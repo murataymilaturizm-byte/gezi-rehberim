@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check } from "lucide-react";
+import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote } from "lucide-react";
 
 const Index = () => {
   const features = [
@@ -89,6 +89,30 @@ const Index = () => {
         "Dedicated account manager"
       ],
       highlighted: false
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Ahmet Yılmaz",
+      company: "Mavi Tur Seyahat",
+      role: "Genel Müdür",
+      content: "TurzzAI sayesinde WhatsApp üzerinden gelen taleplere anında yanıt verebiliyoruz. İlk ayda rezervasyonlarımız %120 arttı. Müşteri memnuniyeti zirve yaptı!",
+      rating: 5
+    },
+    {
+      name: "Zeynep Kaya",
+      company: "Güneş Turizm",
+      role: "Satış Müdürü",
+      content: "Gece yarısı bile müşterilerimiz tur bilgisi alıp rezervasyon yapabiliyor. Artık hiçbir fırsatı kaçırmıyoruz. Kesinlikle tavsiye ediyorum!",
+      rating: 5
+    },
+    {
+      name: "Mehmet Demir",
+      company: "Şafak Seyahat",
+      role: "İşletme Sahibi",
+      content: "Küçük bir acente olarak böyle bir teknolojiye sahip olmak harika. Kurulum çok kolay, kullanımı son derece pratik. İlk haftadan itibaren geri dönüşler başladı.",
+      rating: 5
     }
   ];
 
@@ -213,6 +237,63 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Müşterilerimiz Ne Diyor?
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Yüzlerce acente TurzzAI ile işlerini büyütüyor
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6 space-y-4">
+                  <Quote className="w-10 h-10 text-primary/20" />
+                  
+                  <div className="flex gap-1">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-secondary text-secondary" />
+                    ))}
+                  </div>
+
+                  <p className="text-foreground leading-relaxed">
+                    {testimonial.content}
+                  </p>
+
+                  <div className="pt-4 border-t border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center">
+                        <span className="text-lg font-semibold text-primary-foreground">
+                          {testimonial.name.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-foreground">{testimonial.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {testimonial.role}, {testimonial.company}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <div className="inline-flex items-center gap-2 text-muted-foreground">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+              <span>250+ mutlu acente</span>
             </div>
           </div>
         </div>
