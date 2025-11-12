@@ -15,14 +15,17 @@ export const parseMessage = (text: string) => {
   // Destinasyon tespiti
   if (lowerText.includes("kapadokya")) result.entities.destination = "Kapadokya";
   if (lowerText.includes("ayvalık")) result.entities.destination = "Ayvalık";
+  if (lowerText.includes("efes") || lowerText.includes("izmir") || lowerText.includes("İzmir")) result.entities.destination = "İzmir";
+  if (lowerText.includes("pamukkale") || lowerText.includes("denizli")) result.entities.destination = "Pamukkale";
+  if (lowerText.includes("antalya") || lowerText.includes("kemer")) result.entities.destination = "Antalya";
 
   // Tur tipi
   if (lowerText.includes("günübirlik") || lowerText.includes("günü birlik")) {
-    result.entities.type = "daytrip";
+    result.entities.type = "DAYTRIP";
   } else if (lowerText.includes("2 gece") || lowerText.includes("iki gece")) {
-    result.entities.type = "2night";
+    result.entities.type = "N2";
   } else if (lowerText.includes("3 gece") || lowerText.includes("üç gece")) {
-    result.entities.type = "3night";
+    result.entities.type = "N3";
   }
 
   // Basit tarih ayrıştırma

@@ -89,6 +89,9 @@ function parseMessage(text: string) {
   // Destinasyon
   if (lowerText.includes("kapadokya")) result.entities.destination = "Kapadokya";
   if (lowerText.includes("ayvalık")) result.entities.destination = "Ayvalık";
+  if (lowerText.includes("efes") || lowerText.includes("izmir") || lowerText.includes("İzmir")) result.entities.destination = "İzmir";
+  if (lowerText.includes("pamukkale") || lowerText.includes("denizli")) result.entities.destination = "Pamukkale";
+  if (lowerText.includes("antalya") || lowerText.includes("kemer")) result.entities.destination = "Antalya";
 
   // Tur tipi
   if (lowerText.includes("günübirlik") || lowerText.includes("günü birlik")) {
@@ -135,6 +138,14 @@ async function searchTours(supabase: any, entities: any) {
       type,
       currency,
       program_url,
+      program_kisa,
+      hareket_noktasi,
+      toplanma_saati,
+      tur_sure,
+      konaklama,
+      ulasim,
+      tur_kategorisi,
+      gezilecek_yerler,
       tour_dates (
         id,
         departure_date,
@@ -143,6 +154,10 @@ async function searchTours(supabase: any, entities: any) {
         quota
       )
     `);
+
+  if (entities.destination) {
+    query = query.eq("destination", entities.destination);
+  }
 
   if (entities.type) {
     query = query.eq("type", entities.type);
@@ -186,9 +201,18 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     const firstDate = tour.dates[0];
     response += `${index + 1}️⃣ *${tour.title}*\n`;
     response += `📍 ${tour.destination}\n`;
+    if (tour.program_kisa) {
+      response += `✨ ${tour.program_kisa}\n`;
+    }
     response += `📅 ${firstDate.departure_date}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + firstDate.return_date : ''}\n`;
+    if (tour.tur_sure) {
+      response += `⏱️ ${tour.tur_sure}\n`;
+    }
     response += `💰 ${formatPrice(firstDate.price_adult)} ${tour.currency} /kişi\n`;
     response += `👥 ${firstDate.quota > 0 ? firstDate.quota + ' kontenjan' : 'Kontenjan doldu'}\n`;
+    if (tour.gezilecek_yerler) {
+      response += `🗺️ ${tour.gezilecek_yerler}\n`;
+    }
     if (tour.program_url) {
       response += `📄 ${tour.program_url}\n`;
     }
