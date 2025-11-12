@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote } from "lucide-react";
+import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp } from "lucide-react";
 
 const Index = () => {
   const features = [
@@ -116,6 +116,33 @@ const Index = () => {
     }
   ];
 
+  const stats = [
+    {
+      icon: MessageSquare,
+      value: "250K+",
+      label: "Aylık WhatsApp Mesajı",
+      color: "text-primary"
+    },
+    {
+      icon: Users,
+      value: "250+",
+      label: "Aktif Acente",
+      color: "text-secondary"
+    },
+    {
+      icon: TrendingUp,
+      value: "%98",
+      label: "Müşteri Memnuniyeti",
+      color: "text-primary"
+    },
+    {
+      icon: CheckCircle2,
+      value: "15K+",
+      label: "Aylık Rezervasyon",
+      color: "text-secondary"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -166,6 +193,27 @@ const Index = () => {
                 Demo İzle
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {stats.map((stat, index) => (
+              <Card key={index} className="border-border/50 shadow-card text-center">
+                <CardContent className="p-6 space-y-3">
+                  <stat.icon className={`w-8 h-8 ${stat.color} mx-auto`} />
+                  <div className="text-3xl md:text-4xl font-bold text-foreground">
+                    {stat.value}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {stat.label}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
