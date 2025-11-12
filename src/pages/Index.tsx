@@ -143,7 +143,7 @@ const Index = () => {
               </div>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <a href="/admin">Admin Panel</a>
+              <a href="/auth">Admin Panel</a>
             </Button>
           </div>
         </div>
