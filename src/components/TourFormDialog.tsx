@@ -28,6 +28,14 @@ interface TourFormDialogProps {
     min_pax: number;
     visa_required: boolean;
     program_url?: string;
+    program_kisa?: string;
+    hareket_noktasi?: string;
+    toplanma_saati?: string;
+    tur_sure?: string;
+    konaklama?: string;
+    ulasim?: string;
+    tur_kategorisi?: string;
+    gezilecek_yerler?: string;
   };
 }
 
@@ -41,7 +49,15 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
     currency: "TRY",
     min_pax: 1,
     visa_required: false,
-    program_url: ""
+    program_url: "",
+    program_kisa: "",
+    hareket_noktasi: "",
+    toplanma_saati: "",
+    tur_sure: "",
+    konaklama: "",
+    ulasim: "",
+    tur_kategorisi: "",
+    gezilecek_yerler: ""
   });
 
   useEffect(() => {
@@ -53,7 +69,15 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         currency: tour.currency,
         min_pax: tour.min_pax,
         visa_required: tour.visa_required,
-        program_url: tour.program_url || ""
+        program_url: tour.program_url || "",
+        program_kisa: tour.program_kisa || "",
+        hareket_noktasi: tour.hareket_noktasi || "",
+        toplanma_saati: tour.toplanma_saati || "",
+        tur_sure: tour.tur_sure || "",
+        konaklama: tour.konaklama || "",
+        ulasim: tour.ulasim || "",
+        tur_kategorisi: tour.tur_kategorisi || "",
+        gezilecek_yerler: tour.gezilecek_yerler || ""
       });
     } else {
       setFormData({
@@ -63,7 +87,15 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         currency: "TRY",
         min_pax: 1,
         visa_required: false,
-        program_url: ""
+        program_url: "",
+        program_kisa: "",
+        hareket_noktasi: "",
+        toplanma_saati: "",
+        tur_sure: "",
+        konaklama: "",
+        ulasim: "",
+        tur_kategorisi: "",
+        gezilecek_yerler: ""
       });
     }
   }, [tour, isOpen]);
@@ -94,7 +126,15 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
             currency: formData.currency,
             min_pax: formData.min_pax,
             visa_required: formData.visa_required,
-            program_url: formData.program_url || null
+            program_url: formData.program_url || null,
+            program_kisa: formData.program_kisa || null,
+            hareket_noktasi: formData.hareket_noktasi || null,
+            toplanma_saati: formData.toplanma_saati || null,
+            tur_sure: formData.tur_sure || null,
+            konaklama: formData.konaklama || null,
+            ulasim: formData.ulasim || null,
+            tur_kategorisi: formData.tur_kategorisi || null,
+            gezilecek_yerler: formData.gezilecek_yerler || null
           })
           .eq("id", tour.id);
 
@@ -113,7 +153,15 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
           currency: formData.currency,
           min_pax: formData.min_pax,
           visa_required: formData.visa_required,
-          program_url: formData.program_url || null
+          program_url: formData.program_url || null,
+          program_kisa: formData.program_kisa || null,
+          hareket_noktasi: formData.hareket_noktasi || null,
+          toplanma_saati: formData.toplanma_saati || null,
+          tur_sure: formData.tur_sure || null,
+          konaklama: formData.konaklama || null,
+          ulasim: formData.ulasim || null,
+          tur_kategorisi: formData.tur_kategorisi || null,
+          gezilecek_yerler: formData.gezilecek_yerler || null
         });
 
         if (error) throw error;
@@ -227,6 +275,90 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
               value={formData.program_url}
               onChange={(e) => setFormData({ ...formData, program_url: e.target.value })}
               placeholder="https://example.com/program.pdf"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="program_kisa">Program Açıklaması</Label>
+            <Input
+              id="program_kisa"
+              value={formData.program_kisa}
+              onChange={(e) => setFormData({ ...formData, program_kisa: e.target.value })}
+              placeholder="Kısa program açıklaması"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="hareket_noktasi">Hareket Noktası</Label>
+              <Input
+                id="hareket_noktasi"
+                value={formData.hareket_noktasi}
+                onChange={(e) => setFormData({ ...formData, hareket_noktasi: e.target.value })}
+                placeholder="Örn: Taksim Meydanı"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="toplanma_saati">Toplanma Saati</Label>
+              <Input
+                id="toplanma_saati"
+                type="time"
+                value={formData.toplanma_saati}
+                onChange={(e) => setFormData({ ...formData, toplanma_saati: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="tur_sure">Tur Süresi</Label>
+              <Input
+                id="tur_sure"
+                value={formData.tur_sure}
+                onChange={(e) => setFormData({ ...formData, tur_sure: e.target.value })}
+                placeholder="Örn: 3 gün, 8 saat"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tur_kategorisi">Kategori</Label>
+              <Input
+                id="tur_kategorisi"
+                value={formData.tur_kategorisi}
+                onChange={(e) => setFormData({ ...formData, tur_kategorisi: e.target.value })}
+                placeholder="Örn: Kültür, Doğa"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="konaklama">Konaklama</Label>
+            <Input
+              id="konaklama"
+              value={formData.konaklama}
+              onChange={(e) => setFormData({ ...formData, konaklama: e.target.value })}
+              placeholder="Konaklama detayları"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="ulasim">Ulaşım</Label>
+            <Input
+              id="ulasim"
+              value={formData.ulasim}
+              onChange={(e) => setFormData({ ...formData, ulasim: e.target.value })}
+              placeholder="Ulaşım detayları"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="gezilecek_yerler">Gezilecek Yerler</Label>
+            <Input
+              id="gezilecek_yerler"
+              value={formData.gezilecek_yerler}
+              onChange={(e) => setFormData({ ...formData, gezilecek_yerler: e.target.value })}
+              placeholder="Virgülle ayırarak yazın"
             />
           </div>
 
