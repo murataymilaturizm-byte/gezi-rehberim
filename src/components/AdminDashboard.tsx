@@ -9,11 +9,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Calendar, Users, Plane, TrendingUp } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 interface Stats {
   totalTours: number;
@@ -57,6 +66,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export const AdminDashboard = () => {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [stats, setStats] = useState<Stats>({
     totalTours: 0,
     totalRegistrations: 0,
@@ -70,16 +80,34 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [dateRange]);
 
   const loadDashboardData = async () => {
     setLoading(true);
     try {
+      // Determine date filter
+      const startDate = dateRange?.from ? dateRange.from.toISOString() : undefined;
+      const endDate = dateRange?.to ? dateRange.to.toISOString() : undefined;
+
       // Get statistics
+      let toursQuery = supabase.from("tours").select("id", { count: "exact", head: true });
+      let registrationsQuery = supabase.from("registrations").select("id, status, created_at", { count: "exact" });
+      let datesQuery = supabase.from("tour_dates").select("id, departure_date", { count: "exact" });
+
+      // Apply date filters
+      if (startDate) {
+        registrationsQuery = registrationsQuery.gte("created_at", startDate);
+        datesQuery = datesQuery.gte("departure_date", startDate);
+      }
+      if (endDate) {
+        registrationsQuery = registrationsQuery.lte("created_at", endDate);
+        datesQuery = datesQuery.lte("departure_date", endDate);
+      }
+
       const [toursResult, registrationsResult, datesResult] = await Promise.all([
-        supabase.from("tours").select("id", { count: "exact", head: true }),
-        supabase.from("registrations").select("id, status", { count: "exact" }),
-        supabase.from("tour_dates").select("id", { count: "exact", head: true })
+        toursQuery,
+        registrationsQuery,
+        datesQuery
       ]);
 
       const pendingCount = registrationsResult.data?.filter(
@@ -94,7 +122,7 @@ export const AdminDashboard = () => {
       });
 
       // Get recent registrations
-      const { data: recentData } = await supabase
+      let recentQuery = supabase
         .from("registrations")
         .select(`
           id,
@@ -109,15 +137,26 @@ export const AdminDashboard = () => {
         .order("created_at", { ascending: false })
         .limit(5);
 
+      if (startDate) recentQuery = recentQuery.gte("created_at", startDate);
+      if (endDate) recentQuery = recentQuery.lte("created_at", endDate);
+
+      const { data: recentData } = await recentQuery;
+
       setRecentRegistrations(recentData || []);
 
       // Get popular tours
-      const { data: popularData } = await supabase
+      let popularQuery = supabase
         .from("registrations")
         .select(`
           tour_id,
+          created_at,
           tours (id, title, destination)
         `);
+
+      if (startDate) popularQuery = popularQuery.gte("created_at", startDate);
+      if (endDate) popularQuery = popularQuery.lte("created_at", endDate);
+
+      const { data: popularData } = await popularQuery;
 
       const tourCounts = popularData?.reduce((acc: Record<string, any>, reg: any) => {
         const tourId = reg.tours.id;
@@ -139,11 +178,21 @@ export const AdminDashboard = () => {
 
       setPopularTours(sortedTours as PopularTour[]);
 
-      // Get chart data (last 7 days)
-      const { data: chartDataRaw } = await supabase
+      // Get chart data
+      let chartQuery = supabase
         .from("registrations")
-        .select("created_at")
-        .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+        .select("created_at");
+
+      if (startDate) {
+        chartQuery = chartQuery.gte("created_at", startDate);
+      } else {
+        // Default to last 7 days if no start date
+        chartQuery = chartQuery.gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+      }
+      
+      if (endDate) chartQuery = chartQuery.lte("created_at", endDate);
+
+      const { data: chartDataRaw } = await chartQuery;
 
       const dailyCounts = chartDataRaw?.reduce((acc: Record<string, number>, reg) => {
         const date = format(new Date(reg.created_at), "dd MMM", { locale: tr });
@@ -164,6 +213,10 @@ export const AdminDashboard = () => {
     }
   };
 
+  const clearDateRange = () => {
+    setDateRange(undefined);
+  };
+
   if (loading) {
     return (
       <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
@@ -172,6 +225,66 @@ export const AdminDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Date Range Filter */}
+      <Card className="shadow-card">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !dateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "d MMM yyyy", { locale: tr })} -{" "}
+                        {format(dateRange.to, "d MMM yyyy", { locale: tr })}
+                      </>
+                    ) : (
+                      format(dateRange.from, "d MMM yyyy", { locale: tr })
+                    )
+                  ) : (
+                    <span>Tarih aralığı seç</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            
+            {dateRange && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearDateRange}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Temizle
+              </Button>
+            )}
+            
+            <p className="text-sm text-muted-foreground ml-auto">
+              {dateRange?.from && dateRange?.to
+                ? "Seçilen dönem verileri gösteriliyor"
+                : "Tüm veriler gösteriliyor"}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-card">
@@ -222,7 +335,11 @@ export const AdminDashboard = () => {
       {/* Chart */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Son 7 Gün - Kayıtlar</CardTitle>
+          <CardTitle>
+            {dateRange?.from && dateRange?.to
+              ? `${format(dateRange.from, "d MMM", { locale: tr })} - ${format(dateRange.to, "d MMM", { locale: tr })} Kayıtları`
+              : "Son 7 Gün - Kayıtlar"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
