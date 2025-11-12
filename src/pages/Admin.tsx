@@ -87,6 +87,8 @@ const Admin = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
+  const [agencyName, setAgencyName] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "agencies">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -131,25 +133,37 @@ const Admin = () => {
 
   const checkUserRole = async (userId: string) => {
     try {
+      // Get user profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .single();
+
+      setUserName(profileData?.full_name || "");
+
       // Check if super admin
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
         .eq("role", "super_admin")
-        .single();
+        .maybeSingle();
 
       setIsSuperAdmin(!!roleData);
 
-      // Get user's agency ID if not super admin
+      // Get user's agency ID and name if not super admin
       if (!roleData) {
         const { data: agencyData } = await supabase
           .from("agencies")
-          .select("id")
+          .select("id, agency_name")
           .eq("user_id", userId)
-          .single();
+          .maybeSingle();
 
         setUserAgencyId(agencyData?.id || null);
+        setAgencyName(agencyData?.agency_name || "");
+      } else {
+        setAgencyName("Super Admin");
       }
     } catch (error) {
       console.error("Error checking user role:", error);
@@ -296,11 +310,24 @@ const Admin = () => {
                   Ana Sayfa
                 </a>
               </Button>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-gradient-ocean flex items-center justify-center">
-                  <Plane className="w-5 h-5 text-primary-foreground" />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-gradient-ocean flex items-center justify-center">
+                    <Plane className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {agencyName && <span>{agencyName}</span>}
+                      {userName && (
+                        <>
+                          <span>•</span>
+                          <span>{userName}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={handleLogout}>
