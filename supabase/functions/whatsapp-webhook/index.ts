@@ -140,10 +140,20 @@ function parseMessage(text: string) {
     };
   }
 
+  // Gereksiz kelimeleri temizle - sadece önemli keyword'leri bırak
+  const stopWords = ['tur', 'turu', 'var', 'varmı', 'var mı', 'mi', 'mı', 'mu', 'mü', 'ne', 'zaman', 'için', 'ile', 'bir', 'bu', 'şu', 'o', 'da', 'de', 'ta', 'te', 'den', 'dan', 'ten', 'tan', 'e', 'a', 'ya', 'ye'];
+  let cleanedText = lowerText;
+  stopWords.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    cleanedText = cleanedText.replace(regex, ' ');
+  });
+  // Fazla boşlukları temizle
+  cleanedText = cleanedText.replace(/\s+/g, ' ').trim();
+
   const result: any = {
     intent: "tour.search",
     entities: {
-      searchTerm: text.trim(), // Kullanıcının yazdığı tam metin
+      searchTerm: cleanedText, // Temizlenmiş anahtar kelimeler
       type: null,
       date_iso: null,
       pax: null
