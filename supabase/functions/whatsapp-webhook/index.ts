@@ -53,10 +53,36 @@ serve(async (req) => {
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    } else if (parsed.intent === 'registration.create') {
+      // Kayıt oluştur
+      const registration = await createRegistration(supabase, parsed.entities, from);
+      
+      if (registration.error) {
+        return new Response(JSON.stringify({
+          success: false,
+          message: `❌ Kayıt oluşturulamadı: ${registration.error}`
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      return new Response(JSON.stringify({
+        success: true,
+        message: registration.message
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } else if (parsed.intent === 'registration.request') {
+      return new Response(JSON.stringify({
+        success: true,
+        message: '📝 *Kayıt Formu*\n\nÖn kayıt oluşturmak için aşağıdaki formatı kullanın:\n\n`Kayıt: [Tur Tarih ID] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n*Örnek:*\n`Kayıt: 5eda4e1e-b791-4365-a7ae-f36acbd186da Ahmet Yılmaz 05551234567 2 kişi`\n\n💡 Tur tarih ID\'sini yukarıdaki tur listesinden alabilirsiniz.'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     } else {
       return new Response(JSON.stringify({
         success: true,
-        message: 'Merhaba! 👋 Size nasıl yardımcı olabilirim?\n\nTur aramak için şöyle yazabilirsiniz:\n"Günübirlik Kapadokya 20 Temmuz"'
+        message: 'Merhaba! 👋 Size nasıl yardımcı olabilirim?\n\n🔍 Tur aramak için:\n"Günübirlik Kapadokya 20 Temmuz"\n\n📝 Kayıt olmak için:\n"Kayıt olmak istiyorum"'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -76,6 +102,30 @@ serve(async (req) => {
 
 function parseMessage(text: string) {
   const lowerText = text.toLowerCase();
+  
+  // Kayıt niyeti kontrolü
+  if (lowerText.includes("kayıt") || lowerText.includes("rezervasyon") || lowerText.includes("ön kayıt")) {
+    // Kayıt formatı: "Kayıt: [Tur ID] [Ad Soyad] [Telefon] [Kişi]"
+    const registrationMatch = text.match(/kayıt[:\s]+([a-f0-9-]+)\s+(.+?)\s+(\+?[\d\s-]+)\s+(\d+)\s*kişi/i);
+    if (registrationMatch) {
+      return {
+        intent: "registration.create",
+        entities: {
+          tour_date_id: registrationMatch[1],
+          full_name: registrationMatch[2].trim(),
+          phone: registrationMatch[3].replace(/\s+/g, ''),
+          pax: parseInt(registrationMatch[4])
+        }
+      };
+    }
+    
+    // Basit kayıt isteği
+    return {
+      intent: "registration.request",
+      entities: {}
+    };
+  }
+
   const result: any = {
     intent: "tour.search",
     entities: {
@@ -183,6 +233,57 @@ async function searchTours(supabase: any, entities: any) {
   return tours;
 }
 
+async function createRegistration(supabase: any, entities: any, from: string) {
+  try {
+    // Tur tarihini kontrol et
+    const { data: tourDate, error: tourDateError } = await supabase
+      .from('tour_dates')
+      .select('id, departure_date, tour_id, tours(title, destination)')
+      .eq('id', entities.tour_date_id)
+      .single();
+
+    if (tourDateError || !tourDate) {
+      return { error: 'Tur tarihi bulunamadı. Lütfen geçerli bir tur tarih ID\'si kullanın.' };
+    }
+
+    // Kayıt oluştur
+    const { data: registration, error: regError } = await supabase
+      .from('registrations')
+      .insert({
+        tour_id: tourDate.tour_id,
+        tour_date_id: entities.tour_date_id,
+        full_name: entities.full_name,
+        phone: entities.phone,
+        pax: entities.pax,
+        status: 'NEW',
+        note: `WhatsApp kayıt: ${from}`
+      })
+      .select()
+      .single();
+
+    if (regError) {
+      console.error('Registration error:', regError);
+      return { error: 'Kayıt oluşturulamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.' };
+    }
+
+    const message = `✅ *Kayıt Başarılı!*\n\n` +
+      `📋 Kayıt No: ${registration.id.substring(0, 8)}\n` +
+      `🎯 Tur: ${tourDate.tours.title}\n` +
+      `📍 ${tourDate.tours.destination}\n` +
+      `📅 ${tourDate.departure_date}\n` +
+      `👤 ${entities.full_name}\n` +
+      `📱 ${entities.phone}\n` +
+      `👥 ${entities.pax} kişi\n\n` +
+      `✨ Ön kaydınız başarıyla oluşturuldu!\n` +
+      `📞 Kısa süre içinde sizinle iletişime geçeceğiz.`;
+
+    return { message };
+  } catch (error) {
+    console.error('Create registration error:', error);
+    return { error: 'Beklenmeyen bir hata oluştu.' };
+  }
+}
+
 function formatWhatsAppResponse(tours: any[], entities: any) {
   if (tours.length === 0) {
     return '😔 Üzgünüm, arama kriterlerinize uygun tur bulunamadı.\n\nLütfen farklı tarih veya destinasyon deneyin.';
@@ -204,6 +305,7 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     if (tour.program_kisa) {
       response += `✨ ${tour.program_kisa}\n`;
     }
+    response += `🆔 Tarih ID: \`${firstDate.id}\`\n`;
     response += `📅 ${firstDate.departure_date}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + firstDate.return_date : ''}\n`;
     if (tour.tur_sure) {
       response += `⏱️ ${tour.tur_sure}\n`;
@@ -223,7 +325,7 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     response += `_... ve ${tours.length - 3} tur daha_\n\n`;
   }
 
-  response += '📝 Ön kayıt için lütfen acentemizle iletişime geçin.';
+  response += '📝 *Kayıt olmak için:*\n"Kayıt olmak istiyorum" yazın veya direkt kayıt formatını kullanın.';
 
   return response;
 }
