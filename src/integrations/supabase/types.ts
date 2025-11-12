@@ -14,8 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      agencies: {
+        Row: {
+          active: boolean | null
+          agency_name: string
+          created_at: string | null
+          id: string
+          twilio_account_sid: string
+          twilio_auth_token: string
+          twilio_phone_number: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          agency_name: string
+          created_at?: string | null
+          id?: string
+          twilio_account_sid: string
+          twilio_auth_token: string
+          twilio_phone_number: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          agency_name?: string
+          created_at?: string | null
+          id?: string
+          twilio_account_sid?: string
+          twilio_auth_token?: string
+          twilio_phone_number?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       registrations: {
         Row: {
+          agency_id: string | null
           created_at: string | null
           full_name: string
           id: string
@@ -27,6 +79,7 @@ export type Database = {
           tour_id: string
         }
         Insert: {
+          agency_id?: string | null
           created_at?: string | null
           full_name: string
           id?: string
@@ -38,6 +91,7 @@ export type Database = {
           tour_id: string
         }
         Update: {
+          agency_id?: string | null
           created_at?: string | null
           full_name?: string
           id?: string
@@ -49,6 +103,13 @@ export type Database = {
           tour_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "registrations_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "registrations_tour_date_id_fkey"
             columns: ["tour_date_id"]
@@ -67,6 +128,7 @@ export type Database = {
       }
       tour_dates: {
         Row: {
+          agency_id: string | null
           created_at: string | null
           departure_date: string
           id: string
@@ -78,6 +140,7 @@ export type Database = {
           tour_id: string
         }
         Insert: {
+          agency_id?: string | null
           created_at?: string | null
           departure_date: string
           id?: string
@@ -89,6 +152,7 @@ export type Database = {
           tour_id: string
         }
         Update: {
+          agency_id?: string | null
           created_at?: string | null
           departure_date?: string
           id?: string
@@ -101,6 +165,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "tour_dates_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tour_dates_tour_id_fkey"
             columns: ["tour_id"]
             isOneToOne: false
@@ -111,6 +182,7 @@ export type Database = {
       }
       tours: {
         Row: {
+          agency_id: string | null
           created_at: string | null
           currency: string
           destination: string
@@ -130,6 +202,7 @@ export type Database = {
           visa_required: boolean | null
         }
         Insert: {
+          agency_id?: string | null
           created_at?: string | null
           currency?: string
           destination: string
@@ -149,6 +222,7 @@ export type Database = {
           visa_required?: boolean | null
         }
         Update: {
+          agency_id?: string | null
           created_at?: string | null
           currency?: string
           destination?: string
@@ -167,10 +241,40 @@ export type Database = {
           ulasim?: string | null
           visa_required?: boolean | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "tours_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
         Relationships: []
       }
       whatsapp_conversations: {
         Row: {
+          agency_id: string | null
           content: string
           created_at: string
           id: string
@@ -178,6 +282,7 @@ export type Database = {
           role: string
         }
         Insert: {
+          agency_id?: string | null
           content: string
           created_at?: string
           id?: string
@@ -185,22 +290,39 @@ export type Database = {
           role: string
         }
         Update: {
+          agency_id?: string | null
           content?: string
           created_at?: string
           id?: string
           phone?: string
           role?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_conversations_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_agency_id: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "super_admin" | "agency"
       registration_status: "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED"
       tour_type: "DAYTRIP" | "N2" | "N3"
     }
@@ -330,6 +452,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["super_admin", "agency"],
       registration_status: ["NEW", "PENDING", "CONFIRMED", "CANCELLED"],
       tour_type: ["DAYTRIP", "N2", "N3"],
     },

@@ -29,6 +29,7 @@ import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
+import { AgencyManagement } from "@/components/AgencyManagement";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 
@@ -84,7 +85,9 @@ const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp">("dashboard");
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "agencies">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,6 +109,11 @@ const Admin = () => {
       setSession(session);
       if (!session) {
         navigate("/auth");
+      } else {
+        // Check user role
+        setTimeout(() => {
+          checkUserRole(session.user.id);
+        }, 0);
       }
     });
 
@@ -113,11 +121,40 @@ const Admin = () => {
       setSession(session);
       if (!session) {
         navigate("/auth");
+      } else {
+        checkUserRole(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkUserRole = async (userId: string) => {
+    try {
+      // Check if super admin
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "super_admin")
+        .single();
+
+      setIsSuperAdmin(!!roleData);
+
+      // Get user's agency ID if not super admin
+      if (!roleData) {
+        const { data: agencyData } = await supabase
+          .from("agencies")
+          .select("id")
+          .eq("user_id", userId)
+          .single();
+
+        setUserAgencyId(agencyData?.id || null);
+      }
+    } catch (error) {
+      console.error("Error checking user role:", error);
+    }
+  };
 
   useEffect(() => {
     if (session) {
@@ -306,6 +343,15 @@ const Admin = () => {
           >
             WhatsApp
           </Button>
+          {isSuperAdmin && (
+            <Button
+              variant={activeTab === "agencies" ? "default" : "outline"}
+              onClick={() => setActiveTab("agencies")}
+              className={activeTab === "agencies" ? "bg-gradient-ocean" : ""}
+            >
+              Acenteler
+            </Button>
+          )}
         </div>
 
         {/* Content */}
@@ -313,6 +359,8 @@ const Admin = () => {
           <AdminDashboard />
         ) : activeTab === "whatsapp" ? (
           <WhatsAppConversations />
+        ) : activeTab === "agencies" && isSuperAdmin ? (
+          <AgencyManagement />
         ) : (
           <Card className="shadow-card">
           <CardHeader>
