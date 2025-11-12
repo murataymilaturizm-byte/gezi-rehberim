@@ -410,7 +410,6 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     // Tarihi varsa göster
     if (tour.dates.length > 0) {
       const firstDate = tour.dates[0];
-      response += `🆔 Tarih ID: \`${firstDate.id}\`\n`;
       response += `📅 ${firstDate.departure_date}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + firstDate.return_date : ''}\n`;
       if (tour.tur_sure) {
         response += `⏱️ ${tour.tur_sure}\n`;
