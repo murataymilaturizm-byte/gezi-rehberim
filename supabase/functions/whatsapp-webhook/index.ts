@@ -47,8 +47,8 @@ serve(async (req) => {
     console.log('Parsed intent:', parsed);
 
     if (parsed.intent === 'tour.search') {
-      // Turları ara
-      const tours = await searchTours(supabase, parsed.entities);
+      // AI ile akıllı arama
+      const tours = await searchToursWithAI(supabase, userMessage);
       
       // WhatsApp formatında cevap oluştur
       const message = formatWhatsAppResponse(tours, parsed.entities);
@@ -199,8 +199,9 @@ function parseMessage(text: string) {
   return result;
 }
 
-async function searchTours(supabase: any, entities: any) {
-  let query = supabase
+async function searchToursWithAI(supabase: any, userMessage: string) {
+  // Önce tüm turları al
+  const { data: allTours, error } = await supabase
     .from("tours")
     .select(`
       id,
@@ -226,33 +227,65 @@ async function searchTours(supabase: any, entities: any) {
       )
     `);
 
-  // Kullanıcının yazdığı metinde title ve destination'da esnek arama
-  if (entities.searchTerm) {
-    query = query.or(`destination.ilike.%${entities.searchTerm}%,title.ilike.%${entities.searchTerm}%`);
-  }
-
-  if (entities.type) {
-    query = query.eq("type", entities.type);
-  }
-
-  const { data, error } = await query;
   if (error) throw error;
 
-  const tours = (data || []).map((tour: any) => ({
-    ...tour,
-    dates: (tour.tour_dates || [])
-      .filter((date: any) => {
-        if (entities.date_iso) {
-          return date.departure_date === entities.date_iso;
-        }
-        return true;
-      })
-      .sort((a: any, b: any) => 
-        new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime()
-      )
-  })); // Tarihi olmayan turları da göster
+  // Turları AI için formatlayalım
+  const toursList = (allTours || []).map((tour: any) => ({
+    id: tour.id,
+    title: tour.title,
+    destination: tour.destination,
+    type: tour.type,
+    description: tour.program_kisa || '',
+    places: tour.gezilecek_yerler || ''
+  }));
 
-  return tours;
+  // AI'dan yardım iste
+  const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        {
+          role: 'system',
+          content: `Sen bir tur arama asistanısın. Kullanıcının mesajını analiz edip hangi turları aradığını belirle.
+Turlar: ${JSON.stringify(toursList, null, 2)}
+
+Kullanıcının mesajından:
+- Hangi destinasyonu aradığını (Kapadokya, Efes, Pamukkale, vb)
+- Hangi tür turu aradığını (günübirlik, 2 gece, 3 gece)
+- Hangi tarihi aradığını (varsa)
+
+Eşleşen turların ID'lerini JSON array olarak döndür. Örnek: ["id1", "id2"]
+Eğer hiçbir tur eşleşmezse boş array döndür: []`
+        },
+        {
+          role: 'user',
+          content: userMessage
+        }
+      ],
+      temperature: 0.3
+    })
+  });
+
+  const aiResult = await aiResponse.json();
+  const matchedIds = JSON.parse(aiResult.choices[0].message.content);
+
+  // Eşleşen turları filtrele ve tarihlerini düzenle
+  const matchedTours = (allTours || [])
+    .filter((tour: any) => matchedIds.includes(tour.id))
+    .map((tour: any) => ({
+      ...tour,
+      dates: (tour.tour_dates || [])
+        .sort((a: any, b: any) => 
+          new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime()
+        )
+    }));
+
+  return matchedTours;
 }
 
 async function createRegistration(supabase: any, entities: any, from: string) {
