@@ -63,7 +63,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     } else if (intent.type === 'registration.request') {
-      const message = '💚 *Kayıt Olmak İstiyorsunuz - Harika!*\n\n📝 Aşağıdaki bilgileri bana gönderirseniz hemen işleme alalım:\n\n📋 *Format:*\n`Kayıt: [Tur Tarih ID] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n💡 *Örnek:*\n`Kayıt: 5eda4e1e-b791-4365-a7ae-f36acbd186da Ahmet Yılmaz 05551234567 2 kişi`\n\n✨ Tur tarih ID\'sini yukarıdaki tur listesinden kopyalayabilirsiniz!\n\n🤝 Yardıma ihtiyacınız olursa çekinmeyin!';
+      const message = '💚 *Kayıt Olmak İstiyorsunuz - Harika!*\n\n📝 Aşağıdaki bilgileri bana gönderirseniz hemen işleme alalım:\n\n📋 *Format:*\n`Kayıt: [Tur Adı] [Tarih] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n💡 *Örnek:*\n`Kayıt: Kapadokya Turu 15.05.2026 Ahmet Yılmaz 05551234567 2 kişi`\n\n✨ Tur adı ve tarihini yukarıdaki tur listesinden görebilirsiniz!\n\n🤝 Yardıma ihtiyacınız olursa çekinmeyin!';
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -118,16 +118,17 @@ serve(async (req) => {
 async function categorizeMessage(userMessage: string) {
   const lowerText = userMessage.toLowerCase();
   
-  // Kayıt formatı kontrolü
-  const registrationMatch = userMessage.match(/kayıt[:\s]+([a-f0-9-]+)\s+(.+?)\s+(\+?[\d\s-]+)\s+(\d+)\s*kişi/i);
+  // Kayıt formatı kontrolü - Tur adı ve tarih ile
+  const registrationMatch = userMessage.match(/kayıt[:\s]+(.+?)\s+(\d{2}[.\/-]\d{2}[.\/-]\d{4})\s+(.+?)\s+(\+?[\d\s-]+)\s+(\d+)\s*kişi/i);
   if (registrationMatch) {
     return {
       type: 'registration.create',
       data: {
-        tour_date_id: registrationMatch[1],
-        full_name: registrationMatch[2].trim(),
-        phone: registrationMatch[3].replace(/\s+/g, ''),
-        pax: parseInt(registrationMatch[4])
+        tour_name: registrationMatch[1].trim(),
+        tour_date: registrationMatch[2].trim(),
+        full_name: registrationMatch[3].trim(),
+        phone: registrationMatch[4].replace(/\s+/g, ''),
+        pax: parseInt(registrationMatch[5])
       }
     };
   }
@@ -204,90 +205,6 @@ Kısa ve öz cevaplar ver (max 2-3 cümle).`
   return result.choices[0].message.content;
 }
 
-function parseMessage(text: string) {
-  const lowerText = text.toLowerCase();
-  
-  // Kayıt niyeti kontrolü
-  if (lowerText.includes("kayıt") || lowerText.includes("rezervasyon") || lowerText.includes("ön kayıt")) {
-    // Kayıt formatı: "Kayıt: [Tur ID] [Ad Soyad] [Telefon] [Kişi]"
-    const registrationMatch = text.match(/kayıt[:\s]+([a-f0-9-]+)\s+(.+?)\s+(\+?[\d\s-]+)\s+(\d+)\s*kişi/i);
-    if (registrationMatch) {
-      return {
-        intent: "registration.create",
-        entities: {
-          tour_date_id: registrationMatch[1],
-          full_name: registrationMatch[2].trim(),
-          phone: registrationMatch[3].replace(/\s+/g, ''),
-          pax: parseInt(registrationMatch[4])
-        }
-      };
-    }
-    
-    // Basit kayıt isteği
-    return {
-      intent: "registration.request",
-      entities: {}
-    };
-  }
-
-  // Gereksiz kelimeleri temizle
-  const stopWords = ['tur', 'turu', 'turları', 'var', 'varmı', 'var mı', 'mi', 'mı', 'mu', 'mü', 'ne', 'zaman', 'için', 'ile', 'bir', 'bu', 'şu', 'o', 'da', 'de', 'ta', 'te', 'den', 'dan', 'ten', 'tan', 'ya', 'ye', 'olmak', 'istiyorum', 'ister', 'misiniz'];
-  let cleanedText = lowerText;
-  stopWords.forEach(word => {
-    const regex = new RegExp(`\\b${word}\\b`, 'gi');
-    cleanedText = cleanedText.replace(regex, ' ');
-  });
-  
-  // Türkçe ekleri temizle (basit hali)
-  cleanedText = cleanedText
-    .replace(/([a-zşçğüöı]+)(e|a|i|ı|u|ü|ler|lar|de|da|den|dan|te|ta|ten|tan|ye|ya|nın|nin|nun|nün|nı|ni|nu|nü|sı|si|su|sü)(\s|$)/gi, '$1 ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  const result: any = {
-    intent: "tour.search",
-    entities: {
-      searchTerm: cleanedText, // Temizlenmiş kelimeler
-      type: null,
-      date_iso: null,
-      pax: null
-    }
-  };
-
-  // Tur tipi
-  if (lowerText.includes("günübirlik") || lowerText.includes("günü birlik")) {
-    result.entities.type = "DAYTRIP";
-  } else if (lowerText.includes("2 gece") || lowerText.includes("iki gece")) {
-    result.entities.type = "N2";
-  } else if (lowerText.includes("3 gece") || lowerText.includes("üç gece")) {
-    result.entities.type = "N3";
-  }
-
-  // Tarih
-  const months: Record<string, string> = {
-    "ocak": "01", "şubat": "02", "mart": "03", "nisan": "04",
-    "mayıs": "05", "haziran": "06", "temmuz": "07", "ağustos": "08",
-    "eylül": "09", "ekim": "10", "kasım": "11", "aralık": "12"
-  };
-
-  for (const [monthName, monthNum] of Object.entries(months)) {
-    if (lowerText.includes(monthName)) {
-      const dayMatch = lowerText.match(/(\d{1,2})\s+/);
-      if (dayMatch) {
-        const day = dayMatch[1].padStart(2, '0');
-        result.entities.date_iso = `2026-${monthNum}-${day}`;
-      }
-    }
-  }
-
-  // Kişi sayısı
-  const paxMatch = lowerText.match(/(\d+)\s*(kişi|kişilik)/);
-  if (paxMatch) {
-    result.entities.pax = parseInt(paxMatch[1]);
-  }
-
-  return result;
-}
 
 async function searchToursWithAI(supabase: any, userMessage: string) {
   // Önce tüm turları al
@@ -380,15 +297,20 @@ Eğer hiçbir tur eşleşmezse boş array döndür: []`
 
 async function createRegistration(supabase: any, entities: any, from: string) {
   try {
-    // Tur tarihini kontrol et
+    // Tur adı ve tarihe göre tur tarihini bul
+    const tourDateStr = entities.tour_date.replace(/[.\/-]/g, '-');
+    const dateParts = tourDateStr.split('-');
+    const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // YYYY-MM-DD formatına çevir
+    
     const { data: tourDate, error: tourDateError } = await supabase
       .from('tour_dates')
       .select('id, departure_date, tour_id, tours(title, destination)')
-      .eq('id', entities.tour_date_id)
+      .eq('departure_date', formattedDate)
+      .ilike('tours.title', `%${entities.tour_name}%`)
       .single();
 
     if (tourDateError || !tourDate) {
-      return { error: 'Tur tarihi bulunamadı. Lütfen geçerli bir tur tarih ID\'si kullanın.' };
+      return { error: 'Tur bulunamadı. Lütfen tur adı ve tarihini kontrol edin.' };
     }
 
     // Kayıt oluştur
@@ -396,7 +318,7 @@ async function createRegistration(supabase: any, entities: any, from: string) {
       .from('registrations')
       .insert({
         tour_id: tourDate.tour_id,
-        tour_date_id: entities.tour_date_id,
+        tour_date_id: tourDate.id,
         full_name: entities.full_name,
         phone: entities.phone,
         pax: entities.pax,
@@ -500,7 +422,8 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     // Tarihi varsa göster
     if (tour.dates.length > 0) {
       const firstDate = tour.dates[0];
-      response += `📅 ${firstDate.departure_date}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + firstDate.return_date : ''}\n`;
+      const formattedDate = new Date(firstDate.departure_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      response += `📅 ${formattedDate}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + new Date(firstDate.return_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}\n`;
       if (tour.tur_sure) {
         response += `⏱️ ${tour.tur_sure}\n`;
       }
