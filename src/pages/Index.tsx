@@ -154,7 +154,11 @@ const Index = () => {
         <div className="grid lg:grid-cols-[450px,1fr] gap-6 h-[calc(100vh-140px)]">
           {/* Chat Widget */}
           <div className="h-full">
-            <ChatWidget onSearch={handleSearch} />
+            <ChatWidget 
+              onSearch={handleSearch} 
+              tours={tours}
+              onRegister={handleRegister}
+            />
           </div>
 
           {/* Tour Results */}

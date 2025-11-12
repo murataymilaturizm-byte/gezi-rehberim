@@ -9,15 +9,39 @@ import { parseMessage } from "@/utils/tourParser";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  tours?: Array<{
+    id: string;
+    title: string;
+    destination: string;
+    dateId: string;
+    date: string;
+    price: number;
+    currency: string;
+  }>;
 }
 
 interface ChatWidgetProps {
   onSearch: (query: string, filters: any) => void;
+  tours?: Array<{
+    id: string;
+    title: string;
+    destination: string;
+    type: string;
+    currency: string;
+    dates: Array<{
+      id: string;
+      departure_date: string;
+      return_date?: string;
+      price_adult: number;
+      quota: number;
+    }>;
+  }>;
+  onRegister?: (tourId: string, dateId: string) => void;
 }
 
 const quickChips = ["Günübirlik", "2 Gece", "Temmuz", "Kapadokya"];
 
-export const ChatWidget = ({ onSearch }: ChatWidgetProps) => {
+export const ChatWidget = ({ onSearch, tours = [], onRegister }: ChatWidgetProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -57,11 +81,14 @@ export const ChatWidget = ({ onSearch }: ChatWidgetProps) => {
           pax: parsed.entities.pax
         });
         
-        const assistantMessage: Message = {
-          role: "assistant",
-          content: `${parsed.entities.destination || "Tüm destinasyonlar"} için uygun turları aşağıda bulabilirsiniz. 🎯`
-        };
-        setMessages(prev => [...prev, assistantMessage]);
+        // Turlar gelene kadar bekle
+        setTimeout(() => {
+          const assistantMessage: Message = {
+            role: "assistant",
+            content: `${parsed.entities.destination || "Tüm destinasyonlar"} için uygun turları buldum! 🎯\n\nHerhangi bir tur için "Kayıt Ol" butonuna tıklayarak rezervasyon yapabilirsiniz.`
+          };
+          setMessages(prev => [...prev, assistantMessage]);
+        }, 500);
       } else {
         const assistantMessage: Message = {
           role: "assistant",
@@ -95,23 +122,71 @@ export const ChatWidget = ({ onSearch }: ChatWidgetProps) => {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
-          <div
-            key={index}
-            className={cn(
-              "flex",
-              message.role === "user" ? "justify-end" : "justify-start"
-            )}
-          >
+          <div key={index}>
             <div
               className={cn(
-                "max-w-[80%] rounded-2xl px-4 py-2 transition-smooth",
-                message.role === "user"
-                  ? "bg-gradient-ocean text-primary-foreground"
-                  : "bg-accent text-accent-foreground"
+                "flex",
+                message.role === "user" ? "justify-end" : "justify-start"
               )}
             >
-              <p className="text-sm">{message.content}</p>
+              <div
+                className={cn(
+                  "max-w-[80%] rounded-2xl px-4 py-2 transition-smooth",
+                  message.role === "user"
+                    ? "bg-gradient-ocean text-primary-foreground"
+                    : "bg-accent text-accent-foreground"
+                )}
+              >
+                <p className="text-sm whitespace-pre-line">{message.content}</p>
+              </div>
             </div>
+            
+            {/* Tur sonuçlarını göster */}
+            {message.role === "assistant" && index === messages.length - 1 && tours.length > 0 && (
+              <div className="mt-3 space-y-2 max-w-[85%]">
+                {tours.slice(0, 3).map((tour) => (
+                  <div
+                    key={tour.id}
+                    className="bg-card border border-border rounded-lg p-3 shadow-sm"
+                  >
+                    <h4 className="font-semibold text-sm text-foreground mb-1">
+                      {tour.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      📍 {tour.destination}
+                    </p>
+                    {tour.dates[0] && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-muted-foreground">
+                          📅 {new Date(tour.dates[0].departure_date).toLocaleDateString('tr-TR')}
+                          {tour.dates[0].return_date && 
+                            ` - ${new Date(tour.dates[0].return_date).toLocaleDateString('tr-TR')}`}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-primary">
+                            {new Intl.NumberFormat('tr-TR').format(tour.dates[0].price_adult)} {tour.currency}
+                          </span>
+                          {onRegister && (
+                            <Button
+                              size="sm"
+                              onClick={() => onRegister(tour.id, tour.dates[0].id)}
+                              className="bg-gradient-ocean hover:opacity-90 h-7 text-xs"
+                            >
+                              Kayıt Ol
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {tours.length > 3 && (
+                  <p className="text-xs text-muted-foreground italic text-center">
+                    +{tours.length - 3} tur daha sağ tarafta gösteriliyor
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ))}
         {isLoading && (
