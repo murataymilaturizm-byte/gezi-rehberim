@@ -34,6 +34,7 @@ serve(async (req) => {
     // Twilio WhatsApp formatı desteği
     const userMessage = body.Body || body.message || '';
     const from = body.From || body.from || '';
+    const to = body.To || body.to || ''; // Twilio phone number
 
     if (!userMessage) {
       return new Response(JSON.stringify({ error: 'No message provided' }), {
@@ -44,9 +45,28 @@ serve(async (req) => {
 
     // Telefon numarasından whatsapp: prefix'ini temizle
     const userPhone = from.replace('whatsapp:', '');
+    const twilioPhone = to.replace('whatsapp:', '');
     
-    // Kullanıcı mesajını kaydet
-    await saveMessage(supabase, userPhone, 'user', userMessage);
+    // Bu Twilio numarasına sahip acente'yi bul
+    const { data: agency, error: agencyError } = await supabase
+      .from('agencies')
+      .select('*')
+      .eq('twilio_phone_number', twilioPhone)
+      .eq('active', true)
+      .single();
+
+    if (agencyError || !agency) {
+      console.error('Agency not found for phone:', twilioPhone, agencyError);
+      return new Response(JSON.stringify({ error: 'Agency not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Found agency:', agency.agency_name);
+    
+    // Kullanıcı mesajını kaydet (agency_id ile)
+    await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
 
     // Önce AI ile mesajı kategorize et
     const intent = await categorizeMessage(userMessage);
@@ -54,14 +74,14 @@ serve(async (req) => {
 
     if (intent.type === 'registration.create') {
       // Kayıt oluştur
-      const registration = await createRegistration(supabase, intent.data, from);
+      const registration = await createRegistration(supabase, intent.data, from, agency.id);
       
       const message = registration.error 
         ? `❌ Kayıt oluşturulamadı: ${registration.error}`
         : (registration.message || 'Kayıt oluşturuldu');
       
       // Bot cevabını kaydet
-      await saveMessage(supabase, userPhone, 'assistant', message);
+      await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -75,7 +95,7 @@ serve(async (req) => {
       const message = '💚 *Kayıt Olmak İstiyorsunuz - Harika!*\n\n📝 Aşağıdaki bilgileri bana gönderirseniz hemen işleme alalım:\n\n📋 *Format:*\n`Kayıt: [Tur Adı] [Tarih] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n💡 *Örnek:*\n`Kayıt: Kapadokya Turu 15.05.2026 Ahmet Yılmaz 05551234567 2 kişi`\n\n✨ Tur adı ve tarihini yukarıdaki tur listesinden görebilirsiniz!\n\n🤝 Yardıma ihtiyacınız olursa çekinmeyin!';
       
       // Bot cevabını kaydet
-      await saveMessage(supabase, userPhone, 'assistant', message);
+      await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -87,13 +107,13 @@ serve(async (req) => {
       });
     } else if (intent.type === 'tour.search') {
       // AI ile akıllı arama
-      const tours = await searchToursWithAI(supabase, userMessage, userPhone);
+      const tours = await searchToursWithAI(supabase, userMessage, userPhone, agency.id);
       
       // WhatsApp formatında cevap oluştur
       const message = formatWhatsAppResponse(tours, {});
       
       // Bot cevabını kaydet
-      await saveMessage(supabase, userPhone, 'assistant', message);
+      await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
       
       // Twilio TwiML response
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -106,10 +126,10 @@ serve(async (req) => {
       });
     } else {
       // Genel sohbet - AI ile cevap ver
-      const chatResponse = await handleGeneralChat(userMessage, userPhone, supabase);
+      const chatResponse = await handleGeneralChat(userMessage, userPhone, supabase, agency.id);
       
       // Bot cevabını kaydet
-      await saveMessage(supabase, userPhone, 'assistant', chatResponse);
+      await saveMessage(supabase, userPhone, 'assistant', chatResponse, agency.id);
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -198,9 +218,9 @@ Sadece "tour.search" veya "general.chat" şeklinde cevap ver, başka bir şey ya
   };
 }
 
-async function handleGeneralChat(userMessage: string, userPhone: string, supabase: any) {
+async function handleGeneralChat(userMessage: string, userPhone: string, supabase: any, agency_id: string) {
   // Konuşma geçmişini al (son 10 mesaj)
-  const history = await getConversationHistory(supabase, userPhone, 10);
+  const history = await getConversationHistory(supabase, userPhone, agency_id, 10);
   
   const messages = [
     {
@@ -237,8 +257,8 @@ Kısa ve öz cevaplar ver (max 2-3 cümle).
 }
 
 
-async function searchToursWithAI(supabase: any, userMessage: string, userPhone: string) {
-  // Önce tüm turları al
+async function searchToursWithAI(supabase: any, userMessage: string, userPhone: string, agency_id: string) {
+  // Önce acentenin turlarını al
   const { data: allTours, error } = await supabase
     .from("tours")
     .select(`
@@ -263,7 +283,8 @@ async function searchToursWithAI(supabase: any, userMessage: string, userPhone: 
         price_adult,
         quota
       )
-    `);
+    `)
+    .eq('agency_id', agency_id);
 
   if (error) throw error;
 
@@ -278,7 +299,7 @@ async function searchToursWithAI(supabase: any, userMessage: string, userPhone: 
   }));
 
   // Konuşma geçmişini al (son 5 mesaj)
-  const history = await getConversationHistory(supabase, userPhone, 5);
+  const history = await getConversationHistory(supabase, userPhone, agency_id, 5);
 
   const messages = [
     {
@@ -344,7 +365,7 @@ Eğer hiçbir tur eşleşmezse boş array döndür: []
   return matchedTours;
 }
 
-async function createRegistration(supabase: any, entities: any, from: string) {
+async function createRegistration(supabase: any, entities: any, from: string, agency_id: string) {
   try {
     // Tur adı ve tarihe göre tur tarihini bul
     const tourDateStr = entities.tour_date.replace(/[.\/-]/g, '-');
@@ -355,6 +376,7 @@ async function createRegistration(supabase: any, entities: any, from: string) {
       .from('tour_dates')
       .select('id, departure_date, tour_id, tours(title, destination)')
       .eq('departure_date', formattedDate)
+      .eq('agency_id', agency_id)
       .ilike('tours.title', `%${entities.tour_name}%`)
       .single();
 
@@ -372,7 +394,8 @@ async function createRegistration(supabase: any, entities: any, from: string) {
         phone: entities.phone,
         pax: entities.pax,
         status: 'NEW',
-        note: `WhatsApp kayıt: ${from}`
+        note: `WhatsApp kayıt: ${from}`,
+        agency_id: agency_id
       })
       .select()
       .single();
@@ -395,9 +418,19 @@ async function createRegistration(supabase: any, entities: any, from: string) {
 
     // WhatsApp onay mesajı gönder (arka planda)
     const userPhone = from.replace('whatsapp:', '');
-    sendWhatsAppMessage(userPhone, message).catch(err => {
-      console.error('WhatsApp mesajı gönderilemedi:', err);
-    });
+    
+    // Agency bilgisini al
+    const { data: agency } = await supabase
+      .from('agencies')
+      .select('*')
+      .eq('id', agency_id)
+      .single();
+    
+    if (agency) {
+      sendWhatsAppMessage(userPhone, message, agency).catch(err => {
+        console.error('WhatsApp mesajı gönderilemedi:', err);
+      });
+    }
 
     return { message };
   } catch (error) {
@@ -406,10 +439,10 @@ async function createRegistration(supabase: any, entities: any, from: string) {
   }
 }
 
-async function sendWhatsAppMessage(to: string, message: string) {
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+async function sendWhatsAppMessage(to: string, message: string, agency: any) {
+  const accountSid = agency.twilio_account_sid;
+  const authToken = agency.twilio_auth_token;
+  const twilioPhone = agency.twilio_phone_number;
 
   if (!accountSid || !authToken || !twilioPhone) {
     console.error('Twilio credentials eksik');
@@ -502,14 +535,15 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
 }
 
 // Mesajı veritabanına kaydet
-async function saveMessage(supabase: any, phone: string, role: string, content: string) {
+async function saveMessage(supabase: any, phone: string, role: string, content: string, agency_id: string) {
   try {
     await supabase
       .from('whatsapp_conversations')
       .insert({
         phone,
         role,
-        content
+        content,
+        agency_id
       });
   } catch (error) {
     console.error('Error saving message:', error);
@@ -517,12 +551,13 @@ async function saveMessage(supabase: any, phone: string, role: string, content: 
 }
 
 // Konuşma geçmişini al
-async function getConversationHistory(supabase: any, phone: string, limit: number = 10) {
+async function getConversationHistory(supabase: any, phone: string, agency_id: string, limit: number = 10) {
   try {
     const { data, error } = await supabase
       .from('whatsapp_conversations')
       .select('role, content')
       .eq('phone', phone)
+      .eq('agency_id', agency_id)
       .order('created_at', { ascending: false })
       .limit(limit);
 

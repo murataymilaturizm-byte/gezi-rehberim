@@ -145,7 +145,18 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
           description: "Tur güncellendi",
         });
       } else {
-        // Insert
+        // Insert - Get user's agency_id first
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Kullanıcı bulunamadı");
+
+        const { data: agencyData } = await supabase
+          .from("agencies")
+          .select("id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (!agencyData) throw new Error("Acente bulunamadı");
+
         const { error } = await supabase.from("tours").insert({
           title: formData.title,
           destination: formData.destination,
@@ -161,7 +172,8 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
           konaklama: formData.konaklama || null,
           ulasim: formData.ulasim || null,
           tur_kategorisi: formData.tur_kategorisi || null,
-          gezilecek_yerler: formData.gezilecek_yerler || null
+          gezilecek_yerler: formData.gezilecek_yerler || null,
+          agency_id: agencyData.id
         });
 
         if (error) throw error;

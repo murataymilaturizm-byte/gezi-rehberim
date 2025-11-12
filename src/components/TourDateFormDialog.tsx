@@ -85,6 +85,18 @@ export const TourDateFormDialog = ({
     setIsLoading(true);
 
     try {
+      // Get user's agency_id first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Kullanıcı bulunamadı");
+
+      const { data: agencyData } = await supabase
+        .from("agencies")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!agencyData) throw new Error("Acente bulunamadı");
+
       const data = {
         tour_id: tourId,
         departure_date: formData.departure_date,
@@ -92,7 +104,8 @@ export const TourDateFormDialog = ({
         price_adult: formData.price_adult,
         price_child: formData.price_child || null,
         price_single: formData.price_single || null,
-        quota: formData.quota
+        quota: formData.quota,
+        agency_id: agencyData.id
       };
 
       if (tourDate) {
