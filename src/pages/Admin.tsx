@@ -10,17 +10,41 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plane } from "lucide-react";
+import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { TourFormDialog } from "@/components/TourFormDialog";
+import { TourDateFormDialog } from "@/components/TourDateFormDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface Tour {
   id: string;
   title: string;
   destination: string;
   type: string;
+  currency: string;
+  min_pax: number;
+  visa_required: boolean;
+  program_url?: string;
   created_at: string;
+  tour_dates?: Array<{
+    id: string;
+    departure_date: string;
+    return_date?: string;
+    price_adult: number;
+    quota: number;
+  }>;
 }
 
 interface Registration {
@@ -52,10 +76,21 @@ const tourTypeLabels: Record<string, string> = {
 };
 
 const Admin = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"tours" | "registrations">("tours");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tourFormOpen, setTourFormOpen] = useState(false);
+  const [dateFormOpen, setDateFormOpen] = useState(false);
+  const [selectedTour, setSelectedTour] = useState<Tour | undefined>();
+  const [selectedTourForDate, setSelectedTourForDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<any>();
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; type: "tour" | "date" }>({
+    open: false,
+    id: "",
+    type: "tour"
+  });
 
   useEffect(() => {
     loadData();
@@ -67,7 +102,16 @@ const Admin = () => {
       if (activeTab === "tours") {
         const { data, error } = await supabase
           .from("tours")
-          .select("*")
+          .select(`
+            *,
+            tour_dates (
+              id,
+              departure_date,
+              return_date,
+              price_adult,
+              quota
+            )
+          `)
           .order("created_at", { ascending: false });
         
         if (error) throw error;
@@ -89,6 +133,58 @@ const Admin = () => {
       console.error("Error loading data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteTour = async () => {
+    try {
+      const { error } = await supabase
+        .from("tours")
+        .delete()
+        .eq("id", deleteDialog.id);
+      
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı! ✅",
+        description: "Tur silindi",
+      });
+      
+      loadData();
+      setDeleteDialog({ open: false, id: "", type: "tour" });
+    } catch (error) {
+      console.error("Delete tour error:", error);
+      toast({
+        title: "Hata",
+        description: "Silme işlemi başarısız",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteDate = async () => {
+    try {
+      const { error } = await supabase
+        .from("tour_dates")
+        .delete()
+        .eq("id", deleteDialog.id);
+      
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı! ✅",
+        description: "Tarih silindi",
+      });
+      
+      loadData();
+      setDeleteDialog({ open: false, id: "", type: "date" });
+    } catch (error) {
+      console.error("Delete date error:", error);
+      toast({
+        title: "Hata",
+        description: "Silme işlemi başarısız",
+        variant: "destructive"
+      });
     }
   };
 
@@ -139,48 +235,131 @@ const Admin = () => {
         {/* Content */}
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle>
-              {activeTab === "tours" ? "Tur Listesi" : "Kayıt Listesi"}
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>
+                {activeTab === "tours" ? "Tur Listesi" : "Kayıt Listesi"}
+              </CardTitle>
+              {activeTab === "tours" && (
+                <Button
+                  onClick={() => {
+                    setSelectedTour(undefined);
+                    setTourFormOpen(true);
+                  }}
+                  className="bg-gradient-ocean hover:opacity-90"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Yeni Tur
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
             ) : activeTab === "tours" ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tur Adı</TableHead>
-                    <TableHead>Destinasyon</TableHead>
-                    <TableHead>Tip</TableHead>
-                    <TableHead>Oluşturulma</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tours.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        Henüz tur eklenmemiş
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    tours.map((tour) => (
-                      <TableRow key={tour.id}>
-                        <TableCell className="font-medium">{tour.title}</TableCell>
-                        <TableCell>{tour.destination}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">
-                            {tourTypeLabels[tour.type] || tour.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(tour.created_at), "d MMM yyyy", { locale: tr })}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+              <div className="space-y-4">
+                {tours.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Henüz tur eklenmemiş
+                  </div>
+                ) : (
+                  tours.map((tour) => (
+                    <Card key={tour.id} className="border-border/50">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <h3 className="font-semibold text-lg">{tour.title}</h3>
+                            <div className="flex gap-2 text-sm text-muted-foreground">
+                              <span>{tour.destination}</span>
+                              <span>•</span>
+                              <Badge variant="secondary" className="text-xs">
+                                {tourTypeLabels[tour.type] || tour.type}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedTourForDate(tour.id);
+                                setSelectedDate(undefined);
+                                setDateFormOpen(true);
+                              }}
+                            >
+                              <Calendar className="w-4 h-4 mr-2" />
+                              Tarih Ekle
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedTour(tour);
+                                setTourFormOpen(true);
+                              }}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setDeleteDialog({ open: true, id: tour.id, type: "tour" })}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      {tour.tour_dates && tour.tour_dates.length > 0 && (
+                        <CardContent>
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium">Tarihler:</h4>
+                            <div className="space-y-2">
+                              {tour.tour_dates.map((date) => (
+                                <div
+                                  key={date.id}
+                                  className="flex items-center justify-between p-2 rounded-lg bg-accent/50 text-sm"
+                                >
+                                  <div className="flex gap-4">
+                                    <span>
+                                      {format(new Date(date.departure_date), "d MMM yyyy", { locale: tr })}
+                                      {date.return_date && date.return_date !== date.departure_date && (
+                                        <> - {format(new Date(date.return_date), "d MMM yyyy", { locale: tr })}</>
+                                      )}
+                                    </span>
+                                    <span className="font-medium">{date.price_adult} {tour.currency}</span>
+                                    <span className="text-muted-foreground">Kota: {date.quota}</span>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedTourForDate(tour.id);
+                                        setSelectedDate(date);
+                                        setDateFormOpen(true);
+                                      }}
+                                    >
+                                      <Pencil className="w-3 h-3" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setDeleteDialog({ open: true, id: date.id, type: "date" })}
+                                    >
+                                      <Trash2 className="w-3 h-3 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))
+                )}
+              </div>
             ) : (
               <Table>
                 <TableHeader>
@@ -233,6 +412,49 @@ const Admin = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* Dialogs */}
+      <TourFormDialog
+        isOpen={tourFormOpen}
+        onClose={() => {
+          setTourFormOpen(false);
+          setSelectedTour(undefined);
+        }}
+        onSuccess={loadData}
+        tour={selectedTour}
+      />
+
+      <TourDateFormDialog
+        isOpen={dateFormOpen}
+        onClose={() => {
+          setDateFormOpen(false);
+          setSelectedDate(undefined);
+          setSelectedTourForDate("");
+        }}
+        onSuccess={loadData}
+        tourId={selectedTourForDate}
+        tourDate={selectedDate}
+      />
+
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, id: "", type: "tour" })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu işlem geri alınamaz. {deleteDialog.type === "tour" ? "Tur ve tüm tarihleri" : "Bu tarih"} kalıcı olarak silinecektir.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deleteDialog.type === "tour" ? handleDeleteTour : handleDeleteDate}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sil
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
