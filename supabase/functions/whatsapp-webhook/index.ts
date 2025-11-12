@@ -275,19 +275,13 @@ async function searchToursWithAI(supabase: any, userMessage: string, userPhone: 
     places: tour.gezilecek_yerler || ''
   }));
 
-  // AI'dan yardım iste
-  const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
-    },
-    body: JSON.stringify({
-      model: 'google/gemini-2.5-flash',
-      messages: [
-        {
-          role: 'system',
-          content: `Sen bir tur arama asistanısın. Kullanıcının mesajını analiz edip hangi turları aradığını belirle.
+  // Konuşma geçmişini al (son 5 mesaj)
+  const history = await getConversationHistory(supabase, userPhone, 5);
+
+  const messages = [
+    {
+      role: 'system',
+      content: `Sen bir tur arama asistanısın. Kullanıcının mesajını ve önceki konuşma geçmişini analiz edip hangi turları aradığını belirle.
 Turlar: ${JSON.stringify(toursList, null, 2)}
 
 Kullanıcının mesajından:
@@ -300,12 +294,24 @@ Eşleşen turların ID'lerini JSON array olarak döndür. SADECE JSON array dön
 Eğer hiçbir tur eşleşmezse boş array döndür: []
 
 ÖNEMLİ: Sadece JSON array döndür, markdown formatı kullanma!`
-        },
-        {
-          role: 'user',
-          content: userMessage
-        }
-      ],
+    },
+    ...history,
+    {
+      role: 'user',
+      content: userMessage
+    }
+  ];
+
+  // AI'dan yardım iste
+  const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: messages,
       temperature: 0.3
     })
   });
