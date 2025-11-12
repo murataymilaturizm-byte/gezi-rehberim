@@ -66,9 +66,9 @@ serve(async (req) => {
       // Kayıt oluştur
       const registration = await createRegistration(supabase, parsed.entities, from);
       
-      const message = registration.error 
-        ? `❌ Kayıt oluşturulamadı: ${registration.error}`
-        : registration.message;
+    const message = registration.error 
+      ? `❌ Kayıt oluşturulamadı: ${registration.error}`
+      : (registration.message || 'Kayıt oluşturuldu');
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -144,22 +144,11 @@ function parseMessage(text: string) {
     intent: "tour.search",
     entities: {
       searchTerm: text.trim(), // Kullanıcının yazdığı tam metin
-      destination: null,
       type: null,
       date_iso: null,
       pax: null
     }
   };
-
-  // Destinasyon - Sadece bilinen destinasyonlar için
-  if (lowerText.includes("kapadokya")) result.entities.destination = "Kapadokya";
-  if (lowerText.includes("ayvalık")) result.entities.destination = "Ayvalık";
-  if (lowerText.includes("pamukkale") || lowerText.includes("denizli")) result.entities.destination = "Pamukkale";
-  if (lowerText.includes("antalya") || lowerText.includes("kemer")) result.entities.destination = "Antalya";
-  // İzmir ve Efes ayrı ayrı kontrol - eğer sadece İzmir varsa İzmir, Efes varsa genel arama
-  if ((lowerText.includes("izmir") || lowerText.includes("İzmir")) && !lowerText.includes("efes")) {
-    result.entities.destination = "İzmir";
-  }
 
   // Tur tipi
   if (lowerText.includes("günübirlik") || lowerText.includes("günü birlik")) {
@@ -223,12 +212,8 @@ async function searchTours(supabase: any, entities: any) {
       )
     `);
 
-  // Önce destination varsa ona göre filtrele
-  if (entities.destination) {
-    query = query.eq("destination", entities.destination);
-  } 
-  // Destination yoksa searchTerm'de title ve destination'da ara
-  else if (entities.searchTerm) {
+  // Kullanıcının yazdığı metinde title ve destination'da esnek arama
+  if (entities.searchTerm) {
     query = query.or(`destination.ilike.%${entities.searchTerm}%,title.ilike.%${entities.searchTerm}%`);
   }
 
