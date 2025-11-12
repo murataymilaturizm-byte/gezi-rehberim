@@ -79,7 +79,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     } else if (parsed.intent === 'registration.request') {
-      const message = '📝 *Kayıt Formu*\n\nÖn kayıt oluşturmak için aşağıdaki formatı kullanın:\n\n`Kayıt: [Tur Tarih ID] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n*Örnek:*\n`Kayıt: 5eda4e1e-b791-4365-a7ae-f36acbd186da Ahmet Yılmaz 05551234567 2 kişi`\n\n💡 Tur tarih ID\'sini yukarıdaki tur listesinden alabilirsiniz.';
+      const message = '💚 *Kayıt Olmak İstiyorsunuz - Harika!*\n\n📝 Aşağıdaki bilgileri bana gönderirseniz hemen işleme alalım:\n\n📋 *Format:*\n`Kayıt: [Tur Tarih ID] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n💡 *Örnek:*\n`Kayıt: 5eda4e1e-b791-4365-a7ae-f36acbd186da Ahmet Yılmaz 05551234567 2 kişi`\n\n✨ Tur tarih ID\'sini yukarıdaki tur listesinden kopyalayabilirsiniz!\n\n🤝 Yardıma ihtiyacınız olursa çekinmeyin!';
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -90,7 +90,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     } else {
-      const message = 'Merhaba! 👋 Size nasıl yardımcı olabilirim?\n\n🔍 Tur aramak için:\n"Günübirlik Kapadokya 20 Temmuz"\n\n📝 Kayıt olmak için:\n"Kayıt olmak istiyorum"';
+      const message = '👋 *Merhaba! Hoş geldiniz!*\n\n🌟 Size nasıl yardımcı olabilirim?\n\n🔍 *Tur aramak için:*\nÖrnek: "Kapadokya turu", "Efes gezisi"\n\n📝 *Kayıt olmak için:*\n"Kayıt olmak istiyorum" yazın\n\n✨ Hayalinizdeki tatili bulmanıza yardımcı olmak için buradayız!';
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -388,7 +388,7 @@ async function sendWhatsAppMessage(to: string, message: string) {
 
 function formatWhatsAppResponse(tours: any[], entities: any) {
   if (tours.length === 0) {
-    return '😔 Üzgünüm, arama kriterlerinize uygun tur bulunamadı.\n\nLütfen farklı tarih veya destinasyon deneyin.';
+    return '😊 Aradığınız kriterlere uygun tur şu anda bulunmuyor.\n\n💡 Farklı bir tarih veya destinasyon deneyelim mi?\n\n📞 İsterseniz bize ulaşın, size özel tur planlaması yapabiliriz!';
   }
 
   const formatPrice = (price: number) => {
@@ -398,7 +398,7 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     }).format(price);
   };
 
-  let response = `🎯 *${tours.length} Tur Bulundu!*\n\n`;
+  let response = `🎉 *Harika! ${tours.length} Muhteşem Tur Buldum!*\n\n`;
 
   tours.slice(0, 3).forEach((tour, index) => {
     response += `${index + 1}️⃣ *${tour.title}*\n`;
@@ -431,10 +431,10 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
   });
 
   if (tours.length > 3) {
-    response += `_... ve ${tours.length - 3} tur daha_\n\n`;
+    response += `✨ _... ve ${tours.length - 3} harika tur daha!_\n\n`;
   }
 
-  response += '📝 *Kayıt olmak için:*\n"Kayıt olmak istiyorum" yazın veya direkt kayıt formatını kullanın.';
+  response += '💚 *Kayıt olmak ister misiniz?*\n"Kayıt olmak istiyorum" yazın, hemen yardımcı olalım!';
 
   return response;
 }
