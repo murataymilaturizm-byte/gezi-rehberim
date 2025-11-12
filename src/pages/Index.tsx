@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, Play } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -168,6 +174,41 @@ const Index = () => {
       value: "15K+",
       label: "Aylık Rezervasyon",
       color: "text-secondary"
+    }
+  ];
+
+  const faqs = [
+    {
+      question: "TurzzAI nasıl çalışır?",
+      answer: "TurzzAI, WhatsApp üzerinden gelen müşteri mesajlarını yapay zeka ile analiz eder, tur veritabanınızdan en uygun turları önerir ve müşterilerinizin 7/24 rezervasyon yapmasını sağlar. Tüm konuşmalar ve rezervasyonlar admin panelinizden yönetilebilir."
+    },
+    {
+      question: "Kurulum ne kadar sürer?",
+      answer: "Kurulum çok basittir ve sadece 10-15 dakika sürer. Twilio hesabınızı bağladıktan sonra WhatsApp Business numaranızı sisteme tanıtırsınız. Turlarınızı ekledikten sonra sistem hemen kullanıma hazır olur."
+    },
+    {
+      question: "WhatsApp Business API'ye ihtiyacım var mı?",
+      answer: "Evet, WhatsApp Business API kullanımı için Twilio hesabı gereklidir. Henüz hesabınız yoksa kurulum sırasında size yol gösteririz. Twilio ücreti ayrıca faturalandırılır."
+    },
+    {
+      question: "Verilerim güvende mi?",
+      answer: "Evet, tüm verileriniz şifrelenmiş ve güvenli Lovable Cloud altyapısında saklanır. Multi-tenant yapı sayesinde her acente sadece kendi verilerine erişebilir. KVKK ve GDPR uyumlu çalışıyoruz."
+    },
+    {
+      question: "Kaç tur ekleyebilirim?",
+      answer: "Tüm planlarda sınırsız tur ekleyebilirsiniz. Tek fark, aylık işlenebilen WhatsApp mesaj sayısıdır. İhtiyacınıza göre planınızı yükseltebilirsiniz."
+    },
+    {
+      question: "Destek alabilir miyim?",
+      answer: "Elbette! Başlangıç planında email destek, Profesyonel planda öncelikli destek, Kurumsal planda ise 7/24 destek sunuyoruz. Ayrıca detaylı dokümantasyon ve video eğitimler de mevcut."
+    },
+    {
+      question: "İptal edebilir miyim?",
+      answer: "Evet, istediğiniz zaman iptal edebilirsiniz. Herhangi bir sözleşme ya da ceza yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz."
+    },
+    {
+      question: "Ücretsiz deneme var mı?",
+      answer: "Evet, tüm planlarda 14 gün ücretsiz deneme imkanı sunuyoruz. Kredi kartı bilgisi gerektirmiyoruz, deneme süresi bittiğinde sizinle iletişime geçiyoruz."
     }
   ];
 
@@ -510,6 +551,48 @@ const Index = () => {
             <p className="text-muted-foreground">
               Tüm planlarda 14 gün ücretsiz deneme. Kredi kartı bilgisi gerekmez.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Sık Sorulan Sorular
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                Merak ettiklerinizin yanıtlarını burada bulabilirsiniz
+              </p>
+            </div>
+
+            <Accordion type="single" collapsible className="space-y-4">
+              {faqs.map((faq, index) => (
+                <AccordionItem 
+                  key={index} 
+                  value={`item-${index}`}
+                  className="border border-border/50 rounded-lg px-6 bg-card shadow-sm"
+                >
+                  <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-4">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-4">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+
+            <div className="text-center mt-8">
+              <p className="text-muted-foreground mb-4">
+                Başka sorularınız mı var?
+              </p>
+              <Button variant="outline" asChild>
+                <a href="/auth">Bizimle İletişime Geçin</a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
