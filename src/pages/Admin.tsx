@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
+import { AdminDashboard } from "@/components/AdminDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 
@@ -81,7 +82,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
-  const [activeTab, setActiveTab] = useState<"tours" | "registrations">("tours");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -268,6 +269,13 @@ const Admin = () => {
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <Button
+            variant={activeTab === "dashboard" ? "default" : "outline"}
+            onClick={() => setActiveTab("dashboard")}
+            className={activeTab === "dashboard" ? "bg-gradient-ocean" : ""}
+          >
+            Dashboard
+          </Button>
+          <Button
             variant={activeTab === "tours" ? "default" : "outline"}
             onClick={() => setActiveTab("tours")}
             className={activeTab === "tours" ? "bg-gradient-ocean" : ""}
@@ -284,7 +292,10 @@ const Admin = () => {
         </div>
 
         {/* Content */}
-        <Card className="shadow-card">
+        {activeTab === "dashboard" ? (
+          <AdminDashboard />
+        ) : (
+          <Card className="shadow-card">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>
@@ -462,6 +473,7 @@ const Admin = () => {
             )}
           </CardContent>
         </Card>
+        )}
       </main>
 
       {/* Dialogs */}
