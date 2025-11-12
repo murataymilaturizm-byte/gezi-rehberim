@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Send, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { parseMessage } from "@/utils/tourParser";
 
 interface Message {
   role: "user" | "assistant";
@@ -80,58 +81,6 @@ export const ChatWidget = ({ onSearch }: ChatWidgetProps) => {
     }
   };
 
-  const parseMessage = (text: string): any => {
-    const lowerText = text.toLowerCase();
-    const result: any = {
-      intent: "tour.search",
-      entities: {
-        destination: null,
-        type: null,
-        date_text: null,
-        date_iso: null,
-        pax: null
-      }
-    };
-
-    // Destinasyon tespiti
-    if (lowerText.includes("kapadokya")) result.entities.destination = "Kapadokya";
-    if (lowerText.includes("ayvalık")) result.entities.destination = "Ayvalık";
-
-    // Tur tipi
-    if (lowerText.includes("günübirlik") || lowerText.includes("günü birlik")) {
-      result.entities.type = "daytrip";
-    } else if (lowerText.includes("2 gece") || lowerText.includes("iki gece")) {
-      result.entities.type = "2night";
-    } else if (lowerText.includes("3 gece") || lowerText.includes("üç gece")) {
-      result.entities.type = "3night";
-    }
-
-    // Basit tarih ayrıştırma
-    const months: Record<string, string> = {
-      "ocak": "01", "şubat": "02", "mart": "03", "nisan": "04",
-      "mayıs": "05", "haziran": "06", "temmuz": "07", "ağustos": "08",
-      "eylül": "09", "ekim": "10", "kasım": "11", "aralık": "12"
-    };
-
-    for (const [monthName, monthNum] of Object.entries(months)) {
-      if (lowerText.includes(monthName)) {
-        const dayMatch = lowerText.match(/(\d{1,2})\s+/);
-        if (dayMatch) {
-          const day = dayMatch[1].padStart(2, '0');
-          result.entities.date_iso = `2026-${monthNum}-${day}`;
-          result.entities.date_text = `${day} ${monthName}`;
-        }
-      }
-    }
-
-    // Kişi sayısı
-    const paxMatch = lowerText.match(/(\d+)\s*(kişi|kişilik)/);
-    if (paxMatch) {
-      result.entities.pax = parseInt(paxMatch[1]);
-    }
-
-    return result;
-  };
 
   return (
     <Card className="flex flex-col h-full shadow-card border-border/50">
