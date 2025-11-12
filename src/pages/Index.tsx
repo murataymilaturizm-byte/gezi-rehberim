@@ -2,8 +2,36 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, Play } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 const Index = () => {
+  const sectionsRef = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    const observers = sectionsRef.current.map((section, index) => {
+      if (!section) return null;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("animate-fade-in");
+              entry.target.classList.remove("opacity-0", "translate-y-8");
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      observer.observe(section);
+      return observer;
+    });
+
+    return () => {
+      observers.forEach((observer) => observer?.disconnect());
+    };
+  }, []);
+
   const features = [
     {
       icon: MessageSquare,
@@ -166,7 +194,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
+      <section ref={(el) => (sectionsRef.current[0] = el)} className="relative overflow-hidden py-20 md:py-32 opacity-0 translate-y-8 transition-all duration-700">
         <div className="absolute inset-0 bg-gradient-hero opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-6">
@@ -198,7 +226,7 @@ const Index = () => {
       </section>
 
       {/* Demo Video Section */}
-      <section className="py-20">
+      <section ref={(el) => (sectionsRef.current[1] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
@@ -265,7 +293,7 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5">
+      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
@@ -286,7 +314,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-card/30">
+      <section ref={(el) => (sectionsRef.current[3] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -314,7 +342,7 @@ const Index = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20">
+      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -358,7 +386,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20">
+      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -415,7 +443,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-card/30">
+      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -487,7 +515,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
+      <section ref={(el) => (sectionsRef.current[7] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
         <div className="absolute inset-0 bg-gradient-ocean opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <Card className="max-w-4xl mx-auto border-border/50 shadow-card bg-gradient-to-br from-card to-accent/10">
