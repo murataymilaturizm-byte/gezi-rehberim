@@ -42,33 +42,17 @@ serve(async (req) => {
       });
     }
 
-    // Mesajı ayrıştır
-    const parsed = parseMessage(userMessage);
-    console.log('Parsed intent:', parsed);
+    // Önce AI ile mesajı kategorize et
+    const intent = await categorizeMessage(userMessage);
+    console.log('Categorized intent:', intent);
 
-    if (parsed.intent === 'tour.search') {
-      // AI ile akıllı arama
-      const tours = await searchToursWithAI(supabase, userMessage);
-      
-      // WhatsApp formatında cevap oluştur
-      const message = formatWhatsAppResponse(tours, parsed.entities);
-      
-      // Twilio TwiML response
-      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
-</Response>`;
-      
-      return new Response(twiml, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
-      });
-    } else if (parsed.intent === 'registration.create') {
+    if (intent.type === 'registration.create') {
       // Kayıt oluştur
-      const registration = await createRegistration(supabase, parsed.entities, from);
+      const registration = await createRegistration(supabase, intent.data, from);
       
-    const message = registration.error 
-      ? `❌ Kayıt oluşturulamadı: ${registration.error}`
-      : (registration.message || 'Kayıt oluşturuldu');
+      const message = registration.error 
+        ? `❌ Kayıt oluşturulamadı: ${registration.error}`
+        : (registration.message || 'Kayıt oluşturuldu');
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -78,7 +62,7 @@ serve(async (req) => {
       return new Response(twiml, {
         headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
-    } else if (parsed.intent === 'registration.request') {
+    } else if (intent.type === 'registration.request') {
       const message = '💚 *Kayıt Olmak İstiyorsunuz - Harika!*\n\n📝 Aşağıdaki bilgileri bana gönderirseniz hemen işleme alalım:\n\n📋 *Format:*\n`Kayıt: [Tur Tarih ID] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n💡 *Örnek:*\n`Kayıt: 5eda4e1e-b791-4365-a7ae-f36acbd186da Ahmet Yılmaz 05551234567 2 kişi`\n\n✨ Tur tarih ID\'sini yukarıdaki tur listesinden kopyalayabilirsiniz!\n\n🤝 Yardıma ihtiyacınız olursa çekinmeyin!';
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -89,12 +73,29 @@ serve(async (req) => {
       return new Response(twiml, {
         headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
+    } else if (intent.type === 'tour.search') {
+      // AI ile akıllı arama
+      const tours = await searchToursWithAI(supabase, userMessage);
+      
+      // WhatsApp formatında cevap oluştur
+      const message = formatWhatsAppResponse(tours, {});
+      
+      // Twilio TwiML response
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+      });
     } else {
-      const message = '👋 *Merhaba! Hoş geldiniz!*\n\n🌟 Size nasıl yardımcı olabilirim?\n\n🔍 *Tur aramak için:*\nÖrnek: "Kapadokya turu", "Efes gezisi"\n\n📝 *Kayıt olmak için:*\n"Kayıt olmak istiyorum" yazın\n\n✨ Hayalinizdeki tatili bulmanıza yardımcı olmak için buradayız!';
+      // Genel sohbet - AI ile cevap ver
+      const chatResponse = await handleGeneralChat(userMessage);
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Message>${message}</Message>
+  <Message>${chatResponse.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
 </Response>`;
       
       return new Response(twiml, {
@@ -113,6 +114,95 @@ serve(async (req) => {
     });
   }
 });
+
+async function categorizeMessage(userMessage: string) {
+  const lowerText = userMessage.toLowerCase();
+  
+  // Kayıt formatı kontrolü
+  const registrationMatch = userMessage.match(/kayıt[:\s]+([a-f0-9-]+)\s+(.+?)\s+(\+?[\d\s-]+)\s+(\d+)\s*kişi/i);
+  if (registrationMatch) {
+    return {
+      type: 'registration.create',
+      data: {
+        tour_date_id: registrationMatch[1],
+        full_name: registrationMatch[2].trim(),
+        phone: registrationMatch[3].replace(/\s+/g, ''),
+        pax: parseInt(registrationMatch[4])
+      }
+    };
+  }
+  
+  // Kayıt isteği kontrolü
+  if (lowerText.includes('kayıt') || lowerText.includes('rezervasyon')) {
+    return { type: 'registration.request', data: {} };
+  }
+  
+  // AI ile mesajı kategorize et
+  const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        {
+          role: 'system',
+          content: `Sen bir mesaj kategorize asistanısın. Kullanıcının mesajına bakıp hangi kategoriye ait olduğunu belirle:
+
+1. "tour.search" - Kullanıcı tur/gezi/tatil arıyorsa (Kapadokya, Efes, Pamukkale, vb. destinasyonlar söz konusuysa)
+2. "general.chat" - Normal sohbet, selamlaşma, teşekkür, genel sorular
+
+Sadece "tour.search" veya "general.chat" şeklinde cevap ver, başka bir şey yazma.`
+        },
+        {
+          role: 'user',
+          content: userMessage
+        }
+      ],
+      temperature: 0.1
+    })
+  });
+
+  const result = await aiResponse.json();
+  const category = result.choices[0].message.content.trim();
+  
+  return { 
+    type: category === 'tour.search' ? 'tour.search' : 'general.chat',
+    data: {}
+  };
+}
+
+async function handleGeneralChat(userMessage: string) {
+  const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        {
+          role: 'system',
+          content: `Sen bir tur şirketinin samimi ve yardımsever WhatsApp asistanısın. 
+Kullanıcıyla doğal Türkçe konuş, sıcak ve dostane davran.
+Tur şirketimiz Kapadokya, Efes, Pamukkale, Antalya gibi destinasyonlara turlar düzenliyor.
+Kısa ve öz cevaplar ver (max 2-3 cümle).`
+        },
+        {
+          role: 'user',
+          content: userMessage
+        }
+      ],
+      temperature: 0.7
+    })
+  });
+
+  const result = await aiResponse.json();
+  return result.choices[0].message.content;
+}
 
 function parseMessage(text: string) {
   const lowerText = text.toLowerCase();
