@@ -277,10 +277,57 @@ async function createRegistration(supabase: any, entities: any, from: string) {
       `✨ Ön kaydınız başarıyla oluşturuldu!\n` +
       `📞 Kısa süre içinde sizinle iletişime geçeceğiz.`;
 
+    // WhatsApp onay mesajı gönder (arka planda)
+    const userPhone = from.replace('whatsapp:', '');
+    sendWhatsAppMessage(userPhone, message).catch(err => {
+      console.error('WhatsApp mesajı gönderilemedi:', err);
+    });
+
     return { message };
   } catch (error) {
     console.error('Create registration error:', error);
     return { error: 'Beklenmeyen bir hata oluştu.' };
+  }
+}
+
+async function sendWhatsAppMessage(to: string, message: string) {
+  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+  const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+
+  if (!accountSid || !authToken || !twilioPhone) {
+    console.error('Twilio credentials eksik');
+    return;
+  }
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+  
+  const auth = btoa(`${accountSid}:${authToken}`);
+  
+  const body = new URLSearchParams({
+    From: `whatsapp:${twilioPhone}`,
+    To: `whatsapp:${to}`,
+    Body: message
+  });
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body.toString()
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Twilio API hatası:', error);
+    } else {
+      console.log('WhatsApp mesajı başarıyla gönderildi');
+    }
+  } catch (error) {
+    console.error('WhatsApp mesajı gönderilirken hata:', error);
   }
 }
 
