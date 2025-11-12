@@ -150,10 +150,11 @@ function parseMessage(text: string) {
     }
   };
 
-  // Destinasyon
+  // Destinasyon - Daha fazla destinasyon eklendi
   if (lowerText.includes("kapadokya")) result.entities.destination = "Kapadokya";
   if (lowerText.includes("ayvalık")) result.entities.destination = "Ayvalık";
-  if (lowerText.includes("efes") || lowerText.includes("izmir") || lowerText.includes("İzmir")) result.entities.destination = "İzmir";
+  if (lowerText.includes("efes") || lowerText.includes("selçuk")) result.entities.destination = "efes";
+  if (lowerText.includes("izmir") || lowerText.includes("İzmir")) result.entities.destination = "İzmir";
   if (lowerText.includes("pamukkale") || lowerText.includes("denizli")) result.entities.destination = "Pamukkale";
   if (lowerText.includes("antalya") || lowerText.includes("kemer")) result.entities.destination = "Antalya";
 
@@ -219,8 +220,9 @@ async function searchTours(supabase: any, entities: any) {
       )
     `);
 
+  // Destination veya title'da esnek arama
   if (entities.destination) {
-    query = query.eq("destination", entities.destination);
+    query = query.or(`destination.ilike.%${entities.destination}%,title.ilike.%${entities.destination}%`);
   }
 
   if (entities.type) {
