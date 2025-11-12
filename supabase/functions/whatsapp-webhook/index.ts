@@ -118,13 +118,18 @@ serve(async (req) => {
 async function categorizeMessage(userMessage: string) {
   const lowerText = userMessage.toLowerCase();
   
-  // Kayıt formatı kontrolü - Tur adı ve tarih ile
-  const registrationMatch = userMessage.match(/kayıt[:\s]+(.+?)\s+(\d{2}[.\/-]\d{2}[.\/-]\d{4})\s+(.+?)\s+(\+?[\d\s-]+)\s+(\d+)\s*kişi/i);
+  // Kayıt formatı kontrolü - "kayıt" kelimesi opsiyonel, tur adı ve tarih ile
+  // Pattern: [kayıt:] [tur adı] [tarih DD.MM.YYYY] [ad soyad] [telefon] [sayı] kişi
+  const registrationMatch = userMessage.match(/(?:kayıt[:\s]+)?(.+?)\s+(\d{2}[.\/-]\d{2}[.\/-]\d{4})\s+(.+?)\s+((?:\+90|0)[\d\s]+)\s+(\d+)\s*kişi/i);
   if (registrationMatch) {
+    // Tur adından "günübirlik", "tur" gibi kelimeleri temizle
+    let tourName = registrationMatch[1].trim();
+    tourName = tourName.replace(/\s+(günübirlik|tur|turu|turları)\s*$/gi, '').trim();
+    
     return {
       type: 'registration.create',
       data: {
-        tour_name: registrationMatch[1].trim(),
+        tour_name: tourName,
         tour_date: registrationMatch[2].trim(),
         full_name: registrationMatch[3].trim(),
         phone: registrationMatch[4].replace(/\s+/g, ''),
@@ -266,8 +271,11 @@ Kullanıcının mesajından:
 - Hangi tür turu aradığını (günübirlik, 2 gece, 3 gece)
 - Hangi tarihi aradığını (varsa)
 
-Eşleşen turların ID'lerini JSON array olarak döndür. Örnek: ["id1", "id2"]
-Eğer hiçbir tur eşleşmezse boş array döndür: []`
+Eşleşen turların ID'lerini JSON array olarak döndür. SADECE JSON array döndür, başka hiçbir şey yazma.
+Örnek: ["id1", "id2"]
+Eğer hiçbir tur eşleşmezse boş array döndür: []
+
+ÖNEMLİ: Sadece JSON array döndür, markdown formatı kullanma!`
         },
         {
           role: 'user',
@@ -279,7 +287,16 @@ Eğer hiçbir tur eşleşmezse boş array döndür: []`
   });
 
   const aiResult = await aiResponse.json();
-  const matchedIds = JSON.parse(aiResult.choices[0].message.content);
+  let content = aiResult.choices[0].message.content.trim();
+  
+  // AI bazen ```json wrapper'ı ile dönebilir, onu temizle
+  if (content.startsWith('```json')) {
+    content = content.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (content.startsWith('```')) {
+    content = content.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+  
+  const matchedIds = JSON.parse(content);
 
   // Eşleşen turları filtrele ve tarihlerini düzenle
   const matchedTours = (allTours || [])
