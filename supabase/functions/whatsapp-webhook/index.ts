@@ -51,51 +51,54 @@ serve(async (req) => {
       const tours = await searchTours(supabase, parsed.entities);
       
       // WhatsApp formatında cevap oluştur
-      const response = formatWhatsAppResponse(tours, parsed.entities);
+      const message = formatWhatsAppResponse(tours, parsed.entities);
       
-      return new Response(JSON.stringify({
-        success: true,
-        message: response,
-        tours: tours.map((t: any) => ({
-          id: t.id,
-          title: t.title,
-          firstDate: t.dates[0]
-        }))
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      // Twilio TwiML response
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     } else if (parsed.intent === 'registration.create') {
       // Kayıt oluştur
       const registration = await createRegistration(supabase, parsed.entities, from);
       
-      if (registration.error) {
-        return new Response(JSON.stringify({
-          success: false,
-          message: `❌ Kayıt oluşturulamadı: ${registration.error}`
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+      const message = registration.error 
+        ? `❌ Kayıt oluşturulamadı: ${registration.error}`
+        : registration.message;
       
-      return new Response(JSON.stringify({
-        success: true,
-        message: registration.message
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     } else if (parsed.intent === 'registration.request') {
-      return new Response(JSON.stringify({
-        success: true,
-        message: '📝 *Kayıt Formu*\n\nÖn kayıt oluşturmak için aşağıdaki formatı kullanın:\n\n`Kayıt: [Tur Tarih ID] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n*Örnek:*\n`Kayıt: 5eda4e1e-b791-4365-a7ae-f36acbd186da Ahmet Yılmaz 05551234567 2 kişi`\n\n💡 Tur tarih ID\'sini yukarıdaki tur listesinden alabilirsiniz.'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      const message = '📝 *Kayıt Formu*\n\nÖn kayıt oluşturmak için aşağıdaki formatı kullanın:\n\n`Kayıt: [Tur Tarih ID] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n*Örnek:*\n`Kayıt: 5eda4e1e-b791-4365-a7ae-f36acbd186da Ahmet Yılmaz 05551234567 2 kişi`\n\n💡 Tur tarih ID\'sini yukarıdaki tur listesinden alabilirsiniz.';
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     } else {
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'Merhaba! 👋 Size nasıl yardımcı olabilirim?\n\n🔍 Tur aramak için:\n"Günübirlik Kapadokya 20 Temmuz"\n\n📝 Kayıt olmak için:\n"Kayıt olmak istiyorum"'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      const message = 'Merhaba! 👋 Size nasıl yardımcı olabilirim?\n\n🔍 Tur aramak için:\n"Günübirlik Kapadokya 20 Temmuz"\n\n📝 Kayıt olmak için:\n"Kayıt olmak istiyorum"';
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     }
 
