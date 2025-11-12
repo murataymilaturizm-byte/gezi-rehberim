@@ -42,6 +42,12 @@ serve(async (req) => {
       });
     }
 
+    // Telefon numarasından whatsapp: prefix'ini temizle
+    const userPhone = from.replace('whatsapp:', '');
+    
+    // Kullanıcı mesajını kaydet
+    await saveMessage(supabase, userPhone, 'user', userMessage);
+
     // Önce AI ile mesajı kategorize et
     const intent = await categorizeMessage(userMessage);
     console.log('Categorized intent:', intent);
@@ -54,6 +60,9 @@ serve(async (req) => {
         ? `❌ Kayıt oluşturulamadı: ${registration.error}`
         : (registration.message || 'Kayıt oluşturuldu');
       
+      // Bot cevabını kaydet
+      await saveMessage(supabase, userPhone, 'assistant', message);
+      
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
@@ -65,6 +74,9 @@ serve(async (req) => {
     } else if (intent.type === 'registration.request') {
       const message = '💚 *Kayıt Olmak İstiyorsunuz - Harika!*\n\n📝 Aşağıdaki bilgileri bana gönderirseniz hemen işleme alalım:\n\n📋 *Format:*\n`Kayıt: [Tur Adı] [Tarih] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n💡 *Örnek:*\n`Kayıt: Kapadokya Turu 15.05.2026 Ahmet Yılmaz 05551234567 2 kişi`\n\n✨ Tur adı ve tarihini yukarıdaki tur listesinden görebilirsiniz!\n\n🤝 Yardıma ihtiyacınız olursa çekinmeyin!';
       
+      // Bot cevabını kaydet
+      await saveMessage(supabase, userPhone, 'assistant', message);
+      
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
@@ -75,10 +87,13 @@ serve(async (req) => {
       });
     } else if (intent.type === 'tour.search') {
       // AI ile akıllı arama
-      const tours = await searchToursWithAI(supabase, userMessage);
+      const tours = await searchToursWithAI(supabase, userMessage, userPhone);
       
       // WhatsApp formatında cevap oluştur
       const message = formatWhatsAppResponse(tours, {});
+      
+      // Bot cevabını kaydet
+      await saveMessage(supabase, userPhone, 'assistant', message);
       
       // Twilio TwiML response
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -91,7 +106,10 @@ serve(async (req) => {
       });
     } else {
       // Genel sohbet - AI ile cevap ver
-      const chatResponse = await handleGeneralChat(userMessage);
+      const chatResponse = await handleGeneralChat(userMessage, userPhone, supabase);
+      
+      // Bot cevabını kaydet
+      await saveMessage(supabase, userPhone, 'assistant', chatResponse);
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -180,7 +198,25 @@ Sadece "tour.search" veya "general.chat" şeklinde cevap ver, başka bir şey ya
   };
 }
 
-async function handleGeneralChat(userMessage: string) {
+async function handleGeneralChat(userMessage: string, userPhone: string, supabase: any) {
+  // Konuşma geçmişini al (son 10 mesaj)
+  const history = await getConversationHistory(supabase, userPhone, 10);
+  
+  const messages = [
+    {
+      role: 'system',
+      content: `Sen bir tur şirketinin samimi ve yardımsever WhatsApp asistanısın. 
+Kullanıcıyla doğal Türkçe konuş, sıcak ve dostane davran.
+Tur şirketimiz Kapadokya, Efes, Pamukkale, Antalya gibi destinasyonlara turlar düzenliyor.
+Kısa ve öz cevaplar ver (max 2-3 cümle).`
+    },
+    ...history,
+    {
+      role: 'user',
+      content: userMessage
+    }
+  ];
+
   const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -189,19 +225,7 @@ async function handleGeneralChat(userMessage: string) {
     },
     body: JSON.stringify({
       model: 'google/gemini-2.5-flash',
-      messages: [
-        {
-          role: 'system',
-          content: `Sen bir tur şirketinin samimi ve yardımsever WhatsApp asistanısın. 
-Kullanıcıyla doğal Türkçe konuş, sıcak ve dostane davran.
-Tur şirketimiz Kapadokya, Efes, Pamukkale, Antalya gibi destinasyonlara turlar düzenliyor.
-Kısa ve öz cevaplar ver (max 2-3 cümle).`
-        },
-        {
-          role: 'user',
-          content: userMessage
-        }
-      ],
+      messages: messages,
       temperature: 0.7
     })
   });
@@ -211,7 +235,7 @@ Kısa ve öz cevaplar ver (max 2-3 cümle).`
 }
 
 
-async function searchToursWithAI(supabase: any, userMessage: string) {
+async function searchToursWithAI(supabase: any, userMessage: string, userPhone: string) {
   // Önce tüm turları al
   const { data: allTours, error } = await supabase
     .from("tours")
@@ -467,4 +491,45 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
   response += '💚 *Kayıt olmak ister misiniz?*\n"Kayıt olmak istiyorum" yazın, hemen yardımcı olalım!';
 
   return response;
+}
+
+// Mesajı veritabanına kaydet
+async function saveMessage(supabase: any, phone: string, role: string, content: string) {
+  try {
+    await supabase
+      .from('whatsapp_conversations')
+      .insert({
+        phone,
+        role,
+        content
+      });
+  } catch (error) {
+    console.error('Error saving message:', error);
+  }
+}
+
+// Konuşma geçmişini al
+async function getConversationHistory(supabase: any, phone: string, limit: number = 10) {
+  try {
+    const { data, error } = await supabase
+      .from('whatsapp_conversations')
+      .select('role, content')
+      .eq('phone', phone)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching conversation history:', error);
+      return [];
+    }
+
+    // Mesajları tersine çevir (en eskiden en yeniye)
+    return (data || []).reverse().map((msg: any) => ({
+      role: msg.role,
+      content: msg.content
+    }));
+  } catch (error) {
+    console.error('Error in getConversationHistory:', error);
+    return [];
+  }
 }
