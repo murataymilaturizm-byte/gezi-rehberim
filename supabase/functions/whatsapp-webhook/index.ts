@@ -143,6 +143,7 @@ function parseMessage(text: string) {
   const result: any = {
     intent: "tour.search",
     entities: {
+      searchTerm: text.trim(), // Kullanıcının yazdığı tam metin
       destination: null,
       type: null,
       date_iso: null,
@@ -150,13 +151,15 @@ function parseMessage(text: string) {
     }
   };
 
-  // Destinasyon - Daha fazla destinasyon eklendi
+  // Destinasyon - Sadece bilinen destinasyonlar için
   if (lowerText.includes("kapadokya")) result.entities.destination = "Kapadokya";
   if (lowerText.includes("ayvalık")) result.entities.destination = "Ayvalık";
-  if (lowerText.includes("efes") || lowerText.includes("selçuk")) result.entities.destination = "efes";
-  if (lowerText.includes("izmir") || lowerText.includes("İzmir")) result.entities.destination = "İzmir";
   if (lowerText.includes("pamukkale") || lowerText.includes("denizli")) result.entities.destination = "Pamukkale";
   if (lowerText.includes("antalya") || lowerText.includes("kemer")) result.entities.destination = "Antalya";
+  // İzmir ve Efes ayrı ayrı kontrol - eğer sadece İzmir varsa İzmir, Efes varsa genel arama
+  if ((lowerText.includes("izmir") || lowerText.includes("İzmir")) && !lowerText.includes("efes")) {
+    result.entities.destination = "İzmir";
+  }
 
   // Tur tipi
   if (lowerText.includes("günübirlik") || lowerText.includes("günü birlik")) {
@@ -220,9 +223,13 @@ async function searchTours(supabase: any, entities: any) {
       )
     `);
 
-  // Destination veya title'da esnek arama
+  // Önce destination varsa ona göre filtrele
   if (entities.destination) {
-    query = query.or(`destination.ilike.%${entities.destination}%,title.ilike.%${entities.destination}%`);
+    query = query.eq("destination", entities.destination);
+  } 
+  // Destination yoksa searchTerm'de title ve destination'da ara
+  else if (entities.searchTerm) {
+    query = query.or(`destination.ilike.%${entities.searchTerm}%,title.ilike.%${entities.searchTerm}%`);
   }
 
   if (entities.type) {
