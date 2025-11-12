@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -21,12 +22,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar } from "lucide-react";
+import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { useToast } from "@/hooks/use-toast";
+import { Session } from "@supabase/supabase-js";
 
 interface Tour {
   id: string;
@@ -76,7 +78,9 @@ const tourTypeLabels: Record<string, string> = {
 };
 
 const Admin = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState<"tours" | "registrations">("tours");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -93,8 +97,29 @@ const Admin = () => {
   });
 
   useEffect(() => {
-    loadData();
-  }, [activeTab]);
+    // Check authentication
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (session) {
+      loadData();
+    }
+  }, [activeTab, session]);
 
   const loadData = async () => {
     setLoading(true);
@@ -188,6 +213,28 @@ const Admin = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Başarılı! ✅",
+        description: "Çıkış yapıldı",
+      });
+      navigate("/auth");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Hata",
+        description: "Çıkış yapılamadı",
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (!session) {
+    return null; // Show nothing while redirecting
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -208,6 +255,10 @@ const Admin = () => {
                 <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
               </div>
             </div>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Çıkış
+            </Button>
           </div>
         </div>
       </header>
