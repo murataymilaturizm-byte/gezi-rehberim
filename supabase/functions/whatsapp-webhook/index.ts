@@ -250,7 +250,7 @@ async function searchTours(supabase: any, entities: any) {
       .sort((a: any, b: any) => 
         new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime()
       )
-  })).filter((tour: any) => tour.dates.length > 0);
+  })); // Tarihi olmayan turları da göster
 
   return tours;
 }
@@ -368,19 +368,27 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
   let response = `🎯 *${tours.length} Tur Bulundu!*\n\n`;
 
   tours.slice(0, 3).forEach((tour, index) => {
-    const firstDate = tour.dates[0];
     response += `${index + 1}️⃣ *${tour.title}*\n`;
     response += `📍 ${tour.destination}\n`;
     if (tour.program_kisa) {
       response += `✨ ${tour.program_kisa}\n`;
     }
-    response += `🆔 Tarih ID: \`${firstDate.id}\`\n`;
-    response += `📅 ${firstDate.departure_date}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + firstDate.return_date : ''}\n`;
-    if (tour.tur_sure) {
-      response += `⏱️ ${tour.tur_sure}\n`;
+    
+    // Tarihi varsa göster
+    if (tour.dates.length > 0) {
+      const firstDate = tour.dates[0];
+      response += `🆔 Tarih ID: \`${firstDate.id}\`\n`;
+      response += `📅 ${firstDate.departure_date}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + firstDate.return_date : ''}\n`;
+      if (tour.tur_sure) {
+        response += `⏱️ ${tour.tur_sure}\n`;
+      }
+      response += `💰 ${formatPrice(firstDate.price_adult)} ${tour.currency} /kişi\n`;
+      response += `👥 ${firstDate.quota > 0 ? firstDate.quota + ' kontenjan' : 'Kontenjan doldu'}\n`;
+    } else {
+      response += `⚠️ Tarih henüz planlanmadı\n`;
+      response += `📞 Detaylı bilgi için iletişime geçin\n`;
     }
-    response += `💰 ${formatPrice(firstDate.price_adult)} ${tour.currency} /kişi\n`;
-    response += `👥 ${firstDate.quota > 0 ? firstDate.quota + ' kontenjan' : 'Kontenjan doldu'}\n`;
+    
     if (tour.gezilecek_yerler) {
       response += `🗺️ ${tour.gezilecek_yerler}\n`;
     }
