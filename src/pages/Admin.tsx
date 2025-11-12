@@ -56,6 +56,7 @@ interface Registration {
   phone: string;
   pax: number;
   status: string;
+  note?: string;
   created_at: string;
   tours: {
     title: string;
@@ -96,6 +97,7 @@ const Admin = () => {
     id: "",
     type: "tour"
   });
+  const [showWhatsAppOnly, setShowWhatsAppOnly] = useState(false);
 
   useEffect(() => {
     // Check authentication
@@ -120,7 +122,7 @@ const Admin = () => {
     if (session) {
       loadData();
     }
-  }, [activeTab, session]);
+  }, [activeTab, session, showWhatsAppOnly]);
 
   const loadData = async () => {
     setLoading(true);
@@ -143,7 +145,7 @@ const Admin = () => {
         if (error) throw error;
         setTours(data || []);
       } else {
-        const { data, error } = await supabase
+        let query = supabase
           .from("registrations")
           .select(`
             *,
@@ -151,6 +153,13 @@ const Admin = () => {
             tour_dates (departure_date)
           `)
           .order("created_at", { ascending: false });
+        
+        // WhatsApp filtresi
+        if (showWhatsAppOnly) {
+          query = query.ilike("note", "%WhatsApp kayıt:%");
+        }
+        
+        const { data, error } = await query;
         
         if (error) throw error;
         setRegistrations(data || []);
@@ -301,18 +310,29 @@ const Admin = () => {
               <CardTitle>
                 {activeTab === "tours" ? "Tur Listesi" : "Kayıt Listesi"}
               </CardTitle>
-              {activeTab === "tours" && (
-                <Button
-                  onClick={() => {
-                    setSelectedTour(undefined);
-                    setTourFormOpen(true);
-                  }}
-                  className="bg-gradient-ocean hover:opacity-90"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Yeni Tur
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {activeTab === "registrations" && (
+                  <Button
+                    variant={showWhatsAppOnly ? "default" : "outline"}
+                    onClick={() => setShowWhatsAppOnly(!showWhatsAppOnly)}
+                    className={showWhatsAppOnly ? "bg-gradient-ocean" : ""}
+                  >
+                    {showWhatsAppOnly ? "Tüm Kayıtlar" : "WhatsApp Kayıtları"}
+                  </Button>
+                )}
+                {activeTab === "tours" && (
+                  <Button
+                    onClick={() => {
+                      setSelectedTour(undefined);
+                      setTourFormOpen(true);
+                    }}
+                    className="bg-gradient-ocean hover:opacity-90"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Yeni Tur
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -432,13 +452,14 @@ const Admin = () => {
                     <TableHead>Tarih</TableHead>
                     <TableHead>Kişi</TableHead>
                     <TableHead>Durum</TableHead>
+                    <TableHead>Kaynak</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {registrations.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground">
-                        Henüz kayıt yok
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                        {showWhatsAppOnly ? "WhatsApp kayıt bulunamadı" : "Henüz kayıt yok"}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -464,6 +485,15 @@ const Admin = () => {
                           >
                             {statusLabels[reg.status] || reg.status}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {reg.note?.includes("WhatsApp kayıt:") ? (
+                            <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                              WhatsApp
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">Web</Badge>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
