@@ -17,7 +17,18 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const body = await req.json();
+    // Twilio sends data as application/x-www-form-urlencoded
+    const contentType = req.headers.get('content-type') || '';
+    let body: any = {};
+    
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      const text = await req.text();
+      const params = new URLSearchParams(text);
+      body = Object.fromEntries(params.entries());
+    } else {
+      body = await req.json();
+    }
+    
     console.log('WhatsApp webhook received:', body);
 
     // Twilio WhatsApp formatı desteği
