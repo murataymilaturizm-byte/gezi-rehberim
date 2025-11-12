@@ -1,73 +1,129 @@
-# Welcome to your Lovable project
+# Tur Satış Chatbotu 🌍
 
-## Project info
+Modern bir seyahat acentesi için Türkçe AI destekli tur arama ve rezervasyon platformu.
 
-**URL**: https://lovable.dev/projects/68410288-52e1-4968-9da2-539398d16600
+## ✨ Özellikler
 
-## How can I edit this code?
+- 💬 **Akıllı Chat Asistanı**: Doğal dille tur arama ("Günübirlik Kapadokya 20 Temmuz")
+- 🎯 **Otomatik Anlama**: Türkçe tarih, destinasyon ve tur tipi algılama
+- 🏖️ **Gerçek Zamanlı Arama**: Filtrelenmiş tur sonuçları
+- 📝 **Ön Kayıt Sistemi**: Hızlı rezervasyon formu
+- 🎨 **Modern UI/UX**: Deniz temalı, gradient tasarım
+- 🔐 **Admin Panel**: Tur ve rezervasyon yönetimi
 
-There are several ways of editing your application.
+## 🛠️ Teknoloji Stack
 
-**Use Lovable**
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: TailwindCSS + shadcn/ui
+- **Backend**: Lovable Cloud (Supabase)
+- **Database**: PostgreSQL
+- **Tarih İşlemleri**: date-fns (TR locale)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/68410288-52e1-4968-9da2-539398d16600) and start prompting.
+## 📦 Kurulum
 
-Changes made via Lovable will be committed automatically to this repo.
+```bash
+# Bağımlılıkları yükle
+npm install
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Geliştirme sunucusunu başlat
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Uygulama http://localhost:8080 adresinde çalışacaktır.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🗄️ Veritabanı Yapısı
 
-**Use GitHub Codespaces**
+### Tours (Turlar)
+- Tur bilgileri: başlık, destinasyon, tip (günübirlik/2-3 gece)
+- Program URL, vize gereklilikleri, minimum katılımcı
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Tour Dates (Tur Tarihleri)
+- Kalkış/dönüş tarihleri
+- Fiyatlar (yetişkin, çocuk, tek kişilik)
+- Kontenjan bilgisi
 
-## What technologies are used for this project?
+### Registrations (Kayıtlar)
+- Müşteri bilgileri (ad, telefon)
+- Tur/tarih seçimi
+- Durum takibi (Yeni, Beklemede, Onaylı, İptal)
 
-This project is built with:
+## 🎨 Tasarım Sistemi
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Primary**: Turkuaz-mavi (deniz teması) `hsl(189 85% 45%)`
+- **Secondary**: Coral-turuncu (aksan) `hsl(16 90% 65%)`
+- **Gradients**: Ocean, Sunset, Hero gradyanları
+- **Shadows**: Soft, Card gölgelendirmeleri
 
-## How can I deploy this project?
+## 🚀 Özellikler
 
-Simply open [Lovable](https://lovable.dev/projects/68410288-52e1-4968-9da2-539398d16600) and click on Share -> Publish.
+### Ana Sayfa (/)
+- Sol: Chat widget (mesaj gönderme, hızlı butonlar)
+- Sağ: Tur kartları (fiyat, tarih, kontenjan, ön kayıt)
 
-## Can I connect a custom domain to my Lovable project?
+### Admin Panel (/admin)
+- Tur listesi görüntüleme
+- Rezervasyon listesi ve durum takibi
 
-Yes, you can!
+### Akıllı Ayrıştırma
+```typescript
+"Günübirlik Kapadokya 20 Temmuz"
+↓
+{
+  intent: "tour.search",
+  entities: {
+    destination: "Kapadokya",
+    type: "daytrip",
+    date_iso: "2026-07-20"
+  }
+}
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📱 Kullanım
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Ana sayfada chat asistanına mesaj yazın
+2. Örnek: "2 gece Kapadokya Mayıs"
+3. Uygun turları görüntüleyin
+4. "Ön Kayıt" butonu ile rezervasyon yapın
+
+## 🔐 Güvenlik
+
+- RLS (Row Level Security) politikaları
+- Public okuma erişimi
+- Güvenli kayıt oluşturma
+
+## 📊 Seed Veriler
+
+Proje 2 örnek Kapadokya turu ile gelir:
+- Günübirlik tur (20-22 Temmuz 2026)
+- 2 Gece 3 Gün (1-3 Mayıs 2026)
+
+## 🌐 Deployment
+
+Lovable platformu üzerinden tek tıkla yayınlayabilirsiniz:
+1. "Publish" butonuna tıklayın
+2. Custom domain bağlayabilirsiniz
+
+## 📝 Geliştirme Notları
+
+- Tarih ayrıştırma: TR ay adları desteklenir
+- Type-safe: Full TypeScript
+- Responsive: Mobile-first tasarım
+- SEO-ready: Meta tags hazır
+
+## 🤝 Katkıda Bulunma
+
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'Add amazing feature'`)
+4. Push edin (`git push origin feature/amazing-feature`)
+5. Pull Request açın
+
+## 📄 Lisans
+
+Bu proje MIT lisansı altındadır.
+
+---
+
+**URL**: https://lovable.dev/projects/68410288-52e1-4968-9da2-539398d16600
+
+Lovable ile ❤️ ile yapıldı
