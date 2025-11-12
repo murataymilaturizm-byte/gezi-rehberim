@@ -28,6 +28,7 @@ import { tr } from "date-fns/locale";
 import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
+import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 
@@ -83,7 +84,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -298,11 +299,20 @@ const Admin = () => {
           >
             Kayıtlar
           </Button>
+          <Button
+            variant={activeTab === "whatsapp" ? "default" : "outline"}
+            onClick={() => setActiveTab("whatsapp")}
+            className={activeTab === "whatsapp" ? "bg-gradient-ocean" : ""}
+          >
+            WhatsApp
+          </Button>
         </div>
 
         {/* Content */}
         {activeTab === "dashboard" ? (
           <AdminDashboard />
+        ) : activeTab === "whatsapp" ? (
+          <WhatsAppConversations />
         ) : (
           <Card className="shadow-card">
           <CardHeader>
