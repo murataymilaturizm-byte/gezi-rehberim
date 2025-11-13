@@ -35,6 +35,8 @@ import { useToast } from "@/hooks/use-toast";
 interface Agency {
   id: string;
   agency_name: string;
+  city?: string;
+  region?: string;
   twilio_account_sid: string;
   twilio_auth_token: string;
   twilio_phone_number: string;
@@ -65,6 +67,8 @@ export const AgencyManagement = () => {
     password: "",
     full_name: "",
     agency_name: "",
+    city: "",
+    region: "",
     twilio_account_sid: "",
     twilio_auth_token: "",
     twilio_phone_number: "",
@@ -85,7 +89,7 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("id, agency_name, twilio_account_sid, twilio_auth_token, twilio_phone_number, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .select("id, agency_name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -129,6 +133,8 @@ export const AgencyManagement = () => {
           .from("agencies")
           .update({
             agency_name: formData.agency_name,
+            city: formData.city,
+            region: formData.region || null,
             twilio_account_sid: formData.twilio_account_sid,
             twilio_auth_token: formData.twilio_auth_token,
             twilio_phone_number: formData.twilio_phone_number,
@@ -162,6 +168,8 @@ export const AgencyManagement = () => {
           .insert({
             user_id: authData.user.id,
             agency_name: formData.agency_name,
+            city: formData.city,
+            region: formData.region || null,
             twilio_account_sid: formData.twilio_account_sid,
             twilio_auth_token: formData.twilio_auth_token,
             twilio_phone_number: formData.twilio_phone_number,
@@ -231,6 +239,8 @@ export const AgencyManagement = () => {
       password: "",
       full_name: "",
       agency_name: agency.agency_name,
+      city: agency.city || "",
+      region: agency.region || "",
       twilio_account_sid: agency.twilio_account_sid,
       twilio_auth_token: agency.twilio_auth_token,
       twilio_phone_number: agency.twilio_phone_number,
@@ -245,6 +255,8 @@ export const AgencyManagement = () => {
       password: "",
       full_name: "",
       agency_name: "",
+      city: "",
+      region: "",
       twilio_account_sid: "",
       twilio_auth_token: "",
       twilio_phone_number: "",
@@ -384,6 +396,28 @@ export const AgencyManagement = () => {
                     onChange={(e) => setFormData({ ...formData, agency_name: e.target.value })}
                     required
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Şehir</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      placeholder="İstanbul"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="region">Bölge (İsteğe Bağlı)</Label>
+                    <Input
+                      id="region"
+                      value={formData.region}
+                      onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                      placeholder="Marmara"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

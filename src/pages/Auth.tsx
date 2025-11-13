@@ -19,6 +19,8 @@ const signupSchema = authSchema.extend({
   fullName: z.string().trim().min(2, { message: "Ad Soyad en az 2 karakter olmalı" }).max(100, { message: "Ad Soyad en fazla 100 karakter olabilir" }),
   agencyName: z.string().trim().min(2, { message: "Acente adı en az 2 karakter olmalı" }).max(100, { message: "Acente adı en fazla 100 karakter olabilir" }),
   phone: z.string().trim().min(10, { message: "Geçerli bir telefon numarası girin" }).max(20, { message: "Telefon numarası çok uzun" }),
+  city: z.string().trim().min(2, { message: "Şehir en az 2 karakter olmalı" }).max(50, { message: "Şehir en fazla 50 karakter olabilir" }),
+  region: z.string().trim().optional(),
   planType: z.enum(["starter", "professional", "enterprise"], { message: "Lütfen bir plan seçin" }),
 });
 
@@ -39,6 +41,8 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [agencyName, setAgencyName] = useState("");
   const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [region, setRegion] = useState("");
   const [isYearly, setIsYearly] = useState(billingParam === "yearly");
   const [planType, setPlanType] = useState<"starter" | "professional" | "enterprise">(
     (planParam === "başlangıç" ? "starter" : 
@@ -71,7 +75,7 @@ const Auth = () => {
     // Validate input
     const validation = isLogin 
       ? authSchema.safeParse({ email, password })
-      : signupSchema.safeParse({ email, password, fullName, agencyName, phone, planType });
+      : signupSchema.safeParse({ email, password, fullName, agencyName, phone, city, region, planType });
       
     if (!validation.success) {
       toast({
@@ -138,6 +142,8 @@ const Auth = () => {
           .insert({
             user_id: authData.user.id,
             agency_name: agencyName.trim(),
+            city: city.trim(),
+            region: region.trim() || null,
             twilio_account_sid: "TEMP_SID", // Will be updated later
             twilio_auth_token: "TEMP_TOKEN", // Will be updated later
             twilio_phone_number: "TEMP_PHONE", // Will be updated later
@@ -231,6 +237,34 @@ const Auth = () => {
                   <p className="text-xs text-muted-foreground">
                     Destek için sizinle iletişime geçmemiz gerekebilir
                   </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Şehir</Label>
+                    <Input
+                      id="city"
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="İstanbul"
+                      required
+                      disabled={isLoading}
+                      maxLength={50}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="region">Bölge (İsteğe Bağlı)</Label>
+                    <Input
+                      id="region"
+                      type="text"
+                      value={region}
+                      onChange={(e) => setRegion(e.target.value)}
+                      placeholder="Marmara"
+                      disabled={isLoading}
+                      maxLength={50}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-3">
