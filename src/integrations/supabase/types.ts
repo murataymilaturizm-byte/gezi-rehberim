@@ -18,12 +18,16 @@ export type Database = {
         Row: {
           active: boolean | null
           agency_name: string
+          city: string | null
           created_at: string | null
           id: string
           last_message_reset_date: string | null
+          latitude: number | null
+          longitude: number | null
           message_limit: number | null
           monthly_message_count: number | null
           plan_type: string
+          region: string | null
           subscription_ends_at: string | null
           subscription_status: string
           trial_ends_at: string | null
@@ -35,12 +39,16 @@ export type Database = {
         Insert: {
           active?: boolean | null
           agency_name: string
+          city?: string | null
           created_at?: string | null
           id?: string
           last_message_reset_date?: string | null
+          latitude?: number | null
+          longitude?: number | null
           message_limit?: number | null
           monthly_message_count?: number | null
           plan_type?: string
+          region?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string
           trial_ends_at?: string | null
@@ -52,12 +60,16 @@ export type Database = {
         Update: {
           active?: boolean | null
           agency_name?: string
+          city?: string | null
           created_at?: string | null
           id?: string
           last_message_reset_date?: string | null
+          latitude?: number | null
+          longitude?: number | null
           message_limit?: number | null
           monthly_message_count?: number | null
           plan_type?: string
+          region?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string
           trial_ends_at?: string | null

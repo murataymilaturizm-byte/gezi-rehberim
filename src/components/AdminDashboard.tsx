@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
-import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X, Building2, MessageSquare, CheckCircle, XCircle, Filter } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X, Building2, MessageSquare, CheckCircle, XCircle, Filter, MapPin } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { tr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
@@ -85,6 +85,7 @@ interface SuperAdminStats {
     professional: number;
     enterprise: number;
   };
+  geographicData: { location: string; count: number }[];
 }
 
 interface RevenueChartData {
@@ -136,7 +137,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       // Get all agencies
       const { data: agencies, error: agenciesError } = await supabase
         .from('agencies')
-        .select('id, active, subscription_status, plan_type, monthly_message_count, created_at');
+        .select('id, active, subscription_status, plan_type, monthly_message_count, created_at, city, region');
 
       if (agenciesError) throw agenciesError;
 
@@ -155,6 +156,21 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         enterprise: paidAgencies.filter(a => a.plan_type === 'enterprise').length || 0,
       };
 
+      // Calculate geographic distribution
+      const cityDistribution = agencies?.reduce((acc: { [key: string]: number }, agency: any) => {
+        const location = agency.city || agency.region || 'Belirtilmemiş';
+        acc[location] = (acc[location] || 0) + 1;
+        return acc;
+      }, {}) || {};
+
+      const geographicData = Object.entries(cityDistribution)
+        .map(([location, count]) => ({
+          location,
+          count: count as number,
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10); // Top 10 locations
+
       setSuperAdminStats({
         totalAgencies,
         activeAgencies,
@@ -162,6 +178,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         trialAgencies,
         totalMessagesUsed,
         agenciesByPlan,
+        geographicData,
       });
 
       // Load revenue trend data
@@ -759,6 +776,67 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                     };
                     return labels[p];
                   }).join(", ")} planları gösteriliyor
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Geographic Distribution Section */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>Acente Coğrafi Dağılımı</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Acentelerin illere ve bölgelere göre dağılımı (En çok 10 lokasyon)
+            </p>
+          </CardHeader>
+          <CardContent>
+            {superAdminStats.geographicData.length > 0 ? (
+              <div className="space-y-4">
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={superAdminStats.geographicData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="location" 
+                      className="text-xs"
+                      angle={-45}
+                      textAnchor="end"
+                      height={120}
+                    />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="count" 
+                      fill="hsl(var(--primary))"
+                      radius={[8, 8, 0, 0]}
+                      name="Acente Sayısı"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-border">
+                  {superAdminStats.geographicData.slice(0, 5).map((item, index) => (
+                    <div key={item.location} className="text-center">
+                      <div className="text-2xl font-bold text-primary">#{index + 1}</div>
+                      <div className="text-sm font-medium">{item.location}</div>
+                      <div className="text-xs text-muted-foreground">{item.count} acente</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
+                <h4 className="text-lg font-medium mb-2">Konum Bilgisi Bulunamadı</h4>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi 
+                  eklendiğinde coğrafi dağılım burada görüntülenecek.
                 </p>
               </div>
             )}
