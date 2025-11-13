@@ -32,7 +32,7 @@ serve(async (req) => {
     console.log('WhatsApp webhook received:', body);
 
     // Twilio WhatsApp formatı desteği
-    const userMessage = body.Body || body.message || '';
+    let userMessage = body.Body || body.message || '';
     const from = body.From || body.from || '';
     const to = body.To || body.to || ''; // Twilio phone number
 
@@ -114,6 +114,44 @@ serve(async (req) => {
     
     // Kullanıcı mesajını kaydet (agency_id ile)
     await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
+
+    // Hızlı cevap butonlarını kontrol et
+    const quickReplyMatch = userMessage.match(/^[1-3]$/);
+    if (quickReplyMatch) {
+      const buttonNumber = parseInt(userMessage);
+      
+      // Son bot mesajını al, hangi context'te olduğumuzu anlamak için
+      const { data: lastBotMessage } = await supabase
+        .from('whatsapp_conversations')
+        .select('content')
+        .eq('phone', userPhone)
+        .eq('agency_id', agency.id)
+        .eq('role', 'assistant')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (lastBotMessage && lastBotMessage.content.includes('Hızlı Seçenekler')) {
+        // Tur sonuçları context'i
+        if (lastBotMessage.content.includes('Kayıt olmak istiyorum')) {
+          if (buttonNumber === 1) {
+            userMessage = 'Kayıt olmak istiyorum';
+          } else if (buttonNumber === 2) {
+            userMessage = 'Daha fazla bilgi';
+          } else if (buttonNumber === 3) {
+            userMessage = 'Başka turlar';
+          }
+        } 
+        // Tur bulunamadı context'i
+        else if (lastBotMessage.content.includes('Tüm turları göster')) {
+          if (buttonNumber === 1) {
+            userMessage = 'Tüm turları göster';
+          } else if (buttonNumber === 2) {
+            userMessage = 'Danışman ile görüşmek istiyorum';
+          }
+        }
+      }
+    }
 
     // Önce AI ile mesajı kategorize et
     const intent = await categorizeMessage(userMessage);
@@ -486,7 +524,13 @@ async function createRegistration(supabase: any, entities: any, from: string, ag
   }
 }
 
-async function sendWhatsAppMessage(to: string, message: string, agency: any) {
+// WhatsApp mesajı gönderme - zengin medya desteği ile
+async function sendWhatsAppMessage(
+  to: string, 
+  message: string, 
+  agency: any,
+  mediaUrls?: string[]
+) {
   const accountSid = agency.twilio_account_sid;
   const authToken = agency.twilio_auth_token;
   const twilioPhone = agency.twilio_phone_number;
@@ -497,14 +541,22 @@ async function sendWhatsAppMessage(to: string, message: string, agency: any) {
   }
 
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-  
   const auth = btoa(`${accountSid}:${authToken}`);
   
-  const body = new URLSearchParams({
+  const bodyParams: Record<string, string> = {
     From: `whatsapp:${twilioPhone}`,
     To: `whatsapp:${to}`,
     Body: message
-  });
+  };
+
+  // Medya URL'leri varsa ekle
+  if (mediaUrls && mediaUrls.length > 0) {
+    mediaUrls.forEach((url, index) => {
+      bodyParams[`MediaUrl${index}`] = url;
+    });
+  }
+
+  const body = new URLSearchParams(bodyParams);
 
   try {
     const response = await fetch(url, {
@@ -527,9 +579,30 @@ async function sendWhatsAppMessage(to: string, message: string, agency: any) {
   }
 }
 
+// Buton mesajları için hızlı cevaplar
+function createQuickReplyButtons(options: { text: string; emoji: string }[]) {
+  let message = '\n\n📱 *Hızlı Seçenekler:*\n\n';
+  options.forEach((option, index) => {
+    message += `${option.emoji} ${index + 1}. ${option.text}\n`;
+  });
+  message += '\n_Yukarıdaki seçeneklerden birinin numarasını yazabilirsiniz_';
+  return message;
+}
+
+// WhatsApp formatı ile zenginleştirilmiş tur yanıtları
 function formatWhatsAppResponse(tours: any[], entities: any) {
   if (tours.length === 0) {
-    return '😊 Aradığınız kriterlere uygun tur şu anda bulunmuyor.\n\n💡 Farklı bir tarih veya destinasyon deneyelim mi?\n\n📞 İsterseniz bize ulaşın, size özel tur planlaması yapabiliriz!';
+    const message = '😊 Aradığınız kriterlere uygun tur şu anda bulunmuyor.\n\n' +
+      '💡 *Farklı bir seçenek deneyelim mi?*\n\n' +
+      '🔹 Başka bir tarih\n' +
+      '🔹 Farklı bir destinasyon\n' +
+      '🔹 Farklı tur tipi (günübirlik, 2 gece, vb.)\n\n' +
+      '📞 İsterseniz bize ulaşın, size _özel tur planlaması_ yapabiliriz!';
+    
+    return message + createQuickReplyButtons([
+      { text: 'Tüm turları göster', emoji: '🗺️' },
+      { text: 'Danışman ile görüş', emoji: '👤' }
+    ]);
   }
 
   const formatPrice = (price: number) => {
@@ -539,46 +612,135 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     }).format(price);
   };
 
-  let response = `🎉 *Harika! ${tours.length} Muhteşem Tur Buldum!*\n\n`;
+  let response = `🎉 *Harika! ${tours.length} Muhteşem Tur Buldum!*\n`;
+  response += `${'─'.repeat(30)}\n\n`;
 
   tours.slice(0, 3).forEach((tour, index) => {
-    response += `${index + 1}️⃣ *${tour.title}*\n`;
-    response += `📍 ${tour.destination}\n`;
+    // Tur başlığı - bold ve büyük
+    response += `*${index + 1}. ${tour.title.toUpperCase()}*\n`;
+    response += `${'·'.repeat(20)}\n`;
+    
+    // Lokasyon bilgisi
+    response += `📍 *Destinasyon:* ${tour.destination}\n`;
+    
+    // Kısa açıklama
     if (tour.program_kisa) {
-      response += `✨ ${tour.program_kisa}\n`;
+      response += `✨ _${tour.program_kisa}_\n\n`;
     }
     
-    // Tarihi varsa göster
-    if (tour.dates.length > 0) {
+    // Tarih ve fiyat bilgileri - daha organize
+    if (tour.dates && tour.dates.length > 0) {
       const firstDate = tour.dates[0];
-      const formattedDate = new Date(firstDate.departure_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      response += `📅 ${formattedDate}${firstDate.return_date && firstDate.return_date !== firstDate.departure_date ? ' → ' + new Date(firstDate.return_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}\n`;
-      if (tour.tur_sure) {
-        response += `⏱️ ${tour.tur_sure}\n`;
+      const depDate = new Date(firstDate.departure_date).toLocaleDateString('tr-TR', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric' 
+      });
+      
+      response += `📅 *Tarih:* ${depDate}`;
+      
+      if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
+        const retDate = new Date(firstDate.return_date).toLocaleDateString('tr-TR', { 
+          day: '2-digit', 
+          month: 'short' 
+        });
+        response += ` → ${retDate}`;
       }
-      response += `💰 ${formatPrice(firstDate.price_adult)} ${tour.currency} /kişi\n`;
-      response += `👥 ${firstDate.quota > 0 ? firstDate.quota + ' kontenjan' : 'Kontenjan doldu'}\n`;
+      response += '\n';
+      
+      if (tour.tur_sure) {
+        response += `⏱️ *Süre:* ${tour.tur_sure}\n`;
+      }
+      
+      // Fiyat - vurgulu
+      response += `\n💰 *FİYAT:* \`${formatPrice(firstDate.price_adult)} ${tour.currency}\` /kişi\n`;
+      
+      // Kontenjan durumu
+      const quotaEmoji = firstDate.quota > 10 ? '✅' : firstDate.quota > 0 ? '⚠️' : '❌';
+      const quotaText = firstDate.quota > 0 
+        ? `${firstDate.quota} kişilik yer mevcut` 
+        : '~Kontenjan doldu~';
+      response += `${quotaEmoji} *Kontenjan:* ${quotaText}\n`;
     } else {
-      response += `⚠️ Tarih henüz planlanmadı\n`;
-      response += `📞 Detaylı bilgi için iletişime geçin\n`;
+      response += `⚠️ _Tarih henüz planlanmadı_\n`;
+      response += `📞 Detaylı bilgi için bizimle iletişime geçin\n`;
     }
     
+    // Gezilecek yerler
     if (tour.gezilecek_yerler) {
-      response += `🗺️ ${tour.gezilecek_yerler}\n`;
+      const places = tour.gezilecek_yerler.split(',').slice(0, 3);
+      response += `\n🗺️ *Gezilecek Yerler:*\n`;
+      places.forEach((place: string) => {
+        response += `   • ${place.trim()}\n`;
+      });
+      if (tour.gezilecek_yerler.split(',').length > 3) {
+        response += `   _...ve daha fazlası_\n`;
+      }
     }
+    
+    // Program linki
     if (tour.program_url) {
-      response += `📄 ${tour.program_url}\n`;
+      response += `\n📄 Detaylı program: ${tour.program_url}\n`;
     }
-    response += '\n';
+    
+    response += `\n${'─'.repeat(30)}\n\n`;
   });
 
+  // Daha fazla tur varsa
   if (tours.length > 3) {
-    response += `✨ _... ve ${tours.length - 3} harika tur daha!_\n\n`;
+    response += `✨ _...ve ${tours.length - 3} harika tur daha var!_\n\n`;
   }
 
-  response += '💚 *Kayıt olmak ister misiniz?*\n"Kayıt olmak istiyorum" yazın, hemen yardımcı olalım!';
+  // Call to action - butonlar ile
+  response += '💚 *Ne yapmak istersiniz?*';
+  response += createQuickReplyButtons([
+    { text: 'Kayıt olmak istiyorum', emoji: '✅' },
+    { text: 'Daha fazla bilgi', emoji: '📞' },
+    { text: 'Başka turlar', emoji: '🔍' }
+  ]);
 
   return response;
+}
+
+// Zengin medya ile tur detayı gönderme (tur fotoğrafları ile)
+async function sendTourWithMedia(
+  to: string,
+  tour: any,
+  agency: any,
+  supabase: any
+) {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('tr-TR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
+  let message = `*${tour.title.toUpperCase()}*\n\n`;
+  message += `📍 ${tour.destination}\n\n`;
+  
+  if (tour.program_kisa) {
+    message += `${tour.program_kisa}\n\n`;
+  }
+  
+  if (tour.dates && tour.dates.length > 0) {
+    const firstDate = tour.dates[0];
+    const depDate = new Date(firstDate.departure_date).toLocaleDateString('tr-TR');
+    message += `📅 ${depDate}\n`;
+    message += `💰 ${formatPrice(firstDate.price_adult)} ${tour.currency} /kişi\n`;
+    message += `👥 ${firstDate.quota} kişilik yer mevcut\n\n`;
+  }
+  
+  if (tour.gezilecek_yerler) {
+    message += `🗺️ *Gezilecek Yerler:*\n${tour.gezilecek_yerler}\n\n`;
+  }
+  
+  message += `Kayıt olmak için "Kayıt: ${tour.title}" yazın`;
+
+  // Eğer tur'un fotoğrafı varsa medya ile gönder
+  const mediaUrls = tour.image_url ? [tour.image_url] : undefined;
+  
+  await sendWhatsAppMessage(to, message, agency, mediaUrls);
 }
 
 // Mesajı veritabanına kaydet
