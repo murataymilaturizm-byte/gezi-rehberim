@@ -202,25 +202,25 @@ const Index = () => {
 
   const testimonials = [
     {
-      name: "Mehmet Yılmaz",
-      company: "Mavi Deniz Turizm",
+      name: "Yasin Çetin",
+      company: "Kampüs Travel",
       role: "İşletme Sahibi",
       content: "İlk ayda 18 yeni rezervasyon aldık. Daha önce gece mesaj atanlar 'yarın ararsınız' deyip başka acenteden alıyordu. Şimdi gece 2'de bile satış yapıyoruz!",
       rating: 5,
       result: "+18 rezervasyon ilk ayda"
     },
     {
-      name: "Ayşe Demir",
-      company: "Kapadokya Tur",
-      role: "Satış Müdürü",
+      name: "Sıtkı Murat OĞRAK",
+      company: "Aymila Turizm",
+      role: "İşletme Müdürü",
       content: "Müşteriler 'çok hızlı cevap veriyorsunuz' diyor. Ayda 40+ saat zaman kazanıyorum. Artık gerçekten önemli işlere odaklanabiliyorum.",
       rating: 5,
       result: "Ayda 40+ saat tasarruf"
     },
     {
-      name: "Can Özkan",
-      company: "Antik Kent Turları",
-      role: "Kurucu",
+      name: "Mustafa Gülmez",
+      company: "4 Eylül Turizm",
+      role: "İşletme Sahibi",
       content: "Hangi turlar daha çok satıyor, hangi gün daha çok talep var - her şeyi görebiliyorum. Artık tahmine değil, veriye göre karar veriyorum. Gelir analizleri muhteşem!",
       rating: 5,
       result: "Veri odaklı karar"
@@ -314,12 +314,12 @@ const Index = () => {
               <span className="text-sm font-medium text-accent-foreground">WhatsApp ile Otomatik Tur Satışı</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
-              İlk Ayda Rezervasyonlarınızı <br />
-              <span className="bg-gradient-ocean bg-clip-text text-transparent">2-3 Katına Çıkarın</span>
+              WhatsApp ile <br />
+              <span className="bg-gradient-ocean bg-clip-text text-transparent">Tur Satışlarınızı Otomatikleştirin</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              WhatsApp'tan 7/24 otomatik satış yapın. Gece yarısı bile müşteriler tur bulup ödeme yapsın. 
-              Siz uyurken sistem çalışsın - hiçbir fırsat kaçmasın.
+              Yapay zeka destekli WhatsApp asistanı ile 7/24 tur satışı yapın. Müşteri sorularını yanıtlayın, 
+              rezervasyon alın ve ödemeleri otomatik yönetin - siz uyurken bile satış yapın.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
