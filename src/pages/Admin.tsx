@@ -31,6 +31,7 @@ import { AdminDashboard } from "@/components/AdminDashboard";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { AgencyManagement } from "@/components/AgencyManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
+import { TwilioSettings } from "@/components/TwilioSettings";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 
@@ -90,7 +91,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "agencies">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "agencies">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -374,6 +375,15 @@ const Admin = () => {
           >
             WhatsApp
           </Button>
+          {!isSuperAdmin && (
+            <Button
+              variant={activeTab === "settings" ? "default" : "outline"}
+              onClick={() => setActiveTab("settings")}
+              className={activeTab === "settings" ? "bg-gradient-ocean" : ""}
+            >
+              Twilio Ayarları
+            </Button>
+          )}
           {isSuperAdmin && (
             <Button
               variant={activeTab === "agencies" ? "default" : "outline"}
@@ -390,6 +400,8 @@ const Admin = () => {
           <AdminDashboard />
         ) : activeTab === "whatsapp" ? (
           <WhatsAppConversations />
+        ) : activeTab === "settings" ? (
+          <TwilioSettings />
         ) : activeTab === "agencies" && isSuperAdmin ? (
           <AgencyManagement />
         ) : (
