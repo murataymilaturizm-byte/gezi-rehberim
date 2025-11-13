@@ -43,6 +43,18 @@ export const RegistrationModal = ({
     setIsLoading(true);
 
     try {
+      // Get current user's agency_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Kullanıcı bulunamadı");
+
+      const { data: agencyData } = await supabase
+        .from("agencies")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!agencyData) throw new Error("Acente bulunamadı");
+
       const { error } = await supabase.from("registrations").insert({
         tour_id: tourId,
         tour_date_id: tourDateId,
@@ -50,7 +62,8 @@ export const RegistrationModal = ({
         phone: formData.phone,
         pax: formData.pax,
         note: formData.note || null,
-        status: "NEW"
+        status: "NEW",
+        agency_id: agencyData.id
       });
 
       if (error) throw error;
