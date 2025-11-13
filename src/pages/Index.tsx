@@ -12,12 +12,23 @@ import {
 import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DemoChat } from "@/components/DemoChat";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 const Index = () => {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
   const [isYearly, setIsYearly] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const demoRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+
+  const contactFormSchema = z.object({
+    name: z.string().trim().min(1, "İsim zorunludur").max(100, "İsim en fazla 100 karakter olabilir"),
+    email: z.string().trim().email("Geçerli bir email adresi girin").max(255, "Email en fazla 255 karakter olabilir"),
+    message: z.string().trim().min(10, "Mesaj en az 10 karakter olmalıdır").max(1000, "Mesaj en fazla 1000 karakter olabilir")
+  });
 
   const scrollToDemo = () => {
     demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -716,6 +727,18 @@ const Index = () => {
               İşletmenizin ihtiyaçlarına göre esnek fiyatlandırma seçenekleri
             </p>
             
+            {/* 14 Days Free Trial Banner */}
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-ocean text-primary-foreground mb-4 animate-pulse">
+                <Sparkles className="w-5 h-5" />
+                <span className="text-lg font-bold">14 GÜN ÜCRETSİZ DENEME</span>
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Kredi kartı bilgisi gerektirmez • İstediğiniz zaman iptal edebilirsiniz
+              </p>
+            </div>
+
             {/* Billing Period Toggle */}
             <div className="flex items-center justify-center gap-3 p-4 bg-card rounded-lg w-fit mx-auto border border-border">
               <Label htmlFor="landing-billing-toggle" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
@@ -852,17 +875,58 @@ const Index = () => {
             {/* Contact Form */}
             <Card className="mt-8 border-border/50 shadow-card max-w-2xl mx-auto">
               <CardContent className="p-8">
-                <form onSubmit={(e) => {
+                <form onSubmit={async (e) => {
                   e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  const name = formData.get('name') as string;
-                  const email = formData.get('email') as string;
-                  const message = formData.get('message') as string;
-                  
-                  // Email ile iletişim formu gönder
-                  const subject = encodeURIComponent(`TurzzAI İletişim: ${name}`);
-                  const body = encodeURIComponent(`İsim: ${name}\nEmail: ${email}\n\nMesaj:\n${message}`);
-                  window.location.href = `mailto:info@turzzai.com?subject=${subject}&body=${body}`;
+                  setIsSubmittingForm(true);
+
+                  try {
+                    const formData = new FormData(e.currentTarget);
+                    const data = {
+                      name: formData.get('name') as string,
+                      email: formData.get('email') as string,
+                      message: formData.get('message') as string
+                    };
+
+                    // Validate form data
+                    const validatedData = contactFormSchema.parse(data);
+
+                    // Save to Supabase
+                    const { error } = await supabase
+                      .from('contact_forms')
+                      .insert({
+                        name: validatedData.name,
+                        email: validatedData.email,
+                        message: validatedData.message,
+                        status: 'new'
+                      });
+
+                    if (error) throw error;
+
+                    toast({
+                      title: "Mesajınız Gönderildi! ✅",
+                      description: "En kısa sürede size geri dönüş yapacağız.",
+                    });
+
+                    // Reset form
+                    (e.target as HTMLFormElement).reset();
+                  } catch (error) {
+                    if (error instanceof z.ZodError) {
+                      toast({
+                        title: "Form Hatası",
+                        description: error.errors[0].message,
+                        variant: "destructive"
+                      });
+                    } else {
+                      console.error('Contact form error:', error);
+                      toast({
+                        title: "Hata",
+                        description: "Mesaj gönderilemedi. Lütfen tekrar deneyin.",
+                        variant: "destructive"
+                      });
+                    }
+                  } finally {
+                    setIsSubmittingForm(false);
+                  }
                 }} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-foreground">İsim Soyisim</Label>
@@ -900,8 +964,12 @@ const Index = () => {
                       placeholder="Mesajınızı buraya yazın..."
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-gradient-ocean hover:opacity-90">
-                    Mesaj Gönder
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-ocean hover:opacity-90"
+                    disabled={isSubmittingForm}
+                  >
+                    {isSubmittingForm ? "Gönderiliyor..." : "Mesaj Gönder"}
                   </Button>
                 </form>
               </CardContent>

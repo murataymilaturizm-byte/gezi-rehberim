@@ -39,6 +39,7 @@ import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
 import { AgencyManagement } from "@/components/AgencyManagement";
+import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { TwilioSettings } from "@/components/TwilioSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
@@ -105,7 +106,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -448,13 +449,22 @@ const Admin = () => {
             </>
           )}
           {isSuperAdmin && (
-            <Button
-              variant={activeTab === "agencies" ? "default" : "outline"}
-              onClick={() => setActiveTab("agencies")}
-              className={activeTab === "agencies" ? "bg-gradient-ocean" : ""}
-            >
-              Acenteler
-            </Button>
+            <>
+              <Button
+                variant={activeTab === "agencies" ? "default" : "outline"}
+                onClick={() => setActiveTab("agencies")}
+                className={activeTab === "agencies" ? "bg-gradient-ocean" : ""}
+              >
+                Acenteler
+              </Button>
+              <Button
+                variant={activeTab === "contact_forms" ? "default" : "outline"}
+                onClick={() => setActiveTab("contact_forms")}
+                className={activeTab === "contact_forms" ? "bg-gradient-ocean" : ""}
+              >
+                İletişim Formları
+              </Button>
+            </>
           )}
         </div>
 
@@ -475,6 +485,8 @@ const Admin = () => {
           <SubscriptionHistory />
         ) : activeTab === "agencies" && isSuperAdmin ? (
           <AgencyManagement />
+        ) : activeTab === "contact_forms" && isSuperAdmin ? (
+          <ContactFormsManagement />
         ) : (
           <Card className="shadow-card">
           <CardHeader>
