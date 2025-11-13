@@ -34,9 +34,17 @@ export const UsageStats = () => {
         .from('agencies')
         .select('monthly_message_count, message_limit, plan_type, last_message_reset_date, subscription_status, trial_ends_at, subscription_ends_at')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      // Super admin veya agency'si olmayan kullanıcılar için
+      if (!data) {
+        setUsage(null);
+        setLoading(false);
+        return;
+      }
+      
       setUsage(data);
     } catch (error) {
       console.error('Error loading usage data:', error);
@@ -50,7 +58,7 @@ export const UsageStats = () => {
     }
   };
 
-  if (loading || !usage) {
+  if (loading) {
     return (
       <Card>
         <CardHeader>
@@ -64,6 +72,11 @@ export const UsageStats = () => {
         </CardContent>
       </Card>
     );
+  }
+
+  // Super admin veya agency olmayan kullanıcılar için gösterme
+  if (!usage) {
+    return null;
   }
 
   const usagePercentage = usage.message_limit === -1 
