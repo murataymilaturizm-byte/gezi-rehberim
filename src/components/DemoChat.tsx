@@ -16,7 +16,7 @@ export const DemoChat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Merhaba! 👋 Ben WhatsApp rezervasyon asistanınızım. Size hangi konuda yardımcı olabilirim?\n\nÖrnek sorular:\n✈️ Kapadokya turları\n🏖️ Antalya turları\n🏛️ İstanbul turları"
+      content: "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu"
     }
   ]);
   const [input, setInput] = useState("");

@@ -123,13 +123,16 @@ const Index = () => {
       price: "3.999",
       monthlyPrice: 3999,
       period: "/ay",
-      description: "Küçük acenteler için ideal",
+      description: "Küçük acenteler ve yeni başlayanlar için",
       features: [
-        "500 WhatsApp mesajı/ay",
-        "1 kullanıcı hesabı",
-        "Temel raporlama",
-        "Email destek",
-        "Tüm turlar sınırsız"
+        "✅ 500 WhatsApp mesajı/ay (~16 mesaj/gün)",
+        "👤 1 kullanıcı hesabı",
+        "📊 Temel raporlama ve istatistikler",
+        "🗂️ Sınırsız tur ekleme",
+        "📝 Rezervasyon yönetimi",
+        "📧 Email destek (48 saat)",
+        "🤖 AI destekli otomatik cevaplar",
+        "💾 30 gün veri saklama"
       ],
       highlighted: false
     },
@@ -138,14 +141,18 @@ const Index = () => {
       price: "7.999",
       monthlyPrice: 7999,
       period: "/ay",
-      description: "Büyüyen işletmeler için",
+      description: "Büyüyen işletmeler ve aktif acenteler için",
       features: [
-        "2.000 WhatsApp mesajı/ay",
-        "5 kullanıcı hesabı",
-        "Gelişmiş raporlama",
-        "Öncelikli destek",
-        "Tüm turlar sınırsız",
-        "Özel entegrasyon desteği"
+        "✅ 2.000 WhatsApp mesajı/ay (~66 mesaj/gün)",
+        "👥 5 kullanıcı hesabı",
+        "📈 Gelişmiş raporlama ve analizler",
+        "🗂️ Sınırsız tur ekleme",
+        "📝 Gelişmiş rezervasyon yönetimi",
+        "🎯 WhatsApp kullanıcı profilleri",
+        "⚡ Öncelikli destek (24 saat)",
+        "🔗 CRM entegrasyon desteği",
+        "💾 90 gün veri saklama",
+        "📱 Özel WhatsApp mesaj şablonları"
       ],
       highlighted: true
     },
@@ -154,15 +161,20 @@ const Index = () => {
       price: "Özel",
       monthlyPrice: 0,
       period: "fiyat",
-      description: "Büyük acenteler için",
+      description: "Büyük acenteler ve zincir işletmeler için",
       features: [
-        "Sınırsız WhatsApp mesajı",
-        "Sınırsız kullanıcı",
-        "Özel raporlama",
-        "7/24 destek",
-        "Özel geliştirmeler",
-        "API erişimi",
-        "Dedicated account manager"
+        "✅ Sınırsız WhatsApp mesajı",
+        "👥 Sınırsız kullanıcı hesabı",
+        "📊 Özel raporlama ve dashboardlar",
+        "🗂️ Sınırsız tur ve multi-branch desteği",
+        "📝 Kurumsal rezervasyon yönetimi",
+        "🎯 Gelişmiş müşteri segmentasyonu",
+        "🚀 7/24 öncelikli destek",
+        "🔌 API erişimi ve özel entegrasyonlar",
+        "💾 Sınırsız veri saklama",
+        "👔 Özel hesap yöneticisi (dedicated)",
+        "⚙️ Özel geliştirme ve özelleştirmeler",
+        "🔒 Kurumsal güvenlik ve SLA garantisi"
       ],
       highlighted: false
     }
