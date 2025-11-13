@@ -12,13 +12,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
-import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X, Building2, MessageSquare, CheckCircle, XCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X, Building2, MessageSquare, CheckCircle, XCircle, Filter } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { tr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
@@ -103,6 +111,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
   const [loading, setLoading] = useState(true);
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
   const [revenueChartData, setRevenueChartData] = useState<RevenueChartData[]>([]);
+  const [chartMonths, setChartMonths] = useState<number>(12);
+  const [selectedPlans, setSelectedPlans] = useState<string[]>(["starter", "professional", "enterprise"]);
+  const [showComparison, setShowComparison] = useState(false);
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -111,6 +122,13 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       loadDashboardData();
     }
   }, [dateRange, isSuperAdmin]);
+
+  // Reload chart when filters change
+  useEffect(() => {
+    if (isSuperAdmin && superAdminStats) {
+      loadRevenueTrendWithFilters();
+    }
+  }, [chartMonths, selectedPlans]);
 
   const loadSuperAdminStats = async () => {
     setLoading(true);
@@ -146,12 +164,27 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         agenciesByPlan,
       });
 
-      // Load revenue trend data for last 12 months
-      await loadRevenueTrend(agencies || []);
+      // Load revenue trend data
+      await loadRevenueTrendWithFilters();
     } catch (error) {
       console.error('Super admin stats error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRevenueTrendWithFilters = async () => {
+    try {
+      // Get all agencies with filters
+      const { data: agencies, error } = await supabase
+        .from('agencies')
+        .select('id, active, subscription_status, plan_type, monthly_message_count, created_at')
+        .in('plan_type', selectedPlans.length > 0 ? selectedPlans : ['starter', 'professional', 'enterprise']);
+
+      if (error) throw error;
+      await loadRevenueTrend(agencies || []);
+    } catch (error) {
+      console.error('Error loading filtered data:', error);
     }
   };
 
@@ -163,27 +196,34 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         enterprise: 14999,
       };
 
-      // Generate last 12 months
+      // Generate months based on selected range
       const months: RevenueChartData[] = [];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = chartMonths - 1; i >= 0; i--) {
         const monthDate = subMonths(new Date(), i);
         const monthStart = startOfMonth(monthDate);
         const monthEnd = endOfMonth(monthDate);
         const monthLabel = format(monthDate, 'MMM yy', { locale: tr });
 
-        // Count new agencies added in this month
+        // Count new agencies added in this month (filtered by selected plans)
         const newAgenciesInMonth = agencies.filter(a => {
           const createdDate = new Date(a.created_at);
           return createdDate >= monthStart && createdDate <= monthEnd;
         }).length;
 
-        // Get payment transactions for this month to calculate revenue
-        const { data: transactions } = await supabase
+        // Get payment transactions for this month
+        let transactionQuery = supabase
           .from('payment_transactions')
-          .select('amount, status')
+          .select('amount, status, plan_type')
           .eq('status', 'success')
           .gte('created_at', monthStart.toISOString())
           .lte('created_at', monthEnd.toISOString());
+
+        // Filter by selected plans
+        if (selectedPlans.length > 0) {
+          transactionQuery = transactionQuery.in('plan_type', selectedPlans);
+        }
+
+        const { data: transactions } = await transactionQuery;
 
         // Calculate revenue from successful transactions
         const monthRevenue = transactions?.reduce((sum, t) => sum + (Number(t.amount) || 0), 0) || 0;
@@ -199,6 +239,14 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
     } catch (error) {
       console.error('Error loading revenue trend:', error);
     }
+  };
+
+  const handlePlanToggle = (plan: string) => {
+    setSelectedPlans(prev => 
+      prev.includes(plan) 
+        ? prev.filter(p => p !== plan)
+        : [...prev, plan]
+    );
   };
 
   const loadDashboardData = async () => {
@@ -534,7 +582,94 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         {/* Revenue Trend Chart */}
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle>Son 12 Ay - Gelir ve Büyüme Trendi</CardTitle>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle>Gelir ve Büyüme Trendi</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Gerçek ödeme verilerine dayalı analiz
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Filter className="w-4 h-4" />
+                      Filtreler
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80" align="end">
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium mb-3">Tarih Aralığı</h4>
+                        <Select
+                          value={chartMonths.toString()}
+                          onValueChange={(value) => setChartMonths(parseInt(value))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="3">Son 3 Ay</SelectItem>
+                            <SelectItem value="6">Son 6 Ay</SelectItem>
+                            <SelectItem value="12">Son 12 Ay</SelectItem>
+                            <SelectItem value="24">Son 24 Ay</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium mb-3">Plan Tipleri</h4>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="starter"
+                              checked={selectedPlans.includes("starter")}
+                              onCheckedChange={() => handlePlanToggle("starter")}
+                            />
+                            <label htmlFor="starter" className="text-sm cursor-pointer">
+                              Başlangıç (2.999₺/ay)
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="professional"
+                              checked={selectedPlans.includes("professional")}
+                              onCheckedChange={() => handlePlanToggle("professional")}
+                            />
+                            <label htmlFor="professional" className="text-sm cursor-pointer">
+                              Profesyonel (7.999₺/ay)
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="enterprise"
+                              checked={selectedPlans.includes("enterprise")}
+                              onCheckedChange={() => handlePlanToggle("enterprise")}
+                            />
+                            <label htmlFor="enterprise" className="text-sm cursor-pointer">
+                              Kurumsal (14.999₺/ay)
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="comparison"
+                            checked={showComparison}
+                            onCheckedChange={(checked) => setShowComparison(!!checked)}
+                          />
+                          <label htmlFor="comparison" className="text-sm cursor-pointer">
+                            Önceki dönem ile karşılaştır
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
@@ -590,18 +725,43 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             </ResponsiveContainer>
             <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-border">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">Toplam Gelir (12 Ay)</p>
+                <p className="text-sm text-muted-foreground">Toplam Gelir ({chartMonths} Ay)</p>
                 <p className="text-2xl font-bold text-primary mt-1">
                   {revenueChartData.reduce((sum, d) => sum + d.revenue, 0).toLocaleString('tr-TR')}₺
                 </p>
+                {showComparison && revenueChartData.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Ortalama: {Math.round(revenueChartData.reduce((sum, d) => sum + d.revenue, 0) / revenueChartData.length).toLocaleString('tr-TR')}₺/ay
+                  </p>
+                )}
               </div>
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">Yeni Acente (12 Ay)</p>
+                <p className="text-sm text-muted-foreground">Yeni Acente ({chartMonths} Ay)</p>
                 <p className="text-2xl font-bold text-green-600 mt-1">
                   {revenueChartData.reduce((sum, d) => sum + d.newAgencies, 0)}
                 </p>
+                {showComparison && revenueChartData.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Ortalama: {Math.round(revenueChartData.reduce((sum, d) => sum + d.newAgencies, 0) / revenueChartData.length * 10) / 10}/ay
+                  </p>
+                )}
               </div>
             </div>
+            
+            {selectedPlans.length > 0 && selectedPlans.length < 3 && (
+              <div className="mt-4 p-3 bg-accent/30 border border-border rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Aktif Filtre:</strong> Sadece {selectedPlans.map(p => {
+                    const labels: Record<string, string> = {
+                      starter: "Başlangıç",
+                      professional: "Profesyonel",
+                      enterprise: "Kurumsal"
+                    };
+                    return labels[p];
+                  }).join(", ")} planları gösteriliyor
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
