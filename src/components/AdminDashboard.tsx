@@ -38,6 +38,9 @@ interface Stats {
   totalRegistrations: number;
   activeDates: number;
   pendingRegistrations: number;
+  totalRevenue?: number;
+  avgBasket?: number;
+  confirmedRegistrations?: number;
 }
 
 interface RecentRegistration {
@@ -104,7 +107,10 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
     totalTours: 0,
     totalRegistrations: 0,
     activeDates: 0,
-    pendingRegistrations: 0
+    pendingRegistrations: 0,
+    totalRevenue: 0,
+    avgBasket: 0,
+    confirmedRegistrations: 0
   });
   const [recentRegistrations, setRecentRegistrations] = useState<RecentRegistration[]>([]);
   const [popularTours, setPopularTours] = useState<PopularTour[]>([]);
@@ -275,7 +281,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
 
       // Get statistics
       let toursQuery = supabase.from("tours").select("id", { count: "exact", head: true });
-      let registrationsQuery = supabase.from("registrations").select("id, status, created_at", { count: "exact" });
+      let registrationsQuery = supabase.from("registrations").select("id, status, created_at, tour_dates(price_adult), pax", { count: "exact" });
       let datesQuery = supabase.from("tour_dates").select("id, departure_date", { count: "exact" });
 
       // Apply date filters
@@ -298,11 +304,25 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         (r) => r.status === "NEW" || r.status === "PENDING"
       ).length || 0;
 
+      // Calculate revenue metrics
+      const confirmedRegistrations = registrationsResult.data?.filter(r => r.status === "CONFIRMED") || [];
+      const totalRevenue = confirmedRegistrations.reduce((sum, r: any) => {
+        const price = r.tour_dates?.price_adult || 0;
+        return sum + (price * (r.pax || 1));
+      }, 0);
+
+      const avgBasket = confirmedRegistrations.length > 0 
+        ? totalRevenue / confirmedRegistrations.length 
+        : 0;
+
       setStats({
         totalTours: toursResult.count || 0,
         totalRegistrations: registrationsResult.count || 0,
         activeDates: datesResult.count || 0,
-        pendingRegistrations: pendingCount
+        pendingRegistrations: pendingCount,
+        totalRevenue,
+        avgBasket,
+        confirmedRegistrations: confirmedRegistrations.length
       });
 
       // Get recent registrations
@@ -864,8 +884,68 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
 
   return (
     <div className="space-y-6">
-      {/* Usage Stats */}
-      <UsageStats />
+      {/* Financial & Performance Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.totalRevenue?.toLocaleString('tr-TR')}₺
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Onaylanmış rezervasyonlardan
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ortalama Sepet</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.avgBasket?.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}₺
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Rezervasyon başına
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Dönüşüm Oranı</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              %{stats.totalRegistrations > 0 
+                ? ((stats.confirmedRegistrations || 0) / stats.totalRegistrations * 100).toFixed(1)
+                : 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {stats.confirmedRegistrations} / {stats.totalRegistrations} kayıt
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bekleyen Kayıt</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pendingRegistrations}</div>
+            <p className="text-xs text-muted-foreground">
+              İşlem bekliyor
+            </p>
+          </CardContent>
+        </Card>
+      </div>
       
       {/* Date Range Filter */}
       <Card className="shadow-card">
@@ -1047,7 +1127,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         {/* Popular Tours */}
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle>Popüler Turlar</CardTitle>
+            <CardTitle>En Popüler Destinasyonlar</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -1069,6 +1149,11 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Usage Stats at Bottom */}
+      <div className="pt-4">
+        <UsageStats />
       </div>
     </div>
   );
