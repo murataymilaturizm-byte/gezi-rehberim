@@ -134,6 +134,8 @@ export type Database = {
           note: string | null
           pax: number
           phone: string
+          reminder_sent: boolean | null
+          reminder_sent_at: string | null
           status: Database["public"]["Enums"]["registration_status"]
           tour_date_id: string
           tour_id: string
@@ -146,6 +148,8 @@ export type Database = {
           note?: string | null
           pax?: number
           phone: string
+          reminder_sent?: boolean | null
+          reminder_sent_at?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           tour_date_id: string
           tour_id: string
@@ -158,6 +162,8 @@ export type Database = {
           note?: string | null
           pax?: number
           phone?: string
+          reminder_sent?: boolean | null
+          reminder_sent_at?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           tour_date_id?: string
           tour_id?: string

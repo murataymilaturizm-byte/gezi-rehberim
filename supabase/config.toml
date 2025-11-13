@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.sipay-callback]
 verify_jwt = false
+
+[functions.send-tour-reminders]
+verify_jwt = false
