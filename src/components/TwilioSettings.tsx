@@ -111,9 +111,15 @@ export const TwilioSettings = () => {
     }
 
     setSaving(true);
+    
+    console.log("Twilio Settings - Updating agency:", agencyId);
+    console.log("Twilio Settings - Form data:", {
+      ...formData,
+      twilio_auth_token: "***hidden***" // Don't log sensitive data
+    });
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("agencies")
         .update({
           twilio_account_sid: formData.twilio_account_sid.trim(),
@@ -122,6 +128,8 @@ export const TwilioSettings = () => {
           active: true // Activate agency after Twilio is configured
         })
         .eq("id", agencyId);
+
+      console.log("Twilio Settings - Update result:", { data, error });
 
       if (error) throw error;
 
