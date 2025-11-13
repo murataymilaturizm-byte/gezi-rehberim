@@ -17,9 +17,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X, Building2, MessageSquare, CheckCircle, XCircle } from "lucide-react";
-import { format } from "date-fns";
+import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { tr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -79,6 +79,12 @@ interface SuperAdminStats {
   };
 }
 
+interface RevenueChartData {
+  month: string;
+  revenue: number;
+  newAgencies: number;
+}
+
 interface AdminDashboardProps {
   isSuperAdmin?: boolean;
 }
@@ -96,6 +102,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
+  const [revenueChartData, setRevenueChartData] = useState<RevenueChartData[]>([]);
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -111,7 +118,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       // Get all agencies
       const { data: agencies, error: agenciesError } = await supabase
         .from('agencies')
-        .select('id, active, subscription_status, plan_type, monthly_message_count');
+        .select('id, active, subscription_status, plan_type, monthly_message_count, created_at');
 
       if (agenciesError) throw agenciesError;
 
@@ -138,10 +145,59 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         totalMessagesUsed,
         agenciesByPlan,
       });
+
+      // Load revenue trend data for last 12 months
+      await loadRevenueTrend(agencies || []);
     } catch (error) {
       console.error('Super admin stats error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRevenueTrend = async (agencies: any[]) => {
+    try {
+      const planPrices = {
+        starter: 2999,
+        professional: 7999,
+        enterprise: 14999,
+      };
+
+      // Generate last 12 months
+      const months: RevenueChartData[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const monthDate = subMonths(new Date(), i);
+        const monthStart = startOfMonth(monthDate);
+        const monthEnd = endOfMonth(monthDate);
+        const monthLabel = format(monthDate, 'MMM yy', { locale: tr });
+
+        // Count new agencies added in this month
+        const newAgenciesInMonth = agencies.filter(a => {
+          const createdDate = new Date(a.created_at);
+          return createdDate >= monthStart && createdDate <= monthEnd;
+        }).length;
+
+        // Get payment transactions for this month to calculate revenue
+        const { data: transactions } = await supabase
+          .from('payment_transactions')
+          .select('amount, status')
+          .eq('status', 'success')
+          .gte('created_at', monthStart.toISOString())
+          .lte('created_at', monthEnd.toISOString());
+
+        // Calculate revenue from successful transactions
+        const monthRevenue = transactions?.reduce((sum, t) => sum + (Number(t.amount) || 0), 0) || 0;
+
+        months.push({
+          month: monthLabel,
+          revenue: monthRevenue,
+          newAgencies: newAgenciesInMonth,
+        });
+      }
+
+      setRevenueChartData(months);
+    } catch (error) {
+      console.error('Error loading revenue trend:', error);
     }
   };
 
@@ -474,6 +530,80 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         </div>
 
         {/* Plan Distribution - Removed old cards */}
+
+        {/* Revenue Trend Chart */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>Son 12 Ay - Gelir ve Büyüme Trendi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={revenueChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="month" 
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis 
+                  yAxisId="left"
+                  style={{ fontSize: '12px' }}
+                  tickFormatter={(value) => `${(value / 1000).toFixed(0)}K₺`}
+                />
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  style={{ fontSize: '12px' }}
+                />
+                <Tooltip 
+                  formatter={(value: any, name: string) => {
+                    if (name === 'Gelir') {
+                      return [`${Number(value).toLocaleString('tr-TR')}₺`, name];
+                    }
+                    return [value, name];
+                  }}
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Legend />
+                <Line 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2}
+                  name="Gelir"
+                  dot={{ fill: 'hsl(var(--primary))' }}
+                />
+                <Line 
+                  yAxisId="right"
+                  type="monotone" 
+                  dataKey="newAgencies" 
+                  stroke="hsl(142, 76%, 36%)" 
+                  strokeWidth={2}
+                  name="Yeni Acenteler"
+                  dot={{ fill: 'hsl(142, 76%, 36%)' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-border">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">Toplam Gelir (12 Ay)</p>
+                <p className="text-2xl font-bold text-primary mt-1">
+                  {revenueChartData.reduce((sum, d) => sum + d.revenue, 0).toLocaleString('tr-TR')}₺
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">Yeni Acente (12 Ay)</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">
+                  {revenueChartData.reduce((sum, d) => sum + d.newAgencies, 0)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Info Message */}
         <Card className="shadow-card bg-accent/30 border-primary/20">
