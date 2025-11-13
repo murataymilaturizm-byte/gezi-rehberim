@@ -324,7 +324,7 @@ const Index = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
-                <a href="/auth">
+                <a href="/auth?mode=signup">
                   14 Gün Ücretsiz Dene
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </a>
@@ -708,7 +708,7 @@ const Index = () => {
               Bu bir demo chatbot'tur. Gerçek sisteminizde kendi turlarınızı ve ayarlarınızı kullanabilirsiniz.
             </p>
             <Button size="lg" className="bg-gradient-ocean hover:opacity-90" asChild>
-              <a href="/auth">
+              <a href="/auth?mode=signup">
                 Hemen Başlayın
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>
@@ -731,7 +731,7 @@ const Index = () => {
             {/* 14 Days Free Trial Banner */}
             <div className="mb-6">
               <a 
-                href="/auth"
+                href="/auth?mode=signup"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-ocean text-primary-foreground mb-4 animate-pulse hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <Sparkles className="w-5 h-5" />
@@ -996,7 +996,7 @@ const Index = () => {
                 Kredi kartı bilgisi gerekmez.
               </p>
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
-                <a href="/auth">
+                <a href="/auth?mode=signup">
                   Ücretsiz Deneyin
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </a>
