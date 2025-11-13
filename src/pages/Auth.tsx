@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plane } from "lucide-react";
+import turzzLogo from "@/assets/turzz-logo-new.png";
 import { z } from "zod";
 
 const authSchema = z.object({
@@ -179,9 +180,7 @@ const Auth = () => {
       <Card className="w-full max-w-2xl shadow-card">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-ocean flex items-center justify-center">
-              <Plane className="w-8 h-8 text-primary-foreground" />
-            </div>
+            <img src={turzzLogo} alt="Turzz Logo" className="h-32 w-auto" />
           </div>
           <CardTitle className="text-2xl">
             {isLogin ? "Admin Paneli" : "TurzzAI'ya Hoş Geldiniz"}
