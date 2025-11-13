@@ -372,7 +372,7 @@ const Admin = () => {
                 <img 
                   src={turzzLogo} 
                   alt="Turzz AI Logo" 
-                  className="h-10 w-auto object-contain"
+                  className="h-14 w-auto object-contain"
                 />
                 <h1 className="text-xl font-bold text-foreground">Acente Paneli</h1>
               </div>
