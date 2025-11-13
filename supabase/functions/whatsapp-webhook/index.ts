@@ -47,11 +47,11 @@ serve(async (req) => {
     const userPhone = from.replace('whatsapp:', '');
     const twilioPhone = to.replace('whatsapp:', '');
     
-    // Bu Twilio numarasına sahip acente'yi bul
+    // Bu WhatsApp numarasına sahip acente'yi bul (merkezi Twilio yapısı)
     const { data: agency, error: agencyError } = await supabase
       .from('agencies')
       .select('*')
-      .eq('twilio_phone_number', twilioPhone)
+      .eq('whatsapp_phone_number', twilioPhone)
       .eq('active', true)
       .single();
 
@@ -737,12 +737,12 @@ async function createRegistration(supabase: any, entities: any, from: string, ag
     // Agency bilgisini al
     const { data: agency } = await supabase
       .from('agencies')
-      .select('*')
+      .select('whatsapp_phone_number')
       .eq('id', agency_id)
       .single();
     
-    if (agency) {
-      sendWhatsAppMessage(userPhone, message, agency).catch(err => {
+    if (agency && agency.whatsapp_phone_number) {
+      sendWhatsAppMessage(userPhone, agency.whatsapp_phone_number, message).catch(err => {
         console.error('WhatsApp mesajı gönderilemedi:', err);
       });
     }
@@ -754,19 +754,19 @@ async function createRegistration(supabase: any, entities: any, from: string, ag
   }
 }
 
-// WhatsApp mesajı gönderme - zengin medya desteği ile
+// WhatsApp mesajı gönderme - merkezi Twilio ile zengin medya desteği
 async function sendWhatsAppMessage(
-  to: string, 
-  message: string, 
-  agency: any,
+  to: string,
+  from: string, // WhatsApp Business phone number
+  message: string,
   mediaUrls?: string[]
 ) {
-  const accountSid = agency.twilio_account_sid;
-  const authToken = agency.twilio_auth_token;
-  const twilioPhone = agency.twilio_phone_number;
+  // Merkezi Twilio credentials kullan
+  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
 
-  if (!accountSid || !authToken || !twilioPhone) {
-    console.error('Twilio credentials eksik');
+  if (!accountSid || !authToken || !from) {
+    console.error('Merkezi Twilio credentials veya from numarası eksik');
     return;
   }
 
@@ -774,7 +774,7 @@ async function sendWhatsAppMessage(
   const auth = btoa(`${accountSid}:${authToken}`);
   
   const bodyParams: Record<string, string> = {
-    From: `whatsapp:${twilioPhone}`,
+    From: `whatsapp:${from}`,
     To: `whatsapp:${to}`,
     Body: message
   };
@@ -971,7 +971,8 @@ async function sendTourWithMedia(
   // Eğer tur'un fotoğrafı varsa medya ile gönder
   const mediaUrls = tour.image_url ? [tour.image_url] : undefined;
   
-  await sendWhatsAppMessage(to, message, agency, mediaUrls);
+  // Merkezi Twilio için agency'nin WhatsApp numarasını kullan
+  await sendWhatsAppMessage(to, agency.whatsapp_phone_number, message, mediaUrls);
 }
 
 // Mesajı veritabanına kaydet
