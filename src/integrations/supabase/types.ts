@@ -34,7 +34,7 @@ export type Database = {
           twilio_account_sid: string
           twilio_auth_token: string
           twilio_phone_number: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           active?: boolean | null
@@ -55,7 +55,7 @@ export type Database = {
           twilio_account_sid: string
           twilio_auth_token: string
           twilio_phone_number: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           active?: boolean | null
@@ -76,7 +76,7 @@ export type Database = {
           twilio_account_sid?: string
           twilio_auth_token?: string
           twilio_phone_number?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

@@ -1,9 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const DEMO_AGENCY_ID = "00000000-0000-0000-0000-000000000000";
+
+async function saveMessage(supabase: any, sessionId: string, role: string, content: string) {
+  try {
+    await supabase
+      .from('whatsapp_conversations')
+      .insert({
+        phone: `demo_${sessionId}`,
+        role: role,
+        content: content,
+        agency_id: DEMO_AGENCY_ID
+      });
+  } catch (error) {
+    console.error('Error saving demo message:', error);
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -11,12 +29,21 @@ serve(async (req) => {
   }
 
   try {
-    const { message, history = [] } = await req.json();
+    const { message, history = [], sessionId = 'default' } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Save user message
+    await saveMessage(supabase, sessionId, 'user', message);
 
     // Bugünün tarihini al
     const today = new Date();
@@ -146,6 +173,9 @@ REZERVASYON SÜRECİ:
 
     const data = await response.json();
     const aiMessage = data.choices[0]?.message?.content || "Üzgünüm, şu anda yanıt veremiyorum.";
+
+    // Save assistant message
+    await saveMessage(supabase, sessionId, 'assistant', aiMessage);
 
     return new Response(
       JSON.stringify({ message: aiMessage }),

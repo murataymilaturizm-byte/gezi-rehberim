@@ -13,6 +13,14 @@ interface Message {
 
 export const DemoChat = () => {
   const { toast } = useToast();
+  const [sessionId] = useState(() => {
+    // Create or get existing session ID
+    const stored = localStorage.getItem('demo_chat_session_id');
+    if (stored) return stored;
+    const newId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem('demo_chat_session_id', newId);
+    return newId;
+  });
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -49,7 +57,8 @@ export const DemoChat = () => {
           },
           body: JSON.stringify({ 
             message: userMessage,
-            history: messages.slice(-10) // Son 10 mesajı gönder
+            history: messages.slice(-10), // Son 10 mesajı gönder
+            sessionId: sessionId
           }),
         }
       );
