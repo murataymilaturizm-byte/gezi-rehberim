@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { SalesChatWidget } from "@/components/SalesChatWidget";
 
 const Index = () => {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
@@ -1032,6 +1033,9 @@ const Index = () => {
           <ArrowUp className="w-5 h-5" />
         </Button>
       )}
+
+      {/* Sales Chat Widget */}
+      <SalesChatWidget />
     </div>
   );
 };
