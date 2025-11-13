@@ -36,14 +36,14 @@ serve(async (req) => {
 FİYATLANDIRMA (Tüm paketlerde 14 günlük ücretsiz deneme dahil):
 
 1. BAŞLANGIÇ PAKETİ - 2.999 TL/ay
-   - 100 konuşma/ay dahil
+   - 500 WhatsApp mesajı/ay dahil
    - Temel analitik raporları
    - E-posta desteği
    - Sipay ödeme entegrasyonu
    - Küçük acenteler için ideal
 
-2. PROFESYONEL PAKET - 4.999 TL/ay (EN POPÜLER)
-   - 500 konuşma/ay dahil
+2. PROFESYONEL PAKET - 7.999 TL/ay (EN POPÜLER)
+   - 3.000 WhatsApp mesajı/ay dahil
    - Gelişmiş analitik ve raporlama
    - Öncelikli destek
    - Özel raporlama özellikleri
@@ -51,7 +51,7 @@ FİYATLANDIRMA (Tüm paketlerde 14 günlük ücretsiz deneme dahil):
    - Büyüyen işletmeler için ideal
 
 3. KURUMSAL PAKET - Özel Fiyatlandırma
-   - Sınırsız konuşma
+   - Sınırsız WhatsApp mesajı
    - Özel yazılım geliştirme desteği
    - 7/24 premium destek
    - API erişimi
