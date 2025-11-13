@@ -125,14 +125,13 @@ const Index = () => {
       period: "/ay",
       description: "Küçük acenteler ve yeni başlayanlar için",
       features: [
-        "✅ 500 WhatsApp mesajı/ay (~16 mesaj/gün)",
-        "👤 1 kullanıcı hesabı",
+        "💬 500 WhatsApp mesajı/ay (~16 mesaj/gün)",
         "📊 Temel raporlama ve istatistikler",
         "🗂️ Sınırsız tur ekleme",
         "📝 Rezervasyon yönetimi",
         "📧 Email destek (48 saat)",
         "🤖 AI destekli otomatik cevaplar",
-        "💾 30 gün veri saklama"
+        "💾 30 gün konuşma geçmişi"
       ],
       highlighted: false
     },
@@ -143,16 +142,16 @@ const Index = () => {
       period: "/ay",
       description: "Büyüyen işletmeler ve aktif acenteler için",
       features: [
-        "✅ 2.000 WhatsApp mesajı/ay (~66 mesaj/gün)",
-        "👥 5 kullanıcı hesabı",
+        "💬 2.000 WhatsApp mesajı/ay (~66 mesaj/gün)",
         "📈 Gelişmiş raporlama ve analizler",
         "🗂️ Sınırsız tur ekleme",
         "📝 Gelişmiş rezervasyon yönetimi",
-        "🎯 WhatsApp kullanıcı profilleri",
-        "⚡ Öncelikli destek (24 saat)",
+        "🎯 WhatsApp kullanıcı profilleri ve segmentasyon",
+        "⚡ Öncelikli destek (24 saat içinde)",
         "🔗 CRM entegrasyon desteği",
-        "💾 90 gün veri saklama",
-        "📱 Özel WhatsApp mesaj şablonları"
+        "💾 90 gün konuşma geçmişi",
+        "🎨 Özel WhatsApp mesaj şablonları",
+        "📱 Otomatik tur hatırlatıcıları"
       ],
       highlighted: true
     },
@@ -163,18 +162,18 @@ const Index = () => {
       period: "fiyat",
       description: "Büyük acenteler ve zincir işletmeler için",
       features: [
-        "✅ Sınırsız WhatsApp mesajı",
-        "👥 Sınırsız kullanıcı hesabı",
+        "💬 Sınırsız WhatsApp mesajı",
         "📊 Özel raporlama ve dashboardlar",
-        "🗂️ Sınırsız tur ve multi-branch desteği",
+        "🗂️ Multi-branch (çoklu şube) desteği",
         "📝 Kurumsal rezervasyon yönetimi",
-        "🎯 Gelişmiş müşteri segmentasyonu",
+        "🎯 Gelişmiş müşteri segmentasyonu ve AI analizleri",
         "🚀 7/24 öncelikli destek",
         "🔌 API erişimi ve özel entegrasyonlar",
-        "💾 Sınırsız veri saklama",
+        "💾 Sınırsız konuşma geçmişi",
         "👔 Özel hesap yöneticisi (dedicated)",
         "⚙️ Özel geliştirme ve özelleştirmeler",
-        "🔒 Kurumsal güvenlik ve SLA garantisi"
+        "🔒 Kurumsal güvenlik ve SLA garantisi",
+        "🌐 Çoklu WhatsApp hesabı desteği"
       ],
       highlighted: false
     }
