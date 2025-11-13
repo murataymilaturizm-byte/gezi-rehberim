@@ -32,6 +32,7 @@ import { tr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { UsageStats } from "@/components/UsageStats";
+import { RevenueAnalytics } from "@/components/RevenueAnalytics";
 
 interface Stats {
   totalTours: number;
@@ -614,7 +615,8 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
           </Card>
         </div>
 
-        {/* Plan Distribution - Removed old cards */}
+        {/* Real Revenue Analytics - Based on actual payment transactions */}
+        <RevenueAnalytics />
 
         {/* Revenue Trend Chart */}
         <Card className="shadow-card">
