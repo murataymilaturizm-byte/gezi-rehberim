@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,14 +25,27 @@ const signupSchema = authSchema.extend({
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  
+  // URL parametrelerinden mode, plan ve billing bilgisini al
+  const modeParam = searchParams.get("mode");
+  const planParam = searchParams.get("plan");
+  const billingParam = searchParams.get("billing");
+  
+  const [isLogin, setIsLogin] = useState(modeParam !== "signup");
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [agencyName, setAgencyName] = useState("");
   const [phone, setPhone] = useState("");
-  const [planType, setPlanType] = useState<"starter" | "professional" | "enterprise">("starter");
+  const [isYearly, setIsYearly] = useState(billingParam === "yearly");
+  const [planType, setPlanType] = useState<"starter" | "professional" | "enterprise">(
+    (planParam === "başlangıç" ? "starter" : 
+     planParam === "profesyonel" ? "professional" : 
+     planParam === "kurumsal" ? "enterprise" : 
+     "starter") as "starter" | "professional" | "enterprise"
+  );
 
   useEffect(() => {
     // Check if user is already logged in
@@ -230,6 +244,28 @@ const Auth = () => {
                       Kredi kartı gerekmez • İstediğiniz zaman iptal edebilirsiniz
                     </p>
                   </div>
+                  
+                  {/* Billing Period Toggle */}
+                  <div className="flex items-center justify-center gap-3 p-3 bg-card rounded-lg border border-border mb-3">
+                    <Label htmlFor="billing-toggle" className={!isYearly ? "font-semibold text-sm" : "text-muted-foreground text-sm"}>
+                      Aylık
+                    </Label>
+                    <Switch
+                      id="billing-toggle"
+                      checked={isYearly}
+                      onCheckedChange={setIsYearly}
+                      disabled={isLoading}
+                    />
+                    <Label htmlFor="billing-toggle" className={isYearly ? "font-semibold text-sm" : "text-muted-foreground text-sm"}>
+                      Yıllık
+                    </Label>
+                    {isYearly && (
+                      <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                        %10 İndirim
+                      </span>
+                    )}
+                  </div>
+                  
                   <div className="grid gap-3">
                     <label
                       className={`relative flex cursor-pointer rounded-lg border p-4 transition-all ${
@@ -251,11 +287,16 @@ const Auth = () => {
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Başlangıç</span>
                           <div className="text-right">
-                            <span className="text-sm text-muted-foreground line-through">2.999₺/ay</span>
+                            <span className="text-sm text-muted-foreground line-through">
+                              {isYearly ? "32.388₺/yıl" : "2.999₺/ay"}
+                            </span>
                             <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">500 mesaj/ay • Temel özellikler</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {isYearly ? "Yıllık 29.149₺ - %10 indirimli" : "Aylık 2.999₺"}
+                        </p>
                       </div>
                     </label>
 
@@ -279,11 +320,16 @@ const Auth = () => {
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Profesyonel</span>
                           <div className="text-right">
-                            <span className="text-sm text-muted-foreground line-through">7.999₺/ay</span>
+                            <span className="text-sm text-muted-foreground line-through">
+                              {isYearly ? "86.388₺/yıl" : "7.999₺/ay"}
+                            </span>
                             <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">2.000 mesaj/ay • Gelişmiş özellikler</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {isYearly ? "Yıllık 77.749₺ - %10 indirimli" : "Aylık 7.999₺"}
+                        </p>
                       </div>
                     </label>
 
@@ -307,12 +353,16 @@ const Auth = () => {
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Kurumsal</span>
                           <div className="text-right">
-                            <span className="text-sm text-muted-foreground line-through">14.999₺/ay</span>
+                            <span className="text-sm text-muted-foreground line-through">
+                              {isYearly ? "161.988₺/yıl" : "14.999₺/ay"}
+                            </span>
                             <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">Sınırsız • Tüm özellikler</p>
-                        <p className="text-xs text-muted-foreground mt-1">14 gün ücretsiz deneme sonrası</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {isYearly ? "Yıllık 145.789₺ - %10 indirimli" : "Aylık 14.999₺"}
+                        </p>
                       </div>
                     </label>
                   </div>

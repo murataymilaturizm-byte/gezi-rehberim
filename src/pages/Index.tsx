@@ -787,7 +787,7 @@ const Index = () => {
                     }`}
                     asChild
                   >
-                    <a href="/auth">
+                    <a href={`/auth?mode=signup&plan=${plan.name.toLowerCase().replace('ı', 'i')}&billing=${isYearly ? 'yearly' : 'monthly'}`}>
                       {plan.name === "Kurumsal" ? "İletişime Geç" : "Başlayın"}
                     </a>
                   </Button>
