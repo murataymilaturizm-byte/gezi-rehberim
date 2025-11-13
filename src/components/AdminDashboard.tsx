@@ -882,9 +882,10 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
     );
   }
 
+  // Normal Admin Dashboard
   return (
     <div className="space-y-6">
-      {/* Financial & Performance Metrics */}
+      {/* Top Metrics Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -895,9 +896,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             <div className="text-2xl font-bold">
               {(stats.totalRevenue || 0).toLocaleString('tr-TR')}₺
             </div>
-            <p className="text-xs text-muted-foreground">
-              Onaylanmış rezervasyonlardan
-            </p>
+            <p className="text-xs text-muted-foreground">Onaylanmış rezervasyonlar</p>
           </CardContent>
         </Card>
 
@@ -910,9 +909,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             <div className="text-2xl font-bold">
               {(stats.avgBasket || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}₺
             </div>
-            <p className="text-xs text-muted-foreground">
-              Rezervasyon başına
-            </p>
+            <p className="text-xs text-muted-foreground">Rezervasyon başına</p>
           </CardContent>
         </Card>
 
@@ -940,9 +937,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTours}</div>
-            <p className="text-xs text-muted-foreground">
-              Aktif tur sayısı
-            </p>
+            <p className="text-xs text-muted-foreground">Aktif tur sayısı</p>
           </CardContent>
         </Card>
       </div>
