@@ -53,53 +53,95 @@ serve(async (req) => {
         : {};
       
       const agencyId = metadata.agency_id || transaction.agency_id;
+      const purchaseType = metadata.purchase_type || "plan";
       const planType = metadata.plan_type || transaction.plan_type;
       const isYearly = metadata.is_yearly || transaction.is_yearly;
+      const quotaAmount = metadata.quota_amount;
 
-      // Calculate subscription end date
-      const subscriptionEndsAt = new Date();
-      if (isYearly) {
-        subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
+      if (purchaseType === "extra_quota") {
+        // Extra quota purchase - add to existing message limit
+        const { data: currentAgency } = await supabase
+          .from("agencies")
+          .select("message_limit")
+          .eq("id", agencyId)
+          .single();
+
+        const newLimit = (currentAgency?.message_limit || 0) + quotaAmount;
+
+        const { error: updateError } = await supabase
+          .from("agencies")
+          .update({
+            message_limit: newLimit,
+          })
+          .eq("id", agencyId);
+
+        if (updateError) {
+          console.error("Error updating agency quota:", updateError);
+        }
+
+        // Add to subscription history
+        await supabase
+          .from("subscription_history")
+          .insert({
+            agency_id: agencyId,
+            event_type: "quota_purchase",
+            plan_type: `extra_${quotaAmount}`,
+            amount: transaction.amount,
+            currency: "TRY",
+            payment_method: "credit_card",
+            transaction_id: transactionId,
+            status: "success",
+            notes: `${quotaAmount} mesaj ekstra kota satın alındı`,
+          });
+
+        console.log(`Extra quota purchased: ${quotaAmount} messages for agency ${agencyId}`);
       } else {
-        subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1);
+        // Plan purchase - regular subscription
+        // Calculate subscription end date
+        const subscriptionEndsAt = new Date();
+        if (isYearly) {
+          subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
+        } else {
+          subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1);
+        }
+
+        // Update agency subscription
+        const { error: updateError } = await supabase
+          .from("agencies")
+          .update({
+            plan_type: planType,
+            subscription_status: "active",
+            subscription_ends_at: subscriptionEndsAt.toISOString(),
+          })
+          .eq("id", agencyId);
+
+        if (updateError) {
+          console.error("Error updating agency:", updateError);
+        }
+
+        // Add to subscription history
+        const { error: historyError } = await supabase
+          .from("subscription_history")
+          .insert({
+            agency_id: agencyId,
+            event_type: "payment_success",
+            plan_type: planType,
+            amount: transaction.amount,
+            currency: "TRY",
+            payment_method: "credit_card",
+            transaction_id: transactionId,
+            status: "success",
+            notes: isYearly 
+              ? "Yıllık abonelik ödemesi (%10 indirimli)" 
+              : "Aylık abonelik ödemesi",
+          });
+
+        if (historyError) {
+          console.error("Error adding to history:", historyError);
+        }
+
+        console.log("Payment successful, subscription activated");
       }
-
-      // Update agency subscription
-      const { error: updateError } = await supabase
-        .from("agencies")
-        .update({
-          plan_type: planType,
-          subscription_status: "active",
-          subscription_ends_at: subscriptionEndsAt.toISOString(),
-        })
-        .eq("id", agencyId);
-
-      if (updateError) {
-        console.error("Error updating agency:", updateError);
-      }
-
-      // Add to subscription history
-      const { error: historyError } = await supabase
-        .from("subscription_history")
-        .insert({
-          agency_id: agencyId,
-          event_type: "payment_success",
-          plan_type: planType,
-          amount: transaction.amount,
-          currency: "TRY",
-          payment_method: "credit_card",
-          transaction_id: transactionId,
-          status: "success",
-          notes: isYearly 
-            ? "Yıllık abonelik ödemesi (%10 indirimli)" 
-            : "Aylık abonelik ödemesi",
-        });
-
-      if (historyError) {
-        console.error("Error adding to history:", historyError);
-      }
-
-      console.log("Payment successful, subscription activated");
     } else {
       // Payment failed, add to history
       await supabase

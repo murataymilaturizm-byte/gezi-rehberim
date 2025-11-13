@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { planType, isYearly, agencyId } = await req.json();
+    const { planType, isYearly, agencyId, purchaseType, quotaAmount } = await req.json();
 
     const SIPAY_MERCHANT_ID = Deno.env.get("SIPAY_MERCHANT_ID");
     const SIPAY_APP_SECRET = Deno.env.get("SIPAY_APP_SECRET");
@@ -35,16 +35,31 @@ serve(async (req) => {
 
     if (agencyError) throw agencyError;
 
-    // Calculate amount based on plan
-    const planPrices: Record<string, number> = {
-      starter: 3999,
-      professional: 7999,
-      enterprise: 9999,
-    };
+    let amount = 0;
+    let description = "";
+    
+    // Calculate amount based on purchase type
+    if (purchaseType === "extra_quota") {
+      // Extra quota purchase
+      const quotaPrices: Record<number, number> = {
+        500: 1500,
+        1000: 2699,
+      };
+      amount = quotaPrices[quotaAmount] || 1500;
+      description = `${quotaAmount} mesaj ekstra kota`;
+    } else {
+      // Plan purchase
+      const planPrices: Record<string, number> = {
+        starter: 3999,
+        professional: 7999,
+        enterprise: 9999,
+      };
 
-    let amount = planPrices[planType] || 3999;
-    if (isYearly) {
-      amount = amount * 12 * 0.9; // %10 discount for yearly
+      amount = planPrices[planType] || 3999;
+      if (isYearly) {
+        amount = amount * 12 * 0.9; // %10 discount for yearly
+      }
+      description = `${planType} plan ${isYearly ? "(yıllık)" : "(aylık)"}`;
     }
 
     // Generate unique order ID
@@ -66,8 +81,10 @@ serve(async (req) => {
       // Additional metadata
       metadata: JSON.stringify({
         agency_id: agencyId,
+        purchase_type: purchaseType || "plan",
         plan_type: planType,
         is_yearly: isYearly,
+        quota_amount: quotaAmount,
         amount: amount,
       }),
     };
@@ -104,10 +121,10 @@ serve(async (req) => {
       .insert({
         agency_id: agencyId,
         order_id: orderId,
-        plan_type: planType,
+        plan_type: planType || `extra_quota_${quotaAmount}`,
         amount: amount,
         currency: "TRY",
-        is_yearly: isYearly,
+        is_yearly: isYearly || false,
         status: "pending",
         sipay_response: sipayResult,
       });

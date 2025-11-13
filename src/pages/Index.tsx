@@ -159,7 +159,7 @@ const Index = () => {
       period: "/ay",
       description: "Büyüyen işletmeler ve aktif acenteler için",
       features: [
-        "💬 2.000 WhatsApp mesajı/ay (~66 mesaj/gün)",
+        "💬 3.000 WhatsApp mesajı/ay (~100 mesaj/gün)",
         "📈 Gelişmiş raporlama ve analizler",
         "🗂️ Sınırsız tur ekleme",
         "📝 Gelişmiş rezervasyon yönetimi",

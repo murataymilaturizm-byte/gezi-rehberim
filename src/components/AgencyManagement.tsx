@@ -80,6 +80,16 @@ export const AgencyManagement = () => {
     extra_messages: 0,
   });
 
+  // Get default message limit based on plan type
+  const getDefaultMessageLimit = (planType: string) => {
+    switch (planType) {
+      case "starter": return 500;
+      case "professional": return 3000;
+      case "enterprise": return -1; // unlimited
+      default: return 500;
+    }
+  };
+
   useEffect(() => {
     loadAgencies();
   }, []);
@@ -267,7 +277,7 @@ export const AgencyManagement = () => {
     setEditingPlanAgency(agency);
     const defaultLimits: Record<string, number> = {
       starter: 500,
-      professional: 2000,
+      professional: 3000,
       enterprise: -1,
     };
     setPlanFormData({
@@ -285,7 +295,7 @@ export const AgencyManagement = () => {
     try {
       const defaultLimits: Record<string, number> = {
         starter: 500,
-        professional: 2000,
+        professional: 3000,
         enterprise: -1,
       };
 

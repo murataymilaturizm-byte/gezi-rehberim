@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Calendar, Database, TrendingUp, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MessageSquare, Calendar, Database, TrendingUp, AlertCircle, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,6 +22,9 @@ export const UsageStats = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [usage, setUsage] = useState<UsageData | null>(null);
+  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+  const [selectedQuotaPackage, setSelectedQuotaPackage] = useState<"500" | "1000">("500");
 
   useEffect(() => {
     loadUsageData();
@@ -55,6 +60,50 @@ export const UsageStats = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePurchaseExtraQuota = async () => {
+    setPurchasing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get agency ID
+      const { data: agency } = await supabase
+        .from('agencies')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!agency) throw new Error("Agency not found");
+
+      // Call sipay-payment edge function with quota purchase type
+      const { data, error } = await supabase.functions.invoke('sipay-payment', {
+        body: {
+          purchaseType: 'extra_quota',
+          quotaAmount: parseInt(selectedQuotaPackage),
+          agencyId: agency.id,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.payment_url) {
+        // Redirect to Sipay payment page
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error("Payment URL not received");
+      }
+    } catch (error: any) {
+      console.error('Error purchasing quota:', error);
+      toast({
+        title: "Hata",
+        description: error.message || "Ödeme işlemi başlatılamadı",
+        variant: "destructive",
+      });
+    } finally {
+      setPurchasing(false);
     }
   };
 
@@ -214,6 +263,85 @@ export const UsageStats = () => {
               <span className="font-medium">{formatDate(usage.last_message_reset_date)}</span>
             </div>
           </div>
+
+          {/* Ekstra Kota Satın Alma Butonu - Sadece ücretli paket kullanıcıları için */}
+          {usage.subscription_status === 'active' && usage.message_limit !== -1 && (
+            <Dialog open={purchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full mt-4" size="sm">
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Ekstra Mesaj Kotası Satın Al
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Ekstra Mesaj Kotası</DialogTitle>
+                  <DialogDescription>
+                    Mevcut paketinize ek mesaj kotası ekleyin. Kota, satın aldığınız andan itibaren kullanılabilir olacaktır.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setSelectedQuotaPackage("500")}
+                      className={`w-full p-4 border-2 rounded-lg transition-all ${
+                        selectedQuotaPackage === "500"
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <div className="font-semibold text-lg">500 Mesaj</div>
+                          <div className="text-sm text-muted-foreground">Ekstra mesaj kotası</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-xl">1.500 ₺</div>
+                          <div className="text-xs text-muted-foreground">Tek seferlik</div>
+                        </div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => setSelectedQuotaPackage("1000")}
+                      className={`w-full p-4 border-2 rounded-lg transition-all ${
+                        selectedQuotaPackage === "1000"
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <div className="font-semibold text-lg">1.000 Mesaj</div>
+                          <div className="text-sm text-muted-foreground">Ekstra mesaj kotası</div>
+                          <Badge variant="secondary" className="mt-1">Popüler</Badge>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-xl">2.699 ₺</div>
+                          <div className="text-xs text-muted-foreground">Tek seferlik</div>
+                          <div className="text-xs text-green-600 font-medium">%10 tasarruf</div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="bg-muted/50 p-3 rounded-lg text-sm">
+                    <p className="text-muted-foreground">
+                      💡 Satın aldığınız ekstra kota mevcut mesaj limitinize eklenecek ve hemen kullanılabilir olacaktır.
+                    </p>
+                  </div>
+
+                  <Button 
+                    onClick={handlePurchaseExtraQuota} 
+                    disabled={purchasing}
+                    className="w-full"
+                  >
+                    {purchasing ? "Yönlendiriliyor..." : "Ödeme Sayfasına Git"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </CardContent>
       </Card>
 
