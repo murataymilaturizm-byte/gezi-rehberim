@@ -947,9 +947,6 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         </Card>
       </div>
 
-      {/* Usage Stats */}
-      <UsageStats />
-
       {/* Popular Destinations */}
       <Card className="shadow-card">
         <CardHeader>
@@ -1140,6 +1137,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
           </Table>
         </CardContent>
       </Card>
+
+      {/* Usage Stats - At Bottom */}
+      <UsageStats />
     </div>
   );
 };
