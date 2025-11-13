@@ -118,6 +118,32 @@ serve(async (req) => {
     // Kullanıcı mesajını kaydet (agency_id ile)
     await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
 
+    // Rezervasyon wizard durumunu kontrol et
+    const wizardState = await getWizardState(supabase, userPhone, agency.id);
+    
+    if (wizardState) {
+      // Wizard aktif - ilgili adımı işle
+      const wizardResponse = await handleWizardStep(
+        supabase, 
+        userPhone, 
+        agency.id, 
+        userMessage, 
+        wizardState
+      );
+      
+      // Bot cevabını kaydet
+      await saveMessage(supabase, userPhone, 'assistant', wizardResponse, agency.id);
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${wizardResponse.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+      });
+    }
+
     // Hızlı cevap butonlarını kontrol et
     const quickReplyMatch = userMessage.match(/^[1-3]$/);
     if (quickReplyMatch) {
@@ -180,9 +206,45 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
     } else if (intent.type === 'registration.request') {
-      const message = '💚 *Kayıt Olmak İstiyorsunuz - Harika!*\n\n📝 Aşağıdaki bilgileri bana gönderirseniz hemen işleme alalım:\n\n📋 *Format:*\n`Kayıt: [Tur Adı] [Tarih] [Ad Soyad] [Telefon] [Kişi Sayısı] kişi`\n\n💡 *Örnek:*\n`Kayıt: Kapadokya Turu 15.05.2026 Ahmet Yılmaz 05551234567 2 kişi`\n\n✨ Tur adı ve tarihini yukarıdaki tur listesinden görebilirsiniz!\n\n🤝 Yardıma ihtiyacınız olursa çekinmeyin!';
+      // Wizard'ı başlat
+      const tours = await searchToursWithAI(supabase, userMessage, userPhone, agency.id);
       
-      // Bot cevabını kaydet
+      if (tours.length === 0) {
+        const message = '😊 Önce bir tur aramanız gerekiyor.\n\nÖrnek: "Kapadokya turları"';
+        await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
+        
+        const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+        
+        return new Response(twiml, {
+          headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+        });
+      }
+      
+      // Wizard state'i oluştur
+      const wizardState: WizardState = {
+        step: 'tour_selection',
+        created_at: new Date().toISOString()
+      };
+      
+      await saveWizardState(supabase, userPhone, agency.id, wizardState);
+      
+      let message = '🎯 *Harika! Rezervasyon yapalım!*\n\n';
+      message += 'Son arama sonuçlarınızdan bir tur seçin:\n\n';
+      
+      tours.slice(0, 5).forEach((tour: any, idx: number) => {
+        message += `${idx + 1}. *${tour.title}*\n`;
+        if (tour.dates && tour.dates.length > 0) {
+          message += `   💰 ${formatPrice(tour.dates[0].price_adult)} ${tour.currency}/kişi\n`;
+        }
+        message += '\n';
+      });
+      
+      message += '\n💡 *Tur seçmek için numara yazın* (örn: 1)\n';
+      message += '_İptal etmek için "iptal" yazın_';
+      
       await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -852,6 +914,443 @@ async function saveMessage(supabase: any, phone: string, role: string, content: 
   } catch (error) {
     console.error('Error saving message:', error);
   }
+}
+
+// Rezervasyon wizard state yönetimi
+interface WizardState {
+  step: 'tour_selection' | 'date_selection' | 'pax_selection' | 'special_requests' | 'confirmation';
+  selected_tour?: any;
+  selected_date?: any;
+  pax_adult?: number;
+  pax_child?: number;
+  special_requests?: string;
+  created_at: string;
+}
+
+// Wizard state'i al
+async function getWizardState(supabase: any, phone: string, agency_id: string): Promise<WizardState | null> {
+  try {
+    const userProfile = await getUserProfile(supabase, phone, agency_id);
+    if (!userProfile || !userProfile.preferences?.wizard_state) {
+      return null;
+    }
+    
+    const state = userProfile.preferences.wizard_state;
+    
+    // 15 dakikadan eski wizard state'leri geçersiz
+    const stateAge = Date.now() - new Date(state.created_at).getTime();
+    if (stateAge > 15 * 60 * 1000) {
+      await clearWizardState(supabase, phone, agency_id);
+      return null;
+    }
+    
+    return state;
+  } catch (error) {
+    console.error('Error getting wizard state:', error);
+    return null;
+  }
+}
+
+// Wizard state'i kaydet
+async function saveWizardState(supabase: any, phone: string, agency_id: string, state: WizardState) {
+  try {
+    const { data: profile } = await supabase
+      .from('whatsapp_user_profiles')
+      .select('preferences')
+      .eq('phone', phone)
+      .eq('agency_id', agency_id)
+      .single();
+    
+    const preferences = profile?.preferences || {};
+    preferences.wizard_state = state;
+    
+    await supabase
+      .from('whatsapp_user_profiles')
+      .update({ preferences })
+      .eq('phone', phone)
+      .eq('agency_id', agency_id);
+  } catch (error) {
+    console.error('Error saving wizard state:', error);
+  }
+}
+
+// Wizard state'i temizle
+async function clearWizardState(supabase: any, phone: string, agency_id: string) {
+  try {
+    const { data: profile } = await supabase
+      .from('whatsapp_user_profiles')
+      .select('preferences')
+      .eq('phone', phone)
+      .eq('agency_id', agency_id)
+      .single();
+    
+    const preferences = profile?.preferences || {};
+    delete preferences.wizard_state;
+    
+    await supabase
+      .from('whatsapp_user_profiles')
+      .update({ preferences })
+      .eq('phone', phone)
+      .eq('agency_id', agency_id);
+  } catch (error) {
+    console.error('Error clearing wizard state:', error);
+  }
+}
+
+// Wizard adımını işle
+async function handleWizardStep(
+  supabase: any,
+  phone: string,
+  agency_id: string,
+  userMessage: string,
+  state: WizardState
+): Promise<string> {
+  const lowerMessage = userMessage.toLowerCase().trim();
+  
+  // İptal kontrolü
+  if (lowerMessage === 'iptal' || lowerMessage === 'vazgeç') {
+    await clearWizardState(supabase, phone, agency_id);
+    return '❌ Rezervasyon iptal edildi.\n\n💬 Size başka nasıl yardımcı olabilirim?';
+  }
+  
+  switch (state.step) {
+    case 'tour_selection':
+      return await handleTourSelection(supabase, phone, agency_id, userMessage, state);
+    
+    case 'date_selection':
+      return await handleDateSelection(supabase, phone, agency_id, userMessage, state);
+    
+    case 'pax_selection':
+      return await handlePaxSelection(supabase, phone, agency_id, userMessage, state);
+    
+    case 'special_requests':
+      return await handleSpecialRequests(supabase, phone, agency_id, userMessage, state);
+    
+    case 'confirmation':
+      return await handleConfirmation(supabase, phone, agency_id, userMessage, state);
+    
+    default:
+      await clearWizardState(supabase, phone, agency_id);
+      return 'Bir hata oluştu. Lütfen tekrar deneyin.';
+  }
+}
+
+// Tur seçimi adımı
+async function handleTourSelection(
+  supabase: any,
+  phone: string,
+  agency_id: string,
+  userMessage: string,
+  state: WizardState
+): Promise<string> {
+  // Kullanıcı bir numara girdi mi?
+  const tourNumber = parseInt(userMessage);
+  
+  if (isNaN(tourNumber) || tourNumber < 1) {
+    return '❌ Lütfen geçerli bir tur numarası girin.\n\n_İptal etmek için "iptal" yazın_';
+  }
+  
+  // Son tur aramayı al
+  const history = await getConversationHistory(supabase, phone, agency_id, 5);
+  const lastTourMessage = history.reverse().find((msg: any) => 
+    msg.role === 'assistant' && msg.content.includes('Muhteşem Tur Buldum')
+  );
+  
+  if (!lastTourMessage) {
+    await clearWizardState(supabase, phone, agency_id);
+    return '❌ Tur bulunamadı. Lütfen önce bir tur arayın.\n\nÖrnek: "Kapadokya turları"';
+  }
+  
+  // Turun bilgilerini parse et (basitleştirilmiş - gerçekte daha iyi yapılmalı)
+  const tours = await searchToursWithAI(supabase, 'son arama', phone, agency_id);
+  
+  if (tourNumber > tours.length) {
+    return `❌ Geçersiz tur numarası. Lütfen 1-${tours.length} arası bir numara girin.`;
+  }
+  
+  const selectedTour = tours[tourNumber - 1];
+  
+  // Tarihleri göster
+  if (!selectedTour.dates || selectedTour.dates.length === 0) {
+    await clearWizardState(supabase, phone, agency_id);
+    return '❌ Bu tur için tarih bulunmuyor. Lütfen başka bir tur seçin.';
+  }
+  
+  // State'i güncelle
+  state.selected_tour = selectedTour;
+  state.step = 'date_selection';
+  await saveWizardState(supabase, phone, agency_id, state);
+  
+  // Tarihleri listele
+  let message = `✅ *${selectedTour.title}* seçildi!\n\n`;
+  message += `📅 *Müsait Tarihler:*\n\n`;
+  
+  selectedTour.dates.forEach((date: any, idx: number) => {
+    const depDate = new Date(date.departure_date).toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    message += `${idx + 1}. ${depDate} - ${formatPrice(date.price_adult)} ${selectedTour.currency}/kişi\n`;
+    message += `   👥 ${date.quota} kişilik yer\n\n`;
+  });
+  
+  message += `\n💡 *Tarih seçmek için numara yazın* (örn: 1)\n`;
+  message += `_İptal etmek için "iptal" yazın_`;
+  
+  return message;
+}
+
+// Tarih seçimi adımı
+async function handleDateSelection(
+  supabase: any,
+  phone: string,
+  agency_id: string,
+  userMessage: string,
+  state: WizardState
+): Promise<string> {
+  const dateNumber = parseInt(userMessage);
+  
+  if (isNaN(dateNumber) || dateNumber < 1 || dateNumber > state.selected_tour.dates.length) {
+    return `❌ Lütfen 1-${state.selected_tour.dates.length} arası bir numara girin.\n\n_İptal etmek için "iptal" yazın_`;
+  }
+  
+  const selectedDate = state.selected_tour.dates[dateNumber - 1];
+  
+  // State'i güncelle
+  state.selected_date = selectedDate;
+  state.step = 'pax_selection';
+  await saveWizardState(supabase, phone, agency_id, state);
+  
+  const depDate = new Date(selectedDate.departure_date).toLocaleDateString('tr-TR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+  
+  let message = `✅ *Tarih seçildi:* ${depDate}\n\n`;
+  message += `👥 *Kişi Sayısı*\n\n`;
+  message += `Kaç kişi katılacaksınız?\n\n`;
+  message += `📝 *Format:*\n`;
+  message += `• Sadece yetişkin: "2 yetişkin" veya "2"\n`;
+  message += `• Yetişkin + Çocuk: "2 yetişkin 1 çocuk"\n\n`;
+  message += `💰 *Fiyatlar:*\n`;
+  message += `• Yetişkin: ${formatPrice(selectedDate.price_adult)} ${state.selected_tour.currency}\n`;
+  if (selectedDate.price_child) {
+    message += `• Çocuk: ${formatPrice(selectedDate.price_child)} ${state.selected_tour.currency}\n`;
+  }
+  if (selectedDate.price_single) {
+    message += `• Tek kişi ek: ${formatPrice(selectedDate.price_single)} ${state.selected_tour.currency}\n`;
+  }
+  
+  message += `\n_İptal etmek için "iptal" yazın_`;
+  
+  return message;
+}
+
+// Kişi sayısı adımı
+async function handlePaxSelection(
+  supabase: any,
+  phone: string,
+  agency_id: string,
+  userMessage: string,
+  state: WizardState
+): Promise<string> {
+  // Kişi sayısını parse et
+  const adultMatch = userMessage.match(/(\d+)\s*(?:yetişkin)?/i);
+  const childMatch = userMessage.match(/(\d+)\s*çocuk/i);
+  
+  if (!adultMatch) {
+    return '❌ Lütfen kişi sayısını belirtin.\n\nÖrnek: "2 yetişkin" veya "2 yetişkin 1 çocuk"\n\n_İptal etmek için "iptal" yazın_';
+  }
+  
+  const paxAdult = parseInt(adultMatch[1]);
+  const paxChild = childMatch ? parseInt(childMatch[1]) : 0;
+  
+  if (paxAdult < 1 || paxAdult > 20) {
+    return '❌ Yetişkin sayısı 1-20 arası olmalıdır.';
+  }
+  
+  if (paxChild < 0 || paxChild > 10) {
+    return '❌ Çocuk sayısı 0-10 arası olmalıdır.';
+  }
+  
+  const totalPax = paxAdult + paxChild;
+  if (totalPax > state.selected_date.quota) {
+    return `❌ Toplam kişi sayısı (${totalPax}) kontenjanı (${state.selected_date.quota}) aşıyor.\n\nLütfen daha az kişi sayısı belirtin.`;
+  }
+  
+  // Fiyat hesapla
+  let totalPrice = paxAdult * state.selected_date.price_adult;
+  if (paxChild > 0 && state.selected_date.price_child) {
+    totalPrice += paxChild * state.selected_date.price_child;
+  }
+  
+  // Tek kişi ek ücreti
+  if (paxAdult === 1 && paxChild === 0 && state.selected_date.price_single) {
+    totalPrice += state.selected_date.price_single;
+  }
+  
+  // State'i güncelle
+  state.pax_adult = paxAdult;
+  state.pax_child = paxChild;
+  state.step = 'special_requests';
+  await saveWizardState(supabase, phone, agency_id, state);
+  
+  let message = `✅ *Kişi Sayısı Kaydedildi*\n\n`;
+  message += `👥 ${paxAdult} Yetişkin`;
+  if (paxChild > 0) {
+    message += ` + ${paxChild} Çocuk`;
+  }
+  message += `\n\n`;
+  
+  message += `💰 *Toplam Fiyat:* ${formatPrice(totalPrice)} ${state.selected_tour.currency}\n\n`;
+  
+  message += `📝 *Özel İstekler*\n\n`;
+  message += `Özel bir isteğiniz var mı?\n`;
+  message += `(Diyet, ulaşım, vb.)\n\n`;
+  message += `• Varsa yazın\n`;
+  message += `• Yoksa "yok" yazın\n\n`;
+  message += `_İptal etmek için "iptal" yazın_`;
+  
+  return message;
+}
+
+// Özel istekler adımı
+async function handleSpecialRequests(
+  supabase: any,
+  phone: string,
+  agency_id: string,
+  userMessage: string,
+  state: WizardState
+): Promise<string> {
+  const lowerMessage = userMessage.toLowerCase().trim();
+  
+  // Özel istek kaydet
+  if (lowerMessage !== 'yok' && lowerMessage !== 'hayır') {
+    state.special_requests = userMessage;
+  }
+  
+  state.step = 'confirmation';
+  await saveWizardState(supabase, phone, agency_id, state);
+  
+  // Özet göster
+  const depDate = new Date(state.selected_date.departure_date).toLocaleDateString('tr-TR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+  
+  let totalPrice = state.pax_adult! * state.selected_date.price_adult;
+  if (state.pax_child && state.pax_child > 0 && state.selected_date.price_child) {
+    totalPrice += state.pax_child * state.selected_date.price_child;
+  }
+  if (state.pax_adult === 1 && (!state.pax_child || state.pax_child === 0) && state.selected_date.price_single) {
+    totalPrice += state.selected_date.price_single;
+  }
+  
+  let message = `📋 *REZERVASYON ÖZETİ*\n`;
+  message += `${'═'.repeat(30)}\n\n`;
+  
+  message += `🎯 *Tur:* ${state.selected_tour.title}\n`;
+  message += `📍 *Destinasyon:* ${state.selected_tour.destination}\n`;
+  message += `📅 *Tarih:* ${depDate}\n`;
+  message += `👥 *Kişi:* ${state.pax_adult} Yetişkin`;
+  if (state.pax_child && state.pax_child > 0) {
+    message += ` + ${state.pax_child} Çocuk`;
+  }
+  message += `\n\n`;
+  
+  if (state.special_requests) {
+    message += `📝 *Özel İstek:* ${state.special_requests}\n\n`;
+  }
+  
+  message += `💰 *TOPLAM FİYAT:* \`${formatPrice(totalPrice)} ${state.selected_tour.currency}\`\n\n`;
+  message += `${'═'.repeat(30)}\n\n`;
+  
+  message += `✅ *Onaylamak için "onayla" yazın*\n`;
+  message += `❌ *İptal etmek için "iptal" yazın*`;
+  
+  return message;
+}
+
+// Onay adımı
+async function handleConfirmation(
+  supabase: any,
+  phone: string,
+  agency_id: string,
+  userMessage: string,
+  state: WizardState
+): Promise<string> {
+  const lowerMessage = userMessage.toLowerCase().trim();
+  
+  if (lowerMessage !== 'onayla' && lowerMessage !== 'evet' && lowerMessage !== 'tamam') {
+    return '❌ Lütfen "onayla" yazarak rezervasyonu onaylayın.\n\n_İptal etmek için "iptal" yazın_';
+  }
+  
+  // Rezervasyon oluştur
+  try {
+    const userProfile = await getUserProfile(supabase, phone, agency_id);
+    
+    const { data: registration, error } = await supabase
+      .from('registrations')
+      .insert({
+        tour_id: state.selected_tour.id,
+        tour_date_id: state.selected_date.id,
+        full_name: userProfile?.full_name || 'WhatsApp Kullanıcısı',
+        phone: phone,
+        pax: state.pax_adult! + (state.pax_child || 0),
+        status: 'NEW',
+        note: `WhatsApp Wizard Rezervasyon\nYetişkin: ${state.pax_adult}\nÇocuk: ${state.pax_child || 0}\nÖzel İstek: ${state.special_requests || 'Yok'}`,
+        agency_id: agency_id
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Wizard state'i temizle
+    await clearWizardState(supabase, phone, agency_id);
+    
+    const depDate = new Date(state.selected_date.departure_date).toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    let totalPrice = state.pax_adult! * state.selected_date.price_adult;
+    if (state.pax_child && state.pax_child > 0 && state.selected_date.price_child) {
+      totalPrice += state.pax_child * state.selected_date.price_child;
+    }
+    if (state.pax_adult === 1 && (!state.pax_child || state.pax_child === 0) && state.selected_date.price_single) {
+      totalPrice += state.selected_date.price_single;
+    }
+    
+    let message = `🎉 *REZERVASYON TAMAMLANDI!*\n\n`;
+    message += `✅ Rezervasyonunuz başarıyla oluşturuldu.\n\n`;
+    message += `📋 *Rezervasyon No:* ${registration.id.substring(0, 8)}\n`;
+    message += `🎯 *Tur:* ${state.selected_tour.title}\n`;
+    message += `📅 *Tarih:* ${depDate}\n`;
+    message += `👥 *Kişi Sayısı:* ${state.pax_adult! + (state.pax_child || 0)}\n`;
+    message += `💰 *Toplam:* ${formatPrice(totalPrice)} ${state.selected_tour.currency}\n\n`;
+    message += `📞 *Kısa süre içinde sizinle iletişime geçeceğiz.*\n\n`;
+    message += `🙏 Bizi tercih ettiğiniz için teşekkür ederiz!`;
+    
+    return message;
+    
+  } catch (error) {
+    console.error('Registration error:', error);
+    await clearWizardState(supabase, phone, agency_id);
+    return '❌ Rezervasyon oluşturulurken bir hata oluştu.\n\nLütfen tekrar deneyin veya bizimle iletişime geçin.';
+  }
+}
+
+// Fiyat formatlama
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('tr-TR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price);
 }
 
 // Kullanıcı profili oluştur/güncelle
