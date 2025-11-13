@@ -49,9 +49,7 @@ Deno.serve(async (req) => {
           )
         ),
         agencies!inner (
-          twilio_account_sid,
-          twilio_auth_token,
-          twilio_phone_number,
+          whatsapp_phone_number,
           agency_name
         )
       `)
@@ -181,18 +179,19 @@ Deno.serve(async (req) => {
   }
 });
 
-// WhatsApp mesajı gönder
+// WhatsApp mesajı gönder - merkezi Twilio ile
 async function sendWhatsAppMessage(
   to: string,
   message: string,
   agency: any
 ): Promise<boolean> {
-  const accountSid = agency.twilio_account_sid;
-  const authToken = agency.twilio_auth_token;
-  const twilioPhone = agency.twilio_phone_number;
+  // Merkezi Twilio credentials
+  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+  const twilioPhone = agency.whatsapp_phone_number;
 
   if (!accountSid || !authToken || !twilioPhone) {
-    console.error('❌ Twilio credentials missing for agency:', agency.agency_name);
+    console.error('❌ Merkezi Twilio credentials veya agency WhatsApp numarası eksik:', agency.agency_name);
     return false;
   }
 
