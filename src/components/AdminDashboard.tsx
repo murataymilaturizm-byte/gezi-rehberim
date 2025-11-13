@@ -942,92 +942,6 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         </Card>
       </div>
 
-      {/* Popular Destinations */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>En Popüler Destinasyonlar</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-2">
-            {popularTours.length === 0 ? (
-              <div className="col-span-2 text-center text-muted-foreground py-4">
-                Henüz veri yok
-              </div>
-            ) : (
-              popularTours.map((tour) => (
-                <div key={tour.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">{tour.title}</p>
-                    <p className="text-sm text-muted-foreground">{tour.destination}</p>
-                  </div>
-                  <Badge variant="secondary">{tour.registrationCount} kayıt</Badge>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Date Range Filter */}
-      <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "justify-start text-left font-normal",
-                    !dateRange && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateRange?.from ? (
-                    dateRange.to ? (
-                      <>
-                        {format(dateRange.from, "d MMM yyyy", { locale: tr })} -{" "}
-                        {format(dateRange.to, "d MMM yyyy", { locale: tr })}
-                      </>
-                    ) : (
-                      format(dateRange.from, "d MMM yyyy", { locale: tr })
-                    )
-                  ) : (
-                    <span>Tarih aralığı seç</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-50 bg-popover" align="start">
-                <Calendar
-                  mode="range"
-                  selected={dateRange}
-                  onSelect={setDateRange}
-                  numberOfMonths={2}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            
-            {dateRange && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearDateRange}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Temizle
-              </Button>
-            )}
-            
-            <p className="text-sm text-muted-foreground ml-auto">
-              {dateRange?.from && dateRange?.to
-                ? "Seçilen dönem verileri gösteriliyor"
-                : "Tüm veriler gösteriliyor"}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-card">
@@ -1086,52 +1000,129 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         </CardContent>
       </Card>
 
-      {/* Recent Registrations */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Son Kayıtlar</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Ad Soyad</TableHead>
-                <TableHead>Tur</TableHead>
-                <TableHead>Durum</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentRegistrations.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
-                    Henüz kayıt yok
-                  </TableCell>
-                </TableRow>
+      {/* Popular Destinations & Recent Registrations Side by Side */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Popular Destinations */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              En Popüler Destinasyonlar
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {popularTours.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  Henüz veri yok
+                </div>
               ) : (
-                recentRegistrations.map((reg) => (
-                  <TableRow key={reg.id}>
-                    <TableCell className="font-medium">{reg.full_name}</TableCell>
-                    <TableCell className="text-sm">{reg.tours?.title}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          reg.status === "CONFIRMED"
-                            ? "default"
-                            : reg.status === "CANCELLED"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {statusLabels[reg.status] || reg.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
+                popularTours.map((tour) => (
+                  <div key={tour.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none">{tour.title}</p>
+                      <p className="text-sm text-muted-foreground">{tour.destination}</p>
+                    </div>
+                    <Badge variant="secondary">{tour.registrationCount} kayıt</Badge>
+                  </div>
                 ))
               )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Registrations with Date Filter */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Son Kayıtlar
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-8 text-xs",
+                        !dateRange && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-1 h-3 w-3" />
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, "dd/MM", { locale: tr })} - {format(dateRange.to, "dd/MM", { locale: tr })}
+                          </>
+                        ) : (
+                          format(dateRange.from, "dd/MM/yy", { locale: tr })
+                        )
+                      ) : (
+                        <span>Filtrele</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-50 bg-popover" align="end">
+                    <Calendar
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                
+                {dateRange && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={clearDateRange}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentRegistrations.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  Henüz kayıt yok
+                </div>
+              ) : (
+                recentRegistrations.map((reg) => (
+                  <div key={reg.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <p className="text-sm font-medium leading-none truncate">{reg.full_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{reg.tours?.title}</p>
+                    </div>
+                    <Badge
+                      className="ml-2 shrink-0"
+                      variant={
+                        reg.status === "CONFIRMED"
+                          ? "default"
+                          : reg.status === "CANCELLED"
+                          ? "destructive"
+                          : "secondary"
+                      }
+                    >
+                      {statusLabels[reg.status] || reg.status}
+                    </Badge>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+
 
       {/* Usage Stats - At Bottom */}
       <UsageStats />
