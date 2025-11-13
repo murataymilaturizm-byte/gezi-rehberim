@@ -17,6 +17,7 @@ const authSchema = z.object({
 const signupSchema = authSchema.extend({
   fullName: z.string().trim().min(2, { message: "Ad Soyad en az 2 karakter olmalı" }).max(100, { message: "Ad Soyad en fazla 100 karakter olabilir" }),
   agencyName: z.string().trim().min(2, { message: "Acente adı en az 2 karakter olmalı" }).max(100, { message: "Acente adı en fazla 100 karakter olabilir" }),
+  phone: z.string().trim().min(10, { message: "Geçerli bir telefon numarası girin" }).max(20, { message: "Telefon numarası çok uzun" }),
   planType: z.enum(["starter", "professional", "enterprise"], { message: "Lütfen bir plan seçin" }),
 });
 
@@ -29,6 +30,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [agencyName, setAgencyName] = useState("");
+  const [phone, setPhone] = useState("");
   const [planType, setPlanType] = useState<"starter" | "professional" | "enterprise">("starter");
 
   useEffect(() => {
@@ -55,7 +57,7 @@ const Auth = () => {
     // Validate input
     const validation = isLogin 
       ? authSchema.safeParse({ email, password })
-      : signupSchema.safeParse({ email, password, fullName, agencyName, planType });
+      : signupSchema.safeParse({ email, password, fullName, agencyName, phone, planType });
       
     if (!validation.success) {
       toast({
@@ -200,6 +202,23 @@ const Auth = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefon Numarası</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="0555 123 45 67"
+                    required
+                    disabled={isLoading}
+                    maxLength={20}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Destek için sizinle iletişime geçmemiz gerekebilir
+                  </p>
+                </div>
+
                 <div className="space-y-3">
                   <Label>Plan Seçimi</Label>
                   <div className="bg-accent/30 border border-primary/20 rounded-lg p-3 mb-3">
@@ -231,10 +250,12 @@ const Auth = () => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Başlangıç</span>
-                          <span className="text-lg font-bold text-primary">2.999₺/ay</span>
+                          <div className="text-right">
+                            <span className="text-sm text-muted-foreground line-through">2.999₺/ay</span>
+                            <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground">500 mesaj/ay • Temel özellikler</p>
-                        <p className="text-xs text-primary mt-1">14 gün ücretsiz deneme sonrası</p>
                       </div>
                     </label>
 
@@ -257,10 +278,12 @@ const Auth = () => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Profesyonel</span>
-                          <span className="text-lg font-bold text-primary">7.999₺/ay</span>
+                          <div className="text-right">
+                            <span className="text-sm text-muted-foreground line-through">7.999₺/ay</span>
+                            <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground">2.000 mesaj/ay • Gelişmiş özellikler</p>
-                        <p className="text-xs text-primary mt-1">14 gün ücretsiz deneme sonrası</p>
                       </div>
                     </label>
 
@@ -283,10 +306,12 @@ const Auth = () => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Kurumsal</span>
-                          <span className="text-lg font-bold text-primary">Özel Fiyat</span>
+                          <div className="text-right">
+                            <span className="text-sm text-muted-foreground line-through">Özel Fiyat</span>
+                            <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground">Sınırsız • Tüm özellikler</p>
-                        <p className="text-xs text-primary mt-1">14 gün ücretsiz deneme sonrası</p>
                       </div>
                     </label>
                   </div>
