@@ -2,8 +2,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, MessageSquare, Calendar, TrendingUp, MapPin } from "lucide-react";
+import { Users, MessageSquare, Calendar, TrendingUp, MapPin, Building2 } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -18,22 +25,69 @@ interface UserProfile {
   last_search_query: string | null;
 }
 
-export const WhatsAppUserProfiles = () => {
+interface Agency {
+  id: string;
+  agency_name: string;
+}
+
+interface WhatsAppUserProfilesProps {
+  isSuperAdmin?: boolean;
+}
+
+export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfilesProps) => {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
+  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
 
   useEffect(() => {
-    loadProfiles();
-  }, []);
+    if (isSuperAdmin) {
+      loadAgencies();
+    } else {
+      loadProfiles();
+    }
+  }, [isSuperAdmin]);
+
+  useEffect(() => {
+    if (selectedAgencyId) {
+      loadProfiles();
+    }
+  }, [selectedAgencyId]);
+
+  const loadAgencies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("agencies")
+        .select("id, agency_name")
+        .order("agency_name");
+
+      if (error) throw error;
+      setAgencies(data || []);
+      
+      // İlk acenteyi seç
+      if (data && data.length > 0) {
+        setSelectedAgencyId(data[0].id);
+      }
+    } catch (error) {
+      console.error("Error loading agencies:", error);
+    }
+  };
 
   const loadProfiles = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from("whatsapp_user_profiles")
         .select("*")
         .order("last_interaction_at", { ascending: false });
+
+      // Süper admin ise seçilen acente için filtrele
+      if (isSuperAdmin && selectedAgencyId) {
+        query = query.eq("agency_id", selectedAgencyId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setProfiles(data || []);
@@ -105,13 +159,33 @@ export const WhatsAppUserProfiles = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="w-5 h-5" />
-          WhatsApp Kullanıcı Profilleri
-          <Badge variant="secondary" className="ml-auto">
-            {profiles.length} Kullanıcı
-          </Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            <CardTitle>WhatsApp Kullanıcı Profilleri</CardTitle>
+            <Badge variant="secondary">
+              {profiles.length} Kullanıcı
+            </Badge>
+          </div>
+          
+          {isSuperAdmin && agencies.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
+                <SelectTrigger className="w-[250px]">
+                  <SelectValue placeholder="Acente Seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agencies.map((agency) => (
+                    <SelectItem key={agency.id} value={agency.id}>
+                      {agency.agency_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

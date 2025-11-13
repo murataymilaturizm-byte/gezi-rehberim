@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, User, Bot } from "lucide-react";
+import { MessageCircle, User, Bot, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
@@ -20,22 +27,69 @@ interface ConversationGroup {
   lastMessageTime: string;
 }
 
-export const WhatsAppConversations = () => {
+interface Agency {
+  id: string;
+  agency_name: string;
+}
+
+interface WhatsAppConversationsProps {
+  isSuperAdmin?: boolean;
+}
+
+export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversationsProps) => {
   const [conversations, setConversations] = useState<ConversationGroup[]>([]);
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
 
   useEffect(() => {
-    loadConversations();
-  }, []);
+    if (isSuperAdmin) {
+      loadAgencies();
+    } else {
+      loadConversations();
+    }
+  }, [isSuperAdmin]);
+
+  useEffect(() => {
+    if (selectedAgencyId) {
+      loadConversations();
+    }
+  }, [selectedAgencyId]);
+
+  const loadAgencies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("agencies")
+        .select("id, agency_name")
+        .order("agency_name");
+
+      if (error) throw error;
+      setAgencies(data || []);
+      
+      // İlk acenteyi seç
+      if (data && data.length > 0) {
+        setSelectedAgencyId(data[0].id);
+      }
+    } catch (error) {
+      console.error("Error loading agencies:", error);
+    }
+  };
 
   const loadConversations = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("whatsapp_conversations")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // Süper admin ise seçilen acente için filtrele
+      if (isSuperAdmin && selectedAgencyId) {
+        query = query.eq("agency_id", selectedAgencyId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -85,10 +139,30 @@ export const WhatsAppConversations = () => {
     <div className="space-y-6">
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            WhatsApp Konuşmaları
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              WhatsApp Konuşmaları
+            </CardTitle>
+            
+            {isSuperAdmin && agencies.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
+                  <SelectTrigger className="w-[250px]">
+                    <SelectValue placeholder="Acente Seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agencies.map((agency) => (
+                      <SelectItem key={agency.id} value={agency.id}>
+                        {agency.agency_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {conversations.length === 0 ? (

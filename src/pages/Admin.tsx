@@ -459,8 +459,8 @@ const Admin = () => {
           <AdminDashboard isSuperAdmin={isSuperAdmin} />
         ) : activeTab === "whatsapp" ? (
           <div className="space-y-6">
-            <WhatsAppUserProfiles />
-            <WhatsAppConversations />
+            <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
+            <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
           </div>
         ) : activeTab === "settings" ? (
           <TwilioSettings />
