@@ -42,7 +42,7 @@ import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
 import { AgencyManagement } from "@/components/AgencyManagement";
 import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
-import { TwilioSettings } from "@/components/TwilioSettings";
+import { WhatsAppSettings } from "@/components/WhatsAppSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
@@ -483,7 +483,7 @@ const Admin = () => {
             <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
           </div>
         ) : activeTab === "settings" ? (
-          <TwilioSettings />
+          <WhatsAppSettings />
         ) : activeTab === "history" ? (
           <SubscriptionHistory />
         ) : activeTab === "agencies" && isSuperAdmin ? (
