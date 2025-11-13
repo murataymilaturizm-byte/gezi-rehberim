@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, Play } from "lucide-react";
+import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 const Index = () => {
@@ -266,75 +266,9 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Demo Video Section */}
-      <section ref={(el) => (sectionsRef.current[1] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <Badge className="bg-gradient-ocean text-primary-foreground px-4 py-1 mb-4">
-                Demo
-              </Badge>
-              <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                TurzzAI Nasıl Çalışır?
-              </h3>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                3 dakikalık videomuzda ürünü keşfedin ve WhatsApp entegrasyonunu görün
-              </p>
-            </div>
-
-            <Card className="border-border/50 shadow-card overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-secondary/10">
-                  {/* Video Placeholder */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-20 h-20 rounded-full bg-gradient-ocean flex items-center justify-center mx-auto shadow-lg hover:scale-110 transition-transform cursor-pointer">
-                        <Play className="w-10 h-10 text-primary-foreground ml-1" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-lg font-semibold text-foreground">
-                          Demo Videoyu İzleyin
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          3:24 dakika
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Decorative elements */}
-                  <div className="absolute top-4 left-4 w-20 h-20 bg-primary/10 rounded-full blur-2xl"></div>
-                  <div className="absolute bottom-4 right-4 w-32 h-32 bg-secondary/10 rounded-full blur-3xl"></div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid md:grid-cols-3 gap-4 mt-8">
-              <Card className="border-border/50 bg-card/50">
-                <CardContent className="p-4 text-center">
-                  <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-medium text-foreground">Kolay Kurulum</p>
-                </CardContent>
-              </Card>
-              <Card className="border-border/50 bg-card/50">
-                <CardContent className="p-4 text-center">
-                  <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-medium text-foreground">WhatsApp Entegrasyonu</p>
-                </CardContent>
-              </Card>
-              <Card className="border-border/50 bg-card/50">
-                <CardContent className="p-4 text-center">
-                  <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-medium text-foreground">Anında Sonuç</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Stats Section */}
-      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[1] = el)} className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
@@ -355,7 +289,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section ref={(el) => (sectionsRef.current[3] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -383,7 +317,7 @@ const Index = () => {
       </section>
 
       {/* Benefits Section */}
-      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[3] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -427,7 +361,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -484,7 +418,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -556,7 +490,7 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
