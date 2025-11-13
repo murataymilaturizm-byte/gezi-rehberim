@@ -307,7 +307,7 @@ const Auth = () => {
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Kurumsal</span>
                           <div className="text-right">
-                            <span className="text-sm text-muted-foreground line-through">Özel Fiyat</span>
+                            <span className="text-sm text-muted-foreground">Özel Fiyat</span>
                             <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
                           </div>
                         </div>
