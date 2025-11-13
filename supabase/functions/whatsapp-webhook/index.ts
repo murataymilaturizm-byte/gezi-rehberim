@@ -112,6 +112,31 @@ serve(async (req) => {
       });
     }
     
+    // Mesaj limiti kontrolü (paket bazlı)
+    const messageLimitExceeded = await checkMessageLimit(supabase, agency);
+    
+    if (messageLimitExceeded) {
+      console.log('Message limit exceeded for agency:', agency.agency_name);
+      
+      const limitMessage = agency.plan_type === 'starter' 
+        ? '📊 *Aylık mesaj kotanız doldu!* 😔\n\nDaha fazla mesaj için paketinizi yükseltmeniz gerekiyor.\n\n💡 *Profesyonel* pakete geçerek 2.000 mesaj/ay hakkı kazanabilirsiniz!\n\n📞 Detaylı bilgi için acente yöneticinizle iletişime geçin.'
+        : '📊 *Aylık mesaj kotanız doldu!* 😔\n\nDaha fazla mesaj için lütfen acente yöneticinizle iletişime geçin.\n\n📞 Paket yükseltme için destek alabilirsiniz.';
+      
+      await saveMessage(supabase, userPhone, 'assistant', limitMessage, agency.id);
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${limitMessage.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+      });
+    }
+    
+    // Mesaj sayacını artır
+    await incrementMessageCount(supabase, agency.id);
+    
     // Kullanıcı profilini oluştur/güncelle
     await upsertUserProfile(supabase, userPhone, agency.id);
     
@@ -1575,5 +1600,64 @@ JSON formatında döndür:
 
   } catch (error) {
     console.error('Error creating conversation summary:', error);
+  }
+}
+
+// Mesaj limiti kontrolü
+async function checkMessageLimit(supabase: any, agency: any): Promise<boolean> {
+  try {
+    // Enterprise planı için sınırsız (-1)
+    if (agency.message_limit === -1) {
+      return false;
+    }
+    
+    // Ay değişmişse sayacı sıfırla
+    const lastReset = new Date(agency.last_message_reset_date);
+    const now = new Date();
+    
+    if (lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear()) {
+      await supabase
+        .from('agencies')
+        .update({
+          monthly_message_count: 0,
+          last_message_reset_date: now.toISOString()
+        })
+        .eq('id', agency.id);
+      
+      return false; // Yeni ay, limit yok
+    }
+    
+    // Mevcut mesaj sayısını kontrol et
+    return agency.monthly_message_count >= agency.message_limit;
+  } catch (error) {
+    console.error('Error checking message limit:', error);
+    return false; // Hata durumunda mesaja izin ver
+  }
+}
+
+// Mesaj sayacını artır
+async function incrementMessageCount(supabase: any, agency_id: string) {
+  try {
+    await supabase.rpc('increment', {
+      table_name: 'agencies',
+      column_name: 'monthly_message_count',
+      row_id: agency_id
+    }).catch(async () => {
+      // RPC fonksiyonu yoksa manuel artır
+      const { data: agency } = await supabase
+        .from('agencies')
+        .select('monthly_message_count')
+        .eq('id', agency_id)
+        .single();
+      
+      if (agency) {
+        await supabase
+          .from('agencies')
+          .update({ monthly_message_count: (agency.monthly_message_count || 0) + 1 })
+          .eq('id', agency_id);
+      }
+    });
+  } catch (error) {
+    console.error('Error incrementing message count:', error);
   }
 }

@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.send-tour-reminders]
 verify_jwt = false
+
+[functions.cleanup-conversations]
+verify_jwt = false
+
+[functions.reset-message-counts]
+verify_jwt = false

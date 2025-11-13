@@ -20,6 +20,9 @@ export type Database = {
           agency_name: string
           created_at: string | null
           id: string
+          last_message_reset_date: string | null
+          message_limit: number | null
+          monthly_message_count: number | null
           plan_type: string
           subscription_ends_at: string | null
           subscription_status: string
@@ -34,6 +37,9 @@ export type Database = {
           agency_name: string
           created_at?: string | null
           id?: string
+          last_message_reset_date?: string | null
+          message_limit?: number | null
+          monthly_message_count?: number | null
           plan_type?: string
           subscription_ends_at?: string | null
           subscription_status?: string
@@ -48,6 +54,9 @@ export type Database = {
           agency_name?: string
           created_at?: string | null
           id?: string
+          last_message_reset_date?: string | null
+          message_limit?: number | null
+          monthly_message_count?: number | null
           plan_type?: string
           subscription_ends_at?: string | null
           subscription_status?: string
@@ -521,6 +530,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_conversations: { Args: never; Returns: undefined }
       get_user_agency_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -529,6 +539,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reset_monthly_message_counts: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "super_admin" | "agency"
