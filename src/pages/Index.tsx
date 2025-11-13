@@ -729,11 +729,14 @@ const Index = () => {
             
             {/* 14 Days Free Trial Banner */}
             <div className="mb-6">
-              <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-ocean text-primary-foreground mb-4 animate-pulse">
+              <a 
+                href="/auth"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-ocean text-primary-foreground mb-4 animate-pulse hover:opacity-90 transition-opacity cursor-pointer"
+              >
                 <Sparkles className="w-5 h-5" />
                 <span className="text-lg font-bold">14 GÜN ÜCRETSİZ DENEME</span>
                 <Sparkles className="w-5 h-5" />
-              </div>
+              </a>
               <p className="text-sm text-muted-foreground">
                 Kredi kartı bilgisi gerektirmez • İstediğiniz zaman iptal edebilirsiniz
               </p>
