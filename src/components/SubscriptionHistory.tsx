@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,8 +10,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { tr } from "date-fns/locale";
 import { 
   History, 
@@ -20,7 +33,11 @@ import {
   CreditCard, 
   TrendingUp,
   Calendar,
-  Ban
+  Ban,
+  Zap,
+  AlertCircle,
+  Crown,
+  ArrowRight
 } from "lucide-react";
 
 interface SubscriptionHistoryItem {
@@ -34,6 +51,23 @@ interface SubscriptionHistoryItem {
   status: string;
   notes: string | null;
   created_at: string;
+}
+
+interface AgencySubscription {
+  id: string;
+  plan_type: string;
+  trial_ends_at: string | null;
+  subscription_status: string;
+  subscription_ends_at: string | null;
+}
+
+interface PlanOption {
+  id: "starter" | "professional" | "enterprise";
+  name: string;
+  price: number;
+  features: string[];
+  icon: any;
+  popular?: boolean;
 }
 
 const eventTypeLabels: Record<string, string> = {
@@ -97,9 +131,39 @@ const getStatusBadge = (status: string) => {
 };
 
 export const SubscriptionHistory = () => {
+  const { toast } = useToast();
   const [history, setHistory] = useState<SubscriptionHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<AgencySubscription | null>(null);
+  const [changingPlan, setChangingPlan] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanOption | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
+
+  const planOptions: PlanOption[] = [
+    {
+      id: "starter",
+      name: "Başlangıç",
+      price: 1999,
+      features: ["500 mesaj/ay", "1 kullanıcı", "Temel raporlama", "Email destek"],
+      icon: Zap
+    },
+    {
+      id: "professional",
+      name: "Profesyonel",
+      price: 3999,
+      features: ["2.000 mesaj/ay", "5 kullanıcı", "Gelişmiş raporlama", "Öncelikli destek"],
+      icon: TrendingUp,
+      popular: true
+    },
+    {
+      id: "enterprise",
+      name: "Kurumsal",
+      price: 0,
+      features: ["Sınırsız mesaj", "Sınırsız kullanıcı", "Özel raporlama", "7/24 destek"],
+      icon: Crown
+    }
+  ];
 
   useEffect(() => {
     loadHistory();
@@ -111,10 +175,10 @@ export const SubscriptionHistory = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Get user's agency
+      // Get user's agency with subscription info
       const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
-        .select("id")
+        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -122,6 +186,7 @@ export const SubscriptionHistory = () => {
       if (!agencyData) return;
 
       setAgencyId(agencyData.id);
+      setSubscription(agencyData);
 
       // Load subscription history
       const { data: historyData, error: historyError } = await supabase
@@ -150,26 +215,257 @@ export const SubscriptionHistory = () => {
     }).format(amount);
   };
 
+  const handlePlanChange = (plan: PlanOption) => {
+    if (!subscription) return;
+
+    // Check if trial or expired
+    if (subscription.subscription_status === "trial") {
+      toast({
+        title: "Uyarı",
+        description: "Deneme süresindeyken plan değiştiremezsiniz. Önce ödeme yapmalısınız.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") {
+      toast({
+        title: "Uyarı",
+        description: "Aboneliğiniz aktif değil. Önce ödeme yapmalısınız.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (plan.id === subscription.plan_type) {
+      toast({
+        title: "Bilgi",
+        description: "Zaten bu plandayınız.",
+      });
+      return;
+    }
+
+    setSelectedPlan(plan);
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmPlanChange = async () => {
+    if (!agencyId || !selectedPlan) return;
+
+    setChangingPlan(true);
+
+    try {
+      // Update agency plan
+      const { error: updateError } = await supabase
+        .from("agencies")
+        .update({
+          plan_type: selectedPlan.id,
+        })
+        .eq("id", agencyId);
+
+      if (updateError) throw updateError;
+
+      // Add to subscription history
+      const { error: historyError } = await supabase
+        .from("subscription_history")
+        .insert({
+          agency_id: agencyId,
+          event_type: "plan_changed",
+          plan_type: selectedPlan.id,
+          status: "success",
+          notes: `Plan değiştirildi: ${subscription?.plan_type} → ${selectedPlan.id}`
+        });
+
+      if (historyError) throw historyError;
+
+      toast({
+        title: "Başarılı! ✅",
+        description: `Planınız ${selectedPlan.name} olarak değiştirildi`,
+      });
+
+      // Refresh data
+      loadHistory();
+      setConfirmDialogOpen(false);
+      setSelectedPlan(null);
+    } catch (error: any) {
+      console.error("Error changing plan:", error);
+      toast({
+        title: "Hata",
+        description: error.message || "Plan değiştirilemedi",
+        variant: "destructive"
+      });
+    } finally {
+      setChangingPlan(false);
+    }
+  };
+
+  const getRemainingDays = () => {
+    if (!subscription) return null;
+    
+    const targetDate = subscription.subscription_status === 'trial' 
+      ? subscription.trial_ends_at 
+      : subscription.subscription_ends_at;
+    
+    if (!targetDate) return null;
+    return differenceInDays(new Date(targetDate), new Date());
+  };
+
   if (loading) {
     return (
       <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
     );
   }
 
+  const remainingDays = getRemainingDays();
+  const currentPlan = planOptions.find(p => p.id === subscription?.plan_type);
+
   return (
-    <Card className="shadow-card">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <History className="h-5 w-5 text-primary" />
-          <div>
-            <CardTitle>Abonelik Geçmişi</CardTitle>
-            <CardDescription>
-              Ödeme geçmişiniz, plan değişiklikleriniz ve abonelik durumunuz
-            </CardDescription>
+    <>
+      {/* Current Plan Card */}
+      {subscription && (
+        <Card className="shadow-card mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {currentPlan?.icon && <currentPlan.icon className="h-5 w-5 text-primary" />}
+                <div>
+                  <CardTitle>Mevcut Planınız</CardTitle>
+                  <CardDescription>
+                    {subscription.subscription_status === "trial" 
+                      ? "Deneme süresinde" 
+                      : subscription.subscription_status === "active"
+                      ? "Aktif abonelik"
+                      : "Abonelik durumu: " + subscription.subscription_status
+                    }
+                  </CardDescription>
+                </div>
+              </div>
+              {remainingDays !== null && remainingDays > 0 && (
+                <Badge variant={remainingDays <= 7 ? "destructive" : "secondary"}>
+                  {remainingDays} gün kaldı
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Current Plan Info */}
+            <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">{currentPlan?.name}</h3>
+                  <p className="text-2xl font-bold text-primary mt-1">
+                    {currentPlan?.price ? `${currentPlan.price.toLocaleString('tr-TR')}₺/ay` : "Özel Fiyat"}
+                  </p>
+                </div>
+                <CheckCircle2 className="h-8 w-8 text-primary" />
+              </div>
+              <ul className="space-y-2">
+                {currentPlan?.features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-2 text-sm text-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Warning for trial/expired status */}
+            {(subscription.subscription_status === "trial" || 
+              subscription.subscription_status === "expired" || 
+              subscription.subscription_status === "cancelled") && (
+              <Alert className="border-primary/50 bg-primary/5">
+                <AlertCircle className="h-4 w-4 text-primary" />
+                <AlertDescription>
+                  {subscription.subscription_status === "trial" && (
+                    <>
+                      <strong>Deneme Süresi:</strong> Plan değiştirmek için önce aboneliğinizi aktifleştirmelisiniz.
+                    </>
+                  )}
+                  {(subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") && (
+                    <>
+                      <strong>Abonelik Aktif Değil:</strong> Planınızı değiştirmek için önce ödeme yapmalısınız.
+                    </>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Other Plans */}
+            {subscription.subscription_status === "active" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-foreground">Diğer Planlar</h4>
+                  <p className="text-sm text-muted-foreground">Plan değişikliği hemen aktif olur</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {planOptions
+                    .filter(plan => plan.id !== subscription.plan_type)
+                    .map((plan) => (
+                      <Card 
+                        key={plan.id} 
+                        className={`relative border-border hover:border-primary/50 transition-all cursor-pointer ${
+                          plan.popular ? 'ring-2 ring-primary' : ''
+                        }`}
+                        onClick={() => handlePlanChange(plan)}
+                      >
+                        {plan.popular && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                            <Badge className="bg-gradient-ocean text-primary-foreground">
+                              Popüler
+                            </Badge>
+                          </div>
+                        )}
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <plan.icon className="h-5 w-5 text-primary" />
+                            <h5 className="font-semibold text-foreground">{plan.name}</h5>
+                          </div>
+                          <p className="text-xl font-bold text-primary">
+                            {plan.price ? `${plan.price.toLocaleString('tr-TR')}₺/ay` : "Özel Fiyat"}
+                          </p>
+                          <ul className="space-y-1">
+                            {plan.features.slice(0, 3).map((feature, index) => (
+                              <li key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <CheckCircle2 className="h-3 w-3 text-primary flex-shrink-0" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                          <Button 
+                            className="w-full bg-gradient-ocean hover:opacity-90" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlanChange(plan);
+                            }}
+                          >
+                            Bu Plana Geç
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Subscription History */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <History className="h-5 w-5 text-primary" />
+            <div>
+              <CardTitle>İşlem Geçmişi</CardTitle>
+              <CardDescription>
+                Ödemeleriniz, plan değişiklikleriniz ve tüm işlemleriniz
+              </CardDescription>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
+        </CardHeader>
+        <CardContent>
         {history.length === 0 ? (
           <div className="text-center py-12 space-y-4">
             <div className="flex justify-center">
@@ -251,5 +547,50 @@ export const SubscriptionHistory = () => {
         )}
       </CardContent>
     </Card>
+
+    {/* Confirmation Dialog */}
+    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Plan Değişikliğini Onayla</AlertDialogTitle>
+          <AlertDialogDescription className="space-y-3">
+            <p>
+              Planınızı <strong>{currentPlan?.name}</strong> planından{" "}
+              <strong>{selectedPlan?.name}</strong> planına değiştirmek istediğinize emin misiniz?
+            </p>
+            {selectedPlan && (
+              <div className="p-3 rounded-lg bg-muted space-y-2">
+                <p className="text-sm font-medium text-foreground">Yeni Plan Özellikleri:</p>
+                <ul className="space-y-1">
+                  {selectedPlan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="h-3 w-3 text-primary flex-shrink-0" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-lg font-bold text-primary mt-2">
+                  {selectedPlan.price ? `${selectedPlan.price.toLocaleString('tr-TR')}₺/ay` : "Özel Fiyat - İletişime Geçin"}
+                </p>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Plan değişikliği hemen aktif olacaktır. Fatura döneminiz değişmeden devam edecektir.
+            </p>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={changingPlan}>İptal</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={confirmPlanChange}
+            disabled={changingPlan}
+            className="bg-gradient-ocean hover:opacity-90"
+          >
+            {changingPlan ? "Değiştiriliyor..." : "Planı Değiştir"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 };
