@@ -760,30 +760,6 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 />
               </LineChart>
             </ResponsiveContainer>
-            <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-border">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Toplam Gelir ({chartMonths} Ay)</p>
-                <p className="text-2xl font-bold text-primary mt-1">
-                  {revenueChartData.reduce((sum, d) => sum + d.revenue, 0).toLocaleString('tr-TR')}₺
-                </p>
-                {showComparison && revenueChartData.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Ortalama: {Math.round(revenueChartData.reduce((sum, d) => sum + d.revenue, 0) / revenueChartData.length).toLocaleString('tr-TR')}₺/ay
-                  </p>
-                )}
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Yeni Acente ({chartMonths} Ay)</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
-                  {revenueChartData.reduce((sum, d) => sum + d.newAgencies, 0)}
-                </p>
-                {showComparison && revenueChartData.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Ortalama: {Math.round(revenueChartData.reduce((sum, d) => sum + d.newAgencies, 0) / revenueChartData.length * 10) / 10}/ay
-                  </p>
-                )}
-              </div>
-            </div>
             
             {selectedPlans.length > 0 && selectedPlans.length < 3 && (
               <div className="mt-4 p-3 bg-accent/30 border border-border rounded-lg">
