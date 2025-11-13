@@ -55,6 +55,26 @@ export const RegistrationModal = ({
 
       if (!agencyData) throw new Error("Acente bulunamadı");
 
+      // Kontenjan kontrolü
+      const { data: tourDate, error: quotaError } = await supabase
+        .from("tour_dates")
+        .select("quota")
+        .eq("id", tourDateId)
+        .single();
+
+      if (quotaError) throw quotaError;
+
+      if (!tourDate || tourDate.quota < formData.pax) {
+        toast({
+          title: "Yetersiz Kontenjan",
+          description: `Bu tarih için sadece ${tourDate?.quota || 0} kişilik yer kalmıştır. Lütfen kişi sayısını azaltın veya başka bir tarih seçin.`,
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Kayıt oluştur ve kontenjandan düş
       const { error } = await supabase.from("registrations").insert({
         tour_id: tourId,
         tour_date_id: tourDateId,
@@ -67,6 +87,12 @@ export const RegistrationModal = ({
       });
 
       if (error) throw error;
+
+      // Kontenjandan düş
+      await supabase
+        .from("tour_dates")
+        .update({ quota: tourDate.quota - formData.pax })
+        .eq("id", tourDateId);
 
       toast({
         title: "Ön Kayıt Başarılı! ✅",

@@ -29,12 +29,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut } from "lucide-react";
+import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut, Download } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
+import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
 import { AgencyManagement } from "@/components/AgencyManagement";
@@ -43,6 +44,7 @@ import { TwilioSettings } from "@/components/TwilioSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
+import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
 
 interface Tour {
   id: string;
@@ -73,9 +75,11 @@ interface Registration {
   created_at: string;
   tours: {
     title: string;
+    destination: string;
   };
   tour_dates: {
     departure_date: string;
+    price_adult: number;
   };
 }
 
@@ -235,8 +239,8 @@ const Admin = () => {
           .from("registrations")
           .select(`
             *,
-            tours (title),
-            tour_dates (departure_date)
+            tours (title, destination),
+            tour_dates (departure_date, price_adult)
           `)
           .order("created_at", { ascending: false });
         
@@ -456,7 +460,10 @@ const Admin = () => {
 
         {/* Content */}
         {activeTab === "dashboard" ? (
-          <AdminDashboard isSuperAdmin={isSuperAdmin} />
+          <div className="space-y-6">
+            <AdminDashboard isSuperAdmin={isSuperAdmin} />
+            <AdvancedAnalytics />
+          </div>
         ) : activeTab === "whatsapp" ? (
           <div className="space-y-6">
             <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
@@ -476,16 +483,35 @@ const Admin = () => {
                 {activeTab === "tours" ? "Tur Listesi" : "Kayıt Listesi"}
               </CardTitle>
               <div className="flex gap-2">
-                {activeTab === "tours" && (
+                {activeTab === "tours" ? (
+                  <>
+                    <Button
+                      onClick={() => exportToursToExcel(tours)}
+                      variant="outline"
+                      disabled={tours.length === 0}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Excel İndir
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setSelectedTour(undefined);
+                        setTourFormOpen(true);
+                      }}
+                      className="bg-gradient-ocean hover:opacity-90"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Yeni Tur
+                    </Button>
+                  </>
+                ) : (
                   <Button
-                    onClick={() => {
-                      setSelectedTour(undefined);
-                      setTourFormOpen(true);
-                    }}
-                    className="bg-gradient-ocean hover:opacity-90"
+                    onClick={() => exportRegistrationsToExcel(registrations)}
+                    variant="outline"
+                    disabled={registrations.length === 0}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Yeni Tur
+                    <Download className="w-4 h-4 mr-2" />
+                    Excel İndir
                   </Button>
                 )}
               </div>

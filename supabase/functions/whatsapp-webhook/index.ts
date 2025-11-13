@@ -700,6 +700,20 @@ async function createRegistration(supabase: any, entities: any, from: string, ag
       return { error: 'Kayıt oluşturulamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.' };
     }
 
+    // Kontenjandan düş
+    const { data: currentTourDate } = await supabase
+      .from('tour_dates')
+      .select('quota')
+      .eq('id', tourDate.id)
+      .single();
+
+    if (currentTourDate) {
+      await supabase
+        .from('tour_dates')
+        .update({ quota: currentTourDate.quota - entities.pax })
+        .eq('id', tourDate.id);
+    }
+
     // Kullanıcı profilini güncelle - isim ve tur tercihlerini kaydet
     const userPhone = from.replace('whatsapp:', '');
     await updateUserPreferences(supabase, userPhone, agency_id, {
@@ -1334,7 +1348,7 @@ async function handleSpecialRequests(
   return message;
 }
 
-// Onay adımı
+  // Onay adımı
 async function handleConfirmation(
   supabase: any,
   phone: string,
@@ -1348,6 +1362,25 @@ async function handleConfirmation(
     return '❌ Lütfen "onayla" yazarak rezervasyonu onaylayın.\n\n_İptal etmek için "iptal" yazın_';
   }
   
+  // Kontenjan kontrolü
+  const { data: currentQuota, error: quotaCheckError } = await supabase
+    .from('tour_dates')
+    .select('quota')
+    .eq('id', state.selected_date.id)
+    .single();
+
+  if (quotaCheckError) {
+    console.error('Quota check error:', quotaCheckError);
+    await clearWizardState(supabase, phone, agency_id);
+    return '❌ Kontenjan kontrolü yapılamadı. Lütfen tekrar deneyin.';
+  }
+
+  const totalPax = state.pax_adult! + (state.pax_child || 0);
+  if (currentQuota.quota < totalPax) {
+    await clearWizardState(supabase, phone, agency_id);
+    return `❌ *Kontenjan Yetersiz*\n\nMaalesef bu tarih için sadece ${currentQuota.quota} kişilik yer kalmıştır.\n\n🔍 Başka bir tarih seçmek ister misiniz?\n_"Rezervasyon yap" yazarak yeniden başlayabilirsiniz._`;
+  }
+  
   // Rezervasyon oluştur
   try {
     const userProfile = await getUserProfile(supabase, phone, agency_id);
@@ -1359,7 +1392,7 @@ async function handleConfirmation(
         tour_date_id: state.selected_date.id,
         full_name: userProfile?.full_name || 'WhatsApp Kullanıcısı',
         phone: phone,
-        pax: state.pax_adult! + (state.pax_child || 0),
+        pax: totalPax,
         status: 'NEW',
         note: `WhatsApp Wizard Rezervasyon\nYetişkin: ${state.pax_adult}\nÇocuk: ${state.pax_child || 0}\nÖzel İstek: ${state.special_requests || 'Yok'}`,
         agency_id: agency_id
@@ -1368,6 +1401,12 @@ async function handleConfirmation(
       .single();
     
     if (error) throw error;
+    
+    // Kontenjandan düş
+    await supabase
+      .from('tour_dates')
+      .update({ quota: currentQuota.quota - totalPax })
+      .eq('id', state.selected_date.id);
     
     // Wizard state'i temizle
     await clearWizardState(supabase, phone, agency_id);
