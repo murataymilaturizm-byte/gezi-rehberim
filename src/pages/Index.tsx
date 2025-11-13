@@ -298,9 +298,14 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">Akıllı Tur Satış Sistemi</p>
               </div>
             </div>
-            <Button asChild className="bg-gradient-ocean hover:opacity-90">
-              <a href="/auth">Giriş Yap</a>
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button asChild variant="outline" className="hidden md:inline-flex">
+                <a href="/nasil-baslarim">Nasıl Başlarım?</a>
+              </Button>
+              <Button asChild className="bg-gradient-ocean hover:opacity-90">
+                <a href="/auth">Giriş Yap</a>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -331,6 +336,9 @@ const Index = () => {
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8" onClick={scrollToDemo}>
                 Canlı Test Et
+              </Button>
+              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+                <a href="/nasil-baslarim">Nasıl Başlarım?</a>
               </Button>
             </div>
           </div>
@@ -1015,6 +1023,14 @@ const Index = () => {
                 <Plane className="w-4 h-4 text-primary-foreground" />
               </div>
               <span className="font-semibold text-foreground">TurzzAI</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <a href="/nasil-baslarim" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Nasıl Başlarım?
+              </a>
+              <a href="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Giriş Yap
+              </a>
             </div>
             <p className="text-sm text-muted-foreground">
               © 2024 TurzzAI. Tüm hakları saklıdır.
