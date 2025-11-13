@@ -138,6 +138,56 @@ export type Database = {
           },
         ]
       }
+      subscription_history: {
+        Row: {
+          agency_id: string
+          amount: number | null
+          created_at: string
+          currency: string | null
+          event_type: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          plan_type: string | null
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          agency_id: string
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          plan_type?: string | null
+          status: string
+          transaction_id?: string | null
+        }
+        Update: {
+          agency_id?: string
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          plan_type?: string | null
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_history_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tour_dates: {
         Row: {
           agency_id: string | null
