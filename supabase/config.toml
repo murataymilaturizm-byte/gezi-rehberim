@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.demo-chat]
 verify_jwt = false
 
+[functions.sales-chat]
+verify_jwt = false
+
 [functions.sipay-payment]
 verify_jwt = true
 
