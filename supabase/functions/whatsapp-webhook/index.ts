@@ -65,6 +65,53 @@ serve(async (req) => {
 
     console.log('Found agency:', agency.agency_name);
     
+    // Subscription kontrolü
+    const now = new Date();
+    let subscriptionExpired = false;
+    
+    if (agency.subscription_status === 'expired' || agency.subscription_status === 'cancelled') {
+      subscriptionExpired = true;
+    } else if (agency.subscription_status === 'trial' && agency.trial_ends_at) {
+      const trialEnd = new Date(agency.trial_ends_at);
+      if (trialEnd < now) {
+        subscriptionExpired = true;
+        // Durumu güncelle
+        await supabase
+          .from('agencies')
+          .update({ subscription_status: 'expired' })
+          .eq('id', agency.id);
+      }
+    } else if (agency.subscription_status === 'active' && agency.subscription_ends_at) {
+      const subscriptionEnd = new Date(agency.subscription_ends_at);
+      if (subscriptionEnd < now) {
+        subscriptionExpired = true;
+        // Durumu güncelle
+        await supabase
+          .from('agencies')
+          .update({ subscription_status: 'expired' })
+          .eq('id', agency.id);
+      }
+    }
+    
+    // Eğer subscription süresi dolduysa, bilgilendirme mesajı gönder ve işleme devam etme
+    if (subscriptionExpired) {
+      console.log('Subscription expired for agency:', agency.agency_name);
+      
+      const expiredMessage = '⚠️ Bu hizmet şu anda aktif değil.\n\n📞 Detaylı bilgi için lütfen acente yöneticinizle iletişime geçin.';
+      
+      // Sadece mesajı kaydet, geri dönüş yapma
+      await saveMessage(supabase, userPhone, 'assistant', expiredMessage, agency.id);
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${expiredMessage}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+      });
+    }
+    
     // Kullanıcı mesajını kaydet (agency_id ile)
     await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
 

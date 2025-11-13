@@ -21,7 +21,9 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Building2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Building2, Calendar, Clock } from "lucide-react";
+import { format, differenceInDays } from "date-fns";
+import { tr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 
 interface Agency {
@@ -32,6 +34,10 @@ interface Agency {
   twilio_phone_number: string;
   active: boolean;
   created_at: string;
+  plan_type: string;
+  trial_ends_at: string | null;
+  subscription_status: string;
+  subscription_ends_at: string | null;
   profiles: {
     full_name: string | null;
   };
@@ -369,42 +375,98 @@ export const AgencyManagement = () => {
               <TableRow>
                 <TableHead>Acente Adı</TableHead>
                 <TableHead>Yetkili</TableHead>
-                <TableHead>Twilio Telefon</TableHead>
+                <TableHead>Plan</TableHead>
+                <TableHead>Abonelik</TableHead>
+                <TableHead>Kalan Süre</TableHead>
                 <TableHead>Durum</TableHead>
                 <TableHead className="text-right">İşlemler</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {agencies.map((agency) => (
-                <TableRow key={agency.id}>
-                  <TableCell className="font-medium">{agency.agency_name}</TableCell>
-                  <TableCell>{agency.profiles?.full_name || "-"}</TableCell>
-                  <TableCell>{agency.twilio_phone_number}</TableCell>
-                  <TableCell>
-                    <Badge variant={agency.active ? "default" : "secondary"}>
-                      {agency.active ? "Aktif" : "Pasif"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(agency)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(agency.id)}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {agencies.map((agency) => {
+                const getRemainingDays = () => {
+                  const targetDate = agency.subscription_status === 'trial' 
+                    ? agency.trial_ends_at 
+                    : agency.subscription_ends_at;
+                  
+                  if (!targetDate) return null;
+                  return differenceInDays(new Date(targetDate), new Date());
+                };
+
+                const remainingDays = getRemainingDays();
+                const planLabels: Record<string, string> = {
+                  starter: "Başlangıç",
+                  professional: "Profesyonel",
+                  enterprise: "Kurumsal"
+                };
+
+                const statusLabels: Record<string, string> = {
+                  trial: "Deneme",
+                  active: "Aktif",
+                  expired: "Süresi Doldu",
+                  cancelled: "İptal Edildi"
+                };
+
+                const getStatusVariant = (status: string) => {
+                  switch (status) {
+                    case 'trial': return 'secondary';
+                    case 'active': return 'default';
+                    case 'expired': return 'destructive';
+                    case 'cancelled': return 'destructive';
+                    default: return 'secondary';
+                  }
+                };
+
+                return (
+                  <TableRow key={agency.id}>
+                    <TableCell className="font-medium">{agency.agency_name}</TableCell>
+                    <TableCell>{agency.profiles?.full_name || "-"}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {planLabels[agency.plan_type] || agency.plan_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(agency.subscription_status)}>
+                        {statusLabels[agency.subscription_status] || agency.subscription_status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {remainingDays !== null && (
+                        <div className="flex items-center gap-1 text-sm">
+                          <Clock className="w-3 h-3" />
+                          <span className={remainingDays <= 3 ? "text-destructive font-medium" : ""}>
+                            {remainingDays > 0 ? `${remainingDays} gün` : "Süresi doldu"}
+                          </span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={agency.active ? "default" : "secondary"}>
+                        {agency.active ? "Aktif" : "Pasif"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(agency)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(agency.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         )}

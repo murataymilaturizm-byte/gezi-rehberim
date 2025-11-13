@@ -30,6 +30,7 @@ import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { AgencyManagement } from "@/components/AgencyManagement";
+import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 
@@ -340,6 +341,9 @@ const Admin = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
+        {/* Subscription Banner */}
+        {!isSuperAdmin && <SubscriptionBanner />}
+        
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <Button

@@ -20,6 +20,10 @@ export type Database = {
           agency_name: string
           created_at: string | null
           id: string
+          plan_type: string
+          subscription_ends_at: string | null
+          subscription_status: string
+          trial_ends_at: string | null
           twilio_account_sid: string
           twilio_auth_token: string
           twilio_phone_number: string
@@ -30,6 +34,10 @@ export type Database = {
           agency_name: string
           created_at?: string | null
           id?: string
+          plan_type?: string
+          subscription_ends_at?: string | null
+          subscription_status?: string
+          trial_ends_at?: string | null
           twilio_account_sid: string
           twilio_auth_token: string
           twilio_phone_number: string
@@ -40,6 +48,10 @@ export type Database = {
           agency_name?: string
           created_at?: string | null
           id?: string
+          plan_type?: string
+          subscription_ends_at?: string | null
+          subscription_status?: string
+          trial_ends_at?: string | null
           twilio_account_sid?: string
           twilio_auth_token?: string
           twilio_phone_number?: string
