@@ -186,22 +186,22 @@ const Index = () => {
 
   const testimonials = [
     {
-      name: "Ahmet Yılmaz",
-      company: "Mavi Tur Seyahat",
+      name: "Müşteri 1",
+      company: "Tur Acentesi",
       role: "Genel Müdür",
       content: "TurzzAI sayesinde WhatsApp üzerinden gelen taleplere anında yanıt verebiliyoruz. İlk ayda rezervasyonlarımız %120 arttı. Müşteri memnuniyeti zirve yaptı!",
       rating: 5
     },
     {
-      name: "Zeynep Kaya",
-      company: "Güneş Turizm",
+      name: "Müşteri 2",
+      company: "Turizm Firması",
       role: "Satış Müdürü",
       content: "Gece yarısı bile müşterilerimiz tur bilgisi alıp rezervasyon yapabiliyor. Artık hiçbir fırsatı kaçırmıyoruz. Kesinlikle tavsiye ediyorum!",
       rating: 5
     },
     {
-      name: "Mehmet Demir",
-      company: "Şafak Seyahat",
+      name: "Müşteri 3",
+      company: "Seyahat Acentesi",
       role: "İşletme Sahibi",
       content: "Küçük bir acente olarak böyle bir teknolojiye sahip olmak harika. Kurulum çok kolay, kullanımı son derece pratik. İlk haftadan itibaren geri dönüşler başladı.",
       rating: 5
@@ -312,12 +312,12 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
                 <a href="/auth">
-                  Hemen Başla
+                  14 Gün Ücretsiz Dene
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8" onClick={scrollToDemo}>
-                Demo İzle
+                Demo'yu İzle
               </Button>
             </div>
           </div>
@@ -481,8 +481,8 @@ const Index = () => {
             <p className="text-lg text-muted-foreground mb-6">
               Tüm süreç otomatik ve 7/24 çalışır 🚀
             </p>
-            <Button size="lg" className="bg-gradient-ocean hover:opacity-90">
-              Demo'yu Deneyin
+            <Button size="lg" className="bg-gradient-ocean hover:opacity-90" onClick={scrollToDemo}>
+              Canlı Demo'yu İncele
             </Button>
           </div>
         </div>
@@ -697,7 +697,7 @@ const Index = () => {
             </p>
             <Button size="lg" className="bg-gradient-ocean hover:opacity-90" asChild>
               <a href="/auth">
-                Şimdi Başlayın
+                Hemen Başlayın
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>
             </Button>
@@ -847,10 +847,65 @@ const Index = () => {
               <p className="text-muted-foreground mb-4">
                 Başka sorularınız mı var?
               </p>
-              <Button variant="outline" asChild>
-                <a href="/auth">Bizimle İletişime Geçin</a>
-              </Button>
             </div>
+
+            {/* Contact Form */}
+            <Card className="mt-8 border-border/50 shadow-card max-w-2xl mx-auto">
+              <CardContent className="p-8">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const name = formData.get('name') as string;
+                  const email = formData.get('email') as string;
+                  const message = formData.get('message') as string;
+                  
+                  // Email ile iletişim formu gönder
+                  const subject = encodeURIComponent(`TurzzAI İletişim: ${name}`);
+                  const body = encodeURIComponent(`İsim: ${name}\nEmail: ${email}\n\nMesaj:\n${message}`);
+                  window.location.href = `mailto:info@turzzai.com?subject=${subject}&body=${body}`;
+                }} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-foreground">İsim Soyisim</Label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      required
+                      maxLength={100}
+                      className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="İsminiz"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-foreground">E-posta</Label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      maxLength={255}
+                      className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="email@ornek.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-foreground">Mesajınız</Label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      required
+                      maxLength={1000}
+                      rows={4}
+                      className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                      placeholder="Mesajınızı buraya yazın..."
+                    />
+                  </div>
+                  <Button type="submit" className="w-full bg-gradient-ocean hover:opacity-90">
+                    Mesaj Gönder
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
