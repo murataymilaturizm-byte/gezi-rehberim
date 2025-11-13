@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Accordion,
   AccordionContent,
@@ -8,10 +10,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Index = () => {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
+  const [isYearly, setIsYearly] = useState(false);
 
   useEffect(() => {
     const observers = sectionsRef.current.map((section, index) => {
@@ -78,10 +81,29 @@ const Index = () => {
     "Her cihazdan erişim - Mobil uyumlu admin paneli"
   ];
 
+  const calculatePrice = (basePrice: number, yearly: boolean) => {
+    if (yearly && typeof basePrice === 'number' && !isNaN(basePrice)) {
+      const yearlyPrice = basePrice * 12;
+      const discountedPrice = yearlyPrice * 0.9; // %10 indirim
+      return discountedPrice;
+    }
+    return basePrice;
+  };
+
+  const formatPrice = (priceStr: string, yearly: boolean) => {
+    if (priceStr === "Özel") return "Özel";
+    const price = parseFloat(priceStr.replace(".", ""));
+    if (isNaN(price)) return priceStr;
+    
+    const finalPrice = calculatePrice(price, yearly);
+    return finalPrice.toLocaleString('tr-TR');
+  };
+
   const pricingPlans = [
     {
       name: "Başlangıç",
       price: "3.999",
+      monthlyPrice: 3999,
       period: "/ay",
       description: "Küçük acenteler için ideal",
       features: [
@@ -96,6 +118,7 @@ const Index = () => {
     {
       name: "Profesyonel",
       price: "7.999",
+      monthlyPrice: 7999,
       period: "/ay",
       description: "Büyüyen işletmeler için",
       features: [
@@ -111,6 +134,7 @@ const Index = () => {
     {
       name: "Kurumsal",
       price: "Özel",
+      monthlyPrice: 0,
       period: "fiyat",
       description: "Büyük acenteler için",
       features: [
@@ -420,13 +444,33 @@ const Index = () => {
       {/* Pricing Section */}
       <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Size Uygun Planı Seçin
             </h3>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
               İşletmenizin ihtiyaçlarına göre esnek fiyatlandırma seçenekleri
             </p>
+            
+            {/* Billing Period Toggle */}
+            <div className="flex items-center justify-center gap-3 p-4 bg-card rounded-lg w-fit mx-auto border border-border">
+              <Label htmlFor="landing-billing-toggle" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
+                Aylık
+              </Label>
+              <Switch
+                id="landing-billing-toggle"
+                checked={isYearly}
+                onCheckedChange={setIsYearly}
+              />
+              <Label htmlFor="landing-billing-toggle" className={isYearly ? "font-semibold" : "text-muted-foreground"}>
+                Yıllık
+              </Label>
+              {isYearly && (
+                <span className="ml-2 text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+                  %10 İndirim
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -450,9 +494,25 @@ const Index = () => {
                     <p className="text-muted-foreground text-sm">{plan.description}</p>
                   </div>
                   
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold text-foreground">
+                        {formatPrice(plan.price, isYearly)}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {plan.price === "Özel" ? plan.period : isYearly ? "₺/yıl" : "₺/ay"}
+                      </span>
+                    </div>
+                    {isYearly && plan.monthlyPrice > 0 && (
+                      <div className="mt-2">
+                        <p className="text-sm text-muted-foreground line-through">
+                          {(plan.monthlyPrice * 12).toLocaleString('tr-TR')}₺/yıl
+                        </p>
+                        <p className="text-sm text-green-600 font-medium">
+                          {(plan.monthlyPrice * 12 * 0.1).toLocaleString('tr-TR')}₺ tasarruf
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <Button 
