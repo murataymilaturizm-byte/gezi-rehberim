@@ -162,9 +162,9 @@ const Index = () => {
     },
     {
       name: "Kurumsal",
-      price: "Özel",
-      monthlyPrice: 0,
-      period: "fiyat",
+      price: "14.999",
+      monthlyPrice: 14999,
+      period: "/ay",
       description: "Büyük acenteler ve zincir işletmeler için",
       features: [
         "💬 Sınırsız WhatsApp mesajı",
