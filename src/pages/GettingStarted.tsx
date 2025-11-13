@@ -1,0 +1,314 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowRight, 
+  CheckCircle2, 
+  Smartphone, 
+  Plus, 
+  MessageSquare,
+  Settings,
+  Upload,
+  Send,
+  Zap
+} from "lucide-react";
+import turzzLogo from "@/assets/turzz-logo-orange.png";
+
+const GettingStarted = () => {
+  const steps = [
+    {
+      number: 1,
+      title: "WhatsApp Business Numaranızı Ekleyin",
+      icon: Smartphone,
+      duration: "2 dakika",
+      description: "WhatsApp Business numaranızı sisteme tanıtın ve müşterilerinizle iletişime başlayın.",
+      substeps: [
+        {
+          title: "WhatsApp Business oluşturun",
+          description: "Henüz yoksa WhatsApp Business uygulamasını indirin ve iş numaranızı kaydedin."
+        },
+        {
+          title: "Admin paneline giriş yapın",
+          description: "Hesabınızla giriş yapıp 'Ayarlar' sekmesine gidin."
+        },
+        {
+          title: "WhatsApp numaranızı ekleyin",
+          description: "WhatsApp Business numaranızı (örn: +905551234567) 'WhatsApp Numarası' alanına yazın ve kaydedin."
+        }
+      ],
+      tips: [
+        "Numarayı +90 ile başlayan uluslararası formatta yazın",
+        "WhatsApp Business hesabınızın aktif olduğundan emin olun",
+        "Tüm teknik altyapıyı biz yönetiyoruz, ekstra kurulum gerekmez"
+      ]
+    },
+    {
+      number: 2,
+      title: "Turlarınızı ve Tarihlerini Yükleyin",
+      icon: Upload,
+      duration: "5-10 dakika",
+      description: "Tur bilgilerinizi ve müsait tarihlerinizi sisteme ekleyin. Müşteriler bu bilgilere WhatsApp'tan ulaşabilecek.",
+      substeps: [
+        {
+          title: "Yeni tur oluşturun",
+          description: "'Turlar' sekmesine gidin ve 'Yeni Tur Ekle' butonuna tıklayın."
+        },
+        {
+          title: "Tur bilgilerini doldurun",
+          description: "Destinasyon, tur tipi (günübirlik/2-3 gece), açıklama, program URL'si gibi bilgileri girin."
+        },
+        {
+          title: "Tarihleri ekleyin",
+          description: "Her tur için kalkış tarihleri, fiyatlar (yetişkin, çocuk, tek kişilik) ve kontenjanları belirleyin."
+        }
+      ],
+      tips: [
+        "Detaylı program URL'si eklerseniz müşteriler daha fazla bilgi alabilir",
+        "Fiyatları güncel tutun, sistem otomatik olarak müşterilere gösterecek",
+        "Kontenjan bilgisi müşterilere gösterilir, acele etmelerini sağlar"
+      ]
+    },
+    {
+      number: 3,
+      title: "İlk Mesajı Gönderin ve Test Edin",
+      icon: Send,
+      duration: "1 dakika",
+      description: "Sisteminizin çalıştığından emin olmak için test mesajı gönderin.",
+      substeps: [
+        {
+          title: "Kendi numaranızdan mesaj gönderin",
+          description: "WhatsApp'tan kaydettiğiniz iş numaranıza 'Merhaba' yazın."
+        },
+        {
+          title: "Bot yanıtını kontrol edin",
+          description: "Bot size hoş geldin mesajı ve hızlı butonlar gönderecek. 'Turları Gör' seçeneğini deneyin."
+        },
+        {
+          title: "Tur araması yapın",
+          description: "'Günübirlik Kapadokya' gibi bir mesaj gönderin ve turlarınızın listelendiğini görün."
+        }
+      ],
+      tips: [
+        "WhatsApp Yönetim panelinden tüm konuşmaları takip edebilirsiniz",
+        "Bot 7/24 çalışır, siz çevrimdışı olsanız bile",
+        "Müşteri profilleri otomatik oluşturulur ve tercihler kaydedilir"
+      ]
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <a href="/" className="flex items-center gap-3">
+                <img src={turzzLogo} alt="Turzz Logo" className="h-16 w-auto" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Akıllı Tur Satış Sistemi</p>
+                </div>
+              </a>
+            </div>
+            <Button asChild className="bg-gradient-ocean hover:opacity-90">
+              <a href="/auth">Giriş Yap</a>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-b from-accent/20 to-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <Badge className="px-4 py-2 text-sm font-medium bg-primary/10 text-primary border-primary/20">
+              <Zap className="w-4 h-4 mr-2" />
+              Başlangıç Rehberi
+            </Badge>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              3 Adımda Başlayın
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Sadece 10-15 dakika içinde WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+              <span>Teknik bilgi gerektirmez</span>
+              <span className="mx-2">•</span>
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+              <span>Tüm altyapıyı biz yönetiyoruz</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Timeline Steps */}
+      <section className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto space-y-16">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div key={index} className="relative">
+                  {/* Connecting Line */}
+                  {index < steps.length - 1 && (
+                    <div className="absolute left-8 top-24 bottom-0 w-0.5 bg-gradient-to-b from-primary/50 to-transparent hidden md:block" />
+                  )}
+                  
+                  <Card className="relative border-2 border-border/50 shadow-lg hover:shadow-xl transition-shadow">
+                    <CardContent className="p-8 md:p-10">
+                      <div className="flex flex-col md:flex-row gap-6">
+                        {/* Step Number & Icon */}
+                        <div className="flex flex-col items-center md:items-start gap-4 flex-shrink-0">
+                          <div className="relative">
+                            <div className="w-16 h-16 rounded-full bg-gradient-ocean flex items-center justify-center shadow-lg">
+                              <span className="text-2xl font-bold text-white">{step.number}</span>
+                            </div>
+                            <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                              <Icon className="w-5 h-5 text-secondary-foreground" />
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">
+                            {step.duration}
+                          </Badge>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 space-y-6">
+                          <div>
+                            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+                              {step.title}
+                            </h3>
+                            <p className="text-muted-foreground text-lg">
+                              {step.description}
+                            </p>
+                          </div>
+
+                          {/* Sub-steps */}
+                          <div className="space-y-4">
+                            {step.substeps.map((substep, subIndex) => (
+                              <div key={subIndex} className="flex gap-4 items-start">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-1">
+                                  <span className="text-xs font-semibold text-primary">
+                                    {subIndex + 1}
+                                  </span>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-foreground mb-1">
+                                    {substep.title}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {substep.description}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Tips */}
+                          <div className="bg-accent/20 rounded-lg p-5 border border-accent/30">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Settings className="w-5 h-5 text-primary" />
+                              <span className="font-semibold text-foreground">İpuçları</span>
+                            </div>
+                            <ul className="space-y-2">
+                              {step.tips.map((tip, tipIndex) => (
+                                <li key={tipIndex} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                                  <span>{tip}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 md:py-24 bg-gradient-to-b from-background to-accent/10">
+        <div className="container mx-auto px-4">
+          <Card className="max-w-4xl mx-auto border-2 border-primary/20 shadow-2xl">
+            <CardContent className="p-8 md:p-12 text-center space-y-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-ocean mb-4">
+                <MessageSquare className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                Hazırsınız! Şimdi Başlayın
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                14 gün ücretsiz deneme ile sistemi test edin. Kredi kartı bilgisi gerekmez. İstediğiniz zaman iptal edebilirsiniz.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-ocean hover:opacity-90 text-lg px-8"
+                  asChild
+                >
+                  <a href="/auth?mode=signup">
+                    Ücretsiz Deneyin
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </a>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="text-lg px-8"
+                  asChild
+                >
+                  <a href="/">
+                    Ana Sayfaya Dön
+                  </a>
+                </Button>
+              </div>
+              <div className="flex items-center justify-center gap-6 pt-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <span>14 gün ücretsiz</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <span>Kredi kartı gerekmez</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <span>İstediğiniz zaman iptal</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 py-8 bg-card/30">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-3">
+              <img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto" />
+              <p className="text-sm text-muted-foreground">
+                © 2024 Turzz. Tüm hakları saklıdır.
+              </p>
+            </div>
+            <div className="flex gap-6 text-sm">
+              <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                Ana Sayfa
+              </a>
+              <a href="/auth" className="text-muted-foreground hover:text-foreground transition-colors">
+                Giriş
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default GettingStarted;
