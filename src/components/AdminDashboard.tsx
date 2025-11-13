@@ -121,10 +121,13 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       const trialAgencies = agencies?.filter(a => a.subscription_status === 'trial').length || 0;
       const totalMessagesUsed = agencies?.reduce((sum, a) => sum + (a.monthly_message_count || 0), 0) || 0;
 
+      // Sadece aktif ve ücretli acenteleri say (trial hariç)
+      const paidAgencies = agencies?.filter(a => a.active && a.subscription_status === 'active') || [];
+      
       const agenciesByPlan = {
-        starter: agencies?.filter(a => a.plan_type === 'starter').length || 0,
-        professional: agencies?.filter(a => a.plan_type === 'professional').length || 0,
-        enterprise: agencies?.filter(a => a.plan_type === 'enterprise').length || 0,
+        starter: paidAgencies.filter(a => a.plan_type === 'starter').length || 0,
+        professional: paidAgencies.filter(a => a.plan_type === 'professional').length || 0,
+        enterprise: paidAgencies.filter(a => a.plan_type === 'enterprise').length || 0,
       };
 
       setSuperAdminStats({
@@ -285,6 +288,22 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
 
   // Super Admin Dashboard
   if (isSuperAdmin && superAdminStats) {
+    // Plan fiyatları (aylık)
+    const planPrices = {
+      starter: 2999,
+      professional: 7999,
+      enterprise: 14999,
+    };
+
+    // Aylık gelir hesaplama (sadece aktif ve ücretli acenteler)
+    const monthlyRevenue = 
+      (superAdminStats.agenciesByPlan.starter * planPrices.starter) +
+      (superAdminStats.agenciesByPlan.professional * planPrices.professional) +
+      (superAdminStats.agenciesByPlan.enterprise * planPrices.enterprise);
+
+    // Yıllık gelir tahmini
+    const yearlyRevenue = monthlyRevenue * 12;
+
     return (
       <div className="space-y-6">
         {/* Super Admin Stats Cards */}
@@ -366,7 +385,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 {superAdminStats.agenciesByPlan.starter}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                500 mesaj/ay
+                {superAdminStats.agenciesByPlan.starter} × 2.999₺ = {(superAdminStats.agenciesByPlan.starter * planPrices.starter).toLocaleString('tr-TR')}₺/ay
               </p>
             </CardContent>
           </Card>
@@ -380,7 +399,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 {superAdminStats.agenciesByPlan.professional}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                2.000 mesaj/ay
+                {superAdminStats.agenciesByPlan.professional} × 7.999₺ = {(superAdminStats.agenciesByPlan.professional * planPrices.professional).toLocaleString('tr-TR')}₺/ay
               </p>
             </CardContent>
           </Card>
@@ -394,11 +413,67 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 {superAdminStats.agenciesByPlan.enterprise}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Sınırsız mesaj
+                {superAdminStats.agenciesByPlan.enterprise} × 14.999₺ = {(superAdminStats.agenciesByPlan.enterprise * planPrices.enterprise).toLocaleString('tr-TR')}₺/ay
               </p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Revenue Cards */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="shadow-card bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                <TrendingUp className="w-5 h-5" />
+                Aylık Gelir (Tahmin)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-green-600 dark:text-green-400">
+                {monthlyRevenue.toLocaleString('tr-TR')}₺
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Sadece aktif ve ücretli abonelikler (trial hariç)
+              </p>
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Deneme acenteler:</span>
+                  <Badge variant="secondary">{superAdminStats.trialAgencies} acente</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                <TrendingUp className="w-5 h-5" />
+                Yıllık Gelir (Tahmin)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                {yearlyRevenue.toLocaleString('tr-TR')}₺
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Mevcut ücretli aboneliklerin yıllık değeri
+              </p>
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Ortalama acente değeri:</span>
+                  <span className="font-medium">
+                    {((superAdminStats.agenciesByPlan.starter + superAdminStats.agenciesByPlan.professional + superAdminStats.agenciesByPlan.enterprise) > 0
+                      ? Math.round(monthlyRevenue / (superAdminStats.agenciesByPlan.starter + superAdminStats.agenciesByPlan.professional + superAdminStats.agenciesByPlan.enterprise))
+                      : 0
+                    ).toLocaleString('tr-TR')}₺/ay
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Plan Distribution - Removed old cards */}
 
         {/* Info Message */}
         <Card className="shadow-card bg-accent/30 border-primary/20">
