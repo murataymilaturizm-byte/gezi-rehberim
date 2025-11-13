@@ -540,7 +540,7 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
-              <div className="order-1 md:order-2 flex justify-center">
+              <div className="hidden md:flex order-1 md:order-2 md:justify-center">
                 <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center">
                   <Users className="w-32 h-32 text-primary/40" />
                 </div>
@@ -549,7 +549,7 @@ const Index = () => {
 
             {/* Conversation Analytics */}
             <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="flex justify-center">
+              <div className="hidden md:flex md:justify-center">
                 <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl flex items-center justify-center">
                   <BarChart3 className="w-32 h-32 text-secondary/40" />
                 </div>
@@ -610,7 +610,7 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
-              <div className="order-1 md:order-2 flex justify-center">
+              <div className="hidden md:flex order-1 md:order-2 md:justify-center">
                 <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center">
                   <Bell className="w-32 h-32 text-primary/40" />
                 </div>
