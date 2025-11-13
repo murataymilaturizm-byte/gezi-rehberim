@@ -12,6 +12,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -108,7 +115,6 @@ const Admin = () => {
     id: "",
     type: "tour"
   });
-  const [showWhatsAppOnly, setShowWhatsAppOnly] = useState(false);
 
   useEffect(() => {
     // Check authentication
@@ -202,7 +208,7 @@ const Admin = () => {
     if (session) {
       loadData();
     }
-  }, [activeTab, session, showWhatsAppOnly]);
+  }, [activeTab, session]);
 
   const loadData = async () => {
     setLoading(true);
@@ -225,7 +231,7 @@ const Admin = () => {
         if (error) throw error;
         setTours(data || []);
       } else {
-        let query = supabase
+        const { data, error } = await supabase
           .from("registrations")
           .select(`
             *,
@@ -233,13 +239,6 @@ const Admin = () => {
             tour_dates (departure_date)
           `)
           .order("created_at", { ascending: false });
-        
-        // WhatsApp filtresi
-        if (showWhatsAppOnly) {
-          query = query.ilike("note", "%WhatsApp kayıt:%");
-        }
-        
-        const { data, error } = await query;
         
         if (error) throw error;
         setRegistrations(data || []);
@@ -298,6 +297,31 @@ const Admin = () => {
       toast({
         title: "Hata",
         description: "Silme işlemi başarısız",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleStatusChange = async (registrationId: string, newStatus: "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED") => {
+    try {
+      const { error } = await supabase
+        .from("registrations")
+        .update({ status: newStatus })
+        .eq("id", registrationId);
+      
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı! ✅",
+        description: "Kayıt durumu güncellendi",
+      });
+      
+      loadData();
+    } catch (error) {
+      console.error("Update status error:", error);
+      toast({
+        title: "Hata",
+        description: "Durum güncellenemedi",
         variant: "destructive"
       });
     }
@@ -452,15 +476,6 @@ const Admin = () => {
                 {activeTab === "tours" ? "Tur Listesi" : "Kayıt Listesi"}
               </CardTitle>
               <div className="flex gap-2">
-                {activeTab === "registrations" && (
-                  <Button
-                    variant={showWhatsAppOnly ? "default" : "outline"}
-                    onClick={() => setShowWhatsAppOnly(!showWhatsAppOnly)}
-                    className={showWhatsAppOnly ? "bg-gradient-ocean" : ""}
-                  >
-                    {showWhatsAppOnly ? "Tüm Kayıtlar" : "WhatsApp Kayıtları"}
-                  </Button>
-                )}
                 {activeTab === "tours" && (
                   <Button
                     onClick={() => {
@@ -600,7 +615,7 @@ const Admin = () => {
                   {registrations.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center text-muted-foreground">
-                        {showWhatsAppOnly ? "WhatsApp kayıt bulunamadı" : "Henüz kayıt yok"}
+                        Henüz kayıt yok
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -615,17 +630,28 @@ const Admin = () => {
                         </TableCell>
                         <TableCell>{reg.pax}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              reg.status === "CONFIRMED"
-                                ? "default"
-                                : reg.status === "CANCELLED"
-                                ? "destructive"
-                                : "secondary"
-                            }
+                          <Select
+                            value={reg.status}
+                            onValueChange={(value) => handleStatusChange(reg.id, value as "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED")}
                           >
-                            {statusLabels[reg.status] || reg.status}
-                          </Badge>
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="NEW">
+                                <Badge variant="secondary">Yeni</Badge>
+                              </SelectItem>
+                              <SelectItem value="PENDING">
+                                <Badge variant="secondary">Beklemede</Badge>
+                              </SelectItem>
+                              <SelectItem value="CONFIRMED">
+                                <Badge variant="default">Onaylandı</Badge>
+                              </SelectItem>
+                              <SelectItem value="CANCELLED">
+                                <Badge variant="destructive">İptal</Badge>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell>
                           {reg.note?.includes("WhatsApp kayıt:") ? (
