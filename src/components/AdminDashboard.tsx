@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
+import { UsageStats } from "@/components/UsageStats";
 
 interface Stats {
   totalTours: number;
@@ -225,6 +226,9 @@ export const AdminDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Usage Stats */}
+      <UsageStats />
+      
       {/* Date Range Filter */}
       <Card className="shadow-card">
         <CardContent className="pt-6">
