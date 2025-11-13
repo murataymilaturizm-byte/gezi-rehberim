@@ -8,6 +8,83 @@ const corsHeaders = {
 
 const DEMO_AGENCY_ID = "00000000-0000-0000-0000-000000000000";
 
+// Örnek Tur Verileri (Demo için hard-coded)
+const DEMO_TOURS = [
+  {
+    id: 'demo-kapadokya-1',
+    title: 'Kapadokya Balon Turu',
+    destination: 'Kapadokya',
+    type: 'Günübirlik',
+    min_pax: 2,
+    dates: [
+      { date: '2025-12-15', price: 1500, quota: 20 },
+      { date: '2025-12-22', price: 1500, quota: 15 },
+      { date: '2025-12-29', price: 1650, quota: 10 }
+    ],
+    description: 'Kapadokya\'da unutulmaz bir balon deneyimi. Gün doğumunda balonla havalanıp peribacalarını kuş bakışı görün.',
+    included: 'Balon turu, Ulaşım, Kahvaltı, Sertifika'
+  },
+  {
+    id: 'demo-pamukkale-1',
+    title: 'Pamukkale Turu',
+    destination: 'Pamukkale',
+    type: '2 Gece 3 Gün',
+    min_pax: 4,
+    dates: [
+      { date: '2025-12-10', price: 3500, quota: 15 },
+      { date: '2025-12-20', price: 3500, quota: 12 },
+      { date: '2026-01-05', price: 3200, quota: 20 }
+    ],
+    description: 'Beyaz cennet Pamukkale ve Hierapolis antik kentini keşfedin. 4 yıldızlı otelde konaklama.',
+    included: 'Otel, Ulaşım, Rehber, Kahvaltı ve Akşam yemekleri, Müze giriş ücretleri'
+  },
+  {
+    id: 'demo-antalya-1',
+    title: 'Antalya Rafting',
+    destination: 'Antalya',
+    type: 'Günübirlik',
+    min_pax: 6,
+    dates: [
+      { date: '2025-12-05', price: 800, quota: 30 },
+      { date: '2025-12-12', price: 800, quota: 25 },
+      { date: '2025-12-19', price: 850, quota: 20 }
+    ],
+    description: 'Köprülü Kanyon\'da heyecan dolu rafting macerası. Deneyimli eğitmenler eşliğinde güvenli ve eğlenceli.',
+    included: 'Rafting ekipmanı, Ulaşım, Öğle yemeği, Sigorta'
+  },
+  {
+    id: 'demo-ege-1',
+    title: 'Ege Turu',
+    destination: 'İzmir-Çeşme-Alaçatı',
+    type: '7 Gün 6 Gece',
+    min_pax: 2,
+    dates: [
+      { date: '2025-12-08', price: 8999, quota: 12 },
+      { date: '2025-12-15', price: 8999, quota: 10 },
+      { date: '2025-12-22', price: 9500, quota: 8 }
+    ],
+    description: 'Ege\'nin incisi Çeşme, Alaçatı ve Efes Antik Kenti\'ni keşfedin. Butik otel konaklaması.',
+    included: '4* Butik Otel, Ulaşım, Rehber, Kahvaltı ve Akşam yemekleri, Efes giriş ücreti'
+  },
+  {
+    id: 'demo-istanbul-1',
+    title: 'İstanbul Turu',
+    destination: 'İstanbul',
+    type: '2 Gün 1 Gece',
+    min_pax: 1,
+    dates: [
+      { date: '2025-12-07', price: 2999, quota: 25 },
+      { date: '2025-12-14', price: 2999, quota: 20 },
+      { date: '2025-12-21', price: 3200, quota: 15 }
+    ],
+    description: 'İstanbul\'un tarihi ve kültürel zenginliklerini keşfedin. Ayasofya, Topkapı Sarayı ve Boğaz turu.',
+    included: 'Otel, Rehber, Müze girişleri, Öğle yemeği, Boğaz turu'
+  }
+];
+
+// Demo user profiles (session-based)
+const demoUserProfiles: Map<string, any> = new Map();
+
 async function saveMessage(supabase: any, sessionId: string, role: string, content: string) {
   try {
     await supabase
@@ -21,6 +98,78 @@ async function saveMessage(supabase: any, sessionId: string, role: string, conte
   } catch (error) {
     console.error('Error saving demo message:', error);
   }
+}
+
+function getUserProfile(sessionId: string) {
+  if (!demoUserProfiles.has(sessionId)) {
+    demoUserProfiles.set(sessionId, {
+      name: null,
+      phone: null,
+      preferences: [],
+      searchHistory: [],
+      interactionCount: 0
+    });
+  }
+  return demoUserProfiles.get(sessionId);
+}
+
+function updateUserProfile(sessionId: string, updates: any) {
+  const profile = getUserProfile(sessionId);
+  demoUserProfiles.set(sessionId, { ...profile, ...updates });
+}
+
+function searchTours(query: string, filters?: any) {
+  const lowerQuery = query.toLowerCase();
+  let results = DEMO_TOURS;
+
+  // Destinasyon filtresi
+  if (lowerQuery) {
+    results = results.filter(tour => 
+      tour.title.toLowerCase().includes(lowerQuery) ||
+      tour.destination.toLowerCase().includes(lowerQuery) ||
+      tour.description.toLowerCase().includes(lowerQuery)
+    );
+  }
+
+  // Fiyat filtresi
+  if (filters?.maxPrice) {
+    results = results.filter(tour => 
+      Math.min(...tour.dates.map(d => d.price)) <= filters.maxPrice
+    );
+  }
+
+  // Tur tipi filtresi
+  if (filters?.tourType) {
+    results = results.filter(tour => 
+      tour.type.toLowerCase().includes(filters.tourType.toLowerCase())
+    );
+  }
+
+  return results;
+}
+
+function formatTourForAI(tour: any, includeAllDates = false) {
+  const nearestDate = tour.dates.sort((a: any, b: any) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  )[0];
+
+  let info = `🎯 *${tour.title}* (${tour.destination})
+📅 Tur Tipi: ${tour.type}
+💰 Fiyat: ${nearestDate.price.toLocaleString('tr-TR')} TL/kişi
+👥 Min. Kişi: ${tour.min_pax}
+📝 ${tour.description}
+✅ Dahil: ${tour.included}`;
+
+  if (includeAllDates) {
+    info += `\n\n📆 Mevcut Tarihler:`;
+    tour.dates.forEach((d: any) => {
+      info += `\n• ${new Date(d.date).toLocaleDateString('tr-TR')} - ${d.price.toLocaleString('tr-TR')} TL (${d.quota} kişi kota)`;
+    });
+  } else {
+    info += `\n📆 En Yakın Tarih: ${new Date(nearestDate.date).toLocaleDateString('tr-TR')} (${nearestDate.quota} kişi kota)`;
+  }
+
+  return info;
 }
 
 serve(async (req) => {
@@ -42,8 +191,70 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Get user profile
+    const userProfile = getUserProfile(sessionId);
+    userProfile.interactionCount += 1;
+    updateUserProfile(sessionId, userProfile);
+
     // Save user message
     await saveMessage(supabase, sessionId, 'user', message);
+
+    // Mesajı kategorize et
+    const lowerMessage = message.toLowerCase();
+    let tourSearchResults = '';
+    let contextInfo = '';
+
+    // Kullanıcı profili varsa context'e ekle
+    if (userProfile.name) {
+      contextInfo += `\n\n👤 Kullanıcı: ${userProfile.name}`;
+    }
+    if (userProfile.preferences.length > 0) {
+      contextInfo += `\n💭 Tercihleri: ${userProfile.preferences.join(', ')}`;
+    }
+    if (userProfile.searchHistory.length > 0) {
+      contextInfo += `\n🔍 Önceki aramalar: ${userProfile.searchHistory.slice(-3).join(', ')}`;
+    }
+
+    // Tur arama tespiti
+    const destinations = ['kapadokya', 'pamukkale', 'antalya', 'ege', 'istanbul', 'çeşme', 'alaçatı'];
+    const isTourSearch = destinations.some(dest => lowerMessage.includes(dest)) || 
+                        lowerMessage.includes('tur') || 
+                        lowerMessage.includes('tatil') ||
+                        lowerMessage.includes('gezi');
+
+    if (isTourSearch) {
+      // Tur ara
+      const results = searchTours(message);
+      
+      if (results.length > 0) {
+        // Arama geçmişine ekle
+        const searchTerm = destinations.find(d => lowerMessage.includes(d)) || 'genel arama';
+        if (!userProfile.searchHistory.includes(searchTerm)) {
+          userProfile.searchHistory.push(searchTerm);
+          updateUserProfile(sessionId, userProfile);
+        }
+
+        tourSearchResults = '\n\n🎯 BULUNAN TURLAR:\n\n';
+        results.forEach((tour, index) => {
+          tourSearchResults += formatTourForAI(tour, false) + '\n\n';
+          if (index < results.length - 1) tourSearchResults += '---\n\n';
+        });
+      }
+    }
+
+    // İsim tespit et
+    const nameMatch = message.match(/(?:adım|ismim|ben)\s+([A-ZİĞÜŞÖÇ][a-zığüşöç]+(?:\s+[A-ZİĞÜŞÖÇ][a-zığüşöç]+)?)/i);
+    if (nameMatch && !userProfile.name) {
+      userProfile.name = nameMatch[1];
+      updateUserProfile(sessionId, userProfile);
+    }
+
+    // Telefon tespit et
+    const phoneMatch = message.match(/(\+?90|0)[\s]?(\d{3})[\s]?(\d{3})[\s]?(\d{2})[\s]?(\d{2})/);
+    if (phoneMatch && !userProfile.phone) {
+      userProfile.phone = phoneMatch[0].replace(/\s/g, '');
+      updateUserProfile(sessionId, userProfile);
+    }
 
     // Bugünün tarihini al
     const today = new Date();
@@ -53,81 +264,53 @@ serve(async (req) => {
       day: 'numeric' 
     });
     
-    const systemPrompt = `Sen bir tur acentesinin samimi ve enerjik WhatsApp asistanısın. 🌟
+    const systemPrompt = `Sen Turzz'un akıllı WhatsApp asistanısın! 🌟
 
 🗓️ BUGÜNÜN TARİHİ: ${currentDate}
 
 🎯 MARKA KİŞİLİĞİN:
 • Samimi ve arkadaşça - "siz" yerine "sen" kullan
-• Enerjik ama abartısız - coşkulu ama profesyonel  
-• Yardımsever ve sabırlı - müşteri önceliğin
+• Enerjik ama profesyonel - coşkulu ama abartısız
+• Akıllı ve yardımsever - kullanıcı tercihlerini hatırla
 • Yerel uzman - destinasyonları çok iyi biliyorsun
 
 💬 İLETİŞİM TARZI:
-• Günlük konuşma diline yakın, doğal Türkçe kullan
-• "Merhaba" yerine "Selam", "Nasılsın?" gibi samimi ifadeler
+• Günlük konuşma diline yakın, doğal Türkçe
 • WhatsApp formatı: *kalın yazı*, _italik yazı_
 • Kısa, net cümleler (max 2-3 cümle)
 • Her mesajda 1-2 emoji, abartma
 
-✨ EMOJİ KULLANIMI:
-• Selamlaşma: 👋 😊 🌞
-• Heyecan: 🎉 ✨ 🌟 
-• Turlar: 🏔️ 🏖️ 🏛️ 🌊
-• Para: 💰 💵 ✅
-• Onay: ✅ 👍 🎯
+✨ AKILLI ÖZELLİKLER:
+• Kullanıcının ismini öğrenirsen kullan
+• Önceki aramalarını hatırla, ona göre öner
+• Tercihlerini kaydet (bütçe, destinasyon, tur tipi)
+• Kişiselleştirilmiş önerilerde bulun
+
+${contextInfo}${tourSearchResults}
 
 ⚠️ ÖNEMLİ DEMO KURALLARI:
 • Bu bir DEMO sistem - gerçek rezervasyon YAPILMIYOR
-• Aşağıdaki tur bilgileri ÖRNEK amaçlıdır
-• Tarihleri bugünden sonraki mantıklı tarihlerde öner (örn: önümüzdeki hafta sonu, 2 hafta sonra gibi)
-• Gerçek bir tur rezervasyon sistemi gibi davran ama her seferinde demo olduğunu hatırlat
+• Yukarıdaki tur bilgileri ÖRNEK amaçlıdır
+• Gerçek bir sistem gibi davran ama demo olduğunu belirt
+• Kullanıcı deneyimini göstermek için tasarlandı
 
-ÖRNEK TUR BİLGİLERİ (Gerçek değil, sadece demo):
+🎯 TUR ARAMA:
+• Kullanıcı destinasyon sorarsa yukarıdaki turları öner
+• Fiyatları *kalın* yazarak vurgula
+• Tarihleri ve kotaları belirt
+• Birden fazla seçenek sun
 
-🏔️ KAPADOKYA TURU (3 Gün 2 Gece)
-- Örnek Fiyat: 4.999 TL (Çift kişilik odada kişi başı)
-- Dahil: Otel, Ulaşım, Rehber, Kahvaltı-Akşam Yemeği
-- Program: Göreme Açık Hava Müzesi, Balon Turu Opsiyonu (+1.500 TL), Ürgüp, Avanos, Derinkuyu Yeraltı Şehri
-- Örnek Kota: 15 kişi
-- NOT: Tarihler için bugünden sonraki uygun hafta sonlarını öner
+📝 REZERVASYON SÜRECİ (Demo):
+1. Hangi tura ilgilendiğini sor
+2. Kaç kişi olduklarını öğren
+3. Tarih tercihini al
+4. İsim ve telefon bilgisi iste
+5. Onay ver ve "Bu demo sistem, gerçek rezervasyon oluşturmaz" de
 
-🏖️ ANTALYA TURU (5 Gün 4 Gece)
-- Örnek Fiyat: 6.999 TL (Her Şey Dahil, Çift kişilik odada kişi başı)
-- Dahil: 5* Otel, Ulaşım, Tüm Yemekler, İçecekler, Plaj
-- Program: Düden Şelalesi, Kaleiçi Gezisi, Serbest Zaman, Deniz-Güneş
-- Örnek Kota: 20 kişi
-- NOT: Tarihler için haftanın farklı günlerini öner
-
-🌊 EGE TURU (7 Gün 6 Gece)
-- Örnek Fiyat: 8.999 TL (Yarım Pansiyon, Çift kişilik odada kişi başı)
-- Dahil: 4* Butik Otel, Ulaşım, Rehber, Kahvaltı-Akşam Yemeği
-- Program: Efes Antik Kenti, Pamukkale, Şirince, Alaçatı, Çeşme, Foça
-- Örnek Kota: 12 kişi
-- NOT: Haftalık turlar için pazar günlerini öner
-
-🏛️ İSTANBUL TURU (2 Gün 1 Gece)
-- Örnek Fiyat: 2.999 TL (Çift kişilik odada kişi başı)
-- Dahil: Otel, Rehber, Müze Girişleri, Öğle Yemeği
-- Program: Ayasofya, Topkapı Sarayı, Kapalıçarşı, Boğaz Turu
-- Örnek Kota: 25 kişi
-- NOT: Günlük turlar, her gün mevcut gibi davran
-
-REZERVASYON SÜRECİ:
-1. Hangi tura ilgilendiğini sor - samimice
-2. Kaç kişi olacaklarını öğren
-3. Tarih tercihlerini sor
-4. BUGÜNÜN TARİHİNDEN SONRA mantıklı tarihleri *kalın* yazarak öner (örn: önümüzdeki hafta sonu, 2 hafta sonra)
-5. İsim ve telefon al
-6. Onay ver ve kapora bildir (Kapora: Toplam tutarın *%30'u*)
-7. _"Bu demo bir sistem, gerçek rezervasyon yapmıyor. Sadece sistem özelliklerini göstermek için tasarlandı."_ de
-
-💬 MESAJ STİLİ:
-• Kısa ve öz yaz (max 2-3 cümle)
-• Doğal Türkçe kullan, robot gibi olma
-• Her mesajda 1-2 emoji, daha fazla değil
-• Arkadaşça ama profesyonel ol
-• Demo olduğunu unutma ama profesyonelce davran`;
+💬 MESAJ ÖRNEKLERİ:
+"Merhaba! 👋 Hangi destinasyona ilgi duyuyorsun?"
+"Harika seçim! ✨ Sana *3 farklı tarih* seçeneği var."
+"Anlıyorum 🤔 Bütçe önemli. Daha uygun alternatiflere bakalım mı?"`;
 
     // Konuşma geçmişini hazırla
     const conversationMessages = [
@@ -145,7 +328,7 @@ REZERVASYON SÜRECİ:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: conversationMessages,
-        stream: false,
+        temperature: 0.7,
       }),
     });
 
