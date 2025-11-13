@@ -409,19 +409,46 @@ async function handleGeneralChat(userMessage: string, userPhone: string, supabas
   const messages = [
     {
       role: 'system',
-      content: `Sen bir tur şirketinin samimi ve yardımsever WhatsApp asistanısın. 
-Kullanıcıyla doğal Türkçe konuş, sıcak ve dostane davran.
-Tur şirketimiz Kapadokya, Efes, Pamukkale, Antalya gibi destinasyonlara turlar düzenliyor.
-Kısa ve öz cevaplar ver (max 2-3 cümle).
+      content: `Sen bir tur şirketinin samimi ve enerjik WhatsApp asistanısın. 🌟
+
+🎯 MARKA KİŞİLİĞİN:
+• Samimi ve sıcakkanlı - arkadaşça konuş
+• Enerjik ama abartısız - coşkulu ama profesyonel
+• Yardımsever ve sabırlı - müşteri her şeyden önce gelir
+• Yerel uzman - destinasyonları çok iyi bilirsin
+
+💬 İLETİŞİM TARZI:
+• Günlük konuşma diline yakın, doğal Türkçe kullan
+• "Merhaba" yerine "Selam", "Nasılsın?" gibi samimi ifadeler tercih et
+• WhatsApp formatını kullan: *kalın yazı*, _italik yazı_
+• Uzun paragraflar yerine kısa, net cümleler (max 2-3 cümle)
+• Her mesajda 1-2 emoji kullan, abartma
+
+✨ EMOJİ KULLANIMI:
+• Selamlaşma: 👋 😊 🌞
+• Heyecan: 🎉 ✨ 🌟 💫
+• Turlar: 🗺️ 🏛️ 🎈 🚐
+• Lokasyon: 📍 🏔️ 🏖️
+• Para: 💰 💵 ✅
+• Onay/Başarı: ✅ 👍 🎯
+• Soru: 🤔 💭
+• İletişim: 📞 💬
 
 ${contextInfo}
 
-ÖNEMLİ KURALLAR:
-- Eğer kullanıcıyı tanıyorsan ve profil bilgileri varsa, bunu doğal şekilde konuşmana yansıt
-- Daha önce ilgilendiği turlara benzer önerilerde bulun
-- Konuşma geçmişi varsa tekrar selamlaşma, sadece soruyu direkt yanıtla
-- Kullanıcının tercihlerini hatırla ve buna göre öneride bulun
-- Bütçe bilgisi varsa, bütçesine uygun turları öner`
+🔑 ÖNEMLİ KURALLAR:
+• Kullanıcıyı tanıyorsan ismini kullan, daha kişisel ol
+• Daha önce ilgilendiği turlara benzer şeyler öner
+• Konuşma geçmişi varsa tekrar selamlaşma, direkt devam et
+• Kullanıcı tercihlerini hatırla, ona özel önerilerde bulun
+• Bütçe bilgisi varsa buna uygun turlar sun
+• Fiyatları *kalın* yazarak vurgula
+• Önemli bilgileri WhatsApp formatıyla vurgula
+
+📝 MESAJ ÖRNEKLERİ:
+"Selam! 👋 Kapadokya turlarımıza baktığını görüyorum. Sana *özel fiyatlar* var!"
+"Harika seçim! ✨ Bu tarihte *3 kişilik yerimiz* var, hemen ayırtabilirsin."
+"Anlıyorum 🤔 Bütçe önemli. Sana daha _uygun fiyatlı_ alternatiflere bakalım mı?"`
     },
     ...history,
     {
@@ -738,23 +765,23 @@ async function sendWhatsAppMessage(
 
 // Buton mesajları için hızlı cevaplar
 function createQuickReplyButtons(options: { text: string; emoji: string }[]) {
-  let message = '\n\n📱 *Hızlı Seçenekler:*\n\n';
+  let message = '\n\n💬 *Hızlı cevaplar:*\n';
   options.forEach((option, index) => {
-    message += `${option.emoji} ${index + 1}. ${option.text}\n`;
+    message += `${option.emoji} *${index + 1}* → ${option.text}\n`;
   });
-  message += '\n_Yukarıdaki seçeneklerden birinin numarasını yazabilirsiniz_';
+  message += '\n_Numara yaz, hemen yardımcı olayım!_ 👆';
   return message;
 }
 
 // WhatsApp formatı ile zenginleştirilmiş tur yanıtları
 function formatWhatsAppResponse(tours: any[], entities: any) {
   if (tours.length === 0) {
-    const message = '😊 Aradığınız kriterlere uygun tur şu anda bulunmuyor.\n\n' +
-      '💡 *Farklı bir seçenek deneyelim mi?*\n\n' +
-      '🔹 Başka bir tarih\n' +
-      '🔹 Farklı bir destinasyon\n' +
-      '🔹 Farklı tur tipi (günübirlik, 2 gece, vb.)\n\n' +
-      '📞 İsterseniz bize ulaşın, size _özel tur planlaması_ yapabiliriz!';
+    const message = 'Hmm... 🤔 Bu kriterlere tam uygun bir tur bulamadım.\n\n' +
+      '*Ama hemen pes etmeyelim!* 💪\n\n' +
+      '✨ Belki başka bir tarih?\n' +
+      '✨ Farklı bir destinasyon?\n' +
+      '✨ Başka tur tipi? (günübirlik, 2-3 gün)\n\n' +
+      '_Ara beni_ 📞 _sana özel bi tur planı yapalım!_';
     
     return message + createQuickReplyButtons([
       { text: 'Tüm turları göster', emoji: '🗺️' },
@@ -769,87 +796,88 @@ function formatWhatsAppResponse(tours: any[], entities: any) {
     }).format(price);
   };
 
-  let response = `🎉 *Harika! ${tours.length} Muhteşem Tur Buldum!*\n`;
-  response += `${'─'.repeat(30)}\n\n`;
+  let response = tours.length === 1 
+    ? `Bak ne buldum! 🎯 *Tam sana göre bir tur!*\n\n`
+    : `Harika haber! ✨ *${tours.length} süper tur* buldum sana!\n\n`;
 
   tours.slice(0, 3).forEach((tour, index) => {
-    // Tur başlığı - bold ve büyük
-    response += `*${index + 1}. ${tour.title.toUpperCase()}*\n`;
-    response += `${'·'.repeat(20)}\n`;
+    // Tur başlığı - bold
+    response += `*${index + 1}. ${tour.title}*\n`;
+    response += `📍 ${tour.destination}\n`;
     
-    // Lokasyon bilgisi
-    response += `📍 *Destinasyon:* ${tour.destination}\n`;
-    
-    // Kısa açıklama
+    // Kısa açıklama - italik ve doğal
     if (tour.program_kisa) {
-      response += `✨ _${tour.program_kisa}_\n\n`;
+      response += `_${tour.program_kisa}_\n`;
     }
+    response += '\n';
     
-    // Tarih ve fiyat bilgileri - daha organize
+    // Tarih ve fiyat bilgileri
     if (tour.dates && tour.dates.length > 0) {
       const firstDate = tour.dates[0];
       const depDate = new Date(firstDate.departure_date).toLocaleDateString('tr-TR', { 
-        day: '2-digit', 
-        month: 'short', 
-        year: 'numeric' 
+        day: 'numeric', 
+        month: 'short'
       });
       
-      response += `📅 *Tarih:* ${depDate}`;
-      
+      // Tarih
       if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
         const retDate = new Date(firstDate.return_date).toLocaleDateString('tr-TR', { 
-          day: '2-digit', 
+          day: 'numeric', 
           month: 'short' 
         });
-        response += ` → ${retDate}`;
+        response += `📅 ${depDate} - ${retDate}`;
+      } else {
+        response += `📅 ${depDate}`;
+      }
+      
+      if (tour.tur_sure) {
+        response += ` • ${tour.tur_sure}`;
       }
       response += '\n';
       
-      if (tour.tur_sure) {
-        response += `⏱️ *Süre:* ${tour.tur_sure}\n`;
+      // Fiyat - vurgulu ve doğal
+      response += `💰 *${formatPrice(firstDate.price_adult)} ${tour.currency}* kişi başı\n`;
+      
+      // Kontenjan - emoji ile durum
+      if (firstDate.quota > 10) {
+        response += `✅ Bol bol yer var (${firstDate.quota} kişi)\n`;
+      } else if (firstDate.quota > 0) {
+        response += `⚠️ Son ${firstDate.quota} kişilik yer!\n`;
+      } else {
+        response += `❌ Maalesef doldu 😔\n`;
       }
-      
-      // Fiyat - vurgulu
-      response += `\n💰 *FİYAT:* \`${formatPrice(firstDate.price_adult)} ${tour.currency}\` /kişi\n`;
-      
-      // Kontenjan durumu
-      const quotaEmoji = firstDate.quota > 10 ? '✅' : firstDate.quota > 0 ? '⚠️' : '❌';
-      const quotaText = firstDate.quota > 0 
-        ? `${firstDate.quota} kişilik yer mevcut` 
-        : '~Kontenjan doldu~';
-      response += `${quotaEmoji} *Kontenjan:* ${quotaText}\n`;
     } else {
-      response += `⚠️ _Tarih henüz planlanmadı_\n`;
-      response += `📞 Detaylı bilgi için bizimle iletişime geçin\n`;
+      response += `⏳ _Tarihler yakında açıklanacak_\n`;
+      response += `📞 Bize ulaş, seni haberdar edelim\n`;
     }
     
-    // Gezilecek yerler
+    // Gezilecek yerler - kısa ve öz
     if (tour.gezilecek_yerler) {
       const places = tour.gezilecek_yerler.split(',').slice(0, 3);
-      response += `\n🗺️ *Gezilecek Yerler:*\n`;
+      response += `\n🗺️ *Neler göreceksin:*\n`;
       places.forEach((place: string) => {
-        response += `   • ${place.trim()}\n`;
+        response += `  • ${place.trim()}\n`;
       });
       if (tour.gezilecek_yerler.split(',').length > 3) {
-        response += `   _...ve daha fazlası_\n`;
+        response += `  _+ daha fazlası..._\n`;
       }
     }
     
     // Program linki
     if (tour.program_url) {
-      response += `\n📄 Detaylı program: ${tour.program_url}\n`;
+      response += `\n📋 Detaylı program → ${tour.program_url}\n`;
     }
     
-    response += `\n${'─'.repeat(30)}\n\n`;
+    response += `\n${'─'.repeat(25)}\n\n`;
   });
 
-  // Daha fazla tur varsa
+  // Daha fazla tur varsa - doğal dil
   if (tours.length > 3) {
-    response += `✨ _...ve ${tours.length - 3} harika tur daha var!_\n\n`;
+    response += `🎈 _Bunlar sadece ilk 3'ü! ${tours.length - 3} tur daha var._\n\n`;
   }
 
-  // Call to action - butonlar ile
-  response += '💚 *Ne yapmak istersiniz?*';
+  // Call to action
+  response += '✨ *Sonraki adım?*';
   response += createQuickReplyButtons([
     { text: 'Kayıt olmak istiyorum', emoji: '✅' },
     { text: 'Daha fazla bilgi', emoji: '📞' },
