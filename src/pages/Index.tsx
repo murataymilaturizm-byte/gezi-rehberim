@@ -15,7 +15,7 @@ import { DemoChat } from "@/components/DemoChat";
 
 const Index = () => {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
-  const [isYearly, setIsYearly] = useState(false);
+  const [isYearly, setIsYearly] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const demoRef = useRef<HTMLDivElement>(null);
 
@@ -125,8 +125,8 @@ const Index = () => {
   const pricingPlans = [
     {
       name: "Başlangıç",
-      price: "3.999",
-      monthlyPrice: 3999,
+      price: "2.999",
+      monthlyPrice: 2999,
       period: "/ay",
       description: "Küçük acenteler ve yeni başlayanlar için",
       features: [
@@ -317,7 +317,7 @@ const Index = () => {
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8" onClick={scrollToDemo}>
-                Demo'yu İzle
+                Canlı Test Et
               </Button>
             </div>
           </div>
