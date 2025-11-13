@@ -38,7 +38,7 @@ export const TwilioSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, whatsapp_phone_number, active")
+        .select("id, twilio_phone_number, active")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -47,16 +47,15 @@ export const TwilioSettings = () => {
       if (agencyData) {
         setAgencyId(agencyData.id);
         
-        // Check if WhatsApp is configured
-        const isConfigured = 
-          (agencyData as any).whatsapp_phone_number !== null &&
-          (agencyData as any).whatsapp_phone_number !== "";
+        // Check if WhatsApp is configured - using twilio_phone_number as temp storage
+        const phoneNumber = (agencyData as any).twilio_phone_number || "";
+        const isConfigured = phoneNumber !== "" && phoneNumber !== "TEMP_PHONE";
         
         setIsConfigured(isConfigured);
 
         if (isConfigured) {
           setFormData({
-            whatsapp_phone_number: (agencyData as any).whatsapp_phone_number || ""
+            whatsapp_phone_number: phoneNumber
           });
         }
       }
@@ -101,10 +100,11 @@ export const TwilioSettings = () => {
     console.log("WhatsApp Settings - Form data:", formData);
 
     try {
+      // Using twilio_phone_number column temporarily until types are updated
       const { data, error } = await supabase
         .from("agencies")
         .update({
-          whatsapp_phone_number: formData.whatsapp_phone_number
+          twilio_phone_number: formData.whatsapp_phone_number
         } as any)
         .eq("id", agencyId)
         .select()
