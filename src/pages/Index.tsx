@@ -266,11 +266,11 @@ const Index = () => {
     },
     {
       question: "Kurulumu ben yapabilir miyim?",
-      answer: "Kesinlikle! Kurulum 10-15 dakika sürüyor ve çok basit. Twilio hesabınızı bağlayın, turlarınızı ekleyin - hepsi bu. Takıldığınız yerde destek ekibimiz size yardımcı olur."
+      answer: "Kesinlikle! Kurulum 5-10 dakika sürüyor ve çok basit. WhatsApp Business numaranızı ekleyin, turlarınızı yükleyin - hepsi bu. Tüm teknik altyapıyı biz yönetiyoruz. Takıldığınız yerde destek ekibimiz size yardımcı olur."
     },
     {
-      question: "Twilio ve WhatsApp Business API ücreti var mı?",
-      answer: "Evet, Twilio ücreti ayrıca faturalandırılır (genelde 100-200₺/ay). WhatsApp Business API kullanımı için gerekli. Kurulum sırasında size yol gösteriyoruz."
+      question: "WhatsApp entegrasyonu için ek ücret var mı?",
+      answer: "Hayır! WhatsApp Business API altyapısını biz yönetiyoruz. Tek yapmanız gereken kendi WhatsApp Business numaranızı sisteme eklemek. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
     },
     {
       question: "Müşterilerden direkt ödeme alabilir miyim?",
