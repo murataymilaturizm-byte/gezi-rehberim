@@ -367,30 +367,29 @@ const Admin = () => {
                   Ana Sayfa
                 </a>
               </Button>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-gradient-ocean flex items-center justify-center">
-                    <Plane className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      {agencyName && <span>{agencyName}</span>}
-                      {userName && (
-                        <>
-                          <span>•</span>
-                          <span>{userName}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-ocean flex items-center justify-center">
+                  <Plane className="w-5 h-5 text-primary-foreground" />
                 </div>
+                <h1 className="text-xl font-bold text-foreground">Acente Paneli</h1>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Çıkış
-            </Button>
+            <div className="flex items-center gap-4">
+              {(agencyName || userName) && (
+                <div className="flex flex-col items-end gap-0.5 px-4 py-2 rounded-lg bg-muted/50 border border-border/50">
+                  {agencyName && (
+                    <span className="text-sm font-semibold text-foreground">{agencyName}</span>
+                  )}
+                  {userName && (
+                    <span className="text-xs text-muted-foreground">{userName}</span>
+                  )}
+                </div>
+              )}
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Çıkış
+              </Button>
+            </div>
           </div>
         </div>
       </header>
