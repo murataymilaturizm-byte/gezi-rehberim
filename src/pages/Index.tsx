@@ -13,7 +13,7 @@ import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, Arro
 import { useEffect, useRef, useState } from "react";
 import { DemoChat } from "@/components/DemoChat";
 import { supabase } from "@/integrations/supabase/client";
-import turzzLogo from "@/assets/turzz-logo.png";
+import turzzLogo from "@/assets/turzz-logo-new.png";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
@@ -289,9 +289,9 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={turzzLogo} alt="Turzz Logo" className="h-16 w-auto" />
+              <img src={turzzLogo} alt="Turzz Logo" className="h-24 w-auto" />
               <div>
-                <p className="text-xs text-muted-foreground">Akıllı Tur Satış Sistemi</p>
+                <p className="text-sm text-muted-foreground">Akıllı Tur Satış Sistemi</p>
               </div>
             </div>
             <Button asChild className="bg-gradient-ocean hover:opacity-90">

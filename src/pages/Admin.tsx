@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import turzzLogo from "@/assets/turzz-logo.png";
+import turzzLogo from "@/assets/turzz-logo-new.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -372,7 +372,7 @@ const Admin = () => {
                 <img 
                   src={turzzLogo} 
                   alt="Turzz AI Logo" 
-                  className="h-14 w-auto object-contain"
+                  className="h-20 w-auto object-contain"
                 />
                 <h1 className="text-xl font-bold text-foreground">Acente Paneli</h1>
               </div>
