@@ -893,7 +893,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.totalRevenue?.toLocaleString('tr-TR')}₺
+              {(stats.totalRevenue || 0).toLocaleString('tr-TR')}₺
             </div>
             <p className="text-xs text-muted-foreground">
               Onaylanmış rezervasyonlardan
@@ -908,7 +908,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.avgBasket?.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}₺
+              {(stats.avgBasket || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}₺
             </div>
             <p className="text-xs text-muted-foreground">
               Rezervasyon başına
@@ -928,24 +928,53 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 : 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats.confirmedRegistrations} / {stats.totalRegistrations} kayıt
+              {stats.confirmedRegistrations || 0} / {stats.totalRegistrations} kayıt
             </p>
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bekleyen Kayıt</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Toplam Turlar</CardTitle>
+            <Plane className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingRegistrations}</div>
+            <div className="text-2xl font-bold">{stats.totalTours}</div>
             <p className="text-xs text-muted-foreground">
-              İşlem bekliyor
+              Aktif tur sayısı
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Usage Stats */}
+      <UsageStats />
+
+      {/* Popular Destinations */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>En Popüler Destinasyonlar</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-2">
+            {popularTours.length === 0 ? (
+              <div className="col-span-2 text-center text-muted-foreground py-4">
+                Henüz veri yok
+              </div>
+            ) : (
+              popularTours.map((tour) => (
+                <div key={tour.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium leading-none">{tour.title}</p>
+                    <p className="text-sm text-muted-foreground">{tour.destination}</p>
+                  </div>
+                  <Badge variant="secondary">{tour.registrationCount} kayıt</Badge>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Date Range Filter */}
       <Card className="shadow-card">
@@ -1008,18 +1037,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Turlar</CardTitle>
-            <Plane className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalTours}</div>
-            <p className="text-xs text-muted-foreground">Aktif tur sayısı</p>
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam Kayıtlar</CardTitle>
@@ -1054,7 +1072,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         </Card>
       </div>
 
-      {/* Chart */}
+      {/* Charts */}
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle>
@@ -1076,85 +1094,52 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Recent Registrations */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Son Kayıtlar</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
+      {/* Recent Registrations */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Son Kayıtlar</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Ad Soyad</TableHead>
+                <TableHead>Tur</TableHead>
+                <TableHead>Durum</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentRegistrations.length === 0 ? (
                 <TableRow>
-                  <TableHead>Ad Soyad</TableHead>
-                  <TableHead>Tur</TableHead>
-                  <TableHead>Durum</TableHead>
+                  <TableCell colSpan={3} className="text-center text-muted-foreground">
+                    Henüz kayıt yok
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentRegistrations.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
-                      Henüz kayıt yok
+              ) : (
+                recentRegistrations.map((reg) => (
+                  <TableRow key={reg.id}>
+                    <TableCell className="font-medium">{reg.full_name}</TableCell>
+                    <TableCell className="text-sm">{reg.tours?.title}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          reg.status === "CONFIRMED"
+                            ? "default"
+                            : reg.status === "CANCELLED"
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
+                        {statusLabels[reg.status] || reg.status}
+                      </Badge>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  recentRegistrations.map((reg) => (
-                    <TableRow key={reg.id}>
-                      <TableCell className="font-medium">{reg.full_name}</TableCell>
-                      <TableCell className="text-sm">{reg.tours?.title}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            reg.status === "CONFIRMED"
-                              ? "default"
-                              : reg.status === "CANCELLED"
-                              ? "destructive"
-                              : "secondary"
-                          }
-                        >
-                          {statusLabels[reg.status] || reg.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Popular Tours */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>En Popüler Destinasyonlar</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {popularTours.length === 0 ? (
-                <div className="text-center text-muted-foreground py-4">
-                  Henüz veri yok
-                </div>
-              ) : (
-                popularTours.map((tour) => (
-                  <div key={tour.id} className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">{tour.title}</p>
-                      <p className="text-sm text-muted-foreground">{tour.destination}</p>
-                    </div>
-                    <Badge variant="secondary">{tour.registrationCount} kayıt</Badge>
-                  </div>
                 ))
               )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Usage Stats at Bottom */}
-      <div className="pt-4">
-        <UsageStats />
-      </div>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };
