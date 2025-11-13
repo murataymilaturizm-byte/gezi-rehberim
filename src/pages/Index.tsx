@@ -9,7 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp } from "lucide-react";
+import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DemoChat } from "@/components/DemoChat";
 
@@ -17,6 +17,11 @@ const Index = () => {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
   const [isYearly, setIsYearly] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const demoRef = useRef<HTMLDivElement>(null);
+
+  const scrollToDemo = () => {
+    demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,27 +73,27 @@ const Index = () => {
     {
       icon: Zap,
       title: "Yapay Zeka Destekli",
-      description: "Akıllı asistan, müşteri sorularını anlayıp en uygun turları önerir."
+      description: "Google Gemini 2.5 ile müşteri sorularını anlayıp en uygun turları önerir, doğal dilde konuşur."
     },
     {
       icon: BarChart3,
-      title: "Detaylı Raporlama",
-      description: "Tüm rezervasyonlarınızı ve WhatsApp konuşmalarınızı tek panelden yönetin."
+      title: "Akıllı Rezervasyon Wizard",
+      description: "Adım adım rehberlik ile müşteriler kolayca rezervasyon oluşturabilir."
     },
     {
       icon: Users,
-      title: "Multi-Tenant Yapı",
-      description: "Her acente kendi verileriyle çalışır, veri güvenliği %100 sağlanır."
+      title: "Kullanıcı Profilleri",
+      description: "Her müşterinin tercihleri, arama geçmişi ve bütçesi otomatik takip edilir."
     },
     {
       icon: Shield,
-      title: "Güvenli Altyapı",
-      description: "Lovable Cloud üzerinde, güvenli ve ölçeklenebilir altyapı."
+      title: "Konuşma Analizleri",
+      description: "AI destekli sentiment analizi ve konuşma özetleri ile müşterilerinizi daha iyi anlayın."
     },
     {
       icon: CheckCircle2,
-      title: "Kolay Kurulum",
-      description: "Dakikalar içinde kurulum, hemen kullanıma hazır."
+      title: "Otomatik Hatırlatıcılar",
+      description: "Tur öncesi otomatik WhatsApp hatırlatmaları ile müşteri memnuniyetini artırın."
     }
   ];
 
@@ -311,7 +316,7 @@ const Index = () => {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </a>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8">
+              <Button size="lg" variant="outline" className="text-lg px-8" onClick={scrollToDemo}>
                 Demo İzle
               </Button>
             </div>
@@ -413,8 +418,203 @@ const Index = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 bg-gradient-to-br from-secondary/5 to-primary/5 opacity-0 translate-y-8 transition-all duration-700">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Nasıl Çalışır?
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              WhatsApp'tan rezervasyona 3 basit adımda
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
+            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 relative">
+              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
+                1
+              </div>
+              <CardContent className="p-6 pt-8 space-y-4">
+                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
+                  <MessageSquare className="w-7 h-7 text-primary" />
+                </div>
+                <h4 className="text-xl font-semibold text-foreground text-center">Müşteri Mesaj Gönderir</h4>
+                <p className="text-muted-foreground text-center">
+                  WhatsApp üzerinden "Kapadokya turları" gibi doğal dilde arama yapar
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 relative">
+              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
+                2
+              </div>
+              <CardContent className="p-6 pt-8 space-y-4">
+                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
+                  <Brain className="w-7 h-7 text-primary" />
+                </div>
+                <h4 className="text-xl font-semibold text-foreground text-center">AI Analiz Yapar</h4>
+                <p className="text-muted-foreground text-center">
+                  Yapay zeka mesajı anlayıp en uygun turları önerir, fiyat ve tarih bilgisi verir
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 relative">
+              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
+                3
+              </div>
+              <CardContent className="p-6 pt-8 space-y-4">
+                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-7 h-7 text-primary" />
+                </div>
+                <h4 className="text-xl font-semibold text-foreground text-center">Rezervasyon Oluşur</h4>
+                <p className="text-muted-foreground text-center">
+                  Wizard rehberliğinde müşteri bilgileri alınır, rezervasyon tamamlanır
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-16 text-center">
+            <p className="text-lg text-muted-foreground mb-6">
+              Tüm süreç otomatik ve 7/24 çalışır 🚀
+            </p>
+            <Button size="lg" className="bg-gradient-ocean hover:opacity-90">
+              Demo'yu Deneyin
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Advanced Features Section */}
+      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Gelişmiş Özellikler</span>
+            </div>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Rekabette Öne Çıkın
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Sektörün en gelişmiş AI ve otomasyon özellikleri
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto space-y-12">
+            {/* Intelligent User Profiles */}
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <Card className="border-border/50 shadow-card p-8 order-2 md:order-1">
+                <CardContent className="p-0 space-y-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
+                    <Users className="w-6 h-6 text-primary-foreground" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-foreground">Akıllı Müşteri Profilleri</h4>
+                  <p className="text-muted-foreground">
+                    Her müşterinin tercihlerini, arama geçmişini ve bütçesini otomatik olarak takip edin. 
+                    AI kişiselleştirilmiş önerilerde bulunur.
+                  </p>
+                  <div className="space-y-3 pt-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      <span className="text-sm text-foreground">Otomatik tercih öğrenme</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      <span className="text-sm text-foreground">Bütçe bazlı segmentasyon</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      <span className="text-sm text-foreground">Arama geçmişi analizi</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="order-1 md:order-2 flex justify-center">
+                <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center">
+                  <Users className="w-32 h-32 text-primary/40" />
+                </div>
+              </div>
+            </div>
+
+            {/* Conversation Analytics */}
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div className="flex justify-center">
+                <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl flex items-center justify-center">
+                  <BarChart3 className="w-32 h-32 text-secondary/40" />
+                </div>
+              </div>
+              <Card className="border-border/50 shadow-card p-8">
+                <CardContent className="p-0 space-y-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-primary-foreground" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-foreground">Konuşma Analizleri</h4>
+                  <p className="text-muted-foreground">
+                    AI destekli sentiment analizi ve otomatik konuşma özetleri ile müşteri memnuniyetini ölçün, 
+                    trendleri yakalayın.
+                  </p>
+                  <div className="space-y-3 pt-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-secondary"></div>
+                      <span className="text-sm text-foreground">Sentiment analizi (Pozitif/Negatif)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-secondary"></div>
+                      <span className="text-sm text-foreground">Otomatik konuşma özetleri</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-secondary"></div>
+                      <span className="text-sm text-foreground">Konu ve trend takibi</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Auto Reminders */}
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <Card className="border-border/50 shadow-card p-8 order-2 md:order-1">
+                <CardContent className="p-0 space-y-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
+                    <Bell className="w-6 h-6 text-primary-foreground" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-foreground">Otomatik Tur Hatırlatıcıları</h4>
+                  <p className="text-muted-foreground">
+                    Turdan 3 gün önce otomatik WhatsApp hatırlatmaları gönderilir. 
+                    Müşteri memnuniyetini artırın, iptal oranlarını düşürün.
+                  </p>
+                  <div className="space-y-3 pt-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      <span className="text-sm text-foreground">Özelleştirilebilir mesaj şablonları</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      <span className="text-sm text-foreground">Otomatik gönderim (3 gün öncesi)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      <span className="text-sm text-foreground">Tur detayları ve bilgilendirme</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="order-1 md:order-2 flex justify-center">
+                <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center">
+                  <Bell className="w-32 h-32 text-primary/40" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
-      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -471,7 +671,10 @@ const Index = () => {
       </section>
 
       {/* Live Demo Section */}
-      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => {
+        sectionsRef.current[7] = el;
+        if (el) demoRef.current = el as HTMLDivElement;
+      }} className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-border mb-4">
@@ -503,7 +706,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -611,7 +814,7 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section ref={(el) => (sectionsRef.current[7] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[9] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
@@ -653,7 +856,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[10] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
         <div className="absolute inset-0 bg-gradient-ocean opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <Card className="max-w-4xl mx-auto border-border/50 shadow-card bg-gradient-to-br from-card to-accent/10">
