@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Plane, TrendingUp, X, Building2, MessageSquare, CheckCircle, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
@@ -66,7 +66,24 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "İptal"
 };
 
-export const AdminDashboard = () => {
+interface SuperAdminStats {
+  totalAgencies: number;
+  activeAgencies: number;
+  inactiveAgencies: number;
+  trialAgencies: number;
+  totalMessagesUsed: number;
+  agenciesByPlan: {
+    starter: number;
+    professional: number;
+    enterprise: number;
+  };
+}
+
+interface AdminDashboardProps {
+  isSuperAdmin?: boolean;
+}
+
+export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [stats, setStats] = useState<Stats>({
     totalTours: 0,
@@ -78,10 +95,52 @@ export const AdminDashboard = () => {
   const [popularTours, setPopularTours] = useState<PopularTour[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
 
   useEffect(() => {
-    loadDashboardData();
-  }, [dateRange]);
+    if (isSuperAdmin) {
+      loadSuperAdminStats();
+    } else {
+      loadDashboardData();
+    }
+  }, [dateRange, isSuperAdmin]);
+
+  const loadSuperAdminStats = async () => {
+    setLoading(true);
+    try {
+      // Get all agencies
+      const { data: agencies, error: agenciesError } = await supabase
+        .from('agencies')
+        .select('id, active, subscription_status, plan_type, monthly_message_count');
+
+      if (agenciesError) throw agenciesError;
+
+      const totalAgencies = agencies?.length || 0;
+      const activeAgencies = agencies?.filter(a => a.active).length || 0;
+      const inactiveAgencies = totalAgencies - activeAgencies;
+      const trialAgencies = agencies?.filter(a => a.subscription_status === 'trial').length || 0;
+      const totalMessagesUsed = agencies?.reduce((sum, a) => sum + (a.monthly_message_count || 0), 0) || 0;
+
+      const agenciesByPlan = {
+        starter: agencies?.filter(a => a.plan_type === 'starter').length || 0,
+        professional: agencies?.filter(a => a.plan_type === 'professional').length || 0,
+        enterprise: agencies?.filter(a => a.plan_type === 'enterprise').length || 0,
+      };
+
+      setSuperAdminStats({
+        totalAgencies,
+        activeAgencies,
+        inactiveAgencies,
+        trialAgencies,
+        totalMessagesUsed,
+        agenciesByPlan,
+      });
+    } catch (error) {
+      console.error('Super admin stats error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -221,6 +280,142 @@ export const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
+    );
+  }
+
+  // Super Admin Dashboard
+  if (isSuperAdmin && superAdminStats) {
+    return (
+      <div className="space-y-6">
+        {/* Super Admin Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="shadow-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Toplam Acenteler</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{superAdminStats.totalAgencies}</div>
+              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3 text-green-500" />
+                  {superAdminStats.activeAgencies} aktif
+                </span>
+                <span className="flex items-center gap-1">
+                  <XCircle className="w-3 h-3 text-red-500" />
+                  {superAdminStats.inactiveAgencies} pasif
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Deneme Sürümü</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{superAdminStats.trialAgencies}</div>
+              <p className="text-xs text-muted-foreground">
+                Deneme sürecindeki acenteler
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Toplam Mesaj</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {superAdminStats.totalMessagesUsed.toLocaleString('tr-TR')}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Bu ay kullanılan mesaj
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Aktif Oran</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                %{superAdminStats.totalAgencies > 0 
+                  ? Math.round((superAdminStats.activeAgencies / superAdminStats.totalAgencies) * 100)
+                  : 0}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Aktif acente oranı
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Plan Distribution */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-base">Başlangıç Planı</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-500">
+                {superAdminStats.agenciesByPlan.starter}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                500 mesaj/ay
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-base">Profesyonel Planı</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-purple-500">
+                {superAdminStats.agenciesByPlan.professional}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                2.000 mesaj/ay
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-base">Kurumsal Planı</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-amber-500">
+                {superAdminStats.agenciesByPlan.enterprise}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Sınırsız mesaj
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Info Message */}
+        <Card className="shadow-card bg-accent/30 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Building2 className="w-5 h-5 text-primary mt-0.5" />
+              <div>
+                <p className="font-medium text-foreground">Super Admin Dashboard</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz.
+                  Detaylı yönetim için "Acenteler" sekmesini kullanın.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

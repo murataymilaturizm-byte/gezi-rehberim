@@ -432,7 +432,7 @@ const Admin = () => {
 
         {/* Content */}
         {activeTab === "dashboard" ? (
-          <AdminDashboard />
+          <AdminDashboard isSuperAdmin={isSuperAdmin} />
         ) : activeTab === "whatsapp" ? (
           <div className="space-y-6">
             <WhatsAppUserProfiles />
