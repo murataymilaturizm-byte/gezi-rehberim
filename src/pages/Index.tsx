@@ -13,6 +13,7 @@ import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, Arro
 import { useEffect, useRef, useState } from "react";
 import { DemoChat } from "@/components/DemoChat";
 import { supabase } from "@/integrations/supabase/client";
+import turzzLogo from "@/assets/turzz-logo.png";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
@@ -287,12 +288,9 @@ const Index = () => {
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-ocean flex items-center justify-center">
-                <Plane className="w-5 h-5 text-primary-foreground" />
-              </div>
+            <div className="flex items-center gap-3">
+              <img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto" />
               <div>
-                <h1 className="text-xl font-bold text-foreground">TurzzAI</h1>
                 <p className="text-xs text-muted-foreground">Akıllı Tur Satış Sistemi</p>
               </div>
             </div>
