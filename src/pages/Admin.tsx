@@ -43,6 +43,7 @@ import { AgencyManagement } from "@/components/AgencyManagement";
 import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { TwilioSettings } from "@/components/TwilioSettings";
+import { SuperAdminTwilioSettings } from "@/components/SuperAdminTwilioSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
@@ -107,7 +108,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -443,7 +444,7 @@ const Admin = () => {
                 onClick={() => setActiveTab("settings")}
                 className={activeTab === "settings" ? "bg-gradient-ocean" : ""}
               >
-                Twilio Ayarları
+                WhatsApp Ayarları
               </Button>
               <Button
                 variant={activeTab === "history" ? "default" : "outline"}
@@ -470,6 +471,13 @@ const Admin = () => {
               >
                 İletişim Formları
               </Button>
+              <Button
+                variant={activeTab === "twilio_settings" ? "default" : "outline"}
+                onClick={() => setActiveTab("twilio_settings")}
+                className={activeTab === "twilio_settings" ? "bg-gradient-ocean" : ""}
+              >
+                Twilio Ayarları
+              </Button>
             </>
           )}
         </div>
@@ -486,6 +494,8 @@ const Admin = () => {
           <TwilioSettings />
         ) : activeTab === "history" ? (
           <SubscriptionHistory />
+        ) : activeTab === "twilio_settings" && isSuperAdmin ? (
+          <SuperAdminTwilioSettings />
         ) : activeTab === "agencies" && isSuperAdmin ? (
           <AgencyManagement />
         ) : activeTab === "contact_forms" && isSuperAdmin ? (

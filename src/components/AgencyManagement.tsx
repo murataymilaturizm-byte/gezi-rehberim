@@ -40,6 +40,7 @@ interface Agency {
   twilio_account_sid: string;
   twilio_auth_token: string;
   twilio_phone_number: string;
+  whatsapp_phone_number?: string;
   active: boolean;
   created_at: string;
   plan_type: string;
@@ -493,6 +494,7 @@ export const AgencyManagement = () => {
               <TableRow>
                 <TableHead>Acente Adı</TableHead>
                 <TableHead>Yetkili</TableHead>
+                <TableHead>WhatsApp No</TableHead>
                 <TableHead>Plan</TableHead>
                 <TableHead>Mesaj Kotası</TableHead>
                 <TableHead>Abonelik</TableHead>
@@ -544,6 +546,13 @@ export const AgencyManagement = () => {
                   <TableRow key={agency.id}>
                     <TableCell className="font-medium">{agency.agency_name}</TableCell>
                     <TableCell>{agency.profiles?.full_name || "-"}</TableCell>
+                    <TableCell>
+                      <span className="text-sm font-mono">
+                        {agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" 
+                          ? agency.twilio_phone_number 
+                          : <span className="text-muted-foreground">Henüz eklenmedi</span>}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">
                         {planLabels[agency.plan_type] || agency.plan_type}
