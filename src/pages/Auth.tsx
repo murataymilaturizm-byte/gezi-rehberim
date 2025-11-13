@@ -202,6 +202,15 @@ const Auth = () => {
 
                 <div className="space-y-3">
                   <Label>Plan Seçimi</Label>
+                  <div className="bg-accent/30 border border-primary/20 rounded-lg p-3 mb-3">
+                    <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                      <span className="text-primary">🎉</span>
+                      <span>İlk 14 gün <strong>tamamen ücretsiz!</strong></span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Kredi kartı gerekmez • İstediğiniz zaman iptal edebilirsiniz
+                    </p>
+                  </div>
                   <div className="grid gap-3">
                     <label
                       className={`relative flex cursor-pointer rounded-lg border p-4 transition-all ${
@@ -222,9 +231,10 @@ const Auth = () => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Başlangıç</span>
-                          <span className="text-lg font-bold text-primary">1.999₺/ay</span>
+                          <span className="text-lg font-bold text-primary">2.999₺/ay</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">500 mesaj/ay • 1 kullanıcı</p>
+                        <p className="text-sm text-muted-foreground">500 mesaj/ay • Temel özellikler</p>
+                        <p className="text-xs text-primary mt-1">14 gün ücretsiz deneme sonrası</p>
                       </div>
                     </label>
 
@@ -247,9 +257,10 @@ const Auth = () => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-foreground">Profesyonel</span>
-                          <span className="text-lg font-bold text-primary">3.999₺/ay</span>
+                          <span className="text-lg font-bold text-primary">7.999₺/ay</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">2.000 mesaj/ay • 5 kullanıcı</p>
+                        <p className="text-sm text-muted-foreground">2.000 mesaj/ay • Gelişmiş özellikler</p>
+                        <p className="text-xs text-primary mt-1">14 gün ücretsiz deneme sonrası</p>
                       </div>
                     </label>
 
@@ -275,12 +286,10 @@ const Auth = () => {
                           <span className="text-lg font-bold text-primary">Özel Fiyat</span>
                         </div>
                         <p className="text-sm text-muted-foreground">Sınırsız • Tüm özellikler</p>
+                        <p className="text-xs text-primary mt-1">14 gün ücretsiz deneme sonrası</p>
                       </div>
                     </label>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    ✨ Tüm planlarda 14 gün ücretsiz deneme
-                  </p>
                 </div>
               </>
             )}
