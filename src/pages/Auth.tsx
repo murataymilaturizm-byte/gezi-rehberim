@@ -180,7 +180,7 @@ const Auth = () => {
       <Card className="w-full max-w-2xl shadow-card">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={turzzLogo} alt="Turzz Logo" className="h-32 w-auto" />
+            <img src={turzzLogo} alt="Turzz Logo" className="h-20 w-auto" />
           </div>
           <CardTitle className="text-2xl">
             {isLogin ? "Admin Paneli" : "TurzzAI'ya Hoş Geldiniz"}
