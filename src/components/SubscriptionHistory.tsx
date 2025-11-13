@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays } from "date-fns";
 import { tr } from "date-fns/locale";
+import { generateInvoicePDF } from "@/utils/invoiceGenerator";
 import { 
   History, 
   CheckCircle2, 
@@ -37,7 +38,8 @@ import {
   Zap,
   AlertCircle,
   Crown,
-  ArrowRight
+  ArrowRight,
+  Download
 } from "lucide-react";
 
 interface SubscriptionHistoryItem {
@@ -202,6 +204,53 @@ export const SubscriptionHistory = () => {
       console.error("Error loading subscription history:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadInvoice = async (item: SubscriptionHistoryItem) => {
+    if (!subscription) return;
+
+    try {
+      // Generate invoice number from transaction ID or item ID
+      const invoiceNumber = item.transaction_id 
+        ? `TRZ-${item.transaction_id.substring(0, 8).toUpperCase()}`
+        : `TRZ-${item.id.substring(0, 8).toUpperCase()}`;
+
+      const planNames: Record<string, string> = {
+        starter: "Başlangıç",
+        professional: "Profesyonel",
+        enterprise: "Kurumsal"
+      };
+
+      // Get agency name
+      const { data: agencyData } = await supabase
+        .from("agencies")
+        .select("agency_name")
+        .eq("id", agencyId)
+        .single();
+
+      generateInvoicePDF({
+        invoiceNumber,
+        transactionId: item.transaction_id || item.id.substring(0, 12),
+        date: item.created_at,
+        agencyName: agencyData?.agency_name || "Acente",
+        planName: item.plan_type ? planNames[item.plan_type] : "Standart",
+        amount: item.amount || 0,
+        currency: item.currency || "TRY",
+        paymentMethod: item.payment_method || "Kredi Kartı"
+      });
+
+      toast({
+        title: "Başarılı! ✅",
+        description: "Fatura indirildi",
+      });
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+      toast({
+        title: "Hata",
+        description: "Fatura oluşturulamadı",
+        variant: "destructive"
+      });
     }
   };
 
@@ -491,6 +540,7 @@ export const SubscriptionHistory = () => {
                   <TableHead>Tutar</TableHead>
                   <TableHead>Durum</TableHead>
                   <TableHead>İşlem No</TableHead>
+                  <TableHead className="text-right">Fatura</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -524,6 +574,24 @@ export const SubscriptionHistory = () => {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground font-mono">
                       {item.transaction_id || "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {/* Show download button only for successful payments */}
+                      {(item.event_type === "payment_success" || 
+                        item.event_type === "subscription_activated") && 
+                        item.status === "success" && 
+                        item.amount ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownloadInvoice(item)}
+                          className="hover:bg-primary/10"
+                        >
+                          <Download className="h-4 w-4 text-primary" />
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
