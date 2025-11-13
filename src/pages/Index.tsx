@@ -13,7 +13,7 @@ import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, Arro
 import { useEffect, useRef, useState } from "react";
 import { DemoChat } from "@/components/DemoChat";
 import { supabase } from "@/integrations/supabase/client";
-import turzzLogo from "@/assets/turzz-logo-new.png";
+import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 

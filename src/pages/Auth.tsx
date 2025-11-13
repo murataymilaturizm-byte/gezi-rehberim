@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plane } from "lucide-react";
-import turzzLogo from "@/assets/turzz-logo-new.png";
+import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { z } from "zod";
 
 const authSchema = z.object({
