@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -21,9 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Building2, Calendar, Clock } from "lucide-react";
-import { format, differenceInDays } from "date-fns";
-import { tr } from "date-fns/locale";
+import { Plus, Pencil, Trash2, Building2, Clock, MessageSquare, Settings } from "lucide-react";
+import { differenceInDays } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 interface Agency {
@@ -38,6 +44,8 @@ interface Agency {
   trial_ends_at: string | null;
   subscription_status: string;
   subscription_ends_at: string | null;
+  message_limit: number | null;
+  monthly_message_count: number | null;
   profiles: {
     full_name: string | null;
   };
@@ -48,7 +56,9 @@ export const AgencyManagement = () => {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
+  const [editingPlanAgency, setEditingPlanAgency] = useState<Agency | null>(null);
   
   const [formData, setFormData] = useState({
     email: "",
@@ -60,6 +70,12 @@ export const AgencyManagement = () => {
     twilio_phone_number: "",
   });
 
+  const [planFormData, setPlanFormData] = useState({
+    plan_type: "starter" as "starter" | "professional" | "enterprise",
+    message_limit: 500,
+    extra_messages: 0,
+  });
+
   useEffect(() => {
     loadAgencies();
   }, []);
@@ -69,7 +85,7 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("*")
+        .select("id, agency_name, twilio_account_sid, twilio_auth_token, twilio_phone_number, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -235,6 +251,64 @@ export const AgencyManagement = () => {
     });
   };
 
+  const handlePlanEdit = (agency: Agency) => {
+    setEditingPlanAgency(agency);
+    const defaultLimits: Record<string, number> = {
+      starter: 500,
+      professional: 2000,
+      enterprise: -1,
+    };
+    setPlanFormData({
+      plan_type: agency.plan_type as "starter" | "professional" | "enterprise",
+      message_limit: agency.message_limit || defaultLimits[agency.plan_type] || 500,
+      extra_messages: 0,
+    });
+    setPlanDialogOpen(true);
+  };
+
+  const handlePlanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPlanAgency) return;
+
+    try {
+      const defaultLimits: Record<string, number> = {
+        starter: 500,
+        professional: 2000,
+        enterprise: -1,
+      };
+
+      const newLimit = planFormData.plan_type === "enterprise" 
+        ? -1 
+        : (planFormData.message_limit + planFormData.extra_messages);
+
+      const { error } = await supabase
+        .from("agencies")
+        .update({
+          plan_type: planFormData.plan_type,
+          message_limit: newLimit,
+        })
+        .eq("id", editingPlanAgency.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı! ✅",
+        description: `Plan güncellendi${planFormData.extra_messages > 0 ? ` (+${planFormData.extra_messages} mesaj eklendi)` : ""}`,
+      });
+
+      setPlanDialogOpen(false);
+      setEditingPlanAgency(null);
+      loadAgencies();
+    } catch (error: any) {
+      console.error("Error updating plan:", error);
+      toast({
+        title: "Hata",
+        description: error.message || "Plan güncellenemedi",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="shadow-card">
       <CardHeader>
@@ -376,6 +450,7 @@ export const AgencyManagement = () => {
                 <TableHead>Acente Adı</TableHead>
                 <TableHead>Yetkili</TableHead>
                 <TableHead>Plan</TableHead>
+                <TableHead>Mesaj Kotası</TableHead>
                 <TableHead>Abonelik</TableHead>
                 <TableHead>Kalan Süre</TableHead>
                 <TableHead>Durum</TableHead>
@@ -417,6 +492,10 @@ export const AgencyManagement = () => {
                   }
                 };
 
+                const messageUsagePercentage = agency.message_limit === -1 
+                  ? 0 
+                  : ((agency.monthly_message_count || 0) / (agency.message_limit || 1)) * 100;
+
                 return (
                   <TableRow key={agency.id}>
                     <TableCell className="font-medium">{agency.agency_name}</TableCell>
@@ -425,6 +504,21 @@ export const AgencyManagement = () => {
                       <Badge variant="outline">
                         {planLabels[agency.plan_type] || agency.plan_type}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm">
+                          <MessageSquare className="w-3 h-3" />
+                          <span>
+                            {agency.monthly_message_count || 0} / {agency.message_limit === -1 ? "∞" : agency.message_limit}
+                          </span>
+                        </div>
+                        {agency.message_limit !== -1 && messageUsagePercentage >= 80 && (
+                          <Badge variant={messageUsagePercentage >= 100 ? "destructive" : "secondary"} className="text-xs">
+                            {messageUsagePercentage >= 100 ? "Kota doldu" : `%${Math.round(messageUsagePercentage)} kullanıldı`}
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={getStatusVariant(agency.subscription_status)}>
@@ -451,7 +545,16 @@ export const AgencyManagement = () => {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handlePlanEdit(agency)}
+                          title="Plan ve Kota Yönetimi"
+                        >
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleEdit(agency)}
+                          title="Acente Bilgilerini Düzenle"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
@@ -459,6 +562,7 @@ export const AgencyManagement = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDelete(agency.id)}
+                          title="Acenteyi Sil"
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
@@ -471,6 +575,113 @@ export const AgencyManagement = () => {
           </Table>
         )}
       </CardContent>
+
+      {/* Plan & Quota Management Dialog */}
+      <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Plan ve Kota Yönetimi</DialogTitle>
+            <DialogDescription>
+              {editingPlanAgency?.agency_name} için plan ve mesaj kotasını yönetin
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePlanSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="plan_type">Plan Tipi</Label>
+              <Select
+                value={planFormData.plan_type}
+                onValueChange={(value: "starter" | "professional" | "enterprise") => {
+                  const defaultLimits: Record<string, number> = {
+                    starter: 500,
+                    professional: 2000,
+                    enterprise: -1,
+                  };
+                  setPlanFormData({
+                    ...planFormData,
+                    plan_type: value,
+                    message_limit: defaultLimits[value],
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="starter">Başlangıç (500 mesaj/ay)</SelectItem>
+                  <SelectItem value="professional">Profesyonel (2.000 mesaj/ay)</SelectItem>
+                  <SelectItem value="enterprise">Kurumsal (Sınırsız)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {planFormData.plan_type !== "enterprise" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="message_limit">Aylık Mesaj Limiti</Label>
+                  <Input
+                    id="message_limit"
+                    type="number"
+                    min="0"
+                    value={planFormData.message_limit}
+                    onChange={(e) => setPlanFormData({ ...planFormData, message_limit: parseInt(e.target.value) || 0 })}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Planın varsayılan limiti: {planFormData.plan_type === "starter" ? "500" : "2.000"} mesaj
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="extra_messages">Ekstra Mesaj Kotası Ekle</Label>
+                  <Input
+                    id="extra_messages"
+                    type="number"
+                    min="0"
+                    value={planFormData.extra_messages}
+                    onChange={(e) => setPlanFormData({ ...planFormData, extra_messages: parseInt(e.target.value) || 0 })}
+                    placeholder="Örn: 500"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Mevcut limite ekstra mesaj kotası ekleyin
+                  </p>
+                </div>
+
+                <div className="bg-accent/20 border border-border rounded-lg p-3">
+                  <p className="text-sm font-medium">Yeni Toplam Limit</p>
+                  <p className="text-2xl font-bold text-primary">
+                    {(planFormData.message_limit + planFormData.extra_messages).toLocaleString('tr-TR')} mesaj/ay
+                  </p>
+                </div>
+              </>
+            )}
+
+            {planFormData.plan_type === "enterprise" && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                <p className="text-sm font-medium text-primary flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Sınırsız Mesaj
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Kurumsal plan ile mesaj limiti yoktur
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPlanDialogOpen(false)}
+              >
+                İptal
+              </Button>
+              <Button type="submit" className="bg-gradient-ocean hover:opacity-90">
+                Kaydet
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
