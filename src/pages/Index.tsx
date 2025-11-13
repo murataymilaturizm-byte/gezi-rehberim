@@ -81,7 +81,7 @@ const Index = () => {
   const pricingPlans = [
     {
       name: "Başlangıç",
-      price: "1.999",
+      price: "3.999",
       period: "/ay",
       description: "Küçük acenteler için ideal",
       features: [
@@ -95,7 +95,7 @@ const Index = () => {
     },
     {
       name: "Profesyonel",
-      price: "3.999",
+      price: "7.999",
       period: "/ay",
       description: "Büyüyen işletmeler için",
       features: [
