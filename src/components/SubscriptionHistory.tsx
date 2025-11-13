@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -141,19 +143,20 @@ export const SubscriptionHistory = () => {
   const [selectedPlan, setSelectedPlan] = useState<PlanOption | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
+  const [isYearly, setIsYearly] = useState(false);
 
   const planOptions: PlanOption[] = [
     {
       id: "starter",
       name: "Başlangıç",
-      price: 1999,
+      price: 3999,
       features: ["500 mesaj/ay", "1 kullanıcı", "Temel raporlama", "Email destek"],
       icon: Zap
     },
     {
       id: "professional",
       name: "Profesyonel",
-      price: 3999,
+      price: 7999,
       features: ["2.000 mesaj/ay", "5 kullanıcı", "Gelişmiş raporlama", "Öncelikli destek"],
       icon: TrendingUp,
       popular: true
@@ -166,6 +169,23 @@ export const SubscriptionHistory = () => {
       icon: Crown
     }
   ];
+
+  const calculatePrice = (basePrice: number, yearly: boolean) => {
+    if (yearly && basePrice > 0) {
+      const yearlyPrice = basePrice * 12;
+      const discountedPrice = yearlyPrice * 0.9; // %10 indirim
+      return discountedPrice;
+    }
+    return basePrice;
+  };
+
+  const formatPrice = (price: number, yearly: boolean) => {
+    if (price === 0) return "Özel Fiyat";
+    if (yearly) {
+      return `${price.toLocaleString('tr-TR')}₺/yıl`;
+    }
+    return `${price.toLocaleString('tr-TR')}₺/ay`;
+  };
 
   useEffect(() => {
     loadHistory();
@@ -397,14 +417,45 @@ export const SubscriptionHistory = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Billing Period Toggle */}
+            <div className="flex items-center justify-center gap-3 p-4 bg-muted/50 rounded-lg w-fit mx-auto">
+              <Label htmlFor="billing-toggle" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
+                Aylık
+              </Label>
+              <Switch
+                id="billing-toggle"
+                checked={isYearly}
+                onCheckedChange={setIsYearly}
+              />
+              <Label htmlFor="billing-toggle" className={isYearly ? "font-semibold" : "text-muted-foreground"}>
+                Yıllık
+              </Label>
+              {isYearly && (
+                <span className="ml-2 text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                  %10 İndirim
+                </span>
+              )}
+            </div>
             {/* Current Plan Info */}
             <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-foreground">{currentPlan?.name}</h3>
-                  <p className="text-2xl font-bold text-primary mt-1">
-                    {currentPlan?.price ? `${currentPlan.price.toLocaleString('tr-TR')}₺/ay` : "Özel Fiyat"}
-                  </p>
+                  <div className="mt-1">
+                    <p className="text-2xl font-bold text-primary">
+                      {currentPlan && formatPrice(calculatePrice(currentPlan.price, isYearly), isYearly)}
+                    </p>
+                    {isYearly && currentPlan && currentPlan.price > 0 && (
+                      <div className="mt-1">
+                        <p className="text-sm text-muted-foreground line-through">
+                          {(currentPlan.price * 12).toLocaleString('tr-TR')}₺/yıl
+                        </p>
+                        <p className="text-sm text-green-600 font-medium">
+                          %10 indirimli ({(currentPlan.price * 12 * 0.1).toLocaleString('tr-TR')}₺ tasarruf)
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
@@ -469,9 +520,21 @@ export const SubscriptionHistory = () => {
                             <plan.icon className="h-5 w-5 text-primary" />
                             <h5 className="font-semibold text-foreground">{plan.name}</h5>
                           </div>
-                          <p className="text-xl font-bold text-primary">
-                            {plan.price ? `${plan.price.toLocaleString('tr-TR')}₺/ay` : "Özel Fiyat"}
-                          </p>
+                          <div>
+                            <p className="text-xl font-bold text-primary">
+                              {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
+                            </p>
+                            {isYearly && plan.price > 0 && (
+                              <div className="mt-1">
+                                <p className="text-xs text-muted-foreground line-through">
+                                  {(plan.price * 12).toLocaleString('tr-TR')}₺/yıl
+                                </p>
+                                <p className="text-xs text-green-600 font-medium">
+                                  %10 indirimli
+                                </p>
+                              </div>
+                            )}
+                          </div>
                           <ul className="space-y-1">
                             {plan.features.slice(0, 3).map((feature, index) => (
                               <li key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -637,9 +700,16 @@ export const SubscriptionHistory = () => {
                     </li>
                   ))}
                 </ul>
-                <p className="text-lg font-bold text-primary mt-2">
-                  {selectedPlan.price ? `${selectedPlan.price.toLocaleString('tr-TR')}₺/ay` : "Özel Fiyat - İletişime Geçin"}
-                </p>
+                <div className="mt-2">
+                  <p className="text-lg font-bold text-primary">
+                    {formatPrice(calculatePrice(selectedPlan.price, isYearly), isYearly)}
+                  </p>
+                  {isYearly && selectedPlan.price > 0 && (
+                    <p className="text-sm text-green-600 font-medium">
+                      %10 indirim uygulanacak ({(selectedPlan.price * 12 * 0.1).toLocaleString('tr-TR')}₺ tasarruf)
+                    </p>
+                  )}
+                </div>
               </div>
             )}
             <p className="text-xs text-muted-foreground">
