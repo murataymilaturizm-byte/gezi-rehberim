@@ -29,6 +29,7 @@ import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
+import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
 import { AgencyManagement } from "@/components/AgencyManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { TwilioSettings } from "@/components/TwilioSettings";
@@ -433,7 +434,10 @@ const Admin = () => {
         {activeTab === "dashboard" ? (
           <AdminDashboard />
         ) : activeTab === "whatsapp" ? (
-          <WhatsAppConversations />
+          <div className="space-y-6">
+            <WhatsAppUserProfiles />
+            <WhatsAppConversations />
+          </div>
         ) : activeTab === "settings" ? (
           <TwilioSettings />
         ) : activeTab === "history" ? (

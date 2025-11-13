@@ -382,6 +382,45 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_conversation_summaries: {
+        Row: {
+          agency_id: string
+          conversation_date: string | null
+          created_at: string | null
+          id: string
+          mentioned_tours: string[] | null
+          message_count: number | null
+          phone: string
+          sentiment: string | null
+          summary: string
+          topics: string[] | null
+        }
+        Insert: {
+          agency_id: string
+          conversation_date?: string | null
+          created_at?: string | null
+          id?: string
+          mentioned_tours?: string[] | null
+          message_count?: number | null
+          phone: string
+          sentiment?: string | null
+          summary: string
+          topics?: string[] | null
+        }
+        Update: {
+          agency_id?: string
+          conversation_date?: string | null
+          created_at?: string | null
+          id?: string
+          mentioned_tours?: string[] | null
+          message_count?: number | null
+          phone?: string
+          sentiment?: string | null
+          summary?: string
+          topics?: string[] | null
+        }
+        Relationships: []
+      }
       whatsapp_conversations: {
         Row: {
           agency_id: string | null
@@ -416,6 +455,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      whatsapp_user_profiles: {
+        Row: {
+          agency_id: string
+          budget_range: string | null
+          created_at: string | null
+          first_interaction_at: string | null
+          full_name: string | null
+          id: string
+          language_preference: string | null
+          last_interaction_at: string | null
+          last_search_query: string | null
+          phone: string
+          preferences: Json | null
+          preferred_destinations: string[] | null
+          preferred_tour_type: string | null
+          total_messages: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          agency_id: string
+          budget_range?: string | null
+          created_at?: string | null
+          first_interaction_at?: string | null
+          full_name?: string | null
+          id?: string
+          language_preference?: string | null
+          last_interaction_at?: string | null
+          last_search_query?: string | null
+          phone: string
+          preferences?: Json | null
+          preferred_destinations?: string[] | null
+          preferred_tour_type?: string | null
+          total_messages?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          agency_id?: string
+          budget_range?: string | null
+          created_at?: string | null
+          first_interaction_at?: string | null
+          full_name?: string | null
+          id?: string
+          language_preference?: string | null
+          last_interaction_at?: string | null
+          last_search_query?: string | null
+          phone?: string
+          preferences?: Json | null
+          preferred_destinations?: string[] | null
+          preferred_tour_type?: string | null
+          total_messages?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -112,6 +112,9 @@ serve(async (req) => {
       });
     }
     
+    // Kullanıcı profilini oluştur/güncelle
+    await upsertUserProfile(supabase, userPhone, agency.id);
+    
     // Kullanıcı mesajını kaydet (agency_id ile)
     await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
 
@@ -304,9 +307,43 @@ Sadece "tour.search" veya "general.chat" şeklinde cevap ver, başka bir şey ya
 }
 
 async function handleGeneralChat(userMessage: string, userPhone: string, supabase: any, agency_id: string) {
-  // Konuşma geçmişini al (son 10 mesaj)
-  const history = await getConversationHistory(supabase, userPhone, agency_id, 10);
+  // Kullanıcı profilini al
+  const userProfile = await getUserProfile(supabase, userPhone, agency_id);
   
+  // Konuşma geçmişini al (son 20 mesaj)
+  const history = await getConversationHistory(supabase, userPhone, agency_id, 20);
+  
+  // Son konuşma özetlerini al
+  const { data: summaries } = await supabase
+    .from('whatsapp_conversation_summaries')
+    .select('summary, topics, sentiment')
+    .eq('phone', userPhone)
+    .eq('agency_id', agency_id)
+    .order('created_at', { ascending: false })
+    .limit(3);
+
+  // Kullanıcı bağlamını oluştur
+  let contextInfo = '';
+  
+  if (userProfile) {
+    contextInfo += `\n\nKullanıcı Profili:`;
+    if (userProfile.full_name) contextInfo += `\n- İsim: ${userProfile.full_name}`;
+    if (userProfile.total_messages) contextInfo += `\n- Toplam mesaj: ${userProfile.total_messages}`;
+    if (userProfile.preferred_destinations && userProfile.preferred_destinations.length > 0) {
+      contextInfo += `\n- Tercih ettiği destinasyonlar: ${userProfile.preferred_destinations.join(', ')}`;
+    }
+    if (userProfile.budget_range) contextInfo += `\n- Bütçe aralığı: ${userProfile.budget_range}`;
+    if (userProfile.preferred_tour_type) contextInfo += `\n- Tercih ettiği tur tipi: ${userProfile.preferred_tour_type}`;
+    if (userProfile.last_search_query) contextInfo += `\n- Son arama: ${userProfile.last_search_query}`;
+  }
+
+  if (summaries && summaries.length > 0) {
+    contextInfo += `\n\nÖnceki Konuşma Özetleri:`;
+    summaries.forEach((s: any, i: number) => {
+      contextInfo += `\n${i + 1}. ${s.summary} (Konular: ${s.topics?.join(', ') || 'Yok'})`;
+    });
+  }
+
   const messages = [
     {
       role: 'system',
@@ -315,7 +352,14 @@ Kullanıcıyla doğal Türkçe konuş, sıcak ve dostane davran.
 Tur şirketimiz Kapadokya, Efes, Pamukkale, Antalya gibi destinasyonlara turlar düzenliyor.
 Kısa ve öz cevaplar ver (max 2-3 cümle).
 
-ÖNEMLİ: Eğer konuşma geçmişi varsa (kullanıcıyla daha önce konuşmuşsanız), tekrar "Merhaba" veya "Merhabalar" deme. Sadece soruyu direkt yanıtla. Selamlaşma sadece ilk mesajda olmalı.`
+${contextInfo}
+
+ÖNEMLİ KURALLAR:
+- Eğer kullanıcıyı tanıyorsan ve profil bilgileri varsa, bunu doğal şekilde konuşmana yansıt
+- Daha önce ilgilendiği turlara benzer önerilerde bulun
+- Konuşma geçmişi varsa tekrar selamlaşma, sadece soruyu direkt yanıtla
+- Kullanıcının tercihlerini hatırla ve buna göre öneride bulun
+- Bütçe bilgisi varsa, bütçesine uygun turları öner`
     },
     ...history,
     {
@@ -338,11 +382,23 @@ Kısa ve öz cevaplar ver (max 2-3 cümle).
   });
 
   const result = await aiResponse.json();
+  
+  // Kullanıcı ismini öğrendiysek profili güncelle
+  const nameMatch = userMessage.match(/(?:adım|benim adım|ismim|ben)\s+([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)?)/i);
+  if (nameMatch && userProfile && !userProfile.full_name) {
+    await updateUserPreferences(supabase, userPhone, agency_id, {
+      full_name: nameMatch[1]
+    });
+  }
+  
   return result.choices[0].message.content;
 }
 
 
 async function searchToursWithAI(supabase: any, userMessage: string, userPhone: string, agency_id: string) {
+  // Kullanıcı profilini al
+  const userProfile = await getUserProfile(supabase, userPhone, agency_id);
+  
   // Önce acentenin turlarını al
   const { data: allTours, error } = await supabase
     .from("tours")
@@ -383,25 +439,46 @@ async function searchToursWithAI(supabase: any, userMessage: string, userPhone: 
     places: tour.gezilecek_yerler || ''
   }));
 
-  // Konuşma geçmişini al (son 5 mesaj)
-  const history = await getConversationHistory(supabase, userPhone, agency_id, 5);
+  // Konuşma geçmişini al (son 10 mesaj)
+  const history = await getConversationHistory(supabase, userPhone, agency_id, 10);
+
+  // Kullanıcı profili context'i oluştur
+  let userContext = '';
+  if (userProfile) {
+    if (userProfile.preferred_destinations && userProfile.preferred_destinations.length > 0) {
+      userContext += `\nKullanıcının daha önce ilgilendiği destinasyonlar: ${userProfile.preferred_destinations.join(', ')}`;
+    }
+    if (userProfile.budget_range) {
+      userContext += `\nKullanıcının bütçe aralığı: ${userProfile.budget_range}`;
+    }
+    if (userProfile.preferred_tour_type) {
+      userContext += `\nKullanıcının tercih ettiği tur tipi: ${userProfile.preferred_tour_type}`;
+    }
+  }
 
   const messages = [
     {
       role: 'system',
       content: `Sen bir tur arama asistanısın. Kullanıcının mesajını ve önceki konuşma geçmişini analiz edip hangi turları aradığını belirle.
+
+${userContext}
+
 Turlar: ${JSON.stringify(toursList, null, 2)}
 
 Kullanıcının mesajından:
 - Hangi destinasyonu aradığını (Kapadokya, Efes, Pamukkale, vb)
 - Hangi tür turu aradığını (günübirlik, 2 gece, 3 gece)
 - Hangi tarihi aradığını (varsa)
+- Bütçe beklentisi (varsa)
 
 Eşleşen turların ID'lerini JSON array olarak döndür. SADECE JSON array döndür, başka hiçbir şey yazma.
 Örnek: ["id1", "id2"]
 Eğer hiçbir tur eşleşmezse boş array döndür: []
 
-ÖNEMLİ: Sadece JSON array döndür, markdown formatı kullanma!`
+ÖNEMLİ: 
+- Sadece JSON array döndür, markdown formatı kullanma!
+- Kullanıcı profilindeki tercihleri dikkate al
+- Önceki aramalara benzer turları da öncelikli olarak ekle`
     },
     ...history,
     {
@@ -447,6 +524,18 @@ Eğer hiçbir tur eşleşmezse boş array döndür: []
         )
     }));
 
+  // Kullanıcı tercihlerini güncelle - destinasyonları ve arama sorgusunu kaydet
+  if (matchedTours.length > 0 && userProfile) {
+    const newDestinations = matchedTours.map((t: any) => t.destination);
+    const existingDests = userProfile.preferred_destinations || [];
+    const updatedDests = Array.from(new Set([...newDestinations, ...existingDests])).slice(0, 5);
+    
+    await updateUserPreferences(supabase, userPhone, agency_id, {
+      last_search_query: userMessage,
+      preferred_destinations: updatedDests
+    });
+  }
+
   return matchedTours;
 }
 
@@ -490,6 +579,13 @@ async function createRegistration(supabase: any, entities: any, from: string, ag
       return { error: 'Kayıt oluşturulamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.' };
     }
 
+    // Kullanıcı profilini güncelle - isim ve tur tercihlerini kaydet
+    const userPhone = from.replace('whatsapp:', '');
+    await updateUserPreferences(supabase, userPhone, agency_id, {
+      full_name: entities.full_name,
+      preferred_destinations: [tourDate.tours.destination]
+    });
+
     const message = `✅ *Kayıt Başarılı!*\n\n` +
       `📋 Kayıt No: ${registration.id.substring(0, 8)}\n` +
       `🎯 Tur: ${tourDate.tours.title}\n` +
@@ -502,7 +598,6 @@ async function createRegistration(supabase: any, entities: any, from: string, ag
       `📞 Kısa süre içinde sizinle iletişime geçeceğiz.`;
 
     // WhatsApp onay mesajı gönder (arka planda)
-    const userPhone = from.replace('whatsapp:', '');
     
     // Agency bilgisini al
     const { data: agency } = await supabase
@@ -759,8 +854,90 @@ async function saveMessage(supabase: any, phone: string, role: string, content: 
   }
 }
 
-// Konuşma geçmişini al
-async function getConversationHistory(supabase: any, phone: string, agency_id: string, limit: number = 10) {
+// Kullanıcı profili oluştur/güncelle
+async function upsertUserProfile(supabase: any, phone: string, agency_id: string) {
+  try {
+    // Kullanıcı profilini kontrol et
+    const { data: existingProfile } = await supabase
+      .from('whatsapp_user_profiles')
+      .select('*')
+      .eq('phone', phone)
+      .eq('agency_id', agency_id)
+      .single();
+
+    if (existingProfile) {
+      // Profili güncelle - mesaj sayısını artır ve son etkileşim tarihini güncelle
+      await supabase
+        .from('whatsapp_user_profiles')
+        .update({
+          total_messages: existingProfile.total_messages + 1,
+          last_interaction_at: new Date().toISOString()
+        })
+        .eq('phone', phone)
+        .eq('agency_id', agency_id);
+    } else {
+      // Yeni profil oluştur
+      await supabase
+        .from('whatsapp_user_profiles')
+        .insert({
+          phone,
+          agency_id,
+          total_messages: 1
+        });
+    }
+  } catch (error) {
+    console.error('Error upserting user profile:', error);
+  }
+}
+
+// Kullanıcı tercihlerini güncelle
+async function updateUserPreferences(
+  supabase: any,
+  phone: string,
+  agency_id: string,
+  updates: {
+    full_name?: string;
+    last_search_query?: string;
+    preferred_destinations?: string[];
+    budget_range?: string;
+    preferred_tour_type?: string;
+  }
+) {
+  try {
+    await supabase
+      .from('whatsapp_user_profiles')
+      .update(updates)
+      .eq('phone', phone)
+      .eq('agency_id', agency_id);
+  } catch (error) {
+    console.error('Error updating user preferences:', error);
+  }
+}
+
+// Kullanıcı profilini al
+async function getUserProfile(supabase: any, phone: string, agency_id: string) {
+  try {
+    const { data, error } = await supabase
+      .from('whatsapp_user_profiles')
+      .select('*')
+      .eq('phone', phone)
+      .eq('agency_id', agency_id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in getUserProfile:', error);
+    return null;
+  }
+}
+
+// Gelişmiş konuşma geçmişi - kullanıcı profili ile birlikte
+async function getConversationHistory(supabase: any, phone: string, agency_id: string, limit: number = 20) {
   try {
     const { data, error } = await supabase
       .from('whatsapp_conversations')
@@ -783,5 +960,93 @@ async function getConversationHistory(supabase: any, phone: string, agency_id: s
   } catch (error) {
     console.error('Error in getConversationHistory:', error);
     return [];
+  }
+}
+
+// Konuşma özeti oluştur (günün sonunda veya uzun konuşmalarda)
+async function createConversationSummary(
+  supabase: any,
+  phone: string,
+  agency_id: string
+) {
+  try {
+    // Son 24 saatin mesajlarını al
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const { data: messages } = await supabase
+      .from('whatsapp_conversations')
+      .select('role, content, created_at')
+      .eq('phone', phone)
+      .eq('agency_id', agency_id)
+      .gte('created_at', oneDayAgo.toISOString())
+      .order('created_at', { ascending: true });
+
+    if (!messages || messages.length === 0) return;
+
+    // AI ile özet oluştur
+    const conversationText = messages
+      .map((m: any) => `${m.role}: ${m.content}`)
+      .join('\n');
+
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: `Aşağıdaki WhatsApp konuşmasını analiz et ve şunları belirle:
+1. Konuşmanın kısa özeti (1-2 cümle)
+2. Ana konular (array olarak)
+3. Bahsedilen tur isimleri (array olarak)
+4. Kullanıcının genel duygu durumu (positive/neutral/negative)
+
+JSON formatında döndür:
+{
+  "summary": "string",
+  "topics": ["string"],
+  "mentioned_tours": ["string"],
+  "sentiment": "string"
+}`
+          },
+          {
+            role: 'user',
+            content: conversationText
+          }
+        ],
+        temperature: 0.3
+      })
+    });
+
+    const result = await aiResponse.json();
+    let analysis = result.choices[0].message.content.trim();
+    
+    // JSON wrapper'ı temizle
+    if (analysis.startsWith('```json')) {
+      analysis = analysis.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    const parsed = JSON.parse(analysis);
+
+    // Özeti kaydet
+    await supabase
+      .from('whatsapp_conversation_summaries')
+      .insert({
+        phone,
+        agency_id,
+        summary: parsed.summary,
+        topics: parsed.topics,
+        mentioned_tours: parsed.mentioned_tours,
+        sentiment: parsed.sentiment,
+        message_count: messages.length
+      });
+
+  } catch (error) {
+    console.error('Error creating conversation summary:', error);
   }
 }
