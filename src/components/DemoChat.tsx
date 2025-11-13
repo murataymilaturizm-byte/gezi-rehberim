@@ -16,7 +16,7 @@ export const DemoChat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Merhaba! 👋 TurzzAI demo asistanıyım. Size nasıl yardımcı olabilirim? Örneğin 'Kapadokya turu' veya 'Nasıl çalışıyor?' diye sorabilirsiniz."
+      content: "Merhaba! 👋 Ben WhatsApp rezervasyon asistanınızım. Size hangi konuda yardımcı olabilirim?\n\nÖrnek sorular:\n✈️ Kapadokya turları\n🏖️ Antalya turları\n🏛️ İstanbul turları"
     }
   ]);
   const [input, setInput] = useState("");
@@ -34,7 +34,8 @@ export const DemoChat = () => {
 
     const userMessage = input.trim();
     setInput("");
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    const newMessages = [...messages, { role: "user" as const, content: userMessage }];
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
@@ -46,7 +47,10 @@ export const DemoChat = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ message: userMessage }),
+          body: JSON.stringify({ 
+            message: userMessage,
+            history: messages.slice(-10) // Son 10 mesajı gönder
+          }),
         }
       );
 
