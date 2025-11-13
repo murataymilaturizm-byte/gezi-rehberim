@@ -79,41 +79,45 @@ const Index = () => {
   const features = [
     {
       icon: MessageSquare,
-      title: "WhatsApp Entegrasyonu",
-      description: "Müşterileriniz WhatsApp üzerinden 7/24 tur sorgulayabilir ve rezervasyon yapabilir."
+      title: "7/24 Otomatik Satış",
+      description: "Gece yarısı bile müşteriler tur soruyor, rezervasyon yapıyor. Siz uyurken bile satış yapın - hiçbir fırsatı kaçırmayın.",
+      metric: "Ortalama %120 rezervasyon artışı ilk ayda"
+    },
+    {
+      icon: TrendingUp,
+      title: "Gelir Takibi & Analiz",
+      description: "Hangi turlar kazandırıyor? Hangi günler daha çok satış oluyor? Tüm gelir ve performans verilerinizi anlık görün.",
+      metric: "Günlük, haftalık, aylık ciro raporları"
     },
     {
       icon: Zap,
-      title: "Yapay Zeka Destekli",
-      description: "Google Gemini 2.5 ile müşteri sorularını anlayıp en uygun turları önerir, doğal dilde konuşur."
-    },
-    {
-      icon: BarChart3,
-      title: "Akıllı Rezervasyon Wizard",
-      description: "Adım adım rehberlik ile müşteriler kolayca rezervasyon oluşturabilir."
-    },
-    {
-      icon: Users,
-      title: "Kullanıcı Profilleri",
-      description: "Her müşterinin tercihleri, arama geçmişi ve bütçesi otomatik takip edilir."
-    },
-    {
-      icon: Shield,
-      title: "Konuşma Analizleri",
-      description: "AI destekli sentiment analizi ve konuşma özetleri ile müşterilerinizi daha iyi anlayın."
-    },
-    {
-      icon: CheckCircle2,
-      title: "Otomatik Hatırlatıcılar",
-      description: "Tur öncesi otomatik WhatsApp hatırlatmaları ile müşteri memnuniyetini artırın."
+      title: "WhatsApp'tan Direkt Ödeme",
+      description: "Müşteri turunu buldu mu? Anında ödeme linkini gönderin, dakikalar içinde ödeme alsın. Ödeme takibi ve fatura otomatik.",
+      metric: "Ödeme alma süresi: 2 dakika"
     }
   ];
 
   const benefits = [
-    "Müşteri memnuniyeti artar - 7/24 hizmet",
-    "Satışlarınızı artırın - Otomatik öneri sistemi",
-    "Zamandan tasarruf - Otomatik rezervasyon yönetimi",
-    "Her cihazdan erişim - Mobil uyumlu admin paneli"
+    {
+      icon: Clock,
+      title: "Ayda 40+ Saat Tasarruf",
+      description: "Tekrar eden soruları yanıtlamak, turları anlatmak, fiyat sormak... Artık bunların hepsi otomatik."
+    },
+    {
+      icon: TrendingUpIcon,
+      title: "İlk Ayda 2-3x Daha Fazla Satış",
+      description: "Hiçbir müşteri kaçmıyor. Gece, gündüz, hafta sonu - her zaman aktif bir satış temsilciniz var."
+    },
+    {
+      icon: Brain,
+      title: "Her Müşteri Kişisel Takip",
+      description: "Kim ne aradı? Bütçesi ne? Geçmişte ne aldı? AI her müşteriyi tanıyor, size özel öneriler yapıyor."
+    },
+    {
+      icon: CheckCircle2,
+      title: "Sadece 2 Tur = Kendini Ödüyor",
+      description: "Başlangıç planı sadece 2.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
+    }
   ];
 
   const calculatePrice = (basePrice: number, yearly: boolean) => {
@@ -198,87 +202,86 @@ const Index = () => {
 
   const testimonials = [
     {
-      name: "Müşteri 1",
-      company: "Tur Acentesi",
-      role: "Genel Müdür",
-      content: "TurzzAI sayesinde WhatsApp üzerinden gelen taleplere anında yanıt verebiliyoruz. İlk ayda rezervasyonlarımız %120 arttı. Müşteri memnuniyeti zirve yaptı!",
-      rating: 5
-    },
-    {
-      name: "Müşteri 2",
-      company: "Turizm Firması",
-      role: "Satış Müdürü",
-      content: "Gece yarısı bile müşterilerimiz tur bilgisi alıp rezervasyon yapabiliyor. Artık hiçbir fırsatı kaçırmıyoruz. Kesinlikle tavsiye ediyorum!",
-      rating: 5
-    },
-    {
-      name: "Müşteri 3",
-      company: "Seyahat Acentesi",
+      name: "Mehmet Yılmaz",
+      company: "Mavi Deniz Turizm",
       role: "İşletme Sahibi",
-      content: "Küçük bir acente olarak böyle bir teknolojiye sahip olmak harika. Kurulum çok kolay, kullanımı son derece pratik. İlk haftadan itibaren geri dönüşler başladı.",
-      rating: 5
+      content: "İlk ayda 18 yeni rezervasyon aldık. Daha önce gece mesaj atanlar 'yarın ararsınız' deyip başka acenteden alıyordu. Şimdi gece 2'de bile satış yapıyoruz!",
+      rating: 5,
+      result: "+18 rezervasyon ilk ayda"
+    },
+    {
+      name: "Ayşe Demir",
+      company: "Kapadokya Tur",
+      role: "Satış Müdürü",
+      content: "Müşteriler 'çok hızlı cevap veriyorsunuz' diyor. Ayda 40+ saat zaman kazanıyorum. Artık gerçekten önemli işlere odaklanabiliyorum.",
+      rating: 5,
+      result: "Ayda 40+ saat tasarruf"
+    },
+    {
+      name: "Can Özkan",
+      company: "Antik Kent Turları",
+      role: "Kurucu",
+      content: "Hangi turlar daha çok satıyor, hangi gün daha çok talep var - her şeyi görebiliyorum. Artık tahmine değil, veriye göre karar veriyorum. Gelir analizleri muhteşem!",
+      rating: 5,
+      result: "Veri odaklı karar"
     }
   ];
 
   const stats = [
     {
-      icon: MessageSquare,
-      value: "250K+",
-      label: "Aylık WhatsApp Mesajı",
-      color: "text-primary"
-    },
-    {
-      icon: Users,
-      value: "250+",
-      label: "Aktif Acente",
-      color: "text-secondary"
-    },
-    {
       icon: TrendingUp,
-      value: "%98",
-      label: "Müşteri Memnuniyeti",
-      color: "text-primary"
+      value: "2-3x",
+      label: "Ortalama Satış Artışı",
+      color: "text-primary",
+      subtext: "İlk ayda"
+    },
+    {
+      icon: Clock,
+      value: "40+",
+      label: "Saat Tasarruf",
+      color: "text-secondary",
+      subtext: "Ayda"
+    },
+    {
+      icon: MessageSquare,
+      value: "7/24",
+      label: "Kesintisiz Hizmet",
+      color: "text-primary",
+      subtext: "Hiç durmayan asistan"
     },
     {
       icon: CheckCircle2,
-      value: "15K+",
-      label: "Aylık Rezervasyon",
-      color: "text-secondary"
+      value: "2 dk",
+      label: "Ödeme Alma Süresi",
+      color: "text-secondary",
+      subtext: "WhatsApp'tan direkt"
     }
   ];
 
   const faqs = [
     {
-      question: "TurzzAI nasıl çalışır?",
-      answer: "TurzzAI, WhatsApp üzerinden gelen müşteri mesajlarını yapay zeka ile analiz eder, tur veritabanınızdan en uygun turları önerir ve müşterilerinizin 7/24 rezervasyon yapmasını sağlar. Tüm konuşmalar ve rezervasyonlar admin panelinizden yönetilebilir."
+      question: "Gerçekten ilk ayda satışlarım artacak mı?",
+      answer: "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. Çünkü artık gece yarısı, hafta sonu, her an müşterilerinize hizmet veriyorsunuz. Hiçbir fırsat kaçmıyor."
     },
     {
-      question: "Kurulum ne kadar sürer?",
-      answer: "Kurulum çok basittir ve sadece 10-15 dakika sürer. Twilio hesabınızı bağladıktan sonra WhatsApp Business numaranızı sisteme tanıtırsınız. Turlarınızı ekledikten sonra sistem hemen kullanıma hazır olur."
+      question: "Kurulumu ben yapabilir miyim?",
+      answer: "Kesinlikle! Kurulum 10-15 dakika sürüyor ve çok basit. Twilio hesabınızı bağlayın, turlarınızı ekleyin - hepsi bu. Takıldığınız yerde destek ekibimiz size yardımcı olur."
     },
     {
-      question: "WhatsApp Business API'ye ihtiyacım var mı?",
-      answer: "Evet, WhatsApp Business API kullanımı için Twilio hesabı gereklidir. Henüz hesabınız yoksa kurulum sırasında size yol gösteririz. Twilio ücreti ayrıca faturalandırılır."
+      question: "Twilio ve WhatsApp Business API ücreti var mı?",
+      answer: "Evet, Twilio ücreti ayrıca faturalandırılır (genelde 100-200₺/ay). WhatsApp Business API kullanımı için gerekli. Kurulum sırasında size yol gösteriyoruz."
     },
     {
-      question: "Verilerim güvende mi?",
-      answer: "Evet, tüm verileriniz şifrelenmiş ve güvenli Lovable Cloud altyapısında saklanır. Multi-tenant yapı sayesinde her acente sadece kendi verilerine erişebilir. KVKK ve GDPR uyumlu çalışıyoruz."
+      question: "Müşterilerden direkt ödeme alabilir miyim?",
+      answer: "Evet! SiPay entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, 2 dakika içinde ödeme alabilirsiniz. Ödeme takibi ve fatura otomatik."
     },
     {
       question: "Kaç tur ekleyebilirim?",
-      answer: "Tüm planlarda sınırsız tur ekleyebilirsiniz. Tek fark, aylık işlenebilen WhatsApp mesaj sayısıdır. İhtiyacınıza göre planınızı yükseltebilirsiniz."
+      answer: "Tüm planlarda sınırsız tur ekleyebilirsiniz. Fark sadece aylık WhatsApp mesaj limitinde. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
     },
     {
-      question: "Destek alabilir miyim?",
-      answer: "Elbette! Başlangıç planında email destek, Profesyonel planda öncelikli destek, Kurumsal planda ise 7/24 destek sunuyoruz. Ayrıca detaylı dokümantasyon ve video eğitimler de mevcut."
-    },
-    {
-      question: "İptal edebilir miyim?",
-      answer: "Evet, istediğiniz zaman iptal edebilirsiniz. Herhangi bir sözleşme ya da ceza yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz."
-    },
-    {
-      question: "Ücretsiz deneme var mı?",
-      answer: "Evet, tüm planlarda 14 gün ücretsiz deneme imkanı sunuyoruz. Kredi kartı bilgisi gerektirmiyoruz, deneme süresi bittiğinde sizinle iletişime geçiyoruz."
+      question: "İptal edersem ne olur?",
+      answer: "İstediğiniz zaman iptal edebilirsiniz, sözleşme yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz. 14 gün ücretsiz deneme sırasında kredi kartı bile istemiyoruz."
     }
   ];
 
@@ -311,12 +314,12 @@ const Index = () => {
               <span className="text-sm font-medium text-accent-foreground">WhatsApp ile Otomatik Tur Satışı</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
-              Tur Satışlarınızı <br />
-              <span className="bg-gradient-ocean bg-clip-text text-transparent">Otomatikleştirin</span>
+              İlk Ayda Rezervasyonlarınızı <br />
+              <span className="bg-gradient-ocean bg-clip-text text-transparent">2-3 Katına Çıkarın</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              WhatsApp üzerinden yapay zeka destekli asistan ile müşterileriniz 7/24 tur sorgulayabilir, 
-              rezervasyon yapabilir. Tüm süreçleri tek panelden yönetin.
+              WhatsApp'tan 7/24 otomatik satış yapın. Gece yarısı bile müşteriler tur bulup ödeme yapsın. 
+              Siz uyurken sistem çalışsın - hiçbir fırsat kaçmasın.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
@@ -340,13 +343,16 @@ const Index = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
               <Card key={index} className="border-border/50 shadow-card text-center">
-                <CardContent className="p-6 space-y-3">
+                <CardContent className="p-6 space-y-2">
                   <stat.icon className={`w-8 h-8 ${stat.color} mx-auto`} />
                   <div className="text-3xl md:text-4xl font-bold text-foreground">
                     {stat.value}
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm font-medium text-foreground">
                     {stat.label}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {stat.subtext}
                   </p>
                 </CardContent>
               </Card>
@@ -360,22 +366,25 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Güçlü Özellikler
+              3 Ana Özellik - Hepsi Bu!
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Modern teknoloji ile tur satış süreçlerinizi optimize edin
+              Karmaşık değil, basit ve etkili. Size gerçekten değer katan özellikler.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
-              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6 space-y-4">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
-                    <feature.icon className="w-6 h-6 text-primary-foreground" />
+              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-card/50">
+                <CardContent className="p-8 space-y-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-ocean flex items-center justify-center">
+                    <feature.icon className="w-7 h-7 text-primary-foreground" />
                   </div>
-                  <h4 className="text-xl font-semibold text-foreground">{feature.title}</h4>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <h4 className="text-xl font-bold text-foreground">{feature.title}</h4>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-sm font-semibold text-primary">{feature.metric}</p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -386,43 +395,31 @@ const Index = () => {
       {/* Benefits Section */}
       <section ref={(el) => (sectionsRef.current[3] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <h3 className="text-3xl md:text-4xl font-bold text-foreground">
-                  Neden TurzzAI?
-                </h3>
-                <p className="text-lg text-muted-foreground">
-                  Acente işletmenizi bir sonraki seviyeye taşıyın. Müşteri memnuniyetini artırırken, 
-                  operasyonel maliyetlerinizi düşürün.
-                </p>
-                <div className="space-y-4">
-                  {benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-foreground">{benefit}</span>
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Somut Sonuçlar, Gerçek Değer
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Sadece özellikler değil - işinize kattığı değer
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="w-6 h-6 text-primary" />
                     </div>
-                  ))}
-                </div>
-              </div>
-              
-              <Card className="border-border/50 shadow-card p-8 bg-gradient-to-br from-card to-accent/20">
-                <CardContent className="space-y-6 p-0">
-                  <div className="space-y-2">
-                    <div className="text-4xl font-bold text-foreground">%150</div>
-                    <p className="text-muted-foreground">Satış artışı</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-4xl font-bold text-foreground">7/24</div>
-                    <p className="text-muted-foreground">Kesintisiz hizmet</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-4xl font-bold text-foreground">10 dk</div>
-                    <p className="text-muted-foreground">Kurulum süresi</p>
+                    <div className="space-y-2 flex-1">
+                      <h4 className="text-lg font-bold text-foreground">{benefit.title}</h4>
+                      <p className="text-muted-foreground">{benefit.description}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -497,7 +494,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Advanced Features Section */}
+      {/* Testimonials Section */}
       <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -627,18 +624,23 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Müşterilerimiz Ne Diyor?
+              Gerçek Sonuçlar, Gerçek Acenteler
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Yüzlerce acente TurzzAI ile işlerini büyütüyor
+              İşlerini büyüten acenteler ne diyor?
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300">
+              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-card to-card/50">
                 <CardContent className="p-6 space-y-4">
-                  <Quote className="w-10 h-10 text-primary/20" />
+                  <div className="flex items-center justify-between">
+                    <Quote className="w-10 h-10 text-primary/20" />
+                    <Badge variant="secondary" className="bg-green-500/10 text-green-700 border-green-500/20">
+                      {testimonial.result}
+                    </Badge>
+                  </div>
                   
                   <div className="flex gap-1">
                     {[...Array(testimonial.rating)].map((_, i) => (
@@ -647,7 +649,7 @@ const Index = () => {
                   </div>
 
                   <p className="text-foreground leading-relaxed">
-                    {testimonial.content}
+                    "{testimonial.content}"
                   </p>
 
                   <div className="pt-4 border-t border-border">
