@@ -41,7 +41,8 @@ import {
   AlertCircle,
   Crown,
   ArrowRight,
-  Download
+  Download,
+  Building2
 } from "lucide-react";
 
 interface SubscriptionHistoryItem {
@@ -144,6 +145,7 @@ export const SubscriptionHistory = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [isYearly, setIsYearly] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const planOptions: PlanOption[] = [
     {
@@ -368,6 +370,39 @@ export const SubscriptionHistory = () => {
     }
   };
 
+  const handlePayment = async () => {
+    if (!agencyId || !subscription) return;
+
+    setIsProcessingPayment(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("sipay-payment", {
+        body: {
+          planType: subscription.plan_type,
+          isYearly,
+          agencyId,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.payment_url) {
+        // Redirect to Sipay payment page
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error("Payment URL not received");
+      }
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Ödeme Hatası",
+        description: error.message || "Ödeme başlatılamadı. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+      setIsProcessingPayment(false);
+    }
+  };
+
   const getRemainingDays = () => {
     if (!subscription) return null;
     
@@ -473,21 +508,33 @@ export const SubscriptionHistory = () => {
             {(subscription.subscription_status === "trial" || 
               subscription.subscription_status === "expired" || 
               subscription.subscription_status === "cancelled") && (
-              <Alert className="border-primary/50 bg-primary/5">
-                <AlertCircle className="h-4 w-4 text-primary" />
-                <AlertDescription>
-                  {subscription.subscription_status === "trial" && (
-                    <>
-                      <strong>Deneme Süresi:</strong> Plan değiştirmek için önce aboneliğinizi aktifleştirmelisiniz.
-                    </>
-                  )}
-                  {(subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") && (
-                    <>
-                      <strong>Abonelik Aktif Değil:</strong> Planınızı değiştirmek için önce ödeme yapmalısınız.
-                    </>
-                  )}
-                </AlertDescription>
-              </Alert>
+              <div className="space-y-4">
+                <Alert className="border-primary/50 bg-primary/5">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <AlertDescription>
+                    {subscription.subscription_status === "trial" && (
+                      <>
+                        <strong>Deneme Süresi:</strong> Aboneliğinizi aktifleştirmek için ödeme yapmalısınız.
+                      </>
+                    )}
+                    {(subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") && (
+                      <>
+                        <strong>Abonelik Sona Erdi:</strong> Devam etmek için ödeme yapmalısınız.
+                      </>
+                    )}
+                  </AlertDescription>
+                </Alert>
+                
+                <Button
+                  onClick={handlePayment}
+                  disabled={isProcessingPayment}
+                  className="w-full bg-gradient-ocean hover:opacity-90"
+                  size="lg"
+                >
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  {isProcessingPayment ? "Ödeme sayfasına yönlendiriliyorsunuz..." : "Ödeme Yap"}
+                </Button>
+              </div>
             )}
 
             {/* Other Plans */}

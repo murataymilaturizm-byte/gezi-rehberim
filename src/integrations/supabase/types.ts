@@ -59,6 +59,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          agency_id: string
+          amount: number
+          callback_response: Json | null
+          created_at: string
+          currency: string
+          id: string
+          is_yearly: boolean
+          order_id: string
+          plan_type: string
+          sipay_response: Json | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          amount: number
+          callback_response?: Json | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_yearly?: boolean
+          order_id: string
+          plan_type: string
+          sipay_response?: Json | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          amount?: number
+          callback_response?: Json | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_yearly?: boolean
+          order_id?: string
+          plan_type?: string
+          sipay_response?: Json | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -86,6 +86,7 @@ const tourTypeLabels: Record<string, string> = {
 
 const Admin = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -133,6 +134,29 @@ const Admin = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Check payment result from URL params
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+    if (paymentStatus === "success") {
+      toast({
+        title: "Ödeme Başarılı! 🎉",
+        description: "Aboneliğiniz aktifleştirildi. Faturanız email adresinize gönderilecek.",
+      });
+      setActiveTab("history");
+      // Clear URL params
+      setSearchParams({});
+    } else if (paymentStatus === "failed") {
+      toast({
+        title: "Ödeme Başarısız",
+        description: "Ödeme işlemi tamamlanamadı. Lütfen tekrar deneyin veya farklı bir kart kullanın.",
+        variant: "destructive",
+      });
+      setActiveTab("history");
+      // Clear URL params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, toast]);
 
   const checkUserRole = async (userId: string) => {
     try {

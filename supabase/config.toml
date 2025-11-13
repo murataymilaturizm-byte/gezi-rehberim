@@ -2,3 +2,12 @@ project_id = "ncuswacwpqcxhmlhvfgq"
 
 [functions.whatsapp-webhook]
 verify_jwt = false
+
+[functions.demo-chat]
+verify_jwt = false
+
+[functions.sipay-payment]
+verify_jwt = true
+
+[functions.sipay-callback]
+verify_jwt = false
