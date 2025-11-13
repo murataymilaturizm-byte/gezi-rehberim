@@ -376,12 +376,16 @@ const Admin = () => {
             </div>
             <div className="flex items-center gap-4">
               {(agencyName || userName) && (
-                <div className="flex flex-col items-end gap-0.5 px-4 py-2 rounded-lg bg-muted/50 border border-border/50">
+                <div className="flex items-center gap-2 text-foreground">
+                  <span className="text-sm font-medium">Hoşgeldiniz</span>
                   {agencyName && (
-                    <span className="text-sm font-semibold text-foreground">{agencyName}</span>
+                    <span className="text-sm font-semibold">{agencyName}</span>
+                  )}
+                  {agencyName && userName && (
+                    <span className="text-sm text-muted-foreground">•</span>
                   )}
                   {userName && (
-                    <span className="text-xs text-muted-foreground">{userName}</span>
+                    <span className="text-sm text-muted-foreground">{userName}</span>
                   )}
                 </div>
               )}
