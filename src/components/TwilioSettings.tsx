@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ const whatsappSchema = z.object({
 });
 
 export const TwilioSettings = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -158,10 +160,10 @@ export const TwilioSettings = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="h-5 w-5" />
-          WhatsApp Ayarları
+          {t("admin.whatsapp.settings.title")}
         </CardTitle>
         <CardDescription>
-          WhatsApp Business numaranızı ayarlayın
+          {t("admin.whatsapp.settings.description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
