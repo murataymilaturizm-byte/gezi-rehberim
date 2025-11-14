@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ interface UsageData {
 }
 
 export const UsageStats = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [usage, setUsage] = useState<UsageData | null>(null);
@@ -54,8 +56,8 @@ export const UsageStats = () => {
     } catch (error) {
       console.error('Error loading usage data:', error);
       toast({
-        title: "Hata",
-        description: "Kullanım bilgileri yüklenemedi",
+        title: t("admin.toast.error"),
+        description: t("admin.usageStats.loadError"),
         variant: "destructive",
       });
     } finally {
@@ -98,8 +100,8 @@ export const UsageStats = () => {
     } catch (error: any) {
       console.error('Error purchasing quota:', error);
       toast({
-        title: "Hata",
-        description: error.message || "Ödeme işlemi başlatılamadı",
+        title: t("admin.toast.error"),
+        description: error.message || t("admin.usageStats.paymentError"),
         variant: "destructive",
       });
     } finally {
@@ -113,11 +115,11 @@ export const UsageStats = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
-            Paket Kullanımı
+            {t("admin.usageStats.packageUsage")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">Yükleniyor...</div>
+          <div className="text-sm text-muted-foreground">{t("admin.loading")}</div>
         </CardContent>
       </Card>
     );
@@ -146,9 +148,9 @@ export const UsageStats = () => {
 
   const getPlanName = (planType: string) => {
     switch (planType) {
-      case 'starter': return 'Başlangıç';
-      case 'professional': return 'Profesyonel';
-      case 'enterprise': return 'Kurumsal';
+      case 'starter': return t("admin.dashboard.starter");
+      case 'professional': return t("admin.dashboard.professional");
+      case 'enterprise': return t("admin.dashboard.enterprise");
       default: return planType;
     }
   };
@@ -176,7 +178,7 @@ export const UsageStats = () => {
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Database className="w-5 h-5" />
-              Aktif Paket
+              {t("admin.usageStats.activePackage")}
             </span>
             <Badge className={getPlanBadgeColor(usage.plan_type)}>
               {getPlanName(usage.plan_type)}
@@ -186,22 +188,22 @@ export const UsageStats = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Durum</span>
+              <span className="text-muted-foreground">{t("admin.usageStats.status")}</span>
               <Badge variant={usage.subscription_status === 'active' ? 'default' : usage.subscription_status === 'trial' ? 'secondary' : 'destructive'}>
-                {usage.subscription_status === 'active' ? 'Aktif' : usage.subscription_status === 'trial' ? 'Deneme' : 'Süresi Doldu'}
+                {usage.subscription_status === 'active' ? t("admin.usageStats.statusActive") : usage.subscription_status === 'trial' ? t("admin.usageStats.statusTrial") : t("admin.usageStats.statusExpired")}
               </Badge>
             </div>
             
             {usage.subscription_status === 'trial' && usage.trial_ends_at && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Deneme Süresi</span>
-                <span className="font-medium">{getDaysRemaining(usage.trial_ends_at)} gün kaldı</span>
+                <span className="text-muted-foreground">{t("admin.usageStats.trialPeriod")}</span>
+                <span className="font-medium">{getDaysRemaining(usage.trial_ends_at)} {t("admin.usageStats.daysRemaining")}</span>
               </div>
             )}
             
             {usage.subscription_status === 'active' && usage.subscription_ends_at && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Yenileme Tarihi</span>
+                <span className="text-muted-foreground">{t("admin.usageStats.renewalDate")}</span>
                 <span className="font-medium">{formatDate(usage.subscription_ends_at)}</span>
               </div>
             )}
@@ -215,7 +217,7 @@ export const UsageStats = () => {
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5" />
-              Mesaj Kotası
+              {t("admin.usageStats.messageQuota")}
             </span>
             {isNearLimit && !isOverLimit && (
               <AlertCircle className="w-5 h-5 text-warning" />
@@ -228,10 +230,10 @@ export const UsageStats = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Bu Ay Kullanılan</span>
+              <span className="text-muted-foreground">{t("admin.usageStats.usedThisMonth")}</span>
               <span className="font-medium">
                 {usage.monthly_message_count.toLocaleString('tr-TR')} 
-                {usage.message_limit === -1 ? ' (Sınırsız)' : ` / ${usage.message_limit.toLocaleString('tr-TR')}`}
+                {usage.message_limit === -1 ? ` (${t("admin.usageStats.unlimited")})` : ` / ${usage.message_limit.toLocaleString('tr-TR')}`}
               </span>
             </div>
             
@@ -245,21 +247,21 @@ export const UsageStats = () => {
                 {isOverLimit && (
                   <div className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
-                    Mesaj kotanız doldu! Paketinizi yükseltmeniz gerekiyor.
+                    {t("admin.usageStats.quotaFull")}
                   </div>
                 )}
                 
                 {isNearLimit && !isOverLimit && (
                   <div className="text-xs text-warning flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
-                    Mesaj kotanızın %{Math.round(100 - usagePercentage)}'i kaldı.
+                    {t("admin.usageStats.quotaNearLimit", { percent: Math.round(100 - usagePercentage) })}
                   </div>
                 )}
               </>
             )}
             
             <div className="flex items-center justify-between text-sm pt-2 border-t">
-              <span className="text-muted-foreground">Son Sıfırlama</span>
+              <span className="text-muted-foreground">{t("admin.usageStats.lastReset")}</span>
               <span className="font-medium">{formatDate(usage.last_message_reset_date)}</span>
             </div>
           </div>
@@ -270,14 +272,14 @@ export const UsageStats = () => {
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full mt-4" size="sm">
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  Ekstra Mesaj Kotası Satın Al
+                  {t("admin.usageStats.buyExtraQuota")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Ekstra Mesaj Kotası</DialogTitle>
+                  <DialogTitle>{t("admin.usageStats.extraQuotaTitle")}</DialogTitle>
                   <DialogDescription>
-                    Mevcut paketinize ek mesaj kotası ekleyin. Kota, satın aldığınız andan itibaren kullanılabilir olacaktır.
+                    {t("admin.usageStats.extraQuotaDescription")}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -292,12 +294,12 @@ export const UsageStats = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="text-left">
-                          <div className="font-semibold text-lg">500 Mesaj</div>
-                          <div className="text-sm text-muted-foreground">Ekstra mesaj kotası</div>
+                          <div className="font-semibold text-lg">{t("admin.usageStats.quota500Messages")}</div>
+                          <div className="text-sm text-muted-foreground">{t("admin.usageStats.extraQuotaLabel")}</div>
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-xl">1.500 ₺</div>
-                          <div className="text-xs text-muted-foreground">Tek seferlik</div>
+                          <div className="text-xs text-muted-foreground">{t("admin.usageStats.oneTime")}</div>
                         </div>
                       </div>
                     </button>
@@ -312,14 +314,14 @@ export const UsageStats = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="text-left">
-                          <div className="font-semibold text-lg">1.000 Mesaj</div>
-                          <div className="text-sm text-muted-foreground">Ekstra mesaj kotası</div>
-                          <Badge variant="secondary" className="mt-1">Popüler</Badge>
+                          <div className="font-semibold text-lg">{t("admin.usageStats.quota1000Messages")}</div>
+                          <div className="text-sm text-muted-foreground">{t("admin.usageStats.extraQuotaLabel")}</div>
+                          <Badge variant="secondary" className="mt-1">{t("admin.usageStats.popular")}</Badge>
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-xl">2.699 ₺</div>
-                          <div className="text-xs text-muted-foreground">Tek seferlik</div>
-                          <div className="text-xs text-green-600 font-medium">%10 tasarruf</div>
+                          <div className="text-xs text-muted-foreground">{t("admin.usageStats.oneTime")}</div>
+                          <div className="text-xs text-green-600 font-medium">{t("admin.usageStats.discount10")}</div>
                         </div>
                       </div>
                     </button>
@@ -327,7 +329,7 @@ export const UsageStats = () => {
 
                   <div className="bg-muted/50 p-3 rounded-lg text-sm">
                     <p className="text-muted-foreground">
-                      💡 Satın aldığınız ekstra kota mevcut mesaj limitinize eklenecek ve hemen kullanılabilir olacaktır.
+                      {t("admin.usageStats.quotaInfo")}
                     </p>
                   </div>
 
@@ -336,7 +338,7 @@ export const UsageStats = () => {
                     disabled={purchasing}
                     className="w-full"
                   >
-                    {purchasing ? "Yönlendiriliyor..." : "Ödeme Sayfasına Git"}
+                    {purchasing ? t("admin.usageStats.redirecting") : t("admin.usageStats.goToPayment")}
                   </Button>
                 </div>
               </DialogContent>
@@ -350,25 +352,25 @@ export const UsageStats = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5" />
-            Ortalama Kullanım
+            {t("admin.usageStats.avgUsage")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Günlük Ortalama</span>
+              <span className="text-muted-foreground">{t("admin.usageStats.dailyAvg")}</span>
               <span className="font-medium">
-                ~{Math.round(usage.monthly_message_count / new Date().getDate())} mesaj/gün
+                ~{Math.round(usage.monthly_message_count / new Date().getDate())} {t("admin.usageStats.messagesPerDay")}
               </span>
             </div>
             
             {usage.message_limit !== -1 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Tahmini Süre</span>
+                <span className="text-muted-foreground">{t("admin.usageStats.estimatedDuration")}</span>
                 <span className="font-medium">
                   {usage.monthly_message_count === 0 
-                    ? 'Henüz kullanılmadı' 
-                    : Math.round((usage.message_limit - usage.monthly_message_count) / (usage.monthly_message_count / new Date().getDate())) + ' gün'
+                    ? t("admin.usageStats.notUsedYet")
+                    : Math.round((usage.message_limit - usage.monthly_message_count) / (usage.monthly_message_count / new Date().getDate())) + ` ${t("admin.usageStats.days")}`
                   }
                 </span>
               </div>
@@ -382,7 +384,7 @@ export const UsageStats = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Paket Özellikleri
+            {t("admin.usageStats.packageFeatures")}
           </CardTitle>
         </CardHeader>
         <CardContent>
