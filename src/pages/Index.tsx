@@ -16,10 +16,10 @@ import { DemoChat } from "@/components/DemoChat";
 import { supabase } from "@/integrations/supabase/client";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
 import { SalesChatWidget } from "@/components/SalesChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { contactFormSchema, checkRateLimit, sanitizeHtml } from "@/utils/validation";
 
 const Index = () => {
   const { t } = useTranslation();
@@ -29,12 +29,6 @@ const Index = () => {
   const demoRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
-
-  const contactFormSchema = z.object({
-    name: z.string().trim().min(1, t("validation.nameRequired")).max(100, t("validation.nameMaxLength")),
-    email: z.string().trim().email(t("validation.emailInvalid")).max(255, t("validation.emailMaxLength")),
-    message: z.string().trim().min(10, t("validation.messageMinLength")).max(1000, t("validation.messageMaxLength"))
-  });
 
   const scrollToDemo = () => {
     demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -897,6 +891,17 @@ const Index = () => {
               <CardContent className="p-8">
                 <form onSubmit={async (e) => {
                   e.preventDefault();
+                  
+                  // Rate limiting check (max 3 submissions per 10 minutes)
+                  if (!checkRateLimit('contact_form', 3, 10 * 60 * 1000)) {
+                    toast({
+                      title: "⚠️ Çok Fazla Deneme",
+                      description: "Lütfen 10 dakika sonra tekrar deneyin. Spam koruması aktif.",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
                   setIsSubmittingForm(true);
 
                   try {
@@ -907,8 +912,11 @@ const Index = () => {
                       message: formData.get('message') as string
                     };
 
-                    // Validate form data
+                    // Validate form data with enhanced security
                     const validatedData = contactFormSchema.parse(data);
+
+                    // Additional XSS protection - sanitize message content
+                    const sanitizedMessage = sanitizeHtml(validatedData.message);
 
                     // Save to Supabase
                     const { error } = await supabase
@@ -916,7 +924,7 @@ const Index = () => {
                       .insert({
                         name: validatedData.name,
                         email: validatedData.email,
-                        message: validatedData.message,
+                        message: sanitizedMessage,
                         status: 'new'
                       });
 
@@ -930,10 +938,12 @@ const Index = () => {
                     // Reset form
                     (e.target as HTMLFormElement).reset();
                   } catch (error) {
-                    if (error instanceof z.ZodError) {
+                    if (error instanceof Error && 'errors' in error) {
+                      // Zod validation error
+                      const zodError = error as any;
                       toast({
                         title: t("contact.formErrorTitle"),
-                        description: error.errors[0].message,
+                        description: zodError.errors[0]?.message || "Form doğrulama hatası",
                         variant: "destructive"
                       });
                     } else {
