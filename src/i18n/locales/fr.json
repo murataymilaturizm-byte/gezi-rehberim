@@ -445,7 +445,7 @@
         "integrationComplete": "Intégration Terminée",
         "integrationCompleteDesc": "Le service WhatsApp est actif. Vos clients peuvent vous contacter depuis {{phone}}."
       },
-      "templates": {
+       "templates": {
         "title": "Modèles de Messages",
         "description": "Modèles multilingues pour les messages automatisés comme la confirmation de réservation, la notification d'annulation",
         "addNew": "Ajouter un Nouveau Modèle",
@@ -462,6 +462,36 @@
         "namePlaceholder": "ex: Message de Bienvenue",
         "contentPlaceholder": "Bonjour! Comment puis-je vous aider?",
         "loadDefaults": "Charger les Modèles par Défaut"
+      },
+      "userProfiles": {
+        "title": "Profils d'Utilisateurs",
+        "selectAgency": "Sélectionner une Agence",
+        "noUsers": "Pas encore d'utilisateurs",
+        "loadingUsers": "Chargement des utilisateurs...",
+        "users": "Utilisateur",
+        "unnamed": "Sans Nom",
+        "userDetails": "Détails de l'Utilisateur",
+        "selectUser": "Sélectionnez un utilisateur pour voir les détails",
+        "generalInfo": "Informations Générales",
+        "name": "Nom",
+        "phoneNumber": "Téléphone",
+        "firstContact": "Premier Contact",
+        "lastContact": "Dernier Contact",
+        "activity": "Activité",
+        "activityStatus": "Statut d'Activité",
+        "todayActive": "Actif Aujourd'hui",
+        "yesterdayActive": "Actif Hier",
+        "daysAgo": "jours",
+        "totalMessages": "Messages Totaux",
+        "preferences": "Préférences",
+        "preferredDestinations": "Destinations Préférées",
+        "budgetRange": "Fourchette de Budget",
+        "preferredTourType": "Type de Tour Préféré",
+         "statistics": "Statistiques",
+        "lastSearchQuery": "Dernière Recherche",
+        "notSpecified": "Non Spécifié",
+        "messagesPerDay": "Messages/Jour",
+        "activeDays": "Jours Actifs"
       }
     },
     "dashboard": {
