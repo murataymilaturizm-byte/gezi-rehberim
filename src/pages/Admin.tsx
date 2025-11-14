@@ -50,6 +50,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
 import { SupportChatWidget } from "@/components/SupportChatWidget";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 interface Tour {
   id: string;
@@ -396,28 +398,29 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
+      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" asChild>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300">
                 <a href="/">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Ana Sayfa
+                  <span className="hidden sm:inline">Ana Sayfa</span>
+                  <span className="sm:hidden">Geri</span>
                 </a>
               </Button>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <img 
                   src={turzzLogo} 
                   alt="Turzz AI Logo" 
-                  className="h-14 w-auto object-contain"
+                  className="h-10 sm:h-14 w-auto object-contain transition-transform duration-300 hover:scale-105"
                 />
-                <h1 className="text-xl font-bold text-foreground">Acente Paneli</h1>
+                <h1 className="text-base sm:text-xl font-bold text-foreground">Acente Paneli</h1>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {(agencyName || userName) && (
-                <div className="flex items-center gap-2 text-foreground">
+                <div className="hidden lg:flex items-center gap-2 text-foreground">
                   <span className="text-sm font-medium">Hoşgeldiniz</span>
                   {agencyName && (
                     <span className="text-sm font-semibold">{agencyName}</span>
@@ -430,14 +433,16 @@ const Admin = () => {
                   )}
                 </div>
               )}
-              <Button variant="ghost" size="sm" asChild>
+              <LanguageSelector />
+              <ThemeToggle />
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex hover:scale-105 transition-transform duration-300">
                 <a href="/yardim" target="_blank">
                   Yardım
                 </a>
               </Button>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Çıkış
+              <Button variant="outline" size="sm" onClick={handleLogout} className="transition-all duration-300 hover:scale-105">
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Çıkış</span>
               </Button>
             </div>
           </div>
@@ -450,32 +455,32 @@ const Admin = () => {
         {!isSuperAdmin && <SubscriptionBanner />}
         
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           <Button
             variant={activeTab === "dashboard" ? "default" : "outline"}
             onClick={() => setActiveTab("dashboard")}
-            className={activeTab === "dashboard" ? "bg-gradient-ocean" : ""}
+            className={`transition-all duration-300 ${activeTab === "dashboard" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
             Dashboard
           </Button>
           <Button
             variant={activeTab === "tours" ? "default" : "outline"}
             onClick={() => setActiveTab("tours")}
-            className={activeTab === "tours" ? "bg-gradient-ocean" : ""}
+            className={`transition-all duration-300 ${activeTab === "tours" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
             Turlar
           </Button>
           <Button
             variant={activeTab === "registrations" ? "default" : "outline"}
             onClick={() => setActiveTab("registrations")}
-            className={activeTab === "registrations" ? "bg-gradient-ocean" : ""}
+            className={`transition-all duration-300 ${activeTab === "registrations" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
             Kayıtlar
           </Button>
           <Button
             variant={activeTab === "whatsapp" ? "default" : "outline"}
             onClick={() => setActiveTab("whatsapp")}
-            className={activeTab === "whatsapp" ? "bg-gradient-ocean" : ""}
+            className={`transition-all duration-300 ${activeTab === "whatsapp" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
             WhatsApp
           </Button>
@@ -484,21 +489,21 @@ const Admin = () => {
               <Button
                 variant={activeTab === "settings" ? "default" : "outline"}
                 onClick={() => setActiveTab("settings")}
-                className={activeTab === "settings" ? "bg-gradient-ocean" : ""}
+                className={`transition-all duration-300 ${activeTab === "settings" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
                 WhatsApp Ayarları
               </Button>
               <Button
                 variant={activeTab === "templates" ? "default" : "outline"}
                 onClick={() => setActiveTab("templates")}
-                className={activeTab === "templates" ? "bg-gradient-ocean" : ""}
+                className={`transition-all duration-300 ${activeTab === "templates" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
                 Şablonlar
               </Button>
               <Button
                 variant={activeTab === "history" ? "default" : "outline"}
                 onClick={() => setActiveTab("history")}
-                className={activeTab === "history" ? "bg-gradient-ocean" : ""}
+                className={`transition-all duration-300 ${activeTab === "history" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
                 Abonelik Geçmişi
               </Button>
@@ -509,21 +514,21 @@ const Admin = () => {
               <Button
                 variant={activeTab === "agencies" ? "default" : "outline"}
                 onClick={() => setActiveTab("agencies")}
-                className={activeTab === "agencies" ? "bg-gradient-ocean" : ""}
+                className={`transition-all duration-300 ${activeTab === "agencies" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
                 Acenteler
               </Button>
               <Button
                 variant={activeTab === "contact_forms" ? "default" : "outline"}
                 onClick={() => setActiveTab("contact_forms")}
-                className={activeTab === "contact_forms" ? "bg-gradient-ocean" : ""}
+                className={`transition-all duration-300 ${activeTab === "contact_forms" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
                 İletişim Formları
               </Button>
               <Button
                 variant={activeTab === "twilio_settings" ? "default" : "outline"}
                 onClick={() => setActiveTab("twilio_settings")}
-                className={activeTab === "twilio_settings" ? "bg-gradient-ocean" : ""}
+                className={`transition-all duration-300 ${activeTab === "twilio_settings" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
                 Twilio Ayarları
               </Button>
