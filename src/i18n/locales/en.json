@@ -76,7 +76,8 @@
     "subtitle": "Try our AI-powered assistant now. Make tour queries, simulate reservations.",
     "note": "This is a demo chatbot. In your real system, you can use your own tours and settings.",
     "cta": "Get Started Now",
-    "greeting": "Hello! 👋 I'm your WhatsApp tour assistant. Which beautiful places would you like to explore?\n\n✨ *Popular tours:*\n🏔️ Cappadocia\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Aegean Tour"
+    "greeting": "Hello! 👋 I'm your WhatsApp tour assistant. Which beautiful places would you like to explore?\n\n✨ *Popular tours:*\n🏔️ Cappadocia\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Aegean Tour",
+    "subtitle2": "AI-powered tour assistant"
   },
   "benefits": {
     "title": "Concrete Results, Real Value",

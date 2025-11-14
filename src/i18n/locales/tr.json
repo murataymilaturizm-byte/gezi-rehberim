@@ -83,7 +83,8 @@
     "subtitle": "AI destekli asistanımızı şimdi deneyin. Tur sorguları yapın, rezervasyon simüle edin.",
     "note": "Bu bir demo chatbot'tur. Gerçek sisteminizde kendi turlarınızı ve ayarlarınızı kullanabilirsiniz.",
     "cta": "Hemen Başlayın",
-    "greeting": "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu"
+    "greeting": "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu",
+    "subtitle2": "Yapay zeka destekli tur asistanı"
   },
   "advanced": {
     "badge": "Gelişmiş Özellikler",
@@ -136,7 +137,21 @@
   },
   "howItWorks": {
     "title": "Nasıl Çalışır?",
-    "subtitle": "WhatsApp'tan rezervasyona 3 basit adımda"
+    "subtitle": "WhatsApp'tan rezervasyona 3 basit adımda",
+    "step1": {
+      "title": "Müşteri Mesaj Gönderir",
+      "description": "WhatsApp üzerinden \"Kapadokya turları\" gibi doğal dilde arama yapar"
+    },
+    "step2": {
+      "title": "AI Analiz Eder",
+      "description": "AI mesajı anlar ve en uygun turları önerir, fiyat ve tarih bilgisi verir"
+    },
+    "step3": {
+      "title": "Rezervasyon Oluşturulur",
+      "description": "Müşteri bilgileri sihirbaz rehberliğinde toplanır, rezervasyon tamamlanır"
+    },
+    "footer": "Tüm süreç otomatik ve 7/24 çalışır 🚀",
+    "demoButton": "Canlı Demo'yu İnceleyin"
   },
   "testimonials": {
     "title": "Gerçek Sonuçlar",
