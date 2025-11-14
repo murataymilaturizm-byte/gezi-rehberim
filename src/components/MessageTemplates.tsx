@@ -82,7 +82,7 @@ export default function MessageTemplates() {
 
       if (!agency) return;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('message_templates')
         .select('*')
         .eq('agency_id', agency.id)
@@ -129,16 +129,16 @@ export default function MessageTemplates() {
       };
 
       if (editingTemplate.id) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('message_templates')
           .update(templateData)
           .eq('id', editingTemplate.id);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('message_templates')
-          .insert(templateData);
+          .insert([templateData]);
 
         if (error) throw error;
       }
@@ -165,7 +165,7 @@ export default function MessageTemplates() {
     if (!confirm('Bu şablonu silmek istediğinizden emin misiniz?')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('message_templates')
         .delete()
         .eq('id', id);
@@ -202,14 +202,14 @@ export default function MessageTemplates() {
       if (!agency) return;
 
       // Varsayılan şablonları kopyala
-      const { data: defaultTemplates } = await supabase
+      const { data: defaultTemplates } = await (supabase as any)
         .from('message_templates')
         .select('*')
         .eq('agency_id', '00000000-0000-0000-0000-000000000000');
 
       if (!defaultTemplates || defaultTemplates.length === 0) return;
 
-      const newTemplates = defaultTemplates.map(t => ({
+      const newTemplates = (defaultTemplates as any[]).map((t: any) => ({
         agency_id: agency.id,
         template_key: t.template_key,
         language: t.language,
@@ -219,7 +219,7 @@ export default function MessageTemplates() {
         is_active: t.is_active,
       }));
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('message_templates')
         .insert(newTemplates);
 
@@ -227,7 +227,7 @@ export default function MessageTemplates() {
 
       toast({
         title: "Başarılı",
-        description: "Varsayılan şablonlar kopyalandı",
+        description: "Varsayılan şablonlar yüklendi",
       });
 
       fetchTemplates();
@@ -243,6 +243,12 @@ export default function MessageTemplates() {
 
   const getTemplatesByLanguage = (lang: string) => {
     return templates.filter(t => t.language === lang);
+  };
+
+  const getVariablesArray = (variables: any): string[] => {
+    if (Array.isArray(variables)) return variables;
+    if (typeof variables === 'string') return variables.split(',').map(v => v.trim());
+    return [];
   };
 
   if (loading) {
@@ -335,9 +341,9 @@ export default function MessageTemplates() {
                             {template.content.substring(0, 200)}
                             {template.content.length > 200 && '...'}
                           </div>
-                          {template.variables && template.variables.length > 0 && (
+                          {template.variables && getVariablesArray(template.variables).length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                              {template.variables.map((variable) => (
+                              {getVariablesArray(template.variables).map((variable) => (
                                 <span
                                   key={variable}
                                   className="inline-flex items-center px-2 py-1 text-xs bg-primary/10 text-primary rounded"
@@ -437,7 +443,7 @@ export default function MessageTemplates() {
               <div>
                 <Label>Değişkenler (virgülle ayırın)</Label>
                 <Input
-                  value={editingTemplate.variables?.join(', ') || ''}
+                  value={getVariablesArray(editingTemplate.variables).join(', ')}
                   onChange={(e) =>
                     setEditingTemplate({
                       ...editingTemplate,
