@@ -69,7 +69,7 @@ interface PopularTour {
 
 interface ChartData {
   name: string;
-  kayitlar: number;
+  registrations: number;
 }
 
 interface SuperAdminStats {
@@ -167,7 +167,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
 
       // Calculate geographic distribution
       const cityDistribution = agencies?.reduce((acc: { [key: string]: number }, agency: any) => {
-        const location = agency.city || agency.region || 'Belirtilmemiş';
+        const location = agency.city || agency.region || t("admin.dashboard.unspecified");
         acc[location] = (acc[location] || 0) + 1;
         return acc;
       }, {}) || {};
@@ -407,9 +407,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         return acc;
       }, {});
 
-      const formattedChartData: ChartData[] = Object.entries(dailyCounts || {}).map(([name, kayitlar]) => ({
+      const formattedChartData: ChartData[] = Object.entries(dailyCounts || {}).map(([name, registrations]) => ({
         name,
-        kayitlar: kayitlar as number
+        registrations: registrations as number
       }));
 
       setChartData(formattedChartData);
@@ -426,7 +426,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
+      <div className="text-center py-8 text-muted-foreground">{t("admin.loading")}</div>
     );
   }
 
@@ -905,19 +905,19 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 : 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats.confirmedRegistrations || 0} / {stats.totalRegistrations} kayıt
+              {stats.confirmedRegistrations || 0} / {stats.totalRegistrations} {t("admin.dashboard.registrations")}
             </p>
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Turlar</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.dashboard.totalTours")}</CardTitle>
             <Plane className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTours}</div>
-            <p className="text-xs text-muted-foreground">Aktif tur sayısı</p>
+            <p className="text-xs text-muted-foreground">{t("admin.dashboard.activeTourCount")}</p>
           </CardContent>
         </Card>
       </div>
@@ -926,34 +926,34 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Kayıtlar</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.dashboard.totalRegistrations")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalRegistrations}</div>
-            <p className="text-xs text-muted-foreground">Tüm kayıtlar</p>
+            <p className="text-xs text-muted-foreground">{t("admin.dashboard.allRegistrations")}</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aktif Tarihler</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.dashboard.activeDates")}</CardTitle>
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeDates}</div>
-            <p className="text-xs text-muted-foreground">Tur tarihleri</p>
+            <p className="text-xs text-muted-foreground">{t("admin.dashboard.tourDates")}</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bekleyen Kayıtlar</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.dashboard.pendingRegistrations")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendingRegistrations}</div>
-            <p className="text-xs text-muted-foreground">İnceleme bekliyor</p>
+            <p className="text-xs text-muted-foreground">{t("admin.dashboard.awaitingReview")}</p>
           </CardContent>
         </Card>
       </div>
@@ -974,7 +974,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey={t("admin.dashboard.chartRegistrations")} fill="hsl(var(--primary))" />
+              <Bar dataKey="registrations" fill="hsl(var(--primary))" name={t("admin.dashboard.chartRegistrations")} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -1003,7 +1003,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                       <p className="text-sm font-medium leading-none">{tour.title}</p>
                       <p className="text-sm text-muted-foreground">{tour.destination}</p>
                     </div>
-                    <Badge variant="secondary">{tour.registrationCount} kayıt</Badge>
+                    <Badge variant="secondary">{tour.registrationCount} {t("admin.dashboard.registration")}</Badge>
                   </div>
                 ))
               )}
@@ -1040,7 +1040,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                           format(dateRange.from, "dd/MM/yy", { locale: tr })
                         )
                       ) : (
-                        <span>Filtrele</span>
+                        <span>{t("admin.dashboard.filter")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -1073,7 +1073,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             <div className="space-y-3">
               {recentRegistrations.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  Henüz kayıt yok
+                  {t("admin.registrations.noRegistrations")}
                 </div>
               ) : (
                 recentRegistrations.map((reg) => (
