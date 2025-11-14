@@ -286,7 +286,13 @@
     "bookings": "Réservations",
     "date": "Date",
     "tours": "Tours",
-    "noFeedbacks": "Aucune réponse aux enquêtes pour le moment"
+    "noFeedbacks": "Aucune réponse aux enquêtes pour le moment",
+    "npsTrend": "Tendance NPS (6 derniers mois)",
+    "scoreDistribution": "Distribution des scores",
+    "responses": "Réponses",
+    "percentage": "Pourcentage",
+    "noTrendData": "Pas de données de tendance",
+    "noDistributionData": "Pas de données de distribution"
   },
   "admin": {
     "title": "Panneau d'Agence",
