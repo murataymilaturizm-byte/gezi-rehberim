@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,7 @@ interface WhatsAppUserProfilesProps {
 }
 
 export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfilesProps) => {
+  const { t } = useTranslation();
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
@@ -117,11 +119,11 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       (Date.now() - new Date(lastInteraction).getTime()) / (1000 * 60 * 60 * 24)
     );
     
-    if (daysSince === 0) return { label: "Bugün Aktif", color: "bg-green-500" };
-    if (daysSince === 1) return { label: "Dün Aktif", color: "bg-blue-500" };
-    if (daysSince <= 7) return { label: `${daysSince} gün önce`, color: "bg-yellow-500" };
-    if (daysSince <= 30) return { label: `${daysSince} gün önce`, color: "bg-orange-500" };
-    return { label: `${daysSince} gün önce`, color: "bg-gray-500" };
+    if (daysSince === 0) return { label: t("admin.whatsapp.userProfiles.todayActive"), color: "bg-green-500" };
+    if (daysSince === 1) return { label: t("admin.whatsapp.userProfiles.yesterdayActive"), color: "bg-blue-500" };
+    if (daysSince <= 7) return { label: `${daysSince} ${t("admin.whatsapp.userProfiles.daysAgo")}`, color: "bg-yellow-500" };
+    if (daysSince <= 30) return { label: `${daysSince} ${t("admin.whatsapp.userProfiles.daysAgo")}`, color: "bg-orange-500" };
+    return { label: `${daysSince} ${t("admin.whatsapp.userProfiles.daysAgo")}`, color: "bg-gray-500" };
   };
 
   if (loading) {
