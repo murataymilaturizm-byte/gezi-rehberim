@@ -492,7 +492,7 @@
         "integrationComplete": "Integración Completa",
         "integrationCompleteDesc": "El servicio de WhatsApp está activo. Sus clientes pueden contactarlo desde {{phone}}."
       },
-      "templates": {
+       "templates": {
         "title": "Plantillas de Mensajes",
         "description": "Plantillas multilingües para mensajes automáticos como confirmación de reserva, notificación de cancelación",
         "addNew": "Agregar Nueva Plantilla",
@@ -509,6 +509,36 @@
         "namePlaceholder": "ej: Mensaje de Bienvenida",
         "contentPlaceholder": "¡Hola! ¿Cómo puedo ayudarte?",
         "loadDefaults": "Cargar Plantillas Predeterminadas"
+      },
+      "userProfiles": {
+        "title": "Perfiles de Usuario",
+        "selectAgency": "Seleccionar Agencia",
+        "noUsers": "Aún no hay usuarios",
+        "loadingUsers": "Cargando usuarios...",
+        "users": "Usuario",
+        "unnamed": "Sin Nombre",
+        "userDetails": "Detalles del Usuario",
+        "selectUser": "Seleccione un usuario para ver detalles",
+        "generalInfo": "Información General",
+        "name": "Nombre",
+        "phoneNumber": "Teléfono",
+        "firstContact": "Primer Contacto",
+        "lastContact": "Último Contacto",
+        "activity": "Actividad",
+        "activityStatus": "Estado de Actividad",
+        "todayActive": "Activo Hoy",
+        "yesterdayActive": "Activo Ayer",
+        "daysAgo": "días atrás",
+        "totalMessages": "Mensajes Totales",
+        "preferences": "Preferencias",
+        "preferredDestinations": "Destinos Preferidos",
+        "budgetRange": "Rango de Presupuesto",
+        "preferredTourType": "Tipo de Tour Preferido",
+        "statistics": "Estadísticas",
+        "lastSearchQuery": "Última Búsqueda",
+        "notSpecified": "No Especificado",
+        "messagesPerDay": "Mensajes/Día",
+        "activeDays": "Días Activos"
       }
     },
     "dashboard": {

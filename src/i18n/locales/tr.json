@@ -511,6 +511,8 @@
         "selectAgency": "Acente Seçin",
         "noUsers": "Henüz kullanıcı bulunmuyor",
         "loadingUsers": "Kullanıcılar yükleniyor...",
+        "users": "Kullanıcı",
+        "unnamed": "İsimsiz",
         "userDetails": "Kullanıcı Detayları",
         "selectUser": "Detayları görüntülemek için bir kullanıcı seçin",
         "generalInfo": "Genel Bilgiler",
@@ -530,7 +532,9 @@
         "preferredTourType": "Tercih Edilen Tur Tipi",
         "statistics": "İstatistikler",
         "lastSearchQuery": "Son Arama",
-        "notSpecified": "Belirtilmemiş"
+        "notSpecified": "Belirtilmemiş",
+        "messagesPerDay": "Mesaj/Gün",
+        "activeDays": "Aktif Gün"
       }
     },
     "agencyManagement": {

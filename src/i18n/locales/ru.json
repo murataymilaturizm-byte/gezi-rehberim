@@ -492,7 +492,7 @@
         "integrationComplete": "Интеграция Завершена",
         "integrationCompleteDesc": "Служба WhatsApp активна. Ваши клиенты могут связаться с вами через {{phone}}."
       },
-      "templates": {
+       "templates": {
         "title": "Шаблоны Сообщений",
         "description": "Многоязычные шаблоны для автоматических сообщений, таких как подтверждение бронирования, уведомление об отмене",
         "addNew": "Добавить Новый Шаблон",
@@ -509,6 +509,36 @@
         "namePlaceholder": "например: Приветственное Сообщение",
         "contentPlaceholder": "Здравствуйте! Как я могу вам помочь?",
         "loadDefaults": "Загрузить Стандартные Шаблоны"
+      },
+      "userProfiles": {
+        "title": "Профили Пользователей",
+        "selectAgency": "Выбрать Агентство",
+        "noUsers": "Пользователей пока нет",
+        "loadingUsers": "Загрузка пользователей...",
+        "users": "Пользователь",
+        "unnamed": "Без Имени",
+        "userDetails": "Детали Пользователя",
+        "selectUser": "Выберите пользователя для просмотра деталей",
+        "generalInfo": "Общая Информация",
+        "name": "Имя",
+        "phoneNumber": "Телефон",
+        "firstContact": "Первый Контакт",
+        "lastContact": "Последний Контакт",
+        "activity": "Активность",
+        "activityStatus": "Статус Активности",
+        "todayActive": "Активен Сегодня",
+        "yesterdayActive": "Активен Вчера",
+        "daysAgo": "дней назад",
+        "totalMessages": "Всего Сообщений",
+        "preferences": "Предпочтения",
+        "preferredDestinations": "Предпочитаемые Направления",
+        "budgetRange": "Бюджетный Диапазон",
+        "preferredTourType": "Предпочитаемый Тип Тура",
+        "statistics": "Статистика",
+        "lastSearchQuery": "Последний Поиск",
+        "notSpecified": "Не Указано",
+        "messagesPerDay": "Сообщений/День",
+        "activeDays": "Активные Дни"
       }
     },
     "dashboard": {

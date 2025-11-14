@@ -132,11 +132,11 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            WhatsApp Kullanıcı Profilleri
+            {t("admin.whatsapp.userProfiles.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Yükleniyor...</p>
+          <p className="text-muted-foreground">{t("admin.whatsapp.userProfiles.loadingUsers")}</p>
         </CardContent>
       </Card>
     );
@@ -148,11 +148,11 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            WhatsApp Kullanıcı Profilleri
+            {t("admin.whatsapp.userProfiles.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Henüz WhatsApp kullanıcısı yok</p>
+          <p className="text-muted-foreground">{t("admin.whatsapp.userProfiles.noUsers")}</p>
         </CardContent>
       </Card>
     );
@@ -164,9 +164,9 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            <CardTitle>WhatsApp Kullanıcı Profilleri</CardTitle>
+            <CardTitle>{t("admin.whatsapp.userProfiles.title")}</CardTitle>
             <Badge variant="secondary">
-              {profiles.length} Kullanıcı
+              {profiles.length} {t("admin.whatsapp.userProfiles.users")}
             </Badge>
           </div>
           
@@ -175,7 +175,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
               <Building2 className="h-4 w-4 text-muted-foreground" />
               <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
                 <SelectTrigger className="w-[250px]">
-                  <SelectValue placeholder="Acente Seçin" />
+                  <SelectValue placeholder={t("admin.whatsapp.userProfiles.selectAgency")} />
                 </SelectTrigger>
                 <SelectContent>
                   {agencies.map((agency) => (
@@ -212,7 +212,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <h3 className="font-medium text-sm">
-                            {profile.full_name || "İsimsiz"}
+                            {profile.full_name || t("admin.whatsapp.userProfiles.unnamed")}
                           </h3>
                           <p className="text-xs text-muted-foreground">
                             {profile.phone}
@@ -223,7 +223,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <MessageSquare className="w-3 h-3" />
-                        <span>{profile.total_messages} mesaj</span>
+                        <span>{profile.total_messages} {t("admin.whatsapp.conversations.messages")}</span>
                       </div>
                       
                       <div className="mt-1 text-xs text-muted-foreground">
@@ -244,21 +244,21 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                 <div className="p-4 rounded-lg border border-border">
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    Genel Bilgiler
+                    {t("admin.whatsapp.userProfiles.generalInfo")}
                   </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">İsim:</span>
+                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.name")}:</span>
                       <span className="font-medium">
-                        {selectedProfile.full_name || "Belirtilmemiş"}
+                        {selectedProfile.full_name || t("admin.whatsapp.userProfiles.notSpecified")}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Telefon:</span>
+                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.phoneNumber")}:</span>
                       <span className="font-mono">{selectedProfile.phone}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Toplam Mesaj:</span>
+                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.totalMessages")}:</span>
                       <Badge variant="secondary">{selectedProfile.total_messages}</Badge>
                     </div>
                   </div>
@@ -268,15 +268,15 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                 <div className="p-4 rounded-lg border border-border">
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    Aktivite
+                    {t("admin.whatsapp.userProfiles.activity")}
                   </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">İlk Mesaj:</span>
+                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.firstContact")}:</span>
                       <span>{formatDate(selectedProfile.first_interaction_at)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Son Mesaj:</span>
+                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.lastContact")}:</span>
                       <span>{formatDate(selectedProfile.last_interaction_at)}</span>
                     </div>
                   </div>
@@ -286,14 +286,14 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                 <div className="p-4 rounded-lg border border-border">
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
-                    Tercihler
+                    {t("admin.whatsapp.userProfiles.preferences")}
                   </h3>
                   <div className="space-y-3">
                     {selectedProfile.preferred_destinations &&
                       selectedProfile.preferred_destinations.length > 0 && (
                         <div>
                           <p className="text-xs text-muted-foreground mb-2">
-                            Tercih Edilen Destinasyonlar:
+                            {t("admin.whatsapp.userProfiles.preferredDestinations")}:
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {selectedProfile.preferred_destinations.map((dest, idx) => (
@@ -309,7 +309,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                     {selectedProfile.preferred_tour_type && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">
-                          Tercih Edilen Tur Tipi:
+                          {t("admin.whatsapp.userProfiles.preferredTourType")}:
                         </p>
                         <Badge>{selectedProfile.preferred_tour_type}</Badge>
                       </div>
@@ -318,7 +318,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                     {selectedProfile.budget_range && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">
-                          Bütçe Aralığı:
+                          {t("admin.whatsapp.userProfiles.budgetRange")}:
                         </p>
                         <Badge variant="secondary">{selectedProfile.budget_range}</Badge>
                       </div>
@@ -327,7 +327,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                     {selectedProfile.last_search_query && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">
-                          Son Arama:
+                          {t("admin.whatsapp.userProfiles.lastSearchQuery")}:
                         </p>
                         <p className="text-sm italic">
                           "{selectedProfile.last_search_query}"
@@ -340,7 +340,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                 {/* İstatistikler */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-gradient-ocean text-primary-foreground">
-                    <p className="text-xs opacity-90">Mesaj/Gün</p>
+                    <p className="text-xs opacity-90">{t("admin.whatsapp.userProfiles.messagesPerDay")}</p>
                     <p className="text-2xl font-bold">
                       {(
                         selectedProfile.total_messages /
@@ -357,7 +357,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                   </div>
                   
                   <div className="p-3 rounded-lg bg-muted">
-                    <p className="text-xs text-muted-foreground">Aktif Gün</p>
+                    <p className="text-xs text-muted-foreground">{t("admin.whatsapp.userProfiles.activeDays")}</p>
                     <p className="text-2xl font-bold">
                       {Math.ceil(
                         (Date.now() -

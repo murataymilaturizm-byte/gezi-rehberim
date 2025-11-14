@@ -505,7 +505,7 @@
         "integrationComplete": "Integration Abgeschlossen",
         "integrationCompleteDesc": "WhatsApp-Dienst ist aktiv. Ihre Kunden können Sie von {{phone}} kontaktieren."
       },
-      "templates": {
+       "templates": {
         "title": "Nachrichtenvorlagen",
         "description": "Mehrsprachige Vorlagen für automatisierte Nachrichten wie Buchungsbestätigung, Stornierungsbenachrichtigung",
         "addNew": "Neue Vorlage Hinzufügen",
@@ -522,6 +522,36 @@
         "namePlaceholder": "z.B: Willkommensnachricht",
         "contentPlaceholder": "Hallo! Wie kann ich Ihnen helfen?",
         "loadDefaults": "Standardvorlagen Laden"
+      },
+      "userProfiles": {
+        "title": "Benutzerprofile",
+        "selectAgency": "Agentur Auswählen",
+        "noUsers": "Noch keine Benutzer",
+        "loadingUsers": "Benutzer werden geladen...",
+        "users": "Benutzer",
+        "unnamed": "Unbenannt",
+        "userDetails": "Benutzerdetails",
+        "selectUser": "Wählen Sie einen Benutzer, um Details anzuzeigen",
+        "generalInfo": "Allgemeine Informationen",
+        "name": "Name",
+        "phoneNumber": "Telefon",
+        "firstContact": "Erster Kontakt",
+        "lastContact": "Letzter Kontakt",
+        "activity": "Aktivität",
+        "activityStatus": "Aktivitätsstatus",
+        "todayActive": "Heute Aktiv",
+        "yesterdayActive": "Gestern Aktiv",
+        "daysAgo": "Tage her",
+        "totalMessages": "Gesamtnachrichten",
+        "preferences": "Präferenzen",
+        "preferredDestinations": "Bevorzugte Ziele",
+        "budgetRange": "Budgetbereich",
+        "preferredTourType": "Bevorzugter Tourtyp",
+        "statistics": "Statistiken",
+        "lastSearchQuery": "Letzte Suche",
+        "notSpecified": "Nicht Angegeben",
+        "messagesPerDay": "Nachrichten/Tag",
+        "activeDays": "Aktive Tage"
       }
     },
     "dashboard": {

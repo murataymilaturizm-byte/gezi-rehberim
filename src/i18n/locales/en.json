@@ -486,7 +486,7 @@
         "integrationComplete": "Integration Complete",
         "integrationCompleteDesc": "WhatsApp service is active. Your customers can contact you from {{phone}}."
       },
-      "templates": {
+       "templates": {
         "title": "Message Templates",
         "description": "Multilingual templates for automated messages like booking confirmation, cancellation notification",
         "addNew": "Add New Template",
@@ -503,6 +503,36 @@
         "namePlaceholder": "e.g: Welcome Message",
         "contentPlaceholder": "Hello! How can I help you?",
         "loadDefaults": "Load Default Templates"
+      },
+      "userProfiles": {
+        "title": "User Profiles",
+        "selectAgency": "Select Agency",
+        "noUsers": "No users yet",
+        "loadingUsers": "Loading users...",
+        "users": "User",
+        "unnamed": "Unnamed",
+        "userDetails": "User Details",
+        "selectUser": "Select a user to view details",
+        "generalInfo": "General Information",
+        "name": "Name",
+        "phoneNumber": "Phone",
+        "firstContact": "First Contact",
+        "lastContact": "Last Contact",
+        "activity": "Activity",
+        "activityStatus": "Activity Status",
+        "todayActive": "Active Today",
+        "yesterdayActive": "Active Yesterday",
+        "daysAgo": "days ago",
+        "totalMessages": "Total Messages",
+        "preferences": "Preferences",
+        "preferredDestinations": "Preferred Destinations",
+        "budgetRange": "Budget Range",
+        "preferredTourType": "Preferred Tour Type",
+        "statistics": "Statistics",
+        "lastSearchQuery": "Last Search",
+        "notSpecified": "Not Specified",
+        "messagesPerDay": "Messages/Day",
+        "activeDays": "Active Days"
       }
     },
     "dashboard": {
