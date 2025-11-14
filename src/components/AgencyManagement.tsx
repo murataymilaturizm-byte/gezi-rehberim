@@ -347,7 +347,7 @@ export const AgencyManagement = () => {
 
       toast({
         title: "Başarılı",
-        description: `WhatsApp entegrasyonu ${status === 'active' ? 'onaylandı' : 'reddedildi'}`,
+        description: status === 'active' ? t("admin.whatsapp.messages.approved") : t("admin.whatsapp.messages.rejected"),
       });
 
       loadAgencies();
@@ -355,7 +355,7 @@ export const AgencyManagement = () => {
       console.error("Error updating WhatsApp status:", error);
       toast({
         title: "Hata",
-        description: error.message || "Durum güncellenemedi",
+        description: error.message || t("admin.whatsapp.messages.updateError"),
         variant: "destructive",
       });
     }
@@ -592,9 +592,9 @@ export const AgencyManagement = () => {
                               }
                               className="text-xs"
                             >
-                              {agency.whatsapp_status === 'active' ? 'Aktif' : 
-                               agency.whatsapp_status === 'pending' ? 'Beklemede' : 
-                               'Reddedildi'}
+                              {agency.whatsapp_status === 'active' ? t("admin.whatsapp.status.active") : 
+                               agency.whatsapp_status === 'pending' ? t("admin.whatsapp.status.pending") : 
+                               t("admin.whatsapp.status.rejected")}
                             </Badge>
                             {agency.whatsapp_status === 'pending' && (
                               <div className="flex gap-1">
@@ -604,7 +604,7 @@ export const AgencyManagement = () => {
                                   className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
                                   onClick={() => handleWhatsAppStatusUpdate(agency.id, 'active')}
                                 >
-                                  Onayla
+                                  {t("admin.whatsapp.actions.approve")}
                                 </Button>
                                 <Button
                                   size="sm"
@@ -612,7 +612,7 @@ export const AgencyManagement = () => {
                                   className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                                   onClick={() => handleWhatsAppStatusUpdate(agency.id, 'rejected')}
                                 >
-                                  Reddet
+                                  {t("admin.whatsapp.actions.reject")}
                                 </Button>
                               </div>
                             )}

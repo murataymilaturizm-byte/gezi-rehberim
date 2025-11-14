@@ -419,6 +419,36 @@
         "title": "Nachrichtenvorlagen",
         "description": "Verwalten Sie Ihre WhatsApp-Nachrichtenvorlagen",
         "loadDefaults": "Standardvorlagen Laden"
+      },
+      "settings": {
+        "title": "WhatsApp-Einstellungen",
+        "description": "WhatsApp Business-Integration verwalten",
+        "notConfigured": "WhatsApp noch nicht konfiguriert. Bitte fügen Sie Ihre WhatsApp Business-Nummer hinzu.",
+        "configured": "WhatsApp-Integration ist aktiv! Ihre Kunden können Sie über WhatsApp kontaktieren.",
+        "phoneNumber": "WhatsApp Business-Nummer",
+        "phonePlaceholder": "+49151xxxxxxx",
+        "phoneHelp": "Geben Sie Ihre in Twilio registrierte WhatsApp Business-Nummer ein (z.B: +14155238886)",
+        "saving": "Wird gespeichert...",
+        "update": "Aktualisieren",
+        "save": "Speichern",
+        "integrationComplete": "Integration Abgeschlossen",
+        "integrationCompleteDesc": "Ihre WhatsApp Business-Nummer {phone} wurde im System registriert."
+      },
+      "status": {
+        "pending": "Ausstehend",
+        "active": "Aktiv",
+        "rejected": "Abgelehnt",
+        "requestReceived": "Ihre WhatsApp-Integrationsanfrage wurde erhalten. Warten auf Admin-Genehmigung.",
+        "requestRejected": "Ihre WhatsApp-Integrationsanfrage wurde abgelehnt. Bitte kontaktieren Sie den Support."
+      },
+      "actions": {
+        "approve": "Genehmigen",
+        "reject": "Ablehnen"
+      },
+      "messages": {
+        "approved": "WhatsApp-Integration genehmigt",
+        "rejected": "WhatsApp-Integration abgelehnt",
+        "updateError": "Status konnte nicht aktualisiert werden"
       }
     },
     "welcome": "Willkommen",

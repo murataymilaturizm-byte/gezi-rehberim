@@ -406,6 +406,36 @@
         "title": "Plantillas de Mensajes",
         "description": "Administre sus plantillas de mensajes de WhatsApp",
         "loadDefaults": "Cargar Plantillas Predeterminadas"
+      },
+      "settings": {
+        "title": "Configuración de WhatsApp",
+        "description": "Administrar integración de WhatsApp Business",
+        "notConfigured": "WhatsApp aún no está configurado. Por favor agregue su número de WhatsApp Business.",
+        "configured": "¡La integración de WhatsApp está activa! Sus clientes pueden contactarlo a través de WhatsApp.",
+        "phoneNumber": "Número de WhatsApp Business",
+        "phonePlaceholder": "+34xxxxxxxxx",
+        "phoneHelp": "Ingrese su número de WhatsApp Business registrado en Twilio (ej: +14155238886)",
+        "saving": "Guardando...",
+        "update": "Actualizar",
+        "save": "Guardar",
+        "integrationComplete": "Integración Completa",
+        "integrationCompleteDesc": "Su número de WhatsApp Business {phone} ha sido registrado en el sistema."
+      },
+      "status": {
+        "pending": "Pendiente",
+        "active": "Activo",
+        "rejected": "Rechazado",
+        "requestReceived": "Su solicitud de integración de WhatsApp ha sido recibida. Esperando aprobación del administrador.",
+        "requestRejected": "Su solicitud de integración de WhatsApp fue rechazada. Por favor contacte al soporte."
+      },
+      "actions": {
+        "approve": "Aprobar",
+        "reject": "Rechazar"
+      },
+      "messages": {
+        "approved": "Integración de WhatsApp aprobada",
+        "rejected": "Integración de WhatsApp rechazada",
+        "updateError": "No se pudo actualizar el estado"
       }
     },
     "welcome": "Bienvenido",

@@ -128,7 +128,7 @@ export const TwilioSettings = () => {
 
       toast({
         title: "Başarılı",
-        description: "WhatsApp entegrasyon talebiniz alındı. Yönetici onayı bekleniyor.",
+        description: t("admin.whatsapp.status.requestReceived"),
       });
 
       await loadWhatsAppSettings();
@@ -185,7 +185,7 @@ export const TwilioSettings = () => {
           <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
             <AlertCircle className="h-4 w-4 text-yellow-500" />
             <AlertDescription className="text-yellow-600">
-              WhatsApp entegrasyon başvurunuz alındı. Yönetici onayı bekleniyor.
+              {t("admin.whatsapp.status.requestReceived")}
             </AlertDescription>
           </Alert>
         )}
@@ -203,7 +203,7 @@ export const TwilioSettings = () => {
           <Alert className="mb-6 border-red-500/50 bg-red-500/10">
             <AlertCircle className="h-4 w-4 text-red-500" />
             <AlertDescription className="text-red-500">
-              WhatsApp entegrasyon başvurunuz reddedildi. Lütfen destek ile iletişime geçin.
+              {t("admin.whatsapp.status.requestRejected")}
             </AlertDescription>
           </Alert>
         )}

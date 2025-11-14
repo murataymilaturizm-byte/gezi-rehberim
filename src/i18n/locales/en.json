@@ -395,6 +395,36 @@
         "title": "Message Templates",
         "description": "Manage your WhatsApp message templates",
         "loadDefaults": "Load Default Templates"
+      },
+      "settings": {
+        "title": "WhatsApp Settings",
+        "description": "Manage WhatsApp Business integration",
+        "notConfigured": "WhatsApp not configured yet. Please add your WhatsApp Business number.",
+        "configured": "WhatsApp integration is active! Your customers can contact you via WhatsApp.",
+        "phoneNumber": "WhatsApp Business Number",
+        "phonePlaceholder": "+1415xxxxxxx",
+        "phoneHelp": "Enter your WhatsApp Business number registered in Twilio (e.g: +14155238886)",
+        "saving": "Saving...",
+        "update": "Update",
+        "save": "Save",
+        "integrationComplete": "Integration Complete",
+        "integrationCompleteDesc": "Your WhatsApp Business number {phone} has been registered in the system."
+      },
+      "status": {
+        "pending": "Pending",
+        "active": "Active",
+        "rejected": "Rejected",
+        "requestReceived": "Your WhatsApp integration request has been received. Waiting for admin approval.",
+        "requestRejected": "Your WhatsApp integration request was rejected. Please contact support."
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject"
+      },
+      "messages": {
+        "approved": "WhatsApp integration approved",
+        "rejected": "WhatsApp integration rejected",
+        "updateError": "Status could not be updated"
       }
     },
     "welcome": "Welcome",

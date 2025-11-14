@@ -597,17 +597,33 @@
       },
       "settings": {
         "title": "Paramètres WhatsApp",
-        "description": "Vous pouvez activer l'intégration WhatsApp en saisissant votre numéro WhatsApp Business",
+        "description": "Gérer l'intégration WhatsApp Business",
         "phoneNumber": "Numéro WhatsApp Business",
-        "phonePlaceholder": "+14155238886",
+        "phonePlaceholder": "+33xxxxxxxxx",
         "phoneHelp": "Entrez votre numéro WhatsApp Business enregistré avec Twilio (ex: +14155238886)",
         "save": "Enregistrer",
         "update": "Mettre à Jour",
         "saving": "Enregistrement...",
-        "notConfigured": "Vous pouvez activer l'intégration WhatsApp en saisissant votre numéro WhatsApp Business. Comme un compte Twilio central est utilisé, vous devez seulement entrer votre numéro WhatsApp.",
+        "notConfigured": "WhatsApp n'est pas encore configuré. Veuillez ajouter votre numéro WhatsApp Business.",
         "configured": "L'intégration WhatsApp est active! Vos clients peuvent vous contacter via WhatsApp.",
         "integrationComplete": "Intégration Terminée",
-        "integrationCompleteDesc": "Le service WhatsApp est actif. Vos clients peuvent vous contacter depuis {{phone}}."
+        "integrationCompleteDesc": "Votre numéro WhatsApp Business {phone} a été enregistré dans le système."
+      },
+      "status": {
+        "pending": "En attente",
+        "active": "Actif",
+        "rejected": "Rejeté",
+        "requestReceived": "Votre demande d'intégration WhatsApp a été reçue. En attente d'approbation de l'administrateur.",
+        "requestRejected": "Votre demande d'intégration WhatsApp a été rejetée. Veuillez contacter le support."
+      },
+      "actions": {
+        "approve": "Approuver",
+        "reject": "Rejeter"
+      },
+      "messages": {
+        "approved": "Intégration WhatsApp approuvée",
+        "rejected": "Intégration WhatsApp rejetée",
+        "updateError": "Impossible de mettre à jour le statut"
       },
        "templates": {
         "title": "Modèles de Messages",
