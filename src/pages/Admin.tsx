@@ -319,10 +319,45 @@ const Admin = () => {
       
       if (error) throw error;
 
-      toast({
-        title: "Başarılı! ✅",
-        description: "Kayıt durumu güncellendi",
-      });
+      // Durum CONFIRMED veya CANCELLED ise otomatik mesaj gönder
+      if (newStatus === 'CONFIRMED' || newStatus === 'CANCELLED') {
+        const templateKey = newStatus === 'CONFIRMED' ? 'reservation_confirmed' : 'reservation_cancelled';
+        
+        try {
+          const { error: messageError } = await supabase.functions.invoke('send-template-message', {
+            body: {
+              registrationId,
+              templateKey,
+              language: 'tr' // Şimdilik Türkçe, ileride kullanıcı tercihinden alınabilir
+            }
+          });
+
+          if (messageError) {
+            console.error('Template message error:', messageError);
+            toast({
+              title: "Uyarı",
+              description: "Durum güncellendi ama WhatsApp mesajı gönderilemedi",
+              variant: "default",
+            });
+          } else {
+            toast({
+              title: "Başarılı! ✅",
+              description: `Kayıt durumu güncellendi ve müşteriye WhatsApp mesajı gönderildi`,
+            });
+          }
+        } catch (msgError) {
+          console.error('Message send error:', msgError);
+          toast({
+            title: "Başarılı! ✅",
+            description: "Kayıt durumu güncellendi (mesaj gönderilemedi)",
+          });
+        }
+      } else {
+        toast({
+          title: "Başarılı! ✅",
+          description: "Kayıt durumu güncellendi",
+        });
+      }
       
       loadData();
     } catch (error) {
