@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ interface Agency {
 }
 
 export const AgencyManagement = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [loading, setLoading] = useState(true);
@@ -492,15 +494,15 @@ export const AgencyManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Acente Adı</TableHead>
-                <TableHead>Yetkili</TableHead>
-                <TableHead>WhatsApp No</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Mesaj Kotası</TableHead>
-                <TableHead>Abonelik</TableHead>
-                <TableHead>Kalan Süre</TableHead>
-                <TableHead>Durum</TableHead>
-                <TableHead className="text-right">İşlemler</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.agencyName")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.authorized")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.whatsappNo")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.plan")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.messageQuota")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.subscription")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.remainingTime")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.status")}</TableHead>
+                <TableHead className="text-right">{t("admin.agency.tableHeaders.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -516,16 +518,16 @@ export const AgencyManagement = () => {
 
                 const remainingDays = getRemainingDays();
                 const planLabels: Record<string, string> = {
-                  starter: "Başlangıç",
-                  professional: "Profesyonel",
-                  enterprise: "Kurumsal"
+                  starter: t("admin.agency.plans.starter"),
+                  professional: t("admin.agency.plans.professional"),
+                  enterprise: t("admin.agency.plans.enterprise")
                 };
 
                 const statusLabels: Record<string, string> = {
-                  trial: "Deneme",
-                  active: "Aktif",
-                  expired: "Süresi Doldu",
-                  cancelled: "İptal Edildi"
+                  trial: t("admin.agency.subscriptionStatus.trial"),
+                  active: t("admin.agency.subscriptionStatus.active"),
+                  expired: t("admin.agency.subscriptionStatus.expired"),
+                  cancelled: t("admin.agency.subscriptionStatus.cancelled")
                 };
 
                 const getStatusVariant = (status: string) => {
@@ -550,7 +552,7 @@ export const AgencyManagement = () => {
                       <span className="text-sm font-mono">
                         {agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" 
                           ? agency.twilio_phone_number 
-                          : <span className="text-muted-foreground">Henüz eklenmedi</span>}
+                          : <span className="text-muted-foreground">{t("admin.agency.messages.notAdded")}</span>}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -568,7 +570,7 @@ export const AgencyManagement = () => {
                         </div>
                         {agency.message_limit !== -1 && messageUsagePercentage >= 80 && (
                           <Badge variant={messageUsagePercentage >= 100 ? "destructive" : "secondary"} className="text-xs">
-                            {messageUsagePercentage >= 100 ? "Kota doldu" : `%${Math.round(messageUsagePercentage)} kullanıldı`}
+                            {messageUsagePercentage >= 100 ? t("admin.agency.messages.quotaFull") : `%${Math.round(messageUsagePercentage)} ${t("admin.agency.messages.percentUsed")}`}
                           </Badge>
                         )}
                       </div>
@@ -583,7 +585,7 @@ export const AgencyManagement = () => {
                         <div className="flex items-center gap-1 text-sm">
                           <Clock className="w-3 h-3" />
                           <span className={remainingDays <= 3 ? "text-destructive font-medium" : ""}>
-                            {remainingDays > 0 ? `${remainingDays} gün` : "Süresi doldu"}
+                            {remainingDays > 0 ? `${remainingDays} ${t("admin.agency.messages.daysLeft")}` : t("admin.agency.messages.expired")}
                           </span>
                         </div>
                       )}
@@ -660,9 +662,9 @@ export const AgencyManagement = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="starter">Başlangıç (500 mesaj/ay)</SelectItem>
-                  <SelectItem value="professional">Profesyonel (2.000 mesaj/ay)</SelectItem>
-                  <SelectItem value="enterprise">Kurumsal (Sınırsız)</SelectItem>
+                  <SelectItem value="starter">{t("admin.agency.plans.starterWithLimit")}</SelectItem>
+                  <SelectItem value="professional">{t("admin.agency.plans.professionalWithLimit")}</SelectItem>
+                  <SelectItem value="enterprise">{t("admin.agency.plans.enterpriseWithLimit")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

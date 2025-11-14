@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -37,6 +38,7 @@ interface WhatsAppConversationsProps {
 }
 
 export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversationsProps) => {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<ConversationGroup[]>([]);
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -189,7 +191,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                         <p className="font-medium text-sm">{conv.phone}</p>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {conv.messages.length} mesaj
+                        {conv.messages.length} {t("admin.whatsapp.conversations.messages")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(conv.lastMessageTime), "dd MMM yyyy, HH:mm", { locale: tr })}
@@ -254,7 +256,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   </ScrollArea>
                 ) : (
                   <div className="h-[600px] flex items-center justify-center text-muted-foreground">
-                    Bir konuşma seçin
+                    {t("admin.whatsapp.conversations.selectConversation")}
                   </div>
                 )}
               </div>
