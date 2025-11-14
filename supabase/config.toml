@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.sales-chat]
 verify_jwt = false
 
+[functions.support-chat]
+verify_jwt = false
+
 [functions.sipay-payment]
 verify_jwt = true
 
@@ -16,6 +19,9 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.send-tour-reminders]
+verify_jwt = false
+
+[functions.send-template-message]
 verify_jwt = false
 
 [functions.cleanup-conversations]

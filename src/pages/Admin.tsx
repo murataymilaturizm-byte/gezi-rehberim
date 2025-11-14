@@ -49,6 +49,7 @@ import MessageTemplates from "@/components/MessageTemplates";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
+import { SupportChatWidget } from "@/components/SupportChatWidget";
 
 interface Tour {
   id: string;
@@ -429,6 +430,11 @@ const Admin = () => {
                   )}
                 </div>
               )}
+              <Button variant="ghost" size="sm" asChild>
+                <a href="/yardim" target="_blank">
+                  Yardım
+                </a>
+              </Button>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Çıkış
@@ -811,6 +817,9 @@ const Admin = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Support Chat Widget */}
+      <SupportChatWidget />
     </div>
   );
 };
