@@ -76,7 +76,8 @@
     "subtitle": "Probieren Sie jetzt unseren KI-gestützten Assistenten aus. Stellen Sie Touranfragen, simulieren Sie Buchungen.",
     "note": "Dies ist ein Demo-Chatbot. In Ihrem echten System können Sie Ihre eigenen Touren und Einstellungen verwenden.",
     "cta": "Jetzt starten",
-    "greeting": "Hallo! 👋 Ich bin Ihr WhatsApp-Tourassistent. Welche schönen Orte möchten Sie erkunden?\n\n✨ *Beliebte Touren:*\n🏔️ Kappadokien\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Ägäis-Tour"
+    "greeting": "Hallo! 👋 Ich bin Ihr WhatsApp-Tourassistent. Welche schönen Orte möchten Sie erkunden?\n\n✨ *Beliebte Touren:*\n🏔️ Kappadokien\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Ägäis-Tour",
+    "subtitle2": "KI-gestützter Tourassistent"
   },
   "advanced": {
     "badge": "Erweiterte Funktionen",

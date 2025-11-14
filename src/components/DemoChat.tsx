@@ -130,7 +130,7 @@ export const DemoChat = () => {
           <div>
             <CardTitle className="text-primary-foreground">TurzzAI Demo</CardTitle>
             <p className="text-sm text-primary-foreground/80">
-              Yapay zeka destekli tur asistanı
+              {t("demo.subtitle2")}
             </p>
           </div>
         </div>

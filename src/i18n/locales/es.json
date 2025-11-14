@@ -38,10 +38,271 @@
     },
     "multi": {
       "title": "Soporte Multiidioma",
-      "description": "Sirve a tus clientes en 7 idiomas diferentes"
+      "description": "Sirve a tus clientes en 7 idiomas diferentes",
+      "metric": "Comunicación fluida en 7 idiomas"
+    },
+    "analytics": {
+      "title": "Seguimiento de Ingresos y Análisis",
+      "description": "¿Qué tours son rentables? ¿Qué días tienen más ventas? Vea todos los datos de ingresos y rendimiento en tiempo real.",
+      "metric": "Informes de ingresos diarios, semanales, mensuales"
+    },
+    "whatsapp": {
+      "title": "Ventas Automatizadas 24/7",
+      "description": "Los clientes preguntan sobre tours y hacen reservas incluso a medianoche. Vende mientras duermes - nunca pierdas una oportunidad.",
+      "metric": "Aumento promedio del 120% en reservas en el primer mes"
+    }
+  },
+  "howItWorks": {
+    "title": "¿Cómo Funciona?",
+    "subtitle": "De WhatsApp a la reserva en 3 simples pasos",
+    "step1": {
+      "title": "El Cliente Envía Mensaje",
+      "description": "Busca en lenguaje natural como \"tours Capadocia\" vía WhatsApp"
+    },
+    "step2": {
+      "title": "IA Analiza",
+      "description": "La IA entiende el mensaje y recomienda los tours más adecuados, proporciona información de precios y fechas"
+    },
+    "step3": {
+      "title": "Reserva Creada",
+      "description": "La información del cliente se recopila con orientación asistente, se completa la reserva"
+    },
+    "footer": "Todo el proceso es automático y funciona 24/7 🚀",
+    "demoButton": "Explorar Demo"
+  },
+  "demo": {
+    "badge": "Demo en Vivo",
+    "title": "Pruébalo Ahora",
+    "subtitle": "Prueba nuestro asistente impulsado por IA ahora. Haz consultas de tours, simula reservas.",
+    "note": "Este es un chatbot de demostración. En tu sistema real, puedes usar tus propios tours y configuraciones.",
+    "cta": "Comenzar Ahora",
+    "greeting": "¡Hola! 👋 Soy tu asistente de tours de WhatsApp. ¿Qué lugares hermosos te gustaría explorar?\n\n✨ *Tours populares:*\n🏔️ Capadocia\n🏖️ Antalya\n🏛️ Estambul\n🌊 Tour del Egeo",
+    "subtitle2": "Asistente de tours impulsado por IA"
+  },
+  "advanced": {
+    "badge": "Características Avanzadas",
+    "title": "Mantente Adelante de la Competencia",
+    "subtitle": "Las características de IA y automatización más avanzadas de la industria",
+    "userProfiles": {
+      "title": "Perfiles de Clientes Inteligentes",
+      "description": "Rastrea automáticamente las preferencias de cada cliente, historial de búsqueda y presupuesto. La IA hace recomendaciones personalizadas.",
+      "feature1": "Aprendizaje automático de preferencias",
+      "feature2": "Segmentación basada en presupuesto",
+      "feature3": "Análisis de historial de búsqueda"
+    },
+    "analytics": {
+      "title": "Análisis de Conversaciones",
+      "description": "Mide la satisfacción del cliente y captura tendencias con análisis de sentimiento impulsado por IA y resúmenes automáticos de conversaciones.",
+      "feature1": "Análisis de sentimiento (Positivo/Negativo)",
+      "feature2": "Resúmenes automáticos de conversaciones",
+      "feature3": "Seguimiento de temas y tendencias"
+    },
+    "reminders": {
+      "title": "Recordatorios de Tours Automáticos",
+      "description": "3 días antes del tour, se envían recordatorios automáticos de WhatsApp. Aumenta la satisfacción del cliente, reduce cancelaciones.",
+      "feature1": "Plantillas de mensajes personalizables",
+      "feature2": "Envío automático (3 días antes)",
+      "feature3": "Detalles e información del tour"
+    },
+    "stats": "250+ agencias felices"
+  },
+  "benefits": {
+    "title": "Resultados Concretos, Valor Real",
+    "subtitle": "No solo características - el valor que añade a tu negocio",
+    "timeSaving": {
+      "title": "Ahorra 40+ Horas Mensuales",
+      "description": "Responder preguntas repetidas, explicar tours, precios... Todo ahora automatizado."
+    },
+    "moreSales": {
+      "title": "2-3x Más Ventas en el Primer Mes",
+      "description": "Vende incluso a medianoche. Nunca pierdas un cliente u oportunidad."
+    },
+    "customerTracking": {
+      "title": "Seguimiento Personal para Cada Cliente",
+      "description": "¿Quién buscó qué? ¿Cuál es el presupuesto? ¿Compras anteriores? La IA conoce a cada cliente, hace recomendaciones personalizadas."
+    },
+    "roi": {
+      "title": "Solo 2 Tours = Se Paga Solo",
+      "description": "Plan inicial solo €49/mes. Haz solo 2 ventas de tours adicionales por mes, el sistema se paga solo."
+    }
+  },
+  "stats": {
+    "salesIncrease": {
+      "value": "2-3x",
+      "label": "Aumento Promedio de Ventas",
+      "subtext": "En el primer mes"
+    },
+    "timeSaved": {
+      "value": "40+",
+      "label": "Horas Ahorradas",
+      "subtext": "Mensualmente"
+    },
+    "availability": {
+      "value": "24/7",
+      "label": "Servicio Continuo",
+      "subtext": "Asistente que nunca se detiene"
+    },
+    "paymentTime": {
+      "value": "2 min",
+      "label": "Tiempo de Cobro",
+      "subtext": "Directamente desde WhatsApp"
+    }
+  },
+  "testimonials": {
+    "title": "Resultados Reales",
+    "subtitle": "Historias de éxito de nuestras agencias",
+    "items": {
+      "yasinCetin": {
+        "name": "Yasin Çetin",
+        "company": "Campus Travel",
+        "role": "Propietario del Negocio",
+        "content": "Obtuvimos 18 nuevas reservas en el primer mes. Antes, la gente que enviaba mensajes por la noche decía 'llamaré mañana' y reservaban con otra agencia. ¡Ahora vendemos incluso a las 2 de la madrugada!",
+        "result": "+18 reservas en el primer mes"
+      },
+      "sitkiOgrak": {
+        "name": "Sıtkı Murat OĞRAK",
+        "company": "Aymila Tourism",
+        "role": "Gerente de Negocios",
+        "content": "Los clientes dicen 'respondes tan rápido'. Ahorro 40+ horas al mes. Ahora puedo concentrarme en cosas verdaderamente importantes.",
+        "result": "40+ horas/mes ahorradas"
+      },
+      "mustafaGulmez": {
+        "name": "Mustafa Gülmez",
+        "company": "4 Eylül Tourism",
+        "role": "Propietario del Negocio",
+        "content": "Qué tours se venden más, qué días ven más demanda - puedo verlo todo. Ahora tomo decisiones basadas en datos, no en suposiciones. ¡Los análisis de ingresos son increíbles!",
+        "result": "Decisiones basadas en datos"
+      }
+    }
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "subtitle": "Encuentra respuestas a tus preguntas aquí",
+    "items": {
+      "salesIncrease": {
+        "question": "¿Realmente aumentarán mis ventas en el primer mes?",
+        "answer": "¡Sí! Nuestras agencias promedio ven un aumento del 120-150% en reservas en el primer mes. Porque ahora sirves a tus clientes a medianoche, los fines de semana, en cualquier momento. No pierdes ninguna oportunidad."
+      },
+      "setup": {
+        "question": "¿Puedo hacer la configuración yo mismo?",
+        "answer": "¡Absolutamente! La configuración toma 5-10 minutos y es muy simple. Añade tu número de WhatsApp Business, sube tus tours - eso es todo. Gestionamos toda la infraestructura técnica. Nuestro equipo de soporte te ayudará si te atascas."
+      },
+      "whatsappCost": {
+        "question": "¿Hay una tarifa adicional por la integración de WhatsApp?",
+        "answer": "¡No! Gestionamos la infraestructura de la API de WhatsApp Business. Solo necesitas añadir tu número de WhatsApp Business al sistema. Las tarifas de uso de API corren por nuestra cuenta, solo pagas la tarifa de tu plan elegido."
+      },
+      "payment": {
+        "question": "¿Puedo cobrar pagos directamente de los clientes?",
+        "answer": "¡Sí! Con la integración SiPay, puedes enviar enlaces de pago instantáneos vía WhatsApp y cobrar pagos en 2 minutos. El seguimiento de pagos y facturación son automáticos."
+      },
+      "tourLimit": {
+        "question": "¿Cuántos tours puedo añadir?",
+        "answer": "Puedes añadir tours ilimitados en todos los planes. La diferencia está solo en el límite mensual de mensajes de WhatsApp. Puedes actualizar tu plan en cualquier momento según tus necesidades."
+      },
+      "cancellation": {
+        "question": "¿Qué pasa si cancelo?",
+        "answer": "Puedes cancelar en cualquier momento, sin contrato. Cuando cancelas, seguirás recibiendo servicio hasta el final del período actual. Durante el período de prueba gratuito de 14 días, ni siquiera pedimos tarjeta de crédito."
+      }
     }
   },
   "pricing": {
+    "title": "Comienza Hoy, Ve la Diferencia",
+    "subtitle": "Una inversión que añade valor inmediato a tu negocio",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "save": "2 Meses Gratis",
+    "trial": "Prueba gratuita de 14 días en todos los planes. No se requiere tarjeta de crédito.",
+    "trialNote": "Prueba gratuita de 14 días en todos los planes. No se requiere tarjeta de crédito.",
+    "custom": "Personalizado",
+    "savings": "ahorro",
+    "cta": {
+      "start": "Comenzar",
+      "contact": "Contáctanos"
+    },
+    "starter": {
+      "name": "Inicial",
+      "price": "€49",
+      "period": "/mes",
+      "description": "Para agencias pequeñas y principiantes",
+      "features": {
+        "messages": "💬 500 mensajes WhatsApp/mes (~16 mensajes/día)",
+        "basicReporting": "📊 Informes básicos y estadísticas",
+        "unlimitedTours": "🗂️ Tours ilimitados",
+        "reservationManagement": "📝 Gestión de reservas",
+        "emailSupport": "📧 Soporte por email (48 horas)",
+        "aiAnswers": "🤖 Respuestas automáticas con IA",
+        "history30": "💾 Historial de conversaciones de 30 días"
+      }
+    },
+    "professional": {
+      "name": "Profesional",
+      "price": "€99",
+      "period": "/mes",
+      "badge": "Más Popular",
+      "description": "Para negocios en crecimiento y agencias activas",
+      "features": {
+        "messages": "💬 3,000 mensajes WhatsApp/mes (~100 mensajes/día)",
+        "advancedReporting": "📈 Informes avanzados y análisis",
+        "unlimitedTours": "🗂️ Tours ilimitados",
+        "advancedReservation": "📝 Gestión avanzada de reservas",
+        "userProfiles": "🎯 Perfiles de usuarios WhatsApp y segmentación",
+        "prioritySupport": "⚡ Soporte prioritario (en 24 horas)",
+        "crmIntegration": "🔗 Soporte de integración CRM",
+        "history90": "💾 Historial de conversaciones de 90 días",
+        "customTemplates": "🎨 Plantillas personalizadas de mensajes WhatsApp",
+        "tourReminders": "📱 Recordatorios automáticos de tours"
+      }
+    },
+    "enterprise": {
+      "name": "Empresarial",
+      "price": "Personalizado",
+      "period": "",
+      "description": "Para agencias grandes y negocios en cadena",
+      "features": {
+        "unlimitedMessages": "💬 Mensajes WhatsApp ilimitados",
+        "customReporting": "📊 Informes personalizados y paneles",
+        "multiBranch": "🗂️ Soporte multi-sucursal",
+        "enterpriseReservation": "📝 Gestión empresarial de reservas",
+        "advancedSegmentation": "🎯 Segmentación avanzada de clientes y análisis IA",
+        "support247": "🚀 Soporte prioritario 24/7",
+        "apiAccess": "🔌 Acceso API e integraciones personalizadas",
+        "unlimitedHistory": "💾 Historial ilimitado de conversaciones",
+        "accountManager": "👔 Gerente de cuenta dedicado",
+        "customDevelopment": "⚙️ Desarrollo personalizado",
+        "enterpriseSecurity": "🔒 Seguridad empresarial y garantía SLA",
+        "multipleAccounts": "🌐 Soporte de múltiples cuentas WhatsApp"
+      }
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Comenzar?",
+    "subtitle": "Crea una cuenta demo y prueba todas las características gratis. No se requiere tarjeta de crédito.",
+    "button": "Probar Gratis"
+  },
+  "contact": {
+    "question": "¿Tienes otras preguntas?",
+    "nameLabel": "Nombre Completo",
+    "namePlaceholder": "Tu nombre",
+    "emailLabel": "Email",
+    "emailPlaceholder": "email@ejemplo.com",
+    "messageLabel": "Tu Mensaje",
+    "messagePlaceholder": "Escribe tu mensaje aquí...",
+    "sendButton": "Enviar Mensaje",
+    "sending": "Enviando...",
+    "successTitle": "¡Mensaje Enviado! ✅",
+    "successMessage": "Nos pondremos en contacto contigo lo antes posible.",
+    "errorTitle": "Error",
+    "errorMessage": "No se pudo enviar el mensaje. Por favor, inténtalo de nuevo.",
+    "formErrorTitle": "Error de Formulario"
+  },
+  "validation": {
+    "nameRequired": "El nombre es obligatorio",
+    "nameMaxLength": "El nombre puede tener máximo 100 caracteres",
+    "emailInvalid": "Ingresa una dirección de email válida",
+    "emailMaxLength": "El email puede tener máximo 255 caracteres",
+    "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
+    "messageMaxLength": "El mensaje puede tener máximo 1000 caracteres"
+  },
     "title": "Precios",
     "subtitle": "Elige El Mejor Plan Para Tu Negocio",
     "monthly": "Mensual",
