@@ -87,57 +87,59 @@ const eventTypeLabels: Record<string, string> = {
   subscription_cancelled: "Abonelik İptal"
 };
 
-const statusLabels: Record<string, string> = {
-  success: "Başarılı",
-  failed: "Başarısız",
-  pending: "Beklemede",
-  cancelled: "İptal"
-};
-
-const planLabels: Record<string, string> = {
-  starter: "Başlangıç",
-  professional: "Profesyonel",
-  enterprise: "Kurumsal"
-};
-
-const getEventIcon = (eventType: string) => {
-  switch (eventType) {
-    case "trial_started":
-    case "subscription_activated":
-      return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-    case "payment_success":
-      return <CreditCard className="h-4 w-4 text-green-600" />;
-    case "payment_failed":
-      return <XCircle className="h-4 w-4 text-destructive" />;
-    case "plan_changed":
-      return <TrendingUp className="h-4 w-4 text-primary" />;
-    case "trial_ended":
-    case "subscription_expired":
-      return <Calendar className="h-4 w-4 text-muted-foreground" />;
-    case "subscription_cancelled":
-      return <Ban className="h-4 w-4 text-destructive" />;
-    default:
-      return <Clock className="h-4 w-4 text-muted-foreground" />;
-  }
-};
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "success":
-      return <Badge variant="default" className="bg-green-600">{statusLabels[status]}</Badge>;
-    case "failed":
-      return <Badge variant="destructive">{statusLabels[status]}</Badge>;
-    case "pending":
-      return <Badge variant="secondary">{statusLabels[status]}</Badge>;
-    case "cancelled":
-      return <Badge variant="outline">{statusLabels[status]}</Badge>;
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-};
-
 export const SubscriptionHistory = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
+  
+  const statusLabels: Record<string, string> = {
+    success: t("admin.subscription.status.success"),
+    failed: t("admin.subscription.status.failed"),
+    pending: t("admin.subscription.status.pending"),
+    cancelled: t("admin.subscription.status.cancelled")
+  };
+
+  const planLabels: Record<string, string> = {
+    starter: t("admin.agency.plans.starter"),
+    professional: t("admin.agency.plans.professional"),
+    enterprise: t("admin.agency.plans.enterprise")
+  };
+
+  const getEventIcon = (eventType: string) => {
+    switch (eventType) {
+      case "trial_started":
+      case "subscription_activated":
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case "payment_success":
+        return <CreditCard className="h-4 w-4 text-green-600" />;
+      case "payment_failed":
+        return <XCircle className="h-4 w-4 text-destructive" />;
+      case "plan_changed":
+        return <TrendingUp className="h-4 w-4 text-primary" />;
+      case "trial_ended":
+      case "subscription_expired":
+        return <Calendar className="h-4 w-4 text-muted-foreground" />;
+      case "subscription_cancelled":
+        return <Ban className="h-4 w-4 text-destructive" />;
+      default:
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "success":
+        return <Badge variant="default" className="bg-green-600">{statusLabels[status]}</Badge>;
+      case "failed":
+        return <Badge variant="destructive">{statusLabels[status]}</Badge>;
+      case "pending":
+        return <Badge variant="secondary">{statusLabels[status]}</Badge>;
+      case "cancelled":
+        return <Badge variant="outline">{statusLabels[status]}</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
   const [history, setHistory] = useState<SubscriptionHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<AgencySubscription | null>(null);
@@ -151,24 +153,24 @@ export const SubscriptionHistory = () => {
   const planOptions: PlanOption[] = [
     {
       id: "starter",
-      name: "Başlangıç",
+      name: t("admin.subscription.planOptions.starter.name"),
       price: 3999,
-      features: ["500 mesaj/ay", "1 kullanıcı", "Temel raporlama", "Email destek"],
+      features: t("admin.subscription.planOptions.starter.features", { returnObjects: true }) as string[],
       icon: Zap
     },
     {
       id: "professional",
-      name: "Profesyonel",
+      name: t("admin.subscription.planOptions.professional.name"),
       price: 7999,
-      features: ["2.000 mesaj/ay", "5 kullanıcı", "Gelişmiş raporlama", "Öncelikli destek"],
+      features: t("admin.subscription.planOptions.professional.features", { returnObjects: true }) as string[],
       icon: TrendingUp,
       popular: true
     },
     {
       id: "enterprise",
-      name: "Kurumsal",
+      name: t("admin.subscription.planOptions.enterprise.name"),
       price: 0,
-      features: ["Sınırsız mesaj", "Sınırsız kullanıcı", "Özel raporlama", "7/24 destek"],
+      features: t("admin.subscription.planOptions.enterprise.features", { returnObjects: true }) as string[],
       icon: Crown
     }
   ];
@@ -240,9 +242,9 @@ export const SubscriptionHistory = () => {
         : `TRZ-${item.id.substring(0, 8).toUpperCase()}`;
 
       const planNames: Record<string, string> = {
-        starter: "Başlangıç",
-        professional: "Profesyonel",
-        enterprise: "Kurumsal"
+        starter: t("admin.agency.plans.starter"),
+        professional: t("admin.agency.plans.professional"),
+        enterprise: t("admin.agency.plans.enterprise")
       };
 
       // Get agency name

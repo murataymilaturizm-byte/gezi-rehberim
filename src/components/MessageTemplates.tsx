@@ -45,10 +45,10 @@ const LANGUAGES = [
   { code: 'ar', name: 'العربية', flag: '🇸🇦' },
 ];
 
-const TEMPLATE_TYPES = [
-  { key: 'reservation_confirmed', name: 'Rezervasyon Onayı' },
-  { key: 'reservation_cancelled', name: 'Rezervasyon İptali' },
-  { key: 'tour_reminder', name: 'Tur Hatırlatma' },
+const getTemplateTypes = (t: any) => [
+  { key: 'reservation_confirmed', name: t('admin.templates.types.reservation_confirmed') },
+  { key: 'reservation_cancelled', name: t('admin.templates.types.reservation_cancelled') },
+  { key: 'tour_reminder', name: t('admin.templates.types.tour_reminder') },
 ];
 
 export default function MessageTemplates() {
@@ -60,6 +60,8 @@ export default function MessageTemplates() {
   const [editingTemplate, setEditingTemplate] = useState<MessageTemplate | null>(null);
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
   const { toast } = useToast();
+
+  const TEMPLATE_TYPES = getTemplateTypes(t);
 
   useEffect(() => {
     fetchTemplates();
@@ -98,8 +100,8 @@ export default function MessageTemplates() {
     } catch (error: any) {
       console.error('Error fetching templates:', error);
       toast({
-        title: "Hata",
-        description: "Şablonlar yüklenirken bir hata oluştu",
+        title: t("common.error"),
+        description: t("admin.templates.errors.fetchError"),
         variant: "destructive",
       });
     } finally {
@@ -148,8 +150,8 @@ export default function MessageTemplates() {
       }
 
       toast({
-        title: "Başarılı",
-        description: "Şablon kaydedildi",
+        title: t("common.success"),
+        description: t("admin.templates.success.saved"),
       });
 
       setEditDialogOpen(false);
@@ -158,15 +160,15 @@ export default function MessageTemplates() {
     } catch (error: any) {
       console.error('Error saving template:', error);
       toast({
-        title: "Hata",
-        description: "Şablon kaydedilirken bir hata oluştu",
+        title: t("common.error"),
+        description: t("admin.templates.errors.saveError"),
         variant: "destructive",
       });
     }
   };
 
   const handleDeleteTemplate = async (id: string) => {
-    if (!confirm('Bu şablonu silmek istediğinizden emin misiniz?')) return;
+    if (!confirm(t('admin.templates.deleteConfirm'))) return;
 
     try {
       const { error } = await (supabase as any)
@@ -177,16 +179,16 @@ export default function MessageTemplates() {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
-        description: "Şablon silindi",
+        title: t("common.success"),
+        description: t("admin.templates.success.deleted"),
       });
 
       fetchTemplates();
     } catch (error: any) {
       console.error('Error deleting template:', error);
       toast({
-        title: "Hata",
-        description: "Şablon silinirken bir hata oluştu",
+        title: t("common.error"),
+        description: t("admin.templates.errors.deleteError"),
         variant: "destructive",
       });
     }
@@ -230,8 +232,8 @@ export default function MessageTemplates() {
 
       if (!defaultTemplates || defaultTemplates.length === 0) {
         toast({
-          title: "Hata",
-          description: "Varsayılan şablonlar bulunamadı",
+          title: t("common.error"),
+          description: t("admin.templates.errors.noDefaultTemplates"),
           variant: "destructive",
         });
         return;
@@ -259,16 +261,16 @@ export default function MessageTemplates() {
       }
 
       toast({
-        title: "Başarılı",
-        description: "Varsayılan şablonlar yüklendi",
+        title: t("common.success"),
+        description: t("admin.templates.success.copied"),
       });
 
       fetchTemplates();
     } catch (error: any) {
       console.error('Error copying templates:', error);
       toast({
-        title: "Hata",
-        description: error.message || "Şablonlar kopyalanırken bir hata oluştu",
+        title: t("common.error"),
+        description: error.message || t("admin.templates.errors.copyError"),
         variant: "destructive",
       });
     }
@@ -332,9 +334,9 @@ export default function MessageTemplates() {
                       <div className="flex items-center justify-between">
                         <div>
                           <CardTitle>{type.name}</CardTitle>
-                          <CardDescription>
-                            {template ? template.subject : 'Henüz oluşturulmadı'}
-                          </CardDescription>
+                           <CardDescription>
+                            {template ? template.subject : t('admin.templates.notCreated')}
+                           </CardDescription>
                         </div>
                         <div className="flex gap-2">
                           <Button
@@ -400,16 +402,16 @@ export default function MessageTemplates() {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Şablon Düzenle</DialogTitle>
+            <DialogTitle>{t('admin.templates.dialog.title')}</DialogTitle>
             <DialogDescription>
-              Mesaj şablonunu düzenleyin. Değişkenler {'{}'} içinde yazılmalıdır.
+              {t('admin.templates.dialog.description')}
             </DialogDescription>
           </DialogHeader>
 
           {editingTemplate && (
             <div className="space-y-4">
               <div>
-                <Label>Şablon Tipi</Label>
+                <Label>{t('admin.templates.dialog.templateType')}</Label>
                 <Select
                   value={editingTemplate.template_key}
                   onValueChange={(value) =>
@@ -430,7 +432,7 @@ export default function MessageTemplates() {
               </div>
 
               <div>
-                <Label>Dil</Label>
+                <Label>{t('admin.templates.dialog.language')}</Label>
                 <Select
                   value={editingTemplate.language}
                   onValueChange={(value) =>
@@ -451,30 +453,30 @@ export default function MessageTemplates() {
               </div>
 
               <div>
-                <Label>Konu</Label>
+                <Label>{t('admin.templates.dialog.subject')}</Label>
                 <Input
                   value={editingTemplate.subject}
                   onChange={(e) =>
                     setEditingTemplate({ ...editingTemplate, subject: e.target.value })
                   }
-                  placeholder="Şablon konusu"
+                  placeholder={t('admin.templates.dialog.subjectPlaceholder')}
                 />
               </div>
 
               <div>
-                <Label>Mesaj İçeriği</Label>
+                <Label>{t('admin.templates.dialog.content')}</Label>
                 <Textarea
                   value={editingTemplate.content}
                   onChange={(e) =>
                     setEditingTemplate({ ...editingTemplate, content: e.target.value })
                   }
-                  placeholder="Mesaj içeriği... {full_name}, {tour_name} gibi değişkenler kullanabilirsiniz"
+                  placeholder={t('admin.templates.dialog.contentPlaceholder')}
                   rows={10}
                 />
               </div>
 
               <div>
-                <Label>Değişkenler (virgülle ayırın)</Label>
+                <Label>{t('admin.templates.dialog.variables')}</Label>
                 <Input
                   value={getVariablesArray(editingTemplate.variables).join(', ')}
                   onChange={(e) =>
@@ -483,10 +485,10 @@ export default function MessageTemplates() {
                       variables: e.target.value.split(',').map(v => v.trim()).filter(v => v),
                     })
                   }
-                  placeholder="full_name, tour_name, date, pax"
+                  placeholder={t('admin.templates.dialog.variablesPlaceholder')}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Örnek: full_name, tour_name, date, pax, total_amount, currency
+                  {t('admin.templates.dialog.variablesExample')}
                 </p>
               </div>
             </div>
@@ -494,9 +496,9 @@ export default function MessageTemplates() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              İptal
+              {t('admin.templates.dialog.cancel')}
             </Button>
-            <Button onClick={handleSaveTemplate}>Kaydet</Button>
+            <Button onClick={handleSaveTemplate}>{t('admin.templates.dialog.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
