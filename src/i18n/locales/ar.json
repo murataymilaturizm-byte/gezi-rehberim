@@ -289,6 +289,18 @@
       "twilioSettings": "إعدادات Twilio",
       "templates": "القوالب"
     },
+    "dashboard": {
+      "title": "لوحة القيادة",
+      "whatsappSettings": "إعدادات واتساب"
+    },
+    "toast": {
+      "success": "نجح",
+      "error": "خطأ"
+    },
+    "date": {
+      "deleteSuccess": "تم حذف التاريخ بنجاح",
+      "deleteError": "خطأ في حذف التاريخ"
+    },
     "tours": {
       "title": "الرحلات",
       "addNew": "إضافة رحلة جديدة",

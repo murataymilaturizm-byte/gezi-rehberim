@@ -289,6 +289,18 @@
       "twilioSettings": "Paramètres Twilio",
       "templates": "Modèles"
     },
+    "dashboard": {
+      "title": "Tableau de Bord",
+      "whatsappSettings": "Paramètres WhatsApp"
+    },
+    "toast": {
+      "success": "Succès",
+      "error": "Erreur"
+    },
+    "date": {
+      "deleteSuccess": "Date supprimée avec succès",
+      "deleteError": "Erreur lors de la suppression de la date"
+    },
     "tours": {
       "title": "Tours",
       "addNew": "Ajouter un Nouveau Tour",

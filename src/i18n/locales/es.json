@@ -341,6 +341,18 @@
       "twilioSettings": "Configuración de Twilio",
       "templates": "Plantillas"
     },
+    "dashboard": {
+      "title": "Panel de Control",
+      "whatsappSettings": "Configuración de WhatsApp"
+    },
+    "toast": {
+      "success": "Éxito",
+      "error": "Error"
+    },
+    "date": {
+      "deleteSuccess": "Fecha eliminada exitosamente",
+      "deleteError": "Error al eliminar la fecha"
+    },
     "tours": {
       "title": "Tours",
       "addNew": "Agregar Nuevo Tour",

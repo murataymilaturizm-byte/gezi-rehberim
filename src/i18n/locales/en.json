@@ -330,6 +330,18 @@
       "twilioSettings": "Twilio Settings",
       "templates": "Templates"
     },
+    "dashboard": {
+      "title": "Dashboard",
+      "whatsappSettings": "WhatsApp Settings"
+    },
+    "toast": {
+      "success": "Success",
+      "error": "Error"
+    },
+    "date": {
+      "deleteSuccess": "Date deleted successfully",
+      "deleteError": "Error deleting date"
+    },
     "tours": {
       "title": "Tours",
       "addNew": "Add New Tour",

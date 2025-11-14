@@ -341,6 +341,18 @@
       "twilioSettings": "Настройки Twilio",
       "templates": "Шаблоны"
     },
+    "dashboard": {
+      "title": "Панель Управления",
+      "whatsappSettings": "Настройки WhatsApp"
+    },
+    "toast": {
+      "success": "Успешно",
+      "error": "Ошибка"
+    },
+    "date": {
+      "deleteSuccess": "Дата успешно удалена",
+      "deleteError": "Ошибка при удалении даты"
+    },
     "tours": {
       "title": "Туры",
       "addNew": "Добавить Новый Тур",
