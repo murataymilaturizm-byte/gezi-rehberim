@@ -379,6 +379,11 @@ export const SubscriptionHistory = () => {
     setIsProcessingPayment(true);
 
     try {
+      toast({
+        title: "Ödeme İşlemi Başlatılıyor...",
+        description: "Sipay ödeme sayfasına yönlendiriliyorsunuz.",
+      });
+
       const { data, error } = await supabase.functions.invoke("sipay-payment", {
         body: {
           planType: subscription.plan_type,
@@ -387,20 +392,47 @@ export const SubscriptionHistory = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Sipay function error:", error);
+        throw new Error(error.message || "Ödeme servisi ile bağlantı kurulamadı");
+      }
+
+      if (!data) {
+        throw new Error("Ödeme servisi yanıt vermedi");
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       if (data.payment_url) {
-        // Redirect to Sipay payment page
-        window.location.href = data.payment_url;
+        console.log("Redirecting to payment URL:", data.payment_url);
+        // Add a small delay to ensure toast is visible
+        setTimeout(() => {
+          window.location.href = data.payment_url;
+        }, 1000);
       } else {
-        throw new Error("Payment URL not received");
+        throw new Error("Ödeme URL'si alınamadı. Lütfen daha sonra tekrar deneyin.");
       }
     } catch (error: any) {
-      console.error("Payment error:", error);
+      console.error("Payment initialization error:", error);
+      
+      let errorMessage = "Ödeme başlatılamadı. ";
+      
+      // Provide more specific error messages
+      if (error.message.includes("credentials")) {
+        errorMessage += "Ödeme sistemi yapılandırması hatalı. Lütfen yönetici ile iletişime geçin.";
+      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        errorMessage += "İnternet bağlantınızı kontrol edin ve tekrar deneyin.";
+      } else {
+        errorMessage += error.message || "Lütfen tekrar deneyin veya destek ekibi ile iletişime geçin.";
+      }
+      
       toast({
-        title: "Ödeme Hatası",
-        description: error.message || "Ödeme başlatılamadı. Lütfen tekrar deneyin.",
+        title: "Ödeme Hatası ❌",
+        description: errorMessage,
         variant: "destructive",
+        duration: 7000,
       });
       setIsProcessingPayment(false);
     }

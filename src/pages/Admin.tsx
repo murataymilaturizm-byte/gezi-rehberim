@@ -160,19 +160,51 @@ const Admin = () => {
   // Check payment result from URL params
   useEffect(() => {
     const paymentStatus = searchParams.get("payment");
+    const errorCode = searchParams.get("error");
+    const errorMessage = searchParams.get("message");
+    const orderId = searchParams.get("orderId");
+    
     if (paymentStatus === "success") {
       toast({
         title: "Ödeme Başarılı! 🎉",
-        description: "Aboneliğiniz aktifleştirildi. Faturanız email adresinize gönderilecek.",
+        description: orderId 
+          ? `Aboneliğiniz aktifleştirildi. Sipariş No: ${orderId.substring(0, 20)}...`
+          : "Aboneliğiniz aktifleştirildi. Faturanız hazırlanıyor.",
+        duration: 5000,
       });
       setActiveTab("history");
       // Clear URL params
       setSearchParams({});
     } else if (paymentStatus === "failed") {
+      let description = "Ödeme işlemi tamamlanamadı. ";
+      
+      // Add specific error messages based on error code
+      if (errorCode) {
+        switch (errorCode) {
+          case "INSUFFICIENT_FUNDS":
+            description += "Kartınızda yeterli bakiye bulunmuyor.";
+            break;
+          case "CARD_DECLINED":
+            description += "Kartınız reddedildi. Lütfen bankanızla iletişime geçin.";
+            break;
+          case "EXPIRED_CARD":
+            description += "Kartınızın süresi dolmuş.";
+            break;
+          case "INVALID_CVV":
+            description += "CVV kodu hatalı.";
+            break;
+          default:
+            description += errorMessage ? decodeURIComponent(errorMessage) : "Lütfen tekrar deneyin veya farklı bir kart kullanın.";
+        }
+      } else {
+        description += "Lütfen tekrar deneyin veya farklı bir kart kullanın.";
+      }
+      
       toast({
-        title: "Ödeme Başarısız",
-        description: "Ödeme işlemi tamamlanamadı. Lütfen tekrar deneyin veya farklı bir kart kullanın.",
+        title: "Ödeme Başarısız ❌",
+        description,
         variant: "destructive",
+        duration: 7000,
       });
       setActiveTab("history");
       // Clear URL params
