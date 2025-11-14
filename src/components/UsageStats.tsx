@@ -148,9 +148,9 @@ export const UsageStats = () => {
 
   const getPlanName = (planType: string) => {
     switch (planType) {
-      case 'starter': return t("admin.dashboard.starter");
-      case 'professional': return t("admin.dashboard.professional");
-      case 'enterprise': return t("admin.dashboard.enterprise");
+      case 'starter': return t("admin.agency.plans.starter");
+      case 'professional': return t("admin.agency.plans.professional");
+      case 'enterprise': return t("admin.agency.plans.enterprise");
       default: return planType;
     }
   };
