@@ -95,7 +95,7 @@ interface Registration {
 const Admin = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   
   const statusLabels: Record<string, string> = {
@@ -200,16 +200,22 @@ const Admin = () => {
 
       setIsSuperAdmin(!!roleData);
 
-      // Get user's agency ID and name if not super admin
+      // Get user's agency ID, name and language preference if not super admin
       if (!roleData) {
         const { data: agencyData } = await supabase
           .from("agencies")
-          .select("id, agency_name")
+          .select("id, agency_name, language_preference")
           .eq("user_id", userId)
           .maybeSingle();
 
         setUserAgencyId(agencyData?.id || null);
         setAgencyName(agencyData?.agency_name || "");
+        
+        // Set language preference based on agency's city/region
+        if (agencyData?.language_preference) {
+          i18n.changeLanguage(agencyData.language_preference);
+          console.log('Admin language set to:', agencyData.language_preference);
+        }
       } else {
         setAgencyName(t("admin.superAdmin"));
       }

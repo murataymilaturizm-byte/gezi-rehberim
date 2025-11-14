@@ -12,6 +12,7 @@ import { Loader2, Plane } from "lucide-react";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { z } from "zod";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { getCityRegionLanguage } from "@/utils/cityLanguageMapper";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -141,6 +142,9 @@ const Auth = () => {
         const trialEndsAt = new Date();
         trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 days trial
 
+        // Determine language preference from city/region
+        const languagePreference = getCityRegionLanguage(city.trim(), region.trim());
+
         const { error: agencyError } = await supabase
           .from("agencies")
           .insert({
@@ -148,6 +152,7 @@ const Auth = () => {
             agency_name: agencyName.trim(),
             city: city.trim(),
             region: region.trim() || null,
+            language_preference: languagePreference,
             twilio_account_sid: "TEMP_SID",
             twilio_auth_token: "TEMP_TOKEN",
             twilio_phone_number: "TEMP_PHONE",
