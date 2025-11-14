@@ -421,6 +421,14 @@
         "phoneNumber": "Número de WhatsApp Business",
         "phonePlaceholder": "+34xxxxxxxxx",
         "phoneHelp": "Ingrese su número de WhatsApp Business registrado en Twilio (ej: +14155238886)",
+        "conversationStyle": "Estilo de Conversación",
+        "conversationStyleHelp": "Elija cómo su bot se comunica con los clientes",
+        "style": {
+          "friendly": "Amistoso/Cordial",
+          "professional": "Profesional/Corporativo",
+          "energetic": "Enérgico/Dinámico",
+          "helpful": "Amable/Servicial"
+        },
         "saving": "Guardando...",
         "update": "Actualizar",
         "save": "Guardar",

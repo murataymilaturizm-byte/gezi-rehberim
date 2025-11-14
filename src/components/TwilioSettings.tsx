@@ -245,7 +245,7 @@ export const TwilioSettings = () => {
           <div className="space-y-2">
             <Label htmlFor="conversation_style" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
-              Konuşma Üslubu
+              {t("admin.whatsapp.settings.conversationStyle")}
             </Label>
             <Select
               value={formData.conversation_style}
@@ -260,31 +260,31 @@ export const TwilioSettings = () => {
                 <SelectItem value="friendly">
                   <div className="flex items-center gap-2">
                     <span>🤝</span>
-                    <span>Samimi/Dostane</span>
+                    <span>{t("admin.whatsapp.settings.style.friendly")}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="professional">
                   <div className="flex items-center gap-2">
                     <span>👔</span>
-                    <span>Profesyonel/Kurumsal</span>
+                    <span>{t("admin.whatsapp.settings.style.professional")}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="energetic">
                   <div className="flex items-center gap-2">
                     <span>⚡</span>
-                    <span>Enerjik/Dinamik</span>
+                    <span>{t("admin.whatsapp.settings.style.energetic")}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="helpful">
                   <div className="flex items-center gap-2">
                     <span>😊</span>
-                    <span>Nazik/Yardımsever</span>
+                    <span>{t("admin.whatsapp.settings.style.helpful")}</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
             <p className="text-sm text-muted-foreground">
-              Botunuzun müşterilerle nasıl konuşacağını belirleyin
+              {t("admin.whatsapp.settings.conversationStyleHelp")}
             </p>
           </div>
 
