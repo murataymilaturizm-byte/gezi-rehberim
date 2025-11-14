@@ -12,6 +12,7 @@ import { Loader2, Plane } from "lucide-react";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { z } from "zod";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCityRegionLanguage } from "@/utils/cityLanguageMapper";
 
 const Auth = () => {
@@ -184,10 +185,35 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
-        <LanguageSelector />
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
+              <div className="hidden sm:block">
+                <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <LanguageSelector />
+              <ThemeToggle />
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
+                <a href="/">{t("nav.home")}</a>
+              </Button>
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
+                <a href="/yardim">{t("nav.help")}</a>
+              </Button>
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
+                <a href="/nasil-baslarim">{t("nav.gettingStarted")}</a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex items-center justify-center p-4 py-12">
       <Card className="w-full max-w-2xl shadow-card">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -471,6 +497,7 @@ const Auth = () => {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

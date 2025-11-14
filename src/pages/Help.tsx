@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { 
   BookOpen, 
   MessageSquare, 
@@ -683,30 +684,26 @@ Her şablonda kullanılabilen değişkenler:
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/")}
-                className="hover:bg-primary/10"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-3">
-                <img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto" />
-                <div>
-                  <h1 className="text-xl font-bold text-foreground">{t("help.title")}</h1>
-                  <p className="text-sm text-muted-foreground">{t("help.subtitle")}</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
+              <div className="hidden sm:block">
+                <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <LanguageSelector />
-              <Button onClick={() => navigate("/admin")} variant="outline">
-                {t("help.backToAdmin")}
+              <ThemeToggle />
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
+                <a href="/">{t("nav.home")}</a>
+              </Button>
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
+                <a href="/nasil-baslarim">{t("nav.gettingStarted")}</a>
+              </Button>
+              <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
+                <a href="/auth">{t("auth.login")}</a>
               </Button>
             </div>
           </div>

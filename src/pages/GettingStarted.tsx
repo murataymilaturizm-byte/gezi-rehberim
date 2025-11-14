@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -102,20 +103,25 @@ const GettingStarted = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <a href="/" className="flex items-center gap-3">
-                <img src={turzzLogo} alt="Turzz Logo" className="h-16 w-auto" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Akıllı Tur Satış Sistemi</p>
-                </div>
-              </a>
+              <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
+              <div className="hidden sm:block">
+                <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <LanguageSelector />
-              <Button asChild className="bg-gradient-ocean hover:opacity-90">
+              <ThemeToggle />
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
+                <a href="/">{t("nav.home")}</a>
+              </Button>
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
+                <a href="/yardim">{t("nav.help")}</a>
+              </Button>
+              <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
                 <a href="/auth">{t("auth.login")}</a>
               </Button>
             </div>
