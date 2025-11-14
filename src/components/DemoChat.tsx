@@ -67,7 +67,7 @@ export const DemoChat = () => {
       const baseGreeting = t("demo.greeting");
       switch(conversationStyle) {
         case 'friendly':
-          return baseGreeting + "\n\n😊 Bugün sana nasıl yardımcı olabilirim arkadaşım?";
+          return baseGreeting + "\n\n😊 Sana nasıl yardımcı olabilirim?";
         case 'energetic':
           return baseGreeting + "\n\n⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀";
         case 'helpful':
@@ -156,7 +156,7 @@ export const DemoChat = () => {
       const baseGreeting = t("demo.greeting");
       switch(conversationStyle) {
         case 'friendly':
-          return baseGreeting + "\n\n😊 Bugün sana nasıl yardımcı olabilirim arkadaşım?";
+          return baseGreeting + "\n\n😊 Sana nasıl yardımcı olabilirim?";
         case 'energetic':
           return baseGreeting + "\n\n⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀";
         case 'helpful':
