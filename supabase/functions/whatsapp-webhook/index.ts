@@ -6,16 +6,49 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting helper
+async function checkRateLimit(supabase: any, identifier: string, endpoint: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('check_api_rate_limit', {
+    _identifier: identifier,
+    _endpoint: endpoint,
+    _max_requests: 100,
+    _window_minutes: 15
+  });
+  
+  if (error) {
+    console.error('Rate limit check error:', error);
+    return true; // Allow on error to prevent blocking legitimate requests
+  }
+  
+  return data;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Get client IP for rate limiting
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+    
+    // Rate limit check
+    const isAllowed = await checkRateLimit(supabase, clientIp, 'whatsapp-webhook');
+    if (!isAllowed) {
+      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     // Twilio sends data as application/x-www-form-urlencoded
     const contentType = req.headers.get('content-type') || '';
