@@ -45,6 +45,7 @@ import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { TwilioSettings } from "@/components/TwilioSettings";
 import { SuperAdminTwilioSettings } from "@/components/SuperAdminTwilioSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
+import MessageTemplates from "@/components/MessageTemplates";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
@@ -108,7 +109,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -447,6 +448,13 @@ const Admin = () => {
                 WhatsApp Ayarları
               </Button>
               <Button
+                variant={activeTab === "templates" ? "default" : "outline"}
+                onClick={() => setActiveTab("templates")}
+                className={activeTab === "templates" ? "bg-gradient-ocean" : ""}
+              >
+                Şablonlar
+              </Button>
+              <Button
                 variant={activeTab === "history" ? "default" : "outline"}
                 onClick={() => setActiveTab("history")}
                 className={activeTab === "history" ? "bg-gradient-ocean" : ""}
@@ -492,6 +500,8 @@ const Admin = () => {
           </div>
         ) : activeTab === "settings" ? (
           <TwilioSettings />
+        ) : activeTab === "templates" ? (
+          <MessageTemplates />
         ) : activeTab === "history" ? (
           <SubscriptionHistory />
         ) : activeTab === "twilio_settings" && isSuperAdmin ? (
