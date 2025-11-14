@@ -6,12 +6,47 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting helper
+async function checkRateLimit(supabase: any, identifier: string, endpoint: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('check_api_rate_limit', {
+    _identifier: identifier,
+    _endpoint: endpoint,
+    _max_requests: 50,
+    _window_minutes: 15
+  });
+  
+  if (error) {
+    console.error('Rate limit check error:', error);
+    return true;
+  }
+  
+  return data;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    
+    const supabaseCheck = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    
+    const isAllowed = await checkRateLimit(supabaseCheck, clientIp, 'sipay-callback');
+    if (!isAllowed) {
+      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded' }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
     const paymentResult = await req.json();
     console.log("📥 Sipay callback received:", JSON.stringify(paymentResult, null, 2));
 
