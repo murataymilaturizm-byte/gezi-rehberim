@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -71,13 +72,6 @@ interface ChartData {
   kayitlar: number;
 }
 
-const statusLabels: Record<string, string> = {
-  NEW: "Yeni",
-  PENDING: "Beklemede",
-  CONFIRMED: "Onaylandı",
-  CANCELLED: "İptal"
-};
-
 interface SuperAdminStats {
   totalAgencies: number;
   activeAgencies: number;
@@ -103,6 +97,14 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) => {
+  const { t } = useTranslation();
+  
+  const statusLabels: Record<string, string> = {
+    NEW: t("admin.status.new"),
+    PENDING: t("admin.status.pending"),
+    CONFIRMED: t("admin.status.confirmed"),
+    CANCELLED: t("admin.status.cancelled")
+  };
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [stats, setStats] = useState<Stats>({
     totalTours: 0,
@@ -985,14 +987,14 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
-              En Popüler Destinasyonlar
+              {t("admin.dashboard.popularDestinations")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {popularTours.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  Henüz veri yok
+                  {t("admin.dashboard.noData")}
                 </div>
               ) : (
                 popularTours.map((tour) => (
@@ -1015,7 +1017,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Son Kayıtlar
+                {t("admin.dashboard.recentRegistrations")}
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Popover>
