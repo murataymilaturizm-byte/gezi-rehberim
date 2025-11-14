@@ -354,6 +354,18 @@
       "twilioSettings": "Twilio-Einstellungen",
       "templates": "Vorlagen"
     },
+    "dashboard": {
+      "title": "Dashboard",
+      "whatsappSettings": "WhatsApp-Einstellungen"
+    },
+    "toast": {
+      "success": "Erfolgreich",
+      "error": "Fehler"
+    },
+    "date": {
+      "deleteSuccess": "Datum erfolgreich gelöscht",
+      "deleteError": "Fehler beim Löschen des Datums"
+    },
     "tours": {
       "title": "Touren",
       "addNew": "Neue Tour Hinzufügen",

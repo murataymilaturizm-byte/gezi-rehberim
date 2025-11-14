@@ -340,12 +340,21 @@
     "totalMessages": "Toplam Mesaj",
     "conversionRate": "Dönüşüm Oranı",
     "dashboard": {
+      "title": "Gösterge Paneli",
       "status": "Durum",
       "trialPeriod": "Deneme Süresi",
       "messagesPerMonth": "500 mesaj/ay",
       "conversationHistory": "30 gün konuşma geçmişi",
       "emailSupport": "Email destek",
       "whatsappSettings": "WhatsApp Ayarları"
+    },
+    "toast": {
+      "success": "Başarılı",
+      "error": "Hata"
+    },
+    "date": {
+      "deleteSuccess": "Tarih başarıyla silindi",
+      "deleteError": "Tarih silinirken hata oluştu"
     },
     "agency": {
       "title": "Acente Yönetimi",
