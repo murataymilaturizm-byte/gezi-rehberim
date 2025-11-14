@@ -217,6 +217,12 @@ export default function MessageTemplates() {
 
       console.log('Agency ID:', agency.id);
 
+      // Mevcut şablonları al
+      const { data: existingTemplates } = await (supabase as any)
+        .from('message_templates')
+        .select('template_key, language')
+        .eq('agency_id', agency.id);
+
       // Varsayılan şablonları kopyala
       const { data: defaultTemplates, error: fetchError } = await (supabase as any)
         .from('message_templates')
@@ -239,17 +245,32 @@ export default function MessageTemplates() {
         return;
       }
 
-      const newTemplates = (defaultTemplates as any[]).map((t: any) => ({
-        agency_id: agency.id,
-        template_key: t.template_key,
-        language: t.language,
-        subject: t.subject,
-        content: t.content,
-        variables: t.variables,
-        is_active: t.is_active,
-      }));
+      // Sadece eksik şablonları filtrele
+      const existingKeys = new Set(
+        (existingTemplates || []).map((t: any) => `${t.template_key}_${t.language}`)
+      );
 
-      console.log('Inserting templates:', newTemplates.length);
+      const newTemplates = (defaultTemplates as any[])
+        .filter((t: any) => !existingKeys.has(`${t.template_key}_${t.language}`))
+        .map((t: any) => ({
+          agency_id: agency.id,
+          template_key: t.template_key,
+          language: t.language,
+          subject: t.subject,
+          content: t.content,
+          variables: t.variables,
+          is_active: t.is_active,
+        }));
+
+      if (newTemplates.length === 0) {
+        toast({
+          title: t("common.success"),
+          description: t("admin.templates.success.copied"),
+        });
+        return;
+      }
+
+      console.log('Inserting new templates:', newTemplates.length);
 
       const { error: insertError } = await (supabase as any)
         .from('message_templates')
@@ -303,12 +324,10 @@ export default function MessageTemplates() {
             {t("admin.whatsapp.templates.description")}
           </p>
         </div>
-        {templates.length === 0 && (
-          <Button onClick={copyDefaultTemplates}>
-            <Copy className="mr-2 h-4 w-4" />
-            {t("admin.whatsapp.templates.loadDefaults")}
-          </Button>
-        )}
+        <Button onClick={copyDefaultTemplates} variant={templates.length === 0 ? "default" : "outline"}>
+          <Copy className="mr-2 h-4 w-4" />
+          {t("admin.whatsapp.templates.loadDefaults")}
+        </Button>
       </div>
 
       <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage}>
