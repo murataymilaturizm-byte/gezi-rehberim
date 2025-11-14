@@ -502,7 +502,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
 
           <Card className="shadow-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aktif Oran</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("admin.dashboard.activeRate")}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -512,7 +512,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                   : 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Aktif acente oranı
+                {t("admin.dashboard.activeAgencyRate")}
               </p>
             </CardContent>
           </Card>
@@ -522,42 +522,42 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle className="text-base">Başlangıç Planı</CardTitle>
+              <CardTitle className="text-base">{t("admin.dashboard.starterPlan")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-blue-500">
                 {superAdminStats.agenciesByPlan.starter}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {superAdminStats.agenciesByPlan.starter} × 2.999₺ = {(superAdminStats.agenciesByPlan.starter * planPrices.starter).toLocaleString('tr-TR')}₺/ay
+                {superAdminStats.agenciesByPlan.starter} × 2.999₺ = {(superAdminStats.agenciesByPlan.starter * planPrices.starter).toLocaleString('tr-TR')}₺/{t("admin.dashboard.month")}
               </p>
             </CardContent>
           </Card>
 
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle className="text-base">Profesyonel Planı</CardTitle>
+              <CardTitle className="text-base">{t("admin.dashboard.professionalPlan")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-purple-500">
                 {superAdminStats.agenciesByPlan.professional}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {superAdminStats.agenciesByPlan.professional} × 7.999₺ = {(superAdminStats.agenciesByPlan.professional * planPrices.professional).toLocaleString('tr-TR')}₺/ay
+                {superAdminStats.agenciesByPlan.professional} × 7.999₺ = {(superAdminStats.agenciesByPlan.professional * planPrices.professional).toLocaleString('tr-TR')}₺/{t("admin.dashboard.month")}
               </p>
             </CardContent>
           </Card>
 
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle className="text-base">Kurumsal Planı</CardTitle>
+              <CardTitle className="text-base">{t("admin.dashboard.enterprisePlan")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-amber-500">
                 {superAdminStats.agenciesByPlan.enterprise}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {superAdminStats.agenciesByPlan.enterprise} × 14.999₺ = {(superAdminStats.agenciesByPlan.enterprise * planPrices.enterprise).toLocaleString('tr-TR')}₺/ay
+                {superAdminStats.agenciesByPlan.enterprise} × 14.999₺ = {(superAdminStats.agenciesByPlan.enterprise * planPrices.enterprise).toLocaleString('tr-TR')}₺/{t("admin.dashboard.month")}
               </p>
             </CardContent>
           </Card>
@@ -569,7 +569,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
                 <TrendingUp className="w-5 h-5" />
-                Aylık Gelir (Tahmin)
+                {t("admin.dashboard.monthlyRevenue")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -577,12 +577,12 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 {monthlyRevenue.toLocaleString('tr-TR')}₺
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                Sadece aktif ve ücretli abonelikler (trial hariç)
+                {t("admin.dashboard.activeSubscriptionsOnly")}
               </p>
               <div className="mt-4 pt-4 border-t border-border/50">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Deneme acenteler:</span>
-                  <Badge variant="secondary">{superAdminStats.trialAgencies} acente</Badge>
+                  <span className="text-muted-foreground">{t("admin.dashboard.trialAgenciesLabel")}</span>
+                  <Badge variant="secondary">{superAdminStats.trialAgencies} {t("admin.dashboard.agency")}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -962,9 +962,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle>
-            {dateRange?.from && dateRange?.to
-              ? `${format(dateRange.from, "d MMM", { locale: tr })} - ${format(dateRange.to, "d MMM", { locale: tr })} Kayıtları`
-              : "Son 7 Gün - Kayıtlar"}
+              {dateRange?.from && dateRange?.to
+                ? `${format(dateRange.from, "d MMM", { locale: tr })} - ${format(dateRange.to, "d MMM", { locale: tr })} ${t("admin.dashboard.registrationsTitle")}`
+                : t("admin.dashboard.last7Days")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -974,7 +974,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="kayitlar" fill="hsl(var(--primary))" />
+              <Bar dataKey={t("admin.dashboard.chartRegistrations")} fill="hsl(var(--primary))" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
