@@ -91,10 +91,10 @@ const Index = () => {
       metric: "Günlük, haftalık, aylık ciro raporları"
     },
     {
-      icon: Zap,
-      title: "WhatsApp'tan Direkt Ödeme",
-      description: "Müşteri turunu buldu mu? Anında ödeme linkini gönderin, dakikalar içinde ödeme alsın. Ödeme takibi ve fatura otomatik.",
-      metric: "Ödeme alma süresi: 2 dakika"
+      icon: Users,
+      title: "Çoklu Dil Desteği",
+      description: "7 farklı dilde otomatik mesajlaşma: Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca. Sistem müşterinizin dilini otomatik algılıyor.",
+      metric: "7 dilde akıcı iletişim"
     }
   ];
 
@@ -375,7 +375,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              3 Ana Özellik - Hepsi Bu!
+              İşinizi Büyüten Özellikler
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Karmaşık değil, basit ve etkili. Size gerçekten değer katan özellikler.
