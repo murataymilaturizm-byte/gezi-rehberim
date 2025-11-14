@@ -6,11 +6,12 @@
     "help": "Aide"
   },
   "hero": {
-    "title": "Intégration WhatsApp",
-    "subtitle": "Pour Votre Agence de Voyage",
-    "description": "Communiquez automatiquement avec vos clients via WhatsApp, gérez les réservations et développez votre entreprise.",
-    "cta": "Commencer",
-    "demo": "Voir la Démo"
+    "title": "Automatiser les Ventes de Tours WhatsApp",
+    "subtitle": "Avec WhatsApp",
+    "highlight": "Automatisez Vos Ventes de Tours",
+    "description": "Vendez des tours 24/7 avec un assistant WhatsApp alimenté par l'IA. Répondez aux questions des clients, prenez des réservations et gérez les paiements automatiquement - même pendant votre sommeil.",
+    "cta": "Essayer Gratuitement 14 Jours",
+    "demo": "Essayer la Démo Live"
   },
   "features": {
     "title": "Fonctionnalités",
@@ -99,7 +100,9 @@
     "legal": "Légal",
     "privacy": "Politique de Confidentialité",
     "terms": "Conditions d'Utilisation",
-    "rights": "Tous droits réservés."
+    "rights": "© 2024 TurzzAI. Tous droits réservés.",
+    "gettingStarted": "Commencer",
+    "login": "Se Connecter"
   },
   "admin": {
     "title": "Panneau d'Agence",

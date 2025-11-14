@@ -6,11 +6,12 @@
     "help": "Help"
   },
   "hero": {
-    "title": "WhatsApp Integration",
-    "subtitle": "For Your Travel Agency",
-    "description": "Automatically communicate with your customers via WhatsApp, manage reservations and grow your business.",
-    "cta": "Get Started",
-    "demo": "Watch Demo"
+    "title": "Automate WhatsApp Tour Sales",
+    "subtitle": "With WhatsApp",
+    "highlight": "Automate Your Tour Sales",
+    "description": "Sell tours 24/7 with an AI-powered WhatsApp assistant. Answer customer questions, take bookings, and manage payments automatically - even while you sleep.",
+    "cta": "Try Free for 14 Days",
+    "demo": "Try Live Demo"
   },
   "features": {
     "title": "Features",
@@ -99,7 +100,9 @@
     "legal": "Legal",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "rights": "All rights reserved."
+    "rights": "© 2024 TurzzAI. All rights reserved.",
+    "gettingStarted": "Getting Started",
+    "login": "Login"
   },
   "admin": {
     "title": "Agency Panel",
