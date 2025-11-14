@@ -320,7 +320,27 @@
     "gettingStarted": "Начало Работы",
     "login": "Войти"
   },
-   "admin": {
+  "feedback": {
+    "customerFeedback": "Опросы удовлетворенности клиентов",
+    "totalResponses": "Всего ответов",
+    "averageScore": "Средний балл",
+    "npsScore": "NPS балл",
+    "responseRate": "Процент ответов",
+    "promoters": "Промоутеры",
+    "detractors": "Критики",
+    "promoter": "Промоутер",
+    "passive": "Пассивный",
+    "detractor": "Критик",
+    "customer": "Клиент",
+    "score": "Оценка",
+    "category": "Категория",
+    "comment": "Комментарий",
+    "bookings": "Бронирования",
+    "date": "Дата",
+    "tours": "Туры",
+    "noFeedbacks": "Пока нет ответов на опросы"
+  },
+  "admin": {
     "title": "Панель Агентства",
     "templates": {
       "title": "Шаблоны Сообщений",
@@ -383,7 +403,8 @@
       "agencies": "Агентства",
       "contactForms": "Контактные Формы",
       "twilioSettings": "Настройки Twilio",
-      "templates": "Шаблоны"
+      "templates": "Шаблоны",
+      "customerFeedback": "Удовлетворенность клиентов"
     },
     "dashboard": {
       "title": "Панель Управления",

@@ -48,6 +48,7 @@ import { TwilioSettings } from "@/components/TwilioSettings";
 import { SuperAdminTwilioSettings } from "@/components/SuperAdminTwilioSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
+import { CustomerFeedback } from "@/components/CustomerFeedback";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
@@ -115,7 +116,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -509,13 +510,20 @@ const Admin = () => {
                >
                  {t("admin.tabs.templates")}
                </Button>
-               <Button
-                 variant={activeTab === "history" ? "default" : "outline"}
-                 onClick={() => setActiveTab("history")}
-                 className={`transition-all duration-300 ${activeTab === "history" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-               >
-                 {t("admin.tabs.history")}
-               </Button>
+              <Button
+                variant={activeTab === "history" ? "default" : "outline"}
+                onClick={() => setActiveTab("history")}
+                className={`transition-all duration-300 ${activeTab === "history" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+              >
+                {t("admin.tabs.history")}
+              </Button>
+              <Button
+                variant={activeTab === "customer-feedback" ? "default" : "outline"}
+                onClick={() => setActiveTab("customer-feedback")}
+                className={`transition-all duration-300 ${activeTab === "customer-feedback" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+              >
+                {t("admin.tabs.customerFeedback")}
+              </Button>
             </>
           )}
           {isSuperAdmin && (
@@ -560,6 +568,8 @@ const Admin = () => {
           <MessageTemplates />
         ) : activeTab === "history" ? (
           <SubscriptionHistory />
+        ) : activeTab === "customer-feedback" ? (
+          <CustomerFeedback />
         ) : activeTab === "twilio_settings" && isSuperAdmin ? (
           <SuperAdminTwilioSettings />
         ) : activeTab === "agencies" && isSuperAdmin ? (

@@ -320,7 +320,27 @@
     "gettingStarted": "Comenzar",
     "login": "Iniciar Sesión"
   },
-   "admin": {
+  "feedback": {
+    "customerFeedback": "Encuestas de satisfacción del cliente",
+    "totalResponses": "Respuestas totales",
+    "averageScore": "Puntuación promedio",
+    "npsScore": "Puntuación NPS",
+    "responseRate": "Tasa de respuesta",
+    "promoters": "Promotores",
+    "detractors": "Detractores",
+    "promoter": "Promotor",
+    "passive": "Pasivo",
+    "detractor": "Detractor",
+    "customer": "Cliente",
+    "score": "Puntuación",
+    "category": "Categoría",
+    "comment": "Comentario",
+    "bookings": "Reservas",
+    "date": "Fecha",
+    "tours": "Tours",
+    "noFeedbacks": "Aún no hay respuestas a encuestas"
+  },
+  "admin": {
     "title": "Panel de Agencia",
     "templates": {
       "title": "Plantillas de Mensajes",
@@ -383,7 +403,8 @@
       "agencies": "Agencias",
       "contactForms": "Formularios de Contacto",
       "twilioSettings": "Configuración de Twilio",
-      "templates": "Plantillas"
+      "templates": "Plantillas",
+      "customerFeedback": "Satisfacción del cliente"
     },
     "dashboard": {
       "title": "Panel de Control",

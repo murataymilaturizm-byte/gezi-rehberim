@@ -333,7 +333,27 @@
     "gettingStarted": "Erste Schritte",
     "login": "Anmelden"
   },
-   "admin": {
+  "feedback": {
+    "customerFeedback": "Kundenzufriedenheitsumfragen",
+    "totalResponses": "Gesamte Antworten",
+    "averageScore": "Durchschnittliche Bewertung",
+    "npsScore": "NPS-Score",
+    "responseRate": "Antwortrate",
+    "promoters": "Promotoren",
+    "detractors": "Kritiker",
+    "promoter": "Promotor",
+    "passive": "Passiv",
+    "detractor": "Kritiker",
+    "customer": "Kunde",
+    "score": "Bewertung",
+    "category": "Kategorie",
+    "comment": "Kommentar",
+    "bookings": "Buchungen",
+    "date": "Datum",
+    "tours": "Touren",
+    "noFeedbacks": "Noch keine Antworten auf Zufriedenheitsumfragen"
+  },
+  "admin": {
     "title": "Agentur-Panel",
     "templates": {
       "title": "Nachrichtenvorlagen",
@@ -396,7 +416,8 @@
       "agencies": "Agenturen",
       "contactForms": "Kontaktformulare",
       "twilioSettings": "Twilio-Einstellungen",
-      "templates": "Vorlagen"
+      "templates": "Vorlagen",
+      "customerFeedback": "Kundenzufriedenheit"
     },
     "dashboard": {
       "title": "Dashboard",

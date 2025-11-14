@@ -309,7 +309,27 @@
     "gettingStarted": "Getting Started",
     "login": "Login"
   },
-   "admin": {
+  "feedback": {
+    "customerFeedback": "Customer Satisfaction Surveys",
+    "totalResponses": "Total Responses",
+    "averageScore": "Average Score",
+    "npsScore": "NPS Score",
+    "responseRate": "Response Rate",
+    "promoters": "Promoters",
+    "detractors": "Detractors",
+    "promoter": "Promoter",
+    "passive": "Passive",
+    "detractor": "Detractor",
+    "customer": "Customer",
+    "score": "Score",
+    "category": "Category",
+    "comment": "Comment",
+    "bookings": "Bookings",
+    "date": "Date",
+    "tours": "Tours",
+    "noFeedbacks": "No satisfaction survey responses yet"
+  },
+  "admin": {
     "title": "Agency Panel",
     "templates": {
       "title": "Message Templates",
@@ -372,7 +392,8 @@
       "agencies": "Agencies",
       "contactForms": "Contact Forms",
       "twilioSettings": "Twilio Settings",
-      "templates": "Templates"
+      "templates": "Templates",
+      "customerFeedback": "Customer Satisfaction"
     },
     "dashboard": {
       "title": "Dashboard",
