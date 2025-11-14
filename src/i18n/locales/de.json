@@ -52,6 +52,31 @@
       "metric": "Durchschnittlich 120% mehr Buchungen im ersten Monat"
     }
   },
+  "howItWorks": {
+    "title": "Wie funktioniert es?",
+    "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten",
+    "step1": {
+      "title": "Kunde sendet Nachricht",
+      "description": "Sucht in natürlicher Sprache wie \"Kappadokien Touren\" über WhatsApp"
+    },
+    "step2": {
+      "title": "KI analysiert",
+      "description": "KI versteht die Nachricht und empfiehlt die am besten geeigneten Touren, liefert Preis- und Datumsinformationen"
+    },
+    "step3": {
+      "title": "Buchung erstellt",
+      "description": "Kundeninformationen werden mit Wizard-Führung gesammelt, Buchung wird abgeschlossen"
+    },
+    "footer": "Der gesamte Prozess ist automatisch und funktioniert 24/7 🚀",
+    "demoButton": "Live-Demo erkunden"
+  },
+  "demo": {
+    "badge": "Live-Demo",
+    "title": "Jetzt testen",
+    "subtitle": "Probieren Sie unseren KI-gestützten Assistenten jetzt aus. Stellen Sie Tour-Anfragen, simulieren Sie Buchungen.",
+    "note": "Dies ist ein Demo-Chatbot. In Ihrem echten System können Sie Ihre eigenen Touren und Einstellungen verwenden.",
+    "cta": "Jetzt starten"
+  },
   "benefits": {
     "title": "Konkrete Ergebnisse, Echter Wert",
     "subtitle": "Nicht nur Funktionen - der Wert für Ihr Geschäft",

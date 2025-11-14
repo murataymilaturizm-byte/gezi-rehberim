@@ -32,6 +32,31 @@
       "metric": "7 dilde akıcı iletişim"
     }
   },
+  "howItWorks": {
+    "title": "Nasıl Çalışır?",
+    "subtitle": "WhatsApp'tan rezervasyona 3 basit adımda",
+    "step1": {
+      "title": "Müşteri Mesaj Gönderir",
+      "description": "WhatsApp üzerinden \"Kapadokya turları\" gibi doğal dilde arama yapar"
+    },
+    "step2": {
+      "title": "AI Analiz Yapar",
+      "description": "Yapay zeka mesajı anlayıp en uygun turları önerir, fiyat ve tarih bilgisi verir"
+    },
+    "step3": {
+      "title": "Rezervasyon Oluşur",
+      "description": "Wizard rehberliğinde müşteri bilgileri alınır, rezervasyon tamamlanır"
+    },
+    "footer": "Tüm süreç otomatik ve 7/24 çalışır 🚀",
+    "demoButton": "Canlı Demo'yu İncele"
+  },
+  "demo": {
+    "badge": "Canlı Demo",
+    "title": "Hemen Test Edin",
+    "subtitle": "Yapay zeka destekli asistanımızı şimdi deneyin. Tur sorguları yapın, rezervasyon simülasyonu yapın.",
+    "note": "Bu bir demo chatbot'tur. Gerçek sisteminizde kendi turlarınızı ve ayarlarınızı kullanabilirsiniz.",
+    "cta": "Hemen Başlayın"
+  },
   "benefits": {
     "title": "Somut Sonuçlar, Gerçek Değer",
     "subtitle": "Sadece özellikler değil - işinize kattığı değer",
@@ -90,6 +115,22 @@
     "title": "Hemen Başlamaya Hazır mısınız?",
     "subtitle": "Demo hesap oluşturun ve tüm özellikleri ücretsiz deneyin. Kredi kartı bilgisi gerekmez.",
     "button": "Ücretsiz Deneyin"
+  },
+  "contact": {
+    "question": "Başka sorularınız mı var?",
+    "nameLabel": "İsim Soyisim",
+    "namePlaceholder": "İsminiz",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "email@ornek.com",
+    "messageLabel": "Mesajınız",
+    "messagePlaceholder": "Mesajınızı buraya yazın...",
+    "sendButton": "Mesaj Gönder",
+    "sending": "Gönderiliyor...",
+    "successTitle": "Mesajınız Gönderildi! ✅",
+    "successMessage": "En kısa sürede size geri dönüş yapacağız.",
+    "errorTitle": "Hata",
+    "errorMessage": "Mesaj gönderilemedi. Lütfen tekrar deneyin.",
+    "formErrorTitle": "Form Hatası"
   },
   "validation": {
     "nameRequired": "İsim zorunludur",

@@ -420,10 +420,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Somut Sonuçlar, Gerçek Değer
+              {t("benefits.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Sadece özellikler değil - işinize kattığı değer
+              {t("benefits.subtitle")}
             </p>
           </div>
           
@@ -468,9 +468,9 @@ const Index = () => {
                 <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
                   <MessageSquare className="w-7 h-7 text-primary" />
                 </div>
-                <h4 className="text-xl font-semibold text-foreground text-center">Müşteri Mesaj Gönderir</h4>
+                <h4 className="text-xl font-semibold text-foreground text-center">{t("howItWorks.step1.title")}</h4>
                 <p className="text-muted-foreground text-center">
-                  WhatsApp üzerinden "Kapadokya turları" gibi doğal dilde arama yapar
+                  {t("howItWorks.step1.description")}
                 </p>
               </CardContent>
             </Card>
@@ -483,9 +483,9 @@ const Index = () => {
                 <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
                   <Brain className="w-7 h-7 text-primary" />
                 </div>
-                <h4 className="text-xl font-semibold text-foreground text-center">AI Analiz Yapar</h4>
+                <h4 className="text-xl font-semibold text-foreground text-center">{t("howItWorks.step2.title")}</h4>
                 <p className="text-muted-foreground text-center">
-                  Yapay zeka mesajı anlayıp en uygun turları önerir, fiyat ve tarih bilgisi verir
+                  {t("howItWorks.step2.description")}
                 </p>
               </CardContent>
             </Card>
@@ -498,9 +498,9 @@ const Index = () => {
                 <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-7 h-7 text-primary" />
                 </div>
-                <h4 className="text-xl font-semibold text-foreground text-center">Rezervasyon Oluşur</h4>
+                <h4 className="text-xl font-semibold text-foreground text-center">{t("howItWorks.step3.title")}</h4>
                 <p className="text-muted-foreground text-center">
-                  Wizard rehberliğinde müşteri bilgileri alınır, rezervasyon tamamlanır
+                  {t("howItWorks.step3.description")}
                 </p>
               </CardContent>
             </Card>
@@ -508,10 +508,10 @@ const Index = () => {
 
           <div className="mt-16 text-center">
             <p className="text-lg text-muted-foreground mb-6">
-              Tüm süreç otomatik ve 7/24 çalışır 🚀
+              {t("howItWorks.footer")}
             </p>
             <Button size="lg" className="bg-gradient-ocean hover:opacity-90" onClick={scrollToDemo}>
-              Canlı Demo'yu İncele
+              {t("howItWorks.demoButton")}
             </Button>
           </div>
         </div>
@@ -713,13 +713,13 @@ const Index = () => {
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-border mb-4">
               <MessageSquare className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-accent-foreground">Canlı Demo</span>
+              <span className="text-sm font-medium text-accent-foreground">{t("demo.badge")}</span>
             </div>
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Hemen Test Edin
+              {t("demo.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Yapay zeka destekli asistanımızı şimdi deneyin. Tur sorguları yapın, rezervasyon simülasyonu yapın.
+              {t("demo.subtitle")}
             </p>
           </div>
 
@@ -727,11 +727,11 @@ const Index = () => {
 
           <div className="text-center mt-8">
             <p className="text-sm text-muted-foreground mb-4">
-              Bu bir demo chatbot'tur. Gerçek sisteminizde kendi turlarınızı ve ayarlarınızı kullanabilirsiniz.
+              {t("demo.note")}
             </p>
             <Button size="lg" className="bg-gradient-ocean hover:opacity-90" asChild>
               <a href="/auth?mode=signup">
-                Hemen Başlayın
+                {t("demo.cta")}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>
             </Button>
@@ -891,7 +891,7 @@ const Index = () => {
 
             <div className="text-center mt-8">
               <p className="text-muted-foreground mb-4">
-                Başka sorularınız mı var?
+                {t("contact.question")}
               </p>
             </div>
 
@@ -926,8 +926,8 @@ const Index = () => {
                     if (error) throw error;
 
                     toast({
-                      title: "Mesajınız Gönderildi! ✅",
-                      description: "En kısa sürede size geri dönüş yapacağız.",
+                      title: t("contact.successTitle"),
+                      description: t("contact.successMessage"),
                     });
 
                     // Reset form
@@ -935,15 +935,15 @@ const Index = () => {
                   } catch (error) {
                     if (error instanceof z.ZodError) {
                       toast({
-                        title: "Form Hatası",
+                        title: t("contact.formErrorTitle"),
                         description: error.errors[0].message,
                         variant: "destructive"
                       });
                     } else {
                       console.error('Contact form error:', error);
                       toast({
-                        title: "Hata",
-                        description: "Mesaj gönderilemedi. Lütfen tekrar deneyin.",
+                        title: t("contact.errorTitle"),
+                        description: t("contact.errorMessage"),
                         variant: "destructive"
                       });
                     }
@@ -952,7 +952,7 @@ const Index = () => {
                   }
                 }} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-foreground">İsim Soyisim</Label>
+                    <Label htmlFor="name" className="text-foreground">{t("contact.nameLabel")}</Label>
                     <input
                       id="name"
                       name="name"
@@ -960,11 +960,11 @@ const Index = () => {
                       required
                       maxLength={100}
                       className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="İsminiz"
+                      placeholder={t("contact.namePlaceholder")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground">E-posta</Label>
+                    <Label htmlFor="email" className="text-foreground">{t("contact.emailLabel")}</Label>
                     <input
                       id="email"
                       name="email"
@@ -972,11 +972,11 @@ const Index = () => {
                       required
                       maxLength={255}
                       className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="email@ornek.com"
+                      placeholder={t("contact.emailPlaceholder")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-foreground">Mesajınız</Label>
+                    <Label htmlFor="message" className="text-foreground">{t("contact.messageLabel")}</Label>
                     <textarea
                       id="message"
                       name="message"
@@ -984,7 +984,7 @@ const Index = () => {
                       maxLength={1000}
                       rows={4}
                       className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                      placeholder="Mesajınızı buraya yazın..."
+                      placeholder={t("contact.messagePlaceholder")}
                     />
                   </div>
                   <Button 
@@ -992,7 +992,7 @@ const Index = () => {
                     className="w-full bg-gradient-ocean hover:opacity-90"
                     disabled={isSubmittingForm}
                   >
-                    {isSubmittingForm ? "Gönderiliyor..." : "Mesaj Gönder"}
+                    {isSubmittingForm ? t("contact.sending") : t("contact.sendButton")}
                   </Button>
                 </form>
               </CardContent>
@@ -1008,15 +1008,14 @@ const Index = () => {
           <Card className="max-w-4xl mx-auto border-border/50 shadow-card bg-gradient-to-br from-card to-accent/10">
             <CardContent className="p-12 text-center space-y-6">
               <h3 className="text-3xl md:text-4xl font-bold text-foreground">
-                Hemen Başlamaya Hazır mısınız?
+                {t("cta.title")}
               </h3>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Demo hesap oluşturun ve tüm özellikleri ücretsiz deneyin. 
-                Kredi kartı bilgisi gerekmez.
+                {t("cta.subtitle")}
               </p>
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
                 <a href="/auth?mode=signup">
-                  Ücretsiz Deneyin
+                  {t("cta.button")}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </a>
               </Button>

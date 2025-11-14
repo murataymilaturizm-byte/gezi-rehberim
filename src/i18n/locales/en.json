@@ -52,6 +52,31 @@
       "metric": "Average 120% reservation increase in first month"
     }
   },
+  "howItWorks": {
+    "title": "How It Works?",
+    "subtitle": "From WhatsApp to reservation in 3 simple steps",
+    "step1": {
+      "title": "Customer Sends Message",
+      "description": "Searches in natural language like \"Cappadocia tours\" via WhatsApp"
+    },
+    "step2": {
+      "title": "AI Analyzes",
+      "description": "AI understands the message and recommends the most suitable tours, provides price and date information"
+    },
+    "step3": {
+      "title": "Reservation Created",
+      "description": "Customer information is collected with wizard guidance, reservation is completed"
+    },
+    "footer": "The entire process is automatic and works 24/7 🚀",
+    "demoButton": "Explore Live Demo"
+  },
+  "demo": {
+    "badge": "Live Demo",
+    "title": "Test It Now",
+    "subtitle": "Try our AI-powered assistant now. Make tour queries, simulate reservations.",
+    "note": "This is a demo chatbot. In your real system, you can use your own tours and settings.",
+    "cta": "Get Started Now"
+  },
   "benefits": {
     "title": "Concrete Results, Real Value",
     "subtitle": "Not just features - the value it adds to your business",
@@ -335,6 +360,27 @@
     "filter": "Filter",
     "export": "Export",
     "import": "Import"
+  },
+  "cta": {
+    "title": "Ready to Get Started?",
+    "subtitle": "Create a demo account and try all features for free. No credit card required.",
+    "button": "Try for Free"
+  },
+  "contact": {
+    "question": "Have other questions?",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "email@example.com",
+    "messageLabel": "Your Message",
+    "messagePlaceholder": "Write your message here...",
+    "sendButton": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message Sent! ✅",
+    "successMessage": "We'll get back to you as soon as possible.",
+    "errorTitle": "Error",
+    "errorMessage": "Message could not be sent. Please try again.",
+    "formErrorTitle": "Form Error"
   },
   "validation": {
     "nameRequired": "Name is required",
