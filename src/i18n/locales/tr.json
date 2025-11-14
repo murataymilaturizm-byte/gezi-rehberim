@@ -402,6 +402,8 @@
       "totalRevenue": "Toplam Gelir",
       "avgBasket": "Ortalama Sepet",
       "conversionRate": "Dönüşüm Oranı",
+      "confirmedReservations": "Onaylanmış rezervasyonlar",
+      "avgPerBooking": "Rezervasyon başına",
       "registrations": "kayıt",
       "totalTours": "Toplam Turlar",
       "activeTourCount": "Aktif tur sayısı",
@@ -413,7 +415,7 @@
       "awaitingReview": "İnceleme bekliyor",
       "registrationsTitle": "Kayıtları",
       "last7Days": "Son 7 Gün - Kayıtlar",
-      "chartRegistrations": "kayitlar",
+      "chartRegistrations": "Kayıtlar",
       "popularDestinations": "En Popüler Destinasyonlar",
       "mostRegisteredPlaces": "En çok kayıt alan yerler",
       "registration": "Kayıt",
@@ -458,12 +460,8 @@
       "professional": "Profesyonel",
       "enterprise": "Kurumsal",
       "unspecified": "Belirtilmemiş",
-      "geographicDistribution": "Coğrafi Dağılım",
-      "location": "Konum",
-      "noLocationData": "Konum Bilgisi Bulunamadı",
-      "noLocationDataDesc": "Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi eklendiğinde coğrafi dağılım burada görüntülenecek.",
-      "superAdminInfo": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için \"Acenteler\" sekmesini kullanın.",
-      "agencyCount": "Acente Sayısı"
+      "noData": "Veri yok",
+      "superAdminDescription": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için 'Acenteler' sekmesini kullanın."
     },
     "tourForm": {
       "addTour": "Yeni Tur Ekle",

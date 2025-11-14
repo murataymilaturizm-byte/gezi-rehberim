@@ -849,10 +849,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             <div className="flex items-start gap-3">
               <Building2 className="w-5 h-5 text-primary mt-0.5" />
               <div>
-                <p className="font-medium text-foreground">Super Admin Dashboard</p>
+                <p className="font-medium text-foreground">{t("admin.superAdmin")}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz.
-                  Detaylı yönetim için "Acenteler" sekmesini kullanın.
+                  {t("admin.dashboard.superAdminDescription")}
                 </p>
               </div>
             </div>
@@ -869,33 +868,33 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.dashboard.totalRevenue")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {(stats.totalRevenue || 0).toLocaleString('tr-TR')}₺
             </div>
-            <p className="text-xs text-muted-foreground">Onaylanmış rezervasyonlar</p>
+            <p className="text-xs text-muted-foreground">{t("admin.dashboard.confirmedReservations")}</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ortalama Sepet</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.dashboard.avgBasket")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {(stats.avgBasket || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}₺
             </div>
-            <p className="text-xs text-muted-foreground">Rezervasyon başına</p>
+            <p className="text-xs text-muted-foreground">{t("admin.dashboard.avgPerBooking")}</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dönüşüm Oranı</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.dashboard.conversionRate")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
