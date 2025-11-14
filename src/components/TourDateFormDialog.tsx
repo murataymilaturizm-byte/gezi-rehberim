@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ export const TourDateFormDialog = ({
   tourDate 
 }: TourDateFormDialogProps) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     departure_date: "",
@@ -75,8 +77,8 @@ export const TourDateFormDialog = ({
     
     if (!formData.departure_date || formData.price_adult <= 0) {
       toast({
-        title: "Hata",
-        description: "Kalkış tarihi ve yetişkin fiyatı zorunludur",
+        title: t("admin.dateForm.error"),
+        description: t("admin.dateForm.fillRequired"),
         variant: "destructive"
       });
       return;
@@ -87,7 +89,7 @@ export const TourDateFormDialog = ({
     try {
       // Get user's agency_id first
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Kullanıcı bulunamadı");
+      if (!user) throw new Error(t("admin.dateForm.userNotFound"));
 
       const { data: agencyData } = await supabase
         .from("agencies")
@@ -95,7 +97,7 @@ export const TourDateFormDialog = ({
         .eq("user_id", user.id)
         .single();
 
-      if (!agencyData) throw new Error("Acente bulunamadı");
+      if (!agencyData) throw new Error(t("admin.dateForm.agencyNotFound"));
 
       const data = {
         tour_id: tourId,
@@ -118,8 +120,8 @@ export const TourDateFormDialog = ({
         if (error) throw error;
 
         toast({
-          title: "Başarılı! ✅",
-          description: "Tarih güncellendi",
+          title: t("admin.toast.success"),
+          description: t("admin.dateForm.updateSuccess"),
         });
       } else {
         // Insert
@@ -128,8 +130,8 @@ export const TourDateFormDialog = ({
         if (error) throw error;
 
         toast({
-          title: "Başarılı! ✅",
-          description: "Yeni tarih eklendi",
+          title: t("admin.toast.success"),
+          description: t("admin.dateForm.addSuccess"),
         });
       }
 
@@ -138,8 +140,8 @@ export const TourDateFormDialog = ({
     } catch (error) {
       console.error("Tour date form error:", error);
       toast({
-        title: "Hata",
-        description: "İşlem sırasında bir hata oluştu",
+        title: t("admin.dateForm.error"),
+        description: t("admin.dateForm.errorOccurred"),
         variant: "destructive"
       });
     } finally {
@@ -151,16 +153,16 @@ export const TourDateFormDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{tourDate ? "Tarih Düzenle" : "Yeni Tarih Ekle"}</DialogTitle>
+          <DialogTitle>{tourDate ? t("admin.dateForm.editDate") : t("admin.dateForm.addDate")}</DialogTitle>
           <DialogDescription>
-            Tur tarihini ve fiyatlandırmasını girin.
+            {t("admin.dateForm.description")}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="departure_date">Kalkış Tarihi *</Label>
+              <Label htmlFor="departure_date">{t("admin.dateForm.departureDate")} *</Label>
               <Input
                 id="departure_date"
                 type="date"
@@ -171,7 +173,7 @@ export const TourDateFormDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="return_date">Dönüş Tarihi</Label>
+              <Label htmlFor="return_date">{t("admin.dateForm.returnDate")}</Label>
               <Input
                 id="return_date"
                 type="date"
@@ -182,7 +184,7 @@ export const TourDateFormDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="price_adult">Yetişkin Fiyatı *</Label>
+            <Label htmlFor="price_adult">{t("admin.dateForm.priceAdult")} *</Label>
             <Input
               id="price_adult"
               type="number"
@@ -196,7 +198,7 @@ export const TourDateFormDialog = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price_child">Çocuk Fiyatı</Label>
+              <Label htmlFor="price_child">{t("admin.dateForm.priceChild")}</Label>
               <Input
                 id="price_child"
                 type="number"
@@ -208,7 +210,7 @@ export const TourDateFormDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price_single">Tek Kişilik Fiyatı</Label>
+              <Label htmlFor="price_single">{t("admin.dateForm.priceSingle")}</Label>
               <Input
                 id="price_single"
                 type="number"
@@ -221,7 +223,7 @@ export const TourDateFormDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quota">Kontenjan *</Label>
+            <Label htmlFor="quota">{t("admin.dateForm.quota")} *</Label>
             <Input
               id="quota"
               type="number"
@@ -234,7 +236,7 @@ export const TourDateFormDialog = ({
 
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              İptal
+              {t("admin.dateForm.cancel")}
             </Button>
             <Button 
               type="submit" 
@@ -244,10 +246,10 @@ export const TourDateFormDialog = ({
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Kaydediliyor...
+                  {t("admin.dateForm.saving")}
                 </>
               ) : (
-                "Kaydet"
+                t("admin.dateForm.save")
               )}
             </Button>
           </DialogFooter>
