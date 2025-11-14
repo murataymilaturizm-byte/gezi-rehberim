@@ -99,9 +99,10 @@ serve(async (req) => {
     
     paymentData.hash = hash;
 
-    // Call Sipay API
-    // Note: Using sandbox URL for testing, change to production when ready
+    // Call Sipay API (Sandbox for testing)
+    // Note: Change to production URL when going live: https://api.sipay.com.tr/api/payment
     const sipayUrl = "https://sandbox-api.sipay.com.tr/api/payment";
+    console.log(`🚀 Calling Sipay API: ${sipayUrl}`);
     
     const sipayResponse = await fetch(sipayUrl, {
       method: "POST",
@@ -112,6 +113,12 @@ serve(async (req) => {
     });
 
     const sipayResult = await sipayResponse.json();
+    console.log("📨 Sipay API response:", JSON.stringify(sipayResult, null, 2));
+
+    if (!sipayResponse.ok) {
+      console.error("❌ Sipay API error response:", sipayResult);
+      throw new Error(sipayResult.message || "Sipay API request failed");
+    }
 
     console.log("Sipay payment initiated:", sipayResult);
 
@@ -133,6 +140,8 @@ serve(async (req) => {
       console.error("Error storing transaction:", transactionError);
     }
 
+    console.log(`✅ Payment URL generated successfully for order: ${orderId}`);
+    
     return new Response(
       JSON.stringify({
         success: true,
@@ -144,11 +153,18 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Sipay payment error:", error);
+    console.error("❌ Sipay payment error:", error);
+    
+    // Return more detailed error information
+    const errorMessage = error instanceof Error ? error.message : "Payment initialization failed";
+    const errorDetails = {
+      error: errorMessage,
+      timestamp: new Date().toISOString(),
+      details: error instanceof Error ? error.stack : null
+    };
+    
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Payment failed",
-      }),
+      JSON.stringify(errorDetails),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

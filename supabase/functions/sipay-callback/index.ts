@@ -13,7 +13,7 @@ serve(async (req) => {
 
   try {
     const paymentResult = await req.json();
-    console.log("Sipay callback received:", paymentResult);
+    console.log("📥 Sipay callback received:", JSON.stringify(paymentResult, null, 2));
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -23,6 +23,13 @@ serve(async (req) => {
     const status = paymentResult.status; // success, failed, etc.
     const transactionId = paymentResult.transaction_id;
 
+    if (!orderId) {
+      console.error("❌ Order ID missing in callback");
+      throw new Error("Invalid callback data: missing order_id");
+    }
+
+    console.log(`🔍 Processing payment for order: ${orderId}, status: ${status}`);
+
     // Get transaction details
     const { data: transaction, error: transactionError } = await supabase
       .from("payment_transactions")
@@ -31,9 +38,11 @@ serve(async (req) => {
       .single();
 
     if (transactionError) {
-      console.error("Transaction not found:", transactionError);
+      console.error("❌ Transaction not found:", transactionError);
       throw new Error("Transaction not found");
     }
+
+    console.log(`📦 Transaction found: ${transaction.id}`);
 
     // Update transaction status
     await supabase
@@ -45,6 +54,8 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       })
       .eq("order_id", orderId);
+
+    console.log(`✅ Transaction status updated to: ${status}`);
 
     if (status === "success") {
       // Get metadata
@@ -94,7 +105,7 @@ serve(async (req) => {
             notes: `${quotaAmount} mesaj ekstra kota satın alındı`,
           });
 
-        console.log(`Extra quota purchased: ${quotaAmount} messages for agency ${agencyId}`);
+        console.log(`✅ Extra quota purchased: ${quotaAmount} messages for agency ${agencyId}`);
       } else {
         // Plan purchase - regular subscription
         // Calculate subscription end date
@@ -104,6 +115,8 @@ serve(async (req) => {
         } else {
           subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1);
         }
+
+        console.log(`📅 Subscription end date calculated: ${subscriptionEndsAt.toISOString()}`);
 
         // Update agency subscription
         const { error: updateError } = await supabase
@@ -116,7 +129,9 @@ serve(async (req) => {
           .eq("id", agencyId);
 
         if (updateError) {
-          console.error("Error updating agency:", updateError);
+          console.error("❌ Error updating agency:", updateError);
+        } else {
+          console.log(`✅ Agency subscription updated successfully`);
         }
 
         // Add to subscription history
@@ -137,13 +152,17 @@ serve(async (req) => {
           });
 
         if (historyError) {
-          console.error("Error adding to history:", historyError);
+          console.error("❌ Error adding to subscription history:", historyError);
+        } else {
+          console.log("✅ Subscription history entry created");
         }
 
-        console.log("Payment successful, subscription activated");
+        console.log("🎉 Payment successful, subscription activated");
       }
     } else {
       // Payment failed, add to history
+      console.log("⚠️ Payment failed, logging to history");
+      
       await supabase
         .from("subscription_history")
         .insert({
@@ -158,14 +177,24 @@ serve(async (req) => {
           notes: `Ödeme başarısız: ${paymentResult.error_message || "Bilinmeyen hata"}`,
         });
 
-      console.log("Payment failed");
+      console.log("❌ Payment failed - reason:", paymentResult.error_message || "Unknown");
     }
 
-    // Redirect user to appropriate page
+    // Redirect user to appropriate page with detailed status
     const baseUrl = SUPABASE_URL ? SUPABASE_URL.replace('.supabase.co', '.lovable.app') : 'https://turzzai.lovable.app';
-    const redirectUrl = status === "success"
-      ? `${baseUrl}/admin?payment=success`
-      : `${baseUrl}/admin?payment=failed`;
+    let redirectUrl = `${baseUrl}/admin?payment=${status === "success" ? "success" : "failed"}`;
+    
+    // Add additional details for failed payments
+    if (status !== "success") {
+      const errorMessage = encodeURIComponent(paymentResult.error_message || "Bilinmeyen hata");
+      const errorCode = paymentResult.error_code || "UNKNOWN";
+      redirectUrl += `&error=${errorCode}&message=${errorMessage}`;
+    } else {
+      // Add order ID for successful payments
+      redirectUrl += `&orderId=${orderId}`;
+    }
+
+    console.log(`Redirecting to: ${redirectUrl}`);
 
     return new Response(null, {
       status: 302,
@@ -175,15 +204,19 @@ serve(async (req) => {
       },
     });
   } catch (error) {
-    console.error("Callback error:", error);
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Callback failed",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    console.error("❌ Callback processing error:", error);
+    
+    // Still try to redirect user even on error
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const baseUrl = SUPABASE_URL ? SUPABASE_URL.replace('.supabase.co', '.lovable.app') : 'https://turzzai.lovable.app';
+    const errorMessage = encodeURIComponent(error instanceof Error ? error.message : "Callback processing failed");
+    
+    return new Response(null, {
+      status: 302,
+      headers: {
+        ...corsHeaders,
+        Location: `${baseUrl}/admin?payment=failed&error=CALLBACK_ERROR&message=${errorMessage}`,
+      },
+    });
   }
 });
