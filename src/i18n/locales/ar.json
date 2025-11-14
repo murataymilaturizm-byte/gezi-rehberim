@@ -360,6 +360,28 @@
         "title": "قوالب الرسائل",
         "description": "إدارة قوالب رسائل واتساب الخاصة بك",
         "loadDefaults": "تحميل القوالب الافتراضية"
+      },
+      "settings": {
+        "title": "إعدادات واتساب",
+        "description": "إدارة تكامل واتساب للأعمال",
+        "notConfigured": "لم يتم تكوين واتساب بعد. يرجى إضافة رقم واتساب الأعمال الخاص بك.",
+        "configured": "تكامل واتساب نشط! يمكن لعملائك الاتصال بك عبر واتساب.",
+        "phoneNumber": "رقم واتساب الأعمال",
+        "phonePlaceholder": "+966xxxxxxxxx",
+        "phoneHelp": "أدخل رقم واتساب الأعمال المسجل في Twilio (مثال: +14155238886)",
+        "conversationStyle": "نمط المحادثة",
+        "conversationStyleHelp": "اختر كيف يتواصل البوت مع العملاء",
+        "style": {
+          "friendly": "ودود/حميم",
+          "professional": "محترف/مؤسسي",
+          "energetic": "نشيط/ديناميكي",
+          "helpful": "لطيف/متعاون"
+        },
+        "saving": "جاري الحفظ...",
+        "update": "تحديث",
+        "save": "حفظ",
+        "integrationComplete": "اكتمل التكامل",
+        "integrationCompleteDesc": "تم تسجيل رقم واتساب الأعمال {phone} في النظام."
       }
     },
     "welcome": "مرحباً",

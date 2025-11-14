@@ -433,6 +433,14 @@
         "phoneNumber": "WhatsApp Business Numarası",
         "phonePlaceholder": "+90555xxxxxxx",
         "phoneHelp": "Twilio'da kayıtlı WhatsApp Business numaranızı girin (ör: +14155238886)",
+        "conversationStyle": "Konuşma Üslubu",
+        "conversationStyleHelp": "Botunuzun müşterilerle nasıl konuşacağını belirleyin",
+        "style": {
+          "friendly": "Samimi/Dostane",
+          "professional": "Profesyonel/Kurumsal",
+          "energetic": "Enerjik/Dinamik",
+          "helpful": "Nazik/Yardımsever"
+        },
         "saving": "Kaydediliyor...",
         "update": "Güncelle",
         "save": "Kaydet",
