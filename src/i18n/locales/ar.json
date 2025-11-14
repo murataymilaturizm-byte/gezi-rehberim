@@ -268,7 +268,27 @@
     "gettingStarted": "البدء",
     "login": "تسجيل الدخول"
   },
-   "admin": {
+  "feedback": {
+    "customerFeedback": "استطلاعات رضا العملاء",
+    "totalResponses": "إجمالي الردود",
+    "averageScore": "متوسط الدرجات",
+    "npsScore": "نقاط NPS",
+    "responseRate": "معدل الاستجابة",
+    "promoters": "المروجون",
+    "detractors": "المنتقدون",
+    "promoter": "مروج",
+    "passive": "سلبي",
+    "detractor": "منتقد",
+    "customer": "العميل",
+    "score": "النقاط",
+    "category": "الفئة",
+    "comment": "التعليق",
+    "bookings": "الحجوزات",
+    "date": "التاريخ",
+    "tours": "الجولات",
+    "noFeedbacks": "لا توجد ردود على الاستطلاعات بعد"
+  },
+  "admin": {
     "title": "لوحة الوكالة",
     "templates": {
       "title": "قوالب الرسائل",
@@ -331,7 +351,8 @@
       "agencies": "الوكالات",
       "contactForms": "نماذج الاتصال",
       "twilioSettings": "إعدادات Twilio",
-      "templates": "القوالب"
+      "templates": "القوالب",
+      "customerFeedback": "رضا العملاء"
     },
     "dashboard": {
       "title": "لوحة القيادة",

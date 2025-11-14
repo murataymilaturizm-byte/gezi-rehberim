@@ -332,6 +332,26 @@
     "gettingStarted": "Nasıl Başlarım?",
     "login": "Giriş Yap"
   },
+  "feedback": {
+    "customerFeedback": "Müşteri Memnuniyet Anketleri",
+    "totalResponses": "Toplam Yanıt",
+    "averageScore": "Ortalama Puan",
+    "npsScore": "NPS Skoru",
+    "responseRate": "Yanıt Oranı",
+    "promoters": "Tavsiye Edenler",
+    "detractors": "Eleştirenler",
+    "promoter": "Tavsiye Eden",
+    "passive": "Pasif",
+    "detractor": "Eleştiren",
+    "customer": "Müşteri",
+    "score": "Puan",
+    "category": "Kategori",
+    "comment": "Yorum",
+    "bookings": "Rezervasyonlar",
+    "date": "Tarih",
+    "tours": "Tur",
+    "noFeedbacks": "Henüz memnuniyet anketi yanıtı yok"
+  },
   "admin": {
     "title": "Yönetim Paneli",
     "templates": {
@@ -673,6 +693,9 @@
       "agencies": "Acenteler",
       "contactForms": "İletişim Formları",
       "twilioSettings": "Twilio Ayarları",
+      "templates": "Şablonlar",
+      "customerFeedback": "Müşteri Memnuniyeti"
+    },
       "templates": "Şablonlar"
     },
     "tours": {
