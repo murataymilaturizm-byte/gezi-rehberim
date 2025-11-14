@@ -628,5 +628,34 @@
     "filter": "Фильтр",
     "export": "Экспорт",
     "import": "Импорт"
+  },
+  "cta": {
+    "title": "Готовы начать?",
+    "subtitle": "Создайте демо-аккаунт и попробуйте все функции бесплатно. Кредитная карта не требуется.",
+    "button": "Попробовать бесплатно"
+  },
+  "contact": {
+    "question": "Есть другие вопросы?",
+    "nameLabel": "Полное Имя",
+    "namePlaceholder": "Ваше имя",
+    "emailLabel": "Email",
+    "emailPlaceholder": "email@example.com",
+    "messageLabel": "Ваше Сообщение",
+    "messagePlaceholder": "Напишите ваше сообщение здесь...",
+    "sendButton": "Отправить Сообщение",
+    "sending": "Отправка...",
+    "successTitle": "Сообщение Отправлено! ✅",
+    "successMessage": "Мы свяжемся с вами как можно скорее.",
+    "errorTitle": "Ошибка",
+    "errorMessage": "Не удалось отправить сообщение. Пожалуйста, попробуйте снова.",
+    "formErrorTitle": "Ошибка формы"
+  },
+  "validation": {
+    "nameRequired": "Имя обязательно",
+    "nameMaxLength": "Имя может быть максимум 100 символов",
+    "emailInvalid": "Введите действительный email адрес",
+    "emailMaxLength": "Email может быть максимум 255 символов",
+    "messageMinLength": "Сообщение должно быть не менее 10 символов",
+    "messageMaxLength": "Сообщение может быть максимум 1000 символов"
   }
 }
