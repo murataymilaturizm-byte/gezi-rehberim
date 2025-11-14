@@ -73,9 +73,55 @@
   "demo": {
     "badge": "Live-Demo",
     "title": "Jetzt testen",
-    "subtitle": "Probieren Sie unseren KI-gestützten Assistenten jetzt aus. Stellen Sie Tour-Anfragen, simulieren Sie Buchungen.",
+    "subtitle": "Probieren Sie jetzt unseren KI-gestützten Assistenten aus. Stellen Sie Touranfragen, simulieren Sie Buchungen.",
     "note": "Dies ist ein Demo-Chatbot. In Ihrem echten System können Sie Ihre eigenen Touren und Einstellungen verwenden.",
-    "cta": "Jetzt starten"
+    "cta": "Jetzt starten",
+    "greeting": "Hallo! 👋 Ich bin Ihr WhatsApp-Tourassistent. Welche schönen Orte möchten Sie erkunden?\n\n✨ *Beliebte Touren:*\n🏔️ Kappadokien\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Ägäis-Tour"
+  },
+  "advanced": {
+    "badge": "Erweiterte Funktionen",
+    "title": "Bleiben Sie der Konkurrenz voraus",
+    "subtitle": "Die fortschrittlichsten KI- und Automatisierungsfunktionen der Branche",
+    "userProfiles": {
+      "title": "Intelligente Kundenprofile",
+      "description": "Verfolgen Sie automatisch die Präferenzen, Suchhistorie und das Budget jedes Kunden. KI gibt personalisierte Empfehlungen.",
+      "feature1": "Automatisches Präferenzlernen",
+      "feature2": "Budgetbasierte Segmentierung",
+      "feature3": "Suchhistorienanalyse"
+    },
+    "analytics": {
+      "title": "Gesprächsanalyse",
+      "description": "Messen Sie Kundenzufriedenheit und erfassen Sie Trends mit KI-gestützter Sentiment-Analyse und automatischen Gesprächszusammenfassungen.",
+      "feature1": "Sentiment-Analyse (Positiv/Negativ)",
+      "feature2": "Automatische Gesprächszusammenfassungen",
+      "feature3": "Themen- und Trendverfolgung"
+    },
+    "reminders": {
+      "title": "Automatische Tour-Erinnerungen",
+      "description": "3 Tage vor der Tour werden automatische WhatsApp-Erinnerungen versendet. Erhöhen Sie die Kundenzufriedenheit, reduzieren Sie Stornierungsraten.",
+      "feature1": "Anpassbare Nachrichtenvorlagen",
+      "feature2": "Automatischer Versand (3 Tage vorher)",
+      "feature3": "Tour-Details und Informationen"
+    },
+    "stats": "250+ zufriedene Agenturen"
+  },
+  "howItWorks": {
+    "title": "Wie funktioniert es?",
+    "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten",
+    "step1": {
+      "title": "Kunde sendet Nachricht",
+      "description": "Sucht in natürlicher Sprache wie \"Kappadokien-Touren\" über WhatsApp"
+    },
+    "step2": {
+      "title": "KI analysiert",
+      "description": "KI versteht die Nachricht und empfiehlt die am besten geeigneten Touren, liefert Preis- und Termininformationen"
+    },
+    "step3": {
+      "title": "Buchung erstellt",
+      "description": "Kundeninformationen werden mit Assistentenführung erfasst, Buchung wird abgeschlossen"
+    },
+    "footer": "Der gesamte Prozess ist automatisch und funktioniert 24/7 🚀",
+    "demoButton": "Live-Demo erkunden"
   },
   "benefits": {
     "title": "Konkrete Ergebnisse, Echter Wert",

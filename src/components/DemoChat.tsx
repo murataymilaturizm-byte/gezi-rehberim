@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, MessageSquare, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,6 +14,7 @@ interface Message {
 
 export const DemoChat = () => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [sessionId] = useState(() => {
     // Create or get existing session ID
     const stored = localStorage.getItem('demo_chat_session_id');
@@ -33,7 +35,7 @@ export const DemoChat = () => {
     return [
       {
         role: "assistant",
-        content: "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu"
+        content: t("demo.greeting")
       }
     ];
   });

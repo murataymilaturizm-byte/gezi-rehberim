@@ -77,6 +77,41 @@
       "description": "Başlangıç planı sadece 2.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
     }
   },
+  "demo": {
+    "badge": "Canlı Demo",
+    "title": "Şimdi Test Edin",
+    "subtitle": "AI destekli asistanımızı şimdi deneyin. Tur sorguları yapın, rezervasyon simüle edin.",
+    "note": "Bu bir demo chatbot'tur. Gerçek sisteminizde kendi turlarınızı ve ayarlarınızı kullanabilirsiniz.",
+    "cta": "Hemen Başlayın",
+    "greeting": "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu"
+  },
+  "advanced": {
+    "badge": "Gelişmiş Özellikler",
+    "title": "Rekabette Öne Çıkın",
+    "subtitle": "Sektörün en gelişmiş AI ve otomasyon özellikleri",
+    "userProfiles": {
+      "title": "Akıllı Müşteri Profilleri",
+      "description": "Her müşterinin tercihlerini, arama geçmişini ve bütçesini otomatik olarak takip edin. AI kişiselleştirilmiş önerilerde bulunur.",
+      "feature1": "Otomatik tercih öğrenme",
+      "feature2": "Bütçe bazlı segmentasyon",
+      "feature3": "Arama geçmişi analizi"
+    },
+    "analytics": {
+      "title": "Konuşma Analizleri",
+      "description": "AI destekli sentiment analizi ve otomatik konuşma özetleri ile müşteri memnuniyetini ölçün, trendleri yakalayın.",
+      "feature1": "Sentiment analizi (Pozitif/Negatif)",
+      "feature2": "Otomatik konuşma özetleri",
+      "feature3": "Konu ve trend takibi"
+    },
+    "reminders": {
+      "title": "Otomatik Tur Hatırlatıcıları",
+      "description": "Turdan 3 gün önce otomatik WhatsApp hatırlatmaları gönderilir. Müşteri memnuniyetini artırın, iptal oranlarını düşürün.",
+      "feature1": "Özelleştirilebilir mesaj şablonları",
+      "feature2": "Otomatik gönderim (3 gün öncesi)",
+      "feature3": "Tur detayları ve bilgilendirme"
+    },
+    "stats": "250+ mutlu acente"
+  },
   "stats": {
     "salesIncrease": {
       "value": "2-3x",
