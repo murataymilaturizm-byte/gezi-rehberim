@@ -167,7 +167,21 @@
   },
   "howItWorks": {
     "title": "Wie funktioniert es?",
-    "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten"
+    "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten",
+    "step1": {
+      "title": "Kunde sendet Nachricht",
+      "description": "Sucht in natürlicher Sprache wie \"Kappadokien-Touren\" über WhatsApp"
+    },
+    "step2": {
+      "title": "KI analysiert",
+      "description": "KI versteht die Nachricht und empfiehlt die am besten geeigneten Touren, liefert Preis- und Termininformationen"
+    },
+    "step3": {
+      "title": "Buchung erstellt",
+      "description": "Kundeninformationen werden mit Assistentenführung erfasst, Buchung wird abgeschlossen"
+    },
+    "footer": "Der gesamte Prozess ist automatisch und funktioniert 24/7 🚀",
+    "demoButton": "Live-Demo erkunden"
   },
   "testimonials": {
     "title": "Echte Ergebnisse",
@@ -228,7 +242,14 @@
   },
   "pricing": {
     "title": "Starten Sie heute, sehen Sie den Unterschied",
-    "subtitle": "Eine Investition, die Ihrem Geschäft Wert verleiht mit sofortigen Erträgen",
+    "subtitle": "Eine Investition, die Ihrem Geschäft sofortigen Mehrwert bietet",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "save": "2 Monate kostenlos",
+    "trial": "14 Tage kostenlose Testversion für alle Pläne. Keine Kreditkarte erforderlich.",
+    "trialNote": "14 Tage kostenlose Testversion für alle Pläne. Keine Kreditkarte erforderlich.",
+    "custom": "Individuell",
+    "savings": "Ersparnis",
     "monthly": "Monatlich",
     "yearly": "Jährlich",
     "save": "2 Monate gratis",
@@ -406,5 +427,34 @@
     "filter": "Filtern",
     "export": "Exportieren",
     "import": "Importieren"
+  },
+  "cta": {
+    "title": "Bereit loszulegen?",
+    "subtitle": "Erstellen Sie ein Demo-Konto und testen Sie alle Funktionen kostenlos. Keine Kreditkarte erforderlich.",
+    "button": "Kostenlos testen"
+  },
+  "contact": {
+    "question": "Haben Sie weitere Fragen?",
+    "nameLabel": "Vollständiger Name",
+    "namePlaceholder": "Ihr Name",
+    "emailLabel": "E-Mail",
+    "emailPlaceholder": "email@beispiel.de",
+    "messageLabel": "Ihre Nachricht",
+    "messagePlaceholder": "Schreiben Sie hier Ihre Nachricht...",
+    "sendButton": "Nachricht senden",
+    "sending": "Wird gesendet...",
+    "successTitle": "Nachricht gesendet! ✅",
+    "successMessage": "Wir werden uns so schnell wie möglich bei Ihnen melden.",
+    "errorTitle": "Fehler",
+    "errorMessage": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "formErrorTitle": "Formularfehler"
+  },
+  "validation": {
+    "nameRequired": "Name ist erforderlich",
+    "nameMaxLength": "Name kann maximal 100 Zeichen lang sein",
+    "emailInvalid": "Geben Sie eine gültige E-Mail-Adresse ein",
+    "emailMaxLength": "E-Mail kann maximal 255 Zeichen lang sein",
+    "messageMinLength": "Nachricht muss mindestens 10 Zeichen lang sein",
+    "messageMaxLength": "Nachricht kann maximal 1000 Zeichen lang sein"
   }
 }

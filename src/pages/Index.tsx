@@ -807,7 +807,7 @@ const Index = () => {
                         {formatPrice(plan.price, isYearly)}
                       </span>
                       <span className="text-muted-foreground">
-                        {plan.price === "Özel" ? plan.period : isYearly ? "₺/yıl" : "₺/ay"}
+                        {plan.price === t("pricing.custom") ? plan.period : isYearly ? "₺/yıl" : "₺/ay"}
                       </span>
                     </div>
                     {isYearly && plan.monthlyPrice > 0 && (
@@ -816,7 +816,7 @@ const Index = () => {
                           {(plan.monthlyPrice * 12).toLocaleString('tr-TR')}₺/yıl
                         </p>
                         <p className="text-sm text-green-600 font-medium">
-                          {(plan.monthlyPrice * 12 * 0.1).toLocaleString('tr-TR')}₺ tasarruf
+                          {(plan.monthlyPrice * 12 * 0.1).toLocaleString('tr-TR')}₺ {t("pricing.savings")}
                         </p>
                       </div>
                     )}
@@ -850,7 +850,7 @@ const Index = () => {
 
           <div className="text-center mt-12">
             <p className="text-muted-foreground">
-              Tüm planlarda 14 gün ücretsiz deneme. Kredi kartı bilgisi gerekmez.
+              {t("pricing.trialNote")}
             </p>
           </div>
         </div>

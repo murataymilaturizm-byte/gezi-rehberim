@@ -14,7 +14,7 @@ interface Message {
 
 export const DemoChat = () => {
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [sessionId] = useState(() => {
     // Create or get existing session ID
     const stored = localStorage.getItem('demo_chat_session_id');
@@ -25,7 +25,9 @@ export const DemoChat = () => {
   });
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('demo-chat-messages');
-    if (saved) {
+    const savedLang = localStorage.getItem('demo-chat-language');
+    
+    if (saved && savedLang === i18n.language) {
       try {
         return JSON.parse(saved);
       } catch (e) {
@@ -45,7 +47,18 @@ export const DemoChat = () => {
 
   useEffect(() => {
     localStorage.setItem('demo-chat-messages', JSON.stringify(messages));
-  }, [messages]);
+    localStorage.setItem('demo-chat-language', i18n.language);
+  }, [messages, i18n.language]);
+
+  // Update greeting when language changes
+  useEffect(() => {
+    setMessages([
+      {
+        role: "assistant",
+        content: t("demo.greeting")
+      }
+    ]);
+  }, [i18n.language, t]);
 
   useEffect(() => {
     if (scrollRef.current) {
