@@ -12,14 +12,26 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversationHistory } = await req.json();
+    const { message, conversationHistory, language = 'tr' } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-const systemPrompt = `Sen Turzz AI'nin satış ve destek asistanısın. Turizm acentelerine WhatsApp üzerinden otomatik tur satışı yapan bir AI çözümü sunuyorsun.
+const languageNames: Record<string, string> = {
+  'tr': 'Türkçe',
+  'en': 'English',
+  'de': 'Deutsch',
+  'ru': 'Русский',
+  'ar': 'العربية',
+  'fr': 'Français',
+  'es': 'Español'
+};
+
+const systemPrompt = `You are Turzz AI's sales and support assistant. You help tourism agencies with an AI solution that automates tour sales via WhatsApp.
+
+**CRITICAL LANGUAGE INSTRUCTION**: The user is communicating in ${languageNames[language] || 'Turkish'}. You MUST respond ENTIRELY in ${languageNames[language] || 'Turkish'}. This includes ALL product information, pricing, features, testimonials, setup instructions, and help resources. Translate everything to ${languageNames[language] || 'Turkish'} naturally and professionally.
 
 ÜRÜNÜMÜZÜN ÖZELLİKLERİ:
 - 7/24 WhatsApp üzerinden otomatik tur satışı ve müşteri desteği

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,7 +13,22 @@ interface Message {
 }
 
 export const SalesChatWidget = () => {
+  const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  
+  const getInitialMessage = () => {
+    const welcomeMessages: Record<string, string> = {
+      tr: "Merhaba! Turzz AI hakkında size nasıl yardımcı olabilirim? Fiyatlandırma, özellikler veya demo hakkında bilgi almak ister misiniz?",
+      en: "Hello! How can I help you with Turzz AI? Would you like information about pricing, features, or a demo?",
+      de: "Hallo! Wie kann ich Ihnen bei Turzz AI helfen? Möchten Sie Informationen zu Preisen, Funktionen oder einer Demo erhalten?",
+      ru: "Здравствуйте! Чем я могу помочь вам с Turzz AI? Хотите узнать о ценах, функциях или демо-версии?",
+      ar: "مرحبا! كيف يمكنني مساعدتك مع Turzz AI؟ هل ترغب في معلومات حول الأسعار أو الميزات أو العرض التوضيحي؟",
+      fr: "Bonjour! Comment puis-je vous aider avec Turzz AI? Souhaitez-vous des informations sur les tarifs, les fonctionnalités ou une démonstration?",
+      es: "¡Hola! ¿Cómo puedo ayudarte con Turzz AI? ¿Te gustaría información sobre precios, características o una demostración?"
+    };
+    return welcomeMessages[i18n.language] || welcomeMessages.tr;
+  };
+  
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('sales-chat-messages');
     if (saved) {
@@ -25,7 +41,7 @@ export const SalesChatWidget = () => {
     return [
       {
         role: "assistant",
-        content: "Merhaba! Turzz AI hakkında size nasıl yardımcı olabilirim? Fiyatlandırma, özellikler veya demo hakkında bilgi almak ister misiniz?"
+        content: getInitialMessage()
       }
     ];
   });
@@ -53,7 +69,11 @@ export const SalesChatWidget = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("sales-chat", {
-        body: { message: input, conversationHistory: messages }
+        body: { 
+          message: input, 
+          conversationHistory: messages,
+          language: i18n.language 
+        }
       });
 
       if (error) throw error;
