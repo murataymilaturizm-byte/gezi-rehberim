@@ -303,51 +303,6 @@
     "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
     "messageMaxLength": "El mensaje puede tener máximo 1000 caracteres"
   },
-    "title": "Precios",
-    "subtitle": "Elige El Mejor Plan Para Tu Negocio",
-    "monthly": "Mensual",
-    "yearly": "Anual",
-    "starter": {
-      "name": "Inicial",
-      "price": "49€",
-      "period": "/mes",
-      "features": {
-        "messages": "1000 mensajes/mes",
-        "tours": "Hasta 50 tours",
-        "ai": "Soporte IA básico",
-        "support": "Soporte por email"
-      },
-      "cta": "Comenzar"
-    },
-    "professional": {
-      "name": "Profesional",
-      "price": "99€",
-      "period": "/mes",
-      "popular": "Popular",
-      "features": {
-        "messages": "5000 mensajes/mes",
-        "tours": "Tours ilimitados",
-        "ai": "Soporte IA avanzado",
-        "analytics": "Análisis detallados",
-        "support": "Soporte prioritario"
-      },
-      "cta": "Comenzar"
-    },
-    "enterprise": {
-      "name": "Empresarial",
-      "price": "Personalizado",
-      "period": "",
-      "features": {
-        "messages": "Mensajes ilimitados",
-        "tours": "Tours ilimitados",
-        "ai": "Modelo IA personalizado",
-        "integration": "Integraciones personalizadas",
-        "support": "Soporte 24/7",
-        "training": "Formación y consultoría"
-      },
-      "cta": "Contáctanos"
-    }
-  },
   "footer": {
     "description": "Sistema moderno de integración de WhatsApp y gestión de reservas para agencias de viajes.",
     "product": "Producto",
