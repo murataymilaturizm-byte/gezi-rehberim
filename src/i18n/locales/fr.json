@@ -307,6 +307,13 @@
       "notCreated": "Pas encore créé",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle?"
     },
+    "whatsapp": {
+      "templates": {
+        "title": "Modèles de Messages",
+        "description": "Gérez vos modèles de messages WhatsApp",
+        "loadDefaults": "Charger les Modèles par Défaut"
+      }
+    },
     "welcome": "Bienvenue",
     "back": "Retour",
     "home": "Accueil",

@@ -372,6 +372,13 @@
       "notCreated": "Noch nicht erstellt",
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?"
     },
+    "whatsapp": {
+      "templates": {
+        "title": "Nachrichtenvorlagen",
+        "description": "Verwalten Sie Ihre WhatsApp-Nachrichtenvorlagen",
+        "loadDefaults": "Standardvorlagen Laden"
+      }
+    },
     "welcome": "Willkommen",
     "back": "Zurück",
     "home": "Startseite",

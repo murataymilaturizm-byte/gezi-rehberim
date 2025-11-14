@@ -371,6 +371,13 @@
       "notCreated": "Henüz oluşturulmadı",
       "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?"
     },
+    "whatsapp": {
+      "templates": {
+        "title": "Mesaj Şablonları",
+        "description": "WhatsApp mesaj şablonlarınızı yönetin",
+        "loadDefaults": "Varsayılan Şablonları Yükle"
+      }
+    },
     "subtitle": "Genel Bakış",
     "totalAgencies": "Toplam Acente",
     "activeAgencies": "Aktif Acente",
