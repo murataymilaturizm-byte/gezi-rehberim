@@ -286,7 +286,13 @@
     "bookings": "الحجوزات",
     "date": "التاريخ",
     "tours": "الجولات",
-    "noFeedbacks": "لا توجد ردود على الاستطلاعات بعد"
+    "noFeedbacks": "لا توجد ردود على الاستطلاعات بعد",
+    "npsTrend": "اتجاه NPS (آخر 6 أشهر)",
+    "scoreDistribution": "توزيع الدرجات",
+    "responses": "الردود",
+    "percentage": "النسبة المئوية",
+    "noTrendData": "لا توجد بيانات الاتجاه",
+    "noDistributionData": "لا توجد بيانات التوزيع"
   },
   "admin": {
     "title": "لوحة الوكالة",

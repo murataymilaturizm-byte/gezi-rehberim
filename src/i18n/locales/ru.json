@@ -338,7 +338,13 @@
     "bookings": "Бронирования",
     "date": "Дата",
     "tours": "Туры",
-    "noFeedbacks": "Пока нет ответов на опросы"
+    "noFeedbacks": "Пока нет ответов на опросы",
+    "npsTrend": "Тренд NPS (Последние 6 месяцев)",
+    "scoreDistribution": "Распределение оценок",
+    "responses": "Ответы",
+    "percentage": "Процент",
+    "noTrendData": "Нет данных о тренде",
+    "noDistributionData": "Нет данных о распределении"
   },
   "admin": {
     "title": "Панель Агентства",

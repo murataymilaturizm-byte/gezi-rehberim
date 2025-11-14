@@ -350,7 +350,13 @@
     "bookings": "Rezervasyonlar",
     "date": "Tarih",
     "tours": "Tur",
-    "noFeedbacks": "Henüz memnuniyet anketi yanıtı yok"
+    "noFeedbacks": "Henüz memnuniyet anketi yanıtı yok",
+    "npsTrend": "NPS Trendi (Son 6 Ay)",
+    "scoreDistribution": "Puan Dağılımı",
+    "responses": "Yanıt Sayısı",
+    "percentage": "Yüzde",
+    "noTrendData": "Trend verisi yok",
+    "noDistributionData": "Dağılım verisi yok"
   },
   "admin": {
     "title": "Yönetim Paneli",

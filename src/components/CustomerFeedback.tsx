@@ -12,8 +12,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Star, MessageSquare, TrendingUp, Users } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfMonth, subMonths } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface FeedbackData {
   id: string;
@@ -33,6 +34,18 @@ interface FeedbackStats {
   promoters: number;
   detractors: number;
   nps: number;
+}
+
+interface NPSTrendData {
+  month: string;
+  nps: number;
+  responses: number;
+}
+
+interface ScoreDistributionData {
+  score: string;
+  count: number;
+  percentage: number;
 }
 
 const localeMap = {
@@ -55,6 +68,8 @@ export const CustomerFeedback = () => {
     detractors: 0,
     nps: 0,
   });
+  const [npsTrend, setNpsTrend] = useState<NPSTrendData[]>([]);
+  const [scoreDistribution, setScoreDistribution] = useState<ScoreDistributionData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -87,6 +102,8 @@ export const CustomerFeedback = () => {
 
       setFeedbacks(data || []);
       calculateStats(data || []);
+      calculateNPSTrend(data || []);
+      calculateScoreDistribution(data || []);
     } catch (error) {
       console.error("Error loading feedbacks:", error);
     } finally {
@@ -121,6 +138,67 @@ export const CustomerFeedback = () => {
       detractors,
       nps: Math.round(nps),
     });
+  };
+
+  const calculateNPSTrend = (data: FeedbackData[]) => {
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const date = subMonths(new Date(), 5 - i);
+      return startOfMonth(date);
+    });
+
+    const trendData = last6Months.map(month => {
+      const monthFeedbacks = data.filter(f => {
+        if (!f.last_feedback_sent_at) return false;
+        const feedbackDate = new Date(f.last_feedback_sent_at);
+        return (
+          feedbackDate.getMonth() === month.getMonth() &&
+          feedbackDate.getFullYear() === month.getFullYear()
+        );
+      });
+
+      const totalResponses = monthFeedbacks.length;
+      if (totalResponses === 0) {
+        return {
+          month: format(month, "MMM yy", { locale: localeMap[i18n.language as keyof typeof localeMap] || tr }),
+          nps: 0,
+          responses: 0,
+        };
+      }
+
+      const scores = monthFeedbacks.map(f => f.feedback_score || 0);
+      const promoters = scores.filter(s => s >= 9).length;
+      const detractors = scores.filter(s => s <= 6).length;
+      const nps = ((promoters - detractors) / totalResponses) * 100;
+
+      return {
+        month: format(month, "MMM yy", { locale: localeMap[i18n.language as keyof typeof localeMap] || tr }),
+        nps: Math.round(nps),
+        responses: totalResponses,
+      };
+    });
+
+    setNpsTrend(trendData);
+  };
+
+  const calculateScoreDistribution = (data: FeedbackData[]) => {
+    const distribution = Array.from({ length: 11 }, (_, i) => ({
+      score: i.toString(),
+      count: 0,
+      percentage: 0,
+    }));
+
+    data.forEach(feedback => {
+      if (feedback.feedback_score !== null) {
+        distribution[feedback.feedback_score].count++;
+      }
+    });
+
+    const total = data.length;
+    distribution.forEach(item => {
+      item.percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
+    });
+
+    setScoreDistribution(distribution.filter(item => item.count > 0));
   };
 
   const getScoreBadge = (score: number) => {
@@ -207,6 +285,86 @@ export const CustomerFeedback = () => {
             <div className="text-2xl font-bold">
               {stats.totalResponses > 0 ? Math.round((stats.totalResponses / (stats.totalResponses * 1.5)) * 100) : 0}%
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* NPS Trend Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("feedback.npsTrend")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {npsTrend.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t("feedback.noTrendData")}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={npsTrend}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis domain={[-100, 100]} className="text-xs" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "var(--radius)",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="nps"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    name={t("feedback.npsScore")}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Score Distribution Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("feedback.scoreDistribution")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {scoreDistribution.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t("feedback.noDistributionData")}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={scoreDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="score" label={{ value: t("feedback.score"), position: "insideBottom", offset: -5 }} />
+                  <YAxis />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "var(--radius)",
+                    }}
+                    formatter={(value: number, name: string) => {
+                      if (name === "count") return [value, t("feedback.responses")];
+                      return [value + "%", t("feedback.percentage")];
+                    }}
+                  />
+                  <Legend />
+                  <Bar
+                    dataKey="count"
+                    fill="hsl(var(--primary))"
+                    name={t("feedback.responses")}
+                    radius={[8, 8, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>

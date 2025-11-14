@@ -351,7 +351,13 @@
     "bookings": "Buchungen",
     "date": "Datum",
     "tours": "Touren",
-    "noFeedbacks": "Noch keine Antworten auf Zufriedenheitsumfragen"
+    "noFeedbacks": "Noch keine Antworten auf Zufriedenheitsumfragen",
+    "npsTrend": "NPS-Trend (Letzte 6 Monate)",
+    "scoreDistribution": "Score-Verteilung",
+    "responses": "Antworten",
+    "percentage": "Prozent",
+    "noTrendData": "Keine Trenddaten verfügbar",
+    "noDistributionData": "Keine Verteilungsdaten verfügbar"
   },
   "admin": {
     "title": "Agentur-Panel",
