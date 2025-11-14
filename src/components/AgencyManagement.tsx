@@ -340,7 +340,7 @@ export const AgencyManagement = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Acente Yönetimi
+            {t("admin.agency.title")}
           </CardTitle>
           <Dialog open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
@@ -349,7 +349,7 @@ export const AgencyManagement = () => {
             <DialogTrigger asChild>
               <Button className="bg-gradient-ocean hover:opacity-90">
                 <Plus className="w-4 h-4 mr-2" />
-                Yeni Acente
+                {t("admin.agency.addNew")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">

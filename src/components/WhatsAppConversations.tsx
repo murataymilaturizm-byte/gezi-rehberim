@@ -144,7 +144,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              WhatsApp Konuşmaları
+              {t("admin.whatsapp.conversations.title")}
             </CardTitle>
             
             {isSuperAdmin && agencies.length > 0 && (
@@ -169,7 +169,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
         <CardContent>
           {conversations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Henüz WhatsApp konuşması yok
+              {t("admin.whatsapp.conversations.selectConversation")}
             </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-4">
