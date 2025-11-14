@@ -596,6 +596,29 @@
       "statusActive": "Aktiv",
       "statusTrial": "Testversion",
       "statusExpired": "Abgelaufen",
+      "status": "Status",
+      "trialPeriod": "Testzeitraum",
+      "daysRemaining": "Tage verbleibend",
+      "renewalDate": "Verlängerungsdatum",
+      "features": {
+        "starter": {
+          "messages": "500 Nachrichten/Monat",
+          "history": "30 Tage Gesprächsverlauf",
+          "support": "E-Mail-Support"
+        },
+        "professional": {
+          "messages": "2.000 Nachrichten/Monat",
+          "history": "90 Tage Gesprächsverlauf",
+          "support": "Prioritäts-Support",
+          "profiles": "Benutzerprofile"
+        },
+        "enterprise": {
+          "messages": "Unbegrenzte Nachrichten",
+          "history": "Unbegrenzter Verlauf",
+          "support": "24/7 Support",
+          "api": "API-Zugang"
+        }
+      },
       "usedThisMonth": "Diesen Monat verwendet",
       "unlimited": "Unbegrenzt",
       "quotaFull": "Kontingent voll",

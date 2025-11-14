@@ -695,6 +695,29 @@
       "statusActive": "Actif",
       "statusTrial": "Essai",
       "statusExpired": "Expiré",
+      "status": "Statut",
+      "trialPeriod": "Période d'Essai",
+      "daysRemaining": "jours restants",
+      "renewalDate": "Date de Renouvellement",
+      "features": {
+        "starter": {
+          "messages": "500 messages/mois",
+          "history": "Historique de 30 jours",
+          "support": "Support par e-mail"
+        },
+        "professional": {
+          "messages": "2 000 messages/mois",
+          "history": "Historique de 90 jours",
+          "support": "Support prioritaire",
+          "profiles": "Profils utilisateurs"
+        },
+        "enterprise": {
+          "messages": "Messages illimités",
+          "history": "Historique illimité",
+          "support": "Support 24/7",
+          "api": "Accès API"
+        }
+      },
       "usedThisMonth": "Utilisé ce mois",
       "unlimited": "Illimité",
       "quotaFull": "Quota plein",
