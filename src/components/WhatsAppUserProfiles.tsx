@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,7 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, MessageSquare, Calendar, TrendingUp, MapPin, Building2 } from "lucide-react";
+import { Users, MessageSquare, Calendar, TrendingUp, MapPin, Building2, Tag, X, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfile {
   id: string;
@@ -24,6 +27,11 @@ interface UserProfile {
   budget_range: string | null;
   preferred_tour_type: string | null;
   last_search_query: string | null;
+  tags: string[] | null;
+  total_bookings: number;
+  total_spent: number;
+  feedback_score: number | null;
+  feedback_comment: string | null;
 }
 
 interface Agency {
@@ -37,11 +45,13 @@ interface WhatsAppUserProfilesProps {
 
 export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfilesProps) => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
+  const [newTag, setNewTag] = useState("");
 
   useEffect(() => {
     if (isSuperAdmin) {
