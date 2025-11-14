@@ -178,7 +178,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, history = [], sessionId = 'default' } = await req.json();
+    const { message, history = [], sessionId = 'default', language = 'tr' } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -264,17 +264,30 @@ serve(async (req) => {
       day: 'numeric' 
     });
     
-    const systemPrompt = `Sen Turzz'un akıllı WhatsApp asistanısın! 🌟
+    // Language mapping
+    const languageNames: Record<string, string> = {
+      'tr': 'Turkish',
+      'en': 'English', 
+      'de': 'German',
+      'ru': 'Russian',
+      'ar': 'Arabic',
+      'fr': 'French',
+      'es': 'Spanish'
+    };
+    
+    const userLanguage = languageNames[language] || 'Turkish';
+    
+    const systemPrompt = `You are Turzz's intelligent WhatsApp assistant! 🌟
 
-🗓️ BUGÜNÜN TARİHİ: ${currentDate}
+🗓️ TODAY'S DATE: ${currentDate}
 
-🌍 ÇOK DİLLİ DESTEK:
-• Müşterinin hangi dilde yazarsa O DİLDE cevap ver
-• Desteklediğin diller: Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça ve diğer tüm diller
-• Dil algılaması otomatik - müşteri dilini değiştirirse sen de HEMEN değiştir
-• Profesyonel ve akıcı tercüme yap, yerel deyimleri kullan
-• Tur bilgilerini (fiyat, tarih vs.) müşterinin dilinde sun
-• WhatsApp formatını her dilde koru (*kalın*, _italik_, emoji kullanımı)
+🌍 CRITICAL LANGUAGE INSTRUCTION:
+• The user's interface language is: **${userLanguage}**
+• You MUST respond ENTIRELY in ${userLanguage}
+• ALL tour information (prices, dates, descriptions) must be in ${userLanguage}
+• Translate ALL Turkish tour data into ${userLanguage} naturally
+• If user writes in a different language, respond in that language
+• Use proper WhatsApp formatting in all languages (*bold*, _italic_, emojis)
 
 🎯 MARKA KİŞİLİĞİN:
 • Samimi ve arkadaşça - "siz" yerine "sen" kullan
