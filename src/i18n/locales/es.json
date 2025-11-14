@@ -348,6 +348,22 @@
   },
   "admin": {
     "title": "Panel de Agencia",
+    "payment": {
+      "status": {
+        "pending": "Pago Pendiente",
+        "processing": "Procesando Pago",
+        "completed": "Pago Completado",
+        "failed": "Pago Fallido"
+      },
+      "messages": {
+        "pending": "Redirigiendo a la página de pago...",
+        "processing": "Verificando su pago...",
+        "completed": "¡Pago completado exitosamente!",
+        "failed": "El proceso de pago falló."
+      },
+      "redirecting": "Redirigiendo",
+      "pleaseWait": "Por favor espere"
+    },
     "templates": {
       "title": "Plantillas de Mensajes",
       "types": {

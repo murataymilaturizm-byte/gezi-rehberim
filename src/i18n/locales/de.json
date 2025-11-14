@@ -361,6 +361,22 @@
   },
   "admin": {
     "title": "Agentur-Panel",
+    "payment": {
+      "status": {
+        "pending": "Zahlung Ausstehend",
+        "processing": "Zahlung wird Verarbeitet",
+        "completed": "Zahlung Abgeschlossen",
+        "failed": "Zahlung Fehlgeschlagen"
+      },
+      "messages": {
+        "pending": "Weiterleitung zur Zahlungsseite...",
+        "processing": "Ihre Zahlung wird überprüft...",
+        "completed": "Zahlung erfolgreich abgeschlossen!",
+        "failed": "Zahlungsvorgang fehlgeschlagen."
+      },
+      "redirecting": "Weiterleiten",
+      "pleaseWait": "Bitte warten"
+    },
     "templates": {
       "title": "Nachrichtenvorlagen",
       "types": {

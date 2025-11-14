@@ -360,6 +360,22 @@
   },
   "admin": {
     "title": "Yönetim Paneli",
+    "payment": {
+      "status": {
+        "pending": "Ödeme Bekleniyor",
+        "processing": "Ödeme İşleniyor",
+        "completed": "Ödeme Tamamlandı",
+        "failed": "Ödeme Başarısız"
+      },
+      "messages": {
+        "pending": "Ödeme sayfasına yönlendiriliyorsunuz...",
+        "processing": "Ödeme işleminiz kontrol ediliyor...",
+        "completed": "Ödeme başarıyla tamamlandı!",
+        "failed": "Ödeme işlemi başarısız oldu."
+      },
+      "redirecting": "Yönlendiriliyor",
+      "pleaseWait": "Lütfen bekleyin"
+    },
     "templates": {
       "title": "Mesaj Şablonları",
       "types": {
