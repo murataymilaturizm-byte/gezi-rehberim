@@ -456,7 +456,13 @@
       "agencies": "agencies",
       "noLocationInfo": "No Location Information Found",
       "noLocationInfoDesc": "No agency location information has been entered yet. Geographic distribution will be displayed here when city and region information is added to agencies.",
-      "superAdminDescription": "You can monitor general status and usage statistics of all agencies here. Use the 'Agencies' tab for detailed management."
+      "superAdminDescription": "You can monitor general status and usage statistics of all agencies here. Use the 'Agencies' tab for detailed management.",
+      "status": "Status",
+      "trialPeriod": "Trial Period",
+      "messagesPerMonth": "500 messages/month",
+      "conversationHistory": "30 days conversation history",
+      "emailSupport": "Email support",
+      "whatsappSettings": "WhatsApp Settings"
     },
     "usageStats": {
       "packageUsage": "Package Usage",

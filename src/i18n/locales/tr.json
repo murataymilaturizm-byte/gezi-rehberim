@@ -493,7 +493,13 @@
       "agencies": "acente",
       "noLocationInfo": "Konum Bilgisi Bulunamadı",
       "noLocationInfoDesc": "Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi eklendiğinde coğrafi dağılım burada görüntülenecek.",
-      "superAdminDescription": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için 'Acenteler' sekmesini kullanın."
+      "superAdminDescription": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için 'Acenteler' sekmesini kullanın.",
+      "status": "Durum",
+      "trialPeriod": "Deneme Süresi",
+      "messagesPerMonth": "500 mesaj/ay",
+      "conversationHistory": "30 gün konuşma geçmişi",
+      "emailSupport": "Email destek",
+      "whatsappSettings": "WhatsApp Ayarları"
     },
     "usageStats": {
       "packageUsage": "Paket Kullanımı",

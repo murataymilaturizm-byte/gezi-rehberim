@@ -471,6 +471,12 @@
       "agencies": "agencias",
       "noLocationInfo": "No se Encontró Información de Ubicación",
       "noLocationInfoDesc": "Aún no se ha ingresado información de ubicación de agencias. La distribución geográfica se mostrará aquí cuando se agregue información de ciudad y región a las agencias.",
+      "status": "Estado",
+      "trialPeriod": "Período de prueba",
+      "messagesPerMonth": "500 mensajes/mes",
+      "conversationHistory": "Historial de 30 días",
+      "emailSupport": "Soporte por correo",
+      "whatsappSettings": "Configuración de WhatsApp",
       "revenueGrowthTrend": "Tendencia de Ingresos y Crecimiento",
       "superAdminDescription": "Puede monitorear el estado general y las estadísticas de uso de todas las agencias aquí. Use la pestaña 'Agencias' para gestión detallada."
     },
