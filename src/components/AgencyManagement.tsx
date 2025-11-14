@@ -43,6 +43,7 @@ interface Agency {
   twilio_phone_number: string;
   whatsapp_phone_number?: string;
   whatsapp_status?: 'pending' | 'active' | 'rejected';
+  conversation_style?: 'friendly' | 'professional' | 'energetic' | 'helpful';
   active: boolean;
   created_at: string;
   plan_type: string;
@@ -63,8 +64,11 @@ export const AgencyManagement = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [styleDialogOpen, setStyleDialogOpen] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [editingPlanAgency, setEditingPlanAgency] = useState<Agency | null>(null);
+  const [editingStyleAgency, setEditingStyleAgency] = useState<Agency | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<'friendly' | 'professional' | 'energetic' | 'helpful'>('professional');
   
   const [formData, setFormData] = useState({
     email: "",
@@ -103,7 +107,7 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("id, agency_name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, whatsapp_phone_number, whatsapp_status, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .select("id, agency_name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, whatsapp_phone_number, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -120,6 +124,7 @@ export const AgencyManagement = () => {
           return {
             ...agency,
             whatsapp_status: (agency as any).whatsapp_status as 'pending' | 'active' | 'rejected' | undefined,
+            conversation_style: (agency as any).conversation_style as 'friendly' | 'professional' | 'energetic' | 'helpful' | undefined,
             profiles: profile || { full_name: null },
           };
         })
@@ -356,6 +361,40 @@ export const AgencyManagement = () => {
       toast({
         title: "Hata",
         description: error.message || t("admin.whatsapp.messages.updateError"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStyleEdit = (agency: Agency) => {
+    setEditingStyleAgency(agency);
+    setSelectedStyle(agency.conversation_style || 'professional');
+    setStyleDialogOpen(true);
+  };
+
+  const handleStyleSubmit = async () => {
+    if (!editingStyleAgency) return;
+
+    try {
+      const { error } = await supabase
+        .from("agencies")
+        .update({ conversation_style: selectedStyle } as any)
+        .eq("id", editingStyleAgency.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı",
+        description: "Konuşma üslubu güncellendi",
+      });
+
+      setStyleDialogOpen(false);
+      loadAgencies();
+    } catch (error: any) {
+      console.error("Error updating conversation style:", error);
+      toast({
+        title: "Hata",
+        description: error.message || "Konuşma üslubu güncellenemedi",
         variant: "destructive",
       });
     }
@@ -665,6 +704,15 @@ export const AgencyManagement = () => {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handleStyleEdit(agency)}
+                          title="Konuşma Üslubu"
+                          className="flex items-center gap-1"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handlePlanEdit(agency)}
                           title="Plan ve Kota Yönetimi"
                         >
@@ -800,6 +848,54 @@ export const AgencyManagement = () => {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Conversation Style Dialog */}
+      <Dialog open={styleDialogOpen} onOpenChange={setStyleDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Konuşma Üslubu</DialogTitle>
+            <DialogDescription>
+              {editingStyleAgency?.agency_name} için bot konuşma üslubunu seçin
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {[
+                { value: 'friendly', icon: '🤝', label: 'Samimi/Dostane', desc: 'Arkadaşça, sıcak, emoji kullanımlı' },
+                { value: 'professional', icon: '👔', label: 'Profesyonel/Kurumsal', desc: 'Resmi, saygılı, net iletişim' },
+                { value: 'energetic', icon: '⚡', label: 'Enerjik/Dinamik', desc: 'Heyecanlı, motive edici, coşkulu' },
+                { value: 'helpful', icon: '😊', label: 'Nazik/Yardımsever', desc: 'Sabırlı, detaylı, empatik' }
+              ].map(style => (
+                <button
+                  key={style.value}
+                  onClick={() => setSelectedStyle(style.value as any)}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                    selectedStyle === style.value 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">{style.icon}</span>
+                    <div className="flex-1">
+                      <p className="font-medium">{style.label}</p>
+                      <p className="text-sm text-muted-foreground">{style.desc}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2 justify-end pt-4">
+              <Button variant="outline" onClick={() => setStyleDialogOpen(false)}>
+                İptal
+              </Button>
+              <Button onClick={handleStyleSubmit}>
+                Kaydet
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </Card>

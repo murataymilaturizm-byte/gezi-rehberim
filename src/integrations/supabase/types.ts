@@ -19,6 +19,7 @@ export type Database = {
           active: boolean | null
           agency_name: string
           city: string | null
+          conversation_style: string | null
           created_at: string | null
           id: string
           language_preference: string | null
@@ -43,6 +44,7 @@ export type Database = {
           active?: boolean | null
           agency_name: string
           city?: string | null
+          conversation_style?: string | null
           created_at?: string | null
           id?: string
           language_preference?: string | null
@@ -67,6 +69,7 @@ export type Database = {
           active?: boolean | null
           agency_name?: string
           city?: string | null
+          conversation_style?: string | null
           created_at?: string | null
           id?: string
           language_preference?: string | null
