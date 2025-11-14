@@ -42,6 +42,7 @@ interface Agency {
   twilio_auth_token: string;
   twilio_phone_number: string;
   whatsapp_phone_number?: string;
+  whatsapp_status?: 'pending' | 'active' | 'rejected';
   active: boolean;
   created_at: string;
   plan_type: string;
@@ -102,7 +103,7 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("id, agency_name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .select("id, agency_name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, whatsapp_phone_number, whatsapp_status, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -118,6 +119,7 @@ export const AgencyManagement = () => {
 
           return {
             ...agency,
+            whatsapp_status: (agency as any).whatsapp_status as 'pending' | 'active' | 'rejected' | undefined,
             profiles: profile || { full_name: null },
           };
         })
@@ -329,6 +331,31 @@ export const AgencyManagement = () => {
       toast({
         title: "Hata",
         description: error.message || "Plan güncellenemedi",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleWhatsAppStatusUpdate = async (agencyId: string, status: 'active' | 'rejected') => {
+    try {
+      const { error } = await supabase
+        .from("agencies")
+        .update({ whatsapp_status: status } as any)
+        .eq("id", agencyId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı",
+        description: `WhatsApp entegrasyonu ${status === 'active' ? 'onaylandı' : 'reddedildi'}`,
+      });
+
+      loadAgencies();
+    } catch (error: any) {
+      console.error("Error updating WhatsApp status:", error);
+      toast({
+        title: "Hata",
+        description: error.message || "Durum güncellenemedi",
         variant: "destructive",
       });
     }
@@ -549,11 +576,49 @@ export const AgencyManagement = () => {
                     <TableCell className="font-medium">{agency.agency_name}</TableCell>
                     <TableCell>{agency.profiles?.full_name || "-"}</TableCell>
                     <TableCell>
-                      <span className="text-sm font-mono">
-                        {agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" 
-                          ? agency.twilio_phone_number 
-                          : <span className="text-muted-foreground">{t("admin.agency.messages.notAdded")}</span>}
-                      </span>
+                      <div className="space-y-1">
+                        <span className="text-sm font-mono block">
+                          {agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" 
+                            ? agency.twilio_phone_number 
+                            : <span className="text-muted-foreground">{t("admin.agency.messages.notAdded")}</span>}
+                        </span>
+                        {agency.whatsapp_status && agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" && (
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={
+                                agency.whatsapp_status === 'active' ? 'default' : 
+                                agency.whatsapp_status === 'pending' ? 'secondary' : 
+                                'destructive'
+                              }
+                              className="text-xs"
+                            >
+                              {agency.whatsapp_status === 'active' ? 'Aktif' : 
+                               agency.whatsapp_status === 'pending' ? 'Beklemede' : 
+                               'Reddedildi'}
+                            </Badge>
+                            {agency.whatsapp_status === 'pending' && (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  onClick={() => handleWhatsAppStatusUpdate(agency.id, 'active')}
+                                >
+                                  Onayla
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleWhatsAppStatusUpdate(agency.id, 'rejected')}
+                                >
+                                  Reddet
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">

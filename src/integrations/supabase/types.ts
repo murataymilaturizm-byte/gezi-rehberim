@@ -37,6 +37,7 @@ export type Database = {
           twilio_phone_number: string | null
           user_id: string | null
           whatsapp_phone_number: string | null
+          whatsapp_status: string | null
         }
         Insert: {
           active?: boolean | null
@@ -60,6 +61,7 @@ export type Database = {
           twilio_phone_number?: string | null
           user_id?: string | null
           whatsapp_phone_number?: string | null
+          whatsapp_status?: string | null
         }
         Update: {
           active?: boolean | null
@@ -83,6 +85,7 @@ export type Database = {
           twilio_phone_number?: string | null
           user_id?: string | null
           whatsapp_phone_number?: string | null
+          whatsapp_status?: string | null
         }
         Relationships: []
       }
