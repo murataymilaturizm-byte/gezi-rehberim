@@ -268,8 +268,45 @@
     "gettingStarted": "Commencer",
     "login": "Se Connecter"
   },
-  "admin": {
+   "admin": {
     "title": "Panneau d'Agence",
+    "templates": {
+      "title": "Modèles de Messages",
+      "types": {
+        "reservation_confirmed": "Réservation Confirmée",
+        "reservation_cancelled": "Réservation Annulée",
+        "tour_reminder": "Rappel de Tour"
+      },
+      "errors": {
+        "fetchError": "Erreur lors du chargement des modèles",
+        "saveError": "Erreur lors de l'enregistrement du modèle",
+        "deleteError": "Erreur lors de la suppression du modèle",
+        "copyError": "Erreur lors de la copie des modèles",
+        "noDefaultTemplates": "Modèles par défaut introuvables"
+      },
+      "success": {
+        "saved": "Modèle enregistré",
+        "deleted": "Modèle supprimé",
+        "copied": "Modèles par défaut chargés"
+      },
+      "dialog": {
+        "title": "Modifier le Modèle",
+        "description": "Modifier le modèle de message. Les variables doivent être écrites entre {}.",
+        "templateType": "Type de Modèle",
+        "language": "Langue",
+        "subject": "Sujet",
+        "subjectPlaceholder": "Sujet du modèle",
+        "content": "Contenu du Message",
+        "contentPlaceholder": "Contenu du message... Vous pouvez utiliser des variables comme {full_name}, {tour_name}",
+        "variables": "Variables (séparées par des virgules)",
+        "variablesPlaceholder": "full_name, tour_name, date, pax",
+        "variablesExample": "Exemple: full_name, tour_name, date, pax, total_amount, currency",
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+      },
+      "notCreated": "Pas encore créé",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle?"
+    },
     "welcome": "Bienvenue",
     "back": "Retour",
     "home": "Accueil",

@@ -333,8 +333,45 @@
     "gettingStarted": "Erste Schritte",
     "login": "Anmelden"
   },
-  "admin": {
+   "admin": {
     "title": "Agentur-Panel",
+    "templates": {
+      "title": "Nachrichtenvorlagen",
+      "types": {
+        "reservation_confirmed": "Reservierung Bestätigt",
+        "reservation_cancelled": "Reservierung Storniert",
+        "tour_reminder": "Tour-Erinnerung"
+      },
+      "errors": {
+        "fetchError": "Fehler beim Laden der Vorlagen",
+        "saveError": "Fehler beim Speichern der Vorlage",
+        "deleteError": "Fehler beim Löschen der Vorlage",
+        "copyError": "Fehler beim Kopieren der Vorlagen",
+        "noDefaultTemplates": "Standardvorlagen nicht gefunden"
+      },
+      "success": {
+        "saved": "Vorlage gespeichert",
+        "deleted": "Vorlage gelöscht",
+        "copied": "Standardvorlagen geladen"
+      },
+      "dialog": {
+        "title": "Vorlage Bearbeiten",
+        "description": "Nachrichtenvorlage bearbeiten. Variablen sollten in {} geschrieben werden.",
+        "templateType": "Vorlagentyp",
+        "language": "Sprache",
+        "subject": "Betreff",
+        "subjectPlaceholder": "Vorlagenbetreff",
+        "content": "Nachrichteninhalt",
+        "contentPlaceholder": "Nachrichteninhalt... Sie können Variablen wie {full_name}, {tour_name} verwenden",
+        "variables": "Variablen (durch Komma getrennt)",
+        "variablesPlaceholder": "full_name, tour_name, date, pax",
+        "variablesExample": "Beispiel: full_name, tour_name, date, pax, total_amount, currency",
+        "cancel": "Abbrechen",
+        "save": "Speichern"
+      },
+      "notCreated": "Noch nicht erstellt",
+      "deleteConfirm": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?"
+    },
     "welcome": "Willkommen",
     "back": "Zurück",
     "home": "Startseite",

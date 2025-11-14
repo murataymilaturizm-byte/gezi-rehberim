@@ -320,8 +320,45 @@
     "gettingStarted": "Comenzar",
     "login": "Iniciar Sesión"
   },
-  "admin": {
+   "admin": {
     "title": "Panel de Agencia",
+    "templates": {
+      "title": "Plantillas de Mensajes",
+      "types": {
+        "reservation_confirmed": "Reserva Confirmada",
+        "reservation_cancelled": "Reserva Cancelada",
+        "tour_reminder": "Recordatorio de Tour"
+      },
+      "errors": {
+        "fetchError": "Error al cargar plantillas",
+        "saveError": "Error al guardar plantilla",
+        "deleteError": "Error al eliminar plantilla",
+        "copyError": "Error al copiar plantillas",
+        "noDefaultTemplates": "Plantillas predeterminadas no encontradas"
+      },
+      "success": {
+        "saved": "Plantilla guardada",
+        "deleted": "Plantilla eliminada",
+        "copied": "Plantillas predeterminadas cargadas"
+      },
+      "dialog": {
+        "title": "Editar Plantilla",
+        "description": "Editar plantilla de mensaje. Las variables deben escribirse entre {}.",
+        "templateType": "Tipo de Plantilla",
+        "language": "Idioma",
+        "subject": "Asunto",
+        "subjectPlaceholder": "Asunto de la plantilla",
+        "content": "Contenido del Mensaje",
+        "contentPlaceholder": "Contenido del mensaje... Puede usar variables como {full_name}, {tour_name}",
+        "variables": "Variables (separadas por comas)",
+        "variablesPlaceholder": "full_name, tour_name, date, pax",
+        "variablesExample": "Ejemplo: full_name, tour_name, date, pax, total_amount, currency",
+        "cancel": "Cancelar",
+        "save": "Guardar"
+      },
+      "notCreated": "Aún no creado",
+      "deleteConfirm": "¿Está seguro de que desea eliminar esta plantilla?"
+    },
     "welcome": "Bienvenido",
     "back": "Atrás",
     "home": "Inicio",

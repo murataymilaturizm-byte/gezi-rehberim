@@ -309,8 +309,45 @@
     "gettingStarted": "Getting Started",
     "login": "Login"
   },
-  "admin": {
+   "admin": {
     "title": "Agency Panel",
+    "templates": {
+      "title": "Message Templates",
+      "types": {
+        "reservation_confirmed": "Reservation Confirmed",
+        "reservation_cancelled": "Reservation Cancelled",
+        "tour_reminder": "Tour Reminder"
+      },
+      "errors": {
+        "fetchError": "Error loading templates",
+        "saveError": "Error saving template",
+        "deleteError": "Error deleting template",
+        "copyError": "Error copying templates",
+        "noDefaultTemplates": "Default templates not found"
+      },
+      "success": {
+        "saved": "Template saved",
+        "deleted": "Template deleted",
+        "copied": "Default templates loaded"
+      },
+      "dialog": {
+        "title": "Edit Template",
+        "description": "Edit message template. Variables should be written within {}.",
+        "templateType": "Template Type",
+        "language": "Language",
+        "subject": "Subject",
+        "subjectPlaceholder": "Template subject",
+        "content": "Message Content",
+        "contentPlaceholder": "Message content... You can use variables like {full_name}, {tour_name}",
+        "variables": "Variables (comma separated)",
+        "variablesPlaceholder": "full_name, tour_name, date, pax",
+        "variablesExample": "Example: full_name, tour_name, date, pax, total_amount, currency",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "notCreated": "Not created yet",
+      "deleteConfirm": "Are you sure you want to delete this template?"
+    },
     "welcome": "Welcome",
     "back": "Back",
     "home": "Home",
