@@ -40,6 +40,7 @@ import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
+import { LanguageStats } from "@/components/LanguageStats";
 import { AgencyManagement } from "@/components/AgencyManagement";
 import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
@@ -543,6 +544,7 @@ const Admin = () => {
           <AdminDashboard isSuperAdmin={isSuperAdmin} />
         ) : activeTab === "whatsapp" ? (
           <div className="space-y-6">
+            {isSuperAdmin && <LanguageStats isSuperAdmin={isSuperAdmin} />}
             <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
             <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
           </div>
