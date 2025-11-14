@@ -628,5 +628,34 @@
     "filter": "Filtrar",
     "export": "Exportar",
     "import": "Importar"
+  },
+  "cta": {
+    "title": "¿Listo para Comenzar?",
+    "subtitle": "Crea una cuenta demo y prueba todas las funciones gratis. No se requiere tarjeta de crédito.",
+    "button": "Probar Gratis"
+  },
+  "contact": {
+    "question": "¿Tienes otras preguntas?",
+    "nameLabel": "Nombre Completo",
+    "namePlaceholder": "Tu nombre",
+    "emailLabel": "Email",
+    "emailPlaceholder": "email@ejemplo.com",
+    "messageLabel": "Tu Mensaje",
+    "messagePlaceholder": "Escribe tu mensaje aquí...",
+    "sendButton": "Enviar Mensaje",
+    "sending": "Enviando...",
+    "successTitle": "¡Mensaje Enviado! ✅",
+    "successMessage": "Nos pondremos en contacto contigo lo antes posible.",
+    "errorTitle": "Error",
+    "errorMessage": "No se pudo enviar el mensaje. Por favor, inténtalo de nuevo.",
+    "formErrorTitle": "Error de Formulario"
+  },
+  "validation": {
+    "nameRequired": "El nombre es obligatorio",
+    "nameMaxLength": "El nombre puede tener máximo 100 caracteres",
+    "emailInvalid": "Ingresa una dirección de email válida",
+    "emailMaxLength": "El email puede tener máximo 255 caracteres",
+    "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
+    "messageMaxLength": "El mensaje puede tener máximo 1000 caracteres"
   }
 }
