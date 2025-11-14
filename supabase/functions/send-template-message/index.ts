@@ -17,9 +17,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { registrationId, templateKey, language = 'tr' } = await req.json();
+    const { registrationId, templateKey } = await req.json();
 
-    console.log('Send template message request:', { registrationId, templateKey, language });
+    console.log('Send template message request:', { registrationId, templateKey });
 
     // Rezervasyon bilgilerini al
     const { data: registration, error: regError } = await supabase
@@ -54,6 +54,23 @@ serve(async (req) => {
     }
 
     console.log('Registration found:', registration);
+
+    // Kullanıcı profilinden dil tercihini al
+    let language = 'tr'; // Varsayılan dil
+    
+    const { data: userProfile } = await supabase
+      .from('whatsapp_user_profiles')
+      .select('language_preference')
+      .eq('phone', registration.phone.replace('+', ''))
+      .eq('agency_id', registration.agency_id)
+      .maybeSingle();
+    
+    if (userProfile?.language_preference) {
+      language = userProfile.language_preference;
+      console.log('User language preference found:', language);
+    } else {
+      console.log('No user profile found, using default language:', language);
+    }
 
     // Şablonu al
     const { data: template, error: templateError } = await (supabase as any)
