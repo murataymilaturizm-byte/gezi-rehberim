@@ -828,6 +828,64 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?"
   },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "agencyName": "Agency Name",
+    "phone": "Phone Number",
+    "city": "City",
+    "region": "Region (Optional)",
+    "planSelection": "Plan Selection",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "discount10": "10% Discount",
+    "trialInfo": "First 14 days completely free!",
+    "trialDetails": "No credit card required • Cancel anytime",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "startFreeTrial": "Start Free Trial",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "phoneHelp": "We may need to contact you for support",
+    "processing": "Processing...",
+    "validation": {
+      "invalidEmail": "Enter a valid email address",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "fullNameMinLength": "Full name must be at least 2 characters",
+      "fullNameMaxLength": "Full name can be maximum 100 characters",
+      "agencyNameMinLength": "Agency name must be at least 2 characters",
+      "agencyNameMaxLength": "Agency name can be maximum 100 characters",
+      "phoneMinLength": "Enter a valid phone number",
+      "phoneMaxLength": "Phone number is too long",
+      "cityMinLength": "City must be at least 2 characters",
+      "cityMaxLength": "City can be maximum 50 characters",
+      "selectPlan": "Please select a plan"
+    },
+    "errors": {
+      "title": "Error",
+      "invalidCredentials": "Invalid email or password",
+      "emailExists": "This email address is already in use",
+      "signupFailed": "Signup failed",
+      "loginFailed": "Login failed"
+    },
+    "success": {
+      "title": "Success",
+      "signupComplete": "Registration complete! Your 14-day free trial has started",
+      "loginComplete": "Login successful"
+    },
+    "placeholders": {
+      "email": "example@email.com",
+      "password": "••••••",
+      "fullName": "John Doe",
+      "agencyName": "Blue Travel Agency",
+      "phone": "+1 555 123 4567",
+      "city": "New York",
+      "region": "Northeast"
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

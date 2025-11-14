@@ -845,6 +845,64 @@
     "noAccount": "Noch kein Konto?",
     "hasAccount": "Haben Sie bereits ein Konto?"
   },
+  "auth": {
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "fullName": "Vollständiger Name",
+    "agencyName": "Agenturname",
+    "phone": "Telefonnummer",
+    "city": "Stadt",
+    "region": "Region (Optional)",
+    "planSelection": "Plan Auswahl",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "discount10": "10% Rabatt",
+    "trialInfo": "Erste 14 Tage völlig kostenlos!",
+    "trialDetails": "Keine Kreditkarte erforderlich • Jederzeit kündbar",
+    "perMonth": "/Monat",
+    "perYear": "/Jahr",
+    "startFreeTrial": "Kostenlose Testversion Starten",
+    "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
+    "dontHaveAccount": "Haben Sie noch kein Konto?",
+    "phoneHelp": "Wir müssen Sie möglicherweise für Support kontaktieren",
+    "processing": "Wird Verarbeitet...",
+    "validation": {
+      "invalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordMinLength": "Passwort muss mindestens 6 Zeichen lang sein",
+      "fullNameMinLength": "Vollständiger Name muss mindestens 2 Zeichen lang sein",
+      "fullNameMaxLength": "Vollständiger Name kann maximal 100 Zeichen lang sein",
+      "agencyNameMinLength": "Agenturname muss mindestens 2 Zeichen lang sein",
+      "agencyNameMaxLength": "Agenturname kann maximal 100 Zeichen lang sein",
+      "phoneMinLength": "Geben Sie eine gültige Telefonnummer ein",
+      "phoneMaxLength": "Telefonnummer ist zu lang",
+      "cityMinLength": "Stadt muss mindestens 2 Zeichen lang sein",
+      "cityMaxLength": "Stadt kann maximal 50 Zeichen lang sein",
+      "selectPlan": "Bitte wählen Sie einen Plan"
+    },
+    "errors": {
+      "title": "Fehler",
+      "invalidCredentials": "Ungültige E-Mail oder Passwort",
+      "emailExists": "Diese E-Mail-Adresse wird bereits verwendet",
+      "signupFailed": "Registrierung fehlgeschlagen",
+      "loginFailed": "Anmeldung fehlgeschlagen"
+    },
+    "success": {
+      "title": "Erfolg",
+      "signupComplete": "Registrierung abgeschlossen! Ihre 14-tägige kostenlose Testversion hat begonnen",
+      "loginComplete": "Anmeldung erfolgreich"
+    },
+    "placeholders": {
+      "email": "beispiel@email.com",
+      "password": "••••••",
+      "fullName": "Max Mustermann",
+      "agencyName": "Blaue Reiseagentur",
+      "phone": "+49 555 123 4567",
+      "city": "Berlin",
+      "region": "Brandenburg"
+    }
+  },
   "common": {
     "loading": "Wird geladen...",
     "error": "Fehler",

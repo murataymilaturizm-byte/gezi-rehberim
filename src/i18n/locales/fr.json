@@ -901,6 +901,64 @@
     "noAccount": "Pas de compte?",
     "hasAccount": "Vous avez déjà un compte?"
   },
+  "auth": {
+    "login": "Se Connecter",
+    "signup": "S'inscrire",
+    "email": "E-mail",
+    "password": "Mot de Passe",
+    "fullName": "Nom Complet",
+    "agencyName": "Nom de l'Agence",
+    "phone": "Numéro de Téléphone",
+    "city": "Ville",
+    "region": "Région (Optionnel)",
+    "planSelection": "Sélection du Plan",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "discount10": "Réduction de 10%",
+    "trialInfo": "Les 14 premiers jours sont entièrement gratuits!",
+    "trialDetails": "Aucune carte de crédit requise • Annulation à tout moment",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "startFreeTrial": "Commencer l'Essai Gratuit",
+    "alreadyHaveAccount": "Vous avez déjà un compte?",
+    "dontHaveAccount": "Vous n'avez pas de compte?",
+    "phoneHelp": "Nous pourrions avoir besoin de vous contacter pour le support",
+    "processing": "Traitement...",
+    "validation": {
+      "invalidEmail": "Entrez une adresse e-mail valide",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
+      "fullNameMinLength": "Le nom complet doit contenir au moins 2 caractères",
+      "fullNameMaxLength": "Le nom complet peut contenir au maximum 100 caractères",
+      "agencyNameMinLength": "Le nom de l'agence doit contenir au moins 2 caractères",
+      "agencyNameMaxLength": "Le nom de l'agence peut contenir au maximum 100 caractères",
+      "phoneMinLength": "Entrez un numéro de téléphone valide",
+      "phoneMaxLength": "Le numéro de téléphone est trop long",
+      "cityMinLength": "La ville doit contenir au moins 2 caractères",
+      "cityMaxLength": "La ville peut contenir au maximum 50 caractères",
+      "selectPlan": "Veuillez sélectionner un plan"
+    },
+    "errors": {
+      "title": "Erreur",
+      "invalidCredentials": "E-mail ou mot de passe invalide",
+      "emailExists": "Cette adresse e-mail est déjà utilisée",
+      "signupFailed": "L'inscription a échoué",
+      "loginFailed": "La connexion a échoué"
+    },
+    "success": {
+      "title": "Succès",
+      "signupComplete": "Inscription terminée! Votre période d'essai gratuite de 14 jours a commencé",
+      "loginComplete": "Connexion réussie"
+    },
+    "placeholders": {
+      "email": "exemple@email.com",
+      "password": "••••••",
+      "fullName": "Jean Dupont",
+      "agencyName": "Agence de Voyage Bleue",
+      "phone": "+33 555 123 4567",
+      "city": "Paris",
+      "region": "Île-de-France"
+    }
+  },
   "common": {
     "loading": "Chargement...",
     "error": "Erreur",
