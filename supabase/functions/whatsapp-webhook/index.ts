@@ -284,8 +284,12 @@ serve(async (req) => {
       // AI ile akıllı arama
       const tours = await searchToursWithAI(supabase, userMessage, userPhone, agency.id);
       
+      // Kullanıcı dil tercihini al
+      const userProfile = await getUserProfile(supabase, userPhone, agency.id);
+      const userLanguage = userProfile?.language_preference || 'tr';
+      
       // WhatsApp formatında cevap oluştur
-      const message = formatWhatsAppResponse(tours, {});
+      const message = await formatWhatsAppResponse(tours, {}, userLanguage);
       
       // Bot cevabını kaydet
       await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
@@ -397,6 +401,14 @@ async function handleGeneralChat(userMessage: string, userPhone: string, supabas
   // Kullanıcı profilini al
   const userProfile = await getUserProfile(supabase, userPhone, agency_id);
   
+  // Kullanıcının dil tercihini al
+  const userLanguage = userProfile?.language_preference || 'tr';
+  const languageNames: Record<string, string> = {
+    'tr': 'Turkish', 'en': 'English', 'de': 'German',
+    'ru': 'Russian', 'ar': 'Arabic', 'fr': 'French', 'es': 'Spanish'
+  };
+  const languageName = languageNames[userLanguage] || 'Turkish';
+  
   // Konuşma geçmişini al (son 20 mesaj)
   const history = await getConversationHistory(supabase, userPhone, agency_id, 20);
   
@@ -442,45 +454,46 @@ async function handleGeneralChat(userMessage: string, userPhone: string, supabas
   const messages = [
     {
       role: 'system',
-      content: `Sen bir tur acentesinin samimi ve enerjik WhatsApp asistanısın. 🌟
+      content: `You are a friendly and energetic WhatsApp assistant for a tour agency. 🌟
 
-🗓️ BUGÜNÜN TARİHİ: ${currentDate}
+🗓️ TODAY'S DATE: ${currentDate}
 
-🎯 MARKA KİŞİLİĞİN:
-• Samimi ve arkadaşça - "siz" yerine "sen" kullan
-• Enerjik ama abartısız - coşkulu ama profesyonel  
-• Yardımsever ve sabırlı - müşteri önceliğin
-• Yerel uzman - destinasyonları çok iyi biliyorsun
+🌍 CRITICAL LANGUAGE INSTRUCTION:
+• User's preferred language: **${languageName}**
+• You MUST respond ENTIRELY in ${languageName}
+• Use natural, conversational ${languageName}
+• Adapt greetings and expressions to ${languageName} culture
+• Keep WhatsApp formatting (*bold*, _italic_, emojis)
 
-💬 İLETİŞİM TARZI:
-• Günlük konuşma diline yakın, doğal Türkçe kullan
-• "Merhaba" yerine "Selam", "Nasılsın?" gibi samimi ifadeler
-• WhatsApp formatı: *kalın yazı*, _italik yazı_
-• Kısa, net cümleler (max 2-3 cümle)
-• Her mesajda 1-2 emoji, abartma
+🎯 YOUR BRAND PERSONALITY:
+• Friendly and approachable - use informal tone
+• Energetic but professional
+• Helpful and patient - customer first
+• Local expert - you know destinations well
 
-✨ EMOJİ KULLANIMI:
-• Selamlaşma: 👋 😊 🌞
-• Heyecan: 🎉 ✨ 🌟 
-• Turlar: 🏔️ 🏖️ 🏛️ 🌊
-• Para: 💰 💵 ✅
-• Onay: ✅ 👍 🎯
+💬 COMMUNICATION STYLE:
+• Natural conversational language
+• WhatsApp format: *bold*, _italic_
+• Short, clear sentences (max 2-3)
+• 1-2 emojis per message, don't overdo
+
+✨ EMOJI USAGE:
+• Greetings: 👋 😊 🌞
+• Excitement: 🎉 ✨ 🌟 
+• Tours: 🏔️ 🏖️ 🏛️ 🌊
+• Money: 💰 💵 ✅
+• Confirmation: ✅ 👍 🎯
 
 ${contextInfo}
 
-🔑 ÖNEMLİ KURALLAR:
-• Kullanıcıyı tanıyorsan ismini kullan, daha kişisel ol
-• Daha önce ilgilendiği turlara benzer şeyler öner
-• Konuşma geçmişi varsa tekrar selamlaşma, direkt devam et
-• Kullanıcı tercihlerini hatırla, ona özel önerilerde bulun
-• Bütçe bilgisi varsa buna uygun turlar sun
-• Fiyatları *kalın* yazarak vurgula
-• Önemli bilgileri WhatsApp formatıyla vurgula
-
-📝 MESAJ ÖRNEKLERİ:
-"Selam! 👋 Kapadokya turlarımıza baktığını görüyorum. Sana *özel fiyatlar* var!"
-"Harika seçim! ✨ Bu tarihte *3 kişilik yerimiz* var, hemen ayırtabilirsin."
-"Anlıyorum 🤔 Bütçe önemli. Sana daha _uygun fiyatlı_ alternatiflere bakalım mı?"`
+🔑 IMPORTANT RULES:
+• If you know user's name, use it - be personal
+• Suggest tours similar to their previous interests
+• If there's conversation history, continue directly
+• Remember user preferences, make personalized suggestions
+• If budget info available, suggest matching tours
+• Highlight prices with *bold*
+• Emphasize important info with WhatsApp formatting`
     },
     ...history,
     {
@@ -519,6 +532,14 @@ ${contextInfo}
 async function searchToursWithAI(supabase: any, userMessage: string, userPhone: string, agency_id: string) {
   // Kullanıcı profilini al
   const userProfile = await getUserProfile(supabase, userPhone, agency_id);
+  
+  // Kullanıcının dil tercihini al
+  const userLanguage = userProfile?.language_preference || 'tr';
+  const languageNames: Record<string, string> = {
+    'tr': 'Turkish', 'en': 'English', 'de': 'German',
+    'ru': 'Russian', 'ar': 'Arabic', 'fr': 'French', 'es': 'Spanish'
+  };
+  const languageName = languageNames[userLanguage] || 'Turkish';
   
   // Önce acentenin turlarını al
   const { data: allTours, error } = await supabase
@@ -580,26 +601,28 @@ async function searchToursWithAI(supabase: any, userMessage: string, userPhone: 
   const messages = [
     {
       role: 'system',
-      content: `Sen bir tur arama asistanısın. Kullanıcının mesajını ve önceki konuşma geçmişini analiz edip hangi turları aradığını belirle.
+      content: `You are a tour search assistant. Analyze user's message and conversation history to find matching tours.
+
+LANGUAGE: User prefers ${languageName} - analyze their message in any language they use.
 
 ${userContext}
 
-Turlar: ${JSON.stringify(toursList, null, 2)}
+Available Tours: ${JSON.stringify(toursList, null, 2)}
 
-Kullanıcının mesajından:
-- Hangi destinasyonu aradığını (Kapadokya, Efes, Pamukkale, vb)
-- Hangi tür turu aradığını (günübirlik, 2 gece, 3 gece)
-- Hangi tarihi aradığını (varsa)
-- Bütçe beklentisi (varsa)
+From user's message extract:
+- Destination (Cappadocia, Ephesus, Pamukkale, etc)
+- Tour type (day trip, 2 nights, 3 nights)
+- Date preference (if mentioned)
+- Budget expectation (if mentioned)
 
-Eşleşen turların ID'lerini JSON array olarak döndür. SADECE JSON array döndür, başka hiçbir şey yazma.
-Örnek: ["id1", "id2"]
-Eğer hiçbir tur eşleşmezse boş array döndür: []
+Return matching tour IDs as JSON array. ONLY return JSON array, nothing else.
+Example: ["id1", "id2"]
+If no tours match, return empty array: []
 
-ÖNEMLİ: 
-- Sadece JSON array döndür, markdown formatı kullanma!
-- Kullanıcı profilindeki tercihleri dikkate al
-- Önceki aramalara benzer turları da öncelikli olarak ekle`
+IMPORTANT: 
+- ONLY return JSON array, no markdown format!
+- Consider user profile preferences
+- Prioritize tours similar to previous searches`
     },
     ...history,
     {
@@ -819,118 +842,97 @@ function createQuickReplyButtons(options: { text: string; emoji: string }[]) {
   return message;
 }
 
-// WhatsApp formatı ile zenginleştirilmiş tur yanıtları
-function formatWhatsAppResponse(tours: any[], entities: any) {
-  if (tours.length === 0) {
-    const message = 'Hmm... 🤔 Bu kriterlere tam uygun bir tur bulamadım.\n\n' +
-      '*Ama hemen pes etmeyelim!* 💪\n\n' +
-      '✨ Belki başka bir tarih?\n' +
-      '✨ Farklı bir destinasyon?\n' +
-      '✨ Başka tur tipi? (günübirlik, 2-3 gün)\n\n' +
-      '_Ara beni_ 📞 _sana özel bi tur planı yapalım!_';
-    
-    return message + createQuickReplyButtons([
-      { text: 'Tüm turları göster', emoji: '🗺️' },
-      { text: 'Danışman ile görüş', emoji: '👤' }
-    ]);
-  }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('tr-TR', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
+// WhatsApp formatı ile zenginleştirilmiş tur yanıtları (AI'a formatlat)
+async function formatWhatsAppResponse(tours: any[], entities: any, userLanguage: string = 'tr') {
+  const languageNames: Record<string, string> = {
+    'tr': 'Turkish', 'en': 'English', 'de': 'German',
+    'ru': 'Russian', 'ar': 'Arabic', 'fr': 'French', 'es': 'Spanish'
   };
-
-  let response = tours.length === 1 
-    ? `Bak ne buldum! 🎯 *Tam sana göre bir tur!*\n\n`
-    : `Harika haber! ✨ *${tours.length} süper tur* buldum sana!\n\n`;
-
-  tours.slice(0, 3).forEach((tour, index) => {
-    // Tur başlığı - bold
-    response += `*${index + 1}. ${tour.title}*\n`;
-    response += `📍 ${tour.destination}\n`;
+  const languageName = languageNames[userLanguage] || 'Turkish';
+  
+  if (tours.length === 0) {
+    // AI'a format mesajı oluştur
+    const prompt = `Create a friendly "no tours found" message in ${languageName}.
     
-    // Kısa açıklama - italik ve doğal
-    if (tour.program_kisa) {
-      response += `_${tour.program_kisa}_\n`;
-    }
-    response += '\n';
-    
-    // Tarih ve fiyat bilgileri
-    if (tour.dates && tour.dates.length > 0) {
-      const firstDate = tour.dates[0];
-      const depDate = new Date(firstDate.departure_date).toLocaleDateString('tr-TR', { 
-        day: 'numeric', 
-        month: 'short'
+Include:
+- Empathetic response with emoji
+- Suggestions (try different date, destination, tour type)
+- Call to action
+
+Use WhatsApp format (*bold*, _italic_) and 1-2 emojis. Keep it short and friendly.`;
+
+    try {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7
+        })
       });
-      
-      // Tarih
-      if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
-        const retDate = new Date(firstDate.return_date).toLocaleDateString('tr-TR', { 
-          day: 'numeric', 
-          month: 'short' 
-        });
-        response += `📅 ${depDate} - ${retDate}`;
-      } else {
-        response += `📅 ${depDate}`;
-      }
-      
-      if (tour.tur_sure) {
-        response += ` • ${tour.tur_sure}`;
-      }
-      response += '\n';
-      
-      // Fiyat - vurgulu ve doğal
-      response += `💰 *${formatPrice(firstDate.price_adult)} ${tour.currency}* kişi başı\n`;
-      
-      // Kontenjan - emoji ile durum
-      if (firstDate.quota > 10) {
-        response += `✅ Bol bol yer var (${firstDate.quota} kişi)\n`;
-      } else if (firstDate.quota > 0) {
-        response += `⚠️ Son ${firstDate.quota} kişilik yer!\n`;
-      } else {
-        response += `❌ Maalesef doldu 😔\n`;
-      }
-    } else {
-      response += `⏳ _Tarihler yakında açıklanacak_\n`;
-      response += `📞 Bize ulaş, seni haberdar edelim\n`;
+      const result = await response.json();
+      return result.choices[0].message.content;
+    } catch (error) {
+      console.error('Error formatting no results message:', error);
+      return 'No tours found matching your criteria. 🤔';
     }
-    
-    // Gezilecek yerler - kısa ve öz
-    if (tour.gezilecek_yerler) {
-      const places = tour.gezilecek_yerler.split(',').slice(0, 3);
-      response += `\n🗺️ *Neler göreceksin:*\n`;
-      places.forEach((place: string) => {
-        response += `  • ${place.trim()}\n`;
-      });
-      if (tour.gezilecek_yerler.split(',').length > 3) {
-        response += `  _+ daha fazlası..._\n`;
-      }
-    }
-    
-    // Program linki
-    if (tour.program_url) {
-      response += `\n📋 Detaylı program → ${tour.program_url}\n`;
-    }
-    
-    response += `\n${'─'.repeat(25)}\n\n`;
-  });
-
-  // Daha fazla tur varsa - doğal dil
-  if (tours.length > 3) {
-    response += `🎈 _Bunlar sadece ilk 3'ü! ${tours.length - 3} tur daha var._\n\n`;
   }
 
-  // Call to action
-  response += '✨ *Sonraki adım?*';
-  response += createQuickReplyButtons([
-    { text: 'Kayıt olmak istiyorum', emoji: '✅' },
-    { text: 'Daha fazla bilgi', emoji: '📞' },
-    { text: 'Başka turlar', emoji: '🔍' }
-  ]);
 
-  return response;
+  // Tours varsa AI'a formatlat
+  const toursData = tours.slice(0, 3).map(tour => ({
+    title: tour.title,
+    destination: tour.destination,
+    description: tour.program_kisa || '',
+    dates: tour.dates?.slice(0, 1).map((d: any) => ({
+      departure_date: d.departure_date,
+      return_date: d.return_date,
+      price_adult: d.price_adult,
+      quota: d.quota
+    })),
+    currency: tour.currency,
+    duration: tour.tur_sure,
+    places: tour.gezilecek_yerler,
+    program_url: tour.program_url
+  }));
+
+  const prompt = `Format these tours for WhatsApp in ${languageName}:
+
+${JSON.stringify(toursData, null, 2)}
+
+Create an engaging message with:
+- Friendly intro (${tours.length} tour${tours.length > 1 ? 's' : ''} found)
+- For each tour: title, destination, date, price, quota status, highlights
+- Use WhatsApp format (*bold*, _italic_)
+- Use emojis: 📍 for location, 📅 for dates, 💰 for price, ✅/⚠️/❌ for availability
+- Keep it conversational and natural in ${languageName}
+- End with call-to-action for booking
+
+Be culturally appropriate for ${languageName} speakers.`;
+
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
+      })
+    });
+    const result = await response.json();
+    return result.choices[0].message.content;
+  } catch (error) {
+    console.error('Error formatting tours:', error);
+    return `Found ${tours.length} tours for you! 🎯`;
+  }
 }
 
 // Zengin medya ile tur detayı gönderme (tur fotoğrafları ile)
