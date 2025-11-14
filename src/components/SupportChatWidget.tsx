@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { MessageCircle, X, Send, Loader2, HelpCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,7 +13,22 @@ interface Message {
 }
 
 export const SupportChatWidget = () => {
+  const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  
+  const getInitialMessage = () => {
+    const welcomeMessages: Record<string, string> = {
+      tr: "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
+      en: "Hello! How can I help you? I can answer your questions about system usage, features, or technical topics. 📚",
+      de: "Hallo! Wie kann ich Ihnen helfen? Ich kann Ihre Fragen zur Systemnutzung, zu Funktionen oder technischen Themen beantworten. 📚",
+      ru: "Здравствуйте! Чем я могу помочь? Я могу ответить на ваши вопросы об использовании системы, функциях или технических темах. 📚",
+      ar: "مرحبا! كيف يمكنني مساعدتك؟ يمكنني الإجابة على أسئلتك حول استخدام النظام أو الميزات أو المواضيع الفنية. 📚",
+      fr: "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
+      es: "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
+    };
+    return welcomeMessages[i18n.language] || welcomeMessages.tr;
+  };
+  
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('support-chat-messages');
     if (saved) {
@@ -25,7 +41,7 @@ export const SupportChatWidget = () => {
     return [
       {
         role: "assistant",
-        content: "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚"
+        content: getInitialMessage()
       }
     ];
   });
@@ -53,7 +69,11 @@ export const SupportChatWidget = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("support-chat", {
-        body: { message: input, conversationHistory: messages }
+        body: { 
+          message: input, 
+          conversationHistory: messages,
+          language: i18n.language 
+        }
       });
 
       if (error) throw error;

@@ -12,14 +12,26 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversationHistory } = await req.json();
+    const { message, conversationHistory, language = 'tr' } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `Sen Turzz AI sisteminin yardim ve destek asistanisin. Musterilerin sistemi dogru kullanmasina yardimci oluyorsun.
+    const languageNames: Record<string, string> = {
+      'tr': 'Türkçe',
+      'en': 'English',
+      'de': 'Deutsch',
+      'ru': 'Русский',
+      'ar': 'العربية',
+      'fr': 'Français',
+      'es': 'Español'
+    };
+
+    const systemPrompt = `You are Turzz AI system's help and support assistant. You help customers use the system correctly.
+
+**CRITICAL LANGUAGE INSTRUCTION**: The user is communicating in ${languageNames[language] || 'Turkish'}. You MUST respond ENTIRELY in ${languageNames[language] || 'Turkish'}. This includes ALL system instructions, troubleshooting steps, feature explanations, and help resources. Translate everything to ${languageNames[language] || 'Turkish'} naturally and professionally.
 
 GOREVLERIN:
 - Sistem kullanimi hakkinda sorulari yanitla
