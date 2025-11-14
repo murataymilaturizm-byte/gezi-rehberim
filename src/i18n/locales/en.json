@@ -341,7 +341,12 @@
       "deleteSuccess": "Tour deleted",
       "deleteError": "Delete operation failed",
       "deleteConfirm": "Are you sure you want to delete this tour?",
-      "deleteWarning": "This action cannot be undone."
+      "deleteWarning": "This action cannot be undone.",
+      "perPerson": "per person",
+      "quotaFull": "Quota full",
+      "otherDates": "Other Dates:",
+      "program": "Program",
+      "preRegistration": "Pre-registration"
     },
     "registrations": {
       "title": "Registrations",
