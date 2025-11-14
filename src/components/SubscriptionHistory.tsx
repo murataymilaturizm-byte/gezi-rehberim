@@ -76,20 +76,20 @@ interface PlanOption {
   popular?: boolean;
 }
 
-const eventTypeLabels: Record<string, string> = {
-  trial_started: "Deneme Başladı",
-  trial_ended: "Deneme Bitti",
-  payment_success: "Ödeme Başarılı",
-  payment_failed: "Ödeme Başarısız",
-  plan_changed: "Plan Değişti",
-  subscription_activated: "Abonelik Aktif",
-  subscription_expired: "Abonelik Süresi Doldu",
-  subscription_cancelled: "Abonelik İptal"
-};
-
 export const SubscriptionHistory = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  
+  const eventTypeLabels: Record<string, string> = {
+    trial_started: t("admin.subscription.eventTypes.trial_started"),
+    trial_ended: t("admin.subscription.eventTypes.trial_ended"),
+    payment_success: t("admin.subscription.eventTypes.payment_success"),
+    payment_failed: t("admin.subscription.eventTypes.payment_failed"),
+    plan_changed: t("admin.subscription.eventTypes.plan_changed"),
+    subscription_activated: t("admin.subscription.eventTypes.subscription_activated"),
+    subscription_expired: t("admin.subscription.eventTypes.subscription_expired"),
+    subscription_cancelled: t("admin.subscription.eventTypes.subscription_cancelled")
+  };
   
   const statusLabels: Record<string, string> = {
     success: t("admin.subscription.status.success"),
@@ -185,11 +185,11 @@ export const SubscriptionHistory = () => {
   };
 
   const formatPrice = (price: number, yearly: boolean) => {
-    if (price === 0) return "Özel Fiyat";
+    if (price === 0) return t("admin.subscription.customPrice");
     if (yearly) {
-      return `${price.toLocaleString('tr-TR')}₺/yıl`;
+      return `${price.toLocaleString('tr-TR')}₺/${t("admin.subscription.yearly").toLowerCase()}`;
     }
-    return `${price.toLocaleString('tr-TR')}₺/ay`;
+    return `${price.toLocaleString('tr-TR')}₺/${t("admin.subscription.monthly").toLowerCase()}`;
   };
 
   useEffect(() => {
@@ -419,7 +419,7 @@ export const SubscriptionHistory = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
+      <div className="text-center py-8 text-muted-foreground">{t("admin.subscription.loading")}</div>
     );
   }
 
@@ -436,20 +436,20 @@ export const SubscriptionHistory = () => {
               <div className="flex items-center gap-2">
                 {currentPlan?.icon && <currentPlan.icon className="h-5 w-5 text-primary" />}
                 <div>
-                  <CardTitle>Mevcut Planınız</CardTitle>
+                  <CardTitle>{t("admin.subscription.currentPlan")}</CardTitle>
                   <CardDescription>
                     {subscription.subscription_status === "trial" 
-                      ? "Deneme süresinde" 
+                      ? t("admin.subscription.inTrialPeriod")
                       : subscription.subscription_status === "active"
-                      ? "Aktif abonelik"
-                      : "Abonelik durumu: " + subscription.subscription_status
+                      ? t("admin.subscription.activeSubscription")
+                      : t("admin.subscription.subscriptionStatus") + " " + subscription.subscription_status
                     }
                   </CardDescription>
                 </div>
               </div>
               {remainingDays !== null && remainingDays > 0 && (
                 <Badge variant={remainingDays <= 7 ? "destructive" : "secondary"}>
-                  {remainingDays} gün kaldı
+                  {remainingDays} {t("admin.subscription.daysRemaining")}
                 </Badge>
               )}
             </div>
@@ -458,7 +458,7 @@ export const SubscriptionHistory = () => {
             {/* Billing Period Toggle */}
             <div className="flex items-center justify-center gap-3 p-4 bg-muted/50 rounded-lg w-fit mx-auto">
               <Label htmlFor="billing-toggle" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
-                Aylık
+                {t("admin.subscription.monthly")}
               </Label>
               <Switch
                 id="billing-toggle"
@@ -466,11 +466,11 @@ export const SubscriptionHistory = () => {
                 onCheckedChange={setIsYearly}
               />
               <Label htmlFor="billing-toggle" className={isYearly ? "font-semibold" : "text-muted-foreground"}>
-                Yıllık
+                {t("admin.subscription.yearly")}
               </Label>
               {isYearly && (
                 <span className="ml-2 text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                  %10 İndirim
+                  {t("admin.subscription.discount10")}
                 </span>
               )}
             </div>
@@ -517,12 +517,12 @@ export const SubscriptionHistory = () => {
                   <AlertDescription>
                     {subscription.subscription_status === "trial" && (
                       <>
-                        <strong>Deneme Süresi:</strong> Aboneliğinizi aktifleştirmek için ödeme yapmalısınız.
+                        <strong>{t("admin.subscription.trialPeriod")}:</strong> {t("admin.subscription.trialWarning").replace('Deneme Süresi: ', '')}
                       </>
                     )}
                     {(subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") && (
                       <>
-                        <strong>Abonelik Sona Erdi:</strong> Devam etmek için ödeme yapmalısınız.
+                        <strong>{t("admin.subscription.expired")}:</strong> {t("admin.subscription.expiredMessage")}
                       </>
                     )}
                   </AlertDescription>
@@ -535,7 +535,7 @@ export const SubscriptionHistory = () => {
                   size="lg"
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
-                  {isProcessingPayment ? "Ödeme sayfasına yönlendiriliyorsunuz..." : "Ödeme Yap"}
+                  {isProcessingPayment ? t("admin.subscription.loading") : t("admin.subscription.makePayment")}
                 </Button>
               </div>
             )}
@@ -544,8 +544,8 @@ export const SubscriptionHistory = () => {
             {subscription.subscription_status === "active" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-foreground">Diğer Planlar</h4>
-                  <p className="text-sm text-muted-foreground">Plan değişikliği hemen aktif olur</p>
+                  <h4 className="font-semibold text-foreground">{t("admin.subscription.availablePlans")}</h4>
+                  <p className="text-sm text-muted-foreground">{t("admin.subscription.planChangeNote").split('.')[0]}</p>
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
                   {planOptions
@@ -561,7 +561,7 @@ export const SubscriptionHistory = () => {
                         {plan.popular && (
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                             <Badge className="bg-gradient-ocean text-primary-foreground">
-                              Popüler
+                              {t("admin.subscription.popular")}
                             </Badge>
                           </div>
                         )}
@@ -577,10 +577,10 @@ export const SubscriptionHistory = () => {
                             {isYearly && plan.price > 0 && (
                               <div className="mt-1">
                                 <p className="text-xs text-muted-foreground line-through">
-                                  {(plan.price * 12).toLocaleString('tr-TR')}₺/yıl
+                                  {(plan.price * 12).toLocaleString('tr-TR')}₺/{t("admin.subscription.yearly").toLowerCase()}
                                 </p>
                                 <p className="text-xs text-green-600 font-medium">
-                                  %10 indirimli
+                                  {t("admin.subscription.discounted")}
                                 </p>
                               </div>
                             )}
@@ -601,7 +601,7 @@ export const SubscriptionHistory = () => {
                               handlePlanChange(plan);
                             }}
                           >
-                            Bu Plana Geç
+                            {t("admin.subscription.switchToPlan")}
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>
                         </CardContent>
@@ -620,9 +620,9 @@ export const SubscriptionHistory = () => {
           <div className="flex items-center gap-2">
             <History className="h-5 w-5 text-primary" />
             <div>
-              <CardTitle>İşlem Geçmişi</CardTitle>
+              <CardTitle>{t("admin.subscription.transactionHistory")}</CardTitle>
               <CardDescription>
-                Ödemeleriniz, plan değişiklikleriniz ve tüm işlemleriniz
+                {t("admin.subscription.historyDescription")}
               </CardDescription>
             </div>
           </div>
