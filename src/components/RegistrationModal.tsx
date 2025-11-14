@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export const RegistrationModal = ({
   tourTitle
 }: RegistrationModalProps) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -45,7 +47,7 @@ export const RegistrationModal = ({
     try {
       // Get current user's agency_id
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Kullanıcı bulunamadı");
+      if (!user) throw new Error(t("admin.registrationForm.userNotFound"));
 
       const { data: agencyData } = await supabase
         .from("agencies")
@@ -53,7 +55,7 @@ export const RegistrationModal = ({
         .eq("user_id", user.id)
         .single();
 
-      if (!agencyData) throw new Error("Acente bulunamadı");
+      if (!agencyData) throw new Error(t("admin.registrationForm.agencyNotFound"));
 
       // Kontenjan kontrolü
       const { data: tourDate, error: quotaError } = await supabase
@@ -66,8 +68,8 @@ export const RegistrationModal = ({
 
       if (!tourDate || tourDate.quota < formData.pax) {
         toast({
-          title: "Yetersiz Kontenjan",
-          description: `Bu tarih için sadece ${tourDate?.quota || 0} kişilik yer kalmıştır. Lütfen kişi sayısını azaltın veya başka bir tarih seçin.`,
+          title: t("admin.registrationForm.quotaError"),
+          description: t("admin.registrationForm.quotaErrorMessage", { quota: tourDate?.quota || 0 }),
           variant: "destructive"
         });
         setIsLoading(false);
@@ -95,8 +97,8 @@ export const RegistrationModal = ({
         .eq("id", tourDateId);
 
       toast({
-        title: "Ön Kayıt Başarılı! ✅",
-        description: "Talebiniz alındı. En kısa sürede size dönüş yapacağız.",
+        title: t("admin.registrationForm.success"),
+        description: t("admin.registrationForm.successMessage"),
       });
 
       setFormData({ fullName: "", phone: "", pax: 1, note: "" });
@@ -104,8 +106,8 @@ export const RegistrationModal = ({
     } catch (error) {
       console.error("Registration error:", error);
       toast({
-        title: "Hata",
-        description: "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+        title: t("admin.registrationForm.error"),
+        description: t("admin.registrationForm.errorMessage"),
         variant: "destructive"
       });
     } finally {
@@ -117,38 +119,38 @@ export const RegistrationModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Ön Kayıt Formu</DialogTitle>
+          <DialogTitle className="text-xl">{t("admin.registrationForm.title")}</DialogTitle>
           <DialogDescription className="text-sm">
-            {tourTitle} için ön kayıt formunu doldurun.
+            {t("admin.registrationForm.description", { tourTitle })}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Ad Soyad *</Label>
+            <Label htmlFor="fullName">{t("admin.registrationForm.fullName")} *</Label>
             <Input
               id="fullName"
               value={formData.fullName}
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              placeholder="Adınız ve soyadınız"
+              placeholder={t("admin.registrationForm.fullNamePlaceholder")}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Telefon *</Label>
+            <Label htmlFor="phone">{t("admin.registrationForm.phone")} *</Label>
             <Input
               id="phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="0555 123 45 67"
+              placeholder={t("admin.registrationForm.phonePlaceholder")}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="pax">Kişi Sayısı *</Label>
+            <Label htmlFor="pax">{t("admin.registrationForm.pax")} *</Label>
             <Input
               id="pax"
               type="number"
@@ -160,26 +162,26 @@ export const RegistrationModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="note">Not (Opsiyonel)</Label>
+            <Label htmlFor="note">{t("admin.registrationForm.note")}</Label>
             <Textarea
               id="note"
               value={formData.note}
               onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-              placeholder="Eklemek istediğiniz notlar..."
+              placeholder={t("admin.registrationForm.notePlaceholder")}
               rows={3}
             />
           </div>
 
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              İptal
+              {t("admin.registrationForm.cancel")}
             </Button>
             <Button 
               type="submit" 
               disabled={isLoading}
               className="bg-gradient-ocean hover:opacity-90 transition-smooth"
             >
-              {isLoading ? "Kaydediliyor..." : "Kaydet"}
+              {isLoading ? t("admin.registrationForm.saving") : t("admin.registrationForm.save")}
             </Button>
           </DialogFooter>
         </form>
