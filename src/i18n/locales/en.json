@@ -886,6 +886,43 @@
       "region": "Northeast"
     }
   },
+  "gettingStarted": {
+    "title": "How to Get Started?",
+    "subtitle": "Set Up the System in 3 Simple Steps and Start Automated Sales",
+    "backHome": "Home",
+    "goToAdmin": "Admin Panel",
+    "step": "Step",
+    "duration": "minutes",
+    "tips": "Tips",
+    "ready": "You're Ready!",
+    "readyDescription": "Your system is set up and running. Now your customers can search for tours 24/7 via WhatsApp, create reservations, and make payments.",
+    "nextSteps": "Next Steps",
+    "watchVideo": "Watch Video",
+    "readDocs": "Documentation"
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Frequently asked questions and detailed guides",
+    "back": "Go Back",
+    "backToAdmin": "Back to Admin Panel",
+    "quickLinks": "Quick Links",
+    "videoGuides": "Video Guides",
+    "needMoreHelp": "Need More Help?",
+    "contactSupport": "Contact Our Support Team",
+    "sections": {
+      "setup": "Getting Started and Setup",
+      "tours": "Tour and Reservation Management",
+      "whatsapp": "WhatsApp and Messaging",
+      "payments": "Payments and Billing",
+      "analytics": "Reports and Analytics",
+      "settings": "Settings and Security"
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Page Not Found",
+    "backHome": "Return to Home"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

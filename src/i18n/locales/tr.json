@@ -1044,6 +1044,43 @@
       "region": "Marmara"
     }
   },
+  "gettingStarted": {
+    "title": "Nasıl Başlarım?",
+    "subtitle": "3 Basit Adımda Sistemi Kurun ve Otomatik Satışa Başlayın",
+    "backHome": "Ana Sayfa",
+    "goToAdmin": "Admin Paneli",
+    "step": "Adım",
+    "duration": "dakika",
+    "tips": "İpuçları",
+    "ready": "Hazırsınız!",
+    "readyDescription": "Sisteminiz kuruldu ve çalışıyor. Artık müşterileriniz WhatsApp üzerinden 7/24 tur araması yapabilir, rezervasyon oluşturabilir ve ödeme yapabilir.",
+    "nextSteps": "Sonraki Adımlar",
+    "watchVideo": "Video İzle",
+    "readDocs": "Dokümantasyon"
+  },
+  "help": {
+    "title": "Yardım Merkezi",
+    "subtitle": "Sıkça sorulan sorular ve detaylı kılavuzlar",
+    "back": "Geri Dön",
+    "backToAdmin": "Admin Paneline Dön",
+    "quickLinks": "Hızlı Bağlantılar",
+    "videoGuides": "Video Kılavuzlar",
+    "needMoreHelp": "Daha Fazla Yardım mı Gerekiyor?",
+    "contactSupport": "Destek Ekibimizle İletişime Geçin",
+    "sections": {
+      "setup": "Başlangıç ve Kurulum",
+      "tours": "Tur ve Rezervasyon Yönetimi",
+      "whatsapp": "WhatsApp ve Mesajlaşma",
+      "payments": "Ödeme ve Faturalama",
+      "analytics": "Raporlar ve Analiz",
+      "settings": "Ayarlar ve Güvenlik"
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Sayfa Bulunamadı",
+    "backHome": "Ana Sayfaya Dön"
+  },
   "common": {
     "loading": "Yükleniyor...",
     "error": "Hata",
