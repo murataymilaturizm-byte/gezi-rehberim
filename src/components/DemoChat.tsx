@@ -34,8 +34,9 @@ export const DemoChat = () => {
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('demo-chat-messages');
     const savedLang = localStorage.getItem('demo-chat-language');
+    const savedStyle = localStorage.getItem('demo-chat-style');
     
-    if (saved && savedLang === i18n.language) {
+    if (saved && savedLang === i18n.language && savedStyle) {
       try {
         return JSON.parse(saved);
       } catch (e) {
@@ -57,17 +58,32 @@ export const DemoChat = () => {
   useEffect(() => {
     localStorage.setItem('demo-chat-messages', JSON.stringify(messages));
     localStorage.setItem('demo-chat-language', i18n.language);
-  }, [messages, i18n.language]);
+    localStorage.setItem('demo-chat-style', conversationStyle);
+  }, [messages, i18n.language, conversationStyle]);
 
-  // Update greeting when language changes
+  // Update greeting when language or conversation style changes
   useEffect(() => {
+    const getStyledGreeting = () => {
+      const baseGreeting = t("demo.greeting");
+      switch(conversationStyle) {
+        case 'friendly':
+          return baseGreeting + "\n\n😊 Bugün sana nasıl yardımcı olabilirim arkadaşım?";
+        case 'energetic':
+          return baseGreeting + "\n\n⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀";
+        case 'helpful':
+          return baseGreeting + "\n\n📝 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz.";
+        default: // professional
+          return baseGreeting + "\n\n📍 Size nasıl yardımcı olabilirim?";
+      }
+    };
+    
     setMessages([
       {
         role: "assistant",
-        content: t("demo.greeting")
+        content: getStyledGreeting()
       }
     ]);
-  }, [i18n.language, t]);
+  }, [i18n.language, conversationStyle, t]);
 
   useEffect(() => {
     if (scrollRef.current) {
