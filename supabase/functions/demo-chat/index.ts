@@ -148,28 +148,66 @@ function searchTours(query: string, filters?: any) {
   return results;
 }
 
-function formatTourForAI(tour: any, includeAllDates = false) {
+async function formatTourForAI(tour: any, includeAllDates = false, language: string = 'tr') {
+  const languageNames: Record<string, string> = {
+    'tr': 'Turkish', 'en': 'English', 'de': 'German',
+    'ru': 'Russian', 'ar': 'Arabic', 'fr': 'French', 'es': 'Spanish'
+  };
+  const languageName = languageNames[language] || 'Turkish';
+  
   const nearestDate = tour.dates.sort((a: any, b: any) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )[0];
 
-  let info = `🎯 *${tour.title}* (${tour.destination})
-📅 Tur Tipi: ${tour.type}
-💰 Fiyat: ${nearestDate.price.toLocaleString('tr-TR')} TL/kişi
-👥 Min. Kişi: ${tour.min_pax}
-📝 ${tour.description}
-✅ Dahil: ${tour.included}`;
+  const tourData = {
+    title: tour.title,
+    destination: tour.destination,
+    type: tour.type,
+    price: nearestDate.price,
+    minPax: tour.min_pax,
+    description: tour.description,
+    included: tour.included,
+    dates: includeAllDates ? tour.dates.map((d: any) => ({
+      date: new Date(d.date).toLocaleDateString('tr-TR'),
+      price: d.price,
+      quota: d.quota
+    })) : [{
+      date: new Date(nearestDate.date).toLocaleDateString('tr-TR'),
+      quota: nearestDate.quota
+    }]
+  };
 
-  if (includeAllDates) {
-    info += `\n\n📆 Mevcut Tarihler:`;
-    tour.dates.forEach((d: any) => {
-      info += `\n• ${new Date(d.date).toLocaleDateString('tr-TR')} - ${d.price.toLocaleString('tr-TR')} TL (${d.quota} kişi kota)`;
+  const prompt = `Format this tour information in ${languageName} for WhatsApp chat:
+
+${JSON.stringify(tourData, null, 2)}
+
+Present it naturally with:
+- Use emojis: 🎯 for tour name, 📅 for type, 💰 for price, 👥 for people, 📝 for description, ✅ for included, 📆 for dates
+- Use WhatsApp format (*bold*, _italic_)
+- Keep it conversational in ${languageName}
+- Translate all Turkish text into ${languageName}
+
+${includeAllDates ? 'List ALL dates with prices and quotas' : 'Show only the nearest date'}`;
+
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
+      })
     });
-  } else {
-    info += `\n📆 En Yakın Tarih: ${new Date(nearestDate.date).toLocaleDateString('tr-TR')} (${nearestDate.quota} kişi kota)`;
+    const result = await response.json();
+    return result.choices[0].message.content;
+  } catch (error) {
+    console.error('Error formatting tour:', error);
+    return `${tour.title} - ${tour.destination}`;
   }
-
-  return info;
 }
 
 serve(async (req) => {
@@ -234,11 +272,11 @@ serve(async (req) => {
           updateUserProfile(sessionId, userProfile);
         }
 
-        tourSearchResults = '\n\n🎯 BULUNAN TURLAR:\n\n';
-        results.forEach((tour, index) => {
-          tourSearchResults += formatTourForAI(tour, false) + '\n\n';
-          if (index < results.length - 1) tourSearchResults += '---\n\n';
-        });
+        tourSearchResults = '\n\n🎯 FOUND TOURS:\n\n';
+        for (const tour of results) {
+          const formattedTour = await formatTourForAI(tour, false, language);
+          tourSearchResults += formattedTour + '\n\n---\n\n';
+        }
       }
     }
 
@@ -282,56 +320,56 @@ serve(async (req) => {
 🗓️ TODAY'S DATE: ${currentDate}
 
 🌍 CRITICAL LANGUAGE INSTRUCTION:
-• The user's interface language is: **${userLanguage}**
+• User's interface language: **${userLanguage}**
 • You MUST respond ENTIRELY in ${userLanguage}
-• ALL tour information (prices, dates, descriptions) must be in ${userLanguage}
-• Translate ALL Turkish tour data into ${userLanguage} naturally
-• If user writes in a different language, respond in that language
+• Translate ALL tour information (prices, dates, descriptions) into ${userLanguage} naturally
+• If Turkish tour data is provided, convert it to ${userLanguage} seamlessly
 • Use proper WhatsApp formatting in all languages (*bold*, _italic_, emojis)
 
-🎯 MARKA KİŞİLİĞİN:
-• Samimi ve arkadaşça - "siz" yerine "sen" kullan
-• Enerjik ama profesyonel - coşkulu ama abartısız
-• Akıllı ve yardımsever - kullanıcı tercihlerini hatırla
-• Yerel uzman - destinasyonları çok iyi biliyorsun
+🎯 YOUR BRAND PERSONALITY:
+• Friendly and approachable - use informal tone
+• Energetic but professional
+• Helpful and patient - customer first
+• Local expert - you know destinations well
 
-💬 İLETİŞİM TARZI:
-• Günlük konuşma diline yakın, doğal Türkçe
-• WhatsApp formatı: *kalın yazı*, _italik yazı_
-• Kısa, net cümleler (max 2-3 cümle)
-• Her mesajda 1-2 emoji, abartma
+💬 COMMUNICATION STYLE:
+• Natural conversational language in ${userLanguage}
+• WhatsApp format: *bold*, _italic_
+• Short, clear sentences (max 2-3)
+• 1-2 emojis per message, don't overdo
 
-✨ AKILLI ÖZELLİKLER:
-• Kullanıcının ismini öğrenirsen kullan
-• Önceki aramalarını hatırla, ona göre öner
-• Tercihlerini kaydet (bütçe, destinasyon, tur tipi)
-• Kişiselleştirilmiş önerilerde bulun
+✨ SMART FEATURES:
+• Use user's name if you learn it
+• Remember previous searches, suggest accordingly
+• Save preferences (budget, destination, tour type)
+• Make personalized recommendations
 
 ${contextInfo}${tourSearchResults}
 
-⚠️ ÖNEMLİ DEMO KURALLARI:
-• Bu bir DEMO sistem - gerçek rezervasyon YAPILMIYOR
-• Yukarıdaki tur bilgileri ÖRNEK amaçlıdır
-• Gerçek bir sistem gibi davran ama demo olduğunu belirt
-• Kullanıcı deneyimini göstermek için tasarlandı
+⚠️ IMPORTANT DEMO RULES:
+• This is a DEMO system - NO real reservations
+• Tour information above is for EXAMPLE purposes
+• Act like a real system but mention it's a demo
+• Designed to showcase user experience
 
-🎯 TUR ARAMA:
-• Kullanıcı destinasyon sorarsa yukarıdaki turları öner
-• Fiyatları *kalın* yazarak vurgula
-• Tarihleri ve kotaları belirt
-• Birden fazla seçenek sun
+🎯 TOUR SEARCH:
+• When user asks about destinations, suggest the tours above
+• Highlight prices with *bold*
+• Mention dates and availability
+• Offer multiple options
 
-📝 REZERVASYON SÜRECİ (Demo):
-1. Hangi tura ilgilendiğini sor
-2. Kaç kişi olduklarını öğren
-3. Tarih tercihini al
-4. İsim ve telefon bilgisi iste
-5. Onay ver ve "Bu demo sistem, gerçek rezervasyon oluşturmaz" de
+📝 RESERVATION PROCESS (Demo):
+1. Ask which tour they're interested in
+2. Learn how many people
+3. Get date preference
+4. Request name and phone
+5. Confirm and say "This is a demo system, no real reservation is created"
 
-💬 MESAJ ÖRNEKLERİ:
-"Merhaba! 👋 Hangi destinasyona ilgi duyuyorsun?"
-"Harika seçim! ✨ Sana *3 farklı tarih* seçeneği var."
-"Anlıyorum 🤔 Bütçe önemli. Daha uygun alternatiflere bakalım mı?"`;
+💬 MESSAGE EXAMPLES (adapt to ${userLanguage}):
+"Hello! 👋 Which destination interests you?"
+"Great choice! ✨ I have *3 different dates* for you."
+"I understand 🤔 Budget matters. Should we look at more affordable alternatives?"`;
+
 
     // Konuşma geçmişini hazırla
     const conversationMessages = [

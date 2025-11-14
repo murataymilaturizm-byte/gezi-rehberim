@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, MessageSquare, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 interface Message {
   role: "user" | "assistant";
@@ -124,16 +125,19 @@ export const DemoChat = () => {
   return (
     <Card className="w-full max-w-2xl mx-auto border-border shadow-card">
       <CardHeader className="border-b border-border bg-gradient-ocean">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
-            <Bot className="w-5 h-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
+              <Bot className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-primary-foreground">TurzzAI Demo</CardTitle>
+              <p className="text-sm text-primary-foreground/80">
+                {t("demo.subtitle2")}
+              </p>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-primary-foreground">TurzzAI Demo</CardTitle>
-            <p className="text-sm text-primary-foreground/80">
-              {t("demo.subtitle2")}
-            </p>
-          </div>
+          <LanguageSelector />
         </div>
       </CardHeader>
       <CardContent className="p-0">
