@@ -493,7 +493,7 @@ const Admin = () => {
                 onClick={() => setActiveTab("settings")}
                 className={`transition-all duration-300 ${activeTab === "settings" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
-                WhatsApp Ayarları
+                {t("admin.dashboard.whatsappSettings")}
               </Button>
               <Button
                 variant={activeTab === "templates" ? "default" : "outline"}

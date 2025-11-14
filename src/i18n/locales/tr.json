@@ -444,7 +444,7 @@
       },
       "templates": {
         "title": "Mesaj Şablonları",
-        "description": "Hızlı yanıtlar için hazır mesaj şablonları oluşturun",
+        "description": "Rezervasyon onayı, iptal bildirimi gibi otomatik mesajlar için çok dilli şablonlar",
         "addNew": "Yeni Şablon Ekle",
         "name": "Şablon Adı",
         "content": "Mesaj İçeriği",
@@ -457,7 +457,8 @@
         "cancel": "İptal",
         "saving": "Kaydediliyor...",
         "namePlaceholder": "Örn: Hoş Geldiniz Mesajı",
-        "contentPlaceholder": "Merhaba! Size nasıl yardımcı olabilirim?"
+        "contentPlaceholder": "Merhaba! Size nasıl yardımcı olabilirim?",
+        "loadDefaults": "Varsayılan Şablonları Yükle"
       }
     },
     "agencyManagement": {
@@ -467,6 +468,16 @@
     "subscriptionHistory": {
       "title": "Abonelik Geçmişi",
       "description": "Ödeme ve işlem geçmişi"
+    },
+    "subscription": {
+      "trialPeriod": "Deneme Süresi",
+      "packageTrial": "paketinizin deneme süresi",
+      "days": "gün",
+      "willEnd": "sonra sona erecek",
+      "activatePlan": "Planı Aktifleştir",
+      "expired": "Abonelik Süresi Doldu",
+      "expiredMessage": "Hizmetlerimize devam etmek için lütfen aboneliğinizi yenileyin.",
+      "makePayment": "Ödeme Yap"
     },
     "title": "Acente Paneli",
     "welcome": "Hoşgeldiniz",

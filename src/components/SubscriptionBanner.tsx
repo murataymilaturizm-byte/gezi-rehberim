@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +15,7 @@ interface SubscriptionInfo {
 }
 
 export const SubscriptionBanner = () => {
+  const { t } = useTranslation();
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -59,14 +61,14 @@ export const SubscriptionBanner = () => {
     return (
       <Alert variant="destructive" className="mb-6">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Abonelik Süresi Doldu</AlertTitle>
+        <AlertTitle>{t("admin.subscription.expired")}</AlertTitle>
         <AlertDescription className="flex items-center justify-between">
           <span>
-            Hizmetlerimize devam etmek için lütfen aboneliğinizi yenileyin.
+            {t("admin.subscription.expiredMessage")}
           </span>
           <Button size="sm" className="ml-4">
             <CreditCard className="w-4 h-4 mr-2" />
-            Ödeme Yap
+            {t("admin.subscription.makePayment")}
           </Button>
         </AlertDescription>
       </Alert>
@@ -84,11 +86,11 @@ export const SubscriptionBanner = () => {
     return (
       <Alert className="mb-6 border-primary/50 bg-primary/5">
         <Clock className="h-4 w-4 text-primary" />
-        <AlertTitle>Deneme Süresi</AlertTitle>
+        <AlertTitle>{t("admin.subscription.trialPeriod")}</AlertTitle>
         <AlertDescription className="flex items-center justify-between">
           <span>
-            {planLabels[subscriptionInfo.plan_type]} paketinizin deneme süresi{" "}
-            <strong>{remainingDays} gün</strong> sonra sona erecek.
+            {t(`admin.agency.plans.${subscriptionInfo.plan_type}`)} {t("admin.subscription.packageTrial")}{" "}
+            <strong>{remainingDays} {t("admin.subscription.days")}</strong> {t("admin.subscription.willEnd")}.
             {subscriptionInfo.trial_ends_at && (
               <span className="text-muted-foreground ml-1">
                 ({format(new Date(subscriptionInfo.trial_ends_at), "d MMMM yyyy", { locale: tr })})
@@ -97,7 +99,7 @@ export const SubscriptionBanner = () => {
           </span>
           <Button size="sm" variant="default" className="ml-4 bg-gradient-ocean">
             <CreditCard className="w-4 h-4 mr-2" />
-            Planı Aktifleştir
+            {t("admin.subscription.activatePlan")}
           </Button>
         </AlertDescription>
       </Alert>

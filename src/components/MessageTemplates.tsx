@@ -296,15 +296,15 @@ export default function MessageTemplates() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Mesaj Şablonları</h2>
+          <h2 className="text-2xl font-bold">{t("admin.whatsapp.templates.title")}</h2>
           <p className="text-muted-foreground">
-            Rezervasyon onayı, iptal bildirimi gibi otomatik mesajlar için çok dilli şablonlar
+            {t("admin.whatsapp.templates.description")}
           </p>
         </div>
         {templates.length === 0 && (
           <Button onClick={copyDefaultTemplates}>
             <Copy className="mr-2 h-4 w-4" />
-            Varsayılan Şablonları Yükle
+            {t("admin.whatsapp.templates.loadDefaults")}
           </Button>
         )}
       </div>
