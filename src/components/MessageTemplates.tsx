@@ -47,7 +47,6 @@ const LANGUAGES = [
 const TEMPLATE_TYPES = [
   { key: 'reservation_confirmed', name: 'Rezervasyon Onayı' },
   { key: 'reservation_cancelled', name: 'Rezervasyon İptali' },
-  { key: 'payment_reminder', name: 'Ödeme Hatırlatma' },
   { key: 'tour_reminder', name: 'Tur Hatırlatma' },
 ];
 
@@ -62,6 +61,13 @@ export default function MessageTemplates() {
   useEffect(() => {
     fetchTemplates();
   }, []);
+
+  useEffect(() => {
+    // Varsayılan şablonları otomatik yükle
+    if (!loading && templates.length === 0) {
+      copyDefaultTemplates();
+    }
+  }, [loading, templates.length]);
 
   const fetchTemplates = async () => {
     try {
