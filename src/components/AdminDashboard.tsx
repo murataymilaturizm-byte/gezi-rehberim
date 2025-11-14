@@ -454,7 +454,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Toplam Acenteler</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("admin.dashboard.totalAgencies")}</CardTitle>
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -462,11 +462,11 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <CheckCircle className="w-3 h-3 text-green-500" />
-                  {superAdminStats.activeAgencies} aktif
+                  {superAdminStats.activeAgencies} {t("admin.dashboard.active")}
                 </span>
                 <span className="flex items-center gap-1">
                   <XCircle className="w-3 h-3 text-red-500" />
-                  {superAdminStats.inactiveAgencies} pasif
+                  {superAdminStats.inactiveAgencies} {t("admin.dashboard.inactive")}
                 </span>
               </div>
             </CardContent>
@@ -474,20 +474,20 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
 
           <Card className="shadow-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Deneme Sürümü</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("admin.dashboard.trialVersion")}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{superAdminStats.trialAgencies}</div>
               <p className="text-xs text-muted-foreground">
-                Deneme sürecindeki acenteler
+                {t("admin.dashboard.agenciesInTrial")}
               </p>
             </CardContent>
           </Card>
 
           <Card className="shadow-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Toplam Mesaj</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("admin.dashboard.totalMessages")}</CardTitle>
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -495,7 +495,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 {superAdminStats.totalMessagesUsed.toLocaleString('tr-TR')}
               </div>
               <p className="text-xs text-muted-foreground">
-                Bu ay kullanılan mesaj
+                {t("admin.dashboard.messagesUsedThisMonth")}
               </p>
             </CardContent>
           </Card>
@@ -592,7 +592,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
                 <TrendingUp className="w-5 h-5" />
-                Yıllık Gelir (Tahmin)
+                {t("admin.dashboard.yearlyRevenue")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -600,11 +600,11 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 {yearlyRevenue.toLocaleString('tr-TR')}₺
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                Mevcut ücretli aboneliklerin yıllık değeri
+                {t("admin.dashboard.yearlyValueText")}
               </p>
               <div className="mt-4 pt-4 border-t border-border/50">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Ortalama acente değeri:</span>
+                  <span className="text-muted-foreground">{t("admin.dashboard.avgAgencyValue")}</span>
                   <span className="font-medium">
                     {((superAdminStats.agenciesByPlan.starter + superAdminStats.agenciesByPlan.professional + superAdminStats.agenciesByPlan.enterprise) > 0
                       ? Math.round(monthlyRevenue / (superAdminStats.agenciesByPlan.starter + superAdminStats.agenciesByPlan.professional + superAdminStats.agenciesByPlan.enterprise))
@@ -625,9 +625,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle>Gelir ve Büyüme Trendi</CardTitle>
+                <CardTitle>{t("admin.dashboard.revenueGrowthTrend")}</CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Gerçek ödeme verilerine dayalı analiz
+                  {t("admin.dashboard.realPaymentDataAnalysis")}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -635,13 +635,13 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2">
                       <Filter className="w-4 h-4" />
-                      Filtreler
+                      {t("admin.dashboard.filters")}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-80" align="end">
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium mb-3">Tarih Aralığı</h4>
+                        <h4 className="font-medium mb-3">{t("admin.dashboard.dateRange")}</h4>
                         <Select
                           value={chartMonths.toString()}
                           onValueChange={(value) => setChartMonths(parseInt(value))}
@@ -650,16 +650,16 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="3">Son 3 Ay</SelectItem>
-                            <SelectItem value="6">Son 6 Ay</SelectItem>
-                            <SelectItem value="12">Son 12 Ay</SelectItem>
-                            <SelectItem value="24">Son 24 Ay</SelectItem>
+                            <SelectItem value="3">{t("admin.dashboard.last3Months")}</SelectItem>
+                            <SelectItem value="6">{t("admin.dashboard.last6Months")}</SelectItem>
+                            <SelectItem value="12">{t("admin.dashboard.last12Months")}</SelectItem>
+                            <SelectItem value="24">{t("admin.dashboard.last24Months")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div>
-                        <h4 className="font-medium mb-3">Plan Tipleri</h4>
+                        <h4 className="font-medium mb-3">{t("admin.dashboard.planTypes")}</h4>
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
                             <Checkbox
@@ -668,7 +668,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                               onCheckedChange={() => handlePlanToggle("starter")}
                             />
                             <label htmlFor="starter" className="text-sm cursor-pointer">
-                              Başlangıç (2.999₺/ay)
+                              {t("admin.dashboard.starterPlanPrice")}
                             </label>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -678,7 +678,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                               onCheckedChange={() => handlePlanToggle("professional")}
                             />
                             <label htmlFor="professional" className="text-sm cursor-pointer">
-                              Profesyonel (7.999₺/ay)
+                              {t("admin.dashboard.professionalPlanPrice")}
                             </label>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -688,7 +688,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                               onCheckedChange={() => handlePlanToggle("enterprise")}
                             />
                             <label htmlFor="enterprise" className="text-sm cursor-pointer">
-                              Kurumsal (14.999₺/ay)
+                              {t("admin.dashboard.enterprisePlanPrice")}
                             </label>
                           </div>
                         </div>
@@ -702,7 +702,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                             onCheckedChange={(checked) => setShowComparison(!!checked)}
                           />
                           <label htmlFor="comparison" className="text-sm cursor-pointer">
-                            Önceki dönem ile karşılaştır
+                            {t("admin.dashboard.compareWithPrevious")}
                           </label>
                         </div>
                       </div>
@@ -732,7 +732,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                 />
                 <Tooltip 
                   formatter={(value: any, name: string) => {
-                    if (name === 'Gelir') {
+                    if (name === t("admin.dashboard.revenue")) {
                       return [`${Number(value).toLocaleString('tr-TR')}₺`, name];
                     }
                     return [value, name];
@@ -750,7 +750,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                   dataKey="revenue" 
                   stroke="hsl(var(--primary))" 
                   strokeWidth={2}
-                  name="Gelir"
+                  name={t("admin.dashboard.revenue")}
                   dot={{ fill: 'hsl(var(--primary))' }}
                 />
                 <Line 
@@ -759,7 +759,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                   dataKey="newAgencies" 
                   stroke="hsl(142, 76%, 36%)" 
                   strokeWidth={2}
-                  name="Yeni Acenteler"
+                  name={t("admin.dashboard.newAgencies")}
                   dot={{ fill: 'hsl(142, 76%, 36%)' }}
                 />
               </LineChart>
@@ -768,14 +768,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             {selectedPlans.length > 0 && selectedPlans.length < 3 && (
               <div className="mt-4 p-3 bg-accent/30 border border-border rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Aktif Filtre:</strong> Sadece {selectedPlans.map(p => {
-                    const labels: Record<string, string> = {
-                      starter: "Başlangıç",
-                      professional: "Profesyonel",
-                      enterprise: "Kurumsal"
-                    };
-                    return labels[p];
-                  }).join(", ")} planları gösteriliyor
+                  <strong>{t("admin.dashboard.activeFilter")}</strong> {t("admin.dashboard.only")} {selectedPlans.map(p => {
+                    return t(`admin.dashboard.${p}`);
+                  }).join(", ")} {t("admin.dashboard.plansShowing")}
                 </p>
               </div>
             )}
@@ -785,9 +780,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         {/* Geographic Distribution Section */}
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle>Acente Coğrafi Dağılımı</CardTitle>
+            <CardTitle>{t("admin.dashboard.geographicDistributionTitle")}</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Acentelerin illere ve bölgelere göre dağılımı (En çok 10 lokasyon)
+              {t("admin.dashboard.geographicDistributionDesc")}
             </p>
           </CardHeader>
           <CardContent>
@@ -815,7 +810,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                       dataKey="count" 
                       fill="hsl(var(--primary))"
                       radius={[8, 8, 0, 0]}
-                      name="Acente Sayısı"
+                      name={t("admin.dashboard.agencyCount")}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -825,7 +820,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
                     <div key={item.location} className="text-center">
                       <div className="text-2xl font-bold text-primary">#{index + 1}</div>
                       <div className="text-sm font-medium">{item.location}</div>
-                      <div className="text-xs text-muted-foreground">{item.count} acente</div>
+                      <div className="text-xs text-muted-foreground">{item.count} {t("admin.dashboard.agencies")}</div>
                     </div>
                   ))}
                 </div>
@@ -833,10 +828,9 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-                <h4 className="text-lg font-medium mb-2">Konum Bilgisi Bulunamadı</h4>
+                <h4 className="text-lg font-medium mb-2">{t("admin.dashboard.noLocationInfo")}</h4>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi 
-                  eklendiğinde coğrafi dağılım burada görüntülenecek.
+                  {t("admin.dashboard.noLocationInfoDesc")}
                 </p>
               </div>
             )}
