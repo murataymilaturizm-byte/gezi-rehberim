@@ -13,15 +13,29 @@ interface Message {
 
 export const SalesChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Merhaba! Turzz AI hakkında size nasıl yardımcı olabilirim? Fiyatlandırma, özellikler veya demo hakkında bilgi almak ister misiniz?"
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('sales-chat-messages');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved messages:', e);
+      }
     }
-  ]);
+    return [
+      {
+        role: "assistant",
+        content: "Merhaba! Turzz AI hakkında size nasıl yardımcı olabilirim? Fiyatlandırma, özellikler veya demo hakkında bilgi almak ister misiniz?"
+      }
+    ];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('sales-chat-messages', JSON.stringify(messages));
+  }, [messages]);
 
   useEffect(() => {
     if (scrollRef.current) {
