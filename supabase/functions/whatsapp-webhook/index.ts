@@ -137,11 +137,11 @@ serve(async (req) => {
     // Mesaj sayacını artır
     await incrementMessageCount(supabase, agency.id);
     
-    // Kullanıcı profilini oluştur/güncelle
-    await upsertUserProfile(supabase, userPhone, agency.id);
-    
     // Kullanıcı mesajını kaydet (agency_id ile)
     await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
+    
+    // Kullanıcı profilini oluştur/güncelle (dil algılama ile)
+    await upsertUserProfile(supabase, userPhone.replace('+', ''), agency.id, userMessage);
 
     // Rezervasyon wizard durumunu kontrol et
     const wizardState = await getWizardState(supabase, userPhone, agency.id);
@@ -1454,7 +1454,7 @@ function formatPrice(price: number): string {
 }
 
 // Kullanıcı profili oluştur/güncelle
-async function upsertUserProfile(supabase: any, phone: string, agency_id: string) {
+async function upsertUserProfile(supabase: any, phone: string, agency_id: string, userMessage?: string) {
   try {
     // Kullanıcı profilini kontrol et
     const { data: existingProfile } = await supabase
@@ -1466,26 +1466,107 @@ async function upsertUserProfile(supabase: any, phone: string, agency_id: string
 
     if (existingProfile) {
       // Profili güncelle - mesaj sayısını artır ve son etkileşim tarihini güncelle
+      const updates: any = {
+        total_messages: existingProfile.total_messages + 1,
+        last_interaction_at: new Date().toISOString()
+      };
+      
+      // İlk 3 mesajda dil algılama yap
+      if (existingProfile.total_messages < 3 && !existingProfile.language_preference && userMessage) {
+        const detectedLanguage = await detectLanguage(userMessage);
+        if (detectedLanguage) {
+          updates.language_preference = detectedLanguage;
+          console.log('Language detected and saved:', detectedLanguage);
+        }
+      }
+      
       await supabase
         .from('whatsapp_user_profiles')
-        .update({
-          total_messages: existingProfile.total_messages + 1,
-          last_interaction_at: new Date().toISOString()
-        })
+        .update(updates)
         .eq('phone', phone)
         .eq('agency_id', agency_id);
     } else {
       // Yeni profil oluştur
+      const newProfile: any = {
+        phone,
+        agency_id,
+        total_messages: 1
+      };
+      
+      // İlk mesajdan dil algıla
+      if (userMessage) {
+        const detectedLanguage = await detectLanguage(userMessage);
+        if (detectedLanguage) {
+          newProfile.language_preference = detectedLanguage;
+          console.log('Language detected for new user:', detectedLanguage);
+        }
+      }
+      
       await supabase
         .from('whatsapp_user_profiles')
-        .insert({
-          phone,
-          agency_id,
-          total_messages: 1
-        });
+        .insert(newProfile);
     }
   } catch (error) {
     console.error('Error upserting user profile:', error);
+  }
+}
+
+// Mesajdan dil algılama
+async function detectLanguage(message: string): Promise<string | null> {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_AI_API_KEY')}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': Deno.env.get('SUPABASE_URL') || '',
+        'X-Title': 'Turzz WhatsApp Bot'
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash-lite',
+        messages: [
+          {
+            role: 'system',
+            content: `Sen bir dil algılama asistanısın. Kullanıcının mesajından hangi dilde yazıldığını tespit et.
+            
+Desteklenen diller ve kodları:
+- tr: Türkçe
+- en: İngilizce
+- de: Almanca
+- ru: Rusça
+- ar: Arapça
+- fr: Fransızca
+- es: İspanyolca
+
+Sadece dil kodunu döndür (örn: "tr", "en", "de"). Başka açıklama ekleme.`
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        temperature: 0.1
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Language detection API error:', await response.text());
+      return null;
+    }
+
+    const data = await response.json();
+    const detectedLang = data.choices[0]?.message?.content?.trim().toLowerCase();
+    
+    // Geçerli bir dil kodu olup olmadığını kontrol et
+    const validLanguages = ['tr', 'en', 'de', 'ru', 'ar', 'fr', 'es'];
+    if (detectedLang && validLanguages.includes(detectedLang)) {
+      return detectedLang;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error detecting language:', error);
+    return null;
   }
 }
 
