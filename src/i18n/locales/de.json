@@ -1,0 +1,145 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "admin": "Admin-Panel",
+    "gettingStarted": "Erste Schritte",
+    "help": "Hilfe"
+  },
+  "hero": {
+    "title": "WhatsApp-Integration",
+    "subtitle": "Für Ihr Reisebüro",
+    "description": "Kommunizieren Sie automatisch mit Ihren Kunden über WhatsApp, verwalten Sie Reservierungen und lassen Sie Ihr Geschäft wachsen.",
+    "cta": "Jetzt Starten",
+    "demo": "Demo Ansehen"
+  },
+  "features": {
+    "title": "Funktionen",
+    "subtitle": "Stärken Sie Ihr Geschäft",
+    "whatsapp": {
+      "title": "WhatsApp-Integration",
+      "description": "Kommunizieren Sie direkt mit Ihren Kunden über WhatsApp"
+    },
+    "ai": {
+      "title": "KI-Gestützt",
+      "description": "Bieten Sie 24/7 Kundensupport mit intelligentem Chatbot"
+    },
+    "booking": {
+      "title": "Einfache Buchung",
+      "description": "Ihre Kunden können einfach Touren buchen"
+    },
+    "analytics": {
+      "title": "Detaillierte Analysen",
+      "description": "Verfolgen Sie die Leistung Ihres Unternehmens"
+    },
+    "templates": {
+      "title": "Nachrichtenvorlagen",
+      "description": "Sparen Sie Zeit mit vorbereiteten Nachrichtenvorlagen"
+    },
+    "multi": {
+      "title": "Mehrsprachige Unterstützung",
+      "description": "Bedienen Sie Ihre Kunden in 7 verschiedenen Sprachen"
+    }
+  },
+  "pricing": {
+    "title": "Preise",
+    "subtitle": "Wählen Sie Den Besten Plan Für Ihr Unternehmen",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "starter": {
+      "name": "Starter",
+      "price": "49€",
+      "period": "/Monat",
+      "features": {
+        "messages": "1000 Nachrichten/Monat",
+        "tours": "Bis zu 50 Touren",
+        "ai": "Basis-KI-Unterstützung",
+        "support": "E-Mail-Support"
+      },
+      "cta": "Starten"
+    },
+    "professional": {
+      "name": "Professional",
+      "price": "99€",
+      "period": "/Monat",
+      "popular": "Beliebt",
+      "features": {
+        "messages": "5000 Nachrichten/Monat",
+        "tours": "Unbegrenzte Touren",
+        "ai": "Erweiterte KI-Unterstützung",
+        "analytics": "Detaillierte Analysen",
+        "support": "Prioritäts-Support"
+      },
+      "cta": "Starten"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "Individuell",
+      "period": "",
+      "features": {
+        "messages": "Unbegrenzte Nachrichten",
+        "tours": "Unbegrenzte Touren",
+        "ai": "Benutzerdefiniertes KI-Modell",
+        "integration": "Benutzerdefinierte Integrationen",
+        "support": "24/7 Support",
+        "training": "Schulung und Beratung"
+      },
+      "cta": "Kontaktieren Sie Uns"
+    }
+  },
+  "footer": {
+    "description": "Moderne WhatsApp-Integration und Reservierungsverwaltungssystem für Reisebüros.",
+    "product": "Produkt",
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "demo": "Demo",
+    "support": "Unterstützung",
+    "help": "Hilfe-Center",
+    "docs": "Dokumentation",
+    "contact": "Kontakt",
+    "legal": "Rechtliches",
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen",
+    "rights": "Alle Rechte vorbehalten."
+  },
+  "admin": {
+    "title": "Admin-Panel",
+    "welcome": "Willkommen",
+    "stats": {
+      "totalTours": "Gesamte Touren",
+      "activeTours": "Aktive Touren",
+      "totalBookings": "Gesamte Buchungen",
+      "revenue": "Umsatz"
+    },
+    "tabs": {
+      "tours": "Touren",
+      "bookings": "Buchungen",
+      "messages": "Nachrichten",
+      "analytics": "Analysen",
+      "settings": "Einstellungen"
+    },
+    "logout": "Abmelden"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "forgotPassword": "Passwort Vergessen",
+    "noAccount": "Noch kein Konto?",
+    "hasAccount": "Haben Sie bereits ein Konto?"
+  },
+  "common": {
+    "loading": "Wird geladen...",
+    "error": "Fehler",
+    "success": "Erfolgreich",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "search": "Suchen...",
+    "filter": "Filtern",
+    "export": "Exportieren",
+    "import": "Importieren"
+  }
+}
