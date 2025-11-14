@@ -7,6 +7,13 @@ import { Send, MessageSquare, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Message {
   role: "user" | "assistant";
@@ -44,6 +51,7 @@ export const DemoChat = () => {
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationStyle, setConversationStyle] = useState<'friendly' | 'professional' | 'energetic' | 'helpful'>('professional');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -89,7 +97,8 @@ export const DemoChat = () => {
             message: userMessage,
             history: messages.slice(-10),
             sessionId: sessionId,
-            language: i18n.language
+            language: i18n.language,
+            conversationStyle: conversationStyle
           }),
         }
       );
@@ -137,7 +146,23 @@ export const DemoChat = () => {
               </p>
             </div>
           </div>
-          <LanguageSelector />
+          <div className="flex items-center gap-2">
+            <Select
+              value={conversationStyle}
+              onValueChange={(value: 'friendly' | 'professional' | 'energetic' | 'helpful') => setConversationStyle(value)}
+            >
+              <SelectTrigger className="w-[180px] bg-background text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="friendly">🤝 {t("demo.style.friendly")}</SelectItem>
+                <SelectItem value="professional">👔 {t("demo.style.professional")}</SelectItem>
+                <SelectItem value="energetic">⚡ {t("demo.style.energetic")}</SelectItem>
+                <SelectItem value="helpful">😊 {t("demo.style.helpful")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <LanguageSelector />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">

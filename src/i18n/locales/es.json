@@ -77,7 +77,13 @@
     "note": "Este es un chatbot de demostración. En tu sistema real, puedes usar tus propios tours y configuraciones.",
     "cta": "Comenzar Ahora",
     "greeting": "¡Hola! 👋 Soy tu asistente de tours de WhatsApp. ¿Qué lugares hermosos te gustaría explorar?\n\n✨ *Tours populares:*\n🏔️ Capadocia\n🏖️ Antalya\n🏛️ Estambul\n🌊 Tour del Egeo",
-    "subtitle2": "Asistente de tours impulsado por IA"
+    "subtitle2": "Asistente de tours impulsado por IA",
+    "style": {
+      "friendly": "Amistoso/Cordial",
+      "professional": "Profesional/Corporativo",
+      "energetic": "Enérgico/Dinámico",
+      "helpful": "Amable/Servicial"
+    }
   },
   "advanced": {
     "badge": "Características Avanzadas",
