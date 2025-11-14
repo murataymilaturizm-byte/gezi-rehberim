@@ -333,6 +333,141 @@
     "login": "Giriş Yap"
   },
   "admin": {
+    "title": "Admin Paneli",
+    "subtitle": "Genel Bakış",
+    "totalAgencies": "Toplam Acente",
+    "activeAgencies": "Aktif Acente",
+    "totalMessages": "Toplam Mesaj",
+    "conversionRate": "Dönüşüm Oranı",
+    "dashboard": {
+      "status": "Durum",
+      "trialPeriod": "Deneme Süresi",
+      "messagesPerMonth": "500 mesaj/ay",
+      "conversationHistory": "30 gün konuşma geçmişi",
+      "emailSupport": "Email destek",
+      "whatsappSettings": "WhatsApp Ayarları"
+    },
+    "agency": {
+      "title": "Acente Yönetimi",
+      "addNew": "Yeni Acente Ekle",
+      "editAgency": "Acente Düzenle",
+      "updateInfo": "Acente bilgilerini güncelleyin",
+      "createAccount": "Yeni acente hesabı oluşturun",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "name": "Acente Adı",
+      "owner": "Acente Sahibi",
+      "city": "Şehir",
+      "region": "Bölge",
+      "plan": "Plan",
+      "status": "Durum",
+      "messageQuota": "Mesaj Kotası",
+      "remainingTime": "Kalan Süre",
+      "actions": "İşlemler",
+      "form": {
+        "fullName": "Ad Soyad",
+        "email": "Email",
+        "password": "Şifre",
+        "agencyName": "Acente Adı",
+        "city": "Şehir",
+        "cityPlaceholder": "İstanbul",
+        "region": "Bölge (İsteğe Bağlı)",
+        "regionPlaceholder": "Marmara"
+      },
+      "tableHeaders": {
+        "agencyName": "Acente Adı",
+        "owner": "Sahibi",
+        "phone": "Telefon",
+        "plan": "Plan",
+        "messageQuota": "Mesaj Kotası",
+        "subscription": "Abonelik",
+        "remainingTime": "Kalan Süre",
+        "status": "Durum",
+        "actions": "İşlemler"
+      },
+      "plans": {
+        "starter": "Başlangıç",
+        "professional": "Profesyonel",
+        "enterprise": "Kurumsal",
+        "starterWithLimit": "Başlangıç (500 mesaj/ay)",
+        "professionalWithLimit": "Profesyonel (2.000 mesaj/ay)",
+        "enterpriseWithLimit": "Kurumsal (Sınırsız)"
+      },
+      "subscriptionStatus": {
+        "trial": "Deneme",
+        "active": "Aktif",
+        "cancelled": "İptal Edildi",
+        "expired": "Süresi Doldu"
+      },
+      "messages": {
+        "unlimited": "Sınırsız",
+        "used": "{{used}}/{{total}} kullanıldı",
+        "daysLeft": "{{days}} gün kaldı",
+        "expired": "Süresi doldu",
+        "notAdded": "Eklenmedi",
+        "quotaFull": "Kota Doldu",
+        "percentUsed": "kullanıldı"
+      },
+      "plan": {
+        "monthlyLimit": "Aylık Mesaj Limiti",
+        "defaultLimit": "Planın varsayılan limiti: {{limit}} mesaj",
+        "extraMessages": "Ekstra Mesaj Kotası Ekle",
+        "extraPlaceholder": "Örn: 500",
+        "extraHelp": "Mevcut limite ekstra mesaj kotası ekleyin",
+        "newTotalLimit": "Yeni Toplam Limit",
+        "messagesPerMonth": "mesaj/ay",
+        "unlimitedMessages": "Sınırsız Mesaj",
+        "enterpriseNoLimit": "Kurumsal plan ile mesaj limiti yoktur",
+        "cancel": "İptal",
+        "save": "Kaydet"
+      }
+    },
+    "whatsapp": {
+      "conversations": {
+        "title": "WhatsApp Konuşmaları",
+        "messages": "mesaj",
+        "selectConversation": "Bir konuşma seçin"
+      },
+      "settings": {
+        "title": "WhatsApp Ayarları",
+        "description": "WhatsApp Business numaranızı girerek WhatsApp entegrasyonunu aktif edebilirsiniz",
+        "phoneNumber": "WhatsApp Business Numarası",
+        "phonePlaceholder": "+14155238886",
+        "phoneHelp": "Twilio'ya kayıtlı WhatsApp Business numaranızı girin (ör: +14155238886)",
+        "save": "Kaydet",
+        "update": "Güncelle",
+        "saving": "Kaydediliyor...",
+        "notConfigured": "WhatsApp Business numaranızı girerek WhatsApp entegrasyonunu aktif edebilirsiniz. Merkezi Twilio hesabı kullanıldığı için sadece WhatsApp numaranızı girmeniz yeterlidir.",
+        "configured": "WhatsApp entegrasyonu aktif! Müşterileriniz WhatsApp üzerinden sizinle iletişim kurabilir.",
+        "integrationComplete": "Entegrasyon Tamamlandı",
+        "integrationCompleteDesc": "WhatsApp hizmeti aktif. Müşterileriniz {{phone}} numarasından sizinle iletişim kurabilir."
+      },
+      "templates": {
+        "title": "Mesaj Şablonları",
+        "description": "Hızlı yanıtlar için hazır mesaj şablonları oluşturun",
+        "addNew": "Yeni Şablon Ekle",
+        "name": "Şablon Adı",
+        "content": "Mesaj İçeriği",
+        "actions": "İşlemler",
+        "edit": "Düzenle",
+        "delete": "Sil",
+        "noTemplates": "Henüz mesaj şablonu yok",
+        "save": "Kaydet",
+        "update": "Güncelle",
+        "cancel": "İptal",
+        "saving": "Kaydediliyor...",
+        "namePlaceholder": "Örn: Hoş Geldiniz Mesajı",
+        "contentPlaceholder": "Merhaba! Size nasıl yardımcı olabilirim?"
+      }
+    },
+    "agencyManagement": {
+      "title": "Acente Yönetimi",
+      "addNewAgency": "Yeni Acente Ekle"
+    },
+    "subscriptionHistory": {
+      "title": "Abonelik Geçmişi",
+      "description": "Ödeme ve işlem geçmişi"
+    },
     "title": "Acente Paneli",
     "welcome": "Hoşgeldiniz",
     "back": "Geri",

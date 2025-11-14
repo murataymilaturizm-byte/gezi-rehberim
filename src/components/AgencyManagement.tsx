@@ -355,12 +355,12 @@ export const AgencyManagement = () => {
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
-                  {editingAgency ? "Acente Düzenle" : "Yeni Acente Ekle"}
+                  {editingAgency ? t("admin.agency.editAgency") : t("admin.agency.addNew")}
                 </DialogTitle>
                 <DialogDescription>
                   {editingAgency 
-                    ? "Acente bilgilerini güncelleyin" 
-                    : "Yeni acente hesabı oluşturun"}
+                    ? t("admin.agency.updateInfo") 
+                    : t("admin.agency.createAccount")}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -368,7 +368,7 @@ export const AgencyManagement = () => {
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="full_name">Ad Soyad</Label>
+                        <Label htmlFor="full_name">{t("admin.agency.form.fullName")}</Label>
                         <Input
                           id="full_name"
                           value={formData.full_name}
@@ -377,7 +377,7 @@ export const AgencyManagement = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t("admin.agency.form.email")}</Label>
                         <Input
                           id="email"
                           type="email"
@@ -388,7 +388,7 @@ export const AgencyManagement = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Şifre</Label>
+                      <Label htmlFor="password">{t("admin.agency.form.password")}</Label>
                       <Input
                         id="password"
                         type="password"
@@ -402,7 +402,7 @@ export const AgencyManagement = () => {
                 )}
                 
                 <div className="space-y-2">
-                  <Label htmlFor="agency_name">Acente Adı</Label>
+                  <Label htmlFor="agency_name">{t("admin.agency.form.agencyName")}</Label>
                   <Input
                     id="agency_name"
                     value={formData.agency_name}
@@ -413,22 +413,22 @@ export const AgencyManagement = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="city">Şehir</Label>
+                    <Label htmlFor="city">{t("admin.agency.form.city")}</Label>
                     <Input
                       id="city"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      placeholder="İstanbul"
+                      placeholder={t("admin.agency.form.cityPlaceholder")}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="region">Bölge (İsteğe Bağlı)</Label>
+                    <Label htmlFor="region">{t("admin.agency.form.region")}</Label>
                     <Input
                       id="region"
                       value={formData.region}
                       onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                      placeholder="Marmara"
+                      placeholder={t("admin.agency.form.regionPlaceholder")}
                     />
                   </div>
                 </div>
@@ -671,42 +671,42 @@ export const AgencyManagement = () => {
 
             {planFormData.plan_type !== "enterprise" && (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="message_limit">Aylık Mesaj Limiti</Label>
-                  <Input
-                    id="message_limit"
-                    type="number"
-                    min="0"
-                    value={planFormData.message_limit}
-                    onChange={(e) => setPlanFormData({ ...planFormData, message_limit: parseInt(e.target.value) || 0 })}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Planın varsayılan limiti: {planFormData.plan_type === "starter" ? "500" : "2.000"} mesaj
-                  </p>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="message_limit">{t("admin.agency.plan.monthlyLimit")}</Label>
+              <Input
+                id="message_limit"
+                type="number"
+                min="0"
+                value={planFormData.message_limit}
+                onChange={(e) => setPlanFormData({ ...planFormData, message_limit: parseInt(e.target.value) || 0 })}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("admin.agency.plan.defaultLimit", { limit: planFormData.plan_type === "starter" ? "500" : "2.000" })}
+              </p>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="extra_messages">Ekstra Mesaj Kotası Ekle</Label>
-                  <Input
-                    id="extra_messages"
-                    type="number"
-                    min="0"
-                    value={planFormData.extra_messages}
-                    onChange={(e) => setPlanFormData({ ...planFormData, extra_messages: parseInt(e.target.value) || 0 })}
-                    placeholder="Örn: 500"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Mevcut limite ekstra mesaj kotası ekleyin
-                  </p>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="extra_messages">{t("admin.agency.plan.extraMessages")}</Label>
+              <Input
+                id="extra_messages"
+                type="number"
+                min="0"
+                value={planFormData.extra_messages}
+                onChange={(e) => setPlanFormData({ ...planFormData, extra_messages: parseInt(e.target.value) || 0 })}
+                placeholder={t("admin.agency.plan.extraPlaceholder")}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("admin.agency.plan.extraHelp")}
+              </p>
+            </div>
 
-                <div className="bg-accent/20 border border-border rounded-lg p-3">
-                  <p className="text-sm font-medium">Yeni Toplam Limit</p>
-                  <p className="text-2xl font-bold text-primary">
-                    {(planFormData.message_limit + planFormData.extra_messages).toLocaleString('tr-TR')} mesaj/ay
-                  </p>
-                </div>
+            <div className="bg-accent/20 border border-border rounded-lg p-3">
+              <p className="text-sm font-medium">{t("admin.agency.plan.newTotalLimit")}</p>
+              <p className="text-2xl font-bold text-primary">
+                {(planFormData.message_limit + planFormData.extra_messages).toLocaleString('tr-TR')} {t("admin.agency.plan.messagesPerMonth")}
+              </p>
+            </div>
               </>
             )}
 
@@ -714,10 +714,10 @@ export const AgencyManagement = () => {
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm font-medium text-primary flex items-center gap-2">
                   <MessageSquare className="w-4 h-4" />
-                  Sınırsız Mesaj
+                  {t("admin.agency.plan.unlimitedMessages")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Kurumsal plan ile mesaj limiti yoktur
+                  {t("admin.agency.plan.enterpriseNoLimit")}
                 </p>
               </div>
             )}
@@ -728,10 +728,10 @@ export const AgencyManagement = () => {
                 variant="outline"
                 onClick={() => setPlanDialogOpen(false)}
               >
-                İptal
+                {t("admin.agency.plan.cancel")}
               </Button>
               <Button type="submit" className="bg-gradient-ocean hover:opacity-90">
-                Kaydet
+                {t("admin.agency.plan.save")}
               </Button>
             </div>
           </form>
