@@ -23,6 +23,7 @@ export const TwilioSettings = () => {
   const [saving, setSaving] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [isConfigured, setIsConfigured] = useState(false);
+  const [whatsappStatus, setWhatsappStatus] = useState<'pending' | 'active' | 'rejected'>('pending');
   
   const [formData, setFormData] = useState({
     whatsapp_phone_number: ""
@@ -40,7 +41,7 @@ export const TwilioSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, twilio_phone_number, active")
+        .select("id, twilio_phone_number, whatsapp_status, active")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -51,9 +52,11 @@ export const TwilioSettings = () => {
         
         // Check if WhatsApp is configured - using twilio_phone_number as temp storage
         const phoneNumber = (agencyData as any).twilio_phone_number || "";
+        const status = (agencyData as any).whatsapp_status || "pending";
         const isConfigured = phoneNumber !== "" && phoneNumber !== "TEMP_PHONE";
         
         setIsConfigured(isConfigured);
+        setWhatsappStatus(status);
 
         if (isConfigured) {
           setFormData({
@@ -106,7 +109,8 @@ export const TwilioSettings = () => {
       const { data, error } = await supabase
         .from("agencies")
         .update({
-          twilio_phone_number: formData.whatsapp_phone_number
+          twilio_phone_number: formData.whatsapp_phone_number,
+          whatsapp_status: 'pending'
         } as any)
         .eq("id", agencyId)
         .select()
@@ -120,10 +124,11 @@ export const TwilioSettings = () => {
       console.log("WhatsApp Settings - Update successful:", data);
 
       setIsConfigured(true);
+      setWhatsappStatus('pending');
 
       toast({
         title: "Başarılı",
-        description: "WhatsApp numarası başarıyla kaydedildi",
+        description: "WhatsApp entegrasyon talebiniz alındı. Yönetici onayı bekleniyor.",
       });
 
       await loadWhatsAppSettings();
@@ -176,11 +181,29 @@ export const TwilioSettings = () => {
           </Alert>
         )}
 
-        {isConfigured && (
+        {isConfigured && whatsappStatus === 'pending' && (
+          <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+            <AlertCircle className="h-4 w-4 text-yellow-500" />
+            <AlertDescription className="text-yellow-600">
+              WhatsApp entegrasyon başvurunuz alındı. Yönetici onayı bekleniyor.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {isConfigured && whatsappStatus === 'active' && (
           <Alert className="mb-6 border-green-500/50 bg-green-500/10">
             <CheckCircle2 className="h-4 w-4 text-green-500" />
             <AlertDescription className="text-green-500">
               {t("admin.whatsapp.settings.configured")}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {isConfigured && whatsappStatus === 'rejected' && (
+          <Alert className="mb-6 border-red-500/50 bg-red-500/10">
+            <AlertCircle className="h-4 w-4 text-red-500" />
+            <AlertDescription className="text-red-500">
+              WhatsApp entegrasyon başvurunuz reddedildi. Lütfen destek ile iletişime geçin.
             </AlertDescription>
           </Alert>
         )}
@@ -209,7 +232,7 @@ export const TwilioSettings = () => {
           </Button>
         </form>
 
-        {isConfigured && (
+        {isConfigured && whatsappStatus === 'active' && (
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <h4 className="font-semibold mb-2">✅ {t("admin.whatsapp.settings.integrationComplete")}</h4>
             <p className="text-sm text-muted-foreground">
