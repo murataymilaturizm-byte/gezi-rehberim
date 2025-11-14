@@ -102,22 +102,77 @@
     "rights": "Все права защищены."
   },
   "admin": {
-    "title": "Панель Администратора",
+    "title": "Панель Агентства",
     "welcome": "Добро Пожаловать",
-    "stats": {
-      "totalTours": "Всего Туров",
-      "activeTours": "Активные Туры",
-      "totalBookings": "Всего Бронирований",
-      "revenue": "Доход"
-    },
+    "back": "Назад",
+    "home": "Главная",
+    "help": "Помощь",
+    "logout": "Выйти",
+    "loading": "Загрузка...",
+    "superAdmin": "Супер Админ",
     "tabs": {
+      "dashboard": "Дашборд",
       "tours": "Туры",
-      "bookings": "Бронирования",
-      "messages": "Сообщения",
-      "analytics": "Аналитика",
-      "settings": "Настройки"
+      "registrations": "Регистрации",
+      "whatsapp": "WhatsApp",
+      "settings": "Настройки",
+      "history": "История",
+      "agencies": "Агентства",
+      "contactForms": "Контактные Формы",
+      "twilioSettings": "Настройки Twilio",
+      "templates": "Шаблоны"
     },
-    "logout": "Выйти"
+    "tours": {
+      "title": "Туры",
+      "addNew": "Добавить Новый Тур",
+      "export": "Экспорт в Excel",
+      "noTours": "Туры еще не добавлены",
+      "addDate": "Добавить Дату",
+      "dates": "Даты",
+      "quota": "Квота",
+      "deleteSuccess": "Тур удален",
+      "deleteError": "Ошибка удаления",
+      "deleteConfirm": "Вы уверены, что хотите удалить этот тур?",
+      "deleteWarning": "Это действие нельзя отменить."
+    },
+    "registrations": {
+      "title": "Регистрации",
+      "export": "Экспорт в Excel",
+      "noRegistrations": "Регистраций пока нет",
+      "name": "Имя",
+      "phone": "Телефон",
+      "tour": "Тур",
+      "date": "Дата",
+      "pax": "Человек",
+      "price": "Цена",
+      "status": "Статус",
+      "note": "Заметка",
+      "createdAt": "Создано",
+      "actions": "Действия"
+    },
+    "status": {
+      "new": "Новый",
+      "pending": "В Ожидании",
+      "confirmed": "Подтвержден",
+      "cancelled": "Отменен"
+    },
+    "tourTypes": {
+      "daytrip": "Однодневный",
+      "n2": "2 Ночи",
+      "n3": "3 Ночи"
+    },
+    "date": {
+      "deleteSuccess": "Дата удалена",
+      "deleteError": "Ошибка удаления"
+    },
+    "toast": {
+      "success": "Успешно! ✅",
+      "error": "Ошибка",
+      "statusUpdated": "Статус обновлен",
+      "statusUpdateError": "Не удалось обновить статус",
+      "messagesSent": "Сообщения отправлены",
+      "messagesSentError": "Не удалось отправить сообщения"
+    }
   },
   "auth": {
     "login": "Войти",

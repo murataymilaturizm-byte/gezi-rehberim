@@ -102,22 +102,77 @@
     "rights": "Alle Rechte vorbehalten."
   },
   "admin": {
-    "title": "Admin-Panel",
+    "title": "Agentur-Panel",
     "welcome": "Willkommen",
-    "stats": {
-      "totalTours": "Gesamte Touren",
-      "activeTours": "Aktive Touren",
-      "totalBookings": "Gesamte Buchungen",
-      "revenue": "Umsatz"
-    },
+    "back": "Zurück",
+    "home": "Startseite",
+    "help": "Hilfe",
+    "logout": "Abmelden",
+    "loading": "Wird geladen...",
+    "superAdmin": "Super Admin",
     "tabs": {
+      "dashboard": "Dashboard",
       "tours": "Touren",
-      "bookings": "Buchungen",
-      "messages": "Nachrichten",
-      "analytics": "Analysen",
-      "settings": "Einstellungen"
+      "registrations": "Registrierungen",
+      "whatsapp": "WhatsApp",
+      "settings": "Einstellungen",
+      "history": "Verlauf",
+      "agencies": "Agenturen",
+      "contactForms": "Kontaktformulare",
+      "twilioSettings": "Twilio-Einstellungen",
+      "templates": "Vorlagen"
     },
-    "logout": "Abmelden"
+    "tours": {
+      "title": "Touren",
+      "addNew": "Neue Tour Hinzufügen",
+      "export": "Nach Excel Exportieren",
+      "noTours": "Noch keine Touren hinzugefügt",
+      "addDate": "Datum Hinzufügen",
+      "dates": "Daten",
+      "quota": "Kontingent",
+      "deleteSuccess": "Tour gelöscht",
+      "deleteError": "Löschvorgang fehlgeschlagen",
+      "deleteConfirm": "Sind Sie sicher, dass Sie diese Tour löschen möchten?",
+      "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "registrations": {
+      "title": "Registrierungen",
+      "export": "Nach Excel Exportieren",
+      "noRegistrations": "Noch keine Registrierungen",
+      "name": "Name",
+      "phone": "Telefon",
+      "tour": "Tour",
+      "date": "Datum",
+      "pax": "Personen",
+      "price": "Preis",
+      "status": "Status",
+      "note": "Notiz",
+      "createdAt": "Erstellt",
+      "actions": "Aktionen"
+    },
+    "status": {
+      "new": "Neu",
+      "pending": "Ausstehend",
+      "confirmed": "Bestätigt",
+      "cancelled": "Storniert"
+    },
+    "tourTypes": {
+      "daytrip": "Tagesausflug",
+      "n2": "2 Nächte",
+      "n3": "3 Nächte"
+    },
+    "date": {
+      "deleteSuccess": "Datum gelöscht",
+      "deleteError": "Löschvorgang fehlgeschlagen"
+    },
+    "toast": {
+      "success": "Erfolgreich! ✅",
+      "error": "Fehler",
+      "statusUpdated": "Status aktualisiert",
+      "statusUpdateError": "Status konnte nicht aktualisiert werden",
+      "messagesSent": "Nachrichten gesendet",
+      "messagesSentError": "Nachrichten konnten nicht gesendet werden"
+    }
   },
   "auth": {
     "login": "Anmelden",

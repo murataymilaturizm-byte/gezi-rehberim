@@ -102,22 +102,77 @@
     "rights": "جميع الحقوق محفوظة."
   },
   "admin": {
-    "title": "لوحة الإدارة",
+    "title": "لوحة الوكالة",
     "welcome": "مرحباً",
-    "stats": {
-      "totalTours": "إجمالي الرحلات",
-      "activeTours": "الرحلات النشطة",
-      "totalBookings": "إجمالي الحجوزات",
-      "revenue": "الإيرادات"
-    },
+    "back": "رجوع",
+    "home": "الرئيسية",
+    "help": "المساعدة",
+    "logout": "خروج",
+    "loading": "جاري التحميل...",
+    "superAdmin": "مدير النظام",
     "tabs": {
+      "dashboard": "لوحة التحكم",
       "tours": "الرحلات",
-      "bookings": "الحجوزات",
-      "messages": "الرسائل",
-      "analytics": "التحليلات",
-      "settings": "الإعدادات"
+      "registrations": "التسجيلات",
+      "whatsapp": "واتساب",
+      "settings": "الإعدادات",
+      "history": "السجل",
+      "agencies": "الوكالات",
+      "contactForms": "نماذج الاتصال",
+      "twilioSettings": "إعدادات Twilio",
+      "templates": "القوالب"
     },
-    "logout": "تسجيل الخروج"
+    "tours": {
+      "title": "الرحلات",
+      "addNew": "إضافة رحلة جديدة",
+      "export": "تصدير إلى Excel",
+      "noTours": "لم تتم إضافة رحلات بعد",
+      "addDate": "إضافة تاريخ",
+      "dates": "التواريخ",
+      "quota": "الحصة",
+      "deleteSuccess": "تم حذف الرحلة",
+      "deleteError": "فشلت عملية الحذف",
+      "deleteConfirm": "هل أنت متأكد من حذف هذه الرحلة؟",
+      "deleteWarning": "لا يمكن التراجع عن هذا الإجراء."
+    },
+    "registrations": {
+      "title": "التسجيلات",
+      "export": "تصدير إلى Excel",
+      "noRegistrations": "لا توجد تسجيلات بعد",
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "tour": "الرحلة",
+      "date": "التاريخ",
+      "pax": "الأشخاص",
+      "price": "السعر",
+      "status": "الحالة",
+      "note": "ملاحظة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "new": "جديد",
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "cancelled": "ملغي"
+    },
+    "tourTypes": {
+      "daytrip": "رحلة يومية",
+      "n2": "ليلتين",
+      "n3": "3 ليالي"
+    },
+    "date": {
+      "deleteSuccess": "تم حذف التاريخ",
+      "deleteError": "فشلت عملية الحذف"
+    },
+    "toast": {
+      "success": "نجح! ✅",
+      "error": "خطأ",
+      "statusUpdated": "تم تحديث الحالة",
+      "statusUpdateError": "فشل تحديث الحالة",
+      "messagesSent": "تم إرسال الرسائل",
+      "messagesSentError": "فشل إرسال الرسائل"
+    }
   },
   "auth": {
     "login": "تسجيل الدخول",

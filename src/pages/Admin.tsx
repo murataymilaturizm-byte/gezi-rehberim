@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,23 +91,24 @@ interface Registration {
   };
 }
 
-const statusLabels: Record<string, string> = {
-  NEW: "Yeni",
-  PENDING: "Beklemede",
-  CONFIRMED: "Onaylandı",
-  CANCELLED: "İptal"
-};
-
-const tourTypeLabels: Record<string, string> = {
-  DAYTRIP: "Günübirlik",
-  N2: "2 Gece",
-  N3: "3 Gece"
-};
-
 const Admin = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation();
   const { toast } = useToast();
+  
+  const statusLabels: Record<string, string> = {
+    NEW: t("admin.status.new"),
+    PENDING: t("admin.status.pending"),
+    CONFIRMED: t("admin.status.confirmed"),
+    CANCELLED: t("admin.status.cancelled")
+  };
+
+  const tourTypeLabels: Record<string, string> = {
+    DAYTRIP: t("admin.tourTypes.daytrip"),
+    N2: t("admin.tourTypes.n2"),
+    N3: t("admin.tourTypes.n3")
+  };
   const [session, setSession] = useState<Session | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
@@ -208,7 +210,7 @@ const Admin = () => {
         setUserAgencyId(agencyData?.id || null);
         setAgencyName(agencyData?.agency_name || "");
       } else {
-        setAgencyName("Super Admin");
+        setAgencyName(t("admin.superAdmin"));
       }
     } catch (error) {
       console.error("Error checking user role:", error);
@@ -271,8 +273,8 @@ const Admin = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı! ✅",
-        description: "Tur silindi",
+        title: t("admin.toast.success"),
+        description: t("admin.tours.deleteSuccess"),
       });
       
       loadData();
@@ -280,8 +282,8 @@ const Admin = () => {
     } catch (error) {
       console.error("Delete tour error:", error);
       toast({
-        title: "Hata",
-        description: "Silme işlemi başarısız",
+        title: t("admin.toast.error"),
+        description: t("admin.tours.deleteError"),
         variant: "destructive"
       });
     }
@@ -297,8 +299,8 @@ const Admin = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı! ✅",
-        description: "Tarih silindi",
+        title: t("admin.toast.success"),
+        description: t("admin.date.deleteSuccess"),
       });
       
       loadData();
@@ -306,8 +308,8 @@ const Admin = () => {
     } catch (error) {
       console.error("Delete date error:", error);
       toast({
-        title: "Hata",
-        description: "Silme işlemi başarısız",
+        title: t("admin.toast.error"),
+        description: t("admin.date.deleteError"),
         variant: "destructive"
       });
     }
@@ -405,8 +407,8 @@ const Admin = () => {
               <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300">
                 <a href="/">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Ana Sayfa</span>
-                  <span className="sm:hidden">Geri</span>
+                  <span className="hidden sm:inline">{t("admin.home")}</span>
+                  <span className="sm:hidden">{t("admin.back")}</span>
                 </a>
               </Button>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -415,13 +417,13 @@ const Admin = () => {
                   alt="Turzz AI Logo" 
                   className="h-10 sm:h-14 w-auto object-contain transition-transform duration-300 hover:scale-105"
                 />
-                <h1 className="text-base sm:text-xl font-bold text-foreground">Acente Paneli</h1>
+                <h1 className="text-base sm:text-xl font-bold text-foreground">{t("admin.title")}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
               {(agencyName || userName) && (
                 <div className="hidden lg:flex items-center gap-2 text-foreground">
-                  <span className="text-sm font-medium">Hoşgeldiniz</span>
+                  <span className="text-sm font-medium">{t("admin.welcome")}</span>
                   {agencyName && (
                     <span className="text-sm font-semibold">{agencyName}</span>
                   )}
@@ -437,12 +439,12 @@ const Admin = () => {
               <ThemeToggle />
               <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex hover:scale-105 transition-transform duration-300">
                 <a href="/yardim" target="_blank">
-                  Yardım
+                  {t("admin.help")}
                 </a>
               </Button>
               <Button variant="outline" size="sm" onClick={handleLogout} className="transition-all duration-300 hover:scale-105">
                 <LogOut className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Çıkış</span>
+                <span className="hidden sm:inline">{t("admin.logout")}</span>
               </Button>
             </div>
           </div>
@@ -461,28 +463,28 @@ const Admin = () => {
             onClick={() => setActiveTab("dashboard")}
             className={`transition-all duration-300 ${activeTab === "dashboard" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
-            Dashboard
+            {t("admin.tabs.dashboard")}
           </Button>
           <Button
             variant={activeTab === "tours" ? "default" : "outline"}
             onClick={() => setActiveTab("tours")}
             className={`transition-all duration-300 ${activeTab === "tours" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
-            Turlar
+            {t("admin.tabs.tours")}
           </Button>
           <Button
             variant={activeTab === "registrations" ? "default" : "outline"}
             onClick={() => setActiveTab("registrations")}
             className={`transition-all duration-300 ${activeTab === "registrations" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
-            Kayıtlar
+            {t("admin.tabs.registrations")}
           </Button>
           <Button
             variant={activeTab === "whatsapp" ? "default" : "outline"}
             onClick={() => setActiveTab("whatsapp")}
             className={`transition-all duration-300 ${activeTab === "whatsapp" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
           >
-            WhatsApp
+            {t("admin.tabs.whatsapp")}
           </Button>
           {!isSuperAdmin && (
             <>
@@ -495,43 +497,43 @@ const Admin = () => {
               </Button>
               <Button
                 variant={activeTab === "templates" ? "default" : "outline"}
-                onClick={() => setActiveTab("templates")}
-                className={`transition-all duration-300 ${activeTab === "templates" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                Şablonlar
-              </Button>
-              <Button
-                variant={activeTab === "history" ? "default" : "outline"}
-                onClick={() => setActiveTab("history")}
-                className={`transition-all duration-300 ${activeTab === "history" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                Abonelik Geçmişi
-              </Button>
+                 onClick={() => setActiveTab("templates")}
+                 className={`transition-all duration-300 ${activeTab === "templates" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+               >
+                 {t("admin.tabs.templates")}
+               </Button>
+               <Button
+                 variant={activeTab === "history" ? "default" : "outline"}
+                 onClick={() => setActiveTab("history")}
+                 className={`transition-all duration-300 ${activeTab === "history" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+               >
+                 {t("admin.tabs.history")}
+               </Button>
             </>
           )}
           {isSuperAdmin && (
             <>
-              <Button
-                variant={activeTab === "agencies" ? "default" : "outline"}
-                onClick={() => setActiveTab("agencies")}
-                className={`transition-all duration-300 ${activeTab === "agencies" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                Acenteler
-              </Button>
-              <Button
-                variant={activeTab === "contact_forms" ? "default" : "outline"}
-                onClick={() => setActiveTab("contact_forms")}
-                className={`transition-all duration-300 ${activeTab === "contact_forms" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                İletişim Formları
-              </Button>
-              <Button
-                variant={activeTab === "twilio_settings" ? "default" : "outline"}
-                onClick={() => setActiveTab("twilio_settings")}
-                className={`transition-all duration-300 ${activeTab === "twilio_settings" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                Twilio Ayarları
-              </Button>
+            <Button
+              variant={activeTab === "agencies" ? "default" : "outline"}
+              onClick={() => setActiveTab("agencies")}
+              className={`transition-all duration-300 ${activeTab === "agencies" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+            >
+              {t("admin.tabs.agencies")}
+            </Button>
+            <Button
+              variant={activeTab === "contact_forms" ? "default" : "outline"}
+              onClick={() => setActiveTab("contact_forms")}
+              className={`transition-all duration-300 ${activeTab === "contact_forms" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+            >
+              {t("admin.tabs.contactForms")}
+            </Button>
+            <Button
+              variant={activeTab === "twilio_settings" ? "default" : "outline"}
+              onClick={() => setActiveTab("twilio_settings")}
+              className={`transition-all duration-300 ${activeTab === "twilio_settings" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+            >
+              {t("admin.tabs.twilioSettings")}
+            </Button>
             </>
           )}
         </div>
@@ -561,7 +563,7 @@ const Admin = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>
-                {activeTab === "tours" ? "Tur Listesi" : "Kayıt Listesi"}
+                {activeTab === "tours" ? t("admin.tours.title") : t("admin.registrations.title")}
               </CardTitle>
               <div className="flex gap-2">
                 {activeTab === "tours" ? (
@@ -572,7 +574,7 @@ const Admin = () => {
                       disabled={tours.length === 0}
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Excel İndir
+                      {t("admin.tours.export")}
                     </Button>
                     <Button
                       onClick={() => {
@@ -582,7 +584,7 @@ const Admin = () => {
                       className="bg-gradient-ocean hover:opacity-90"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Yeni Tur
+                      {t("admin.tours.addNew")}
                     </Button>
                   </>
                 ) : (
@@ -592,7 +594,7 @@ const Admin = () => {
                     disabled={registrations.length === 0}
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Excel İndir
+                    {t("admin.registrations.export")}
                   </Button>
                 )}
               </div>
@@ -600,12 +602,12 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
+              <div className="text-center py-8 text-muted-foreground">{t("admin.loading")}</div>
             ) : activeTab === "tours" ? (
               <div className="space-y-4">
                 {tours.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Henüz tur eklenmemiş
+                    {t("admin.tours.noTours")}
                   </div>
                 ) : (
                   tours.map((tour) => (
@@ -633,7 +635,7 @@ const Admin = () => {
                               }}
                             >
                               <Calendar className="w-4 h-4 mr-2" />
-                              Tarih Ekle
+                              {t("admin.tours.addDate")}
                             </Button>
                             <Button
                               variant="outline"
@@ -658,7 +660,7 @@ const Admin = () => {
                       {tour.tour_dates && tour.tour_dates.length > 0 && (
                         <CardContent>
                           <div className="space-y-2">
-                            <h4 className="text-sm font-medium">Tarihler:</h4>
+                            <h4 className="text-sm font-medium">{t("admin.tours.dates")}:</h4>
                             <div className="space-y-2">
                               {tour.tour_dates.map((date) => (
                                 <div
@@ -673,7 +675,7 @@ const Admin = () => {
                                       )}
                                     </span>
                                     <span className="font-medium">{date.price_adult} {tour.currency}</span>
-                                    <span className="text-muted-foreground">Kota: {date.quota}</span>
+                                    <span className="text-muted-foreground">{t("admin.tours.quota")}: {date.quota}</span>
                                   </div>
                                   <div className="flex gap-2">
                                     <Button
@@ -709,12 +711,12 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Ad Soyad</TableHead>
-                    <TableHead>Telefon</TableHead>
-                    <TableHead>Tur</TableHead>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Kişi</TableHead>
-                    <TableHead>Durum</TableHead>
+                    <TableHead>{t("admin.registrations.name")}</TableHead>
+                    <TableHead>{t("admin.registrations.phone")}</TableHead>
+                    <TableHead>{t("admin.registrations.tour")}</TableHead>
+                    <TableHead>{t("admin.registrations.date")}</TableHead>
+                    <TableHead>{t("admin.registrations.pax")}</TableHead>
+                    <TableHead>{t("admin.registrations.status")}</TableHead>
                     <TableHead>Kaynak</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -722,7 +724,7 @@ const Admin = () => {
                   {registrations.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center text-muted-foreground">
-                        Henüz kayıt yok
+                        {t("admin.registrations.noRegistrations")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -746,16 +748,16 @@ const Admin = () => {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="NEW">
-                                <Badge variant="secondary">Yeni</Badge>
+                                <Badge variant="secondary">{statusLabels.NEW}</Badge>
                               </SelectItem>
                               <SelectItem value="PENDING">
-                                <Badge variant="secondary">Beklemede</Badge>
+                                <Badge variant="secondary">{statusLabels.PENDING}</Badge>
                               </SelectItem>
                               <SelectItem value="CONFIRMED">
-                                <Badge variant="default">Onaylandı</Badge>
+                                <Badge variant="default">{statusLabels.CONFIRMED}</Badge>
                               </SelectItem>
                               <SelectItem value="CANCELLED">
-                                <Badge variant="destructive">İptal</Badge>
+                                <Badge variant="destructive">{statusLabels.CANCELLED}</Badge>
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -806,18 +808,18 @@ const Admin = () => {
       <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, id: "", type: "tour" })}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.tours.deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu işlem geri alınamaz. {deleteDialog.type === "tour" ? "Tur ve tüm tarihleri" : "Bu tarih"} kalıcı olarak silinecektir.
+              {t("admin.tours.deleteWarning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={deleteDialog.type === "tour" ? handleDeleteTour : handleDeleteDate}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Sil
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
