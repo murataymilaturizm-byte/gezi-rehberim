@@ -638,6 +638,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_contact_form_rate_limit: {
+        Args: { _email: string }
+        Returns: boolean
+      }
       cleanup_old_conversations: { Args: never; Returns: undefined }
       get_user_agency_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
@@ -647,7 +651,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_valid_email: { Args: { _email: string }; Returns: boolean }
+      is_valid_phone: { Args: { _phone: string }; Returns: boolean }
       reset_monthly_message_counts: { Args: never; Returns: undefined }
+      sanitize_text: { Args: { _text: string }; Returns: string }
     }
     Enums: {
       app_role: "super_admin" | "agency"
