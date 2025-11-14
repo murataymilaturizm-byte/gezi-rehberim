@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ interface TourFormDialogProps {
 
 export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDialogProps) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -105,8 +107,8 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
     
     if (!formData.title.trim() || !formData.destination.trim()) {
       toast({
-        title: "Hata",
-        description: "Lütfen zorunlu alanları doldurun",
+        title: t("admin.tourForm.error"),
+        description: t("admin.tourForm.fillRequired"),
         variant: "destructive"
       });
       return;
@@ -141,13 +143,13 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         if (error) throw error;
 
         toast({
-          title: "Başarılı! ✅",
-          description: "Tur güncellendi",
+          title: t("admin.toast.success"),
+          description: t("admin.tourForm.updateSuccess"),
         });
       } else {
         // Insert - Get user's agency_id first
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Kullanıcı bulunamadı");
+        if (!user) throw new Error(t("admin.tourForm.error"));
 
         const { data: agencyData } = await supabase
           .from("agencies")
@@ -155,7 +157,7 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
           .eq("user_id", user.id)
           .single();
 
-        if (!agencyData) throw new Error("Acente bulunamadı");
+        if (!agencyData) throw new Error(t("admin.tourForm.error"));
 
         const { error } = await supabase.from("tours").insert({
           title: formData.title,
@@ -179,8 +181,8 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         if (error) throw error;
 
         toast({
-          title: "Başarılı! ✅",
-          description: "Yeni tur eklendi",
+          title: t("admin.toast.success"),
+          description: t("admin.tourForm.addSuccess"),
         });
       }
 
@@ -189,8 +191,8 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
     } catch (error) {
       console.error("Tour form error:", error);
       toast({
-        title: "Hata",
-        description: "İşlem sırasında bir hata oluştu",
+        title: t("admin.tourForm.error"),
+        description: t("admin.tourForm.error"),
         variant: "destructive"
       });
     } finally {
@@ -302,17 +304,17 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="hareket_noktasi">Hareket Noktası</Label>
+              <Label htmlFor="hareket_noktasi">{t("admin.tourForm.departurePoint")}</Label>
               <Input
                 id="hareket_noktasi"
                 value={formData.hareket_noktasi}
                 onChange={(e) => setFormData({ ...formData, hareket_noktasi: e.target.value })}
-                placeholder="Örn: Taksim Meydanı"
+                placeholder={t("admin.tourForm.departurePlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="toplanma_saati">Toplanma Saati</Label>
+              <Label htmlFor="toplanma_saati">{t("admin.tourForm.meetingTime")}</Label>
               <Input
                 id="toplanma_saati"
                 type="time"
@@ -324,53 +326,53 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tur_sure">Tur Süresi</Label>
+              <Label htmlFor="tur_sure">{t("admin.tourForm.duration")}</Label>
               <Input
                 id="tur_sure"
                 value={formData.tur_sure}
                 onChange={(e) => setFormData({ ...formData, tur_sure: e.target.value })}
-                placeholder="Örn: 3 gün, 8 saat"
+                placeholder={t("admin.tourForm.durationPlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tur_kategorisi">Kategori</Label>
+              <Label htmlFor="tur_kategorisi">{t("admin.tourForm.category")}</Label>
               <Input
                 id="tur_kategorisi"
                 value={formData.tur_kategorisi}
                 onChange={(e) => setFormData({ ...formData, tur_kategorisi: e.target.value })}
-                placeholder="Örn: Kültür, Doğa"
+                placeholder={t("admin.tourForm.categoryPlaceholder")}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="konaklama">Konaklama</Label>
+            <Label htmlFor="konaklama">{t("admin.tourForm.accommodation")}</Label>
             <Input
               id="konaklama"
               value={formData.konaklama}
               onChange={(e) => setFormData({ ...formData, konaklama: e.target.value })}
-              placeholder="Konaklama detayları"
+              placeholder={t("admin.tourForm.accommodationPlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ulasim">Ulaşım</Label>
+            <Label htmlFor="ulasim">{t("admin.tourForm.transportation")}</Label>
             <Input
               id="ulasim"
               value={formData.ulasim}
               onChange={(e) => setFormData({ ...formData, ulasim: e.target.value })}
-              placeholder="Ulaşım detayları"
+              placeholder={t("admin.tourForm.transportationPlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="gezilecek_yerler">Gezilecek Yerler</Label>
+            <Label htmlFor="gezilecek_yerler">{t("admin.tourForm.places")}</Label>
             <Input
               id="gezilecek_yerler"
               value={formData.gezilecek_yerler}
               onChange={(e) => setFormData({ ...formData, gezilecek_yerler: e.target.value })}
-              placeholder="Virgülle ayırarak yazın"
+              placeholder={t("admin.tourForm.placesPlaceholder")}
             />
           </div>
 
@@ -382,12 +384,12 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
               onChange={(e) => setFormData({ ...formData, visa_required: e.target.checked })}
               className="rounded border-border"
             />
-            <Label htmlFor="visa_required" className="cursor-pointer">Vize Gerekli</Label>
+            <Label htmlFor="visa_required" className="cursor-pointer">{t("admin.tourForm.visaRequired")}</Label>
           </div>
 
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              İptal
+              {t("admin.tourForm.cancel")}
             </Button>
             <Button 
               type="submit" 
@@ -397,10 +399,10 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Kaydediliyor...
+                  {t("admin.tourForm.saving")}
                 </>
               ) : (
-                "Kaydet"
+                t("admin.tourForm.save")
               )}
             </Button>
           </DialogFooter>
