@@ -788,6 +788,30 @@
       "trialPeriod": "Deneme Süresi",
       "daysRemaining": "gün kaldı",
       "renewalDate": "Yenileme Tarihi",
+      "loadError": "Kullanım verileri yüklenirken hata oluştu",
+      "paymentError": "Ödeme işlemi sırasında hata oluştu",
+      "features": {
+        "starter": {
+          "messages": "500 mesaj/ay",
+          "history": "30 gün konuşma geçmişi",
+          "support": "Email destek"
+        },
+        "professional": {
+          "messages": "2.000 mesaj/ay",
+          "history": "90 gün konuşma geçmişi",
+          "support": "Öncelikli destek",
+          "profiles": "Kullanıcı profilleri"
+        },
+        "enterprise": {
+          "messages": "Sınırsız mesaj",
+          "history": "Sınırsız geçmiş",
+          "support": "7/24 destek",
+          "api": "API erişimi"
+        }
+      },
+      "trialPeriod": "Deneme Süresi",
+      "daysRemaining": "gün kaldı",
+      "renewalDate": "Yenileme Tarihi",
       "usedThisMonth": "Bu Ay Kullanılan",
       "unlimited": "Sınırsız",
       "quotaFull": "Mesaj kotanız doldu! Paketinizi yükseltmeniz gerekiyor.",
