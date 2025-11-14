@@ -6,11 +6,12 @@
     "help": "Yardım"
   },
   "hero": {
-    "title": "Seyahat Acenteniz İçin",
-    "subtitle": "WhatsApp Entegrasyonu",
-    "description": "Müşterilerinizle WhatsApp üzerinden otomatik olarak iletişim kurun, rezervasyonları yönetin ve işletmenizi büyütün.",
-    "cta": "Hemen Başla",
-    "demo": "Demo İzle"
+    "title": "WhatsApp ile Otomatik Tur Satışı",
+    "subtitle": "WhatsApp ile",
+    "highlight": "Tur Satışlarınızı Otomatikleştirin",
+    "description": "Yapay zeka destekli WhatsApp asistanı ile 7/24 tur satışı yapın. Müşteri sorularını yanıtlayın, rezervasyon alın ve ödemeleri otomatik yönetin - siz uyurken bile satış yapın.",
+    "cta": "14 Gün Ücretsiz Dene",
+    "demo": "Canlı Test Et"
   },
   "features": {
     "title": "Özellikler",
@@ -99,7 +100,9 @@
     "legal": "Yasal",
     "privacy": "Gizlilik Politikası",
     "terms": "Kullanım Koşulları",
-    "rights": "Tüm hakları saklıdır."
+    "rights": "© 2024 TurzzAI. Tüm hakları saklıdır.",
+    "gettingStarted": "Nasıl Başlarım?",
+    "login": "Giriş Yap"
   },
   "admin": {
     "title": "Acente Paneli",

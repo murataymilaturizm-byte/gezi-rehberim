@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DemoChat } from "@/components/DemoChat";
 import { supabase } from "@/integrations/supabase/client";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
@@ -21,6 +22,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
 const Index = () => {
+  const { t } = useTranslation();
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
   const [isYearly, setIsYearly] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -297,20 +299,20 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
               <div className="hidden sm:block">
-                <p className="text-sm text-muted-foreground">Akıllı Tur Satış Sistemi</p>
+                <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <LanguageSelector />
               <ThemeToggle />
               <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/yardim">Yardım</a>
+                <a href="/yardim">{t("nav.help")}</a>
               </Button>
               <Button asChild variant="outline" className="hidden lg:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/nasil-baslarim">Nasıl Başlarım?</a>
+                <a href="/nasil-baslarim">{t("nav.gettingStarted")}</a>
               </Button>
               <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
-                <a href="/auth">Giriş Yap</a>
+                <a href="/auth">{t("auth.login")}</a>
               </Button>
             </div>
           </div>
@@ -324,28 +326,27 @@ const Index = () => {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-border mb-4">
               <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-accent-foreground">WhatsApp ile Otomatik Tur Satışı</span>
+              <span className="text-sm font-medium text-accent-foreground">{t("hero.title")}</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
-              WhatsApp ile <br />
-              <span className="bg-gradient-ocean bg-clip-text text-transparent">Tur Satışlarınızı Otomatikleştirin</span>
+              {t("hero.subtitle")} <br />
+              <span className="bg-gradient-ocean bg-clip-text text-transparent">{t("hero.highlight")}</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Yapay zeka destekli WhatsApp asistanı ile 7/24 tur satışı yapın. Müşteri sorularını yanıtlayın, 
-              rezervasyon alın ve ödemeleri otomatik yönetin - siz uyurken bile satış yapın.
+              {t("hero.description")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 text-lg px-8" asChild>
                 <a href="/auth?mode=signup">
-                  14 Gün Ücretsiz Dene
+                  {t("hero.cta")}
                   <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 transition-all duration-300 hover:scale-105" onClick={scrollToDemo}>
-                Canlı Test Et
+                {t("hero.demo")}
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 transition-all duration-300 hover:scale-105" asChild>
-                <a href="/nasil-baslarim">Nasıl Başlarım?</a>
+                <a href="/nasil-baslarim">{t("nav.gettingStarted")}</a>
               </Button>
             </div>
           </div>
@@ -1039,14 +1040,14 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-6">
               <a href="/nasil-baslarim" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Nasıl Başlarım?
+                {t("footer.gettingStarted")}
               </a>
               <a href="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Giriş Yap
+                {t("footer.login")}
               </a>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 TurzzAI. Tüm hakları saklıdır.
+              {t("footer.rights")}
             </p>
           </div>
         </div>
