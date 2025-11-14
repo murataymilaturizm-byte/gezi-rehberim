@@ -809,9 +809,6 @@
           "api": "API erişimi"
         }
       },
-      "trialPeriod": "Deneme Süresi",
-      "daysRemaining": "gün kaldı",
-      "renewalDate": "Yenileme Tarihi",
       "usedThisMonth": "Bu Ay Kullanılan",
       "unlimited": "Sınırsız",
       "quotaFull": "Mesaj kotanız doldu! Paketinizi yükseltmeniz gerekiyor.",
