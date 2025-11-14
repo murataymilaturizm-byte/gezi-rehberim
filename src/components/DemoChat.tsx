@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, MessageSquare, Bot, User } from "lucide-react";
+import { Send, MessageSquare, Bot, User, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -147,6 +147,36 @@ export const DemoChat = () => {
     }
   };
 
+  const resetConversation = () => {
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem('demo_chat_session_id', newSessionId);
+    localStorage.removeItem('demo-chat-messages');
+    
+    const getStyledGreeting = () => {
+      const baseGreeting = t("demo.greeting");
+      switch(conversationStyle) {
+        case 'friendly':
+          return baseGreeting + "\n\n😊 Bugün sana nasıl yardımcı olabilirim arkadaşım?";
+        case 'energetic':
+          return baseGreeting + "\n\n⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀";
+        case 'helpful':
+          return baseGreeting + "\n\n📝 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz.";
+        default:
+          return baseGreeting + "\n\n📍 Size nasıl yardımcı olabilirim?";
+      }
+    };
+    
+    setMessages([{
+      role: "assistant",
+      content: getStyledGreeting()
+    }]);
+    
+    toast({
+      title: t("demo.resetSuccess"),
+      description: t("demo.resetSuccessDesc"),
+    });
+  };
+
   return (
     <Card className="w-full max-w-2xl mx-auto border-border shadow-card">
       <CardHeader className="border-b border-border bg-gradient-ocean">
@@ -177,6 +207,15 @@ export const DemoChat = () => {
                 <SelectItem value="helpful">😊 {t("demo.style.helpful")}</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={resetConversation}
+              className="bg-background text-foreground hover:bg-background/80"
+              title={t("demo.resetChat")}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
             <LanguageSelector />
           </div>
         </div>

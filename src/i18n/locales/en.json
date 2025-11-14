@@ -78,6 +78,9 @@
     "cta": "Get Started Now",
     "greeting": "Hello! 👋 I'm your WhatsApp tour assistant. Which beautiful places would you like to explore?\n\n✨ *Popular tours:*\n🏔️ Cappadocia\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Aegean Tour",
     "subtitle2": "AI-powered tour assistant",
+    "resetChat": "Reset Conversation",
+    "resetSuccess": "Conversation reset",
+    "resetSuccessDesc": "You can start a new conversation",
     "style": {
       "friendly": "Friendly/Cordial",
       "professional": "Professional/Corporate",

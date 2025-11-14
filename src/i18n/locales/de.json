@@ -78,11 +78,14 @@
     "cta": "Jetzt starten",
     "greeting": "Hallo! 👋 Ich bin Ihr WhatsApp-Tourassistent. Welche schönen Orte möchten Sie erkunden?\n\n✨ *Beliebte Touren:*\n🏔️ Kappadokien\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Ägäis-Tour",
     "subtitle2": "KI-gestützter Tourassistent",
+    "resetChat": "Gespräch zurücksetzen",
+    "resetSuccess": "Gespräch zurückgesetzt",
+    "resetSuccessDesc": "Sie können ein neues Gespräch beginnen",
     "style": {
-      "friendly": "Freundlich/Herzlich",
-      "professional": "Professionell/Geschäftlich",
-      "energetic": "Energisch/Dynamisch",
-      "helpful": "Hilfsbereit/Freundlich"
+      "friendly": "Freundlich",
+      "professional": "Professionell",
+      "energetic": "Energisch",
+      "helpful": "Hilfsbereit"
     }
   },
   "advanced": {

@@ -78,11 +78,14 @@
     "cta": "Commencer Maintenant",
     "greeting": "Bonjour! 👋 Je suis votre assistant de tours WhatsApp. Quels beaux endroits aimeriez-vous explorer?\n\n✨ *Tours populaires:*\n🏔️ Cappadoce\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Tour de la Mer Égée",
     "subtitle2": "Assistant de tours alimenté par l'IA",
+    "resetChat": "Réinitialiser la conversation",
+    "resetSuccess": "Conversation réinitialisée",
+    "resetSuccessDesc": "Vous pouvez commencer une nouvelle conversation",
     "style": {
-      "friendly": "Amical/Cordial",
-      "professional": "Professionnel/Entreprise",
-      "energetic": "Énergique/Dynamique",
-      "helpful": "Aimable/Serviable"
+      "friendly": "Amical",
+      "professional": "Professionnel",
+      "energetic": "Énergique",
+      "helpful": "Serviable"
     }
   },
   "advanced": {
