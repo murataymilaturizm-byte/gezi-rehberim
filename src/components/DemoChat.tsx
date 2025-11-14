@@ -86,8 +86,9 @@ export const DemoChat = () => {
           },
           body: JSON.stringify({ 
             message: userMessage,
-            history: messages.slice(-10), // Son 10 mesajı gönder
-            sessionId: sessionId
+            history: messages.slice(-10),
+            sessionId: sessionId,
+            language: i18n.language
           }),
         }
       );
