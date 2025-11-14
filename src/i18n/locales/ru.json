@@ -320,8 +320,45 @@
     "gettingStarted": "Начало Работы",
     "login": "Войти"
   },
-  "admin": {
+   "admin": {
     "title": "Панель Агентства",
+    "templates": {
+      "title": "Шаблоны Сообщений",
+      "types": {
+        "reservation_confirmed": "Бронирование Подтверждено",
+        "reservation_cancelled": "Бронирование Отменено",
+        "tour_reminder": "Напоминание о Туре"
+      },
+      "errors": {
+        "fetchError": "Ошибка загрузки шаблонов",
+        "saveError": "Ошибка сохранения шаблона",
+        "deleteError": "Ошибка удаления шаблона",
+        "copyError": "Ошибка копирования шаблонов",
+        "noDefaultTemplates": "Стандартные шаблоны не найдены"
+      },
+      "success": {
+        "saved": "Шаблон сохранен",
+        "deleted": "Шаблон удален",
+        "copied": "Стандартные шаблоны загружены"
+      },
+      "dialog": {
+        "title": "Редактировать Шаблон",
+        "description": "Редактировать шаблон сообщения. Переменные должны быть написаны в {}.",
+        "templateType": "Тип Шаблона",
+        "language": "Язык",
+        "subject": "Тема",
+        "subjectPlaceholder": "Тема шаблона",
+        "content": "Содержание Сообщения",
+        "contentPlaceholder": "Содержание сообщения... Вы можете использовать переменные типа {full_name}, {tour_name}",
+        "variables": "Переменные (через запятую)",
+        "variablesPlaceholder": "full_name, tour_name, date, pax",
+        "variablesExample": "Пример: full_name, tour_name, date, pax, total_amount, currency",
+        "cancel": "Отмена",
+        "save": "Сохранить"
+      },
+      "notCreated": "Еще не создано",
+      "deleteConfirm": "Вы уверены, что хотите удалить этот шаблон?"
+    },
     "welcome": "Добро Пожаловать",
     "back": "Назад",
     "home": "Главная",

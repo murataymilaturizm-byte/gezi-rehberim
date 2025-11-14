@@ -268,8 +268,45 @@
     "gettingStarted": "البدء",
     "login": "تسجيل الدخول"
   },
-  "admin": {
+   "admin": {
     "title": "لوحة الوكالة",
+    "templates": {
+      "title": "قوالب الرسائل",
+      "types": {
+        "reservation_confirmed": "تم تأكيد الحجز",
+        "reservation_cancelled": "تم إلغاء الحجز",
+        "tour_reminder": "تذكير بالرحلة"
+      },
+      "errors": {
+        "fetchError": "خطأ في تحميل القوالب",
+        "saveError": "خطأ في حفظ القالب",
+        "deleteError": "خطأ في حذف القالب",
+        "copyError": "خطأ في نسخ القوالب",
+        "noDefaultTemplates": "القوالب الافتراضية غير موجودة"
+      },
+      "success": {
+        "saved": "تم حفظ القالب",
+        "deleted": "تم حذف القالب",
+        "copied": "تم تحميل القوالب الافتراضية"
+      },
+      "dialog": {
+        "title": "تعديل القالب",
+        "description": "تعديل قالب الرسالة. يجب كتابة المتغيرات داخل {}.",
+        "templateType": "نوع القالب",
+        "language": "اللغة",
+        "subject": "الموضوع",
+        "subjectPlaceholder": "موضوع القالب",
+        "content": "محتوى الرسالة",
+        "contentPlaceholder": "محتوى الرسالة... يمكنك استخدام متغيرات مثل {full_name}, {tour_name}",
+        "variables": "المتغيرات (مفصولة بفواصل)",
+        "variablesPlaceholder": "full_name, tour_name, date, pax",
+        "variablesExample": "مثال: full_name, tour_name, date, pax, total_amount, currency",
+        "cancel": "إلغاء",
+        "save": "حفظ"
+      },
+      "notCreated": "لم يتم الإنشاء بعد",
+      "deleteConfirm": "هل أنت متأكد من رغبتك في حذف هذا القالب؟"
+    },
     "welcome": "مرحباً",
     "back": "رجوع",
     "home": "الرئيسية",
