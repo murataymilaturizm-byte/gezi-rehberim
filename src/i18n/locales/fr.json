@@ -1,0 +1,145 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "admin": "Panneau Admin",
+    "gettingStarted": "Commencer",
+    "help": "Aide"
+  },
+  "hero": {
+    "title": "Intégration WhatsApp",
+    "subtitle": "Pour Votre Agence de Voyage",
+    "description": "Communiquez automatiquement avec vos clients via WhatsApp, gérez les réservations et développez votre entreprise.",
+    "cta": "Commencer",
+    "demo": "Voir la Démo"
+  },
+  "features": {
+    "title": "Fonctionnalités",
+    "subtitle": "Renforcez Votre Entreprise",
+    "whatsapp": {
+      "title": "Intégration WhatsApp",
+      "description": "Communiquez directement avec vos clients via WhatsApp"
+    },
+    "ai": {
+      "title": "Propulsé par l'IA",
+      "description": "Offrez un support client 24/7 avec un chatbot intelligent"
+    },
+    "booking": {
+      "title": "Réservation Facile",
+      "description": "Vos clients peuvent facilement réserver des tours"
+    },
+    "analytics": {
+      "title": "Analyses Détaillées",
+      "description": "Suivez les performances de votre entreprise"
+    },
+    "templates": {
+      "title": "Modèles de Messages",
+      "description": "Gagnez du temps avec des modèles de messages préparés"
+    },
+    "multi": {
+      "title": "Support Multilingue",
+      "description": "Servez vos clients dans 7 langues différentes"
+    }
+  },
+  "pricing": {
+    "title": "Tarifs",
+    "subtitle": "Choisissez Le Meilleur Plan Pour Votre Entreprise",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "starter": {
+      "name": "Débutant",
+      "price": "49€",
+      "period": "/mois",
+      "features": {
+        "messages": "1000 messages/mois",
+        "tours": "Jusqu'à 50 tours",
+        "ai": "Support IA de base",
+        "support": "Support par email"
+      },
+      "cta": "Commencer"
+    },
+    "professional": {
+      "name": "Professionnel",
+      "price": "99€",
+      "period": "/mois",
+      "popular": "Populaire",
+      "features": {
+        "messages": "5000 messages/mois",
+        "tours": "Tours illimités",
+        "ai": "Support IA avancé",
+        "analytics": "Analyses détaillées",
+        "support": "Support prioritaire"
+      },
+      "cta": "Commencer"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "Personnalisé",
+      "period": "",
+      "features": {
+        "messages": "Messages illimités",
+        "tours": "Tours illimités",
+        "ai": "Modèle IA personnalisé",
+        "integration": "Intégrations personnalisées",
+        "support": "Support 24/7",
+        "training": "Formation et conseil"
+      },
+      "cta": "Nous Contacter"
+    }
+  },
+  "footer": {
+    "description": "Système moderne d'intégration WhatsApp et de gestion des réservations pour les agences de voyage.",
+    "product": "Produit",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "demo": "Démo",
+    "support": "Support",
+    "help": "Centre d'Aide",
+    "docs": "Documentation",
+    "contact": "Contact",
+    "legal": "Légal",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions d'Utilisation",
+    "rights": "Tous droits réservés."
+  },
+  "admin": {
+    "title": "Panneau Admin",
+    "welcome": "Bienvenue",
+    "stats": {
+      "totalTours": "Total des Tours",
+      "activeTours": "Tours Actifs",
+      "totalBookings": "Total des Réservations",
+      "revenue": "Revenus"
+    },
+    "tabs": {
+      "tours": "Tours",
+      "bookings": "Réservations",
+      "messages": "Messages",
+      "analytics": "Analyses",
+      "settings": "Paramètres"
+    },
+    "logout": "Se Déconnecter"
+  },
+  "auth": {
+    "login": "Se Connecter",
+    "signup": "S'Inscrire",
+    "email": "Email",
+    "password": "Mot de Passe",
+    "forgotPassword": "Mot de Passe Oublié",
+    "noAccount": "Pas de compte?",
+    "hasAccount": "Vous avez déjà un compte?"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "search": "Rechercher...",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "import": "Importer"
+  }
+}

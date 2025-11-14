@@ -9,6 +9,7 @@ import Admin from "./pages/Admin";
 import GettingStarted from "./pages/GettingStarted";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
+import "./i18n";
 
 const queryClient = new QueryClient();
 

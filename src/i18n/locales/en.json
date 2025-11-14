@@ -1,0 +1,145 @@
+{
+  "nav": {
+    "home": "Home",
+    "admin": "Admin Panel",
+    "gettingStarted": "Getting Started",
+    "help": "Help"
+  },
+  "hero": {
+    "title": "WhatsApp Integration",
+    "subtitle": "For Your Travel Agency",
+    "description": "Automatically communicate with your customers via WhatsApp, manage reservations and grow your business.",
+    "cta": "Get Started",
+    "demo": "Watch Demo"
+  },
+  "features": {
+    "title": "Features",
+    "subtitle": "Empower Your Business",
+    "whatsapp": {
+      "title": "WhatsApp Integration",
+      "description": "Communicate directly with your customers via WhatsApp"
+    },
+    "ai": {
+      "title": "AI-Powered",
+      "description": "Provide 24/7 customer support with intelligent chatbot"
+    },
+    "booking": {
+      "title": "Easy Booking",
+      "description": "Your customers can easily book tours"
+    },
+    "analytics": {
+      "title": "Detailed Analytics",
+      "description": "Track your business performance"
+    },
+    "templates": {
+      "title": "Message Templates",
+      "description": "Save time with pre-prepared message templates"
+    },
+    "multi": {
+      "title": "Multi-Language Support",
+      "description": "Serve your customers in 7 different languages"
+    }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Choose The Best Plan For Your Business",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "starter": {
+      "name": "Starter",
+      "price": "€49",
+      "period": "/month",
+      "features": {
+        "messages": "1000 messages/month",
+        "tours": "Up to 50 tours",
+        "ai": "Basic AI support",
+        "support": "Email support"
+      },
+      "cta": "Get Started"
+    },
+    "professional": {
+      "name": "Professional",
+      "price": "€99",
+      "period": "/month",
+      "popular": "Popular",
+      "features": {
+        "messages": "5000 messages/month",
+        "tours": "Unlimited tours",
+        "ai": "Advanced AI support",
+        "analytics": "Detailed analytics",
+        "support": "Priority support"
+      },
+      "cta": "Get Started"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "Custom",
+      "period": "",
+      "features": {
+        "messages": "Unlimited messages",
+        "tours": "Unlimited tours",
+        "ai": "Custom AI model",
+        "integration": "Custom integrations",
+        "support": "24/7 support",
+        "training": "Training and consulting"
+      },
+      "cta": "Contact Us"
+    }
+  },
+  "footer": {
+    "description": "Modern WhatsApp integration and reservation management system for travel agencies.",
+    "product": "Product",
+    "features": "Features",
+    "pricing": "Pricing",
+    "demo": "Demo",
+    "support": "Support",
+    "help": "Help Center",
+    "docs": "Documentation",
+    "contact": "Contact",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "rights": "All rights reserved."
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "welcome": "Welcome",
+    "stats": {
+      "totalTours": "Total Tours",
+      "activeTours": "Active Tours",
+      "totalBookings": "Total Bookings",
+      "revenue": "Revenue"
+    },
+    "tabs": {
+      "tours": "Tours",
+      "bookings": "Bookings",
+      "messages": "Messages",
+      "analytics": "Analytics",
+      "settings": "Settings"
+    },
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search...",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import"
+  }
+}

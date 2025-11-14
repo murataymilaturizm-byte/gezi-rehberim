@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Select,
   SelectContent,
@@ -19,21 +19,17 @@ const languages = [
 ];
 
 export const LanguageSelector = () => {
-  const [currentLang, setCurrentLang] = useState(() => {
-    return localStorage.getItem("preferred-language") || "tr";
-  });
+  const { i18n } = useTranslation();
 
   const handleLanguageChange = (langCode: string) => {
-    setCurrentLang(langCode);
+    i18n.changeLanguage(langCode);
     localStorage.setItem("preferred-language", langCode);
-    // Trigger language change event for other components
-    window.dispatchEvent(new CustomEvent("languageChanged", { detail: langCode }));
   };
 
-  const currentLanguage = languages.find(lang => lang.code === currentLang);
+  const currentLanguage = languages.find(lang => lang.code === i18n.language);
 
   return (
-    <Select value={currentLang} onValueChange={handleLanguageChange}>
+    <Select value={i18n.language} onValueChange={handleLanguageChange}>
       <SelectTrigger className="w-[140px] bg-background/95 backdrop-blur border-border/50 hover:bg-muted/50 transition-all duration-300">
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-muted-foreground" />

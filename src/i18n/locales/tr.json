@@ -1,0 +1,145 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "admin": "Admin Paneli",
+    "gettingStarted": "Nasıl Başlarım?",
+    "help": "Yardım"
+  },
+  "hero": {
+    "title": "Seyahat Acenteniz İçin",
+    "subtitle": "WhatsApp Entegrasyonu",
+    "description": "Müşterilerinizle WhatsApp üzerinden otomatik olarak iletişim kurun, rezervasyonları yönetin ve işletmenizi büyütün.",
+    "cta": "Hemen Başla",
+    "demo": "Demo İzle"
+  },
+  "features": {
+    "title": "Özellikler",
+    "subtitle": "İşletmenizi Güçlendirin",
+    "whatsapp": {
+      "title": "WhatsApp Entegrasyonu",
+      "description": "Müşterilerinizle doğrudan WhatsApp üzerinden iletişim kurun"
+    },
+    "ai": {
+      "title": "Yapay Zeka Destekli",
+      "description": "Akıllı chatbot ile 7/24 müşteri desteği sağlayın"
+    },
+    "booking": {
+      "title": "Kolay Rezervasyon",
+      "description": "Müşterileriniz kolayca tur rezervasyonu yapabilir"
+    },
+    "analytics": {
+      "title": "Detaylı Analitik",
+      "description": "İşletmenizin performansını takip edin"
+    },
+    "templates": {
+      "title": "Mesaj Şablonları",
+      "description": "Önceden hazırlanmış mesaj şablonları ile zaman kazanın"
+    },
+    "multi": {
+      "title": "Çok Dilli Destek",
+      "description": "7 farklı dilde müşterilerinize hizmet verin"
+    }
+  },
+  "pricing": {
+    "title": "Fiyatlandırma",
+    "subtitle": "İşletmeniz İçin En Uygun Planı Seçin",
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "starter": {
+      "name": "Başlangıç",
+      "price": "499₺",
+      "period": "/ay",
+      "features": {
+        "messages": "1000 mesaj/ay",
+        "tours": "50 tura kadar",
+        "ai": "Temel AI desteği",
+        "support": "E-posta desteği"
+      },
+      "cta": "Başla"
+    },
+    "professional": {
+      "name": "Profesyonel",
+      "price": "999₺",
+      "period": "/ay",
+      "popular": "Popüler",
+      "features": {
+        "messages": "5000 mesaj/ay",
+        "tours": "Sınırsız tur",
+        "ai": "Gelişmiş AI desteği",
+        "analytics": "Detaylı analitik",
+        "support": "Öncelikli destek"
+      },
+      "cta": "Başla"
+    },
+    "enterprise": {
+      "name": "Kurumsal",
+      "price": "Özel",
+      "period": "",
+      "features": {
+        "messages": "Sınırsız mesaj",
+        "tours": "Sınırsız tur",
+        "ai": "Özel AI modeli",
+        "integration": "Özel entegrasyonlar",
+        "support": "7/24 destek",
+        "training": "Eğitim ve danışmanlık"
+      },
+      "cta": "İletişime Geç"
+    }
+  },
+  "footer": {
+    "description": "Seyahat acenteleri için modern WhatsApp entegrasyonu ve rezervasyon yönetim sistemi.",
+    "product": "Ürün",
+    "features": "Özellikler",
+    "pricing": "Fiyatlandırma",
+    "demo": "Demo",
+    "support": "Destek",
+    "help": "Yardım Merkezi",
+    "docs": "Dokümantasyon",
+    "contact": "İletişim",
+    "legal": "Yasal",
+    "privacy": "Gizlilik Politikası",
+    "terms": "Kullanım Koşulları",
+    "rights": "Tüm hakları saklıdır."
+  },
+  "admin": {
+    "title": "Admin Paneli",
+    "welcome": "Hoş Geldiniz",
+    "stats": {
+      "totalTours": "Toplam Turlar",
+      "activeTours": "Aktif Turlar",
+      "totalBookings": "Toplam Rezervasyonlar",
+      "revenue": "Gelir"
+    },
+    "tabs": {
+      "tours": "Turlar",
+      "bookings": "Rezervasyonlar",
+      "messages": "Mesajlar",
+      "analytics": "Analitik",
+      "settings": "Ayarlar"
+    },
+    "logout": "Çıkış Yap"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "signup": "Kayıt Ol",
+    "email": "E-posta",
+    "password": "Şifre",
+    "forgotPassword": "Şifremi Unuttum",
+    "noAccount": "Hesabınız yok mu?",
+    "hasAccount": "Hesabınız var mı?"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "success": "Başarılı",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "add": "Ekle",
+    "search": "Ara...",
+    "filter": "Filtrele",
+    "export": "Dışa Aktar",
+    "import": "İçe Aktar"
+  }
+}
