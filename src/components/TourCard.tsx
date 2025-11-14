@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface TourCardProps {
   tour: {
@@ -24,14 +25,15 @@ interface TourCardProps {
   onRegister: (tourId: string, dateId: string) => void;
 }
 
-const tourTypeLabels: Record<string, string> = {
-  DAYTRIP: "Günübirlik",
-  N2: "2 Gece 3 Gün",
-  N3: "3 Gece 4 Gün"
-};
-
 export const TourCard = ({ tour, onRegister }: TourCardProps) => {
+  const { t } = useTranslation();
   const firstDate = tour.dates[0];
+  
+  const tourTypeLabels: Record<string, string> = {
+    DAYTRIP: t("admin.tourTypes.daytrip"),
+    N2: t("admin.tourTypes.n2"),
+    N3: t("admin.tourTypes.n3")
+  };
   
   if (!firstDate) return null;
 
@@ -74,7 +76,7 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
           <span className="text-2xl font-bold text-primary">
             {formatPrice(firstDate.price_adult)} {tour.currency}
           </span>
-          <span className="text-sm text-muted-foreground">kişi başı</span>
+          <span className="text-sm text-muted-foreground">{t("admin.tours.perPerson")}</span>
         </div>
 
         {/* Kota */}
@@ -82,9 +84,9 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
           <Users className="w-4 h-4 text-secondary" />
           <span className="text-muted-foreground">
             {firstDate.quota > 0 ? (
-              <span className="text-foreground font-medium">{firstDate.quota} kişilik kontenjan</span>
+              <span className="text-foreground font-medium">{firstDate.quota} {t("admin.tours.quota")}</span>
             ) : (
-              <span className="text-destructive">Kontenjan doldu</span>
+              <span className="text-destructive">{t("admin.tours.quotaFull")}</span>
             )}
           </span>
         </div>
@@ -92,7 +94,7 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
         {/* Diğer Tarihler */}
         {tour.dates.length > 1 && (
           <div className="pt-3 border-t border-border/50">
-            <p className="text-xs text-muted-foreground mb-2">Diğer Tarihler:</p>
+            <p className="text-xs text-muted-foreground mb-2">{t("admin.tours.otherDates")}</p>
             <div className="flex flex-wrap gap-2">
               {tour.dates.slice(1).map((date) => (
                 <Badge key={date.id} variant="outline" className="text-xs">
@@ -113,7 +115,7 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
             onClick={() => window.open(tour.program_url, '_blank')}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Program
+            {t("admin.tours.program")}
           </Button>
         )}
         <Button
@@ -122,7 +124,7 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
           onClick={() => onRegister(tour.id, firstDate.id)}
           disabled={firstDate.quota === 0}
         >
-          Ön Kayıt
+          {t("admin.tours.preRegistration")}
         </Button>
       </CardFooter>
     </Card>
