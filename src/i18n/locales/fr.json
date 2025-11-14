@@ -38,7 +38,170 @@
     },
     "multi": {
       "title": "Support Multilingue",
-      "description": "Servez vos clients dans 7 langues différentes"
+      "description": "Servez vos clients dans 7 langues différentes",
+      "metric": "Communication fluide en 7 langues"
+    },
+    "analytics": {
+      "title": "Suivi des Revenus et Analyses",
+      "description": "Quels tours sont rentables? Quels jours voient plus de ventes? Voyez toutes les données de revenus et de performance en temps réel.",
+      "metric": "Rapports de revenus quotidiens, hebdomadaires, mensuels"
+    },
+    "whatsapp": {
+      "title": "Ventes Automatisées 24/7",
+      "description": "Les clients demandent des tours et font des réservations même à minuit. Vendez pendant votre sommeil - ne manquez jamais une opportunité.",
+      "metric": "Augmentation moyenne de 120% des réservations au premier mois"
+    }
+  },
+  "howItWorks": {
+    "title": "Comment Ça Marche?",
+    "subtitle": "De WhatsApp à la réservation en 3 étapes simples",
+    "step1": {
+      "title": "Le Client Envoie un Message",
+      "description": "Recherche en langage naturel comme \"tours Cappadoce\" via WhatsApp"
+    },
+    "step2": {
+      "title": "L'IA Analyse",
+      "description": "L'IA comprend le message et recommande les tours les plus appropriés, fournit des informations sur les prix et les dates"
+    },
+    "step3": {
+      "title": "Réservation Créée",
+      "description": "Les informations client sont collectées avec guidage d'assistant, la réservation est complétée"
+    },
+    "footer": "L'ensemble du processus est automatique et fonctionne 24/7 🚀",
+    "demoButton": "Explorer la Démo"
+  },
+  "demo": {
+    "badge": "Démo en Direct",
+    "title": "Testez-le Maintenant",
+    "subtitle": "Essayez notre assistant alimenté par l'IA maintenant. Faites des demandes de tours, simulez des réservations.",
+    "note": "Ceci est un chatbot de démonstration. Dans votre système réel, vous pouvez utiliser vos propres tours et paramètres.",
+    "cta": "Commencer Maintenant",
+    "greeting": "Bonjour! 👋 Je suis votre assistant de tours WhatsApp. Quels beaux endroits aimeriez-vous explorer?\n\n✨ *Tours populaires:*\n🏔️ Cappadoce\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Tour de la Mer Égée"
+  },
+  "advanced": {
+    "badge": "Fonctionnalités Avancées",
+    "title": "Gardez une Longueur d'Avance sur la Concurrence",
+    "subtitle": "Les fonctionnalités d'IA et d'automatisation les plus avancées de l'industrie",
+    "userProfiles": {
+      "title": "Profils Clients Intelligents",
+      "description": "Suivez automatiquement les préférences de chaque client, l'historique de recherche et le budget. L'IA fait des recommandations personnalisées.",
+      "feature1": "Apprentissage automatique des préférences",
+      "feature2": "Segmentation basée sur le budget",
+      "feature3": "Analyse de l'historique de recherche"
+    },
+    "analytics": {
+      "title": "Analyses de Conversations",
+      "description": "Mesurez la satisfaction client et capturez les tendances avec l'analyse de sentiment alimentée par l'IA et les résumés de conversations automatiques.",
+      "feature1": "Analyse de sentiment (Positif/Négatif)",
+      "feature2": "Résumés de conversations automatiques",
+      "feature3": "Suivi des sujets et tendances"
+    },
+    "reminders": {
+      "title": "Rappels de Tours Automatiques",
+      "description": "3 jours avant le tour, des rappels WhatsApp automatiques sont envoyés. Augmentez la satisfaction client, réduisez les annulations.",
+      "feature1": "Modèles de messages personnalisables",
+      "feature2": "Envoi automatique (3 jours avant)",
+      "feature3": "Détails et informations du tour"
+    },
+    "stats": "250+ agences heureuses"
+  },
+  "benefits": {
+    "title": "Résultats Concrets, Vraie Valeur",
+    "subtitle": "Pas seulement des fonctionnalités - la valeur qu'elle ajoute à votre entreprise",
+    "timeSaving": {
+      "title": "Économisez 40+ Heures par Mois",
+      "description": "Répondre aux questions répétées, expliquer les tours, les prix... Tout est maintenant automatisé."
+    },
+    "moreSales": {
+      "title": "2-3x Plus de Ventes au Premier Mois",
+      "description": "Vendez même à minuit. Ne manquez jamais un client ou une opportunité."
+    },
+    "customerTracking": {
+      "title": "Suivi Personnel pour Chaque Client",
+      "description": "Qui a cherché quoi? Quel est le budget? Achats précédents? L'IA connaît chaque client, fait des recommandations personnalisées."
+    },
+    "roi": {
+      "title": "Seulement 2 Tours = Se Paie Lui-même",
+      "description": "Plan de démarrage seulement €49/mois. Faites seulement 2 ventes de tours supplémentaires par mois, le système se paie lui-même."
+    }
+  },
+  "stats": {
+    "salesIncrease": {
+      "value": "2-3x",
+      "label": "Augmentation Moyenne des Ventes",
+      "subtext": "Au premier mois"
+    },
+    "timeSaved": {
+      "value": "40+",
+      "label": "Heures Économisées",
+      "subtext": "Par mois"
+    },
+    "availability": {
+      "value": "24/7",
+      "label": "Service Continu",
+      "subtext": "Assistant qui ne s'arrête jamais"
+    },
+    "paymentTime": {
+      "value": "2 min",
+      "label": "Temps de Collecte de Paiement",
+      "subtext": "Directement depuis WhatsApp"
+    }
+  },
+  "testimonials": {
+    "title": "Résultats Réels",
+    "subtitle": "Histoires de succès de nos agences",
+    "items": {
+      "yasinCetin": {
+        "name": "Yasin Çetin",
+        "company": "Campus Travel",
+        "role": "Propriétaire d'Entreprise",
+        "content": "Nous avons obtenu 18 nouvelles réservations au premier mois. Avant, les gens qui envoyaient des messages la nuit disaient 'j'appellerai demain' et réservaient avec une autre agence. Maintenant nous vendons même à 2h du matin!",
+        "result": "+18 réservations au premier mois"
+      },
+      "sitkiOgrak": {
+        "name": "Sıtkı Murat OĞRAK",
+        "company": "Aymila Tourism",
+        "role": "Directeur d'Entreprise",
+        "content": "Les clients disent 'vous répondez si vite'. J'économise 40+ heures par mois. Maintenant je peux me concentrer sur les choses vraiment importantes.",
+        "result": "40+ heures/mois économisées"
+      },
+      "mustafaGulmez": {
+        "name": "Mustafa Gülmez",
+        "company": "4 Eylül Tourism",
+        "role": "Propriétaire d'Entreprise",
+        "content": "Quels tours se vendent plus, quels jours voient plus de demande - je peux tout voir. Maintenant je prends des décisions basées sur les données, pas sur les suppositions. Les analyses de revenus sont incroyables!",
+        "result": "Décisions basées sur les données"
+      }
+    }
+  },
+  "faq": {
+    "title": "Questions Fréquemment Posées",
+    "subtitle": "Trouvez les réponses à vos questions ici",
+    "items": {
+      "salesIncrease": {
+        "question": "Mes ventes vont-elles vraiment augmenter au premier mois?",
+        "answer": "Oui! Nos agences moyennes voient une augmentation de 120-150% des réservations au premier mois. Parce que maintenant vous servez vos clients à minuit, le week-end, à tout moment. Vous ne manquez aucune opportunité."
+      },
+      "setup": {
+        "question": "Puis-je effectuer la configuration moi-même?",
+        "answer": "Absolument! La configuration prend 5-10 minutes et est très simple. Ajoutez votre numéro WhatsApp Business, téléchargez vos tours - c'est tout. Nous gérons toute l'infrastructure technique. Notre équipe de support vous aidera si vous êtes bloqué."
+      },
+      "whatsappCost": {
+        "question": "Y a-t-il des frais supplémentaires pour l'intégration WhatsApp?",
+        "answer": "Non! Nous gérons l'infrastructure de l'API WhatsApp Business. Vous devez seulement ajouter votre numéro WhatsApp Business au système. Les frais d'utilisation de l'API sont à notre charge, vous ne payez que les frais de votre plan choisi."
+      },
+      "payment": {
+        "question": "Puis-je collecter les paiements directement des clients?",
+        "answer": "Oui! Avec l'intégration SiPay, vous pouvez envoyer des liens de paiement instantanés via WhatsApp et collecter les paiements en 2 minutes. Le suivi des paiements et la facturation sont automatiques."
+      },
+      "tourLimit": {
+        "question": "Combien de tours puis-je ajouter?",
+        "answer": "Vous pouvez ajouter des tours illimités dans tous les plans. La différence réside uniquement dans la limite mensuelle de messages WhatsApp. Vous pouvez mettre à niveau votre plan à tout moment en fonction de vos besoins."
+      },
+      "cancellation": {
+        "question": "Que se passe-t-il si j'annule?",
+        "answer": "Vous pouvez annuler à tout moment, pas de contrat. Lorsque vous annulez, vous continuerez à recevoir le service jusqu'à la fin de la période actuelle. Pendant la période d'essai gratuite de 14 jours, nous ne demandons même pas de carte de crédit."
+      }
     }
   },
   "pricing": {

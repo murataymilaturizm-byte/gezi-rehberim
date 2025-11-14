@@ -695,7 +695,7 @@ const Index = () => {
           <div className="text-center mt-12">
             <div className="inline-flex items-center gap-2 text-muted-foreground">
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span>250+ mutlu acente</span>
+              <span>{t("advanced.stats")}</span>
             </div>
           </div>
         </div>
