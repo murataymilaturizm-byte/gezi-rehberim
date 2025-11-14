@@ -359,6 +359,13 @@
       "notCreated": "Aún no creado",
       "deleteConfirm": "¿Está seguro de que desea eliminar esta plantilla?"
     },
+    "whatsapp": {
+      "templates": {
+        "title": "Plantillas de Mensajes",
+        "description": "Administre sus plantillas de mensajes de WhatsApp",
+        "loadDefaults": "Cargar Plantillas Predeterminadas"
+      }
+    },
     "welcome": "Bienvenido",
     "back": "Atrás",
     "home": "Inicio",

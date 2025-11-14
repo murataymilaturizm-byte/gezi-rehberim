@@ -348,6 +348,13 @@
       "notCreated": "Not created yet",
       "deleteConfirm": "Are you sure you want to delete this template?"
     },
+    "whatsapp": {
+      "templates": {
+        "title": "Message Templates",
+        "description": "Manage your WhatsApp message templates",
+        "loadDefaults": "Load Default Templates"
+      }
+    },
     "welcome": "Welcome",
     "back": "Back",
     "home": "Home",
