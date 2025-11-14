@@ -900,6 +900,64 @@
     "noAccount": "ليس لديك حساب؟",
     "hasAccount": "لديك حساب بالفعل؟"
   },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "signup": "التسجيل",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "fullName": "الاسم الكامل",
+    "agencyName": "اسم الوكالة",
+    "phone": "رقم الهاتف",
+    "city": "المدينة",
+    "region": "المنطقة (اختياري)",
+    "planSelection": "اختيار الخطة",
+    "monthly": "شهرياً",
+    "yearly": "سنوياً",
+    "discount10": "خصم 10%",
+    "trialInfo": "أول 14 يومًا مجانية تمامًا!",
+    "trialDetails": "لا حاجة لبطاقة ائتمان • إلغاء في أي وقت",
+    "perMonth": "/شهر",
+    "perYear": "/سنة",
+    "startFreeTrial": "ابدأ التجربة المجانية",
+    "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+    "dontHaveAccount": "ليس لديك حساب؟",
+    "phoneHelp": "قد نحتاج للاتصال بك للدعم",
+    "processing": "جاري المعالجة...",
+    "validation": {
+      "invalidEmail": "أدخل عنوان بريد إلكتروني صالح",
+      "passwordMinLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+      "fullNameMinLength": "يجب أن يكون الاسم الكامل حرفين على الأقل",
+      "fullNameMaxLength": "يمكن أن يكون الاسم الكامل 100 حرف كحد أقصى",
+      "agencyNameMinLength": "يجب أن يكون اسم الوكالة حرفين على الأقل",
+      "agencyNameMaxLength": "يمكن أن يكون اسم الوكالة 100 حرف كحد أقصى",
+      "phoneMinLength": "أدخل رقم هاتف صالح",
+      "phoneMaxLength": "رقم الهاتف طويل جدًا",
+      "cityMinLength": "يجب أن تكون المدينة حرفين على الأقل",
+      "cityMaxLength": "يمكن أن تكون المدينة 50 حرفًا كحد أقصى",
+      "selectPlan": "يرجى اختيار خطة"
+    },
+    "errors": {
+      "title": "خطأ",
+      "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صالحة",
+      "emailExists": "عنوان البريد الإلكتروني هذا مستخدم بالفعل",
+      "signupFailed": "فشل التسجيل",
+      "loginFailed": "فشل تسجيل الدخول"
+    },
+    "success": {
+      "title": "نجح",
+      "signupComplete": "اكتمل التسجيل! بدأت فترة تجريبية مجانية مدتها 14 يومًا",
+      "loginComplete": "تم تسجيل الدخول بنجاح"
+    },
+    "placeholders": {
+      "email": "example@email.com",
+      "password": "••••••",
+      "fullName": "أحمد محمد",
+      "agencyName": "وكالة السفر الزرقاء",
+      "phone": "+966 555 123 4567",
+      "city": "الرياض",
+      "region": "وسط"
+    }
+  },
   "common": {
     "loading": "جاري التحميل...",
     "error": "خطأ",

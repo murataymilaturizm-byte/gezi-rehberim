@@ -986,6 +986,64 @@
     "noAccount": "Hesabınız yok mu?",
     "hasAccount": "Hesabınız var mı?"
   },
+  "auth": {
+    "login": "Giriş Yap",
+    "signup": "Kayıt Ol",
+    "email": "E-posta",
+    "password": "Şifre",
+    "fullName": "Ad Soyad",
+    "agencyName": "Acente Adı",
+    "phone": "Telefon Numarası",
+    "city": "Şehir",
+    "region": "Bölge (İsteğe Bağlı)",
+    "planSelection": "Plan Seçimi",
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "discount10": "%10 İndirim",
+    "trialInfo": "İlk 14 gün tamamen ücretsiz!",
+    "trialDetails": "Kredi kartı gerekmez • İstediğiniz zaman iptal edebilirsiniz",
+    "perMonth": "/ay",
+    "perYear": "/yıl",
+    "startFreeTrial": "Ücretsiz Denemeye Başla",
+    "alreadyHaveAccount": "Hesabınız var mı?",
+    "dontHaveAccount": "Hesabınız yok mu?",
+    "phoneHelp": "Destek için sizinle iletişime geçmemiz gerekebilir",
+    "processing": "İşleniyor...",
+    "validation": {
+      "invalidEmail": "Geçerli bir email adresi girin",
+      "passwordMinLength": "Şifre en az 6 karakter olmalı",
+      "fullNameMinLength": "Ad Soyad en az 2 karakter olmalı",
+      "fullNameMaxLength": "Ad Soyad en fazla 100 karakter olabilir",
+      "agencyNameMinLength": "Acente adı en az 2 karakter olmalı",
+      "agencyNameMaxLength": "Acente adı en fazla 100 karakter olabilir",
+      "phoneMinLength": "Geçerli bir telefon numarası girin",
+      "phoneMaxLength": "Telefon numarası çok uzun",
+      "cityMinLength": "Şehir en az 2 karakter olmalı",
+      "cityMaxLength": "Şehir en fazla 50 karakter olabilir",
+      "selectPlan": "Lütfen bir plan seçin"
+    },
+    "errors": {
+      "title": "Hata",
+      "invalidCredentials": "Email veya şifre hatalı",
+      "emailExists": "Bu email adresi zaten kullanılıyor",
+      "signupFailed": "Kayıt başarısız oldu",
+      "loginFailed": "Giriş başarısız oldu"
+    },
+    "success": {
+      "title": "Başarılı",
+      "signupComplete": "Kayıt tamamlandı! 14 günlük ücretsiz deneme süreniz başladı",
+      "loginComplete": "Giriş başarılı"
+    },
+    "placeholders": {
+      "email": "ornek@email.com",
+      "password": "••••••",
+      "fullName": "Ahmet Yılmaz",
+      "agencyName": "Mavi Tur Seyahat",
+      "phone": "0555 123 45 67",
+      "city": "İstanbul",
+      "region": "Marmara"
+    }
+  },
   "common": {
     "loading": "Yükleniyor...",
     "error": "Hata",

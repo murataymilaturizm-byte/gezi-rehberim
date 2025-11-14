@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,25 +11,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plane } from "lucide-react";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { z } from "zod";
-
-const authSchema = z.object({
-  email: z.string().email({ message: "Geçerli bir email adresi girin" }),
-  password: z.string().min(6, { message: "Şifre en az 6 karakter olmalı" }),
-});
-
-const signupSchema = authSchema.extend({
-  fullName: z.string().trim().min(2, { message: "Ad Soyad en az 2 karakter olmalı" }).max(100, { message: "Ad Soyad en fazla 100 karakter olabilir" }),
-  agencyName: z.string().trim().min(2, { message: "Acente adı en az 2 karakter olmalı" }).max(100, { message: "Acente adı en fazla 100 karakter olabilir" }),
-  phone: z.string().trim().min(10, { message: "Geçerli bir telefon numarası girin" }).max(20, { message: "Telefon numarası çok uzun" }),
-  city: z.string().trim().min(2, { message: "Şehir en az 2 karakter olmalı" }).max(50, { message: "Şehir en fazla 50 karakter olabilir" }),
-  region: z.string().trim().optional(),
-  planType: z.enum(["starter", "professional", "enterprise"], { message: "Lütfen bir plan seçin" }),
-});
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+
+  const authSchema = z.object({
+    email: z.string().email({ message: t("auth.validation.invalidEmail") }),
+    password: z.string().min(6, { message: t("auth.validation.passwordMinLength") }),
+  });
+
+  const signupSchema = authSchema.extend({
+    fullName: z.string().trim().min(2, { message: t("auth.validation.fullNameMinLength") }).max(100, { message: t("auth.validation.fullNameMaxLength") }),
+    agencyName: z.string().trim().min(2, { message: t("auth.validation.agencyNameMinLength") }).max(100, { message: t("auth.validation.agencyNameMaxLength") }),
+    phone: z.string().trim().min(10, { message: t("auth.validation.phoneMinLength") }).max(20, { message: t("auth.validation.phoneMaxLength") }),
+    city: z.string().trim().min(2, { message: t("auth.validation.cityMinLength") }).max(50, { message: t("auth.validation.cityMaxLength") }),
+    region: z.string().trim().optional(),
+    planType: z.enum(["starter", "professional", "enterprise"], { message: t("auth.validation.selectPlan") }),
+  });
   
   // URL parametrelerinden mode, plan ve billing bilgisini al
   const modeParam = searchParams.get("mode");
@@ -80,7 +83,7 @@ const Auth = () => {
       
     if (!validation.success) {
       toast({
-        title: "Hata",
+        title: t("auth.errors.title"),
         description: validation.error.errors[0].message,
         variant: "destructive"
       });
@@ -99,14 +102,14 @@ const Auth = () => {
 
         if (error) {
           if (error.message.includes("Invalid login credentials")) {
-            throw new Error("Email veya şifre hatalı");
+            throw new Error(t("auth.errors.invalidCredentials"));
           }
           throw error;
         }
 
         toast({
-          title: "Başarılı! ✅",
-          description: "Giriş yapıldı",
+          title: t("auth.success.title"),
+          description: t("auth.success.loginComplete"),
         });
       } else {
         // Sign up
@@ -125,13 +128,13 @@ const Auth = () => {
 
         if (authError) {
           if (authError.message.includes("User already registered")) {
-            throw new Error("Bu email adresi zaten kayıtlı");
+            throw new Error(t("auth.errors.emailExists"));
           }
           throw authError;
         }
 
         if (!authData.user) {
-          throw new Error("Kullanıcı oluşturulamadı");
+          throw new Error(t("auth.errors.signupFailed"));
         }
 
         // Create agency with plan information
@@ -145,10 +148,10 @@ const Auth = () => {
             agency_name: agencyName.trim(),
             city: city.trim(),
             region: region.trim() || null,
-            twilio_account_sid: "TEMP_SID", // Will be updated later
-            twilio_auth_token: "TEMP_TOKEN", // Will be updated later
-            twilio_phone_number: "TEMP_PHONE", // Will be updated later
-            active: false, // Will be activated after Twilio setup
+            twilio_account_sid: "TEMP_SID",
+            twilio_auth_token: "TEMP_TOKEN",
+            twilio_phone_number: "TEMP_PHONE",
+            active: false,
             plan_type: planType,
             trial_ends_at: trialEndsAt.toISOString(),
             subscription_status: "trial"
@@ -156,18 +159,18 @@ const Auth = () => {
 
         if (agencyError) {
           console.error("Agency creation error:", agencyError);
-          throw new Error("Acente kaydı oluşturulamadı");
+          throw new Error(t("auth.errors.signupFailed"));
         }
 
         toast({
-          title: "Başarılı! ✅",
-          description: "Hesap oluşturuldu! 14 gün deneme süreniz başladı.",
+          title: t("auth.success.title"),
+          description: t("auth.success.signupComplete"),
         });
       }
     } catch (error: any) {
       toast({
-        title: "Hata",
-        description: error.message || "İşlem sırasında bir hata oluştu",
+        title: t("auth.errors.title"),
+        description: error.message || t("auth.errors.loginFailed"),
         variant: "destructive"
       });
     } finally {
@@ -177,16 +180,19 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSelector />
+      </div>
       <Card className="w-full max-w-2xl shadow-card">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img src={turzzLogo} alt="Turzz Logo" className="h-20 w-auto" />
           </div>
           <CardTitle className="text-2xl">
-            {isLogin ? "Admin Paneli" : "TurzzAI'ya Hoş Geldiniz"}
+            {isLogin ? t("auth.login") : "TurzzAI"}
           </CardTitle>
           <CardDescription>
-            {isLogin ? "Giriş yapın" : "14 gün ücretsiz deneme ile başlayın"}
+            {isLogin ? t("auth.login") : t("auth.trialInfo")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -194,13 +200,13 @@ const Auth = () => {
             {!isLogin && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Ad Soyad</Label>
+                  <Label htmlFor="fullName">{t("auth.fullName")}</Label>
                   <Input
                     id="fullName"
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Ahmet Yılmaz"
+                    placeholder={t("auth.placeholders.fullName")}
                     required
                     disabled={isLoading}
                     maxLength={100}
@@ -208,13 +214,13 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="agencyName">Acente Adı</Label>
+                  <Label htmlFor="agencyName">{t("auth.agencyName")}</Label>
                   <Input
                     id="agencyName"
                     type="text"
                     value={agencyName}
                     onChange={(e) => setAgencyName(e.target.value)}
-                    placeholder="Mavi Tur Seyahat"
+                    placeholder={t("auth.placeholders.agencyName")}
                     required
                     disabled={isLoading}
                     maxLength={100}
@@ -222,44 +228,44 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Telefon Numarası</Label>
+                  <Label htmlFor="phone">{t("auth.phone")}</Label>
                   <Input
                     id="phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="0555 123 45 67"
+                    placeholder={t("auth.placeholders.phone")}
                     required
                     disabled={isLoading}
                     maxLength={20}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Destek için sizinle iletişime geçmemiz gerekebilir
+                    {t("auth.phoneHelp")}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="city">Şehir</Label>
+                    <Label htmlFor="city">{t("auth.city")}</Label>
                     <Input
                       id="city"
                       type="text"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      placeholder="İstanbul"
+                      placeholder={t("auth.placeholders.city")}
                       required
                       disabled={isLoading}
                       maxLength={50}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="region">Bölge (İsteğe Bağlı)</Label>
+                    <Label htmlFor="region">{t("auth.region")}</Label>
                     <Input
                       id="region"
                       type="text"
                       value={region}
                       onChange={(e) => setRegion(e.target.value)}
-                      placeholder="Marmara"
+                      placeholder={t("auth.placeholders.region")}
                       disabled={isLoading}
                       maxLength={50}
                     />
@@ -267,21 +273,21 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Plan Seçimi</Label>
+                  <Label>{t("auth.planSelection")}</Label>
                   <div className="bg-accent/30 border border-primary/20 rounded-lg p-3 mb-3">
                     <p className="text-sm font-medium text-foreground flex items-center gap-2">
                       <span className="text-primary">🎉</span>
-                      <span>İlk 14 gün <strong>tamamen ücretsiz!</strong></span>
+                      <span>{t("auth.trialInfo")}</span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Kredi kartı gerekmez • İstediğiniz zaman iptal edebilirsiniz
+                      {t("auth.trialDetails")}
                     </p>
                   </div>
                   
                   {/* Billing Period Toggle */}
                   <div className="flex items-center justify-center gap-3 p-3 bg-card rounded-lg border border-border mb-3">
                     <Label htmlFor="billing-toggle" className={!isYearly ? "font-semibold text-sm" : "text-muted-foreground text-sm"}>
-                      Aylık
+                      {t("auth.monthly")}
                     </Label>
                     <Switch
                       id="billing-toggle"
@@ -290,11 +296,11 @@ const Auth = () => {
                       disabled={isLoading}
                     />
                     <Label htmlFor="billing-toggle" className={isYearly ? "font-semibold text-sm" : "text-muted-foreground text-sm"}>
-                      Yıllık
+                      {t("auth.yearly")}
                     </Label>
                     {isYearly && (
                       <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                        %10 İndirim
+                        {t("auth.discount10")}
                       </span>
                     )}
                   </div>
@@ -318,17 +324,17 @@ const Auth = () => {
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-foreground">Başlangıç</span>
+                          <span className="font-semibold text-foreground">{t("admin.agency.plans.starter")}</span>
                           <div className="text-right">
                             <span className="text-sm text-muted-foreground line-through">
-                              {isYearly ? "32.388₺/yıl" : "2.999₺/ay"}
+                              {isYearly ? "32.388₺" + t("auth.perYear") : "2.999₺" + t("auth.perMonth")}
                             </span>
-                            <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
+                            <div className="text-lg font-bold text-primary">{t("auth.trialInfo")}</div>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">500 mesaj/ay • Temel özellikler</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.subscription.planOptions.starter.features.0")} • {t("admin.subscription.planOptions.starter.features.1")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {isYearly ? "Yıllık 29.149₺ - %10 indirimli" : "Aylık 2.999₺"}
+                          {isYearly ? "29.149₺" + t("auth.perYear") + " - " + t("auth.discount10") : "2.999₺" + t("auth.perMonth")}
                         </p>
                       </div>
                     </label>
@@ -351,17 +357,17 @@ const Auth = () => {
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-foreground">Profesyonel</span>
+                          <span className="font-semibold text-foreground">{t("admin.agency.plans.professional")}</span>
                           <div className="text-right">
                             <span className="text-sm text-muted-foreground line-through">
-                              {isYearly ? "86.388₺/yıl" : "7.999₺/ay"}
+                              {isYearly ? "86.388₺" + t("auth.perYear") : "7.999₺" + t("auth.perMonth")}
                             </span>
-                            <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
+                            <div className="text-lg font-bold text-primary">{t("auth.trialInfo")}</div>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">2.000 mesaj/ay • Gelişmiş özellikler</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.subscription.planOptions.professional.features.0")} • {t("admin.subscription.planOptions.professional.features.1")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {isYearly ? "Yıllık 77.749₺ - %10 indirimli" : "Aylık 7.999₺"}
+                          {isYearly ? "77.749₺" + t("auth.perYear") + " - " + t("auth.discount10") : "7.999₺" + t("auth.perMonth")}
                         </p>
                       </div>
                     </label>
@@ -384,17 +390,17 @@ const Auth = () => {
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-foreground">Kurumsal</span>
+                          <span className="font-semibold text-foreground">{t("admin.agency.plans.enterprise")}</span>
                           <div className="text-right">
                             <span className="text-sm text-muted-foreground line-through">
-                              {isYearly ? "161.988₺/yıl" : "14.999₺/ay"}
+                              {isYearly ? "161.988₺" + t("auth.perYear") : "14.999₺" + t("auth.perMonth")}
                             </span>
-                            <div className="text-lg font-bold text-primary">İlk 14 Gün ÜCRETSIZ</div>
+                            <div className="text-lg font-bold text-primary">{t("auth.trialInfo")}</div>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">Sınırsız • Tüm özellikler</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.subscription.planOptions.enterprise.features.0")} • {t("admin.subscription.planOptions.enterprise.features.1")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {isYearly ? "Yıllık 145.789₺ - %10 indirimli" : "Aylık 14.999₺"}
+                          {isYearly ? "145.789₺" + t("auth.perYear") + " - " + t("auth.discount10") : "14.999₺" + t("auth.perMonth")}
                         </p>
                       </div>
                     </label>
@@ -404,26 +410,26 @@ const Auth = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ornek@email.com"
+                placeholder={t("auth.placeholders.email")}
                 required
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Şifre</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••"
+                placeholder={t("auth.placeholders.password")}
                 required
                 disabled={isLoading}
                 minLength={6}
@@ -438,12 +444,12 @@ const Auth = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  İşleniyor...
+                  {t("auth.processing")}
                 </>
               ) : isLogin ? (
-                "Giriş Yap"
+                t("auth.login")
               ) : (
-                "Kayıt Ol"
+                t("auth.signup")
               )}
             </Button>
 
@@ -454,7 +460,7 @@ const Auth = () => {
                 className="text-primary hover:underline"
                 disabled={isLoading}
               >
-                {isLogin ? "Hesabınız yok mu? Kayıt olun" : "Zaten hesabınız var mı? Giriş yapın"}
+                {isLogin ? t("auth.dontHaveAccount") : t("auth.alreadyHaveAccount")}
               </button>
             </div>
           </form>

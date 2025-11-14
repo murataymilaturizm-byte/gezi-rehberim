@@ -832,6 +832,64 @@
     "noAccount": "¿No tienes cuenta?",
     "hasAccount": "¿Ya tienes una cuenta?"
   },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "fullName": "Nombre Completo",
+    "agencyName": "Nombre de la Agencia",
+    "phone": "Número de Teléfono",
+    "city": "Ciudad",
+    "region": "Región (Opcional)",
+    "planSelection": "Selección de Plan",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "discount10": "Descuento del 10%",
+    "trialInfo": "¡Los primeros 14 días son completamente gratis!",
+    "trialDetails": "No se requiere tarjeta de crédito • Cancela en cualquier momento",
+    "perMonth": "/mes",
+    "perYear": "/año",
+    "startFreeTrial": "Comenzar Prueba Gratuita",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "phoneHelp": "Es posible que necesitemos contactarte para soporte",
+    "processing": "Procesando...",
+    "validation": {
+      "invalidEmail": "Ingresa una dirección de correo electrónico válida",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+      "fullNameMinLength": "El nombre completo debe tener al menos 2 caracteres",
+      "fullNameMaxLength": "El nombre completo puede tener un máximo de 100 caracteres",
+      "agencyNameMinLength": "El nombre de la agencia debe tener al menos 2 caracteres",
+      "agencyNameMaxLength": "El nombre de la agencia puede tener un máximo de 100 caracteres",
+      "phoneMinLength": "Ingresa un número de teléfono válido",
+      "phoneMaxLength": "El número de teléfono es demasiado largo",
+      "cityMinLength": "La ciudad debe tener al menos 2 caracteres",
+      "cityMaxLength": "La ciudad puede tener un máximo de 50 caracteres",
+      "selectPlan": "Por favor selecciona un plan"
+    },
+    "errors": {
+      "title": "Error",
+      "invalidCredentials": "Correo electrónico o contraseña inválidos",
+      "emailExists": "Esta dirección de correo electrónico ya está en uso",
+      "signupFailed": "Registro fallido",
+      "loginFailed": "Inicio de sesión fallido"
+    },
+    "success": {
+      "title": "Éxito",
+      "signupComplete": "¡Registro completado! Tu período de prueba gratuito de 14 días ha comenzado",
+      "loginComplete": "Inicio de sesión exitoso"
+    },
+    "placeholders": {
+      "email": "ejemplo@email.com",
+      "password": "••••••",
+      "fullName": "Juan Pérez",
+      "agencyName": "Agencia de Viajes Azul",
+      "phone": "+34 555 123 4567",
+      "city": "Madrid",
+      "region": "Centro"
+    }
+  },
   "common": {
     "loading": "Cargando...",
     "error": "Error",
