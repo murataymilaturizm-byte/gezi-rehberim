@@ -418,6 +418,36 @@
         "title": "Mesaj Şablonları",
         "description": "WhatsApp mesaj şablonlarınızı yönetin",
         "loadDefaults": "Varsayılan Şablonları Yükle"
+      },
+      "settings": {
+        "title": "WhatsApp Ayarları",
+        "description": "WhatsApp Business entegrasyonunu yönetin",
+        "notConfigured": "WhatsApp henüz yapılandırılmadı. Lütfen WhatsApp Business numaranızı ekleyin.",
+        "configured": "WhatsApp entegrasyonu aktif! Müşterileriniz WhatsApp üzerinden sizinle iletişim kurabilir.",
+        "phoneNumber": "WhatsApp Business Numarası",
+        "phonePlaceholder": "+90555xxxxxxx",
+        "phoneHelp": "Twilio'da kayıtlı WhatsApp Business numaranızı girin (ör: +14155238886)",
+        "saving": "Kaydediliyor...",
+        "update": "Güncelle",
+        "save": "Kaydet",
+        "integrationComplete": "Entegrasyon Tamamlandı",
+        "integrationCompleteDesc": "WhatsApp Business numaranız {phone} sisteme tanımlandı."
+      },
+      "status": {
+        "pending": "Beklemede",
+        "active": "Aktif",
+        "rejected": "Reddedildi",
+        "requestReceived": "WhatsApp entegrasyon başvurunuz alındı. Yönetici onayı bekleniyor.",
+        "requestRejected": "WhatsApp entegrasyon başvurunuz reddedildi. Lütfen destek ile iletişime geçin."
+      },
+      "actions": {
+        "approve": "Onayla",
+        "reject": "Reddet"
+      },
+      "messages": {
+        "approved": "WhatsApp entegrasyonu onaylandı",
+        "rejected": "WhatsApp entegrasyonu reddedildi",
+        "updateError": "Durum güncellenemedi"
       }
     },
     "subtitle": "Genel Bakış",

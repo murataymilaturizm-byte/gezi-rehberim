@@ -406,6 +406,36 @@
         "title": "Шаблоны Сообщений",
         "description": "Управляйте своими шаблонами сообщений WhatsApp",
         "loadDefaults": "Загрузить Стандартные Шаблоны"
+      },
+      "settings": {
+        "title": "Настройки WhatsApp",
+        "description": "Управление интеграцией WhatsApp Business",
+        "notConfigured": "WhatsApp еще не настроен. Пожалуйста, добавьте свой номер WhatsApp Business.",
+        "configured": "Интеграция WhatsApp активна! Ваши клиенты могут связаться с вами через WhatsApp.",
+        "phoneNumber": "Номер WhatsApp Business",
+        "phonePlaceholder": "+7905xxxxxxx",
+        "phoneHelp": "Введите свой номер WhatsApp Business, зарегистрированный в Twilio (например: +14155238886)",
+        "saving": "Сохранение...",
+        "update": "Обновить",
+        "save": "Сохранить",
+        "integrationComplete": "Интеграция Завершена",
+        "integrationCompleteDesc": "Ваш номер WhatsApp Business {phone} зарегистрирован в системе."
+      },
+      "status": {
+        "pending": "В ожидании",
+        "active": "Активный",
+        "rejected": "Отклонено",
+        "requestReceived": "Ваш запрос на интеграцию WhatsApp получен. Ожидание одобрения администратора.",
+        "requestRejected": "Ваш запрос на интеграцию WhatsApp был отклонен. Пожалуйста, свяжитесь со службой поддержки."
+      },
+      "actions": {
+        "approve": "Одобрить",
+        "reject": "Отклонить"
+      },
+      "messages": {
+        "approved": "Интеграция WhatsApp одобрена",
+        "rejected": "Интеграция WhatsApp отклонена",
+        "updateError": "Не удалось обновить статус"
       }
     },
     "welcome": "Добро Пожаловать",
