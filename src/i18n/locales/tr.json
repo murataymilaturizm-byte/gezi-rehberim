@@ -14,77 +14,76 @@
     "demo": "Canlı Test Et"
   },
   "features": {
-    "title": "Özellikler",
-    "subtitle": "İşletmenizi Güçlendirin",
+    "title": "İşinizi Büyüten Özellikler",
+    "subtitle": "Karmaşık değil, basit ve etkili. Size gerçekten değer katan özellikler.",
     "whatsapp": {
-      "title": "WhatsApp Entegrasyonu",
-      "description": "Müşterilerinizle doğrudan WhatsApp üzerinden iletişim kurun"
-    },
-    "ai": {
-      "title": "Yapay Zeka Destekli",
-      "description": "Akıllı chatbot ile 7/24 müşteri desteği sağlayın"
-    },
-    "booking": {
-      "title": "Kolay Rezervasyon",
-      "description": "Müşterileriniz kolayca tur rezervasyonu yapabilir"
+      "title": "7/24 Otomatik Satış",
+      "description": "Gece yarısı bile müşteriler tur soruyor, rezervasyon yapıyor. Siz uyurken bile satış yapın - hiçbir fırsatı kaçırmayın.",
+      "metric": "Ortalama %120 rezervasyon artışı ilk ayda"
     },
     "analytics": {
-      "title": "Detaylı Analitik",
-      "description": "İşletmenizin performansını takip edin"
-    },
-    "templates": {
-      "title": "Mesaj Şablonları",
-      "description": "Önceden hazırlanmış mesaj şablonları ile zaman kazanın"
+      "title": "Gelir Takibi & Analiz",
+      "description": "Hangi turlar kazandırıyor? Hangi günler daha çok satış oluyor? Tüm gelir ve performans verilerinizi anlık görün.",
+      "metric": "Günlük, haftalık, aylık ciro raporları"
     },
     "multi": {
-      "title": "Çok Dilli Destek",
-      "description": "7 farklı dilde müşterilerinize hizmet verin"
+      "title": "Çoklu Dil Desteği",
+      "description": "7 farklı dilde otomatik mesajlaşma: Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca. Sistem müşterinizin dilini otomatik algılıyor.",
+      "metric": "7 dilde akıcı iletişim"
     }
   },
+  "benefits": {
+    "title": "Somut Sonuçlar, Gerçek Değer",
+    "subtitle": "Sadece özellikler değil - işinize kattığı değer"
+  },
+  "howItWorks": {
+    "title": "Nasıl Çalışır?",
+    "subtitle": "WhatsApp'tan rezervasyona 3 basit adımda"
+  },
+  "testimonials": {
+    "title": "Gerçek Sonuçlar",
+    "subtitle": "Acentelerimizin başarı hikayeleri"
+  },
+  "faq": {
+    "title": "Sık Sorulan Sorular",
+    "subtitle": "Merak ettiklerinizin yanıtlarını burada bulabilirsiniz"
+  },
+  "cta": {
+    "title": "Hemen Başlamaya Hazır mısınız?",
+    "subtitle": "Demo hesap oluşturun ve tüm özellikleri ücretsiz deneyin. Kredi kartı bilgisi gerekmez.",
+    "button": "Ücretsiz Deneyin"
+  },
   "pricing": {
-    "title": "Fiyatlandırma",
-    "subtitle": "İşletmeniz İçin En Uygun Planı Seçin",
+    "title": "Bugün Başlayın, Farkı Görün",
+    "subtitle": "İşinize değer katan, hemen geri dönüşü olan bir yatırım",
     "monthly": "Aylık",
     "yearly": "Yıllık",
+    "save": "2 Ay Ücretsiz",
+    "trial": "Tüm planlarda 14 gün ücretsiz deneme. Kredi kartı bilgisi gerekmez.",
+    "custom": "Özel",
+    "savings": "tasarruf",
+    "cta": {
+      "start": "Başlayın",
+      "contact": "İletişime Geç"
+    },
     "starter": {
       "name": "Başlangıç",
-      "price": "499₺",
+      "price": "2.999",
       "period": "/ay",
-      "features": {
-        "messages": "1000 mesaj/ay",
-        "tours": "50 tura kadar",
-        "ai": "Temel AI desteği",
-        "support": "E-posta desteği"
-      },
-      "cta": "Başla"
+      "description": "Küçük acenteler ve yeni başlayanlar için"
     },
     "professional": {
       "name": "Profesyonel",
-      "price": "999₺",
+      "price": "7.999",
       "period": "/ay",
-      "popular": "Popüler",
-      "features": {
-        "messages": "5000 mesaj/ay",
-        "tours": "Sınırsız tur",
-        "ai": "Gelişmiş AI desteği",
-        "analytics": "Detaylı analitik",
-        "support": "Öncelikli destek"
-      },
-      "cta": "Başla"
+      "badge": "En Popüler",
+      "description": "Büyüyen işletmeler ve aktif acenteler için"
     },
     "enterprise": {
       "name": "Kurumsal",
-      "price": "Özel",
-      "period": "",
-      "features": {
-        "messages": "Sınırsız mesaj",
-        "tours": "Sınırsız tur",
-        "ai": "Özel AI modeli",
-        "integration": "Özel entegrasyonlar",
-        "support": "7/24 destek",
-        "training": "Eğitim ve danışmanlık"
-      },
-      "cta": "İletişime Geç"
+      "price": "14.999",
+      "period": "/ay",
+      "description": "Yüksek hacimli işletmeler ve büyük acenteler için"
     }
   },
   "footer": {

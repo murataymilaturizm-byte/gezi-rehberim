@@ -84,21 +84,21 @@ const Index = () => {
   const features = [
     {
       icon: MessageSquare,
-      title: "7/24 Otomatik Satış",
-      description: "Gece yarısı bile müşteriler tur soruyor, rezervasyon yapıyor. Siz uyurken bile satış yapın - hiçbir fırsatı kaçırmayın.",
-      metric: "Ortalama %120 rezervasyon artışı ilk ayda"
+      title: t("features.whatsapp.title"),
+      description: t("features.whatsapp.description"),
+      metric: t("features.whatsapp.metric")
     },
     {
       icon: TrendingUp,
-      title: "Gelir Takibi & Analiz",
-      description: "Hangi turlar kazandırıyor? Hangi günler daha çok satış oluyor? Tüm gelir ve performans verilerinizi anlık görün.",
-      metric: "Günlük, haftalık, aylık ciro raporları"
+      title: t("features.analytics.title"),
+      description: t("features.analytics.description"),
+      metric: t("features.analytics.metric")
     },
     {
       icon: Users,
-      title: "Çoklu Dil Desteği",
-      description: "7 farklı dilde otomatik mesajlaşma: Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca. Sistem müşterinizin dilini otomatik algılıyor.",
-      metric: "7 dilde akıcı iletişim"
+      title: t("features.multi.title"),
+      description: t("features.multi.description"),
+      metric: t("features.multi.metric")
     }
   ];
 
@@ -386,10 +386,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              İşinizi Büyüten Özellikler
+              {t("features.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Karmaşık değil, basit ve etkili. Size gerçekten değer katan özellikler.
+              {t("features.subtitle")}
             </p>
           </div>
           
