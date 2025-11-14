@@ -392,13 +392,13 @@ export const UsageStats = () => {
             {usage.plan_type === 'starter' && (
               <>
                 <div className="flex items-center gap-2">
-                  <span>💬 500 mesaj/ay</span>
+                  <span>💬 {t("admin.usageStats.features.starter.messages")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>💾 30 gün konuşma geçmişi</span>
+                  <span>💾 {t("admin.usageStats.features.starter.history")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>📧 Email destek</span>
+                  <span>📧 {t("admin.usageStats.features.starter.support")}</span>
                 </div>
               </>
             )}
@@ -406,16 +406,16 @@ export const UsageStats = () => {
             {usage.plan_type === 'professional' && (
               <>
                 <div className="flex items-center gap-2">
-                  <span>💬 2.000 mesaj/ay</span>
+                  <span>💬 {t("admin.usageStats.features.professional.messages")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>💾 90 gün konuşma geçmişi</span>
+                  <span>💾 {t("admin.usageStats.features.professional.history")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>⚡ Öncelikli destek</span>
+                  <span>⚡ {t("admin.usageStats.features.professional.support")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🎯 Kullanıcı profilleri</span>
+                  <span>🎯 {t("admin.usageStats.features.professional.profiles")}</span>
                 </div>
               </>
             )}
@@ -423,16 +423,16 @@ export const UsageStats = () => {
             {usage.plan_type === 'enterprise' && (
               <>
                 <div className="flex items-center gap-2">
-                  <span>💬 Sınırsız mesaj</span>
+                  <span>💬 {t("admin.usageStats.features.enterprise.messages")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>💾 Sınırsız geçmiş</span>
+                  <span>💾 {t("admin.usageStats.features.enterprise.history")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🚀 7/24 destek</span>
+                  <span>🚀 {t("admin.usageStats.features.enterprise.support")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🔌 API erişimi</span>
+                  <span>🔌 {t("admin.usageStats.features.enterprise.api")}</span>
                 </div>
               </>
             )}
