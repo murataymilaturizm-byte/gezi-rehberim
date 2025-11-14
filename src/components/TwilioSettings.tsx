@@ -6,9 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, AlertCircle } from "lucide-react";
+import { Settings, CheckCircle2, AlertCircle, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const whatsappSchema = z.object({
   whatsapp_phone_number: z.string()
@@ -26,7 +33,8 @@ export const TwilioSettings = () => {
   const [whatsappStatus, setWhatsappStatus] = useState<'pending' | 'active' | 'rejected'>('pending');
   
   const [formData, setFormData] = useState({
-    whatsapp_phone_number: ""
+    whatsapp_phone_number: "",
+    conversation_style: "professional" as 'friendly' | 'professional' | 'energetic' | 'helpful'
   });
 
   useEffect(() => {
@@ -41,7 +49,7 @@ export const TwilioSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, twilio_phone_number, whatsapp_status, active")
+        .select("id, twilio_phone_number, whatsapp_status, active, conversation_style")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -60,8 +68,14 @@ export const TwilioSettings = () => {
 
         if (isConfigured) {
           setFormData({
-            whatsapp_phone_number: phoneNumber
+            whatsapp_phone_number: phoneNumber,
+            conversation_style: (agencyData as any).conversation_style || 'professional'
           });
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            conversation_style: (agencyData as any).conversation_style || 'professional'
+          }));
         }
       }
     } catch (error) {
@@ -110,7 +124,8 @@ export const TwilioSettings = () => {
         .from("agencies")
         .update({
           twilio_phone_number: formData.whatsapp_phone_number,
-          whatsapp_status: 'pending'
+          whatsapp_status: 'pending',
+          conversation_style: formData.conversation_style
         } as any)
         .eq("id", agencyId)
         .select()
@@ -218,12 +233,58 @@ export const TwilioSettings = () => {
               placeholder={t("admin.whatsapp.settings.phonePlaceholder")}
               value={formData.whatsapp_phone_number}
               onChange={(e) =>
-                setFormData({ whatsapp_phone_number: e.target.value })
+                setFormData({ ...formData, whatsapp_phone_number: e.target.value })
               }
               required
             />
             <p className="text-sm text-muted-foreground">
               {t("admin.whatsapp.settings.phoneHelp")}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="conversation_style" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Konuşma Üslubu
+            </Label>
+            <Select
+              value={formData.conversation_style}
+              onValueChange={(value: 'friendly' | 'professional' | 'energetic' | 'helpful') =>
+                setFormData({ ...formData, conversation_style: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="friendly">
+                  <div className="flex items-center gap-2">
+                    <span>🤝</span>
+                    <span>Samimi/Dostane</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="professional">
+                  <div className="flex items-center gap-2">
+                    <span>👔</span>
+                    <span>Profesyonel/Kurumsal</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="energetic">
+                  <div className="flex items-center gap-2">
+                    <span>⚡</span>
+                    <span>Enerjik/Dinamik</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="helpful">
+                  <div className="flex items-center gap-2">
+                    <span>😊</span>
+                    <span>Nazik/Yardımsever</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              Botunuzun müşterilerle nasıl konuşacağını belirleyin
             </p>
           </div>
 
