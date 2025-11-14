@@ -34,7 +34,45 @@
   },
   "benefits": {
     "title": "Somut Sonuçlar, Gerçek Değer",
-    "subtitle": "Sadece özellikler değil - işinize kattığı değer"
+    "subtitle": "Sadece özellikler değil - işinize kattığı değer",
+    "timeSaving": {
+      "title": "Ayda 40+ Saat Tasarruf",
+      "description": "Tekrar eden soruları yanıtlamak, turları anlatmak, fiyat sormak... Artık bunların hepsi otomatik."
+    },
+    "moreSales": {
+      "title": "İlk Ayda 2-3x Daha Fazla Satış",
+      "description": "Gece yarısı bile satış yapın. Hiçbir müşteriyi ve fırsatı kaçırmayın."
+    },
+    "customerTracking": {
+      "title": "Her Müşteri Kişisel Takip",
+      "description": "Kim ne aradı? Bütçesi ne? Geçmişte ne aldı? AI her müşteriyi tanıyor, size özel öneriler yapıyor."
+    },
+    "roi": {
+      "title": "Sadece 2 Tur = Kendini Ödüyor",
+      "description": "Başlangıç planı sadece 2.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
+    }
+  },
+  "stats": {
+    "salesIncrease": {
+      "value": "2-3x",
+      "label": "Ortalama Satış Artışı",
+      "subtext": "İlk ayda"
+    },
+    "timeSaved": {
+      "value": "40+",
+      "label": "Saat Tasarruf",
+      "subtext": "Ayda"
+    },
+    "availability": {
+      "value": "7/24",
+      "label": "Kesintisiz Hizmet",
+      "subtext": "Hiç durmayan asistan"
+    },
+    "paymentTime": {
+      "value": "2 dk",
+      "label": "Ödeme Alma Süresi",
+      "subtext": "WhatsApp'tan direkt"
+    }
   },
   "howItWorks": {
     "title": "Nasıl Çalışır?",
@@ -53,6 +91,14 @@
     "subtitle": "Demo hesap oluşturun ve tüm özellikleri ücretsiz deneyin. Kredi kartı bilgisi gerekmez.",
     "button": "Ücretsiz Deneyin"
   },
+  "validation": {
+    "nameRequired": "İsim zorunludur",
+    "nameMaxLength": "İsim en fazla 100 karakter olabilir",
+    "emailInvalid": "Geçerli bir email adresi girin",
+    "emailMaxLength": "Email en fazla 255 karakter olabilir",
+    "messageMinLength": "Mesaj en az 10 karakter olmalıdır",
+    "messageMaxLength": "Mesaj en fazla 1000 karakter olabilir"
+  },
   "pricing": {
     "title": "Bugün Başlayın, Farkı Görün",
     "subtitle": "İşinize değer katan, hemen geri dönüşü olan bir yatırım",
@@ -70,20 +116,112 @@
       "name": "Başlangıç",
       "price": "2.999",
       "period": "/ay",
-      "description": "Küçük acenteler ve yeni başlayanlar için"
+      "description": "Küçük acenteler ve yeni başlayanlar için",
+      "features": {
+        "messages": "💬 500 WhatsApp mesajı/ay (~16 mesaj/gün)",
+        "basicReporting": "📊 Temel raporlama ve istatistikler",
+        "unlimitedTours": "🗂️ Sınırsız tur ekleme",
+        "reservationManagement": "📝 Rezervasyon yönetimi",
+        "emailSupport": "📧 Email destek (48 saat)",
+        "aiAnswers": "🤖 AI destekli otomatik cevaplar",
+        "history30": "💾 30 gün konuşma geçmişi"
+      }
     },
     "professional": {
       "name": "Profesyonel",
       "price": "7.999",
       "period": "/ay",
       "badge": "En Popüler",
-      "description": "Büyüyen işletmeler ve aktif acenteler için"
+      "description": "Büyüyen işletmeler ve aktif acenteler için",
+      "features": {
+        "messages": "💬 3.000 WhatsApp mesajı/ay (~100 mesaj/gün)",
+        "advancedReporting": "📈 Gelişmiş raporlama ve analizler",
+        "unlimitedTours": "🗂️ Sınırsız tur ekleme",
+        "advancedReservation": "📝 Gelişmiş rezervasyon yönetimi",
+        "userProfiles": "🎯 WhatsApp kullanıcı profilleri ve segmentasyon",
+        "prioritySupport": "⚡ Öncelikli destek (24 saat içinde)",
+        "crmIntegration": "🔗 CRM entegrasyon desteği",
+        "history90": "💾 90 gün konuşma geçmişi",
+        "customTemplates": "🎨 Özel WhatsApp mesaj şablonları",
+        "tourReminders": "📱 Otomatik tur hatırlatıcıları"
+      }
     },
     "enterprise": {
       "name": "Kurumsal",
       "price": "14.999",
       "period": "/ay",
-      "description": "Yüksek hacimli işletmeler ve büyük acenteler için"
+      "description": "Büyük acenteler ve zincir işletmeler için",
+      "features": {
+        "unlimitedMessages": "💬 Sınırsız WhatsApp mesajı",
+        "customReporting": "📊 Özel raporlama ve dashboardlar",
+        "multiBranch": "🗂️ Multi-branch (çoklu şube) desteği",
+        "enterpriseReservation": "📝 Kurumsal rezervasyon yönetimi",
+        "advancedSegmentation": "🎯 Gelişmiş müşteri segmentasyonu ve AI analizleri",
+        "support247": "🚀 7/24 öncelikli destek",
+        "apiAccess": "🔌 API erişimi ve özel entegrasyonlar",
+        "unlimitedHistory": "💾 Sınırsız konuşma geçmişi",
+        "accountManager": "👔 Özel hesap yöneticisi (dedicated)",
+        "customDevelopment": "⚙️ Özel geliştirme ve özelleştirmeler",
+        "enterpriseSecurity": "🔒 Kurumsal güvenlik ve SLA garantisi",
+        "multipleAccounts": "🌐 Çoklu WhatsApp hesabı desteği"
+      }
+    }
+  },
+  "testimonials": {
+    "title": "Gerçek Sonuçlar",
+    "subtitle": "Acentelerimizin başarı hikayeleri",
+    "items": {
+      "yasinCetin": {
+        "name": "Yasin Çetin",
+        "company": "Kampüs Travel",
+        "role": "İşletme Sahibi",
+        "content": "İlk ayda 18 yeni rezervasyon aldık. Daha önce gece mesaj atanlar 'yarın ararsınız' deyip başka acenteden alıyordu. Şimdi gece 2'de bile satış yapıyoruz!",
+        "result": "+18 rezervasyon ilk ayda"
+      },
+      "sitkiOgrak": {
+        "name": "Sıtkı Murat OĞRAK",
+        "company": "Aymila Turizm",
+        "role": "İşletme Müdürü",
+        "content": "Müşteriler 'çok hızlı cevap veriyorsunuz' diyor. Ayda 40+ saat zaman kazanıyorum. Artık gerçekten önemli işlere odaklanabiliyorum.",
+        "result": "40+ saat/ay tasarruf"
+      },
+      "mustafaGulmez": {
+        "name": "Mustafa Gülmez",
+        "company": "4 Eylül Turizm",
+        "role": "İşletme Sahibi",
+        "content": "Hangi turlar daha çok satıyor, hangi gün daha çok talep var - her şeyi görebiliyorum. Artık tahmine değil, veriye göre karar veriyorum. Gelir analizleri muhteşem!",
+        "result": "Veri odaklı karar"
+      }
+    }
+  },
+  "faq": {
+    "title": "Sık Sorulan Sorular",
+    "subtitle": "Merak ettiklerinizin yanıtlarını burada bulabilirsiniz",
+    "items": {
+      "salesIncrease": {
+        "question": "Gerçekten ilk ayda satışlarım artacak mı?",
+        "answer": "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. Çünkü artık gece yarısı, hafta sonu, her an müşterilerinize hizmet veriyorsunuz. Hiçbir fırsat kaçmıyor."
+      },
+      "setup": {
+        "question": "Kurulumu ben yapabilir miyim?",
+        "answer": "Kesinlikle! Kurulum 5-10 dakika sürüyor ve çok basit. WhatsApp Business numaranızı ekleyin, turlarınızı yükleyin - hepsi bu. Tüm teknik altyapıyı biz yönetiyoruz. Takıldığınız yerde destek ekibimiz size yardımcı olur."
+      },
+      "whatsappCost": {
+        "question": "WhatsApp entegrasyonu için ek ücret var mı?",
+        "answer": "Hayır! WhatsApp Business API altyapısını biz yönetiyoruz. Tek yapmanız gereken kendi WhatsApp Business numaranızı sisteme eklemek. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
+      },
+      "payment": {
+        "question": "Müşterilerden direkt ödeme alabilir miyim?",
+        "answer": "Evet! SiPay entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, 2 dakika içinde ödeme alabilirsiniz. Ödeme takibi ve fatura otomatik."
+      },
+      "tourLimit": {
+        "question": "Kaç tur ekleyebilirim?",
+        "answer": "Tüm planlarda sınırsız tur ekleyebilirsiniz. Fark sadece aylık WhatsApp mesaj limitinde. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
+      },
+      "cancellation": {
+        "question": "İptal edersem ne olur?",
+        "answer": "İstediğiniz zaman iptal edebilirsiniz, sözleşme yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz. 14 gün ücretsiz deneme sırasında kredi kartı bile istemiyoruz."
+      }
     }
   },
   "footer": {

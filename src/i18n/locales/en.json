@@ -38,53 +38,189 @@
     },
     "multi": {
       "title": "Multi-Language Support",
-      "description": "Serve your customers in 7 different languages"
+      "description": "Serve your customers in 7 different languages",
+      "metric": "Fluent communication in 7 languages"
+    },
+    "analytics": {
+      "title": "Revenue Tracking & Analytics",
+      "description": "Which tours are profitable? Which days see more sales? See all revenue and performance data in real-time.",
+      "metric": "Daily, weekly, monthly revenue reports"
+    },
+    "whatsapp": {
+      "title": "24/7 Automated Sales",
+      "description": "Customers asking about tours and making reservations even at midnight. Sell while you sleep - never miss an opportunity.",
+      "metric": "Average 120% reservation increase in first month"
+    }
+  },
+  "benefits": {
+    "title": "Concrete Results, Real Value",
+    "subtitle": "Not just features - the value it adds to your business",
+    "timeSaving": {
+      "title": "Save 40+ Hours Monthly",
+      "description": "Answering repeated questions, explaining tours, pricing... All automated now."
+    },
+    "moreSales": {
+      "title": "2-3x More Sales in First Month",
+      "description": "Sell even at midnight. Never miss any customer or opportunity."
+    },
+    "customerTracking": {
+      "title": "Personal Tracking for Every Customer",
+      "description": "Who asked for what? What's their budget? Past purchases? AI knows every customer, makes personalized recommendations."
+    },
+    "roi": {
+      "title": "Just 2 Tours = Pays for Itself",
+      "description": "Starter plan only €49/month. Make just 2 extra tour sales per month, system pays for itself."
+    }
+  },
+  "stats": {
+    "salesIncrease": {
+      "value": "2-3x",
+      "label": "Average Sales Increase",
+      "subtext": "In first month"
+    },
+    "timeSaved": {
+      "value": "40+",
+      "label": "Hours Saved",
+      "subtext": "Monthly"
+    },
+    "availability": {
+      "value": "24/7",
+      "label": "Continuous Service",
+      "subtext": "Never-stopping assistant"
+    },
+    "paymentTime": {
+      "value": "2 min",
+      "label": "Payment Collection Time",
+      "subtext": "Direct from WhatsApp"
+    }
+  },
+  "howItWorks": {
+    "title": "How It Works?",
+    "subtitle": "From WhatsApp to reservation in 3 simple steps"
+  },
+  "testimonials": {
+    "title": "Real Results",
+    "subtitle": "Success stories from our agencies",
+    "items": {
+      "yasinCetin": {
+        "name": "Yasin Çetin",
+        "company": "Campus Travel",
+        "role": "Business Owner",
+        "content": "We got 18 new reservations in the first month. Previously, people who messaged at night would say 'call you tomorrow' and book with another agency. Now we're making sales even at 2 AM!",
+        "result": "+18 reservations in first month"
+      },
+      "sitkiOgrak": {
+        "name": "Sıtkı Murat OĞRAK",
+        "company": "Aymila Tourism",
+        "role": "Business Manager",
+        "content": "Customers say 'you respond so quickly'. I save 40+ hours per month. Now I can focus on truly important matters.",
+        "result": "40+ hours/month saved"
+      },
+      "mustafaGulmez": {
+        "name": "Mustafa Gülmez",
+        "company": "4 Eylül Tourism",
+        "role": "Business Owner",
+        "content": "Which tours sell more, which days see more demand - I can see everything. Now I make decisions based on data, not guesses. Revenue analytics are amazing!",
+        "result": "Data-driven decisions"
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to your questions here",
+    "items": {
+      "salesIncrease": {
+        "question": "Will my sales really increase in the first month?",
+        "answer": "Yes! Our average agencies see a 120-150% reservation increase in the first month. Because now you're serving your customers at midnight, on weekends, anytime. You don't miss any opportunity."
+      },
+      "setup": {
+        "question": "Can I do the setup myself?",
+        "answer": "Absolutely! Setup takes 5-10 minutes and is very simple. Add your WhatsApp Business number, upload your tours - that's it. We manage all the technical infrastructure. Our support team will help you if you get stuck."
+      },
+      "whatsappCost": {
+        "question": "Is there an extra fee for WhatsApp integration?",
+        "answer": "No! We manage the WhatsApp Business API infrastructure. All you need to do is add your own WhatsApp Business number to the system. API usage fees are on us, you only pay your chosen plan fee."
+      },
+      "payment": {
+        "question": "Can I collect payments directly from customers?",
+        "answer": "Yes! With SiPay integration, you can send instant payment links via WhatsApp and collect payments in 2 minutes. Payment tracking and invoicing are automatic."
+      },
+      "tourLimit": {
+        "question": "How many tours can I add?",
+        "answer": "You can add unlimited tours in all plans. The difference is only in the monthly WhatsApp message limit. You can upgrade your plan anytime based on your needs."
+      },
+      "cancellation": {
+        "question": "What happens if I cancel?",
+        "answer": "You can cancel anytime, no contract. When you cancel, you'll continue to receive service until the end of the current period. We don't even ask for a credit card during the 14-day free trial."
+      }
     }
   },
   "pricing": {
-    "title": "Pricing",
-    "subtitle": "Choose The Best Plan For Your Business",
+    "title": "Start Today, See the Difference",
+    "subtitle": "An investment that adds value to your business with immediate returns",
     "monthly": "Monthly",
     "yearly": "Yearly",
+    "save": "2 Months Free",
+    "trial": "14-day free trial on all plans. No credit card required.",
+    "custom": "Custom",
+    "savings": "savings",
+    "cta": {
+      "start": "Get Started",
+      "contact": "Contact Us"
+    },
     "starter": {
       "name": "Starter",
       "price": "€49",
       "period": "/month",
+      "description": "For small agencies and beginners",
       "features": {
-        "messages": "1000 messages/month",
-        "tours": "Up to 50 tours",
-        "ai": "Basic AI support",
-        "support": "Email support"
-      },
-      "cta": "Get Started"
+        "messages": "💬 500 WhatsApp messages/month (~16 msg/day)",
+        "basicReporting": "📊 Basic reporting and statistics",
+        "unlimitedTours": "🗂️ Unlimited tour additions",
+        "reservationManagement": "📝 Reservation management",
+        "emailSupport": "📧 Email support (48 hours)",
+        "aiAnswers": "🤖 AI-powered automatic answers",
+        "history30": "💾 30-day conversation history"
+      }
     },
     "professional": {
       "name": "Professional",
       "price": "€99",
       "period": "/month",
-      "popular": "Popular",
+      "badge": "Most Popular",
+      "description": "For growing businesses and active agencies",
       "features": {
-        "messages": "5000 messages/month",
-        "tours": "Unlimited tours",
-        "ai": "Advanced AI support",
-        "analytics": "Detailed analytics",
-        "support": "Priority support"
-      },
-      "cta": "Get Started"
+        "messages": "💬 3,000 WhatsApp messages/month (~100 msg/day)",
+        "advancedReporting": "📈 Advanced reporting and analytics",
+        "unlimitedTours": "🗂️ Unlimited tour additions",
+        "advancedReservation": "📝 Advanced reservation management",
+        "userProfiles": "🎯 WhatsApp user profiles and segmentation",
+        "prioritySupport": "⚡ Priority support (within 24 hours)",
+        "crmIntegration": "🔗 CRM integration support",
+        "history90": "💾 90-day conversation history",
+        "customTemplates": "🎨 Custom WhatsApp message templates",
+        "tourReminders": "📱 Automatic tour reminders"
+      }
     },
     "enterprise": {
       "name": "Enterprise",
       "price": "Custom",
       "period": "",
+      "description": "For large agencies and chain businesses",
       "features": {
-        "messages": "Unlimited messages",
-        "tours": "Unlimited tours",
-        "ai": "Custom AI model",
-        "integration": "Custom integrations",
-        "support": "24/7 support",
-        "training": "Training and consulting"
-      },
-      "cta": "Contact Us"
+        "unlimitedMessages": "💬 Unlimited WhatsApp messages",
+        "customReporting": "📊 Custom reporting and dashboards",
+        "multiBranch": "🗂️ Multi-branch support",
+        "enterpriseReservation": "📝 Enterprise reservation management",
+        "advancedSegmentation": "🎯 Advanced customer segmentation and AI analytics",
+        "support247": "🚀 24/7 priority support",
+        "apiAccess": "🔌 API access and custom integrations",
+        "unlimitedHistory": "💾 Unlimited conversation history",
+        "accountManager": "👔 Dedicated account manager",
+        "customDevelopment": "⚙️ Custom development and customizations",
+        "enterpriseSecurity": "🔒 Enterprise security and SLA guarantee",
+        "multipleAccounts": "🌐 Multiple WhatsApp account support"
+      }
     }
   },
   "footer": {
@@ -199,5 +335,13 @@
     "filter": "Filter",
     "export": "Export",
     "import": "Import"
+  },
+  "validation": {
+    "nameRequired": "Name is required",
+    "nameMaxLength": "Name can be maximum 100 characters",
+    "emailInvalid": "Enter a valid email address",
+    "emailMaxLength": "Email can be maximum 255 characters",
+    "messageMinLength": "Message must be at least 10 characters",
+    "messageMaxLength": "Message can be maximum 1000 characters"
   }
 }
