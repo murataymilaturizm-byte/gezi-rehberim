@@ -17,6 +17,8 @@ import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { SalesChatWidget } from "@/components/SalesChatWidget";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const Index = () => {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
@@ -289,23 +291,25 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={turzzLogo} alt="Turzz Logo" className="h-16 w-auto" />
-              <div>
+              <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
+              <div className="hidden sm:block">
                 <p className="text-sm text-muted-foreground">Akıllı Tur Satış Sistemi</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button asChild variant="ghost" className="hidden md:inline-flex">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <LanguageSelector />
+              <ThemeToggle />
+              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
                 <a href="/yardim">Yardım</a>
               </Button>
-              <Button asChild variant="outline" className="hidden md:inline-flex">
+              <Button asChild variant="outline" className="hidden lg:inline-flex hover:scale-105 transition-transform duration-300">
                 <a href="/nasil-baslarim">Nasıl Başlarım?</a>
               </Button>
-              <Button asChild className="bg-gradient-ocean hover:opacity-90">
+              <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
                 <a href="/auth">Giriş Yap</a>
               </Button>
             </div>
@@ -331,16 +335,16 @@ const Index = () => {
               rezervasyon alın ve ödemeleri otomatik yönetin - siz uyurken bile satış yapın.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
+              <Button size="lg" className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 text-lg px-8" asChild>
                 <a href="/auth?mode=signup">
                   14 Gün Ücretsiz Dene
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                 </a>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8" onClick={scrollToDemo}>
+              <Button size="lg" variant="outline" className="text-lg px-8 transition-all duration-300 hover:scale-105" onClick={scrollToDemo}>
                 Canlı Test Et
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+              <Button size="lg" variant="outline" className="text-lg px-8 transition-all duration-300 hover:scale-105" asChild>
                 <a href="/nasil-baslarim">Nasıl Başlarım?</a>
               </Button>
             </div>
@@ -354,9 +358,12 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
-              <Card key={index} className="border-border/50 shadow-card text-center">
+              <Card 
+                key={index} 
+                className="border-border/50 shadow-card text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
+              >
                 <CardContent className="p-6 space-y-2">
-                  <stat.icon className={`w-8 h-8 ${stat.color} mx-auto`} />
+                  <stat.icon className={`w-8 h-8 ${stat.color} mx-auto transition-transform duration-300 group-hover:scale-110`} />
                   <div className="text-3xl md:text-4xl font-bold text-foreground">
                     {stat.value}
                   </div>
@@ -387,12 +394,15 @@ const Index = () => {
           
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
-              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-card/50">
+              <Card 
+                key={index} 
+                className="border-border/50 shadow-card hover:shadow-xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-card to-card/50 group cursor-pointer"
+              >
                 <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-ocean flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                     <feature.icon className="w-7 h-7 text-primary-foreground" />
                   </div>
-                  <h4 className="text-xl font-bold text-foreground">{feature.title}</h4>
+                  <h4 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">{feature.title}</h4>
                   <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                   <div className="pt-2 border-t border-border/50">
                     <p className="text-sm font-semibold text-primary">{feature.metric}</p>
@@ -1046,10 +1056,11 @@ const Index = () => {
       {showScrollTop && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-gradient-ocean hover:opacity-90 shadow-lg animate-fade-in"
+          className="fixed bottom-8 right-8 z-40 w-12 h-12 rounded-full bg-gradient-ocean hover:opacity-90 shadow-elegant hover:shadow-glow animate-fade-in transition-all duration-300 hover:scale-110 group"
           size="icon"
+          aria-label="Scroll to top"
         >
-          <ArrowUp className="w-5 h-5" />
+          <ArrowUp className="w-5 h-5 transition-transform duration-300 group-hover:-translate-y-1" />
         </Button>
       )}
 
