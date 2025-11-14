@@ -37,54 +37,190 @@
       "description": "Sparen Sie Zeit mit vorbereiteten Nachrichtenvorlagen"
     },
     "multi": {
-      "title": "Mehrsprachige Unterstützung",
-      "description": "Bedienen Sie Ihre Kunden in 7 verschiedenen Sprachen"
+      "title": "Mehrsprachiger Support",
+      "description": "Bedienen Sie Ihre Kunden in 7 verschiedenen Sprachen",
+      "metric": "Fließende Kommunikation in 7 Sprachen"
+    },
+    "analytics": {
+      "title": "Umsatzverfolgung & Analyse",
+      "description": "Welche Touren sind rentabel? An welchen Tagen gibt es mehr Verkäufe? Sehen Sie alle Umsatz- und Leistungsdaten in Echtzeit.",
+      "metric": "Tägliche, wöchentliche, monatliche Umsatzberichte"
+    },
+    "whatsapp": {
+      "title": "24/7 Automatischer Verkauf",
+      "description": "Kunden fragen auch um Mitternacht nach Touren und buchen. Verkaufen Sie, während Sie schlafen - verpassen Sie keine Gelegenheit.",
+      "metric": "Durchschnittlich 120% mehr Buchungen im ersten Monat"
+    }
+  },
+  "benefits": {
+    "title": "Konkrete Ergebnisse, Echter Wert",
+    "subtitle": "Nicht nur Funktionen - der Wert für Ihr Geschäft",
+    "timeSaving": {
+      "title": "40+ Stunden monatlich sparen",
+      "description": "Wiederholte Fragen beantworten, Touren erklären, Preise nennen... Alles jetzt automatisiert."
+    },
+    "moreSales": {
+      "title": "2-3x mehr Verkäufe im ersten Monat",
+      "description": "Verkaufen Sie auch um Mitternacht. Verpassen Sie keinen Kunden oder keine Gelegenheit."
+    },
+    "customerTracking": {
+      "title": "Persönliche Verfolgung für jeden Kunden",
+      "description": "Wer hat nach was gefragt? Wie hoch ist das Budget? Frühere Käufe? KI kennt jeden Kunden, macht personalisierte Empfehlungen."
+    },
+    "roi": {
+      "title": "Nur 2 Touren = Bezahlt sich selbst",
+      "description": "Starter-Plan nur 49€/Monat. Machen Sie nur 2 zusätzliche Tourverkäufe pro Monat, System zahlt sich selbst."
+    }
+  },
+  "stats": {
+    "salesIncrease": {
+      "value": "2-3x",
+      "label": "Durchschnittliche Umsatzsteigerung",
+      "subtext": "Im ersten Monat"
+    },
+    "timeSaved": {
+      "value": "40+",
+      "label": "Gesparte Stunden",
+      "subtext": "Monatlich"
+    },
+    "availability": {
+      "value": "24/7",
+      "label": "Kontinuierlicher Service",
+      "subtext": "Niemals stoppender Assistent"
+    },
+    "paymentTime": {
+      "value": "2 Min",
+      "label": "Zahlungszeit",
+      "subtext": "Direkt von WhatsApp"
+    }
+  },
+  "howItWorks": {
+    "title": "Wie funktioniert es?",
+    "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten"
+  },
+  "testimonials": {
+    "title": "Echte Ergebnisse",
+    "subtitle": "Erfolgsgeschichten unserer Agenturen",
+    "items": {
+      "yasinCetin": {
+        "name": "Yasin Çetin",
+        "company": "Campus Travel",
+        "role": "Geschäftsinhaber",
+        "content": "Wir haben im ersten Monat 18 neue Buchungen erhalten. Früher sagten Leute, die nachts schrieben, 'rufe morgen an' und buchten bei einer anderen Agentur. Jetzt verkaufen wir sogar um 2 Uhr morgens!",
+        "result": "+18 Buchungen im ersten Monat"
+      },
+      "sitkiOgrak": {
+        "name": "Sıtkı Murat OĞRAK",
+        "company": "Aymila Tourismus",
+        "role": "Geschäftsführer",
+        "content": "Kunden sagen 'Sie antworten so schnell'. Ich spare 40+ Stunden pro Monat. Jetzt kann ich mich auf wirklich wichtige Dinge konzentrieren.",
+        "result": "40+ Stunden/Monat gespart"
+      },
+      "mustafaGulmez": {
+        "name": "Mustafa Gülmez",
+        "company": "4 Eylül Tourismus",
+        "role": "Geschäftsinhaber",
+        "content": "Welche Touren verkaufen sich mehr, an welchen Tagen gibt es mehr Nachfrage - ich kann alles sehen. Jetzt treffe ich Entscheidungen basierend auf Daten, nicht auf Vermutungen. Umsatzanalysen sind erstaunlich!",
+        "result": "Datenbasierte Entscheidungen"
+      }
+    }
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Finden Sie hier Antworten auf Ihre Fragen",
+    "items": {
+      "salesIncrease": {
+        "question": "Werden meine Verkäufe wirklich im ersten Monat steigen?",
+        "answer": "Ja! Unsere durchschnittlichen Agenturen sehen im ersten Monat eine Steigerung der Buchungen um 120-150%. Denn jetzt bedienen Sie Ihre Kunden um Mitternacht, am Wochenende, jederzeit. Sie verpassen keine Gelegenheit."
+      },
+      "setup": {
+        "question": "Kann ich die Einrichtung selbst durchführen?",
+        "answer": "Absolut! Die Einrichtung dauert 5-10 Minuten und ist sehr einfach. Fügen Sie Ihre WhatsApp Business-Nummer hinzu, laden Sie Ihre Touren hoch - das war's. Wir verwalten die gesamte technische Infrastruktur. Unser Support-Team hilft Ihnen, wenn Sie nicht weiterkommen."
+      },
+      "whatsappCost": {
+        "question": "Gibt es eine zusätzliche Gebühr für die WhatsApp-Integration?",
+        "answer": "Nein! Wir verwalten die WhatsApp Business API-Infrastruktur. Sie müssen nur Ihre eigene WhatsApp Business-Nummer zum System hinzufügen. Die API-Nutzungsgebühren gehen auf uns, Sie zahlen nur Ihre gewählte Plangebühr."
+      },
+      "payment": {
+        "question": "Kann ich Zahlungen direkt von Kunden einziehen?",
+        "answer": "Ja! Mit der SiPay-Integration können Sie sofortige Zahlungslinks per WhatsApp senden und Zahlungen in 2 Minuten einziehen. Zahlungsverfolgung und Rechnungsstellung sind automatisch."
+      },
+      "tourLimit": {
+        "question": "Wie viele Touren kann ich hinzufügen?",
+        "answer": "Sie können in allen Plänen unbegrenzt Touren hinzufügen. Der Unterschied liegt nur im monatlichen WhatsApp-Nachrichtenlimit. Sie können Ihren Plan jederzeit je nach Bedarf upgraden."
+      },
+      "cancellation": {
+        "question": "Was passiert, wenn ich kündige?",
+        "answer": "Sie können jederzeit kündigen, kein Vertrag. Wenn Sie kündigen, erhalten Sie bis zum Ende des aktuellen Zeitraums weiterhin Service. Während der 14-tägigen kostenlosen Testphase fragen wir nicht einmal nach einer Kreditkarte."
+      }
     }
   },
   "pricing": {
-    "title": "Preise",
-    "subtitle": "Wählen Sie Den Besten Plan Für Ihr Unternehmen",
+    "title": "Starten Sie heute, sehen Sie den Unterschied",
+    "subtitle": "Eine Investition, die Ihrem Geschäft Wert verleiht mit sofortigen Erträgen",
     "monthly": "Monatlich",
     "yearly": "Jährlich",
+    "save": "2 Monate gratis",
+    "trial": "14-tägige kostenlose Testversion für alle Pläne. Keine Kreditkarte erforderlich.",
+    "custom": "Individuell",
+    "savings": "Ersparnis",
+    "cta": {
+      "start": "Loslegen",
+      "contact": "Kontaktieren Sie uns"
+    },
     "starter": {
       "name": "Starter",
-      "price": "49€",
+      "price": "€49",
       "period": "/Monat",
+      "description": "Für kleine Agenturen und Einsteiger",
       "features": {
-        "messages": "1000 Nachrichten/Monat",
-        "tours": "Bis zu 50 Touren",
-        "ai": "Basis-KI-Unterstützung",
-        "support": "E-Mail-Support"
-      },
-      "cta": "Starten"
+        "messages": "💬 500 WhatsApp-Nachrichten/Monat (~16 Nachr./Tag)",
+        "basicReporting": "📊 Grundlegende Berichte und Statistiken",
+        "unlimitedTours": "🗂️ Unbegrenzte Tourhinzufügungen",
+        "reservationManagement": "📝 Reservierungsverwaltung",
+        "emailSupport": "📧 E-Mail-Support (48 Stunden)",
+        "aiAnswers": "🤖 KI-gestützte automatische Antworten",
+        "history30": "💾 30-Tage Gesprächsverlauf"
+      }
     },
     "professional": {
       "name": "Professional",
-      "price": "99€",
+      "price": "€99",
       "period": "/Monat",
-      "popular": "Beliebt",
+      "badge": "Beliebteste",
+      "description": "Für wachsende Unternehmen und aktive Agenturen",
       "features": {
-        "messages": "5000 Nachrichten/Monat",
-        "tours": "Unbegrenzte Touren",
-        "ai": "Erweiterte KI-Unterstützung",
-        "analytics": "Detaillierte Analysen",
-        "support": "Prioritäts-Support"
-      },
-      "cta": "Starten"
+        "messages": "💬 3.000 WhatsApp-Nachrichten/Monat (~100 Nachr./Tag)",
+        "advancedReporting": "📈 Erweiterte Berichte und Analysen",
+        "unlimitedTours": "🗂️ Unbegrenzte Tourhinzufügungen",
+        "advancedReservation": "📝 Erweiterte Reservierungsverwaltung",
+        "userProfiles": "🎯 WhatsApp-Benutzerprofile und Segmentierung",
+        "prioritySupport": "⚡ Prioritäts-Support (innerhalb von 24 Stunden)",
+        "crmIntegration": "🔗 CRM-Integrationsunterstützung",
+        "history90": "💾 90-Tage Gesprächsverlauf",
+        "customTemplates": "🎨 Benutzerdefinierte WhatsApp-Nachrichtenvorlagen",
+        "tourReminders": "📱 Automatische Tour-Erinnerungen"
+      }
     },
     "enterprise": {
       "name": "Enterprise",
       "price": "Individuell",
       "period": "",
+      "description": "Für große Agenturen und Kettenunternehmen",
       "features": {
-        "messages": "Unbegrenzte Nachrichten",
-        "tours": "Unbegrenzte Touren",
-        "ai": "Benutzerdefiniertes KI-Modell",
-        "integration": "Benutzerdefinierte Integrationen",
-        "support": "24/7 Support",
-        "training": "Schulung und Beratung"
-      },
-      "cta": "Kontaktieren Sie Uns"
+        "unlimitedMessages": "💬 Unbegrenzte WhatsApp-Nachrichten",
+        "customReporting": "📊 Benutzerdefinierte Berichte und Dashboards",
+        "multiBranch": "🗂️ Multi-Filial-Support",
+        "enterpriseReservation": "📝 Enterprise-Reservierungsverwaltung",
+        "advancedSegmentation": "🎯 Erweiterte Kundensegmentierung und KI-Analysen",
+        "support247": "🚀 24/7 Prioritäts-Support",
+        "apiAccess": "🔌 API-Zugriff und benutzerdefinierte Integrationen",
+        "unlimitedHistory": "💾 Unbegrenzter Gesprächsverlauf",
+        "accountManager": "👔 Dedizierter Account Manager",
+        "customDevelopment": "⚙️ Individuelle Entwicklung und Anpassungen",
+        "enterpriseSecurity": "🔒 Enterprise-Sicherheit und SLA-Garantie",
+        "multipleAccounts": "🌐 Mehrere WhatsApp-Konten-Support"
+      }
     }
   },
   "footer": {
