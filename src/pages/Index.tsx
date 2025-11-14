@@ -299,6 +299,9 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button asChild variant="ghost" className="hidden md:inline-flex">
+                <a href="/yardim">Yardım</a>
+              </Button>
               <Button asChild variant="outline" className="hidden md:inline-flex">
                 <a href="/nasil-baslarim">Nasıl Başlarım?</a>
               </Button>
