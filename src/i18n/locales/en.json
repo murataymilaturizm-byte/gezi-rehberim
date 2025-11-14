@@ -563,6 +563,30 @@
       "trialPeriod": "Trial Period",
       "daysRemaining": "days remaining",
       "renewalDate": "Renewal Date",
+      "loadError": "Error loading usage data",
+      "paymentError": "Error processing payment",
+      "features": {
+        "starter": {
+          "messages": "500 messages/month",
+          "history": "30 days conversation history",
+          "support": "Email support"
+        },
+        "professional": {
+          "messages": "2,000 messages/month",
+          "history": "90 days conversation history",
+          "support": "Priority support",
+          "profiles": "User profiles"
+        },
+        "enterprise": {
+          "messages": "Unlimited messages",
+          "history": "Unlimited history",
+          "support": "24/7 support",
+          "api": "API access"
+        }
+      },
+      "trialPeriod": "Trial Period",
+      "daysRemaining": "days remaining",
+      "renewalDate": "Renewal Date",
       "usedThisMonth": "Used This Month",
       "unlimited": "Unlimited",
       "quotaFull": "Your message quota is full! You need to upgrade your package.",

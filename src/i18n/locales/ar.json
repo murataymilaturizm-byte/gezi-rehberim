@@ -694,6 +694,29 @@
       "statusActive": "نشط",
       "statusTrial": "تجريبي",
       "statusExpired": "منتهي الصلاحية",
+      "status": "الحالة",
+      "trialPeriod": "فترة التجربة",
+      "daysRemaining": "يوم متبقي",
+      "renewalDate": "تاريخ التجديد",
+      "features": {
+        "starter": {
+          "messages": "500 رسالة/شهر",
+          "history": "30 يوم سجل المحادثات",
+          "support": "دعم البريد الإلكتروني"
+        },
+        "professional": {
+          "messages": "2,000 رسالة/شهر",
+          "history": "90 يوم سجل المحادثات",
+          "support": "دعم ذو أولوية",
+          "profiles": "ملفات تعريف المستخدمين"
+        },
+        "enterprise": {
+          "messages": "رسائل غير محدودة",
+          "history": "سجل غير محدود",
+          "support": "دعم 24/7",
+          "api": "وصول API"
+        }
+      },
       "usedThisMonth": "مستخدم هذا الشهر",
       "unlimited": "غير محدود",
       "quotaFull": "الحصة ممتلئة",

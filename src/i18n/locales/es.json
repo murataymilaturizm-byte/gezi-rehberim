@@ -583,6 +583,29 @@
       "statusActive": "Activo",
       "statusTrial": "Prueba",
       "statusExpired": "Expirado",
+      "status": "Estado",
+      "trialPeriod": "Período de Prueba",
+      "daysRemaining": "días restantes",
+      "renewalDate": "Fecha de Renovación",
+      "features": {
+        "starter": {
+          "messages": "500 mensajes/mes",
+          "history": "30 días de historial",
+          "support": "Soporte por correo"
+        },
+        "professional": {
+          "messages": "2.000 mensajes/mes",
+          "history": "90 días de historial",
+          "support": "Soporte prioritario",
+          "profiles": "Perfiles de usuario"
+        },
+        "enterprise": {
+          "messages": "Mensajes ilimitados",
+          "history": "Historial ilimitado",
+          "support": "Soporte 24/7",
+          "api": "Acceso API"
+        }
+      },
       "usedThisMonth": "Usado este mes",
       "unlimited": "Ilimitado",
       "quotaFull": "Cuota llena",

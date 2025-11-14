@@ -583,6 +583,29 @@
       "statusActive": "Активен",
       "statusTrial": "Пробный",
       "statusExpired": "Истек",
+      "status": "Статус",
+      "trialPeriod": "Пробный Период",
+      "daysRemaining": "дней осталось",
+      "renewalDate": "Дата Продления",
+      "features": {
+        "starter": {
+          "messages": "500 сообщений/месяц",
+          "history": "30 дней истории",
+          "support": "Поддержка по электронной почте"
+        },
+        "professional": {
+          "messages": "2 000 сообщений/месяц",
+          "history": "90 дней истории",
+          "support": "Приоритетная поддержка",
+          "profiles": "Профили пользователей"
+        },
+        "enterprise": {
+          "messages": "Неограниченные сообщения",
+          "history": "Неограниченная история",
+          "support": "Поддержка 24/7",
+          "api": "Доступ к API"
+        }
+      },
       "usedThisMonth": "Использовано в этом месяце",
       "unlimited": "Неограничено",
       "quotaFull": "Квота заполнена",
