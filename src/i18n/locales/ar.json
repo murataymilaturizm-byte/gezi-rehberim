@@ -296,6 +296,22 @@
   },
   "admin": {
     "title": "لوحة الوكالة",
+    "payment": {
+      "status": {
+        "pending": "الدفع معلق",
+        "processing": "جاري معالجة الدفع",
+        "completed": "اكتمل الدفع",
+        "failed": "فشل الدفع"
+      },
+      "messages": {
+        "pending": "إعادة التوجيه إلى صفحة الدفع...",
+        "processing": "التحقق من الدفع الخاص بك...",
+        "completed": "تم الدفع بنجاح!",
+        "failed": "فشلت عملية الدفع."
+      },
+      "redirecting": "إعادة التوجيه",
+      "pleaseWait": "يرجى الانتظار"
+    },
     "templates": {
       "title": "قوالب الرسائل",
       "types": {

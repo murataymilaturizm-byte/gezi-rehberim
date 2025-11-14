@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { PaymentStatusIndicator } from "@/components/PaymentStatusIndicator";
 import {
   Table,
   TableBody,
@@ -149,6 +150,7 @@ export const SubscriptionHistory = () => {
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [isYearly, setIsYearly] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"pending" | "processing" | "completed" | "failed" | null>(null);
 
   const planOptions: PlanOption[] = [
     {
@@ -377,13 +379,9 @@ export const SubscriptionHistory = () => {
     if (!agencyId || !subscription) return;
 
     setIsProcessingPayment(true);
+    setPaymentStatus("pending");
 
     try {
-      toast({
-        title: "Ödeme İşlemi Başlatılıyor...",
-        description: "Sipay ödeme sayfasına yönlendiriliyorsunuz.",
-      });
-
       const { data, error } = await supabase.functions.invoke("sipay-payment", {
         body: {
           planType: subscription.plan_type,
@@ -394,24 +392,34 @@ export const SubscriptionHistory = () => {
 
       if (error) {
         console.error("Sipay function error:", error);
+        setPaymentStatus("failed");
+        setTimeout(() => setPaymentStatus(null), 3000);
         throw new Error(error.message || "Ödeme servisi ile bağlantı kurulamadı");
       }
 
       if (!data) {
+        setPaymentStatus("failed");
+        setTimeout(() => setPaymentStatus(null), 3000);
         throw new Error("Ödeme servisi yanıt vermedi");
       }
 
       if (data.error) {
+        setPaymentStatus("failed");
+        setTimeout(() => setPaymentStatus(null), 3000);
         throw new Error(data.error);
       }
 
       if (data.payment_url) {
         console.log("Redirecting to payment URL:", data.payment_url);
-        // Add a small delay to ensure toast is visible
+        setPaymentStatus("processing");
+        
+        // Redirect after showing processing status
         setTimeout(() => {
           window.location.href = data.payment_url;
-        }, 1000);
+        }, 1500);
       } else {
+        setPaymentStatus("failed");
+        setTimeout(() => setPaymentStatus(null), 3000);
         throw new Error("Ödeme URL'si alınamadı. Lütfen daha sonra tekrar deneyin.");
       }
     } catch (error: any) {
@@ -811,6 +819,17 @@ export const SubscriptionHistory = () => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    {/* Payment Status Indicator */}
+    <PaymentStatusIndicator 
+      status={paymentStatus || "pending"}
+      isOpen={paymentStatus !== null}
+      onClose={() => {
+        if (paymentStatus === "completed" || paymentStatus === "failed") {
+          setPaymentStatus(null);
+        }
+      }}
+    />
   </>
   );
 };

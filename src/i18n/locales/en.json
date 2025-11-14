@@ -337,6 +337,22 @@
   },
   "admin": {
     "title": "Agency Panel",
+    "payment": {
+      "status": {
+        "pending": "Payment Pending",
+        "processing": "Processing Payment",
+        "completed": "Payment Completed",
+        "failed": "Payment Failed"
+      },
+      "messages": {
+        "pending": "Redirecting to payment page...",
+        "processing": "Verifying your payment...",
+        "completed": "Payment completed successfully!",
+        "failed": "Payment process failed."
+      },
+      "redirecting": "Redirecting",
+      "pleaseWait": "Please wait"
+    },
     "templates": {
       "title": "Message Templates",
       "types": {

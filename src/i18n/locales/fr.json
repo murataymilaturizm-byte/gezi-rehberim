@@ -296,6 +296,22 @@
   },
   "admin": {
     "title": "Panneau d'Agence",
+    "payment": {
+      "status": {
+        "pending": "Paiement en Attente",
+        "processing": "Traitement du Paiement",
+        "completed": "Paiement Terminé",
+        "failed": "Échec du Paiement"
+      },
+      "messages": {
+        "pending": "Redirection vers la page de paiement...",
+        "processing": "Vérification de votre paiement...",
+        "completed": "Paiement effectué avec succès!",
+        "failed": "Le processus de paiement a échoué."
+      },
+      "redirecting": "Redirection",
+      "pleaseWait": "Veuillez patienter"
+    },
     "templates": {
       "title": "Modèles de Messages",
       "types": {
