@@ -102,22 +102,77 @@
     "rights": "Tüm hakları saklıdır."
   },
   "admin": {
-    "title": "Admin Paneli",
-    "welcome": "Hoş Geldiniz",
-    "stats": {
-      "totalTours": "Toplam Turlar",
-      "activeTours": "Aktif Turlar",
-      "totalBookings": "Toplam Rezervasyonlar",
-      "revenue": "Gelir"
-    },
+    "title": "Acente Paneli",
+    "welcome": "Hoşgeldiniz",
+    "back": "Geri",
+    "home": "Ana Sayfa",
+    "help": "Yardım",
+    "logout": "Çıkış",
+    "loading": "Yükleniyor...",
+    "superAdmin": "Super Admin",
     "tabs": {
+      "dashboard": "Dashboard",
       "tours": "Turlar",
-      "bookings": "Rezervasyonlar",
-      "messages": "Mesajlar",
-      "analytics": "Analitik",
-      "settings": "Ayarlar"
+      "registrations": "Kayıtlar",
+      "whatsapp": "WhatsApp",
+      "settings": "Ayarlar",
+      "history": "Geçmiş",
+      "agencies": "Acenteler",
+      "contactForms": "İletişim Formları",
+      "twilioSettings": "Twilio Ayarları",
+      "templates": "Şablonlar"
     },
-    "logout": "Çıkış Yap"
+    "tours": {
+      "title": "Turlar",
+      "addNew": "Yeni Tur Ekle",
+      "export": "Excel'e Aktar",
+      "noTours": "Henüz tur eklenmemiş",
+      "addDate": "Tarih Ekle",
+      "dates": "Tarihler",
+      "quota": "Kota",
+      "deleteSuccess": "Tur silindi",
+      "deleteError": "Silme işlemi başarısız",
+      "deleteConfirm": "Bu turu silmek istediğinize emin misiniz?",
+      "deleteWarning": "Bu işlem geri alınamaz."
+    },
+    "registrations": {
+      "title": "Kayıtlar",
+      "export": "Excel'e Aktar",
+      "noRegistrations": "Henüz kayıt yok",
+      "name": "İsim",
+      "phone": "Telefon",
+      "tour": "Tur",
+      "date": "Tarih",
+      "pax": "Kişi",
+      "price": "Fiyat",
+      "status": "Durum",
+      "note": "Not",
+      "createdAt": "Oluşturma",
+      "actions": "İşlemler"
+    },
+    "status": {
+      "new": "Yeni",
+      "pending": "Beklemede",
+      "confirmed": "Onaylandı",
+      "cancelled": "İptal"
+    },
+    "tourTypes": {
+      "daytrip": "Günübirlik",
+      "n2": "2 Gece",
+      "n3": "3 Gece"
+    },
+    "date": {
+      "deleteSuccess": "Tarih silindi",
+      "deleteError": "Silme işlemi başarısız"
+    },
+    "toast": {
+      "success": "Başarılı! ✅",
+      "error": "Hata",
+      "statusUpdated": "Durum güncellendi",
+      "statusUpdateError": "Durum güncellenemedi",
+      "messagesSent": "Mesajlar gönderildi",
+      "messagesSentError": "Mesajlar gönderilemedi"
+    }
   },
   "auth": {
     "login": "Giriş Yap",

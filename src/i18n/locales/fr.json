@@ -102,22 +102,77 @@
     "rights": "Tous droits réservés."
   },
   "admin": {
-    "title": "Panneau Admin",
+    "title": "Panneau d'Agence",
     "welcome": "Bienvenue",
-    "stats": {
-      "totalTours": "Total des Tours",
-      "activeTours": "Tours Actifs",
-      "totalBookings": "Total des Réservations",
-      "revenue": "Revenus"
-    },
+    "back": "Retour",
+    "home": "Accueil",
+    "help": "Aide",
+    "logout": "Déconnexion",
+    "loading": "Chargement...",
+    "superAdmin": "Super Admin",
     "tabs": {
+      "dashboard": "Tableau de Bord",
       "tours": "Tours",
-      "bookings": "Réservations",
-      "messages": "Messages",
-      "analytics": "Analyses",
-      "settings": "Paramètres"
+      "registrations": "Inscriptions",
+      "whatsapp": "WhatsApp",
+      "settings": "Paramètres",
+      "history": "Historique",
+      "agencies": "Agences",
+      "contactForms": "Formulaires de Contact",
+      "twilioSettings": "Paramètres Twilio",
+      "templates": "Modèles"
     },
-    "logout": "Se Déconnecter"
+    "tours": {
+      "title": "Tours",
+      "addNew": "Ajouter un Nouveau Tour",
+      "export": "Exporter vers Excel",
+      "noTours": "Aucun tour ajouté",
+      "addDate": "Ajouter une Date",
+      "dates": "Dates",
+      "quota": "Quota",
+      "deleteSuccess": "Tour supprimé",
+      "deleteError": "Échec de la suppression",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce tour?",
+      "deleteWarning": "Cette action ne peut pas être annulée."
+    },
+    "registrations": {
+      "title": "Inscriptions",
+      "export": "Exporter vers Excel",
+      "noRegistrations": "Aucune inscription",
+      "name": "Nom",
+      "phone": "Téléphone",
+      "tour": "Tour",
+      "date": "Date",
+      "pax": "Personnes",
+      "price": "Prix",
+      "status": "Statut",
+      "note": "Note",
+      "createdAt": "Créé",
+      "actions": "Actions"
+    },
+    "status": {
+      "new": "Nouveau",
+      "pending": "En Attente",
+      "confirmed": "Confirmé",
+      "cancelled": "Annulé"
+    },
+    "tourTypes": {
+      "daytrip": "Excursion d'une Journée",
+      "n2": "2 Nuits",
+      "n3": "3 Nuits"
+    },
+    "date": {
+      "deleteSuccess": "Date supprimée",
+      "deleteError": "Échec de la suppression"
+    },
+    "toast": {
+      "success": "Succès! ✅",
+      "error": "Erreur",
+      "statusUpdated": "Statut mis à jour",
+      "statusUpdateError": "Échec de la mise à jour du statut",
+      "messagesSent": "Messages envoyés",
+      "messagesSentError": "Échec de l'envoi des messages"
+    }
   },
   "auth": {
     "login": "Se Connecter",

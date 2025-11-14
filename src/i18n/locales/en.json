@@ -102,22 +102,77 @@
     "rights": "All rights reserved."
   },
   "admin": {
-    "title": "Admin Panel",
+    "title": "Agency Panel",
     "welcome": "Welcome",
-    "stats": {
-      "totalTours": "Total Tours",
-      "activeTours": "Active Tours",
-      "totalBookings": "Total Bookings",
-      "revenue": "Revenue"
-    },
+    "back": "Back",
+    "home": "Home",
+    "help": "Help",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "superAdmin": "Super Admin",
     "tabs": {
+      "dashboard": "Dashboard",
       "tours": "Tours",
-      "bookings": "Bookings",
-      "messages": "Messages",
-      "analytics": "Analytics",
-      "settings": "Settings"
+      "registrations": "Registrations",
+      "whatsapp": "WhatsApp",
+      "settings": "Settings",
+      "history": "History",
+      "agencies": "Agencies",
+      "contactForms": "Contact Forms",
+      "twilioSettings": "Twilio Settings",
+      "templates": "Templates"
     },
-    "logout": "Logout"
+    "tours": {
+      "title": "Tours",
+      "addNew": "Add New Tour",
+      "export": "Export to Excel",
+      "noTours": "No tours added yet",
+      "addDate": "Add Date",
+      "dates": "Dates",
+      "quota": "Quota",
+      "deleteSuccess": "Tour deleted",
+      "deleteError": "Delete operation failed",
+      "deleteConfirm": "Are you sure you want to delete this tour?",
+      "deleteWarning": "This action cannot be undone."
+    },
+    "registrations": {
+      "title": "Registrations",
+      "export": "Export to Excel",
+      "noRegistrations": "No registrations yet",
+      "name": "Name",
+      "phone": "Phone",
+      "tour": "Tour",
+      "date": "Date",
+      "pax": "Persons",
+      "price": "Price",
+      "status": "Status",
+      "note": "Note",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "status": {
+      "new": "New",
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "tourTypes": {
+      "daytrip": "Day Trip",
+      "n2": "2 Nights",
+      "n3": "3 Nights"
+    },
+    "date": {
+      "deleteSuccess": "Date deleted",
+      "deleteError": "Delete operation failed"
+    },
+    "toast": {
+      "success": "Success! ✅",
+      "error": "Error",
+      "statusUpdated": "Status updated",
+      "statusUpdateError": "Status could not be updated",
+      "messagesSent": "Messages sent",
+      "messagesSentError": "Messages could not be sent"
+    }
   },
   "auth": {
     "login": "Login",
