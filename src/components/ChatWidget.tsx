@@ -42,15 +42,29 @@ interface ChatWidgetProps {
 const quickChips = ["Günübirlik", "2 Gece", "Temmuz", "Kapadokya"];
 
 export const ChatWidget = ({ onSearch, tours = [], onRegister }: ChatWidgetProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Merhaba 👋 Hangi tur ve tarih aralığına bakayım? Örn: 'Günübirlik Kapadokya 20 Temmuz'"
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('tour-chat-messages');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved messages:', e);
+      }
     }
-  ]);
+    return [
+      {
+        role: "assistant",
+        content: "Merhaba 👋 Hangi tur ve tarih aralığına bakayım? Örn: 'Günübirlik Kapadokya 20 Temmuz'"
+      }
+    ];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('tour-chat-messages', JSON.stringify(messages));
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

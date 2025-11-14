@@ -21,15 +21,29 @@ export const DemoChat = () => {
     localStorage.setItem('demo_chat_session_id', newId);
     return newId;
   });
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu"
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('demo-chat-messages');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved messages:', e);
+      }
     }
-  ]);
+    return [
+      {
+        role: "assistant",
+        content: "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu"
+      }
+    ];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('demo-chat-messages', JSON.stringify(messages));
+  }, [messages]);
 
   useEffect(() => {
     if (scrollRef.current) {
