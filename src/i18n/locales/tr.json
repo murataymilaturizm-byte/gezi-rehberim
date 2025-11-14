@@ -333,7 +333,44 @@
     "login": "Giriş Yap"
   },
   "admin": {
-    "title": "Admin Paneli",
+    "title": "Yönetim Paneli",
+    "templates": {
+      "title": "Mesaj Şablonları",
+      "types": {
+        "reservation_confirmed": "Rezervasyon Onayı",
+        "reservation_cancelled": "Rezervasyon İptali",
+        "tour_reminder": "Tur Hatırlatma"
+      },
+      "errors": {
+        "fetchError": "Şablonlar yüklenirken bir hata oluştu",
+        "saveError": "Şablon kaydedilirken bir hata oluştu",
+        "deleteError": "Şablon silinirken bir hata oluştu",
+        "copyError": "Şablonlar kopyalanırken bir hata oluştu",
+        "noDefaultTemplates": "Varsayılan şablonlar bulunamadı"
+      },
+      "success": {
+        "saved": "Şablon kaydedildi",
+        "deleted": "Şablon silindi",
+        "copied": "Varsayılan şablonlar yüklendi"
+      },
+      "dialog": {
+        "title": "Şablon Düzenle",
+        "description": "Mesaj şablonunu düzenleyin. Değişkenler {} içinde yazılmalıdır.",
+        "templateType": "Şablon Tipi",
+        "language": "Dil",
+        "subject": "Konu",
+        "subjectPlaceholder": "Şablon konusu",
+        "content": "Mesaj İçeriği",
+        "contentPlaceholder": "Mesaj içeriği... {full_name}, {tour_name} gibi değişkenler kullanabilirsiniz",
+        "variables": "Değişkenler (virgülle ayırın)",
+        "variablesPlaceholder": "full_name, tour_name, date, pax",
+        "variablesExample": "Örnek: full_name, tour_name, date, pax, total_amount, currency",
+        "cancel": "İptal",
+        "save": "Kaydet"
+      },
+      "notCreated": "Henüz oluşturulmadı",
+      "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?"
+    },
     "subtitle": "Genel Bakış",
     "totalAgencies": "Toplam Acente",
     "activeAgencies": "Aktif Acente",
@@ -514,6 +551,29 @@
       "expiredMessage": "Hizmetlerimize devam etmek için lütfen aboneliğinizi yenileyin.",
       "makePayment": "Ödeme Yap",
       "currentPlan": "Mevcut Planınız",
+      "transactionHistory": "İşlem Geçmişi",
+      "planFeatures": "Paket Özellikleri",
+      "activePlan": "Aktif Paket",
+      "status": {
+        "success": "Başarılı",
+        "failed": "Başarısız",
+        "pending": "Beklemede",
+        "cancelled": "İptal"
+      },
+      "planOptions": {
+        "starter": {
+          "name": "Başlangıç",
+          "features": ["500 mesaj/ay", "1 kullanıcı", "Temel raporlama", "Email destek"]
+        },
+        "professional": {
+          "name": "Profesyonel",
+          "features": ["2.000 mesaj/ay", "5 kullanıcı", "Gelişmiş raporlama", "Öncelikli destek"]
+        },
+        "enterprise": {
+          "name": "Kurumsal",
+          "features": ["Sınırsız mesaj", "Sınırsız kullanıcı", "Özel raporlama", "7/24 destek"]
+        }
+      },
       "trialEndsIn": "Deneme süresi bitiyor",
       "subscriptionEndsIn": "Abonelik bitiyor",
       "daysLeft": "gün kaldı",
