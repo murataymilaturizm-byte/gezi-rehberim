@@ -85,6 +85,9 @@
     "cta": "Hemen Başlayın",
     "greeting": "Selam! 👋 Ben senin WhatsApp tur asistanınım. Hangi güzel yerleri keşfetmek istersin?\n\n✨ *Popüler turlar:*\n🏔️ Kapadokya\n🏖️ Antalya\n🏛️ İstanbul\n🌊 Ege Turu",
     "subtitle2": "Yapay zeka destekli tur asistanı",
+    "resetChat": "Konuşmayı Sıfırla",
+    "resetSuccess": "Konuşma sıfırlandı",
+    "resetSuccessDesc": "Yeni bir konuşma başlatabilirsiniz",
     "style": {
       "friendly": "Samimi/Dostane",
       "professional": "Profesyonel/Kurumsal",
