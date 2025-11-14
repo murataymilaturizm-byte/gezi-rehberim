@@ -523,13 +523,13 @@ const Index = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Gelişmiş Özellikler</span>
+              <span className="text-sm font-medium text-primary">{t("advanced.badge")}</span>
             </div>
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Rekabette Öne Çıkın
+              {t("advanced.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Sektörün en gelişmiş AI ve otomasyon özellikleri
+              {t("advanced.subtitle")}
             </p>
           </div>
 
@@ -541,23 +541,22 @@ const Index = () => {
                   <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
                     <Users className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground">Akıllı Müşteri Profilleri</h4>
+                  <h4 className="text-2xl font-bold text-foreground">{t("advanced.userProfiles.title")}</h4>
                   <p className="text-muted-foreground">
-                    Her müşterinin tercihlerini, arama geçmişini ve bütçesini otomatik olarak takip edin. 
-                    AI kişiselleştirilmiş önerilerde bulunur.
+                    {t("advanced.userProfiles.description")}
                   </p>
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">Otomatik tercih öğrenme</span>
+                      <span className="text-sm text-foreground">{t("advanced.userProfiles.feature1")}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">Bütçe bazlı segmentasyon</span>
+                      <span className="text-sm text-foreground">{t("advanced.userProfiles.feature2")}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">Arama geçmişi analizi</span>
+                      <span className="text-sm text-foreground">{t("advanced.userProfiles.feature3")}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -581,23 +580,22 @@ const Index = () => {
                   <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
                     <TrendingUp className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground">Konuşma Analizleri</h4>
+                  <h4 className="text-2xl font-bold text-foreground">{t("advanced.analytics.title")}</h4>
                   <p className="text-muted-foreground">
-                    AI destekli sentiment analizi ve otomatik konuşma özetleri ile müşteri memnuniyetini ölçün, 
-                    trendleri yakalayın.
+                    {t("advanced.analytics.description")}
                   </p>
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                      <span className="text-sm text-foreground">Sentiment analizi (Pozitif/Negatif)</span>
+                      <span className="text-sm text-foreground">{t("advanced.analytics.feature1")}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                      <span className="text-sm text-foreground">Otomatik konuşma özetleri</span>
+                      <span className="text-sm text-foreground">{t("advanced.analytics.feature2")}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                      <span className="text-sm text-foreground">Konu ve trend takibi</span>
+                      <span className="text-sm text-foreground">{t("advanced.analytics.feature3")}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -611,23 +609,22 @@ const Index = () => {
                   <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
                     <Bell className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground">Otomatik Tur Hatırlatıcıları</h4>
+                  <h4 className="text-2xl font-bold text-foreground">{t("advanced.reminders.title")}</h4>
                   <p className="text-muted-foreground">
-                    Turdan 3 gün önce otomatik WhatsApp hatırlatmaları gönderilir. 
-                    Müşteri memnuniyetini artırın, iptal oranlarını düşürün.
+                    {t("advanced.reminders.description")}
                   </p>
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">Özelleştirilebilir mesaj şablonları</span>
+                      <span className="text-sm text-foreground">{t("advanced.reminders.feature1")}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">Otomatik gönderim (3 gün öncesi)</span>
+                      <span className="text-sm text-foreground">{t("advanced.reminders.feature2")}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">Tur detayları ve bilgilendirme</span>
+                      <span className="text-sm text-foreground">{t("advanced.reminders.feature3")}</span>
                     </div>
                   </div>
                 </CardContent>

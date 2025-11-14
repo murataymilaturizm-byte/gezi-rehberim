@@ -75,7 +75,8 @@
     "title": "Test It Now",
     "subtitle": "Try our AI-powered assistant now. Make tour queries, simulate reservations.",
     "note": "This is a demo chatbot. In your real system, you can use your own tours and settings.",
-    "cta": "Get Started Now"
+    "cta": "Get Started Now",
+    "greeting": "Hello! 👋 I'm your WhatsApp tour assistant. Which beautiful places would you like to explore?\n\n✨ *Popular tours:*\n🏔️ Cappadocia\n🏖️ Antalya\n🏛️ Istanbul\n🌊 Aegean Tour"
   },
   "benefits": {
     "title": "Concrete Results, Real Value",
@@ -121,7 +122,48 @@
   },
   "howItWorks": {
     "title": "How It Works?",
-    "subtitle": "From WhatsApp to reservation in 3 simple steps"
+    "subtitle": "From WhatsApp to reservation in 3 simple steps",
+    "step1": {
+      "title": "Customer Sends Message",
+      "description": "Searches in natural language like \"Cappadocia tours\" via WhatsApp"
+    },
+    "step2": {
+      "title": "AI Analyzes",
+      "description": "AI understands the message and recommends the most suitable tours, provides price and date information"
+    },
+    "step3": {
+      "title": "Reservation Created",
+      "description": "Customer information is collected with wizard guidance, reservation is completed"
+    },
+    "footer": "The entire process is automatic and works 24/7 🚀",
+    "demoButton": "Explore Live Demo"
+  },
+  "advanced": {
+    "badge": "Advanced Features",
+    "title": "Stay Ahead of Competition",
+    "subtitle": "Industry's most advanced AI and automation features",
+    "userProfiles": {
+      "title": "Intelligent Customer Profiles",
+      "description": "Automatically track each customer's preferences, search history and budget. AI makes personalized recommendations.",
+      "feature1": "Automatic preference learning",
+      "feature2": "Budget-based segmentation",
+      "feature3": "Search history analysis"
+    },
+    "analytics": {
+      "title": "Conversation Analytics",
+      "description": "Which tours get more inquiries? What's the average response time? AI analyzes all conversations and provides reports.",
+      "feature1": "Popular tour analysis",
+      "feature2": "Response time tracking",
+      "feature3": "Conversion rate analysis"
+    },
+    "reminders": {
+      "title": "Automatic Tour Reminders",
+      "description": "Send automatic reminders before tour dates. Reduce no-shows, increase customer satisfaction.",
+      "feature1": "Smart reminder timing",
+      "feature2": "Multi-channel notifications",
+      "feature3": "Custom reminder messages"
+    },
+    "stats": "250+ happy agencies"
   },
   "testimonials": {
     "title": "Real Results",
