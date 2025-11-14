@@ -903,6 +903,43 @@
       "region": "Brandenburg"
     }
   },
+  "gettingStarted": {
+    "title": "Wie Fange Ich An?",
+    "subtitle": "Richten Sie das System in 3 Einfachen Schritten Ein und Starten Sie den Automatischen Verkauf",
+    "backHome": "Startseite",
+    "goToAdmin": "Admin-Panel",
+    "step": "Schritt",
+    "duration": "Minuten",
+    "tips": "Tipps",
+    "ready": "Sie Sind Bereit!",
+    "readyDescription": "Ihr System ist eingerichtet und läuft. Jetzt können Ihre Kunden rund um die Uhr über WhatsApp nach Touren suchen, Reservierungen erstellen und Zahlungen vornehmen.",
+    "nextSteps": "Nächste Schritte",
+    "watchVideo": "Video Ansehen",
+    "readDocs": "Dokumentation"
+  },
+  "help": {
+    "title": "Hilfezentrum",
+    "subtitle": "Häufig gestellte Fragen und detaillierte Anleitungen",
+    "back": "Zurück",
+    "backToAdmin": "Zurück zum Admin-Panel",
+    "quickLinks": "Schnelllinks",
+    "videoGuides": "Video-Anleitungen",
+    "needMoreHelp": "Benötigen Sie Weitere Hilfe?",
+    "contactSupport": "Kontaktieren Sie Unser Support-Team",
+    "sections": {
+      "setup": "Erste Schritte und Einrichtung",
+      "tours": "Tour- und Reservierungsverwaltung",
+      "whatsapp": "WhatsApp und Nachrichten",
+      "payments": "Zahlungen und Abrechnung",
+      "analytics": "Berichte und Analysen",
+      "settings": "Einstellungen und Sicherheit"
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Seite Nicht Gefunden",
+    "backHome": "Zurück zur Startseite"
+  },
   "common": {
     "loading": "Wird geladen...",
     "error": "Fehler",

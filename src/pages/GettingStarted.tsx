@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -15,6 +17,7 @@ import {
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 
 const GettingStarted = () => {
+  const { t } = useTranslation();
   const steps = [
     {
       number: 1,
@@ -110,9 +113,12 @@ const GettingStarted = () => {
                 </div>
               </a>
             </div>
-            <Button asChild className="bg-gradient-ocean hover:opacity-90">
-              <a href="/auth">Giriş Yap</a>
-            </Button>
+            <div className="flex items-center gap-3">
+              <LanguageSelector />
+              <Button asChild className="bg-gradient-ocean hover:opacity-90">
+                <a href="/auth">{t("auth.login")}</a>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -123,10 +129,10 @@ const GettingStarted = () => {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <Badge className="px-4 py-2 text-sm font-medium bg-primary/10 text-primary border-primary/20">
               <Zap className="w-4 h-4 mr-2" />
-              Başlangıç Rehberi
+              {t("gettingStarted.title")}
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-              3 Adımda Başlayın
+              {t("gettingStarted.subtitle")}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Sadece 10-15 dakika içinde WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.
@@ -169,7 +175,7 @@ const GettingStarted = () => {
                             </div>
                           </div>
                           <Badge variant="secondary" className="text-xs">
-                            {step.duration}
+                            {step.duration} {t("gettingStarted.duration")}
                           </Badge>
                         </div>
 
@@ -209,7 +215,7 @@ const GettingStarted = () => {
                           <div className="bg-accent/20 rounded-lg p-5 border border-accent/30">
                             <div className="flex items-center gap-2 mb-3">
                               <Settings className="w-5 h-5 text-primary" />
-                              <span className="font-semibold text-foreground">İpuçları</span>
+                              <span className="font-semibold text-foreground">{t("gettingStarted.tips")}</span>
                             </div>
                             <ul className="space-y-2">
                               {step.tips.map((tip, tipIndex) => (
@@ -240,10 +246,10 @@ const GettingStarted = () => {
                 <MessageSquare className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                Hazırsınız! Şimdi Başlayın
+                {t("gettingStarted.ready")}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                14 gün ücretsiz deneme ile sistemi test edin. Kredi kartı bilgisi gerekmez. İstediğiniz zaman iptal edebilirsiniz.
+                {t("gettingStarted.readyDescription")}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Button 
@@ -252,7 +258,7 @@ const GettingStarted = () => {
                   asChild
                 >
                   <a href="/auth?mode=signup">
-                    Ücretsiz Deneyin
+                    {t("auth.startFreeTrial")}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </a>
                 </Button>
@@ -263,7 +269,7 @@ const GettingStarted = () => {
                   asChild
                 >
                   <a href="/">
-                    Ana Sayfaya Dön
+                    {t("gettingStarted.backHome")}
                   </a>
                 </Button>
               </div>

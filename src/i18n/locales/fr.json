@@ -959,6 +959,43 @@
       "region": "Île-de-France"
     }
   },
+  "gettingStarted": {
+    "title": "Comment Commencer?",
+    "subtitle": "Configurez le Système en 3 Étapes Simples et Commencez les Ventes Automatisées",
+    "backHome": "Accueil",
+    "goToAdmin": "Panneau d'Administration",
+    "step": "Étape",
+    "duration": "minutes",
+    "tips": "Conseils",
+    "ready": "Vous Êtes Prêt!",
+    "readyDescription": "Votre système est configuré et fonctionne. Maintenant, vos clients peuvent rechercher des circuits 24h/24 et 7j/7 via WhatsApp, créer des réservations et effectuer des paiements.",
+    "nextSteps": "Prochaines Étapes",
+    "watchVideo": "Regarder la Vidéo",
+    "readDocs": "Documentation"
+  },
+  "help": {
+    "title": "Centre d'Aide",
+    "subtitle": "Questions fréquemment posées et guides détaillés",
+    "back": "Retour",
+    "backToAdmin": "Retour au Panneau d'Administration",
+    "quickLinks": "Liens Rapides",
+    "videoGuides": "Guides Vidéo",
+    "needMoreHelp": "Besoin de Plus d'Aide?",
+    "contactSupport": "Contactez Notre Équipe d'Assistance",
+    "sections": {
+      "setup": "Démarrage et Configuration",
+      "tours": "Gestion des Circuits et Réservations",
+      "whatsapp": "WhatsApp et Messagerie",
+      "payments": "Paiements et Facturation",
+      "analytics": "Rapports et Analyses",
+      "settings": "Paramètres et Sécurité"
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Page Non Trouvée",
+    "backHome": "Retour à l'Accueil"
+  },
   "common": {
     "loading": "Chargement...",
     "error": "Erreur",

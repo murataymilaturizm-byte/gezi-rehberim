@@ -7,6 +7,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { 
   BookOpen, 
   MessageSquare, 
@@ -27,11 +29,12 @@ import turzzLogo from "@/assets/turzz-logo-orange.png";
 
 const Help = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const sections = [
     {
       icon: Settings,
-      title: "Başlangıç ve Kurulum",
+      title: t("help.sections.setup"),
       color: "text-primary",
       bgColor: "bg-primary/10",
       items: [
@@ -84,7 +87,7 @@ const Help = () => {
     },
     {
       icon: Upload,
-      title: "Tur ve Rezervasyon Yönetimi",
+      title: t("help.sections.tours"),
       color: "text-secondary",
       bgColor: "bg-secondary/10",
       items: [
@@ -183,7 +186,7 @@ const Help = () => {
     },
     {
       icon: MessageSquare,
-      title: "WhatsApp Entegrasyonu",
+      title: t("help.sections.whatsapp"),
       color: "text-primary",
       bgColor: "bg-primary/10",
       items: [
@@ -314,7 +317,7 @@ Her şablonda kullanılabilen değişkenler:
     },
     {
       icon: BarChart3,
-      title: "Raporlama ve Analitik",
+      title: t("help.sections.analytics"),
       color: "text-secondary",
       bgColor: "bg-secondary/10",
       items: [
@@ -393,7 +396,7 @@ Her şablonda kullanılabilen değişkenler:
     },
     {
       icon: CreditCard,
-      title: "Ödeme ve Abonelik",
+      title: t("help.sections.payments"),
       color: "text-primary",
       bgColor: "bg-primary/10",
       items: [
@@ -493,7 +496,7 @@ Her şablonda kullanılabilen değişkenler:
     },
     {
       icon: Settings,
-      title: "Ayarlar ve Özelleştirme",
+      title: t("help.sections.settings"),
       color: "text-secondary",
       bgColor: "bg-secondary/10",
       items: [
@@ -560,7 +563,7 @@ Her şablonda kullanılabilen değişkenler:
     },
     {
       icon: Shield,
-      title: "Güvenlik ve Destek",
+      title: t("help.sections.settings"),
       color: "text-primary",
       bgColor: "bg-primary/10",
       items: [
@@ -695,14 +698,17 @@ Her şablonda kullanılabilen değişkenler:
               <div className="flex items-center gap-3">
                 <img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto" />
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">Yardım Merkezi</h1>
-                  <p className="text-sm text-muted-foreground">Tüm sorularınızın cevabı burada</p>
+                  <h1 className="text-xl font-bold text-foreground">{t("help.title")}</h1>
+                  <p className="text-sm text-muted-foreground">{t("help.subtitle")}</p>
                 </div>
               </div>
             </div>
-            <Button onClick={() => navigate("/admin")} variant="outline">
-              Admin Paneli
-            </Button>
+            <div className="flex items-center gap-3">
+              <LanguageSelector />
+              <Button onClick={() => navigate("/admin")} variant="outline">
+                {t("help.backToAdmin")}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -713,7 +719,7 @@ Her şablonda kullanılabilen değişkenler:
           <div className="max-w-3xl mx-auto text-center space-y-4">
             <Badge className="mb-2">
               <BookOpen className="w-3 h-3 mr-1" />
-              Kapsamlı Rehber
+              {t("help.title")}
             </Badge>
             <h2 className="text-4xl font-bold text-foreground">
               Turzz AI Kullanım Kılavuzu

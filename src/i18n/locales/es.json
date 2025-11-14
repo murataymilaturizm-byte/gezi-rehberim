@@ -890,6 +890,43 @@
       "region": "Centro"
     }
   },
+  "gettingStarted": {
+    "title": "¿Cómo Empezar?",
+    "subtitle": "Configure el Sistema en 3 Pasos Simples y Comience las Ventas Automatizadas",
+    "backHome": "Inicio",
+    "goToAdmin": "Panel de Administración",
+    "step": "Paso",
+    "duration": "minutos",
+    "tips": "Consejos",
+    "ready": "¡Estás Listo!",
+    "readyDescription": "Tu sistema está configurado y funcionando. Ahora tus clientes pueden buscar tours las 24 horas a través de WhatsApp, crear reservas y realizar pagos.",
+    "nextSteps": "Próximos Pasos",
+    "watchVideo": "Ver Video",
+    "readDocs": "Documentación"
+  },
+  "help": {
+    "title": "Centro de Ayuda",
+    "subtitle": "Preguntas frecuentes y guías detalladas",
+    "back": "Volver",
+    "backToAdmin": "Volver al Panel de Administración",
+    "quickLinks": "Enlaces Rápidos",
+    "videoGuides": "Guías de Video",
+    "needMoreHelp": "¿Necesitas Más Ayuda?",
+    "contactSupport": "Contacta con Nuestro Equipo de Soporte",
+    "sections": {
+      "setup": "Inicio y Configuración",
+      "tours": "Gestión de Tours y Reservas",
+      "whatsapp": "WhatsApp y Mensajería",
+      "payments": "Pagos y Facturación",
+      "analytics": "Informes y Análisis",
+      "settings": "Configuración y Seguridad"
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Página No Encontrada",
+    "backHome": "Volver al Inicio"
+  },
   "common": {
     "loading": "Cargando...",
     "error": "Error",
