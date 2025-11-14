@@ -171,8 +171,7 @@ export const TwilioSettings = () => {
           <Alert className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              WhatsApp Business numranızı girerek WhatsApp entegrasyonunu aktif edebilirsiniz.
-              Merkezi Twilio hesabı kullanıldığı için sadece WhatsApp numaranızı girmeniz yeterlidir.
+              {t("admin.whatsapp.settings.notConfigured")}
             </AlertDescription>
           </Alert>
         )}
@@ -181,7 +180,7 @@ export const TwilioSettings = () => {
           <Alert className="mb-6 border-green-500/50 bg-green-500/10">
             <CheckCircle2 className="h-4 w-4 text-green-500" />
             <AlertDescription className="text-green-500">
-              WhatsApp entegrasyonu aktif! Müşterileriniz WhatsApp üzerinden sizinle iletişim kurabilir.
+              {t("admin.whatsapp.settings.configured")}
             </AlertDescription>
           </Alert>
         )}
@@ -189,11 +188,11 @@ export const TwilioSettings = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="whatsapp_phone_number">
-              WhatsApp Business Numarası
+              {t("admin.whatsapp.settings.phoneNumber")}
             </Label>
             <Input
               id="whatsapp_phone_number"
-              placeholder="+14155238886"
+              placeholder={t("admin.whatsapp.settings.phonePlaceholder")}
               value={formData.whatsapp_phone_number}
               onChange={(e) =>
                 setFormData({ whatsapp_phone_number: e.target.value })
@@ -201,20 +200,20 @@ export const TwilioSettings = () => {
               required
             />
             <p className="text-sm text-muted-foreground">
-              Twilio'ya kayıtlı WhatsApp Business numaranızı girin (ör: +14155238886)
+              {t("admin.whatsapp.settings.phoneHelp")}
             </p>
           </div>
 
           <Button type="submit" disabled={saving} className="w-full">
-            {saving ? "Kaydediliyor..." : isConfigured ? "Güncelle" : "Kaydet"}
+            {saving ? t("admin.whatsapp.settings.saving") : isConfigured ? t("admin.whatsapp.settings.update") : t("admin.whatsapp.settings.save")}
           </Button>
         </form>
 
         {isConfigured && (
           <div className="mt-6 p-4 bg-muted rounded-lg">
-            <h4 className="font-semibold mb-2">✅ Entegrasyon Tamamlandı</h4>
+            <h4 className="font-semibold mb-2">✅ {t("admin.whatsapp.settings.integrationComplete")}</h4>
             <p className="text-sm text-muted-foreground">
-              WhatsApp hizmeti aktif. Müşterileriniz <strong>{formData.whatsapp_phone_number}</strong> numarasından sizinle iletişim kurabilir.
+              {t("admin.whatsapp.settings.integrationCompleteDesc", { phone: formData.whatsapp_phone_number })}
             </p>
           </div>
         )}
