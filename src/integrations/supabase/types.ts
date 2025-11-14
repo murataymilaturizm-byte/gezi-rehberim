@@ -21,6 +21,7 @@ export type Database = {
           city: string | null
           created_at: string | null
           id: string
+          language_preference: string | null
           last_message_reset_date: string | null
           latitude: number | null
           longitude: number | null
@@ -31,10 +32,11 @@ export type Database = {
           subscription_ends_at: string | null
           subscription_status: string
           trial_ends_at: string | null
-          twilio_account_sid: string
-          twilio_auth_token: string
-          twilio_phone_number: string
+          twilio_account_sid: string | null
+          twilio_auth_token: string | null
+          twilio_phone_number: string | null
           user_id: string | null
+          whatsapp_phone_number: string | null
         }
         Insert: {
           active?: boolean | null
@@ -42,6 +44,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           id?: string
+          language_preference?: string | null
           last_message_reset_date?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -52,10 +55,11 @@ export type Database = {
           subscription_ends_at?: string | null
           subscription_status?: string
           trial_ends_at?: string | null
-          twilio_account_sid: string
-          twilio_auth_token: string
-          twilio_phone_number: string
+          twilio_account_sid?: string | null
+          twilio_auth_token?: string | null
+          twilio_phone_number?: string | null
           user_id?: string | null
+          whatsapp_phone_number?: string | null
         }
         Update: {
           active?: boolean | null
@@ -63,6 +67,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           id?: string
+          language_preference?: string | null
           last_message_reset_date?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -73,10 +78,11 @@ export type Database = {
           subscription_ends_at?: string | null
           subscription_status?: string
           trial_ends_at?: string | null
-          twilio_account_sid?: string
-          twilio_auth_token?: string
-          twilio_phone_number?: string
+          twilio_account_sid?: string | null
+          twilio_auth_token?: string | null
+          twilio_phone_number?: string | null
           user_id?: string | null
+          whatsapp_phone_number?: string | null
         }
         Relationships: []
       }
@@ -107,6 +113,45 @@ export type Database = {
           name?: string
           notes?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      message_templates: {
+        Row: {
+          agency_id: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          language: string
+          subject: string
+          template_key: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          agency_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          language?: string
+          subject: string
+          template_key: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          agency_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          language?: string
+          subject?: string
+          template_key?: string
+          updated_at?: string
+          variables?: Json | null
         }
         Relationships: []
       }
