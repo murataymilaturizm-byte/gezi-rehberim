@@ -97,7 +97,11 @@ serve(async (req) => {
     if (subscriptionExpired) {
       console.log('Subscription expired for agency:', agency.agency_name);
       
-      const expiredMessage = '⚠️ Bu hizmet şu anda aktif değil.\n\n📞 Detaylı bilgi için lütfen acente yöneticinizle iletişime geçin.';
+      // Kullanıcı dil tercihini al
+      const userProfile = await getUserProfile(supabase, userPhone, agency.id);
+      const userLanguage = userProfile?.language_preference || 'tr';
+      
+      const expiredMessage = await formatSystemMessage('subscription_expired', {}, userLanguage);
       
       // Sadece mesajı kaydet, geri dönüş yapma
       await saveMessage(supabase, userPhone, 'assistant', expiredMessage, agency.id);
@@ -248,6 +252,10 @@ serve(async (req) => {
         });
       }
       
+      // Kullanıcı dil tercihini al
+      const userProfile = await getUserProfile(supabase, userPhone, agency.id);
+      const userLanguage = userProfile?.language_preference || 'tr';
+      
       // Wizard state'i oluştur
       const wizardState: WizardState = {
         step: 'tour_selection',
@@ -256,19 +264,17 @@ serve(async (req) => {
       
       await saveWizardState(supabase, userPhone, agency.id, wizardState);
       
-      let message = '🎯 *Harika! Rezervasyon yapalım!*\n\n';
-      message += 'Son arama sonuçlarınızdan bir tur seçin:\n\n';
+      const toursData = tours.slice(0, 5).map((tour: any, idx: number) => ({
+        number: idx + 1,
+        title: tour.title,
+        price: tour.dates && tour.dates.length > 0 ? tour.dates[0].price_adult : 0,
+        currency: tour.currency
+      }));
       
-      tours.slice(0, 5).forEach((tour: any, idx: number) => {
-        message += `${idx + 1}. *${tour.title}*\n`;
-        if (tour.dates && tour.dates.length > 0) {
-          message += `   💰 ${formatPrice(tour.dates[0].price_adult)} ${tour.currency}/kişi\n`;
-        }
-        message += '\n';
-      });
-      
-      message += '\n💡 *Tur seçmek için numara yazın* (örn: 1)\n';
-      message += '_İptal etmek için "iptal" yazın_';
+      const message = await formatSystemMessage('wizard_tour_selection_start', {
+        tourCount: Math.min(tours.length, 5),
+        tours: toursData
+      }, userLanguage);
       
       await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
       
@@ -739,21 +745,25 @@ async function createRegistration(supabase: any, entities: any, from: string, ag
 
     // Kullanıcı profilini güncelle - isim ve tur tercihlerini kaydet
     const userPhone = from.replace('whatsapp:', '');
+    
+    // Kullanıcı dil tercihini al
+    const userProfile = await getUserProfile(supabase, userPhone, agency_id);
+    const userLanguage = userProfile?.language_preference || 'tr';
+    
     await updateUserPreferences(supabase, userPhone, agency_id, {
       full_name: entities.full_name,
       preferred_destinations: [tourDate.tours.destination]
     });
 
-    const message = `✅ *Kayıt Başarılı!*\n\n` +
-      `📋 Kayıt No: ${registration.id.substring(0, 8)}\n` +
-      `🎯 Tur: ${tourDate.tours.title}\n` +
-      `📍 ${tourDate.tours.destination}\n` +
-      `📅 ${tourDate.departure_date}\n` +
-      `👤 ${entities.full_name}\n` +
-      `📱 ${entities.phone}\n` +
-      `👥 ${entities.pax} kişi\n\n` +
-      `✨ Ön kaydınız başarıyla oluşturuldu!\n` +
-      `📞 Kısa süre içinde sizinle iletişime geçeceğiz.`;
+    const message = await formatSystemMessage('registration_success', {
+      registrationId: registration.id.substring(0, 8),
+      tourTitle: tourDate.tours.title,
+      destination: tourDate.tours.destination,
+      date: tourDate.departure_date,
+      fullName: entities.full_name,
+      phone: entities.phone,
+      pax: entities.pax
+    }, userLanguage);
 
     // WhatsApp onay mesajı gönder (arka planda)
     
@@ -1084,31 +1094,35 @@ async function handleWizardStep(
 ): Promise<string> {
   const lowerMessage = userMessage.toLowerCase().trim();
   
+  // Kullanıcı dil tercihini al
+  const userProfile = await getUserProfile(supabase, phone, agency_id);
+  const userLanguage = userProfile?.language_preference || 'tr';
+  
   // İptal kontrolü
-  if (lowerMessage === 'iptal' || lowerMessage === 'vazgeç') {
+  if (lowerMessage === 'iptal' || lowerMessage === 'vazgeç' || lowerMessage === 'cancel') {
     await clearWizardState(supabase, phone, agency_id);
-    return '❌ Rezervasyon iptal edildi.\n\n💬 Size başka nasıl yardımcı olabilirim?';
+    return await formatSystemMessage('wizard_cancel', {}, userLanguage);
   }
   
   switch (state.step) {
     case 'tour_selection':
-      return await handleTourSelection(supabase, phone, agency_id, userMessage, state);
+      return await handleTourSelection(supabase, phone, agency_id, userMessage, state, userLanguage);
     
     case 'date_selection':
-      return await handleDateSelection(supabase, phone, agency_id, userMessage, state);
+      return await handleDateSelection(supabase, phone, agency_id, userMessage, state, userLanguage);
     
     case 'pax_selection':
-      return await handlePaxSelection(supabase, phone, agency_id, userMessage, state);
+      return await handlePaxSelection(supabase, phone, agency_id, userMessage, state, userLanguage);
     
     case 'special_requests':
-      return await handleSpecialRequests(supabase, phone, agency_id, userMessage, state);
+      return await handleSpecialRequests(supabase, phone, agency_id, userMessage, state, userLanguage);
     
     case 'confirmation':
-      return await handleConfirmation(supabase, phone, agency_id, userMessage, state);
+      return await handleConfirmation(supabase, phone, agency_id, userMessage, state, userLanguage);
     
     default:
       await clearWizardState(supabase, phone, agency_id);
-      return 'Bir hata oluştu. Lütfen tekrar deneyin.';
+      return await formatSystemMessage('wizard_confirmation_error', {}, userLanguage);
   }
 }
 
@@ -1118,13 +1132,14 @@ async function handleTourSelection(
   phone: string,
   agency_id: string,
   userMessage: string,
-  state: WizardState
+  state: WizardState,
+  userLanguage: string = 'tr'
 ): Promise<string> {
   // Kullanıcı bir numara girdi mi?
   const tourNumber = parseInt(userMessage);
   
   if (isNaN(tourNumber) || tourNumber < 1) {
-    return '❌ Lütfen geçerli bir tur numarası girin.\n\n_İptal etmek için "iptal" yazın_';
+    return await formatSystemMessage('wizard_tour_selection_invalid', {}, userLanguage);
   }
   
   // Son tur aramayı al
@@ -1135,14 +1150,14 @@ async function handleTourSelection(
   
   if (!lastTourMessage) {
     await clearWizardState(supabase, phone, agency_id);
-    return '❌ Tur bulunamadı. Lütfen önce bir tur arayın.\n\nÖrnek: "Kapadokya turları"';
+    return await formatSystemMessage('wizard_tour_not_found', {}, userLanguage);
   }
   
-  // Turun bilgilerini parse et (basitleştirilmiş - gerçekte daha iyi yapılmalı)
+  // Turun bilgilerini parse et
   const tours = await searchToursWithAI(supabase, 'son arama', phone, agency_id);
   
   if (tourNumber > tours.length) {
-    return `❌ Geçersiz tur numarası. Lütfen 1-${tours.length} arası bir numara girin.`;
+    return await formatSystemMessage('wizard_tour_selection_invalid', {}, userLanguage);
   }
   
   const selectedTour = tours[tourNumber - 1];
@@ -1150,7 +1165,7 @@ async function handleTourSelection(
   // Tarihleri göster
   if (!selectedTour.dates || selectedTour.dates.length === 0) {
     await clearWizardState(supabase, phone, agency_id);
-    return '❌ Bu tur için tarih bulunmuyor. Lütfen başka bir tur seçin.';
+    return await formatSystemMessage('wizard_tour_not_found', {}, userLanguage);
   }
   
   // State'i güncelle
@@ -1159,23 +1174,23 @@ async function handleTourSelection(
   await saveWizardState(supabase, phone, agency_id, state);
   
   // Tarihleri listele
-  let message = `✅ *${selectedTour.title}* seçildi!\n\n`;
-  message += `📅 *Müsait Tarihler:*\n\n`;
-  
-  selectedTour.dates.forEach((date: any, idx: number) => {
-    const depDate = new Date(date.departure_date).toLocaleDateString('tr-TR', {
+  const datesData = selectedTour.dates.map((date: any, idx: number) => ({
+    number: idx + 1,
+    date: new Date(date.departure_date).toLocaleDateString(userLanguage === 'tr' ? 'tr-TR' : 'en-US', {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
-    });
-    message += `${idx + 1}. ${depDate} - ${formatPrice(date.price_adult)} ${selectedTour.currency}/kişi\n`;
-    message += `   👥 ${date.quota} kişilik yer\n\n`;
-  });
+    }),
+    price: date.price_adult,
+    quota: date.quota
+  }));
   
-  message += `\n💡 *Tarih seçmek için numara yazın* (örn: 1)\n`;
-  message += `_İptal etmek için "iptal" yazın_`;
-  
-  return message;
+  return await formatSystemMessage('wizard_date_selection', {
+    tourTitle: selectedTour.title,
+    dateCount: selectedTour.dates.length,
+    dates: datesData,
+    currency: selectedTour.currency
+  }, userLanguage);
 }
 
 // Tarih seçimi adımı
@@ -1184,7 +1199,8 @@ async function handleDateSelection(
   phone: string,
   agency_id: string,
   userMessage: string,
-  state: WizardState
+  state: WizardState,
+  userLanguage: string = 'tr'
 ): Promise<string> {
   const dateNumber = parseInt(userMessage);
   
@@ -1231,7 +1247,8 @@ async function handlePaxSelection(
   phone: string,
   agency_id: string,
   userMessage: string,
-  state: WizardState
+  state: WizardState,
+  userLanguage: string = 'tr'
 ): Promise<string> {
   // Kişi sayısını parse et
   const adultMatch = userMessage.match(/(\d+)\s*(?:yetişkin)?/i);
@@ -1299,7 +1316,8 @@ async function handleSpecialRequests(
   phone: string,
   agency_id: string,
   userMessage: string,
-  state: WizardState
+  state: WizardState,
+  userLanguage: string = 'tr'
 ): Promise<string> {
   const lowerMessage = userMessage.toLowerCase().trim();
   
@@ -1357,7 +1375,8 @@ async function handleConfirmation(
   phone: string,
   agency_id: string,
   userMessage: string,
-  state: WizardState
+  state: WizardState,
+  userLanguage: string = 'tr'
 ): Promise<string> {
   const lowerMessage = userMessage.toLowerCase().trim();
   
@@ -1593,6 +1612,111 @@ async function updateUserPreferences(
       .eq('agency_id', agency_id);
   } catch (error) {
     console.error('Error updating user preferences:', error);
+  }
+}
+
+// Sistem mesajlarını çok dilli formatlama
+async function formatSystemMessage(
+  messageType: string,
+  data: Record<string, any>,
+  userLanguage: string = 'tr'
+): Promise<string> {
+  const languageNames: Record<string, string> = {
+    'tr': 'Turkish', 'en': 'English', 'de': 'German',
+    'ru': 'Russian', 'ar': 'Arabic', 'fr': 'French', 'es': 'Spanish'
+  };
+  const languageName = languageNames[userLanguage] || 'Turkish';
+  
+  const templates: Record<string, string> = {
+    subscription_expired: `Create a message in ${languageName} saying the service is currently inactive and they should contact the agency admin for details. Use WhatsApp format and ⚠️ emoji.`,
+    
+    wizard_cancel: `Create a friendly cancellation message in ${languageName} saying the reservation was cancelled and asking how you can help. Use ❌ and 💬 emojis.`,
+    
+    wizard_tour_selection_start: `Create a message in ${languageName} for starting a reservation. Show ${data.tourCount} tours with numbers. Include title and price for each. End with instructions to select by number or cancel with "iptal". Use 🎯 emoji. Format:
+Tours: ${JSON.stringify(data.tours, null, 2)}`,
+    
+    wizard_tour_selection_invalid: `Create an error message in ${languageName} asking for a valid tour number. Use ❌ emoji and mention "iptal" to cancel.`,
+    
+    wizard_tour_not_found: `Create an error message in ${languageName} saying no tour found and they should search first (example: "Cappadocia tours"). Use ❌ emoji.`,
+    
+    wizard_date_selection: `Create a message in ${languageName} showing available dates for ${data.tourTitle}. List ${data.dateCount} dates with numbers, prices, and quotas. Ask to select by number. Use ✅, 📅, 💰 emojis.
+Dates: ${JSON.stringify(data.dates, null, 2)}
+Currency: ${data.currency}`,
+    
+    wizard_date_invalid: `Create an error message in ${languageName} asking for a valid date number (1-${data.max}). Use ❌ emoji.`,
+    
+    wizard_pax_selection: `Create a message in ${languageName} asking for number of people. Show selected date: ${data.date}. Show pricing: Adult ${data.priceAdult} ${data.currency}, Child ${data.priceChild || 'N/A'} ${data.currency}, Single ${data.priceSingle || 'N/A'} ${data.currency}. Give examples of input formats. Use ✅, 👥, 💰 emojis.`,
+    
+    wizard_pax_invalid: `Create an error message in ${languageName} asking for valid number of people with example format. Use ❌ emoji.`,
+    
+    wizard_pax_exceeds: `Create an error message in ${languageName} saying total people (${data.total}) exceeds quota (${data.quota}). Use ❌ emoji.`,
+    
+    wizard_special_requests: `Create a message in ${languageName} confirming ${data.paxAdult} adults${data.paxChild > 0 ? ` + ${data.paxChild} children` : ''} with total price ${data.totalPrice} ${data.currency}. Ask for special requests or write "yok" if none. Use ✅, 💰, 📝 emojis.`,
+    
+    wizard_confirmation_summary: `Create a reservation summary in ${languageName}:
+Tour: ${data.tourTitle}
+Destination: ${data.destination}
+Date: ${data.date}
+People: ${data.paxAdult} adults${data.paxChild > 0 ? ` + ${data.paxChild} children` : ''}
+Special requests: ${data.specialRequests || 'None'}
+Total price: ${data.totalPrice} ${data.currency}
+
+Ask to confirm with "onayla" or cancel with "iptal". Use 📋, 🎯, 📅, 👥, 💰, ✅, ❌ emojis.`,
+    
+    wizard_confirm_invalid: `Create an error message in ${languageName} asking to write "onayla" to confirm. Use ❌ emoji.`,
+    
+    wizard_quota_insufficient: `Create an error message in ${languageName} saying only ${data.remainingQuota} spots left for this date and suggesting to pick another date. Use ❌, 🔍 emojis.`,
+    
+    wizard_confirmation_success: `Create a success message in ${languageName}:
+Reservation ID: ${data.reservationId}
+Tour: ${data.tourTitle}
+Date: ${data.date}
+People: ${data.totalPax}
+Total: ${data.totalPrice} ${data.currency}
+
+Say they'll be contacted soon and thank them. Use 🎉, ✅, 📋, 🎯, 📅, 👥, 💰, 📞, 🙏 emojis.`,
+    
+    wizard_confirmation_error: `Create an error message in ${languageName} saying reservation creation failed and to try again or contact them. Use ❌ emoji.`,
+    
+    registration_success: `Create a success message in ${languageName}:
+Registration ID: ${data.registrationId}
+Tour: ${data.tourTitle}
+Destination: ${data.destination}
+Date: ${data.date}
+Name: ${data.fullName}
+Phone: ${data.phone}
+People: ${data.pax}
+
+Say pre-registration is successful and they'll be contacted soon. Use ✅, 📋, 🎯, 📍, 📅, 👤, 📱, 👥, ✨, 📞 emojis.`,
+  };
+  
+  const prompt = templates[messageType];
+  if (!prompt) {
+    console.error('Unknown message type:', messageType);
+    return 'Message format error';
+  }
+  
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [{ 
+          role: 'user', 
+          content: `${prompt}\n\nUse WhatsApp format (*bold*, _italic_). Keep it natural and conversational.` 
+        }],
+        temperature: 0.7
+      })
+    });
+    const result = await response.json();
+    return result.choices[0].message.content;
+  } catch (error) {
+    console.error('Error formatting system message:', error);
+    return 'Error creating message';
   }
 }
 
