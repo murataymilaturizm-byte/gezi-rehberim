@@ -56,6 +56,7 @@ export default function MessageTemplates() {
   const [selectedLanguage, setSelectedLanguage] = useState('tr');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<MessageTemplate | null>(null);
+  const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -63,11 +64,12 @@ export default function MessageTemplates() {
   }, []);
 
   useEffect(() => {
-    // Varsayılan şablonları otomatik yükle
-    if (!loading && templates.length === 0) {
+    // Varsayılan şablonları sadece bir kere otomatik yükle
+    if (!loading && templates.length === 0 && !autoLoadAttempted) {
+      setAutoLoadAttempted(true);
       copyDefaultTemplates();
     }
-  }, [loading, templates.length]);
+  }, [loading, templates.length, autoLoadAttempted]);
 
   const fetchTemplates = async () => {
     try {
@@ -190,8 +192,13 @@ export default function MessageTemplates() {
 
   const copyDefaultTemplates = async () => {
     try {
+      console.log('Starting to copy default templates...');
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.error('No user found');
+        return;
+      }
 
       const { data: agency } = await supabase
         .from('agencies')
@@ -199,15 +206,34 @@ export default function MessageTemplates() {
         .eq('user_id', user.id)
         .single();
 
-      if (!agency) return;
+      if (!agency) {
+        console.error('No agency found');
+        return;
+      }
+
+      console.log('Agency ID:', agency.id);
 
       // Varsayılan şablonları kopyala
-      const { data: defaultTemplates } = await (supabase as any)
+      const { data: defaultTemplates, error: fetchError } = await (supabase as any)
         .from('message_templates')
         .select('*')
         .eq('agency_id', '00000000-0000-0000-0000-000000000000');
 
-      if (!defaultTemplates || defaultTemplates.length === 0) return;
+      console.log('Default templates fetched:', defaultTemplates?.length, 'Error:', fetchError);
+
+      if (fetchError) {
+        console.error('Fetch error:', fetchError);
+        throw fetchError;
+      }
+
+      if (!defaultTemplates || defaultTemplates.length === 0) {
+        toast({
+          title: "Hata",
+          description: "Varsayılan şablonlar bulunamadı",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const newTemplates = (defaultTemplates as any[]).map((t: any) => ({
         agency_id: agency.id,
@@ -219,11 +245,16 @@ export default function MessageTemplates() {
         is_active: t.is_active,
       }));
 
-      const { error } = await (supabase as any)
+      console.log('Inserting templates:', newTemplates.length);
+
+      const { error: insertError } = await (supabase as any)
         .from('message_templates')
         .insert(newTemplates);
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
 
       toast({
         title: "Başarılı",
@@ -235,7 +266,7 @@ export default function MessageTemplates() {
       console.error('Error copying templates:', error);
       toast({
         title: "Hata",
-        description: "Şablonlar kopyalanırken bir hata oluştu",
+        description: error.message || "Şablonlar kopyalanırken bir hata oluştu",
         variant: "destructive",
       });
     }
