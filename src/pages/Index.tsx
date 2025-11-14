@@ -31,9 +31,9 @@ const Index = () => {
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
 
   const contactFormSchema = z.object({
-    name: z.string().trim().min(1, "İsim zorunludur").max(100, "İsim en fazla 100 karakter olabilir"),
-    email: z.string().trim().email("Geçerli bir email adresi girin").max(255, "Email en fazla 255 karakter olabilir"),
-    message: z.string().trim().min(10, "Mesaj en az 10 karakter olmalıdır").max(1000, "Mesaj en fazla 1000 karakter olabilir")
+    name: z.string().trim().min(1, t("validation.nameRequired")).max(100, t("validation.nameMaxLength")),
+    email: z.string().trim().email(t("validation.emailInvalid")).max(255, t("validation.emailMaxLength")),
+    message: z.string().trim().min(10, t("validation.messageMinLength")).max(1000, t("validation.messageMaxLength"))
   });
 
   const scrollToDemo = () => {
@@ -105,23 +105,23 @@ const Index = () => {
   const benefits = [
     {
       icon: Clock,
-      title: "Ayda 40+ Saat Tasarruf",
-      description: "Tekrar eden soruları yanıtlamak, turları anlatmak, fiyat sormak... Artık bunların hepsi otomatik."
+      title: t("benefits.timeSaving.title"),
+      description: t("benefits.timeSaving.description")
     },
     {
       icon: TrendingUpIcon,
-      title: "İlk Ayda 2-3x Daha Fazla Satış",
-      description: "Hiçbir müşteri kaçmıyor. Gece, gündüz, hafta sonu - her zaman aktif bir satış temsilciniz var."
+      title: t("benefits.moreSales.title"),
+      description: t("benefits.moreSales.description")
     },
     {
       icon: Brain,
-      title: "Her Müşteri Kişisel Takip",
-      description: "Kim ne aradı? Bütçesi ne? Geçmişte ne aldı? AI her müşteriyi tanıyor, size özel öneriler yapıyor."
+      title: t("benefits.customerTracking.title"),
+      description: t("benefits.customerTracking.description")
     },
     {
       icon: CheckCircle2,
-      title: "Sadece 2 Tur = Kendini Ödüyor",
-      description: "Başlangıç planı sadece 2.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
+      title: t("benefits.roi.title"),
+      description: t("benefits.roi.description")
     }
   ];
 
@@ -135,8 +135,8 @@ const Index = () => {
   };
 
   const formatPrice = (priceStr: string, yearly: boolean) => {
-    if (priceStr === "Özel") return "Özel";
-    const price = parseFloat(priceStr.replace(".", ""));
+    if (priceStr === t("pricing.custom")) return t("pricing.custom");
+    const price = parseFloat(priceStr.replace(".", "").replace("€", "").replace(",", ""));
     if (isNaN(price)) return priceStr;
     
     const finalPrice = calculatePrice(price, yearly);
@@ -145,61 +145,61 @@ const Index = () => {
 
   const pricingPlans = [
     {
-      name: "Başlangıç",
-      price: "2.999",
+      name: t("pricing.starter.name"),
+      price: t("pricing.starter.price"),
       monthlyPrice: 2999,
-      period: "/ay",
-      description: "Küçük acenteler ve yeni başlayanlar için",
+      period: t("pricing.starter.period"),
+      description: t("pricing.starter.description"),
       features: [
-        "💬 500 WhatsApp mesajı/ay (~16 mesaj/gün)",
-        "📊 Temel raporlama ve istatistikler",
-        "🗂️ Sınırsız tur ekleme",
-        "📝 Rezervasyon yönetimi",
-        "📧 Email destek (48 saat)",
-        "🤖 AI destekli otomatik cevaplar",
-        "💾 30 gün konuşma geçmişi"
+        t("pricing.starter.features.messages"),
+        t("pricing.starter.features.basicReporting"),
+        t("pricing.starter.features.unlimitedTours"),
+        t("pricing.starter.features.reservationManagement"),
+        t("pricing.starter.features.emailSupport"),
+        t("pricing.starter.features.aiAnswers"),
+        t("pricing.starter.features.history30")
       ],
       highlighted: false
     },
     {
-      name: "Profesyonel",
-      price: "7.999",
+      name: t("pricing.professional.name"),
+      price: t("pricing.professional.price"),
       monthlyPrice: 7999,
-      period: "/ay",
-      description: "Büyüyen işletmeler ve aktif acenteler için",
+      period: t("pricing.professional.period"),
+      description: t("pricing.professional.description"),
       features: [
-        "💬 3.000 WhatsApp mesajı/ay (~100 mesaj/gün)",
-        "📈 Gelişmiş raporlama ve analizler",
-        "🗂️ Sınırsız tur ekleme",
-        "📝 Gelişmiş rezervasyon yönetimi",
-        "🎯 WhatsApp kullanıcı profilleri ve segmentasyon",
-        "⚡ Öncelikli destek (24 saat içinde)",
-        "🔗 CRM entegrasyon desteği",
-        "💾 90 gün konuşma geçmişi",
-        "🎨 Özel WhatsApp mesaj şablonları",
-        "📱 Otomatik tur hatırlatıcıları"
+        t("pricing.professional.features.messages"),
+        t("pricing.professional.features.advancedReporting"),
+        t("pricing.professional.features.unlimitedTours"),
+        t("pricing.professional.features.advancedReservation"),
+        t("pricing.professional.features.userProfiles"),
+        t("pricing.professional.features.prioritySupport"),
+        t("pricing.professional.features.crmIntegration"),
+        t("pricing.professional.features.history90"),
+        t("pricing.professional.features.customTemplates"),
+        t("pricing.professional.features.tourReminders")
       ],
       highlighted: true
     },
     {
-      name: "Kurumsal",
-      price: "14.999",
+      name: t("pricing.enterprise.name"),
+      price: t("pricing.enterprise.price"),
       monthlyPrice: 14999,
-      period: "/ay",
-      description: "Büyük acenteler ve zincir işletmeler için",
+      period: t("pricing.enterprise.period"),
+      description: t("pricing.enterprise.description"),
       features: [
-        "💬 Sınırsız WhatsApp mesajı",
-        "📊 Özel raporlama ve dashboardlar",
-        "🗂️ Multi-branch (çoklu şube) desteği",
-        "📝 Kurumsal rezervasyon yönetimi",
-        "🎯 Gelişmiş müşteri segmentasyonu ve AI analizleri",
-        "🚀 7/24 öncelikli destek",
-        "🔌 API erişimi ve özel entegrasyonlar",
-        "💾 Sınırsız konuşma geçmişi",
-        "👔 Özel hesap yöneticisi (dedicated)",
-        "⚙️ Özel geliştirme ve özelleştirmeler",
-        "🔒 Kurumsal güvenlik ve SLA garantisi",
-        "🌐 Çoklu WhatsApp hesabı desteği"
+        t("pricing.enterprise.features.unlimitedMessages"),
+        t("pricing.enterprise.features.customReporting"),
+        t("pricing.enterprise.features.multiBranch"),
+        t("pricing.enterprise.features.enterpriseReservation"),
+        t("pricing.enterprise.features.advancedSegmentation"),
+        t("pricing.enterprise.features.support247"),
+        t("pricing.enterprise.features.apiAccess"),
+        t("pricing.enterprise.features.unlimitedHistory"),
+        t("pricing.enterprise.features.accountManager"),
+        t("pricing.enterprise.features.customDevelopment"),
+        t("pricing.enterprise.features.enterpriseSecurity"),
+        t("pricing.enterprise.features.multipleAccounts")
       ],
       highlighted: false
     }
@@ -207,86 +207,86 @@ const Index = () => {
 
   const testimonials = [
     {
-      name: "Yasin Çetin",
-      company: "Kampüs Travel",
-      role: "İşletme Sahibi",
-      content: "İlk ayda 18 yeni rezervasyon aldık. Daha önce gece mesaj atanlar 'yarın ararsınız' deyip başka acenteden alıyordu. Şimdi gece 2'de bile satış yapıyoruz!",
+      name: t("testimonials.items.yasinCetin.name"),
+      company: t("testimonials.items.yasinCetin.company"),
+      role: t("testimonials.items.yasinCetin.role"),
+      content: t("testimonials.items.yasinCetin.content"),
       rating: 5,
-      result: "+18 rezervasyon ilk ayda"
+      result: t("testimonials.items.yasinCetin.result")
     },
     {
-      name: "Sıtkı Murat OĞRAK",
-      company: "Aymila Turizm",
-      role: "İşletme Müdürü",
-      content: "Müşteriler 'çok hızlı cevap veriyorsunuz' diyor. Ayda 40+ saat zaman kazanıyorum. Artık gerçekten önemli işlere odaklanabiliyorum.",
+      name: t("testimonials.items.sitkiOgrak.name"),
+      company: t("testimonials.items.sitkiOgrak.company"),
+      role: t("testimonials.items.sitkiOgrak.role"),
+      content: t("testimonials.items.sitkiOgrak.content"),
       rating: 5,
-      result: "Ayda 40+ saat tasarruf"
+      result: t("testimonials.items.sitkiOgrak.result")
     },
     {
-      name: "Mustafa Gülmez",
-      company: "4 Eylül Turizm",
-      role: "İşletme Sahibi",
-      content: "Hangi turlar daha çok satıyor, hangi gün daha çok talep var - her şeyi görebiliyorum. Artık tahmine değil, veriye göre karar veriyorum. Gelir analizleri muhteşem!",
+      name: t("testimonials.items.mustafaGulmez.name"),
+      company: t("testimonials.items.mustafaGulmez.company"),
+      role: t("testimonials.items.mustafaGulmez.role"),
+      content: t("testimonials.items.mustafaGulmez.content"),
       rating: 5,
-      result: "Veri odaklı karar"
+      result: t("testimonials.items.mustafaGulmez.result")
     }
   ];
 
   const stats = [
     {
       icon: TrendingUp,
-      value: "2-3x",
-      label: "Ortalama Satış Artışı",
+      value: t("stats.salesIncrease.value"),
+      label: t("stats.salesIncrease.label"),
       color: "text-primary",
-      subtext: "İlk ayda"
+      subtext: t("stats.salesIncrease.subtext")
     },
     {
       icon: Clock,
-      value: "40+",
-      label: "Saat Tasarruf",
+      value: t("stats.timeSaved.value"),
+      label: t("stats.timeSaved.label"),
       color: "text-secondary",
-      subtext: "Ayda"
+      subtext: t("stats.timeSaved.subtext")
     },
     {
       icon: MessageSquare,
-      value: "7/24",
-      label: "Kesintisiz Hizmet",
+      value: t("stats.availability.value"),
+      label: t("stats.availability.label"),
       color: "text-primary",
-      subtext: "Hiç durmayan asistan"
+      subtext: t("stats.availability.subtext")
     },
     {
       icon: CheckCircle2,
-      value: "2 dk",
-      label: "Ödeme Alma Süresi",
+      value: t("stats.paymentTime.value"),
+      label: t("stats.paymentTime.label"),
       color: "text-secondary",
-      subtext: "WhatsApp'tan direkt"
+      subtext: t("stats.paymentTime.subtext")
     }
   ];
 
   const faqs = [
     {
-      question: "Gerçekten ilk ayda satışlarım artacak mı?",
-      answer: "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. Çünkü artık gece yarısı, hafta sonu, her an müşterilerinize hizmet veriyorsunuz. Hiçbir fırsat kaçmıyor."
+      question: t("faq.items.salesIncrease.question"),
+      answer: t("faq.items.salesIncrease.answer")
     },
     {
-      question: "Kurulumu ben yapabilir miyim?",
-      answer: "Kesinlikle! Kurulum 5-10 dakika sürüyor ve çok basit. WhatsApp Business numaranızı ekleyin, turlarınızı yükleyin - hepsi bu. Tüm teknik altyapıyı biz yönetiyoruz. Takıldığınız yerde destek ekibimiz size yardımcı olur."
+      question: t("faq.items.setup.question"),
+      answer: t("faq.items.setup.answer")
     },
     {
-      question: "WhatsApp entegrasyonu için ek ücret var mı?",
-      answer: "Hayır! WhatsApp Business API altyapısını biz yönetiyoruz. Tek yapmanız gereken kendi WhatsApp Business numaranızı sisteme eklemek. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
+      question: t("faq.items.whatsappCost.question"),
+      answer: t("faq.items.whatsappCost.answer")
     },
     {
-      question: "Müşterilerden direkt ödeme alabilir miyim?",
-      answer: "Evet! SiPay entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, 2 dakika içinde ödeme alabilirsiniz. Ödeme takibi ve fatura otomatik."
+      question: t("faq.items.payment.question"),
+      answer: t("faq.items.payment.answer")
     },
     {
-      question: "Kaç tur ekleyebilirim?",
-      answer: "Tüm planlarda sınırsız tur ekleyebilirsiniz. Fark sadece aylık WhatsApp mesaj limitinde. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
+      question: t("faq.items.tourLimit.question"),
+      answer: t("faq.items.tourLimit.answer")
     },
     {
-      question: "İptal edersem ne olur?",
-      answer: "İstediğiniz zaman iptal edebilirsiniz, sözleşme yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz. 14 gün ücretsiz deneme sırasında kredi kartı bile istemiyoruz."
+      question: t("faq.items.cancellation.question"),
+      answer: t("faq.items.cancellation.answer")
     }
   ];
 
@@ -452,10 +452,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Nasıl Çalışır?
+              {t("howItWorks.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              WhatsApp'tan rezervasyona 3 basit adımda
+              {t("howItWorks.subtitle")}
             </p>
           </div>
 
@@ -647,10 +647,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Gerçek Sonuçlar, Gerçek Acenteler
+              {t("testimonials.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              İşlerini büyüten acenteler ne diyor?
+              {t("testimonials.subtitle")}
             </p>
           </div>
 
@@ -744,10 +744,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Size Uygun Planı Seçin
+              {t("pricing.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
-              İşletmenizin ihtiyaçlarına göre esnek fiyatlandırma seçenekleri
+              {t("pricing.subtitle")}
             </p>
             
             {/* 14 Days Free Trial Banner */}
@@ -757,18 +757,15 @@ const Index = () => {
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-ocean text-primary-foreground mb-4 animate-pulse hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <Sparkles className="w-5 h-5" />
-                <span className="text-lg font-bold">14 GÜN ÜCRETSİZ DENEME</span>
+                <span className="text-lg font-bold">{t("pricing.trial")}</span>
                 <Sparkles className="w-5 h-5" />
               </a>
-              <p className="text-sm text-muted-foreground">
-                Kredi kartı bilgisi gerektirmez • İstediğiniz zaman iptal edebilirsiniz
-              </p>
             </div>
 
             {/* Billing Period Toggle */}
             <div className="flex items-center justify-center gap-3 p-4 bg-card rounded-lg w-fit mx-auto border border-border">
               <Label htmlFor="landing-billing-toggle" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
-                Aylık
+                {t("pricing.monthly")}
               </Label>
               <Switch
                 id="landing-billing-toggle"
@@ -776,11 +773,11 @@ const Index = () => {
                 onCheckedChange={setIsYearly}
               />
               <Label htmlFor="landing-billing-toggle" className={isYearly ? "font-semibold" : "text-muted-foreground"}>
-                Yıllık
+                {t("pricing.yearly")}
               </Label>
               {isYearly && (
                 <span className="ml-2 text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-                  %10 İndirim
+                  {t("pricing.save")}
                 </span>
               )}
             </div>
@@ -837,7 +834,7 @@ const Index = () => {
                     asChild
                   >
                     <a href={`/auth?mode=signup&plan=${plan.name.toLowerCase().replace('ı', 'i')}&billing=${isYearly ? 'yearly' : 'monthly'}`}>
-                      {plan.name === "Kurumsal" ? "İletişime Geç" : "Başlayın"}
+                      {plan.name === t("pricing.enterprise.name") ? t("pricing.cta.contact") : t("pricing.cta.start")}
                     </a>
                   </Button>
 
@@ -868,10 +865,10 @@ const Index = () => {
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
               <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Sık Sorulan Sorular
+                {t("faq.title")}
               </h3>
               <p className="text-muted-foreground text-lg">
-                Merak ettiklerinizin yanıtlarını burada bulabilirsiniz
+                {t("faq.subtitle")}
               </p>
             </div>
 
