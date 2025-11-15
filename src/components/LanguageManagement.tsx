@@ -35,8 +35,8 @@ export const LanguageManagement = () => {
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [planType, setPlanType] = useState<string>('starter');
   const [maxLanguages, setMaxLanguages] = useState<number>(1);
-  const [enabledLanguages, setEnabledLanguages] = useState<string[]>(['tr']);
-  const [tempEnabledLanguages, setTempEnabledLanguages] = useState<string[]>(['tr']);
+  const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
+  const [tempEnabledLanguages, setTempEnabledLanguages] = useState<string[]>([]);
 
   useEffect(() => {
     loadLanguageSettings();
@@ -64,7 +64,7 @@ export const LanguageManagement = () => {
         const maxLangs = await getMaxLanguages(currentPlanType);
         setMaxLanguages(maxLangs);
         
-        const currentLanguages = (agencyData as any).enabled_languages || ['tr'];
+        const currentLanguages = (agencyData as any).enabled_languages || [];
         setEnabledLanguages(currentLanguages);
         setTempEnabledLanguages(currentLanguages);
       }
@@ -82,16 +82,6 @@ export const LanguageManagement = () => {
 
   const handleLanguageToggle = (languageCode: string) => {
     const isEnabled = tempEnabledLanguages.includes(languageCode);
-    
-    // Türkçe her zaman aktif olmalı
-    if (languageCode === 'tr') {
-      toast({
-        title: "Uyarı",
-        description: "Türkçe dili devre dışı bırakılamaz.",
-        variant: "destructive"
-      });
-      return;
-    }
 
     if (isEnabled) {
       // Dili çıkar
@@ -118,6 +108,16 @@ export const LanguageManagement = () => {
 
   const handleSave = async () => {
     if (!agencyId) return;
+    
+    // En az 1 dil seçilmiş olmalı
+    if (tempEnabledLanguages.length === 0) {
+      toast({
+        title: "Uyarı",
+        description: "En az 1 dil seçmelisiniz.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setSaving(true);
     try {
@@ -183,14 +183,18 @@ export const LanguageManagement = () => {
           <AlertDescription>
             <strong>Plan Limitiniz:</strong> {planType === 'starter' ? 'Başlangıç' : planType === 'professional' ? 'Profesyonel' : 'Kurumsal'} paketinizde maksimum {maxLanguages} dil aktif edebilirsiniz.
             {planType !== 'enterprise' && ' Daha fazla dil için paketinizi yükseltin.'}
+            {tempEnabledLanguages.length === 0 && (
+              <div className="mt-2 text-destructive font-medium">
+                ⚠️ En az 1 dil seçmelisiniz.
+              </div>
+            )}
           </AlertDescription>
         </Alert>
 
         <div className="space-y-3">
           {AVAILABLE_LANGUAGES.map((language) => {
             const isEnabled = tempEnabledLanguages.includes(language.code);
-            const isDisabled = language.code !== 'tr' && !isEnabled && tempEnabledLanguages.length >= maxLanguages;
-            const isTurkish = language.code === 'tr';
+            const isDisabled = !isEnabled && tempEnabledLanguages.length >= maxLanguages;
             
             return (
               <div
@@ -206,14 +210,7 @@ export const LanguageManagement = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-3xl">{language.flag}</span>
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{language.nativeName}</span>
-                      {isTurkish && (
-                        <Badge variant="secondary" className="text-xs">
-                          Varsayılan
-                        </Badge>
-                      )}
-                    </div>
+                    <span className="font-medium">{language.nativeName}</span>
                     <span className="text-sm text-muted-foreground">{language.name}</span>
                   </div>
                 </div>
@@ -233,7 +230,7 @@ export const LanguageManagement = () => {
                   )}
                   <Checkbox
                     checked={isEnabled}
-                    disabled={isTurkish || isDisabled}
+                    disabled={isDisabled}
                     onCheckedChange={() => handleLanguageToggle(language.code)}
                   />
                 </div>

@@ -83,7 +83,7 @@ serve(async (req) => {
     // Bu WhatsApp numarasına sahip acente'yi bul (merkezi Twilio yapısı)
     const { data: agency, error: agencyError } = await supabase
       .from('agencies')
-      .select('*')
+      .select('id, agency_name, active, subscription_status, trial_ends_at, subscription_ends_at, plan_type, monthly_message_count, message_limit, conversation_style, enabled_languages')
       .eq('whatsapp_phone_number', twilioPhone)
       .eq('active', true)
       .single();
@@ -178,7 +178,7 @@ serve(async (req) => {
     await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
     
     // Kullanıcı profilini oluştur/güncelle (dil algılama ile)
-    await upsertUserProfile(supabase, userPhone.replace('+', ''), agency.id, userMessage);
+    await upsertUserProfile(supabase, userPhone.replace('+', ''), agency.id, userMessage, agency.enabled_languages || []);
 
     // Rezervasyon wizard durumunu kontrol et
     const wizardState = await getWizardState(supabase, userPhone, agency.id);
@@ -1578,7 +1578,7 @@ function formatPrice(price: number): string {
 }
 
 // Kullanıcı profili oluştur/güncelle
-async function upsertUserProfile(supabase: any, phone: string, agency_id: string, userMessage?: string) {
+async function upsertUserProfile(supabase: any, phone: string, agency_id: string, userMessage?: string, enabledLanguages: string[] = []) {
   try {
     // Kullanıcı profilini kontrol et
     const { data: existingProfile } = await supabase
@@ -1599,8 +1599,16 @@ async function upsertUserProfile(supabase: any, phone: string, agency_id: string
       if (existingProfile.total_messages < 3 && !existingProfile.language_preference && userMessage) {
         const detectedLanguage = await detectLanguage(userMessage);
         if (detectedLanguage) {
-          updates.language_preference = detectedLanguage;
-          console.log('Language detected and saved:', detectedLanguage);
+          // Aktif dil kontrolü
+          if (enabledLanguages.length > 0 && !enabledLanguages.includes(detectedLanguage)) {
+            console.log(`Detected language ${detectedLanguage} is not enabled. Enabled languages:`, enabledLanguages);
+            // Varsayılan olarak ilk aktif dili kullan
+            updates.language_preference = enabledLanguages[0];
+            console.log('Using first enabled language:', enabledLanguages[0]);
+          } else {
+            updates.language_preference = detectedLanguage;
+            console.log('Language detected and saved:', detectedLanguage);
+          }
         }
       }
       
@@ -1621,8 +1629,16 @@ async function upsertUserProfile(supabase: any, phone: string, agency_id: string
       if (userMessage) {
         const detectedLanguage = await detectLanguage(userMessage);
         if (detectedLanguage) {
-          newProfile.language_preference = detectedLanguage;
-          console.log('Language detected for new user:', detectedLanguage);
+          // Aktif dil kontrolü
+          if (enabledLanguages.length > 0 && !enabledLanguages.includes(detectedLanguage)) {
+            console.log(`Detected language ${detectedLanguage} is not enabled. Enabled languages:`, enabledLanguages);
+            // Varsayılan olarak ilk aktif dili kullan
+            newProfile.language_preference = enabledLanguages[0];
+            console.log('Using first enabled language for new user:', enabledLanguages[0]);
+          } else {
+            newProfile.language_preference = detectedLanguage;
+            console.log('Language detected for new user:', detectedLanguage);
+          }
         }
       }
       
