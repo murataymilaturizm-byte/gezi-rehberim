@@ -34,6 +34,7 @@ import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { UsageStats } from "@/components/UsageStats";
 import { RevenueAnalytics } from "@/components/RevenueAnalytics";
+import { PlanFeatures } from "@/utils/planFeatures";
 
 interface Stats {
   totalTours: number;
@@ -94,9 +95,10 @@ interface RevenueChartData {
 
 interface AdminDashboardProps {
   isSuperAdmin?: boolean;
+  planFeatures?: PlanFeatures | null;
 }
 
-export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) => {
+export const AdminDashboard = ({ isSuperAdmin = false, planFeatures }: AdminDashboardProps) => {
   const { t } = useTranslation();
   
   const statusLabels: Record<string, string> = {
@@ -618,7 +620,7 @@ export const AdminDashboard = ({ isSuperAdmin = false }: AdminDashboardProps) =>
         </div>
 
         {/* Real Revenue Analytics - Based on actual payment transactions */}
-        <RevenueAnalytics />
+        {(isSuperAdmin || planFeatures?.has_analytics) && <RevenueAnalytics />}
 
         {/* Revenue Trend Chart */}
         <Card className="shadow-card">

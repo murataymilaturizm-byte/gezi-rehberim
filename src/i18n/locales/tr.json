@@ -776,6 +776,16 @@
       "program": "Program",
       "preRegistration": "Ön Kayıt"
     },
+    "planLimits": {
+      "tourLimitReached": "Tur Limiti Doldu",
+      "tourLimitMessage": "{planName} paketinizde maksimum {maxTours} tur ekleyebilirsiniz. Daha fazla tur eklemek için paketinizi yükseltin.",
+      "starterPlan": "Başlangıç",
+      "professionalPlan": "Profesyonel",
+      "enterprisePlan": "Kurumsal",
+      "upgradeRequired": "Paket Yükseltme Gerekli",
+      "featureNotAvailable": "Bu özellik paketinizde bulunmamaktadır.",
+      "upgradeToAccess": "Erişim için paketinizi yükseltin."
+    },
     "registrations": {
       "title": "Kayıtlar",
       "export": "Excel'e Aktar",

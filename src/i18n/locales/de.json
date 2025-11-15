@@ -500,6 +500,16 @@
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Tour löschen möchten?",
       "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden."
     },
+    "planLimits": {
+      "tourLimitReached": "Tourlimit erreicht",
+      "tourLimitMessage": "Ihr {planName}-Paket erlaubt maximal {maxTours} Touren. Bitte upgraden Sie Ihr Paket, um mehr Touren hinzuzufügen.",
+      "starterPlan": "Starter",
+      "professionalPlan": "Professional",
+      "enterprisePlan": "Enterprise",
+      "upgradeRequired": "Upgrade erforderlich",
+      "featureNotAvailable": "Diese Funktion ist in Ihrem Paket nicht verfügbar.",
+      "upgradeToAccess": "Upgraden Sie Ihr Paket, um auf diese Funktion zuzugreifen."
+    },
     "registrations": {
       "title": "Registrierungen",
       "export": "Nach Excel Exportieren",

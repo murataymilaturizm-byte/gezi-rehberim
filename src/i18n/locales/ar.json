@@ -444,6 +444,16 @@
       "program": "البرنامج",
       "preRegistration": "تسجيل مسبق"
     },
+    "planLimits": {
+      "tourLimitReached": "تم الوصول إلى حد الجولات",
+      "tourLimitMessage": "تتيح خطتك {planName} بحد أقصى {maxTours} جولة. يرجى ترقية خطتك لإضافة المزيد من الجولات.",
+      "starterPlan": "البداية",
+      "professionalPlan": "المحترف",
+      "enterprisePlan": "المؤسسة",
+      "upgradeRequired": "الترقية مطلوبة",
+      "featureNotAvailable": "هذه الميزة غير متاحة في خطتك.",
+      "upgradeToAccess": "قم بترقية خطتك للوصول إلى هذه الميزة."
+    },
     "registrations": {
       "title": "التسجيلات",
       "export": "تصدير إلى Excel",
