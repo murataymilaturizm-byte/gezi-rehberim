@@ -353,6 +353,20 @@
   },
   "admin": {
     "title": "Панель Агентства",
+    "filters": {
+      "status": "Статус",
+      "tour": "Тур",
+      "dateRange": "Диапазон дат",
+      "priceRange": "Диапазон цен",
+      "from": "С",
+      "to": "До",
+      "min": "Мин",
+      "max": "Макс",
+      "all": "Все",
+      "allStatuses": "Все статусы",
+      "allTours": "Все туры",
+      "clear": "Очистить фильтры"
+    },
     "payment": {
       "status": {
         "pending": "Ожидание Платежа",
@@ -571,6 +585,7 @@
       "title": "Регистрации",
       "export": "Экспорт в Excel",
       "noRegistrations": "Регистраций пока нет",
+      "noFilteredResults": "Нет записей, соответствующих фильтрам",
       "name": "Имя",
       "phone": "Телефон",
       "tour": "Тур",

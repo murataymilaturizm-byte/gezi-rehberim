@@ -339,6 +339,20 @@
   },
   "admin": {
     "title": "Agency Panel",
+    "filters": {
+      "status": "Status",
+      "tour": "Tour",
+      "dateRange": "Date Range",
+      "priceRange": "Price Range",
+      "from": "From",
+      "to": "To",
+      "min": "Min",
+      "max": "Max",
+      "all": "All",
+      "allStatuses": "All statuses",
+      "allTours": "All tours",
+      "clear": "Clear Filters"
+    },
     "payment": {
       "status": {
         "pending": "Payment Pending",
@@ -562,6 +576,7 @@
       "title": "Registrations",
       "export": "Export to Excel",
       "noRegistrations": "No registrations yet",
+      "noFilteredResults": "No records match the filters",
       "name": "Name",
       "phone": "Phone",
       "tour": "Tour",

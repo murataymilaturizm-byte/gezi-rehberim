@@ -728,33 +728,33 @@ const Admin = () => {
             {/* Registration Filters */}
             {activeTab === "registrations" && (
               <div className="mt-4 p-4 bg-accent/30 rounded-lg border border-border/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Status Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Durum</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.status")}</label>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Tüm durumlar" />
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder={t("admin.filters.allStatuses")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Tümü</SelectItem>
-                        <SelectItem value="NEW">Yeni</SelectItem>
-                        <SelectItem value="PENDING">Beklemede</SelectItem>
-                        <SelectItem value="CONFIRMED">Onaylandı</SelectItem>
-                        <SelectItem value="CANCELLED">İptal</SelectItem>
+                        <SelectItem value="all">{t("admin.filters.all")}</SelectItem>
+                        <SelectItem value="NEW">{t("admin.status.new")}</SelectItem>
+                        <SelectItem value="PENDING">{t("admin.status.pending")}</SelectItem>
+                        <SelectItem value="CONFIRMED">{t("admin.status.confirmed")}</SelectItem>
+                        <SelectItem value="CANCELLED">{t("admin.status.cancelled")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {/* Tour Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Tur</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.tour")}</label>
                     <Select value={filterTour} onValueChange={setFilterTour}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Tüm turlar" />
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder={t("admin.filters.allTours")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Tümü</SelectItem>
+                        <SelectItem value="all">{t("admin.filters.all")}</SelectItem>
                         {tours.map((tour) => (
                           <SelectItem key={tour.id} value={tour.id}>
                             {tour.title}
@@ -764,103 +764,101 @@ const Admin = () => {
                     </Select>
                   </div>
 
-                  {/* Date Range Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Başlangıç Tarihi</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !filterDateFrom && "text-muted-foreground"
-                          )}
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {filterDateFrom ? format(filterDateFrom, "d MMM yyyy", { locale: tr }) : "Tarih seç"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={filterDateFrom}
-                          onSelect={setFilterDateFrom}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Bitiş Tarihi</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !filterDateTo && "text-muted-foreground"
-                          )}
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {filterDateTo ? format(filterDateTo, "d MMM yyyy", { locale: tr }) : "Tarih seç"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={filterDateTo}
-                          onSelect={setFilterDateTo}
-                          disabled={(date) => filterDateFrom ? date < filterDateFrom : false}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
+                  {/* Date Filter */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.dateRange")}</label>
+                    <div className="flex gap-1">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "h-9 flex-1 justify-start text-left font-normal text-xs px-2",
+                              !filterDateFrom && "text-muted-foreground"
+                            )}
+                          >
+                            {filterDateFrom ? format(filterDateFrom, "d MMM", { locale: tr }) : t("admin.filters.from")}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={filterDateFrom}
+                            onSelect={setFilterDateFrom}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "h-9 flex-1 justify-start text-left font-normal text-xs px-2",
+                              !filterDateTo && "text-muted-foreground"
+                            )}
+                          >
+                            {filterDateTo ? format(filterDateTo, "d MMM", { locale: tr }) : t("admin.filters.to")}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={filterDateTo}
+                            onSelect={setFilterDateTo}
+                            disabled={(date) => filterDateFrom ? date < filterDateFrom : false}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
 
                   {/* Price Range Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Min Fiyat (₺)</label>
-                    <input
-                      type="number"
-                      value={filterPriceMin}
-                      onChange={(e) => setFilterPriceMin(e.target.value)}
-                      placeholder="0"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Max Fiyat (₺)</label>
-                    <input
-                      type="number"
-                      value={filterPriceMax}
-                      onChange={(e) => setFilterPriceMax(e.target.value)}
-                      placeholder="∞"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.priceRange")}</label>
+                    <div className="flex gap-1">
+                      <input
+                        type="number"
+                        value={filterPriceMin}
+                        onChange={(e) => setFilterPriceMin(e.target.value)}
+                        placeholder={t("admin.filters.min")}
+                        className="flex h-9 flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                      />
+                      <input
+                        type="number"
+                        value={filterPriceMax}
+                        onChange={(e) => setFilterPriceMax(e.target.value)}
+                        placeholder={t("admin.filters.max")}
+                        className="flex h-9 flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Clear Filters Button */}
-                <div className="mt-4 flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setFilterStatus("all");
-                      setFilterTour("all");
-                      setFilterDateFrom(undefined);
-                      setFilterDateTo(undefined);
-                      setFilterPriceMin("");
-                      setFilterPriceMax("");
-                    }}
-                  >
-                    Filtreleri Temizle
-                  </Button>
-                </div>
+                {(filterStatus !== "all" || filterTour !== "all" || filterDateFrom || filterDateTo || filterPriceMin || filterPriceMax) && (
+                  <div className="mt-3 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => {
+                        setFilterStatus("all");
+                        setFilterTour("all");
+                        setFilterDateFrom(undefined);
+                        setFilterDateTo(undefined);
+                        setFilterPriceMin("");
+                        setFilterPriceMax("");
+                      }}
+                    >
+                      {t("admin.filters.clear")}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardHeader>
@@ -1036,7 +1034,7 @@ const Admin = () => {
                           <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                             {registrations.length === 0 
                               ? t("admin.registrations.noRegistrations")
-                              : "Filtreye uygun kayıt bulunamadı"}
+                              : t("admin.registrations.noFilteredResults")}
                           </TableCell>
                         </TableRow>
                       );
