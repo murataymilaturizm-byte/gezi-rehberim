@@ -214,56 +214,49 @@
     },
     "starter": {
       "name": "Başlangıç",
-      "price": "2.999",
+      "price": "399",
       "period": "/ay",
       "description": "Küçük acenteler ve yeni başlayanlar için",
       "features": {
-        "messages": "💬 500 WhatsApp mesajı/ay (~16 mesaj/gün)",
-        "basicReporting": "📊 Temel raporlama ve istatistikler",
-        "unlimitedTours": "🗂️ Sınırsız tur ekleme",
-        "reservationManagement": "📝 Rezervasyon yönetimi",
-        "emailSupport": "📧 Email destek (48 saat)",
-        "aiAnswers": "🤖 AI destekli otomatik cevaplar",
-        "history30": "💾 30 gün konuşma geçmişi"
+        "messages": "💬 500 mesaj/ay",
+        "tours": "🗂️ 5 tura kadar",
+        "languages": "🌍 Türkçe + 1 dil desteği",
+        "style": "🎨 Professional konuşma uslübu",
+        "basicFeatures": "📊 Temel özellikler"
       }
     },
     "professional": {
       "name": "Profesyonel",
-      "price": "7.999",
+      "price": "999",
       "period": "/ay",
       "badge": "En Popüler",
       "description": "Büyüyen işletmeler ve aktif acenteler için",
       "features": {
-        "messages": "💬 3.000 WhatsApp mesajı/ay (~100 mesaj/gün)",
-        "advancedReporting": "📈 Gelişmiş raporlama ve analizler",
-        "unlimitedTours": "🗂️ Sınırsız tur ekleme",
-        "advancedReservation": "📝 Gelişmiş rezervasyon yönetimi",
-        "userProfiles": "🎯 WhatsApp kullanıcı profilleri ve segmentasyon",
-        "prioritySupport": "⚡ Öncelikli destek (24 saat içinde)",
-        "crmIntegration": "🔗 CRM entegrasyon desteği",
-        "history90": "💾 90 gün konuşma geçmişi",
-        "customTemplates": "🎨 Özel WhatsApp mesaj şablonları",
-        "tourReminders": "📱 Otomatik tur hatırlatıcıları"
+        "messages": "💬 2.000 mesaj/ay",
+        "tours": "🗂️ 20 tura kadar",
+        "languages": "🌍 3 dile kadar destek",
+        "allStyles": "🎨 Tüm konuşma uslüpları (4 çeşit)",
+        "userProfiles": "👤 Kullanıcı profilleri",
+        "reminders": "⏰ Otomatik hatırlatıcılar",
+        "templates": "📝 Mesaj şablonları",
+        "followUps": "📲 Takip mesajları",
+        "feedback": "⭐ Geri bildirim sistemi",
+        "analytics": "📊 Detaylı analizler"
       }
     },
     "enterprise": {
       "name": "Kurumsal",
-      "price": "14.999",
+      "price": "2.499",
       "period": "/ay",
       "description": "Büyük acenteler ve zincir işletmeler için",
       "features": {
-        "unlimitedMessages": "💬 Sınırsız WhatsApp mesajı",
-        "customReporting": "📊 Özel raporlama ve dashboardlar",
-        "multiBranch": "🗂️ Multi-branch (çoklu şube) desteği",
-        "enterpriseReservation": "📝 Kurumsal rezervasyon yönetimi",
-        "advancedSegmentation": "🎯 Gelişmiş müşteri segmentasyonu ve AI analizleri",
-        "support247": "🚀 7/24 öncelikli destek",
-        "apiAccess": "🔌 API erişimi ve özel entegrasyonlar",
-        "unlimitedHistory": "💾 Sınırsız konuşma geçmişi",
-        "accountManager": "👔 Özel hesap yöneticisi (dedicated)",
-        "customDevelopment": "⚙️ Özel geliştirme ve özelleştirmeler",
-        "enterpriseSecurity": "🔒 Kurumsal güvenlik ve SLA garantisi",
-        "multipleAccounts": "🌐 Çoklu WhatsApp hesabı desteği"
+        "messages": "💬 10.000 mesaj/ay",
+        "unlimitedTours": "🗂️ Sınırsız tur",
+        "allLanguages": "🌍 Tüm diller (7 dil)",
+        "customStyles": "🎨 Özel konuşma uslüpları",
+        "allFeatures": "✨ Tüm özellikler",
+        "prioritySupport": "🚀 Öncelikli destek",
+        "customIntegration": "🔌 Özel entegrasyonlar"
       }
     }
   },
