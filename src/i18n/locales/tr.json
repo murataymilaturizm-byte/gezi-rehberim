@@ -220,7 +220,7 @@
       "features": {
         "messages": "💬 1.000 mesaj/ay",
         "tours": "🗂️ 10 tura kadar",
-        "languages": "🌍 Türkçe + 1 dil desteği",
+        "languages": "🌍 1 Dil Seçimi (TR, EN, DE, FR, ES, RU, AR'dan herhangi biri)",
         "style": "🎨 Sadece Profesyonel üslup",
         "basicFeatures": "📊 Temel özellikler"
       }
@@ -234,7 +234,7 @@
       "features": {
         "messages": "💬 5.000 mesaj/ay",
         "tours": "🗂️ Sınırsız tur",
-        "languages": "🌍 3 dile kadar destek",
+        "languages": "🌍 5 Dile Kadar Destek (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça)",
         "allStyles": "🎨 4 farklı konuşma üslubu",
         "userProfiles": "👤 Kullanıcı profilleri ve takip",
         "reminders": "⏰ Otomatik tur hatırlatıcıları",
@@ -251,7 +251,7 @@
       "features": {
         "messages": "💬 Sınırsız mesaj",
         "unlimitedTours": "🗂️ Sınırsız tur",
-        "allLanguages": "🌍 Tüm 7 dil desteği",
+        "allLanguages": "🌍 Tüm 7 Dil (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça)",
         "customStyles": "🎨 4 üslup + özel üslup",
         "allFeatures": "✨ Tüm özellikler",
         "feedback": "⭐ Otomatik feedback anketleri",

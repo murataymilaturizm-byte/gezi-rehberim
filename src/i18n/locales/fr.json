@@ -236,7 +236,7 @@
       "features": {
         "messages": "💬 1,000 messages/mois",
         "tours": "🗂️ Jusqu'à 10 tours",
-        "languages": "🌍 Turc + 1 langue",
+        "languages": "🌍 Choix de 1 Langue (Parmi TR, EN, DE, FR, ES, RU, AR)",
         "style": "🎨 Style professionnel uniquement",
         "basicFeatures": "📊 Fonctionnalités de base"
       }
@@ -250,7 +250,7 @@
       "features": {
         "messages": "💬 5,000 messages/mois",
         "tours": "🗂️ Tours illimités",
-        "languages": "🌍 Jusqu'à 3 langues",
+        "languages": "🌍 Jusqu'à 5 Langues (Turc, Anglais, Allemand, Français, Espagnol, Russe, Arabe)",
         "allStyles": "🎨 4 styles de conversation différents",
         "userProfiles": "👤 Profils utilisateur et suivi",
         "reminders": "⏰ Rappels automatiques de tours",
@@ -267,25 +267,7 @@
       "features": {
         "messages": "💬 Messages illimités",
         "unlimitedTours": "🗂️ Tours illimités",
-        "allLanguages": "🌍 Toutes les 7 langues",
-        "customStyles": "🎨 4 styles + styles personnalisés",
-        "allFeatures": "✨ Toutes les fonctionnalités",
-        "feedback": "⭐ Enquêtes de feedback automatiques",
-        "prioritySupport": "🚀 Support prioritaire",
-        "customIntegration": "🔌 Intégrations personnalisées"
-      }
-    }
-  },
-  "footer": {
-    "enterprise": {
-      "name": "Entreprise",
-      "price": "€149",
-      "period": "/mois",
-      "description": "Pour les grandes agences et les entreprises en chaîne",
-      "features": {
-        "messages": "💬 Messages illimités",
-        "unlimitedTours": "🗂️ Tours illimités",
-        "allLanguages": "🌍 Les 7 langues",
+        "allLanguages": "🌍 Toutes les 7 Langues (Turc, Anglais, Allemand, Français, Espagnol, Russe, Arabe)",
         "customStyles": "🎨 4 styles + styles personnalisés",
         "allFeatures": "✨ Toutes les fonctionnalités",
         "feedback": "⭐ Enquêtes de feedback automatiques",
