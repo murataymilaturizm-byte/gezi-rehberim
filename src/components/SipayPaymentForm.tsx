@@ -36,8 +36,15 @@ export const SipayPaymentForm = ({
       const merchantId = import.meta.env.VITE_SIPAY_MERCHANT_ID;
       const appSecret = import.meta.env.VITE_SIPAY_APP_SECRET;
 
+      console.log("🔍 Environment check:", {
+        merchantId: merchantId ? "✅ Found" : "❌ Missing",
+        appSecret: appSecret ? "✅ Found" : "❌ Missing",
+        allEnvVars: import.meta.env
+      });
+
       if (!merchantId || !appSecret) {
-        throw new Error("Sipay credentials not configured");
+        console.error("❌ Sipay credentials missing:", { merchantId, appSecret });
+        throw new Error("Sipay credentials not configured. Please check environment variables.");
       }
 
       // Prepare callback URLs
