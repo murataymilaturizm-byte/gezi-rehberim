@@ -229,7 +229,7 @@
     },
     "starter": {
       "name": "Inicial",
-      "price": "€49",
+      "price": "2.999",
       "period": "/mes",
       "description": "Para agencias pequeñas y principiantes",
       "features": {
@@ -242,7 +242,7 @@
     },
     "professional": {
       "name": "Profesional",
-      "price": "€99",
+      "price": "4.999",
       "period": "/mes",
       "badge": "Más Popular",
       "description": "Para empresas en crecimiento y agencias activas",
@@ -260,7 +260,7 @@
     },
     "enterprise": {
       "name": "Empresarial",
-      "price": "€149",
+      "price": "7.999",
       "period": "/mes",
       "description": "Para grandes agencias y empresas en cadena",
       "features": {

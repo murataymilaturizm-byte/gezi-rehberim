@@ -265,7 +265,7 @@
     },
     "starter": {
       "name": "Starter",
-      "price": "€49",
+      "price": "2.999",
       "period": "/Monat",
       "description": "Für kleine Agenturen und Anfänger",
       "features": {
@@ -278,7 +278,7 @@
     },
     "professional": {
       "name": "Professional",
-      "price": "€99",
+      "price": "4.999",
       "period": "/Monat",
       "badge": "Am beliebtesten",
       "description": "Für wachsende Unternehmen und aktive Agenturen",
@@ -296,7 +296,7 @@
     },
     "enterprise": {
       "name": "Enterprise",
-      "price": "€149",
+      "price": "7.999",
       "period": "/Monat",
       "description": "Für große Agenturen und Kettenunternehmen",
       "features": {

@@ -182,12 +182,10 @@ const Index = () => {
       features: [
         t("pricing.enterprise.features.allProFeatures"),
         t("pricing.enterprise.features.messages"),
-        t("pricing.enterprise.features.unlimitedTours"),
         t("pricing.enterprise.features.allLanguages"),
         t("pricing.enterprise.features.customStyles"),
         t("pricing.enterprise.features.feedback"),
         t("pricing.enterprise.features.prioritySupport"),
-        t("pricing.enterprise.features.customIntegration"),
         t("pricing.enterprise.features.multiAgency"),
         t("pricing.enterprise.features.apiAccess"),
         t("pricing.enterprise.features.paymentCollection")

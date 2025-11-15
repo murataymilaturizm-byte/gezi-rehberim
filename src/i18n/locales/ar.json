@@ -221,7 +221,7 @@
     "yearly": "سنوي",
     "starter": {
       "name": "المبتدئ",
-      "price": "€49",
+      "price": "2.999",
       "period": "/شهر",
       "description": "للوكالات الصغيرة والمبتدئين",
       "features": {
@@ -234,7 +234,7 @@
     },
     "professional": {
       "name": "المحترف",
-      "price": "€99",
+      "price": "4.999",
       "period": "/شهر",
       "badge": "الأكثر شعبية",
       "description": "للشركات المتنامية والوكالات النشطة",
@@ -252,7 +252,7 @@
     },
     "enterprise": {
       "name": "للمؤسسات",
-      "price": "€149",
+      "price": "7.999",
       "period": "/شهر",
       "description": "للوكالات الكبيرة والشركات المتسلسلة",
       "features": {
