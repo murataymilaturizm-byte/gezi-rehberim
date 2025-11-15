@@ -331,7 +331,14 @@ serve(async (req) => {
       const userLanguage = userProfile?.language_preference || 'tr';
       
       // WhatsApp formatında cevap oluştur
-      const message = await formatWhatsAppResponse(tours, {}, userLanguage);
+      let message = await formatWhatsAppResponse(tours, {}, userLanguage);
+      
+      // WhatsApp mesaj uzunluk limiti: 1600 karakter
+      const MAX_WHATSAPP_LENGTH = 1600;
+      if (message.length > MAX_WHATSAPP_LENGTH) {
+        console.warn(`⚠️ Tour search message too long (${message.length} chars), truncating`);
+        message = message.substring(0, MAX_WHATSAPP_LENGTH - 50) + '...\n\n(Daha fazla tur için lütfen daha spesifik arama yapın)';
+      }
       
       // Bot cevabını kaydet
       await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
@@ -349,8 +356,15 @@ serve(async (req) => {
     } else {
       // Genel sohbet - AI ile cevap ver
       console.log('🗨️ Handling general chat...');
-      const chatResponse = await handleGeneralChat(userMessage, userPhone, supabase, agency.id, agency.conversation_style || 'professional');
+      let chatResponse = await handleGeneralChat(userMessage, userPhone, supabase, agency.id, agency.conversation_style || 'professional');
       console.log('✅ Chat response generated, length:', chatResponse?.length);
+      
+      // WhatsApp mesaj uzunluk limiti: 1600 karakter
+      const MAX_WHATSAPP_LENGTH = 1600;
+      if (chatResponse.length > MAX_WHATSAPP_LENGTH) {
+        console.warn(`⚠️ Message too long (${chatResponse.length} chars), truncating to ${MAX_WHATSAPP_LENGTH}`);
+        chatResponse = chatResponse.substring(0, MAX_WHATSAPP_LENGTH - 50) + '...\n\n(Mesaj çok uzun, devamı için lütfen tekrar sorun)';
+      }
       
       // Bot cevabını kaydet
       await saveMessage(supabase, userPhone, 'assistant', chatResponse, agency.id);
