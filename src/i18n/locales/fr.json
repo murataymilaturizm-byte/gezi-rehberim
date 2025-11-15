@@ -265,14 +265,17 @@
       "period": "/mois",
       "description": "Pour les grandes agences et les chaînes d'entreprises",
       "features": {
+        "allProFeatures": "Toutes les fonctionnalités du plan Professionnel et,",
         "messages": "💬 Messages illimités",
         "unlimitedTours": "🗂️ Tours illimités",
         "allLanguages": "🌍 Toutes les 7 Langues (Turc, Anglais, Allemand, Français, Espagnol, Russe, Arabe)",
         "customStyles": "🎨 4 styles + styles personnalisés",
-        "allFeatures": "✨ Toutes les fonctionnalités",
         "feedback": "⭐ Enquêtes de feedback automatiques",
         "prioritySupport": "🚀 Support prioritaire",
-        "customIntegration": "🔌 Intégrations personnalisées"
+        "customIntegration": "🔌 Intégrations personnalisées",
+        "multiAgency": "✅ Gestion multi-agence (bientôt disponible)",
+        "apiAccess": "✅ Accès API (bientôt disponible)",
+        "paymentCollection": "✅ Collecte de paiements (bientôt disponible)"
       }
     }
   },

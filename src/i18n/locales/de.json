@@ -301,14 +301,17 @@
       "period": "/Monat",
       "description": "Für große Agenturen und Kettenunternehmen",
       "features": {
+        "allProFeatures": "Alle Professional-Funktionen und,",
         "messages": "💬 Unbegrenzte Nachrichten",
         "unlimitedTours": "🗂️ Unbegrenzte Touren",
         "allLanguages": "🌍 Alle 7 Sprachen (Türkisch, Englisch, Deutsch, Französisch, Spanisch, Russisch, Arabisch)",
         "customStyles": "🎨 4 Stile + benutzerdefinierte Stile",
-        "allFeatures": "✨ Alle Funktionen",
         "feedback": "⭐ Automatische Feedback-Umfragen",
         "prioritySupport": "🚀 Priority-Support",
-        "customIntegration": "🔌 Benutzerdefinierte Integrationen"
+        "customIntegration": "🔌 Benutzerdefinierte Integrationen",
+        "multiAgency": "✅ Multi-Agentur-Verwaltung (demnächst)",
+        "apiAccess": "✅ API-Zugriff (demnächst)",
+        "paymentCollection": "✅ Zahlungsabwicklung (demnächst)"
       }
     }
   },
