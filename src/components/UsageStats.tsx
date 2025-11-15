@@ -388,17 +388,28 @@ export const UsageStats = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm">
+          <div className="space-y-3 text-sm">
             {usage.plan_type === 'starter' && (
               <>
                 <div className="flex items-center gap-2">
-                  <span>💬 {t("admin.usageStats.features.starter.messages")}</span>
+                  <span>💬</span>
+                  <span>500 mesaj/ay</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>💾 {t("admin.usageStats.features.starter.history")}</span>
+                  <span>🏨</span>
+                  <span>5 tura kadar</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>📧 {t("admin.usageStats.features.starter.support")}</span>
+                  <span>🌍</span>
+                  <span>Türkçe + 1 dil desteği</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>👔</span>
+                  <span>Sadece Profesyonel üslup</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>💾</span>
+                  <span>30 gün geçmiş</span>
                 </div>
               </>
             )}
@@ -406,16 +417,36 @@ export const UsageStats = () => {
             {usage.plan_type === 'professional' && (
               <>
                 <div className="flex items-center gap-2">
-                  <span>💬 {t("admin.usageStats.features.professional.messages")}</span>
+                  <span>💬</span>
+                  <span>2.000 mesaj/ay</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>💾 {t("admin.usageStats.features.professional.history")}</span>
+                  <span>🏨</span>
+                  <span>20 tura kadar</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>⚡ {t("admin.usageStats.features.professional.support")}</span>
+                  <span>🌍</span>
+                  <span>4 dil desteği</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🎯 {t("admin.usageStats.features.professional.profiles")}</span>
+                  <span>🎭</span>
+                  <span>4 farklı konuşma üslubu</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>👥</span>
+                  <span>Kullanıcı profilleri</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>🔔</span>
+                  <span>Otomatik hatırlatmalar</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>📊</span>
+                  <span>Gelişmiş analizler</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>💾</span>
+                  <span>90 gün geçmiş</span>
                 </div>
               </>
             )}
@@ -423,16 +454,40 @@ export const UsageStats = () => {
             {usage.plan_type === 'enterprise' && (
               <>
                 <div className="flex items-center gap-2">
-                  <span>💬 {t("admin.usageStats.features.enterprise.messages")}</span>
+                  <span>💬</span>
+                  <span>10.000 mesaj/ay</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>💾 {t("admin.usageStats.features.enterprise.history")}</span>
+                  <span>🏨</span>
+                  <span>Sınırsız tur</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🚀 {t("admin.usageStats.features.enterprise.support")}</span>
+                  <span>🌍</span>
+                  <span>7 dil desteği (Tüm diller)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🔌 {t("admin.usageStats.features.enterprise.api")}</span>
+                  <span>🎭</span>
+                  <span>Özel üslup oluşturma</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>👥</span>
+                  <span>Gelişmiş kullanıcı profilleri</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>🔔</span>
+                  <span>Akıllı hatırlatmalar</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>📊</span>
+                  <span>Premium analizler & raporlar</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>💾</span>
+                  <span>Sınırsız geçmiş</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>🚀</span>
+                  <span>Öncelikli destek</span>
                 </div>
               </>
             )}

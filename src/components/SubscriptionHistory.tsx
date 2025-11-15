@@ -155,24 +155,50 @@ export const SubscriptionHistory = () => {
   const planOptions: PlanOption[] = [
     {
       id: "starter",
-      name: t("admin.subscription.planOptions.starter.name"),
-      price: 3999,
-      features: t("admin.subscription.planOptions.starter.features", { returnObjects: true }) as string[],
+      name: "Başlangıç",
+      price: 2999,
+      features: [
+        "💬 500 mesaj/ay",
+        "🏨 5 tura kadar",
+        "🌍 Türkçe + 1 dil",
+        "👔 Profesyonel üslup",
+        "📊 Temel raporlama",
+        "💾 30 gün geçmiş"
+      ],
       icon: Zap
     },
     {
       id: "professional",
-      name: t("admin.subscription.planOptions.professional.name"),
+      name: "Profesyonel",
       price: 7999,
-      features: t("admin.subscription.planOptions.professional.features", { returnObjects: true }) as string[],
+      features: [
+        "💬 2.000 mesaj/ay",
+        "🏨 20 tura kadar",
+        "🌍 4 dil desteği",
+        "🎭 4 konuşma üslubu",
+        "👥 Kullanıcı profilleri",
+        "🔔 Otomatik hatırlatmalar",
+        "📊 Gelişmiş analizler",
+        "💾 90 gün geçmiş"
+      ],
       icon: TrendingUp,
       popular: true
     },
     {
       id: "enterprise",
-      name: t("admin.subscription.planOptions.enterprise.name"),
-      price: 0,
-      features: t("admin.subscription.planOptions.enterprise.features", { returnObjects: true }) as string[],
+      name: "Kurumsal",
+      price: 14999,
+      features: [
+        "💬 10.000 mesaj/ay",
+        "🏨 Sınırsız tur",
+        "🌍 7 dil desteği",
+        "🎨 Özel üslup",
+        "👥 Gelişmiş profiller",
+        "🔔 Akıllı hatırlatmalar",
+        "📊 Premium analizler",
+        "🚀 7/24 destek",
+        "💾 Sınırsız geçmiş"
+      ],
       icon: Crown
     }
   ];
