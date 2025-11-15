@@ -192,6 +192,7 @@ export const TwilioSettings = () => {
     }
   };
 
+
   if (loading) {
     return (
       <Card>
@@ -209,82 +210,111 @@ export const TwilioSettings = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          {t("admin.whatsapp.settings.title")}
-        </CardTitle>
-        <CardDescription>
-          {t("admin.whatsapp.settings.description")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {!isConfigured && (
-          <Alert className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {t("admin.whatsapp.settings.notConfigured")}
-            </AlertDescription>
-          </Alert>
-        )}
+    <div className="space-y-6">
+      {/* WhatsApp Business Number Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="h-5 w-5" />
+            {t("admin.whatsapp.settings.phoneTitle")}
+          </CardTitle>
+          <CardDescription>
+            {t("admin.whatsapp.settings.phoneDescription")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!isConfigured && (
+            <Alert className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {t("admin.whatsapp.settings.notConfigured")}
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {isConfigured && whatsappStatus === 'pending' && (
-          <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
-            <AlertDescription className="text-yellow-600">
-              {t("admin.whatsapp.status.requestReceived")}
-            </AlertDescription>
-          </Alert>
-        )}
+          {isConfigured && whatsappStatus === 'pending' && (
+            <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+              <AlertCircle className="h-4 w-4 text-yellow-500" />
+              <AlertDescription className="text-yellow-600">
+                {t("admin.whatsapp.status.requestReceived")}
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {isConfigured && whatsappStatus === 'active' && (
-          <Alert className="mb-6 border-green-500/50 bg-green-500/10">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-            <AlertDescription className="text-green-500">
-              {t("admin.whatsapp.settings.configured")}
-            </AlertDescription>
-          </Alert>
-        )}
+          {isConfigured && whatsappStatus === 'active' && (
+            <Alert className="mb-6 border-green-500/50 bg-green-500/10">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <AlertDescription className="text-green-500">
+                {t("admin.whatsapp.settings.configured")}
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {isConfigured && whatsappStatus === 'rejected' && (
-          <Alert className="mb-6 border-red-500/50 bg-red-500/10">
-            <AlertCircle className="h-4 w-4 text-red-500" />
-            <AlertDescription className="text-red-500">
-              {t("admin.whatsapp.status.requestRejected")}
-            </AlertDescription>
-          </Alert>
-        )}
+          {isConfigured && whatsappStatus === 'rejected' && (
+            <Alert className="mb-6 border-red-500/50 bg-red-500/10">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <AlertDescription className="text-red-500">
+                {t("admin.whatsapp.status.requestRejected")}
+              </AlertDescription>
+            </Alert>
+          )}
 
-        <form onSubmit={handlePhoneSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp_phone_number">
-              {t("admin.whatsapp.settings.phoneNumber")}
-            </Label>
-            <Input
-              id="whatsapp_phone_number"
-              placeholder={t("admin.whatsapp.settings.phonePlaceholder")}
-              value={formData.whatsapp_phone_number}
-              onChange={(e) =>
-                setFormData({ ...formData, whatsapp_phone_number: e.target.value })
-              }
-              required
-            />
-            <p className="text-sm text-muted-foreground">
-              {t("admin.whatsapp.settings.phoneHelp")}
-            </p>
-          </div>
+          <form onSubmit={handlePhoneSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp_phone_number">
+                {t("admin.whatsapp.settings.phoneNumber")}
+              </Label>
+              <Input
+                id="whatsapp_phone_number"
+                placeholder={t("admin.whatsapp.settings.phonePlaceholder")}
+                value={formData.whatsapp_phone_number}
+                onChange={(e) =>
+                  setFormData({ ...formData, whatsapp_phone_number: e.target.value })
+                }
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                {t("admin.whatsapp.settings.phoneHelp")}
+              </p>
+            </div>
 
+            <Button type="submit" disabled={saving} className="w-full">
+              {saving ? t("admin.whatsapp.settings.saving") : isConfigured ? t("admin.whatsapp.settings.update") : t("admin.whatsapp.settings.save")}
+            </Button>
+          </form>
+
+          {isConfigured && whatsappStatus === 'active' && (
+            <div className="mt-6 p-4 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-2">✅ {t("admin.whatsapp.settings.integrationComplete")}</h4>
+              <p className="text-sm text-muted-foreground">
+                {t("admin.whatsapp.settings.integrationCompleteDesc", { phone: formData.whatsapp_phone_number })}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Conversation Style Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            {t("admin.whatsapp.settings.styleTitle")}
+          </CardTitle>
+          <CardDescription>
+            {t("admin.whatsapp.settings.styleDescription")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="conversation_style" className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
+              <Label htmlFor="conversation_style">
                 {t("admin.whatsapp.settings.conversationStyle")}
               </Label>
               {planType === 'starter' && (
                 <Badge variant="outline" className="text-xs">
                   <Lock className="w-3 h-3 mr-1" />
-                  Profesyonel pakette tüm üsluplar
+                  {t("admin.whatsapp.settings.upgradeForStyles")}
                 </Badge>
               )}
             </div>
@@ -332,20 +362,15 @@ export const TwilioSettings = () => {
             </p>
           </div>
 
-          <Button type="submit" disabled={saving} className="w-full">
-            {saving ? t("admin.whatsapp.settings.saving") : isConfigured ? t("admin.whatsapp.settings.update") : t("admin.whatsapp.settings.save")}
+          <Button 
+            onClick={handleStyleUpdate} 
+            disabled={saving} 
+            className="w-full"
+          >
+            {saving ? t("admin.whatsapp.settings.saving") : t("admin.whatsapp.settings.updateStyle")}
           </Button>
-        </form>
-
-        {isConfigured && whatsappStatus === 'active' && (
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <h4 className="font-semibold mb-2">✅ {t("admin.whatsapp.settings.integrationComplete")}</h4>
-            <p className="text-sm text-muted-foreground">
-              {t("admin.whatsapp.settings.integrationCompleteDesc", { phone: formData.whatsapp_phone_number })}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
