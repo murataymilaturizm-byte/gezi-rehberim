@@ -2011,25 +2011,19 @@ async function checkMessageLimit(supabase: any, agency: any): Promise<boolean> {
 // Mesaj sayacını artır
 async function incrementMessageCount(supabase: any, agency_id: string) {
   try {
-    await supabase.rpc('increment', {
-      table_name: 'agencies',
-      column_name: 'monthly_message_count',
-      row_id: agency_id
-    }).catch(async () => {
-      // RPC fonksiyonu yoksa manuel artır
-      const { data: agency } = await supabase
+    // Manuel increment kullan
+    const { data: agency } = await supabase
+      .from('agencies')
+      .select('monthly_message_count')
+      .eq('id', agency_id)
+      .single();
+    
+    if (agency) {
+      await supabase
         .from('agencies')
-        .select('monthly_message_count')
-        .eq('id', agency_id)
-        .single();
-      
-      if (agency) {
-        await supabase
-          .from('agencies')
-          .update({ monthly_message_count: (agency.monthly_message_count || 0) + 1 })
-          .eq('id', agency_id);
-      }
-    });
+        .update({ monthly_message_count: (agency.monthly_message_count || 0) + 1 })
+        .eq('id', agency_id);
+    }
   } catch (error) {
     console.error('Error incrementing message count:', error);
   }
