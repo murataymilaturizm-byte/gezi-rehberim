@@ -29,9 +29,8 @@ serve(async (req) => {
     // Generate order ID
     const orderId = `ORDER-${agencyId.substring(0, 8)}-${Date.now()}`;
 
-    // Prepare callback URL (use SUPABASE_URL instead of VITE_SUPABASE_URL in edge functions)
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const callbackUrl = `${supabaseUrl}/functions/v1/sipay-callback`;
+    // Callback URL - hardcoded for reliability
+    const callbackUrl = `https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/sipay-callback`;
     
     console.log("📍 Callback URL:", callbackUrl);
 
