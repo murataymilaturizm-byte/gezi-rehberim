@@ -369,7 +369,17 @@
       "templates": {
         "title": "قوالب الرسائل",
         "description": "إدارة قوالب رسائل واتساب الخاصة بك",
-        "loadDefaults": "تحميل القوالب الافتراضية"
+        "loadDefaults": "تحميل القوالب الافتراضية",
+        "addNew": "إضافة قالب جديد",
+        "name": "اسم القالب",
+        "content": "محتوى الرسالة",
+        "actions": "الإجراءات",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "noTemplates": "لا توجد قوالب رسائل بعد",
+        "cancel": "إلغاء",
+        "namePlaceholder": "مثال: رسالة ترحيب",
+        "contentPlaceholder": "مرحباً! كيف يمكنني مساعدتك؟"
       },
       "settings": {
         "title": "إعدادات واتساب",
@@ -403,6 +413,57 @@
         "phoneUpdateError": "تعذر حفظ رقم واتساب",
         "styleUpdateSuccess": "تم تحديث أسلوب المحادثة",
         "styleUpdateError": "تعذر تحديث أسلوب المحادثة"
+      },
+      "conversations": {
+        "title": "محادثات الواتساب",
+        "messages": "رسائل",
+        "selectConversation": "اختر محادثة"
+      },
+      "userProfiles": {
+        "title": "ملفات المستخدمين",
+        "selectAgency": "اختر الوكالة",
+        "noUsers": "لا يوجد مستخدمون بعد",
+        "loadingUsers": "جاري تحميل المستخدمين...",
+        "users": "مستخدم",
+        "unnamed": "بدون اسم",
+        "userDetails": "تفاصيل المستخدم",
+        "selectUser": "حدد مستخدمًا لعرض التفاصيل",
+        "generalInfo": "معلومات عامة",
+        "name": "الاسم",
+        "phoneNumber": "الهاتف",
+        "firstContact": "أول اتصال",
+        "lastContact": "آخر اتصال",
+        "activity": "النشاط",
+        "activityStatus": "حالة النشاط",
+        "todayActive": "نشط اليوم",
+        "yesterdayActive": "نشط أمس",
+        "daysAgo": "أيام مضت",
+        "totalMessages": "إجمالي الرسائل",
+        "preferences": "التفضيلات",
+        "preferredDestinations": "الوجهات المفضلة",
+        "budgetRange": "نطاق الميزانية",
+        "preferredTourType": "نوع الرحلة المفضل",
+        "statistics": "الإحصائيات",
+        "lastSearchQuery": "آخر بحث",
+        "notSpecified": "غير محدد",
+        "messagesPerDay": "رسائل/يوم",
+        "activeDays": "أيام نشطة"
+      },
+      "status": {
+        "pending": "قيد الانتظار",
+        "active": "نشط",
+        "rejected": "مرفوض",
+        "requestReceived": "تم استلام طلب تكامل واتساب الخاص بك. في انتظار موافقة المسؤول.",
+        "requestRejected": "تم رفض طلب تكامل واتساب الخاص بك. يرجى الاتصال بالدعم."
+      },
+      "actions": {
+        "approve": "موافقة",
+        "reject": "رفض"
+      },
+      "messages": {
+        "approved": "تمت الموافقة على تكامل واتساب",
+        "rejected": "تم رفض تكامل واتساب",
+        "updateError": "تعذر تحديث الحالة"
       }
     },
     "welcome": "مرحباً",
@@ -651,91 +712,6 @@
         "enterpriseNoLimit": "خطة المؤسسات ليس لها حد للرسائل",
         "cancel": "إلغاء",
         "save": "حفظ"
-      }
-    },
-    "whatsapp": {
-      "conversations": {
-        "title": "محادثات الواتساب",
-        "messages": "رسائل",
-        "selectConversation": "اختر محادثة"
-      },
-      "settings": {
-        "title": "إعدادات الواتساب",
-        "description": "إدارة تكامل واتساب للأعمال",
-        "phoneNumber": "رقم الواتساب للأعمال",
-        "phonePlaceholder": "+966xxxxxxxxx",
-        "phoneHelp": "أدخل رقم الواتساب للأعمال المسجل في Twilio (مثال: +14155238886)",
-        "save": "حفظ",
-        "update": "تحديث",
-        "saving": "جاري الحفظ...",
-        "notConfigured": "لم يتم تكوين واتساب بعد. يرجى إضافة رقم واتساب للأعمال الخاص بك.",
-        "configured": "تكامل الواتساب نشط! يمكن لعملائك الاتصال بك عبر الواتساب.",
-        "integrationComplete": "اكتمل التكامل",
-        "integrationCompleteDesc": "تم تسجيل رقم واتساب للأعمال الخاص بك {phone} في النظام."
-      },
-      "status": {
-        "pending": "قيد الانتظار",
-        "active": "نشط",
-        "rejected": "مرفوض",
-        "requestReceived": "تم استلام طلب تكامل واتساب الخاص بك. في انتظار موافقة المسؤول.",
-        "requestRejected": "تم رفض طلب تكامل واتساب الخاص بك. يرجى الاتصال بالدعم."
-      },
-      "actions": {
-        "approve": "موافقة",
-        "reject": "رفض"
-      },
-      "messages": {
-        "approved": "تمت الموافقة على تكامل واتساب",
-        "rejected": "تم رفض تكامل واتساب",
-        "updateError": "تعذر تحديث الحالة"
-      },
-       "templates": {
-        "title": "قوالب الرسائل",
-        "description": "قوالب متعددة اللغات للرسائل التلقائية مثل تأكيد الحجز، إشعار الإلغاء",
-        "addNew": "إضافة قالب جديد",
-        "name": "اسم القالب",
-        "content": "محتوى الرسالة",
-        "actions": "الإجراءات",
-        "edit": "تعديل",
-        "delete": "حذف",
-        "noTemplates": "لا توجد قوالب رسائل بعد",
-        "save": "حفظ",
-        "update": "تحديث",
-        "cancel": "إلغاء",
-        "saving": "جاري الحفظ...",
-        "namePlaceholder": "مثال: رسالة ترحيب",
-        "contentPlaceholder": "مرحباً! كيف يمكنني مساعدتك؟",
-        "loadDefaults": "تحميل القوالب الافتراضية"
-      },
-      "userProfiles": {
-        "title": "ملفات المستخدمين",
-        "selectAgency": "اختر الوكالة",
-        "noUsers": "لا يوجد مستخدمون بعد",
-        "loadingUsers": "جاري تحميل المستخدمين...",
-        "users": "مستخدم",
-        "unnamed": "بدون اسم",
-        "userDetails": "تفاصيل المستخدم",
-        "selectUser": "حدد مستخدمًا لعرض التفاصيل",
-        "generalInfo": "معلومات عامة",
-        "name": "الاسم",
-        "phoneNumber": "الهاتف",
-        "firstContact": "أول اتصال",
-        "lastContact": "آخر اتصال",
-        "activity": "النشاط",
-        "activityStatus": "حالة النشاط",
-        "todayActive": "نشط اليوم",
-        "yesterdayActive": "نشط أمس",
-        "daysAgo": "أيام مضت",
-        "totalMessages": "إجمالي الرسائل",
-        "preferences": "التفضيلات",
-        "preferredDestinations": "الوجهات المفضلة",
-        "budgetRange": "نطاق الميزانية",
-        "preferredTourType": "نوع الرحلة المفضل",
-         "statistics": "الإحصائيات",
-        "lastSearchQuery": "آخر بحث",
-        "notSpecified": "غير محدد",
-        "messagesPerDay": "رسائل/يوم",
-        "activeDays": "أيام نشطة"
       }
     },
     "dashboard": {
