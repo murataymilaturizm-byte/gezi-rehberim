@@ -824,64 +824,102 @@ const Admin = () => {
                     <TableHead>{t("admin.registrations.phone")}</TableHead>
                     <TableHead>{t("admin.registrations.tour")}</TableHead>
                     <TableHead>{t("admin.registrations.date")}</TableHead>
-                    <TableHead>{t("admin.registrations.pax")}</TableHead>
+                    <TableHead className="text-center">{t("admin.registrations.pax")}</TableHead>
+                    <TableHead className="text-right">Birim Fiyat</TableHead>
+                    <TableHead className="text-right font-semibold">Toplam</TableHead>
                     <TableHead>{t("admin.registrations.status")}</TableHead>
-                    <TableHead>Kaynak</TableHead>
+                    <TableHead className="text-center">Not</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {registrations.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      <TableCell colSpan={9} className="text-center text-muted-foreground">
                         {t("admin.registrations.noRegistrations")}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    registrations.map((reg) => (
-                      <TableRow key={reg.id}>
-                        <TableCell className="font-medium">{reg.full_name}</TableCell>
-                        <TableCell>{reg.phone}</TableCell>
-                        <TableCell>{reg.tours?.title}</TableCell>
-                        <TableCell>
-                          {reg.tour_dates?.departure_date &&
-                            format(new Date(reg.tour_dates.departure_date), "d MMM yyyy", { locale: tr })}
-                        </TableCell>
-                        <TableCell>{reg.pax}</TableCell>
-                        <TableCell>
-                          <Select
-                            value={reg.status}
-                            onValueChange={(value) => handleStatusChange(reg.id, value as "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED")}
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="NEW">
-                                <Badge variant="secondary">{statusLabels.NEW}</Badge>
-                              </SelectItem>
-                              <SelectItem value="PENDING">
-                                <Badge variant="secondary">{statusLabels.PENDING}</Badge>
-                              </SelectItem>
-                              <SelectItem value="CONFIRMED">
-                                <Badge variant="default">{statusLabels.CONFIRMED}</Badge>
-                              </SelectItem>
-                              <SelectItem value="CANCELLED">
-                                <Badge variant="destructive">{statusLabels.CANCELLED}</Badge>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          {reg.note?.includes("WhatsApp kayıt:") ? (
-                            <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
-                              WhatsApp
+                    registrations.map((reg) => {
+                      const unitPrice = reg.tour_dates?.price_adult || 0;
+                      const totalPrice = unitPrice * reg.pax;
+                      
+                      return (
+                        <TableRow key={reg.id} className="hover:bg-accent/50">
+                          <TableCell className="font-medium">{reg.full_name}</TableCell>
+                          <TableCell>
+                            <a href={`tel:${reg.phone}`} className="text-primary hover:underline">
+                              {reg.phone}
+                            </a>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <span className="font-medium">{reg.tours?.title}</span>
+                              <span className="text-xs text-muted-foreground">{reg.tours?.destination}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {reg.tour_dates?.departure_date &&
+                              format(new Date(reg.tour_dates.departure_date), "d MMM yyyy", { locale: tr })}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="font-semibold">
+                              {reg.pax} kişi
                             </Badge>
-                          ) : (
-                            <Badge variant="outline">Web</Badge>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
+                          </TableCell>
+                          <TableCell className="text-right text-muted-foreground">
+                            {unitPrice > 0 ? `${unitPrice.toLocaleString('tr-TR')}₺` : '-'}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {totalPrice > 0 ? (
+                              <span className="font-bold text-lg text-primary">
+                                {totalPrice.toLocaleString('tr-TR')}₺
+                              </span>
+                            ) : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={reg.status}
+                              onValueChange={(value) => handleStatusChange(reg.id, value as "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED")}
+                            >
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="NEW">
+                                  <Badge variant="secondary">{statusLabels.NEW}</Badge>
+                                </SelectItem>
+                                <SelectItem value="PENDING">
+                                  <Badge variant="secondary">{statusLabels.PENDING}</Badge>
+                                </SelectItem>
+                                <SelectItem value="CONFIRMED">
+                                  <Badge variant="default">{statusLabels.CONFIRMED}</Badge>
+                                </SelectItem>
+                                <SelectItem value="CANCELLED">
+                                  <Badge variant="destructive">{statusLabels.CANCELLED}</Badge>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {reg.note && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  toast({
+                                    title: "Rezervasyon Notu",
+                                    description: reg.note,
+                                    duration: 5000,
+                                  });
+                                }}
+                              >
+                                📝
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
