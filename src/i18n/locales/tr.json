@@ -251,12 +251,10 @@
       "features": {
         "allProFeatures": "Profesyonel paketin tüm özellikleri ve,",
         "messages": "💬 Sınırsız mesaj",
-        "unlimitedTours": "🗂️ Sınırsız tur",
         "allLanguages": "🌍 Tüm 7 Dil (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça)",
-        "customStyles": "🎨 4 üslup + özel üslup",
-        "feedback": "⭐ Otomatik feedback anketleri",
+        "customStyles": "🎨 + 1 Özel Konuşma Üslubu",
+        "feedback": "⭐ Otomatik müşteri memnuniyeti anketi",
         "prioritySupport": "🚀 Öncelikli destek",
-        "customIntegration": "🔌 Özel entegrasyonlar",
         "multiAgency": "✅ Multi-agency yönetimi (gelecekte)",
         "apiAccess": "✅ API erişimi (gelecekte)",
         "paymentCollection": "✅ Ödeme Alabilme (gelecekte)"

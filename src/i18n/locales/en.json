@@ -285,15 +285,13 @@
       "features": {
         "allProFeatures": "All Professional plan features and,",
         "messages": "💬 Unlimited messages",
-        "unlimitedTours": "🗂️ Unlimited tours",
         "allLanguages": "🌍 All 7 Languages (Turkish, English, German, French, Spanish, Russian, Arabic)",
-        "customStyles": "🎨 4 styles + custom styles",
-        "feedback": "⭐ Automatic feedback surveys",
+        "customStyles": "🎨 + 1 Custom Conversation Style",
+        "feedback": "⭐ Automatic customer satisfaction survey",
         "prioritySupport": "🚀 Priority support",
-        "customIntegration": "🔌 Custom integrations",
         "multiAgency": "✅ Multi-agency management (coming soon)",
         "apiAccess": "✅ API access (coming soon)",
-        "paymentCollection": "✅ Payment collection (coming soon)"
+        "paymentCollection": "✅ Payment Collection (coming soon)"
       }
     }
   },
