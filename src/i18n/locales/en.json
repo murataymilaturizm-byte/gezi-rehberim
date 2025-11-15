@@ -1012,6 +1012,29 @@
       "settings": "Settings and Security"
     }
   },
+  "languageManagement": {
+    "title": "Language Management",
+    "description": "Select the languages your WhatsApp bot will use. Automatic communication will be established with your customers in the selected languages.",
+    "languagesBadge": "Languages",
+    "planLimit": "Your Plan Limit:",
+    "planStarter": "Starter",
+    "planProfessional": "Professional",
+    "planEnterprise": "Enterprise",
+    "maxLanguagesMessage": "you can activate up to {count} languages in your package.",
+    "upgradePlan": "Upgrade your package for more languages.",
+    "minLanguageWarning": "⚠️ You must select at least 1 language.",
+    "languageLimitTitle": "Language Limit Reached",
+    "languageLimitMessage": "You can activate a maximum of {count} languages in your {plan} package. Upgrade your package for more languages.",
+    "minLanguageError": "You must select at least 1 language.",
+    "loadError": "Language settings could not be loaded",
+    "saveSuccess": "Language settings saved successfully",
+    "saveError": "Language settings could not be saved",
+    "activeBadge": "Active",
+    "lockedBadge": "Locked",
+    "cancelButton": "Cancel",
+    "saveButton": "Save",
+    "warning": "Warning"
+  },
   "notFound": {
     "title": "404",
     "message": "Page Not Found",

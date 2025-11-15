@@ -1098,6 +1098,29 @@
       "settings": "الإعدادات والأمان"
     }
   },
+  "languageManagement": {
+    "title": "إدارة اللغات",
+    "description": "اختر اللغات التي سيستخدمها بوت WhatsApp الخاص بك. سيتم إنشاء اتصال تلقائي مع عملائك باللغات المحددة.",
+    "languagesBadge": "اللغات",
+    "planLimit": "حد خطتك:",
+    "planStarter": "المبتدئ",
+    "planProfessional": "المحترف",
+    "planEnterprise": "المؤسسي",
+    "maxLanguagesMessage": "يمكنك تفعيل ما يصل إلى {count} لغة في باقتك.",
+    "upgradePlan": "قم بترقية باقتك للحصول على المزيد من اللغات.",
+    "minLanguageWarning": "⚠️ يجب عليك اختيار لغة واحدة على الأقل.",
+    "languageLimitTitle": "تم الوصول إلى حد اللغة",
+    "languageLimitMessage": "يمكنك تفعيل حد أقصى {count} لغة في باقة {plan} الخاصة بك. قم بترقية باقتك للحصول على المزيد من اللغات.",
+    "minLanguageError": "يجب عليك اختيار لغة واحدة على الأقل.",
+    "loadError": "تعذر تحميل إعدادات اللغة",
+    "saveSuccess": "تم حفظ إعدادات اللغة بنجاح",
+    "saveError": "تعذر حفظ إعدادات اللغة",
+    "activeBadge": "نشط",
+    "lockedBadge": "مقفل",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ",
+    "warning": "تحذير"
+  },
   "notFound": {
     "title": "404",
     "message": "الصفحة غير موجودة",

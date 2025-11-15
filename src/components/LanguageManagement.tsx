@@ -72,7 +72,7 @@ export const LanguageManagement = () => {
       console.error("Error loading language settings:", error);
       toast({
         title: t("common.error"),
-        description: "Dil ayarları yüklenemedi",
+        description: t("languageManagement.loadError"),
         variant: "destructive"
       });
     } finally {
@@ -89,14 +89,17 @@ export const LanguageManagement = () => {
     } else {
       // Limit kontrolü
       if (tempEnabledLanguages.length >= maxLanguages) {
-        const planNames = {
-          'starter': 'Başlangıç',
-          'professional': 'Profesyonel',
-          'enterprise': 'Kurumsal'
+        const planNames: Record<string, string> = {
+          'starter': t("languageManagement.planStarter"),
+          'professional': t("languageManagement.planProfessional"),
+          'enterprise': t("languageManagement.planEnterprise")
         };
         toast({
-          title: "Dil Limiti Doldu",
-          description: `${planNames[planType as keyof typeof planNames]} paketinizde maksimum ${maxLanguages} dil aktif edebilirsiniz. Daha fazla dil için paketinizi yükseltin.`,
+          title: t("languageManagement.languageLimitTitle"),
+          description: t("languageManagement.languageLimitMessage", { 
+            plan: planNames[planType as keyof typeof planNames], 
+            count: maxLanguages 
+          }),
           variant: "destructive"
         });
         return;
@@ -112,8 +115,8 @@ export const LanguageManagement = () => {
     // En az 1 dil seçilmiş olmalı
     if (tempEnabledLanguages.length === 0) {
       toast({
-        title: "Uyarı",
-        description: "En az 1 dil seçmelisiniz.",
+        title: t("languageManagement.warning"),
+        description: t("languageManagement.minLanguageError"),
         variant: "destructive"
       });
       return;
@@ -132,13 +135,13 @@ export const LanguageManagement = () => {
       
       toast({
         title: t("common.success"),
-        description: "Dil ayarları kaydedildi",
+        description: t("languageManagement.saveSuccess"),
       });
     } catch (error) {
       console.error("Error saving language settings:", error);
       toast({
         title: t("common.error"),
-        description: "Dil ayarları kaydedilemedi",
+        description: t("languageManagement.saveError"),
         variant: "destructive"
       });
     } finally {
@@ -167,25 +170,25 @@ export const LanguageManagement = () => {
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2">
               <Languages className="w-5 h-5" />
-              Dil Yönetimi
+              {t("languageManagement.title")}
             </CardTitle>
             <CardDescription>
-              WhatsApp botunuzun kullanacağı dilleri seçin. Seçili dillerde müşterilerinizle otomatik iletişim kurulacaktır.
+              {t("languageManagement.description")}
             </CardDescription>
           </div>
           <Badge variant="outline" className="ml-4">
-            {tempEnabledLanguages.length}/{maxLanguages} Dil
+            {tempEnabledLanguages.length}/{maxLanguages} {t("languageManagement.languagesBadge")}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <Alert>
           <AlertDescription>
-            <strong>Plan Limitiniz:</strong> {planType === 'starter' ? 'Başlangıç' : planType === 'professional' ? 'Profesyonel' : 'Kurumsal'} paketinizde maksimum {maxLanguages} dil aktif edebilirsiniz.
-            {planType !== 'enterprise' && ' Daha fazla dil için paketinizi yükseltin.'}
+            <strong>{t("languageManagement.planLimit")}</strong> {planType === 'starter' ? t("languageManagement.planStarter") : planType === 'professional' ? t("languageManagement.planProfessional") : t("languageManagement.planEnterprise")} {t("languageManagement.maxLanguagesMessage", { count: maxLanguages })}
+            {planType !== 'enterprise' && ` ${t("languageManagement.upgradePlan")}`}
             {tempEnabledLanguages.length === 0 && (
               <div className="mt-2 text-destructive font-medium">
-                ⚠️ En az 1 dil seçmelisiniz.
+                {t("languageManagement.minLanguageWarning")}
               </div>
             )}
           </AlertDescription>
@@ -219,13 +222,13 @@ export const LanguageManagement = () => {
                   {isEnabled && (
                     <Badge variant="default" className="gap-1">
                       <Check className="w-3 h-3" />
-                      Aktif
+                      {t("languageManagement.activeBadge")}
                     </Badge>
                   )}
                   {isDisabled && (
                     <Badge variant="outline" className="gap-1">
                       <Lock className="w-3 h-3" />
-                      Limit Doldu
+                      {t("languageManagement.lockedBadge")}
                     </Badge>
                   )}
                   <Checkbox
@@ -247,11 +250,11 @@ export const LanguageManagement = () => {
               disabled={saving}
             >
               <X className="w-4 h-4 mr-2" />
-              İptal
+              {t("languageManagement.cancelButton")}
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               <Check className="w-4 h-4 mr-2" />
-              {saving ? "Kaydediliyor..." : "Kaydet"}
+              {saving ? `${t("languageManagement.saveButton")}...` : t("languageManagement.saveButton")}
             </Button>
           </div>
         )}
