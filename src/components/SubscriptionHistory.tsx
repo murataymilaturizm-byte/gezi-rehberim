@@ -235,7 +235,7 @@ export const SubscriptionHistory = () => {
       // Get user's agency with subscription info
       const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
-        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at")
+        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, agency_name")
         .eq("user_id", user.id)
         .maybeSingle();
 
