@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { PaymentStatusIndicator } from "@/components/PaymentStatusIndicator";
+import { SipayPaymentForm } from "./SipayPaymentForm";
+import type { PaymentStatus } from "./PaymentStatusIndicator";
 import {
   Table,
   TableBody,
@@ -66,6 +67,7 @@ interface AgencySubscription {
   trial_ends_at: string | null;
   subscription_status: string;
   subscription_ends_at: string | null;
+  agency_name?: string;
 }
 
 interface PlanOption {
@@ -149,8 +151,6 @@ export const SubscriptionHistory = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [isYearly, setIsYearly] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<"pending" | "processing" | "completed" | "failed" | null>(null);
 
   const planOptions: PlanOption[] = [
     {
@@ -527,15 +527,13 @@ export const SubscriptionHistory = () => {
                   </AlertDescription>
                 </Alert>
                 
-                <Button
-                  onClick={handlePayment}
-                  disabled={isProcessingPayment}
-                  className="w-full bg-gradient-ocean hover:opacity-90"
-                  size="lg"
-                >
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  {isProcessingPayment ? t("admin.subscription.loading") : t("admin.subscription.makePayment")}
-                </Button>
+                <SipayPaymentForm
+                  agencyId={agencyId}
+                  planType={subscription.plan_type}
+                  isYearly={isYearly}
+                  amount={calculatePrice(currentPlan?.price || 0, isYearly)}
+                  agencyName={subscription.agency_name || "Acenta"}
+                />
               </div>
             )}
 
@@ -778,17 +776,6 @@ export const SubscriptionHistory = () => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-
-    {/* Payment Status Indicator */}
-    <PaymentStatusIndicator 
-      status={paymentStatus || "pending"}
-      isOpen={paymentStatus !== null}
-      onClose={() => {
-        if (paymentStatus === "completed" || paymentStatus === "failed") {
-          setPaymentStatus(null);
-        }
-      }}
-    />
   </>
   );
 };
