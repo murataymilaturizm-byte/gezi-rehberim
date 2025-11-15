@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { CheckCircle2, Loader2, XCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type PaymentStatus = "pending" | "processing" | "completed" | "failed";
+export type PaymentStatus = "pending" | "processing" | "completed" | "failed";
 
 interface PaymentStatusIndicatorProps {
   status: PaymentStatus;
