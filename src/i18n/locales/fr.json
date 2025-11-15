@@ -410,6 +410,10 @@
     "logout": "Déconnexion",
     "loading": "Chargement...",
     "superAdmin": "Super Admin",
+    "languageWarning": {
+      "message": "Vous n'avez pas encore sélectionné de langues pour votre bot WhatsApp. Vous devez sélectionner au moins 1 langue pour que votre bot fonctionne",
+      "action": "Sélectionner les Langues Maintenant"
+    },
     "tabs": {
       "dashboard": "Tableau de Bord",
       "tours": "Tours",
