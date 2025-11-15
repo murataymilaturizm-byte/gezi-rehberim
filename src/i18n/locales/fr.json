@@ -152,9 +152,9 @@
       "subtext": "Assistant qui ne s'arrête jamais"
     },
     "paymentTime": {
-      "value": "2 min",
-      "label": "Temps de Collecte de Paiement",
-      "subtext": "Directement depuis WhatsApp"
+      "value": "500+",
+      "label": "Profils Client",
+      "subtext": "Suivi automatique"
     }
   },
   "testimonials": {

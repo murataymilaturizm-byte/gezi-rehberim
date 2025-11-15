@@ -243,7 +243,7 @@ const Index = () => {
       subtext: t("stats.availability.subtext")
     },
     {
-      icon: CheckCircle2,
+      icon: Users,
       value: t("stats.paymentTime.value"),
       label: t("stats.paymentTime.label"),
       color: "text-secondary",
