@@ -29,8 +29,11 @@ serve(async (req) => {
     // Generate order ID
     const orderId = `ORDER-${agencyId.substring(0, 8)}-${Date.now()}`;
 
-    // Prepare callback URL
-    const callbackUrl = `${Deno.env.get('VITE_SUPABASE_URL')}/functions/v1/sipay-callback`;
+    // Prepare callback URL (use SUPABASE_URL instead of VITE_SUPABASE_URL in edge functions)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const callbackUrl = `${supabaseUrl}/functions/v1/sipay-callback`;
+    
+    console.log("📍 Callback URL:", callbackUrl);
 
     // Generate hash (SHA-256)
     const hashString = `${merchantId}${orderId}${amount.toFixed(2)}TRY${appSecret}`;
@@ -66,11 +69,16 @@ serve(async (req) => {
     };
 
     // Return payment data for frontend to submit
+    // Use TEST URL for testing with test cards
+    const sipayUrl = 'https://test.sipay.com.tr/api/payment';
+    
+    console.log("🔗 Sipay URL:", sipayUrl);
+    
     return new Response(
       JSON.stringify({
         success: true,
         paymentData,
-        sipayUrl: 'https://api.sipay.com.tr/api/payment'
+        sipayUrl
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
