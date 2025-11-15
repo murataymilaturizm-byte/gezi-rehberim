@@ -419,6 +419,82 @@ export type Database = {
           },
         ]
       }
+      ticket_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean
+          message: string
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          message: string
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          message?: string
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          agency_id: string
+          created_at: string
+          description: string
+          id: string
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          status: Database["public"]["Enums"]["ticket_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          created_at?: string
+          description: string
+          id?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          status?: Database["public"]["Enums"]["ticket_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          status?: Database["public"]["Enums"]["ticket_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tour_dates: {
         Row: {
           agency_id: string | null
@@ -750,6 +826,8 @@ export type Database = {
     Enums: {
       app_role: "super_admin" | "agency"
       registration_status: "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED"
+      ticket_priority: "low" | "medium" | "high"
+      ticket_status: "open" | "in_progress" | "resolved" | "closed"
       tour_type: "DAYTRIP" | "N2" | "N3"
     }
     CompositeTypes: {
@@ -880,6 +958,8 @@ export const Constants = {
     Enums: {
       app_role: ["super_admin", "agency"],
       registration_status: ["NEW", "PENDING", "CONFIRMED", "CANCELLED"],
+      ticket_priority: ["low", "medium", "high"],
+      ticket_status: ["open", "in_progress", "resolved", "closed"],
       tour_type: ["DAYTRIP", "N2", "N3"],
     },
   },

@@ -548,7 +548,8 @@
       "contactForms": "Kontaktformulare",
       "twilioSettings": "Twilio-Einstellungen",
       "templates": "Vorlagen",
-      "customerFeedback": "Kundenzufriedenheit"
+      "customerFeedback": "Kundenzufriedenheit",
+      "tickets": "Support"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -1099,5 +1100,45 @@
     "emailMaxLength": "E-Mail kann maximal 255 Zeichen lang sein",
     "messageMinLength": "Nachricht muss mindestens 10 Zeichen lang sein",
     "messageMaxLength": "Nachricht kann maximal 1000 Zeichen lang sein"
+  },
+  "tickets": {
+    "title": "Support-Tickets",
+    "adminTitle": "Alle Support-Tickets",
+    "createNew": "Neues Ticket erstellen",
+    "noTickets": "Noch keine Support-Tickets",
+    "viewDetails": "Details anzeigen",
+    "created": "Erstellt",
+    "fillAllFields": "Bitte füllen Sie alle Felder aus",
+    "createSuccess": "Support-Ticket erfolgreich erstellt",
+    "createError": "Support-Ticket konnte nicht erstellt werden",
+    "loadError": "Support-Tickets konnten nicht geladen werden",
+    "updateError": "Status konnte nicht aktualisiert werden",
+    "messageError": "Nachricht konnte nicht gesendet werden",
+    "messageSent": "Nachricht gesendet",
+    "statusUpdated": "Status aktualisiert",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Beschreiben Sie Ihr Problem kurz",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Beschreiben Sie Ihr Problem im Detail...",
+    "priorityLabel": "Priorität",
+    "submit": "Absenden",
+    "messages": "Nachrichten",
+    "writeMessage": "Schreiben Sie Ihre Nachricht...",
+    "writeReply": "Schreiben Sie Ihre Antwort...",
+    "send": "Senden",
+    "admin": "Admin",
+    "you": "Sie",
+    "user": "Benutzer",
+    "status": {
+      "open": "Offen",
+      "in_progress": "In Bearbeitung",
+      "resolved": "Gelöst",
+      "closed": "Geschlossen"
+    },
+    "priority": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
+    }
   }
 }

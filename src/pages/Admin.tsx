@@ -64,6 +64,8 @@ import { SupportChatWidget } from "@/components/SupportChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageManagement } from "@/components/LanguageManagement";
+import { TicketManagement } from "@/components/TicketManagement";
+import { SuperAdminTickets } from "@/components/SuperAdminTickets";
 import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
 
 interface Tour {
@@ -127,7 +129,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -604,6 +606,13 @@ const Admin = () => {
               >
                 {t("admin.tabs.history")}
               </Button>
+              <Button
+                variant={activeTab === "tickets" ? "default" : "outline"}
+                onClick={() => setActiveTab("tickets")}
+                className={`transition-all duration-300 ${activeTab === "tickets" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+              >
+                {t("admin.tabs.tickets")}
+              </Button>
               {planFeatures?.has_feedback && (
                 <Button
                   variant={activeTab === "customer-feedback" ? "default" : "outline"}
@@ -617,6 +626,13 @@ const Admin = () => {
           )}
           {isSuperAdmin && (
             <>
+            <Button
+              variant={activeTab === "tickets" ? "default" : "outline"}
+              onClick={() => setActiveTab("tickets")}
+              className={`transition-all duration-300 ${activeTab === "tickets" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+            >
+              {t("admin.tabs.tickets")}
+            </Button>
             <Button
               variant={activeTab === "agencies" ? "default" : "outline"}
               onClick={() => setActiveTab("agencies")}
@@ -661,12 +677,16 @@ const Admin = () => {
           <SubscriptionHistory />
         ) : activeTab === "customer-feedback" && planFeatures?.has_feedback ? (
           <CustomerFeedback />
+        ) : activeTab === "tickets" && !isSuperAdmin ? (
+          <TicketManagement />
         ) : activeTab === "twilio_settings" && isSuperAdmin ? (
           <SuperAdminTwilioSettings />
         ) : activeTab === "agencies" && isSuperAdmin ? (
           <AgencyManagement />
         ) : activeTab === "contact_forms" && isSuperAdmin ? (
           <ContactFormsManagement />
+        ) : activeTab === "tickets" && isSuperAdmin ? (
+          <SuperAdminTickets />
         ) : (
           <Card className="shadow-card">
           <CardHeader>

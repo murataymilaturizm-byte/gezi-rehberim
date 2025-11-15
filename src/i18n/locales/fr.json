@@ -512,7 +512,8 @@
       "contactForms": "Formulaires de Contact",
       "twilioSettings": "Paramètres Twilio",
       "templates": "Modèles",
-      "customerFeedback": "Satisfaction client"
+      "customerFeedback": "Satisfaction client",
+      "tickets": "Support"
     },
     "dashboard": {
       "title": "Tableau de Bord",
@@ -1155,5 +1156,36 @@
     "filter": "Filtrer",
     "export": "Exporter",
     "import": "Importer"
+  },
+  "tickets": {
+    "title": "Tickets de Support",
+    "adminTitle": "Tous les Tickets",
+    "createNew": "Créer un Nouveau Ticket",
+    "noTickets": "Aucun ticket pour le moment",
+    "viewDetails": "Voir les Détails",
+    "created": "Créé",
+    "fillAllFields": "Veuillez remplir tous les champs",
+    "createSuccess": "Ticket créé avec succès",
+    "createError": "Impossible de créer le ticket",
+    "loadError": "Impossible de charger les tickets",
+    "updateError": "Impossible de mettre à jour le statut",
+    "messageError": "Impossible d'envoyer le message",
+    "messageSent": "Message envoyé",
+    "statusUpdated": "Statut mis à jour",
+    "titleLabel": "Titre",
+    "titlePlaceholder": "Décrivez brièvement votre problème",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Décrivez votre problème en détail...",
+    "priorityLabel": "Priorité",
+    "submit": "Soumettre",
+    "messages": "Messages",
+    "writeMessage": "Écrivez votre message...",
+    "writeReply": "Écrivez votre réponse...",
+    "send": "Envoyer",
+    "admin": "Admin",
+    "you": "Vous",
+    "user": "Utilisateur",
+    "status": {"open": "Ouvert", "in_progress": "En Cours", "resolved": "Résolu", "closed": "Fermé"},
+    "priority": {"low": "Basse", "medium": "Moyenne", "high": "Haute"}
   }
 }
