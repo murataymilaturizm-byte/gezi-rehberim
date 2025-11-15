@@ -130,6 +130,8 @@ const Admin = () => {
     id: "",
     type: "tour"
   });
+  const [planType, setPlanType] = useState<string>('starter');
+  const [maxTours, setMaxTours] = useState<number>(10);
 
   useEffect(() => {
     // Check authentication
@@ -237,12 +239,18 @@ const Admin = () => {
       if (!roleData) {
         const { data: agencyData } = await supabase
           .from("agencies")
-          .select("id, agency_name, language_preference")
+          .select("id, agency_name, language_preference, plan_type")
           .eq("user_id", userId)
           .maybeSingle();
 
         setUserAgencyId(agencyData?.id || null);
         setAgencyName(agencyData?.agency_name || "");
+        
+        // Load plan features
+        const currentPlanType = (agencyData?.plan_type as string) || 'starter';
+        setPlanType(currentPlanType);
+        const maxToursLimit = await getMaxTours(currentPlanType);
+        setMaxTours(maxToursLimit);
         
         // Set language preference based on agency's city/region
         if (agencyData?.language_preference) {
