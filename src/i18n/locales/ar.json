@@ -391,7 +391,18 @@
         "update": "تحديث",
         "save": "حفظ",
         "integrationComplete": "اكتمل التكامل",
-        "integrationCompleteDesc": "تم تسجيل رقم واتساب الأعمال {phone} في النظام."
+        "integrationCompleteDesc": "تم تسجيل رقم واتساب للأعمال {phone} في النظام.",
+        "phoneTitle": "رقم واتساب للأعمال",
+        "phoneDescription": "أدخل رقم واتساب للأعمال المسجل في Twilio",
+        "styleTitle": "أسلوب المحادثة",
+        "styleDescription": "حدد كيف سيتواصل البوت مع العملاء",
+        "upgradeForStyles": "جميع الأساليب في الباقة الاحترافية",
+        "updateStyle": "تحديث الأسلوب",
+        "agencyNotFound": "معلومات الوكالة غير موجودة",
+        "loadError": "تعذر تحميل إعدادات واتساب",
+        "phoneUpdateError": "تعذر حفظ رقم واتساب",
+        "styleUpdateSuccess": "تم تحديث أسلوب المحادثة",
+        "styleUpdateError": "تعذر تحديث أسلوب المحادثة"
       }
     },
     "welcome": "مرحباً",

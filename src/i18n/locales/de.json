@@ -436,7 +436,18 @@
         "update": "Aktualisieren",
         "save": "Speichern",
         "integrationComplete": "Integration Abgeschlossen",
-        "integrationCompleteDesc": "Ihre WhatsApp Business-Nummer {phone} wurde im System registriert."
+        "integrationCompleteDesc": "Ihre WhatsApp Business-Nummer {phone} wurde im System registriert.",
+        "phoneTitle": "WhatsApp Business-Nummer",
+        "phoneDescription": "Geben Sie Ihre bei Twilio registrierte WhatsApp Business-Nummer ein",
+        "styleTitle": "Gesprächsstil",
+        "styleDescription": "Definieren Sie, wie Ihr Bot mit Kunden kommuniziert",
+        "upgradeForStyles": "Alle Stile im Professional-Paket",
+        "updateStyle": "Stil Aktualisieren",
+        "agencyNotFound": "Agenturinformationen nicht gefunden",
+        "loadError": "WhatsApp-Einstellungen konnten nicht geladen werden",
+        "phoneUpdateError": "WhatsApp-Nummer konnte nicht gespeichert werden",
+        "styleUpdateSuccess": "Gesprächsstil aktualisiert",
+        "styleUpdateError": "Gesprächsstil konnte nicht aktualisiert werden"
       },
       "status": {
         "pending": "Ausstehend",

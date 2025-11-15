@@ -400,7 +400,18 @@
         "update": "Mettre à Jour",
         "save": "Enregistrer",
         "integrationComplete": "Intégration Terminée",
-        "integrationCompleteDesc": "Votre numéro WhatsApp Business {phone} a été enregistré dans le système."
+        "integrationCompleteDesc": "Votre numéro WhatsApp Business {phone} a été enregistré dans le système.",
+        "phoneTitle": "Numéro WhatsApp Business",
+        "phoneDescription": "Entrez votre numéro WhatsApp Business enregistré avec Twilio",
+        "styleTitle": "Style de Conversation",
+        "styleDescription": "Définissez comment votre bot communiquera avec les clients",
+        "upgradeForStyles": "Tous les styles dans le forfait Professionnel",
+        "updateStyle": "Mettre à Jour le Style",
+        "agencyNotFound": "Informations sur l'agence introuvables",
+        "loadError": "Les paramètres WhatsApp n'ont pas pu être chargés",
+        "phoneUpdateError": "Le numéro WhatsApp n'a pas pu être enregistré",
+        "styleUpdateSuccess": "Style de conversation mis à jour",
+        "styleUpdateError": "Le style de conversation n'a pas pu être mis à jour"
       }
     },
     "welcome": "Bienvenue",
