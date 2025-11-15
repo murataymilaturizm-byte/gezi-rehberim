@@ -265,7 +265,8 @@ serve(async (req) => {
 </Response>`;
       
       return new Response(twiml, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+        status: 200,
+        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
       });
     } else if (intent.type === 'registration.request') {
       // Wizard'ı başlat
@@ -275,14 +276,15 @@ serve(async (req) => {
         const message = '😊 Önce bir tur aramanız gerekiyor.\n\nÖrnek: "Kapadokya turları"';
         await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
         
-        const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
 </Response>`;
-        
-        return new Response(twiml, {
-          headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
-        });
+      
+      return new Response(twiml, {
+        status: 200,
+        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      });
       }
       
       // Kullanıcı dil tercihini al
@@ -317,7 +319,8 @@ serve(async (req) => {
 </Response>`;
       
       return new Response(twiml, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+        status: 200,
+        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
       });
     } else if (intent.type === 'tour.search') {
       // AI ile akıllı arama
@@ -340,7 +343,8 @@ serve(async (req) => {
 </Response>`;
       
       return new Response(twiml, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+        status: 200,
+        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
       });
     } else {
       // Genel sohbet - AI ile cevap ver
@@ -359,7 +363,8 @@ serve(async (req) => {
       
       console.log('📤 Sending TwiML response to Twilio');
       return new Response(twiml, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+        status: 200,
+        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
       });
     }
 
