@@ -344,16 +344,20 @@ serve(async (req) => {
       });
     } else {
       // Genel sohbet - AI ile cevap ver
+      console.log('🗨️ Handling general chat...');
       const chatResponse = await handleGeneralChat(userMessage, userPhone, supabase, agency.id, agency.conversation_style || 'professional');
+      console.log('✅ Chat response generated, length:', chatResponse?.length);
       
       // Bot cevabını kaydet
       await saveMessage(supabase, userPhone, 'assistant', chatResponse, agency.id);
+      console.log('💾 Response saved to database');
       
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Message>${chatResponse.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
 </Response>`;
       
+      console.log('📤 Sending TwiML response to Twilio');
       return new Response(twiml, {
         headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
       });
@@ -546,8 +550,11 @@ ${baseInstructions}`
 }
 
 async function handleGeneralChat(userMessage: string, userPhone: string, supabase: any, agency_id: string, conversationStyle: string = 'professional') {
+  console.log('🤖 handleGeneralChat started for:', userPhone);
+  
   // Kullanıcı profilini al
   const userProfile = await getUserProfile(supabase, userPhone, agency_id);
+  console.log('📱 User profile loaded:', userProfile?.language_preference);
   
   // Kullanıcının dil tercihini al
   const userLanguage = userProfile?.language_preference || 'tr';
@@ -559,6 +566,7 @@ async function handleGeneralChat(userMessage: string, userPhone: string, supabas
   
   // Konuşma geçmişini al (son 20 mesaj)
   const history = await getConversationHistory(supabase, userPhone, agency_id, 20);
+  console.log('📜 Conversation history loaded:', history.length, 'messages');
   
   // Son konuşma özetlerini al
   const { data: summaries } = await supabase
@@ -611,6 +619,8 @@ async function handleGeneralChat(userMessage: string, userPhone: string, supabas
     }
   ];
 
+  console.log('🚀 Sending request to AI Gateway...');
+  
   const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -624,7 +634,13 @@ async function handleGeneralChat(userMessage: string, userPhone: string, supabas
     })
   });
 
+  if (!aiResponse.ok) {
+    console.error('❌ AI Gateway error:', aiResponse.status, await aiResponse.text());
+    throw new Error(`AI Gateway returned ${aiResponse.status}`);
+  }
+
   const result = await aiResponse.json();
+  console.log('✅ AI Response received:', result.choices?.[0]?.message?.content?.substring(0, 100) + '...');
   
   // Kullanıcı ismini öğrendiysek profili güncelle
   const nameMatch = userMessage.match(/(?:adım|benim adım|ismim|ben)\s+([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)?)/i);
