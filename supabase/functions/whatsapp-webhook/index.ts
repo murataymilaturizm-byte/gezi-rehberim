@@ -773,6 +773,8 @@ IMPORTANT:
   const aiResult = await aiResponse.json();
   let content = aiResult.choices[0].message.content.trim();
   
+  console.log('🔍 AI search response:', content.substring(0, 200));
+  
   // AI bazen ```json wrapper'ı ile dönebilir, onu temizle
   if (content.startsWith('```json')) {
     content = content.replace(/^```json\s*/, '').replace(/\s*```$/, '');
@@ -780,7 +782,18 @@ IMPORTANT:
     content = content.replace(/^```\s*/, '').replace(/\s*```$/, '');
   }
   
-  const matchedIds = JSON.parse(content);
+  // Eğer content JSON değilse (düz metin yanıt geldiyse), tüm turları döndür
+  let matchedIds: string[];
+  try {
+    matchedIds = JSON.parse(content);
+    if (!Array.isArray(matchedIds)) {
+      console.warn('AI returned non-array JSON, using all tours');
+      matchedIds = (allTours || []).map((t: any) => t.id);
+    }
+  } catch (parseError) {
+    console.warn('AI returned non-JSON response, using all tours:', parseError);
+    matchedIds = (allTours || []).map((t: any) => t.id);
+  }
 
   // Eşleşen turları filtrele ve tarihlerini düzenle
   const matchedTours = (allTours || [])
