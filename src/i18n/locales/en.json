@@ -530,7 +530,8 @@
       "contactForms": "Contact Forms",
       "twilioSettings": "Twilio Settings",
       "templates": "Templates",
-      "customerFeedback": "Customer Satisfaction"
+      "customerFeedback": "Customer Satisfaction",
+      "tickets": "Support"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -1088,5 +1089,45 @@
     "emailMaxLength": "Email can be maximum 255 characters",
     "messageMinLength": "Message must be at least 10 characters",
     "messageMaxLength": "Message can be maximum 1000 characters"
+  },
+  "tickets": {
+    "title": "Support Tickets",
+    "adminTitle": "All Support Tickets",
+    "createNew": "Create New Ticket",
+    "noTickets": "No support tickets yet",
+    "viewDetails": "View Details",
+    "created": "Created",
+    "fillAllFields": "Please fill in all fields",
+    "createSuccess": "Support ticket created successfully",
+    "createError": "Could not create support ticket",
+    "loadError": "Could not load support tickets",
+    "updateError": "Could not update status",
+    "messageError": "Could not send message",
+    "messageSent": "Message sent",
+    "statusUpdated": "Status updated",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Briefly describe your issue",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe your issue in detail...",
+    "priorityLabel": "Priority",
+    "submit": "Submit",
+    "messages": "Messages",
+    "writeMessage": "Write your message...",
+    "writeReply": "Write your reply...",
+    "send": "Send",
+    "admin": "Admin",
+    "you": "You",
+    "user": "User",
+    "status": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
   }
 }

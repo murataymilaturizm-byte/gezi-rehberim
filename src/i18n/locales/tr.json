@@ -762,7 +762,8 @@
       "contactForms": "İletişim Formları",
       "twilioSettings": "Twilio Ayarları",
       "templates": "Şablonlar",
-      "customerFeedback": "Müşteri Memnuniyeti"
+      "customerFeedback": "Müşteri Memnuniyeti",
+      "tickets": "Destek"
     },
     "tours": {
       "title": "Turlar",
@@ -1198,6 +1199,46 @@
     "cancelButton": "İptal",
     "saveButton": "Kaydet",
     "warning": "Uyarı"
+  },
+  "tickets": {
+    "title": "Destek Talepleri",
+    "adminTitle": "Tüm Destek Talepleri",
+    "createNew": "Yeni Talep Oluştur",
+    "noTickets": "Henüz destek talebi bulunmuyor",
+    "viewDetails": "Detayları Gör",
+    "created": "Oluşturulma",
+    "fillAllFields": "Lütfen tüm alanları doldurun",
+    "createSuccess": "Destek talebi başarıyla oluşturuldu",
+    "createError": "Destek talebi oluşturulamadı",
+    "loadError": "Destek talepleri yüklenemedi",
+    "updateError": "Durum güncellenemedi",
+    "messageError": "Mesaj gönderilemedi",
+    "messageSent": "Mesaj gönderildi",
+    "statusUpdated": "Durum güncellendi",
+    "titleLabel": "Başlık",
+    "titlePlaceholder": "Sorununuzu kısaca özetleyin",
+    "descriptionLabel": "Açıklama",
+    "descriptionPlaceholder": "Sorununuzu detaylı bir şekilde açıklayın...",
+    "priorityLabel": "Öncelik",
+    "submit": "Gönder",
+    "messages": "Mesajlar",
+    "writeMessage": "Mesajınızı yazın...",
+    "writeReply": "Cevabınızı yazın...",
+    "send": "Gönder",
+    "admin": "Admin",
+    "you": "Siz",
+    "user": "Kullanıcı",
+    "status": {
+      "open": "Açık",
+      "in_progress": "İşlemde",
+      "resolved": "Çözüldü",
+      "closed": "Kapalı"
+    },
+    "priority": {
+      "low": "Düşük",
+      "medium": "Orta",
+      "high": "Yüksek"
+    }
   },
   "notFound": {
     "title": "404",

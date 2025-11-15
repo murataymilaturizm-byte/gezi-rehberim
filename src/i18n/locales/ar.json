@@ -503,7 +503,8 @@
       "contactForms": "نماذج الاتصال",
       "twilioSettings": "إعدادات Twilio",
       "templates": "القوالب",
-      "customerFeedback": "رضا العملاء"
+      "customerFeedback": "رضا العملاء",
+      "tickets": "الدعم"
     },
     "dashboard": {
       "title": "لوحة القيادة",
@@ -1145,5 +1146,36 @@
     "filter": "تصفية",
     "export": "تصدير",
     "import": "استيراد"
+  },
+  "tickets": {
+    "title": "تذاكر الدعم",
+    "adminTitle": "جميع التذاكر",
+    "createNew": "إنشاء تذكرة جديدة",
+    "noTickets": "لا توجد تذاكر بعد",
+    "viewDetails": "عرض التفاصيل",
+    "created": "تم الإنشاء",
+    "fillAllFields": "يرجى ملء جميع الحقول",
+    "createSuccess": "تم إنشاء التذكرة بنجاح",
+    "createError": "تعذر إنشاء التذكرة",
+    "loadError": "تعذر تحميل التذاكر",
+    "updateError": "تعذر تحديث الحالة",
+    "messageError": "تعذر إرسال الرسالة",
+    "messageSent": "تم إرسال الرسالة",
+    "statusUpdated": "تم تحديث الحالة",
+    "titleLabel": "العنوان",
+    "titlePlaceholder": "صف مشكلتك بإيجاز",
+    "descriptionLabel": "الوصف",
+    "descriptionPlaceholder": "صف مشكلتك بالتفصيل...",
+    "priorityLabel": "الأولوية",
+    "submit": "إرسال",
+    "messages": "الرسائل",
+    "writeMessage": "اكتب رسالتك...",
+    "writeReply": "اكتب ردك...",
+    "send": "إرسال",
+    "admin": "المسؤول",
+    "you": "أنت",
+    "user": "المستخدم",
+    "status": {"open": "مفتوح", "in_progress": "قيد المعالجة", "resolved": "تم الحل", "closed": "مغلق"},
+    "priority": {"low": "منخفض", "medium": "متوسط", "high": "عالي"}
   }
 }

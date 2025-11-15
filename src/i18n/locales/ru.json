@@ -544,7 +544,8 @@
       "contactForms": "Контактные Формы",
       "twilioSettings": "Настройки Twilio",
       "templates": "Шаблоны",
-      "customerFeedback": "Удовлетворенность клиентов"
+      "customerFeedback": "Удовлетворенность клиентов",
+      "tickets": "Поддержка"
     },
     "dashboard": {
       "title": "Панель Управления",
@@ -1095,5 +1096,36 @@
     "emailMaxLength": "Email может быть максимум 255 символов",
     "messageMinLength": "Сообщение должно быть не менее 10 символов",
     "messageMaxLength": "Сообщение может быть максимум 1000 символов"
+  },
+  "tickets": {
+    "title": "Тикеты Поддержки",
+    "adminTitle": "Все Тикеты",
+    "createNew": "Создать Новый Тикет",
+    "noTickets": "Пока нет тикетов",
+    "viewDetails": "Просмотр Деталей",
+    "created": "Создан",
+    "fillAllFields": "Пожалуйста, заполните все поля",
+    "createSuccess": "Тикет успешно создан",
+    "createError": "Не удалось создать тикет",
+    "loadError": "Не удалось загрузить тикеты",
+    "updateError": "Не удалось обновить статус",
+    "messageError": "Не удалось отправить сообщение",
+    "messageSent": "Сообщение отправлено",
+    "statusUpdated": "Статус обновлен",
+    "titleLabel": "Заголовок",
+    "titlePlaceholder": "Кратко опишите вашу проблему",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Подробно опишите вашу проблему...",
+    "priorityLabel": "Приоритет",
+    "submit": "Отправить",
+    "messages": "Сообщения",
+    "writeMessage": "Напишите ваше сообщение...",
+    "writeReply": "Напишите ваш ответ...",
+    "send": "Отправить",
+    "admin": "Админ",
+    "you": "Вы",
+    "user": "Пользователь",
+    "status": {"open": "Открыт", "in_progress": "В Работе", "resolved": "Решен", "closed": "Закрыт"},
+    "priority": {"low": "Низкий", "medium": "Средний", "high": "Высокий"}
   }
 }
