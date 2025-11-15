@@ -378,7 +378,17 @@
       "templates": {
         "title": "Modèles de Messages",
         "description": "Gérez vos modèles de messages WhatsApp",
-        "loadDefaults": "Charger les Modèles par Défaut"
+        "loadDefaults": "Charger les Modèles par Défaut",
+        "addNew": "Ajouter un Nouveau Modèle",
+        "name": "Nom du Modèle",
+        "content": "Contenu du Message",
+        "actions": "Actions",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "noTemplates": "Pas encore de modèles de messages",
+        "cancel": "Annuler",
+        "namePlaceholder": "ex: Message de Bienvenue",
+        "contentPlaceholder": "Bonjour! Comment puis-je vous aider?"
       },
       "settings": {
         "title": "Paramètres WhatsApp",
@@ -387,7 +397,7 @@
         "configured": "L'intégration WhatsApp est active! Vos clients peuvent vous contacter via WhatsApp.",
         "phoneNumber": "Numéro WhatsApp Business",
         "phonePlaceholder": "+33xxxxxxxxx",
-        "phoneHelp": "Entrez votre numéro WhatsApp Business enregistré dans Twilio (ex: +14155238886)",
+        "phoneHelp": "Entrez votre numéro WhatsApp Business enregistré avec Twilio (ex: +14155238886)",
         "conversationStyle": "Style de Conversation",
         "conversationStyleHelp": "Choisissez comment votre bot communique avec les clients",
         "style": {
@@ -412,6 +422,57 @@
         "phoneUpdateError": "Le numéro WhatsApp n'a pas pu être enregistré",
         "styleUpdateSuccess": "Style de conversation mis à jour",
         "styleUpdateError": "Le style de conversation n'a pas pu être mis à jour"
+      },
+      "conversations": {
+        "title": "Conversations WhatsApp",
+        "messages": "messages",
+        "selectConversation": "Sélectionner une conversation"
+      },
+      "userProfiles": {
+        "title": "Profils d'Utilisateurs",
+        "selectAgency": "Sélectionner une Agence",
+        "noUsers": "Pas encore d'utilisateurs",
+        "loadingUsers": "Chargement des utilisateurs...",
+        "users": "Utilisateur",
+        "unnamed": "Sans Nom",
+        "userDetails": "Détails de l'Utilisateur",
+        "selectUser": "Sélectionnez un utilisateur pour voir les détails",
+        "generalInfo": "Informations Générales",
+        "name": "Nom",
+        "phoneNumber": "Téléphone",
+        "firstContact": "Premier Contact",
+        "lastContact": "Dernier Contact",
+        "activity": "Activité",
+        "activityStatus": "Statut d'Activité",
+        "todayActive": "Actif Aujourd'hui",
+        "yesterdayActive": "Actif Hier",
+        "daysAgo": "jours",
+        "totalMessages": "Messages Totaux",
+        "preferences": "Préférences",
+        "preferredDestinations": "Destinations Préférées",
+        "budgetRange": "Fourchette de Budget",
+        "preferredTourType": "Type de Tour Préféré",
+        "statistics": "Statistiques",
+        "lastSearchQuery": "Dernière Recherche",
+        "notSpecified": "Non Spécifié",
+        "messagesPerDay": "Messages/Jour",
+        "activeDays": "Jours Actifs"
+      },
+      "status": {
+        "pending": "En attente",
+        "active": "Actif",
+        "rejected": "Rejeté",
+        "requestReceived": "Votre demande d'intégration WhatsApp a été reçue. En attente d'approbation de l'administrateur.",
+        "requestRejected": "Votre demande d'intégration WhatsApp a été rejetée. Veuillez contacter le support."
+      },
+      "actions": {
+        "approve": "Approuver",
+        "reject": "Rejeter"
+      },
+      "messages": {
+        "approved": "Intégration WhatsApp approuvée",
+        "rejected": "Intégration WhatsApp rejetée",
+        "updateError": "Impossible de mettre à jour le statut"
       }
     },
     "welcome": "Bienvenue",
@@ -660,91 +721,6 @@
         "enterpriseNoLimit": "Le plan Entreprise n'a pas de limite de messages",
         "cancel": "Annuler",
         "save": "Enregistrer"
-      }
-    },
-    "whatsapp": {
-      "conversations": {
-        "title": "Conversations WhatsApp",
-        "messages": "messages",
-        "selectConversation": "Sélectionner une conversation"
-      },
-      "settings": {
-        "title": "Paramètres WhatsApp",
-        "description": "Gérer l'intégration WhatsApp Business",
-        "phoneNumber": "Numéro WhatsApp Business",
-        "phonePlaceholder": "+33xxxxxxxxx",
-        "phoneHelp": "Entrez votre numéro WhatsApp Business enregistré avec Twilio (ex: +14155238886)",
-        "save": "Enregistrer",
-        "update": "Mettre à Jour",
-        "saving": "Enregistrement...",
-        "notConfigured": "WhatsApp n'est pas encore configuré. Veuillez ajouter votre numéro WhatsApp Business.",
-        "configured": "L'intégration WhatsApp est active! Vos clients peuvent vous contacter via WhatsApp.",
-        "integrationComplete": "Intégration Terminée",
-        "integrationCompleteDesc": "Votre numéro WhatsApp Business {phone} a été enregistré dans le système."
-      },
-      "status": {
-        "pending": "En attente",
-        "active": "Actif",
-        "rejected": "Rejeté",
-        "requestReceived": "Votre demande d'intégration WhatsApp a été reçue. En attente d'approbation de l'administrateur.",
-        "requestRejected": "Votre demande d'intégration WhatsApp a été rejetée. Veuillez contacter le support."
-      },
-      "actions": {
-        "approve": "Approuver",
-        "reject": "Rejeter"
-      },
-      "messages": {
-        "approved": "Intégration WhatsApp approuvée",
-        "rejected": "Intégration WhatsApp rejetée",
-        "updateError": "Impossible de mettre à jour le statut"
-      },
-       "templates": {
-        "title": "Modèles de Messages",
-        "description": "Modèles multilingues pour les messages automatisés comme la confirmation de réservation, la notification d'annulation",
-        "addNew": "Ajouter un Nouveau Modèle",
-        "name": "Nom du Modèle",
-        "content": "Contenu du Message",
-        "actions": "Actions",
-        "edit": "Modifier",
-        "delete": "Supprimer",
-        "noTemplates": "Pas encore de modèles de messages",
-        "save": "Enregistrer",
-        "update": "Mettre à Jour",
-        "cancel": "Annuler",
-        "saving": "Enregistrement...",
-        "namePlaceholder": "ex: Message de Bienvenue",
-        "contentPlaceholder": "Bonjour! Comment puis-je vous aider?",
-        "loadDefaults": "Charger les Modèles par Défaut"
-      },
-      "userProfiles": {
-        "title": "Profils d'Utilisateurs",
-        "selectAgency": "Sélectionner une Agence",
-        "noUsers": "Pas encore d'utilisateurs",
-        "loadingUsers": "Chargement des utilisateurs...",
-        "users": "Utilisateur",
-        "unnamed": "Sans Nom",
-        "userDetails": "Détails de l'Utilisateur",
-        "selectUser": "Sélectionnez un utilisateur pour voir les détails",
-        "generalInfo": "Informations Générales",
-        "name": "Nom",
-        "phoneNumber": "Téléphone",
-        "firstContact": "Premier Contact",
-        "lastContact": "Dernier Contact",
-        "activity": "Activité",
-        "activityStatus": "Statut d'Activité",
-        "todayActive": "Actif Aujourd'hui",
-        "yesterdayActive": "Actif Hier",
-        "daysAgo": "jours",
-        "totalMessages": "Messages Totaux",
-        "preferences": "Préférences",
-        "preferredDestinations": "Destinations Préférées",
-        "budgetRange": "Fourchette de Budget",
-        "preferredTourType": "Type de Tour Préféré",
-         "statistics": "Statistiques",
-        "lastSearchQuery": "Dernière Recherche",
-        "notSpecified": "Non Spécifié",
-        "messagesPerDay": "Messages/Jour",
-        "activeDays": "Jours Actifs"
       }
     },
     "dashboard": {
