@@ -274,54 +274,47 @@
       "name": "Starter",
       "price": "€49",
       "period": "/Monat",
-      "description": "Für kleine Agenturen und Einsteiger",
+      "description": "Für kleine Agenturen und Anfänger",
       "features": {
-        "messages": "💬 500 WhatsApp-Nachrichten/Monat (~16 Nachr./Tag)",
-        "basicReporting": "📊 Grundlegende Berichte und Statistiken",
-        "unlimitedTours": "🗂️ Unbegrenzte Tourhinzufügungen",
-        "reservationManagement": "📝 Reservierungsverwaltung",
-        "emailSupport": "📧 E-Mail-Support (48 Stunden)",
-        "aiAnswers": "🤖 KI-gestützte automatische Antworten",
-        "history30": "💾 30-Tage Gesprächsverlauf"
+        "messages": "💬 1.000 Nachrichten/Monat",
+        "tours": "🗂️ Bis zu 10 Touren",
+        "languages": "🌍 Türkisch + 1 Sprache",
+        "style": "🎨 Nur Professioneller Stil",
+        "basicFeatures": "📊 Grundfunktionen"
       }
     },
     "professional": {
       "name": "Professional",
       "price": "€99",
       "period": "/Monat",
-      "badge": "Beliebteste",
+      "badge": "Am beliebtesten",
       "description": "Für wachsende Unternehmen und aktive Agenturen",
       "features": {
-        "messages": "💬 3.000 WhatsApp-Nachrichten/Monat (~100 Nachr./Tag)",
-        "advancedReporting": "📈 Erweiterte Berichte und Analysen",
-        "unlimitedTours": "🗂️ Unbegrenzte Tourhinzufügungen",
-        "advancedReservation": "📝 Erweiterte Reservierungsverwaltung",
-        "userProfiles": "🎯 WhatsApp-Benutzerprofile und Segmentierung",
-        "prioritySupport": "⚡ Prioritäts-Support (innerhalb von 24 Stunden)",
-        "crmIntegration": "🔗 CRM-Integrationsunterstützung",
-        "history90": "💾 90-Tage Gesprächsverlauf",
-        "customTemplates": "🎨 Benutzerdefinierte WhatsApp-Nachrichtenvorlagen",
-        "tourReminders": "📱 Automatische Tour-Erinnerungen"
+        "messages": "💬 5.000 Nachrichten/Monat",
+        "tours": "🗂️ Unbegrenzte Touren",
+        "languages": "🌍 Bis zu 3 Sprachen",
+        "allStyles": "🎨 4 verschiedene Gesprächsstile",
+        "userProfiles": "👤 Benutzerprofile und Tracking",
+        "reminders": "⏰ Automatische Tour-Erinnerungen",
+        "templates": "📝 Benutzerdefinierte Nachrichtenvorlagen",
+        "followUps": "📲 Follow-up-Nachrichten",
+        "analytics": "📊 Detaillierte Analysen & Umsatzverfolgung"
       }
     },
     "enterprise": {
       "name": "Enterprise",
-      "price": "Individuell",
-      "period": "",
+      "price": "€149",
+      "period": "/Monat",
       "description": "Für große Agenturen und Kettenunternehmen",
       "features": {
-        "unlimitedMessages": "💬 Unbegrenzte WhatsApp-Nachrichten",
-        "customReporting": "📊 Benutzerdefinierte Berichte und Dashboards",
-        "multiBranch": "🗂️ Multi-Filial-Support",
-        "enterpriseReservation": "📝 Enterprise-Reservierungsverwaltung",
-        "advancedSegmentation": "🎯 Erweiterte Kundensegmentierung und KI-Analysen",
-        "support247": "🚀 24/7 Prioritäts-Support",
-        "apiAccess": "🔌 API-Zugriff und benutzerdefinierte Integrationen",
-        "unlimitedHistory": "💾 Unbegrenzter Gesprächsverlauf",
-        "accountManager": "👔 Dedizierter Account Manager",
-        "customDevelopment": "⚙️ Individuelle Entwicklung und Anpassungen",
-        "enterpriseSecurity": "🔒 Enterprise-Sicherheit und SLA-Garantie",
-        "multipleAccounts": "🌐 Mehrere WhatsApp-Konten-Support"
+        "messages": "💬 Unbegrenzte Nachrichten",
+        "unlimitedTours": "🗂️ Unbegrenzte Touren",
+        "allLanguages": "🌍 Alle 7 Sprachen",
+        "customStyles": "🎨 4 Stile + benutzerdefinierte Stile",
+        "allFeatures": "✨ Alle Funktionen",
+        "feedback": "⭐ Automatische Feedback-Umfragen",
+        "prioritySupport": "🚀 Priority-Support",
+        "customIntegration": "🔌 Benutzerdefinierte Integrationen"
       }
     }
   },

@@ -252,13 +252,11 @@
       "period": "/month",
       "description": "For small agencies and beginners",
       "features": {
-        "messages": "💬 500 WhatsApp messages/month (~16 msg/day)",
-        "basicReporting": "📊 Basic reporting and statistics",
-        "unlimitedTours": "🗂️ Unlimited tour additions",
-        "reservationManagement": "📝 Reservation management",
-        "emailSupport": "📧 Email support (48 hours)",
-        "aiAnswers": "🤖 AI-powered automatic answers",
-        "history30": "💾 30-day conversation history"
+        "messages": "💬 1,000 messages/month",
+        "tours": "🗂️ Up to 10 tours",
+        "languages": "🌍 Turkish + 1 language",
+        "style": "🎨 Professional style only",
+        "basicFeatures": "📊 Basic features"
       }
     },
     "professional": {
@@ -268,36 +266,31 @@
       "badge": "Most Popular",
       "description": "For growing businesses and active agencies",
       "features": {
-        "messages": "💬 3,000 WhatsApp messages/month (~100 msg/day)",
-        "advancedReporting": "📈 Advanced reporting and analytics",
-        "unlimitedTours": "🗂️ Unlimited tour additions",
-        "advancedReservation": "📝 Advanced reservation management",
-        "userProfiles": "🎯 WhatsApp user profiles and segmentation",
-        "prioritySupport": "⚡ Priority support (within 24 hours)",
-        "crmIntegration": "🔗 CRM integration support",
-        "history90": "💾 90-day conversation history",
-        "customTemplates": "🎨 Custom WhatsApp message templates",
-        "tourReminders": "📱 Automatic tour reminders"
+        "messages": "💬 5,000 messages/month",
+        "tours": "🗂️ Unlimited tours",
+        "languages": "🌍 Up to 3 languages",
+        "allStyles": "🎨 4 different conversation styles",
+        "userProfiles": "👤 User profiles and tracking",
+        "reminders": "⏰ Automatic tour reminders",
+        "templates": "📝 Custom message templates",
+        "followUps": "📲 Follow-up messages",
+        "analytics": "📊 Detailed analytics & revenue tracking"
       }
     },
     "enterprise": {
       "name": "Enterprise",
-      "price": "Custom",
-      "period": "",
+      "price": "€149",
+      "period": "/month",
       "description": "For large agencies and chain businesses",
       "features": {
-        "unlimitedMessages": "💬 Unlimited WhatsApp messages",
-        "customReporting": "📊 Custom reporting and dashboards",
-        "multiBranch": "🗂️ Multi-branch support",
-        "enterpriseReservation": "📝 Enterprise reservation management",
-        "advancedSegmentation": "🎯 Advanced customer segmentation and AI analytics",
-        "support247": "🚀 24/7 priority support",
-        "apiAccess": "🔌 API access and custom integrations",
-        "unlimitedHistory": "💾 Unlimited conversation history",
-        "accountManager": "👔 Dedicated account manager",
-        "customDevelopment": "⚙️ Custom development and customizations",
-        "enterpriseSecurity": "🔒 Enterprise security and SLA guarantee",
-        "multipleAccounts": "🌐 Multiple WhatsApp account support"
+        "messages": "💬 Unlimited messages",
+        "unlimitedTours": "🗂️ Unlimited tours",
+        "allLanguages": "🌍 All 7 languages",
+        "customStyles": "🎨 4 styles + custom styles",
+        "allFeatures": "✨ All features",
+        "feedback": "⭐ Automatic feedback surveys",
+        "prioritySupport": "🚀 Priority support",
+        "customIntegration": "🔌 Custom integrations"
       }
     }
   },
