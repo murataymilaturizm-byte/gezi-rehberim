@@ -22,6 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -35,6 +41,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut, Download, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
@@ -86,6 +93,7 @@ interface Registration {
   status: string;
   note?: string;
   created_at: string;
+  tour_id: string;
   tours: {
     title: string;
     destination: string;
@@ -137,6 +145,14 @@ const Admin = () => {
   const [maxTours, setMaxTours] = useState<number>(10);
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
+  
+  // Registration filters
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterTour, setFilterTour] = useState<string>("all");
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
+  const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
+  const [filterPriceMin, setFilterPriceMin] = useState<string>("");
+  const [filterPriceMax, setFilterPriceMax] = useState<string>("");
 
   useEffect(() => {
     // Check authentication
@@ -708,6 +724,145 @@ const Admin = () => {
                 )}
               </div>
             </div>
+            
+            {/* Registration Filters */}
+            {activeTab === "registrations" && (
+              <div className="mt-4 p-4 bg-accent/30 rounded-lg border border-border/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {/* Status Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Durum</label>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tüm durumlar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tümü</SelectItem>
+                        <SelectItem value="NEW">Yeni</SelectItem>
+                        <SelectItem value="PENDING">Beklemede</SelectItem>
+                        <SelectItem value="CONFIRMED">Onaylandı</SelectItem>
+                        <SelectItem value="CANCELLED">İptal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Tour Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tur</label>
+                    <Select value={filterTour} onValueChange={setFilterTour}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tüm turlar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tümü</SelectItem>
+                        {tours.map((tour) => (
+                          <SelectItem key={tour.id} value={tour.id}>
+                            {tour.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Date Range Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Başlangıç Tarihi</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !filterDateFrom && "text-muted-foreground"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {filterDateFrom ? format(filterDateFrom, "d MMM yyyy", { locale: tr }) : "Tarih seç"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={filterDateFrom}
+                          onSelect={setFilterDateFrom}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Bitiş Tarihi</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !filterDateTo && "text-muted-foreground"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {filterDateTo ? format(filterDateTo, "d MMM yyyy", { locale: tr }) : "Tarih seç"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={filterDateTo}
+                          onSelect={setFilterDateTo}
+                          disabled={(date) => filterDateFrom ? date < filterDateFrom : false}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {/* Price Range Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Min Fiyat (₺)</label>
+                    <input
+                      type="number"
+                      value={filterPriceMin}
+                      onChange={(e) => setFilterPriceMin(e.target.value)}
+                      placeholder="0"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Max Fiyat (₺)</label>
+                    <input
+                      type="number"
+                      value={filterPriceMax}
+                      onChange={(e) => setFilterPriceMax(e.target.value)}
+                      placeholder="∞"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                <div className="mt-4 flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setFilterStatus("all");
+                      setFilterTour("all");
+                      setFilterDateFrom(undefined);
+                      setFilterDateTo(undefined);
+                      setFilterPriceMin("");
+                      setFilterPriceMax("");
+                    }}
+                  >
+                    Filtreleri Temizle
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -832,14 +987,62 @@ const Admin = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {registrations.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center text-muted-foreground">
-                        {t("admin.registrations.noRegistrations")}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    registrations.map((reg) => {
+                  {(() => {
+                    // Apply filters
+                    let filteredRegistrations = registrations.filter((reg) => {
+                      // Status filter
+                      if (filterStatus !== "all" && reg.status !== filterStatus) {
+                        return false;
+                      }
+
+                      // Tour filter
+                      if (filterTour !== "all" && reg.tour_id !== filterTour) {
+                        return false;
+                      }
+
+                      // Date range filter
+                      if (filterDateFrom && reg.tour_dates?.departure_date) {
+                        const regDate = new Date(reg.tour_dates.departure_date);
+                        if (regDate < filterDateFrom) {
+                          return false;
+                        }
+                      }
+
+                      if (filterDateTo && reg.tour_dates?.departure_date) {
+                        const regDate = new Date(reg.tour_dates.departure_date);
+                        if (regDate > filterDateTo) {
+                          return false;
+                        }
+                      }
+
+                      // Price filter
+                      const unitPrice = reg.tour_dates?.price_adult || 0;
+                      const totalPrice = unitPrice * reg.pax;
+
+                      if (filterPriceMin && totalPrice < Number(filterPriceMin)) {
+                        return false;
+                      }
+
+                      if (filterPriceMax && totalPrice > Number(filterPriceMax)) {
+                        return false;
+                      }
+
+                      return true;
+                    });
+
+                    if (filteredRegistrations.length === 0) {
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                            {registrations.length === 0 
+                              ? t("admin.registrations.noRegistrations")
+                              : "Filtreye uygun kayıt bulunamadı"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+
+                    return filteredRegistrations.map((reg) => {
                       const unitPrice = reg.tour_dates?.price_adult || 0;
                       const totalPrice = unitPrice * reg.pax;
                       
@@ -919,8 +1122,8 @@ const Admin = () => {
                           </TableCell>
                         </TableRow>
                       );
-                    })
-                  )}
+                    });
+                  })()}
                 </TableBody>
               </Table>
             )}
