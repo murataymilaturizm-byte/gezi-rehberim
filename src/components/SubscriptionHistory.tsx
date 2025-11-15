@@ -403,76 +403,7 @@ export const SubscriptionHistory = () => {
     }
   };
 
-  const handlePayment = async () => {
-    if (!agencyId || !subscription) return;
-
-    setIsProcessingPayment(true);
-    setPaymentStatus("pending");
-
-    try {
-      const { data, error } = await supabase.functions.invoke("sipay-payment", {
-        body: {
-          planType: subscription.plan_type,
-          isYearly,
-          agencyId,
-        },
-      });
-
-      if (error) {
-        console.error("Sipay function error:", error);
-        setPaymentStatus("failed");
-        setTimeout(() => setPaymentStatus(null), 3000);
-        throw new Error(error.message || "Ödeme servisi ile bağlantı kurulamadı");
-      }
-
-      if (!data) {
-        setPaymentStatus("failed");
-        setTimeout(() => setPaymentStatus(null), 3000);
-        throw new Error("Ödeme servisi yanıt vermedi");
-      }
-
-      if (data.error) {
-        setPaymentStatus("failed");
-        setTimeout(() => setPaymentStatus(null), 3000);
-        throw new Error(data.error);
-      }
-
-      if (data.payment_url) {
-        console.log("Redirecting to payment URL:", data.payment_url);
-        setPaymentStatus("processing");
-        
-        // Redirect after showing processing status
-        setTimeout(() => {
-          window.location.href = data.payment_url;
-        }, 1500);
-      } else {
-        setPaymentStatus("failed");
-        setTimeout(() => setPaymentStatus(null), 3000);
-        throw new Error("Ödeme URL'si alınamadı. Lütfen daha sonra tekrar deneyin.");
-      }
-    } catch (error: any) {
-      console.error("Payment initialization error:", error);
-      
-      let errorMessage = "Ödeme başlatılamadı. ";
-      
-      // Provide more specific error messages
-      if (error.message.includes("credentials")) {
-        errorMessage += "Ödeme sistemi yapılandırması hatalı. Lütfen yönetici ile iletişime geçin.";
-      } else if (error.message.includes("network") || error.message.includes("fetch")) {
-        errorMessage += "İnternet bağlantınızı kontrol edin ve tekrar deneyin.";
-      } else {
-        errorMessage += error.message || "Lütfen tekrar deneyin veya destek ekibi ile iletişime geçin.";
-      }
-      
-      toast({
-        title: "Ödeme Hatası ❌",
-        description: errorMessage,
-        variant: "destructive",
-        duration: 7000,
-      });
-      setIsProcessingPayment(false);
-    }
-  };
+  // Payment is now handled by SipayPaymentForm component
 
   const getRemainingDays = () => {
     if (!subscription) return null;
