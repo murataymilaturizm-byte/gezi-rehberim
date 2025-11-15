@@ -66,6 +66,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageManagement } from "@/components/LanguageManagement";
 import { TicketManagement } from "@/components/TicketManagement";
 import { SuperAdminTickets } from "@/components/SuperAdminTickets";
+import { WhatsAppLogs } from "@/components/WhatsAppLogs";
 import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
 
 interface Tour {
@@ -129,7 +130,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets" | "whatsapp_logs">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -634,6 +635,13 @@ const Admin = () => {
               {t("admin.tabs.tickets")}
             </Button>
             <Button
+              variant={activeTab === "whatsapp_logs" ? "default" : "outline"}
+              onClick={() => setActiveTab("whatsapp_logs")}
+              className={`transition-all duration-300 ${activeTab === "whatsapp_logs" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+            >
+              WhatsApp Logları
+            </Button>
+            <Button
               variant={activeTab === "agencies" ? "default" : "outline"}
               onClick={() => setActiveTab("agencies")}
               className={`transition-all duration-300 ${activeTab === "agencies" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
@@ -687,6 +695,8 @@ const Admin = () => {
           <ContactFormsManagement />
         ) : activeTab === "tickets" && isSuperAdmin ? (
           <SuperAdminTickets />
+        ) : activeTab === "whatsapp_logs" && isSuperAdmin ? (
+          <WhatsAppLogs />
         ) : (
           <Card className="shadow-card">
           <CardHeader>
