@@ -84,7 +84,7 @@ serve(async (req) => {
     const { data: agency, error: agencyError } = await supabase
       .from('agencies')
       .select('id, agency_name, active, subscription_status, trial_ends_at, subscription_ends_at, plan_type, monthly_message_count, message_limit, conversation_style, enabled_languages')
-      .eq('whatsapp_phone_number', twilioPhone)
+      .eq('twilio_phone_number', twilioPhone)
       .eq('active', true)
       .single();
 
