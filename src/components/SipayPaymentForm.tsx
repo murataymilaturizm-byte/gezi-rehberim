@@ -29,57 +29,36 @@ export const SipayPaymentForm = ({
     setPaymentStatus("pending");
 
     try {
-      // Generate order ID
-      const orderId = `ORDER-${agencyId.substring(0, 8)}-${Date.now()}`;
-      
-      // Get Sipay credentials from environment (these will be public but secured with hash)
-      const merchantId = import.meta.env.VITE_SIPAY_MERCHANT_ID;
-      const appSecret = import.meta.env.VITE_SIPAY_APP_SECRET;
+      console.log("💳 Initializing payment via backend...");
 
-      console.log("🔍 Environment check:", {
-        merchantId: merchantId ? "✅ Found" : "❌ Missing",
-        appSecret: appSecret ? "✅ Found" : "❌ Missing",
-        allEnvVars: import.meta.env
+      // Call backend to initialize payment
+      const { data, error } = await supabase.functions.invoke('sipay-payment-init', {
+        body: {
+          agencyId,
+          planType,
+          isYearly,
+          amount,
+          agencyName
+        }
       });
 
-      if (!merchantId || !appSecret) {
-        console.error("❌ Sipay credentials missing:", { merchantId, appSecret });
-        throw new Error("Sipay credentials not configured. Please check environment variables.");
-      }
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || "Payment initialization failed");
 
-      // Prepare callback URLs
-      const callbackUrl = `${window.location.origin}/admin?payment_callback=true`;
-      
-      // Generate hash (SHA-256)
-      const hashString = `${merchantId}${orderId}${amount.toFixed(2)}TRY${appSecret}`;
-      const encoder = new TextEncoder();
-      const data = encoder.encode(hashString);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      console.log("✅ Payment data received from backend");
 
       // Save transaction to database
       const { error: dbError } = await supabase
         .from("payment_transactions")
         .insert({
           agency_id: agencyId,
-          order_id: orderId,
+          order_id: data.paymentData.order_id,
           amount: amount,
           currency: "TRY",
           plan_type: planType,
           is_yearly: isYearly,
           status: "pending",
-          sipay_response: {
-            merchant_id: merchantId,
-            order_id: orderId,
-            metadata: JSON.stringify({
-              agency_id: agencyId,
-              purchase_type: "plan",
-              plan_type: planType,
-              is_yearly: isYearly,
-              amount: amount,
-            })
-          }
+          sipay_response: data.paymentData
         });
 
       if (dbError) throw dbError;
@@ -87,35 +66,13 @@ export const SipayPaymentForm = ({
       // Create form and submit to Sipay
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'https://api.sipay.com.tr/api/payment';
+      form.action = data.sipayUrl;
       
-      const fields = {
-        merchant_id: merchantId,
-        order_id: orderId,
-        amount: amount.toFixed(2),
-        currency: 'TRY',
-        installment: '1',
-        customer_name: agencyName,
-        customer_email: 'billing@turzzai.com',
-        success_url: callbackUrl,
-        failure_url: callbackUrl,
-        language: 'tr',
-        hash: hash,
-        merchant_key: appSecret,
-        metadata: JSON.stringify({
-          agency_id: agencyId,
-          purchase_type: "plan",
-          plan_type: planType,
-          is_yearly: isYearly,
-          amount: amount,
-        })
-      };
-
-      Object.entries(fields).forEach(([key, value]) => {
+      Object.entries(data.paymentData).forEach(([key, value]) => {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = key;
-        input.value = value;
+        input.value = String(value);
         form.appendChild(input);
       });
 
