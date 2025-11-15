@@ -471,6 +471,16 @@
       "program": "Programme",
       "preRegistration": "Pré-inscription"
     },
+    "planLimits": {
+      "tourLimitReached": "Limite de visites atteint",
+      "tourLimitMessage": "Votre plan {planName} permet un maximum de {maxTours} visites. Veuillez mettre à niveau votre plan pour ajouter plus de visites.",
+      "starterPlan": "Débutant",
+      "professionalPlan": "Professionnel",
+      "enterprisePlan": "Entreprise",
+      "upgradeRequired": "Mise à niveau requise",
+      "featureNotAvailable": "Cette fonctionnalité n'est pas disponible dans votre plan.",
+      "upgradeToAccess": "Mettez à niveau votre plan pour accéder à cette fonctionnalité."
+    },
     "registrations": {
       "title": "Inscriptions",
       "export": "Exporter vers Excel",

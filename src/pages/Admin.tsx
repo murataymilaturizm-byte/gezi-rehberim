@@ -55,7 +55,7 @@ import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExp
 import { SupportChatWidget } from "@/components/SupportChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
-import { getMaxTours } from "@/utils/planFeatures";
+import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
 
 interface Tour {
   id: string;
@@ -133,6 +133,7 @@ const Admin = () => {
   });
   const [planType, setPlanType] = useState<string>('starter');
   const [maxTours, setMaxTours] = useState<number>(10);
+  const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
 
   useEffect(() => {
     // Check authentication
@@ -528,13 +529,15 @@ const Admin = () => {
           >
             {t("admin.tabs.registrations")}
           </Button>
-          <Button
-            variant={activeTab === "whatsapp" ? "default" : "outline"}
-            onClick={() => setActiveTab("whatsapp")}
-            className={`transition-all duration-300 ${activeTab === "whatsapp" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-          >
-            {t("admin.tabs.whatsapp")}
-          </Button>
+          {(!isSuperAdmin && planFeatures?.has_user_profiles) || isSuperAdmin ? (
+            <Button
+              variant={activeTab === "whatsapp" ? "default" : "outline"}
+              onClick={() => setActiveTab("whatsapp")}
+              className={`transition-all duration-300 ${activeTab === "whatsapp" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+            >
+              {t("admin.tabs.whatsapp")}
+            </Button>
+          ) : null}
           {!isSuperAdmin && (
             <>
               <Button
@@ -544,13 +547,15 @@ const Admin = () => {
               >
                 {t("admin.dashboard.whatsappSettings")}
               </Button>
-              <Button
-                variant={activeTab === "templates" ? "default" : "outline"}
-                 onClick={() => setActiveTab("templates")}
-                 className={`transition-all duration-300 ${activeTab === "templates" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-               >
-                 {t("admin.tabs.templates")}
-               </Button>
+              {planFeatures?.has_templates && (
+                <Button
+                  variant={activeTab === "templates" ? "default" : "outline"}
+                  onClick={() => setActiveTab("templates")}
+                  className={`transition-all duration-300 ${activeTab === "templates" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+                >
+                  {t("admin.tabs.templates")}
+                </Button>
+              )}
               <Button
                 variant={activeTab === "history" ? "default" : "outline"}
                 onClick={() => setActiveTab("history")}
@@ -558,13 +563,15 @@ const Admin = () => {
               >
                 {t("admin.tabs.history")}
               </Button>
-              <Button
-                variant={activeTab === "customer-feedback" ? "default" : "outline"}
-                onClick={() => setActiveTab("customer-feedback")}
-                className={`transition-all duration-300 ${activeTab === "customer-feedback" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                {t("admin.tabs.customerFeedback")}
-              </Button>
+              {planFeatures?.has_feedback && (
+                <Button
+                  variant={activeTab === "customer-feedback" ? "default" : "outline"}
+                  onClick={() => setActiveTab("customer-feedback")}
+                  className={`transition-all duration-300 ${activeTab === "customer-feedback" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+                >
+                  {t("admin.tabs.customerFeedback")}
+                </Button>
+              )}
             </>
           )}
           {isSuperAdmin && (
@@ -596,8 +603,8 @@ const Admin = () => {
 
         {/* Content */}
         {activeTab === "dashboard" ? (
-          <AdminDashboard isSuperAdmin={isSuperAdmin} />
-        ) : activeTab === "whatsapp" ? (
+          <AdminDashboard isSuperAdmin={isSuperAdmin} planFeatures={planFeatures} />
+        ) : activeTab === "whatsapp" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
           <div className="space-y-6">
             {isSuperAdmin && <LanguageStats isSuperAdmin={isSuperAdmin} />}
             <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
@@ -605,11 +612,11 @@ const Admin = () => {
           </div>
         ) : activeTab === "settings" ? (
           <TwilioSettings />
-        ) : activeTab === "templates" ? (
+        ) : activeTab === "templates" && planFeatures?.has_templates ? (
           <MessageTemplates />
         ) : activeTab === "history" ? (
           <SubscriptionHistory />
-        ) : activeTab === "customer-feedback" ? (
+        ) : activeTab === "customer-feedback" && planFeatures?.has_feedback ? (
           <CustomerFeedback />
         ) : activeTab === "twilio_settings" && isSuperAdmin ? (
           <SuperAdminTwilioSettings />
@@ -638,9 +645,17 @@ const Admin = () => {
                     <Button
                       onClick={() => {
                         if (!isSuperAdmin && tours.length >= maxTours) {
+                          const planNames = {
+                            'starter': t("admin.planLimits.starterPlan"),
+                            'professional': t("admin.planLimits.professionalPlan"),
+                            'enterprise': t("admin.planLimits.enterprisePlan")
+                          };
                           toast({
-                            title: "Tur Limiti Doldu",
-                            description: `${planType === 'starter' ? 'Başlangıç' : planType === 'professional' ? 'Profesyonel' : 'Enterprise'} paketinizde maksimum ${maxTours} tur ekleyebilirsiniz. Daha fazla tur eklemek için paketinizi yükseltin.`,
+                            title: t("admin.planLimits.tourLimitReached"),
+                            description: t("admin.planLimits.tourLimitMessage", { 
+                              planName: planNames[planType as keyof typeof planNames] || planType,
+                              maxTours: maxTours 
+                            }),
                             variant: "destructive",
                           });
                           return;

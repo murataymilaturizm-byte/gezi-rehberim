@@ -493,6 +493,16 @@
       "deleteConfirm": "¿Está seguro de eliminar este tour?",
       "deleteWarning": "Esta acción no se puede deshacer."
     },
+    "planLimits": {
+      "tourLimitReached": "Límite de tours alcanzado",
+      "tourLimitMessage": "Su plan {planName} permite un máximo de {maxTours} tours. Por favor, actualice su plan para añadir más tours.",
+      "starterPlan": "Inicial",
+      "professionalPlan": "Profesional",
+      "enterprisePlan": "Empresarial",
+      "upgradeRequired": "Actualización requerida",
+      "featureNotAvailable": "Esta función no está disponible en su plan.",
+      "upgradeToAccess": "Actualice su plan para acceder a esta función."
+    },
     "registrations": {
       "title": "Registros",
       "export": "Exportar a Excel",
