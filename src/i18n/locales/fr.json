@@ -321,6 +321,20 @@
   },
   "admin": {
     "title": "Panneau d'Agence",
+    "filters": {
+      "status": "Statut",
+      "tour": "Tour",
+      "dateRange": "Plage de dates",
+      "priceRange": "Plage de prix",
+      "from": "Depuis",
+      "to": "Jusqu'à",
+      "min": "Min",
+      "max": "Max",
+      "all": "Tout",
+      "allStatuses": "Tous les statuts",
+      "allTours": "Tous les tours",
+      "clear": "Effacer les filtres"
+    },
     "payment": {
       "status": {
         "pending": "Paiement en Attente",
@@ -544,6 +558,7 @@
       "title": "Inscriptions",
       "export": "Exporter vers Excel",
       "noRegistrations": "Aucune inscription",
+      "noFilteredResults": "Aucun enregistrement ne correspond aux filtres",
       "name": "Nom",
       "phone": "Téléphone",
       "tour": "Tour",

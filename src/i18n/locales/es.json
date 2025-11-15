@@ -350,6 +350,20 @@
   },
   "admin": {
     "title": "Panel de Agencia",
+    "filters": {
+      "status": "Estado",
+      "tour": "Tour",
+      "dateRange": "Rango de fechas",
+      "priceRange": "Rango de precios",
+      "from": "Desde",
+      "to": "Hasta",
+      "min": "Mín",
+      "max": "Máx",
+      "all": "Todo",
+      "allStatuses": "Todos los estados",
+      "allTours": "Todos los tours",
+      "clear": "Limpiar filtros"
+    },
     "payment": {
       "status": {
         "pending": "Pago Pendiente",
@@ -568,6 +582,7 @@
       "title": "Registros",
       "export": "Exportar a Excel",
       "noRegistrations": "No hay registros",
+      "noFilteredResults": "No hay registros que coincidan con los filtros",
       "name": "Nombre",
       "phone": "Teléfono",
       "tour": "Tour",

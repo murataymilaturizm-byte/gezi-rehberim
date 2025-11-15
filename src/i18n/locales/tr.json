@@ -362,6 +362,20 @@
   },
   "admin": {
     "title": "Yönetim Paneli",
+    "filters": {
+      "status": "Durum",
+      "tour": "Tur",
+      "dateRange": "Tarih Aralığı",
+      "priceRange": "Fiyat Aralığı (₺)",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "min": "Min",
+      "max": "Max",
+      "all": "Tümü",
+      "allStatuses": "Tüm durumlar",
+      "allTours": "Tüm turlar",
+      "clear": "Filtreleri Temizle"
+    },
     "payment": {
       "status": {
         "pending": "Ödeme Bekleniyor",
@@ -782,6 +796,7 @@
       "title": "Kayıtlar",
       "export": "Excel'e Aktar",
       "noRegistrations": "Henüz kayıt yok",
+      "noFilteredResults": "Filtreye uygun kayıt bulunamadı",
       "name": "İsim",
       "phone": "Telefon",
       "tour": "Tur",

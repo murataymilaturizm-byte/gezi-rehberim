@@ -312,6 +312,20 @@
   },
   "admin": {
     "title": "لوحة الوكالة",
+    "filters": {
+      "status": "الحالة",
+      "tour": "الرحلة",
+      "dateRange": "نطاق التاريخ",
+      "priceRange": "نطاق السعر",
+      "from": "من",
+      "to": "إلى",
+      "min": "الحد الأدنى",
+      "max": "الحد الأقصى",
+      "all": "الكل",
+      "allStatuses": "جميع الحالات",
+      "allTours": "جميع الرحلات",
+      "clear": "مسح الفلاتر"
+    },
     "payment": {
       "status": {
         "pending": "الدفع معلق",
@@ -535,6 +549,7 @@
       "title": "التسجيلات",
       "export": "تصدير إلى Excel",
       "noRegistrations": "لا توجد تسجيلات بعد",
+      "noFilteredResults": "لا توجد سجلات تطابق الفلاتر",
       "name": "الاسم",
       "phone": "الهاتف",
       "tour": "الرحلة",
