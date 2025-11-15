@@ -1170,6 +1170,29 @@
       "settings": "Ayarlar ve Güvenlik"
     }
   },
+  "languageManagement": {
+    "title": "Dil Yönetimi",
+    "description": "WhatsApp botunuzun kullanacağı dilleri seçin. Seçili dillerde müşterilerinizle otomatik iletişim kurulacaktır.",
+    "languagesBadge": "Dil",
+    "planLimit": "Plan Limitiniz:",
+    "planStarter": "Başlangıç",
+    "planProfessional": "Profesyonel",
+    "planEnterprise": "Kurumsal",
+    "maxLanguagesMessage": "paketinizde maksimum {count} dil aktif edebilirsiniz.",
+    "upgradePlan": "Daha fazla dil için paketinizi yükseltin.",
+    "minLanguageWarning": "⚠️ En az 1 dil seçmelisiniz.",
+    "languageLimitTitle": "Dil Limiti Doldu",
+    "languageLimitMessage": "{plan} paketinizde maksimum {count} dil aktif edebilirsiniz. Daha fazla dil için paketinizi yükseltin.",
+    "minLanguageError": "En az 1 dil seçmelisiniz.",
+    "loadError": "Dil ayarları yüklenemedi",
+    "saveSuccess": "Dil ayarları kaydedildi",
+    "saveError": "Dil ayarları kaydedilemedi",
+    "activeBadge": "Aktif",
+    "lockedBadge": "Kilitli",
+    "cancelButton": "İptal",
+    "saveButton": "Kaydet",
+    "warning": "Uyarı"
+  },
   "notFound": {
     "title": "404",
     "message": "Sayfa Bulunamadı",

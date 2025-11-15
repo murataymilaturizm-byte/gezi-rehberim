@@ -1108,6 +1108,29 @@
       "settings": "Paramètres et Sécurité"
     }
   },
+  "languageManagement": {
+    "title": "Gestion des langues",
+    "description": "Sélectionnez les langues que votre bot WhatsApp utilisera. La communication automatique sera établie avec vos clients dans les langues sélectionnées.",
+    "languagesBadge": "Langues",
+    "planLimit": "Limite de votre forfait:",
+    "planStarter": "Débutant",
+    "planProfessional": "Professionnel",
+    "planEnterprise": "Entreprise",
+    "maxLanguagesMessage": "vous pouvez activer jusqu'à {count} langues dans votre forfait.",
+    "upgradePlan": "Améliorez votre forfait pour plus de langues.",
+    "minLanguageWarning": "⚠️ Vous devez sélectionner au moins 1 langue.",
+    "languageLimitTitle": "Limite de langue atteinte",
+    "languageLimitMessage": "Vous pouvez activer un maximum de {count} langues dans votre forfait {plan}. Améliorez votre forfait pour plus de langues.",
+    "minLanguageError": "Vous devez sélectionner au moins 1 langue.",
+    "loadError": "Les paramètres de langue n'ont pas pu être chargés",
+    "saveSuccess": "Paramètres de langue enregistrés avec succès",
+    "saveError": "Les paramètres de langue n'ont pas pu être enregistrés",
+    "activeBadge": "Actif",
+    "lockedBadge": "Verrouillé",
+    "cancelButton": "Annuler",
+    "saveButton": "Enregistrer",
+    "warning": "Avertissement"
+  },
   "notFound": {
     "title": "404",
     "message": "Page Non Trouvée",
