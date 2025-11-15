@@ -99,15 +99,17 @@ serve(async (req) => {
     
     paymentData.hash = hash;
 
-    // Call Sipay API (Sandbox for testing)
-    // Note: Change to production URL when going live: https://api.sipay.com.tr/api/payment
-    const sipayUrl = "https://sandbox-api.sipay.com.tr/api/payment";
+    // Call Sipay API
+    // Using production URL as sandbox has DNS issues with Supabase edge functions
+    const sipayUrl = "https://api.sipay.com.tr/api/payment";
     console.log(`🚀 Calling Sipay API: ${sipayUrl}`);
+    console.log(`📦 Payment data:`, JSON.stringify(paymentData, null, 2));
     
     const sipayResponse = await fetch(sipayUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "application/json",
       },
       body: JSON.stringify(paymentData),
     });
