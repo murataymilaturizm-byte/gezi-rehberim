@@ -236,6 +236,51 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_features: {
+        Row: {
+          available_styles: string[]
+          created_at: string | null
+          has_analytics: boolean
+          has_feedback: boolean
+          has_follow_ups: boolean
+          has_reminders: boolean
+          has_templates: boolean
+          has_user_profiles: boolean
+          max_languages: number
+          max_tours: number
+          message_limit: number
+          plan_type: string
+        }
+        Insert: {
+          available_styles: string[]
+          created_at?: string | null
+          has_analytics?: boolean
+          has_feedback?: boolean
+          has_follow_ups?: boolean
+          has_reminders?: boolean
+          has_templates?: boolean
+          has_user_profiles?: boolean
+          max_languages: number
+          max_tours: number
+          message_limit: number
+          plan_type: string
+        }
+        Update: {
+          available_styles?: string[]
+          created_at?: string | null
+          has_analytics?: boolean
+          has_feedback?: boolean
+          has_follow_ups?: boolean
+          has_reminders?: boolean
+          has_templates?: boolean
+          has_user_profiles?: boolean
+          max_languages?: number
+          max_tours?: number
+          message_limit?: number
+          plan_type?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

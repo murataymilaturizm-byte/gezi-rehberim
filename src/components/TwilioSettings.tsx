@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, AlertCircle, MessageSquare } from "lucide-react";
+import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import {
@@ -16,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getPlanFeatures } from "@/utils/planFeatures";
 
 const whatsappSchema = z.object({
   whatsapp_phone_number: z.string()
@@ -31,6 +33,8 @@ export const TwilioSettings = () => {
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [isConfigured, setIsConfigured] = useState(false);
   const [whatsappStatus, setWhatsappStatus] = useState<'pending' | 'active' | 'rejected'>('pending');
+  const [planType, setPlanType] = useState<string>('starter');
+  const [availableStyles, setAvailableStyles] = useState<string[]>(['professional']);
   
   const [formData, setFormData] = useState({
     whatsapp_phone_number: "",
@@ -49,7 +53,7 @@ export const TwilioSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, twilio_phone_number, whatsapp_status, active, conversation_style")
+        .select("id, twilio_phone_number, whatsapp_status, active, conversation_style, plan_type")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -57,6 +61,14 @@ export const TwilioSettings = () => {
 
       if (agencyData) {
         setAgencyId(agencyData.id);
+        const currentPlanType = (agencyData as any).plan_type || 'starter';
+        setPlanType(currentPlanType);
+        
+        // Paket özelliklerini yükle
+        const features = await getPlanFeatures(currentPlanType);
+        if (features) {
+          setAvailableStyles(features.available_styles);
+        }
         
         // Check if WhatsApp is configured - using twilio_phone_number as temp storage
         const phoneNumber = (agencyData as any).twilio_phone_number || "";
@@ -243,10 +255,18 @@ export const TwilioSettings = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="conversation_style" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              {t("admin.whatsapp.settings.conversationStyle")}
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="conversation_style" className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                {t("admin.whatsapp.settings.conversationStyle")}
+              </Label>
+              {planType === 'starter' && (
+                <Badge variant="outline" className="text-xs">
+                  <Lock className="w-3 h-3 mr-1" />
+                  Profesyonel pakette tüm üsluplar
+                </Badge>
+              )}
+            </div>
             <Select
               value={formData.conversation_style}
               onValueChange={(value: 'friendly' | 'professional' | 'energetic' | 'helpful') =>
@@ -257,28 +277,31 @@ export const TwilioSettings = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="friendly">
-                  <div className="flex items-center gap-2">
-                    <span>🤝</span>
-                    <span>{t("admin.whatsapp.settings.style.friendly")}</span>
-                  </div>
-                </SelectItem>
                 <SelectItem value="professional">
                   <div className="flex items-center gap-2">
                     <span>👔</span>
                     <span>{t("admin.whatsapp.settings.style.professional")}</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="energetic">
+                <SelectItem value="friendly" disabled={!availableStyles.includes('friendly')}>
+                  <div className="flex items-center gap-2">
+                    <span>🤝</span>
+                    <span>{t("admin.whatsapp.settings.style.friendly")}</span>
+                    {!availableStyles.includes('friendly') && <Lock className="w-3 h-3 ml-1" />}
+                  </div>
+                </SelectItem>
+                <SelectItem value="energetic" disabled={!availableStyles.includes('energetic')}>
                   <div className="flex items-center gap-2">
                     <span>⚡</span>
                     <span>{t("admin.whatsapp.settings.style.energetic")}</span>
+                    {!availableStyles.includes('energetic') && <Lock className="w-3 h-3 ml-1" />}
                   </div>
                 </SelectItem>
-                <SelectItem value="helpful">
+                <SelectItem value="helpful" disabled={!availableStyles.includes('helpful')}>
                   <div className="flex items-center gap-2">
                     <span>😊</span>
                     <span>{t("admin.whatsapp.settings.style.helpful")}</span>
+                    {!availableStyles.includes('helpful') && <Lock className="w-3 h-3 ml-1" />}
                   </div>
                 </SelectItem>
               </SelectContent>
