@@ -18,6 +18,11 @@ export const PaymentStatusIndicator = ({
 }: PaymentStatusIndicatorProps) => {
   const { t } = useTranslation();
 
+  // Early return if status is null/undefined
+  if (!status) {
+    return null;
+  }
+
   const statusConfig = {
     pending: {
       icon: Clock,
