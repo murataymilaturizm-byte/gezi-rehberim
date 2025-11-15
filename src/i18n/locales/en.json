@@ -444,6 +444,10 @@
     "logout": "Logout",
     "loading": "Loading...",
     "superAdmin": "Super Admin",
+    "languageWarning": {
+      "message": "You haven't selected any languages for your WhatsApp bot yet. You must select at least 1 language for your bot to work",
+      "action": "Select Languages Now"
+    },
     "tabs": {
       "dashboard": "Dashboard",
       "tours": "Tours",

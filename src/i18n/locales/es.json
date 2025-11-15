@@ -455,6 +455,10 @@
     "logout": "Cerrar Sesión",
     "loading": "Cargando...",
     "superAdmin": "Super Admin",
+    "languageWarning": {
+      "message": "Aún no has seleccionado ningún idioma para tu bot de WhatsApp. Debes seleccionar al menos 1 idioma para que tu bot funcione",
+      "action": "Seleccionar Idiomas Ahora"
+    },
     "tabs": {
       "dashboard": "Panel de Control",
       "tours": "Tours",

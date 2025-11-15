@@ -745,6 +745,10 @@
     "logout": "Çıkış",
     "loading": "Yükleniyor...",
     "superAdmin": "Super Admin",
+    "languageWarning": {
+      "message": "WhatsApp botunuz için henüz bir dil seçmediniz. Botunuzun çalışabilmesi için en az 1 dil seçmelisiniz",
+      "action": "Şimdi Dil Seç"
+    },
     "tabs": {
       "dashboard": "Dashboard",
       "tours": "Turlar",

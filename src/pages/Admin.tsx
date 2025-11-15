@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
@@ -31,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut, Download } from "lucide-react";
+import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut, Download, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { TourFormDialog } from "@/components/TourFormDialog";
@@ -135,6 +136,7 @@ const Admin = () => {
   const [planType, setPlanType] = useState<string>('starter');
   const [maxTours, setMaxTours] = useState<number>(10);
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
+  const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
 
   useEffect(() => {
     // Check authentication
@@ -242,12 +244,13 @@ const Admin = () => {
       if (!roleData) {
         const { data: agencyData } = await supabase
           .from("agencies")
-          .select("id, agency_name, language_preference, plan_type")
+          .select("id, agency_name, language_preference, plan_type, enabled_languages")
           .eq("user_id", userId)
           .maybeSingle();
 
         setUserAgencyId(agencyData?.id || null);
         setAgencyName(agencyData?.agency_name || "");
+        setEnabledLanguages(agencyData?.enabled_languages || []);
         
         // Load plan features
         const currentPlanType = (agencyData?.plan_type as string) || 'starter';
@@ -506,6 +509,20 @@ const Admin = () => {
       <main className="container mx-auto px-4 py-6">
         {/* Subscription Banner */}
         {!isSuperAdmin && <SubscriptionBanner />}
+        
+        {/* Language Selection Warning */}
+        {!isSuperAdmin && enabledLanguages.length === 0 && (
+          <Alert 
+            className="mb-6 border-warning bg-warning/10 cursor-pointer hover:bg-warning/20 transition-colors"
+            onClick={() => setActiveTab("languages")}
+          >
+            <AlertCircle className="h-5 w-5 text-warning" />
+            <AlertDescription className="ml-2 text-warning-foreground">
+              <strong>{t("languageManagement.warning")}:</strong> {t("admin.languageWarning.message")}
+              <span className="underline ml-2">{t("admin.languageWarning.action")}</span>
+            </AlertDescription>
+          </Alert>
+        )}
         
         {/* Tabs */}
         <div className="flex gap-2 mb-6 flex-wrap">
