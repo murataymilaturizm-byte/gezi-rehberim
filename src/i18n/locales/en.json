@@ -254,7 +254,7 @@
       "features": {
         "messages": "💬 1,000 messages/month",
         "tours": "🗂️ Up to 10 tours",
-        "languages": "🌍 Turkish + 1 language",
+        "languages": "🌍 1 Language Choice (Any of TR, EN, DE, FR, ES, RU, AR)",
         "style": "🎨 Professional style only",
         "basicFeatures": "📊 Basic features"
       }
@@ -268,7 +268,7 @@
       "features": {
         "messages": "💬 5,000 messages/month",
         "tours": "🗂️ Unlimited tours",
-        "languages": "🌍 Up to 3 languages",
+        "languages": "🌍 Up to 5 Languages (Turkish, English, German, French, Spanish, Russian, Arabic)",
         "allStyles": "🎨 4 different conversation styles",
         "userProfiles": "👤 User profiles and tracking",
         "reminders": "⏰ Automatic tour reminders",
@@ -285,7 +285,7 @@
       "features": {
         "messages": "💬 Unlimited messages",
         "unlimitedTours": "🗂️ Unlimited tours",
-        "allLanguages": "🌍 All 7 languages",
+        "allLanguages": "🌍 All 7 Languages (Turkish, English, German, French, Spanish, Russian, Arabic)",
         "customStyles": "🎨 4 styles + custom styles",
         "allFeatures": "✨ All features",
         "feedback": "⭐ Automatic feedback surveys",
