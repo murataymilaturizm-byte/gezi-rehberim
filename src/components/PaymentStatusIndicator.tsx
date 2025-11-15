@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export type PaymentStatus = "pending" | "processing" | "completed" | "failed";
 
 interface PaymentStatusIndicatorProps {
-  status: PaymentStatus;
+  status: PaymentStatus | null;
   isOpen: boolean;
   onClose?: () => void;
 }
@@ -59,6 +59,12 @@ export const PaymentStatusIndicator = ({
   };
 
   const config = statusConfig[status];
+  
+  // If config is not found, return null to prevent errors
+  if (!config) {
+    return null;
+  }
+  
   const Icon = config.icon;
 
   return (
