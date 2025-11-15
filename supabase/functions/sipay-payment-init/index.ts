@@ -69,10 +69,11 @@ serve(async (req) => {
     };
 
     // Return payment data for frontend to submit
-    // Use TEST URL for testing with test cards
-    const sipayUrl = 'https://test.sipay.com.tr/api/payment';
+    // PRODUCTION URL - gerçek ödeme alır!
+    const sipayUrl = 'https://api.sipay.com.tr/api/payment';
     
-    console.log("🔗 Sipay URL:", sipayUrl);
+    console.log("🔗 Sipay URL (PRODUCTION):", sipayUrl);
+    console.log("⚠️ PRODUCTION MODE: Gerçek ödeme işlenecek!");
     
     return new Response(
       JSON.stringify({
