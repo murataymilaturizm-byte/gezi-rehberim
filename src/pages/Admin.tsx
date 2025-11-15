@@ -55,6 +55,7 @@ import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExp
 import { SupportChatWidget } from "@/components/SupportChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { getMaxTours } from "@/utils/planFeatures";
 
 interface Tour {
   id: string;
@@ -636,6 +637,14 @@ const Admin = () => {
                     </Button>
                     <Button
                       onClick={() => {
+                        if (!isSuperAdmin && tours.length >= maxTours) {
+                          toast({
+                            title: "Tur Limiti Doldu",
+                            description: `${planType === 'starter' ? 'Başlangıç' : planType === 'professional' ? 'Profesyonel' : 'Enterprise'} paketinizde maksimum ${maxTours} tur ekleyebilirsiniz. Daha fazla tur eklemek için paketinizi yükseltin.`,
+                            variant: "destructive",
+                          });
+                          return;
+                        }
                         setSelectedTour(undefined);
                         setTourFormOpen(true);
                       }}

@@ -215,10 +215,19 @@
     }
   },
   "pricing": {
-    "title": "Tarifs",
-    "subtitle": "Choisissez Le Meilleur Plan Pour Votre Entreprise",
+    "title": "Commencez Aujourd'hui, Voyez la Différence",
+    "subtitle": "Un investissement qui apporte une valeur immédiate à votre entreprise",
     "monthly": "Mensuel",
     "yearly": "Annuel",
+    "save": "2 Mois Gratuits",
+    "trial": "Essai gratuit de 14 jours sur tous les plans. Aucune carte de crédit requise.",
+    "trialNote": "Essai gratuit de 14 jours sur tous les plans. Aucune carte de crédit requise.",
+    "custom": "Personnalisé",
+    "savings": "économies",
+    "cta": {
+      "start": "Commencer",
+      "contact": "Nous Contacter"
+    },
     "starter": {
       "name": "Débutant",
       "price": "€49",
@@ -250,6 +259,24 @@
         "analytics": "📊 Analyses détaillées et suivi des revenus"
       }
     },
+    "enterprise": {
+      "name": "Entreprise",
+      "price": "€149",
+      "period": "/mois",
+      "description": "Pour les grandes agences et les chaînes d'entreprises",
+      "features": {
+        "messages": "💬 Messages illimités",
+        "unlimitedTours": "🗂️ Tours illimités",
+        "allLanguages": "🌍 Toutes les 7 langues",
+        "customStyles": "🎨 4 styles + styles personnalisés",
+        "allFeatures": "✨ Toutes les fonctionnalités",
+        "feedback": "⭐ Enquêtes de feedback automatiques",
+        "prioritySupport": "🚀 Support prioritaire",
+        "customIntegration": "🔌 Intégrations personnalisées"
+      }
+    }
+  },
+  "footer": {
     "enterprise": {
       "name": "Entreprise",
       "price": "€149",
