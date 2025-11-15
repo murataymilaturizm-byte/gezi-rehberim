@@ -283,14 +283,17 @@
       "period": "/month",
       "description": "For large agencies and chain businesses",
       "features": {
+        "allProFeatures": "All Professional plan features and,",
         "messages": "💬 Unlimited messages",
         "unlimitedTours": "🗂️ Unlimited tours",
         "allLanguages": "🌍 All 7 Languages (Turkish, English, German, French, Spanish, Russian, Arabic)",
         "customStyles": "🎨 4 styles + custom styles",
-        "allFeatures": "✨ All features",
         "feedback": "⭐ Automatic feedback surveys",
         "prioritySupport": "🚀 Priority support",
-        "customIntegration": "🔌 Custom integrations"
+        "customIntegration": "🔌 Custom integrations",
+        "multiAgency": "✅ Multi-agency management (coming soon)",
+        "apiAccess": "✅ API access (coming soon)",
+        "paymentCollection": "✅ Payment collection (coming soon)"
       }
     }
   },
