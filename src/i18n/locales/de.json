@@ -303,12 +303,10 @@
       "features": {
         "allProFeatures": "Alle Professional-Funktionen und,",
         "messages": "💬 Unbegrenzte Nachrichten",
-        "unlimitedTours": "🗂️ Unbegrenzte Touren",
         "allLanguages": "🌍 Alle 7 Sprachen (Türkisch, Englisch, Deutsch, Französisch, Spanisch, Russisch, Arabisch)",
-        "customStyles": "🎨 4 Stile + benutzerdefinierte Stile",
-        "feedback": "⭐ Automatische Feedback-Umfragen",
+        "customStyles": "🎨 + 1 Benutzerdefinierter Gesprächsstil",
+        "feedback": "⭐ Automatische Kundenzufriedenheitsumfrage",
         "prioritySupport": "🚀 Priority-Support",
-        "customIntegration": "🔌 Benutzerdefinierte Integrationen",
         "multiAgency": "✅ Multi-Agentur-Verwaltung (demnächst)",
         "apiAccess": "✅ API-Zugriff (demnächst)",
         "paymentCollection": "✅ Zahlungsabwicklung (demnächst)"
