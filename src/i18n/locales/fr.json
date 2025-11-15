@@ -221,43 +221,50 @@
     "yearly": "Annuel",
     "starter": {
       "name": "Débutant",
-      "price": "49€",
+      "price": "€49",
       "period": "/mois",
+      "description": "Pour les petites agences et les débutants",
       "features": {
-        "messages": "1000 messages/mois",
-        "tours": "Jusqu'à 50 tours",
-        "ai": "Support IA de base",
-        "support": "Support par email"
-      },
-      "cta": "Commencer"
+        "messages": "💬 1,000 messages/mois",
+        "tours": "🗂️ Jusqu'à 10 tours",
+        "languages": "🌍 Turc + 1 langue",
+        "style": "🎨 Style professionnel uniquement",
+        "basicFeatures": "📊 Fonctionnalités de base"
+      }
     },
     "professional": {
       "name": "Professionnel",
-      "price": "99€",
+      "price": "€99",
       "period": "/mois",
-      "popular": "Populaire",
+      "badge": "Le plus populaire",
+      "description": "Pour les entreprises en croissance et les agences actives",
       "features": {
-        "messages": "5000 messages/mois",
-        "tours": "Tours illimités",
-        "ai": "Support IA avancé",
-        "analytics": "Analyses détaillées",
-        "support": "Support prioritaire"
-      },
-      "cta": "Commencer"
+        "messages": "💬 5,000 messages/mois",
+        "tours": "🗂️ Tours illimités",
+        "languages": "🌍 Jusqu'à 3 langues",
+        "allStyles": "🎨 4 styles de conversation différents",
+        "userProfiles": "👤 Profils utilisateur et suivi",
+        "reminders": "⏰ Rappels automatiques de tours",
+        "templates": "📝 Modèles de messages personnalisés",
+        "followUps": "📲 Messages de suivi",
+        "analytics": "📊 Analyses détaillées et suivi des revenus"
+      }
     },
     "enterprise": {
-      "name": "Enterprise",
-      "price": "Personnalisé",
-      "period": "",
+      "name": "Entreprise",
+      "price": "€149",
+      "period": "/mois",
+      "description": "Pour les grandes agences et les entreprises en chaîne",
       "features": {
-        "messages": "Messages illimités",
-        "tours": "Tours illimités",
-        "ai": "Modèle IA personnalisé",
-        "integration": "Intégrations personnalisées",
-        "support": "Support 24/7",
-        "training": "Formation et conseil"
-      },
-      "cta": "Nous Contacter"
+        "messages": "💬 Messages illimités",
+        "unlimitedTours": "🗂️ Tours illimités",
+        "allLanguages": "🌍 Les 7 langues",
+        "customStyles": "🎨 4 styles + styles personnalisés",
+        "allFeatures": "✨ Toutes les fonctionnalités",
+        "feedback": "⭐ Enquêtes de feedback automatiques",
+        "prioritySupport": "🚀 Support prioritaire",
+        "customIntegration": "🔌 Intégrations personnalisées"
+      }
     }
   },
   "footer": {

@@ -234,13 +234,11 @@
       "period": "/mes",
       "description": "Para agencias pequeñas y principiantes",
       "features": {
-        "messages": "💬 500 mensajes WhatsApp/mes (~16 mensajes/día)",
-        "basicReporting": "📊 Informes básicos y estadísticas",
-        "unlimitedTours": "🗂️ Tours ilimitados",
-        "reservationManagement": "📝 Gestión de reservas",
-        "emailSupport": "📧 Soporte por email (48 horas)",
-        "aiAnswers": "🤖 Respuestas automáticas con IA",
-        "history30": "💾 Historial de conversaciones de 30 días"
+        "messages": "💬 1,000 mensajes/mes",
+        "tours": "🗂️ Hasta 10 tours",
+        "languages": "🌍 Turco + 1 idioma",
+        "style": "🎨 Solo estilo profesional",
+        "basicFeatures": "📊 Funciones básicas"
       }
     },
     "professional": {
@@ -248,38 +246,33 @@
       "price": "€99",
       "period": "/mes",
       "badge": "Más Popular",
-      "description": "Para negocios en crecimiento y agencias activas",
+      "description": "Para empresas en crecimiento y agencias activas",
       "features": {
-        "messages": "💬 3,000 mensajes WhatsApp/mes (~100 mensajes/día)",
-        "advancedReporting": "📈 Informes avanzados y análisis",
-        "unlimitedTours": "🗂️ Tours ilimitados",
-        "advancedReservation": "📝 Gestión avanzada de reservas",
-        "userProfiles": "🎯 Perfiles de usuarios WhatsApp y segmentación",
-        "prioritySupport": "⚡ Soporte prioritario (en 24 horas)",
-        "crmIntegration": "🔗 Soporte de integración CRM",
-        "history90": "💾 Historial de conversaciones de 90 días",
-        "customTemplates": "🎨 Plantillas personalizadas de mensajes WhatsApp",
-        "tourReminders": "📱 Recordatorios automáticos de tours"
+        "messages": "💬 5,000 mensajes/mes",
+        "tours": "🗂️ Tours ilimitados",
+        "languages": "🌍 Hasta 3 idiomas",
+        "allStyles": "🎨 4 estilos de conversación diferentes",
+        "userProfiles": "👤 Perfiles de usuario y seguimiento",
+        "reminders": "⏰ Recordatorios automáticos de tours",
+        "templates": "📝 Plantillas de mensajes personalizadas",
+        "followUps": "📲 Mensajes de seguimiento",
+        "analytics": "📊 Análisis detallados y seguimiento de ingresos"
       }
     },
     "enterprise": {
       "name": "Empresarial",
-      "price": "Personalizado",
-      "period": "",
-      "description": "Para agencias grandes y negocios en cadena",
+      "price": "€149",
+      "period": "/mes",
+      "description": "Para grandes agencias y empresas en cadena",
       "features": {
-        "unlimitedMessages": "💬 Mensajes WhatsApp ilimitados",
-        "customReporting": "📊 Informes personalizados y paneles",
-        "multiBranch": "🗂️ Soporte multi-sucursal",
-        "enterpriseReservation": "📝 Gestión empresarial de reservas",
-        "advancedSegmentation": "🎯 Segmentación avanzada de clientes y análisis IA",
-        "support247": "🚀 Soporte prioritario 24/7",
-        "apiAccess": "🔌 Acceso API e integraciones personalizadas",
-        "unlimitedHistory": "💾 Historial ilimitado de conversaciones",
-        "accountManager": "👔 Gerente de cuenta dedicado",
-        "customDevelopment": "⚙️ Desarrollo personalizado",
-        "enterpriseSecurity": "🔒 Seguridad empresarial y garantía SLA",
-        "multipleAccounts": "🌐 Soporte de múltiples cuentas WhatsApp"
+        "messages": "💬 Mensajes ilimitados",
+        "unlimitedTours": "🗂️ Tours ilimitados",
+        "allLanguages": "🌍 Los 7 idiomas",
+        "customStyles": "🎨 4 estilos + estilos personalizados",
+        "allFeatures": "✨ Todas las funciones",
+        "feedback": "⭐ Encuestas de feedback automáticas",
+        "prioritySupport": "🚀 Soporte prioritario",
+        "customIntegration": "🔌 Integraciones personalizadas"
       }
     }
   },
