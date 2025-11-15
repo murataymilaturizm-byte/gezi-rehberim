@@ -67,11 +67,11 @@ serve(async (req) => {
       })
     };
 
-    // Try TEST URL first to check DNS
-    const sipayUrl = 'https://test.sipay.com.tr/api/payment';
+    // PRODUCTION URL - Sipay canlı sunucu
+    const sipayUrl = 'https://app.sipay.com.tr/ccpayment';
     
-    console.log("🔗 Sipay URL (TEST for DNS check):", sipayUrl);
-    console.log("⚠️ Using TEST URL to diagnose DNS issue");
+    console.log("🔗 Sipay URL (PRODUCTION):", sipayUrl);
+    console.log("⚠️ PRODUCTION MODE: Gerçek ödeme işlenecek!");
     
     return new Response(
       JSON.stringify({
