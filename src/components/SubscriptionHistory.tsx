@@ -158,9 +158,9 @@ export const SubscriptionHistory = () => {
       name: "Başlangıç",
       price: 2999,
       features: [
-        "💬 500 mesaj/ay",
-        "🏨 5 tura kadar",
-        "🌍 Türkçe + 1 dil",
+        "💬 1.000 mesaj/ay",
+        "🏨 10 tura kadar",
+        "🌍 1 dil (Türkçe)",
         "👔 Profesyonel üslup",
         "📊 Temel raporlama",
         "💾 30 gün geçmiş"
@@ -172,12 +172,13 @@ export const SubscriptionHistory = () => {
       name: "Profesyonel",
       price: 7999,
       features: [
-        "💬 2.000 mesaj/ay",
-        "🏨 20 tura kadar",
-        "🌍 4 dil desteği",
+        "💬 5.000 mesaj/ay",
+        "🏨 Sınırsız tur",
+        "🌍 3 dil desteği",
         "🎭 4 konuşma üslubu",
         "👥 Kullanıcı profilleri",
         "🔔 Otomatik hatırlatmalar",
+        "📧 Otomatik takip mesajları",
         "📊 Gelişmiş analizler",
         "💾 90 gün geçmiş"
       ],
@@ -189,12 +190,13 @@ export const SubscriptionHistory = () => {
       name: "Kurumsal",
       price: 14999,
       features: [
-        "💬 10.000 mesaj/ay",
+        "💬 Sınırsız mesaj",
         "🏨 Sınırsız tur",
         "🌍 7 dil desteği",
-        "🎨 Özel üslup",
+        "🎨 4 konuşma üslubu",
         "👥 Gelişmiş profiller",
         "🔔 Akıllı hatırlatmalar",
+        "📧 Otomatik takip & anket",
         "📊 Premium analizler",
         "🚀 7/24 destek",
         "💾 Sınırsız geçmiş"
