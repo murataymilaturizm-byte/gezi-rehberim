@@ -727,13 +727,13 @@ const Admin = () => {
             
             {/* Registration Filters */}
             {activeTab === "registrations" && (
-              <div className="mt-4 p-4 bg-accent/30 rounded-lg border border-border/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="mt-4 p-3 bg-accent/30 rounded-lg border border-border/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                   {/* Status Filter */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.status")}</label>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.status")}</label>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder={t("admin.filters.allStatuses")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -747,10 +747,10 @@ const Admin = () => {
                   </div>
 
                   {/* Tour Filter */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.tour")}</label>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.tour")}</label>
                     <Select value={filterTour} onValueChange={setFilterTour}>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder={t("admin.filters.allTours")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -765,15 +765,15 @@ const Admin = () => {
                   </div>
 
                   {/* Date Filter */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.dateRange")}</label>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.dateRange")}</label>
                     <div className="flex gap-1">
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className={cn(
-                              "h-9 flex-1 justify-start text-left font-normal text-xs px-2",
+                              "h-8 flex-1 justify-start text-left font-normal text-[10px] px-1.5",
                               !filterDateFrom && "text-muted-foreground"
                             )}
                           >
@@ -796,7 +796,7 @@ const Admin = () => {
                           <Button
                             variant="outline"
                             className={cn(
-                              "h-9 flex-1 justify-start text-left font-normal text-xs px-2",
+                              "h-8 flex-1 justify-start text-left font-normal text-[10px] px-1.5",
                               !filterDateTo && "text-muted-foreground"
                             )}
                           >
@@ -818,22 +818,22 @@ const Admin = () => {
                   </div>
 
                   {/* Price Range Filter */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">{t("admin.filters.priceRange")}</label>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.priceRange")}</label>
                     <div className="flex gap-1">
                       <input
                         type="number"
                         value={filterPriceMin}
                         onChange={(e) => setFilterPriceMin(e.target.value)}
                         placeholder={t("admin.filters.min")}
-                        className="flex h-9 flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                        className="flex h-8 w-full rounded-md border border-input bg-background px-1.5 py-1 text-[10px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       />
                       <input
                         type="number"
                         value={filterPriceMax}
                         onChange={(e) => setFilterPriceMax(e.target.value)}
                         placeholder={t("admin.filters.max")}
-                        className="flex h-9 flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                        className="flex h-8 w-full rounded-md border border-input bg-background px-1.5 py-1 text-[10px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       />
                     </div>
                   </div>
@@ -841,11 +841,11 @@ const Admin = () => {
 
                 {/* Clear Filters Button */}
                 {(filterStatus !== "all" || filterTour !== "all" || filterDateFrom || filterDateTo || filterPriceMin || filterPriceMax) && (
-                  <div className="mt-3 flex justify-end">
+                  <div className="mt-2 flex justify-end">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 text-xs"
+                      className="h-7 text-[10px]"
                       onClick={() => {
                         setFilterStatus("all");
                         setFilterTour("all");
