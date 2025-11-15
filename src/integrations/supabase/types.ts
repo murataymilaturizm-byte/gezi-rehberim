@@ -21,6 +21,7 @@ export type Database = {
           city: string | null
           conversation_style: string | null
           created_at: string | null
+          enabled_languages: string[] | null
           id: string
           language_preference: string | null
           last_message_reset_date: string | null
@@ -46,6 +47,7 @@ export type Database = {
           city?: string | null
           conversation_style?: string | null
           created_at?: string | null
+          enabled_languages?: string[] | null
           id?: string
           language_preference?: string | null
           last_message_reset_date?: string | null
@@ -71,6 +73,7 @@ export type Database = {
           city?: string | null
           conversation_style?: string | null
           created_at?: string | null
+          enabled_languages?: string[] | null
           id?: string
           language_preference?: string | null
           last_message_reset_date?: string | null

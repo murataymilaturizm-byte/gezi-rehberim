@@ -55,6 +55,7 @@ import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExp
 import { SupportChatWidget } from "@/components/SupportChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { LanguageManagement } from "@/components/LanguageManagement";
 import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
 
 interface Tour {
@@ -117,7 +118,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -547,6 +548,13 @@ const Admin = () => {
               >
                 {t("admin.dashboard.whatsappSettings")}
               </Button>
+              <Button
+                variant={activeTab === "languages" ? "default" : "outline"}
+                onClick={() => setActiveTab("languages")}
+                className={`transition-all duration-300 ${activeTab === "languages" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
+              >
+                {t("admin.tabs.languages")}
+              </Button>
               {planFeatures?.has_templates && (
                 <Button
                   variant={activeTab === "templates" ? "default" : "outline"}
@@ -612,6 +620,8 @@ const Admin = () => {
           </div>
         ) : activeTab === "settings" ? (
           <TwilioSettings />
+        ) : activeTab === "languages" ? (
+          <LanguageManagement />
         ) : activeTab === "templates" && planFeatures?.has_templates ? (
           <MessageTemplates />
         ) : activeTab === "history" ? (
