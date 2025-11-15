@@ -432,7 +432,18 @@
         "update": "Обновить",
         "save": "Сохранить",
         "integrationComplete": "Интеграция Завершена",
-        "integrationCompleteDesc": "Ваш номер WhatsApp Business {phone} зарегистрирован в системе."
+        "integrationCompleteDesc": "Ваш номер WhatsApp Business {phone} зарегистрирован в системе.",
+        "phoneTitle": "Номер WhatsApp Business",
+        "phoneDescription": "Введите номер WhatsApp Business, зарегистрированный в Twilio",
+        "styleTitle": "Стиль Общения",
+        "styleDescription": "Определите, как ваш бот будет общаться с клиентами",
+        "upgradeForStyles": "Все стили в пакете Professional",
+        "updateStyle": "Обновить Стиль",
+        "agencyNotFound": "Информация об агентстве не найдена",
+        "loadError": "Не удалось загрузить настройки WhatsApp",
+        "phoneUpdateError": "Не удалось сохранить номер WhatsApp",
+        "styleUpdateSuccess": "Стиль общения обновлен",
+        "styleUpdateError": "Не удалось обновить стиль общения"
       },
       "status": {
         "pending": "В ожидании",

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock } from "lucide-react";
+import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import {
@@ -93,8 +93,8 @@ export const TwilioSettings = () => {
     } catch (error) {
       console.error("Error loading WhatsApp settings:", error);
       toast({
-        title: "Hata",
-        description: "WhatsApp ayarları yüklenemedi",
+        title: t("common.error"),
+        description: t("admin.whatsapp.settings.loadError"),
         variant: "destructive"
       });
     } finally {
@@ -102,14 +102,14 @@ export const TwilioSettings = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate input
     const validation = whatsappSchema.safeParse(formData);
     if (!validation.success) {
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: validation.error.errors[0].message,
         variant: "destructive"
       });
@@ -118,8 +118,8 @@ export const TwilioSettings = () => {
 
     if (!agencyId) {
       toast({
-        title: "Hata",
-        description: "Acente bilgisi bulunamadı",
+        title: t("common.error"),
+        description: t("admin.whatsapp.settings.agencyNotFound"),
         variant: "destructive"
       });
       return;
@@ -127,34 +127,25 @@ export const TwilioSettings = () => {
 
     setSaving(true);
     
-    console.log("WhatsApp Settings - Updating agency:", agencyId);
-    console.log("WhatsApp Settings - Form data:", formData);
-
     try {
       // Using twilio_phone_number column temporarily until types are updated
       const { data, error } = await supabase
         .from("agencies")
         .update({
           twilio_phone_number: formData.whatsapp_phone_number,
-          whatsapp_status: 'pending',
-          conversation_style: formData.conversation_style
+          whatsapp_status: 'pending'
         } as any)
         .eq("id", agencyId)
         .select()
         .single();
 
-      if (error) {
-        console.error("WhatsApp Settings - Update error:", error);
-        throw error;
-      }
-
-      console.log("WhatsApp Settings - Update successful:", data);
+      if (error) throw error;
 
       setIsConfigured(true);
       setWhatsappStatus('pending');
 
       toast({
-        title: "Başarılı",
+        title: t("common.success"),
         description: t("admin.whatsapp.status.requestReceived"),
       });
 
@@ -162,8 +153,38 @@ export const TwilioSettings = () => {
     } catch (error: any) {
       console.error("WhatsApp Settings - Error:", error);
       toast({
-        title: "Hata",
-        description: error.message || "WhatsApp numarası kaydedilemedi",
+        title: t("common.error"),
+        description: t("admin.whatsapp.settings.phoneUpdateError"),
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStyleUpdate = async () => {
+    if (!agencyId) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("agencies")
+        .update({ conversation_style: formData.conversation_style } as any)
+        .eq("id", agencyId);
+
+      if (error) throw error;
+
+      toast({
+        title: t("common.success"),
+        description: t("admin.whatsapp.settings.styleUpdateSuccess"),
+      });
+
+      await loadWhatsAppSettings();
+    } catch (error: any) {
+      console.error("Style update error:", error);
+      toast({
+        title: t("common.error"),
+        description: t("admin.whatsapp.settings.styleUpdateError"),
         variant: "destructive"
       });
     } finally {
@@ -235,7 +256,7 @@ export const TwilioSettings = () => {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handlePhoneSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="whatsapp_phone_number">
               {t("admin.whatsapp.settings.phoneNumber")}
