@@ -48,11 +48,11 @@ serve(async (req) => {
       amount = quotaPrices[quotaAmount] || 1500;
       description = `${quotaAmount} mesaj ekstra kota`;
     } else {
-      // Plan purchase
+      // Plan purchase (prices from Index.tsx)
       const planPrices: Record<string, number> = {
-        starter: 3999,
-        professional: 7999,
-        enterprise: 9999,
+        starter: 2999,
+        professional: 4999,
+        enterprise: 7999,
       };
 
       amount = planPrices[planType] || 3999;
