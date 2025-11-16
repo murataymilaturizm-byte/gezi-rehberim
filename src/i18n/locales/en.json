@@ -574,6 +574,7 @@
       "tours": "Tours",
       "registrations": "Registrations",
       "whatsapp": "WhatsApp",
+      "userProfiles": "User Profiles",
       "settings": "Settings",
       "languages": "Language Management",
       "history": "My Plan",
@@ -583,7 +584,9 @@
       "templates": "Templates",
       "customerFeedback": "Customer Satisfaction",
       "tickets": "Support",
-      "whatsapp_logs": "WhatsApp Logs"
+      "allTickets": "All Support Tickets",
+      "whatsappLogs": "WhatsApp Logs",
+      "analytics": "Analytics"
     },
     "dashboard": {
       "title": "Dashboard",

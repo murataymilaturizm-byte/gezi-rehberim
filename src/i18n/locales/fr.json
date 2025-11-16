@@ -556,6 +556,7 @@
       "tours": "Tours",
       "registrations": "Inscriptions",
       "whatsapp": "WhatsApp",
+      "userProfiles": "Profils d'utilisateurs",
       "settings": "Paramètres",
       "languages": "Gestion des Langues",
       "history": "Mon Plan",
@@ -565,7 +566,9 @@
       "templates": "Modèles",
       "customerFeedback": "Satisfaction client",
       "tickets": "Support",
-      "whatsapp_logs": "Journaux WhatsApp"
+      "allTickets": "Tous les tickets de support",
+      "whatsappLogs": "Journaux WhatsApp",
+      "analytics": "Analytique"
     },
     "dashboard": {
       "title": "Tableau de Bord",

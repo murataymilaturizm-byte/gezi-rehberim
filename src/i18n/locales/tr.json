@@ -767,6 +767,7 @@
       "tours": "Turlar",
       "registrations": "Kayıtlar",
       "whatsapp": "WhatsApp",
+      "userProfiles": "Kullanıcı Profilleri",
       "settings": "Ayarlar",
       "languages": "Dil Yönetimi",
       "history": "Planım",
@@ -776,7 +777,9 @@
       "templates": "Şablonlar",
       "customerFeedback": "Müşteri Memnuniyeti",
       "tickets": "Destek",
-      "whatsapp_logs": "WhatsApp Logları"
+      "allTickets": "Tüm Destek Talepleri",
+      "whatsappLogs": "WhatsApp Logları",
+      "analytics": "Analitik"
     },
     "tours": {
       "title": "Turlar",
