@@ -550,7 +550,7 @@ export const AgencyManagement = () => {
           </Dialog>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-x-auto">
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
         ) : agencies.length === 0 ? (
@@ -558,20 +558,19 @@ export const AgencyManagement = () => {
             Henüz acente eklenmemiş
           </div>
         ) : (
-          <ScrollArea className="w-full">
-            <div className="min-w-[1200px]">
-              <Table>
+          <div className="w-full overflow-auto">
+            <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead>{t("admin.agency.tableHeaders.agencyName")}</TableHead>
-                <TableHead>{t("admin.agency.tableHeaders.authorized")}</TableHead>
-                <TableHead>{t("admin.agency.tableHeaders.whatsappNo")}</TableHead>
-                <TableHead>{t("admin.agency.tableHeaders.plan")}</TableHead>
-                <TableHead>{t("admin.agency.tableHeaders.messageQuota")}</TableHead>
-                <TableHead>{t("admin.agency.tableHeaders.subscription")}</TableHead>
-                <TableHead>{t("admin.agency.tableHeaders.remainingTime")}</TableHead>
-                <TableHead>{t("admin.agency.tableHeaders.status")}</TableHead>
-                <TableHead className="text-right">{t("admin.agency.tableHeaders.actions")}</TableHead>
+                <TableHead className="min-w-[150px]">{t("admin.agency.tableHeaders.agencyName")}</TableHead>
+                <TableHead className="min-w-[120px]">{t("admin.agency.tableHeaders.authorized")}</TableHead>
+                <TableHead className="min-w-[180px]">{t("admin.agency.tableHeaders.whatsappNo")}</TableHead>
+                <TableHead className="min-w-[100px]">{t("admin.agency.tableHeaders.plan")}</TableHead>
+                <TableHead className="min-w-[130px]">{t("admin.agency.tableHeaders.messageQuota")}</TableHead>
+                <TableHead className="min-w-[100px]">{t("admin.agency.tableHeaders.subscription")}</TableHead>
+                <TableHead className="min-w-[100px]">{t("admin.agency.tableHeaders.remainingTime")}</TableHead>
+                <TableHead className="min-w-[80px]">{t("admin.agency.tableHeaders.status")}</TableHead>
+                <TableHead className="text-right min-w-[180px]">{t("admin.agency.tableHeaders.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -615,9 +614,9 @@ export const AgencyManagement = () => {
 
                 return (
                   <TableRow key={agency.id}>
-                    <TableCell className="font-medium">{agency.agency_name}</TableCell>
-                    <TableCell>{agency.profiles?.full_name || "-"}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">{agency.agency_name}</TableCell>
+                    <TableCell className="whitespace-nowrap">{agency.profiles?.full_name || "-"}</TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <div className="space-y-1">
                         <span className="text-sm font-mono block">
                           {agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" 
@@ -662,12 +661,12 @@ export const AgencyManagement = () => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant="outline" className="text-xs">
                         {planLabels[agency.plan_type] || agency.plan_type}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-sm">
                           <MessageSquare className="w-3 h-3" />
@@ -682,12 +681,12 @@ export const AgencyManagement = () => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(agency.subscription_status)}>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant={getStatusVariant(agency.subscription_status)} className="text-xs">
                         {statusLabels[agency.subscription_status] || agency.subscription_status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {remainingDays !== null && (
                         <div className="flex items-center gap-1 text-sm">
                           <Clock className="w-3 h-3" />
@@ -697,12 +696,12 @@ export const AgencyManagement = () => {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={agency.active ? "default" : "secondary"}>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant={agency.active ? "default" : "secondary"} className="text-xs">
                         {agency.active ? "Aktif" : "Pasif"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right whitespace-nowrap">
                       <div className="flex gap-2 justify-end">
                         <Button
                           variant="outline"
@@ -743,9 +742,8 @@ export const AgencyManagement = () => {
                 );
               })}
             </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
+            </Table>
+          </div>
         )}
       </CardContent>
 
