@@ -83,7 +83,26 @@ export function WhatsAppLogs() {
   const loadLogs = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Get current user and check if super admin
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
+
+      // Check if super admin
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'super_admin')
+        .maybeSingle();
+
+      const isSuperAdmin = !!roleData;
+      console.log('Is super admin:', isSuperAdmin);
+
+      let query = supabase
         .from('whatsapp_conversations')
         .select(`
           id,
@@ -99,13 +118,33 @@ export function WhatsAppLogs() {
         .order('created_at', { ascending: false })
         .limit(500);
 
+      // If not super admin, filter by agency
+      if (!isSuperAdmin) {
+        const { data: agencyData } = await supabase
+          .from('agencies')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!agencyData) {
+          console.log('No agency found for user');
+          return;
+        }
+
+        console.log('Filtering by agency:', agencyData.id);
+        query = query.eq('agency_id', agencyData.id);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
+      console.log('Loaded logs:', data?.length);
       setLogs(data || []);
     } catch (error: any) {
       console.error('Error loading logs:', error);
       toast({
         title: "Hata",
-        description: "Loglar yüklenirken bir hata oluştu",
+        description: "Loglar yüklenirken bir hata oluştu: " + error.message,
         variant: "destructive",
       });
     } finally {
