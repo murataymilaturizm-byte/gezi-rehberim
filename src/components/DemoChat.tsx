@@ -7,6 +7,7 @@ import { Send, MessageSquare, Bot, User, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ interface Message {
 export const DemoChat = () => {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
+  const isMobile = useIsMobile();
   const [sessionId] = useState(() => {
     // Create or get existing session ID
     const stored = localStorage.getItem('demo_chat_session_id');
@@ -192,12 +194,12 @@ export const DemoChat = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center ${isMobile ? 'flex-wrap gap-1.5' : 'gap-2'}`}>
             <Select
               value={conversationStyle}
               onValueChange={(value: 'friendly' | 'professional' | 'energetic' | 'helpful') => setConversationStyle(value)}
             >
-              <SelectTrigger className="w-[180px] bg-background text-foreground">
+              <SelectTrigger className={`${isMobile ? 'w-[110px] text-xs' : 'w-[180px]'} bg-background text-foreground`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -209,12 +211,12 @@ export const DemoChat = () => {
             </Select>
             <Button
               variant="outline"
-              size="icon"
+              size={isMobile ? "sm" : "icon"}
               onClick={resetConversation}
               className="bg-background text-foreground hover:bg-background/80"
               title={t("demo.resetChat")}
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
             </Button>
             <LanguageSelector />
           </div>
