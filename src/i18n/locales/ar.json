@@ -552,6 +552,7 @@
       "tours": "الرحلات",
       "registrations": "التسجيلات",
       "whatsapp": "واتساب",
+      "userProfiles": "ملفات المستخدمين",
       "settings": "الإعدادات",
       "languages": "إدارة اللغات",
       "history": "خطتي",
@@ -561,7 +562,9 @@
       "templates": "القوالب",
       "customerFeedback": "رضا العملاء",
       "tickets": "الدعم",
-      "whatsapp_logs": "سجلات واتساب"
+      "allTickets": "جميع تذاكر الدعم",
+      "whatsappLogs": "سجلات واتساب",
+      "analytics": "التحليلات"
     },
     "dashboard": {
       "title": "لوحة القيادة",

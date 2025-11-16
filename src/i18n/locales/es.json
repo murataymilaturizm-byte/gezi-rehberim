@@ -585,6 +585,7 @@
       "tours": "Tours",
       "registrations": "Registros",
       "whatsapp": "WhatsApp",
+      "userProfiles": "Perfiles de usuario",
       "settings": "Configuración",
       "languages": "Gestión de Idiomas",
       "history": "Mi Plan",
@@ -594,7 +595,9 @@
       "templates": "Plantillas",
       "customerFeedback": "Satisfacción del cliente",
       "tickets": "Soporte",
-      "whatsapp_logs": "Registros de WhatsApp"
+      "allTickets": "Todos los tickets de soporte",
+      "whatsappLogs": "Registros de WhatsApp",
+      "analytics": "Analítica"
     },
     "dashboard": {
       "title": "Panel de Control",

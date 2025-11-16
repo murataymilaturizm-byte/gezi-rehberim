@@ -585,6 +585,7 @@
       "tours": "Туры",
       "registrations": "Регистрации",
       "whatsapp": "WhatsApp",
+      "userProfiles": "Профили пользователей",
       "settings": "Настройки",
       "languages": "Управление Языками",
       "history": "Мой План",
@@ -594,7 +595,9 @@
       "templates": "Шаблоны",
       "customerFeedback": "Удовлетворенность клиентов",
       "tickets": "Поддержка",
-      "whatsapp_logs": "Журналы WhatsApp"
+      "allTickets": "Все заявки в поддержку",
+      "whatsappLogs": "Журналы WhatsApp",
+      "analytics": "Аналитика"
     },
     "dashboard": {
       "title": "Панель Управления",
