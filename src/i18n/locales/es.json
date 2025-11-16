@@ -545,7 +545,8 @@
       "twilioSettings": "Configuración de Twilio",
       "templates": "Plantillas",
       "customerFeedback": "Satisfacción del cliente",
-      "tickets": "Soporte"
+      "tickets": "Soporte",
+      "whatsapp_logs": "Registros de WhatsApp"
     },
     "dashboard": {
       "title": "Panel de Control",

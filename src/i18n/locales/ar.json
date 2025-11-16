@@ -512,7 +512,8 @@
       "twilioSettings": "إعدادات Twilio",
       "templates": "القوالب",
       "customerFeedback": "رضا العملاء",
-      "tickets": "الدعم"
+      "tickets": "الدعم",
+      "whatsapp_logs": "سجلات واتساب"
     },
     "dashboard": {
       "title": "لوحة القيادة",

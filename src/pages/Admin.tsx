@@ -639,7 +639,7 @@ const Admin = () => {
               onClick={() => setActiveTab("whatsapp_logs")}
               className={`transition-all duration-300 ${activeTab === "whatsapp_logs" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
             >
-              WhatsApp Logları
+              {t("admin.tabs.whatsapp_logs")}
             </Button>
             <Button
               variant={activeTab === "agencies" ? "default" : "outline"}

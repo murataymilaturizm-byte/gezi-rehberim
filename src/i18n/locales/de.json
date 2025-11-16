@@ -552,7 +552,8 @@
       "twilioSettings": "Twilio-Einstellungen",
       "templates": "Vorlagen",
       "customerFeedback": "Kundenzufriedenheit",
-      "tickets": "Support"
+      "tickets": "Support",
+      "whatsapp_logs": "WhatsApp-Protokolle"
     },
     "dashboard": {
       "title": "Dashboard",

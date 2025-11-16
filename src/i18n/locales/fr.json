@@ -516,7 +516,8 @@
       "twilioSettings": "Paramètres Twilio",
       "templates": "Modèles",
       "customerFeedback": "Satisfaction client",
-      "tickets": "Support"
+      "tickets": "Support",
+      "whatsapp_logs": "Journaux WhatsApp"
     },
     "dashboard": {
       "title": "Tableau de Bord",
