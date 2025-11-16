@@ -38,7 +38,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut, Download, AlertCircle } from "lucide-react";
+import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut, Download, AlertCircle, Menu } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -68,6 +68,8 @@ import { TicketManagement } from "@/components/TicketManagement";
 import { SuperAdminTickets } from "@/components/SuperAdminTickets";
 import { WhatsAppLogs } from "@/components/WhatsAppLogs";
 import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminSidebar } from "@/components/AdminSidebar";
 
 interface Tour {
   id: string;
@@ -130,7 +132,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets" | "whatsapp_logs">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
