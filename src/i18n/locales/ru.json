@@ -545,7 +545,8 @@
       "twilioSettings": "Настройки Twilio",
       "templates": "Шаблоны",
       "customerFeedback": "Удовлетворенность клиентов",
-      "tickets": "Поддержка"
+      "tickets": "Поддержка",
+      "whatsapp_logs": "Журналы WhatsApp"
     },
     "dashboard": {
       "title": "Панель Управления",

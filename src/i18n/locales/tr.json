@@ -767,7 +767,8 @@
       "twilioSettings": "Twilio Ayarları",
       "templates": "Şablonlar",
       "customerFeedback": "Müşteri Memnuniyeti",
-      "tickets": "Destek"
+      "tickets": "Destek",
+      "whatsapp_logs": "WhatsApp Logları"
     },
     "tours": {
       "title": "Turlar",

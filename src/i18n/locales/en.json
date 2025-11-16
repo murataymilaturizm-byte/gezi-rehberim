@@ -534,7 +534,8 @@
       "twilioSettings": "Twilio Settings",
       "templates": "Templates",
       "customerFeedback": "Customer Satisfaction",
-      "tickets": "Support"
+      "tickets": "Support",
+      "whatsapp_logs": "WhatsApp Logs"
     },
     "dashboard": {
       "title": "Dashboard",
