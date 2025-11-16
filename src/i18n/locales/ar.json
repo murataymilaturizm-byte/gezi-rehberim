@@ -360,6 +360,14 @@
   },
   "admin": {
     "title": "لوحة الوكالة",
+    "groups": {
+      "general": "الإدارة العامة",
+      "tours": "إدارة الجولات",
+      "communication": "الاتصالات",
+      "reporting": "التقارير",
+      "support": "الدعم",
+      "superAdmin": "المشرف الرئيسي"
+    },
     "filters": {
       "status": "الحالة",
       "tour": "الرحلة",

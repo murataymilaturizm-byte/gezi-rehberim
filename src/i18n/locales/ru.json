@@ -393,6 +393,14 @@
   },
   "admin": {
     "title": "Панель Агентства",
+    "groups": {
+      "general": "Общее управление",
+      "tours": "Управление турами",
+      "communication": "Коммуникация",
+      "reporting": "Отчетность",
+      "support": "Поддержка",
+      "superAdmin": "Супер админ"
+    },
     "filters": {
       "status": "Статус",
       "tour": "Тур",
