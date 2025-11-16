@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, DollarSign, Users, MessageSquare, Target, Award, Calendar, MapPin } from "lucide-react";
-import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { TrendingUp, TrendingDown, DollarSign, Users, MessageSquare, Target, Award, Calendar as CalendarIcon, MapPin, Filter } from "lucide-react";
+import { format, startOfMonth, endOfMonth, subMonths, subDays, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr } from "date-fns/locale";
 import {
   BarChart,
@@ -19,6 +20,14 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 interface AnalyticsData {
   revenueByMonth: Array<{ month: string; revenue: number; registrations: number }>;
@@ -33,13 +42,51 @@ interface AnalyticsData {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
+type DateFilterType = '1month' | '3months' | '6months' | '1year' | 'custom';
+
 export const AdvancedAnalytics = () => {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
     loadAnalytics();
-  }, []);
+  }, [dateFilter, customDateRange]);
+
+  const getDateRange = () => {
+    const endDate = new Date();
+    let startDate: Date;
+
+    switch (dateFilter) {
+      case '1month':
+        startDate = subMonths(endDate, 1);
+        break;
+      case '3months':
+        startDate = subMonths(endDate, 3);
+        break;
+      case '6months':
+        startDate = subMonths(endDate, 6);
+        break;
+      case '1year':
+        startDate = subYears(endDate, 1);
+        break;
+      case 'custom':
+        if (customDateRange?.from) {
+          startDate = startOfDay(customDateRange.from);
+          if (customDateRange.to) {
+            return { startDate, endDate: endOfDay(customDateRange.to) };
+          }
+          return { startDate, endDate: endOfDay(endDate) };
+        }
+        startDate = subMonths(endDate, 6);
+        break;
+      default:
+        startDate = subMonths(endDate, 6);
+    }
+
+    return { startDate: startOfDay(startDate), endDate: endOfDay(endDate) };
+  };
 
   const loadAnalytics = async () => {
     try {
@@ -76,8 +123,9 @@ export const AdvancedAnalytics = () => {
 
       console.log('Loading analytics for agency:', agencyId || 'all (super admin)');
 
-      // Son 6 aylık gelir analizi
-      const sixMonthsAgo = subMonths(new Date(), 6);
+      // Tarih aralığını al
+      const { startDate, endDate } = getDateRange();
+      console.log('Date range:', startDate, 'to', endDate);
       let registrationsQuery = supabase
         .from("registrations")
         .select(`
@@ -88,7 +136,8 @@ export const AdvancedAnalytics = () => {
           tours!inner(destination),
           tour_dates!inner(price_adult)
         `)
-        .gte("created_at", sixMonthsAgo.toISOString())
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString())
         .in("status", ["CONFIRMED", "NEW", "PENDING"]);
 
       if (agencyId) {
@@ -149,12 +198,12 @@ export const AdvancedAnalytics = () => {
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 5);
 
-      // Dönüşüm oranı (son 30 gün)
-      const thirtyDaysAgo = subMonths(new Date(), 1);
+      // Dönüşüm oranı (seçili tarih aralığı)
       let conversationQuery = supabase
         .from("whatsapp_conversations")
         .select("*", { count: 'exact', head: true })
-        .gte("created_at", thirtyDaysAgo.toISOString());
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString());
 
       if (agencyId) {
         conversationQuery = conversationQuery.eq("agency_id", agencyId);
@@ -165,7 +214,8 @@ export const AdvancedAnalytics = () => {
       let registrationQuery = supabase
         .from("registrations")
         .select("*", { count: 'exact', head: true })
-        .gte("created_at", thirtyDaysAgo.toISOString());
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString());
 
       if (agencyId) {
         registrationQuery = registrationQuery.eq("agency_id", agencyId);
@@ -212,10 +262,126 @@ export const AdvancedAnalytics = () => {
     }
   };
 
+  const getDateFilterLabel = () => {
+    switch (dateFilter) {
+      case '1month': return 'Son 1 Ay';
+      case '3months': return 'Son 3 Ay';
+      case '6months': return 'Son 6 Ay';
+      case '1year': return 'Son 1 Yıl';
+      case 'custom':
+        if (customDateRange?.from) {
+          const fromDate = format(customDateRange.from, 'dd MMM yyyy', { locale: tr });
+          const toDate = customDateRange.to 
+            ? format(customDateRange.to, 'dd MMM yyyy', { locale: tr })
+            : 'Bugün';
+          return `${fromDate} - ${toDate}`;
+        }
+        return 'Özel Tarih';
+      default: return 'Son 6 Ay';
+    }
+  };
+
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+  return (
+    <div className="space-y-6">
+      {/* Tarih Filtreleme */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Tarih Aralığı Filtresi
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={dateFilter === '1month' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('1month');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 1 Ay
+            </Button>
+            <Button
+              variant={dateFilter === '3months' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('3months');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 3 Ay
+            </Button>
+            <Button
+              variant={dateFilter === '6months' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('6months');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 6 Ay
+            </Button>
+            <Button
+              variant={dateFilter === '1year' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('1year');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 1 Yıl
+            </Button>
+            
+            {/* Özel Tarih Aralığı */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !customDateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateFilter === 'custom' && customDateRange?.from ? (
+                    getDateFilterLabel()
+                  ) : (
+                    <span>Özel Tarih</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={customDateRange}
+                  onSelect={(range) => {
+                    setCustomDateRange(range);
+                    if (range?.from) {
+                      setDateFilter('custom');
+                    }
+                  }}
+                  numberOfMonths={2}
+                  locale={tr}
+                  disabled={(date) => date > new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mt-4">
+            Gösterilen veriler: <span className="font-medium">{getDateFilterLabel()}</span>
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Özet Kartlar */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="h-20 bg-muted" />
@@ -252,7 +418,7 @@ export const AdvancedAnalytics = () => {
               {new Intl.NumberFormat('tr-TR').format(analytics.totalRevenue)} TL
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Son 6 ay
+              {analytics.totalRegistrations} kayıt • {getDateFilterLabel()}
             </p>
           </CardContent>
         </Card>
