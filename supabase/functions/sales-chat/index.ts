@@ -15,8 +15,25 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { message, conversationHistory } = body;
+    const message = (body.message || '').trim();
+    const conversationHistory = body.conversationHistory || [];
     language = body.language || 'tr';
+    
+    // Input validation
+    if (!message || message.length < 1 || message.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid message length. Must be between 1 and 2000 characters.' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    // Sanitize message
+    const sanitizedMessage = message
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -176,7 +193,7 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
         role: msg.role,
         content: msg.content
       })),
-      { role: "user", content: message }
+      { role: "user", content: sanitizedMessage }
     ];
 
     console.log("Calling Lovable AI with sales chat request");

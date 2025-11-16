@@ -621,7 +621,27 @@ serve(async (req) => {
         }
       );
     }
-    const { message, conversationHistory, language = 'tr' } = await req.json();
+    
+    const body = await req.json();
+    const message = (body.message || '').trim();
+    const conversationHistory = body.conversationHistory || [];
+    const language = body.language || 'tr';
+    
+    // Input validation
+    if (!message || message.length < 1 || message.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid message length. Must be between 1 and 2000 characters.' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    // Sanitize message
+    const sanitizedMessage = message
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -633,7 +653,7 @@ serve(async (req) => {
     const messages = [
       { role: "system", content: systemPrompt },
       ...(conversationHistory || []),
-      { role: "user", content: message }
+      { role: "user", content: sanitizedMessage }
     ];
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {

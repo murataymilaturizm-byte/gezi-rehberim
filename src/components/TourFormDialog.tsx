@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { tourSchema } from "@/utils/validation";
 
 interface TourFormDialogProps {
   isOpen: boolean;
@@ -105,10 +107,17 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title.trim() || !formData.destination.trim()) {
+    // Validate with zod schema
+    const validation = tourSchema.safeParse({
+      title: formData.title,
+      destination: formData.destination,
+      program_url: formData.program_url
+    });
+    
+    if (!validation.success) {
       toast({
         title: t("admin.tourForm.error"),
-        description: t("admin.tourForm.fillRequired"),
+        description: validation.error.errors[0].message,
         variant: "destructive"
       });
       return;

@@ -64,17 +64,30 @@ serve(async (req) => {
     
     console.log('WhatsApp webhook received:', body);
 
-    // Twilio WhatsApp formatı desteği
-    let userMessage = body.Body || body.message || '';
-    const from = body.From || body.from || '';
-    const to = body.To || body.to || ''; // Twilio phone number
+    // Twilio WhatsApp formatı desteği - Input validation
+    let userMessage = (body.Body || body.message || '').trim();
+    const from = (body.From || body.from || '').trim();
+    const to = (body.To || body.to || '').trim(); // Twilio phone number
 
-    if (!userMessage) {
-      return new Response(JSON.stringify({ error: 'No message provided' }), {
+    // Validate inputs
+    if (!userMessage || userMessage.length > 2000) {
+      return new Response(JSON.stringify({ error: 'Invalid message length' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    
+    if (!from || !to) {
+      return new Response(JSON.stringify({ error: 'Invalid phone numbers' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Sanitize message - remove dangerous content
+    userMessage = userMessage
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
 
     // Telefon numarasından whatsapp: prefix'ini temizle
     const userPhone = from.replace('whatsapp:', '');

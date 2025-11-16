@@ -337,7 +337,29 @@ serve(async (req) => {
   }
 
   try {
-    const { message, history = [], sessionId = 'default', language = 'tr', conversationStyle = 'professional' } = await req.json();
+    const body = await req.json();
+    const message = (body.message || '').trim();
+    const history = body.history || [];
+    const sessionId = body.sessionId || 'default';
+    const language = body.language || 'tr';
+    const conversationStyle = body.conversationStyle || 'professional';
+    
+    // Input validation
+    if (!message || message.length < 1 || message.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid message length. Must be between 1 and 2000 characters.' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    // Sanitize message
+    const sanitizedMessage = message
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -356,10 +378,10 @@ serve(async (req) => {
     updateUserProfile(sessionId, userProfile);
 
     // Save user message
-    await saveMessage(supabase, sessionId, 'user', message);
+    await saveMessage(supabase, sessionId, 'user', sanitizedMessage);
 
     // Mesajı kategorize et
-    const lowerMessage = message.toLowerCase();
+    const lowerMessage = sanitizedMessage.toLowerCase();
     let tourSearchResults = '';
     let contextInfo = '';
 
@@ -464,7 +486,7 @@ serve(async (req) => {
     const conversationMessages = [
       { role: "system", content: systemPrompt },
       ...history,
-      { role: "user", content: message }
+      { role: "user", content: sanitizedMessage }
     ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
