@@ -317,7 +317,8 @@
     "topCustomers": "Top 10 Clients Précieux",
     "reservations": "réservations",
     "noCustomerData": "Pas encore de données clients",
-    "noCustomerDataDescription": "Les analyses apparaîtront ici lorsque votre premier client sera ajouté"
+    "noCustomerDataDescription": "Les analyses apparaîtront ici lorsque votre premier client sera ajouté",
+    "dateFilter": "Filtre de Plage de Dates"
   },
   "destinationAnalytics": {
     "title": "Analyses de Destinations",
@@ -338,7 +339,21 @@
     "revenue": "Revenus (TL)",
     "unknown": "Inconnu",
     "noDestinationData": "Pas encore de données de destinations",
-    "noDestinationDataDescription": "Les analyses de destinations apparaîtront ici lorsque votre première réservation sera effectuée"
+    "noDestinationDataDescription": "Les analyses de destinations apparaîtront ici lorsque votre première réservation sera effectuée",
+    "dateFilter": "Filtre de Plage de Dates"
+  },
+  "analytics": {
+    "filter": {
+      "last1Month": "Dernier 1 Mois",
+      "last3Months": "Derniers 3 Mois",
+      "last6Months": "Derniers 6 Mois",
+      "last1Year": "Dernière 1 Année",
+      "customDate": "Date Personnalisée",
+      "showingData": "Données affichées"
+    }
+  },
+  "customerFeedback": {
+    "dateFilter": "Filtre de Plage de Dates"
   },
   "feedback": {
     "customerFeedback": "Enquêtes de satisfaction client",
