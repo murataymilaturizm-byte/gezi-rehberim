@@ -335,7 +335,8 @@
     "topCustomers": "Top 10 Valuable Customers",
     "reservations": "bookings",
     "noCustomerData": "No customer data yet",
-    "noCustomerDataDescription": "Analytics will appear here when your first customer is added"
+    "noCustomerDataDescription": "Analytics will appear here when your first customer is added",
+    "dateFilter": "Date Range Filter"
   },
   "destinationAnalytics": {
     "title": "Destination Analytics",
@@ -356,7 +357,8 @@
     "revenue": "Revenue (TL)",
     "unknown": "Unknown",
     "noDestinationData": "No destination data yet",
-    "noDestinationDataDescription": "Destination analytics will appear here when your first booking is made"
+    "noDestinationDataDescription": "Destination analytics will appear here when your first booking is made",
+    "dateFilter": "Date Range Filter"
   },
   "feedback": {
     "customerFeedback": "Customer Satisfaction Surveys",
@@ -382,7 +384,21 @@
     "responses": "Responses",
     "percentage": "Percentage",
     "noTrendData": "No trend data available",
-    "noDistributionData": "No distribution data available"
+    "noDistributionData": "No distribution data available",
+    "dateFilter": "Date Range Filter"
+  },
+  "analytics": {
+    "filter": {
+      "last1Month": "Last 1 Month",
+      "last3Months": "Last 3 Months",
+      "last6Months": "Last 6 Months",
+      "last1Year": "Last 1 Year",
+      "customDate": "Custom Date",
+      "showingData": "Showing data"
+    }
+  },
+  "customerFeedback": {
+    "dateFilter": "Date Range Filter"
   },
   "tickets": {
     "title": "Support Requests",

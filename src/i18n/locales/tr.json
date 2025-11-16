@@ -359,7 +359,8 @@
     "topCustomers": "En Değerli Müşteriler (Top 10)",
     "reservations": "rezervasyon",
     "noCustomerData": "Henüz müşteri verisi yok",
-    "noCustomerDataDescription": "İlk müşteriniz sisteme eklendiğinde analitikler burada görünecek"
+    "noCustomerDataDescription": "İlk müşteriniz sisteme eklendiğinde analitikler burada görünecek",
+    "dateFilter": "Tarih Aralığı Filtresi"
   },
   "destinationAnalytics": {
     "title": "Destinasyon Analizleri",
@@ -380,7 +381,8 @@
     "revenue": "Gelir (TL)",
     "unknown": "Bilinmeyen",
     "noDestinationData": "Henüz destinasyon verisi yok",
-    "noDestinationDataDescription": "İlk rezervasyonunuz oluştuğunda destinasyon analizleri burada görünecek"
+    "noDestinationDataDescription": "İlk rezervasyonunuz oluştuğunda destinasyon analizleri burada görünecek",
+    "dateFilter": "Tarih Aralığı Filtresi"
   },
   "feedback": {
     "customerFeedback": "Müşteri Memnuniyet Anketleri",
@@ -406,7 +408,21 @@
     "responses": "Yanıt Sayısı",
     "percentage": "Yüzde",
     "noTrendData": "Trend verisi yok",
-    "noDistributionData": "Dağılım verisi yok"
+    "noDistributionData": "Dağılım verisi yok",
+    "dateFilter": "Tarih Aralığı Filtresi"
+  },
+  "analytics": {
+    "filter": {
+      "last1Month": "Son 1 Ay",
+      "last3Months": "Son 3 Ay",
+      "last6Months": "Son 6 Ay",
+      "last1Year": "Son 1 Yıl",
+      "customDate": "Özel Tarih",
+      "showingData": "Gösterilen veriler"
+    }
+  },
+  "customerFeedback": {
+    "dateFilter": "Tarih Aralığı Filtresi"
   },
   "admin": {
     "title": "Yönetim Paneli",

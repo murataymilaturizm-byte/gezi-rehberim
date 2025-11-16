@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -11,10 +12,20 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, MessageSquare, TrendingUp, Users } from "lucide-react";
-import { format, startOfMonth, subMonths } from "date-fns";
+import { Star, MessageSquare, TrendingUp, Users, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { format, startOfMonth, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
+
+type DateFilterType = '1month' | '3months' | '6months' | '1year' | 'custom';
 
 interface FeedbackData {
   id: string;
@@ -71,10 +82,52 @@ export const CustomerFeedback = () => {
   const [npsTrend, setNpsTrend] = useState<NPSTrendData[]>([]);
   const [scoreDistribution, setScoreDistribution] = useState<ScoreDistributionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
     loadFeedbacks();
-  }, []);
+  }, [dateFilter, customDateRange]);
+
+  const getDateRange = () => {
+    const endDate = new Date();
+    let startDate: Date;
+
+    switch (dateFilter) {
+      case '1month':
+        startDate = subMonths(endDate, 1);
+        break;
+      case '3months':
+        startDate = subMonths(endDate, 3);
+        break;
+      case '6months':
+        startDate = subMonths(endDate, 6);
+        break;
+      case '1year':
+        startDate = subYears(endDate, 1);
+        break;
+      case 'custom':
+        if (customDateRange?.from) {
+          startDate = startOfDay(customDateRange.from);
+          if (customDateRange.to) {
+            return { startDate, endDate: endOfDay(customDateRange.to) };
+          }
+          return { startDate, endDate: endOfDay(endDate) };
+        }
+        startDate = subMonths(endDate, 6);
+        break;
+      default:
+        startDate = subMonths(endDate, 6);
+    }
+
+    return { startDate: startOfDay(startDate), endDate: endOfDay(endDate) };
+  };
+
+  const getDateFilterLabel = () => {
+    const { startDate, endDate } = getDateRange();
+    const locale = localeMap[i18n.language as keyof typeof localeMap] || tr;
+    return `${format(startDate, 'dd MMM yyyy', { locale })} - ${format(endDate, 'dd MMM yyyy', { locale })}`;
+  };
 
   const loadFeedbacks = async () => {
     try {
@@ -90,12 +143,17 @@ export const CustomerFeedback = () => {
 
       if (!agency) return;
 
-      // Get feedbacks
+      // Get date range
+      const { startDate, endDate } = getDateRange();
+
+      // Get feedbacks within date range
       const { data, error } = await supabase
         .from("whatsapp_user_profiles")
         .select("*")
         .eq("agency_id", agency.id)
         .not("feedback_score", "is", null)
+        .gte('last_feedback_sent_at', startDate.toISOString())
+        .lte('last_feedback_sent_at', endDate.toISOString())
         .order("last_feedback_sent_at", { ascending: false });
 
       if (error) throw error;
@@ -233,6 +291,101 @@ export const CustomerFeedback = () => {
 
   return (
     <div className="space-y-6">
+      {/* Tarih Filtreleme */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            {t("customerFeedback.dateFilter")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={dateFilter === '1month' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('1month');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              {t("analytics.filter.last1Month")}
+            </Button>
+            <Button
+              variant={dateFilter === '3months' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('3months');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              {t("analytics.filter.last3Months")}
+            </Button>
+            <Button
+              variant={dateFilter === '6months' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('6months');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              {t("analytics.filter.last6Months")}
+            </Button>
+            <Button
+              variant={dateFilter === '1year' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('1year');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              {t("analytics.filter.last1Year")}
+            </Button>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !customDateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateFilter === 'custom' && customDateRange?.from ? (
+                    getDateFilterLabel()
+                  ) : (
+                    <span>{t("analytics.filter.customDate")}</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={customDateRange}
+                  onSelect={(range) => {
+                    setCustomDateRange(range);
+                    if (range?.from) {
+                      setDateFilter('custom');
+                    }
+                  }}
+                  numberOfMonths={2}
+                  locale={localeMap[i18n.language as keyof typeof localeMap] || tr}
+                  disabled={(date) => date > new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mt-4">
+            {t("analytics.filter.showingData")}: <span className="font-medium">{getDateFilterLabel()}</span>
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

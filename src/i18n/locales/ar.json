@@ -313,7 +313,8 @@
     "topCustomers": "أفضل 10 عملاء قيمة",
     "reservations": "حجوزات",
     "noCustomerData": "لا توجد بيانات عملاء بعد",
-    "noCustomerDataDescription": "ستظهر التحليلات هنا عند إضافة عميلك الأول"
+    "noCustomerDataDescription": "ستظهر التحليلات هنا عند إضافة عميلك الأول",
+    "dateFilter": "مرشح نطاق التاريخ"
   },
   "destinationAnalytics": {
     "title": "تحليلات الوجهات",
@@ -334,7 +335,21 @@
     "revenue": "الإيرادات (TL)",
     "unknown": "غير معروف",
     "noDestinationData": "لا توجد بيانات وجهات بعد",
-    "noDestinationDataDescription": "ستظهر تحليلات الوجهات هنا عند إجراء حجزك الأول"
+    "noDestinationDataDescription": "ستظهر تحليلات الوجهات هنا عند إجراء حجزك الأول",
+    "dateFilter": "مرشح نطاق التاريخ"
+  },
+  "analytics": {
+    "filter": {
+      "last1Month": "آخر شهر",
+      "last3Months": "آخر 3 أشهر",
+      "last6Months": "آخر 6 أشهر",
+      "last1Year": "آخر سنة",
+      "customDate": "تاريخ مخصص",
+      "showingData": "عرض البيانات"
+    }
+  },
+  "customerFeedback": {
+    "dateFilter": "مرشح نطاق التاريخ"
   },
   "feedback": {
     "customerFeedback": "استطلاعات رضا العملاء",

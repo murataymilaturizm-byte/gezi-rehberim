@@ -353,7 +353,8 @@
     "topCustomers": "Top 10 Wertvollste Kunden",
     "reservations": "Buchungen",
     "noCustomerData": "Noch keine Kundendaten",
-    "noCustomerDataDescription": "Analysen erscheinen hier, wenn Ihr erster Kunde hinzugefügt wird"
+    "noCustomerDataDescription": "Analysen erscheinen hier, wenn Ihr erster Kunde hinzugefügt wird",
+    "dateFilter": "Datumsbereichsfilter"
   },
   "destinationAnalytics": {
     "title": "Reisezielanalysen",
@@ -374,7 +375,8 @@
     "revenue": "Umsatz (TL)",
     "unknown": "Unbekannt",
     "noDestinationData": "Noch keine Zieldaten",
-    "noDestinationDataDescription": "Zielanalysen erscheinen hier, wenn Ihre erste Buchung erfolgt"
+    "noDestinationDataDescription": "Zielanalysen erscheinen hier, wenn Ihre erste Buchung erfolgt",
+    "dateFilter": "Datumsbereichsfilter"
   },
   "feedback": {
     "customerFeedback": "Kundenzufriedenheitsumfragen",
@@ -400,7 +402,21 @@
     "responses": "Antworten",
     "percentage": "Prozent",
     "noTrendData": "Keine Trenddaten verfügbar",
-    "noDistributionData": "Keine Verteilungsdaten verfügbar"
+    "noDistributionData": "Keine Verteilungsdaten verfügbar",
+    "dateFilter": "Datumsbereichsfilter"
+  },
+  "analytics": {
+    "filter": {
+      "last1Month": "Letzter 1 Monat",
+      "last3Months": "Letzte 3 Monate",
+      "last6Months": "Letzte 6 Monate",
+      "last1Year": "Letztes 1 Jahr",
+      "customDate": "Benutzerdefiniertes Datum",
+      "showingData": "Angezeigte Daten"
+    }
+  },
+  "customerFeedback": {
+    "dateFilter": "Datumsbereichsfilter"
   },
   "tickets": {
     "title": "Support-Anfragen",
