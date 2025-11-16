@@ -83,6 +83,7 @@
     "resetSuccessDesc": "Vous pouvez commencer une nouvelle conversation",
     "typing": "Saisie en cours...",
     "style": {
+      "basic": "Simple/Bref",
       "friendly": "Amical",
       "professional": "Professionnel",
       "energetic": "Énergique",

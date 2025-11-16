@@ -90,6 +90,7 @@
     "resetSuccessDesc": "Yeni bir konuşma başlatabilirsiniz",
     "typing": "Yazıyor...",
     "style": {
+      "basic": "Basit/Kısa",
       "friendly": "Samimi/Dostane",
       "professional": "Profesyonel/Kurumsal",
       "energetic": "Enerjik/Dinamik",
