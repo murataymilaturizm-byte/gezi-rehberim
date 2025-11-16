@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -557,7 +558,9 @@ export const AgencyManagement = () => {
             Henüz acente eklenmemiş
           </div>
         ) : (
-          <Table>
+          <ScrollArea className="w-full">
+            <div className="min-w-[1200px]">
+              <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>{t("admin.agency.tableHeaders.agencyName")}</TableHead>
@@ -740,7 +743,9 @@ export const AgencyManagement = () => {
                 );
               })}
             </TableBody>
-          </Table>
+              </Table>
+            </div>
+          </ScrollArea>
         )}
       </CardContent>
 
