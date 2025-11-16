@@ -293,7 +293,7 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (session) {
+    if (session && (activeTab === "tours" || activeTab === "registrations")) {
       loadData();
     }
   }, [activeTab, session]);
@@ -318,7 +318,7 @@ const Admin = () => {
         
         if (error) throw error;
         setTours(data || []);
-      } else {
+      } else if (activeTab === "registrations") {
         const { data, error } = await supabase
           .from("registrations")
           .select(`
