@@ -353,6 +353,7 @@
     "allDestinationsDetailed": "All Destinations - Detailed Analysis",
     "people": "people",
     "average": "Average",
+    "revenue": "Revenue (TL)",
     "unknown": "Unknown",
     "noDestinationData": "No destination data yet",
     "noDestinationDataDescription": "Destination analytics will appear here when your first booking is made"

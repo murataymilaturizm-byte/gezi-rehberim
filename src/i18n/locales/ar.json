@@ -331,6 +331,7 @@
     "allDestinationsDetailed": "جميع الوجهات - تحليل مفصل",
     "people": "أشخاص",
     "average": "متوسط",
+    "revenue": "الإيرادات (TL)",
     "unknown": "غير معروف",
     "noDestinationData": "لا توجد بيانات وجهات بعد",
     "noDestinationDataDescription": "ستظهر تحليلات الوجهات هنا عند إجراء حجزك الأول"

@@ -377,6 +377,7 @@
     "allDestinationsDetailed": "Tüm Destinasyonlar - Detaylı Analiz",
     "people": "kişi",
     "average": "Ortalama",
+    "revenue": "Gelir (TL)",
     "unknown": "Bilinmeyen",
     "noDestinationData": "Henüz destinasyon verisi yok",
     "noDestinationDataDescription": "İlk rezervasyonunuz oluştuğunda destinasyon analizleri burada görünecek"
