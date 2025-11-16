@@ -544,95 +544,97 @@ const Admin = () => {
             
             
             {activeTab === "dashboard" ? (
-          <AdminDashboard isSuperAdmin={isSuperAdmin} planFeatures={planFeatures} />
-        ) : activeTab === "whatsapp" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
-          <div className="space-y-6">
-            {isSuperAdmin && <LanguageStats isSuperAdmin={isSuperAdmin} />}
-            <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
-            <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
-          </div>
-        ) : activeTab === "settings" ? (
-          <TwilioSettings />
-        ) : activeTab === "languages" ? (
-          <LanguageManagement />
-        ) : activeTab === "templates" && planFeatures?.has_templates ? (
-          <MessageTemplates />
-        ) : activeTab === "history" ? (
-          <SubscriptionHistory />
-        ) : activeTab === "customer-feedback" && planFeatures?.has_feedback ? (
-          <CustomerFeedback />
-        ) : activeTab === "tickets" && !isSuperAdmin ? (
-          <TicketManagement />
-        ) : activeTab === "twilio_settings" && isSuperAdmin ? (
-          <SuperAdminTwilioSettings />
-        ) : activeTab === "agencies" && isSuperAdmin ? (
-          <AgencyManagement />
-        ) : activeTab === "contact_forms" && isSuperAdmin ? (
-          <ContactFormsManagement />
-        ) : activeTab === "tickets" && isSuperAdmin ? (
-          <SuperAdminTickets />
-        ) : activeTab === "whatsapp_logs" && isSuperAdmin ? (
-          <WhatsAppLogs />
-        ) : (
-          <Card className="shadow-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>
-                {activeTab === "tours" ? t("admin.tours.title") : t("admin.registrations.title")}
-              </CardTitle>
-              <div className="flex gap-2">
-                {activeTab === "tours" ? (
-                  <>
-                    <Button
-                      onClick={() => exportToursToExcel(tours)}
-                      variant="outline"
-                      disabled={tours.length === 0}
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      {t("admin.tours.export")}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        if (!isSuperAdmin && tours.length >= maxTours) {
-                          const planNames = {
-                            'starter': t("admin.planLimits.starterPlan"),
-                            'professional': t("admin.planLimits.professionalPlan"),
-                            'enterprise': t("admin.planLimits.enterprisePlan")
-                          };
-                          toast({
-                            title: t("admin.planLimits.tourLimitReached"),
-                            description: t("admin.planLimits.tourLimitMessage", { 
-                              planName: planNames[planType as keyof typeof planNames] || planType,
-                              maxTours: maxTours 
-                            }),
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-                        setSelectedTour(undefined);
-                        setTourFormOpen(true);
-                      }}
-                      className="bg-gradient-ocean hover:opacity-90"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t("admin.tours.addNew")}
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={() => exportRegistrationsToExcel(registrations)}
-                    variant="outline"
-                    disabled={registrations.length === 0}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    {t("admin.registrations.export")}
-                  </Button>
-                )}
+              <AdminDashboard isSuperAdmin={isSuperAdmin} planFeatures={planFeatures} />
+            ) : activeTab === "whatsapp" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
+              <div className="space-y-6">
+                {isSuperAdmin && <LanguageStats isSuperAdmin={isSuperAdmin} />}
+                <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
+                <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
               </div>
-            </div>
-            
-            {/* Registration Filters */}
-            {activeTab === "registrations" && (
+            ) : activeTab === "whatsapp_profiles" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
+              <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
+            ) : activeTab === "analytics" && isSuperAdmin ? (
+              <AdvancedAnalytics />
+            ) : activeTab === "settings" ? (
+              <TwilioSettings />
+            ) : activeTab === "languages" ? (
+              <LanguageManagement />
+            ) : activeTab === "templates" && planFeatures?.has_templates ? (
+              <MessageTemplates />
+            ) : activeTab === "history" ? (
+              <SubscriptionHistory />
+            ) : activeTab === "customer-feedback" && planFeatures?.has_feedback ? (
+              <CustomerFeedback />
+            ) : activeTab === "tickets" && !isSuperAdmin ? (
+              <TicketManagement />
+            ) : activeTab === "super_tickets" && isSuperAdmin ? (
+              <SuperAdminTickets />
+            ) : activeTab === "twilio_settings" && isSuperAdmin ? (
+              <SuperAdminTwilioSettings />
+            ) : activeTab === "agencies" && isSuperAdmin ? (
+              <AgencyManagement />
+            ) : activeTab === "contact_forms" && isSuperAdmin ? (
+              <ContactFormsManagement />
+             ) : activeTab === "tours" || activeTab === "registrations" ? (
+               <Card className="shadow-card">
+                 <CardHeader>
+                   <div className="flex items-center justify-between">
+                     <CardTitle>
+                       {activeTab === "tours" ? t("admin.tours.title") : t("admin.registrations.title")}
+                     </CardTitle>
+                     <div className="flex gap-2">
+                       {activeTab === "tours" ? (
+                         <>
+                           <Button
+                             onClick={() => exportToursToExcel(tours)}
+                             variant="outline"
+                             disabled={tours.length === 0}
+                           >
+                             <Download className="w-4 h-4 mr-2" />
+                             {t("admin.tours.export")}
+                           </Button>
+                           <Button
+                             onClick={() => {
+                               if (!isSuperAdmin && tours.length >= maxTours) {
+                                 const planNames = {
+                                   'starter': t("admin.planLimits.starterPlan"),
+                                   'professional': t("admin.planLimits.professionalPlan"),
+                                   'enterprise': t("admin.planLimits.enterprisePlan")
+                                 };
+                                 toast({
+                                   title: t("admin.planLimits.tourLimitReached"),
+                                   description: t("admin.planLimits.tourLimitMessage", { 
+                                     planName: planNames[planType as keyof typeof planNames] || planType,
+                                     maxTours: maxTours 
+                                   }),
+                                   variant: "destructive",
+                                 });
+                                 return;
+                               }
+                               setSelectedTour(undefined);
+                               setTourFormOpen(true);
+                             }}
+                             className="bg-gradient-ocean hover:opacity-90"
+                           >
+                             <Plus className="w-4 h-4 mr-2" />
+                             {t("admin.tours.addNew")}
+                           </Button>
+                         </>
+                       ) : (
+                         <Button
+                           onClick={() => exportRegistrationsToExcel(registrations)}
+                           variant="outline"
+                           disabled={registrations.length === 0}
+                         >
+                           <Download className="w-4 h-4 mr-2" />
+                           {t("admin.registrations.export")}
+                         </Button>
+                       )}
+                     </div>
+                   </div>
+                   
+                   {/* Registration Filters */}
+                   {activeTab === "registrations" && (
               <div className="mt-4 p-3 bg-accent/30 rounded-lg border border-border/50">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                   {/* Status Filter */}
@@ -1028,13 +1030,13 @@ const Admin = () => {
                       );
                     });
                   })()}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-        )}
-      </main>
+                 </TableBody>
+               </Table>
+             )}
+           </CardContent>
+         </Card>
+            ) : null}
+          </main>
 
       {/* Dialogs */}
       <TourFormDialog
