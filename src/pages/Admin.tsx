@@ -46,6 +46,7 @@ import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
+import { CustomerAnalytics } from "@/components/CustomerAnalytics";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
 import { LanguageStats } from "@/components/LanguageStats";
@@ -132,7 +133,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -562,6 +563,8 @@ const Admin = () => {
               <WhatsAppLogs />
             ) : activeTab === "analytics" && (planFeatures?.has_analytics || isSuperAdmin) ? (
               <AdvancedAnalytics />
+            ) : activeTab === "customer-analytics" && (planFeatures?.has_analytics || isSuperAdmin) ? (
+              <CustomerAnalytics />
             ) : activeTab === "settings" ? (
               <TwilioSettings />
             ) : activeTab === "languages" ? (

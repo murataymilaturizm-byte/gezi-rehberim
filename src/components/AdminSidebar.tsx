@@ -67,7 +67,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     const generalIds = ["dashboard", "settings", "languages", "history"];
     const tourIds = ["tours", "registrations"];
     const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "whatsapp_logs"];
-    const reportingIds = ["analytics", "customer-feedback"];
+    const reportingIds = ["analytics", "customer-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets"];
     
@@ -118,6 +118,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
 
   const reportingItems = [
     ...(shouldShowAnalytics ? [{ id: "analytics", icon: BarChart3, label: t("admin.tabs.analytics") }] : []),
+    ...(shouldShowAnalytics ? [{ id: "customer-analytics", icon: Users, label: t("admin.tabs.customerAnalytics") }] : []),
     ...(shouldShowFeedback ? [{ id: "customer-feedback", icon: MessageCircle, label: t("admin.tabs.customerFeedback") }] : []),
   ];
 
