@@ -558,17 +558,19 @@ const Admin = () => {
               </div>
             ) : activeTab === "whatsapp_profiles" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
               <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
-            ) : activeTab === "analytics" && isSuperAdmin ? (
+            ) : activeTab === "whatsapp_logs" ? (
+              <WhatsAppLogs />
+            ) : activeTab === "analytics" && (planFeatures?.has_analytics || isSuperAdmin) ? (
               <AdvancedAnalytics />
             ) : activeTab === "settings" ? (
               <TwilioSettings />
             ) : activeTab === "languages" ? (
               <LanguageManagement />
-            ) : activeTab === "templates" && planFeatures?.has_templates ? (
+            ) : activeTab === "templates" && (planFeatures?.has_templates || isSuperAdmin) ? (
               <MessageTemplates />
             ) : activeTab === "history" ? (
               <SubscriptionHistory />
-            ) : activeTab === "customer-feedback" && planFeatures?.has_feedback ? (
+            ) : activeTab === "customer-feedback" && (planFeatures?.has_feedback || isSuperAdmin) ? (
               <CustomerFeedback />
             ) : activeTab === "tickets" && !isSuperAdmin ? (
               <TicketManagement />

@@ -61,11 +61,11 @@ export const AdvancedAnalytics = () => {
 
       let agencyId = null;
       if (!isSuperAdmin) {
-        const { data: agency } = await supabase
-          .from("agencies")
-          .select("id")
-          .eq("user_id", user.id)
-          .single();
+      const { data: agency } = await supabase
+        .from("agencies")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
         if (!agency) {
           console.log('No agency found for user');
