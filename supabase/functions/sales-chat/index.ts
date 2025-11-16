@@ -11,8 +11,12 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let language = 'tr'; // Default language
+
   try {
-    const { message, conversationHistory, language = 'tr' } = await req.json();
+    const body = await req.json();
+    const { message, conversationHistory } = body;
+    language = body.language || 'tr';
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -212,10 +216,21 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
 
   } catch (error) {
     console.error("Error in sales-chat function:", error);
+    
+    const errorMessages: Record<string, string> = {
+      tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@turzz.ai adresinden bizimle iletişime geçin.",
+      en: "Sorry, I'm experiencing an issue right now. Please contact us at info@turzz.ai.",
+      de: "Entschuldigung, ich habe gerade ein Problem. Bitte kontaktieren Sie uns unter info@turzz.ai.",
+      ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@turzz.ai.",
+      ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@turzz.ai.",
+      fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@turzz.ai.",
+      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@turzz.ai."
+    };
+    
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : "Unknown error",
-        response: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@turzz.ai adresinden bizimle iletişime geçin veya +90 XXX XXX XX XX numaralı WhatsApp hattımızdan destek alın."
+        response: errorMessages[language] || errorMessages.tr
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

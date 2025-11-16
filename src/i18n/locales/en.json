@@ -340,6 +340,46 @@
     "noTrendData": "No trend data available",
     "noDistributionData": "No distribution data available"
   },
+  "tickets": {
+    "title": "Support Requests",
+    "adminTitle": "All Support Requests",
+    "createNew": "Create New Request",
+    "noTickets": "No support requests yet",
+    "viewDetails": "View Details",
+    "created": "Created",
+    "fillAllFields": "Please fill all fields",
+    "createSuccess": "Support request created successfully",
+    "createError": "Failed to create support request",
+    "loadError": "Failed to load support requests",
+    "updateError": "Failed to update status",
+    "messageError": "Failed to send message",
+    "messageSent": "Message sent",
+    "statusUpdated": "Status updated",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Briefly summarize your issue",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe your issue in detail...",
+    "priorityLabel": "Priority",
+    "submit": "Submit",
+    "messages": "Messages",
+    "writeMessage": "Write your message...",
+    "writeReply": "Write your reply...",
+    "send": "Send",
+    "admin": "Admin",
+    "you": "You",
+    "user": "User",
+    "status": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
+  },
   "admin": {
     "title": "Agency Panel",
     "filters": {

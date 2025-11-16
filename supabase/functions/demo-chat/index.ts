@@ -516,9 +516,30 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Demo chat error:", error);
+    
+    const errorMessages: Record<string, string> = {
+      tr: "Üzgünüm, şu anda yanıt veremiyorum. Lütfen tekrar deneyin.",
+      en: "Sorry, I can't respond right now. Please try again.",
+      de: "Entschuldigung, ich kann gerade nicht antworten. Bitte versuchen Sie es erneut.",
+      ru: "Извините, я не могу ответить сейчас. Пожалуйста, попробуйте снова.",
+      ar: "آسف، لا أستطيع الرد الآن. يرجى المحاولة مرة أخرى.",
+      fr: "Désolé, je ne peux pas répondre pour le moment. Veuillez réessayer.",
+      es: "Lo siento, no puedo responder ahora. Por favor intente de nuevo."
+    };
+    
+    // Extract language from request if available
+    let lang = 'tr';
+    try {
+      const body = await req.clone().json();
+      lang = body.language || 'tr';
+    } catch (e) {
+      console.error("Could not extract language from request:", e);
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Bilinmeyen hata" 
+        error: error instanceof Error ? error.message : "Unknown error",
+        message: errorMessages[lang] || errorMessages.tr
       }),
       {
         status: 500,

@@ -318,6 +318,46 @@
     "noTrendData": "لا توجد بيانات الاتجاه",
     "noDistributionData": "لا توجد بيانات التوزيع"
   },
+  "tickets": {
+    "title": "طلبات الدعم",
+    "adminTitle": "جميع طلبات الدعم",
+    "createNew": "إنشاء طلب جديد",
+    "noTickets": "لا توجد طلبات دعم بعد",
+    "viewDetails": "عرض التفاصيل",
+    "created": "تم الإنشاء",
+    "fillAllFields": "يرجى ملء جميع الحقول",
+    "createSuccess": "تم إنشاء طلب الدعم بنجاح",
+    "createError": "فشل في إنشاء طلب الدعم",
+    "loadError": "فشل في تحميل طلبات الدعم",
+    "updateError": "فشل في تحديث الحالة",
+    "messageError": "فشل في إرسال الرسالة",
+    "messageSent": "تم إرسال الرسالة",
+    "statusUpdated": "تم تحديث الحالة",
+    "titleLabel": "العنوان",
+    "titlePlaceholder": "لخص مشكلتك بإيجاز",
+    "descriptionLabel": "الوصف",
+    "descriptionPlaceholder": "صف مشكلتك بالتفصيل...",
+    "priorityLabel": "الأولوية",
+    "submit": "إرسال",
+    "messages": "الرسائل",
+    "writeMessage": "اكتب رسالتك...",
+    "writeReply": "اكتب ردك...",
+    "send": "إرسال",
+    "admin": "مسؤول",
+    "you": "أنت",
+    "user": "مستخدم",
+    "status": {
+      "open": "مفتوح",
+      "in_progress": "قيد المعالجة",
+      "resolved": "تم الحل",
+      "closed": "مغلق"
+    },
+    "priority": {
+      "low": "منخفض",
+      "medium": "متوسط",
+      "high": "عالٍ"
+    }
+  },
   "admin": {
     "title": "لوحة الوكالة",
     "filters": {
