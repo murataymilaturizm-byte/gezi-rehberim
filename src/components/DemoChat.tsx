@@ -184,51 +184,52 @@ export const DemoChat = () => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto border-border shadow-card">
-      <CardHeader className="border-b border-border bg-gradient-ocean">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary" />
+    <div className="fixed inset-4 md:relative md:container md:mx-auto md:py-8 md:inset-auto">
+      <Card className="h-full md:h-auto w-full md:max-w-2xl md:mx-auto border-border shadow-card flex flex-col">
+        <CardHeader className="border-b border-border bg-gradient-ocean flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
+                <Bot className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-primary-foreground">TurzzAI Demo</CardTitle>
+                <p className="text-sm text-primary-foreground/80">
+                  {t("demo.subtitle2")}
+                </p>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-primary-foreground">TurzzAI Demo</CardTitle>
-              <p className="text-sm text-primary-foreground/80">
-                {t("demo.subtitle2")}
-              </p>
+            <div className={`flex items-center ${isMobile ? 'flex-wrap gap-1.5' : 'gap-2'}`}>
+              <Select
+                value={conversationStyle}
+                onValueChange={(value: 'basic' | 'friendly' | 'professional' | 'energetic' | 'helpful') => setConversationStyle(value)}
+              >
+                <SelectTrigger className={`${isMobile ? 'w-[110px] text-xs' : 'w-[180px]'} bg-background text-foreground`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">✨ {t("demo.style.basic")}</SelectItem>
+                  <SelectItem value="friendly">🤝 {t("demo.style.friendly")}</SelectItem>
+                  <SelectItem value="professional">👔 {t("demo.style.professional")}</SelectItem>
+                  <SelectItem value="energetic">⚡ {t("demo.style.energetic")}</SelectItem>
+                  <SelectItem value="helpful">😊 {t("demo.style.helpful")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size={isMobile ? "sm" : "icon"}
+                onClick={resetConversation}
+                className="bg-background text-foreground hover:bg-background/80"
+                title={t("demo.resetChat")}
+              >
+                <RotateCcw className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
+              </Button>
+              <LanguageSelector />
             </div>
           </div>
-          <div className={`flex items-center ${isMobile ? 'flex-wrap gap-1.5' : 'gap-2'}`}>
-            <Select
-              value={conversationStyle}
-              onValueChange={(value: 'basic' | 'friendly' | 'professional' | 'energetic' | 'helpful') => setConversationStyle(value)}
-            >
-              <SelectTrigger className={`${isMobile ? 'w-[110px] text-xs' : 'w-[180px]'} bg-background text-foreground`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">✨ {t("demo.style.basic")}</SelectItem>
-                <SelectItem value="friendly">🤝 {t("demo.style.friendly")}</SelectItem>
-                <SelectItem value="professional">👔 {t("demo.style.professional")}</SelectItem>
-                <SelectItem value="energetic">⚡ {t("demo.style.energetic")}</SelectItem>
-                <SelectItem value="helpful">😊 {t("demo.style.helpful")}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size={isMobile ? "sm" : "icon"}
-              onClick={resetConversation}
-              className="bg-background text-foreground hover:bg-background/80"
-              title={t("demo.resetChat")}
-            >
-              <RotateCcw className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
-            </Button>
-            <LanguageSelector />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
+        </CardHeader>
+        <CardContent className="p-0 flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
           <div className="space-y-4">
             {messages.map((msg, idx) => (
               <div
@@ -288,7 +289,7 @@ export const DemoChat = () => {
             )}
           </div>
         </ScrollArea>
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border flex-shrink-0">
           <div className="flex gap-2">
             <Input
               value={input}
@@ -296,14 +297,14 @@ export const DemoChat = () => {
               onKeyPress={handleKeyPress}
               placeholder="Mesajınızı yazın..."
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 h-12 md:h-10"
             />
             <Button
               onClick={sendMessage}
               disabled={!input.trim() || isLoading}
-              className="bg-gradient-ocean hover:opacity-90"
+              className="bg-gradient-ocean hover:opacity-90 h-12 w-12 md:h-10 md:w-10"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-5 h-5 md:w-4 md:h-4" />
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">
@@ -311,6 +312,7 @@ export const DemoChat = () => {
           </p>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 };
