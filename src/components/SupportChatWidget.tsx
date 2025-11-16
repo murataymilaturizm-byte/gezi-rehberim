@@ -193,7 +193,7 @@ export const SupportChatWidget = () => {
       console.error("Error:", error);
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya detaylı yardım için /yardim sayfasını ziyaret edin ya da info@turzz.ai adresinden bizimle iletişime geçin."
+        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya detaylı yardım için https://ai.turzz.com/yardim sayfasını ziyaret edin ya da info@turzz.ai adresinden bizimle iletişime geçin."
       }]);
     } finally {
       setIsLoading(false);
@@ -255,9 +255,18 @@ export const SupportChatWidget = () => {
                         : "bg-muted text-foreground"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                      {message.content}
-                    </p>
+                    <p 
+                      className="text-sm whitespace-pre-wrap break-words leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html: message.content.replace(
+                          /(https?:\/\/[^\s]+|(?:www\.|ai\.)[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g,
+                          (url) => {
+                            const href = url.startsWith('http') ? url : `https://${url}`;
+                            return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline hover:opacity-80 transition-opacity" style="color: inherit; text-decoration: underline;">${url}</a>`;
+                          }
+                        )
+                      }}
+                    />
                   </div>
                 </div>
               ))}
@@ -293,7 +302,7 @@ export const SupportChatWidget = () => {
             </div>
             <p className="text-xs text-muted-foreground mt-2 text-center">
               Detaylı bilgi için{" "}
-              <a href="/yardim" className="text-primary hover:underline" target="_blank">
+              <a href="https://ai.turzz.com/yardim" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                 Yardım Merkezi
               </a>
             </p>
