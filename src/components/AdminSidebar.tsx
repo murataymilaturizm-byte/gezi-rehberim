@@ -15,10 +15,12 @@ import {
   HelpCircle,
   User,
   MessageCircle,
-  ScrollText
+  ScrollText,
+  ChevronDown
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 import {
   Sidebar,
@@ -31,6 +33,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface AdminSidebarProps {
   isSuperAdmin: boolean;
@@ -54,6 +61,41 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   const shouldShowUserProfiles = isSuperAdmin || planFeatures?.has_user_profiles;
   const shouldShowTemplates = isSuperAdmin || planFeatures?.has_templates;
   const shouldShowFeedback = isSuperAdmin || planFeatures?.has_feedback;
+  
+  // Determine which group should be open based on active tab
+  const getDefaultOpenGroup = () => {
+    const generalIds = ["dashboard", "settings", "languages", "history"];
+    const tourIds = ["tours", "registrations"];
+    const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "whatsapp_logs"];
+    const reportingIds = ["analytics", "customer-feedback"];
+    const supportIds = ["tickets"];
+    const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets"];
+    
+    if (generalIds.includes(activeTab)) return "general";
+    if (tourIds.includes(activeTab)) return "tours";
+    if (communicationIds.includes(activeTab)) return "communication";
+    if (reportingIds.includes(activeTab)) return "reporting";
+    if (supportIds.includes(activeTab)) return "support";
+    if (superAdminIds.includes(activeTab)) return "superAdmin";
+    return "general";
+  };
+  
+  const defaultOpen = getDefaultOpenGroup();
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    general: defaultOpen === "general",
+    tours: defaultOpen === "tours",
+    communication: defaultOpen === "communication",
+    reporting: defaultOpen === "reporting",
+    support: defaultOpen === "support",
+    superAdmin: defaultOpen === "superAdmin",
+  });
+  
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups(prev => ({
+      ...prev,
+      [groupId]: !prev[groupId]
+    }));
+  };
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
@@ -113,55 +155,109 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     <Sidebar className={isCollapsed ? "w-14" : "w-64"}>
       <SidebarContent>
         {/* Genel Yönetim */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{!isCollapsed && t("admin.groups.general")}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(generalItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <Collapsible open={openGroups.general} onOpenChange={() => toggleGroup("general")}>
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                {!isCollapsed && t("admin.groups.general")}
+                {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.general ? "rotate-180" : ""}`} />}
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                {renderMenuItems(generalItems)}
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
         {/* Tur Yönetimi */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{!isCollapsed && t("admin.groups.tours")}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(tourItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <Collapsible open={openGroups.tours} onOpenChange={() => toggleGroup("tours")}>
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                {!isCollapsed && t("admin.groups.tours")}
+                {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.tours ? "rotate-180" : ""}`} />}
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                {renderMenuItems(tourItems)}
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
         {/* İletişim Yönetimi */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{!isCollapsed && t("admin.groups.communication")}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(communicationItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <Collapsible open={openGroups.communication} onOpenChange={() => toggleGroup("communication")}>
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                {!isCollapsed && t("admin.groups.communication")}
+                {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.communication ? "rotate-180" : ""}`} />}
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                {renderMenuItems(communicationItems)}
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
         {/* Raporlama - Sadece özellikler varsa */}
         {reportingItems.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>{!isCollapsed && t("admin.groups.reporting")}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              {renderMenuItems(reportingItems)}
-            </SidebarGroupContent>
-          </SidebarGroup>
+          <Collapsible open={openGroups.reporting} onOpenChange={() => toggleGroup("reporting")}>
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                  {!isCollapsed && t("admin.groups.reporting")}
+                  {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.reporting ? "rotate-180" : ""}`} />}
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  {renderMenuItems(reportingItems)}
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
         )}
 
         {/* Destek */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{!isCollapsed && t("admin.groups.support")}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(supportItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <Collapsible open={openGroups.support} onOpenChange={() => toggleGroup("support")}>
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                {!isCollapsed && t("admin.groups.support")}
+                {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.support ? "rotate-180" : ""}`} />}
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                {renderMenuItems(supportItems)}
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
         {/* Super Admin - Sadece super adminler için */}
         {isSuperAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>{!isCollapsed && t("admin.groups.superAdmin")}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              {renderMenuItems(superAdminItems)}
-            </SidebarGroupContent>
-          </SidebarGroup>
+          <Collapsible open={openGroups.superAdmin} onOpenChange={() => toggleGroup("superAdmin")}>
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                  {!isCollapsed && t("admin.groups.superAdmin")}
+                  {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.superAdmin ? "rotate-180" : ""}`} />}
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  {renderMenuItems(superAdminItems)}
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
         )}
       </SidebarContent>
     </Sidebar>
