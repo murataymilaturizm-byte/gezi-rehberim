@@ -1109,7 +1109,23 @@
       "messagesPerDay": "رسائل/يوم",
       "estimatedDuration": "المدة المقدرة",
       "notUsedYet": "لم يتم الاستخدام بعد",
-      "days": "أيام"
+      "days": "أيام",
+      "dynamicFeatures": {
+        "messagesPerMonth": "{{count}} رسالة/شهر",
+        "unlimitedMessages": "رسائل غير محدودة",
+        "maxTours": "حتى {{count}} جولة",
+        "unlimitedTours": "جولات غير محدودة",
+        "languageSupport": "دعم {{count}} لغات",
+        "allLanguages": "جميع اللغات (7 لغات)",
+        "limitedStyles": "{{count}} أنماط محادثة",
+        "allStyles": "جميع أنماط المحادثة + نمط مخصص",
+        "userProfiles": "ملفات المستخدمين",
+        "autoReminders": "تذكيرات تلقائية",
+        "advancedAnalytics": "تحليلات متقدمة",
+        "messageTemplates": "قوالب الرسائل",
+        "feedbackSurveys": "استطلاعات رضا العملاء",
+        "followUpMessages": "رسائل المتابعة"
+      }
     }
   },
   "auth": {

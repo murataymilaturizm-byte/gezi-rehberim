@@ -1043,7 +1043,23 @@
       "notUsedYet": "Henüz kullanılmadı",
       "days": "gün",
       "loadError": "Kullanım bilgileri yüklenemedi",
-      "paymentError": "Ödeme işlemi başlatılamadı"
+      "paymentError": "Ödeme işlemi başlatılamadı",
+      "dynamicFeatures": {
+        "messagesPerMonth": "{{count}} mesaj/ay",
+        "unlimitedMessages": "Sınırsız mesaj",
+        "maxTours": "{{count}} tura kadar",
+        "unlimitedTours": "Sınırsız tur",
+        "languageSupport": "{{count}} dil desteği",
+        "allLanguages": "Tüm diller (7 dil)",
+        "limitedStyles": "{{count}} konuşma üslubu",
+        "allStyles": "Tüm konuşma üslupları + Özel üslup",
+        "userProfiles": "Kullanıcı profilleri",
+        "autoReminders": "Otomatik hatırlatmalar",
+        "advancedAnalytics": "Gelişmiş analizler",
+        "messageTemplates": "Mesaj şablonları",
+        "feedbackSurveys": "Müşteri memnuniyeti anketleri",
+        "followUpMessages": "Takip mesajları"
+      }
     },
     "tourForm": {
       "addTour": "Yeni Tur Ekle",

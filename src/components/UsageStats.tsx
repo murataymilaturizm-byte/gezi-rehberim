@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { MessageSquare, Calendar, Database, TrendingUp, AlertCircle, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getPlanFeatures, type PlanFeatures } from "@/utils/planFeatures";
 
 interface UsageData {
   monthly_message_count: number;
@@ -24,6 +25,7 @@ export const UsageStats = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [usage, setUsage] = useState<UsageData | null>(null);
+  const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const [selectedQuotaPackage, setSelectedQuotaPackage] = useState<"500" | "1000">("500");
@@ -53,6 +55,12 @@ export const UsageStats = () => {
       }
       
       setUsage(data);
+      
+      // Load plan features
+      if (data) {
+        const features = await getPlanFeatures(data.plan_type);
+        setPlanFeatures(features);
+      }
     } catch (error) {
       console.error('Error loading usage data:', error);
       toast({
@@ -388,110 +396,64 @@ export const UsageStats = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3 text-sm">
-            {usage.plan_type === 'starter' && (
-              <>
-                <div className="flex items-center gap-2">
-                  <span>💬</span>
-                  <span>500 mesaj/ay</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🏨</span>
-                  <span>5 tura kadar</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🌍</span>
-                  <span>Türkçe + 1 dil desteği</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>👔</span>
-                  <span>Sadece Profesyonel üslup</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>💾</span>
-                  <span>30 gün geçmiş</span>
-                </div>
-              </>
-            )}
-            
-            {usage.plan_type === 'professional' && (
-              <>
-                <div className="flex items-center gap-2">
-                  <span>💬</span>
-                  <span>2.000 mesaj/ay</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🏨</span>
-                  <span>20 tura kadar</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🌍</span>
-                  <span>4 dil desteği</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🎭</span>
-                  <span>4 farklı konuşma üslubu</span>
-                </div>
+          {planFeatures ? (
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-2">
+                <span>💬</span>
+                <span>{planFeatures.message_limit === -1 ? t("admin.usageStats.dynamicFeatures.unlimitedMessages") : t("admin.usageStats.dynamicFeatures.messagesPerMonth", { count: planFeatures.message_limit })}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🏨</span>
+                <span>{planFeatures.max_tours >= 9999 ? t("admin.usageStats.dynamicFeatures.unlimitedTours") : t("admin.usageStats.dynamicFeatures.maxTours", { count: planFeatures.max_tours })}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🌍</span>
+                <span>{planFeatures.max_languages >= 7 ? t("admin.usageStats.dynamicFeatures.allLanguages") : t("admin.usageStats.dynamicFeatures.languageSupport", { count: planFeatures.max_languages })}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🎭</span>
+                <span>{planFeatures.available_styles.length >= 4 ? t("admin.usageStats.dynamicFeatures.allStyles") : t("admin.usageStats.dynamicFeatures.limitedStyles", { count: planFeatures.available_styles.length })}</span>
+              </div>
+              {planFeatures.has_user_profiles && (
                 <div className="flex items-center gap-2">
                   <span>👥</span>
-                  <span>Kullanıcı profilleri</span>
+                  <span>{t("admin.usageStats.dynamicFeatures.userProfiles")}</span>
                 </div>
+              )}
+              {planFeatures.has_reminders && (
                 <div className="flex items-center gap-2">
                   <span>🔔</span>
-                  <span>Otomatik hatırlatmalar</span>
+                  <span>{t("admin.usageStats.dynamicFeatures.autoReminders")}</span>
                 </div>
+              )}
+              {planFeatures.has_analytics && (
                 <div className="flex items-center gap-2">
                   <span>📊</span>
-                  <span>Gelişmiş analizler</span>
+                  <span>{t("admin.usageStats.dynamicFeatures.advancedAnalytics")}</span>
                 </div>
+              )}
+              {planFeatures.has_templates && (
                 <div className="flex items-center gap-2">
-                  <span>💾</span>
-                  <span>90 gün geçmiş</span>
+                  <span>📝</span>
+                  <span>{t("admin.usageStats.dynamicFeatures.messageTemplates")}</span>
                 </div>
-              </>
-            )}
-            
-            {usage.plan_type === 'enterprise' && (
-              <>
+              )}
+              {planFeatures.has_feedback && (
                 <div className="flex items-center gap-2">
-                  <span>💬</span>
-                  <span>10.000 mesaj/ay</span>
+                  <span>⭐</span>
+                  <span>{t("admin.usageStats.dynamicFeatures.feedbackSurveys")}</span>
                 </div>
+              )}
+              {planFeatures.has_follow_ups && (
                 <div className="flex items-center gap-2">
-                  <span>🏨</span>
-                  <span>Sınırsız tur</span>
+                  <span>📲</span>
+                  <span>{t("admin.usageStats.dynamicFeatures.followUpMessages")}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span>🌍</span>
-                  <span>7 dil desteği (Tüm diller)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🎭</span>
-                  <span>Özel üslup oluşturma</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>👥</span>
-                  <span>Gelişmiş kullanıcı profilleri</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🔔</span>
-                  <span>Akıllı hatırlatmalar</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>📊</span>
-                  <span>Premium analizler & raporlar</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>💾</span>
-                  <span>Sınırsız geçmiş</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>🚀</span>
-                  <span>Öncelikli destek</span>
-                </div>
-              </>
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">{t("admin.loading")}</div>
+          )}
         </CardContent>
       </Card>
     </div>

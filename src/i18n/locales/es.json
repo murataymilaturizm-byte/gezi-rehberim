@@ -979,7 +979,23 @@
       "messagesPerDay": "mensajes/día",
       "estimatedDuration": "Duración estimada",
       "notUsedYet": "Aún no usado",
-      "days": "días"
+      "days": "días",
+      "dynamicFeatures": {
+        "messagesPerMonth": "{{count}} mensajes/mes",
+        "unlimitedMessages": "Mensajes ilimitados",
+        "maxTours": "Hasta {{count}} tours",
+        "unlimitedTours": "Tours ilimitados",
+        "languageSupport": "Soporte de {{count}} idiomas",
+        "allLanguages": "Todos los idiomas (7 idiomas)",
+        "limitedStyles": "{{count}} estilos de conversación",
+        "allStyles": "Todos los estilos de conversación + Estilo personalizado",
+        "userProfiles": "Perfiles de usuario",
+        "autoReminders": "Recordatorios automáticos",
+        "advancedAnalytics": "Análisis avanzados",
+        "messageTemplates": "Plantillas de mensajes",
+        "feedbackSurveys": "Encuestas de satisfacción del cliente",
+        "followUpMessages": "Mensajes de seguimiento"
+      }
     },
     "dateForm": {
       "addDate": "Agregar Nueva Fecha",

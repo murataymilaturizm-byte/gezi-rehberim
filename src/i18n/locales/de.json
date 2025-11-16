@@ -986,7 +986,23 @@
       "messagesPerDay": "Nachrichten/Tag",
       "estimatedDuration": "Geschätzte Dauer",
       "notUsedYet": "Noch nicht verwendet",
-      "days": "Tage"
+      "days": "Tage",
+      "dynamicFeatures": {
+        "messagesPerMonth": "{{count}} Nachrichten/Monat",
+        "unlimitedMessages": "Unbegrenzte Nachrichten",
+        "maxTours": "Bis zu {{count}} Touren",
+        "unlimitedTours": "Unbegrenzte Touren",
+        "languageSupport": "{{count}} Sprachunterstützung",
+        "allLanguages": "Alle Sprachen (7 Sprachen)",
+        "limitedStyles": "{{count}} Gesprächsstile",
+        "allStyles": "Alle Gesprächsstile + Benutzerdefinierter Stil",
+        "userProfiles": "Benutzerprofile",
+        "autoReminders": "Automatische Erinnerungen",
+        "advancedAnalytics": "Erweiterte Analysen",
+        "messageTemplates": "Nachrichtenvorlagen",
+        "feedbackSurveys": "Kundenzufriedenheitsumfragen",
+        "followUpMessages": "Folgenachrichten"
+      }
     },
     "dateForm": {
       "addDate": "Neues Datum Hinzufügen",
