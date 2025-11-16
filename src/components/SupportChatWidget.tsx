@@ -45,6 +45,22 @@ export const SupportChatWidget = () => {
       }
     ];
   });
+
+  // Dil değiştiğinde karşılama mesajını güncelle
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length === 0 || prev[0].role !== 'assistant') {
+        return [{
+          role: "assistant",
+          content: getInitialMessage()
+        }, ...prev];
+      }
+      return [{
+        role: "assistant",
+        content: getInitialMessage()
+      }, ...prev.slice(1)];
+    });
+  }, [i18n.language]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
