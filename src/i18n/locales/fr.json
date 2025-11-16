@@ -322,6 +322,46 @@
     "noTrendData": "Pas de données de tendance",
     "noDistributionData": "Pas de données de distribution"
   },
+  "tickets": {
+    "title": "Demandes de Support",
+    "adminTitle": "Toutes les Demandes de Support",
+    "createNew": "Créer une Nouvelle Demande",
+    "noTickets": "Pas encore de demandes de support",
+    "viewDetails": "Voir les Détails",
+    "created": "Créé",
+    "fillAllFields": "Veuillez remplir tous les champs",
+    "createSuccess": "Demande de support créée avec succès",
+    "createError": "Échec de la création de la demande de support",
+    "loadError": "Échec du chargement des demandes de support",
+    "updateError": "Échec de la mise à jour du statut",
+    "messageError": "Échec de l'envoi du message",
+    "messageSent": "Message envoyé",
+    "statusUpdated": "Statut mis à jour",
+    "titleLabel": "Titre",
+    "titlePlaceholder": "Résumez brièvement votre problème",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Décrivez votre problème en détail...",
+    "priorityLabel": "Priorité",
+    "submit": "Soumettre",
+    "messages": "Messages",
+    "writeMessage": "Écrivez votre message...",
+    "writeReply": "Écrivez votre réponse...",
+    "send": "Envoyer",
+    "admin": "Admin",
+    "you": "Vous",
+    "user": "Utilisateur",
+    "status": {
+      "open": "Ouvert",
+      "in_progress": "En Cours",
+      "resolved": "Résolu",
+      "closed": "Fermé"
+    },
+    "priority": {
+      "low": "Faible",
+      "medium": "Moyen",
+      "high": "Élevé"
+    }
+  },
   "admin": {
     "title": "Panneau d'Agence",
     "filters": {

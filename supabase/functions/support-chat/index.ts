@@ -671,11 +671,31 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in support-chat function:', error);
+    
+    const errorMessages: Record<string, string> = {
+      tr: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin veya info@turzz.ai adresinden bizimle iletişime geçin.',
+      en: 'Sorry, an error occurred. Please try again or contact us at info@turzz.ai.',
+      de: 'Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns unter info@turzz.ai.',
+      ru: 'Извините, произошла ошибка. Пожалуйста, попробуйте снова или свяжитесь с нами по адресу info@turzz.ai.',
+      ar: 'آسف، حدث خطأ. يرجى المحاولة مرة أخرى أو الاتصال بنا على info@turzz.ai.',
+      fr: 'Désolé, une erreur s\'est produite. Veuillez réessayer ou nous contacter à info@turzz.ai.',
+      es: 'Lo siento, ocurrió un error. Por favor intente de nuevo o contáctenos en info@turzz.ai.'
+    };
+    
+    // Extract language from request if available
+    let lang = 'tr';
+    try {
+      const body = await req.clone().json();
+      lang = body.language || 'tr';
+    } catch (e) {
+      console.error("Could not extract language from request:", e);
+    }
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ 
         error: errorMessage,
-        response: 'Uzgunum, bir hata olustu. Lutfen tekrar deneyin veya info@turzz.ai adresinden bizimle iletisime gecin.'
+        response: errorMessages[lang] || errorMessages.tr
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

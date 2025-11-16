@@ -351,6 +351,46 @@
     "noTrendData": "No hay datos de tendencia",
     "noDistributionData": "No hay datos de distribución"
   },
+  "tickets": {
+    "title": "Solicitudes de Soporte",
+    "adminTitle": "Todas las Solicitudes de Soporte",
+    "createNew": "Crear Nueva Solicitud",
+    "noTickets": "Aún no hay solicitudes de soporte",
+    "viewDetails": "Ver Detalles",
+    "created": "Creado",
+    "fillAllFields": "Por favor complete todos los campos",
+    "createSuccess": "Solicitud de soporte creada exitosamente",
+    "createError": "Error al crear la solicitud de soporte",
+    "loadError": "Error al cargar las solicitudes de soporte",
+    "updateError": "Error al actualizar el estado",
+    "messageError": "Error al enviar el mensaje",
+    "messageSent": "Mensaje enviado",
+    "statusUpdated": "Estado actualizado",
+    "titleLabel": "Título",
+    "titlePlaceholder": "Resuma brevemente su problema",
+    "descriptionLabel": "Descripción",
+    "descriptionPlaceholder": "Describa su problema en detalle...",
+    "priorityLabel": "Prioridad",
+    "submit": "Enviar",
+    "messages": "Mensajes",
+    "writeMessage": "Escriba su mensaje...",
+    "writeReply": "Escriba su respuesta...",
+    "send": "Enviar",
+    "admin": "Admin",
+    "you": "Usted",
+    "user": "Usuario",
+    "status": {
+      "open": "Abierto",
+      "in_progress": "En Progreso",
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
+    },
+    "priority": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta"
+    }
+  },
   "admin": {
     "title": "Panel de Agencia",
     "filters": {

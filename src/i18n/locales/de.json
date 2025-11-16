@@ -358,6 +358,46 @@
     "noTrendData": "Keine Trenddaten verfügbar",
     "noDistributionData": "Keine Verteilungsdaten verfügbar"
   },
+  "tickets": {
+    "title": "Support-Anfragen",
+    "adminTitle": "Alle Support-Anfragen",
+    "createNew": "Neue Anfrage Erstellen",
+    "noTickets": "Noch keine Support-Anfragen",
+    "viewDetails": "Details Anzeigen",
+    "created": "Erstellt",
+    "fillAllFields": "Bitte füllen Sie alle Felder aus",
+    "createSuccess": "Support-Anfrage erfolgreich erstellt",
+    "createError": "Support-Anfrage konnte nicht erstellt werden",
+    "loadError": "Support-Anfragen konnten nicht geladen werden",
+    "updateError": "Status konnte nicht aktualisiert werden",
+    "messageError": "Nachricht konnte nicht gesendet werden",
+    "messageSent": "Nachricht gesendet",
+    "statusUpdated": "Status aktualisiert",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Fassen Sie Ihr Problem kurz zusammen",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Beschreiben Sie Ihr Problem im Detail...",
+    "priorityLabel": "Priorität",
+    "submit": "Absenden",
+    "messages": "Nachrichten",
+    "writeMessage": "Schreiben Sie Ihre Nachricht...",
+    "writeReply": "Schreiben Sie Ihre Antwort...",
+    "send": "Senden",
+    "admin": "Admin",
+    "you": "Sie",
+    "user": "Benutzer",
+    "status": {
+      "open": "Offen",
+      "in_progress": "In Bearbeitung",
+      "resolved": "Gelöst",
+      "closed": "Geschlossen"
+    },
+    "priority": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
+    }
+  },
   "admin": {
     "title": "Agentur-Panel",
     "filters": {
