@@ -104,7 +104,7 @@ export const DestinationAnalytics = () => {
       }> = {};
 
       registrations.forEach((reg: any) => {
-        const destination = reg.tours?.destination || 'Bilinmeyen';
+        const destination = reg.tours?.destination || t("destinationAnalytics.unknown");
         const price = (reg.tour_dates?.price_adult || 0) * reg.pax;
         const date = reg.tour_dates?.departure_date;
 
@@ -219,8 +219,8 @@ export const DestinationAnalytics = () => {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">Henüz destinasyon verisi yok</p>
-          <p className="text-sm text-muted-foreground mt-2">İlk rezervasyonunuz oluştuğunda destinasyon analizleri burada görünecek</p>
+          <p className="text-lg font-medium text-muted-foreground">{t("destinationAnalytics.noDestinationData")}</p>
+          <p className="text-sm text-muted-foreground mt-2">{t("destinationAnalytics.noDestinationDataDescription")}</p>
         </CardContent>
       </Card>
     );
@@ -232,49 +232,49 @@ export const DestinationAnalytics = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Destinasyon</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("destinationAnalytics.totalDestinations")}</CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalDestinations}</div>
-            <p className="text-xs text-muted-foreground mt-1">Farklı destinasyon</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("destinationAnalytics.differentDestinations")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("destinationAnalytics.totalRevenue")}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {new Intl.NumberFormat('tr-TR').format(stats.totalRevenue)} TL
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Tüm destinasyonlar</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("destinationAnalytics.allDestinations")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Rezervasyon</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("destinationAnalytics.totalBookings")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalBookings}</div>
-            <p className="text-xs text-muted-foreground mt-1">Rezervasyon sayısı</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("destinationAnalytics.bookingCount")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ortalama Sepet</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("destinationAnalytics.averageBasket")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {new Intl.NumberFormat('tr-TR').format(Math.round(stats.averageBookingValue))} TL
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Rezervasyon başına</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("destinationAnalytics.perBooking")}</p>
           </CardContent>
         </Card>
       </div>
@@ -285,7 +285,7 @@ export const DestinationAnalytics = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
-              Destinasyon Gelirleri
+              {t("destinationAnalytics.destinationRevenue")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -313,10 +313,32 @@ export const DestinationAnalytics = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Rezervasyon Dağılımı
+              {t("destinationAnalytics.bookingDistribution")}
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={stats.topDestinations.slice(0, 8)}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry) => `${entry.destination} (${entry.count})`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="count"
+                >
+                  {stats.topDestinations.slice(0, 8).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -346,7 +368,7 @@ export const DestinationAnalytics = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              En Popüler 3 Destinasyon Trendi
+              {t("destinationAnalytics.topDestinationsTrend")}
             </CardTitle>
           </CardHeader>
           <CardContent>
