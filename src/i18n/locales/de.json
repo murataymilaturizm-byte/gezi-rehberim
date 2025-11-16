@@ -400,6 +400,14 @@
   },
   "admin": {
     "title": "Agentur-Panel",
+    "groups": {
+      "general": "Allgemeine Verwaltung",
+      "tours": "Tour-Verwaltung",
+      "communication": "Kommunikation",
+      "reporting": "Berichterstattung",
+      "support": "Unterstützung",
+      "superAdmin": "Super-Admin"
+    },
     "filters": {
       "status": "Status",
       "tour": "Tour",

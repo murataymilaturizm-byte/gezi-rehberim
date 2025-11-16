@@ -382,6 +382,14 @@
   },
   "admin": {
     "title": "Agency Panel",
+    "groups": {
+      "general": "General Management",
+      "tours": "Tour Management",
+      "communication": "Communication",
+      "reporting": "Reporting",
+      "support": "Support",
+      "superAdmin": "Super Admin"
+    },
     "filters": {
       "status": "Status",
       "tour": "Tour",

@@ -364,6 +364,14 @@
   },
   "admin": {
     "title": "Panneau d'Agence",
+    "groups": {
+      "general": "Gestion générale",
+      "tours": "Gestion des circuits",
+      "communication": "Communication",
+      "reporting": "Rapports",
+      "support": "Support",
+      "superAdmin": "Super Admin"
+    },
     "filters": {
       "status": "Statut",
       "tour": "Tour",

@@ -393,6 +393,14 @@
   },
   "admin": {
     "title": "Panel de Agencia",
+    "groups": {
+      "general": "Gestión general",
+      "tours": "Gestión de tours",
+      "communication": "Comunicación",
+      "reporting": "Informes",
+      "support": "Soporte",
+      "superAdmin": "Super Admin"
+    },
     "filters": {
       "status": "Estado",
       "tour": "Tour",
