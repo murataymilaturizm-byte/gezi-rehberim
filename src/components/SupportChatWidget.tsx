@@ -34,17 +34,17 @@ export const SupportChatWidget = () => {
     role: "assistant",
     content: getInitialMessage()
   }]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
 
+  // Dil değiştiğinde karşılama mesajını güncelle
   useEffect(() => {
     setMessages([{
       role: "assistant",
       content: getInitialMessage()
     }]);
   }, [i18n.language]);
-
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showQuickReplies, setShowQuickReplies] = useState(true);
 
   const getQuickReplies = () => {
     const quickReplies: Record<string, string[]> = {
