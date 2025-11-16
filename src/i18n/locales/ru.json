@@ -979,7 +979,23 @@
       "messagesPerDay": "сообщений/день",
       "estimatedDuration": "Ориентировочная продолжительность",
       "notUsedYet": "Еще не использовано",
-      "days": "дней"
+      "days": "дней",
+      "dynamicFeatures": {
+        "messagesPerMonth": "{{count}} сообщений/месяц",
+        "unlimitedMessages": "Неограниченные сообщения",
+        "maxTours": "До {{count}} туров",
+        "unlimitedTours": "Неограниченные туры",
+        "languageSupport": "Поддержка {{count}} языков",
+        "allLanguages": "Все языки (7 языков)",
+        "limitedStyles": "{{count}} стилей общения",
+        "allStyles": "Все стили общения + Пользовательский стиль",
+        "userProfiles": "Профили пользователей",
+        "autoReminders": "Автоматические напоминания",
+        "advancedAnalytics": "Расширенная аналитика",
+        "messageTemplates": "Шаблоны сообщений",
+        "feedbackSurveys": "Опросы удовлетворенности клиентов",
+        "followUpMessages": "Последующие сообщения"
+      }
     },
     "dateForm": {
       "addDate": "Добавить Новую Дату",

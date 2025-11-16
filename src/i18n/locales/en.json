@@ -963,7 +963,23 @@
       "notUsedYet": "Not used yet",
       "days": "days",
       "loadError": "Could not load usage information",
-      "paymentError": "Could not initiate payment"
+      "paymentError": "Could not initiate payment",
+      "dynamicFeatures": {
+        "messagesPerMonth": "{{count}} messages/month",
+        "unlimitedMessages": "Unlimited messages",
+        "maxTours": "Up to {{count}} tours",
+        "unlimitedTours": "Unlimited tours",
+        "languageSupport": "{{count}} language support",
+        "allLanguages": "All languages (7 languages)",
+        "limitedStyles": "{{count}} conversation styles",
+        "allStyles": "All conversation styles + Custom style",
+        "userProfiles": "User profiles",
+        "autoReminders": "Automatic reminders",
+        "advancedAnalytics": "Advanced analytics",
+        "messageTemplates": "Message templates",
+        "feedbackSurveys": "Customer satisfaction surveys",
+        "followUpMessages": "Follow-up messages"
+      }
     },
     "dateForm": {
       "addDate": "Add New Date",
