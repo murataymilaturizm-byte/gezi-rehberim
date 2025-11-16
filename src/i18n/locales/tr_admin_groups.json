@@ -1,0 +1,10 @@
+{
+  "groups": {
+    "general": "Genel Yönetim",
+    "tours": "Tur Yönetimi",
+    "communication": "İletişim",
+    "reporting": "Raporlama",
+    "support": "Destek",
+    "superAdmin": "Süper Yönetici"
+  }
+}
