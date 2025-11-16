@@ -586,7 +586,9 @@
       "tickets": "Support",
       "allTickets": "All Support Tickets",
       "whatsappLogs": "WhatsApp Logs",
-      "analytics": "Analytics"
+      "analytics": "Revenue & Performance Analytics",
+      "customerAnalytics": "Customer Analytics",
+      "destinationAnalytics": "Destination Analytics"
     },
     "dashboard": {
       "title": "Dashboard",

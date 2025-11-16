@@ -564,7 +564,9 @@
       "tickets": "الدعم",
       "allTickets": "جميع تذاكر الدعم",
       "whatsappLogs": "سجلات واتساب",
-      "analytics": "التحليلات"
+      "analytics": "تحليلات الإيرادات والأداء",
+      "customerAnalytics": "تحليلات العملاء",
+      "destinationAnalytics": "تحليلات الوجهات"
     },
     "dashboard": {
       "title": "لوحة القيادة",
