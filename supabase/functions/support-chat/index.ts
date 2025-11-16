@@ -45,8 +45,8 @@ GÖREVLERİN:
 - Gerektiğinde /yardim sayfasına yönlendir
 
 YARDIM KAYNAKLARI:
-- Kapsamlı Yardım Merkezi: www.turzz.ai/yardim - Tüm konularda detaylı rehber
-- Başlangıç Rehberi: www.turzz.ai/nasil-baslarim - İlk kurulum adımları
+- Kapsamlı Yardım Merkezi: ai.turzz.com/yardim - Tüm konularda detaylı rehber
+- Başlangıç Rehberi: ai.turzz.com/nasil-baslarim - İlk kurulum adımları
 - Destek E-posta: info@turzz.ai - Teknik destek için
 
 ANA KONULAR:
@@ -126,8 +126,8 @@ YOUR TASKS:
 - Direct to /help page when needed
 
 HELP RESOURCES:
-- Comprehensive Help Center: www.turzz.ai/yardim - Detailed guides on all topics
-- Getting Started Guide: www.turzz.ai/nasil-baslarim - Initial setup steps
+- Comprehensive Help Center: ai.turzz.com/yardim - Detailed guides on all topics
+- Getting Started Guide: ai.turzz.com/nasil-baslarim - Initial setup steps
 - Support Email: info@turzz.ai - For technical support
 
 MAIN TOPICS:
@@ -207,8 +207,8 @@ IHRE AUFGABEN:
 - Bei Bedarf zur /hilfe-Seite weiterleiten
 
 HILFE-RESSOURCEN:
-- Umfassendes Hilfe-Center: www.turzz.ai/yardim - Detaillierte Anleitungen zu allen Themen
-- Erste Schritte: www.turzz.ai/nasil-baslarim - Erste Einrichtungsschritte
+- Umfassendes Hilfe-Center: ai.turzz.com/yardim - Detaillierte Anleitungen zu allen Themen
+- Erste Schritte: ai.turzz.com/nasil-baslarim - Erste Einrichtungsschritte
 - Support-E-Mail: info@turzz.ai - Für technischen Support
 
 HAUPTTHEMEN:
@@ -288,8 +288,8 @@ WICHTIG:
 - При необходимости направлять на страницу /помощь
 
 РЕСУРСЫ ПОМОЩИ:
-- Центр помощи: www.turzz.ai/yardim - Подробные руководства по всем темам
-- Руководство по началу работы: www.turzz.ai/nasil-baslarim - Первые шаги
+- Центр помощи: ai.turzz.com/yardim - Подробные руководства по всем темам
+- Руководство по началу работы: ai.turzz.com/nasil-baslarim - Первые шаги
 - Email поддержки: info@turzz.ai - Для технической поддержки
 
 ОСНОВНЫЕ ТЕМЫ:
@@ -369,8 +369,8 @@ WICHTIG:
 - التوجيه إلى صفحة /مساعدة عند الحاجة
 
 موارد المساعدة:
-- مركز المساعدة الشامل: www.turzz.ai/yardim - أدلة مفصلة حول جميع المواضيع
-- دليل البدء: www.turzz.ai/nasil-baslarim - خطوات الإعداد الأولية
+- مركز المساعدة الشامل: ai.turzz.com/yardim - أدلة مفصلة حول جميع المواضيع
+- دليل البدء: ai.turzz.com/nasil-baslarim - خطوات الإعداد الأولية
 - البريد الإلكتروني للدعم: info@turzz.ai - للدعم الفني
 
 المواضيع الرئيسية:
@@ -450,8 +450,8 @@ VOS TÂCHES:
 - Diriger vers la page /aide si nécessaire
 
 RESSOURCES D'AIDE:
-- Centre d'aide complet: www.turzz.ai/yardim - Guides détaillés sur tous les sujets
-- Guide de démarrage: www.turzz.ai/nasil-baslarim - Étapes d'installation initiales
+- Centre d'aide complet: ai.turzz.com/yardim - Guides détaillés sur tous les sujets
+- Guide de démarrage: ai.turzz.com/nasil-baslarim - Étapes d'installation initiales
 - E-mail de support: info@turzz.ai - Pour le support technique
 
 SUJETS PRINCIPAUX:
@@ -531,8 +531,8 @@ TUS TAREAS:
 - Dirigir a la página /ayuda cuando sea necesario
 
 RECURSOS DE AYUDA:
-- Centro de ayuda completo: www.turzz.ai/yardim - Guías detalladas sobre todos los temas
-- Guía de inicio: www.turzz.ai/nasil-baslarim - Pasos de configuración iniciales
+- Centro de ayuda completo: ai.turzz.com/yardim - Guías detalladas sobre todos los temas
+- Guía de inicio: ai.turzz.com/nasil-baslarim - Pasos de configuración iniciales
 - Email de soporte: info@turzz.ai - Para soporte técnico
 
 TEMAS PRINCIPALES:
