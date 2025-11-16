@@ -124,7 +124,7 @@ export function WhatsAppLogs() {
           .from('agencies')
           .select('id')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (!agencyData) {
           console.log('No agency found for user');
