@@ -35,6 +35,14 @@ export const SalesChatWidget = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Dil değiştiğinde karşılama mesajını güncelle
+  useEffect(() => {
+    setMessages([{
+      role: "assistant",
+      content: getInitialMessage()
+    }]);
+  }, [i18n.language]);
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
