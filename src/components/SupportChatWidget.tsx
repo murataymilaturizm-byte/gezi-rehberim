@@ -64,6 +64,62 @@ export const SupportChatWidget = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
+
+  const getQuickReplies = () => {
+    const quickReplies: Record<string, Array<{label: string, message: string}>> = {
+      tr: [
+        { label: "🚀 Kurulum", message: "Sistemi nasıl kurabilirim? WhatsApp bağlantısı nasıl yapılır?" },
+        { label: "🎯 Turlar", message: "Tur nasıl eklerim? Tur tarihlerini nasıl yönetirim?" },
+        { label: "📅 Rezervasyonlar", message: "Rezervasyonları nasıl yönetirim? Durum güncellemeleri nasıl yapılır?" },
+        { label: "💬 WhatsApp Bot", message: "WhatsApp botu nasıl çalışır? Dil desteği nedir?" },
+        { label: "🔧 Teknik Destek", message: "Teknik bir sorunla karşılaştım, yardım alabilir miyim?" }
+      ],
+      en: [
+        { label: "🚀 Setup", message: "How can I set up the system? How to connect WhatsApp?" },
+        { label: "🎯 Tours", message: "How do I add tours? How to manage tour dates?" },
+        { label: "📅 Reservations", message: "How do I manage reservations? How to update statuses?" },
+        { label: "💬 WhatsApp Bot", message: "How does the WhatsApp bot work? What is language support?" },
+        { label: "🔧 Technical Support", message: "I have a technical issue, can I get help?" }
+      ],
+      de: [
+        { label: "🚀 Einrichtung", message: "Wie kann ich das System einrichten? Wie verbinde ich WhatsApp?" },
+        { label: "🎯 Touren", message: "Wie füge ich Touren hinzu? Wie verwalte ich Tourdaten?" },
+        { label: "📅 Reservierungen", message: "Wie verwalte ich Reservierungen? Wie aktualisiere ich Status?" },
+        { label: "💬 WhatsApp Bot", message: "Wie funktioniert der WhatsApp-Bot? Was ist Sprachunterstützung?" },
+        { label: "🔧 Technischer Support", message: "Ich habe ein technisches Problem, kann ich Hilfe bekommen?" }
+      ],
+      ru: [
+        { label: "🚀 Настройка", message: "Как настроить систему? Как подключить WhatsApp?" },
+        { label: "🎯 Туры", message: "Как добавить туры? Как управлять датами туров?" },
+        { label: "📅 Бронирования", message: "Как управлять бронированиями? Как обновить статусы?" },
+        { label: "💬 WhatsApp Бот", message: "Как работает WhatsApp бот? Какая языковая поддержка?" },
+        { label: "🔧 Техподдержка", message: "У меня техническая проблема, можно получить помощь?" }
+      ],
+      ar: [
+        { label: "🚀 الإعداد", message: "كيف يمكنني إعداد النظام؟ كيف أربط WhatsApp؟" },
+        { label: "🎯 الجولات", message: "كيف أضيف الجولات؟ كيف أدير تواريخ الجولات؟" },
+        { label: "📅 الحجوزات", message: "كيف أدير الحجوزات؟ كيف أحدث الحالات؟" },
+        { label: "💬 بوت WhatsApp", message: "كيف يعمل بوت WhatsApp؟ ما هو دعم اللغات؟" },
+        { label: "🔧 الدعم الفني", message: "لدي مشكلة تقنية، هل يمكنني الحصول على المساعدة؟" }
+      ],
+      fr: [
+        { label: "🚀 Configuration", message: "Comment configurer le système? Comment connecter WhatsApp?" },
+        { label: "🎯 Visites", message: "Comment ajouter des visites? Comment gérer les dates?" },
+        { label: "📅 Réservations", message: "Comment gérer les réservations? Comment mettre à jour les statuts?" },
+        { label: "💬 Bot WhatsApp", message: "Comment fonctionne le bot WhatsApp? Quel est le support linguistique?" },
+        { label: "🔧 Support Technique", message: "J'ai un problème technique, puis-je obtenir de l'aide?" }
+      ],
+      es: [
+        { label: "🚀 Configuración", message: "¿Cómo configuro el sistema? ¿Cómo conecto WhatsApp?" },
+        { label: "🎯 Tours", message: "¿Cómo agrego tours? ¿Cómo gestiono las fechas de tours?" },
+        { label: "📅 Reservas", message: "¿Cómo gestiono las reservas? ¿Cómo actualizo estados?" },
+        { label: "💬 Bot WhatsApp", message: "¿Cómo funciona el bot de WhatsApp? ¿Qué es el soporte de idiomas?" },
+        { label: "🔧 Soporte Técnico", message: "Tengo un problema técnico, ¿puedo obtener ayuda?" }
+      ]
+    };
+    return quickReplies[i18n.language] || quickReplies.tr;
+  };
 
   useEffect(() => {
     localStorage.setItem('support-chat-messages', JSON.stringify(messages));
@@ -75,18 +131,52 @@ export const SupportChatWidget = () => {
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleQuickReply = (message: string) => {
+    setInput(message);
+    setShowQuickReplies(false);
+    // Hemen gönder
+    const userMessage: Message = { role: "user", content: message };
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
 
-    const userMessage: Message = { role: "user", content: input };
+    supabase.functions.invoke("support-chat", {
+      body: { 
+        message: message, 
+        conversationHistory: messages,
+        language: i18n.language 
+      }
+    }).then(({ data, error }) => {
+      if (error) throw error;
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.response
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+    }).catch(error => {
+      console.error("Error:", error);
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya detaylı yardım için /yardim sayfasını ziyaret edin ya da info@turzz.ai adresinden bizimle iletişime geçin."
+      }]);
+    }).finally(() => {
+      setIsLoading(false);
+    });
+  };
+
+  const handleSend = async () => {
+    const messageToSend = input.trim();
+    if (!messageToSend || isLoading) return;
+
+    const userMessage: Message = { role: "user", content: messageToSend };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setShowQuickReplies(false);
 
     try {
       const { data, error } = await supabase.functions.invoke("support-chat", {
         body: { 
-          message: input, 
+          message: messageToSend, 
           conversationHistory: messages,
           language: i18n.language 
         }
