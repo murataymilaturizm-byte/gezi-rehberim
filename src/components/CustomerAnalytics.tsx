@@ -179,8 +179,8 @@ export const CustomerAnalytics = () => {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Users className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">Henüz müşteri verisi yok</p>
-          <p className="text-sm text-muted-foreground mt-2">İlk müşteriniz sisteme eklendiğinde analitikler burada görünecek</p>
+          <p className="text-lg font-medium text-muted-foreground">{t("customerAnalytics.noCustomerData")}</p>
+          <p className="text-sm text-muted-foreground mt-2">{t("customerAnalytics.noCustomerDataDescription")}</p>
         </CardContent>
       </Card>
     );
@@ -192,56 +192,56 @@ export const CustomerAnalytics = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Müşteri</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("customerAnalytics.totalCustomers")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalCustomers}</div>
-            <p className="text-xs text-muted-foreground mt-1">Tüm müşteriler</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("customerAnalytics.allCustomers")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">VIP Müşteriler</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("customerAnalytics.vipCustomers")}</CardTitle>
             <Star className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{stats.vipCustomers}</div>
-            <p className="text-xs text-muted-foreground mt-1">3+ rezervasyon veya 10K+ harcama</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("customerAnalytics.vipDescription")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Düzenli Müşteri</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("customerAnalytics.regularCustomers")}</CardTitle>
             <Award className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{stats.regularCustomers}</div>
-            <p className="text-xs text-muted-foreground mt-1">2+ rezervasyon yapan</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("customerAnalytics.regularDescription")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Potansiyel</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("customerAnalytics.potentialCustomers")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.potentialCustomers}</div>
-            <p className="text-xs text-muted-foreground mt-1">Mesaj attı, rezervasyon yapmadı</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("customerAnalytics.potentialDescription")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">İnaktif</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("customerAnalytics.inactiveCustomers")}</CardTitle>
             <Calendar className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{stats.inactiveCustomers}</div>
-            <p className="text-xs text-muted-foreground mt-1">90+ gün mesaj atmayan</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("customerAnalytics.inactiveDescription")}</p>
           </CardContent>
         </Card>
       </div>
@@ -250,23 +250,23 @@ export const CustomerAnalytics = () => {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ortalama Mesaj Sayısı</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("customerAnalytics.averageMessages")}</CardTitle>
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageMessages.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Müşteri başına</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("customerAnalytics.perCustomer")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ortalama Rezervasyon</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("customerAnalytics.averageBookings")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageBookings.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Müşteri başına</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("customerAnalytics.perCustomer")}</p>
           </CardContent>
         </Card>
       </div>
@@ -324,7 +324,7 @@ export const CustomerAnalytics = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            En Değerli Müşteriler (Top 10)
+            {t("customerAnalytics.topCustomers")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -351,7 +351,7 @@ export const CustomerAnalytics = () => {
                   <p className="text-lg font-bold text-green-600">
                     {new Intl.NumberFormat('tr-TR').format(customer.total_spent)} TL
                   </p>
-                  <p className="text-sm text-muted-foreground">{customer.total_bookings} rezervasyon</p>
+                  <p className="text-sm text-muted-foreground">{customer.total_bookings} {t("customerAnalytics.reservations")}</p>
                 </div>
               </div>
             ))}
