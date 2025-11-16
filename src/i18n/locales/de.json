@@ -604,7 +604,9 @@
       "tickets": "Support",
       "allTickets": "Alle Support-Tickets",
       "whatsappLogs": "WhatsApp-Protokolle",
-      "analytics": "Analytik"
+      "analytics": "Umsatz- und Leistungsanalysen",
+      "customerAnalytics": "Kundenanalysen",
+      "destinationAnalytics": "Reisezielanalysen"
     },
     "dashboard": {
       "title": "Dashboard",

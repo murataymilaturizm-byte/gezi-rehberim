@@ -568,7 +568,9 @@
       "tickets": "Support",
       "allTickets": "Tous les tickets de support",
       "whatsappLogs": "Journaux WhatsApp",
-      "analytics": "Analytique"
+      "analytics": "Analyses de Revenus et Performance",
+      "customerAnalytics": "Analyses Clients",
+      "destinationAnalytics": "Analyses de Destinations"
     },
     "dashboard": {
       "title": "Tableau de Bord",

@@ -597,7 +597,9 @@
       "tickets": "Поддержка",
       "allTickets": "Все заявки в поддержку",
       "whatsappLogs": "Журналы WhatsApp",
-      "analytics": "Аналитика"
+      "analytics": "Аналитика Доходов и Производительности",
+      "customerAnalytics": "Аналитика Клиентов",
+      "destinationAnalytics": "Аналитика Направлений"
     },
     "dashboard": {
       "title": "Панель Управления",
