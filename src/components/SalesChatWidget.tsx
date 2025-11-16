@@ -26,28 +26,14 @@ export const SalesChatWidget = () => {
     return welcomeMessages[i18n.language] || welcomeMessages.tr;
   };
   
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem('sales-chat-messages');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved messages:', e);
-      }
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content: getInitialMessage()
     }
-    return [
-      {
-        role: "assistant",
-        content: getInitialMessage()
-      }
-    ];
-  });
+  ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('sales-chat-messages', JSON.stringify(messages));
-  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;

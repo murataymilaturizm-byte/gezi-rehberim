@@ -30,43 +30,21 @@ export const SupportChatWidget = () => {
     return welcomeMessages[i18n.language] || welcomeMessages.tr;
   };
   
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem('support-chat-messages');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved messages:', e);
-      }
-    }
-    return [{
-      role: "assistant",
-      content: getInitialMessage()
-    }];
-  });
+  const [messages, setMessages] = useState<Message[]>([{
+    role: "assistant",
+    content: getInitialMessage()
+  }]);
 
   useEffect(() => {
-    setMessages(prev => {
-      if (prev.length === 0 || prev[0].role !== 'assistant') {
-        return [{
-          role: "assistant",
-          content: getInitialMessage()
-        }, ...prev];
-      }
-      return [{
-        role: "assistant",
-        content: getInitialMessage()
-      }, ...prev.slice(1)];
-    });
+    setMessages([{
+      role: "assistant",
+      content: getInitialMessage()
+    }]);
   }, [i18n.language]);
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
-
-  useEffect(() => {
-    localStorage.setItem('support-chat-messages', JSON.stringify(messages));
-  }, [messages]);
 
   const getQuickReplies = () => {
     const quickReplies: Record<string, string[]> = {
