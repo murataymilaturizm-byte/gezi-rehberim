@@ -54,7 +54,7 @@ export const DemoChat = () => {
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationStyle, setConversationStyle] = useState<'friendly' | 'professional' | 'energetic' | 'helpful'>('professional');
+  const [conversationStyle, setConversationStyle] = useState<'basic' | 'friendly' | 'professional' | 'energetic' | 'helpful'>('basic');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,6 +68,8 @@ export const DemoChat = () => {
     const getStyledGreeting = () => {
       const baseGreeting = t("demo.greeting");
       switch(conversationStyle) {
+        case 'basic':
+          return baseGreeting + "\n\n📍 Nasıl yardımcı olabilirim?";
         case 'friendly':
           return baseGreeting + "\n\n😊 Sana nasıl yardımcı olabilirim?";
         case 'energetic':
@@ -157,6 +159,8 @@ export const DemoChat = () => {
     const getStyledGreeting = () => {
       const baseGreeting = t("demo.greeting");
       switch(conversationStyle) {
+        case 'basic':
+          return baseGreeting + "\n\n📍 Nasıl yardımcı olabilirim?";
         case 'friendly':
           return baseGreeting + "\n\n😊 Sana nasıl yardımcı olabilirim?";
         case 'energetic':
@@ -197,12 +201,13 @@ export const DemoChat = () => {
           <div className={`flex items-center ${isMobile ? 'flex-wrap gap-1.5' : 'gap-2'}`}>
             <Select
               value={conversationStyle}
-              onValueChange={(value: 'friendly' | 'professional' | 'energetic' | 'helpful') => setConversationStyle(value)}
+              onValueChange={(value: 'basic' | 'friendly' | 'professional' | 'energetic' | 'helpful') => setConversationStyle(value)}
             >
               <SelectTrigger className={`${isMobile ? 'w-[110px] text-xs' : 'w-[180px]'} bg-background text-foreground`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="basic">✨ {t("demo.style.basic")}</SelectItem>
                 <SelectItem value="friendly">🤝 {t("demo.style.friendly")}</SelectItem>
                 <SelectItem value="professional">👔 {t("demo.style.professional")}</SelectItem>
                 <SelectItem value="energetic">⚡ {t("demo.style.energetic")}</SelectItem>

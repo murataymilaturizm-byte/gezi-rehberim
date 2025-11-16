@@ -83,6 +83,7 @@
     "resetSuccessDesc": "You can start a new conversation",
     "typing": "Typing...",
     "style": {
+      "basic": "Simple/Brief",
       "friendly": "Friendly/Cordial",
       "professional": "Professional/Corporate",
       "energetic": "Energetic/Dynamic",

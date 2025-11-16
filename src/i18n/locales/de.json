@@ -83,6 +83,7 @@
     "resetSuccessDesc": "Sie können ein neues Gespräch beginnen",
     "typing": "Tippt...",
     "style": {
+      "basic": "Einfach/Kurz",
       "friendly": "Freundlich",
       "professional": "Professionell",
       "energetic": "Energisch",

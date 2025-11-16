@@ -83,6 +83,7 @@
     "resetSuccessDesc": "يمكنك بدء محادثة جديدة",
     "typing": "يكتب...",
     "style": {
+      "basic": "بسيط/مختصر",
       "friendly": "ودود/حميم",
       "professional": "محترف/مؤسسي",
       "energetic": "نشيط/ديناميكي",
