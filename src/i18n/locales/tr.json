@@ -780,7 +780,8 @@
       "allTickets": "Tüm Destek Talepleri",
       "whatsappLogs": "WhatsApp Logları",
       "analytics": "Gelir & Performans Analizi",
-      "customerAnalytics": "Müşteri Analizleri"
+      "customerAnalytics": "Müşteri Analizleri",
+      "destinationAnalytics": "Destinasyon Analizleri"
     },
     "tours": {
       "title": "Turlar",

@@ -596,61 +596,6 @@ export const AdvancedAnalytics = () => {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Popüler Destinasyonlar */}
-        {analytics.topDestinations.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Popüler Destinasyonlar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={analytics.topDestinations}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="destination" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value: number) => new Intl.NumberFormat('tr-TR').format(value) + ' TL'}
-                    labelStyle={{ color: '#000' }}
-                  />
-                  <Bar dataKey="revenue" fill="#82ca9d" name="Gelir (TL)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Kayıt Sayıları */}
-        {analytics.topDestinations.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Destinasyon Dağılımı</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={analytics.topDestinations}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={(entry) => `${entry.destination} (${entry.count})`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {analytics.topDestinations.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
       {/* Destinasyon Detayları */}
       {analytics.topDestinations.length > 0 && (
         <Card>
