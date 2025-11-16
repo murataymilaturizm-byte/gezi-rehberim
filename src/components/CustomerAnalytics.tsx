@@ -275,7 +275,7 @@ export const CustomerAnalytics = () => {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Müşteri Segmentleri</CardTitle>
+            <CardTitle>{t("customerAnalytics.customerSegments")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -302,7 +302,7 @@ export const CustomerAnalytics = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Dil Tercihleri</CardTitle>
+            <CardTitle>{t("customerAnalytics.languagePreferences")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -312,7 +312,7 @@ export const CustomerAnalytics = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="#8884d8" name="Müşteri Sayısı" />
+                <Bar dataKey="count" fill="#8884d8" name={t("customerAnalytics.customerCount")} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -303,7 +303,7 @@ export const DestinationAnalytics = () => {
                   formatter={(value: number) => new Intl.NumberFormat('tr-TR').format(value) + ' TL'}
                   labelStyle={{ color: '#000' }}
                 />
-                <Bar dataKey="revenue" fill="#82ca9d" name="Gelir (TL)" />
+                <Bar dataKey="revenue" fill="#82ca9d" name={t("destinationAnalytics.revenue")} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -381,7 +381,7 @@ export const DestinationAnalytics = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
-            Tüm Destinasyonlar - Detaylı Analiz
+            {t("destinationAnalytics.allDestinationsDetailed")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -398,11 +398,11 @@ export const DestinationAnalytics = () => {
                   <div>
                     <p className="font-medium text-lg">{destination.destination}</p>
                     <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
-                      <span>{destination.count} rezervasyon</span>
+                      <span>{destination.count} {t("customerAnalytics.reservations")}</span>
                       <span>•</span>
-                      <span>{destination.totalPax} kişi</span>
+                      <span>{destination.totalPax} {t("destinationAnalytics.people")}</span>
                       <span>•</span>
-                      <span>Ortalama: {new Intl.NumberFormat('tr-TR').format(Math.round(destination.averagePrice))} TL</span>
+                      <span>{t("destinationAnalytics.average")}: {new Intl.NumberFormat('tr-TR').format(Math.round(destination.averagePrice))} TL</span>
                     </div>
                   </div>
                 </div>

@@ -364,6 +364,7 @@
     "allDestinationsDetailed": "Todos los Destinos - Análisis Detallado",
     "people": "personas",
     "average": "Promedio",
+    "revenue": "Ingresos (TL)",
     "unknown": "Desconocido",
     "noDestinationData": "Aún no hay datos de destinos",
     "noDestinationDataDescription": "Los análisis de destinos aparecerán aquí cuando se realice su primera reserva"
