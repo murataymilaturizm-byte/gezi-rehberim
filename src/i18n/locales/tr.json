@@ -88,6 +88,7 @@
     "resetChat": "Konuşmayı Sıfırla",
     "resetSuccess": "Konuşma sıfırlandı",
     "resetSuccessDesc": "Yeni bir konuşma başlatabilirsiniz",
+    "typing": "Yazıyor...",
     "style": {
       "friendly": "Samimi/Dostane",
       "professional": "Profesyonel/Kurumsal",

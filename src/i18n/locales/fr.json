@@ -81,6 +81,7 @@
     "resetChat": "Réinitialiser la conversation",
     "resetSuccess": "Conversation réinitialisée",
     "resetSuccessDesc": "Vous pouvez commencer une nouvelle conversation",
+    "typing": "Saisie en cours...",
     "style": {
       "friendly": "Amical",
       "professional": "Professionnel",

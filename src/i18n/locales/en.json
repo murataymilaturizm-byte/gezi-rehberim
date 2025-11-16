@@ -81,6 +81,7 @@
     "resetChat": "Reset Conversation",
     "resetSuccess": "Conversation reset",
     "resetSuccessDesc": "You can start a new conversation",
+    "typing": "Typing...",
     "style": {
       "friendly": "Friendly/Cordial",
       "professional": "Professional/Corporate",

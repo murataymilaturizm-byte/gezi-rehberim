@@ -254,15 +254,29 @@ export const DemoChat = () => {
               </div>
             ))}
             {isLoading && (
-              <div className="flex gap-3 justify-start">
+              <div className="flex gap-3 justify-start animate-fade-in">
                 <div className="w-8 h-8 rounded-full bg-gradient-ocean flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="w-4 h-4 text-primary-foreground" />
+                  <MessageSquare className="w-4 h-4 text-primary-foreground animate-pulse" />
                 </div>
-                <div className="bg-muted rounded-lg px-4 py-2">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div className="bg-muted rounded-lg px-4 py-3 animate-scale-in">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {t("demo.typing") || "Yazıyor..."}
+                    </span>
+                    <div className="flex gap-1">
+                      <div 
+                        className="w-2 h-2 bg-primary rounded-full animate-bounce" 
+                        style={{ animationDelay: "0ms", animationDuration: "1s" }} 
+                      />
+                      <div 
+                        className="w-2 h-2 bg-primary rounded-full animate-bounce" 
+                        style={{ animationDelay: "200ms", animationDuration: "1s" }} 
+                      />
+                      <div 
+                        className="w-2 h-2 bg-primary rounded-full animate-bounce" 
+                        style={{ animationDelay: "400ms", animationDuration: "1s" }} 
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
