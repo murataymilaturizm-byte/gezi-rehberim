@@ -68,7 +68,7 @@ import { TicketManagement } from "@/components/TicketManagement";
 import { SuperAdminTickets } from "@/components/SuperAdminTickets";
 import { WhatsAppLogs } from "@/components/WhatsAppLogs";
 import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 
 interface Tour {
@@ -473,203 +473,77 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300">
-                <a href="/">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">{t("admin.home")}</span>
-                  <span className="sm:hidden">{t("admin.back")}</span>
-                </a>
-              </Button>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <img 
-                  src={turzzLogo} 
-                  alt="Turzz AI Logo" 
-                  className="h-10 sm:h-14 w-auto object-contain transition-transform duration-300 hover:scale-105"
-                />
-                <h1 className="text-base sm:text-xl font-bold text-foreground">{t("admin.title")}</h1>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AdminSidebar 
+          isSuperAdmin={isSuperAdmin} 
+          activeTab={activeTab} 
+          onTabChange={(tab) => setActiveTab(tab as any)} 
+        />
+        
+        <SidebarInset>
+          {/* Header */}
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <div className="flex flex-1 items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300">
+                  <a href="/">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">{t("admin.home")}</span>
+                  </a>
+                </Button>
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={turzzLogo} 
+                    alt="Turzz AI Logo" 
+                    className="h-10 w-auto object-contain"
+                  />
+                  <div>
+                    <h1 className="text-lg font-bold">{t("admin.title")}</h1>
+                    {agencyName && (
+                      <p className="text-xs text-muted-foreground">{agencyName}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <LanguageSelector />
+                <ThemeToggle />
+                <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                  <a href="/yardim" target="_blank">
+                    {t("admin.help")}
+                  </a>
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t("admin.logout")}</span>
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-4">
-              {(agencyName || userName) && (
-                <div className="hidden lg:flex items-center gap-2 text-foreground">
-                  <span className="text-sm font-medium">{t("admin.welcome")}</span>
-                  {agencyName && (
-                    <span className="text-sm font-semibold">{agencyName}</span>
-                  )}
-                  {agencyName && userName && (
-                    <span className="text-sm text-muted-foreground">•</span>
-                  )}
-                  {userName && (
-                    <span className="text-sm text-muted-foreground">{userName}</span>
-                  )}
-                </div>
-              )}
-              <LanguageSelector />
-              <ThemeToggle />
-              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/yardim" target="_blank">
-                  {t("admin.help")}
-                </a>
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleLogout} className="transition-all duration-300 hover:scale-105">
-                <LogOut className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">{t("admin.logout")}</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        {/* Subscription Banner */}
-        {!isSuperAdmin && <SubscriptionBanner />}
-        
-        {/* Language Selection Warning */}
-        {!isSuperAdmin && enabledLanguages.length === 0 && (
-          <Alert 
-            className="mb-6 border-warning bg-warning/10 cursor-pointer hover:bg-warning/20 transition-colors"
-            onClick={() => setActiveTab("languages")}
-          >
-            <AlertCircle className="h-5 w-5 text-warning" />
-            <AlertDescription className="ml-2 text-warning-foreground">
-              <strong>{t("languageManagement.warning")}:</strong> {t("admin.languageWarning.message")}
-              <span className="underline ml-2">{t("admin.languageWarning.action")}</span>
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          <Button
-            variant={activeTab === "dashboard" ? "default" : "outline"}
-            onClick={() => setActiveTab("dashboard")}
-            className={`transition-all duration-300 ${activeTab === "dashboard" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-          >
-            {t("admin.tabs.dashboard")}
-          </Button>
-          <Button
-            variant={activeTab === "tours" ? "default" : "outline"}
-            onClick={() => setActiveTab("tours")}
-            className={`transition-all duration-300 ${activeTab === "tours" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-          >
-            {t("admin.tabs.tours")}
-          </Button>
-          <Button
-            variant={activeTab === "registrations" ? "default" : "outline"}
-            onClick={() => setActiveTab("registrations")}
-            className={`transition-all duration-300 ${activeTab === "registrations" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-          >
-            {t("admin.tabs.registrations")}
-          </Button>
-          {(!isSuperAdmin && planFeatures?.has_user_profiles) || isSuperAdmin ? (
-            <Button
-              variant={activeTab === "whatsapp" ? "default" : "outline"}
-              onClick={() => setActiveTab("whatsapp")}
-              className={`transition-all duration-300 ${activeTab === "whatsapp" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-            >
-              {t("admin.tabs.whatsapp")}
-            </Button>
-          ) : null}
-          {!isSuperAdmin && (
-            <>
-              <Button
-                variant={activeTab === "settings" ? "default" : "outline"}
-                onClick={() => setActiveTab("settings")}
-                className={`transition-all duration-300 ${activeTab === "settings" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                {t("admin.dashboard.whatsappSettings")}
-              </Button>
-              <Button
-                variant={activeTab === "languages" ? "default" : "outline"}
+          {/* Main Content */}
+          <main className="flex-1 p-6 space-y-6">
+            {/* Subscription Banner */}
+            {!isSuperAdmin && <SubscriptionBanner />}
+            
+            {/* Language Selection Warning */}
+            {!isSuperAdmin && enabledLanguages.length === 0 && (
+              <Alert 
+                className="border-warning bg-warning/10 cursor-pointer hover:bg-warning/20 transition-colors"
                 onClick={() => setActiveTab("languages")}
-                className={`transition-all duration-300 ${activeTab === "languages" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
               >
-                {t("admin.tabs.languages")}
-              </Button>
-              {planFeatures?.has_templates && (
-                <Button
-                  variant={activeTab === "templates" ? "default" : "outline"}
-                  onClick={() => setActiveTab("templates")}
-                  className={`transition-all duration-300 ${activeTab === "templates" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-                >
-                  {t("admin.tabs.templates")}
-                </Button>
-              )}
-              <Button
-                variant={activeTab === "history" ? "default" : "outline"}
-                onClick={() => setActiveTab("history")}
-                className={`transition-all duration-300 ${activeTab === "history" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                {t("admin.tabs.history")}
-              </Button>
-              <Button
-                variant={activeTab === "tickets" ? "default" : "outline"}
-                onClick={() => setActiveTab("tickets")}
-                className={`transition-all duration-300 ${activeTab === "tickets" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-              >
-                {t("admin.tabs.tickets")}
-              </Button>
-              {planFeatures?.has_feedback && (
-                <Button
-                  variant={activeTab === "customer-feedback" ? "default" : "outline"}
-                  onClick={() => setActiveTab("customer-feedback")}
-                  className={`transition-all duration-300 ${activeTab === "customer-feedback" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-                >
-                  {t("admin.tabs.customerFeedback")}
-                </Button>
-              )}
-            </>
-          )}
-          {isSuperAdmin && (
-            <>
-            <Button
-              variant={activeTab === "tickets" ? "default" : "outline"}
-              onClick={() => setActiveTab("tickets")}
-              className={`transition-all duration-300 ${activeTab === "tickets" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-            >
-              {t("admin.tabs.tickets")}
-            </Button>
-            <Button
-              variant={activeTab === "whatsapp_logs" ? "default" : "outline"}
-              onClick={() => setActiveTab("whatsapp_logs")}
-              className={`transition-all duration-300 ${activeTab === "whatsapp_logs" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-            >
-              {t("admin.tabs.whatsapp_logs")}
-            </Button>
-            <Button
-              variant={activeTab === "agencies" ? "default" : "outline"}
-              onClick={() => setActiveTab("agencies")}
-              className={`transition-all duration-300 ${activeTab === "agencies" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-            >
-              {t("admin.tabs.agencies")}
-            </Button>
-            <Button
-              variant={activeTab === "contact_forms" ? "default" : "outline"}
-              onClick={() => setActiveTab("contact_forms")}
-              className={`transition-all duration-300 ${activeTab === "contact_forms" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-            >
-              {t("admin.tabs.contactForms")}
-            </Button>
-            <Button
-              variant={activeTab === "twilio_settings" ? "default" : "outline"}
-              onClick={() => setActiveTab("twilio_settings")}
-              className={`transition-all duration-300 ${activeTab === "twilio_settings" ? "bg-gradient-ocean scale-105" : "hover:scale-105"}`}
-            >
-              {t("admin.tabs.twilioSettings")}
-            </Button>
-            </>
-          )}
-        </div>
-
-        {/* Content */}
-        {activeTab === "dashboard" ? (
+                <AlertCircle className="h-5 w-5 text-warning" />
+                <AlertDescription className="ml-2 text-warning-foreground">
+                  <strong>{t("languageManagement.warning")}:</strong> {t("admin.languageWarning.message")}
+                  <span className="underline ml-2">{t("admin.languageWarning.action")}</span>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            
+            {activeTab === "dashboard" ? (
           <AdminDashboard isSuperAdmin={isSuperAdmin} planFeatures={planFeatures} />
         ) : activeTab === "whatsapp" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
           <div className="space-y-6">
@@ -1205,9 +1079,12 @@ const Admin = () => {
         </AlertDialogContent>
       </AlertDialog>
       
+        </SidebarInset>
+      </div>
+      
       {/* Support Chat Widget */}
       <SupportChatWidget />
-    </div>
+    </SidebarProvider>
   );
 };
 
