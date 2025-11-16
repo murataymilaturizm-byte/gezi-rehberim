@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -75,10 +76,27 @@ export const TourDateFormDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.departure_date || formData.price_adult <= 0) {
+    // Validate input
+    const tourDateSchema = z.object({
+      departure_date: z.string().min(1, { message: t("admin.dateForm.fillRequired") }),
+      price_adult: z.number().positive({ message: t("admin.dateForm.pricePositive") }),
+      price_child: z.number().min(0).optional(),
+      price_single: z.number().min(0).optional(),
+      quota: z.number().int().min(0, { message: t("admin.dateForm.quotaPositive") })
+    });
+    
+    const validation = tourDateSchema.safeParse({
+      departure_date: formData.departure_date,
+      price_adult: formData.price_adult,
+      price_child: formData.price_child,
+      price_single: formData.price_single,
+      quota: formData.quota
+    });
+    
+    if (!validation.success) {
       toast({
         title: t("admin.dateForm.error"),
-        description: t("admin.dateForm.fillRequired"),
+        description: validation.error.errors[0].message,
         variant: "destructive"
       });
       return;

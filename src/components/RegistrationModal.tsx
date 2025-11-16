@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { registrationSchema } from "@/utils/validation";
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -42,6 +43,24 @@ export const RegistrationModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate with zod schema
+    const validation = registrationSchema.safeParse({
+      full_name: formData.fullName,
+      phone: formData.phone,
+      pax: formData.pax,
+      note: formData.note
+    });
+    
+    if (!validation.success) {
+      toast({
+        title: t("admin.registrationForm.error"),
+        description: validation.error.errors[0].message,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
