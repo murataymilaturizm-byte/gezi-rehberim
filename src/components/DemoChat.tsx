@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, MessageSquare, Bot, User, RotateCcw } from "lucide-react";
+import { Send, MessageSquare, Bot, User, RotateCcw, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -55,6 +55,7 @@ export const DemoChat = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationStyle, setConversationStyle] = useState<'basic' | 'friendly' | 'professional' | 'energetic' | 'helpful'>('basic');
+  const [isExpanded, setIsExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,6 +101,12 @@ export const DemoChat = () => {
 
     const userMessage = input.trim();
     setInput("");
+    
+    // Expand to fullscreen on mobile when first message is sent
+    if (isMobile && !isExpanded) {
+      setIsExpanded(true);
+    }
+    
     const newMessages = [...messages, { role: "user" as const, content: userMessage }];
     setMessages(newMessages);
     setIsLoading(true);
@@ -177,6 +184,9 @@ export const DemoChat = () => {
       content: getStyledGreeting()
     }]);
     
+    // Exit fullscreen mode
+    setIsExpanded(false);
+    
     toast({
       title: t("demo.resetSuccess"),
       description: t("demo.resetSuccessDesc"),
@@ -184,8 +194,8 @@ export const DemoChat = () => {
   };
 
   return (
-    <div className="fixed inset-4 md:relative md:container md:mx-auto md:py-8 md:inset-auto">
-      <Card className="h-full md:h-auto w-full md:max-w-2xl md:mx-auto border-border shadow-card flex flex-col">
+    <div className={`${isExpanded && isMobile ? 'fixed inset-4 z-50 animate-scale-in' : 'container mx-auto py-8'}`}>
+      <Card className={`${isExpanded && isMobile ? 'h-full' : 'max-w-2xl mx-auto'} border-border shadow-card flex flex-col`}>
         <CardHeader className="border-b border-border bg-gradient-ocean flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -200,6 +210,17 @@ export const DemoChat = () => {
               </div>
             </div>
             <div className={`flex items-center ${isMobile ? 'flex-wrap gap-1.5' : 'gap-2'}`}>
+              {isExpanded && isMobile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsExpanded(false)}
+                  className="bg-background text-foreground hover:bg-background/80"
+                  title="Kapat"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              )}
               <Select
                 value={conversationStyle}
                 onValueChange={(value: 'basic' | 'friendly' | 'professional' | 'energetic' | 'helpful') => setConversationStyle(value)}
@@ -228,8 +249,8 @@ export const DemoChat = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0 flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        <CardContent className={`p-0 flex flex-col ${isExpanded && isMobile ? 'flex-1 min-h-0' : ''}`}>
+          <ScrollArea className={`${isExpanded && isMobile ? 'flex-1' : 'h-[400px]'} p-4`} ref={scrollRef}>
           <div className="space-y-4">
             {messages.map((msg, idx) => (
               <div
