@@ -180,17 +180,17 @@ export const SupportChatWidget = () => {
   };
 
   return (
-    <div className="fixed bottom-6 left-6 z-50">
+    <div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50">
       {!isOpen ? (
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className="h-16 w-16 rounded-full shadow-lg hover:shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 hover:opacity-90 transition-all duration-300"
+          className="h-14 w-14 md:h-16 md:w-16 rounded-full shadow-lg hover:shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 hover:opacity-90 transition-all duration-300"
         >
-          <HelpCircle className="h-7 w-7" />
+          <HelpCircle className="h-6 w-6 md:h-7 md:w-7" />
         </Button>
       ) : (
-        <Card className="w-[380px] h-[600px] shadow-2xl flex flex-col">
+        <Card className="fixed inset-4 md:relative md:inset-auto md:w-[380px] md:h-[600px] shadow-2xl flex flex-col">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 flex items-center justify-between rounded-t-lg">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
@@ -224,7 +224,7 @@ export const SupportChatWidget = () => {
                     <Badge
                       key={index}
                       variant="secondary"
-                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs md:text-sm py-2 px-3"
                       onClick={() => handleQuickReply(reply)}
                     >
                       {reply}
@@ -270,14 +270,15 @@ export const SupportChatWidget = () => {
                 onKeyPress={handleKeyPress}
                 placeholder={i18n.language === 'tr' ? "Nasıl yardımcı olabiliriz?" : "How can we help?"}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 h-12 md:h-10"
               />
               <Button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
                 size="icon"
+                className="h-12 w-12 md:h-10 md:w-10"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5 md:h-4 md:w-4" />
               </Button>
             </div>
           </div>

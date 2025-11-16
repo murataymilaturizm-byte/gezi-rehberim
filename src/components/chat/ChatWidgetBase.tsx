@@ -72,18 +72,18 @@ export const ChatWidgetBase = ({
   );
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50">
       {!isOpen ? (
         <Button
           onClick={() => onOpenChange(true)}
           size="lg"
-          className={`rounded-full shadow-lg ${buttonColor} hover:scale-105 transition-transform`}
+          className={`rounded-full shadow-lg ${buttonColor} hover:scale-105 transition-transform h-14 w-14 md:h-auto md:w-auto`}
         >
           <MessageCircle className="h-6 w-6" />
-          {buttonLabel && <span className="ml-2">{buttonLabel}</span>}
+          {buttonLabel && <span className="ml-2 hidden md:inline">{buttonLabel}</span>}
         </Button>
       ) : (
-        <Card className="w-[380px] h-[600px] flex flex-col shadow-2xl">
+        <Card className="fixed inset-4 md:relative md:inset-auto md:w-[380px] md:h-[600px] flex flex-col shadow-2xl">
           <div className={`${buttonColor} text-white p-4 rounded-t-lg flex justify-between items-center`}>
             <h3 className="font-semibold text-lg">{title}</h3>
             <Button
@@ -117,14 +117,15 @@ export const ChatWidgetBase = ({
                 onKeyPress={handleKeyPress}
                 placeholder={placeholder}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 h-12 md:h-10"
               />
               <Button
                 onClick={onSend}
                 disabled={isLoading || !input.trim()}
                 size="icon"
+                className="h-12 w-12 md:h-10 md:w-10"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5 md:h-4 md:w-4" />
               </Button>
             </div>
           </div>
