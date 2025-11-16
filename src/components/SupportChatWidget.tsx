@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MessageCircle, X, Send, Loader2, HelpCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useTranslation } from "react-i18next";
 
 interface Message {
   role: "user" | "assistant";
@@ -38,15 +39,12 @@ export const SupportChatWidget = () => {
         console.error('Failed to parse saved messages:', e);
       }
     }
-    return [
-      {
-        role: "assistant",
-        content: getInitialMessage()
-      }
-    ];
+    return [{
+      role: "assistant",
+      content: getInitialMessage()
+    }];
   });
 
-  // Dil değiştiğinde karşılama mesajını güncelle
   useEffect(() => {
     setMessages(prev => {
       if (prev.length === 0 || prev[0].role !== 'assistant') {
@@ -61,80 +59,50 @@ export const SupportChatWidget = () => {
       }, ...prev.slice(1)];
     });
   }, [i18n.language]);
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
-
-  const getQuickReplies = () => {
-    const quickReplies: Record<string, Array<{label: string, message: string}>> = {
-      tr: [
-        { label: "🚀 Kurulum", message: "Sistemi nasıl kurabilirim? WhatsApp bağlantısı nasıl yapılır?" },
-        { label: "🎯 Turlar", message: "Tur nasıl eklerim? Tur tarihlerini nasıl yönetirim?" },
-        { label: "📅 Rezervasyonlar", message: "Rezervasyonları nasıl yönetirim? Durum güncellemeleri nasıl yapılır?" },
-        { label: "💬 WhatsApp Bot", message: "WhatsApp botu nasıl çalışır? Dil desteği nedir?" },
-        { label: "🔧 Teknik Destek", message: "Teknik bir sorunla karşılaştım, yardım alabilir miyim?" }
-      ],
-      en: [
-        { label: "🚀 Setup", message: "How can I set up the system? How to connect WhatsApp?" },
-        { label: "🎯 Tours", message: "How do I add tours? How to manage tour dates?" },
-        { label: "📅 Reservations", message: "How do I manage reservations? How to update statuses?" },
-        { label: "💬 WhatsApp Bot", message: "How does the WhatsApp bot work? What is language support?" },
-        { label: "🔧 Technical Support", message: "I have a technical issue, can I get help?" }
-      ],
-      de: [
-        { label: "🚀 Einrichtung", message: "Wie kann ich das System einrichten? Wie verbinde ich WhatsApp?" },
-        { label: "🎯 Touren", message: "Wie füge ich Touren hinzu? Wie verwalte ich Tourdaten?" },
-        { label: "📅 Reservierungen", message: "Wie verwalte ich Reservierungen? Wie aktualisiere ich Status?" },
-        { label: "💬 WhatsApp Bot", message: "Wie funktioniert der WhatsApp-Bot? Was ist Sprachunterstützung?" },
-        { label: "🔧 Technischer Support", message: "Ich habe ein technisches Problem, kann ich Hilfe bekommen?" }
-      ],
-      ru: [
-        { label: "🚀 Настройка", message: "Как настроить систему? Как подключить WhatsApp?" },
-        { label: "🎯 Туры", message: "Как добавить туры? Как управлять датами туров?" },
-        { label: "📅 Бронирования", message: "Как управлять бронированиями? Как обновить статусы?" },
-        { label: "💬 WhatsApp Бот", message: "Как работает WhatsApp бот? Какая языковая поддержка?" },
-        { label: "🔧 Техподдержка", message: "У меня техническая проблема, можно получить помощь?" }
-      ],
-      ar: [
-        { label: "🚀 الإعداد", message: "كيف يمكنني إعداد النظام؟ كيف أربط WhatsApp؟" },
-        { label: "🎯 الجولات", message: "كيف أضيف الجولات؟ كيف أدير تواريخ الجولات؟" },
-        { label: "📅 الحجوزات", message: "كيف أدير الحجوزات؟ كيف أحدث الحالات؟" },
-        { label: "💬 بوت WhatsApp", message: "كيف يعمل بوت WhatsApp؟ ما هو دعم اللغات؟" },
-        { label: "🔧 الدعم الفني", message: "لدي مشكلة تقنية، هل يمكنني الحصول على المساعدة؟" }
-      ],
-      fr: [
-        { label: "🚀 Configuration", message: "Comment configurer le système? Comment connecter WhatsApp?" },
-        { label: "🎯 Visites", message: "Comment ajouter des visites? Comment gérer les dates?" },
-        { label: "📅 Réservations", message: "Comment gérer les réservations? Comment mettre à jour les statuts?" },
-        { label: "💬 Bot WhatsApp", message: "Comment fonctionne le bot WhatsApp? Quel est le support linguistique?" },
-        { label: "🔧 Support Technique", message: "J'ai un problème technique, puis-je obtenir de l'aide?" }
-      ],
-      es: [
-        { label: "🚀 Configuración", message: "¿Cómo configuro el sistema? ¿Cómo conecto WhatsApp?" },
-        { label: "🎯 Tours", message: "¿Cómo agrego tours? ¿Cómo gestiono las fechas de tours?" },
-        { label: "📅 Reservas", message: "¿Cómo gestiono las reservas? ¿Cómo actualizo estados?" },
-        { label: "💬 Bot WhatsApp", message: "¿Cómo funciona el bot de WhatsApp? ¿Qué es el soporte de idiomas?" },
-        { label: "🔧 Soporte Técnico", message: "Tengo un problema técnico, ¿puedo obtener ayuda?" }
-      ]
-    };
-    return quickReplies[i18n.language] || quickReplies.tr;
-  };
 
   useEffect(() => {
     localStorage.setItem('support-chat-messages', JSON.stringify(messages));
   }, [messages]);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+  const getQuickReplies = () => {
+    const quickReplies: Record<string, string[]> = {
+      tr: ["🚀 Kurulum", "🎯 Turlar", "📅 Rezervasyonlar", "💬 WhatsApp Bot", "🔧 Teknik Destek"],
+      en: ["🚀 Setup", "🎯 Tours", "📅 Reservations", "💬 WhatsApp Bot", "🔧 Technical Support"],
+      de: ["🚀 Einrichtung", "🎯 Touren", "📅 Reservierungen", "💬 WhatsApp Bot", "🔧 Technische Unterstützung"],
+      ru: ["🚀 Настройка", "🎯 Туры", "📅 Бронирования", "💬 WhatsApp Бот", "🔧 Техническая поддержка"],
+      ar: ["🚀 الإعداد", "🎯 الجولات", "📅 الحجوزات", "💬 بوت WhatsApp", "🔧 الدعم الفني"],
+      fr: ["🚀 Configuration", "🎯 Circuits", "📅 Réservations", "💬 Bot WhatsApp", "🔧 Support technique"],
+      es: ["🚀 Configuración", "🎯 Tours", "📅 Reservas", "💬 Bot de WhatsApp", "🔧 Soporte técnico"]
+    };
+    return quickReplies[i18n.language] || quickReplies.tr;
+  };
 
-  const handleQuickReply = (message: string) => {
-    setInput(message);
+  const handleQuickReply = (label: string) => {
+    const fullMessages: Record<string, Record<string, string>> = {
+      tr: {
+        "🚀 Kurulum": "Sistemi nasıl kurabilirim? WhatsApp bağlantısı nasıl yapılır?",
+        "🎯 Turlar": "Tur nasıl eklerim? Tur tarihlerini nasıl yönetirim?",
+        "📅 Rezervasyonlar": "Rezervasyonları nasıl yönetirim? Durum güncellemeleri nasıl yapılır?",
+        "💬 WhatsApp Bot": "WhatsApp botu nasıl çalışır? Dil desteği nedir?",
+        "🔧 Teknik Destek": "Teknik bir sorunla karşılaştım, yardım alabilir miyim?"
+      },
+      en: {
+        "🚀 Setup": "How can I set up the system? How to connect WhatsApp?",
+        "🎯 Tours": "How do I add tours? How to manage tour dates?",
+        "📅 Reservations": "How do I manage reservations? How to update statuses?",
+        "💬 WhatsApp Bot": "How does the WhatsApp bot work? What is language support?",
+        "🔧 Technical Support": "I encountered a technical problem, can I get help?"
+      }
+    };
+    
+    const langMessages = fullMessages[i18n.language] || fullMessages.tr;
+    const message = langMessages[label] || label;
+    
     setShowQuickReplies(false);
-    // Hemen gönder
     const userMessage: Message = { role: "user", content: message };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
@@ -156,7 +124,7 @@ export const SupportChatWidget = () => {
       console.error("Error:", error);
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya detaylı yardım için /yardim sayfasını ziyaret edin ya da info@turzz.ai adresinden bizimle iletişime geçin."
+        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya info@turzz.ai adresinden bizimle iletişime geçin."
       }]);
     }).finally(() => {
       setIsLoading(false);
@@ -193,7 +161,7 @@ export const SupportChatWidget = () => {
       console.error("Error:", error);
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya detaylı yardım için https://ai.turzz.com/yardim sayfasını ziyaret edin ya da info@turzz.ai adresinden bizimle iletişime geçin."
+        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://ai.turzz.com/yardim sayfasını ziyaret edin."
       }]);
     } finally {
       setIsLoading(false);
@@ -207,27 +175,54 @@ export const SupportChatWidget = () => {
     }
   };
 
+  const renderContentWithLinks = (content: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|ai\.[^\s]+)/g;
+    const parts = content.split(urlRegex);
+    
+    return parts.map((part, i) => {
+      if (urlRegex.test(part)) {
+        let url = part;
+        if (!url.startsWith('http')) {
+          url = 'https://' + url;
+        }
+        return (
+          <a 
+            key={i} 
+            href={url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:text-blue-700 underline font-medium"
+          >
+            {part}
+          </a>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 left-6 z-50">
       {!isOpen ? (
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className="h-16 w-16 rounded-full shadow-elegant hover:shadow-glow bg-gradient-to-br from-secondary to-secondary/80 hover:opacity-90 transition-all duration-300"
+          className="h-16 w-16 rounded-full shadow-lg hover:shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 hover:opacity-90 transition-all duration-300"
         >
           <HelpCircle className="h-7 w-7" />
         </Button>
       ) : (
-        <Card className="w-[380px] h-[600px] shadow-elegant flex flex-col animate-in slide-in-from-bottom-5 duration-300">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-secondary to-secondary/80 p-4 flex items-center justify-between rounded-t-lg">
+        <Card className="w-[380px] h-[600px] shadow-2xl flex flex-col">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 flex items-center justify-between rounded-t-lg">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
                 <HelpCircle className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-white">Turzz Yardım & Destek</h3>
-                <p className="text-xs text-white/80">Size yardımcı olmak için buradayız</p>
+                <h3 className="font-semibold text-white">Turzz Destek</h3>
+                <p className="text-xs text-white/80">
+                  {i18n.language === 'tr' ? 'Size yardımcı olmak için buradayız' : 'We are here to help'}
+                </p>
               </div>
             </div>
             <Button
@@ -240,54 +235,62 @@ export const SupportChatWidget = () => {
             </Button>
           </div>
 
-          {/* Messages */}
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-            <div className="space-y-4">
-              {messages.map((message, index) => (
+          <ScrollArea className="flex-1 p-4">
+            {showQuickReplies && messages.length === 1 && (
+              <div className="mb-4 p-3 bg-secondary/50 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-2">
+                  {i18n.language === 'tr' ? 'Hızlı Seçenekler:' : 'Quick Options:'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {getQuickReplies().map((reply, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                      onClick={() => handleQuickReply(reply)}
+                    >
+                      {reply}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-4`}
+              >
                 <div
-                  key={index}
-                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                    message.role === "user"
+                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                      : "bg-gradient-to-r from-muted to-muted/80 shadow-md"
+                  }`}
                 >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground"
-                    }`}
-                  >
-                    <p 
-                      className="text-sm whitespace-pre-wrap break-words leading-relaxed"
-                      dangerouslySetInnerHTML={{
-                        __html: message.content.replace(
-                          /(https?:\/\/[^\s]+|(?:www\.|ai\.)[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g,
-                          (url) => {
-                            const href = url.startsWith('http') ? url : `https://${url}`;
-                            return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline hover:opacity-80 transition-opacity" style="color: inherit; text-decoration: underline;">${url}</a>`;
-                          }
-                        )
-                      }}
-                    />
-                  </div>
+                  <p className="text-sm whitespace-pre-wrap">
+                    {renderContentWithLinks(message.content)}
+                  </p>
                 </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-muted rounded-2xl px-4 py-3">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="flex justify-start mb-4">
+                <div className="bg-muted rounded-lg px-4 py-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </ScrollArea>
 
-          {/* Input */}
-          <div className="border-t p-4">
+          <div className="p-4 border-t">
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Sorunuzu yazın..."
+                placeholder={i18n.language === 'tr' ? "Nasıl yardımcı olabiliriz?" : "How can we help?"}
                 disabled={isLoading}
                 className="flex-1"
               />
@@ -295,17 +298,10 @@ export const SupportChatWidget = () => {
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
                 size="icon"
-                className="bg-secondary hover:bg-secondary/90"
               >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              Detaylı bilgi için{" "}
-              <a href="https://ai.turzz.com/yardim" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                Yardım Merkezi
-              </a>
-            </p>
           </div>
         </Card>
       )}

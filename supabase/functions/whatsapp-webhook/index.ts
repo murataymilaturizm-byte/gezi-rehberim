@@ -83,7 +83,7 @@ serve(async (req) => {
     // Bu WhatsApp numarasına sahip acente'yi bul (merkezi Twilio yapısı)
     const { data: agency, error: agencyError } = await supabase
       .from('agencies')
-      .select('id, agency_name, active, subscription_status, trial_ends_at, subscription_ends_at, plan_type, monthly_message_count, message_limit, conversation_style, enabled_languages')
+      .select('id, agency_name, active, subscription_status, trial_ends_at, subscription_ends_at, plan_type, monthly_message_count, message_limit, conversation_style, enabled_languages, whatsapp_status')
       .eq('twilio_phone_number', twilioPhone)
       .eq('active', true)
       .single();
@@ -97,6 +97,60 @@ serve(async (req) => {
     }
 
     console.log('Found agency:', agency.agency_name);
+    
+    // WhatsApp status kontrolü - 'active' değilse mesaj gönderme
+    if (agency.whatsapp_status !== 'active') {
+      console.log('WhatsApp status not active for agency:', agency.agency_name, 'Status:', agency.whatsapp_status);
+      
+      // Kullanıcı dil tercihini al
+      const userProfile = await getUserProfile(supabase, userPhone, agency.id);
+      const userLanguage = userProfile?.language_preference || 'tr';
+      
+      const statusMessages: Record<string, Record<string, string>> = {
+        'pending': {
+          'tr': '⏳ *WhatsApp entegrasyonunuz onay bekliyor*\n\nYöneticimiz tarafından inceleniyor. Onaylandıktan sonra sistemi kullanabileceksiniz.\n\n📞 Acil durumlar için: info@turzz.ai',
+          'en': '⏳ *Your WhatsApp integration is pending approval*\n\nIt is being reviewed by our administrator. You will be able to use the system after approval.\n\n📞 For urgent matters: info@turzz.ai',
+          'de': '⏳ *Ihre WhatsApp-Integration wartet auf Genehmigung*\n\nSie wird von unserem Administrator überprüft. Nach der Genehmigung können Sie das System nutzen.\n\n📞 Für dringende Fälle: info@turzz.ai',
+          'ru': '⏳ *Ваша интеграция WhatsApp ожидает одобрения*\n\nОна проверяется нашим администратором. Вы сможете использовать систему после одобрения.\n\n📞 Для срочных случаев: info@turzz.ai',
+          'ar': '⏳ *تكامل WhatsApp الخاص بك في انتظار الموافقة*\n\nيتم مراجعته من قبل المسؤول. ستتمكن من استخدام النظام بعد الموافقة.\n\n📞 للحالات العاجلة: info@turzz.ai',
+          'fr': '⏳ *Votre intégration WhatsApp est en attente d\'approbation*\n\nElle est en cours d\'examen par notre administrateur. Vous pourrez utiliser le système après approbation.\n\n📞 Pour les urgences: info@turzz.ai',
+          'es': '⏳ *Su integración de WhatsApp está pendiente de aprobación*\n\nEstá siendo revisada por nuestro administrador. Podrá usar el sistema después de la aprobación.\n\n📞 Para casos urgentes: info@turzz.ai'
+        },
+        'rejected': {
+          'tr': '❌ *WhatsApp entegrasyonunuz reddedildi*\n\nLütfen acente yöneticinizle iletişime geçin.\n\n📞 Destek: info@turzz.ai',
+          'en': '❌ *Your WhatsApp integration was rejected*\n\nPlease contact your agency administrator.\n\n📞 Support: info@turzz.ai',
+          'de': '❌ *Ihre WhatsApp-Integration wurde abgelehnt*\n\nBitte kontaktieren Sie Ihren Agenturadministrator.\n\n📞 Support: info@turzz.ai',
+          'ru': '❌ *Ваша интеграция WhatsApp была отклонена*\n\nПожалуйста, свяжитесь с администратором агентства.\n\n📞 Поддержка: info@turzz.ai',
+          'ar': '❌ *تم رفض تكامل WhatsApp الخاص بك*\n\nيرجى الاتصال بمسؤول الوكالة.\n\n📞 الدعم: info@turzz.ai',
+          'fr': '❌ *Votre intégration WhatsApp a été rejetée*\n\nVeuillez contacter votre administrateur d\'agence.\n\n📞 Support: info@turzz.ai',
+          'es': '❌ *Su integración de WhatsApp fue rechazada*\n\nPor favor, contacte con el administrador de su agencia.\n\n📞 Soporte: info@turzz.ai'
+        },
+        'default': {
+          'tr': '⚠️ *WhatsApp sistemi şu anda aktif değil*\n\nLütfen acente yöneticinizle iletişime geçin.\n\n📞 Destek: info@turzz.ai',
+          'en': '⚠️ *WhatsApp system is currently not active*\n\nPlease contact your agency administrator.\n\n📞 Support: info@turzz.ai',
+          'de': '⚠️ *WhatsApp-System ist derzeit nicht aktiv*\n\nBitte kontaktieren Sie Ihren Agenturadministrator.\n\n📞 Support: info@turzz.ai',
+          'ru': '⚠️ *Система WhatsApp в настоящее время не активна*\n\nПожалуйста, свяжитесь с администратором агентства.\n\n📞 Поддержка: info@turzz.ai',
+          'ar': '⚠️ *نظام WhatsApp غير نشط حاليًا*\n\nيرجى الاتصال بمسؤول الوكالة.\n\n📞 الدعم: info@turzz.ai',
+          'fr': '⚠️ *Le système WhatsApp n\'est pas actuellement actif*\n\nVeuillez contacter votre administrateur d\'agence.\n\n📞 Support: info@turzz.ai',
+          'es': '⚠️ *El sistema WhatsApp no está activo actualmente*\n\nPor favor, contacte con el administrador de su agencia.\n\n📞 Soporte: info@turzz.ai'
+        }
+      };
+      
+      const messageGroup = statusMessages[agency.whatsapp_status || 'default'] || statusMessages['default'];
+      const statusMessage = messageGroup[userLanguage] || messageGroup['tr'];
+      
+      // Sadece mesajı kaydet
+      await saveMessage(supabase, userPhone, 'assistant', statusMessage, agency.id);
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${statusMessage}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+      });
+    }
     
     // Subscription kontrolü
     const now = new Date();
