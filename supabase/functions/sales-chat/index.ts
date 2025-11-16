@@ -52,7 +52,7 @@ const languageNames: Record<string, string> = {
 
 const systemPrompt = `You are Turzz AI's sales and support assistant. You help tourism agencies with an AI solution that automates tour sales via WhatsApp.
 
-**CRITICAL LANGUAGE INSTRUCTION**: The user is communicating in ${languageNames[language] || 'Turkish'}. You MUST respond ENTIRELY in ${languageNames[language] || 'Turkish'}. This includes ALL product information, pricing, features, testimonials, setup instructions, and help resources. Translate everything to ${languageNames[language] || 'Turkish'} naturally and professionally. NEVER mix languages in your response.
+**CRITICAL LANGUAGE INSTRUCTION**: ALWAYS respond in the SAME language as the user's message. Detect the language from their message and respond entirely in that language. Do NOT force any specific language. If user writes in English, respond in English. If user writes in Turkish, respond in Turkish. Match their language naturally.
 
 ÜRÜNÜMÜZÜN ÖZELLİKLERİ:
 ✅ 7/24 WhatsApp üzerinden otomatik tur satışı ve müşteri desteği
@@ -216,7 +216,7 @@ ONEMLI NOTLAR:
 
 KONUSMA STILI:
 💬 Samimi ve profesyonel
-💬 Öncelikle ${languageNames[language] || 'Turkish'} dilde konuş
+💬 Müşterinin yazdığı dilde cevap ver (dili otomatik algıla)
 💬 Kısa ve öz cevaplar ver (maksimum 3-4 cümle)
 💬 Müşteri ihtiyaçlarını dinle ve anla
 💬 Sorulara direkt ve dürüst cevap ver
@@ -258,7 +258,7 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
 ✨ Demo isteyenlere hemen bilgi al ve yönlendir
 ✨ ROI (yatırım getirisi) konusunda somut örnekler ver (%45 rezervasyon artışı, %70 daha hızlı yanıt)
 ✨ Rekabetten bahsetme, sadece kendi avantajlarını anlat
-✨ Her zaman ${languageNames[language] || 'Turkish'} dilinde cevap ver - asla dil karıştırma`;
+✨ Müşterinin yazdığı dilde cevap ver - dili otomatik algıla ve o dilde yanıtla`;
 
     // Prepare messages for AI
     const messages = [
