@@ -16,7 +16,8 @@ import {
   User,
   MessageCircle,
   ScrollText,
-  ChevronDown
+  ChevronDown,
+  MapPin
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
@@ -67,7 +68,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     const generalIds = ["dashboard", "settings", "languages", "history"];
     const tourIds = ["tours", "registrations"];
     const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "whatsapp_logs"];
-    const reportingIds = ["analytics", "customer-analytics", "customer-feedback"];
+    const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets"];
     
@@ -119,6 +120,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   const reportingItems = [
     ...(shouldShowAnalytics ? [{ id: "analytics", icon: BarChart3, label: t("admin.tabs.analytics") }] : []),
     ...(shouldShowAnalytics ? [{ id: "customer-analytics", icon: Users, label: t("admin.tabs.customerAnalytics") }] : []),
+    ...(shouldShowAnalytics ? [{ id: "destination-analytics", icon: MapPin, label: t("admin.tabs.destinationAnalytics") }] : []),
     ...(shouldShowFeedback ? [{ id: "customer-feedback", icon: MessageCircle, label: t("admin.tabs.customerFeedback") }] : []),
   ];
 
