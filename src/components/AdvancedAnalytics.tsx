@@ -407,6 +407,99 @@ export const AdvancedAnalytics = () => {
 
   return (
     <div className="space-y-6">
+      {/* Tarih Filtreleme */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Tarih Aralığı Filtresi
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={dateFilter === '1month' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('1month');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 1 Ay
+            </Button>
+            <Button
+              variant={dateFilter === '3months' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('3months');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 3 Ay
+            </Button>
+            <Button
+              variant={dateFilter === '6months' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('6months');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 6 Ay
+            </Button>
+            <Button
+              variant={dateFilter === '1year' ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter('1year');
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              Son 1 Yıl
+            </Button>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
+                  size="sm"
+                  className="gap-2"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  {dateFilter === 'custom' && customDateRange?.from ? (
+                    getDateFilterLabel()
+                  ) : (
+                    <span>Özel Tarih</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={customDateRange}
+                  onSelect={(range) => {
+                    setCustomDateRange(range);
+                    if (range?.from) {
+                      setDateFilter('custom');
+                    }
+                  }}
+                  numberOfMonths={2}
+                  locale={tr}
+                  disabled={(date) => date > new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mt-4">
+            Gösterilen veriler: <span className="font-medium">{getDateFilterLabel()}</span>
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Özet Kartlar */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
