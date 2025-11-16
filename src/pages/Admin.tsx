@@ -279,6 +279,10 @@ const Admin = () => {
         const maxToursLimit = await getMaxTours(currentPlanType);
         setMaxTours(maxToursLimit);
         
+        // Load all plan features
+        const features = await getPlanFeatures(currentPlanType);
+        setPlanFeatures(features);
+        
         // Set language preference based on agency's city/region
         if (agencyData?.language_preference) {
           i18n.changeLanguage(agencyData.language_preference);
@@ -478,7 +482,8 @@ const Admin = () => {
         <AdminSidebar 
           isSuperAdmin={isSuperAdmin} 
           activeTab={activeTab} 
-          onTabChange={(tab) => setActiveTab(tab as any)} 
+          onTabChange={(tab) => setActiveTab(tab as any)}
+          planFeatures={planFeatures}
         />
         
         <SidebarInset>

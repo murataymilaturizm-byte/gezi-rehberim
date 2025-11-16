@@ -36,12 +36,24 @@ interface AdminSidebarProps {
   isSuperAdmin: boolean;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  planFeatures?: {
+    has_user_profiles: boolean;
+    has_analytics: boolean;
+    has_templates: boolean;
+    has_feedback: boolean;
+  } | null;
 }
 
-export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange }: AdminSidebarProps) {
+export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeatures }: AdminSidebarProps) {
   const { state } = useSidebar();
   const { t } = useTranslation();
   const isCollapsed = state === "collapsed";
+  
+  // Filter items based on plan features
+  const shouldShowAnalytics = isSuperAdmin || planFeatures?.has_analytics;
+  const shouldShowUserProfiles = isSuperAdmin || planFeatures?.has_user_profiles;
+  const shouldShowTemplates = isSuperAdmin || planFeatures?.has_templates;
+  const shouldShowFeedback = isSuperAdmin || planFeatures?.has_feedback;
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
@@ -57,14 +69,14 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange }: AdminSide
 
   const communicationItems = [
     { id: "whatsapp", icon: MessageSquare, label: t("admin.tabs.whatsapp") },
-    { id: "whatsapp_profiles", icon: User, label: t("admin.tabs.userProfiles") },
-    { id: "templates", icon: FileText, label: t("admin.tabs.templates") },
+    ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: User, label: t("admin.tabs.userProfiles") }] : []),
+    ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates") }] : []),
     { id: "whatsapp_logs", icon: ScrollText, label: t("admin.tabs.whatsappLogs") },
   ];
 
   const reportingItems = [
-    { id: "analytics", icon: BarChart3, label: t("admin.tabs.analytics") },
-    { id: "customer-feedback", icon: MessageCircle, label: t("admin.tabs.customerFeedback") },
+    ...(shouldShowAnalytics ? [{ id: "analytics", icon: BarChart3, label: t("admin.tabs.analytics") }] : []),
+    ...(shouldShowFeedback ? [{ id: "customer-feedback", icon: MessageCircle, label: t("admin.tabs.customerFeedback") }] : []),
   ];
 
   const supportItems = [
@@ -124,13 +136,15 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange }: AdminSide
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Raporlama */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{!isCollapsed && t("admin.groups.reporting")}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(reportingItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Raporlama - Sadece özellikler varsa */}
+        {reportingItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>{!isCollapsed && t("admin.groups.reporting")}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              {renderMenuItems(reportingItems)}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Destek */}
         <SidebarGroup>
