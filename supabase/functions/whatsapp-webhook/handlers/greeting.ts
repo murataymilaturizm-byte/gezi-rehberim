@@ -50,15 +50,38 @@ export async function handleGreeting(
 
 // Helper function to extract last discussed tour from conversation history
 function extractLastTourFromHistory(history: any[]): string | null {
+  // Define tour patterns to search for
+  const tourPatterns = [
+    { patterns: ['pamukkale'], name: 'Pamukkale' },
+    { patterns: ['kapadokya', 'balon', 'cappadocia'], name: 'Kapadokya' },
+    { patterns: ['antalya', 'rafting'], name: 'Antalya Rafting' },
+    { patterns: ['ege', 'çeşme', 'alaçatı', 'alacati'], name: 'Ege Turu' },
+    { patterns: ['istanbul', 'İstanbul'], name: 'İstanbul' }
+  ];
+  
+  // First pass: Check assistant messages (most reliable)
   for (let i = history.length - 1; i >= 0; i--) {
-    const content = history[i].content.toLowerCase();
-    // Look for tour names in the last few messages
-    if (content.includes('pamukkale')) return 'Pamukkale';
-    if (content.includes('kapadokya')) return 'Kapadokya';
-    if (content.includes('balon')) return 'Kapadokya Balon Turu';
-    if (content.includes('antalya') || content.includes('rafting')) return 'Antalya Rafting';
-    if (content.includes('ege') || content.includes('çeşme') || content.includes('alaçatı')) return 'Ege Turu';
-    if (content.includes('istanbul')) return 'İstanbul';
+    if (history[i].role === 'assistant') {
+      const content = history[i].content.toLowerCase();
+      for (const pattern of tourPatterns) {
+        if (pattern.patterns.some(p => content.includes(p.toLowerCase()))) {
+          return pattern.name;
+        }
+      }
+    }
   }
+  
+  // Second pass: Check user messages if not found
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].role === 'user') {
+      const content = history[i].content.toLowerCase();
+      for (const pattern of tourPatterns) {
+        if (pattern.patterns.some(p => content.includes(p.toLowerCase()))) {
+          return pattern.name;
+        }
+      }
+    }
+  }
+  
   return null;
 }

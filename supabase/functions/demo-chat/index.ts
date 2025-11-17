@@ -267,26 +267,40 @@ serve(async (req) => {
         // Extract last discussed tour from conversation history
         // History comes ordered by created_at DESC (newest first), so iterate from start
         let lastTour = null;
+        const tourPatterns = [
+          { patterns: ['pamukkale'], name: 'Pamukkale Turu' },
+          { patterns: ['kapadokya', 'balon', 'kappadocia'], name: 'Kapadokya Balon Turu' },
+          { patterns: ['antalya', 'rafting'], name: 'Antalya Rafting' },
+          { patterns: ['ege', 'çeşme', 'alaçatı', 'alacati'], name: 'Ege Turu' },
+          { patterns: ['istanbul', 'İstanbul'], name: 'İstanbul Turu' }
+        ];
+        
         if (historyData && historyData.length > 0) {
-          for (let i = 0; i < historyData.length; i++) {
-            const content = historyData[i].content.toLowerCase();
-            // Check only assistant messages for tour mentions
+          // First pass: Check assistant messages (more reliable - they describe tours in detail)
+          for (let i = 0; i < historyData.length && !lastTour; i++) {
             if (historyData[i].role === 'assistant') {
-              if (content.includes('pamukkale')) {
-                lastTour = 'Pamukkale Turu';
-                break;
-              } else if (content.includes('kapadokya') || content.includes('balon')) {
-                lastTour = 'Kapadokya Balon Turu';
-                break;
-              } else if (content.includes('antalya') || content.includes('rafting')) {
-                lastTour = 'Antalya Rafting';
-                break;
-              } else if (content.includes('ege') || content.includes('çeşme') || content.includes('alaçatı')) {
-                lastTour = 'Ege Turu';
-                break;
-              } else if (content.includes('istanbul')) {
-                lastTour = 'İstanbul Turu';
-                break;
+              const content = historyData[i].content.toLowerCase();
+              for (const tourPattern of tourPatterns) {
+                if (tourPattern.patterns.some(pattern => content.includes(pattern.toLowerCase()))) {
+                  lastTour = tourPattern.name;
+                  break;
+                }
+              }
+            }
+          }
+          
+          // Second pass: If not found in assistant, check user messages
+          if (!lastTour) {
+            for (let i = 0; i < historyData.length; i++) {
+              if (historyData[i].role === 'user') {
+                const content = historyData[i].content.toLowerCase();
+                for (const tourPattern of tourPatterns) {
+                  if (tourPattern.patterns.some(pattern => content.includes(pattern.toLowerCase()))) {
+                    lastTour = tourPattern.name;
+                    break;
+                  }
+                }
+                if (lastTour) break;
               }
             }
           }
@@ -408,7 +422,7 @@ function formatDemoTourList(language: string = 'tr', style: string = 'friendly')
     
     response += `${index + 1}. *${tour.title}* (${tour.destination})\n`;
     
-    // Format date with departure/return distinction
+    // CRITICAL: Use formatDate function for proper date formatting
     if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
       response += `   ${lang.departure}: ${formatDate(firstDate.departure_date, language)}\n`;
       response += `   ${lang.return}: ${formatDate(firstDate.return_date, language)}\n`;
@@ -522,7 +536,7 @@ async function handleDemoTourSearch(
     
     response += `🏖️ *${tour.title}* - ${tour.destination}\n`;
     
-    // Format date with departure/return
+    // CRITICAL: Use formatDate for proper formatting
     if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
       response += `📅 ${lang.departure}: ${formatDate(firstDate.departure_date, language)}\n`;
       response += `   ${lang.return}: ${formatDate(firstDate.return_date, language)}\n`;
