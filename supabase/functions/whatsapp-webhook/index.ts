@@ -112,8 +112,51 @@ serve(async (req) => {
         responseMessage = await handleTourSearch(supabase, userPhone, agency.id, userMessage);
         break;
       case 'reservation.wizard':
-        await saveWizardState(supabase, userPhone, agency.id, { step: 'tour_selection', created_at: new Date().toISOString() });
-        responseMessage = 'Rezervasyon başlatıldı. Hangi turu seçmek istersiniz?';
+        // Extract last discussed tour from history
+        let lastDiscussedTour = null;
+        for (let i = history.length - 1; i >= 0; i--) {
+          const content = history[i].content.toLowerCase();
+          if (content.includes('pamukkale')) {
+            lastDiscussedTour = 'Pamukkale';
+            break;
+          } else if (content.includes('kapadokya') || content.includes('balon')) {
+            lastDiscussedTour = 'Kapadokya';
+            break;
+          } else if (content.includes('antalya') || content.includes('rafting')) {
+            lastDiscussedTour = 'Antalya';
+            break;
+          } else if (content.includes('ege') || content.includes('çeşme') || content.includes('alaçatı')) {
+            lastDiscussedTour = 'Ege';
+            break;
+          } else if (content.includes('istanbul')) {
+            lastDiscussedTour = 'İstanbul';
+            break;
+          }
+        }
+        
+        console.log('WhatsApp: Last discussed tour:', lastDiscussedTour);
+        
+        await saveWizardState(supabase, userPhone, agency.id, { 
+          step: lastDiscussedTour ? 'date_selection' : 'tour_selection', 
+          created_at: new Date().toISOString() 
+        });
+        
+        if (lastDiscussedTour) {
+          const tourGreetings: Record<string, string> = {
+            tr: `🎯 Harika! ${lastDiscussedTour} turu için rezervasyon işleminize başlayalım.\n\n📅 Hangi tarihi tercih edersiniz ve kaç kişi katılacaksınız?\n\nİptal etmek için "iptal" yazabilirsiniz.`,
+            en: `🎯 Great! Let's start your reservation for ${lastDiscussedTour} tour.\n\n📅 Which date do you prefer and how many people will join?\n\nYou can write "cancel" to abort.`,
+            de: `🎯 Großartig! Beginnen wir mit Ihrer Reservierung für ${lastDiscussedTour} Tour.\n\n📅 Welches Datum bevorzugen Sie und wie viele Personen nehmen teil?\n\nSie können "cancel" schreiben, um abzubrechen.`,
+            ru: `🎯 Отлично! Начнем бронирование тура ${lastDiscussedTour}.\n\n📅 Какую дату вы предпочитаете и сколько человек будет участвовать?\n\nНапишите "cancel" для отмены.`,
+            ar: `🎯 رائع! لنبدأ حجز جولة ${lastDiscussedTour}.\n\n📅 ما هو التاريخ المفضل وكم عدد الأشخاص؟\n\nيمكنك كتابة "cancel" للإلغاء.`,
+            fr: `🎯 Super! Commençons votre réservation pour le circuit ${lastDiscussedTour}.\n\n📅 Quelle date préférez-vous et combien de personnes participeront?\n\nVous pouvez écrire "cancel" pour annuler.`,
+            es: `🎯 ¡Genial! Comencemos con su reserva para el tour ${lastDiscussedTour}.\n\n📅 ¿Qué fecha prefiere y cuántas personas participarán?\n\nPuede escribir "cancel" para cancelar.`
+          };
+          responseMessage = tourGreetings[userLanguage] || tourGreetings['tr'];
+        } else {
+          responseMessage = userLanguage === 'tr' 
+            ? 'Rezervasyon başlatıldı. Hangi turu seçmek istersiniz?' 
+            : 'Reservation started. Which tour would you like to select?';
+        }
         break;
       default:
         responseMessage = await handleGeneralChat(supabase, userPhone, agency.id, userMessage, agency.conversation_style || 'professional');
