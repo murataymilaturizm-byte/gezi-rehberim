@@ -122,10 +122,8 @@ export const DemoChat = () => {
           },
           body: JSON.stringify({ 
             message: userMessage,
-            history: messages.slice(-10),
             sessionId: sessionId,
-            language: i18n.language,
-            conversationStyle: conversationStyle
+            conversationStyle: conversationStyle === 'basic' ? 'professional' : conversationStyle
           }),
         }
       );
@@ -136,7 +134,7 @@ export const DemoChat = () => {
       }
 
       const data = await response.json();
-      setMessages(prev => [...prev, { role: "assistant", content: data.message }]);
+      setMessages(prev => [...prev, { role: "assistant", content: data.response || data.message }]);
     } catch (error) {
       console.error("Chat error:", error);
       toast({
