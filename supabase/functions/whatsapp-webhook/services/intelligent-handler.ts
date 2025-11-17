@@ -42,7 +42,7 @@ export async function handleIntelligently(
   // Get tours data if needed
   let toursContext = '';
   if (['tour.list', 'tour.search', 'tour.detail'].includes(intent)) {
-    const tours = await searchToursWithAI(supabase, agencyId, userMessage, language);
+    const tours = await searchToursWithAI(supabase, userMessage, phone, agencyId);
     if (tours && tours.length > 0) {
       toursContext = '\n\nMevcut Turlar:\n' + tours.map(tour => {
         const dates = tour.dates?.map((d: any) => 
