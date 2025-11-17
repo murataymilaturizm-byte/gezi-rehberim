@@ -220,7 +220,8 @@ serve(async (req) => {
       console.error('Demo: Error fetching history:', historyError);
     }
     
-    const hasHistory = historyData && historyData.length > 0;
+    // Check if user has meaningful conversation history (at least 2 exchanges = 4 messages)
+    const hasHistory = historyData && historyData.length >= 4;
     console.log('Demo: Phone:', `demo_${sessionId}`, 'History count:', historyData?.length || 0, 'Has history:', hasHistory);
 
     // Categorize message - pass conversation history for better context
