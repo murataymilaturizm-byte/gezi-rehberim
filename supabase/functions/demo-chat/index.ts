@@ -2,13 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import WhatsApp webhook modular services
-import { checkFAQ } from '../whatsapp-webhook/services/faq.ts';
-import { categorizeMessage } from '../whatsapp-webhook/services/categorize.ts';
-import { detectCannedResponseTrigger, getCannedResponse } from '../whatsapp-webhook/services/canned-responses.ts';
-import { handleGreeting } from '../whatsapp-webhook/handlers/greeting.ts';
-import { handleTourList } from '../whatsapp-webhook/handlers/tour-list.ts';
-import { handleTourSearch } from '../whatsapp-webhook/handlers/tour-search.ts';
-import { handleGeneralChat } from '../whatsapp-webhook/handlers/general-chat.ts';
+import { detectIntent } from '../whatsapp-webhook/services/intent-detector.ts';
+import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
 import { 
   getWizardState, 
   saveWizardState, 
