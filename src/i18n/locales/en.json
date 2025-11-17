@@ -568,7 +568,11 @@
         "added": "FAQ added",
         "deleted": "FAQ deleted",
         "delete_confirm": "Are you sure you want to delete this FAQ?"
-      }
+      },
+      "template": "Template",
+      "useTemplate": "Use Template",
+      "templateCopied": "Template copied",
+      "cannotDeleteTemplate": "Template FAQs cannot be deleted"
     },
     "whatsapp": {
       "templates": {

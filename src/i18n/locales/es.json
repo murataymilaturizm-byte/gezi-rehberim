@@ -578,7 +578,11 @@
         "added": "FAQ agregada",
         "deleted": "FAQ eliminada",
         "delete_confirm": "¿Está seguro de que desea eliminar esta FAQ?"
-      }
+      },
+      "template": "Plantilla",
+      "useTemplate": "Usar plantilla",
+      "templateCopied": "Plantilla copiada",
+      "cannotDeleteTemplate": "Las FAQ de plantilla no se pueden eliminar"
     },
     "whatsapp": {
       "templates": {

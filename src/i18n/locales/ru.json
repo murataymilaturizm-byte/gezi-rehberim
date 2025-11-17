@@ -578,7 +578,11 @@
         "added": "FAQ добавлен",
         "deleted": "FAQ удален",
         "delete_confirm": "Вы уверены, что хотите удалить этот FAQ?"
-      }
+      },
+      "template": "Шаблон",
+      "useTemplate": "Использовать шаблон",
+      "templateCopied": "Шаблон скопирован",
+      "cannotDeleteTemplate": "Шаблонные FAQ нельзя удалить"
     },
     "whatsapp": {
       "templates": {

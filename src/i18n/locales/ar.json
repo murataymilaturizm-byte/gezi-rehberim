@@ -545,7 +545,11 @@
         "added": "تمت إضافة السؤال الشائع",
         "deleted": "تم حذف السؤال الشائع",
         "delete_confirm": "هل أنت متأكد أنك تريد حذف هذا السؤال الشائع؟"
-      }
+      },
+      "template": "نموذج",
+      "useTemplate": "استخدم النموذج",
+      "templateCopied": "تم نسخ النموذج",
+      "cannotDeleteTemplate": "لا يمكن حذف الأسئلة الشائعة القالبية"
     },
     "whatsapp": {
       "templates": {

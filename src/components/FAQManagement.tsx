@@ -36,6 +36,8 @@ interface FAQTemplate {
   usage_count: number;
   created_at: string;
   updated_at: string;
+  agency_id: string;
+  is_template?: boolean;
 }
 
 export default function FAQManagement() {
@@ -95,19 +97,28 @@ export default function FAQManagement() {
   };
 
   const loadFaqs = async (agencyId: string) => {
-    const { data, error } = await supabase
+    // Load both agency FAQs and default templates
+    const { data: agencyFaqs, error: agencyError } = await supabase
       .from("faq_templates")
       .select("*")
       .eq("agency_id", agencyId)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error loading FAQs:", error);
+    const { data: templateFaqs, error: templateError } = await supabase
+      .from("faq_templates")
+      .select("*")
+      .eq("agency_id", "00000000-0000-0000-0000-000000000000")
+      .order("created_at", { ascending: false });
+
+    if (agencyError || templateError) {
+      console.error("Error loading FAQs:", agencyError || templateError);
       toast.error(t("common.error"));
       return;
     }
 
-    setFaqs(data || []);
+    // Mark templates and combine
+    const marked = (templateFaqs || []).map(faq => ({ ...faq, is_template: true }));
+    setFaqs([...(agencyFaqs || []), ...marked]);
   };
 
   const applyFilters = () => {
@@ -250,6 +261,12 @@ export default function FAQManagement() {
   };
 
   const handleDelete = async (id: string) => {
+    const faq = faqs.find(f => f.id === id);
+    if (faq?.is_template) {
+      toast.error(t("admin.faq.cannotDeleteTemplate"));
+      return;
+    }
+
     if (!confirm(t("admin.faq.messages.delete_confirm"))) return;
 
     try {
@@ -264,6 +281,32 @@ export default function FAQManagement() {
       if (agencyId) await loadFaqs(agencyId);
     } catch (error) {
       console.error("Error deleting FAQ:", error);
+      toast.error(t("common.error"));
+    }
+  };
+
+  const copyTemplateToAgency = async (templateFaq: FAQTemplate) => {
+    if (!agencyId) return;
+
+    try {
+      const { error } = await supabase
+        .from("faq_templates")
+        .insert({
+          agency_id: agencyId,
+          question: templateFaq.question,
+          answer: templateFaq.answer,
+          keywords: templateFaq.keywords,
+          language: templateFaq.language,
+          category: templateFaq.category,
+          is_active: true,
+        });
+
+      if (error) throw error;
+
+      toast.success(t("admin.faq.templateCopied"));
+      await loadFaqs(agencyId);
+    } catch (error) {
+      console.error("Error copying template:", error);
       toast.error(t("common.error"));
     }
   };
@@ -518,6 +561,11 @@ export default function FAQManagement() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <CardTitle className="text-lg">{faq.question}</CardTitle>
+                      {faq.is_template && (
+                        <Badge variant="secondary" className="bg-primary/10 text-primary">
+                          {t("admin.faq.template")}
+                        </Badge>
+                      )}
                       <Badge variant={faq.is_active ? "default" : "secondary"}>
                         {faq.is_active ? t("admin.faq.active") : t("admin.faq.inactive")}
                       </Badge>
@@ -530,24 +578,37 @@ export default function FAQManagement() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Switch
-                      checked={faq.is_active}
-                      onCheckedChange={() => toggleActive(faq)}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit(faq)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(faq.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {faq.is_template ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => copyTemplateToAgency(faq)}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        {t("admin.faq.useTemplate")}
+                      </Button>
+                    ) : (
+                      <>
+                        <Switch
+                          checked={faq.is_active}
+                          onCheckedChange={() => toggleActive(faq)}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(faq)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(faq.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardHeader>
