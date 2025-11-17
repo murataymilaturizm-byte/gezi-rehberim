@@ -229,6 +229,8 @@ serve(async (req) => {
     let responseType = intent.type;
 
     console.log('Demo chat - Intent:', intent.type, 'Has history:', hasHistory, 'Message length:', message.length, 'History entries:', historyData?.length || 0);
+    console.log('Demo chat - Message:', message.substring(0, 100));
+    console.log('Demo chat - Intent confidence:', intent.confidence);
 
     switch (intent.type) {
       case 'greeting':
@@ -290,7 +292,9 @@ serve(async (req) => {
           }
         }
         
-        console.log('Demo: Last discussed tour:', lastTour);
+        console.log('Demo: Last discussed tour from history:', lastTour);
+        console.log('Demo: History data length:', historyData?.length);
+        console.log('Demo: Recent history:', historyData?.slice(0, 3).map((h: any) => `${h.role}: ${h.content.substring(0, 50)}`));
         
         // If we detected a tour from context, skip tour selection and go to date selection
         const initialState: WizardState = {
