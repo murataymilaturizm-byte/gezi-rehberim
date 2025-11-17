@@ -76,7 +76,8 @@ export async function handleIntelligently(
     }
   ];
 
-  const response = await callAI(messages, 0.4);
+  // Lower temperature for more consistent short responses
+  const response = await callAI(messages, 0.2);
   return response;
 }
 
@@ -98,13 +99,13 @@ function buildIntelligentPrompt(
   const baseRules = `Sen bir seyahat acentesi müşteri hizmetleri asistanısın.
 ${stylePersonality}
 
-KRİTİK KURALLAR:
-1. DİL: Kullanıcıya ${language} dilinde cevap ver
-2. SELAMLAMA: Sohbet devam ediyorsa ASLA "Merhaba" deme, direkt cevapla
+🚨 ZORUNLU KURALLAR - KESINLIKLE UYULMALI:
+1. DİL: ${language} dilinde cevap ver
+2. SELAMLAMA: Sohbet devam ediyorsa ASLA "Merhaba" deme
 3. HAFIZA: Önceki mesajları hatırla ve bağlamı koru
-4. DOĞRULUK: Sadece mevcut turlardaki bilgileri ver
-5. KISA VE ÖZ: Maksimum 3-4 cümle! WhatsApp için kısa mesajlar (ideal 160 karakter)
-6. FORMAT: Sadece önemli bilgileri ver, detaya girme
+4. 🔴 KISA VE ÖZ: MAKSIMUM 3 CÜMLE! WhatsApp için! Bu kurala KESINLIKLE uy!
+5. 🔴 DETAY YASAK: Program detayı, günlük plan YASAK! Sadece özet
+6. 🔴 PARAGRAF YASAK: Uzun paragraf yazma! Her satır kısa olmalı
 
 Konuşma Stili: ${conversationStyle}
 Mevcut Aşama: ${state.currentStage}
@@ -116,22 +117,22 @@ Intent: ${intent}`;
   // Intent-specific instructions
   const intentInstructions: Record<string, string> = {
     'greeting': `
-İlk selamlaşma. Kısa karşıla (1 cümle), hemen yardımcı olmaya hazır olduğunu belirt.`,
+🔴 TEK CÜMLE: "Merhaba! Hangi tura ilgi duyuyorsunuz?" gibi kısa sor.`,
     
     'tour.list': `
-Tüm turları basit liste formatında göster: "- Tur Adı (Tarih, Fiyat)". Maksimum 5 satır.`,
+🔴 5 SATIR MAX: "- Tur (Tarih, Fiyat)" formatında. Her satır 1 tur. DETAY YASAK!`,
     
     'tour.search': `
-İlgili 2-3 turu göster, kısa açıklama yap. Detay isterse söyle.`,
+🔴 2-3 TUR: İsim, tarih, fiyat. DETAY YASAK!`,
     
     'tour.detail': `
-Sadece ÖNEMLİ bilgileri ver: Neler görülecek, fiyat, tarihler. Maksimum 4 cümle.`,
+🔴 3 CÜMLE MAX: Neler görülecek + Fiyat + Tarih. Program detayı YASAK!`,
     
     'reservation.wizard': `
-Rezervasyon için bilgi topla: Hangi tur, kaç kişi, hangi tarih. Kısa sor.`,
+🔴 KISA SOR: "Hangi tur ve tarih?" gibi tek soruda topla.`,
     
     'question': `
-Doğrudan ve kısa cevap ver. 2 cümle yeterli.`,
+🔴 2 CÜMLE: Direkt cevap ver.`,
     
     'general': `
 Kısa cevapla ve turlara yönlendir. 2-3 cümle.`
