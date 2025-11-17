@@ -117,31 +117,31 @@ export function formatToursSummary(tours: Tour[], language: string = 'tr'): stri
   const labels = {
     tr: {
       foundTours: '🎯 Bulduğum turlar',
-      moreInfo: '\n\n💡 Herhangi bir tur hakkında daha fazla bilgi almak için tur numarasını yazabilir veya "detay göster" diyebilirsiniz.'
+      moreInfo: '\n\n💡 Hangi tur ile ilgileniyorsunuz? Tur numarasını veya adını yazabilirsiniz.'
     },
     en: {
       foundTours: '🎯 Tours I found',
-      moreInfo: '\n\n💡 For more information about any tour, you can write the tour number or say "show details".'
+      moreInfo: '\n\n💡 Which tour are you interested in? You can write the tour number or name.'
     },
     de: {
       foundTours: '🎯 Gefundene Touren',
-      moreInfo: '\n\n💡 Für weitere Informationen zu einer Tour können Sie die Tournummer eingeben oder "Details zeigen" sagen.'
+      moreInfo: '\n\n💡 Für welche Tour interessieren Sie sich? Sie können die Tournummer oder den Namen eingeben.'
     },
     ru: {
       foundTours: '🎯 Найденные туры',
-      moreInfo: '\n\n💡 Для получения дополнительной информации о туре введите номер тура или скажите "показать детали".'
+      moreInfo: '\n\n💡 Какой тур вас интересует? Можете написать номер или название тура.'
     },
     ar: {
       foundTours: '🎯 الجولات التي وجدتها',
-      moreInfo: '\n\n💡 لمزيد من المعلومات حول أي جولة، يمكنك كتابة رقم الجولة أو قول "إظهار التفاصيل".'
+      moreInfo: '\n\n💡 أي جولة تهمك؟ يمكنك كتابة رقم الجولة أو الاسم.'
     },
     fr: {
       foundTours: '🎯 Circuits trouvés',
-      moreInfo: '\n\n💡 Pour plus d\'informations sur un circuit, vous pouvez écrire le numéro du circuit ou dire "afficher les détails".'
+      moreInfo: '\n\n💡 Quel circuit vous intéresse? Vous pouvez écrire le numéro ou le nom du circuit.'
     },
     es: {
       foundTours: '🎯 Tours encontrados',
-      moreInfo: '\n\n💡 Para más información sobre cualquier tour, puede escribir el número del tour o decir "mostrar detalles".'
+      moreInfo: '\n\n💡 ¿Qué tour te interesa? Puedes escribir el número o nombre del tour.'
     }
   };
 
@@ -154,6 +154,105 @@ export function formatToursSummary(tours: Tour[], language: string = 'tr'): stri
   }).join('\n\n');
 
   return `${lang.foundTours}:\n\n${tourList}${lang.moreInfo}`;
+}
+
+// Format single tour as brief summary (not full details)
+export function formatTourBrief(tour: Tour, language: string = 'tr'): string {
+  const dateInfo = tour.dates[0];
+  if (!dateInfo) return '';
+
+  const labels = {
+    tr: {
+      departure: 'Çıkış',
+      return: 'Dönüş',
+      price: 'Fiyat',
+      quota: 'Kontenjan',
+      spots: 'kişilik',
+      soldOut: 'Kontenjan doldu',
+      question: '\n\n❓ Bu tur hakkında öğrenmek istediğiniz başka bir şey var mı? (Fiyat, kalkış noktası, vb.)',
+      detailOffer: '\n\n📄 İsterseniz detaylı tur programını paylaşabilirim.'
+    },
+    en: {
+      departure: 'Departure',
+      return: 'Return',
+      price: 'Price',
+      quota: 'Quota',
+      spots: 'spots',
+      soldOut: 'Sold out',
+      question: '\n\n❓ Is there anything else you would like to know about this tour? (Price, departure point, etc.)',
+      detailOffer: '\n\n📄 I can share the detailed tour program if you wish.'
+    },
+    de: {
+      departure: 'Abfahrt',
+      return: 'Rückkehr',
+      price: 'Preis',
+      quota: 'Kontingent',
+      spots: 'Plätze',
+      soldOut: 'Ausverkauft',
+      question: '\n\n❓ Gibt es noch etwas, das Sie über diese Tour wissen möchten? (Preis, Abfahrtsort, usw.)',
+      detailOffer: '\n\n📄 Ich kann Ihnen auf Wunsch das detaillierte Tourprogramm mitteilen.'
+    },
+    ru: {
+      departure: 'Отправление',
+      return: 'Возвращение',
+      price: 'Цена',
+      quota: 'Квота',
+      spots: 'мест',
+      soldOut: 'Мест нет',
+      question: '\n\n❓ Есть ли что-то еще, что вы хотели бы узнать об этом туре? (Цена, место отправления и т.д.)',
+      detailOffer: '\n\n📄 При желании могу поделиться подробной программой тура.'
+    },
+    ar: {
+      departure: 'المغادرة',
+      return: 'العودة',
+      price: 'السعر',
+      quota: 'الحصة',
+      spots: 'أماكن',
+      soldOut: 'مكتمل',
+      question: '\n\n❓ هل هناك أي شيء آخر تريد معرفته عن هذه الجولة؟ (السعر، نقطة الانطلاق، إلخ)',
+      detailOffer: '\n\n📄 يمكنني مشاركة برنامج الجولة التفصيلي إذا أردت.'
+    },
+    fr: {
+      departure: 'Départ',
+      return: 'Retour',
+      price: 'Prix',
+      quota: 'Quota',
+      spots: 'places',
+      soldOut: 'Complet',
+      question: '\n\n❓ Y a-t-il autre chose que vous aimeriez savoir sur ce circuit? (Prix, point de départ, etc.)',
+      detailOffer: '\n\n📄 Je peux partager le programme détaillé du circuit si vous le souhaitez.'
+    },
+    es: {
+      departure: 'Salida',
+      return: 'Regreso',
+      price: 'Precio',
+      quota: 'Cuota',
+      spots: 'plazas',
+      soldOut: 'Completo',
+      question: '\n\n❓ ¿Hay algo más que te gustaría saber sobre este tour? (Precio, punto de salida, etc.)',
+      detailOffer: '\n\n📄 Puedo compartir el programa detallado del tour si lo deseas.'
+    }
+  };
+
+  const lang = labels[language as keyof typeof labels] || labels.tr;
+
+  const parts = [
+    `🏖️ *${tour.title}*`,
+    `📍 ${tour.destination}`,
+    `📅 ${lang.departure}: ${formatDate(dateInfo.departure_date, language)}`
+  ];
+
+  if (dateInfo.return_date && dateInfo.return_date !== dateInfo.departure_date) {
+    parts.push(`📅 ${lang.return}: ${formatDate(dateInfo.return_date, language)}`);
+  }
+
+  parts.push(`💰 ${lang.price}: ${formatPrice(dateInfo.price_adult)} ${tour.currency}`);
+  parts.push(`👥 ${lang.quota}: ${dateInfo.quota > 0 ? dateInfo.quota + ' ' + lang.spots : lang.soldOut}`);
+
+  parts.push(lang.question);
+  parts.push(lang.detailOffer);
+
+  return parts.join('\n');
 }
 
 export function formatToursResponse(tours: Tour[], language: string = 'tr'): string {

@@ -350,7 +350,7 @@ serve(async (req) => {
       
       case 'tour.list':
         // Use demo tours instead of database
-        responseMessage = formatDemoTourList(userLanguage, activeConversationStyle);
+        responseMessage = formatAllDemoTours(userLanguage, activeConversationStyle);
         break;
       
       case 'tour.search':
@@ -393,7 +393,7 @@ serve(async (req) => {
   }
 });
 
-function formatDemoTourList(language: string = 'tr', style: string = 'friendly'): string {
+function formatAllDemoTours(language: string = 'tr', style: string = 'friendly'): string {
   const headers: Record<string, string> = {
     tr: `✨ İşte sizin için hazırladığım turlar:\n\n`,
     en: `✨ Here are our available tours:\n\n`,
@@ -471,7 +471,7 @@ async function handleDemoTourSearch(
     return await handleGeneralChat(supabase, phone, agencyId, message, conversationStyle);
   }
 
-  // Check conversation history to see if user is asking for details
+  // Check conversation history to see if user is selecting or requesting details
   const { data: history } = await supabase
     .from('whatsapp_conversations')
     .select('*')
@@ -482,90 +482,226 @@ async function handleDemoTourSearch(
   
   const lastAssistantMessage = history?.find((msg: any) => msg.role === 'assistant')?.content || '';
   
-  // Check if user is requesting details
-  const detailKeywords = {
-    tr: ['detay', 'bilgi', 'program', 'daha fazla', 'birinci', 'ikinci', '1.', '2.', '1 ', '2 '],
-    en: ['detail', 'info', 'information', 'more', 'first', 'second', '1.', '2.', '1 ', '2 '],
-    de: ['detail', 'info', 'information', 'mehr', 'erste', 'zweite', '1.', '2.', '1 ', '2 '],
-    ru: ['детали', 'информация', 'больше', 'первый', 'второй', '1.', '2.', '1 ', '2 '],
-    ar: ['تفاصيل', 'معلومات', 'المزيد', 'الأول', 'الثاني', '1.', '2.', '1 ', '2 '],
-    fr: ['détail', 'info', 'information', 'plus', 'premier', 'deuxième', '1.', '2.', '1 ', '2 '],
-    es: ['detalle', 'info', 'información', 'más', 'primero', 'segundo', '1.', '2.', '1 ', '2 ']
+  // Keywords for selecting a tour from list
+  const tourSelectKeywords = {
+    tr: ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    en: ['first', 'second', 'third', 'fourth', 'fifth', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    de: ['erste', 'zweite', 'dritte', 'vierte', 'fünfte', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    ru: ['первый', 'второй', 'третий', 'четвертый', 'пятый', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    ar: ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    fr: ['premier', 'deuxième', 'troisième', 'quatrième', 'cinquième', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    es: ['primero', 'segundo', 'tercero', 'cuarto', 'quinto', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 ']
   };
 
-  const keywords = detailKeywords[language as keyof typeof detailKeywords] || detailKeywords.tr;
-  const isRequestingDetail = keywords.some(keyword => message.toLowerCase().includes(keyword));
-  
-  // If last message had tour list AND user is requesting details, show detailed info
-  if (isRequestingDetail && lastAssistantMessage.includes('📍')) {
-    // Extract tour number from message (1, 2, etc)
+  const selectKeywords = tourSelectKeywords[language as keyof typeof tourSelectKeywords] || tourSelectKeywords.tr;
+  const isSelectingTour = selectKeywords.some(keyword => message.toLowerCase().includes(keyword));
+
+  // Check if user is requesting detailed program
+  const detailKeywords = {
+    tr: ['detaylı', 'program', 'tam program', 'tüm bilgi', 'ayrıntı', 'programı paylaş', 'tüm detaylar'],
+    en: ['detailed', 'program', 'full program', 'all info', 'detail', 'share program', 'all details'],
+    de: ['detailliert', 'programm', 'vollständiges programm', 'alle infos'],
+    ru: ['подробный', 'программа', 'полная программа', 'все сведения'],
+    ar: ['تفصيلي', 'برنامج', 'برنامج كامل', 'جميع المعلومات'],
+    fr: ['détaillé', 'programme', 'programme complet', 'toutes les infos'],
+    es: ['detallado', 'programa', 'programa completo', 'toda la info']
+  };
+
+  const detailKw = detailKeywords[language as keyof typeof detailKeywords] || detailKeywords.tr;
+  const isRequestingDetail = detailKw.some(keyword => message.toLowerCase().includes(keyword));
+
+  // If requesting detailed program and we know the tour, show full details
+  if (isRequestingDetail && lastAssistantMessage.includes('❓')) {
+    const tour = matchedTours[0];
+    return formatDemoTourDetail(tour, language);
+  }
+
+  // If user is selecting a tour from the list, show brief summary
+  if (isSelectingTour && lastAssistantMessage.includes('🎯')) {
     const numberMatch = message.match(/\d+/);
     if (numberMatch) {
       const tourIndex = parseInt(numberMatch[0]) - 1;
       if (tourIndex >= 0 && tourIndex < matchedTours.length) {
-        // Show detailed info for specific tour
-        const tour = matchedTours[tourIndex];
-        const dateLabels: Record<string, any> = {
-          tr: { departure: 'Çıkış Tarihi', return: 'Dönüş Tarihi' },
-          en: { departure: 'Departure Date', return: 'Return Date' },
-          de: { departure: 'Abfahrtsdatum', return: 'Rückkehrdatum' },
-          ru: { departure: 'Дата отправления', return: 'Дата возвращения' },
-          ar: { departure: 'تاريخ المغادرة', return: 'تاريخ العودة' },
-          fr: { departure: 'Date de départ', return: 'Date de retour' },
-          es: { departure: 'Fecha de salida', return: 'Fecha de regreso' }
-        };
-        const lang = dateLabels[language] || dateLabels.tr;
-        
-        let detailResponse = `🏖️ *${tour.title}*\n📍 ${tour.destination}\n\n`;
-        detailResponse += `📝 ${tour.program_kisa}\n\n`;
-        detailResponse += `📍 Gezilecek Yerler: ${tour.gezilecek_yerler}\n\n`;
-        
-        tour.dates.forEach((date, idx) => {
-          detailResponse += `📅 Tarih ${idx + 1}:\n`;
-          if (date.return_date && date.return_date !== date.departure_date) {
-            detailResponse += `   ${lang.departure}: ${formatDate(date.departure_date, language)}\n`;
-            detailResponse += `   ${lang.return}: ${formatDate(date.return_date, language)}\n`;
-          } else {
-            detailResponse += `   ${formatDate(date.departure_date, language)}\n`;
-          }
-          detailResponse += `   💰 ${date.price_adult} ${tour.currency}\n`;
-          detailResponse += `   👥 ${date.quota} kişilik kontenjan\n\n`;
-        });
-        
-        return detailResponse;
+        return formatDemoTourBrief(matchedTours[tourIndex], language);
       }
+    }
+    if (matchedTours.length === 1) {
+      return formatDemoTourBrief(matchedTours[0], language);
     }
   }
 
-  // Default: Show simple summary list
-  const headers: Record<string, string> = {
-    tr: '🎯 Size uygun turları buldum:\n\n',
-    en: '🎯 I found tours that match your search:\n\n',
-    de: '🎯 Ich habe passende Touren gefunden:\n\n',
-    ru: '🎯 Я нашел подходящие туры:\n\n',
-    ar: '🎯 وجدت جولات تناسبك:\n\n',
-    fr: '🎯 J\'ai trouvé des circuits correspondants:\n\n',
-    es: '🎯 Encontré tours que coinciden:\n\n'
+  // If multiple tours found, show list
+  if (matchedTours.length > 1) {
+    return formatDemoTourList(matchedTours, language);
+  }
+  
+  // If only one tour found, show brief summary directly
+  if (matchedTours.length === 1) {
+    return formatDemoTourBrief(matchedTours[0], language);
+  }
+
+  return formatDemoTourList(matchedTours, language);
+}
+
+// Format demo tour list (summary)
+function formatDemoTourList(tours: any[], language: string): string {
+  const labels = {
+    tr: {
+      foundTours: '🎯 Bulduğum turlar',
+      moreInfo: '\n\n💡 Hangi tur ile ilgileniyorsunuz? Tur numarasını veya adını yazabilirsiniz.'
+    },
+    en: {
+      foundTours: '🎯 Tours I found',
+      moreInfo: '\n\n💡 Which tour are you interested in? You can write the tour number or name.'
+    },
+    de: {
+      foundTours: '🎯 Gefundene Touren',
+      moreInfo: '\n\n💡 Für welche Tour interessieren Sie sich? Sie können die Tournummer oder den Namen eingeben.'
+    },
+    ru: {
+      foundTours: '🎯 Найденные туры',
+      moreInfo: '\n\n💡 Какой тур вас интересует? Можете написать номер или название тура.'
+    },
+    ar: {
+      foundTours: '🎯 الجولات التي وجدتها',
+      moreInfo: '\n\n💡 أي جولة تهمك؟ يمكنك كتابة رقم الجولة أو الاسم.'
+    },
+    fr: {
+      foundTours: '🎯 Circuits trouvés',
+      moreInfo: '\n\n💡 Quel circuit vous intéresse? Vous pouvez écrire le numéro ou le nom du circuit.'
+    },
+    es: {
+      foundTours: '🎯 Tours encontrados',
+      moreInfo: '\n\n💡 ¿Qué tour te interesa? Puedes escribir el número o nombre del tour.'
+    }
   };
 
-  const callToActions: Record<string, string> = {
-    tr: '\n\n💡 Daha fazla bilgi için tur numarasını yazabilir veya "detay göster" diyebilirsiniz.',
-    en: '\n\n💡 For more information, you can write the tour number or say "show details".',
-    de: '\n\n💡 Für weitere Informationen können Sie die Tournummer eingeben oder "Details zeigen" sagen.',
-    ru: '\n\n💡 Для получения дополнительной информации введите номер тура или скажите "показать детали".',
-    ar: '\n\n💡 لمزيد من المعلومات، يمكنك كتابة رقم الجولة أو قول "إظهار التفاصيل".',
-    fr: '\n\n💡 Pour plus d\'informations, vous pouvez écrire le numéro du circuit ou dire "afficher les détails".',
-    es: '\n\n💡 Para más información, puede escribir el número del tour o decir "mostrar detalles".'
-  };
+  const lang = labels[language as keyof typeof labels] || labels.tr;
 
-  let response = headers[language] || headers['tr'];
-
-  matchedTours.forEach((tour, index) => {
+  const tourList = tours.map((tour, index) => {
     const firstDate = tour.dates[0];
-    response += `${index + 1}. *${tour.title}*\n   📍 ${tour.destination} | 📅 ${formatDate(firstDate.departure_date, language)}\n\n`;
+    const dateStr = formatDate(firstDate.departure_date, language);
+    return `${index + 1}. *${tour.title}*\n   📍 ${tour.destination} | 📅 ${dateStr}`;
+  }).join('\n\n');
+
+  return `${lang.foundTours}:\n\n${tourList}${lang.moreInfo}`;
+}
+
+// Format demo tour brief (not full details)
+function formatDemoTourBrief(tour: any, language: string): string {
+  const dateInfo = tour.dates[0];
+
+  const labels = {
+    tr: {
+      departure: 'Çıkış',
+      return: 'Dönüş',
+      price: 'Fiyat',
+      quota: 'Kontenjan',
+      spots: 'kişilik',
+      question: '\n\n❓ Bu tur hakkında öğrenmek istediğiniz başka bir şey var mı? (Fiyat, kalkış noktası, vb.)',
+      detailOffer: '\n\n📄 İsterseniz detaylı tur programını paylaşabilirim.'
+    },
+    en: {
+      departure: 'Departure',
+      return: 'Return',
+      price: 'Price',
+      quota: 'Quota',
+      spots: 'spots',
+      question: '\n\n❓ Is there anything else you would like to know about this tour?',
+      detailOffer: '\n\n📄 I can share the detailed tour program if you wish.'
+    },
+    de: {
+      departure: 'Abfahrt',
+      return: 'Rückkehr',
+      price: 'Preis',
+      quota: 'Kontingent',
+      spots: 'Plätze',
+      question: '\n\n❓ Gibt es noch etwas, das Sie über diese Tour wissen möchten?',
+      detailOffer: '\n\n📄 Ich kann Ihnen auf Wunsch das detaillierte Tourprogramm mitteilen.'
+    },
+    ru: {
+      departure: 'Отправление',
+      return: 'Возвращение',
+      price: 'Цена',
+      quota: 'Квота',
+      spots: 'мест',
+      question: '\n\n❓ Есть ли что-то еще, что вы хотели бы узнать об этом туре?',
+      detailOffer: '\n\n📄 При желании могу поделиться подробной программой тура.'
+    },
+    ar: {
+      departure: 'المغادرة',
+      return: 'العودة',
+      price: 'السعر',
+      quota: 'الحصة',
+      spots: 'أماكن',
+      question: '\n\n❓ هل هناك أي شيء آخر تريد معرفته عن هذه الجولة؟',
+      detailOffer: '\n\n📄 يمكنني مشاركة برنامج الجولة التفصيلي إذا أردت.'
+    },
+    fr: {
+      departure: 'Départ',
+      return: 'Retour',
+      price: 'Prix',
+      quota: 'Quota',
+      spots: 'places',
+      question: '\n\n❓ Y a-t-il autre chose que vous aimeriez savoir sur ce circuit?',
+      detailOffer: '\n\n📄 Je peux partager le programme détaillé du circuit si vous le souhaitez.'
+    },
+    es: {
+      departure: 'Salida',
+      return: 'Regreso',
+      price: 'Precio',
+      quota: 'Cuota',
+      spots: 'plazas',
+      question: '\n\n❓ ¿Hay algo más que te gustaría saber sobre este tour?',
+      detailOffer: '\n\n📄 Puedo compartir el programa detallado del tour si lo deseas.'
+    }
+  };
+
+  const lang = labels[language as keyof typeof labels] || labels.tr;
+
+  let brief = `🏖️ *${tour.title}*\n📍 ${tour.destination}\n`;
+  brief += `📅 ${lang.departure}: ${formatDate(dateInfo.departure_date, language)}\n`;
+  
+  if (dateInfo.return_date && dateInfo.return_date !== dateInfo.departure_date) {
+    brief += `📅 ${lang.return}: ${formatDate(dateInfo.return_date, language)}\n`;
+  }
+
+  brief += `💰 ${lang.price}: ${dateInfo.price_adult} ${tour.currency}\n`;
+  brief += `👥 ${lang.quota}: ${dateInfo.quota} ${lang.spots}`;
+  brief += lang.question;
+  brief += lang.detailOffer;
+
+  return brief;
+}
+
+// Format demo tour detail (full information)
+function formatDemoTourDetail(tour: any, language: string): string {
+  const dateLabels: Record<string, any> = {
+    tr: { departure: 'Çıkış Tarihi', return: 'Dönüş Tarihi' },
+    en: { departure: 'Departure Date', return: 'Return Date' },
+    de: { departure: 'Abfahrtsdatum', return: 'Rückkehrdatum' },
+    ru: { departure: 'Дата отправления', return: 'Дата возвращения' },
+    ar: { departure: 'تاريخ المغادرة', return: 'تاريخ العودة' },
+    fr: { departure: 'Date de départ', return: 'Date de retour' },
+    es: { departure: 'Fecha de salida', return: 'Fecha de regreso' }
+  };
+  const lang = dateLabels[language] || dateLabels.tr;
+  
+  let detail = `🏖️ *${tour.title}*\n📍 ${tour.destination}\n\n`;
+  detail += `📝 ${tour.program_kisa}\n\n`;
+  detail += `📍 Gezilecek Yerler: ${tour.gezilecek_yerler}\n\n`;
+  
+  tour.dates.forEach((date: any, idx: number) => {
+    detail += `📅 Tarih ${idx + 1}:\n`;
+    if (date.return_date && date.return_date !== date.departure_date) {
+      detail += `   ${lang.departure}: ${formatDate(date.departure_date, language)}\n`;
+      detail += `   ${lang.return}: ${formatDate(date.return_date, language)}\n`;
+    } else {
+      detail += `   ${formatDate(date.departure_date, language)}\n`;
+    }
+    detail += `   💰 ${date.price_adult} ${tour.currency}\n`;
+    detail += `   👥 ${date.quota} kişilik kontenjan\n\n`;
   });
-
-  response += callToActions[language] || callToActions['tr'];
-
-  return response;
+  
+  return detail;
 }
