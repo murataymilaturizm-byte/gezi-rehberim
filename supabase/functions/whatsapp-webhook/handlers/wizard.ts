@@ -3,6 +3,7 @@
 import type { WizardState } from '../types.ts';
 import { getUserProfile } from '../services/profile.ts';
 import { getSystemMessage } from '../config/labels.ts';
+import { formatDate, formatPrice } from '../utils/format.ts';
 
 // Get wizard state from user preferences
 export async function getWizardState(
@@ -397,7 +398,51 @@ async function handleConfirmation(
   // Clear wizard state
   await clearWizardState(supabase, phone, agencyId);
 
-  return language === 'tr'
-    ? `🎉 *REZERVASYON TAMAMLANDI!*\n\n✅ Rezervasyonunuz başarıyla alındı.\n📱 Rezervasyon No: ${registration.id.substring(0, 8)}\n\n📞 Acentemiz en kısa sürede sizinle iletişime geçecektir.\n\nTeşekkür ederiz! 🙏`
-    : `🎉 *RESERVATION COMPLETED!*\n\n✅ Your reservation has been received.\n📱 Reservation No: ${registration.id.substring(0, 8)}\n\n📞 Our agency will contact you shortly.\n\nThank you! 🙏`;
+  // Calculate total price
+  const totalPrice = state.pax_adult * state.selected_date.price_adult;
+  const formattedDate = formatDate(state.selected_date.departure_date, language);
+  const formattedPrice = formatPrice(totalPrice);
+
+  // Build beautiful summary message
+  if (language === 'tr') {
+    return `🎉 *REZERVASYON TAMAMLANDI!*
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *REZERVASYON ÖZETİ*
+━━━━━━━━━━━━━━━━━━━━
+
+🎫 *Tur:* ${state.selected_tour.title}
+📅 *Tarih:* ${formattedDate}
+👥 *Kişi Sayısı:* ${state.pax_adult} Yetişkin
+💰 *Toplam Fiyat:* ${formattedPrice}
+
+📱 *Rezervasyon No:* ${registration.id.substring(0, 8).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ Rezervasyonunuz başarıyla alındı!
+📞 Acentemiz en kısa sürede sizinle iletişime geçecektir.
+
+Teşekkür ederiz! 🙏`;
+  } else {
+    return `🎉 *RESERVATION COMPLETED!*
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *RESERVATION SUMMARY*
+━━━━━━━━━━━━━━━━━━━━
+
+🎫 *Tour:* ${state.selected_tour.title}
+📅 *Date:* ${formattedDate}
+👥 *Participants:* ${state.pax_adult} Adults
+💰 *Total Price:* ${formattedPrice}
+
+📱 *Reservation No:* ${registration.id.substring(0, 8).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ Your reservation has been received!
+📞 Our agency will contact you shortly.
+
+Thank you! 🙏`;
+  }
 }
