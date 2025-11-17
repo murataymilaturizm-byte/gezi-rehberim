@@ -21,6 +21,8 @@ export interface UserProfile {
   last_search_query: string | null;
   preferences: any;
   total_messages: number;
+  last_interaction_at: string | null;
+  last_follow_up_sent_at: string | null;
 }
 
 export interface Tour {
