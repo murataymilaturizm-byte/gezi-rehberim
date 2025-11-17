@@ -39,12 +39,12 @@ function buildDemoPrompt(
     return `- ${tour.title} (${tour.destination})\n  Tarihler: ${dates}`;
   }).join('\n\n');
 
-  // Style-based personality
+  // Style-based personality and emoji rules
   const stylePersonality = conversationStyle === 'friendly' 
     ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
     : conversationStyle === 'casual'
-    ? 'Rahat, günlük dilde konuş. Samimi ama profesyonel kal.'
-    : 'Profesyonel, kibar ve açık bir dil kullan.';
+    ? 'Rahat, günlük dilde konuş. Uygun yerlerde emoji kullan.'
+    : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.';
 
   const basePrompt = `Sen bir seyahat acentesi müşteri hizmetleri asistanısın.
 ${stylePersonality}
@@ -53,8 +53,9 @@ KRİTİK KURALLAR:
 1. DİL: ${language} dilinde cevap ver
 2. HAFIZA: Önceki mesajları HATIRLA - kullanıcı hangi turdan bahsettiyse context'i koru
 3. SELAMLAMA: Sohbet devam ediyorsa ASLA "Merhaba" tekrar etme
-4. KISA ve ÖZ: 2-3 cümle yeterli
-5. EMOJİ: Uygun yerlerde emoji kullan
+4. KISA VE ÖZ: Maksimum 3-4 cümle! Uzun açıklamalar yapma
+5. DEMO AÇIKLAMASI YAPMA: "Demo sistemi", "gerçek değil" gibi ifadeler kullanma
+6. FORMAT: Sadece önemli bilgileri ver, detaya girme
 
 ${lastDiscussedTour ? `Son tartışılan tur: ${lastDiscussedTour}` : ''}
 
@@ -64,13 +65,13 @@ ${toursContext}
 Intent: ${intent}`;
 
   const intentInstructions: Record<string, string> = {
-    'greeting': 'Kısa karşıla, turları sor.',
-    'tour.list': 'Tüm turları LİSTE formatında göster.',
-    'tour.search': 'İlgili turları göster ve detay sormayı öner.',
-    'tour.detail': 'Detaylı bilgi ver: gezilecek yerler, fiyatlar, tarihler.',
-    'reservation.wizard': 'Rezervasyon için bilgi topla: tur, tarih, kişi sayısı.',
-    'question': 'Doğrudan cevap ver.',
-    'general': 'Cevapla ve turlara yönlendir.'
+    'greeting': 'Kısa karşıla (1 cümle), turları sor.',
+    'tour.list': 'Tüm turları basit liste formatında göster: "- Tur Adı (Tarih, Fiyat)". Maksimum 5 satır.',
+    'tour.search': 'İlgili 2-3 turu göster, kısa açıklama yap.',
+    'tour.detail': 'Sadece ÖNEMLİ bilgileri ver: Neler görülecek, fiyat, tarihler. Maksimum 4 cümle.',
+    'reservation.wizard': 'Rezervasyon için bilgi topla: Hangi tur, kaç kişi, hangi tarih. Kısa sor.',
+    'question': 'Doğrudan ve kısa cevap ver. 2 cümle yeterli.',
+    'general': 'Kısa cevapla ve turlara yönlendir. 2-3 cümle.'
   };
 
   return basePrompt + '\n\n' + (intentInstructions[intent] || intentInstructions['general']);
