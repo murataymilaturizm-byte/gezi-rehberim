@@ -32,116 +32,6 @@ const multilingualLabels: Record<string, Record<string, string>> = {
   }
 };
 
-// FAQ kontrolü - akıllı eşleştirme
-async function checkFAQ(
-  supabase: any,
-  userMessage: string,
-  agencyId: string,
-  language: string
-): Promise<string | null> {
-  try {
-    // Aktif FAQ'ları al
-    const { data: faqs, error } = await supabase
-      .from('faq_templates')
-      .select('*')
-      .eq('agency_id', agencyId)
-      .eq('is_active', true)
-      .eq('language', language);
-    
-    if (error || !faqs || faqs.length === 0) {
-      return null;
-    }
-    
-    const lowerMessage = userMessage.toLowerCase();
-    
-    // Keyword eşleştirmesi
-    for (const faq of faqs) {
-      if (faq.keywords && Array.isArray(faq.keywords)) {
-        const hasMatch = faq.keywords.some((keyword: string) => 
-          lowerMessage.includes(keyword.toLowerCase())
-        );
-        
-        if (hasMatch) {
-          // Kullanım sayısını artır
-          await supabase
-            .from('faq_templates')
-            .update({ usage_count: (faq.usage_count || 0) + 1 })
-            .eq('id', faq.id);
-          
-          return `💡 ${faq.answer}`;
-        }
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('FAQ check error:', error);
-    return null;
-  }
-}
-
-// Message intent detection and categorization (Multi-language support)
-function categorizeMessage(
-  message: string, 
-  userProfile: any,
-  language: string
-): { intent: string; greetingContext: boolean } {
-  const lowerMessage = message.toLowerCase();
-  
-  // Çok dilli selamlaşma tespiti
-  const greetings: Record<string, string[]> = {
-    tr: ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey'],
-    en: ['hi', 'hello', 'hey', 'good morning', 'good day'],
-    de: ['hallo', 'guten tag', 'guten morgen', 'hi', 'hey'],
-    ru: ['привет', 'здравствуйте', 'добрый день', 'доброе утро'],
-    ar: ['مرحبا', 'أهلا', 'السلام عليكم', 'صباح الخير'],
-    fr: ['bonjour', 'salut', 'hey', 'bonsoir'],
-    es: ['hola', 'buenos días', 'buenas tardes', 'hey']
-  };
-  
-  const allGreetings = Object.values(greetings).flat();
-  const isGreeting = allGreetings.some(g => lowerMessage === g || lowerMessage === g + 's' || lowerMessage.startsWith(g + ' '));
-  const isShortGreeting = isGreeting && message.length < 30;
-  
-  // Çok dilli tur listesi soruları
-  const listQuestions: Record<string, string[]> = {
-    tr: ['nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi'],
-    en: ['what tours', 'which tours', 'available tours', 'tour list', 'your tours'],
-    de: ['welche touren', 'verfügbare touren', 'tourliste', 'ihre touren'],
-    ru: ['какие туры', 'доступные туры', 'список туров', 'ваши туры'],
-    ar: ['ما الجولات', 'الجولات المتاحة', 'قائمة الجولات', 'جولاتكم'],
-    fr: ['quels circuits', 'circuits disponibles', 'liste des circuits', 'vos circuits'],
-    es: ['qué tours', 'tours disponibles', 'lista de tours', 'sus tours']
-  };
-  
-  const allListQuestions = Object.values(listQuestions).flat();
-  const isTourListQuestion = allListQuestions.some(q => lowerMessage.includes(q));
-  
-  // Selamlaşma + geçmiş arama context'i
-  const greetingContext = isShortGreeting && userProfile?.last_search_query;
-  
-  if (greetingContext) {
-    return { intent: 'greeting', greetingContext: true };
-  }
-  
-  if (isTourListQuestion) {
-    return { intent: 'tour.list', greetingContext: false };
-  }
-  
-  // Çok dilli tur arama tespiti
-  const destinations = ['kapadokya', 'pamukkale', 'antalya', 'ege', 'istanbul', 'cappadocia', 'ephesus', 'bodrum', 'türkei', 'turquie', 'турция'];
-  const tourKeywords = ['tur', 'tour', 'tatil', 'holiday', 'vacation', 'urlaub', 'отпуск', 'vacances', 'vacaciones', 'gezi', 'trip', 'reise', 'رحلة'];
-  
-  const isTourSearch = destinations.some(dest => lowerMessage.includes(dest)) || 
-                      tourKeywords.some(keyword => lowerMessage.includes(keyword) && !isTourListQuestion);
-  
-  if (isTourSearch) {
-    return { intent: 'tour.search', greetingContext: false };
-  }
-  
-  return { intent: 'general', greetingContext: false };
-}
-
 // Rate limiting helper
 async function checkRateLimit(supabase: any, identifier: string, endpoint: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('check_api_rate_limit', {
@@ -447,8 +337,29 @@ serve(async (req) => {
       }
     }
 
-    // Önce AI ile mesajı kategorize et
-    const intent = await categorizeMessage(userMessage);
+    // Kullanıcı profilini al
+    const userProfile = await getUserProfile(supabase, userPhone, agency.id);
+    const userLanguage = userProfile?.language_preference || 'tr';
+
+    // Önce FAQ kontrolü yap
+    const faqResponse = await checkFAQ(supabase, userMessage, agency.id, userLanguage);
+    
+    if (faqResponse) {
+      // FAQ bulundu, direkt cevap ver
+      await saveMessage(supabase, userPhone, 'assistant', faqResponse, agency.id);
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${faqResponse.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/xml' },
+      });
+    }
+
+    // Mesajı kategorize et
+    const intent = await categorizeMessage(userMessage, userProfile, userLanguage);
     console.log('Categorized intent:', intent);
 
     if (intent.type === 'registration.create') {
@@ -527,24 +438,16 @@ serve(async (req) => {
       });
     } else if (intent.type === 'greeting') {
       // Selamlaşma - kullanıcının geçmiş aramasına göre kontekstli cevap ver
-      const userProfile = await getUserProfile(supabase, userPhone, agency.id);
-      const userLanguage = userProfile?.language_preference || 'tr';
       const lastSearch = userProfile?.last_search_query;
+      const labels = multilingualLabels;
       
       let message = '';
       
-      if (lastSearch) {
+      if (lastSearch && intent.hasContext) {
         // Geçmiş arama varsa kontekstli soru sor
-        const contextPrompt = `User previously searched for: "${lastSearch}". Create a friendly greeting in ${userLanguage} that:
-- Says hello warmly
-- References their previous search
-- Asks if they want more info about that tour OR if they're interested in something else
-- Keep it short and conversational (2-3 sentences max)
-- Use WhatsApp format (*bold*)
-
-Example in Turkish:
-Merhaba! 👋 Daha önce *${lastSearch}* turunu sormuştunuz. Bu turla ilgili daha fazla bilgi almak ister misiniz, yoksa farklı bir tura mı ilgi duyuyorsunuz?`;
-
+        const greetingMsg = labels.greeting_context[userLanguage] || labels.greeting_context.tr;
+        const contextPrompt = greetingMsg.replace('{search}', lastSearch);
+        
         try {
           const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
@@ -684,7 +587,60 @@ Merhaba! 👋 Daha önce *${lastSearch}* turunu sormuştunuz. Bu turla ilgili da
 
 // Helper fonksiyonlar
 
-async function categorizeMessage(userMessage: string) {
+// FAQ kontrolü - akıllı eşleştirme
+async function checkFAQ(
+  supabase: any,
+  userMessage: string,
+  agencyId: string,
+  language: string
+): Promise<string | null> {
+  try {
+    // Aktif FAQ'ları al
+    const { data: faqs, error } = await supabase
+      .from('faq_templates')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('is_active', true)
+      .eq('language', language);
+    
+    if (error || !faqs || faqs.length === 0) {
+      return null;
+    }
+    
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Keyword eşleştirmesi
+    for (const faq of faqs) {
+      if (faq.keywords && Array.isArray(faq.keywords)) {
+        const hasMatch = faq.keywords.some((keyword: string) => 
+          lowerMessage.includes(keyword.toLowerCase())
+        );
+        
+        if (hasMatch) {
+          // Kullanım sayısını artır
+          await supabase
+            .from('faq_templates')
+            .update({ usage_count: (faq.usage_count || 0) + 1 })
+            .eq('id', faq.id);
+          
+          return `💡 ${faq.answer}`;
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('FAQ check error:', error);
+    return null;
+  }
+}
+
+// Message intent detection and categorization (Multi-language support)
+async function categorizeMessage(
+  userMessage: string,
+  userProfile: any,
+  language: string
+) {
   const lowerText = userMessage.toLowerCase();
   
   // Kayıt formatı kontrolü - "kayıt" kelimesi opsiyonel, tur adı ve tarih ile
@@ -716,7 +672,7 @@ async function categorizeMessage(userMessage: string) {
   const greetings = ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey', 'hi', 'hello', 'hola', 'bonjour', 'guten tag', 'привет', 'مرحبا'];
   const isGreeting = greetings.some(g => lowerText === g || lowerText === g + 'lar' || lowerText.startsWith(g + ' '));
   if (isGreeting && userMessage.length < 30) {
-    return { type: 'greeting', data: {} };
+    return { type: 'greeting', data: {}, hasContext: userProfile?.last_search_query ? true : false };
   }
   
   // Çok dilli genel tur listesi sorusu kontrolü
@@ -769,54 +725,6 @@ Sadece "tour.search" veya "general.chat" şeklinde cevap ver, başka bir şey ya
     type: category === 'tour.search' ? 'tour.search' : 'general.chat',
     data: {}
   };
-}
-
-// FAQ kontrolü - akıllı eşleştirme
-async function checkFAQ(
-  supabase: any,
-  userMessage: string,
-  agencyId: string,
-  language: string
-): Promise<string | null> {
-  try {
-    // Aktif FAQ'ları al
-    const { data: faqs, error } = await supabase
-      .from('faq_templates')
-      .select('*')
-      .eq('agency_id', agencyId)
-      .eq('is_active', true)
-      .eq('language', language);
-    
-    if (error || !faqs || faqs.length === 0) {
-      return null;
-    }
-    
-    const lowerMessage = userMessage.toLowerCase();
-    
-    // Keyword eşleştirmesi
-    for (const faq of faqs) {
-      if (faq.keywords && Array.isArray(faq.keywords)) {
-        const hasMatch = faq.keywords.some((keyword: string) => 
-          lowerMessage.includes(keyword.toLowerCase())
-        );
-        
-        if (hasMatch) {
-          // Kullanım sayısını artır
-          await supabase
-            .from('faq_templates')
-            .update({ usage_count: (faq.usage_count || 0) + 1 })
-            .eq('id', faq.id);
-          
-          return `💡 ${faq.answer}`;
-        }
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('FAQ check error:', error);
-    return null;
-  }
 }
 
 // Konuşma üslubuna göre sistem prompt'u al
