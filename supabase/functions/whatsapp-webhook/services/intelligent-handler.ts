@@ -88,15 +88,23 @@ function buildIntelligentPrompt(
   pattern: any,
   profile: any
 ): string {
+  // Style-based personality and emoji rules
+  const stylePersonality = conversationStyle === 'friendly' 
+    ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
+    : conversationStyle === 'casual'
+    ? 'Rahat, günlük dilde konuş. Uygun yerlerde emoji kullan.'
+    : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.';
+
   const baseRules = `Sen bir seyahat acentesi müşteri hizmetleri asistanısın.
+${stylePersonality}
 
 KRİTİK KURALLAR:
 1. DİL: Kullanıcıya ${language} dilinde cevap ver
 2. SELAMLAMA: Sohbet devam ediyorsa ASLA "Merhaba" deme, direkt cevapla
 3. HAFIZA: Önceki mesajları hatırla ve bağlamı koru
 4. DOĞRULUK: Sadece mevcut turlardaki bilgileri ver
-5. KISA VE ÖZ: WhatsApp için uygun kısa mesajlar (1-3 paragraf)
-6. EMOJİ: Uygun yerlerde emoji kullan 😊✨📍
+5. KISA VE ÖZ: Maksimum 3-4 cümle! WhatsApp için kısa mesajlar (ideal 160 karakter)
+6. FORMAT: Sadece önemli bilgileri ver, detaya girme
 
 Konuşma Stili: ${conversationStyle}
 Mevcut Aşama: ${state.currentStage}
@@ -108,41 +116,25 @@ Intent: ${intent}`;
   // Intent-specific instructions
   const intentInstructions: Record<string, string> = {
     'greeting': `
-İlk selamlaşma. Kısa ve sıcak karşıla, hemen yardımcı olmaya hazır olduğunu belirt.`,
+İlk selamlaşma. Kısa karşıla (1 cümle), hemen yardımcı olmaya hazır olduğunu belirt.`,
     
     'tour.list': `
-Tüm tur seçeneklerini LİSTE formatında göster:
-📍 Tur Adı - Destinasyon
-📅 Tarihler
-💰 Fiyat
-
-Kısa ve özlü liste formatı kullan.`,
+Tüm turları basit liste formatında göster: "- Tur Adı (Tarih, Fiyat)". Maksimum 5 satır.`,
     
     'tour.search': `
-Kullanıcının aradığı tura uygun seçenekleri göster.
-- Eğer tek tur varsa: Kısa özet ver ve detay sormayı öner
-- Eğer birden fazla tur varsa: Liste halinde göster`,
+İlgili 2-3 turu göster, kısa açıklama yap. Detay isterse söyle.`,
     
     'tour.detail': `
-Seçilen tur hakkında detaylı bilgi ver:
-- Gezilecek yerler
-- Süre, konaklama, ulaşım
-- Fiyatlar ve tarihler
-- Rezervasyon nasıl yapılır`,
+Sadece ÖNEMLİ bilgileri ver: Neler görülecek, fiyat, tarihler. Maksimum 4 cümle.`,
     
     'reservation.wizard': `
-Rezervasyon sürecini başlat. Nazikçe şunları sor:
-1. Hangi tur?
-2. Hangi tarih?
-3. Kaç kişi?
-4. İsim ve iletişim`,
+Rezervasyon için bilgi topla: Hangi tur, kaç kişi, hangi tarih. Kısa sor.`,
     
     'question': `
-Kullanıcının sorusuna doğrudan ve net cevap ver.
-Mevcut tur bilgilerinden yararlan.`,
+Doğrudan ve kısa cevap ver. 2 cümle yeterli.`,
     
     'general': `
-Genel konuşmaya devam et ama fırsatını bul ve turlara yönlendir.`
+Kısa cevapla ve turlara yönlendir. 2-3 cümle.`
   };
 
   return baseRules + '\n\n' + (intentInstructions[intent] || intentInstructions['general']);
