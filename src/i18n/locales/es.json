@@ -528,9 +528,10 @@
       "deleteConfirm": "¿Está seguro de que desea eliminar esta plantilla?"
     },
     "faq": {
-      "title": "Gestión de FAQ",
+      "title": "Preguntas frecuentes",
+      "subtitle": "Gestione sus plantillas de respuesta automática",
       "description": "Preguntas frecuentes y respuestas automáticas",
-      "addNew": "Añadir nueva FAQ",
+      "addNew": "Agregar nueva FAQ",
       "edit": "Editar FAQ",
       "search_placeholder": "Buscar FAQ (pregunta, respuesta, palabra clave...)",
       "all_languages": "Todos los idiomas",
@@ -539,17 +540,45 @@
       "active": "Activo",
       "inactive": "Inactivo",
       "status": "Estado",
-      "sort_by": "Ordenar",
+      "sort_by": "Ordenar por",
       "sort_created": "Creado",
       "sort_updated": "Actualizado",
       "sort_usage": "Uso",
       "sort_question": "Pregunta (A-Z)",
+      "sort_ascending": "↑ Ascendente",
+      "sort_descending": "↓ Descendente",
       "clear_filters": "Limpiar filtros",
       "total": "Total",
       "showing": "Mostrando",
       "active_count": "Activo",
       "no_results": "No se encontraron resultados",
-      "filter_no_match": "No hay FAQ que coincidan con sus criterios"
+      "filter_no_match": "Ninguna FAQ coincide con sus criterios de búsqueda",
+      "empty_state": "Aún no se han agregado FAQs. Comience agregando su primera FAQ.",
+      "form": {
+        "language": "Idioma",
+        "question": "Pregunta *",
+        "question_placeholder": "Ej: ¿Cómo puedo hacer una reserva?",
+        "answer": "Respuesta *",
+        "answer_placeholder": "Escriba una respuesta detallada...",
+        "keywords": "Palabras clave (separadas por comas)",
+        "keywords_placeholder": "reserva, pago, cancelación, registro",
+        "keywords_help": "Se dará una respuesta automática cuando estas palabras aparezcan en el mensaje del usuario",
+        "category": "Categoría (Opcional)",
+        "category_placeholder": "Ej: Reserva, Pago, General",
+        "active": "Activo",
+        "update": "Actualizar",
+        "add": "Agregar"
+      },
+      "card": {
+        "keywords_label": "Palabras clave:",
+        "times_used": "veces usado"
+      },
+      "messages": {
+        "updated": "FAQ actualizada",
+        "added": "FAQ agregada",
+        "deleted": "FAQ eliminada",
+        "delete_confirm": "¿Está seguro de que desea eliminar esta FAQ?"
+      }
     },
     "whatsapp": {
       "templates": {

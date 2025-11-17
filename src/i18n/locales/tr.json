@@ -502,7 +502,8 @@
       "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?"
     },
     "faq": {
-      "title": "SSS Yönetimi",
+      "title": "Sık Sorulan Sorular",
+      "subtitle": "Otomatik yanıt şablonlarınızı yönetin",
       "description": "Sık sorulan sorular ve otomatik yanıtlar",
       "addNew": "Yeni FAQ Ekle",
       "edit": "FAQ Düzenle",
@@ -518,12 +519,40 @@
       "sort_updated": "Güncellenme",
       "sort_usage": "Kullanım",
       "sort_question": "Soru (A-Z)",
+      "sort_ascending": "↑ Artan",
+      "sort_descending": "↓ Azalan",
       "clear_filters": "Filtreleri Temizle",
       "total": "Toplam",
       "showing": "Gösterilen",
       "active_count": "Aktif",
       "no_results": "Sonuç bulunamadı",
-      "filter_no_match": "Arama kriterlerinize uygun FAQ bulunamadı"
+      "filter_no_match": "Arama kriterlerinize uygun FAQ bulunamadı",
+      "empty_state": "Henüz FAQ eklenmemiş. İlk FAQ'inizi ekleyerek başlayın.",
+      "form": {
+        "language": "Dil",
+        "question": "Soru *",
+        "question_placeholder": "Örn: Rezervasyon nasıl yapabilirim?",
+        "answer": "Cevap *",
+        "answer_placeholder": "Detaylı cevap yazın...",
+        "keywords": "Anahtar Kelimeler (virgülle ayırın)",
+        "keywords_placeholder": "rezervasyon, kayıt, ödeme, iptal",
+        "keywords_help": "Kullanıcı mesajında bu kelimeler geçerse otomatik yanıt verilir",
+        "category": "Kategori (Opsiyonel)",
+        "category_placeholder": "Örn: Rezervasyon, Ödeme, Genel",
+        "active": "Aktif",
+        "update": "Güncelle",
+        "add": "Ekle"
+      },
+      "card": {
+        "keywords_label": "Anahtar kelimeler:",
+        "times_used": "kez kullanıldı"
+      },
+      "messages": {
+        "updated": "FAQ güncellendi",
+        "added": "FAQ eklendi",
+        "deleted": "FAQ silindi",
+        "delete_confirm": "Bu FAQ'i silmek istediğinize emin misiniz?"
+      }
     },
     "whatsapp": {
       "templates": {
