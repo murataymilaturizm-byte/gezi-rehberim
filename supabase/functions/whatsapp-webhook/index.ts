@@ -117,6 +117,7 @@ serve(async (req) => {
         break;
       case 'reservation.wizard':
         // Extract last discussed tour from history - check assistant messages for tour mentions
+        // History comes ordered by created_at DESC (newest first), so iterate from start
         let lastDiscussedTour = null;
         const tourKeywords = [
           { keywords: ['pamukkale'], name: 'Pamukkale' },
@@ -126,8 +127,8 @@ serve(async (req) => {
           { keywords: ['istanbul', 'İstanbul'], name: 'İstanbul' }
         ];
         
-        // Look through history in reverse to find most recent tour discussion
-        for (let i = history.length - 1; i >= 0; i--) {
+        // Look through history from newest to find most recent tour discussion
+        for (let i = 0; i < history.length; i++) {
           const content = history[i].content.toLowerCase();
           // Focus on assistant messages that likely contain tour details
           if (history[i].role === 'assistant') {
