@@ -152,6 +152,56 @@ export type Database = {
         }
         Relationships: []
       }
+      faq_templates: {
+        Row: {
+          agency_id: string
+          answer: string
+          category: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          keywords: string[] | null
+          language: string | null
+          question: string
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          agency_id: string
+          answer: string
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          language?: string | null
+          question: string
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          agency_id?: string
+          answer?: string
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          language?: string | null
+          question?: string
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faq_templates_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_templates: {
         Row: {
           agency_id: string
