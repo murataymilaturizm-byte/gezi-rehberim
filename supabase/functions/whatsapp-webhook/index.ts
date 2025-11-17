@@ -6,6 +6,142 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Çok dilli label'lar
+const multilingualLabels: Record<string, Record<string, string>> = {
+  user: { tr: 'Kullanıcı', en: 'User', de: 'Benutzer', ru: 'Пользователь', ar: 'المستخدم', fr: 'Utilisateur', es: 'Usuario' },
+  preferences: { tr: 'Tercihleri', en: 'Preferences', de: 'Präferenzen', ru: 'Предпочтения', ar: 'التفضيلات', fr: 'Préférences', es: 'Preferencias' },
+  previous_searches: { tr: 'Önceki aramalar', en: 'Previous searches', de: 'Frühere Suchen', ru: 'Предыдущие поиски', ar: 'عمليات البحث السابقة', fr: 'Recherches précédentes', es: 'Búsquedas anteriores' },
+  found_tours: { tr: 'Muhteşem Turlar Buldum', en: 'Amazing Tours Found', de: 'Tolle Touren gefunden', ru: 'Найдены отличные туры', ar: 'عثرنا على جولات رائعة', fr: 'Superbes circuits trouvés', es: 'Tours increíbles encontrados' },
+  greeting_context: { 
+    tr: 'KULLANICI SELAMLAŞTI: Kullanıcı daha önce "{search}" araması yaptı. Bu tur hakkında mı bilgi almak isterler yoksa farklı bir şey mi? KISA TUT (2 cümle max).',
+    en: 'USER GREETED: User previously searched for "{search}". Do they want info about that tour OR something else? Keep it SHORT (2 sentences max).',
+    de: 'BENUTZER GRÜSSTE: Benutzer suchte zuvor nach "{search}". Möchten sie Informationen über diese Tour ODER etwas anderes? KURZ HALTEN (max. 2 Sätze).',
+    ru: 'ПОЛЬЗОВАТЕЛЬ ПОЗДОРОВАЛСЯ: Пользователь ранее искал "{search}". Хотят ли они информацию об этом туре ИЛИ о чём-то другом? КОРОТКО (макс. 2 предложения).',
+    ar: 'المستخدم سلم: بحث المستخدم سابقًا عن "{search}". هل يريدون معلومات عن تلك الجولة أم شيء آخر؟ اجعلها قصيرة (جملتان كحد أقصى).',
+    fr: 'UTILISATEUR SALUÉ: L\'utilisateur a déjà recherché "{search}". Veulent-ils des informations sur ce circuit OU autre chose? BREF (2 phrases max).',
+    es: 'USUARIO SALUDÓ: El usuario buscó anteriormente "{search}". ¿Quieren información sobre ese tour O algo más? BREVE (máx. 2 oraciones).'
+  },
+  tour_list_prompt: {
+    tr: 'KULLANICI GENEL TUR LİSTESİ SORDU: SADECE tur isimlerini ve ilk 2 tarihi numaralı liste olarak göster. Ekle: "Hangi tura ilgi duyuyorsunuz? Detaylı bilgi için tur adını yazabilirsiniz." KISA ve TEMİZ tut.',
+    en: 'USER ASKED FOR GENERAL TOUR LIST: Show ONLY tour names and first 2 dates in a numbered list. Add: "Which tour are you interested in? You can write the tour name for detailed information." Keep it SHORT and CLEAN.',
+    de: 'BENUTZER FRAGTE NACH ALLGEMEINER TOURLISTE: Zeigen Sie NUR Tournamen und erste 2 Daten in nummerierter Liste. Fügen Sie hinzu: "Welche Tour interessiert Sie? Sie können den Tournamen für detaillierte Informationen schreiben." KURZ und SAUBER halten.',
+    ru: 'ПОЛЬЗОВАТЕЛЬ ЗАПРОСИЛ ОБЩИЙ СПИСОК ТУРОВ: Показать ТОЛЬКО названия туров и первые 2 даты в нумерованном списке. Добавьте: "Какой тур вас интересует? Вы можете написать название тура для подробной информации." КОРОТКО и ЧИСТО.',
+    ar: 'طلب المستخدم قائمة الجولات العامة: أظهر فقط أسماء الجولات وأول تاريخين في قائمة مرقمة. أضف: "ما الجولة التي تهتم بها؟ يمكنك كتابة اسم الجولة للحصول على معلومات مفصلة." اجعلها قصيرة ونظيفة.',
+    fr: 'L\'UTILISATEUR A DEMANDÉ LA LISTE GÉNÉRALE DES CIRCUITS: Afficher UNIQUEMENT les noms des circuits et les 2 premières dates dans une liste numérotée. Ajoutez: "Quel circuit vous intéresse? Vous pouvez écrire le nom du circuit pour des informations détaillées." BREF et PROPRE.',
+    es: 'EL USUARIO PIDIÓ LISTA GENERAL DE TOURS: Mostrar SOLO nombres de tours y primeras 2 fechas en lista numerada. Agregue: "¿Qué tour le interesa? Puede escribir el nombre del tour para información detallada." BREVE y LIMPIO.'
+  }
+};
+
+// FAQ kontrolü - akıllı eşleştirme
+async function checkFAQ(
+  supabase: any,
+  userMessage: string,
+  agencyId: string,
+  language: string
+): Promise<string | null> {
+  try {
+    // Aktif FAQ'ları al
+    const { data: faqs, error } = await supabase
+      .from('faq_templates')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('is_active', true)
+      .eq('language', language);
+    
+    if (error || !faqs || faqs.length === 0) {
+      return null;
+    }
+    
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Keyword eşleştirmesi
+    for (const faq of faqs) {
+      if (faq.keywords && Array.isArray(faq.keywords)) {
+        const hasMatch = faq.keywords.some((keyword: string) => 
+          lowerMessage.includes(keyword.toLowerCase())
+        );
+        
+        if (hasMatch) {
+          // Kullanım sayısını artır
+          await supabase
+            .from('faq_templates')
+            .update({ usage_count: (faq.usage_count || 0) + 1 })
+            .eq('id', faq.id);
+          
+          return `💡 ${faq.answer}`;
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('FAQ check error:', error);
+    return null;
+  }
+}
+
+// Message intent detection and categorization (Multi-language support)
+function categorizeMessage(
+  message: string, 
+  userProfile: any,
+  language: string
+): { intent: string; greetingContext: boolean } {
+  const lowerMessage = message.toLowerCase();
+  
+  // Çok dilli selamlaşma tespiti
+  const greetings: Record<string, string[]> = {
+    tr: ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey'],
+    en: ['hi', 'hello', 'hey', 'good morning', 'good day'],
+    de: ['hallo', 'guten tag', 'guten morgen', 'hi', 'hey'],
+    ru: ['привет', 'здравствуйте', 'добрый день', 'доброе утро'],
+    ar: ['مرحبا', 'أهلا', 'السلام عليكم', 'صباح الخير'],
+    fr: ['bonjour', 'salut', 'hey', 'bonsoir'],
+    es: ['hola', 'buenos días', 'buenas tardes', 'hey']
+  };
+  
+  const allGreetings = Object.values(greetings).flat();
+  const isGreeting = allGreetings.some(g => lowerMessage === g || lowerMessage === g + 's' || lowerMessage.startsWith(g + ' '));
+  const isShortGreeting = isGreeting && message.length < 30;
+  
+  // Çok dilli tur listesi soruları
+  const listQuestions: Record<string, string[]> = {
+    tr: ['nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi'],
+    en: ['what tours', 'which tours', 'available tours', 'tour list', 'your tours'],
+    de: ['welche touren', 'verfügbare touren', 'tourliste', 'ihre touren'],
+    ru: ['какие туры', 'доступные туры', 'список туров', 'ваши туры'],
+    ar: ['ما الجولات', 'الجولات المتاحة', 'قائمة الجولات', 'جولاتكم'],
+    fr: ['quels circuits', 'circuits disponibles', 'liste des circuits', 'vos circuits'],
+    es: ['qué tours', 'tours disponibles', 'lista de tours', 'sus tours']
+  };
+  
+  const allListQuestions = Object.values(listQuestions).flat();
+  const isTourListQuestion = allListQuestions.some(q => lowerMessage.includes(q));
+  
+  // Selamlaşma + geçmiş arama context'i
+  const greetingContext = isShortGreeting && userProfile?.last_search_query;
+  
+  if (greetingContext) {
+    return { intent: 'greeting', greetingContext: true };
+  }
+  
+  if (isTourListQuestion) {
+    return { intent: 'tour.list', greetingContext: false };
+  }
+  
+  // Çok dilli tur arama tespiti
+  const destinations = ['kapadokya', 'pamukkale', 'antalya', 'ege', 'istanbul', 'cappadocia', 'ephesus', 'bodrum', 'türkei', 'turquie', 'турция'];
+  const tourKeywords = ['tur', 'tour', 'tatil', 'holiday', 'vacation', 'urlaub', 'отпуск', 'vacances', 'vacaciones', 'gezi', 'trip', 'reise', 'رحلة'];
+  
+  const isTourSearch = destinations.some(dest => lowerMessage.includes(dest)) || 
+                      tourKeywords.some(keyword => lowerMessage.includes(keyword) && !isTourListQuestion);
+  
+  if (isTourSearch) {
+    return { intent: 'tour.search', greetingContext: false };
+  }
+  
+  return { intent: 'general', greetingContext: false };
+}
+
 // Rate limiting helper
 async function checkRateLimit(supabase: any, identifier: string, endpoint: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('check_api_rate_limit', {
@@ -546,6 +682,8 @@ Merhaba! 👋 Daha önce *${lastSearch}* turunu sormuştunuz. Bu turla ilgili da
   }
 });
 
+// Helper fonksiyonlar
+
 async function categorizeMessage(userMessage: string) {
   const lowerText = userMessage.toLowerCase();
   
@@ -574,15 +712,23 @@ async function categorizeMessage(userMessage: string) {
     return { type: 'registration.request', data: {} };
   }
   
-  // Selamlaşma kontrolü
-  const greetings = ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey', 'hi', 'hello'];
+  // Çok dilli selamlaşma kontrolü
+  const greetings = ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey', 'hi', 'hello', 'hola', 'bonjour', 'guten tag', 'привет', 'مرحبا'];
   const isGreeting = greetings.some(g => lowerText === g || lowerText === g + 'lar' || lowerText.startsWith(g + ' '));
   if (isGreeting && userMessage.length < 30) {
     return { type: 'greeting', data: {} };
   }
   
-  // Genel tur listesi sorusu kontrolü
-  const listQuestions = ['nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi', 'turlar'];
+  // Çok dilli genel tur listesi sorusu kontrolü
+  const listQuestions = [
+    'nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi', 'turlar',
+    'what tours', 'which tours', 'available tours', 'tour list', 'your tours',
+    'welche touren', 'verfügbare touren', 'tourliste',
+    'какие туры', 'доступные туры',
+    'ما الجولات', 'الجولات المتاحة',
+    'quels circuits', 'circuits disponibles',
+    'qué tours', 'tours disponibles'
+  ];
   const isListQuestion = listQuestions.some(q => lowerText.includes(q));
   if (isListQuestion) {
     return { type: 'tour.list', data: {} };
@@ -623,6 +769,54 @@ Sadece "tour.search" veya "general.chat" şeklinde cevap ver, başka bir şey ya
     type: category === 'tour.search' ? 'tour.search' : 'general.chat',
     data: {}
   };
+}
+
+// FAQ kontrolü - akıllı eşleştirme
+async function checkFAQ(
+  supabase: any,
+  userMessage: string,
+  agencyId: string,
+  language: string
+): Promise<string | null> {
+  try {
+    // Aktif FAQ'ları al
+    const { data: faqs, error } = await supabase
+      .from('faq_templates')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('is_active', true)
+      .eq('language', language);
+    
+    if (error || !faqs || faqs.length === 0) {
+      return null;
+    }
+    
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Keyword eşleştirmesi
+    for (const faq of faqs) {
+      if (faq.keywords && Array.isArray(faq.keywords)) {
+        const hasMatch = faq.keywords.some((keyword: string) => 
+          lowerMessage.includes(keyword.toLowerCase())
+        );
+        
+        if (hasMatch) {
+          // Kullanım sayısını artır
+          await supabase
+            .from('faq_templates')
+            .update({ usage_count: (faq.usage_count || 0) + 1 })
+            .eq('id', faq.id);
+          
+          return `💡 ${faq.answer}`;
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('FAQ check error:', error);
+    return null;
+  }
 }
 
 // Konuşma üslubuna göre sistem prompt'u al
@@ -2023,33 +2217,6 @@ async function updateUserPreferences(
     console.error('Error updating user preferences:', error);
   }
 }
-
-// Çok dilli label'lar
-const multilingualLabels: Record<string, Record<string, string>> = {
-  user: { tr: 'Kullanıcı', en: 'User', de: 'Benutzer', ru: 'Пользователь', ar: 'المستخدم', fr: 'Utilisateur', es: 'Usuario' },
-  preferences: { tr: 'Tercihleri', en: 'Preferences', de: 'Präferenzen', ru: 'Предпочтения', ar: 'التفضيلات', fr: 'Préférences', es: 'Preferencias' },
-  previous_searches: { tr: 'Önceki aramalar', en: 'Previous searches', de: 'Frühere Suchen', ru: 'Предыдущие поиски', ar: 'عمليات البحث السابقة', fr: 'Recherches précédentes', es: 'Búsquedas anteriores' },
-  dear_customer: { tr: 'Sayın Müşteri', en: 'Dear Customer', de: 'Sehr geehrter Kunde', ru: 'Уважаемый клиент', ar: 'عزيزي العميل', fr: 'Cher client', es: 'Estimado cliente' },
-  found_tours: { tr: 'Muhteşem Turlar Buldum', en: 'Amazing Tours Found', de: 'Tolle Touren gefunden', ru: 'Найдены отличные туры', ar: 'عثرنا على جولات رائعة', fr: 'Superbes circuits trouvés', es: 'Tours increíbles encontrados' },
-  greeting_context: { 
-    tr: 'KULLANICI SELAMLAŞTI: Kullanıcı daha önce "{search}" araması yaptı. Bu tur hakkında mı bilgi almak isterler yoksa farklı bir şey mi? KISA TUT (2 cümle max).',
-    en: 'USER GREETED: User previously searched for "{search}". Do they want info about that tour OR something else? Keep it SHORT (2 sentences max).',
-    de: 'BENUTZER GRÜSSTE: Benutzer suchte zuvor nach "{search}". Möchten sie Informationen über diese Tour ODER etwas anderes? KURZ HALTEN (max. 2 Sätze).',
-    ru: 'ПОЛЬЗОВАТЕЛЬ ПОЗДОРОВАЛСЯ: Пользователь ранее искал "{search}". Хотят ли они информацию об этом туре ИЛИ о чём-то другом? КОРОТКО (макс. 2 предложения).',
-    ar: 'المستخدم سلم: بحث المستخدم سابقًا عن "{search}". هل يريدون معلومات عن تلك الجولة أم شيء آخر؟ اجعلها قصيرة (جملتان كحد أقصى).',
-    fr: 'UTILISATEUR SALUÉ: L\'utilisateur a déjà recherché "{search}". Veulent-ils des informations sur ce circuit OU autre chose? BREF (2 phrases max).',
-    es: 'USUARIO SALUDÓ: El usuario buscó anteriormente "{search}". ¿Quieren información sobre ese tour O algo más? BREVE (máx. 2 oraciones).'
-  },
-  tour_list_prompt: {
-    tr: 'KULLANICI GENEL TUR LİSTESİ SORDU: SADECE tur isimlerini ve ilk 2 tarihi numaralı liste olarak göster. Ekle: "Hangi tura ilgi duyuyorsunuz? Detaylı bilgi için tur adını yazabilirsiniz." KISA ve TEMİZ tut.',
-    en: 'USER ASKED FOR GENERAL TOUR LIST: Show ONLY tour names and first 2 dates in a numbered list. Add: "Which tour are you interested in? You can write the tour name for detailed information." Keep it SHORT and CLEAN.',
-    de: 'BENUTZER FRAGTE NACH ALLGEMEINER TOURLISTE: Zeigen Sie NUR Tournamen und erste 2 Daten in nummerierter Liste. Fügen Sie hinzu: "Welche Tour interessiert Sie? Sie können den Tournamen für detaillierte Informationen schreiben." KURZ und SAUBER halten.',
-    ru: 'ПОЛЬЗОВАТЕЛЬ ЗАПРОСИЛ ОБЩИЙ СПИСОК ТУРОВ: Показать ТОЛЬКО названия туров и первые 2 даты в нумерованном списке. Добавьте: "Какой тур вас интересует? Вы можете написать название тура для подробной информации." КОРОТКО и ЧИСТО.',
-    ar: 'طلب المستخدم قائمة الجولات العامة: أظهر فقط أسماء الجولات وأول تاريخين في قائمة مرقمة. أضف: "ما الجولة التي تهتم بها؟ يمكنك كتابة اسم الجولة للحصول على معلومات مفصلة." اجعلها قصيرة ونظيفة.',
-    fr: 'L\'UTILISATEUR A DEMANDÉ LA LISTE GÉNÉRALE DES CIRCUITS: Afficher UNIQUEMENT les noms des circuits et les 2 premières dates dans une liste numérotée. Ajoutez: "Quel circuit vous intéresse? Vous pouvez écrire le nom du circuit pour des informations détaillées." BREF et PROPRE.',
-    es: 'EL USUARIO PIDIÓ LISTA GENERAL DE TOURS: Mostrar SOLO nombres de tours y primeras 2 fechas en lista numerada. Agregue: "¿Qué tour le interesa? Puede escribir el nombre del tour para información detallada." BREVE y LIMPIO.'
-  }
-};
 
 // Sistem mesajlarını çok dilli formatlama
 async function formatSystemMessage(
