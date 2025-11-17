@@ -498,6 +498,30 @@
       "notCreated": "Pas encore créé",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle?"
     },
+    "faq": {
+      "title": "Gestion FAQ",
+      "description": "Questions fréquentes et réponses automatiques",
+      "addNew": "Ajouter nouvelle FAQ",
+      "edit": "Modifier FAQ",
+      "search_placeholder": "Rechercher FAQ (question, réponse, mot-clé...)",
+      "all_languages": "Toutes les langues",
+      "all_categories": "Toutes les catégories",
+      "all_status": "Tous",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "status": "Statut",
+      "sort_by": "Trier",
+      "sort_created": "Créé",
+      "sort_updated": "Mis à jour",
+      "sort_usage": "Utilisation",
+      "sort_question": "Question (A-Z)",
+      "clear_filters": "Effacer les filtres",
+      "total": "Total",
+      "showing": "Affichage",
+      "active_count": "Actif",
+      "no_results": "Aucun résultat trouvé",
+      "filter_no_match": "Aucune FAQ ne correspond à vos critères"
+    },
     "whatsapp": {
       "templates": {
         "title": "Modèles de Messages",

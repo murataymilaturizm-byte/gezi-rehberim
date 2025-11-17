@@ -517,6 +517,30 @@
       "notCreated": "Not created yet",
       "deleteConfirm": "Are you sure you want to delete this template?"
     },
+    "faq": {
+      "title": "FAQ Management",
+      "description": "Frequently asked questions and automatic responses",
+      "addNew": "Add New FAQ",
+      "edit": "Edit FAQ",
+      "search_placeholder": "Search FAQ (question, answer, keyword...)",
+      "all_languages": "All Languages",
+      "all_categories": "All Categories",
+      "all_status": "All",
+      "active": "Active",
+      "inactive": "Inactive",
+      "status": "Status",
+      "sort_by": "Sort",
+      "sort_created": "Created",
+      "sort_updated": "Updated",
+      "sort_usage": "Usage",
+      "sort_question": "Question (A-Z)",
+      "clear_filters": "Clear Filters",
+      "total": "Total",
+      "showing": "Showing",
+      "active_count": "Active",
+      "no_results": "No results found",
+      "filter_no_match": "No FAQ matches your search criteria"
+    },
     "whatsapp": {
       "templates": {
         "title": "Message Templates",
