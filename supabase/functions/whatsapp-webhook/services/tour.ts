@@ -78,11 +78,16 @@ ${userContext}
 
 Available Tours: ${JSON.stringify(toursList, null, 2)}
 
+SEARCH RULES:
+1. 🔴 DESTINATION MATCH: If user mentions a place (e.g. "Kapadokya", "Pamukkale"), return ALL tours where destination contains that place
+2. BROAD MATCHING: "Kapadokya" should match "Kapadokya Balon Turu", "Kapadokya Turu", "Kapadokya Gezisi" etc.
+3. TYPE MATCH: If user specifies tour type (day trip, 2N3D), filter by type field
+4. DATE: If specific date mentioned, consider it but don't be too strict
+
 From user's message extract:
-- Destination (Cappadocia, Ephesus, Pamukkale, etc)
-- Tour type (day trip, 2 nights, 3 nights)
+- Destination (the most important - match destination field)
+- Tour type (day trip=DAYTRIP, 2 nights=N2, 3 nights=N3)
 - Date preference (if mentioned)
-- Budget expectation (if mentioned)
 
 Return matching tour IDs as JSON array. ONLY return JSON array, nothing else.
 Example: ["id1", "id2"]
@@ -90,8 +95,8 @@ If no tours match, return empty array: []
 
 IMPORTANT: 
 - ONLY return JSON array, no markdown format!
-- Consider user profile preferences
-- Prioritize tours similar to previous searches`
+- Prioritize destination matching over everything
+- Be inclusive - better to return multiple tours than miss one`
       },
       ...history,
       {

@@ -47,20 +47,21 @@ export async function detectIntent(
 Kullanıcının mesajını ve geçmiş konuşma bağlamını analiz ederek niyetini tespit et.
 
 Niyet Türleri:
-- greeting: İlk selamlaşma veya merhaba
+- greeting: İlk selamlaşma veya merhaba (SADECE İLK MESAJ için)
 - tour.list: Tüm tur seçeneklerini görmek istiyor
 - tour.search: Belirli bir tur veya destinasyon hakkında bilgi arıyor
 - tour.detail: Belirli bir turun detaylarını öğrenmek istiyor
-- reservation.wizard: Rezervasyon yapmak, ayırtmak, katılmak istiyor
+- reservation.wizard: Rezervasyon yapmak, ayırtmak, katılmak, kayıt olmak istiyor
 - question: Genel sorular (fiyat, tarih, koşullar vs.)
 - general: Diğer genel sohbet
 
-Önemli Kurallar:
-1. Eğer kullanıcı bir soruya "evet", "olur", "tabii" gibi onay veriyor ve önceki mesaj tur hakkındaysa -> tour.detail
-2. Eğer kullanıcı "rezervasyon", "ayırtmak", "katılmak" gibi kelimeler kullanıyorsa -> reservation.wizard
-3. Eğer kullanıcı "turlarınız", "seçenekler", "neler var" gibi genel sorular soruyorsa -> tour.list
-4. Eğer kullanıcı belirli bir destinasyon (Kapadokya, Pamukkale vs.) söylüyorsa -> tour.search
-5. Bağlamı dikkate al - önceki mesajlar ne hakkındaydı?
+🔴 ÖNEMLİ KURALLAR:
+1. CONTEXT KULLAN: Eğer önceki mesajlarda turlardan bahsedildiyse, bu greeting DEĞİL!
+2. Eğer kullanıcı "rezervasyon", "ayırtmak", "katılmak", "kayıt", "booking" gibi kelimeler kullanıyorsa -> reservation.wizard
+3. Eğer kullanıcı bir soruya "evet", "olur", "tabii" gibi onay veriyor ve önceki mesaj tur hakkındaysa -> tour.detail
+4. Eğer kullanıcı "turlarınız", "seçenekler", "neler var" gibi genel sorular soruyorsa -> tour.list
+5. Eğer kullanıcı belirli bir destinasyon (Kapadokya, Pamukkale vs.) söylüyorsa -> tour.search
+6. 🔴 HAFIZA: Eğer kullanıcı daha önce yazdıysa ve turlardan bahsedildiyse, bu ASLA greeting olamaz!
 
 Dil: ${userLanguage}`;
 
