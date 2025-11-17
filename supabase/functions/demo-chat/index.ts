@@ -11,6 +11,12 @@ import { handleGreeting } from '../whatsapp-webhook/handlers/greeting.ts';
 import { handleTourList } from '../whatsapp-webhook/handlers/tour-list.ts';
 import { handleTourSearch } from '../whatsapp-webhook/handlers/tour-search.ts';
 import { handleGeneralChat } from '../whatsapp-webhook/handlers/general-chat.ts';
+import { 
+  getWizardState, 
+  saveWizardState, 
+  handleWizardStep 
+} from '../whatsapp-webhook/handlers/wizard.ts';
+import type { WizardState } from '../whatsapp-webhook/types.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -164,6 +170,27 @@ serve(async (req) => {
     // Use conversation style from request or default
     const activeConversationStyle = conversationStyle || DEMO_AGENCY.conversation_style;
 
+    // Check if user is in wizard mode (using session ID as phone)
+    const wizardState = await getWizardState(supabase, `demo_${sessionId}`, DEMO_AGENCY_ID);
+    
+    if (wizardState) {
+      console.log('Demo: Continuing wizard flow at step:', wizardState.step);
+      const wizardResponse = await handleWizardStep(
+        supabase,
+        `demo_${sessionId}`,
+        DEMO_AGENCY_ID,
+        message,
+        wizardState
+      );
+      
+      await saveMessage(supabase, sessionId, 'assistant', wizardResponse);
+      
+      return new Response(
+        JSON.stringify({ response: wizardResponse, type: 'reservation.wizard' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Check canned responses
     const cannedTrigger = detectCannedResponseTrigger(message, userLanguage);
     if (cannedTrigger) {
@@ -194,6 +221,30 @@ serve(async (req) => {
           message, 
           activeConversationStyle
         );
+        break;
+      
+      case 'reservation.wizard':
+        // Start reservation wizard
+        console.log('Demo: Starting reservation wizard');
+        const initialState: WizardState = {
+          step: 'tour_selection',
+          created_at: new Date().toISOString()
+        };
+        
+        await saveWizardState(supabase, `demo_${sessionId}`, DEMO_AGENCY_ID, initialState);
+        
+        const wizardGreetings = {
+          tr: '🎯 Harika! Rezervasyon işleminize başlayalım.\n\n📋 Lütfen rezervasyon yapmak istediğiniz turun numarasını yazın veya tur adını belirtin.\n\nİptal etmek için "iptal" yazabilirsiniz.',
+          en: '🎯 Great! Let\'s start your reservation.\n\n📋 Please write the tour number or name you want to book.\n\nYou can write "cancel" to abort.',
+          de: '🎯 Großartig! Beginnen wir mit Ihrer Reservierung.\n\n📋 Bitte geben Sie die Tournummer oder den Namen ein.\n\nSie können "cancel" schreiben, um abzubrechen.',
+          es: '🎯 ¡Genial! Comencemos con su reserva.\n\n📋 Por favor escriba el número o nombre del tour.\n\nPuede escribir "cancel" para cancelar.',
+          fr: '🎯 Super! Commençons votre réservation.\n\n📋 Veuillez écrire le numéro ou le nom du tour.\n\nVous pouvez écrire "cancel" pour annuler.',
+          ru: '🎯 Отлично! Начнем бронирование.\n\n📋 Пожалуйста, напишите номер или название тура.\n\nНапишите "cancel" для отмены.',
+          ar: '🎯 رائع! لنبدأ حجزك.\n\n📋 يرجى كتابة رقم أو اسم الجولة.\n\nيمكنك كتابة "cancel" للإلغاء.'
+        };
+        
+        responseMessage = wizardGreetings[userLanguage as keyof typeof wizardGreetings] || wizardGreetings.tr;
+        responseType = 'reservation.wizard';
         break;
       
       case 'tour.list':
