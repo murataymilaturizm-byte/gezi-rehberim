@@ -85,6 +85,26 @@ Deno.serve(async (req) => {
         const tour = tourDate.tours;
         const agency = registration.agencies as any;
 
+        // Check if reminders are enabled for this agency's plan
+        const { data: agencyDetails } = await supabase
+          .from('agencies')
+          .select('plan_type')
+          .eq('id', registration.agency_id)
+          .single();
+
+        if (agencyDetails) {
+          const { data: planFeatures } = await supabase
+            .from('plan_features')
+            .select('has_reminders')
+            .eq('plan_type', agencyDetails.plan_type)
+            .single();
+
+          if (!planFeatures?.has_reminders) {
+            console.log(`⏭️ Skipping ${registration.full_name} - reminders not enabled for ${agencyDetails.plan_type} plan`);
+            continue;
+          }
+        }
+
         // Hatırlatma mesajını oluştur
         const departureDate = new Date(tourDate.departure_date).toLocaleDateString('tr-TR', {
           day: '2-digit',

@@ -52,6 +52,13 @@ serve(async (req) => {
 
     if (!agency) return new Response('Agency not found', { status: 404 });
 
+    // Get plan features
+    const { data: planFeatures } = await supabase
+      .from('plan_features')
+      .select('*')
+      .eq('plan_type', agency.plan_type)
+      .single();
+
     await saveMessage(supabase, userPhone, 'user', userMessage, agency.id);
     await upsertUserProfile(supabase, userPhone, agency.id, userMessage, agency.enabled_languages || []);
 
@@ -66,21 +73,25 @@ serve(async (req) => {
       return new Response(createTwiMLResponse(response), { status: 200, headers: createTwiMLHeaders() });
     }
 
-    // Check canned responses
-    const cannedTrigger = detectCannedResponseTrigger(userMessage, userLanguage);
-    if (cannedTrigger) {
-      const response = getCannedResponse(cannedTrigger, userLanguage);
-      if (response) {
-        await saveMessage(supabase, userPhone, 'assistant', response, agency.id);
-        return new Response(createTwiMLResponse(response), { status: 200, headers: createTwiMLHeaders() });
+    // Check canned responses (if templates enabled)
+    if (planFeatures?.has_templates) {
+      const cannedTrigger = detectCannedResponseTrigger(userMessage, userLanguage);
+      if (cannedTrigger) {
+        const response = getCannedResponse(cannedTrigger, userLanguage);
+        if (response) {
+          await saveMessage(supabase, userPhone, 'assistant', response, agency.id);
+          return new Response(createTwiMLResponse(response), { status: 200, headers: createTwiMLHeaders() });
+        }
       }
     }
 
-    // Check FAQ
-    const faqResponse = await checkFAQ(supabase, userMessage, agency.id, userLanguage);
-    if (faqResponse) {
-      await saveMessage(supabase, userPhone, 'assistant', faqResponse, agency.id);
-      return new Response(createTwiMLResponse(faqResponse), { status: 200, headers: createTwiMLHeaders() });
+    // Check FAQ (if templates enabled)
+    if (planFeatures?.has_templates) {
+      const faqResponse = await checkFAQ(supabase, userMessage, agency.id, userLanguage);
+      if (faqResponse) {
+        await saveMessage(supabase, userPhone, 'assistant', faqResponse, agency.id);
+        return new Response(createTwiMLResponse(faqResponse), { status: 200, headers: createTwiMLHeaders() });
+      }
     }
 
     const intent = await categorizeMessage(userMessage, [], userLanguage);

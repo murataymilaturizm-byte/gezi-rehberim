@@ -67,6 +67,26 @@ serve(async (req) => {
       const tour = Array.isArray(tourDate.tours) ? tourDate.tours[0] : tourDate.tours;
       console.log(`Tour ${tour.title}: ${registrations?.length || 0} participants`);
 
+      // Check if feedback surveys are enabled for this agency's plan
+      const { data: agency } = await supabase
+        .from('agencies')
+        .select('plan_type')
+        .eq('id', tour.agency_id)
+        .single();
+
+      if (agency) {
+        const { data: planFeatures } = await supabase
+          .from('plan_features')
+          .select('has_feedback')
+          .eq('plan_type', agency.plan_type)
+          .single();
+
+        if (!planFeatures?.has_feedback) {
+          console.log(`Skipping tour ${tour.title} - feedback not enabled for ${agency.plan_type} plan`);
+          continue;
+        }
+      }
+
       // Her katılımcıya anket gönder
       for (const registration of registrations || []) {
         // Kullanıcı profilini kontrol et
