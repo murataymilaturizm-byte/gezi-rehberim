@@ -501,6 +501,30 @@
       "notCreated": "Henüz oluşturulmadı",
       "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?"
     },
+    "faq": {
+      "title": "SSS Yönetimi",
+      "description": "Sık sorulan sorular ve otomatik yanıtlar",
+      "addNew": "Yeni FAQ Ekle",
+      "edit": "FAQ Düzenle",
+      "search_placeholder": "FAQ ara (soru, cevap, anahtar kelime...)",
+      "all_languages": "Tüm Diller",
+      "all_categories": "Tüm Kategoriler",
+      "all_status": "Tümü",
+      "active": "Aktif",
+      "inactive": "Pasif",
+      "status": "Durum",
+      "sort_by": "Sırala",
+      "sort_created": "Oluşturulma",
+      "sort_updated": "Güncellenme",
+      "sort_usage": "Kullanım",
+      "sort_question": "Soru (A-Z)",
+      "clear_filters": "Filtreleri Temizle",
+      "total": "Toplam",
+      "showing": "Gösterilen",
+      "active_count": "Aktif",
+      "no_results": "Sonuç bulunamadı",
+      "filter_no_match": "Arama kriterlerinize uygun FAQ bulunamadı"
+    },
     "whatsapp": {
       "templates": {
         "title": "Mesaj Şablonları",

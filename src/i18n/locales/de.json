@@ -535,6 +535,30 @@
       "notCreated": "Noch nicht erstellt",
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?"
     },
+    "faq": {
+      "title": "FAQ-Verwaltung",
+      "description": "Häufig gestellte Fragen und automatische Antworten",
+      "addNew": "Neue FAQ hinzufügen",
+      "edit": "FAQ bearbeiten",
+      "search_placeholder": "FAQ suchen (Frage, Antwort, Schlüsselwort...)",
+      "all_languages": "Alle Sprachen",
+      "all_categories": "Alle Kategorien",
+      "all_status": "Alle",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "status": "Status",
+      "sort_by": "Sortieren",
+      "sort_created": "Erstellt",
+      "sort_updated": "Aktualisiert",
+      "sort_usage": "Verwendung",
+      "sort_question": "Frage (A-Z)",
+      "clear_filters": "Filter löschen",
+      "total": "Gesamt",
+      "showing": "Anzeige",
+      "active_count": "Aktiv",
+      "no_results": "Keine Ergebnisse gefunden",
+      "filter_no_match": "Keine FAQ entspricht Ihren Suchkriterien"
+    },
     "whatsapp": {
       "templates": {
         "title": "Nachrichtenvorlagen",

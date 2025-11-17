@@ -494,6 +494,30 @@
       "notCreated": "لم يتم الإنشاء بعد",
       "deleteConfirm": "هل أنت متأكد من رغبتك في حذف هذا القالب؟"
     },
+    "faq": {
+      "title": "إدارة الأسئلة الشائعة",
+      "description": "الأسئلة المتكررة والردود التلقائية",
+      "addNew": "إضافة سؤال جديد",
+      "edit": "تحرير السؤال",
+      "search_placeholder": "بحث (سؤال، إجابة، كلمة مفتاحية...)",
+      "all_languages": "جميع اللغات",
+      "all_categories": "جميع الفئات",
+      "all_status": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "status": "الحالة",
+      "sort_by": "ترتيب",
+      "sort_created": "تاريخ الإنشاء",
+      "sort_updated": "تاريخ التحديث",
+      "sort_usage": "الاستخدام",
+      "sort_question": "السؤال (أ-ي)",
+      "clear_filters": "مسح الفلاتر",
+      "total": "المجموع",
+      "showing": "المعروض",
+      "active_count": "نشط",
+      "no_results": "لم يتم العثور على نتائج",
+      "filter_no_match": "لا توجد أسئلة شائعة تطابق معايير البحث"
+    },
     "whatsapp": {
       "templates": {
         "title": "قوالب الرسائل",

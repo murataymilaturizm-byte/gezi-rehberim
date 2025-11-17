@@ -41,10 +41,19 @@ interface FAQTemplate {
 export default function FAQManagement() {
   const { t, i18n } = useTranslation();
   const [faqs, setFaqs] = useState<FAQTemplate[]>([]);
+  const [filteredFaqs, setFilteredFaqs] = useState<FAQTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<FAQTemplate | null>(null);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterLanguage, setFilterLanguage] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   
   // Form states
   const [question, setQuestion] = useState("");
@@ -57,6 +66,10 @@ export default function FAQManagement() {
   useEffect(() => {
     loadAgencyAndFaqs();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [faqs, searchQuery, filterLanguage, filterCategory, filterStatus, sortBy, sortOrder]);
 
   const loadAgencyAndFaqs = async () => {
     try {
@@ -95,6 +108,76 @@ export default function FAQManagement() {
     }
 
     setFaqs(data || []);
+  };
+
+  const applyFilters = () => {
+    let filtered = [...faqs];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(faq => 
+        faq.question.toLowerCase().includes(query) ||
+        faq.answer.toLowerCase().includes(query) ||
+        faq.keywords.some(k => k.toLowerCase().includes(query)) ||
+        (faq.category && faq.category.toLowerCase().includes(query))
+      );
+    }
+
+    // Language filter
+    if (filterLanguage !== "all") {
+      filtered = filtered.filter(faq => faq.language === filterLanguage);
+    }
+
+    // Category filter
+    if (filterCategory !== "all") {
+      filtered = filtered.filter(faq => faq.category === filterCategory);
+    }
+
+    // Status filter
+    if (filterStatus === "active") {
+      filtered = filtered.filter(faq => faq.is_active);
+    } else if (filterStatus === "inactive") {
+      filtered = filtered.filter(faq => !faq.is_active);
+    }
+
+    // Sorting
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortBy as keyof FAQTemplate];
+      let bValue: any = b[sortBy as keyof FAQTemplate];
+
+      if (sortBy === "usage_count") {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      }
+
+      if (sortBy === "created_at" || sortBy === "updated_at") {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      }
+
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredFaqs(filtered);
+  };
+
+  const getUniqueCategories = (): string[] => {
+    const categories = faqs
+      .map(faq => faq.category)
+      .filter((cat): cat is string => cat !== null && cat !== "");
+    return Array.from(new Set(categories)).sort();
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFilterLanguage("all");
+    setFilterCategory("all");
+    setFilterStatus("all");
+    setSortBy("created_at");
+    setSortOrder("desc");
   };
 
   const resetForm = () => {
@@ -318,7 +401,106 @@ export default function FAQManagement() {
         </Dialog>
       </div>
 
-      {faqs.length === 0 ? (
+      {/* Search and Filter Section */}
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="lg:col-span-2">
+              <Input
+                placeholder={t("admin.faq.search_placeholder") || "FAQ ara (soru, cevap, anahtar kelime...)"}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Language Filter */}
+            <Select value={filterLanguage} onValueChange={setFilterLanguage}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("admin.faq.all_languages") || "Tüm Diller"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("admin.faq.all_languages") || "Tüm Diller"}</SelectItem>
+                <SelectItem value="tr">Türkçe</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="de">Deutsch</SelectItem>
+                <SelectItem value="ru">Русский</SelectItem>
+                <SelectItem value="ar">العربية</SelectItem>
+                <SelectItem value="fr">Français</SelectItem>
+                <SelectItem value="es">Español</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Category Filter */}
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("admin.faq.all_categories") || "Tüm Kategoriler"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("admin.faq.all_categories") || "Tüm Kategoriler"}</SelectItem>
+                {getUniqueCategories().map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {/* Status Filter */}
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder={t("admin.faq.status") || "Durum"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("admin.faq.all_status") || "Tümü"}</SelectItem>
+                <SelectItem value="active">{t("admin.faq.active") || "Aktif"}</SelectItem>
+                <SelectItem value="inactive">{t("admin.faq.inactive") || "Pasif"}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Sort By */}
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder={t("admin.faq.sort_by") || "Sırala"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">{t("admin.faq.sort_created") || "Oluşturulma"}</SelectItem>
+                <SelectItem value="updated_at">{t("admin.faq.sort_updated") || "Güncellenme"}</SelectItem>
+                <SelectItem value="usage_count">{t("admin.faq.sort_usage") || "Kullanım"}</SelectItem>
+                <SelectItem value="question">{t("admin.faq.sort_question") || "Soru (A-Z)"}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Sort Order */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            >
+              {sortOrder === "asc" ? "↑ Artan" : "↓ Azalan"}
+            </Button>
+
+            {/* Clear Filters */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+            >
+              {t("admin.faq.clear_filters") || "Filtreleri Temizle"}
+            </Button>
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>{t("admin.faq.total") || "Toplam"}: {faqs.length}</span>
+            <span>{t("admin.faq.showing") || "Gösterilen"}: {filteredFaqs.length}</span>
+            <span>{t("admin.faq.active_count") || "Aktif"}: {faqs.filter(f => f.is_active).length}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {filteredFaqs.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
@@ -329,7 +511,7 @@ export default function FAQManagement() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {faqs.map((faq) => (
+          {filteredFaqs.map((faq) => (
             <Card key={faq.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
