@@ -975,18 +975,6 @@
       "revenueGrowthTrend": "Tendencia de Ingresos y Crecimiento",
       "superAdminDescription": "Puede monitorear el estado general y las estadísticas de uso de todas las agencias aquí. Use la pestaña 'Agencias' para gestión detallada."
     },
-    "date": {
-      "deleteSuccess": "Fecha eliminada",
-      "deleteError": "Error al eliminar"
-    },
-    "toast": {
-      "success": "¡Éxito! ✅",
-      "error": "Error",
-      "statusUpdated": "Estado actualizado",
-      "statusUpdateError": "No se pudo actualizar el estado",
-      "messagesSent": "Mensajes enviados",
-      "messagesSentError": "No se pudieron enviar los mensajes"
-    },
     "usageStats": {
       "loadError": "Error al cargar las estadísticas de uso",
       "paymentError": "Error al crear el pago",
@@ -1140,6 +1128,18 @@
       "quotaErrorMessage": "Solo quedan {quota} lugares para esta fecha. Por favor, reduzca el número de personas o seleccione otra fecha.",
       "userNotFound": "Usuario no encontrado",
       "agencyNotFound": "Agencia no encontrada"
+    },
+    "date": {
+      "deleteSuccess": "Fecha eliminada",
+      "deleteError": "Error al eliminar la fecha"
+    },
+    "toast": {
+      "success": "¡Exitoso! ✅",
+      "error": "Error",
+      "statusUpdated": "Estado actualizado",
+      "statusUpdateError": "No se pudo actualizar el estado",
+      "messagesSent": "Mensajes enviados",
+      "messagesSentError": "No se pudieron enviar los mensajes"
     }
   },
   "auth": {
