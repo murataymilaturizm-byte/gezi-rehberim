@@ -96,10 +96,14 @@ serve(async (req) => {
 
     // Get conversation history for better categorization
     const history = await getConversationHistory(supabase, userPhone, agency.id, 10);
+    
+    console.log('WhatsApp - Phone:', userPhone, 'Agency:', agency.id, 'History count:', history.length);
+    console.log('WhatsApp - User message:', userMessage.substring(0, 100));
+    
     const intent = await categorizeMessage(userMessage, history, userLanguage);
     let responseMessage = '';
 
-    console.log('WhatsApp - Intent:', intent.type, 'Has history:', history.length > 0, 'Message:', userMessage.substring(0, 50));
+    console.log('WhatsApp - Intent:', intent.type, 'Confidence:', intent.confidence);
 
     switch (intent.type) {
       case 'greeting':
@@ -112,29 +116,34 @@ serve(async (req) => {
         responseMessage = await handleTourSearch(supabase, userPhone, agency.id, userMessage);
         break;
       case 'reservation.wizard':
-        // Extract last discussed tour from history
+        // Extract last discussed tour from history - check assistant messages for tour mentions
         let lastDiscussedTour = null;
+        const tourKeywords = [
+          { keywords: ['pamukkale'], name: 'Pamukkale' },
+          { keywords: ['kapadokya', 'balon', 'kappadocia'], name: 'Kapadokya' },
+          { keywords: ['antalya', 'rafting'], name: 'Antalya' },
+          { keywords: ['ege', 'çeşme', 'alaçatı', 'alacati'], name: 'Ege' },
+          { keywords: ['istanbul', 'İstanbul'], name: 'İstanbul' }
+        ];
+        
+        // Look through history in reverse to find most recent tour discussion
         for (let i = history.length - 1; i >= 0; i--) {
           const content = history[i].content.toLowerCase();
-          if (content.includes('pamukkale')) {
-            lastDiscussedTour = 'Pamukkale';
-            break;
-          } else if (content.includes('kapadokya') || content.includes('balon')) {
-            lastDiscussedTour = 'Kapadokya';
-            break;
-          } else if (content.includes('antalya') || content.includes('rafting')) {
-            lastDiscussedTour = 'Antalya';
-            break;
-          } else if (content.includes('ege') || content.includes('çeşme') || content.includes('alaçatı')) {
-            lastDiscussedTour = 'Ege';
-            break;
-          } else if (content.includes('istanbul')) {
-            lastDiscussedTour = 'İstanbul';
-            break;
+          // Focus on assistant messages that likely contain tour details
+          if (history[i].role === 'assistant') {
+            for (const tourGroup of tourKeywords) {
+              if (tourGroup.keywords.some(keyword => content.includes(keyword.toLowerCase()))) {
+                lastDiscussedTour = tourGroup.name;
+                break;
+              }
+            }
+            if (lastDiscussedTour) break;
           }
         }
         
-        console.log('WhatsApp: Last discussed tour:', lastDiscussedTour);
+        console.log('WhatsApp - Reservation wizard triggered');
+        console.log('WhatsApp - Last discussed tour:', lastDiscussedTour);
+        console.log('WhatsApp - History length:', history.length);
         
         await saveWizardState(supabase, userPhone, agency.id, { 
           step: lastDiscussedTour ? 'date_selection' : 'tour_selection', 
