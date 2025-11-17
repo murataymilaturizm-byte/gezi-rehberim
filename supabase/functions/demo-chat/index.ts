@@ -231,7 +231,8 @@ ${userInfo}
 • Answer the question DIRECTLY but FULLY when it's about tours
 • Use name if known
 • Respect mentioned budget
-• Highlight prices with *bold*`;
+• Highlight prices with *bold*
+• DO NOT use formal Turkish greetings like "Sayın müşteri" when speaking other languages - use appropriate greetings for ${languageName}`;
 
   const stylePrompts: Record<string, string> = {
     basic: `✨ STYLE: SIMPLE & BRIEF
@@ -424,37 +425,84 @@ serve(async (req) => {
     let tourSearchResults = '';
     let contextInfo = '';
 
-    // Kullanıcı profili varsa context'e ekle
+    // Çok dilli label'lar
+    const labels: Record<string, Record<string, string>> = {
+      user: { tr: 'Kullanıcı', en: 'User', de: 'Benutzer', ru: 'Пользователь', ar: 'المستخدم', fr: 'Utilisateur', es: 'Usuario' },
+      preferences: { tr: 'Tercihleri', en: 'Preferences', de: 'Präferenzen', ru: 'Предпочтения', ar: 'التفضيلات', fr: 'Préférences', es: 'Preferencias' },
+      previous_searches: { tr: 'Önceki aramalar', en: 'Previous searches', de: 'Frühere Suchen', ru: 'Предыдущие поиски', ar: 'عمليات البحث السابقة', fr: 'Recherches précédentes', es: 'Búsquedas anteriores' }
+    };
+
+    // Kullanıcı profili varsa context'e ekle (multi-language)
     if (userProfile.name) {
-      contextInfo += `\n\n👤 Kullanıcı: ${userProfile.name}`;
+      contextInfo += `\n\n👤 ${labels.user[language] || labels.user.tr}: ${userProfile.name}`;
     }
     if (userProfile.preferences.length > 0) {
-      contextInfo += `\n💭 Tercihleri: ${userProfile.preferences.join(', ')}`;
+      contextInfo += `\n💭 ${labels.preferences[language] || labels.preferences.tr}: ${userProfile.preferences.join(', ')}`;
     }
     if (userProfile.searchHistory.length > 0) {
-      contextInfo += `\n🔍 Önceki aramalar: ${userProfile.searchHistory.slice(-3).join(', ')}`;
+      contextInfo += `\n🔍 ${labels.previous_searches[language] || labels.previous_searches.tr}: ${userProfile.searchHistory.slice(-3).join(', ')}`;
     }
 
-    // Selamlaşma kontrolü
-    const greetings = ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey', 'hi', 'hello'];
-    const isGreeting = greetings.some(g => lowerMessage === g || lowerMessage === g + 'lar' || lowerMessage.startsWith(g + ' '));
+    // Çok dilli selamlaşma kontrolü
+    const greetings: Record<string, string[]> = {
+      tr: ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey'],
+      en: ['hi', 'hello', 'hey', 'good morning', 'good day'],
+      de: ['hallo', 'guten tag', 'guten morgen', 'hi', 'hey'],
+      ru: ['привет', 'здравствуйте', 'добрый день', 'доброе утро'],
+      ar: ['مرحبا', 'أهلا', 'السلام عليكم', 'صباح الخير'],
+      fr: ['bonjour', 'salut', 'hey', 'bonsoir'],
+      es: ['hola', 'buenos días', 'buenas tardes', 'hey']
+    };
+    
+    const allGreetings = Object.values(greetings).flat();
+    const isGreeting = allGreetings.some(g => lowerMessage === g || lowerMessage === g + 's' || lowerMessage.startsWith(g + ' '));
     const isShortGreeting = isGreeting && sanitizedMessage.length < 30;
     
-    // Genel tur listesi sorusu kontrolü
-    const listQuestions = ['nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi'];
-    const isListQuestion = listQuestions.some(q => lowerMessage.includes(q));
+    // Çok dilli genel tur listesi sorusu kontrolü
+    const listQuestions: Record<string, string[]> = {
+      tr: ['nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi'],
+      en: ['what tours', 'which tours', 'available tours', 'tour list', 'your tours'],
+      de: ['welche touren', 'verfügbare touren', 'tourliste', 'ihre touren'],
+      ru: ['какие туры', 'доступные туры', 'список туров', 'ваши туры'],
+      ar: ['ما الجولات', 'الجولات المتاحة', 'قائمة الجولات', 'جولاتكم'],
+      fr: ['quels circuits', 'circuits disponibles', 'liste des circuits', 'vos circuits'],
+      es: ['qué tours', 'tours disponibles', 'lista de tours', 'sus tours']
+    };
+    
+    const allListQuestions = Object.values(listQuestions).flat();
+    const isListQuestion = allListQuestions.some(q => lowerMessage.includes(q));
 
-    // Tur arama tespiti
-    const destinations = ['kapadokya', 'pamukkale', 'antalya', 'ege', 'istanbul', 'çeşme', 'alaçatı'];
+    // Çok dilli tur arama tespiti
+    const destinations = ['kapadokya', 'pamukkale', 'antalya', 'ege', 'istanbul', 'çeşme', 'alaçatı', 'cappadocia', 'ephesus', 'bodrum', 'türkei', 'turquie', 'турция'];
+    const tourKeywords = ['tur', 'tour', 'tatil', 'holiday', 'vacation', 'urlaub', 'отпуск', 'vacances', 'vacaciones', 'gezi', 'trip', 'reise', 'رحلة'];
     const isTourSearch = destinations.some(dest => lowerMessage.includes(dest)) || 
-                        (lowerMessage.includes('tur') && !isListQuestion) || 
-                        lowerMessage.includes('tatil') ||
-                        lowerMessage.includes('gezi');
+                        tourKeywords.some(keyword => lowerMessage.includes(keyword) && !isListQuestion);
 
+    const languagePrompts: Record<string, string> = {
+      tr: '⚠️ KULLANICI SELAMLAŞTI: Kullanıcı daha önce "{search}" araması yaptı. Bu tur hakkında mı bilgi almak isterler yoksa farklı bir şey mi? KISA TUT (2 cümle max).',
+      en: '⚠️ USER JUST GREETED: User previously searched for "{search}". Ask if they want info about that tour OR something else. Keep it SHORT (2 sentences max).',
+      de: '⚠️ BENUTZER GRÜSSTE: Benutzer suchte zuvor nach "{search}". Fragen Sie, ob sie Infos zu dieser Tour ODER etwas anderes möchten. KURZ HALTEN (max. 2 Sätze).',
+      ru: '⚠️ ПОЛЬЗОВАТЕЛЬ ПОЗДОРОВАЛСЯ: Пользователь ранее искал "{search}". Спросите, хотят ли они информацию об этом туре ИЛИ что-то другое? КОРОТКО (макс. 2 предложения).',
+      ar: '⚠️ المستخدم سلم: بحث المستخدم سابقًا عن "{search}". اسأل إذا كانوا يريدون معلومات عن تلك الجولة أم شيء آخر؟ اجعلها قصيرة (جملتان كحد أقصى).',
+      fr: '⚠️ UTILISATEUR SALUÉ: L\'utilisateur a recherché "{search}". Demandez s\'ils veulent des infos sur ce circuit OU autre chose? BREF (2 phrases max).',
+      es: '⚠️ USUARIO SALUDÓ: El usuario buscó "{search}". ¿Preguntar si quieren información sobre ese tour O algo más? BREVE (máx. 2 oraciones).'
+    };
+    
+    const listPrompts: Record<string, string> = {
+      tr: '⚠️ KULLANICI GENEL TUR LİSTESİ SORDU: SADECE tur isimlerini ve ilk 2 tarihi numaralı liste olarak göster. Ekle: "Hangi tura ilgi duyuyorsunuz? Detaylı bilgi için tur adını yazabilirsiniz." KISA ve TEMİZ tut.',
+      en: '⚠️ USER ASKED FOR GENERAL TOUR LIST: Show ONLY tour names and first 2 dates in a numbered list. Add: "Which tour are you interested in? You can write the tour name for detailed information." Keep it SHORT and CLEAN.',
+      de: '⚠️ BENUTZER FRAGTE NACH TOURLISTE: Zeigen Sie NUR Tournamen und erste 2 Daten in nummerierter Liste. Fügen Sie hinzu: "Welche Tour interessiert Sie? Schreiben Sie den Tournamen für Details." KURZ und SAUBER.',
+      ru: '⚠️ ПОЛЬЗОВАТЕЛЬ ЗАПРОСИЛ СПИСОК ТУРОВ: Показать ТОЛЬКО названия туров и первые 2 даты в списке. Добавьте: "Какой тур вас интересует? Напишите название для подробной информации." КОРОТКО и ЧИСТО.',
+      ar: '⚠️ طلب المستخدم قائمة الجولات: أظهر فقط أسماء الجولات وأول تاريخين في قائمة. أضف: "ما الجولة التي تهتم بها؟ اكتب اسم الجولة للحصول على معلومات مفصلة." قصيرة ونظيفة.',
+      fr: '⚠️ UTILISATEUR A DEMANDÉ LISTE DES CIRCUITS: Afficher UNIQUEMENT noms de circuits et 2 premières dates en liste. Ajoutez: "Quel circuit vous intéresse? Écrivez le nom pour plus d\'infos." BREF et PROPRE.',
+      es: '⚠️ USUARIO PIDIÓ LISTA DE TOURS: Mostrar SOLO nombres de tours y primeras 2 fechas en lista. Agregue: "¿Qué tour le interesa? Escriba el nombre del tour para información detallada." BREVE y LIMPIO.'
+    };
+    
     if (isShortGreeting && userProfile.searchHistory.length > 0) {
       // Selamlaşma ve geçmiş arama varsa kontekstli cevap ver
       const lastSearch = userProfile.searchHistory[userProfile.searchHistory.length - 1];
-      contextInfo += `\n\n⚠️ USER JUST GREETED: User previously searched for "${lastSearch}". Ask if they want info about that tour OR something else. Keep it SHORT (2 sentences max).`;
+      const prompt = (languagePrompts[language] || languagePrompts.tr).replace('{search}', lastSearch);
+      contextInfo += `\n\n${prompt}`;
     } else if (isListQuestion) {
       // Genel tur listesi sorusu - sadece özet ver
       const results = searchTours('');  // Tüm turları getir
@@ -465,7 +513,7 @@ serve(async (req) => {
           const dates = tour.dates.slice(0, 2).map(d => d.date).join(', ');
           tourSearchResults += `• *${tour.title}* (${tour.destination})\n  📅 ${dates}\n\n`;
         }
-        tourSearchResults += '\n⚠️ USER ASKED FOR GENERAL TOUR LIST: Show ONLY tour names and first 2 dates in a numbered list. Add: "Hangi tura ilgi duyuyorsunuz? Detaylı bilgi için tur adını yazabilirsiniz." Keep it SHORT and CLEAN.';
+        tourSearchResults += `\n${listPrompts[language] || listPrompts.tr}`;
       }
     } else if (isTourSearch) {
       // Tur ara
