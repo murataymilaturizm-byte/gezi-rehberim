@@ -582,7 +582,10 @@
       "template": "Plantilla",
       "useTemplate": "Usar plantilla",
       "templateCopied": "Plantilla copiada",
-      "cannotDeleteTemplate": "Las FAQ de plantilla no se pueden eliminar"
+      "cannotDeleteTemplate": "Las FAQ de plantilla no se pueden eliminar",
+      "translating": "Traduciendo...",
+      "translationSuccess": "FAQ traducida a otros idiomas",
+      "translationError": "Error durante la traducción"
     },
     "whatsapp": {
       "templates": {

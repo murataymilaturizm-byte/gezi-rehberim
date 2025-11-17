@@ -556,7 +556,10 @@
       "template": "Şablon",
       "useTemplate": "Şablonu Kullan",
       "templateCopied": "Şablon kopyalandı",
-      "cannotDeleteTemplate": "Şablon FAQ'lar silinemez"
+      "cannotDeleteTemplate": "Şablon FAQ'lar silinemez",
+      "translating": "Çevriliyor...",
+      "translationSuccess": "FAQ diğer dillere çevrildi",
+      "translationError": "Çeviri sırasında hata oluştu"
     },
     "whatsapp": {
       "templates": {

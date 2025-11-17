@@ -590,7 +590,10 @@
       "template": "Vorlage",
       "useTemplate": "Vorlage verwenden",
       "templateCopied": "Vorlage kopiert",
-      "cannotDeleteTemplate": "Vorlagen-FAQs können nicht gelöscht werden"
+      "cannotDeleteTemplate": "Vorlagen-FAQs können nicht gelöscht werden",
+      "translating": "Übersetzen...",
+      "translationSuccess": "FAQ in andere Sprachen übersetzt",
+      "translationError": "Fehler beim Übersetzen"
     },
     "whatsapp": {
       "templates": {

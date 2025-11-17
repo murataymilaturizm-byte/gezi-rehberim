@@ -582,7 +582,10 @@
       "template": "Шаблон",
       "useTemplate": "Использовать шаблон",
       "templateCopied": "Шаблон скопирован",
-      "cannotDeleteTemplate": "Шаблонные FAQ нельзя удалить"
+      "cannotDeleteTemplate": "Шаблонные FAQ нельзя удалить",
+      "translating": "Перевод...",
+      "translationSuccess": "FAQ переведен на другие языки",
+      "translationError": "Ошибка при переводе"
     },
     "whatsapp": {
       "templates": {
