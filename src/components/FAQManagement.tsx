@@ -219,14 +219,14 @@ export default function FAQManagement() {
           .eq("id", editingFaq.id);
 
         if (error) throw error;
-        toast.success("FAQ güncellendi");
+        toast.success(t("admin.faq.messages.updated"));
       } else {
         const { error } = await supabase
           .from("faq_templates")
           .insert(faqData);
 
         if (error) throw error;
-        toast.success("FAQ eklendi");
+        toast.success(t("admin.faq.messages.added"));
       }
 
       await loadFaqs(agencyId);
@@ -250,7 +250,7 @@ export default function FAQManagement() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bu FAQ'i silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t("admin.faq.messages.delete_confirm"))) return;
 
     try {
       const { error } = await supabase
@@ -260,7 +260,7 @@ export default function FAQManagement() {
 
       if (error) throw error;
       
-      toast.success("FAQ silindi");
+      toast.success(t("admin.faq.messages.deleted"));
       if (agencyId) await loadFaqs(agencyId);
     } catch (error) {
       console.error("Error deleting FAQ:", error);
@@ -296,9 +296,9 @@ export default function FAQManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Sık Sorulan Sorular</h2>
+          <h2 className="text-2xl font-bold">{t("admin.faq.title")}</h2>
           <p className="text-muted-foreground">
-            Otomatik yanıt şablonlarınızı yönetin
+            {t("admin.faq.subtitle")}
           </p>
         </div>
 
@@ -309,19 +309,19 @@ export default function FAQManagement() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Yeni FAQ Ekle
+              {t("admin.faq.addNew")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingFaq ? "FAQ Düzenle" : "Yeni FAQ Ekle"}
+                {editingFaq ? t("admin.faq.edit") : t("admin.faq.addNew")}
               </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="language">Dil</Label>
+                <Label htmlFor="language">{t("admin.faq.form.language")}</Label>
                 <Select value={language} onValueChange={setLanguage}>
                   <SelectTrigger>
                     <SelectValue />
@@ -339,48 +339,48 @@ export default function FAQManagement() {
               </div>
 
               <div>
-                <Label htmlFor="question">Soru *</Label>
+                <Label htmlFor="question">{t("admin.faq.form.question")}</Label>
                 <Input
                   id="question"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Örn: Rezervasyon nasıl yapabilirim?"
+                  placeholder={t("admin.faq.form.question_placeholder")}
                 />
               </div>
 
               <div>
-                <Label htmlFor="answer">Cevap *</Label>
+                <Label htmlFor="answer">{t("admin.faq.form.answer")}</Label>
                 <Textarea
                   id="answer"
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="Detaylı cevap yazın..."
+                  placeholder={t("admin.faq.form.answer_placeholder")}
                   rows={6}
                 />
               </div>
 
               <div>
                 <Label htmlFor="keywords">
-                  Anahtar Kelimeler (virgülle ayırın)
+                  {t("admin.faq.form.keywords")}
                 </Label>
                 <Input
                   id="keywords"
                   value={keywords}
                   onChange={(e) => setKeywords(e.target.value)}
-                  placeholder="rezervasyon, kayıt, ödeme, iptal"
+                  placeholder={t("admin.faq.form.keywords_placeholder")}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Kullanıcı mesajında bu kelimeler geçerse otomatik yanıt verilir
+                  {t("admin.faq.form.keywords_help")}
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="category">Kategori (Opsiyonel)</Label>
+                <Label htmlFor="category">{t("admin.faq.form.category")}</Label>
                 <Input
                   id="category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Örn: Rezervasyon, Ödeme, Genel"
+                  placeholder={t("admin.faq.form.category_placeholder")}
                 />
               </div>
 
@@ -390,11 +390,11 @@ export default function FAQManagement() {
                   checked={isActive}
                   onCheckedChange={setIsActive}
                 />
-                <Label htmlFor="active">Aktif</Label>
+                <Label htmlFor="active">{t("admin.faq.form.active")}</Label>
               </div>
 
               <Button onClick={handleSubmit} className="w-full">
-                {editingFaq ? "Güncelle" : "Ekle"}
+                {editingFaq ? t("admin.faq.form.update") : t("admin.faq.form.add")}
               </Button>
             </div>
           </DialogContent>
@@ -478,7 +478,7 @@ export default function FAQManagement() {
               size="sm"
               onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
             >
-              {sortOrder === "asc" ? "↑ Artan" : "↓ Azalan"}
+              {sortOrder === "asc" ? t("admin.faq.sort_ascending") : t("admin.faq.sort_descending")}
             </Button>
 
             {/* Clear Filters */}
@@ -505,7 +505,7 @@ export default function FAQManagement() {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground text-center">
-              Henüz FAQ eklenmemiş. İlk FAQ'inizi ekleyerek başlayın.
+              {t("admin.faq.empty_state")}
             </p>
           </CardContent>
         </Card>
@@ -519,7 +519,7 @@ export default function FAQManagement() {
                     <div className="flex items-center gap-2 mb-2">
                       <CardTitle className="text-lg">{faq.question}</CardTitle>
                       <Badge variant={faq.is_active ? "default" : "secondary"}>
-                        {faq.is_active ? "Aktif" : "Pasif"}
+                        {faq.is_active ? t("admin.faq.active") : t("admin.faq.inactive")}
                       </Badge>
                       <Badge variant="outline">{faq.language.toUpperCase()}</Badge>
                       {faq.category && (
@@ -557,7 +557,7 @@ export default function FAQManagement() {
                   <div className="flex items-center justify-between text-sm">
                     {faq.keywords.length > 0 && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">Anahtar kelimeler:</span>
+                        <span className="text-muted-foreground">{t("admin.faq.card.keywords_label")}</span>
                         <div className="flex gap-1 flex-wrap">
                           {faq.keywords.map((keyword, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs">
@@ -571,7 +571,7 @@ export default function FAQManagement() {
                     {faq.usage_count > 0 && (
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <TrendingUp className="h-3 w-3" />
-                        <span>{faq.usage_count} kez kullanıldı</span>
+                        <span>{faq.usage_count} {t("admin.faq.card.times_used")}</span>
                       </div>
                     )}
                   </div>

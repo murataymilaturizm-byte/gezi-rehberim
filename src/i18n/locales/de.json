@@ -536,28 +536,57 @@
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?"
     },
     "faq": {
-      "title": "FAQ-Verwaltung",
+      "title": "Häufig gestellte Fragen",
+      "subtitle": "Verwalten Sie Ihre automatischen Antwortvorlagen",
       "description": "Häufig gestellte Fragen und automatische Antworten",
       "addNew": "Neue FAQ hinzufügen",
       "edit": "FAQ bearbeiten",
-      "search_placeholder": "FAQ suchen (Frage, Antwort, Schlüsselwort...)",
+      "search_placeholder": "FAQ suchen (Frage, Antwort, Stichwort...)",
       "all_languages": "Alle Sprachen",
       "all_categories": "Alle Kategorien",
       "all_status": "Alle",
       "active": "Aktiv",
       "inactive": "Inaktiv",
       "status": "Status",
-      "sort_by": "Sortieren",
+      "sort_by": "Sortieren nach",
       "sort_created": "Erstellt",
       "sort_updated": "Aktualisiert",
       "sort_usage": "Verwendung",
       "sort_question": "Frage (A-Z)",
+      "sort_ascending": "↑ Aufsteigend",
+      "sort_descending": "↓ Absteigend",
       "clear_filters": "Filter löschen",
       "total": "Gesamt",
-      "showing": "Anzeige",
+      "showing": "Angezeigt",
       "active_count": "Aktiv",
       "no_results": "Keine Ergebnisse gefunden",
-      "filter_no_match": "Keine FAQ entspricht Ihren Suchkriterien"
+      "filter_no_match": "Keine FAQs entsprechen Ihren Suchkriterien",
+      "empty_state": "Noch keine FAQs hinzugefügt. Beginnen Sie mit Ihrer ersten FAQ.",
+      "form": {
+        "language": "Sprache",
+        "question": "Frage *",
+        "question_placeholder": "Z.B: Wie kann ich eine Reservierung vornehmen?",
+        "answer": "Antwort *",
+        "answer_placeholder": "Detaillierte Antwort schreiben...",
+        "keywords": "Schlüsselwörter (durch Komma getrennt)",
+        "keywords_placeholder": "reservierung, buchung, zahlung, stornierung",
+        "keywords_help": "Automatische Antwort wird gegeben, wenn diese Wörter in der Benutzernachricht erscheinen",
+        "category": "Kategorie (Optional)",
+        "category_placeholder": "Z.B: Reservierung, Zahlung, Allgemein",
+        "active": "Aktiv",
+        "update": "Aktualisieren",
+        "add": "Hinzufügen"
+      },
+      "card": {
+        "keywords_label": "Schlüsselwörter:",
+        "times_used": "mal verwendet"
+      },
+      "messages": {
+        "updated": "FAQ aktualisiert",
+        "added": "FAQ hinzugefügt",
+        "deleted": "FAQ gelöscht",
+        "delete_confirm": "Möchten Sie diese FAQ wirklich löschen?"
+      }
     },
     "whatsapp": {
       "templates": {

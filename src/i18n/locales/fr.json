@@ -499,8 +499,9 @@
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle?"
     },
     "faq": {
-      "title": "Gestion FAQ",
-      "description": "Questions fréquentes et réponses automatiques",
+      "title": "Questions fréquemment posées",
+      "subtitle": "Gérez vos modèles de réponses automatiques",
+      "description": "Questions fréquemment posées et réponses automatiques",
       "addNew": "Ajouter nouvelle FAQ",
       "edit": "Modifier FAQ",
       "search_placeholder": "Rechercher FAQ (question, réponse, mot-clé...)",
@@ -510,17 +511,45 @@
       "active": "Actif",
       "inactive": "Inactif",
       "status": "Statut",
-      "sort_by": "Trier",
+      "sort_by": "Trier par",
       "sort_created": "Créé",
       "sort_updated": "Mis à jour",
       "sort_usage": "Utilisation",
       "sort_question": "Question (A-Z)",
+      "sort_ascending": "↑ Croissant",
+      "sort_descending": "↓ Décroissant",
       "clear_filters": "Effacer les filtres",
       "total": "Total",
       "showing": "Affichage",
       "active_count": "Actif",
       "no_results": "Aucun résultat trouvé",
-      "filter_no_match": "Aucune FAQ ne correspond à vos critères"
+      "filter_no_match": "Aucune FAQ ne correspond à vos critères de recherche",
+      "empty_state": "Aucune FAQ ajoutée pour le moment. Commencez par ajouter votre première FAQ.",
+      "form": {
+        "language": "Langue",
+        "question": "Question *",
+        "question_placeholder": "Ex: Comment puis-je faire une réservation?",
+        "answer": "Réponse *",
+        "answer_placeholder": "Écrivez une réponse détaillée...",
+        "keywords": "Mots-clés (séparés par des virgules)",
+        "keywords_placeholder": "réservation, paiement, annulation, enregistrement",
+        "keywords_help": "Une réponse automatique sera donnée lorsque ces mots apparaissent dans le message de l'utilisateur",
+        "category": "Catégorie (Optionnel)",
+        "category_placeholder": "Ex: Réservation, Paiement, Général",
+        "active": "Actif",
+        "update": "Mettre à jour",
+        "add": "Ajouter"
+      },
+      "card": {
+        "keywords_label": "Mots-clés:",
+        "times_used": "fois utilisé"
+      },
+      "messages": {
+        "updated": "FAQ mise à jour",
+        "added": "FAQ ajoutée",
+        "deleted": "FAQ supprimée",
+        "delete_confirm": "Êtes-vous sûr de vouloir supprimer cette FAQ?"
+      }
     },
     "whatsapp": {
       "templates": {
