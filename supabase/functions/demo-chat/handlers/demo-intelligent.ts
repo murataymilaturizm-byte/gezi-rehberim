@@ -1,6 +1,7 @@
 // Demo-specific intelligent handler with context awareness
 
 import { callAI } from '../../whatsapp-webhook/services/ai.ts';
+import { validateResponse } from '../services/response-validator.ts';
 
 export async function handleDemoIntelligently(
   message: string,
@@ -20,7 +21,22 @@ export async function handleDemoIntelligently(
   ];
 
   // Lower temperature for more consistent short responses
-  return await callAI(messages, 0.2);
+  let response = await callAI(messages, 0.2);
+  
+  // Validate and fix response if needed
+  const validation = validateResponse(response, conversationStyle);
+  
+  if (!validation.isValid) {
+    console.warn('⚠️ Demo response validation failed:', validation.violations);
+    console.log('📝 Original response:', response.substring(0, 100));
+    
+    if (validation.fixedResponse) {
+      response = validation.fixedResponse;
+      console.log('✅ Fixed response:', response.substring(0, 100));
+    }
+  }
+  
+  return response;
 }
 
 function buildDemoPrompt(

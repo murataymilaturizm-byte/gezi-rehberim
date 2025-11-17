@@ -6,6 +6,7 @@ import { getUserProfile } from './profile.ts';
 import { getConversationState, analyzeConversationPattern } from './conversation-state.ts';
 import { searchToursWithAI } from './tour.ts';
 import { getLabel } from '../config/labels.ts';
+import { validateResponse } from './response-validator.ts';
 
 export async function handleIntelligently(
   supabase: any,
@@ -77,7 +78,21 @@ export async function handleIntelligently(
   ];
 
   // Lower temperature for more consistent short responses
-  const response = await callAI(messages, 0.2);
+  let response = await callAI(messages, 0.2);
+  
+  // Validate and fix response if needed
+  const validation = validateResponse(response, conversationStyle);
+  
+  if (!validation.isValid) {
+    console.warn('⚠️ Response validation failed:', validation.violations);
+    console.log('📝 Original response:', response.substring(0, 100));
+    
+    if (validation.fixedResponse) {
+      response = validation.fixedResponse;
+      console.log('✅ Fixed response:', response.substring(0, 100));
+    }
+  }
+  
   return response;
 }
 
