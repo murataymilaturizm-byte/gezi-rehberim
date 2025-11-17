@@ -7,10 +7,11 @@ export async function handleDemoIntelligently(
   conversationHistory: any[],
   intent: string,
   language: string,
-  availableTours: any[]
+  availableTours: any[],
+  conversationStyle: string = 'professional'
 ): Promise<string> {
   // Build context-aware system prompt
-  const systemPrompt = buildDemoPrompt(intent, language, availableTours, conversationHistory);
+  const systemPrompt = buildDemoPrompt(intent, language, availableTours, conversationHistory, conversationStyle);
   
   const messages = [
     { role: 'system', content: systemPrompt },
@@ -25,7 +26,8 @@ function buildDemoPrompt(
   intent: string,
   language: string,
   tours: any[],
-  history: any[]
+  history: any[],
+  conversationStyle: string = 'professional'
 ): string {
   // Extract last discussed tour from history
   const lastDiscussedTour = extractLastTourFromHistory(history);
@@ -37,7 +39,15 @@ function buildDemoPrompt(
     return `- ${tour.title} (${tour.destination})\n  Tarihler: ${dates}`;
   }).join('\n\n');
 
+  // Style-based personality
+  const stylePersonality = conversationStyle === 'friendly' 
+    ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
+    : conversationStyle === 'casual'
+    ? 'Rahat, günlük dilde konuş. Samimi ama profesyonel kal.'
+    : 'Profesyonel, kibar ve açık bir dil kullan.';
+
   const basePrompt = `Sen bir seyahat acentesi müşteri hizmetleri asistanısın.
+${stylePersonality}
 
 KRİTİK KURALLAR:
 1. DİL: ${language} dilinde cevap ver

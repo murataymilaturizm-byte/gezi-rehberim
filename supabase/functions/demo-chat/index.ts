@@ -154,7 +154,8 @@ serve(async (req) => {
       historyData || [],
       intent.type,
       userLanguage,
-      DEMO_TOURS
+      DEMO_TOURS,
+      conversationStyle
     );
 
     await saveMessage(supabase, sessionId, 'assistant', responseMessage);
