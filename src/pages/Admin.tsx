@@ -58,6 +58,7 @@ import { TwilioSettings } from "@/components/TwilioSettings";
 import { SuperAdminTwilioSettings } from "@/components/SuperAdminTwilioSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
+import FAQManagement from "@/components/FAQManagement";
 import { CustomerFeedback } from "@/components/CustomerFeedback";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
@@ -134,7 +135,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -574,6 +575,8 @@ const Admin = () => {
               <LanguageManagement />
             ) : activeTab === "templates" && (planFeatures?.has_templates || isSuperAdmin) ? (
               <MessageTemplates />
+            ) : activeTab === "faq" ? (
+              <FAQManagement />
             ) : activeTab === "history" ? (
               <SubscriptionHistory />
             ) : activeTab === "customer-feedback" && (planFeatures?.has_feedback || isSuperAdmin) ? (

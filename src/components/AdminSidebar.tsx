@@ -67,7 +67,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   const getDefaultOpenGroup = () => {
     const generalIds = ["dashboard", "settings", "languages", "history"];
     const tourIds = ["tours", "registrations"];
-    const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "whatsapp_logs"];
+    const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "whatsapp_logs"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets"];
@@ -114,6 +114,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     { id: "whatsapp", icon: MessageSquare, label: t("admin.tabs.whatsapp") },
     ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: User, label: t("admin.tabs.userProfiles") }] : []),
     ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates") }] : []),
+    { id: "faq", icon: HelpCircle, label: t("admin.tabs.faq") },
     { id: "whatsapp_logs", icon: ScrollText, label: t("admin.tabs.whatsappLogs") },
   ];
 
