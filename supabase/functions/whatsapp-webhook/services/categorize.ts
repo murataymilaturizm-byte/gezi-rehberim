@@ -38,12 +38,20 @@ export async function categorizeMessage(
   userLanguage: string = 'tr'
 ): Promise<MessageIntent> {
   const lowerMessage = userMessage.toLowerCase().trim();
+  const hasHistory = conversationHistory && conversationHistory.length > 0;
   
-  // Check for short greeting (less than 20 chars and contains greeting word)
+  // Check for short greeting ONLY if this is the first message or user explicitly greets
   if (lowerMessage.length < 20) {
     const allGreetings = Object.values(greetingKeywords).flat();
-    if (allGreetings.some(g => lowerMessage.includes(g))) {
-      return { type: 'greeting', confidence: 0.9 };
+    const isExplicitGreeting = allGreetings.some(g => lowerMessage === g || lowerMessage === g + '!');
+    
+    // Only categorize as greeting if:
+    // 1. This is the first message (no history), OR
+    // 2. User sends ONLY a greeting word (exact match)
+    if (!hasHistory || isExplicitGreeting) {
+      if (allGreetings.some(g => lowerMessage.includes(g))) {
+        return { type: 'greeting', confidence: 0.9 };
+      }
     }
   }
   
@@ -65,6 +73,6 @@ export async function categorizeMessage(
     return { type: 'reservation.wizard', confidence: 0.85 };
   }
   
-  // Default to general chat
+  // Default to general chat (this includes price questions, follow-ups, etc.)
   return { type: 'general', confidence: 0.6 };
 }

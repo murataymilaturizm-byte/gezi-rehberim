@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkFAQ } from './services/faq.ts';
 import { categorizeMessage } from './services/categorize.ts';
 import { getUserProfile, upsertUserProfile } from './services/profile.ts';
-import { saveMessage } from './services/conversation.ts';
+import { saveMessage, getConversationHistory } from './services/conversation.ts';
 import { detectCannedResponseTrigger, getCannedResponse } from './services/canned-responses.ts';
 
 // Handlers
@@ -94,8 +94,12 @@ serve(async (req) => {
       }
     }
 
-    const intent = await categorizeMessage(userMessage, [], userLanguage);
+    // Get conversation history for better categorization
+    const history = await getConversationHistory(supabase, userPhone, agency.id, 10);
+    const intent = await categorizeMessage(userMessage, history, userLanguage);
     let responseMessage = '';
+
+    console.log('WhatsApp - Intent:', intent.type, 'Has history:', history.length > 0, 'Message:', userMessage.substring(0, 50));
 
     switch (intent.type) {
       case 'greeting':
