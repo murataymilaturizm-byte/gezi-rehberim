@@ -55,14 +55,26 @@ serve(async (req) => {
         }
       }
 
-      // Get agency info for this customer
+      // Get agency info and plan features for this customer
       const { data: agency } = await supabase
         .from('agencies')
-        .select('id, agency_name')
+        .select('id, agency_name, plan_type')
         .eq('id', customer.agency_id)
         .single();
 
       if (!agency) continue;
+
+      // Check if follow-ups are enabled for this agency's plan
+      const { data: planFeatures } = await supabase
+        .from('plan_features')
+        .select('has_follow_ups')
+        .eq('plan_type', agency.plan_type)
+        .single();
+
+      if (!planFeatures?.has_follow_ups) {
+        console.log(`Skipping ${customer.phone} - follow-ups not enabled for ${agency.plan_type} plan`);
+        continue;
+      }
 
       // Takip mesajını hazırla
       const followUpMessage = await formatFollowUpMessage(
