@@ -3,16 +3,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Services
 import { checkFAQ } from './services/faq.ts';
-import { categorizeMessage } from './services/categorize.ts';
-import { getUserProfile, upsertUserProfile } from './services/profile.ts';
+import { detectIntent } from './services/intent-detector.ts';
+import { getUserProfile, upsertUserProfile, enrichConversationInsights } from './services/profile.ts';
 import { saveMessage, getConversationHistory } from './services/conversation.ts';
+import { updateConversationState } from './services/conversation-state.ts';
 import { detectCannedResponseTrigger, getCannedResponse } from './services/canned-responses.ts';
 
 // Handlers
-import { handleGreeting } from './handlers/greeting.ts';
-import { handleTourList } from './handlers/tour-list.ts';
-import { handleTourSearch } from './handlers/tour-search.ts';
-import { handleGeneralChat } from './handlers/general-chat.ts';
+import { handleIntelligently } from './services/intelligent-handler.ts';
 import { getWizardState, handleWizardStep, saveWizardState } from './handlers/wizard.ts';
 
 // Utils
