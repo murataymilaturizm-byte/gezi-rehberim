@@ -1225,13 +1225,7 @@
     "password": "Şifre",
     "forgotPassword": "Şifremi Unuttum",
     "noAccount": "Hesabınız yok mu?",
-    "hasAccount": "Hesabınız var mı?"
-  },
-  "auth": {
-    "login": "Giriş Yap",
-    "signup": "Kayıt Ol",
-    "email": "E-posta",
-    "password": "Şifre",
+    "hasAccount": "Hesabınız var mı?",
     "fullName": "Ad Soyad",
     "agencyName": "Acente Adı",
     "phone": "Telefon Numarası",
