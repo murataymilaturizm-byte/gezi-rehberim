@@ -40,6 +40,46 @@ export async function categorizeMessage(
   const lowerMessage = userMessage.toLowerCase().trim();
   const hasHistory = conversationHistory && conversationHistory.length > 0;
   
+  // Get last assistant message for context-aware categorization
+  const lastAssistantMsg = hasHistory 
+    ? conversationHistory.find((msg: any) => msg.role === 'assistant')?.content?.toLowerCase() || ''
+    : '';
+  
+  // PRIORITY 0: Context-aware affirmative responses
+  // If user says "yes/evet/etc" after a question, categorize based on question context
+  const affirmativeWords: Record<string, string[]> = {
+    tr: ['evet', 'olur', 'tabii', 'tamam', 'istiyorum', 'isterim'],
+    en: ['yes', 'yeah', 'sure', 'ok', 'okay', 'yep', 'yup'],
+    de: ['ja', 'okay', 'gut', 'klar'],
+    ru: ['да', 'хорошо', 'ладно'],
+    ar: ['نعم', 'حسنا', 'طيب'],
+    fr: ['oui', 'd\'accord', 'ok'],
+    es: ['sí', 'si', 'vale', 'ok']
+  };
+  
+  const allAffirmatives = Object.values(affirmativeWords).flat();
+  const isAffirmative = allAffirmatives.some(word => lowerMessage === word || lowerMessage === word + '!');
+  
+  if (isAffirmative && lastAssistantMsg) {
+    // Check what the bot was asking about
+    if (lastAssistantMsg.includes('tur') || 
+        lastAssistantMsg.includes('tour') || 
+        lastAssistantMsg.includes('kapadokya') ||
+        lastAssistantMsg.includes('pamukkale') ||
+        lastAssistantMsg.includes('bilgi almak ister') ||
+        lastAssistantMsg.includes('would you like to know')) {
+      console.log('Context-aware: Affirmative response to tour question -> tour.search');
+      return { type: 'tour.search', confidence: 0.9 };
+    }
+    
+    if (lastAssistantMsg.includes('rezervasyon') || 
+        lastAssistantMsg.includes('booking') ||
+        lastAssistantMsg.includes('ayır')) {
+      console.log('Context-aware: Affirmative response to booking question -> reservation.wizard');
+      return { type: 'reservation.wizard', confidence: 0.95 };
+    }
+  }
+  
   // PRIORITY 1: Check for reservation/booking intent (highest priority)
   // This catches various ways users express booking intent
   const reservationPatterns = [
@@ -47,17 +87,17 @@ export async function categorizeMessage(
     /\b(rezervasyon|kayıt|booking|reserve|ayır|ayırtmak)\b/,
     // Participation intent
     /\b(katıl|katılmak|katılım|gelmek istiyorum|gideceğim)\b/,
-    // Action verbs with tour context
-    /\b(almak istiyorum|yapmak istiyorum|düşünüyorum|istiyorum)\b/,
+    // Strong action verbs (removed "düşünüyorum" - too ambiguous)
+    /\b(almak istiyorum|yapmak istiyorum)\b/,
   ];
   
   // Check if message matches reservation patterns
   const matchesReservation = reservationPatterns.some(pattern => pattern.test(lowerMessage));
   
-  // Extra boost if they mentioned "istiyorum" (I want to) - strong intent signal
-  const hasStrongIntent = lowerMessage.includes('istiyorum') || 
-                          lowerMessage.includes('isterim') ||
-                          lowerMessage.includes('istiyoruz');
+  // Extra boost if they mentioned "istiyorum" with reservation context
+  const hasStrongIntent = (lowerMessage.includes('rezervasyon') && lowerMessage.includes('istiyorum')) ||
+                          lowerMessage.includes('ayırtmak istiyorum') ||
+                          lowerMessage.includes('rezervasyon yapmak');
   
   if (matchesReservation || (hasStrongIntent && hasHistory)) {
     return { type: 'reservation.wizard', confidence: 0.95 };

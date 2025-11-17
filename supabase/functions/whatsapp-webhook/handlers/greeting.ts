@@ -47,7 +47,7 @@ export async function handleGreeting(
     }
   ];
 
-  return await callAI(messages);
+  return await callAI(messages, 0.2); // Very low temperature for strict rule following
 }
 
 // Helper function to extract last discussed tour from conversation history
