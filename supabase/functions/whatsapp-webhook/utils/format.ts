@@ -112,6 +112,50 @@ export function formatTourForWhatsApp(tour: Tour, language: string = 'tr'): stri
   return parts.join('\n');
 }
 
+// Format tours as simple list (summary only)
+export function formatToursSummary(tours: Tour[], language: string = 'tr'): string {
+  const labels = {
+    tr: {
+      foundTours: '🎯 Bulduğum turlar',
+      moreInfo: '\n\n💡 Herhangi bir tur hakkında daha fazla bilgi almak için tur numarasını yazabilir veya "detay göster" diyebilirsiniz.'
+    },
+    en: {
+      foundTours: '🎯 Tours I found',
+      moreInfo: '\n\n💡 For more information about any tour, you can write the tour number or say "show details".'
+    },
+    de: {
+      foundTours: '🎯 Gefundene Touren',
+      moreInfo: '\n\n💡 Für weitere Informationen zu einer Tour können Sie die Tournummer eingeben oder "Details zeigen" sagen.'
+    },
+    ru: {
+      foundTours: '🎯 Найденные туры',
+      moreInfo: '\n\n💡 Для получения дополнительной информации о туре введите номер тура или скажите "показать детали".'
+    },
+    ar: {
+      foundTours: '🎯 الجولات التي وجدتها',
+      moreInfo: '\n\n💡 لمزيد من المعلومات حول أي جولة، يمكنك كتابة رقم الجولة أو قول "إظهار التفاصيل".'
+    },
+    fr: {
+      foundTours: '🎯 Circuits trouvés',
+      moreInfo: '\n\n💡 Pour plus d\'informations sur un circuit, vous pouvez écrire le numéro du circuit ou dire "afficher les détails".'
+    },
+    es: {
+      foundTours: '🎯 Tours encontrados',
+      moreInfo: '\n\n💡 Para más información sobre cualquier tour, puede escribir el número del tour o decir "mostrar detalles".'
+    }
+  };
+
+  const lang = labels[language as keyof typeof labels] || labels.tr;
+
+  const tourList = tours.map((tour, index) => {
+    const firstDate = tour.dates[0];
+    const dateStr = firstDate ? formatDate(firstDate.departure_date, language) : '';
+    return `${index + 1}. *${tour.title}*\n   📍 ${tour.destination} | 📅 ${dateStr}`;
+  }).join('\n\n');
+
+  return `${lang.foundTours}:\n\n${tourList}${lang.moreInfo}`;
+}
+
 export function formatToursResponse(tours: Tour[], language: string = 'tr'): string {
   if (tours.length === 0) {
     const messages: Record<string, string> = {

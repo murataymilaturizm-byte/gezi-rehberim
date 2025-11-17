@@ -404,48 +404,21 @@ function formatDemoTourList(language: string = 'tr', style: string = 'friendly')
     es: `✨ Aquí están nuestros tours disponibles:\n\n`
   };
 
-  const dateLabels: Record<string, any> = {
-    tr: { departure: 'Çıkış', return: 'Dönüş', available: 'tarih mevcut' },
-    en: { departure: 'Departure', return: 'Return', available: 'dates available' },
-    de: { departure: 'Abfahrt', return: 'Rückkehr', available: 'Termine verfügbar' },
-    ru: { departure: 'Отправление', return: 'Возвращение', available: 'даты доступны' },
-    ar: { departure: 'المغادرة', return: 'العودة', available: 'التواريخ المتاحة' },
-    fr: { departure: 'Départ', return: 'Retour', available: 'dates disponibles' },
-    es: { departure: 'Salida', return: 'Regreso', available: 'fechas disponibles' }
-  };
-
-  const lang = dateLabels[language] || dateLabels.tr;
   let response = headers[language] || headers['tr'];
 
   DEMO_TOURS.forEach((tour, index) => {
-    const minPrice = Math.min(...tour.dates.map(d => d.price_adult));
     const firstDate = tour.dates[0];
-    
-    response += `${index + 1}. *${tour.title}* (${tour.destination})\n`;
-    
-    // CRITICAL: Use formatDate function for proper date formatting
-    if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
-      response += `   ${lang.departure}: ${formatDate(firstDate.departure_date, language)}\n`;
-      response += `   ${lang.return}: ${formatDate(firstDate.return_date, language)}\n`;
-    } else {
-      response += `   📅 ${formatDate(firstDate.departure_date, language)}\n`;
-    }
-    
-    response += `   💰 ${minPrice} ${tour.currency}\n`;
-    if (tour.dates.length > 1) {
-      response += `   🗓️ +${tour.dates.length - 1} ${lang.available}\n`;
-    }
-    response += '\n';
+    response += `${index + 1}. *${tour.title}*\n   📍 ${tour.destination} | 📅 ${formatDate(firstDate.departure_date, language)}\n\n`;
   });
 
   const callToAction: Record<string, string> = {
-    tr: '📍 Hangi tur için düşündüğünüz tarihi ve kişi sayısını yazarsanız, size net fiyat ve uygunluk bilgisini verebilirim. 😊',
-    en: '📍 Tell me which tour you\'re interested in, along with your preferred dates and number of people, and I\'ll provide exact pricing and availability. 😊',
-    de: '📍 Sagen Sie mir, welche Tour Sie interessiert, zusammen mit Ihren bevorzugten Daten und der Anzahl der Personen, und ich gebe Ihnen genaue Preise und Verfügbarkeit. 😊',
-    ru: '📍 Скажите мне, какой тур вас интересует, вместе с предпочтительными датами и количеством людей, и я предоставлю точную цену и наличие. 😊',
-    ar: '📍 أخبرني بالجولة التي تهمك، مع التواريخ المفضلة لديك وعدد الأشخاص، وسأقدم لك السعر الدقيق والتوفر. 😊',
-    fr: '📍 Dites-moi quel circuit vous intéresse, avec vos dates préférées et le nombre de personnes, et je vous fournirai le prix exact et la disponibilité. 😊',
-    es: '📍 Dime qué tour te interesa, junto con tus fechas preferidas y el número de personas, y te proporcionaré el precio exacto y la disponibilidad. 😊'
+    tr: '💡 Herhangi bir tur hakkında daha fazla bilgi almak için tur numarasını yazabilir veya "detay göster" diyebilirsiniz.',
+    en: '💡 For more information about any tour, you can write the tour number or say "show details".',
+    de: '💡 Für weitere Informationen zu einer Tour können Sie die Tournummer eingeben oder "Details zeigen" sagen.',
+    ru: '💡 Для получения дополнительной информации о туре введите номер тура или скажите "показать детали".',
+    ar: '💡 لمزيد من المعلومات حول أي جولة، يمكنك كتابة رقم الجولة أو قول "إظهار التفاصيل".',
+    fr: '💡 Pour plus d\'informations sur un circuit, vous pouvez écrire le numéro du circuit ou dire "afficher les détails".',
+    es: '💡 Para más información sobre cualquier tour, puede escribir el número del tour o decir "mostrar detalles".'
   };
 
   response += callToAction[language] || callToAction['tr'];
@@ -498,6 +471,73 @@ async function handleDemoTourSearch(
     return await handleGeneralChat(supabase, phone, agencyId, message, conversationStyle);
   }
 
+  // Check conversation history to see if user is asking for details
+  const { data: history } = await supabase
+    .from('whatsapp_conversations')
+    .select('*')
+    .eq('phone', phone)
+    .eq('agency_id', agencyId)
+    .order('created_at', { ascending: false })
+    .limit(5);
+  
+  const lastAssistantMessage = history?.find((msg: any) => msg.role === 'assistant')?.content || '';
+  
+  // Check if user is requesting details
+  const detailKeywords = {
+    tr: ['detay', 'bilgi', 'program', 'daha fazla', 'birinci', 'ikinci', '1.', '2.', '1 ', '2 '],
+    en: ['detail', 'info', 'information', 'more', 'first', 'second', '1.', '2.', '1 ', '2 '],
+    de: ['detail', 'info', 'information', 'mehr', 'erste', 'zweite', '1.', '2.', '1 ', '2 '],
+    ru: ['детали', 'информация', 'больше', 'первый', 'второй', '1.', '2.', '1 ', '2 '],
+    ar: ['تفاصيل', 'معلومات', 'المزيد', 'الأول', 'الثاني', '1.', '2.', '1 ', '2 '],
+    fr: ['détail', 'info', 'information', 'plus', 'premier', 'deuxième', '1.', '2.', '1 ', '2 '],
+    es: ['detalle', 'info', 'información', 'más', 'primero', 'segundo', '1.', '2.', '1 ', '2 ']
+  };
+
+  const keywords = detailKeywords[language as keyof typeof detailKeywords] || detailKeywords.tr;
+  const isRequestingDetail = keywords.some(keyword => message.toLowerCase().includes(keyword));
+  
+  // If last message had tour list AND user is requesting details, show detailed info
+  if (isRequestingDetail && lastAssistantMessage.includes('📍')) {
+    // Extract tour number from message (1, 2, etc)
+    const numberMatch = message.match(/\d+/);
+    if (numberMatch) {
+      const tourIndex = parseInt(numberMatch[0]) - 1;
+      if (tourIndex >= 0 && tourIndex < matchedTours.length) {
+        // Show detailed info for specific tour
+        const tour = matchedTours[tourIndex];
+        const dateLabels: Record<string, any> = {
+          tr: { departure: 'Çıkış Tarihi', return: 'Dönüş Tarihi' },
+          en: { departure: 'Departure Date', return: 'Return Date' },
+          de: { departure: 'Abfahrtsdatum', return: 'Rückkehrdatum' },
+          ru: { departure: 'Дата отправления', return: 'Дата возвращения' },
+          ar: { departure: 'تاريخ المغادرة', return: 'تاريخ العودة' },
+          fr: { departure: 'Date de départ', return: 'Date de retour' },
+          es: { departure: 'Fecha de salida', return: 'Fecha de regreso' }
+        };
+        const lang = dateLabels[language] || dateLabels.tr;
+        
+        let detailResponse = `🏖️ *${tour.title}*\n📍 ${tour.destination}\n\n`;
+        detailResponse += `📝 ${tour.program_kisa}\n\n`;
+        detailResponse += `📍 Gezilecek Yerler: ${tour.gezilecek_yerler}\n\n`;
+        
+        tour.dates.forEach((date, idx) => {
+          detailResponse += `📅 Tarih ${idx + 1}:\n`;
+          if (date.return_date && date.return_date !== date.departure_date) {
+            detailResponse += `   ${lang.departure}: ${formatDate(date.departure_date, language)}\n`;
+            detailResponse += `   ${lang.return}: ${formatDate(date.return_date, language)}\n`;
+          } else {
+            detailResponse += `   ${formatDate(date.departure_date, language)}\n`;
+          }
+          detailResponse += `   💰 ${date.price_adult} ${tour.currency}\n`;
+          detailResponse += `   👥 ${date.quota} kişilik kontenjan\n\n`;
+        });
+        
+        return detailResponse;
+      }
+    }
+  }
+
+  // Default: Show simple summary list
   const headers: Record<string, string> = {
     tr: '🎯 Size uygun turları buldum:\n\n',
     en: '🎯 I found tours that match your search:\n\n',
@@ -508,45 +548,21 @@ async function handleDemoTourSearch(
     es: '🎯 Encontré tours que coinciden:\n\n'
   };
 
-  const dateLabels: Record<string, any> = {
-    tr: { departure: 'Çıkış', return: 'Dönüş' },
-    en: { departure: 'Departure', return: 'Return' },
-    de: { departure: 'Abfahrt', return: 'Rückkehr' },
-    ru: { departure: 'Отправление', return: 'Возвращение' },
-    ar: { departure: 'المغادرة', return: 'العودة' },
-    fr: { departure: 'Départ', return: 'Retour' },
-    es: { departure: 'Salida', return: 'Regreso' }
-  };
-
   const callToActions: Record<string, string> = {
-    tr: '\n\n📍 İlgilendiğiniz tur için düşündüğünüz tarihi ve kişi sayısını yazarsanız, size net fiyat ve uygunluk bilgisini verebilirim. 😊',
-    en: '\n\n📍 Tell me your preferred dates and number of people for the tour you\'re interested in, and I\'ll provide exact pricing and availability. 😊',
-    de: '\n\n📍 Sagen Sie mir Ihre bevorzugten Daten und die Anzahl der Personen für die Tour, die Sie interessiert, und ich gebe Ihnen genaue Preise und Verfügbarkeit. 😊',
-    ru: '\n\n📍 Скажите мне предпочтительные даты и количество людей для интересующего вас тура, и я предоставлю точную цену и наличие. 😊',
-    ar: '\n\n📍 أخبرني بالتواريخ المفضلة لديك وعدد الأشخاص للجولة التي تهمك، وسأقدم لك السعر الدقيق والتوفر. 😊',
-    fr: '\n\n📍 Dites-moi vos dates préférées et le nombre de personnes pour le circuit qui vous intéresse, et je vous fournirai le prix exact et la disponibilité. 😊',
-    es: '\n\n📍 Dime tus fechas preferidas y el número de personas para el tour que te interesa, y te proporcionaré el precio exacto y la disponibilidad. 😊'
+    tr: '\n\n💡 Daha fazla bilgi için tur numarasını yazabilir veya "detay göster" diyebilirsiniz.',
+    en: '\n\n💡 For more information, you can write the tour number or say "show details".',
+    de: '\n\n💡 Für weitere Informationen können Sie die Tournummer eingeben oder "Details zeigen" sagen.',
+    ru: '\n\n💡 Для получения дополнительной информации введите номер тура или скажите "показать детали".',
+    ar: '\n\n💡 لمزيد من المعلومات، يمكنك كتابة رقم الجولة أو قول "إظهار التفاصيل".',
+    fr: '\n\n💡 Pour plus d\'informations, vous pouvez écrire le numéro du circuit ou dire "afficher les détails".',
+    es: '\n\n💡 Para más información, puede escribir el número del tour o decir "mostrar detalles".'
   };
 
-  const lang = dateLabels[language] || dateLabels.tr;
   let response = headers[language] || headers['tr'];
 
-  matchedTours.forEach((tour) => {
-    const minPrice = Math.min(...tour.dates.map(d => d.price_adult));
+  matchedTours.forEach((tour, index) => {
     const firstDate = tour.dates[0];
-    
-    response += `🏖️ *${tour.title}* - ${tour.destination}\n`;
-    
-    // CRITICAL: Use formatDate for proper formatting
-    if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
-      response += `📅 ${lang.departure}: ${formatDate(firstDate.departure_date, language)}\n`;
-      response += `   ${lang.return}: ${formatDate(firstDate.return_date, language)}\n`;
-    } else {
-      response += `📅 ${formatDate(firstDate.departure_date, language)}\n`;
-    }
-    
-    response += `💰 ${minPrice} ${tour.currency}\n`;
-    response += `📝 ${tour.program_kisa}\n\n`;
+    response += `${index + 1}. *${tour.title}*\n   📍 ${tour.destination} | 📅 ${formatDate(firstDate.departure_date, language)}\n\n`;
   });
 
   response += callToActions[language] || callToActions['tr'];
