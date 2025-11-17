@@ -18,7 +18,9 @@ export async function handleGreeting(
   const language = userProfile?.language_preference || 'tr';
   const history = await getConversationHistory(supabase, phone, agencyId, 10);
 
-  const hasHistory = history.length > 0;
+  // Check if user has meaningful conversation history (not just single greeting exchange)
+  // Meaningful = at least 2 exchanges (4 messages: user->assistant->user->assistant)
+  const hasHistory = history.length >= 4;
 
   // Build context - include last search and last discussed tour
   let additionalContext = '';
