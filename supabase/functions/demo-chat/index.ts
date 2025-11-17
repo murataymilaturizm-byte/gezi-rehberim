@@ -263,25 +263,29 @@ serve(async (req) => {
         console.log('Demo: Starting reservation wizard');
         
         // Extract last discussed tour from conversation history
+        // History comes ordered by created_at DESC (newest first), so iterate from start
         let lastTour = null;
         if (historyData && historyData.length > 0) {
-          for (let i = historyData.length - 1; i >= 0; i--) {
+          for (let i = 0; i < historyData.length; i++) {
             const content = historyData[i].content.toLowerCase();
-            if (content.includes('pamukkale')) {
-              lastTour = 'Pamukkale Turu';
-              break;
-            } else if (content.includes('kapadokya') || content.includes('balon')) {
-              lastTour = 'Kapadokya Balon Turu';
-              break;
-            } else if (content.includes('antalya') || content.includes('rafting')) {
-              lastTour = 'Antalya Rafting';
-              break;
-            } else if (content.includes('ege') || content.includes('çeşme') || content.includes('alaçatı')) {
-              lastTour = 'Ege Turu';
-              break;
-            } else if (content.includes('istanbul')) {
-              lastTour = 'İstanbul Turu';
-              break;
+            // Check only assistant messages for tour mentions
+            if (historyData[i].role === 'assistant') {
+              if (content.includes('pamukkale')) {
+                lastTour = 'Pamukkale Turu';
+                break;
+              } else if (content.includes('kapadokya') || content.includes('balon')) {
+                lastTour = 'Kapadokya Balon Turu';
+                break;
+              } else if (content.includes('antalya') || content.includes('rafting')) {
+                lastTour = 'Antalya Rafting';
+                break;
+              } else if (content.includes('ege') || content.includes('çeşme') || content.includes('alaçatı')) {
+                lastTour = 'Ege Turu';
+                break;
+              } else if (content.includes('istanbul')) {
+                lastTour = 'İstanbul Turu';
+                break;
+              }
             }
           }
         }
