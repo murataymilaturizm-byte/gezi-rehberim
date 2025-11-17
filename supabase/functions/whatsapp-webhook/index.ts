@@ -116,7 +116,7 @@ serve(async (req) => {
         responseMessage = await handleTourSearch(supabase, userPhone, agency.id, userMessage);
         break;
       case 'reservation.wizard':
-        // Extract last discussed tour from history - check assistant messages for tour mentions
+        // Extract last discussed tour from history - check both assistant and user messages
         // History comes ordered by created_at DESC (newest first), so iterate from start
         let lastDiscussedTour = null;
         const tourKeywords = [
@@ -127,18 +127,32 @@ serve(async (req) => {
           { keywords: ['istanbul', 'İstanbul'], name: 'İstanbul' }
         ];
         
-        // Look through history from newest to find most recent tour discussion
-        for (let i = 0; i < history.length; i++) {
-          const content = history[i].content.toLowerCase();
-          // Focus on assistant messages that likely contain tour details
+        // First pass: Check assistant messages (more reliable)
+        for (let i = 0; i < history.length && !lastDiscussedTour; i++) {
           if (history[i].role === 'assistant') {
+            const content = history[i].content.toLowerCase();
             for (const tourGroup of tourKeywords) {
               if (tourGroup.keywords.some(keyword => content.includes(keyword.toLowerCase()))) {
                 lastDiscussedTour = tourGroup.name;
                 break;
               }
             }
-            if (lastDiscussedTour) break;
+          }
+        }
+        
+        // Second pass: If not found, check user messages
+        if (!lastDiscussedTour) {
+          for (let i = 0; i < history.length; i++) {
+            if (history[i].role === 'user') {
+              const content = history[i].content.toLowerCase();
+              for (const tourGroup of tourKeywords) {
+                if (tourGroup.keywords.some(keyword => content.includes(keyword.toLowerCase()))) {
+                  lastDiscussedTour = tourGroup.name;
+                  break;
+                }
+              }
+              if (lastDiscussedTour) break;
+            }
           }
         }
         

@@ -19,6 +19,12 @@ CRITICAL LANGUAGE RULES:
 - NEVER use formal Turkish greetings (like "Sayın Müşteri") when speaking other languages
 - Keep your tone natural and conversational in the target language
 
+CRITICAL DATE FORMATTING RULES:
+- NEVER use raw date formats like "2025-12-15" or "15 Aralık 2025, 22 Aralık 2025"
+- ALWAYS format dates properly: "15 Aralık 2025" (Turkish), "December 15, 2025" (English)
+- When listing multiple dates, format each individually
+- Use proper date separators and formatting for the target language
+
 CRITICAL GREETING RULES:
 ${hasHistory ? `**** THIS IS A CONTINUING CONVERSATION - YOU HAVE ALREADY TALKED TO THIS USER ****
 - HISTORY LENGTH: You already had ${hasHistory ? 'multiple' : 'zero'} exchanges with this user

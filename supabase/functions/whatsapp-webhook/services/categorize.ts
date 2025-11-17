@@ -40,14 +40,27 @@ export async function categorizeMessage(
   const lowerMessage = userMessage.toLowerCase().trim();
   const hasHistory = conversationHistory && conversationHistory.length > 0;
   
-  // PRIORITY 1: Check for reservation-related keywords first (highest priority)
-  const reservationKeywords = [
-    'rezervasyon', 'kayıt', 'booking', 'reserve', 
-    'reservierung', 'бронирование', 'حجز', 'réservation', 'reserva',
-    'kaydetmek', 'katılmak', 'katılım', 'ayırtmak', 'ayırma'
+  // PRIORITY 1: Check for reservation/booking intent (highest priority)
+  // This catches various ways users express booking intent
+  const reservationPatterns = [
+    // Direct booking words
+    /\b(rezervasyon|kayıt|booking|reserve|ayır|ayırtmak)\b/,
+    // Participation intent
+    /\b(katıl|katılmak|katılım|gelmek istiyorum|gideceğim)\b/,
+    // Action verbs with tour context
+    /\b(almak istiyorum|yapmak istiyorum|düşünüyorum|istiyorum)\b/,
   ];
-  if (reservationKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return { type: 'reservation.wizard', confidence: 0.9 };
+  
+  // Check if message matches reservation patterns
+  const matchesReservation = reservationPatterns.some(pattern => pattern.test(lowerMessage));
+  
+  // Extra boost if they mentioned "istiyorum" (I want to) - strong intent signal
+  const hasStrongIntent = lowerMessage.includes('istiyorum') || 
+                          lowerMessage.includes('isterim') ||
+                          lowerMessage.includes('istiyoruz');
+  
+  if (matchesReservation || (hasStrongIntent && hasHistory)) {
+    return { type: 'reservation.wizard', confidence: 0.95 };
   }
   
   // PRIORITY 2: Check for tour list request
