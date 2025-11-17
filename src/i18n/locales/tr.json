@@ -552,7 +552,11 @@
         "added": "FAQ eklendi",
         "deleted": "FAQ silindi",
         "delete_confirm": "Bu FAQ'i silmek istediğinize emin misiniz?"
-      }
+      },
+      "template": "Şablon",
+      "useTemplate": "Şablonu Kullan",
+      "templateCopied": "Şablon kopyalandı",
+      "cannotDeleteTemplate": "Şablon FAQ'lar silinemez"
     },
     "whatsapp": {
       "templates": {

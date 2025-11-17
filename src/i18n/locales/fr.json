@@ -549,7 +549,11 @@
         "added": "FAQ ajoutée",
         "deleted": "FAQ supprimée",
         "delete_confirm": "Êtes-vous sûr de vouloir supprimer cette FAQ?"
-      }
+      },
+      "template": "Modèle",
+      "useTemplate": "Utiliser le modèle",
+      "templateCopied": "Modèle copié",
+      "cannotDeleteTemplate": "Les FAQ modèles ne peuvent pas être supprimées"
     },
     "whatsapp": {
       "templates": {

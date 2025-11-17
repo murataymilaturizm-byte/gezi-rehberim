@@ -586,7 +586,11 @@
         "added": "FAQ hinzugefügt",
         "deleted": "FAQ gelöscht",
         "delete_confirm": "Möchten Sie diese FAQ wirklich löschen?"
-      }
+      },
+      "template": "Vorlage",
+      "useTemplate": "Vorlage verwenden",
+      "templateCopied": "Vorlage kopiert",
+      "cannotDeleteTemplate": "Vorlagen-FAQs können nicht gelöscht werden"
     },
     "whatsapp": {
       "templates": {
