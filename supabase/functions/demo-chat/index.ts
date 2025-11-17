@@ -5,8 +5,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkFAQ } from '../whatsapp-webhook/services/faq.ts';
 import { categorizeMessage } from '../whatsapp-webhook/services/categorize.ts';
 import { detectCannedResponseTrigger, getCannedResponse } from '../whatsapp-webhook/services/canned-responses.ts';
-
-// Import handlers
 import { handleGreeting } from '../whatsapp-webhook/handlers/greeting.ts';
 import { handleTourList } from '../whatsapp-webhook/handlers/tour-list.ts';
 import { handleTourSearch } from '../whatsapp-webhook/handlers/tour-search.ts';
