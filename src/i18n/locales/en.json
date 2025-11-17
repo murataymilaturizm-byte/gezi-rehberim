@@ -572,7 +572,10 @@
       "template": "Template",
       "useTemplate": "Use Template",
       "templateCopied": "Template copied",
-      "cannotDeleteTemplate": "Template FAQs cannot be deleted"
+      "cannotDeleteTemplate": "Template FAQs cannot be deleted",
+      "translating": "Translating...",
+      "translationSuccess": "FAQ translated to other languages",
+      "translationError": "Error during translation"
     },
     "whatsapp": {
       "templates": {

@@ -7,13 +7,13 @@ export async function checkFAQ(
   language: string
 ): Promise<string | null> {
   try {
-    // Get active FAQs for the agency and language
+    // Get active FAQs for the agency - only match exact language
     const { data: faqs, error } = await supabase
       .from('faq_templates')
       .select('*')
       .eq('agency_id', agencyId)
       .eq('is_active', true)
-      .or(`language.eq.${language},language.is.null`);
+      .eq('language', language);
 
     if (error || !faqs || faqs.length === 0) {
       return null;

@@ -549,7 +549,10 @@
       "template": "نموذج",
       "useTemplate": "استخدم النموذج",
       "templateCopied": "تم نسخ النموذج",
-      "cannotDeleteTemplate": "لا يمكن حذف الأسئلة الشائعة القالبية"
+      "cannotDeleteTemplate": "لا يمكن حذف الأسئلة الشائعة القالبية",
+      "translating": "جاري الترجمة...",
+      "translationSuccess": "تمت ترجمة الأسئلة الشائعة إلى لغات أخرى",
+      "translationError": "خطأ أثناء الترجمة"
     },
     "whatsapp": {
       "templates": {

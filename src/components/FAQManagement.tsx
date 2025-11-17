@@ -48,6 +48,7 @@ export default function FAQManagement() {
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<FAQTemplate | null>(null);
+  const [translating, setTranslating] = useState(false);
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,17 +98,19 @@ export default function FAQManagement() {
   };
 
   const loadFaqs = async (agencyId: string) => {
-    // Load both agency FAQs and default templates
+    // Load agency FAQs (all languages)
     const { data: agencyFaqs, error: agencyError } = await supabase
       .from("faq_templates")
       .select("*")
       .eq("agency_id", agencyId)
       .order("created_at", { ascending: false });
 
+    // Load template FAQs filtered by current language
     const { data: templateFaqs, error: templateError } = await supabase
       .from("faq_templates")
       .select("*")
       .eq("agency_id", "00000000-0000-0000-0000-000000000000")
+      .eq("language", i18n.language)
       .order("created_at", { ascending: false });
 
     if (agencyError || templateError) {
@@ -232,12 +235,37 @@ export default function FAQManagement() {
         if (error) throw error;
         toast.success(t("admin.faq.messages.updated"));
       } else {
-        const { error } = await supabase
+        const { data: newFaq, error } = await supabase
           .from("faq_templates")
-          .insert(faqData);
+          .insert(faqData)
+          .select()
+          .single();
 
         if (error) throw error;
         toast.success(t("admin.faq.messages.added"));
+
+        // Auto-translate to other languages
+        const allLanguages = ["tr", "en", "de", "ru", "ar", "fr", "es"];
+        const targetLanguages = allLanguages.filter(lang => lang !== language);
+        
+        if (targetLanguages.length > 0) {
+          setTranslating(true);
+          const { error: translateError } = await supabase.functions.invoke("translate-faq", {
+            body: {
+              faqId: newFaq.id,
+              sourceLanguage: language,
+              targetLanguages,
+            },
+          });
+
+          if (translateError) {
+            console.error("Translation error:", translateError);
+            toast.error(t("admin.faq.translationError"));
+          } else {
+            toast.success(t("admin.faq.translationSuccess"));
+          }
+          setTranslating(false);
+        }
       }
 
       await loadFaqs(agencyId);
@@ -246,6 +274,7 @@ export default function FAQManagement() {
     } catch (error) {
       console.error("Error saving FAQ:", error);
       toast.error(t("common.error"));
+      setTranslating(false);
     }
   };
 
@@ -436,8 +465,8 @@ export default function FAQManagement() {
                 <Label htmlFor="active">{t("admin.faq.form.active")}</Label>
               </div>
 
-              <Button onClick={handleSubmit} className="w-full">
-                {editingFaq ? t("admin.faq.form.update") : t("admin.faq.form.add")}
+              <Button onClick={handleSubmit} className="w-full" disabled={translating}>
+                {translating ? t("admin.faq.translating") : (editingFaq ? t("admin.faq.form.update") : t("admin.faq.form.add"))}
               </Button>
             </div>
           </DialogContent>
