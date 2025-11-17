@@ -35,16 +35,78 @@ export function formatTourForWhatsApp(tour: Tour, language: string = 'tr'): stri
   const dateInfo = tour.dates[0];
   if (!dateInfo) return '';
 
+  const labels = {
+    tr: {
+      departure: 'Çıkış Tarihi',
+      return: 'Dönüş Tarihi',
+      singleDate: 'Tarih',
+      quota: 'kişilik kontenjan',
+      soldOut: 'Kontenjan doldu'
+    },
+    en: {
+      departure: 'Departure Date',
+      return: 'Return Date',
+      singleDate: 'Date',
+      quota: 'spots available',
+      soldOut: 'Sold out'
+    },
+    de: {
+      departure: 'Abfahrtsdatum',
+      return: 'Rückkehrdatum',
+      singleDate: 'Datum',
+      quota: 'verfügbare Plätze',
+      soldOut: 'Ausverkauft'
+    },
+    ru: {
+      departure: 'Дата отправления',
+      return: 'Дата возвращения',
+      singleDate: 'Дата',
+      quota: 'мест доступно',
+      soldOut: 'Мест нет'
+    },
+    ar: {
+      departure: 'تاريخ المغادرة',
+      return: 'تاريخ العودة',
+      singleDate: 'التاريخ',
+      quota: 'أماكن متاحة',
+      soldOut: 'مكتمل'
+    },
+    fr: {
+      departure: 'Date de départ',
+      return: 'Date de retour',
+      singleDate: 'Date',
+      quota: 'places disponibles',
+      soldOut: 'Complet'
+    },
+    es: {
+      departure: 'Fecha de salida',
+      return: 'Fecha de regreso',
+      singleDate: 'Fecha',
+      quota: 'plazas disponibles',
+      soldOut: 'Completo'
+    }
+  };
+
+  const lang = labels[language as keyof typeof labels] || labels.tr;
+
   const parts = [
     `🏖️ *${tour.title}*`,
-    `📍 ${tour.destination}`,
-    `📅 ${formatDate(dateInfo.departure_date, language)}${dateInfo.return_date && dateInfo.return_date !== dateInfo.departure_date ? ' - ' + formatDate(dateInfo.return_date, language) : ''}`,
-    `💰 ${formatPrice(dateInfo.price_adult)} ${tour.currency}`,
-    `👥 ${dateInfo.quota > 0 ? dateInfo.quota + ' ' + (language === 'tr' ? 'kişilik kontenjan' : 'spots available') : (language === 'tr' ? 'Kontenjan doldu' : 'Sold out')}`
+    `📍 ${tour.destination}`
   ];
 
+  // Format dates with departure/return labels
+  if (dateInfo.return_date && dateInfo.return_date !== dateInfo.departure_date) {
+    parts.push(`📅 ${lang.departure}: ${formatDate(dateInfo.departure_date, language)}`);
+    parts.push(`   ${lang.return}: ${formatDate(dateInfo.return_date, language)}`);
+  } else {
+    parts.push(`📅 ${lang.singleDate}: ${formatDate(dateInfo.departure_date, language)}`);
+  }
+
+  parts.push(`💰 ${formatPrice(dateInfo.price_adult)} ${tour.currency}`);
+  parts.push(`👥 ${dateInfo.quota > 0 ? dateInfo.quota + ' ' + lang.quota : lang.soldOut}`);
+
   if (tour.program_url) {
-    parts.push(`📄 ${language === 'tr' ? 'Program' : 'Program'}: ${tour.program_url}`);
+    parts.push(`📄 Program: ${tour.program_url}`);
   }
 
   return parts.join('\n');
