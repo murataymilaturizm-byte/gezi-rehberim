@@ -218,10 +218,12 @@ serve(async (req) => {
     
     const hasHistory = historyData && historyData.length > 0;
 
-    // Categorize message
-    const intent = await categorizeMessage(message, [], userLanguage);
+    // Categorize message - pass conversation history for better context
+    const intent = await categorizeMessage(message, historyData || [], userLanguage);
     let responseMessage = '';
     let responseType = intent.type;
+
+    console.log('Demo chat - Intent:', intent.type, 'Has history:', hasHistory, 'Message length:', message.length);
 
     switch (intent.type) {
       case 'greeting':
