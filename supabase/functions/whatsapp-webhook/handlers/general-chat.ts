@@ -20,10 +20,10 @@ export async function handleGeneralChat(
 
   const hasHistory = history.length > 0;
 
-  // Get tours for context
+  // Get tours for context - only tour names, DO NOT include dates
   const tours = await getAllActiveTours(supabase, agencyId);
   const toursContext = tours.length > 0 
-    ? `\n\nAvailable tours: ${tours.map(t => `${t.title} (${t.destination})`).join(', ')}`
+    ? `\n\nAvailable tours (names only, DO NOT mention specific dates): ${tours.map(t => t.title).join(', ')}`
     : '';
 
   // Extract last discussed tour from history

@@ -40,7 +40,29 @@ export async function categorizeMessage(
   const lowerMessage = userMessage.toLowerCase().trim();
   const hasHistory = conversationHistory && conversationHistory.length > 0;
   
-  // Check for short greeting ONLY if this is the first message or user explicitly greets
+  // PRIORITY 1: Check for reservation-related keywords first (highest priority)
+  const reservationKeywords = [
+    'rezervasyon', 'kayıt', 'booking', 'reserve', 
+    'reservierung', 'бронирование', 'حجز', 'réservation', 'reserva',
+    'kaydetmek', 'katılmak', 'katılım', 'ayırtmak', 'ayırma'
+  ];
+  if (reservationKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    return { type: 'reservation.wizard', confidence: 0.9 };
+  }
+  
+  // PRIORITY 2: Check for tour list request
+  const listKeywords = tourListKeywords[userLanguage] || tourListKeywords['tr'];
+  if (listKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    return { type: 'tour.list', confidence: 0.9 };
+  }
+  
+  // PRIORITY 3: Check for tour search
+  const searchKeywords = tourSearchKeywords[userLanguage] || tourSearchKeywords['tr'];
+  if (searchKeywords.some(keyword => lowerMessage.includes(keyword))) {
+    return { type: 'tour.search', confidence: 0.8 };
+  }
+  
+  // PRIORITY 4: Check for short greeting ONLY if this is the first message or user explicitly greets
   if (lowerMessage.length < 20) {
     const allGreetings = Object.values(greetingKeywords).flat();
     const isExplicitGreeting = allGreetings.some(g => lowerMessage === g || lowerMessage === g + '!');
@@ -53,24 +75,6 @@ export async function categorizeMessage(
         return { type: 'greeting', confidence: 0.9 };
       }
     }
-  }
-  
-  // Check for tour list request
-  const listKeywords = tourListKeywords[userLanguage] || tourListKeywords['tr'];
-  if (listKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return { type: 'tour.list', confidence: 0.9 };
-  }
-  
-  // Check for tour search
-  const searchKeywords = tourSearchKeywords[userLanguage] || tourSearchKeywords['tr'];
-  if (searchKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return { type: 'tour.search', confidence: 0.8 };
-  }
-  
-  // Check for reservation-related keywords
-  const reservationKeywords = ['rezervasyon', 'kayıt', 'booking', 'reserve', 'reservierung', 'бронирование', 'حجز', 'réservation', 'reserva'];
-  if (reservationKeywords.some(keyword => lowerMessage.includes(keyword))) {
-    return { type: 'reservation.wizard', confidence: 0.85 };
   }
   
   // Default to general chat (this includes price questions, follow-ups, etc.)
