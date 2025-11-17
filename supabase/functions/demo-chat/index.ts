@@ -207,6 +207,17 @@ serve(async (req) => {
     // Check FAQ (mock - no FAQs in demo)
     // const faqResponse = await checkFAQ(supabase, message, DEMO_AGENCY_ID, userLanguage);
 
+    // Get conversation history to check if this is a continuing conversation
+    const { data: historyData } = await supabase
+      .from('whatsapp_conversations')
+      .select('*')
+      .eq('phone', `demo_${sessionId}`)
+      .eq('agency_id', DEMO_AGENCY_ID)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    
+    const hasHistory = historyData && historyData.length > 0;
+
     // Categorize message
     const intent = await categorizeMessage(message, [], userLanguage);
     let responseMessage = '';
@@ -214,13 +225,30 @@ serve(async (req) => {
 
     switch (intent.type) {
       case 'greeting':
-        responseMessage = await handleGreeting(
-          supabase, 
-          `demo_${sessionId}`, 
-          DEMO_AGENCY_ID, 
-          message, 
-          activeConversationStyle
-        );
+        // If has history and user just says hello, give brief response
+        if (hasHistory && (message.toLowerCase().includes('merhaba') || 
+                          message.toLowerCase().includes('selam') ||
+                          message.toLowerCase().includes('hello') ||
+                          message.toLowerCase().includes('hi'))) {
+          const greetingResponses = {
+            tr: 'Merhaba, yardımcı olmam için bana gitmek istediğin yerleri ya da tur türünü yazabilirsin. 😊',
+            en: 'Hello, you can tell me the places you want to visit or the type of tour you prefer. 😊',
+            de: 'Hallo, Sie können mir die Orte mitteilen, die Sie besuchen möchten, oder die Art der Tour. 😊',
+            ru: 'Привет, вы можете сказать мне места, которые хотите посетить, или тип тура. 😊',
+            ar: 'مرحبا، يمكنك إخباري بالأماكن التي تريد زيارتها أو نوع الجولة. 😊',
+            fr: 'Bonjour, vous pouvez me dire les endroits que vous souhaitez visiter ou le type de circuit. 😊',
+            es: 'Hola, puedes decirme los lugares que quieres visitar o el tipo de tour. 😊'
+          };
+          responseMessage = greetingResponses[userLanguage as keyof typeof greetingResponses] || greetingResponses['tr'];
+        } else {
+          responseMessage = await handleGreeting(
+            supabase, 
+            `demo_${sessionId}`, 
+            DEMO_AGENCY_ID, 
+            message, 
+            activeConversationStyle
+          );
+        }
         break;
       
       case 'reservation.wizard':
@@ -293,40 +321,84 @@ serve(async (req) => {
 });
 
 function formatDemoTourList(language: string = 'tr', style: string = 'friendly'): string {
-  const styleEmoji = style === 'friendly' ? '😊' : style === 'energetic' ? '🚀' : '✨';
-  
-  const greetings: Record<string, string> = {
-    tr: `Merhaba! ${styleEmoji} İşte sizin için hazırladığım turlar:\n\n`,
-    en: `Hello! ${styleEmoji} Here are our available tours:\n\n`,
-    de: `Hallo! ${styleEmoji} Hier sind unsere verfügbaren Touren:\n\n`,
-    ru: `Здравствуйте! ${styleEmoji} Вот наши доступные туры:\n\n`,
-    ar: `مرحبا! ${styleEmoji} إليك جولاتنا المتاحة:\n\n`,
-    fr: `Bonjour! ${styleEmoji} Voici nos circuits disponibles:\n\n`,
-    es: `¡Hola! ${styleEmoji} Aquí están nuestros tours disponibles:\n\n`
+  const headers: Record<string, string> = {
+    tr: `✨ İşte sizin için hazırladığım turlar:\n\n`,
+    en: `✨ Here are our available tours:\n\n`,
+    de: `✨ Hier sind unsere verfügbaren Touren:\n\n`,
+    ru: `✨ Вот наши доступные туры:\n\n`,
+    ar: `✨ إليك جولاتنا المتاحة:\n\n`,
+    fr: `✨ Voici nos circuits disponibles:\n\n`,
+    es: `✨ Aquí están nuestros tours disponibles:\n\n`
   };
 
-  let response = greetings[language] || greetings['tr'];
+  const dateLabels: Record<string, any> = {
+    tr: { departure: 'Çıkış', return: 'Dönüş', available: 'tarih mevcut' },
+    en: { departure: 'Departure', return: 'Return', available: 'dates available' },
+    de: { departure: 'Abfahrt', return: 'Rückkehr', available: 'Termine verfügbar' },
+    ru: { departure: 'Отправление', return: 'Возвращение', available: 'даты доступны' },
+    ar: { departure: 'المغادرة', return: 'العودة', available: 'التواريخ المتاحة' },
+    fr: { departure: 'Départ', return: 'Retour', available: 'dates disponibles' },
+    es: { departure: 'Salida', return: 'Regreso', available: 'fechas disponibles' }
+  };
+
+  const lang = dateLabels[language] || dateLabels.tr;
+  let response = headers[language] || headers['tr'];
 
   DEMO_TOURS.forEach((tour, index) => {
     const minPrice = Math.min(...tour.dates.map(d => d.price_adult));
-    response += `${index + 1}. 🎯 *${tour.title}*\n`;
-    response += `   📍 ${tour.destination}\n`;
-    response += `   💰 ${minPrice} ${tour.currency} ${language === 'en' ? 'from' : language === 'tr' ? 'başlayan fiyatlarla' : 'ab'}\n`;
-    response += `   📅 ${tour.dates.length} ${language === 'tr' ? 'tarih mevcut' : language === 'en' ? 'dates available' : 'Termine verfügbar'}\n\n`;
+    const firstDate = tour.dates[0];
+    
+    response += `${index + 1}. *${tour.title}* (${tour.destination})\n`;
+    
+    // Format date with departure/return distinction
+    if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
+      response += `   ${lang.departure}: ${formatDate(firstDate.departure_date, language)}\n`;
+      response += `   ${lang.return}: ${formatDate(firstDate.return_date, language)}\n`;
+    } else {
+      response += `   📅 ${formatDate(firstDate.departure_date, language)}\n`;
+    }
+    
+    response += `   💰 ${minPrice} ${tour.currency}\n`;
+    if (tour.dates.length > 1) {
+      response += `   🗓️ +${tour.dates.length - 1} ${lang.available}\n`;
+    }
+    response += '\n';
   });
 
-  const footers: Record<string, string> = {
-    tr: '🔍 Detaylı bilgi için tur adını yazabilirsiniz!',
-    en: '🔍 Type tour name for more details!',
-    de: '🔍 Geben Sie den Tour-Namen ein für Details!',
-    ru: '🔍 Введите название тура для подробностей!',
-    ar: '🔍 اكتب اسم الجولة للحصول على التفاصيل!',
-    fr: '🔍 Tapez le nom du circuit pour plus de détails!',
-    es: '🔍 Escribe el nombre del tour para más detalles!'
+  const callToAction: Record<string, string> = {
+    tr: '📍 Hangi tur için düşündüğünüz tarihi ve kişi sayısını yazarsanız, size net fiyat ve uygunluk bilgisini verebilirim. 😊',
+    en: '📍 Tell me which tour you\'re interested in, along with your preferred dates and number of people, and I\'ll provide exact pricing and availability. 😊',
+    de: '📍 Sagen Sie mir, welche Tour Sie interessiert, zusammen mit Ihren bevorzugten Daten und der Anzahl der Personen, und ich gebe Ihnen genaue Preise und Verfügbarkeit. 😊',
+    ru: '📍 Скажите мне, какой тур вас интересует, вместе с предпочтительными датами и количеством людей, и я предоставлю точную цену и наличие. 😊',
+    ar: '📍 أخبرني بالجولة التي تهمك، مع التواريخ المفضلة لديك وعدد الأشخاص، وسأقدم لك السعر الدقيق والتوفر. 😊',
+    fr: '📍 Dites-moi quel circuit vous intéresse, avec vos dates préférées et le nombre de personnes, et je vous fournirai le prix exact et la disponibilité. 😊',
+    es: '📍 Dime qué tour te interesa, junto con tus fechas preferidas y el número de personas, y te proporcionaré el precio exacto y la disponibilidad. 😊'
   };
 
-  response += footers[language] || footers['tr'];
+  response += callToAction[language] || callToAction['tr'];
   return response;
+}
+
+// Helper function to format date for demo
+function formatDate(dateString: string, language: string = 'tr'): string {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  };
+  
+  const locales: Record<string, string> = {
+    tr: 'tr-TR',
+    en: 'en-US',
+    de: 'de-DE',
+    ru: 'ru-RU',
+    ar: 'ar-SA',
+    fr: 'fr-FR',
+    es: 'es-ES'
+  };
+  
+  return date.toLocaleDateString(locales[language] || 'tr-TR', options);
 }
 
 async function handleDemoTourSearch(
@@ -336,6 +408,10 @@ async function handleDemoTourSearch(
   message: string,
   conversationStyle: string
 ): Promise<string> {
+  // Get user language
+  const userProfile = getUserProfile(phone.replace('demo_', ''));
+  const language = userProfile?.language_preference || 'tr';
+
   // Search in demo tours
   const searchLower = message.toLowerCase();
   const matchedTours = DEMO_TOURS.filter(tour => 
@@ -349,17 +425,58 @@ async function handleDemoTourSearch(
     return await handleGeneralChat(supabase, phone, agencyId, message, conversationStyle);
   }
 
-  let response = '🎯 Aradığınız turlara benzer sonuçlar buldum:\n\n';
+  const headers: Record<string, string> = {
+    tr: '🎯 Size uygun turları buldum:\n\n',
+    en: '🎯 I found tours that match your search:\n\n',
+    de: '🎯 Ich habe passende Touren gefunden:\n\n',
+    ru: '🎯 Я нашел подходящие туры:\n\n',
+    ar: '🎯 وجدت جولات تناسبك:\n\n',
+    fr: '🎯 J\'ai trouvé des circuits correspondants:\n\n',
+    es: '🎯 Encontré tours que coinciden:\n\n'
+  };
+
+  const dateLabels: Record<string, any> = {
+    tr: { departure: 'Çıkış', return: 'Dönüş' },
+    en: { departure: 'Departure', return: 'Return' },
+    de: { departure: 'Abfahrt', return: 'Rückkehr' },
+    ru: { departure: 'Отправление', return: 'Возвращение' },
+    ar: { departure: 'المغادرة', return: 'العودة' },
+    fr: { departure: 'Départ', return: 'Retour' },
+    es: { departure: 'Salida', return: 'Regreso' }
+  };
+
+  const callToActions: Record<string, string> = {
+    tr: '\n\n📍 İlgilendiğiniz tur için düşündüğünüz tarihi ve kişi sayısını yazarsanız, size net fiyat ve uygunluk bilgisini verebilirim. 😊',
+    en: '\n\n📍 Tell me your preferred dates and number of people for the tour you\'re interested in, and I\'ll provide exact pricing and availability. 😊',
+    de: '\n\n📍 Sagen Sie mir Ihre bevorzugten Daten und die Anzahl der Personen für die Tour, die Sie interessiert, und ich gebe Ihnen genaue Preise und Verfügbarkeit. 😊',
+    ru: '\n\n📍 Скажите мне предпочтительные даты и количество людей для интересующего вас тура, и я предоставлю точную цену и наличие. 😊',
+    ar: '\n\n📍 أخبرني بالتواريخ المفضلة لديك وعدد الأشخاص للجولة التي تهمك، وسأقدم لك السعر الدقيق والتوفر. 😊',
+    fr: '\n\n📍 Dites-moi vos dates préférées et le nombre de personnes pour le circuit qui vous intéresse, et je vous fournirai le prix exact et la disponibilité. 😊',
+    es: '\n\n📍 Dime tus fechas preferidas y el número de personas para el tour que te interesa, y te proporcionaré el precio exacto y la disponibilidad. 😊'
+  };
+
+  const lang = dateLabels[language] || dateLabels.tr;
+  let response = headers[language] || headers['tr'];
 
   matchedTours.forEach((tour) => {
     const minPrice = Math.min(...tour.dates.map(d => d.price_adult));
-    response += `📍 *${tour.title}* - ${tour.destination}\n`;
-    response += `💰 ${minPrice} ${tour.currency} başlayan fiyatlarla\n`;
-    response += `📝 ${tour.program_kisa}\n`;
-    response += `🗓️ Müsait tarihler: ${tour.dates.length} adet\n\n`;
+    const firstDate = tour.dates[0];
+    
+    response += `🏖️ *${tour.title}* - ${tour.destination}\n`;
+    
+    // Format date with departure/return
+    if (firstDate.return_date && firstDate.return_date !== firstDate.departure_date) {
+      response += `📅 ${lang.departure}: ${formatDate(firstDate.departure_date, language)}\n`;
+      response += `   ${lang.return}: ${formatDate(firstDate.return_date, language)}\n`;
+    } else {
+      response += `📅 ${formatDate(firstDate.departure_date, language)}\n`;
+    }
+    
+    response += `💰 ${minPrice} ${tour.currency}\n`;
+    response += `📝 ${tour.program_kisa}\n\n`;
   });
 
-  response += '✨ Detaylı bilgi için tur adını yazabilir veya sorularınızı sorabilirsiniz!';
+  response += callToActions[language] || callToActions['tr'];
 
   return response;
 }
