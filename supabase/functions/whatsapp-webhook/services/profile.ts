@@ -114,3 +114,70 @@ export async function updateUserPreferences(
     console.error('Error updating user preferences:', error);
   }
 }
+
+export async function enrichConversationInsights(
+  supabase: any,
+  phone: string,
+  agencyId: string,
+  userMessage: string,
+  assistantResponse: string,
+  intent: string
+) {
+  const profile = await getUserProfile(supabase, phone, agencyId);
+  const currentPrefs = (profile?.preferences as any) || {};
+  const currentInsights = currentPrefs.conversation_insights || {
+    topics_discussed: [],
+    questions_asked: [],
+    concerns_raised: [],
+    positive_signals: [],
+    negative_signals: []
+  };
+
+  // Extract topics from message
+  const tourKeywords = ['kapadokya', 'pamukkale', 'efes', 'antalya', 'ege', 'likya'];
+  const mentionedTopics = tourKeywords.filter(keyword => 
+    userMessage.toLowerCase().includes(keyword)
+  );
+
+  // Detect question patterns
+  if (userMessage.includes('?') || 
+      userMessage.toLowerCase().match(/ne|nasıl|kaç|hangi|nerede|neden/)) {
+    currentInsights.questions_asked.push(userMessage.slice(0, 100));
+    currentInsights.questions_asked = currentInsights.questions_asked.slice(-5);
+  }
+
+  // Detect positive signals
+  const positiveWords = ['teşekkür', 'harika', 'güzel', 'süper', 'mükemmel', 'istiyorum'];
+  if (positiveWords.some(word => userMessage.toLowerCase().includes(word))) {
+    currentInsights.positive_signals.push(intent);
+    currentInsights.positive_signals = [...new Set(currentInsights.positive_signals)].slice(-5);
+  }
+
+  // Detect negative signals
+  const negativeWords = ['pahalı', 'olmaz', 'istemiyorum', 'hayır', 'iptal'];
+  if (negativeWords.some(word => userMessage.toLowerCase().includes(word))) {
+    currentInsights.negative_signals.push(intent);
+    currentInsights.negative_signals = [...new Set(currentInsights.negative_signals)].slice(-5);
+  }
+
+  // Update topics
+  if (mentionedTopics.length > 0) {
+    currentInsights.topics_discussed = [
+      ...new Set([...currentInsights.topics_discussed, ...mentionedTopics])
+    ].slice(-10);
+  }
+
+  // Save insights
+  currentPrefs.conversation_insights = currentInsights;
+
+  await supabase
+    .from('whatsapp_user_profiles')
+    .update({ 
+      preferences: currentPrefs,
+      updated_at: new Date().toISOString()
+    })
+    .eq('phone', phone)
+    .eq('agency_id', agencyId);
+
+  console.log('Conversation insights enriched:', currentInsights);
+}
