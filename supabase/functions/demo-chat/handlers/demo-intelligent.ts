@@ -19,7 +19,8 @@ export async function handleDemoIntelligently(
     { role: 'user', content: message }
   ];
 
-  return await callAI(messages, 0.4);
+  // Lower temperature for more consistent short responses
+  return await callAI(messages, 0.2);
 }
 
 function buildDemoPrompt(
@@ -49,13 +50,14 @@ function buildDemoPrompt(
   const basePrompt = `Sen bir seyahat acentesi müşteri hizmetleri asistanısın.
 ${stylePersonality}
 
-KRİTİK KURALLAR:
+🚨 ZORUNLU KURALLAR - KESINLIKLE UYULMALI:
 1. DİL: ${language} dilinde cevap ver
-2. HAFIZA: Önceki mesajları HATIRLA - kullanıcı hangi turdan bahsettiyse context'i koru
+2. HAFIZA: Önceki mesajları HATIRLA - context'i koru
 3. SELAMLAMA: Sohbet devam ediyorsa ASLA "Merhaba" tekrar etme
-4. KISA VE ÖZ: Maksimum 3-4 cümle! Uzun açıklamalar yapma
-5. DEMO AÇIKLAMASI YAPMA: "Demo sistemi", "gerçek değil" gibi ifadeler kullanma
-6. FORMAT: Sadece önemli bilgileri ver, detaya girme
+4. 🔴 KISA VE ÖZ: MAKSIMUM 3 CÜMLE! Bu kurala KESINLIKLE uy! Daha uzun yazma!
+5. 🔴 DEMO AÇIKLAMASI YASAK: "Demo", "demo sistemi", "gerçek değil" kelimelerini ASLA kullanma!
+6. 🔴 FORMAT: Detaylı program, günlük plan YASAK! Sadece özet bilgi ver
+7. 🔴 PARAGRAF YASAK: Uzun paragraflar yazma! Her satır kısa olmalı
 
 ${lastDiscussedTour ? `Son tartışılan tur: ${lastDiscussedTour}` : ''}
 
@@ -65,13 +67,13 @@ ${toursContext}
 Intent: ${intent}`;
 
   const intentInstructions: Record<string, string> = {
-    'greeting': 'Kısa karşıla (1 cümle), turları sor.',
-    'tour.list': 'Tüm turları basit liste formatında göster: "- Tur Adı (Tarih, Fiyat)". Maksimum 5 satır.',
-    'tour.search': 'İlgili 2-3 turu göster, kısa açıklama yap.',
-    'tour.detail': 'Sadece ÖNEMLİ bilgileri ver: Neler görülecek, fiyat, tarihler. Maksimum 4 cümle.',
-    'reservation.wizard': 'Rezervasyon için bilgi topla: Hangi tur, kaç kişi, hangi tarih. Kısa sor.',
-    'question': 'Doğrudan ve kısa cevap ver. 2 cümle yeterli.',
-    'general': 'Kısa cevapla ve turlara yönlendir. 2-3 cümle.'
+    'greeting': '🔴 TEK CÜMLE: "Merhaba! Hangi tura ilgi duyuyorsunuz?" gibi kısa sor.',
+    'tour.list': '🔴 5 SATIR MAX: "- Tur (Tarih, Fiyat)" formatında. Her satır 1 tur. DETAY YASAK!',
+    'tour.search': '🔴 2-3 TUR: İsim, tarih, fiyat. DETAY YASAK!',
+    'tour.detail': '🔴 3 CÜMLE MAX: Neler görülecek + Fiyat + Tarih. Program detayı YASAK!',
+    'reservation.wizard': '🔴 KISA SOR: "Hangi tur ve tarih?" gibi tek soruda topla.',
+    'question': '🔴 2 CÜMLE: Direkt cevap ver.',
+    'general': '🔴 2 CÜMLE: Cevapla + tura yönlendir.'
   };
 
   return basePrompt + '\n\n' + (intentInstructions[intent] || intentInstructions['general']);
