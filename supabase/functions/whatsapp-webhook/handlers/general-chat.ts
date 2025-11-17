@@ -84,7 +84,7 @@ export async function handleGeneralChat(
     }
   ];
 
-  return await callAI(messages);
+  return await callAI(messages, 0.3); // Lower temperature for more deterministic responses
 }
 
 // Helper function to extract last discussed tour from conversation history

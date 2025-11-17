@@ -10,7 +10,19 @@ export function getSystemPrompt(
 ): string {
   const languageName = getLanguageName(userLanguage);
   
-  const basePrompt = `You are a helpful tour assistant for a travel agency.
+  // CRITICAL: Put this at the very top so AI sees it first
+  const greetingRule = hasHistory ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ ABSOLUTE RULE - READ THIS FIRST ⛔
+YOU ALREADY TALKED TO THIS USER!
+NEVER SAY: "Merhaba", "Hello", "Selam", "Hoş geldiniz"
+NEVER ASK: "Nasıl yardımcı olabilirim", "Size nasıl yardımcı olabilirim"
+JUST ANSWER THE QUESTION DIRECTLY - NO GREETING!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+` : '';
+  
+  const basePrompt = greetingRule + `You are a helpful tour assistant for a travel agency.
 
 CRITICAL LANGUAGE RULES:
 - User prefers ${languageName}
