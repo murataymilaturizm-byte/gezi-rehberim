@@ -435,14 +435,39 @@ serve(async (req) => {
       contextInfo += `\n🔍 Önceki aramalar: ${userProfile.searchHistory.slice(-3).join(', ')}`;
     }
 
+    // Selamlaşma kontrolü
+    const greetings = ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey', 'hi', 'hello'];
+    const isGreeting = greetings.some(g => lowerMessage === g || lowerMessage === g + 'lar' || lowerMessage.startsWith(g + ' '));
+    const isShortGreeting = isGreeting && sanitizedMessage.length < 30;
+    
+    // Genel tur listesi sorusu kontrolü
+    const listQuestions = ['nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi'];
+    const isListQuestion = listQuestions.some(q => lowerMessage.includes(q));
+
     // Tur arama tespiti
     const destinations = ['kapadokya', 'pamukkale', 'antalya', 'ege', 'istanbul', 'çeşme', 'alaçatı'];
     const isTourSearch = destinations.some(dest => lowerMessage.includes(dest)) || 
-                        lowerMessage.includes('tur') || 
+                        (lowerMessage.includes('tur') && !isListQuestion) || 
                         lowerMessage.includes('tatil') ||
                         lowerMessage.includes('gezi');
 
-    if (isTourSearch) {
+    if (isShortGreeting && userProfile.searchHistory.length > 0) {
+      // Selamlaşma ve geçmiş arama varsa kontekstli cevap ver
+      const lastSearch = userProfile.searchHistory[userProfile.searchHistory.length - 1];
+      contextInfo += `\n\n⚠️ USER JUST GREETED: User previously searched for "${lastSearch}". Ask if they want info about that tour OR something else. Keep it SHORT (2 sentences max).`;
+    } else if (isListQuestion) {
+      // Genel tur listesi sorusu - sadece özet ver
+      const results = searchTours('');  // Tüm turları getir
+      
+      if (results.length > 0) {
+        tourSearchResults = '\n\n🎯 ALL AVAILABLE TOURS (SUMMARY ONLY):\n\n';
+        for (const tour of results) {
+          const dates = tour.dates.slice(0, 2).map(d => d.date).join(', ');
+          tourSearchResults += `• *${tour.title}* (${tour.destination})\n  📅 ${dates}\n\n`;
+        }
+        tourSearchResults += '\n⚠️ USER ASKED FOR GENERAL TOUR LIST: Show ONLY tour names and first 2 dates in a numbered list. Add: "Hangi tura ilgi duyuyorsunuz? Detaylı bilgi için tur adını yazabilirsiniz." Keep it SHORT and CLEAN.';
+      }
+    } else if (isTourSearch) {
       // Tur ara
       const results = searchTours(message);
       

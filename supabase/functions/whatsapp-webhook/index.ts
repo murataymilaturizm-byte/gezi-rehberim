@@ -389,6 +389,91 @@ serve(async (req) => {
         status: 200,
         headers: { 'Content-Type': 'text/xml; charset=utf-8' },
       });
+    } else if (intent.type === 'greeting') {
+      // Selamlaşma - kullanıcının geçmiş aramasına göre kontekstli cevap ver
+      const userProfile = await getUserProfile(supabase, userPhone, agency.id);
+      const userLanguage = userProfile?.language_preference || 'tr';
+      const lastSearch = userProfile?.last_search_query;
+      
+      let message = '';
+      
+      if (lastSearch) {
+        // Geçmiş arama varsa kontekstli soru sor
+        const contextPrompt = `User previously searched for: "${lastSearch}". Create a friendly greeting in ${userLanguage} that:
+- Says hello warmly
+- References their previous search
+- Asks if they want more info about that tour OR if they're interested in something else
+- Keep it short and conversational (2-3 sentences max)
+- Use WhatsApp format (*bold*)
+
+Example in Turkish:
+Merhaba! 👋 Daha önce *${lastSearch}* turunu sormuştunuz. Bu turla ilgili daha fazla bilgi almak ister misiniz, yoksa farklı bir tura mı ilgi duyuyorsunuz?`;
+
+        try {
+          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+            },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash',
+              messages: [{ role: 'user', content: contextPrompt }],
+              temperature: 0.7
+            })
+          });
+          const result = await response.json();
+          message = result.choices[0].message.content;
+        } catch (error) {
+          console.error('Error generating contextual greeting:', error);
+          message = userLanguage === 'tr' 
+            ? 'Merhaba! 👋 Size nasıl yardımcı olabilirim?' 
+            : 'Hello! 👋 How can I help you?';
+        }
+      } else {
+        // Geçmiş arama yoksa normal selamlaşma
+        message = userLanguage === 'tr' 
+          ? 'Merhaba! 👋 Size nasıl yardımcı olabilirim?' 
+          : 'Hello! 👋 How can I help you?';
+      }
+      
+      await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        status: 200,
+        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      });
+    } else if (intent.type === 'tour.list') {
+      // Genel tur listesi sorusu - özet bilgi ver
+      const tours = await searchToursWithAI(supabase, userMessage, userPhone, agency.id);
+      
+      const userProfile = await getUserProfile(supabase, userPhone, agency.id);
+      const userLanguage = userProfile?.language_preference || 'tr';
+      
+      // Özet formatında yanıt oluştur
+      let message = await formatWhatsAppResponse(tours, {}, userLanguage, true);
+      
+      const MAX_WHATSAPP_LENGTH = 1600;
+      if (message.length > MAX_WHATSAPP_LENGTH) {
+        message = message.substring(0, MAX_WHATSAPP_LENGTH - 50) + '...';
+      }
+      
+      await saveMessage(supabase, userPhone, 'assistant', message, agency.id);
+      
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Message>${message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Message>
+</Response>`;
+      
+      return new Response(twiml, {
+        status: 200,
+        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      });
     } else if (intent.type === 'tour.search') {
       // AI ile akıllı arama
       const tours = await searchToursWithAI(supabase, userMessage, userPhone, agency.id);
@@ -489,6 +574,20 @@ async function categorizeMessage(userMessage: string) {
     return { type: 'registration.request', data: {} };
   }
   
+  // Selamlaşma kontrolü
+  const greetings = ['merhaba', 'selam', 'günaydın', 'iyi günler', 'hey', 'hi', 'hello'];
+  const isGreeting = greetings.some(g => lowerText === g || lowerText === g + 'lar' || lowerText.startsWith(g + ' '));
+  if (isGreeting && userMessage.length < 30) {
+    return { type: 'greeting', data: {} };
+  }
+  
+  // Genel tur listesi sorusu kontrolü
+  const listQuestions = ['nerelere tur', 'hangi turlar', 'ne gibi turlar', 'turlarınız', 'tur listesi', 'turlar'];
+  const isListQuestion = listQuestions.some(q => lowerText.includes(q));
+  if (isListQuestion) {
+    return { type: 'tour.list', data: {} };
+  }
+  
   // AI ile mesajı kategorize et
   const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
@@ -503,8 +602,8 @@ async function categorizeMessage(userMessage: string) {
           role: 'system',
           content: `Sen bir mesaj kategorize asistanısın. Kullanıcının mesajına bakıp hangi kategoriye ait olduğunu belirle:
 
-1. "tour.search" - Kullanıcı tur/gezi/tatil arıyorsa (Kapadokya, Efes, Pamukkale, vb. destinasyonlar söz konusuysa)
-2. "general.chat" - Normal sohbet, selamlaşma, teşekkür, genel sorular
+1. "tour.search" - Kullanıcı spesifik tur/gezi/tatil arıyorsa (belirli destinasyonlar veya tarihler söz konusuysa)
+2. "general.chat" - Normal sohbet, teşekkür, genel sorular
 
 Sadece "tour.search" veya "general.chat" şeklinde cevap ver, başka bir şey yazma.`
         },
@@ -1096,7 +1195,7 @@ function createQuickReplyButtons(options: { text: string; emoji: string }[]) {
 }
 
 // WhatsApp formatı ile zenginleştirilmiş tur yanıtları (AI'a formatlat)
-async function formatWhatsAppResponse(tours: any[], entities: any, userLanguage: string = 'tr') {
+async function formatWhatsAppResponse(tours: any[], entities: any, userLanguage: string = 'tr', summaryOnly: boolean = false) {
   const languageNames: Record<string, string> = {
     'tr': 'Turkish', 'en': 'English', 'de': 'German',
     'ru': 'Russian', 'ar': 'Arabic', 'fr': 'French', 'es': 'Spanish'
@@ -1135,8 +1234,59 @@ Use WhatsApp format (*bold*, _italic_) and 1-2 emojis. Keep it short and friendl
     }
   }
 
+  // Özet liste formatı - sadece başlık ve tarihler
+  if (summaryOnly) {
+    const toursData = tours.map(tour => ({
+      title: tour.title,
+      destination: tour.destination,
+      dates: tour.dates?.slice(0, 2).map((d: any) => d.departure_date)
+    }));
 
-  // Tours varsa AI'a formatlat
+    const prompt = `Create a summary list of tours in ${languageName}:
+
+${JSON.stringify(toursData, null, 2)}
+
+Create a concise message with:
+- Friendly intro (${tours.length} tour${tours.length > 1 ? 's' : ''} available)
+- For each tour: Just the title and first 2 dates (use numbered list)
+- Use WhatsApp format (*bold*)
+- Use emoji: 🎯 for intro, 📅 for dates
+- End with: "Hangi tura ilgi duyuyorsunuz? Detaylı bilgi almak için tur adını yazabilirsiniz."
+- Keep it very short and clean
+
+Example format:
+🎯 Size ${tours.length} tur buldum:
+
+1. *Kapadokya Balon Turu*
+   📅 15 Aralık, 22 Aralık
+
+2. *Pamukkale Turu*
+   📅 10 Aralık, 20 Aralık
+
+Hangi tura ilgi duyuyorsunuz? Detaylı bilgi için tur adını yazın.`;
+
+    try {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7
+        })
+      });
+      const result = await response.json();
+      return result.choices[0].message.content;
+    } catch (error) {
+      console.error('Error formatting tour summary:', error);
+      return `Found ${tours.length} tours for you! 🎯`;
+    }
+  }
+
+  // Detaylı format - tüm bilgiler
   const toursData = tours.slice(0, 3).map(tour => ({
     title: tour.title,
     destination: tour.destination,
