@@ -2,7 +2,7 @@
 
 import { searchToursWithAI } from '../services/tour.ts';
 import { getUserProfile, updateUserPreferences } from '../services/profile.ts';
-import { formatToursSummary, formatTourForWhatsApp } from '../utils/format.ts';
+import { formatToursSummary, formatTourBrief, formatTourForWhatsApp } from '../utils/format.ts';
 import { getConversationHistory } from '../services/conversation.ts';
 
 export async function handleTourSearch(
@@ -30,37 +30,38 @@ export async function handleTourSearch(
     return messages[language] || messages['tr'];
   }
 
-  // Check conversation history to see if user is asking for details
+  // Check conversation history to see if user is asking for specific tour or details
   const history = await getConversationHistory(supabase, phone, agencyId, 5);
   const lastAssistantMessage = history.reverse().find((msg: any) => msg.role === 'assistant')?.content || '';
   
-  // Check if user is requesting details (keywords like "1", "birinci", "detay", "bilgi", etc.)
-  const detailKeywords = {
-    tr: ['detay', 'bilgi', 'program', 'daha fazla', 'birinci', 'ikinci', '1.', '2.', '1 ', '2 '],
-    en: ['detail', 'info', 'information', 'more', 'first', 'second', '1.', '2.', '1 ', '2 '],
-    de: ['detail', 'info', 'information', 'mehr', 'erste', 'zweite', '1.', '2.', '1 ', '2 '],
-    ru: ['детали', 'информация', 'больше', 'первый', 'второй', '1.', '2.', '1 ', '2 '],
-    ar: ['تفاصيل', 'معلومات', 'المزيد', 'الأول', 'الثاني', '1.', '2.', '1 ', '2 '],
-    fr: ['détail', 'info', 'information', 'plus', 'premier', 'deuxième', '1.', '2.', '1 ', '2 '],
-    es: ['detalle', 'info', 'información', 'más', 'primero', 'segundo', '1.', '2.', '1 ', '2 ']
+  // Keywords for selecting a tour from list
+  const tourSelectKeywords = {
+    tr: ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    en: ['first', 'second', 'third', 'fourth', 'fifth', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    de: ['erste', 'zweite', 'dritte', 'vierte', 'fünfte', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    ru: ['первый', 'второй', 'третий', 'четвертый', 'пятый', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    ar: ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    fr: ['premier', 'deuxième', 'troisième', 'quatrième', 'cinquième', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 '],
+    es: ['primero', 'segundo', 'tercero', 'cuarto', 'quinto', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 ']
   };
 
-  const keywords = detailKeywords[language as keyof typeof detailKeywords] || detailKeywords.tr;
-  const isRequestingDetail = keywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+  const selectKeywords = tourSelectKeywords[language as keyof typeof tourSelectKeywords] || tourSelectKeywords.tr;
+  const isSelectingTour = selectKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
   
-  // If last message had tour list AND user is requesting details, show detailed info
-  if (isRequestingDetail && lastAssistantMessage.includes('📍')) {
-    // Extract tour number from message (1, 2, etc)
+  // If user is selecting a tour from the list, show brief summary
+  if (isSelectingTour && lastAssistantMessage.includes('🎯')) {
     const numberMatch = userMessage.match(/\d+/);
     if (numberMatch) {
       const tourIndex = parseInt(numberMatch[0]) - 1;
       if (tourIndex >= 0 && tourIndex < tours.length) {
-        // Show detailed info for specific tour
-        return formatTourForWhatsApp(tours[tourIndex], language);
+        // Show brief summary with questions
+        return formatTourBrief(tours[tourIndex], language);
       }
     }
-    // If can't determine specific tour but asking for details, show first tour details
-    return formatTourForWhatsApp(tours[0], language);
+    // If can't determine specific tour number, show first tour brief
+    if (tours.length === 1) {
+      return formatTourBrief(tours[0], language);
+    }
   }
 
   // Update user's last search
@@ -68,6 +69,15 @@ export async function handleTourSearch(
     last_search_query: userMessage
   });
 
-  // Default: Show simple summary list
+  // If multiple tours found, show list
+  if (tours.length > 1) {
+    return formatToursSummary(tours, language);
+  }
+  
+  // If only one tour found, show brief summary directly
+  if (tours.length === 1) {
+    return formatTourBrief(tours[0], language);
+  }
+
   return formatToursSummary(tours, language);
 }

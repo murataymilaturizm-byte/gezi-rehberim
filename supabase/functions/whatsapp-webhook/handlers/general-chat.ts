@@ -6,6 +6,7 @@ import { getUserProfile } from '../services/profile.ts';
 import { getAllActiveTours } from '../services/tour.ts';
 import { getSystemPrompt } from '../utils/prompt.ts';
 import { getLabel } from '../config/labels.ts';
+import { formatTourForWhatsApp } from '../utils/format.ts';
 
 export async function handleGeneralChat(
   supabase: any,
@@ -19,6 +20,32 @@ export async function handleGeneralChat(
   const history = await getConversationHistory(supabase, phone, agencyId, 10);
 
   const hasHistory = history.length > 0;
+
+  // Check if user is requesting detailed tour program
+  const detailKeywords = {
+    tr: ['detaylı', 'program', 'tam program', 'tüm bilgi', 'detay', 'ayrıntı', 'programı paylaş', 'tüm detaylar'],
+    en: ['detailed', 'program', 'full program', 'all info', 'detail', 'share program', 'all details'],
+    de: ['detailliert', 'programm', 'vollständiges programm', 'alle infos', 'details'],
+    ru: ['подробный', 'программа', 'полная программа', 'все сведения', 'детали'],
+    ar: ['تفصيلي', 'برنامج', 'برنامج كامل', 'جميع المعلومات', 'تفاصيل'],
+    fr: ['détaillé', 'programme', 'programme complet', 'toutes les infos', 'détails'],
+    es: ['detallado', 'programa', 'programa completo', 'toda la info', 'detalles']
+  };
+
+  const keywords = detailKeywords[language as keyof typeof detailKeywords] || detailKeywords.tr;
+  const isRequestingDetail = keywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+
+  // If requesting detailed program, check if we have a tour in context
+  if (isRequestingDetail) {
+    const lastDiscussedTour = extractLastTourFromHistory(history);
+    if (lastDiscussedTour) {
+      const tours = await getAllActiveTours(supabase, agencyId);
+      const tour = tours.find(t => t.title === lastDiscussedTour);
+      if (tour) {
+        return formatTourForWhatsApp(tour, language);
+      }
+    }
+  }
 
   // Get tours for context - only tour names, DO NOT include dates
   const tours = await getAllActiveTours(supabase, agencyId);
