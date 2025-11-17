@@ -208,7 +208,7 @@ serve(async (req) => {
     // const faqResponse = await checkFAQ(supabase, message, DEMO_AGENCY_ID, userLanguage);
 
     // Get conversation history to check if this is a continuing conversation
-    const { data: historyData } = await supabase
+    const { data: historyData, error: historyError } = await supabase
       .from('whatsapp_conversations')
       .select('*')
       .eq('phone', `demo_${sessionId}`)
@@ -216,14 +216,19 @@ serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(10);
     
+    if (historyError) {
+      console.error('Demo: Error fetching history:', historyError);
+    }
+    
     const hasHistory = historyData && historyData.length > 0;
+    console.log('Demo: Phone:', `demo_${sessionId}`, 'History count:', historyData?.length || 0, 'Has history:', hasHistory);
 
     // Categorize message - pass conversation history for better context
     const intent = await categorizeMessage(message, historyData || [], userLanguage);
     let responseMessage = '';
     let responseType = intent.type;
 
-    console.log('Demo chat - Intent:', intent.type, 'Has history:', hasHistory, 'Message length:', message.length);
+    console.log('Demo chat - Intent:', intent.type, 'Has history:', hasHistory, 'Message length:', message.length, 'History entries:', historyData?.length || 0);
 
     switch (intent.type) {
       case 'greeting':
