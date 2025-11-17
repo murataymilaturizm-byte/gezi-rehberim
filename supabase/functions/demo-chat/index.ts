@@ -259,26 +259,69 @@ serve(async (req) => {
         break;
       
       case 'reservation.wizard':
-        // Start reservation wizard
+        // Start reservation wizard - extract last discussed tour from history
         console.log('Demo: Starting reservation wizard');
+        
+        // Extract last discussed tour from conversation history
+        let lastTour = null;
+        if (historyData && historyData.length > 0) {
+          for (let i = historyData.length - 1; i >= 0; i--) {
+            const content = historyData[i].content.toLowerCase();
+            if (content.includes('pamukkale')) {
+              lastTour = 'Pamukkale Turu';
+              break;
+            } else if (content.includes('kapadokya') || content.includes('balon')) {
+              lastTour = 'Kapadokya Balon Turu';
+              break;
+            } else if (content.includes('antalya') || content.includes('rafting')) {
+              lastTour = 'Antalya Rafting';
+              break;
+            } else if (content.includes('ege') || content.includes('çeşme') || content.includes('alaçatı')) {
+              lastTour = 'Ege Turu';
+              break;
+            } else if (content.includes('istanbul')) {
+              lastTour = 'İstanbul Turu';
+              break;
+            }
+          }
+        }
+        
+        console.log('Demo: Last discussed tour:', lastTour);
+        
+        // If we detected a tour from context, skip tour selection and go to date selection
         const initialState: WizardState = {
-          step: 'tour_selection',
+          step: lastTour ? 'date_selection' : 'tour_selection',
           created_at: new Date().toISOString()
         };
         
         await saveWizardState(supabase, `demo_${sessionId}`, DEMO_AGENCY_ID, initialState);
         
-        const wizardGreetings = {
-          tr: '🎯 Harika! Rezervasyon işleminize başlayalım.\n\n📋 Lütfen rezervasyon yapmak istediğiniz turun numarasını yazın veya tur adını belirtin.\n\nİptal etmek için "iptal" yazabilirsiniz.',
-          en: '🎯 Great! Let\'s start your reservation.\n\n📋 Please write the tour number or name you want to book.\n\nYou can write "cancel" to abort.',
-          de: '🎯 Großartig! Beginnen wir mit Ihrer Reservierung.\n\n📋 Bitte geben Sie die Tournummer oder den Namen ein.\n\nSie können "cancel" schreiben, um abzubrechen.',
-          es: '🎯 ¡Genial! Comencemos con su reserva.\n\n📋 Por favor escriba el número o nombre del tour.\n\nPuede escribir "cancel" para cancelar.',
-          fr: '🎯 Super! Commençons votre réservation.\n\n📋 Veuillez écrire le numéro ou le nom du tour.\n\nVous pouvez écrire "cancel" pour annuler.',
-          ru: '🎯 Отлично! Начнем бронирование.\n\n📋 Пожалуйста, напишите номер или название тура.\n\nНапишите "cancel" для отмены.',
-          ar: '🎯 رائع! لنبدأ حجزك.\n\n📋 يرجى كتابة رقم أو اسم الجولة.\n\nيمكنك كتابة "cancel" للإلغاء.'
-        };
+        if (lastTour) {
+          // User already discussed a tour, skip tour selection
+          const contextGreetings = {
+            tr: `🎯 Harika! ${lastTour} için rezervasyon işleminize başlayalım.\n\n📅 Hangi tarihi tercih edersiniz? Lütfen tarih ve kaç kişi olduğunuzu belirtin.\n\nİptal etmek için "iptal" yazabilirsiniz.`,
+            en: `🎯 Great! Let's start your reservation for ${lastTour}.\n\n📅 Which date do you prefer? Please specify the date and number of people.\n\nYou can write "cancel" to abort.`,
+            de: `🎯 Großartig! Beginnen wir mit Ihrer Reservierung für ${lastTour}.\n\n📅 Welches Datum bevorzugen Sie? Bitte geben Sie das Datum und die Anzahl der Personen an.\n\nSie können "cancel" schreiben, um abzubrechen.`,
+            ru: `🎯 Отлично! Начнем бронирование ${lastTour}.\n\n📅 Какую дату вы предпочитаете? Укажите дату и количество человек.\n\nНапишите "cancel" для отмены.`,
+            ar: `🎯 رائع! لنبدأ حجز ${lastTour}.\n\n📅 ما هو التاريخ المفضل لديك؟ حدد التاريخ وعدد الأشخاص.\n\nيمكنك كتابة "cancel" للإلغاء.`,
+            fr: `🎯 Super! Commençons votre réservation pour ${lastTour}.\n\n📅 Quelle date préférez-vous? Veuillez préciser la date et le nombre de personnes.\n\nVous pouvez écrire "cancel" pour annuler.`,
+            es: `🎯 ¡Genial! Comencemos con su reserva para ${lastTour}.\n\n📅 ¿Qué fecha prefiere? Especifique la fecha y el número de personas.\n\nPuede escribir "cancel" para cancelar.`
+          };
+          responseMessage = contextGreetings[userLanguage as keyof typeof contextGreetings] || contextGreetings['tr'];
+        } else {
+          // No tour discussed yet, ask for tour selection
+          const wizardGreetings = {
+            tr: '🎯 Harika! Rezervasyon işleminize başlayalım.\n\n📋 Lütfen rezervasyon yapmak istediğiniz turun numarasını yazın veya tur adını belirtin.\n\nİptal etmek için "iptal" yazabilirsiniz.',
+            en: '🎯 Great! Let\'s start your reservation.\n\n📋 Please write the tour number or name you want to book.\n\nYou can write "cancel" to abort.',
+            de: '🎯 Großartig! Beginnen wir mit Ihrer Reservierung.\n\n📋 Bitte geben Sie die Tournummer oder den Namen ein.\n\nSie können "cancel" schreiben, um abzubrechen.',
+            es: '🎯 ¡Genial! Comencemos con su reserva.\n\n📋 Por favor escriba el número o nombre del tour.\n\nPuede escribir "cancel" para cancelar.',
+            fr: '🎯 Super! Commençons votre réservation.\n\n📋 Veuillez écrire le numéro ou le nom du tour.\n\nVous pouvez écrire "cancel" pour annuler.',
+            ru: '🎯 Отлично! Начнем бронирование.\n\n📋 Пожалуйста, напишите номер или название тура.\n\nНапишите "cancel" для отмены.',
+            ar: '🎯 رائع! لنبدأ حجزك.\n\n📋 يرجى كتابة رقم أو اسم الجولة.\n\nيمكنك كتابة "cancel" للإلغاء.'
+          };
+          responseMessage = wizardGreetings[userLanguage as keyof typeof wizardGreetings] || wizardGreetings['tr'];
+        }
         
-        responseMessage = wizardGreetings[userLanguage as keyof typeof wizardGreetings] || wizardGreetings.tr;
         responseType = 'reservation.wizard';
         break;
       
