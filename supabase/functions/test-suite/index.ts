@@ -98,7 +98,7 @@ serve(async (req) => {
     }
 
     // Test 1: Memory Structure
-    if (!testType || testType === 'memory') {
+    if (!testType || testType === 'all' || testType === 'memory') {
       results.push(await testMemoryStructure(demoProfile, whatsappProfile));
       results.push(await testDestinationMemory(demoProfile, whatsappProfile));
       results.push(await testInterestExtraction(demoProfile, whatsappProfile));
@@ -107,21 +107,21 @@ serve(async (req) => {
     }
 
     // Test 2: Conversation State
-    if (!testType || testType === 'conversation') {
+    if (!testType || testType === 'all' || testType === 'conversation') {
       results.push(await testConversationState(demoProfile, whatsappProfile));
       results.push(await testWizardState(demoProfile, whatsappProfile));
       results.push(await testFlowHistory(demoProfile, whatsappProfile));
     }
 
     // Test 3: Profile Insights
-    if (!testType || testType === 'insights') {
+    if (!testType || testType === 'all' || testType === 'insights') {
       results.push(await testTopicsDiscussed(demoProfile, whatsappProfile));
       results.push(await testQuestionsAsked(demoProfile, whatsappProfile));
       results.push(await testSentimentSignals(demoProfile, whatsappProfile));
     }
 
     // Test 4: Registrations (WhatsApp only)
-    if (!testType || testType === 'registrations') {
+    if (!testType || testType === 'all' || testType === 'registrations') {
       let registrations = [];
       
       if (useMockData) {
