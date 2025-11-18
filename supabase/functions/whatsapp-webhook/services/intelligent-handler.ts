@@ -331,16 +331,17 @@ Intent: ${intent}`;
       };
       intentInstructions = continuingMessages[language as keyof typeof continuingMessages] || continuingMessages.tr;
     } else {
-      const repeatMessages = {
-        tr: '🔴 TEKRAR SELAMLAMA: Kısa "Tekrar merhaba! 😊 Size nasıl yardımcı olabilirim?" (max 1 cümle)',
-        en: '🔴 REPEAT GREETING: Short "Hello again! 😊 How can I help you?" (max 1 sentence)',
-        de: '🔴 WIEDERHOLTE BEGRÜSSUNG: Kurz "Hallo wieder! 😊 Wie kann ich Ihnen helfen?" (max 1 Satz)',
-        ru: '🔴 ПОВТОРНОЕ ПРИВЕТСТВИЕ: Кратко "Привет снова! 😊 Как я могу помочь?" (макс 1 предложение)',
-        ar: '🔴 تحية متكررة: قصيرة "مرحبًا مرة أخرى! 😊 كيف يمكنني مساعدتك؟" (جملة واحدة كحد أقصى)',
-        fr: '🔴 SALUTATION RÉPÉTÉE: Court "Bonjour à nouveau! 😊 Comment puis-je vous aider?" (max 1 phrase)',
-        es: '🔴 SALUDO REPETIDO: Corto "¡Hola de nuevo! 😊 ¿Cómo puedo ayudarte?" (máx 1 oración)'
+      // Returning user - respond warmly to greeting
+      const returningGreetingMessages = {
+        tr: '🔴 DÖNEN KULLANICI SELAMLAŞMASI: Samimi karşılık ver (Merhaba! / Tekrar hoş geldin! vb.) + "Size nasıl yardımcı olabilirim?" (max 2 cümle, usluba uygun emoji kullan)',
+        en: '🔴 RETURNING USER GREETING: Respond warmly (Hello! / Welcome back! etc.) + "How can I help you?" (max 2 sentences, use style-appropriate emoji)',
+        de: '🔴 WIEDERKEHRENDER BENUTZER BEGRÜSSUNG: Antworten Sie herzlich (Hallo! / Willkommen zurück! usw.) + "Wie kann ich Ihnen helfen?" (max 2 Sätze, verwenden Sie stilgerechte Emojis)',
+        ru: '🔴 ПРИВЕТСТВИЕ ВОЗВРАЩАЮЩЕГОСЯ ПОЛЬЗОВАТЕЛЯ: Ответьте тепло (Привет! / С возвращением! и т.д.) + "Чем могу помочь?" (макс 2 предложения, используйте эмодзи в соответствии со стилем)',
+        ar: '🔴 تحية المستخدم العائد: رد بحرارة (مرحبا! / مرحبا بعودتك! إلخ.) + "كيف يمكنني مساعدتك?" (جملتان كحد أقصى، استخدم الرموز التعبيرية المناسبة للأسلوب)',
+        fr: '🔴 SALUTATION DE L\'UTILISATEUR DE RETOUR: Répondez chaleureusement (Bonjour! / Bon retour! etc.) + "Comment puis-je vous aider?" (max 2 phrases, utilisez des emojis adaptés au style)',
+        es: '🔴 SALUDO DE USUARIO QUE REGRESA: Responde calurosamente (¡Hola! / ¡Bienvenido de nuevo! etc.) + "¿Cómo puedo ayudarte?" (máx 2 oraciones, usa emojis apropiados al estilo)'
       };
-      intentInstructions = repeatMessages[language as keyof typeof repeatMessages] || repeatMessages.tr;
+      intentInstructions = returningGreetingMessages[language as keyof typeof returningGreetingMessages] || returningGreetingMessages.tr;
     }
   } else if (intent === 'tour.list' || intent === 'tour.search') {
     const hasMemory = state.userMemory && (

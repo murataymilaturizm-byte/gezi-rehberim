@@ -349,11 +349,19 @@ async function handleConfirmation(
 ): Promise<string> {
   const lowerMessage = userMessage.toLowerCase();
 
-  if (lowerMessage !== 'evet' && lowerMessage !== 'yes' && lowerMessage !== 'y') {
+  const cancelMessages = {
+    tr: 'Rezervasyon iptal edildi.',
+    en: 'Reservation cancelled.',
+    de: 'Reservierung storniert.',
+    ru: 'Бронирование отменено.',
+    ar: 'تم إلغاء الحجز.',
+    fr: 'Réservation annulée.',
+    es: 'Reserva cancelada.'
+  };
+
+  if (lowerMessage !== 'evet' && lowerMessage !== 'yes' && lowerMessage !== 'y' && lowerMessage !== 'ja' && lowerMessage !== 'да' && lowerMessage !== 'نعم' && lowerMessage !== 'oui' && lowerMessage !== 'sí') {
     await clearWizardState(supabase, phone, agencyId);
-    return language === 'tr'
-      ? 'Rezervasyon iptal edildi.'
-      : 'Reservation cancelled.';
+    return cancelMessages[language as keyof typeof cancelMessages] || cancelMessages.tr;
   }
 
   if (!state.selected_tour || !state.selected_date || !state.pax_adult) {
@@ -403,9 +411,9 @@ async function handleConfirmation(
   const formattedDate = formatDate(state.selected_date.departure_date, language);
   const formattedPrice = formatPrice(totalPrice);
 
-  // Build beautiful summary message
-  if (language === 'tr') {
-    return `🎉 *REZERVASYON TAMAMLANDI!*
+  // Build beautiful summary message - multilingual
+  const confirmationMessages = {
+    tr: `🎉 *REZERVASYON TAMAMLANDI!*
 
 ━━━━━━━━━━━━━━━━━━━━
 📋 *REZERVASYON ÖZETİ*
@@ -421,11 +429,10 @@ async function handleConfirmation(
 ━━━━━━━━━━━━━━━━━━━━
 
 ✅ Rezervasyonunuz başarıyla alındı!
-📞 Acentemiz en kısa sürede sizinle iletişime geçecektir.
+📞 Acente yetkilimiz en kısa sürede sizinle iletişime geçecektir.
 
-Teşekkür ederiz! 🙏`;
-  } else {
-    return `🎉 *RESERVATION COMPLETED!*
+Teşekkür ederiz! 🙏`,
+    en: `🎉 *RESERVATION COMPLETED!*
 
 ━━━━━━━━━━━━━━━━━━━━
 📋 *RESERVATION SUMMARY*
@@ -440,9 +447,106 @@ Teşekkür ederiz! 🙏`;
 
 ━━━━━━━━━━━━━━━━━━━━
 
-✅ Your reservation has been received!
-📞 Our agency will contact you shortly.
+✅ Your reservation has been successfully received!
+📞 Our agency representative will contact you shortly.
 
-Thank you! 🙏`;
-  }
+Thank you! 🙏`,
+    de: `🎉 *RESERVIERUNG ABGESCHLOSSEN!*
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *RESERVIERUNGSÜBERSICHT*
+━━━━━━━━━━━━━━━━━━━━
+
+🎫 *Tour:* ${state.selected_tour.title}
+📅 *Datum:* ${formattedDate}
+👥 *Teilnehmer:* ${state.pax_adult} Erwachsene
+💰 *Gesamtpreis:* ${formattedPrice}
+
+📱 *Reservierungs-Nr:* ${registration.id.substring(0, 8).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ Ihre Reservierung wurde erfolgreich entgegengenommen!
+📞 Unser Agenturvertreter wird sich in Kürze mit Ihnen in Verbindung setzen.
+
+Vielen Dank! 🙏`,
+    ru: `🎉 *БРОНИРОВАНИЕ ЗАВЕРШЕНО!*
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *ИТОГИ БРОНИРОВАНИЯ*
+━━━━━━━━━━━━━━━━━━━━
+
+🎫 *Тур:* ${state.selected_tour.title}
+📅 *Дата:* ${formattedDate}
+👥 *Участники:* ${state.pax_adult} Взрослых
+💰 *Общая стоимость:* ${formattedPrice}
+
+📱 *Номер брони:* ${registration.id.substring(0, 8).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ Ваше бронирование успешно принято!
+📞 Наш представитель свяжется с вами в ближайшее время.
+
+Спасибо! 🙏`,
+    ar: `🎉 *تم إكمال الحجز!*
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *ملخص الحجز*
+━━━━━━━━━━━━━━━━━━━━
+
+🎫 *الجولة:* ${state.selected_tour.title}
+📅 *التاريخ:* ${formattedDate}
+👥 *المشاركون:* ${state.pax_adult} بالغين
+💰 *السعر الإجمالي:* ${formattedPrice}
+
+📱 *رقم الحجز:* ${registration.id.substring(0, 8).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ تم استلام حجزك بنجاح!
+📞 سيتصل بك ممثل وكالتنا قريبًا.
+
+شكراً لك! 🙏`,
+    fr: `🎉 *RÉSERVATION TERMINÉE!*
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *RÉSUMÉ DE LA RÉSERVATION*
+━━━━━━━━━━━━━━━━━━━━
+
+🎫 *Circuit:* ${state.selected_tour.title}
+📅 *Date:* ${formattedDate}
+👥 *Participants:* ${state.pax_adult} Adultes
+💰 *Prix total:* ${formattedPrice}
+
+📱 *N° de réservation:* ${registration.id.substring(0, 8).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ Votre réservation a été reçue avec succès!
+📞 Notre représentant vous contactera sous peu.
+
+Merci! 🙏`,
+    es: `🎉 *¡RESERVA COMPLETADA!*
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *RESUMEN DE RESERVA*
+━━━━━━━━━━━━━━━━━━━━
+
+🎫 *Tour:* ${state.selected_tour.title}
+📅 *Fecha:* ${formattedDate}
+👥 *Participantes:* ${state.pax_adult} Adultos
+💰 *Precio total:* ${formattedPrice}
+
+📱 *N° de reserva:* ${registration.id.substring(0, 8).toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━
+
+✅ ¡Su reserva ha sido recibida exitosamente!
+📞 Nuestro representante se pondrá en contacto con usted en breve.
+
+¡Gracias! 🙏`
+  };
+
+  return confirmationMessages[language as keyof typeof confirmationMessages] || confirmationMessages.tr;
 }
