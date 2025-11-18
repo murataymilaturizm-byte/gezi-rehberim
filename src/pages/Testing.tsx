@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import TestRunner from '@/components/TestRunner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function Testing() {
@@ -14,19 +14,27 @@ export default function Testing() {
       </div>
 
       <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>🚀 Otomatik Test - Kolay Kullanım</AlertTitle>
+        <CheckCircle2 className="h-4 w-4" />
+        <AlertTitle>Nasıl Kullanılır?</AlertTitle>
         <AlertDescription>
-          <div className="space-y-2 mt-2">
-            <p className="font-semibold">En kolay yöntem:</p>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Demo chat'te birkaç mesaj gönderin</li>
-              <li>WhatsApp'ta aynı agency ile birkaç mesaj gönderin</li>
-              <li>"🚀 Otomatik Test Çalıştır" butonuna tıklayın</li>
-            </ol>
-            <p className="text-xs text-muted-foreground mt-3">
-              Sistem otomatik olarak en son demo ve WhatsApp profillerinizi bulup test eder.
-            </p>
+          <div className="space-y-3 mt-2">
+            <div>
+              <p className="font-semibold mb-1">🎭 Seçenek 1: Mock Data ile Test (Önerilen - En Kolay)</p>
+              <ol className="list-decimal list-inside space-y-1 text-sm">
+                <li>🎭 Mock Data ile Test butonuna tıklayın</li>
+                <li>Örnek verilerle tüm testler otomatik çalışacaktır</li>
+                <li>Hiçbir konuşma yapmanıza gerek yoktur</li>
+              </ol>
+            </div>
+            
+            <div>
+              <p className="font-semibold mb-1">🚀 Seçenek 2: Gerçek Verilerle Test</p>
+              <ol className="list-decimal list-inside space-y-1 text-sm">
+                <li>Demo chat'te ve WhatsApp'ta konuşmalar yapın</li>
+                <li>"Gerçek Verilerle Otomatik Test" butonuna tıklayın</li>
+                <li>Sistem en son konuşmalarınızı otomatik bulup test edecektir</li>
+              </ol>
+            </div>
           </div>
         </AlertDescription>
       </Alert>

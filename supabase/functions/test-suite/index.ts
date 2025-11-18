@@ -28,26 +28,74 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { testType, demoSessionId, whatsappPhone, agencyId } = await req.json();
+    const { testType, demoSessionId, whatsappPhone, agencyId, useMockData } = await req.json();
 
-    console.log('Running test suite:', { testType, demoSessionId, whatsappPhone, agencyId });
+    console.log('Running test suite:', { testType, demoSessionId, whatsappPhone, agencyId, useMockData });
 
     const results: TestResult[] = [];
 
-    // Get profiles
-    const { data: demoProfile } = await supabase
-      .from('whatsapp_user_profiles')
-      .select('*')
-      .eq('phone', `demo_${demoSessionId}`)
-      .eq('agency_id', agencyId)
-      .maybeSingle();
+    // Get profiles (or use mock data)
+    let demoProfile, whatsappProfile;
+    
+    if (useMockData) {
+      console.log('Using mock data for testing');
+      
+      // Mock demo profile
+      demoProfile = {
+        phone: 'demo_mock_session',
+        agency_id: agencyId,
+        preferences: {
+          destinations: ['Kapadokya', 'Pamukkale'],
+          interests: ['culture', 'history', 'nature'],
+          budget_range: '2000-5000',
+          pax_adult: 2,
+          pax_child: 1,
+          travel_style: 'comfort'
+        },
+        language_preference: 'tr',
+        total_messages: 8,
+        tags: ['potential', 'interested'],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      // Mock WhatsApp profile
+      whatsappProfile = {
+        phone: '+905551234567',
+        agency_id: agencyId,
+        preferences: {
+          destinations: ['Kapadokya', 'Pamukkale'],
+          interests: ['culture', 'history', 'nature'],
+          budget_range: '2000-5000',
+          pax_adult: 2,
+          pax_child: 1,
+          travel_style: 'comfort'
+        },
+        language_preference: 'tr',
+        total_messages: 8,
+        tags: ['potential', 'interested'],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    } else {
+      // Get real profiles from database
+      const { data: realDemoProfile } = await supabase
+        .from('whatsapp_user_profiles')
+        .select('*')
+        .eq('phone', `demo_${demoSessionId}`)
+        .eq('agency_id', agencyId)
+        .maybeSingle();
 
-    const { data: whatsappProfile } = await supabase
-      .from('whatsapp_user_profiles')
-      .select('*')
-      .eq('phone', whatsappPhone)
-      .eq('agency_id', agencyId)
-      .maybeSingle();
+      const { data: realWhatsappProfile } = await supabase
+        .from('whatsapp_user_profiles')
+        .select('*')
+        .eq('phone', whatsappPhone)
+        .eq('agency_id', agencyId)
+        .maybeSingle();
+        
+      demoProfile = realDemoProfile;
+      whatsappProfile = realWhatsappProfile;
+    }
 
     // Test 1: Memory Structure
     if (!testType || testType === 'memory') {
@@ -74,11 +122,28 @@ serve(async (req) => {
 
     // Test 4: Registrations (WhatsApp only)
     if (!testType || testType === 'registrations') {
-      const { data: registrations } = await supabase
-        .from('registrations')
-        .select('*')
-        .eq('phone', whatsappPhone)
-        .eq('agency_id', agencyId);
+      let registrations = [];
+      
+      if (useMockData) {
+        // Mock registration data
+        registrations = [{
+          id: 'mock-reg-1',
+          phone: '+905551234567',
+          full_name: 'Test User',
+          tour_id: 'mock-tour-id',
+          tour_date_id: 'mock-date-id',
+          pax: 2,
+          status: 'CONFIRMED',
+          created_at: new Date().toISOString()
+        }];
+      } else {
+        const { data: realRegistrations } = await supabase
+          .from('registrations')
+          .select('*')
+          .eq('phone', whatsappPhone)
+          .eq('agency_id', agencyId);
+        registrations = realRegistrations || [];
+      }
 
       results.push({
         id: '5.1',

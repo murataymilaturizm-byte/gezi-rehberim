@@ -187,6 +187,61 @@ export default function TestRunner() {
     }
   };
 
+  const runMockTests = async () => {
+    setLoading(true);
+    setResults([]);
+    setSummary(null);
+
+    try {
+      // Get current user's agency
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Kullanıcı bulunamadı');
+
+      // Get user's agency
+      const { data: agencies } = await supabase
+        .from('agencies')
+        .select('id, agency_name')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!agencies) throw new Error('Agency bulunamadı');
+
+      const currentAgencyId = agencies.id;
+
+      // Run tests with mock data
+      const { data, error } = await supabase.functions.invoke('test-suite', {
+        body: {
+          demoSessionId: 'mock_session',
+          whatsappPhone: '+905551234567',
+          agencyId: currentAgencyId,
+          testType: 'all',
+          useMockData: true
+        }
+      });
+
+      if (error) throw error;
+
+      setResults(data.results);
+      setSummary(data.summary);
+      setProfiles(data.profiles);
+
+      toast({
+        title: '✅ Mock Testler Tamamlandı',
+        description: `${data.summary.passed}/${data.summary.total} test başarılı (${data.summary.matchRate}% eşleşme)`,
+        duration: 5000
+      });
+    } catch (error) {
+      console.error('Mock test error:', error);
+      toast({
+        title: 'Hata',
+        description: error instanceof Error ? error.message : 'Mock testler çalıştırılırken bir hata oluştu',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const exportResults = () => {
     const report = {
       timestamp: new Date().toISOString(),
@@ -291,8 +346,28 @@ export default function TestRunner() {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={runAutoTests} disabled={loading} size="lg" className="flex-1">
+          <div className="flex flex-col gap-3">
+            <Button onClick={runMockTests} disabled={loading} size="lg" className="w-full" variant="default">
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Mock Test Çalışıyor...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-5 w-5" />
+                  🎭 Mock Data ile Test (Konuşma Gerekmez)
+                </>
+              )}
+            </Button>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex-1 border-t" />
+              <span>veya gerçek verilerle</span>
+              <div className="flex-1 border-t" />
+            </div>
+
+            <Button onClick={runAutoTests} disabled={loading} size="lg" variant="outline" className="w-full">
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -300,14 +375,14 @@ export default function TestRunner() {
                 </>
               ) : (
                 <>
-                  <Zap className="mr-2 h-5 w-5" />
-                  🚀 Otomatik Test Çalıştır
+                  <Play className="mr-2 h-5 w-5" />
+                  Gerçek Verilerle Otomatik Test
                 </>
               )}
             </Button>
 
             {results.length > 0 && (
-              <Button onClick={exportResults} variant="outline" size="lg">
+              <Button onClick={exportResults} variant="secondary" size="lg" className="w-full">
                 <Download className="mr-2 h-4 w-4" />
                 Raporu İndir
               </Button>
