@@ -94,8 +94,10 @@ serve(async (req) => {
       confidence: intent.confidence
     });
 
-    // Handle tour selection - update currentTour in conversation state
-    if ((intent.type as string).includes('tour.detail') || userMessage.match(/^\d+$/)) {
+    // Handle tour selection - ONLY select if user is specific or there's only one match
+    const numericSelection = userMessage.match(/^\d+$/);
+    
+    if ((intent.type as string).includes('tour.detail') || numericSelection) {
       const { data: tours } = await supabase
         .from('tours')
         .select(`
@@ -106,11 +108,25 @@ serve(async (req) => {
         .order('created_at', { ascending: false });
 
       if (tours && tours.length > 0) {
-        const selectedTour = tours.find((t: any, index: number) => 
+        // Find matching tours
+        const matchingTours = tours.filter((t: any) => 
           userMessage.toLowerCase().includes(t.title.toLowerCase()) ||
-          userMessage.toLowerCase().includes(t.destination.toLowerCase()) ||
-          (parseInt(userMessage) === index + 1)
+          userMessage.toLowerCase().includes(t.destination.toLowerCase())
         );
+        
+        let selectedTour = null;
+        
+        // Handle numeric selection
+        if (numericSelection) {
+          const index = parseInt(userMessage) - 1;
+          if (index >= 0 && index < tours.length) {
+            selectedTour = tours[index];
+          }
+        } else if (matchingTours.length === 1) {
+          // Only auto-select if there's exactly ONE matching tour
+          selectedTour = matchingTours[0];
+        }
+        // If multiple matching tours, don't select - let AI list them
         
         if (selectedTour) {
           const { data: profile } = await supabase
@@ -146,6 +162,8 @@ serve(async (req) => {
             
             console.log('✅ Tour selected:', selectedTour.title);
           }
+        } else if (matchingTours.length > 1) {
+          console.log(`📋 Multiple tours match (${matchingTours.length}), letting AI list them`);
         }
       }
     }
