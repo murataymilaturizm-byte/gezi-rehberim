@@ -262,7 +262,7 @@ Son Tartışılan Tur: ${state.lastDiscussedTour || 'Yok'}
 
 Intent: ${intent}`;
 
-  // Intent-specific instructions
+  // Intent-specific instructions - multilingual
   let intentInstructions = '';
   
   if (intent === 'greeting') {
@@ -274,16 +274,73 @@ Intent: ${intent}`;
     );
     
     if (!hasHistory) {
-      intentInstructions = '🔴 İLK SELAMLAMA: Kısa karşılama + "Gitmek istediğin bölgeyi veya tur türünü yazarsan sana uygun turları listeleyebilirim." (max 2 cümle)';
+      const firstGreetingMessages = {
+        tr: '🔴 İLK SELAMLAMA: Kısa karşılama + "Gitmek istediğin bölgeyi veya tur türünü yazarsan sana uygun turları listeleyebilirim." (max 2 cümle)',
+        en: '🔴 FIRST GREETING: Short welcome + "If you tell me the region or tour type you want to visit, I can list suitable tours for you." (max 2 sentences)',
+        de: '🔴 ERSTE BEGRÜSSUNG: Kurze Begrüßung + "Wenn Sie mir die Region oder Art der Tour mitteilen, die Sie besuchen möchten, kann ich passende Touren für Sie auflisten." (max 2 Sätze)',
+        ru: '🔴 ПЕРВОЕ ПРИВЕТСТВИЕ: Краткое приветствие + "Если вы скажете мне регион или тип тура, который хотите посетить, я могу перечислить подходящие туры для вас." (макс 2 предложения)',
+        ar: '🔴 التحية الأولى: ترحيب قصير + "إذا أخبرتني بالمنطقة أو نوع الجولة التي تريد زيارتها، يمكنني إدراج الجولات المناسبة لك." (جملتان كحد أقصى)',
+        fr: '🔴 PREMIÈRE SALUTATION: Courte bienvenue + "Si vous me dites la région ou le type de circuit que vous souhaitez visiter, je peux lister les circuits adaptés pour vous." (max 2 phrases)',
+        es: '🔴 PRIMER SALUDO: Breve bienvenida + "Si me dices la región o tipo de tour que quieres visitar, puedo listar tours adecuados para ti." (máx 2 oraciones)'
+      };
+      intentInstructions = firstGreetingMessages[language as keyof typeof firstGreetingMessages] || firstGreetingMessages.tr;
     } else if (hasMemory && state.lastDiscussedTour) {
-      intentInstructions = `🔴 DEVAM SELAMLAMASI:
+      const continuingMessages = {
+        tr: `🔴 DEVAM SELAMLAMASI:
 - "Tekrar merhaba! 😊" ile başla
 - Hatırlat: "Daha önce ${state.lastDiscussedTour} ile ilgilenmiştiniz."
 - Tercihlerine vurgu yap ama kısa tut
 - Sor: "Bu turla ilgili mi bilgi almak istiyorsunuz yoksa farklı bir konuda mı?"
-- Max 2-3 cümle`;
+- Max 2-3 cümle`,
+        en: `🔴 CONTINUING GREETING:
+- Start with "Welcome back! 😊"
+- Remind: "You were previously interested in ${state.lastDiscussedTour}."
+- Emphasize their preferences but keep it short
+- Ask: "Would you like information about this tour or something else?"
+- Max 2-3 sentences`,
+        de: `🔴 FORTGESETZTE BEGRÜSSUNG:
+- Beginnen Sie mit "Willkommen zurück! 😊"
+- Erinnern: "Sie interessierten sich zuvor für ${state.lastDiscussedTour}."
+- Betonen Sie ihre Präferenzen, aber halten Sie es kurz
+- Fragen: "Möchten Sie Informationen über diese Tour oder etwas anderes?"
+- Max 2-3 Sätze`,
+        ru: `🔴 ПРОДОЛЖЕНИЕ ПРИВЕТСТВИЯ:
+- Начните с "Добро пожаловать обратно! 😊"
+- Напомните: "Вы ранее интересовались ${state.lastDiscussedTour}."
+- Подчеркните их предпочтения, но будьте кратки
+- Спросите: "Хотите информацию об этом туре или что-то другое?"
+- Макс 2-3 предложения`,
+        ar: `🔴 تحية استمرارية:
+- ابدأ بـ "مرحبًا بعودتك! 😊"
+- ذكّر: "كنت مهتمًا سابقًا بـ ${state.lastDiscussedTour}."
+- أكد على تفضيلاتهم لكن اجعلها قصيرة
+- اسأل: "هل تريد معلومات عن هذه الجولة أم شيء آخر؟"
+- 2-3 جمل كحد أقصى`,
+        fr: `🔴 ACCUEIL DE CONTINUATION:
+- Commencez par "Ravi de vous revoir! 😊"
+- Rappelez: "Vous étiez précédemment intéressé par ${state.lastDiscussedTour}."
+- Mettez l'accent sur leurs préférences mais restez bref
+- Demandez: "Souhaitez-vous des informations sur ce circuit ou autre chose?"
+- Max 2-3 phrases`,
+        es: `🔴 SALUDO DE CONTINUACIÓN:
+- Comience con "¡Bienvenido de nuevo! 😊"
+- Recuerde: "Anteriormente estaba interesado en ${state.lastDiscussedTour}."
+- Enfatice sus preferencias pero manténgalo breve
+- Pregunte: "¿Desea información sobre este tour u otra cosa?"
+- Máx 2-3 oraciones`
+      };
+      intentInstructions = continuingMessages[language as keyof typeof continuingMessages] || continuingMessages.tr;
     } else {
-      intentInstructions = '🔴 TEKRAR SELAMLAMA: Kısa "Tekrar merhaba! 😊 Size nasıl yardımcı olabilirim?" (max 1 cümle)';
+      const repeatMessages = {
+        tr: '🔴 TEKRAR SELAMLAMA: Kısa "Tekrar merhaba! 😊 Size nasıl yardımcı olabilirim?" (max 1 cümle)',
+        en: '🔴 REPEAT GREETING: Short "Hello again! 😊 How can I help you?" (max 1 sentence)',
+        de: '🔴 WIEDERHOLTE BEGRÜSSUNG: Kurz "Hallo wieder! 😊 Wie kann ich Ihnen helfen?" (max 1 Satz)',
+        ru: '🔴 ПОВТОРНОЕ ПРИВЕТСТВИЕ: Кратко "Привет снова! 😊 Как я могу помочь?" (макс 1 предложение)',
+        ar: '🔴 تحية متكررة: قصيرة "مرحبًا مرة أخرى! 😊 كيف يمكنني مساعدتك؟" (جملة واحدة كحد أقصى)',
+        fr: '🔴 SALUTATION RÉPÉTÉE: Court "Bonjour à nouveau! 😊 Comment puis-je vous aider?" (max 1 phrase)',
+        es: '🔴 SALUDO REPETIDO: Corto "¡Hola de nuevo! 😊 ¿Cómo puedo ayudarte?" (máx 1 oración)'
+      };
+      intentInstructions = repeatMessages[language as keyof typeof repeatMessages] || repeatMessages.tr;
     }
   } else if (intent === 'tour.list' || intent === 'tour.search') {
     const hasMemory = state.userMemory && (
@@ -292,7 +349,8 @@ Intent: ${intent}`;
       state.userMemory.budgetRange
     );
     
-    intentInstructions = `🔴 TUR LİSTESİ ADIMI:
+    const tourListMessages = {
+      tr: `🔴 TUR LİSTESİ ADIMI:
 ${hasMemory ? `
 🧠 KİŞİSELLEŞTİRME:
 - Kullanıcı hafızası var! Kişiselleştirilmiş önerileri ön plana çıkar
@@ -303,51 +361,326 @@ ${hasMemory ? `
 - Her tur için: numara, ad, bölge, tarih(ler)
 - Program/fiyat/detay YASAK
 - Son satır: "Hangi turla ilgileniyorsunuz? Numara veya tur adını yazabilirsiniz. 🙂"
-- MAX 5 satır tur listesi`;
+- MAX 5 satır tur listesi`,
+      en: `🔴 TOUR LIST STEP:
+${hasMemory ? `
+🧠 PERSONALIZATION:
+- User memory exists! Highlight personalized recommendations
+- You can start with "My recommendations for you:" (optional)
+- Show tours matching their preferences first, then others
+` : ''}
+- ONLY show list, don't add anything else
+- For each tour: number, name, region, date(s)
+- Program/price/details FORBIDDEN
+- Last line: "Which tour are you interested in? You can write the number or tour name. 🙂"
+- MAX 5 tour lines`,
+      de: `🔴 TOURLISTEN-SCHRITT:
+${hasMemory ? `
+🧠 PERSONALISIERUNG:
+- Benutzerspeicher existiert! Heben Sie personalisierte Empfehlungen hervor
+- Sie können mit "Meine Empfehlungen für Sie:" beginnen (optional)
+- Zeigen Sie zuerst Touren, die ihren Präferenzen entsprechen, dann andere
+` : ''}
+- NUR Liste zeigen, nichts anderes hinzufügen
+- Für jede Tour: Nummer, Name, Region, Datum/Daten
+- Programm/Preis/Details VERBOTEN
+- Letzte Zeile: "An welcher Tour sind Sie interessiert? Sie können die Nummer oder den Tournamen schreiben. 🙂"
+- MAX 5 Tourzeilen`,
+      ru: `🔴 ШАГ СПИСКА ТУРОВ:
+${hasMemory ? `
+🧠 ПЕРСОНАЛИЗАЦИЯ:
+- Память пользователя существует! Выделите персонализированные рекомендации
+- Вы можете начать с "Мои рекомендации для вас:" (опционально)
+- Сначала покажите туры, соответствующие их предпочтениям, затем другие
+` : ''}
+- ТОЛЬКО показать список, ничего больше не добавлять
+- Для каждого тура: номер, название, регион, дата/даты
+- Программа/цена/детали ЗАПРЕЩЕНЫ
+- Последняя строка: "Какой тур вас интересует? Вы можете написать номер или название тура. 🙂"
+- МАКС 5 строк туров`,
+      ar: `🔴 خطوة قائمة الجولات:
+${hasMemory ? `
+🧠 التخصيص:
+- ذاكرة المستخدم موجودة! أبرز التوصيات المخصصة
+- يمكنك البدء بـ "توصياتي لك:" (اختياري)
+- اعرض الجولات المطابقة لتفضيلاتهم أولاً، ثم الأخرى
+` : ''}
+- اعرض القائمة فقط، لا تضف أي شيء آخر
+- لكل جولة: رقم، اسم، منطقة، تاريخ/تواريخ
+- البرنامج/السعر/التفاصيل ممنوع
+- السطر الأخير: "أي جولة تهتم بها؟ يمكنك كتابة الرقم أو اسم الجولة. 🙂"
+- بحد أقصى 5 أسطر جولة`,
+      fr: `🔴 ÉTAPE LISTE DES CIRCUITS:
+${hasMemory ? `
+🧠 PERSONNALISATION:
+- La mémoire utilisateur existe! Mettez en évidence les recommandations personnalisées
+- Vous pouvez commencer par "Mes recommandations pour vous:" (optionnel)
+- Affichez d'abord les circuits correspondant à leurs préférences, puis les autres
+` : ''}
+- Afficher UNIQUEMENT la liste, n'ajoutez rien d'autre
+- Pour chaque circuit: numéro, nom, région, date(s)
+- Programme/prix/détails INTERDITS
+- Dernière ligne: "Quel circuit vous intéresse? Vous pouvez écrire le numéro ou le nom du circuit. 🙂"
+- MAX 5 lignes de circuits`,
+      es: `🔴 PASO LISTA DE TOURS:
+${hasMemory ? `
+🧠 PERSONALIZACIÓN:
+- ¡La memoria del usuario existe! Destaque las recomendaciones personalizadas
+- Puede comenzar con "Mis recomendaciones para ti:" (opcional)
+- Muestre primero los tours que coincidan con sus preferencias, luego otros
+` : ''}
+- SOLO mostrar lista, no agregar nada más
+- Para cada tour: número, nombre, región, fecha(s)
+- Programa/precio/detalles PROHIBIDO
+- Última línea: "¿Qué tour te interesa? Puedes escribir el número o nombre del tour. 🙂"
+- MAX 5 líneas de tours`
+    };
+    intentInstructions = tourListMessages[language as keyof typeof tourListMessages] || tourListMessages.tr;
   } else if (intent === 'tour.detail') {
     if (wizardStep === 'none' || wizardStep === 'tour_selected') {
-      intentInstructions = `🔴 TUR SEÇİLDİ - 3 SEÇENEK SUN:
+      const tourSelectedMessages = {
+        tr: `🔴 TUR SEÇİLDİ - 3 SEÇENEK SUN:
 1️⃣ Detaylı tur programını gör
 2️⃣ Fiyat öğren (kişi sayısına göre)
 3️⃣ Kayıt / ön rezervasyon başlat
 
 "Bu turla ilgili ne yapmak istersiniz?" diye sor.
-🔴 PROGRAM OTOMATIK GÖNDERME!`;
+🔴 PROGRAM OTOMATIK GÖNDERME!`,
+        en: `🔴 TOUR SELECTED - OFFER 3 OPTIONS:
+1️⃣ See detailed tour program
+2️⃣ Learn price (based on number of people)
+3️⃣ Start registration / pre-booking
+
+Ask "What would you like to do with this tour?"
+🔴 DON'T SEND PROGRAM AUTOMATICALLY!`,
+        de: `🔴 TOUR AUSGEWÄHLT - 3 OPTIONEN ANBIETEN:
+1️⃣ Detailliertes Tourprogramm ansehen
+2️⃣ Preis erfahren (basierend auf Personenanzahl)
+3️⃣ Registrierung / Vorbuchung starten
+
+Fragen Sie "Was möchten Sie mit dieser Tour machen?"
+🔴 PROGRAMM NICHT AUTOMATISCH SENDEN!`,
+        ru: `🔴 ТУР ВЫБРАН - ПРЕДЛОЖИТЕ 3 ВАРИАНТА:
+1️⃣ Посмотреть подробную программу тура
+2️⃣ Узнать цену (в зависимости от количества человек)
+3️⃣ Начать регистрацию / предварительное бронирование
+
+Спросите "Что бы вы хотели сделать с этим туром?"
+🔴 НЕ ОТПРАВЛЯТЬ ПРОГРАММУ АВТОМАТИЧЕСКИ!`,
+        ar: `🔴 تم اختيار الجولة - قدم 3 خيارات:
+1️⃣ انظر برنامج الجولة المفصل
+2️⃣ تعرف على السعر (بناءً على عدد الأشخاص)
+3️⃣ ابدأ التسجيل / الحجز المسبق
+
+اسأل "ماذا تريد أن تفعل مع هذه الجولة؟"
+🔴 لا ترسل البرنامج تلقائيًا!`,
+        fr: `🔴 CIRCUIT SÉLECTIONNÉ - PROPOSER 3 OPTIONS:
+1️⃣ Voir le programme détaillé du circuit
+2️⃣ Connaître le prix (selon le nombre de personnes)
+3️⃣ Commencer l'inscription / la pré-réservation
+
+Demandez "Que souhaitez-vous faire avec ce circuit?"
+🔴 N'ENVOYEZ PAS LE PROGRAMME AUTOMATIQUEMENT!`,
+        es: `🔴 TOUR SELECCIONADO - OFRECER 3 OPCIONES:
+1️⃣ Ver programa detallado del tour
+2️⃣ Conocer precio (según número de personas)
+3️⃣ Iniciar registro / pre-reserva
+
+Pregunte "¿Qué le gustaría hacer con este tour?"
+🔴 ¡NO ENVÍE EL PROGRAMA AUTOMÁTICAMENTE!`
+      };
+      intentInstructions = tourSelectedMessages[language as keyof typeof tourSelectedMessages] || tourSelectedMessages.tr;
     } else if (wizardStep === 'action_choice') {
-      intentInstructions = `🔴 KULLANICI SEÇİM YAPTI:
+      const actionChoiceMessages = {
+        tr: `🔴 KULLANICI SEÇİM YAPTI:
 - "detay/program" → Detaylı programı göster
 - "fiyat" → Fiyat hesapla
 - "kayıt/rezervasyon" → Kayıt başlat
-Sadece seçilen işlemi yap!`;
+Sadece seçilen işlemi yap!`,
+        en: `🔴 USER MADE CHOICE:
+- "detail/program" → Show detailed program
+- "price" → Calculate price
+- "registration/booking" → Start registration
+Only do the selected action!`,
+        de: `🔴 BENUTZER HAT GEWÄHLT:
+- "detail/programm" → Detailliertes Programm zeigen
+- "preis" → Preis berechnen
+- "registrierung/buchung" → Registrierung starten
+Nur die gewählte Aktion ausführen!`,
+        ru: `🔴 ПОЛЬЗОВАТЕЛЬ СДЕЛАЛ ВЫБОР:
+- "детали/программа" → Показать подробную программу
+- "цена" → Рассчитать цену
+- "регистрация/бронирование" → Начать регистрацию
+Выполните только выбранное действие!`,
+        ar: `🔴 قام المستخدم بالاختيار:
+- "تفاصيل/برنامج" → أظهر البرنامج المفصل
+- "سعر" → احسب السعر
+- "تسجيل/حجز" → ابدأ التسجيل
+قم فقط بالإجراء المحدد!`,
+        fr: `🔴 L'UTILISATEUR A FAIT UN CHOIX:
+- "détail/programme" → Afficher le programme détaillé
+- "prix" → Calculer le prix
+- "inscription/réservation" → Commencer l'inscription
+Effectuez uniquement l'action sélectionnée!`,
+        es: `🔴 EL USUARIO HIZO UNA ELECCIÓN:
+- "detalle/programa" → Mostrar programa detallado
+- "precio" → Calcular precio
+- "registro/reserva" → Iniciar registro
+¡Solo haga la acción seleccionada!`
+      };
+      intentInstructions = actionChoiceMessages[language as keyof typeof actionChoiceMessages] || actionChoiceMessages.tr;
     } else {
-      intentInstructions = '🔴 TUR DETAYI: Kısa özet (max 3 cümle), gün gün program YASAK.';
+      const tourDetailMessages = {
+        tr: '🔴 TUR DETAYI: Kısa özet (max 3 cümle), gün gün program YASAK.',
+        en: '🔴 TOUR DETAIL: Short summary (max 3 sentences), day-by-day program FORBIDDEN.',
+        de: '🔴 TOURDETAIL: Kurze Zusammenfassung (max 3 Sätze), Tag-für-Tag-Programm VERBOTEN.',
+        ru: '🔴 ДЕТАЛИ ТУРА: Краткое резюме (макс 3 предложения), программа по дням ЗАПРЕЩЕНА.',
+        ar: '🔴 تفاصيل الجولة: ملخص قصير (3 جمل كحد أقصى)، برنامج يومًا بيوم ممنوع.',
+        fr: '🔴 DÉTAIL DU CIRCUIT: Résumé court (max 3 phrases), programme jour par jour INTERDIT.',
+        es: '🔴 DETALLE DEL TOUR: Resumen breve (máx 3 oraciones), programa día a día PROHIBIDO.'
+      };
+      intentInstructions = tourDetailMessages[language as keyof typeof tourDetailMessages] || tourDetailMessages.tr;
     }
   } else if (intent === 'price.inquiry') {
     if (currentTour) {
-      intentInstructions = `🔴 FİYAT HESAPLAMA:
+      const priceWithTourMessages = {
+        tr: `🔴 FİYAT HESAPLAMA:
 - currentTour VAR: ${currentTour.title}
 - "Hangi tur?" diye ASLA SORMA
 - Kullanıcının verdiği kişi sayısına göre hesapla
 - Format: "Yetişkin: X x FIYAT, Çocuk: Y x FIYAT, Toplam: Z"
-- Son satır: "Dilersen detaylı programı paylaşabilirim veya kayıt başlatabilirim. (Program / Kayıt)"`;
+- Son satır: "Dilersen detaylı programı paylaşabilirim veya kayıt başlatabilirim. (Program / Kayıt)"`,
+        en: `🔴 PRICE CALCULATION:
+- currentTour EXISTS: ${currentTour.title}
+- NEVER ASK "Which tour?"
+- Calculate based on number of people user provided
+- Format: "Adult: X x PRICE, Child: Y x PRICE, Total: Z"
+- Last line: "If you like, I can share the detailed program or start registration. (Program / Registration)"`,
+        de: `🔴 PREISBERECHNUNG:
+- currentTour EXISTIERT: ${currentTour.title}
+- NIEMALS FRAGEN "Welche Tour?"
+- Berechnen Sie basierend auf der Anzahl der Personen, die der Benutzer angegeben hat
+- Format: "Erwachsene: X x PREIS, Kind: Y x PREIS, Gesamt: Z"
+- Letzte Zeile: "Wenn Sie möchten, kann ich das detaillierte Programm teilen oder die Registrierung starten. (Programm / Registrierung)"`,
+        ru: `🔴 РАСЧЕТ ЦЕНЫ:
+- currentTour СУЩЕСТВУЕТ: ${currentTour.title}
+- НИКОГДА НЕ СПРАШИВАЙТЕ "Какой тур?"
+- Рассчитайте на основе количества людей, указанного пользователем
+- Формат: "Взрослый: X x ЦЕНА, Ребенок: Y x ЦЕНА, Всего: Z"
+- Последняя строка: "Если хотите, я могу поделиться подробной программой или начать регистрацию. (Программа / Регистрация)"`,
+        ar: `🔴 حساب السعر:
+- currentTour موجود: ${currentTour.title}
+- لا تسأل أبدًا "أي جولة؟"
+- احسب بناءً على عدد الأشخاص الذي قدمه المستخدم
+- التنسيق: "بالغ: X x السعر، طفل: Y x السعر، الإجمالي: Z"
+- السطر الأخير: "إذا أردت، يمكنني مشاركة البرنامج المفصل أو بدء التسجيل. (البرنامج / التسجيل)"`,
+        fr: `🔴 CALCUL DU PRIX:
+- currentTour EXISTE: ${currentTour.title}
+- NE DEMANDEZ JAMAIS "Quel circuit?"
+- Calculez en fonction du nombre de personnes fourni par l'utilisateur
+- Format: "Adulte: X x PRIX, Enfant: Y x PRIX, Total: Z"
+- Dernière ligne: "Si vous le souhaitez, je peux partager le programme détaillé ou commencer l'inscription. (Programme / Inscription)"`,
+        es: `🔴 CÁLCULO DE PRECIO:
+- currentTour EXISTE: ${currentTour.title}
+- NUNCA PREGUNTE "¿Qué tour?"
+- Calcule según el número de personas que proporcionó el usuario
+- Formato: "Adulto: X x PRECIO, Niño: Y x PRECIO, Total: Z"
+- Última línea: "Si lo desea, puedo compartir el programa detallado o comenzar el registro. (Programa / Registro)"`
+      };
+      intentInstructions = priceWithTourMessages[language as keyof typeof priceWithTourMessages] || priceWithTourMessages.tr;
     } else {
-      intentInstructions = '🔴 FİYAT SORU: currentTour YOK, "Hangi turumuz için fiyat öğrenmek istiyorsunuz?" sor.';
+      const priceWithoutTourMessages = {
+        tr: '🔴 FİYAT SORU: currentTour YOK, "Hangi turumuz için fiyat öğrenmek istiyorsunuz?" sor.',
+        en: '🔴 PRICE QUESTION: currentTour NONE, ask "Which tour would you like to know the price for?"',
+        de: '🔴 PREISFRAGE: currentTour KEINE, fragen Sie "Für welche Tour möchten Sie den Preis wissen?"',
+        ru: '🔴 ВОПРОС О ЦЕНЕ: currentTour НЕТ, спросите "Для какого тура вы хотите узнать цену?"',
+        ar: '🔴 سؤال السعر: currentTour لا يوجد، اسأل "لأي جولة تريد معرفة السعر؟"',
+        fr: '🔴 QUESTION DE PRIX: currentTour AUCUN, demandez "Pour quel circuit souhaitez-vous connaître le prix?"',
+        es: '🔴 PREGUNTA DE PRECIO: currentTour NINGUNO, pregunte "¿Para qué tour desea conocer el precio?"'
+      };
+      intentInstructions = priceWithoutTourMessages[language as keyof typeof priceWithoutTourMessages] || priceWithoutTourMessages.tr;
     }
   } else if (intent === 'reservation.wizard') {
     if (currentTour) {
-      intentInstructions = `🔴 KAYIT TALEBİ:
+      const reservationWithTourMessages = {
+        tr: `🔴 KAYIT TALEBİ:
 - currentTour VAR: ${currentTour.title}
 - "Hangi tur?" diye ASLA SORMA
 - Direkt kayıt başlat: "Harika! ${currentTour.title} için kayıt oluşturalım."
 - Soru sor: "Kaç kişi katılacaksınız?" (Yetişkin/Çocuk)
-- wizardStep'i "booking_started" yap`;
+- wizardStep'i "booking_started" yap`,
+        en: `🔴 REGISTRATION REQUEST:
+- currentTour EXISTS: ${currentTour.title}
+- NEVER ASK "Which tour?"
+- Start registration directly: "Great! Let's create registration for ${currentTour.title}."
+- Ask question: "How many people will attend?" (Adult/Child)
+- Set wizardStep to "booking_started"`,
+        de: `🔴 REGISTRIERUNGSANFRAGE:
+- currentTour EXISTIERT: ${currentTour.title}
+- NIEMALS FRAGEN "Welche Tour?"
+- Registrierung direkt starten: "Großartig! Lassen Sie uns die Registrierung für ${currentTour.title} erstellen."
+- Frage stellen: "Wie viele Personen werden teilnehmen?" (Erwachsene/Kind)
+- Setzen Sie wizardStep auf "booking_started"`,
+        ru: `🔴 ЗАПРОС РЕГИСТРАЦИИ:
+- currentTour СУЩЕСТВУЕТ: ${currentTour.title}
+- НИКОГДА НЕ СПРАШИВАЙТЕ "Какой тур?"
+- Начните регистрацию напрямую: "Отлично! Давайте создадим регистрацию для ${currentTour.title}."
+- Задайте вопрос: "Сколько человек будет участвовать?" (Взрослый/Ребенок)
+- Установите wizardStep на "booking_started"`,
+        ar: `🔴 طلب تسجيل:
+- currentTour موجود: ${currentTour.title}
+- لا تسأل أبدًا "أي جولة؟"
+- ابدأ التسجيل مباشرة: "رائع! دعنا ننشئ تسجيلًا لـ ${currentTour.title}."
+- اسأل: "كم عدد الأشخاص الذين سيحضرون؟" (بالغ/طفل)
+- اضبط wizardStep على "booking_started"`,
+        fr: `🔴 DEMANDE D'INSCRIPTION:
+- currentTour EXISTE: ${currentTour.title}
+- NE DEMANDEZ JAMAIS "Quel circuit?"
+- Commencez l'inscription directement: "Génial! Créons l'inscription pour ${currentTour.title}."
+- Posez la question: "Combien de personnes participeront?" (Adulte/Enfant)
+- Définissez wizardStep sur "booking_started"`,
+        es: `🔴 SOLICITUD DE REGISTRO:
+- currentTour EXISTE: ${currentTour.title}
+- NUNCA PREGUNTE "¿Qué tour?"
+- Inicie el registro directamente: "¡Genial! Creemos el registro para ${currentTour.title}."
+- Haga la pregunta: "¿Cuántas personas asistirán?" (Adulto/Niño)
+- Establezca wizardStep en "booking_started"`
+      };
+      intentInstructions = reservationWithTourMessages[language as keyof typeof reservationWithTourMessages] || reservationWithTourMessages.tr;
     } else {
-      intentInstructions = '🔴 REZERVASYON: currentTour YOK, "Hangi turumuz için kayıt oluşturmak istiyorsunuz?" sor.';
+      const reservationWithoutTourMessages = {
+        tr: '🔴 REZERVASYON: currentTour YOK, "Hangi turumuz için kayıt oluşturmak istiyorsunuz?" sor.',
+        en: '🔴 RESERVATION: currentTour NONE, ask "Which tour would you like to create registration for?"',
+        de: '🔴 RESERVIERUNG: currentTour KEINE, fragen Sie "Für welche Tour möchten Sie eine Registrierung erstellen?"',
+        ru: '🔴 РЕЗЕРВАЦИЯ: currentTour НЕТ, спросите "Для какого тура вы хотите создать регистрацию?"',
+        ar: '🔴 حجز: currentTour لا يوجد، اسأل "لأي جولة تريد إنشاء تسجيل؟"',
+        fr: '🔴 RÉSERVATION: currentTour AUCUN, demandez "Pour quel circuit souhaitez-vous créer une inscription?"',
+        es: '🔴 RESERVA: currentTour NINGUNO, pregunte "¿Para qué tour desea crear un registro?"'
+      };
+      intentInstructions = reservationWithoutTourMessages[language as keyof typeof reservationWithoutTourMessages] || reservationWithoutTourMessages.tr;
     }
   } else if (intent === 'faq' || intent === 'question') {
-    intentInstructions = '🔴 SSS: Direkt cevap ver (max 2 cümle).';
+    const faqMessages = {
+      tr: '🔴 SSS: Direkt cevap ver (max 2 cümle).',
+      en: '🔴 FAQ: Give direct answer (max 2 sentences).',
+      de: '🔴 FAQ: Geben Sie eine direkte Antwort (max 2 Sätze).',
+      ru: '🔴 FAQ: Дайте прямой ответ (макс 2 предложения).',
+      ar: '🔴 الأسئلة الشائعة: أعط إجابة مباشرة (جملتان كحد أقصى).',
+      fr: '🔴 FAQ: Donnez une réponse directe (max 2 phrases).',
+      es: '🔴 FAQ: Dé una respuesta directa (máx 2 oraciones).'
+    };
+    intentInstructions = faqMessages[language as keyof typeof faqMessages] || faqMessages.tr;
   } else {
-    intentInstructions = '🔴 GENEL: Kısa ve net cevap (max 3 cümle).';
+    const generalMessages = {
+      tr: '🔴 GENEL: Kısa ve net cevap (max 3 cümle).',
+      en: '🔴 GENERAL: Short and clear answer (max 3 sentences).',
+      de: '🔴 ALLGEMEIN: Kurze und klare Antwort (max 3 Sätze).',
+      ru: '🔴 ОБЩЕЕ: Краткий и четкий ответ (макс 3 предложения).',
+      ar: '🔴 عام: إجابة قصيرة وواضحة (3 جمل كحد أقصى).',
+      fr: '🔴 GÉNÉRAL: Réponse courte et claire (max 3 phrases).',
+      es: '🔴 GENERAL: Respuesta breve y clara (máx 3 oraciones).'
+    };
+    intentInstructions = generalMessages[language as keyof typeof generalMessages] || generalMessages.tr;
   }
 
   return fullPrompt + '\n\n' + intentInstructions;
