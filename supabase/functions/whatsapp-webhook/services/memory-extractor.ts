@@ -9,14 +9,14 @@ interface UserMemory {
 }
 
 const INTEREST_KEYWORDS: { [key: string]: string[] } = {
-  'balon turu': ['balon', 'balloon', 'uçmak', 'hava'],
-  'macera': ['rafting', 'adrenalin', 'macera', 'extreme', 'aktivite'],
-  'kültür': ['müze', 'antik', 'tarihi', 'kültür', 'history', 'cultural', 'tarih'],
-  'doğa': ['doğa', 'vadi', 'kanyon', 'nature', 'hiking', 'trekking', 'yürüyüş'],
-  'lüks': ['lüks', 'luxury', 'konforlu', 'premium', 'butik'],
-  'termal': ['termal', 'spa', 'kaplıca', 'wellness'],
-  'aile': ['aile', 'çocuk', 'family', 'kids', 'bebek'],
-  'romantik': ['romantik', 'balayı', 'çift', 'romantic', 'honeymoon']
+  'balon turu': ['balon', 'balloon', 'uçmak', 'hava', 'luft', 'воздушный', 'هواء', 'air', 'globo'],
+  'macera': ['rafting', 'adrenalin', 'macera', 'extreme', 'aktivite', 'abenteuer', 'adventure', 'приключение', 'مغامرة', 'aventure', 'aventura'],
+  'kültür': ['müze', 'antik', 'tarihi', 'kültür', 'history', 'cultural', 'tarih', 'museum', 'kultur', 'культура', 'ثقافة', 'culture', 'cultura', 'ancient', 'antike'],
+  'doğa': ['doğa', 'vadi', 'kanyon', 'nature', 'hiking', 'trekking', 'yürüyüş', 'natur', 'природа', 'طبيعة', 'nature', 'naturaleza', 'wandern'],
+  'lüks': ['lüks', 'luxury', 'konforlu', 'premium', 'butik', 'luxus', 'роскошь', 'فاخر', 'luxe', 'lujo', 'boutique'],
+  'termal': ['termal', 'spa', 'kaplıca', 'wellness', 'thermal', 'термальный', 'حراري', 'thermal', 'termal'],
+  'aile': ['aile', 'çocuk', 'family', 'kids', 'bebek', 'familie', 'kinder', 'семья', 'дети', 'عائلة', 'أطفال', 'famille', 'enfants', 'familia', 'niños'],
+  'romantik': ['romantik', 'balayı', 'çift', 'romantic', 'honeymoon', 'romantisch', 'flitterwochen', 'романтика', 'романтический', 'رومانسي', 'شهر العسل', 'romantique', 'lune de miel', 'romántico', 'luna de miel']
 };
 
 export function extractMemory(
@@ -73,66 +73,134 @@ export function extractMemory(
   }
 
   // Extract travel style from keywords
-  if (lowerMessage.match(/lüks|luxury|konforlu|premium/) || 
-      memory.interests.includes('lüks')) {
-    memory.travelStyle = 'lüks';
-  } else if (lowerMessage.match(/macera|adrenalin|extreme|rafting/) ||
-             memory.interests.includes('macera')) {
-    memory.travelStyle = 'macera';
-  } else if (lowerMessage.match(/kültür|tarihi|antik|müze/) ||
-             memory.interests.includes('kültür')) {
-    memory.travelStyle = 'kültür';
-  } else if (lowerMessage.match(/doğa|vadi|kanyon|nature/) ||
-             memory.interests.includes('doğa')) {
-    memory.travelStyle = 'doğa';
-  } else if (lowerMessage.match(/aile|çocuk|family/) ||
-             memory.interests.includes('aile')) {
-    memory.travelStyle = 'aile';
-  } else if (lowerMessage.match(/romantik|balayı|çift/) ||
-             memory.interests.includes('romantik')) {
-    memory.travelStyle = 'romantik';
+  const stylePatterns = {
+    lüks: /lüks|luxury|konforlu|premium|luxus|роскошь|فاخر|luxe|lujo/i,
+    macera: /macera|adrenalin|extreme|rafting|abenteuer|adventure|приключение|мغامرة|aventure|aventura/i,
+    kültür: /kültür|tarihi|antik|müze|kultur|культура|ثقافة|culture|cultura|history|museum/i,
+    doğa: /doğa|vadi|kanyon|nature|natur|природа|طبيعة|naturaleza|hiking/i,
+    aile: /aile|çocuk|family|familie|kinder|семья|дети|عائلة|أطفال|famille|enfants|familia|niños/i,
+    romantik: /romantik|balayı|çift|romantic|honeymoon|romantisch|flitterwochen|романтика|رومانسي|شهر العسل|romantique|lune de miel|romántico|luna de miel/i
+  };
+  
+  for (const [style, pattern] of Object.entries(stylePatterns)) {
+    if (pattern.test(lowerMessage) || memory.interests.includes(style)) {
+      memory.travelStyle = style;
+      break;
+    }
   }
 
   memory.lastUpdated = new Date().toISOString();
   return memory;
 }
 
-export function buildPersonalizedContext(memory: UserMemory, tours: any[]): string {
+export function buildPersonalizedContext(memory: UserMemory, tours: any[], language: string = 'tr'): string {
   if (!memory || (memory.preferredDestinations.length === 0 && 
                   memory.interests.length === 0 && 
                   !memory.budgetRange)) {
     return '';
   }
 
-  let context = '\n\n🧠 KULLANICI HAFİZASI (Kişiselleştirme için kullan):';
+  const labels = {
+    tr: {
+      header: '\n\n🧠 KULLANICI HAFİZASI (Kişiselleştirme için kullan):',
+      destinations: '\n✈️ Tercih ettiği destinasyonlar:',
+      interests: '\n💡 İlgi alanları:',
+      budget: '\n💰 Bütçe aralığı:',
+      style: '\n🎭 Seyahat stili:',
+      recommendations: '\n\n🎯 KİŞİSELLEŞTİRİLMİŞ ÖNERİLER:',
+      matchingTours: 'turları kullanıcının tercihlerine uygun.',
+      prioritize: '\n🔴 Öneriler yaparken bu turları ÖN PLANA ÇIKAR ama zorlama yapma.'
+    },
+    en: {
+      header: '\n\n🧠 USER MEMORY (Use for personalization):',
+      destinations: '\n✈️ Preferred destinations:',
+      interests: '\n💡 Interests:',
+      budget: '\n💰 Budget range:',
+      style: '\n🎭 Travel style:',
+      recommendations: '\n\n🎯 PERSONALIZED RECOMMENDATIONS:',
+      matchingTours: 'tours match user preferences.',
+      prioritize: '\n🔴 PRIORITIZE these tours in suggestions but don\'t force.'
+    },
+    de: {
+      header: '\n\n🧠 BENUTZERGEDÄCHTNIS (Für Personalisierung verwenden):',
+      destinations: '\n✈️ Bevorzugte Reiseziele:',
+      interests: '\n💡 Interessen:',
+      budget: '\n💰 Budgetbereich:',
+      style: '\n🎭 Reisestil:',
+      recommendations: '\n\n🎯 PERSONALISIERTE EMPFEHLUNGEN:',
+      matchingTours: 'Touren passen zu den Benutzerpräferenzen.',
+      prioritize: '\n🔴 Diese Touren in Vorschlägen PRIORISIEREN, aber nicht erzwingen.'
+    },
+    ru: {
+      header: '\n\n🧠 ПАМЯТЬ ПОЛЬЗОВАТЕЛЯ (Используйте для персонализации):',
+      destinations: '\n✈️ Предпочтительные направления:',
+      interests: '\n💡 Интересы:',
+      budget: '\n💰 Бюджетный диапазон:',
+      style: '\n🎭 Стиль путешествия:',
+      recommendations: '\n\n🎯 ПЕРСОНАЛИЗИРОВАННЫЕ РЕКОМЕНДАЦИИ:',
+      matchingTours: 'туры соответствуют предпочтениям пользователя.',
+      prioritize: '\n🔴 ПРИОРИТЕЗИРУЙТЕ эти туры в предложениях, но не навязывайте.'
+    },
+    ar: {
+      header: '\n\n🧠 ذاكرة المستخدم (استخدم للتخصيص):',
+      destinations: '\n✈️ الوجهات المفضلة:',
+      interests: '\n💡 الاهتمامات:',
+      budget: '\n💰 نطاق الميزانية:',
+      style: '\n🎭 أسلوب السفر:',
+      recommendations: '\n\n🎯 التوصيات المخصصة:',
+      matchingTours: 'الجولات تتوافق مع تفضيلات المستخدم.',
+      prioritize: '\n🔴 أعط الأولوية لهذه الجولات في الاقتراحات لكن لا تفرض.'
+    },
+    fr: {
+      header: '\n\n🧠 MÉMOIRE UTILISATEUR (Utilisez pour la personnalisation):',
+      destinations: '\n✈️ Destinations préférées:',
+      interests: '\n💡 Intérêts:',
+      budget: '\n💰 Fourchette budgétaire:',
+      style: '\n🎭 Style de voyage:',
+      recommendations: '\n\n🎯 RECOMMANDATIONS PERSONNALISÉES:',
+      matchingTours: 'circuits correspondent aux préférences de l\'utilisateur.',
+      prioritize: '\n🔴 PRIORISEZ ces circuits dans les suggestions mais ne forcez pas.'
+    },
+    es: {
+      header: '\n\n🧠 MEMORIA DEL USUARIO (Usar para personalización):',
+      destinations: '\n✈️ Destinos preferidos:',
+      interests: '\n💡 Intereses:',
+      budget: '\n💰 Rango de presupuesto:',
+      style: '\n🎭 Estilo de viaje:',
+      recommendations: '\n\n🎯 RECOMENDACIONES PERSONALIZADAS:',
+      matchingTours: 'tours coinciden con las preferencias del usuario.',
+      prioritize: '\n🔴 PRIORIZA estos tours en sugerencias pero no fuerces.'
+    }
+  };
+
+  const l = labels[language as keyof typeof labels] || labels.tr;
+  let context = l.header;
   
   if (memory.preferredDestinations.length > 0) {
-    context += `\n✈️ Tercih ettiği destinasyonlar: ${memory.preferredDestinations.join(', ')}`;
+    context += `${l.destinations} ${memory.preferredDestinations.join(', ')}`;
   }
   
   if (memory.interests.length > 0) {
-    context += `\n💡 İlgi alanları: ${memory.interests.join(', ')}`;
+    context += `${l.interests} ${memory.interests.join(', ')}`;
   }
   
   if (memory.budgetRange) {
-    context += `\n💰 Bütçe aralığı: ${memory.budgetRange}`;
+    context += `${l.budget} ${memory.budgetRange}`;
   }
   
   if (memory.travelStyle) {
-    context += `\n🎭 Seyahat stili: ${memory.travelStyle}`;
+    context += `${l.style} ${memory.travelStyle}`;
   }
 
   // Find matching tours based on memory
   const matchingTours = tours.filter(tour => {
     let score = 0;
     
-    // Destination match
     if (memory.preferredDestinations.some(dest => 
         tour.destination.includes(dest) || tour.title.includes(dest))) {
       score += 3;
     }
     
-    // Interest match
     const tourText = `${tour.title} ${tour.program_kisa || ''}`.toLowerCase();
     for (const interest of memory.interests) {
       if (tourText.includes(interest.toLowerCase())) {
@@ -140,7 +208,6 @@ export function buildPersonalizedContext(memory: UserMemory, tours: any[]): stri
       }
     }
     
-    // Budget match (if dates available)
     if (memory.budgetRange && tour.dates && tour.dates.length > 0) {
       const avgPrice = tour.dates.reduce((sum: number, d: any) => sum + d.price_adult, 0) / tour.dates.length;
       if (memory.budgetRange === 'düşük' && avgPrice < 1000) score += 1;
@@ -150,7 +217,6 @@ export function buildPersonalizedContext(memory: UserMemory, tours: any[]): stri
     
     return score > 0;
   }).sort((a, b) => {
-    // Simple scoring for sorting
     let scoreA = 0, scoreB = 0;
     
     if (memory.preferredDestinations.some(dest => a.destination.includes(dest))) scoreA += 3;
@@ -160,9 +226,9 @@ export function buildPersonalizedContext(memory: UserMemory, tours: any[]): stri
   });
 
   if (matchingTours.length > 0) {
-    context += `\n\n🎯 KİŞİSELLEŞTİRİLMİŞ ÖNERİLER:`;
-    context += `\n"${matchingTours.map(t => t.title).slice(0, 3).join('", "')}" turları kullanıcının tercihlerine uygun.`;
-    context += `\n🔴 Öneriler yaparken bu turları ÖN PLANA ÇIKAR ama zorlama yapma.`;
+    context += l.recommendations;
+    context += `\n"${matchingTours.map(t => t.title).slice(0, 3).join('", "')}" ${l.matchingTours}`;
+    context += l.prioritize;
   }
 
   return context;
