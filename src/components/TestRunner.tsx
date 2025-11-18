@@ -63,28 +63,15 @@ export default function TestRunner() {
 
       const currentAgencyId = agencies.id;
 
-      // Get demo and whatsapp profiles for this agency
-      const { data: profiles } = await supabase
-        .from('whatsapp_user_profiles')
-        .select('phone, agency_id')
-        .eq('agency_id', currentAgencyId)
-        .order('updated_at', { ascending: false })
-        .limit(20);
+      // Get demo session - most recent from whatsapp_conversations where phone starts with 'session_'
+      const { data: demoConversations } = await supabase
+        .from('whatsapp_conversations')
+        .select('phone')
+        .like('phone', 'session_%')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (!profiles || profiles.length === 0) {
-        toast({
-          title: 'Profil Bulunamadı',
-          description: 'Bu agency için test edilecek profil bulunamadı',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      // Find demo and whatsapp profiles
-      const demoProfile = profiles.find(p => p.phone.startsWith('demo_'));
-      const whatsappProfile = profiles.find(p => !p.phone.startsWith('demo_'));
-
-      if (!demoProfile) {
+      if (!demoConversations || demoConversations.length === 0) {
         toast({
           title: 'Demo Profil Bulunamadı',
           description: 'Demo chat profili bulunamadı. Önce demo chat\'te bir konuşma yapın.',
@@ -92,6 +79,17 @@ export default function TestRunner() {
         });
         return;
       }
+
+      const sessionId = demoConversations[0].phone;
+
+      // Get WhatsApp profile - most recent from whatsapp_user_profiles
+      const { data: whatsappProfile } = await supabase
+        .from('whatsapp_user_profiles')
+        .select('phone')
+        .eq('agency_id', currentAgencyId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
 
       if (!whatsappProfile) {
         toast({
@@ -101,9 +99,6 @@ export default function TestRunner() {
         });
         return;
       }
-
-      // Extract session ID from demo phone
-      const sessionId = demoProfile.phone.replace('demo_', '');
 
       // Auto-fill form
       setDemoSessionId(sessionId);
@@ -116,7 +111,7 @@ export default function TestRunner() {
           demoSessionId: sessionId,
           whatsappPhone: whatsappProfile.phone,
           agencyId: currentAgencyId,
-          testType: testType || null
+          testType: 'all'
         }
       });
 
