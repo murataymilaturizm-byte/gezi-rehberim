@@ -4,6 +4,8 @@ import { detectIntent } from './services/intent-detector.ts';
 import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
 import { extractMemory } from './services/memory-extractor.ts';
 import { handleWizardStep } from './handlers/wizard.ts';
+import { enrichConversationInsights } from './services/profile.ts';
+import { getConversationState, updateConversationState } from './services/conversation-state.ts';
 import type { WizardState } from './types.ts';
 
 const corsHeaders = {
@@ -229,6 +231,11 @@ serve(async (req) => {
     const intent = await detectIntent(message, conversationHistory, userLanguage);
     console.log('🎯 AI Intent:', intent.type, 'confidence:', intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
+    // Update conversation state with detected intent
+    await updateConversationState(supabase, sessionId, DEMO_AGENCY_ID, {
+      lastIntent: intent.type
+    });
+
     // Handle tour selection - check ALL intents, not just tour.detail/tour.search
     const numericSelection = message.match(/^\d+$/);
     
@@ -403,11 +410,15 @@ serve(async (req) => {
     console.log('✅ Response generated:', responseMessage.substring(0, 100));
     await saveMessage(supabase, sessionId, 'assistant', responseMessage);
 
+    // Enrich conversation insights
+    await enrichConversationInsights(supabase, sessionId, DEMO_AGENCY_ID, message, responseMessage, intent.type);
+
     // Extract and update user memory from conversation
     console.log('🧠 Extracting user preferences...');
     const updatedMemory = extractMemory(
       message,
       responseMessage,
+      DEMO_TOURS,
       conversationState.userMemory
     );
     
