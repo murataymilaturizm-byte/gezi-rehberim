@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Play, Download, CheckCircle2, XCircle, MinusCircle, Loader2 } from 'lucide-react';
+import { Play, Download, CheckCircle2, XCircle, MinusCircle, Loader2, Zap } from 'lucide-react';
 
 interface TestResult {
   id: string;
@@ -41,6 +41,106 @@ export default function TestRunner() {
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [agencyId, setAgencyId] = useState('');
   const [testType, setTestType] = useState<string>('');
+
+  const runAutoTests = async () => {
+    setLoading(true);
+    setResults([]);
+    setSummary(null);
+
+    try {
+      // Get current user's agency
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Kullanıcı bulunamadı');
+
+      // Get user's agency
+      const { data: agencies } = await supabase
+        .from('agencies')
+        .select('id, agency_name')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!agencies) throw new Error('Agency bulunamadı');
+
+      const currentAgencyId = agencies.id;
+
+      // Get demo and whatsapp profiles for this agency
+      const { data: profiles } = await supabase
+        .from('whatsapp_user_profiles')
+        .select('phone, agency_id')
+        .eq('agency_id', currentAgencyId)
+        .order('updated_at', { ascending: false })
+        .limit(20);
+
+      if (!profiles || profiles.length === 0) {
+        toast({
+          title: 'Profil Bulunamadı',
+          description: 'Bu agency için test edilecek profil bulunamadı',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Find demo and whatsapp profiles
+      const demoProfile = profiles.find(p => p.phone.startsWith('demo_'));
+      const whatsappProfile = profiles.find(p => !p.phone.startsWith('demo_'));
+
+      if (!demoProfile) {
+        toast({
+          title: 'Demo Profil Bulunamadı',
+          description: 'Demo chat profili bulunamadı. Önce demo chat\'te bir konuşma yapın.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      if (!whatsappProfile) {
+        toast({
+          title: 'WhatsApp Profil Bulunamadı',
+          description: 'WhatsApp profili bulunamadı. Önce WhatsApp\'tan bir konuşma yapın.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Extract session ID from demo phone
+      const sessionId = demoProfile.phone.replace('demo_', '');
+
+      // Auto-fill form
+      setDemoSessionId(sessionId);
+      setWhatsappPhone(whatsappProfile.phone);
+      setAgencyId(currentAgencyId);
+
+      // Run tests
+      const { data, error } = await supabase.functions.invoke('test-suite', {
+        body: {
+          demoSessionId: sessionId,
+          whatsappPhone: whatsappProfile.phone,
+          agencyId: currentAgencyId,
+          testType: testType || null
+        }
+      });
+
+      if (error) throw error;
+
+      setResults(data.results);
+      setSummary(data.summary);
+      setProfiles(data.profiles);
+
+      toast({
+        title: '✅ Otomatik Testler Tamamlandı',
+        description: `${data.summary.passed}/${data.summary.total} test başarılı (${data.summary.matchRate}% eşleşme)`
+      });
+    } catch (error) {
+      console.error('Auto test error:', error);
+      toast({
+        title: 'Hata',
+        description: error instanceof Error ? error.message : 'Testler çalıştırılırken bir hata oluştu',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const runTests = async () => {
     if (!demoSessionId || !whatsappPhone || !agencyId) {
@@ -193,7 +293,39 @@ export default function TestRunner() {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={runTests} disabled={loading} className="flex-1">
+            <Button onClick={runAutoTests} disabled={loading} size="lg" className="flex-1">
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Testler Çalışıyor...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-5 w-5" />
+                  🚀 Otomatik Test Çalıştır
+                </>
+              )}
+            </Button>
+
+            {results.length > 0 && (
+              <Button onClick={exportResults} variant="outline" size="lg">
+                <Download className="mr-2 h-4 w-4" />
+                Raporu İndir
+              </Button>
+            )}
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">veya manuel test</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={runTests} disabled={loading} variant="outline" className="flex-1">
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -202,17 +334,10 @@ export default function TestRunner() {
               ) : (
                 <>
                   <Play className="mr-2 h-4 w-4" />
-                  Testleri Çalıştır
+                  Manuel Test Çalıştır
                 </>
               )}
             </Button>
-
-            {results.length > 0 && (
-              <Button onClick={exportResults} variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Raporu İndir
-              </Button>
-            )}
           </div>
         </CardContent>
       </Card>
