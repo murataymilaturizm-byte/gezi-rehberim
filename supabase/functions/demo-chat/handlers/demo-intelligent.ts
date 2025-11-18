@@ -1,6 +1,6 @@
 // Demo-specific intelligent handler with context awareness
 
-import { callAI } from '../../whatsapp-webhook/services/ai.ts';
+import { callAI } from '../services/ai.ts';
 import { validateResponse } from '../services/response-validator.ts';
 
 export async function handleDemoIntelligently(
