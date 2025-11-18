@@ -9,6 +9,18 @@ interface ConversationState {
   conversationFlow: string[];
   needsFollowUp: boolean;
   lastQuestionAsked: string | null;
+  currentTour: {
+    id: string;
+    title: string;
+    destination: string;
+    dateId?: string;
+    departureDate?: string;
+    returnDate?: string;
+    priceAdult?: number;
+    currency?: string;
+  } | null;
+  wizardStep: 'none' | 'tour_selected' | 'action_choice' | 'detail_shown' | 'price_shown' | 'booking_started';
+  shownTourIds: string[];
 }
 
 export async function getConversationState(
@@ -31,7 +43,10 @@ export async function getConversationState(
     userInterests: [],
     conversationFlow: [],
     needsFollowUp: false,
-    lastQuestionAsked: null
+    lastQuestionAsked: null,
+    currentTour: null,
+    wizardStep: 'none',
+    shownTourIds: []
   };
 
   return conversationState;
