@@ -99,6 +99,39 @@ export function extractMemory(
     }
   }
 
+  // Extract participant numbers (adults/children) ONLY from user message
+  const paxPatterns = [
+    /(\d+)\s*(yetişkin|büyük|adult|adults|erwachsene|взрослых|بالغين|adulte|adultes|adulto|adultos)/gi,
+    /(\d+)\s*(çocuk|child|children|kinder|детей|أطفال|enfant|enfants|niño|niños)/gi,
+    /(\d+)\s*(kişi|person|people|personen|человек|людей|شخص|personne|personnes|persona|personas)/gi
+  ];
+
+  let paxAdults = 0;
+  let paxChildren = 0;
+
+  for (const pattern of paxPatterns) {
+    const matches = Array.from(lowerMessage.matchAll(new RegExp(pattern, 'gi')));
+    for (const match of matches) {
+      const num = parseInt(match[1]);
+      const type = match[2].toLowerCase();
+      
+      if (type.match(/yetişkin|büyük|adult|erwachsene|взрослых|بالغين|adulte|adulto/i)) {
+        paxAdults = Math.max(paxAdults, num);
+      } else if (type.match(/çocuk|child|kinder|детей|أطفال|enfant|niño/i)) {
+        paxChildren = Math.max(paxChildren, num);
+      } else if (type.match(/kişi|person|people|personen|человек|людей|شخص|personne|persona/i) && paxAdults === 0) {
+        paxAdults = Math.max(paxAdults, num);
+      }
+    }
+  }
+
+  if (paxAdults > 0) {
+    memory.lastMentionedPax = {
+      adults: paxAdults,
+      children: paxChildren > 0 ? paxChildren : undefined
+    };
+  }
+
   memory.lastUpdated = new Date().toISOString();
   return memory;
 }
