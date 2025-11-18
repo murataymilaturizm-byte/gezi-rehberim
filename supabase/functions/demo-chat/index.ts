@@ -328,6 +328,24 @@ serve(async (req) => {
     }
     // ELSE: Keep existing currentTour - DON'T reset it even if no tours match!
 
+    // Handle reservation.wizard - prepare wizard state with currentTour if available
+    if (intent.type === 'reservation.wizard' && conversationState.currentTour) {
+      console.log('🎯 reservation.wizard detected with currentTour:', conversationState.currentTour.title);
+      // Mark that booking process has started
+      conversationState.wizardStep = 'booking_started';
+      
+      console.log('💾 Saving booking_started state...');
+      await supabase
+        .from('whatsapp_user_profiles')
+        .upsert({
+          phone: `demo_${sessionId}`,
+          agency_id: DEMO_AGENCY_ID,
+          preferences: { conversation_state: conversationState }
+        }, { onConflict: 'phone,agency_id' });
+      
+      console.log('✅ Wizard state updated to booking_started');
+    }
+
     // Use intelligent handler with conversation state
     console.log('🧠 Calling intelligent handler...');
     const responseMessage = await handleDemoIntelligently(

@@ -566,69 +566,55 @@ Effectuer uniquement l'action sélectionnée!`,
   } else if (intent === 'reservation.wizard') {
     if (currentTour) {
       const reservationMessages = {
-        tr: `🔴 KAYIT TALEBİ:
+        tr: `🔴 KAYIT TALEBİ - TURLU:
 - currentTour VAR: ${currentTour.title}
-- 🔴 "Merhaba" YASAK!
-- 🔴 "Hangi tur?" diye ASLA SORMA
-- Direkt: "Harika! ${currentTour.title} için kayıt oluşturalım."
-- Soru sor: "Kaç kişi katılacaksınız? (Yetişkin/Çocuk sayısını belirtin)"
-- Sonra: "İsim ve iletişim bilgilerinizi alabilir miyim?"
-- Tüm bilgiler toplandığında: Özet göster ve onay al
-- wizardStep'i "booking_started" yap`,
-        en: `🔴 BOOKING REQUEST:
+- "Hangi tur?" diye ASLA SORMA - TUR BELLİ!
+- "Merhaba" YASAK!
+- Direkt kayıt başlat: "Harika! ${currentTour.title} için kayıt oluşturalım."
+- İlk soru: "Kaç kişi katılacaksınız?"
+- SADECE bu tura odaklan`,
+        en: `🔴 REGISTRATION REQUEST - WITH TOUR:
 - currentTour EXISTS: ${currentTour.title}
-- 🔴 "Hello" FORBIDDEN!
-- 🔴 NEVER ASK "Which tour?"
-- Direct: "Great! Let's create a booking for ${currentTour.title}."
-- Ask: "How many people will join? (Specify adult/child count)"
-- Then: "May I get your name and contact information?"
-- When all info collected: Show summary and get confirmation
-- Set wizardStep to "booking_started"`,
-        de: `🔴 BUCHUNGSANFRAGE:
-- currentTour VORHANDEN: ${currentTour.title}
-- 🔴 "Hallo" VERBOTEN!
-- 🔴 NIEMALS "Welche Tour?" FRAGEN
-- Direkt: "Großartig! Erstellen wir eine Buchung für ${currentTour.title}."
-- Fragen: "Wie viele Personen nehmen teil? (Erwachsene/Kinder angeben)"
-- Dann: "Darf ich Ihren Namen und Kontaktinformationen erhalten?"
-- Wenn alle Infos gesammelt: Zusammenfassung zeigen und Bestätigung einholen
-- wizardStep auf "booking_started" setzen`,
-        ru: `🔴 ЗАПРОС НА БРОНИРОВАНИЕ:
+- NEVER ASK "Which tour?" - TOUR IS KNOWN!
+- NO "Hello"!
+- Start registration directly: "Great! Let's create registration for ${currentTour.title}."
+- First question: "How many people will attend?"
+- FOCUS ONLY on this tour`,
+        de: `🔴 REGISTRIERUNGSANFRAGE - MIT TOUR:
+- currentTour EXISTIERT: ${currentTour.title}
+- NIEMALS FRAGEN "Welche Tour?" - TOUR IST BEKANNT!
+- KEIN "Hallo"!
+- Registrierung direkt starten: "Großartig! Lassen Sie uns die Registrierung für ${currentTour.title} erstellen."
+- Erste Frage: "Wie viele Personen werden teilnehmen?"
+- NUR auf diese Tour konzentrieren`,
+        ru: `🔴 ЗАПРОС РЕГИСТРАЦИИ - С ТУРОМ:
 - currentTour СУЩЕСТВУЕТ: ${currentTour.title}
-- 🔴 "Привет" ЗАПРЕЩЕНО!
-- 🔴 НИКОГДА НЕ СПРАШИВАЙТЕ "Какой тур?"
-- Прямо: "Отлично! Давайте создадим бронирование для ${currentTour.title}."
-- Спросите: "Сколько человек присоединится? (Укажите количество взрослых/детей)"
-- Затем: "Могу я получить ваше имя и контактную информацию?"
-- Когда вся информация собрана: Показать резюме и получить подтверждение
-- Установить wizardStep на "booking_started"`,
-        ar: `🔴 طلب حجز:
+- НИКОГДА НЕ СПРАШИВАЙТЕ "Какой тур?" - ТУР ИЗВЕСТЕН!
+- БЕЗ "Привет"!
+- Начните регистрацию напрямую: "Отлично! Давайте создадим регистрацию для ${currentTour.title}."
+- Первый вопрос: "Сколько человек будет участвовать?"
+- ФОКУСИРУЙТЕСЬ ТОЛЬКО на этом туре`,
+        ar: `🔴 طلب تسجيل - مع جولة:
 - currentTour موجود: ${currentTour.title}
-- 🔴 "مرحبا" محظور!
-- 🔴 لا تسأل أبدًا "أي جولة؟"
-- مباشرة: "رائع! دعنا ننشئ حجزًا لـ ${currentTour.title}."
-- اسأل: "كم عدد الأشخاص الذين سينضمون؟ (حدد عدد البالغين/الأطفال)"
-- ثم: "هل يمكنني الحصول على اسمك ومعلومات الاتصال؟"
-- عندما يتم جمع جميع المعلومات: عرض الملخص والحصول على تأكيد
-- تعيين wizardStep إلى "booking_started"`,
-        fr: `🔴 DEMANDE DE RÉSERVATION:
+- لا تسأل أبدًا "أي جولة؟" - الجولة معروفة!
+- بدون "مرحبا"!
+- ابدأ التسجيل مباشرة: "رائع! دعنا ننشئ تسجيلًا لـ ${currentTour.title}."
+- السؤال الأول: "كم عدد الأشخاص الذين سيحضرون؟"
+- ركز فقط على هذه الجولة`,
+        fr: `🔴 DEMANDE D'INSCRIPTION - AVEC CIRCUIT:
 - currentTour EXISTE: ${currentTour.title}
-- 🔴 "Bonjour" INTERDIT!
-- 🔴 NE JAMAIS DEMANDER "Quel circuit?"
-- Direct: "Excellent! Créons une réservation pour ${currentTour.title}."
-- Demandez: "Combien de personnes participeront? (Précisez nombre adultes/enfants)"
-- Puis: "Puis-je obtenir votre nom et vos coordonnées?"
-- Quand toutes les infos sont collectées: Montrer résumé et obtenir confirmation
-- Définir wizardStep sur "booking_started"`,
-        es: `🔴 SOLICITUD DE RESERVA:
+- NE DEMANDEZ JAMAIS "Quel circuit?" - LE CIRCUIT EST CONNU!
+- PAS DE "Bonjour"!
+- Commencez l'inscription directement: "Génial! Créons l'inscription pour ${currentTour.title}."
+- Première question: "Combien de personnes participeront?"
+- CONCENTREZ-VOUS UNIQUEMENT sur ce circuit`,
+        es: `🔴 SOLICITUD DE REGISTRO - CON TOUR:
 - currentTour EXISTE: ${currentTour.title}
-- 🔴 ¡"Hola" PROHIBIDO!
-- 🔴 NUNCA PREGUNTES "¿Qué tour?"
-- Directo: "¡Excelente! Creemos una reserva para ${currentTour.title}."
-- Pregunte: "¿Cuántas personas se unirán? (Especifique número adultos/niños)"
-- Luego: "¿Puedo obtener su nombre e información de contacto?"
-- Cuando se recopile toda la info: Mostrar resumen y obtener confirmación
-- Establecer wizardStep en "booking_started"`
+- NUNCA PREGUNTE "¿Qué tour?" - ¡EL TOUR ES CONOCIDO!
+- SIN "Hola"!
+- Inicie el registro directamente: "¡Genial! Creemos el registro para ${currentTour.title}."
+- Primera pregunta: "¿Cuántas personas asistirán?"
+- CONCÉNTRESE SOLO en este tour`
       };
       intentInstructions = reservationMessages[language as keyof typeof reservationMessages] || reservationMessages.tr;
     } else {
