@@ -127,8 +127,39 @@ serve(async (req) => {
         } else if (matchingTours.length === 1) {
           // Only auto-select if there's exactly ONE matching tour
           selectedTour = matchingTours[0];
+        } else if (matchingTours.length > 1 && intent.type === 'tour.detail') {
+          // Multiple tours match and user wants tour details - find best match
+          console.log('🎯 MULTIPLE TOURS MATCH - Finding best match for tour.detail intent');
+          
+          // Score each tour based on how well it matches the message
+          const scoredTours = matchingTours.map((tour: any) => {
+            const messageLower = userMessage.toLowerCase();
+            const titleWords = tour.title.toLowerCase().split(' ');
+            
+            // Count how many title words appear in the message
+            const matchScore = titleWords.filter((word: string) => 
+              word.length > 2 && messageLower.includes(word)
+            ).length;
+            
+            // Bonus points for exact title match
+            const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
+            
+            return { tour, score: matchScore + exactMatch };
+          });
+          
+          // Sort by score and pick the best match
+          scoredTours.sort((a, b) => b.score - a.score);
+          const bestMatch = scoredTours[0];
+          
+          if (bestMatch.score > 0) {
+            // We have a clear best match
+            selectedTour = bestMatch.tour;
+            console.log('✅ BEST MATCH TOUR SELECTED:', selectedTour.title, 'score:', bestMatch.score);
+          } else {
+            console.log('⚠️ No clear best match - will let AI list all options');
+          }
         }
-        // If multiple matching tours, don't select - let AI list them
+        // If multiple matching tours and not tour.detail, don't select - let AI list them
         
         if (selectedTour) {
           const { data: profile } = await supabase

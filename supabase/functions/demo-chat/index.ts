@@ -313,26 +313,89 @@ serve(async (req) => {
       } else {
         console.log('✅ State saved successfully (auto-select). currentTour:', conversationState.currentTour.title);
       }
-    } else if (matchingTours.length > 1 && (intent.type === 'tour.search' || intent.type === 'tour.list')) {
-      // Multiple tours match AND user is searching - force AI to list them
-      console.log('⚠️ MULTIPLE TOURS MATCH - Will list them for user to choose');
-      conversationState.currentTour = null;
-      conversationState.wizardStep = 'none';
-      conversationState.shownTourIds = matchingTours.map(t => t.id);
-      
-      console.log('💾 Saving multiple tours state...');
-      const { error: saveError3 } = await supabase
-        .from('whatsapp_user_profiles')
-        .upsert({
-          phone: `demo_${sessionId}`,
-          agency_id: DEMO_AGENCY_ID,
-          preferences: { conversation_state: conversationState }
-        }, { onConflict: 'phone,agency_id' });
-      
-      if (saveError3) {
-        console.error('❌ Failed to save multiple tours state:', saveError3);
+    } else if (matchingTours.length > 1) {
+      // Multiple tours match - need to determine best match
+      if (intent.type === 'tour.detail') {
+        // User is asking for specific tour details - find best match
+        console.log('🎯 MULTIPLE TOURS MATCH - Finding best match for tour.detail intent');
+        
+        // Score each tour based on how well it matches the message
+        const scoredTours = matchingTours.map(tour => {
+          const messageLower = message.toLowerCase();
+          const titleWords = tour.title.toLowerCase().split(' ');
+          
+          // Count how many title words appear in the message
+          const matchScore = titleWords.filter(word => 
+            word.length > 2 && messageLower.includes(word)
+          ).length;
+          
+          // Bonus points for exact title match
+          const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
+          
+          return { tour, score: matchScore + exactMatch };
+        });
+        
+        // Sort by score and pick the best match
+        scoredTours.sort((a, b) => b.score - a.score);
+        const bestMatch = scoredTours[0];
+        
+        if (bestMatch.score > 0) {
+          // We have a clear best match
+          console.log('✅ BEST MATCH TOUR SELECTED:', bestMatch.tour.title, 'score:', bestMatch.score);
+          conversationState.currentTour = {
+            id: bestMatch.tour.id,
+            title: bestMatch.tour.title,
+            destination: bestMatch.tour.destination,
+            priceAdult: bestMatch.tour.dates[0]?.price_adult,
+            currency: bestMatch.tour.currency
+          };
+          conversationState.wizardStep = 'tour_selected';
+          if (!conversationState.shownTourIds.includes(bestMatch.tour.id)) {
+            conversationState.shownTourIds.push(bestMatch.tour.id);
+          }
+          
+          console.log('💾 Saving best match tour to DB...');
+          const { error: saveError3 } = await supabase
+            .from('whatsapp_user_profiles')
+            .upsert({
+              phone: `demo_${sessionId}`,
+              agency_id: DEMO_AGENCY_ID,
+              preferences: { conversation_state: conversationState }
+            }, { onConflict: 'phone,agency_id' });
+          
+          if (saveError3) {
+            console.error('❌ Failed to save state (best match):', saveError3);
+          } else {
+            console.log('✅ Best match state saved. currentTour:', conversationState.currentTour.title);
+          }
+        } else {
+          // No clear match - list all options
+          console.log('⚠️ No clear best match - listing all matching tours');
+          conversationState.currentTour = null;
+          conversationState.wizardStep = 'none';
+          conversationState.shownTourIds = matchingTours.map(t => t.id);
+        }
       } else {
-        console.log('✅ Multiple tours state saved');
+        // User is searching/listing - show all matches
+        console.log('⚠️ MULTIPLE TOURS MATCH - Will list them for user to choose');
+        conversationState.currentTour = null;
+        conversationState.wizardStep = 'none';
+        conversationState.shownTourIds = matchingTours.map(t => t.id);
+        
+        console.log('💾 Saving multiple tours state...');
+        const { error: saveError3 } = await supabase
+          .from('whatsapp_user_profiles')
+          .upsert({
+            phone: `demo_${sessionId}`,
+            agency_id: DEMO_AGENCY_ID,
+            preferences: { conversation_state: conversationState }
+          }, { onConflict: 'phone,agency_id' });
+        
+        if (saveError3) {
+          console.error('❌ Failed to save multiple tours state:', saveError3);
+        } else {
+          console.log('✅ Multiple tours state saved');
+        }
       }
     }
     // ELSE: Keep existing currentTour - DON'T reset it even if no tours match!
