@@ -193,17 +193,50 @@ serve(async (req) => {
     const intent = await detectIntent(message, historyData || [], userLanguage);
     console.log('🎯 AI Intent:', intent.type, 'confidence:', intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
-    // Handle tour selection - update currentTour
-    if ((intent.type as string) === 'tour.detail' || message.match(/^\d+$/)) {
+    // Handle tour selection - ONLY select if user is specific or there's only one match
+    const numericSelection = message.match(/^\d+$/);
+    
+    if ((intent.type as string) === 'tour.detail' || numericSelection) {
       console.log('🔍 Checking for tour selection...');
-      const selectedTour = DEMO_TOURS.find((t, index) => 
+      
+      // Find matching tours
+      const matchingTours = DEMO_TOURS.filter(t => 
         message.toLowerCase().includes(t.title.toLowerCase()) ||
-        message.toLowerCase().includes(t.destination.toLowerCase()) ||
-        (parseInt(message) === index + 1)
+        message.toLowerCase().includes(t.destination.toLowerCase())
       );
       
-      if (selectedTour && !conversationState.currentTour) {
-        console.log('✅ TOUR SELECTED:', selectedTour.title);
+      // Or handle numeric selection
+      if (numericSelection) {
+        const index = parseInt(message) - 1;
+        if (index >= 0 && index < DEMO_TOURS.length) {
+          const selectedTour = DEMO_TOURS[index];
+          console.log('✅ TOUR SELECTED BY NUMBER:', selectedTour.title);
+          conversationState.currentTour = {
+            id: selectedTour.id,
+            title: selectedTour.title,
+            destination: selectedTour.destination,
+            priceAdult: selectedTour.dates[0]?.price_adult,
+            currency: selectedTour.currency
+          };
+          conversationState.wizardStep = 'tour_selected';
+          if (!conversationState.shownTourIds.includes(selectedTour.id)) {
+            conversationState.shownTourIds.push(selectedTour.id);
+          }
+          
+          await supabase
+            .from('whatsapp_user_profiles')
+            .upsert({
+              phone: `demo_${sessionId}`,
+              agency_id: DEMO_AGENCY_ID,
+              preferences: { conversation_state: conversationState }
+            }, { onConflict: 'phone,agency_id' });
+          
+          console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
+        }
+      } else if (matchingTours.length === 1 && !conversationState.currentTour) {
+        // Only auto-select if there's exactly ONE matching tour
+        const selectedTour = matchingTours[0];
+        console.log('✅ SINGLE TOUR AUTO-SELECTED:', selectedTour.title);
         conversationState.currentTour = {
           id: selectedTour.id,
           title: selectedTour.title,
@@ -216,8 +249,6 @@ serve(async (req) => {
           conversationState.shownTourIds.push(selectedTour.id);
         }
         
-        // Save updated state
-        console.log('💾 Saving updated conversation state...');
         await supabase
           .from('whatsapp_user_profiles')
           .upsert({
@@ -227,10 +258,9 @@ serve(async (req) => {
           }, { onConflict: 'phone,agency_id' });
         
         console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
-      } else if (selectedTour) {
-        console.log('⚠️ Tour already selected:', conversationState.currentTour?.title);
-      } else {
-        console.log('⚠️ No tour matched the selection');
+      } else if (matchingTours.length > 1) {
+        console.log(`📋 Multiple tours match (${matchingTours.length}), letting AI list them`);
+        // Don't select - let AI list multiple matching tours
       }
     }
 
