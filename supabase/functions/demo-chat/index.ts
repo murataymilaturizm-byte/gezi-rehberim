@@ -339,6 +339,48 @@ serve(async (req) => {
 
     // Handle reservation.wizard - prepare wizard state with currentTour if available
     if (intent.type === 'reservation.wizard') {
+      // If no currentTour, try to find it from recent conversation history
+      if (!conversationState.currentTour && conversationHistory.length > 0) {
+        console.log('🔍 No currentTour - searching in conversation history...');
+        
+        // Look for tour mentions in recent messages
+        for (let i = conversationHistory.length - 1; i >= 0; i--) {
+          const msg = conversationHistory[i];
+          if (msg.role === 'assistant' || msg.role === 'user') {
+            const content = msg.content.toLowerCase();
+            
+            // Find matching tour
+            const foundTour = DEMO_TOURS.find(t => 
+              content.includes(t.title.toLowerCase()) ||
+              content.includes(t.destination.toLowerCase())
+            );
+            
+            if (foundTour) {
+              console.log('✅ Found tour in history:', foundTour.title);
+              conversationState.currentTour = {
+                id: foundTour.id,
+                title: foundTour.title,
+                destination: foundTour.destination,
+                priceAdult: foundTour.dates[0]?.price_adult,
+                currency: foundTour.currency
+              };
+              conversationState.wizardStep = 'tour_selected';
+              
+              // Save to DB
+              await supabase
+                .from('whatsapp_user_profiles')
+                .upsert({
+                  phone: `demo_${sessionId}`,
+                  agency_id: DEMO_AGENCY_ID,
+                  preferences: { conversation_state: conversationState }
+                }, { onConflict: 'phone,agency_id' });
+              
+              break;
+            }
+          }
+        }
+      }
+      
       if (conversationState.currentTour) {
         console.log('🎯 reservation.wizard detected with currentTour:', conversationState.currentTour.title);
         
