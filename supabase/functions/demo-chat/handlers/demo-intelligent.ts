@@ -61,14 +61,7 @@ function buildDemoPrompt(
     return `- ${tour.title} (${tour.destination})\n  Tarihler: ${dates}`;
   }).join('\n\n');
 
-  // Style-based personality and emoji rules
-  const stylePersonality = conversationStyle === 'friendly' 
-    ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
-    : conversationStyle === 'casual'
-    ? 'Rahat, günlük dilde konuş. Uygun yerlerde emoji kullan.'
-    : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.';
-
-  const basePrompt = `Sen bir seyahat asistanısın. ${stylePersonality}
+  const basePrompt = `Sen bir seyahat asistanısın.
 
 🚨 ZORUNLU WIZARD KURALLARI 🚨
 🔴 ADIM 1: Tur listele (sadece liste, detay yok)
@@ -197,7 +190,40 @@ Sadece seçilen işlemi yap!`;
     intentInstructions = '🔴 GENEL: 🔴 "Merhaba" YASAK! Kısa ve net cevap (max 3 cümle).';
   }
 
-  return basePrompt + '\n\n' + intentInstructions;
+  // Style-specific instructions
+  const styleInstructions = conversationStyle === 'friendly'
+    ? `
+
+USLUP: Samimi ve Sıcak
+- Dostane, misafirperver bir dil kullan
+- Coşkulu ama kısa ol
+- Yardım etmeye gerçekten istekli görün
+- Uygun yerlerde emoji kullan 😊`
+    : conversationStyle === 'casual'
+    ? `
+
+USLUP: Rahat ve Günlük
+- Günlük konuşma dilini kullan
+- Samimi ve rahat ol
+- Yanıtları hafif ve kolay anlaşılır tut
+- Uygun yerlerde emoji kullanabilirsin`
+    : conversationStyle === 'formal'
+    ? `
+
+USLUP: Resmi ve Saygılı
+- Kültüre uygun resmi dil kullan
+- Profesyonel mesafe koru ama kısa ol
+- Kibar ve özenli ifadeler seç
+- Emoji kullanma`
+    : `
+
+USLUP: Profesyonel ve Bilgilendirici
+- Kibar, işe uygun dil kullan
+- Net ama kısa ol
+- Saygılı bir ton koru
+- Emoji kullanma`;
+
+  return basePrompt + '\n\n' + intentInstructions + styleInstructions;
 }
 
 function extractLastTourFromHistory(history: any[]): string | null {
