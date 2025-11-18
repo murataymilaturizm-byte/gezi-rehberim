@@ -32,9 +32,11 @@ interface TestSummary {
 export default function TestRunner() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [analyzingFailures, setAnalyzingFailures] = useState(false);
   const [results, setResults] = useState<TestResult[]>([]);
   const [summary, setSummary] = useState<TestSummary | null>(null);
   const [profiles, setProfiles] = useState<any>(null);
+  const [failureAnalysis, setFailureAnalysis] = useState<any>(null);
 
   // Form state
   const [demoSessionId, setDemoSessionId] = useState('');
@@ -191,6 +193,7 @@ export default function TestRunner() {
     setLoading(true);
     setResults([]);
     setSummary(null);
+    setFailureAnalysis(null);
 
     try {
       // Get current user's agency
@@ -262,6 +265,44 @@ export default function TestRunner() {
       title: 'Rapor İndirildi',
       description: 'Test raporu başarıyla indirildi'
     });
+  };
+
+  const analyzeFailures = async () => {
+    const failedTests = results.filter(r => !r.match);
+    
+    if (failedTests.length === 0) {
+      toast({
+        title: 'Başarısız Test Yok',
+        description: 'Analiz edilecek başarısız test bulunamadı'
+      });
+      return;
+    }
+
+    setAnalyzingFailures(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-test-failures', {
+        body: { failedTests }
+      });
+
+      if (error) throw error;
+
+      setFailureAnalysis(data.analyses);
+      
+      toast({
+        title: '✅ Analiz Tamamlandı',
+        description: `${failedTests.length} başarısız test analiz edildi`
+      });
+    } catch (error) {
+      console.error('Failure analysis error:', error);
+      toast({
+        title: 'Hata',
+        description: 'Analiz sırasında bir hata oluştu',
+        variant: 'destructive'
+      });
+    } finally {
+      setAnalyzingFailures(false);
+    }
   };
 
   const getResultIcon = (result: 'pass' | 'fail' | 'skip') => {
@@ -382,10 +423,33 @@ export default function TestRunner() {
             </Button>
 
             {results.length > 0 && (
-              <Button onClick={exportResults} variant="secondary" size="lg" className="w-full">
-                <Download className="mr-2 h-4 w-4" />
-                Raporu İndir
-              </Button>
+              <>
+                <Button onClick={exportResults} variant="secondary" size="lg" className="w-full">
+                  <Download className="mr-2 h-4 w-4" />
+                  Raporu İndir
+                </Button>
+                
+                {summary && summary.failed > 0 && (
+                  <Button 
+                    onClick={analyzeFailures} 
+                    disabled={analyzingFailures}
+                    variant="default" 
+                    size="lg" 
+                    className="w-full"
+                  >
+                    {analyzingFailures ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        AI Analiz Ediyor...
+                      </>
+                    ) : (
+                      <>
+                        ✨ AI ile Başarısızlıkları Analiz Et
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
             )}
           </div>
 
@@ -504,6 +568,71 @@ export default function TestRunner() {
                 ))}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {failureAnalysis && failureAnalysis.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>🔍 AI Analiz Sonuçları & Düzeltme Önerileri</CardTitle>
+            <CardDescription>
+              Başarısız testler için AI tarafından oluşturulan detaylı analiz ve çözüm önerileri
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {failureAnalysis.map((analysis: any, idx: number) => (
+                <div key={idx} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <h4 className="font-semibold text-lg">{analysis.testName}</h4>
+                    <Badge 
+                      variant={
+                        analysis.priority === 'critical' ? 'destructive' :
+                        analysis.priority === 'high' ? 'default' :
+                        analysis.priority === 'medium' ? 'secondary' : 'outline'
+                      }
+                    >
+                      {analysis.priority.toUpperCase()}
+                    </Badge>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">🔴 Sorun:</h5>
+                    <p className="text-sm text-muted-foreground">{analysis.problem}</p>
+                  </div>
+
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">📁 Etkilenen Dosyalar:</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {analysis.affectedFiles.map((file: string, i: number) => (
+                        <Badge key={i} variant="outline" className="font-mono text-xs">
+                          {file}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">✅ Düzeltme Adımları:</h5>
+                    <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                      {analysis.fixSteps.map((step: string, i: number) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  {analysis.codeExample && (
+                    <div>
+                      <h5 className="font-medium text-sm mb-2">💻 Örnek Kod:</h5>
+                      <pre className="bg-muted p-3 rounded text-xs overflow-x-auto">
+                        <code>{analysis.codeExample}</code>
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
