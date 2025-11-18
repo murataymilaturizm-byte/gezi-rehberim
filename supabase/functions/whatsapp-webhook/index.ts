@@ -178,51 +178,6 @@ serve(async (req) => {
     if (intent.type === 'reservation.wizard') {
       const conversationState = await getConversationState(supabase, userPhone, agency.id);
       
-      // If no currentTour, try to find it from recent conversation history
-      if (!conversationState.currentTour && history.length > 0) {
-        console.log('🔍 No currentTour - searching in conversation history...');
-        
-        // Get all agency tours
-        const { data: allTours } = await supabase
-          .from('tours')
-          .select('id, title, destination, currency, dates:tour_dates(price_adult)')
-          .eq('agency_id', agency.id);
-        
-        if (allTours && allTours.length > 0) {
-          // Look for tour mentions in recent messages
-          for (let i = history.length - 1; i >= 0; i--) {
-            const msg = history[i];
-            if (msg.role === 'assistant' || msg.role === 'user') {
-              const content = msg.content.toLowerCase();
-              
-              // Find matching tour
-              const foundTour = allTours.find((t: any) => 
-                content.includes(t.title.toLowerCase()) ||
-                content.includes(t.destination.toLowerCase())
-              );
-              
-              if (foundTour) {
-                console.log('✅ Found tour in history:', foundTour.title);
-                conversationState.currentTour = {
-                  id: foundTour.id,
-                  title: foundTour.title,
-                  destination: foundTour.destination,
-                  priceAdult: foundTour.dates?.[0]?.price_adult,
-                  currency: foundTour.currency
-                };
-                
-                // Update conversation state
-                await updateConversationState(supabase, userPhone, agency.id, {
-                  currentTour: conversationState.currentTour
-                });
-                
-                break;
-              }
-            }
-          }
-        }
-      }
-      
       if (conversationState.currentTour) {
         // Start wizard with pre-selected tour
         console.log('🎯 Starting wizard with pre-selected tour:', conversationState.currentTour.title);
