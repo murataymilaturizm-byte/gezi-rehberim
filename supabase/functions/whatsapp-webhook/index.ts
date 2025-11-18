@@ -155,15 +155,40 @@ serve(async (req) => {
           scoredTours.sort((a, b) => b.score - a.score);
           const bestMatch = scoredTours[0];
           
-          if (bestMatch.score > 0) {
+          // If score is high enough (>=2), we have a clear best match
+          if (bestMatch.score >= 2) {
             // We have a clear best match
             selectedTour = bestMatch.tour;
             console.log('✅ BEST MATCH TOUR SELECTED:', selectedTour.title, 'score:', bestMatch.score);
           } else {
-            console.log('⚠️ No clear best match - will let AI list all options');
+            console.log('⚠️ No clear best match (score:', bestMatch.score, ') - will let AI list all options');
+          }
+        } else if (matchingTours.length > 1) {
+          // Multiple tours match - try to find best match regardless of intent
+          console.log('🎯 MULTIPLE TOURS MATCH - Finding best match for any intent');
+          
+          const scoredTours = matchingTours.map((tour: any) => {
+            const messageLower = userMessage.toLowerCase();
+            const titleWords = tour.title.toLowerCase().split(' ');
+            
+            const matchScore = titleWords.filter((word: string) => 
+              word.length > 2 && messageLower.includes(word)
+            ).length;
+            
+            const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
+            
+            return { tour, score: matchScore + exactMatch };
+          });
+          
+          scoredTours.sort((a, b) => b.score - a.score);
+          const bestMatch = scoredTours[0];
+          
+          // If score is high enough (>=2), we have a clear best match
+          if (bestMatch.score >= 2) {
+            selectedTour = bestMatch.tour;
+            console.log('✅ BEST MATCH TOUR SELECTED:', selectedTour.title, 'score:', bestMatch.score);
           }
         }
-        // If multiple matching tours and not tour.detail, don't select - let AI list them
         
         if (selectedTour && !conversationState.currentTour) {
           conversationState.currentTour = {
@@ -286,31 +311,40 @@ serve(async (req) => {
           return new Response(createTwiMLResponse(wizardResponse), { status: 200, headers: createTwiMLHeaders() });
         }
       } else {
-        // No currentTour - clear any old wizard state and ask user to select a tour
-        console.log('⚠️ reservation.wizard detected but no currentTour - asking user to select tour first');
+        // No currentTour - user must select a tour first
+        console.log('⚠️ reservation.wizard detected but no currentTour - user needs to select tour first');
         
-        const { data: profile } = await supabase
-          .from('whatsapp_user_profiles')
-          .select('preferences')
-          .eq('phone', userPhone)
+        // Get all tours to show user
+        const { data: allTours } = await supabase
+          .from('tours')
+          .select('id, title, destination')
           .eq('agency_id', agency.id)
-          .single();
-
-        const preferences = profile?.preferences || {};
-        preferences.wizard_state = undefined;
-
-        await supabase
-          .from('whatsapp_user_profiles')
-          .update({ preferences })
-          .eq('phone', userPhone)
-          .eq('agency_id', agency.id);
+          .order('created_at', { ascending: false })
+          .limit(10);
         
-        const noTourMessage = userLanguage === 'tr'
-          ? '📋 Hangi turumuz için kayıt oluşturmak istiyorsunuz?\n\nLütfen tur adını veya numarasını yazın.'
-          : '📋 Which tour would you like to book?\n\nPlease enter the tour name or number.';
-        
-        await saveMessage(supabase, userPhone, 'assistant', noTourMessage, agency.id);
-        return new Response(createTwiMLResponse(noTourMessage), { status: 200, headers: createTwiMLHeaders() });
+        if (allTours && allTours.length > 0) {
+          let tourListMsg = userLanguage === 'tr'
+            ? '📋 Hangi turumuz için kayıt oluşturmak istiyorsunuz?\n\n'
+            : '📋 Which tour would you like to book?\n\n';
+          
+          allTours.forEach((tour: any, idx: number) => {
+            tourListMsg += `${idx + 1}. ${tour.title} (${tour.destination})\n`;
+          });
+          
+          tourListMsg += userLanguage === 'tr'
+            ? '\n\nLütfen numara veya tur adını yazın.'
+            : '\n\nPlease enter the number or tour name.';
+          
+          await saveMessage(supabase, userPhone, 'assistant', tourListMsg, agency.id);
+          return new Response(createTwiMLResponse(tourListMsg), { status: 200, headers: createTwiMLHeaders() });
+        } else {
+          const noToursMsg = userLanguage === 'tr'
+            ? '❌ Üzgünüm, şu anda kayıt alabileceğimiz tur bulunmamaktadır.'
+            : '❌ Sorry, no tours available for booking at the moment.';
+          
+          await saveMessage(supabase, userPhone, 'assistant', noToursMsg, agency.id);
+          return new Response(createTwiMLResponse(noToursMsg), { status: 200, headers: createTwiMLHeaders() });
+        }
       }
     }
 
