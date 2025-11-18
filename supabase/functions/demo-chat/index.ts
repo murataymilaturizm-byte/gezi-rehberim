@@ -346,10 +346,32 @@ serve(async (req) => {
         const fullTour = DEMO_TOURS.find(t => t.id === conversationState.currentTour.id);
         
         if (fullTour) {
+          // Filter available dates
+          const availableDates = (fullTour.dates || [])
+            .filter((d: any) => 
+              new Date(d.departure_date) >= new Date() && 
+              d.quota > 0
+            )
+            .sort((a: any, b: any) => 
+              new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime()
+            );
+
+          if (availableDates.length === 0) {
+            const noDateMessage = userLanguage === 'tr' 
+              ? '❌ Üzgünüm, bu tur için uygun tarih bulunmamaktadır.'
+              : '❌ Sorry, no available dates for this tour.';
+            await saveMessage(supabase, sessionId, 'assistant', noDateMessage);
+            
+            return new Response(
+              JSON.stringify({ message: noDateMessage }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
           // Initialize wizard state with context from conversation
           const wizardState: WizardState = {
             step: 'date_selection',
-            selected_tour: fullTour,
+            selected_tour: { ...fullTour, dates: availableDates },
             pax_adult: conversationState.userMemory?.lastMentionedPax?.adults || undefined,
             pax_child: conversationState.userMemory?.lastMentionedPax?.children || undefined,
             created_at: new Date().toISOString()
@@ -368,6 +390,35 @@ serve(async (req) => {
             }, { onConflict: 'phone,agency_id' });
           
           console.log('✅ Wizard state initialized with tour and pax info');
+
+          // CRITICAL: Show date options immediately, don't call intelligent handler
+          let wizardResponse = '';
+          
+          if (userLanguage === 'tr') {
+            wizardResponse = `🎫 *${fullTour.title}*\n\n📅 *Müsait Tarihler:*\n\n`;
+          } else {
+            wizardResponse = `🎫 *${fullTour.title}*\n\n📅 *Available Dates:*\n\n`;
+          }
+
+          availableDates.forEach((date: any, index: number) => {
+            const depDate = new Date(date.departure_date).toLocaleDateString(userLanguage === 'tr' ? 'tr-TR' : 'en-US', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric'
+            });
+            wizardResponse += `${index + 1}. ${depDate} - ${date.price_adult} ${fullTour.currency}\n`;
+          });
+
+          wizardResponse += userLanguage === 'tr'
+            ? '\n\nLütfen tarih numarasını yazın:'
+            : '\n\nPlease enter the date number:';
+
+          await saveMessage(supabase, sessionId, 'assistant', wizardResponse);
+          
+          return new Response(
+            JSON.stringify({ message: wizardResponse }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
       }
     }
