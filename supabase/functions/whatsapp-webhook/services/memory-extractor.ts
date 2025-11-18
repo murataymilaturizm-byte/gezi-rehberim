@@ -39,11 +39,12 @@ export function extractMemory(
   const lowerResponse = aiResponse.toLowerCase();
   const combinedText = `${lowerMessage} ${lowerResponse}`;
 
-  // Extract destinations from tours and messages
+  // Extract destinations ONLY from user message (not AI suggestions)
   const destinationKeywords = [...new Set(tours.map(t => t.destination))];
   for (const dest of destinationKeywords) {
-    if (combinedText.includes(dest.toLowerCase()) && 
-        !memory.preferredDestinations.includes(dest)) {
+    // Use word boundaries to avoid partial matches
+    const regex = new RegExp(`\\b${dest.toLowerCase()}\\b`, 'i');
+    if (regex.test(lowerMessage) && !memory.preferredDestinations.includes(dest)) {
       memory.preferredDestinations.push(dest);
     }
   }
