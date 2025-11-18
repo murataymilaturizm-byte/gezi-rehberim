@@ -285,14 +285,42 @@ async function handleDateSelection(
 
   const selectedDate = dates[dateNumber - 1];
 
-  // Update wizard state
+  // Update wizard state - skip to date_selection if pax info from conversation exists
+  if (state.pax_adult && state.pax_adult > 0) {
+    // We already have pax info from conversation memory, skip to full name
+    state.step = 'full_name_request';
+    state.selected_date = selectedDate;
+    await saveWizardState(supabase, phone, agencyId, state);
+    
+    const paxMessages = {
+      tr: `✅ Tarih seçildi: ${new Date(selectedDate.departure_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}\n👥 ${state.pax_adult} yetişkin${state.pax_child ? ` ve ${state.pax_child} çocuk` : ''}\n\nLütfen adınız ve soyadınızı yazın:`,
+      en: `✅ Date selected: ${new Date(selectedDate.departure_date).toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })}\n👥 ${state.pax_adult} adult${state.pax_adult > 1 ? 's' : ''}${state.pax_child ? ` and ${state.pax_child} child${state.pax_child > 1 ? 'ren' : ''}` : ''}\n\nPlease enter your full name:`,
+      de: `✅ Datum ausgewählt: ${new Date(selectedDate.departure_date).toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })}\n👥 ${state.pax_adult} Erwachsene${state.pax_child ? ` und ${state.pax_child} Kinder` : ''}\n\nBitte geben Sie Ihren vollständigen Namen ein:`,
+      ru: `✅ Дата выбрана: ${new Date(selectedDate.departure_date).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })}\n👥 ${state.pax_adult} взрослых${state.pax_child ? ` и ${state.pax_child} детей` : ''}\n\nПожалуйста, введите свое полное имя:`,
+      ar: `✅ تم اختيار التاريخ: ${new Date(selectedDate.departure_date).toLocaleDateString('ar-EG', { day: '2-digit', month: 'long', year: 'numeric' })}\n👥 ${state.pax_adult} بالغين${state.pax_child ? ` و ${state.pax_child} أطفال` : ''}\n\nالرجاء إدخال اسمك الكامل:`,
+      fr: `✅ Date sélectionnée: ${new Date(selectedDate.departure_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}\n👥 ${state.pax_adult} adulte${state.pax_adult > 1 ? 's' : ''}${state.pax_child ? ` et ${state.pax_child} enfant${state.pax_child > 1 ? 's' : ''}` : ''}\n\nVeuillez entrer votre nom complet:`,
+      es: `✅ Fecha seleccionada: ${new Date(selectedDate.departure_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}\n👥 ${state.pax_adult} adulto${state.pax_adult > 1 ? 's' : ''}${state.pax_child ? ` y ${state.pax_child} niño${state.pax_child > 1 ? 's' : ''}` : ''}\n\nPor favor, ingrese su nombre completo:`
+    };
+    
+    return paxMessages[language as keyof typeof paxMessages] || paxMessages.tr;
+  }
+  
+  // Ask for pax
   state.step = 'pax_selection';
   state.selected_date = selectedDate;
   await saveWizardState(supabase, phone, agencyId, state);
-
-  return language === 'tr'
-    ? `✅ Tarih seçildi: ${new Date(selectedDate.departure_date).toLocaleDateString('tr-TR')}\n\n👥 Kaç yetişkin katılacak? (Sayı yazın)`
-    : `✅ Date selected: ${new Date(selectedDate.departure_date).toLocaleDateString('en-US')}\n\n👥 How many adults? (Enter number)`;
+  
+  const paxRequestMessages = {
+    tr: `✅ Tarih seçildi: ${new Date(selectedDate.departure_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}\n\n👥 Kaç yetişkin katılacak? Çocuk varsa belirtin (Örnek: 3 yetişkin 2 çocuk)`,
+    en: `✅ Date selected: ${new Date(selectedDate.departure_date).toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })}\n\n👥 How many adults? Specify children if any (Example: 3 adults 2 children)`,
+    de: `✅ Datum ausgewählt: ${new Date(selectedDate.departure_date).toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })}\n\n👥 Wie viele Erwachsene? Geben Sie Kinder an, falls vorhanden (Beispiel: 3 Erwachsene 2 Kinder)`,
+    ru: `✅ Дата выбрана: ${new Date(selectedDate.departure_date).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })}\n\n👥 Сколько взрослых? Укажите детей, если есть (Пример: 3 взрослых 2 детей)`,
+    ar: `✅ تم اختيار التاريخ: ${new Date(selectedDate.departure_date).toLocaleDateString('ar-EG', { day: '2-digit', month: 'long', year: 'numeric' })}\n\n👥 كم عدد البالغين؟ حدد الأطفال إن وجدوا (مثال: 3 بالغين 2 أطفال)`,
+    fr: `✅ Date sélectionnée: ${new Date(selectedDate.departure_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}\n\n👥 Combien d'adultes? Précisez les enfants s'il y en a (Exemple: 3 adultes 2 enfants)`,
+    es: `✅ Fecha seleccionada: ${new Date(selectedDate.departure_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}\n\n👥 ¿Cuántos adultos? Especifique niños si los hay (Ejemplo: 3 adultos 2 niños)`
+  };
+  
+  return paxRequestMessages[language as keyof typeof paxRequestMessages] || paxRequestMessages.tr;
 }
 
 // Pax selection step

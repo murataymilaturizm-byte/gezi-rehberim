@@ -26,6 +26,10 @@ interface ConversationState {
     budgetRange?: 'düşük' | 'orta' | 'yüksek';
     travelStyle?: string;
     interests: string[];
+    lastMentionedPax?: {
+      adults: number;
+      children?: number;
+    };
     lastUpdated: string;
   };
 }

@@ -193,8 +193,10 @@ serve(async (req) => {
 
         if (tours) {
           const wizardState = {
-            step: 'date_selection',
+            step: conversationState.userMemory?.lastMentionedPax ? 'date_selection' : 'date_selection',
             selected_tour: tours,
+            pax_adult: conversationState.userMemory?.lastMentionedPax?.adults || undefined,
+            pax_child: conversationState.userMemory?.lastMentionedPax?.children || undefined,
             created_at: new Date().toISOString()
           };
 
@@ -215,7 +217,7 @@ serve(async (req) => {
             .eq('phone', userPhone)
             .eq('agency_id', agency.id);
 
-          console.log('✅ Wizard state saved with pre-selected tour');
+          console.log('✅ Wizard state saved with pre-selected tour and pax:', wizardState.pax_adult, 'adults,', wizardState.pax_child, 'children');
         }
       }
     }
