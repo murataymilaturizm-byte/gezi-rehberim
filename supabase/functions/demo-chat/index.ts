@@ -3,10 +3,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { detectIntent } from './services/intent-detector.ts';
 import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
 import { extractMemory } from './services/memory-extractor.ts';
-import { handleWizardStep } from './handlers/wizard.ts';
-import { enrichConversationInsights } from './services/profile.ts';
-import { getConversationState, updateConversationState } from './services/conversation-state.ts';
-import type { WizardState } from './types.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -231,87 +227,19 @@ serve(async (req) => {
     const intent = await detectIntent(message, conversationHistory, userLanguage);
     console.log('🎯 AI Intent:', intent.type, 'confidence:', intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
-    // Update conversation state with detected intent
-    await updateConversationState(supabase, sessionId, DEMO_AGENCY_ID, {
-      lastIntent: intent.type
-    });
-
     // Handle tour selection - check ALL intents, not just tour.detail/tour.search
     const numericSelection = message.match(/^\d+$/);
     
     // CRITICAL: Check for tour selection on EVERY message type to preserve memory
     console.log('🔍 Checking for tour selection...');
     
-    const lowerMessage = message.toLowerCase();
-    
-    // Find matching tours - smart matching (case insensitive, partial match)
-    const matchingTours = DEMO_TOURS.filter(t => {
-      const lowerTitle = t.title.toLowerCase();
-      const lowerDestination = t.destination.toLowerCase();
-      
-      // Exact match or contains
-      return lowerMessage.includes(lowerTitle) || 
-             lowerTitle.includes(lowerMessage) ||
-             lowerMessage.includes(lowerDestination) ||
-             lowerDestination.includes(lowerMessage);
-    });
+    // Find matching tours in the message
+    const matchingTours = DEMO_TOURS.filter(t => 
+      message.toLowerCase().includes(t.title.toLowerCase()) ||
+      message.toLowerCase().includes(t.destination.toLowerCase())
+    );
     
     console.log(`🔎 Found ${matchingTours.length} matching tours for "${message}"`);
-    
-    // Check if user is referring to a previously discussed tour (e.g., "konuştuğumuz tura kayıt olmak istiyorum")
-    if (matchingTours.length === 0 && !conversationState.currentTour) {
-      const referencePatterns = /\b(konuştuğumuz|bahsettiğimiz|söylediğiniz|bu|o|şu|kayıt|rezervasyon)\s*(tur|turu|tura|turun)?/i;
-      const bookingIntents = /\b(kayıt|kayır|rezervasyon|ayır|ayırmak|katılmak|gelmek|gitmek|olmak|isterim|istiyorum)\b/i;
-      
-      if (referencePatterns.test(message) || (bookingIntents.test(message) && intent.type === 'reservation.wizard')) {
-        console.log('🔍 User is referring to a previous tour or wants to book, checking conversation history...');
-        
-        // Check last 10 messages (both user and assistant) for tour mentions
-        const recentMessages = conversationHistory.slice(-10).reverse();
-        
-        for (const msg of recentMessages) {
-          // Try to find any tour mentioned in this message
-          for (const tour of DEMO_TOURS) {
-            const lowerContent = msg.content.toLowerCase();
-            const lowerTitle = tour.title.toLowerCase();
-            const lowerDestination = tour.destination.toLowerCase();
-            
-            if (lowerContent.includes(lowerTitle) || lowerContent.includes(lowerDestination)) {
-              console.log('✅ Found previously mentioned tour:', tour.title, 'in', msg.role, 'message');
-              conversationState.currentTour = {
-                id: tour.id,
-                title: tour.title,
-                destination: tour.destination,
-                priceAdult: tour.dates[0]?.price_adult,
-                currency: tour.currency
-              };
-              conversationState.wizardStep = 'tour_selected';
-              if (!conversationState.shownTourIds.includes(tour.id)) {
-                conversationState.shownTourIds.push(tour.id);
-              }
-              
-              console.log('💾 Saving tour reference from history...');
-              await supabase
-                .from('whatsapp_user_profiles')
-                .upsert({
-                  phone: `demo_${sessionId}`,
-                  agency_id: DEMO_AGENCY_ID,
-                  preferences: { conversation_state: conversationState }
-                }, { onConflict: 'phone,agency_id' });
-              
-              console.log('✅ Tour reference saved. currentTour:', conversationState.currentTour.title);
-              break;
-            }
-          }
-          
-          if (conversationState.currentTour) break;
-        }
-        
-        if (!conversationState.currentTour) {
-          console.log('⚠️ No tour found in history despite reference pattern match');
-        }
-      }
-    }
     
     // Handle numeric selection (user chose from list)
     if (numericSelection) {
@@ -401,52 +329,12 @@ serve(async (req) => {
     // ELSE: Keep existing currentTour - DON'T reset it even if no tours match!
 
     // Handle reservation.wizard - prepare wizard state with currentTour if available
-    if (intent.type === 'reservation.wizard') {
-      if (conversationState.currentTour) {
-        console.log('🎯 reservation.wizard detected with currentTour:', conversationState.currentTour.title);
-        
-        // Find the full tour data
-        const fullTour = DEMO_TOURS.find(t => t.id === conversationState.currentTour.id);
-        
-        if (fullTour) {
-          // Initialize wizard state with context from conversation
-          const wizardState: WizardState = {
-            step: 'date_selection',
-            selected_tour: fullTour,
-            pax_adult: conversationState.userMemory?.lastMentionedPax?.adults || undefined,
-            pax_child: conversationState.userMemory?.lastMentionedPax?.children || undefined,
-            created_at: new Date().toISOString()
-          };
-          
-          conversationState.wizardState = wizardState;
-          conversationState.wizardStep = 'booking_started';
-          
-          console.log('💾 Saving wizard state with pax info:', wizardState.pax_adult, 'adults,', wizardState.pax_child, 'children');
-          await supabase
-            .from('whatsapp_user_profiles')
-            .upsert({
-              phone: `demo_${sessionId}`,
-              agency_id: DEMO_AGENCY_ID,
-              preferences: { conversation_state: conversationState }
-            }, { onConflict: 'phone,agency_id' });
-          
-          console.log('✅ Wizard state initialized with tour and pax info');
-        }
-      }
-    }
-    
-    // Check if we're in wizard mode
-    const wizardState = conversationState.wizardState as WizardState | undefined;
-    let responseMessage: string;
-    
-    if (wizardState) {
-      // We're in active wizard - handle wizard step
-      console.log('🎯 Wizard active - step:', wizardState.step);
+    if (intent.type === 'reservation.wizard' && conversationState.currentTour) {
+      console.log('🎯 reservation.wizard detected with currentTour:', conversationState.currentTour.title);
+      // Mark that booking process has started
+      conversationState.wizardStep = 'booking_started';
       
-      responseMessage = await handleWizardStep(message, wizardState, DEMO_TOURS, userLanguage);
-      
-      // Save updated wizard state (wizard handler modifies state directly)
-      // If wizard completed, it will return to confirmation which user can continue from
+      console.log('💾 Saving booking_started state...');
       await supabase
         .from('whatsapp_user_profiles')
         .upsert({
@@ -455,33 +343,29 @@ serve(async (req) => {
           preferences: { conversation_state: conversationState }
         }, { onConflict: 'phone,agency_id' });
       
-      console.log('✅ Wizard step completed, state saved');
-    } else {
-      // Normal intelligent handler
-      console.log('🧠 Calling intelligent handler...');
-      responseMessage = await handleDemoIntelligently(
-        message,
-        conversationHistory,
-        intent.type,
-        userLanguage,
-        DEMO_TOURS,
-        conversationStyle,
-        conversationState
-      );
+      console.log('✅ Wizard state updated to booking_started');
     }
+
+    // Use intelligent handler with conversation state
+    console.log('🧠 Calling intelligent handler...');
+    const responseMessage = await handleDemoIntelligently(
+      message,
+      conversationHistory,
+      intent.type,
+      userLanguage,
+      DEMO_TOURS,
+      conversationStyle,
+      conversationState
+    );
 
     console.log('✅ Response generated:', responseMessage.substring(0, 100));
     await saveMessage(supabase, sessionId, 'assistant', responseMessage);
-
-    // Enrich conversation insights
-    await enrichConversationInsights(supabase, sessionId, DEMO_AGENCY_ID, message, responseMessage, intent.type);
 
     // Extract and update user memory from conversation
     console.log('🧠 Extracting user preferences...');
     const updatedMemory = extractMemory(
       message,
       responseMessage,
-      DEMO_TOURS,
       conversationState.userMemory
     );
     

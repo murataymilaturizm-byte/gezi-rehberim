@@ -88,7 +88,7 @@ export async function handleIntelligently(
   let response = await callAI(messages, 0.2);
   
   // Validate and fix response if needed
-  const validation = validateResponse(response, conversationStyle, intent);
+  const validation = validateResponse(response, conversationStyle);
   
   if (!validation.isValid) {
     console.warn('⚠️ Response validation failed:', validation.violations);

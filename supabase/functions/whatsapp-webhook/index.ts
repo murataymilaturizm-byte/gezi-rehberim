@@ -110,18 +110,11 @@ serve(async (req) => {
         .order('created_at', { ascending: false });
 
       if (tours && tours.length > 0) {
-        const lowerMessage = userMessage.toLowerCase();
-        
-        // Smart matching (case insensitive, partial match)
-        const matchingTours = tours.filter((t: any) => {
-          const lowerTitle = t.title.toLowerCase();
-          const lowerDestination = t.destination.toLowerCase();
-          
-          return lowerMessage.includes(lowerTitle) || 
-                 lowerTitle.includes(lowerMessage) ||
-                 lowerMessage.includes(lowerDestination) ||
-                 lowerDestination.includes(lowerMessage);
-        });
+        // Find matching tours
+        const matchingTours = tours.filter((t: any) => 
+          userMessage.toLowerCase().includes(t.title.toLowerCase()) ||
+          userMessage.toLowerCase().includes(t.destination.toLowerCase())
+        );
         
         let selectedTour = null;
         
@@ -135,34 +128,7 @@ serve(async (req) => {
           // Only auto-select if there's exactly ONE matching tour
           selectedTour = matchingTours[0];
         }
-        
-        // Check if user is referring to a previously discussed tour
-        if (!selectedTour && matchingTours.length === 0) {
-          const referencePatterns = /\b(konuştuğumuz|bahsettiğimiz|söylediğiniz|bu|o|şu|kayıt|rezervasyon)\s*(tur|turu|tura|turun)?/i;
-          const bookingIntents = /\b(kayıt|kayır|rezervasyon|ayır|ayırmak|katılmak|gelmek|gitmek|olmak|isterim|istiyorum)\b/i;
-          
-          if (referencePatterns.test(userMessage) || (bookingIntents.test(userMessage) && intent.type === 'reservation.wizard')) {
-            console.log('🔍 User referring to previous tour, checking history...');
-            
-            // Get recent conversation history
-            const recentHistory = await getConversationHistory(supabase, userPhone, agency.id, 10);
-            
-            for (const msg of recentHistory.reverse()) {
-              for (const tour of tours) {
-                const lowerContent = msg.content.toLowerCase();
-                const lowerTitle = tour.title.toLowerCase();
-                const lowerDest = tour.destination.toLowerCase();
-                
-                if (lowerContent.includes(lowerTitle) || lowerContent.includes(lowerDest)) {
-                  console.log('✅ Found previously mentioned tour:', tour.title);
-                  selectedTour = tour;
-                  break;
-                }
-              }
-              if (selectedTour) break;
-            }
-          }
-        }
+        // If multiple matching tours, don't select - let AI list them
         
         if (selectedTour) {
           const { data: profile } = await supabase
