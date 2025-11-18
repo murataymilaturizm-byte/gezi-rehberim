@@ -94,6 +94,62 @@ serve(async (req) => {
       confidence: intent.confidence
     });
 
+    // Handle tour selection - update currentTour in conversation state
+    if ((intent.type as string).includes('tour.detail') || userMessage.match(/^\d+$/)) {
+      const { data: tours } = await supabase
+        .from('tours')
+        .select(`
+          *,
+          dates:tour_dates(*)
+        `)
+        .eq('agency_id', agency.id)
+        .order('created_at', { ascending: false });
+
+      if (tours && tours.length > 0) {
+        const selectedTour = tours.find((t: any, index: number) => 
+          userMessage.toLowerCase().includes(t.title.toLowerCase()) ||
+          userMessage.toLowerCase().includes(t.destination.toLowerCase()) ||
+          (parseInt(userMessage) === index + 1)
+        );
+        
+        if (selectedTour) {
+          const { data: profile } = await supabase
+            .from('whatsapp_user_profiles')
+            .select('preferences')
+            .eq('phone', userPhone)
+            .eq('agency_id', agency.id)
+            .single();
+
+          const state = (profile?.preferences as any)?.conversation_state || {};
+          
+          if (!state.currentTour) {
+            state.currentTour = {
+              id: selectedTour.id,
+              title: selectedTour.title,
+              destination: selectedTour.destination,
+              priceAdult: selectedTour.dates?.[0]?.price_adult,
+              currency: selectedTour.currency
+            };
+            state.wizardStep = 'tour_selected';
+            state.shownTourIds = state.shownTourIds || [];
+            if (!state.shownTourIds.includes(selectedTour.id)) {
+              state.shownTourIds.push(selectedTour.id);
+            }
+            
+            await supabase
+              .from('whatsapp_user_profiles')
+              .update({
+                preferences: { ...profile?.preferences, conversation_state: state }
+              })
+              .eq('phone', userPhone)
+              .eq('agency_id', agency.id);
+            
+            console.log('✅ Tour selected:', selectedTour.title);
+          }
+        }
+      }
+    }
+
     await updateConversationState(supabase, userPhone, agency.id, {
       lastIntent: intent.type
     });

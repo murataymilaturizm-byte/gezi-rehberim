@@ -144,18 +144,75 @@ serve(async (req) => {
 
     console.log('📱 Demo Chat - History:', historyData?.length || 0, 'messages');
 
+    // Get user profile for conversation state
+    const { data: profile } = await supabase
+      .from('whatsapp_user_profiles')
+      .select('preferences')
+      .eq('phone', `demo_${sessionId}`)
+      .eq('agency_id', DEMO_AGENCY_ID)
+      .single();
+
+    const conversationState = (profile?.preferences as any)?.conversation_state || {
+      currentStage: 'initial',
+      lastIntent: '',
+      lastDiscussedTour: null,
+      discussedTours: [],
+      userInterests: [],
+      conversationFlow: [],
+      needsFollowUp: false,
+      lastQuestionAsked: null,
+      currentTour: null,
+      wizardStep: 'none',
+      shownTourIds: []
+    };
+
     // AI intent detection
     const intent = await detectIntent(message, historyData || [], userLanguage);
-    console.log('🤖 AI Intent:', intent.type, intent.confidence);
+    console.log('🤖 AI Intent:', intent.type, intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
-    // Use intelligent handler
+    // Handle tour selection - update currentTour
+    if ((intent.type as string) === 'tour.detail' || message.match(/^\d+$/)) {
+      const selectedTour = DEMO_TOURS.find((t, index) => 
+        message.toLowerCase().includes(t.title.toLowerCase()) ||
+        message.toLowerCase().includes(t.destination.toLowerCase()) ||
+        (parseInt(message) === index + 1)
+      );
+      
+      if (selectedTour && !conversationState.currentTour) {
+        conversationState.currentTour = {
+          id: selectedTour.id,
+          title: selectedTour.title,
+          destination: selectedTour.destination,
+          priceAdult: selectedTour.dates[0]?.price_adult,
+          currency: selectedTour.currency
+        };
+        conversationState.wizardStep = 'tour_selected';
+        if (!conversationState.shownTourIds.includes(selectedTour.id)) {
+          conversationState.shownTourIds.push(selectedTour.id);
+        }
+        
+        // Save updated state
+        await supabase
+          .from('whatsapp_user_profiles')
+          .upsert({
+            phone: `demo_${sessionId}`,
+            agency_id: DEMO_AGENCY_ID,
+            preferences: { conversation_state: conversationState }
+          }, { onConflict: 'phone,agency_id' });
+        
+        console.log('✅ Tour selected:', selectedTour.title);
+      }
+    }
+
+    // Use intelligent handler with conversation state
     const responseMessage = await handleDemoIntelligently(
       message,
       historyData || [],
       intent.type,
       userLanguage,
       DEMO_TOURS,
-      conversationStyle
+      conversationStyle,
+      conversationState
     );
 
     await saveMessage(supabase, sessionId, 'assistant', responseMessage);
