@@ -25,6 +25,18 @@ const DEMO_TOURS = [
     ]
   },
   {
+    id: 'demo-kapadokya-2',
+    title: 'Kapadokya Kültür Turu',
+    destination: 'Kapadokya',
+    type: 'N2',
+    currency: 'TRY',
+    program_kisa: 'Kapadokya\'nın tarihi ve kültürel zenginlikleri.',
+    gezilecek_yerler: 'Göreme Açık Hava Müzesi, Derinkuyu Yeraltı Şehri, Avanos',
+    dates: [
+      { id: 'demo-date-3', departure_date: '2025-12-18', price_adult: 2500, quota: 18 }
+    ]
+  },
+  {
     id: 'demo-pamukkale-1',
     title: 'Pamukkale Turu',
     destination: 'Pamukkale',
@@ -176,7 +188,7 @@ serve(async (req) => {
     // Handle tour selection - ONLY select if user is specific or there's only one match
     const numericSelection = message.match(/^\d+$/);
     
-    if ((intent.type as string) === 'tour.detail' || numericSelection) {
+    if ((intent.type as string) === 'tour.detail' || (intent.type as string) === 'tour.search' || numericSelection) {
       console.log('🔍 Checking for tour selection...');
       
       // Find matching tours
@@ -184,6 +196,8 @@ serve(async (req) => {
         message.toLowerCase().includes(t.title.toLowerCase()) ||
         message.toLowerCase().includes(t.destination.toLowerCase())
       );
+      
+      console.log(`🔎 Found ${matchingTours.length} matching tours for "${message}"`);
       
       // Or handle numeric selection
       if (numericSelection) {
@@ -243,6 +257,15 @@ serve(async (req) => {
         // Clear currentTour and wizardStep so AI will list all matching tours
         conversationState.currentTour = null;
         conversationState.wizardStep = 'none';
+        
+        // Save cleared state
+        await supabase
+          .from('whatsapp_user_profiles')
+          .upsert({
+            phone: `demo_${sessionId}`,
+            agency_id: DEMO_AGENCY_ID,
+            preferences: { conversation_state: conversationState }
+          }, { onConflict: 'phone,agency_id' });
       }
     }
 
