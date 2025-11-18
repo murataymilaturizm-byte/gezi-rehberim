@@ -114,11 +114,19 @@ serve(async (req) => {
         .order('created_at', { ascending: false });
 
       if (tours && tours.length > 0) {
-        // Find matching tours
-        const matchingTours = tours.filter((t: any) => 
-          userMessage.toLowerCase().includes(t.title.toLowerCase()) ||
-          userMessage.toLowerCase().includes(t.destination.toLowerCase())
-        );
+        // Find matching tours - check if tour title/destination contains words from user message
+        const messageLower = userMessage.toLowerCase();
+        const messageWords = messageLower.split(/\s+/).filter((w: string) => w.length > 2);
+        
+        const matchingTours = tours.filter((t: any) => {
+          const titleLower = t.title.toLowerCase();
+          const destLower = t.destination.toLowerCase();
+          
+          // Match if any significant word from message appears in title or destination
+          return messageWords.some((word: string) => 
+            titleLower.includes(word) || destLower.includes(word)
+          ) || titleLower.includes(messageLower) || destLower.includes(messageLower);
+        });
         
         let selectedTour = null;
         
