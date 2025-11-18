@@ -40,17 +40,31 @@ serve(async (req) => {
     if (useMockData) {
       console.log('Using mock data for testing');
       
-      // Mock demo profile
+      // Mock demo profile - Test 2.1: Destinasyon farklı, Test 2.2: İlgi alanları eksik
       demoProfile = {
         phone: 'demo_mock_session',
         agency_id: agencyId,
         preferences: {
-          destinations: ['Kapadokya', 'Pamukkale'],
-          interests: ['culture', 'history', 'nature'],
-          budget_range: '2000-5000',
-          pax_adult: 2,
-          pax_child: 1,
-          travel_style: 'comfort'
+          conversation_state: {
+            userMemory: {
+              preferredDestinations: ['Kapadokya'], // Demo'da sadece Kapadokya
+              interests: ['balon turu', 'culture'], // Demo'da balon + culture
+              lastMentionedPax: { adults: 2, children: 1 }, // Pax extraction başarılı
+              budgetRange: '2000-5000',
+              travelStyle: 'comfort',
+              lastUpdated: new Date().toISOString()
+            },
+            currentStage: 'exploration',
+            lastIntent: 'tour.search',
+            wizardStep: 'none', // Wizard yok
+            conversationFlow: ['greeting', 'tour.search']
+          },
+          conversation_insights: {
+            topics_discussed: ['balon turu', 'prices'],
+            questions_asked: ['fiyat', 'tarih'],
+            positive_signals: ['interested'],
+            negative_signals: []
+          }
         },
         language_preference: 'tr',
         total_messages: 8,
@@ -59,21 +73,35 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       };
       
-      // Mock WhatsApp profile
+      // Mock WhatsApp profile - Kasıtlı farklılıklar ile
       whatsappProfile = {
         phone: '+905551234567',
         agency_id: agencyId,
         preferences: {
-          destinations: ['Kapadokya', 'Pamukkale'],
-          interests: ['culture', 'history', 'nature'],
-          budget_range: '2000-5000',
-          pax_adult: 2,
-          pax_child: 1,
-          travel_style: 'comfort'
+          conversation_state: {
+            userMemory: {
+              preferredDestinations: ['Kapadokya', 'Pamukkale'], // WhatsApp'ta 2 destinasyon (FARKLI)
+              interests: ['culture'], // WhatsApp'ta balon turu yok (EKSIK)
+              lastMentionedPax: { adults: 2 }, // Çocuk sayısı yok (EKSIK)
+              budgetRange: '3000-6000', // Farklı bütçe (FARKLI)
+              travelStyle: 'comfort',
+              lastUpdated: new Date().toISOString()
+            },
+            currentStage: 'booking', // Farklı stage (FARKLI)
+            lastIntent: 'reservation.wizard',
+            wizardStep: 'date_selection', // Wizard var (FARKLI)
+            conversationFlow: ['greeting', 'tour.search', 'reservation.wizard']
+          },
+          conversation_insights: {
+            topics_discussed: ['prices'], // Daha az konu (EKSIK)
+            questions_asked: ['fiyat', 'tarih', 'ödeme'], // Daha fazla soru (FARKLI)
+            positive_signals: ['ready_to_book'],
+            negative_signals: ['price_concern'] // Negatif sinyal var (FARKLI)
+          }
         },
         language_preference: 'tr',
-        total_messages: 8,
-        tags: ['potential', 'interested'],
+        total_messages: 12, // Daha fazla mesaj
+        tags: ['potential', 'interested', 'price_sensitive'],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -299,22 +327,19 @@ function testConversationState(demo: any, whatsapp: any): TestResult {
 }
 
 function testWizardState(demo: any, whatsapp: any): TestResult {
-  const demoWizard = demo?.preferences?.wizard_state;
-  const whatsappWizard = whatsapp?.preferences?.wizard_state;
+  const demoWizard = demo?.preferences?.conversation_state?.wizardStep;
+  const whatsappWizard = whatsapp?.preferences?.conversation_state?.wizardStep;
 
-  const demoStep = demoWizard?.step;
-  const whatsappStep = whatsappWizard?.step;
-
-  const match = demoStep === whatsappStep;
+  const match = demoWizard === whatsappWizard;
 
   return {
     id: '3.2',
     category: 'Conversation State',
     name: 'Wizard State',
-    demoResult: demoStep ? 'pass' : 'skip',
-    whatsappResult: whatsappStep ? 'pass' : 'skip',
-    match: demoStep && whatsappStep ? match : true,
-    details: `Demo: ${demoStep || 'none'}, WhatsApp: ${whatsappStep || 'none'}`,
+    demoResult: demoWizard && demoWizard !== 'none' ? 'pass' : 'skip',
+    whatsappResult: whatsappWizard && whatsappWizard !== 'none' ? 'pass' : 'skip',
+    match: (demoWizard && demoWizard !== 'none') && (whatsappWizard && whatsappWizard !== 'none') ? match : true,
+    details: `Demo: ${demoWizard || 'none'}, WhatsApp: ${whatsappWizard || 'none'}`,
     demoData: demoWizard,
     whatsappData: whatsappWizard
   };
