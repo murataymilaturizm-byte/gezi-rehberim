@@ -192,9 +192,27 @@ serve(async (req) => {
           .single();
 
         if (tours) {
+          // Filter out past dates and dates with no quota
+          const availableDates = (tours.dates || [])
+            .filter((d: any) => 
+              new Date(d.departure_date) >= new Date() && 
+              d.quota > 0
+            )
+            .sort((a: any, b: any) => 
+              new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime()
+            );
+
+          if (availableDates.length === 0) {
+            const response = userLanguage === 'tr' 
+              ? '❌ Üzgünüm, bu tur için uygun tarih bulunmamaktadır.'
+              : '❌ Sorry, no available dates for this tour.';
+            await saveMessage(supabase, userPhone, 'assistant', response, agency.id);
+            return new Response(createTwiMLResponse(response), { status: 200, headers: createTwiMLHeaders() });
+          }
+
           const wizardState = {
-            step: conversationState.userMemory?.lastMentionedPax ? 'date_selection' : 'date_selection',
-            selected_tour: tours,
+            step: 'date_selection' as const,
+            selected_tour: { ...tours, dates: availableDates },
             pax_adult: conversationState.userMemory?.lastMentionedPax?.adults || undefined,
             pax_child: conversationState.userMemory?.lastMentionedPax?.children || undefined,
             created_at: new Date().toISOString()
@@ -218,6 +236,32 @@ serve(async (req) => {
             .eq('agency_id', agency.id);
 
           console.log('✅ Wizard state saved with pre-selected tour and pax:', wizardState.pax_adult, 'adults,', wizardState.pax_child, 'children');
+
+          // CRITICAL: Call wizard handler immediately to show date options
+          // Don't call intelligent handler - directly show dates
+          let wizardResponse = '';
+          
+          if (userLanguage === 'tr') {
+            wizardResponse = `🎫 *${tours.title}*\n\n📅 *Müsait Tarihler:*\n\n`;
+          } else {
+            wizardResponse = `🎫 *${tours.title}*\n\n📅 *Available Dates:*\n\n`;
+          }
+
+          availableDates.forEach((date: any, index: number) => {
+            const depDate = new Date(date.departure_date).toLocaleDateString(userLanguage === 'tr' ? 'tr-TR' : 'en-US', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric'
+            });
+            wizardResponse += `${index + 1}. ${depDate} - ${date.price_adult} ${tours.currency}\n`;
+          });
+
+          wizardResponse += userLanguage === 'tr'
+            ? '\n\nLütfen tarih numarasını yazın:'
+            : '\n\nPlease enter the date number:';
+
+          await saveMessage(supabase, userPhone, 'assistant', wizardResponse, agency.id);
+          return new Response(createTwiMLResponse(wizardResponse), { status: 200, headers: createTwiMLHeaders() });
         }
       }
     }
