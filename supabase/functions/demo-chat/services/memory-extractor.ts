@@ -99,7 +99,7 @@ export function extractMemory(
     }
   }
 
-  // Extract participant numbers (adults/children) from conversation
+  // Extract participant numbers (adults/children) ONLY from user message
   const paxPatterns = [
     /(\d+)\s*(yetişkin|büyük|adult|adults|erwachsene|взрослых|بالغين|adulte|adultes|adulto|adultos)/gi,
     /(\d+)\s*(çocuk|child|children|kinder|детей|أطفال|enfant|enfants|niño|niños)/gi,
@@ -110,7 +110,7 @@ export function extractMemory(
   let paxChildren = 0;
 
   for (const pattern of paxPatterns) {
-    const matches = Array.from(combinedText.matchAll(new RegExp(pattern, 'gi')));
+    const matches = Array.from(lowerMessage.matchAll(new RegExp(pattern, 'gi')));
     for (const match of matches) {
       const num = parseInt(match[1]);
       const type = match[2].toLowerCase();
