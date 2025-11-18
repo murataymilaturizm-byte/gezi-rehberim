@@ -285,6 +285,32 @@ serve(async (req) => {
           await saveMessage(supabase, userPhone, 'assistant', wizardResponse, agency.id);
           return new Response(createTwiMLResponse(wizardResponse), { status: 200, headers: createTwiMLHeaders() });
         }
+      } else {
+        // No currentTour - clear any old wizard state and ask user to select a tour
+        console.log('⚠️ reservation.wizard detected but no currentTour - asking user to select tour first');
+        
+        const { data: profile } = await supabase
+          .from('whatsapp_user_profiles')
+          .select('preferences')
+          .eq('phone', userPhone)
+          .eq('agency_id', agency.id)
+          .single();
+
+        const preferences = profile?.preferences || {};
+        preferences.wizard_state = undefined;
+
+        await supabase
+          .from('whatsapp_user_profiles')
+          .update({ preferences })
+          .eq('phone', userPhone)
+          .eq('agency_id', agency.id);
+        
+        const noTourMessage = userLanguage === 'tr'
+          ? '📋 Hangi turumuz için kayıt oluşturmak istiyorsunuz?\n\nLütfen tur adını veya numarasını yazın.'
+          : '📋 Which tour would you like to book?\n\nPlease enter the tour name or number.';
+        
+        await saveMessage(supabase, userPhone, 'assistant', noTourMessage, agency.id);
+        return new Response(createTwiMLResponse(noTourMessage), { status: 200, headers: createTwiMLHeaders() });
       }
     }
 

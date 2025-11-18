@@ -426,6 +426,27 @@ serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+      } else {
+        // No currentTour - clear any old wizard state and ask user to select a tour
+        console.log('⚠️ reservation.wizard detected but no currentTour - asking user to select tour first');
+        conversationState.wizardState = undefined;
+        conversationState.wizardStep = 'none';
+        
+        await updateConversationState(supabase, sessionId, DEMO_AGENCY_ID, {
+          wizardState: undefined,
+          wizardStep: 'none'
+        });
+        
+        const noTourMessage = userLanguage === 'tr'
+          ? '📋 Hangi turumuz için kayıt oluşturmak istiyorsunuz?\n\nLütfen tur adını veya numarasını yazın.'
+          : '📋 Which tour would you like to book?\n\nPlease enter the tour name or number.';
+        
+        await saveMessage(supabase, sessionId, 'assistant', noTourMessage);
+        
+        return new Response(
+          JSON.stringify({ message: noTourMessage }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     }
     
