@@ -1,8 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { detectIntent } from '../whatsapp-webhook/services/intent-detector.ts';
+import { detectIntent } from './services/intent-detector.ts';
 import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
-import { getWizardState, handleWizardStep } from '../whatsapp-webhook/handlers/wizard.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,38 +125,19 @@ serve(async (req) => {
 
     const userLanguage = 'tr';
 
-    // Check wizard state
-    console.log('🔍 Checking wizard state...');
-    const wizardState = await getWizardState(supabase, `demo_${sessionId}`, DEMO_AGENCY_ID);
-    console.log('✅ Wizard state:', wizardState ? 'EXISTS' : 'NULL');
-    if (wizardState) {
-      console.log('🎯 Handling wizard step:', wizardState.step);
-      const wizardResponse = await handleWizardStep(
-        supabase,
-        `demo_${sessionId}`,
-        DEMO_AGENCY_ID,
-        message,
-        wizardState
-      );
-      console.log('📤 Wizard response:', wizardResponse.substring(0, 100));
-      await saveMessage(supabase, sessionId, 'assistant', wizardResponse);
-      return new Response(
-        JSON.stringify({ message: wizardResponse }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Get conversation history
     console.log('📜 Fetching conversation history...');
     const { data: historyData } = await supabase
       .from('whatsapp_conversations')
-      .select('*')
+      .select('role, content')
       .eq('phone', `demo_${sessionId}`)
       .eq('agency_id', DEMO_AGENCY_ID)
       .order('created_at', { ascending: false })
       .limit(15);
 
-    console.log('📱 Demo Chat - History:', historyData?.length || 0, 'messages');
+    // Reverse to get chronological order for AI
+    const conversationHistory = (historyData || []).reverse();
+    console.log('📱 Demo Chat - History:', conversationHistory.length, 'messages');
 
     // Get user profile for conversation state
     console.log('👤 Fetching user profile...');
@@ -190,7 +170,7 @@ serve(async (req) => {
 
     // AI intent detection
     console.log('🤖 Detecting intent...');
-    const intent = await detectIntent(message, historyData || [], userLanguage);
+    const intent = await detectIntent(message, conversationHistory, userLanguage);
     console.log('🎯 AI Intent:', intent.type, 'confidence:', intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
     // Handle tour selection - ONLY select if user is specific or there's only one match
@@ -259,8 +239,10 @@ serve(async (req) => {
         
         console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
       } else if (matchingTours.length > 1) {
-        console.log(`📋 Multiple tours match (${matchingTours.length}), letting AI list them`);
-        // Don't select - let AI list multiple matching tours
+        console.log(`📋 Multiple tours match (${matchingTours.length}), clearing currentTour so AI lists them`);
+        // Clear currentTour and wizardStep so AI will list all matching tours
+        conversationState.currentTour = null;
+        conversationState.wizardStep = 'none';
       }
     }
 
@@ -268,7 +250,7 @@ serve(async (req) => {
     console.log('🧠 Calling intelligent handler...');
     const responseMessage = await handleDemoIntelligently(
       message,
-      historyData || [],
+      conversationHistory,
       intent.type,
       userLanguage,
       DEMO_TOURS,
