@@ -15,15 +15,19 @@ export default function Testing() {
 
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Nasıl Kullanılır?</AlertTitle>
+        <AlertTitle>🚀 Otomatik Test - Kolay Kullanım</AlertTitle>
         <AlertDescription>
-          <ol className="list-decimal list-inside space-y-1 mt-2">
-            <li>Demo chat'te bir konuşma başlatın ve session ID'yi alın</li>
-            <li>WhatsApp'ta aynı konuşmayı yapın ve telefon numarasını not edin</li>
-            <li>Agency ID'nizi girin</li>
-            <li>"Testleri Çalıştır" butonuna tıklayın</li>
-            <li>Sonuçları inceleyin ve raporu indirin</li>
-          </ol>
+          <div className="space-y-2 mt-2">
+            <p className="font-semibold">En kolay yöntem:</p>
+            <ol className="list-decimal list-inside space-y-1">
+              <li>Demo chat'te birkaç mesaj gönderin</li>
+              <li>WhatsApp'ta aynı agency ile birkaç mesaj gönderin</li>
+              <li>"🚀 Otomatik Test Çalıştır" butonuna tıklayın</li>
+            </ol>
+            <p className="text-xs text-muted-foreground mt-3">
+              Sistem otomatik olarak en son demo ve WhatsApp profillerinizi bulup test eder.
+            </p>
+          </div>
         </AlertDescription>
       </Alert>
 
