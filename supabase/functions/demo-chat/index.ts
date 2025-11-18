@@ -231,11 +231,6 @@ serve(async (req) => {
     const intent = await detectIntent(message, conversationHistory, userLanguage);
     console.log('🎯 AI Intent:', intent.type, 'confidence:', intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
-    // Update conversation state with detected intent
-    await updateConversationState(supabase, sessionId, DEMO_AGENCY_ID, {
-      lastIntent: intent.type
-    });
-
     // Handle tour selection - check ALL intents, not just tour.detail/tour.search
     const numericSelection = message.match(/^\d+$/);
     
@@ -267,21 +262,6 @@ serve(async (req) => {
         if (!conversationState.shownTourIds.includes(selectedTour.id)) {
           conversationState.shownTourIds.push(selectedTour.id);
         }
-        
-        console.log('💾 Saving tour selection to DB...');
-        const { data: saveData, error: saveError } = await supabase
-          .from('whatsapp_user_profiles')
-          .upsert({
-            phone: `demo_${sessionId}`,
-            agency_id: DEMO_AGENCY_ID,
-            preferences: { conversation_state: conversationState }
-          }, { onConflict: 'phone,agency_id' });
-        
-        if (saveError) {
-          console.error('❌ Failed to save state:', saveError);
-        } else {
-          console.log('✅ State saved successfully. currentTour:', conversationState.currentTour.title);
-        }
       }
     } else if (matchingTours.length === 1 && !conversationState.currentTour) {
       // Only auto-select if there's exactly ONE matching tour and no current tour
@@ -297,21 +277,6 @@ serve(async (req) => {
       conversationState.wizardStep = 'tour_selected';
       if (!conversationState.shownTourIds.includes(selectedTour.id)) {
         conversationState.shownTourIds.push(selectedTour.id);
-      }
-      
-      console.log('💾 Saving tour selection to DB (auto-select)...');
-      const { data: saveData2, error: saveError2 } = await supabase
-        .from('whatsapp_user_profiles')
-        .upsert({
-          phone: `demo_${sessionId}`,
-          agency_id: DEMO_AGENCY_ID,
-          preferences: { conversation_state: conversationState }
-        }, { onConflict: 'phone,agency_id' });
-      
-      if (saveError2) {
-        console.error('❌ Failed to save state (auto-select):', saveError2);
-      } else {
-        console.log('✅ State saved successfully (auto-select). currentTour:', conversationState.currentTour.title);
       }
     } else if (matchingTours.length > 1) {
       // Multiple tours match - need to determine best match
@@ -353,21 +318,6 @@ serve(async (req) => {
           if (!conversationState.shownTourIds.includes(bestMatch.tour.id)) {
             conversationState.shownTourIds.push(bestMatch.tour.id);
           }
-          
-          console.log('💾 Saving best match tour to DB...');
-          const { error: saveError3 } = await supabase
-            .from('whatsapp_user_profiles')
-            .upsert({
-              phone: `demo_${sessionId}`,
-              agency_id: DEMO_AGENCY_ID,
-              preferences: { conversation_state: conversationState }
-            }, { onConflict: 'phone,agency_id' });
-          
-          if (saveError3) {
-            console.error('❌ Failed to save state (best match):', saveError3);
-          } else {
-            console.log('✅ Best match state saved. currentTour:', conversationState.currentTour.title);
-          }
         } else {
           // No clear match - list all options
           console.log('⚠️ No clear best match - listing all matching tours');
@@ -381,24 +331,17 @@ serve(async (req) => {
         conversationState.currentTour = null;
         conversationState.wizardStep = 'none';
         conversationState.shownTourIds = matchingTours.map(t => t.id);
-        
-        console.log('💾 Saving multiple tours state...');
-        const { error: saveError3 } = await supabase
-          .from('whatsapp_user_profiles')
-          .upsert({
-            phone: `demo_${sessionId}`,
-            agency_id: DEMO_AGENCY_ID,
-            preferences: { conversation_state: conversationState }
-          }, { onConflict: 'phone,agency_id' });
-        
-        if (saveError3) {
-          console.error('❌ Failed to save multiple tours state:', saveError3);
-        } else {
-          console.log('✅ Multiple tours state saved');
-        }
       }
     }
     // ELSE: Keep existing currentTour - DON'T reset it even if no tours match!
+
+    // Update conversation state with detected intent AND tour selection
+    await updateConversationState(supabase, sessionId, DEMO_AGENCY_ID, {
+      lastIntent: intent.type,
+      currentTour: conversationState.currentTour,
+      wizardStep: conversationState.wizardStep,
+      shownTourIds: conversationState.shownTourIds
+    });
 
     // Handle reservation.wizard - prepare wizard state with currentTour if available
     if (intent.type === 'reservation.wizard') {

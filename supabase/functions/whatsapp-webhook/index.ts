@@ -99,6 +99,10 @@ serve(async (req) => {
     // Handle tour selection - ONLY select if user is specific or there's only one match
     const numericSelection = userMessage.match(/^\d+$/);
     
+    // Get current conversation state
+    const conversationState = await getConversationState(supabase, userPhone, agency.id);
+    let tourSelected = false;
+    
     if ((intent.type as string).includes('tour.detail') || numericSelection) {
       const { data: tours } = await supabase
         .from('tours')
@@ -161,48 +165,35 @@ serve(async (req) => {
         }
         // If multiple matching tours and not tour.detail, don't select - let AI list them
         
-        if (selectedTour) {
-          const { data: profile } = await supabase
-            .from('whatsapp_user_profiles')
-            .select('preferences')
-            .eq('phone', userPhone)
-            .eq('agency_id', agency.id)
-            .single();
-
-          const state = (profile?.preferences as any)?.conversation_state || {};
-          
-          if (!state.currentTour) {
-            state.currentTour = {
-              id: selectedTour.id,
-              title: selectedTour.title,
-              destination: selectedTour.destination,
-              priceAdult: selectedTour.dates?.[0]?.price_adult,
-              currency: selectedTour.currency
-            };
-            state.wizardStep = 'tour_selected';
-            state.shownTourIds = state.shownTourIds || [];
-            if (!state.shownTourIds.includes(selectedTour.id)) {
-              state.shownTourIds.push(selectedTour.id);
-            }
-            
-            await supabase
-              .from('whatsapp_user_profiles')
-              .update({
-                preferences: { ...profile?.preferences, conversation_state: state }
-              })
-              .eq('phone', userPhone)
-              .eq('agency_id', agency.id);
-            
-            console.log('✅ Tour selected:', selectedTour.title);
+        if (selectedTour && !conversationState.currentTour) {
+          conversationState.currentTour = {
+            id: selectedTour.id,
+            title: selectedTour.title,
+            destination: selectedTour.destination,
+            priceAdult: selectedTour.dates?.[0]?.price_adult,
+            currency: selectedTour.currency
+          };
+          conversationState.wizardStep = 'tour_selected';
+          conversationState.shownTourIds = conversationState.shownTourIds || [];
+          if (!conversationState.shownTourIds.includes(selectedTour.id)) {
+            conversationState.shownTourIds.push(selectedTour.id);
           }
+          tourSelected = true;
+          console.log('✅ Tour selected:', selectedTour.title);
         } else if (matchingTours.length > 1) {
           console.log(`📋 Multiple tours match (${matchingTours.length}), letting AI list them`);
         }
       }
     }
 
+    // Update conversation state with intent AND tour selection (if any)
     await updateConversationState(supabase, userPhone, agency.id, {
-      lastIntent: intent.type
+      lastIntent: intent.type,
+      ...(tourSelected && {
+        currentTour: conversationState.currentTour,
+        wizardStep: conversationState.wizardStep,
+        shownTourIds: conversationState.shownTourIds
+      })
     });
 
     // Handle reservation.wizard - start wizard with currentTour if available
