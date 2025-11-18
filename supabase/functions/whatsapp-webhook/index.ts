@@ -96,15 +96,15 @@ serve(async (req) => {
       confidence: intent.confidence
     });
 
-    // Handle tour selection - check ALL messages except reservation.wizard
+    // CRITICAL: Check for tour names in the message FIRST, before handling intents
     const numericSelection = userMessage.match(/^\d+$/);
     
     // Get current conversation state
     const conversationState = await getConversationState(supabase, userPhone, agency.id);
     let tourSelected = false;
     
-    // CRITICAL: Only try to select tour if intent is NOT reservation.wizard
-    if (intent.type !== 'reservation.wizard') {
+    // Check for tour selection in ALL messages (including reservation.wizard)
+    console.log('🔍 Checking for tour selection...');
       const { data: tours } = await supabase
         .from('tours')
         .select(`
