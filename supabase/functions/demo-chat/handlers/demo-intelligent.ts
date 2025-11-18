@@ -2,6 +2,7 @@
 
 import { callAI } from '../services/ai.ts';
 import { validateResponse } from '../services/response-validator.ts';
+import { buildPersonalizedContext } from '../services/memory-extractor.ts';
 
 export async function handleDemoIntelligently(
   message: string,
@@ -51,6 +52,7 @@ function buildDemoPrompt(
   const currentTour = conversationState?.currentTour;
   const wizardStep = conversationState?.wizardStep || 'none';
   const shownTourIds = conversationState?.shownTourIds || [];
+  const userMemory = conversationState?.userMemory;
   // Extract last discussed tour from history
   const lastDiscussedTour = extractLastTourFromHistory(history);
   
@@ -68,6 +70,9 @@ function buildDemoPrompt(
   ⏳ Süre: ${tour.tur_sure || 'Belirtilmemiş'}
   🗺️ Gezilecek: ${tour.gezilecek_yerler || 'Belirtilmemiş'}`;
   }).join('\n\n');
+
+  // Build personalized context from user memory
+  const personalizedContext = userMemory ? buildPersonalizedContext(userMemory, tours) : '';
 
   const basePrompt = `Sen bir seyahat asistanısın.
 
@@ -122,6 +127,7 @@ ${lastDiscussedTour ? `Son tartışılan tur: ${lastDiscussedTour}` : ''}
 
 Mevcut Turlar:
 ${toursContext}
+${personalizedContext}
 
 Intent: ${intent}`;
 
@@ -144,8 +150,20 @@ Intent: ${intent}`;
       }
     }
   } else if (intent === 'tour.list' || intent === 'tour.search') {
+    const hasMemory = userMemory && (
+      userMemory.preferredDestinations?.length > 0 || 
+      userMemory.interests?.length > 0 ||
+      userMemory.budgetRange
+    );
+    
     intentInstructions = `🔴 TUR LİSTESİ/ARAMA ADIMI:
 ${currentTour ? '⚠️ UYARI: currentTour VAR ama birden fazla eşleşme olabilir!' : ''}
+${hasMemory ? `
+🧠 KİŞİSELLEŞTİRME YAPILSIN:
+- Kullanıcı hafızası var! Tercihlerine uygun turları ÖN PLANA ÇıKAR.
+- Önce kişiselleştirilmiş önerileri göster, sonra diğerlerini.
+- "Size özel önerilerim:" diye başla.
+` : ''}
 
 KONTROL ET:
 - Kaç tane tur var bu destinasyon/arama için?

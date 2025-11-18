@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { detectIntent } from './services/intent-detector.ts';
 import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
+import { extractMemory } from './services/memory-extractor.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -207,7 +208,12 @@ serve(async (req) => {
       lastQuestionAsked: null,
       currentTour: null,
       wizardStep: 'none',
-      shownTourIds: []
+      shownTourIds: [],
+      userMemory: {
+        preferredDestinations: [],
+        interests: [],
+        lastUpdated: new Date().toISOString()
+      }
     };
 
     console.log('🧠 Conversation state:', {
@@ -336,6 +342,38 @@ serve(async (req) => {
 
     console.log('✅ Response generated:', responseMessage.substring(0, 100));
     await saveMessage(supabase, sessionId, 'assistant', responseMessage);
+
+    // Extract and update user memory from conversation
+    console.log('🧠 Extracting user preferences...');
+    const updatedMemory = extractMemory(
+      message,
+      responseMessage,
+      conversationState.userMemory
+    );
+    
+    if (JSON.stringify(updatedMemory) !== JSON.stringify(conversationState.userMemory)) {
+      conversationState.userMemory = updatedMemory;
+      console.log('💾 Saving updated memory:', {
+        destinations: updatedMemory.preferredDestinations,
+        interests: updatedMemory.interests,
+        budget: updatedMemory.budgetRange,
+        style: updatedMemory.travelStyle
+      });
+      
+      const { error: memoryError } = await supabase
+        .from('whatsapp_user_profiles')
+        .upsert({
+          phone: `demo_${sessionId}`,
+          agency_id: DEMO_AGENCY_ID,
+          preferences: { conversation_state: conversationState }
+        }, { onConflict: 'phone,agency_id' });
+      
+      if (memoryError) {
+        console.error('❌ Failed to save memory:', memoryError);
+      } else {
+        console.log('✅ Memory saved successfully');
+      }
+    }
 
     console.log('📤 Sending response to client');
     return new Response(
