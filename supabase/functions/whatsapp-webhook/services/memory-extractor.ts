@@ -62,10 +62,10 @@ export function extractMemory(
     }
   }
 
-  // Extract budget range from price discussions
-  if (lowerMessage.match(/\d{3,5}/) || lowerResponse.match(/\d{3,5}[₺TRY]/)) {
+  // Extract budget range ONLY from user message (not AI price suggestions)
+  if (lowerMessage.match(/\d{3,5}/)) {
     const prices: number[] = [];
-    const priceMatches = combinedText.match(/\d{3,5}/g);
+    const priceMatches = lowerMessage.match(/\d{3,5}/g);
     if (priceMatches) {
       prices.push(...priceMatches.map(p => parseInt(p)));
     }
