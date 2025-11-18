@@ -88,29 +88,103 @@ export function extractMemory(
   return memory;
 }
 
-export function buildPersonalizedContext(memory: UserMemory, tours: any[]): string {
+export function buildPersonalizedContext(memory: UserMemory, tours: any[], language: string = 'tr'): string {
   if (!memory || (memory.preferredDestinations.length === 0 && 
                   memory.interests.length === 0 && 
                   !memory.budgetRange)) {
     return '';
   }
 
-  let context = '\n\n🧠 KULLANICI HAFİZASI (Kişiselleştirme için kullan):';
+  const contextMessages = {
+    tr: {
+      header: '\n\n🧠 KULLANICI HAFİZASI (Kişiselleştirme için kullan):',
+      destinations: '✈️ Tercih ettiği destinasyonlar:',
+      interests: '💡 İlgi alanları:',
+      budget: '💰 Bütçe aralığı:',
+      style: '🎭 Seyahat stili:',
+      recommendations: '🎯 KİŞİSELLEŞTİRİLMİŞ ÖNERİLER:',
+      suggestion: 'turları kullanıcının tercihlerine uygun.',
+      priority: '🔴 Öneriler yaparken bu turları ÖN PLANA ÇıKAR.'
+    },
+    en: {
+      header: '\n\n🧠 USER MEMORY (Use for personalization):',
+      destinations: '✈️ Preferred destinations:',
+      interests: '💡 Interests:',
+      budget: '💰 Budget range:',
+      style: '🎭 Travel style:',
+      recommendations: '🎯 PERSONALIZED RECOMMENDATIONS:',
+      suggestion: 'tours match user preferences.',
+      priority: '🔴 PRIORITIZE these tours when making suggestions.'
+    },
+    de: {
+      header: '\n\n🧠 BENUTZERGEDÄCHTNIS (Für Personalisierung verwenden):',
+      destinations: '✈️ Bevorzugte Reiseziele:',
+      interests: '💡 Interessen:',
+      budget: '💰 Budgetbereich:',
+      style: '🎭 Reisestil:',
+      recommendations: '🎯 PERSONALISIERTE EMPFEHLUNGEN:',
+      suggestion: 'Touren entsprechen den Benutzerpräferenzen.',
+      priority: '🔴 Diese Touren bei Vorschlägen PRIORISIEREN.'
+    },
+    ru: {
+      header: '\n\n🧠 ПАМЯТЬ ПОЛЬЗОВАТЕЛЯ (Использовать для персонализации):',
+      destinations: '✈️ Предпочитаемые направления:',
+      interests: '💡 Интересы:',
+      budget: '💰 Бюджетный диапазон:',
+      style: '🎭 Стиль путешествия:',
+      recommendations: '🎯 ПЕРСОНАЛИЗИРОВАННЫЕ РЕКОМЕНДАЦИИ:',
+      suggestion: 'туры соответствуют предпочтениям пользователя.',
+      priority: '🔴 ПРИОРИТИЗИРОВАТЬ эти туры при предложениях.'
+    },
+    ar: {
+      header: '\n\n🧠 ذاكرة المستخدم (استخدم للتخصيص):',
+      destinations: '✈️ الوجهات المفضلة:',
+      interests: '💡 الاهتمامات:',
+      budget: '💰 نطاق الميزانية:',
+      style: '🎭 أسلوب السفر:',
+      recommendations: '🎯 التوصيات الشخصية:',
+      suggestion: 'الجولات تتطابق مع تفضيلات المستخدم.',
+      priority: '🔴 أعط الأولوية لهذه الجولات عند تقديم الاقتراحات.'
+    },
+    fr: {
+      header: '\n\n🧠 MÉMOIRE UTILISATEUR (Utiliser pour la personnalisation):',
+      destinations: '✈️ Destinations préférées:',
+      interests: '💡 Intérêts:',
+      budget: '💰 Gamme de budget:',
+      style: '🎭 Style de voyage:',
+      recommendations: '🎯 RECOMMANDATIONS PERSONNALISÉES:',
+      suggestion: 'circuits correspondent aux préférences de l\'utilisateur.',
+      priority: '🔴 PRIORISER ces circuits lors des suggestions.'
+    },
+    es: {
+      header: '\n\n🧠 MEMORIA DEL USUARIO (Usar para personalización):',
+      destinations: '✈️ Destinos preferidos:',
+      interests: '💡 Intereses:',
+      budget: '💰 Rango de presupuesto:',
+      style: '🎭 Estilo de viaje:',
+      recommendations: '🎯 RECOMENDACIONES PERSONALIZADAS:',
+      suggestion: 'tours coinciden con las preferencias del usuario.',
+      priority: '🔴 PRIORIZAR estos tours al hacer sugerencias.'
+    }
+  };
+
+  const msg = contextMessages[language as keyof typeof contextMessages] || contextMessages.tr;
+  let context = msg.header;
   
   if (memory.preferredDestinations.length > 0) {
-    context += `\n✈️ Tercih ettiği destinasyonlar: ${memory.preferredDestinations.join(', ')}`;
+    context += `\n${msg.destinations} ${memory.preferredDestinations.join(', ')}`;
   }
   
   if (memory.interests.length > 0) {
-    context += `\n💡 İlgi alanları: ${memory.interests.join(', ')}`;
+    context += `\n${msg.interests} ${memory.interests.join(', ')}`;
   }
   
   if (memory.budgetRange) {
-    context += `\n💰 Bütçe aralığı: ${memory.budgetRange}`;
+    context += `\n${msg.budget} ${memory.budgetRange}`;
   }
   
   if (memory.travelStyle) {
-    context += `\n🎭 Seyahat stili: ${memory.travelStyle}`;
+    context += `\n${msg.style} ${memory.travelStyle}`;
   }
 
   // Find matching tours based on memory
@@ -151,9 +225,10 @@ export function buildPersonalizedContext(memory: UserMemory, tours: any[]): stri
   });
 
   if (matchingTours.length > 0) {
-    context += `\n\n🎯 KİŞİSELLEŞTİRİLMİŞ ÖNERİLER:`;
-    context += `\n"${matchingTours.map(t => t.title).slice(0, 3).join('", "')}" turları kullanıcının tercihlerine uygun.`;
-    context += `\n🔴 Öneriler yaparken bu turları ÖN PLANA ÇıKAR.`;
+    const msg = contextMessages[language as keyof typeof contextMessages] || contextMessages.tr;
+    context += `\n\n${msg.recommendations}`;
+    context += `\n"${matchingTours.map(t => t.title).slice(0, 3).join('", "')}" ${msg.suggestion}`;
+    context += `\n${msg.priority}`;
   }
 
   return context;
