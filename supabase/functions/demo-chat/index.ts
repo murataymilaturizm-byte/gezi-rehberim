@@ -3,6 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { detectIntent } from './services/intent-detector.ts';
 import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
 import { extractMemory } from './services/memory-extractor.ts';
+import { handleWizardStep } from './handlers/wizard.ts';
+import type { WizardState } from './types.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -329,12 +331,52 @@ serve(async (req) => {
     // ELSE: Keep existing currentTour - DON'T reset it even if no tours match!
 
     // Handle reservation.wizard - prepare wizard state with currentTour if available
-    if (intent.type === 'reservation.wizard' && conversationState.currentTour) {
-      console.log('🎯 reservation.wizard detected with currentTour:', conversationState.currentTour.title);
-      // Mark that booking process has started
-      conversationState.wizardStep = 'booking_started';
+    if (intent.type === 'reservation.wizard') {
+      if (conversationState.currentTour) {
+        console.log('🎯 reservation.wizard detected with currentTour:', conversationState.currentTour.title);
+        
+        // Find the full tour data
+        const fullTour = DEMO_TOURS.find(t => t.id === conversationState.currentTour.id);
+        
+        if (fullTour) {
+          // Initialize wizard state with context from conversation
+          const wizardState: WizardState = {
+            step: 'date_selection',
+            selected_tour: fullTour,
+            pax_adult: conversationState.userMemory?.lastMentionedPax?.adults || undefined,
+            pax_child: conversationState.userMemory?.lastMentionedPax?.children || undefined,
+            created_at: new Date().toISOString()
+          };
+          
+          conversationState.wizardState = wizardState;
+          conversationState.wizardStep = 'booking_started';
+          
+          console.log('💾 Saving wizard state with pax info:', wizardState.pax_adult, 'adults,', wizardState.pax_child, 'children');
+          await supabase
+            .from('whatsapp_user_profiles')
+            .upsert({
+              phone: `demo_${sessionId}`,
+              agency_id: DEMO_AGENCY_ID,
+              preferences: { conversation_state: conversationState }
+            }, { onConflict: 'phone,agency_id' });
+          
+          console.log('✅ Wizard state initialized with tour and pax info');
+        }
+      }
+    }
+    
+    // Check if we're in wizard mode
+    const wizardState = conversationState.wizardState as WizardState | undefined;
+    let responseMessage: string;
+    
+    if (wizardState) {
+      // We're in active wizard - handle wizard step
+      console.log('🎯 Wizard active - step:', wizardState.step);
       
-      console.log('💾 Saving booking_started state...');
+      responseMessage = await handleWizardStep(message, wizardState, DEMO_TOURS, userLanguage);
+      
+      // Save updated wizard state (wizard handler modifies state directly)
+      // If wizard completed, it will return to confirmation which user can continue from
       await supabase
         .from('whatsapp_user_profiles')
         .upsert({
@@ -343,20 +385,20 @@ serve(async (req) => {
           preferences: { conversation_state: conversationState }
         }, { onConflict: 'phone,agency_id' });
       
-      console.log('✅ Wizard state updated to booking_started');
+      console.log('✅ Wizard step completed, state saved');
+    } else {
+      // Normal intelligent handler
+      console.log('🧠 Calling intelligent handler...');
+      responseMessage = await handleDemoIntelligently(
+        message,
+        conversationHistory,
+        intent.type,
+        userLanguage,
+        DEMO_TOURS,
+        conversationStyle,
+        conversationState
+      );
     }
-
-    // Use intelligent handler with conversation state
-    console.log('🧠 Calling intelligent handler...');
-    const responseMessage = await handleDemoIntelligently(
-      message,
-      conversationHistory,
-      intent.type,
-      userLanguage,
-      DEMO_TOURS,
-      conversationStyle,
-      conversationState
-    );
 
     console.log('✅ Response generated:', responseMessage.substring(0, 100));
     await saveMessage(supabase, sessionId, 'assistant', responseMessage);

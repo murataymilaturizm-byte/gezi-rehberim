@@ -1,10 +1,14 @@
-// Extract and maintain user preferences from conversation
+// Extract user preferences from demo conversations
 
 interface UserMemory {
   preferredDestinations: string[];
   budgetRange?: 'düşük' | 'orta' | 'yüksek';
   travelStyle?: string;
   interests: string[];
+  lastMentionedPax?: {
+    adults: number;
+    children?: number;
+  };
   lastUpdated: string;
 }
 
@@ -82,6 +86,39 @@ export function extractMemory(
       memory.travelStyle = style;
       break;
     }
+  }
+
+  // Extract participant numbers (adults/children) from conversation
+  const paxPatterns = [
+    /(\d+)\s*(yetişkin|büyük|adult|adults|erwachsene|взрослых|بالغين|adulte|adultes|adulto|adultos)/gi,
+    /(\d+)\s*(çocuk|child|children|kinder|детей|أطفال|enfant|enfants|niño|niños)/gi,
+    /(\d+)\s*(kişi|person|people|personen|человек|людей|شخص|personne|personnes|persona|personas)/gi
+  ];
+
+  let adults = 0;
+  let children = 0;
+
+  for (const pattern of paxPatterns) {
+    const matches = Array.from(combinedText.matchAll(new RegExp(pattern, 'gi')));
+    for (const match of matches) {
+      const num = parseInt(match[1]);
+      const type = match[2].toLowerCase();
+      
+      if (type.match(/yetişkin|büyük|adult|erwachsene|взрослых|بالغين|adulte|adulto/i)) {
+        adults = Math.max(adults, num);
+      } else if (type.match(/çocuk|child|kinder|детей|أطفال|enfant|niño/i)) {
+        children = Math.max(children, num);
+      } else if (type.match(/kişi|person|people|personen|человек|людей|شخص|personne|persona/i) && adults === 0) {
+        adults = Math.max(adults, num);
+      }
+    }
+  }
+
+  if (adults > 0) {
+    memory.lastMentionedPax = {
+      adults,
+      children: children > 0 ? children : undefined
+    };
   }
 
   memory.lastUpdated = new Date().toISOString();
