@@ -185,52 +185,26 @@ serve(async (req) => {
     const intent = await detectIntent(message, conversationHistory, userLanguage);
     console.log('🎯 AI Intent:', intent.type, 'confidence:', intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
-    // Handle tour selection - ONLY select if user is specific or there's only one match
+    // Handle tour selection - check ALL intents, not just tour.detail/tour.search
     const numericSelection = message.match(/^\d+$/);
     
-    if ((intent.type as string) === 'tour.detail' || (intent.type as string) === 'tour.search' || numericSelection) {
-      console.log('🔍 Checking for tour selection...');
-      
-      // Find matching tours
-      const matchingTours = DEMO_TOURS.filter(t => 
-        message.toLowerCase().includes(t.title.toLowerCase()) ||
-        message.toLowerCase().includes(t.destination.toLowerCase())
-      );
-      
-      console.log(`🔎 Found ${matchingTours.length} matching tours for "${message}"`);
-      
-      // Or handle numeric selection
-      if (numericSelection) {
-        const index = parseInt(message) - 1;
-        if (index >= 0 && index < DEMO_TOURS.length) {
-          const selectedTour = DEMO_TOURS[index];
-          console.log('✅ TOUR SELECTED BY NUMBER:', selectedTour.title);
-          conversationState.currentTour = {
-            id: selectedTour.id,
-            title: selectedTour.title,
-            destination: selectedTour.destination,
-            priceAdult: selectedTour.dates[0]?.price_adult,
-            currency: selectedTour.currency
-          };
-          conversationState.wizardStep = 'tour_selected';
-          if (!conversationState.shownTourIds.includes(selectedTour.id)) {
-            conversationState.shownTourIds.push(selectedTour.id);
-          }
-          
-          await supabase
-            .from('whatsapp_user_profiles')
-            .upsert({
-              phone: `demo_${sessionId}`,
-              agency_id: DEMO_AGENCY_ID,
-              preferences: { conversation_state: conversationState }
-            }, { onConflict: 'phone,agency_id' });
-          
-          console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
-        }
-      } else if (matchingTours.length === 1 && !conversationState.currentTour) {
-        // Only auto-select if there's exactly ONE matching tour
-        const selectedTour = matchingTours[0];
-        console.log('✅ SINGLE TOUR AUTO-SELECTED:', selectedTour.title);
+    // CRITICAL: Check for tour selection on EVERY message type to preserve memory
+    console.log('🔍 Checking for tour selection...');
+    
+    // Find matching tours in the message
+    const matchingTours = DEMO_TOURS.filter(t => 
+      message.toLowerCase().includes(t.title.toLowerCase()) ||
+      message.toLowerCase().includes(t.destination.toLowerCase())
+    );
+    
+    console.log(`🔎 Found ${matchingTours.length} matching tours for "${message}"`);
+    
+    // Handle numeric selection (user chose from list)
+    if (numericSelection) {
+      const index = parseInt(message) - 1;
+      if (index >= 0 && index < DEMO_TOURS.length) {
+        const selectedTour = DEMO_TOURS[index];
+        console.log('✅ TOUR SELECTED BY NUMBER:', selectedTour.title);
         conversationState.currentTour = {
           id: selectedTour.id,
           title: selectedTour.title,
@@ -252,22 +226,48 @@ serve(async (req) => {
           }, { onConflict: 'phone,agency_id' });
         
         console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
-      } else if (matchingTours.length > 1) {
-        console.log(`📋 Multiple tours match (${matchingTours.length}), clearing currentTour so AI lists them`);
-        // Clear currentTour and wizardStep so AI will list all matching tours
-        conversationState.currentTour = null;
-        conversationState.wizardStep = 'none';
-        
-        // Save cleared state
-        await supabase
-          .from('whatsapp_user_profiles')
-          .upsert({
-            phone: `demo_${sessionId}`,
-            agency_id: DEMO_AGENCY_ID,
-            preferences: { conversation_state: conversationState }
-          }, { onConflict: 'phone,agency_id' });
       }
+    } else if (matchingTours.length === 1 && !conversationState.currentTour) {
+      // Only auto-select if there's exactly ONE matching tour and no current tour
+      const selectedTour = matchingTours[0];
+      console.log('✅ SINGLE TOUR AUTO-SELECTED:', selectedTour.title);
+      conversationState.currentTour = {
+        id: selectedTour.id,
+        title: selectedTour.title,
+        destination: selectedTour.destination,
+        priceAdult: selectedTour.dates[0]?.price_adult,
+        currency: selectedTour.currency
+      };
+      conversationState.wizardStep = 'tour_selected';
+      if (!conversationState.shownTourIds.includes(selectedTour.id)) {
+        conversationState.shownTourIds.push(selectedTour.id);
+      }
+      
+      await supabase
+        .from('whatsapp_user_profiles')
+        .upsert({
+          phone: `demo_${sessionId}`,
+          agency_id: DEMO_AGENCY_ID,
+          preferences: { conversation_state: conversationState }
+        }, { onConflict: 'phone,agency_id' });
+      
+      console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
+    } else if (matchingTours.length > 1 && (intent.type === 'tour.search' || intent.type === 'tour.list')) {
+      // Multiple tours match AND user is searching - force AI to list them
+      console.log('⚠️ MULTIPLE TOURS MATCH - Will list them for user to choose');
+      conversationState.currentTour = null;
+      conversationState.wizardStep = 'none';
+      conversationState.shownTourIds = matchingTours.map(t => t.id);
+      
+      await supabase
+        .from('whatsapp_user_profiles')
+        .upsert({
+          phone: `demo_${sessionId}`,
+          agency_id: DEMO_AGENCY_ID,
+          preferences: { conversation_state: conversationState }
+        }, { onConflict: 'phone,agency_id' });
     }
+    // ELSE: Keep existing currentTour - DON'T reset it even if no tours match!
 
     // Use intelligent handler with conversation state
     console.log('🧠 Calling intelligent handler...');

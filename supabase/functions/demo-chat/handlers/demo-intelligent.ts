@@ -88,14 +88,17 @@ ${currentTour ? `
 ✅ SEÇİLİ TUR: ${currentTour.title}
 📍 Adım: ${wizardStep}
 
-🔴 "Hangi tur?" diye SORMA - currentTour zaten var!
-🔴 Fiyat sorarsa → Direkt ${currentTour.title} için hesapla
-🔴 Kayıt/rezervasyon derse → Direkt ${currentTour.title} için kayıt başlat
-🔴 Program derse → Sadece o zaman program detayını ver
+🔴🔴🔴 HAFIZA ÖNEMLİ 🔴🔴🔴
+- currentTour VAR demek kullanıcı BU TURU SEÇMİŞ demek
+- "Hangi tur?" diye ASLA SORMA
+- Fiyat sorarsa → ${currentTour.title} için hesapla
+- Kayıt/rezervasyon derse → ${currentTour.title} için kayıt başlat
+- Program derse → ${currentTour.title} programını göster
+- Detay isterse → ${currentTour.title} detaylarını ver
 
 ${wizardStep === 'tour_selected' ? `
 ŞİMDİ NE YAPMALI:
-"Bu turla ilgili ne yapmak istersiniz?"
+"${currentTour.title} ile ilgili ne yapmak istersiniz?"
 1️⃣ Detaylı program
 2️⃣ Fiyat öğren
 3️⃣ Kayıt/rezervasyon
