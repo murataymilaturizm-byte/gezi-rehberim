@@ -17,11 +17,16 @@ const DEMO_TOURS = [
     destination: 'Kapadokya',
     type: 'DAYTRIP',
     currency: 'TRY',
-    program_kisa: 'Kapadokya\'da unutulmaz bir balon deneyimi.',
-    gezilecek_yerler: 'Göreme, Peribacaları, Uçhisar Kalesi',
+    program_kisa: 'Kapadokya\'da gün doğumunda unutulmaz bir sıcak hava balonu deneyimi.',
+    gezilecek_yerler: 'Göreme Vadisi, Peribacaları, Uçhisar Kalesi (havadan)',
+    toplanma_saati: '05:00',
+    hareket_noktasi: 'Göreme Merkez',
+    tur_sure: '3 saat (uçuş 1 saat)',
+    ulasim: 'Otelden alım-bırakım dahil',
+    konaklama: 'Günübirlik tur - konaklama yok',
     dates: [
-      { id: 'demo-date-1', departure_date: '2025-12-15', price_adult: 1500, quota: 20 },
-      { id: 'demo-date-2', departure_date: '2025-12-22', price_adult: 1500, quota: 15 }
+      { id: 'demo-date-1', departure_date: '2025-12-15', price_adult: 1500, price_child: 1200, quota: 20 },
+      { id: 'demo-date-2', departure_date: '2025-12-22', price_adult: 1500, price_child: 1200, quota: 15 }
     ]
   },
   {
@@ -30,10 +35,15 @@ const DEMO_TOURS = [
     destination: 'Kapadokya',
     type: 'N2',
     currency: 'TRY',
-    program_kisa: 'Kapadokya\'nın tarihi ve kültürel zenginlikleri.',
-    gezilecek_yerler: 'Göreme Açık Hava Müzesi, Derinkuyu Yeraltı Şehri, Avanos',
+    program_kisa: 'Kapadokya\'nın tarihi ve kültürel zenginliklerini keşfedin.',
+    gezilecek_yerler: 'Göreme Açık Hava Müzesi, Derinkuyu Yeraltı Şehri, Paşabağ Peribacaları, Avanos Çömlekçilik, Uçhisar Kalesi',
+    toplanma_saati: '08:00',
+    hareket_noktasi: 'Nevşehir Havalimanı veya Göreme Oteller',
+    tur_sure: '2 gün 1 gece',
+    ulasim: 'Klimalı otobüs',
+    konaklama: 'Göreme\'de 4* otel, kahvaltı dahil',
     dates: [
-      { id: 'demo-date-3', departure_date: '2025-12-18', price_adult: 2500, quota: 18 }
+      { id: 'demo-date-3', departure_date: '2025-12-18', price_adult: 2500, price_child: 2000, quota: 18 }
     ]
   },
   {
@@ -42,11 +52,16 @@ const DEMO_TOURS = [
     destination: 'Pamukkale',
     type: 'N2',
     currency: 'TRY',
-    program_kisa: 'Beyaz cennet Pamukkale ve Hierapolis.',
-    gezilecek_yerler: 'Pamukkale Travertenleri, Hierapolis, Kleopatra Havuzu',
+    program_kisa: 'Beyaz cennet Pamukkale travertenleri ve antik Hierapolis kenti.',
+    gezilecek_yerler: 'Pamukkale Travertenleri, Hierapolis Antik Kenti, Kleopatra Havuzu, Antik Tiyatro',
+    toplanma_saati: '07:30',
+    hareket_noktasi: 'Denizli',
+    tur_sure: '2 gün 1 gece',
+    ulasim: 'Klimalı otobüs',
+    konaklama: 'Pamukkale\'de 4* termal otel, yarım pansiyon',
     dates: [
-      { id: 'demo-date-4', departure_date: '2025-12-10', price_adult: 3500, quota: 15 },
-      { id: 'demo-date-5', departure_date: '2025-12-20', price_adult: 3500, quota: 12 }
+      { id: 'demo-date-4', departure_date: '2025-12-10', price_adult: 3500, price_child: 2800, quota: 15 },
+      { id: 'demo-date-5', departure_date: '2025-12-20', price_adult: 3500, price_child: 2800, quota: 12 }
     ]
   },
   {
@@ -55,11 +70,16 @@ const DEMO_TOURS = [
     destination: 'Antalya',
     type: 'DAYTRIP',
     currency: 'TRY',
-    program_kisa: 'Köprülü Kanyon\'da heyecan dolu rafting.',
-    gezilecek_yerler: 'Köprülü Kanyon',
+    program_kisa: 'Köprülü Kanyon\'da adrenalin dolu rafting macerası.',
+    gezilecek_yerler: 'Köprülü Kanyon Milli Parkı, Köprüçay Nehri (14 km rafting)',
+    toplanma_saati: '08:30',
+    hareket_noktasi: 'Antalya oteller bölgesi',
+    tur_sure: 'Günübirlik (sabah 08:30 - akşam 17:00)',
+    ulasim: 'Otelden alım-bırakım',
+    konaklama: 'Günübirlik - konaklama yok',
     dates: [
-      { id: 'demo-date-6', departure_date: '2025-12-05', price_adult: 800, quota: 30 },
-      { id: 'demo-date-7', departure_date: '2025-12-12', price_adult: 800, quota: 25 }
+      { id: 'demo-date-6', departure_date: '2025-12-05', price_adult: 800, price_child: 600, quota: 30 },
+      { id: 'demo-date-7', departure_date: '2025-12-12', price_adult: 800, price_child: 600, quota: 25 }
     ]
   },
   {
@@ -68,10 +88,15 @@ const DEMO_TOURS = [
     destination: 'İzmir-Çeşme-Alaçatı',
     type: 'N3',
     currency: 'TRY',
-    program_kisa: 'Ege\'nin incisi Çeşme, Alaçatı ve Efes.',
-    gezilecek_yerler: 'Çeşme, Alaçatı, Efes Antik Kenti',
+    program_kisa: 'Ege\'nin incisi Çeşme, rüzgar başkenti Alaçatı ve antik Efes.',
+    gezilecek_yerler: 'Çeşme Marina, Alaçatı Taş Sokaklar, Efes Antik Kenti, Artemis Tapınağı, Şirince Köyü',
+    toplanma_saati: '09:00',
+    hareket_noktasi: 'İzmir Adnan Menderes Havalimanı',
+    tur_sure: '3 gün 2 gece',
+    ulasim: 'Klimalı minibüs',
+    konaklama: 'Alaçatı\'da butik otel, kahvaltı dahil',
     dates: [
-      { id: 'demo-date-8', departure_date: '2025-12-08', price_adult: 8999, quota: 12 }
+      { id: 'demo-date-8', departure_date: '2025-12-08', price_adult: 8999, price_child: 7500, quota: 12 }
     ]
   },
   {
@@ -80,10 +105,15 @@ const DEMO_TOURS = [
     destination: 'İstanbul',
     type: 'N2',
     currency: 'TRY',
-    program_kisa: 'İstanbul\'un tarihi zenginlikleri.',
-    gezilecek_yerler: 'Ayasofya, Topkapı, Sultanahmet, Boğaz',
+    program_kisa: 'İstanbul\'un tarihi ve kültürel zenginlikleri.',
+    gezilecek_yerler: 'Ayasofya Camii, Topkapı Sarayı, Sultanahmet Meydanı, Kapalı Çarşı, Boğaz Turu',
+    toplanma_saati: '09:30',
+    hareket_noktasi: 'İstanbul Havalimanı veya Sultanahmet',
+    tur_sure: '2 gün 1 gece',
+    ulasim: 'Özel araç',
+    konaklama: 'Sultanahmet\'te 4* butik otel, kahvaltı dahil',
     dates: [
-      { id: 'demo-date-9', departure_date: '2025-12-07', price_adult: 2999, quota: 25 }
+      { id: 'demo-date-9', departure_date: '2025-12-07', price_adult: 2999, price_child: 2400, quota: 25 }
     ]
   }
 ];
