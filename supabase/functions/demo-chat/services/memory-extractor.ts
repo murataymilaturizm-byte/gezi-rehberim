@@ -10,12 +10,12 @@ interface UserMemory {
 
 const DESTINATIONS = ['Kapadokya', 'Pamukkale', 'Antalya', 'İzmir', 'Çeşme', 'Alaçatı', 'Efes'];
 const INTEREST_KEYWORDS: { [key: string]: string[] } = {
-  'balon turu': ['balon', 'balloon', 'uçmak', 'hava'],
-  'macera': ['rafting', 'adrenalin', 'macera', 'extreme', 'aktivite'],
-  'kültür': ['müze', 'antik', 'tarihi', 'kültür', 'history', 'cultural'],
-  'doğa': ['doğa', 'vadi', 'kanyon', 'nature', 'hiking', 'trekking'],
-  'lüks': ['lüks', 'luxury', 'konforlu', 'premium', 'butik'],
-  'termal': ['termal', 'spa', 'kaplıca', 'wellness']
+  'balon turu': ['balon', 'balloon', 'uçmak', 'hava', 'luft', 'воздушный', 'هواء', 'air', 'globo'],
+  'macera': ['rafting', 'adrenalin', 'macera', 'extreme', 'aktivite', 'abenteuer', 'adventure', 'приключение', 'مغامرة', 'aventure', 'aventura'],
+  'kültür': ['müze', 'antik', 'tarihi', 'kültür', 'history', 'cultural', 'museum', 'kultur', 'культура', 'ثقافة', 'culture', 'cultura', 'ancient', 'antike'],
+  'doğa': ['doğa', 'vadi', 'kanyon', 'nature', 'hiking', 'trekking', 'natur', 'природа', 'طبيعة', 'nature', 'naturaleza', 'wandern'],
+  'lüks': ['lüks', 'luxury', 'konforlu', 'premium', 'butik', 'luxus', 'роскошь', 'فاخر', 'luxe', 'lujo', 'boutique'],
+  'termal': ['termal', 'spa', 'kaplıca', 'wellness', 'thermal', 'термальный', 'حراري', 'thermal', 'termal']
 };
 
 export function extractMemory(
@@ -69,19 +69,19 @@ export function extractMemory(
     }
   }
 
-  // Extract travel style from keywords
-  if (lowerMessage.match(/lüks|luxury|konforlu|premium/) || 
-      memory.interests.includes('lüks')) {
-    memory.travelStyle = 'lüks';
-  } else if (lowerMessage.match(/macera|adrenalin|extreme|rafting/) ||
-             memory.interests.includes('macera')) {
-    memory.travelStyle = 'macera';
-  } else if (lowerMessage.match(/kültür|tarihi|antik|müze/) ||
-             memory.interests.includes('kültür')) {
-    memory.travelStyle = 'kültür';
-  } else if (lowerMessage.match(/doğa|vadi|kanyon|nature/) ||
-             memory.interests.includes('doğa')) {
-    memory.travelStyle = 'doğa';
+  // Extract travel style from keywords - multilingual
+  const stylePatterns = {
+    lüks: /lüks|luxury|konforlu|premium|luxus|роскошь|فاخر|luxe|lujo/i,
+    macera: /macera|adrenalin|extreme|rafting|abenteuer|adventure|приключение|مغامرة|aventure|aventura/i,
+    kültür: /kültür|tarihi|antik|müze|kultur|культура|ثقافة|culture|cultura|history|museum/i,
+    doğa: /doğa|vadi|kanyon|nature|natur|природа|طبيعة|naturaleza|hiking/i
+  };
+  
+  for (const [style, pattern] of Object.entries(stylePatterns)) {
+    if (pattern.test(lowerMessage) || memory.interests.includes(style)) {
+      memory.travelStyle = style;
+      break;
+    }
   }
 
   memory.lastUpdated = new Date().toISOString();

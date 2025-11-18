@@ -59,7 +59,7 @@ export async function handleIntelligently(
 
   // Build personalized context from user memory
   const personalizedContext = conversationState.userMemory 
-    ? buildPersonalizedContext(conversationState.userMemory, tours)
+    ? buildPersonalizedContext(conversationState.userMemory, tours, language)
     : '';
 
   // Add adaptive instructions based on pattern
@@ -115,14 +115,47 @@ function buildIntelligentPrompt(
   const wizardStep = state?.wizardStep || 'none';
   const shownTourIds = state?.shownTourIds || [];
   
-  // Style-based personality and emoji rules
-  const stylePersonality = conversationStyle === 'friendly' 
-    ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
-    : conversationStyle === 'casual'
-    ? 'Rahat, günlük dilde konuş. Uygun yerlerde emoji kullan.'
-    : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.';
+  // Style-based personality and emoji rules - multilingual
+  const stylePersonality = {
+    tr: conversationStyle === 'friendly' 
+      ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
+      : conversationStyle === 'casual'
+      ? 'Rahat, günlük dilde konuş. Uygun yerlerde emoji kullan.'
+      : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.',
+    en: conversationStyle === 'friendly'
+      ? 'Use a friendly, warm and welcoming style. Add emojis 😊'
+      : conversationStyle === 'casual'
+      ? 'Speak in casual, everyday language. Use emojis where appropriate.'
+      : 'Use a professional, polite and clear language. No emojis.',
+    de: conversationStyle === 'friendly'
+      ? 'Verwenden Sie einen freundlichen, warmen und einladenden Stil. Fügen Sie Emojis hinzu 😊'
+      : conversationStyle === 'casual'
+      ? 'Sprechen Sie in lockerer, alltäglicher Sprache. Verwenden Sie Emojis, wo passend.'
+      : 'Verwenden Sie eine professionelle, höfliche und klare Sprache. Keine Emojis.',
+    ru: conversationStyle === 'friendly'
+      ? 'Используйте дружелюбный, теплый и гостеприимный стиль. Добавляйте эмодзи 😊'
+      : conversationStyle === 'casual'
+      ? 'Говорите на повседневном, разговорном языке. Используйте эмодзи где уместно.'
+      : 'Используйте профессиональный, вежливый и четкий язык. Без эмодзи.',
+    ar: conversationStyle === 'friendly'
+      ? 'استخدم أسلوبًا ودودًا ودافئًا ومرحبًا. أضف الرموز التعبيرية 😊'
+      : conversationStyle === 'casual'
+      ? 'تحدث بلغة عادية يومية. استخدم الرموز التعبيرية حيثما كان مناسبًا.'
+      : 'استخدم لغة احترافية ومهذبة وواضحة. بدون رموز تعبيرية.',
+    fr: conversationStyle === 'friendly'
+      ? 'Utilisez un style amical, chaleureux et accueillant. Ajoutez des emojis 😊'
+      : conversationStyle === 'casual'
+      ? 'Parlez dans un langage décontracté et quotidien. Utilisez des emojis si approprié.'
+      : 'Utilisez un langage professionnel, poli et clair. Pas d\'emojis.',
+    es: conversationStyle === 'friendly'
+      ? 'Use un estilo amigable, cálido y acogedor. Agregue emojis 😊'
+      : conversationStyle === 'casual'
+      ? 'Hable en un lenguaje casual y cotidiano. Use emojis donde sea apropiado.'
+      : 'Use un lenguaje profesional, educado y claro. Sin emojis.'
+  };
 
-  const baseRules = `Sen bir seyahat asistanısın. ${stylePersonality}
+  const baseRulesText = {
+    tr: `Sen bir seyahat asistanısın. ${stylePersonality.tr}
 
 🚨 ZORUNLU WIZARD KURALLARI 🚨
 🔴 ADIM 1: Tur listele (sadece liste, detay yok)
@@ -130,7 +163,66 @@ function buildIntelligentPrompt(
 🔴 ADIM 3: "Bu turla ne yapmak istersiniz?" → 1️⃣Detay 2️⃣Fiyat 3️⃣Kayıt
 🔴 ADIM 4: Kullanıcının seçimine göre (SADECE o bilgiyi ver)
 🔴 MERHABA YASAK - Konuşma başladıktan sonra her cevabın başına "Merhaba" yazma
-🔴 MAKSIMUM 3 CÜMLE
+🔴 MAKSIMUM 3 CÜMLE`,
+    en: `You are a travel assistant. ${stylePersonality.en}
+
+🚨 MANDATORY WIZARD RULES 🚨
+🔴 STEP 1: List tours (only list, no details)
+🔴 STEP 2: User selects (number or name)
+🔴 STEP 3: "What would you like to do with this tour?" → 1️⃣Details 2️⃣Price 3️⃣Booking
+🔴 STEP 4: According to user choice (ONLY that info)
+🔴 NO "HELLO" - Don't start every answer with "Hello" after conversation started
+🔴 MAXIMUM 3 SENTENCES`,
+    de: `Sie sind ein Reiseassistent. ${stylePersonality.de}
+
+🚨 PFLICHT-WIZARD-REGELN 🚨
+🔴 SCHRITT 1: Touren auflisten (nur Liste, keine Details)
+🔴 SCHRITT 2: Benutzer wählt (Nummer oder Name)
+🔴 SCHRITT 3: "Was möchten Sie mit dieser Tour machen?" → 1️⃣Details 2️⃣Preis 3️⃣Buchung
+🔴 SCHRITT 4: Nach Benutzerwahl (NUR diese Info)
+🔴 KEIN "HALLO" - Beginnen Sie nicht jede Antwort mit "Hallo", nachdem das Gespräch begonnen hat
+🔴 MAXIMUM 3 SÄTZE`,
+    ru: `Вы туристический ассистент. ${stylePersonality.ru}
+
+🚨 ОБЯЗАТЕЛЬНЫЕ ПРАВИЛА МАСТЕРА 🚨
+🔴 ШАГ 1: Перечислить туры (только список, без деталей)
+🔴 ШАГ 2: Пользователь выбирает (номер или название)
+🔴 ШАГ 3: "Что бы вы хотели сделать с этим туром?" → 1️⃣Детали 2️⃣Цена 3️⃣Бронирование
+🔴 ШАГ 4: По выбору пользователя (ТОЛЬКО эта информация)
+🔴 НЕ "ПРИВЕТ" - Не начинайте каждый ответ с "Привет" после начала разговора
+🔴 МАКСИМУМ 3 ПРЕДЛОЖЕНИЯ`,
+    ar: `أنت مساعد سفر. ${stylePersonality.ar}
+
+🚨 قواعد المعالج الإلزامية 🚨
+🔴 الخطوة 1: قائمة الجولات (القائمة فقط، بدون تفاصيل)
+🔴 الخطوة 2: يختار المستخدم (رقم أو اسم)
+🔴 الخطوة 3: "ماذا تريد أن تفعل مع هذه الجولة؟" → 1️⃣التفاصيل 2️⃣السعر 3️⃣الحجز
+🔴 الخطوة 4: وفقًا لاختيار المستخدم (فقط تلك المعلومات)
+🔴 بدون "مرحبا" - لا تبدأ كل إجابة بـ "مرحبا" بعد بدء المحادثة
+🔴 3 جمل كحد أقصى`,
+    fr: `Vous êtes un assistant de voyage. ${stylePersonality.fr}
+
+🚨 RÈGLES D'ASSISTANT OBLIGATOIRES 🚨
+🔴 ÉTAPE 1: Lister les circuits (liste uniquement, pas de détails)
+🔴 ÉTAPE 2: L'utilisateur sélectionne (numéro ou nom)
+🔴 ÉTAPE 3: "Que souhaitez-vous faire avec ce circuit?" → 1️⃣Détails 2️⃣Prix 3️⃣Réservation
+🔴 ÉTAPE 4: Selon le choix de l'utilisateur (UNIQUEMENT cette info)
+🔴 PAS DE "BONJOUR" - Ne commencez pas chaque réponse par "Bonjour" après le début de la conversation
+🔴 MAXIMUM 3 PHRASES`,
+    es: `Eres un asistente de viajes. ${stylePersonality.es}
+
+🚨 REGLAS OBLIGATORIAS DEL ASISTENTE 🚨
+🔴 PASO 1: Listar tours (solo lista, sin detalles)
+🔴 PASO 2: El usuario selecciona (número o nombre)
+🔴 PASO 3: "¿Qué te gustaría hacer con este tour?" → 1️⃣Detalles 2️⃣Precio 3️⃣Reserva
+🔴 PASO 4: Según la elección del usuario (SOLO esa información)
+🔴 SIN "HOLA" - No comiences cada respuesta con "Hola" después de que comience la conversación
+🔴 MÁXIMO 3 ORACIONES`
+  };
+
+  const baseRules = baseRulesText[language as keyof typeof baseRulesText] || baseRulesText.tr;
+
+  const fullPrompt = `${baseRules}
 
 HAFIZA KURALLARI:
 ${currentTour ? `
@@ -258,5 +350,5 @@ Sadece seçilen işlemi yap!`;
     intentInstructions = '🔴 GENEL: Kısa ve net cevap (max 3 cümle).';
   }
 
-  return baseRules + '\n\n' + intentInstructions;
+  return fullPrompt + '\n\n' + intentInstructions;
 }
