@@ -1,6 +1,10 @@
 // Response validation and enforcement for demo chat
 
-export function validateResponse(response: string, conversationStyle: string): {
+export function validateResponse(
+  response: string, 
+  conversationStyle: string,
+  intent?: string
+): {
   isValid: boolean;
   fixedResponse?: string;
   violations: string[];
@@ -10,9 +14,11 @@ export function validateResponse(response: string, conversationStyle: string): {
   // Count sentences (rough approximation)
   const sentences = response.split(/[.!?]+/).filter(s => s.trim().length > 0);
   
-  // Check length violations
-  if (sentences.length > 4) {
-    violations.push(`Too many sentences: ${sentences.length} (max 4)`);
+  // Check length violations - more lenient for tour listings
+  const maxSentences = (intent === 'tour.list' || intent === 'tour.search') ? 15 : 4;
+  
+  if (sentences.length > maxSentences) {
+    violations.push(`Too many sentences: ${sentences.length} (max ${maxSentences})`);
   }
   
   // Check for banned phrases
@@ -58,8 +64,8 @@ export function validateResponse(response: string, conversationStyle: string): {
       fixed = fixed.replace(regex, '');
     }
     
-    // Trim to first 3 sentences
-    if (sentences.length > 3) {
+    // Trim sentences only if not tour listing
+    if (sentences.length > maxSentences && intent !== 'tour.list' && intent !== 'tour.search') {
       const firstThree = sentences.slice(0, 3).join('. ').trim();
       fixed = firstThree + (firstThree.endsWith('.') ? '' : '.');
     }

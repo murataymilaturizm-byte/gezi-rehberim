@@ -25,7 +25,7 @@ export async function handleDemoIntelligently(
   let response = await callAI(messages, 0.2);
   
   // Validate and fix response if needed
-  const validation = validateResponse(response, conversationStyle);
+  const validation = validateResponse(response, conversationStyle, intent);
   
   if (!validation.isValid) {
     console.warn('⚠️ Demo response validation failed:', validation.violations);
