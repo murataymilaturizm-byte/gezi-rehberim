@@ -104,6 +104,10 @@ function buildIntelligentPrompt(
   pattern: any,
   profile: any
 ): string {
+  const currentTour = state?.currentTour;
+  const wizardStep = state?.wizardStep || 'none';
+  const shownTourIds = state?.shownTourIds || [];
+  
   // Style-based personality and emoji rules
   const stylePersonality = conversationStyle === 'friendly' 
     ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
@@ -111,16 +115,42 @@ function buildIntelligentPrompt(
     ? 'Rahat, günlük dilde konuş. Uygun yerlerde emoji kullan.'
     : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.';
 
-  const baseRules = `Sen bir seyahat acentesi müşteri hizmetleri asistanısın.
-${stylePersonality}
+  const baseRules = `Sen bir seyahat asistanısın. ${stylePersonality}
 
-🚨 ZORUNLU KURALLAR - KESINLIKLE UYULMALI:
-1. DİL: ${language} dilinde cevap ver
-2. SELAMLAMA: Sohbet devam ediyorsa ASLA "Merhaba" deme
-3. HAFIZA: Önceki mesajları hatırla ve bağlamı koru
-4. 🔴 KISA VE ÖZ: MAKSIMUM 3 CÜMLE! WhatsApp için! Bu kurala KESINLIKLE uy!
-5. 🔴 DETAY YASAK: Program detayı, günlük plan YASAK! Sadece özet
-6. 🔴 PARAGRAF YASAK: Uzun paragraf yazma! Her satır kısa olmalı
+🚨 ZORUNLU WIZARD KURALLARI 🚨
+🔴 ADIM ADIM İLERLE - Kullanıcıdan onay almadan ileri atlama
+🔴 TEK SEFERDE HER ŞEYİ VERME - Program + fiyat + kayıt aynı mesajda olmasın
+🔴 MERHABA TEKRARI YASAK - Sadece ilk karşılama ve "merhaba/selam" mesajına bir kere cevap ver
+🔴 MAKSIMUM 3 CÜMLE - İstisnasız!
+
+HAFIZA KURALLARI:
+- Konuşma başladıktan sonra her cevabın başına "Merhaba" yazma
+- currentTour dolu mu? Evet ise "hangi tur" diye SORMA
+- Kullanıcı fiyat sorarsa ve currentTour varsa, o tur için cevap ver
+- Daha önce gösterilen turları tekrar gösterme (shownTourIds: ${JSON.stringify(shownTourIds)})
+
+WIZARD AKIŞI:
+${currentTour ? `
+✅ SEÇİLİ TUR: ${currentTour.title} (${currentTour.destination})
+📍 Wizard Adımı: ${wizardStep}
+
+Kullanıcı şu işlemleri yapabilir:
+1️⃣ Detaylı programı görmek
+2️⃣ Fiyat öğrenmek (kişi sayısına göre)
+3️⃣ Kayıt/rezervasyon başlatmak
+
+🔴 KULLANICI İSTEMEDEN PROGRAM GÖNDERME!
+🔴 FIYAT SORARSA "hangi tur" diye SORMA - currentTour var!
+` : `
+❌ SEÇİLİ TUR YOK
+Kullanıcı tur seçmeli → Sonra 3 seçenek sun (detay/fiyat/kayıt)
+`}
+
+TEMEL KURALLAR:
+- DİL: ${language === 'tr' ? 'Türkçe' : language === 'en' ? 'English' : language === 'de' ? 'Deutsch' : language === 'ru' ? 'Русский' : language === 'ar' ? 'العربية' : language === 'fr' ? 'Français' : 'Español'}
+- TARİH: Her zaman konuşma dilinle göster (15 Aralık 2025)
+- DOĞRULUK: Sadece verilen tur bilgilerini kullan
+- DETAY YASAK: Gün gün program detaylarını asla yazma
 
 Konuşma Stili: ${conversationStyle}
 Mevcut Aşama: ${state.currentStage}
@@ -130,28 +160,58 @@ Son Tartışılan Tur: ${state.lastDiscussedTour || 'Yok'}
 Intent: ${intent}`;
 
   // Intent-specific instructions
-  const intentInstructions: Record<string, string> = {
-    'greeting': `
-🔴 TEK CÜMLE: "Merhaba! Hangi tura ilgi duyuyorsunuz?" gibi kısa sor.`,
-    
-    'tour.list': `
-🔴 5 SATIR MAX: "- Tur (Tarih, Fiyat)" formatında. Her satır 1 tur. DETAY YASAK!`,
-    
-    'tour.search': `
-🔴 2-3 TUR: İsim, tarih, fiyat. DETAY YASAK!`,
-    
-    'tour.detail': `
-🔴 3 CÜMLE MAX: Neler görülecek + Fiyat + Tarih. Program detayı YASAK!`,
-    
-    'reservation.wizard': `
-🔴 KISA SOR: "Hangi tur ve tarih?" gibi tek soruda topla.`,
-    
-    'question': `
-🔴 2 CÜMLE: Direkt cevap ver.`,
-    
-    'general': `
-Kısa cevapla ve turlara yönlendir. 2-3 cümle.`
-  };
+  let intentInstructions = '';
+  
+  if (intent === 'greeting') {
+    const hasHistory = state.conversationFlow && state.conversationFlow.length > 0;
+    if (!hasHistory) {
+      intentInstructions = '🔴 İLK SELAMLAMA: Kısa karşılama + "Gitmek istediğin bölgeyi veya tur türünü yazarsan sana uygun turları listeleyebilirim." (max 2 cümle)';
+    } else {
+      intentInstructions = '🔴 TEKRAR SELAMLAMA YASAK - Kullanıcı sadece "merhaba/selam" yazmışsa kısa cevap ver, yoksa normal devam et.';
+    }
+  } else if (intent === 'tour.list' || intent === 'tour.search') {
+    intentInstructions = `🔴 TUR LİSTESİ ADIMI:
+- SADECE liste göster, başka hiçbir şey ekleme
+- Her tur için: numara, ad, bölge, tarih(ler)
+- Program/fiyat/detay YASAK
+- Son satır: "Hangi turla ilgileniyorsunuz? Numara veya tur adını yazabilirsiniz. 🙂"
+- MAX 5 satır tur listesi`;
+  } else if (intent === 'tour.detail') {
+    if (wizardStep === 'none' || wizardStep === 'tour_selected') {
+      intentInstructions = `🔴 TUR SEÇİLDİ - 3 SEÇENEK SUN:
+1️⃣ Detaylı tur programını gör
+2️⃣ Fiyat öğren (kişi sayısına göre)
+3️⃣ Kayıt / ön rezervasyon başlat
 
-  return baseRules + '\n\n' + (intentInstructions[intent] || intentInstructions['general']);
+"Bu turla ilgili ne yapmak istersiniz?" diye sor.
+🔴 PROGRAM OTOMATIK GÖNDERME!`;
+    } else if (wizardStep === 'action_choice') {
+      intentInstructions = `🔴 KULLANICI SEÇİM YAPTI:
+- "detay/program" → Detaylı programı göster
+- "fiyat" → Fiyat hesapla
+- "kayıt/rezervasyon" → Kayıt başlat
+Sadece seçilen işlemi yap!`;
+    } else {
+      intentInstructions = '🔴 TUR DETAYI: Kısa özet (max 3 cümle), gün gün program YASAK.';
+    }
+  } else if (intent === 'price.inquiry') {
+    if (currentTour) {
+      intentInstructions = `🔴 FİYAT HESAPLAMA:
+- currentTour VAR: ${currentTour.title}
+- "Hangi tur?" diye ASLA SORMA
+- Kullanıcının verdiği kişi sayısına göre hesapla
+- Format: "Yetişkin: X x FIYAT, Çocuk: Y x FIYAT, Toplam: Z"
+- Son satır: "Dilersen detaylı programı paylaşabilirim veya kayıt başlatabilirim. (Program / Kayıt)"`;
+    } else {
+      intentInstructions = '🔴 FİYAT SORU: currentTour YOK, "Hangi turumuz için fiyat öğrenmek istiyorsunuz?" sor.';
+    }
+  } else if (intent === 'reservation.wizard') {
+    intentInstructions = '🔴 REZERVASYON: Kısa onay + tarih seçimi başlat (max 2 cümle).';
+  } else if (intent === 'faq' || intent === 'question') {
+    intentInstructions = '🔴 SSS: Direkt cevap ver (max 2 cümle).';
+  } else {
+    intentInstructions = '🔴 GENEL: Kısa ve net cevap (max 3 cümle).';
+  }
+
+  return baseRules + '\n\n' + intentInstructions;
 }
