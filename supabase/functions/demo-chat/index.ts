@@ -242,56 +242,73 @@ serve(async (req) => {
     // CRITICAL: Check for tour selection on EVERY message type to preserve memory
     console.log('🔍 Checking for tour selection...');
     
-    // Find matching tours in the message
-    const matchingTours = DEMO_TOURS.filter(t => 
-      message.toLowerCase().includes(t.title.toLowerCase()) ||
-      message.toLowerCase().includes(t.destination.toLowerCase())
-    );
+    const lowerMessage = message.toLowerCase();
+    
+    // Find matching tours - smart matching (case insensitive, partial match)
+    const matchingTours = DEMO_TOURS.filter(t => {
+      const lowerTitle = t.title.toLowerCase();
+      const lowerDestination = t.destination.toLowerCase();
+      
+      // Exact match or contains
+      return lowerMessage.includes(lowerTitle) || 
+             lowerTitle.includes(lowerMessage) ||
+             lowerMessage.includes(lowerDestination) ||
+             lowerDestination.includes(lowerMessage);
+    });
     
     console.log(`🔎 Found ${matchingTours.length} matching tours for "${message}"`);
     
-    // Check if user is referring to a previously discussed tour
+    // Check if user is referring to a previously discussed tour (e.g., "konuştuğumuz tura kayıt olmak istiyorum")
     if (matchingTours.length === 0 && !conversationState.currentTour) {
-      const referencePatterns = /\b(konuştuğumuz|bahsettiğimiz|söylediğiniz|bu|o|şu)\s*(tur|turu|tura)/i;
-      if (referencePatterns.test(message)) {
-        console.log('🔍 User is referring to a previous tour, checking conversation history...');
+      const referencePatterns = /\b(konuştuğumuz|bahsettiğimiz|söylediğiniz|bu|o|şu|kayıt|rezervasyon)\s*(tur|turu|tura|turun)?/i;
+      const bookingIntents = /\b(kayıt|kayır|rezervasyon|ayır|ayırmak|katılmak|gelmek|gitmek|olmak|isterim|istiyorum)\b/i;
+      
+      if (referencePatterns.test(message) || (bookingIntents.test(message) && intent.type === 'reservation.wizard')) {
+        console.log('🔍 User is referring to a previous tour or wants to book, checking conversation history...');
         
-        // Check last 5 assistant messages for tour mentions
-        const recentAssistantMessages = conversationHistory
-          .filter(m => m.role === 'assistant')
-          .slice(-5)
-          .reverse();
+        // Check last 10 messages (both user and assistant) for tour mentions
+        const recentMessages = conversationHistory.slice(-10).reverse();
         
-        for (const msg of recentAssistantMessages) {
-          const mentionedTour = DEMO_TOURS.find(t => 
-            msg.content.includes(t.title) || msg.content.includes(t.destination)
-          );
-          if (mentionedTour) {
-            console.log('✅ Found previously mentioned tour:', mentionedTour.title);
-            conversationState.currentTour = {
-              id: mentionedTour.id,
-              title: mentionedTour.title,
-              destination: mentionedTour.destination,
-              priceAdult: mentionedTour.dates[0]?.price_adult,
-              currency: mentionedTour.currency
-            };
-            conversationState.wizardStep = 'tour_selected';
-            if (!conversationState.shownTourIds.includes(mentionedTour.id)) {
-              conversationState.shownTourIds.push(mentionedTour.id);
+        for (const msg of recentMessages) {
+          // Try to find any tour mentioned in this message
+          for (const tour of DEMO_TOURS) {
+            const lowerContent = msg.content.toLowerCase();
+            const lowerTitle = tour.title.toLowerCase();
+            const lowerDestination = tour.destination.toLowerCase();
+            
+            if (lowerContent.includes(lowerTitle) || lowerContent.includes(lowerDestination)) {
+              console.log('✅ Found previously mentioned tour:', tour.title, 'in', msg.role, 'message');
+              conversationState.currentTour = {
+                id: tour.id,
+                title: tour.title,
+                destination: tour.destination,
+                priceAdult: tour.dates[0]?.price_adult,
+                currency: tour.currency
+              };
+              conversationState.wizardStep = 'tour_selected';
+              if (!conversationState.shownTourIds.includes(tour.id)) {
+                conversationState.shownTourIds.push(tour.id);
+              }
+              
+              console.log('💾 Saving tour reference from history...');
+              await supabase
+                .from('whatsapp_user_profiles')
+                .upsert({
+                  phone: `demo_${sessionId}`,
+                  agency_id: DEMO_AGENCY_ID,
+                  preferences: { conversation_state: conversationState }
+                }, { onConflict: 'phone,agency_id' });
+              
+              console.log('✅ Tour reference saved. currentTour:', conversationState.currentTour.title);
+              break;
             }
-            
-            console.log('💾 Saving tour reference from history...');
-            await supabase
-              .from('whatsapp_user_profiles')
-              .upsert({
-                phone: `demo_${sessionId}`,
-                agency_id: DEMO_AGENCY_ID,
-                preferences: { conversation_state: conversationState }
-              }, { onConflict: 'phone,agency_id' });
-            
-            console.log('✅ Tour reference saved. currentTour:', conversationState.currentTour.title);
-            break;
           }
+          
+          if (conversationState.currentTour) break;
+        }
+        
+        if (!conversationState.currentTour) {
+          console.log('⚠️ No tour found in history despite reference pattern match');
         }
       }
     }
