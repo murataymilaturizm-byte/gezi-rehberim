@@ -280,56 +280,53 @@ serve(async (req) => {
       }
     } else if (matchingTours.length > 1) {
       // Multiple tours match - need to determine best match
-      if (intent.type === 'tour.detail') {
-        // User is asking for specific tour details - find best match
-        console.log('🎯 MULTIPLE TOURS MATCH - Finding best match for tour.detail intent');
+      // CRITICAL: Always try to find best match regardless of intent!
+      // User might say tour name with any intent (tour.detail, tour.search, general, etc.)
+      console.log('🎯 MULTIPLE TOURS MATCH - Finding best match for any intent');
+      
+      // Score each tour based on how well it matches the message
+      const scoredTours = matchingTours.map(tour => {
+        const messageLower = message.toLowerCase();
+        const titleWords = tour.title.toLowerCase().split(' ');
         
-        // Score each tour based on how well it matches the message
-        const scoredTours = matchingTours.map(tour => {
-          const messageLower = message.toLowerCase();
-          const titleWords = tour.title.toLowerCase().split(' ');
-          
-          // Count how many title words appear in the message
-          const matchScore = titleWords.filter(word => 
-            word.length > 2 && messageLower.includes(word)
-          ).length;
-          
-          // Bonus points for exact title match
-          const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
-          
-          return { tour, score: matchScore + exactMatch };
-        });
+        // Count how many title words appear in the message
+        const matchScore = titleWords.filter(word => 
+          word.length > 2 && messageLower.includes(word)
+        ).length;
         
-        // Sort by score and pick the best match
-        scoredTours.sort((a, b) => b.score - a.score);
-        const bestMatch = scoredTours[0];
+        // Bonus points for exact title match
+        const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
         
-        if (bestMatch.score > 0) {
-          // We have a clear best match
-          console.log('✅ BEST MATCH TOUR SELECTED:', bestMatch.tour.title, 'score:', bestMatch.score);
-          conversationState.currentTour = {
-            id: bestMatch.tour.id,
-            title: bestMatch.tour.title,
-            destination: bestMatch.tour.destination,
-            priceAdult: bestMatch.tour.dates[0]?.price_adult,
-            currency: bestMatch.tour.currency
-          };
-          conversationState.wizardStep = 'tour_selected';
-          if (!conversationState.shownTourIds.includes(bestMatch.tour.id)) {
-            conversationState.shownTourIds.push(bestMatch.tour.id);
-          }
-        } else {
-          // No clear match - list all options
-          console.log('⚠️ No clear best match - listing all matching tours');
-          conversationState.currentTour = null;
-          conversationState.wizardStep = 'none';
-          conversationState.shownTourIds = matchingTours.map(t => t.id);
+        return { tour, score: matchScore + exactMatch };
+      });
+      
+      // Sort by score and pick the best match
+      scoredTours.sort((a, b) => b.score - a.score);
+      const bestMatch = scoredTours[0];
+      
+      // If score is high enough (>2), we have a clear best match
+      if (bestMatch.score >= 2) {
+        // We have a clear best match
+        console.log('✅ BEST MATCH TOUR SELECTED:', bestMatch.tour.title, 'score:', bestMatch.score);
+        conversationState.currentTour = {
+          id: bestMatch.tour.id,
+          title: bestMatch.tour.title,
+          destination: bestMatch.tour.destination,
+          priceAdult: bestMatch.tour.dates[0]?.price_adult,
+          currency: bestMatch.tour.currency
+        };
+        conversationState.wizardStep = 'tour_selected';
+        if (!conversationState.shownTourIds.includes(bestMatch.tour.id)) {
+          conversationState.shownTourIds.push(bestMatch.tour.id);
         }
       } else {
-        // User is searching/listing - show all matches
-        console.log('⚠️ MULTIPLE TOURS MATCH - Will list them for user to choose');
-        conversationState.currentTour = null;
-        conversationState.wizardStep = 'none';
+        // No clear match - list all options
+        console.log('⚠️ No clear best match (score:', bestMatch.score, ') - will let AI handle it');
+        // Don't set currentTour to null if we already have one
+        if (!conversationState.currentTour) {
+          conversationState.currentTour = null;
+          conversationState.wizardStep = 'none';
+        }
         conversationState.shownTourIds = matchingTours.map(t => t.id);
       }
     }
@@ -427,8 +424,8 @@ serve(async (req) => {
           );
         }
       } else {
-        // No currentTour - clear any old wizard state and ask user to select a tour
-        console.log('⚠️ reservation.wizard detected but no currentTour - asking user to select tour first');
+        // No currentTour - clear any old wizard state and show available tours
+        console.log('⚠️ reservation.wizard detected but no currentTour - showing tour options');
         conversationState.wizardState = undefined;
         conversationState.wizardStep = 'none';
         
@@ -437,14 +434,23 @@ serve(async (req) => {
           wizardStep: 'none'
         });
         
-        const noTourMessage = userLanguage === 'tr'
-          ? '📋 Hangi turumuz için kayıt oluşturmak istiyorsunuz?\n\nLütfen tur adını veya numarasını yazın.'
-          : '📋 Which tour would you like to book?\n\nPlease enter the tour name or number.';
+        // Show tour list
+        let tourListMsg = userLanguage === 'tr'
+          ? '📋 Hangi turumuz için kayıt oluşturmak istiyorsunuz?\n\n'
+          : '📋 Which tour would you like to book?\n\n';
         
-        await saveMessage(supabase, sessionId, 'assistant', noTourMessage);
+        DEMO_TOURS.forEach((tour, idx) => {
+          tourListMsg += `${idx + 1}. ${tour.title} (${tour.destination})\n`;
+        });
+        
+        tourListMsg += userLanguage === 'tr'
+          ? '\n\nLütfen numara veya tur adını yazın.'
+          : '\n\nPlease enter the number or tour name.';
+        
+        await saveMessage(supabase, sessionId, 'assistant', tourListMsg);
         
         return new Response(
-          JSON.stringify({ message: noTourMessage }),
+          JSON.stringify({ message: tourListMsg }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
