@@ -64,12 +64,15 @@ export default function TestRunner() {
       const currentAgencyId = agencies.id;
 
       // Get demo session - most recent from whatsapp_conversations where phone starts with 'session_'
-      const { data: demoConversations } = await supabase
+      // Demo chats are stored with DEMO_AGENCY_ID, so we don't filter by current agency
+      const { data: demoConversations, error: demoError } = await supabase
         .from('whatsapp_conversations')
         .select('phone')
         .like('phone', 'session_%')
         .order('created_at', { ascending: false })
         .limit(1);
+
+      console.log('Demo conversations query:', { demoConversations, demoError });
 
       if (!demoConversations || demoConversations.length === 0) {
         toast({
@@ -81,6 +84,7 @@ export default function TestRunner() {
       }
 
       const sessionId = demoConversations[0].phone;
+      console.log('Found demo session:', sessionId);
 
       // Get WhatsApp profile - most recent from whatsapp_user_profiles
       const { data: whatsappProfile } = await supabase
