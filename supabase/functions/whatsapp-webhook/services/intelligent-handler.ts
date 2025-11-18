@@ -7,6 +7,7 @@ import { getConversationState, analyzeConversationPattern } from './conversation
 import { searchToursWithAI } from './tour.ts';
 import { getLabel } from '../config/labels.ts';
 import { validateResponse } from './response-validator.ts';
+import { buildPersonalizedContext } from './memory-extractor.ts';
 
 export async function handleIntelligently(
   supabase: any,
@@ -42,8 +43,9 @@ export async function handleIntelligently(
 
   // Get tours data if needed
   let toursContext = '';
+  let tours: any[] = [];
   if (['tour.list', 'tour.search', 'tour.detail'].includes(intent)) {
-    const tours = await searchToursWithAI(supabase, userMessage, phone, agencyId);
+    tours = await searchToursWithAI(supabase, userMessage, phone, agencyId);
     if (tours && tours.length > 0) {
       toursContext = '\n\nMevcut Turlar:\n' + tours.map(tour => {
         const dates = tour.dates?.map((d: any) => 
@@ -54,6 +56,11 @@ export async function handleIntelligently(
       }).join('\n\n');
     }
   }
+
+  // Build personalized context from user memory
+  const personalizedContext = conversationState.userMemory 
+    ? buildPersonalizedContext(conversationState.userMemory, tours)
+    : '';
 
   // Add adaptive instructions based on pattern
   let adaptiveInstructions = '';
@@ -68,7 +75,7 @@ export async function handleIntelligently(
   const messages = [
     {
       role: 'system',
-      content: systemPrompt + toursContext + adaptiveInstructions
+      content: systemPrompt + toursContext + personalizedContext + adaptiveInstructions
     },
     ...conversationHistory,
     {
@@ -168,13 +175,38 @@ Intent: ${intent}`;
   
   if (intent === 'greeting') {
     const hasHistory = state.conversationFlow && state.conversationFlow.length > 0;
+    const hasMemory = state.userMemory && (
+      state.userMemory.preferredDestinations?.length > 0 ||
+      state.userMemory.interests?.length > 0 ||
+      state.userMemory.budgetRange
+    );
+    
     if (!hasHistory) {
       intentInstructions = '🔴 İLK SELAMLAMA: Kısa karşılama + "Gitmek istediğin bölgeyi veya tur türünü yazarsan sana uygun turları listeleyebilirim." (max 2 cümle)';
+    } else if (hasMemory && state.lastDiscussedTour) {
+      intentInstructions = `🔴 DEVAM SELAMLAMASI:
+- "Tekrar merhaba! 😊" ile başla
+- Hatırlat: "Daha önce ${state.lastDiscussedTour} ile ilgilenmiştiniz."
+- Tercihlerine vurgu yap ama kısa tut
+- Sor: "Bu turla ilgili mi bilgi almak istiyorsunuz yoksa farklı bir konuda mı?"
+- Max 2-3 cümle`;
     } else {
-      intentInstructions = '🔴 TEKRAR SELAMLAMA YASAK - Kullanıcı sadece "merhaba/selam" yazmışsa kısa cevap ver, yoksa normal devam et.';
+      intentInstructions = '🔴 TEKRAR SELAMLAMA: Kısa "Tekrar merhaba! 😊 Size nasıl yardımcı olabilirim?" (max 1 cümle)';
     }
   } else if (intent === 'tour.list' || intent === 'tour.search') {
+    const hasMemory = state.userMemory && (
+      state.userMemory.preferredDestinations?.length > 0 ||
+      state.userMemory.interests?.length > 0 ||
+      state.userMemory.budgetRange
+    );
+    
     intentInstructions = `🔴 TUR LİSTESİ ADIMI:
+${hasMemory ? `
+🧠 KİŞİSELLEŞTİRME:
+- Kullanıcı hafızası var! Kişiselleştirilmiş önerileri ön plana çıkar
+- "Size özel önerilerim:" diye başlayabilirsin (opsiyonel)
+- Önce tercihlerine uygun turları göster, sonra diğerlerini
+` : ''}
 - SADECE liste göster, başka hiçbir şey ekleme
 - Her tur için: numara, ad, bölge, tarih(ler)
 - Program/fiyat/detay YASAK

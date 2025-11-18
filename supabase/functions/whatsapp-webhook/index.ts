@@ -6,12 +6,14 @@ import { checkFAQ } from './services/faq.ts';
 import { detectIntent } from './services/intent-detector.ts';
 import { getUserProfile, upsertUserProfile, enrichConversationInsights } from './services/profile.ts';
 import { saveMessage, getConversationHistory } from './services/conversation.ts';
-import { updateConversationState } from './services/conversation-state.ts';
+import { updateConversationState, getConversationState } from './services/conversation-state.ts';
 import { detectCannedResponseTrigger, getCannedResponse } from './services/canned-responses.ts';
 import { handleIntelligently } from './services/intelligent-handler.ts';
 import { getWizardState, handleWizardStep } from './handlers/wizard.ts';
 import { truncateForWhatsApp } from './utils/format.ts';
 import { createTwiMLResponse, createTwiMLHeaders } from './utils/twilio.ts';
+import { extractMemory } from './services/memory-extractor.ts';
+import { getAllActiveTours } from './services/tour.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -184,6 +186,33 @@ serve(async (req) => {
     const truncatedResponse = truncateForWhatsApp(responseMessage);
     await saveMessage(supabase, userPhone, 'assistant', truncatedResponse, agency.id);
     await enrichConversationInsights(supabase, userPhone, agency.id, userMessage, truncatedResponse, intent.type);
+
+    // Extract and update user memory from conversation
+    console.log('🧠 Extracting user preferences...');
+    const tours = await getAllActiveTours(supabase, agency.id);
+    const conversationState = await getConversationState(supabase, userPhone, agency.id);
+    
+    const updatedMemory = extractMemory(
+      userMessage,
+      truncatedResponse,
+      tours,
+      conversationState.userMemory
+    );
+    
+    if (JSON.stringify(updatedMemory) !== JSON.stringify(conversationState.userMemory)) {
+      console.log('💾 Saving updated memory:', {
+        destinations: updatedMemory.preferredDestinations,
+        interests: updatedMemory.interests,
+        budget: updatedMemory.budgetRange,
+        style: updatedMemory.travelStyle
+      });
+      
+      await updateConversationState(supabase, userPhone, agency.id, {
+        userMemory: updatedMemory
+      });
+      
+      console.log('✅ Memory saved successfully');
+    }
 
     console.log('✅ Response sent:', truncatedResponse.length, 'chars');
 

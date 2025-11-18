@@ -21,6 +21,13 @@ interface ConversationState {
   } | null;
   wizardStep: 'none' | 'tour_selected' | 'action_choice' | 'detail_shown' | 'price_shown' | 'booking_started';
   shownTourIds: string[];
+  userMemory?: {
+    preferredDestinations: string[];
+    budgetRange?: 'düşük' | 'orta' | 'yüksek';
+    travelStyle?: string;
+    interests: string[];
+    lastUpdated: string;
+  };
 }
 
 export async function getConversationState(
@@ -46,7 +53,12 @@ export async function getConversationState(
     lastQuestionAsked: null,
     currentTour: null,
     wizardStep: 'none',
-    shownTourIds: []
+    shownTourIds: [],
+    userMemory: {
+      preferredDestinations: [],
+      interests: [],
+      lastUpdated: new Date().toISOString()
+    }
   };
 
   return conversationState;
