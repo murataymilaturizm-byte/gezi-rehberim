@@ -153,12 +153,18 @@ serve(async (req) => {
 
     // Get user profile for conversation state
     console.log('👤 Fetching user profile...');
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('whatsapp_user_profiles')
       .select('preferences')
       .eq('phone', `demo_${sessionId}`)
       .eq('agency_id', DEMO_AGENCY_ID)
       .single();
+
+    console.log('📊 Profile fetch result:', {
+      found: !!profile,
+      error: profileError?.message,
+      preferences: profile?.preferences
+    });
 
     const conversationState = (profile?.preferences as any)?.conversation_state || {
       currentStage: 'initial',
@@ -217,7 +223,8 @@ serve(async (req) => {
           conversationState.shownTourIds.push(selectedTour.id);
         }
         
-        await supabase
+        console.log('💾 Saving tour selection to DB...');
+        const { data: saveData, error: saveError } = await supabase
           .from('whatsapp_user_profiles')
           .upsert({
             phone: `demo_${sessionId}`,
@@ -225,7 +232,11 @@ serve(async (req) => {
             preferences: { conversation_state: conversationState }
           }, { onConflict: 'phone,agency_id' });
         
-        console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
+        if (saveError) {
+          console.error('❌ Failed to save state:', saveError);
+        } else {
+          console.log('✅ State saved successfully. currentTour:', conversationState.currentTour.title);
+        }
       }
     } else if (matchingTours.length === 1 && !conversationState.currentTour) {
       // Only auto-select if there's exactly ONE matching tour and no current tour
@@ -243,7 +254,8 @@ serve(async (req) => {
         conversationState.shownTourIds.push(selectedTour.id);
       }
       
-      await supabase
+      console.log('💾 Saving tour selection to DB (auto-select)...');
+      const { data: saveData2, error: saveError2 } = await supabase
         .from('whatsapp_user_profiles')
         .upsert({
           phone: `demo_${sessionId}`,
@@ -251,7 +263,11 @@ serve(async (req) => {
           preferences: { conversation_state: conversationState }
         }, { onConflict: 'phone,agency_id' });
       
-      console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
+      if (saveError2) {
+        console.error('❌ Failed to save state (auto-select):', saveError2);
+      } else {
+        console.log('✅ State saved successfully (auto-select). currentTour:', conversationState.currentTour.title);
+      }
     } else if (matchingTours.length > 1 && (intent.type === 'tour.search' || intent.type === 'tour.list')) {
       // Multiple tours match AND user is searching - force AI to list them
       console.log('⚠️ MULTIPLE TOURS MATCH - Will list them for user to choose');
@@ -259,13 +275,20 @@ serve(async (req) => {
       conversationState.wizardStep = 'none';
       conversationState.shownTourIds = matchingTours.map(t => t.id);
       
-      await supabase
+      console.log('💾 Saving multiple tours state...');
+      const { error: saveError3 } = await supabase
         .from('whatsapp_user_profiles')
         .upsert({
           phone: `demo_${sessionId}`,
           agency_id: DEMO_AGENCY_ID,
           preferences: { conversation_state: conversationState }
         }, { onConflict: 'phone,agency_id' });
+      
+      if (saveError3) {
+        console.error('❌ Failed to save multiple tours state:', saveError3);
+      } else {
+        console.log('✅ Multiple tours state saved');
+      }
     }
     // ELSE: Keep existing currentTour - DON'T reset it even if no tours match!
 
