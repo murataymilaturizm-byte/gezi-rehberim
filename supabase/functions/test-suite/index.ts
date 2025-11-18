@@ -40,27 +40,27 @@ serve(async (req) => {
     if (useMockData) {
       console.log('Using mock data for testing');
       
-      // Mock demo profile - Test 2.1: Destinasyon farklı, Test 2.2: İlgi alanları eksik
+      // Mock demo profile - Doğru extraction (baseline)
       demoProfile = {
         phone: 'demo_mock_session',
         agency_id: agencyId,
         preferences: {
           conversation_state: {
             userMemory: {
-              preferredDestinations: ['Kapadokya'], // Demo'da sadece Kapadokya
-              interests: ['balon turu', 'culture'], // Demo'da balon + culture
-              lastMentionedPax: { adults: 2, children: 1 }, // Pax extraction başarılı
-              budgetRange: '2000-5000',
+              preferredDestinations: ['Kapadokya'], // Sadece kullanıcı mesajından
+              interests: ['balon turu', 'kültür'], // Hem activity hem genel
+              lastMentionedPax: { adults: 2, children: 1 }, // Tam veri
+              budgetRange: 'orta', // Enum değeri
               travelStyle: 'comfort',
               lastUpdated: new Date().toISOString()
             },
-            currentStage: 'exploration',
+            currentStage: 'exploring', // Kod 'exploring' kullanıyor
             lastIntent: 'tour.search',
-            wizardStep: 'none', // Wizard yok
+            wizardStep: 'none',
             conversationFlow: ['greeting', 'tour.search']
           },
           conversation_insights: {
-            topics_discussed: ['balon turu', 'prices'],
+            topics_discussed: ['balon turu', 'prices', 'Kapadokya'],
             questions_asked: ['fiyat', 'tarih'],
             positive_signals: ['interested'],
             negative_signals: []
@@ -73,34 +73,34 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       };
       
-      // Mock WhatsApp profile - Aynı conversation flow, sadece memory extraction farklı
+      // Mock WhatsApp profile - Extraction hataları ile (düzeltmeden önce)
       whatsappProfile = {
         phone: '+905551234567',
         agency_id: agencyId,
         preferences: {
           conversation_state: {
             userMemory: {
-              preferredDestinations: ['Kapadokya', 'Pamukkale'], // WhatsApp AI'nın önerdiği yeri de eklemiş (FARKLI)
-              interests: ['kültür'], // 'balon turu' kaçmış (EKSIK)
-              lastMentionedPax: { adults: 2 }, // Çocuk sayısı kaçmış (EKSIK)
-              budgetRange: 'orta', // AI fiyatları da dahil etmiş (FARKLI - yanlış hesaplama)
+              preferredDestinations: ['Kapadokya', 'Pamukkale'], // AI önerilerini de eklemiş (HATA)
+              interests: ['kültür'], // 'balon turu' kaçmış (HATA)
+              lastMentionedPax: { adults: 2 }, // children kaçmış (HATA)
+              budgetRange: 'orta', // Doğru
               travelStyle: 'comfort',
               lastUpdated: new Date().toISOString()
             },
-            currentStage: 'exploring', // Demo ile aynı stage
-            lastIntent: 'tour.search', // Demo ile aynı intent
-            wizardStep: 'none', // Demo ile aynı (henüz wizard başlamamış)
-            conversationFlow: ['greeting', 'tour.search'] // Demo ile aynı flow
+            currentStage: 'exploring', // Doğru
+            lastIntent: 'tour.search', // Doğru
+            wizardStep: 'none', // Doğru
+            conversationFlow: ['greeting', 'tour.search'] // Doğru
           },
           conversation_insights: {
-            topics_discussed: ['prices'], // 'balon turu' topic kaçmış (EKSIK)
-            questions_asked: ['fiyat', 'tarih'], // Demo ile aynı
+            topics_discussed: ['prices', 'Kapadokya'], // 'balon turu' kaçmış (HATA)
+            questions_asked: ['fiyat', 'tarih'], // Doğru
             positive_signals: ['interested'],
-            negative_signals: [] // Demo ile aynı
+            negative_signals: []
           }
         },
         language_preference: 'tr',
-        total_messages: 8, // Demo ile aynı
+        total_messages: 8,
         tags: ['potential', 'interested'],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
