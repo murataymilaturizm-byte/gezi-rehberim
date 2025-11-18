@@ -604,48 +604,55 @@ Effectuez uniquement l'action sélectionnée!`,
   } else if (intent === 'reservation.wizard') {
     if (currentTour) {
       const reservationWithTourMessages = {
-        tr: `🔴 KAYIT TALEBİ:
+        tr: `🔴 KAYIT TALEBİ - TURLU:
 - currentTour VAR: ${currentTour.title}
-- "Hangi tur?" diye ASLA SORMA
+- "Hangi tur?" diye ASLA SORMA - TUR BELLİ!
 - Direkt kayıt başlat: "Harika! ${currentTour.title} için kayıt oluşturalım."
-- Soru sor: "Kaç kişi katılacaksınız?" (Yetişkin/Çocuk)
-- wizardStep'i "booking_started" yap`,
-        en: `🔴 REGISTRATION REQUEST:
+- İlk soru: "Kaç kişi katılacaksınız?"
+- wizardStep: "booking_started"
+- SADECE bu tura odaklan, başka tur önerme`,
+        en: `🔴 REGISTRATION REQUEST - WITH TOUR:
 - currentTour EXISTS: ${currentTour.title}
-- NEVER ASK "Which tour?"
+- NEVER ASK "Which tour?" - TOUR IS KNOWN!
 - Start registration directly: "Great! Let's create registration for ${currentTour.title}."
-- Ask question: "How many people will attend?" (Adult/Child)
-- Set wizardStep to "booking_started"`,
-        de: `🔴 REGISTRIERUNGSANFRAGE:
+- First question: "How many people will attend?"
+- wizardStep: "booking_started"
+- FOCUS ONLY on this tour, don't suggest others`,
+        de: `🔴 REGISTRIERUNGSANFRAGE - MIT TOUR:
 - currentTour EXISTIERT: ${currentTour.title}
-- NIEMALS FRAGEN "Welche Tour?"
+- NIEMALS FRAGEN "Welche Tour?" - TOUR IST BEKANNT!
 - Registrierung direkt starten: "Großartig! Lassen Sie uns die Registrierung für ${currentTour.title} erstellen."
-- Frage stellen: "Wie viele Personen werden teilnehmen?" (Erwachsene/Kind)
-- Setzen Sie wizardStep auf "booking_started"`,
-        ru: `🔴 ЗАПРОС РЕГИСТРАЦИИ:
+- Erste Frage: "Wie viele Personen werden teilnehmen?"
+- wizardStep: "booking_started"
+- NUR auf diese Tour konzentrieren, keine anderen vorschlagen`,
+        ru: `🔴 ЗАПРОС РЕГИСТРАЦИИ - С ТУРОМ:
 - currentTour СУЩЕСТВУЕТ: ${currentTour.title}
-- НИКОГДА НЕ СПРАШИВАЙТЕ "Какой тур?"
+- НИКОГДА НЕ СПРАШИВАЙТЕ "Какой тур?" - ТУР ИЗВЕСТЕН!
 - Начните регистрацию напрямую: "Отлично! Давайте создадим регистрацию для ${currentTour.title}."
-- Задайте вопрос: "Сколько человек будет участвовать?" (Взрослый/Ребенок)
-- Установите wizardStep на "booking_started"`,
-        ar: `🔴 طلب تسجيل:
+- Первый вопрос: "Сколько человек будет участвовать?"
+- wizardStep: "booking_started"
+- ФОКУСИРУЙТЕСЬ ТОЛЬКО на этом туре, не предлагайте другие`,
+        ar: `🔴 طلب تسجيل - مع جولة:
 - currentTour موجود: ${currentTour.title}
-- لا تسأل أبدًا "أي جولة؟"
+- لا تسأل أبدًا "أي جولة؟" - الجولة معروفة!
 - ابدأ التسجيل مباشرة: "رائع! دعنا ننشئ تسجيلًا لـ ${currentTour.title}."
-- اسأل: "كم عدد الأشخاص الذين سيحضرون؟" (بالغ/طفل)
-- اضبط wizardStep على "booking_started"`,
-        fr: `🔴 DEMANDE D'INSCRIPTION:
+- السؤال الأول: "كم عدد الأشخاص الذين سيحضرون؟"
+- wizardStep: "booking_started"
+- ركز فقط على هذه الجولة، لا تقترح أخرى`,
+        fr: `🔴 DEMANDE D'INSCRIPTION - AVEC CIRCUIT:
 - currentTour EXISTE: ${currentTour.title}
-- NE DEMANDEZ JAMAIS "Quel circuit?"
+- NE DEMANDEZ JAMAIS "Quel circuit?" - LE CIRCUIT EST CONNU!
 - Commencez l'inscription directement: "Génial! Créons l'inscription pour ${currentTour.title}."
-- Posez la question: "Combien de personnes participeront?" (Adulte/Enfant)
-- Définissez wizardStep sur "booking_started"`,
-        es: `🔴 SOLICITUD DE REGISTRO:
+- Première question: "Combien de personnes participeront?"
+- wizardStep: "booking_started"
+- CONCENTREZ-VOUS UNIQUEMENT sur ce circuit, n'en suggérez pas d'autres`,
+        es: `🔴 SOLICITUD DE REGISTRO - CON TOUR:
 - currentTour EXISTE: ${currentTour.title}
-- NUNCA PREGUNTE "¿Qué tour?"
+- NUNCA PREGUNTE "¿Qué tour?" - ¡EL TOUR ES CONOCIDO!
 - Inicie el registro directamente: "¡Genial! Creemos el registro para ${currentTour.title}."
-- Haga la pregunta: "¿Cuántas personas asistirán?" (Adulto/Niño)
-- Establezca wizardStep en "booking_started"`
+- Primera pregunta: "¿Cuántas personas asistirán?"
+- wizardStep: "booking_started"
+- CONCÉNTRESE SOLO en este tour, no sugiera otros`
       };
       intentInstructions = reservationWithTourMessages[language as keyof typeof reservationWithTourMessages] || reservationWithTourMessages.tr;
     } else {

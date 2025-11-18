@@ -174,6 +174,52 @@ serve(async (req) => {
       lastIntent: intent.type
     });
 
+    // Handle reservation.wizard - start wizard with currentTour if available
+    if (intent.type === 'reservation.wizard') {
+      const conversationState = await getConversationState(supabase, userPhone, agency.id);
+      
+      if (conversationState.currentTour) {
+        // Start wizard with pre-selected tour
+        console.log('🎯 Starting wizard with pre-selected tour:', conversationState.currentTour.title);
+        
+        const { data: tours } = await supabase
+          .from('tours')
+          .select(`
+            *,
+            dates:tour_dates(*)
+          `)
+          .eq('id', conversationState.currentTour.id)
+          .single();
+
+        if (tours) {
+          const wizardState = {
+            step: 'date_selection',
+            selected_tour: tours,
+            created_at: new Date().toISOString()
+          };
+
+          // Save wizard state
+          const { data: profile } = await supabase
+            .from('whatsapp_user_profiles')
+            .select('preferences')
+            .eq('phone', userPhone)
+            .eq('agency_id', agency.id)
+            .single();
+
+          const preferences = profile?.preferences || {};
+          preferences.wizard_state = wizardState;
+
+          await supabase
+            .from('whatsapp_user_profiles')
+            .update({ preferences })
+            .eq('phone', userPhone)
+            .eq('agency_id', agency.id);
+
+          console.log('✅ Wizard state saved with pre-selected tour');
+        }
+      }
+    }
+
     const responseMessage = await handleIntelligently(
       supabase,
       userPhone,
