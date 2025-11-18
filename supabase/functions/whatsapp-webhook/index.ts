@@ -187,31 +187,33 @@ serve(async (req) => {
     await saveMessage(supabase, userPhone, 'assistant', truncatedResponse, agency.id);
     await enrichConversationInsights(supabase, userPhone, agency.id, userMessage, truncatedResponse, intent.type);
 
-    // Extract and update user memory from conversation
-    console.log('🧠 Extracting user preferences...');
-    const tours = await getAllActiveTours(supabase, agency.id);
-    const conversationState = await getConversationState(supabase, userPhone, agency.id);
-    
-    const updatedMemory = extractMemory(
-      userMessage,
-      truncatedResponse,
-      tours,
-      conversationState.userMemory
-    );
-    
-    if (JSON.stringify(updatedMemory) !== JSON.stringify(conversationState.userMemory)) {
-      console.log('💾 Saving updated memory:', {
-        destinations: updatedMemory.preferredDestinations,
-        interests: updatedMemory.interests,
-        budget: updatedMemory.budgetRange,
-        style: updatedMemory.travelStyle
-      });
+    // Extract and update user memory from conversation (only if plan supports it)
+    if (planFeatures?.has_user_profiles) {
+      console.log('🧠 Extracting user preferences...');
+      const tours = await getAllActiveTours(supabase, agency.id);
+      const conversationState = await getConversationState(supabase, userPhone, agency.id);
       
-      await updateConversationState(supabase, userPhone, agency.id, {
-        userMemory: updatedMemory
-      });
+      const updatedMemory = extractMemory(
+        userMessage,
+        truncatedResponse,
+        tours,
+        conversationState.userMemory
+      );
       
-      console.log('✅ Memory saved successfully');
+      if (JSON.stringify(updatedMemory) !== JSON.stringify(conversationState.userMemory)) {
+        console.log('💾 Saving updated memory:', {
+          destinations: updatedMemory.preferredDestinations,
+          interests: updatedMemory.interests,
+          budget: updatedMemory.budgetRange,
+          style: updatedMemory.travelStyle
+        });
+        
+        await updateConversationState(supabase, userPhone, agency.id, {
+          userMemory: updatedMemory
+        });
+        
+        console.log('✅ Memory saved successfully');
+      }
     }
 
     console.log('✅ Response sent:', truncatedResponse.length, 'chars');
