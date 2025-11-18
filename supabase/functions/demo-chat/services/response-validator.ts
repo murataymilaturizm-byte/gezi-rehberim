@@ -14,8 +14,10 @@ export function validateResponse(
   // Count sentences (rough approximation)
   const sentences = response.split(/[.!?]+/).filter(s => s.trim().length > 0);
   
-  // Check length violations - more lenient for tour listings
-  const maxSentences = (intent === 'tour.list' || intent === 'tour.search') ? 15 : 4;
+  // Check length violations - more lenient for tour listings and reservations
+  const maxSentences = (intent === 'tour.list' || intent === 'tour.search') ? 15 
+                     : (intent === 'reservation.wizard') ? 10
+                     : 4;
   
   if (sentences.length > maxSentences) {
     violations.push(`Too many sentences: ${sentences.length} (max ${maxSentences})`);
@@ -46,8 +48,16 @@ export function validateResponse(
     violations.push('Contains day-by-day program details (forbidden)');
   }
   
-  // Check for repeated greetings
+  // Check for repeated greetings - MUST BLOCK them
   const greetings = ['merhaba', 'hello', 'hola', 'bonjour', 'привет', 'مرحبا'];
+  
+  // Check if response starts with greeting after first message
+  const startsWithGreeting = greetings.some(g => lowerResponse.trim().startsWith(g));
+  
+  if (startsWithGreeting && intent !== 'greeting') {
+    violations.push('Response starts with greeting (forbidden after first message)');
+  }
+  
   const greetingMatches = greetings.filter(g => lowerResponse.includes(g));
   
   if (greetingMatches.length > 1) {
@@ -64,10 +74,18 @@ export function validateResponse(
       fixed = fixed.replace(regex, '');
     }
     
-    // Trim sentences only if not tour listing
-    if (sentences.length > maxSentences && intent !== 'tour.list' && intent !== 'tour.search') {
+    // Trim sentences only if not tour listing or reservation
+    if (sentences.length > maxSentences && intent !== 'tour.list' && intent !== 'tour.search' && intent !== 'reservation.wizard') {
       const firstThree = sentences.slice(0, 3).join('. ').trim();
       fixed = firstThree + (firstThree.endsWith('.') ? '' : '.');
+    }
+    
+    // Remove greetings if not greeting intent
+    if (intent !== 'greeting') {
+      for (const greeting of greetings) {
+        const regex = new RegExp(`^${greeting}[!.]?\\s*`, 'gi');
+        fixed = fixed.replace(regex, '').trim();
+      }
     }
     
     // Remove emojis if professional
