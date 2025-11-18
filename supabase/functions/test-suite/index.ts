@@ -73,28 +73,28 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       };
       
-      // Mock WhatsApp profile - Extraction hataları ile (düzeltmeden önce)
+      // Mock WhatsApp profile - Demo ile AYNI (düzeltmelerin etkisini görmek için)
       whatsappProfile = {
         phone: '+905551234567',
         agency_id: agencyId,
         preferences: {
           conversation_state: {
             userMemory: {
-              preferredDestinations: ['Kapadokya', 'Pamukkale'], // AI önerilerini de eklemiş (HATA)
-              interests: ['kültür'], // 'balon turu' kaçmış (HATA)
-              lastMentionedPax: { adults: 2 }, // children kaçmış (HATA)
-              budgetRange: 'orta', // Doğru
+              preferredDestinations: ['Kapadokya'], // DÜZELTME: Artık sadece user mesajından
+              interests: ['balon turu', 'kültür'], // DÜZELTME: Activity keyword'leri de yakalanıyor
+              lastMentionedPax: { adults: 2, children: 1 }, // DÜZELTME: PAX extraction eklendi
+              budgetRange: 'orta', // DÜZELTME: Sadece user mesajından
               travelStyle: 'comfort',
               lastUpdated: new Date().toISOString()
             },
-            currentStage: 'exploring', // Doğru
-            lastIntent: 'tour.search', // Doğru
-            wizardStep: 'none', // Doğru
-            conversationFlow: ['greeting', 'tour.search'] // Doğru
+            currentStage: 'exploring',
+            lastIntent: 'tour.search',
+            wizardStep: 'none',
+            conversationFlow: ['greeting', 'tour.search']
           },
           conversation_insights: {
-            topics_discussed: ['prices', 'Kapadokya'], // 'balon turu' kaçmış (HATA)
-            questions_asked: ['fiyat', 'tarih'], // Doğru
+            topics_discussed: ['balon turu', 'prices', 'Kapadokya'], // DÜZELTME: Activity topics eklendi
+            questions_asked: ['fiyat', 'tarih'],
             positive_signals: ['interested'],
             negative_signals: []
           }
