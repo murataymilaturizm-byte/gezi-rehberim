@@ -467,6 +467,39 @@ async function handleSpecialRequests(
 ): Promise<string> {
   const lowerMessage = userMessage.toLowerCase();
 
+  // Check if required fields are present
+  if (!state.selected_date || !state.selected_tour || !state.pax_adult) {
+    await clearWizardState(supabase, phone, agencyId);
+    const messages = {
+      tr: 'Bir hata oluştu. Lütfen tekrar başlayın.',
+      en: 'An error occurred. Please start again.',
+      de: 'Ein Fehler ist aufgetreten. Bitte beginnen Sie erneut.',
+      ru: 'Произошла ошибка. Пожалуйста, начните снова.',
+      ar: 'حدث خطأ. يرجى البدء من جديد.',
+      fr: 'Une erreur s\'est produite. Veuillez recommencer.',
+      es: 'Ocurrió un error. Por favor comience de nuevo.'
+    };
+    return messages[language as keyof typeof messages] || messages.tr;
+  }
+
+  // CRITICAL: Check if full_name is present (should have been collected in previous step)
+  if (!state.full_name || state.full_name.trim().length < 3) {
+    // If full_name is missing, go back to full_name_request step
+    state.step = 'full_name_request';
+    await saveWizardState(supabase, phone, agencyId, state);
+    
+    const messages = {
+      tr: 'Lütfen tam adınızı ve soyadınızı yazın:',
+      en: 'Please enter your full name:',
+      de: 'Bitte geben Sie Ihren vollständigen Namen ein:',
+      ru: 'Пожалуйста, введите ваше полное имя:',
+      ar: 'يرجى إدخال اسمك الكامل:',
+      fr: 'Veuillez entrer votre nom complet:',
+      es: 'Por favor ingrese su nombre completo:'
+    };
+    return messages[language as keyof typeof messages] || messages.tr;
+  }
+
   if (lowerMessage !== 'yok' && lowerMessage !== 'no' && lowerMessage !== 'none') {
     state.special_requests = userMessage;
   }
@@ -474,11 +507,6 @@ async function handleSpecialRequests(
   // Update wizard state
   state.step = 'confirmation';
   await saveWizardState(supabase, phone, agencyId, state);
-
-  if (!state.selected_date || !state.selected_tour || !state.pax_adult) {
-    await clearWizardState(supabase, phone, agencyId);
-    return 'Bir hata oluştu. Lütfen tekrar başlayın.';
-  }
 
   // Format confirmation message
   const depDate = new Date(state.selected_date.departure_date).toLocaleDateString(
@@ -556,11 +584,38 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
 
   if (!state.selected_tour || !state.selected_date || !state.pax_adult) {
     await clearWizardState(supabase, phone, agencyId);
-    return 'Bir hata oluştu. Lütfen tekrar başlayın.';
+    const messages = {
+      tr: 'Bir hata oluştu. Lütfen tekrar başlayın.',
+      en: 'An error occurred. Please start again.',
+      de: 'Ein Fehler ist aufgetreten. Bitte beginnen Sie erneut.',
+      ru: 'Произошла ошибка. Пожалуйста, начните снова.',
+      ar: 'حدث خطأ. يرجى البدء من جديد.',
+      fr: 'Une erreur s\'est produite. Veuillez recommencer.',
+      es: 'Ocurrió un error. Por favor comience de nuevo.'
+    };
+    return messages[language as keyof typeof messages] || messages.tr;
   }
 
-  // Use full name from wizard state
-  const fullName = state.full_name || 'WhatsApp Customer';
+  // CRITICAL: Ensure full_name is present before creating registration
+  if (!state.full_name || state.full_name.trim().length < 3) {
+    // If full_name is missing, go back to full_name_request step
+    state.step = 'full_name_request';
+    await saveWizardState(supabase, phone, agencyId, state);
+    
+    const messages = {
+      tr: 'Kayıt için lütfen tam adınızı ve soyadınızı yazın:',
+      en: 'Please enter your full name for registration:',
+      de: 'Bitte geben Sie Ihren vollständigen Namen für die Anmeldung ein:',
+      ru: 'Пожалуйста, введите ваше полное имя для регистрации:',
+      ar: 'يرجى إدخال اسمك الكامل للتسجيل:',
+      fr: 'Veuillez entrer votre nom complet pour l\'inscription:',
+      es: 'Por favor ingrese su nombre completo para el registro:'
+    };
+    return messages[language as keyof typeof messages] || messages.tr;
+  }
+
+  // Use full name from wizard state (guaranteed to exist now)
+  const fullName = state.full_name;
 
   // Create registration
   const { data: registration, error } = await supabase
