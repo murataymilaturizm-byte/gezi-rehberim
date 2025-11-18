@@ -179,7 +179,7 @@ serve(async (req) => {
       const conversationState = await getConversationState(supabase, userPhone, agency.id);
       
       if (conversationState.currentTour) {
-        // Start wizard with pre-selected tour
+        // Start wizard with pre-selected tour and show dates immediately
         console.log('🎯 Starting wizard with pre-selected tour:', conversationState.currentTour.title);
         
         const { data: tours } = await supabase
@@ -193,7 +193,7 @@ serve(async (req) => {
 
         if (tours) {
           const wizardState = {
-            step: conversationState.userMemory?.lastMentionedPax ? 'date_selection' : 'date_selection',
+            step: 'date_selection',
             selected_tour: tours,
             pax_adult: conversationState.userMemory?.lastMentionedPax?.adults || undefined,
             pax_child: conversationState.userMemory?.lastMentionedPax?.children || undefined,
@@ -217,7 +217,7 @@ serve(async (req) => {
             .eq('phone', userPhone)
             .eq('agency_id', agency.id);
 
-          console.log('✅ Wizard state saved with pre-selected tour and pax:', wizardState.pax_adult, 'adults,', wizardState.pax_child, 'children');
+          console.log('✅ Wizard state saved with tour and dates shown');
         }
       }
     }
