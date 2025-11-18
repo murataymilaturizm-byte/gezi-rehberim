@@ -11,16 +11,16 @@ export function validateResponse(
 } {
   const violations: string[] = [];
   
-  // Count sentences (rough approximation)
-  const sentences = response.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  // Count words instead of sentences for better control
+  const words = response.split(/\s+/).filter(w => w.trim().length > 0);
   
-  // Check length violations - more lenient for tour listings and reservations
-  const maxSentences = (intent === 'tour.list' || intent === 'tour.search') ? 15 
-                     : (intent === 'reservation.wizard') ? 10
-                     : 4;
+  // Check length violations - use word count for more reliable limits
+  const maxWords = (intent === 'tour.list' || intent === 'tour.search') ? 300 
+                  : (intent === 'reservation.wizard') ? 200
+                  : 100;
   
-  if (sentences.length > maxSentences) {
-    violations.push(`Too many sentences: ${sentences.length} (max ${maxSentences})`);
+  if (words.length > maxWords) {
+    violations.push(`Too many words: ${words.length} (max ${maxWords})`);
   }
   
   // Check for banned phrases
@@ -74,10 +74,10 @@ export function validateResponse(
       fixed = fixed.replace(regex, '');
     }
     
-    // Trim sentences only if not tour listing or reservation
-    if (sentences.length > maxSentences && intent !== 'tour.list' && intent !== 'tour.search' && intent !== 'reservation.wizard') {
-      const firstThree = sentences.slice(0, 3).join('. ').trim();
-      fixed = firstThree + (firstThree.endsWith('.') ? '' : '.');
+    // Trim by word count only if not tour listing or reservation
+    if (words.length > maxWords && intent !== 'tour.list' && intent !== 'tour.search' && intent !== 'reservation.wizard') {
+      const trimmedWords = words.slice(0, maxWords).join(' ');
+      fixed = trimmedWords + (trimmedWords.endsWith('.') ? '' : '.');
     }
     
     // Remove greetings if not greeting intent
