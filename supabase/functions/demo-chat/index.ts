@@ -93,32 +93,45 @@ async function saveMessage(supabase: any, sessionId: string, role: string, conte
 }
 
 serve(async (req) => {
+  console.log('🚀 === DEMO CHAT REQUEST RECEIVED ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  
   if (req.method === 'OPTIONS') {
+    console.log('⚠️ OPTIONS request - returning CORS headers');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('📥 Parsing request body...');
     const { message, sessionId, conversationStyle = 'professional' } = await req.json();
+    console.log('✅ Request parsed:', { message: message?.substring(0, 50), sessionId, conversationStyle });
 
     if (!message || !sessionId) {
+      console.error('❌ Missing message or sessionId');
       return new Response(
         JSON.stringify({ error: 'Missing message or sessionId' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('🔧 Creating Supabase client...');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    console.log('💾 Saving user message...');
     await saveMessage(supabase, sessionId, 'user', message);
 
     const userLanguage = 'tr';
 
     // Check wizard state
+    console.log('🔍 Checking wizard state...');
     const wizardState = await getWizardState(supabase, `demo_${sessionId}`, DEMO_AGENCY_ID);
+    console.log('✅ Wizard state:', wizardState ? 'EXISTS' : 'NULL');
     if (wizardState) {
+      console.log('🎯 Handling wizard step:', wizardState.step);
       const wizardResponse = await handleWizardStep(
         supabase,
         `demo_${sessionId}`,
@@ -126,6 +139,7 @@ serve(async (req) => {
         message,
         wizardState
       );
+      console.log('📤 Wizard response:', wizardResponse.substring(0, 100));
       await saveMessage(supabase, sessionId, 'assistant', wizardResponse);
       return new Response(
         JSON.stringify({ message: wizardResponse }),
@@ -134,6 +148,7 @@ serve(async (req) => {
     }
 
     // Get conversation history
+    console.log('📜 Fetching conversation history...');
     const { data: historyData } = await supabase
       .from('whatsapp_conversations')
       .select('*')
@@ -145,6 +160,7 @@ serve(async (req) => {
     console.log('📱 Demo Chat - History:', historyData?.length || 0, 'messages');
 
     // Get user profile for conversation state
+    console.log('👤 Fetching user profile...');
     const { data: profile } = await supabase
       .from('whatsapp_user_profiles')
       .select('preferences')
@@ -166,12 +182,20 @@ serve(async (req) => {
       shownTourIds: []
     };
 
+    console.log('🧠 Conversation state:', {
+      currentTour: conversationState.currentTour?.title || 'NONE',
+      wizardStep: conversationState.wizardStep,
+      shownTourIds: conversationState.shownTourIds.length
+    });
+
     // AI intent detection
+    console.log('🤖 Detecting intent...');
     const intent = await detectIntent(message, historyData || [], userLanguage);
-    console.log('🤖 AI Intent:', intent.type, intent.confidence, 'currentTour:', conversationState.currentTour?.title);
+    console.log('🎯 AI Intent:', intent.type, 'confidence:', intent.confidence, 'currentTour:', conversationState.currentTour?.title);
 
     // Handle tour selection - update currentTour
     if ((intent.type as string) === 'tour.detail' || message.match(/^\d+$/)) {
+      console.log('🔍 Checking for tour selection...');
       const selectedTour = DEMO_TOURS.find((t, index) => 
         message.toLowerCase().includes(t.title.toLowerCase()) ||
         message.toLowerCase().includes(t.destination.toLowerCase()) ||
@@ -179,6 +203,7 @@ serve(async (req) => {
       );
       
       if (selectedTour && !conversationState.currentTour) {
+        console.log('✅ TOUR SELECTED:', selectedTour.title);
         conversationState.currentTour = {
           id: selectedTour.id,
           title: selectedTour.title,
@@ -192,6 +217,7 @@ serve(async (req) => {
         }
         
         // Save updated state
+        console.log('💾 Saving updated conversation state...');
         await supabase
           .from('whatsapp_user_profiles')
           .upsert({
@@ -200,11 +226,16 @@ serve(async (req) => {
             preferences: { conversation_state: conversationState }
           }, { onConflict: 'phone,agency_id' });
         
-        console.log('✅ Tour selected:', selectedTour.title);
+        console.log('✅ State saved. currentTour:', conversationState.currentTour.title);
+      } else if (selectedTour) {
+        console.log('⚠️ Tour already selected:', conversationState.currentTour?.title);
+      } else {
+        console.log('⚠️ No tour matched the selection');
       }
     }
 
     // Use intelligent handler with conversation state
+    console.log('🧠 Calling intelligent handler...');
     const responseMessage = await handleDemoIntelligently(
       message,
       historyData || [],
@@ -215,16 +246,19 @@ serve(async (req) => {
       conversationState
     );
 
+    console.log('✅ Response generated:', responseMessage.substring(0, 100));
     await saveMessage(supabase, sessionId, 'assistant', responseMessage);
 
+    console.log('📤 Sending response to client');
     return new Response(
       JSON.stringify({ message: responseMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Demo chat error:', error);
+    console.error('❌ Demo chat error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
