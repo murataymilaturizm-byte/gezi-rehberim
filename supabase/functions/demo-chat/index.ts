@@ -158,7 +158,7 @@ serve(async (req) => {
       .select('preferences')
       .eq('phone', `demo_${sessionId}`)
       .eq('agency_id', DEMO_AGENCY_ID)
-      .single();
+      .maybeSingle();
 
     console.log('📊 Profile fetch result:', {
       found: !!profile,
