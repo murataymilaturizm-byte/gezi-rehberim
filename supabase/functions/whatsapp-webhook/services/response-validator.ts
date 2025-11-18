@@ -1,17 +1,20 @@
 // Response validation and enforcement
 
-export function validateResponse(response: string, conversationStyle: string): {
+export function validateResponse(response: string, conversationStyle: string, skipLengthCheck: boolean = false): {
   isValid: boolean;
   fixedResponse?: string;
   violations: string[];
 } {
   const violations: string[] = [];
   
+  // Skip length check for tour lists and other formatted content
+  const isList = response.includes('1.') && response.includes('2.') && response.includes('📅');
+  
   // Count sentences (rough approximation)
   const sentences = response.split(/[.!?]+/).filter(s => s.trim().length > 0);
   
-  // Check length violations
-  if (sentences.length > 4) {
+  // Check length violations (skip for lists)
+  if (!skipLengthCheck && !isList && sentences.length > 4) {
     violations.push(`Too many sentences: ${sentences.length} (max 4)`);
   }
   
@@ -58,8 +61,8 @@ export function validateResponse(response: string, conversationStyle: string): {
       fixed = fixed.replace(regex, '');
     }
     
-    // Trim to first 3 sentences
-    if (sentences.length > 3) {
+    // Trim to first 3 sentences (skip for lists)
+    if (!isList && sentences.length > 3) {
       const firstThree = sentences.slice(0, 3).join('. ').trim();
       fixed = firstThree + (firstThree.endsWith('.') ? '' : '.');
     }
