@@ -96,14 +96,15 @@ serve(async (req) => {
       confidence: intent.confidence
     });
 
-    // Handle tour selection - ONLY select if user is specific or there's only one match
+    // Handle tour selection - check ALL messages except reservation.wizard
     const numericSelection = userMessage.match(/^\d+$/);
     
     // Get current conversation state
     const conversationState = await getConversationState(supabase, userPhone, agency.id);
     let tourSelected = false;
     
-    if ((intent.type as string).includes('tour.detail') || numericSelection) {
+    // CRITICAL: Only try to select tour if intent is NOT reservation.wizard
+    if (intent.type !== 'reservation.wizard') {
       const { data: tours } = await supabase
         .from('tours')
         .select(`
@@ -137,68 +138,39 @@ serve(async (req) => {
             selectedTour = tours[index];
           }
         } else if (matchingTours.length === 1) {
-          // Only auto-select if there's exactly ONE matching tour
+          // Auto-select if there's exactly ONE matching tour
           selectedTour = matchingTours[0];
-        } else if (matchingTours.length > 1 && intent.type === 'tour.detail') {
-          // Multiple tours match and user wants tour details - find best match
-          console.log('🎯 MULTIPLE TOURS MATCH - Finding best match for tour.detail intent');
+        } else if (matchingTours.length > 1) {
+          // Multiple tours match - find best match
+          console.log('🎯 MULTIPLE TOURS MATCH - Finding best match');
           
-          // Score each tour based on how well it matches the message
           const scoredTours = matchingTours.map((tour: any) => {
             const messageLower = userMessage.toLowerCase();
             const titleWords = tour.title.toLowerCase().split(' ');
             
-            // Count how many title words appear in the message
             const matchScore = titleWords.filter((word: string) => 
               word.length > 2 && messageLower.includes(word)
             ).length;
             
-            // Bonus points for exact title match
             const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
             
             return { tour, score: matchScore + exactMatch };
           });
           
-          // Sort by score and pick the best match
           scoredTours.sort((a, b) => b.score - a.score);
           const bestMatch = scoredTours[0];
           
           // If score is high enough (>=2), we have a clear best match
           if (bestMatch.score >= 2) {
-            // We have a clear best match
             selectedTour = bestMatch.tour;
             console.log('✅ BEST MATCH TOUR SELECTED:', selectedTour.title, 'score:', bestMatch.score);
           } else {
             console.log('⚠️ No clear best match (score:', bestMatch.score, ') - will let AI list all options');
           }
-        } else if (matchingTours.length > 1) {
-          // Multiple tours match - try to find best match regardless of intent
-          console.log('🎯 MULTIPLE TOURS MATCH - Finding best match for any intent');
-          
-          const scoredTours = matchingTours.map((tour: any) => {
-            const messageLower = userMessage.toLowerCase();
-            const titleWords = tour.title.toLowerCase().split(' ');
-            
-            const matchScore = titleWords.filter((word: string) => 
-              word.length > 2 && messageLower.includes(word)
-            ).length;
-            
-            const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
-            
-            return { tour, score: matchScore + exactMatch };
-          });
-          
-          scoredTours.sort((a, b) => b.score - a.score);
-          const bestMatch = scoredTours[0];
-          
-          // If score is high enough (>=2), we have a clear best match
-          if (bestMatch.score >= 2) {
-            selectedTour = bestMatch.tour;
-            console.log('✅ BEST MATCH TOUR SELECTED:', selectedTour.title, 'score:', bestMatch.score);
-          }
         }
         
-        if (selectedTour && !conversationState.currentTour) {
+        // If we found a selectedTour, update conversationState
+        if (selectedTour) {
           conversationState.currentTour = {
             id: selectedTour.id,
             title: selectedTour.title,
