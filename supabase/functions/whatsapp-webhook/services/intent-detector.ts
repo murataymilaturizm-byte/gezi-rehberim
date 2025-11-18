@@ -13,7 +13,7 @@ const intentDetectionTool = {
       properties: {
         intent_type: {
           type: "string",
-          enum: ["greeting", "tour.list", "tour.search", "tour.detail", "reservation.wizard", "general", "question"],
+          enum: ["greeting", "tour.list", "tour.search", "tour.detail", "reservation.wizard", "price.inquiry", "general", "question"],
           description: "The detected intent type"
         },
         confidence: {
@@ -51,6 +51,7 @@ Niyet Türleri:
 - tour.list: Tüm tur seçeneklerini görmek istiyor
 - tour.search: Belirli bir tur veya destinasyon hakkında bilgi arıyor
 - tour.detail: Belirli bir turun detaylarını öğrenmek istiyor
+- price.inquiry: Fiyat bilgisi öğrenmek istiyor
 - reservation.wizard: Rezervasyon yapmak, ayırtmak, katılmak, kayıt olmak istiyor
 - question: Genel sorular (fiyat, tarih, koşullar vs.)
 - general: Diğer genel sohbet
@@ -61,7 +62,8 @@ Niyet Türleri:
 3. Eğer kullanıcı bir soruya "evet", "olur", "tabii" gibi onay veriyor ve önceki mesaj tur hakkındaysa -> tour.detail
 4. Eğer kullanıcı "turlarınız", "seçenekler", "neler var" gibi genel sorular soruyorsa -> tour.list
 5. Eğer kullanıcı belirli bir destinasyon (Kapadokya, Pamukkale vs.) söylüyorsa -> tour.search
-6. 🔴 HAFIZA: Eğer kullanıcı daha önce yazdıysa ve turlardan bahsedildiyse, bu ASLA greeting olamaz!
+6. Eğer kullanıcı "fiyat", "kaç para", "ne kadar" gibi kelimeler kullanıyorsa -> price.inquiry
+7. 🔴 HAFIZA: Eğer kullanıcı daha önce yazdıysa ve turlardan bahsedildiyse, bu ASLA greeting olamaz!
 
 Dil: ${userLanguage}`;
 
