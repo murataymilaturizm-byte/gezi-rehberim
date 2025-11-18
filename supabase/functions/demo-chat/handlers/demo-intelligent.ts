@@ -56,9 +56,17 @@ function buildDemoPrompt(
   
   const toursContext = tours.map(tour => {
     const dates = tour.dates?.map((d: any) => 
-      `${d.departure_date} (${d.price_adult} ${tour.currency})`
+      `${d.departure_date} (Yetişkin: ${d.price_adult}₺, Çocuk: ${d.price_child || 'N/A'}₺)`
     ).join(', ');
-    return `- ${tour.title} (${tour.destination})\n  Tarihler: ${dates}`;
+    
+    return `${tour.title} (${tour.destination})
+  📅 Tarihler: ${dates}
+  ⏰ Toplanma: ${tour.toplanma_saati || 'Belirtilmemiş'}
+  📍 Hareket: ${tour.hareket_noktasi || 'Belirtilmemiş'}
+  🚌 Ulaşım: ${tour.ulasim || 'Belirtilmemiş'}
+  🏨 Konaklama: ${tour.konaklama || 'Belirtilmemiş'}
+  ⏳ Süre: ${tour.tur_sure || 'Belirtilmemiş'}
+  🗺️ Gezilecek: ${tour.gezilecek_yerler || 'Belirtilmemiş'}`;
   }).join('\n\n');
 
   const basePrompt = `Sen bir seyahat asistanısın.
