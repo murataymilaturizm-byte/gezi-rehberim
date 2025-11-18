@@ -237,11 +237,19 @@ serve(async (req) => {
     // CRITICAL: Check for tour selection on EVERY message type to preserve memory
     console.log('🔍 Checking for tour selection...');
     
-    // Find matching tours in the message
-    const matchingTours = DEMO_TOURS.filter(t => 
-      message.toLowerCase().includes(t.title.toLowerCase()) ||
-      message.toLowerCase().includes(t.destination.toLowerCase())
-    );
+    // Find matching tours in the message - check if tour title/destination contains words from user message
+    const messageLower = message.toLowerCase();
+    const messageWords = messageLower.split(/\s+/).filter((w: string) => w.length > 2);
+    
+    const matchingTours = DEMO_TOURS.filter(t => {
+      const titleLower = t.title.toLowerCase();
+      const destLower = t.destination.toLowerCase();
+      
+      // Match if any significant word from message appears in title or destination
+      return messageWords.some((word: string) => 
+        titleLower.includes(word) || destLower.includes(word)
+      ) || titleLower.includes(messageLower) || destLower.includes(messageLower);
+    });
     
     console.log(`🔎 Found ${matchingTours.length} matching tours for "${message}"`);
     
