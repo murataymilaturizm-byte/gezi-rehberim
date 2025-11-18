@@ -39,33 +39,27 @@ export function extractMemory(
   const lowerResponse = aiResponse.toLowerCase();
   const combinedText = `${lowerMessage} ${lowerResponse}`;
 
-  // Extract destinations ONLY from user message (not AI suggestions)
+  // Extract destinations from tours and messages
   const destinationKeywords = [...new Set(tours.map(t => t.destination))];
   for (const dest of destinationKeywords) {
-    // Use word boundaries to avoid partial matches
-    const regex = new RegExp(`\\b${dest.toLowerCase()}\\b`, 'i');
-    if (regex.test(lowerMessage) && !memory.preferredDestinations.includes(dest)) {
+    if (combinedText.includes(dest.toLowerCase()) && 
+        !memory.preferredDestinations.includes(dest)) {
       memory.preferredDestinations.push(dest);
     }
   }
 
-  // Extract interests ONLY from user message (not AI suggestions)
+  // Extract interests
   for (const [interest, keywords] of Object.entries(INTEREST_KEYWORDS)) {
-    // Check if any keyword appears in user's message with word boundaries
-    const hasInterest = keywords.some(keyword => {
-      const regex = new RegExp(`\\b${keyword}\\b`, 'i');
-      return regex.test(lowerMessage);
-    });
-    
-    if (hasInterest && !memory.interests.includes(interest)) {
+    if (keywords.some(keyword => combinedText.includes(keyword)) &&
+        !memory.interests.includes(interest)) {
       memory.interests.push(interest);
     }
   }
 
-  // Extract budget range ONLY from user message (not AI price suggestions)
-  if (lowerMessage.match(/\d{3,5}/)) {
+  // Extract budget range from price discussions
+  if (lowerMessage.match(/\d{3,5}/) || lowerResponse.match(/\d{3,5}[₺TRY]/)) {
     const prices: number[] = [];
-    const priceMatches = lowerMessage.match(/\d{3,5}/g);
+    const priceMatches = combinedText.match(/\d{3,5}/g);
     if (priceMatches) {
       prices.push(...priceMatches.map(p => parseInt(p)));
     }
@@ -97,39 +91,6 @@ export function extractMemory(
       memory.travelStyle = style;
       break;
     }
-  }
-
-  // Extract participant numbers (adults/children) ONLY from user message
-  const paxPatterns = [
-    /(\d+)\s*(yetişkin|büyük|adult|adults|erwachsene|взрослых|بالغين|adulte|adultes|adulto|adultos)/gi,
-    /(\d+)\s*(çocuk|child|children|kinder|детей|أطفال|enfant|enfants|niño|niños)/gi,
-    /(\d+)\s*(kişi|person|people|personen|человек|людей|شخص|personne|personnes|persona|personas)/gi
-  ];
-
-  let paxAdults = 0;
-  let paxChildren = 0;
-
-  for (const pattern of paxPatterns) {
-    const matches = Array.from(lowerMessage.matchAll(new RegExp(pattern, 'gi')));
-    for (const match of matches) {
-      const num = parseInt(match[1]);
-      const type = match[2].toLowerCase();
-      
-      if (type.match(/yetişkin|büyük|adult|erwachsene|взрослых|بالغين|adulte|adulto/i)) {
-        paxAdults = Math.max(paxAdults, num);
-      } else if (type.match(/çocuk|child|kinder|детей|أطفال|enfant|niño/i)) {
-        paxChildren = Math.max(paxChildren, num);
-      } else if (type.match(/kişi|person|people|personen|человек|людей|شخص|personne|persona/i) && paxAdults === 0) {
-        paxAdults = Math.max(paxAdults, num);
-      }
-    }
-  }
-
-  if (paxAdults > 0) {
-    memory.lastMentionedPax = {
-      adults: paxAdults,
-      children: paxChildren > 0 ? paxChildren : undefined
-    };
   }
 
   memory.lastUpdated = new Date().toISOString();

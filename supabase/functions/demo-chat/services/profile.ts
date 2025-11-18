@@ -26,14 +26,11 @@ export async function enrichConversationInsights(
       negative_signals: []
     };
 
-    // Extract topics from message (destinations + activities/interests)
+    // Extract topics from message
     const tourKeywords = ['kapadokya', 'pamukkale', 'efes', 'antalya', 'ege', 'likya', 'istanbul', 'çeşme', 'alaçatı'];
-    const activityKeywords = ['balon turu', 'balon', 'rafting', 'dalış', 'kültür turu', 'antik kent', 'müze', 'spa', 'wellness', 'termal'];
-    
-    const mentionedTopics = [
-      ...tourKeywords.filter(keyword => userMessage.toLowerCase().includes(keyword)),
-      ...activityKeywords.filter(keyword => userMessage.toLowerCase().includes(keyword))
-    ];
+    const mentionedTopics = tourKeywords.filter(keyword => 
+      userMessage.toLowerCase().includes(keyword)
+    );
 
     // Detect question patterns - multilingual
     if (userMessage.includes('?') || 

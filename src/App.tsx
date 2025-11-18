@@ -8,7 +8,6 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import GettingStarted from "./pages/GettingStarted";
 import Help from "./pages/Help";
-import Testing from "./pages/Testing";
 import NotFound from "./pages/NotFound";
 import "./i18n";
 
@@ -27,7 +26,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/testing" element={<Testing />} />
           <Route path="/nasil-baslarim" element={<GettingStarted />} />
           <Route path="/yardim" element={<Help />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

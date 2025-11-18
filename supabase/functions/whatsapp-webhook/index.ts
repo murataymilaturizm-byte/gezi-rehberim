@@ -96,15 +96,10 @@ serve(async (req) => {
       confidence: intent.confidence
     });
 
-    // CRITICAL: Check for tour names in the message FIRST, before handling intents
+    // Handle tour selection - ONLY select if user is specific or there's only one match
     const numericSelection = userMessage.match(/^\d+$/);
     
-    // Get current conversation state
-    const conversationState = await getConversationState(supabase, userPhone, agency.id);
-    let tourSelected = false;
-    
-    // Check for tour selection in ALL messages (including reservation.wizard)
-    console.log('🔍 Checking for tour selection...');
+    if ((intent.type as string).includes('tour.detail') || numericSelection) {
       const { data: tours } = await supabase
         .from('tours')
         .select(`
@@ -115,19 +110,11 @@ serve(async (req) => {
         .order('created_at', { ascending: false });
 
       if (tours && tours.length > 0) {
-        // Find matching tours - check if tour title/destination contains words from user message
-        const messageLower = userMessage.toLowerCase();
-        const messageWords = messageLower.split(/\s+/).filter((w: string) => w.length > 2);
-        
-        const matchingTours = tours.filter((t: any) => {
-          const titleLower = t.title.toLowerCase();
-          const destLower = t.destination.toLowerCase();
-          
-          // Match if any significant word from message appears in title or destination
-          return messageWords.some((word: string) => 
-            titleLower.includes(word) || destLower.includes(word)
-          ) || titleLower.includes(messageLower) || destLower.includes(messageLower);
-        });
+        // Find matching tours
+        const matchingTours = tours.filter((t: any) => 
+          userMessage.toLowerCase().includes(t.title.toLowerCase()) ||
+          userMessage.toLowerCase().includes(t.destination.toLowerCase())
+        );
         
         let selectedTour = null;
         
@@ -138,67 +125,53 @@ serve(async (req) => {
             selectedTour = tours[index];
           }
         } else if (matchingTours.length === 1) {
-          // Auto-select if there's exactly ONE matching tour
+          // Only auto-select if there's exactly ONE matching tour
           selectedTour = matchingTours[0];
-        } else if (matchingTours.length > 1) {
-          // Multiple tours match - find best match
-          console.log('🎯 MULTIPLE TOURS MATCH - Finding best match');
-          
-          const scoredTours = matchingTours.map((tour: any) => {
-            const messageLower = userMessage.toLowerCase();
-            const titleWords = tour.title.toLowerCase().split(' ');
-            
-            const matchScore = titleWords.filter((word: string) => 
-              word.length > 2 && messageLower.includes(word)
-            ).length;
-            
-            const exactMatch = messageLower.includes(tour.title.toLowerCase()) ? 10 : 0;
-            
-            return { tour, score: matchScore + exactMatch };
-          });
-          
-          scoredTours.sort((a, b) => b.score - a.score);
-          const bestMatch = scoredTours[0];
-          
-          // If score is high enough (>=2), we have a clear best match
-          if (bestMatch.score >= 2) {
-            selectedTour = bestMatch.tour;
-            console.log('✅ BEST MATCH TOUR SELECTED:', selectedTour.title, 'score:', bestMatch.score);
-          } else {
-            console.log('⚠️ No clear best match (score:', bestMatch.score, ') - will let AI list all options');
-          }
         }
+        // If multiple matching tours, don't select - let AI list them
         
-        // If we found a selectedTour, update conversationState
         if (selectedTour) {
-          conversationState.currentTour = {
-            id: selectedTour.id,
-            title: selectedTour.title,
-            destination: selectedTour.destination,
-            priceAdult: selectedTour.dates?.[0]?.price_adult,
-            currency: selectedTour.currency
-          };
-          conversationState.wizardStep = 'tour_selected';
-          conversationState.shownTourIds = conversationState.shownTourIds || [];
-          if (!conversationState.shownTourIds.includes(selectedTour.id)) {
-            conversationState.shownTourIds.push(selectedTour.id);
+          const { data: profile } = await supabase
+            .from('whatsapp_user_profiles')
+            .select('preferences')
+            .eq('phone', userPhone)
+            .eq('agency_id', agency.id)
+            .single();
+
+          const state = (profile?.preferences as any)?.conversation_state || {};
+          
+          if (!state.currentTour) {
+            state.currentTour = {
+              id: selectedTour.id,
+              title: selectedTour.title,
+              destination: selectedTour.destination,
+              priceAdult: selectedTour.dates?.[0]?.price_adult,
+              currency: selectedTour.currency
+            };
+            state.wizardStep = 'tour_selected';
+            state.shownTourIds = state.shownTourIds || [];
+            if (!state.shownTourIds.includes(selectedTour.id)) {
+              state.shownTourIds.push(selectedTour.id);
+            }
+            
+            await supabase
+              .from('whatsapp_user_profiles')
+              .update({
+                preferences: { ...profile?.preferences, conversation_state: state }
+              })
+              .eq('phone', userPhone)
+              .eq('agency_id', agency.id);
+            
+            console.log('✅ Tour selected:', selectedTour.title);
           }
-          tourSelected = true;
-          console.log('✅ Tour selected:', selectedTour.title);
         } else if (matchingTours.length > 1) {
           console.log(`📋 Multiple tours match (${matchingTours.length}), letting AI list them`);
         }
       }
     }
 
-    // Update conversation state with intent AND tour selection (if any)
     await updateConversationState(supabase, userPhone, agency.id, {
-      lastIntent: intent.type,
-      ...(tourSelected && {
-        currentTour: conversationState.currentTour,
-        wizardStep: conversationState.wizardStep,
-        shownTourIds: conversationState.shownTourIds
-      })
+      lastIntent: intent.type
     });
 
     // Handle reservation.wizard - start wizard with currentTour if available
@@ -219,27 +192,9 @@ serve(async (req) => {
           .single();
 
         if (tours) {
-          // Filter out past dates and dates with no quota
-          const availableDates = (tours.dates || [])
-            .filter((d: any) => 
-              new Date(d.departure_date) >= new Date() && 
-              d.quota > 0
-            )
-            .sort((a: any, b: any) => 
-              new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime()
-            );
-
-          if (availableDates.length === 0) {
-            const response = userLanguage === 'tr' 
-              ? '❌ Üzgünüm, bu tur için uygun tarih bulunmamaktadır.'
-              : '❌ Sorry, no available dates for this tour.';
-            await saveMessage(supabase, userPhone, 'assistant', response, agency.id);
-            return new Response(createTwiMLResponse(response), { status: 200, headers: createTwiMLHeaders() });
-          }
-
           const wizardState = {
-            step: 'date_selection' as const,
-            selected_tour: { ...tours, dates: availableDates },
+            step: conversationState.userMemory?.lastMentionedPax ? 'date_selection' : 'date_selection',
+            selected_tour: tours,
             pax_adult: conversationState.userMemory?.lastMentionedPax?.adults || undefined,
             pax_child: conversationState.userMemory?.lastMentionedPax?.children || undefined,
             created_at: new Date().toISOString()
@@ -263,67 +218,6 @@ serve(async (req) => {
             .eq('agency_id', agency.id);
 
           console.log('✅ Wizard state saved with pre-selected tour and pax:', wizardState.pax_adult, 'adults,', wizardState.pax_child, 'children');
-
-          // CRITICAL: Call wizard handler immediately to show date options
-          // Don't call intelligent handler - directly show dates
-          let wizardResponse = '';
-          
-          if (userLanguage === 'tr') {
-            wizardResponse = `🎫 *${tours.title}*\n\n📅 *Müsait Tarihler:*\n\n`;
-          } else {
-            wizardResponse = `🎫 *${tours.title}*\n\n📅 *Available Dates:*\n\n`;
-          }
-
-          availableDates.forEach((date: any, index: number) => {
-            const depDate = new Date(date.departure_date).toLocaleDateString(userLanguage === 'tr' ? 'tr-TR' : 'en-US', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric'
-            });
-            wizardResponse += `${index + 1}. ${depDate} - ${date.price_adult} ${tours.currency}\n`;
-          });
-
-          wizardResponse += userLanguage === 'tr'
-            ? '\n\nLütfen tarih numarasını yazın:'
-            : '\n\nPlease enter the date number:';
-
-          await saveMessage(supabase, userPhone, 'assistant', wizardResponse, agency.id);
-          return new Response(createTwiMLResponse(wizardResponse), { status: 200, headers: createTwiMLHeaders() });
-        }
-      } else {
-        // No currentTour - user must select a tour first
-        console.log('⚠️ reservation.wizard detected but no currentTour - user needs to select tour first');
-        
-        // Get all tours to show user
-        const { data: allTours } = await supabase
-          .from('tours')
-          .select('id, title, destination')
-          .eq('agency_id', agency.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
-        if (allTours && allTours.length > 0) {
-          let tourListMsg = userLanguage === 'tr'
-            ? '📋 Hangi turumuz için kayıt oluşturmak istiyorsunuz?\n\n'
-            : '📋 Which tour would you like to book?\n\n';
-          
-          allTours.forEach((tour: any, idx: number) => {
-            tourListMsg += `${idx + 1}. ${tour.title} (${tour.destination})\n`;
-          });
-          
-          tourListMsg += userLanguage === 'tr'
-            ? '\n\nLütfen numara veya tur adını yazın.'
-            : '\n\nPlease enter the number or tour name.';
-          
-          await saveMessage(supabase, userPhone, 'assistant', tourListMsg, agency.id);
-          return new Response(createTwiMLResponse(tourListMsg), { status: 200, headers: createTwiMLHeaders() });
-        } else {
-          const noToursMsg = userLanguage === 'tr'
-            ? '❌ Üzgünüm, şu anda kayıt alabileceğimiz tur bulunmamaktadır.'
-            : '❌ Sorry, no tours available for booking at the moment.';
-          
-          await saveMessage(supabase, userPhone, 'assistant', noToursMsg, agency.id);
-          return new Response(createTwiMLResponse(noToursMsg), { status: 200, headers: createTwiMLHeaders() });
         }
       }
     }

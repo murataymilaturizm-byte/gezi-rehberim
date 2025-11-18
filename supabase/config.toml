@@ -29,9 +29,3 @@ verify_jwt = false
 
 [functions.reset-message-counts]
 verify_jwt = false
-
-[functions.test-suite]
-verify_jwt = false
-
-[functions.analyze-test-failures]
-verify_jwt = false

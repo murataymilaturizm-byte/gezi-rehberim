@@ -115,57 +115,43 @@ function buildIntelligentPrompt(
   const wizardStep = state?.wizardStep || 'none';
   const shownTourIds = state?.shownTourIds || [];
   
-  // Style-based personality and emoji rules - multilingual with STRONG emphasis
+  // Style-based personality and emoji rules - multilingual
   const stylePersonality = {
     tr: conversationStyle === 'friendly' 
-      ? '🎯 ZORUNLU ÜSLUP: Samimi, sıcak ve dostane. Bol bol emoji kullan 😊🌟✨. Cümleler kısa ve içten olsun.'
+      ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
       : conversationStyle === 'casual'
-      ? '🎯 ZORUNLU ÜSLUP: Günlük konuşma dili. Rahat ve samimi, ama profesyonellikten ödün verme. Emoji kullan 👍'
-      : conversationStyle === 'formal'
-      ? '🎯 ZORUNLU ÜSLUP: Resmi ve saygılı. "Sayın müşterimiz" gibi hitaplar kullan. Emoji kullanma.'
-      : '🎯 ZORUNLU ÜSLUP: Profesyonel ama sıcak. Net ve açık bilgi ver. Emoji kullanma.',
+      ? 'Rahat, günlük dilde konuş. Uygun yerlerde emoji kullan.'
+      : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.',
     en: conversationStyle === 'friendly'
-      ? '🎯 MANDATORY STYLE: Friendly, warm and welcoming. Use lots of emojis 😊🌟✨. Keep sentences short and genuine.'
+      ? 'Use a friendly, warm and welcoming style. Add emojis 😊'
       : conversationStyle === 'casual'
-      ? '🎯 MANDATORY STYLE: Everyday conversational language. Relaxed and friendly, but maintain professionalism. Use emojis 👍'
-      : conversationStyle === 'formal'
-      ? '🎯 MANDATORY STYLE: Formal and respectful. Use formal address like "Dear customer". No emojis.'
-      : '🎯 MANDATORY STYLE: Professional but warm. Provide clear information. No emojis.',
+      ? 'Speak in casual, everyday language. Use emojis where appropriate.'
+      : 'Use a professional, polite and clear language. No emojis.',
     de: conversationStyle === 'friendly'
-      ? '🎯 PFLICHT-STIL: Freundlich, warm und einladend. Verwenden Sie viele Emojis 😊🌟✨. Kurze und authentische Sätze.'
+      ? 'Verwenden Sie einen freundlichen, warmen und einladenden Stil. Fügen Sie Emojis hinzu 😊'
       : conversationStyle === 'casual'
-      ? '🎯 PFLICHT-STIL: Alltägliche Umgangssprache. Entspannt und freundlich, aber professionell bleiben. Emojis verwenden 👍'
-      : conversationStyle === 'formal'
-      ? '🎯 PFLICHT-STIL: Formell und respektvoll. Förmliche Anrede wie "Sehr geehrte/r Kunde/in". Keine Emojis.'
-      : '🎯 PFLICHT-STIL: Professionell aber warm. Klare Informationen liefern. Keine Emojis.',
+      ? 'Sprechen Sie in lockerer, alltäglicher Sprache. Verwenden Sie Emojis, wo passend.'
+      : 'Verwenden Sie eine professionelle, höfliche und klare Sprache. Keine Emojis.',
     ru: conversationStyle === 'friendly'
-      ? '🎯 ОБЯЗАТЕЛЬНЫЙ СТИЛЬ: Дружелюбный, теплый и гостеприимный. Используйте много эмодзи 😊🌟✨. Короткие и искренние предложения.'
+      ? 'Используйте дружелюбный, теплый и гостеприимный стиль. Добавляйте эмодзи 😊'
       : conversationStyle === 'casual'
-      ? '🎯 ОБЯЗАТЕЛЬНЫЙ СТИЛЬ: Повседневный разговорный язык. Расслабленный и дружелюбный, но сохраняйте профессионализм. Используйте эмодзи 👍'
-      : conversationStyle === 'formal'
-      ? '🎯 ОБЯЗАТЕЛЬНЫЙ СТИЛЬ: Формальный и уважительный. Используйте формальное обращение. Без эмодзи.'
-      : '🎯 ОБЯЗАТЕЛЬНЫЙ СТИЛЬ: Профессиональный но теплый. Предоставляйте четкую информацию. Без эмодзи.',
+      ? 'Говорите на повседневном, разговорном языке. Используйте эмодзи где уместно.'
+      : 'Используйте профессиональный, вежливый и четкий язык. Без эмодзи.',
     ar: conversationStyle === 'friendly'
-      ? '🎯 أسلوب إلزامي: ودود ودافئ ومرحب. استخدم الكثير من الرموز التعبيرية 😊🌟✨. جمل قصيرة وصادقة.'
+      ? 'استخدم أسلوبًا ودودًا ودافئًا ومرحبًا. أضف الرموز التعبيرية 😊'
       : conversationStyle === 'casual'
-      ? '🎯 أسلوب إلزامي: لغة محادثة يومية. مريح وودود، لكن حافظ على الاحترافية. استخدم الرموز التعبيرية 👍'
-      : conversationStyle === 'formal'
-      ? '🎯 أسلوب إلزامي: رسمي ومحترم. استخدم مخاطبة رسمية. بدون رموز تعبيرية.'
-      : '🎯 أسلوب إلزامي: محترف لكن دافئ. قدم معلومات واضحة. بدون رموز تعبيرية.',
+      ? 'تحدث بلغة عادية يومية. استخدم الرموز التعبيرية حيثما كان مناسبًا.'
+      : 'استخدم لغة احترافية ومهذبة وواضحة. بدون رموز تعبيرية.',
     fr: conversationStyle === 'friendly'
-      ? '🎯 STYLE OBLIGATOIRE: Amical, chaleureux et accueillant. Utilisez beaucoup d\'emojis 😊🌟✨. Phrases courtes et authentiques.'
+      ? 'Utilisez un style amical, chaleureux et accueillant. Ajoutez des emojis 😊'
       : conversationStyle === 'casual'
-      ? '🎯 STYLE OBLIGATOIRE: Langage conversationnel quotidien. Détendu et amical, mais restez professionnel. Utilisez des emojis 👍'
-      : conversationStyle === 'formal'
-      ? '🎯 STYLE OBLIGATOIRE: Formel et respectueux. Utilisez une adresse formelle. Pas d\'emojis.'
-      : '🎯 STYLE OBLIGATOIRE: Professionnel mais chaleureux. Fournissez des informations claires. Pas d\'emojis.',
+      ? 'Parlez dans un langage décontracté et quotidien. Utilisez des emojis si approprié.'
+      : 'Utilisez un langage professionnel, poli et clair. Pas d\'emojis.',
     es: conversationStyle === 'friendly'
-      ? '🎯 ESTILO OBLIGATORIO: Amigable, cálido y acogedor. Use muchos emojis 😊🌟✨. Frases cortas y genuinas.'
+      ? 'Use un estilo amigable, cálido y acogedor. Agregue emojis 😊'
       : conversationStyle === 'casual'
-      ? '🎯 ESTILO OBLIGATORIO: Lenguaje conversacional cotidiano. Relajado y amigable, pero mantenga el profesionalismo. Use emojis 👍'
-      : conversationStyle === 'formal'
-      ? '🎯 ESTILO OBLIGATORIO: Formal y respetuoso. Use tratamiento formal. Sin emojis.'
-      : '🎯 ESTILO OBLIGATORIO: Profesional pero cálido. Proporcione información clara. Sin emojis.'
+      ? 'Hable en un lenguaje casual y cotidiano. Use emojis donde sea apropiado.'
+      : 'Use un lenguaje profesional, educado y claro. Sin emojis.'
   };
 
   const baseRulesText = {

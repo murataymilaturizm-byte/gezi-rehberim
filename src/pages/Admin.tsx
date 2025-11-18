@@ -70,7 +70,6 @@ import { LanguageManagement } from "@/components/LanguageManagement";
 import { TicketManagement } from "@/components/TicketManagement";
 import { SuperAdminTickets } from "@/components/SuperAdminTickets";
 import { WhatsAppLogs } from "@/components/WhatsAppLogs";
-import Testing from "./Testing";
 import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
@@ -136,7 +135,7 @@ const Admin = () => {
   const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
   const [agencyName, setAgencyName] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "testing" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   const [tours, setTours] = useState<Tour[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -586,8 +585,6 @@ const Admin = () => {
               <TicketManagement />
             ) : activeTab === "super_tickets" && isSuperAdmin ? (
               <SuperAdminTickets />
-            ) : activeTab === "testing" && isSuperAdmin ? (
-              <Testing />
             ) : activeTab === "twilio_settings" && isSuperAdmin ? (
               <SuperAdminTwilioSettings />
             ) : activeTab === "agencies" && isSuperAdmin ? (

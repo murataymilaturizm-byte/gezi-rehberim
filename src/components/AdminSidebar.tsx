@@ -17,8 +17,7 @@ import {
   MessageCircle,
   ScrollText,
   ChevronDown,
-  MapPin,
-  FlaskConical
+  MapPin
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
@@ -71,7 +70,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "whatsapp_logs"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
-    const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets", "testing"];
+    const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets"];
     
     if (generalIds.includes(activeTab)) return "general";
     if (tourIds.includes(activeTab)) return "tours";
@@ -135,7 +134,6 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     { id: "contact_forms", icon: Mail, label: t("admin.tabs.contactForms") },
     { id: "twilio_settings", icon: Phone, label: t("admin.tabs.twilioSettings") },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
-    { id: "testing", icon: FlaskConical, label: "Test Automation" },
   ];
 
   const renderMenuItems = (items: typeof generalItems) => (
