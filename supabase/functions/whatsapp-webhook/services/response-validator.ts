@@ -1,21 +1,26 @@
 // Response validation and enforcement
 
-export function validateResponse(response: string, conversationStyle: string, skipLengthCheck: boolean = false): {
+export function validateResponse(
+  response: string, 
+  conversationStyle: string,
+  intent?: string
+): {
   isValid: boolean;
   fixedResponse?: string;
   violations: string[];
 } {
   const violations: string[] = [];
   
-  // Skip length check for tour lists and other formatted content
-  const isList = response.includes('1.') && response.includes('2.') && response.includes('📅');
+  // Count words instead of sentences for better control
+  const words = response.split(/\s+/).filter(w => w.trim().length > 0);
   
-  // Count sentences (rough approximation)
-  const sentences = response.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  // Check length violations - use word count for more reliable limits
+  const maxWords = (intent === 'tour.list' || intent === 'tour.search') ? 300 
+                  : (intent === 'reservation.wizard') ? 200
+                  : 100;
   
-  // Check length violations (skip for lists)
-  if (!skipLengthCheck && !isList && sentences.length > 4) {
-    violations.push(`Too many sentences: ${sentences.length} (max 4)`);
+  if (words.length > maxWords) {
+    violations.push(`Too many words: ${words.length} (max ${maxWords})`);
   }
   
   // Check for banned phrases
@@ -43,8 +48,16 @@ export function validateResponse(response: string, conversationStyle: string, sk
     violations.push('Contains day-by-day program details (forbidden)');
   }
   
-  // Check for repeated greetings
+  // Check for repeated greetings - MUST BLOCK them
   const greetings = ['merhaba', 'hello', 'hola', 'bonjour', 'привет', 'مرحبا'];
+  
+  // Check if response starts with greeting after first message
+  const startsWithGreeting = greetings.some(g => lowerResponse.trim().startsWith(g));
+  
+  if (startsWithGreeting && intent !== 'greeting') {
+    violations.push('Response starts with greeting (forbidden after first message)');
+  }
+  
   const greetingMatches = greetings.filter(g => lowerResponse.includes(g));
   
   if (greetingMatches.length > 1) {
@@ -61,10 +74,18 @@ export function validateResponse(response: string, conversationStyle: string, sk
       fixed = fixed.replace(regex, '');
     }
     
-    // Trim to first 3 sentences (skip for lists)
-    if (!isList && sentences.length > 3) {
-      const firstThree = sentences.slice(0, 3).join('. ').trim();
-      fixed = firstThree + (firstThree.endsWith('.') ? '' : '.');
+    // Trim by word count only if not tour listing or reservation
+    if (words.length > maxWords && intent !== 'tour.list' && intent !== 'tour.search' && intent !== 'reservation.wizard') {
+      const trimmedWords = words.slice(0, maxWords).join(' ');
+      fixed = trimmedWords + (trimmedWords.endsWith('.') ? '' : '.');
+    }
+    
+    // Remove greetings if not greeting intent
+    if (intent !== 'greeting') {
+      for (const greeting of greetings) {
+        const regex = new RegExp(`^${greeting}[!.]?\\s*`, 'gi');
+        fixed = fixed.replace(regex, '').trim();
+      }
     }
     
     // Remove emojis if professional
