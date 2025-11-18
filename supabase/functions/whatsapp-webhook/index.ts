@@ -191,7 +191,8 @@ serve(async (req) => {
           .eq('id', conversationState.currentTour.id)
           .single();
 
-        if (tours) {
+        if (tours && tours.dates && tours.dates.length > 0) {
+          // Create wizard state
           const wizardState = {
             step: 'date_selection',
             selected_tour: tours,
@@ -217,7 +218,47 @@ serve(async (req) => {
             .eq('phone', userPhone)
             .eq('agency_id', agency.id);
 
-          console.log('✅ Wizard state saved with tour and dates shown');
+          // Format and show available dates immediately
+          const dateMessages = {
+            tr: { 
+              welcome: 'Harika! Aşağıdaki tur için kayıt işleminizi başlatalım:',
+              availableDates: 'Mevcut tarihler',
+              selectDate: 'Hangi tarih için kayıt olmak istersiniz? (Numara yazabilirsiniz)',
+              quota: 'kişi'
+            },
+            en: {
+              welcome: 'Great! Let\'s start your registration for the following tour:',
+              availableDates: 'Available dates',
+              selectDate: 'Which date would you like to register for? (You can write the number)',
+              quota: 'people'
+            }
+          };
+
+          const msg = dateMessages[userLanguage as keyof typeof dateMessages] || dateMessages.tr;
+          
+          const dateList = tours.dates
+            .filter((d: any) => d.quota > 0 && new Date(d.departure_date) >= new Date())
+            .sort((a: any, b: any) => new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime())
+            .map((d: any, i: number) => {
+              const date = new Date(d.departure_date);
+              const formattedDate = date.toLocaleDateString(userLanguage === 'tr' ? 'tr-TR' : 'en-US', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              });
+              return `${i + 1}. ${formattedDate} - ${d.quota} ${msg.quota}`;
+            })
+            .join('\n');
+          
+          const wizardResponse = `${msg.welcome} *${tours.title}*! 🎉\n\n${msg.availableDates}:\n${dateList}\n\n${msg.selectDate}`;
+          
+          await saveMessage(supabase, userPhone, 'assistant', wizardResponse, agency.id);
+          console.log('✅ Wizard started with dates shown to user');
+          
+          return new Response(createTwiMLResponse(wizardResponse), { 
+            status: 200, 
+            headers: createTwiMLHeaders() 
+          });
         }
       }
     }
