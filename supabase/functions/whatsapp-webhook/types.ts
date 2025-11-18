@@ -51,11 +51,12 @@ export interface MessageIntent {
 }
 
 export interface WizardState {
-  step: 'tour_selection' | 'date_selection' | 'pax_selection' | 'special_requests' | 'confirmation';
+  step: 'tour_selection' | 'date_selection' | 'pax_selection' | 'full_name_request' | 'special_requests' | 'confirmation';
   selected_tour?: Tour;
   selected_date?: TourDate;
   pax_adult?: number;
   pax_child?: number;
+  full_name?: string;
   special_requests?: string;
   created_at: string;
 }

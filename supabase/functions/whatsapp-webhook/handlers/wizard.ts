@@ -119,6 +119,9 @@ export async function handleWizardStep(
     case 'pax_selection':
       return await handlePaxSelection(supabase, phone, agencyId, userMessage, state, userLanguage);
 
+    case 'full_name_request':
+      return await handleFullNameRequest(supabase, phone, agencyId, userMessage, state, userLanguage);
+
     case 'special_requests':
       return await handleSpecialRequests(supabase, phone, agencyId, userMessage, state, userLanguage);
 
@@ -306,28 +309,123 @@ async function handlePaxSelection(
     return 'Bir hata oluştu. Lütfen tekrar başlayın.';
   }
 
-  const paxAdult = parseInt(userMessage);
+  // Try to parse "X yetişkin Y çocuk" format
+  const turkishMatch = userMessage.match(/(\d+)\s*(?:yetişkin|yetiskin|adult)/i);
+  const childMatch = userMessage.match(/(\d+)\s*(?:çocuk|cocuk|child)/i);
+  
+  let paxAdult: number;
+  let paxChild = 0;
 
-  if (isNaN(paxAdult) || paxAdult < 1) {
-    return language === 'tr'
-      ? 'Geçersiz sayı. Lütfen 1 veya daha fazla sayı girin.'
-      : 'Invalid number. Please enter 1 or more.';
+  if (turkishMatch) {
+    paxAdult = parseInt(turkishMatch[1]);
+    if (childMatch) {
+      paxChild = parseInt(childMatch[1]);
+    }
+  } else {
+    // Simple number only
+    paxAdult = parseInt(userMessage);
   }
 
-  if (paxAdult > state.selected_date.quota) {
-    return language === 'tr'
-      ? `Üzgünüm, sadece ${state.selected_date.quota} kişilik kontenjan var.`
-      : `Sorry, only ${state.selected_date.quota} spots available.`;
+  if (isNaN(paxAdult) || paxAdult < 1) {
+    const messages = {
+      tr: 'Geçersiz sayı. Örnek: "3 yetişkin 2 çocuk" veya sadece "3"',
+      en: 'Invalid number. Example: "3 adults 2 children" or just "3"',
+      de: 'Ungültige Zahl. Beispiel: "3 Erwachsene 2 Kinder" oder nur "3"',
+      ru: 'Неверное число. Пример: "3 взрослых 2 ребёнка" или просто "3"',
+      ar: 'رقم غير صالح. مثال: "3 بالغين 2 أطفال" أو فقط "3"',
+      fr: 'Nombre invalide. Exemple: "3 adultes 2 enfants" ou juste "3"',
+      es: 'Número inválido. Ejemplo: "3 adultos 2 niños" o solo "3"'
+    };
+    return messages[language as keyof typeof messages] || messages.tr;
+  }
+
+  const totalPax = paxAdult + paxChild;
+  if (totalPax > state.selected_date.quota) {
+    const messages = {
+      tr: `Üzgünüm, sadece ${state.selected_date.quota} kişilik kontenjan var.`,
+      en: `Sorry, only ${state.selected_date.quota} spots available.`,
+      de: `Entschuldigung, nur ${state.selected_date.quota} Plätze verfügbar.`,
+      ru: `Извините, доступно только ${state.selected_date.quota} мест.`,
+      ar: `عذرًا، متاح فقط ${state.selected_date.quota} مكان.`,
+      fr: `Désolé, seulement ${state.selected_date.quota} places disponibles.`,
+      es: `Lo siento, solo ${state.selected_date.quota} plazas disponibles.`
+    };
+    return messages[language as keyof typeof messages] || messages.tr;
   }
 
   // Update wizard state
   state.pax_adult = paxAdult;
+  state.pax_child = paxChild;
+  state.step = 'full_name_request';
+  await saveWizardState(supabase, phone, agencyId, state);
+
+  const summaryMessages = {
+    tr: paxChild > 0 
+      ? `✅ ${paxAdult} yetişkin, ${paxChild} çocuk kaydedildi.\n\n👤 Adınız ve soyadınız nedir?`
+      : `✅ ${paxAdult} yetişkin kaydedildi.\n\n👤 Adınız ve soyadınız nedir?`,
+    en: paxChild > 0
+      ? `✅ ${paxAdult} adults, ${paxChild} children registered.\n\n👤 What's your full name?`
+      : `✅ ${paxAdult} adults registered.\n\n👤 What's your full name?`,
+    de: paxChild > 0
+      ? `✅ ${paxAdult} Erwachsene, ${paxChild} Kinder registriert.\n\n👤 Wie ist Ihr vollständiger Name?`
+      : `✅ ${paxAdult} Erwachsene registriert.\n\n👤 Wie ist Ihr vollständiger Name?`,
+    ru: paxChild > 0
+      ? `✅ ${paxAdult} взрослых, ${paxChild} детей зарегистрировано.\n\n👤 Как ваше полное имя?`
+      : `✅ ${paxAdult} взрослых зарегистрировано.\n\n👤 Как ваше полное имя?`,
+    ar: paxChild > 0
+      ? `✅ ${paxAdult} بالغين، ${paxChild} أطفال مسجلين.\n\n👤 ما هو اسمك الكامل؟`
+      : `✅ ${paxAdult} بالغين مسجلين.\n\n👤 ما هو اسمك الكامل؟`,
+    fr: paxChild > 0
+      ? `✅ ${paxAdult} adultes, ${paxChild} enfants enregistrés.\n\n👤 Quel est votre nom complet?`
+      : `✅ ${paxAdult} adultes enregistrés.\n\n👤 Quel est votre nom complet?`,
+    es: paxChild > 0
+      ? `✅ ${paxAdult} adultos, ${paxChild} niños registrados.\n\n👤 ¿Cuál es su nombre completo?`
+      : `✅ ${paxAdult} adultos registrados.\n\n👤 ¿Cuál es su nombre completo?`
+  };
+
+  return summaryMessages[language as keyof typeof summaryMessages] || summaryMessages.tr;
+}
+
+// Full name request step
+async function handleFullNameRequest(
+  supabase: any,
+  phone: string,
+  agencyId: string,
+  userMessage: string,
+  state: WizardState,
+  language: string
+): Promise<string> {
+  const trimmedName = userMessage.trim();
+
+  if (trimmedName.length < 3) {
+    const messages = {
+      tr: 'Lütfen tam adınızı ve soyadınızı yazın.',
+      en: 'Please enter your full name.',
+      de: 'Bitte geben Sie Ihren vollständigen Namen ein.',
+      ru: 'Пожалуйста, введите ваше полное имя.',
+      ar: 'يرجى إدخال اسمك الكامل.',
+      fr: 'Veuillez entrer votre nom complet.',
+      es: 'Por favor ingrese su nombre completo.'
+    };
+    return messages[language as keyof typeof messages] || messages.tr;
+  }
+
+  // Update wizard state
+  state.full_name = trimmedName;
   state.step = 'special_requests';
   await saveWizardState(supabase, phone, agencyId, state);
 
-  return language === 'tr'
-    ? `✅ ${paxAdult} yetişkin kaydedildi.\n\n📝 Özel isteğiniz var mı? (Yoksa "yok" yazın)`
-    : `✅ ${paxAdult} adults registered.\n\n📝 Any special requests? (Type "no" if none)`;
+  const messages = {
+    tr: `✅ Teşekkürler ${trimmedName}!\n\n📝 Özel isteğiniz var mı? (Yoksa "yok" yazın)`,
+    en: `✅ Thank you ${trimmedName}!\n\n📝 Any special requests? (Type "no" if none)`,
+    de: `✅ Danke ${trimmedName}!\n\n📝 Haben Sie besondere Wünsche? (Schreiben Sie "nein", wenn keine)`,
+    ru: `✅ Спасибо ${trimmedName}!\n\n📝 Есть ли особые пожелания? (Напишите "нет", если нет)`,
+    ar: `✅ شكراً ${trimmedName}!\n\n📝 هل لديك طلبات خاصة؟ (اكتب "لا" إذا لم يكن هناك)`,
+    fr: `✅ Merci ${trimmedName}!\n\n📝 Des demandes spéciales? (Tapez "non" si aucune)`,
+    es: `✅ Gracias ${trimmedName}!\n\n📝 ¿Alguna solicitud especial? (Escriba "no" si ninguna)`
+  };
+
+  return messages[language as keyof typeof messages] || messages.tr;
 }
 
 // Special requests step
@@ -368,7 +466,13 @@ async function handleSpecialRequests(
 
   message += `🏖️ *${language === 'tr' ? 'Tur' : 'Tour'}:* ${state.selected_tour.title}\n`;
   message += `📅 *${language === 'tr' ? 'Tarih' : 'Date'}:* ${depDate}\n`;
-  message += `👥 *${language === 'tr' ? 'Kişi' : 'People'}:* ${state.pax_adult}\n`;
+  
+  const paxText = state.pax_child && state.pax_child > 0
+    ? `${state.pax_adult} ${language === 'tr' ? 'Yetişkin' : 'Adults'}, ${state.pax_child} ${language === 'tr' ? 'Çocuk' : 'Children'}`
+    : `${state.pax_adult} ${language === 'tr' ? 'Yetişkin' : 'Adults'}`;
+  
+  message += `👥 *${language === 'tr' ? 'Kişi' : 'People'}:* ${paxText}\n`;
+  message += `👤 *${language === 'tr' ? 'İsim' : 'Name'}:* ${state.full_name || '-'}\n`;
   message += `💰 *${language === 'tr' ? 'Toplam' : 'Total'}:* ${totalPrice} ${state.selected_tour.currency}\n`;
 
   if (state.special_requests) {
@@ -427,9 +531,8 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
     return 'Bir hata oluştu. Lütfen tekrar başlayın.';
   }
 
-  // Get user profile for name
-  const userProfile = await getUserProfile(supabase, phone, agencyId);
-  const fullName = userProfile?.full_name || 'WhatsApp Customer';
+  // Use full name from wizard state
+  const fullName = state.full_name || 'WhatsApp Customer';
 
   // Create registration
   const { data: registration, error } = await supabase
@@ -479,7 +582,8 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
 
 🎫 *Tur:* ${state.selected_tour.title}
 📅 *Tarih:* ${formattedDate}
-👥 *Kişi Sayısı:* ${state.pax_adult} Yetişkin
+👥 *Kişi Sayısı:* ${state.pax_child && state.pax_child > 0 ? `${state.pax_adult} Yetişkin, ${state.pax_child} Çocuk` : `${state.pax_adult} Yetişkin`}
+👤 *İsim:* ${state.full_name || fullName}
 💰 *Toplam Fiyat:* ${formattedPrice}
 
 📱 *Rezervasyon No:* ${registration.id.substring(0, 8).toUpperCase()}
@@ -498,7 +602,8 @@ Teşekkür ederiz! 🙏`,
 
 🎫 *Tour:* ${state.selected_tour.title}
 📅 *Date:* ${formattedDate}
-👥 *Participants:* ${state.pax_adult} Adults
+👥 *Participants:* ${state.pax_child && state.pax_child > 0 ? `${state.pax_adult} Adults, ${state.pax_child} Children` : `${state.pax_adult} Adults`}
+👤 *Name:* ${state.full_name || fullName}
 💰 *Total Price:* ${formattedPrice}
 
 📱 *Reservation No:* ${registration.id.substring(0, 8).toUpperCase()}
@@ -517,7 +622,8 @@ Thank you! 🙏`,
 
 🎫 *Tour:* ${state.selected_tour.title}
 📅 *Datum:* ${formattedDate}
-👥 *Teilnehmer:* ${state.pax_adult} Erwachsene
+👥 *Teilnehmer:* ${state.pax_child && state.pax_child > 0 ? `${state.pax_adult} Erwachsene, ${state.pax_child} Kinder` : `${state.pax_adult} Erwachsene`}
+👤 *Name:* ${state.full_name || fullName}
 💰 *Gesamtpreis:* ${formattedPrice}
 
 📱 *Reservierungs-Nr:* ${registration.id.substring(0, 8).toUpperCase()}
@@ -536,7 +642,8 @@ Vielen Dank! 🙏`,
 
 🎫 *Тур:* ${state.selected_tour.title}
 📅 *Дата:* ${formattedDate}
-👥 *Участники:* ${state.pax_adult} Взрослых
+👥 *Участники:* ${state.pax_child && state.pax_child > 0 ? `${state.pax_adult} Взрослых, ${state.pax_child} Детей` : `${state.pax_adult} Взрослых`}
+👤 *Имя:* ${state.full_name || fullName}
 💰 *Общая стоимость:* ${formattedPrice}
 
 📱 *Номер брони:* ${registration.id.substring(0, 8).toUpperCase()}
@@ -555,7 +662,8 @@ Vielen Dank! 🙏`,
 
 🎫 *الجولة:* ${state.selected_tour.title}
 📅 *التاريخ:* ${formattedDate}
-👥 *المشاركون:* ${state.pax_adult} بالغين
+👥 *المشاركون:* ${state.pax_child && state.pax_child > 0 ? `${state.pax_adult} بالغين، ${state.pax_child} أطفال` : `${state.pax_adult} بالغين`}
+👤 *الاسم:* ${state.full_name || fullName}
 💰 *السعر الإجمالي:* ${formattedPrice}
 
 📱 *رقم الحجز:* ${registration.id.substring(0, 8).toUpperCase()}
@@ -574,7 +682,8 @@ Vielen Dank! 🙏`,
 
 🎫 *Circuit:* ${state.selected_tour.title}
 📅 *Date:* ${formattedDate}
-👥 *Participants:* ${state.pax_adult} Adultes
+👥 *Participants:* ${state.pax_child && state.pax_child > 0 ? `${state.pax_adult} Adultes, ${state.pax_child} Enfants` : `${state.pax_adult} Adultes`}
+👤 *Nom:* ${state.full_name || fullName}
 💰 *Prix total:* ${formattedPrice}
 
 📱 *N° de réservation:* ${registration.id.substring(0, 8).toUpperCase()}
@@ -593,7 +702,8 @@ Merci! 🙏`,
 
 🎫 *Tour:* ${state.selected_tour.title}
 📅 *Fecha:* ${formattedDate}
-👥 *Participantes:* ${state.pax_adult} Adultos
+👥 *Participantes:* ${state.pax_child && state.pax_child > 0 ? `${state.pax_adult} Adultos, ${state.pax_child} Niños` : `${state.pax_adult} Adultos`}
+👤 *Nombre:* ${state.full_name || fullName}
 💰 *Precio total:* ${formattedPrice}
 
 📱 *N° de reserva:* ${registration.id.substring(0, 8).toUpperCase()}

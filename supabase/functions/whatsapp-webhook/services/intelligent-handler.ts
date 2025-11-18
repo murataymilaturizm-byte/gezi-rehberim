@@ -275,9 +275,9 @@ Intent: ${intent}`;
     
     if (!hasHistory) {
       const firstGreetingMessages = {
-        tr: '🔴 İLK SELAMLAMA: Kısa karşılama + "Gitmek istediğin bölgeyi veya tur türünü yazarsan sana uygun turları listeleyebilirim." (max 2 cümle)',
-        en: '🔴 FIRST GREETING: Short welcome + "If you tell me the region or tour type you want to visit, I can list suitable tours for you." (max 2 sentences)',
-        de: '🔴 ERSTE BEGRÜSSUNG: Kurze Begrüßung + "Wenn Sie mir die Region oder Art der Tour mitteilen, die Sie besuchen möchten, kann ich passende Touren für Sie auflisten." (max 2 Sätze)',
+        tr: '🔴 İLK SELAMLAMA: Kullanıcının selamına karşılık ver (Merhaba!, Selam! vb.) + "Gitmek istediğin bölgeyi veya tur türünü yazarsan sana uygun turları listeleyebilirim." (max 2 cümle)',
+        en: '🔴 FIRST GREETING: Respond to user greeting (Hello!, Hi! etc.) + "If you tell me the region or tour type you want to visit, I can list suitable tours for you." (max 2 sentences)',
+        de: '🔴 ERSTE BEGRÜSSUNG: Auf Begrüßung antworten (Hallo!, Hi! usw.) + "Wenn Sie mir die Region oder Art der Tour mitteilen, die Sie besuchen möchten, kann ich passende Touren für Sie auflisten." (max 2 Sätze)',
         ru: '🔴 ПЕРВОЕ ПРИВЕТСТВИЕ: Краткое приветствие + "Если вы скажете мне регион или тип тура, который хотите посетить, я могу перечислить подходящие туры для вас." (макс 2 предложения)',
         ar: '🔴 التحية الأولى: ترحيب قصير + "إذا أخبرتني بالمنطقة أو نوع الجولة التي تريد زيارتها، يمكنني إدراج الجولات المناسبة لك." (جملتان كحد أقصى)',
         fr: '🔴 PREMIÈRE SALUTATION: Courte bienvenue + "Si vous me dites la région ou le type de circuit que vous souhaitez visiter, je peux lister les circuits adaptés pour vous." (max 2 phrases)',
