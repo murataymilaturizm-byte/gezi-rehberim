@@ -132,7 +132,16 @@ Intent: ${intent}`;
     if (!hasHistory) {
       intentInstructions = '🔴 İLK SELAMLAMA: Kısa karşılama + "Gitmek istediğin bölgeyi veya tur türünü yazarsan sana uygun turları listeleyebilirim." (max 2 cümle)';
     } else {
-      intentInstructions = '🔴 TEKRAR SELAMLAMA YASAK - Kullanıcı sadece "merhaba/selam" yazmışsa kısa cevap ver, yoksa normal devam et.';
+      // Continuing conversation - check if we have a last discussed tour
+      if (lastDiscussedTour && lastDiscussedTour !== 'NONE') {
+        intentInstructions = `🔴 DEVAM SELAMLAMASI:
+- "Tekrar merhaba! 😊" ile başla
+- Hatırlat: "Daha önce ${lastDiscussedTour} ile ilgilenmiştiniz."
+- Sor: "Bu turla ilgili mi bilgi almak istiyorsunuz yoksa farklı bir konuda mı yardımcı olmamı istersiniz?"
+- Max 2-3 cümle, samimi ve sıcak ol`;
+      } else {
+        intentInstructions = '🔴 TEKRAR SELAMLAMA: Kısa "Tekrar merhaba! 😊 Size nasıl yardımcı olabilirim?" (max 1 cümle)';
+      }
     }
   } else if (intent === 'tour.list' || intent === 'tour.search') {
     intentInstructions = `🔴 TUR LİSTESİ/ARAMA ADIMI:
@@ -202,34 +211,44 @@ Sadece seçilen işlemi yap!`;
   const styleInstructions = conversationStyle === 'friendly'
     ? `
 
-USLUP: Samimi ve Sıcak
-- Dostane, misafirperver bir dil kullan
-- Coşkulu ama kısa ol
-- Yardım etmeye gerçekten istekli görün
-- Uygun yerlerde emoji kullan 😊`
+USLUP: Samimi (Friendly)
+- "Sen/senin" formunu kullan
+- Samimi, sıcak ve yakın bir dil kullan
+- Dostça, rahat, çok yakın bir ton
+- Her mesajda 1-2 emoji kullan (ama fazla kaçırma) 😊 ✨ 🌟 💫
+- "Harika", "muhteşem", "süper", "güzel" gibi coşkulu kelimeler kullan
+- Cümleler kısa ama sıcak olsun
+- Coşkulu ama profesyonel kalmayı unutma
+- Kullanıcıyı heyecanlandır ama 3-4 cümleyi geçme`
     : conversationStyle === 'casual'
     ? `
 
-USLUP: Rahat ve Günlük
+USLUP: Rahat (Casual)
 - Günlük konuşma dilini kullan
+- "Sen/senin" formunu kullan
 - Samimi ve rahat ol
 - Yanıtları hafif ve kolay anlaşılır tut
-- Uygun yerlerde emoji kullanabilirsin`
+- Uygun yerlerde emoji kullanabilirsin 🙂
+- "Tamam", "evet", "güzel" gibi günlük kelimeler kullan`
     : conversationStyle === 'formal'
     ? `
 
-USLUP: Resmi ve Saygılı
+USLUP: Resmi (Formal)
+- "Siz/sizin" formunu kullan
 - Kültüre uygun resmi dil kullan
 - Profesyonel mesafe koru ama kısa ol
 - Kibar ve özenli ifadeler seç
-- Emoji kullanma`
+- Emoji kullanma
+- "Sayın", "lütfen", "rica ederim" gibi resmi ifadeler kullan`
     : `
 
-USLUP: Profesyonel ve Bilgilendirici
+USLUP: Profesyonel (Professional)
+- "Siz/sizin" veya "sen/senin" - duruma göre
 - Kibar, işe uygun dil kullan
 - Net ama kısa ol
 - Saygılı bir ton koru
-- Emoji kullanma`;
+- Emoji kullanma
+- Açık ve anlaşılır ifadeler kullan`;
 
   return basePrompt + '\n\n' + intentInstructions + styleInstructions;
 }
