@@ -250,6 +250,52 @@ serve(async (req) => {
     
     console.log(`🔎 Found ${matchingTours.length} matching tours for "${message}"`);
     
+    // Check if user is referring to a previously discussed tour
+    if (matchingTours.length === 0 && !conversationState.currentTour) {
+      const referencePatterns = /\b(konuştuğumuz|bahsettiğimiz|söylediğiniz|bu|o|şu)\s*(tur|turu|tura)/i;
+      if (referencePatterns.test(message)) {
+        console.log('🔍 User is referring to a previous tour, checking conversation history...');
+        
+        // Check last 5 assistant messages for tour mentions
+        const recentAssistantMessages = conversationHistory
+          .filter(m => m.role === 'assistant')
+          .slice(-5)
+          .reverse();
+        
+        for (const msg of recentAssistantMessages) {
+          const mentionedTour = DEMO_TOURS.find(t => 
+            msg.content.includes(t.title) || msg.content.includes(t.destination)
+          );
+          if (mentionedTour) {
+            console.log('✅ Found previously mentioned tour:', mentionedTour.title);
+            conversationState.currentTour = {
+              id: mentionedTour.id,
+              title: mentionedTour.title,
+              destination: mentionedTour.destination,
+              priceAdult: mentionedTour.dates[0]?.price_adult,
+              currency: mentionedTour.currency
+            };
+            conversationState.wizardStep = 'tour_selected';
+            if (!conversationState.shownTourIds.includes(mentionedTour.id)) {
+              conversationState.shownTourIds.push(mentionedTour.id);
+            }
+            
+            console.log('💾 Saving tour reference from history...');
+            await supabase
+              .from('whatsapp_user_profiles')
+              .upsert({
+                phone: `demo_${sessionId}`,
+                agency_id: DEMO_AGENCY_ID,
+                preferences: { conversation_state: conversationState }
+              }, { onConflict: 'phone,agency_id' });
+            
+            console.log('✅ Tour reference saved. currentTour:', conversationState.currentTour.title);
+            break;
+          }
+        }
+      }
+    }
+    
     // Handle numeric selection (user chose from list)
     if (numericSelection) {
       const index = parseInt(message) - 1;
