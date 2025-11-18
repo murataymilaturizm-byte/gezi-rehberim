@@ -440,55 +440,55 @@ ${hasMemory ? `
   } else if (intent === 'tour.detail') {
     if (wizardStep === 'none' || wizardStep === 'tour_selected') {
       const tourSelectedMessages = {
-        tr: `🔴 TUR SEÇİLDİ - 3 SEÇENEK SUN:
-1️⃣ Detaylı tur programını gör
-2️⃣ Fiyat öğren (kişi sayısına göre)
-3️⃣ Kayıt / ön rezervasyon başlat
+        tr: `🔴 TUR DETAY BİLGİSİ VER:
+✅ Kısa özet bilgisi ver (gezilecek yerler, süre, konaklama, ulaşım)
+✅ Tarih ve fiyat bilgilerini göster
+✅ En son satırda şunu ekle: "Dilerseniz tüm tur programını detaylı olarak paylaşabilirim. 📋"
 
-"Bu turla ilgili ne yapmak istersiniz?" diye sor.
-🔴 PROGRAM OTOMATIK GÖNDERME!`,
-        en: `🔴 TOUR SELECTED - OFFER 3 OPTIONS:
-1️⃣ See detailed tour program
-2️⃣ Learn price (based on number of people)
-3️⃣ Start registration / pre-booking
+🔴 DETAYLI PROGRAM: Sadece kullanıcı "detaylı program", "tüm program", "tam program" isterse göster!
+🔴 MAX 5-6 cümle özet bilgi`,
+        en: `🔴 PROVIDE TOUR DETAIL INFO:
+✅ Give brief summary (places to visit, duration, accommodation, transportation)
+✅ Show date and price information
+✅ Add this at the end: "If you wish, I can share the full tour program in detail. 📋"
 
-Ask "What would you like to do with this tour?"
-🔴 DON'T SEND PROGRAM AUTOMATICALLY!`,
-        de: `🔴 TOUR AUSGEWÄHLT - 3 OPTIONEN ANBIETEN:
-1️⃣ Detailliertes Tourprogramm ansehen
-2️⃣ Preis erfahren (basierend auf Personenanzahl)
-3️⃣ Registrierung / Vorbuchung starten
+🔴 DETAILED PROGRAM: Only show if user asks for "detailed program", "full program", "complete program"!
+🔴 MAX 5-6 sentences summary`,
+        de: `🔴 TOUR-DETAIL-INFORMATIONEN BEREITSTELLEN:
+✅ Kurze Zusammenfassung geben (Sehenswürdigkeiten, Dauer, Unterkunft, Transport)
+✅ Datum und Preisinformationen anzeigen
+✅ Am Ende hinzufügen: "Auf Wunsch kann ich Ihnen das vollständige Tourprogramm im Detail mitteilen. 📋"
 
-Fragen Sie "Was möchten Sie mit dieser Tour machen?"
-🔴 PROGRAMM NICHT AUTOMATISCH SENDEN!`,
-        ru: `🔴 ТУР ВЫБРАН - ПРЕДЛОЖИТЕ 3 ВАРИАНТА:
-1️⃣ Посмотреть подробную программу тура
-2️⃣ Узнать цену (в зависимости от количества человек)
-3️⃣ Начать регистрацию / предварительное бронирование
+🔴 DETAILLIERTES PROGRAMM: Nur zeigen, wenn der Benutzer nach "detailliertem Programm", "vollständigem Programm" fragt!
+🔴 MAX 5-6 Sätze Zusammenfassung`,
+        ru: `🔴 ПРЕДОСТАВЬТЕ ДЕТАЛЬНУЮ ИНФОРМАЦИЮ О ТУРЕ:
+✅ Дайте краткое описание (места для посещения, продолжительность, проживание, транспорт)
+✅ Покажите информацию о датах и ценах
+✅ Добавьте в конце: "При желании могу поделиться полной программой тура подробно. 📋"
 
-Спросите "Что бы вы хотели сделать с этим туром?"
-🔴 НЕ ОТПРАВЛЯТЬ ПРОГРАММУ АВТОМАТИЧЕСКИ!`,
-        ar: `🔴 تم اختيار الجولة - قدم 3 خيارات:
-1️⃣ انظر برنامج الجولة المفصل
-2️⃣ تعرف على السعر (بناءً على عدد الأشخاص)
-3️⃣ ابدأ التسجيل / الحجز المسبق
+🔴 ПОДРОБНАЯ ПРОГРАММА: Показывать только если пользователь спросит "подробную программу", "полную программу"!
+🔴 МАКС 5-6 предложений резюме`,
+        ar: `🔴 قدم معلومات تفصيلية عن الجولة:
+✅ قدم ملخصًا موجزًا (الأماكن المراد زيارتها، المدة، الإقامة، النقل)
+✅ أظهر معلومات التاريخ والسعر
+✅ أضف في النهاية: "إذا أردت، يمكنني مشاركة برنامج الجولة الكامل بالتفصيل. 📋"
 
-اسأل "ماذا تريد أن تفعل مع هذه الجولة؟"
-🔴 لا ترسل البرنامج تلقائيًا!`,
-        fr: `🔴 CIRCUIT SÉLECTIONNÉ - PROPOSER 3 OPTIONS:
-1️⃣ Voir le programme détaillé du circuit
-2️⃣ Connaître le prix (selon le nombre de personnes)
-3️⃣ Commencer l'inscription / la pré-réservation
+🔴 البرنامج التفصيلي: اعرضه فقط إذا طلب المستخدم "برنامج تفصيلي"، "برنامج كامل"!
+🔴 أقصى حد 5-6 جمل ملخص`,
+        fr: `🔴 FOURNIR DES INFORMATIONS DÉTAILLÉES SUR LE CIRCUIT:
+✅ Donner un bref résumé (lieux à visiter, durée, hébergement, transport)
+✅ Afficher les informations de date et de prix
+✅ Ajouter à la fin: "Si vous le souhaitez, je peux partager le programme complet du circuit en détail. 📋"
 
-Demandez "Que souhaitez-vous faire avec ce circuit?"
-🔴 N'ENVOYEZ PAS LE PROGRAMME AUTOMATIQUEMENT!`,
-        es: `🔴 TOUR SELECCIONADO - OFRECER 3 OPCIONES:
-1️⃣ Ver programa detallado del tour
-2️⃣ Conocer precio (según número de personas)
-3️⃣ Iniciar registro / pre-reserva
+🔴 PROGRAMME DÉTAILLÉ: Montrer uniquement si l'utilisateur demande "programme détaillé", "programme complet"!
+🔴 MAX 5-6 phrases de résumé`,
+        es: `🔴 PROPORCIONAR INFORMACIÓN DETALLADA DEL TOUR:
+✅ Dar un breve resumen (lugares a visitar, duración, alojamiento, transporte)
+✅ Mostrar información de fecha y precio
+✅ Añadir al final: "Si lo desea, puedo compartir el programa completo del tour en detalle. 📋"
 
-Pregunte "¿Qué le gustaría hacer con este tour?"
-🔴 ¡NO ENVÍE EL PROGRAMA AUTOMÁTICAMENTE!`
+🔴 PROGRAMA DETALLADO: ¡Mostrar solo si el usuario solicita "programa detallado", "programa completo"!
+🔴 MAX 5-6 frases de resumen`
       };
       intentInstructions = tourSelectedMessages[language as keyof typeof tourSelectedMessages] || tourSelectedMessages.tr;
     } else if (wizardStep === 'action_choice') {
