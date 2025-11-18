@@ -126,12 +126,20 @@ Intent: ${intent}`;
       intentInstructions = '🔴 TEKRAR SELAMLAMA YASAK - Kullanıcı sadece "merhaba/selam" yazmışsa kısa cevap ver, yoksa normal devam et.';
     }
   } else if (intent === 'tour.list' || intent === 'tour.search') {
-    intentInstructions = `🔴 TUR LİSTESİ ADIMI:
-- SADECE liste göster, başka hiçbir şey ekleme
-- Her tur için: numara, ad, bölge, tarih(ler)
-- Program/fiyat/detay YASAK
+    intentInstructions = `🔴 TUR LİSTESİ/ARAMA ADIMI:
+${currentTour ? '⚠️ UYARI: currentTour VAR ama birden fazla eşleşme olabilir!' : ''}
+
+KONTROL ET:
+- Kaç tane tur var bu destinasyon/arama için?
+- Eğer 2+ tur varsa → MUTLAKA LİSTELE, seçim yaptırma!
+
+FORMAT:
+- Her tur için: numara, tam ad, kısa açıklama, tarih
+- Örnek: "1. Kapadokya Balon Turu - Sıcak hava balonu deneyimi (15 Aralık, 22 Aralık)"
+- Örnek: "2. Kapadokya Kültür Turu - Tarihi yerler (18 Aralık)"
 - Son satır: "Hangi turla ilgileniyorsunuz? Numara veya tur adını yazabilirsiniz. 🙂"
-- MAX 5 satır tur listesi`;
+
+🔴 YASAK: Program detayı, fiyat, otomatik seçim yapma!`;
   } else if (intent === 'tour.detail') {
     if (wizardStep === 'none' || wizardStep === 'tour_selected') {
       intentInstructions = `🔴 TUR SEÇİLDİ - 3 SEÇENEK SUN:
