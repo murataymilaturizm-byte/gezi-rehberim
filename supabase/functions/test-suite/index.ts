@@ -73,35 +73,35 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       };
       
-      // Mock WhatsApp profile - Kasıtlı farklılıklar ile
+      // Mock WhatsApp profile - Aynı conversation flow, sadece memory extraction farklı
       whatsappProfile = {
         phone: '+905551234567',
         agency_id: agencyId,
         preferences: {
           conversation_state: {
             userMemory: {
-              preferredDestinations: ['Kapadokya', 'Pamukkale'], // WhatsApp'ta 2 destinasyon (FARKLI)
-              interests: ['culture'], // WhatsApp'ta balon turu yok (EKSIK)
-              lastMentionedPax: { adults: 2 }, // Çocuk sayısı yok (EKSIK)
-              budgetRange: '3000-6000', // Farklı bütçe (FARKLI)
+              preferredDestinations: ['Kapadokya', 'Pamukkale'], // WhatsApp AI'nın önerdiği yeri de eklemiş (FARKLI)
+              interests: ['kültür'], // 'balon turu' kaçmış (EKSIK)
+              lastMentionedPax: { adults: 2 }, // Çocuk sayısı kaçmış (EKSIK)
+              budgetRange: 'orta', // AI fiyatları da dahil etmiş (FARKLI - yanlış hesaplama)
               travelStyle: 'comfort',
               lastUpdated: new Date().toISOString()
             },
-            currentStage: 'booking', // Farklı stage (FARKLI)
-            lastIntent: 'reservation.wizard',
-            wizardStep: 'date_selection', // Wizard var (FARKLI)
-            conversationFlow: ['greeting', 'tour.search', 'reservation.wizard']
+            currentStage: 'exploring', // Demo ile aynı stage
+            lastIntent: 'tour.search', // Demo ile aynı intent
+            wizardStep: 'none', // Demo ile aynı (henüz wizard başlamamış)
+            conversationFlow: ['greeting', 'tour.search'] // Demo ile aynı flow
           },
           conversation_insights: {
-            topics_discussed: ['prices'], // Daha az konu (EKSIK)
-            questions_asked: ['fiyat', 'tarih', 'ödeme'], // Daha fazla soru (FARKLI)
-            positive_signals: ['ready_to_book'],
-            negative_signals: ['price_concern'] // Negatif sinyal var (FARKLI)
+            topics_discussed: ['prices'], // 'balon turu' topic kaçmış (EKSIK)
+            questions_asked: ['fiyat', 'tarih'], // Demo ile aynı
+            positive_signals: ['interested'],
+            negative_signals: [] // Demo ile aynı
           }
         },
         language_preference: 'tr',
-        total_messages: 12, // Daha fazla mesaj
-        tags: ['potential', 'interested', 'price_sensitive'],
+        total_messages: 8, // Demo ile aynı
+        tags: ['potential', 'interested'],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
