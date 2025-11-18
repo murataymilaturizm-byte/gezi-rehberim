@@ -140,6 +140,50 @@ async function handleTourSelection(
   state: WizardState,
   language: string
 ): Promise<string> {
+  // If tour already selected (from conversation state), skip to date selection
+  if (state.selected_tour) {
+    const selectedTour = state.selected_tour;
+    
+    // Get available dates for the already selected tour
+    const { data: dates } = await supabase
+      .from('tour_dates')
+      .select('*')
+      .eq('tour_id', selectedTour.id)
+      .gte('departure_date', new Date().toISOString())
+      .gt('quota', 0)
+      .order('departure_date', { ascending: true });
+
+    if (!dates || dates.length === 0) {
+      return language === 'tr'
+        ? 'Bu tur için müsait tarih bulunmuyor. Başka bir tur seçebilirsiniz.'
+        : 'No available dates for this tour. You can choose another tour.';
+    }
+
+    // Update wizard state to date selection
+    state.step = 'date_selection';
+    await saveWizardState(supabase, phone, agencyId, state);
+
+    // Format dates list
+    let message = language === 'tr'
+      ? `✅ *${selectedTour.title}* turu için kayıt başlatıyorum!\n\n📅 Müsait tarihler:\n\n`
+      : `✅ Starting registration for *${selectedTour.title}* tour!\n\n📅 Available dates:\n\n`;
+
+    dates.forEach((date: any, index: number) => {
+      const depDate = new Date(date.departure_date).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+      message += `${index + 1}. ${depDate} - ${date.price_adult} ${selectedTour.currency}\n`;
+    });
+
+    message += language === 'tr'
+      ? '\n\nLütfen tarih numarasını yazın:'
+      : '\n\nPlease enter the date number:';
+
+    return message;
+  }
+
   // Get all tours
   const { data: tours } = await supabase
     .from('tours')
@@ -350,13 +394,27 @@ async function handleConfirmation(
   const lowerMessage = userMessage.toLowerCase();
 
   const cancelMessages = {
-    tr: 'Rezervasyon iptal edildi.',
-    en: 'Reservation cancelled.',
-    de: 'Reservierung storniert.',
-    ru: 'Бронирование отменено.',
-    ar: 'تم إلغاء الحجز.',
-    fr: 'Réservation annulée.',
-    es: 'Reserva cancelada.'
+    tr: `❌ Rezervasyon iptal edildi.
+
+Başka bir tur hakkında bilgi almak isterseniz yardımcı olabilirim. 🙂`,
+    en: `❌ Reservation cancelled.
+
+If you'd like information about another tour, I'm here to help. 🙂`,
+    de: `❌ Reservierung storniert.
+
+Wenn Sie Informationen zu einer anderen Tour wünschen, helfe ich Ihnen gerne. 🙂`,
+    ru: `❌ Бронирование отменено.
+
+Если вы хотите получить информацию о другом туре, я готов помочь. 🙂`,
+    ar: `❌ تم إلغاء الحجز.
+
+إذا كنت تريد معلومات عن جولة أخرى، يمكنني المساعدة. 🙂`,
+    fr: `❌ Réservation annulée.
+
+Si vous souhaitez des informations sur un autre circuit, je suis là pour vous aider. 🙂`,
+    es: `❌ Reserva cancelada.
+
+Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
   };
 
   if (lowerMessage !== 'evet' && lowerMessage !== 'yes' && lowerMessage !== 'y' && lowerMessage !== 'ja' && lowerMessage !== 'да' && lowerMessage !== 'نعم' && lowerMessage !== 'oui' && lowerMessage !== 'sí') {
