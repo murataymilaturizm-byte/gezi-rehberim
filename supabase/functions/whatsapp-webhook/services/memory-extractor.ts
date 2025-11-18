@@ -49,10 +49,15 @@ export function extractMemory(
     }
   }
 
-  // Extract interests
+  // Extract interests ONLY from user message (not AI suggestions)
   for (const [interest, keywords] of Object.entries(INTEREST_KEYWORDS)) {
-    if (keywords.some(keyword => combinedText.includes(keyword)) &&
-        !memory.interests.includes(interest)) {
+    // Check if any keyword appears in user's message with word boundaries
+    const hasInterest = keywords.some(keyword => {
+      const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+      return regex.test(lowerMessage);
+    });
+    
+    if (hasInterest && !memory.interests.includes(interest)) {
       memory.interests.push(interest);
     }
   }
