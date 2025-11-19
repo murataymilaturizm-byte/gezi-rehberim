@@ -116,6 +116,9 @@ function extractFullName(message: string): string | null {
     return null;
   }
   
+  // Remove extra spaces and trim
+  const cleaned = message.trim().replace(/\s+/g, ' ');
+  
   // Explicit patterns with keywords
   const explicitPatterns = [
     /(?:ismim|adım|adim|name is|i am|i'm|ben)\s+([A-ZÇĞİÖŞÜa-zçğıöşü]+\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)/i,
@@ -123,7 +126,7 @@ function extractFullName(message: string): string | null {
   ];
   
   for (const pattern of explicitPatterns) {
-    const match = message.match(pattern);
+    const match = cleaned.match(pattern);
     if (match && match[1]) {
       const name = match[1].trim();
       if (isValidName(name)) {
@@ -132,9 +135,9 @@ function extractFullName(message: string): string | null {
     }
   }
   
-  // Try to extract name from message (2-4 words, capitalized)
-  const nameMatch = message.match(/\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)?)\b/);
-  if (nameMatch && nameMatch[1]) {
+  // Try to extract name from message (2-4 words, may include lowercase)
+  const nameMatch = cleaned.match(/\b([A-ZÇĞİÖŞÜa-zçğıöşü]{2,}\s+[A-ZÇĞİÖŞÜa-zçğıöşü]{2,}(?:\s+[A-ZÇĞİÖŞÜa-zçğıöşü]{2,})?)\b/);
+  if (nameMatch) {
     const name = nameMatch[1].trim();
     if (isValidName(name)) {
       return formatName(name);
