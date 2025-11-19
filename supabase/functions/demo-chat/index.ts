@@ -146,6 +146,8 @@ serve(async (req) => {
         preferences: updatedMemory,
         last_interaction_at: new Date().toISOString(),
         total_messages: (profile?.total_messages || 0) + 1
+      }, {
+        onConflict: 'phone'
       });
 
     if (profileError) {
