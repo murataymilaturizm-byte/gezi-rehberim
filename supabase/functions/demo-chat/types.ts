@@ -18,6 +18,7 @@ export interface DemoConversationState {
     title: string;
     destination: string;
     dateId?: string;
+    selectedDate?: string;
   } | null;
   previousTour: {
     id: string;
@@ -29,4 +30,15 @@ export interface DemoConversationState {
   lastUserMessage: string;
   conversationFlow: string[];
   userMemory?: any;
+  // Reservation tracking
+  collectedInfo?: {
+    fullName?: string;
+    phone?: string;
+    paxAdult?: number;
+    paxChild?: number;
+    selectedDate?: string;
+    tourId?: string;
+    tourTitle?: string;
+  };
+  reservationConfirmed?: boolean;
 }

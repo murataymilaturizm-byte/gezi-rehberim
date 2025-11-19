@@ -120,26 +120,28 @@ export function detectTourSwitch(
   return 'no_switch';
 }
 
-// Extract customer info from message
 export function extractCustomerInfo(message: string, currentInfo: any = {}) {
   const info = { ...currentInfo };
   
-  // Extract pax (number of people)
+  // Extract pax (number of people) - support various formats
   const paxMatch = message.match(/(\d+)\s*(?:kişi|kisi|people|person|adult|yetişkin|yetiskin)/i);
   if (paxMatch) {
-    info.pax_adult = parseInt(paxMatch[1]);
+    info.paxAdult = parseInt(paxMatch[1]);
   }
   
   // Extract child count
   const childMatch = message.match(/(\d+)\s*(?:çocuk|cocuk|child|children)/i);
   if (childMatch) {
-    info.pax_child = parseInt(childMatch[1]);
+    info.paxChild = parseInt(childMatch[1]);
   }
   
   // Extract full name (look for 2+ words that look like names)
-  const nameMatch = message.match(/([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)/);
-  if (nameMatch && nameMatch[1].split(' ').length >= 2) {
-    info.full_name = nameMatch[1];
+  const nameMatch = message.match(/([A-ZÇĞİÖŞÜa-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)+)/);
+  if (nameMatch) {
+    const words = nameMatch[1].trim().split(/\s+/);
+    if (words.length >= 2) {
+      info.fullName = nameMatch[1].trim();
+    }
   }
   
   // Extract phone (Turkish format or international)
@@ -325,6 +327,40 @@ export function getContextForAI(state: DemoConversationState, switchType: string
     context += `\n🎯 ŞU AN AKTİF TUR: ${state.currentTour.title} (${state.currentTour.destination})`;
     context += `\n- Kullanıcı bu turla ilgileniyor`;
     context += `\n- Eğer rezervasyon başlatılıyorsa, BU TURU kullan`;
+  }
+  
+  // Add collected reservation info
+  if (state.collectedInfo && Object.keys(state.collectedInfo).length > 0) {
+    context += `\n\n📋 TOPLANAN BİLGİLER:`;
+    if (state.collectedInfo.tourTitle) {
+      context += `\n✅ Tur: ${state.collectedInfo.tourTitle}`;
+    }
+    if (state.collectedInfo.selectedDate) {
+      context += `\n✅ Tarih: ${state.collectedInfo.selectedDate}`;
+    }
+    if (state.collectedInfo.paxAdult) {
+      context += `\n✅ Kişi sayısı: ${state.collectedInfo.paxAdult} yetişkin${state.collectedInfo.paxChild ? ` + ${state.collectedInfo.paxChild} çocuk` : ''}`;
+    }
+    if (state.collectedInfo.fullName) {
+      context += `\n✅ İsim: ${state.collectedInfo.fullName}`;
+    }
+    if (state.collectedInfo.phone) {
+      context += `\n✅ Telefon: ${state.collectedInfo.phone}`;
+    }
+    
+    // Check what's missing
+    const missing = [];
+    if (!state.collectedInfo.fullName) missing.push('tam ad-soyad');
+    if (!state.collectedInfo.phone) missing.push('telefon');
+    
+    if (missing.length > 0) {
+      context += `\n\n⚠️ EKSIK BİLGİ: ${missing.join(', ')}`;
+      context += `\n- Bu bilgileri toplamadan devam etme!`;
+    } else if (!state.reservationConfirmed) {
+      context += `\n\n✅ Tüm bilgiler toplandı!`;
+      context += `\n- Özet göster ve onay iste`;
+      context += `\n- Onay aldıktan SONRA "Rezervasyonunuz başarıyla onaylanmıştır" mesajı ver`;
+    }
   }
   
   if (state.previousTour && !state.currentTour && switchType === 'explicit_cancel') {
