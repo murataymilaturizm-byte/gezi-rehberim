@@ -461,6 +461,54 @@
       "redirecting": "Redirection",
       "pleaseWait": "Veuillez patienter"
     },
+    "paymentSettings": {
+      "title": "Paramètres d'Informations de Paiement",
+      "description": "Gérez les informations de paiement à afficher à vos clients. Ces informations seront partagées automatiquement lorsqu'une réservation est finalisée.",
+      "paymentType": {
+        "label": "Type de Paiement",
+        "description": "Quel type de paiement souhaitez-vous recevoir des clients?",
+        "deposit": "Acompte",
+        "full": "Paiement Complet"
+      },
+      "depositPercentage": "Pourcentage d'Acompte",
+      "paymentMethods": {
+        "label": "Méthodes de Paiement",
+        "description": "Quelles méthodes de paiement acceptez-vous?",
+        "bankTransfer": "Virement Bancaire",
+        "cash": "Espèces",
+        "creditCard": "Carte de Crédit"
+      },
+      "bankInfo": {
+        "label": "Informations Bancaires",
+        "description": "Entrez vos coordonnées bancaires pour recevoir les paiements",
+        "bankName": "Nom de la Banque",
+        "accountHolder": "Titulaire du Compte",
+        "iban": "IBAN",
+        "additionalInfo": "Informations Supplémentaires (Optionnel)",
+        "bankNamePlaceholder": "Ex: BNP Paribas",
+        "accountHolderPlaceholder": "Ex: ABC Tourisme SARL",
+        "ibanPlaceholder": "FR00 0000 0000 0000 0000 0000 00",
+        "additionalInfoPlaceholder": "Notes spéciales ou instructions à mentionner lors du paiement..."
+      },
+      "languages": {
+        "tr": "🇹🇷 Turc",
+        "en": "🇬🇧 Anglais"
+      },
+      "actions": {
+        "save": "Enregistrer",
+        "saving": "Enregistrement..."
+      },
+      "messages": {
+        "loadError": "Une erreur s'est produite lors du chargement des informations de paiement",
+        "saveSuccess": "Informations de paiement mises à jour avec succès",
+        "saveError": "Une erreur s'est produite lors de l'enregistrement des informations de paiement",
+        "agencyNotFound": "Informations de l'agence introuvables"
+      },
+      "tip": {
+        "title": "💡 Astuce",
+        "description": "Ces paramètres sont spécifiques à l'agence et actifs dans tous les forfaits. Ces informations seront automatiquement partagées avec vos clients via WhatsApp et le chat de démonstration après qu'ils aient effectué une réservation. Assurez-vous que votre IBAN et vos informations bancaires sont corrects."
+      }
+    },
     "templates": {
       "title": "Modèles de Messages",
       "types": {

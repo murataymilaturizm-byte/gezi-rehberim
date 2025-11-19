@@ -480,6 +480,54 @@
       "redirecting": "Redirecting",
       "pleaseWait": "Please wait"
     },
+    "paymentSettings": {
+      "title": "Payment Information Settings",
+      "description": "Manage payment information to be shown to your customers. This information will be shared automatically when a reservation is completed.",
+      "paymentType": {
+        "label": "Payment Type",
+        "description": "What type of payment would you like to receive from customers?",
+        "deposit": "Deposit (Down Payment)",
+        "full": "Full Payment"
+      },
+      "depositPercentage": "Deposit Percentage",
+      "paymentMethods": {
+        "label": "Payment Methods",
+        "description": "Which payment methods do you accept?",
+        "bankTransfer": "Bank Transfer / Wire",
+        "cash": "Cash",
+        "creditCard": "Credit Card"
+      },
+      "bankInfo": {
+        "label": "Bank Information",
+        "description": "Enter your bank account information for receiving payments",
+        "bankName": "Bank Name",
+        "accountHolder": "Account Holder",
+        "iban": "IBAN",
+        "additionalInfo": "Additional Information (Optional)",
+        "bankNamePlaceholder": "E.g: Chase Bank",
+        "accountHolderPlaceholder": "E.g: ABC Tourism Ltd.",
+        "ibanPlaceholder": "GB00 0000 0000 0000 0000 00",
+        "additionalInfoPlaceholder": "Special notes or instructions that should be mentioned during payment..."
+      },
+      "languages": {
+        "tr": "🇹🇷 Turkish",
+        "en": "🇬🇧 English"
+      },
+      "actions": {
+        "save": "Save",
+        "saving": "Saving..."
+      },
+      "messages": {
+        "loadError": "An error occurred while loading payment information",
+        "saveSuccess": "Payment information updated successfully",
+        "saveError": "An error occurred while saving payment information",
+        "agencyNotFound": "Agency information not found"
+      },
+      "tip": {
+        "title": "💡 Tip",
+        "description": "These settings are agency-specific and active in all packages. This information will be automatically shared with your customers via WhatsApp and demo chat after they make a reservation. Make sure your IBAN and bank information is correct."
+      }
+    },
     "templates": {
       "title": "Message Templates",
       "types": {

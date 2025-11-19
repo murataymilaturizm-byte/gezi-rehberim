@@ -464,6 +464,54 @@
       "redirecting": "Yönlendiriliyor",
       "pleaseWait": "Lütfen bekleyin"
     },
+    "paymentSettings": {
+      "title": "Ödeme Bilgileri Ayarları",
+      "description": "Müşterilerinize gösterilecek ödeme bilgilerini buradan yönetin. Rezervasyon tamamlandığında bu bilgiler otomatik olarak paylaşılacaktır.",
+      "paymentType": {
+        "label": "Ödeme Türü",
+        "description": "Müşterilerden ne tür ödeme almak istiyorsunuz?",
+        "deposit": "Kapora (Ön Ödeme)",
+        "full": "Tam Ödeme"
+      },
+      "depositPercentage": "Kapora Yüzdesi",
+      "paymentMethods": {
+        "label": "Ödeme Yöntemleri",
+        "description": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+        "bankTransfer": "Banka Transferi / EFT",
+        "cash": "Nakit",
+        "creditCard": "Kredi Kartı"
+      },
+      "bankInfo": {
+        "label": "Banka Bilgileri",
+        "description": "Ödeme alacağınız banka hesap bilgilerini girin",
+        "bankName": "Banka Adı",
+        "accountHolder": "Hesap Sahibi",
+        "iban": "IBAN",
+        "additionalInfo": "Ek Bilgiler (Opsiyonel)",
+        "bankNamePlaceholder": "Örn: Garanti BBVA",
+        "accountHolderPlaceholder": "Örn: ABC Turizm Ltd. Şti.",
+        "ibanPlaceholder": "TR00 0000 0000 0000 0000 0000 00",
+        "additionalInfoPlaceholder": "Ödeme sırasında belirtilmesi gereken özel notlar veya talimatlar..."
+      },
+      "languages": {
+        "tr": "🇹🇷 Türkçe",
+        "en": "🇬🇧 English"
+      },
+      "actions": {
+        "save": "Kaydet",
+        "saving": "Kaydediliyor..."
+      },
+      "messages": {
+        "loadError": "Ödeme bilgileri yüklenirken bir hata oluştu",
+        "saveSuccess": "Ödeme bilgileri başarıyla güncellendi",
+        "saveError": "Ödeme bilgileri kaydedilirken bir hata oluştu",
+        "agencyNotFound": "Acente bilgisi bulunamadı"
+      },
+      "tip": {
+        "title": "💡 İpucu",
+        "description": "Bu ayarlar acente özelindedir ve tüm paketlerde aktiftir. Müşterileriniz rezervasyon yaptıktan sonra WhatsApp ve demo chat üzerinden bu bilgiler otomatik olarak paylaşılacaktır. IBAN ve banka bilgilerinizin doğru olduğundan emin olun."
+      }
+    },
     "templates": {
       "title": "Mesaj Şablonları",
       "types": {
