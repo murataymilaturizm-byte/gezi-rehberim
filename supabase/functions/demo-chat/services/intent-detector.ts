@@ -42,10 +42,12 @@ export async function detectIntent(
   userLanguage: string = 'tr'
 ): Promise<MessageIntent> {
   try {
-    // Multi-language system prompts
+    // Multi-language system prompts - CRITICAL: AI must reason in user's language
     const systemPrompts: Record<string, string> = {
       tr: `Sen bir seyahat acentesi müşteri hizmetleri asistanısın.
 Kullanıcının mesajını ve geçmiş konuşma bağlamını analiz ederek niyetini tespit et.
+
+⚠️ ÖNEMLİ: Tüm düşünce sürecinizi ve reasoning'i TÜRKÇE yazın!
 
 Niyet Türleri:
 - greeting: İlk selamlaşma veya merhaba (SADECE İLK MESAJ için)
@@ -70,6 +72,8 @@ Niyet Türleri:
 
       en: `You are a travel agency customer service assistant.
 Analyze the user's message and conversation history to detect their intent.
+
+⚠️ IMPORTANT: Write ALL your reasoning and thinking process in ENGLISH!
 
 Intent Types:
 - greeting: Initial greeting or hello (ONLY FOR FIRST MESSAGE)

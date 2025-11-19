@@ -1,16 +1,16 @@
 // Conversation style personalities by language
 export const STYLE_PERSONALITIES = {
   tr: {
-    friendly: 'Samimi, sıcak ve dostane bir üslup kullan. Çok emojili ve heyecanlı ol 😊🎉✨ Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster.',
-    casual: 'Rahat ve gündelik bir dil kullan. Emojiler kullan ama abartma 😊 Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster.',
-    professional: 'Profesyonel ama samimi bir ton kullan. Az emoji kullan. Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster. Format örneği:\n\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi Sayısı: 2 yetişkin\nAd Soyad: Ahmet Yılmaz\nTelefon: 05551234567',
-    formal: 'Resmi ve kibar bir üslup kullan. Emoji kullanma. Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster. Format örneği:\n\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi Sayısı: 2 yetişkin\nAd Soyad: Ahmet Yılmaz\nTelefon: 05551234567'
+    friendly: '🎨 Samimi, sıcak ve dostane bir üslup kullan. EN AZ 3-4 emoji kullan 😊🎉✨ Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.',
+    casual: '🎨 Rahat ve gündelik bir dil kullan. 1-2 emoji kullan 😊 Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.',
+    professional: '🎨 Profesyonel ton kullan. ❌ HİÇ EMOJİ KULLANMA! Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.\n\nFormat örneği:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin\nAd: Ahmet Yılmaz\nTelefon: 05551234567',
+    formal: '🎨 Resmi ve kibar üslup kullan. ❌ HİÇ EMOJİ KULLANMA! Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.\n\nFormat örneği:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin\nAd: Ahmet Yılmaz\nTelefon: 05551234567'
   },
   en: {
-    friendly: 'Use a friendly, warm and enthusiastic style. Use many emojis 😊🎉✨ WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Never combine on a single line!',
-    casual: 'Use a relaxed and casual language. Use emojis but don\'t overdo it 😊 WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Never combine on a single line!',
-    professional: 'Use a professional but friendly tone. Use minimal emojis. WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Format example:\n\nTour: Cappadocia Tour\nDate: December 15, 2025\nParticipants: 2 adults\nFull Name: John Smith\nPhone: 05551234567',
-    formal: 'Use a formal and polite style. Don\'t use emojis. WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Format example:\n\nTour: Cappadocia Tour\nDate: December 15, 2025\nParticipants: 2 adults\nFull Name: John Smith\nPhone: 05551234567'
+    friendly: '🎨 Use friendly, warm style. Use AT LEAST 3-4 emojis 😊🎉✨ Write each info on NEW LINE, show VERTICALLY organized.',
+    casual: '🎨 Use relaxed, casual language. Use 1-2 emojis 😊 Write each info on NEW LINE, show VERTICALLY organized.',
+    professional: '🎨 Use professional tone. ❌ NO EMOJIS AT ALL! Write each info on NEW LINE, show VERTICALLY organized.\n\nFormat example:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults\nName: John Smith\nPhone: 05551234567',
+    formal: '🎨 Use formal, polite style. ❌ NO EMOJIS AT ALL! Write each info on NEW LINE, show VERTICALLY organized.\n\nFormat example:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults\nName: John Smith\nPhone: 05551234567'
   },
   de: {
     friendly: 'Verwenden Sie einen freundlichen, warmen und enthusiastischen Stil. Verwenden Sie viele Emojis 😊🎉✨ SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Kombinieren Sie niemals auf einer einzigen Zeile!',
@@ -19,10 +19,10 @@ export const STYLE_PERSONALITIES = {
     formal: 'Verwenden Sie einen formellen und höflichen Stil. Verwenden Sie keine Emojis. SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Formatbeispiel:\n\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene\nVollständiger Name: Hans Schmidt\nTelefon: 05551234567'
   },
   ru: {
-    friendly: 'Используйте дружелюбный, теплый и восторженный стиль. Используйте много эмодзи 😊🎉✨ ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Никогда не объединяйте на одной строке!',
-    casual: 'Используйте расслабленный и повседневный язык. Используйте эмодзи, но не переусердствуйте 😊 ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Никогда не объединяйте на одной строке!',
-    professional: 'Используйте профессиональный, но дружелюбный тон. Используйте минимум эмодзи. ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Пример формата:\n\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nУчастники: 2 взрослых\nПолное имя: Иван Иванов\nТелефон: 05551234567',
-    formal: 'Используйте формальный и вежливый стиль. Не используйте эмодзи. ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Пример формата:\n\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nУчастники: 2 взрослых\nПолное имя: Иван Иванов\nТелефон: 05551234567'
+    friendly: '🎨 Дружелюбно, тепло. Используйте МИНИМУМ 3-4 эмодзи 😊🎉✨ Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.',
+    casual: '🎨 Расслабленно, повседневно. 1-2 эмодзи 😊 Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.',
+    professional: '🎨 Профессиональный тон. ❌ НЕТ ЭМОДЗИ! Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых\nИмя: Иван Иванов\nТелефон: 05551234567',
+    formal: '🎨 Формально, вежливо. ❌ НЕТ ЭМОДЗИ! Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых\nИмя: Иван Иванов\nТелефон: 05551234567'
   },
   ar: {
     friendly: 'استخدم أسلوبًا ودودًا ودافئًا ومتحمسًا. استخدم العديد من الرموز التعبيرية 😊🎉✨ اكتب كل سطر على سطر جديد، أظهرها منظمة عموديًا. لا تجمع أبدًا على سطر واحد!',
@@ -71,6 +71,7 @@ export const INTENT_PROMPTS = {
     'price.inquiry': `🎯 Fiyat Sorgulama senaryosu
 - Net fiyat bilgisi ver
 - Yetişkin ve çocuk fiyatlarını ayır
+- ⚠️ ÖNEMLİ: ÖDEME BİLGİLERİNİ de paylaş (varsa)
 - Dahil olan hizmetleri belirt`,
     
     'reservation.wizard': `🎯 Rezervasyon senaryosu
@@ -115,8 +116,9 @@ export const INTENT_PROMPTS = {
 - Encourage reservation`,
     
     'price.inquiry': `🎯 Price Inquiry scenario
-- Give clear price information
+- Give clear price information  
 - Separate adult and child prices
+- ⚠️ IMPORTANT: Also share PAYMENT INSTRUCTIONS if available
 - Mention included services`,
     
     'reservation.wizard': `🎯 Reservation scenario
@@ -161,9 +163,10 @@ export const INTENT_PROMPTS = {
 - Ermutigen Sie zur Reservierung`,
     
     'price.inquiry': `🎯 Preisanfrageszenario
-- Geben Sie klare Preisinformationen
-- Trennen Sie Erwachsenen- und Kinderpreise
-- Erwähnen Sie enthaltene Dienstleistungen`,
+- Klare Preisinformationen geben
+- Erwachsenen- und Kinderpreise trennen
+- ⚠️ WICHTIG: ZAHLUNGSINFORMATIONEN auch teilen (falls verfügbar)
+- Enthaltene Dienstleistungen erwähnen`,
     
     'reservation.wizard': `🎯 Reservierungsszenario
 - Klären Sie, für welche Tour
@@ -207,6 +210,7 @@ export const INTENT_PROMPTS = {
     'price.inquiry': `🎯 Сценарий запроса цены
 - Дайте четкую информацию о ценах
 - Разделите цены для взрослых и детей
+- ⚠️ ВАЖНО: Также поделитесь ИНСТРУКЦИЯМИ ПО ОПЛАТЕ (если есть)
 - Упомяните включенные услуги`,
     
     'reservation.wizard': `🎯 Сценарий бронирования
