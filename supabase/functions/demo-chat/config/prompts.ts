@@ -1,46 +1,46 @@
 // Conversation style personalities by language
 export const STYLE_PERSONALITIES = {
   tr: {
-    friendly: 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊 Tarihleri "12 Aralık 2026" formatında göster.',
-    casual: 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊 Tarihleri "12 Aralık 2026" formatında göster.',
-    professional: 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊 Tarihleri "12 Aralık 2026" formatında göster.',
-    formal: 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊 Tarihleri "12 Aralık 2026" formatında göster.'
+    friendly: 'Samimi, sıcak ve dostane bir üslup kullan. Çok emojili ve heyecanlı ol 😊🎉✨ Tarihleri ve turları alt alta düzenli göster.',
+    casual: 'Rahat ve gündelik bir dil kullan. Emojiler kullan ama abartma 😊 Tarihleri ve turları alt alta düzenli göster.',
+    professional: 'Profesyonel ama samimi bir ton kullan. Az emoji kullan. Tarihleri ve turları alt alta düzenli göster.',
+    formal: 'Resmi ve kibar bir üslup kullan. Emoji kullanma. Tarihleri ve turları alt alta düzenli göster.'
   },
   en: {
-    friendly: 'Use a friendly, warm and welcoming style. Add emojis 😊 Show dates in "December 12, 2026" format.',
-    casual: 'Use a friendly, warm and welcoming style. Add emojis 😊 Show dates in "December 12, 2026" format.',
-    professional: 'Use a friendly, warm and welcoming style. Add emojis 😊 Show dates in "December 12, 2026" format.',
-    formal: 'Use a friendly, warm and welcoming style. Add emojis 😊 Show dates in "December 12, 2026" format.'
+    friendly: 'Use a friendly, warm and enthusiastic style. Use many emojis 😊🎉✨ Show dates and tours in organized list format.',
+    casual: 'Use a relaxed and casual language. Use emojis but don\'t overdo it 😊 Show dates and tours in organized list format.',
+    professional: 'Use a professional but friendly tone. Use minimal emojis. Show dates and tours in organized list format.',
+    formal: 'Use a formal and polite style. Don\'t use emojis. Show dates and tours in organized list format.'
   },
   de: {
-    friendly: 'Verwenden Sie einen freundlichen, warmen und einladenden Stil. Fügen Sie Emojis hinzu 😊 Zeigen Sie Daten im Format "12. Dezember 2026".',
-    casual: 'Verwenden Sie einen freundlichen, warmen und einladenden Stil. Fügen Sie Emojis hinzu 😊 Zeigen Sie Daten im Format "12. Dezember 2026".',
-    professional: 'Verwenden Sie einen freundlichen, warmen und einladenden Stil. Fügen Sie Emojis hinzu 😊 Zeigen Sie Daten im Format "12. Dezember 2026".',
-    formal: 'Verwenden Sie einen freundlichen, warmen und einladenden Stil. Fügen Sie Emojis hinzu 😊 Zeigen Sie Daten im Format "12. Dezember 2026".'
+    friendly: 'Verwenden Sie einen freundlichen, warmen und enthusiastischen Stil. Verwenden Sie viele Emojis 😊🎉✨ Zeigen Sie Daten und Touren in organisiertem Listenformat.',
+    casual: 'Verwenden Sie eine entspannte und lockere Sprache. Verwenden Sie Emojis, aber übertreiben Sie es nicht 😊 Zeigen Sie Daten und Touren in organisiertem Listenformat.',
+    professional: 'Verwenden Sie einen professionellen, aber freundlichen Ton. Verwenden Sie minimale Emojis. Zeigen Sie Daten und Touren in organisiertem Listenformat.',
+    formal: 'Verwenden Sie einen formellen und höflichen Stil. Verwenden Sie keine Emojis. Zeigen Sie Daten und Touren in organisiertem Listenformat.'
   },
   ru: {
-    friendly: 'Используйте дружелюбный, теплый и гостеприимный стиль. Добавляйте эмодзи 😊 Показывайте даты в формате "12 декабря 2026".',
-    casual: 'Используйте дружелюбный, теплый и гостеприимный стиль. Добавляйте эмодзи 😊 Показывайте даты в формате "12 декабря 2026".',
-    professional: 'Используйте дружелюбный, теплый и гостеприимный стиль. Добавляйте эмодзи 😊 Показывайте даты в формате "12 декабря 2026".',
-    formal: 'Используйте дружелюбный, теплый и гостеприимный стиль. Добавляйте эмодзи 😊 Показывайте даты в формате "12 декабря 2026".'
+    friendly: 'Используйте дружелюбный, теплый и восторженный стиль. Используйте много эмодзи 😊🎉✨ Показывайте даты и туры в организованном формате списка.',
+    casual: 'Используйте расслабленный и повседневный язык. Используйте эмодзи, но не переусердствуйте 😊 Показывайте даты и туры в организованном формате списка.',
+    professional: 'Используйте профессиональный, но дружелюбный тон. Используйте минимум эмодзи. Показывайте даты и туры в организованном формате списка.',
+    formal: 'Используйте формальный и вежливый стиль. Не используйте эмодзи. Показывайте даты и туры в организованном формате списка.'
   },
   ar: {
-    friendly: 'استخدم أسلوبًا ودودًا ودافئًا ومرحبًا. أضف رموز تعبيرية 😊 أظهر التواريخ بتنسيق "12 ديسمبر 2026".',
-    casual: 'استخدم أسلوبًا ودودًا ودافئًا ومرحبًا. أضف رموز تعبيرية 😊 أظهر التواريخ بتنسيق "12 ديسمبر 2026".',
-    professional: 'استخدم أسلوبًا ودودًا ودافئًا ومرحبًا. أضف رموز تعبيرية 😊 أظهر التواريخ بتنسيق "12 ديسمبر 2026".',
-    formal: 'استخدم أسلوبًا ودودًا ودافئًا ومرحبًا. أضف رموز تعبيرية 😊 أظهر التواريخ بتنسيق "12 ديسمبر 2026".'
+    friendly: 'استخدم أسلوبًا ودودًا ودافئًا ومتحمسًا. استخدم العديد من الرموز التعبيرية 😊🎉✨ أظهر التواريخ والجولات بتنسيق قائمة منظم.',
+    casual: 'استخدم لغة مريحة وعادية. استخدم الرموز التعبيرية ولكن لا تبالغ 😊 أظهر التواريخ والجولات بتنسيق قائمة منظم.',
+    professional: 'استخدم نبرة احترافية ولكن ودية. استخدم الحد الأدنى من الرموز التعبيرية. أظهر التواريخ والجولات بتنسيق قائمة منظم.',
+    formal: 'استخدم أسلوبًا رسميًا ومهذبًا. لا تستخدم الرموز التعبيرية. أظهر التواريخ والجولات بتنسيق قائمة منظم.'
   },
   fr: {
-    friendly: 'Utilisez un style amical, chaleureux et accueillant. Ajoutez des émojis 😊 Affichez les dates au format "12 décembre 2026".',
-    casual: 'Utilisez un style amical, chaleureux et accueillant. Ajoutez des émojis 😊 Affichez les dates au format "12 décembre 2026".',
-    professional: 'Utilisez un style amical, chaleureux et accueillant. Ajoutez des émojis 😊 Affichez les dates au format "12 décembre 2026".',
-    formal: 'Utilisez un style amical, chaleureux et accueillant. Ajoutez des émojis 😊 Affichez les dates au format "12 décembre 2026".'
+    friendly: 'Utilisez un style amical, chaleureux et enthousiaste. Utilisez beaucoup d\'émojis 😊🎉✨ Affichez les dates et les circuits dans un format de liste organisé.',
+    casual: 'Utilisez un langage détendu et décontracté. Utilisez des émojis mais n\'en faites pas trop 😊 Affichez les dates et les circuits dans un format de liste organisé.',
+    professional: 'Utilisez un ton professionnel mais amical. Utilisez un minimum d\'émojis. Affichez les dates et les circuits dans un format de liste organisé.',
+    formal: 'Utilisez un style formel et poli. N\'utilisez pas d\'émojis. Affichez les dates et les circuits dans un format de liste organisé.'
   },
   es: {
-    friendly: 'Usa un estilo amigable, cálido y acogedor. Añade emojis 😊 Muestra fechas en formato "12 de diciembre de 2026".',
-    casual: 'Usa un estilo amigable, cálido y acogedor. Añade emojis 😊 Muestra fechas en formato "12 de diciembre de 2026".',
-    professional: 'Usa un estilo amigable, cálido y acogedor. Añade emojis 😊 Muestra fechas en formato "12 de diciembre de 2026".',
-    formal: 'Usa un estilo amigable, cálido y acogedor. Añade emojis 😊 Muestra fechas en formato "12 de diciembre de 2026".'
+    friendly: 'Usa un estilo amigable, cálido y entusiasta. Usa muchos emojis 😊🎉✨ Muestra fechas y tours en formato de lista organizada.',
+    casual: 'Usa un lenguaje relajado y casual. Usa emojis pero no exageres 😊 Muestra fechas y tours en formato de lista organizada.',
+    professional: 'Usa un tono profesional pero amigable. Usa emojis mínimos. Muestra fechas y tours en formato de lista organizada.',
+    formal: 'Usa un estilo formal y cortés. No uses emojis. Muestra fechas y tours en formato de lista organizada.'
   }
 } as const;
 

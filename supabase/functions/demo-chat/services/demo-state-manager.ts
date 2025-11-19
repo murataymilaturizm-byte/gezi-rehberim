@@ -357,7 +357,7 @@ export function updateStateWithIntent(
   return { state: updatedState, switchType };
 }
 
-export function getContextForAI(state: DemoConversationState, switchType: string, newTourName?: string): string {
+export async function getContextForAI(state: DemoConversationState, switchType: string, newTourName?: string, paymentInstructions?: any, totalPrice?: number, depositAmount?: number, language?: string): Promise<string> {
   let context = '';
   
   // Handle tour switch confirmation scenarios
@@ -410,7 +410,21 @@ export function getContextForAI(state: DemoConversationState, switchType: string
     } else if (!state.reservationConfirmed) {
       context += `\n\n✅ Tüm bilgiler toplandı!`;
       context += `\n- Özet göster ve onay iste`;
-      context += `\n- Onay aldıktan SONRA "Rezervasyonunuz başarıyla onaylanmıştır" mesajı ver`;
+      context += `\n- Onay aldıktan SONRA mesajının SONUNA mutlaka ödeme bilgilerini ekle!`;
+    } else if (state.reservationConfirmed && paymentInstructions && totalPrice && depositAmount) {
+      // ADD PAYMENT CONTEXT SO AI INCLUDES IT
+      context += `\n\n💳 ÖDEME BİLGİLERİNİ EKLE:`;
+      context += `\n⚠️ KRİTİK: Rezervasyon onaylandı, mesajının SONUNA aşağıdaki ödeme bilgilerini AYNEN EKLE!`;
+      context += `\n\n`;
+      
+      // Generate payment message and add to context
+      const { generatePaymentMessage } = await import('./payment-message.ts');
+      const paymentInfo = generatePaymentMessage(paymentInstructions, language || 'tr', totalPrice, depositAmount);
+      
+      if (paymentInfo) {
+        context += paymentInfo;
+        context += `\n\n⚠️ Yukarıdaki ödeme bilgilerini mesajının sonuna AYNEN ekle! Hiçbir şeyi değiştirme!`;
+      }
     }
   }
   
