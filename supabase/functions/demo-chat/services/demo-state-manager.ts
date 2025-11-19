@@ -173,22 +173,25 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
     }
   }
   
-  // Extract phone (Turkish format or international)
-  const phonePatterns = [
-    /(?:telefon|phone|numara|number)[\s:]+(\d[\s\-\d]{8,14})/i,
-    /\b(05\d{9})\b/,  // Turkish mobile: 05xxxxxxxxx
-    /\b(\+90[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})\b/,  // International Turkish
-    /\b(\d{10,11})\b/  // Fallback: 10-11 digits
-  ];
-  
-  for (const pattern of phonePatterns) {
-    const match = message.match(pattern);
-    if (match) {
-      let phone = match[1].replace(/[\s\-]/g, '');
-      // Only accept if it looks like a phone (starts with 0 or +, or is 10+ digits)
-      if (phone.length >= 10 && (phone.startsWith('0') || phone.startsWith('+') || phone.length === 10 || phone.length === 11)) {
-        info.phone = phone;
-        break;
+  // Extract phone - be MORE aggressive but smart
+  if (!info.phone) {
+    const phonePatterns = [
+      /(?:telefon|phone|numara|number|tel)[\s:]+(\d[\s\-\d]{8,14})/i,
+      /\b(05\d{9})\b/,  // Turkish mobile: 05xxxxxxxxx
+      /\b(\+90[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})\b/,  // International
+      /\b(\d{10})\b/,  // 10 digits
+      /\b(\d{11})\b/   // 11 digits
+    ];
+    
+    for (const pattern of phonePatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        let phone = match[1].replace(/[\s\-]/g, '');
+        // Accept if 10-11 digits
+        if (phone.length >= 10 && phone.length <= 11 && /^\d+$/.test(phone)) {
+          info.phone = phone;
+          break;
+        }
       }
     }
   }
