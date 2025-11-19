@@ -19,14 +19,7 @@ export function initializeState(): DemoConversationState {
     previousTour: null,
     discussedTours: [],
     lastUserMessage: '',
-    conversationFlow: [],
-    collectedInfo: {
-      full_name: null,
-      phone: null,
-      pax_adult: null,
-      pax_child: null
-    },
-    reservationConfirmed: false
+    conversationFlow: []
   };
 }
 

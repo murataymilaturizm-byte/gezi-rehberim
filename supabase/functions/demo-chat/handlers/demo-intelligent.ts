@@ -176,10 +176,12 @@ ${personalizedContext}
 4. Rezervasyon için teşvik et
 5. ASLA uzun paragraflar yazma
 6. Her yanıtta maksimum 1-2 emoji kullan
-7. SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "1" diyorsa 1, "2" diyorsa 2. Asla farklı bir sayı anlama!
-8. ❌❌❌ KRİTİK: Rezervasyonda ASLA E-MAİL İSTEME! SADECE TAM AD-SOYAD VE TELEFON YETER! ❌❌❌
-9. TARİH FORMATI: Tarihleri MUTLAKA "12 Aralık 2026" formatında yaz (gün ay yıl, ay Türkçe yazıyla)`;
+7. SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! Örnek: "3 kişi" derse 3 kişi yaz!
+8. KRİTİK: Rezervasyonda SADECE tam ad-soyad ve telefon iste!
+9. REZERVASYON ADIMI: Tüm bilgileri topladıktan sonra özet göster, onay al, SONRA "Rezervasyon başarıyla alındı" mesajı ver
+10. ÖDEME BİLGİSİ: Rezervasyon tamamlandıktan sonra otomatik eklenecek, sen bahsetme!`;
 
+  return systemMessage;
 }
 
 function extractLastTourFromHistory(history: any[]): string | null {
