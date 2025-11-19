@@ -99,8 +99,13 @@ serve(async (req) => {
       .eq('agency_id', DEMO_AGENCY_ID)
       .single();
 
-    // Initialize or restore conversation state
-    let conversationState: DemoConversationState = clientState || initializeState();
+    // Initialize or restore conversation state - PRESERVE CLIENT STATE
+    let conversationState: DemoConversationState = clientState ? {
+      ...clientState,
+      // Ensure all required fields exist
+      collectedInfo: clientState.collectedInfo || {},
+      reservationConfirmed: clientState.reservationConfirmed || false
+    } : initializeState();
     
     // Add user memory to state
     const stateWithMemory = {
@@ -146,7 +151,12 @@ serve(async (req) => {
         } : undefined
       );
       
-      conversationState = result.state;
+      // CRITICAL: Preserve collectedInfo and reservationConfirmed from previous state
+      conversationState = {
+        ...result.state,
+        collectedInfo: stateWithMemory.collectedInfo || result.state.collectedInfo || {},
+        reservationConfirmed: stateWithMemory.reservationConfirmed || result.state.reservationConfirmed || false
+      };
       switchType = result.switchType;
       
       // Update tour info in collectedInfo if a tour is selected
@@ -301,7 +311,10 @@ serve(async (req) => {
     await saveMessage(supabase, sessionId, 'assistant', response);
 
     return new Response(
-      JSON.stringify({ response }),
+      JSON.stringify({ 
+        response,
+        conversationState // Return state so client can persist it
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

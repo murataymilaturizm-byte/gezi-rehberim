@@ -19,7 +19,9 @@ export function initializeState(): DemoConversationState {
     previousTour: null,
     discussedTours: [],
     lastUserMessage: '',
-    conversationFlow: []
+    conversationFlow: [],
+    collectedInfo: {},
+    reservationConfirmed: false
   };
 }
 
@@ -123,6 +125,14 @@ export function detectTourSwitch(
 export function extractCustomerInfo(message: string, currentInfo: any = {}) {
   const info = { ...currentInfo };
   
+  // Don't extract from common phrases
+  const commonPhrases = [
+    'kayıt olmak', 'kayıt ol', 'rezervasyon yap', 'rezervasyon istiyorum',
+    'katılmak istiyorum', 'istiyorum', 'isterim', 'düşünüyorum'
+  ];
+  const lowerMessage = message.toLowerCase();
+  const isCommonPhrase = commonPhrases.some(phrase => lowerMessage.includes(phrase));
+  
   // Extract pax (number of people) - support various formats
   const paxMatch = message.match(/(\d+)\s*(?:kişi|kisi|people|person|adult|yetişkin|yetiskin)/i);
   if (paxMatch) {
@@ -135,12 +145,16 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
     info.paxChild = parseInt(childMatch[1]);
   }
   
-  // Extract full name (look for 2+ words that look like names)
-  const nameMatch = message.match(/([A-ZÇĞİÖŞÜa-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)+)/);
-  if (nameMatch) {
-    const words = nameMatch[1].trim().split(/\s+/);
-    if (words.length >= 2) {
-      info.fullName = nameMatch[1].trim();
+  // Extract full name - ONLY if not a common phrase and starts with capital letters
+  if (!isCommonPhrase) {
+    // Look for 2+ capitalized words (proper names)
+    const nameMatch = message.match(/\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)\b/);
+    if (nameMatch) {
+      const words = nameMatch[1].trim().split(/\s+/);
+      // Only accept if we have 2-4 words (typical name format)
+      if (words.length >= 2 && words.length <= 4) {
+        info.fullName = nameMatch[1].trim();
+      }
     }
   }
   
@@ -159,7 +173,12 @@ export function updateStateWithIntent(
   userMessage: string,
   selectedTour?: any
 ): { state: DemoConversationState; switchType: string } {
-  const updatedState = { ...currentState };
+  // Preserve ALL existing state including collectedInfo and reservationConfirmed
+  const updatedState = { 
+    ...currentState,
+    collectedInfo: currentState.collectedInfo || {},
+    reservationConfirmed: currentState.reservationConfirmed || false
+  };
   
   // First check if user is responding to a pending confirmation
   const hasPendingConfirmation = !!(currentState.previousTour && currentState.currentTour);
