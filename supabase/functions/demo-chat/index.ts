@@ -4,6 +4,12 @@ import { detectIntent } from './services/intent-detector.ts';
 import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
 import { extractMemory } from './services/memory-extractor.ts';
 import { DEMO_AGENCY_ID, DEMO_TOURS } from './config/demo-tours.ts';
+import { 
+  initializeState, 
+  updateStateWithIntent, 
+  getContextForAI 
+} from './services/demo-state-manager.ts';
+import { DemoConversationState } from './types.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +46,13 @@ serve(async (req) => {
   }
 
   try {
-    const { message, sessionId, language = 'tr', conversationStyle = 'professional' } = await req.json();
+    const { 
+      message, 
+      sessionId, 
+      language = 'tr', 
+      conversationStyle = 'professional',
+      conversationState: clientState 
+    } = await req.json();
 
     if (!message || !sessionId) {
       return new Response(
@@ -85,16 +97,12 @@ serve(async (req) => {
       .eq('agency_id', DEMO_AGENCY_ID)
       .single();
 
-    // Initialize conversation state
-    let conversationState: {
-      currentStage: string;
-      wizardStep: string | null;
-      currentTour: string | null;
-      userMemory: any;
-    } = {
-      currentStage: 'chat',
-      wizardStep: null,
-      currentTour: null,
+    // Initialize or restore conversation state
+    let conversationState: DemoConversationState = clientState || initializeState();
+    
+    // Add user memory to state
+    const stateWithMemory = {
+      ...conversationState,
       userMemory: profile?.preferences || {}
     };
 
@@ -102,12 +110,12 @@ serve(async (req) => {
     const detectedIntent = await detectIntent(message, formattedHistory, language);
     console.log('🎯 Detected intent:', detectedIntent);
 
-    // Handle tour selection by number or name
+    // Find matching tour if user mentions specific destination
     let selectedTour = null;
     const tourNumber = parseInt(message.trim());
+    
     if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= DEMO_TOURS.length) {
       selectedTour = DEMO_TOURS[tourNumber - 1];
-      conversationState.currentTour = selectedTour.title;
       console.log('🎫 Tour selected by number:', selectedTour.title);
     } else {
       // Try to match tour by title or destination
@@ -117,10 +125,25 @@ serve(async (req) => {
         lowerMessage.includes(tour.destination.toLowerCase())
       );
       if (selectedTour) {
-        conversationState.currentTour = selectedTour.title;
         console.log('🎫 Tour selected by name:', selectedTour.title);
       }
     }
+    
+    // Update conversation state with new intent and selected tour
+    conversationState = updateStateWithIntent(
+      conversationState,
+      detectedIntent.type,
+      message,
+      selectedTour ? {
+        id: selectedTour.id,
+        title: selectedTour.title,
+        destination: selectedTour.destination,
+        dateId: selectedTour.dates[0]?.id
+      } : undefined
+    );
+    
+    // Get contextual information for AI
+    const stateContext = getContextForAI(conversationState);
 
     // Generate intelligent response
     const response = await handleDemoIntelligently(
@@ -134,7 +157,7 @@ serve(async (req) => {
     );
 
     // Extract and update user memory
-    const updatedMemory = extractMemory(message, response, conversationState.userMemory);
+    const updatedMemory = extractMemory(message, response, conversationState?.userMemory || DEMO_TOURS);
     
     // Update or create user profile
     const { error: profileError } = await supabase

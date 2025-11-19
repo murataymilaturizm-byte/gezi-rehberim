@@ -56,6 +56,7 @@ export const DemoChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationStyle, setConversationStyle] = useState<'basic' | 'friendly' | 'professional' | 'energetic' | 'helpful'>('basic');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [conversationState, setConversationState] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -123,7 +124,8 @@ export const DemoChat = () => {
           body: JSON.stringify({ 
             message: userMessage,
             sessionId: sessionId,
-            conversationStyle: conversationStyle === 'basic' ? 'professional' : conversationStyle
+            conversationStyle: conversationStyle === 'basic' ? 'professional' : conversationStyle,
+            conversationState: conversationState
           }),
         }
       );
@@ -135,6 +137,11 @@ export const DemoChat = () => {
 
       const data = await response.json();
       setMessages(prev => [...prev, { role: "assistant", content: data.response || data.message }]);
+      
+      // Update conversation state from server response
+      if (data.conversationState) {
+        setConversationState(data.conversationState);
+      }
     } catch (error) {
       console.error("Chat error:", error);
       toast({
@@ -161,6 +168,7 @@ export const DemoChat = () => {
     setSessionId(newSessionId);
     localStorage.setItem('demo_chat_session_id', newSessionId);
     localStorage.removeItem('demo-chat-messages');
+    setConversationState(null); // Reset conversation state
     
     const getStyledGreeting = () => {
       const baseGreeting = t("demo.greeting");

@@ -19,8 +19,11 @@ export async function handleDemoIntelligently(
   conversationStyle: string = 'professional',
   conversationState?: any
 ): Promise<string> {
-  // Build context-aware system prompt
-  const systemPrompt = buildDemoPrompt(intent, language, availableTours, conversationHistory, conversationStyle, conversationState);
+  // Get state context if available
+  const stateContextInfo = conversationState?.stateContext || '';
+  
+  // Build context-aware system prompt with state info
+  const systemPrompt = buildDemoPrompt(intent, language, availableTours, conversationHistory, conversationStyle, conversationState) + stateContextInfo;
   
   const messages = [
     { role: 'system', content: systemPrompt },
