@@ -5,14 +5,6 @@ import { Button } from "@/components/ui/button";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -28,6 +20,19 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Plus, Download, AlertCircle, LogOut, Calendar, Pencil, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+import { tr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -37,13 +42,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plane, Plus, Pencil, Trash2, Calendar, LogOut, Download, AlertCircle, Menu } from "lucide-react";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
+import { ToursList } from "@/components/admin/ToursList";
+import { RegistrationsList } from "@/components/admin/RegistrationsList";
+import { RegistrationFilters } from "@/components/admin/RegistrationFilters";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { CustomerAnalytics } from "@/components/CustomerAnalytics";
@@ -62,6 +65,10 @@ import FAQManagement from "@/components/FAQManagement";
 import { CustomerFeedback } from "@/components/CustomerFeedback";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useTours } from "@/hooks/useTours";
+import { useRegistrations } from "@/hooks/useRegistrations";
+import { usePlanFeatures } from "@/hooks/usePlanFeatures";
 import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
 import { SupportChatWidget } from "@/components/SupportChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -118,6 +125,69 @@ const Admin = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  
+  // Custom hooks for auth, tours, registrations, and plan features
+  const {
+    session,
+    isSuperAdmin,
+    userAgencyId,
+    agencyName,
+    userName,
+    loading: authLoading,
+    handleLogout
+  } = useAdminAuth();
+  
+  const {
+    tours,
+    loading: toursLoading,
+    tourFormOpen,
+    setTourFormOpen,
+    dateFormOpen,
+    setDateFormOpen,
+    selectedTour,
+    setSelectedTour,
+    selectedTourForDate,
+    setSelectedTourForDate,
+    selectedDate,
+    setSelectedDate,
+    deleteDialog,
+    setDeleteDialog,
+    handleDeleteTour,
+    handleDeleteDate,
+    loadTours
+  } = useTours(activeTab, session);
+  
+  const {
+    registrations,
+    loading: registrationsLoading,
+    filterStatus,
+    setFilterStatus,
+    filterTour,
+    setFilterTour,
+    filterDateFrom,
+    setFilterDateFrom,
+    filterDateTo,
+    setFilterDateTo,
+    filterPriceMin,
+    setFilterPriceMin,
+    filterPriceMax,
+    setFilterPriceMax,
+    handleStatusChange,
+    clearFilters,
+    getFilteredRegistrations,
+    loadRegistrations
+  } = useRegistrations(activeTab, session);
+  
+  const {
+    planType,
+    maxTours,
+    planFeatures,
+    enabledLanguages
+  } = usePlanFeatures(userAgencyId, isSuperAdmin);
+  
+  // Translation labels
   const statusLabels: Record<string, string> = {
     NEW: t("admin.status.new"),
     PENDING: t("admin.status.pending"),
@@ -130,63 +200,6 @@ const Admin = () => {
     N2: t("admin.tourTypes.n2"),
     N3: t("admin.tourTypes.n3")
   };
-  const [session, setSession] = useState<Session | null>(null);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
-  const [agencyName, setAgencyName] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tourFormOpen, setTourFormOpen] = useState(false);
-  const [dateFormOpen, setDateFormOpen] = useState(false);
-  const [selectedTour, setSelectedTour] = useState<Tour | undefined>();
-  const [selectedTourForDate, setSelectedTourForDate] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<any>();
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; type: "tour" | "date" }>({
-    open: false,
-    id: "",
-    type: "tour"
-  });
-  const [planType, setPlanType] = useState<string>('starter');
-  const [maxTours, setMaxTours] = useState<number>(10);
-  const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
-  const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
-  
-  // Registration filters
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterTour, setFilterTour] = useState<string>("all");
-  const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
-  const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
-  const [filterPriceMin, setFilterPriceMin] = useState<string>("");
-  const [filterPriceMax, setFilterPriceMax] = useState<string>("");
-
-  useEffect(() => {
-    // Check authentication
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      if (!session) {
-        navigate("/auth");
-      } else {
-        // Check user role
-        setTimeout(() => {
-          checkUserRole(session.user.id);
-        }, 0);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (!session) {
-        navigate("/auth");
-      } else {
-        checkUserRole(session.user.id);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
 
   // Check payment result from URL params
   useEffect(() => {
@@ -242,62 +255,6 @@ const Admin = () => {
       setSearchParams({});
     }
   }, [searchParams, setSearchParams, toast]);
-
-  const checkUserRole = async (userId: string) => {
-    try {
-      // Get user profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", userId)
-        .single();
-
-      setUserName(profileData?.full_name || "");
-
-      // Check if super admin
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "super_admin")
-        .maybeSingle();
-
-      setIsSuperAdmin(!!roleData);
-
-      // Get user's agency ID, name and language preference if not super admin
-      if (!roleData) {
-        const { data: agencyData } = await supabase
-          .from("agencies")
-          .select("id, agency_name, language_preference, plan_type, enabled_languages")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        setUserAgencyId(agencyData?.id || null);
-        setAgencyName(agencyData?.agency_name || "");
-        setEnabledLanguages(agencyData?.enabled_languages || []);
-        
-        // Load plan features
-        const currentPlanType = (agencyData?.plan_type as string) || 'starter';
-        setPlanType(currentPlanType);
-        const maxToursLimit = await getMaxTours(currentPlanType);
-        setMaxTours(maxToursLimit);
-        
-        // Load all plan features
-        const features = await getPlanFeatures(currentPlanType);
-        setPlanFeatures(features);
-        
-        // Set language preference based on agency's city/region
-        if (agencyData?.language_preference) {
-          i18n.changeLanguage(agencyData.language_preference);
-          console.log('Admin language set to:', agencyData.language_preference);
-        }
-      } else {
-        setAgencyName(t("admin.superAdmin"));
-      }
-    } catch (error) {
-      console.error("Error checking user role:", error);
-    }
-  };
 
   useEffect(() => {
     if (session && (activeTab === "tours" || activeTab === "registrations")) {
