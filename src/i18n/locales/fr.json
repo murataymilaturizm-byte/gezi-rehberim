@@ -475,8 +475,17 @@
         "label": "Méthodes de Paiement",
         "description": "Quelles méthodes de paiement acceptez-vous?",
         "bankTransfer": "Virement Bancaire",
-        "cash": "Espèces",
+        "cashOffice": "Espèces au Bureau",
+        "cashOnTour": "Espèces dans le Véhicule/Jour du Tour",
         "creditCard": "Carte de Crédit"
+      },
+      "additionalInfo": {
+        "officeAddress": "Adresse du Bureau",
+        "officeAddressPlaceholder": "Ex: 123 Rue Principale, 75001 Paris",
+        "workingHours": "Heures d'Ouverture",
+        "workingHoursPlaceholder": "Ex: Lun-Ven 9:00-18:00, Sam 10:00-16:00",
+        "phoneNumber": "Numéro de Téléphone",
+        "phoneNumberPlaceholder": "Ex: +33 1 23 45 67 89"
       },
       "bankInfo": {
         "label": "Informations Bancaires",

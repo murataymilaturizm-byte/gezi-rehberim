@@ -17,6 +17,9 @@ interface PaymentInstructions {
   payment_type?: "deposit" | "full";
   deposit_percentage?: number;
   payment_methods?: string[];
+  office_address?: string;
+  working_hours?: string;
+  phone_number?: string;
   [language: string]: any;
 }
 
@@ -30,6 +33,9 @@ export const PaymentSettings = () => {
     payment_type: "deposit",
     deposit_percentage: 30,
     payment_methods: ["bank_transfer"],
+    office_address: "",
+    working_hours: "",
+    phone_number: "",
     tr: {
       bank_name: "",
       account_holder: "",
@@ -314,14 +320,26 @@ export const PaymentSettings = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="cash"
-                  checked={paymentInstructions.payment_methods?.includes("cash")}
+                  id="cash_office"
+                  checked={paymentInstructions.payment_methods?.includes("cash_office")}
                   onCheckedChange={(checked) =>
-                    handlePaymentMethodsChange("cash", checked as boolean)
+                    handlePaymentMethodsChange("cash_office", checked as boolean)
                   }
                 />
-                <Label htmlFor="cash" className="font-normal cursor-pointer">
-                  {t("admin.paymentSettings.paymentMethods.cash")}
+                <Label htmlFor="cash_office" className="font-normal cursor-pointer">
+                  {t("admin.paymentSettings.paymentMethods.cashOffice")}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="cash_on_tour"
+                  checked={paymentInstructions.payment_methods?.includes("cash_on_tour")}
+                  onCheckedChange={(checked) =>
+                    handlePaymentMethodsChange("cash_on_tour", checked as boolean)
+                  }
+                />
+                <Label htmlFor="cash_on_tour" className="font-normal cursor-pointer">
+                  {t("admin.paymentSettings.paymentMethods.cashOnTour")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -337,6 +355,66 @@ export const PaymentSettings = () => {
                 </Label>
               </div>
             </div>
+
+            {/* Additional Info for Cash Office */}
+            {paymentInstructions.payment_methods?.includes("cash_office") && (
+              <div className="ml-6 space-y-4 mt-4 p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-2">
+                  <Label htmlFor="office-address">
+                    {t("admin.paymentSettings.additionalInfo.officeAddress")}
+                  </Label>
+                  <Input
+                    id="office-address"
+                    value={paymentInstructions.office_address || ""}
+                    onChange={(e) =>
+                      setPaymentInstructions((prev) => ({
+                        ...prev,
+                        office_address: e.target.value,
+                      }))
+                    }
+                    placeholder={t("admin.paymentSettings.additionalInfo.officeAddressPlaceholder")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="working-hours">
+                    {t("admin.paymentSettings.additionalInfo.workingHours")}
+                  </Label>
+                  <Input
+                    id="working-hours"
+                    value={paymentInstructions.working_hours || ""}
+                    onChange={(e) =>
+                      setPaymentInstructions((prev) => ({
+                        ...prev,
+                        working_hours: e.target.value,
+                      }))
+                    }
+                    placeholder={t("admin.paymentSettings.additionalInfo.workingHoursPlaceholder")}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Additional Info for Credit Card */}
+            {paymentInstructions.payment_methods?.includes("credit_card") && (
+              <div className="ml-6 space-y-4 mt-4 p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-2">
+                  <Label htmlFor="phone-number">
+                    {t("admin.paymentSettings.additionalInfo.phoneNumber")}
+                  </Label>
+                  <Input
+                    id="phone-number"
+                    value={paymentInstructions.phone_number || ""}
+                    onChange={(e) =>
+                      setPaymentInstructions((prev) => ({
+                        ...prev,
+                        phone_number: e.target.value,
+                      }))
+                    }
+                    placeholder={t("admin.paymentSettings.additionalInfo.phoneNumberPlaceholder")}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bank Information Section */}

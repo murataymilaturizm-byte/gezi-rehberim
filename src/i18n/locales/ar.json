@@ -471,8 +471,17 @@
         "label": "طرق الدفع",
         "description": "ما هي طرق الدفع التي تقبلها؟",
         "bankTransfer": "تحويل بنكي",
-        "cash": "نقدًا",
+        "cashOffice": "نقدًا في المكتب",
+        "cashOnTour": "نقدًا في المركبة/يوم الرحلة",
         "creditCard": "بطاقة ائتمان"
+      },
+      "additionalInfo": {
+        "officeAddress": "عنوان المكتب",
+        "officeAddressPlaceholder": "مثال: شارع الرئيسي 123، الرياض 11564",
+        "workingHours": "ساعات العمل",
+        "workingHoursPlaceholder": "مثال: الأحد-الخميس 9:00-18:00، السبت 10:00-16:00",
+        "phoneNumber": "رقم الهاتف",
+        "phoneNumberPlaceholder": "مثال: +966 11 123 4567"
       },
       "bankInfo": {
         "label": "المعلومات البنكية",
