@@ -132,7 +132,9 @@ export const DemoChat = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Yanıt alınamadı");
+        const errorMsg = errorData.error || "Yanıt alınamadı";
+        const errorDetails = errorData.details || "";
+        throw new Error(errorDetails ? `${errorMsg}\n${errorDetails}` : errorMsg);
       }
 
       const data = await response.json();
@@ -144,11 +146,15 @@ export const DemoChat = () => {
       }
     } catch (error) {
       console.error("Chat error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Mesaj gönderilemedi";
+      
       toast({
         title: "Hata",
-        description: error instanceof Error ? error.message : "Mesaj gönderilemedi",
+        description: errorMessage,
         variant: "destructive",
+        duration: 5000, // Show for 5 seconds so user can read it
       });
+      
       // Remove user message on error
       setMessages(prev => prev.slice(0, -1));
     } finally {
