@@ -318,7 +318,7 @@ function buildDemoPrompt(
 
   // Base system prompt and guidelines
   const basePrompt = getBaseSystemPrompt(language);
-  const guidelines = getResponseGuidelines(language);
+  const guidelines = getResponseGuidelines(language, conversationStyle);
 
   // Add tour dates context if a specific tour is selected
   let datesContext = '';
