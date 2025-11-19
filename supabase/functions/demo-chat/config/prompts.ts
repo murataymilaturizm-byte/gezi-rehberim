@@ -7,40 +7,40 @@ export const STYLE_PERSONALITIES = {
     formal: 'Resmi ve kibar bir üslup kullan. Emoji kullanma. Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster. Format örneği:\n\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi Sayısı: 2 yetişkin\nAd Soyad: Ahmet Yılmaz\nTelefon: 05551234567'
   },
   en: {
-    friendly: 'Use a friendly, warm and enthusiastic style. Use many emojis 😊🎉✨ Show dates and tours in organized list format.',
-    casual: 'Use a relaxed and casual language. Use emojis but don\'t overdo it 😊 Show dates and tours in organized list format.',
-    professional: 'Use a professional but friendly tone. Use minimal emojis. Show dates and tours in organized list format.',
-    formal: 'Use a formal and polite style. Don\'t use emojis. Show dates and tours in organized list format.'
+    friendly: 'Use a friendly, warm and enthusiastic style. Use many emojis 😊🎉✨ WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Never combine on a single line!',
+    casual: 'Use a relaxed and casual language. Use emojis but don\'t overdo it 😊 WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Never combine on a single line!',
+    professional: 'Use a professional but friendly tone. Use minimal emojis. WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Format example:\n\nTour: Cappadocia Tour\nDate: December 15, 2025\nParticipants: 2 adults\nFull Name: John Smith\nPhone: 05551234567',
+    formal: 'Use a formal and polite style. Don\'t use emojis. WRITE EACH LINE ON A NEW LINE, show them ORGANIZED VERTICALLY. Format example:\n\nTour: Cappadocia Tour\nDate: December 15, 2025\nParticipants: 2 adults\nFull Name: John Smith\nPhone: 05551234567'
   },
   de: {
-    friendly: 'Verwenden Sie einen freundlichen, warmen und enthusiastischen Stil. Verwenden Sie viele Emojis 😊🎉✨ Zeigen Sie Daten und Touren in organisiertem Listenformat.',
-    casual: 'Verwenden Sie eine entspannte und lockere Sprache. Verwenden Sie Emojis, aber übertreiben Sie es nicht 😊 Zeigen Sie Daten und Touren in organisiertem Listenformat.',
-    professional: 'Verwenden Sie einen professionellen, aber freundlichen Ton. Verwenden Sie minimale Emojis. Zeigen Sie Daten und Touren in organisiertem Listenformat.',
-    formal: 'Verwenden Sie einen formellen und höflichen Stil. Verwenden Sie keine Emojis. Zeigen Sie Daten und Touren in organisiertem Listenformat.'
+    friendly: 'Verwenden Sie einen freundlichen, warmen und enthusiastischen Stil. Verwenden Sie viele Emojis 😊🎉✨ SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Kombinieren Sie niemals auf einer einzigen Zeile!',
+    casual: 'Verwenden Sie eine entspannte und lockere Sprache. Verwenden Sie Emojis, aber übertreiben Sie es nicht 😊 SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Kombinieren Sie niemals auf einer einzigen Zeile!',
+    professional: 'Verwenden Sie einen professionellen, aber freundlichen Ton. Verwenden Sie minimale Emojis. SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Formatbeispiel:\n\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene\nVollständiger Name: Hans Schmidt\nTelefon: 05551234567',
+    formal: 'Verwenden Sie einen formellen und höflichen Stil. Verwenden Sie keine Emojis. SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Formatbeispiel:\n\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene\nVollständiger Name: Hans Schmidt\nTelefon: 05551234567'
   },
   ru: {
-    friendly: 'Используйте дружелюбный, теплый и восторженный стиль. Используйте много эмодзи 😊🎉✨ Показывайте даты и туры в организованном формате списка.',
-    casual: 'Используйте расслабленный и повседневный язык. Используйте эмодзи, но не переусердствуйте 😊 Показывайте даты и туры в организованном формате списка.',
-    professional: 'Используйте профессиональный, но дружелюбный тон. Используйте минимум эмодзи. Показывайте даты и туры в организованном формате списка.',
-    formal: 'Используйте формальный и вежливый стиль. Не используйте эмодзи. Показывайте даты и туры в организованном формате списка.'
+    friendly: 'Используйте дружелюбный, теплый и восторженный стиль. Используйте много эмодзи 😊🎉✨ ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Никогда не объединяйте на одной строке!',
+    casual: 'Используйте расслабленный и повседневный язык. Используйте эмодзи, но не переусердствуйте 😊 ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Никогда не объединяйте на одной строке!',
+    professional: 'Используйте профессиональный, но дружелюбный тон. Используйте минимум эмодзи. ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Пример формата:\n\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nУчастники: 2 взрослых\nПолное имя: Иван Иванов\nТелефон: 05551234567',
+    formal: 'Используйте формальный и вежливый стиль. Не используйте эмодзи. ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ, показывайте их ВЕРТИКАЛЬНО ОРГАНИЗОВАННО. Пример формата:\n\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nУчастники: 2 взрослых\nПолное имя: Иван Иванов\nТелефон: 05551234567'
   },
   ar: {
-    friendly: 'استخدم أسلوبًا ودودًا ودافئًا ومتحمسًا. استخدم العديد من الرموز التعبيرية 😊🎉✨ أظهر التواريخ والجولات بتنسيق قائمة منظم.',
-    casual: 'استخدم لغة مريحة وعادية. استخدم الرموز التعبيرية ولكن لا تبالغ 😊 أظهر التواريخ والجولات بتنسيق قائمة منظم.',
-    professional: 'استخدم نبرة احترافية ولكن ودية. استخدم الحد الأدنى من الرموز التعبيرية. أظهر التواريخ والجولات بتنسيق قائمة منظم.',
-    formal: 'استخدم أسلوبًا رسميًا ومهذبًا. لا تستخدم الرموز التعبيرية. أظهر التواريخ والجولات بتنسيق قائمة منظم.'
+    friendly: 'استخدم أسلوبًا ودودًا ودافئًا ومتحمسًا. استخدم العديد من الرموز التعبيرية 😊🎉✨ اكتب كل سطر على سطر جديد، أظهرها منظمة عموديًا. لا تجمع أبدًا على سطر واحد!',
+    casual: 'استخدم لغة مريحة وعادية. استخدم الرموز التعبيرية ولكن لا تبالغ 😊 اكتب كل سطر على سطر جديد، أظهرها منظمة عموديًا. لا تجمع أبدًا على سطر واحد!',
+    professional: 'استخدم نبرة احترافية ولكن ودية. استخدم الحد الأدنى من الرموز التعبيرية. اكتب كل سطر على سطر جديد، أظهرها منظمة عموديًا. مثال التنسيق:\n\nالجولة: جولة كابادوكيا\nالتاريخ: 15 ديسمبر 2025\nالمشاركون: 2 بالغين\nالاسم الكامل: أحمد محمد\nالهاتف: 05551234567',
+    formal: 'استخدم أسلوبًا رسميًا ومهذبًا. لا تستخدم الرموز التعبيرية. اكتب كل سطر على سطر جديد، أظهرها منظمة عموديًا. مثال التنسيق:\n\nالجولة: جولة كابادوكيا\nالتاريخ: 15 ديسمبر 2025\nالمشاركون: 2 بالغين\nالاسم الكامل: أحمد محمد\nالهاتف: 05551234567'
   },
   fr: {
-    friendly: 'Utilisez un style amical, chaleureux et enthousiaste. Utilisez beaucoup d\'émojis 😊🎉✨ Affichez les dates et les circuits dans un format de liste organisé.',
-    casual: 'Utilisez un langage détendu et décontracté. Utilisez des émojis mais n\'en faites pas trop 😊 Affichez les dates et les circuits dans un format de liste organisé.',
-    professional: 'Utilisez un ton professionnel mais amical. Utilisez un minimum d\'émojis. Affichez les dates et les circuits dans un format de liste organisé.',
-    formal: 'Utilisez un style formel et poli. N\'utilisez pas d\'émojis. Affichez les dates et les circuits dans un format de liste organisé.'
+    friendly: 'Utilisez un style amical, chaleureux et enthousiaste. Utilisez beaucoup d\'émojis 😊🎉✨ ÉCRIVEZ CHAQUE LIGNE SUR UNE NOUVELLE LIGNE, montrez-les ORGANISÉES VERTICALEMENT. Ne combinez jamais sur une seule ligne!',
+    casual: 'Utilisez un langage détendu et décontracté. Utilisez des émojis mais n\'en faites pas trop 😊 ÉCRIVEZ CHAQUE LIGNE SUR UNE NOUVELLE LIGNE, montrez-les ORGANISÉES VERTICALEMENT. Ne combinez jamais sur une seule ligne!',
+    professional: 'Utilisez un ton professionnel mais amical. Utilisez un minimum d\'émojis. ÉCRIVEZ CHAQUE LIGNE SUR UNE NOUVELLE LIGNE, montrez-les ORGANISÉES VERTICALEMENT. Exemple de format:\n\nTour: Tour de Cappadoce\nDate: 15 décembre 2025\nParticipants: 2 adultes\nNom complet: Jean Dupont\nTéléphone: 05551234567',
+    formal: 'Utilisez un style formel et poli. N\'utilisez pas d\'émojis. ÉCRIVEZ CHAQUE LIGNE SUR UNE NOUVELLE LIGNE, montrez-les ORGANISÉES VERTICALEMENT. Exemple de format:\n\nTour: Tour de Cappadoce\nDate: 15 décembre 2025\nParticipants: 2 adultes\nNom complet: Jean Dupont\nTéléphone: 05551234567'
   },
   es: {
-    friendly: 'Usa un estilo amigable, cálido y entusiasta. Usa muchos emojis 😊🎉✨ Muestra fechas y tours en formato de lista organizada.',
-    casual: 'Usa un lenguaje relajado y casual. Usa emojis pero no exageres 😊 Muestra fechas y tours en formato de lista organizada.',
-    professional: 'Usa un tono profesional pero amigable. Usa emojis mínimos. Muestra fechas y tours en formato de lista organizada.',
-    formal: 'Usa un estilo formal y cortés. No uses emojis. Muestra fechas y tours en formato de lista organizada.'
+    friendly: 'Usa un estilo amigable, cálido y entusiasta. Usa muchos emojis 😊🎉✨ ESCRIBE CADA LÍNEA EN UNA NUEVA LÍNEA, muéstralas ORGANIZADAS VERTICALMENTE. ¡Nunca combines en una sola línea!',
+    casual: 'Usa un lenguaje relajado y casual. Usa emojis pero no exageres 😊 ESCRIBE CADA LÍNEA EN UNA NUEVA LÍNEA, muéstralas ORGANIZADAS VERTICALMENTE. ¡Nunca combines en una sola línea!',
+    professional: 'Usa un tono profesional pero amigable. Usa emojis mínimos. ESCRIBE CADA LÍNEA EN UNA NUEVA LÍNEA, muéstralas ORGANIZADAS VERTICALMENTE. Ejemplo de formato:\n\nTour: Tour de Capadocia\nFecha: 15 de diciembre de 2025\nParticipantes: 2 adultos\nNombre completo: Juan García\nTeléfono: 05551234567',
+    formal: 'Usa un estilo formal y cortés. No uses emojis. ESCRIBE CADA LÍNEA EN UNA NUEVA LÍNEA, muéstralas ORGANIZADAS VERTICALMENTE. Ejemplo de formato:\n\nTour: Tour de Capadocia\nFecha: 15 de diciembre de 2025\nParticipantes: 2 adultos\nNombre completo: Juan García\nTeléfono: 05551234567'
   }
 } as const;
 
@@ -458,7 +458,8 @@ export function getResponseGuidelines(language: string): string {
 - Liste kullanırken bullet points (•) tercih et
 - Her paragraf maksimum 2 satır olsun
 - Gereksiz detaylara girme, özlü ve net ol
-- TUR LİSTESİ: "MEVCUT TURLAR" bölümünü gösterirken AYNEN kopyala, format değiştirme!`,
+- TUR LİSTESİ: "MEVCUT TURLAR" bölümünü gösterirken AYNEN kopyala, format değiştirme!
+- **KRİTİK FORMAT:** Bilgileri gösterirken HER SATIRI ALT ALTA YAZ! Tek satırda birleştirme!`,
     
     en: `
 📏 RESPONSE RULES:
@@ -469,7 +470,8 @@ export function getResponseGuidelines(language: string): string {
 - Don't go into unnecessary details, be concise and clear
 - NUMBER DETECTION: When user says participant count, use EXACTLY that number! "1" means 1, "2" means 2. Never misunderstand the number!
 - ❌❌❌ CRITICAL: During reservation NEVER ask for EMAIL! ONLY full name and phone! ❌❌❌
-- DATE FORMAT: Write dates in "December 12, 2026" format (day month year, month in words)`,
+- DATE FORMAT: Write dates in "December 12, 2026" format (day month year, month in words)
+- **CRITICAL FORMAT:** When showing information, WRITE EACH LINE ON A NEW LINE! Don't combine on single line!`,
     
     de: `
 📏 ANTWORTREGELN:
@@ -480,7 +482,8 @@ export function getResponseGuidelines(language: string): string {
 - Gehen Sie nicht auf unnötige Details ein, seien Sie prägnant und klar
 - ZAHLENERKENNUNG: Wenn der Benutzer die Teilnehmerzahl sagt, verwenden Sie GENAU diese Zahl! "1" bedeutet 1, "2" bedeutet 2. Verstehen Sie die Zahl niemals falsch!
 - ❌❌❌ KRITISCH: Fragen Sie bei der Reservierung NIEMALS nach E-MAIL! NUR vollständiger Name und Telefon! ❌❌❌
-- DATUMSFORMAT: Schreiben Sie Daten im Format "12. Dezember 2026" (Tag Monat Jahr, Monat in Worten)`,
+- DATUMSFORMAT: Schreiben Sie Daten im Format "12. Dezember 2026" (Tag Monat Jahr, Monat in Worten)
+- **KRITISCHES FORMAT:** Beim Anzeigen von Informationen JEDE ZEILE AUF EINE NEUE ZEILE SCHREIBEN! Nicht auf einer Zeile kombinieren!`,
     
     ru: `
 📏 ПРАВИЛА ОТВЕТА:
@@ -491,7 +494,8 @@ export function getResponseGuidelines(language: string): string {
 - Не вдавайтесь в ненужные детали, будьте лаконичны и ясны
 - РАСПОЗНАВАНИЕ ЧИСЕЛ: Когда пользователь говорит количество участников, используйте ТОЧНО это число! "1" означает 1, "2" означает 2. Никогда не путайте число!
 - ❌❌❌ КРИТИЧНО: При бронировании НИКОГДА не спрашивайте EMAIL! ТОЛЬКО полное имя и телефон! ❌❌❌
-- ФОРМАТ ДАТЫ: Пишите даты в формате "12 декабря 2026" (день месяц год, месяц словами)`,
+- ФОРМАТ ДАТЫ: Пишите даты в формате "12 декабря 2026" (день месяц год, месяц словами)
+- **КРИТИЧЕСКИЙ ФОРМАТ:** При показе информации ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ! Не объединяйте на одной строке!`,
     
     ar: `
 📏 قواعد الإجابة:
@@ -502,7 +506,8 @@ export function getResponseGuidelines(language: string): string {
 - لا تدخل في تفاصيل غير ضرورية، كن موجزاً وواضحاً
 - كشف الأرقام: عندما يقول المستخدم عدد المشاركين، استخدم بالضبط هذا الرقم! "1" يعني 1، "2" يعني 2. لا تسيء فهم الرقم أبداً!
 - ❌❌❌ حرج: أثناء الحجز لا تسأل أبداً عن البريد الإلكتروني! فقط الاسم الكامل والهاتف! ❌❌❌
-- تنسيق التاريخ: اكتب التواريخ بتنسيق "12 ديسمبر 2026" (يوم شهر سنة، الشهر بالكلمات)`,
+- تنسيق التاريخ: اكتب التواريخ بتنسيق "12 ديسمبر 2026" (يوم شهر سنة، الشهر بالكلمات)
+- **تنسيق حرج:** عند عرض المعلومات، اكتب كل سطر على سطر جديد! لا تجمع على سطر واحد!`,
     
     fr: `
 📏 RÈGLES DE RÉPONSE:
@@ -512,8 +517,9 @@ export function getResponseGuidelines(language: string): string {
 - Chaque paragraphe maximum 2 lignes
 - N'entrez pas dans des détails inutiles, soyez concis et clair
 - DÉTECTION DES NOMBRES: Lorsque l'utilisateur dit le nombre de participants, utilisez EXACTEMENT ce nombre! "1" signifie 1, "2" signifie 2. Ne vous trompez jamais sur le nombre!
-- ❌❌❌ CRITIQUE: Lors de la réservation, ne demandez JAMAIS l'EMAIL! UNIQUEMENT nom complet et téléphone! ❌❌❌
-- FORMAT DE DATE: Écrivez les dates au format "12 décembre 2026" (jour mois année, mois en lettres)`,
+- ❌❌❌ CRITIQUE: Lors de la réservation, ne demandez JAMAIS d'EMAIL! SEULEMENT le nom complet et le téléphone! ❌❌❌
+- FORMAT DE DATE: Écrivez les dates au format "12 décembre 2026" (jour mois année, mois en mots)
+- **FORMAT CRITIQUE:** Lors de l'affichage d'informations, ÉCRIVEZ CHAQUE LIGNE SUR UNE NOUVELLE LIGNE! Ne combinez pas sur une seule ligne!`,
     
     es: `
 📏 REGLAS DE RESPUESTA:
