@@ -58,6 +58,60 @@ export function detectTourSwitch(
   return 'no_switch';
 }
 
+export function detectConfirmationResponse(
+  userMessage: string,
+  hasPendingConfirmation: boolean
+): 'confirm_new_tour' | 'confirm_previous_tour' | 'no_confirmation' {
+  if (!hasPendingConfirmation) {
+    return 'no_confirmation';
+  }
+  
+  const lowerMessage = userMessage.toLowerCase();
+  
+  // Keywords for confirming NEW tour
+  const newTourKeywords = [
+    'yeni tur', 'new tour', 'yeni', 'new', 'başka', 'different', 'another',
+    'yeni turla', 'yeni tura', 'diğer', 'other', 'bu yeni', 'this new',
+    'evet yeni', 'yes new', 'yeni olan', 'the new one'
+  ];
+  
+  // Keywords for confirming PREVIOUS tour
+  const previousTourKeywords = [
+    'eski tur', 'previous tour', 'old tour', 'önceki', 'previous', 'eski',
+    'ilk', 'first', 'eski turla', 'eski tura', 'önceki tur',
+    'devam', 'continue', 'evet eski', 'yes previous', 'önceki ile',
+    'o turla', 'that tour', 'ilk tur', 'first tour'
+  ];
+  
+  // Check for new tour confirmation
+  const hasNewTourKeyword = newTourKeywords.some(keyword => 
+    lowerMessage.includes(keyword)
+  );
+  
+  // Check for previous tour confirmation
+  const hasPreviousTourKeyword = previousTourKeywords.some(keyword => 
+    lowerMessage.includes(keyword)
+  );
+  
+  // Simple "evet"/"yes" handling - need to be smarter about context
+  // If message is just "evet" or "yes", we'll assume they want the new tour
+  // since that's what they just asked about
+  const isSimpleYes = lowerMessage.trim() === 'evet' || 
+                       lowerMessage.trim() === 'yes' ||
+                       lowerMessage.trim() === 'evet yeni' ||
+                       lowerMessage.trim() === 'yes new';
+  
+  if (hasNewTourKeyword || isSimpleYes) {
+    return 'confirm_new_tour';
+  }
+  
+  if (hasPreviousTourKeyword) {
+    return 'confirm_previous_tour';
+  }
+  
+  return 'no_confirmation';
+}
+
 export function buildTourSwitchContext(
   switchType: string,
   currentTour: any,
