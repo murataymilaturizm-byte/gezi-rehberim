@@ -13,7 +13,7 @@ const intentDetectionTool = {
       properties: {
         intent_type: {
           type: "string",
-          enum: ["greeting", "tour.list", "tour.search", "tour.detail", "reservation.wizard", "price.inquiry", "general", "question"],
+          enum: ["greeting", "tour.list", "tour.search", "tour.detail", "reservation.wizard", "confirmation", "price.inquiry", "general", "question"],
           description: "The detected intent type"
         },
         confidence: {
@@ -53,17 +53,19 @@ Niyet Türleri:
 - tour.detail: Belirli bir turun detaylarını öğrenmek istiyor
 - price.inquiry: Fiyat bilgisi öğrenmek istiyor
 - reservation.wizard: Rezervasyon yapmak, ayırtmak, katılmak, kayıt olmak istiyor
+- confirmation: Onay veriyor ("evet", "olur", "tamam", "onaylıyorum", "kabul", "isterim" gibi)
 - question: Genel sorular (fiyat, tarih, koşullar vs.)
 - general: Diğer genel sohbet
 
 🔴 ÖNEMLİ KURALLAR:
 1. CONTEXT KULLAN: Eğer önceki mesajlarda turlardan bahsedildiyse, bu greeting DEĞİL!
 2. Eğer kullanıcı "rezervasyon", "ayırtmak", "katılmak", "kayıt", "booking" gibi kelimeler kullanıyorsa -> reservation.wizard
-3. Eğer kullanıcı bir soruya "evet", "olur", "tabii" gibi onay veriyor ve önceki mesaj tur hakkındaysa -> tour.detail
+3. 🔴 KRİTİK ONAY ALGILAMA: Eğer kullanıcı "evet", "olur", "tamam", "onaylıyorum", "kabul", "isterim" gibi onay kelimeler kullanıyorsa -> confirmation
 4. Eğer kullanıcı "turlarınız", "seçenekler", "neler var" gibi genel sorular soruyorsa -> tour.list
 5. Eğer kullanıcı belirli bir destinasyon (Kapadokya, Pamukkale vs.) söylüyorsa -> tour.search
 6. Eğer kullanıcı "fiyat", "kaç para", "ne kadar" gibi kelimeler kullanıyorsa -> price.inquiry
 7. 🔴 HAFIZA: Eğer kullanıcı daha önce yazdıysa ve turlardan bahsedildiyse, bu ASLA greeting olamaz!
+8. 🔴 CONTEXT: Eğer asistan soru sordu ve kullanıcı kısa onay veriyorsa (evet, olur, tamam) -> confirmation
 
 Dil: ${userLanguage}`;
 

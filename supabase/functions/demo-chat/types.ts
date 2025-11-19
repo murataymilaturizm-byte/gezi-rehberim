@@ -1,7 +1,7 @@
 // Type definitions for demo chat
 
 export interface MessageIntent {
-  type: 'greeting' | 'tour.list' | 'tour.search' | 'tour.detail' | 'reservation.wizard' | 'general' | 'question' | 'price.inquiry' | 'cancel';
+  type: 'greeting' | 'tour.list' | 'tour.search' | 'tour.detail' | 'reservation.wizard' | 'general' | 'question' | 'price.inquiry' | 'cancel' | 'confirmation';
   confidence: number;
 }
 
