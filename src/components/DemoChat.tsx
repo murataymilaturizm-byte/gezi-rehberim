@@ -134,6 +134,28 @@ export const DemoChat = () => {
         const errorData = await response.json();
         const errorMsg = errorData.error || "Yanıt alınamadı";
         const errorDetails = errorData.details || "";
+        
+        // Special handling for AI quota errors
+        if (response.status === 402) {
+          toast({
+            title: errorMsg,
+            description: errorDetails,
+            variant: "destructive",
+            duration: 10000, // Show longer for important errors
+          });
+          throw new Error("QUOTA_ERROR");
+        }
+        
+        if (response.status === 429) {
+          toast({
+            title: errorMsg,
+            description: errorDetails,
+            variant: "destructive",
+            duration: 7000,
+          });
+          throw new Error("RATE_LIMIT_ERROR");
+        }
+        
         throw new Error(errorDetails ? `${errorMsg}\n${errorDetails}` : errorMsg);
       }
 
@@ -146,14 +168,20 @@ export const DemoChat = () => {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Mesaj gönderilemedi";
       
-      toast({
-        title: "Hata",
-        description: errorMessage,
-        variant: "destructive",
-        duration: 5000, // Show for 5 seconds so user can read it
-      });
+      // Skip toast if already shown for quota/rate limit errors
+      if (error instanceof Error && 
+          (error.message === "QUOTA_ERROR" || error.message === "RATE_LIMIT_ERROR")) {
+        // Toast already shown above
+      } else {
+        const errorMessage = error instanceof Error ? error.message : "Mesaj gönderilemedi";
+        toast({
+          title: "Hata",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
       
       // Remove user message on error
       setMessages(prev => prev.slice(0, -1));

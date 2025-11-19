@@ -331,23 +331,27 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in demo-chat:', error);
     
-    // Handle specific AI errors with user-friendly messages
+    // Handle specific AI errors with user-friendly messages and proper status codes
     let errorMessage = 'Internal server error';
     let errorDetails = '';
+    let statusCode = 500;
     
     if (error instanceof Error) {
       switch(error.message) {
         case 'AI_SERVICE_UNAVAILABLE':
           errorMessage = 'AI servisi şu anda yanıt vermiyor';
           errorDetails = 'Lütfen birkaç saniye bekleyip tekrar deneyin.';
+          statusCode = 503;
           break;
         case 'AI_RATE_LIMIT':
           errorMessage = 'Çok fazla istek gönderildi';
           errorDetails = 'Lütfen birkaç dakika bekleyip tekrar deneyin.';
+          statusCode = 429;
           break;
         case 'AI_PAYMENT_REQUIRED':
-          errorMessage = 'AI servisi kullanım kotası doldu';
-          errorDetails = 'Lütfen site yöneticisi ile iletişime geçin.';
+          errorMessage = '⚠️ AI Kullanım Kotası Doldu';
+          errorDetails = 'Workspace ayarlarınızdan (Settings → Workspace → Usage) kredi eklemeniz gerekiyor. Detaylı bilgi için: https://docs.lovable.dev/features/ai';
+          statusCode = 402;
           break;
         default:
           if (error.message.includes('AI_ERROR_')) {
@@ -362,7 +366,7 @@ serve(async (req) => {
         error: errorMessage,
         details: errorDetails 
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: statusCode }
     );
   }
 });
