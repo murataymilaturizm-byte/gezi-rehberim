@@ -29,4 +29,11 @@ export interface DemoConversationState {
   lastUserMessage: string;
   conversationFlow: string[];
   userMemory?: any;
+  collectedInfo?: {
+    full_name: string | null;
+    phone: string | null;
+    pax_adult: number | null;
+    pax_child: number | null;
+  };
+  reservationConfirmed?: boolean;
 }

@@ -19,7 +19,14 @@ export function initializeState(): DemoConversationState {
     previousTour: null,
     discussedTours: [],
     lastUserMessage: '',
-    conversationFlow: []
+    conversationFlow: [],
+    collectedInfo: {
+      full_name: null,
+      phone: null,
+      pax_adult: null,
+      pax_child: null
+    },
+    reservationConfirmed: false
   };
 }
 
@@ -118,6 +125,37 @@ export function detectTourSwitch(
   }
   
   return 'no_switch';
+}
+
+// Extract customer info from message
+export function extractCustomerInfo(message: string, currentInfo: any = {}) {
+  const info = { ...currentInfo };
+  
+  // Extract pax (number of people)
+  const paxMatch = message.match(/(\d+)\s*(?:kişi|kisi|people|person|adult|yetişkin|yetiskin)/i);
+  if (paxMatch) {
+    info.pax_adult = parseInt(paxMatch[1]);
+  }
+  
+  // Extract child count
+  const childMatch = message.match(/(\d+)\s*(?:çocuk|cocuk|child|children)/i);
+  if (childMatch) {
+    info.pax_child = parseInt(childMatch[1]);
+  }
+  
+  // Extract full name (look for 2+ words that look like names)
+  const nameMatch = message.match(/([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)/);
+  if (nameMatch && nameMatch[1].split(' ').length >= 2) {
+    info.full_name = nameMatch[1];
+  }
+  
+  // Extract phone (Turkish format or international)
+  const phoneMatch = message.match(/(?:\+90|0)?[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}|(?:\d{10,11})/);
+  if (phoneMatch) {
+    info.phone = phoneMatch[0].replace(/[\s\-]/g, '');
+  }
+  
+  return info;
 }
 
 export function updateStateWithIntent(
