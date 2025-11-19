@@ -234,32 +234,17 @@ serve(async (req) => {
       { ...conversationState, stateContext }
     );
 
-    // Check if response contains FINAL confirmation (reservation completed)
-    const finalConfirmationKeywords = [
-      'rezervasyon tamamlandı',
-      'rezervasyon alındı',
-      'rezervasyon onaylandı',
-      'rezervasyon oluşturuldu',
-      'rezervasyonunuz başarıyla',
-      'başarıyla alındı',
-      'başarıyla onaylandı',
-      'başarıyla oluşturuldu',
-      'onaylanmıştır',
-      'oluşturulmuştur',
-      'kaydedildi',
-      'successfully received',
-      'reservation has been',
-      'reservation complete',
-      'reservation confirmed',
-      'successfully confirmed'
-    ];
+    // Add payment info if reservation is confirmed and all info is collected
+    const hasAllRequiredInfo = conversationState.collectedInfo?.fullName && 
+                                conversationState.collectedInfo?.phone &&
+                                (conversationState.collectedInfo?.paxAdult || conversationState.collectedInfo?.paxChild);
     
-    const hasReservationCompleted = finalConfirmationKeywords.some(keyword => 
-      response.toLowerCase().includes(keyword)
-    ) && conversationState.reservationConfirmed === true;
+    const shouldAddPayment = conversationState.reservationConfirmed === true && 
+                             hasAllRequiredInfo && 
+                             conversationState.currentTour;
 
-    // ONLY add payment info if reservation was COMPLETED (not during data collection)
-    if (hasReservationCompleted && conversationState.currentTour) {
+    // ONLY add payment info if reservation was COMPLETED
+    if (shouldAddPayment && conversationState.currentTour) {
       // Get the selected tour data
       const tourData = DEMO_TOURS.find(t => t.id === conversationState.currentTour?.id || t.title === conversationState.currentTour?.title);
       

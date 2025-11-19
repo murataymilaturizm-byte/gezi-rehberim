@@ -112,6 +112,20 @@ function buildDemoPrompt(
 ): string {
   const currentTour = conversationState?.currentTour;
   const wizardStep = conversationState?.wizardStep || 'none';
+  
+  // Format dates for current tour if available
+  let currentTourDatesInfo = '';
+  if (currentTour && currentTour.id) {
+    const tour = tours.find(t => t.id === currentTour.id || t.title === currentTour.title);
+    if (tour && tour.dates && tour.dates.length > 0) {
+      const datesFormatted = tour.dates.map((date: any, idx: number) => {
+        const formattedDate = formatTurkishDate(date.departure_date);
+        return `${idx + 1}. ${formattedDate} - ${date.price_adult} ${tour.currency}`;
+      }).join('\n');
+      
+      currentTourDatesInfo = `\n\n**SEÇİLİ TUR TARİHLERİ (${currentTour.title}):**\n${datesFormatted}\n\nKullanıcıya bu tarihleri otomatik olarak göster ve tarih seçmesini iste.`;
+    }
+  }
   const shownTourIds = conversationState?.shownTourIds || [];
   const userMemory = conversationState?.userMemory;
   const stateContextInfo = conversationState?.stateContext || '';
@@ -183,7 +197,7 @@ ${stateContextInfo}
 1. Yanıtları KISA ve ÖZ tut (maksimum 4-5 cümle)
 2. Markdown formatı kullan (**kalın**, • liste)
 3. KRİTİK TUR LİSTESİ: Tur listesi isterken yukarıdaki "MEVCUT TURLAR" bölümünü AYNEN kopyala, hiçbir şeyi değiştirme!
-4. KRİTİK TARİH SEÇİMİ: Kullanıcı tur seçtiğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini göster!
+4. KRİTİK TARİH GÖSTERME: Kullanıcı tur seçtiğinde veya rezervasyon yapmak istediğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini HEMEN göster! Kullanıcının sormasını BEKLEME!
 5. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
 6. ASLA uzun paragraflar yazma
 7. Her yanıtta maksimum 1-2 emoji kullan
