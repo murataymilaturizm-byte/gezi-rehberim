@@ -33,6 +33,12 @@ interface ConversationState {
   previousTour: {
     id: string;
     title: string;
+    destination: string;
+    dateId?: string;
+    departureDate?: string;
+    returnDate?: string;
+    priceAdult?: number;
+    currency?: string;
   } | null;
   wizardStep: 'none' | 'tour_selected' | 'action_choice' | 'detail_shown' | 'price_shown' | 'booking_started';
   shownTourIds: string[];
@@ -96,9 +102,58 @@ export async function updateConversationState(
   const newState = { ...currentState, ...updates };
   
   // Import tour switch detector
-  const { detectTourSwitch } = await import('./tour-switch-detector.ts');
+  const { detectTourSwitch, detectConfirmationResponse } = await import('./tour-switch-detector.ts');
   
-  // Detect tour switch if we have the necessary info
+  // First check if user is responding to a pending confirmation
+  const hasPendingConfirmation = !!(currentState.previousTour && currentState.currentTour);
+  let confirmationResponse = 'no_confirmation';
+  
+  if (hasPendingConfirmation && updates.lastUserMessage) {
+    confirmationResponse = detectConfirmationResponse(
+      updates.lastUserMessage,
+      hasPendingConfirmation
+    );
+    
+    console.log('✅ Confirmation response detected:', confirmationResponse);
+  }
+  
+  // Handle confirmation responses
+  if (confirmationResponse === 'confirm_new_tour') {
+    console.log('✅ User confirmed NEW tour, switching now');
+    // User wants the new tour - keep updates.currentTour, clear previousTour
+    newState.previousTour = null;
+    newState.currentStage = 'exploring';
+    
+    await supabase
+      .from('whatsapp_user_profiles')
+      .update({
+        preferences: { conversation_state: newState },
+        updated_at: new Date().toISOString()
+      })
+      .eq('phone', phone)
+      .eq('agency_id', agencyId);
+    
+    return { state: newState, switchType: 'confirmed_new_tour' };
+  } else if (confirmationResponse === 'confirm_previous_tour') {
+    console.log('✅ User confirmed PREVIOUS tour, reverting');
+    // User wants to continue with previous tour
+    newState.currentTour = currentState.previousTour;
+    newState.previousTour = null;
+    newState.currentStage = 'exploring';
+    
+    await supabase
+      .from('whatsapp_user_profiles')
+      .update({
+        preferences: { conversation_state: newState },
+        updated_at: new Date().toISOString()
+      })
+      .eq('phone', phone)
+      .eq('agency_id', agencyId);
+    
+    return { state: newState, switchType: 'confirmed_previous_tour' };
+  }
+  
+  // No confirmation response, proceed with normal tour switch detection
   let switchType = 'no_switch';
   if (updates.lastUserMessage && updates.currentTour) {
     switchType = detectTourSwitch(
@@ -118,10 +173,7 @@ export async function updateConversationState(
     case 'explicit_cancel':
       console.log('❌ User explicitly cancelled current tour');
       if (currentState.currentTour) {
-        newState.previousTour = {
-          id: currentState.currentTour.id,
-          title: currentState.currentTour.title
-        };
+        newState.previousTour = currentState.currentTour;
       }
       newState.currentTour = null;
       newState.currentStage = 'exploring';
@@ -130,10 +182,7 @@ export async function updateConversationState(
     case 'new_tour_inquiry':
       console.log('🔄 User switched to new tour without confirmation needed');
       if (currentState.currentTour) {
-        newState.previousTour = {
-          id: currentState.currentTour.id,
-          title: currentState.currentTour.title
-        };
+        newState.previousTour = currentState.currentTour;
       }
       // currentTour is already set from updates
       newState.currentStage = 'exploring';
