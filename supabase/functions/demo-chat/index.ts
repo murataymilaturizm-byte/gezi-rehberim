@@ -193,8 +193,38 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in demo-chat:', error);
+    
+    // Handle specific AI errors with user-friendly messages
+    let errorMessage = 'Internal server error';
+    let errorDetails = '';
+    
+    if (error instanceof Error) {
+      switch(error.message) {
+        case 'AI_SERVICE_UNAVAILABLE':
+          errorMessage = 'AI servisi şu anda yanıt vermiyor';
+          errorDetails = 'Lütfen birkaç saniye bekleyip tekrar deneyin.';
+          break;
+        case 'AI_RATE_LIMIT':
+          errorMessage = 'Çok fazla istek gönderildi';
+          errorDetails = 'Lütfen birkaç dakika bekleyip tekrar deneyin.';
+          break;
+        case 'AI_PAYMENT_REQUIRED':
+          errorMessage = 'AI servisi kullanım kotası doldu';
+          errorDetails = 'Lütfen site yöneticisi ile iletişime geçin.';
+          break;
+        default:
+          if (error.message.includes('AI_ERROR_')) {
+            errorMessage = 'AI servisi hatası';
+            errorDetails = 'Lütfen tekrar deneyin veya site yöneticisi ile iletişime geçin.';
+          }
+      }
+    }
+    
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: errorMessage,
+        details: errorDetails 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
