@@ -245,11 +245,12 @@ serve(async (req) => {
       reservationConfirmed: conversationState.reservationConfirmed
     });
     
-    // Get contextual information for AI with switch type
+    // Get contextual information for AI with switch type and language
     const stateContext = await getContextForAI(
       conversationState, 
       switchType,
-      selectedTour?.title
+      selectedTour?.title,
+      language
     );
 
     // Generate intelligent response
