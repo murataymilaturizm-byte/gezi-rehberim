@@ -80,7 +80,8 @@ export async function handleIntelligently(
   agencyId: string,
   userMessage: string,
   intent: string,
-  conversationStyle: string
+  conversationStyle: string,
+  tourSwitchContext?: string
 ): Promise<string> {
   // Gather full context
   const userProfile = await getUserProfile(supabase, phone, agencyId);
@@ -138,7 +139,7 @@ export async function handleIntelligently(
   const messages = [
     {
       role: 'system',
-      content: systemPrompt + toursContext + personalizedContext + adaptiveInstructions
+      content: systemPrompt + toursContext + personalizedContext + adaptiveInstructions + (tourSwitchContext || '')
     },
     ...conversationHistory,
     {

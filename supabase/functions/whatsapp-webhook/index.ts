@@ -170,8 +170,10 @@ serve(async (req) => {
       }
     }
 
-    await updateConversationState(supabase, userPhone, agency.id, {
-      lastIntent: intent.type
+    const { state: updatedState, switchType } = await updateConversationState(supabase, userPhone, agency.id, {
+      lastIntent: intent.type,
+      lastUserMessage: userMessage,
+      currentTour: (await getConversationState(supabase, userPhone, agency.id)).currentTour
     });
 
     // Handle reservation.wizard - start wizard with currentTour if available
@@ -263,13 +265,24 @@ serve(async (req) => {
       }
     }
 
+    // Build tour switch context if needed
+    const { buildTourSwitchContext } = await import('./tour-switch-detector.ts');
+    const tourSwitchContext = buildTourSwitchContext(
+      switchType,
+      updatedState.currentTour,
+      updatedState.previousTour,
+      updatedState.currentTour?.title || null,
+      userLanguage
+    );
+
     const responseMessage = await handleIntelligently(
       supabase,
       userPhone,
       agency.id,
       userMessage,
       intent.type,
-      agency.conversation_style || 'professional'
+      agency.conversation_style || 'professional',
+      tourSwitchContext
     );
 
     const truncatedResponse = truncateForWhatsApp(responseMessage);
