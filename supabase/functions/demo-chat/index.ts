@@ -175,9 +175,9 @@ serve(async (req) => {
       };
     }
     
-    // Extract customer info ONLY if in booking/deciding stage and message contains potential info
-    if ((conversationState.currentStage === 'booking' || conversationState.currentStage === 'deciding') 
-        && detectedIntent.type !== 'confirmation') {
+    // Extract customer info if in booking/deciding stage and message contains potential info
+    // DO THIS EVEN FOR CONFIRMATION MESSAGES - they might contain missing info!
+    if (conversationState.currentStage === 'booking' || conversationState.currentStage === 'deciding') {
       const currentInfo = conversationState.collectedInfo || {};
       
       // Only extract if we're missing info and message looks informative
