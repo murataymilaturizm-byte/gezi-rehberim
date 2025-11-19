@@ -22,6 +22,8 @@ export interface DemoConversationState {
   previousTour: {
     id: string;
     title: string;
+    destination: string;
+    dateId?: string;
   } | null;
   discussedTours: string[];
   lastUserMessage: string;

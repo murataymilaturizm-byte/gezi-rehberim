@@ -23,6 +23,58 @@ export function initializeState(): DemoConversationState {
   };
 }
 
+export function detectConfirmationResponse(
+  userMessage: string,
+  hasPendingConfirmation: boolean
+): 'confirm_new_tour' | 'confirm_previous_tour' | 'no_confirmation' {
+  if (!hasPendingConfirmation) {
+    return 'no_confirmation';
+  }
+  
+  const lowerMessage = userMessage.toLowerCase();
+  
+  // Keywords for confirming NEW tour
+  const newTourKeywords = [
+    'yeni tur', 'new tour', 'yeni', 'new', 'başka', 'different', 'another',
+    'yeni turla', 'yeni tura', 'diğer', 'other', 'bu yeni', 'this new',
+    'evet yeni', 'yes new', 'yeni olan', 'the new one'
+  ];
+  
+  // Keywords for confirming PREVIOUS tour
+  const previousTourKeywords = [
+    'eski tur', 'previous tour', 'old tour', 'önceki', 'previous', 'eski',
+    'ilk', 'first', 'eski turla', 'eski tura', 'önceki tur',
+    'devam', 'continue', 'evet eski', 'yes previous', 'önceki ile',
+    'o turla', 'that tour', 'ilk tur', 'first tour'
+  ];
+  
+  // Check for new tour confirmation
+  const hasNewTourKeyword = newTourKeywords.some(keyword => 
+    lowerMessage.includes(keyword)
+  );
+  
+  // Check for previous tour confirmation
+  const hasPreviousTourKeyword = previousTourKeywords.some(keyword => 
+    lowerMessage.includes(keyword)
+  );
+  
+  // Simple "evet"/"yes" handling - assume they want the new tour
+  const isSimpleYes = lowerMessage.trim() === 'evet' || 
+                       lowerMessage.trim() === 'yes' ||
+                       lowerMessage.trim() === 'evet yeni' ||
+                       lowerMessage.trim() === 'yes new';
+  
+  if (hasNewTourKeyword || isSimpleYes) {
+    return 'confirm_new_tour';
+  }
+  
+  if (hasPreviousTourKeyword) {
+    return 'confirm_previous_tour';
+  }
+  
+  return 'no_confirmation';
+}
+
 export function detectTourSwitch(
   userMessage: string, 
   newIntent: string, 
@@ -76,7 +128,52 @@ export function updateStateWithIntent(
 ): { state: DemoConversationState; switchType: string } {
   const updatedState = { ...currentState };
   
-  // Detect tour switch scenario
+  // First check if user is responding to a pending confirmation
+  const hasPendingConfirmation = !!(currentState.previousTour && currentState.currentTour);
+  let confirmationResponse = 'no_confirmation';
+  
+  if (hasPendingConfirmation) {
+    confirmationResponse = detectConfirmationResponse(userMessage, hasPendingConfirmation);
+    console.log('✅ Confirmation response detected in demo:', confirmationResponse);
+  }
+  
+  // Handle confirmation responses first
+  if (confirmationResponse === 'confirm_new_tour') {
+    console.log('✅ User confirmed NEW tour in demo chat');
+    // User wants the new tour - clear previousTour, keep currentTour
+    updatedState.previousTour = null;
+    updatedState.currentStage = 'exploring';
+    updatedState.lastIntent = newIntent;
+    updatedState.lastUserMessage = userMessage;
+    updatedState.conversationFlow = [...updatedState.conversationFlow, newIntent].slice(-10);
+    
+    console.log('📊 State after confirmation:', {
+      stage: updatedState.currentStage,
+      currentTour: updatedState.currentTour?.title || 'none',
+      previousTour: 'cleared'
+    });
+    
+    return { state: updatedState, switchType: 'confirmed_new_tour' };
+  } else if (confirmationResponse === 'confirm_previous_tour') {
+    console.log('✅ User confirmed PREVIOUS tour in demo chat');
+    // User wants to continue with previous tour - swap them
+    updatedState.currentTour = currentState.previousTour;
+    updatedState.previousTour = null;
+    updatedState.currentStage = 'exploring';
+    updatedState.lastIntent = newIntent;
+    updatedState.lastUserMessage = userMessage;
+    updatedState.conversationFlow = [...updatedState.conversationFlow, newIntent].slice(-10);
+    
+    console.log('📊 State after confirmation:', {
+      stage: updatedState.currentStage,
+      currentTour: updatedState.currentTour?.title || 'none',
+      previousTour: 'cleared'
+    });
+    
+    return { state: updatedState, switchType: 'confirmed_previous_tour' };
+  }
+  
+  // No confirmation response, proceed with normal tour switch detection
   const switchType = detectTourSwitch(userMessage, newIntent, currentState, selectedTour);
   
   // Handle different switch scenarios
@@ -84,10 +181,7 @@ export function updateStateWithIntent(
     case 'explicit_cancel':
       console.log('❌ User explicitly cancelled current tour');
       if (currentState.currentTour) {
-        updatedState.previousTour = {
-          id: currentState.currentTour.id,
-          title: currentState.currentTour.title
-        };
+        updatedState.previousTour = currentState.currentTour;
       }
       updatedState.currentTour = null;
       updatedState.currentStage = 'exploring';
@@ -96,10 +190,7 @@ export function updateStateWithIntent(
     case 'new_tour_inquiry':
       console.log('🔄 User switched to new tour without confirmation needed');
       if (currentState.currentTour) {
-        updatedState.previousTour = {
-          id: currentState.currentTour.id,
-          title: currentState.currentTour.title
-        };
+        updatedState.previousTour = currentState.currentTour;
       }
       if (selectedTour) {
         updatedState.currentTour = {
