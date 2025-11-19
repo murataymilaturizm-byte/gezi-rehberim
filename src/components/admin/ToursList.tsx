@@ -24,6 +24,8 @@ interface Tour {
 interface ToursListProps {
   tours: Tour[];
   loading: boolean;
+  onExport?: () => void;
+  onAddTour?: () => void;
   onAddDate: (tourId: string) => void;
   onEditTour: (tour: Tour) => void;
   onDeleteTour: (tourId: string) => void;
@@ -34,6 +36,8 @@ interface ToursListProps {
 export const ToursList = ({
   tours,
   loading,
+  onExport,
+  onAddTour,
   onAddDate,
   onEditTour,
   onDeleteTour,
