@@ -147,6 +147,27 @@ function buildDemoPrompt(
   const basePrompt = getBaseSystemPrompt(language);
   const guidelines = getResponseGuidelines(language);
 
+  // Add tour dates context if a specific tour is selected
+  let datesContext = '';
+  if (currentTour) {
+    const selectedTourData = tours.find(t => 
+      t.title === currentTour.title || t.id === currentTour.id
+    );
+    
+    if (selectedTourData?.dates && selectedTourData.dates.length > 0) {
+      datesContext = `\n\n📅 MEVCUT TARİHLER VE FİYATLAR (${selectedTourData.title}):\n`;
+      selectedTourData.dates.forEach((date: any, index: number) => {
+        const formattedDate = formatTurkishDate(date.departure_date);
+        datesContext += `${index + 1}. **${formattedDate}**\n`;
+        datesContext += `   💰 Yetişkin: ${date.price_adult} ${selectedTourData.currency}\n`;
+        if (date.price_child) {
+          datesContext += `   👶 Çocuk: ${date.price_child} ${selectedTourData.currency}\n`;
+        }
+        datesContext += `   📊 Kota: ${date.quota} kişi\n\n`;
+      });
+    }
+  }
+
   // Build the prompt using helper functions and config
   return `${basePrompt}
 
@@ -160,6 +181,8 @@ ${intentPrompt}
 📋 MEVCUT TURLAR:
 ${toursContext}
 
+${datesContext}
+
 ${personalizedContext}
 
 🎯 KONTEXT BİLGİSİ:
@@ -172,16 +195,14 @@ ${personalizedContext}
 ⚠️ ÖNEMLİ KURALLAR:
 1. Yanıtları KISA ve ÖZ tut (maksimum 4-5 cümle)
 2. Markdown formatı kullan (**kalın**, • liste)
-3. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
-4. Rezervasyon için teşvik et
+3. TARİH SEÇİMİ: Kullanıcı tur seçtiğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini göster
+4. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
 5. ASLA uzun paragraflar yazma
 6. Her yanıtta maksimum 1-2 emoji kullan
 7. SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! Örnek: "3 kişi" derse 3 kişi yaz!
 8. KRİTİK: Rezervasyonda SADECE tam ad-soyad ve telefon iste!
-9. REZERVASYON ADIMI: Tüm bilgileri topladıktan sonra özet göster, onay al, SONRA "Rezervasyon başarıyla alındı" mesajı ver
+9. REZERVASYON ADIMI: Tüm bilgileri topladıktan sonra özet göster, onay al, SONRA "Rezervasyonunuz başarıyla onaylanmıştır" veya "Rezervasyon tamamlandı" mesajı ver
 10. ÖDEME BİLGİSİ: Rezervasyon tamamlandıktan sonra otomatik eklenecek, sen bahsetme!`;
-
-  return systemMessage;
 }
 
 function extractLastTourFromHistory(history: any[]): string | null {
