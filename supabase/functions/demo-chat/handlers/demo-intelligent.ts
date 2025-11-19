@@ -67,21 +67,37 @@ function formatTurkishDate(dateString: string): string {
 }
 
 function formatToursContext(tours: any[]): string {
-  return tours.map(tour => {
-    const dates = tour.dates?.map((d: any) => 
-      `${formatTurkishDate(d.departure_date)} (Yetişkin: ${d.price_adult}₺, Çocuk: ${d.price_child || 'N/A'}₺)`
-    ).join(', ');
+  return tours.map((tour, index) => {
+    const parts = [
+      `${index + 1}. 🎯 *${tour.title}*`,
+      `   📍 ${tour.destination || 'Belirtilmemiş'}`
+    ];
     
-    return `━━━━━━━━━━━━━━━━━━
-📌 ${tour.title} (${tour.destination})
-━━━━━━━━━━━━━━━━━━
-📅 Tarihler: ${dates}
-⏰ Toplanma: ${tour.toplanma_saati || 'Belirtilmemiş'}
-📍 Hareket: ${tour.hareket_noktasi || 'Belirtilmemiş'}
-🚌 Ulaşım: ${tour.ulasim || 'Belirtilmemiş'}
-🏨 Konaklama: ${tour.konaklama || 'Belirtilmemiş'}
-⏳ Süre: ${tour.tur_sure || 'Belirtilmemiş'}
-🗺️ Gezilecek: ${tour.gezilecek_yerler || 'Belirtilmemiş'}`;
+    if (tour.tur_sure) {
+      parts.push(`   ⏱️ Süre: ${tour.tur_sure}`);
+    }
+    
+    if (tour.tur_kategorisi) {
+      parts.push(`   🏷️ Kategori: ${tour.tur_kategorisi}`);
+    }
+    
+    if (tour.hareket_noktasi) {
+      parts.push(`   🚩 Kalkış: ${tour.hareket_noktasi}`);
+    }
+    
+    if (tour.ulasim) {
+      parts.push(`   🚌 Ulaşım: ${tour.ulasim}`);
+    }
+    
+    if (tour.konaklama) {
+      parts.push(`   🏨 Konaklama: ${tour.konaklama}`);
+    }
+    
+    if (tour.gezilecek_yerler) {
+      parts.push(`   🗺️ Gezilecek Yerler: ${tour.gezilecek_yerler}`);
+    }
+    
+    return parts.join('\n');
   }).join('\n\n');
 }
 
