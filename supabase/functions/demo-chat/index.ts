@@ -175,36 +175,42 @@ serve(async (req) => {
       };
     }
     
-    // Extract customer info ONLY for reservation.wizard and confirmation intents
-    if (detectedIntent.type === 'reservation.wizard' || detectedIntent.type === 'confirmation') {
+    // ALWAYS extract customer info during booking flow
+    if (conversationState.currentStage === 'booking' || 
+        conversationState.currentStage === 'deciding' ||
+        detectedIntent.type === 'reservation.wizard' || 
+        detectedIntent.type === 'confirmation') {
       const currentInfo = conversationState.collectedInfo || {};
       const extractedInfo = extractCustomerInfo(message, currentInfo);
       
-      // Only update if we actually extracted something new
-      const hasNewInfo = Object.entries(extractedInfo).some(([key, value]) => {
-        const currentValue = currentInfo[key as keyof typeof currentInfo];
-        return value && value !== currentValue;
-      });
-      
-      if (hasNewInfo) {
-        conversationState.collectedInfo = extractedInfo;
-        console.log('📝 Updated collected info:', conversationState.collectedInfo);
-      }
+      // Merge extracted info with existing
+      conversationState.collectedInfo = { ...currentInfo, ...extractedInfo };
+      console.log('📝 Updated collected info:', conversationState.collectedInfo);
     }
     
-    // Set reservation confirmed if all info is collected and user is confirming
-    if (detectedIntent.type === 'confirmation' && conversationState.collectedInfo) {
-      const hasAllInfo = !!(
-        conversationState.collectedInfo.fullName && 
-        conversationState.collectedInfo.phone &&
-        (conversationState.collectedInfo.paxAdult || conversationState.collectedInfo.paxChild) &&
-        conversationState.currentTour
-      );
-      
-      if (hasAllInfo && !conversationState.reservationConfirmed) {
-        conversationState.reservationConfirmed = true;
-        console.log('✅ Reservation confirmed - all info collected and user confirmed');
-      }
+    // Check if we have all required info
+    const hasFullName = !!(conversationState.collectedInfo?.fullName && 
+                          conversationState.collectedInfo.fullName.trim().length >= 3);
+    const hasPhone = !!(conversationState.collectedInfo?.phone && 
+                       conversationState.collectedInfo.phone.trim().length >= 10);
+    const hasPax = !!(conversationState.collectedInfo?.paxAdult || 
+                     conversationState.collectedInfo?.paxChild);
+    const hasTour = !!conversationState.currentTour;
+    
+    const hasAllRequiredInfo = hasFullName && hasPhone && hasPax && hasTour;
+    
+    console.log('📋 Info checklist:', {
+      hasFullName,
+      hasPhone,
+      hasPax,
+      hasTour,
+      allReady: hasAllRequiredInfo
+    });
+    
+    // Set reservation confirmed if all info is collected AND user is confirming
+    if (detectedIntent.type === 'confirmation' && hasAllRequiredInfo && !conversationState.reservationConfirmed) {
+      conversationState.reservationConfirmed = true;
+      console.log('✅✅✅ RESERVATION CONFIRMED - Payment info will be added! ✅✅✅');
     }
     
     console.log('📊 Current state:', {
@@ -233,13 +239,11 @@ serve(async (req) => {
     );
 
     // Add payment info if reservation is confirmed and all info is collected
-    const hasAllRequiredInfo = conversationState.collectedInfo?.fullName && 
-                                conversationState.collectedInfo?.phone &&
-                                (conversationState.collectedInfo?.paxAdult || conversationState.collectedInfo?.paxChild);
-    
     const shouldAddPayment = conversationState.reservationConfirmed === true && 
-                             hasAllRequiredInfo && 
-                             conversationState.currentTour;
+                             conversationState.currentTour &&
+                             conversationState.collectedInfo?.fullName &&
+                             conversationState.collectedInfo?.phone &&
+                             (conversationState.collectedInfo?.paxAdult || conversationState.collectedInfo?.paxChild);
 
     // ONLY add payment info if reservation was COMPLETED
     if (shouldAddPayment && conversationState.currentTour) {
