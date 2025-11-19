@@ -68,33 +68,18 @@ function formatTurkishDate(dateString: string): string {
 
 function formatToursContext(tours: any[]): string {
   return tours.map((tour, index) => {
+    // Get first available date for price
+    const firstDate = tour.dates?.[0];
+    const priceText = firstDate ? `${firstDate.price_adult} ${tour.currency}` : 'Fiyat Sorabilirsiniz';
+    
     const parts = [
-      `${index + 1}. 🎯 *${tour.title}*`,
-      `   📍 ${tour.destination || 'Belirtilmemiş'}`
+      `**${index + 1}. ${tour.title}**`,
+      `• 📍 Destinasyon: ${tour.destination}`,
+      `• 💰 Fiyat: ${priceText} (Yetişkin)`,
     ];
     
     if (tour.tur_sure) {
-      parts.push(`   ⏱️ Süre: ${tour.tur_sure}`);
-    }
-    
-    if (tour.tur_kategorisi) {
-      parts.push(`   🏷️ Kategori: ${tour.tur_kategorisi}`);
-    }
-    
-    if (tour.hareket_noktasi) {
-      parts.push(`   🚩 Kalkış: ${tour.hareket_noktasi}`);
-    }
-    
-    if (tour.ulasim) {
-      parts.push(`   🚌 Ulaşım: ${tour.ulasim}`);
-    }
-    
-    if (tour.konaklama) {
-      parts.push(`   🏨 Konaklama: ${tour.konaklama}`);
-    }
-    
-    if (tour.gezilecek_yerler) {
-      parts.push(`   🗺️ Gezilecek Yerler: ${tour.gezilecek_yerler}`);
+      parts.push(`• ⏱️ Süre: ${tour.tur_sure}`);
     }
     
     return parts.join('\n');
@@ -197,14 +182,15 @@ ${stateContextInfo}
 ⚠️ ÖNEMLİ KURALLAR:
 1. Yanıtları KISA ve ÖZ tut (maksimum 4-5 cümle)
 2. Markdown formatı kullan (**kalın**, • liste)
-3. KRİTİK TARİH SEÇİMİ: Kullanıcı tur seçtiğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini göster!
-4. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
-5. ASLA uzun paragraflar yazma
-6. Her yanıtta maksimum 1-2 emoji kullan
-7. KRİTİK SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "3 kişi" = 3 kişi, "1 kişi" = 1 kişi
-8. KRİTİK BİLGİ TOPLAMA: SADECE tam ad-soyad ve telefon iste! DAHA ÖNCE TOPLANMIŞ BİLGİYİ TEKRAR İSTEME!
-9. REZERVASYON AKIŞI: Bilgiler toplandıktan sonra özet göster → onay al → SONRA "Rezervasyonunuz başarıyla onaylanmıştır" mesajı ver
-10. ÖDEME BİLGİSİ: Rezervasyon tamamlandıktan sonra otomatik eklenecek, sen bahsetme!`;
+3. KRİTİK TUR LİSTESİ: Tur listesi isterken yukarıdaki "MEVCUT TURLAR" bölümünü AYNEN kopyala, hiçbir şeyi değiştirme!
+4. KRİTİK TARİH SEÇİMİ: Kullanıcı tur seçtiğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini göster!
+5. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
+6. ASLA uzun paragraflar yazma
+7. Her yanıtta maksimum 1-2 emoji kullan
+8. KRİTİK SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "3 kişi" = 3 kişi, "1 kişi" = 1 kişi
+9. KRİTİK BİLGİ TOPLAMA: SADECE tam ad-soyad ve telefon iste! DAHA ÖNCE TOPLANMIŞ BİLGİYİ TEKRAR İSTEME!
+10. REZERVASYON AKIŞI: Bilgiler toplandıktan sonra özet göster → onay al → SONRA "Rezervasyonunuz başarıyla onaylanmıştır" mesajı ver
+11. ÖDEME BİLGİSİ: Rezervasyon tamamlandıktan sonra otomatik eklenecek, sen bahsetme!`;
 }
 
 function extractLastTourFromHistory(history: any[]): string | null {

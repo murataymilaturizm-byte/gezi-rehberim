@@ -53,10 +53,10 @@ export const INTENT_PROMPTS = {
 - Maksimum 2 cümle kullan`,
     
     'tour.list': `🎯 Tur Listesi senaryosu
-- Tüm mevcut turları kısaca özetle
-- Destinasyon ve fiyatları belirt
-- Liste formatında sun (•)
-- Maksimum 5-6 satır`,
+- SADECE yukarıdaki "MEVCUT TURLAR" listesini AYNEN göster
+- HİÇBİR ŞEYİ değiştirme veya ekleme yapma
+- Format: Numaralı liste, her tur için aynı bilgiler
+- Sonunda: "Hangi tura göz atmak istersiniz?" diye sor`,
     
     'tour.search': `🎯 Tur Arama senaryosu
 - İlgili turları filtrele ve öner
@@ -393,7 +393,8 @@ export function getResponseGuidelines(language: string): string {
 - Önemli bilgileri kalın yap (**text**)
 - Liste kullanırken bullet points (•) tercih et
 - Her paragraf maksimum 2 satır olsun
-- Gereksiz detaylara girme, özlü ve net ol`,
+- Gereksiz detaylara girme, özlü ve net ol
+- TUR LİSTESİ: "MEVCUT TURLAR" bölümünü gösterirken AYNEN kopyala, format değiştirme!`,
     
     en: `
 📏 RESPONSE RULES:
