@@ -76,8 +76,9 @@ export const INTENT_PROMPTS = {
     'reservation.wizard': `🎯 Rezervasyon senaryosu
 - Hangi tur için olduğunu netleştir
 - Tarih seçimi yap
-- Kişi sayısını sor
-- İletişim bilgilerini al`,
+- Kişi sayısını dikkatle sor ve AYNEN kullanıcının söylediği rakamı kullan (örn: "1" diyorsa 1, "2" diyorsa 2)
+- Sadece TAM AD-SOYAD ve TELEFON bilgilerini al (E-MAIL İSTEME!)
+- Bilgileri özetle ve onay iste`,
     
     question: `🎯 Soru-Cevap senaryosu
 - Soruyu net ve kısa cevapla
