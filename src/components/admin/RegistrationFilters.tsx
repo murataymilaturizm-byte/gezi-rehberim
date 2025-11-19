@@ -65,8 +65,8 @@ export const RegistrationFilters = ({
   };
 
   const hasActiveFilters = 
-    filterStatus !== "all" || 
-    filterTour !== "all" || 
+    filterStatus !== "ALL" || 
+    filterTour !== "ALL" || 
     filterDateFrom || 
     filterDateTo || 
     filterPriceMin || 
@@ -87,7 +87,7 @@ export const RegistrationFilters = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("admin.filters.all")}</SelectItem>
+              <SelectItem value="ALL">{t("admin.filters.all")}</SelectItem>
               <SelectItem value="NEW">{statusLabels.NEW}</SelectItem>
               <SelectItem value="PENDING">{statusLabels.PENDING}</SelectItem>
               <SelectItem value="CONFIRMED">{statusLabels.CONFIRMED}</SelectItem>
@@ -106,7 +106,7 @@ export const RegistrationFilters = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("admin.filters.allTours")}</SelectItem>
+              <SelectItem value="ALL">{t("admin.filters.allTours")}</SelectItem>
               {tours.map((tour) => (
                 <SelectItem key={tour.id} value={tour.id}>
                   {tour.title}

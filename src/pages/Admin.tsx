@@ -5,33 +5,6 @@ import { Button } from "@/components/ui/button";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plus, Download, AlertCircle, LogOut, Calendar, Pencil, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Plus, Download, AlertCircle, LogOut } from "lucide-react";
 import { TourFormDialog } from "@/components/TourFormDialog";
 import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { ToursList } from "@/components/admin/ToursList";
@@ -73,7 +48,7 @@ import { LanguageManagement } from "@/components/LanguageManagement";
 import { TicketManagement } from "@/components/TicketManagement";
 import { SuperAdminTickets } from "@/components/SuperAdminTickets";
 import { WhatsAppLogs } from "@/components/WhatsAppLogs";
-import { getMaxTours, getPlanFeatures, canUseFeature, PlanFeatures } from "@/utils/planFeatures";
+import { getMaxTours, getPlanFeatures, PlanFeatures } from "@/utils/planFeatures";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 
@@ -160,20 +135,6 @@ const Admin = () => {
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
   
-  // Translation labels
-  const statusLabels: Record<string, string> = {
-    NEW: t("admin.status.new"),
-    PENDING: t("admin.status.pending"),
-    CONFIRMED: t("admin.status.confirmed"),
-    CANCELLED: t("admin.status.cancelled")
-  };
-
-  const tourTypeLabels: Record<string, string> = {
-    DAYTRIP: t("admin.tourTypes.daytrip"),
-    N2: t("admin.tourTypes.n2"),
-    N3: t("admin.tourTypes.n3")
-  };
-
   // Check user role and load data
   const checkUserRole = async (userId: string) => {
     try {
