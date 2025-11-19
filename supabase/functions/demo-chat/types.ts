@@ -21,6 +21,9 @@ export interface TourReference {
   destination: string;
   dateId?: string;
   selectedDate?: string;
+  dates?: any[]; // Available dates for the tour
+  program_kisa?: string;
+  gezilecek_yerler?: string;
 }
 
 export interface ReservationInfo {

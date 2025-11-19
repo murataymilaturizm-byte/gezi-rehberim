@@ -13,8 +13,9 @@ export function extractReservationInfo(
   // Extract based on what we're expecting
   switch (expectedInput) {
     case 'date':
-      const date = extractDate(message);
-      if (date) extracted.selectedDate = date;
+      const dateResult = extractDate(message, currentInfo);
+      if (dateResult.selectedDate) extracted.selectedDate = dateResult.selectedDate;
+      if (dateResult.dateId) extracted.dateId = dateResult.dateId;
       break;
       
     case 'pax_count':
@@ -42,7 +43,18 @@ export function extractReservationInfo(
   return extracted;
 }
 
-function extractDate(message: string): string | null {
+function extractDate(message: string, currentInfo: ReservationInfo): { selectedDate?: string; dateId?: string } {
+  const result: { selectedDate?: string; dateId?: string } = {};
+  
+  // First, try to extract date selection by number (1, 2, 3...)
+  const numberMatch = message.trim().match(/^(\d+)$/);
+  if (numberMatch) {
+    const dateIndex = parseInt(numberMatch[1]) - 1;
+    // This will be validated against available dates in state machine
+    result.selectedDate = `date_${dateIndex}`;
+    return result;
+  }
+  
   // Match patterns like "15 aralık", "22 December", "2025-12-15"
   const patterns = [
     /(\d{1,2})\s*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/i,
@@ -53,12 +65,12 @@ function extractDate(message: string): string | null {
   for (const pattern of patterns) {
     const match = message.match(pattern);
     if (match) {
-      // Return the matched string - will be validated against available dates
-      return match[0];
+      result.selectedDate = match[0];
+      return result;
     }
   }
   
-  return null;
+  return result;
 }
 
 function extractPax(message: string): { adult?: number; child?: number } {
@@ -168,8 +180,9 @@ function extractAllInfo(message: string): Partial<ReservationInfo> {
   const name = extractFullName(message);
   if (name) extracted.fullName = name;
   
-  const date = extractDate(message);
-  if (date) extracted.selectedDate = date;
+  const dateResult = extractDate(message, {} as ReservationInfo);
+  if (dateResult.selectedDate) extracted.selectedDate = dateResult.selectedDate;
+  if (dateResult.dateId) extracted.dateId = dateResult.dateId;
   
   return extracted;
 }

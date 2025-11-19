@@ -83,6 +83,41 @@ function getStylePrompt(language: string, style: string): string {
   return personalities[style as keyof typeof personalities] || personalities.friendly;
 }
 
+function getTourDatesPrompt(currentTour: any, language: string): string {
+  if (!currentTour?.dates || currentTour.dates.length === 0) {
+    return language === 'tr' 
+      ? 'Bu tur için şu anda müsait tarih bulunmuyor.'
+      : 'No available dates for this tour at the moment.';
+  }
+
+  const datesList = currentTour.dates
+    .map((date: any, idx: number) => {
+      const formattedDate = formatDateForDisplay(date.departure_date);
+      return language === 'tr'
+        ? `${idx + 1}. ${formattedDate} - ${date.price_adult}₺ (Kontenjan: ${date.quota} kişi)`
+        : `${idx + 1}. ${formattedDate} - ${date.price_adult}₺ (Quota: ${date.quota} people)`;
+    })
+    .join('\n');
+
+  return language === 'tr'
+    ? `📅 MÜSAİT TARİHLER:\n${datesList}`
+    : `📅 AVAILABLE DATES:\n${datesList}`;
+}
+
+function formatDateForDisplay(dateStr: string): string {
+  const date = new Date(dateStr);
+  const months = {
+    tr: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
+    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  };
+  
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+  
+  return `${day} ${months.tr[monthIndex]} ${year}`;
+}
+
 function getStagePrompt(
   stage: ConversationStage,
   collectionStep: string | undefined,
@@ -122,19 +157,24 @@ WHAT TO DO:
 - Ask them to select for details`;
     
     case 'TOUR_SELECTED':
+      const tourDetails = getTourDatesPrompt(currentTour, language);
       return language === 'tr'
         ? `✅ ŞU AN: Tur seçildi - ${currentTour?.title}
         
+${tourDetails}
+
 YAPMAN GEREKEN:
-- Seçilen turun detaylarını göster
-- Müsait tarihleri listele
-- Rezervasyon yapmak isteyip istemediklerini sor`
+- Turun detaylarını ve müsait tarihleri göster
+- Tarihleri numaralı liste olarak sun (1, 2, 3...)
+- Hangi tarih için rezervasyon yapmak istediklerini sor`
         : `✅ CURRENT STAGE: Tour selected - ${currentTour?.title}
         
+${tourDetails}
+
 WHAT TO DO:
-- Show tour details
-- List available dates
-- Ask if they want to make a reservation`;
+- Show tour details and available dates
+- Present dates as numbered list (1, 2, 3...)
+- Ask which date they want to book`;
     
     case 'COLLECTING_INFO':
       return getCollectionStagePrompt(collectionStep!, reservationInfo, language);
