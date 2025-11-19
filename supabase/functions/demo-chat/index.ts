@@ -48,13 +48,10 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      message, 
-      sessionId, 
-      language = 'tr', 
-      conversationStyle = 'professional',
-      conversationState: clientState 
-    } = await req.json();
+    // TEMPORARY: Lock to TR + Friendly only for clean start
+    const { message, sessionId, state: clientState } = await req.json();
+    const language = 'tr'; // LOCKED
+    const conversationStyle = 'friendly'; // LOCKED
 
     if (!message || !sessionId) {
       return new Response(
@@ -87,9 +84,8 @@ serve(async (req) => {
 
     const conversationHistory = history || [];
     
-    // CRITICAL: Limit history to last 10 messages to prevent language contamination
-    // When user switches language, we don't want old Turkish messages to influence AI
-    const recentHistory = conversationHistory.slice(-10);
+    // SIMPLIFIED: Keep only last 5 messages for clean, focused context
+    const recentHistory = conversationHistory.slice(-5);
     
     const formattedHistory = recentHistory.map((msg: any) => ({
       role: msg.role,
