@@ -48,10 +48,25 @@ export async function handleDemoIntelligently(
 }
 
 // Helper function to format tour context
+// Helper function to format date in Turkish format (e.g., "12 Aralık 2026")
+function formatTurkishDate(dateString: string): string {
+  const months = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+  ];
+  
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  
+  return `${day} ${month} ${year}`;
+}
+
 function formatToursContext(tours: any[]): string {
   return tours.map(tour => {
     const dates = tour.dates?.map((d: any) => 
-      `${d.departure_date} (Yetişkin: ${d.price_adult}₺, Çocuk: ${d.price_child || 'N/A'}₺)`
+      `${formatTurkishDate(d.departure_date)} (Yetişkin: ${d.price_adult}₺, Çocuk: ${d.price_child || 'N/A'}₺)`
     ).join(', ');
     
     return `${tour.title} (${tour.destination})
@@ -139,7 +154,10 @@ ${personalizedContext}
 3. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
 4. Rezervasyon için teşvik et
 5. ASLA uzun paragraflar yazma
-6. Her yanıtta maksimum 1-2 emoji kullan`;
+6. Her yanıtta maksimum 1-2 emoji kullan
+7. SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "1" diyorsa 1, "2" diyorsa 2. Asla farklı bir sayı anlama!
+8. Rezervasyonda SADECE tam ad-soyad ve telefon iste, E-MAIL İSTEME!`;
+
 }
 
 function extractLastTourFromHistory(history: any[]): string | null {
