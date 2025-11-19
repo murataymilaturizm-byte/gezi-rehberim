@@ -384,7 +384,7 @@ const Admin = () => {
       });
       
       loadData();
-      setDeleteDialog({ open: false, id: "", type: "tour" });
+      setDeleteDialog({ open: false, id: null, type: null });
     } catch (error) {
       console.error("Delete tour error:", error);
       toast({
@@ -410,7 +410,7 @@ const Admin = () => {
       });
       
       loadData();
-      setDeleteDialog({ open: false, id: "", type: "date" });
+      setDeleteDialog({ open: false, id: null, type: null });
     } catch (error) {
       console.error("Delete date error:", error);
       toast({
@@ -701,7 +701,7 @@ const Admin = () => {
                       loading={loading}
                       onAddDate={(tourId) => {
                         setSelectedTourForDate(tourId);
-                        setSelectedDate(undefined);
+                        setSelectedDate(null);
                         setDateFormOpen(true);
                       }}
                       onEditTour={(tour) => {
@@ -743,15 +743,15 @@ const Admin = () => {
         isOpen={dateFormOpen}
         onClose={() => {
           setDateFormOpen(false);
-          setSelectedDate(undefined);
-          setSelectedTourForDate("");
+          setSelectedDate(null);
+          setSelectedTourForDate(null);
         }}
         onSuccess={loadData}
         tourId={selectedTourForDate}
         tourDate={selectedDate}
       />
 
-      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, id: "", type: "tour" })}>
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, id: null, type: null })}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("admin.tours.deleteConfirm")}</AlertDialogTitle>
