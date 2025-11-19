@@ -86,7 +86,12 @@ serve(async (req) => {
     }
 
     const conversationHistory = history || [];
-    const formattedHistory = conversationHistory.map((msg: any) => ({
+    
+    // CRITICAL: Limit history to last 10 messages to prevent language contamination
+    // When user switches language, we don't want old Turkish messages to influence AI
+    const recentHistory = conversationHistory.slice(-10);
+    
+    const formattedHistory = recentHistory.map((msg: any) => ({
       role: msg.role,
       content: msg.content
     }));
@@ -265,13 +270,9 @@ serve(async (req) => {
     );
 
     // Add payment info AFTER AI response if reservation is confirmed
-    // BUT ONLY if:
-    // 1. Reservation is confirmed
-    // 2. Payment info NOT already sent
-    // 3. Current intent is NOT confirmation (wait for next message)
+    // Payment info should be sent ONCE after confirmation
     const shouldAddPayment = conversationState.reservationConfirmed === true && 
                              !conversationState.paymentInfoSent &&
-                             detectedIntent.type !== 'confirmation' &&
                              conversationState.currentTour &&
                              conversationState.collectedInfo?.fullName &&
                              conversationState.collectedInfo?.phone &&
