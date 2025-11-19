@@ -119,9 +119,10 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Reservation scenario
 - Clarify which tour
-- Select date
-- Ask number of people
-- Get contact information`,
+- Select date (show date in "December 12, 2026" format)
+- Ask number of people carefully and use EXACTLY the number user says (e.g., "1" means 1, "2" means 2)
+- ❌ CRITICAL: Get ONLY full name and phone. NEVER ask for EMAIL! ❌
+- Summarize information and ask for confirmation`,
     
     question: `🎯 Q&A scenario
 - Answer clearly and briefly
@@ -132,6 +133,226 @@ export const INTENT_PROMPTS = {
 - Give natural and friendly response
 - Steer conversation to tours
 - Show willingness to help`
+  },
+  de: {
+    greeting: `🎯 Begrüßungsszenario
+- Machen Sie eine kurze und freundliche Begrüßung
+- Laden Sie ein, unsere Touren zu erkunden
+- Verwenden Sie maximal 2 Sätze`,
+    
+    'tour.list': `🎯 Tourlistenszenario
+- Fassen Sie alle verfügbaren Touren kurz zusammen
+- Geben Sie Ziele und Preise an
+- Präsentieren Sie im Listenformat (•)
+- Maximal 5-6 Zeilen`,
+    
+    'tour.search': `🎯 Toursuchszenario
+- Filtern und schlagen Sie relevante Touren vor
+- Fügen Sie eine kurze Beschreibung hinzu
+- Geben Sie Preis- und Datumsinformationen an`,
+    
+    'tour.detail': `🎯 Tourdetailszenario
+- Listen Sie die Highlights der Tour auf
+- Daten, Preise, Sehenswürdigkeiten
+- Ermutigen Sie zur Reservierung`,
+    
+    'price.inquiry': `🎯 Preisanfrageszenario
+- Geben Sie klare Preisinformationen
+- Trennen Sie Erwachsenen- und Kinderpreise
+- Erwähnen Sie enthaltene Dienstleistungen`,
+    
+    'reservation.wizard': `🎯 Reservierungsszenario
+- Klären Sie, für welche Tour
+- Wählen Sie ein Datum (zeigen Sie Datum im Format "12. Dezember 2026")
+- Fragen Sie sorgfältig nach Personenzahl und verwenden Sie GENAU die Zahl, die der Benutzer sagt (z.B. "1" bedeutet 1, "2" bedeutet 2)
+- ❌ KRITISCH: Holen Sie NUR vollständigen Namen und Telefon. Fragen Sie NIEMALS nach E-MAIL! ❌
+- Fassen Sie Informationen zusammen und bitten Sie um Bestätigung`,
+    
+    question: `🎯 Frage-Antwort-Szenario
+- Antworten Sie klar und kurz
+- Schlagen Sie relevante Tour vor
+- Fragen Sie, ob es weitere Fragen gibt`,
+    
+    general: `🎯 Allgemeines Gesprächsszenario
+- Geben Sie eine natürliche und freundliche Antwort
+- Lenken Sie das Gespräch auf Touren
+- Zeigen Sie Hilfsbereitschaft`
+  },
+  ru: {
+    greeting: `🎯 Сценарий приветствия
+- Сделайте короткое и дружелюбное приветствие
+- Пригласите изучить наши туры
+- Используйте максимум 2 предложения`,
+    
+    'tour.list': `🎯 Сценарий списка туров
+- Кратко обобщите все доступные туры
+- Укажите направления и цены
+- Представьте в формате списка (•)
+- Максимум 5-6 строк`,
+    
+    'tour.search': `🎯 Сценарий поиска тура
+- Отфильтруйте и предложите соответствующие туры
+- Добавьте краткое описание
+- Предоставьте информацию о ценах и датах`,
+    
+    'tour.detail': `🎯 Сценарий деталей тура
+- Перечислите основные моменты тура
+- Даты, цены, места для посещения
+- Поощряйте бронирование`,
+    
+    'price.inquiry': `🎯 Сценарий запроса цены
+- Дайте четкую информацию о ценах
+- Разделите цены для взрослых и детей
+- Упомяните включенные услуги`,
+    
+    'reservation.wizard': `🎯 Сценарий бронирования
+- Уточните, для какого тура
+- Выберите дату (показывайте дату в формате "12 декабря 2026")
+- Спросите количество человек внимательно и используйте ТОЧНО то число, которое говорит пользователь (например, "1" означает 1, "2" означает 2)
+- ❌ КРИТИЧНО: Получите ТОЛЬКО полное имя и телефон. НИКОГДА не спрашивайте EMAIL! ❌
+- Обобщите информацию и попросите подтверждения`,
+    
+    question: `🎯 Сценарий вопрос-ответ
+- Отвечайте четко и кратко
+- Предложите соответствующий тур
+- Спросите, есть ли еще вопросы`,
+    
+    general: `🎯 Сценарий общего чата
+- Дайте естественный и дружелюбный ответ
+- Направьте разговор на туры
+- Покажите готовность помочь`
+  },
+  ar: {
+    greeting: `🎯 سيناريو الترحيب
+- قدم ترحيباً قصيراً وودياً
+- ادعُ لاستكشاف جولاتنا
+- استخدم جملتين كحد أقصى`,
+    
+    'tour.list': `🎯 سيناريو قائمة الجولات
+- لخص جميع الجولات المتاحة بإيجاز
+- قم بتضمين الوجهات والأسعار
+- اعرض بتنسيق قائمة (•)
+- 5-6 أسطر كحد أقصى`,
+    
+    'tour.search': `🎯 سيناريو البحث عن الجولة
+- قم بتصفية واقتراح الجولات ذات الصلة
+- أضف وصفاً موجزاً
+- قدم معلومات السعر والتاريخ`,
+    
+    'tour.detail': `🎯 سيناريو تفاصيل الجولة
+- اذكر أبرز نقاط الجولة
+- التواريخ والأسعار والأماكن المراد زيارتها
+- شجع على الحجز`,
+    
+    'price.inquiry': `🎯 سيناريو الاستفسار عن السعر
+- قدم معلومات سعر واضحة
+- افصل أسعار البالغين والأطفال
+- اذكر الخدمات المشمولة`,
+    
+    'reservation.wizard': `🎯 سيناريو الحجز
+- وضح أي جولة
+- اختر التاريخ (اعرض التاريخ بتنسيق "12 ديسمبر 2026")
+- اسأل عن عدد الأشخاص بعناية واستخدم بالضبط الرقم الذي يقوله المستخدم (مثلاً، "1" يعني 1، "2" يعني 2)
+- ❌ حرج: احصل فقط على الاسم الكامل والهاتف. لا تسأل أبداً عن البريد الإلكتروني! ❌
+- لخص المعلومات واطلب التأكيد`,
+    
+    question: `🎯 سيناريو الأسئلة والأجوبة
+- أجب بوضوح وإيجاز
+- اقترح جولة ذات صلة
+- اسأل إذا كانت هناك المزيد من الأسئلة`,
+    
+    general: `🎯 سيناريو الدردشة العامة
+- قدم استجابة طبيعية وودية
+- وجه المحادثة نحو الجولات
+- أظهر الاستعداد للمساعدة`
+  },
+  fr: {
+    greeting: `🎯 Scénario de salutation
+- Faites un accueil court et amical
+- Invitez à explorer nos circuits
+- Utilisez maximum 2 phrases`,
+    
+    'tour.list': `🎯 Scénario de liste de circuits
+- Résumez brièvement tous les circuits disponibles
+- Incluez les destinations et les prix
+- Présentez au format liste (•)
+- Maximum 5-6 lignes`,
+    
+    'tour.search': `🎯 Scénario de recherche de circuit
+- Filtrez et suggérez des circuits pertinents
+- Ajoutez une brève description
+- Fournissez les informations de prix et de date`,
+    
+    'tour.detail': `🎯 Scénario de détails du circuit
+- Listez les points forts du circuit
+- Dates, prix, lieux à visiter
+- Encouragez la réservation`,
+    
+    'price.inquiry': `🎯 Scénario de demande de prix
+- Donnez des informations de prix claires
+- Séparez les prix adultes et enfants
+- Mentionnez les services inclus`,
+    
+    'reservation.wizard': `🎯 Scénario de réservation
+- Clarifiez pour quel circuit
+- Sélectionnez une date (affichez la date au format "12 décembre 2026")
+- Demandez le nombre de personnes avec attention et utilisez EXACTEMENT le nombre que l'utilisateur dit (par ex., "1" signifie 1, "2" signifie 2)
+- ❌ CRITIQUE: Obtenez UNIQUEMENT le nom complet et le téléphone. Ne demandez JAMAIS l'EMAIL! ❌
+- Résumez les informations et demandez confirmation`,
+    
+    question: `🎯 Scénario de questions-réponses
+- Répondez clairement et brièvement
+- Suggérez un circuit pertinent
+- Demandez s'il y a d'autres questions`,
+    
+    general: `🎯 Scénario de discussion générale
+- Donnez une réponse naturelle et amicale
+- Orientez la conversation vers les circuits
+- Montrez votre volonté d'aider`
+  },
+  es: {
+    greeting: `🎯 Escenario de saludo
+- Haz una bienvenida corta y amigable
+- Invita a explorar nuestros tours
+- Usa máximo 2 oraciones`,
+    
+    'tour.list': `🎯 Escenario de lista de tours
+- Resume brevemente todos los tours disponibles
+- Incluye destinos y precios
+- Presenta en formato de lista (•)
+- Máximo 5-6 líneas`,
+    
+    'tour.search': `🎯 Escenario de búsqueda de tour
+- Filtra y sugiere tours relevantes
+- Agrega una breve descripción
+- Proporciona información de precio y fecha`,
+    
+    'tour.detail': `🎯 Escenario de detalles del tour
+- Lista los aspectos destacados del tour
+- Fechas, precios, lugares a visitar
+- Fomenta la reserva`,
+    
+    'price.inquiry': `🎯 Escenario de consulta de precio
+- Da información de precio clara
+- Separa precios de adultos y niños
+- Menciona los servicios incluidos`,
+    
+    'reservation.wizard': `🎯 Escenario de reserva
+- Aclara para qué tour
+- Selecciona fecha (muestra la fecha en formato "12 de diciembre de 2026")
+- Pregunta el número de personas con cuidado y usa EXACTAMENTE el número que dice el usuario (ej., "1" significa 1, "2" significa 2)
+- ❌ CRÍTICO: Obtén SOLO nombre completo y teléfono. ¡NUNCA pidas EMAIL! ❌
+- Resume la información y pide confirmación`,
+    
+    question: `🎯 Escenario de preguntas y respuestas
+- Responde clara y brevemente
+- Sugiere un tour relevante
+- Pregunta si hay más preguntas`,
+    
+    general: `🎯 Escenario de chat general
+- Da una respuesta natural y amigable
+- Dirige la conversación hacia los tours
+- Muestra disposición para ayudar`
   }
 } as const;
 
@@ -180,7 +401,10 @@ export function getResponseGuidelines(language: string): string {
 - Bold important information (**text**)
 - Use bullet points (•) for lists
 - Each paragraph maximum 2 lines
-- Don't go into unnecessary details, be concise and clear`,
+- Don't go into unnecessary details, be concise and clear
+- NUMBER DETECTION: When user says participant count, use EXACTLY that number! "1" means 1, "2" means 2. Never misunderstand the number!
+- ❌❌❌ CRITICAL: During reservation NEVER ask for EMAIL! ONLY full name and phone! ❌❌❌
+- DATE FORMAT: Write dates in "December 12, 2026" format (day month year, month in words)`,
     
     de: `
 📏 ANTWORTREGELN:
@@ -188,7 +412,10 @@ export function getResponseGuidelines(language: string): string {
 - Fetten Sie wichtige Informationen (**text**)
 - Verwenden Sie Aufzählungszeichen (•) für Listen
 - Jeder Absatz maximal 2 Zeilen
-- Gehen Sie nicht auf unnötige Details ein, seien Sie prägnant und klar`,
+- Gehen Sie nicht auf unnötige Details ein, seien Sie prägnant und klar
+- ZAHLENERKENNUNG: Wenn der Benutzer die Teilnehmerzahl sagt, verwenden Sie GENAU diese Zahl! "1" bedeutet 1, "2" bedeutet 2. Verstehen Sie die Zahl niemals falsch!
+- ❌❌❌ KRITISCH: Fragen Sie bei der Reservierung NIEMALS nach E-MAIL! NUR vollständiger Name und Telefon! ❌❌❌
+- DATUMSFORMAT: Schreiben Sie Daten im Format "12. Dezember 2026" (Tag Monat Jahr, Monat in Worten)`,
     
     ru: `
 📏 ПРАВИЛА ОТВЕТА:
@@ -196,7 +423,10 @@ export function getResponseGuidelines(language: string): string {
 - Выделяйте важную информацию жирным (**text**)
 - Используйте маркированные списки (•)
 - Каждый абзац максимум 2 строки
-- Не вдавайтесь в ненужные детали, будьте лаконичны и ясны`,
+- Не вдавайтесь в ненужные детали, будьте лаконичны и ясны
+- РАСПОЗНАВАНИЕ ЧИСЕЛ: Когда пользователь говорит количество участников, используйте ТОЧНО это число! "1" означает 1, "2" означает 2. Никогда не путайте число!
+- ❌❌❌ КРИТИЧНО: При бронировании НИКОГДА не спрашивайте EMAIL! ТОЛЬКО полное имя и телефон! ❌❌❌
+- ФОРМАТ ДАТЫ: Пишите даты в формате "12 декабря 2026" (день месяц год, месяц словами)`,
     
     ar: `
 📏 قواعد الإجابة:
@@ -204,7 +434,10 @@ export function getResponseGuidelines(language: string): string {
 - اجعل المعلومات المهمة بخط عريض (**text**)
 - استخدم النقاط (•) للقوائم
 - كل فقرة سطرين كحد أقصى
-- لا تدخل في تفاصيل غير ضرورية، كن موجزاً وواضحاً`,
+- لا تدخل في تفاصيل غير ضرورية، كن موجزاً وواضحاً
+- كشف الأرقام: عندما يقول المستخدم عدد المشاركين، استخدم بالضبط هذا الرقم! "1" يعني 1، "2" يعني 2. لا تسيء فهم الرقم أبداً!
+- ❌❌❌ حرج: أثناء الحجز لا تسأل أبداً عن البريد الإلكتروني! فقط الاسم الكامل والهاتف! ❌❌❌
+- تنسيق التاريخ: اكتب التواريخ بتنسيق "12 ديسمبر 2026" (يوم شهر سنة، الشهر بالكلمات)`,
     
     fr: `
 📏 RÈGLES DE RÉPONSE:
@@ -212,7 +445,10 @@ export function getResponseGuidelines(language: string): string {
 - Mettez les informations importantes en gras (**text**)
 - Utilisez des puces (•) pour les listes
 - Chaque paragraphe maximum 2 lignes
-- N'entrez pas dans des détails inutiles, soyez concis et clair`,
+- N'entrez pas dans des détails inutiles, soyez concis et clair
+- DÉTECTION DES NOMBRES: Lorsque l'utilisateur dit le nombre de participants, utilisez EXACTEMENT ce nombre! "1" signifie 1, "2" signifie 2. Ne vous trompez jamais sur le nombre!
+- ❌❌❌ CRITIQUE: Lors de la réservation, ne demandez JAMAIS l'EMAIL! UNIQUEMENT nom complet et téléphone! ❌❌❌
+- FORMAT DE DATE: Écrivez les dates au format "12 décembre 2026" (jour mois année, mois en lettres)`,
     
     es: `
 📏 REGLAS DE RESPUESTA:
@@ -220,7 +456,10 @@ export function getResponseGuidelines(language: string): string {
 - Pon en negrita información importante (**text**)
 - Usa viñetas (•) para listas
 - Cada párrafo máximo 2 líneas
-- No entres en detalles innecesarios, sé conciso y claro`
+- No entres en detalles innecesarios, sé conciso y claro
+- DETECCIÓN DE NÚMEROS: Cuando el usuario diga la cantidad de participantes, ¡usa EXACTAMENTE ese número! "1" significa 1, "2" significa 2. ¡Nunca malinterpretes el número!
+- ❌❌❌ CRÍTICO: Durante la reserva ¡NUNCA pidas EMAIL! ¡SOLO nombre completo y teléfono! ❌❌❌
+- FORMATO DE FECHA: Escribe las fechas en formato "12 de diciembre de 2026" (día mes año, mes en palabras)`
   };
   
   return guidelines[language] || guidelines.tr;
