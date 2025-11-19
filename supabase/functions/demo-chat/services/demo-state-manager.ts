@@ -3,7 +3,7 @@ import { DemoConversationState } from '../types.ts';
 
 const CANCELLATION_KEYWORDS = [
   'vazgeçtim', 'vazgeç', 'iptal', 'istemiyorum', 'farklı', 'başka', 
-  'değil', 'olmaz', 'hayır', 'yok', 'cancel', 'no', 'different', 'another'
+  'değil', 'olmaz', 'hayır', 'cancel', 'different', 'another'
 ];
 
 const TOUR_SWITCH_INDICATORS = [
@@ -146,58 +146,50 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
     info.paxChild = parseInt(childMatch[1]);
   }
   
-  // Extract full name - be AGGRESSIVE but smart
+  // Extract full name - ONLY from explicit name patterns
   if (!info.fullName) {
-    // Common words to exclude
-    const excludeWords = [
-      'kayıt', 'rezervasyon', 'tur', 'katılmak', 'olmak', 'yapmak', 
-      'istiyorum', 'isterim', 'evet', 'hayır', 'için', 'aralık'
+    // Pattern 1: "ismim/adım X Y" or "ben X Y"
+    const explicitNamePatterns = [
+      /(?:ismim|adım|adim|name is|i am|i'm|ben)\s+([A-ZÇĞİÖŞÜa-zçğıöşü]+\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)/i,
+      /^([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)$/
     ];
     
-    // Try 1: Capitalized pattern (Murat Yılmaz)
-    let nameMatch = message.match(/\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)\b/);
-    
-    // Try 2: Any two words that look like names (even lowercase like "murat oğrak")
-    if (!nameMatch) {
-      const words = message.toLowerCase().split(/\s+/);
-      const nameWords = words.filter(word => 
-        word.length >= 2 && 
-        !excludeWords.includes(word) &&
-        !/\d/.test(word) &&
-        /^[a-zçğıöşü]+$/.test(word)
-      );
-      
-      if (nameWords.length >= 2) {
-        // Capitalize each word
-        const capitalizedName = nameWords.slice(0, 2).map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
-        
-        if (capitalizedName.length >= 5 && capitalizedName.length <= 50) {
-          info.fullName = capitalizedName;
+    for (const pattern of explicitNamePatterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        const name = match[1].trim();
+        // Exclude if contains tour-related words
+        if (!name.toLowerCase().match(/tur|tour|kayıt|rezerv|book/)) {
+          const words = name.split(/\s+/);
+          if (words.length >= 2 && words.length <= 4 && name.length >= 5 && name.length <= 50) {
+            // Capitalize properly
+            info.fullName = words.map(w => 
+              w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+            ).join(' ');
+            break;
+          }
         }
-      }
-    } else if (nameMatch && nameMatch[1]) {
-      const name = nameMatch[1].trim();
-      const words = name.split(/\s+/);
-      if (words.length >= 2 && words.length <= 4 && name.length >= 5 && name.length <= 50) {
-        info.fullName = name;
       }
     }
   }
   
-  // Extract phone (Turkish format or international) - VERY AGGRESSIVE
+  // Extract phone (Turkish format or international)
   const phonePatterns = [
-    /\b(\d{11})\b/,  // 11 digits together like 45854564545
-    /\b(\d{10})\b/,  // 10 digits together
-    /(?:\+90|0)?[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}/
+    /(?:telefon|phone|numara|number)[\s:]+(\d[\s\-\d]{8,14})/i,
+    /\b(05\d{9})\b/,  // Turkish mobile: 05xxxxxxxxx
+    /\b(\+90[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})\b/,  // International Turkish
+    /\b(\d{10,11})\b/  // Fallback: 10-11 digits
   ];
   
   for (const pattern of phonePatterns) {
     const match = message.match(pattern);
     if (match) {
-      info.phone = match[1] || match[0].replace(/[\s\-]/g, '');
-      break;
+      let phone = match[1].replace(/[\s\-]/g, '');
+      // Only accept if it looks like a phone (starts with 0 or +, or is 10+ digits)
+      if (phone.length >= 10 && (phone.startsWith('0') || phone.startsWith('+') || phone.length === 10 || phone.length === 11)) {
+        info.phone = phone;
+        break;
+      }
     }
   }
   
