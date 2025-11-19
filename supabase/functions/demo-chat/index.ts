@@ -7,7 +7,8 @@ import { DEMO_AGENCY_ID, DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from './config/
 import { 
   initializeState, 
   updateStateWithIntent, 
-  getContextForAI 
+  getContextForAI,
+  extractCustomerInfo
 } from './services/demo-state-manager.ts';
 import { DemoConversationState } from './types.ts';
 import { generatePaymentMessage } from './services/payment-message.ts';
@@ -101,6 +102,15 @@ serve(async (req) => {
     // Initialize or restore conversation state
     let conversationState: DemoConversationState = clientState || initializeState();
     
+    // Extract customer info from current message
+    const extractedInfo = extractCustomerInfo(message, conversationState.collectedInfo || {});
+    
+    // Update collectedInfo if new data found
+    if (Object.keys(extractedInfo).length > 0) {
+      conversationState.collectedInfo = extractedInfo;
+      console.log('📝 Updated collected info:', extractedInfo);
+    }
+    
     // Add user memory to state
     const stateWithMemory = {
       ...conversationState,
@@ -143,7 +153,31 @@ serve(async (req) => {
       } : undefined
     );
     
+    // Update tour info in collectedInfo if a tour is selected
+    if (selectedTour && detectedIntent.type === 'reservation.wizard') {
+      newState.collectedInfo = {
+        ...newState.collectedInfo,
+        tourId: selectedTour.id,
+        tourTitle: selectedTour.title
+      };
+    }
+    
     conversationState = newState;
+    
+    // Check if user is confirming reservation
+    const confirmKeywords = ['evet', 'yes', 'onaylıyorum', 'onayla', 'onay', 'tamam', 'ok', 'doğru'];
+    const isConfirming = confirmKeywords.some(k => message.toLowerCase().trim().includes(k));
+    
+    // Set reservation confirmed if all info is collected and user is confirming
+    if (isConfirming && conversationState.collectedInfo) {
+      const hasAllInfo = conversationState.collectedInfo.fullName && 
+                         conversationState.collectedInfo.phone &&
+                         conversationState.collectedInfo.paxAdult;
+      if (hasAllInfo) {
+        conversationState.reservationConfirmed = true;
+        console.log('✅ Reservation confirmed by user');
+      }
+    }
     
     // Get contextual information for AI with switch type
     const stateContext = getContextForAI(
@@ -160,45 +194,57 @@ serve(async (req) => {
       language,
       DEMO_TOURS,
       conversationStyle,
-      conversationState
+      { ...conversationState, stateContext }
     );
 
     // Check if response contains FINAL confirmation (reservation completed)
     const finalConfirmationKeywords = [
-      'rezervasyon tamamlandı', 
-      'rezervasyon alındı', 
-      'başarıyla alındı', 
+      'rezervasyon tamamlandı',
+      'rezervasyon alındı',
+      'rezervasyon onaylandı',
+      'rezervasyon oluşturuldu',
+      'rezervasyonunuz başarıyla',
+      'başarıyla alındı',
+      'başarıyla onaylandı',
+      'başarıyla oluşturuldu',
       'onaylanmıştır',
       'oluşturulmuştur',
-      'successfully received', 
+      'kaydedildi',
+      'successfully received',
       'reservation has been',
       'reservation complete',
-      'confirmed',
-      'kaydedildi'
+      'reservation confirmed',
+      'successfully confirmed'
     ];
+    
     const hasReservationCompleted = finalConfirmationKeywords.some(keyword => 
       response.toLowerCase().includes(keyword)
-    );
+    ) && conversationState.reservationConfirmed === true;
 
     // ONLY add payment info if reservation was COMPLETED (not during data collection)
-    if (hasReservationCompleted && detectedIntent.type === 'reservation.wizard' && selectedTour) {
-      // Extract price from the selected tour (use first available date)
-      const tourDate = selectedTour.dates?.[0];
-      if (tourDate && tourDate.price_adult) {
-        const totalPrice = tourDate.price_adult; // Simplified for demo
-        const depositPercentage = DEMO_PAYMENT_INSTRUCTIONS.deposit_percentage || 30;
-        const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+    if (hasReservationCompleted && conversationState.currentTour) {
+      // Get the selected tour data
+      const tourData = DEMO_TOURS.find(t => t.id === conversationState.currentTour?.id || t.title === conversationState.currentTour?.title);
+      
+      if (tourData) {
+        const tourDate = tourData.dates?.[0];
+        if (tourDate && tourDate.price_adult) {
+          const paxAdult = conversationState.collectedInfo?.paxAdult || 1;
+          const totalPrice = tourDate.price_adult * paxAdult;
+          const depositPercentage = DEMO_PAYMENT_INSTRUCTIONS.deposit_percentage || 30;
+          const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
 
-        const paymentInfo = generatePaymentMessage(
-          DEMO_PAYMENT_INSTRUCTIONS,
-          language,
-          totalPrice,
-          depositAmount
-        );
+          const paymentInfo = generatePaymentMessage(
+            DEMO_PAYMENT_INSTRUCTIONS,
+            language,
+            totalPrice,
+            depositAmount
+          );
 
-        if (paymentInfo) {
-          response += paymentInfo;
-          console.log('💳 Payment information added to demo response');
+          if (paymentInfo) {
+            response += paymentInfo;
+            console.log('💳 Payment information added to demo response');
+          }
         }
       }
     }

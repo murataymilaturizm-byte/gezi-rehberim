@@ -129,6 +129,7 @@ function buildDemoPrompt(
   const wizardStep = conversationState?.wizardStep || 'none';
   const shownTourIds = conversationState?.shownTourIds || [];
   const userMemory = conversationState?.userMemory;
+  const stateContextInfo = conversationState?.stateContext || '';
   
   // Extract last discussed tour from history
   const lastDiscussedTour = extractLastTourFromHistory(history);
@@ -191,17 +192,18 @@ ${personalizedContext}
 - Seçili tur: ${currentTour || 'Yok'}
 - Son bahsedilen tur: ${lastDiscussedTour || 'Yok'}
 - Daha önce gösterilen turlar: ${shownTourIds.length > 0 ? shownTourIds.join(', ') : 'Yok'}
+${stateContextInfo}
 
 ⚠️ ÖNEMLİ KURALLAR:
 1. Yanıtları KISA ve ÖZ tut (maksimum 4-5 cümle)
 2. Markdown formatı kullan (**kalın**, • liste)
-3. TARİH SEÇİMİ: Kullanıcı tur seçtiğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini göster
+3. KRİTİK TARİH SEÇİMİ: Kullanıcı tur seçtiğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini göster!
 4. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
 5. ASLA uzun paragraflar yazma
 6. Her yanıtta maksimum 1-2 emoji kullan
-7. SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! Örnek: "3 kişi" derse 3 kişi yaz!
-8. KRİTİK: Rezervasyonda SADECE tam ad-soyad ve telefon iste!
-9. REZERVASYON ADIMI: Tüm bilgileri topladıktan sonra özet göster, onay al, SONRA "Rezervasyonunuz başarıyla onaylanmıştır" veya "Rezervasyon tamamlandı" mesajı ver
+7. KRİTİK SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "3 kişi" = 3 kişi, "1 kişi" = 1 kişi
+8. KRİTİK BİLGİ TOPLAMA: SADECE tam ad-soyad ve telefon iste! DAHA ÖNCE TOPLANMIŞ BİLGİYİ TEKRAR İSTEME!
+9. REZERVASYON AKIŞI: Bilgiler toplandıktan sonra özet göster → onay al → SONRA "Rezervasyonunuz başarıyla onaylanmıştır" mesajı ver
 10. ÖDEME BİLGİSİ: Rezervasyon tamamlandıktan sonra otomatik eklenecek, sen bahsetme!`;
 }
 
