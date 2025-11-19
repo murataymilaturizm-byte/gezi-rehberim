@@ -130,7 +130,7 @@ serve(async (req) => {
     }
     
     // Update conversation state with new intent and selected tour
-    conversationState = updateStateWithIntent(
+    const { state: newState, switchType } = updateStateWithIntent(
       conversationState,
       detectedIntent.type,
       message,
@@ -142,8 +142,14 @@ serve(async (req) => {
       } : undefined
     );
     
-    // Get contextual information for AI
-    const stateContext = getContextForAI(conversationState);
+    conversationState = newState;
+    
+    // Get contextual information for AI with switch type
+    const stateContext = getContextForAI(
+      conversationState, 
+      switchType,
+      selectedTour?.title
+    );
 
     // Generate intelligent response
     const response = await handleDemoIntelligently(
