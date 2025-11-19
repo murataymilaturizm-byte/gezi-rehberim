@@ -452,85 +452,299 @@ Tu función es proporcionar información sobre nuestros tours y ayudar con el pr
 export function getResponseGuidelines(language: string): string {
   const guidelines: Record<string, string> = {
     tr: `
-📏 YANIT KURALLARI:
-- Maksimum 4-5 cümle kullan
-- Önemli bilgileri kalın yap (**text**)
-- Liste kullanırken bullet points (•) tercih et
-- Her paragraf maksimum 2 satır olsun
-- Gereksiz detaylara girme, özlü ve net ol
-- TUR LİSTESİ: "MEVCUT TURLAR" bölümünü gösterirken AYNEN kopyala, format değiştirme!
-- **KRİTİK FORMAT:** Bilgileri gösterirken HER SATIRI ALT ALTA YAZ! Tek satırda birleştirme!`,
-    
+🎯 YANIT KURALLARI:
+- TÜRKÇE konuş, başka dil KULLANMA
+- Maksimum 3-4 cümle kullan
+- Emojiler kullan ama abartma
+- Samimi ve yardımsever ol
+
+⚠️ KRİTİK FORMAT KURALI - HER BİLGİ AYRI SATIRDA:
+
+TUR LİSTELEME FORMATI (✅):
+**1. Kapadokya Balon Turu**
+📍 Destinasyon: Kapadokya
+💰 Fiyat: 1500 TRY (Yetişkin)
+⏱️ Süre: 1 Gün
+
+**2. İstanbul Şehir Turu**
+📍 Destinasyon: İstanbul
+💰 Fiyat: 800 TRY (Yetişkin)
+⏱️ Süre: 1 Gün
+
+ÖDEME BİLGİLERİ FORMATI (✅):
+💳 Ödeme Bilgileri:
+• Toplam Tutar: 3000 TRY
+• Kişi Sayısı: 2 Yetişkin
+• Tarih: 15 Mart 2024
+
+REZERVASYON ÖZET FORMATI (✅):
+✅ Rezervasyon Özeti:
+📅 Tarih: 15 Mart 2024
+👥 Kişi Sayısı: 2 Yetişkin
+💰 Toplam: 3000 TRY
+📞 İletişim: +90 555 123 4567
+
+❌ ASLA BÖYLE YAZMA:
+**1. Kapadokya Balon Turu** • 📍 Destinasyon: Kapadokya • 💰 Fiyat: 1500 TRY • ⏱️ Süre: 1 Gün
+
+🚫 ASLA YAPMA:
+- Bilgileri • ile tek satıra sıkıştırma
+- Fiyat sorusu olmadan fiyat verme
+- 3 turdan fazla listeleme
+- Uzun paragraflar yazma
+`,
     en: `
-📏 RESPONSE RULES:
-- Use maximum 4-5 sentences
-- Bold important information (**text**)
-- Use bullet points (•) for lists
-- Each paragraph maximum 2 lines
-- Don't go into unnecessary details, be concise and clear
-- NUMBER DETECTION: When user says participant count, use EXACTLY that number! "1" means 1, "2" means 2. Never misunderstand the number!
-- ❌❌❌ CRITICAL: During reservation NEVER ask for EMAIL! ONLY full name and phone! ❌❌❌
-- DATE FORMAT: Write dates in "December 12, 2026" format (day month year, month in words)
-- **CRITICAL FORMAT:** When showing information, WRITE EACH LINE ON A NEW LINE! Don't combine on single line!`,
-    
+🎯 RESPONSE RULES:
+- Speak ENGLISH, do NOT use other languages
+- Use maximum 3-4 sentences
+- Use emojis but don't overdo it
+- Be friendly and helpful
+
+⚠️ CRITICAL FORMAT RULE - EACH INFO ON SEPARATE LINE:
+
+TOUR LISTING FORMAT (✅):
+**1. Cappadocia Balloon Tour**
+📍 Destination: Cappadocia
+💰 Price: 1500 TRY (Adult)
+⏱️ Duration: 1 Day
+
+**2. Istanbul City Tour**
+📍 Destination: Istanbul
+💰 Price: 800 TRY (Adult)
+⏱️ Duration: 1 Day
+
+PAYMENT INFO FORMAT (✅):
+💳 Payment Information:
+• Total Amount: 3000 TRY
+• Number of People: 2 Adults
+• Date: March 15, 2024
+
+RESERVATION SUMMARY FORMAT (✅):
+✅ Reservation Summary:
+📅 Date: March 15, 2024
+👥 Number of People: 2 Adults
+💰 Total: 3000 TRY
+📞 Contact: +90 555 123 4567
+
+❌ NEVER WRITE LIKE THIS:
+**1. Cappadocia Balloon Tour** • 📍 Destination: Cappadocia • 💰 Price: 1500 TRY • ⏱️ Duration: 1 Day
+
+🚫 NEVER:
+- Compress information with • in one line
+- Give prices without being asked
+- List more than 3 tours
+- Write long paragraphs
+`,
     de: `
-📏 ANTWORTREGELN:
-- Verwenden Sie maximal 4-5 Sätze
-- Fetten Sie wichtige Informationen (**text**)
-- Verwenden Sie Aufzählungszeichen (•) für Listen
-- Jeder Absatz maximal 2 Zeilen
-- Gehen Sie nicht auf unnötige Details ein, seien Sie prägnant und klar
-- ZAHLENERKENNUNG: Wenn der Benutzer die Teilnehmerzahl sagt, verwenden Sie GENAU diese Zahl! "1" bedeutet 1, "2" bedeutet 2. Verstehen Sie die Zahl niemals falsch!
-- ❌❌❌ KRITISCH: Fragen Sie bei der Reservierung NIEMALS nach E-MAIL! NUR vollständiger Name und Telefon! ❌❌❌
-- DATUMSFORMAT: Schreiben Sie Daten im Format "12. Dezember 2026" (Tag Monat Jahr, Monat in Worten)
-- **KRITISCHES FORMAT:** Beim Anzeigen von Informationen JEDE ZEILE AUF EINE NEUE ZEILE SCHREIBEN! Nicht auf einer Zeile kombinieren!`,
-    
+🎯 ANTWORTREGELN:
+- Sprechen Sie DEUTSCH, verwenden Sie KEINE anderen Sprachen
+- Verwenden Sie maximal 3-4 Sätze
+- Verwenden Sie Emojis, aber übertreiben Sie nicht
+- Seien Sie freundlich und hilfsbereit
+
+⚠️ KRITISCHE FORMATREGEL - JEDE INFO IN SEPARATER ZEILE:
+
+TOURLISTEN-FORMAT (✅):
+**1. Kappadokien Ballonfahrt**
+📍 Ziel: Kappadokien
+💰 Preis: 1500 TRY (Erwachsene)
+⏱️ Dauer: 1 Tag
+
+**2. Istanbul Stadtrundfahrt**
+📍 Ziel: Istanbul
+💰 Preis: 800 TRY (Erwachsene)
+⏱️ Dauer: 1 Tag
+
+ZAHLUNGSINFORMATIONEN FORMAT (✅):
+💳 Zahlungsinformationen:
+• Gesamtbetrag: 3000 TRY
+• Anzahl der Personen: 2 Erwachsene
+• Datum: 15. März 2024
+
+RESERVIERUNGSÜBERSICHT FORMAT (✅):
+✅ Reservierungsübersicht:
+📅 Datum: 15. März 2024
+👥 Anzahl der Personen: 2 Erwachsene
+💰 Gesamt: 3000 TRY
+📞 Kontakt: +90 555 123 4567
+
+❌ NIEMALS SO SCHREIBEN:
+**1. Kappadokien Ballonfahrt** • 📍 Ziel: Kappadokien • 💰 Preis: 1500 TRY • ⏱️ Dauer: 1 Tag
+
+🚫 NIEMALS:
+- Informationen mit • in einer Zeile komprimieren
+- Preise ohne Anfrage nennen
+- Mehr als 3 Touren auflisten
+- Lange Absätze schreiben
+`,
     ru: `
-📏 ПРАВИЛА ОТВЕТА:
-- Используйте максимум 4-5 предложений
-- Выделяйте важную информацию жирным (**text**)
-- Используйте маркированные списки (•)
-- Каждый абзац максимум 2 строки
-- Не вдавайтесь в ненужные детали, будьте лаконичны и ясны
-- РАСПОЗНАВАНИЕ ЧИСЕЛ: Когда пользователь говорит количество участников, используйте ТОЧНО это число! "1" означает 1, "2" означает 2. Никогда не путайте число!
-- ❌❌❌ КРИТИЧНО: При бронировании НИКОГДА не спрашивайте EMAIL! ТОЛЬКО полное имя и телефон! ❌❌❌
-- ФОРМАТ ДАТЫ: Пишите даты в формате "12 декабря 2026" (день месяц год, месяц словами)
-- **КРИТИЧЕСКИЙ ФОРМАТ:** При показе информации ПИШИТЕ КАЖДУЮ СТРОКУ НА НОВОЙ СТРОКЕ! Не объединяйте на одной строке!`,
-    
+🎯 ПРАВИЛА ОТВЕТА:
+- Говорите на РУССКОМ, НЕ используйте другие языки
+- Используйте максимум 3-4 предложения
+- Используйте эмодзи, но не переусердствуйте
+- Будьте дружелюбны и полезны
+
+⚠️ КРИТИЧЕСКОЕ ПРАВИЛО ФОРМАТА - КАЖДАЯ ИНФОРМАЦИЯ В ОТДЕЛЬНОЙ СТРОКЕ:
+
+ФОРМАТ СПИСКА ТУРОВ (✅):
+**1. Полет на воздушном шаре в Каппадокии**
+📍 Направление: Каппадокия
+💰 Цена: 1500 TRY (Взрослый)
+⏱️ Продолжительность: 1 День
+
+**2. Экскурсия по Стамбулу**
+📍 Направление: Стамбул
+💰 Цена: 800 TRY (Взрослый)
+⏱️ Продолжительность: 1 День
+
+ФОРМАТ ПЛАТЕЖНОЙ ИНФОРМАЦИИ (✅):
+💳 Информация об оплате:
+• Общая сумма: 3000 TRY
+• Количество человек: 2 Взрослых
+• Дата: 15 марта 2024
+
+ФОРМАТ РЕЗЮМЕ БРОНИРОВАНИЯ (✅):
+✅ Резюме бронирования:
+📅 Дата: 15 марта 2024
+👥 Количество человек: 2 Взрослых
+💰 Итого: 3000 TRY
+📞 Контакт: +90 555 123 4567
+
+❌ НИКОГДА НЕ ПИШИТЕ ТАК:
+**1. Полет на воздушном шаре в Каппадокии** • 📍 Направление: Каппадокия • 💰 Цена: 1500 TRY • ⏱️ Продолжительность: 1 День
+
+🚫 НИКОГДА:
+- Не сжимайте информацию с • в одну строку
+- Не называйте цены без запроса
+- Не перечисляйте более 3 туров
+- Не пишите длинные абзацы
+`,
     ar: `
-📏 قواعد الإجابة:
-- استخدم 4-5 جمل كحد أقصى
-- اجعل المعلومات المهمة بخط عريض (**text**)
-- استخدم النقاط (•) للقوائم
-- كل فقرة سطرين كحد أقصى
-- لا تدخل في تفاصيل غير ضرورية، كن موجزاً وواضحاً
-- كشف الأرقام: عندما يقول المستخدم عدد المشاركين، استخدم بالضبط هذا الرقم! "1" يعني 1، "2" يعني 2. لا تسيء فهم الرقم أبداً!
-- ❌❌❌ حرج: أثناء الحجز لا تسأل أبداً عن البريد الإلكتروني! فقط الاسم الكامل والهاتف! ❌❌❌
-- تنسيق التاريخ: اكتب التواريخ بتنسيق "12 ديسمبر 2026" (يوم شهر سنة، الشهر بالكلمات)
-- **تنسيق حرج:** عند عرض المعلومات، اكتب كل سطر على سطر جديد! لا تجمع على سطر واحد!`,
-    
+🎯 قواعد الرد:
+- تحدث بالعربية، لا تستخدم لغات أخرى
+- استخدم 3-4 جمل كحد أقصى
+- استخدم الرموز التعبيرية لكن لا تبالغ
+- كن ودودًا ومفيدًا
+
+⚠️ قاعدة التنسيق الحرجة - كل معلومة في سطر منفصل:
+
+تنسيق قائمة الجولات (✅):
+**1. جولة بالمنطاد في كابادوكيا**
+📍 الوجهة: كابادوكيا
+💰 السعر: 1500 ليرة تركية (بالغ)
+⏱️ المدة: يوم واحد
+
+**2. جولة في مدينة إسطنبول**
+📍 الوجهة: إسطنبول
+💰 السعر: 800 ليرة تركية (بالغ)
+⏱️ المدة: يوم واحد
+
+تنسيق معلومات الدفع (✅):
+💳 معلومات الدفع:
+• المبلغ الإجمالي: 3000 ليرة تركية
+• عدد الأشخاص: 2 بالغين
+• التاريخ: 15 مارس 2024
+
+تنسيق ملخص الحجز (✅):
+✅ ملخص الحجز:
+📅 التاريخ: 15 مارس 2024
+👥 عدد الأشخاص: 2 بالغين
+💰 الإجمالي: 3000 ليرة تركية
+📞 الاتصال: +90 555 123 4567
+
+❌ لا تكتب أبدًا هكذا:
+**1. جولة بالمنطاد في كابادوكيا** • 📍 الوجهة: كابادوكيا • 💰 السعر: 1500 ليرة تركية • ⏱️ المدة: يوم واحد
+
+🚫 لا تفعل أبدًا:
+- لا تضغط المعلومات بـ • في سطر واحد
+- لا تعطِ الأسعار دون طلب
+- لا تسرد أكثر من 3 جولات
+- لا تكتب فقرات طويلة
+`,
     fr: `
-📏 RÈGLES DE RÉPONSE:
-- Utilisez maximum 4-5 phrases
-- Mettez les informations importantes en gras (**text**)
-- Utilisez des puces (•) pour les listes
-- Chaque paragraphe maximum 2 lignes
-- N'entrez pas dans des détails inutiles, soyez concis et clair
-- DÉTECTION DES NOMBRES: Lorsque l'utilisateur dit le nombre de participants, utilisez EXACTEMENT ce nombre! "1" signifie 1, "2" signifie 2. Ne vous trompez jamais sur le nombre!
-- ❌❌❌ CRITIQUE: Lors de la réservation, ne demandez JAMAIS d'EMAIL! SEULEMENT le nom complet et le téléphone! ❌❌❌
-- FORMAT DE DATE: Écrivez les dates au format "12 décembre 2026" (jour mois année, mois en mots)
-- **FORMAT CRITIQUE:** Lors de l'affichage d'informations, ÉCRIVEZ CHAQUE LIGNE SUR UNE NOUVELLE LIGNE! Ne combinez pas sur une seule ligne!`,
-    
+🎯 RÈGLES DE RÉPONSE:
+- Parlez FRANÇAIS, N'utilisez PAS d'autres langues
+- Utilisez maximum 3-4 phrases
+- Utilisez des emojis mais n'en faites pas trop
+- Soyez amical et serviable
+
+⚠️ RÈGLE DE FORMAT CRITIQUE - CHAQUE INFO SUR UNE LIGNE SÉPARÉE:
+
+FORMAT DE LISTE DES CIRCUITS (✅):
+**1. Tour en montgolfière en Cappadoce**
+📍 Destination: Cappadoce
+💰 Prix: 1500 TRY (Adulte)
+⏱️ Durée: 1 Jour
+
+**2. Visite de la ville d'Istanbul**
+📍 Destination: Istanbul
+💰 Prix: 800 TRY (Adulte)
+⏱️ Durée: 1 Jour
+
+FORMAT DES INFORMATIONS DE PAIEMENT (✅):
+💳 Informations de paiement:
+• Montant total: 3000 TRY
+• Nombre de personnes: 2 Adultes
+• Date: 15 mars 2024
+
+FORMAT DU RÉSUMÉ DE RÉSERVATION (✅):
+✅ Résumé de la réservation:
+📅 Date: 15 mars 2024
+👥 Nombre de personnes: 2 Adultes
+💰 Total: 3000 TRY
+📞 Contact: +90 555 123 4567
+
+❌ N'ÉCRIVEZ JAMAIS COMME CECI:
+**1. Tour en montgolfière en Cappadoce** • 📍 Destination: Cappadoce • 💰 Prix: 1500 TRY • ⏱️ Durée: 1 Jour
+
+🚫 JAMAIS:
+- Ne compressez pas les informations avec • sur une ligne
+- Ne donnez pas de prix sans demande
+- Ne listez pas plus de 3 circuits
+- N'écrivez pas de longs paragraphes
+`,
     es: `
-📏 REGLAS DE RESPUESTA:
-- Usa máximo 4-5 oraciones
-- Pon en negrita información importante (**text**)
-- Usa viñetas (•) para listas
-- Cada párrafo máximo 2 líneas
-- No entres en detalles innecesarios, sé conciso y claro
-- DETECCIÓN DE NÚMEROS: Cuando el usuario diga la cantidad de participantes, ¡usa EXACTAMENTE ese número! "1" significa 1, "2" significa 2. ¡Nunca malinterpretes el número!
-- ❌❌❌ CRÍTICO: Durante la reserva ¡NUNCA pidas EMAIL! ¡SOLO nombre completo y teléfono! ❌❌❌
-- FORMATO DE FECHA: Escribe las fechas en formato "12 de diciembre de 2026" (día mes año, mes en palabras)`
+🎯 REGLAS DE RESPUESTA:
+- Hable ESPAÑOL, NO use otros idiomas
+- Use máximo 3-4 oraciones
+- Use emojis pero no exagere
+- Sea amable y servicial
+
+⚠️ REGLA DE FORMATO CRÍTICA - CADA INFO EN LÍNEA SEPARADA:
+
+FORMATO DE LISTA DE TOURS (✅):
+**1. Tour en Globo en Capadocia**
+📍 Destino: Capadocia
+💰 Precio: 1500 TRY (Adulto)
+⏱️ Duración: 1 Día
+
+**2. Tour por la Ciudad de Estambul**
+📍 Destino: Estambul
+💰 Precio: 800 TRY (Adulto)
+⏱️ Duración: 1 Día
+
+FORMATO DE INFORMACIÓN DE PAGO (✅):
+💳 Información de pago:
+• Monto total: 3000 TRY
+• Número de personas: 2 Adultos
+• Fecha: 15 de marzo de 2024
+
+FORMATO DE RESUMEN DE RESERVA (✅):
+✅ Resumen de reserva:
+📅 Fecha: 15 de marzo de 2024
+👥 Número de personas: 2 Adultos
+💰 Total: 3000 TRY
+📞 Contacto: +90 555 123 4567
+
+❌ NUNCA ESCRIBA ASÍ:
+**1. Tour en Globo en Capadocia** • 📍 Destino: Capadocia • 💰 Precio: 1500 TRY • ⏱️ Duración: 1 Día
+
+🚫 NUNCA:
+- No comprima información con • en una línea
+- No dé precios sin que se lo pidan
+- No liste más de 3 tours
+- No escriba párrafos largos
+`
   };
   
   return guidelines[language] || guidelines.tr;
