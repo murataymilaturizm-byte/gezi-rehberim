@@ -11,7 +11,7 @@ import { callAI } from './services/ai.ts';
 import { matchTour, findTourById } from './services/tour-matcher.ts';
 import { extractReservationInfo } from './services/info-extractor.ts';
 import { buildSystemPrompt } from './services/prompt-builder.ts';
-import { generatePaymentMessage } from '../whatsapp-webhook/services/payment-message.ts';
+import { generatePaymentMessage } from './services/payment.ts';
 
 // Config
 import { DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from './config/demo-tours.ts';
