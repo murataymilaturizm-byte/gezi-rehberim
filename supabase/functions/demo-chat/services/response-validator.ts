@@ -99,9 +99,21 @@ export function validateResponse(
       }
     }
     
-    // Remove emojis if professional
-    if (conversationStyle === 'professional') {
+    // Remove emojis if professional/formal
+    if (conversationStyle === 'professional' || conversationStyle === 'formal') {
       fixed = fixed.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
+    }
+    
+    // Add emojis if friendly style needs more
+    if (conversationStyle === 'friendly' && emojiCount < 2) {
+      const missingCount = 2 - emojiCount;
+      const emojisToAdd = '😊✨🎉🌟'.slice(0, missingCount * 2);
+      fixed = fixed + ' ' + emojisToAdd;
+    }
+    
+    // Add emoji if casual style needs one
+    if (conversationStyle === 'casual' && emojiCount < 1) {
+      fixed = fixed + ' 😊';
     }
     
     // Clean up whitespace

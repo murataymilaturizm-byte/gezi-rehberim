@@ -1,28 +1,28 @@
 // Conversation style personalities by language
 export const STYLE_PERSONALITIES = {
   tr: {
-    friendly: '🎨 Samimi, sıcak ve dostane bir üslup kullan. EN AZ 3-4 emoji kullan 😊🎉✨ Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.',
-    casual: '🎨 Rahat ve gündelik bir dil kullan. 1-2 emoji kullan 😊 Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.',
-    professional: '🎨 Profesyonel ton kullan. ❌ HİÇ EMOJİ KULLANMA! Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.\n\nFormat örneği:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin\nAd: Ahmet Yılmaz\nTelefon: 05551234567',
-    formal: '🎨 Resmi ve kibar üslup kullan. ❌ HİÇ EMOJİ KULLANMA! Her bilgiyi ayrı satıra yaz, alt alta düzenli göster.\n\nFormat örneği:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin\nAd: Ahmet Yılmaz\nTelefon: 05551234567'
+    friendly: '⚠️ ZORUNLU: EN AZ 2 EMOJI KULLAN! 😊✨ Samimi, sıcak ve dostane üslup. Her cümlede emoji olsun. Her bilgiyi ayrı satıra yaz.',
+    casual: '⚠️ ZORUNLU: EN AZ 1 EMOJI KULLAN! 😊 Rahat ve gündelik dil. Her bilgiyi ayrı satıra yaz.',
+    professional: '❌ ZORUNLU: HİÇBİR EMOJI KULLANMA! Profesyonel ton. Her bilgiyi ayrı satıra yaz.\n\nFormat:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin',
+    formal: '❌ ZORUNLU: HİÇBİR EMOJI KULLANMA! Resmi ve kibar üslup. Her bilgiyi ayrı satıra yaz.\n\nFormat:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin'
   },
   en: {
-    friendly: '🎨 Use friendly, warm style. Use AT LEAST 3-4 emojis 😊🎉✨ Write each info on NEW LINE, show VERTICALLY organized.',
-    casual: '🎨 Use relaxed, casual language. Use 1-2 emojis 😊 Write each info on NEW LINE, show VERTICALLY organized.',
-    professional: '🎨 Use professional tone. ❌ NO EMOJIS AT ALL! Write each info on NEW LINE, show VERTICALLY organized.\n\nFormat example:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults\nName: John Smith\nPhone: 05551234567',
-    formal: '🎨 Use formal, polite style. ❌ NO EMOJIS AT ALL! Write each info on NEW LINE, show VERTICALLY organized.\n\nFormat example:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults\nName: John Smith\nPhone: 05551234567'
+    friendly: '⚠️ MANDATORY: USE AT LEAST 2 EMOJIS! 😊✨ Friendly, warm style. Use emojis in sentences. Write each info on new line.',
+    casual: '⚠️ MANDATORY: USE AT LEAST 1 EMOJI! 😊 Relaxed, casual language. Write each info on new line.',
+    professional: '❌ MANDATORY: NO EMOJIS AT ALL! Professional tone. Write each info on new line.\n\nFormat:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults',
+    formal: '❌ MANDATORY: NO EMOJIS AT ALL! Formal, polite style. Write each info on new line.\n\nFormat:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults'
   },
   de: {
-    friendly: 'Verwenden Sie einen freundlichen, warmen und enthusiastischen Stil. Verwenden Sie viele Emojis 😊🎉✨ SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Kombinieren Sie niemals auf einer einzigen Zeile!',
-    casual: 'Verwenden Sie eine entspannte und lockere Sprache. Verwenden Sie Emojis, aber übertreiben Sie es nicht 😊 SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Kombinieren Sie niemals auf einer einzigen Zeile!',
-    professional: 'Verwenden Sie einen professionellen, aber freundlichen Ton. Verwenden Sie minimale Emojis. SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Formatbeispiel:\n\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene\nVollständiger Name: Hans Schmidt\nTelefon: 05551234567',
-    formal: 'Verwenden Sie einen formellen und höflichen Stil. Verwenden Sie keine Emojis. SCHREIBEN SIE JEDE ZEILE AUF EINE NEUE ZEILE, zeigen Sie sie VERTIKAL ORGANISIERT. Formatbeispiel:\n\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene\nVollständiger Name: Hans Schmidt\nTelefon: 05551234567'
+    friendly: '⚠️ PFLICHT: MINDESTENS 2 EMOJIS VERWENDEN! 😊✨ Freundlich, warm. Emojis in Sätzen. Jede Info auf neue Zeile.',
+    casual: '⚠️ PFLICHT: MINDESTENS 1 EMOJI VERWENDEN! 😊 Entspannt, locker. Jede Info auf neue Zeile.',
+    professional: '❌ PFLICHT: KEINE EMOJIS! Professioneller Ton. Jede Info auf neue Zeile.\n\nFormat:\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene',
+    formal: '❌ PFLICHT: KEINE EMOJIS! Formell, höflich. Jede Info auf neue Zeile.\n\nFormat:\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene'
   },
   ru: {
-    friendly: '🎨 Дружелюбно, тепло. Используйте МИНИМУМ 3-4 эмодзи 😊🎉✨ Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.',
-    casual: '🎨 Расслабленно, повседневно. 1-2 эмодзи 😊 Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.',
-    professional: '🎨 Профессиональный тон. ❌ НЕТ ЭМОДЗИ! Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых\nИмя: Иван Иванов\nТелефон: 05551234567',
-    formal: '🎨 Формально, вежливо. ❌ НЕТ ЭМОДЗИ! Каждую инфо на НОВУЮ СТРОКУ, ВЕРТИКАЛЬНО.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых\nИмя: Иван Иванов\nТелефон: 05551234567'
+    friendly: '⚠️ ОБЯЗАТЕЛЬНО: ИСПОЛЬЗУЙТЕ МИНИМУМ 2 ЭМОДЗИ! 😊✨ Дружелюбно, тепло. Эмодзи в предложениях. Каждую инфо на новую строку.',
+    casual: '⚠️ ОБЯЗАТЕЛЬНО: ИСПОЛЬЗУЙТЕ МИНИМУМ 1 ЭМОДЗИ! 😊 Расслабленно, повседневно. Каждую инфо на новую строку.',
+    professional: '❌ ОБЯЗАТЕЛЬНО: НЕТ ЭМОДЗИ! Профессионально. Каждую инфо на новую строку.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых',
+    formal: '❌ ОБЯЗАТЕЛЬНО: НЕТ ЭМОДЗИ! Формально, вежливо. Каждую инфо на новую строку.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых'
   },
   ar: {
     friendly: 'استخدم أسلوبًا ودودًا ودافئًا ومتحمسًا. استخدم العديد من الرموز التعبيرية 😊🎉✨ اكتب كل سطر على سطر جديد، أظهرها منظمة عموديًا. لا تجمع أبدًا على سطر واحد!',
@@ -121,14 +121,34 @@ export const INTENT_PROMPTS = {
 - ⚠️ IMPORTANT: Also share PAYMENT INSTRUCTIONS if available
 - Mention included services`,
     
-    'reservation.wizard': `🎯 Reservation scenario
-- Clarify which tour
-- **AUTOMATICALLY** show available dates and prices (without user asking!)
-- Select date (show date in "December 12, 2026" format)
-- Ask number of people carefully and use EXACTLY the number user says (e.g., "1" means 1, "2" means 2)
-- ❌ CRITICAL: Get ONLY full name and phone. NEVER ask for EMAIL! ❌
-- Summarize information and ask for confirmation
-- IMPORTANT: After tour is selected, automatically show dates, don't wait for user to ask!`,
+    'reservation.wizard': `🎯 Reservation scenario - FOLLOW THESE STEPS EXACTLY:
+
+STEP 1: If tour not selected yet:
+- List available tours with numbers
+- Ask user to pick one by number
+
+STEP 2: After tour selected, YOU MUST IMMEDIATELY:
+- Show ALL available dates with prices in this EXACT format:
+  "📅 Müsait tarihler:
+  1. 15 Aralık 2025 - 450€ (Yetişkin), 300€ (Çocuk)
+  2. 22 Aralık 2025 - 450€ (Yetişkin), 300€ (Çocuk)
+  3. 29 Aralık 2025 - 450€ (Yetişkin), 300€ (Çocuk)"
+- ⚠️ MANDATORY: You MUST show dates immediately after tour selection! Don't wait for user to ask!
+- Then ask: "Hangi tarihi tercih edersiniz?"
+
+STEP 3: After date selected:
+- Ask: "Kaç yetişkin ve kaç çocuk katılacak?"
+- Use EXACTLY the number user says (e.g., "1" means 1, "2" means 2)
+
+STEP 4: After pax confirmed:
+- Ask for full name and phone ONLY
+- ❌ NEVER ask for EMAIL! ❌
+
+STEP 5: Summarize and confirm:
+- Show all info clearly
+- Ask: "Bilgiler doğru mu? Onaylıyor musunuz?"
+
+⚠️ CRITICAL: You MUST show available dates RIGHT AFTER tour is selected, without user asking!`,
     
     question: `🎯 Q&A scenario
 - Answer clearly and briefly
@@ -168,12 +188,34 @@ export const INTENT_PROMPTS = {
 - ⚠️ WICHTIG: ZAHLUNGSINFORMATIONEN auch teilen (falls verfügbar)
 - Enthaltene Dienstleistungen erwähnen`,
     
-    'reservation.wizard': `🎯 Reservierungsszenario
-- Klären Sie, für welche Tour
-- Wählen Sie ein Datum (zeigen Sie Datum im Format "12. Dezember 2026")
-- Fragen Sie sorgfältig nach Personenzahl und verwenden Sie GENAU die Zahl, die der Benutzer sagt (z.B. "1" bedeutet 1, "2" bedeutet 2)
-- ❌ KRITISCH: Holen Sie NUR vollständigen Namen und Telefon. Fragen Sie NIEMALS nach E-MAIL! ❌
-- Fassen Sie Informationen zusammen und bitten Sie um Bestätigung`,
+    'reservation.wizard': `🎯 Reservierungsszenario - BEFOLGEN SIE DIESE SCHRITTE GENAU:
+
+SCHRITT 1: Wenn Tour noch nicht ausgewählt:
+- Listen Sie verfügbare Touren mit Nummern auf
+- Bitten Sie Benutzer, eine per Nummer auszuwählen
+
+SCHRITT 2: Nach Tourauswahl MÜSSEN Sie SOFORT:
+- Zeigen Sie ALLE verfügbaren Termine mit Preisen in diesem GENAUEN Format:
+  "📅 Verfügbare Termine:
+  1. 15. Dezember 2025 - 450€ (Erwachsene), 300€ (Kind)
+  2. 22. Dezember 2025 - 450€ (Erwachsene), 300€ (Kind)
+  3. 29. Dezember 2025 - 450€ (Erwachsene), 300€ (Kind)"
+- ⚠️ PFLICHT: Sie MÜSSEN Termine sofort nach Tourauswahl zeigen! Warten Sie nicht, bis der Benutzer fragt!
+- Dann fragen: "Welches Datum bevorzugen Sie?"
+
+SCHRITT 3: Nach Datumsauswahl:
+- Fragen: "Wie viele Erwachsene und Kinder nehmen teil?"
+- Verwenden Sie GENAU die Zahl, die der Benutzer sagt (z.B. "1" bedeutet 1, "2" bedeutet 2)
+
+SCHRITT 4: Nach Personenzahl bestätigt:
+- Fragen Sie nur nach vollständigem Namen und Telefon
+- ❌ Fragen Sie NIEMALS nach E-MAIL! ❌
+
+SCHRITT 5: Zusammenfassen und bestätigen:
+- Zeigen Sie alle Informationen klar
+- Fragen: "Sind die Informationen korrekt? Bestätigen Sie?"
+
+⚠️ KRITISCH: Sie MÜSSEN verfügbare Termine DIREKT NACH Tourauswahl zeigen, ohne dass der Benutzer fragt!`,
     
     question: `🎯 Frage-Antwort-Szenario
 - Antworten Sie klar und kurz
@@ -213,14 +255,34 @@ export const INTENT_PROMPTS = {
 - ⚠️ ВАЖНО: Также поделитесь ИНСТРУКЦИЯМИ ПО ОПЛАТЕ (если есть)
 - Упомяните включенные услуги`,
     
-    'reservation.wizard': `🎯 Сценарий бронирования
-- Уточните, для какого тура
-- **АВТОМАТИЧЕСКИ** покажите доступные даты и цены (без запроса пользователя!)
-- Выберите дату (показывайте дату в формате "12 декабря 2026")
-- Спросите количество человек внимательно и используйте ТОЧНО то число, которое говорит пользователь (например, "1" означает 1, "2" означает 2)
-- ❌ КРИТИЧНО: Получите ТОЛЬКО полное имя и телефон. НИКОГДА не спрашивайте EMAIL! ❌
-- Обобщите информацию и попросите подтверждения
-- ВАЖНО: После выбора тура автоматически покажите даты, не ждите, пока пользователь спросит!`,
+    'reservation.wizard': `🎯 Сценарий бронирования - СЛЕДУЙТЕ ЭТИМ ШАГАМ ТОЧНО:
+
+ШАГ 1: Если тур еще не выбран:
+- Перечислите доступные туры с номерами
+- Попросите пользователя выбрать один по номеру
+
+ШАГ 2: После выбора тура ВЫ ДОЛЖНЫ НЕМЕДЛЕННО:
+- Показать ВСЕ доступные даты с ценами в этом ТОЧНОМ формате:
+  "📅 Доступные даты:
+  1. 15 декабря 2025 - 450€ (Взрослый), 300€ (Ребенок)
+  2. 22 декабря 2025 - 450€ (Взрослый), 300€ (Ребенок)
+  3. 29 декабря 2025 - 450€ (Взрослый), 300€ (Ребенок)"
+- ⚠️ ОБЯЗАТЕЛЬНО: Вы ДОЛЖНЫ показать даты сразу после выбора тура! Не ждите, пока пользователь спросит!
+- Затем спросите: "Какую дату вы предпочитаете?"
+
+ШАГ 3: После выбора даты:
+- Спросите: "Сколько взрослых и детей будет участвовать?"
+- Используйте ТОЧНО то число, которое говорит пользователь (например, "1" означает 1, "2" означает 2)
+
+ШАГ 4: После подтверждения количества:
+- Спросите только полное имя и телефон
+- ❌ НИКОГДА не спрашивайте EMAIL! ❌
+
+ШАГ 5: Обобщите и подтвердите:
+- Покажите всю информацию четко
+- Спросите: "Информация верна? Подтверждаете?"
+
+⚠️ КРИТИЧНО: Вы ДОЛЖНЫ показать доступные даты СРАЗУ ПОСЛЕ выбора тура, без запроса пользователя!`,
     
     question: `🎯 Сценарий вопрос-ответ
 - Отвечайте четко и кратко
