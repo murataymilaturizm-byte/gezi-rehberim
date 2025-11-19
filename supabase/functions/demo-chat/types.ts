@@ -1,45 +1,86 @@
-// Type definitions for demo chat
+// Enhanced type definitions for FSM-based demo chat
 
-export interface MessageIntent {
-  type: 'greeting' | 'tour.list' | 'tour.search' | 'tour.detail' | 'reservation.wizard' | 'general' | 'question' | 'price.inquiry' | 'cancel' | 'confirmation';
-  confidence: number;
+export type ConversationStage = 
+  | 'GREETING'           // Initial greeting
+  | 'EXPLORING'          // Browsing/searching tours
+  | 'TOUR_SELECTED'      // Specific tour selected, viewing details
+  | 'COLLECTING_INFO'    // Gathering reservation details
+  | 'CONFIRMING'         // Waiting for final confirmation
+  | 'COMPLETED';         // Reservation completed
+
+export type InfoCollectionStep =
+  | 'waiting_for_date'
+  | 'waiting_for_pax'
+  | 'waiting_for_name'
+  | 'waiting_for_phone'
+  | 'ready_for_confirmation';
+
+export interface TourReference {
+  id: string;
+  title: string;
+  destination: string;
+  dateId?: string;
+  selectedDate?: string;
 }
 
-export interface ConversationMessage {
-  role: 'user' | 'assistant';
-  content: string;
+export interface ReservationInfo {
+  tourId?: string;
+  tourTitle?: string;
+  dateId?: string;
+  selectedDate?: string;
+  paxAdult?: number;
+  paxChild?: number;
+  fullName?: string;
+  phone?: string;
 }
 
-export interface DemoConversationState {
-  currentStage: 'initial' | 'exploring' | 'interested' | 'deciding' | 'booking';
-  lastIntent: string;
-  currentTour: {
-    id: string;
-    title: string;
-    destination: string;
-    dateId?: string;
-    selectedDate?: string;
-  } | null;
-  previousTour: {
-    id: string;
-    title: string;
-    destination: string;
-    dateId?: string;
-  } | null;
-  discussedTours: string[];
+export interface ConversationContext {
+  // Core state
+  stage: ConversationStage;
+  collectionStep?: InfoCollectionStep;
+  
+  // Tour context
+  currentTour: TourReference | null;
+  viewedTours: string[]; // IDs of tours user has viewed
+  
+  // Reservation data
+  reservationInfo: ReservationInfo;
+  reservationConfirmed: boolean;
+  paymentInfoSent: boolean;
+  
+  // Conversation metadata
+  messageCount: number;
   lastUserMessage: string;
-  conversationFlow: string[];
-  userMemory?: any;
-  // Reservation tracking
-  collectedInfo?: {
-    fullName?: string;
-    phone?: string;
-    paxAdult?: number;
-    paxChild?: number;
-    selectedDate?: string;
-    tourId?: string;
-    tourTitle?: string;
-  };
-  reservationConfirmed?: boolean;
-  paymentInfoSent?: boolean;
+  sessionStarted: string;
+  lastUpdated: string;
+}
+
+export interface StateTransition {
+  from: ConversationStage;
+  to: ConversationStage;
+  condition: (context: ConversationContext, input: ProcessingInput) => boolean;
+  action?: (context: ConversationContext, input: ProcessingInput) => ConversationContext;
+}
+
+export interface ProcessingInput {
+  userMessage: string;
+  detectedIntent: string;
+  extractedInfo: Partial<ReservationInfo>;
+  selectedTour: TourReference | null;
+  language: string;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  missingFields: string[];
+  errors: string[];
+}
+
+export interface AIPromptContext {
+  stage: ConversationStage;
+  collectionStep?: InfoCollectionStep;
+  currentTour: TourReference | null;
+  reservationInfo: ReservationInfo;
+  availableTours: any[];
+  language: string;
 }
