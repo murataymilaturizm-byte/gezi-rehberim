@@ -9,6 +9,71 @@ import { getLabel } from '../config/labels.ts';
 import { validateResponse } from './response-validator.ts';
 import { buildPersonalizedContext } from './memory-extractor.ts';
 
+// Helper function to format date in Turkish format (e.g., "12 Aralık 2026")
+function formatTurkishDate(dateString: string): string {
+  const months = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+  ];
+  
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  
+  return `${day} ${month} ${year}`;
+}
+
+// Helper function to format tours with beautiful styling
+function formatToursContext(tours: any[]): string {
+  return tours.map(tour => {
+    const dates = tour.dates?.map((d: any) => 
+      `${formatTurkishDate(d.departure_date)} (Yetişkin: ${d.price_adult}₺, Çocuk: ${d.price_child || 'N/A'}₺)`
+    ).join(', ');
+    
+    return `━━━━━━━━━━━━━━━━━━
+📌 ${tour.title} (${tour.destination})
+━━━━━━━━━━━━━━━━━━
+📅 Tarihler: ${dates}
+⏰ Toplanma: ${tour.toplanma_saati || 'Belirtilmemiş'}
+📍 Hareket: ${tour.hareket_noktasi || 'Belirtilmemiş'}
+🚌 Ulaşım: ${tour.ulasim || 'Belirtilmemiş'}
+🏨 Konaklama: ${tour.konaklama || 'Belirtilmemiş'}
+⏳ Süre: ${tour.tur_sure || 'Belirtilmemiş'}
+🗺️ Gezilecek: ${tour.gezilecek_yerler || 'Belirtilmemiş'}`;
+  }).join('\n\n');
+}
+
+// Helper function to extract last discussed tour from history
+function extractLastTourFromHistory(history: any[]): string | null {
+  // Common tour patterns - can be extended
+  const tourPatterns = [
+    /Kapadokya/i,
+    /Pamukkale/i,
+    /Antalya/i,
+    /Ege/i,
+    /Akdeniz/i,
+    /Balon/i,
+    /Rafting/i,
+    /Kültür/i
+  ];
+
+  // Search from newest to oldest
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msg = history[i];
+    if (msg.role === 'assistant' || msg.role === 'user') {
+      for (const pattern of tourPatterns) {
+        const match = msg.content.match(pattern);
+        if (match) {
+          return match[0];
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 export async function handleIntelligently(
   supabase: any,
   phone: string,
@@ -31,6 +96,9 @@ export async function handleIntelligently(
     userMessage
   });
 
+  // Extract last discussed tour from history
+  const lastDiscussedTour = extractLastTourFromHistory(conversationHistory);
+
   // Build intelligent system prompt
   const systemPrompt = buildIntelligentPrompt(
     intent,
@@ -38,7 +106,8 @@ export async function handleIntelligently(
     conversationStyle,
     conversationState,
     pattern,
-    userProfile
+    userProfile,
+    lastDiscussedTour
   );
 
   // Get tours data if needed
@@ -47,13 +116,7 @@ export async function handleIntelligently(
   if (['tour.list', 'tour.search', 'tour.detail'].includes(intent)) {
     tours = await searchToursWithAI(supabase, userMessage, phone, agencyId);
     if (tours && tours.length > 0) {
-      toursContext = '\n\nMevcut Turlar:\n' + tours.map(tour => {
-        const dates = tour.dates?.map((d: any) => 
-          `${d.departure_date} (${d.price_adult}${tour.currency})`
-        ).join(', ') || '';
-        const tourDuration = (tour as any).tur_sure || tour.type || '-';
-        return `- ${tour.title} (${tour.destination})\n  Tarihler: ${dates}\n  Süre: ${tourDuration}`;
-      }).join('\n\n');
+      toursContext = '\n\n📋 MEVCUT TURLAR:\n' + formatToursContext(tours);
     }
   }
 
@@ -109,7 +172,8 @@ function buildIntelligentPrompt(
   conversationStyle: string,
   state: any,
   pattern: any,
-  profile: any
+  profile: any,
+  lastDiscussedTour?: string | null
 ): string {
   const currentTour = state?.currentTour;
   const wizardStep = state?.wizardStep || 'none';
@@ -255,10 +319,27 @@ TEMEL KURALLAR:
 - DOĞRULUK: Sadece verilen tur bilgilerini kullan
 - DETAY YASAK: Gün gün program detaylarını asla yazma
 
+🎯 KONTEXT BİLGİSİ:
+- Şu anki intent: ${intent}
+- Wizard adımı: ${wizardStep}
+- Seçili tur: ${currentTour || 'Yok'}
+- Son bahsedilen tur: ${lastDiscussedTour || 'Yok'}
+- Daha önce gösterilen turlar: ${shownTourIds.length > 0 ? shownTourIds.join(', ') : 'Yok'}
+
+⚠️ ÖNEMLİ KURALLAR:
+1. Yanıtları KISA ve ÖZ tut (maksimum 4-5 cümle)
+2. Markdown formatı kullan (**kalın**, • liste)
+3. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
+4. Rezervasyon için teşvik et
+5. ASLA uzun paragraflar yazma
+6. Her yanıtta maksimum 1-2 emoji kullan
+7. SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "1" diyorsa 1, "2" diyorsa 2. Asla farklı bir sayı anlama!
+8. ❌❌❌ KRİTİK: Rezervasyonda ASLA E-MAİL İSTEME! SADECE TAM AD-SOYAD VE TELEFON YETER! ❌❌❌
+9. TARİH FORMATI: Tarihleri MUTLAKA "12 Aralık 2026" formatında yaz (gün ay yıl, ay Türkçe yazıyla)
+
 Konuşma Stili: ${conversationStyle}
 Mevcut Aşama: ${state.currentStage}
 Kullanıcının İlgileri: ${state.userInterests.join(', ') || 'Henüz tespit edilmedi'}
-Son Tartışılan Tur: ${state.lastDiscussedTour || 'Yok'}
 
 Intent: ${intent}`;
 
