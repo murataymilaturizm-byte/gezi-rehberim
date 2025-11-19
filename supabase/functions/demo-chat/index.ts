@@ -40,6 +40,8 @@ serve(async (req) => {
       throw new Error('Session ID required');
     }
 
+    console.log('🚀 NEW FSM VERSION ACTIVE - v2.0.0');
+    
     // Initialize Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
