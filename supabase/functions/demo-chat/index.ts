@@ -245,10 +245,25 @@ serve(async (req) => {
       reservationConfirmed: conversationState.reservationConfirmed
     });
     
-    // Calculate payment info BEFORE calling AI so we can pass it in context
-    let totalPrice: number | undefined;
-    let depositAmount: number | undefined;
-    
+    // Get contextual information for AI with switch type
+    const stateContext = await getContextForAI(
+      conversationState, 
+      switchType,
+      selectedTour?.title
+    );
+
+    // Generate intelligent response
+    let response = await handleDemoIntelligently(
+      message,
+      formattedHistory,
+      detectedIntent.type,
+      language,
+      DEMO_TOURS,
+      conversationStyle,
+      { ...conversationState, stateContext }
+    );
+
+    // Add payment info AFTER AI response if reservation is confirmed
     const shouldAddPayment = conversationState.reservationConfirmed === true && 
                              conversationState.currentTour &&
                              conversationState.collectedInfo?.fullName &&
@@ -262,34 +277,24 @@ serve(async (req) => {
         const tourDate = tourData.dates?.[0];
         if (tourDate && tourDate.price_adult) {
           const paxAdult = conversationState.collectedInfo?.paxAdult || 1;
-          totalPrice = tourDate.price_adult * paxAdult;
+          const totalPrice = tourDate.price_adult * paxAdult;
           const depositPercentage = DEMO_PAYMENT_INSTRUCTIONS.deposit_percentage || 30;
-          depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+          const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+
+          const paymentInfo = generatePaymentMessage(
+            DEMO_PAYMENT_INSTRUCTIONS,
+            language,
+            totalPrice,
+            depositAmount
+          );
+
+          if (paymentInfo) {
+            response += '\n\n' + paymentInfo;
+            console.log('💳 Payment information added to demo response');
+          }
         }
       }
     }
-
-    // Get contextual information for AI with switch type AND payment info
-    const stateContext = await getContextForAI(
-      conversationState, 
-      switchType,
-      selectedTour?.title,
-      shouldAddPayment ? DEMO_PAYMENT_INSTRUCTIONS : undefined,
-      totalPrice,
-      depositAmount,
-      language
-    );
-
-    // Generate intelligent response - AI will include payment info if needed
-    const response = await handleDemoIntelligently(
-      message,
-      formattedHistory,
-      detectedIntent.type,
-      language,
-      DEMO_TOURS,
-      conversationStyle,
-      { ...conversationState, stateContext }
-    );
 
     // Extract and update user memory
     const updatedMemory = extractMemory(message, response, conversationState?.userMemory || DEMO_TOURS);

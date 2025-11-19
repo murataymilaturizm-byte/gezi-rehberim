@@ -1,10 +1,10 @@
 // Conversation style personalities by language
 export const STYLE_PERSONALITIES = {
   tr: {
-    friendly: 'Samimi, sıcak ve dostane bir üslup kullan. Çok emojili ve heyecanlı ol 😊🎉✨ Tarihleri ve turları alt alta düzenli göster.',
-    casual: 'Rahat ve gündelik bir dil kullan. Emojiler kullan ama abartma 😊 Tarihleri ve turları alt alta düzenli göster.',
-    professional: 'Profesyonel ama samimi bir ton kullan. Az emoji kullan. Tarihleri ve turları alt alta düzenli göster.',
-    formal: 'Resmi ve kibar bir üslup kullan. Emoji kullanma. Tarihleri ve turları alt alta düzenli göster.'
+    friendly: 'Samimi, sıcak ve dostane bir üslup kullan. Çok emojili ve heyecanlı ol 😊🎉✨ Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster.',
+    casual: 'Rahat ve gündelik bir dil kullan. Emojiler kullan ama abartma 😊 Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster.',
+    professional: 'Profesyonel ama samimi bir ton kullan. Az emoji kullan. Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster. Format örneği:\n\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi Sayısı: 2 yetişkin\nAd Soyad: Ahmet Yılmaz\nTelefon: 05551234567',
+    formal: 'Resmi ve kibar bir üslup kullan. Emoji kullanma. Bilgileri listelerken her satırı yeni satıra yaz, alt alta düzenli göster. Format örneği:\n\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi Sayısı: 2 yetişkin\nAd Soyad: Ahmet Yılmaz\nTelefon: 05551234567'
   },
   en: {
     friendly: 'Use a friendly, warm and enthusiastic style. Use many emojis 😊🎉✨ Show dates and tours in organized list format.',

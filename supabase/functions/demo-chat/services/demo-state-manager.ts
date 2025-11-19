@@ -146,41 +146,15 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
     info.paxChild = parseInt(childMatch[1]);
   }
   
-  // Extract full name - ONLY from explicit name patterns
-  if (!info.fullName) {
-    // Pattern 1: "ismim/adım X Y" or "ben X Y"
-    const explicitNamePatterns = [
-      /(?:ismim|adım|adim|name is|i am|i'm|ben)\s+([A-ZÇĞİÖŞÜa-zçğıöşü]+\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)/i,
-      /^([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)$/
-    ];
-    
-    for (const pattern of explicitNamePatterns) {
-      const match = message.match(pattern);
-      if (match && match[1]) {
-        const name = match[1].trim();
-        // Exclude if contains tour-related words
-        if (!name.toLowerCase().match(/tur|tour|kayıt|rezerv|book/)) {
-          const words = name.split(/\s+/);
-          if (words.length >= 2 && words.length <= 4 && name.length >= 5 && name.length <= 50) {
-            // Capitalize properly
-            info.fullName = words.map(w => 
-              w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
-            ).join(' ');
-            break;
-          }
-        }
-      }
-    }
-  }
-  
-  // Extract phone - be MORE aggressive but smart
+  // Extract phone FIRST - be MORE aggressive but smart
+  let extractedPhone: string | null = null;
   if (!info.phone) {
     const phonePatterns = [
       /(?:telefon|phone|numara|number|tel)[\s:]+(\d[\s\-\d]{8,14})/i,
       /\b(05\d{9})\b/,  // Turkish mobile: 05xxxxxxxxx
+      /\b(0\d{10})\b/,  // 0 + 10 digits
       /\b(\+90[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})\b/,  // International
-      /\b(\d{10})\b/,  // 10 digits
-      /\b(\d{11})\b/   // 11 digits
+      /\b(\d{10,11})\b/  // 10-11 digits
     ];
     
     for (const pattern of phonePatterns) {
@@ -190,7 +164,54 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
         // Accept if 10-11 digits
         if (phone.length >= 10 && phone.length <= 11 && /^\d+$/.test(phone)) {
           info.phone = phone;
+          extractedPhone = phone;
           break;
+        }
+      }
+    }
+  }
+  
+  // Extract full name - SMART extraction including names next to phone numbers
+  if (!info.fullName) {
+    // If we found a phone, look for name BEFORE the phone
+    if (extractedPhone) {
+      // Remove the phone from message and look for name in remaining text
+      const beforePhone = message.split(extractedPhone)[0].trim();
+      const nameMatch = beforePhone.match(/([A-ZÇĞİÖŞÜa-zçğıöşü]+\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)$/i);
+      if (nameMatch && nameMatch[1]) {
+        const name = nameMatch[1].trim();
+        if (!name.toLowerCase().match(/tur|tour|kayıt|rezerv|book|kişi|kisi|people/)) {
+          const words = name.split(/\s+/);
+          if (words.length >= 2 && words.length <= 4 && name.length >= 5 && name.length <= 50) {
+            info.fullName = words.map(w => 
+              w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+            ).join(' ');
+          }
+        }
+      }
+    }
+    
+    // If still no name, try explicit patterns
+    if (!info.fullName) {
+      const explicitNamePatterns = [
+        /(?:ismim|adım|adim|name is|i am|i'm|ben)\s+([A-ZÇĞİÖŞÜa-zçğıöşü]+\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)/i,
+        /^([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s*\d/i,  // Name followed by number
+        /^([A-ZÇĞİÖŞÜ][a-zçğıöşü]+\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)$/i  // Just name
+      ];
+      
+      for (const pattern of explicitNamePatterns) {
+        const match = message.match(pattern);
+        if (match && match[1]) {
+          const name = match[1].trim();
+          if (!name.toLowerCase().match(/tur|tour|kayıt|rezerv|book|kişi|kisi|people/)) {
+            const words = name.split(/\s+/);
+            if (words.length >= 2 && words.length <= 4 && name.length >= 5 && name.length <= 50) {
+              info.fullName = words.map(w => 
+                w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+              ).join(' ');
+              break;
+            }
+          }
         }
       }
     }
@@ -357,7 +378,7 @@ export function updateStateWithIntent(
   return { state: updatedState, switchType };
 }
 
-export async function getContextForAI(state: DemoConversationState, switchType: string, newTourName?: string, paymentInstructions?: any, totalPrice?: number, depositAmount?: number, language?: string): Promise<string> {
+export async function getContextForAI(state: DemoConversationState, switchType: string, newTourName?: string): Promise<string> {
   let context = '';
   
   // Handle tour switch confirmation scenarios
@@ -409,22 +430,13 @@ export async function getContextForAI(state: DemoConversationState, switchType: 
       context += `\n- Bu bilgileri toplamadan devam etme!`;
     } else if (!state.reservationConfirmed) {
       context += `\n\n✅ Tüm bilgiler toplandı!`;
-      context += `\n- Özet göster ve onay iste`;
-      context += `\n- Onay aldıktan SONRA mesajının SONUNA mutlaka ödeme bilgilerini ekle!`;
-    } else if (state.reservationConfirmed && paymentInstructions && totalPrice && depositAmount) {
-      // ADD PAYMENT CONTEXT SO AI INCLUDES IT
-      context += `\n\n💳 ÖDEME BİLGİLERİNİ EKLE:`;
-      context += `\n⚠️ KRİTİK: Rezervasyon onaylandı, mesajının SONUNA aşağıdaki ödeme bilgilerini AYNEN EKLE!`;
-      context += `\n\n`;
-      
-      // Generate payment message and add to context
-      const { generatePaymentMessage } = await import('./payment-message.ts');
-      const paymentInfo = generatePaymentMessage(paymentInstructions, language || 'tr', totalPrice, depositAmount);
-      
-      if (paymentInfo) {
-        context += paymentInfo;
-        context += `\n\n⚠️ Yukarıdaki ödeme bilgilerini mesajının sonuna AYNEN ekle! Hiçbir şeyi değiştirme!`;
-      }
+      context += `\n- Bilgileri ALT ALTA düzenli bir şekilde göster`;
+      context += `\n- Her bilgiyi yeni satırda göster`;
+      context += `\n- Onay iste: "Bu bilgiler doğruysa, rezervasyonunuzu onaylayabilirim. Onaylıyor musunuz?"`;
+    } else if (state.reservationConfirmed) {
+      context += `\n\n✅ REZERVASYON ONAYLANDI!`;
+      context += `\n- Kısa bir teşekkür mesajı ver`;
+      context += `\n- Backend ödeme bilgilerini otomatik ekleyecek, sen ekleme!`;
     }
   }
   
