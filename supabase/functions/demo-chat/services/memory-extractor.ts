@@ -89,9 +89,17 @@ export function extractMemory(
 }
 
 export function buildPersonalizedContext(memory: UserMemory, tours: any[], language: string = 'tr'): string {
-  if (!memory || (memory.preferredDestinations.length === 0 && 
-                  memory.interests.length === 0 && 
-                  !memory.budgetRange)) {
+  if (!memory) {
+    return '';
+  }
+
+  // Ensure arrays exist
+  const preferredDestinations = memory.preferredDestinations || [];
+  const interests = memory.interests || [];
+
+  if (preferredDestinations.length === 0 && 
+      interests.length === 0 && 
+      !memory.budgetRange) {
     return '';
   }
 
@@ -171,12 +179,12 @@ export function buildPersonalizedContext(memory: UserMemory, tours: any[], langu
   const msg = contextMessages[language as keyof typeof contextMessages] || contextMessages.tr;
   let context = msg.header;
   
-  if (memory.preferredDestinations.length > 0) {
-    context += `\n${msg.destinations} ${memory.preferredDestinations.join(', ')}`;
+  if (preferredDestinations.length > 0) {
+    context += `\n${msg.destinations} ${preferredDestinations.join(', ')}`;
   }
   
-  if (memory.interests.length > 0) {
-    context += `\n${msg.interests} ${memory.interests.join(', ')}`;
+  if (interests.length > 0) {
+    context += `\n${msg.interests} ${interests.join(', ')}`;
   }
   
   if (memory.budgetRange) {
@@ -192,14 +200,14 @@ export function buildPersonalizedContext(memory: UserMemory, tours: any[], langu
     let score = 0;
     
     // Destination match
-    if (memory.preferredDestinations.some(dest => 
+    if (preferredDestinations.some(dest => 
         tour.destination.includes(dest) || tour.title.includes(dest))) {
       score += 3;
     }
     
     // Interest match
     const tourText = `${tour.title} ${tour.program_kisa}`.toLowerCase();
-    for (const interest of memory.interests) {
+    for (const interest of interests) {
       if (tourText.includes(interest.toLowerCase())) {
         score += 2;
       }
@@ -218,8 +226,8 @@ export function buildPersonalizedContext(memory: UserMemory, tours: any[], langu
     // Simple scoring for sorting
     let scoreA = 0, scoreB = 0;
     
-    if (memory.preferredDestinations.some(dest => a.destination.includes(dest))) scoreA += 3;
-    if (memory.preferredDestinations.some(dest => b.destination.includes(dest))) scoreB += 3;
+    if (preferredDestinations.some(dest => a.destination.includes(dest))) scoreA += 3;
+    if (preferredDestinations.some(dest => b.destination.includes(dest))) scoreB += 3;
     
     return scoreB - scoreA;
   });
