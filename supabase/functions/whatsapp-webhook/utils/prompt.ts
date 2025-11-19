@@ -1,7 +1,13 @@
-// System prompts for different conversation styles
+// System prompts using new modular config structure
 
 import { getLabel } from '../config/labels.ts';
 import { getLanguageName } from '../services/language.ts';
+import { 
+  getBaseSystemPrompt, 
+  getStylePersonality, 
+  getResponseGuidelines,
+  getIntentPrompt 
+} from '../config/prompts.ts';
 
 export function getSystemPrompt(
   conversationStyle: string,
@@ -22,7 +28,17 @@ JUST ANSWER THE QUESTION DIRECTLY - NO GREETING!
 
 ` : '';
   
-  const basePrompt = greetingRule + `You are a helpful tour assistant for a travel agency.
+  // Get base system prompt from config
+  const baseSystemPrompt = getBaseSystemPrompt(userLanguage);
+  
+  // Get style personality from config
+  const stylePersonality = getStylePersonality(userLanguage, conversationStyle);
+  
+  // Get response guidelines from config
+  const responseGuidelines = getResponseGuidelines(userLanguage);
+  
+  // Build the complete prompt
+  const completePrompt = greetingRule + baseSystemPrompt + `
 
 CRITICAL LANGUAGE RULES:
 - User prefers ${languageName}
@@ -68,6 +84,11 @@ ${hasHistory ? `**** THIS IS A CONTINUING CONVERSATION - YOU ALREADY TALKED TO T
 - Introduce yourself as a tour assistant
 - Invite them to share their travel interests`}
 
+${responseGuidelines}
+
+🎨 CONVERSATION STYLE:
+${stylePersonality}
+
 RESPONSE STYLE:
 - Keep responses SHORT and CONCISE (4-6 bullet points max)
 - Use bullet points for clarity
@@ -75,7 +96,7 @@ RESPONSE STYLE:
 - ALWAYS end with a call-to-action asking for:
   * Preferred dates
   * Number of people
-  * Specific destination/tour interest
+  * Any specific preferences
 - Example ending: "📍 Şimdi bu tur için düşündüğünüz tarihi ve kişi sayısını yazarsanız, size net fiyat ve uygunluk bilgisini verebilirim."
 
 CONTEXT AWARENESS:
@@ -94,37 +115,34 @@ When describing tours, use this structure:
 RESPONSE GUIDELINES:
 - Be helpful and focused on tour information
 - Ask clarifying questions only when truly needed
-- Use emojis appropriately for the culture`;
+- Use emojis appropriately for the culture
 
-  const stylePrompts: Record<string, string> = {
-    professional: `${basePrompt}
+⚠️ CRITICAL RULES:
+1. Responses should be SHORT (max 4-5 sentences)
+2. Use Markdown format (**bold**, • lists)
+3. Clarify prices (Adult/Child separate)
+4. Encourage reservations
+5. NEVER write long paragraphs
+6. Use maximum 1-2 emojis per response
+7. NUMBER DETECTION: When user says participant count, use EXACTLY that number! "1" means 1, "2" means 2. Never misunderstand!
+8. ❌❌❌ CRITICAL: During reservation NEVER ask for EMAIL! ONLY full name and phone! ❌❌❌
+9. DATE FORMAT: Write dates in proper format (day Month year, month in words - e.g., "12 Aralık 2026")`;
 
-STYLE: Professional and informative
-- Use polite, business-appropriate language
-- Be clear but concise
-- Maintain a respectful tone`,
+  return completePrompt;
+}
 
-    friendly: `${basePrompt}
+// Helper to get intent-based prompt for specific scenarios
+export function getIntentBasedPrompt(
+  intent: string,
+  language: string,
+  conversationStyle: string = 'professional',
+  hasHistory: boolean = false
+): string {
+  const intentPrompt = getIntentPrompt(intent, language);
+  const basePrompt = getSystemPrompt(conversationStyle, language, hasHistory);
+  
+  return `${basePrompt}
 
-STYLE: Friendly and warm
-- Use casual, welcoming language
-- Be enthusiastic but brief
-- Show genuine interest in helping`,
-
-    casual: `${basePrompt}
-
-STYLE: Casual and relaxed
-- Use everyday language
-- Be conversational and brief
-- Keep responses light and easy-going`,
-
-    formal: `${basePrompt}
-
-STYLE: Formal and respectful
-- Use formal language appropriate to the culture
-- Maintain professional distance but be concise
-- Be courteous and precise`
-  };
-
-  return stylePrompts[conversationStyle] || stylePrompts['professional'];
+🎯 CURRENT SCENARIO:
+${intentPrompt}`;
 }
