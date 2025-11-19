@@ -140,6 +140,17 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
     }
   }
   
+  // If no pax yet and message is just a number 1-20, treat as pax count
+  if (!info.paxAdult && !info.paxChild) {
+    const justNumber = message.trim().match(/^(\d+)$/);
+    if (justNumber) {
+      const num = parseInt(justNumber[1]);
+      if (num >= 1 && num <= 20) {
+        info.paxAdult = num;
+      }
+    }
+  }
+  
   // Extract child count
   const childMatch = message.match(/(\d+)\s*(?:çocuk|cocuk|child|children)/i);
   if (childMatch) {

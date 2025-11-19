@@ -149,19 +149,36 @@ serve(async (req) => {
     // Find matching tour if user mentions specific destination
     let selectedTour = null;
     const tourNumber = parseInt(message.trim());
+    const lowerMessage = message.toLowerCase();
     
     if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= DEMO_TOURS.length) {
-      selectedTour = DEMO_TOURS[tourNumber - 1];
-      console.log('🎫 Tour selected by number:', selectedTour.title);
-    } else {
-      // Try to match tour by title or destination
-      const lowerMessage = message.toLowerCase();
-      selectedTour = DEMO_TOURS.find(tour =>
-        lowerMessage.includes(tour.title.toLowerCase()) ||
-        lowerMessage.includes(tour.destination.toLowerCase())
-      );
+      // Only treat as tour number if context makes sense (not asking for pax)
+      const isAskingForPax = conversationState.currentStage === 'booking' || 
+                             conversationState.lastUserMessage?.includes('kaç') ||
+                             conversationState.lastUserMessage?.includes('kişi');
+      
+      if (!isAskingForPax) {
+        selectedTour = DEMO_TOURS[tourNumber - 1];
+        console.log('🎫 Tour selected by number:', selectedTour.title);
+      }
+    }
+    
+    // Try to match tour by keywords if not found by number
+    if (!selectedTour) {
+      selectedTour = DEMO_TOURS.find(tour => {
+        const tourTitle = tour.title.toLowerCase();
+        const tourDest = tour.destination.toLowerCase();
+        
+        // Check for exact matches or key words
+        return lowerMessage.includes(tourTitle) ||
+               lowerMessage.includes(tourDest) ||
+               // Check individual words (e.g., "kültür" matches "Kapadokya Kültür Turu")
+               tourTitle.split(' ').some(word => word.length > 3 && lowerMessage.includes(word)) ||
+               tourDest.split(' ').some(word => word.length > 3 && lowerMessage.includes(word));
+      });
+      
       if (selectedTour) {
-        console.log('🎫 Tour selected by name:', selectedTour.title);
+        console.log('🎫 Tour selected by keywords:', selectedTour.title);
       }
     }
     
@@ -204,18 +221,13 @@ serve(async (req) => {
       };
     }
     
-    // ALWAYS extract customer info during booking flow
-    if (conversationState.currentStage === 'booking' || 
-        conversationState.currentStage === 'deciding' ||
-        detectedIntent.type === 'reservation.wizard' || 
-        detectedIntent.type === 'confirmation') {
-      const currentInfo = conversationState.collectedInfo || {};
-      const extractedInfo = extractCustomerInfo(message, currentInfo);
-      
-      // Merge extracted info with existing
-      conversationState.collectedInfo = { ...currentInfo, ...extractedInfo };
-      console.log('📝 Updated collected info:', conversationState.collectedInfo);
-    }
+    // ALWAYS extract customer info from every message in booking context
+    const currentInfo = conversationState.collectedInfo || {};
+    const extractedInfo = extractCustomerInfo(message, currentInfo);
+    
+    // Merge extracted info with existing
+    conversationState.collectedInfo = { ...currentInfo, ...extractedInfo };
+    console.log('📝 Updated collected info:', conversationState.collectedInfo);
     
     // Check if we have all required info
     const hasFullName = !!(conversationState.collectedInfo?.fullName && 
