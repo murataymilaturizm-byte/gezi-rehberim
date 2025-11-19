@@ -1,6 +1,53 @@
 // Demo tour data configuration
 export const DEMO_AGENCY_ID = "00000000-0000-0000-0000-000000000000";
 
+// Demo payment instructions for demo agency
+export const DEMO_PAYMENT_INSTRUCTIONS = {
+  payment_type: 'deposit',
+  deposit_percentage: 30,
+  payment_methods: ['bank_transfer', 'cash_office', 'cash_on_tour', 'credit_card'],
+  bank_info: {
+    tr: {
+      bank_name: 'Demo Bank',
+      iban: 'TR11 1111 1111 1111 1111 1111 11',
+      account_holder: 'Örnek Turizm Ltd. Şti.'
+    },
+    en: {
+      bank_name: 'Demo Bank',
+      iban: 'TR11 1111 1111 1111 1111 1111 11',
+      account_holder: 'Sample Tourism Ltd.'
+    },
+    de: {
+      bank_name: 'Demo Bank',
+      iban: 'TR11 1111 1111 1111 1111 1111 11',
+      account_holder: 'Beispiel Tourismus GmbH'
+    },
+    ru: {
+      bank_name: 'Демо Банк',
+      iban: 'TR11 1111 1111 1111 1111 1111 11',
+      account_holder: 'Пример Туризм ООО'
+    },
+    fr: {
+      bank_name: 'Banque Démo',
+      iban: 'TR11 1111 1111 1111 1111 1111 11',
+      account_holder: 'Exemple Tourisme SARL'
+    },
+    es: {
+      bank_name: 'Banco Demo',
+      iban: 'TR11 1111 1111 1111 1111 1111 11',
+      account_holder: 'Ejemplo Turismo S.L.'
+    },
+    ar: {
+      bank_name: 'بنك تجريبي',
+      iban: 'TR11 1111 1111 1111 1111 1111 11',
+      account_holder: 'شركة السياحة النموذجية'
+    }
+  },
+  office_address: 'Demo Caddesi No:1 Merkez/İstanbul',
+  working_hours: '09:00 - 18:00',
+  phone_number: '+90 555 111 1111'
+};
+
 export const DEMO_TOURS = [
   {
     id: 'demo-kapadokya-1',

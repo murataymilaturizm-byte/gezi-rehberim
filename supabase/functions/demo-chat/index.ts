@@ -3,13 +3,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { detectIntent } from './services/intent-detector.ts';
 import { handleDemoIntelligently } from './handlers/demo-intelligent.ts';
 import { extractMemory } from './services/memory-extractor.ts';
-import { DEMO_AGENCY_ID, DEMO_TOURS } from './config/demo-tours.ts';
+import { DEMO_AGENCY_ID, DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from './config/demo-tours.ts';
 import { 
   initializeState, 
   updateStateWithIntent, 
   getContextForAI 
 } from './services/demo-state-manager.ts';
 import { DemoConversationState } from './types.ts';
+import { generatePaymentMessage } from './services/payment-message.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -152,7 +153,7 @@ serve(async (req) => {
     );
 
     // Generate intelligent response
-    const response = await handleDemoIntelligently(
+    let response = await handleDemoIntelligently(
       message,
       formattedHistory,
       detectedIntent.type,
@@ -161,6 +162,34 @@ serve(async (req) => {
       conversationStyle,
       conversationState
     );
+
+    // Check if reservation was confirmed and add payment instructions
+    const reservationKeywords = ['rezervasyon', 'booking', 'confirmed', 'onaylandı', 'tamamlandı', 'kaydedildi'];
+    const hasReservationConfirmation = reservationKeywords.some(keyword => 
+      response.toLowerCase().includes(keyword)
+    );
+
+    if (hasReservationConfirmation && selectedTour && detectedIntent.type === 'reservation.wizard') {
+      // Extract price from the selected tour (use first available date)
+      const tourDate = selectedTour.dates?.[0];
+      if (tourDate && tourDate.price_adult) {
+        const totalPrice = tourDate.price_adult; // Simplified for demo
+        const depositPercentage = DEMO_PAYMENT_INSTRUCTIONS.deposit_percentage || 30;
+        const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+
+        const paymentInfo = generatePaymentMessage(
+          DEMO_PAYMENT_INSTRUCTIONS,
+          language,
+          totalPrice,
+          depositAmount
+        );
+
+        if (paymentInfo) {
+          response += paymentInfo;
+          console.log('💳 Payment information added to demo response');
+        }
+      }
+    }
 
     // Extract and update user memory
     const updatedMemory = extractMemory(message, response, conversationState?.userMemory || DEMO_TOURS);
