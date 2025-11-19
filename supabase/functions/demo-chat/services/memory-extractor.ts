@@ -29,6 +29,10 @@ export function extractMemory(
     lastUpdated: new Date().toISOString()
   };
 
+  // Ensure arrays exist
+  if (!memory.preferredDestinations) memory.preferredDestinations = [];
+  if (!memory.interests) memory.interests = [];
+
   const lowerMessage = userMessage.toLowerCase();
   const lowerResponse = aiResponse.toLowerCase();
   const combinedText = `${lowerMessage} ${lowerResponse}`;
