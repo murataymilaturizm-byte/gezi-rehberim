@@ -29,8 +29,8 @@ export const useRegistrations = (activeTab: string, session: any) => {
   const [loading, setLoading] = useState(true);
   
   // Registration filters
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterTour, setFilterTour] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [filterTour, setFilterTour] = useState<string>("ALL");
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
   const [filterPriceMin, setFilterPriceMin] = useState<string>("");
@@ -125,8 +125,8 @@ export const useRegistrations = (activeTab: string, session: any) => {
   };
 
   const clearFilters = () => {
-    setFilterStatus("all");
-    setFilterTour("all");
+    setFilterStatus("ALL");
+    setFilterTour("ALL");
     setFilterDateFrom(undefined);
     setFilterDateTo(undefined);
     setFilterPriceMin("");
@@ -135,8 +135,8 @@ export const useRegistrations = (activeTab: string, session: any) => {
 
   const getFilteredRegistrations = () => {
     return registrations.filter((reg) => {
-      if (filterStatus !== "all" && reg.status !== filterStatus) return false;
-      if (filterTour !== "all" && reg.tour_id !== filterTour) return false;
+      if (filterStatus !== "ALL" && reg.status !== filterStatus) return false;
+      if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
 
       if (filterDateFrom && reg.tour_dates?.departure_date) {
         const regDate = new Date(reg.tour_dates.departure_date);
