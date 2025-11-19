@@ -175,37 +175,35 @@ serve(async (req) => {
       };
     }
     
-    // Extract customer info if in booking/deciding stage and message contains potential info
-    // DO THIS EVEN FOR CONFIRMATION MESSAGES - they might contain missing info!
-    if (conversationState.currentStage === 'booking' || conversationState.currentStage === 'deciding') {
+    // Extract customer info ONLY for reservation.wizard and confirmation intents
+    if (detectedIntent.type === 'reservation.wizard' || detectedIntent.type === 'confirmation') {
       const currentInfo = conversationState.collectedInfo || {};
+      const extractedInfo = extractCustomerInfo(message, currentInfo);
       
-      // Only extract if we're missing info and message looks informative
-      const missingInfo = !currentInfo.fullName || !currentInfo.phone;
-      const hasInfoPattern = /\d{10,}|[a-zA-ZğüşıöçĞÜŞİÖÇ]+\s+[a-zA-ZğüşıöçĞÜŞİÖÇ]+/.test(message);
+      // Only update if we actually extracted something new
+      const hasNewInfo = Object.entries(extractedInfo).some(([key, value]) => {
+        const currentValue = currentInfo[key as keyof typeof currentInfo];
+        return value && value !== currentValue;
+      });
       
-      if (missingInfo && hasInfoPattern) {
-        const extractedInfo = extractCustomerInfo(message, currentInfo);
-        if (Object.keys(extractedInfo).length > 0 && Object.values(extractedInfo).some(v => v)) {
-          conversationState.collectedInfo = { ...currentInfo, ...extractedInfo };
-          console.log('📝 Updated collected info:', conversationState.collectedInfo);
-        }
+      if (hasNewInfo) {
+        conversationState.collectedInfo = extractedInfo;
+        console.log('📝 Updated collected info:', conversationState.collectedInfo);
       }
     }
     
-    // Check if user is confirming reservation
-    const isConfirmationIntent = detectedIntent.type === 'confirmation';
-    const confirmKeywords = ['evet', 'yes', 'onaylıyorum', 'onayla', 'onay', 'tamam', 'ok', 'doğru', 'isterim', 'kabul'];
-    const isConfirmingKeyword = confirmKeywords.some(k => message.toLowerCase().trim().includes(k));
-    
     // Set reservation confirmed if all info is collected and user is confirming
-    if ((isConfirmationIntent || isConfirmingKeyword) && conversationState.collectedInfo) {
-      const hasAllInfo = conversationState.collectedInfo.fullName && 
-                         conversationState.collectedInfo.phone &&
-                         (conversationState.collectedInfo.paxAdult || conversationState.collectedInfo.paxChild);
+    if (detectedIntent.type === 'confirmation' && conversationState.collectedInfo) {
+      const hasAllInfo = !!(
+        conversationState.collectedInfo.fullName && 
+        conversationState.collectedInfo.phone &&
+        (conversationState.collectedInfo.paxAdult || conversationState.collectedInfo.paxChild) &&
+        conversationState.currentTour
+      );
+      
       if (hasAllInfo && !conversationState.reservationConfirmed) {
         conversationState.reservationConfirmed = true;
-        console.log('✅ Reservation confirmed by user');
+        console.log('✅ Reservation confirmed - all info collected and user confirmed');
       }
     }
     

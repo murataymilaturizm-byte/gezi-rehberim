@@ -2,7 +2,7 @@
 
 const CANCELLATION_KEYWORDS = [
   'vazgeçtim', 'vazgeç', 'iptal', 'istemiyorum', 'farklı', 'başka', 
-  'değil', 'olmaz', 'hayır', 'yok', 'cancel', 'no', 'different', 'another',
+  'değil', 'olmaz', 'hayır', 'cancel', 'different', 'another',
   'change', 'değiştir'
 ];
 
