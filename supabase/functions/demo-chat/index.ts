@@ -101,12 +101,27 @@ serve(async (req) => {
     // Initialize or restore conversation state
     let conversationState: DemoConversationState = clientState || initializeState();
     
+    // Ensure collectedInfo exists
+    if (!conversationState.collectedInfo) {
+      conversationState.collectedInfo = {
+        full_name: null,
+        phone: null,
+        pax_adult: null,
+        pax_child: null
+      };
+    }
+    
     // Add user memory to state
     const stateWithMemory = {
       ...conversationState,
       userMemory: profile?.preferences || {}
     };
 
+    // Extract customer information from message
+    const { extractCustomerInfo } = await import('./services/demo-state-manager.ts');
+    conversationState.collectedInfo = extractCustomerInfo(message, conversationState.collectedInfo);
+    console.log('📝 Collected info updated:', conversationState.collectedInfo);
+    
     // Detect intent
     const detectedIntent = await detectIntent(message, formattedHistory, language);
     console.log('🎯 Detected intent:', detectedIntent);
@@ -163,13 +178,31 @@ serve(async (req) => {
       conversationState
     );
 
-    // Check if reservation was confirmed and add payment instructions
-    const reservationKeywords = ['rezervasyon', 'booking', 'confirmed', 'onaylandı', 'tamamlandı', 'kaydedildi'];
-    const hasReservationConfirmation = reservationKeywords.some(keyword => 
+    // Check if user confirmed reservation (keywords like "evet", "onaylıyorum", "yes")
+    const confirmationKeywords = ['evet', 'onaylıyorum', 'onaylayalım', 'yes', 'confirm', 'tamam', 'okay'];
+    const userConfirmedReservation = confirmationKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword)
+    );
+    
+    // Check if ALL info is collected
+    const allInfoCollected = conversationState.collectedInfo?.full_name && 
+                            conversationState.collectedInfo?.phone && 
+                            conversationState.collectedInfo?.pax_adult;
+    
+    // Only mark as confirmed if user explicitly confirmed AND all info is collected
+    if (userConfirmedReservation && allInfoCollected && detectedIntent.type === 'reservation.wizard') {
+      conversationState.reservationConfirmed = true;
+      console.log('✅ User confirmed reservation with all info collected');
+    }
+    
+    // Check if response contains FINAL confirmation (reservation completed)
+    const finalConfirmationKeywords = ['rezervasyon tamamlandı', 'rezervasyon alındı', 'başarıyla alındı', 'kaydedildi', 'reservation completed', 'successfully received'];
+    const hasReservationCompleted = finalConfirmationKeywords.some(keyword => 
       response.toLowerCase().includes(keyword)
     );
 
-    if (hasReservationConfirmation && selectedTour && detectedIntent.type === 'reservation.wizard') {
+    // ONLY add payment info if reservation was COMPLETED (not just during data collection)
+    if (hasReservationCompleted && conversationState.reservationConfirmed && selectedTour) {
       // Extract price from the selected tour (use first available date)
       const tourDate = selectedTour.dates?.[0];
       if (tourDate && tourDate.price_adult) {
