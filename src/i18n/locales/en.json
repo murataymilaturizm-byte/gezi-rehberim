@@ -525,7 +525,7 @@
       },
       "tip": {
         "title": "💡 Tip",
-        "description": "These settings are agency-specific and active in all packages. This information will be automatically shared with your customers via WhatsApp and demo chat after they make a reservation. Make sure your IBAN and bank information is correct."
+        "description": "This information will be automatically shared with your customers via WhatsApp after they make a reservation. Make sure your IBAN and bank information is correct."
       }
     },
     "templates": {
