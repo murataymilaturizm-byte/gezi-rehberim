@@ -449,19 +449,13 @@ Tu función es proporcionar información sobre nuestros tours y ayudar con el pr
 }
 
 // Response guidelines by language
-export function getResponseGuidelines(language: string): string {
-  const guidelines: Record<string, string> = {
-    tr: `
-🎯 YANIT KURALLARI:
-- TÜRKÇE konuş, başka dil KULLANMA
-- Maksimum 3-4 cümle kullan
-- Emojiler kullan ama abartma
-- Samimi ve yardımsever ol
-
-⚠️ KRİTİK FORMAT KURALI - HER BİLGİ AYRI SATIRDA:
-
-TUR LİSTELEME FORMATI (✅):
-**1. Kapadokya Balon Turu**
+export function getResponseGuidelines(language: string, conversationStyle: string = 'friendly'): string {
+  // Emoji usage based on style
+  const useEmojis = conversationStyle === 'friendly' || conversationStyle === 'casual';
+  
+  // Format examples with or without emojis
+  const tourFormat = useEmojis 
+    ? `**1. Kapadokya Balon Turu**
 📍 Destinasyon: Kapadokya
 💰 Fiyat: 1500 TRY (Yetişkin)
 ⏱️ Süre: 1 Gün
@@ -469,20 +463,58 @@ TUR LİSTELEME FORMATI (✅):
 **2. İstanbul Şehir Turu**
 📍 Destinasyon: İstanbul
 💰 Fiyat: 800 TRY (Yetişkin)
-⏱️ Süre: 1 Gün
+⏱️ Süre: 1 Gün`
+    : `**1. Kapadokya Balon Turu**
+Destinasyon: Kapadokya
+Fiyat: 1500 TRY (Yetişkin)
+Süre: 1 Gün
 
-ÖDEME BİLGİLERİ FORMATI (✅):
-💳 Ödeme Bilgileri:
+**2. İstanbul Şehir Turu**
+Destinasyon: İstanbul
+Fiyat: 800 TRY (Yetişkin)
+Süre: 1 Gün`;
+
+  const paymentFormat = useEmojis
+    ? `💳 Ödeme Bilgileri:
 • Toplam Tutar: 3000 TRY
 • Kişi Sayısı: 2 Yetişkin
-• Tarih: 15 Mart 2024
+• Tarih: 15 Mart 2024`
+    : `Ödeme Bilgileri:
+• Toplam Tutar: 3000 TRY
+• Kişi Sayısı: 2 Yetişkin
+• Tarih: 15 Mart 2024`;
 
-REZERVASYON ÖZET FORMATI (✅):
-✅ Rezervasyon Özeti:
+  const reservationFormat = useEmojis
+    ? `✅ Rezervasyon Özeti:
 📅 Tarih: 15 Mart 2024
 👥 Kişi Sayısı: 2 Yetişkin
 💰 Toplam: 3000 TRY
-📞 İletişim: +90 555 123 4567
+📞 İletişim: +90 555 123 4567`
+    : `Rezervasyon Özeti:
+Tarih: 15 Mart 2024
+Kişi Sayısı: 2 Yetişkin
+Toplam: 3000 TRY
+İletişim: +90 555 123 4567`;
+  const emojiNote = useEmojis ? '- Emojiler kullan ama abartma' : '- Emoji kullanma, profesyonel ol';
+  
+  const guidelines: Record<string, string> = {
+    tr: `
+🎯 YANIT KURALLARI:
+- TÜRKÇE konuş, başka dil KULLANMA
+- Maksimum 3-4 cümle kullan
+${emojiNote}
+- Samimi ve yardımsever ol
+
+⚠️ KRİTİK FORMAT KURALI - HER BİLGİ AYRI SATIRDA:
+
+TUR LİSTELEME FORMATI (✅):
+${tourFormat}
+
+ÖDEME BİLGİLERİ FORMATI (✅):
+${paymentFormat}
+
+REZERVASYON ÖZET FORMATI (✅):
+${reservationFormat}
 
 ❌ ASLA BÖYLE YAZMA:
 **1. Kapadokya Balon Turu** • 📍 Destinasyon: Kapadokya • 💰 Fiyat: 1500 TRY • ⏱️ Süre: 1 Gün
@@ -497,34 +529,19 @@ REZERVASYON ÖZET FORMATI (✅):
 🎯 RESPONSE RULES:
 - Speak ENGLISH, do NOT use other languages
 - Use maximum 3-4 sentences
-- Use emojis but don't overdo it
+${useEmojis ? '- Use emojis but don\'t overdo it' : '- No emojis, be professional'}
 - Be friendly and helpful
 
 ⚠️ CRITICAL FORMAT RULE - EACH INFO ON SEPARATE LINE:
 
 TOUR LISTING FORMAT (✅):
-**1. Cappadocia Balloon Tour**
-📍 Destination: Cappadocia
-💰 Price: 1500 TRY (Adult)
-⏱️ Duration: 1 Day
-
-**2. Istanbul City Tour**
-📍 Destination: Istanbul
-💰 Price: 800 TRY (Adult)
-⏱️ Duration: 1 Day
+${tourFormat.replace(/Kapadokya/g, 'Cappadocia').replace(/İstanbul/g, 'Istanbul').replace(/Destinasyon/g, 'Destination').replace(/Fiyat/g, 'Price').replace(/Yetişkin/g, 'Adult').replace(/Süre/g, 'Duration').replace(/Gün/g, 'Day').replace(/Şehir Turu/g, 'City Tour')}
 
 PAYMENT INFO FORMAT (✅):
-💳 Payment Information:
-• Total Amount: 3000 TRY
-• Number of People: 2 Adults
-• Date: March 15, 2024
+${paymentFormat.replace(/Ödeme Bilgileri/g, 'Payment Information').replace(/Toplam Tutar/g, 'Total Amount').replace(/Kişi Sayısı/g, 'Number of People').replace(/Yetişkin/g, 'Adults').replace(/Tarih/g, 'Date').replace(/Mart/g, 'March')}
 
 RESERVATION SUMMARY FORMAT (✅):
-✅ Reservation Summary:
-📅 Date: March 15, 2024
-👥 Number of People: 2 Adults
-💰 Total: 3000 TRY
-📞 Contact: +90 555 123 4567
+${reservationFormat.replace(/Rezervasyon Özeti/g, 'Reservation Summary').replace(/Tarih/g, 'Date').replace(/Kişi Sayısı/g, 'Number of People').replace(/Yetişkin/g, 'Adults').replace(/Toplam/g, 'Total').replace(/İletişim/g, 'Contact').replace(/Mart/g, 'March')}
 
 ❌ NEVER WRITE LIKE THIS:
 **1. Cappadocia Balloon Tour** • 📍 Destination: Cappadocia • 💰 Price: 1500 TRY • ⏱️ Duration: 1 Day
@@ -539,34 +556,19 @@ RESERVATION SUMMARY FORMAT (✅):
 🎯 ANTWORTREGELN:
 - Sprechen Sie DEUTSCH, verwenden Sie KEINE anderen Sprachen
 - Verwenden Sie maximal 3-4 Sätze
-- Verwenden Sie Emojis, aber übertreiben Sie nicht
+${useEmojis ? '- Verwenden Sie Emojis, aber übertreiben Sie nicht' : '- Keine Emojis, seien Sie professionell'}
 - Seien Sie freundlich und hilfsbereit
 
 ⚠️ KRITISCHE FORMATREGEL - JEDE INFO IN SEPARATER ZEILE:
 
 TOURLISTEN-FORMAT (✅):
-**1. Kappadokien Ballonfahrt**
-📍 Ziel: Kappadokien
-💰 Preis: 1500 TRY (Erwachsene)
-⏱️ Dauer: 1 Tag
-
-**2. Istanbul Stadtrundfahrt**
-📍 Ziel: Istanbul
-💰 Preis: 800 TRY (Erwachsene)
-⏱️ Dauer: 1 Tag
+${tourFormat.replace(/Kapadokya/g, 'Kappadokien').replace(/Balon Turu/g, 'Ballonfahrt').replace(/İstanbul/g, 'Istanbul').replace(/Şehir Turu/g, 'Stadtrundfahrt').replace(/Destinasyon/g, 'Ziel').replace(/Fiyat/g, 'Preis').replace(/Yetişkin/g, 'Erwachsene').replace(/Süre/g, 'Dauer').replace(/Gün/g, 'Tag')}
 
 ZAHLUNGSINFORMATIONEN FORMAT (✅):
-💳 Zahlungsinformationen:
-• Gesamtbetrag: 3000 TRY
-• Anzahl der Personen: 2 Erwachsene
-• Datum: 15. März 2024
+${paymentFormat.replace(/Ödeme Bilgileri/g, 'Zahlungsinformationen').replace(/Toplam Tutar/g, 'Gesamtbetrag').replace(/Kişi Sayısı/g, 'Anzahl der Personen').replace(/Yetişkin/g, 'Erwachsene').replace(/Tarih/g, 'Datum').replace(/Mart/g, 'März')}
 
 RESERVIERUNGSÜBERSICHT FORMAT (✅):
-✅ Reservierungsübersicht:
-📅 Datum: 15. März 2024
-👥 Anzahl der Personen: 2 Erwachsene
-💰 Gesamt: 3000 TRY
-📞 Kontakt: +90 555 123 4567
+${reservationFormat.replace(/Rezervasyon Özeti/g, 'Reservierungsübersicht').replace(/Tarih/g, 'Datum').replace(/Kişi Sayısı/g, 'Anzahl der Personen').replace(/Yetişkin/g, 'Erwachsene').replace(/Toplam/g, 'Gesamt').replace(/İletişim/g, 'Kontakt').replace(/Mart/g, 'März')}
 
 ❌ NIEMALS SO SCHREIBEN:
 **1. Kappadokien Ballonfahrt** • 📍 Ziel: Kappadokien • 💰 Preis: 1500 TRY • ⏱️ Dauer: 1 Tag
@@ -581,34 +583,19 @@ RESERVIERUNGSÜBERSICHT FORMAT (✅):
 🎯 ПРАВИЛА ОТВЕТА:
 - Говорите на РУССКОМ, НЕ используйте другие языки
 - Используйте максимум 3-4 предложения
-- Используйте эмодзи, но не переусердствуйте
+${useEmojis ? '- Используйте эмодзи, но не переусердствуйте' : '- Без эмодзи, будьте профессиональны'}
 - Будьте дружелюбны и полезны
 
 ⚠️ КРИТИЧЕСКОЕ ПРАВИЛО ФОРМАТА - КАЖДАЯ ИНФОРМАЦИЯ В ОТДЕЛЬНОЙ СТРОКЕ:
 
 ФОРМАТ СПИСКА ТУРОВ (✅):
-**1. Полет на воздушном шаре в Каппадокии**
-📍 Направление: Каппадокия
-💰 Цена: 1500 TRY (Взрослый)
-⏱️ Продолжительность: 1 День
-
-**2. Экскурсия по Стамбулу**
-📍 Направление: Стамбул
-💰 Цена: 800 TRY (Взрослый)
-⏱️ Продолжительность: 1 День
+${tourFormat.replace(/Kapadokya/g, 'Каппадокия').replace(/Balon Turu/g, 'Полет на воздушном шаре').replace(/İstanbul/g, 'Стамбул').replace(/Şehir Turu/g, 'Экскурсия').replace(/Destinasyon/g, 'Направление').replace(/Fiyat/g, 'Цена').replace(/Yetişkin/g, 'Взрослый').replace(/Süre/g, 'Продолжительность').replace(/Gün/g, 'День')}
 
 ФОРМАТ ПЛАТЕЖНОЙ ИНФОРМАЦИИ (✅):
-💳 Информация об оплате:
-• Общая сумма: 3000 TRY
-• Количество человек: 2 Взрослых
-• Дата: 15 марта 2024
+${paymentFormat.replace(/Ödeme Bilgileri/g, 'Информация об оплате').replace(/Toplam Tutar/g, 'Общая сумма').replace(/Kişi Sayısı/g, 'Количество человек').replace(/Yetişkin/g, 'Взрослых').replace(/Tarih/g, 'Дата').replace(/Mart/g, 'марта')}
 
 ФОРМАТ РЕЗЮМЕ БРОНИРОВАНИЯ (✅):
-✅ Резюме бронирования:
-📅 Дата: 15 марта 2024
-👥 Количество человек: 2 Взрослых
-💰 Итого: 3000 TRY
-📞 Контакт: +90 555 123 4567
+${reservationFormat.replace(/Rezervasyon Özeti/g, 'Резюме бронирования').replace(/Tarih/g, 'Дата').replace(/Kişi Sayısı/g, 'Количество человек').replace(/Yetişkin/g, 'Взрослых').replace(/Toplam/g, 'Итого').replace(/İletişim/g, 'Контакт').replace(/Mart/g, 'марта')}
 
 ❌ НИКОГДА НЕ ПИШИТЕ ТАК:
 **1. Полет на воздушном шаре в Каппадокии** • 📍 Направление: Каппадокия • 💰 Цена: 1500 TRY • ⏱️ Продолжительность: 1 День
@@ -623,34 +610,19 @@ RESERVIERUNGSÜBERSICHT FORMAT (✅):
 🎯 قواعد الرد:
 - تحدث بالعربية، لا تستخدم لغات أخرى
 - استخدم 3-4 جمل كحد أقصى
-- استخدم الرموز التعبيرية لكن لا تبالغ
+${useEmojis ? '- استخدم الرموز التعبيرية لكن لا تبالغ' : '- بدون رموز تعبيرية، كن محترفًا'}
 - كن ودودًا ومفيدًا
 
 ⚠️ قاعدة التنسيق الحرجة - كل معلومة في سطر منفصل:
 
 تنسيق قائمة الجولات (✅):
-**1. جولة بالمنطاد في كابادوكيا**
-📍 الوجهة: كابادوكيا
-💰 السعر: 1500 ليرة تركية (بالغ)
-⏱️ المدة: يوم واحد
-
-**2. جولة في مدينة إسطنبول**
-📍 الوجهة: إسطنبول
-💰 السعر: 800 ليرة تركية (بالغ)
-⏱️ المدة: يوم واحد
+${tourFormat.replace(/Kapadokya/g, 'كابادوكيا').replace(/Balon Turu/g, 'جولة بالمنطاد').replace(/İstanbul/g, 'إسطنبول').replace(/Şehir Turu/g, 'جولة في المدينة').replace(/Destinasyon/g, 'الوجهة').replace(/Fiyat/g, 'السعر').replace(/Yetişkin/g, 'بالغ').replace(/Süre/g, 'المدة').replace(/Gün/g, 'يوم واحد')}
 
 تنسيق معلومات الدفع (✅):
-💳 معلومات الدفع:
-• المبلغ الإجمالي: 3000 ليرة تركية
-• عدد الأشخاص: 2 بالغين
-• التاريخ: 15 مارس 2024
+${paymentFormat.replace(/Ödeme Bilgileri/g, 'معلومات الدفع').replace(/Toplam Tutar/g, 'المبلغ الإجمالي').replace(/Kişi Sayısı/g, 'عدد الأشخاص').replace(/Yetişkin/g, 'بالغين').replace(/Tarih/g, 'التاريخ').replace(/Mart/g, 'مارس').replace(/TRY/g, 'ليرة تركية')}
 
 تنسيق ملخص الحجز (✅):
-✅ ملخص الحجز:
-📅 التاريخ: 15 مارس 2024
-👥 عدد الأشخاص: 2 بالغين
-💰 الإجمالي: 3000 ليرة تركية
-📞 الاتصال: +90 555 123 4567
+${reservationFormat.replace(/Rezervasyon Özeti/g, 'ملخص الحجز').replace(/Tarih/g, 'التاريخ').replace(/Kişi Sayısı/g, 'عدد الأشخاص').replace(/Yetişkin/g, 'بالغين').replace(/Toplam/g, 'الإجمالي').replace(/İletişim/g, 'الاتصال').replace(/Mart/g, 'مارس').replace(/TRY/g, 'ليرة تركية')}
 
 ❌ لا تكتب أبدًا هكذا:
 **1. جولة بالمنطاد في كابادوكيا** • 📍 الوجهة: كابادوكيا • 💰 السعر: 1500 ليرة تركية • ⏱️ المدة: يوم واحد
@@ -665,34 +637,19 @@ RESERVIERUNGSÜBERSICHT FORMAT (✅):
 🎯 RÈGLES DE RÉPONSE:
 - Parlez FRANÇAIS, N'utilisez PAS d'autres langues
 - Utilisez maximum 3-4 phrases
-- Utilisez des emojis mais n'en faites pas trop
+${useEmojis ? '- Utilisez des emojis mais n\'en faites pas trop' : '- Pas d\'emojis, soyez professionnel'}
 - Soyez amical et serviable
 
 ⚠️ RÈGLE DE FORMAT CRITIQUE - CHAQUE INFO SUR UNE LIGNE SÉPARÉE:
 
 FORMAT DE LISTE DES CIRCUITS (✅):
-**1. Tour en montgolfière en Cappadoce**
-📍 Destination: Cappadoce
-💰 Prix: 1500 TRY (Adulte)
-⏱️ Durée: 1 Jour
-
-**2. Visite de la ville d'Istanbul**
-📍 Destination: Istanbul
-💰 Prix: 800 TRY (Adulte)
-⏱️ Durée: 1 Jour
+${tourFormat.replace(/Kapadokya/g, 'Cappadoce').replace(/Balon Turu/g, 'Tour en montgolfière').replace(/İstanbul/g, 'Istanbul').replace(/Şehir Turu/g, 'Visite de la ville').replace(/Destinasyon/g, 'Destination').replace(/Fiyat/g, 'Prix').replace(/Yetişkin/g, 'Adulte').replace(/Süre/g, 'Durée').replace(/Gün/g, 'Jour')}
 
 FORMAT DES INFORMATIONS DE PAIEMENT (✅):
-💳 Informations de paiement:
-• Montant total: 3000 TRY
-• Nombre de personnes: 2 Adultes
-• Date: 15 mars 2024
+${paymentFormat.replace(/Ödeme Bilgileri/g, 'Informations de paiement').replace(/Toplam Tutar/g, 'Montant total').replace(/Kişi Sayısı/g, 'Nombre de personnes').replace(/Yetişkin/g, 'Adultes').replace(/Tarih/g, 'Date').replace(/Mart/g, 'mars')}
 
 FORMAT DU RÉSUMÉ DE RÉSERVATION (✅):
-✅ Résumé de la réservation:
-📅 Date: 15 mars 2024
-👥 Nombre de personnes: 2 Adultes
-💰 Total: 3000 TRY
-📞 Contact: +90 555 123 4567
+${reservationFormat.replace(/Rezervasyon Özeti/g, 'Résumé de la réservation').replace(/Tarih/g, 'Date').replace(/Kişi Sayısı/g, 'Nombre de personnes').replace(/Yetişkin/g, 'Adultes').replace(/Toplam/g, 'Total').replace(/İletişim/g, 'Contact').replace(/Mart/g, 'mars')}
 
 ❌ N'ÉCRIVEZ JAMAIS COMME CECI:
 **1. Tour en montgolfière en Cappadoce** • 📍 Destination: Cappadoce • 💰 Prix: 1500 TRY • ⏱️ Durée: 1 Jour
@@ -707,34 +664,19 @@ FORMAT DU RÉSUMÉ DE RÉSERVATION (✅):
 🎯 REGLAS DE RESPUESTA:
 - Hable ESPAÑOL, NO use otros idiomas
 - Use máximo 3-4 oraciones
-- Use emojis pero no exagere
+${useEmojis ? '- Use emojis pero no exagere' : '- Sin emojis, sea profesional'}
 - Sea amable y servicial
 
 ⚠️ REGLA DE FORMATO CRÍTICA - CADA INFO EN LÍNEA SEPARADA:
 
 FORMATO DE LISTA DE TOURS (✅):
-**1. Tour en Globo en Capadocia**
-📍 Destino: Capadocia
-💰 Precio: 1500 TRY (Adulto)
-⏱️ Duración: 1 Día
-
-**2. Tour por la Ciudad de Estambul**
-📍 Destino: Estambul
-💰 Precio: 800 TRY (Adulto)
-⏱️ Duración: 1 Día
+${tourFormat.replace(/Kapadokya/g, 'Capadocia').replace(/Balon Turu/g, 'Tour en globo').replace(/İstanbul/g, 'Estambul').replace(/Şehir Turu/g, 'Tour de la ciudad').replace(/Destinasyon/g, 'Destino').replace(/Fiyat/g, 'Precio').replace(/Yetişkin/g, 'Adulto').replace(/Süre/g, 'Duración').replace(/Gün/g, 'Día')}
 
 FORMATO DE INFORMACIÓN DE PAGO (✅):
-💳 Información de pago:
-• Monto total: 3000 TRY
-• Número de personas: 2 Adultos
-• Fecha: 15 de marzo de 2024
+${paymentFormat.replace(/Ödeme Bilgileri/g, 'Información de pago').replace(/Toplam Tutar/g, 'Monto total').replace(/Kişi Sayısı/g, 'Número de personas').replace(/Yetişkin/g, 'Adultos').replace(/Tarih/g, 'Fecha').replace(/Mart/g, 'marzo')}
 
 FORMATO DE RESUMEN DE RESERVA (✅):
-✅ Resumen de reserva:
-📅 Fecha: 15 de marzo de 2024
-👥 Número de personas: 2 Adultos
-💰 Total: 3000 TRY
-📞 Contacto: +90 555 123 4567
+${reservationFormat.replace(/Rezervasyon Özeti/g, 'Resumen de reserva').replace(/Tarih/g, 'Fecha').replace(/Kişi Sayısı/g, 'Número de personas').replace(/Yetişkin/g, 'Adultos').replace(/Toplam/g, 'Total').replace(/İletişim/g, 'Contacto').replace(/Mart/g, 'marzo')}
 
 ❌ NUNCA ESCRIBA ASÍ:
 **1. Tour en Globo en Capadocia** • 📍 Destino: Capadocia • 💰 Precio: 1500 TRY • ⏱️ Duración: 1 Día
