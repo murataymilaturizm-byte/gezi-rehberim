@@ -50,36 +50,132 @@ export async function handleDemoIntelligently(
   return response;
 }
 
-// Helper function to format tour context
-// Helper function to format date in Turkish format (e.g., "12 Aralık 2026")
-function formatTurkishDate(dateString: string): string {
-  const months = [
-    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-  ];
-  
+// Multi-language month names
+const MONTH_NAMES: Record<string, string[]> = {
+  tr: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  de: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+  ru: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
+  ar: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+  fr: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+  es: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+};
+
+// Multi-language labels for UI elements
+const UI_LABELS: Record<string, any> = {
+  tr: {
+    destination: 'Destinasyon',
+    price: 'Fiyat',
+    adult: 'Yetişkin',
+    child: 'Çocuk',
+    duration: 'Süre',
+    askPrice: 'Fiyat Sorabilirsiniz',
+    quota: 'Kota',
+    person: 'kişi'
+  },
+  en: {
+    destination: 'Destination',
+    price: 'Price',
+    adult: 'Adult',
+    child: 'Child',
+    duration: 'Duration',
+    askPrice: 'Ask for Price',
+    quota: 'Quota',
+    person: 'people'
+  },
+  de: {
+    destination: 'Ziel',
+    price: 'Preis',
+    adult: 'Erwachsene',
+    child: 'Kind',
+    duration: 'Dauer',
+    askPrice: 'Nach Preis fragen',
+    quota: 'Kontingent',
+    person: 'Personen'
+  },
+  ru: {
+    destination: 'Направление',
+    price: 'Цена',
+    adult: 'Взрослый',
+    child: 'Ребенок',
+    duration: 'Продолжительность',
+    askPrice: 'Уточнить цену',
+    quota: 'Квота',
+    person: 'человек'
+  },
+  ar: {
+    destination: 'الوجهة',
+    price: 'السعر',
+    adult: 'بالغ',
+    child: 'طفل',
+    duration: 'المدة',
+    askPrice: 'اسأل عن السعر',
+    quota: 'الحصة',
+    person: 'شخص'
+  },
+  fr: {
+    destination: 'Destination',
+    price: 'Prix',
+    adult: 'Adulte',
+    child: 'Enfant',
+    duration: 'Durée',
+    askPrice: 'Demander le prix',
+    quota: 'Quota',
+    person: 'personnes'
+  },
+  es: {
+    destination: 'Destino',
+    price: 'Precio',
+    adult: 'Adulto',
+    child: 'Niño',
+    duration: 'Duración',
+    askPrice: 'Preguntar precio',
+    quota: 'Cuota',
+    person: 'personas'
+  }
+};
+
+// Format date according to language
+function formatDate(dateString: string, language: string): string {
+  const months = MONTH_NAMES[language] || MONTH_NAMES.tr;
   const date = new Date(dateString);
   const day = date.getDate();
   const month = months[date.getMonth()];
   const year = date.getFullYear();
   
-  return `${day} ${month} ${year}`;
+  // Different formats for different languages
+  if (language === 'de') {
+    return `${day}. ${month} ${year}`;
+  } else if (language === 'en') {
+    return `${month} ${day}, ${year}`;
+  } else if (language === 'ru') {
+    return `${day} ${month} ${year}`;
+  } else if (language === 'ar') {
+    return `${day} ${month} ${year}`;
+  } else if (language === 'fr') {
+    return `${day} ${month} ${year}`;
+  } else if (language === 'es') {
+    return `${day} de ${month} de ${year}`;
+  }
+  
+  return `${day} ${month} ${year}`; // Turkish default
 }
 
-function formatToursContext(tours: any[]): string {
+function formatToursContext(tours: any[], language: string = 'tr'): string {
+  const labels = UI_LABELS[language] || UI_LABELS.tr;
+  
   return tours.map((tour, index) => {
-    // Get first available date for price
     const firstDate = tour.dates?.[0];
-    const priceText = firstDate ? `${firstDate.price_adult} ${tour.currency}` : 'Fiyat Sorabilirsiniz';
+    const priceText = firstDate ? `${firstDate.price_adult} ${tour.currency}` : labels.askPrice;
     
     const parts = [
       `**${index + 1}. ${tour.title}**`,
-      `• 📍 Destinasyon: ${tour.destination}`,
-      `• 💰 Fiyat: ${priceText} (Yetişkin)`,
+      `• 📍 ${labels.destination}: ${tour.destination}`,
+      `• 💰 ${labels.price}: ${priceText} (${labels.adult})`,
     ];
     
     if (tour.tur_sure) {
-      parts.push(`• ⏱️ Süre: ${tour.tur_sure}`);
+      parts.push(`• ⏱️ ${labels.duration}: ${tour.tur_sure}`);
     }
     
     return parts.join('\n');
@@ -102,6 +198,94 @@ function getIntentPrompt(intent: string, language: string): string {
   return langPrompts[intent as keyof typeof langPrompts] || langPrompts.general;
 }
 
+// Section headers by language
+const SECTION_HEADERS: Record<string, any> = {
+  tr: {
+    conversationStyle: '🎨 KONUŞMA STİLİ',
+    availableTours: '📋 MEVCUT TURLAR',
+    availableDates: '📅 MEVCUT TARİHLER VE FİYATLAR',
+    contextInfo: '🎯 KONTEXT BİLGİSİ',
+    currentIntent: 'Şu anki intent',
+    wizardStep: 'Wizard adımı',
+    selectedTour: 'Seçili tur',
+    lastMentionedTour: 'Son bahsedilen tur',
+    previouslyShownTours: 'Daha önce gösterilen turlar',
+    none: 'Yok'
+  },
+  en: {
+    conversationStyle: '🎨 CONVERSATION STYLE',
+    availableTours: '📋 AVAILABLE TOURS',
+    availableDates: '📅 AVAILABLE DATES AND PRICES',
+    contextInfo: '🎯 CONTEXT INFO',
+    currentIntent: 'Current intent',
+    wizardStep: 'Wizard step',
+    selectedTour: 'Selected tour',
+    lastMentionedTour: 'Last mentioned tour',
+    previouslyShownTours: 'Previously shown tours',
+    none: 'None'
+  },
+  de: {
+    conversationStyle: '🎨 GESPRÄCHSSTIL',
+    availableTours: '📋 VERFÜGBARE TOUREN',
+    availableDates: '📅 VERFÜGBARE TERMINE UND PREISE',
+    contextInfo: '🎯 KONTEXTINFO',
+    currentIntent: 'Aktuelle Absicht',
+    wizardStep: 'Assistenten-Schritt',
+    selectedTour: 'Ausgewählte Tour',
+    lastMentionedTour: 'Zuletzt erwähnte Tour',
+    previouslyShownTours: 'Zuvor angezeigte Touren',
+    none: 'Keine'
+  },
+  ru: {
+    conversationStyle: '🎨 СТИЛЬ РАЗГОВОРА',
+    availableTours: '📋 ДОСТУПНЫЕ ТУРЫ',
+    availableDates: '📅 ДОСТУПНЫЕ ДАТЫ И ЦЕНЫ',
+    contextInfo: '🎯 ИНФОРМАЦИЯ О КОНТЕКСТЕ',
+    currentIntent: 'Текущее намерение',
+    wizardStep: 'Шаг мастера',
+    selectedTour: 'Выбранный тур',
+    lastMentionedTour: 'Последний упомянутый тур',
+    previouslyShownTours: 'Ранее показанные туры',
+    none: 'Нет'
+  },
+  ar: {
+    conversationStyle: '🎨 أسلوب المحادثة',
+    availableTours: '📋 الجولات المتاحة',
+    availableDates: '📅 التواريخ والأسعار المتاحة',
+    contextInfo: '🎯 معلومات السياق',
+    currentIntent: 'النية الحالية',
+    wizardStep: 'خطوة المعالج',
+    selectedTour: 'الجولة المحددة',
+    lastMentionedTour: 'آخر جولة مذكورة',
+    previouslyShownTours: 'الجولات المعروضة سابقًا',
+    none: 'لا يوجد'
+  },
+  fr: {
+    conversationStyle: '🎨 STYLE DE CONVERSATION',
+    availableTours: '📋 CIRCUITS DISPONIBLES',
+    availableDates: '📅 DATES ET PRIX DISPONIBLES',
+    contextInfo: '🎯 INFORMATIONS DE CONTEXTE',
+    currentIntent: 'Intention actuelle',
+    wizardStep: 'Étape de l\'assistant',
+    selectedTour: 'Circuit sélectionné',
+    lastMentionedTour: 'Dernier circuit mentionné',
+    previouslyShownTours: 'Circuits précédemment affichés',
+    none: 'Aucun'
+  },
+  es: {
+    conversationStyle: '🎨 ESTILO DE CONVERSACIÓN',
+    availableTours: '📋 TOURS DISPONIBLES',
+    availableDates: '📅 FECHAS Y PRECIOS DISPONIBLES',
+    contextInfo: '🎯 INFORMACIÓN DE CONTEXTO',
+    currentIntent: 'Intención actual',
+    wizardStep: 'Paso del asistente',
+    selectedTour: 'Tour seleccionado',
+    lastMentionedTour: 'Último tour mencionado',
+    previouslyShownTours: 'Tours mostrados anteriormente',
+    none: 'Ninguno'
+  }
+};
+
 function buildDemoPrompt(
   intent: string,
   language: string,
@@ -112,20 +296,9 @@ function buildDemoPrompt(
 ): string {
   const currentTour = conversationState?.currentTour;
   const wizardStep = conversationState?.wizardStep || 'none';
+  const headers = SECTION_HEADERS[language] || SECTION_HEADERS.tr;
+  const labels = UI_LABELS[language] || UI_LABELS.tr;
   
-  // Format dates for current tour if available
-  let currentTourDatesInfo = '';
-  if (currentTour && currentTour.id) {
-    const tour = tours.find(t => t.id === currentTour.id || t.title === currentTour.title);
-    if (tour && tour.dates && tour.dates.length > 0) {
-      const datesFormatted = tour.dates.map((date: any, idx: number) => {
-        const formattedDate = formatTurkishDate(date.departure_date);
-        return `${idx + 1}. ${formattedDate} - ${date.price_adult} ${tour.currency}`;
-      }).join('\n');
-      
-      currentTourDatesInfo = `\n\n**SEÇİLİ TUR TARİHLERİ (${currentTour.title}):**\n${datesFormatted}\n\nKullanıcıya bu tarihleri otomatik olarak göster ve tarih seçmesini iste.`;
-    }
-  }
   const shownTourIds = conversationState?.shownTourIds || [];
   const userMemory = conversationState?.userMemory;
   const stateContextInfo = conversationState?.stateContext || '';
@@ -133,8 +306,8 @@ function buildDemoPrompt(
   // Extract last discussed tour from history
   const lastDiscussedTour = extractLastTourFromHistory(history);
   
-  // Format tours context
-  const toursContext = formatToursContext(tours);
+  // Format tours context with language support
+  const toursContext = formatToursContext(tours, language);
   
   // Build personalized context from user memory
   const personalizedContext = userMemory ? buildPersonalizedContext(userMemory, tours, language) : '';
@@ -155,79 +328,56 @@ function buildDemoPrompt(
     );
     
     if (selectedTourData?.dates && selectedTourData.dates.length > 0) {
-      datesContext = `\n\n📅 MEVCUT TARİHLER VE FİYATLAR (${selectedTourData.title}):\n`;
+      datesContext = `\n\n${headers.availableDates} (${selectedTourData.title}):\n`;
       selectedTourData.dates.forEach((date: any, index: number) => {
-        const formattedDate = formatTurkishDate(date.departure_date);
+        const formattedDate = formatDate(date.departure_date, language);
         datesContext += `${index + 1}. **${formattedDate}**\n`;
-        datesContext += `   💰 Yetişkin: ${date.price_adult} ${selectedTourData.currency}\n`;
+        datesContext += `   💰 ${labels.adult}: ${date.price_adult} ${selectedTourData.currency}\n`;
         if (date.price_child) {
-          datesContext += `   👶 Çocuk: ${date.price_child} ${selectedTourData.currency}\n`;
+          datesContext += `   👶 ${labels.child}: ${date.price_child} ${selectedTourData.currency}\n`;
         }
-        datesContext += `   📊 Kota: ${date.quota} kişi\n\n`;
+        datesContext += `   📊 ${labels.quota}: ${date.quota} ${labels.person}\n\n`;
       });
     }
   }
 
-  // Build the prompt using helper functions and config
+  // Build the final prompt
   return `${basePrompt}
 
 ${guidelines}
 
-🎨 KONUŞMA STİLİ:
+${headers.conversationStyle}:
 ${stylePersonality}
 
 ${intentPrompt}
 
-📋 MEVCUT TURLAR:
+${headers.availableTours}:
 ${toursContext}
 
 ${datesContext}
 
 ${personalizedContext}
 
-🎯 KONTEXT BİLGİSİ:
-- Şu anki intent: ${intent}
-- Wizard adımı: ${wizardStep}
-- Seçili tur: ${currentTour || 'Yok'}
-- Son bahsedilen tur: ${lastDiscussedTour || 'Yok'}
-- Daha önce gösterilen turlar: ${shownTourIds.length > 0 ? shownTourIds.join(', ') : 'Yok'}
-${stateContextInfo}
-
-⚠️ ÖNEMLİ KURALLAR:
-1. Yanıtları KISA ve ÖZ tut (maksimum 4-5 cümle)
-2. Markdown formatı kullan (**kalın**, • liste)
-3. KRİTİK TUR LİSTESİ: Tur listesi isterken yukarıdaki "MEVCUT TURLAR" bölümünü AYNEN kopyala, hiçbir şeyi değiştirme!
-4. KRİTİK TARİH GÖSTERME: Kullanıcı tur seçtiğinde veya rezervasyon yapmak istediğinde, MUTLAKA yukarıdaki "MEVCUT TARİHLER VE FİYATLAR" listesini HEMEN göster! Kullanıcının sormasını BEKLEME!
-5. Fiyatları netleştir (Yetişkin/Çocuk ayrı)
-6. ASLA uzun paragraflar yazma
-7. Her yanıtta maksimum 1-2 emoji kullan
-8. KRİTİK SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "3 kişi" = 3 kişi, "1 kişi" = 1 kişi
-9. KRİTİK BİLGİ TOPLAMA: SADECE tam ad-soyad ve telefon iste! DAHA ÖNCE TOPLANMIŞ BİLGİYİ TEKRAR İSTEME!
-10. REZERVASYON AKIŞI: Bilgiler toplandıktan sonra özet göster → onay al → SONRA "Rezervasyonunuz başarıyla onaylanmıştır" mesajı ver
-11. ÖDEME BİLGİSİ: Rezervasyon tamamlandıktan sonra otomatik eklenecek, sen bahsetme!`;
+${headers.contextInfo}:
+- ${headers.currentIntent}: ${intent}
+- ${headers.wizardStep}: ${wizardStep}
+- ${headers.selectedTour}: ${currentTour?.title || headers.none}
+- ${headers.lastMentionedTour}: ${lastDiscussedTour || headers.none}
+- ${headers.previouslyShownTours}: ${shownTourIds.length > 0 ? shownTourIds.join(', ') : headers.none}
+${stateContextInfo}`;
 }
 
+// Helper to extract last tour from conversation
 function extractLastTourFromHistory(history: any[]): string | null {
-  const tourPatterns = [
-    /Kapadokya Balon Turu/i,
-    /Kapadokya Kültür Turu/i,
-    /Pamukkale Turu/i,
-    /Antalya Rafting/i,
-    /Ege Turu/i
-  ];
-
-  // Search from newest to oldest
   for (let i = history.length - 1; i >= 0; i--) {
     const msg = history[i];
-    if (msg.role === 'assistant' || msg.role === 'user') {
-      for (const pattern of tourPatterns) {
-        const match = msg.content.match(pattern);
-        if (match) {
-          return match[0];
-        }
+    if (msg.role === 'assistant' && msg.content) {
+      const tourMatch = msg.content.match(/\*\*\d+\.\s+([^*]+)\*\*/);
+      if (tourMatch) {
+        return tourMatch[1].trim();
       }
     }
   }
-
   return null;
 }
+
