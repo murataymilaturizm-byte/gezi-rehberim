@@ -265,7 +265,13 @@ serve(async (req) => {
     );
 
     // Add payment info AFTER AI response if reservation is confirmed
+    // BUT ONLY if:
+    // 1. Reservation is confirmed
+    // 2. Payment info NOT already sent
+    // 3. Current intent is NOT confirmation (wait for next message)
     const shouldAddPayment = conversationState.reservationConfirmed === true && 
+                             !conversationState.paymentInfoSent &&
+                             detectedIntent.type !== 'confirmation' &&
                              conversationState.currentTour &&
                              conversationState.collectedInfo?.fullName &&
                              conversationState.collectedInfo?.phone &&
@@ -291,7 +297,8 @@ serve(async (req) => {
 
           if (paymentInfo) {
             response += '\n\n' + paymentInfo;
-            console.log('💳 Payment information added to demo response');
+            conversationState.paymentInfoSent = true; // Mark as sent
+            console.log('💳 Payment information added to demo response (ONCE)');
           }
         }
       }

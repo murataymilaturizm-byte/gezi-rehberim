@@ -516,6 +516,19 @@ Tu función es proporcionar información sobre nuestros tours y ayudar con el pr
 
 // Response guidelines by language
 export function getResponseGuidelines(language: string, conversationStyle: string = 'friendly'): string {
+  // Language names for extra emphasis
+  const languageNames: Record<string, string> = {
+    tr: 'TÜRKÇE',
+    en: 'ENGLISH',
+    de: 'DEUTSCH',
+    ru: 'РУССКИЙ',
+    ar: 'العربية',
+    fr: 'FRANÇAIS',
+    es: 'ESPAÑOL'
+  };
+  
+  const currentLang = languageNames[language] || 'TÜRKÇE';
+  
   // Emoji usage based on style
   const useEmojis = conversationStyle === 'friendly' || conversationStyle === 'casual';
   
@@ -565,6 +578,8 @@ Toplam: 3000 TRY
   
   const guidelines: Record<string, string> = {
     tr: `
+⚠️⚠️⚠️ SADECE TÜRKÇE CEVAP VER! ⚠️⚠️⚠️
+
 🎯 YANIT KURALLARI:
 - TÜRKÇE konuş, başka dil KULLANMA
 - Maksimum 3-4 cümle kullan
@@ -592,6 +607,8 @@ ${reservationFormat}
 - Uzun paragraflar yazma
 `,
     en: `
+⚠️⚠️⚠️ ANSWER ONLY IN ENGLISH! ⚠️⚠️⚠️
+
 🎯 RESPONSE RULES:
 - Speak ENGLISH, do NOT use other languages
 - Use maximum 3-4 sentences

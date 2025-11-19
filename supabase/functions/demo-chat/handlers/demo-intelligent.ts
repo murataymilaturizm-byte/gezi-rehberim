@@ -342,6 +342,18 @@ function buildDemoPrompt(
   }
 
   // Build the final prompt
+  const languageNames: Record<string, string> = {
+    tr: 'TURKISH (TÜRKÇE)',
+    en: 'ENGLISH',
+    de: 'GERMAN (DEUTSCH)',
+    ru: 'RUSSIAN (РУССКИЙ)',
+    ar: 'ARABIC (العربية)',
+    fr: 'FRENCH (FRANÇAIS)',
+    es: 'SPANISH (ESPAÑOL)'
+  };
+  
+  const currentLanguageName = languageNames[language] || 'TURKISH';
+  
   return `${basePrompt}
 
 ${guidelines}
@@ -364,7 +376,22 @@ ${headers.contextInfo}:
 - ${headers.selectedTour}: ${currentTour?.title || headers.none}
 - ${headers.lastMentionedTour}: ${lastDiscussedTour || headers.none}
 - ${headers.previouslyShownTours}: ${shownTourIds.length > 0 ? shownTourIds.join(', ') : headers.none}
-${stateContextInfo}`;
+${stateContextInfo}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️⚠️⚠️ FINAL CRITICAL INSTRUCTION ⚠️⚠️⚠️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOU MUST ANSWER IN: ${currentLanguageName}
+
+This is NON-NEGOTIABLE. Your ENTIRE response must be in ${currentLanguageName}.
+Do NOT mix languages. Do NOT use any other language.
+Even if you see other languages in the context, respond ONLY in ${currentLanguageName}.
+
+LANGUAGE: ${currentLanguageName}
+YOUR RESPONSE LANGUAGE: ${currentLanguageName}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 }
 
 // Helper to extract last tour from conversation
