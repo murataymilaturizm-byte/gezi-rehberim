@@ -112,70 +112,49 @@ export function formatTourForWhatsApp(tour: Tour, language: string = 'tr'): stri
   return parts.join('\n');
 }
 
-// Format tours as simple list (summary only)
+// Format tours as simple list (summary only, without prices)
 export function formatToursSummary(tours: Tour[], language: string = 'tr'): string {
   const labels = {
     tr: {
-      foundTours: '📍 Şu anda aşağıdaki turlarımız var',
-      departure: 'Çıkış',
-      return: 'Dönüş',
-      moreInfo: '\n\n💡 Hangi turla ilgileniyorsunuz? Numara veya tur adını yazabilirsiniz. 🙂'
+      foundTours: '🌟 *Mevcut Turlarımız*',
+      moreInfo: '\n\n💬 Hangi tur hakkında detaylı bilgi almak istersiniz?'
     },
     en: {
-      foundTours: '📍 Currently available tours',
-      departure: 'Departure',
-      return: 'Return',
-      moreInfo: '\n\n💡 Which tour are you interested in? You can write the tour number or name. 🙂'
+      foundTours: '🌟 *Our Available Tours*',
+      moreInfo: '\n\n💬 Which tour would you like to learn more about?'
     },
     de: {
-      foundTours: '📍 Derzeit verfügbare Touren',
-      departure: 'Abfahrt',
-      return: 'Rückkehr',
-      moreInfo: '\n\n💡 Für welche Tour interessieren Sie sich? Sie können die Tournummer oder den Namen eingeben. 🙂'
+      foundTours: '🌟 *Unsere verfügbaren Touren*',
+      moreInfo: '\n\n💬 Über welche Tour möchten Sie mehr erfahren?'
     },
     ru: {
-      foundTours: '📍 Доступные туры',
-      departure: 'Отправление',
-      return: 'Возвращение',
-      moreInfo: '\n\n💡 Какой тур вас интересует? Напишите номер или название тура. 🙂'
+      foundTours: '🌟 *Наши доступные туры*',
+      moreInfo: '\n\n💬 О каком туре вы хотите узнать больше?'
     },
     ar: {
-      foundTours: '📍 الجولات المتاحة حالياً',
-      departure: 'المغادرة',
-      return: 'العودة',
-      moreInfo: '\n\n💡 أي جولة تهمك؟ يمكنك كتابة رقم الجولة أو اسمها. 🙂'
+      foundTours: '🌟 *جولاتنا المتاحة*',
+      moreInfo: '\n\n💬 عن أي جولة تريد معرفة المزيد؟'
     },
     fr: {
-      foundTours: '📍 Circuits actuellement disponibles',
-      departure: 'Départ',
-      return: 'Retour',
-      moreInfo: '\n\n💡 Quel circuit vous intéresse? Vous pouvez écrire le numéro ou le nom du circuit. 🙂'
+      foundTours: '🌟 *Nos circuits disponibles*',
+      moreInfo: '\n\n💬 Sur quel circuit souhaitez-vous en savoir plus?'
     },
     es: {
-      foundTours: '📍 Tours actualmente disponibles',
-      departure: 'Salida',
-      return: 'Regreso',
-      moreInfo: '\n\n💡 ¿Qué tour te interesa? Puedes escribir el número o el nombre del tour. 🙂'
+      foundTours: '🌟 *Nuestros tours disponibles*',
+      moreInfo: '\n\n💬 ¿Sobre qué tour te gustaría saber más?'
     }
   };
 
   const lang = labels[language as keyof typeof labels] || labels.tr;
 
   const tourList = tours.map((tour, index) => {
-    // Group dates for same tour
-    const allDates = tour.dates.map(dateInfo => {
-      if (dateInfo.return_date && dateInfo.return_date !== dateInfo.departure_date) {
-        return `${lang.departure}: ${formatDate(dateInfo.departure_date, language)} — ${lang.return}: ${formatDate(dateInfo.return_date, language)}`;
-      }
-      return `${formatDate(dateInfo.departure_date, language)}`;
-    });
-
-    const dateLines = allDates.map(d => `   📅 ${d}`).join('\n');
+    const destination = tour.destination ? ` - ${tour.destination}` : '';
+    const places = tour.gezilecek_yerler ? `\n   🗺️ ${tour.gezilecek_yerler}` : '';
     
-    return `${index + 1}. *${tour.title}* (${tour.destination})\n${dateLines}`;
+    return `${index + 1}. 🎯 *${tour.title}*${destination}${places}`;
   }).filter(Boolean).join('\n\n');
 
-  return `${lang.foundTours}:\n\n${tourList}${lang.moreInfo}`;
+  return `${lang.foundTours}\n\n${tourList}${lang.moreInfo}`;
 }
 
 // Format single tour as brief summary (not full details)
