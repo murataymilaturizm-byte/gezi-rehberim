@@ -509,7 +509,7 @@
       },
       "tip": {
         "title": "💡 İpucu",
-        "description": "Bu ayarlar acente özelindedir ve tüm paketlerde aktiftir. Müşterileriniz rezervasyon yaptıktan sonra WhatsApp ve demo chat üzerinden bu bilgiler otomatik olarak paylaşılacaktır. IBAN ve banka bilgilerinizin doğru olduğundan emin olun."
+        "description": "Müşterileriniz rezervasyon yaptıktan sonra WhatsApp üzerinden bu bilgiler otomatik olarak paylaşılacaktır. IBAN ve banka bilgilerinizin doğru olduğundan emin olun."
       }
     },
     "templates": {
