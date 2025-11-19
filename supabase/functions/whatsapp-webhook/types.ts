@@ -46,7 +46,7 @@ export interface TourDate {
 }
 
 export interface MessageIntent {
-  type: 'greeting' | 'tour.list' | 'tour.search' | 'general' | 'reservation.wizard';
+  type: 'greeting' | 'tour.list' | 'tour.search' | 'general' | 'reservation.wizard' | 'confirmation';
   confidence: number;
 }
 

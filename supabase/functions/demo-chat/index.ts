@@ -102,15 +102,6 @@ serve(async (req) => {
     // Initialize or restore conversation state
     let conversationState: DemoConversationState = clientState || initializeState();
     
-    // Extract customer info from current message
-    const extractedInfo = extractCustomerInfo(message, conversationState.collectedInfo || {});
-    
-    // Update collectedInfo if new data found
-    if (Object.keys(extractedInfo).length > 0) {
-      conversationState.collectedInfo = extractedInfo;
-      console.log('📝 Updated collected info:', extractedInfo);
-    }
-    
     // Add user memory to state
     const stateWithMemory = {
       ...conversationState,
@@ -140,44 +131,80 @@ serve(async (req) => {
       }
     }
     
-    // Update conversation state with new intent and selected tour
-    const { state: newState, switchType } = updateStateWithIntent(
-      conversationState,
-      detectedIntent.type,
-      message,
-      selectedTour ? {
-        id: selectedTour.id,
-        title: selectedTour.title,
-        destination: selectedTour.destination,
-        dateId: selectedTour.dates[0]?.id
-      } : undefined
-    );
-    
-    // Update tour info in collectedInfo if a tour is selected
-    if (selectedTour && detectedIntent.type === 'reservation.wizard') {
-      newState.collectedInfo = {
-        ...newState.collectedInfo,
-        tourId: selectedTour.id,
-        tourTitle: selectedTour.title
+    // Update conversation state ONLY if not a confirmation
+    let switchType = 'no_switch';
+    if (detectedIntent.type !== 'confirmation') {
+      const result = updateStateWithIntent(
+        stateWithMemory,
+        detectedIntent.type,
+        message,
+        selectedTour ? {
+          id: selectedTour.id,
+          title: selectedTour.title,
+          destination: selectedTour.destination,
+          dateId: selectedTour.dates[0]?.id
+        } : undefined
+      );
+      
+      conversationState = result.state;
+      switchType = result.switchType;
+      
+      // Update tour info in collectedInfo if a tour is selected
+      if (selectedTour && detectedIntent.type === 'reservation.wizard') {
+        conversationState.collectedInfo = {
+          ...conversationState.collectedInfo,
+          tourId: selectedTour.id,
+          tourTitle: selectedTour.title
+        };
+      }
+    } else {
+      // For confirmations, preserve existing state
+      conversationState = {
+        ...stateWithMemory,
+        lastUserMessage: message
       };
     }
     
-    conversationState = newState;
+    // Extract customer info ONLY if in booking/deciding stage and message contains potential info
+    if ((conversationState.currentStage === 'booking' || conversationState.currentStage === 'deciding') 
+        && detectedIntent.type !== 'confirmation') {
+      const currentInfo = conversationState.collectedInfo || {};
+      
+      // Only extract if we're missing info and message looks informative
+      const missingInfo = !currentInfo.fullName || !currentInfo.phone;
+      const hasInfoPattern = /\d{10,}|[a-zA-ZğüşıöçĞÜŞİÖÇ]+\s+[a-zA-ZğüşıöçĞÜŞİÖÇ]+/.test(message);
+      
+      if (missingInfo && hasInfoPattern) {
+        const extractedInfo = extractCustomerInfo(message, currentInfo);
+        if (Object.keys(extractedInfo).length > 0 && Object.values(extractedInfo).some(v => v)) {
+          conversationState.collectedInfo = { ...currentInfo, ...extractedInfo };
+          console.log('📝 Updated collected info:', conversationState.collectedInfo);
+        }
+      }
+    }
     
     // Check if user is confirming reservation
-    const confirmKeywords = ['evet', 'yes', 'onaylıyorum', 'onayla', 'onay', 'tamam', 'ok', 'doğru'];
-    const isConfirming = confirmKeywords.some(k => message.toLowerCase().trim().includes(k));
+    const isConfirmationIntent = detectedIntent.type === 'confirmation';
+    const confirmKeywords = ['evet', 'yes', 'onaylıyorum', 'onayla', 'onay', 'tamam', 'ok', 'doğru', 'isterim', 'kabul'];
+    const isConfirmingKeyword = confirmKeywords.some(k => message.toLowerCase().trim().includes(k));
     
     // Set reservation confirmed if all info is collected and user is confirming
-    if (isConfirming && conversationState.collectedInfo) {
+    if ((isConfirmationIntent || isConfirmingKeyword) && conversationState.collectedInfo) {
       const hasAllInfo = conversationState.collectedInfo.fullName && 
                          conversationState.collectedInfo.phone &&
-                         conversationState.collectedInfo.paxAdult;
-      if (hasAllInfo) {
+                         (conversationState.collectedInfo.paxAdult || conversationState.collectedInfo.paxChild);
+      if (hasAllInfo && !conversationState.reservationConfirmed) {
         conversationState.reservationConfirmed = true;
         console.log('✅ Reservation confirmed by user');
       }
     }
+    
+    console.log('📊 Current state:', {
+      stage: conversationState.currentStage,
+      currentTour: conversationState.currentTour?.title,
+      collectedInfo: conversationState.collectedInfo,
+      reservationConfirmed: conversationState.reservationConfirmed
+    });
     
     // Get contextual information for AI with switch type
     const stateContext = getContextForAI(
