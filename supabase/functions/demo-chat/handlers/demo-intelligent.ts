@@ -69,14 +69,16 @@ function formatToursContext(tours: any[]): string {
       `${formatTurkishDate(d.departure_date)} (Yetişkin: ${d.price_adult}₺, Çocuk: ${d.price_child || 'N/A'}₺)`
     ).join(', ');
     
-    return `${tour.title} (${tour.destination})
-  📅 Tarihler: ${dates}
-  ⏰ Toplanma: ${tour.toplanma_saati || 'Belirtilmemiş'}
-  📍 Hareket: ${tour.hareket_noktasi || 'Belirtilmemiş'}
-  🚌 Ulaşım: ${tour.ulasim || 'Belirtilmemiş'}
-  🏨 Konaklama: ${tour.konaklama || 'Belirtilmemiş'}
-  ⏳ Süre: ${tour.tur_sure || 'Belirtilmemiş'}
-  🗺️ Gezilecek: ${tour.gezilecek_yerler || 'Belirtilmemiş'}`;
+    return `━━━━━━━━━━━━━━━━━━
+📌 ${tour.title} (${tour.destination})
+━━━━━━━━━━━━━━━━━━
+📅 Tarihler: ${dates}
+⏰ Toplanma: ${tour.toplanma_saati || 'Belirtilmemiş'}
+📍 Hareket: ${tour.hareket_noktasi || 'Belirtilmemiş'}
+🚌 Ulaşım: ${tour.ulasim || 'Belirtilmemiş'}
+🏨 Konaklama: ${tour.konaklama || 'Belirtilmemiş'}
+⏳ Süre: ${tour.tur_sure || 'Belirtilmemiş'}
+🗺️ Gezilecek: ${tour.gezilecek_yerler || 'Belirtilmemiş'}`;
   }).join('\n\n');
 }
 
@@ -156,7 +158,8 @@ ${personalizedContext}
 5. ASLA uzun paragraflar yazma
 6. Her yanıtta maksimum 1-2 emoji kullan
 7. SAYI ALGILAMA: Kullanıcı kişi sayısı söylediğinde AYNEN o sayıyı kullan! "1" diyorsa 1, "2" diyorsa 2. Asla farklı bir sayı anlama!
-8. Rezervasyonda SADECE tam ad-soyad ve telefon iste, E-MAIL İSTEME!`;
+8. ❌❌❌ KRİTİK: Rezervasyonda ASLA E-MAİL İSTEME! SADECE TAM AD-SOYAD VE TELEFON YETER! ❌❌❌
+9. TARİH FORMATI: Tarihleri MUTLAKA "12 Aralık 2026" formatında yaz (gün ay yıl, ay Türkçe yazıyla)`;
 
 }
 

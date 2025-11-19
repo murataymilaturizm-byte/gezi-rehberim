@@ -25,7 +25,7 @@ export const DemoChat = () => {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
-  const [sessionId] = useState(() => {
+  const [sessionId, setSessionId] = useState(() => {
     // Create or get existing session ID
     const stored = localStorage.getItem('demo_chat_session_id');
     if (stored) return stored;
@@ -158,6 +158,7 @@ export const DemoChat = () => {
 
   const resetConversation = () => {
     const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
     localStorage.setItem('demo_chat_session_id', newSessionId);
     localStorage.removeItem('demo-chat-messages');
     
