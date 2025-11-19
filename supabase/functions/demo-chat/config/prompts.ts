@@ -75,10 +75,12 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Rezervasyon senaryosu
 - Hangi tur için olduğunu netleştir
-- Tarih seçimi yap (tarihi "12 Aralık 2026" formatında göster)
+- **OTOMATIK OLARAK** mevcut tarihleri ve fiyatları göster (kullanıcı sormadan!)
+- Tarih seçimini iste (tarihi "12 Aralık 2026" formatında göster)
 - Kişi sayısını dikkatle sor ve AYNEN kullanıcının söylediği rakamı kullan (örn: "1" diyorsa 1, "2" diyorsa 2)
 - ❌ KRİTİK: SADECE tam ad-soyad ve telefon al. E-MAIL ASLA İSTEME! ❌
-- Bilgileri özetle ve onay iste`,
+- Bilgileri özetle ve onay iste
+- ÖNEMLİ: Tur seçildikten hemen sonra tarihleri otomatik göster, kullanıcının sormasını bekleme!`,
     
     question: `🎯 Soru-Cevap senaryosu
 - Soruyu net ve kısa cevapla
