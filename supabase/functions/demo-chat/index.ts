@@ -56,7 +56,7 @@ serve(async (req) => {
     } else {
       console.log('🆕 Initializing fresh context');
       // Auto-detect language on first message
-      const { detectLanguage } = await import('../whatsapp-webhook/services/language.ts');
+      const { detectLanguage } = await import('./services/language.ts');
       const detectedLang = await detectLanguage(message);
       const language = detectedLang || 'tr';
       const conversationStyle = 'friendly'; // Default style
