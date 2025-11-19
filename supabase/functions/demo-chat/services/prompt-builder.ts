@@ -1,37 +1,86 @@
 // Build AI prompts based on conversation context
 import type { AIPromptContext, ConversationStage } from '../types.ts';
 import { formatTourList } from './tour-matcher.ts';
+import { STYLE_PERSONALITIES } from '../config/prompts.ts';
 
 export function buildSystemPrompt(context: AIPromptContext): string {
-  const { stage, collectionStep, currentTour, reservationInfo, availableTours, language } = context;
+  const { stage, collectionStep, currentTour, reservationInfo, availableTours, language, conversationStyle } = context;
   
   const basePrompt = getBasePrompt(language);
+  const stylePrompt = getStylePrompt(language, conversationStyle);
   const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, language);
   const toursInfo = `\n\n📋 Mevcut Turlar:\n${formatTourList(availableTours, language)}`;
   
-  return basePrompt + '\n\n' + stagePrompt + toursInfo;
+  return basePrompt + '\n\n' + stylePrompt + '\n\n' + stagePrompt + toursInfo;
 }
 
 function getBasePrompt(language: string): string {
-  if (language === 'tr') {
-    return `Sen bir seyahat acentesi rezervasyon asistanısın. Görevin müşterilere tur rezervasyonu yaptırmak.
+  const prompts: Record<string, string> = {
+    tr: `Sen bir seyahat acentesi rezervasyon asistanısın. Görevin müşterilere tur rezervasyonu yaptırmak.
 
 🎯 TEMEL KURALLAR:
 1. Kısa ve net cevaplar ver (max 3 cümle)
-2. Emoji kullan ama abartma
-3. Asla bilgi uydurma - sadece verilen turları kullan
-4. Müşteriden bir seferde tek bilgi iste
-5. Her mesajda bir sonraki adımı açıkça belirt`;
-  }
-  
-  return `You are a travel agency reservation assistant. Your job is to help customers make tour reservations.
+2. Asla bilgi uydurma - sadece verilen turları kullan
+3. Müşteriden bir seferde tek bilgi iste
+4. Her mesajda bir sonraki adımı açıkça belirt`,
+    
+    en: `You are a travel agency reservation assistant. Your job is to help customers make tour reservations.
 
 🎯 CORE RULES:
 1. Keep responses short and clear (max 3 sentences)
-2. Use emojis but don't overdo it
-3. Never make up information - only use provided tours
-4. Ask for one piece of information at a time
-5. Clearly indicate the next step in each message`;
+2. Never make up information - only use provided tours
+3. Ask for one piece of information at a time
+4. Clearly indicate the next step in each message`,
+
+    de: `Sie sind ein Reservierungsassistent eines Reisebüros. Ihre Aufgabe ist es, Kunden bei Tourbuchungen zu helfen.
+
+🎯 GRUNDREGELN:
+1. Halten Sie Antworten kurz und klar (max. 3 Sätze)
+2. Erfinden Sie keine Informationen - verwenden Sie nur angegebene Touren
+3. Fragen Sie jeweils nach einer Information
+4. Geben Sie in jeder Nachricht den nächsten Schritt klar an`,
+
+    ru: `Вы ассистент по бронированию в туристическом агентстве. Ваша задача помогать клиентам бронировать туры.
+
+🎯 ОСНОВНЫЕ ПРАВИЛА:
+1. Давайте короткие и четкие ответы (макс 3 предложения)
+2. Не выдумывайте информацию - используйте только предоставленные туры
+3. Спрашивайте по одной информации за раз
+4. Четко указывайте следующий шаг в каждом сообщении`,
+
+    ar: `أنت مساعد حجز في وكالة سفريات. مهمتك مساعدة العملاء في حجز الجولات.
+
+🎯 القواعد الأساسية:
+1. قدم إجابات قصيرة وواضحة (3 جمل كحد أقصى)
+2. لا تختلق المعلومات - استخدم فقط الجولات المقدمة
+3. اطلب معلومة واحدة في كل مرة
+4. حدد الخطوة التالية بوضوح في كل رسالة`,
+
+    fr: `Vous êtes un assistant de réservation d'agence de voyage. Votre rôle est d'aider les clients à réserver des circuits.
+
+🎯 RÈGLES DE BASE:
+1. Donnez des réponses courtes et claires (max 3 phrases)
+2. N'inventez pas d'informations - utilisez uniquement les circuits fournis
+3. Demandez une information à la fois
+4. Indiquez clairement la prochaine étape dans chaque message`,
+
+    es: `Eres un asistente de reservas de agencia de viajes. Tu trabajo es ayudar a los clientes a reservar tours.
+
+🎯 REGLAS BÁSICAS:
+1. Da respuestas cortas y claras (máx 3 frases)
+2. Nunca inventes información - solo usa los tours proporcionados
+3. Pide una información a la vez
+4. Indica claramente el siguiente paso en cada mensaje`
+  };
+
+  return prompts[language] || prompts.tr;
+}
+
+function getStylePrompt(language: string, style: string): string {
+  const personalities = STYLE_PERSONALITIES[language as keyof typeof STYLE_PERSONALITIES];
+  if (!personalities) return '';
+  
+  return personalities[style as keyof typeof personalities] || personalities.friendly;
 }
 
 function getStagePrompt(

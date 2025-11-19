@@ -48,6 +48,11 @@ export interface ConversationContext {
   reservationConfirmed: boolean;
   paymentInfoSent: boolean;
   
+  // Language & Style
+  language: string; // tr, en, de, ru, ar, fr, es
+  conversationStyle: string; // friendly, casual, professional, formal
+  detectedLanguage?: string; // Auto-detected language from first message
+  
   // Conversation metadata
   messageCount: number;
   lastUserMessage: string;
@@ -83,4 +88,5 @@ export interface AIPromptContext {
   reservationInfo: ReservationInfo;
   availableTours: any[];
   language: string;
+  conversationStyle: string;
 }

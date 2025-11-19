@@ -8,7 +8,7 @@ import type {
   ReservationInfo
 } from '../types.ts';
 
-export function createInitialContext(): ConversationContext {
+export function createInitialContext(language: string = 'tr', conversationStyle: string = 'friendly'): ConversationContext {
   return {
     stage: 'GREETING',
     currentTour: null,
@@ -16,6 +16,8 @@ export function createInitialContext(): ConversationContext {
     reservationInfo: {},
     reservationConfirmed: false,
     paymentInfoSent: false,
+    language,
+    conversationStyle,
     messageCount: 0,
     lastUserMessage: '',
     sessionStarted: new Date().toISOString(),
