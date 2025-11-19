@@ -36,8 +36,19 @@ export function validateResponse(
   // Check emoji usage based on style
   const emojiCount = (response.match(/[\u{1F300}-\u{1F9FF}]/gu) || []).length;
   
-  if (conversationStyle === 'professional' && emojiCount > 0) {
-    violations.push(`Professional style should not have emojis (found ${emojiCount})`);
+  // Professional and formal styles: NO emojis allowed
+  if ((conversationStyle === 'professional' || conversationStyle === 'formal') && emojiCount > 0) {
+    violations.push(`${conversationStyle} style should not have emojis (found ${emojiCount})`);
+  }
+  
+  // Friendly style: MUST have at least 2 emojis
+  if (conversationStyle === 'friendly' && emojiCount < 2) {
+    violations.push(`Friendly style must have at least 2 emojis (found ${emojiCount})`);
+  }
+  
+  // Casual style: Should have at least 1 emoji
+  if (conversationStyle === 'casual' && emojiCount < 1) {
+    violations.push(`Casual style should have at least 1 emoji (found ${emojiCount})`);
   }
   
   // Check for program details (day-by-day)
