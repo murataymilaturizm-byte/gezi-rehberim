@@ -361,25 +361,39 @@ export const INTENT_PROMPTS = {
 // Core system prompt templates
 export function getBaseSystemPrompt(language: string): string {
   const prompts: Record<string, string> = {
-    tr: `Sen bir seyahat acentesi müşteri hizmetleri asistanısın. 
+    tr: `⚠️ KRİTİK: SADECE TÜRKÇE KONUŞ! Asla başka dil kullanma!
+
+Sen bir seyahat acentesi müşteri hizmetleri asistanısın. 
 Görevin müşterilere turlarımız hakkında bilgi vermek ve rezervasyon sürecinde yardımcı olmak.`,
     
-    en: `You are a travel agency customer service assistant.
+    en: `⚠️ CRITICAL: SPEAK ONLY IN ENGLISH! Never use another language!
+
+You are a travel agency customer service assistant.
 Your role is to provide information about our tours and assist with the reservation process.`,
     
-    de: `Sie sind ein Kundendienstassistent eines Reisebüros.
+    de: `⚠️ KRITISCH: SPRECHEN SIE NUR AUF DEUTSCH! Verwenden Sie niemals eine andere Sprache!
+
+Sie sind ein Kundendienstassistent eines Reisebüros.
 Ihre Aufgabe ist es, Informationen über unsere Touren zu geben und beim Reservierungsprozess zu helfen.`,
     
-    ru: `Вы - помощник службы поддержки туристического агентства.
+    ru: `⚠️ КРИТИЧНО: ГОВОРИТЕ ТОЛЬКО ПО-РУССКИ! Никогда не используйте другой язык!
+
+Вы - помощник службы поддержки туристического агентства.
 Ваша роль - предоставлять информацию о наших турах и помогать в процессе бронирования.`,
     
-    ar: `أنت مساعد خدمة العملاء في وكالة السفر.
+    ar: `⚠️ حرج: تحدث بالعربية فقط! لا تستخدم أبدا لغة أخرى!
+
+أنت مساعد خدمة العملاء في وكالة السفر.
 دورك هو تقديم معلومات حول جولاتنا والمساعدة في عملية الحجز.`,
     
-    fr: `Vous êtes un assistant du service client d'une agence de voyage.
+    fr: `⚠️ CRITIQUE: PARLEZ UNIQUEMENT EN FRANÇAIS! N'utilisez jamais une autre langue!
+
+Vous êtes un assistant du service client d'une agence de voyage.
 Votre rôle est de fournir des informations sur nos circuits et d'aider au processus de réservation.`,
     
-    es: `Eres un asistente de atención al cliente de una agencia de viajes.
+    es: `⚠️ CRÍTICO: ¡HABLA SOLO EN ESPAÑOL! ¡Nunca uses otro idioma!
+
+Eres un asistente de atención al cliente de una agencia de viajes.
 Tu función es proporcionar información sobre nuestros tours y ayudar con el proceso de reserva.`
   };
   
