@@ -85,6 +85,21 @@ serve(async (req) => {
 
     // Extract reservation info
     const extractedInfo = extractReservationInfo(message, context.reservationInfo, expectedInput);
+    
+    // If date was selected by number and we have a current tour, resolve the actual date
+    if (extractedInfo.selectedDate?.startsWith('date_') && context.currentTour) {
+      const tour = findTourById(context.currentTour.id, DEMO_TOURS);
+      if (tour?.dates) {
+        const dateIndex = parseInt(extractedInfo.selectedDate.split('_')[1]);
+        if (dateIndex >= 0 && dateIndex < tour.dates.length) {
+          const selectedDate = tour.dates[dateIndex];
+          extractedInfo.selectedDate = selectedDate.departure_date;
+          extractedInfo.dateId = selectedDate.id;
+          console.log('📅 Resolved date:', selectedDate.departure_date);
+        }
+      }
+    }
+    
     console.log('📝 Extracted info:', extractedInfo);
 
     // Create processing input
@@ -105,11 +120,24 @@ serve(async (req) => {
       collectionStep: newContext.collectionStep
     });
 
-    // Build AI prompt
+    // Build AI prompt with full tour data including dates
+    let currentTourWithDates = newContext.currentTour;
+    if (newContext.currentTour) {
+      const fullTour = findTourById(newContext.currentTour.id, DEMO_TOURS);
+      if (fullTour) {
+        currentTourWithDates = {
+          ...newContext.currentTour,
+          dates: fullTour.dates,
+          program_kisa: fullTour.program_kisa,
+          gezilecek_yerler: fullTour.gezilecek_yerler
+        };
+      }
+    }
+    
     const systemPrompt = buildSystemPrompt({
       stage: newContext.stage,
       collectionStep: newContext.collectionStep,
-      currentTour: newContext.currentTour,
+      currentTour: currentTourWithDates,
       reservationInfo: newContext.reservationInfo,
       availableTours: DEMO_TOURS,
       language: newContext.language,
