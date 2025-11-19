@@ -1,7 +1,7 @@
 // Extract customer information from messages
 import type { ReservationInfo } from '../types.ts';
 
-const BLACKLIST_WORDS = /evet|onay|tamam|olur|hayır|yes|no|okay|sure|confirm|tur|tour|kayıt|rezerv|book|kişi|kisi|people|lütfen|please|doğru|correct/i;
+const BLACKLIST_WORDS = /evet|onay|tamam|olur|hayır|hayir|yes|no|okay|sure|confirm|tur|tour|kayıt|rezerv|book|kişi|kisi|people|lütfen|lutfen|please|doğru|dogru|correct|senin|benim|onun|bunun|şunun|o|bu|şu|nerede|nasıl|ne|kim|için|icin|gibi|var|yok|ister|yapmak|yapar|söyle|soyle|gerekmez|gerek|lazım|lazim|olmalı|olmali|otobüs|otobus|ödeme|odeme|tarih|seçenek|secenek/i;
 
 export function extractReservationInfo(
   message: string,
@@ -196,14 +196,23 @@ function isValidName(name: string): boolean {
   
   const words = name.split(/\s+/);
   
-  // Must be 2-4 words
-  if (words.length < 2 || words.length > 4) return false;
+  // Must be 2-3 words (not more)
+  if (words.length < 2 || words.length > 3) return false;
+  
+  // Each word must be at least 2 characters
+  if (words.some(w => w.length < 2)) return false;
   
   // Length check
   if (name.length < 5 || name.length > 50) return false;
   
-  // All words should be at least 2 chars
-  if (words.some(w => w.length < 2)) return false;
+  // Must not contain numbers
+  if (/\d/.test(name)) return false;
+  
+  // Check each word against blacklist
+  if (words.some(word => BLACKLIST_WORDS.test(word))) return false;
+  
+  // Must not be a question or command
+  if (/(mi|mu|mı|mü)$/.test(name.toLowerCase())) return false;
   
   return true;
 }

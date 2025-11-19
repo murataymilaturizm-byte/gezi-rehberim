@@ -53,7 +53,6 @@ const transitions: StateTransition[] = [
     from: 'EXPLORING',
     to: 'TOUR_SELECTED',
     condition: (ctx, input) => 
-      ['tour.detail', 'price.inquiry'].includes(input.detectedIntent) && 
       input.selectedTour !== null,
     action: (ctx, input) => ({
       ...ctx,
