@@ -478,8 +478,17 @@
         "label": "Ödeme Yöntemleri",
         "description": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
         "bankTransfer": "Banka Transferi / EFT",
-        "cash": "Nakit",
+        "cashOffice": "Ofiste Nakit Ödeme",
+        "cashOnTour": "Araçta/Tur Günü Nakit Ödeme",
         "creditCard": "Kredi Kartı"
+      },
+      "additionalInfo": {
+        "officeAddress": "Ofis Adresi",
+        "officeAddressPlaceholder": "Örn: Kızılırmak Mah. Dumlupınar Blv. No:3 Çankaya/Ankara",
+        "workingHours": "Çalışma Saatleri",
+        "workingHoursPlaceholder": "Örn: Hafta içi 09:00-18:00, Cumartesi 10:00-16:00",
+        "phoneNumber": "Telefon Numarası",
+        "phoneNumberPlaceholder": "Örn: +90 312 123 45 67"
       },
       "bankInfo": {
         "label": "Banka Bilgileri",

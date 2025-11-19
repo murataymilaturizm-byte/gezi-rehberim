@@ -504,8 +504,17 @@
         "label": "Métodos de Pago",
         "description": "¿Qué métodos de pago acepta?",
         "bankTransfer": "Transferencia Bancaria",
-        "cash": "Efectivo",
+        "cashOffice": "Efectivo en Oficina",
+        "cashOnTour": "Efectivo en Vehículo/Día del Tour",
         "creditCard": "Tarjeta de Crédito"
+      },
+      "additionalInfo": {
+        "officeAddress": "Dirección de Oficina",
+        "officeAddressPlaceholder": "Ej: Calle Principal 123, 28001 Madrid",
+        "workingHours": "Horario de Atención",
+        "workingHoursPlaceholder": "Ej: Lun-Vie 9:00-18:00, Sáb 10:00-16:00",
+        "phoneNumber": "Número de Teléfono",
+        "phoneNumberPlaceholder": "Ej: +34 91 123 45 67"
       },
       "bankInfo": {
         "label": "Información Bancaria",

@@ -494,8 +494,17 @@
         "label": "Payment Methods",
         "description": "Which payment methods do you accept?",
         "bankTransfer": "Bank Transfer / Wire",
-        "cash": "Cash",
+        "cashOffice": "Cash at Office",
+        "cashOnTour": "Cash on Tour / In Vehicle",
         "creditCard": "Credit Card"
+      },
+      "additionalInfo": {
+        "officeAddress": "Office Address",
+        "officeAddressPlaceholder": "E.g: 123 Main St, Suite 100, New York, NY 10001",
+        "workingHours": "Working Hours",
+        "workingHoursPlaceholder": "E.g: Mon-Fri 9:00-18:00, Sat 10:00-16:00",
+        "phoneNumber": "Phone Number",
+        "phoneNumberPlaceholder": "E.g: +1 (555) 123-4567"
       },
       "bankInfo": {
         "label": "Bank Information",

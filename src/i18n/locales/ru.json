@@ -504,8 +504,17 @@
         "label": "Способы Оплаты",
         "description": "Какие способы оплаты вы принимаете?",
         "bankTransfer": "Банковский Перевод",
-        "cash": "Наличные",
+        "cashOffice": "Наличными в Офисе",
+        "cashOnTour": "Наличными в Транспорте/В День Тура",
         "creditCard": "Кредитная Карта"
+      },
+      "additionalInfo": {
+        "officeAddress": "Адрес Офиса",
+        "officeAddressPlaceholder": "Напр: ул. Примерная 123, Москва 101000",
+        "workingHours": "Часы Работы",
+        "workingHoursPlaceholder": "Напр: Пн-Пт 9:00-18:00, Сб 10:00-16:00",
+        "phoneNumber": "Номер Телефона",
+        "phoneNumberPlaceholder": "Напр: +7 495 123-45-67"
       },
       "bankInfo": {
         "label": "Банковская Информация",

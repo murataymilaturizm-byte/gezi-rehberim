@@ -512,8 +512,17 @@
         "label": "Zahlungsmethoden",
         "description": "Welche Zahlungsmethoden akzeptieren Sie?",
         "bankTransfer": "Banküberweisung",
-        "cash": "Bargeld",
+        "cashOffice": "Barzahlung im Büro",
+        "cashOnTour": "Barzahlung im Fahrzeug/am Tourtag",
         "creditCard": "Kreditkarte"
+      },
+      "additionalInfo": {
+        "officeAddress": "Büroadresse",
+        "officeAddressPlaceholder": "z.B: Musterstraße 123, 10115 Berlin",
+        "workingHours": "Öffnungszeiten",
+        "workingHoursPlaceholder": "z.B: Mo-Fr 9:00-18:00, Sa 10:00-16:00",
+        "phoneNumber": "Telefonnummer",
+        "phoneNumberPlaceholder": "z.B: +49 30 12345678"
       },
       "bankInfo": {
         "label": "Bankinformationen",
