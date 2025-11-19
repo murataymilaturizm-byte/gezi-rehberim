@@ -226,17 +226,17 @@ function detectSimpleIntent(message: string, context: ConversationContext): stri
   const lower = message.toLowerCase().trim();
   
   // Greeting
-  if (context.stage === 'GREETING' && /^(merhaba|selam|hello|hi)/.test(lower)) {
+  if (context.stage === 'GREETING' && /^(merhaba|selam|hello|hi|hey)/.test(lower)) {
     return 'greeting';
   }
   
-  // Confirmation
-  if (/^(evet|tamam|olur|onaylıyorum|doğru|yes|ok|okay|confirm)$/.test(lower)) {
+  // Confirmation - broader patterns
+  if (/^(evet|tamam|olur|onaylıyorum|doğru|yes|ok|okay|confirm|correct|kabul)$/i.test(lower)) {
     return 'confirmation';
   }
   
-  // Reservation keywords
-  if (/rezervasyon|ayır|katıl|kayıt|book|reserve|join/.test(lower)) {
+  // Explicit reservation request
+  if (/rezervasyon|ayır|katıl|kayıt|book|reserve|join|istiyorum|want/.test(lower)) {
     return 'reservation.wizard';
   }
   
@@ -248,6 +248,23 @@ function detectSimpleIntent(message: string, context: ConversationContext): stri
   // Price inquiry
   if (/fiyat|kaç para|ne kadar|price|cost|how much/.test(lower)) {
     return 'price.inquiry';
+  }
+  
+  // Check if in collecting info stage and message might be data
+  if (context.stage === 'COLLECTING_INFO') {
+    // If waiting for specific info, assume it's being provided
+    if (context.collectionStep === 'waiting_for_date' && /\d/.test(lower)) {
+      return 'info.provided';
+    }
+    if (context.collectionStep === 'waiting_for_pax' && /\d/.test(lower)) {
+      return 'info.provided';
+    }
+    if (context.collectionStep === 'waiting_for_name' && lower.split(' ').length >= 2) {
+      return 'info.provided';
+    }
+    if (context.collectionStep === 'waiting_for_phone' && /\d{10}/.test(message.replace(/[\s\-]/g, ''))) {
+      return 'info.provided';
+    }
   }
   
   // Tour search/detail (default for most cases)

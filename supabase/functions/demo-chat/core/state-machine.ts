@@ -67,17 +67,24 @@ const transitions: StateTransition[] = [
     from: 'TOUR_SELECTED',
     to: 'COLLECTING_INFO',
     condition: (ctx, input) => 
-      input.detectedIntent === 'reservation.wizard' ||
-      (input.detectedIntent === 'confirmation' && !ctx.reservationInfo.dateId),
-    action: (ctx, input) => ({
-      ...ctx,
-      collectionStep: determineCollectionStep(ctx.reservationInfo),
-      reservationInfo: {
-        ...ctx.reservationInfo,
-        tourId: ctx.currentTour?.id,
-        tourTitle: ctx.currentTour?.title
-      }
-    })
+      (input.detectedIntent === 'reservation.wizard' || input.detectedIntent === 'confirmation') &&
+      ctx.currentTour !== null,
+    action: (ctx, input) => {
+      // Merge any extracted info (like date selection)
+      const mergedInfo = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
+      
+      return {
+        ...ctx,
+        collectionStep: determineCollectionStep(mergedInfo),
+        reservationInfo: {
+          ...mergedInfo,
+          tourId: ctx.currentTour?.id,
+          tourTitle: ctx.currentTour?.title,
+          dateId: mergedInfo.dateId || ctx.currentTour?.dateId,
+          selectedDate: mergedInfo.selectedDate || ctx.currentTour?.selectedDate
+        }
+      };
+    }
   },
   
   // COLLECTING_INFO → COLLECTING_INFO (stay but update step)
@@ -184,41 +191,52 @@ export function processTransition(
 }
 
 // Helper functions
-function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
-  if (!info.dateId && !info.selectedDate) return 'waiting_for_date';
-  if (!info.paxAdult && !info.paxChild) return 'waiting_for_pax';
-  if (!info.fullName) return 'waiting_for_name';
-  if (!info.phone) return 'waiting_for_phone';
+export function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
+  if (!info.dateId && !info.selectedDate) {
+    return 'waiting_for_date';
+  }
+  if (!info.paxAdult) {
+    return 'waiting_for_pax';
+  }
+  if (!info.fullName) {
+    return 'waiting_for_name';
+  }
+  if (!info.phone) {
+    return 'waiting_for_phone';
+  }
   return 'ready_for_confirmation';
 }
 
-function isAllInfoCollected(info: ReservationInfo): boolean {
+export function isAllInfoCollected(info: ReservationInfo): boolean {
   return !!(
     info.tourId &&
     (info.dateId || info.selectedDate) &&
-    (info.paxAdult || info.paxChild) &&
+    info.paxAdult &&
+    info.paxAdult > 0 &&
     info.fullName &&
-    info.phone
+    info.fullName.trim().length >= 3 &&
+    info.phone &&
+    info.phone.length >= 10
   );
 }
 
-function mergeReservationInfo(
+export function mergeReservationInfo(
   existing: ReservationInfo,
   extracted: Partial<ReservationInfo>
 ): ReservationInfo {
-  return {
-    ...existing,
-    ...extracted,
-    // Don't overwrite with undefined
-    tourId: extracted.tourId || existing.tourId,
-    tourTitle: extracted.tourTitle || existing.tourTitle,
-    dateId: extracted.dateId || existing.dateId,
-    selectedDate: extracted.selectedDate || existing.selectedDate,
-    paxAdult: extracted.paxAdult || existing.paxAdult,
-    paxChild: extracted.paxChild || existing.paxChild,
-    fullName: extracted.fullName || existing.fullName,
-    phone: extracted.phone || existing.phone
-  };
+  const merged = { ...existing };
+  
+  // Only update fields that have new values
+  if (extracted.tourId) merged.tourId = extracted.tourId;
+  if (extracted.tourTitle) merged.tourTitle = extracted.tourTitle;
+  if (extracted.dateId) merged.dateId = extracted.dateId;
+  if (extracted.selectedDate) merged.selectedDate = extracted.selectedDate;
+  if (extracted.paxAdult) merged.paxAdult = extracted.paxAdult;
+  if (extracted.paxChild !== undefined) merged.paxChild = extracted.paxChild;
+  if (extracted.fullName) merged.fullName = extracted.fullName.trim();
+  if (extracted.phone) merged.phone = extracted.phone.replace(/[\s\-]/g, '');
+  
+  return merged;
 }
 
 export function getNextExpectedInput(context: ConversationContext): string {
