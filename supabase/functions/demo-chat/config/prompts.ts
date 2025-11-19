@@ -121,10 +121,12 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Reservation scenario
 - Clarify which tour
+- **AUTOMATICALLY** show available dates and prices (without user asking!)
 - Select date (show date in "December 12, 2026" format)
 - Ask number of people carefully and use EXACTLY the number user says (e.g., "1" means 1, "2" means 2)
 - ❌ CRITICAL: Get ONLY full name and phone. NEVER ask for EMAIL! ❌
-- Summarize information and ask for confirmation`,
+- Summarize information and ask for confirmation
+- IMPORTANT: After tour is selected, automatically show dates, don't wait for user to ask!`,
     
     question: `🎯 Q&A scenario
 - Answer clearly and briefly
@@ -209,10 +211,12 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Сценарий бронирования
 - Уточните, для какого тура
+- **АВТОМАТИЧЕСКИ** покажите доступные даты и цены (без запроса пользователя!)
 - Выберите дату (показывайте дату в формате "12 декабря 2026")
 - Спросите количество человек внимательно и используйте ТОЧНО то число, которое говорит пользователь (например, "1" означает 1, "2" означает 2)
 - ❌ КРИТИЧНО: Получите ТОЛЬКО полное имя и телефон. НИКОГДА не спрашивайте EMAIL! ❌
-- Обобщите информацию и попросите подтверждения`,
+- Обобщите информацию и попросите подтверждения
+- ВАЖНО: После выбора тура автоматически покажите даты, не ждите, пока пользователь спросит!`,
     
     question: `🎯 Сценарий вопрос-ответ
 - Отвечайте четко и кратко
@@ -253,10 +257,12 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 سيناريو الحجز
 - وضح أي جولة
+- **تلقائيًا** أظهر التواريخ والأسعار المتاحة (دون أن يسأل المستخدم!)
 - اختر التاريخ (اعرض التاريخ بتنسيق "12 ديسمبر 2026")
 - اسأل عن عدد الأشخاص بعناية واستخدم بالضبط الرقم الذي يقوله المستخدم (مثلاً، "1" يعني 1، "2" يعني 2)
 - ❌ حرج: احصل فقط على الاسم الكامل والهاتف. لا تسأل أبداً عن البريد الإلكتروني! ❌
-- لخص المعلومات واطلب التأكيد`,
+- لخص المعلومات واطلب التأكيد
+- مهم: بعد اختيار الجولة، أظهر التواريخ تلقائيًا، لا تنتظر المستخدم ليسأل!`,
     
     question: `🎯 سيناريو الأسئلة والأجوبة
 - أجب بوضوح وإيجاز
