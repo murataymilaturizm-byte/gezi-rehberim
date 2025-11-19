@@ -173,6 +173,9 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
   
   // Extract full name - SMART extraction including names next to phone numbers
   if (!info.fullName) {
+    // Blacklist words that should NEVER be considered as names
+    const nameBlacklist = /evet|onay|tamam|olur|hayır|yes|no|okay|sure|confirm|tur|tour|kayıt|rezerv|book|kişi|kisi|people|lütfen|please/i;
+    
     // If we found a phone, look for name BEFORE the phone
     if (extractedPhone) {
       // Remove the phone from message and look for name in remaining text
@@ -180,7 +183,8 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
       const nameMatch = beforePhone.match(/([A-ZÇĞİÖŞÜa-zçğıöşü]+\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+)$/i);
       if (nameMatch && nameMatch[1]) {
         const name = nameMatch[1].trim();
-        if (!name.toLowerCase().match(/tur|tour|kayıt|rezerv|book|kişi|kisi|people/)) {
+        // Check against blacklist
+        if (!nameBlacklist.test(name)) {
           const words = name.split(/\s+/);
           if (words.length >= 2 && words.length <= 4 && name.length >= 5 && name.length <= 50) {
             info.fullName = words.map(w => 
@@ -203,7 +207,8 @@ export function extractCustomerInfo(message: string, currentInfo: any = {}) {
         const match = message.match(pattern);
         if (match && match[1]) {
           const name = match[1].trim();
-          if (!name.toLowerCase().match(/tur|tour|kayıt|rezerv|book|kişi|kisi|people/)) {
+          // Check against blacklist
+          if (!nameBlacklist.test(name)) {
             const words = name.split(/\s+/);
             if (words.length >= 2 && words.length <= 4 && name.length >= 5 && name.length <= 50) {
               info.fullName = words.map(w => 
@@ -319,14 +324,17 @@ export function updateStateWithIntent(
       break;
       
     case 'no_switch':
-      // Normal flow - update current tour if provided and no conflict
-      if (selectedTour && !currentState.currentTour) {
-        updatedState.currentTour = {
-          id: selectedTour.id,
-          title: selectedTour.title,
-          destination: selectedTour.destination,
-          dateId: selectedTour.dateId
-        };
+      // Normal flow - update current tour if provided
+      // For tour.detail or tour.search, always update the current tour
+      if (selectedTour) {
+        if (newIntent === 'tour.detail' || newIntent === 'tour.search' || !currentState.currentTour) {
+          updatedState.currentTour = {
+            id: selectedTour.id,
+            title: selectedTour.title,
+            destination: selectedTour.destination,
+            dateId: selectedTour.dateId
+          };
+        }
       }
       break;
   }
