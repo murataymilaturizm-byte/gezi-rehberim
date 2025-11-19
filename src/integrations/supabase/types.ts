@@ -29,6 +29,7 @@ export type Database = {
           longitude: number | null
           message_limit: number | null
           monthly_message_count: number | null
+          payment_instructions: Json | null
           plan_type: string
           region: string | null
           subscription_ends_at: string | null
@@ -55,6 +56,7 @@ export type Database = {
           longitude?: number | null
           message_limit?: number | null
           monthly_message_count?: number | null
+          payment_instructions?: Json | null
           plan_type?: string
           region?: string | null
           subscription_ends_at?: string | null
@@ -81,6 +83,7 @@ export type Database = {
           longitude?: number | null
           message_limit?: number | null
           monthly_message_count?: number | null
+          payment_instructions?: Json | null
           plan_type?: string
           region?: string | null
           subscription_ends_at?: string | null
