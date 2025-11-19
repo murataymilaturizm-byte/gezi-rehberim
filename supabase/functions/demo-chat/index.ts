@@ -49,7 +49,7 @@ serve(async (req) => {
 
   try {
     // TEMPORARY: Lock to TR + Friendly only for clean start
-    const { message, sessionId, state: clientState } = await req.json();
+    const { message, sessionId, conversationState: clientState } = await req.json();
     const language = 'tr'; // LOCKED
     const conversationStyle = 'friendly'; // LOCKED
 
@@ -61,6 +61,7 @@ serve(async (req) => {
     }
 
     console.log('📨 Demo chat request:', { message, sessionId, language, conversationStyle });
+    console.log('📦 Incoming clientState:', clientState ? 'EXISTS' : 'NULL');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -122,6 +123,7 @@ serve(async (req) => {
         console.log('⚠️ State is stale (>30 min old), starting fresh');
         conversationState = initializeState();
       } else {
+        console.log('✅ Using client state:', JSON.stringify(clientState).substring(0, 100));
         // Use client state but ensure all required fields
         conversationState = {
           ...clientState,
@@ -130,6 +132,7 @@ serve(async (req) => {
         };
       }
     } else {
+      console.log('⚠️ No client state, initializing fresh');
       conversationState = initializeState();
     }
     
