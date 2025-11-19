@@ -65,10 +65,6 @@ import FAQManagement from "@/components/FAQManagement";
 import { CustomerFeedback } from "@/components/CustomerFeedback";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { useTours } from "@/hooks/useTours";
-import { useRegistrations } from "@/hooks/useRegistrations";
-import { usePlanFeatures } from "@/hooks/usePlanFeatures";
 import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
 import { SupportChatWidget } from "@/components/SupportChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -128,64 +124,41 @@ const Admin = () => {
   // Active tab state
   const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   
-  // Custom hooks for auth, tours, registrations, and plan features
-  const {
-    session,
-    isSuperAdmin,
-    userAgencyId,
-    agencyName,
-    userName,
-    loading: authLoading,
-    handleLogout
-  } = useAdminAuth();
-  
-  const {
-    tours,
-    loading: toursLoading,
-    tourFormOpen,
-    setTourFormOpen,
-    dateFormOpen,
-    setDateFormOpen,
-    selectedTour,
-    setSelectedTour,
-    selectedTourForDate,
-    setSelectedTourForDate,
-    selectedDate,
-    setSelectedDate,
-    deleteDialog,
-    setDeleteDialog,
-    handleDeleteTour,
-    handleDeleteDate,
-    loadTours
-  } = useTours(activeTab, session);
-  
-  const {
-    registrations,
-    loading: registrationsLoading,
-    filterStatus,
-    setFilterStatus,
-    filterTour,
-    setFilterTour,
-    filterDateFrom,
-    setFilterDateFrom,
-    filterDateTo,
-    setFilterDateTo,
-    filterPriceMin,
-    setFilterPriceMin,
-    filterPriceMax,
-    setFilterPriceMax,
-    handleStatusChange,
-    clearFilters,
-    getFilteredRegistrations,
-    loadRegistrations
-  } = useRegistrations(activeTab, session);
-  
-  const {
-    planType,
-    maxTours,
-    planFeatures,
-    enabledLanguages
-  } = usePlanFeatures(userAgencyId, isSuperAdmin);
+  // Auth & User state
+  const [session, setSession] = useState<Session | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [userAgencyId, setUserAgencyId] = useState<string | null>(null);
+  const [agencyName, setAgencyName] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  // Tours state
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [tourFormOpen, setTourFormOpen] = useState(false);
+  const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
+  const [dateFormOpen, setDateFormOpen] = useState(false);
+  const [selectedTourForDate, setSelectedTourForDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<any>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    type: "tour" | "date" | null;
+    id: string | null;
+  }>({ open: false, type: null, id: null });
+
+  // Registrations state
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [filterTour, setFilterTour] = useState<string>("ALL");
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
+  const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
+  const [filterPriceMin, setFilterPriceMin] = useState<string>("");
+  const [filterPriceMax, setFilterPriceMax] = useState<string>("");
+
+  // Plan features state
+  const [planType, setPlanType] = useState<string>('starter');
+  const [maxTours, setMaxTours] = useState<number>(10);
+  const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
+  const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
   
   // Translation labels
   const statusLabels: Record<string, string> = {
@@ -200,6 +173,139 @@ const Admin = () => {
     N2: t("admin.tourTypes.n2"),
     N3: t("admin.tourTypes.n3")
   };
+
+  // Check user role and load data
+  const checkUserRole = async (userId: string) => {
+    try {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .single();
+
+      const isSuperAdmin = roleData?.role === "super_admin";
+      setIsSuperAdmin(isSuperAdmin);
+
+      if (isSuperAdmin) {
+        setUserName("Super Admin");
+        setLoading(false);
+        return;
+      }
+
+      const { data: agencyData } = await supabase
+        .from("agencies")
+        .select("id, agency_name")
+        .eq("user_id", userId)
+        .single();
+
+      if (agencyData) {
+        setUserAgencyId(agencyData.id);
+        setAgencyName(agencyData.agency_name);
+      }
+
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .single();
+
+      if (profileData?.full_name) {
+        setUserName(profileData.full_name);
+      }
+    } catch (error) {
+      console.error("Role check error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAgencyPlan = async () => {
+    if (!userAgencyId) return;
+
+    try {
+      const { data: agencyData, error } = await supabase
+        .from("agencies")
+        .select("plan_type, enabled_languages")
+        .eq("id", userAgencyId)
+        .single();
+
+      if (error) throw error;
+
+      if (agencyData) {
+        const plan = agencyData.plan_type || 'starter';
+        setPlanType(plan);
+        const maxToursValue = await getMaxTours(plan);
+        const features = await getPlanFeatures(plan);
+        setMaxTours(maxToursValue);
+        setPlanFeatures(features);
+        setEnabledLanguages(agencyData.enabled_languages || []);
+      }
+    } catch (error) {
+      console.error("Error loading agency plan:", error);
+    }
+  };
+
+  const clearFilters = () => {
+    setFilterStatus("ALL");
+    setFilterTour("ALL");
+    setFilterDateFrom(undefined);
+    setFilterDateTo(undefined);
+    setFilterPriceMin("");
+    setFilterPriceMax("");
+  };
+
+  const getFilteredRegistrations = () => {
+    return registrations.filter(reg => {
+      if (filterStatus !== "ALL" && reg.status !== filterStatus) return false;
+      if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
+      
+      if (filterDateFrom || filterDateTo) {
+        const regDate = new Date(reg.created_at);
+        if (filterDateFrom && regDate < filterDateFrom) return false;
+        if (filterDateTo && regDate > filterDateTo) return false;
+      }
+      
+      if (filterPriceMin || filterPriceMax) {
+        const totalPrice = reg.tour_dates.price_adult * reg.pax;
+        if (filterPriceMin && totalPrice < parseFloat(filterPriceMin)) return false;
+        if (filterPriceMax && totalPrice > parseFloat(filterPriceMax)) return false;
+      }
+      
+      return true;
+    });
+  };
+
+  // Auth check
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setTimeout(() => {
+          checkUserRole(session.user.id);
+        }, 0);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      } else {
+        checkUserRole(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  // Load agency plan
+  useEffect(() => {
+    if (userAgencyId && !isSuperAdmin) {
+      loadAgencyPlan();
+    }
+  }, [userAgencyId, isSuperAdmin]);
 
   // Check payment result from URL params
   useEffect(() => {
@@ -546,468 +652,118 @@ const Admin = () => {
               <SuperAdminTwilioSettings />
             ) : activeTab === "agencies" && isSuperAdmin ? (
               <AgencyManagement />
-            ) : activeTab === "contact_forms" && isSuperAdmin ? (
-              <ContactFormsManagement />
              ) : activeTab === "tours" || activeTab === "registrations" ? (
-               <Card className="shadow-card">
-                 <CardHeader>
-                   <div className="flex items-center justify-between">
-                     <CardTitle>
-                       {activeTab === "tours" ? t("admin.tours.title") : t("admin.registrations.title")}
-                     </CardTitle>
-                     <div className="flex gap-2">
-                       {activeTab === "tours" ? (
-                         <>
-                           <Button
-                             onClick={() => exportToursToExcel(tours)}
-                             variant="outline"
-                             disabled={tours.length === 0}
-                           >
-                             <Download className="w-4 h-4 mr-2" />
-                             {t("admin.tours.export")}
-                           </Button>
-                           <Button
-                             onClick={() => {
-                               if (!isSuperAdmin && tours.length >= maxTours) {
-                                 const planNames = {
-                                   'starter': t("admin.planLimits.starterPlan"),
-                                   'professional': t("admin.planLimits.professionalPlan"),
-                                   'enterprise': t("admin.planLimits.enterprisePlan")
-                                 };
-                                 toast({
-                                   title: t("admin.planLimits.tourLimitReached"),
-                                   description: t("admin.planLimits.tourLimitMessage", { 
-                                     planName: planNames[planType as keyof typeof planNames] || planType,
-                                     maxTours: maxTours 
-                                   }),
-                                   variant: "destructive",
-                                 });
-                                 return;
-                               }
-                               setSelectedTour(undefined);
-                               setTourFormOpen(true);
-                             }}
-                             className="bg-gradient-ocean hover:opacity-90"
-                           >
-                             <Plus className="w-4 h-4 mr-2" />
-                             {t("admin.tours.addNew")}
-                           </Button>
-                         </>
-                       ) : (
-                         <Button
-                           onClick={() => exportRegistrationsToExcel(registrations)}
-                           variant="outline"
-                           disabled={registrations.length === 0}
-                         >
-                           <Download className="w-4 h-4 mr-2" />
-                           {t("admin.registrations.export")}
-                         </Button>
-                       )}
-                     </div>
-                   </div>
-                   
-                   {/* Registration Filters */}
-                   {activeTab === "registrations" && (
-              <div className="mt-4 p-3 bg-accent/30 rounded-lg border border-border/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                  {/* Status Filter */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.status")}</label>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder={t("admin.filters.allStatuses")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t("admin.filters.all")}</SelectItem>
-                        <SelectItem value="NEW">{t("admin.status.new")}</SelectItem>
-                        <SelectItem value="PENDING">{t("admin.status.pending")}</SelectItem>
-                        <SelectItem value="CONFIRMED">{t("admin.status.confirmed")}</SelectItem>
-                        <SelectItem value="CANCELLED">{t("admin.status.cancelled")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Tour Filter */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.tour")}</label>
-                    <Select value={filterTour} onValueChange={setFilterTour}>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder={t("admin.filters.allTours")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t("admin.filters.all")}</SelectItem>
-                        {tours.map((tour) => (
-                          <SelectItem key={tour.id} value={tour.id}>
-                            {tour.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Date Filter */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.dateRange")}</label>
-                    <div className="flex gap-1">
-                      <Popover>
-                        <PopoverTrigger asChild>
+              <Card className="shadow-card">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>
+                      {activeTab === "tours" ? t("admin.tours.title") : t("admin.registrations.title")}
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      {activeTab === "tours" ? (
+                        <>
                           <Button
+                            onClick={() => exportToursToExcel(tours)}
                             variant="outline"
-                            className={cn(
-                              "h-8 flex-1 justify-start text-left font-normal text-[10px] px-1.5",
-                              !filterDateFrom && "text-muted-foreground"
-                            )}
+                            disabled={tours.length === 0}
                           >
-                            {filterDateFrom ? format(filterDateFrom, "d MMM", { locale: tr }) : t("admin.filters.from")}
+                            <Download className="w-4 h-4 mr-2" />
+                            {t("admin.tours.export")}
                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={filterDateFrom}
-                            onSelect={setFilterDateFrom}
-                            initialFocus
-                            className="p-3 pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      
-                      <Popover>
-                        <PopoverTrigger asChild>
                           <Button
-                            variant="outline"
-                            className={cn(
-                              "h-8 flex-1 justify-start text-left font-normal text-[10px] px-1.5",
-                              !filterDateTo && "text-muted-foreground"
-                            )}
+                            onClick={() => {
+                              if (!isSuperAdmin && tours.length >= maxTours) {
+                                const planNames = {
+                                  'starter': t("admin.planLimits.starterPlan"),
+                                  'professional': t("admin.planLimits.professionalPlan"),
+                                  'enterprise': t("admin.planLimits.enterprisePlan")
+                                };
+                                toast({
+                                  title: t("admin.planLimits.tourLimitReached"),
+                                  description: t("admin.planLimits.tourLimitMessage", { 
+                                    planName: planNames[planType as keyof typeof planNames] || planType,
+                                    maxTours: maxTours 
+                                  }),
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              setSelectedTour(undefined);
+                              setTourFormOpen(true);
+                            }}
+                            className="bg-gradient-ocean hover:opacity-90"
                           >
-                            {filterDateTo ? format(filterDateTo, "d MMM", { locale: tr }) : t("admin.filters.to")}
+                            <Plus className="w-4 h-4 mr-2" />
+                            {t("admin.tours.addNew")}
                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={filterDateTo}
-                            onSelect={setFilterDateTo}
-                            disabled={(date) => filterDateFrom ? date < filterDateFrom : false}
-                            initialFocus
-                            className="p-3 pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-
-                  {/* Price Range Filter */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-medium text-muted-foreground">{t("admin.filters.priceRange")}</label>
-                    <div className="flex gap-1">
-                      <input
-                        type="number"
-                        value={filterPriceMin}
-                        onChange={(e) => setFilterPriceMin(e.target.value)}
-                        placeholder={t("admin.filters.min")}
-                        className="flex h-8 w-full rounded-md border border-input bg-background px-1.5 py-1 text-[10px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      />
-                      <input
-                        type="number"
-                        value={filterPriceMax}
-                        onChange={(e) => setFilterPriceMax(e.target.value)}
-                        placeholder={t("admin.filters.max")}
-                        className="flex h-8 w-full rounded-md border border-input bg-background px-1.5 py-1 text-[10px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Clear Filters Button */}
-                {(filterStatus !== "all" || filterTour !== "all" || filterDateFrom || filterDateTo || filterPriceMin || filterPriceMax) && (
-                  <div className="mt-2 flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-[10px]"
-                      onClick={() => {
-                        setFilterStatus("all");
-                        setFilterTour("all");
-                        setFilterDateFrom(undefined);
-                        setFilterDateTo(undefined);
-                        setFilterPriceMin("");
-                        setFilterPriceMax("");
-                      }}
-                    >
-                      {t("admin.filters.clear")}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">{t("admin.loading")}</div>
-            ) : activeTab === "tours" ? (
-              <div className="space-y-4">
-                {tours.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {t("admin.tours.noTours")}
-                  </div>
-                ) : (
-                  tours.map((tour) => (
-                    <Card key={tour.id} className="border-border/50">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <h3 className="font-semibold text-lg">{tour.title}</h3>
-                            <div className="flex gap-2 text-sm text-muted-foreground">
-                              <span>{tour.destination}</span>
-                              <span>•</span>
-                              <Badge variant="secondary" className="text-xs">
-                                {tourTypeLabels[tour.type] || tour.type}
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedTourForDate(tour.id);
-                                setSelectedDate(undefined);
-                                setDateFormOpen(true);
-                              }}
-                            >
-                              <Calendar className="w-4 h-4 mr-2" />
-                              {t("admin.tours.addDate")}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedTour(tour);
-                                setTourFormOpen(true);
-                              }}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setDeleteDialog({ open: true, id: tour.id, type: "tour" })}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      {tour.tour_dates && tour.tour_dates.length > 0 && (
-                        <CardContent>
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium">{t("admin.tours.dates")}:</h4>
-                            <div className="space-y-2">
-                              {tour.tour_dates.map((date) => (
-                                <div
-                                  key={date.id}
-                                  className="flex items-center justify-between p-2 rounded-lg bg-accent/50 text-sm"
-                                >
-                                  <div className="flex gap-4">
-                                    <span>
-                                      {format(new Date(date.departure_date), "d MMM yyyy", { locale: tr })}
-                                      {date.return_date && date.return_date !== date.departure_date && (
-                                        <> - {format(new Date(date.return_date), "d MMM yyyy", { locale: tr })}</>
-                                      )}
-                                    </span>
-                                    <span className="font-medium">{date.price_adult} {tour.currency}</span>
-                                    <span className="text-muted-foreground">{t("admin.tours.quota")}: {date.quota}</span>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedTourForDate(tour.id);
-                                        setSelectedDate(date);
-                                        setDateFormOpen(true);
-                                      }}
-                                    >
-                                      <Pencil className="w-3 h-3" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setDeleteDialog({ open: true, id: date.id, type: "date" })}
-                                    >
-                                      <Trash2 className="w-3 h-3 text-destructive" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </CardContent>
+                        </>
+                      ) : (
+                        <Button
+                          onClick={() => exportRegistrationsToExcel(registrations)}
+                          variant="outline"
+                          disabled={registrations.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          {t("admin.registrations.export")}
+                        </Button>
                       )}
-                    </Card>
-                  ))
-                )}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("admin.registrations.name")}</TableHead>
-                    <TableHead>{t("admin.registrations.phone")}</TableHead>
-                    <TableHead>{t("admin.registrations.tour")}</TableHead>
-                    <TableHead>{t("admin.registrations.date")}</TableHead>
-                    <TableHead className="text-center">{t("admin.registrations.pax")}</TableHead>
-                    <TableHead className="text-right">Birim Fiyat</TableHead>
-                    <TableHead className="text-right font-semibold">Toplam</TableHead>
-                    <TableHead>{t("admin.registrations.status")}</TableHead>
-                    <TableHead className="text-center">Not</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(() => {
-                    // Apply filters
-                    let filteredRegistrations = registrations.filter((reg) => {
-                      // Status filter
-                      if (filterStatus !== "all" && reg.status !== filterStatus) {
-                        return false;
-                      }
+                    </div>
+                  </div>
 
-                      // Tour filter
-                      if (filterTour !== "all" && reg.tour_id !== filterTour) {
-                        return false;
-                      }
+                  {/* Registration Filters */}
+                  {activeTab === "registrations" && (
+                    <div className="mt-4">
+                      <RegistrationFilters
+                        filterStatus={filterStatus}
+                        setFilterStatus={setFilterStatus}
+                        filterTour={filterTour}
+                        setFilterTour={setFilterTour}
+                        tours={tours}
+                        filterDateFrom={filterDateFrom}
+                        setFilterDateFrom={setFilterDateFrom}
+                        filterDateTo={filterDateTo}
+                        setFilterDateTo={setFilterDateTo}
+                        filterPriceMin={filterPriceMin}
+                        setFilterPriceMin={setFilterPriceMin}
+                        filterPriceMax={filterPriceMax}
+                        setFilterPriceMax={setFilterPriceMax}
+                        onClearFilters={clearFilters}
+                      />
+                    </div>
+                  )}
+                </CardHeader>
 
-                      // Date range filter
-                      if (filterDateFrom && reg.tour_dates?.departure_date) {
-                        const regDate = new Date(reg.tour_dates.departure_date);
-                        if (regDate < filterDateFrom) {
-                          return false;
-                        }
-                      }
-
-                      if (filterDateTo && reg.tour_dates?.departure_date) {
-                        const regDate = new Date(reg.tour_dates.departure_date);
-                        if (regDate > filterDateTo) {
-                          return false;
-                        }
-                      }
-
-                      // Price filter
-                      const unitPrice = reg.tour_dates?.price_adult || 0;
-                      const totalPrice = unitPrice * reg.pax;
-
-                      if (filterPriceMin && totalPrice < Number(filterPriceMin)) {
-                        return false;
-                      }
-
-                      if (filterPriceMax && totalPrice > Number(filterPriceMax)) {
-                        return false;
-                      }
-
-                      return true;
-                    });
-
-                    if (filteredRegistrations.length === 0) {
-                      return (
-                        <TableRow>
-                          <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
-                            {registrations.length === 0 
-                              ? t("admin.registrations.noRegistrations")
-                              : t("admin.registrations.noFilteredResults")}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }
-
-                    return filteredRegistrations.map((reg) => {
-                      const unitPrice = reg.tour_dates?.price_adult || 0;
-                      const totalPrice = unitPrice * reg.pax;
-                      
-                      return (
-                        <TableRow key={reg.id} className="hover:bg-accent/50">
-                          <TableCell className="font-medium">{reg.full_name}</TableCell>
-                          <TableCell>
-                            <a href={`tel:${reg.phone}`} className="text-primary hover:underline">
-                              {reg.phone}
-                            </a>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1">
-                              <span className="font-medium">{reg.tours?.title}</span>
-                              <span className="text-xs text-muted-foreground">{reg.tours?.destination}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {reg.tour_dates?.departure_date &&
-                              format(new Date(reg.tour_dates.departure_date), "d MMM yyyy", { locale: tr })}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="outline" className="font-semibold">
-                              {reg.pax} kişi
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right text-muted-foreground">
-                            {unitPrice > 0 ? `${unitPrice.toLocaleString('tr-TR')}₺` : '-'}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {totalPrice > 0 ? (
-                              <span className="font-bold text-lg text-primary">
-                                {totalPrice.toLocaleString('tr-TR')}₺
-                              </span>
-                            ) : '-'}
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={reg.status}
-                              onValueChange={(value) => handleStatusChange(reg.id, value as "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED")}
-                            >
-                              <SelectTrigger className="w-[140px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="NEW">
-                                  <Badge variant="secondary">{statusLabels.NEW}</Badge>
-                                </SelectItem>
-                                <SelectItem value="PENDING">
-                                  <Badge variant="secondary">{statusLabels.PENDING}</Badge>
-                                </SelectItem>
-                                <SelectItem value="CONFIRMED">
-                                  <Badge variant="default">{statusLabels.CONFIRMED}</Badge>
-                                </SelectItem>
-                                <SelectItem value="CANCELLED">
-                                  <Badge variant="destructive">{statusLabels.CANCELLED}</Badge>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {reg.note && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  toast({
-                                    title: "Rezervasyon Notu",
-                                    description: reg.note,
-                                    duration: 5000,
-                                  });
-                                }}
-                              >
-                                📝
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    });
-                  })()}
-                 </TableBody>
-               </Table>
-             )}
-           </CardContent>
-         </Card>
+                <CardContent>
+                  {activeTab === "tours" ? (
+                    <ToursList
+                      tours={tours}
+                      loading={loading}
+                      onAddDate={(tourId) => {
+                        setSelectedTourForDate(tourId);
+                        setSelectedDate(undefined);
+                        setDateFormOpen(true);
+                      }}
+                      onEditTour={(tour) => {
+                        setSelectedTour(tour as any);
+                        setTourFormOpen(true);
+                      }}
+                      onDeleteTour={(tourId) => setDeleteDialog({ open: true, id: tourId, type: "tour" })}
+                      onEditDate={(tourId, date) => {
+                        setSelectedTourForDate(tourId);
+                        setSelectedDate(date);
+                        setDateFormOpen(true);
+                      }}
+                      onDeleteDate={(dateId) => setDeleteDialog({ open: true, id: dateId, type: "date" })}
+                    />
+                  ) : (
+                    <RegistrationsList
+                      registrations={getFilteredRegistrations()}
+                      loading={loading}
+                      onStatusChange={handleStatusChange}
+                    />
+                  )}
+                </CardContent>
+              </Card>
             ) : null}
           </main>
 
