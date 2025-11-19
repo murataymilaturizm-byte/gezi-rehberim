@@ -535,7 +535,7 @@
       },
       "tip": {
         "title": "💡 Consejo",
-        "description": "Estas configuraciones son específicas de la agencia y están activas en todos los paquetes. Esta información se compartirá automáticamente con sus clientes a través de WhatsApp y el chat de demostración después de realizar una reserva. Asegúrese de que su IBAN e información bancaria sean correctos."
+        "description": "Esta información se compartirá automáticamente con sus clientes a través de WhatsApp después de realizar una reserva. Asegúrese de que su IBAN e información bancaria sean correctos."
       }
     },
     "templates": {

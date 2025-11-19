@@ -543,7 +543,7 @@
       },
       "tip": {
         "title": "💡 Tipp",
-        "description": "Diese Einstellungen sind agenturspezifisch und in allen Paketen aktiv. Diese Informationen werden Ihren Kunden automatisch über WhatsApp und Demo-Chat mitgeteilt, nachdem sie eine Reservierung vorgenommen haben. Stellen Sie sicher, dass Ihre IBAN und Bankinformationen korrekt sind."
+        "description": "Diese Informationen werden Ihren Kunden automatisch über WhatsApp mitgeteilt, nachdem sie eine Reservierung vorgenommen haben. Stellen Sie sicher, dass Ihre IBAN und Bankinformationen korrekt sind."
       }
     },
     "templates": {

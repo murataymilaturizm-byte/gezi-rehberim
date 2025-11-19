@@ -506,7 +506,7 @@
       },
       "tip": {
         "title": "💡 Astuce",
-        "description": "Ces paramètres sont spécifiques à l'agence et actifs dans tous les forfaits. Ces informations seront automatiquement partagées avec vos clients via WhatsApp et le chat de démonstration après qu'ils aient effectué une réservation. Assurez-vous que votre IBAN et vos informations bancaires sont corrects."
+        "description": "Ces informations seront automatiquement partagées avec vos clients via WhatsApp après qu'ils aient effectué une réservation. Assurez-vous que votre IBAN et vos informations bancaires sont corrects."
       }
     },
     "templates": {
