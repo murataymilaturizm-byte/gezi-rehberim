@@ -32,8 +32,6 @@ serve(async (req) => {
 
   try {
     const { message: rawMessage, sessionId, conversationState: clientState } = await req.json();
-    const language = 'tr'; // LOCKED for now
-    const conversationStyle = 'friendly'; // LOCKED for now
 
     // Sanitize input
     const message = sanitizeInput(rawMessage);
@@ -41,9 +39,6 @@ serve(async (req) => {
     if (!sessionId) {
       throw new Error('Session ID required');
     }
-
-    console.log('📨 Demo chat request:', { message, sessionId, language, conversationStyle });
-    console.log('📦 Incoming clientState:', clientState ? 'EXISTS' : 'NULL');
 
     // Initialize Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -58,8 +53,19 @@ serve(async (req) => {
       context = clientState;
     } else {
       console.log('🆕 Initializing fresh context');
-      context = createInitialContext();
+      // Auto-detect language on first message
+      const { detectLanguage } = await import('../whatsapp-webhook/services/language.ts');
+      const detectedLang = await detectLanguage(message);
+      const language = detectedLang || 'tr';
+      const conversationStyle = 'friendly'; // Default style
+      
+      context = createInitialContext(language, conversationStyle);
+      context.detectedLanguage = detectedLang || undefined;
+      
+      console.log(`🌍 Language: ${language} (detected: ${detectedLang}), Style: ${conversationStyle}`);
     }
+
+    console.log('📨 Demo chat:', { message, sessionId, stage: context.stage, lang: context.language, style: context.conversationStyle });
 
     // Detect intent using simple rules (could use AI here too)
     const detectedIntent = detectSimpleIntent(message, context);
@@ -85,7 +91,7 @@ serve(async (req) => {
       detectedIntent,
       extractedInfo,
       selectedTour,
-      language
+      language: context.language
     };
 
     // Process state transition
@@ -104,7 +110,8 @@ serve(async (req) => {
       currentTour: newContext.currentTour,
       reservationInfo: newContext.reservationInfo,
       availableTours: DEMO_TOURS,
-      language
+      language: newContext.language,
+      conversationStyle: newContext.conversationStyle
     });
 
     // Get conversation history
@@ -144,7 +151,7 @@ serve(async (req) => {
 
           const paymentInfo = generatePaymentMessage(
             DEMO_PAYMENT_INSTRUCTIONS,
-            language,
+            newContext.language,
             totalPrice,
             depositAmount
           );
