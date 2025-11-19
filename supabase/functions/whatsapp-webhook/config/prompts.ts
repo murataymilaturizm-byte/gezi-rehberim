@@ -75,10 +75,11 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Rezervasyon senaryosu
 - Hangi tur için olduğunu netleştir
-- Tarih seçimi yap (tarihi "12 Aralık 2026" formatında göster)
-- Kişi sayısını dikkatle sor ve AYNEN kullanıcının söylediği rakamı kullan (örn: "1" diyorsa 1, "2" diyorsa 2)
-- ❌ KRİTİK: SADECE tam ad-soyad ve telefon al. E-MAIL ASLA İSTEME! ❌
-- Bilgileri özetle ve onay iste`,
+- TARİH SEÇİMİ: Tur seçildiğinde MUTLAKA mevcut tarihleri fiyatlarla birlikte listele
+- Kişi sayısını dikkatle sor ve AYNEN kullanıcının söylediği rakamı kullan (örn: "1" diyorsa 1, "2" diyorsa 2, "3" diyorsa 3)
+- ❌ KRİTİK: SADECE tam ad-soyad iste. E-MAIL VE TELEFON ASLA İSTEME! ❌
+- Bilgileri özetle ve onay iste
+- ÖDEME BİLGİSİ: Rezervasyon tamamlandıktan sonra otomatik eklenecek, sen bahsetme!`,
     
     question: `🎯 Soru-Cevap senaryosu
 - Soruyu net ve kısa cevapla
@@ -119,10 +120,11 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Reservation scenario
 - Clarify which tour
-- Select date (show date in "December 12, 2026" format)
-- Ask number of people carefully and use EXACTLY the number user says (e.g., "1" means 1, "2" means 2)
-- ❌ CRITICAL: Get ONLY full name and phone. NEVER ask for EMAIL! ❌
-- Summarize information and ask for confirmation`,
+- DATE SELECTION: When tour is selected, ALWAYS list available dates with prices
+- Ask number of people carefully and use EXACTLY the number user says (e.g., "1" means 1, "2" means 2, "3" means 3)
+- ❌ CRITICAL: Get ONLY full name. NEVER ask for EMAIL or PHONE! ❌
+- Summarize information and ask for confirmation
+- PAYMENT INFO: Will be added automatically after reservation completion, don't mention it!`,
     
     question: `🎯 Q&A scenario
 - Answer clearly and briefly
@@ -149,31 +151,32 @@ export const INTENT_PROMPTS = {
     'tour.search': `🎯 Toursuchszenario
 - Filtern und schlagen Sie relevante Touren vor
 - Fügen Sie eine kurze Beschreibung hinzu
-- Geben Sie Preis- und Datumsinformationen an`,
+- Geben Sie Preis- und Datumsangaben an`,
     
     'tour.detail': `🎯 Tourdetailszenario
 - Listen Sie die Highlights der Tour auf
-- Daten, Preise, Sehenswürdigkeiten
+- Termine, Preise, Sehenswürdigkeiten
 - Ermutigen Sie zur Reservierung`,
     
     'price.inquiry': `🎯 Preisanfrageszenario
 - Geben Sie klare Preisinformationen
 - Trennen Sie Erwachsenen- und Kinderpreise
-- Erwähnen Sie enthaltene Dienstleistungen`,
+- Erwähnen Sie enthaltene Leistungen`,
     
     'reservation.wizard': `🎯 Reservierungsszenario
-- Klären Sie, für welche Tour
-- Wählen Sie ein Datum (zeigen Sie Datum im Format "12. Dezember 2026")
-- Fragen Sie sorgfältig nach Personenzahl und verwenden Sie GENAU die Zahl, die der Benutzer sagt (z.B. "1" bedeutet 1, "2" bedeutet 2)
-- ❌ KRITISCH: Holen Sie NUR vollständigen Namen und Telefon. Fragen Sie NIEMALS nach E-MAIL! ❌
-- Fassen Sie Informationen zusammen und bitten Sie um Bestätigung`,
+- Klären Sie, um welche Tour es sich handelt
+- DATUMSAUSWAHL: Wenn die Tour ausgewählt ist, listen Sie IMMER verfügbare Termine mit Preisen auf
+- Fragen Sie sorgfältig nach der Personenanzahl und verwenden Sie GENAU die Zahl, die der Benutzer sagt (z.B. "1" bedeutet 1, "2" bedeutet 2, "3" bedeutet 3)
+- ❌ KRITISCH: Fragen Sie NUR nach dem vollständigen Namen. NIEMALS nach E-MAIL oder TELEFON fragen! ❌
+- Fassen Sie die Informationen zusammen und bitten Sie um Bestätigung
+- ZAHLUNGSINFO: Wird nach Abschluss der Reservierung automatisch hinzugefügt, erwähnen Sie es nicht!`,
     
-    question: `🎯 Frage-Antwort-Szenario
+    question: `🎯 Q&A-Szenario
 - Antworten Sie klar und kurz
 - Schlagen Sie relevante Tour vor
 - Fragen Sie, ob es weitere Fragen gibt`,
     
-    general: `🎯 Allgemeines Gesprächsszenario
+    general: `🎯 Allgemeines Chat-Szenario
 - Geben Sie eine natürliche und freundliche Antwort
 - Lenken Sie das Gespräch auf Touren
 - Zeigen Sie Hilfsbereitschaft`
@@ -207,10 +210,11 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Сценарий бронирования
 - Уточните, для какого тура
-- Выберите дату (показывайте дату в формате "12 декабря 2026")
-- Спросите количество человек внимательно и используйте ТОЧНО то число, которое говорит пользователь (например, "1" означает 1, "2" означает 2)
-- ❌ КРИТИЧНО: Получите ТОЛЬКО полное имя и телефон. НИКОГДА не спрашивайте EMAIL! ❌
-- Обобщите информацию и попросите подтверждения`,
+- ВЫБОР ДАТЫ: Когда тур выбран, ВСЕГДА перечисляйте доступные даты с ценами
+- Спросите количество человек внимательно и используйте ТОЧНО то число, которое говорит пользователь (например, "1" означает 1, "2" означает 2, "3" означает 3)
+- ❌ КРИТИЧНО: Получите ТОЛЬКО полное имя. НИКОГДА не спрашивайте EMAIL или ТЕЛЕФОН! ❌
+- Обобщите информацию и попросите подтверждения
+- ИНФОРМАЦИЯ О ПЛАТЕЖЕ: Будет добавлена автоматически после завершения бронирования, не упоминайте об этом!`,
     
     question: `🎯 Сценарий вопрос-ответ
 - Отвечайте четко и кратко
@@ -251,10 +255,11 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 سيناريو الحجز
 - وضح أي جولة
-- اختر التاريخ (اعرض التاريخ بتنسيق "12 ديسمبر 2026")
-- اسأل عن عدد الأشخاص بعناية واستخدم بالضبط الرقم الذي يقوله المستخدم (مثلاً، "1" يعني 1، "2" يعني 2)
-- ❌ حرج: احصل فقط على الاسم الكامل والهاتف. لا تسأل أبداً عن البريد الإلكتروني! ❌
-- لخص المعلومات واطلب التأكيد`,
+- اختيار التاريخ: عند اختيار الجولة، قائمة التواريخ المتاحة مع الأسعار دائماً
+- اسأل عن عدد الأشخاص بعناية واستخدم بالضبط الرقم الذي يقوله المستخدم (مثلاً، "1" يعني 1، "2" يعني 2، "3" يعني 3)
+- ❌ حرج: احصل فقط على الاسم الكامل. لا تسأل أبداً عن البريد الإلكتروني أو الهاتف! ❌
+- لخص المعلومات واطلب التأكيد
+- معلومات الدفع: ستتم إضافتها تلقائياً بعد إتمام الحجز، لا تذكرها!`,
     
     question: `🎯 سيناريو الأسئلة والأجوبة
 - أجب بوضوح وإيجاز
@@ -294,11 +299,12 @@ export const INTENT_PROMPTS = {
 - Mentionnez les services inclus`,
     
     'reservation.wizard': `🎯 Scénario de réservation
-- Clarifiez pour quel circuit
-- Sélectionnez une date (affichez la date au format "12 décembre 2026")
-- Demandez le nombre de personnes avec attention et utilisez EXACTEMENT le nombre que l'utilisateur dit (par ex., "1" signifie 1, "2" signifie 2)
-- ❌ CRITIQUE: Obtenez UNIQUEMENT le nom complet et le téléphone. Ne demandez JAMAIS l'EMAIL! ❌
-- Résumez les informations et demandez confirmation`,
+- Clarifiez quel circuit
+- SÉLECTION DE DATE: Lorsque le circuit est sélectionné, listez TOUJOURS les dates disponibles avec les prix
+- Demandez le nombre de personnes avec attention et utilisez EXACTEMENT le nombre que l'utilisateur dit (par ex., "1" signifie 1, "2" signifie 2, "3" signifie 3)
+- ❌ CRITIQUE: Obtenez SEULEMENT le nom complet. Ne demandez JAMAIS l'EMAIL ou le TÉLÉPHONE! ❌
+- Résumez les informations et demandez confirmation
+- INFORMATIONS DE PAIEMENT: Seront ajoutées automatiquement après la fin de la réservation, ne les mentionnez pas!`,
     
     question: `🎯 Scénario de questions-réponses
 - Répondez clairement et brièvement
@@ -339,10 +345,11 @@ export const INTENT_PROMPTS = {
     
     'reservation.wizard': `🎯 Escenario de reserva
 - Aclara para qué tour
-- Selecciona fecha (muestra la fecha en formato "12 de diciembre de 2026")
-- Pregunta el número de personas con cuidado y usa EXACTAMENTE el número que dice el usuario (ej., "1" significa 1, "2" significa 2)
-- ❌ CRÍTICO: Obtén SOLO nombre completo y teléfono. ¡NUNCA pidas EMAIL! ❌
-- Resume la información y pide confirmación`,
+- SELECCIÓN DE FECHA: Cuando se seleccione el tour, lista SIEMPRE las fechas disponibles con precios
+- Pregunta el número de personas con cuidado y usa EXACTAMENTE el número que dice el usuario (ej., "1" significa 1, "2" significa 2, "3" significa 3)
+- ❌ CRÍTICO: Obtén SOLO nombre completo. ¡NUNCA pidas EMAIL o TELÉFONO! ❌
+- Resume la información y pide confirmación
+- INFORMACIÓN DE PAGO: Se agregará automáticamente después de completar la reserva, ¡no lo menciones!`,
     
     question: `🎯 Escenario de preguntas y respuestas
 - Responde clara y brevemente
