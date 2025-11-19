@@ -44,14 +44,16 @@ export async function handleDemoIntelligently(
 🚨🚨🚨 ABSOLUTE FINAL INSTRUCTION 🚨🚨🚨
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-YOU MUST RESPOND IN: ${targetLanguage}
+CRITICAL LANGUAGE RULE:
+• YOUR RESPONSE LANGUAGE: ${targetLanguage}
+• CONVERSATION HISTORY LANGUAGE: IRRELEVANT - IGNORE IT!
+• Even if ALL previous messages are in Turkish, you MUST respond in ${targetLanguage}
+• Even if the user's current message is in a different language, detect intent but respond in ${targetLanguage}
+• This is a HARD REQUIREMENT - there are NO exceptions
+• Using any language other than ${targetLanguage} is FORBIDDEN
 
-IGNORE any language patterns from conversation history!
-Even if previous messages are in different languages, YOU MUST USE ${targetLanguage}!
-This is NOT optional. This is MANDATORY.
-
-YOUR RESPONSE LANGUAGE: ${targetLanguage}
-NO OTHER LANGUAGE IS ACCEPTABLE!
+RESPONSE LANGUAGE: ${targetLanguage}
+NOT TURKISH. NOT ENGLISH. ONLY: ${targetLanguage}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
   
