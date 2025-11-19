@@ -41,4 +41,5 @@ export interface DemoConversationState {
     tourTitle?: string;
   };
   reservationConfirmed?: boolean;
+  paymentInfoSent?: boolean;
 }
