@@ -25,8 +25,38 @@ export async function handleDemoIntelligently(
   // Build context-aware system prompt with state info
   const systemPrompt = buildDemoPrompt(intent, language, availableTours, conversationHistory, conversationStyle, conversationState) + stateContextInfo;
   
+  // CRITICAL: Add ultra-strong language instruction at the very end
+  const languageNames: Record<string, string> = {
+    tr: 'TURKISH',
+    en: 'ENGLISH',
+    de: 'GERMAN',
+    ru: 'RUSSIAN',
+    ar: 'ARABIC',
+    fr: 'FRENCH',
+    es: 'SPANISH'
+  };
+  
+  const targetLanguage = languageNames[language] || 'TURKISH';
+  
+  const enforcedSystemPrompt = `${systemPrompt}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨🚨🚨 ABSOLUTE FINAL INSTRUCTION 🚨🚨🚨
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOU MUST RESPOND IN: ${targetLanguage}
+
+IGNORE any language patterns from conversation history!
+Even if previous messages are in different languages, YOU MUST USE ${targetLanguage}!
+This is NOT optional. This is MANDATORY.
+
+YOUR RESPONSE LANGUAGE: ${targetLanguage}
+NO OTHER LANGUAGE IS ACCEPTABLE!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+  
   const messages = [
-    { role: 'system', content: systemPrompt },
+    { role: 'system', content: enforcedSystemPrompt },
     ...conversationHistory,
     { role: 'user', content: message }
   ];

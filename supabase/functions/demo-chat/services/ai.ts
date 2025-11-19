@@ -12,7 +12,7 @@ export async function callAI(
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const requestBody: any = {
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro', // UPGRADED: Using Pro for better instruction following
         messages,
         temperature
       };
