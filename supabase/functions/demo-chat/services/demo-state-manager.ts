@@ -378,80 +378,372 @@ export function updateStateWithIntent(
   return { state: updatedState, switchType };
 }
 
-export async function getContextForAI(state: DemoConversationState, switchType: string, newTourName?: string): Promise<string> {
+// Multi-language context labels
+const CONTEXT_LABELS: Record<string, any> = {
+  tr: {
+    userMayWantSwitch: '🔔 ÖNEMLİ - KULLANICI TUR DEĞİŞTİRMEK İSTEYEBİLİR:',
+    previousTour: '• Önceki ilgilendiği tur:',
+    nowAsking: '• Şimdi sorduğu tur:',
+    newTour: 'yeni bir tur',
+    whatToDo: '📋 YAPMAN GEREKEN:',
+    askPolitely: 'Kullanıcıya nazikçe sor:',
+    orNew: 'turu ile devam mı etmek istersiniz, yoksa',
+    aboutInfo: 'hakkında bilgi mi almak istersiniz?',
+    presentBoth: 'Her iki seçeneği de olumlu bir şekilde sun',
+    followChoice: 'Kullanıcının tercihine göre ilerle',
+    ifSwitchClear: '⚠️ Kullanıcı açıkça yeni tura geçmek isterse veya eski turdan vazgeçtiğini söylerse, yeni turla devam et.',
+    activeTour: '🎯 ŞU AN AKTİF TUR:',
+    userInterested: '- Kullanıcı bu turla ilgileniyor',
+    useThisTour: '- Eğer rezervasyon başlatılıyorsa, BU TURU kullan',
+    collectedInfo: '📋 TOPLANAN BİLGİLER:',
+    tour: '✅ Tur:',
+    date: '✅ Tarih:',
+    numberOfPeople: '✅ Kişi sayısı:',
+    adults: 'yetişkin',
+    children: 'çocuk',
+    name: '✅ İsim:',
+    phone: '✅ Telefon:',
+    missingInfo: '⚠️ EKSIK BİLGİ:',
+    fullName: 'tam ad-soyad',
+    phoneNumber: 'telefon',
+    dontContinue: '- Bu bilgileri toplamadan devam etme!',
+    allInfoCollected: '✅ Tüm bilgiler toplandı!',
+    showOrganized: '- Bilgileri ALT ALTA düzenli bir şekilde göster',
+    eachLine: '- Her bilgiyi yeni satırda göster',
+    askConfirm: '- Onay iste: "Bu bilgiler doğruysa, rezervasyonunuzu onaylayabilirim. Onaylıyor musunuz?"',
+    confirmed: '✅ REZERVASYON ONAYLANDI!',
+    thankYou: '- Kısa bir teşekkür mesajı ver',
+    backendPayment: '- Backend ödeme bilgilerini otomatik ekleyecek, sen ekleme!',
+    canceledPrevious: '⚠️ Kullanıcı önceki turdan vazgeçti:',
+    suggestNew: '- Yeni tur önerileri sun',
+    warningNoTour: '⛔ UYARI: Rezervasyon başlatılamaz - aktif tur yok',
+    askWhichTour: '- Önce kullanıcıya hangi tur için rezervasyon yapmak istediğini sor',
+    userViewed: '📝 Kullanıcı',
+    differentTours: 'farklı tur inceledi'
+  },
+  en: {
+    userMayWantSwitch: '🔔 IMPORTANT - USER MAY WANT TO SWITCH TOURS:',
+    previousTour: '• Previously interested in:',
+    nowAsking: '• Now asking about:',
+    newTour: 'a new tour',
+    whatToDo: '📋 WHAT YOU SHOULD DO:',
+    askPolitely: 'Ask the user politely:',
+    orNew: 'Do you want to continue with the tour, or',
+    aboutInfo: 'would you like information about',
+    presentBoth: 'Present both options positively',
+    followChoice: 'Follow the user\'s choice',
+    ifSwitchClear: '⚠️ If user clearly wants to switch to new tour or cancel the old one, continue with the new tour.',
+    activeTour: '🎯 CURRENTLY ACTIVE TOUR:',
+    userInterested: '- User is interested in this tour',
+    useThisTour: '- If starting a reservation, USE THIS TOUR',
+    collectedInfo: '📋 COLLECTED INFORMATION:',
+    tour: '✅ Tour:',
+    date: '✅ Date:',
+    numberOfPeople: '✅ Number of people:',
+    adults: 'adults',
+    children: 'children',
+    name: '✅ Name:',
+    phone: '✅ Phone:',
+    missingInfo: '⚠️ MISSING INFO:',
+    fullName: 'full name',
+    phoneNumber: 'phone',
+    dontContinue: '- Do not continue without collecting this information!',
+    allInfoCollected: '✅ All information collected!',
+    showOrganized: '- Show information ORGANIZED LINE BY LINE',
+    eachLine: '- Show each piece of information on a new line',
+    askConfirm: '- Ask for confirmation: "If this information is correct, I can confirm your reservation. Do you confirm?"',
+    confirmed: '✅ RESERVATION CONFIRMED!',
+    thankYou: '- Give a brief thank you message',
+    backendPayment: '- Backend will add payment info automatically, don\'t add it yourself!',
+    canceledPrevious: '⚠️ User canceled previous tour:',
+    suggestNew: '- Suggest new tours',
+    warningNoTour: '⛔ WARNING: Cannot start reservation - no active tour',
+    askWhichTour: '- First ask user which tour they want to book',
+    userViewed: '📝 User viewed',
+    differentTours: 'different tours'
+  },
+  de: {
+    userMayWantSwitch: '🔔 WICHTIG - BENUTZER MÖCHTE MÖGLICHERWEISE TOUREN WECHSELN:',
+    previousTour: '• Zuvor interessiert an:',
+    nowAsking: '• Fragt jetzt nach:',
+    newTour: 'einer neuen Tour',
+    whatToDo: '📋 WAS SIE TUN SOLLTEN:',
+    askPolitely: 'Fragen Sie den Benutzer höflich:',
+    orNew: 'Möchten Sie mit der Tour fortfahren oder',
+    aboutInfo: 'möchten Sie Informationen über',
+    presentBoth: 'Präsentieren Sie beide Optionen positiv',
+    followChoice: 'Folgen Sie der Wahl des Benutzers',
+    ifSwitchClear: '⚠️ Wenn der Benutzer eindeutig zur neuen Tour wechseln oder die alte stornieren möchte, fahren Sie mit der neuen Tour fort.',
+    activeTour: '🎯 AKTUELL AKTIVE TOUR:',
+    userInterested: '- Benutzer ist an dieser Tour interessiert',
+    useThisTour: '- Wenn eine Reservierung beginnt, VERWENDEN SIE DIESE TOUR',
+    collectedInfo: '📋 GESAMMELTE INFORMATIONEN:',
+    tour: '✅ Tour:',
+    date: '✅ Datum:',
+    numberOfPeople: '✅ Anzahl der Personen:',
+    adults: 'Erwachsene',
+    children: 'Kinder',
+    name: '✅ Name:',
+    phone: '✅ Telefon:',
+    missingInfo: '⚠️ FEHLENDE INFO:',
+    fullName: 'vollständiger Name',
+    phoneNumber: 'Telefon',
+    dontContinue: '- Fahren Sie nicht fort, ohne diese Informationen zu sammeln!',
+    allInfoCollected: '✅ Alle Informationen gesammelt!',
+    showOrganized: '- Zeigen Sie Informationen ORGANISIERT ZEILE FÜR ZEILE',
+    eachLine: '- Zeigen Sie jede Information in einer neuen Zeile',
+    askConfirm: '- Fragen Sie nach Bestätigung: "Wenn diese Informationen korrekt sind, kann ich Ihre Reservierung bestätigen. Bestätigen Sie?"',
+    confirmed: '✅ RESERVIERUNG BESTÄTIGT!',
+    thankYou: '- Geben Sie eine kurze Dankesnachricht',
+    backendPayment: '- Backend fügt Zahlungsinformationen automatisch hinzu, fügen Sie sie nicht selbst hinzu!',
+    canceledPrevious: '⚠️ Benutzer hat vorherige Tour storniert:',
+    suggestNew: '- Schlagen Sie neue Touren vor',
+    warningNoTour: '⛔ WARNUNG: Kann keine Reservierung starten - keine aktive Tour',
+    askWhichTour: '- Fragen Sie zuerst den Benutzer, welche Tour er buchen möchte',
+    userViewed: '📝 Benutzer hat',
+    differentTours: 'verschiedene Touren angesehen'
+  },
+  ru: {
+    userMayWantSwitch: '🔔 ВАЖНО - ПОЛЬЗОВАТЕЛЬ МОЖЕТ ЗАХОТЕТЬ СМЕНИТЬ ТУР:',
+    previousTour: '• Ранее интересовался:',
+    nowAsking: '• Сейчас спрашивает о:',
+    newTour: 'новом туре',
+    whatToDo: '📋 ЧТО ВАМ СЛЕДУЕТ СДЕЛАТЬ:',
+    askPolitely: 'Вежливо спросите пользователя:',
+    orNew: 'Вы хотите продолжить с туром, или',
+    aboutInfo: 'вы хотите получить информацию о',
+    presentBoth: 'Представьте оба варианта положительно',
+    followChoice: 'Следуйте выбору пользователя',
+    ifSwitchClear: '⚠️ Если пользователь явно хочет переключиться на новый тур или отменить старый, продолжайте с новым туром.',
+    activeTour: '🎯 ТЕКУЩИЙ АКТИВНЫЙ ТУР:',
+    userInterested: '- Пользователь заинтересован в этом туре',
+    useThisTour: '- Если начинается бронирование, ИСПОЛЬЗУЙТЕ ЭТОТ ТУР',
+    collectedInfo: '📋 СОБРАННАЯ ИНФОРМАЦИЯ:',
+    tour: '✅ Тур:',
+    date: '✅ Дата:',
+    numberOfPeople: '✅ Количество людей:',
+    adults: 'взрослых',
+    children: 'детей',
+    name: '✅ Имя:',
+    phone: '✅ Телефон:',
+    missingInfo: '⚠️ ОТСУТСТВУЮЩАЯ ИНФОРМАЦИЯ:',
+    fullName: 'полное имя',
+    phoneNumber: 'телефон',
+    dontContinue: '- Не продолжайте без сбора этой информации!',
+    allInfoCollected: '✅ Вся информация собрана!',
+    showOrganized: '- Показывайте информацию ОРГАНИЗОВАННО СТРОКА ЗА СТРОКОЙ',
+    eachLine: '- Показывайте каждую информацию на новой строке',
+    askConfirm: '- Попросите подтверждение: "Если эта информация верна, я могу подтвердить ваше бронирование. Вы подтверждаете?"',
+    confirmed: '✅ БРОНИРОВАНИЕ ПОДТВЕРЖДЕНО!',
+    thankYou: '- Дайте краткое благодарственное сообщение',
+    backendPayment: '- Backend добавит информацию об оплате автоматически, не добавляйте её сами!',
+    canceledPrevious: '⚠️ Пользователь отменил предыдущий тур:',
+    suggestNew: '- Предложите новые туры',
+    warningNoTour: '⛔ ПРЕДУПРЕЖДЕНИЕ: Невозможно начать бронирование - нет активного тура',
+    askWhichTour: '- Сначала спросите пользователя, какой тур он хочет забронировать',
+    userViewed: '📝 Пользователь просмотрел',
+    differentTours: 'различных туров'
+  },
+  ar: {
+    userMayWantSwitch: '🔔 مهم - قد يرغب المستخدم في تغيير الجولة:',
+    previousTour: '• كان مهتمًا سابقًا بـ:',
+    nowAsking: '• يسأل الآن عن:',
+    newTour: 'جولة جديدة',
+    whatToDo: '📋 ما يجب عليك فعله:',
+    askPolitely: 'اسأل المستخدم بأدب:',
+    orNew: 'هل تريد المتابعة مع الجولة، أم',
+    aboutInfo: 'هل تريد معلومات عن',
+    presentBoth: 'قدم كلا الخيارين بشكل إيجابي',
+    followChoice: 'اتبع اختيار المستخدم',
+    ifSwitchClear: '⚠️ إذا أراد المستخدم بوضوح التبديل إلى جولة جديدة أو إلغاء القديمة، تابع مع الجولة الجديدة.',
+    activeTour: '🎯 الجولة النشطة حاليًا:',
+    userInterested: '- المستخدم مهتم بهذه الجولة',
+    useThisTour: '- إذا بدأ الحجز، استخدم هذه الجولة',
+    collectedInfo: '📋 المعلومات المجمعة:',
+    tour: '✅ الجولة:',
+    date: '✅ التاريخ:',
+    numberOfPeople: '✅ عدد الأشخاص:',
+    adults: 'بالغين',
+    children: 'أطفال',
+    name: '✅ الاسم:',
+    phone: '✅ الهاتف:',
+    missingInfo: '⚠️ معلومات مفقودة:',
+    fullName: 'الاسم الكامل',
+    phoneNumber: 'الهاتف',
+    dontContinue: '- لا تتابع دون جمع هذه المعلومات!',
+    allInfoCollected: '✅ تم جمع جميع المعلومات!',
+    showOrganized: '- اعرض المعلومات منظمة سطر بسطر',
+    eachLine: '- اعرض كل معلومة على سطر جديد',
+    askConfirm: '- اطلب التأكيد: "إذا كانت هذه المعلومات صحيحة، يمكنني تأكيد حجزك. هل تؤكد؟"',
+    confirmed: '✅ تم تأكيد الحجز!',
+    thankYou: '- أعط رسالة شكر موجزة',
+    backendPayment: '- سيضيف النظام الخلفي معلومات الدفع تلقائيًا، لا تضفها بنفسك!',
+    canceledPrevious: '⚠️ ألغى المستخدم الجولة السابقة:',
+    suggestNew: '- اقترح جولات جديدة',
+    warningNoTour: '⛔ تحذير: لا يمكن بدء الحجز - لا توجد جولة نشطة',
+    askWhichTour: '- اسأل المستخدم أولاً عن الجولة التي يريد حجزها',
+    userViewed: '📝 شاهد المستخدم',
+    differentTours: 'جولات مختلفة'
+  },
+  fr: {
+    userMayWantSwitch: '🔔 IMPORTANT - L\'UTILISATEUR PEUT VOULOIR CHANGER DE CIRCUIT:',
+    previousTour: '• Précédemment intéressé par:',
+    nowAsking: '• Demande maintenant à propos de:',
+    newTour: 'un nouveau circuit',
+    whatToDo: '📋 CE QUE VOUS DEVEZ FAIRE:',
+    askPolitely: 'Demandez poliment à l\'utilisateur:',
+    orNew: 'Voulez-vous continuer avec le circuit, ou',
+    aboutInfo: 'voulez-vous des informations sur',
+    presentBoth: 'Présentez les deux options positivement',
+    followChoice: 'Suivez le choix de l\'utilisateur',
+    ifSwitchClear: '⚠️ Si l\'utilisateur veut clairement passer au nouveau circuit ou annuler l\'ancien, continuez avec le nouveau circuit.',
+    activeTour: '🎯 CIRCUIT ACTUELLEMENT ACTIF:',
+    userInterested: '- L\'utilisateur est intéressé par ce circuit',
+    useThisTour: '- Si une réservation commence, UTILISEZ CE CIRCUIT',
+    collectedInfo: '📋 INFORMATIONS COLLECTÉES:',
+    tour: '✅ Circuit:',
+    date: '✅ Date:',
+    numberOfPeople: '✅ Nombre de personnes:',
+    adults: 'adultes',
+    children: 'enfants',
+    name: '✅ Nom:',
+    phone: '✅ Téléphone:',
+    missingInfo: '⚠️ INFORMATIONS MANQUANTES:',
+    fullName: 'nom complet',
+    phoneNumber: 'téléphone',
+    dontContinue: '- Ne continuez pas sans collecter ces informations!',
+    allInfoCollected: '✅ Toutes les informations collectées!',
+    showOrganized: '- Montrez les informations ORGANISÉES LIGNE PAR LIGNE',
+    eachLine: '- Montrez chaque information sur une nouvelle ligne',
+    askConfirm: '- Demandez confirmation: "Si ces informations sont correctes, je peux confirmer votre réservation. Confirmez-vous?"',
+    confirmed: '✅ RÉSERVATION CONFIRMÉE!',
+    thankYou: '- Donnez un bref message de remerciement',
+    backendPayment: '- Le backend ajoutera automatiquement les informations de paiement, ne les ajoutez pas vous-même!',
+    canceledPrevious: '⚠️ L\'utilisateur a annulé le circuit précédent:',
+    suggestNew: '- Suggérez de nouveaux circuits',
+    warningNoTour: '⛔ AVERTISSEMENT: Impossible de commencer la réservation - aucun circuit actif',
+    askWhichTour: '- Demandez d\'abord à l\'utilisateur quel circuit il souhaite réserver',
+    userViewed: '📝 L\'utilisateur a vu',
+    differentTours: 'circuits différents'
+  },
+  es: {
+    userMayWantSwitch: '🔔 IMPORTANTE - EL USUARIO PUEDE QUERER CAMBIAR DE TOUR:',
+    previousTour: '• Anteriormente interesado en:',
+    nowAsking: '• Ahora pregunta sobre:',
+    newTour: 'un nuevo tour',
+    whatToDo: '📋 LO QUE DEBES HACER:',
+    askPolitely: 'Pregunta cortésmente al usuario:',
+    orNew: '¿Quieres continuar con el tour, o',
+    aboutInfo: 'quieres información sobre',
+    presentBoth: 'Presenta ambas opciones positivamente',
+    followChoice: 'Sigue la elección del usuario',
+    ifSwitchClear: '⚠️ Si el usuario claramente quiere cambiar al nuevo tour o cancelar el antiguo, continúa con el nuevo tour.',
+    activeTour: '🎯 TOUR ACTUALMENTE ACTIVO:',
+    userInterested: '- El usuario está interesado en este tour',
+    useThisTour: '- Si comienza una reserva, USA ESTE TOUR',
+    collectedInfo: '📋 INFORMACIÓN RECOPILADA:',
+    tour: '✅ Tour:',
+    date: '✅ Fecha:',
+    numberOfPeople: '✅ Número de personas:',
+    adults: 'adultos',
+    children: 'niños',
+    name: '✅ Nombre:',
+    phone: '✅ Teléfono:',
+    missingInfo: '⚠️ INFORMACIÓN FALTANTE:',
+    fullName: 'nombre completo',
+    phoneNumber: 'teléfono',
+    dontContinue: '- ¡No continúes sin recopilar esta información!',
+    allInfoCollected: '✅ ¡Toda la información recopilada!',
+    showOrganized: '- Muestra la información ORGANIZADA LÍNEA POR LÍNEA',
+    eachLine: '- Muestra cada información en una nueva línea',
+    askConfirm: '- Pide confirmación: "Si esta información es correcta, puedo confirmar tu reserva. ¿Confirmas?"',
+    confirmed: '✅ ¡RESERVA CONFIRMADA!',
+    thankYou: '- Da un breve mensaje de agradecimiento',
+    backendPayment: '- ¡El backend agregará información de pago automáticamente, no la agregues tú mismo!',
+    canceledPrevious: '⚠️ El usuario canceló el tour anterior:',
+    suggestNew: '- Sugiere nuevos tours',
+    warningNoTour: '⛔ ADVERTENCIA: No se puede comenzar la reserva - sin tour activo',
+    askWhichTour: '- Primero pregunta al usuario qué tour quiere reservar',
+    userViewed: '📝 El usuario vio',
+    differentTours: 'tours diferentes'
+  }
+};
+
+export async function getContextForAI(state: DemoConversationState, switchType: string, newTourName?: string, language: string = 'tr'): Promise<string> {
+  const labels = CONTEXT_LABELS[language] || CONTEXT_LABELS.tr;
   let context = '';
   
   // Handle tour switch confirmation scenarios
   if (switchType === 'confirmation_needed' && state.currentTour && state.previousTour) {
-    context += `\n\n🔔 ÖNEMLİ - KULLANICI TUR DEĞİŞTİRMEK İSTEYEBİLİR:`;
+    context += `\n\n${labels.userMayWantSwitch}`;
     context += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
-    context += `\n• Önceki ilgilendiği tur: "${state.previousTour.title}"`;
-    context += `\n• Şimdi sorduğu tur: "${newTourName || 'yeni bir tur'}"`;
-    context += `\n\n📋 YAPMAN GEREKEN:`;
-    context += `\n1. Kullanıcıya nazikçe sor: "${state.previousTour.title} turu ile devam mı etmek istersiniz, yoksa ${newTourName || 'yeni tur'} hakkında bilgi mi almak istersiniz?"`;
-    context += `\n2. Her iki seçeneği de olumlu bir şekilde sun`;
-    context += `\n3. Kullanıcının tercihine göre ilerle`;
-    context += `\n\n⚠️ Kullanıcı açıkça yeni tura geçmek isterse veya eski turdan vazgeçtiğini söylerse, yeni turla devam et.`;
+    context += `\n${labels.previousTour} "${state.previousTour.title}"`;
+    context += `\n${labels.nowAsking} "${newTourName || labels.newTour}"`;
+    context += `\n\n${labels.whatToDo}`;
+    context += `\n1. ${labels.askPolitely} "${state.previousTour.title} ${labels.orNew} ${newTourName || labels.newTour} ${labels.aboutInfo}?"`;
+    context += `\n2. ${labels.presentBoth}`;
+    context += `\n3. ${labels.followChoice}`;
+    context += `\n\n${labels.ifSwitchClear}`;
     return context;
   }
   
   if (state.currentTour) {
-    context += `\n🎯 ŞU AN AKTİF TUR: ${state.currentTour.title} (${state.currentTour.destination})`;
-    context += `\n- Kullanıcı bu turla ilgileniyor`;
-    context += `\n- Eğer rezervasyon başlatılıyorsa, BU TURU kullan`;
+    context += `\n${labels.activeTour} ${state.currentTour.title} (${state.currentTour.destination})`;
+    context += `\n${labels.userInterested}`;
+    context += `\n${labels.useThisTour}`;
   }
   
   // Add collected reservation info
   if (state.collectedInfo && Object.keys(state.collectedInfo).length > 0) {
-    context += `\n\n📋 TOPLANAN BİLGİLER:`;
+    context += `\n\n${labels.collectedInfo}`;
     if (state.collectedInfo.tourTitle) {
-      context += `\n✅ Tur: ${state.collectedInfo.tourTitle}`;
+      context += `\n${labels.tour} ${state.collectedInfo.tourTitle}`;
     }
     if (state.collectedInfo.selectedDate) {
-      context += `\n✅ Tarih: ${state.collectedInfo.selectedDate}`;
+      context += `\n${labels.date} ${state.collectedInfo.selectedDate}`;
     }
     if (state.collectedInfo.paxAdult) {
-      context += `\n✅ Kişi sayısı: ${state.collectedInfo.paxAdult} yetişkin${state.collectedInfo.paxChild ? ` + ${state.collectedInfo.paxChild} çocuk` : ''}`;
+      context += `\n${labels.numberOfPeople} ${state.collectedInfo.paxAdult} ${labels.adults}${state.collectedInfo.paxChild ? ` + ${state.collectedInfo.paxChild} ${labels.children}` : ''}`;
     }
     if (state.collectedInfo.fullName) {
-      context += `\n✅ İsim: ${state.collectedInfo.fullName}`;
+      context += `\n${labels.name} ${state.collectedInfo.fullName}`;
     }
     if (state.collectedInfo.phone) {
-      context += `\n✅ Telefon: ${state.collectedInfo.phone}`;
+      context += `\n${labels.phone} ${state.collectedInfo.phone}`;
     }
     
     // Check what's missing
     const missing = [];
-    if (!state.collectedInfo.fullName) missing.push('tam ad-soyad');
-    if (!state.collectedInfo.phone) missing.push('telefon');
+    if (!state.collectedInfo.fullName) missing.push(labels.fullName);
+    if (!state.collectedInfo.phone) missing.push(labels.phoneNumber);
     
     if (missing.length > 0) {
-      context += `\n\n⚠️ EKSIK BİLGİ: ${missing.join(', ')}`;
-      context += `\n- Bu bilgileri toplamadan devam etme!`;
+      context += `\n\n${labels.missingInfo} ${missing.join(', ')}`;
+      context += `\n${labels.dontContinue}`;
     } else if (!state.reservationConfirmed) {
-      context += `\n\n✅ Tüm bilgiler toplandı!`;
-      context += `\n- Bilgileri ALT ALTA düzenli bir şekilde göster`;
-      context += `\n- Her bilgiyi yeni satırda göster`;
-      context += `\n- Onay iste: "Bu bilgiler doğruysa, rezervasyonunuzu onaylayabilirim. Onaylıyor musunuz?"`;
+      context += `\n\n${labels.allInfoCollected}`;
+      context += `\n${labels.showOrganized}`;
+      context += `\n${labels.eachLine}`;
+      context += `\n${labels.askConfirm}`;
     } else if (state.reservationConfirmed) {
-      context += `\n\n✅ REZERVASYON ONAYLANDI!`;
-      context += `\n- Kısa bir teşekkür mesajı ver`;
-      context += `\n- Backend ödeme bilgilerini otomatik ekleyecek, sen ekleme!`;
+      context += `\n\n${labels.confirmed}`;
+      context += `\n${labels.thankYou}`;
+      context += `\n${labels.backendPayment}`;
     }
   }
   
   if (state.previousTour && !state.currentTour && switchType === 'explicit_cancel') {
-    context += `\n⚠️ Kullanıcı önceki turdan vazgeçti: ${state.previousTour.title}`;
-    context += `\n- Yeni tur önerileri sun`;
+    context += `\n${labels.canceledPrevious} ${state.previousTour.title}`;
+    context += `\n${labels.suggestNew}`;
   }
   
   if (state.currentStage === 'booking' && !state.currentTour) {
-    context += `\n⛔ UYARI: Rezervasyon başlatılamaz - aktif tur yok`;
-    context += `\n- Önce kullanıcıya hangi tur için rezervasyon yapmak istediğini sor`;
+    context += `\n${labels.warningNoTour}`;
+    context += `\n${labels.askWhichTour}`;
   }
   
   if (state.discussedTours.length > 1) {
-    context += `\n📝 Kullanıcı ${state.discussedTours.length} farklı tur inceledi`;
+    context += `\n${labels.userViewed} ${state.discussedTours.length} ${labels.differentTours}`;
   }
   
   return context;
