@@ -164,7 +164,18 @@ serve(async (req) => {
     );
 
     // Check if response contains FINAL confirmation (reservation completed)
-    const finalConfirmationKeywords = ['rezervasyon tamamlandı', 'rezervasyon alındı', 'başarıyla alındı', 'successfully received', 'reservation has been', 'kaydedildi'];
+    const finalConfirmationKeywords = [
+      'rezervasyon tamamlandı', 
+      'rezervasyon alındı', 
+      'başarıyla alındı', 
+      'onaylanmıştır',
+      'oluşturulmuştur',
+      'successfully received', 
+      'reservation has been',
+      'reservation complete',
+      'confirmed',
+      'kaydedildi'
+    ];
     const hasReservationCompleted = finalConfirmationKeywords.some(keyword => 
       response.toLowerCase().includes(keyword)
     );
