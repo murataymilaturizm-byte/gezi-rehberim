@@ -490,6 +490,54 @@
       "redirecting": "Redirigiendo",
       "pleaseWait": "Por favor espere"
     },
+    "paymentSettings": {
+      "title": "Configuración de Información de Pago",
+      "description": "Gestione la información de pago que se mostrará a sus clientes. Esta información se compartirá automáticamente cuando se complete una reserva.",
+      "paymentType": {
+        "label": "Tipo de Pago",
+        "description": "¿Qué tipo de pago le gustaría recibir de los clientes?",
+        "deposit": "Depósito",
+        "full": "Pago Completo"
+      },
+      "depositPercentage": "Porcentaje de Depósito",
+      "paymentMethods": {
+        "label": "Métodos de Pago",
+        "description": "¿Qué métodos de pago acepta?",
+        "bankTransfer": "Transferencia Bancaria",
+        "cash": "Efectivo",
+        "creditCard": "Tarjeta de Crédito"
+      },
+      "bankInfo": {
+        "label": "Información Bancaria",
+        "description": "Ingrese su información de cuenta bancaria para recibir pagos",
+        "bankName": "Nombre del Banco",
+        "accountHolder": "Titular de la Cuenta",
+        "iban": "IBAN",
+        "additionalInfo": "Información Adicional (Opcional)",
+        "bankNamePlaceholder": "Ej: BBVA",
+        "accountHolderPlaceholder": "Ej: ABC Turismo S.L.",
+        "ibanPlaceholder": "ES00 0000 0000 0000 0000 0000",
+        "additionalInfoPlaceholder": "Notas especiales o instrucciones que deben mencionarse durante el pago..."
+      },
+      "languages": {
+        "tr": "🇹🇷 Turco",
+        "en": "🇬🇧 Inglés"
+      },
+      "actions": {
+        "save": "Guardar",
+        "saving": "Guardando..."
+      },
+      "messages": {
+        "loadError": "Ocurrió un error al cargar la información de pago",
+        "saveSuccess": "Información de pago actualizada exitosamente",
+        "saveError": "Ocurrió un error al guardar la información de pago",
+        "agencyNotFound": "Información de la agencia no encontrada"
+      },
+      "tip": {
+        "title": "💡 Consejo",
+        "description": "Estas configuraciones son específicas de la agencia y están activas en todos los paquetes. Esta información se compartirá automáticamente con sus clientes a través de WhatsApp y el chat de demostración después de realizar una reserva. Asegúrese de que su IBAN e información bancaria sean correctos."
+      }
+    },
     "templates": {
       "title": "Plantillas de Mensajes",
       "types": {

@@ -71,8 +71,7 @@ export const PaymentSettings = () => {
     } catch (error) {
       console.error("Error fetching payment instructions:", error);
       toast({
-        title: "Hata",
-        description: "Ödeme bilgileri yüklenirken bir hata oluştu",
+        title: t("admin.paymentSettings.messages.loadError"),
         variant: "destructive",
       });
     } finally {
@@ -83,8 +82,7 @@ export const PaymentSettings = () => {
   const handleSave = async () => {
     if (!agencyId) {
       toast({
-        title: "Hata",
-        description: "Acente bilgisi bulunamadı",
+        title: t("admin.paymentSettings.messages.agencyNotFound"),
         variant: "destructive",
       });
       return;
@@ -100,14 +98,12 @@ export const PaymentSettings = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
-        description: "Ödeme bilgileri başarıyla güncellendi",
+        title: t("admin.paymentSettings.messages.saveSuccess"),
       });
     } catch (error) {
       console.error("Error saving payment instructions:", error);
       toast({
-        title: "Hata",
-        description: "Ödeme bilgileri kaydedilirken bir hata oluştu",
+        title: t("admin.paymentSettings.messages.saveError"),
         variant: "destructive",
       });
     } finally {
@@ -169,7 +165,7 @@ export const PaymentSettings = () => {
       <div className="space-y-2">
         <Label htmlFor={`${language}-bank-name`}>
           <Building2 className="h-4 w-4 inline mr-2" />
-          Banka Adı
+          {t("admin.paymentSettings.bankInfo.bankName")}
         </Label>
         <Input
           id={`${language}-bank-name`}
@@ -177,26 +173,28 @@ export const PaymentSettings = () => {
           onChange={(e) =>
             handleInputChange(language, "bank_name", e.target.value)
           }
-          placeholder="Örn: Garanti BBVA"
+          placeholder={t("admin.paymentSettings.bankInfo.bankNamePlaceholder")}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`${language}-account-holder`}>Hesap Sahibi</Label>
+        <Label htmlFor={`${language}-account-holder`}>
+          {t("admin.paymentSettings.bankInfo.accountHolder")}
+        </Label>
         <Input
           id={`${language}-account-holder`}
           value={paymentInstructions[language]?.account_holder || ""}
           onChange={(e) =>
             handleInputChange(language, "account_holder", e.target.value)
           }
-          placeholder="Örn: ABC Turizm Ltd. Şti."
+          placeholder={t("admin.paymentSettings.bankInfo.accountHolderPlaceholder")}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor={`${language}-iban`}>
           <CreditCard className="h-4 w-4 inline mr-2" />
-          IBAN
+          {t("admin.paymentSettings.bankInfo.iban")}
         </Label>
         <Input
           id={`${language}-iban`}
@@ -204,13 +202,13 @@ export const PaymentSettings = () => {
           onChange={(e) =>
             handleInputChange(language, "iban", e.target.value)
           }
-          placeholder="TR00 0000 0000 0000 0000 0000 00"
+          placeholder={t("admin.paymentSettings.bankInfo.ibanPlaceholder")}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor={`${language}-additional-info`}>
-          Ek Bilgiler (Opsiyonel)
+          {t("admin.paymentSettings.bankInfo.additionalInfo")}
         </Label>
         <Textarea
           id={`${language}-additional-info`}
@@ -218,7 +216,7 @@ export const PaymentSettings = () => {
           onChange={(e) =>
             handleInputChange(language, "additional_info", e.target.value)
           }
-          placeholder="Ödeme sırasında belirtilmesi gereken özel notlar veya talimatlar..."
+          placeholder={t("admin.paymentSettings.bankInfo.additionalInfoPlaceholder")}
           rows={4}
         />
       </div>
@@ -228,10 +226,9 @@ export const PaymentSettings = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ödeme Bilgileri Ayarları</CardTitle>
+        <CardTitle>{t("admin.paymentSettings.title")}</CardTitle>
         <CardDescription>
-          Müşterilerinize gösterilecek ödeme bilgilerini buradan yönetin.
-          Rezervasyon tamamlandığında bu bilgiler otomatik olarak paylaşılacaktır.
+          {t("admin.paymentSettings.description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -239,9 +236,11 @@ export const PaymentSettings = () => {
           {/* Payment Type Section */}
           <div className="space-y-4 pb-6 border-b">
             <div>
-              <Label className="text-base font-semibold">Ödeme Türü</Label>
+              <Label className="text-base font-semibold">
+                {t("admin.paymentSettings.paymentType.label")}
+              </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Müşterilerden ne tür ödeme almak istiyorsunuz?
+                {t("admin.paymentSettings.paymentType.description")}
               </p>
             </div>
             
@@ -253,13 +252,13 @@ export const PaymentSettings = () => {
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="deposit" id="deposit" />
                 <Label htmlFor="deposit" className="font-normal cursor-pointer">
-                  Kapora (Ön Ödeme)
+                  {t("admin.paymentSettings.paymentType.deposit")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="full" id="full" />
                 <Label htmlFor="full" className="font-normal cursor-pointer">
-                  Tam Ödeme
+                  {t("admin.paymentSettings.paymentType.full")}
                 </Label>
               </div>
             </RadioGroup>
@@ -268,7 +267,7 @@ export const PaymentSettings = () => {
               <div className="space-y-2 ml-6">
                 <Label htmlFor="deposit-percentage">
                   <Percent className="h-4 w-4 inline mr-2" />
-                  Kapora Yüzdesi
+                  {t("admin.paymentSettings.depositPercentage")}
                 </Label>
                 <Select
                   value={paymentInstructions.deposit_percentage?.toString()}
@@ -292,9 +291,11 @@ export const PaymentSettings = () => {
           {/* Payment Methods Section */}
           <div className="space-y-4 pb-6 border-b">
             <div>
-              <Label className="text-base font-semibold">Ödeme Yöntemleri</Label>
+              <Label className="text-base font-semibold">
+                {t("admin.paymentSettings.paymentMethods.label")}
+              </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Hangi ödeme yöntemlerini kabul ediyorsunuz?
+                {t("admin.paymentSettings.paymentMethods.description")}
               </p>
             </div>
 
@@ -308,7 +309,7 @@ export const PaymentSettings = () => {
                   }
                 />
                 <Label htmlFor="bank_transfer" className="font-normal cursor-pointer">
-                  Banka Transferi / EFT
+                  {t("admin.paymentSettings.paymentMethods.bankTransfer")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -320,7 +321,7 @@ export const PaymentSettings = () => {
                   }
                 />
                 <Label htmlFor="cash" className="font-normal cursor-pointer">
-                  Nakit
+                  {t("admin.paymentSettings.paymentMethods.cash")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -332,7 +333,7 @@ export const PaymentSettings = () => {
                   }
                 />
                 <Label htmlFor="credit_card" className="font-normal cursor-pointer">
-                  Kredi Kartı
+                  {t("admin.paymentSettings.paymentMethods.creditCard")}
                 </Label>
               </div>
             </div>
@@ -341,16 +342,22 @@ export const PaymentSettings = () => {
           {/* Bank Information Section */}
           <div>
             <div className="mb-4">
-              <Label className="text-base font-semibold">Banka Bilgileri</Label>
+              <Label className="text-base font-semibold">
+                {t("admin.paymentSettings.bankInfo.label")}
+              </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Ödeme alacağınız banka hesap bilgilerini girin
+                {t("admin.paymentSettings.bankInfo.description")}
               </p>
             </div>
 
             <Tabs defaultValue="tr" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="tr">🇹🇷 Türkçe</TabsTrigger>
-                <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                <TabsTrigger value="tr">
+                  {t("admin.paymentSettings.languages.tr")}
+                </TabsTrigger>
+                <TabsTrigger value="en">
+                  {t("admin.paymentSettings.languages.en")}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tr" className="space-y-4 mt-4">
@@ -367,17 +374,18 @@ export const PaymentSettings = () => {
         <div className="mt-6 flex justify-end">
           <Button onClick={handleSave} disabled={isSaving}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Kaydet
+            {isSaving 
+              ? t("admin.paymentSettings.actions.saving") 
+              : t("admin.paymentSettings.actions.save")}
           </Button>
         </div>
 
         <div className="mt-6 p-4 bg-muted rounded-lg">
-          <h4 className="font-semibold mb-2">💡 İpucu</h4>
+          <h4 className="font-semibold mb-2">
+            {t("admin.paymentSettings.tip.title")}
+          </h4>
           <p className="text-sm text-muted-foreground">
-            Bu ayarlar acente özelindedir ve tüm paketlerde aktiftir. Müşterileriniz 
-            rezervasyon yaptıktan sonra WhatsApp ve demo chat üzerinden bu bilgiler 
-            otomatik olarak paylaşılacaktır. IBAN ve banka bilgilerinizin doğru 
-            olduğundan emin olun.
+            {t("admin.paymentSettings.tip.description")}
           </p>
         </div>
       </CardContent>

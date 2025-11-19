@@ -498,6 +498,54 @@
       "redirecting": "Weiterleiten",
       "pleaseWait": "Bitte warten"
     },
+    "paymentSettings": {
+      "title": "Zahlungsinformationseinstellungen",
+      "description": "Verwalten Sie die Zahlungsinformationen, die Ihren Kunden angezeigt werden. Diese Informationen werden automatisch geteilt, wenn eine Reservierung abgeschlossen wird.",
+      "paymentType": {
+        "label": "Zahlungsart",
+        "description": "Welche Art von Zahlung möchten Sie von Kunden erhalten?",
+        "deposit": "Anzahlung",
+        "full": "Vollzahlung"
+      },
+      "depositPercentage": "Anzahlungsprozentsatz",
+      "paymentMethods": {
+        "label": "Zahlungsmethoden",
+        "description": "Welche Zahlungsmethoden akzeptieren Sie?",
+        "bankTransfer": "Banküberweisung",
+        "cash": "Bargeld",
+        "creditCard": "Kreditkarte"
+      },
+      "bankInfo": {
+        "label": "Bankinformationen",
+        "description": "Geben Sie Ihre Bankverbindung für den Zahlungseingang ein",
+        "bankName": "Bankname",
+        "accountHolder": "Kontoinhaber",
+        "iban": "IBAN",
+        "additionalInfo": "Zusätzliche Informationen (Optional)",
+        "bankNamePlaceholder": "z.B: Deutsche Bank",
+        "accountHolderPlaceholder": "z.B: ABC Tourism GmbH",
+        "ibanPlaceholder": "DE00 0000 0000 0000 0000 00",
+        "additionalInfoPlaceholder": "Besondere Hinweise oder Anweisungen für die Zahlung..."
+      },
+      "languages": {
+        "tr": "🇹🇷 Türkisch",
+        "en": "🇬🇧 Englisch"
+      },
+      "actions": {
+        "save": "Speichern",
+        "saving": "Speichern..."
+      },
+      "messages": {
+        "loadError": "Fehler beim Laden der Zahlungsinformationen",
+        "saveSuccess": "Zahlungsinformationen erfolgreich aktualisiert",
+        "saveError": "Fehler beim Speichern der Zahlungsinformationen",
+        "agencyNotFound": "Agenturinformationen nicht gefunden"
+      },
+      "tip": {
+        "title": "💡 Tipp",
+        "description": "Diese Einstellungen sind agenturspezifisch und in allen Paketen aktiv. Diese Informationen werden Ihren Kunden automatisch über WhatsApp und Demo-Chat mitgeteilt, nachdem sie eine Reservierung vorgenommen haben. Stellen Sie sicher, dass Ihre IBAN und Bankinformationen korrekt sind."
+      }
+    },
     "templates": {
       "title": "Nachrichtenvorlagen",
       "types": {
