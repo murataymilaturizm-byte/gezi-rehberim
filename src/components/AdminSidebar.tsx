@@ -17,7 +17,8 @@ import {
   MessageCircle,
   ScrollText,
   ChevronDown,
-  MapPin
+  MapPin,
+  CreditCard
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
@@ -65,7 +66,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   
   // Determine which group should be open based on active tab
   const getDefaultOpenGroup = () => {
-    const generalIds = ["dashboard", "settings", "languages", "history"];
+    const generalIds = ["dashboard", "settings", "payment_settings", "languages", "history"];
     const tourIds = ["tours", "registrations"];
     const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "whatsapp_logs"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
@@ -101,6 +102,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
     { id: "settings", icon: Settings, label: t("admin.tabs.settings") },
+    { id: "payment_settings", icon: CreditCard, label: "Ödeme Ayarları" },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
     { id: "history", icon: History, label: t("admin.tabs.history") },
   ];
