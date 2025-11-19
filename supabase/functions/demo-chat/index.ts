@@ -99,13 +99,38 @@ serve(async (req) => {
       .eq('agency_id', DEMO_AGENCY_ID)
       .single();
 
-    // Initialize or restore conversation state - PRESERVE CLIENT STATE
-    let conversationState: DemoConversationState = clientState ? {
-      ...clientState,
-      // Ensure all required fields exist
-      collectedInfo: clientState.collectedInfo || {},
-      reservationConfirmed: clientState.reservationConfirmed || false
-    } : initializeState();
+    // Initialize or restore conversation state - CHECK IF STATE IS STALE
+    let conversationState: DemoConversationState;
+    
+    if (clientState) {
+      // Check if state is from a previous session (older than 30 minutes)
+      const now = new Date();
+      let lastMessageTime: Date | null = null;
+      
+      if (history && history.length > 0) {
+        const lastMsg = history[history.length - 1] as any;
+        if (lastMsg.created_at) {
+          lastMessageTime = new Date(lastMsg.created_at);
+        }
+      }
+      
+      const isStaleState = lastMessageTime && 
+        (now.getTime() - lastMessageTime.getTime()) > 30 * 60 * 1000; // 30 minutes
+      
+      if (isStaleState) {
+        console.log('⚠️ State is stale (>30 min old), starting fresh');
+        conversationState = initializeState();
+      } else {
+        // Use client state but ensure all required fields
+        conversationState = {
+          ...clientState,
+          collectedInfo: clientState.collectedInfo || {},
+          reservationConfirmed: clientState.reservationConfirmed || false
+        };
+      }
+    } else {
+      conversationState = initializeState();
+    }
     
     // Add user memory to state
     const stateWithMemory = {
@@ -220,15 +245,43 @@ serve(async (req) => {
       reservationConfirmed: conversationState.reservationConfirmed
     });
     
-    // Get contextual information for AI with switch type
-    const stateContext = getContextForAI(
+    // Calculate payment info BEFORE calling AI so we can pass it in context
+    let totalPrice: number | undefined;
+    let depositAmount: number | undefined;
+    
+    const shouldAddPayment = conversationState.reservationConfirmed === true && 
+                             conversationState.currentTour &&
+                             conversationState.collectedInfo?.fullName &&
+                             conversationState.collectedInfo?.phone &&
+                             (conversationState.collectedInfo?.paxAdult || conversationState.collectedInfo?.paxChild);
+
+    if (shouldAddPayment && conversationState.currentTour) {
+      const tourData = DEMO_TOURS.find(t => t.id === conversationState.currentTour?.id || t.title === conversationState.currentTour?.title);
+      
+      if (tourData) {
+        const tourDate = tourData.dates?.[0];
+        if (tourDate && tourDate.price_adult) {
+          const paxAdult = conversationState.collectedInfo?.paxAdult || 1;
+          totalPrice = tourDate.price_adult * paxAdult;
+          const depositPercentage = DEMO_PAYMENT_INSTRUCTIONS.deposit_percentage || 30;
+          depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+        }
+      }
+    }
+
+    // Get contextual information for AI with switch type AND payment info
+    const stateContext = await getContextForAI(
       conversationState, 
       switchType,
-      selectedTour?.title
+      selectedTour?.title,
+      shouldAddPayment ? DEMO_PAYMENT_INSTRUCTIONS : undefined,
+      totalPrice,
+      depositAmount,
+      language
     );
 
-    // Generate intelligent response
-    let response = await handleDemoIntelligently(
+    // Generate intelligent response - AI will include payment info if needed
+    const response = await handleDemoIntelligently(
       message,
       formattedHistory,
       detectedIntent.type,
@@ -237,41 +290,6 @@ serve(async (req) => {
       conversationStyle,
       { ...conversationState, stateContext }
     );
-
-    // Add payment info if reservation is confirmed and all info is collected
-    const shouldAddPayment = conversationState.reservationConfirmed === true && 
-                             conversationState.currentTour &&
-                             conversationState.collectedInfo?.fullName &&
-                             conversationState.collectedInfo?.phone &&
-                             (conversationState.collectedInfo?.paxAdult || conversationState.collectedInfo?.paxChild);
-
-    // ONLY add payment info if reservation was COMPLETED
-    if (shouldAddPayment && conversationState.currentTour) {
-      // Get the selected tour data
-      const tourData = DEMO_TOURS.find(t => t.id === conversationState.currentTour?.id || t.title === conversationState.currentTour?.title);
-      
-      if (tourData) {
-        const tourDate = tourData.dates?.[0];
-        if (tourDate && tourDate.price_adult) {
-          const paxAdult = conversationState.collectedInfo?.paxAdult || 1;
-          const totalPrice = tourDate.price_adult * paxAdult;
-          const depositPercentage = DEMO_PAYMENT_INSTRUCTIONS.deposit_percentage || 30;
-          const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
-
-          const paymentInfo = generatePaymentMessage(
-            DEMO_PAYMENT_INSTRUCTIONS,
-            language,
-            totalPrice,
-            depositAmount
-          );
-
-          if (paymentInfo) {
-            response += paymentInfo;
-            console.log('💳 Payment information added to demo response');
-          }
-        }
-      }
-    }
 
     // Extract and update user memory
     const updatedMemory = extractMemory(message, response, conversationState?.userMemory || DEMO_TOURS);
