@@ -3,26 +3,26 @@ export const STYLE_PERSONALITIES = {
   tr: {
     friendly: '⚠️ ZORUNLU: EN AZ 2 EMOJI KULLAN! 😊✨ Samimi, sıcak ve dostane üslup. Her cümlede emoji olsun. Her bilgiyi ayrı satıra yaz.',
     casual: '⚠️ ZORUNLU: EN AZ 1 EMOJI KULLAN! 😊 Rahat ve gündelik dil. Her bilgiyi ayrı satıra yaz.',
-    professional: '❌ ZORUNLU: HİÇBİR EMOJI KULLANMA! Profesyonel ton. Her bilgiyi ayrı satıra yaz.\n\nFormat:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin',
-    formal: '❌ ZORUNLU: HİÇBİR EMOJI KULLANMA! Resmi ve kibar üslup. Her bilgiyi ayrı satıra yaz.\n\nFormat:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin'
+    professional: '❌ ZORUNLU: HİÇBİR EMOJI KULLANMA! Profesyonel ton. Her bilgiyi ayrı satıra yaz.\n\n✅ Rezervasyon format örneği:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin\nTam İsim: Ahmet Yılmaz\nTelefon: 05551234567',
+    formal: '❌ ZORUNLU: HİÇBİR EMOJI KULLANMA! Resmi ve kibar üslup. Her bilgiyi ayrı satıra yaz.\n\n✅ Rezervasyon format örneği:\nTur: Kapadokya Turu\nTarih: 15 Aralık 2025\nKişi: 2 yetişkin\nTam İsim: Ahmet Yılmaz\nTelefon: 05551234567'
   },
   en: {
     friendly: '⚠️ MANDATORY: USE AT LEAST 2 EMOJIS! 😊✨ Friendly, warm style. Use emojis in sentences. Write each info on new line.',
     casual: '⚠️ MANDATORY: USE AT LEAST 1 EMOJI! 😊 Relaxed, casual language. Write each info on new line.',
-    professional: '❌ MANDATORY: NO EMOJIS AT ALL! Professional tone. Write each info on new line.\n\nFormat:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults',
-    formal: '❌ MANDATORY: NO EMOJIS AT ALL! Formal, polite style. Write each info on new line.\n\nFormat:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults'
+    professional: '❌ MANDATORY: NO EMOJIS AT ALL! Professional tone. Write each info on new line.\n\n✅ Reservation format example:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults\nFull Name: John Smith\nPhone: 05551234567',
+    formal: '❌ MANDATORY: NO EMOJIS AT ALL! Formal, polite style. Write each info on new line.\n\n✅ Reservation format example:\nTour: Cappadocia Tour\nDate: December 15, 2025\nPeople: 2 adults\nFull Name: John Smith\nPhone: 05551234567'
   },
   de: {
     friendly: '⚠️ PFLICHT: MINDESTENS 2 EMOJIS VERWENDEN! 😊✨ Freundlich, warm. Emojis in Sätzen. Jede Info auf neue Zeile.',
     casual: '⚠️ PFLICHT: MINDESTENS 1 EMOJI VERWENDEN! 😊 Entspannt, locker. Jede Info auf neue Zeile.',
-    professional: '❌ PFLICHT: KEINE EMOJIS! Professioneller Ton. Jede Info auf neue Zeile.\n\nFormat:\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene',
-    formal: '❌ PFLICHT: KEINE EMOJIS! Formell, höflich. Jede Info auf neue Zeile.\n\nFormat:\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene'
+    professional: '❌ PFLICHT: KEINE EMOJIS! Professioneller Ton. Jede Info auf neue Zeile.\n\n✅ Reservierungsformat Beispiel:\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene\nVollständiger Name: Hans Müller\nTelefon: 05551234567',
+    formal: '❌ PFLICHT: KEINE EMOJIS! Formell, höflich. Jede Info auf neue Zeile.\n\n✅ Reservierungsformat Beispiel:\nTour: Kappadokien-Tour\nDatum: 15. Dezember 2025\nTeilnehmer: 2 Erwachsene\nVollständiger Name: Hans Müller\nTelefon: 05551234567'
   },
   ru: {
     friendly: '⚠️ ОБЯЗАТЕЛЬНО: ИСПОЛЬЗУЙТЕ МИНИМУМ 2 ЭМОДЗИ! 😊✨ Дружелюбно, тепло. Эмодзи в предложениях. Каждую инфо на новую строку.',
     casual: '⚠️ ОБЯЗАТЕЛЬНО: ИСПОЛЬЗУЙТЕ МИНИМУМ 1 ЭМОДЗИ! 😊 Расслабленно, повседневно. Каждую инфо на новую строку.',
-    professional: '❌ ОБЯЗАТЕЛЬНО: НЕТ ЭМОДЗИ! Профессионально. Каждую инфо на новую строку.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых',
-    formal: '❌ ОБЯЗАТЕЛЬНО: НЕТ ЭМОДЗИ! Формально, вежливо. Каждую инфо на новую строку.\n\nФормат:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых'
+    professional: '❌ ОБЯЗАТЕЛЬНО: НЕТ ЭМОДЗИ! Профессионально. Каждую инфо на новую строку.\n\n✅ Пример формата бронирования:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых\nПолное имя: Иван Петров\nТелефон: 05551234567',
+    formal: '❌ ОБЯЗАТЕЛЬНО: НЕТ ЭМОДЗИ! Формально, вежливо. Каждую инфо на новую строку.\n\n✅ Пример формата бронирования:\nТур: Тур по Каппадокии\nДата: 15 декабря 2025\nЛюди: 2 взрослых\nПолное имя: Иван Петров\nТелефон: 05551234567'
   },
   ar: {
     friendly: 'استخدم أسلوبًا ودودًا ودافئًا ومتحمسًا. استخدم العديد من الرموز التعبيرية 😊🎉✨ اكتب كل سطر على سطر جديد، أظهرها منظمة عموديًا. لا تجمع أبدًا على سطر واحد!',
@@ -74,14 +74,43 @@ export const INTENT_PROMPTS = {
 - ⚠️ ÖNEMLİ: ÖDEME BİLGİLERİNİ de paylaş (varsa)
 - Dahil olan hizmetleri belirt`,
     
-    'reservation.wizard': `🎯 Rezervasyon senaryosu
-- Hangi tur için olduğunu netleştir
-- **OTOMATIK OLARAK** mevcut tarihleri ve fiyatları göster (kullanıcı sormadan!)
-- Tarih seçimini iste (tarihi "12 Aralık 2026" formatında göster)
-- Kişi sayısını dikkatle sor ve AYNEN kullanıcının söylediği rakamı kullan (örn: "1" diyorsa 1, "2" diyorsa 2)
-- ❌ KRİTİK: SADECE tam ad-soyad ve telefon al. E-MAIL ASLA İSTEME! ❌
-- Bilgileri özetle ve onay iste
-- ÖNEMLİ: Tur seçildikten hemen sonra tarihleri otomatik göster, kullanıcının sormasını bekleme!`,
+    'reservation.wizard': `🎯 Rezervasyon senaryosu - BU ADIMLARI TAM OLARAK TAKİP ET:
+
+⚠️⚠️⚠️ KRİTİK: 5 ADIMIN HEPSİNİ TAMAMLAMADAN REZERVASYONU ONAYLAMA! ⚠️⚠️⚠️
+
+ADIM 1: Tur seçimi (eğer seçilmediyse):
+- Mevcut turları numaralandır
+- Kullanıcıdan numara ile seçim yapmasını iste
+
+ADIM 2: Tarih seçimi - **ZORUNLU OTOMATIK GÖSTERİM**:
+📅 Müsait tarihler:
+1. **15 Aralık 2025**
+   💰 Yetişkin: 2,500₺
+   📊 Kota: 25 kişi
+
+- Kullanıcı sormadan TÜM tarihleri bu formatta göster
+- Tarih seçimini iste
+
+ADIM 3: Kişi sayısı:
+- Kaç kişi olduğunu sor (yetişkin/çocuk)
+- Kullanıcının söylediği AYNI rakamı kullan (1 diyorsa 1, 2 diyorsa 2)
+
+ADIM 4: İletişim bilgileri - ❌ ZORUNLU ❌:
+- Tam ad-soyad iste (en az 2 kelime)
+- Telefon numarası iste (10-11 haneli)
+- ❌ E-MAIL ASLA İSTEME! ❌
+- Bu 2 bilgi olmadan ADIM 5'e geçme!
+
+ADIM 5: Özet ve onay:
+- TÜM bilgileri ALT ALTA göster:
+  Tur: [tur adı]
+  Tarih: [tarih]
+  Kişi: [sayı] yetişkin
+  Tam İsim: [isim]
+  Telefon: [telefon]
+- Onay iste: "Bu bilgiler doğruysa, rezervasyonunuzu onaylayabilirim. Onaylıyor musunuz?"
+
+⚠️ HİÇBİR ADIMI ATLAMA! Eksik bilgi varsa kullanıcıdan iste!`,
     
     question: `🎯 Soru-Cevap senaryosu
 - Soruyu net ve kısa cevapla
