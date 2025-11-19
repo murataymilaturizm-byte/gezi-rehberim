@@ -178,12 +178,17 @@ async function handleTourSelection(
         month: 'long',
         year: 'numeric'
       });
-      message += `${index + 1}. ${depDate} - ${date.price_adult} ${selectedTour.currency}\n`;
+      message += `${index + 1}. **${depDate}**\n`;
+      message += `   💰 Yetişkin: ${date.price_adult} ${selectedTour.currency}\n`;
+      if (date.price_child) {
+        message += `   👶 Çocuk: ${date.price_child} ${selectedTour.currency}\n`;
+      }
+      message += `   📊 Kota: ${date.quota} kişi\n\n`;
     });
 
     message += language === 'tr'
-      ? '\n\nLütfen tarih numarasını yazın:'
-      : '\n\nPlease enter the date number:';
+      ? 'Lütfen tarih numarasını yazın:'
+      : 'Please enter the date number:';
 
     return message;
   }
@@ -244,12 +249,17 @@ async function handleTourSelection(
       month: 'long',
       year: 'numeric'
     });
-    message += `${index + 1}. ${depDate} - ${date.price_adult} ${selectedTour.currency}\n`;
+    message += `${index + 1}. **${depDate}**\n`;
+    message += `   💰 Yetişkin: ${date.price_adult} ${selectedTour.currency}\n`;
+    if (date.price_child) {
+      message += `   👶 Çocuk: ${date.price_child} ${selectedTour.currency}\n`;
+    }
+    message += `   📊 Kota: ${date.quota} kişi\n\n`;
   });
 
   message += language === 'tr'
-    ? '\n\nLütfen tarih numarasını yazın:'
-    : '\n\nPlease enter the date number:';
+    ? 'Lütfen tarih numarasını yazın:'
+    : 'Please enter the date number:';
 
   return message;
 }
