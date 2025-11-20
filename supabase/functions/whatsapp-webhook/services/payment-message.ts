@@ -166,6 +166,7 @@ export function generatePaymentMessage(
 
   const lang = labels[language] || labels.tr;
   const bankInfo = paymentInstructions.bank_info?.[language] || paymentInstructions.bank_info?.tr || {};
+  const languageData = paymentInstructions[language] || paymentInstructions.tr || {};
 
   let message = `\n\n${lang.title}\n\n`;
   
@@ -207,6 +208,11 @@ export function generatePaymentMessage(
     message += `${lang.creditCard}\n`;
     if (paymentInstructions.phone_number) message += `${lang.phone} ${paymentInstructions.phone_number}\n`;
     message += `${lang.phonePayment}\n`;
+  }
+
+  // Additional Info (from panel's "Ek Bilgiler" / "Additional Information" field)
+  if (languageData.additional_info && languageData.additional_info.trim()) {
+    message += `\n${lang.note}\n${languageData.additional_info}\n`;
   }
 
   return message;

@@ -101,4 +101,5 @@ export interface AIPromptContext {
   tone: ConversationTone;
   agencyName?: string;
   agencyCity?: string;
+  paymentInfo?: string;
 }
