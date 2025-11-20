@@ -192,8 +192,23 @@ serve(async (req) => {
     // Use NLU entities for tour matching
     let selectedTour = null;
 
+    // First, try to match by tour number (if user just typed a number like "1", "2", etc.)
+    const trimmedMsg = message.trim();
+    const tourNumber = parseInt(trimmedMsg);
+    if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= DEMO_TOURS.length) {
+      const foundTour = DEMO_TOURS[tourNumber - 1];
+      selectedTour = {
+        id: foundTour.id,
+        title: foundTour.title,
+        destination: foundTour.destination,
+        dates: foundTour.dates,
+        program_kisa: foundTour.program_kisa,
+        gezilecek_yerler: foundTour.gezilecek_yerler,
+      };
+      console.log("🎫 Tour matched by number:", selectedTour.title);
+    }
     // Match by tour name from NLU
-    if (nluResult.entities.tour_name) {
+    else if (nluResult.entities.tour_name) {
       const foundTour = DEMO_TOURS.find((t) =>
         t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()),
       );
