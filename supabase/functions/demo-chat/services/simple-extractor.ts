@@ -49,8 +49,16 @@ function isValidName(name: string): boolean {
   // Must not contain numbers
   if (/\d/.test(name)) return false;
   
-  // Common blacklist
-  if (/evet|hayır|tamam|olur|kişi|tur|kayıt|tarih/i.test(name)) return false;
+  // Expanded blacklist - reject questions and common words
+  const blacklist = [
+    'evet', 'hayır', 'tamam', 'olur', 'kişi', 'tur', 'kayıt', 'tarih',
+    'nereden', 'nereye', 'nasıl', 'kaçta', 'hangi', 'kim', 'neden',
+    'hareket', 'ediyor', 'yapıyor', 'gidiyor', 'kalkıyor', 'varıyor',
+    'istiyorum', 'istiyor', 'ister', 'sorun', 'soru', 'bilgi'
+  ];
+  
+  const lowerName = name.toLowerCase();
+  if (blacklist.some(word => lowerName.includes(word))) return false;
   
   return true;
 }
