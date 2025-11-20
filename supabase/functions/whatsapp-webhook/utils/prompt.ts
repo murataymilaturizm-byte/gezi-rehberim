@@ -155,7 +155,7 @@ RESPONSE GUIDELINES:
 export function getIntentBasedPrompt(
   intent: string,
   language: string,
-  conversationStyle: string = 'professional',
+  conversationStyle: string = 'standart',
   hasHistory: boolean = false,
   agencyName?: string
 ): string {

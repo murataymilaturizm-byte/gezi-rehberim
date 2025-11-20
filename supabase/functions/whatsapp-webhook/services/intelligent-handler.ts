@@ -183,57 +183,58 @@ function buildIntelligentPrompt(
   const wizardStep = state?.wizardStep || 'none';
   const shownTourIds = state?.shownTourIds || [];
   
-  // Style-based personality and emoji rules - multilingual
+  // Style-based personality and emoji rules - UPDATED TO NEW STYLE NAMES
+  // Use detailed tone definitions from shared config
   const stylePersonality = {
-    tr: conversationStyle === 'friendly' 
-      ? 'Samimi, sıcak ve dostane bir üslup kullan. Emojiler ekle 😊'
-      : conversationStyle === 'energetic'
-      ? 'Enerjik, heyecanlı ve motive edici bir üslup kullan. Bol emoji ve ünlem kullan! 🎉⚡'
-      : conversationStyle === 'helpful'
-      ? 'Yardımsever, destekleyici ve rehber bir üslup kullan. Anlaşılır emoji kullan 🤝📝'
-      : 'Profesyonel, kibar ve açık bir dil kullan. Emoji kullanma.',
-    en: conversationStyle === 'friendly'
-      ? 'Use a friendly, warm and welcoming style. Add emojis 😊'
-      : conversationStyle === 'energetic'
-      ? 'Use an energetic, exciting and motivating style. Use plenty of emojis and exclamations! 🎉⚡'
-      : conversationStyle === 'helpful'
-      ? 'Use a helpful, supportive and guiding style. Use clear emojis 🤝📝'
-      : 'Use a professional, polite and clear language. No emojis.',
-    de: conversationStyle === 'friendly'
-      ? 'Verwenden Sie einen freundlichen, warmen und einladenden Stil. Fügen Sie Emojis hinzu 😊'
-      : conversationStyle === 'energetic'
-      ? 'Verwenden Sie einen energischen, aufregenden und motivierenden Stil. Verwenden Sie viele Emojis und Ausrufe! 🎉⚡'
-      : conversationStyle === 'helpful'
-      ? 'Verwenden Sie einen hilfreichen, unterstützenden und anleitenden Stil. Verwenden Sie klare Emojis 🤝📝'
-      : 'Verwenden Sie eine professionelle, höfliche und klare Sprache. Keine Emojis.',
-    ru: conversationStyle === 'friendly'
-      ? 'Используйте дружелюбный, теплый и гостеприимный стиль. Добавляйте эмодзи 😊'
-      : conversationStyle === 'energetic'
-      ? 'Используйте энергичный, захватывающий и мотивирующий стиль. Используйте много эмодзи и восклицаний! 🎉⚡'
-      : conversationStyle === 'helpful'
-      ? 'Используйте полезный, поддерживающий и направляющий стиль. Используйте понятные эмодзи 🤝📝'
-      : 'Используйте профессиональный, вежливый и четкий язык. Без эмодзи.',
-    ar: conversationStyle === 'friendly'
-      ? 'استخدم أسلوبًا ودودًا ودافئًا ومرحبًا. أضف الرموز التعبيرية 😊'
-      : conversationStyle === 'energetic'
-      ? 'استخدم أسلوبًا نشطًا ومثيرًا ومحفزًا. استخدم الكثير من الرموز التعبيرية والتعجب! 🎉⚡'
-      : conversationStyle === 'helpful'
-      ? 'استخدم أسلوبًا مفيدًا وداعمًا وموجهًا. استخدم رموزًا تعبيرية واضحة 🤝📝'
-      : 'استخدم لغة احترافية ومهذبة وواضحة. بدون رموز تعبيرية.',
-    fr: conversationStyle === 'friendly'
-      ? 'Utilisez un style amical, chaleureux et accueillant. Ajoutez des emojis 😊'
-      : conversationStyle === 'energetic'
-      ? 'Utilisez un style énergique, passionnant et motivant. Utilisez beaucoup d\'emojis et d\'exclamations! 🎉⚡'
-      : conversationStyle === 'helpful'
-      ? 'Utilisez un style utile, de soutien et de guide. Utilisez des emojis clairs 🤝📝'
-      : 'Utilisez un langage professionnel, poli et clair. Pas d\'emojis.',
-    es: conversationStyle === 'friendly'
-      ? 'Use un estilo amigable, cálido y acogedor. Agregue emojis 😊'
-      : conversationStyle === 'energetic'
-      ? 'Use un estilo enérgico, emocionante y motivador. ¡Use muchos emojis y exclamaciones! 🎉⚡'
-      : conversationStyle === 'helpful'
-      ? 'Use un estilo útil, de apoyo y de guía. Use emojis claros 🤝📝'
-      : 'Use un lenguaje profesional, educado y claro. Sin emojis.'
+    tr: conversationStyle === 'standart'
+      ? 'Doğal, samimi, sohbet havasında konuş. Her mesajda 1-2 emoji kullan 😊 ✨'
+      : conversationStyle === 'dinamik'
+      ? 'Enerjik, coşkulu, hevesli bir ton kullan. Bol emoji kullan - Her mesajda 2-4 emoji 🚀 ⭐ 🎉 ✨'
+      : conversationStyle === 'premium'
+      ? 'Zarif, sofistike, kişiselleştirilmiş ton. Seçici emoji kullanımı - Nadir, sadece özel anlar için ✨ 🌟'
+      : 'Profesyonel, ölçülü, resmi ton kullan. EMOJİ KULLANMA - Kesinlikle yasak!',
+    en: conversationStyle === 'standart'
+      ? 'Natural, friendly, conversational style. Use 1-2 emojis per message 😊 ✨'
+      : conversationStyle === 'dinamik'
+      ? 'Energetic, enthusiastic, excited tone. Lots of emojis - 2-4 per message 🚀 ⭐ 🎉 ✨'
+      : conversationStyle === 'premium'
+      ? 'Elegant, sophisticated, personalized tone. Selective emoji use - Rare, only for special moments ✨ 🌟'
+      : 'Professional, measured, formal tone. NO EMOJIS - Strictly forbidden!',
+    de: conversationStyle === 'standart'
+      ? 'Natürlich, freundlich, gesprächig. 1-2 Emojis pro Nachricht 😊 ✨'
+      : conversationStyle === 'dinamik'
+      ? 'Energisch, enthusiastisch, begeistert. Viele Emojis - 2-4 pro Nachricht 🚀 ⭐ 🎉 ✨'
+      : conversationStyle === 'premium'
+      ? 'Elegant, anspruchsvoll, personalisiert. Seltene Emojis - Nur für besondere Momente ✨ 🌟'
+      : 'Professionell, gemessen, formell. KEINE EMOJIS - Streng verboten!',
+    ru: conversationStyle === 'standart'
+      ? 'Естественный, дружелюбный стиль. 1-2 эмодзи в сообщении 😊 ✨'
+      : conversationStyle === 'dinamik'
+      ? 'Энергично, восторженно, воодушевленно. Много эмодзи - 2-4 в сообщении 🚀 ⭐ 🎉 ✨'
+      : conversationStyle === 'premium'
+      ? 'Элегантно, изысканно, персонализированно. Редкие эмодзи - Только для особых моментов ✨ 🌟'
+      : 'Профессионально, сдержанно, формально. БЕЗ ЭМОДЗИ - Строго запрещено!',
+    ar: conversationStyle === 'standart'
+      ? 'أسلوب طبيعي وودود ومحادثة. 1-2 رمز تعبيري في الرسالة 😊 ✨'
+      : conversationStyle === 'dinamik'
+      ? 'نشيط ومتحمس ومتحمس. الكثير من الرموز التعبيرية - 2-4 في الرسالة 🚀 ⭐ 🎉 ✨'
+      : conversationStyle === 'premium'
+      ? 'أنيق ومتطور وشخصي. استخدام انتقائي للرموز - نادرة، فقط للحظات خاصة ✨ 🌟'
+      : 'احترافي ومقاس ورسمي. بدون رموز تعبيرية - ممنوع تمامًا!',
+    fr: conversationStyle === 'standart'
+      ? 'Style naturel, amical, conversationnel. 1-2 émojis par message 😊 ✨'
+      : conversationStyle === 'dinamik'
+      ? 'Énergique, enthousiaste, excité. Beaucoup d\'émojis - 2-4 par message 🚀 ⭐ 🎉 ✨'
+      : conversationStyle === 'premium'
+      ? 'Élégant, sophistiqué, personnalisé. Usage sélectif des émojis - Rare, seulement pour moments spéciaux ✨ 🌟'
+      : 'Professionnel, mesuré, formel. PAS D\'ÉMOJIS - Strictement interdit!',
+    es: conversationStyle === 'standart'
+      ? 'Estilo natural, amigable, conversacional. 1-2 emojis por mensaje 😊 ✨'
+      : conversationStyle === 'dinamik'
+      ? 'Enérgico, entusiasta, emocionado. Muchos emojis - 2-4 por mensaje 🚀 ⭐ 🎉 ✨'
+      : conversationStyle === 'premium'
+      ? 'Elegante, sofisticado, personalizado. Uso selectivo de emojis - Raro, solo para momentos especiales ✨ 🌟'
+      : 'Profesional, medido, formal. SIN EMOJIS - ¡Estrictamente prohibido!'
   };
 
   const baseRulesText = {

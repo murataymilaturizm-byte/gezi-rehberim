@@ -28,8 +28,8 @@ export function validateResponse(response: string, conversationStyle: string): {
   // Check emoji usage based on style
   const emojiCount = (response.match(/[\u{1F300}-\u{1F9FF}]/gu) || []).length;
   
-  if (conversationStyle === 'professional' && emojiCount > 0) {
-    violations.push(`Professional style should not have emojis (found ${emojiCount})`);
+  if (conversationStyle === 'kurumsal' && emojiCount > 0) {
+    violations.push(`Corporate style should not have emojis (found ${emojiCount})`);
   }
   
   // Check for program details (day-by-day)
@@ -64,8 +64,8 @@ export function validateResponse(response: string, conversationStyle: string): {
       fixed = firstThree + (firstThree.endsWith('.') ? '' : '.');
     }
     
-    // Remove emojis if professional
-    if (conversationStyle === 'professional') {
+    // Remove emojis if corporate style
+    if (conversationStyle === 'kurumsal') {
       fixed = fixed.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
     }
     
