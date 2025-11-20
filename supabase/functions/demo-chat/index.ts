@@ -15,7 +15,7 @@ import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "./services/nlu.ts";
 import { extractNameAndPhone } from "./services/simple-extractor.ts";
 
 // Config
-import { DEMO_TOURS } from "./config/demo-tours.ts";
+import { DEMO_AGENCY_ID } from "./config/demo-tours.ts";
 
 // Types
 import type { ConversationContext, ProcessingInput } from "./types.ts";
@@ -43,6 +43,45 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Load tours from database for demo agency
+    const { data: dbTours, error: toursError } = await supabase
+      .from('tours')
+      .select(`
+        *,
+        dates:tour_dates(
+          id,
+          departure_date,
+          return_date,
+          price_adult,
+          price_child,
+          quota
+        )
+      `)
+      .eq('agency_id', DEMO_AGENCY_ID);
+
+    if (toursError) {
+      console.error("❌ Error loading tours:", toursError);
+      throw new Error("Failed to load tours");
+    }
+
+    const DEMO_TOURS = (dbTours || []).map((tour: any) => ({
+      id: tour.id,
+      title: tour.title,
+      destination: tour.destination,
+      type: tour.type,
+      currency: tour.currency,
+      program_kisa: tour.program_kisa,
+      gezilecek_yerler: tour.gezilecek_yerler,
+      toplanma_saati: tour.toplanma_saati,
+      hareket_noktasi: tour.hareket_noktasi,
+      tur_sure: tour.tur_sure,
+      ulasim: tour.ulasim,
+      konaklama: tour.konaklama,
+      dates: tour.dates || []
+    }));
+
+    console.log(`📦 Loaded ${DEMO_TOURS.length} tours from database`);
 
     // Load or initialize context
     let context: ConversationContext;
@@ -292,19 +331,48 @@ serve(async (req) => {
       }
     }
 
+    // === Save reservation to database if completed ===
+    if (newContext.stage === "COMPLETED" && newContext.reservationInfo) {
+      const { fullName, phone, dateId, paxAdult } = newContext.reservationInfo;
+      const tour = newContext.currentTour;
+
+      if (tour && dateId && fullName && phone && paxAdult) {
+        console.log("💾 Saving reservation to database...");
+        
+        const { error: regError } = await supabase
+          .from('registrations')
+          .insert({
+            agency_id: DEMO_AGENCY_ID,
+            tour_id: tour.id,
+            tour_date_id: dateId,
+            full_name: fullName,
+            phone: phone,
+            pax: paxAdult,
+            status: 'NEW',
+            note: 'Demo chat reservation'
+          });
+
+        if (regError) {
+          console.error("❌ Error saving reservation:", regError);
+        } else {
+          console.log("✅ Reservation saved successfully");
+        }
+      }
+    }
+
     // Save messages
     await supabase.from("whatsapp_conversations").insert([
       {
         phone: sessionId,
         role: "user",
         content: message,
-        agency_id: "00000000-0000-0000-0000-000000000000",
+        agency_id: DEMO_AGENCY_ID,
       },
       {
         phone: sessionId,
         role: "assistant",
         content: finalResponse,
-        agency_id: "00000000-0000-0000-0000-000000000000",
+        agency_id: DEMO_AGENCY_ID,
       },
     ]);
 
