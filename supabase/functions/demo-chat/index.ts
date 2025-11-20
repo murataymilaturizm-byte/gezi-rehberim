@@ -42,7 +42,36 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const availableTours = DEMO_TOURS;
+    // Load tours from database for demo agency
+    const { data: dbTours, error: toursError } = await supabase
+      .from('tours')
+      .select(`
+        *,
+        dates:tour_dates(*)
+      `)
+      .eq('agency_id', DEMO_AGENCY_ID);
+
+    if (toursError) {
+      console.error("❌ Error loading tours:", toursError);
+      throw new Error("Failed to load tours");
+    }
+
+    const availableTours = (dbTours || []).map((tour: any) => ({
+      id: tour.id,
+      title: tour.title,
+      destination: tour.destination,
+      type: tour.type,
+      currency: tour.currency,
+      program_kisa: tour.program_kisa,
+      gezilecek_yerler: tour.gezilecek_yerler,
+      toplanma_saati: tour.toplanma_saati,
+      hareket_noktasi: tour.hareket_noktasi,
+      tur_sure: tour.tur_sure,
+      ulasim: tour.ulasim,
+      konaklama: tour.konaklama,
+      dates: tour.dates || []
+    }));
+    
     console.log(`📦 Using ${availableTours.length} demo tours`);
 
     // Load or initialize context
