@@ -1,5 +1,5 @@
 // Centralized tour matching logic
-import type { TourReference } from '../types.ts';
+import type { TourReference } from '../../shared/fsm/types.ts';
 
 export function matchTour(
   userMessage: string,
