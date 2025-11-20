@@ -2,11 +2,11 @@
 import type { AIPromptContext, ConversationStage, ConversationTone } from '../types.ts';
 
 export function buildSystemPrompt(context: AIPromptContext): string {
-  const { stage, collectionStep, currentTour, reservationInfo, availableTours, language, tone, agencyName, agencyCity } = context;
+  const { stage, collectionStep, currentTour, reservationInfo, availableTours, language, tone, agencyName, agencyCity, paymentInfo } = context;
   
   const rolePrompt = getRolePrompt(language);
   const tonePrompt = getTonePrompt(language, tone);
-  const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, availableTours, language);
+  const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, availableTours, language, paymentInfo);
   const agencyInfo = agencyName ? getAgencyInfo(agencyName, agencyCity, language) : '';
   
   return `${rolePrompt}\n\n${tonePrompt}\n\n${stagePrompt}${agencyInfo}`;
@@ -161,7 +161,8 @@ function getStagePrompt(
   currentTour: any,
   reservationInfo: any,
   availableTours: any[],
-  language: string
+  language: string,
+  paymentInfo?: string
 ): string {
   const toursList = formatToursList(availableTours, language);
   
@@ -239,8 +240,23 @@ ${summary}
 "Bu bilgiler doğru mudur, onaylıyor musunuz?"`;
 
       case 'COMPLETED':
+        const paymentPromptTR = paymentInfo ? `
+
+⚠️ ÖDEME BİLGİLERİ:
+- Kayıt tamamlandı mesajından sonra, kullanıcının diline göre kısa başlık ekle:
+  • Türkçe: "Ödeme bilgileri:"
+  • İngilizce: "Payment details:"
+  • Rusça: "Платёжные реквизиты:"
+  • Almanca: "Zahlungsinformationen:"
+  • Fransızca: "Informations de paiement :"
+  • İspanyolca: "Detalles de pago:"
+  
+- Başlığın altına şu metni OLDUĞU GİBİ yaz (çevirme, değiştirme):
+${paymentInfo}` : '';
+
         return `📍 DURUM: Kayıt tamamlandı
-"Teşekkür ederiz, kayıt işleminiz tamamlanmıştır. Bilgileriniz acente kayıtlarına iletilmiştir, en kısa sürede size dönüş yapılacaktır."`;
+"Teşekkür ederiz, kayıt işleminiz tamamlanmıştır. Bilgileriniz acente kayıtlarına iletilmiştir, en kısa sürede size dönüş yapılacaktır."
+${paymentPromptTR}`;
 
       default:
         return '';
@@ -321,8 +337,23 @@ ${summary}
 "Are these details correct, do you confirm?"`;
 
     case 'COMPLETED':
+      const paymentPromptEN = paymentInfo ? `
+
+⚠️ PAYMENT INFORMATION:
+- After the registration completed message, add a short header based on user's language:
+  • Turkish: "Ödeme bilgileri:"
+  • English: "Payment details:"
+  • Russian: "Платёжные реквизиты:"
+  • German: "Zahlungsinformationen:"
+  • French: "Informations de paiement :"
+  • Spanish: "Detalles de pago:"
+  
+- Below the header, write this text EXACTLY AS IS (don't translate, don't modify):
+${paymentInfo}` : '';
+
       return `📍 STATUS: Registration completed
-"Thank you, your registration has been completed. Your information has been forwarded to the agency records, you will be contacted shortly."`;
+"Thank you, your registration has been completed. Your information has been forwarded to the agency records, you will be contacted shortly."
+${paymentPromptEN}`;
 
     default:
       return '';

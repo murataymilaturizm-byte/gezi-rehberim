@@ -203,7 +203,8 @@ serve(async (req) => {
       language: newContext.language,
       tone: newContext.tone,
       agencyName: 'Demo Travel Agency',
-      agencyCity: undefined
+      agencyCity: undefined,
+      paymentInfo: undefined // Panel'den gelecek, şimdilik undefined
     });
 
     // Get conversation history
