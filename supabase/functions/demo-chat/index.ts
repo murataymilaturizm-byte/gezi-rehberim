@@ -2,23 +2,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Core FSM
-import { createInitialContext, processTransition, getNextExpectedInput } from "./core/state-machine.ts";
-import { sanitizeInput } from "./core/validator.ts";
+// Shared FSM
+import { createInitialContext, processTransition, getNextExpectedInput } from "../shared/fsm/state-machine.ts";
+import { sanitizeInput } from "../shared/fsm/validator.ts";
+import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
+import { detectLanguage } from "../shared/fsm/language.ts";
+import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
+import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
+import type { ConversationContext, ProcessingInput } from "../shared/fsm/types.ts";
 
-// Services
+// Demo-specific services
 import { callAI } from "./services/ai.ts";
 import { findTourById } from "./services/tour-matcher.ts";
-import { buildSystemPrompt } from "./services/prompt-builder.ts";
-import { detectLanguage } from "./services/language.ts";
-import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "./services/nlu.ts";
-import { extractNameAndPhone } from "./services/simple-extractor.ts";
 
 // Config
 import { DEMO_AGENCY_ID } from "./config/demo-tours.ts";
-
-// Types
-import type { ConversationContext, ProcessingInput } from "./types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,22 +123,8 @@ serve(async (req) => {
     // Use NLU entities for tour matching
     let selectedTour = null;
 
-    // Try NLU tour_id or destination/tour_name
-    if (nluResult.entities.tour_id) {
-      const foundTour = findTourById(nluResult.entities.tour_id, DEMO_TOURS);
-      if (foundTour) {
-        selectedTour = {
-          id: foundTour.id,
-          title: foundTour.title,
-          destination: foundTour.destination,
-          dates: foundTour.dates,
-          program_kisa: foundTour.program_kisa,
-          gezilecek_yerler: foundTour.gezilecek_yerler,
-        };
-        console.log("🎫 Tour matched by NLU ID:", selectedTour.title);
-      }
-    } else if (nluResult.entities.tour_name) {
-      // Match by tour name from NLU
+    // Match by tour name from NLU
+    if (nluResult.entities.tour_name) {
       const foundTour = DEMO_TOURS.find((t) =>
         t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()),
       );
@@ -173,22 +157,13 @@ serve(async (req) => {
       }
     }
 
-    // Extract reservation info from NLU entities
-    const extractedInfo: any = {};
+    // Extract reservation info from NLU updates (already processed by NLU)
+    const extractedInfo: any = { ...nluResult.updates };
 
-    if (nluResult.entities.date) {
-      extractedInfo.selectedDate = nluResult.entities.date;
-      console.log("📅 Date from NLU:", nluResult.entities.date);
-    }
-
-    if (nluResult.entities.adults !== null) {
-      extractedInfo.paxAdult = nluResult.entities.adults;
-      console.log("👥 Adults from NLU:", nluResult.entities.adults);
-    }
-
-    if (nluResult.entities.children !== null) {
-      extractedInfo.paxChild = nluResult.entities.children;
-      console.log("👶 Children from NLU:", nluResult.entities.children);
+    // Handle dates if provided
+    if (nluResult.entities.dates && nluResult.entities.dates.length > 0) {
+      extractedInfo.selectedDate = nluResult.entities.dates[0];
+      console.log("📅 Date from NLU:", nluResult.entities.dates[0]);
     }
 
     // Simple fallback for name and phone (NLU sometimes misses these)

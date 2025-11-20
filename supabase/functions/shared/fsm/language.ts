@@ -1,4 +1,4 @@
-// Simple language detection for demo chat
+// Simple language detection
 
 export async function detectLanguage(text: string): Promise<string | null> {
   const lower = text.toLowerCase().trim();

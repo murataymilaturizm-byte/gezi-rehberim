@@ -1,5 +1,5 @@
 // Centralized validation logic
-import type { ReservationInfo, ValidationResult } from '../types.ts';
+import type { ReservationInfo, ValidationResult } from './types.ts';
 
 export function validateReservationInfo(info: ReservationInfo): ValidationResult {
   const missingFields: string[] = [];

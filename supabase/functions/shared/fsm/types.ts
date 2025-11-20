@@ -1,4 +1,4 @@
-// Enhanced type definitions for FSM-based demo chat
+// Shared FSM type definitions for demo-chat and whatsapp-webhook
 
 export type ConversationStage = 
   | 'GREETING'           // Initial greeting
