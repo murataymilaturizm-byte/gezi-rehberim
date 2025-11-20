@@ -239,15 +239,40 @@ serve(async (req) => {
     console.log('🤖 Calling AI...');
     const aiResponse = await callAI(messages, 0.7);
 
+    // If reservation is completed and payment info not sent yet, add payment details
+    let finalResponse = aiResponse;
+    if (newContext.stage === 'COMPLETED' && !newContext.paymentInfoSent && paymentData?.payment_instructions) {
+      const { generatePaymentMessage } = await import('./services/payment.ts');
+      
+      // Calculate prices
+      const priceAdult = newContext.currentTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId)?.price_adult || 0;
+      const paxAdult = newContext.reservationInfo.paxAdult || 1;
+      const totalPrice = priceAdult * paxAdult;
+      const depositPercentage = paymentData.payment_instructions.deposit_percentage || 30;
+      const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+      
+      const paymentMessage = generatePaymentMessage(
+        paymentData.payment_instructions,
+        newContext.language,
+        totalPrice,
+        depositAmount
+      );
+      
+      if (paymentMessage) {
+        finalResponse = aiResponse + paymentMessage;
+        newContext.paymentInfoSent = true;
+      }
+    }
+
     // Save messages
     await supabase.from('whatsapp_conversations').insert([
       { phone: sessionId, role: 'user', content: message, agency_id: '00000000-0000-0000-0000-000000000000' },
-      { phone: sessionId, role: 'assistant', content: aiResponse, agency_id: '00000000-0000-0000-0000-000000000000' }
+      { phone: sessionId, role: 'assistant', content: finalResponse, agency_id: '00000000-0000-0000-0000-000000000000' }
     ]);
 
     return new Response(
       JSON.stringify({
-        response: aiResponse,
+        response: finalResponse,
         conversationState: newContext
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

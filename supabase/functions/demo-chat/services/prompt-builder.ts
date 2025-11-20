@@ -203,23 +203,10 @@ ${summary}
 "Bu bilgiler doğru mudur, onaylıyor musunuz?"`;
 
       case 'COMPLETED':
-        const paymentPromptTR = paymentInfo ? `
-
-⚠️ ÖDEME BİLGİLERİ:
-- Kayıt tamamlandı mesajından sonra, kullanıcının diline göre kısa başlık ekle:
-  • Türkçe: "Ödeme bilgileri:"
-  • İngilizce: "Payment details:"
-  • Rusça: "Платёжные реквизиты:"
-  • Almanca: "Zahlungsinformationen:"
-  • Fransızca: "Informations de paiement :"
-  • İspanyolca: "Detalles de pago:"
-  
-- Başlığın altına şu metni OLDUĞU GİBİ yaz (çevirme, değiştirme):
-${paymentInfo}` : '';
-
         return `📍 DURUM: Kayıt tamamlandı
 "Teşekkür ederiz, kayıt işleminiz tamamlanmıştır. Bilgileriniz acente kayıtlarına iletilmiştir, en kısa sürede size dönüş yapılacaktır."
-${paymentPromptTR}`;
+
+⚠️ ÖNEMLİ: Ödeme bilgileri otomatik olarak eklenecek, sen sadece teşekkür mesajı ver.`;
 
       default:
         return '';
