@@ -30,19 +30,18 @@ export const DemoChat = () => {
   });
 
   const [conversationStyle, setConversationStyle] = useState<
-    "basic" | "friendly" | "professional" | "energetic" | "helpful"
+    "standart" | "kurumsal" | "dinamik" | "premium"
   >(() => {
     const savedStyle = localStorage.getItem("demo-chat-style");
     if (
-      savedStyle === "basic" ||
-      savedStyle === "friendly" ||
-      savedStyle === "professional" ||
-      savedStyle === "energetic" ||
-      savedStyle === "helpful"
+      savedStyle === "standart" ||
+      savedStyle === "kurumsal" ||
+      savedStyle === "dinamik" ||
+      savedStyle === "premium"
     ) {
       return savedStyle;
     }
-    return "basic";
+    return "standart";
   });
 
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -54,11 +53,10 @@ export const DemoChat = () => {
       saved &&
       savedLang === i18n.language &&
       savedStyle &&
-      (savedStyle === "basic" ||
-        savedStyle === "friendly" ||
-        savedStyle === "professional" ||
-        savedStyle === "energetic" ||
-        savedStyle === "helpful")
+      (savedStyle === "standart" ||
+        savedStyle === "kurumsal" ||
+        savedStyle === "dinamik" ||
+        savedStyle === "premium")
     ) {
       try {
         return JSON.parse(saved);
@@ -103,16 +101,16 @@ export const DemoChat = () => {
       const getStyledGreeting = () => {
         const baseGreeting = t("demo.greeting");
         switch (conversationStyle) {
-          case "basic":
-            return baseGreeting + "\n\n" + t("demo.helpPrompt.basic");
-          case "friendly":
-            return baseGreeting + "\n\n" + t("demo.helpPrompt.friendly");
-          case "energetic":
-            return baseGreeting + "\n\n" + t("demo.helpPrompt.energetic");
-          case "helpful":
-            return baseGreeting + "\n\n" + t("demo.helpPrompt.helpful");
-          default: // professional
-            return baseGreeting + "\n\n" + t("demo.helpPrompt.professional");
+          case "standart":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.standart");
+          case "kurumsal":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.kurumsal");
+          case "dinamik":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.dinamik");
+          case "premium":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.premium");
+          default:
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.standart");
         }
       };
       
@@ -129,16 +127,16 @@ export const DemoChat = () => {
     const getStyledGreeting = () => {
       const baseGreeting = t("demo.greeting");
       switch (conversationStyle) {
-        case "basic":
-          return baseGreeting + "\n\n" + t("demo.helpPrompt.basic");
-        case "friendly":
-          return baseGreeting + "\n\n" + t("demo.helpPrompt.friendly");
-        case "energetic":
-          return baseGreeting + "\n\n" + t("demo.helpPrompt.energetic");
-        case "helpful":
-          return baseGreeting + "\n\n" + t("demo.helpPrompt.helpful");
-        default: // professional
-          return baseGreeting + "\n\n" + t("demo.helpPrompt.professional");
+        case "standart":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.standart");
+        case "kurumsal":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.kurumsal");
+        case "dinamik":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.dinamik");
+        case "premium":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.premium");
+        default:
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.standart");
       }
     };
 
@@ -190,7 +188,7 @@ export const DemoChat = () => {
         body: JSON.stringify({
           message: userMessage,
           sessionId: sessionId,
-          conversationStyle: conversationStyle === "basic" ? "professional" : conversationStyle,
+          conversationStyle: conversationStyle,
           conversationState: conversationState,
         }),
       });
@@ -244,16 +242,16 @@ export const DemoChat = () => {
     const getStyledGreeting = () => {
       const baseGreeting = t("demo.greeting");
       switch (conversationStyle) {
-        case "basic":
-          return baseGreeting + "\n\n📍 Nasıl yardımcı olabilirim?";
-        case "friendly":
-          return baseGreeting + "\n\n😊 Sana nasıl yardımcı olabilirim?";
-        case "energetic":
-          return baseGreeting + "\n\n⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀";
-        case "helpful":
-          return baseGreeting + "\n\n📝 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz.";
+        case "standart":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.standart");
+        case "kurumsal":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.kurumsal");
+        case "dinamik":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.dinamik");
+        case "premium":
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.premium");
         default:
-          return baseGreeting + "\n\n📍 Size nasıl yardımcı olabilirim?";
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.standart");
       }
     };
 
@@ -303,7 +301,7 @@ export const DemoChat = () => {
               )}
               <Select
                 value={conversationStyle}
-                onValueChange={(value: "basic" | "friendly" | "professional" | "energetic" | "helpful") =>
+                onValueChange={(value: "standart" | "kurumsal" | "dinamik" | "premium") =>
                   setConversationStyle(value)
                 }
               >
@@ -313,11 +311,10 @@ export const DemoChat = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="basic">✨ {t("demo.style.basic")}</SelectItem>
-                  <SelectItem value="friendly">🤝 {t("demo.style.friendly")}</SelectItem>
-                  <SelectItem value="professional">👔 {t("demo.style.professional")}</SelectItem>
-                  <SelectItem value="energetic">⚡ {t("demo.style.energetic")}</SelectItem>
-                  <SelectItem value="helpful">😊 {t("demo.style.helpful")}</SelectItem>
+                  <SelectItem value="standart">✨ {t("demo.style.standart")}</SelectItem>
+                  <SelectItem value="kurumsal">👔 {t("demo.style.kurumsal")}</SelectItem>
+                  <SelectItem value="dinamik">⚡ {t("demo.style.dinamik")}</SelectItem>
+                  <SelectItem value="premium">💎 {t("demo.style.premium")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button

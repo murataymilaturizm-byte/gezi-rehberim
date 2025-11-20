@@ -83,18 +83,16 @@
     "resetSuccessDesc": "Puedes comenzar una nueva conversación",
     "typing": "Escribiendo...",
     "style": {
-      "basic": "Simple/Breve",
-      "friendly": "Amigable",
-      "professional": "Profesional",
-      "energetic": "Enérgico",
-      "helpful": "Servicial"
+      "standart": "Estándar",
+      "kurumsal": "Profesional",
+      "dinamik": "Dinámico",
+      "premium": "Premium"
     },
     "helpPrompt": {
-      "basic": "📍 ¿Cómo puedo ayudarte?",
-      "friendly": "😊 ¿Cómo puedo ayudarte?",
-      "professional": "💼 ¿Cómo puedo ayudarle?",
-      "energetic": "⚡ ¿Listo para explorar nuestros tours fantásticos?! 🚀",
-      "helpful": "📝 Estoy aquí para ayudarte. ¡No dudes en hacer tus preguntas!"
+      "standart": "📍 ¿Cómo puedo ayudarte?",
+      "kurumsal": "💼 ¿Cómo puedo ayudarle?",
+      "dinamik": "⚡ ¿Listo para explorar nuestros tours fantásticos?! 🚀",
+      "premium": "💎 Estoy aquí para ayudarte. ¡No dudes en hacer tus preguntas!"
     }
   },
   "advanced": {
