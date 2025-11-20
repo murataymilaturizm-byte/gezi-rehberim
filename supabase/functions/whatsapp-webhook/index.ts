@@ -9,11 +9,15 @@ import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
 import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
+import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
 // WhatsApp-specific utilities
 import { createTwiMLResponse, createTwiMLHeaders } from './utils/twilio.ts';
 import { truncateForWhatsApp } from './utils/format.ts';
+
+// WhatsApp services
+import { generatePaymentMessage } from './services/payment-message.ts';
 
 // Legacy services (backward compatibility)
 import { checkFAQ } from './services/faq.ts';
@@ -91,52 +95,10 @@ serve(async (req) => {
       `)
       .eq('agency_id', agency.id);
 
-    const tours = (dbTours || []).map((tour: any) => ({
-      id: tour.id,
-      title: tour.title,
-      destination: tour.destination,
-      type: tour.type,
-      currency: tour.currency,
-      program_kisa: tour.program_kisa,
-      gezilecek_yerler: tour.gezilecek_yerler,
-      dates: tour.dates || []
-    }));
+    // Note: We'll update tours with localized fields after we have context
+    const toursRaw = dbTours || [];
 
-    console.log(`📦 Tours: ${tours.length}`);
-
-    // === Legacy features (canned responses, FAQ) ===
-    if (planFeatures?.has_templates) {
-      const cannedTrigger = detectCannedResponseTrigger(message, 'tr');
-      if (cannedTrigger) {
-        const response = getCannedResponse(cannedTrigger, 'tr');
-        if (response) {
-          await supabase.from('whatsapp_conversations').insert({
-            phone: userPhone,
-            role: 'assistant',
-            content: response,
-            agency_id: agency.id
-          });
-          return new Response(
-            createTwiMLResponse(truncateForWhatsApp(response)), 
-            { status: 200, headers: createTwiMLHeaders() }
-          );
-        }
-      }
-
-      const faqResponse = await checkFAQ(supabase, message, agency.id, 'tr');
-      if (faqResponse) {
-        await supabase.from('whatsapp_conversations').insert({
-          phone: userPhone,
-          role: 'assistant',
-          content: faqResponse,
-          agency_id: agency.id
-        });
-        return new Response(
-          createTwiMLResponse(truncateForWhatsApp(faqResponse)), 
-          { status: 200, headers: createTwiMLHeaders() }
-        );
-      }
-    }
+    console.log(`📦 Tours: ${toursRaw.length}`);
 
     // === FSM-based conversation ===
 
@@ -153,26 +115,90 @@ serve(async (req) => {
 
     let context: ConversationContext;
 
+    // Detect language change intent and runtime language
+    const languageChangeIntent = detectLanguageChangeIntent(message);
+    const runtimeDetectedLang = await detectLanguage(message);
+
     if (existingState?.content) {
       try {
         const parsed = JSON.parse(existingState.content);
         if (isValidContext(parsed)) {
           context = parsed;
-          console.log(`✅ Loaded context - Stage: ${context.stage}`);
+          
+          // Handle explicit language change request
+          if (languageChangeIntent && languageChangeIntent !== context.language) {
+            console.log(`🌐 Language change: ${context.language} → ${languageChangeIntent}`);
+            context.language = languageChangeIntent;
+            context.tone = getDefaultToneForLanguage(languageChangeIntent) as ConversationTone;
+          } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
+            // Update language if detected language is different (but less aggressively than intent)
+            console.log(`🌐 Language detected: ${context.language} → ${runtimeDetectedLang}`);
+            context.language = runtimeDetectedLang;
+          }
+          
+          console.log(`✅ Loaded context - Stage: ${context.stage}, Lang: ${context.language}`);
         } else {
           throw new Error('Invalid context');
         }
       } catch (e) {
         console.log("⚠️ Creating fresh context");
-        const detectedLang = await detectLanguage(message);
-        const tone = (agency.conversation_style || 'standart') as ConversationTone;
-        context = createInitialContext(detectedLang || 'tr', tone);
+        const initialLang = languageChangeIntent || runtimeDetectedLang || 'tr';
+        const tone = getDefaultToneForLanguage(initialLang) as ConversationTone;
+        context = createInitialContext(initialLang, tone);
       }
     } else {
       console.log("🆕 Fresh context");
-      const detectedLang = await detectLanguage(message);
-      const tone = (agency.conversation_style || 'standart') as ConversationTone;
-      context = createInitialContext(detectedLang || 'tr', tone);
+      const initialLang = languageChangeIntent || runtimeDetectedLang || 'tr';
+      const tone = getDefaultToneForLanguage(initialLang) as ConversationTone;
+      context = createInitialContext(initialLang, tone);
+    }
+
+    // Now create localized tours based on context language
+    const tours = toursRaw.map((tour: any) => ({
+      id: tour.id,
+      title: pickLocalized(tour, "title", context.language),
+      destination: pickLocalized(tour, "destination", context.language),
+      type: tour.type,
+      currency: tour.currency,
+      program_kisa: pickLocalized(tour, "program_kisa", context.language),
+      gezilecek_yerler: tour.gezilecek_yerler,
+      dates: tour.dates || []
+    }));
+
+    // === Legacy features (canned responses, FAQ) - with dynamic language ===
+    const currentLang = context.language || 'tr';
+    
+    if (planFeatures?.has_templates) {
+      const cannedTrigger = detectCannedResponseTrigger(message, currentLang);
+      if (cannedTrigger) {
+        const response = getCannedResponse(cannedTrigger, currentLang);
+        if (response) {
+          await supabase.from('whatsapp_conversations').insert({
+            phone: userPhone,
+            role: 'assistant',
+            content: response,
+            agency_id: agency.id
+          });
+          return new Response(
+            createTwiMLResponse(truncateForWhatsApp(response)), 
+            { status: 200, headers: createTwiMLHeaders() }
+          );
+        }
+      }
+
+      const faqResponse = await checkFAQ(supabase, message, agency.id, currentLang);
+      if (faqResponse) {
+        await supabase.from('whatsapp_conversations').insert({
+          phone: userPhone,
+          role: 'assistant',
+          content: faqResponse,
+          agency_id: agency.id
+        });
+        return new Response(
+          createTwiMLResponse(truncateForWhatsApp(faqResponse)), 
+          { status: 200, headers: createTwiMLHeaders() }
+        );
+      }
     }
 
     // Get conversation history
@@ -307,15 +333,58 @@ serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    const reply = aiData.choices[0].message.content;
+    let reply = aiData.choices[0].message.content;
 
     console.log("🤖 Reply:", reply.substring(0, 80));
+
+    // === APPEND PAYMENT MESSAGE IF COMPLETED ===
+    let finalReply = reply;
+    
+    if (newContext.stage === 'COMPLETED' && 
+        newContext.reservationConfirmed && 
+        !newContext.paymentInfoSent && 
+        agency.payment_instructions) {
+      
+      console.log("💳 Appending payment info...");
+      
+      // Calculate payment amounts
+      const paymentInstructions = agency.payment_instructions;
+      const depositPercentage = paymentInstructions.deposit_percentage || 30;
+      
+      // Get selected tour date to calculate price
+      const selectedTourDate = toursRaw
+        .find((t: any) => t.id === newContext.reservationInfo.tourId)
+        ?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
+      
+      if (selectedTourDate) {
+        const paxAdult = newContext.reservationInfo.paxAdult || 0;
+        const paxChild = newContext.reservationInfo.paxChild || 0;
+        const priceAdult = selectedTourDate.price_adult || 0;
+        const priceChild = selectedTourDate.price_child || priceAdult;
+        
+        const totalPrice = (paxAdult * priceAdult) + (paxChild * priceChild);
+        const depositAmount = Math.ceil((totalPrice * depositPercentage) / 100);
+        
+        const paymentMessage = generatePaymentMessage(
+          paymentInstructions,
+          newContext.language,
+          totalPrice,
+          depositAmount
+        );
+        
+        if (paymentMessage) {
+          finalReply = reply + paymentMessage;
+          newContext.paymentInfoSent = true;
+          console.log("✅ Payment info appended");
+        }
+      }
+    }
 
     // Save response
     await supabase.from('whatsapp_conversations').insert({
       phone: userPhone,
       role: 'assistant',
-      content: reply,
+      content: finalReply,
       agency_id: agency.id
     });
 
@@ -360,7 +429,7 @@ serve(async (req) => {
     });
 
     return new Response(
-      createTwiMLResponse(truncateForWhatsApp(reply)), 
+      createTwiMLResponse(truncateForWhatsApp(finalReply)), 
       { status: 200, headers: createTwiMLHeaders() }
     );
 
