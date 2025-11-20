@@ -83,6 +83,7 @@ export const DemoChat = () => {
 
   // Eski scroll mantığına dönüş: ScrollArea'ya ref
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const previousLanguageRef = useRef(i18n.language);
 
   useEffect(() => {
     localStorage.setItem("demo-chat-messages", JSON.stringify(messages));
@@ -92,8 +93,8 @@ export const DemoChat = () => {
 
   // Dil değiştiğinde konuşmaları temizle ve session'ı sıfırla
   useEffect(() => {
-    const savedLang = localStorage.getItem("demo-chat-language");
-    if (savedLang && savedLang !== i18n.language) {
+    if (previousLanguageRef.current !== i18n.language) {
+      console.log('Dil değişti:', previousLanguageRef.current, '->', i18n.language);
       // Dil değişti, konuşmaları temizle
       const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setSessionId(newSessionId);
@@ -117,8 +118,11 @@ export const DemoChat = () => {
       
       setMessages([{ role: "assistant", content: getStyledGreeting() }]);
       setConversationState(null);
+      
+      // Ref'i güncelle
+      previousLanguageRef.current = i18n.language;
     }
-  }, [i18n.language, conversationStyle, t]);
+  }, [i18n.language, conversationStyle, t, setSessionId]);
 
   // Stil değiştiğinde sadece greeting'i güncelle
   useEffect(() => {
