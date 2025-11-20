@@ -321,19 +321,19 @@ ${paymentPromptEN}`;
 }
 
 function getAgencyInfo(agencyName: string, agencyCity: string | undefined, language: string): string {
-  if (language === 'tr') {
-    return `\n\n🏢 ACENTA BİLGİSİ:
-Acenta Adı: ${agencyName}
-${agencyCity ? `Merkez: ${agencyCity}` : ''}
+  const greeting = language === 'tr' 
+    ? `Merhaba! ${agencyName}'ye hoş geldiniz.`
+    : `Hello! Welcome to ${agencyName}.`;
+    
+  return `\n\n🏢 ACENTA/AGENCY INFO:
+İsim/Name: ${agencyName}
+${agencyCity ? `Şehir/City: ${agencyCity}` : ''}
 
-⚠️ Karşılama mesajında acente adını 1 kez kullan: "Merhaba! ${agencyName}'ye hoş geldiniz."`;
-  }
-  
-  return `\n\n🏢 AGENCY INFO:
-Agency Name: ${agencyName}
-${agencyCity ? `Location: ${agencyCity}` : ''}
+⚠️ KARŞILAMA/GREETING:
+"${greeting}"
 
-⚠️ Use agency name once in greeting: "Hello! Welcome to ${agencyName}."`;
+UYARI: Yukarıdaki ismi AYNEN kullan, çevirme!
+WARNING: Use the name above EXACTLY as shown, do NOT translate!`;
 }
 
 function formatToursList(tours: any[], language: string): string {
