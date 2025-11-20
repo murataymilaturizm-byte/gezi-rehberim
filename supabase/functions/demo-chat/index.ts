@@ -202,9 +202,9 @@ serve(async (req) => {
       availableTours: DEMO_TOURS,
       language: newContext.language,
       tone: newContext.tone,
-      agencyName: 'Demo Travel Agency',
+      agencyName: undefined, // Demo'da acente adı yok
       agencyCity: undefined,
-      paymentInfo: undefined // Panel'den gelecek, şimdilik undefined
+      paymentInfo: undefined
     });
 
     // Get conversation history
