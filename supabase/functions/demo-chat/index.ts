@@ -1,20 +1,20 @@
-// Demo chat endpoint with FSM-based architecture
+// Demo chat endpoint - Clean FSM v3.0.0
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Core FSM
 import { createInitialContext, processTransition, getNextExpectedInput } from './core/state-machine.ts';
-import { validateReservationInfo, sanitizeInput } from './core/validator.ts';
+import { sanitizeInput } from './core/validator.ts';
 
 // Services
 import { callAI } from './services/ai.ts';
 import { matchTour, findTourById } from './services/tour-matcher.ts';
 import { extractReservationInfo } from './services/info-extractor.ts';
 import { buildSystemPrompt } from './services/prompt-builder.ts';
-import { generatePaymentMessage } from './services/payment.ts';
+import { detectLanguage } from './services/language.ts';
 
 // Config
-import { DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from './config/demo-tours.ts';
+import { DEMO_TOURS } from './config/demo-tours.ts';
 
 // Types
 import type { ConversationContext, ProcessingInput } from './types.ts';
@@ -25,24 +25,20 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { message: rawMessage, sessionId, conversationState: clientState } = await req.json();
-
-    // Sanitize input
     const message = sanitizeInput(rawMessage);
 
     if (!sessionId) {
       throw new Error('Session ID required');
     }
 
-    console.log('🚀 NEW FSM VERSION ACTIVE - v2.0.0');
+    console.log('🚀 DEMO CHAT FSM v3.0.0 - CLEAN START');
     
-    // Initialize Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -55,38 +51,43 @@ serve(async (req) => {
       context = clientState;
     } else {
       console.log('🆕 Initializing fresh context');
-      // Auto-detect language on first message
-      const { detectLanguage } = await import('./services/language.ts');
       const detectedLang = await detectLanguage(message);
       const language = detectedLang || 'tr';
-      const conversationStyle = 'friendly'; // Default style
+      const tone = 'standart'; // Default tone
       
-      context = createInitialContext(language, conversationStyle);
+      context = createInitialContext(language, tone);
       context.detectedLanguage = detectedLang || undefined;
       
-      console.log(`🌍 Language: ${language} (detected: ${detectedLang}), Style: ${conversationStyle}`);
+      console.log(`🌍 Language: ${language}, Tone: ${tone}`);
     }
 
-    console.log('📨 Demo chat:', { message, sessionId, stage: context.stage, lang: context.language, style: context.conversationStyle });
+    console.log('📨 Message:', { message, stage: context.stage, lang: context.language, tone: context.tone });
 
-    // Detect intent using simple rules (could use AI here too)
-    const detectedIntent = detectSimpleIntent(message, context);
-    console.log('🎯 Detected intent:', detectedIntent);
+    // Simple intent detection
+    const detectedIntent = detectIntent(message, context);
+    console.log('🎯 Intent:', detectedIntent);
 
-    // Get expected input based on current state
     const expectedInput = getNextExpectedInput(context);
-    console.log('⏭️ Expected input:', expectedInput);
+    console.log('⏭️ Expected:', expectedInput);
 
-    // Match tour if mentioned
+    // Match tour
     const selectedTour = matchTour(message, DEMO_TOURS, expectedInput);
     if (selectedTour) {
       console.log('🎫 Tour matched:', selectedTour.title);
+      
+      // Get full tour data
+      const fullTour = findTourById(selectedTour.id, DEMO_TOURS);
+      if (fullTour) {
+        selectedTour.dates = fullTour.dates;
+        selectedTour.program_kisa = fullTour.program_kisa;
+        selectedTour.gezilecek_yerler = fullTour.gezilecek_yerler;
+      }
     }
 
     // Extract reservation info
     const extractedInfo = extractReservationInfo(message, context.reservationInfo, expectedInput);
     
-    // If date was selected by number and we have a current tour, resolve the actual date
+    // Resolve date if selected by number
     if (extractedInfo.selectedDate?.startsWith('date_') && context.currentTour) {
       const tour = findTourById(context.currentTour.id, DEMO_TOURS);
       if (tour?.dates) {
@@ -99,11 +100,11 @@ serve(async (req) => {
         }
       }
     }
-    
+
     console.log('📝 Extracted info:', extractedInfo);
 
-    // Create processing input
-    const processingInput: ProcessingInput = {
+    // Process FSM transition
+    const input: ProcessingInput = {
       userMessage: message,
       detectedIntent,
       extractedInfo,
@@ -111,166 +112,113 @@ serve(async (req) => {
       language: context.language
     };
 
-    // Process state transition
-    const newContext = processTransition(context, processingInput);
-    
-    console.log('📊 State transition:', {
-      from: context.stage,
-      to: newContext.stage,
-      collectionStep: newContext.collectionStep
-    });
+    const newContext = processTransition(context, input);
+    console.log(`🔄 Transition: ${context.stage} → ${newContext.stage}`);
 
-    // Build AI prompt with full tour data including dates
-    let currentTourWithDates = newContext.currentTour;
-    if (newContext.currentTour) {
-      const fullTour = findTourById(newContext.currentTour.id, DEMO_TOURS);
-      if (fullTour) {
-        currentTourWithDates = {
-          ...newContext.currentTour,
-          dates: fullTour.dates,
-          program_kisa: fullTour.program_kisa,
-          gezilecek_yerler: fullTour.gezilecek_yerler
-        };
-      }
-    }
+    // Build system prompt
+    const currentTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, DEMO_TOURS) : null;
     
     const systemPrompt = buildSystemPrompt({
       stage: newContext.stage,
       collectionStep: newContext.collectionStep,
-      currentTour: currentTourWithDates,
+      currentTour: currentTourData,
       reservationInfo: newContext.reservationInfo,
       availableTours: DEMO_TOURS,
       language: newContext.language,
-      conversationStyle: newContext.conversationStyle
+      tone: newContext.tone,
+      agencyName: 'Demo Travel Agency',
+      agencyCity: undefined
     });
 
     // Get conversation history
     const { data: history } = await supabase
       .from('whatsapp_conversations')
-      .select('role, content')
+      .select('role, content, created_at')
       .eq('phone', sessionId)
       .order('created_at', { ascending: true })
       .limit(20);
 
-    const formattedHistory = (history || []).map(h => ({
-      role: h.role as 'user' | 'assistant',
-      content: h.content
+    const conversationHistory = (history || []).map((msg: any) => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
     }));
 
-    // Add current message to history
-    formattedHistory.push({ role: 'user', content: message });
-
-    // Generate AI response
+    // Call AI
     const messages = [
-      { role: 'system' as const, content: systemPrompt },
-      ...formattedHistory
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory,
+      { role: 'user', content: message }
     ];
-    
-    let response = await callAI(messages);
 
-    // Add payment info if completed
-    if (newContext.stage === 'COMPLETED' && newContext.reservationConfirmed && !newContext.paymentInfoSent) {
-      const tour = findTourById(newContext.reservationInfo.tourId!, DEMO_TOURS);
-      if (tour) {
-        const tourDate = tour.dates?.[0];
-        if (tourDate && tourDate.price_adult) {
-          const paxAdult = newContext.reservationInfo.paxAdult || 1;
-          const totalPrice = tourDate.price_adult * paxAdult;
-          const depositPercentage = DEMO_PAYMENT_INSTRUCTIONS.deposit_percentage || 30;
-          const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
-
-          const paymentInfo = generatePaymentMessage(
-            DEMO_PAYMENT_INSTRUCTIONS,
-            newContext.language,
-            totalPrice,
-            depositAmount
-          );
-
-          if (paymentInfo) {
-            response += '\n\n' + paymentInfo;
-            newContext.paymentInfoSent = true;
-            console.log('💳 Payment information added');
-          }
-        }
-      }
-    }
+    console.log('🤖 Calling AI...');
+    const aiResponse = await callAI(messages, 0.7);
 
     // Save messages
     await supabase.from('whatsapp_conversations').insert([
       { phone: sessionId, role: 'user', content: message, agency_id: '00000000-0000-0000-0000-000000000000' },
-      { phone: sessionId, role: 'assistant', content: response, agency_id: '00000000-0000-0000-0000-000000000000' }
+      { phone: sessionId, role: 'assistant', content: aiResponse, agency_id: '00000000-0000-0000-0000-000000000000' }
     ]);
 
     return new Response(
       JSON.stringify({
-        response,
+        response: aiResponse,
         conversationState: newContext
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('❌ Demo chat error:', error);
+    console.error('❌ Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
 
-// Simple intent detection based on keywords and context
-function detectSimpleIntent(message: string, context: ConversationContext): string {
+function detectIntent(message: string, context: ConversationContext): string {
   const lower = message.toLowerCase().trim();
   
-  // Greeting
-  if (context.stage === 'GREETING' && /^(merhaba|selam|hello|hi|hey)/.test(lower)) {
+  // Greetings
+  if (context.messageCount === 0 && /^(merhaba|selam|hello|hi|hola)/i.test(lower)) {
     return 'greeting';
   }
   
-  // Confirmation - broader patterns
-  if (/^(evet|tamam|olur|onaylıyorum|doğru|yes|ok|okay|confirm|correct|kabul)$/i.test(lower)) {
+  // Confirmation
+  if (/^(evet|tamam|olur|onay|yes|okay|ok|confirm)$/i.test(lower)) {
     return 'confirmation';
   }
   
-  // Explicit reservation request
-  if (/rezervasyon|ayır|katıl|kayıt|book|reserve|join|istiyorum|want/.test(lower)) {
-    return 'reservation.wizard';
+  // Reservation start
+  if (/(kayıt|rezerv|book|satın|almak istiyorum|yapmak istiyorum)/i.test(lower)) {
+    return 'reservation.start';
   }
   
-  // Tour list
-  if (/turlar|seçenek|neler var|tours|options|list/.test(lower)) {
+  // Tour list request
+  if (/(turlar|liste|seçenek|tours|list|options|hangi turlar)/i.test(lower)) {
     return 'tour.list';
   }
   
-  // Price inquiry
-  if (/fiyat|kaç para|ne kadar|price|cost|how much/.test(lower)) {
-    return 'price.inquiry';
+  // General inquiry
+  if (/(bilgi|detay|info|detail|hakkında|about)/i.test(lower)) {
+    return 'general.inquiry';
   }
   
-  // Check if in collecting info stage and message might be data
-  if (context.stage === 'COLLECTING_INFO') {
-    // If waiting for specific info, assume it's being provided
-    if (context.collectionStep === 'waiting_for_date' && /\d/.test(lower)) {
-      return 'info.provided';
-    }
-    if (context.collectionStep === 'waiting_for_pax' && /\d/.test(lower)) {
-      return 'info.provided';
-    }
-    if (context.collectionStep === 'waiting_for_name' && lower.split(' ').length >= 2) {
-      return 'info.provided';
-    }
-    if (context.collectionStep === 'waiting_for_phone' && /\d{10}/.test(message.replace(/[\s\-]/g, ''))) {
-      return 'info.provided';
-    }
+  // During collection, assume it's info provision
+  if (context.stage === 'COLLECTING_INFO' || context.stage === 'DATE_SELECTION') {
+    return 'info.provided';
   }
   
-  // Tour search/detail (default for most cases)
-  return 'tour.search';
+  return 'general';
 }
 
 function isValidContext(ctx: any): ctx is ConversationContext {
-  return ctx && typeof ctx.stage === 'string' && ctx.reservationInfo !== undefined;
+  return (
+    ctx &&
+    typeof ctx === 'object' &&
+    typeof ctx.stage === 'string' &&
+    typeof ctx.language === 'string' &&
+    typeof ctx.tone === 'string' &&
+    typeof ctx.messageCount === 'number'
+  );
 }

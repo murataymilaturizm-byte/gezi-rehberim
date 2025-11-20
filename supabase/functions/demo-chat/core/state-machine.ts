@@ -8,7 +8,7 @@ import type {
   ReservationInfo
 } from '../types.ts';
 
-export function createInitialContext(language: string = 'tr', conversationStyle: string = 'friendly'): ConversationContext {
+export function createInitialContext(language: string = 'tr', tone: 'standart' | 'kurumsal' | 'dinamik' | 'premium' = 'standart'): ConversationContext {
   return {
     stage: 'GREETING',
     currentTour: null,
@@ -17,7 +17,7 @@ export function createInitialContext(language: string = 'tr', conversationStyle:
     reservationConfirmed: false,
     paymentInfoSent: false,
     language,
-    conversationStyle,
+    tone,
     messageCount: 0,
     lastUserMessage: '',
     sessionStarted: new Date().toISOString(),
@@ -27,30 +27,17 @@ export function createInitialContext(language: string = 'tr', conversationStyle:
 
 // Define all possible state transitions
 const transitions: StateTransition[] = [
-  // GREETING → EXPLORING
+  // GREETING → BROWSING (user shows interest in tours)
   {
     from: 'GREETING',
-    to: 'EXPLORING',
+    to: 'BROWSING',
     condition: (ctx, input) => 
-      ['tour.search', 'tour.list'].includes(input.detectedIntent)
+      ['tour.search', 'tour.list', 'general.inquiry'].includes(input.detectedIntent)
   },
   
   // GREETING → TOUR_SELECTED (direct tour selection)
   {
     from: 'GREETING',
-    to: 'TOUR_SELECTED',
-    condition: (ctx, input) => 
-      input.detectedIntent === 'tour.detail' && input.selectedTour !== null,
-    action: (ctx, input) => ({
-      ...ctx,
-      currentTour: input.selectedTour,
-      viewedTours: [...ctx.viewedTours, input.selectedTour!.id]
-    })
-  },
-  
-  // EXPLORING → TOUR_SELECTED
-  {
-    from: 'EXPLORING',
     to: 'TOUR_SELECTED',
     condition: (ctx, input) => 
       input.selectedTour !== null,
@@ -61,26 +48,42 @@ const transitions: StateTransition[] = [
     })
   },
   
-  // TOUR_SELECTED → COLLECTING_INFO
+  // BROWSING → TOUR_SELECTED
+  {
+    from: 'BROWSING',
+    to: 'TOUR_SELECTED',
+    condition: (ctx, input) => 
+      input.selectedTour !== null,
+    action: (ctx, input) => ({
+      ...ctx,
+      currentTour: input.selectedTour,
+      viewedTours: [...ctx.viewedTours, input.selectedTour!.id]
+    })
+  },
+  
+  // TOUR_SELECTED → DATE_SELECTION (when user shows reservation intent)
   {
     from: 'TOUR_SELECTED',
+    to: 'DATE_SELECTION',
+    condition: (ctx, input) => 
+      input.detectedIntent === 'reservation.start' && ctx.currentTour !== null
+  },
+  
+  // DATE_SELECTION → COLLECTING_INFO (when date is selected)
+  {
+    from: 'DATE_SELECTION',
     to: 'COLLECTING_INFO',
     condition: (ctx, input) => 
-      (input.detectedIntent === 'reservation.wizard' || input.detectedIntent === 'confirmation') &&
-      ctx.currentTour !== null,
+      (input.extractedInfo.dateId || input.extractedInfo.selectedDate) !== undefined,
     action: (ctx, input) => {
-      // Merge any extracted info (like date selection)
       const mergedInfo = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
-      
       return {
         ...ctx,
         collectionStep: determineCollectionStep(mergedInfo),
         reservationInfo: {
           ...mergedInfo,
           tourId: ctx.currentTour?.id,
-          tourTitle: ctx.currentTour?.title,
-          dateId: mergedInfo.dateId || ctx.currentTour?.dateId,
-          selectedDate: mergedInfo.selectedDate || ctx.currentTour?.selectedDate
+          tourTitle: ctx.currentTour?.title
         }
       };
     }
@@ -123,30 +126,11 @@ const transitions: StateTransition[] = [
     from: 'CONFIRMING',
     to: 'COMPLETED',
     condition: (ctx, input) => 
-      input.detectedIntent === 'confirmation' && 
-      isAllInfoCollected(ctx.reservationInfo),
+      input.detectedIntent === 'confirmation',
     action: (ctx, input) => ({
       ...ctx,
       reservationConfirmed: true
     })
-  },
-  
-  // EXPLORING → EXPLORING (continue browsing)
-  {
-    from: 'EXPLORING',
-    to: 'EXPLORING',
-    condition: (ctx, input) => 
-      ['tour.search', 'tour.list'].includes(input.detectedIntent),
-    action: (ctx, input) => {
-      if (input.selectedTour) {
-        return {
-          ...ctx,
-          currentTour: input.selectedTour,
-          viewedTours: [...ctx.viewedTours, input.selectedTour.id]
-        };
-      }
-      return ctx;
-    }
   }
 ];
 
@@ -191,9 +175,6 @@ export function processTransition(
 
 // Helper functions
 export function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
-  if (!info.dateId && !info.selectedDate) {
-    return 'waiting_for_date';
-  }
   if (!info.paxAdult) {
     return 'waiting_for_pax';
   }
@@ -242,13 +223,14 @@ export function getNextExpectedInput(context: ConversationContext): string {
   switch (context.stage) {
     case 'GREETING':
       return 'tour_interest';
-    case 'EXPLORING':
+    case 'BROWSING':
       return 'tour_selection';
     case 'TOUR_SELECTED':
       return 'reservation_intent';
+    case 'DATE_SELECTION':
+      return 'date';
     case 'COLLECTING_INFO':
       switch (context.collectionStep) {
-        case 'waiting_for_date': return 'date';
         case 'waiting_for_pax': return 'pax_count';
         case 'waiting_for_name': return 'full_name';
         case 'waiting_for_phone': return 'phone_number';
