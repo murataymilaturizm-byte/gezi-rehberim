@@ -1,121 +1,108 @@
-// Build AI prompts based on conversation context
-import type { AIPromptContext, ConversationStage } from '../types.ts';
-import { formatTourList } from './tour-matcher.ts';
-import { STYLE_PERSONALITIES } from '../config/prompts.ts';
+// Build AI system prompts based on new requirements
+import type { AIPromptContext, ConversationStage, ConversationTone } from '../types.ts';
 
 export function buildSystemPrompt(context: AIPromptContext): string {
-  const { stage, collectionStep, currentTour, reservationInfo, availableTours, language, conversationStyle } = context;
+  const { stage, collectionStep, currentTour, reservationInfo, availableTours, language, tone, agencyName, agencyCity } = context;
   
-  const basePrompt = getBasePrompt(language);
-  const stylePrompt = getStylePrompt(language, conversationStyle);
-  const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, language);
-  const toursInfo = `\n\n📋 Mevcut Turlar:\n${formatTourList(availableTours, language)}`;
+  const rolePrompt = getRolePrompt(language);
+  const tonePrompt = getTonePrompt(language, tone);
+  const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, availableTours, language);
+  const agencyInfo = agencyName ? getAgencyInfo(agencyName, agencyCity, language) : '';
   
-  return basePrompt + '\n\n' + stylePrompt + '\n\n' + stagePrompt + toursInfo;
+  return `${rolePrompt}\n\n${tonePrompt}\n\n${stagePrompt}${agencyInfo}`;
 }
 
-function getBasePrompt(language: string): string {
+function getRolePrompt(language: string): string {
   const prompts: Record<string, string> = {
-    tr: `Sen bir seyahat acentesi rezervasyon asistanısın. Görevin müşterilere tur rezervasyonu yaptırmak.
+    tr: `ROLÜN
+Sen, tur ve seyahat acentaları için tasarlanmış, FSM (finite state machine) tabanlı bir satış ve bilgi asistanısın. Görevin:
+- Kullanıcının niyetini anlamak (nereye gitmek istiyor, hangi tarih, kaç kişi vb.)
+- Uygun tur / paket seçeneklerini sade bir şekilde sunmak
+- Gerekirse acente adına ön kayıt / lead toplamak (ad-soyad, telefon, kişi sayısı vb.)
+- Kullanıcıyı yormadan, adım adım wizard mantığıyla ilerlemek
 
-🎯 TEMEL KURALLAR:
-1. Kısa ve net cevaplar ver (max 3 cümle)
-2. Asla bilgi uydurma - sadece verilen turları kullan
-3. Müşteriden bir seferde tek bilgi iste
-4. Her mesajda bir sonraki adımı açıkça belirt`,
-    
-    en: `You are a travel agency reservation assistant. Your job is to help customers make tour reservations.
+⚠️ CRITICAL RULES:
+- Her mesajında en fazla 1 adım ilerlet
+- Aynı anda birden fazla şey isteme
+- Her mesaj max 4 kısa cümle veya max 5 madde
+- Bilgi toplarken sırayı koru: Tur → Tarih → Kişi sayısı → İsim → Telefon
+- Kullanıcı zaten verdiği bilgiyi tekrar sorma
+- Asla bilgi uydurma - sadece verilen turları kullan`,
 
-🎯 CORE RULES:
-1. Keep responses short and clear (max 3 sentences)
-2. Never make up information - only use provided tours
-3. Ask for one piece of information at a time
-4. Clearly indicate the next step in each message`,
+    en: `YOUR ROLE
+You are an FSM-based sales and information assistant for tour and travel agencies. Your mission:
+- Understand user intent (where they want to go, which date, how many people, etc.)
+- Present suitable tour options in a simple way
+- If needed, collect pre-registration leads (name, phone, pax count, etc.)
+- Progress step by step with a wizard approach without overwhelming the user
 
-    de: `Sie sind ein Reservierungsassistent eines Reisebüros. Ihre Aufgabe ist es, Kunden bei Tourbuchungen zu helfen.
-
-🎯 GRUNDREGELN:
-1. Halten Sie Antworten kurz und klar (max. 3 Sätze)
-2. Erfinden Sie keine Informationen - verwenden Sie nur angegebene Touren
-3. Fragen Sie jeweils nach einer Information
-4. Geben Sie in jeder Nachricht den nächsten Schritt klar an`,
-
-    ru: `Вы ассистент по бронированию в туристическом агентстве. Ваша задача помогать клиентам бронировать туры.
-
-🎯 ОСНОВНЫЕ ПРАВИЛА:
-1. Давайте короткие и четкие ответы (макс 3 предложения)
-2. Не выдумывайте информацию - используйте только предоставленные туры
-3. Спрашивайте по одной информации за раз
-4. Четко указывайте следующий шаг в каждом сообщении`,
-
-    ar: `أنت مساعد حجز في وكالة سفريات. مهمتك مساعدة العملاء في حجز الجولات.
-
-🎯 القواعد الأساسية:
-1. قدم إجابات قصيرة وواضحة (3 جمل كحد أقصى)
-2. لا تختلق المعلومات - استخدم فقط الجولات المقدمة
-3. اطلب معلومة واحدة في كل مرة
-4. حدد الخطوة التالية بوضوح في كل رسالة`,
-
-    fr: `Vous êtes un assistant de réservation d'agence de voyage. Votre rôle est d'aider les clients à réserver des circuits.
-
-🎯 RÈGLES DE BASE:
-1. Donnez des réponses courtes et claires (max 3 phrases)
-2. N'inventez pas d'informations - utilisez uniquement les circuits fournis
-3. Demandez une information à la fois
-4. Indiquez clairement la prochaine étape dans chaque message`,
-
-    es: `Eres un asistente de reservas de agencia de viajes. Tu trabajo es ayudar a los clientes a reservar tours.
-
-🎯 REGLAS BÁSICAS:
-1. Da respuestas cortas y claras (máx 3 frases)
-2. Nunca inventes información - solo usa los tours proporcionados
-3. Pide una información a la vez
-4. Indica claramente el siguiente paso en cada mensaje`
+⚠️ CRITICAL RULES:
+- Maximum 1 step forward per message
+- Don't ask for multiple things at once
+- Max 4 short sentences or 5 bullet points per message
+- Follow the order: Tour → Date → Pax count → Name → Phone
+- Don't re-ask for information already provided
+- Never make up information - only use provided tours`
   };
 
   return prompts[language] || prompts.tr;
 }
 
-function getStylePrompt(language: string, style: string): string {
-  const personalities = STYLE_PERSONALITIES[language as keyof typeof STYLE_PERSONALITIES];
-  if (!personalities) return '';
-  
-  return personalities[style as keyof typeof personalities] || personalities.friendly;
-}
-
-function getTourDatesPrompt(currentTour: any, language: string): string {
-  if (!currentTour?.dates || currentTour.dates.length === 0) {
-    return language === 'tr' 
-      ? 'Bu tur için şu anda müsait tarih bulunmuyor.'
-      : 'No available dates for this tour at the moment.';
-  }
-
-  const datesList = currentTour.dates
-    .map((date: any, idx: number) => {
-      const formattedDate = formatDateForDisplay(date.departure_date);
-      return language === 'tr'
-        ? `${idx + 1}. ${formattedDate} - ${date.price_adult}₺ (Kontenjan: ${date.quota} kişi)`
-        : `${idx + 1}. ${formattedDate} - ${date.price_adult}₺ (Quota: ${date.quota} people)`;
-    })
-    .join('\n');
-
-  return language === 'tr'
-    ? `📅 MÜSAİT TARİHLER:\n${datesList}`
-    : `📅 AVAILABLE DATES:\n${datesList}`;
-}
-
-function formatDateForDisplay(dateStr: string): string {
-  const date = new Date(dateStr);
-  const months = {
-    tr: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
-    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+function getTonePrompt(language: string, tone: ConversationTone): string {
+  const tones: Record<string, Record<ConversationTone, string>> = {
+    tr: {
+      standart: `ÜSLUP KURALLARI (tone = "standart"):
+- Sıcak, samimi ama profesyonel
+- 2-3 emoji kullan 😊✨
+- Net cümleler kur
+- "Sen" dili kullan`,
+      
+      kurumsal: `ÜSLUP KURALLARI (tone = "kurumsal"):
+- Daha resmi, "Siz" dili
+- Emoji YOK veya çok az
+- Kurumsal acenta üslubu
+- Profesyonel ton`,
+      
+      dinamik: `ÜSLUP KURALLARI (tone = "dinamik"):
+- Genç, enerjik
+- Daha fazla emoji 🎉✨🌟
+- Kısa cümleler
+- Sosyal medya dili gibi ama abartma`,
+      
+      premium: `ÜSLUP KURALLARI (tone = "premium"):
+- Lüks segment, seçkin ve sakin dil
+- "Özel deneyim", "konfor", "kişiye özel" ifadeleri
+- Az emoji veya hiç
+- Zarif ve profesyonel`
+    },
+    en: {
+      standart: `TONE RULES (tone = "standart"):
+- Warm, friendly but professional
+- Use 2-3 emojis 😊✨
+- Clear sentences
+- Casual "you" language`,
+      
+      kurumsal: `TONE RULES (tone = "kurumsal"):
+- More formal
+- NO emojis or very few
+- Corporate agency style
+- Professional tone`,
+      
+      dinamik: `TONE RULES (tone = "dinamik"):
+- Young, energetic
+- More emojis 🎉✨🌟
+- Short sentences
+- Social media style but don't overdo it`,
+      
+      premium: `TONE RULES (tone = "premium"):
+- Luxury segment, refined and calm
+- Use "exclusive experience", "comfort", "personalized"
+- Few or no emojis
+- Elegant and professional`
+    }
   };
-  
-  const day = date.getDate();
-  const monthIndex = date.getMonth();
-  const year = date.getFullYear();
-  
-  return `${day} ${months.tr[monthIndex]} ${year}`;
+
+  return tones[language]?.[tone] || tones.tr[tone];
 }
 
 function getStagePrompt(
@@ -123,186 +110,247 @@ function getStagePrompt(
   collectionStep: string | undefined,
   currentTour: any,
   reservationInfo: any,
+  availableTours: any[],
   language: string
 ): string {
+  const toursList = formatToursList(availableTours, language);
+  
+  if (language === 'tr') {
+    switch (stage) {
+      case 'GREETING':
+        return `📍 DURUM: İlk karşılama
+Kullanıcıyı kısaca karşıla ve turlarla ilgili ne istediğini sor.
+
+Mevcut Turlar:
+${toursList}`;
+
+      case 'BROWSING':
+        return `📍 DURUM: Tur arama/listeleme
+Kullanıcı turları keşfediyor. Eğer aynı destinasyondan birden fazla tur varsa, hepsini madde madde listele ve seçim yaptır.
+
+Mevcut Turlar:
+${toursList}
+
+⚠️ ÖNEMLİ: Aynı destinasyondan birden fazla tur varsa:
+1. Hepsini madde madde listele (tarih + fiyat ile)
+2. "Hangisini tercih edersiniz?" diye sor
+3. NET seçim yapana kadar ilerleme`;
+
+      case 'TOUR_SELECTED':
+        const tourDetails = currentTour ? formatTourDetails(currentTour, language) : '';
+        return `📍 DURUM: Tur seçildi
+Seçili Tur:
+${tourDetails}
+
+Kullanıcı kayıt olmak istediğinde:
+1. Eğer tur birden fazla tarih seçeneği varsa, tarihleri listele
+2. Eğer sadece 1 tarih varsa, tarihi göster ve "Bu tarih uygun mu?" diye sor`;
+
+      case 'DATE_SELECTION':
+        const dates = currentTour?.dates || [];
+        const datesInfo = dates.map((d: any, idx: number) => 
+          `${idx + 1}. ${d.departure_date} - Kişi başı: ${d.price_adult}₺`
+        ).join('\n');
+        
+        return `📍 DURUM: Tarih seçimi
+Seçili Tur: ${currentTour?.title}
+
+${dates.length > 1 ? `Uygun Tarihler:\n${datesInfo}\n\n"Hangi tarihi tercih edersiniz?"` : `Tarih: ${dates[0]?.departure_date} - ${dates[0]?.price_adult}₺\n\n"Bu tarih sizin için uygun mu?"`}`;
+
+      case 'COLLECTING_INFO':
+        const step = collectionStep || 'waiting_for_pax';
+        let stepPrompt = '';
+        
+        if (step === 'waiting_for_pax') {
+          stepPrompt = '📝 ADIM: Kişi sayısı al\n"Tura kaç kişi katılmayı planlıyorsunuz? (Yetişkin ve çocuk sayısını belirtebilirsiniz.)"';
+        } else if (step === 'waiting_for_name') {
+          stepPrompt = '📝 ADIM: İsim al\n"Sizi hangi isimle kaydedelim? Ad-soyadınızı yazar mısınız?"';
+        } else if (step === 'waiting_for_phone') {
+          stepPrompt = '📝 ADIM: Telefon al\n"Size ulaşabileceğimiz telefon numaranızı da paylaşır mısınız?"';
+        }
+        
+        const collectedInfo = formatCollectedInfo(reservationInfo, language);
+        return `📍 DURUM: Bilgi toplama
+${stepPrompt}
+
+Toplanan Bilgiler:
+${collectedInfo}`;
+
+      case 'CONFIRMING':
+        const summary = formatReservationSummary(currentTour, reservationInfo, language);
+        return `📍 DURUM: Onay bekleniyor
+Bilgileri özet olarak göster ve onayla:
+
+${summary}
+
+"Bu bilgiler doğru mudur, onaylıyor musunuz?"`;
+
+      case 'COMPLETED':
+        return `📍 DURUM: Kayıt tamamlandı
+"Teşekkür ederiz, kayıt işleminiz tamamlanmıştır. Bilgileriniz acente kayıtlarına iletilmiştir, en kısa sürede size dönüş yapılacaktır."`;
+
+      default:
+        return '';
+    }
+  }
+  
+  // English prompts
   switch (stage) {
     case 'GREETING':
-      return language === 'tr'
-        ? `🌟 ŞU AN: İlk karşılama
-        
-YAPMAN GEREKEN:
-- Kısa selamla
-- Mevcut turları listele (1-5 numaralı)
-- Seçim yapmasını iste`
-        : `🌟 CURRENT STAGE: Initial greeting
-        
-WHAT TO DO:
-- Greet briefly
-- List available tours (numbered 1-5)
-- Ask them to choose`;
-    
-    case 'EXPLORING':
-      return language === 'tr'
-        ? `🔍 ŞU AN: Tur araştırma
-        
-YAPMAN GEREKEN:
-- Kullanıcının ilgilendiği turları göster
-- Her turun kısa açıklamasını ve fiyatını ver
-- Detay için tur seçmesini iste`
-        : `🔍 CURRENT STAGE: Tour exploration
-        
-WHAT TO DO:
-- Show tours they're interested in
-- Give brief description and price for each
-- Ask them to select for details`;
-    
+      return `📍 STATUS: Initial greeting
+Briefly greet the user and ask what they're interested in.
+
+Available Tours:
+${toursList}`;
+
+    case 'BROWSING':
+      return `📍 STATUS: Tour browsing
+User is exploring tours. If multiple tours for same destination, list all with bullet points and ask for selection.
+
+Available Tours:
+${toursList}
+
+⚠️ IMPORTANT: If multiple tours for same destination:
+1. List all with bullet points (date + price)
+2. Ask "Which one would you prefer?"
+3. Don't proceed until clear selection`;
+
     case 'TOUR_SELECTED':
-      const tourDetails = getTourDatesPrompt(currentTour, language);
-      return language === 'tr'
-        ? `✅ ŞU AN: Tur seçildi - ${currentTour?.title}
-        
+      const tourDetails = currentTour ? formatTourDetails(currentTour, language) : '';
+      return `📍 STATUS: Tour selected
+Selected Tour:
 ${tourDetails}
 
-YAPMAN GEREKEN:
-- Turun detaylarını ve müsait tarihleri göster
-- Tarihleri numaralı liste olarak sun (1, 2, 3...)
-- Hangi tarih için rezervasyon yapmak istediklerini sor`
-        : `✅ CURRENT STAGE: Tour selected - ${currentTour?.title}
-        
-${tourDetails}
+When user wants to register:
+1. If tour has multiple date options, list dates
+2. If only 1 date, show it and ask "Is this date suitable?"`;
 
-WHAT TO DO:
-- Show tour details and available dates
-- Present dates as numbered list (1, 2, 3...)
-- Ask which date they want to book`;
-    
+    case 'DATE_SELECTION':
+      const dates = currentTour?.dates || [];
+      const datesInfo = dates.map((d: any, idx: number) => 
+        `${idx + 1}. ${d.departure_date} - Per person: ${d.price_adult}₺`
+      ).join('\n');
+      
+      return `📍 STATUS: Date selection
+Selected Tour: ${currentTour?.title}
+
+${dates.length > 1 ? `Available Dates:\n${datesInfo}\n\n"Which date would you prefer?"` : `Date: ${dates[0]?.departure_date} - ${dates[0]?.price_adult}₺\n\n"Is this date suitable for you?"`}`;
+
     case 'COLLECTING_INFO':
-      return getCollectionStagePrompt(collectionStep!, reservationInfo, language);
-    
+      const step = collectionStep || 'waiting_for_pax';
+      let stepPrompt = '';
+      
+      if (step === 'waiting_for_pax') {
+        stepPrompt = '📝 STEP: Get participant count\n"How many people will be joining the tour? (You can specify adults and children.)"';
+      } else if (step === 'waiting_for_name') {
+        stepPrompt = '📝 STEP: Get name\n"What name should we register you under? Please provide your full name."';
+      } else if (step === 'waiting_for_phone') {
+        stepPrompt = '📝 STEP: Get phone\n"Could you also share your phone number so we can reach you?"';
+      }
+      
+      const collectedInfo = formatCollectedInfo(reservationInfo, language);
+      return `📍 STATUS: Collecting information
+${stepPrompt}
+
+Collected Information:
+${collectedInfo}`;
+
     case 'CONFIRMING':
-      return language === 'tr'
-        ? `✅ ŞU AN: Bilgileri onayla
-        
-TOPLANAN BİLGİLER:
-- Tur: ${reservationInfo.tourTitle}
-- Tarih: ${reservationInfo.selectedDate}
-- Kişi: ${reservationInfo.paxAdult || 0} yetişkin${reservationInfo.paxChild ? `, ${reservationInfo.paxChild} çocuk` : ''}
-- İsim: ${reservationInfo.fullName}
-- Telefon: ${reservationInfo.phone}
+      const summary = formatReservationSummary(currentTour, reservationInfo, language);
+      return `📍 STATUS: Awaiting confirmation
+Show summary and ask for confirmation:
 
-YAPMAN GEREKEN:
-- Bilgileri SATIR SATIR düzenli göster
-- "Bilgiler doğru mu? Onaylarsanız rezervasyonunuzu tamamlayabilirim." diye sor`
-        : `✅ CURRENT STAGE: Confirm information
-        
-COLLECTED INFO:
-- Tour: ${reservationInfo.tourTitle}
-- Date: ${reservationInfo.selectedDate}
-- People: ${reservationInfo.paxAdult || 0} adult${reservationInfo.paxChild ? `, ${reservationInfo.paxChild} child` : ''}
-- Name: ${reservationInfo.fullName}
-- Phone: ${reservationInfo.phone}
+${summary}
 
-WHAT TO DO:
-- Show info LINE BY LINE organized
-- Ask: "Is this information correct? I can complete your reservation if you confirm."`;
-    
+"Are these details correct, do you confirm?"`;
+
     case 'COMPLETED':
-      return language === 'tr'
-        ? `🎉 ŞU AN: Rezervasyon tamamlandı!
-        
-YAPMAN GEREKEN:
-- Kısa teşekkür et
-- "Ödeme bilgileri aşağıda" de
-- Backend otomatik ödeme bilgisi ekleyecek, sen ekleme!`
-        : `🎉 CURRENT STAGE: Reservation completed!
-        
-WHAT TO DO:
-- Thank them briefly
-- Say "Payment information below"
-- Backend will add payment info automatically, don't add it!`;
-    
+      return `📍 STATUS: Registration completed
+"Thank you, your registration has been completed. Your information has been forwarded to the agency records, you will be contacted shortly."`;
+
     default:
       return '';
   }
 }
 
-function getCollectionStagePrompt(
-  step: string,
-  reservationInfo: any,
-  language: string
-): string {
-  switch (step) {
-    case 'waiting_for_date':
-      return language === 'tr'
-        ? `📅 ŞU AN: Tarih bekleniyor
-        
-YAPMAN GEREKEN:
-- "Hangi tarihi tercih edersiniz?" diye sor
-- Müsait tarihleri listele`
-        : `📅 CURRENT STAGE: Waiting for date
-        
-WHAT TO DO:
-- Ask: "Which date do you prefer?"
-- List available dates`;
-    
-    case 'waiting_for_pax':
-      return language === 'tr'
-        ? `👥 ŞU AN: Kişi sayısı bekleniyor
-        
-TOPLANAN:
-- Tarih: ${reservationInfo.selectedDate} ✅
+function getAgencyInfo(agencyName: string, agencyCity: string | undefined, language: string): string {
+  if (language === 'tr') {
+    return `\n\n🏢 ACENTA BİLGİSİ:
+Acenta Adı: ${agencyName}
+${agencyCity ? `Merkez: ${agencyCity}` : ''}
 
-YAPMAN GEREKEN:
-- "Kaç kişi katılacaksınız?" diye sor`
-        : `👥 CURRENT STAGE: Waiting for pax count
-        
-COLLECTED:
-- Date: ${reservationInfo.selectedDate} ✅
-
-WHAT TO DO:
-- Ask: "How many people will join?"`;
-    
-    case 'waiting_for_name':
-      return language === 'tr'
-        ? `📝 ŞU AN: İsim bekleniyor
-        
-TOPLANAN:
-- Tarih: ${reservationInfo.selectedDate} ✅
-- Kişi: ${reservationInfo.paxAdult || 0} ✅
-
-YAPMAN GEREKEN:
-- "Tam isminizi alabilir miyim?" diye sor`
-        : `📝 CURRENT STAGE: Waiting for name
-        
-COLLECTED:
-- Date: ${reservationInfo.selectedDate} ✅
-- People: ${reservationInfo.paxAdult || 0} ✅
-
-WHAT TO DO:
-- Ask: "May I have your full name?"`;
-    
-    case 'waiting_for_phone':
-      return language === 'tr'
-        ? `📱 ŞU AN: Telefon bekleniyor
-        
-TOPLANAN:
-- Tarih: ${reservationInfo.selectedDate} ✅
-- Kişi: ${reservationInfo.paxAdult || 0} ✅
-- İsim: ${reservationInfo.fullName} ✅
-
-YAPMAN GEREKEN:
-- "Telefon numaranızı alabilir miyim?" diye sor`
-        : `📱 CURRENT STAGE: Waiting for phone
-        
-COLLECTED:
-- Date: ${reservationInfo.selectedDate} ✅
-- People: ${reservationInfo.paxAdult || 0} ✅
-- Name: ${reservationInfo.fullName} ✅
-
-WHAT TO DO:
-- Ask: "May I have your phone number?"`;
-    
-    default:
-      return '';
+⚠️ Karşılama mesajında 1 kez acenta adını kullan, sonra tekrar etme.`;
   }
+  
+  return `\n\n🏢 AGENCY INFO:
+Agency Name: ${agencyName}
+${agencyCity ? `Location: ${agencyCity}` : ''}
+
+⚠️ Use agency name once in greeting, don't repeat.`;
+}
+
+function formatToursList(tours: any[], language: string): string {
+  if (tours.length === 0) return language === 'tr' ? 'Şu an aktif tur bulunmuyor.' : 'No active tours at the moment.';
+  
+  return tours.map((tour, idx) => {
+    const price = tour.dates?.[0]?.price_adult || 0;
+    return `${idx + 1}. ${tour.title} - ${tour.destination} (${price}₺)`;
+  }).join('\n');
+}
+
+function formatTourDetails(tour: any, language: string): string {
+  const price = tour.dates?.[0]?.price_adult || 0;
+  const date = tour.dates?.[0]?.departure_date || '';
+  
+  if (language === 'tr') {
+    return `Tur: ${tour.title}
+Destinasyon: ${tour.destination}
+${date ? `Tarih: ${date}` : ''}
+Fiyat: ${price}₺ (kişi başı)
+${tour.program_kisa ? `\nÖzet: ${tour.program_kisa}` : ''}`;
+  }
+  
+  return `Tour: ${tour.title}
+Destination: ${tour.destination}
+${date ? `Date: ${date}` : ''}
+Price: ${price}₺ (per person)
+${tour.program_kisa ? `\nSummary: ${tour.program_kisa}` : ''}`;
+}
+
+function formatCollectedInfo(info: any, language: string): string {
+  const lines: string[] = [];
+  
+  if (language === 'tr') {
+    if (info.tourTitle) lines.push(`✅ Tur: ${info.tourTitle}`);
+    if (info.selectedDate) lines.push(`✅ Tarih: ${info.selectedDate}`);
+    if (info.paxAdult) lines.push(`✅ Kişi: ${info.paxAdult} yetişkin${info.paxChild ? `, ${info.paxChild} çocuk` : ''}`);
+    if (info.fullName) lines.push(`✅ İsim: ${info.fullName}`);
+    if (info.phone) lines.push(`✅ Telefon: ${info.phone}`);
+  } else {
+    if (info.tourTitle) lines.push(`✅ Tour: ${info.tourTitle}`);
+    if (info.selectedDate) lines.push(`✅ Date: ${info.selectedDate}`);
+    if (info.paxAdult) lines.push(`✅ People: ${info.paxAdult} adult${info.paxChild ? `, ${info.paxChild} child` : ''}`);
+    if (info.fullName) lines.push(`✅ Name: ${info.fullName}`);
+    if (info.phone) lines.push(`✅ Phone: ${info.phone}`);
+  }
+  
+  return lines.length > 0 ? lines.join('\n') : (language === 'tr' ? 'Henüz bilgi toplanmadı' : 'No information collected yet');
+}
+
+function formatReservationSummary(tour: any, info: any, language: string): string {
+  if (language === 'tr') {
+    return `📋 REZERVASYON ÖZETİ:
+• Tur: ${info.tourTitle || tour?.title}
+• Tarih: ${info.selectedDate}
+• Kişi: ${info.paxAdult} yetişkin${info.paxChild ? `, ${info.paxChild} çocuk` : ''}
+• İsim: ${info.fullName}
+• Telefon: ${info.phone}`;
+  }
+  
+  return `📋 RESERVATION SUMMARY:
+• Tour: ${info.tourTitle || tour?.title}
+• Date: ${info.selectedDate}
+• People: ${info.paxAdult} adult${info.paxChild ? `, ${info.paxChild} child` : ''}
+• Name: ${info.fullName}
+• Phone: ${info.phone}`;
 }

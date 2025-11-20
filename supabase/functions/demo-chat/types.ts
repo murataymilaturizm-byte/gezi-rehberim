@@ -2,11 +2,18 @@
 
 export type ConversationStage = 
   | 'GREETING'           // Initial greeting
-  | 'EXPLORING'          // Browsing/searching tours
-  | 'TOUR_SELECTED'      // Specific tour selected, viewing details
-  | 'COLLECTING_INFO'    // Gathering reservation details
+  | 'BROWSING'           // Browsing tours
+  | 'TOUR_SELECTED'      // Specific tour selected
+  | 'DATE_SELECTION'     // Selecting date
+  | 'COLLECTING_INFO'    // Gathering pax, name, phone
   | 'CONFIRMING'         // Waiting for final confirmation
   | 'COMPLETED';         // Reservation completed
+
+export type ConversationTone = 
+  | 'standart'
+  | 'kurumsal'
+  | 'dinamik'
+  | 'premium';
 
 export type InfoCollectionStep =
   | 'waiting_for_date'
@@ -53,7 +60,7 @@ export interface ConversationContext {
   
   // Language & Style
   language: string; // tr, en, de, ru, ar, fr, es
-  conversationStyle: string; // friendly, casual, professional, formal
+  tone: ConversationTone; // standart, kurumsal, dinamik, premium
   detectedLanguage?: string; // Auto-detected language from first message
   
   // Conversation metadata
@@ -91,5 +98,7 @@ export interface AIPromptContext {
   reservationInfo: ReservationInfo;
   availableTours: any[];
   language: string;
-  conversationStyle: string;
+  tone: ConversationTone;
+  agencyName?: string;
+  agencyCity?: string;
 }
