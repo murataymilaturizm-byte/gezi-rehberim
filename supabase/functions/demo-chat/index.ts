@@ -194,6 +194,11 @@ function detectIntent(message: string, context: ConversationContext): string {
     return 'reservation.start';
   }
   
+  // Date inquiry
+  if (/(tarih|date|ne zaman|when|hangi gün)/i.test(lower)) {
+    return 'date.inquiry';
+  }
+  
   // Tour list request
   if (/(turlar|liste|seçenek|tours|list|options|hangi turlar)/i.test(lower)) {
     return 'tour.list';
