@@ -184,6 +184,16 @@ serve(async (req) => {
       }
     }
 
+    // Auto-select date if there's only one and user is confirming/providing info
+    if (!extractedInfo.dateId && !extractedInfo.selectedDate && 
+        context.currentTour?.dates?.length === 1 &&
+        (detectedIntent === 'provide_info' || detectedIntent === 'confirm' || detectedIntent === 'reservation_intent')) {
+      const singleDate = context.currentTour.dates[0];
+      extractedInfo.selectedDate = singleDate.departure_date;
+      extractedInfo.dateId = singleDate.id;
+      console.log("📅 Auto-selected single available date:", singleDate.departure_date);
+    }
+
     console.log("📝 Extracted info:", extractedInfo);
 
     // Process FSM transition
