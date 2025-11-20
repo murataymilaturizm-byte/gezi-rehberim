@@ -44,12 +44,14 @@ serve(async (req) => {
 
     // Load tours from database for demo agency
     const { data: dbTours, error: toursError } = await supabase
-      .from('tours')
-      .select(`
+      .from("tours")
+      .select(
+        `
         *,
         dates:tour_dates(*)
-      `)
-      .eq('agency_id', DEMO_AGENCY_ID);
+      `,
+      )
+      .eq("agency_id", DEMO_AGENCY_ID);
 
     if (toursError) {
       console.error("❌ Error loading tours:", toursError);
@@ -69,10 +71,14 @@ serve(async (req) => {
       tur_sure: tour.tur_sure,
       ulasim: tour.ulasim,
       konaklama: tour.konaklama,
-      dates: tour.dates || []
+      dates: tour.dates || [],
     }));
-    
+
     console.log(`📦 Using ${availableTours.length} demo tours`);
+
+    // 🔎 Her mesajda dili tekrar tespit et
+    const runtimeDetectedLang = await detectLanguage(message);
+    console.log("🌐 Detected language (runtime):", runtimeDetectedLang);
 
     // Load or initialize context
     let context: ConversationContext;
@@ -80,16 +86,22 @@ serve(async (req) => {
     if (clientState && isValidContext(clientState)) {
       console.log("✅ Using client state");
       context = clientState;
+
+      // Eğer yeni mesajdaki dil, context'teki dilden farklıysa güncelle
+      if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
+        console.log(`🌍 Language update: ${context.language} → ${runtimeDetectedLang}`);
+        context.language = runtimeDetectedLang;
+        (context as any).detectedLanguage = runtimeDetectedLang;
+      }
     } else {
       console.log("🆕 Initializing fresh context");
-      const detectedLang = await detectLanguage(message);
-      const language = detectedLang || "tr";
+      const initialLang = runtimeDetectedLang || "tr";
       const tone = "standart"; // Default tone
 
-      context = createInitialContext(language, tone);
-      context.detectedLanguage = detectedLang || undefined;
+      context = createInitialContext(initialLang, tone);
+      (context as any).detectedLanguage = runtimeDetectedLang || undefined;
 
-      console.log(`🌍 Language: ${language}, Tone: ${tone}`);
+      console.log(`🌍 Language: ${initialLang}, Tone: ${tone}`);
     }
 
     console.log("📨 Message:", { message, stage: context.stage, lang: context.language, tone: context.tone });
@@ -185,9 +197,12 @@ serve(async (req) => {
     }
 
     // Auto-select date if there's only one and user is confirming/providing info
-    if (!extractedInfo.dateId && !extractedInfo.selectedDate && 
-        context.currentTour?.dates?.length === 1 &&
-        (detectedIntent === 'provide_info' || detectedIntent === 'confirm' || detectedIntent === 'reservation_intent')) {
+    if (
+      !extractedInfo.dateId &&
+      !extractedInfo.selectedDate &&
+      context.currentTour?.dates?.length === 1 &&
+      (detectedIntent === "provide_info" || detectedIntent === "confirm" || detectedIntent === "reservation_intent")
+    ) {
       const singleDate = context.currentTour.dates[0];
       extractedInfo.selectedDate = singleDate.departure_date;
       extractedInfo.dateId = singleDate.id;
@@ -316,19 +331,17 @@ serve(async (req) => {
 
       if (tour && dateId && fullName && phone && paxAdult) {
         console.log("💾 Saving reservation to database...");
-        
-        const { error: regError } = await supabase
-          .from('registrations')
-          .insert({
-            agency_id: DEMO_AGENCY_ID,
-            tour_id: tour.id,
-            tour_date_id: dateId,
-            full_name: fullName,
-            phone: phone,
-            pax: paxAdult,
-            status: 'NEW',
-            note: 'Demo chat reservation'
-          });
+
+        const { error: regError } = await supabase.from("registrations").insert({
+          agency_id: DEMO_AGENCY_ID,
+          tour_id: tour.id,
+          tour_date_id: dateId,
+          full_name: fullName,
+          phone: phone,
+          pax: paxAdult,
+          status: "NEW",
+          note: "Demo chat reservation",
+        });
 
         if (regError) {
           console.error("❌ Error saving reservation:", regError);
