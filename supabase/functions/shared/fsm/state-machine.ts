@@ -86,9 +86,18 @@ const transitions: StateTransition[] = [
     condition: (ctx, input) => 
       input.detectedIntent === 'provide_info' ||
       input.detectedIntent === 'reservation_intent' ||
+      input.detectedIntent === 'confirm' ||
       Object.keys(input.extractedInfo).length > 0,
     action: (ctx, input) => {
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
+      
+      // If there's only one date available and no date selected yet, auto-select it
+      if (!merged.dateId && !merged.selectedDate && ctx.currentTour?.dates?.length === 1) {
+        const singleDate = ctx.currentTour.dates[0];
+        merged.dateId = singleDate.id;
+        merged.selectedDate = singleDate.departure_date;
+      }
+      
       return {
         ...ctx,
         reservationInfo: merged,
@@ -219,8 +228,11 @@ export function processTransition(
  * Determine the next collection step based on reservation info
  */
 function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
-  if (!info.dateId && !info.selectedDate) return 'waiting_for_date';
-  if (!info.paxAdult && !info.paxChild) return 'waiting_for_pax';
+  // Date is collected if either dateId or selectedDate exists
+  const hasDate = !!(info.selectedDate || info.dateId);
+  
+  if (!hasDate) return 'waiting_for_date';
+  if (!info.paxAdult) return 'waiting_for_pax';
   if (!info.fullName) return 'waiting_for_name';
   if (!info.phone) return 'waiting_for_phone';
   return 'ready_for_confirmation';
@@ -230,14 +242,17 @@ function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
  * Check if all required info is collected
  */
 function isAllInfoCollected(info: ReservationInfo): boolean {
+  // Must have both date ID and date string, plus all other info
   return !!(
     info.tourId &&
-    (info.dateId || info.selectedDate) &&
-    (info.paxAdult || info.paxChild) &&
+    info.dateId &&
+    info.selectedDate &&
+    info.paxAdult &&
     info.fullName &&
     info.phone
   );
 }
+
 
 /**
  * Merge new reservation info with existing
