@@ -36,7 +36,7 @@ interface UserProfile {
 
 interface Agency {
   id: string;
-  agency_name: string;
+  name: string;
 }
 
 interface WhatsAppUserProfilesProps {
@@ -71,8 +71,8 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
     try {
       const { data, error } = await supabase
         .from("agencies")
-        .select("id, agency_name")
-        .order("agency_name");
+        .select("id, name")
+        .order("name");
 
       if (error) throw error;
       setAgencies(data || []);
@@ -190,7 +190,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                 <SelectContent>
                   {agencies.map((agency) => (
                     <SelectItem key={agency.id} value={agency.id}>
-                      {agency.agency_name}
+                      {agency.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -39,7 +39,7 @@ serve(async (req) => {
         agencies:agency_id (
           id,
           whatsapp_phone_number,
-          agency_name
+          name
         )
       `)
       .eq('id', registrationId)

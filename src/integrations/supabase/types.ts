@@ -17,7 +17,6 @@ export type Database = {
       agencies: {
         Row: {
           active: boolean | null
-          agency_name: string
           city: string | null
           conversation_style: string | null
           created_at: string | null
@@ -29,6 +28,7 @@ export type Database = {
           longitude: number | null
           message_limit: number | null
           monthly_message_count: number | null
+          name: string
           payment_instructions: Json | null
           plan_type: string
           region: string | null
@@ -44,7 +44,6 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
-          agency_name: string
           city?: string | null
           conversation_style?: string | null
           created_at?: string | null
@@ -56,6 +55,7 @@ export type Database = {
           longitude?: number | null
           message_limit?: number | null
           monthly_message_count?: number | null
+          name: string
           payment_instructions?: Json | null
           plan_type?: string
           region?: string | null
@@ -71,7 +71,6 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
-          agency_name?: string
           city?: string | null
           conversation_style?: string | null
           created_at?: string | null
@@ -83,6 +82,7 @@ export type Database = {
           longitude?: number | null
           message_limit?: number | null
           monthly_message_count?: number | null
+          name?: string
           payment_instructions?: Json | null
           plan_type?: string
           region?: string | null

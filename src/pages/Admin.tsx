@@ -156,13 +156,13 @@ const Admin = () => {
 
       const { data: agencyData } = await supabase
         .from("agencies")
-        .select("id, agency_name")
+        .select("id, name")
         .eq("user_id", userId)
         .single();
 
       if (agencyData) {
         setUserAgencyId(agencyData.id);
-        setAgencyName(agencyData.agency_name);
+        setAgencyName(agencyData.name);
       }
 
       const { data: profileData } = await supabase

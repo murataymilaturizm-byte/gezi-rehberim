@@ -283,7 +283,7 @@ serve(async (req) => {
       intent.type,
       agency.conversation_style || 'professional',
       tourSwitchContext,
-      agency.agency_name
+      agency.name
     );
 
     const truncatedResponse = truncateForWhatsApp(responseMessage);

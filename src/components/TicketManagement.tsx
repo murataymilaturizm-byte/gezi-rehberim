@@ -34,7 +34,8 @@ interface Ticket {
   priority: "low" | "medium" | "high";
   created_at: string;
   updated_at: string;
-  agencies?: { agency_name: string };
+  agency_id: string;
+  agencies?: { name: string };
 }
 
 interface TicketMessage {
@@ -75,7 +76,7 @@ export const TicketManagement = () => {
     try {
       const { data, error } = await supabase
         .from("tickets")
-        .select("*, agencies(agency_name)")
+        .select("*, agencies(name)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;

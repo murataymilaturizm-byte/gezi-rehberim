@@ -29,7 +29,7 @@ serve(async (req) => {
     // Get agency details
     const { data: agency, error: agencyError } = await supabase
       .from("agencies")
-      .select("agency_name")
+      .select("name")
       .eq("id", agencyId)
       .single();
 
@@ -72,7 +72,7 @@ serve(async (req) => {
       amount: amount.toFixed(2),
       currency: "TRY",
       installment: "1",
-      customer_name: agency.agency_name,
+      customer_name: agency.name,
       customer_email: "billing@turzzai.com", // This should come from user data
       success_url: `${SUPABASE_URL}/functions/v1/sipay-callback`,
       failure_url: `${SUPABASE_URL}/functions/v1/sipay-callback`,
