@@ -608,14 +608,32 @@ export type Database = {
           created_at: string | null
           currency: string
           destination: string
+          destination_ar: string | null
+          destination_de: string | null
+          destination_en: string | null
+          destination_es: string | null
+          destination_fr: string | null
+          destination_ru: string | null
           gezilecek_yerler: string | null
           hareket_noktasi: string | null
           id: string
           konaklama: string | null
           min_pax: number | null
           program_kisa: string | null
+          program_kisa_ar: string | null
+          program_kisa_de: string | null
+          program_kisa_en: string | null
+          program_kisa_es: string | null
+          program_kisa_fr: string | null
+          program_kisa_ru: string | null
           program_url: string | null
           title: string
+          title_ar: string | null
+          title_de: string | null
+          title_en: string | null
+          title_es: string | null
+          title_fr: string | null
+          title_ru: string | null
           toplanma_saati: string | null
           tur_kategorisi: string | null
           tur_sure: string | null
@@ -628,14 +646,32 @@ export type Database = {
           created_at?: string | null
           currency?: string
           destination: string
+          destination_ar?: string | null
+          destination_de?: string | null
+          destination_en?: string | null
+          destination_es?: string | null
+          destination_fr?: string | null
+          destination_ru?: string | null
           gezilecek_yerler?: string | null
           hareket_noktasi?: string | null
           id?: string
           konaklama?: string | null
           min_pax?: number | null
           program_kisa?: string | null
+          program_kisa_ar?: string | null
+          program_kisa_de?: string | null
+          program_kisa_en?: string | null
+          program_kisa_es?: string | null
+          program_kisa_fr?: string | null
+          program_kisa_ru?: string | null
           program_url?: string | null
           title: string
+          title_ar?: string | null
+          title_de?: string | null
+          title_en?: string | null
+          title_es?: string | null
+          title_fr?: string | null
+          title_ru?: string | null
           toplanma_saati?: string | null
           tur_kategorisi?: string | null
           tur_sure?: string | null
@@ -648,14 +684,32 @@ export type Database = {
           created_at?: string | null
           currency?: string
           destination?: string
+          destination_ar?: string | null
+          destination_de?: string | null
+          destination_en?: string | null
+          destination_es?: string | null
+          destination_fr?: string | null
+          destination_ru?: string | null
           gezilecek_yerler?: string | null
           hareket_noktasi?: string | null
           id?: string
           konaklama?: string | null
           min_pax?: number | null
           program_kisa?: string | null
+          program_kisa_ar?: string | null
+          program_kisa_de?: string | null
+          program_kisa_en?: string | null
+          program_kisa_es?: string | null
+          program_kisa_fr?: string | null
+          program_kisa_ru?: string | null
           program_url?: string | null
           title?: string
+          title_ar?: string | null
+          title_de?: string | null
+          title_en?: string | null
+          title_es?: string | null
+          title_fr?: string | null
+          title_ru?: string | null
           toplanma_saati?: string | null
           tur_kategorisi?: string | null
           tur_sure?: string | null
