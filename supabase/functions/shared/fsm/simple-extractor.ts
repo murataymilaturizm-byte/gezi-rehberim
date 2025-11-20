@@ -1,5 +1,5 @@
 // Simple fallback extractor for name and phone (when NLU misses them)
-import type { ReservationInfo } from '../types.ts';
+import type { ReservationInfo } from './types.ts';
 
 export function extractNameAndPhone(message: string): { fullName?: string; phone?: string } {
   const result: { fullName?: string; phone?: string } = {};
