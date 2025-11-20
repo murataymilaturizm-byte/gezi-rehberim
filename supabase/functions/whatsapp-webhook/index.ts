@@ -51,7 +51,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get agency
+    // Get agency with enabled languages
     const { data: agency } = await supabase
       .from('agencies')
       .select('*')
@@ -151,6 +151,14 @@ serve(async (req) => {
       const initialLang = languageChangeIntent || runtimeDetectedLang || 'tr';
       const tone = getDefaultToneForLanguage(initialLang) as ConversationTone;
       context = createInitialContext(initialLang, tone);
+    }
+
+    // Check if detected language is enabled for this agency
+    const enabledLanguages = (agency as any).enabled_languages || ['tr'];
+    if (!enabledLanguages.includes(context.language)) {
+      console.log(`⚠️ Language ${context.language} not enabled for agency. Falling back to first enabled: ${enabledLanguages[0]}`);
+      context.language = enabledLanguages[0];
+      context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
     }
 
     // Now create localized tours based on context language
@@ -392,7 +400,7 @@ serve(async (req) => {
     if (newContext.stage === 'COMPLETED' && newContext.reservationConfirmed) {
       console.log("💾 Saving reservation...");
       
-      const { error: regError } = await supabase.from('registrations').insert({
+      const { data: newRegistration, error: regError } = await supabase.from('registrations').insert({
         tour_id: newContext.reservationInfo.tourId,
         tour_date_id: newContext.reservationInfo.dateId,
         full_name: newContext.reservationInfo.fullName,
@@ -400,12 +408,40 @@ serve(async (req) => {
         pax: (newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
         agency_id: agency.id,
         status: 'NEW'
-      });
+      }).select().single();
 
       if (regError) {
         console.error("❌ Save error:", regError);
       } else {
         console.log("✅ Reservation saved");
+
+        // Send reservation confirmation template if available
+        const { data: template } = await supabase
+          .from('message_templates')
+          .select('*')
+          .eq('agency_id', agency.id)
+          .eq('template_key', 'reservation_confirmed')
+          .eq('language', newContext.language)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (template && newRegistration) {
+          console.log("📧 Sending reservation confirmation template...");
+          
+          // Replace template variables
+          const selectedTour = tours.find(t => t.id === newContext.reservationInfo.tourId);
+          const selectedDate = selectedTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
+          
+          let templateContent = template.content;
+          templateContent = templateContent.replace('{customer_name}', newContext.reservationInfo.fullName || '');
+          templateContent = templateContent.replace('{tour_name}', selectedTour?.title || '');
+          templateContent = templateContent.replace('{tour_date}', selectedDate?.departure_date || '');
+          templateContent = templateContent.replace('{pax}', String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)));
+          
+          // Append template message to final reply
+          finalReply = finalReply + '\n\n' + templateContent;
+          console.log("✅ Template message appended");
+        }
       }
 
       // Update profile
