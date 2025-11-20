@@ -13,7 +13,8 @@ export async function handleGeneralChat(
   phone: string,
   agencyId: string,
   userMessage: string,
-  conversationStyle: string
+  conversationStyle: string,
+  agencyName?: string
 ): Promise<string> {
   const userProfile = await getUserProfile(supabase, phone, agencyId);
   const language = userProfile?.language_preference || 'tr';
@@ -75,7 +76,7 @@ export async function handleGeneralChat(
   const messages = [
     {
       role: 'system',
-      content: getSystemPrompt(conversationStyle, language, hasHistory) + toursContext + userContext
+      content: getSystemPrompt(conversationStyle, language, hasHistory, agencyName) + toursContext + userContext
     },
     ...history,
     {

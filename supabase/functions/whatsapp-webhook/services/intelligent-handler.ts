@@ -81,7 +81,8 @@ export async function handleIntelligently(
   userMessage: string,
   intent: string,
   conversationStyle: string,
-  tourSwitchContext?: string
+  tourSwitchContext?: string,
+  agencyName?: string
 ): Promise<string> {
   // Gather full context
   const userProfile = await getUserProfile(supabase, phone, agencyId);
@@ -108,7 +109,8 @@ export async function handleIntelligently(
     conversationState,
     pattern,
     userProfile,
-    lastDiscussedTour
+    lastDiscussedTour,
+    agencyName
   );
 
   // Get tours data if needed
@@ -174,7 +176,8 @@ function buildIntelligentPrompt(
   state: any,
   pattern: any,
   profile: any,
-  lastDiscussedTour?: string | null
+  lastDiscussedTour?: string | null,
+  agencyName?: string
 ): string {
   const currentTour = state?.currentTour;
   const wizardStep = state?.wizardStep || 'none';
@@ -234,7 +237,7 @@ function buildIntelligentPrompt(
   };
 
   const baseRulesText = {
-    tr: `Sen bir seyahat asistanısın. ${stylePersonality.tr}
+    tr: `${agencyName ? `🏢 ACENTA: ${agencyName}\n⚠️ İlk karşılamada: "Merhaba! ${agencyName}'ye hoş geldiniz." yaz.\n⚠️ Acente adını ASLA çevirme!\n\n` : ''}Sen bir seyahat asistanısın. ${stylePersonality.tr}
 
 🚨 ZORUNLU WIZARD KURALLARI 🚨
 🔴 ADIM 1: Tur listele (sadece liste, detay yok)
@@ -243,7 +246,7 @@ function buildIntelligentPrompt(
 🔴 ADIM 4: Kullanıcının seçimine göre (SADECE o bilgiyi ver)
 🔴 MERHABA YASAK - Konuşma başladıktan sonra her cevabın başına "Merhaba" yazma
 🔴 MAKSIMUM 3 CÜMLE`,
-    en: `You are a travel assistant. ${stylePersonality.en}
+    en: `${agencyName ? `🏢 AGENCY: ${agencyName}\n⚠️ First greeting: "Hello! Welcome to ${agencyName}."\n⚠️ NEVER translate the agency name!\n\n` : ''}You are a travel assistant. ${stylePersonality.en}
 
 🚨 MANDATORY WIZARD RULES 🚨
 🔴 STEP 1: List tours (only list, no details)

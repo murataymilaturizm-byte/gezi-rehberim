@@ -12,9 +12,29 @@ import {
 export function getSystemPrompt(
   conversationStyle: string,
   userLanguage: string = 'tr',
-  hasHistory: boolean = false
+  hasHistory: boolean = false,
+  agencyName?: string
 ): string {
   const languageName = getLanguageName(userLanguage);
+  
+  // Agency greeting info
+  const agencyGreeting = agencyName ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏢 ACENTA BİLGİSİ / AGENCY INFO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Acenta Adı / Agency Name: ${agencyName}
+
+⚠️ KARŞILAMA KURALI / GREETING RULE:
+${userLanguage === 'tr' 
+  ? `İlk karşılamada: "Merhaba! ${agencyName}'ye hoş geldiniz."`
+  : `First greeting: "Hello! Welcome to ${agencyName}."`}
+
+⚠️ ÇOK ÖNEMLİ / CRITICAL:
+Bu acente adını AYNEN kullan, çevirme veya değiştirme!
+Use this agency name EXACTLY as shown, do NOT translate or modify!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+` : '';
   
   // CRITICAL: Put this at the very top so AI sees it first
   const greetingRule = hasHistory ? `
@@ -38,7 +58,7 @@ JUST ANSWER THE QUESTION DIRECTLY - NO GREETING!
   const responseGuidelines = getResponseGuidelines(userLanguage);
   
   // Build the complete prompt
-  const completePrompt = greetingRule + baseSystemPrompt + `
+  const completePrompt = agencyGreeting + greetingRule + baseSystemPrompt + `
 
 CRITICAL LANGUAGE RULES:
 - User prefers ${languageName}
@@ -136,10 +156,11 @@ export function getIntentBasedPrompt(
   intent: string,
   language: string,
   conversationStyle: string = 'professional',
-  hasHistory: boolean = false
+  hasHistory: boolean = false,
+  agencyName?: string
 ): string {
   const intentPrompt = getIntentPrompt(intent, language);
-  const basePrompt = getSystemPrompt(conversationStyle, language, hasHistory);
+  const basePrompt = getSystemPrompt(conversationStyle, language, hasHistory, agencyName);
   
   return `${basePrompt}
 

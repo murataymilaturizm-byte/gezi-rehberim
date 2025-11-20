@@ -11,7 +11,8 @@ export async function handleGreeting(
   phone: string,
   agencyId: string,
   userMessage: string,
-  conversationStyle: string
+  conversationStyle: string,
+  agencyName?: string
 ): Promise<string> {
   // Get user profile and history
   const userProfile = await getUserProfile(supabase, phone, agencyId);
@@ -38,7 +39,7 @@ export async function handleGreeting(
   const messages = [
     {
       role: 'system',
-      content: getSystemPrompt(conversationStyle, language, hasHistory) + additionalContext
+      content: getSystemPrompt(conversationStyle, language, hasHistory, agencyName) + additionalContext
     },
     ...history,
     {
