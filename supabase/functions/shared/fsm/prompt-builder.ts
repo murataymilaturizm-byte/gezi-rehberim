@@ -145,19 +145,18 @@ function getStagePrompt(
 
   if (language === "tr") {
     switch (stage) {
-    case "GREETING":
-      return `📍 DURUM: İlk karşılama
+      case "GREETING":
+        return `📍 DURUM: İlk karşılama
 - Kullanıcıyı sıcak ve kısa bir mesajla karşıla.
 - Acentenin adını kullanarak hoş geldiniz de.
 - Ne konuda yardımcı olabileceğini 1-2 cümlede anlat.
-- **ÖNEMLI: Mutlaka mevcut turları numaralandırılmış liste olarak göster** (1. Tur Adı - Destinasyon (Fiyat₺), 2. ... şeklinde)
-- Son cümlede "Hangi tura ilgi duyuyorsunuz?" veya "Kaçıncı turu incelemek istersiniz?" gibi seçim yaptıran bir soru sor.
+- Son cümlede mutlaka ihtiyacını sor (tur mu arıyor, destinasyon mu, tarih mi).
 
-Mevcut turlar (MUTLAKA LİSTELE):
+Mevcut turlar hakkında genel bir fikrin olsun (kullanıcı sorarsa örnek verebilirsin):
 ${toursList}`;
 
-    case "BROWSING":
-      return `📍 DURUM: Tur arama / listeleme
+      case "BROWSING":
+        return `📍 DURUM: Tur arama / listeleme
 - Kullanıcı turları keşfediyor, bu aşamada kayıt bilgisi sorma.
 - İlgilendiği destinasyona göre uygun turları sade bir şekilde listele.
 - Aynı destinasyondan birden fazla tur varsa hepsini madde madde göster ve "Hangisini tercih edersiniz?" diye sor.
@@ -166,22 +165,21 @@ ${toursList}`;
 Mevcut turlar:
 ${toursList}`;
 
-    case "TOUR_SELECTED":
-      return `📍 DURUM: Tur seçildi
+      case "TOUR_SELECTED":
+        return `📍 DURUM: Tur seçildi
 Seçili turun özetini kısa anlat (süre, destinasyon, temel özellikler):
 
 ${tourDetails}
 
 - Kullanıcı "kayıt olmak istiyorum" derse önce tarih konusunda netleş.
-- Turda birden fazla tarih varsa bunları numaralandırılmış liste olarak göster: "1. 2025-12-15 (1500₺)" şeklinde
-- Kullanıcıya "Hangi tarihi tercih edersiniz? (Sayı yazabilirsiniz)" diye sor.
+- Turda birden fazla tarih varsa bunları listeleyip "Hangi tarihi tercih edersiniz?" diye sor.
 - Sadece 1 tarih varsa, o tarihi söyle ve "Bu tarih sizin için uygun mu?" diye sor.
 - Bu aşamada henüz kişi sayısı, isim, telefon isteme.`;
 
-    case "DATE_SELECTION":
-      return `📍 DURUM: Tarih seçimi
+      case "DATE_SELECTION":
+        return `📍 DURUM: Tarih seçimi
 - Görevin, seçilen tur için net bir tarih belirlemek.
-- Birden fazla tarih varsa hepsini numaralandırılmış liste olarak göster ve "Hangi tarihi tercih edersiniz? (Sayı yazabilirsiniz)" diye sor.
+- Birden fazla tarih varsa hepsini madde madde listele ve "Hangi tarihi tercih edersiniz?" diye sor.
 - Sadece 1 tarih varsa bu tarihi belirt ve "Bu tarih sizin için uygun mu?" diye sor.
 - Bu aşamada kişi sayısı, isim, telefon isteme.`;
 
