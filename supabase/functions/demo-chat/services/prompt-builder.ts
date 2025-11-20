@@ -88,4 +88,75 @@ function getTonePrompt(language: string, tone: ConversationTone): string {
     tr: {
       standart: `ÜSLUP KURALLARI (tone = "standart"):
 - Sıcak, samimi ama profesyonel
--
+- Rahat ama saygılı
+- Emoji kullanabilir (aşırıya kaçmadan)
+- Kısa ve net cümleler`,
+
+      kurumsal: `ÜSLUP KURALLARI (tone = "kurumsal"):
+- Profesyonel ve resmi
+- Emoji kullanma
+- Düzgün Türkçe, saygı ifadeleri`,
+
+      dinamik: `ÜSLUP KURALLARI (tone = "dinamik"):
+- Enerjik ve heyecanlı
+- Sık emoji kullan
+- Coşkulu ifadeler
+- Hızlı akıcı dil`,
+
+      premium: `ÜSLUP KURALLARI (tone = "premium"):
+- Lüks, özel hissettiren
+- Seçkin, zarif
+- Az emoji, kaliteli ifadeler
+- VIP muamelesi`,
+    },
+    en: {
+      standart: `TONE RULES (tone = "standart"):
+- Warm, friendly but professional
+- Casual but respectful
+- Can use emojis (not too much)
+- Short and clear sentences`,
+
+      kurumsal: `TONE RULES (tone = "kurumsal"):
+- Professional and formal
+- No emojis
+- Proper English, respectful expressions`,
+
+      dinamik: `TONE RULES (tone = "dinamik"):
+- Energetic and exciting
+- Use emojis frequently
+- Enthusiastic expressions
+- Fast flowing language`,
+
+      premium: `TONE RULES (tone = "premium"):
+- Luxurious, make them feel special
+- Elegant, refined
+- Few emojis, quality expressions
+- VIP treatment`,
+    },
+  };
+
+  return tones[language]?.[tone] || tones.tr.standart;
+}
+
+function getStagePrompt(
+  stage: ConversationStage,
+  collectionStep: string | undefined,
+  currentTour: any,
+  reservationInfo: any,
+  availableTours: any[],
+  language: string,
+  paymentInfo?: string,
+): string {
+  // Stage-specific prompts removed - payment message is appended after AI response
+  return '';
+}
+
+function getAgencyInfo(agencyName: string, agencyCity: string | undefined, language: string): string {
+  const cityText = agencyCity ? ` (${agencyCity})` : '';
+  
+  if (language === 'en') {
+    return `\n\n🏢 AGENCY INFO:\nYou represent: ${agencyName}${cityText}`;
+  }
+  
+  return `\n\n🏢 ACENTE BİLGİSİ:\nTemsil ettiğiniz acente: ${agencyName}${cityText}`;
+}
