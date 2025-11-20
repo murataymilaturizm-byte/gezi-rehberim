@@ -17,10 +17,12 @@ export function buildSystemPrompt(context: AIPromptContext): string {
 
   const rolePrompt = getRolePrompt(language);
   const tonePrompt = getTonePrompt(language, tone);
+  const languageRule = getLanguageRule(language);
   const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, availableTours, language);
   const agencyInfo = agencyName ? getAgencyInfo(agencyName, agencyCity, language) : "";
 
-  return `${rolePrompt}\n\n${tonePrompt}\n\n${stagePrompt}${agencyInfo}`;
+  // Sıra: Rol → Üslup → DİL KURALI → Aşama → Acente info
+  return `${rolePrompt}\n\n${tonePrompt}\n\n${languageRule}\n\n${stagePrompt}${agencyInfo}`;
 }
 
 function getRolePrompt(language: string): string {
@@ -39,15 +41,6 @@ Sen, tur ve seyahat acentaları için tasarlanmış, FSM (finite state machine) 
 - Bilgi toplarken sırayı koru: Tur → Tarih → Kişi sayısı → İsim → Telefon
 - Kullanıcı zaten verdiği bilgiyi tekrar sorma
 - Asla bilgi uydurma - sadece verilen turları kullan
-
-🗣️ CEVAP DİLİ KURALI:
-- Her zaman kullanıcının SON mesajındaki dilde cevap ver.
-- Kullanıcı Almanca, İngilizce, Rusça, Fransızca vb. yazabilir; dili otomatik algıla.
-- Aynı konuşma içinde kullanıcı dil değiştirirse, sen de yeni mesaja göre dili değiştir.
-- ÖRNEK:
-  • Kullanıcı Almanca yazıyorsa sen de Almanca cevap ver.
-  • Kullanıcı İngilizceye geçerse, sen de İngilizceye geç.
-  • Kullanıcı tekrar Türkçe yazarsa, sen de tekrar Türkçe devam et.
 
 💳 ÖDEME & İBAN KURALLARI:
 - Ödeme detayları (IBAN, kapora, tutar, banka bilgileri) SENİN TARAFINDAN yazılmayacak.
@@ -77,15 +70,6 @@ You are an FSM-based sales and information assistant for tour and travel agencie
 - Don't re-ask for information already provided
 - Never make up information - only use provided tours
 
-🗣️ LANGUAGE RULE:
-- ALWAYS reply in the same language as the USER'S LAST MESSAGE.
-- The user may write in German, English, Turkish, Russian, French, Spanish, etc. Detect the language from their text.
-- If the user switches language in the middle of the conversation, you must also switch to the new language.
-- EXAMPLES:
-  • If the user writes in German, you reply in German.
-  • If the user then writes in English, you continue in English.
-  • If the user goes back to Turkish, you also go back to Turkish.
-
 💳 PAYMENT & IBAN RULES:
 - Payment details (IBAN, deposit amount, bank info) MUST NOT be written by you.
 - These details will be added AUTOMATICALLY at the END of the message by the backend.
@@ -100,9 +84,68 @@ You are an FSM-based sales and information assistant for tour and travel agencie
   3) If really no number: "I don't see a phone number in our conversation history, could you please provide it once more?"`,
   };
 
-  // Bilinmeyen diller için (de, ru, fr, es vs.) TR prompt'unu kullan ama AI'ye yukarıdaki dil kuralıyla
-  // kullanıcının dilinde cevap vermesini emrediyoruz.
+  // language 'tr' veya 'en' dışındaysa bile TR prompt'u kullanıyoruz (kurallar için),
+  // asıl çıktı dili aşağıdaki getLanguageRule ile zorlanacak.
   return prompts[language] || prompts.tr;
+}
+
+/**
+ * 🌐 DİL KURALI – burada modeli ZORLA seçilen dilde konuşturuyoruz.
+ */
+function getLanguageRule(language: string): string {
+  const langNameMapTR: Record<string, string> = {
+    tr: "Türkçe",
+    en: "İngilizce",
+    de: "Almanca",
+    ru: "Rusça",
+    ar: "Arapça",
+    fr: "Fransızca",
+    es: "İspanyolca",
+  };
+
+  const langNameMapEN: Record<string, string> = {
+    tr: "Turkish",
+    en: "English",
+    de: "German",
+    ru: "Russian",
+    ar: "Arabic",
+    fr: "French",
+    es: "Spanish",
+  };
+
+  const nameTR = langNameMapTR[language] || "Türkçe";
+  const nameEN = langNameMapEN[language] || "Turkish";
+
+  const trRule = `🌐 DİL KURALI:
+- Bu konuşmanın hedef dili: ${nameTR} (language = "${language}").
+- Cevaplarını HER ZAMAN bu dilde ver.
+- language kodu ile dil eşleştirmesi:
+  • "tr" → Türkçe
+  • "en" → İngilizce
+  • "de" → Almanca
+  • "ru" → Rusça
+  • "ar" → Arapça
+  • "fr" → Fransızca
+  • "es" → İspanyolca
+- Sistem promptundaki talimatların dili farklı olabilir; bunlar sadece senin içindir.
+- Kullanıcıya gönderdiğin tüm mesajlar, hedef dil (${nameTR}) ile tam uyumlu olmalıdır.`;
+
+  const enRule = `🌐 LANGUAGE RULE:
+- The active conversation language is: ${nameEN} (language = "${language}").
+- ALWAYS respond in this language.
+- language code mapping:
+  • "tr" → Turkish
+  • "en" → English
+  • "de" → German
+  • "ru" → Russian
+  • "ar" → Arabic
+  • "fr" → French
+  • "es" → Spanish
+- The system prompt may be partially in another language; it is only for your internal instructions.
+- Every message you send to the user must be written in the target language (${nameEN}).`;
+
+  // Eğer sistem dili Türkçe ise TR açıklama, değilse EN açıklama kullanıyoruz
+  return language === "tr" ? trRule : enRule;
 }
 
 function getTonePrompt(language: string, tone: ConversationTone): string {
@@ -157,6 +200,7 @@ function getTonePrompt(language: string, tone: ConversationTone): string {
     },
   };
 
+  // 'de', 'ru' vb. için de en azından bir üslup kuralı olsun diye TR fallback
   return tones[language]?.[tone] || tones.tr.standart;
 }
 
@@ -299,7 +343,7 @@ KATI YASAKLAR (KENDİ YAZDIĞIN KISIM İÇİN):
     }
   }
 
-  // ENGLISH PROMPTS
+  // ENGLISH PROMPTS (non-tr diller için de buradan besleniyor ama DİL KURALI onları çevirtir)
   switch (stage) {
     case "GREETING":
       return `📍 STATUS: Initial greeting
