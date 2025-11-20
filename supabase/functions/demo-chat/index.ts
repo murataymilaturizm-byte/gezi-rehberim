@@ -16,7 +16,7 @@ import { callAI } from "./services/ai.ts";
 import { findTourById } from "./services/tour-matcher.ts";
 
 // Config
-import { DEMO_AGENCY_ID } from "./config/demo-tours.ts";
+import { DEMO_AGENCY_ID, DEMO_TOURS as DEMO_TOURS_CONFIG } from "./config/demo-tours.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,7 +43,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Load tours from database for demo agency
-    const { data: dbTours, error: toursError } = await supabase
+    let { data: dbTours, error: toursError } = await supabase
       .from('tours')
       .select(`
         *,
@@ -61,6 +61,75 @@ serve(async (req) => {
     if (toursError) {
       console.error("❌ Error loading tours:", toursError);
       throw new Error("Failed to load tours");
+    }
+
+    // If no tours exist, create demo tours from config
+    if (!dbTours || dbTours.length === 0) {
+      console.log("📝 No demo tours found, creating from config...");
+      
+      for (const demoTour of DEMO_TOURS_CONFIG) {
+        // Insert tour
+        const { error: tourInsertError } = await supabase
+          .from('tours')
+          .insert({
+            id: demoTour.id,
+            agency_id: DEMO_AGENCY_ID,
+            title: demoTour.title,
+            destination: demoTour.destination,
+            type: demoTour.type,
+            currency: demoTour.currency,
+            program_kisa: demoTour.program_kisa,
+            gezilecek_yerler: demoTour.gezilecek_yerler,
+            toplanma_saati: demoTour.toplanma_saati,
+            hareket_noktasi: demoTour.hareket_noktasi,
+            tur_sure: demoTour.tur_sure,
+            ulasim: demoTour.ulasim,
+            konaklama: demoTour.konaklama,
+          });
+
+        if (tourInsertError) {
+          console.error("❌ Error inserting tour:", tourInsertError);
+          continue;
+        }
+
+        // Insert tour dates
+        for (const date of demoTour.dates) {
+          const { error: dateInsertError } = await supabase
+            .from('tour_dates')
+            .insert({
+              id: date.id,
+              tour_id: demoTour.id,
+              agency_id: DEMO_AGENCY_ID,
+              departure_date: date.departure_date,
+              price_adult: date.price_adult,
+              price_child: date.price_child,
+              quota: date.quota,
+            });
+
+          if (dateInsertError) {
+            console.error("❌ Error inserting tour date:", dateInsertError);
+          }
+        }
+      }
+
+      // Reload tours
+      const { data: reloadedTours } = await supabase
+        .from('tours')
+        .select(`
+          *,
+          dates:tour_dates(
+            id,
+            departure_date,
+            return_date,
+            price_adult,
+            price_child,
+            quota
+          )
+        `)
+        .eq('agency_id', DEMO_AGENCY_ID);
+
+      dbTours = reloadedTours;
+      console.log(`✅ Created ${reloadedTours?.length || 0} demo tours`);
     }
 
     const DEMO_TOURS = (dbTours || []).map((tour: any) => ({
