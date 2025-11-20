@@ -202,7 +202,7 @@ serve(async (req) => {
       availableTours: DEMO_TOURS,
       language: newContext.language,
       tone: newContext.tone,
-      agencyName: undefined, // Demo'da acente adı yok
+      agencyName: 'Demo Travel Agency',
       agencyCity: undefined,
       paymentInfo: undefined
     });
