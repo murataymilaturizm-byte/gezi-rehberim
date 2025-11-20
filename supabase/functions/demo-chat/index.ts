@@ -9,6 +9,7 @@ import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
 import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
+import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
 import type { ConversationContext, ProcessingInput } from "../shared/fsm/types.ts";
 
 // Demo-specific services
@@ -58,13 +59,14 @@ serve(async (req) => {
       throw new Error("Failed to load tours");
     }
 
-    const availableTours = (dbTours || []).map((tour: any) => ({
+    // Helper function to create localized tour object
+    const createLocalizedTour = (tour: any, lang: string) => ({
       id: tour.id,
-      title: tour.title,
-      destination: tour.destination,
+      title: pickLocalized(tour, 'title', lang),
+      destination: pickLocalized(tour, 'destination', lang),
       type: tour.type,
       currency: tour.currency,
-      program_kisa: tour.program_kisa,
+      program_kisa: pickLocalized(tour, 'program_kisa', lang),
       gezilecek_yerler: tour.gezilecek_yerler,
       toplanma_saati: tour.toplanma_saati,
       hareket_noktasi: tour.hareket_noktasi,
@@ -72,13 +74,17 @@ serve(async (req) => {
       ulasim: tour.ulasim,
       konaklama: tour.konaklama,
       dates: tour.dates || [],
-    }));
+      // Keep raw tour object for later re-localization if language changes
+      _raw: tour
+    });
 
-    console.log(`📦 Using ${availableTours.length} demo tours`);
-
-    // 🔎 Her mesajda dili tekrar tespit et
+    // 🔎 Check for explicit language change intent FIRST
+    const languageChangeIntent = detectLanguageChangeIntent(message);
+    
+    // 🔎 Then detect language from message content
     const runtimeDetectedLang = await detectLanguage(message);
     console.log("🌐 Detected language (runtime):", runtimeDetectedLang);
+    console.log("🔄 Language change intent:", languageChangeIntent);
 
     // Load or initialize context
     let context: ConversationContext;
@@ -87,22 +93,39 @@ serve(async (req) => {
       console.log("✅ Using client state");
       context = clientState;
 
-      // Eğer yeni mesajdaki dil, context'teki dilden farklıysa güncelle
-      if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
-        console.log(`🌍 Language update: ${context.language} → ${runtimeDetectedLang}`);
+      // Priority 1: Explicit language change request
+      if (languageChangeIntent && languageChangeIntent !== context.language) {
+        console.log(`🔄 EXPLICIT language change: ${context.language} → ${languageChangeIntent}`);
+        context.language = languageChangeIntent;
+        (context as any).detectedLanguage = languageChangeIntent;
+        // Also update tone to language-appropriate default
+        context.tone = getDefaultToneForLanguage(languageChangeIntent) as any;
+        console.log(`🎯 Tone updated to: ${context.tone}`);
+      }
+      // Priority 2: Automatic detection (only if different and no explicit change)
+      else if (runtimeDetectedLang && runtimeDetectedLang !== context.language && !languageChangeIntent) {
+        console.log(`🌍 AUTO language update: ${context.language} → ${runtimeDetectedLang}`);
         context.language = runtimeDetectedLang;
         (context as any).detectedLanguage = runtimeDetectedLang;
       }
     } else {
       console.log("🆕 Initializing fresh context");
       const initialLang = runtimeDetectedLang || "tr";
-      const tone = "standart"; // Default tone
+      const tone = getDefaultToneForLanguage(initialLang);
 
-      context = createInitialContext(initialLang, tone);
+      context = createInitialContext(initialLang, tone as any);
       (context as any).detectedLanguage = runtimeDetectedLang || undefined;
 
       console.log(`🌍 Language: ${initialLang}, Tone: ${tone}`);
     }
+
+    // 🌐 Create localized tours based on current context language
+    const availableTours = (dbTours || []).map((tour: any) => 
+      createLocalizedTour(tour, context.language)
+    );
+
+    console.log(`📦 Using ${availableTours.length} tours (localized to: ${context.language})`);
+    
 
     console.log("📨 Message:", { message, stage: context.stage, lang: context.language, tone: context.tone });
 
