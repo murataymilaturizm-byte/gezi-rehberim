@@ -81,7 +81,8 @@ export const DemoChat = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversationState, setConversationState] = useState<any>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  // Eski scroll mantığına dönüş: ScrollArea'ya ref
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     localStorage.setItem("demo-chat-messages", JSON.stringify(messages));
@@ -123,9 +124,11 @@ export const DemoChat = () => {
     });
   }, [i18n.language, conversationStyle, t]);
 
-  // Her yeni mesajda en alta scroll et
+  // Her yeni mesajda ScrollArea'nın en altına git (eski davranış)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const sendMessage = async () => {
@@ -297,7 +300,7 @@ export const DemoChat = () => {
           </div>
         </CardHeader>
         <CardContent className={`p-0 flex flex-col ${isExpanded && isMobile ? "flex-1 min-h-0" : ""}`}>
-          <ScrollArea className={`${isExpanded && isMobile ? "flex-1" : "h-[400px]"} p-4`}>
+          <ScrollArea className={`${isExpanded && isMobile ? "flex-1" : "h-[400px]"} p-4`} ref={scrollRef}>
             <div className="space-y-4">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -357,7 +360,6 @@ export const DemoChat = () => {
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
           <div className="p-4 border-t border-border flex-shrink-0">
