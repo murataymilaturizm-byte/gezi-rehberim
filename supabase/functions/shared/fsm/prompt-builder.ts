@@ -178,10 +178,12 @@ ${tourDetails}
 
       case "DATE_SELECTION":
         return `📍 DURUM: Tarih seçimi
-- Görevin, seçilen tur için net bir tarih belirlemek.
-- Birden fazla tarih varsa hepsini madde madde listele ve "Hangi tarihi tercih edersiniz?" diye sor.
+- Görevin, seçilen tur için NET bir tarih belirlemek.
+- Birden fazla tarih varsa hepsini madde madde listele ve "Hangi tarihi tercih edersiniz? (1, 2, 3 şeklinde cevap verebilirsiniz.)" diye sor.
 - Sadece 1 tarih varsa bu tarihi belirt ve "Bu tarih sizin için uygun mu?" diye sor.
-- Bu aşamada kişi sayısı, isim, telefon isteme.`;
+- Bu aşamada kişi sayısı, isim, telefon isteme.
+- LİSTELEDİĞİN TARİHLERİN DIŞINDA YENİ BİR TARİH UYDURMA.
+- Kullanıcı listede olmayan bir tarih söylerse: "Şu an sadece yukarıda paylaştığım tarihler için kontenjanımız var, bu tarihlerden hangisini tercih edersiniz?" diyerek tekrar bu tarihler arasından seçim iste.`;
 
       case "COLLECTING_INFO": {
         let stepPrompt = "";
@@ -214,16 +216,18 @@ ${stepPrompt}
 ${collectedInfo}
 
 - Aynı mesajda birden fazla yeni bilgi isteme.
-- Kullanıcı zaten verdiği bilgiyi tekrar isteme.`;
+- Kullanıcı zaten verdiği bilgiyi tekrar isteme.
+- BU AŞAMADA "rezervasyonunuzu oluşturalım mı", "onayınızı bekliyorum", "rezervasyonunuzu oluşturuyorum" gibi cümleler KULLANMA.
+- Onay veya "kaydınız oluşturuldu" tarzı cümleler SADECE CONFIRMING ve COMPLETED aşamalarında kullanılabilir.`;
       }
 
       case "CONFIRMING":
         return `📍 DURUM: Onay bekleniyor
 - Şu ana kadar toplanan bilgileri ÖZET OLARAK göster (tur, tarih, kişi sayısı, isim, telefon).
 - Kullanıcıdan bu bilgileri kontrol etmesini iste.
-- "Bu bilgiler doğru mudur, onaylıyor musunuz?" gibi net bir soru sor.
-- Bu aşamada henüz "kaydınız oluşturuldu" veya "rezervasyon tamamlandı" deme.
-- Ödeme bilgisi veya IBAN verme, sadece onay al. 
+- Son cümlede mutlaka "Bu bilgiler doğru mudur, onaylıyor musunuz?" benzeri NET bir soru sor.
+- Bu aşamada henüz "ön kaydınız oluşturuldu", "rezervasyon tamamlandı" gibi cümleler KESİNLİKLE KULLANMA.
+- Ödeme bilgisi veya IBAN verme, sadece onay al.
 
 ÖZET:
 ${summary}`;
@@ -276,9 +280,11 @@ ${tourDetails}
     case "DATE_SELECTION":
       return `📍 STATUS: Date selection
 - Your goal is to confirm a clear date for the selected tour.
-- If there are multiple dates, list them and ask "Which date would you prefer?".
+- If there are multiple dates, list them and ask "Which date would you prefer? (You can answer with 1, 2, 3 etc.)".
 - If there is only one date, show it and ask "Is this date suitable for you?".
-- Do NOT ask for pax, name or phone yet.`;
+- Do NOT ask for pax, name or phone yet.
+- Do NOT INVENT a new date outside of the ones you listed.
+- If the user mentions a date that is not in the list, reply with: "At the moment we only have availability for the dates above, which one would you prefer?" and guide them to choose from the listed dates.`;
 
     case "COLLECTING_INFO": {
       let stepPrompt = "";
@@ -311,15 +317,17 @@ Information collected so far:
 ${collectedInfo}
 
 - Do NOT ask for multiple new pieces of information in one message.
-- Do NOT re-ask for information the user has already provided.`;
+- Do NOT re-ask for information the user has already provided.
+- At this stage do NOT ask for confirmation or say things like "shall I complete your booking now?" or "I am creating your reservation".
+- Confirmation questions and "your booking is created" style sentences MUST ONLY be used in CONFIRMING and COMPLETED stages.`;
     }
 
     case "CONFIRMING":
       return `📍 STATUS: Awaiting confirmation
 - Show a short SUMMARY of the collected details (tour, date, pax, name, phone).
 - Ask the user to check if everything is correct.
-- Ask a clear question like: "Are these details correct, do you confirm?".
-- At this stage do NOT say "your booking is completed" yet.
+- In your LAST sentence, ask a clear question like: "Are these details correct, do you confirm?".
+- At this stage do NOT say "your reservation is completed" or "your booking has been created".
 - Do NOT provide payment details or IBAN here, only ask for confirmation.
 
 SUMMARY:
