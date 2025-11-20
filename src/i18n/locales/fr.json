@@ -83,18 +83,16 @@
     "resetSuccessDesc": "Vous pouvez commencer une nouvelle conversation",
     "typing": "Saisie en cours...",
     "style": {
-      "basic": "Simple/Bref",
-      "friendly": "Amical",
-      "professional": "Professionnel",
-      "energetic": "Énergique",
-      "helpful": "Serviable"
+      "standart": "Standard",
+      "kurumsal": "Professionnel",
+      "dinamik": "Dynamique",
+      "premium": "Premium"
     },
     "helpPrompt": {
-      "basic": "📍 Comment puis-je vous aider?",
-      "friendly": "😊 Comment puis-je t'aider?",
-      "professional": "💼 Comment puis-je vous aider?",
-      "energetic": "⚡ Prêt à découvrir nos tours fantastiques?! 🚀",
-      "helpful": "📝 Je suis là pour vous aider. N'hésitez pas à poser vos questions!"
+      "standart": "📍 Comment puis-je vous aider?",
+      "kurumsal": "💼 Comment puis-je vous aider?",
+      "dinamik": "⚡ Prêt à découvrir nos tours fantastiques?! 🚀",
+      "premium": "💎 Je suis là pour vous aider. N'hésitez pas à poser vos questions!"
     }
   },
   "advanced": {

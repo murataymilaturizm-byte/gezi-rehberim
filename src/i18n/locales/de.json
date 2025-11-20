@@ -83,18 +83,16 @@
     "resetSuccessDesc": "Sie können ein neues Gespräch beginnen",
     "typing": "Tippt...",
     "style": {
-      "basic": "Einfach/Kurz",
-      "friendly": "Freundlich",
-      "professional": "Professionell",
-      "energetic": "Energisch",
-      "helpful": "Hilfsbereit"
+      "standart": "Standard",
+      "kurumsal": "Professionell",
+      "dinamik": "Dynamisch",
+      "premium": "Premium"
     },
     "helpPrompt": {
-      "basic": "📍 Wie kann ich Ihnen helfen?",
-      "friendly": "😊 Wie kann ich dir helfen?",
-      "professional": "💼 Wie kann ich Ihnen helfen?",
-      "energetic": "⚡ Bereit, unsere fantastischen Touren zu entdecken?! 🚀",
-      "helpful": "📝 Ich bin hier, um Ihnen zu helfen. Fragen Sie ruhig!"
+      "standart": "📍 Wie kann ich Ihnen helfen?",
+      "kurumsal": "💼 Wie kann ich Ihnen helfen?",
+      "dinamik": "⚡ Bereit, unsere fantastischen Touren zu entdecken?! 🚀",
+      "premium": "💎 Ich bin hier, um Ihnen zu helfen. Fragen Sie ruhig!"
     }
   },
   "advanced": {

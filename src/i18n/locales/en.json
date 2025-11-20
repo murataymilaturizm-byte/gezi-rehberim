@@ -83,18 +83,16 @@
     "resetSuccessDesc": "You can start a new conversation",
     "typing": "Typing...",
     "style": {
-      "basic": "Simple/Brief",
-      "friendly": "Friendly/Cordial",
-      "professional": "Professional/Corporate",
-      "energetic": "Energetic/Dynamic",
-      "helpful": "Kind/Helpful"
+      "standart": "Standard",
+      "kurumsal": "Corporate",
+      "dinamik": "Dynamic",
+      "premium": "Premium"
     },
     "helpPrompt": {
-      "basic": "📍 How can I help you?",
-      "friendly": "😊 How can I help you?",
-      "professional": "💼 How can I assist you?",
-      "energetic": "⚡ Ready to explore our amazing tours?! 🚀",
-      "helpful": "📝 I'm here to help you. Feel free to ask your questions!"
+      "standart": "📍 How can I help you?",
+      "kurumsal": "💼 How can I assist you?",
+      "dinamik": "⚡ Ready to explore our amazing tours?! 🚀",
+      "premium": "💎 I'm here to help you. Feel free to ask your questions!"
     }
   },
   "benefits": {

@@ -90,18 +90,16 @@
     "resetSuccessDesc": "Yeni bir konuşma başlatabilirsiniz",
     "typing": "Yazıyor...",
     "style": {
-      "basic": "Basit/Kısa",
-      "friendly": "Samimi/Dostane",
-      "professional": "Profesyonel/Kurumsal",
-      "energetic": "Enerjik/Dinamik",
-      "helpful": "Nazik/Yardımsever"
+      "standart": "Standart",
+      "kurumsal": "Kurumsal",
+      "dinamik": "Dinamik",
+      "premium": "Premium"
     },
     "helpPrompt": {
-      "basic": "📍 Nasıl yardımcı olabilirim?",
-      "friendly": "😊 Sana nasıl yardımcı olabilirim?",
-      "professional": "💼 Size nasıl yardımcı olabilirim?",
-      "energetic": "⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀",
-      "helpful": "📝 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz."
+      "standart": "📍 Nasıl yardımcı olabilirim?",
+      "kurumsal": "💼 Size nasıl yardımcı olabilirim?",
+      "dinamik": "⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀",
+      "premium": "💎 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz."
     }
   },
   "advanced": {

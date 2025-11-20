@@ -30,7 +30,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message: rawMessage, sessionId, conversationState: clientState } = await req.json();
+    const { message: rawMessage, sessionId, conversationState: clientState, conversationStyle } = await req.json();
     const message = sanitizeInput(rawMessage);
 
     if (!sessionId) {
@@ -111,12 +111,21 @@ serve(async (req) => {
     } else {
       console.log("🆕 Initializing fresh context");
       const initialLang = runtimeDetectedLang || "tr";
-      const tone = getDefaultToneForLanguage(initialLang);
+      // Use conversationStyle from frontend if provided, otherwise use language default
+      const tone = conversationStyle || getDefaultToneForLanguage(initialLang);
 
       context = createInitialContext(initialLang, tone as any);
       (context as any).detectedLanguage = runtimeDetectedLang || undefined;
 
-      console.log(`🌍 Language: ${initialLang}, Tone: ${tone}`);
+      console.log(`🌍 Language: ${initialLang}, Tone: ${tone} (from: ${conversationStyle ? 'frontend' : 'auto'})`);
+    }
+    
+    // Update tone from conversationStyle if provided in existing context
+    if (conversationStyle && clientState && isValidContext(clientState)) {
+      if (context.tone !== conversationStyle) {
+        console.log(`🎨 Updating tone from frontend: ${context.tone} → ${conversationStyle}`);
+        context.tone = conversationStyle as any;
+      }
     }
 
     // 🌐 Create localized tours based on current context language
