@@ -61,12 +61,37 @@ const transitions: StateTransition[] = [
     })
   },
   
-  // TOUR_SELECTED → DATE_SELECTION (when user shows reservation intent)
+  // TOUR_SELECTED → DATE_SELECTION (when user shows reservation intent OR asks about dates)
   {
     from: 'TOUR_SELECTED',
     to: 'DATE_SELECTION',
     condition: (ctx, input) => 
-      input.detectedIntent === 'reservation.start' && ctx.currentTour !== null
+      (input.detectedIntent === 'reservation.start' || 
+       input.detectedIntent === 'date.inquiry' ||
+       /kayıt|rezerv|book|almak|yapmak|tarih|date/i.test(input.userMessage)) &&
+      ctx.currentTour !== null
+  },
+  
+  // TOUR_SELECTED → COLLECTING_INFO (if user directly provides pax, name or phone without going through date selection)
+  {
+    from: 'TOUR_SELECTED',
+    to: 'COLLECTING_INFO',
+    condition: (ctx, input) => 
+      (input.extractedInfo.paxAdult || input.extractedInfo.fullName || input.extractedInfo.phone) !== undefined,
+    action: (ctx, input) => {
+      const mergedInfo = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
+      return {
+        ...ctx,
+        collectionStep: determineCollectionStep(mergedInfo),
+        reservationInfo: {
+          ...mergedInfo,
+          tourId: ctx.currentTour?.id,
+          tourTitle: ctx.currentTour?.title,
+          dateId: ctx.currentTour?.dateId,
+          selectedDate: ctx.currentTour?.selectedDate
+        }
+      };
+    }
   },
   
   // DATE_SELECTION → COLLECTING_INFO (when date is selected)
