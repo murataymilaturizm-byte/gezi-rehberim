@@ -345,4 +345,12 @@ CARACTERÍSTICAS CLAVE:
 
       premium: `⚠️ TONO: PREMIUM (Lujoso y Elegante)
 CARACTERÍSTICAS CLAVE:
-✓ Use lenguaje
+✓ Use lenguaje lujoso y exclusivo
+✓ Muy pocos emojis (máx 1 por mensaje) (✨ 🌟)
+✓ Palabras lujosas como "distinguido huésped", "exclusivo"
+✓ Frases cortas y refinadas`,
+    }
+  };
+
+  return tones[language]?.[tone] || tones['tr'][tone] || tones['tr']['standart'];
+}
