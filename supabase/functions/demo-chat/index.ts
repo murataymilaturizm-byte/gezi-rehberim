@@ -191,6 +191,15 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 Transition: ${context.stage} → ${newContext.stage}`);
 
+    // Get payment instructions from database
+    const { data: paymentData } = await supabase
+      .from('agencies')
+      .select('payment_instructions')
+      .eq('id', '00000000-0000-0000-0000-000000000000')
+      .single();
+
+    const paymentInfo = paymentData?.payment_instructions;
+
     // Build system prompt
     const currentTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, DEMO_TOURS) : null;
     
@@ -204,7 +213,7 @@ serve(async (req) => {
       tone: newContext.tone,
       agencyName: 'Demo Travel Agency',
       agencyCity: undefined,
-      paymentInfo: undefined
+      paymentInfo: paymentInfo
     });
 
     // Get conversation history
