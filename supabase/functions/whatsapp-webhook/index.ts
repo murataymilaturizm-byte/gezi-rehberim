@@ -409,15 +409,7 @@ serve(async (req) => {
       }
     }
 
-    // Save response
-    await supabase.from('whatsapp_conversations').insert({
-      phone: userPhone,
-      role: 'assistant',
-      content: finalReply,
-      agency_id: agency.id
-    });
-
-    // Save reservation if completed
+    // Save reservation if completed and get template BEFORE saving response
     if (newContext.stage === 'COMPLETED' && newContext.reservationConfirmed) {
       console.log("💾 Saving reservation...");
       
@@ -460,7 +452,7 @@ serve(async (req) => {
             templateContent = templateContent.replace('{tour_date}', selectedDate?.departure_date || '');
             templateContent = templateContent.replace('{pax}', String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)));
             
-            // Append template message to final reply
+            // Append template message to final reply BEFORE saving
             finalReply = finalReply + '\n\n' + templateContent;
             console.log("✅ Template message appended");
           }
@@ -481,6 +473,14 @@ serve(async (req) => {
         console.log('✅ User profile updated with booking');
       }
     }
+
+    // Save response (now includes template if applicable)
+    await supabase.from('whatsapp_conversations').insert({
+      phone: userPhone,
+      role: 'assistant',
+      content: finalReply,
+      agency_id: agency.id
+    });
 
     // Enrich conversation insights (only if user profiles feature is enabled)
     if (planFeatures?.has_user_profiles) {
