@@ -16,7 +16,7 @@ import { callAI } from "./services/ai.ts";
 import { findTourById } from "./services/tour-matcher.ts";
 
 // Config
-import { DEMO_AGENCY_ID, DEMO_TOURS as DEMO_TOURS_CONFIG } from "./config/demo-tours.ts";
+import { DEMO_AGENCY_ID, DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from "./config/demo-tours.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,113 +42,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Load tours from database for demo agency
-    let { data: dbTours, error: toursError } = await supabase
-      .from('tours')
-      .select(`
-        *,
-        dates:tour_dates(
-          id,
-          departure_date,
-          return_date,
-          price_adult,
-          price_child,
-          quota
-        )
-      `)
-      .eq('agency_id', DEMO_AGENCY_ID);
-
-    if (toursError) {
-      console.error("❌ Error loading tours:", toursError);
-      throw new Error("Failed to load tours");
-    }
-
-    // If no tours exist, create demo tours from config
-    if (!dbTours || dbTours.length === 0) {
-      console.log("📝 No demo tours found, creating from config...");
-      
-      for (const demoTour of DEMO_TOURS_CONFIG) {
-        // Insert tour
-        const { error: tourInsertError } = await supabase
-          .from('tours')
-          .insert({
-            id: demoTour.id,
-            agency_id: DEMO_AGENCY_ID,
-            title: demoTour.title,
-            destination: demoTour.destination,
-            type: demoTour.type,
-            currency: demoTour.currency,
-            program_kisa: demoTour.program_kisa,
-            gezilecek_yerler: demoTour.gezilecek_yerler,
-            toplanma_saati: demoTour.toplanma_saati,
-            hareket_noktasi: demoTour.hareket_noktasi,
-            tur_sure: demoTour.tur_sure,
-            ulasim: demoTour.ulasim,
-            konaklama: demoTour.konaklama,
-          });
-
-        if (tourInsertError) {
-          console.error("❌ Error inserting tour:", tourInsertError);
-          continue;
-        }
-
-        // Insert tour dates
-        for (const date of demoTour.dates) {
-          const { error: dateInsertError } = await supabase
-            .from('tour_dates')
-            .insert({
-              id: date.id,
-              tour_id: demoTour.id,
-              agency_id: DEMO_AGENCY_ID,
-              departure_date: date.departure_date,
-              price_adult: date.price_adult,
-              price_child: date.price_child,
-              quota: date.quota,
-            });
-
-          if (dateInsertError) {
-            console.error("❌ Error inserting tour date:", dateInsertError);
-          }
-        }
-      }
-
-      // Reload tours
-      const { data: reloadedTours } = await supabase
-        .from('tours')
-        .select(`
-          *,
-          dates:tour_dates(
-            id,
-            departure_date,
-            return_date,
-            price_adult,
-            price_child,
-            quota
-          )
-        `)
-        .eq('agency_id', DEMO_AGENCY_ID);
-
-      dbTours = reloadedTours;
-      console.log(`✅ Created ${reloadedTours?.length || 0} demo tours`);
-    }
-
-    const DEMO_TOURS = (dbTours || []).map((tour: any) => ({
-      id: tour.id,
-      title: tour.title,
-      destination: tour.destination,
-      type: tour.type,
-      currency: tour.currency,
-      program_kisa: tour.program_kisa,
-      gezilecek_yerler: tour.gezilecek_yerler,
-      toplanma_saati: tour.toplanma_saati,
-      hareket_noktasi: tour.hareket_noktasi,
-      tur_sure: tour.tur_sure,
-      ulasim: tour.ulasim,
-      konaklama: tour.konaklama,
-      dates: tour.dates || []
-    }));
-
-    console.log(`📦 Loaded ${DEMO_TOURS.length} tours from database`);
+    const availableTours = DEMO_TOURS;
+    console.log(`📦 Using ${availableTours.length} demo tours`);
 
     // Load or initialize context
     let context: ConversationContext;
@@ -192,24 +87,9 @@ serve(async (req) => {
     // Use NLU entities for tour matching
     let selectedTour = null;
 
-    // First, try to match by tour number (if user just typed a number like "1", "2", etc.)
-    const trimmedMsg = message.trim();
-    const tourNumber = parseInt(trimmedMsg);
-    if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= DEMO_TOURS.length) {
-      const foundTour = DEMO_TOURS[tourNumber - 1];
-      selectedTour = {
-        id: foundTour.id,
-        title: foundTour.title,
-        destination: foundTour.destination,
-        dates: foundTour.dates,
-        program_kisa: foundTour.program_kisa,
-        gezilecek_yerler: foundTour.gezilecek_yerler,
-      };
-      console.log("🎫 Tour matched by number:", selectedTour.title);
-    }
     // Match by tour name from NLU
-    else if (nluResult.entities.tour_name) {
-      const foundTour = DEMO_TOURS.find((t) =>
+    if (nluResult.entities.tour_name) {
+      const foundTour = availableTours.find((t) =>
         t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()),
       );
       if (foundTour) {
@@ -225,7 +105,7 @@ serve(async (req) => {
       }
     } else if (nluResult.entities.destination) {
       // Match by destination from NLU
-      const foundTour = DEMO_TOURS.find((t) =>
+      const foundTour = availableTours.find((t) =>
         t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()),
       );
       if (foundTour) {
@@ -263,7 +143,7 @@ serve(async (req) => {
 
     // Resolve date if selected by number
     if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
-      const tour = findTourById(context.currentTour.id, DEMO_TOURS);
+      const tour = findTourById(context.currentTour.id, availableTours);
       if (tour?.dates) {
         const dateIndex = parseInt(extractedInfo.selectedDate.split("_")[1]);
         if (dateIndex >= 0 && dateIndex < tour.dates.length) {
@@ -317,14 +197,14 @@ serve(async (req) => {
     }
 
     // Build system prompt
-    const currentTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, DEMO_TOURS) : null;
+    const currentTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null;
 
     const systemPrompt = buildSystemPrompt({
       stage: newContext.stage,
       collectionStep: newContext.collectionStep,
       currentTour: currentTourData,
       reservationInfo: newContext.reservationInfo,
-      availableTours: DEMO_TOURS,
+      availableTours,
       language: newContext.language,
       tone: newContext.tone,
       agencyName,
