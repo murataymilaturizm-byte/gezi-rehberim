@@ -1,5 +1,5 @@
 // Build AI system prompts based on new requirements
-import type { AIPromptContext, ConversationStage, ConversationTone } from "../types.ts";
+import type { AIPromptContext, ConversationStage, ConversationTone } from "./types.ts";
 
 export function buildSystemPrompt(context: AIPromptContext): string {
   const {
