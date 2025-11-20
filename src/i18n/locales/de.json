@@ -88,6 +88,13 @@
       "professional": "Professionell",
       "energetic": "Energisch",
       "helpful": "Hilfsbereit"
+    },
+    "helpPrompt": {
+      "basic": "📍 Wie kann ich Ihnen helfen?",
+      "friendly": "😊 Wie kann ich dir helfen?",
+      "professional": "💼 Wie kann ich Ihnen helfen?",
+      "energetic": "⚡ Bereit, unsere fantastischen Touren zu entdecken?! 🚀",
+      "helpful": "📝 Ich bin hier, um Ihnen zu helfen. Fragen Sie ruhig!"
     }
   },
   "advanced": {
