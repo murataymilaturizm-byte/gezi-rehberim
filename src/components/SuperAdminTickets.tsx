@@ -32,7 +32,8 @@ interface Ticket {
   priority: "low" | "medium" | "high";
   created_at: string;
   updated_at: string;
-  agencies: { agency_name: string };
+  agency_id: string;
+  agencies: { name: string };
 }
 
 interface TicketMessage {
@@ -68,7 +69,7 @@ export const SuperAdminTickets = () => {
     try {
       const { data, error } = await supabase
         .from("tickets")
-        .select("*, agencies(agency_name)")
+        .select("*, agencies(name)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -246,7 +247,7 @@ export const SuperAdminTickets = () => {
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2">
                       <Building className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{ticket.agencies.agency_name}</span>
+                      <span className="text-sm text-muted-foreground">{ticket.agencies.name}</span>
                     </div>
                     <CardTitle className="text-lg">{ticket.title}</CardTitle>
                     <div className="flex gap-2">
@@ -287,7 +288,7 @@ export const SuperAdminTickets = () => {
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2">
                             <Building className="w-5 h-5" />
-                            {ticket.agencies.agency_name} - {ticket.title}
+                            {ticket.agencies.name} - {ticket.title}
                           </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">

@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
         ),
         agencies!inner (
           whatsapp_phone_number,
-          agency_name
+          name
         )
       `)
       .eq('reminder_sent', false)
@@ -211,7 +211,7 @@ async function sendWhatsAppMessage(
   const twilioPhone = agency.whatsapp_phone_number;
 
   if (!accountSid || !authToken || !twilioPhone) {
-    console.error('❌ Merkezi Twilio credentials veya agency WhatsApp numarası eksik:', agency.agency_name);
+    console.error('❌ Merkezi Twilio credentials veya agency WhatsApp numarası eksik:', agency.name);
     return false;
   }
 

@@ -58,7 +58,7 @@ export const contactFormSchema = z.object({
 
 // Agency settings validation
 export const agencySettingsSchema = z.object({
-  agency_name: z
+  name: z
     .string()
     .trim()
     .min(2, { message: "Acente adı en az 2 karakter olmalı" })

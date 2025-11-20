@@ -36,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Agency {
   id: string;
-  agency_name: string;
+  name: string;
   city?: string;
   region?: string;
   twilio_account_sid: string;
@@ -75,7 +75,7 @@ export const AgencyManagement = () => {
     email: "",
     password: "",
     full_name: "",
-    agency_name: "",
+    name: "",
     city: "",
     region: "",
     twilio_account_sid: "",
@@ -108,7 +108,7 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("id, agency_name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, whatsapp_phone_number, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .select("id, name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, whatsapp_phone_number, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -153,7 +153,7 @@ export const AgencyManagement = () => {
         const { error } = await supabase
           .from("agencies")
           .update({
-            agency_name: formData.agency_name,
+            name: formData.name,
             city: formData.city,
             region: formData.region || null,
             twilio_account_sid: formData.twilio_account_sid,
@@ -188,7 +188,7 @@ export const AgencyManagement = () => {
           .from("agencies")
           .insert({
             user_id: authData.user.id,
-            agency_name: formData.agency_name,
+            name: formData.name,
             city: formData.city,
             region: formData.region || null,
             twilio_account_sid: formData.twilio_account_sid,
@@ -259,7 +259,7 @@ export const AgencyManagement = () => {
       email: "",
       password: "",
       full_name: "",
-      agency_name: agency.agency_name,
+      name: agency.name,
       city: agency.city || "",
       region: agency.region || "",
       twilio_account_sid: agency.twilio_account_sid,
@@ -275,7 +275,7 @@ export const AgencyManagement = () => {
       email: "",
       password: "",
       full_name: "",
-      agency_name: "",
+      name: "",
       city: "",
       region: "",
       twilio_account_sid: "",
@@ -472,8 +472,8 @@ export const AgencyManagement = () => {
                   <Label htmlFor="agency_name">{t("admin.agency.form.agencyName")}</Label>
                   <Input
                     id="agency_name"
-                    value={formData.agency_name}
-                    onChange={(e) => setFormData({ ...formData, agency_name: e.target.value })}
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                   />
                 </div>
@@ -614,7 +614,7 @@ export const AgencyManagement = () => {
 
                 return (
                   <TableRow key={agency.id}>
-                    <TableCell className="font-medium whitespace-nowrap">{agency.agency_name}</TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">{agency.name}</TableCell>
                     <TableCell className="whitespace-nowrap">{agency.profiles?.full_name || "-"}</TableCell>
                     <TableCell className="whitespace-nowrap">
                       <div className="space-y-1">
@@ -753,7 +753,7 @@ export const AgencyManagement = () => {
           <DialogHeader>
             <DialogTitle>Plan ve Kota Yönetimi</DialogTitle>
             <DialogDescription>
-              {editingPlanAgency?.agency_name} için plan ve mesaj kotasını yönetin
+              {editingPlanAgency?.name} için plan ve mesaj kotasını yönetin
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePlanSubmit} className="space-y-4">
@@ -860,7 +860,7 @@ export const AgencyManagement = () => {
           <DialogHeader>
             <DialogTitle>Konuşma Üslubu</DialogTitle>
             <DialogDescription>
-              {editingStyleAgency?.agency_name} için bot konuşma üslubunu seçin
+              {editingStyleAgency?.name} için bot konuşma üslubunu seçin
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

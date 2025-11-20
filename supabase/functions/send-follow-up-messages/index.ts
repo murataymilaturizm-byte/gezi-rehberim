@@ -58,7 +58,7 @@ serve(async (req) => {
       // Get agency info and plan features for this customer
       const { data: agency } = await supabase
         .from('agencies')
-        .select('id, agency_name, plan_type')
+        .select('id, name, plan_type')
         .eq('id', customer.agency_id)
         .single();
 
@@ -82,7 +82,7 @@ serve(async (req) => {
         customer.preferred_destinations,
         customer.last_search_query,
         customer.language_preference || 'tr',
-        agency.agency_name
+        agency.name
       );
 
       // WhatsApp mesajı gönder

@@ -30,7 +30,7 @@ interface ConversationGroup {
 
 interface Agency {
   id: string;
-  agency_name: string;
+  name: string;
 }
 
 interface WhatsAppConversationsProps {
@@ -63,8 +63,8 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
     try {
       const { data, error } = await supabase
         .from("agencies")
-        .select("id, agency_name")
-        .order("agency_name");
+        .select("id, name")
+        .order("name");
 
       if (error) throw error;
       setAgencies(data || []);
@@ -157,7 +157,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   <SelectContent>
                     {agencies.map((agency) => (
                       <SelectItem key={agency.id} value={agency.id}>
-                        {agency.agency_name}
+                        {agency.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

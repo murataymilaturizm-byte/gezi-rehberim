@@ -191,10 +191,10 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 Transition: ${context.stage} → ${newContext.stage}`);
 
-    // Get agency data (agency_name, city, payment instructions) from database
+    // Get agency data (name, city, payment instructions) from database
     const { data: agencyData, error: agencyError } = await supabase
       .from("agencies")
-      .select("agency_name, city, payment_instructions")
+      .select("name, city, payment_instructions")
       .eq("id", "00000000-0000-0000-0000-000000000000")
       .single();
 
@@ -202,7 +202,7 @@ serve(async (req) => {
       console.error("⚠️ Agency data error:", agencyError.message);
     }
 
-    const agencyName = agencyData?.agency_name ?? "Demo Travel Agency";
+    const agencyName = agencyData?.name ?? "Demo Travel Agency";
     const agencyCity = agencyData?.city ?? undefined;
     const paymentInstructions = agencyData?.payment_instructions ?? null;
 

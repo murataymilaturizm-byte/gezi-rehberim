@@ -41,7 +41,7 @@ interface WhatsAppLog {
   created_at: string;
   agency_id: string;
   agencies?: {
-    agency_name: string;
+    name: string;
   };
 }
 
@@ -55,7 +55,7 @@ export function WhatsAppLogs() {
   const [selectedAgency, setSelectedAgency] = useState<string>("all");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [agencies, setAgencies] = useState<Array<{ id: string; agency_name: string }>>([]);
+  const [agencies, setAgencies] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
     loadAgencies();
@@ -70,8 +70,8 @@ export function WhatsAppLogs() {
     try {
       const { data, error } = await supabase
         .from('agencies')
-        .select('id, agency_name')
-        .order('agency_name');
+        .select('id, name')
+        .order('name');
 
       if (error) throw error;
       setAgencies(data || []);
@@ -112,7 +112,7 @@ export function WhatsAppLogs() {
           created_at,
           agency_id,
           agencies (
-            agency_name
+            name
           )
         `)
         .order('created_at', { ascending: false })
@@ -276,7 +276,7 @@ export function WhatsAppLogs() {
                   <SelectItem value="all">Tümü</SelectItem>
                   {agencies.map((agency) => (
                     <SelectItem key={agency.id} value={agency.id}>
-                      {agency.agency_name}
+                      {agency.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -398,7 +398,7 @@ export function WhatsAppLogs() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
-                          {log.agencies?.agency_name || 'Bilinmiyor'}
+                          {log.agencies?.name || 'Bilinmiyor'}
                         </div>
                       </TableCell>
                       <TableCell>

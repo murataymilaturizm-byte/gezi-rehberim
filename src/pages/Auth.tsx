@@ -150,7 +150,7 @@ const Auth = () => {
           .from("agencies")
           .insert({
             user_id: authData.user.id,
-            agency_name: agencyName.trim(),
+            name: agencyName.trim(),
             city: city.trim(),
             region: region.trim() || null,
             language_preference: languagePreference,

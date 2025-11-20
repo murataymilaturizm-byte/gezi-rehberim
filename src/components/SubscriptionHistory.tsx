@@ -67,7 +67,7 @@ interface AgencySubscription {
   trial_ends_at: string | null;
   subscription_status: string;
   subscription_ends_at: string | null;
-  agency_name?: string;
+  name?: string;
 }
 
 interface PlanOption {
@@ -235,7 +235,7 @@ export const SubscriptionHistory = () => {
       // Get user's agency with subscription info
       const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
-        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, agency_name")
+        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -280,7 +280,7 @@ export const SubscriptionHistory = () => {
       // Get agency name
       const { data: agencyData } = await supabase
         .from("agencies")
-        .select("agency_name")
+        .select("name")
         .eq("id", agencyId)
         .single();
 
@@ -288,7 +288,7 @@ export const SubscriptionHistory = () => {
         invoiceNumber,
         transactionId: item.transaction_id || item.id.substring(0, 12),
         date: item.created_at,
-        agencyName: agencyData?.agency_name || "Acente",
+        agencyName: agencyData?.name || "Acente",
         planName: item.plan_type ? planNames[item.plan_type] : "Standart",
         amount: item.amount || 0,
         currency: item.currency || "TRY",
@@ -532,7 +532,7 @@ export const SubscriptionHistory = () => {
                   planType={subscription.plan_type}
                   isYearly={isYearly}
                   amount={calculatePrice(currentPlan?.price || 0, isYearly)}
-                  agencyName={subscription.agency_name || "Acenta"}
+                  agencyName={subscription.name || "Acenta"}
                 />
               </div>
             )}
