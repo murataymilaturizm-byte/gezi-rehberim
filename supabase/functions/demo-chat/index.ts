@@ -12,6 +12,7 @@ import { matchTour, findTourById } from './services/tour-matcher.ts';
 import { extractReservationInfo } from './services/info-extractor.ts';
 import { buildSystemPrompt } from './services/prompt-builder.ts';
 import { detectLanguage } from './services/language.ts';
+import { analyzeUserMessage, mapNLUIntentToFSMIntent } from './services/nlu.ts';
 
 // Config
 import { DEMO_TOURS } from './config/demo-tours.ts';
@@ -63,29 +64,97 @@ serve(async (req) => {
 
     console.log('📨 Message:', { message, stage: context.stage, lang: context.language, tone: context.tone });
 
-    // Simple intent detection
-    const detectedIntent = detectIntent(message, context);
-    console.log('🎯 Intent:', detectedIntent);
+    // === NEW: Use AI-based NLU for understanding ===
+    const nluResult = await analyzeUserMessage(
+      message,
+      `Current stage: ${context.stage}. ${context.currentTour ? `Selected tour: ${context.currentTour.title}` : ''}`,
+      context.stage,
+      context.currentTour,
+      DEMO_TOURS
+    );
+    
+    console.log('🧠 NLU Intent:', nluResult.intent);
+    console.log('🧠 NLU Entities:', JSON.stringify(nluResult.entities));
+    
+    // Map NLU intent to FSM intent
+    const detectedIntent = mapNLUIntentToFSMIntent(nluResult.intent);
+    console.log('🎯 FSM Intent:', detectedIntent);
 
     const expectedInput = getNextExpectedInput(context);
     console.log('⏭️ Expected:', expectedInput);
 
-    // Match tour
-    const selectedTour = matchTour(message, DEMO_TOURS, expectedInput);
-    if (selectedTour) {
-      console.log('🎫 Tour matched:', selectedTour.title);
-      
-      // Get full tour data
-      const fullTour = findTourById(selectedTour.id, DEMO_TOURS);
-      if (fullTour) {
-        selectedTour.dates = fullTour.dates;
-        selectedTour.program_kisa = fullTour.program_kisa;
-        selectedTour.gezilecek_yerler = fullTour.gezilecek_yerler;
+    // Use NLU entities for tour matching
+    let selectedTour = null;
+    
+    // First try NLU tour_id
+    if (nluResult.entities.tour_id) {
+      selectedTour = findTourById(nluResult.entities.tour_id, DEMO_TOURS);
+      if (selectedTour) {
+        selectedTour = {
+          id: selectedTour.id,
+          title: selectedTour.title,
+          destination: selectedTour.destination,
+          dates: selectedTour.dates,
+          program_kisa: selectedTour.program_kisa,
+          gezilecek_yerler: selectedTour.gezilecek_yerler
+        };
+        console.log('🎫 Tour matched by NLU ID:', selectedTour.title);
+      }
+    }
+    
+    // Fallback to keyword matching
+    if (!selectedTour) {
+      selectedTour = matchTour(message, DEMO_TOURS, expectedInput);
+      if (selectedTour) {
+        console.log('🎫 Tour matched by keyword:', selectedTour.title);
+        
+        // Get full tour data
+        const fullTour = findTourById(selectedTour.id, DEMO_TOURS);
+        if (fullTour) {
+          selectedTour.dates = fullTour.dates;
+          selectedTour.program_kisa = fullTour.program_kisa;
+          selectedTour.gezilecek_yerler = fullTour.gezilecek_yerler;
+        }
       }
     }
 
-    // Extract reservation info
-    const extractedInfo = extractReservationInfo(message, context.reservationInfo, expectedInput);
+    // Use NLU entities for reservation info extraction
+    const extractedInfo: any = {};
+    
+    if (nluResult.entities.date) {
+      extractedInfo.selectedDate = nluResult.entities.date;
+    }
+    
+    if (nluResult.entities.adults !== null) {
+      extractedInfo.paxAdult = nluResult.entities.adults;
+    }
+    
+    if (nluResult.entities.children !== null) {
+      extractedInfo.paxChild = nluResult.entities.children;
+    }
+    
+    // Fallback to regex extraction
+    const regexExtracted = extractReservationInfo(message, context.reservationInfo, expectedInput);
+    
+    // Merge regex extracted info (safely)
+    if (regexExtracted.selectedDate && !extractedInfo.selectedDate) {
+      extractedInfo.selectedDate = regexExtracted.selectedDate;
+    }
+    if (regexExtracted.dateId && !extractedInfo.dateId) {
+      extractedInfo.dateId = regexExtracted.dateId;
+    }
+    if (regexExtracted.paxAdult !== undefined && extractedInfo.paxAdult === undefined) {
+      extractedInfo.paxAdult = regexExtracted.paxAdult;
+    }
+    if (regexExtracted.paxChild !== undefined && extractedInfo.paxChild === undefined) {
+      extractedInfo.paxChild = regexExtracted.paxChild;
+    }
+    if (regexExtracted.fullName && !extractedInfo.fullName) {
+      extractedInfo.fullName = regexExtracted.fullName;
+    }
+    if (regexExtracted.phone && !extractedInfo.phone) {
+      extractedInfo.phone = regexExtracted.phone;
+    }
     
     // Resolve date if selected by number
     if (extractedInfo.selectedDate?.startsWith('date_') && context.currentTour) {
