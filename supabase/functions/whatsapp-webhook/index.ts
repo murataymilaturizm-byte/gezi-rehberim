@@ -18,6 +18,7 @@ import { truncateForWhatsApp } from './utils/format.ts';
 
 // WhatsApp services
 import { generatePaymentMessage } from './services/payment-message.ts';
+import { upsertUserProfile, enrichConversationInsights } from './services/profile.ts';
 
 // Legacy services (backward compatibility)
 import { checkFAQ } from './services/faq.ts';
@@ -71,6 +72,15 @@ serve(async (req) => {
       .eq('plan_type', agency.plan_type)
       .single();
 
+    console.log(`📊 Plan: ${agency.plan_type}, Features:`, {
+      user_profiles: planFeatures?.has_user_profiles,
+      reminders: planFeatures?.has_reminders,
+      follow_ups: planFeatures?.has_follow_ups,
+      templates: planFeatures?.has_templates,
+      feedback: planFeatures?.has_feedback,
+      analytics: planFeatures?.has_analytics
+    });
+
     // Save incoming message
     await supabase.from('whatsapp_conversations').insert({
       phone: userPhone,
@@ -78,6 +88,14 @@ serve(async (req) => {
       content: message,
       agency_id: agency.id
     });
+
+    // Upsert user profile (only if user profiles feature is enabled)
+    if (planFeatures?.has_user_profiles) {
+      await upsertUserProfile(supabase, userPhone, agency.id, message, agency?.enabled_languages || ['tr']);
+      console.log('✅ User profile updated');
+    } else {
+      console.log('⏭️ User profiles disabled for plan:', agency.plan_type);
+    }
 
     // Load tours
     const { data: dbTours } = await supabase
@@ -297,6 +315,9 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 ${context.stage} → ${newContext.stage}`);
 
+    // Store detected intent for conversation insights
+    const detectedIntent = fsmIntent;
+
     // Build prompt
     const promptContext = {
       stage: newContext.stage,
@@ -415,45 +436,63 @@ serve(async (req) => {
       } else {
         console.log("✅ Reservation saved");
 
-        // Send reservation confirmation template if available
-        const { data: template } = await supabase
-          .from('message_templates')
-          .select('*')
-          .eq('agency_id', agency.id)
-          .eq('template_key', 'reservation_confirmed')
-          .eq('language', newContext.language)
-          .eq('is_active', true)
-          .maybeSingle();
+        // Send reservation confirmation template if available (only if templates enabled)
+        if (planFeatures?.has_templates) {
+          const { data: template } = await supabase
+            .from('message_templates')
+            .select('*')
+            .eq('agency_id', agency.id)
+            .eq('template_key', 'reservation_confirmed')
+            .eq('language', newContext.language)
+            .eq('is_active', true)
+            .maybeSingle();
 
-        if (template && newRegistration) {
-          console.log("📧 Sending reservation confirmation template...");
-          
-          // Replace template variables
-          const selectedTour = tours.find(t => t.id === newContext.reservationInfo.tourId);
-          const selectedDate = selectedTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
-          
-          let templateContent = template.content;
-          templateContent = templateContent.replace('{customer_name}', newContext.reservationInfo.fullName || '');
-          templateContent = templateContent.replace('{tour_name}', selectedTour?.title || '');
-          templateContent = templateContent.replace('{tour_date}', selectedDate?.departure_date || '');
-          templateContent = templateContent.replace('{pax}', String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)));
-          
-          // Append template message to final reply
-          finalReply = finalReply + '\n\n' + templateContent;
-          console.log("✅ Template message appended");
+          if (template && newRegistration) {
+            console.log("📧 Sending reservation confirmation template...");
+            
+            // Replace template variables
+            const selectedTour = tours.find(t => t.id === newContext.reservationInfo.tourId);
+            const selectedDate = selectedTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
+            
+            let templateContent = template.content;
+            templateContent = templateContent.replace('{customer_name}', newContext.reservationInfo.fullName || '');
+            templateContent = templateContent.replace('{tour_name}', selectedTour?.title || '');
+            templateContent = templateContent.replace('{tour_date}', selectedDate?.departure_date || '');
+            templateContent = templateContent.replace('{pax}', String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)));
+            
+            // Append template message to final reply
+            finalReply = finalReply + '\n\n' + templateContent;
+            console.log("✅ Template message appended");
+          }
         }
       }
 
-      // Update profile
-      await supabase.from('whatsapp_user_profiles').upsert({
-        phone: userPhone,
-        agency_id: agency.id,
-        full_name: newContext.reservationInfo.fullName,
-        total_bookings: 1,
-        last_interaction_at: new Date().toISOString()
-      }, {
-        onConflict: 'phone,agency_id'
-      });
+      // Update profile (only if user profiles feature is enabled)
+      if (planFeatures?.has_user_profiles) {
+        await supabase.from('whatsapp_user_profiles').upsert({
+          phone: userPhone,
+          agency_id: agency.id,
+          full_name: newContext.reservationInfo.fullName,
+          total_bookings: 1,
+          last_interaction_at: new Date().toISOString()
+        }, {
+          onConflict: 'phone,agency_id'
+        });
+        console.log('✅ User profile updated with booking');
+      }
+    }
+
+    // Enrich conversation insights (only if user profiles feature is enabled)
+    if (planFeatures?.has_user_profiles) {
+      await enrichConversationInsights(
+        supabase,
+        userPhone,
+        agency.id,
+        message,
+        finalReply,
+        detectedIntent || 'general'
+      );
+      console.log('✅ Conversation insights enriched');
     }
 
     // Save context
