@@ -33,6 +33,9 @@ Sen, tur ve seyahat acentaları için tasarlanmış, FSM (finite state machine) 
 - Karşılama mesajında şu formata sadık kal:
   "Merhaba! {agency_name}'ye hoş geldiniz."
 - Burada {agency_name} değeri panelden geldiği gibi yazılmalıdır.
+- ⚠️ ÇOK ÖNEMLİ: Acente adını ASLA çevirme! Türkçe ise Türkçe, İngilizce ise İngilizce olduğu gibi kullan.
+- Örnek: "Merhaba! Antalya Travel'ye hoş geldiniz." (DOĞRU)
+- Örnek: "Merhaba! Antalya Seyahat'e hoş geldiniz." (YANLIŞ - çevrilmiş)
 
 📱 TELEFON NUMARASI KURALLARI:
 - Bir konuşma içinde geçerli bir telefon numarası aldıysan (örneğin 05 ile başlayan ve en az 10–11 haneli bir sayı), bu numarayı HATIRLA ve kayıt tamamlanana kadar geçerli kabul et.
@@ -70,6 +73,9 @@ You are an FSM-based sales and information assistant for tour and travel agencie
 - Use this greeting format:
   "Hello! Welcome to {agency_name}."
 - The {agency_name} value should be used as provided from the panel.
+- ⚠️ VERY IMPORTANT: NEVER translate the agency name! Use it exactly as provided.
+- Example: "Hello! Welcome to Antalya Travel." (CORRECT)
+- Example: "Hello! Welcome to Antalya Seyahat." (WRONG - translated)
 
 📱 PHONE NUMBER RULES:
 - If you receive a valid phone number in a conversation (e.g., starting with 05 and at least 10-11 digits), REMEMBER it and consider it valid until registration is completed.
@@ -163,7 +169,10 @@ function getStagePrompt(
     switch (stage) {
       case 'GREETING':
         return `📍 DURUM: İlk karşılama
-Kullanıcıyı kısaca karşıla ve turlarla ilgili ne istediğini sor.
+Kullanıcıyı şu formatla karşıla: "Merhaba! {agency_name}'ye hoş geldiniz."
+⚠️ Acente adını AYNEN kullan, çevirme!
+
+Sonra turlarla ilgili ne istediğini sor.
 
 Mevcut Turlar:
 ${toursList}`;
@@ -242,7 +251,10 @@ ${summary}
   switch (stage) {
     case 'GREETING':
       return `📍 STATUS: Initial greeting
-Briefly greet the user and ask what they're interested in.
+Greet with this format: "Hello! Welcome to {agency_name}."
+⚠️ Use the agency name EXACTLY as provided, do NOT translate!
+
+Then ask what they're interested in.
 
 Available Tours:
 ${toursList}`;
@@ -323,14 +335,20 @@ function getAgencyInfo(agencyName: string, agencyCity: string | undefined, langu
 Acenta Adı: ${agencyName}
 ${agencyCity ? `Merkez: ${agencyCity}` : ''}
 
-⚠️ Karşılama mesajında 1 kez acenta adını kullan, sonra tekrar etme.`;
+⚠️ UYARI: 
+- Karşılama mesajında acenta adını AYNEN kullan: "${agencyName}"
+- Bu ismi ASLA çevirme veya değiştirme!
+- 1 kez kullan, sonra tekrar etme.`;
   }
   
   return `\n\n🏢 AGENCY INFO:
 Agency Name: ${agencyName}
 ${agencyCity ? `Location: ${agencyCity}` : ''}
 
-⚠️ Use agency name once in greeting, don't repeat.`;
+⚠️ WARNING:
+- Use the agency name EXACTLY in greeting: "${agencyName}"
+- NEVER translate or modify this name!
+- Use once in greeting, don't repeat.`;
 }
 
 function formatToursList(tours: any[], language: string): string {
