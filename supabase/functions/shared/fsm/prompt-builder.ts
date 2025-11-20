@@ -93,115 +93,98 @@ You are an FSM-based sales and information assistant for tour and travel agencie
  * 🌐 DİL KURALI – burada modeli ZORLA seçilen dilde konuşturuyoruz.
  */
 function getLanguageRule(language: string): string {
-  const langNameMapTR: Record<string, string> = {
-    tr: "Türkçe",
-    en: "İngilizce",
-    de: "Almanca",
-    ru: "Rusça",
-    ar: "Arapça",
-    fr: "Fransızca",
-    es: "İspanyolca",
+  const rules: Record<string, string> = {
+    tr: `🌐 DİL KURALI:
+- Bu konuşmanın hedef dili: TÜRKÇE (language = "tr")
+- Cevaplarını HER ZAMAN Türkçe ver
+- Kullanıcıya gönderdiğin tüm mesajlar Türkçe olmalıdır`,
+
+    en: `🌐 LANGUAGE RULE:
+- Target language: ENGLISH (language = "en")
+- ALWAYS respond in English
+- All messages to the user must be in English`,
+
+    de: `🌐 SPRACHREGEL:
+- Zielsprache: DEUTSCH (language = "de")
+- Antworte IMMER auf Deutsch
+- Alle Nachrichten an den Benutzer müssen auf Deutsch sein
+- KRITISCH: Verwende NUR deutsche Sprache in deinen Antworten`,
+
+    ru: `🌐 ЯЗЫКОВОЕ ПРАВИЛО:
+- Целевой язык: РУССКИЙ (language = "ru")
+- ВСЕГДА отвечай на русском языке
+- Все сообщения пользователю должны быть на русском
+- КРИТИЧНО: Используй ТОЛЬКО русский язык в своих ответах`,
+
+    ar: `🌐 قاعدة اللغة:
+- اللغة المستهدفة: العربية (language = "ar")
+- أجب دائمًا باللغة العربية
+- يجب أن تكون جميع الرسائل للمستخدم باللغة العربية
+- حرج: استخدم اللغة العربية فقط في إجاباتك`,
+
+    fr: `🌐 RÈGLE LINGUISTIQUE:
+- Langue cible: FRANÇAIS (language = "fr")
+- Répondez TOUJOURS en français
+- Tous les messages à l'utilisateur doivent être en français
+- CRITIQUE: Utilisez UNIQUEMENT la langue française dans vos réponses`,
+
+    es: `🌐 REGLA DE IDIOMA:
+- Idioma objetivo: ESPAÑOL (language = "es")
+- Responde SIEMPRE en español
+- Todos los mensajes al usuario deben estar en español
+- CRÍTICO: Usa SOLO el idioma español en tus respuestas`,
   };
 
-  const langNameMapEN: Record<string, string> = {
-    tr: "Turkish",
-    en: "English",
-    de: "German",
-    ru: "Russian",
-    ar: "Arabic",
-    fr: "French",
-    es: "Spanish",
-  };
-
-  const nameTR = langNameMapTR[language] || "Türkçe";
-  const nameEN = langNameMapEN[language] || "Turkish";
-
-  const trRule = `🌐 DİL KURALI:
-- Bu konuşmanın hedef dili: ${nameTR} (language = "${language}").
-- Cevaplarını HER ZAMAN bu dilde ver.
-- language kodu ile dil eşleştirmesi:
-  • "tr" → Türkçe
-  • "en" → İngilizce
-  • "de" → Almanca
-  • "ru" → Rusça
-  • "ar" → Arapça
-  • "fr" → Fransızca
-  • "es" → İspanyolca
-- Sistem promptundaki talimatların dili farklı olabilir; bunlar sadece senin içindir.
-- Kullanıcıya gönderdiğin tüm mesajlar, hedef dil (${nameTR}) ile tam uyumlu olmalıdır.`;
-
-  const enRule = `🌐 LANGUAGE RULE:
-- The active conversation language is: ${nameEN} (language = "${language}").
-- ALWAYS respond in this language.
-- language code mapping:
-  • "tr" → Turkish
-  • "en" → English
-  • "de" → German
-  • "ru" → Russian
-  • "ar" → Arabic
-  • "fr" → French
-  • "es" → Spanish
-- The system prompt may be partially in another language; it is only for your internal instructions.
-- Every message you send to the user must be written in the target language (${nameEN}).`;
-
-  // Eğer sistem dili Türkçe ise TR açıklama, değilse EN açıklama kullanıyoruz
-  return language === "tr" ? trRule : enRule;
+  return rules[language] || rules.tr;
 }
 
 function getTonePrompt(language: string, tone: ConversationTone): string {
   const tones: Record<string, Record<ConversationTone, string>> = {
     tr: {
-      standart: `ÜSLUP KURALLARI (tone = "standart"):
-- Sıcak, samimi ama profesyonel
-- Rahat ama saygılı
-- Emoji kullanabilir (aşırıya kaçmadan)
-- Kısa ve net cümleler`,
-
-      kurumsal: `ÜSLUP KURALLARI (tone = "kurumsal"):
-- Profesyonel ve resmi
-- Emoji kullanma
-- Düzgün Türkçe, saygı ifadeleri`,
-
-      dinamik: `ÜSLUP KURALLARI (tone = "dinamik"):
-- Enerjik ve heyecanlı
-- Sık emoji kullan
-- Coşkulu ifadeler
-- Hızlı akıcı dil`,
-
-      premium: `ÜSLUP KURALLARI (tone = "premium"):
-- Lüks, özel hissettiren
-- Seçkin, zarif
-- Az emoji, kaliteli ifadeler
-- VIP muamelesi`,
+      standart: `ÜSLUP (tone = "standart"): Sıcak, samimi ama profesyonel. Rahat ama saygılı. Emoji kullanabilir (az). Kısa net cümleler.`,
+      kurumsal: `ÜSLUP (tone = "kurumsal"): Profesyonel ve resmi. Emoji yok. Düzgün Türkçe, saygı ifadeleri.`,
+      dinamik: `ÜSLUP (tone = "dinamik"): Enerjik ve heyecanlı. Sık emoji. Coşkulu ifadeler. Hızlı dil.`,
+      premium: `ÜSLUP (tone = "premium"): Lüks, özel hissettiren. Seçkin, zarif. Az emoji, kaliteli ifadeler. VIP muamelesi.`,
     },
     en: {
-      standart: `TONE RULES (tone = "standart"):
-- Warm, friendly but professional
-- Casual but respectful
-- Can use emojis (not too much)
-- Short and clear sentences`,
-
-      kurumsal: `TONE RULES (tone = "kurumsal"):
-- Professional and formal
-- No emojis
-- Proper English, respectful expressions`,
-
-      dinamik: `TONE RULES (tone = "dinamik"):
-- Energetic and exciting
-- Use emojis frequently
-- Enthusiastic expressions
-- Fast flowing language`,
-
-      premium: `TONE RULES (tone = "premium"):
-- Luxurious, make them feel special
-- Elegant, refined
-- Few emojis, quality expressions
-- VIP treatment`,
+      standart: `TONE (tone = "standart"): Warm, friendly but professional. Casual but respectful. Few emojis. Short clear sentences.`,
+      kurumsal: `TONE (tone = "kurumsal"): Professional and formal. No emojis. Proper English, respectful expressions.`,
+      dinamik: `TONE (tone = "dinamik"): Energetic and exciting. Frequent emojis. Enthusiastic expressions. Fast flowing.`,
+      premium: `TONE (tone = "premium"): Luxurious, make them feel special. Elegant, refined. Few emojis, quality expressions. VIP treatment.`,
+    },
+    de: {
+      standart: `TON (tone = "standart"): Warm, freundlich aber professionell. Locker aber respektvoll. Wenige Emojis. Kurze klare Sätze.`,
+      kurumsal: `TON (tone = "kurumsal"): Professionell und formal. Keine Emojis. Korrektes Deutsch, respektvolle Ausdrücke.`,
+      dinamik: `TON (tone = "dinamik"): Energisch und aufregend. Häufige Emojis. Begeisterte Ausdrücke. Schnelle Sprache.`,
+      premium: `TON (tone = "premium"): Luxuriös, besonders. Elegant, raffiniert. Wenige Emojis, hochwertige Ausdrücke. VIP-Behandlung.`,
+    },
+    ru: {
+      standart: `ТОН (tone = "standart"): Тепло, дружелюбно но профессионально. Непринужденно но уважительно. Мало эмодзи. Короткие четкие предложения.`,
+      kurumsal: `ТОН (tone = "kurumsal"): Профессионально и формально. Без эмодзи. Правильный русский, уважительные выражения.`,
+      dinamik: `ТОН (tone = "dinamik"): Энергично и увлекательно. Частые эмодзи. Восторженные выражения. Быстрая речь.`,
+      premium: `ТОН (tone = "premium"): Роскошно, особенно. Элегантно, изысканно. Мало эмодзи, качественные выражения. VIP-обслуживание.`,
+    },
+    ar: {
+      standart: `النبرة (tone = "standart"): دافئ، ودود لكن محترف. غير رسمي لكن محترم. إيموجي قليلة. جمل قصيرة واضحة.`,
+      kurumsal: `النبرة (tone = "kurumsal"): احترافي ورسمي. بدون إيموجي. لغة عربية صحيحة، تعبيرات محترمة.`,
+      dinamik: `النبرة (tone = "dinamik"): نشيط ومثير. إيموجي متكررة. تعبيرات متحمسة. لغة سريعة.`,
+      premium: `النبرة (tone = "premium"): فاخر، خاص. أنيق، راقي. إيموجي قليلة، تعبيرات عالية الجودة. معاملة VIP.`,
+    },
+    fr: {
+      standart: `TON (tone = "standart"): Chaleureux, amical mais professionnel. Décontracté mais respectueux. Peu d'emojis. Phrases courtes claires.`,
+      kurumsal: `TON (tone = "kurumsal"): Professionnel et formel. Pas d'emojis. Français correct, expressions respectueuses.`,
+      dinamik: `TON (tone = "dinamik"): Énergique et excitant. Emojis fréquents. Expressions enthousiastes. Langage rapide.`,
+      premium: `TON (tone = "premium"): Luxueux, spécial. Élégant, raffiné. Peu d'emojis, expressions de qualité. Traitement VIP.`,
+    },
+    es: {
+      standart: `TONO (tone = "standart"): Cálido, amigable pero profesional. Casual pero respetuoso. Pocos emojis. Frases cortas claras.`,
+      kurumsal: `TONO (tone = "kurumsal"): Profesional y formal. Sin emojis. Español correcto, expresiones respetuosas.`,
+      dinamik: `TONO (tone = "dinamik"): Enérgico y emocionante. Emojis frecuentes. Expresiones entusiastas. Lenguaje rápido.`,
+      premium: `TONO (tone = "premium"): Lujoso, especial. Elegante, refinado. Pocos emojis, expresiones de calidad. Trato VIP.`,
     },
   };
 
-  // 'de', 'ru' vb. için de en azından bir üslup kuralı olsun diye TR fallback
-  return tones[language]?.[tone] || tones.tr.standart;
+  return tones[language]?.[tone] || tones.en.standart;
 }
 
 function getStagePrompt(
