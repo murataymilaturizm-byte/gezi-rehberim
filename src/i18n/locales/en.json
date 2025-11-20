@@ -88,6 +88,13 @@
       "professional": "Professional/Corporate",
       "energetic": "Energetic/Dynamic",
       "helpful": "Kind/Helpful"
+    },
+    "helpPrompt": {
+      "basic": "📍 How can I help you?",
+      "friendly": "😊 How can I help you?",
+      "professional": "💼 How can I assist you?",
+      "energetic": "⚡ Ready to explore our amazing tours?! 🚀",
+      "helpful": "📝 I'm here to help you. Feel free to ask your questions!"
     }
   },
   "benefits": {

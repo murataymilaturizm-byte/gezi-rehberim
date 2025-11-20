@@ -90,21 +90,51 @@ export const DemoChat = () => {
     localStorage.setItem("demo-chat-style", conversationStyle);
   }, [messages, i18n.language, conversationStyle]);
 
-  // Dil veya stil değiştiğinde: sadece daha önce kullanıcı mesajı yoksa greeting'i güncelle
+  // Dil değiştiğinde konuşmaları temizle ve session'ı sıfırla
+  useEffect(() => {
+    const savedLang = localStorage.getItem("demo-chat-language");
+    if (savedLang && savedLang !== i18n.language) {
+      // Dil değişti, konuşmaları temizle
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setSessionId(newSessionId);
+      localStorage.setItem("demo_chat_session_id", newSessionId);
+      
+      const getStyledGreeting = () => {
+        const baseGreeting = t("demo.greeting");
+        switch (conversationStyle) {
+          case "basic":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.basic");
+          case "friendly":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.friendly");
+          case "energetic":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.energetic");
+          case "helpful":
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.helpful");
+          default: // professional
+            return baseGreeting + "\n\n" + t("demo.helpPrompt.professional");
+        }
+      };
+      
+      setMessages([{ role: "assistant", content: getStyledGreeting() }]);
+      setConversationState(null);
+    }
+  }, [i18n.language, conversationStyle, t]);
+
+  // Stil değiştiğinde sadece greeting'i güncelle
   useEffect(() => {
     const getStyledGreeting = () => {
       const baseGreeting = t("demo.greeting");
       switch (conversationStyle) {
         case "basic":
-          return baseGreeting + "\n\n📍 Nasıl yardımcı olabilirim?";
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.basic");
         case "friendly":
-          return baseGreeting + "\n\n😊 Sana nasıl yardımcı olabilirim?";
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.friendly");
         case "energetic":
-          return baseGreeting + "\n\n⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀";
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.energetic");
         case "helpful":
-          return baseGreeting + "\n\n📝 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz.";
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.helpful");
         default: // professional
-          return baseGreeting + "\n\n📍 Size nasıl yardımcı olabilirim?";
+          return baseGreeting + "\n\n" + t("demo.helpPrompt.professional");
       }
     };
 

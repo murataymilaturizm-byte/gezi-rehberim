@@ -95,6 +95,13 @@
       "professional": "Profesyonel/Kurumsal",
       "energetic": "Enerjik/Dinamik",
       "helpful": "Nazik/Yardımsever"
+    },
+    "helpPrompt": {
+      "basic": "📍 Nasıl yardımcı olabilirim?",
+      "friendly": "😊 Sana nasıl yardımcı olabilirim?",
+      "professional": "💼 Size nasıl yardımcı olabilirim?",
+      "energetic": "⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀",
+      "helpful": "📝 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz."
     }
   },
   "advanced": {
