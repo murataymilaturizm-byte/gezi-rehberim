@@ -466,28 +466,49 @@ CEVAP FORMATIN:
       case "COLLECTING_INFO": {
         let stepPrompt = "";
         switch (collectionStep) {
+          case "waiting_for_date":
+            stepPrompt = `📝 ADIM: Tarih seçimi
+- Kullanıcıdan hangi tarihte katılmak istediğini sor.
+- Eğer tur için birden fazla tarih varsa, bunları listeleyip seçmesini iste.
+⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (isim, telefon, kişi sayısı), önce onu KABUL ET:
+  "Teşekkürler, [verilen bilgi] kaydedildi. Şimdi hangi tarihte katılmak istersiniz?" gibi bir geçiş cümlesi kullan.
+Örnek mesaj iskeleti:
+"Hangi tarihte katılmak istersiniz? Müsait tarihlerimiz: [tarihler]"`;
+            break;
           case "waiting_for_pax":
             stepPrompt = `📝 ADIM: Kişi sayısı
 - Kullanıcıdan kaç kişi katılacağını sor.
 - Yetişkin ve çocuk sayısını belirtmesini isteyebilirsin.
+⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (isim, telefon), önce onu KABUL ET:
+  "Teşekkürler, [verilen bilgi] kaydedildi. Kaç kişi katılacaksınız?" gibi bir geçiş cümlesi kullan.
 Örnek mesaj iskeleti:
 "Kaç kişi katılmayı planlıyorsunuz? (Yetişkin ve çocuk sayısını da yazabilirsiniz.)"`;
             break;
           case "waiting_for_name":
             stepPrompt = `📝 ADIM: İsim
 - Sadece ad-soyad iste.
+⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (telefon), önce onu KABUL ET:
+  "Teşekkürler, telefon numaranızı aldım. Şimdi ad-soyadınız nedir?" gibi bir geçiş cümlesi kullan.
 Örnek mesaj iskeleti:
 "Sizi hangi isimle kaydedelim? Lütfen ad-soyadınızı yazar mısınız?"`;
             break;
           case "waiting_for_phone":
             stepPrompt = `📝 ADIM: Telefon
 - Sadece telefon numarası iste.
+⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (isim), önce onu KABUL ET:
+  "Teşekkürler [isim], kaydınızı aldım. Telefon numaranızı da alabilir miyim?" gibi bir geçiş cümlesi kullan.
 Örnek mesaj iskeleti:
 "Size ulaşabileceğimiz telefon numaranızı da paylaşır mısınız?"`;
             break;
+          case "ready_for_confirmation":
+            stepPrompt = `📝 ADIM: Onay için hazır
+- Tüm bilgiler toplandı, kullanıcıya özet göster ve onay iste.
+- Bir sonraki aşama CONFIRMING olacak.`;
+            break;
           default:
             stepPrompt = `📝 ADIM: Bilgi toplama
-- Eksik olan bilgiyi tamamlamaya odaklan (kişi sayısı, isim veya telefon).`;
+- Eksik olan bilgiyi tamamlamaya odaklan.
+- Kullanıcının verdiği bilgiyi önce KABUL ET ve kaydet, sonra eksik olanı iste.`;
         }
 
         return `📍 DURUM: Bilgi toplama
@@ -496,9 +517,16 @@ ${stepPrompt}
 Şu ana kadar toplanan bilgiler:
 ${collectedInfo}
 
+⚠️ KRİTİK KURAL - KULLANICI HER BİLGİYİ VERDİĞİNDE:
+- Kullanıcı SIRAYLA ilerlemiyor olabilir (tarih yerine isim, telefon yerine kişi sayısı vb. gönderebilir)
+- Kullanıcının verdiği BİLGİYİ KABUL ET ve kayıt edildiğini belirt
+- Sonra eksik olan bir sonraki bilgiyi iste
+- Asla "önce [x] vermelisiniz" deme, bunun yerine "Teşekkürler, [verilen bilgi] kaydedildi. Şimdi [eksik bilgi] için..." de
+
 FORMAT KURALLARI (BU AŞAMA):
 - Aynı mesajda birden fazla yeni bilgi isteme (sadece 1 soru sor).
 - Kullanıcı zaten verdiği bilgiyi tekrar isteme.
+- Kullanıcı sırayı takip etmese bile, verdiği bilgiyi kabul et.
 - Mesajın sonunda mutlaka tek bir net soru olsun.
 - BU AŞAMADA "rezervasyonunuzu oluşturalım mı", "ön kaydınızı oluşturalım", "onayınızı bekliyorum", "rezervasyonunuzu oluşturuyorum" gibi cümleler KULLANMA.
 - Onay veya "kaydınız oluşturuldu" tarzı cümleler SADECE CONFIRMING ve COMPLETED aşamalarında kullanılabilir.`;
@@ -626,28 +654,49 @@ RESPONSE FORMAT:
     case "COLLECTING_INFO": {
       let stepPrompt = "";
       switch (collectionStep) {
+        case "waiting_for_date":
+          stepPrompt = `📝 STEP: Date selection
+- Ask which date the user prefers.
+- If there are multiple dates available, list them and ask them to choose.
+⚠️ IMPORTANT: If the user provided other information (name, phone, pax), ACKNOWLEDGE it first:
+  Say something like "Thank you, I've noted [the info]. Now, which date would you prefer?" 
+Example message:
+"Which date would you like to join? Available dates: [dates]"`;
+          break;
         case "waiting_for_pax":
           stepPrompt = `📝 STEP: Pax count
 - Ask how many people will join.
 - They may specify adults and children.
+⚠️ IMPORTANT: If the user provided other information (name, phone), ACKNOWLEDGE it first:
+  Say something like "Thank you, I've noted [the info]. How many people will be joining?"
 Example message:
 "How many people will be joining the tour? (You can specify adults and children.)"`;
           break;
         case "waiting_for_name":
           stepPrompt = `📝 STEP: Name
 - Only ask for full name.
+⚠️ IMPORTANT: If the user provided other information (phone), ACKNOWLEDGE it first:
+  Say something like "Thank you for the phone number. What is your full name?"
 Example message:
 "Under which name should we register you? Please write your full name."`;
           break;
         case "waiting_for_phone":
           stepPrompt = `📝 STEP: Phone
 - Only ask for phone number.
+⚠️ IMPORTANT: If the user provided other information (name), ACKNOWLEDGE it first:
+  Say something like "Thank you [name], I've noted your name. Could you also share your phone number?"
 Example message:
 "Could you also share your phone number so we can reach you?"`;
           break;
+        case "ready_for_confirmation":
+          stepPrompt = `📝 STEP: Ready for confirmation
+- All information collected, show summary to user and ask for confirmation.
+- Next stage will be CONFIRMING.`;
+          break;
         default:
           stepPrompt = `📝 STEP: Collect missing info
-- Focus on completing the missing field (pax count, name or phone).`;
+- Focus on completing the missing field.
+- When user provides info, ACKNOWLEDGE it first then ask for the next missing piece.`;
       }
 
       return `📍 STATUS: Collecting information
@@ -656,9 +705,16 @@ ${stepPrompt}
 Information collected so far:
 ${collectedInfo}
 
+⚠️ CRITICAL RULE - WHEN USER PROVIDES ANY INFORMATION:
+- User may NOT follow the sequence (they might send name instead of date, pax instead of phone, etc.)
+- ACCEPT the information the user provided and acknowledge it
+- Then ask for the next missing piece of information
+- Never say "you must provide [x] first", instead say "Thank you, [provided info] noted. Now for [missing info]..."
+
 FORMAT RULES (THIS STAGE):
 - Do NOT ask for multiple new pieces of information in one message (only one question).
 - Do NOT re-ask for information the user has already provided.
+- Even if user doesn't follow the sequence, accept what they provide.
 - Always end with a single, clear question.
 - At this stage do NOT ask for confirmation or say things like "shall I complete your booking now?", "let's create your pre-booking", "I am creating your reservation" or "I am waiting for your confirmation".
 - Confirmation questions and "your booking is created" style sentences MUST ONLY be used in CONFIRMING and COMPLETED stages.`;
