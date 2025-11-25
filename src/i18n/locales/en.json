@@ -1385,5 +1385,51 @@
       "medium": "Medium",
       "high": "High"
     }
+  },
+  "agencyInfo": {
+    "title": "Agency Information",
+    "description": "Update your agency information. This information will be used by the WhatsApp chatbot.",
+    "address": "Address",
+    "addressPlaceholder": "Enter your office address",
+    "phonePublic": "Contact Phone",
+    "phonePublicPlaceholder": "+90 XXX XXX XX XX",
+    "website": "Website",
+    "websitePlaceholder": "https://www.youragency.com",
+    "workingHours": "Working Hours",
+    "workingHoursPlaceholder": "E.g.: Monday-Friday 09:00-18:00, Saturday 10:00-16:00",
+    "mapsUrl": "Google Maps Link",
+    "mapsUrlPlaceholder": "https://maps.google.com/...",
+    "paymentMethods": "Payment Methods",
+    "paymentMethodsPlaceholder": "E.g.: Credit card, Bank transfer, Cash payment",
+    "cancellationPolicy": "Cancellation and Refund Policy",
+    "cancellationPolicyPlaceholder": "Write your cancellation and refund policy in detail",
+    "saveSuccess": "Agency information saved",
+    "saveError": "Save error",
+    "loadError": "Information could not be loaded"
+  },
+  "complaints": {
+    "title": "Complaints and Feedback",
+    "description": "View and manage complaints and feedback received via WhatsApp.",
+    "noComplaints": "No complaints or feedback yet",
+    "type": "Type",
+    "status": "Status",
+    "phone": "Phone",
+    "message": "Message",
+    "createdAt": "Created",
+    "markReviewed": "Mark as Reviewed",
+    "markResolved": "Mark as Resolved",
+    "loadError": "Complaints could not be loaded",
+    "updateError": "Status could not be updated",
+    "updateSuccess": "Status updated",
+    "types": {
+      "complaint": "Complaint",
+      "feedback": "Feedback",
+      "suggestion": "Suggestion"
+    },
+    "statuses": {
+      "new": "New",
+      "reviewed": "Reviewed",
+      "resolved": "Resolved"
+    }
   }
 }

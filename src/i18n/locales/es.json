@@ -1379,5 +1379,51 @@
     "user": "Usuario",
     "status": {"open": "Abierto", "in_progress": "En Progreso", "resolved": "Resuelto", "closed": "Cerrado"},
     "priority": {"low": "Baja", "medium": "Media", "high": "Alta"}
+  },
+  "agencyInfo": {
+    "title": "Información de la agencia",
+    "description": "Actualice la información de su agencia. Esta información será utilizada por el chatbot de WhatsApp.",
+    "address": "Dirección",
+    "addressPlaceholder": "Ingrese la dirección de su oficina",
+    "phonePublic": "Teléfono de contacto",
+    "phonePublicPlaceholder": "+90 XXX XXX XX XX",
+    "website": "Sitio web",
+    "websitePlaceholder": "https://www.suagencia.com",
+    "workingHours": "Horario de atención",
+    "workingHoursPlaceholder": "Ej: Lunes-Viernes 09:00-18:00, Sábado 10:00-16:00",
+    "mapsUrl": "Enlace de Google Maps",
+    "mapsUrlPlaceholder": "https://maps.google.com/...",
+    "paymentMethods": "Métodos de pago",
+    "paymentMethodsPlaceholder": "Ej: Tarjeta de crédito, Transferencia bancaria, Pago en efectivo",
+    "cancellationPolicy": "Política de cancelación y reembolso",
+    "cancellationPolicyPlaceholder": "Escriba su política de cancelación y reembolso en detalle",
+    "saveSuccess": "Información de la agencia guardada",
+    "saveError": "Error al guardar",
+    "loadError": "No se pudo cargar la información"
+  },
+  "complaints": {
+    "title": "Quejas y comentarios",
+    "description": "Ver y gestionar quejas y comentarios recibidos a través de WhatsApp.",
+    "noComplaints": "Aún no hay quejas o comentarios",
+    "type": "Tipo",
+    "status": "Estado",
+    "phone": "Teléfono",
+    "message": "Mensaje",
+    "createdAt": "Creado",
+    "markReviewed": "Marcar como revisado",
+    "markResolved": "Marcar como resuelto",
+    "loadError": "No se pudieron cargar las quejas",
+    "updateError": "No se pudo actualizar el estado",
+    "updateSuccess": "Estado actualizado",
+    "types": {
+      "complaint": "Queja",
+      "feedback": "Comentario",
+      "suggestion": "Sugerencia"
+    },
+    "statuses": {
+      "new": "Nuevo",
+      "reviewed": "Revisado",
+      "resolved": "Resuelto"
+    }
   }
 }

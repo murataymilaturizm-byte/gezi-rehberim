@@ -1437,5 +1437,51 @@
     "user": "المستخدم",
     "status": {"open": "مفتوح", "in_progress": "قيد المعالجة", "resolved": "تم الحل", "closed": "مغلق"},
     "priority": {"low": "منخفض", "medium": "متوسط", "high": "عالي"}
+  },
+  "agencyInfo": {
+    "title": "معلومات الوكالة",
+    "description": "قم بتحديث معلومات وكالتك. سيتم استخدام هذه المعلومات بواسطة روبوت الدردشة على WhatsApp.",
+    "address": "العنوان",
+    "addressPlaceholder": "أدخل عنوان مكتبك",
+    "phonePublic": "هاتف الاتصال",
+    "phonePublicPlaceholder": "+90 XXX XXX XX XX",
+    "website": "الموقع الإلكتروني",
+    "websitePlaceholder": "https://www.youragency.com",
+    "workingHours": "ساعات العمل",
+    "workingHoursPlaceholder": "مثال: الاثنين-الجمعة 09:00-18:00، السبت 10:00-16:00",
+    "mapsUrl": "رابط خرائط جوجل",
+    "mapsUrlPlaceholder": "https://maps.google.com/...",
+    "paymentMethods": "طرق الدفع",
+    "paymentMethodsPlaceholder": "مثال: بطاقة الائتمان، التحويل البنكي، الدفع النقدي",
+    "cancellationPolicy": "سياسة الإلغاء والاسترداد",
+    "cancellationPolicyPlaceholder": "اكتب سياسة الإلغاء والاسترداد بالتفصيل",
+    "saveSuccess": "تم حفظ معلومات الوكالة",
+    "saveError": "خطأ في الحفظ",
+    "loadError": "تعذر تحميل المعلومات"
+  },
+  "complaints": {
+    "title": "الشكاوى والتعليقات",
+    "description": "عرض وإدارة الشكاوى والتعليقات المستلمة عبر WhatsApp.",
+    "noComplaints": "لا توجد شكاوى أو تعليقات حتى الآن",
+    "type": "النوع",
+    "status": "الحالة",
+    "phone": "الهاتف",
+    "message": "الرسالة",
+    "createdAt": "تم الإنشاء",
+    "markReviewed": "وضع علامة كمراجع",
+    "markResolved": "وضع علامة كمحلول",
+    "loadError": "تعذر تحميل الشكاوى",
+    "updateError": "تعذر تحديث الحالة",
+    "updateSuccess": "تم تحديث الحالة",
+    "types": {
+      "complaint": "شكوى",
+      "feedback": "تعليق",
+      "suggestion": "اقتراح"
+    },
+    "statuses": {
+      "new": "جديد",
+      "reviewed": "تمت المراجعة",
+      "resolved": "تم الحل"
+    }
   }
 }

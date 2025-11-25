@@ -1379,5 +1379,51 @@
     "user": "Пользователь",
     "status": {"open": "Открыт", "in_progress": "В Работе", "resolved": "Решен", "closed": "Закрыт"},
     "priority": {"low": "Низкий", "medium": "Средний", "high": "Высокий"}
+  },
+  "agencyInfo": {
+    "title": "Информация об агентстве",
+    "description": "Обновите информацию об агентстве. Эта информация будет использоваться WhatsApp чат-ботом.",
+    "address": "Адрес",
+    "addressPlaceholder": "Введите адрес офиса",
+    "phonePublic": "Контактный телефон",
+    "phonePublicPlaceholder": "+90 XXX XXX XX XX",
+    "website": "Веб-сайт",
+    "websitePlaceholder": "https://www.vashagency.com",
+    "workingHours": "Часы работы",
+    "workingHoursPlaceholder": "Например: Понедельник-Пятница 09:00-18:00, Суббота 10:00-16:00",
+    "mapsUrl": "Ссылка на Google Maps",
+    "mapsUrlPlaceholder": "https://maps.google.com/...",
+    "paymentMethods": "Способы оплаты",
+    "paymentMethodsPlaceholder": "Например: Кредитная карта, Банковский перевод, Наличные",
+    "cancellationPolicy": "Условия отмены и возврата",
+    "cancellationPolicyPlaceholder": "Подробно опишите условия отмены и возврата",
+    "saveSuccess": "Информация об агентстве сохранена",
+    "saveError": "Ошибка сохранения",
+    "loadError": "Не удалось загрузить информацию"
+  },
+  "complaints": {
+    "title": "Жалобы и отзывы",
+    "description": "Просмотр и управление жалобами и отзывами, полученными через WhatsApp.",
+    "noComplaints": "Пока нет жалоб или отзывов",
+    "type": "Тип",
+    "status": "Статус",
+    "phone": "Телефон",
+    "message": "Сообщение",
+    "createdAt": "Создано",
+    "markReviewed": "Отметить как проверено",
+    "markResolved": "Отметить как решено",
+    "loadError": "Не удалось загрузить жалобы",
+    "updateError": "Не удалось обновить статус",
+    "updateSuccess": "Статус обновлен",
+    "types": {
+      "complaint": "Жалоба",
+      "feedback": "Отзыв",
+      "suggestion": "Предложение"
+    },
+    "statuses": {
+      "new": "Новый",
+      "reviewed": "Проверено",
+      "resolved": "Решено"
+    }
   }
 }

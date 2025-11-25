@@ -101,10 +101,10 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
-    { id: "agency_info", icon: Building2, label: "Acente Bilgileri" },
-    { id: "complaints", icon: MessageCircle, label: "Şikayetler" },
+    { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo") },
+    { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
     { id: "settings", icon: Settings, label: t("admin.tabs.settings") },
-    { id: "payment_settings", icon: CreditCard, label: "Ödeme Ayarları" },
+    { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
     { id: "history", icon: History, label: t("admin.tabs.history") },
   ];

@@ -1396,5 +1396,51 @@
       "medium": "Mittel",
       "high": "Hoch"
     }
+  },
+  "agencyInfo": {
+    "title": "Agenturinformationen",
+    "description": "Aktualisieren Sie Ihre Agenturinformationen. Diese Informationen werden vom WhatsApp-Chatbot verwendet.",
+    "address": "Adresse",
+    "addressPlaceholder": "Geben Sie Ihre Büroadresse ein",
+    "phonePublic": "Kontakttelefon",
+    "phonePublicPlaceholder": "+90 XXX XXX XX XX",
+    "website": "Webseite",
+    "websitePlaceholder": "https://www.ihreagentur.com",
+    "workingHours": "Öffnungszeiten",
+    "workingHoursPlaceholder": "Z.B.: Montag-Freitag 09:00-18:00, Samstag 10:00-16:00",
+    "mapsUrl": "Google Maps Link",
+    "mapsUrlPlaceholder": "https://maps.google.com/...",
+    "paymentMethods": "Zahlungsmethoden",
+    "paymentMethodsPlaceholder": "Z.B.: Kreditkarte, Überweisung, Barzahlung",
+    "cancellationPolicy": "Stornierungsbedingungen",
+    "cancellationPolicyPlaceholder": "Schreiben Sie Ihre Stornierungsbedingungen im Detail",
+    "saveSuccess": "Agenturinformationen gespeichert",
+    "saveError": "Speicherfehler",
+    "loadError": "Informationen konnten nicht geladen werden"
+  },
+  "complaints": {
+    "title": "Beschwerden und Feedback",
+    "description": "Anzeigen und Verwalten von Beschwerden und Feedback über WhatsApp.",
+    "noComplaints": "Noch keine Beschwerden oder Feedback",
+    "type": "Typ",
+    "status": "Status",
+    "phone": "Telefon",
+    "message": "Nachricht",
+    "createdAt": "Erstellt",
+    "markReviewed": "Als überprüft markieren",
+    "markResolved": "Als gelöst markieren",
+    "loadError": "Beschwerden konnten nicht geladen werden",
+    "updateError": "Status konnte nicht aktualisiert werden",
+    "updateSuccess": "Status aktualisiert",
+    "types": {
+      "complaint": "Beschwerde",
+      "feedback": "Feedback",
+      "suggestion": "Vorschlag"
+    },
+    "statuses": {
+      "new": "Neu",
+      "reviewed": "Überprüft",
+      "resolved": "Gelöst"
+    }
   }
 }
