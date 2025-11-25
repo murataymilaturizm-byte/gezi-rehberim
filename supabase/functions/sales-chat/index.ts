@@ -56,21 +56,30 @@ const systemPrompt = `You are Turzz AI's sales and support assistant. You help t
 
 ÜRÜNÜMÜZÜN ÖZELLİKLERİ:
 ✅ 7/24 WhatsApp üzerinden otomatik tur satışı ve müşteri desteği
-✅ Yapay zeka destekli akıllı müşteri yanıtlama
-✅ Otomatik ödeme entegrasyonu (Sipay ile güvenli ödeme)
+✅ Yapay zeka destekli akıllı müşteri yanıtlama (Google Gemini 2.5 Flash AI)
+✅ 7 dil desteği (Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca)
+✅ Otomatik dil algılama - Bot müşterinin yazdığı dilde otomatik cevap verir
+✅ 5 farklı konuşma stili (Standart, Kurumsal, Dinamik, Premium, Samimi)
+✅ Akıllı rezervasyon wizard'ı - Adım adım rehberli rezervasyon süreci
+✅ Otomatik ödeme entegrasyonu (Sipay ile güvenli online ödeme)
+✅ WhatsApp'tan direkt rezervasyon alma ve onaylama
+✅ Müşteri profili ve tercih takibi sistemi - Kişiselleştirilmiş deneyim
+✅ Otomatik etiketleme (VIP, düzenli müşteri, potansiyel müşteri)
+✅ Otomatik tur hatırlatıcıları (rezervasyon öncesi SMS/WhatsApp)
+✅ Müşteri memnuniyet anketleri - Otomatik geri bildirim toplama
+✅ Otomatik takip mesajları - Rezervasyon sonrası iletişim
+✅ Özelleştirilebilir mesaj şablonları - Her dil için özel şablonlar
+✅ FAQ yönetimi - Sık sorulan soruları otomatik yanıtla
 ✅ Detaylı raporlama ve gelişmiş analitik dashboardları
 ✅ Excel export özelliği ile müşteri ve rezervasyon raporları
-✅ WhatsApp'tan direkt rezervasyon alma ve onaylama
-✅ Müşteri profili ve tercih takibi sistemi
-✅ Otomatik tur hatırlatıcıları (rezervasyon öncesi)
-✅ Çok dilli destek (Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca)
-✅ Kolay entegrasyon ve kurulum (5-10 dakika)
-✅ Akıllı rezervasyon wizard'ı
-✅ Müşteri memnuniyet anketleri
-✅ Detaylı destinasyon analitiği
-✅ Gelir ve rezervasyon takibi
-✅ Özelleştirilebilir mesaj şablonları
-✅ Otomatik takip mesajları
+✅ Destinasyon analitiği - Hangi turlar daha çok ilgi görüyor?
+✅ Gelir ve rezervasyon takibi - Gerçek zamanlı satış performansı
+✅ Müşteri segmentasyonu - Davranış ve tercihlere göre gruplandırma
+✅ Konuşma geçmişi ve özet raporları
+✅ Kolay entegrasyon ve kurulum (5-10 dakika - Teknik bilgi gerektirmez)
+✅ WhatsApp Business API altyapısı tamamen bizde - Siz sadece numaranızı girin
+✅ Admin paneli - Tüm yönetim tek yerden
+✅ Gerçek zamanlı bildirimler ve uyarılar
 
 FİYATLANDIRMA (Tüm paketlerde 14 günlük ücretsiz deneme dahil - Kredi kartı gerektirmez):
 
