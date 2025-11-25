@@ -17,6 +17,8 @@ export type Database = {
       agencies: {
         Row: {
           active: boolean | null
+          address: string | null
+          cancellation_policy: string | null
           city: string | null
           conversation_style: string | null
           created_at: string | null
@@ -26,10 +28,13 @@ export type Database = {
           last_message_reset_date: string | null
           latitude: number | null
           longitude: number | null
+          maps_url: string | null
           message_limit: number | null
           monthly_message_count: number | null
           name: string
           payment_instructions: Json | null
+          payment_methods_text: string | null
+          phone_public: string | null
           plan_type: string
           region: string | null
           subscription_ends_at: string | null
@@ -39,11 +44,15 @@ export type Database = {
           twilio_auth_token: string | null
           twilio_phone_number: string | null
           user_id: string | null
+          website_url: string | null
           whatsapp_phone_number: string | null
           whatsapp_status: string | null
+          working_hours: string | null
         }
         Insert: {
           active?: boolean | null
+          address?: string | null
+          cancellation_policy?: string | null
           city?: string | null
           conversation_style?: string | null
           created_at?: string | null
@@ -53,10 +62,13 @@ export type Database = {
           last_message_reset_date?: string | null
           latitude?: number | null
           longitude?: number | null
+          maps_url?: string | null
           message_limit?: number | null
           monthly_message_count?: number | null
           name: string
           payment_instructions?: Json | null
+          payment_methods_text?: string | null
+          phone_public?: string | null
           plan_type?: string
           region?: string | null
           subscription_ends_at?: string | null
@@ -66,11 +78,15 @@ export type Database = {
           twilio_auth_token?: string | null
           twilio_phone_number?: string | null
           user_id?: string | null
+          website_url?: string | null
           whatsapp_phone_number?: string | null
           whatsapp_status?: string | null
+          working_hours?: string | null
         }
         Update: {
           active?: boolean | null
+          address?: string | null
+          cancellation_policy?: string | null
           city?: string | null
           conversation_style?: string | null
           created_at?: string | null
@@ -80,10 +96,13 @@ export type Database = {
           last_message_reset_date?: string | null
           latitude?: number | null
           longitude?: number | null
+          maps_url?: string | null
           message_limit?: number | null
           monthly_message_count?: number | null
           name?: string
           payment_instructions?: Json | null
+          payment_methods_text?: string | null
+          phone_public?: string | null
           plan_type?: string
           region?: string | null
           subscription_ends_at?: string | null
@@ -93,8 +112,10 @@ export type Database = {
           twilio_auth_token?: string | null
           twilio_phone_number?: string | null
           user_id?: string | null
+          website_url?: string | null
           whatsapp_phone_number?: string | null
           whatsapp_status?: string | null
+          working_hours?: string | null
         }
         Relationships: []
       }
@@ -124,6 +145,47 @@ export type Database = {
           window_start?: string
         }
         Relationships: []
+      }
+      complaints: {
+        Row: {
+          agency_id: string
+          created_at: string
+          id: string
+          message: string
+          phone: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          created_at?: string
+          id?: string
+          message: string
+          phone: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          phone?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contact_forms: {
         Row: {
@@ -616,6 +678,8 @@ export type Database = {
           destination_ru: string | null
           gezilecek_yerler: string | null
           hareket_noktasi: string | null
+          hotel_name: string | null
+          hotel_stars: number | null
           id: string
           konaklama: string | null
           min_pax: number | null
@@ -639,6 +703,7 @@ export type Database = {
           tur_sure: string | null
           type: Database["public"]["Enums"]["tour_type"]
           ulasim: string | null
+          visa_notes: string | null
           visa_required: boolean | null
         }
         Insert: {
@@ -654,6 +719,8 @@ export type Database = {
           destination_ru?: string | null
           gezilecek_yerler?: string | null
           hareket_noktasi?: string | null
+          hotel_name?: string | null
+          hotel_stars?: number | null
           id?: string
           konaklama?: string | null
           min_pax?: number | null
@@ -677,6 +744,7 @@ export type Database = {
           tur_sure?: string | null
           type: Database["public"]["Enums"]["tour_type"]
           ulasim?: string | null
+          visa_notes?: string | null
           visa_required?: boolean | null
         }
         Update: {
@@ -692,6 +760,8 @@ export type Database = {
           destination_ru?: string | null
           gezilecek_yerler?: string | null
           hareket_noktasi?: string | null
+          hotel_name?: string | null
+          hotel_stars?: number | null
           id?: string
           konaklama?: string | null
           min_pax?: number | null
@@ -715,6 +785,7 @@ export type Database = {
           tur_sure?: string | null
           type?: Database["public"]["Enums"]["tour_type"]
           ulasim?: string | null
+          visa_notes?: string | null
           visa_required?: boolean | null
         }
         Relationships: [

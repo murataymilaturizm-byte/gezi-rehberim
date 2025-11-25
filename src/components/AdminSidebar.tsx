@@ -66,7 +66,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   
   // Determine which group should be open based on active tab
   const getDefaultOpenGroup = () => {
-    const generalIds = ["dashboard", "settings", "payment_settings", "languages", "history"];
+    const generalIds = ["dashboard", "agency_info", "complaints", "settings", "payment_settings", "languages", "history"];
     const tourIds = ["tours", "registrations"];
     const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "whatsapp_logs"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
@@ -101,6 +101,8 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
+    { id: "agency_info", icon: Building2, label: "Acente Bilgileri" },
+    { id: "complaints", icon: MessageCircle, label: "Şikayetler" },
     { id: "settings", icon: Settings, label: t("admin.tabs.settings") },
     { id: "payment_settings", icon: CreditCard, label: "Ödeme Ayarları" },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
