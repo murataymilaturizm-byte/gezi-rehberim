@@ -15,6 +15,7 @@ import type { ConversationContext, ProcessingInput, ConversationTone } from "../
 // WhatsApp-specific utilities
 import { createTwiMLResponse, createTwiMLHeaders } from './utils/twilio.ts';
 import { truncateForWhatsApp } from './utils/format.ts';
+import { validateTwilioWebhook } from './utils/signature-validation.ts';
 
 // WhatsApp services
 import { generatePaymentMessage } from './services/payment-message.ts';
@@ -36,9 +37,32 @@ serve(async (req) => {
 
   try {
     const formData = await req.formData();
+    
+    // Initialize Supabase client first (needed for validation)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // === MULTI-TENANT SECURITY: Validate Twilio Signature ===
+    const validation = await validateTwilioWebhook(req, formData, supabase);
+    
+    if (!validation.isValid) {
+      console.error(`🚫 Unauthorized request: ${validation.error} (AccountSid: ${validation.accountSid})`);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', details: validation.error }), 
+        { 
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const agency = validation.agency;
+    
+    // Extract request data
     const userPhone = formData.get('From')?.toString() || '';
     const rawMessage = formData.get('Body')?.toString() || '';
-    const twilioAccountSid = formData.get('AccountSid')?.toString() || '';
 
     if (!userPhone || !rawMessage) {
       return new Response('Missing required fields', { status: 400 });
@@ -46,22 +70,6 @@ serve(async (req) => {
 
     const message = sanitizeInput(rawMessage);
     console.log("📱 WhatsApp FSM:", userPhone.slice(-4));
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Get agency with enabled languages
-    const { data: agency } = await supabase
-      .from('agencies')
-      .select('*')
-      .eq('twilio_account_sid', twilioAccountSid)
-      .single();
-
-    if (!agency) {
-      return new Response('Agency not found', { status: 404 });
-    }
 
     console.log(`🏢 Agency: ${agency.name}`);
 
