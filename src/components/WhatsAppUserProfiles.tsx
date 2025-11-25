@@ -304,7 +304,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="text-2xl font-bold">
-                      {selectedProfile.full_name || t("userProfiles.unnamed")}
+                      {selectedProfile.full_name || t("admin.whatsapp.userProfiles.unnamed")}
                     </h2>
                     <p className="text-sm text-muted-foreground font-mono mt-1">
                       {selectedProfile.phone}
@@ -326,10 +326,10 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
 
               <Tabs defaultValue="profile" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="profile">{t("userProfiles.tabs.profile")}</TabsTrigger>
-                  <TabsTrigger value="preferences">{t("userProfiles.tabs.preferences")}</TabsTrigger>
-                  <TabsTrigger value="tags">{t("userProfiles.tabs.tags")}</TabsTrigger>
-                  <TabsTrigger value="conversations">{t("userProfiles.tabs.conversations")}</TabsTrigger>
+                  <TabsTrigger value="profile">{t("admin.whatsapp.userProfiles.tabs.profile")}</TabsTrigger>
+                  <TabsTrigger value="preferences">{t("admin.whatsapp.userProfiles.tabs.preferences")}</TabsTrigger>
+                  <TabsTrigger value="tags">{t("admin.whatsapp.userProfiles.tabs.tags")}</TabsTrigger>
+                  <TabsTrigger value="conversations">{t("admin.whatsapp.userProfiles.tabs.conversations")}</TabsTrigger>
                 </TabsList>
 
                 <ScrollArea className="h-[700px] mt-4">
@@ -341,7 +341,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                         <CardContent className="p-4">
                           <div className="flex items-center gap-2 mb-1">
                             <ShoppingBag className="w-4 h-4 opacity-80" />
-                            <p className="text-xs opacity-80">{t("userProfiles.totalBookings")}</p>
+                            <p className="text-xs opacity-80">{t("admin.whatsapp.userProfiles.totalBookings")}</p>
                           </div>
                           <p className="text-3xl font-bold">{selectedProfile.total_bookings}</p>
                         </CardContent>
@@ -351,7 +351,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                         <CardContent className="p-4">
                           <div className="flex items-center gap-2 mb-1">
                             <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
-                            <p className="text-xs text-muted-foreground">{t("userProfiles.totalSpent")}</p>
+                            <p className="text-xs text-muted-foreground">{t("admin.whatsapp.userProfiles.totalSpent")}</p>
                           </div>
                           <p className="text-3xl font-bold text-green-700 dark:text-green-300">
                             {selectedProfile.total_spent.toLocaleString()} ₺
@@ -363,7 +363,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                         <CardContent className="p-4">
                           <div className="flex items-center gap-2 mb-1">
                             <Star className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                            <p className="text-xs text-muted-foreground">{t("userProfiles.averageSpending")}</p>
+                            <p className="text-xs text-muted-foreground">{t("admin.whatsapp.userProfiles.averageSpending")}</p>
                           </div>
                           <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
                             {selectedProfile.total_bookings > 0
@@ -380,17 +380,17 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                           <MessageSquare className="w-4 h-4" />
-                          {t("userProfiles.communicationMetrics")}
+                          {t("admin.whatsapp.userProfiles.communicationMetrics")}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">{t("userProfiles.totalMessages")}</p>
+                            <p className="text-sm text-muted-foreground mb-1">{t("admin.whatsapp.userProfiles.totalMessages")}</p>
                             <p className="text-2xl font-bold">{selectedProfile.total_messages}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">{t("userProfiles.dailyAverage")}</p>
+                            <p className="text-sm text-muted-foreground mb-1">{t("admin.whatsapp.userProfiles.dailyAverage")}</p>
                             <p className="text-2xl font-bold">
                               {(
                                 selectedProfile.total_messages /
@@ -405,11 +405,11 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">{t("userProfiles.firstInteraction")}</p>
+                            <p className="text-sm text-muted-foreground mb-1">{t("admin.whatsapp.userProfiles.firstInteraction")}</p>
                             <p className="text-sm font-medium">{formatDate(selectedProfile.first_interaction_at)}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">{t("userProfiles.lastInteraction")}</p>
+                            <p className="text-sm text-muted-foreground mb-1">{t("admin.whatsapp.userProfiles.lastInteraction")}</p>
                             <p className="text-sm font-medium">{formatDate(selectedProfile.last_interaction_at)}</p>
                           </div>
                         </div>
@@ -464,13 +464,13 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                           <TrendingUp className="w-4 h-4" />
-                          {t("userProfiles.preferencesInterests")}
+                          {t("admin.whatsapp.userProfiles.preferencesInterests")}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {selectedProfile.preferred_destinations && selectedProfile.preferred_destinations.length > 0 && (
                           <div>
-                            <p className="text-sm font-medium mb-2">{t("userProfiles.interestedDestinations")}</p>
+                            <p className="text-sm font-medium mb-2">{t("admin.whatsapp.userProfiles.interestedDestinations")}</p>
                             <div className="flex flex-wrap gap-2">
                               {selectedProfile.preferred_destinations.map((dest, idx) => (
                                 <Badge key={idx} variant="secondary" className="gap-1">
@@ -485,14 +485,14 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                         <div className="grid grid-cols-2 gap-4">
                           {selectedProfile.preferred_tour_type && (
                             <div>
-                              <p className="text-sm text-muted-foreground mb-1">{t("userProfiles.preferredTourType")}</p>
+                              <p className="text-sm text-muted-foreground mb-1">{t("admin.whatsapp.userProfiles.preferredTourType")}</p>
                               <Badge>{selectedProfile.preferred_tour_type}</Badge>
                             </div>
                           )}
 
                           {selectedProfile.budget_range && (
                             <div>
-                              <p className="text-sm text-muted-foreground mb-1">{t("userProfiles.budgetRange")}</p>
+                              <p className="text-sm text-muted-foreground mb-1">{t("admin.whatsapp.userProfiles.budgetRange")}</p>
                               <Badge variant="outline">{selectedProfile.budget_range}</Badge>
                             </div>
                           )}
@@ -500,7 +500,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
 
                         {selectedProfile.last_search_query && (
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">{t("userProfiles.lastSearch")}</p>
+                            <p className="text-sm text-muted-foreground mb-1">{t("admin.whatsapp.userProfiles.lastSearch")}</p>
                             <p className="text-sm bg-muted p-3 rounded-md font-medium">
                               "{selectedProfile.last_search_query}"
                             </p>
@@ -513,7 +513,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                           !selectedProfile.last_search_query && (
                             <div className="text-center py-8 text-muted-foreground">
                               <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                              <p className="text-sm">{t("userProfiles.noFeedback")}</p>
+                              <p className="text-sm">{t("admin.whatsapp.userProfiles.noFeedback")}</p>
                             </div>
                           )}
                       </CardContent>
@@ -526,7 +526,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                           <Tag className="w-4 h-4" />
-                          {t("userProfiles.customerTags")}
+                          {t("admin.whatsapp.userProfiles.customerTags")}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -559,12 +559,12 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                                         );
 
                                         toast({
-                                          title: t("userProfiles.tagRemoved"),
+                                          title: t("admin.whatsapp.userProfiles.tagRemoved"),
                                         });
                                       } catch (error) {
                                         console.error("Error removing tag:", error);
                                         toast({
-                                          title: t("userProfiles.tagError"),
+                                          title: t("admin.whatsapp.userProfiles.tagError"),
                                           variant: "destructive",
                                         });
                                       }
@@ -580,7 +580,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                           {/* Yeni Etiket Ekleme */}
                           <div className="flex gap-2">
                             <Input
-                              placeholder={t("userProfiles.addTag")}
+                              placeholder={t("admin.whatsapp.userProfiles.addTag")}
                               value={newTag}
                               onChange={(e) => setNewTag(e.target.value)}
                               onKeyDown={async (e) => {
@@ -603,12 +603,12 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                                     setNewTag("");
 
                                     toast({
-                                      title: t("userProfiles.tagAdded"),
+                                      title: t("admin.whatsapp.userProfiles.tagAdded"),
                                     });
                                   } catch (error) {
                                     console.error("Error adding tag:", error);
                                     toast({
-                                      title: t("userProfiles.tagError"),
+                                      title: t("admin.whatsapp.userProfiles.tagError"),
                                       variant: "destructive",
                                     });
                                   }
@@ -636,12 +636,12 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                                   setNewTag("");
 
                                   toast({
-                                    title: t("userProfiles.tagAdded"),
+                                    title: t("admin.whatsapp.userProfiles.tagAdded"),
                                   });
                                 } catch (error) {
                                   console.error("Error adding tag:", error);
                                   toast({
-                                    title: t("userProfiles.tagError"),
+                                    title: t("admin.whatsapp.userProfiles.tagError"),
                                     variant: "destructive",
                                   });
                                 }
@@ -661,19 +661,19 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                           <History className="w-4 h-4" />
-                          {t("userProfiles.conversationHistory")}
+                          {t("admin.whatsapp.userProfiles.conversationHistory")}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         {loadingConversations ? (
                           <div className="text-center py-8 text-muted-foreground">
                             <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20 animate-pulse" />
-                            <p className="text-sm">{t("userProfiles.loadingConversations")}</p>
+                            <p className="text-sm">{t("admin.whatsapp.userProfiles.loadingConversations")}</p>
                           </div>
                         ) : conversations.length === 0 ? (
                           <div className="text-center py-8 text-muted-foreground">
                             <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                            <p className="text-sm">{t("userProfiles.noConversations")}</p>
+                            <p className="text-sm">{t("admin.whatsapp.userProfiles.noConversations")}</p>
                           </div>
                         ) : (
                           <ScrollArea className="h-[500px] pr-4">
@@ -699,7 +699,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                                   <div className="flex-1 max-w-[80%]">
                                     <div className="flex items-center gap-2 mb-1">
                                       <p className="text-xs font-medium">
-                                        {msg.role === "user" ? t("userProfiles.customer") : t("userProfiles.assistant")}
+                                        {msg.role === "user" ? t("admin.whatsapp.userProfiles.customer") : t("admin.whatsapp.userProfiles.assistant")}
                                       </p>
                                       <p className="text-xs text-muted-foreground">
                                         {format(new Date(msg.created_at), "dd MMM yyyy, HH:mm", { locale: tr })}
