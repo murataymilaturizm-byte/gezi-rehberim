@@ -61,7 +61,6 @@ const systemPrompt = `You are Turzz AI's sales and support assistant. You help t
 ✅ Otomatik dil algılama - Bot müşterinin yazdığı dilde otomatik cevap verir
 ✅ 5 farklı konuşma stili (Standart, Kurumsal, Dinamik, Premium, Samimi)
 ✅ Akıllı rezervasyon wizard'ı - Adım adım rehberli rezervasyon süreci
-✅ Otomatik ödeme entegrasyonu (Sipay ile güvenli online ödeme)
 ✅ WhatsApp'tan direkt rezervasyon alma ve onaylama
 ✅ Müşteri profili ve tercih takibi sistemi - Kişiselleştirilmiş deneyim
 ✅ Otomatik etiketleme (VIP, düzenli müşteri, potansiyel müşteri)
@@ -91,7 +90,6 @@ Yıllık: 29.990 TL/yıl (%17 indirimli - 2.499 TL/ay)
    • 2 dil desteği
    • Temel analitik raporları
    • E-posta desteği
-   • Sipay ödeme entegrasyonu
    • Müşteri profil takibi
    • Küçük acenteler için ideal
    • 1 konuşma stili
