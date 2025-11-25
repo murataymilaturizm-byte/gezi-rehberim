@@ -5,6 +5,7 @@ import { Calendar, Users, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
+import { formatPrice } from "@/utils/currency";
 
 interface TourCardProps {
   tour: {
@@ -37,13 +38,6 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
   
   if (!firstDate) return null;
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('tr-TR', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
-  };
-
   return (
     <Card className="shadow-card hover:shadow-soft transition-smooth border-border/50 overflow-hidden group">
       <div className="h-2 bg-gradient-ocean" />
@@ -74,7 +68,7 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
         {/* Fiyat */}
         <div className="flex items-baseline gap-2">
           <span className="text-2xl font-bold text-primary">
-            {formatPrice(firstDate.price_adult)} {tour.currency}
+            {formatPrice(firstDate.price_adult, tour.currency)}
           </span>
           <span className="text-sm text-muted-foreground">{t("admin.tours.perPerson")}</span>
         </div>

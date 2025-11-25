@@ -3,10 +3,30 @@
 import type { Tour } from '../types.ts';
 import { getLabel } from '../config/labels.ts';
 
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('tr-TR', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+// Modular currency system
+interface CurrencyConfig {
+  code: string;
+  symbol: string;
+  locale: string;
+  decimals: number;
+}
+
+const CURRENCIES: Record<string, CurrencyConfig> = {
+  TRY: { code: 'TRY', symbol: '₺', locale: 'tr-TR', decimals: 0 },
+  USD: { code: 'USD', symbol: '$', locale: 'en-US', decimals: 2 },
+  EUR: { code: 'EUR', symbol: '€', locale: 'de-DE', decimals: 2 },
+  SAR: { code: 'SAR', symbol: 'ر.س', locale: 'ar-SA', decimals: 2 },
+};
+
+const getCurrency = (code: string): CurrencyConfig => {
+  return CURRENCIES[code] || CURRENCIES.TRY;
+};
+
+export function formatPrice(price: number, currencyCode: string = 'TRY'): string {
+  const currency = getCurrency(currencyCode);
+  return new Intl.NumberFormat(currency.locale, {
+    minimumFractionDigits: currency.decimals,
+    maximumFractionDigits: currency.decimals
   }).format(price);
 }
 
@@ -102,7 +122,7 @@ export function formatTourForWhatsApp(tour: Tour, language: string = 'tr'): stri
     parts.push(`📅 ${lang.singleDate}: ${formatDate(dateInfo.departure_date, language)}`);
   }
 
-  parts.push(`💰 ${formatPrice(dateInfo.price_adult)} ${tour.currency}`);
+  parts.push(`💰 ${formatPrice(dateInfo.price_adult, tour.currency)} ${tour.currency}`);
   parts.push(`👥 ${dateInfo.quota > 0 ? dateInfo.quota + ' ' + lang.quota : lang.soldOut}`);
 
   if (tour.program_url) {
@@ -247,7 +267,7 @@ export function formatTourBrief(tour: Tour, language: string = 'tr'): string {
     parts.push(`📅 ${lang.return}: ${formatDate(dateInfo.return_date, language)}`);
   }
 
-  parts.push(`💰 ${lang.price}: ${formatPrice(dateInfo.price_adult)} ${tour.currency}`);
+  parts.push(`💰 ${lang.price}: ${formatPrice(dateInfo.price_adult, tour.currency)} ${tour.currency}`);
   parts.push(`👥 ${lang.quota}: ${dateInfo.quota > 0 ? dateInfo.quota + ' ' + lang.spots : lang.soldOut}`);
 
   parts.push(lang.question);

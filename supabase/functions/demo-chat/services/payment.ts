@@ -1,10 +1,39 @@
 // Simple payment message generator for demo chat
 
+// Modular currency formatting
+interface CurrencyConfig {
+  code: string;
+  symbol: string;
+  locale: string;
+  decimals: number;
+}
+
+const CURRENCIES: Record<string, CurrencyConfig> = {
+  TRY: { code: 'TRY', symbol: '₺', locale: 'tr-TR', decimals: 0 },
+  USD: { code: 'USD', symbol: '$', locale: 'en-US', decimals: 2 },
+  EUR: { code: 'EUR', symbol: '€', locale: 'de-DE', decimals: 2 },
+  SAR: { code: 'SAR', symbol: 'ر.س', locale: 'ar-SA', decimals: 2 },
+};
+
+const getCurrency = (code: string): CurrencyConfig => {
+  return CURRENCIES[code] || CURRENCIES.TRY;
+};
+
+function formatPrice(amount: number, currencyCode: string = 'TRY'): string {
+  const currency = getCurrency(currencyCode);
+  const formatted = new Intl.NumberFormat(currency.locale, {
+    minimumFractionDigits: currency.decimals,
+    maximumFractionDigits: currency.decimals
+  }).format(amount);
+  return `${formatted} ${currency.code}`;
+}
+
 export function generatePaymentMessage(
   paymentInstructions: any,
   language: string,
   totalPrice: number,
-  depositAmount: number
+  depositAmount: number,
+  currencyCode: string = 'TRY'
 ): string {
   if (!paymentInstructions || !paymentInstructions.payment_methods || paymentInstructions.payment_methods.length === 0) {
     return '';
@@ -18,9 +47,9 @@ export function generatePaymentMessage(
     tr: {
       title: '💳 ÖDEME BİLGİLERİ',
       paymentType: paymentType === 'deposit' ? `Kapora (%${depositPercentage})` : 'Tam Ödeme',
-      depositAmount: `Kapora Tutarı: ${depositAmount}₺`,
-      remaining: `Kalan Tutar: ${totalPrice - depositAmount}₺ (Tur gününde)`,
-      fullAmount: `Ödeme Tutarı: ${totalPrice}₺`,
+      depositAmount: `Kapora Tutarı: ${formatPrice(depositAmount, currencyCode)}`,
+      remaining: `Kalan Tutar: ${formatPrice(totalPrice - depositAmount, currencyCode)} (Tur gününde)`,
+      fullAmount: `Ödeme Tutarı: ${formatPrice(totalPrice, currencyCode)}`,
       methods: 'Ödeme Yöntemleriniz:',
       bankTransfer: '🏦 Havale/EFT:',
       bankName: 'Banka:',
@@ -39,9 +68,9 @@ export function generatePaymentMessage(
     en: {
       title: '💳 PAYMENT INFORMATION',
       paymentType: paymentType === 'deposit' ? `Deposit (${depositPercentage}%)` : 'Full Payment',
-      depositAmount: `Deposit Amount: ${depositAmount}₺`,
-      remaining: `Remaining: ${totalPrice - depositAmount}₺ (On tour day)`,
-      fullAmount: `Payment Amount: ${totalPrice}₺`,
+      depositAmount: `Deposit Amount: ${formatPrice(depositAmount, currencyCode)}`,
+      remaining: `Remaining: ${formatPrice(totalPrice - depositAmount, currencyCode)} (On tour day)`,
+      fullAmount: `Payment Amount: ${formatPrice(totalPrice, currencyCode)}`,
       methods: 'Payment Methods:',
       bankTransfer: '🏦 Bank Transfer:',
       bankName: 'Bank:',
@@ -60,9 +89,9 @@ export function generatePaymentMessage(
     de: {
       title: '💳 ZAHLUNGSINFORMATIONEN',
       paymentType: paymentType === 'deposit' ? `Anzahlung (${depositPercentage}%)` : 'Vollzahlung',
-      depositAmount: `Anzahlungsbetrag: ${depositAmount}₺`,
-      remaining: `Restbetrag: ${totalPrice - depositAmount}₺ (Am Tourtag)`,
-      fullAmount: `Zahlungsbetrag: ${totalPrice}₺`,
+      depositAmount: `Anzahlungsbetrag: ${formatPrice(depositAmount, currencyCode)}`,
+      remaining: `Restbetrag: ${formatPrice(totalPrice - depositAmount, currencyCode)} (Am Tourtag)`,
+      fullAmount: `Zahlungsbetrag: ${formatPrice(totalPrice, currencyCode)}`,
       methods: 'Zahlungsmethoden:',
       bankTransfer: '🏦 Banküberweisung:',
       bankName: 'Bank:',
@@ -81,9 +110,9 @@ export function generatePaymentMessage(
     ru: {
       title: '💳 ПЛАТЕЖНАЯ ИНФОРМАЦИЯ',
       paymentType: paymentType === 'deposit' ? `Депозит (${depositPercentage}%)` : 'Полная оплата',
-      depositAmount: `Сумма депозита: ${depositAmount}₺`,
-      remaining: `Остаток: ${totalPrice - depositAmount}₺ (В день тура)`,
-      fullAmount: `Сумма оплаты: ${totalPrice}₺`,
+      depositAmount: `Сумма депозита: ${formatPrice(depositAmount, currencyCode)}`,
+      remaining: `Остаток: ${formatPrice(totalPrice - depositAmount, currencyCode)} (В день тура)`,
+      fullAmount: `Сумма оплаты: ${formatPrice(totalPrice, currencyCode)}`,
       methods: 'Способы оплаты:',
       bankTransfer: '🏦 Банковский перевод:',
       bankName: 'Банк:',
@@ -102,9 +131,9 @@ export function generatePaymentMessage(
     ar: {
       title: '💳 معلومات الدفع',
       paymentType: paymentType === 'deposit' ? `وديعة (${depositPercentage}٪)` : 'الدفع الكامل',
-      depositAmount: `مبلغ الوديعة: ${depositAmount}₺`,
-      remaining: `المتبقي: ${totalPrice - depositAmount}₺ (في يوم الجولة)`,
-      fullAmount: `مبلغ الدفع: ${totalPrice}₺`,
+      depositAmount: `مبلغ الوديعة: ${formatPrice(depositAmount, currencyCode)}`,
+      remaining: `المتبقي: ${formatPrice(totalPrice - depositAmount, currencyCode)} (في يوم الجولة)`,
+      fullAmount: `مبلغ الدفع: ${formatPrice(totalPrice, currencyCode)}`,
       methods: 'طرق الدفع:',
       bankTransfer: '🏦 تحويل بنكي:',
       bankName: 'البنك:',
@@ -123,9 +152,9 @@ export function generatePaymentMessage(
     fr: {
       title: '💳 INFORMATIONS DE PAIEMENT',
       paymentType: paymentType === 'deposit' ? `Acompte (${depositPercentage}%)` : 'Paiement complet',
-      depositAmount: `Montant de l'acompte: ${depositAmount}₺`,
-      remaining: `Reste: ${totalPrice - depositAmount}₺ (Le jour du circuit)`,
-      fullAmount: `Montant du paiement: ${totalPrice}₺`,
+      depositAmount: `Montant de l'acompte: ${formatPrice(depositAmount, currencyCode)}`,
+      remaining: `Reste: ${formatPrice(totalPrice - depositAmount, currencyCode)} (Le jour du circuit)`,
+      fullAmount: `Montant du paiement: ${formatPrice(totalPrice, currencyCode)}`,
       methods: 'Méthodes de paiement:',
       bankTransfer: '🏦 Virement bancaire:',
       bankName: 'Banque:',
@@ -144,9 +173,9 @@ export function generatePaymentMessage(
     es: {
       title: '💳 INFORMACIÓN DE PAGO',
       paymentType: paymentType === 'deposit' ? `Depósito (${depositPercentage}%)` : 'Pago completo',
-      depositAmount: `Monto del depósito: ${depositAmount}₺`,
-      remaining: `Restante: ${totalPrice - depositAmount}₺ (El día del tour)`,
-      fullAmount: `Monto del pago: ${totalPrice}₺`,
+      depositAmount: `Monto del depósito: ${formatPrice(depositAmount, currencyCode)}`,
+      remaining: `Restante: ${formatPrice(totalPrice - depositAmount, currencyCode)} (El día del tour)`,
+      fullAmount: `Monto del pago: ${formatPrice(totalPrice, currencyCode)}`,
       methods: 'Métodos de pago:',
       bankTransfer: '🏦 Transferencia bancaria:',
       bankName: 'Banco:',
