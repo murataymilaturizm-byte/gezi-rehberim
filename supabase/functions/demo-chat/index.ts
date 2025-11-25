@@ -401,6 +401,25 @@ serve(async (req) => {
       }
     }
 
+    // === Save complaint to database if detected ===
+    if (nluResult.intent === "complaint_feedback") {
+      console.log("📝 Saving complaint to database...");
+
+      const { error: complaintError } = await supabase.from("complaints").insert({
+        agency_id: DEMO_AGENCY_ID,
+        phone: sessionId,
+        message: message,
+        type: "complaint",
+        status: "new",
+      });
+
+      if (complaintError) {
+        console.error("❌ Error saving complaint:", complaintError);
+      } else {
+        console.log("✅ Complaint saved successfully");
+      }
+    }
+
     // Save messages
     await supabase.from("whatsapp_conversations").insert([
       {
