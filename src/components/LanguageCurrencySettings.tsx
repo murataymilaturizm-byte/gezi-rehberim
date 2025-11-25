@@ -179,8 +179,8 @@ export function LanguageCurrencySettings() {
 
           <div className="space-y-3">
             {enabledLanguages.map((lang) => {
-              const selectedCurrency = languageCurrencies[lang] || '';
-              const displayCurrency = selectedCurrency || primaryCurrency;
+              const selectedCurrency = languageCurrencies[lang] || '__default__';
+              const displayCurrency = selectedCurrency === '__default__' ? primaryCurrency : selectedCurrency;
               
               return (
                 <div key={lang} className="p-4 border rounded-lg bg-muted/20">
@@ -195,8 +195,8 @@ export function LanguageCurrencySettings() {
                       <Select
                         value={selectedCurrency}
                         onValueChange={(value) => {
-                          if (value === '') {
-                            // Boş seçilirse override'ı kaldır
+                          if (value === '__default__') {
+                            // Ana para birimi seçilirse override'ı kaldır
                             setLanguageOverrides(prev => ({ ...prev, [lang]: false }));
                             setLanguageCurrencies(prev => {
                               const newCurrencies = { ...prev };
@@ -211,10 +211,10 @@ export function LanguageCurrencySettings() {
                         }}
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={`Ana para birimi kullanılacak (${primaryCurrency})`} />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">
+                          <SelectItem value="__default__">
                             Ana Para Birimi ({primaryCurrency})
                           </SelectItem>
                           {currencies.map((currency) => (
