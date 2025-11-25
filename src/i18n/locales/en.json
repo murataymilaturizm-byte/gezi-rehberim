@@ -471,7 +471,7 @@
     "groups": {
       "general": "General Management",
       "tours": "Tour Management",
-      "communication": "Communication",
+      "communication": "Chat Bot Settings",
       "reporting": "Reporting",
       "support": "Support",
       "superAdmin": "Super Admin"

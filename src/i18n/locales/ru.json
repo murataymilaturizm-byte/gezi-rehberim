@@ -481,7 +481,7 @@
     "groups": {
       "general": "Общее управление",
       "tours": "Управление турами",
-      "communication": "Коммуникация",
+      "communication": "Настройки чат-бота",
       "reporting": "Отчетность",
       "support": "Поддержка",
       "superAdmin": "Супер админ"

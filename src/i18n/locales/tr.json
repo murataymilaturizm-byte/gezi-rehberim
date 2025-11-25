@@ -455,7 +455,7 @@
     "groups": {
       "general": "Genel Yönetim",
       "tours": "Tur Yönetimi",
-      "communication": "İletişim",
+      "communication": "Chat Bot Ayarları",
       "reporting": "Raporlama",
       "support": "Destek",
       "superAdmin": "Süper Yönetici"

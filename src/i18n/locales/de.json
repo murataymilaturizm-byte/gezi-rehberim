@@ -489,7 +489,7 @@
     "groups": {
       "general": "Allgemeine Verwaltung",
       "tours": "Tour-Verwaltung",
-      "communication": "Kommunikation",
+      "communication": "Chat Bot Einstellungen",
       "reporting": "Berichterstattung",
       "support": "Unterstützung",
       "superAdmin": "Super-Admin"

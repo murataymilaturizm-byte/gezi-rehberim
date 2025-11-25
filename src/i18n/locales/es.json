@@ -481,7 +481,7 @@
     "groups": {
       "general": "Gestión general",
       "tours": "Gestión de tours",
-      "communication": "Comunicación",
+      "communication": "Configuración del Chatbot",
       "reporting": "Informes",
       "support": "Soporte",
       "superAdmin": "Super Admin"
