@@ -661,10 +661,10 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
   // Clear wizard state
   await clearWizardState(supabase, phone, agencyId);
 
-  // Fetch agency payment instructions and language currencies
+  // Fetch agency payment instructions, language currencies and primary currency
   const { data: agencyData } = await supabase
     .from('agencies')
-    .select('payment_instructions, language_currencies')
+    .select('payment_instructions, primary_currency, language_currencies')
     .eq('id', agencyId)
     .single();
 
@@ -683,7 +683,10 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
         totalPrice, 
         depositAmount, 
         state.selected_tour.currency,
-        agencyData.language_currencies
+        {
+          languageCurrencies: agencyData.language_currencies,
+          primaryCurrency: agencyData.primary_currency
+        }
       )
     : '';
 

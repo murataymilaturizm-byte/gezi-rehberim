@@ -33,10 +33,22 @@ const getCurrency = (code: string): CurrencyConfig => {
   return CURRENCIES[code] || CURRENCIES.TRY;
 };
 
-function getCurrencyForLanguage(language: string, languageCurrencies?: any): string {
-  if (languageCurrencies && languageCurrencies[language]) {
-    return languageCurrencies[language];
+function getCurrencyForLanguage(
+  language: string, 
+  options?: { 
+    languageCurrencies?: any;
+    primaryCurrency?: string;
   }
+): string {
+  // 1. Önce dil bazlı override'a bak
+  if (options?.languageCurrencies && options.languageCurrencies[language]) {
+    return options.languageCurrencies[language];
+  }
+  // 2. Primary currency kullan
+  if (options?.primaryCurrency) {
+    return options.primaryCurrency;
+  }
+  // 3. Default language currency
   return DEFAULT_LANGUAGE_CURRENCIES[language] || 'TRY';
 }
 
@@ -103,12 +115,15 @@ export function formatDate(dateString: string, language: string = 'tr'): string 
 export async function formatTourForWhatsApp(
   tour: Tour, 
   language: string = 'tr',
-  languageCurrencies?: any
+  options?: {
+    languageCurrencies?: any;
+    primaryCurrency?: string;
+  }
 ): Promise<string> {
   const dateInfo = tour.dates[0];
   if (!dateInfo) return '';
 
-  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
+  const targetCurrency = getCurrencyForLanguage(language, options);
   const convertedPrice = await convertPrice(dateInfo.price_adult, tour.currency, targetCurrency);
 
   const labels = {
@@ -192,7 +207,10 @@ export async function formatTourForWhatsApp(
 export async function formatToursSummary(
   tours: Tour[], 
   language: string = 'tr',
-  languageCurrencies?: any
+  options?: {
+    languageCurrencies?: any;
+    primaryCurrency?: string;
+  }
 ): Promise<string> {
   const labels = {
     tr: {
@@ -226,7 +244,7 @@ export async function formatToursSummary(
   };
 
   const lang = labels[language as keyof typeof labels] || labels.tr;
-  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
+  const targetCurrency = getCurrencyForLanguage(language, options);
 
   const tourList = await Promise.all(tours.map(async (tour, index) => {
     const destination = tour.destination ? ` - ${tour.destination}` : '';
@@ -250,12 +268,15 @@ export async function formatToursSummary(
 export async function formatTourBrief(
   tour: Tour, 
   language: string = 'tr',
-  languageCurrencies?: any
+  options?: {
+    languageCurrencies?: any;
+    primaryCurrency?: string;
+  }
 ): Promise<string> {
   const dateInfo = tour.dates[0];
   if (!dateInfo) return '';
 
-  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
+  const targetCurrency = getCurrencyForLanguage(language, options);
   const convertedPrice = await convertPrice(dateInfo.price_adult, tour.currency, targetCurrency);
 
   const labels = {
@@ -355,7 +376,10 @@ export async function formatTourBrief(
 export async function formatToursResponse(
   tours: Tour[], 
   language: string = 'tr',
-  languageCurrencies?: any
+  options?: {
+    languageCurrencies?: any;
+    primaryCurrency?: string;
+  }
 ): Promise<string> {
   if (tours.length === 0) {
     const messages: Record<string, string> = {
@@ -372,7 +396,7 @@ export async function formatToursResponse(
 
   const header = getLabel('found_tours', language);
   const tourStrings = await Promise.all(
-    tours.map(tour => formatTourForWhatsApp(tour, language, languageCurrencies))
+    tours.map(tour => formatTourForWhatsApp(tour, language, options))
   );
   
   return `${header} ✨\n\n${tourStrings.join('\n\n---\n\n')}`;
