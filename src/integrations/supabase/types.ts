@@ -24,6 +24,7 @@ export type Database = {
           created_at: string | null
           enabled_languages: string[] | null
           id: string
+          language_currencies: Json | null
           language_preference: string | null
           last_message_reset_date: string | null
           latitude: number | null
@@ -58,6 +59,7 @@ export type Database = {
           created_at?: string | null
           enabled_languages?: string[] | null
           id?: string
+          language_currencies?: Json | null
           language_preference?: string | null
           last_message_reset_date?: string | null
           latitude?: number | null
@@ -92,6 +94,7 @@ export type Database = {
           created_at?: string | null
           enabled_languages?: string[] | null
           id?: string
+          language_currencies?: Json | null
           language_preference?: string | null
           last_message_reset_date?: string | null
           latitude?: number | null

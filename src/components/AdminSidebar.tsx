@@ -102,6 +102,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
     { id: "settings", icon: Settings, label: t("admin.tabs.settings") },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
+    { id: "language_currencies", icon: CreditCard, label: "Dil Para Birimleri" },
     { id: "history", icon: History, label: t("admin.tabs.history") },
   ];
 
