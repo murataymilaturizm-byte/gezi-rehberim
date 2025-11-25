@@ -1,4 +1,25 @@
 {
+  "currency": {
+    "management": "Gestión de monedas",
+    "description": "Primero seleccione su moneda principal. Opcionalmente, puede usar monedas diferentes para algunos idiomas.",
+    "howItWorks": "Cómo funciona:",
+    "howItWorksDesc": "Su moneda principal es {currency} por defecto. Puede seleccionar su moneda preferida para cada idioma. Si no hace una selección, se usará la moneda principal.",
+    "primaryCurrency": "Moneda principal",
+    "primaryCurrencyDesc": "Moneda predeterminada para todos los idiomas",
+    "selectPrimaryCurrency": "Seleccione la moneda principal",
+    "languageBasedSettings": "Configuración de moneda por idioma",
+    "languageBasedSettingsDesc": "Active si desea usar una moneda personalizada para cada idioma",
+    "customCurrency": "Moneda personalizada: {currency}",
+    "usingPrimary": "Usando moneda principal: {currency}",
+    "selectCurrencyForLanguage": "Seleccione la moneda para este idioma:",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "saveSuccess": "Éxito",
+    "saveSuccessDesc": "Configuración de moneda guardada",
+    "saveError": "Error",
+    "saveErrorDesc": "Ocurrió un error al guardar la configuración",
+    "loadError": "Ocurrió un error al cargar la configuración"
+  },
   "nav": {
     "home": "Inicio",
     "admin": "Panel de Admin",

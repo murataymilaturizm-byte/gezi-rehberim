@@ -1,4 +1,25 @@
 {
+  "currency": {
+    "management": "إدارة العملات",
+    "description": "اختر أولاً عملتك الأساسية. يمكنك اختيارياً استخدام عملات مختلفة لبعض اللغات.",
+    "howItWorks": "كيف يعمل:",
+    "howItWorksDesc": "عملتك الأساسية هي {currency} افتراضياً. يمكنك اختيار العملة المفضلة لكل لغة. إذا لم تقم بالاختيار، سيتم استخدام العملة الأساسية.",
+    "primaryCurrency": "العملة الأساسية",
+    "primaryCurrencyDesc": "العملة الافتراضية لجميع اللغات",
+    "selectPrimaryCurrency": "اختر العملة الأساسية",
+    "languageBasedSettings": "إعدادات العملة حسب اللغة",
+    "languageBasedSettingsDesc": "قم بالتفعيل إذا كنت تريد استخدام عملة مخصصة لكل لغة",
+    "customCurrency": "عملة مخصصة: {currency}",
+    "usingPrimary": "استخدام العملة الأساسية: {currency}",
+    "selectCurrencyForLanguage": "اختر العملة لهذه اللغة:",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "saveSuccess": "نجح",
+    "saveSuccessDesc": "تم حفظ إعدادات العملة",
+    "saveError": "خطأ",
+    "saveErrorDesc": "حدث خطأ أثناء حفظ الإعدادات",
+    "loadError": "حدث خطأ أثناء تحميل الإعدادات"
+  },
   "nav": {
     "home": "الرئيسية",
     "admin": "لوحة الإدارة",

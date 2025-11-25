@@ -5,6 +5,27 @@
     "gettingStarted": "Nasıl Başlarım?",
     "help": "Yardım"
   },
+  "currency": {
+    "management": "Para Birimi Yönetimi",
+    "description": "Önce ana para biriminizi seçin. İsterseniz bazı diller için farklı para birimleri kullanabilirsiniz.",
+    "howItWorks": "Nasıl Çalışır:",
+    "howItWorksDesc": "Ana para biriminiz {currency} olarak varsayılan değerdir. Her dil için istediğiniz para birimini seçebilirsiniz. Seçim yapmazsanız ana para birimi kullanılır.",
+    "primaryCurrency": "Ana Para Birimi",
+    "primaryCurrencyDesc": "Tüm diller için varsayılan olarak kullanılacak para birimi",
+    "selectPrimaryCurrency": "Ana para birimi seçin",
+    "languageBasedSettings": "Dil Bazlı Para Birimi Ayarları",
+    "languageBasedSettingsDesc": "Her dil için özel para birimi kullanmak istiyorsanız aktif edin",
+    "customCurrency": "Özel para birimi: {currency}",
+    "usingPrimary": "Ana para birimi kullanılıyor: {currency}",
+    "selectCurrencyForLanguage": "Bu dil için para birimi seçin:",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "saveSuccess": "Başarılı",
+    "saveSuccessDesc": "Para birimi ayarları kaydedildi",
+    "saveError": "Hata",
+    "saveErrorDesc": "Ayarlar kaydedilirken bir hata oluştu",
+    "loadError": "Ayarlar yüklenirken bir hata oluştu"
+  },
   "hero": {
     "title": "WhatsApp ile Otomatik Tur Satışı",
     "subtitle": "Akıllı Tur Satış Asistanı",
