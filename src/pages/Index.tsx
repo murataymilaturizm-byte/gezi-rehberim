@@ -1064,8 +1064,8 @@ const Index = () => {
         </Button>
       )}
 
-      {/* Sales Chat Widget - Temporarily disabled for testing */}
-      {/* <SalesChatWidget /> */}
+      {/* Sales Chat Widget */}
+      <SalesChatWidget />
     </div>
   );
 };
