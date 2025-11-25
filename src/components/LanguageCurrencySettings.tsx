@@ -168,8 +168,9 @@ export function LanguageCurrencySettings() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <strong>Hibrit Model:</strong> Acenteniz genellikle {primaryCurrency} ile çalışır. 
-            Ancak bazı diller için farklı para birimleri göstermek isterseniz, o diller için özel ayar yapabilirsiniz.
+            <strong>Nasıl Çalışır:</strong> Ana para biriminiz <strong>{primaryCurrency}</strong> olarak ayarlanır. 
+            Belirli dillerde farklı para birimi göstermek isterseniz, o dilin tikini açıp özel para birimi seçebilirsiniz. 
+            Tik kapalıysa, o dil için ana para birimi kullanılır.
           </AlertDescription>
         </Alert>
 
@@ -199,53 +200,67 @@ export function LanguageCurrencySettings() {
         {/* Dil Bazlı Override'lar */}
         <div className="space-y-4">
           <div>
-            <Label className="text-base font-semibold">Dil Bazlı Özel Ayarlar</Label>
+            <Label className="text-base font-semibold">Dil Bazlı Para Birimi Ayarları</Label>
             <p className="text-sm text-muted-foreground mt-1">
-              Belirli diller için farklı para birimi göstermek isterseniz işaretleyin
+              Her dilin yanındaki tiki açarak o dil için farklı para birimi seçebilirsiniz
             </p>
           </div>
 
-          {enabledLanguages.map((lang) => (
-            <div key={lang} className="flex items-start gap-4 p-3 border rounded-lg">
-              <div className="flex items-center gap-2 pt-2">
-                <Switch
-                  id={`override-${lang}`}
-                  checked={languageOverrides[lang] || false}
-                  onCheckedChange={(checked) => handleOverrideToggle(lang, checked)}
-                />
-                <Label 
-                  htmlFor={`override-${lang}`}
-                  className="min-w-[100px] cursor-pointer"
-                >
-                  {LANGUAGE_LABELS[lang] || lang}
-                </Label>
-              </div>
-              
-              <div className="flex-1">
-                {languageOverrides[lang] ? (
-                  <Select
-                    value={languageCurrencies[lang] || primaryCurrency}
-                    onValueChange={(value) => handleCurrencyChange(lang, value)}
+          {enabledLanguages.map((lang) => {
+            const isOverridden = languageOverrides[lang] || false;
+            const activeCurrency = isOverridden ? (languageCurrencies[lang] || primaryCurrency) : primaryCurrency;
+            
+            return (
+              <div key={lang} className="p-4 border rounded-lg bg-muted/20">
+                <div className="flex items-center gap-3 mb-3">
+                  <Switch
+                    id={`override-${lang}`}
+                    checked={isOverridden}
+                    onCheckedChange={(checked) => handleOverrideToggle(lang, checked)}
+                  />
+                  <Label 
+                    htmlFor={`override-${lang}`}
+                    className="text-base font-medium cursor-pointer"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Para birimi seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map((currency) => (
-                        <SelectItem key={currency.code} value={currency.code}>
-                          {currency.symbol} {currency.code} - {currency.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="text-sm text-muted-foreground pt-2">
-                    Ana para birimi kullanılacak: <strong>{primaryCurrency}</strong>
+                    {LANGUAGE_LABELS[lang] || lang}
+                  </Label>
+                  <div className="ml-auto text-sm">
+                    <span className="text-muted-foreground">Kullanılacak para birimi: </span>
+                    <span className="font-semibold text-foreground">{activeCurrency}</span>
+                  </div>
+                </div>
+                
+                {isOverridden && (
+                  <div className="pl-11">
+                    <Select
+                      value={activeCurrency}
+                      onValueChange={(value) => handleCurrencyChange(lang, value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Para birimi seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currencies.map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.symbol} {currency.code} - {currency.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Bu dilde turlar ve fiyatlar <strong>{activeCurrency}</strong> ile gösterilecek
+                    </p>
+                  </div>
+                )}
+                
+                {!isOverridden && (
+                  <div className="pl-11 text-sm text-muted-foreground">
+                    Bu dil için ana para birimi (<strong>{primaryCurrency}</strong>) kullanılacak
                   </div>
                 )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <Button 
