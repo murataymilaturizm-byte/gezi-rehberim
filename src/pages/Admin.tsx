@@ -38,6 +38,7 @@ import MessageTemplates from "@/components/MessageTemplates";
 import FAQManagement from "@/components/FAQManagement";
 import { CustomerFeedback } from "@/components/CustomerFeedback";
 import { PaymentSettings } from "@/components/PaymentSettings";
+import { LanguageCurrencySettings } from "@/components/LanguageCurrencySettings";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 import { exportRegistrationsToExcel, exportToursToExcel } from "@/utils/excelExporter";
@@ -98,7 +99,7 @@ const Admin = () => {
   const { toast } = useToast();
   
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   
   // Auth & User state
   const [session, setSession] = useState<Session | null>(null);
@@ -598,6 +599,8 @@ const Admin = () => {
               <PaymentSettings />
             ) : activeTab === "languages" ? (
               <LanguageManagement />
+            ) : activeTab === "language_currencies" ? (
+              <LanguageCurrencySettings />
             ) : activeTab === "templates" && (planFeatures?.has_templates || isSuperAdmin) ? (
               <MessageTemplates />
             ) : activeTab === "faq" ? (
