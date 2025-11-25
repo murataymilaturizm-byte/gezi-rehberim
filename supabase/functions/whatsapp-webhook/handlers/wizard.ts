@@ -661,10 +661,10 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
   // Clear wizard state
   await clearWizardState(supabase, phone, agencyId);
 
-  // Fetch agency payment instructions
+  // Fetch agency payment instructions and language currencies
   const { data: agencyData } = await supabase
     .from('agencies')
-    .select('payment_instructions')
+    .select('payment_instructions, language_currencies')
     .eq('id', agencyId)
     .single();
 
@@ -675,9 +675,16 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
   const formattedDate = formatDate(state.selected_date.departure_date, language);
   const formattedPrice = formatPrice(totalPrice);
 
-  // Generate payment message
+  // Generate payment message with currency conversion
   const paymentMessage = agencyData?.payment_instructions 
-    ? generatePaymentMessage(agencyData.payment_instructions, language, totalPrice, depositAmount)
+    ? await generatePaymentMessage(
+        agencyData.payment_instructions, 
+        language, 
+        totalPrice, 
+        depositAmount, 
+        state.selected_tour.currency,
+        agencyData.language_currencies
+      )
     : '';
 
   // Build beautiful summary message - multilingual

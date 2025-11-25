@@ -16,11 +16,60 @@ const CURRENCIES: Record<string, CurrencyConfig> = {
   USD: { code: 'USD', symbol: '$', locale: 'en-US', decimals: 2 },
   EUR: { code: 'EUR', symbol: '€', locale: 'de-DE', decimals: 2 },
   SAR: { code: 'SAR', symbol: 'ر.س', locale: 'ar-SA', decimals: 2 },
+  RUB: { code: 'RUB', symbol: '₽', locale: 'ru-RU', decimals: 0 },
+};
+
+const DEFAULT_LANGUAGE_CURRENCIES: Record<string, string> = {
+  tr: 'TRY',
+  en: 'USD',
+  de: 'EUR',
+  ru: 'RUB',
+  ar: 'SAR',
+  fr: 'EUR',
+  es: 'EUR'
 };
 
 const getCurrency = (code: string): CurrencyConfig => {
   return CURRENCIES[code] || CURRENCIES.TRY;
 };
+
+function getCurrencyForLanguage(language: string, languageCurrencies?: any): string {
+  if (languageCurrencies && languageCurrencies[language]) {
+    return languageCurrencies[language];
+  }
+  return DEFAULT_LANGUAGE_CURRENCIES[language] || 'TRY';
+}
+
+async function getExchangeRate(fromCurrency: string, toCurrency: string): Promise<number> {
+  if (fromCurrency === toCurrency) return 1;
+  
+  try {
+    const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/get-exchange-rates`, {
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+      }
+    });
+    
+    if (!response.ok) return 1;
+    
+    const data = await response.json();
+    const rates = data.rates || {};
+    
+    // Convert from base to target currency
+    const fromRate = rates[fromCurrency] || 1;
+    const toRate = rates[toCurrency] || 1;
+    
+    return toRate / fromRate;
+  } catch (error) {
+    console.error('Error fetching exchange rate:', error);
+    return 1;
+  }
+}
+
+async function convertPrice(price: number, fromCurrency: string, toCurrency: string): Promise<number> {
+  const rate = await getExchangeRate(fromCurrency, toCurrency);
+  return price * rate;
+}
 
 export function formatPrice(price: number, currencyCode: string = 'TRY'): string {
   const currency = getCurrency(currencyCode);
@@ -51,9 +100,16 @@ export function formatDate(dateString: string, language: string = 'tr'): string 
   return date.toLocaleDateString(locales[language] || 'tr-TR', options);
 }
 
-export function formatTourForWhatsApp(tour: Tour, language: string = 'tr'): string {
+export async function formatTourForWhatsApp(
+  tour: Tour, 
+  language: string = 'tr',
+  languageCurrencies?: any
+): Promise<string> {
   const dateInfo = tour.dates[0];
   if (!dateInfo) return '';
+
+  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
+  const convertedPrice = await convertPrice(dateInfo.price_adult, tour.currency, targetCurrency);
 
   const labels = {
     tr: {
@@ -122,7 +178,7 @@ export function formatTourForWhatsApp(tour: Tour, language: string = 'tr'): stri
     parts.push(`📅 ${lang.singleDate}: ${formatDate(dateInfo.departure_date, language)}`);
   }
 
-  parts.push(`💰 ${formatPrice(dateInfo.price_adult, tour.currency)} ${tour.currency}`);
+  parts.push(`💰 ${formatPrice(convertedPrice, targetCurrency)} ${targetCurrency}`);
   parts.push(`👥 ${dateInfo.quota > 0 ? dateInfo.quota + ' ' + lang.quota : lang.soldOut}`);
 
   if (tour.program_url) {
@@ -132,8 +188,12 @@ export function formatTourForWhatsApp(tour: Tour, language: string = 'tr'): stri
   return parts.join('\n');
 }
 
-// Format tours as simple list (summary only, without prices)
-export function formatToursSummary(tours: Tour[], language: string = 'tr'): string {
+// Format tours as simple list (summary only, with prices in target currency)
+export async function formatToursSummary(
+  tours: Tour[], 
+  language: string = 'tr',
+  languageCurrencies?: any
+): Promise<string> {
   const labels = {
     tr: {
       foundTours: '🌟 *Mevcut Turlarımız*',
@@ -166,21 +226,37 @@ export function formatToursSummary(tours: Tour[], language: string = 'tr'): stri
   };
 
   const lang = labels[language as keyof typeof labels] || labels.tr;
+  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
 
-  const tourList = tours.map((tour, index) => {
+  const tourList = await Promise.all(tours.map(async (tour, index) => {
     const destination = tour.destination ? ` - ${tour.destination}` : '';
     const places = tour.gezilecek_yerler ? `\n   🗺️ ${tour.gezilecek_yerler}` : '';
     
-    return `${index + 1}. 🎯 *${tour.title}*${destination}${places}`;
-  }).filter(Boolean).join('\n\n');
+    // Add price info if dates available
+    let priceInfo = '';
+    if (tour.dates && tour.dates.length > 0) {
+      const firstDate = tour.dates[0];
+      const convertedPrice = await convertPrice(firstDate.price_adult, tour.currency, targetCurrency);
+      priceInfo = `\n   💰 ${formatPrice(convertedPrice, targetCurrency)} ${targetCurrency}`;
+    }
+    
+    return `${index + 1}. 🎯 *${tour.title}*${destination}${places}${priceInfo}`;
+  }));
 
-  return `${lang.foundTours}\n\n${tourList}${lang.moreInfo}`;
+  return `${lang.foundTours}\n\n${tourList.join('\n\n')}${lang.moreInfo}`;
 }
 
 // Format single tour as brief summary (not full details)
-export function formatTourBrief(tour: Tour, language: string = 'tr'): string {
+export async function formatTourBrief(
+  tour: Tour, 
+  language: string = 'tr',
+  languageCurrencies?: any
+): Promise<string> {
   const dateInfo = tour.dates[0];
   if (!dateInfo) return '';
+
+  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
+  const convertedPrice = await convertPrice(dateInfo.price_adult, tour.currency, targetCurrency);
 
   const labels = {
     tr: {
@@ -267,7 +343,7 @@ export function formatTourBrief(tour: Tour, language: string = 'tr'): string {
     parts.push(`📅 ${lang.return}: ${formatDate(dateInfo.return_date, language)}`);
   }
 
-  parts.push(`💰 ${lang.price}: ${formatPrice(dateInfo.price_adult, tour.currency)} ${tour.currency}`);
+  parts.push(`💰 ${lang.price}: ${formatPrice(convertedPrice, targetCurrency)} ${targetCurrency}`);
   parts.push(`👥 ${lang.quota}: ${dateInfo.quota > 0 ? dateInfo.quota + ' ' + lang.spots : lang.soldOut}`);
 
   parts.push(lang.question);
@@ -276,7 +352,11 @@ export function formatTourBrief(tour: Tour, language: string = 'tr'): string {
   return parts.join('\n');
 }
 
-export function formatToursResponse(tours: Tour[], language: string = 'tr'): string {
+export async function formatToursResponse(
+  tours: Tour[], 
+  language: string = 'tr',
+  languageCurrencies?: any
+): Promise<string> {
   if (tours.length === 0) {
     const messages: Record<string, string> = {
       tr: 'Üzgünüm, aradığınız kriterlere uygun tur bulamadım. Farklı bir destinasyon veya tarih aralığı deneyelim mi?',
@@ -291,7 +371,9 @@ export function formatToursResponse(tours: Tour[], language: string = 'tr'): str
   }
 
   const header = getLabel('found_tours', language);
-  const tourStrings = tours.map(tour => formatTourForWhatsApp(tour, language));
+  const tourStrings = await Promise.all(
+    tours.map(tour => formatTourForWhatsApp(tour, language, languageCurrencies))
+  );
   
   return `${header} ✨\n\n${tourStrings.join('\n\n---\n\n')}`;
 }
