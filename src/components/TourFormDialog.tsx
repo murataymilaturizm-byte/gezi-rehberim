@@ -39,6 +39,9 @@ interface TourFormDialogProps {
     ulasim?: string;
     tur_kategorisi?: string;
     gezilecek_yerler?: string;
+    visa_notes?: string;
+    hotel_name?: string;
+    hotel_stars?: number;
   };
 }
 
@@ -61,7 +64,10 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
     konaklama: "",
     ulasim: "",
     tur_kategorisi: "",
-    gezilecek_yerler: ""
+    gezilecek_yerler: "",
+    visa_notes: "",
+    hotel_name: "",
+    hotel_stars: 0
   });
 
   useEffect(() => {
@@ -81,7 +87,10 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         konaklama: tour.konaklama || "",
         ulasim: tour.ulasim || "",
         tur_kategorisi: tour.tur_kategorisi || "",
-        gezilecek_yerler: tour.gezilecek_yerler || ""
+        gezilecek_yerler: tour.gezilecek_yerler || "",
+        visa_notes: tour.visa_notes || "",
+        hotel_name: tour.hotel_name || "",
+        hotel_stars: tour.hotel_stars || 0
       });
     } else {
       setFormData({
@@ -99,7 +108,10 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         konaklama: "",
         ulasim: "",
         tur_kategorisi: "",
-        gezilecek_yerler: ""
+        gezilecek_yerler: "",
+        visa_notes: "",
+        hotel_name: "",
+        hotel_stars: 0
       });
     }
   }, [tour, isOpen]);
@@ -145,7 +157,10 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
             konaklama: formData.konaklama || null,
             ulasim: formData.ulasim || null,
             tur_kategorisi: formData.tur_kategorisi || null,
-            gezilecek_yerler: formData.gezilecek_yerler || null
+            gezilecek_yerler: formData.gezilecek_yerler || null,
+            visa_notes: formData.visa_notes || null,
+            hotel_name: formData.hotel_name || null,
+            hotel_stars: formData.hotel_stars || null
           })
           .eq("id", tour.id);
 
@@ -184,6 +199,9 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
           ulasim: formData.ulasim || null,
           tur_kategorisi: formData.tur_kategorisi || null,
           gezilecek_yerler: formData.gezilecek_yerler || null,
+          visa_notes: formData.visa_notes || null,
+          hotel_name: formData.hotel_name || null,
+          hotel_stars: formData.hotel_stars || null,
           agency_id: agencyData.id
         });
 
@@ -394,6 +412,46 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
               className="rounded border-border"
             />
             <Label htmlFor="visa_required" className="cursor-pointer">{t("admin.tourForm.visaRequired")}</Label>
+          </div>
+
+          {formData.visa_required && (
+            <div className="space-y-2">
+              <Label htmlFor="visa_notes">Vize Notları</Label>
+              <Input
+                id="visa_notes"
+                value={formData.visa_notes}
+                onChange={(e) => setFormData({ ...formData, visa_notes: e.target.value })}
+                placeholder="Vize desteği, gerekli belgeler vb."
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="hotel_name">Otel Adı</Label>
+            <Input
+              id="hotel_name"
+              value={formData.hotel_name}
+              onChange={(e) => setFormData({ ...formData, hotel_name: e.target.value })}
+              placeholder="Konaklama yapılacak otel adı"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="hotel_stars">Otel Yıldız Sayısı</Label>
+            <Select
+              value={formData.hotel_stars.toString()}
+              onValueChange={(value) => setFormData({ ...formData, hotel_stars: parseInt(value) })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seçiniz" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Belirtilmemiş</SelectItem>
+                <SelectItem value="3">3 Yıldız</SelectItem>
+                <SelectItem value="4">4 Yıldız</SelectItem>
+                <SelectItem value="5">5 Yıldız</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter className="pt-4">

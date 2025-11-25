@@ -25,6 +25,18 @@ Your job is to analyze user messages and extract intents and entities.
 - provide_info: User provides reservation details (date, pax, name, phone)
 - confirm_reservation: User confirms the booking
 - change_info: User wants to modify information
+- agency_info: User asks about agency details (name, address, phone, website)
+- working_hours: User asks about business hours
+- payment_methods: User asks about payment options
+- cancellation_policy: User asks about cancellation/refund rules
+- visa_support: User asks about visa requirements or support
+- hotel_details: User asks about hotel/accommodation
+- transport_details: User asks about transportation
+- custom_package: User wants a custom/private tour package
+- after_sales: User wants to modify/check existing reservation
+- complaint_feedback: User has a complaint or wants to give feedback
+- faq_general: General tour-related questions
+- human_handover: User wants to speak with a real person
 - general: General questions or chat
 
 **Entities to extract:**
@@ -80,7 +92,14 @@ export async function analyzeUserMessage(
           properties: {
             intent: {
               type: "string",
-              enum: ["greeting", "browse_tours", "tour_search", "select_tour", "provide_info", "confirm_reservation", "change_info", "general"],
+              enum: [
+                "greeting", "browse_tours", "tour_search", "select_tour", 
+                "provide_info", "confirm_reservation", "change_info",
+                "agency_info", "working_hours", "payment_methods", 
+                "cancellation_policy", "visa_support", "hotel_details",
+                "transport_details", "custom_package", "after_sales",
+                "complaint_feedback", "faq_general", "human_handover", "general"
+              ],
               description: "The detected user intent"
             },
             language: {
@@ -198,6 +217,19 @@ export function mapNLUIntentToFSMIntent(nluIntent: string): string {
     'confirm_reservation': 'confirm_reservation',
     'change_info': 'change_info',
     'greeting': 'greeting',
+    // New intents - map to general_question to avoid disrupting FSM flow
+    'agency_info': 'general_question',
+    'working_hours': 'general_question',
+    'payment_methods': 'general_question',
+    'cancellation_policy': 'general_question',
+    'visa_support': 'general_question',
+    'hotel_details': 'general_question',
+    'transport_details': 'general_question',
+    'custom_package': 'support_request',
+    'after_sales': 'support_request',
+    'complaint_feedback': 'support_request',
+    'faq_general': 'general_question',
+    'human_handover': 'support_request',
     'general': 'general'
   };
   
