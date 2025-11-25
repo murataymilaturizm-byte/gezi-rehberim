@@ -28,7 +28,6 @@ import { CustomerAnalytics } from "@/components/CustomerAnalytics";
 import { DestinationAnalytics } from "@/components/DestinationAnalytics";
 import { WhatsAppConversations } from "@/components/WhatsAppConversations";
 import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
-import { LanguageStats } from "@/components/LanguageStats";
 import { AgencyManagement } from "@/components/AgencyManagement";
 import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
@@ -48,7 +47,6 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageManagement } from "@/components/LanguageManagement";
 import { TicketManagement } from "@/components/TicketManagement";
 import { SuperAdminTickets } from "@/components/SuperAdminTickets";
-import { WhatsAppLogs } from "@/components/WhatsAppLogs";
 import { AgencyInfoSettings } from "@/components/AgencyInfoSettings";
 import { ComplaintsManagement } from "@/components/ComplaintsManagement";
 import { getMaxTours, getPlanFeatures, PlanFeatures } from "@/utils/planFeatures";
@@ -100,7 +98,7 @@ const Admin = () => {
   const { toast } = useToast();
   
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "whatsapp_logs" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   
   // Auth & User state
   const [session, setSession] = useState<Session | null>(null);
@@ -580,16 +578,10 @@ const Admin = () => {
             
             {activeTab === "dashboard" ? (
               <AdminDashboard isSuperAdmin={isSuperAdmin} planFeatures={planFeatures} />
-            ) : activeTab === "whatsapp" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
-              <div className="space-y-6">
-                {isSuperAdmin && <LanguageStats isSuperAdmin={isSuperAdmin} />}
-                <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
-                <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
-              </div>
+            ) : activeTab === "whatsapp" ? (
+              <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp_profiles" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (
               <WhatsAppUserProfiles isSuperAdmin={isSuperAdmin} />
-            ) : activeTab === "whatsapp_logs" ? (
-              <WhatsAppLogs />
             ) : activeTab === "analytics" && (planFeatures?.has_analytics || isSuperAdmin) ? (
               <AdvancedAnalytics />
             ) : activeTab === "customer-analytics" && (planFeatures?.has_analytics || isSuperAdmin) ? (
