@@ -32,7 +32,8 @@ export function LanguageCurrencySettings() {
   const [primaryCurrency, setPrimaryCurrency] = useState<string>('TRY');
   const [languageCurrencies, setLanguageCurrencies] = useState<LanguageCurrencyMapping>({});
   const [languageOverrides, setLanguageOverrides] = useState<Record<string, boolean>>({});
-  const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
+  // Tüm mevcut dilleri göster
+  const availableLanguages = Object.keys(LANGUAGE_LABELS);
   const currencies = getAvailableCurrencies();
 
   useEffect(() => {
@@ -55,13 +56,12 @@ export function LanguageCurrencySettings() {
       if (agency) {
         setAgencyId(agency.id);
         setPrimaryCurrency(agency.primary_currency || 'TRY');
-        setEnabledLanguages(agency.enabled_languages || ['tr']);
         const currencies = (agency.language_currencies as LanguageCurrencyMapping) || {};
         setLanguageCurrencies(currencies);
         
         // Hangi dillerin override'ı var, işaretle
         const overrides: Record<string, boolean> = {};
-        (agency.enabled_languages || ['tr']).forEach(lang => {
+        Object.keys(LANGUAGE_LABELS).forEach(lang => {
           overrides[lang] = !!currencies[lang];
         });
         setLanguageOverrides(overrides);
@@ -178,7 +178,7 @@ export function LanguageCurrencySettings() {
           </div>
 
           <div className="space-y-3">
-            {enabledLanguages.map((lang) => {
+            {availableLanguages.map((lang) => {
               const isOverride = languageOverrides[lang] || false;
               const selectedCurrency = languageCurrencies[lang];
               const displayCurrency = isOverride && selectedCurrency ? selectedCurrency : primaryCurrency;
