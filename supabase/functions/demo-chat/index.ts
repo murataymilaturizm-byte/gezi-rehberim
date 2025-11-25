@@ -255,10 +255,10 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 Transition: ${context.stage} → ${newContext.stage}`);
 
-    // Get agency data (name, city, payment instructions) from database
+    // Get agency data from database
     const { data: agencyData, error: agencyError } = await supabase
       .from("agencies")
-      .select("name, city, payment_instructions")
+      .select("name, city, payment_instructions, address, phone_public, website_url, working_hours, maps_url, cancellation_policy")
       .eq("id", "00000000-0000-0000-0000-000000000000")
       .single();
 
@@ -268,6 +268,12 @@ serve(async (req) => {
 
     const agencyName = agencyData?.name ?? "Demo Travel Agency";
     const agencyCity = agencyData?.city ?? undefined;
+    const agencyAddress = agencyData?.address ?? undefined;
+    const agencyPhone = agencyData?.phone_public ?? undefined;
+    const agencyWebsite = agencyData?.website_url ?? undefined;
+    const agencyWorkingHours = agencyData?.working_hours ?? undefined;
+    const agencyMapsUrl = agencyData?.maps_url ?? undefined;
+    const agencyCancellationPolicy = agencyData?.cancellation_policy ?? undefined;
     const paymentInstructions = agencyData?.payment_instructions ?? null;
 
     // paymentInfo: prompt-builder içinde (özellikle EN tarafında) gösterilmek istenen düz metin
@@ -295,6 +301,12 @@ serve(async (req) => {
       tone: newContext.tone,
       agencyName,
       agencyCity,
+      agencyAddress,
+      agencyPhone,
+      agencyWebsite,
+      agencyWorkingHours,
+      agencyMapsUrl,
+      agencyCancellationPolicy,
       paymentInfo,
     });
 

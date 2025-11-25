@@ -102,4 +102,10 @@ export interface AIPromptContext {
   agencyName?: string;
   agencyCity?: string;
   paymentInfo?: string;
+  agencyAddress?: string;
+  agencyPhone?: string;
+  agencyWebsite?: string;
+  agencyWorkingHours?: string;
+  agencyMapsUrl?: string;
+  agencyCancellationPolicy?: string;
 }
