@@ -13,11 +13,29 @@ const CURRENCIES: Record<string, CurrencyConfig> = {
   USD: { code: 'USD', symbol: '$', locale: 'en-US', decimals: 2 },
   EUR: { code: 'EUR', symbol: '€', locale: 'de-DE', decimals: 2 },
   SAR: { code: 'SAR', symbol: 'ر.س', locale: 'ar-SA', decimals: 2 },
+  RUB: { code: 'RUB', symbol: '₽', locale: 'ru-RU', decimals: 0 },
+};
+
+const DEFAULT_LANGUAGE_CURRENCIES: Record<string, string> = {
+  tr: 'TRY',
+  en: 'USD',
+  de: 'EUR',
+  ru: 'RUB',
+  ar: 'SAR',
+  fr: 'EUR',
+  es: 'EUR'
 };
 
 const getCurrency = (code: string): CurrencyConfig => {
   return CURRENCIES[code] || CURRENCIES.TRY;
 };
+
+function getCurrencyForLanguage(language: string, languageCurrencies?: any): string {
+  if (languageCurrencies && languageCurrencies[language]) {
+    return languageCurrencies[language];
+  }
+  return DEFAULT_LANGUAGE_CURRENCIES[language] || 'TRY';
+}
 
 function formatPrice(amount: number, currencyCode: string = 'TRY'): string {
   const currency = getCurrency(currencyCode);
@@ -28,13 +46,46 @@ function formatPrice(amount: number, currencyCode: string = 'TRY'): string {
   return `${formatted} ${currency.code}`;
 }
 
-export function generatePaymentMessage(
+async function convertPrice(price: number, fromCurrency: string, toCurrency: string): Promise<number> {
+  if (fromCurrency === toCurrency) return price;
+  
+  try {
+    const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/get-exchange-rates`, {
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+      }
+    });
+    
+    if (!response.ok) return price;
+    
+    const data = await response.json();
+    const rates = data.rates || {};
+    
+    const fromRate = rates[fromCurrency] || 1;
+    const toRate = rates[toCurrency] || 1;
+    
+    return price * (toRate / fromRate);
+  } catch (error) {
+    console.error('Error converting price:', error);
+    return price;
+  }
+}
+
+export async function generatePaymentMessage(
   paymentInstructions: any,
   language: string,
   totalPrice: number,
   depositAmount: number,
-  currencyCode: string = 'TRY'
-): string {
+  tourCurrency: string = 'TRY',
+  languageCurrencies?: any
+): Promise<string> {
+  // Get target currency for the language
+  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
+  
+  // Convert prices if needed
+  const convertedTotal = await convertPrice(totalPrice, tourCurrency, targetCurrency);
+  const convertedDeposit = await convertPrice(depositAmount, tourCurrency, targetCurrency);
+
   if (!paymentInstructions || !paymentInstructions.payment_methods || paymentInstructions.payment_methods.length === 0) {
     return '';
   }
@@ -47,9 +98,9 @@ export function generatePaymentMessage(
     tr: {
       title: '💳 ÖDEME BİLGİLERİ',
       paymentType: paymentType === 'deposit' ? `Kapora (%${depositPercentage})` : 'Tam Ödeme',
-      depositAmount: `Kapora Tutarı: ${formatPrice(depositAmount, currencyCode)}`,
-      remainingAmount: `Kalan Tutar: ${formatPrice(totalPrice - depositAmount, currencyCode)} (Tur gününde)`,
-      fullAmount: `Ödeme Tutarı: ${formatPrice(totalPrice, currencyCode)}`,
+      depositAmount: `Kapora Tutarı: ${formatPrice(convertedDeposit, targetCurrency)}`,
+      remainingAmount: `Kalan Tutar: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Tur gününde)`,
+      fullAmount: `Ödeme Tutarı: ${formatPrice(convertedTotal, targetCurrency)}`,
       methods: 'Ödeme Yöntemleriniz:',
       bankTransfer: '🏦 Havale/EFT:',
       cashOffice: '💵 Ofiste Nakit:',
@@ -68,9 +119,9 @@ export function generatePaymentMessage(
     en: {
       title: '💳 PAYMENT INFORMATION',
       paymentType: paymentType === 'deposit' ? `Deposit (${depositPercentage}%)` : 'Full Payment',
-      depositAmount: `Deposit Amount: ${formatPrice(depositAmount, currencyCode)}`,
-      remainingAmount: `Remaining Amount: ${formatPrice(totalPrice - depositAmount, currencyCode)} (On tour day)`,
-      fullAmount: `Payment Amount: ${formatPrice(totalPrice, currencyCode)}`,
+      depositAmount: `Deposit Amount: ${formatPrice(convertedDeposit, targetCurrency)}`,
+      remainingAmount: `Remaining Amount: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (On tour day)`,
+      fullAmount: `Payment Amount: ${formatPrice(convertedTotal, targetCurrency)}`,
       methods: 'Payment Methods:',
       bankTransfer: '🏦 Bank Transfer:',
       cashOffice: '💵 Cash at Office:',
@@ -89,9 +140,9 @@ export function generatePaymentMessage(
     de: {
       title: '💳 ZAHLUNGSINFORMATIONEN',
       paymentType: paymentType === 'deposit' ? `Anzahlung (${depositPercentage}%)` : 'Vollzahlung',
-      depositAmount: `Anzahlungsbetrag: ${formatPrice(depositAmount, currencyCode)}`,
-      remainingAmount: `Restbetrag: ${formatPrice(totalPrice - depositAmount, currencyCode)} (Am Tourtag)`,
-      fullAmount: `Zahlungsbetrag: ${formatPrice(totalPrice, currencyCode)}`,
+      depositAmount: `Anzahlungsbetrag: ${formatPrice(convertedDeposit, targetCurrency)}`,
+      remainingAmount: `Restbetrag: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Am Tourtag)`,
+      fullAmount: `Zahlungsbetrag: ${formatPrice(convertedTotal, targetCurrency)}`,
       methods: 'Zahlungsmethoden:',
       bankTransfer: '🏦 Banküberweisung:',
       cashOffice: '💵 Bargeld im Büro:',
@@ -110,9 +161,9 @@ export function generatePaymentMessage(
     ru: {
       title: '💳 ИНФОРМАЦИЯ ОБ ОПЛАТЕ',
       paymentType: paymentType === 'deposit' ? `Депозит (${depositPercentage}%)` : 'Полная оплата',
-      depositAmount: `Сумма депозита: ${formatPrice(depositAmount, currencyCode)}`,
-      remainingAmount: `Остаток: ${formatPrice(totalPrice - depositAmount, currencyCode)} (В день тура)`,
-      fullAmount: `Сумма оплаты: ${formatPrice(totalPrice, currencyCode)}`,
+      depositAmount: `Сумма депозита: ${formatPrice(convertedDeposit, targetCurrency)}`,
+      remainingAmount: `Остаток: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (В день тура)`,
+      fullAmount: `Сумма оплаты: ${formatPrice(convertedTotal, targetCurrency)}`,
       methods: 'Способы оплаты:',
       bankTransfer: '🏦 Банковский перевод:',
       cashOffice: '💵 Наличные в офисе:',
@@ -131,9 +182,9 @@ export function generatePaymentMessage(
     fr: {
       title: '💳 INFORMATIONS DE PAIEMENT',
       paymentType: paymentType === 'deposit' ? `Acompte (${depositPercentage}%)` : 'Paiement complet',
-      depositAmount: `Montant de l'acompte: ${formatPrice(depositAmount, currencyCode)}`,
-      remainingAmount: `Montant restant: ${formatPrice(totalPrice - depositAmount, currencyCode)} (Le jour de la visite)`,
-      fullAmount: `Montant du paiement: ${formatPrice(totalPrice, currencyCode)}`,
+      depositAmount: `Montant de l'acompte: ${formatPrice(convertedDeposit, targetCurrency)}`,
+      remainingAmount: `Montant restant: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Le jour de la visite)`,
+      fullAmount: `Montant du paiement: ${formatPrice(convertedTotal, targetCurrency)}`,
       methods: 'Méthodes de paiement:',
       bankTransfer: '🏦 Virement bancaire:',
       cashOffice: '💵 Espèces au bureau:',
@@ -152,9 +203,9 @@ export function generatePaymentMessage(
     es: {
       title: '💳 INFORMACIÓN DE PAGO',
       paymentType: paymentType === 'deposit' ? `Depósito (${depositPercentage}%)` : 'Pago completo',
-      depositAmount: `Monto del depósito: ${formatPrice(depositAmount, currencyCode)}`,
-      remainingAmount: `Monto restante: ${formatPrice(totalPrice - depositAmount, currencyCode)} (El día del tour)`,
-      fullAmount: `Monto del pago: ${formatPrice(totalPrice, currencyCode)}`,
+      depositAmount: `Monto del depósito: ${formatPrice(convertedDeposit, targetCurrency)}`,
+      remainingAmount: `Monto restante: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (El día del tour)`,
+      fullAmount: `Monto del pago: ${formatPrice(convertedTotal, targetCurrency)}`,
       methods: 'Métodos de pago:',
       bankTransfer: '🏦 Transferencia bancaria:',
       cashOffice: '💵 Efectivo en oficina:',
@@ -173,9 +224,9 @@ export function generatePaymentMessage(
     ar: {
       title: '💳 معلومات الدفع',
       paymentType: paymentType === 'deposit' ? `عربون (${depositPercentage}%)` : 'الدفع الكامل',
-      depositAmount: `مبلغ العربون: ${formatPrice(depositAmount, currencyCode)}`,
-      remainingAmount: `المبلغ المتبقي: ${formatPrice(totalPrice - depositAmount, currencyCode)} (يوم الجولة)`,
-      fullAmount: `مبلغ الدفع: ${formatPrice(totalPrice, currencyCode)}`,
+      depositAmount: `مبلغ العربون: ${formatPrice(convertedDeposit, targetCurrency)}`,
+      remainingAmount: `المبلغ المتبقي: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (يوم الجولة)`,
+      fullAmount: `مبلغ الدفع: ${formatPrice(convertedTotal, targetCurrency)}`,
       methods: 'طرق الدفع:',
       bankTransfer: '🏦 تحويل بنكي:',
       cashOffice: '💵 نقداً في المكتب:',
