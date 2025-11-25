@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { tourSchema } from "@/utils/validation";
+import { getAvailableCurrencies } from "@/utils/currency";
 
 interface TourFormDialogProps {
   isOpen: boolean;
@@ -49,6 +50,7 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
   const { toast } = useToast();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const availableCurrencies = getAvailableCurrencies();
   const [formData, setFormData] = useState({
     title: "",
     destination: "",
@@ -288,9 +290,11 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="TRY">TRY</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
+                  {availableCurrencies.map((currency) => (
+                    <SelectItem key={currency.code} value={currency.code}>
+                      {currency.symbol} {currency.code} - {currency.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
