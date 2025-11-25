@@ -16,13 +16,28 @@ export function buildSystemPrompt(context: AIPromptContext): string {
     paymentInfo, // şu an bilinçli olarak kullanılmıyor, ödeme mesajı backend'de ekleniyor
   } = context;
 
+  // Get current date in the user's language
+  const now = new Date();
+  const currentDateStr = formatDateForLanguage(now.toISOString().split('T')[0], language);
+  const dayNames: Record<string, string[]> = {
+    tr: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
+    en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    de: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+    ru: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+    ar: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+    fr: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+    es: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  };
+  const dayName = (dayNames[language] || dayNames.tr)[now.getDay()];
+  const dateInfo = `📅 CURRENT DATE: ${dayName}, ${currentDateStr}`;
+
   const rolePrompt = getRolePrompt(language);
   const tonePrompt = getTonePrompt(language, tone);
   const formatPrompt = getFormatPrompt(language);
   const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, availableTours, language);
   const agencyInfo = agencyName ? getAgencyInfo(context, language) : "";
 
-  return `${rolePrompt}\n\n${tonePrompt}\n\n${formatPrompt}\n\n${stagePrompt}${agencyInfo}`;
+  return `${dateInfo}\n\n${rolePrompt}\n\n${tonePrompt}\n\n${formatPrompt}\n\n${stagePrompt}${agencyInfo}`;
 }
 
 function getRolePrompt(language: string): string {
@@ -991,7 +1006,24 @@ RULES:
 - When asked about agency info (address, phone, hours, cancellation policy), use the information above.
 - If any information is "Not available", tell the user honestly that this information is not in the system yet.
 - Do NOT add extra words like "Travel Agency" unless they are already part of the name.
-- Example greeting: "Hello! Welcome to ${agencyName}."`;
+- Example greeting: "Hello! Welcome to ${agencyName}."
+
+📞 CONTACT RULES:
+- When user wants to contact the agency ("I want to contact you", "call me", "speak with office" etc.):
+  * Provide all available contact information (phone, address, website, working hours) in a clear list
+  * Example: "Of course! Here's how to reach us:
+    📞 Phone: [phone]
+    📍 Address: [address]
+    🌐 Website: [website]
+    🕐 Working Hours: [hours]
+    
+    How can we help you?"
+  * If any info is missing, skip that line but show what's available
+  
+💰 CURRENCY ACCEPTANCE RULES:
+- When asked about payment methods, only explain general payment options (wire transfer, credit card, etc.)
+- When asked about foreign currencies (Euro, Dollar, etc.): "For currency acceptance policies, please contact our office"
+- Never make definitive statements like "We don't accept Euro/Dollar" as this info is not in the system`;
   }
 
   if (language === "de") {
@@ -1098,8 +1130,25 @@ KURALLAR:
 - Karşılama ve metinlerde bu ismi AYNEN kullan, çevirmeye çalışma.
 - İsmin sonuna ekstra "Travel Agency" vb. ekleme (sadece isimde ne yazıyorsa onu kullan).
 - Acente bilgisi sorulduğunda (adres, telefon, saat, iptal koşulları) yukarıdaki bilgileri kullan.
-- Bir bilgi "Henüz eklenmemiş" ise, kullanıcıya dürüst şekilde bu bilginin sistemde olmadığını söyle.
-- Örnek karşılama: "Merhaba! ${agencyName}'ye hoş geldiniz."`;
+- Eğer herhangi bir bilgi "Henüz eklenmemiş" ise, kullanıcıya dürüst bir şekilde "Bu bilgi henüz sisteme girilmemiş" de.
+- Örnek karşılama: "Merhaba! ${agencyName}'e hoş geldiniz."
+
+📞 İLETİŞİM KURALLARI:
+- Kullanıcı "iletişime geçmek istiyorum", "arayın beni", "ofisle konuşmak istiyorum" gibi ifadeler kullandığında:
+  * Mevcut tüm iletişim bilgilerini (telefon, adres, web sitesi, çalışma saatleri) sıralı bir şekilde ver
+  * Örnek: "Tabii ki! İletişim bilgilerimiz:
+    📞 Telefon: [telefon]
+    📍 Adres: [adres]
+    🌐 Web: [web]
+    🕐 Çalışma Saatleri: [saatler]
+    
+    Size nasıl yardımcı olabiliriz?"
+  * Eğer bir bilgi yoksa, o satırı atlama ama var olanları mutlaka göster
+  
+💰 PARA BİRİMİ KABUL KURALLARI:
+- Ödeme yöntemleri hakkında sorulduğunda, sadece genel olarak nasıl ödeme yapılabileceğini anlat (havale, EFT, kredi kartı vb.)
+- Euro, Dolar gibi yabancı para birimleri hakkında sorulduğunda: "Para birimi kabul kurallarımız için lütfen ofisimizle iletişime geçin" de
+- Asla "Euro/Dolar kabul etmiyoruz" gibi kesin ifadeler kullanma, çünkü bu bilgi sistemde yok`;
 }
 
 /* Helper functions */
