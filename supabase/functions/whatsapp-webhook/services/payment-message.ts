@@ -30,10 +30,22 @@ const getCurrency = (code: string): CurrencyConfig => {
   return CURRENCIES[code] || CURRENCIES.TRY;
 };
 
-function getCurrencyForLanguage(language: string, languageCurrencies?: any): string {
-  if (languageCurrencies && languageCurrencies[language]) {
-    return languageCurrencies[language];
+function getCurrencyForLanguage(
+  language: string,
+  options?: {
+    languageCurrencies?: any;
+    primaryCurrency?: string;
   }
+): string {
+  // 1. Önce dil bazlı override
+  if (options?.languageCurrencies && options.languageCurrencies[language]) {
+    return options.languageCurrencies[language];
+  }
+  // 2. Primary currency
+  if (options?.primaryCurrency) {
+    return options.primaryCurrency;
+  }
+  // 3. Default
   return DEFAULT_LANGUAGE_CURRENCIES[language] || 'TRY';
 }
 
@@ -77,10 +89,13 @@ export async function generatePaymentMessage(
   totalPrice: number,
   depositAmount: number,
   tourCurrency: string = 'TRY',
-  languageCurrencies?: any
+  options?: {
+    languageCurrencies?: any;
+    primaryCurrency?: string;
+  }
 ): Promise<string> {
   // Get target currency for the language
-  const targetCurrency = getCurrencyForLanguage(language, languageCurrencies);
+  const targetCurrency = getCurrencyForLanguage(language, options);
   
   // Convert prices if needed
   const convertedTotal = await convertPrice(totalPrice, tourCurrency, targetCurrency);

@@ -10,13 +10,26 @@ export const DEFAULT_LANGUAGE_CURRENCIES: Record<string, string> = {
   es: 'EUR'
 };
 
+/**
+ * Hibrit model: Önce dil bazlı override, sonra primary currency, son olarak default
+ */
 export function getCurrencyForLanguage(
   language: string,
-  languageCurrencies?: Record<string, string> | null
+  options?: {
+    languageCurrencies?: Record<string, string> | null;
+    primaryCurrency?: string | null;
+  }
 ): string {
-  if (languageCurrencies && languageCurrencies[language]) {
-    return languageCurrencies[language];
+  // 1. Önce dil bazlı override'a bak
+  if (options?.languageCurrencies && options.languageCurrencies[language]) {
+    return options.languageCurrencies[language];
   }
   
+  // 2. Primary currency kullan
+  if (options?.primaryCurrency) {
+    return options.primaryCurrency;
+  }
+  
+  // 3. Default language currency kullan
   return DEFAULT_LANGUAGE_CURRENCIES[language] || 'TRY';
 }

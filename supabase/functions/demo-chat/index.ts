@@ -264,7 +264,7 @@ serve(async (req) => {
     // Get agency data from database
     const { data: agencyData, error: agencyError } = await supabase
       .from("agencies")
-      .select("name, city, payment_instructions, language_currencies, address, phone_public, website_url, working_hours, maps_url, cancellation_policy")
+      .select("name, city, payment_instructions, primary_currency, language_currencies, address, phone_public, website_url, working_hours, maps_url, cancellation_policy")
       .eq("id", "00000000-0000-0000-0000-000000000000")
       .single();
 
@@ -282,6 +282,7 @@ serve(async (req) => {
     const agencyCancellationPolicy = agencyData?.cancellation_policy ?? undefined;
     const paymentInstructions = agencyData?.payment_instructions ?? null;
     const languageCurrencies = agencyData?.language_currencies ?? null;
+    const primaryCurrency = agencyData?.primary_currency ?? 'TRY';
 
     // paymentInfo: prompt-builder içinde (özellikle EN tarafında) gösterilmek istenen düz metin
     let paymentInfo: string | undefined = undefined;
@@ -371,7 +372,10 @@ serve(async (req) => {
         totalPrice,
         depositAmount,
         tourCurrency,
-        languageCurrencies
+        {
+          languageCurrencies: languageCurrencies,
+          primaryCurrency: primaryCurrency
+        }
       );
 
       if (paymentMessage) {

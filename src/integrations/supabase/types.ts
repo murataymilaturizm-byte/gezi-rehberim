@@ -37,6 +37,7 @@ export type Database = {
           payment_methods_text: string | null
           phone_public: string | null
           plan_type: string
+          primary_currency: string | null
           region: string | null
           subscription_ends_at: string | null
           subscription_status: string
@@ -72,6 +73,7 @@ export type Database = {
           payment_methods_text?: string | null
           phone_public?: string | null
           plan_type?: string
+          primary_currency?: string | null
           region?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string
@@ -107,6 +109,7 @@ export type Database = {
           payment_methods_text?: string | null
           phone_public?: string | null
           plan_type?: string
+          primary_currency?: string | null
           region?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string

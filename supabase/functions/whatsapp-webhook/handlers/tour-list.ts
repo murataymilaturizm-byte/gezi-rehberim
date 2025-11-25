@@ -13,10 +13,10 @@ export async function handleTourList(
   const userProfile = await getUserProfile(supabase, phone, agencyId);
   const language = userProfile?.language_preference || 'tr';
 
-  // Get agency language_currencies settings
+  // Get agency language_currencies and primary_currency settings
   const { data: agency } = await supabase
     .from('agencies')
-    .select('language_currencies')
+    .select('primary_currency, language_currencies')
     .eq('id', agencyId)
     .single();
 
@@ -37,5 +37,8 @@ export async function handleTourList(
   }
 
   // Use formatToursSummary for consistent list format
-  return await formatToursSummary(tours, language, agency?.language_currencies);
+  return await formatToursSummary(tours, language, {
+    languageCurrencies: agency?.language_currencies,
+    primaryCurrency: agency?.primary_currency
+  });
 }
