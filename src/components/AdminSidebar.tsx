@@ -66,9 +66,9 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   
   // Determine which group should be open based on active tab
   const getDefaultOpenGroup = () => {
-    const generalIds = ["dashboard", "agency_info", "complaints", "settings", "payment_settings", "languages", "history"];
+    const generalIds = ["dashboard", "settings", "languages", "history"];
     const tourIds = ["tours", "registrations"];
-    const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "whatsapp_logs"];
+    const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "whatsapp_logs", "agency_info", "complaints", "payment_settings"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets"];
@@ -101,10 +101,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
-    { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo") },
-    { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
     { id: "settings", icon: Settings, label: t("admin.tabs.settings") },
-    { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
     { id: "history", icon: History, label: t("admin.tabs.history") },
   ];
@@ -116,6 +113,9 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
 
   const communicationItems = [
     { id: "whatsapp", icon: MessageSquare, label: t("admin.tabs.whatsapp") },
+    { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo") },
+    { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
+    { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
     ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: User, label: t("admin.tabs.userProfiles") }] : []),
     ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates") }] : []),
     { id: "faq", icon: HelpCircle, label: t("admin.tabs.faq") },
