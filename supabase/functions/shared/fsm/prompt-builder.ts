@@ -20,7 +20,7 @@ export function buildSystemPrompt(context: AIPromptContext): string {
   const tonePrompt = getTonePrompt(language, tone);
   const formatPrompt = getFormatPrompt(language);
   const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, availableTours, language);
-  const agencyInfo = agencyName ? getAgencyInfo(agencyName, agencyCity, language) : "";
+  const agencyInfo = agencyName ? getAgencyInfo(context, language) : "";
 
   return `${rolePrompt}\n\n${tonePrompt}\n\n${formatPrompt}\n\n${stagePrompt}${agencyInfo}`;
 }
@@ -971,26 +971,43 @@ STRICT BANS (FOR YOUR PART OF THE MESSAGE):
   }
 }
 
-function getAgencyInfo(agencyName: string, agencyCity: string | undefined, language: string): string {
+function getAgencyInfo(context: AIPromptContext, language: string): string {
+  const { agencyName, agencyCity, agencyAddress, agencyPhone, agencyWebsite, agencyWorkingHours, agencyMapsUrl, agencyCancellationPolicy } = context;
   const cityText = agencyCity ? ` (${agencyCity})` : "";
 
   if (language === "en") {
     return `\n\n🏢 AGENCY INFO:
 Agency display name: ${agencyName}${cityText}
+${agencyAddress ? `Address: ${agencyAddress}` : "Address: Not available"}
+${agencyPhone ? `Phone: ${agencyPhone}` : "Phone: Not available"}
+${agencyWebsite ? `Website: ${agencyWebsite}` : ""}
+${agencyWorkingHours ? `Working Hours: ${agencyWorkingHours}` : "Working Hours: Not available"}
+${agencyMapsUrl ? `Location: ${agencyMapsUrl}` : ""}
+${agencyCancellationPolicy ? `Cancellation Policy: ${agencyCancellationPolicy}` : "Cancellation Policy: Not available"}
 
 RULES:
 - Use this exact name in greetings and messages.
 - Do NOT translate or modify the name.
+- When asked about agency info (address, phone, hours, cancellation policy), use the information above.
+- If any information is "Not available", tell the user honestly that this information is not in the system yet.
 - Do NOT add extra words like "Travel Agency" unless they are already part of the name.
 - Example greeting: "Hello! Welcome to ${agencyName}."`;
   }
 
   return `\n\n🏢 ACENTE BİLGİSİ:
-Acentenin görünen adı: ${agencyName}${cityText}
+Acente görünen adı: ${agencyName}${cityText}
+${agencyAddress ? `Adres: ${agencyAddress}` : "Adres: Henüz eklenmemiş"}
+${agencyPhone ? `Telefon: ${agencyPhone}` : "Telefon: Henüz eklenmemiş"}
+${agencyWebsite ? `Web: ${agencyWebsite}` : ""}
+${agencyWorkingHours ? `Çalışma Saatleri: ${agencyWorkingHours}` : "Çalışma Saatleri: Henüz eklenmemiş"}
+${agencyMapsUrl ? `Konum: ${agencyMapsUrl}` : ""}
+${agencyCancellationPolicy ? `İptal Koşulları: ${agencyCancellationPolicy}` : "İptal Koşulları: Henüz eklenmemiş"}
 
 KURALLAR:
 - Karşılama ve metinlerde bu ismi AYNEN kullan, çevirmeye çalışma.
 - İsmin sonuna ekstra "Travel Agency" vb. ekleme (sadece isimde ne yazıyorsa onu kullan).
+- Acente bilgisi sorulduğunda (adres, telefon, saat, iptal koşulları) yukarıdaki bilgileri kullan.
+- Bir bilgi "Henüz eklenmemiş" ise, kullanıcıya dürüst şekilde bu bilginin sistemde olmadığını söyle.
 - Örnek karşılama: "Merhaba! ${agencyName}'ye hoş geldiniz."`;
 }
 
