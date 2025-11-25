@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
 
 export function LanguageCurrencySettings() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
@@ -69,8 +71,8 @@ export function LanguageCurrencySettings() {
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast({
-        title: "Hata",
-        description: "Ayarlar yüklenirken bir hata oluştu",
+        title: t('currency.saveError'),
+        description: t('currency.loadError'),
         variant: "destructive",
       });
     } finally {
@@ -102,14 +104,14 @@ export function LanguageCurrencySettings() {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
-        description: "Para birimi ayarları kaydedildi",
+        title: t('currency.saveSuccess'),
+        description: t('currency.saveSuccessDesc'),
       });
     } catch (error) {
       console.error('Error saving settings:', error);
       toast({
-        title: "Hata",
-        description: "Ayarlar kaydedilirken bir hata oluştu",
+        title: t('currency.saveError'),
+        description: t('currency.saveErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -131,32 +133,31 @@ export function LanguageCurrencySettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Para Birimi Yönetimi</CardTitle>
+        <CardTitle>{t('currency.management')}</CardTitle>
         <CardDescription>
-          Önce ana para biriminizi seçin. İsterseniz bazı diller için farklı para birimleri kullanabilirsiniz.
+          {t('currency.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <strong>Nasıl Çalışır:</strong> Ana para biriminiz <strong>{primaryCurrency}</strong> olarak varsayılan değerdir. 
-            Her dil için istediğiniz para birimini seçebilirsiniz. Seçim yapmazsanız ana para birimi kullanılır.
+            <strong>{t('currency.howItWorks')}</strong> {t('currency.howItWorksDesc', { currency: primaryCurrency })}
           </AlertDescription>
         </Alert>
 
         {/* Ana Para Birimi */}
         <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
-          <Label className="text-base font-semibold">Ana Para Birimi</Label>
+          <Label className="text-base font-semibold">{t('currency.primaryCurrency')}</Label>
           <p className="text-sm text-muted-foreground mb-3">
-            Tüm diller için varsayılan olarak kullanılacak para birimi
+            {t('currency.primaryCurrencyDesc')}
           </p>
           <Select
             value={primaryCurrency}
             onValueChange={setPrimaryCurrency}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Ana para birimi seçin" />
+              <SelectValue placeholder={t('currency.selectPrimaryCurrency')} />
             </SelectTrigger>
             <SelectContent>
               {currencies.map((currency) => (
@@ -171,9 +172,9 @@ export function LanguageCurrencySettings() {
         {/* Dil Bazlı Para Birimi Seçimi */}
         <div className="space-y-4">
           <div>
-            <Label className="text-base font-semibold">Dil Bazlı Para Birimi Ayarları</Label>
+            <Label className="text-base font-semibold">{t('currency.languageBasedSettings')}</Label>
             <p className="text-sm text-muted-foreground mt-1">
-              Her dil için özel para birimi kullanmak istiyorsanız aktif edin
+              {t('currency.languageBasedSettingsDesc')}
             </p>
           </div>
 
@@ -193,8 +194,8 @@ export function LanguageCurrencySettings() {
                         </Label>
                         <p className="text-sm text-muted-foreground mt-1">
                           {isOverride 
-                            ? `Özel para birimi: ${displayCurrency}`
-                            : `Ana para birimi kullanılıyor: ${primaryCurrency}`
+                            ? t('currency.customCurrency', { currency: displayCurrency })
+                            : t('currency.usingPrimary', { currency: primaryCurrency })
                           }
                         </p>
                       </div>
@@ -217,7 +218,7 @@ export function LanguageCurrencySettings() {
                     {isOverride && (
                       <div>
                         <Label className="text-sm text-muted-foreground mb-2">
-                          Bu dil için para birimi seçin:
+                          {t('currency.selectCurrencyForLanguage')}
                         </Label>
                         <Select
                           value={selectedCurrency || primaryCurrency}
@@ -253,10 +254,10 @@ export function LanguageCurrencySettings() {
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Kaydediliyor...
+              {t('currency.saving')}
             </>
           ) : (
-            'Kaydet'
+            t('currency.save')
           )}
         </Button>
       </CardContent>

@@ -5,6 +5,27 @@
     "gettingStarted": "Getting Started",
     "help": "Help"
   },
+  "currency": {
+    "management": "Currency Management",
+    "description": "First select your primary currency. You can optionally use different currencies for some languages.",
+    "howItWorks": "How It Works:",
+    "howItWorksDesc": "Your primary currency is {currency} by default. You can select your preferred currency for each language. If you don't make a selection, the primary currency will be used.",
+    "primaryCurrency": "Primary Currency",
+    "primaryCurrencyDesc": "Default currency to be used for all languages",
+    "selectPrimaryCurrency": "Select primary currency",
+    "languageBasedSettings": "Language-Based Currency Settings",
+    "languageBasedSettingsDesc": "Enable if you want to use a custom currency for each language",
+    "customCurrency": "Custom currency: {currency}",
+    "usingPrimary": "Using primary currency: {currency}",
+    "selectCurrencyForLanguage": "Select currency for this language:",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveSuccess": "Success",
+    "saveSuccessDesc": "Currency settings saved",
+    "saveError": "Error",
+    "saveErrorDesc": "An error occurred while saving settings",
+    "loadError": "An error occurred while loading settings"
+  },
   "hero": {
     "title": "Automate WhatsApp Tour Sales",
     "subtitle": "Smart Tour Sales AI Assistant",

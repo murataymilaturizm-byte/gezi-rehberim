@@ -1,4 +1,25 @@
 {
+  "currency": {
+    "management": "Währungsverwaltung",
+    "description": "Wählen Sie zuerst Ihre Hauptwährung. Optional können Sie für einige Sprachen unterschiedliche Währungen verwenden.",
+    "howItWorks": "Wie es funktioniert:",
+    "howItWorksDesc": "Ihre Hauptwährung ist standardmäßig {currency}. Sie können für jede Sprache Ihre bevorzugte Währung auswählen. Wenn Sie keine Auswahl treffen, wird die Hauptwährung verwendet.",
+    "primaryCurrency": "Hauptwährung",
+    "primaryCurrencyDesc": "Standardwährung für alle Sprachen",
+    "selectPrimaryCurrency": "Hauptwährung auswählen",
+    "languageBasedSettings": "Sprachbasierte Währungseinstellungen",
+    "languageBasedSettingsDesc": "Aktivieren, wenn Sie für jede Sprache eine benutzerdefinierte Währung verwenden möchten",
+    "customCurrency": "Benutzerdefinierte Währung: {currency}",
+    "usingPrimary": "Hauptwährung wird verwendet: {currency}",
+    "selectCurrencyForLanguage": "Währung für diese Sprache auswählen:",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "saveSuccess": "Erfolg",
+    "saveSuccessDesc": "Währungseinstellungen gespeichert",
+    "saveError": "Fehler",
+    "saveErrorDesc": "Beim Speichern der Einstellungen ist ein Fehler aufgetreten",
+    "loadError": "Beim Laden der Einstellungen ist ein Fehler aufgetreten"
+  },
   "nav": {
     "home": "Startseite",
     "admin": "Admin-Panel",

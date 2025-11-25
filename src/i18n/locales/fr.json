@@ -1,4 +1,25 @@
 {
+  "currency": {
+    "management": "Gestion des devises",
+    "description": "Sélectionnez d'abord votre devise principale. Vous pouvez éventuellement utiliser des devises différentes pour certaines langues.",
+    "howItWorks": "Comment ça marche :",
+    "howItWorksDesc": "Votre devise principale est {currency} par défaut. Vous pouvez sélectionner votre devise préférée pour chaque langue. Si vous ne faites pas de sélection, la devise principale sera utilisée.",
+    "primaryCurrency": "Devise principale",
+    "primaryCurrencyDesc": "Devise par défaut pour toutes les langues",
+    "selectPrimaryCurrency": "Sélectionnez la devise principale",
+    "languageBasedSettings": "Paramètres de devise par langue",
+    "languageBasedSettingsDesc": "Activez si vous souhaitez utiliser une devise personnalisée pour chaque langue",
+    "customCurrency": "Devise personnalisée : {currency}",
+    "usingPrimary": "Utilisation de la devise principale : {currency}",
+    "selectCurrencyForLanguage": "Sélectionnez la devise pour cette langue :",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saveSuccess": "Succès",
+    "saveSuccessDesc": "Paramètres de devise enregistrés",
+    "saveError": "Erreur",
+    "saveErrorDesc": "Une erreur s'est produite lors de l'enregistrement des paramètres",
+    "loadError": "Une erreur s'est produite lors du chargement des paramètres"
+  },
   "nav": {
     "home": "Accueil",
     "admin": "Panneau Admin",
