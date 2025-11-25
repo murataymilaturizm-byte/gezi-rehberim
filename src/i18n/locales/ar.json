@@ -448,7 +448,7 @@
     "groups": {
       "general": "الإدارة العامة",
       "tours": "إدارة الجولات",
-      "communication": "الاتصالات",
+      "communication": "إعدادات روبوت الدردشة",
       "reporting": "التقارير",
       "support": "الدعم",
       "superAdmin": "المشرف الرئيسي"

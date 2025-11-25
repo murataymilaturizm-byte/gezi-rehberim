@@ -452,7 +452,7 @@
     "groups": {
       "general": "Gestion générale",
       "tours": "Gestion des circuits",
-      "communication": "Communication",
+      "communication": "Paramètres du Chatbot",
       "reporting": "Rapports",
       "support": "Support",
       "superAdmin": "Super Admin"
