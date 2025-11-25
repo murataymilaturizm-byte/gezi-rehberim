@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import { CurrencySelector } from "@/components/CurrencySelector";
+import { useState } from "react";
 
 interface Tour {
   id: string;
@@ -45,6 +48,8 @@ export const ToursList = ({
   onDeleteDate
 }: ToursListProps) => {
   const { t } = useTranslation();
+  const [displayCurrency, setDisplayCurrency] = useState<string>('TRY');
+  const { convertAndFormat, loading: ratesLoading, refresh } = useCurrencyConverter('USD');
 
   const tourTypeLabels: Record<string, string> = {
     DAYTRIP: t("admin.tourTypes.daytrip"),
@@ -70,6 +75,22 @@ export const ToursList = ({
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-sm text-muted-foreground">
+          {displayCurrency !== 'TRY' && (
+            <span className="text-xs">
+              💱 Fiyatlar anlık kurla {displayCurrency} cinsinden gösteriliyor
+            </span>
+          )}
+        </div>
+        <CurrencySelector
+          value={displayCurrency}
+          onChange={setDisplayCurrency}
+          onRefresh={refresh}
+          loading={ratesLoading}
+        />
+      </div>
+      
       {tours.map((tour) => (
         <Card key={tour.id} className="border-border/50">
           <CardHeader>
@@ -127,7 +148,16 @@ export const ToursList = ({
                             <> - {format(new Date(date.return_date), "d MMM yyyy", { locale: tr })}</>
                           )}
                         </span>
-                        <span className="font-medium">{date.price_adult} {tour.currency}</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">
+                            {convertAndFormat(date.price_adult, tour.currency, displayCurrency)}
+                          </span>
+                          {displayCurrency !== tour.currency && (
+                            <span className="text-xs text-muted-foreground">
+                              Orijinal: {date.price_adult} {tour.currency}
+                            </span>
+                          )}
+                        </div>
                         <span className="text-muted-foreground">{t("admin.tours.quota")}: {date.quota}</span>
                       </div>
                       <div className="flex gap-2">

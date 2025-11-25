@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.reset-message-counts]
 verify_jwt = false
+
+[functions.get-exchange-rates]
+verify_jwt = true
