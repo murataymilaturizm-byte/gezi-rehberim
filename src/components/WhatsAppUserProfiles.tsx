@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -13,8 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, MessageSquare, Calendar, TrendingUp, MapPin, Building2, Tag, X, Plus } from "lucide-react";
+import { Users, MessageSquare, Calendar, TrendingUp, MapPin, Building2, Tag, X, Plus, ShoppingBag, DollarSign, Star, User, Bot, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { tr } from "date-fns/locale";
 
 interface UserProfile {
   id: string;
@@ -32,6 +35,14 @@ interface UserProfile {
   total_spent: number;
   feedback_score: number | null;
   feedback_comment: string | null;
+  language_preference: string | null;
+}
+
+interface ConversationMessage {
+  id: string;
+  role: string;
+  content: string;
+  created_at: string;
 }
 
 interface Agency {
@@ -52,6 +63,8 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
   const [newTag, setNewTag] = useState("");
+  const [conversations, setConversations] = useState<ConversationMessage[]>([]);
+  const [loadingConversations, setLoadingConversations] = useState(false);
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -66,6 +79,12 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       loadProfiles();
     }
   }, [selectedAgencyId]);
+
+  useEffect(() => {
+    if (selectedProfile) {
+      loadConversations(selectedProfile.phone);
+    }
+  }, [selectedProfile]);
 
   const loadAgencies = async () => {
     try {
@@ -111,6 +130,37 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       console.error("Error loading profiles:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadConversations = async (phone: string) => {
+    try {
+      setLoadingConversations(true);
+      let query = supabase
+        .from("whatsapp_conversations")
+        .select("id, role, content, created_at")
+        .eq("phone", phone)
+        .neq("role", "system")
+        .order("created_at", { ascending: true });
+
+      // Süper admin değilse agency_id'ye göre filtrele
+      if (isSuperAdmin && selectedAgencyId) {
+        query = query.eq("agency_id", selectedAgencyId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setConversations(data || []);
+    } catch (error) {
+      console.error("Error loading conversations:", error);
+      toast({
+        title: "Hata",
+        description: "Konuşmalar yüklenirken bir hata oluştu",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingConversations(false);
     }
   };
 
@@ -203,7 +253,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Kullanıcı Listesi */}
           <div className="md:col-span-1">
-            <ScrollArea className="h-[500px] pr-4">
+            <ScrollArea className="h-[800px] pr-4">
               <div className="space-y-2">
                 {profiles.map((profile) => {
                   const activity = getActivityStatus(profile.last_interaction_at);
@@ -246,68 +296,130 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
             </ScrollArea>
           </div>
 
-          {/* Profil Detayı */}
+          {/* Profil Detayı - CRM Benzeri */}
           {selectedProfile && (
             <div className="md:col-span-2">
-              <div className="space-y-4">
-                {/* Genel Bilgiler */}
-                <div className="p-4 rounded-lg border border-border">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    {t("admin.whatsapp.userProfiles.generalInfo")}
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.name")}:</span>
-                      <span className="font-medium">
-                        {selectedProfile.full_name || t("admin.whatsapp.userProfiles.notSpecified")}
-                      </span>
+              <ScrollArea className="h-[800px] pr-4">
+                <div className="space-y-6">
+                  {/* Başlık ve Özet */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold">
+                        {selectedProfile.full_name || "İsimsiz Kullanıcı"}
+                      </h2>
+                      <p className="text-sm text-muted-foreground font-mono mt-1">
+                        {selectedProfile.phone}
+                      </p>
+                      {selectedProfile.language_preference && (
+                        <Badge variant="outline" className="mt-2">
+                          {selectedProfile.language_preference.toUpperCase()}
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.phoneNumber")}:</span>
-                      <span className="font-mono">{selectedProfile.phone}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.totalMessages")}:</span>
-                      <Badge variant="secondary">{selectedProfile.total_messages}</Badge>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Aktivite Bilgileri */}
-                <div className="p-4 rounded-lg border border-border">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {t("admin.whatsapp.userProfiles.activity")}
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.firstContact")}:</span>
-                      <span>{formatDate(selectedProfile.first_interaction_at)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("admin.whatsapp.userProfiles.lastContact")}:</span>
-                      <span>{formatDate(selectedProfile.last_interaction_at)}</span>
+                    <div className="text-right">
+                      <div className={`w-3 h-3 rounded-full inline-block ${getActivityStatus(selectedProfile.last_interaction_at).color}`} />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {getActivityStatus(selectedProfile.last_interaction_at).label}
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                {/* Tercihler */}
-                <div className="p-4 rounded-lg border border-border">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    {t("admin.whatsapp.userProfiles.preferences")}
-                  </h3>
-                  <div className="space-y-3">
-                    {selectedProfile.preferred_destinations &&
-                      selectedProfile.preferred_destinations.length > 0 && (
+                  {/* Satış İstatistikleri Grid */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <Card className="bg-gradient-ocean text-primary-foreground border-0">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ShoppingBag className="w-4 h-4 opacity-80" />
+                          <p className="text-xs opacity-80">Toplam Rezervasyon</p>
+                        </div>
+                        <p className="text-3xl font-bold">{selectedProfile.total_bookings}</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          <p className="text-xs text-muted-foreground">Toplam Harcama</p>
+                        </div>
+                        <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+                          {selectedProfile.total_spent.toLocaleString()} ₺
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Star className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          <p className="text-xs text-muted-foreground">Ortalama Harcama</p>
+                        </div>
+                        <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
+                          {selectedProfile.total_bookings > 0
+                            ? Math.round(selectedProfile.total_spent / selectedProfile.total_bookings).toLocaleString()
+                            : 0}{" "}
+                          ₺
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* İletişim Metrikleri */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4" />
+                        İletişim İstatistikleri
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            {t("admin.whatsapp.userProfiles.preferredDestinations")}:
+                          <p className="text-sm text-muted-foreground mb-1">Toplam Mesaj</p>
+                          <p className="text-2xl font-bold">{selectedProfile.total_messages}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Günlük Ortalama</p>
+                          <p className="text-2xl font-bold">
+                            {(
+                              selectedProfile.total_messages /
+                              Math.max(
+                                1,
+                                Math.ceil(
+                                  (Date.now() - new Date(selectedProfile.first_interaction_at).getTime()) /
+                                    (1000 * 60 * 60 * 24)
+                                )
+                              )
+                            ).toFixed(1)}
                           </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">İlk İletişim</p>
+                          <p className="text-sm font-medium">{formatDate(selectedProfile.first_interaction_at)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Son İletişim</p>
+                          <p className="text-sm font-medium">{formatDate(selectedProfile.last_interaction_at)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Tercihler ve İlgi Alanları */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" />
+                        Tercihler & İlgi Alanları
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {selectedProfile.preferred_destinations && selectedProfile.preferred_destinations.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium mb-2">İlgilendiği Destinasyonlar:</p>
                           <div className="flex flex-wrap gap-2">
                             {selectedProfile.preferred_destinations.map((dest, idx) => (
-                              <Badge key={idx} variant="outline" className="gap-1">
+                              <Badge key={idx} variant="secondary" className="gap-1">
                                 <MapPin className="w-3 h-3" />
                                 {dest}
                               </Badge>
@@ -316,68 +428,176 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                         </div>
                       )}
 
-                    {selectedProfile.preferred_tour_type && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {t("admin.whatsapp.userProfiles.preferredTourType")}:
-                        </p>
-                        <Badge>{selectedProfile.preferred_tour_type}</Badge>
-                      </div>
-                    )}
+                      <div className="grid grid-cols-2 gap-4">
+                        {selectedProfile.preferred_tour_type && (
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Tercih Edilen Tur Tipi</p>
+                            <Badge>{selectedProfile.preferred_tour_type}</Badge>
+                          </div>
+                        )}
 
-                    {selectedProfile.budget_range && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {t("admin.whatsapp.userProfiles.budgetRange")}:
-                        </p>
-                        <Badge variant="secondary">{selectedProfile.budget_range}</Badge>
+                        {selectedProfile.budget_range && (
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Bütçe Aralığı</p>
+                            <Badge variant="outline">{selectedProfile.budget_range}</Badge>
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    {selectedProfile.last_search_query && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {t("admin.whatsapp.userProfiles.lastSearchQuery")}:
-                        </p>
-                        <p className="text-sm italic">
-                          "{selectedProfile.last_search_query}"
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* İstatistikler */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-gradient-ocean text-primary-foreground">
-                    <p className="text-xs opacity-90">{t("admin.whatsapp.userProfiles.messagesPerDay")}</p>
-                    <p className="text-2xl font-bold">
-                      {(
-                        selectedProfile.total_messages /
-                        Math.max(
-                          1,
-                          Math.ceil(
-                            (Date.now() -
-                              new Date(selectedProfile.first_interaction_at).getTime()) /
-                              (1000 * 60 * 60 * 24)
-                          )
-                        )
-                      ).toFixed(1)}
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 rounded-lg bg-muted">
-                    <p className="text-xs text-muted-foreground">{t("admin.whatsapp.userProfiles.activeDays")}</p>
-                    <p className="text-2xl font-bold">
-                      {Math.ceil(
-                        (Date.now() -
-                          new Date(selectedProfile.first_interaction_at).getTime()) /
-                          (1000 * 60 * 60 * 24)
+                      {selectedProfile.last_search_query && (
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Son Arama</p>
+                          <p className="text-sm italic bg-muted p-2 rounded">"{selectedProfile.last_search_query}"</p>
+                        </div>
                       )}
-                    </p>
-                  </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Müşteri Memnuniyeti */}
+                  {(selectedProfile.feedback_score !== null || selectedProfile.feedback_comment) && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Star className="w-4 h-4" />
+                          Müşteri Memnuniyeti
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {selectedProfile.feedback_score !== null && (
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">Memnuniyet Puanı</p>
+                            <div className="flex items-center gap-2">
+                              <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`w-5 h-5 ${
+                                      star <= selectedProfile.feedback_score!
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-lg font-bold">{selectedProfile.feedback_score}/5</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedProfile.feedback_comment && (
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">Yorum</p>
+                            <p className="text-sm bg-muted p-3 rounded italic">{selectedProfile.feedback_comment}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Etiketler */}
+                  {selectedProfile.tags && selectedProfile.tags.length > 0 && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Tag className="w-4 h-4" />
+                          Müşteri Etiketleri
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProfile.tags.map((tag, idx) => (
+                            <Badge
+                              key={idx}
+                              variant={
+                                tag === "vip"
+                                  ? "default"
+                                  : tag === "regular"
+                                  ? "secondary"
+                                  : tag === "potential"
+                                  ? "outline"
+                                  : "destructive"
+                              }
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Separator className="my-6" />
+
+                  {/* Konuşma Geçmişi */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <History className="w-5 h-5" />
+                        Konuşma Geçmişi
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Bu müşteriyle yapılan tüm WhatsApp konuşmaları
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingConversations ? (
+                        <div className="text-center py-8 text-muted-foreground">Konuşmalar yükleniyor...</div>
+                      ) : conversations.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          Henüz bu müşteriyle konuşma yapılmamış
+                        </div>
+                      ) : (
+                        <ScrollArea className="h-[400px] pr-4">
+                          <div className="space-y-4">
+                            {conversations.map((msg) => (
+                              <div
+                                key={msg.id}
+                                className={`flex gap-3 ${msg.role === "user" ? "justify-start" : "justify-end"}`}
+                              >
+                                <div
+                                  className={`flex gap-2 max-w-[80%] ${
+                                    msg.role === "user" ? "flex-row" : "flex-row-reverse"
+                                  }`}
+                                >
+                                  <div
+                                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                      msg.role === "user" ? "bg-secondary" : "bg-primary"
+                                    }`}
+                                  >
+                                    {msg.role === "user" ? (
+                                      <User className="h-4 w-4 text-secondary-foreground" />
+                                    ) : (
+                                      <Bot className="h-4 w-4 text-primary-foreground" />
+                                    )}
+                                  </div>
+                                  <div
+                                    className={`rounded-lg p-3 ${
+                                      msg.role === "user"
+                                        ? "bg-secondary text-secondary-foreground"
+                                        : "bg-primary text-primary-foreground"
+                                    }`}
+                                  >
+                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    <p
+                                      className={`text-xs mt-1 ${
+                                        msg.role === "user"
+                                          ? "text-secondary-foreground/60"
+                                          : "text-primary-foreground/60"
+                                      }`}
+                                    >
+                                      {format(new Date(msg.created_at), "dd MMM yyyy, HH:mm", { locale: tr })}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
+              </ScrollArea>
             </div>
           )}
         </div>
