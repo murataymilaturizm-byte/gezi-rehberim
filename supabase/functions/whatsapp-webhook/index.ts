@@ -255,6 +255,25 @@ serve(async (req) => {
 
     const fsmIntent = mapNLUIntentToFSMIntent(nluResult.intent);
 
+    // === Save complaint to database if detected ===
+    if (nluResult.intent === "complaint_feedback") {
+      console.log("📝 Saving complaint to database...");
+
+      const { error: complaintError } = await supabase.from("complaints").insert({
+        agency_id: agency.id,
+        phone: userPhone,
+        message: message,
+        type: "complaint",
+        status: "new",
+      });
+
+      if (complaintError) {
+        console.error("❌ Error saving complaint:", complaintError);
+      } else {
+        console.log("✅ Complaint saved successfully");
+      }
+    }
+
     // Match tours
     let selectedTour = null;
     if (nluResult.entities.tour_name) {
