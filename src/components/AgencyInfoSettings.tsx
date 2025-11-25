@@ -47,7 +47,7 @@ export function AgencyInfoSettings() {
         .from('agencies')
         .select('id, address, phone_public, website_url, working_hours, maps_url, cancellation_policy')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
