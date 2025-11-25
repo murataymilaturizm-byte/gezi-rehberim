@@ -329,6 +329,12 @@ serve(async (req) => {
       tone: newContext.tone,
       agencyName: agency.name,
       agencyCity: agency.city,
+      agencyAddress: agency.address,
+      agencyPhone: agency.phone_public,
+      agencyWebsite: agency.website_url,
+      agencyWorkingHours: agency.working_hours,
+      agencyMapsUrl: agency.maps_url,
+      agencyCancellationPolicy: agency.cancellation_policy,
       paymentInfo: agency.payment_instructions ? 
         JSON.stringify(agency.payment_instructions) : undefined
     };

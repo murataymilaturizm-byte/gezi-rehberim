@@ -994,6 +994,97 @@ RULES:
 - Example greeting: "Hello! Welcome to ${agencyName}."`;
   }
 
+  if (language === "de") {
+    return `\n\n🏢 AGENTUR-INFO:
+Agentur-Anzeigename: ${agencyName}${cityText}
+${agencyAddress ? `Adresse: ${agencyAddress}` : "Adresse: Nicht verfügbar"}
+${agencyPhone ? `Telefon: ${agencyPhone}` : "Telefon: Nicht verfügbar"}
+${agencyWebsite ? `Website: ${agencyWebsite}` : ""}
+${agencyWorkingHours ? `Öffnungszeiten: ${agencyWorkingHours}` : "Öffnungszeiten: Nicht verfügbar"}
+${agencyMapsUrl ? `Standort: ${agencyMapsUrl}` : ""}
+${agencyCancellationPolicy ? `Stornierungsbedingungen: ${agencyCancellationPolicy}` : "Stornierungsbedingungen: Nicht verfügbar"}
+
+REGELN:
+- Verwenden Sie diesen Namen exakt in Begrüßungen und Nachrichten.
+- Übersetzen oder ändern Sie den Namen NICHT.
+- Bei Fragen zu Agentur-Infos (Adresse, Telefon, Öffnungszeiten, Stornierung) verwenden Sie die obigen Informationen.
+- Falls eine Information "Nicht verfügbar" ist, sagen Sie dem Nutzer ehrlich, dass diese Information noch nicht im System ist.
+- Beispiel-Begrüßung: "Hallo! Willkommen bei ${agencyName}."`;
+  }
+
+  if (language === "ru") {
+    return `\n\n🏢 ИНФОРМАЦИЯ ОБ АГЕНТСТВЕ:
+Название агентства: ${agencyName}${cityText}
+${agencyAddress ? `Адрес: ${agencyAddress}` : "Адрес: Недоступно"}
+${agencyPhone ? `Телефон: ${agencyPhone}` : "Телефон: Недоступно"}
+${agencyWebsite ? `Веб-сайт: ${agencyWebsite}` : ""}
+${agencyWorkingHours ? `Часы работы: ${agencyWorkingHours}` : "Часы работы: Недоступно"}
+${agencyMapsUrl ? `Местоположение: ${agencyMapsUrl}` : ""}
+${agencyCancellationPolicy ? `Условия отмены: ${agencyCancellationPolicy}` : "Условия отмены: Недоступно"}
+
+ПРАВИЛА:
+- Используйте это точное название в приветствиях и сообщениях.
+- НЕ переводите и не изменяйте название.
+- При вопросах об агентстве (адрес, телефон, часы, отмена) используйте информацию выше.
+- Если информация "Недоступно", честно скажите пользователю, что информации пока нет в системе.
+- Пример приветствия: "Здравствуйте! Добро пожаловать в ${agencyName}."`;
+  }
+
+  if (language === "ar") {
+    return `\n\n🏢 معلومات الوكالة:
+اسم الوكالة المعروض: ${agencyName}${cityText}
+${agencyAddress ? `العنوان: ${agencyAddress}` : "العنوان: غير متوفر"}
+${agencyPhone ? `الهاتف: ${agencyPhone}` : "الهاتف: غير متوفر"}
+${agencyWebsite ? `الموقع الإلكتروني: ${agencyWebsite}` : ""}
+${agencyWorkingHours ? `ساعات العمل: ${agencyWorkingHours}` : "ساعات العمل: غير متوفرة"}
+${agencyMapsUrl ? `الموقع: ${agencyMapsUrl}` : ""}
+${agencyCancellationPolicy ? `سياسة الإلغاء: ${agencyCancellationPolicy}` : "سياسة الإلغاء: غير متوفرة"}
+
+القواعد:
+- استخدم هذا الاسم بالضبط في التحيات والرسائل.
+- لا تترجم أو تعدل الاسم.
+- عند السؤال عن معلومات الوكالة (العنوان، الهاتف، الساعات، الإلغاء) استخدم المعلومات أعلاه.
+- إذا كانت المعلومات "غير متوفرة"، أخبر المستخدم بصدق أن هذه المعلومات غير موجودة في النظام بعد.
+- مثال للترحيب: "مرحباً! أهلاً بك في ${agencyName}."`;
+  }
+
+  if (language === "fr") {
+    return `\n\n🏢 INFORMATIONS SUR L'AGENCE:
+Nom d'affichage de l'agence: ${agencyName}${cityText}
+${agencyAddress ? `Adresse: ${agencyAddress}` : "Adresse: Non disponible"}
+${agencyPhone ? `Téléphone: ${agencyPhone}` : "Téléphone: Non disponible"}
+${agencyWebsite ? `Site web: ${agencyWebsite}` : ""}
+${agencyWorkingHours ? `Heures d'ouverture: ${agencyWorkingHours}` : "Heures d'ouverture: Non disponible"}
+${agencyMapsUrl ? `Emplacement: ${agencyMapsUrl}` : ""}
+${agencyCancellationPolicy ? `Politique d'annulation: ${agencyCancellationPolicy}` : "Politique d'annulation: Non disponible"}
+
+RÈGLES:
+- Utilisez ce nom exact dans les salutations et les messages.
+- NE traduisez PAS ou ne modifiez PAS le nom.
+- Lorsqu'on pose des questions sur l'agence (adresse, téléphone, heures, annulation) utilisez les informations ci-dessus.
+- Si une information est "Non disponible", dites honnêtement à l'utilisateur que cette information n'est pas encore dans le système.
+- Exemple de salutation: "Bonjour! Bienvenue chez ${agencyName}."`;
+  }
+
+  if (language === "es") {
+    return `\n\n🏢 INFORMACIÓN DE LA AGENCIA:
+Nombre de la agencia: ${agencyName}${cityText}
+${agencyAddress ? `Dirección: ${agencyAddress}` : "Dirección: No disponible"}
+${agencyPhone ? `Teléfono: ${agencyPhone}` : "Teléfono: No disponible"}
+${agencyWebsite ? `Sitio web: ${agencyWebsite}` : ""}
+${agencyWorkingHours ? `Horario de atención: ${agencyWorkingHours}` : "Horario de atención: No disponible"}
+${agencyMapsUrl ? `Ubicación: ${agencyMapsUrl}` : ""}
+${agencyCancellationPolicy ? `Política de cancelación: ${agencyCancellationPolicy}` : "Política de cancelación: No disponible"}
+
+REGLAS:
+- Use este nombre exacto en saludos y mensajes.
+- NO traduzca ni modifique el nombre.
+- Cuando pregunten sobre información de la agencia (dirección, teléfono, horario, cancelación) use la información anterior.
+- Si alguna información es "No disponible", diga honestamente al usuario que esta información aún no está en el sistema.
+- Ejemplo de saludo: "¡Hola! Bienvenido a ${agencyName}."`;
+  }
+
+  // Default: Turkish
   return `\n\n🏢 ACENTE BİLGİSİ:
 Acente görünen adı: ${agencyName}${cityText}
 ${agencyAddress ? `Adres: ${agencyAddress}` : "Adres: Henüz eklenmemiş"}
