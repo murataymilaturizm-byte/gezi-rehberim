@@ -1462,6 +1462,52 @@
     "message": "Sayfa Bulunamadı",
     "backHome": "Ana Sayfaya Dön"
   },
+  "agencyInfo": {
+    "title": "Acente Bilgileri",
+    "description": "Acente bilgilerinizi güncelleyin. Bu bilgiler WhatsApp chatbot tarafından kullanılacaktır.",
+    "address": "Adres",
+    "addressPlaceholder": "Ofis adresinizi girin",
+    "phonePublic": "İletişim Telefonu",
+    "phonePublicPlaceholder": "+90 XXX XXX XX XX",
+    "website": "Web Sitesi",
+    "websitePlaceholder": "https://www.acenteniz.com",
+    "workingHours": "Çalışma Saatleri",
+    "workingHoursPlaceholder": "Örn: Pazartesi-Cuma 09:00-18:00, Cumartesi 10:00-16:00",
+    "mapsUrl": "Google Maps Linki",
+    "mapsUrlPlaceholder": "https://maps.google.com/...",
+    "paymentMethods": "Ödeme Yöntemleri",
+    "paymentMethodsPlaceholder": "Örn: Kredi kartı, Havale/EFT, Nakit ödeme",
+    "cancellationPolicy": "İptal ve İade Koşulları",
+    "cancellationPolicyPlaceholder": "İptal ve iade koşullarınızı detaylı yazın",
+    "saveSuccess": "Acente bilgileri kaydedildi",
+    "saveError": "Kaydetme hatası",
+    "loadError": "Bilgiler yüklenemedi"
+  },
+  "complaints": {
+    "title": "Şikayetler ve Geri Bildirimler",
+    "description": "WhatsApp üzerinden gelen şikayet ve geri bildirimleri görüntüleyin ve yönetin.",
+    "noComplaints": "Henüz şikayet veya geri bildirim bulunmuyor",
+    "type": "Tür",
+    "status": "Durum",
+    "phone": "Telefon",
+    "message": "Mesaj",
+    "createdAt": "Oluşturulma",
+    "markReviewed": "İncelendi Olarak İşaretle",
+    "markResolved": "Çözüldü Olarak İşaretle",
+    "loadError": "Şikayetler yüklenemedi",
+    "updateError": "Durum güncellenemedi",
+    "updateSuccess": "Durum güncellendi",
+    "types": {
+      "complaint": "Şikayet",
+      "feedback": "Geri Bildirim",
+      "suggestion": "Öneri"
+    },
+    "statuses": {
+      "new": "Yeni",
+      "reviewed": "İncelendi",
+      "resolved": "Çözüldü"
+    }
+  },
   "common": {
     "loading": "Yükleniyor...",
     "error": "Hata",

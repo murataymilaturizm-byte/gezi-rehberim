@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface Complaint {
 }
 
 export function ComplaintsManagement() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -52,8 +54,8 @@ export function ComplaintsManagement() {
     } catch (error) {
       console.error('Error fetching complaints:', error);
       toast({
-        title: "Hata",
-        description: "Şikayetler yüklenemedi",
+        title: t("common.error"),
+        description: t("complaints.loadError"),
         variant: "destructive"
       });
     } finally {
@@ -71,16 +73,16 @@ export function ComplaintsManagement() {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
-        description: "Durum güncellendi"
+        title: t("common.success"),
+        description: t("complaints.updateSuccess")
       });
       
       fetchComplaints();
     } catch (error) {
       console.error('Error updating status:', error);
       toast({
-        title: "Hata",
-        description: "Durum güncellenemedi",
+        title: t("common.error"),
+        description: t("complaints.updateError"),
         variant: "destructive"
       });
     }
@@ -100,16 +102,16 @@ export function ComplaintsManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Şikayet ve Geri Bildirimler
+            {t("complaints.title")}
           </CardTitle>
           <CardDescription>
-            Chatbot üzerinden gelen şikayet ve geri bildirimleri yönetin
+            {t("complaints.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {complaints.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              Henüz şikayet veya geri bildirim bulunmuyor
+              {t("complaints.noComplaints")}
             </div>
           ) : (
             <div className="space-y-4">
@@ -120,14 +122,13 @@ export function ComplaintsManagement() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <Badge variant={complaint.type === 'complaint' ? 'destructive' : 'default'}>
-                            {complaint.type === 'complaint' ? 'Şikayet' : 'Geri Bildirim'}
+                            {t(`complaints.types.${complaint.type}`)}
                           </Badge>
                           <Badge variant={
                             complaint.status === 'new' ? 'secondary' :
                             complaint.status === 'reviewed' ? 'default' : 'outline'
                           }>
-                            {complaint.status === 'new' ? 'Yeni' :
-                             complaint.status === 'reviewed' ? 'İncelendi' : 'Çözüldü'}
+                            {t(`complaints.statuses.${complaint.status}`)}
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
@@ -144,7 +145,7 @@ export function ComplaintsManagement() {
                           )}
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
-                          {complaint.status === 'new' ? 'İncele' : 'Çöz'}
+                          {complaint.status === 'new' ? t("complaints.markReviewed") : t("complaints.markResolved")}
                         </Button>
                       )}
                     </div>

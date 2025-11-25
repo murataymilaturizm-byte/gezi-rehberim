@@ -1442,5 +1442,51 @@
     "user": "Utilisateur",
     "status": {"open": "Ouvert", "in_progress": "En Cours", "resolved": "Résolu", "closed": "Fermé"},
     "priority": {"low": "Basse", "medium": "Moyenne", "high": "Haute"}
+  },
+  "agencyInfo": {
+    "title": "Informations sur l'agence",
+    "description": "Mettez à jour les informations de votre agence. Ces informations seront utilisées par le chatbot WhatsApp.",
+    "address": "Adresse",
+    "addressPlaceholder": "Entrez l'adresse de votre bureau",
+    "phonePublic": "Téléphone de contact",
+    "phonePublicPlaceholder": "+90 XXX XXX XX XX",
+    "website": "Site web",
+    "websitePlaceholder": "https://www.votreagence.com",
+    "workingHours": "Heures d'ouverture",
+    "workingHoursPlaceholder": "Ex: Lundi-Vendredi 09:00-18:00, Samedi 10:00-16:00",
+    "mapsUrl": "Lien Google Maps",
+    "mapsUrlPlaceholder": "https://maps.google.com/...",
+    "paymentMethods": "Méthodes de paiement",
+    "paymentMethodsPlaceholder": "Ex: Carte de crédit, Virement bancaire, Paiement en espèces",
+    "cancellationPolicy": "Politique d'annulation et de remboursement",
+    "cancellationPolicyPlaceholder": "Décrivez en détail votre politique d'annulation et de remboursement",
+    "saveSuccess": "Informations de l'agence enregistrées",
+    "saveError": "Erreur d'enregistrement",
+    "loadError": "Les informations n'ont pas pu être chargées"
+  },
+  "complaints": {
+    "title": "Réclamations et commentaires",
+    "description": "Afficher et gérer les réclamations et commentaires reçus via WhatsApp.",
+    "noComplaints": "Aucune réclamation ou commentaire pour le moment",
+    "type": "Type",
+    "status": "Statut",
+    "phone": "Téléphone",
+    "message": "Message",
+    "createdAt": "Créé",
+    "markReviewed": "Marquer comme examiné",
+    "markResolved": "Marquer comme résolu",
+    "loadError": "Les réclamations n'ont pas pu être chargées",
+    "updateError": "Le statut n'a pas pu être mis à jour",
+    "updateSuccess": "Statut mis à jour",
+    "types": {
+      "complaint": "Réclamation",
+      "feedback": "Commentaire",
+      "suggestion": "Suggestion"
+    },
+    "statuses": {
+      "new": "Nouveau",
+      "reviewed": "Examiné",
+      "resolved": "Résolu"
+    }
   }
 }

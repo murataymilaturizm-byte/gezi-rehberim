@@ -68,8 +68,8 @@ export function AgencyInfoSettings() {
     } catch (error) {
       console.error('Error fetching agency info:', error);
       toast({
-        title: "Hata",
-        description: "Acente bilgileri yüklenemedi",
+        title: t("common.error"),
+        description: t("agencyInfo.loadError"),
         variant: "destructive"
       });
     } finally {
@@ -90,14 +90,14 @@ export function AgencyInfoSettings() {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
-        description: "Acente bilgileri güncellendi"
+        title: t("common.success"),
+        description: t("agencyInfo.saveSuccess")
       });
     } catch (error) {
       console.error('Error saving agency info:', error);
       toast({
-        title: "Hata",
-        description: "Bilgiler kaydedilemedi",
+        title: t("common.error"),
+        description: t("agencyInfo.saveError"),
         variant: "destructive"
       });
     } finally {
@@ -119,21 +119,21 @@ export function AgencyInfoSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Acente İletişim Bilgileri
+            {t("agencyInfo.title")}
           </CardTitle>
           <CardDescription>
-            Chatbot müşterilere bu bilgileri paylaşabilecek
+            {t("agencyInfo.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Adres
+              {t("agencyInfo.address")}
             </Label>
             <Textarea
               id="address"
-              placeholder="Acente adresinizi yazın"
+              placeholder={t("agencyInfo.addressPlaceholder")}
               value={agencyInfo.address}
               onChange={(e) => setAgencyInfo({ ...agencyInfo, address: e.target.value })}
               rows={2}
@@ -143,12 +143,12 @@ export function AgencyInfoSettings() {
           <div className="space-y-2">
             <Label htmlFor="phone_public" className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              İletişim Telefonu
+              {t("agencyInfo.phonePublic")}
             </Label>
             <Input
               id="phone_public"
               type="tel"
-              placeholder="+90 XXX XXX XX XX"
+              placeholder={t("agencyInfo.phonePublicPlaceholder")}
               value={agencyInfo.phone_public}
               onChange={(e) => setAgencyInfo({ ...agencyInfo, phone_public: e.target.value })}
             />
@@ -157,12 +157,12 @@ export function AgencyInfoSettings() {
           <div className="space-y-2">
             <Label htmlFor="website_url" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              Web Sitesi
+              {t("agencyInfo.website")}
             </Label>
             <Input
               id="website_url"
               type="url"
-              placeholder="https://www.siteniz.com"
+              placeholder={t("agencyInfo.websitePlaceholder")}
               value={agencyInfo.website_url}
               onChange={(e) => setAgencyInfo({ ...agencyInfo, website_url: e.target.value })}
             />
@@ -171,12 +171,12 @@ export function AgencyInfoSettings() {
           <div className="space-y-2">
             <Label htmlFor="maps_url" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Google Maps Linki
+              {t("agencyInfo.mapsUrl")}
             </Label>
             <Input
               id="maps_url"
               type="url"
-              placeholder="https://maps.google.com/..."
+              placeholder={t("agencyInfo.mapsUrlPlaceholder")}
               value={agencyInfo.maps_url}
               onChange={(e) => setAgencyInfo({ ...agencyInfo, maps_url: e.target.value })}
             />
@@ -188,16 +188,16 @@ export function AgencyInfoSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Çalışma Saatleri
+            {t("agencyInfo.workingHours")}
           </CardTitle>
           <CardDescription>
-            Ofis çalışma saatlerinizi belirtin
+            {t("agencyInfo.workingHoursPlaceholder")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
             id="working_hours"
-            placeholder="Örn: Pazartesi-Cuma: 09:00-18:00, Cumartesi: 10:00-14:00"
+            placeholder={t("agencyInfo.workingHoursPlaceholder")}
             value={agencyInfo.working_hours}
             onChange={(e) => setAgencyInfo({ ...agencyInfo, working_hours: e.target.value })}
             rows={3}
@@ -209,16 +209,16 @@ export function AgencyInfoSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Ödeme Yöntemleri
+            {t("agencyInfo.paymentMethods")}
           </CardTitle>
           <CardDescription>
-            Genel ödeme yöntemlerinizi açıklayın (IBAN veya tutar belirtmeyin, sadece yöntemleri yazın)
+            {t("agencyInfo.paymentMethodsPlaceholder")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
             id="payment_methods_text"
-            placeholder="Örn: Havale/EFT, Kredi Kartı, Tur günü nakit ödeme imkanı"
+            placeholder={t("agencyInfo.paymentMethodsPlaceholder")}
             value={agencyInfo.payment_methods_text}
             onChange={(e) => setAgencyInfo({ ...agencyInfo, payment_methods_text: e.target.value })}
             rows={3}
@@ -230,16 +230,16 @@ export function AgencyInfoSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <XCircle className="h-5 w-5" />
-            İptal ve İade Koşulları
+            {t("agencyInfo.cancellationPolicy")}
           </CardTitle>
           <CardDescription>
-            İptal ve iade politikanızı belirtin
+            {t("agencyInfo.cancellationPolicyPlaceholder")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
             id="cancellation_policy"
-            placeholder="Örn: Turdan 7 gün öncesine kadar iptal durumunda %50 iade, 3 gün öncesine kadar %25 iade"
+            placeholder={t("agencyInfo.cancellationPolicyPlaceholder")}
             value={agencyInfo.cancellation_policy}
             onChange={(e) => setAgencyInfo({ ...agencyInfo, cancellation_policy: e.target.value })}
             rows={4}
@@ -250,7 +250,7 @@ export function AgencyInfoSettings() {
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving}>
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Kaydet
+          {t("common.save")}
         </Button>
       </div>
     </div>
