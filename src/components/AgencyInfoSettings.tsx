@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Building2, MapPin, Phone, Globe, Clock, CreditCard, XCircle } from "lucide-react";
+import { Loader2, Building2, MapPin, Phone, Globe, Clock, XCircle } from "lucide-react";
 
 interface AgencyInfo {
   address?: string;
@@ -15,7 +15,6 @@ interface AgencyInfo {
   website_url?: string;
   working_hours?: string;
   maps_url?: string;
-  payment_methods_text?: string;
   cancellation_policy?: string;
 }
 
@@ -31,7 +30,6 @@ export function AgencyInfoSettings() {
     website_url: "",
     working_hours: "",
     maps_url: "",
-    payment_methods_text: "",
     cancellation_policy: ""
   });
 
@@ -47,7 +45,7 @@ export function AgencyInfoSettings() {
 
       const { data: agency, error } = await supabase
         .from('agencies')
-        .select('id, address, phone_public, website_url, working_hours, maps_url, payment_methods_text, cancellation_policy')
+        .select('id, address, phone_public, website_url, working_hours, maps_url, cancellation_policy')
         .eq('user_id', session.user.id)
         .single();
 
@@ -61,7 +59,6 @@ export function AgencyInfoSettings() {
           website_url: agency.website_url || "",
           working_hours: agency.working_hours || "",
           maps_url: agency.maps_url || "",
-          payment_methods_text: agency.payment_methods_text || "",
           cancellation_policy: agency.cancellation_policy || ""
         });
       }
@@ -200,27 +197,6 @@ export function AgencyInfoSettings() {
             placeholder={t("agencyInfo.workingHoursPlaceholder")}
             value={agencyInfo.working_hours}
             onChange={(e) => setAgencyInfo({ ...agencyInfo, working_hours: e.target.value })}
-            rows={3}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            {t("agencyInfo.paymentMethods")}
-          </CardTitle>
-          <CardDescription>
-            {t("agencyInfo.paymentMethodsPlaceholder")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            id="payment_methods_text"
-            placeholder={t("agencyInfo.paymentMethodsPlaceholder")}
-            value={agencyInfo.payment_methods_text}
-            onChange={(e) => setAgencyInfo({ ...agencyInfo, payment_methods_text: e.target.value })}
             rows={3}
           />
         </CardContent>
