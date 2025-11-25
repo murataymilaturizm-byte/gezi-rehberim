@@ -173,7 +173,7 @@ export function LanguageCurrencySettings() {
           <div>
             <Label className="text-base font-semibold">Dil Bazlı Para Birimi Ayarları</Label>
             <p className="text-sm text-muted-foreground mt-1">
-              Her dil için kullanılacak para birimini seçin
+              Her dilde WhatsApp mesajlarında hangi para biriminin kullanılacağını seçin
             </p>
           </div>
 
@@ -184,19 +184,25 @@ export function LanguageCurrencySettings() {
               
               return (
                 <div key={lang} className="p-4 border rounded-lg bg-muted/20">
-                  <div className="flex items-center gap-4">
-                    <div className="min-w-[140px]">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
                       <Label className="text-base font-medium">
-                        {LANGUAGE_LABELS[lang] || lang}
+                        {LANGUAGE_LABELS[lang] || lang} Dili
                       </Label>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Kullanılacak: </span>
+                        <span className="font-bold text-lg text-primary">{displayCurrency}</span>
+                      </div>
                     </div>
                     
-                    <div className="flex-1">
+                    <div>
+                      <Label className="text-sm text-muted-foreground mb-2">
+                        Bu dilde gösterilecek para birimi:
+                      </Label>
                       <Select
                         value={selectedCurrency}
                         onValueChange={(value) => {
                           if (value === '__default__') {
-                            // Ana para birimi seçilirse override'ı kaldır
                             setLanguageOverrides(prev => ({ ...prev, [lang]: false }));
                             setLanguageCurrencies(prev => {
                               const newCurrencies = { ...prev };
@@ -204,7 +210,6 @@ export function LanguageCurrencySettings() {
                               return newCurrencies;
                             });
                           } else {
-                            // Para birimi seçilirse override'ı aktif et
                             setLanguageOverrides(prev => ({ ...prev, [lang]: true }));
                             setLanguageCurrencies(prev => ({ ...prev, [lang]: value }));
                           }
@@ -215,7 +220,7 @@ export function LanguageCurrencySettings() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__default__">
-                            Ana Para Birimi ({primaryCurrency})
+                            Ana Para Birimi Kullan ({primaryCurrency})
                           </SelectItem>
                           {currencies.map((currency) => (
                             <SelectItem key={currency.code} value={currency.code}>
@@ -224,12 +229,12 @@ export function LanguageCurrencySettings() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
-                    
-                    <div className="min-w-[100px] text-right">
-                      <span className="text-sm font-semibold text-foreground">
-                        → {displayCurrency}
-                      </span>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {selectedCurrency === '__default__' 
+                          ? `Ana para birimi (${primaryCurrency}) kullanılacak`
+                          : `${displayCurrency} para birimi kullanılacak`
+                        }
+                      </p>
                     </div>
                   </div>
                 </div>
