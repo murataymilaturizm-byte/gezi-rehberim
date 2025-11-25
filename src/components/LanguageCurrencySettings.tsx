@@ -173,69 +173,71 @@ export function LanguageCurrencySettings() {
           <div>
             <Label className="text-base font-semibold">Dil Bazlı Para Birimi Ayarları</Label>
             <p className="text-sm text-muted-foreground mt-1">
-              Her dilde WhatsApp mesajlarında hangi para biriminin kullanılacağını seçin
+              Her dil için özel para birimi kullanmak istiyorsanız aktif edin
             </p>
           </div>
 
           <div className="space-y-3">
             {enabledLanguages.map((lang) => {
-              const selectedCurrency = languageCurrencies[lang] || '__default__';
-              const displayCurrency = selectedCurrency === '__default__' ? primaryCurrency : selectedCurrency;
+              const isOverride = languageOverrides[lang] || false;
+              const selectedCurrency = languageCurrencies[lang];
+              const displayCurrency = isOverride && selectedCurrency ? selectedCurrency : primaryCurrency;
               
               return (
                 <div key={lang} className="p-4 border rounded-lg bg-muted/20">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-base font-medium">
-                        {LANGUAGE_LABELS[lang] || lang} Dili
-                      </Label>
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Kullanılacak: </span>
-                        <span className="font-bold text-lg text-primary">{displayCurrency}</span>
+                      <div>
+                        <Label className="text-base font-medium">
+                          {LANGUAGE_LABELS[lang] || lang}
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {isOverride 
+                            ? `Özel para birimi: ${displayCurrency}`
+                            : `Ana para birimi kullanılıyor: ${primaryCurrency}`
+                          }
+                        </p>
                       </div>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm text-muted-foreground mb-2">
-                        Bu dilde gösterilecek para birimi:
-                      </Label>
-                      <Select
-                        value={selectedCurrency}
-                        onValueChange={(value) => {
-                          if (value === '__default__') {
-                            setLanguageOverrides(prev => ({ ...prev, [lang]: false }));
+                      <Switch
+                        checked={isOverride}
+                        onCheckedChange={(checked) => {
+                          setLanguageOverrides(prev => ({ ...prev, [lang]: checked }));
+                          if (!checked) {
+                            // Switch kapatılırsa override'ı temizle
                             setLanguageCurrencies(prev => {
                               const newCurrencies = { ...prev };
                               delete newCurrencies[lang];
                               return newCurrencies;
                             });
-                          } else {
-                            setLanguageOverrides(prev => ({ ...prev, [lang]: true }));
-                            setLanguageCurrencies(prev => ({ ...prev, [lang]: value }));
                           }
                         }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__default__">
-                            Ana Para Birimi Kullan ({primaryCurrency})
-                          </SelectItem>
-                          {currencies.map((currency) => (
-                            <SelectItem key={currency.code} value={currency.code}>
-                              {currency.symbol} {currency.code} - {currency.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {selectedCurrency === '__default__' 
-                          ? `Ana para birimi (${primaryCurrency}) kullanılacak`
-                          : `${displayCurrency} para birimi kullanılacak`
-                        }
-                      </p>
+                      />
                     </div>
+                    
+                    {isOverride && (
+                      <div>
+                        <Label className="text-sm text-muted-foreground mb-2">
+                          Bu dil için para birimi seçin:
+                        </Label>
+                        <Select
+                          value={selectedCurrency || primaryCurrency}
+                          onValueChange={(value) => {
+                            setLanguageCurrencies(prev => ({ ...prev, [lang]: value }));
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {currencies.map((currency) => (
+                              <SelectItem key={currency.code} value={currency.code}>
+                                {currency.symbol} {currency.code} - {currency.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
