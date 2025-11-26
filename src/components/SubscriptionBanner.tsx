@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, Clock, CreditCard } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
 import { tr } from "date-fns/locale";
-import { SipayPaymentForm } from "./SipayPaymentForm";
+import { PayTRPaymentForm } from "./PayTRPaymentForm";
 
 interface SubscriptionInfo {
   plan_type: string;
@@ -112,7 +112,7 @@ export const SubscriptionBanner = () => {
               <DialogTitle>Abonelik Yenileme</DialogTitle>
             </DialogHeader>
             {agencyInfo && (
-              <SipayPaymentForm
+              <PayTRPaymentForm
                 agencyId={agencyInfo.id}
                 agencyName={agencyInfo.name}
                 planType={subscriptionInfo.plan_type}
@@ -156,7 +156,7 @@ export const SubscriptionBanner = () => {
               <DialogTitle>Abonelik Aktivasyonu</DialogTitle>
             </DialogHeader>
             {agencyInfo && (
-              <SipayPaymentForm
+              <PayTRPaymentForm
                 agencyId={agencyInfo.id}
                 agencyName={agencyInfo.name}
                 planType={subscriptionInfo.plan_type}
