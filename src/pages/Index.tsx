@@ -646,7 +646,7 @@ const Index = () => {
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <Quote className="w-10 h-10 text-primary/20" />
-                    <Badge variant="secondary" className="bg-green-500/10 text-green-700 border-green-500/20">
+                    <Badge variant="secondary" className="bg-success/10 text-success dark:text-success-foreground border-success/20">
                       {testimonial.result}
                     </Badge>
                   </div>
@@ -762,7 +762,7 @@ const Index = () => {
                 {t("pricing.yearly")}
               </Label>
               {isYearly && (
-                <span className="ml-2 text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+                <span className="ml-2 text-sm bg-success/10 text-success dark:text-success-foreground px-3 py-1 rounded-full font-medium border border-success/20">
                   {t("pricing.save")}
                 </span>
               )}
@@ -804,7 +804,7 @@ const Index = () => {
                         <p className="text-sm text-muted-foreground line-through">
                           {(plan.monthlyPrice * 12).toLocaleString('tr-TR')}₺/yıl
                         </p>
-                        <p className="text-sm text-green-600 font-medium">
+                        <p className="text-sm text-success font-medium">
                           {(plan.monthlyPrice * 12 * 0.1).toLocaleString('tr-TR')}₺ {t("pricing.savings")}
                         </p>
                       </div>

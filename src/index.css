@@ -32,6 +32,9 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
     --border: 28 25% 85%;
     --input: 28 25% 85%;
     --ring: 16 95% 55%;
@@ -73,6 +76,32 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
 
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 20 20% 22%;
+    --input: 20 20% 22%;
+    --ring: 16 90% 60%;
+  }
+}
+
+/* Dark mode media query fallback for better production support */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: 20 30% 8%;
+    --foreground: 42 50% 95%;
+    --card: 20 25% 12%;
+    --card-foreground: 42 50% 95%;
+    --popover: 20 25% 12%;
+    --popover-foreground: 42 50% 95%;
+    --primary: 16 90% 60%;
+    --primary-foreground: 20 30% 8%;
+    --secondary: 28 85% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 20 20% 18%;
+    --muted-foreground: 42 30% 65%;
+    --accent: 16 60% 20%;
+    --accent-foreground: 16 80% 85%;
     --border: 20 20% 22%;
     --input: 20 20% 22%;
     --ring: 16 90% 60%;
