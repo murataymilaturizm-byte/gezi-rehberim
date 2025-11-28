@@ -299,6 +299,26 @@ serve(async (req) => {
 
     // Build system prompt
     const currentTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null;
+    
+    // Check if user is querying a different tour while having another selected
+    let tourSwitchWarning = '';
+    if (selectedTour && newContext.currentTour && selectedTour.id !== newContext.currentTour.id) {
+      tourSwitchWarning = newContext.language === 'tr' 
+        ? `\n\n⚠️ ÖNEMLİ: Kullanıcı şu anda "${newContext.currentTour.title}" hakkında rezervasyon yapıyor, AMA "${selectedTour.title}" hakkında bilgi sordu. 
+        
+İKİ SEÇENEĞİN VAR:
+1. Eğer kullanıcı sadece bilgi soruyorsa: "${selectedTour.title}" hakkında bilgi ver ve "Bu turu seçmek ister misiniz?" diye sor
+2. Eğer kullanıcı açıkça tur değiştirmek istiyorsa: "Şu anda ${newContext.currentTour.title} için rezervasyon yapıyorduk, ${selectedTour.title}'na geçmek ister misiniz?" diye onay iste
+
+Kullanıcının net bir cevabı yoksa 1. seçeneği kullan.`
+        : `\n\n⚠️ IMPORTANT: User is currently making a reservation for "${newContext.currentTour.title}", BUT asked about "${selectedTour.title}".
+        
+YOU HAVE TWO OPTIONS:
+1. If user is just asking for info: Provide info about "${selectedTour.title}" and ask "Would you like to select this tour?"
+2. If user clearly wants to switch: Ask for confirmation "We were making a reservation for ${newContext.currentTour.title}, would you like to switch to ${selectedTour.title}?"
+
+If unclear, use option 1.`;
+    }
 
     const systemPrompt = buildSystemPrompt({
       stage: newContext.stage,
@@ -317,7 +337,7 @@ serve(async (req) => {
       agencyMapsUrl,
       agencyCancellationPolicy,
       paymentInfo,
-    });
+    }) + tourSwitchWarning;
 
     // Get conversation history
     const { data: history } = await supabase
