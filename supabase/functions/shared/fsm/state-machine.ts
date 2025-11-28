@@ -113,22 +113,16 @@ const transitions: StateTransition[] = [
     condition: (ctx, input) => 
       input.selectedTour !== null && 
       input.selectedTour.id !== ctx.currentTour?.id,
-    action: (ctx, input) => {
-      // Önceki rezervasyon bilgilerini koru, sadece tur bilgilerini güncelle
-      const newReservationInfo = {
-        ...ctx.reservationInfo,
+    action: (ctx, input) => ({
+      ...ctx,
+      currentTour: input.selectedTour,
+      viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
+      reservationInfo: {
         tourId: input.selectedTour!.id,
         tourTitle: input.selectedTour!.title
-      };
-      
-      return {
-        ...ctx,
-        currentTour: input.selectedTour,
-        viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
-        reservationInfo: newReservationInfo,
-        collectionStep: determineCollectionStep(newReservationInfo)
-      };
-    }
+      },
+      collectionStep: 'waiting_for_date' as InfoCollectionStep
+    })
   },
   
   // COLLECTING_INFO → COLLECTING_INFO (gathering info)

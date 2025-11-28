@@ -52,7 +52,8 @@ serve(async (req) => {
         dates:tour_dates(*)
       `,
       )
-      .eq("agency_id", DEMO_AGENCY_ID);
+      .eq("agency_id", DEMO_AGENCY_ID)
+      .order('created_at', { ascending: true }); // TUTARLI SIRALAMA İÇİN
 
     if (toursError) {
       console.error("❌ Error loading tours:", toursError);
