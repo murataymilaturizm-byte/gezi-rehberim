@@ -21,11 +21,25 @@ export const DemoChat = () => {
   const isMobile = useIsMobile();
 
   const [sessionId, setSessionId] = useState(() => {
-    // Create or get existing session ID
+    // Create or get existing session ID with timestamp check
     const stored = localStorage.getItem("demo_chat_session_id");
-    if (stored) return stored;
+    const timestamp = localStorage.getItem("demo_chat_session_timestamp");
+    
+    // Session timeout: 1 hour
+    const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
+    
+    if (stored && timestamp) {
+      const sessionAge = Date.now() - parseInt(timestamp);
+      if (sessionAge < SESSION_TIMEOUT) {
+        return stored; // Session still valid
+      }
+    }
+    
+    // Create new session
     const newId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     localStorage.setItem("demo_chat_session_id", newId);
+    localStorage.setItem("demo_chat_session_timestamp", Date.now().toString());
+    localStorage.removeItem("demo-chat-messages"); // Clear old messages
     return newId;
   });
 
@@ -97,6 +111,7 @@ export const DemoChat = () => {
       const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setSessionId(newSessionId);
       localStorage.setItem("demo_chat_session_id", newSessionId);
+      localStorage.setItem("demo_chat_session_timestamp", Date.now().toString()); // Update timestamp
       
       const getStyledGreeting = () => {
         const baseGreeting = t("demo.greeting");
@@ -239,6 +254,7 @@ export const DemoChat = () => {
     const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     setSessionId(newSessionId);
     localStorage.setItem("demo_chat_session_id", newSessionId);
+    localStorage.setItem("demo_chat_session_timestamp", Date.now().toString()); // Update timestamp
     localStorage.removeItem("demo-chat-messages");
     setConversationState(null); // Reset conversation state
 
