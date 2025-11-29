@@ -10,7 +10,7 @@ import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
 import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
 import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
-import { matchTour } from "../shared/fsm/tour-matcher.ts";
+import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
 // WhatsApp-specific utilities
@@ -54,6 +54,23 @@ serve(async (req) => {
     }
 
     const agency = validation.agency;
+
+    // 🔐 Ödeme / para birimi ile ilgili alanları agency’den çek
+    const paymentInstructions = agency.payment_instructions ?? null;
+    const languageCurrencies = agency.language_currencies ?? null;
+    const primaryCurrency = agency.primary_currency ?? "TRY";
+
+    // System prompt içinde kullanılacak sade paymentInfo metni (opsiyonel)
+    let paymentInfo: string | undefined = undefined;
+    if (typeof paymentInstructions === "string") {
+      paymentInfo = paymentInstructions;
+    } else if (
+      paymentInstructions &&
+      typeof paymentInstructions === "object" &&
+      typeof (paymentInstructions as any).text === "string"
+    ) {
+      paymentInfo = (paymentInstructions as any).text;
+    }
 
     // Extract request data
     const userPhone = formData.get("From")?.toString() || "";
@@ -118,7 +135,6 @@ serve(async (req) => {
       )
       .eq("agency_id", agency.id);
 
-    // Note: We'll update tours with localized fields after we have context
     const toursRaw = dbTours || [];
 
     console.log(`📦 Tours: ${toursRaw.length}`);
@@ -154,7 +170,7 @@ serve(async (req) => {
             context.language = languageChangeIntent;
             context.tone = getDefaultToneForLanguage(languageChangeIntent) as ConversationTone;
           } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
-            // Update language if detected language is different (but less aggressively than intent)
+            // Update language if detected language is different
             console.log(`🌐 Language detected: ${context.language} → ${runtimeDetectedLang}`);
             context.language = runtimeDetectedLang;
           }
@@ -186,7 +202,7 @@ serve(async (req) => {
       context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
     }
 
-    // Now create localized tours based on context language
+    // Localized tours
     const tours = toursRaw.map((tour: any) => ({
       id: tour.id,
       title: pickLocalized(tour, "title", context.language),
@@ -234,7 +250,7 @@ serve(async (req) => {
       }
     }
 
-    // Get conversation history (for NLU context)
+    // Get conversation history
     const { data: recentMessages } = await supabase
       .from("whatsapp_conversations")
       .select("role, content")
@@ -278,7 +294,7 @@ serve(async (req) => {
     // Match tours - CRITICAL: Two-layer strategy
     // Strategy 1: NLU entities (tour_name, destination)
     // Strategy 2: Direct matching (numbers, keywords) via matchTour
-    let selectedTour: any | null = null;
+    let selectedTour: any = null;
 
     if (nluResult.entities.tour_name) {
       const found = tours.find((t) => t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()));
@@ -310,21 +326,23 @@ serve(async (req) => {
       }
     }
 
-    // FALLBACK: If NLU didn't find a tour, try direct matching (numbers, keywords)
-    // This catches cases like "1", "2", "3" that NLU might miss
+    // FALLBACK: direct matching
     if (!selectedTour) {
       const expectedInput = getNextExpectedInput(context);
       const matchedTour = matchTour(message, tours, expectedInput);
       if (matchedTour) {
-        selectedTour = {
-          id: matchedTour.id,
-          title: matchedTour.title,
-          destination: matchedTour.destination,
-          dates: matchedTour.dates,
-          program_kisa: matchedTour.program_kisa,
-          gezilecek_yerler: matchedTour.gezilecek_yerler,
-        };
-        console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+        const fullTour = findTourById(matchedTour.id, tours);
+        if (fullTour) {
+          selectedTour = {
+            id: fullTour.id,
+            title: fullTour.title,
+            destination: fullTour.destination,
+            dates: fullTour.dates,
+            program_kisa: fullTour.program_kisa,
+            gezilecek_yerler: fullTour.gezilecek_yerler,
+          };
+          console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+        }
       } else {
         console.log("❌ No tour match found via NLU or direct matching");
       }
@@ -360,10 +378,12 @@ serve(async (req) => {
     const detectedIntent = fsmIntent;
 
     // Build prompt
+    const currentTourFull = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
+
     const promptContext = {
       stage: newContext.stage,
       collectionStep: newContext.collectionStep,
-      currentTour: newContext.currentTour,
+      currentTour: currentTourFull || newContext.currentTour,
       reservationInfo: newContext.reservationInfo,
       availableTours: tours,
       language: newContext.language,
@@ -376,17 +396,12 @@ serve(async (req) => {
       agencyWorkingHours: agency.working_hours,
       agencyMapsUrl: agency.maps_url,
       agencyCancellationPolicy: agency.cancellation_policy,
-      // paymentInfo: AI'nin okuyacağı sade metin
-      paymentInfo:
-        typeof agency.payment_instructions === "string"
-          ? agency.payment_instructions
-          : agency.payment_instructions?.text || undefined,
+      paymentInfo: paymentInfo,
     };
 
     // CRITICAL: Prevent accidental tour switching during reservation
     let tourSwitchWarning = "";
 
-    // If user is in COLLECTING_INFO and mentions different tour
     if (
       newContext.stage === "COLLECTING_INFO" &&
       selectedTour &&
@@ -414,9 +429,11 @@ Cevabınız:
 - Hayır, ${newContext.currentTour.title} ile devam → Mevcut rezervasyona devam"
 
 ASLA tur değişikliği yapma, sadece kullanıcıdan onay iste!`
-          : `\n\n🚨 CRITICAL WARNING: User is currently making a reservation for "${newContext.currentTour.title}" (date: ${
-              newContext.reservationInfo.selectedDate || "not specified"
-            }, pax: ${newContext.reservationInfo.paxAdult || "not specified"}).
+          : `\n\n🚨 CRITICAL WARNING: User is currently making a reservation for "${
+              newContext.currentTour.title
+            }" (date: ${newContext.reservationInfo.selectedDate || "not specified"}, pax: ${
+              newContext.reservationInfo.paxAdult || "not specified"
+            }).
 
 But user mentioned "${selectedTour.title}".
 
@@ -433,8 +450,7 @@ Your answer:
 - No, continue with ${newContext.currentTour.title} → Continue current reservation"
 
 NEVER switch tours automatically, only ask for confirmation!`;
-    } // If user is in TOUR_SELECTED but has info already, also warn
-    else if (
+    } else if (
       newContext.stage === "TOUR_SELECTED" &&
       selectedTour &&
       newContext.currentTour &&
@@ -476,7 +492,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
     }
 
     const aiData = await aiResponse.json();
-    let reply = aiData.choices[0].message.content;
+    let reply: string = aiData.choices[0].message.content;
 
     console.log("🤖 Reply:", reply.substring(0, 80));
 
@@ -487,19 +503,22 @@ NEVER switch tours automatically, only ask for confirmation!`;
       newContext.stage === "COMPLETED" &&
       newContext.reservationConfirmed &&
       !newContext.paymentInfoSent &&
-      agency.payment_instructions
+      paymentInstructions
     ) {
       console.log("💳 Appending payment info...");
 
-      const paymentInstructions = agency.payment_instructions;
-      const depositPercentage = paymentInstructions.deposit_percentage || 30;
+      const depositPercentage =
+        (paymentInstructions &&
+          typeof paymentInstructions === "object" &&
+          (paymentInstructions as any).deposit_percentage) ||
+        30;
 
-      // İlgili turu ve tarihi bul (para birimi için de lazım)
-      const selectedTourRaw = toursRaw.find((t: any) => t.id === newContext.reservationInfo.tourId);
+      // Get selected tour date to calculate price
+      const tourForReservation = toursRaw.find((t: any) => t.id === newContext.reservationInfo.tourId);
 
-      const selectedTourDate = selectedTourRaw?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
+      const selectedTourDate = tourForReservation?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
 
-      if (selectedTourDate && selectedTourRaw) {
+      if (selectedTourDate) {
         const paxAdult = newContext.reservationInfo.paxAdult || 0;
         const paxChild = newContext.reservationInfo.paxChild || 0;
         const priceAdult = selectedTourDate.price_adult || 0;
@@ -508,9 +527,10 @@ NEVER switch tours automatically, only ask for confirmation!`;
         const totalPrice = paxAdult * priceAdult + paxChild * priceChild;
         const depositAmount = Math.ceil((totalPrice * depositPercentage) / 100);
 
-        // Turun kendi para birimi (yoksa ajansın primary’si, o da yoksa TRY)
-        const tourCurrency = selectedTourRaw.currency || agency.primary_currency || "TRY";
+        // Turun kendi para birimi
+        const tourCurrency = tourForReservation?.currency || "TRY";
 
+        // Yeni async, çoklu para birimi destekli payment message
         const paymentMessage = await generatePaymentMessage(
           paymentInstructions,
           newContext.language,
@@ -518,8 +538,8 @@ NEVER switch tours automatically, only ask for confirmation!`;
           depositAmount,
           tourCurrency,
           {
-            languageCurrencies: agency.language_currencies,
-            primaryCurrency: agency.primary_currency,
+            languageCurrencies,
+            primaryCurrency,
           },
         );
 
@@ -608,7 +628,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
       }
     }
 
-    // Save response (now includes template if applicable)
+    // Save response (now includes template/payment if applicable)
     await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
       role: "assistant",
