@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, X, Send, Loader2, HelpCircle } from "lucide-react";
+import { X, Send, Loader2, HelpCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
@@ -16,7 +16,7 @@ interface Message {
 export const SupportChatWidget = () => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const getInitialMessage = () => {
     const welcomeMessages: Record<string, string> = {
       tr: "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
@@ -25,25 +25,30 @@ export const SupportChatWidget = () => {
       ru: "Здравствуйте! Чем я могу помочь? Я могу ответить на ваши вопросы об использовании системы, функциях или технических темах. 📚",
       ar: "مرحبا! كيف يمكنني مساعدتك؟ يمكنني الإجابة على أسئلتك حول استخدام النظام أو الميزات أو المواضيع الفنية. 📚",
       fr: "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
-      es: "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
+      es: "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚",
     };
     return welcomeMessages[i18n.language] || welcomeMessages.tr;
   };
-  
-  const [messages, setMessages] = useState<Message[]>([{
-    role: "assistant",
-    content: getInitialMessage()
-  }]);
+
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content: getInitialMessage(),
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
 
-  // Dil değiştiğinde karşılama mesajını güncelle
+  // Dil değiştiğinde karşılama mesajını güncelle (konuşmayı resetliyoruz)
   useEffect(() => {
-    setMessages([{
-      role: "assistant",
-      content: getInitialMessage()
-    }]);
+    setMessages([
+      {
+        role: "assistant",
+        content: getInitialMessage(),
+      },
+    ]);
+    setShowQuickReplies(true);
   }, [i18n.language]);
 
   const getQuickReplies = () => {
@@ -54,7 +59,7 @@ export const SupportChatWidget = () => {
       ru: ["🚀 Настройка", "🎯 Туры", "📅 Бронирования", "💬 WhatsApp Бот", "🔧 Техническая поддержка"],
       ar: ["🚀 الإعداد", "🎯 الجولات", "📅 الحجوزات", "💬 بوت WhatsApp", "🔧 الدعم الفني"],
       fr: ["🚀 Configuration", "🎯 Circuits", "📅 Réservations", "💬 Bot WhatsApp", "🔧 Support technique"],
-      es: ["🚀 Configuración", "🎯 Tours", "📅 Reservas", "💬 Bot de WhatsApp", "🔧 Soporte técnico"]
+      es: ["🚀 Configuración", "🎯 Tours", "📅 Reservas", "💬 Bot de WhatsApp", "🔧 Soporte técnico"],
     };
     return quickReplies[i18n.language] || quickReplies.tr;
   };
@@ -66,47 +71,59 @@ export const SupportChatWidget = () => {
         "🎯 Turlar": "Tur nasıl eklerim? Tur tarihlerini nasıl yönetirim?",
         "📅 Rezervasyonlar": "Rezervasyonları nasıl yönetirim? Durum güncellemeleri nasıl yapılır?",
         "💬 WhatsApp Bot": "WhatsApp botu nasıl çalışır? Dil desteği nedir?",
-        "🔧 Teknik Destek": "Teknik bir sorunla karşılaştım, yardım alabilir miyim?"
+        "🔧 Teknik Destek": "Teknik bir sorunla karşılaştım, yardım alabilir miyim?",
       },
       en: {
         "🚀 Setup": "How can I set up the system? How to connect WhatsApp?",
         "🎯 Tours": "How do I add tours? How to manage tour dates?",
         "📅 Reservations": "How do I manage reservations? How to update statuses?",
         "💬 WhatsApp Bot": "How does the WhatsApp bot work? What is language support?",
-        "🔧 Technical Support": "I encountered a technical problem, can I get help?"
-      }
+        "🔧 Technical Support": "I encountered a technical problem, can I get help?",
+      },
     };
-    
+
     const langMessages = fullMessages[i18n.language] || fullMessages.tr;
     const message = langMessages[label] || label;
-    
+
     setShowQuickReplies(false);
     const userMessage: Message = { role: "user", content: message };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
-    supabase.functions.invoke("support-chat", {
-      body: { 
-        message: message, 
-        conversationHistory: messages,
-        language: i18n.language 
-      }
-    }).then(({ data, error }) => {
-      if (error) throw error;
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.response
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-    }).catch(error => {
-      console.error("Error:", error);
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya info@turzz.ai adresinden bizimle iletişime geçin."
-      }]);
-    }).finally(() => {
-      setIsLoading(false);
-    });
+    supabase.functions
+      .invoke("support-chat", {
+        body: {
+          message: message,
+          // ÖNEMLİ: quick reply mesajını da history’ye ekliyoruz
+          conversationHistory: [...messages, userMessage],
+          language: i18n.language,
+        },
+      })
+      .then(({ data, error }) => {
+        if (error) throw error;
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: data.response,
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        const fallbackMessages: Record<string, string> = {
+          tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://ai.turzz.com/yardim sayfasını ziyaret edin.",
+          en: "Sorry, something went wrong. Please try again or visit https://ai.turzz.com/help.",
+        };
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: fallbackMessages[i18n.language] || fallbackMessages.tr,
+          },
+        ]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const handleSend = async () => {
@@ -114,33 +131,41 @@ export const SupportChatWidget = () => {
     if (!messageToSend || isLoading) return;
 
     const userMessage: Message = { role: "user", content: messageToSend };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
     setShowQuickReplies(false);
 
     try {
       const { data, error } = await supabase.functions.invoke("support-chat", {
-        body: { 
-          message: messageToSend, 
-          conversationHistory: messages,
-          language: i18n.language 
-        }
+        body: {
+          message: messageToSend,
+          // ÖNEMLİ: Son user mesajını da history’ye ekliyoruz
+          conversationHistory: [...messages, userMessage],
+          language: i18n.language,
+        },
       });
 
       if (error) throw error;
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: data.response
+        content: data.response,
       };
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://ai.turzz.com/yardim sayfasını ziyaret edin."
-      }]);
+      const fallbackMessages: Record<string, string> = {
+        tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://ai.turzz.com/yardim sayfasını ziyaret edin.",
+        en: "Sorry, something went wrong. Please try again or visit https://ai.turzz.com/help.",
+      };
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: fallbackMessages[i18n.language] || fallbackMessages.tr,
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -153,21 +178,23 @@ export const SupportChatWidget = () => {
     }
   };
 
+  // Linkleri doğru ve stabil şekilde tıklanabilir yap
   const renderContentWithLinks = (content: string) => {
     const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|ai\.[^\s]+)/g;
     const parts = content.split(urlRegex);
-    
+
     return parts.map((part, i) => {
-      if (urlRegex.test(part)) {
+      const isUrl = /^(https?:\/\/[^\s]+|www\.[^\s]+|ai\.[^\s]+)$/i.test(part);
+      if (isUrl) {
         let url = part;
-        if (!url.startsWith('http')) {
-          url = 'https://' + url;
+        if (!url.startsWith("http")) {
+          url = "https://" + url;
         }
         return (
-          <a 
-            key={i} 
-            href={url} 
-            target="_blank" 
+          <a
+            key={i}
+            href={url}
+            target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:text-blue-700 underline font-medium"
           >
@@ -199,7 +226,7 @@ export const SupportChatWidget = () => {
               <div>
                 <h3 className="font-semibold text-white">Turzz Destek</h3>
                 <p className="text-xs text-white/80">
-                  {i18n.language === 'tr' ? 'Size yardımcı olmak için buradayız' : 'We are here to help'}
+                  {i18n.language === "tr" ? "Size yardımcı olmak için buradayız" : "We are here to help"}
                 </p>
               </div>
             </div>
@@ -217,7 +244,7 @@ export const SupportChatWidget = () => {
             {showQuickReplies && messages.length === 1 && (
               <div className="mb-4 p-3 bg-secondary/50 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-2">
-                  {i18n.language === 'tr' ? 'Hızlı Seçenekler:' : 'Quick Options:'}
+                  {i18n.language === "tr" ? "Hızlı Seçenekler:" : "Quick Options:"}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {getQuickReplies().map((reply, index) => (
@@ -235,10 +262,7 @@ export const SupportChatWidget = () => {
             )}
 
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-4`}
-              >
+              <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-4`}>
                 <div
                   className={`max-w-[80%] rounded-lg px-4 py-3 ${
                     message.role === "user"
@@ -246,9 +270,7 @@ export const SupportChatWidget = () => {
                       : "bg-gradient-to-r from-muted to-muted/80 shadow-md"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">
-                    {renderContentWithLinks(message.content)}
-                  </p>
+                  <p className="text-sm whitespace-pre-wrap">{renderContentWithLinks(message.content)}</p>
                 </div>
               </div>
             ))}
@@ -268,7 +290,7 @@ export const SupportChatWidget = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={i18n.language === 'tr' ? "Nasıl yardımcı olabiliriz?" : "How can we help?"}
+                placeholder={i18n.language === "tr" ? "Nasıl yardımcı olabiliriz?" : "How can we help?"}
                 disabled={isLoading}
                 className="flex-1 h-12 md:h-10"
               />
