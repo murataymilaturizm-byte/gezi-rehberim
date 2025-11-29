@@ -106,13 +106,36 @@ const transitions: StateTransition[] = [
     }
   },
   
-  // TOUR_SELECTED → TOUR_SELECTED (switch tour)
+  // TOUR_SELECTED → TOUR_SELECTED (switch tour - only if not collecting info yet)
   {
     from: 'TOUR_SELECTED',
     to: 'TOUR_SELECTED',
     condition: (ctx, input) => 
       input.selectedTour !== null && 
-      input.selectedTour.id !== ctx.currentTour?.id,
+      input.selectedTour.id !== ctx.currentTour?.id &&
+      // Only allow if no reservation info collected yet
+      Object.keys(ctx.reservationInfo).length <= 2, // only tourId and tourTitle
+    action: (ctx, input) => ({
+      ...ctx,
+      currentTour: input.selectedTour,
+      viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
+      reservationInfo: {
+        tourId: input.selectedTour!.id,
+        tourTitle: input.selectedTour!.title
+      },
+      collectionStep: 'waiting_for_date' as InfoCollectionStep
+    })
+  },
+  
+  // COLLECTING_INFO → TOUR_SELECTED (explicit tour switch with confirmation needed)
+  {
+    from: 'COLLECTING_INFO',
+    to: 'TOUR_SELECTED',
+    condition: (ctx, input) => 
+      input.selectedTour !== null && 
+      input.selectedTour.id !== ctx.currentTour?.id &&
+      // Require explicit confirmation keywords
+      /yeni tur|başka tur|tur değiştir|cancel|iptal|switch tour|change tour|different tour/i.test(input.userMessage),
     action: (ctx, input) => ({
       ...ctx,
       currentTour: input.selectedTour,
