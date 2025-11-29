@@ -62,13 +62,15 @@ const transitions: StateTransition[] = [
     })
   },
   
-  // BROWSING → COLLECTING_INFO (direct reservation intent)
+  // BROWSING → COLLECTING_INFO (direct reservation intent OR tour selection with immediate action)
   {
     from: 'BROWSING',
     to: 'COLLECTING_INFO',
     condition: (ctx, input) => 
       input.selectedTour !== null && 
-      input.detectedIntent === 'reservation_intent',
+      (input.detectedIntent === 'reservation_intent' || 
+       input.detectedIntent === 'tour_selected' ||
+       input.detectedIntent === 'provide_info'),
     action: (ctx, input) => {
       const merged = mergeReservationInfo({
         tourId: input.selectedTour!.id,
@@ -92,13 +94,15 @@ const transitions: StateTransition[] = [
     }
   },
   
-  // BROWSING → TOUR_SELECTED (just browsing without reservation intent)
+  // BROWSING → TOUR_SELECTED (just browsing without any action)
   {
     from: 'BROWSING',
     to: 'TOUR_SELECTED',
     condition: (ctx, input) => 
       input.selectedTour !== null && 
-      input.detectedIntent !== 'reservation_intent',
+      input.detectedIntent !== 'reservation_intent' &&
+      input.detectedIntent !== 'tour_selected' &&
+      input.detectedIntent !== 'provide_info',
     action: (ctx, input) => ({
       ...ctx,
       currentTour: input.selectedTour,
@@ -118,6 +122,7 @@ const transitions: StateTransition[] = [
     condition: (ctx, input) => 
       input.detectedIntent === 'provide_info' ||
       input.detectedIntent === 'reservation_intent' ||
+      input.detectedIntent === 'tour_selected' ||
       input.detectedIntent === 'confirm' ||
       Object.keys(input.extractedInfo).length > 0,
     action: (ctx, input) => {
