@@ -32,8 +32,9 @@ Your job is to analyze user messages and extract intents and entities.
 - browse_tours: User wants to see available tours
 - tour_search: User searches for specific destination/tour (ONLY when explicitly asking about tours)
 - select_tour: User selects a specific tour
+- reservation_intent: User explicitly wants to make a reservation (e.g., "I want to book", "rezervasyon yapmak istiyorum", "book this tour")
 - provide_info: User provides reservation details (date, pax, name, phone)
-- confirm_reservation: User confirms the booking
+- confirm_reservation: User confirms the booking (final confirmation, e.g., "yes, confirm", "evet onaylıyorum")
 - change_info: User wants to modify information
 - agency_info: User asks about agency details (name, address, phone, website, contact)
 - working_hours: User asks about business hours
@@ -104,7 +105,7 @@ export async function analyzeUserMessage(
               type: "string",
               enum: [
                 "greeting", "browse_tours", "tour_search", "select_tour", 
-                "provide_info", "confirm_reservation", "change_info",
+                "reservation_intent", "provide_info", "confirm_reservation", "change_info",
                 "agency_info", "working_hours", "payment_methods", 
                 "cancellation_policy", "visa_support", "hotel_details",
                 "transport_details", "custom_package", "after_sales",
@@ -223,6 +224,7 @@ export function mapNLUIntentToFSMIntent(nluIntent: string): string {
     'browse_tours': 'browse_tours',
     'tour_search': 'tour_search',
     'select_tour': 'tour_selected',
+    'reservation_intent': 'reservation_intent',
     'provide_info': 'provide_info',
     'confirm_reservation': 'confirm_reservation',
     'change_info': 'change_info',
