@@ -10,6 +10,7 @@ import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
 import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
 import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
+import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
 // WhatsApp-specific utilities
@@ -282,8 +283,11 @@ serve(async (req) => {
       }
     }
 
-    // Match tours
+    // Match tours - CRITICAL: Two-layer strategy
+    // Strategy 1: NLU entities (tour_name, destination)
+    // Strategy 2: Direct matching (numbers, keywords) via matchTour
     let selectedTour = null;
+    
     if (nluResult.entities.tour_name) {
       const found = tours.find(t => 
         t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase())
@@ -297,7 +301,7 @@ serve(async (req) => {
           program_kisa: found.program_kisa,
           gezilecek_yerler: found.gezilecek_yerler
         };
-        console.log("🎫 Tour:", selectedTour.title);
+        console.log("🎫 Tour matched by NLU name:", selectedTour.title);
       }
     } else if (nluResult.entities.destination) {
       const found = tours.find(t => 
@@ -312,7 +316,27 @@ serve(async (req) => {
           program_kisa: found.program_kisa,
           gezilecek_yerler: found.gezilecek_yerler
         };
-        console.log("🎫 Tour by destination:", selectedTour.title);
+        console.log("🎫 Tour matched by NLU destination:", selectedTour.title);
+      }
+    }
+    
+    // FALLBACK: If NLU didn't find a tour, try direct matching (numbers, keywords)
+    // This catches cases like "1", "2", "3" that NLU might miss
+    if (!selectedTour) {
+      const expectedInput = getNextExpectedInput(context);
+      const matchedTour = matchTour(message, tours, expectedInput);
+      if (matchedTour) {
+        selectedTour = {
+          id: matchedTour.id,
+          title: matchedTour.title,
+          destination: matchedTour.destination,
+          dates: matchedTour.dates,
+          program_kisa: matchedTour.program_kisa,
+          gezilecek_yerler: matchedTour.gezilecek_yerler
+        };
+        console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+      } else {
+        console.log("❌ No tour match found via NLU or direct matching");
       }
     }
 
