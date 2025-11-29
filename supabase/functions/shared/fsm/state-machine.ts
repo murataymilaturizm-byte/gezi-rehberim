@@ -66,28 +66,38 @@ const transitions: StateTransition[] = [
   {
     from: 'BROWSING',
     to: 'COLLECTING_INFO',
-    condition: (ctx, input) => 
-      input.selectedTour !== null && 
-      (input.detectedIntent === 'reservation_intent' || 
-       input.detectedIntent === 'tour_selected' ||
-       input.detectedIntent === 'provide_info'),
+    condition: (ctx, input) => {
+      // Either new tour selected OR user providing info for existing currentTour
+      const hasSelectedTour = input.selectedTour !== null;
+      const hasCurrentTour = ctx.currentTour !== null;
+      const isReservationAction = 
+        input.detectedIntent === 'reservation_intent' || 
+        input.detectedIntent === 'tour_selected' ||
+        input.detectedIntent === 'provide_info' ||
+        input.detectedIntent === 'confirm';
+      
+      return (hasSelectedTour || hasCurrentTour) && isReservationAction;
+    },
     action: (ctx, input) => {
+      // Use selectedTour if available, otherwise use currentTour from context
+      const tour = input.selectedTour || ctx.currentTour;
+      
       const merged = mergeReservationInfo({
-        tourId: input.selectedTour!.id,
-        tourTitle: input.selectedTour!.title
+        tourId: tour!.id,
+        tourTitle: tour!.title
       }, input.extractedInfo);
       
       // If there's only one date available, auto-select it
-      if (!merged.dateId && !merged.selectedDate && input.selectedTour?.dates?.length === 1) {
-        const singleDate = input.selectedTour.dates[0];
+      if (!merged.dateId && !merged.selectedDate && tour?.dates?.length === 1) {
+        const singleDate = tour.dates[0];
         merged.dateId = singleDate.id;
         merged.selectedDate = singleDate.departure_date;
       }
       
       return {
         ...ctx,
-        currentTour: input.selectedTour,
-        viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
+        currentTour: tour,
+        viewedTours: input.selectedTour ? [...ctx.viewedTours, input.selectedTour.id] : ctx.viewedTours,
         reservationInfo: merged,
         collectionStep: determineCollectionStep(merged)
       };
@@ -102,7 +112,8 @@ const transitions: StateTransition[] = [
       input.selectedTour !== null && 
       input.detectedIntent !== 'reservation_intent' &&
       input.detectedIntent !== 'tour_selected' &&
-      input.detectedIntent !== 'provide_info',
+      input.detectedIntent !== 'provide_info' &&
+      input.detectedIntent !== 'confirm',
     action: (ctx, input) => ({
       ...ctx,
       currentTour: input.selectedTour,
