@@ -14,7 +14,7 @@ import type { ConversationContext, ProcessingInput } from "../shared/fsm/types.t
 
 // Demo-specific services
 import { callAI } from "./services/ai.ts";
-import { findTourById } from "./services/tour-matcher.ts";
+import { matchTour, findTourById } from "./services/tour-matcher.ts";
 
 // Config
 import { DEMO_AGENCY_ID, DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from "./config/demo-tours.ts";
@@ -158,7 +158,9 @@ serve(async (req) => {
     const expectedInput = getNextExpectedInput(context);
     console.log("⏭️ Expected:", expectedInput);
 
-    // Use NLU entities for tour matching - ONLY for tour-related intents
+    // CRITICAL: Always try to match tour using multiple strategies
+    // Strategy 1: NLU entities (tour_name, destination)
+    // Strategy 2: Direct matching (numbers, keywords) via matchTour
     let selectedTour = null;
     const tourRelatedIntents = ['browse_tours', 'tour_search', 'select_tour', 'hotel_details', 'transport_details'];
     const shouldMatchTour = tourRelatedIntents.includes(nluResult.intent);
@@ -197,8 +199,28 @@ serve(async (req) => {
           console.log("🎫 Tour matched by NLU destination:", selectedTour.title);
         }
       }
-    } else {
-      console.log("🚫 Skipping tour match - intent is not tour-related:", nluResult.intent);
+    }
+    
+    // FALLBACK: If NLU didn't find a tour, try direct matching (numbers, keywords)
+    // This catches cases like "1", "2", "Kapadokya" that NLU might miss
+    if (!selectedTour) {
+      const matchedTour = matchTour(message, availableTours, expectedInput);
+      if (matchedTour) {
+        const fullTour = findTourById(matchedTour.id, availableTours);
+        if (fullTour) {
+          selectedTour = {
+            id: fullTour.id,
+            title: fullTour.title,
+            destination: fullTour.destination,
+            dates: fullTour.dates,
+            program_kisa: fullTour.program_kisa,
+            gezilecek_yerler: fullTour.gezilecek_yerler,
+          };
+          console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+        }
+      } else {
+        console.log("❌ No tour match found via NLU or direct matching");
+      }
     }
 
     // Extract reservation info from NLU updates (already processed by NLU)
