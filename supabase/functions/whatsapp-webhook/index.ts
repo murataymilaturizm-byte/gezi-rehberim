@@ -366,7 +366,50 @@ serve(async (req) => {
         JSON.stringify(agency.payment_instructions) : undefined
     };
 
-    const systemPrompt = buildSystemPrompt(promptContext);
+    // CRITICAL: Prevent accidental tour switching during reservation
+    let tourSwitchWarning = '';
+    
+    // If user is in COLLECTING_INFO and mentions different tour
+    if (newContext.stage === 'COLLECTING_INFO' && selectedTour && newContext.currentTour && selectedTour.id !== newContext.currentTour.id) {
+      tourSwitchWarning = newContext.language === 'tr' 
+        ? `\n\n🚨 KRİTİK UYARI: Kullanıcı şu anda "${newContext.currentTour.title}" için rezervasyon YAPIYOR (tarih: ${newContext.reservationInfo.selectedDate || 'belirtilmedi'}, kişi: ${newContext.reservationInfo.paxAdult || 'belirtilmedi'}).
+        
+Ama kullanıcı "${selectedTour.title}" hakkında bir şey söyledi.
+
+MUTLAKA ŞUNU SOR:
+"Şu anda ${newContext.currentTour.title} için rezervasyon yapıyoruz. ${selectedTour.title} turuna geçmek ister misiniz? 
+Geçerseniz mevcut rezervasyon bilgileriniz (${newContext.reservationInfo.selectedDate ? 'tarih: ' + newContext.reservationInfo.selectedDate : 'girdiğiniz bilgiler'}) silinecek.
+
+Cevabınız: 
+- Evet, ${selectedTour.title} turuna geç → Ben tur değiştirme yapacağım
+- Hayır, ${newContext.currentTour.title} ile devam → Mevcut rezervasyona devam"
+
+ASLA tur değişikliği yapma, sadece kullanıcıdan onay iste!`
+        : `\n\n🚨 CRITICAL WARNING: User is currently making a reservation for "${newContext.currentTour.title}" (date: ${newContext.reservationInfo.selectedDate || 'not specified'}, pax: ${newContext.reservationInfo.paxAdult || 'not specified'}).
+
+But user mentioned "${selectedTour.title}".
+
+YOU MUST ASK:
+"You're currently making a reservation for ${newContext.currentTour.title}. Would you like to switch to ${selectedTour.title}? 
+If you switch, your current reservation info (${newContext.reservationInfo.selectedDate ? 'date: ' + newContext.reservationInfo.selectedDate : 'entered details'}) will be deleted.
+
+Your answer:
+- Yes, switch to ${selectedTour.title} → I'll switch the tour
+- No, continue with ${newContext.currentTour.title} → Continue current reservation"
+
+NEVER switch tours automatically, only ask for confirmation!`;
+    }
+    
+    // If user is in TOUR_SELECTED but has info already, also warn
+    else if (newContext.stage === 'TOUR_SELECTED' && selectedTour && newContext.currentTour && 
+             selectedTour.id !== newContext.currentTour.id && 
+             Object.keys(newContext.reservationInfo).length > 2) {
+      tourSwitchWarning = newContext.language === 'tr'
+        ? `\n\n⚠️ DİKKAT: Kullanıcı "${newContext.currentTour.title}" seçmişti, şimdi "${selectedTour.title}" sordu. Netleştir: "Hangi tur için devam etmek istersiniz?"`
+        : `\n\n⚠️ ATTENTION: User had selected "${newContext.currentTour.title}", now asked about "${selectedTour.title}". Clarify: "Which tour would you like to continue with?"`;
+    }
+
+    const systemPrompt = buildSystemPrompt(promptContext) + tourSwitchWarning;
 
     // Call AI
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
