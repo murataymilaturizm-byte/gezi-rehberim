@@ -14,7 +14,9 @@ import type { ConversationContext, ProcessingInput } from "../shared/fsm/types.t
 
 // Demo-specific services
 import { callAI } from "./services/ai.ts";
-import { matchTour, findTourById } from "./services/tour-matcher.ts";
+
+// Shared tour matching
+import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 
 // Config
 import { DEMO_AGENCY_ID, DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from "./config/demo-tours.ts";
