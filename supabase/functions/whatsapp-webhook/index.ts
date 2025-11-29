@@ -10,63 +10,57 @@ import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
 import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
 import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
-import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
+import { matchTour } from "../shared/fsm/tour-matcher.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
 // WhatsApp-specific utilities
-import { createTwiMLResponse, createTwiMLHeaders } from './utils/twilio.ts';
-import { truncateForWhatsApp } from './utils/format.ts';
-import { validateTwilioWebhook } from './utils/signature-validation.ts';
+import { createTwiMLResponse, createTwiMLHeaders } from "./utils/twilio.ts";
+import { truncateForWhatsApp } from "./utils/format.ts";
+import { validateTwilioWebhook } from "./utils/signature-validation.ts";
 
 // WhatsApp services
-import { generatePaymentMessage } from './services/payment-message.ts';
-import { upsertUserProfile, enrichConversationInsights } from './services/profile.ts';
+import { generatePaymentMessage } from "./services/payment-message.ts";
+import { upsertUserProfile, enrichConversationInsights } from "./services/profile.ts";
 
 // Legacy services (backward compatibility)
-import { checkFAQ } from './services/faq.ts';
-import { detectCannedResponseTrigger, getCannedResponse } from './services/canned-responses.ts';
+import { checkFAQ } from "./services/faq.ts";
+import { detectCannedResponseTrigger, getCannedResponse } from "./services/canned-responses.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const formData = await req.formData();
-    
+
     // Initialize Supabase client first (needed for validation)
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
     // === MULTI-TENANT SECURITY: Validate Twilio Signature ===
     const validation = await validateTwilioWebhook(req, formData, supabase);
-    
+
     if (!validation.isValid) {
       console.error(`🚫 Unauthorized request: ${validation.error} (AccountSid: ${validation.accountSid})`);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: validation.error }), 
-        { 
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized", details: validation.error }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const agency = validation.agency;
-    
+
     // Extract request data
-    const userPhone = formData.get('From')?.toString() || '';
-    const rawMessage = formData.get('Body')?.toString() || '';
+    const userPhone = formData.get("From")?.toString() || "";
+    const rawMessage = formData.get("Body")?.toString() || "";
 
     if (!userPhone || !rawMessage) {
-      return new Response('Missing required fields', { status: 400 });
+      return new Response("Missing required fields", { status: 400 });
     }
 
     const message = sanitizeInput(rawMessage);
@@ -76,40 +70,41 @@ serve(async (req) => {
 
     // Get plan features
     const { data: planFeatures } = await supabase
-      .from('plan_features')
-      .select('*')
-      .eq('plan_type', agency.plan_type)
+      .from("plan_features")
+      .select("*")
+      .eq("plan_type", agency.plan_type)
       .single();
 
-    console.log(`📊 Plan: ${agency.plan_type}, Features:`, {
+    console.log("📊 Plan:", agency.plan_type, "Features:", {
       user_profiles: planFeatures?.has_user_profiles,
       reminders: planFeatures?.has_reminders,
       follow_ups: planFeatures?.has_follow_ups,
       templates: planFeatures?.has_templates,
       feedback: planFeatures?.has_feedback,
-      analytics: planFeatures?.has_analytics
+      analytics: planFeatures?.has_analytics,
     });
 
     // Save incoming message
-    await supabase.from('whatsapp_conversations').insert({
+    await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
-      role: 'user',
+      role: "user",
       content: message,
-      agency_id: agency.id
+      agency_id: agency.id,
     });
 
     // Upsert user profile (only if user profiles feature is enabled)
     if (planFeatures?.has_user_profiles) {
-      await upsertUserProfile(supabase, userPhone, agency.id, message, agency?.enabled_languages || ['tr']);
-      console.log('✅ User profile updated');
+      await upsertUserProfile(supabase, userPhone, agency.id, message, agency?.enabled_languages || ["tr"]);
+      console.log("✅ User profile updated");
     } else {
-      console.log('⏭️ User profiles disabled for plan:', agency.plan_type);
+      console.log("⏭️ User profiles disabled for plan:", agency.plan_type);
     }
 
     // Load tours
     const { data: dbTours } = await supabase
-      .from('tours')
-      .select(`
+      .from("tours")
+      .select(
+        `
         *,
         dates:tour_dates(
           id,
@@ -119,8 +114,9 @@ serve(async (req) => {
           price_child,
           quota
         )
-      `)
-      .eq('agency_id', agency.id);
+      `,
+      )
+      .eq("agency_id", agency.id);
 
     // Note: We'll update tours with localized fields after we have context
     const toursRaw = dbTours || [];
@@ -131,12 +127,12 @@ serve(async (req) => {
 
     // Load context (sessionId = phone)
     const { data: existingState } = await supabase
-      .from('whatsapp_conversations')
-      .select('content')
-      .eq('phone', userPhone)
-      .eq('agency_id', agency.id)
-      .eq('role', 'system')
-      .order('created_at', { ascending: false })
+      .from("whatsapp_conversations")
+      .select("content")
+      .eq("phone", userPhone)
+      .eq("agency_id", agency.id)
+      .eq("role", "system")
+      .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
@@ -151,7 +147,7 @@ serve(async (req) => {
         const parsed = JSON.parse(existingState.content);
         if (isValidContext(parsed)) {
           context = parsed;
-          
+
           // Handle explicit language change request
           if (languageChangeIntent && languageChangeIntent !== context.language) {
             console.log(`🌐 Language change: ${context.language} → ${languageChangeIntent}`);
@@ -162,28 +158,30 @@ serve(async (req) => {
             console.log(`🌐 Language detected: ${context.language} → ${runtimeDetectedLang}`);
             context.language = runtimeDetectedLang;
           }
-          
+
           console.log(`✅ Loaded context - Stage: ${context.stage}, Lang: ${context.language}`);
         } else {
-          throw new Error('Invalid context');
+          throw new Error("Invalid context");
         }
-      } catch (e) {
+      } catch (_e) {
         console.log("⚠️ Creating fresh context");
-        const initialLang = languageChangeIntent || runtimeDetectedLang || 'tr';
+        const initialLang = languageChangeIntent || runtimeDetectedLang || "tr";
         const tone = getDefaultToneForLanguage(initialLang) as ConversationTone;
         context = createInitialContext(initialLang, tone);
       }
     } else {
       console.log("🆕 Fresh context");
-      const initialLang = languageChangeIntent || runtimeDetectedLang || 'tr';
+      const initialLang = languageChangeIntent || runtimeDetectedLang || "tr";
       const tone = getDefaultToneForLanguage(initialLang) as ConversationTone;
       context = createInitialContext(initialLang, tone);
     }
 
     // Check if detected language is enabled for this agency
-    const enabledLanguages = (agency as any).enabled_languages || ['tr'];
+    const enabledLanguages = (agency as any).enabled_languages || ["tr"];
     if (!enabledLanguages.includes(context.language)) {
-      console.log(`⚠️ Language ${context.language} not enabled for agency. Falling back to first enabled: ${enabledLanguages[0]}`);
+      console.log(
+        `⚠️ Language ${context.language} not enabled for agency. Falling back to first enabled: ${enabledLanguages[0]}`,
+      );
       context.language = enabledLanguages[0];
       context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
     }
@@ -197,68 +195,62 @@ serve(async (req) => {
       currency: tour.currency,
       program_kisa: pickLocalized(tour, "program_kisa", context.language),
       gezilecek_yerler: tour.gezilecek_yerler,
-      dates: tour.dates || []
+      dates: tour.dates || [],
     }));
 
     // === Legacy features (canned responses, FAQ) - with dynamic language ===
-    const currentLang = context.language || 'tr';
-    
+    const currentLang = context.language || "tr";
+
     if (planFeatures?.has_templates) {
       const cannedTrigger = detectCannedResponseTrigger(message, currentLang);
       if (cannedTrigger) {
         const response = getCannedResponse(cannedTrigger, currentLang);
         if (response) {
-          await supabase.from('whatsapp_conversations').insert({
+          await supabase.from("whatsapp_conversations").insert({
             phone: userPhone,
-            role: 'assistant',
+            role: "assistant",
             content: response,
-            agency_id: agency.id
+            agency_id: agency.id,
           });
-          return new Response(
-            createTwiMLResponse(truncateForWhatsApp(response)), 
-            { status: 200, headers: createTwiMLHeaders() }
-          );
+          return new Response(createTwiMLResponse(truncateForWhatsApp(response)), {
+            status: 200,
+            headers: createTwiMLHeaders(),
+          });
         }
       }
 
       const faqResponse = await checkFAQ(supabase, message, agency.id, currentLang);
       if (faqResponse) {
-        await supabase.from('whatsapp_conversations').insert({
+        await supabase.from("whatsapp_conversations").insert({
           phone: userPhone,
-          role: 'assistant',
+          role: "assistant",
           content: faqResponse,
-          agency_id: agency.id
+          agency_id: agency.id,
         });
-        return new Response(
-          createTwiMLResponse(truncateForWhatsApp(faqResponse)), 
-          { status: 200, headers: createTwiMLHeaders() }
-        );
+        return new Response(createTwiMLResponse(truncateForWhatsApp(faqResponse)), {
+          status: 200,
+          headers: createTwiMLHeaders(),
+        });
       }
     }
 
-    // Get conversation history
+    // Get conversation history (for NLU context)
     const { data: recentMessages } = await supabase
-      .from('whatsapp_conversations')
-      .select('role, content')
-      .eq('phone', userPhone)
-      .eq('agency_id', agency.id)
-      .neq('role', 'system')
-      .order('created_at', { ascending: false })
+      .from("whatsapp_conversations")
+      .select("role, content")
+      .eq("phone", userPhone)
+      .eq("agency_id", agency.id)
+      .neq("role", "system")
+      .order("created_at", { ascending: false })
       .limit(10);
 
     const conversationSummary = (recentMessages || [])
       .reverse()
-      .map(m => `${m.role}: ${m.content}`)
-      .join('\n');
+      .map((m) => `${m.role}: ${m.content}`)
+      .join("\n");
 
     // Analyze with NLU
-    const nluResult = await analyzeUserMessage(
-      message,
-      conversationSummary,
-      context.stage,
-      context.currentTour,
-      tours
-    );
+    const nluResult = await analyzeUserMessage(message, conversationSummary, context.stage, context.currentTour, tours);
 
     console.log("🧠 Intent:", nluResult.intent);
 
@@ -286,12 +278,10 @@ serve(async (req) => {
     // Match tours - CRITICAL: Two-layer strategy
     // Strategy 1: NLU entities (tour_name, destination)
     // Strategy 2: Direct matching (numbers, keywords) via matchTour
-    let selectedTour = null;
-    
+    let selectedTour: any | null = null;
+
     if (nluResult.entities.tour_name) {
-      const found = tours.find(t => 
-        t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase())
-      );
+      const found = tours.find((t) => t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()));
       if (found) {
         selectedTour = {
           id: found.id,
@@ -299,13 +289,13 @@ serve(async (req) => {
           destination: found.destination,
           dates: found.dates,
           program_kisa: found.program_kisa,
-          gezilecek_yerler: found.gezilecek_yerler
+          gezilecek_yerler: found.gezilecek_yerler,
         };
         console.log("🎫 Tour matched by NLU name:", selectedTour.title);
       }
     } else if (nluResult.entities.destination) {
-      const found = tours.find(t => 
-        t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase())
+      const found = tours.find((t) =>
+        t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()),
       );
       if (found) {
         selectedTour = {
@@ -314,12 +304,12 @@ serve(async (req) => {
           destination: found.destination,
           dates: found.dates,
           program_kisa: found.program_kisa,
-          gezilecek_yerler: found.gezilecek_yerler
+          gezilecek_yerler: found.gezilecek_yerler,
         };
         console.log("🎫 Tour matched by NLU destination:", selectedTour.title);
       }
     }
-    
+
     // FALLBACK: If NLU didn't find a tour, try direct matching (numbers, keywords)
     // This catches cases like "1", "2", "3" that NLU might miss
     if (!selectedTour) {
@@ -332,7 +322,7 @@ serve(async (req) => {
           destination: matchedTour.destination,
           dates: matchedTour.dates,
           program_kisa: matchedTour.program_kisa,
-          gezilecek_yerler: matchedTour.gezilecek_yerler
+          gezilecek_yerler: matchedTour.gezilecek_yerler,
         };
         console.log("🎯 Tour matched by direct matching:", selectedTour.title);
       } else {
@@ -360,7 +350,7 @@ serve(async (req) => {
       detectedIntent: fsmIntent,
       extractedInfo,
       selectedTour,
-      language: context.language
+      language: context.language,
     };
 
     const newContext = processTransition(context, input);
@@ -386,72 +376,96 @@ serve(async (req) => {
       agencyWorkingHours: agency.working_hours,
       agencyMapsUrl: agency.maps_url,
       agencyCancellationPolicy: agency.cancellation_policy,
-      paymentInfo: agency.payment_instructions ? 
-        JSON.stringify(agency.payment_instructions) : undefined
+      // paymentInfo: AI'nin okuyacağı sade metin
+      paymentInfo:
+        typeof agency.payment_instructions === "string"
+          ? agency.payment_instructions
+          : agency.payment_instructions?.text || undefined,
     };
 
     // CRITICAL: Prevent accidental tour switching during reservation
-    let tourSwitchWarning = '';
-    
+    let tourSwitchWarning = "";
+
     // If user is in COLLECTING_INFO and mentions different tour
-    if (newContext.stage === 'COLLECTING_INFO' && selectedTour && newContext.currentTour && selectedTour.id !== newContext.currentTour.id) {
-      tourSwitchWarning = newContext.language === 'tr' 
-        ? `\n\n🚨 KRİTİK UYARI: Kullanıcı şu anda "${newContext.currentTour.title}" için rezervasyon YAPIYOR (tarih: ${newContext.reservationInfo.selectedDate || 'belirtilmedi'}, kişi: ${newContext.reservationInfo.paxAdult || 'belirtilmedi'}).
+    if (
+      newContext.stage === "COLLECTING_INFO" &&
+      selectedTour &&
+      newContext.currentTour &&
+      selectedTour.id !== newContext.currentTour.id
+    ) {
+      tourSwitchWarning =
+        newContext.language === "tr"
+          ? `\n\n🚨 KRİTİK UYARI: Kullanıcı şu anda "${newContext.currentTour.title}" için rezervasyon YAPIYOR (tarih: ${
+              newContext.reservationInfo.selectedDate || "belirtilmedi"
+            }, kişi: ${newContext.reservationInfo.paxAdult || "belirtilmedi"}).
         
 Ama kullanıcı "${selectedTour.title}" hakkında bir şey söyledi.
 
 MUTLAKA ŞUNU SOR:
 "Şu anda ${newContext.currentTour.title} için rezervasyon yapıyoruz. ${selectedTour.title} turuna geçmek ister misiniz? 
-Geçerseniz mevcut rezervasyon bilgileriniz (${newContext.reservationInfo.selectedDate ? 'tarih: ' + newContext.reservationInfo.selectedDate : 'girdiğiniz bilgiler'}) silinecek.
+Geçerseniz mevcut rezervasyon bilgileriniz (${
+              newContext.reservationInfo.selectedDate
+                ? "tarih: " + newContext.reservationInfo.selectedDate
+                : "girdiğiniz bilgiler"
+            }) silinecek.
 
 Cevabınız: 
 - Evet, ${selectedTour.title} turuna geç → Ben tur değiştirme yapacağım
 - Hayır, ${newContext.currentTour.title} ile devam → Mevcut rezervasyona devam"
 
 ASLA tur değişikliği yapma, sadece kullanıcıdan onay iste!`
-        : `\n\n🚨 CRITICAL WARNING: User is currently making a reservation for "${newContext.currentTour.title}" (date: ${newContext.reservationInfo.selectedDate || 'not specified'}, pax: ${newContext.reservationInfo.paxAdult || 'not specified'}).
+          : `\n\n🚨 CRITICAL WARNING: User is currently making a reservation for "${newContext.currentTour.title}" (date: ${
+              newContext.reservationInfo.selectedDate || "not specified"
+            }, pax: ${newContext.reservationInfo.paxAdult || "not specified"}).
 
 But user mentioned "${selectedTour.title}".
 
 YOU MUST ASK:
 "You're currently making a reservation for ${newContext.currentTour.title}. Would you like to switch to ${selectedTour.title}? 
-If you switch, your current reservation info (${newContext.reservationInfo.selectedDate ? 'date: ' + newContext.reservationInfo.selectedDate : 'entered details'}) will be deleted.
+If you switch, your current reservation info (${
+              newContext.reservationInfo.selectedDate
+                ? "date: " + newContext.reservationInfo.selectedDate
+                : "entered details"
+            }) will be deleted.
 
 Your answer:
 - Yes, switch to ${selectedTour.title} → I'll switch the tour
 - No, continue with ${newContext.currentTour.title} → Continue current reservation"
 
 NEVER switch tours automatically, only ask for confirmation!`;
-    }
-    
-    // If user is in TOUR_SELECTED but has info already, also warn
-    else if (newContext.stage === 'TOUR_SELECTED' && selectedTour && newContext.currentTour && 
-             selectedTour.id !== newContext.currentTour.id && 
-             Object.keys(newContext.reservationInfo).length > 2) {
-      tourSwitchWarning = newContext.language === 'tr'
-        ? `\n\n⚠️ DİKKAT: Kullanıcı "${newContext.currentTour.title}" seçmişti, şimdi "${selectedTour.title}" sordu. Netleştir: "Hangi tur için devam etmek istersiniz?"`
-        : `\n\n⚠️ ATTENTION: User had selected "${newContext.currentTour.title}", now asked about "${selectedTour.title}". Clarify: "Which tour would you like to continue with?"`;
+    } // If user is in TOUR_SELECTED but has info already, also warn
+    else if (
+      newContext.stage === "TOUR_SELECTED" &&
+      selectedTour &&
+      newContext.currentTour &&
+      selectedTour.id !== newContext.currentTour.id &&
+      Object.keys(newContext.reservationInfo).length > 2
+    ) {
+      tourSwitchWarning =
+        newContext.language === "tr"
+          ? `\n\n⚠️ DİKKAT: Kullanıcı "${newContext.currentTour.title}" seçmişti, şimdi "${selectedTour.title}" sordu. Netleştir: "Hangi tur için devam etmek istersiniz?"`
+          : `\n\n⚠️ ATTENTION: User had selected "${newContext.currentTour.title}", now asked about "${selectedTour.title}". Clarify: "Which tour would you like to continue with?"`;
     }
 
     const systemPrompt = buildSystemPrompt(promptContext) + tourSwitchWarning;
 
     // Call AI
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+      throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: "google/gemini-2.5-flash",
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message },
         ],
         temperature: 0.7,
       }),
@@ -468,39 +482,47 @@ NEVER switch tours automatically, only ask for confirmation!`;
 
     // === APPEND PAYMENT MESSAGE IF COMPLETED ===
     let finalReply = reply;
-    
-    if (newContext.stage === 'COMPLETED' && 
-        newContext.reservationConfirmed && 
-        !newContext.paymentInfoSent && 
-        agency.payment_instructions) {
-      
+
+    if (
+      newContext.stage === "COMPLETED" &&
+      newContext.reservationConfirmed &&
+      !newContext.paymentInfoSent &&
+      agency.payment_instructions
+    ) {
       console.log("💳 Appending payment info...");
-      
-      // Calculate payment amounts
+
       const paymentInstructions = agency.payment_instructions;
       const depositPercentage = paymentInstructions.deposit_percentage || 30;
-      
-      // Get selected tour date to calculate price
-      const selectedTourDate = toursRaw
-        .find((t: any) => t.id === newContext.reservationInfo.tourId)
-        ?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
-      
-      if (selectedTourDate) {
+
+      // İlgili turu ve tarihi bul (para birimi için de lazım)
+      const selectedTourRaw = toursRaw.find((t: any) => t.id === newContext.reservationInfo.tourId);
+
+      const selectedTourDate = selectedTourRaw?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
+
+      if (selectedTourDate && selectedTourRaw) {
         const paxAdult = newContext.reservationInfo.paxAdult || 0;
         const paxChild = newContext.reservationInfo.paxChild || 0;
         const priceAdult = selectedTourDate.price_adult || 0;
         const priceChild = selectedTourDate.price_child || priceAdult;
-        
-        const totalPrice = (paxAdult * priceAdult) + (paxChild * priceChild);
+
+        const totalPrice = paxAdult * priceAdult + paxChild * priceChild;
         const depositAmount = Math.ceil((totalPrice * depositPercentage) / 100);
-        
-        const paymentMessage = generatePaymentMessage(
+
+        // Turun kendi para birimi (yoksa ajansın primary’si, o da yoksa TRY)
+        const tourCurrency = selectedTourRaw.currency || agency.primary_currency || "TRY";
+
+        const paymentMessage = await generatePaymentMessage(
           paymentInstructions,
           newContext.language,
           totalPrice,
-          depositAmount
+          depositAmount,
+          tourCurrency,
+          {
+            languageCurrencies: agency.language_currencies,
+            primaryCurrency: agency.primary_currency,
+          },
         );
-        
+
         if (paymentMessage) {
           finalReply = reply + paymentMessage;
           newContext.paymentInfoSent = true;
@@ -510,18 +532,22 @@ NEVER switch tours automatically, only ask for confirmation!`;
     }
 
     // Save reservation if completed and get template BEFORE saving response
-    if (newContext.stage === 'COMPLETED' && newContext.reservationConfirmed) {
+    if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed) {
       console.log("💾 Saving reservation...");
-      
-      const { data: newRegistration, error: regError } = await supabase.from('registrations').insert({
-        tour_id: newContext.reservationInfo.tourId,
-        tour_date_id: newContext.reservationInfo.dateId,
-        full_name: newContext.reservationInfo.fullName,
-        phone: newContext.reservationInfo.phone || userPhone,
-        pax: (newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
-        agency_id: agency.id,
-        status: 'NEW'
-      }).select().single();
+
+      const { data: newRegistration, error: regError } = await supabase
+        .from("registrations")
+        .insert({
+          tour_id: newContext.reservationInfo.tourId,
+          tour_date_id: newContext.reservationInfo.dateId,
+          full_name: newContext.reservationInfo.fullName,
+          phone: newContext.reservationInfo.phone || userPhone,
+          pax: (newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
+          agency_id: agency.id,
+          status: "NEW",
+        })
+        .select()
+        .single();
 
       if (regError) {
         console.error("❌ Save error:", regError);
@@ -531,29 +557,34 @@ NEVER switch tours automatically, only ask for confirmation!`;
         // Send reservation confirmation template if available (only if templates enabled)
         if (planFeatures?.has_templates) {
           const { data: template } = await supabase
-            .from('message_templates')
-            .select('*')
-            .eq('agency_id', agency.id)
-            .eq('template_key', 'reservation_confirmed')
-            .eq('language', newContext.language)
-            .eq('is_active', true)
+            .from("message_templates")
+            .select("*")
+            .eq("agency_id", agency.id)
+            .eq("template_key", "reservation_confirmed")
+            .eq("language", newContext.language)
+            .eq("is_active", true)
             .maybeSingle();
 
           if (template && newRegistration) {
             console.log("📧 Sending reservation confirmation template...");
-            
+
             // Replace template variables
-            const selectedTour = tours.find(t => t.id === newContext.reservationInfo.tourId);
-            const selectedDate = selectedTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
-            
+            const selectedTourForTemplate = tours.find((t) => t.id === newContext.reservationInfo.tourId);
+            const selectedDateForTemplate = selectedTourForTemplate?.dates?.find(
+              (d: any) => d.id === newContext.reservationInfo.dateId,
+            );
+
             let templateContent = template.content;
-            templateContent = templateContent.replace('{customer_name}', newContext.reservationInfo.fullName || '');
-            templateContent = templateContent.replace('{tour_name}', selectedTour?.title || '');
-            templateContent = templateContent.replace('{tour_date}', selectedDate?.departure_date || '');
-            templateContent = templateContent.replace('{pax}', String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)));
-            
+            templateContent = templateContent.replace("{customer_name}", newContext.reservationInfo.fullName || "");
+            templateContent = templateContent.replace("{tour_name}", selectedTourForTemplate?.title || "");
+            templateContent = templateContent.replace("{tour_date}", selectedDateForTemplate?.departure_date || "");
+            templateContent = templateContent.replace(
+              "{pax}",
+              String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)),
+            );
+
             // Append template message to final reply BEFORE saving
-            finalReply = finalReply + '\n\n' + templateContent;
+            finalReply = finalReply + "\n\n" + templateContent;
             console.log("✅ Template message appended");
           }
         }
@@ -561,25 +592,28 @@ NEVER switch tours automatically, only ask for confirmation!`;
 
       // Update profile (only if user profiles feature is enabled)
       if (planFeatures?.has_user_profiles) {
-        await supabase.from('whatsapp_user_profiles').upsert({
-          phone: userPhone,
-          agency_id: agency.id,
-          full_name: newContext.reservationInfo.fullName,
-          total_bookings: 1,
-          last_interaction_at: new Date().toISOString()
-        }, {
-          onConflict: 'phone,agency_id'
-        });
-        console.log('✅ User profile updated with booking');
+        await supabase.from("whatsapp_user_profiles").upsert(
+          {
+            phone: userPhone,
+            agency_id: agency.id,
+            full_name: newContext.reservationInfo.fullName,
+            total_bookings: 1,
+            last_interaction_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "phone,agency_id",
+          },
+        );
+        console.log("✅ User profile updated with booking");
       }
     }
 
     // Save response (now includes template if applicable)
-    await supabase.from('whatsapp_conversations').insert({
+    await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
-      role: 'assistant',
+      role: "assistant",
       content: finalReply,
-      agency_id: agency.id
+      agency_id: agency.id,
     });
 
     // Enrich conversation insights (only if user profiles feature is enabled)
@@ -590,37 +624,38 @@ NEVER switch tours automatically, only ask for confirmation!`;
         agency.id,
         message,
         finalReply,
-        detectedIntent || 'general'
+        detectedIntent || "general",
       );
-      console.log('✅ Conversation insights enriched');
+      console.log("✅ Conversation insights enriched");
     }
 
     // Save context
-    await supabase.from('whatsapp_conversations').insert({
+    await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
-      role: 'system',
+      role: "system",
       content: JSON.stringify(newContext),
-      agency_id: agency.id
+      agency_id: agency.id,
     });
 
-    return new Response(
-      createTwiMLResponse(truncateForWhatsApp(finalReply)), 
-      { status: 200, headers: createTwiMLHeaders() }
-    );
-
+    return new Response(createTwiMLResponse(truncateForWhatsApp(finalReply)), {
+      status: 200,
+      headers: createTwiMLHeaders(),
+    });
   } catch (error) {
-    console.error('❌ Error:', error);
-    return new Response(
-      createTwiMLResponse("Üzgünüm, bir hata oluştu."),
-      { status: 200, headers: createTwiMLHeaders() }
-    );
+    console.error("❌ Error:", error);
+    return new Response(createTwiMLResponse("Üzgünüm, bir hata oluştu."), {
+      status: 200,
+      headers: createTwiMLHeaders(),
+    });
   }
 });
 
 function isValidContext(obj: any): obj is ConversationContext {
-  return obj && 
-    typeof obj === 'object' &&
-    typeof obj.stage === 'string' &&
-    typeof obj.language === 'string' &&
-    typeof obj.tone === 'string';
+  return (
+    obj &&
+    typeof obj === "object" &&
+    typeof obj.stage === "string" &&
+    typeof obj.language === "string" &&
+    typeof obj.tone === "string"
+  );
 }
