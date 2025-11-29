@@ -2,55 +2,52 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  let language = 'tr'; // Default language
+  let language = "tr"; // Default language
 
   try {
     const body = await req.json();
-    const message = (body.message || '').trim();
+    const message = (body.message || "").trim();
     const conversationHistory = body.conversationHistory || [];
-    language = body.language || 'tr';
-    
+    language = body.language || "tr";
+
     // Input validation
     if (!message || message.length < 1 || message.length > 2000) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid message length. Must be between 1 and 2000 characters.' }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid message length. Must be between 1 and 2000 characters." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
+
     // Sanitize message
     const sanitizedMessage = message
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
-    
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "");
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-const languageNames: Record<string, string> = {
-  'tr': 'Türkçe',
-  'en': 'English',
-  'de': 'Deutsch',
-  'ru': 'Русский',
-  'ar': 'العربية',
-  'fr': 'Français',
-  'es': 'Español'
-};
+    const languageNames: Record<string, string> = {
+      tr: "Türkçe",
+      en: "English",
+      de: "Deutsch",
+      ru: "Русский",
+      ar: "العربية",
+      fr: "Français",
+      es: "Español",
+    };
 
-const systemPrompt = `You are Turzz AI's sales and support assistant. You help tourism agencies with an AI solution that automates tour sales via WhatsApp.
+    const systemPrompt = `You are Turzz AI's sales and support assistant. You help tourism agencies with an AI solution that automates tour sales via WhatsApp.
 
 **CRITICAL LANGUAGE INSTRUCTION**: ALWAYS respond in the SAME language as the user's message. Detect the language from their message and respond entirely in that language. Do NOT force any specific language. If user writes in English, respond in English. If user writes in Turkish, respond in Turkish. Match their language naturally.
 
@@ -128,16 +125,6 @@ Yıllık: 86.389 TL/yıl (%10 indirimli - 7.199 TL/ay)
    • API erişimi (gelecekte)
    • Ödeme Alabilme (gelecekte)
    • Büyük organizasyonlar için özel çözümler
-   • Sınırsız WhatsApp mesajı
-   • Sınırsız tur sayısı
-   • Tüm dil desteği
-   • Özel yazılım geliştirme desteği
-   • 7/24 premium destek
-   • API erişimi
-   • Özel eğitim ve danışmanlık
-   • Özel entegrasyonlar
-   • Büyük organizasyonlar için özel çözümler
-   • Fiyat için bizimle iletişime geçin
 
 HEDEF KİTLE:
 - Küçük ve orta ölçekli turizm acenteleri
@@ -277,7 +264,7 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
 ✨ Profesyonel Paket'in en popüler paket olduğunu belirt
 ✨ Müşteri bilgilerini mutlaka topla (isim, telefon, acente adı, aylık mesaj/rezervasyon ihtiyacı)
 ✨ Demo isteyenlere hemen bilgi al ve yönlendir
-✨ ROI (yatırım getirisi) konusunda somut örnekler ver (2-3x satış artışı ilk ayda, 40+ saat tasarruf)
+✨ ROI (yatırım getirisi) konusunda somut örnekler ver (%45 rezervasyon artışı, %70 daha hızlı yanıt)
 ✨ Rekabetten bahsetme, sadece kendi avantajlarını anlat
 ✨ Müşterinin yazdığı dilde cevap ver - dili otomatik algıla ve o dilde yanıtla
 ✨ Başlangıç paketi sadece 2 tur satışı ile kendini öder (2.999 TL/ay)
@@ -291,9 +278,9 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
       { role: "system", content: systemPrompt },
       ...conversationHistory.map((msg: any) => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content,
       })),
-      { role: "user", content: sanitizedMessage }
+      { role: "user", content: sanitizedMessage },
     ];
 
     console.log("Calling Lovable AI with sales chat request");
@@ -301,14 +288,14 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: messages,
         temperature: 0.7,
-        max_tokens: 500
+        max_tokens: 500,
       }),
     });
 
@@ -323,17 +310,13 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
 
     console.log("Sales chat response generated successfully");
 
-    return new Response(
-      JSON.stringify({ response: aiResponse }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
-
+    return new Response(JSON.stringify({ response: aiResponse }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   } catch (error) {
     console.error("Error in sales-chat function:", error);
-    
+
     const errorMessages: Record<string, string> = {
       tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@turzz.ai adresinden bizimle iletişime geçin.",
       en: "Sorry, I'm experiencing an issue right now. Please contact us at info@turzz.ai.",
@@ -341,18 +324,18 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
       ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@turzz.ai.",
       ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@turzz.ai.",
       fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@turzz.ai.",
-      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@turzz.ai."
+      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@turzz.ai.",
     };
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error instanceof Error ? error.message : "Unknown error",
-        response: errorMessages[language] || errorMessages.tr
+        response: errorMessages[language] || errorMessages.tr,
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
     );
   }
 });
