@@ -62,11 +62,43 @@ const transitions: StateTransition[] = [
     })
   },
   
-  // BROWSING → TOUR_SELECTED
+  // BROWSING → COLLECTING_INFO (direct reservation intent)
+  {
+    from: 'BROWSING',
+    to: 'COLLECTING_INFO',
+    condition: (ctx, input) => 
+      input.selectedTour !== null && 
+      input.detectedIntent === 'reservation_intent',
+    action: (ctx, input) => {
+      const merged = mergeReservationInfo({
+        tourId: input.selectedTour!.id,
+        tourTitle: input.selectedTour!.title
+      }, input.extractedInfo);
+      
+      // If there's only one date available, auto-select it
+      if (!merged.dateId && !merged.selectedDate && input.selectedTour?.dates?.length === 1) {
+        const singleDate = input.selectedTour.dates[0];
+        merged.dateId = singleDate.id;
+        merged.selectedDate = singleDate.departure_date;
+      }
+      
+      return {
+        ...ctx,
+        currentTour: input.selectedTour,
+        viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
+        reservationInfo: merged,
+        collectionStep: determineCollectionStep(merged)
+      };
+    }
+  },
+  
+  // BROWSING → TOUR_SELECTED (just browsing without reservation intent)
   {
     from: 'BROWSING',
     to: 'TOUR_SELECTED',
-    condition: (ctx, input) => input.selectedTour !== null,
+    condition: (ctx, input) => 
+      input.selectedTour !== null && 
+      input.detectedIntent !== 'reservation_intent',
     action: (ctx, input) => ({
       ...ctx,
       currentTour: input.selectedTour,
