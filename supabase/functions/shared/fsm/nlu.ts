@@ -32,9 +32,12 @@ Your job is to analyze user messages and extract intents and entities.
 - browse_tours: User wants to see available tours
 - tour_search: User searches for specific destination/tour (ONLY when explicitly asking about tours)
 - select_tour: User selects a specific tour
-- reservation_intent: User explicitly wants to make a reservation (e.g., "I want to book", "rezervasyon yapmak istiyorum", "book this tour")
+- reservation_intent: User wants to make a reservation. CRITICAL RULES:
+  * EXPLICIT requests: "I want to book", "rezervasyon yapmak istiyorum", "book this tour", "let's book"
+  * CONTEXT-AWARE (when current state = "TOUR_SELECTED"): Simple confirmations like "tamam", "olur", "evet", "yapabiliriz", "ok", "yes", "sure", "let's do it", "evet yapalım", "hadi", "kabul", "haydi" → ALL MEAN reservation_intent
+  * When a tour is already selected and user says ANY positive short confirmation → reservation_intent (NOT general!)
 - provide_info: User provides reservation details (date, pax, name, phone)
-- confirm_reservation: User confirms the booking (final confirmation, e.g., "yes, confirm", "evet onaylıyorum")
+- confirm_reservation: User confirms FINAL booking (ONLY in "CONFIRMING" stage, e.g., "yes, confirm", "evet onaylıyorum")
 - change_info: User wants to modify information
 - agency_info: User asks about agency details (name, address, phone, website, contact)
 - working_hours: User asks about business hours
@@ -49,6 +52,11 @@ Your job is to analyze user messages and extract intents and entities.
 - faq_general: General tour-related questions
 - human_handover: User wants to speak with a real person
 - general: General questions or chat
+
+**CRITICAL CONTEXT RULES FOR SHORT CONFIRMATIONS:**
+1. If conversation summary contains "TOUR_SELECTED" or "Currently selected tour" AND user says: "tamam/ok/evet/olur/yapabiliriz/sure/yes/let's go/haydi/hadi" → MUST return reservation_intent
+2. If conversation summary contains "CONFIRMING" or "ready for confirmation" AND user confirms → MUST return confirm_reservation
+3. Short positive responses WITHOUT tour context → general
 
 **Entities to extract:**
 - destination: City or country name (ONLY when user is asking about tours, NOT for visa/payment/agency questions)
