@@ -96,22 +96,18 @@ export const RegistrationsList = ({
         <TableHeader>
           <TableRow>
             <TableHead className="min-w-[150px]">{t("admin.registrations.name")}</TableHead>
-            <TableHead className="min-w-[120px]">{t("admin.registrations.phone")}</TableHead>
             <TableHead className="min-w-[200px]">{t("admin.registrations.tour")}</TableHead>
             <TableHead className="min-w-[120px]">{t("admin.registrations.date")}</TableHead>
             <TableHead className="text-center min-w-[80px]">{t("admin.registrations.pax")}</TableHead>
-            <TableHead className="min-w-[100px] hidden md:table-cell">{t("admin.registrations.source")}</TableHead>
             <TableHead className="min-w-[100px]">{t("admin.registrations.paymentStatus")}</TableHead>
-            <TableHead className="text-right min-w-[100px] hidden lg:table-cell">{t("admin.registrations.unitPrice")}</TableHead>
-            <TableHead className="text-right min-w-[100px] font-semibold">{t("admin.registrations.totalPrice")}</TableHead>
-            <TableHead className="min-w-[150px]">{t("admin.registrations.status")}</TableHead>
+            <TableHead className="text-right min-w-[100px] font-semibold hidden sm:table-cell">{t("admin.registrations.totalPrice")}</TableHead>
             <TableHead className="text-center min-w-[80px]">{t("admin.registrations.detail")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {registrations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                 {t("admin.registrations.noRegistrations")}
               </TableCell>
             </TableRow>
@@ -123,11 +119,6 @@ export const RegistrationsList = ({
             return (
               <TableRow key={reg.id} className="hover:bg-accent/50">
                 <TableCell className="font-medium">{reg.full_name}</TableCell>
-                <TableCell>
-                  <a href={`tel:${reg.phone}`} className="text-primary hover:underline">
-                    {reg.phone}
-                  </a>
-                </TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-1">
                     <span className="font-medium">{reg.tours?.title}</span>
@@ -144,11 +135,6 @@ export const RegistrationsList = ({
                     {reg.pax}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Badge variant="secondary" className="text-xs">
-                    {sourceChannelLabels[reg.source_channel || 'WHATSAPP']}
-                  </Badge>
-                </TableCell>
                 <TableCell>
                   <Badge 
                     variant={
@@ -161,43 +147,12 @@ export const RegistrationsList = ({
                     {paymentStatusLabels[reg.payment_status || 'UNPAID']}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right hidden lg:table-cell">
-                  {unitPrice > 0 ? (
-                    <span className="text-sm text-muted-foreground">
-                      {unitPrice.toLocaleString('tr-TR')}₺
-                    </span>
-                  ) : '-'}
-                </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right hidden sm:table-cell">
                   {totalPrice > 0 ? (
                     <span className="text-base font-semibold">
                       {totalPrice.toLocaleString('tr-TR')}₺
                     </span>
                   ) : '-'}
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={reg.status}
-                    onValueChange={(value) => onStatusChange(reg.id, value as "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED")}
-                  >
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="NEW">
-                        <Badge variant="secondary">{statusLabels.NEW}</Badge>
-                      </SelectItem>
-                      <SelectItem value="PENDING">
-                        <Badge variant="secondary">{statusLabels.PENDING}</Badge>
-                      </SelectItem>
-                      <SelectItem value="CONFIRMED">
-                        <Badge variant="default">{statusLabels.CONFIRMED}</Badge>
-                      </SelectItem>
-                      <SelectItem value="CANCELLED">
-                        <Badge variant="destructive">{statusLabels.CANCELLED}</Badge>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
                 </TableCell>
                 <TableCell className="text-center">
                   <Button

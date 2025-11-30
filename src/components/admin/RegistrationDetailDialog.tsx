@@ -166,8 +166,24 @@ export const RegistrationDetailDialog = ({
                 </p>
               </div>
               <div>
+                <Label className="text-xs text-muted-foreground">{t("admin.registrations.name")}</Label>
+                <p className="font-medium">{registration.full_name}</p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">{t("admin.registrations.phone")}</Label>
+                <p className="font-medium">
+                  <a href={`tel:${registration.phone}`} className="text-primary hover:underline">
+                    {registration.phone}
+                  </a>
+                </p>
+              </div>
+              <div>
                 <Label className="text-xs text-muted-foreground">{t("admin.registrations.pax")}</Label>
                 <p className="font-medium">{registration.pax} kişi</p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">{t("admin.registrations.unitPrice")}</Label>
+                <p className="font-medium">{(registration.tour_dates?.price_adult || 0).toLocaleString('tr-TR')}₺</p>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">{t("admin.registrations.source")}</Label>
