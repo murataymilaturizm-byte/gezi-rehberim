@@ -19,6 +19,7 @@ import {
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { Eye } from "lucide-react";
 
 interface Registration {
   id: string;
@@ -31,6 +32,9 @@ interface Registration {
   tour_id: string;
   source_channel?: string;
   payment_status?: string;
+  total_amount?: number;
+  paid_amount?: number;
+  deposit_amount?: number;
   tours: {
     title: string;
     destination: string;
@@ -45,12 +49,14 @@ interface RegistrationsListProps {
   registrations: Registration[];
   loading: boolean;
   onStatusChange: (registrationId: string, newStatus: "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED") => void;
+  onViewDetail: (registration: Registration) => void;
 }
 
 export const RegistrationsList = ({
   registrations,
   loading,
-  onStatusChange
+  onStatusChange,
+  onViewDetail
 }: RegistrationsListProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -63,17 +69,17 @@ export const RegistrationsList = ({
   };
 
   const sourceChannelLabels: Record<string, string> = {
-    WHATSAPP: "WhatsApp",
-    PHONE: "Telefon",
-    OFFICE: "Ofis",
-    INSTAGRAM: "Instagram",
-    OTHER: "Diğer"
+    WHATSAPP: t("admin.sourceChannel.WHATSAPP"),
+    PHONE: t("admin.sourceChannel.PHONE"),
+    OFFICE: t("admin.sourceChannel.OFFICE"),
+    INSTAGRAM: t("admin.sourceChannel.INSTAGRAM"),
+    OTHER: t("admin.sourceChannel.OTHER")
   };
 
   const paymentStatusLabels: Record<string, string> = {
-    UNPAID: "Ödenmedi",
-    DEPOSIT: "Kapora",
-    PAID: "Ödendi"
+    UNPAID: t("admin.paymentStatusLabels.UNPAID"),
+    DEPOSIT: t("admin.paymentStatusLabels.DEPOSIT"),
+    PAID: t("admin.paymentStatusLabels.PAID")
   };
 
   if (loading) {
@@ -85,29 +91,30 @@ export const RegistrationsList = ({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t("admin.registrations.name")}</TableHead>
-          <TableHead>{t("admin.registrations.phone")}</TableHead>
-          <TableHead>{t("admin.registrations.tour")}</TableHead>
-          <TableHead>{t("admin.registrations.date")}</TableHead>
-          <TableHead className="text-center">{t("admin.registrations.pax")}</TableHead>
-          <TableHead>Kaynak</TableHead>
-          <TableHead>Ödeme</TableHead>
-          <TableHead className="text-right">Birim Fiyat</TableHead>
-          <TableHead className="text-right font-semibold">Toplam</TableHead>
-          <TableHead>{t("admin.registrations.status")}</TableHead>
-          <TableHead className="text-center">Not</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {registrations.length === 0 ? (
+    <div className="w-full overflow-x-auto">
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
-              {t("admin.registrations.noRegistrations")}
-            </TableCell>
+            <TableHead className="min-w-[150px]">{t("admin.registrations.name")}</TableHead>
+            <TableHead className="min-w-[120px]">{t("admin.registrations.phone")}</TableHead>
+            <TableHead className="min-w-[200px]">{t("admin.registrations.tour")}</TableHead>
+            <TableHead className="min-w-[120px]">{t("admin.registrations.date")}</TableHead>
+            <TableHead className="text-center min-w-[80px]">{t("admin.registrations.pax")}</TableHead>
+            <TableHead className="min-w-[100px] hidden md:table-cell">{t("admin.registrations.source")}</TableHead>
+            <TableHead className="min-w-[100px]">{t("admin.registrations.paymentStatus")}</TableHead>
+            <TableHead className="text-right min-w-[100px] hidden lg:table-cell">{t("admin.registrations.unitPrice")}</TableHead>
+            <TableHead className="text-right min-w-[100px] font-semibold">{t("admin.registrations.totalPrice")}</TableHead>
+            <TableHead className="min-w-[150px]">{t("admin.registrations.status")}</TableHead>
+            <TableHead className="text-center min-w-[80px]">{t("admin.registrations.detail")}</TableHead>
           </TableRow>
+        </TableHeader>
+        <TableBody>
+          {registrations.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+                {t("admin.registrations.noRegistrations")}
+              </TableCell>
+            </TableRow>
         ) : (
           registrations.map((reg) => {
             const unitPrice = reg.tour_dates?.price_adult || 0;
@@ -137,7 +144,7 @@ export const RegistrationsList = ({
                     {reg.pax}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   <Badge variant="secondary" className="text-xs">
                     {sourceChannelLabels[reg.source_channel || 'WHATSAPP']}
                   </Badge>
@@ -154,7 +161,7 @@ export const RegistrationsList = ({
                     {paymentStatusLabels[reg.payment_status || 'UNPAID']}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right hidden lg:table-cell">
                   {unitPrice > 0 ? (
                     <span className="text-sm text-muted-foreground">
                       {unitPrice.toLocaleString('tr-TR')}₺
@@ -193,27 +200,20 @@ export const RegistrationsList = ({
                   </Select>
                 </TableCell>
                 <TableCell className="text-center">
-                  {reg.note && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        toast({
-                          title: "Rezervasyon Notu",
-                          description: reg.note,
-                          duration: 5000,
-                        });
-                      }}
-                    >
-                      📝
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewDetail(reg)}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             );
           })
-        )}
-      </TableBody>
-    </Table>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };

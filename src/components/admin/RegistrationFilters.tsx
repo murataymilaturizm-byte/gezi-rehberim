@@ -22,12 +22,19 @@ interface Tour {
   title: string;
 }
 
+interface TourDate {
+  departure_date: string;
+}
+
 interface RegistrationFiltersProps {
   tours: Tour[];
+  availableTourDates: string[];
   filterStatus: string;
   setFilterStatus: (value: string) => void;
   filterTour: string;
   setFilterTour: (value: string) => void;
+  filterTourDate: string;
+  setFilterTourDate: (value: string) => void;
   filterSourceChannel: string;
   setFilterSourceChannel: (value: string) => void;
   filterDateFrom: Date | undefined;
@@ -43,10 +50,13 @@ interface RegistrationFiltersProps {
 
 export const RegistrationFilters = ({
   tours,
+  availableTourDates,
   filterStatus,
   setFilterStatus,
   filterTour,
   setFilterTour,
+  filterTourDate,
+  setFilterTourDate,
   filterSourceChannel,
   setFilterSourceChannel,
   filterDateFrom,
@@ -71,6 +81,7 @@ export const RegistrationFilters = ({
   const hasActiveFilters = 
     filterStatus !== "ALL" || 
     filterTour !== "ALL" || 
+    filterTourDate !== "ALL" ||
     filterSourceChannel !== "ALL" ||
     filterDateFrom || 
     filterDateTo || 
@@ -78,10 +89,54 @@ export const RegistrationFilters = ({
     filterPriceMax;
 
   return (
-    <div className="bg-card rounded-lg border p-3 space-y-3">
+    <div className="bg-card rounded-lg border p-4 space-y-4">
       <h3 className="text-sm font-semibold">{t("admin.filters.title")}</h3>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      {/* Primary Filters - Tur ve Tur Tarihi */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Tour Filter */}
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-foreground">
+            {t("admin.filters.tour")}
+          </label>
+          <Select value={filterTour} onValueChange={setFilterTour}>
+            <SelectTrigger className="h-10 border-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">{t("admin.filters.allTours")}</SelectItem>
+              {tours.map((tour) => (
+                <SelectItem key={tour.id} value={tour.id}>
+                  {tour.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Tour Date Filter */}
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-foreground">
+            {t("admin.filters.tourDate")}
+          </label>
+          <Select value={filterTourDate} onValueChange={setFilterTourDate}>
+            <SelectTrigger className="h-10 border-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">{t("admin.filters.allDates")}</SelectItem>
+              {availableTourDates.map((date) => (
+                <SelectItem key={date} value={date}>
+                  {format(new Date(date), "d MMMM yyyy", { locale: tr })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Secondary Filters */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         {/* Status Filter */}
         <div className="space-y-1">
           <label className="text-[10px] font-medium text-muted-foreground">
@@ -101,47 +156,27 @@ export const RegistrationFilters = ({
           </Select>
         </div>
 
-        {/* Tour Filter */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-medium text-muted-foreground">
-            {t("admin.filters.tour")}
-          </label>
-          <Select value={filterTour} onValueChange={setFilterTour}>
-            <SelectTrigger className="h-8 text-[11px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{t("admin.filters.allTours")}</SelectItem>
-              {tours.map((tour) => (
-                <SelectItem key={tour.id} value={tour.id}>
-                  {tour.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Source Channel Filter */}
         <div className="space-y-1">
           <label className="text-[10px] font-medium text-muted-foreground">
-            Kaynak Kanal
+            {t("admin.filters.sourceChannel")}
           </label>
           <Select value={filterSourceChannel} onValueChange={setFilterSourceChannel}>
             <SelectTrigger className="h-8 text-[11px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">Tümü</SelectItem>
-              <SelectItem value="WHATSAPP">WhatsApp</SelectItem>
-              <SelectItem value="PHONE">Telefon</SelectItem>
-              <SelectItem value="OFFICE">Ofis</SelectItem>
-              <SelectItem value="INSTAGRAM">Instagram</SelectItem>
-              <SelectItem value="OTHER">Diğer</SelectItem>
+              <SelectItem value="ALL">{t("admin.filters.all")}</SelectItem>
+              <SelectItem value="WHATSAPP">{t("admin.sourceChannel.WHATSAPP")}</SelectItem>
+              <SelectItem value="PHONE">{t("admin.sourceChannel.PHONE")}</SelectItem>
+              <SelectItem value="OFFICE">{t("admin.sourceChannel.OFFICE")}</SelectItem>
+              <SelectItem value="INSTAGRAM">{t("admin.sourceChannel.INSTAGRAM")}</SelectItem>
+              <SelectItem value="OTHER">{t("admin.sourceChannel.OTHER")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Date Range Filter */}
+        {/* Registration Date Range Filter */}
         <div className="space-y-1 col-span-2">
           <label className="text-[10px] font-medium text-muted-foreground">
             {t("admin.filters.dateRange")}

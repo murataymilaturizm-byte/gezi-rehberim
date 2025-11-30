@@ -427,9 +427,11 @@ export type Database = {
         Row: {
           agency_id: string | null
           created_at: string | null
+          deposit_amount: number | null
           full_name: string
           id: string
           note: string | null
+          paid_amount: number | null
           pax: number
           payment_status: string | null
           phone: string
@@ -437,15 +439,18 @@ export type Database = {
           reminder_sent_at: string | null
           source_channel: string | null
           status: Database["public"]["Enums"]["registration_status"]
+          total_amount: number | null
           tour_date_id: string
           tour_id: string
         }
         Insert: {
           agency_id?: string | null
           created_at?: string | null
+          deposit_amount?: number | null
           full_name: string
           id?: string
           note?: string | null
+          paid_amount?: number | null
           pax?: number
           payment_status?: string | null
           phone: string
@@ -453,15 +458,18 @@ export type Database = {
           reminder_sent_at?: string | null
           source_channel?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
+          total_amount?: number | null
           tour_date_id: string
           tour_id: string
         }
         Update: {
           agency_id?: string | null
           created_at?: string | null
+          deposit_amount?: number | null
           full_name?: string
           id?: string
           note?: string | null
+          paid_amount?: number | null
           pax?: number
           payment_status?: string | null
           phone?: string
@@ -469,6 +477,7 @@ export type Database = {
           reminder_sent_at?: string | null
           source_channel?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
+          total_amount?: number | null
           tour_date_id?: string
           tour_id?: string
         }

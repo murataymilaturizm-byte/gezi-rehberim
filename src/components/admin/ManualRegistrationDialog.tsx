@@ -58,6 +58,7 @@ export const ManualRegistrationDialog = ({
     paxAdult: "1",
     sourceChannel: "PHONE",
     paymentStatus: "UNPAID",
+    depositAmount: "",
     notes: ""
   });
   
@@ -78,6 +79,16 @@ export const ManualRegistrationDialog = ({
       return;
     }
 
+    // Validate deposit amount if DEPOSIT is selected
+    if (formData.paymentStatus === "DEPOSIT" && (!formData.depositAmount || parseFloat(formData.depositAmount) <= 0)) {
+      toast({
+        title: "Hata",
+        description: t("admin.registrations.enterDepositAmount"),
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!agencyId) {
       toast({
         title: "Hata",
@@ -90,6 +101,11 @@ export const ManualRegistrationDialog = ({
     setIsSubmitting(true);
 
     try {
+      const depositAmount = formData.paymentStatus === "DEPOSIT" ? parseFloat(formData.depositAmount) : null;
+      const paidAmount = formData.paymentStatus === "DEPOSIT" ? parseFloat(formData.depositAmount) : 
+                        formData.paymentStatus === "PAID" ? (selectedTour?.tour_dates.find(d => d.id === formData.tourDateId)?.price_adult || 0) * parseInt(formData.paxAdult) :
+                        0;
+
       const { error } = await supabase
         .from("registrations")
         .insert({
@@ -101,6 +117,9 @@ export const ManualRegistrationDialog = ({
           pax: parseInt(formData.paxAdult),
           source_channel: formData.sourceChannel,
           payment_status: formData.paymentStatus,
+          deposit_amount: depositAmount,
+          paid_amount: paidAmount,
+          total_amount: (selectedTour?.tour_dates.find(d => d.id === formData.tourDateId)?.price_adult || 0) * parseInt(formData.paxAdult),
           note: formData.notes || null,
           status: "NEW"
         });
@@ -121,6 +140,7 @@ export const ManualRegistrationDialog = ({
         paxAdult: "1",
         sourceChannel: "PHONE",
         paymentStatus: "UNPAID",
+        depositAmount: "",
         notes: ""
       });
 
@@ -256,18 +276,34 @@ export const ManualRegistrationDialog = ({
               <Label htmlFor="paymentStatus">Ödeme Durumu</Label>
               <Select 
                 value={formData.paymentStatus} 
-                onValueChange={(value) => setFormData({ ...formData, paymentStatus: value })}
+                onValueChange={(value) => setFormData({ ...formData, paymentStatus: value, depositAmount: "" })}
               >
                 <SelectTrigger id="paymentStatus">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="UNPAID">Ödenmedi</SelectItem>
-                  <SelectItem value="DEPOSIT">Kapora</SelectItem>
-                  <SelectItem value="PAID">Ödendi</SelectItem>
+                  <SelectItem value="UNPAID">{t("admin.paymentStatusLabels.UNPAID")}</SelectItem>
+                  <SelectItem value="DEPOSIT">{t("admin.paymentStatusLabels.DEPOSIT")}</SelectItem>
+                  <SelectItem value="PAID">{t("admin.paymentStatusLabels.PAID")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Kapora Miktarı - Sadece DEPOSIT seçiliyken görünür */}
+            {formData.paymentStatus === "DEPOSIT" && (
+              <div className="col-span-2">
+                <Label htmlFor="depositAmount">{t("admin.registrations.depositAmount")} *</Label>
+                <Input
+                  id="depositAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.depositAmount}
+                  onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })}
+                  placeholder={t("admin.registrations.enterDepositAmount")}
+                />
+              </div>
+            )}
 
             {/* Notlar */}
             <div className="col-span-2">
