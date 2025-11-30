@@ -9,6 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,11 +75,20 @@ export const RegistrationDetailDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  
+  // Editable fields
+  const [editablePhone, setEditablePhone] = useState("");
+  const [editableStatus, setEditableStatus] = useState("");
+  const [editablePaymentStatus, setEditablePaymentStatus] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Load payment history when dialog opens
   useEffect(() => {
     if (open && registration?.id) {
       loadPaymentHistory();
+      setEditablePhone(registration.phone || "");
+      setEditableStatus(registration.status || "NEW");
+      setEditablePaymentStatus(registration.payment_status || "UNPAID");
     }
   }, [open, registration?.id]);
 
@@ -170,6 +186,9 @@ export const RegistrationDetailDialog = ({
 
       if (updateError) throw updateError;
 
+      // Update local state
+      setEditablePaymentStatus(newPaymentStatus);
+
       toast({
         title: t("admin.registrations.paymentSuccess"),
         description: `${amount.toLocaleString('tr-TR')}₺ ödeme eklendi`
@@ -189,6 +208,34 @@ export const RegistrationDetailDialog = ({
     }
   };
 
+  const handleUpdateField = async (field: string, value: string) => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("registrations")
+        .update({ [field]: value })
+        .eq("id", registration.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı",
+        description: "Kayıt güncellendi"
+      });
+
+      onSuccess();
+    } catch (error) {
+      console.error("Update error:", error);
+      toast({
+        title: "Hata",
+        description: "Güncelleme başarısız",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -204,7 +251,7 @@ export const RegistrationDetailDialog = ({
 
         <div className="space-y-4">
           {/* Main Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             {/* Tour Info Card */}
             <Card>
               <CardHeader className="pb-3">
@@ -242,33 +289,95 @@ export const RegistrationDetailDialog = ({
               </CardContent>
             </Card>
 
+            {/* Contact Info Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  İletişim
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">İsim</p>
+                  <p className="font-medium text-sm">{registration.full_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Telefon</p>
+                  <div className="flex gap-1.5">
+                    <Input
+                      value={editablePhone}
+                      onChange={(e) => setEditablePhone(e.target.value)}
+                      onBlur={() => {
+                        if (editablePhone !== registration.phone) {
+                          handleUpdateField("phone", editablePhone);
+                        }
+                      }}
+                      className="h-7 text-xs flex-1"
+                      disabled={isUpdating}
+                    />
+                    <a 
+                      href={`tel:${editablePhone}`} 
+                      className="text-primary hover:underline text-xs flex items-center"
+                    >
+                      Ara
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Status Card */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">Durum</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Kayıt:</span>
-                  <Badge variant="outline" className="text-xs">
-                    {statusLabels[registration.status]}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Ödeme:</span>
-                  <Badge 
-                    variant={
-                      registration.payment_status === 'PAID' ? 'default' : 
-                      registration.payment_status === 'DEPOSIT' ? 'secondary' : 
-                      'outline'
-                    }
-                    className="text-xs"
+              <CardContent className="space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Kayıt Durumu</Label>
+                  <Select 
+                    value={editableStatus} 
+                    onValueChange={(value) => {
+                      setEditableStatus(value);
+                      handleUpdateField("status", value);
+                    }}
+                    disabled={isUpdating}
                   >
-                    {paymentStatusLabels[registration.payment_status || 'UNPAID']}
-                  </Badge>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NEW">{statusLabels.NEW}</SelectItem>
+                      <SelectItem value="PENDING">{statusLabels.PENDING}</SelectItem>
+                      <SelectItem value="CONFIRMED">{statusLabels.CONFIRMED}</SelectItem>
+                      <SelectItem value="CANCELLED">{statusLabels.CANCELLED}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Kaynak:</span>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Ödeme Durumu</Label>
+                  <Select 
+                    value={editablePaymentStatus} 
+                    onValueChange={(value) => {
+                      setEditablePaymentStatus(value);
+                      handleUpdateField("payment_status", value);
+                    }}
+                    disabled={isUpdating}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UNPAID">{paymentStatusLabels.UNPAID}</SelectItem>
+                      <SelectItem value="DEPOSIT">{paymentStatusLabels.DEPOSIT}</SelectItem>
+                      <SelectItem value="PAID">{paymentStatusLabels.PAID}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Kaynak</Label>
                   <Badge variant="secondary" className="text-xs">
                     {sourceChannelLabels[registration.source_channel || 'WHATSAPP']}
                   </Badge>
