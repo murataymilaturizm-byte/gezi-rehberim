@@ -228,11 +228,16 @@ const Admin = () => {
     setFilterPriceMax("");
   };
 
-  // Get available tour dates from registrations
+  // Get available tour dates from registrations based on selected tour
   const availableTourDates = Array.from(
     new Set(
       registrations
-        .filter(reg => reg.tour_dates?.departure_date)
+        .filter(reg => {
+          if (!reg.tour_dates?.departure_date) return false;
+          // If a tour is selected, only show dates for that tour
+          if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
+          return true;
+        })
         .map(reg => reg.tour_dates.departure_date)
     )
   ).sort();
@@ -356,24 +361,25 @@ const Admin = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      if (activeTab === "tours") {
-        const { data, error } = await supabase
-          .from("tours")
-          .select(`
-            *,
-            tour_dates (
-              id,
-              departure_date,
-              return_date,
-              price_adult,
-              quota
-            )
-          `)
-          .order("created_at", { ascending: false });
-        
-        if (error) throw error;
-        setTours(data || []);
-      } else if (activeTab === "registrations") {
+      // Always load tours for the registration filters
+      const { data: toursData, error: toursError } = await supabase
+        .from("tours")
+        .select(`
+          *,
+          tour_dates (
+            id,
+            departure_date,
+            return_date,
+            price_adult,
+            quota
+          )
+        `)
+        .order("created_at", { ascending: false });
+      
+      if (toursError) throw toursError;
+      setTours(toursData || []);
+
+      if (activeTab === "registrations") {
         const { data, error } = await supabase
           .from("registrations")
           .select(`
