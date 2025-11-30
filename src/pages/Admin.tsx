@@ -23,6 +23,7 @@ import { ToursList } from "@/components/admin/ToursList";
 import { RegistrationsList } from "@/components/admin/RegistrationsList";
 import { RegistrationFilters } from "@/components/admin/RegistrationFilters";
 import { ManualRegistrationDialog } from "@/components/admin/ManualRegistrationDialog";
+import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { CustomerAnalytics } from "@/components/CustomerAnalytics";
@@ -128,8 +129,11 @@ const Admin = () => {
   // Registrations state
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [manualRegistrationDialogOpen, setManualRegistrationDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [filterTour, setFilterTour] = useState<string>("ALL");
+  const [filterTourDate, setFilterTourDate] = useState<string>("ALL");
   const [filterSourceChannel, setFilterSourceChannel] = useState<string>("ALL");
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
@@ -216,6 +220,7 @@ const Admin = () => {
   const clearFilters = () => {
     setFilterStatus("ALL");
     setFilterTour("ALL");
+    setFilterTourDate("ALL");
     setFilterSourceChannel("ALL");
     setFilterDateFrom(undefined);
     setFilterDateTo(undefined);
@@ -223,10 +228,20 @@ const Admin = () => {
     setFilterPriceMax("");
   };
 
+  // Get available tour dates from registrations
+  const availableTourDates = Array.from(
+    new Set(
+      registrations
+        .filter(reg => reg.tour_dates?.departure_date)
+        .map(reg => reg.tour_dates.departure_date)
+    )
+  ).sort();
+
   const getFilteredRegistrations = () => {
     return registrations.filter(reg => {
       if (filterStatus !== "ALL" && reg.status !== filterStatus) return false;
       if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
+      if (filterTourDate !== "ALL" && reg.tour_dates?.departure_date !== filterTourDate) return false;
       if (filterSourceChannel !== "ALL" && reg.source_channel !== filterSourceChannel) return false;
       
       if (filterDateFrom || filterDateTo) {
@@ -676,7 +691,7 @@ const Admin = () => {
                             className="bg-gradient-ocean hover:opacity-90"
                           >
                             <Plus className="w-4 h-4 mr-2" />
-                            + Manuel Kayıt Ekle
+                            {t("admin.registrations.addManual")}
                           </Button>
                           <Button
                             onClick={() => exportRegistrationsToExcel(registrations)}
@@ -699,6 +714,9 @@ const Admin = () => {
                         setFilterStatus={setFilterStatus}
                         filterTour={filterTour}
                         setFilterTour={setFilterTour}
+                        filterTourDate={filterTourDate}
+                        setFilterTourDate={setFilterTourDate}
+                        availableTourDates={availableTourDates}
                         filterSourceChannel={filterSourceChannel}
                         setFilterSourceChannel={setFilterSourceChannel}
                         tours={tours}
@@ -743,6 +761,10 @@ const Admin = () => {
                       registrations={getFilteredRegistrations()}
                       loading={loading}
                       onStatusChange={handleStatusChange}
+                      onViewDetail={(registration) => {
+                        setSelectedRegistration(registration);
+                        setDetailDialogOpen(true);
+                      }}
                     />
                   )}
                 </CardContent>

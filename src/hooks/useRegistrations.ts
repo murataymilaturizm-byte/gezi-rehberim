@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
-interface Registration {
+export interface Registration {
   id: string;
   full_name: string;
   phone: string;
@@ -14,6 +14,9 @@ interface Registration {
   tour_id: string;
   source_channel?: string;
   payment_status?: string;
+  total_amount?: number;
+  paid_amount?: number;
+  deposit_amount?: number;
   tours: {
     title: string;
     destination: string;
@@ -33,6 +36,7 @@ export const useRegistrations = (activeTab: string, session: any) => {
   // Registration filters
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [filterTour, setFilterTour] = useState<string>("ALL");
+  const [filterTourDate, setFilterTourDate] = useState<string>("ALL");
   const [filterSourceChannel, setFilterSourceChannel] = useState<string>("ALL");
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
@@ -130,6 +134,7 @@ export const useRegistrations = (activeTab: string, session: any) => {
   const clearFilters = () => {
     setFilterStatus("ALL");
     setFilterTour("ALL");
+    setFilterTourDate("ALL");
     setFilterSourceChannel("ALL");
     setFilterDateFrom(undefined);
     setFilterDateTo(undefined);
@@ -137,10 +142,20 @@ export const useRegistrations = (activeTab: string, session: any) => {
     setFilterPriceMax("");
   };
 
+  // Get available tour dates from registrations
+  const availableTourDates = Array.from(
+    new Set(
+      registrations
+        .filter(reg => reg.tour_dates?.departure_date)
+        .map(reg => reg.tour_dates.departure_date)
+    )
+  ).sort();
+
   const getFilteredRegistrations = () => {
     return registrations.filter((reg) => {
       if (filterStatus !== "ALL" && reg.status !== filterStatus) return false;
       if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
+      if (filterTourDate !== "ALL" && reg.tour_dates?.departure_date !== filterTourDate) return false;
       if (filterSourceChannel !== "ALL" && reg.source_channel !== filterSourceChannel) return false;
 
       if (filterDateFrom && reg.tour_dates?.departure_date) {
@@ -170,6 +185,9 @@ export const useRegistrations = (activeTab: string, session: any) => {
     setFilterStatus,
     filterTour,
     setFilterTour,
+    filterTourDate,
+    setFilterTourDate,
+    availableTourDates,
     filterSourceChannel,
     setFilterSourceChannel,
     filterDateFrom,
