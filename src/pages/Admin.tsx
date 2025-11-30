@@ -228,29 +228,30 @@ const Admin = () => {
     setFilterPriceMax("");
   };
 
-  // Get available tour dates from registrations based on selected tour
+  // Get available tour dates from tours (not registrations!) based on selected tour
   const availableTourDates = Array.from(
     new Set(
-      registrations
-        .filter(reg => {
-          if (!reg.tour_dates?.departure_date) return false;
+      tours
+        .filter(tour => {
           // If a tour is selected, only show dates for that tour
-          if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
+          if (filterTour !== "ALL" && tour.id !== filterTour) return false;
           return true;
         })
-        .map(reg => reg.tour_dates.departure_date)
+        .flatMap(tour => tour.tour_dates?.map(td => td.departure_date) || [])
+        .filter(date => date) // Remove any undefined/null dates
     )
   ).sort();
 
   console.log("🔍 Filter Debug:", {
     filterTour,
-    registrationsCount: registrations.length,
+    toursCount: tours.length,
+    selectedTour: tours.find(t => t.id === filterTour),
     availableTourDatesCount: availableTourDates.length,
-    availableTourDates: availableTourDates.slice(0, 5), // İlk 5 tarih
-    sampleRegistration: registrations[0] ? {
-      tour_id: registrations[0].tour_id,
-      tour_title: registrations[0].tours?.title,
-      departure_date: registrations[0].tour_dates?.departure_date
+    availableTourDates,
+    sampleTour: tours[0] ? {
+      id: tours[0].id,
+      title: tours[0].title,
+      tour_dates: tours[0].tour_dates
     } : null
   });
 
