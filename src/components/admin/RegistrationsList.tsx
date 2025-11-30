@@ -29,6 +29,8 @@ interface Registration {
   note?: string;
   created_at: string;
   tour_id: string;
+  source_channel?: string;
+  payment_status?: string;
   tours: {
     title: string;
     destination: string;
@@ -60,6 +62,20 @@ export const RegistrationsList = ({
     CANCELLED: t("admin.status.cancelled")
   };
 
+  const sourceChannelLabels: Record<string, string> = {
+    WHATSAPP: "WhatsApp",
+    PHONE: "Telefon",
+    OFFICE: "Ofis",
+    INSTAGRAM: "Instagram",
+    OTHER: "Diğer"
+  };
+
+  const paymentStatusLabels: Record<string, string> = {
+    UNPAID: "Ödenmedi",
+    DEPOSIT: "Kapora",
+    PAID: "Ödendi"
+  };
+
   if (loading) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -77,6 +93,8 @@ export const RegistrationsList = ({
           <TableHead>{t("admin.registrations.tour")}</TableHead>
           <TableHead>{t("admin.registrations.date")}</TableHead>
           <TableHead className="text-center">{t("admin.registrations.pax")}</TableHead>
+          <TableHead>Kaynak</TableHead>
+          <TableHead>Ödeme</TableHead>
           <TableHead className="text-right">Birim Fiyat</TableHead>
           <TableHead className="text-right font-semibold">Toplam</TableHead>
           <TableHead>{t("admin.registrations.status")}</TableHead>
@@ -86,7 +104,7 @@ export const RegistrationsList = ({
       <TableBody>
         {registrations.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+            <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
               {t("admin.registrations.noRegistrations")}
             </TableCell>
           </TableRow>
@@ -117,6 +135,23 @@ export const RegistrationsList = ({
                 <TableCell className="text-center">
                   <Badge variant="outline" className="font-semibold">
                     {reg.pax}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="text-xs">
+                    {sourceChannelLabels[reg.source_channel || 'WHATSAPP']}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge 
+                    variant={
+                      reg.payment_status === 'PAID' ? 'default' : 
+                      reg.payment_status === 'DEPOSIT' ? 'secondary' : 
+                      'outline'
+                    }
+                    className="text-xs"
+                  >
+                    {paymentStatusLabels[reg.payment_status || 'UNPAID']}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">

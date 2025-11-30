@@ -497,6 +497,8 @@ NEVER switch tours automatically, only ask for confirmation!`;
           phone: phone,
           pax: paxAdult,
           status: "NEW",
+          source_channel: "WHATSAPP",
+          payment_status: "UNPAID",
           note: "Demo chat reservation",
         });
 

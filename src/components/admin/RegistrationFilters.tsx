@@ -28,6 +28,8 @@ interface RegistrationFiltersProps {
   setFilterStatus: (value: string) => void;
   filterTour: string;
   setFilterTour: (value: string) => void;
+  filterSourceChannel: string;
+  setFilterSourceChannel: (value: string) => void;
   filterDateFrom: Date | undefined;
   setFilterDateFrom: (date: Date | undefined) => void;
   filterDateTo: Date | undefined;
@@ -45,6 +47,8 @@ export const RegistrationFilters = ({
   setFilterStatus,
   filterTour,
   setFilterTour,
+  filterSourceChannel,
+  setFilterSourceChannel,
   filterDateFrom,
   setFilterDateFrom,
   filterDateTo,
@@ -67,6 +71,7 @@ export const RegistrationFilters = ({
   const hasActiveFilters = 
     filterStatus !== "ALL" || 
     filterTour !== "ALL" || 
+    filterSourceChannel !== "ALL" ||
     filterDateFrom || 
     filterDateTo || 
     filterPriceMin || 
@@ -76,7 +81,7 @@ export const RegistrationFilters = ({
     <div className="bg-card rounded-lg border p-3 space-y-3">
       <h3 className="text-sm font-semibold">{t("admin.filters.title")}</h3>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         {/* Status Filter */}
         <div className="space-y-1">
           <label className="text-[10px] font-medium text-muted-foreground">
@@ -112,6 +117,26 @@ export const RegistrationFilters = ({
                   {tour.title}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Source Channel Filter */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-medium text-muted-foreground">
+            Kaynak Kanal
+          </label>
+          <Select value={filterSourceChannel} onValueChange={setFilterSourceChannel}>
+            <SelectTrigger className="h-8 text-[11px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tümü</SelectItem>
+              <SelectItem value="WHATSAPP">WhatsApp</SelectItem>
+              <SelectItem value="PHONE">Telefon</SelectItem>
+              <SelectItem value="OFFICE">Ofis</SelectItem>
+              <SelectItem value="INSTAGRAM">Instagram</SelectItem>
+              <SelectItem value="OTHER">Diğer</SelectItem>
             </SelectContent>
           </Select>
         </div>
