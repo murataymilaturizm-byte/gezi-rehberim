@@ -22,6 +22,7 @@ import { TourDateFormDialog } from "@/components/TourDateFormDialog";
 import { ToursList } from "@/components/admin/ToursList";
 import { RegistrationsList } from "@/components/admin/RegistrationsList";
 import { RegistrationFilters } from "@/components/admin/RegistrationFilters";
+import { ManualRegistrationDialog } from "@/components/admin/ManualRegistrationDialog";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { CustomerAnalytics } from "@/components/CustomerAnalytics";
@@ -82,6 +83,8 @@ interface Registration {
   note?: string;
   created_at: string;
   tour_id: string;
+  source_channel?: string;
+  payment_status?: string;
   tours: {
     title: string;
     destination: string;
@@ -124,8 +127,10 @@ const Admin = () => {
 
   // Registrations state
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [manualRegistrationDialogOpen, setManualRegistrationDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [filterTour, setFilterTour] = useState<string>("ALL");
+  const [filterSourceChannel, setFilterSourceChannel] = useState<string>("ALL");
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
   const [filterPriceMin, setFilterPriceMin] = useState<string>("");
@@ -211,6 +216,7 @@ const Admin = () => {
   const clearFilters = () => {
     setFilterStatus("ALL");
     setFilterTour("ALL");
+    setFilterSourceChannel("ALL");
     setFilterDateFrom(undefined);
     setFilterDateTo(undefined);
     setFilterPriceMin("");
@@ -221,6 +227,7 @@ const Admin = () => {
     return registrations.filter(reg => {
       if (filterStatus !== "ALL" && reg.status !== filterStatus) return false;
       if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
+      if (filterSourceChannel !== "ALL" && reg.source_channel !== filterSourceChannel) return false;
       
       if (filterDateFrom || filterDateTo) {
         const regDate = new Date(reg.created_at);
@@ -663,14 +670,23 @@ const Admin = () => {
                           </Button>
                         </>
                       ) : (
-                        <Button
-                          onClick={() => exportRegistrationsToExcel(registrations)}
-                          variant="outline"
-                          disabled={registrations.length === 0}
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          {t("admin.registrations.export")}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => setManualRegistrationDialogOpen(true)}
+                            className="bg-gradient-ocean hover:opacity-90"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            + Manuel Kayıt Ekle
+                          </Button>
+                          <Button
+                            onClick={() => exportRegistrationsToExcel(registrations)}
+                            variant="outline"
+                            disabled={registrations.length === 0}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            {t("admin.registrations.export")}
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -683,6 +699,8 @@ const Admin = () => {
                         setFilterStatus={setFilterStatus}
                         filterTour={filterTour}
                         setFilterTour={setFilterTour}
+                        filterSourceChannel={filterSourceChannel}
+                        setFilterSourceChannel={setFilterSourceChannel}
                         tours={tours}
                         filterDateFrom={filterDateFrom}
                         setFilterDateFrom={setFilterDateFrom}
@@ -777,6 +795,23 @@ const Admin = () => {
       
         </SidebarInset>
       </div>
+      
+      {/* Manual Registration Dialog */}
+      <ManualRegistrationDialog
+        open={manualRegistrationDialogOpen}
+        onOpenChange={setManualRegistrationDialogOpen}
+        tours={tours.map(t => ({
+          id: t.id,
+          title: t.title,
+          tour_dates: t.tour_dates || []
+        }))}
+        onSuccess={() => {
+          if (session && activeTab === "registrations") {
+            loadData();
+          }
+        }}
+        agencyId={userAgencyId}
+      />
       
       {/* Support Chat Widget */}
       <SupportChatWidget />

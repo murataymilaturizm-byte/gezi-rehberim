@@ -565,6 +565,8 @@ NEVER switch tours automatically, only ask for confirmation!`;
           pax: (newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
           agency_id: agency.id,
           status: "NEW",
+          source_channel: "WHATSAPP",
+          payment_status: "UNPAID"
         })
         .select()
         .single();

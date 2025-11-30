@@ -431,9 +431,11 @@ export type Database = {
           id: string
           note: string | null
           pax: number
+          payment_status: string | null
           phone: string
           reminder_sent: boolean | null
           reminder_sent_at: string | null
+          source_channel: string | null
           status: Database["public"]["Enums"]["registration_status"]
           tour_date_id: string
           tour_id: string
@@ -445,9 +447,11 @@ export type Database = {
           id?: string
           note?: string | null
           pax?: number
+          payment_status?: string | null
           phone: string
           reminder_sent?: boolean | null
           reminder_sent_at?: string | null
+          source_channel?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           tour_date_id: string
           tour_id: string
@@ -459,9 +463,11 @@ export type Database = {
           id?: string
           note?: string | null
           pax?: number
+          payment_status?: string | null
           phone?: string
           reminder_sent?: boolean | null
           reminder_sent_at?: string | null
+          source_channel?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           tour_date_id?: string
           tour_id?: string
