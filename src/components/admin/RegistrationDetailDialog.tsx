@@ -13,9 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { tr as trLocale } from "date-fns/locale";
+import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign } from "lucide-react";
 
 interface Registration {
   id: string;
@@ -139,146 +140,171 @@ export const RegistrationDetailDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("admin.registrations.detailTitle")}</DialogTitle>
-          <DialogDescription>
-            {registration.full_name} - {registration.phone}
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {t("admin.registrations.detailTitle")}
+          </DialogTitle>
+          <DialogDescription className="flex items-center gap-2 text-base">
+            {registration.full_name} • {registration.phone}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Basic Info */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">{t("admin.registrations.basicInfo")}</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.tour")}</Label>
-                <p className="font-medium">{registration.tours?.title}</p>
+        <div className="space-y-4">
+          {/* Main Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Tour Info Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  {t("admin.registrations.tour")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <p className="font-medium text-sm">{registration.tours?.title}</p>
                 <p className="text-xs text-muted-foreground">{registration.tours?.destination}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.date")}</Label>
-                <p className="font-medium">
+              </CardContent>
+            </Card>
+
+            {/* Date & Pax Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {t("admin.registrations.date")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="font-medium text-sm">
                   {registration.tour_dates?.departure_date 
                     ? format(new Date(registration.tour_dates.departure_date), "d MMM yyyy", { locale: trLocale })
                     : '-'}
                 </p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.name")}</Label>
-                <p className="font-medium">{registration.full_name}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.phone")}</Label>
-                <p className="font-medium">
-                  <a href={`tel:${registration.phone}`} className="text-primary hover:underline">
-                    {registration.phone}
-                  </a>
-                </p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.pax")}</Label>
-                <p className="font-medium">{registration.pax} kişi</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.unitPrice")}</Label>
-                <p className="font-medium">{(registration.tour_dates?.price_adult || 0).toLocaleString('tr-TR')}₺</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.source")}</Label>
-                <Badge variant="secondary" className="text-xs">
-                  {sourceChannelLabels[registration.source_channel || 'WHATSAPP']}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.status")}</Label>
-                <Badge variant="outline">
-                  {statusLabels[registration.status]}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.paymentStatus")}</Label>
-                <Badge 
-                  variant={
-                    registration.payment_status === 'PAID' ? 'default' : 
-                    registration.payment_status === 'DEPOSIT' ? 'secondary' : 
-                    'outline'
-                  }
-                >
-                  {paymentStatusLabels[registration.payment_status || 'UNPAID']}
-                </Badge>
-              </div>
-            </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Users className="h-3 w-3" />
+                  <span>{registration.pax} kişi</span>
+                  <span className="text-muted-foreground">•</span>
+                  <span>{(registration.tour_dates?.price_adult || 0).toLocaleString('tr-TR')}₺/kişi</span>
+                </div>
+              </CardContent>
+            </Card>
 
-            {registration.note && (
-              <div className="mt-4">
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.note")}</Label>
-                <p className="text-sm mt-1 p-2 bg-muted rounded">{registration.note}</p>
-              </div>
-            )}
+            {/* Status Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Durum</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Kayıt:</span>
+                  <Badge variant="outline" className="text-xs">
+                    {statusLabels[registration.status]}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Ödeme:</span>
+                  <Badge 
+                    variant={
+                      registration.payment_status === 'PAID' ? 'default' : 
+                      registration.payment_status === 'DEPOSIT' ? 'secondary' : 
+                      'outline'
+                    }
+                    className="text-xs"
+                  >
+                    {paymentStatusLabels[registration.payment_status || 'UNPAID']}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Kaynak:</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {sourceChannelLabels[registration.source_channel || 'WHATSAPP']}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <Separator />
+          {/* Payment Summary */}
+          {totalAmount > 0 && (
+            <Card className="border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Wallet className="h-4 w-4" />
+                  {t("admin.registrations.paymentInfo")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("admin.registrations.totalAmount")}</p>
+                    <p className="font-semibold text-lg">{totalAmount.toLocaleString('tr-TR')}₺</p>
+                  </div>
+                  {registration.deposit_amount && registration.deposit_amount > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">{t("admin.registrations.depositAmount")}</p>
+                      <p className="font-medium text-blue-600">{registration.deposit_amount.toLocaleString('tr-TR')}₺</p>
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("admin.registrations.paidAmount")}</p>
+                    <p className="font-medium text-green-600">{paidAmount.toLocaleString('tr-TR')}₺</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("admin.registrations.remainingAmount")}</p>
+                    <p className="font-semibold text-orange-600">{remainingAmount.toLocaleString('tr-TR')}₺</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Payment Info */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">{t("admin.registrations.paymentInfo")}</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {totalAmount > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">{t("admin.registrations.totalAmount")}</Label>
-                  <p className="font-semibold text-lg">{totalAmount.toLocaleString('tr-TR')}₺</p>
-                </div>
-              )}
-              {registration.deposit_amount && registration.deposit_amount > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">{t("admin.registrations.depositAmount")}</Label>
-                  <p className="font-medium">{registration.deposit_amount.toLocaleString('tr-TR')}₺</p>
-                </div>
-              )}
-              <div>
-                <Label className="text-xs text-muted-foreground">{t("admin.registrations.paidAmount")}</Label>
-                <p className="font-medium text-green-600">{paidAmount.toLocaleString('tr-TR')}₺</p>
-              </div>
-              {totalAmount > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">{t("admin.registrations.remainingAmount")}</Label>
-                  <p className="font-semibold text-orange-600">{remainingAmount.toLocaleString('tr-TR')}₺</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <Separator />
+          {/* Note */}
+          {registration.note && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">{t("admin.registrations.note")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{registration.note}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Add Payment */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">{t("admin.registrations.addPayment")}</h3>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Label htmlFor="paymentAmount">{t("admin.registrations.paymentAmount")}</Label>
-                <Input
-                  id="paymentAmount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  placeholder={t("admin.registrations.enterAmount")}
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="flex items-end">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                {t("admin.registrations.addPayment")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    id="paymentAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    placeholder={t("admin.registrations.enterAmount")}
+                    disabled={isSubmitting}
+                    className="h-9"
+                  />
+                </div>
                 <Button 
                   onClick={handleAddPayment}
                   disabled={isSubmitting || !paymentAmount}
+                  size="sm"
                 >
                   {isSubmitting ? "..." : t("admin.registrations.addPaymentButton")}
                 </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
