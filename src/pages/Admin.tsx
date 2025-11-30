@@ -242,6 +242,18 @@ const Admin = () => {
     )
   ).sort();
 
+  console.log("🔍 Filter Debug:", {
+    filterTour,
+    registrationsCount: registrations.length,
+    availableTourDatesCount: availableTourDates.length,
+    availableTourDates: availableTourDates.slice(0, 5), // İlk 5 tarih
+    sampleRegistration: registrations[0] ? {
+      tour_id: registrations[0].tour_id,
+      tour_title: registrations[0].tours?.title,
+      departure_date: registrations[0].tour_dates?.departure_date
+    } : null
+  });
+
   const getFilteredRegistrations = () => {
     return registrations.filter(reg => {
       // Status filter
