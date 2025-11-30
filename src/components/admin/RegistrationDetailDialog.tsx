@@ -135,7 +135,7 @@ export const RegistrationDetailDialog = ({
     CANCELLED: t("admin.status.cancelled")
   };
 
-  const totalAmount = registration.total_amount || 0;
+  const totalAmount = registration.total_amount || (registration.tour_dates?.price_adult || 0) * registration.pax;
   const paidAmount = registration.paid_amount || 0;
   const remainingAmount = totalAmount - paidAmount;
 
@@ -324,6 +324,12 @@ export const RegistrationDetailDialog = ({
                     </a>
                   </div>
                 </div>
+                {registration.note && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Not</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{registration.note}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -387,40 +393,43 @@ export const RegistrationDetailDialog = ({
           </div>
 
           {/* Payment Summary */}
-          {totalAmount > 0 && (
-            <Card className="border-primary/20">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Wallet className="h-4 w-4" />
-                  {t("admin.registrations.paymentInfo")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t("admin.registrations.totalAmount")}</p>
-                    <p className="font-semibold text-lg">{totalAmount.toLocaleString('tr-TR')}₺</p>
-                  </div>
-                  {registration.deposit_amount && registration.deposit_amount > 0 && (
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">{t("admin.registrations.depositAmount")}</p>
-                      <p className="font-medium text-blue-600">{registration.deposit_amount.toLocaleString('tr-TR')}₺</p>
-                    </div>
-                  )}
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t("admin.registrations.paidAmount")}</p>
-                    <p className="font-medium text-green-600">{paidAmount.toLocaleString('tr-TR')}₺</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t("admin.registrations.remainingAmount")}</p>
-                    <p className={`font-semibold ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                      {remainingAmount.toLocaleString('tr-TR')}₺
-                    </p>
-                  </div>
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                {t("admin.registrations.paymentInfo")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Birim Fiyat</p>
+                  <p className="font-medium text-base">{(registration.tour_dates?.price_adult || 0).toLocaleString('tr-TR')}₺</p>
+                  <p className="text-xs text-muted-foreground">{registration.pax} kişi</p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">{t("admin.registrations.totalAmount")}</p>
+                  <p className="font-semibold text-lg text-primary">{totalAmount.toLocaleString('tr-TR')}₺</p>
+                </div>
+                {registration.deposit_amount && registration.deposit_amount > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("admin.registrations.depositAmount")}</p>
+                    <p className="font-medium text-blue-600">{registration.deposit_amount.toLocaleString('tr-TR')}₺</p>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">{t("admin.registrations.paidAmount")}</p>
+                  <p className="font-medium text-green-600">{paidAmount.toLocaleString('tr-TR')}₺</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">{t("admin.registrations.remainingAmount")}</p>
+                  <p className={`font-bold text-xl ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                    {remainingAmount.toLocaleString('tr-TR')}₺
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Payment History */}
           {paymentHistory.length > 0 && (
