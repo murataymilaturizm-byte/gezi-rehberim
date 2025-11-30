@@ -76,10 +76,11 @@ export const RegistrationDetailDialog = ({
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   
-  // Editable fields
+  // Editable fields - with live updates
   const [editablePhone, setEditablePhone] = useState("");
   const [editableStatus, setEditableStatus] = useState("");
   const [editablePaymentStatus, setEditablePaymentStatus] = useState("");
+  const [currentPaidAmount, setCurrentPaidAmount] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Load payment history when dialog opens
@@ -89,8 +90,9 @@ export const RegistrationDetailDialog = ({
       setEditablePhone(registration.phone || "");
       setEditableStatus(registration.status || "NEW");
       setEditablePaymentStatus(registration.payment_status || "UNPAID");
+      setCurrentPaidAmount(registration.paid_amount || 0);
     }
-  }, [open, registration?.id]);
+  }, [open, registration]);
 
   const loadPaymentHistory = async () => {
     if (!registration?.id) return;
@@ -136,7 +138,7 @@ export const RegistrationDetailDialog = ({
   };
 
   const totalAmount = registration.total_amount || (registration.tour_dates?.price_adult || 0) * registration.pax;
-  const paidAmount = registration.paid_amount || 0;
+  const paidAmount = currentPaidAmount;
   const remainingAmount = totalAmount - paidAmount;
 
   const handleAddPayment = async () => {
@@ -186,8 +188,9 @@ export const RegistrationDetailDialog = ({
 
       if (updateError) throw updateError;
 
-      // Update local state
+      // Update local state immediately
       setEditablePaymentStatus(newPaymentStatus);
+      setCurrentPaidAmount(newPaidAmount);
 
       toast({
         title: t("admin.registrations.paymentSuccess"),
@@ -196,7 +199,7 @@ export const RegistrationDetailDialog = ({
 
       setPaymentAmount("");
       await loadPaymentHistory(); // Reload payment history
-      onSuccess();
+      onSuccess(); // Refresh parent data
     } catch (error) {
       console.error("Payment add error:", error);
       toast({
@@ -325,9 +328,10 @@ export const RegistrationDetailDialog = ({
                   </div>
                 </div>
                 {registration.note && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Not</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{registration.note}</p>
+                  <div className="mt-2 pt-2 border-t">
+                    <p className="text-[10px] text-muted-foreground line-clamp-1" title={registration.note}>
+                      📝 {registration.note}
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -431,78 +435,25 @@ export const RegistrationDetailDialog = ({
             </CardContent>
           </Card>
 
-          {/* Payment History */}
-          {paymentHistory.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Receipt className="h-4 w-4" />
-                  Ödeme Geçmişi
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {paymentHistory.map((payment) => (
-                    <div 
-                      key={payment.id} 
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                          <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {payment.amount.toLocaleString('tr-TR')}₺
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(payment.payment_date), "d MMMM yyyy, HH:mm", { locale: trLocale })}
-                          </p>
-                        </div>
-                      </div>
-                      {payment.note && (
-                        <p className="text-xs text-muted-foreground max-w-[200px] truncate">
-                          {payment.note}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Note */}
-          {registration.note && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">{t("admin.registrations.note")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{registration.note}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Add Payment */}
+          {/* Payment History & Add Payment - Combined */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                {t("admin.registrations.addPayment")}
+                <Receipt className="h-4 w-4" />
+                Ödeme İşlemleri
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
+            <CardContent className="space-y-4">
+              {/* Add Payment Form */}
+              <div className="flex gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
                 <div className="flex-1">
                   <Input
-                    id="paymentAmount"
                     type="number"
                     min="0"
                     step="0.01"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
-                    placeholder={t("admin.registrations.enterAmount")}
+                    placeholder="Ödeme tutarı girin..."
                     disabled={isSubmitting}
                     className="h-9"
                   />
@@ -511,10 +462,43 @@ export const RegistrationDetailDialog = ({
                   onClick={handleAddPayment}
                   disabled={isSubmitting || !paymentAmount}
                   size="sm"
+                  className="px-6"
                 >
-                  {isSubmitting ? "..." : t("admin.registrations.addPaymentButton")}
+                  {isSubmitting ? "..." : "Ödeme Ekle"}
                 </Button>
               </div>
+
+              {/* Payment History */}
+              {paymentHistory.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Geçmiş Ödemeler</p>
+                  {paymentHistory.map((payment) => (
+                    <div 
+                      key={payment.id} 
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                          <DollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {payment.amount.toLocaleString('tr-TR')}₺
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {format(new Date(payment.payment_date), "d MMMM yyyy, HH:mm", { locale: trLocale })}
+                          </p>
+                        </div>
+                      </div>
+                      {payment.note && (
+                        <p className="text-[10px] text-muted-foreground max-w-[150px] truncate">
+                          {payment.note}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
