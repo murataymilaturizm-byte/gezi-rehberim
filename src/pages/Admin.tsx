@@ -244,19 +244,28 @@ const Admin = () => {
 
   const getFilteredRegistrations = () => {
     return registrations.filter(reg => {
+      // Status filter
       if (filterStatus !== "ALL" && reg.status !== filterStatus) return false;
+      
+      // Tour filter - CRITICAL: Only filter if a tour is selected
       if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
+      
+      // Tour Date filter - CRITICAL: Only filter if a date is selected
       if (filterTourDate !== "ALL" && reg.tour_dates?.departure_date !== filterTourDate) return false;
+      
+      // Source channel filter
       if (filterSourceChannel !== "ALL" && reg.source_channel !== filterSourceChannel) return false;
       
+      // Registration date range filter
       if (filterDateFrom || filterDateTo) {
         const regDate = new Date(reg.created_at);
         if (filterDateFrom && regDate < filterDateFrom) return false;
         if (filterDateTo && regDate > filterDateTo) return false;
       }
       
+      // Price range filter
       if (filterPriceMin || filterPriceMax) {
-        const totalPrice = reg.tour_dates.price_adult * reg.pax;
+        const totalPrice = (reg.tour_dates?.price_adult || 0) * reg.pax;
         if (filterPriceMin && totalPrice < parseFloat(filterPriceMin)) return false;
         if (filterPriceMax && totalPrice > parseFloat(filterPriceMax)) return false;
       }
@@ -839,6 +848,18 @@ const Admin = () => {
           }
         }}
         agencyId={userAgencyId}
+      />
+
+      {/* Registration Detail Dialog */}
+      <RegistrationDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        registration={selectedRegistration}
+        onSuccess={() => {
+          if (session && activeTab === "registrations") {
+            loadData();
+          }
+        }}
       />
       
       {/* Support Chat Widget */}
