@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +16,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { tr as trLocale } from "date-fns/locale";
-import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign } from "lucide-react";
+import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign, Receipt } from "lucide-react";
+
+interface PaymentHistory {
+  id: string;
+  amount: number;
+  payment_date: string;
+  payment_method?: string;
+  note?: string;
+}
 
 interface Registration {
   id: string;
@@ -58,6 +66,35 @@ export const RegistrationDetailDialog = ({
   const { toast } = useToast();
   const [paymentAmount, setPaymentAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Load payment history when dialog opens
+  useEffect(() => {
+    if (open && registration?.id) {
+      loadPaymentHistory();
+    }
+  }, [open, registration?.id]);
+
+  const loadPaymentHistory = async () => {
+    if (!registration?.id) return;
+    
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from("registration_payments")
+        .select("*")
+        .eq("registration_id", registration.id)
+        .order("payment_date", { ascending: false });
+
+      if (error) throw error;
+      setPaymentHistory(data || []);
+    } catch (error) {
+      console.error("Payment history load error:", error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   if (!registration) return null;
 
@@ -110,7 +147,20 @@ export const RegistrationDetailDialog = ({
         newPaymentStatus = "DEPOSIT";
       }
 
-      const { error } = await supabase
+      // Insert payment record
+      const { error: paymentError } = await supabase
+        .from("registration_payments")
+        .insert({
+          registration_id: registration.id,
+          amount: amount,
+          payment_date: new Date().toISOString(),
+          note: `Ödeme: ${amount.toLocaleString('tr-TR')}₺`
+        });
+
+      if (paymentError) throw paymentError;
+
+      // Update registration
+      const { error: updateError } = await supabase
         .from("registrations")
         .update({
           paid_amount: newPaidAmount,
@@ -118,7 +168,7 @@ export const RegistrationDetailDialog = ({
         })
         .eq("id", registration.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       toast({
         title: t("admin.registrations.paymentSuccess"),
@@ -126,6 +176,7 @@ export const RegistrationDetailDialog = ({
       });
 
       setPaymentAmount("");
+      await loadPaymentHistory(); // Reload payment history
       onSuccess();
     } catch (error) {
       console.error("Payment add error:", error);
@@ -253,8 +304,51 @@ export const RegistrationDetailDialog = ({
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">{t("admin.registrations.remainingAmount")}</p>
-                    <p className="font-semibold text-orange-600">{remainingAmount.toLocaleString('tr-TR')}₺</p>
+                    <p className={`font-semibold ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                      {remainingAmount.toLocaleString('tr-TR')}₺
+                    </p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Payment History */}
+          {paymentHistory.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Receipt className="h-4 w-4" />
+                  Ödeme Geçmişi
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {paymentHistory.map((payment) => (
+                    <div 
+                      key={payment.id} 
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                          <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {payment.amount.toLocaleString('tr-TR')}₺
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(payment.payment_date), "d MMMM yyyy, HH:mm", { locale: trLocale })}
+                          </p>
+                        </div>
+                      </div>
+                      {payment.note && (
+                        <p className="text-xs text-muted-foreground max-w-[200px] truncate">
+                          {payment.note}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
