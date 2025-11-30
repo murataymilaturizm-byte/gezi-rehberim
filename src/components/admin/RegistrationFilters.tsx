@@ -99,7 +99,14 @@ export const RegistrationFilters = ({
           <label className="text-xs font-semibold text-foreground">
             {t("admin.filters.tour")}
           </label>
-          <Select value={filterTour} onValueChange={setFilterTour}>
+          <Select 
+            value={filterTour} 
+            onValueChange={(value) => {
+              setFilterTour(value);
+              // Tur değiştiğinde tarihi sıfırla
+              setFilterTourDate("ALL");
+            }}
+          >
             <SelectTrigger className="h-10 border-2">
               <SelectValue />
             </SelectTrigger>
@@ -119,9 +126,17 @@ export const RegistrationFilters = ({
           <label className="text-xs font-semibold text-foreground">
             {t("admin.filters.tourDate")}
           </label>
-          <Select value={filterTourDate} onValueChange={setFilterTourDate}>
+          <Select 
+            value={filterTourDate} 
+            onValueChange={setFilterTourDate}
+            disabled={availableTourDates.length === 0}
+          >
             <SelectTrigger className="h-10 border-2">
-              <SelectValue />
+              <SelectValue placeholder={
+                availableTourDates.length === 0 
+                  ? t("admin.filters.noDateAvailable") 
+                  : undefined
+              } />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">{t("admin.filters.allDates")}</SelectItem>
