@@ -1,10 +1,10 @@
-// Greeting stage prompts
+// greeting.ts - WITH TONE SUPPORT
 import type { PromptContext } from "../types.ts";
 import { formatToursList } from "../helpers.ts";
 
 export function getGreetingPrompt(context: PromptContext): string {
-  const { availableTours, language } = context;
-  const toursList = formatToursList(availableTours, language);
+  const { availableTours, language, tone } = context;
+  const toursList = formatToursList(availableTours, language, tone); // Pass tone here
 
   if (language === "tr") {
     return `📍 DURUM: İlk karşılama
