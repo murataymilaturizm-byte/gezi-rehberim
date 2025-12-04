@@ -79,17 +79,6 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
     }
   }
 
-  // Also try date extraction on any confirmation intent
-  if (!result.dateId && (detectedIntent === 'reservation_intent' || detectedIntent === 'confirm_reservation')) {
-    const dateInfo = extractDate(message, context, availableTours, detectedIntent);
-    if (dateInfo.selectedDate && !result.selectedDate) {
-      result.selectedDate = dateInfo.selectedDate;
-    }
-    if (dateInfo.dateId && !result.dateId) {
-      result.dateId = dateInfo.dateId;
-    }
-  }
-
   // 4. Try to extract everything if no specific expectation
   if (!expectedInput || expectedInput === "any") {
     const allInfo = extractAllInfo(message);
@@ -237,25 +226,11 @@ function extractDate(
     }
   }
 
-  // Auto-select if only one date available
+  // Auto-select ONLY if there's exactly one date available
   if (!result.dateId && tourDates.length === 1) {
     result.dateId = tourDates[0].id;
     result.selectedDate = tourDates[0].departure_date;
-  }
-
-  // Auto-select first date on confirmation phrases when waiting for date
-  const confirmationPhrases = [
-    'olur', 'evet', 'tamam', 'katılmak istiyorum', 'katılmak isterim',
-    'yes', 'ok', 'sure', 'sounds good', 'kabul', 'onay'
-  ];
-  
-  const isConfirmation = confirmationPhrases.some(phrase => lower.includes(phrase));
-  
-  if (!result.dateId && tourDates.length > 0 && isConfirmation) {
-    // User confirmed - auto-select the first (most recent/mentioned) date
-    result.dateId = tourDates[0].id;
-    result.selectedDate = tourDates[0].departure_date;
-    logger.debug("Auto-selected first date on confirmation", { dateId: result.dateId, selectedDate: result.selectedDate });
+    logger.debug("Auto-selected single available date", { dateId: result.dateId, selectedDate: result.selectedDate });
   }
 
   return result;
