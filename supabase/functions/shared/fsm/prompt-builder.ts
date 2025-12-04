@@ -1202,32 +1202,45 @@ function formatToursList(tours: any[], language: string): string {
 }
 
 function formatTourDetails(tour: any, language: string): string {
-  const firstDate = tour.dates?.[0];
+  const dates = tour.dates || [];
+  const firstDate = dates[0];
   const price = firstDate?.price_adult;
-  const rawDate = firstDate?.departure_date;
-  const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
+
+  // Format all available dates
+  let datesSection = "";
+  if (dates.length > 0) {
+    const formattedDates = dates.map((d: any, idx: number) => {
+      const formattedDate = formatDateForLanguage(d.departure_date, language);
+      const datePrice = d.price_adult ? ` (${d.price_adult}₺)` : "";
+      return `  ${idx + 1}) ${formattedDate}${datePrice}`;
+    }).join("\n");
+    
+    if (language === "tr") {
+      datesSection = `\n📅 Müsait Tarihler:\n${formattedDates}`;
+    } else {
+      datesSection = `\n📅 Available Dates:\n${formattedDates}`;
+    }
+  }
 
   if (language === "tr") {
     return [
       `Tur: ${tour.title}`,
       `Destinasyon: ${tour.destination}`,
-      rawDate ? `En yakın tarih: ${formattedDate}` : "",
       price ? `Fiyat: kişi başı yaklaşık ${price}₺` : "",
       tour.program_kisa ? `Özet: ${tour.program_kisa}` : "",
     ]
       .filter(Boolean)
-      .join("\n");
+      .join("\n") + datesSection;
   }
 
   return [
     `Tour: ${tour.title}`,
     `Destination: ${tour.destination}`,
-    rawDate ? `Next date: ${formattedDate}` : "",
     price ? `Price: approx. ${price}₺ per person` : "",
     tour.program_kisa ? `Summary: ${tour.program_kisa}` : "",
   ]
     .filter(Boolean)
-    .join("\n");
+    .join("\n") + datesSection;
 }
 
 function formatCollectedInfo(info: any, language: string): string {
