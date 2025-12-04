@@ -162,8 +162,11 @@ serve(async (req) => {
     // Strategy 2: Direct matching (numbers, keywords) via matchTour
     let selectedTour: any = null;
     let multipleTourMatches: any[] = []; // Track multiple matches
-    const tourRelatedIntents = ["browse_tours", "tour_search", "select_tour", "hotel_details", "transport_details"];
-    const shouldMatchTour = tourRelatedIntents.includes(nluResult.intent);
+    const tourRelatedIntents = ["browse_tours", "tour_search", "select_tour", "hotel_details", "transport_details", "reservation_intent"];
+    // Also match if NLU extracted tour_name or destination, regardless of intent
+    const shouldMatchTour = tourRelatedIntents.includes(nluResult.intent) || 
+                            nluResult.entities.tour_name || 
+                            nluResult.entities.destination;
 
     if (shouldMatchTour) {
       // Match by tour name from NLU - find ALL matching tours
