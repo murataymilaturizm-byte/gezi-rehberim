@@ -186,6 +186,19 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?`;
 
 YASAK: IBAN, kapora, tutar yazma.`;
 
+      case "ASKING_NEW_RESERVATION":
+        return `📍 DURUM: Yeni rezervasyon sorgusu
+
+Kullanıcı mevcut rezervasyonunu tamamladıktan sonra farklı bir tur hakkında sordu.
+
+🎯 YAPILACAK:
+- Kibarca "Farklı bir tur için bilgi almak veya yeni bir rezervasyon yapmak mı istiyorsunuz?" diye sor.
+- Önceki rezervasyonlarının tamamlandığını hatırlat.
+- Kullanıcının cevabını bekle.
+
+Örnek yanıt:
+"Kapadokya Kültür Turu rezervasyonunuz tamamlandı. Başka bir tur için bilgi almak veya yeni rezervasyon yapmak ister misiniz?"`;
+
       default:
         return "";
     }
@@ -240,6 +253,19 @@ Are these details correct, do you confirm?`;
 "Payment details will be shared automatically."
 
 BANNED: IBAN, deposit, amount.`;
+
+    case "ASKING_NEW_RESERVATION":
+      return `📍 STATUS: New reservation inquiry
+
+User asked about a different tour after completing their current reservation.
+
+🎯 ACTION:
+- Politely ask "Would you like to get info about a different tour or make a new reservation?"
+- Remind them their previous reservation is complete.
+- Wait for user's response.
+
+Example response:
+"Your Cappadocia Culture Tour reservation is complete. Would you like to get info about another tour or make a new reservation?"`;
 
     default:
       return "";

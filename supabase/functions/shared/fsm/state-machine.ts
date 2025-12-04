@@ -273,6 +273,58 @@ const transitions: StateTransition[] = [
       ...ctx,
       collectionStep: 'waiting_for_date' as InfoCollectionStep
     })
+  },
+  
+  // COMPLETED → ASKING_NEW_RESERVATION (user asks about different tour)
+  {
+    from: 'COMPLETED',
+    to: 'ASKING_NEW_RESERVATION',
+    condition: (ctx, input) => {
+      // Check if user is asking about a different tour
+      const isDifferentTour = input.selectedTour !== null && 
+        input.selectedTour.id !== ctx.currentTour?.id;
+      
+      // Check for tour-related intents
+      const isTourIntent = 
+        input.detectedIntent === 'tour_search' ||
+        input.detectedIntent === 'browse_tours' ||
+        input.detectedIntent === 'reservation_intent';
+      
+      return isDifferentTour || isTourIntent;
+    }
+  },
+  
+  // ASKING_NEW_RESERVATION → BROWSING (user confirms new reservation)
+  {
+    from: 'ASKING_NEW_RESERVATION',
+    to: 'BROWSING',
+    condition: (ctx, input) => 
+      input.detectedIntent === 'confirm' ||
+      input.detectedIntent === 'confirm_reservation' ||
+      /^(evet|yes|da|oui|si|sim|tamam|olur|istiyorum|yapmak istiyorum)/i.test(input.userMessage.toLowerCase().trim()),
+    action: (ctx, input) => ({
+      ...ctx,
+      // Reset reservation state for new flow
+      currentTour: input.selectedTour || null,
+      reservationInfo: input.selectedTour ? {
+        tourId: input.selectedTour.id,
+        tourTitle: input.selectedTour.title
+      } : {},
+      reservationConfirmed: false,
+      paymentInfoSent: false,
+      collectionStep: undefined,
+      viewedTours: input.selectedTour ? [input.selectedTour.id] : []
+    })
+  },
+  
+  // ASKING_NEW_RESERVATION → COMPLETED (user declines, stay with current reservation)
+  {
+    from: 'ASKING_NEW_RESERVATION',
+    to: 'COMPLETED',
+    condition: (ctx, input) => 
+      /^(hayır|no|nein|non|yok|istemiyorum)/i.test(input.userMessage.toLowerCase().trim()) ||
+      input.detectedIntent === 'decline' ||
+      input.detectedIntent === 'cancel'
   }
 ];
 
