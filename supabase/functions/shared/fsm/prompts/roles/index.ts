@@ -1,2 +1,2 @@
-// Role prompts - AI asistan rol tanımları
+// All Roles Export
 export {}

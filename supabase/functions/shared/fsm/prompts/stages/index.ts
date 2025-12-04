@@ -1,2 +1,2 @@
-// Stage prompts - Conversation stage tanımları
+// All Stages Export
 export {}

@@ -1,0 +1,2 @@
+// Prompt Types
+export {}
