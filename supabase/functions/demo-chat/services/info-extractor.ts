@@ -60,7 +60,7 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
     }
   }
 
-  if (expectedInput === "date" || expectedInput === "tour_date") {
+  if (expectedInput === "date" || expectedInput === "tour_date" || expectedInput === "date_selection") {
     const dateInfo = extractDate(message, context, availableTours, detectedIntent);
     if (dateInfo.selectedDate && !result.selectedDate) {
       result.selectedDate = dateInfo.selectedDate;
