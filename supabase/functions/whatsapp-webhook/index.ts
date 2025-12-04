@@ -374,6 +374,18 @@ serve(async (req) => {
       console.log("📅 Date from regex:", simpleExtraction.selectedDate);
     }
 
+    // Get expected input for context-aware extraction
+    const expectedInput = getNextExpectedInput(context);
+
+    // CRITICAL: Handle plain number input when expecting pax
+    if (!extractedInfo.paxAdult && expectedInput === 'pax') {
+      const plainNumber = parseInt(message.trim());
+      if (!isNaN(plainNumber) && plainNumber >= 1 && plainNumber <= 50) {
+        extractedInfo.paxAdult = plainNumber;
+        console.log("👥 Pax from plain number:", plainNumber);
+      }
+    }
+
     // Resolve date_X format (e.g., "date_0", "date_1")
     if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
       const tour = findTourById(context.currentTour.id, tours);
@@ -389,7 +401,6 @@ serve(async (req) => {
     }
 
     // Handle numeric date selection (1, 2, 3) when expecting date
-    const expectedInput = getNextExpectedInput(context);
     if (!extractedInfo.dateId && context.currentTour && 
         (expectedInput === 'date' || expectedInput === 'date_selection')) {
       const dateNumber = parseInt(message.trim());

@@ -250,6 +250,15 @@ serve(async (req) => {
       console.log("📅 Date from regex:", simpleExtraction.selectedDate);
     }
 
+    // CRITICAL: Handle plain number input when expecting pax
+    if (!extractedInfo.paxAdult && expectedInput === 'pax') {
+      const plainNumber = parseInt(message.trim());
+      if (!isNaN(plainNumber) && plainNumber >= 1 && plainNumber <= 50) {
+        extractedInfo.paxAdult = plainNumber;
+        console.log("👥 Pax from plain number:", plainNumber);
+      }
+    }
+
     // Resolve date_X format
     if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
       const tour = findTourById(context.currentTour.id, availableTours);
