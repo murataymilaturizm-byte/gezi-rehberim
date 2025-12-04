@@ -280,17 +280,18 @@ const transitions: StateTransition[] = [
     from: 'COMPLETED',
     to: 'ASKING_NEW_RESERVATION',
     condition: (ctx, input) => {
-      // Check if user is asking about a different tour
+      // Check if user is asking about a DIFFERENT tour
       const isDifferentTour = input.selectedTour !== null && 
         input.selectedTour.id !== ctx.currentTour?.id;
       
-      // Check for tour-related intents
-      const isTourIntent = 
-        input.detectedIntent === 'tour_search' ||
-        input.detectedIntent === 'browse_tours' ||
-        input.detectedIntent === 'reservation_intent';
+      // Check for explicit "other tour" keywords (without specific tour mention)
+      const wantsOtherTour = /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour/i.test(input.userMessage);
       
-      return isDifferentTour || isTourIntent;
+      // Only trigger if:
+      // 1. User explicitly mentions a DIFFERENT tour, OR
+      // 2. User explicitly says they want "another/different tour"
+      // Do NOT trigger for general questions about the current booked tour
+      return isDifferentTour || wantsOtherTour;
     }
   },
   
