@@ -1,57 +1,39 @@
-// browsing.ts - WITH TONE SUPPORT
-// ============================================
+// Greeting stage prompts - WITH IMPORTS
+import type { PromptContext } from "../types.ts";
+import { formatToursList } from "../helpers.ts";
 
-export function getBrowsingPrompt(context: PromptContext): string {
+export function getGreetingPrompt(context: PromptContext): string {
   const { availableTours, language, tone } = context;
-  const toursList = formatToursList(availableTours, language, tone); // Pass tone here
+  const toursList = formatToursList(availableTours, language, tone);
 
   if (language === "tr") {
-    return `📍 DURUM: Tur arama / listeleme
-- Kullanıcı turları keşfediyor, bu aşamada kişisel kayıt bilgisi SORMA.
-- İlgilendiği destinasyona göre uygun turları sade bir şekilde listele.
-- Aynı destinasyondan birden fazla tur varsa hepsini madde madde göster ve sonunda "Hangisini tercih edersiniz?" diye sor.
-- Cevaplarında en fazla 4 kısa cümle veya 5 madde kullan.
-
-🚨 KRİTİK KURAL - HENÜZ TUR SEÇİLMEDİ:
-- Kullanıcı "tura katılmak istiyorum", "rezervasyon yapmak istiyorum", "kayıt olmak istiyorum" veya benzeri bir şey derse:
-  * ASLA direkt "hangi tarihte katılmak istersiniz?" deme! ❌
-  * ASLA tarih sorma! ❌
-  * ÖNCE tur seçmesini iste: "Hangi turumuza katılmak istersiniz? İşte seçeneklerimiz: [tur listesi]" ✓
-- Kullanıcı tarih, kişi sayısı, isim, telefon vb. verirse:
-  * Önce teşekkür et: "Teşekkürler! [bilgiyi] kaydettim."
-  * Sonra tur seçmesini iste: "Hangi turumuza katılmak istersiniz?"
+    return `📍 DURUM: İlk karşılama
+- Kullanıcıyı sıcak ve KISA bir mesajla karşıla.
+- Acentenin adını kullanarak hoş geldiniz de.
+- Ne konuda yardımcı olabileceğini 1–2 cümlede özetle.
+- Son cümlede mutlaka ihtiyacını sor (tur, destinasyon veya tarih).
 
 CEVAP FORMATIN:
-- 1 satır: Kısa giriş cümlesi (örn: "Kapadokya için şu tur seçeneklerimiz var:")
-- 1 boş satır
-- Alt alta "• Tur Adı — kısa açıklama (varsa yaklaşık fiyat)" formatında liste
-- Son satır: "Siz hangisini tercih edersiniz?" tarzı soru
+- 1 satır: Karşılama cümlesi
+- 1 satır: Nasıl yardımcı olabileceğini anlatan kısa özet
+- 1 satır: "Hangi bölge / tur / tarih ile başlayalım?" tarzı net soru
+- İstersen sonraki mesajlarda turları listelemek için alt alta "• " ile maddeler kullan.
 
-Mevcut turlar:
+Sistem için mevcut turlar (kullanıcıya birebir kopyalama zorunlu değil):
 ${toursList}`;
   }
 
-  return `📍 STATUS: Tour browsing
-- The user is exploring tours, do NOT ask for personal details yet.
-- List relevant tours in a simple way according to their interest.
-- If there are multiple tours for the same destination, list them as bullet points and ask "Which one would you prefer?".
-- Use at most 4 short sentences or 5 bullet points.
-
-🚨 CRITICAL RULE - NO TOUR SELECTED YET:
-- If user says "I want to join a tour", "I want to book", "I want to register" or similar:
-  * NEVER ask "which date would you like?" directly! ❌
-  * NEVER ask for a date! ❌
-  * FIRST ask them to select a tour: "Which tour would you like to join? Here are our options: [tour list]" ✓
-- If user provides date, pax count, name, phone, etc.:
-  * First thank them: "Thank you! I've noted [info]."
-  * Then ask them to select a tour: "Which tour would you like to join?"
+  return `📍 STATUS: Initial greeting
+- Greet the user warmly in a SHORT message.
+- Use the agency name in the welcome sentence.
+- In 1–2 sentences explain how you can help (tours, destinations, dates).
+- End with a clear question about their need.
 
 RESPONSE FORMAT:
-- Line 1: Short intro sentence (e.g. "Here are some options for Cappadocia:")
-- Empty line
-- Bullet list with "• Tour Name — short highlight (optional approx. price)"
-- Last line: Clear question (e.g. "Which tour would you like to choose?")
+- Line 1: Friendly greeting with agency name
+- Line 2: Short explanation of how you can help
+- Line 3: Direct question (e.g. "Which destination or type of tour are you interested in?")
 
-Available tours:
+Available tours for your internal context (no need to copy verbatim):
 ${toursList}`;
 }
