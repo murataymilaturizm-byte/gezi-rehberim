@@ -61,7 +61,27 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
   }
 
   if (expectedInput === "date" || expectedInput === "tour_date") {
-    const dateInfo = extractDate(message, context, availableTours);
+    const dateInfo = extractDate(message, context, availableTours, detectedIntent);
+    if (dateInfo.selectedDate && !result.selectedDate) {
+      result.selectedDate = dateInfo.selectedDate;
+    }
+    if (dateInfo.dateId && !result.dateId) {
+      result.dateId = dateInfo.dateId;
+    }
+    
+    // If we couldn't extract a date but message is a plain number, try pax
+    if (!result.dateId && !result.paxAdult) {
+      const pax = extractPax(message);
+      if (pax) {
+        result.paxAdult = pax;
+        logger.debug("Extracted pax from date context", { pax });
+      }
+    }
+  }
+
+  // Also try date extraction on any confirmation intent
+  if (!result.dateId && (detectedIntent === 'reservation_intent' || detectedIntent === 'confirm_reservation')) {
+    const dateInfo = extractDate(message, context, availableTours, detectedIntent);
     if (dateInfo.selectedDate && !result.selectedDate) {
       result.selectedDate = dateInfo.selectedDate;
     }
@@ -164,7 +184,8 @@ function extractPhone(message: string): string | null {
 function extractDate(
   message: string,
   context: ConversationContext,
-  availableTours: Tour[]
+  availableTours: Tour[],
+  detectedIntent?: string
 ): { selectedDate?: string; dateId?: string } {
   const result: { selectedDate?: string; dateId?: string } = {};
   const lower = message.toLowerCase().trim();
@@ -173,7 +194,7 @@ function extractDate(
   let tourDates: any[] = [];
   if (context.currentTour?.id) {
     const tour = availableTours.find((t) => t.id === context.currentTour?.id);
-    tourDates = tour?.dates || [];
+    tourDates = tour?.dates || context.currentTour?.dates || [];
   }
 
   // Try to match date selection by number (e.g., "1", "2. seçenek")
@@ -220,6 +241,21 @@ function extractDate(
   if (!result.dateId && tourDates.length === 1) {
     result.dateId = tourDates[0].id;
     result.selectedDate = tourDates[0].departure_date;
+  }
+
+  // Auto-select first date on confirmation phrases when waiting for date
+  const confirmationPhrases = [
+    'olur', 'evet', 'tamam', 'katılmak istiyorum', 'katılmak isterim',
+    'yes', 'ok', 'sure', 'sounds good', 'kabul', 'onay'
+  ];
+  
+  const isConfirmation = confirmationPhrases.some(phrase => lower.includes(phrase));
+  
+  if (!result.dateId && tourDates.length > 0 && isConfirmation) {
+    // User confirmed - auto-select the first (most recent/mentioned) date
+    result.dateId = tourDates[0].id;
+    result.selectedDate = tourDates[0].departure_date;
+    logger.debug("Auto-selected first date on confirmation", { dateId: result.dateId, selectedDate: result.selectedDate });
   }
 
   return result;
