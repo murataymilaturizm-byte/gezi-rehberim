@@ -91,6 +91,16 @@ export interface ExtractedInfo {
   dateId?: string;
 }
 
+export interface ExtractionParams {
+  message: string;
+  nluEntities: NLUEntities;
+  nluUpdates: Record<string, unknown>;
+  context: import("../../shared/fsm/types.ts").ConversationContext;
+  availableTours: Tour[];
+  expectedInput: string;
+  detectedIntent: string;
+}
+
 export interface ConversationMessage {
   role: "user" | "assistant";
   content: string;
