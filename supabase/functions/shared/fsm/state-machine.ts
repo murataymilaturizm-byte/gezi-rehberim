@@ -36,16 +36,7 @@ export function createInitialContext(
  * Defines all possible state transitions in the FSM
  */
 const transitions: StateTransition[] = [
-  // GREETING → BROWSING
-  {
-    from: 'GREETING',
-    to: 'BROWSING',
-    condition: (ctx, input) => 
-      input.detectedIntent === 'browse_tours' || 
-      input.detectedIntent === 'tour_search'
-  },
-  
-  // GREETING → TOUR_SELECTED
+  // GREETING → TOUR_SELECTED (when tour is matched - check FIRST before BROWSING)
   {
     from: 'GREETING',
     to: 'TOUR_SELECTED',
@@ -60,6 +51,19 @@ const transitions: StateTransition[] = [
         tourTitle: input.selectedTour!.title
       }
     })
+  },
+  
+  // GREETING → BROWSING (only when NO tour selected)
+  {
+    from: 'GREETING',
+    to: 'BROWSING',
+    condition: (ctx, input) => 
+      input.selectedTour === null && (
+        input.detectedIntent === 'browse_tours' || 
+        input.detectedIntent === 'tour_search' ||
+        input.detectedIntent === 'greeting' ||
+        input.detectedIntent === 'general'
+      )
   },
   
   // BROWSING → COLLECTING_INFO (direct reservation intent OR tour selection with immediate action)
@@ -130,12 +134,28 @@ const transitions: StateTransition[] = [
   {
     from: 'TOUR_SELECTED',
     to: 'COLLECTING_INFO',
-    condition: (ctx, input) => 
-      input.detectedIntent === 'provide_info' ||
-      input.detectedIntent === 'reservation_intent' ||
-      input.detectedIntent === 'tour_selected' ||
-      input.detectedIntent === 'confirm' ||
-      Object.keys(input.extractedInfo).length > 0,
+    condition: (ctx, input) => {
+      // Check if there's extracted info
+      const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
+      
+      // Check for date-like patterns in message (fallback)
+      const hasDatePattern = /\d{1,2}[\.\/-]\d{1,2}|ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december/i.test(input.userMessage);
+      
+      // Check for pax patterns
+      const hasPaxPattern = /\d+\s*(kişi|person|people|yetişkin|adult|çocuk|child)/i.test(input.userMessage);
+      
+      // Check for phone patterns
+      const hasPhonePattern = /\d{10,11}|05\d{9}|\+90/i.test(input.userMessage);
+      
+      return input.detectedIntent === 'provide_info' ||
+        input.detectedIntent === 'reservation_intent' ||
+        input.detectedIntent === 'tour_selected' ||
+        input.detectedIntent === 'confirm' ||
+        hasExtractedInfo ||
+        hasDatePattern ||
+        hasPaxPattern ||
+        hasPhonePattern;
+    },
     action: (ctx, input) => {
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
       
