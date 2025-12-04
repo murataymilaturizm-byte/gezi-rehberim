@@ -1,13 +1,14 @@
 // Shared FSM type definitions for demo-chat and whatsapp-webhook
 
 export type ConversationStage = 
-  | 'GREETING'           // Initial greeting
-  | 'BROWSING'           // Browsing tours
-  | 'TOUR_SELECTED'      // Specific tour selected
-  | 'DATE_SELECTION'     // Selecting date
-  | 'COLLECTING_INFO'    // Gathering pax, name, phone
-  | 'CONFIRMING'         // Waiting for final confirmation
-  | 'COMPLETED';         // Reservation completed
+  | 'GREETING'                 // Initial greeting
+  | 'BROWSING'                 // Browsing tours
+  | 'TOUR_SELECTED'            // Specific tour selected
+  | 'DATE_SELECTION'           // Selecting date
+  | 'COLLECTING_INFO'          // Gathering pax, name, phone
+  | 'CONFIRMING'               // Waiting for final confirmation
+  | 'COMPLETED'                // Reservation completed
+  | 'ASKING_NEW_RESERVATION';  // Asking if user wants to start new reservation
 
 export type ConversationTone = 
   | 'standart'
