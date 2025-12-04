@@ -264,6 +264,21 @@ serve(async (req) => {
       }
     }
 
+    // Handle numeric date selection (1, 2, 3) when expecting date
+    if (!extractedInfo.dateId && context.currentTour && 
+        (expectedInput === 'date' || expectedInput === 'date_selection')) {
+      const dateNumber = parseInt(message.trim());
+      if (!isNaN(dateNumber) && dateNumber >= 1) {
+        const tour = findTourById(context.currentTour.id, availableTours);
+        if (tour?.dates && dateNumber <= tour.dates.length) {
+          const selectedDate = tour.dates[dateNumber - 1];
+          extractedInfo.selectedDate = selectedDate.departure_date;
+          extractedInfo.dateId = selectedDate.id;
+          console.log("📅 Date selected by number:", selectedDate.departure_date);
+        }
+      }
+    }
+
     // Match ISO date (YYYY-MM-DD) with available tour dates
     if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
       const tour = findTourById(context.currentTour.id, availableTours);
