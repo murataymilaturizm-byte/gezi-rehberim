@@ -231,7 +231,7 @@ serve(async (req) => {
       console.log("📅 Date from NLU:", nluResult.entities.dates[0]);
     }
 
-    // Simple fallback for name and phone (NLU sometimes misses these)
+    // Simple fallback for name, phone, pax, and date (NLU sometimes misses these)
     const simpleExtraction = extractNameAndPhone(message);
     if (simpleExtraction.fullName && !extractedInfo.fullName) {
       extractedInfo.fullName = simpleExtraction.fullName;
@@ -240,6 +240,14 @@ serve(async (req) => {
     if (simpleExtraction.phone && !extractedInfo.phone) {
       extractedInfo.phone = simpleExtraction.phone;
       console.log("📞 Phone from regex:", simpleExtraction.phone);
+    }
+    if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) {
+      extractedInfo.paxAdult = simpleExtraction.paxAdult;
+      console.log("👥 Pax from regex:", simpleExtraction.paxAdult);
+    }
+    if (simpleExtraction.selectedDate && !extractedInfo.selectedDate) {
+      extractedInfo.selectedDate = simpleExtraction.selectedDate;
+      console.log("📅 Date from regex:", simpleExtraction.selectedDate);
     }
 
     // Resolve date if selected by number
