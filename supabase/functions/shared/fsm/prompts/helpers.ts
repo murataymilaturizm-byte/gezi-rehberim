@@ -1,4 +1,4 @@
-// Helper functions for formatting prompts
+// Helper functions for formatting prompts - TONE-AWARE VERSION
 import { formatDateForLanguage } from "../localization.ts";
 
 export function formatDateHeader(language: string): string {
@@ -19,12 +19,32 @@ export function formatDateHeader(language: string): string {
   return `📅 CURRENT DATE: ${dayName}, ${currentDateStr}`;
 }
 
-export function formatToursList(tours: any[], language: string): string {
+/**
+ * Format tours list with tone-aware styling
+ */
+export function formatToursList(tours: any[], language: string, tone: string = "standart"): string {
   if (!tours || tours.length === 0) {
     return language === "tr"
       ? "Şu an sistemde tanımlı aktif tur bulunmuyor."
       : "There are no active tours defined in the system at the moment.";
   }
+
+  // Get tone-specific formatter
+  switch (tone) {
+    case "kurumsal":
+      return formatToursListCorporate(tours, language);
+    case "dinamik":
+      return formatToursListDynamic(tours, language);
+    case "premium":
+      return formatToursListPremium(tours, language);
+    default: // standart
+      return formatToursListStandard(tours, language);
+  }
+}
+
+// STANDART TONE - Friendly and clear
+function formatToursListStandard(tours: any[], language: string): string {
+  const isTR = language === "tr";
 
   return tours
     .map((tour, idx) => {
@@ -32,24 +52,110 @@ export function formatToursList(tours: any[], language: string): string {
       const price = firstDate?.price_adult;
       const rawDate = firstDate?.departure_date;
       const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
-      const dateText =
-        formattedDate && formattedDate.trim() !== ""
-          ? language === "tr"
-            ? ` — en yakın tarih: ${formattedDate}`
-            : ` — next date: ${formattedDate}`
-          : "";
-      const priceText =
-        price && price > 0
-          ? language === "tr"
-            ? ` (kişi başı yaklaşık ${price}₺)`
-            : ` (approx. ${price}₺ per person)`
-          : "";
-      return `${idx + 1}. ${tour.title} — ${tour.destination}${dateText}${priceText}`;
+
+      const icon = getTourIcon(tour.type);
+      const priceText = price ? `${price}₺` : "";
+      const dateText = formattedDate ? formattedDate : isTR ? "Tarih belirtilmemiş" : "Date not specified";
+
+      if (isTR) {
+        return `${icon} **${tour.title}**\n   📍 ${tour.destination} | 💰 ${priceText}/kişi | 📅 ${dateText}`;
+      } else {
+        return `${icon} **${tour.title}**\n   📍 ${tour.destination} | 💰 ${priceText}/person | 📅 ${dateText}`;
+      }
     })
-    .join("\n");
+    .join("\n\n");
 }
 
-export function formatTourDetails(tour: any, language: string): string {
+// KURUMSAL TONE - Formal and structured
+function formatToursListCorporate(tours: any[], language: string): string {
+  const isTR = language === "tr";
+
+  return tours
+    .map((tour, idx) => {
+      const firstDate = tour.dates?.[0];
+      const price = firstDate?.price_adult;
+      const rawDate = firstDate?.departure_date;
+      const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
+
+      if (isTR) {
+        return `${idx + 1}) ${tour.title}\n   Destinasyon: ${tour.destination}\n   Fiyat: ${price ? price + " TRY" : "Belirtilmemiş"} (kişi başı)\n   İlk Tarih: ${formattedDate || "Belirtilmemiş"}`;
+      } else {
+        return `${idx + 1}) ${tour.title}\n   Destination: ${tour.destination}\n   Price: ${price ? price + " TRY" : "Not specified"} (per person)\n   First Date: ${formattedDate || "Not specified"}`;
+      }
+    })
+    .join("\n\n");
+}
+
+// DİNAMİK TONE - Energetic and exciting
+function formatToursListDynamic(tours: any[], language: string): string {
+  const isTR = language === "tr";
+
+  return tours
+    .map((tour, idx) => {
+      const firstDate = tour.dates?.[0];
+      const price = firstDate?.price_adult;
+      const rawDate = firstDate?.departure_date;
+      const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
+
+      const icon = getTourIcon(tour.type);
+      const numberEmoji = getNumberEmoji(idx + 1);
+
+      if (isTR) {
+        return `${numberEmoji} **${tour.title}** ${icon}\n   ⭐ ${tour.destination}\n   💎 ${price}₺ | 🚀 ${formattedDate}`;
+      } else {
+        return `${numberEmoji} **${tour.title}** ${icon}\n   ⭐ ${tour.destination}\n   💎 ${price}₺ | 🚀 ${formattedDate}`;
+      }
+    })
+    .join("\n\n");
+}
+
+// PREMIUM TONE - Elegant and refined
+function formatToursListPremium(tours: any[], language: string): string {
+  const isTR = language === "tr";
+
+  return tours
+    .map((tour) => {
+      const firstDate = tour.dates?.[0];
+      const price = firstDate?.price_adult;
+      const rawDate = firstDate?.departure_date;
+      const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
+
+      const description = tour.program_kisa || (isTR ? "Eşsiz bir deneyim" : "An exclusive experience");
+
+      if (isTR) {
+        return `**${tour.title}**\n${description}\n${tour.destination} | ${price ? price + " TRY" : ""} | ${formattedDate}`;
+      } else {
+        return `**${tour.title}**\n${description}\n${tour.destination} | ${price ? price + " TRY" : ""} | ${formattedDate}`;
+      }
+    })
+    .join("\n\n");
+}
+
+// Helper: Get tour type icon
+function getTourIcon(type?: string): string {
+  const icons: Record<string, string> = {
+    cultural: "🏛️",
+    adventure: "🏔️",
+    city: "🌆",
+    beach: "🏖️",
+    nature: "🌿",
+    historical: "🏰",
+    food: "🍽️",
+    default: "🗺️",
+  };
+  return icons[type || "default"] || icons.default;
+}
+
+// Helper: Get number emoji
+function getNumberEmoji(num: number): string {
+  const emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+  return emojis[num - 1] || `${num}.`;
+}
+
+/**
+ * Format tour details with tone-aware styling
+ */
+export function formatTourDetails(tour: any, language: string, tone: string = "standart"): string {
   const dates = tour.dates || [];
   const firstDate = dates[0];
   const price = firstDate?.price_adult;
@@ -60,39 +166,48 @@ export function formatTourDetails(tour: any, language: string): string {
       .map((d: any, idx: number) => {
         const formattedDate = formatDateForLanguage(d.departure_date, language);
         const datePrice = d.price_adult ? ` (${d.price_adult}₺)` : "";
-        return `  ${idx + 1}) ${formattedDate}${datePrice}`;
+
+        if (tone === "kurumsal") {
+          return `  ${idx + 1}) ${formattedDate}${datePrice}`;
+        } else if (tone === "dinamik") {
+          return `  ${getNumberEmoji(idx + 1)} ${formattedDate}${datePrice}`;
+        } else {
+          return `  ${idx + 1}) ${formattedDate}${datePrice}`;
+        }
       })
       .join("\n");
 
-    datesSection =
-      language === "tr" ? `\n📅 Müsait Tarihler:\n${formattedDates}` : `\n📅 Available Dates:\n${formattedDates}`;
+    if (language === "tr") {
+      datesSection =
+        tone === "premium" ? `\n\nMüsait Tarihler:\n${formattedDates}` : `\n📅 Müsait Tarihler:\n${formattedDates}`;
+    } else {
+      datesSection =
+        tone === "premium" ? `\n\nAvailable Dates:\n${formattedDates}` : `\n📅 Available Dates:\n${formattedDates}`;
+    }
   }
 
   if (language === "tr") {
-    return (
-      [
-        `Tur: ${tour.title}`,
-        `Destinasyon: ${tour.destination}`,
-        price ? `Fiyat: kişi başı yaklaşık ${price}₺` : "",
-        tour.program_kisa ? `Özet: ${tour.program_kisa}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n") + datesSection
-    );
+    const parts = [
+      `Tur: ${tour.title}`,
+      `Destinasyon: ${tour.destination}`,
+      price ? `Fiyat: kişi başı ${price}₺` : "",
+      tour.program_kisa ? `Özet: ${tour.program_kisa}` : "",
+    ];
+    return parts.filter(Boolean).join("\n") + datesSection;
   }
 
-  return (
-    [
-      `Tour: ${tour.title}`,
-      `Destination: ${tour.destination}`,
-      price ? `Price: approx. ${price}₺ per person` : "",
-      tour.program_kisa ? `Summary: ${tour.program_kisa}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n") + datesSection
-  );
+  const parts = [
+    `Tour: ${tour.title}`,
+    `Destination: ${tour.destination}`,
+    price ? `Price: ${price}₺ per person` : "",
+    tour.program_kisa ? `Summary: ${tour.program_kisa}` : "",
+  ];
+  return parts.filter(Boolean).join("\n") + datesSection;
 }
 
+/**
+ * Format collected info (unchanged - simple is better here)
+ */
 export function formatCollectedInfo(info: any, language: string): string {
   const lines: string[] = [];
   const formattedDate = info?.selectedDate ? formatDateForLanguage(info.selectedDate, language) : "";
@@ -115,7 +230,10 @@ export function formatCollectedInfo(info: any, language: string): string {
   return lines.length > 0 ? lines.join("\n") : "No reservation information collected yet.";
 }
 
-export function formatReservationSummary(tour: any, info: any, language: string): string {
+/**
+ * Format reservation summary with tone-aware styling
+ */
+export function formatReservationSummary(tour: any, info: any, language: string, tone: string = "standart"): string {
   const tourTitle = info?.tourTitle || tour?.title || "";
   const rawDate = info?.selectedDate || "";
   const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
@@ -125,22 +243,34 @@ export function formatReservationSummary(tour: any, info: any, language: string)
   const phone = info?.phone || "";
 
   if (language === "tr") {
-    return `📋 REZERVASYON ÖZETİ:
-• Tur: ${tourTitle || "-"}
-• Tarih: ${formattedDate || rawDate || "-"}
-• Kişi: ${paxAdult || 0} yetişkin${paxChild ? `, ${paxChild} çocuk` : ""}
-• İsim: ${fullName || "-"}
-• Telefon: ${phone || "-"}`;
+    if (tone === "premium") {
+      return `Rezervasyon Özeti\n${"─".repeat(25)}\nTur: ${tourTitle || "-"}\nTarih: ${formattedDate || rawDate || "-"}\nKatılımcı: ${paxAdult || 0} yetişkin${paxChild ? `, ${paxChild} çocuk` : ""}\nİsim: ${fullName || "-"}\nTelefon: ${phone || "-"}`;
+    } else if (tone === "kurumsal") {
+      return `REZERVASYON ÖZETİ\n\nTur: ${tourTitle || "-"}\nTarih: ${formattedDate || rawDate || "-"}\nKatılımcı Sayısı: ${paxAdult || 0} yetişkin${paxChild ? `, ${paxChild} çocuk` : ""}\nAd Soyad: ${fullName || "-"}\nTelefon: ${phone || "-"}`;
+    } else if (tone === "dinamik") {
+      return `🎉 REZERVASYON ÖZETİ 🎉\n• 🗺️ Tur: ${tourTitle || "-"}\n• 📅 Tarih: ${formattedDate || rawDate || "-"}\n• 👥 Kişi: ${paxAdult || 0} yetişkin${paxChild ? `, ${paxChild} çocuk` : ""}\n• 👤 İsim: ${fullName || "-"}\n• 📱 Telefon: ${phone || "-"}`;
+    } else {
+      // standart
+      return `📋 REZERVASYON ÖZETİ:\n• Tur: ${tourTitle || "-"}\n• Tarih: ${formattedDate || rawDate || "-"}\n• Kişi: ${paxAdult || 0} yetişkin${paxChild ? `, ${paxChild} çocuk` : ""}\n• İsim: ${fullName || "-"}\n• Telefon: ${phone || "-"}`;
+    }
   }
 
-  return `📋 RESERVATION SUMMARY:
-• Tour: ${tourTitle || "-"}
-• Date: ${formattedDate || rawDate || "-"}
-• People: ${paxAdult || 0} adult${paxChild ? `, ${paxChild} child` : ""}
-• Name: ${fullName || "-"}
-• Phone: ${phone || "-"}`;
+  // English versions
+  if (tone === "premium") {
+    return `Reservation Summary\n${"─".repeat(25)}\nTour: ${tourTitle || "-"}\nDate: ${formattedDate || rawDate || "-"}\nParticipants: ${paxAdult || 0} adult${paxChild ? `, ${paxChild} child` : ""}\nName: ${fullName || "-"}\nPhone: ${phone || "-"}`;
+  } else if (tone === "kurumsal") {
+    return `RESERVATION SUMMARY\n\nTour: ${tourTitle || "-"}\nDate: ${formattedDate || rawDate || "-"}\nNumber of Participants: ${paxAdult || 0} adult${paxChild ? `, ${paxChild} child` : ""}\nFull Name: ${fullName || "-"}\nPhone: ${phone || "-"}`;
+  } else if (tone === "dinamik") {
+    return `🎉 RESERVATION SUMMARY 🎉\n• 🗺️ Tour: ${tourTitle || "-"}\n• 📅 Date: ${formattedDate || rawDate || "-"}\n• 👥 People: ${paxAdult || 0} adult${paxChild ? `, ${paxChild} child` : ""}\n• 👤 Name: ${fullName || "-"}\n• 📱 Phone: ${phone || "-"}`;
+  } else {
+    // standart
+    return `📋 RESERVATION SUMMARY:\n• Tour: ${tourTitle || "-"}\n• Date: ${formattedDate || rawDate || "-"}\n• People: ${paxAdult || 0} adult${paxChild ? `, ${paxChild} child` : ""}\n• Name: ${fullName || "-"}\n• Phone: ${phone || "-"}`;
+  }
 }
 
+/**
+ * Multiple tour warning (unchanged)
+ */
 export function getMultipleTourWarning(context: any, language: string): string {
   const { multipleTourMatches } = context;
 
