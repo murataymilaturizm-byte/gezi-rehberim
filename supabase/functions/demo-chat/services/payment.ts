@@ -1,4 +1,5 @@
 // Simple payment message generator for demo chat
+// IMPROVED VERSION with better formatting
 
 // Modular currency formatting
 interface CurrencyConfig {
@@ -116,147 +117,161 @@ export async function generatePaymentMessage(
   const labels: Record<string, any> = {
     tr: {
       title: "💳 ÖDEME BİLGİLERİ",
+      separator: "─────────────────────",
       paymentType: paymentType === "deposit" ? `Kapora (%${depositPercentage})` : "Tam Ödeme",
-      depositAmount: `Kapora Tutarı: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Kalan Tutar: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Tur gününde)`,
-      fullAmount: `Ödeme Tutarı: ${formatPrice(convertedTotal, targetCurrency)}`,
-      methods: "Ödeme Yöntemleriniz:",
-      bankTransfer: "🏦 Havale/EFT:",
+      depositAmount: `Kapora Tutarı`,
+      remaining: `Kalan Tutar`,
+      remainingNote: "(Tur gününde)",
+      fullAmount: `Ödeme Tutarı`,
+      methods: "📋 Ödeme Yöntemleriniz:",
+      bankTransfer: "🏦 HAVALE/EFT",
       bankName: "Banka:",
       iban: "IBAN:",
       accountHolder: "Hesap Sahibi:",
-      cashOffice: "💵 Ofiste Nakit:",
+      cashOffice: "💵 OFİSTE NAKİT",
       address: "Adres:",
       hours: "Çalışma Saatleri:",
-      cashOnTour: "💵 Araçta/Tur Günü Nakit:",
+      cashOnTour: "💵 ARAÇTA/TUR GÜNÜ NAKİT",
       tourDay: "Tur günü araçta rehberimize ödeme yapabilirsiniz",
-      creditCard: "💳 Kredi Kartı:",
+      creditCard: "💳 KREDİ KARTI",
       phone: "Telefon:",
       phonePayment: "Telefon ile güvenli ödeme yapabilirsiniz",
       note: "📌 Not:",
     },
     en: {
       title: "💳 PAYMENT INFORMATION",
+      separator: "─────────────────────",
       paymentType: paymentType === "deposit" ? `Deposit (${depositPercentage}%)` : "Full Payment",
-      depositAmount: `Deposit Amount: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Remaining: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (On tour day)`,
-      fullAmount: `Payment Amount: ${formatPrice(convertedTotal, targetCurrency)}`,
-      methods: "Payment Methods:",
-      bankTransfer: "🏦 Bank Transfer:",
+      depositAmount: `Deposit Amount`,
+      remaining: `Remaining`,
+      remainingNote: "(On tour day)",
+      fullAmount: `Payment Amount`,
+      methods: "📋 Payment Methods:",
+      bankTransfer: "🏦 BANK TRANSFER",
       bankName: "Bank:",
       iban: "IBAN:",
       accountHolder: "Account Holder:",
-      cashOffice: "💵 Cash at Office:",
+      cashOffice: "💵 CASH AT OFFICE",
       address: "Address:",
       hours: "Working Hours:",
-      cashOnTour: "💵 Cash on Tour:",
+      cashOnTour: "💵 CASH ON TOUR",
       tourDay: "You can pay to our guide on tour day",
-      creditCard: "💳 Credit Card:",
+      creditCard: "💳 CREDIT CARD",
       phone: "Phone:",
       phonePayment: "Secure payment by phone",
       note: "📌 Note:",
     },
     de: {
       title: "💳 ZAHLUNGSINFORMATIONEN",
+      separator: "─────────────────────",
       paymentType: paymentType === "deposit" ? `Anzahlung (${depositPercentage}%)` : "Vollzahlung",
-      depositAmount: `Anzahlungsbetrag: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Restbetrag: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Am Tourtag)`,
-      fullAmount: `Zahlungsbetrag: ${formatPrice(convertedTotal, targetCurrency)}`,
-      methods: "Zahlungsmethoden:",
-      bankTransfer: "🏦 Banküberweisung:",
+      depositAmount: `Anzahlungsbetrag`,
+      remaining: `Restbetrag`,
+      remainingNote: "(Am Tourtag)",
+      fullAmount: `Zahlungsbetrag`,
+      methods: "📋 Zahlungsmethoden:",
+      bankTransfer: "🏦 BANKÜBERWEISUNG",
       bankName: "Bank:",
       iban: "IBAN:",
       accountHolder: "Kontoinhaber:",
-      cashOffice: "💵 Bar im Büro:",
+      cashOffice: "💵 BAR IM BÜRO",
       address: "Adresse:",
       hours: "Öffnungszeiten:",
-      cashOnTour: "💵 Bar am Tourtag:",
+      cashOnTour: "💵 BAR AM TOURTAG",
       tourDay: "Sie können am Tourtag bei unserem Reiseleiter bezahlen",
-      creditCard: "💳 Kreditkarte:",
+      creditCard: "💳 KREDITKARTE",
       phone: "Telefon:",
       phonePayment: "Sichere Zahlung per Telefon",
       note: "📌 Hinweis:",
     },
     ru: {
       title: "💳 ПЛАТЕЖНАЯ ИНФОРМАЦИЯ",
+      separator: "─────────────────────",
       paymentType: paymentType === "deposit" ? `Депозит (${depositPercentage}%)` : "Полная оплата",
-      depositAmount: `Сумма депозита: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Остаток: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (В день тура)`,
-      fullAmount: `Сумма оплаты: ${formatPrice(convertedTotal, targetCurrency)}`,
-      methods: "Способы оплаты:",
-      bankTransfer: "🏦 Банковский перевод:",
+      depositAmount: `Сумма депозита`,
+      remaining: `Остаток`,
+      remainingNote: "(В день тура)",
+      fullAmount: `Сумма оплаты`,
+      methods: "📋 Способы оплаты:",
+      bankTransfer: "🏦 БАНКОВСКИЙ ПЕРЕВОД",
       bankName: "Банк:",
       iban: "IBAN:",
       accountHolder: "Владелец счета:",
-      cashOffice: "💵 Наличными в офисе:",
+      cashOffice: "💵 НАЛИЧНЫМИ В ОФИСЕ",
       address: "Адрес:",
       hours: "Рабочие часы:",
-      cashOnTour: "💵 Наличными в день тура:",
+      cashOnTour: "💵 НАЛИЧНЫМИ В ДЕНЬ ТУРА",
       tourDay: "Вы можете оплатить нашему гиду в день тура",
-      creditCard: "💳 Кредитная карта:",
+      creditCard: "💳 КРЕДИТНАЯ КАРТА",
       phone: "Телефон:",
       phonePayment: "Безопасная оплата по телефону",
       note: "📌 Примечание:",
     },
     ar: {
       title: "💳 معلومات الدفع",
-      paymentType: paymentType === "deposit" ? `وديعة (${depositPercentage}٪)` : "الدفع الكامل",
-      depositAmount: `مبلغ الوديعة: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `المتبقي: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (في يوم الجولة)`,
-      fullAmount: `مبلغ الدفع: ${formatPrice(convertedTotal, targetCurrency)}`,
-      methods: "طرق الدفع:",
-      bankTransfer: "🏦 تحويل بنكي:",
+      separator: "─────────────────────",
+      paymentType: paymentType === "deposit" ? `وديعة (${depositPercentage}%)` : "الدفع الكامل",
+      depositAmount: `مبلغ الوديعة`,
+      remaining: `المتبقي`,
+      remainingNote: "(في يوم الجولة)",
+      fullAmount: `مبلغ الدفع`,
+      methods: "📋 طرق الدفع:",
+      bankTransfer: "🏦 تحويل بنكي",
       bankName: "البنك:",
       iban: "IBAN:",
       accountHolder: "صاحب الحساب:",
-      cashOffice: "💵 نقداً في المكتب:",
+      cashOffice: "💵 نقداً في المكتب",
       address: "العنوان:",
       hours: "ساعات العمل:",
-      cashOnTour: "💵 نقداً في يوم الجولة:",
+      cashOnTour: "💵 نقداً في يوم الجولة",
       tourDay: "يمكنك الدفع لمرشدنا في يوم الجولة",
-      creditCard: "💳 بطاقة ائتمان:",
+      creditCard: "💳 بطاقة ائتمان",
       phone: "الهاتف:",
       phonePayment: "دفع آمن عبر الهاتف",
       note: "📌 ملاحظة:",
     },
     fr: {
       title: "💳 INFORMATIONS DE PAIEMENT",
+      separator: "─────────────────────",
       paymentType: paymentType === "deposit" ? `Acompte (${depositPercentage}%)` : "Paiement complet",
-      depositAmount: `Montant de l'acompte: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Reste: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Le jour du circuit)`,
-      fullAmount: `Montant du paiement: ${formatPrice(convertedTotal, targetCurrency)}`,
-      methods: "Méthodes de paiement:",
-      bankTransfer: "🏦 Virement bancaire:",
+      depositAmount: `Montant de l'acompte`,
+      remaining: `Reste`,
+      remainingNote: "(Le jour du circuit)",
+      fullAmount: `Montant du paiement`,
+      methods: "📋 Méthodes de paiement:",
+      bankTransfer: "🏦 VIREMENT BANCAIRE",
       bankName: "Banque:",
       iban: "IBAN:",
       accountHolder: "Titulaire du compte:",
-      cashOffice: "💵 Espèces au bureau:",
+      cashOffice: "💵 ESPÈCES AU BUREAU",
       address: "Adresse:",
       hours: "Heures d'ouverture:",
-      cashOnTour: "💵 Espèces le jour du circuit:",
+      cashOnTour: "💵 ESPÈCES LE JOUR DU CIRCUIT",
       tourDay: "Vous pouvez payer à notre guide le jour du circuit",
-      creditCard: "💳 Carte de crédit:",
+      creditCard: "💳 CARTE DE CRÉDIT",
       phone: "Téléphone:",
       phonePayment: "Paiement sécurisé par téléphone",
       note: "📌 Note:",
     },
     es: {
       title: "💳 INFORMACIÓN DE PAGO",
+      separator: "─────────────────────",
       paymentType: paymentType === "deposit" ? `Depósito (${depositPercentage}%)` : "Pago completo",
-      depositAmount: `Monto del depósito: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Restante: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (El día del tour)`,
-      fullAmount: `Monto del pago: ${formatPrice(convertedTotal, targetCurrency)}`,
-      methods: "Métodos de pago:",
-      bankTransfer: "🏦 Transferencia bancaria:",
+      depositAmount: `Monto del depósito`,
+      remaining: `Restante`,
+      remainingNote: "(El día del tour)",
+      fullAmount: `Monto del pago`,
+      methods: "📋 Métodos de pago:",
+      bankTransfer: "🏦 TRANSFERENCIA BANCARIA",
       bankName: "Banco:",
       iban: "IBAN:",
       accountHolder: "Titular de la cuenta:",
-      cashOffice: "💵 Efectivo en la oficina:",
+      cashOffice: "💵 EFECTIVO EN LA OFICINA",
       address: "Dirección:",
       hours: "Horario de atención:",
-      cashOnTour: "💵 Efectivo el día del tour:",
+      cashOnTour: "💵 EFECTIVO EL DÍA DEL TOUR",
       tourDay: "Puede pagar a nuestro guía el día del tour",
-      creditCard: "💳 Tarjeta de crédito:",
+      creditCard: "💳 TARJETA DE CRÉDITO",
       phone: "Teléfono:",
       phonePayment: "Pago seguro por teléfono",
       note: "📌 Nota:",
@@ -266,46 +281,76 @@ export async function generatePaymentMessage(
   const lang = labels[language] || labels.tr;
   const bankInfo = paymentInstructions[language] || paymentInstructions.tr || {};
 
-  let message = `\n\n${lang.title}\n\n`;
+  // ========================================
+  // HEADER - Daha belirgin
+  // ========================================
+  let message = `\n\n${lang.title}\n${lang.separator}\n\n`;
 
-  // Payment amount info
+  // ========================================
+  // PAYMENT AMOUNT - Daha okunaklı
+  // ========================================
   if (paymentType === "deposit") {
-    message += `${lang.paymentType}\n${lang.depositAmount}\n${lang.remaining}\n\n`;
+    message += `💰 ${lang.paymentType}\n`;
+    message += `   ${lang.depositAmount}: **${formatPrice(convertedDeposit, targetCurrency)}**\n`;
+    message += `   ${lang.remaining}: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} ${lang.remainingNote}\n\n`;
   } else {
-    message += `${lang.paymentType}\n${lang.fullAmount}\n\n`;
+    message += `💰 ${lang.paymentType}\n`;
+    message += `   ${lang.fullAmount}: **${formatPrice(convertedTotal, targetCurrency)}**\n\n`;
   }
 
-  message += `${lang.methods}\n\n`;
+  message += `${lang.separator}\n${lang.methods}\n\n`;
 
-  // Bank transfer
+  // ========================================
+  // BANK TRANSFER - Kopyala-yapıştır kolay
+  // ========================================
   if (methods.includes("bank_transfer")) {
     message += `${lang.bankTransfer}\n`;
-    if (bankInfo.bank_name) message += `${lang.bankName} ${bankInfo.bank_name}\n`;
-    if (bankInfo.iban) message += `${lang.iban} ${bankInfo.iban}\n`;
-    if (bankInfo.account_holder) message += `${lang.accountHolder} ${bankInfo.account_holder}\n`;
-    if (bankInfo.additional_info) message += `${lang.note} ${bankInfo.additional_info}\n`;
+    if (bankInfo.bank_name) {
+      message += `  ${lang.bankName} ${bankInfo.bank_name}\n`;
+    }
+    if (bankInfo.iban) {
+      message += `  ${lang.iban}\n  \`${bankInfo.iban}\`\n`; // Monospace font
+    }
+    if (bankInfo.account_holder) {
+      message += `  ${lang.accountHolder} ${bankInfo.account_holder}\n`;
+    }
+    if (bankInfo.additional_info) {
+      message += `  ${lang.note} ${bankInfo.additional_info}\n`;
+    }
     message += "\n";
   }
 
-  // Cash at office
+  // ========================================
+  // CASH AT OFFICE - Kompakt
+  // ========================================
   if (methods.includes("cash_office")) {
     message += `${lang.cashOffice}\n`;
-    if (paymentInstructions.office_address) message += `${lang.address} ${paymentInstructions.office_address}\n`;
-    if (paymentInstructions.working_hours) message += `${lang.hours} ${paymentInstructions.working_hours}\n`;
+    if (paymentInstructions.office_address) {
+      message += `  ${lang.address} ${paymentInstructions.office_address}\n`;
+    }
+    if (paymentInstructions.working_hours) {
+      message += `  ${lang.hours} ${paymentInstructions.working_hours}\n`;
+    }
     message += "\n";
   }
 
-  // Cash on tour
+  // ========================================
+  // CASH ON TOUR - Kısa ve net
+  // ========================================
   if (methods.includes("cash_on_tour")) {
     message += `${lang.cashOnTour}\n`;
-    message += `${lang.tourDay}\n\n`;
+    message += `  ${lang.tourDay}\n\n`;
   }
 
-  // Credit card
+  // ========================================
+  // CREDIT CARD - Net
+  // ========================================
   if (methods.includes("credit_card")) {
     message += `${lang.creditCard}\n`;
-    if (paymentInstructions.phone_number) message += `${lang.phone} ${paymentInstructions.phone_number}\n`;
-    message += `${lang.phonePayment}\n`;
+    if (paymentInstructions.phone_number) {
+      message += `  ${lang.phone} ${paymentInstructions.phone_number}\n`;
+    }
+    message += `  ${lang.phonePayment}\n`;
   }
 
   return message;
