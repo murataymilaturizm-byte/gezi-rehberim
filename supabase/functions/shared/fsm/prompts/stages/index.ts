@@ -1,6 +1,6 @@
-// All stage prompts consolidated
+// All stage prompts - WITH TONE SUPPORT
 import type { PromptContext } from "../types.ts";
-import { formatTourDetails, formatCollectedInfo, formatReservationSummary } from "../helpers.ts";
+import { formatTourDetails, formatCollectedInfo, formatReservationSummary, formatToursList } from "../helpers.ts";
 import { getGreetingPrompt } from "./greeting.ts";
 import { getBrowsingPrompt } from "./browsing.ts";
 
@@ -71,15 +71,17 @@ function getCollectionStepPrompt(collectionStep: string, language: string): stri
 }
 
 export function getStagePrompt(context: PromptContext): string {
-  const { stage, collectionStep, currentTour, reservationInfo, language } = context;
+  const { stage, collectionStep, currentTour, reservationInfo, language, tone, availableTours } = context;
 
   // Use dedicated functions for greeting and browsing
   if (stage === "GREETING") return getGreetingPrompt(context);
   if (stage === "BROWSING") return getBrowsingPrompt(context);
 
-  const tourDetails = currentTour ? formatTourDetails(currentTour, language) : "";
+  // Pass tone to formatting functions
+  const tourDetails = currentTour ? formatTourDetails(currentTour, language, tone) : "";
   const collectedInfo = formatCollectedInfo(reservationInfo, language);
-  const summary = formatReservationSummary(currentTour, reservationInfo, language);
+  const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
+  const toursList = formatToursList(availableTours, language, tone);
 
   // Turkish prompts
   if (language === "tr") {
