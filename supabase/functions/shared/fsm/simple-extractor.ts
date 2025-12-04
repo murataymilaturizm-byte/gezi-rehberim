@@ -110,7 +110,9 @@ function isValidName(name: string): boolean {
     'istiyorum', 'istiyor', 'ister', 'sorun', 'soru', 'bilgi',
     'telefon', 'numara', 'vermiştim', 'verdim', 'söyledim', 'yazdım',
     'aralık', 'ocak', 'şubat', 'mart', 'nisan', 'mayıs', 'haziran',
-    'temmuz', 'ağustos', 'eylül', 'ekim', 'kasım'
+    'temmuz', 'ağustos', 'eylül', 'ekim', 'kasım',
+    'onaylıyorum', 'onay', 'kabul', 'ediyorum', 'yes', 'confirm',
+    'doğru', 'yanlış', 'iptal', 'cancel', 'değiştir', 'change'
   ];
   
   const lowerName = name.toLowerCase();

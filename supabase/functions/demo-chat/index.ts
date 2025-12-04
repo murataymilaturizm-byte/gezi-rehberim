@@ -250,7 +250,7 @@ serve(async (req) => {
       console.log("📅 Date from regex:", simpleExtraction.selectedDate);
     }
 
-    // Resolve date if selected by number
+    // Resolve date_X format
     if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
       const tour = findTourById(context.currentTour.id, availableTours);
       if (tour?.dates) {
@@ -259,7 +259,33 @@ serve(async (req) => {
           const selectedDate = tour.dates[dateIndex];
           extractedInfo.selectedDate = selectedDate.departure_date;
           extractedInfo.dateId = selectedDate.id;
-          console.log("📅 Resolved date:", selectedDate.departure_date);
+          console.log("📅 Resolved date from index:", selectedDate.departure_date);
+        }
+      }
+    }
+
+    // Match ISO date (YYYY-MM-DD) with available tour dates
+    if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
+      const tour = findTourById(context.currentTour.id, availableTours);
+      if (tour?.dates && tour.dates.length > 0) {
+        // Try to find matching date
+        const matchedDate = tour.dates.find((d: any) => {
+          // Direct match
+          if (d.departure_date === extractedInfo.selectedDate) return true;
+          // Parse both dates for comparison
+          const targetDate = new Date(extractedInfo.selectedDate);
+          const tourDate = new Date(d.departure_date);
+          return targetDate.getDate() === tourDate.getDate() && 
+                 targetDate.getMonth() === tourDate.getMonth();
+        });
+        
+        if (matchedDate) {
+          extractedInfo.selectedDate = matchedDate.departure_date;
+          extractedInfo.dateId = matchedDate.id;
+          console.log("📅 Matched date with tour date:", matchedDate.departure_date);
+        } else {
+          // No exact match - show available dates and ask user to pick
+          console.log("⚠️ Date not found in tour dates, will prompt user to select");
         }
       }
     }
