@@ -14,6 +14,7 @@ export function buildSystemPrompt(context: AIPromptContext): string {
     agencyName,
     agencyCity,
     paymentInfo, // şu an bilinçli olarak kullanılmıyor, ödeme mesajı backend'de ekleniyor
+    multipleTourMatches,
   } = context;
 
   // Get current date in the user's language
@@ -36,8 +37,37 @@ export function buildSystemPrompt(context: AIPromptContext): string {
   const formatPrompt = getFormatPrompt(language);
   const stagePrompt = getStagePrompt(stage, collectionStep, currentTour, reservationInfo, availableTours, language);
   const agencyInfo = agencyName ? getAgencyInfo(context, language) : "";
+  
+  // Add multiple tour matches warning if applicable
+  let multipleTourWarning = "";
+  if (multipleTourMatches && multipleTourMatches.length > 1) {
+    const tourList = multipleTourMatches.map((t: any, i: number) => `${i + 1}. ${t.title}`).join("\n");
+    if (language === "tr") {
+      multipleTourWarning = `\n\n🚨 KRİTİK - ÇOKLU TUR EŞLEŞMESİ:
+Kullanıcının araması birden fazla turla eşleşti. OTOMATİK SEÇİM YAPMA!
+Mutlaka şu turları listele ve hangisini istediğini sor:
+${tourList}
 
-  return `${dateInfo}\n\n${rolePrompt}\n\n${tonePrompt}\n\n${formatPrompt}\n\n${stagePrompt}${agencyInfo}`;
+Örnek yanıt: "Bu destinasyon için birden fazla tur seçeneğimiz var:
+1. [Tur 1 adı] - [kısa açıklama]
+2. [Tur 2 adı] - [kısa açıklama]
+
+Hangisini tercih edersiniz?"`;
+    } else {
+      multipleTourWarning = `\n\n🚨 CRITICAL - MULTIPLE TOUR MATCHES:
+User's search matched multiple tours. DO NOT auto-select!
+You MUST list these tours and ask which one they want:
+${tourList}
+
+Example response: "We have multiple tour options for this destination:
+1. [Tour 1 name] - [brief description]
+2. [Tour 2 name] - [brief description]
+
+Which one would you prefer?"`;
+    }
+  }
+
+  return `${dateInfo}\n\n${rolePrompt}\n\n${tonePrompt}\n\n${formatPrompt}\n\n${stagePrompt}${agencyInfo}${multipleTourWarning}`;
 }
 
 function getRolePrompt(language: string): string {

@@ -108,4 +108,5 @@ export interface AIPromptContext {
   agencyWorkingHours?: string;
   agencyMapsUrl?: string;
   agencyCancellationPolicy?: string;
+  multipleTourMatches?: any[]; // When multiple tours match user's query
 }

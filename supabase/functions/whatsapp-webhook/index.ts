@@ -295,10 +295,13 @@ serve(async (req) => {
     // Strategy 1: NLU entities (tour_name, destination)
     // Strategy 2: Direct matching (numbers, keywords) via matchTour
     let selectedTour: any = null;
+    let multipleTourMatches: any[] = []; // Track multiple matches
 
     if (nluResult.entities.tour_name) {
-      const found = tours.find((t) => t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()));
-      if (found) {
+      const matchingTours = tours.filter((t) => t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()));
+      
+      if (matchingTours.length === 1) {
+        const found = matchingTours[0];
         selectedTour = {
           id: found.id,
           title: found.title,
@@ -307,13 +310,21 @@ serve(async (req) => {
           program_kisa: found.program_kisa,
           gezilecek_yerler: found.gezilecek_yerler,
         };
-        console.log("🎫 Tour matched by NLU name:", selectedTour.title);
+        console.log("🎫 Tour matched by NLU name (single):", selectedTour.title);
+      } else if (matchingTours.length > 1) {
+        multipleTourMatches = matchingTours;
+        console.log("🎫 Multiple tours matched by NLU name:", matchingTours.map(t => t.title).join(", "));
       }
-    } else if (nluResult.entities.destination) {
-      const found = tours.find((t) =>
-        t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()),
+    } 
+    
+    if (!selectedTour && !multipleTourMatches.length && nluResult.entities.destination) {
+      const matchingTours = tours.filter((t) =>
+        t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()) ||
+        t.title.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()),
       );
-      if (found) {
+      
+      if (matchingTours.length === 1) {
+        const found = matchingTours[0];
         selectedTour = {
           id: found.id,
           title: found.title,
@@ -322,12 +333,15 @@ serve(async (req) => {
           program_kisa: found.program_kisa,
           gezilecek_yerler: found.gezilecek_yerler,
         };
-        console.log("🎫 Tour matched by NLU destination:", selectedTour.title);
+        console.log("🎫 Tour matched by NLU destination (single):", selectedTour.title);
+      } else if (matchingTours.length > 1) {
+        multipleTourMatches = matchingTours;
+        console.log("🎫 Multiple tours matched by destination:", matchingTours.map(t => t.title).join(", "));
       }
     }
 
-    // FALLBACK: direct matching
-    if (!selectedTour) {
+    // FALLBACK: direct matching (only if no multiple matches)
+    if (!selectedTour && !multipleTourMatches.length) {
       const expectedInput = getNextExpectedInput(context);
       const matchedTour = matchTour(message, tours, expectedInput);
       if (matchedTour) {
@@ -490,6 +504,7 @@ serve(async (req) => {
       agencyMapsUrl: agency.maps_url,
       agencyCancellationPolicy: agency.cancellation_policy,
       paymentInfo: paymentInfo,
+      multipleTourMatches: multipleTourMatches.length > 1 ? multipleTourMatches : undefined,
     };
 
     // CRITICAL: Prevent accidental tour switching during reservation
