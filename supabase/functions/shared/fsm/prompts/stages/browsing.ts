@@ -1,10 +1,9 @@
-// Browsing stage prompts
-import type { PromptContext } from "../types.ts";
-import { formatToursList } from "../helpers.ts";
+// browsing.ts - WITH TONE SUPPORT
+// ============================================
 
 export function getBrowsingPrompt(context: PromptContext): string {
-  const { availableTours, language } = context;
-  const toursList = formatToursList(availableTours, language);
+  const { availableTours, language, tone } = context;
+  const toursList = formatToursList(availableTours, language, tone); // Pass tone here
 
   if (language === "tr") {
     return `📍 DURUM: Tur arama / listeleme
