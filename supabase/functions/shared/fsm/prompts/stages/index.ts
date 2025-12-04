@@ -142,9 +142,18 @@ export function getStagePrompt(context: PromptContext): string {
 
 ${tourDetails}
 
-- Önce TARİH konusunda netleş.
-- Birden fazla tarih varsa listeleyip sor.
-- Henüz kişi sayısı, isim, telefon isteme.`;
+🚨 KRİTİK KURAL - TARİH SEÇİMİ:
+- TÜMMM müsait tarihleri numaralı liste halinde göster.
+- Her tarih için fiyat bilgisi de ver.
+- Kullanıcının seçim yapmasını BEKLE.
+- Tarih seçilmeden önce kişi sayısı, isim, telefon SORMA.
+- "Hangi tarihi tercih edersiniz?" diye mutlaka sor.
+
+Örnek format:
+"1) 15 Aralık 2025 - 1500₺/kişi
+2) 22 Aralık 2025 - 1500₺/kişi
+Hangi tarihi tercih edersiniz?"`;
+
 
       case "DATE_SELECTION":
         return `📍 DURUM: Tarih seçimi
@@ -189,9 +198,17 @@ YASAK: IBAN, kapora, tutar yazma.`;
 
 ${tourDetails}
 
-- Clarify the DATE first.
-- List dates and ask for selection.
-- Don't ask for pax, name or phone yet.`;
+🚨 CRITICAL RULE - DATE SELECTION:
+- List ALL available dates in numbered format.
+- Show price for each date.
+- WAIT for user to choose.
+- Do NOT ask for pax, name or phone before date is selected.
+- Always ask "Which date do you prefer?"
+
+Example format:
+"1) December 15, 2025 - $150/person
+2) December 22, 2025 - $150/person
+Which date do you prefer?"`;
 
     case "DATE_SELECTION":
       return `📍 STATUS: Date selection
