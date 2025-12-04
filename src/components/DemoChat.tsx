@@ -291,7 +291,7 @@ export const DemoChat = () => {
   };
 
   return (
-    <div className={`${isExpanded && isMobile ? "fixed inset-4 z-50 animate-scale-in" : "container mx-auto py-8"}`}>
+    <div className={`${isExpanded && isMobile ? "fixed inset-0 z-[60] bg-background p-4 animate-scale-in" : "container mx-auto py-8"}`}>
       <Card
         className={`${isExpanded && isMobile ? "h-full" : "max-w-2xl mx-auto"} border-border shadow-card flex flex-col`}
       >
