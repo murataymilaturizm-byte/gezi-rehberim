@@ -352,15 +352,97 @@ serve(async (req) => {
     const extractedInfo: any = { ...nluResult.updates };
     if (nluResult.entities.dates && nluResult.entities.dates.length > 0) {
       extractedInfo.selectedDate = nluResult.entities.dates[0];
+      console.log("📅 Date from NLU:", nluResult.entities.dates[0]);
     }
 
+    // Simple fallback for name, phone, pax, and date (NLU sometimes misses these)
     const simpleExtraction = extractNameAndPhone(message);
     if (simpleExtraction.fullName && !extractedInfo.fullName) {
       extractedInfo.fullName = simpleExtraction.fullName;
+      console.log("👤 Name from regex:", simpleExtraction.fullName);
     }
     if (simpleExtraction.phone && !extractedInfo.phone) {
       extractedInfo.phone = simpleExtraction.phone;
+      console.log("📞 Phone from regex:", simpleExtraction.phone);
     }
+    if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) {
+      extractedInfo.paxAdult = simpleExtraction.paxAdult;
+      console.log("👥 Pax from regex:", simpleExtraction.paxAdult);
+    }
+    if (simpleExtraction.selectedDate && !extractedInfo.selectedDate) {
+      extractedInfo.selectedDate = simpleExtraction.selectedDate;
+      console.log("📅 Date from regex:", simpleExtraction.selectedDate);
+    }
+
+    // Resolve date_X format (e.g., "date_0", "date_1")
+    if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
+      const tour = findTourById(context.currentTour.id, tours);
+      if (tour?.dates) {
+        const dateIndex = parseInt(extractedInfo.selectedDate.split("_")[1]);
+        if (dateIndex >= 0 && dateIndex < tour.dates.length) {
+          const selectedDate = tour.dates[dateIndex];
+          extractedInfo.selectedDate = selectedDate.departure_date;
+          extractedInfo.dateId = selectedDate.id;
+          console.log("📅 Resolved date from index:", selectedDate.departure_date);
+        }
+      }
+    }
+
+    // Handle numeric date selection (1, 2, 3) when expecting date
+    const expectedInput = getNextExpectedInput(context);
+    if (!extractedInfo.dateId && context.currentTour && 
+        (expectedInput === 'date' || expectedInput === 'date_selection')) {
+      const dateNumber = parseInt(message.trim());
+      if (!isNaN(dateNumber) && dateNumber >= 1) {
+        const tour = findTourById(context.currentTour.id, tours);
+        if (tour?.dates && dateNumber <= tour.dates.length) {
+          const selectedDate = tour.dates[dateNumber - 1];
+          extractedInfo.selectedDate = selectedDate.departure_date;
+          extractedInfo.dateId = selectedDate.id;
+          console.log("📅 Date selected by number:", selectedDate.departure_date);
+        }
+      }
+    }
+
+    // Match ISO date (YYYY-MM-DD) or text date with available tour dates
+    if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
+      const tour = findTourById(context.currentTour.id, tours);
+      if (tour?.dates && tour.dates.length > 0) {
+        const matchedDate = tour.dates.find((d: any) => {
+          // Direct match
+          if (d.departure_date === extractedInfo.selectedDate) return true;
+          // Parse both dates for comparison
+          try {
+            const targetDate = new Date(extractedInfo.selectedDate);
+            const tourDate = new Date(d.departure_date);
+            return targetDate.getDate() === tourDate.getDate() && 
+                   targetDate.getMonth() === tourDate.getMonth();
+          } catch {
+            return false;
+          }
+        });
+        
+        if (matchedDate) {
+          extractedInfo.selectedDate = matchedDate.departure_date;
+          extractedInfo.dateId = matchedDate.id;
+          console.log("📅 Matched date with tour date:", matchedDate.departure_date);
+        } else {
+          console.log("⚠️ Date not found in tour dates, will prompt user to select");
+        }
+      }
+    }
+
+    // Auto-select date if there's only one and user is confirming/providing info
+    if (!extractedInfo.dateId && !extractedInfo.selectedDate && 
+        context.currentTour?.dates?.length === 1 &&
+        (fsmIntent === "provide_info" || fsmIntent === "confirm" || fsmIntent === "reservation_intent")) {
+      const singleDate = context.currentTour.dates[0];
+      extractedInfo.selectedDate = singleDate.departure_date;
+      extractedInfo.dateId = singleDate.id;
+      console.log("📅 Auto-selected single available date:", singleDate.departure_date);
+    }
+
+    console.log("📝 Extracted info:", extractedInfo);
 
     // Process transition
     const input: ProcessingInput = {
@@ -553,23 +635,28 @@ NEVER switch tours automatically, only ask for confirmation!`;
 
     // Save reservation if completed and get template BEFORE saving response
     if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed) {
-      console.log("💾 Saving reservation...");
+      const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
+      const reservationPhone = regPhone || userPhone;
+      
+      // CRITICAL: Validate all required fields before saving
+      if (tourId && dateId && fullName && reservationPhone && paxAdult) {
+        console.log("💾 Saving reservation...", { tourId, dateId, fullName, paxAdult });
 
-      const { data: newRegistration, error: regError } = await supabase
-        .from("registrations")
-        .insert({
-          tour_id: newContext.reservationInfo.tourId,
-          tour_date_id: newContext.reservationInfo.dateId,
-          full_name: newContext.reservationInfo.fullName,
-          phone: newContext.reservationInfo.phone || userPhone,
-          pax: (newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
-          agency_id: agency.id,
-          status: "NEW",
-          source_channel: "WHATSAPP",
-          payment_status: "UNPAID"
-        })
-        .select()
-        .single();
+        const { data: newRegistration, error: regError } = await supabase
+          .from("registrations")
+          .insert({
+            tour_id: tourId,
+            tour_date_id: dateId,
+            full_name: fullName,
+            phone: reservationPhone,
+            pax: (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
+            agency_id: agency.id,
+            status: "NEW",
+            source_channel: "WHATSAPP",
+            payment_status: "UNPAID"
+          })
+          .select()
+          .single();
 
       if (regError) {
         console.error("❌ Save error:", regError);
@@ -612,21 +699,24 @@ NEVER switch tours automatically, only ask for confirmation!`;
         }
       }
 
-      // Update profile (only if user profiles feature is enabled)
-      if (planFeatures?.has_user_profiles) {
-        await supabase.from("whatsapp_user_profiles").upsert(
-          {
-            phone: userPhone,
-            agency_id: agency.id,
-            full_name: newContext.reservationInfo.fullName,
-            total_bookings: 1,
-            last_interaction_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "phone,agency_id",
-          },
-        );
-        console.log("✅ User profile updated with booking");
+        // Update profile (only if user profiles feature is enabled)
+        if (planFeatures?.has_user_profiles) {
+          await supabase.from("whatsapp_user_profiles").upsert(
+            {
+              phone: userPhone,
+              agency_id: agency.id,
+              full_name: newContext.reservationInfo.fullName,
+              total_bookings: 1,
+              last_interaction_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "phone,agency_id",
+            },
+          );
+          console.log("✅ User profile updated with booking");
+        }
+      } else {
+        console.error("❌ Missing required fields for reservation:", { tourId, dateId, fullName, paxAdult });
       }
     }
 
