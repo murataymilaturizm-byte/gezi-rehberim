@@ -1,68 +1,117 @@
-// All stage prompts - WITH TONE SUPPORT
+// All stage prompts - ALL IN ONE FILE (no separate files needed)
 import type { PromptContext } from "../types.ts";
 import { formatTourDetails, formatCollectedInfo, formatReservationSummary, formatToursList } from "../helpers.ts";
-import { getGreetingPrompt } from "./greeting.ts";
-import { getBrowsingPrompt } from "./browsing.ts";
 
-// Helper function to get collection step prompt
+// ============================================
+// GREETING STAGE
+// ============================================
+function getGreetingPrompt(context: PromptContext): string {
+  const { availableTours, language, tone } = context;
+  const toursList = formatToursList(availableTours, language, tone);
+
+  if (language === "tr") {
+    return `📍 DURUM: İlk karşılama
+- Kullanıcıyı sıcak ve KISA bir mesajla karşıla.
+- Acentenin adını kullanarak hoş geldiniz de.
+- Ne konuda yardımcı olabileceğini 1–2 cümlede özetle.
+- Son cümlede mutlaka ihtiyacını sor (tur, destinasyon veya tarih).
+
+CEVAP FORMATIN:
+- 1 satır: Karşılama cümlesi
+- 1 satır: Nasıl yardımcı olabileceğini anlatan kısa özet
+- 1 satır: "Hangi bölge / tur / tarih ile başlayalım?" tarzı net soru
+
+Sistem için mevcut turlar:
+${toursList}`;
+  }
+
+  return `📍 STATUS: Initial greeting
+- Greet the user warmly in a SHORT message.
+- Use the agency name in the welcome sentence.
+- In 1–2 sentences explain how you can help (tours, destinations, dates).
+- End with a clear question about their need.
+
+Available tours:
+${toursList}`;
+}
+
+// ============================================
+// BROWSING STAGE
+// ============================================
+function getBrowsingPrompt(context: PromptContext): string {
+  const { availableTours, language, tone } = context;
+  const toursList = formatToursList(availableTours, language, tone);
+
+  if (language === "tr") {
+    return `📍 DURUM: Tur arama / listeleme
+- Kullanıcı turları keşfediyor, bu aşamada kişisel kayıt bilgisi SORMA.
+- İlgilendiği destinasyona göre uygun turları sade bir şekilde listele.
+- Aynı destinasyondan birden fazla tur varsa hepsini madde madde göster.
+
+🚨 KRİTİK KURAL - HENÜZ TUR SEÇİLMEDİ:
+- Kullanıcı "tura katılmak istiyorum" derse ÖNCE tur seçmesini iste.
+- ASLA tarih sorma!
+
+Mevcut turlar:
+${toursList}`;
+  }
+
+  return `📍 STATUS: Tour browsing
+- The user is exploring tours, do NOT ask for personal details yet.
+- List relevant tours according to their interest.
+
+🚨 CRITICAL RULE:
+- If user wants to join, ask them to select a tour FIRST.
+- NEVER ask for a date before tour selection!
+
+Available tours:
+${toursList}`;
+}
+
+// ============================================
+// COLLECTION STEP HELPER
+// ============================================
 function getCollectionStepPrompt(collectionStep: string, language: string): string {
   const prompts: Record<string, Record<string, string>> = {
     tr: {
       waiting_for_date: `📝 ADIM: Tarih seçimi
 - Kullanıcıdan hangi tarihte katılmak istediğini sor.
-- Eğer tur için birden fazla tarih varsa, bunları listeleyip seçmesini iste.
-⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (isim, telefon, kişi sayısı), önce onu KABUL ET:
-  "Teşekkürler, [verilen bilgi] kaydedildi. Şimdi hangi tarihte katılmak istersiniz?" gibi bir geçiş cümlesi kullan.`,
+⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
 
       waiting_for_pax: `📝 ADIM: Kişi sayısı
 - Kullanıcıdan kaç kişi katılacağını sor.
-⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (isim, telefon), önce onu KABUL ET:
-  "Teşekkürler, [verilen bilgi] kaydedildi. Kaç kişi katılacaksınız?" gibi bir geçiş cümlesi kullan.`,
+⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
 
       waiting_for_name: `📝 ADIM: İsim
 - Sadece ad-soyad iste.
-⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (telefon), önce onu KABUL ET:
-  "Teşekkürler, telefon numaranızı aldım. Şimdi ad-soyadınız nedir?" gibi bir geçiş cümlesi kullan.`,
+⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
 
       waiting_for_phone: `📝 ADIM: Telefon
 - Sadece telefon numarası iste.
-⚠️ ÖNEMLİ: Eğer kullanıcı başka bir bilgi verdiyse (isim), önce onu KABUL ET:
-  "Teşekkürler [isim], kaydınızı aldım. Telefon numaranızı da alabilir miyim?" gibi bir geçiş cümlesi kullan.`,
-
-      ready_for_confirmation: `📝 ADIM: Onay için hazır
-- Tüm bilgiler toplandı, kullanıcıya özet göster ve onay iste.`,
+⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
 
       default: `📝 ADIM: Bilgi toplama
-- Eksik olan bilgiyi tamamlamaya odaklan.
-- Kullanıcının verdiği bilgiyi önce KABUL ET ve kaydet, sonra eksik olanı iste.`,
+- Eksik bilgiyi tamamla.`,
     },
     en: {
       waiting_for_date: `📝 STEP: Date selection
-- Ask which date the user prefers.
-⚠️ IMPORTANT: If the user provided other information (name, phone, pax), ACKNOWLEDGE it first:
-  Say something like "Thank you, I've noted [the info]. Now, which date would you prefer?"`,
+- Ask which date they prefer.
+⚠️ If user provided other info, ACKNOWLEDGE it first.`,
 
       waiting_for_pax: `📝 STEP: Pax count
-- Ask how many people will join.
-⚠️ IMPORTANT: If the user provided other information (name, phone), ACKNOWLEDGE it first:
-  Say something like "Thank you, I've noted [the info]. How many people will be joining?"`,
+- Ask how many people.
+⚠️ If user provided other info, ACKNOWLEDGE it first.`,
 
       waiting_for_name: `📝 STEP: Name
-- Only ask for full name.
-⚠️ IMPORTANT: If the user provided other information (phone), ACKNOWLEDGE it first:
-  Say something like "Thank you for the phone number. What is your full name?"`,
+- Ask for full name only.
+⚠️ If user provided other info, ACKNOWLEDGE it first.`,
 
       waiting_for_phone: `📝 STEP: Phone
-- Only ask for phone number.
-⚠️ IMPORTANT: If the user provided other information (name), ACKNOWLEDGE it first:
-  Say something like "Thank you [name], I've noted your name. Could you also share your phone number?"`,
+- Ask for phone number only.
+⚠️ If user provided other info, ACKNOWLEDGE it first.`,
 
-      ready_for_confirmation: `📝 STEP: Ready for confirmation
-- All information collected, show summary to user and ask for confirmation.`,
-
-      default: `📝 STEP: Collect missing info
-- Focus on completing the missing field.
-- When user provides info, ACKNOWLEDGE it first then ask for the next missing piece.`,
+      default: `📝 STEP: Collect info
+- Complete the missing field.`,
     },
   };
 
@@ -70,73 +119,63 @@ function getCollectionStepPrompt(collectionStep: string, language: string): stri
   return langPrompts[collectionStep] || langPrompts.default;
 }
 
+// ============================================
+// MAIN STAGE PROMPT FUNCTION
+// ============================================
 export function getStagePrompt(context: PromptContext): string {
   const { stage, collectionStep, currentTour, reservationInfo, language, tone, availableTours } = context;
 
-  // Use dedicated functions for greeting and browsing
+  // Handle greeting and browsing
   if (stage === "GREETING") return getGreetingPrompt(context);
   if (stage === "BROWSING") return getBrowsingPrompt(context);
 
-  // Pass tone to formatting functions
+  // Format helpers with tone support
   const tourDetails = currentTour ? formatTourDetails(currentTour, language, tone) : "";
   const collectedInfo = formatCollectedInfo(reservationInfo, language);
   const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
-  const toursList = formatToursList(availableTours, language, tone);
 
   // Turkish prompts
   if (language === "tr") {
     switch (stage) {
       case "TOUR_SELECTED":
         return `📍 DURUM: Tur seçildi
-Seçili turun özetini kısa anlat (süre, destinasyon, temel özellikler):
 
 ${tourDetails}
 
-- Kullanıcı "kayıt olmak istiyorum" dese bile, önce TARİH konusunda netleş.
-- Turda birden fazla tarih varsa, bunları listeleyip "Hangi tarihi tercih edersiniz?" diye sor.
-- Sadece 1 tarih varsa, o tarihi söyle ve "Bu tarih sizin için uygun mu?" diye sor.
-- Bu aşamada henüz kişi sayısı, isim, telefon isteme.`;
+- Önce TARİH konusunda netleş.
+- Birden fazla tarih varsa listeleyip sor.
+- Henüz kişi sayısı, isim, telefon isteme.`;
 
       case "DATE_SELECTION":
         return `📍 DURUM: Tarih seçimi
-- Görevin, seçilen tur için NET bir tarih belirlemek.
-- Birden fazla tarih varsa hepsini madde madde listele ve "Hangi tarihi tercih edersiniz? (1, 2, 3 şeklinde cevap verebilirsiniz.)" diye sor.
-- Sadece 1 tarih varsa bu tarihi açıkça belirt ve "Bu tarih sizin için uygun mu?" diye sor.
-- LİSTELEDİĞİN TARİHLERİN DIŞINDA YENİ BİR TARİH UYDURMA.`;
+- NET bir tarih belirle.
+- Tarihleri listele ve seçim iste.
+- YENİ TARİH UYDURMA.`;
 
       case "COLLECTING_INFO":
         const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr");
         return `📍 DURUM: Bilgi toplama
 ${stepPrompt}
 
-Şu ana kadar toplanan bilgiler:
+Toplanan bilgiler:
 ${collectedInfo}
 
-⚠️ KRİTİK KURAL: Kullanıcı her bilgiyi verdiğinde önce KABUL ET, sonra eksik olanı iste.
-- BU AŞAMADA "rezervasyonunuzu oluşturalım mı" veya "onayınızı bekliyorum" DİYEMEZSİN.`;
+⚠️ Kullanıcı bilgi verdiğinde önce KABUL ET.`;
 
       case "CONFIRMING":
         return `📍 DURUM: Onay bekleniyor
-ŞU FORMATTA CEVAP ÜRET:
 
-1) Önce aşağıdaki özeti AYNEN yaz:
 ${summary}
 
-2) Bir boş satır bırak.
-
-3) Son satırda SADECE şunu yaz:
-"Bu bilgiler doğru mudur, onaylıyor musunuz?"
-
-- Bu aşamada ödeme, IBAN, kapora bilgisi VERME.`;
+Bu bilgiler doğru mudur, onaylıyor musunuz?`;
 
       case "COMPLETED":
         return `📍 DURUM: Kayıt tamamlandı
-En fazla 3 kısa cümle yaz:
 "Teşekkür ederiz, kayıt bilgilerinizi aldık."
-"Acentemiz en kısa sürede sizinle iletişime geçerek rezervasyonunuzu netleştirecek."
-"Ödeme ve hesap bilgileri bu mesajın devamında sistem tarafından otomatik olarak paylaşılacaktır."
+"Acentemiz en kısa sürede iletişime geçecek."
+"Ödeme bilgileri otomatik olarak paylaşılacak."
 
-YASAK: "IBAN", "kapora", "tutar", "havale", banka bilgileri, TL miktarları.`;
+YASAK: IBAN, kapora, tutar yazma.`;
 
       default:
         return "";
@@ -147,53 +186,43 @@ YASAK: "IBAN", "kapora", "tutar", "havale", banka bilgileri, TL miktarları.`;
   switch (stage) {
     case "TOUR_SELECTED":
       return `📍 STATUS: Tour selected
-Briefly describe the selected tour:
 
 ${tourDetails}
 
-- Even if user wants to book, FIRST clarify the date.
-- List dates and ask "Which date would you prefer?".
-- Do NOT ask for pax, name or phone yet.`;
+- Clarify the DATE first.
+- List dates and ask for selection.
+- Don't ask for pax, name or phone yet.`;
 
     case "DATE_SELECTION":
       return `📍 STATUS: Date selection
-- Confirm a clear date for the tour.
-- List all dates and ask "Which date? (Answer with 1, 2, 3...)".
-- Do NOT INVENT dates outside the list.`;
+- Confirm a clear date.
+- List dates and ask to choose.
+- Don't invent dates.`;
 
     case "COLLECTING_INFO":
       const stepPromptEn = getCollectionStepPrompt(collectionStep || "default", "en");
       return `📍 STATUS: Collecting information
 ${stepPromptEn}
 
-Information collected so far:
+Collected info:
 ${collectedInfo}
 
-⚠️ CRITICAL: ACCEPT what user provides first, then ask for missing info.
-- Do NOT say "shall I complete your booking" or ask for confirmation here.`;
+⚠️ ACCEPT user info first, then ask for next.`;
 
     case "CONFIRMING":
       return `📍 STATUS: Awaiting confirmation
-FOLLOW THIS FORMAT:
 
-1) Write this summary EXACTLY:
 ${summary}
 
-2) Empty line.
-
-3) Last line ONLY:
-"Are these details correct, do you confirm?"
-
-- Do NOT provide payment details here.`;
+Are these details correct, do you confirm?`;
 
     case "COMPLETED":
       return `📍 STATUS: Registration completed
-Write max 3 short sentences:
-"Thank you, we have received your registration."
-"Our team will contact you shortly to finalize."
-"Payment details will be shared automatically below."
+"Thank you, we received your registration."
+"Our team will contact you shortly."
+"Payment details will be shared automatically."
 
-BANNED WORDS: "IBAN", "deposit", "amount", "bank", currency amounts.`;
+BANNED: IBAN, deposit, amount.`;
 
     default:
       return "";
