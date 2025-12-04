@@ -213,8 +213,9 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       }
     }
 
-    // 15. Save reservation if completed
-    if (newContext.stage === "COMPLETED" && newContext.reservationInfo) {
+    // 15. Save reservation ONLY when transitioning TO COMPLETED (not when already completed)
+    const isNewlyCompleted = context.stage !== "COMPLETED" && newContext.stage === "COMPLETED";
+    if (isNewlyCompleted && newContext.reservationInfo) {
       await saveReservation(supabase, newContext);
     }
 
