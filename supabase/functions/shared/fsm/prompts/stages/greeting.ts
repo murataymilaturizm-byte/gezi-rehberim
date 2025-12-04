@@ -1,0 +1,2 @@
+// Greeting Stage Prompt
+export {}

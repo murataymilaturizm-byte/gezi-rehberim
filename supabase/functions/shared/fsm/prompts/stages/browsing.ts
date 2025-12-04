@@ -1,0 +1,2 @@
+// Browsing Stage Prompt
+export {}

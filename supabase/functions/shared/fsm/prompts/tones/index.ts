@@ -1,2 +1,2 @@
-// Tone prompts - Konuşma tonu tanımları
+// All Tones Export
 export {}
