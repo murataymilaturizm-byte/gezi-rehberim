@@ -1,181 +1,292 @@
-// Centralized Tour Matching Service - FIXED VERSION
+// Extract reservation info from user messages for demo-chat
 
 import { logger } from "../utils/logger.ts";
-import type { Tour, TourMatchResult, NLUEntities } from "../types/index.ts";
+import type { NLUEntities, Tour, ExtractionParams, ExtractedInfo } from "../types/index.ts";
+import type { ConversationContext, ReservationInfo } from "../../shared/fsm/types.ts";
 
 /**
- * Find tour by ID from available tours list
+ * Main extraction function - extracts reservation info from user message
  */
-export function findTourById(tourId: string, availableTours: Tour[]): Tour | null {
-  return availableTours.find((t) => t.id === tourId) || null;
-}
+export function extractReservationInfo(params: ExtractionParams): ExtractedInfo {
+  const { message, nluEntities, nluUpdates, context, availableTours, expectedInput, detectedIntent } = params;
+  
+  const result: ExtractedInfo = {};
+  const lower = message.toLowerCase().trim();
 
-/**
- * Direct matching by keywords or number (fallback strategy)
- */
-function directMatchTour(userMessage: string, availableTours: Tour[], expectedInput: string): Tour | null {
-  const lowerMessage = userMessage.toLowerCase().trim();
+  // 1. Extract from NLU updates first (highest priority)
+  if (nluUpdates) {
+    if (typeof nluUpdates.paxAdult === "number") result.paxAdult = nluUpdates.paxAdult;
+    if (typeof nluUpdates.paxChild === "number") result.paxChild = nluUpdates.paxChild;
+    if (typeof nluUpdates.fullName === "string") result.fullName = nluUpdates.fullName;
+    if (typeof nluUpdates.phone === "string") result.phone = nluUpdates.phone;
+    if (typeof nluUpdates.selectedDate === "string") result.selectedDate = nluUpdates.selectedDate;
+  }
 
-  // 1. Try to match by tour number (only if not expecting pax/name/phone)
-  if (!["pax_count", "pax", "phone_number", "phone", "full_name", "name"].includes(expectedInput)) {
-    const tourNumber = parseInt(lowerMessage);
-    if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= availableTours.length) {
-      logger.debug(`Tour matched by number: ${tourNumber}`);
-      return availableTours[tourNumber - 1];
+  // 2. Extract from NLU entities
+  if (nluEntities) {
+    if (typeof nluEntities.pax === "number" && !result.paxAdult) {
+      result.paxAdult = nluEntities.pax;
+    }
+    if (typeof nluEntities.full_name === "string" && !result.fullName) {
+      result.fullName = formatName(nluEntities.full_name);
+    }
+    if (typeof nluEntities.phone === "string" && !result.phone) {
+      result.phone = cleanPhone(nluEntities.phone);
+    }
+    if (typeof nluEntities.date === "string" && !result.selectedDate) {
+      result.selectedDate = nluEntities.date;
     }
   }
 
-  // 2. Try exact title match
-  let matchedTour = availableTours.find((tour) => tour.title.toLowerCase() === lowerMessage);
-
-  if (matchedTour) {
-    logger.debug(`Tour matched by exact title: ${matchedTour.title}`);
-    return matchedTour;
+  // 3. Context-aware extraction based on expectedInput
+  if (expectedInput === "pax" || expectedInput === "pax_count") {
+    const pax = extractPax(message);
+    if (pax && !result.paxAdult) {
+      result.paxAdult = pax;
+    }
   }
 
-  // 3. Try destination match
-  matchedTour = availableTours.find((tour) => tour.destination.toLowerCase() === lowerMessage);
-
-  if (matchedTour) {
-    logger.debug(`Tour matched by destination: ${matchedTour.title}`);
-    return matchedTour;
+  if (expectedInput === "name" || expectedInput === "full_name") {
+    const name = extractFullName(message);
+    if (name && !result.fullName) {
+      result.fullName = name;
+    }
   }
 
-  // 4. Try keyword matching (partial match)
-  matchedTour = availableTours.find((tour) => {
-    const tourWords = [...tour.title.toLowerCase().split(/\s+/), ...tour.destination.toLowerCase().split(/\s+/)];
+  if (expectedInput === "phone" || expectedInput === "phone_number") {
+    const phone = extractPhone(message);
+    if (phone && !result.phone) {
+      result.phone = phone;
+    }
+  }
 
-    // Check if any significant word (>3 chars) from tour matches message
-    return tourWords.some((word) => word.length > 3 && lowerMessage.includes(word));
-  });
+  if (expectedInput === "date" || expectedInput === "tour_date") {
+    const dateInfo = extractDate(message, context, availableTours);
+    if (dateInfo.selectedDate && !result.selectedDate) {
+      result.selectedDate = dateInfo.selectedDate;
+    }
+    if (dateInfo.dateId && !result.dateId) {
+      result.dateId = dateInfo.dateId;
+    }
+  }
 
-  if (matchedTour) {
-    logger.debug(`Tour matched by keyword: ${matchedTour.title}`);
-    return matchedTour;
+  // 4. Try to extract everything if no specific expectation
+  if (!expectedInput || expectedInput === "any") {
+    const allInfo = extractAllInfo(message);
+    Object.keys(allInfo).forEach((key) => {
+      if (!result[key as keyof ExtractedInfo]) {
+        (result as any)[key] = allInfo[key as keyof ExtractedInfo];
+      }
+    });
+  }
+
+  logger.debug("Extracted info", result);
+  return result;
+}
+
+/**
+ * Extract passenger count from message
+ */
+function extractPax(message: string): number | null {
+  const lower = message.toLowerCase();
+
+  // Patterns for adults
+  const patterns = [
+    /(\d+)\s*(yetişkin|adult|büyük)/i,
+    /(\d+)\s*kişi/i,
+    /^(\d+)$/  // Just a number
+  ];
+
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match) {
+      const pax = parseInt(match[1]);
+      if (pax >= 1 && pax <= 20) {
+        return pax;
+      }
+    }
   }
 
   return null;
 }
 
 /**
- * Create a tour reference with essential data
+ * Extract full name from message
  */
-function createTourReference(tour: Tour): Tour {
-  return {
-    id: tour.id,
-    title: tour.title,
-    destination: tour.destination,
-    type: tour.type,
-    currency: tour.currency,
-    dates: tour.dates,
-    program_kisa: tour.program_kisa,
-    gezilecek_yerler: tour.gezilecek_yerler,
-  };
+function extractFullName(message: string): string | null {
+  // Clean the message first
+  const cleaned = message.trim();
+  
+  // Match 2-3 word names with Turkish and Latin characters
+  const nameMatch = cleaned.match(/\b([A-ZÇĞİÖŞÜa-zçğıöşü]{2,}\s+[A-ZÇĞİÖŞÜa-zçğıöşü]{2,}(?:\s+[A-ZÇĞİÖŞÜa-zçğıöşü]{2,})?)\b/);
+
+  if (nameMatch) {
+    const name = nameMatch[1].trim();
+    if (isValidName(name)) {
+      return formatName(name);
+    }
+  }
+
+  // Try whole message as name if it looks like a name
+  if (isValidName(cleaned)) {
+    return formatName(cleaned);
+  }
+
+  return null;
 }
 
 /**
- * Find matching tours using multiple strategies:
- * 1. NLU tour_name matching
- * 2. NLU destination matching
- * 3. Direct keyword/number matching (fallback)
- *
- * Returns either a single tour OR multiple matches (user needs to choose)
+ * Extract phone number from message
  */
-export function findMatchingTours(
-  message: string,
-  nluEntities: NLUEntities,
-  availableTours: Tour[],
-  expectedInput: string,
-  intent: string,
-): TourMatchResult {
-  const tourRelatedIntents = [
-    "browse_tours",
-    "tour_search",
-    "select_tour",
-    "hotel_details",
-    "transport_details",
-    "reservation_intent",
+function extractPhone(message: string): string | null {
+  const phonePatterns = [
+    /\b(05\d{9})\b/,  // Turkish mobile: 05xxxxxxxxx
+    /\b(\+90[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})\b/,  // International
+    /\b(\d{10,11})\b/  // 10-11 digits
   ];
 
-  // Check if we should try tour matching
-  const shouldMatchTour = tourRelatedIntents.includes(intent) || nluEntities.tour_name || nluEntities.destination;
-
-  if (!shouldMatchTour) {
-    logger.debug("No need to match tours for this intent");
-    return { selectedTour: null, multipleMatches: [] };
-  }
-
-  let selectedTour: Tour | null = null;
-  let multipleMatches: Tour[] = [];
-
-  // ========================================
-  // STRATEGY 1: Match by NLU tour_name
-  // ========================================
-  if (nluEntities.tour_name) {
-    const matchingTours = availableTours.filter((t) =>
-      t.title.toLowerCase().includes(nluEntities.tour_name!.toLowerCase()),
-    );
-
-    if (matchingTours.length === 1) {
-      selectedTour = createTourReference(matchingTours[0]);
-      logger.info(`Tour matched by NLU name (single): ${selectedTour.title}`);
-    } else if (matchingTours.length > 1) {
-      multipleMatches = matchingTours;
-      logger.info(`Multiple tours matched by NLU name: ${matchingTours.map((t) => t.title).join(", ")}`);
-    } else {
-      logger.debug(`No tours matched NLU name: ${nluEntities.tour_name}`);
-    }
-  }
-
-  // ========================================
-  // STRATEGY 2: Match by NLU destination
-  // ========================================
-  if (!selectedTour && multipleMatches.length === 0 && nluEntities.destination) {
-    const matchingTours = availableTours.filter(
-      (t) =>
-        t.destination.toLowerCase().includes(nluEntities.destination!.toLowerCase()) ||
-        t.title.toLowerCase().includes(nluEntities.destination!.toLowerCase()),
-    );
-
-    if (matchingTours.length === 1) {
-      selectedTour = createTourReference(matchingTours[0]);
-      logger.info(`Tour matched by NLU destination (single): ${selectedTour.title}`);
-    } else if (matchingTours.length > 1) {
-      multipleMatches = matchingTours;
-      logger.info(`Multiple tours matched by destination: ${matchingTours.map((t) => t.title).join(", ")}`);
-    } else {
-      logger.debug(`No tours matched NLU destination: ${nluEntities.destination}`);
-    }
-  }
-
-  // ========================================
-  // STRATEGY 3: Fallback - Direct matching
-  // ========================================
-  // CRITICAL: Only try fallback if no matches yet
-  if (!selectedTour && multipleMatches.length === 0) {
-    const matchedTour = directMatchTour(message, availableTours, expectedInput);
-
-    if (matchedTour) {
-      // Check if this keyword matches multiple tours
-      const lowerMessage = message.toLowerCase().trim();
-      const allMatches = availableTours.filter(
-        (tour) =>
-          tour.title.toLowerCase().includes(lowerMessage) || tour.destination.toLowerCase().includes(lowerMessage),
-      );
-
-      if (allMatches.length > 1) {
-        multipleMatches = allMatches;
-        logger.info(`Fallback found multiple matches: ${allMatches.map((t) => t.title).join(", ")}`);
-      } else {
-        selectedTour = createTourReference(matchedTour);
-        logger.info(`Tour matched by direct matching: ${selectedTour.title}`);
+  for (const pattern of phonePatterns) {
+    const match = message.match(pattern);
+    if (match) {
+      const phone = cleanPhone(match[1]);
+      if (phone && phone.length >= 10 && phone.length <= 11) {
+        return phone;
       }
-    } else {
-      logger.debug("No tour match found via NLU or direct matching");
     }
-  } else if (multipleMatches.length > 0) {
-    logger.info("Skipping fallback - multiple matches found, user needs to choose");
   }
 
-  return { selectedTour, multipleMatches };
+  return null;
+}
+
+/**
+ * Extract date from message
+ */
+function extractDate(
+  message: string,
+  context: ConversationContext,
+  availableTours: Tour[]
+): { selectedDate?: string; dateId?: string } {
+  const result: { selectedDate?: string; dateId?: string } = {};
+  const lower = message.toLowerCase().trim();
+
+  // Get current tour dates if tour is selected
+  let tourDates: any[] = [];
+  if (context.currentTour?.id) {
+    const tour = availableTours.find((t) => t.id === context.currentTour?.id);
+    tourDates = tour?.dates || [];
+  }
+
+  // Try to match date selection by number (e.g., "1", "2. seçenek")
+  const optionMatch = lower.match(/^(\d+)\.?\s*(seçenek|option|tarih)?$/);
+  if (optionMatch && tourDates.length > 0) {
+    const index = parseInt(optionMatch[1]) - 1;
+    if (index >= 0 && index < tourDates.length) {
+      result.dateId = tourDates[index].id;
+      result.selectedDate = tourDates[index].departure_date;
+      return result;
+    }
+  }
+
+  // Try to match specific date formats
+  const monthNames: Record<string, number> = {
+    ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6,
+    temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12,
+    january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+    july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+  };
+
+  // Pattern: "18 aralık" or "18 december"
+  const textDateMatch = lower.match(/(\d{1,2})\s+(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)/i);
+  
+  if (textDateMatch) {
+    const day = parseInt(textDateMatch[1]);
+    const month = monthNames[textDateMatch[2].toLowerCase()];
+    const year = new Date().getFullYear();
+    
+    // Format as ISO date
+    const isoDate = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+    
+    // Try to match with tour dates
+    const matchingDate = tourDates.find((d) => d.departure_date === isoDate);
+    if (matchingDate) {
+      result.dateId = matchingDate.id;
+      result.selectedDate = matchingDate.departure_date;
+    } else {
+      result.selectedDate = isoDate;
+    }
+  }
+
+  // Auto-select if only one date available
+  if (!result.dateId && tourDates.length === 1) {
+    result.dateId = tourDates[0].id;
+    result.selectedDate = tourDates[0].departure_date;
+  }
+
+  return result;
+}
+
+/**
+ * Try to extract all information from a single message
+ */
+function extractAllInfo(message: string): Partial<ExtractedInfo> {
+  const result: Partial<ExtractedInfo> = {};
+
+  const phone = extractPhone(message);
+  if (phone) result.phone = phone;
+
+  const name = extractFullName(message);
+  if (name) result.fullName = name;
+
+  const pax = extractPax(message);
+  if (pax) result.paxAdult = pax;
+
+  return result;
+}
+
+/**
+ * Validate name
+ */
+function isValidName(name: string): boolean {
+  const words = name.split(/\s+/);
+
+  // Must be 2-3 words
+  if (words.length < 2 || words.length > 3) return false;
+
+  // Each word must be at least 2 characters
+  if (words.some((w) => w.length < 2)) return false;
+
+  // Length check
+  if (name.length < 5 || name.length > 50) return false;
+
+  // Must not contain numbers
+  if (/\d/.test(name)) return false;
+
+  // Blacklist common words
+  const blacklist = [
+    "evet", "hayır", "tamam", "olur", "kişi", "tur", "kayıt", "tarih",
+    "nereden", "nereye", "nasıl", "kaçta", "hangi", "kim", "neden",
+    "onaylıyorum", "kabul", "ediyorum", "istiyorum", "rezervasyon"
+  ];
+
+  const lowerName = name.toLowerCase();
+  if (blacklist.some((word) => lowerName.includes(word))) return false;
+
+  return true;
+}
+
+/**
+ * Format name with proper capitalization
+ */
+function formatName(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+/**
+ * Clean phone number
+ */
+function cleanPhone(phone: string): string {
+  return phone.replace(/[\s\-\(\)]/g, "");
 }
