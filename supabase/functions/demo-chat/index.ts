@@ -136,12 +136,40 @@ serve(async (req) => {
 
     console.log(`📦 Using ${availableTours.length} tours (localized to: ${context.language})`);
 
-    console.log("📨 Message:", { message, stage: context.stage, lang: context.language, tone: context.tone });
+    console.log("📨 Message:", { message, stage: context.stage, lang: context.language, tone: context.tone, collectionStep: context.collectionStep });
 
-    // === NEW: Use AI-based NLU for understanding ===
+    // === Build rich context for NLU ===
+    let nluContext = `Current stage: ${context.stage}.`;
+    if (context.collectionStep) {
+      nluContext += ` Collection step: ${context.collectionStep}.`;
+    }
+    if (context.currentTour) {
+      nluContext += ` Selected tour: ${context.currentTour.title}.`;
+    }
+    if (context.reservationInfo) {
+      const info = context.reservationInfo;
+      const collected = [];
+      if (info.selectedDate) collected.push(`date: ${info.selectedDate}`);
+      if (info.paxAdult) collected.push(`pax: ${info.paxAdult}`);
+      if (info.fullName) collected.push(`name: ${info.fullName}`);
+      if (info.phone) collected.push(`phone: ${info.phone}`);
+      if (collected.length > 0) {
+        nluContext += ` Reservation info collected: ${collected.join(', ')}.`;
+      }
+    }
+    // If all info collected, indicate ready for confirmation
+    if (context.collectionStep === 'ready_for_confirmation' || 
+        (context.reservationInfo?.fullName && context.reservationInfo?.phone && 
+         context.reservationInfo?.paxAdult && context.reservationInfo?.dateId)) {
+      nluContext += ` STATUS: READY FOR CONFIRMATION - waiting for user to confirm booking.`;
+    }
+
+    console.log("📋 NLU Context:", nluContext);
+
+    // === Use AI-based NLU for understanding ===
     const nluResult = await analyzeUserMessage(
       message,
-      `Current stage: ${context.stage}. ${context.currentTour ? `Selected tour: ${context.currentTour.title}` : ""}`,
+      nluContext,
       context.stage,
       context.currentTour,
       DEMO_TOURS, // NLU için demo tur listesi (statik)
@@ -221,26 +249,43 @@ serve(async (req) => {
       }
     }
 
-    // FALLBACK: If NLU didn't find a tour, try direct matching (numbers, keywords)
-    // This catches cases like "1", "2", "Kapadokya" that NLU might miss
-    if (!selectedTour) {
+    // FALLBACK: If NLU didn't find a tour AND we don't have multiple matches, try direct matching
+    // This catches cases like "1", "2" that NLU might miss
+    // CRITICAL: Skip fallback if we already found multiple matches - we need to ask user to choose!
+    if (!selectedTour && multipleTourMatches.length === 0) {
       const matchedTour = matchTour(message, availableTours, expectedInput);
       if (matchedTour) {
-        const fullTour = findTourById(matchedTour.id, availableTours);
-        if (fullTour) {
-          selectedTour = {
-            id: fullTour.id,
-            title: fullTour.title,
-            destination: fullTour.destination,
-            dates: fullTour.dates,
-            program_kisa: fullTour.program_kisa,
-            gezilecek_yerler: fullTour.gezilecek_yerler,
-          };
-          console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+        // Check if this keyword matches multiple tours
+        const lowerMessage = message.toLowerCase().trim();
+        const allMatches = availableTours.filter(tour => 
+          tour.title.toLowerCase().includes(lowerMessage) ||
+          tour.destination.toLowerCase().includes(lowerMessage)
+        );
+        
+        if (allMatches.length > 1) {
+          // Multiple tours match - store them and don't auto-select
+          multipleTourMatches = allMatches;
+          console.log("🎫 Fallback found multiple matches:", allMatches.map(t => t.title).join(", "));
+        } else {
+          // Single match - safe to select
+          const fullTour = findTourById(matchedTour.id, availableTours);
+          if (fullTour) {
+            selectedTour = {
+              id: fullTour.id,
+              title: fullTour.title,
+              destination: fullTour.destination,
+              dates: fullTour.dates,
+              program_kisa: fullTour.program_kisa,
+              gezilecek_yerler: fullTour.gezilecek_yerler,
+            };
+            console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+          }
         }
       } else {
         console.log("❌ No tour match found via NLU or direct matching");
       }
+    } else if (multipleTourMatches.length > 0) {
+      console.log("⏭️ Skipping fallback - multiple tour matches found, need user to choose");
     }
 
     // Extract reservation info from NLU updates (already processed by NLU)

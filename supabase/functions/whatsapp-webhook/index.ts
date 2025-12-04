@@ -265,8 +265,37 @@ serve(async (req) => {
       .map((m) => `${m.role}: ${m.content}`)
       .join("\n");
 
+    // === Build rich context for NLU ===
+    let nluContext = conversationSummary;
+    nluContext += `\n\nCurrent stage: ${context.stage}.`;
+    if (context.collectionStep) {
+      nluContext += ` Collection step: ${context.collectionStep}.`;
+    }
+    if (context.currentTour) {
+      nluContext += ` Selected tour: ${context.currentTour.title}.`;
+    }
+    if (context.reservationInfo) {
+      const info = context.reservationInfo;
+      const collected = [];
+      if (info.selectedDate) collected.push(`date: ${info.selectedDate}`);
+      if (info.paxAdult) collected.push(`pax: ${info.paxAdult}`);
+      if (info.fullName) collected.push(`name: ${info.fullName}`);
+      if (info.phone) collected.push(`phone: ${info.phone}`);
+      if (collected.length > 0) {
+        nluContext += ` Reservation info collected: ${collected.join(', ')}.`;
+      }
+    }
+    // If all info collected, indicate ready for confirmation
+    if (context.collectionStep === 'ready_for_confirmation' || 
+        (context.reservationInfo?.fullName && context.reservationInfo?.phone && 
+         context.reservationInfo?.paxAdult && context.reservationInfo?.dateId)) {
+      nluContext += ` STATUS: READY FOR CONFIRMATION - waiting for user to confirm booking.`;
+    }
+
+    console.log("📋 NLU Context (stage):", context.stage, context.collectionStep);
+
     // Analyze with NLU
-    const nluResult = await analyzeUserMessage(message, conversationSummary, context.stage, context.currentTour, tours);
+    const nluResult = await analyzeUserMessage(message, nluContext, context.stage, context.currentTour, tours);
 
     console.log("🧠 Intent:", nluResult.intent);
 
@@ -341,25 +370,42 @@ serve(async (req) => {
     }
 
     // FALLBACK: direct matching (only if no multiple matches)
-    if (!selectedTour && !multipleTourMatches.length) {
+    // CRITICAL: Skip fallback if we already found multiple matches - we need to ask user to choose!
+    if (!selectedTour && multipleTourMatches.length === 0) {
       const expectedInput = getNextExpectedInput(context);
       const matchedTour = matchTour(message, tours, expectedInput);
       if (matchedTour) {
-        const fullTour = findTourById(matchedTour.id, tours);
-        if (fullTour) {
-          selectedTour = {
-            id: fullTour.id,
-            title: fullTour.title,
-            destination: fullTour.destination,
-            dates: fullTour.dates,
-            program_kisa: fullTour.program_kisa,
-            gezilecek_yerler: fullTour.gezilecek_yerler,
-          };
-          console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+        // Check if this keyword matches multiple tours
+        const lowerMessage = message.toLowerCase().trim();
+        const allMatches = tours.filter(tour => 
+          tour.title.toLowerCase().includes(lowerMessage) ||
+          tour.destination.toLowerCase().includes(lowerMessage)
+        );
+        
+        if (allMatches.length > 1) {
+          // Multiple tours match - store them and don't auto-select
+          multipleTourMatches = allMatches;
+          console.log("🎫 Fallback found multiple matches:", allMatches.map(t => t.title).join(", "));
+        } else {
+          // Single match - safe to select
+          const fullTour = findTourById(matchedTour.id, tours);
+          if (fullTour) {
+            selectedTour = {
+              id: fullTour.id,
+              title: fullTour.title,
+              destination: fullTour.destination,
+              dates: fullTour.dates,
+              program_kisa: fullTour.program_kisa,
+              gezilecek_yerler: fullTour.gezilecek_yerler,
+            };
+            console.log("🎯 Tour matched by direct matching:", selectedTour.title);
+          }
         }
       } else {
         console.log("❌ No tour match found via NLU or direct matching");
       }
+    } else if (multipleTourMatches.length > 0) {
+      console.log("⏭️ Skipping fallback - multiple tour matches found, need user to choose");
     }
 
     // Extract info
