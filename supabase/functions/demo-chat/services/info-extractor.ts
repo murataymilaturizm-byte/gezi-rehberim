@@ -1,129 +1,181 @@
-// Information Extraction Service
+// Centralized Tour Matching Service - FIXED VERSION
 
-import { CONFIG } from "../config/constants.ts";
 import { logger } from "../utils/logger.ts";
-import { extractNameAndPhone } from "../../shared/fsm/simple-extractor.ts";
-import { findTourById } from "./tour-matching.ts";
-import type { ExtractedInfo, Tour, NLUEntities } from "../types/index.ts";
-import type { ConversationContext } from "../../shared/fsm/types.ts";
+import type { Tour, TourMatchResult, NLUEntities } from "../types/index.ts";
 
-interface ExtractionOptions {
-  message: string;
-  nluEntities: NLUEntities;
-  nluUpdates: Record<string, unknown>;
-  context: ConversationContext;
-  availableTours: Tour[];
-  expectedInput: string;
-  detectedIntent: string;
+/**
+ * Find tour by ID from available tours list
+ */
+export function findTourById(tourId: string, availableTours: Tour[]): Tour | null {
+  return availableTours.find((t) => t.id === tourId) || null;
 }
 
 /**
- * Extract reservation info from user message using multiple strategies
+ * Direct matching by keywords or number (fallback strategy)
  */
-export function extractReservationInfo(options: ExtractionOptions): ExtractedInfo {
-  const { message, nluEntities, nluUpdates, context, availableTours, expectedInput, detectedIntent } = options;
-  
-  // Start with NLU updates
-  const extractedInfo: ExtractedInfo = { ...nluUpdates } as ExtractedInfo;
+function directMatchTour(userMessage: string, availableTours: Tour[], expectedInput: string): Tour | null {
+  const lowerMessage = userMessage.toLowerCase().trim();
 
-  // Handle dates from NLU
-  if (nluEntities.dates && nluEntities.dates.length > 0) {
-    extractedInfo.selectedDate = nluEntities.dates[0];
-    logger.debug("Date from NLU", nluEntities.dates[0]);
-  }
-
-  // Simple fallback for name, phone, pax, and date
-  const simpleExtraction = extractNameAndPhone(message);
-  
-  if (simpleExtraction.fullName && !extractedInfo.fullName) {
-    extractedInfo.fullName = simpleExtraction.fullName;
-    logger.debug("Name from regex", simpleExtraction.fullName);
-  }
-  if (simpleExtraction.phone && !extractedInfo.phone) {
-    extractedInfo.phone = simpleExtraction.phone;
-    logger.debug("Phone from regex", simpleExtraction.phone);
-  }
-  if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) {
-    extractedInfo.paxAdult = simpleExtraction.paxAdult;
-    logger.debug("Pax from regex", simpleExtraction.paxAdult);
-  }
-  if (simpleExtraction.selectedDate && !extractedInfo.selectedDate) {
-    extractedInfo.selectedDate = simpleExtraction.selectedDate;
-    logger.debug("Date from regex", simpleExtraction.selectedDate);
-  }
-
-  // Handle plain number input when expecting pax
-  if (!extractedInfo.paxAdult && expectedInput === 'pax') {
-    const plainNumber = parseInt(message.trim());
-    if (!isNaN(plainNumber) && plainNumber >= CONFIG.MIN_PAX_COUNT && plainNumber <= CONFIG.MAX_PAX_COUNT) {
-      extractedInfo.paxAdult = plainNumber;
-      logger.debug("Pax from plain number", plainNumber);
+  // 1. Try to match by tour number (only if not expecting pax/name/phone)
+  if (!["pax_count", "pax", "phone_number", "phone", "full_name", "name"].includes(expectedInput)) {
+    const tourNumber = parseInt(lowerMessage);
+    if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= availableTours.length) {
+      logger.debug(`Tour matched by number: ${tourNumber}`);
+      return availableTours[tourNumber - 1];
     }
   }
 
-  // Resolve date_X format
-  if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
-    const tour = findTourById(context.currentTour.id, availableTours);
-    if (tour?.dates) {
-      const dateIndex = parseInt(extractedInfo.selectedDate.split("_")[1]);
-      if (dateIndex >= 0 && dateIndex < tour.dates.length) {
-        const selectedDate = tour.dates[dateIndex];
-        extractedInfo.selectedDate = selectedDate.departure_date;
-        extractedInfo.dateId = selectedDate.id;
-        logger.debug("Resolved date from index", selectedDate.departure_date);
-      }
+  // 2. Try exact title match
+  let matchedTour = availableTours.find((tour) => tour.title.toLowerCase() === lowerMessage);
+
+  if (matchedTour) {
+    logger.debug(`Tour matched by exact title: ${matchedTour.title}`);
+    return matchedTour;
+  }
+
+  // 3. Try destination match
+  matchedTour = availableTours.find((tour) => tour.destination.toLowerCase() === lowerMessage);
+
+  if (matchedTour) {
+    logger.debug(`Tour matched by destination: ${matchedTour.title}`);
+    return matchedTour;
+  }
+
+  // 4. Try keyword matching (partial match)
+  matchedTour = availableTours.find((tour) => {
+    const tourWords = [...tour.title.toLowerCase().split(/\s+/), ...tour.destination.toLowerCase().split(/\s+/)];
+
+    // Check if any significant word (>3 chars) from tour matches message
+    return tourWords.some((word) => word.length > 3 && lowerMessage.includes(word));
+  });
+
+  if (matchedTour) {
+    logger.debug(`Tour matched by keyword: ${matchedTour.title}`);
+    return matchedTour;
+  }
+
+  return null;
+}
+
+/**
+ * Create a tour reference with essential data
+ */
+function createTourReference(tour: Tour): Tour {
+  return {
+    id: tour.id,
+    title: tour.title,
+    destination: tour.destination,
+    type: tour.type,
+    currency: tour.currency,
+    dates: tour.dates,
+    program_kisa: tour.program_kisa,
+    gezilecek_yerler: tour.gezilecek_yerler,
+  };
+}
+
+/**
+ * Find matching tours using multiple strategies:
+ * 1. NLU tour_name matching
+ * 2. NLU destination matching
+ * 3. Direct keyword/number matching (fallback)
+ *
+ * Returns either a single tour OR multiple matches (user needs to choose)
+ */
+export function findMatchingTours(
+  message: string,
+  nluEntities: NLUEntities,
+  availableTours: Tour[],
+  expectedInput: string,
+  intent: string,
+): TourMatchResult {
+  const tourRelatedIntents = [
+    "browse_tours",
+    "tour_search",
+    "select_tour",
+    "hotel_details",
+    "transport_details",
+    "reservation_intent",
+  ];
+
+  // Check if we should try tour matching
+  const shouldMatchTour = tourRelatedIntents.includes(intent) || nluEntities.tour_name || nluEntities.destination;
+
+  if (!shouldMatchTour) {
+    logger.debug("No need to match tours for this intent");
+    return { selectedTour: null, multipleMatches: [] };
+  }
+
+  let selectedTour: Tour | null = null;
+  let multipleMatches: Tour[] = [];
+
+  // ========================================
+  // STRATEGY 1: Match by NLU tour_name
+  // ========================================
+  if (nluEntities.tour_name) {
+    const matchingTours = availableTours.filter((t) =>
+      t.title.toLowerCase().includes(nluEntities.tour_name!.toLowerCase()),
+    );
+
+    if (matchingTours.length === 1) {
+      selectedTour = createTourReference(matchingTours[0]);
+      logger.info(`Tour matched by NLU name (single): ${selectedTour.title}`);
+    } else if (matchingTours.length > 1) {
+      multipleMatches = matchingTours;
+      logger.info(`Multiple tours matched by NLU name: ${matchingTours.map((t) => t.title).join(", ")}`);
+    } else {
+      logger.debug(`No tours matched NLU name: ${nluEntities.tour_name}`);
     }
   }
 
-  // Handle numeric date selection (1, 2, 3)
-  if (!extractedInfo.dateId && context.currentTour && 
-      (expectedInput === 'date' || expectedInput === 'date_selection')) {
-    const dateNumber = parseInt(message.trim());
-    if (!isNaN(dateNumber) && dateNumber >= 1) {
-      const tour = findTourById(context.currentTour.id, availableTours);
-      if (tour?.dates && dateNumber <= tour.dates.length) {
-        const selectedDate = tour.dates[dateNumber - 1];
-        extractedInfo.selectedDate = selectedDate.departure_date;
-        extractedInfo.dateId = selectedDate.id;
-        logger.debug("Date selected by number", selectedDate.departure_date);
-      }
+  // ========================================
+  // STRATEGY 2: Match by NLU destination
+  // ========================================
+  if (!selectedTour && multipleMatches.length === 0 && nluEntities.destination) {
+    const matchingTours = availableTours.filter(
+      (t) =>
+        t.destination.toLowerCase().includes(nluEntities.destination!.toLowerCase()) ||
+        t.title.toLowerCase().includes(nluEntities.destination!.toLowerCase()),
+    );
+
+    if (matchingTours.length === 1) {
+      selectedTour = createTourReference(matchingTours[0]);
+      logger.info(`Tour matched by NLU destination (single): ${selectedTour.title}`);
+    } else if (matchingTours.length > 1) {
+      multipleMatches = matchingTours;
+      logger.info(`Multiple tours matched by destination: ${matchingTours.map((t) => t.title).join(", ")}`);
+    } else {
+      logger.debug(`No tours matched NLU destination: ${nluEntities.destination}`);
     }
   }
 
-  // Match ISO date with available tour dates
-  if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
-    const tour = findTourById(context.currentTour.id, availableTours);
-    if (tour?.dates && tour.dates.length > 0) {
-      const matchedDate = tour.dates.find((d: any) => {
-        if (d.departure_date === extractedInfo.selectedDate) return true;
-        const targetDate = new Date(extractedInfo.selectedDate!);
-        const tourDate = new Date(d.departure_date);
-        return targetDate.getDate() === tourDate.getDate() && 
-               targetDate.getMonth() === tourDate.getMonth();
-      });
-      
-      if (matchedDate) {
-        extractedInfo.selectedDate = matchedDate.departure_date;
-        extractedInfo.dateId = matchedDate.id;
-        logger.debug("Matched date with tour date", matchedDate.departure_date);
+  // ========================================
+  // STRATEGY 3: Fallback - Direct matching
+  // ========================================
+  // CRITICAL: Only try fallback if no matches yet
+  if (!selectedTour && multipleMatches.length === 0) {
+    const matchedTour = directMatchTour(message, availableTours, expectedInput);
+
+    if (matchedTour) {
+      // Check if this keyword matches multiple tours
+      const lowerMessage = message.toLowerCase().trim();
+      const allMatches = availableTours.filter(
+        (tour) =>
+          tour.title.toLowerCase().includes(lowerMessage) || tour.destination.toLowerCase().includes(lowerMessage),
+      );
+
+      if (allMatches.length > 1) {
+        multipleMatches = allMatches;
+        logger.info(`Fallback found multiple matches: ${allMatches.map((t) => t.title).join(", ")}`);
       } else {
-        logger.debug("Date not found in tour dates, will prompt user to select");
+        selectedTour = createTourReference(matchedTour);
+        logger.info(`Tour matched by direct matching: ${selectedTour.title}`);
       }
+    } else {
+      logger.debug("No tour match found via NLU or direct matching");
     }
+  } else if (multipleMatches.length > 0) {
+    logger.info("Skipping fallback - multiple matches found, user needs to choose");
   }
 
-  // Auto-select date if there's only one
-  if (
-    !extractedInfo.dateId &&
-    !extractedInfo.selectedDate &&
-    context.currentTour?.dates?.length === 1 &&
-    (detectedIntent === "provide_info" || detectedIntent === "confirm" || detectedIntent === "reservation_intent")
-  ) {
-    const singleDate = context.currentTour.dates[0];
-    extractedInfo.selectedDate = singleDate.departure_date;
-    extractedInfo.dateId = singleDate.id;
-    logger.debug("Auto-selected single available date", singleDate.departure_date);
-  }
-
-  return extractedInfo;
+  return { selectedTour, multipleMatches };
 }
