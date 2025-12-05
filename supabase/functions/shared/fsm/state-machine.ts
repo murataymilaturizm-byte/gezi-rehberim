@@ -258,7 +258,8 @@ const transitions: StateTransition[] = [
       /^(evet|yes|da|oui|si|sim|はい)/i.test(input.userMessage.toLowerCase().trim()),
     action: (ctx) => ({
       ...ctx,
-      reservationConfirmed: true
+      reservationConfirmed: true,
+      collectionStep: undefined // Clear collection step - reservation is complete
     })
   },
   
