@@ -214,7 +214,10 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     }
 
     // 15. Save reservation ONLY when transitioning TO COMPLETED (not when already completed)
-    const isNewlyCompleted = context.stage !== "COMPLETED" && newContext.stage === "COMPLETED";
+    // This prevents duplicate reservations when user sends more messages after completion
+    const isNewlyCompleted = context.stage !== "COMPLETED" && 
+                              newContext.stage === "COMPLETED" && 
+                              newContext.reservationConfirmed;
     if (isNewlyCompleted && newContext.reservationInfo) {
       await saveReservation(supabase, newContext);
     }
