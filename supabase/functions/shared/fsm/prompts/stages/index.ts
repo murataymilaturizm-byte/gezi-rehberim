@@ -184,15 +184,13 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?`;
 🎯 YAPILACAK:
 - Kayıt tamamlandı mesajı ver
 - "Acentemiz en kısa sürede iletişime geçecek" de
-- Başka sorusu var mı diye sor
+- Başka sorusu veya başka tur isteği var mı diye sor
 
-🚫 KESİNLİKLE YAPMA:
-- Tekrar isim, telefon, kişi sayısı, tarih SORMA
+🚫 BU REZERVASYON İÇİN:
+- Tekrar bilgi toplama (zaten tüm bilgiler alındı)
 - IBAN, kapora, tutar yazma
-- Rezervasyon bilgisi toplama
-- Kayıt süreci devam ediyormuş gibi davranma
 
-Kayıt TAMAMLANDI, tüm bilgiler ALINDI.`;
+NOT: Kullanıcı başka tur isterse sistem otomatik olarak yeni akışa geçecek.`;
 
       case "ASKING_NEW_RESERVATION":
         return `📍 DURUM: Yeni rezervasyon sorgusu
@@ -260,15 +258,13 @@ Are these details correct, do you confirm?`;
 🎯 DO:
 - Confirm registration is complete
 - Say "Our team will contact you shortly"
-- Ask if they have other questions
+- Ask if they have other questions or want another tour
 
-🚫 NEVER DO:
-- Ask for name, phone, pax, date again
-- Write IBAN, deposit, amount
-- Continue collecting reservation info
-- Act like registration is still in progress
+🚫 FOR THIS RESERVATION:
+- Don't collect more info (all info already collected)
+- Don't write IBAN, deposit, amount
 
-Registration is COMPLETE, all info has been COLLECTED.`;
+NOTE: If user wants another tour, system will automatically start new flow.`;
 
     case "ASKING_NEW_RESERVATION":
       return `📍 STATUS: New reservation inquiry
