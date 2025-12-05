@@ -179,12 +179,20 @@ ${summary}
 Bu bilgiler doğru mudur, onaylıyor musunuz?`;
 
       case "COMPLETED":
-        return `📍 DURUM: Kayıt tamamlandı
-"Teşekkür ederiz, kayıt bilgilerinizi aldık."
-"Acentemiz en kısa sürede iletişime geçecek."
-"Ödeme bilgileri otomatik olarak paylaşılacak."
+        return `📍 DURUM: Kayıt tamamlandı ✅
 
-YASAK: IBAN, kapora, tutar yazma.`;
+🎯 YAPILACAK:
+- Kayıt tamamlandı mesajı ver
+- "Acentemiz en kısa sürede iletişime geçecek" de
+- Başka sorusu var mı diye sor
+
+🚫 KESİNLİKLE YAPMA:
+- Tekrar isim, telefon, kişi sayısı, tarih SORMA
+- IBAN, kapora, tutar yazma
+- Rezervasyon bilgisi toplama
+- Kayıt süreci devam ediyormuş gibi davranma
+
+Kayıt TAMAMLANDI, tüm bilgiler ALINDI.`;
 
       case "ASKING_NEW_RESERVATION":
         return `📍 DURUM: Yeni rezervasyon sorgusu
@@ -247,12 +255,20 @@ ${summary}
 Are these details correct, do you confirm?`;
 
     case "COMPLETED":
-      return `📍 STATUS: Registration completed
-"Thank you, we received your registration."
-"Our team will contact you shortly."
-"Payment details will be shared automatically."
+      return `📍 STATUS: Registration completed ✅
 
-BANNED: IBAN, deposit, amount.`;
+🎯 DO:
+- Confirm registration is complete
+- Say "Our team will contact you shortly"
+- Ask if they have other questions
+
+🚫 NEVER DO:
+- Ask for name, phone, pax, date again
+- Write IBAN, deposit, amount
+- Continue collecting reservation info
+- Act like registration is still in progress
+
+Registration is COMPLETE, all info has been COLLECTED.`;
 
     case "ASKING_NEW_RESERVATION":
       return `📍 STATUS: New reservation inquiry
