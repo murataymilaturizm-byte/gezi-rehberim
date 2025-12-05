@@ -705,8 +705,13 @@ NEVER switch tours automatically, only ask for confirmation!`;
       }
     }
 
-    // Save reservation if completed and get template BEFORE saving response
-    if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed) {
+    // Save reservation if JUST transitioned to COMPLETED (not if already in COMPLETED)
+    // This prevents duplicate reservations when user sends more messages after completion
+    const justCompletedReservation = newContext.stage === "COMPLETED" && 
+                                      newContext.reservationConfirmed && 
+                                      context.stage !== "COMPLETED";
+    
+    if (justCompletedReservation) {
       const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
       const reservationPhone = regPhone || userPhone;
       
