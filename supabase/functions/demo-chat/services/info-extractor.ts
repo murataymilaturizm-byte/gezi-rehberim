@@ -13,13 +13,28 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
   const result: ExtractedInfo = {};
   const lower = message.toLowerCase().trim();
 
+  // Get current tour dates for date matching
+  let tourDates: any[] = [];
+  if (context.currentTour?.id) {
+    const tour = availableTours.find((t) => t.id === context.currentTour?.id);
+    tourDates = tour?.dates || context.currentTour?.dates || [];
+  }
+
   // 1. Extract from NLU updates first (highest priority)
   if (nluUpdates) {
     if (typeof nluUpdates.paxAdult === "number") result.paxAdult = nluUpdates.paxAdult;
     if (typeof nluUpdates.paxChild === "number") result.paxChild = nluUpdates.paxChild;
     if (typeof nluUpdates.fullName === "string") result.fullName = nluUpdates.fullName;
     if (typeof nluUpdates.phone === "string") result.phone = nluUpdates.phone;
-    if (typeof nluUpdates.selectedDate === "string") result.selectedDate = nluUpdates.selectedDate;
+    if (typeof nluUpdates.selectedDate === "string") {
+      result.selectedDate = nluUpdates.selectedDate;
+      // Try to match dateId from selectedDate
+      const matchedDate = matchDateWithTourDates(nluUpdates.selectedDate, tourDates);
+      if (matchedDate) {
+        result.dateId = matchedDate.id;
+        result.selectedDate = matchedDate.departure_date;
+      }
+    }
   }
 
   // 2. Extract from NLU entities
@@ -35,6 +50,12 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
     }
     if (typeof nluEntities.date === "string" && !result.selectedDate) {
       result.selectedDate = nluEntities.date;
+      // Try to match dateId from selectedDate
+      const matchedDate = matchDateWithTourDates(nluEntities.date, tourDates);
+      if (matchedDate) {
+        result.dateId = matchedDate.id;
+        result.selectedDate = matchedDate.departure_date;
+      }
     }
   }
 
@@ -89,8 +110,88 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
     });
   }
 
+  // 5. Final check: If we have selectedDate but no dateId, try to match again
+  if (result.selectedDate && !result.dateId && tourDates.length > 0) {
+    const matchedDate = matchDateWithTourDates(result.selectedDate, tourDates);
+    if (matchedDate) {
+      result.dateId = matchedDate.id;
+      result.selectedDate = matchedDate.departure_date;
+      logger.debug("Matched dateId from selectedDate", { dateId: result.dateId });
+    }
+  }
+
+  // 6. Auto-select single date if available and no date selected
+  if (!result.dateId && !result.selectedDate && tourDates.length === 1) {
+    result.dateId = tourDates[0].id;
+    result.selectedDate = tourDates[0].departure_date;
+    logger.debug("Auto-selected single available date", { dateId: result.dateId });
+  }
+
   logger.debug("Extracted info", result);
   return result;
+}
+
+/**
+ * Match a date string with available tour dates
+ * Returns the matched tour date or null
+ */
+function matchDateWithTourDates(dateStr: string, tourDates: any[]): any | null {
+  if (!dateStr || tourDates.length === 0) return null;
+  
+  // Direct ISO match
+  const exactMatch = tourDates.find((d) => d.departure_date === dateStr);
+  if (exactMatch) return exactMatch;
+  
+  // Parse date and try to match
+  const parsedDate = parseFlexibleDate(dateStr);
+  if (parsedDate) {
+    const isoDate = parsedDate.toISOString().split('T')[0];
+    const match = tourDates.find((d) => d.departure_date === isoDate);
+    if (match) return match;
+  }
+  
+  // Try partial match (same day and month, ignore year)
+  const dateParts = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (dateParts) {
+    const month = dateParts[2];
+    const day = dateParts[3];
+    const partialMatch = tourDates.find((d) => {
+      const parts = d.departure_date?.match(/(\d{4})-(\d{2})-(\d{2})/);
+      return parts && parts[2] === month && parts[3] === day;
+    });
+    if (partialMatch) return partialMatch;
+  }
+  
+  return null;
+}
+
+/**
+ * Parse flexible date formats
+ */
+function parseFlexibleDate(dateStr: string): Date | null {
+  const monthNames: Record<string, number> = {
+    ocak: 0, şubat: 1, mart: 2, nisan: 3, mayıs: 4, haziran: 5,
+    temmuz: 6, ağustos: 7, eylül: 8, ekim: 9, kasım: 10, aralık: 11,
+    january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+    july: 6, august: 7, september: 8, october: 9, november: 10, december: 11
+  };
+  
+  // Try ISO format first
+  const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return new Date(parseInt(isoMatch[1]), parseInt(isoMatch[2]) - 1, parseInt(isoMatch[3]));
+  }
+  
+  // Try "18 aralık" format
+  const textMatch = dateStr.toLowerCase().match(/(\d{1,2})\s+(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)/i);
+  if (textMatch) {
+    const day = parseInt(textMatch[1]);
+    const month = monthNames[textMatch[2].toLowerCase()];
+    const year = new Date().getFullYear();
+    return new Date(year, month, day);
+  }
+  
+  return null;
 }
 
 /**
