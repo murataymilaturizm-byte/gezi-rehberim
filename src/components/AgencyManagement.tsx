@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Building2, Clock, MessageSquare, Settings } from "lucide-react";
+import { Plus, Pencil, Trash2, Building2, Clock, MessageSquare, Settings, Eye } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -65,9 +65,11 @@ export const AgencyManagement = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [styleDialogOpen, setStyleDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [editingPlanAgency, setEditingPlanAgency] = useState<Agency | null>(null);
   const [editingStyleAgency, setEditingStyleAgency] = useState<Agency | null>(null);
+  const [viewingAgency, setViewingAgency] = useState<Agency | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<'friendly' | 'professional' | 'energetic' | 'helpful'>('professional');
   
   const [formData, setFormData] = useState({
@@ -549,7 +551,7 @@ export const AgencyManagement = () => {
           </Dialog>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-4">
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
         ) : agencies.length === 0 ? (
@@ -557,196 +559,338 @@ export const AgencyManagement = () => {
             Henüz acente eklenmemiş
           </div>
         ) : (
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-[1200px] p-4">
-              <Table className="w-full">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[150px]">{t("admin.agency.tableHeaders.agencyName")}</TableHead>
-                    <TableHead className="min-w-[120px]">{t("admin.agency.tableHeaders.authorized")}</TableHead>
-                    <TableHead className="min-w-[180px]">{t("admin.agency.tableHeaders.whatsappNo")}</TableHead>
-                    <TableHead className="min-w-[100px]">{t("admin.agency.tableHeaders.plan")}</TableHead>
-                    <TableHead className="min-w-[130px]">{t("admin.agency.tableHeaders.messageQuota")}</TableHead>
-                    <TableHead className="min-w-[100px]">{t("admin.agency.tableHeaders.subscription")}</TableHead>
-                    <TableHead className="min-w-[100px]">{t("admin.agency.tableHeaders.remainingTime")}</TableHead>
-                    <TableHead className="min-w-[80px]">{t("admin.agency.tableHeaders.status")}</TableHead>
-                    <TableHead className="text-right min-w-[180px]">{t("admin.agency.tableHeaders.actions")}</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("admin.agency.tableHeaders.agencyName")}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t("admin.agency.tableHeaders.plan")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("admin.agency.tableHeaders.messageQuota")}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t("admin.agency.tableHeaders.subscription")}</TableHead>
+                <TableHead>{t("admin.agency.tableHeaders.status")}</TableHead>
+                <TableHead className="text-right">{t("admin.agency.tableHeaders.actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {agencies.map((agency) => {
+                const getRemainingDays = () => {
+                  const targetDate = agency.subscription_status === 'trial' 
+                    ? agency.trial_ends_at 
+                    : agency.subscription_ends_at;
+                  
+                  if (!targetDate) return null;
+                  return differenceInDays(new Date(targetDate), new Date());
+                };
+
+                const remainingDays = getRemainingDays();
+                const planLabels: Record<string, string> = {
+                  starter: t("admin.agency.plans.starter"),
+                  professional: t("admin.agency.plans.professional"),
+                  enterprise: t("admin.agency.plans.enterprise")
+                };
+
+                const getStatusVariant = (status: string) => {
+                  switch (status) {
+                    case 'trial': return 'secondary';
+                    case 'active': return 'default';
+                    case 'expired': return 'destructive';
+                    case 'cancelled': return 'destructive';
+                    default: return 'secondary';
+                  }
+                };
+
+                const statusLabels: Record<string, string> = {
+                  trial: t("admin.agency.subscriptionStatus.trial"),
+                  active: t("admin.agency.subscriptionStatus.active"),
+                  expired: t("admin.agency.subscriptionStatus.expired"),
+                  cancelled: t("admin.agency.subscriptionStatus.cancelled")
+                };
+
+                return (
+                  <TableRow key={agency.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{agency.name}</div>
+                        <div className="text-xs text-muted-foreground sm:hidden">
+                          {planLabels[agency.plan_type] || agency.plan_type}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge variant="outline" className="text-xs">
+                        {planLabels[agency.plan_type] || agency.plan_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex items-center gap-1 text-sm">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>
+                          {agency.monthly_message_count || 0} / {agency.message_limit === -1 ? "∞" : agency.message_limit}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getStatusVariant(agency.subscription_status)} className="text-xs">
+                          {statusLabels[agency.subscription_status] || agency.subscription_status}
+                        </Badge>
+                        {remainingDays !== null && remainingDays <= 7 && (
+                          <span className={`text-xs ${remainingDays <= 3 ? "text-destructive" : "text-muted-foreground"}`}>
+                            ({remainingDays > 0 ? `${remainingDays}g` : "Bitti"})
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={agency.active ? "default" : "secondary"} className="text-xs">
+                        {agency.active ? "Aktif" : "Pasif"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setViewingAgency(agency);
+                            setDetailDialogOpen(true);
+                          }}
+                          title="Detaylar"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePlanEdit(agency)}
+                          title="Plan Yönetimi"
+                          className="hidden sm:inline-flex"
+                        >
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(agency)}
+                          title="Düzenle"
+                          className="hidden sm:inline-flex"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(agency.id)}
+                          title="Sil"
+                          className="hidden sm:inline-flex"
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {agencies.map((agency) => {
-                    const getRemainingDays = () => {
-                      const targetDate = agency.subscription_status === 'trial' 
-                        ? agency.trial_ends_at 
-                        : agency.subscription_ends_at;
-                      
-                      if (!targetDate) return null;
-                      return differenceInDays(new Date(targetDate), new Date());
-                    };
-
-                    const remainingDays = getRemainingDays();
-                    const planLabels: Record<string, string> = {
-                      starter: t("admin.agency.plans.starter"),
-                      professional: t("admin.agency.plans.professional"),
-                      enterprise: t("admin.agency.plans.enterprise")
-                    };
-
-                    const statusLabels: Record<string, string> = {
-                      trial: t("admin.agency.subscriptionStatus.trial"),
-                      active: t("admin.agency.subscriptionStatus.active"),
-                      expired: t("admin.agency.subscriptionStatus.expired"),
-                      cancelled: t("admin.agency.subscriptionStatus.cancelled")
-                    };
-
-                    const getStatusVariant = (status: string) => {
-                      switch (status) {
-                        case 'trial': return 'secondary';
-                        case 'active': return 'default';
-                        case 'expired': return 'destructive';
-                        case 'cancelled': return 'destructive';
-                        default: return 'secondary';
-                      }
-                    };
-
-                    const messageUsagePercentage = agency.message_limit === -1 
-                      ? 0 
-                      : ((agency.monthly_message_count || 0) / (agency.message_limit || 1)) * 100;
-
-                    return (
-                      <TableRow key={agency.id}>
-                        <TableCell className="font-medium whitespace-nowrap">{agency.name}</TableCell>
-                        <TableCell className="whitespace-nowrap">{agency.profiles?.full_name || "-"}</TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          <div className="space-y-1">
-                            <span className="text-sm font-mono block">
-                              {agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" 
-                                ? agency.twilio_phone_number 
-                                : <span className="text-muted-foreground">{t("admin.agency.messages.notAdded")}</span>}
-                            </span>
-                            {agency.whatsapp_status && agency.twilio_phone_number && agency.twilio_phone_number !== "TEMP_PHONE" && (
-                              <div className="flex items-center gap-2">
-                                <Badge 
-                                  variant={
-                                    agency.whatsapp_status === 'active' ? 'default' : 
-                                    agency.whatsapp_status === 'pending' ? 'secondary' : 
-                                    'destructive'
-                                  }
-                                  className="text-xs"
-                                >
-                                  {agency.whatsapp_status === 'active' ? t("admin.whatsapp.status.active") : 
-                                   agency.whatsapp_status === 'pending' ? t("admin.whatsapp.status.pending") : 
-                                   t("admin.whatsapp.status.rejected")}
-                                </Badge>
-                                {agency.whatsapp_status === 'pending' && (
-                                  <div className="flex gap-1">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
-                                      onClick={() => handleWhatsAppStatusUpdate(agency.id, 'active')}
-                                    >
-                                      {t("admin.whatsapp.actions.approve")}
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      onClick={() => handleWhatsAppStatusUpdate(agency.id, 'rejected')}
-                                    >
-                                      {t("admin.whatsapp.actions.reject")}
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          <Badge variant="outline" className="text-xs">
-                            {planLabels[agency.plan_type] || agency.plan_type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-sm">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>
-                                {agency.monthly_message_count || 0} / {agency.message_limit === -1 ? "∞" : agency.message_limit}
-                              </span>
-                            </div>
-                            {agency.message_limit !== -1 && messageUsagePercentage >= 80 && (
-                              <Badge variant={messageUsagePercentage >= 100 ? "destructive" : "secondary"} className="text-xs">
-                                {messageUsagePercentage >= 100 ? t("admin.agency.messages.quotaFull") : `%${Math.round(messageUsagePercentage)} ${t("admin.agency.messages.percentUsed")}`}
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          <Badge variant={getStatusVariant(agency.subscription_status)} className="text-xs">
-                            {statusLabels[agency.subscription_status] || agency.subscription_status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          {remainingDays !== null && (
-                            <div className="flex items-center gap-1 text-sm">
-                              <Clock className="w-3 h-3" />
-                              <span className={remainingDays <= 3 ? "text-destructive font-medium" : ""}>
-                                {remainingDays > 0 ? `${remainingDays} ${t("admin.agency.messages.daysLeft")}` : t("admin.agency.messages.expired")}
-                              </span>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          <Badge variant={agency.active ? "default" : "secondary"} className="text-xs">
-                            {agency.active ? "Aktif" : "Pasif"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right whitespace-nowrap">
-                          <div className="flex gap-2 justify-end">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleStyleEdit(agency)}
-                              title="Konuşma Üslubu"
-                              className="flex items-center gap-1"
-                            >
-                              <MessageSquare className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePlanEdit(agency)}
-                              title="Plan ve Kota Yönetimi"
-                            >
-                              <Settings className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(agency)}
-                              title="Acente Bilgilerini Düzenle"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(agency.id)}
-                              title="Acenteyi Sil"
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+                );
+              })}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
+
+      {/* Agency Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              {viewingAgency?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Acente detayları ve yönetim seçenekleri
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingAgency && (
+            <div className="space-y-4">
+              {/* Basic Info */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Yetkili:</span>
+                  <p className="font-medium">{viewingAgency.profiles?.full_name || "-"}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Şehir:</span>
+                  <p className="font-medium">{viewingAgency.city || "-"}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Bölge:</span>
+                  <p className="font-medium">{viewingAgency.region || "-"}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Durum:</span>
+                  <p>
+                    <Badge variant={viewingAgency.active ? "default" : "secondary"}>
+                      {viewingAgency.active ? "Aktif" : "Pasif"}
+                    </Badge>
+                  </p>
+                </div>
+              </div>
+
+              {/* Plan & Subscription */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Plan Bilgileri</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Plan:</span>
+                    <p>
+                      <Badge variant="outline">
+                        {t(`admin.agency.plans.${viewingAgency.plan_type}`)}
+                      </Badge>
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Abonelik:</span>
+                    <p>
+                      <Badge variant={viewingAgency.subscription_status === 'active' ? 'default' : 'secondary'}>
+                        {t(`admin.agency.subscriptionStatus.${viewingAgency.subscription_status}`)}
+                      </Badge>
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Mesaj Kullanımı:</span>
+                    <p className="font-medium flex items-center gap-1">
+                      <MessageSquare className="w-3 h-3" />
+                      {viewingAgency.monthly_message_count || 0} / {viewingAgency.message_limit === -1 ? "∞" : viewingAgency.message_limit}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Kalan Süre:</span>
+                    <p className="font-medium flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {(() => {
+                        const targetDate = viewingAgency.subscription_status === 'trial' 
+                          ? viewingAgency.trial_ends_at 
+                          : viewingAgency.subscription_ends_at;
+                        if (!targetDate) return "-";
+                        const days = differenceInDays(new Date(targetDate), new Date());
+                        return days > 0 ? `${days} gün` : "Süresi doldu";
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* WhatsApp Info */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">WhatsApp Bilgileri</h4>
+                <div className="text-sm space-y-2">
+                  <div>
+                    <span className="text-muted-foreground">Telefon:</span>
+                    <p className="font-mono">
+                      {viewingAgency.twilio_phone_number && viewingAgency.twilio_phone_number !== "TEMP_PHONE" 
+                        ? viewingAgency.twilio_phone_number 
+                        : <span className="text-muted-foreground">Eklenmedi</span>}
+                    </p>
+                  </div>
+                  {viewingAgency.whatsapp_status && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">WhatsApp Durumu:</span>
+                      <Badge 
+                        variant={
+                          viewingAgency.whatsapp_status === 'active' ? 'default' : 
+                          viewingAgency.whatsapp_status === 'pending' ? 'secondary' : 
+                          'destructive'
+                        }
+                      >
+                        {viewingAgency.whatsapp_status === 'active' ? 'Aktif' : 
+                         viewingAgency.whatsapp_status === 'pending' ? 'Bekliyor' : 
+                         'Reddedildi'}
+                      </Badge>
+                      {viewingAgency.whatsapp_status === 'pending' && (
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs text-green-600"
+                            onClick={() => {
+                              handleWhatsAppStatusUpdate(viewingAgency.id, 'active');
+                              setDetailDialogOpen(false);
+                            }}
+                          >
+                            Onayla
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs text-destructive"
+                            onClick={() => {
+                              handleWhatsAppStatusUpdate(viewingAgency.id, 'rejected');
+                              setDetailDialogOpen(false);
+                            }}
+                          >
+                            Reddet
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-muted-foreground">Konuşma Üslubu:</span>
+                    <p className="font-medium capitalize">{viewingAgency.conversation_style || "professional"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="border-t pt-4 flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDetailDialogOpen(false);
+                    handleStyleEdit(viewingAgency);
+                  }}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Üslup Değiştir
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDetailDialogOpen(false);
+                    handlePlanEdit(viewingAgency);
+                  }}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Plan Yönetimi
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDetailDialogOpen(false);
+                    handleEdit(viewingAgency);
+                  }}
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Düzenle
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDetailDialogOpen(false);
+                    handleDelete(viewingAgency.id);
+                  }}
+                  className="text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Sil
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Plan & Quota Management Dialog */}
       <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
