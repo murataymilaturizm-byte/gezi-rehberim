@@ -31,6 +31,7 @@ export function LanguageCurrencySettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
+  const [noAgency, setNoAgency] = useState(false);
   const [primaryCurrency, setPrimaryCurrency] = useState<string>('TRY');
   const [languageCurrencies, setLanguageCurrencies] = useState<LanguageCurrencyMapping>({});
   const [languageOverrides, setLanguageOverrides] = useState<Record<string, boolean>>({});
@@ -51,23 +52,28 @@ export function LanguageCurrencySettings() {
         .from('agencies')
         .select('id, primary_currency, language_currencies, enabled_languages')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      if (agency) {
-        setAgencyId(agency.id);
-        setPrimaryCurrency(agency.primary_currency || 'TRY');
-        const currencies = (agency.language_currencies as LanguageCurrencyMapping) || {};
-        setLanguageCurrencies(currencies);
-        
-        // Hangi dillerin override'ı var, işaretle
-        const overrides: Record<string, boolean> = {};
-        Object.keys(LANGUAGE_LABELS).forEach(lang => {
-          overrides[lang] = !!currencies[lang];
-        });
-        setLanguageOverrides(overrides);
+      if (!agency) {
+        // Super admin veya acentesi olmayan kullanıcı
+        setNoAgency(true);
+        setLoading(false);
+        return;
       }
+
+      setAgencyId(agency.id);
+      setPrimaryCurrency(agency.primary_currency || 'TRY');
+      const currenciesData = (agency.language_currencies as LanguageCurrencyMapping) || {};
+      setLanguageCurrencies(currenciesData);
+      
+      // Hangi dillerin override'ı var, işaretle
+      const overrides: Record<string, boolean> = {};
+      Object.keys(LANGUAGE_LABELS).forEach(lang => {
+        overrides[lang] = !!currenciesData[lang];
+      });
+      setLanguageOverrides(overrides);
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast({
@@ -125,6 +131,24 @@ export function LanguageCurrencySettings() {
       <Card>
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (noAgency) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('currency.management')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              {t('currency.noAgencyError', { defaultValue: 'Bu ayarlar sadece acente hesapları için kullanılabilir. Super admin olarak giriş yaptığınız için bu bölümü görüntüleyemezsiniz.' })}
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
