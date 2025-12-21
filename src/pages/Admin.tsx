@@ -667,7 +667,9 @@ const Admin = () => {
               <SuperAdminTwilioSettings />
             ) : activeTab === "agencies" && isSuperAdmin ? (
               <AgencyManagement />
-             ) : activeTab === "tours" || activeTab === "registrations" ? (
+            ) : activeTab === "contact_forms" && isSuperAdmin ? (
+              <ContactFormsManagement />
+            ) : activeTab === "tours" || activeTab === "registrations" ? (
               <Card className="shadow-card">
                 <CardHeader>
                   <div className="flex items-center justify-between">
