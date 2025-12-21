@@ -1014,12 +1014,18 @@
         "saving": "Saving..."
       },
       "tableHeaders": {
+        "agencyName": "Agency Name",
         "name": "Agency Name",
+        "authorized": "Authorized",
         "owner": "Owner",
+        "whatsappNo": "WhatsApp No",
         "plan": "Plan",
         "subscription": "Subscription",
+        "messageQuota": "Message Quota",
         "messages": "Messages",
+        "remainingTime": "Remaining Time",
         "remaining": "Remaining",
+        "status": "Status",
         "actions": "Actions"
       },
       "plans": {
