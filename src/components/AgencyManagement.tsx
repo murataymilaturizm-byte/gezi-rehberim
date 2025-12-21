@@ -550,7 +550,7 @@ export const AgencyManagement = () => {
           </Dialog>
         </div>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
+      <CardContent className="p-0">
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
         ) : agencies.length === 0 ? (
@@ -558,8 +558,9 @@ export const AgencyManagement = () => {
             Henüz acente eklenmemiş
           </div>
         ) : (
-          <div className="w-full overflow-auto">
-            <Table className="w-full">
+          <ScrollArea className="w-full">
+            <div className="min-w-[1200px] p-4">
+              <Table className="w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="min-w-[150px]">{t("admin.agency.tableHeaders.agencyName")}</TableHead>
@@ -743,7 +744,8 @@ export const AgencyManagement = () => {
               })}
             </TableBody>
             </Table>
-          </div>
+            </div>
+          </ScrollArea>
         )}
       </CardContent>
 

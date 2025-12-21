@@ -830,8 +830,10 @@
       },
       "tableHeaders": {
         "agencyName": "Acente Adı",
+        "authorized": "Yetkili",
         "owner": "Sahibi",
         "phone": "Telefon",
+        "whatsappNo": "WhatsApp No",
         "plan": "Plan",
         "messageQuota": "Mesaj Kotası",
         "subscription": "Abonelik",
