@@ -38,9 +38,8 @@ interface Agency {
   name: string;
   city?: string;
   region?: string;
-  twilio_account_sid: string;
-  twilio_auth_token: string;
-  twilio_phone_number: string;
+  whatsapp_api_key?: string;
+  threesixty_client_id?: string;
   whatsapp_phone_number?: string;
   whatsapp_status?: 'pending' | 'active' | 'rejected';
   conversation_style?: 'friendly' | 'professional' | 'energetic' | 'helpful';
@@ -79,9 +78,7 @@ export const AgencyManagement = () => {
     name: "",
     city: "",
     region: "",
-    twilio_account_sid: "",
-    twilio_auth_token: "",
-    twilio_phone_number: "",
+    whatsapp_api_key: "",
   });
 
   const [planFormData, setPlanFormData] = useState({
@@ -109,7 +106,7 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("id, name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, whatsapp_phone_number, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .select("id, name, city, region, whatsapp_phone_number, whatsapp_api_key, threesixty_client_id, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -157,9 +154,7 @@ export const AgencyManagement = () => {
             name: formData.name,
             city: formData.city,
             region: formData.region || null,
-            twilio_account_sid: formData.twilio_account_sid,
-            twilio_auth_token: formData.twilio_auth_token,
-            twilio_phone_number: formData.twilio_phone_number,
+            whatsapp_api_key: formData.whatsapp_api_key || null,
           })
           .eq("id", editingAgency.id);
 
@@ -192,9 +187,7 @@ export const AgencyManagement = () => {
             name: formData.name,
             city: formData.city,
             region: formData.region || null,
-            twilio_account_sid: formData.twilio_account_sid,
-            twilio_auth_token: formData.twilio_auth_token,
-            twilio_phone_number: formData.twilio_phone_number,
+            whatsapp_api_key: formData.whatsapp_api_key || null,
           });
 
         if (agencyError) throw agencyError;
@@ -263,9 +256,7 @@ export const AgencyManagement = () => {
       name: agency.name,
       city: agency.city || "",
       region: agency.region || "",
-      twilio_account_sid: agency.twilio_account_sid,
-      twilio_auth_token: agency.twilio_auth_token,
-      twilio_phone_number: agency.twilio_phone_number,
+      whatsapp_api_key: (agency as any).whatsapp_api_key || "",
     });
     setDialogOpen(true);
   };
@@ -279,9 +270,7 @@ export const AgencyManagement = () => {
       name: "",
       city: "",
       region: "",
-      twilio_account_sid: "",
-      twilio_auth_token: "",
-      twilio_phone_number: "",
+      whatsapp_api_key: "",
     });
   };
 
@@ -501,37 +490,18 @@ export const AgencyManagement = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="twilio_account_sid">Twilio Account SID</Label>
-                    <Input
-                      id="twilio_account_sid"
-                      value={formData.twilio_account_sid}
-                      onChange={(e) => setFormData({ ...formData, twilio_account_sid: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="twilio_auth_token">Twilio Auth Token</Label>
-                    <Input
-                      id="twilio_auth_token"
-                      type="password"
-                      value={formData.twilio_auth_token}
-                      onChange={(e) => setFormData({ ...formData, twilio_auth_token: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="twilio_phone_number">Twilio Telefon Numarası</Label>
+                  <Label htmlFor="whatsapp_api_key">360Dialog API Anahtarı (opsiyonel)</Label>
                   <Input
-                    id="twilio_phone_number"
-                    value={formData.twilio_phone_number}
-                    onChange={(e) => setFormData({ ...formData, twilio_phone_number: e.target.value })}
-                    placeholder="+14155238886"
-                    required
+                    id="whatsapp_api_key"
+                    type="password"
+                    value={formData.whatsapp_api_key}
+                    onChange={(e) => setFormData({ ...formData, whatsapp_api_key: e.target.value })}
+                    placeholder="Acente kendi bağlantısını yapabilir"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Acente kendi dashboard'undan da bağlayabilir
+                  </p>
                 </div>
 
                 <div className="flex gap-2 justify-end">
@@ -783,11 +753,19 @@ export const AgencyManagement = () => {
                 <h4 className="font-medium mb-3">WhatsApp Bilgileri</h4>
                 <div className="text-sm space-y-2">
                   <div>
-                    <span className="text-muted-foreground">Telefon:</span>
+                    <span className="text-muted-foreground">WhatsApp Numarası:</span>
                     <p className="font-mono">
-                      {viewingAgency.twilio_phone_number && viewingAgency.twilio_phone_number !== "TEMP_PHONE" 
-                        ? viewingAgency.twilio_phone_number 
+                      {viewingAgency.whatsapp_phone_number 
+                        ? viewingAgency.whatsapp_phone_number 
                         : <span className="text-muted-foreground">Eklenmedi</span>}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">API Anahtarı:</span>
+                    <p className="font-mono">
+                      {viewingAgency.whatsapp_api_key 
+                        ? "••••" + (viewingAgency.whatsapp_api_key as string).slice(-8) 
+                        : <span className="text-muted-foreground">Yapılandırılmamış</span>}
                     </p>
                   </div>
                   {viewingAgency.whatsapp_status && (

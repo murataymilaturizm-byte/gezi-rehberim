@@ -33,8 +33,8 @@ import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
 import { AgencyManagement } from "@/components/AgencyManagement";
 import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
-import { TwilioSettings } from "@/components/TwilioSettings";
-import { SuperAdminTwilioSettings } from "@/components/SuperAdminTwilioSettings";
+import { WhatsAppSettings } from "@/components/WhatsAppSettings";
+import { SuperAdminWhatsAppSettings } from "@/components/SuperAdminWhatsAppSettings";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
 import FAQManagement from "@/components/FAQManagement";
@@ -103,7 +103,7 @@ const Admin = () => {
   const { toast } = useToast();
   
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "twilio_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "whatsapp_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   
   // Auth & User state
   const [session, setSession] = useState<Session | null>(null);
@@ -644,7 +644,7 @@ const Admin = () => {
             ) : activeTab === "complaints" ? (
               <ComplaintsManagement />
             ) : activeTab === "settings" ? (
-              <TwilioSettings />
+              <WhatsAppSettings />
             ) : activeTab === "payment_settings" ? (
               <PaymentSettings />
             ) : activeTab === "languages" ? (
@@ -663,8 +663,8 @@ const Admin = () => {
               <TicketManagement />
             ) : activeTab === "super_tickets" && isSuperAdmin ? (
               <SuperAdminTickets />
-            ) : activeTab === "twilio_settings" && isSuperAdmin ? (
-              <SuperAdminTwilioSettings />
+            ) : activeTab === "whatsapp_settings" && isSuperAdmin ? (
+              <SuperAdminWhatsAppSettings />
             ) : activeTab === "agencies" && isSuperAdmin ? (
               <AgencyManagement />
             ) : activeTab === "contact_forms" && isSuperAdmin ? (

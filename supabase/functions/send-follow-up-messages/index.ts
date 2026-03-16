@@ -19,7 +19,6 @@ serve(async (req) => {
 
     console.log('Starting follow-up messages task...');
 
-    // 3-7 gün önce mesajlaşan ama rezervasyon yapmayan müşterileri bul
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     
@@ -45,7 +44,6 @@ serve(async (req) => {
     let sentCount = 0;
 
     for (const customer of potentialCustomers || []) {
-      // Son 7 gün içinde takip mesajı gönderdiyse atla
       if (customer.last_follow_up_sent_at) {
         const lastSent = new Date(customer.last_follow_up_sent_at);
         const daysSince = (Date.now() - lastSent.getTime()) / (1000 * 60 * 60 * 24);
@@ -55,16 +53,14 @@ serve(async (req) => {
         }
       }
 
-      // Get agency info and plan features for this customer
       const { data: agency } = await supabase
         .from('agencies')
-        .select('id, name, plan_type')
+        .select('id, name, plan_type, whatsapp_api_key')
         .eq('id', customer.agency_id)
         .single();
 
       if (!agency) continue;
 
-      // Check if follow-ups are enabled for this agency's plan
       const { data: planFeatures } = await supabase
         .from('plan_features')
         .select('has_follow_ups')
@@ -76,7 +72,6 @@ serve(async (req) => {
         continue;
       }
 
-      // Takip mesajını hazırla
       const followUpMessage = await formatFollowUpMessage(
         customer.full_name,
         customer.preferred_destinations,
@@ -85,15 +80,13 @@ serve(async (req) => {
         agency.name
       );
 
-      // WhatsApp mesajı gönder
       const sent = await sendWhatsAppMessage(
-        customer.agency_id,
-        `+${customer.phone}`,
-        followUpMessage
+        customer.phone,
+        followUpMessage,
+        agency.whatsapp_api_key
       );
 
       if (sent) {
-        // Gönderim kaydını güncelle
         await supabase
           .from('whatsapp_user_profiles')
           .update({ last_follow_up_sent_at: new Date().toISOString() })
@@ -103,32 +96,21 @@ serve(async (req) => {
         console.log(`✓ Follow-up sent to ${customer.phone}`);
       }
 
-      // Rate limiting - 2 saniye bekle
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     console.log(`✓ Follow-up messages task completed. Sent ${sentCount} messages.`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        customersProcessed: potentialCustomers?.length || 0,
-        messagesSent: sentCount 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({ success: true, customersProcessed: potentialCustomers?.length || 0, messagesSent: sentCount }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
     console.error('Error in send-follow-up-messages function:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
@@ -148,112 +130,67 @@ async function formatFollowUpMessage(
     tr: () => {
       let message = `Merhaba${name ? ' ' + name : ''}! 👋\n\n`;
       message += `${agencyName} olarak size yardımcı olmak için buradayız! `;
-      
       if (destinations) {
         message += `${destinations} bölgesi için harika turlarımız var. `;
       } else if (lastSearch) {
         message += `Daha önce "${lastSearch}" konusunda bilgi almıştınız. `;
       }
-      
       message += `\n\n✨ Size özel fırsatlarımız hakkında konuşmak ister misiniz?\n\n`;
       message += `📱 Herhangi bir sorunuz varsa çekinmeden yazabilirsiniz. Size yardımcı olmaktan mutluluk duyarız! 😊`;
-      
       return message;
     },
-
     en: () => {
       let message = `Hello${name ? ' ' + name : ''}! 👋\n\n`;
       message += `We're here to help you at ${agencyName}! `;
-      
-      if (destinations) {
-        message += `We have great tours to ${destinations}. `;
-      } else if (lastSearch) {
-        message += `You previously inquired about "${lastSearch}". `;
-      }
-      
+      if (destinations) { message += `We have great tours to ${destinations}. `; }
+      else if (lastSearch) { message += `You previously inquired about "${lastSearch}". `; }
       message += `\n\n✨ Would you like to discuss our special offers for you?\n\n`;
       message += `📱 Feel free to reach out if you have any questions. We'd be happy to help! 😊`;
-      
       return message;
     },
-
     de: () => {
       let message = `Hallo${name ? ' ' + name : ''}! 👋\n\n`;
       message += `Wir sind bei ${agencyName} für Sie da! `;
-      
-      if (destinations) {
-        message += `Wir haben tolle Touren nach ${destinations}. `;
-      } else if (lastSearch) {
-        message += `Sie haben sich zuvor nach "${lastSearch}" erkundigt. `;
-      }
-      
+      if (destinations) { message += `Wir haben tolle Touren nach ${destinations}. `; }
+      else if (lastSearch) { message += `Sie haben sich zuvor nach "${lastSearch}" erkundigt. `; }
       message += `\n\n✨ Möchten Sie über unsere speziellen Angebote für Sie sprechen?\n\n`;
       message += `📱 Zögern Sie nicht, uns bei Fragen zu kontaktieren. Wir helfen Ihnen gerne! 😊`;
-      
       return message;
     },
-
     ru: () => {
       let message = `Здравствуйте${name ? ', ' + name : ''}! 👋\n\n`;
       message += `Мы в ${agencyName} здесь, чтобы помочь вам! `;
-      
-      if (destinations) {
-        message += `У нас есть отличные туры в ${destinations}. `;
-      } else if (lastSearch) {
-        message += `Вы ранее интересовались "${lastSearch}". `;
-      }
-      
+      if (destinations) { message += `У нас есть отличные туры в ${destinations}. `; }
+      else if (lastSearch) { message += `Вы ранее интересовались "${lastSearch}". `; }
       message += `\n\n✨ Хотите обсудить наши специальные предложения для вас?\n\n`;
       message += `📱 Не стесняйтесь обращаться, если у вас есть вопросы. Мы будем рады помочь! 😊`;
-      
       return message;
     },
-
     ar: () => {
       let message = `مرحباً${name ? ' ' + name : ''}! 👋\n\n`;
       message += `نحن هنا لمساعدتك في ${agencyName}! `;
-      
-      if (destinations) {
-        message += `لدينا جولات رائعة إلى ${destinations}. `;
-      } else if (lastSearch) {
-        message += `لقد استفسرت سابقاً عن "${lastSearch}". `;
-      }
-      
+      if (destinations) { message += `لدينا جولات رائعة إلى ${destinations}. `; }
+      else if (lastSearch) { message += `لقد استفسرت سابقاً عن "${lastSearch}". `; }
       message += `\n\n✨ هل ترغب في مناقشة عروضنا الخاصة لك؟\n\n`;
       message += `📱 لا تتردد في التواصل إذا كان لديك أي أسئلة. سنكون سعداء بالمساعدة! 😊`;
-      
       return message;
     },
-
     fr: () => {
       let message = `Bonjour${name ? ' ' + name : ''}! 👋\n\n`;
       message += `Nous sommes là pour vous aider chez ${agencyName}! `;
-      
-      if (destinations) {
-        message += `Nous avons de superbes circuits vers ${destinations}. `;
-      } else if (lastSearch) {
-        message += `Vous vous êtes renseigné sur "${lastSearch}" auparavant. `;
-      }
-      
+      if (destinations) { message += `Nous avons de superbes circuits vers ${destinations}. `; }
+      else if (lastSearch) { message += `Vous vous êtes renseigné sur "${lastSearch}" auparavant. `; }
       message += `\n\n✨ Souhaitez-vous discuter de nos offres spéciales pour vous?\n\n`;
       message += `📱 N'hésitez pas à nous contacter si vous avez des questions. Nous serons ravis de vous aider! 😊`;
-      
       return message;
     },
-
     es: () => {
       let message = `¡Hola${name ? ' ' + name : ''}! 👋\n\n`;
       message += `¡Estamos aquí para ayudarte en ${agencyName}! `;
-      
-      if (destinations) {
-        message += `Tenemos excelentes tours a ${destinations}. `;
-      } else if (lastSearch) {
-        message += `Anteriormente preguntaste sobre "${lastSearch}". `;
-      }
-      
+      if (destinations) { message += `Tenemos excelentes tours a ${destinations}. `; }
+      else if (lastSearch) { message += `Anteriormente preguntaste sobre "${lastSearch}". `; }
       message += `\n\n✨ ¿Te gustaría hablar sobre nuestras ofertas especiales para ti?\n\n`;
       message += `📱 No dudes en contactarnos si tienes alguna pregunta. ¡Estaremos encantados de ayudarte! 😊`;
-      
       return message;
     }
   };
@@ -263,41 +200,30 @@ async function formatFollowUpMessage(
 }
 
 async function sendWhatsAppMessage(
-  agencyId: string,
   phoneNumber: string,
-  message: string
+  message: string,
+  apiKey: string | null
 ): Promise<boolean> {
+  if (!apiKey) {
+    console.error('❌ No WhatsApp API key provided');
+    return false;
+  }
+
+  const normalizedTo = phoneNumber.replace('whatsapp:', '').replace('+', '').trim();
+
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Get agency Twilio credentials
-    const { data: agency } = await supabase
-      .from('agencies')
-      .select('twilio_account_sid, twilio_auth_token, whatsapp_phone_number')
-      .eq('id', agencyId)
-      .single();
-
-    if (!agency) return false;
-
-    // Send via Twilio
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${agency.twilio_account_sid}/Messages.json`;
-    const auth = btoa(`${agency.twilio_account_sid}:${agency.twilio_auth_token}`);
-
-    const formData = new URLSearchParams();
-    formData.append('From', `whatsapp:${agency.whatsapp_phone_number}`);
-    formData.append('To', phoneNumber.startsWith('whatsapp:') ? phoneNumber : `whatsapp:${phoneNumber}`);
-    formData.append('Body', message);
-
-    const response = await fetch(twilioUrl, {
+    const response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'D360-API-KEY': apiKey,
+        'Content-Type': 'application/json',
       },
-      body: formData.toString(),
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: normalizedTo,
+        type: 'text',
+        text: { body: message },
+      }),
     });
 
     return response.ok;

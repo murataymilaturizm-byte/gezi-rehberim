@@ -18,17 +18,15 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 3 gün sonraki tarihi hesapla
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-    threeDaysFromNow.setHours(0, 0, 0, 0); // Günün başı
+    threeDaysFromNow.setHours(0, 0, 0, 0);
 
     const nextDay = new Date(threeDaysFromNow);
-    nextDay.setDate(nextDay.getDate() + 1); // Gün sonu
+    nextDay.setDate(nextDay.getDate() + 1);
 
     console.log('📅 Looking for tours between:', threeDaysFromNow.toISOString(), 'and', nextDay.toISOString());
 
-    // 3 gün sonra turu olan ve henüz hatırlatma gönderilmemiş rezervasyonları bul
     const { data: upcomingRegistrations, error: fetchError } = await supabase
       .from('registrations')
       .select(`
@@ -50,6 +48,7 @@ Deno.serve(async (req) => {
         ),
         agencies!inner (
           whatsapp_phone_number,
+          whatsapp_api_key,
           name
         )
       `)
@@ -66,11 +65,7 @@ Deno.serve(async (req) => {
 
     if (!upcomingRegistrations || upcomingRegistrations.length === 0) {
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'No reminders to send',
-          count: 0 
-        }),
+        JSON.stringify({ success: true, message: 'No reminders to send', count: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -78,7 +73,6 @@ Deno.serve(async (req) => {
     let sentCount = 0;
     let errorCount = 0;
 
-    // Her rezervasyon için hatırlatma gönder
     for (const registration of upcomingRegistrations) {
       try {
         const tourDate = registration.tour_dates as any;
@@ -105,12 +99,8 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Hatırlatma mesajını oluştur
         const departureDate = new Date(tourDate.departure_date).toLocaleDateString('tr-TR', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric',
-          weekday: 'long'
+          day: '2-digit', month: 'long', year: 'numeric', weekday: 'long'
         });
 
         let message = `🔔 *TUR HATIRLATMASI*\n\n`;
@@ -123,36 +113,24 @@ Deno.serve(async (req) => {
         if (tour.hareket_noktasi) {
           message += `🚌 *Hareket Noktası:* ${tour.hareket_noktasi}\n`;
         }
-
         if (tour.toplanma_saati) {
           message += `🕐 *Toplanma Saati:* ${tour.toplanma_saati}\n`;
         }
 
         message += `\n📋 *Rezervasyon No:* ${registration.id.substring(0, 8)}\n\n`;
-
         message += `💼 *Hazırlıklar:*\n`;
         message += `✅ Kimliğinizi yanınıza almayı unutmayın\n`;
         message += `✅ Hava durumuna göre giyinin\n`;
         message += `✅ Gerekli ilaçlarınızı yanınıza alın\n\n`;
-
         message += `📞 Sorularınız için bizimle iletişime geçebilirsiniz.\n\n`;
         message += `🙏 İyi yolculuklar dileriz!`;
 
-        // WhatsApp mesajı gönder
-        const sent = await sendWhatsAppMessage(
-          registration.phone,
-          message,
-          agency
-        );
+        const sent = await sendWhatsAppMessage(registration.phone, message, agency);
 
         if (sent) {
-          // Hatırlatma gönderildi olarak işaretle
           await supabase
             .from('registrations')
-            .update({
-              reminder_sent: true,
-              reminder_sent_at: new Date().toISOString()
-            })
+            .update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() })
             .eq('id', registration.id);
 
           sentCount++;
@@ -162,8 +140,8 @@ Deno.serve(async (req) => {
           console.error(`❌ Failed to send reminder to ${registration.phone}`);
         }
 
-        // Rate limiting - Twilio için bekleme
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 saniye bekle
+        // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, 500));
 
       } catch (error) {
         errorCount++;
@@ -174,69 +152,49 @@ Deno.serve(async (req) => {
     console.log(`✅ Reminder job completed. Sent: ${sentCount}, Errors: ${errorCount}`);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Reminders sent successfully',
-        sent: sentCount,
-        errors: errorCount,
-        total: upcomingRegistrations.length
-      }),
+      JSON.stringify({ success: true, message: 'Reminders sent successfully', sent: sentCount, errors: errorCount, total: upcomingRegistrations.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('❌ Reminder job error:', error);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
 
-// WhatsApp mesajı gönder - merkezi Twilio ile
-async function sendWhatsAppMessage(
-  to: string,
-  message: string,
-  agency: any
-): Promise<boolean> {
-  // Merkezi Twilio credentials
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const twilioPhone = agency.whatsapp_phone_number;
-
-  if (!accountSid || !authToken || !twilioPhone) {
-    console.error('❌ Merkezi Twilio credentials veya agency WhatsApp numarası eksik:', agency.name);
+// WhatsApp mesajı gönder - 360Dialog API ile
+async function sendWhatsAppMessage(to: string, message: string, agency: any): Promise<boolean> {
+  const apiKey = agency.whatsapp_api_key;
+  
+  if (!apiKey) {
+    console.error('❌ Agency WhatsApp API key not configured:', agency.name);
     return false;
   }
 
-  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-  const auth = btoa(`${accountSid}:${authToken}`);
-
-  const body = new URLSearchParams({
-    From: `whatsapp:${twilioPhone}`,
-    To: `whatsapp:${to}`,
-    Body: message
-  });
+  // Normalize phone: remove + and whatsapp: prefix
+  const normalizedTo = to.replace('whatsapp:', '').replace('+', '').trim();
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'D360-API-KEY': apiKey,
+        'Content-Type': 'application/json',
       },
-      body: body.toString()
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: normalizedTo,
+        type: 'text',
+        text: { body: message },
+      }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('❌ Twilio API error:', error);
+      console.error('❌ 360Dialog API error:', error);
       return false;
     }
 

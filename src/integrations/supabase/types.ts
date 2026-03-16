@@ -41,12 +41,15 @@ export type Database = {
           region: string | null
           subscription_ends_at: string | null
           subscription_status: string
+          threesixty_client_id: string | null
           trial_ends_at: string | null
           twilio_account_sid: string | null
           twilio_auth_token: string | null
           twilio_phone_number: string | null
           user_id: string | null
           website_url: string | null
+          whatsapp_api_key: string | null
+          whatsapp_connected_at: string | null
           whatsapp_phone_number: string | null
           whatsapp_status: string | null
           working_hours: string | null
@@ -77,12 +80,15 @@ export type Database = {
           region?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string
+          threesixty_client_id?: string | null
           trial_ends_at?: string | null
           twilio_account_sid?: string | null
           twilio_auth_token?: string | null
           twilio_phone_number?: string | null
           user_id?: string | null
           website_url?: string | null
+          whatsapp_api_key?: string | null
+          whatsapp_connected_at?: string | null
           whatsapp_phone_number?: string | null
           whatsapp_status?: string | null
           working_hours?: string | null
@@ -113,12 +119,15 @@ export type Database = {
           region?: string | null
           subscription_ends_at?: string | null
           subscription_status?: string
+          threesixty_client_id?: string | null
           trial_ends_at?: string | null
           twilio_account_sid?: string | null
           twilio_auth_token?: string | null
           twilio_phone_number?: string | null
           user_id?: string | null
           website_url?: string | null
+          whatsapp_api_key?: string | null
+          whatsapp_connected_at?: string | null
           whatsapp_phone_number?: string | null
           whatsapp_status?: string | null
           working_hours?: string | null

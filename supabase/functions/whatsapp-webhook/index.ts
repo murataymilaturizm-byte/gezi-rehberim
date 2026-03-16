@@ -1,4 +1,4 @@
-// WhatsApp webhook - Clean FSM with shared core
+// WhatsApp webhook - Clean FSM with shared core (360Dialog)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -13,10 +13,9 @@ import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } 
 import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
-// WhatsApp-specific utilities
-import { createTwiMLResponse, createTwiMLHeaders } from "./utils/twilio.ts";
+// 360Dialog utilities
+import { extract360WebhookData, send360Message, resolveAgencyByPhone } from "./utils/threesixty.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
-import { validateTwilioWebhook } from "./utils/signature-validation.ts";
 
 // WhatsApp services
 import { generatePaymentMessage } from "./services/payment-message.ts";
@@ -36,31 +35,82 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const formData = await req.formData();
+  // 360Dialog webhook verification (GET)
+  if (req.method === "GET") {
+    const url = new URL(req.url);
+    const mode = url.searchParams.get("hub.mode");
+    const token = url.searchParams.get("hub.verify_token");
+    const challenge = url.searchParams.get("hub.challenge");
 
-    // Initialize Supabase client first (needed for validation)
+    const verifyToken = Deno.env.get("WHATSAPP_VERIFY_TOKEN");
+    if (mode === "subscribe" && token === verifyToken) {
+      console.log("✅ Webhook verified");
+      return new Response(challenge, { status: 200 });
+    }
+    return new Response("Forbidden", { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+
+    // Initialize Supabase client
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
-    // === MULTI-TENANT SECURITY: Validate Twilio Signature ===
-    const validation = await validateTwilioWebhook(req, formData, supabase);
+    // Extract message from 360Dialog webhook format
+    const webhookData = extract360WebhookData(body);
 
-    if (!validation.isValid) {
-      console.error(`🚫 Unauthorized request: ${validation.error} (AccountSid: ${validation.accountSid})`);
-      return new Response(JSON.stringify({ error: "Unauthorized", details: validation.error }), {
-        status: 403,
+    if (!webhookData) {
+      return new Response(JSON.stringify({ error: "Invalid webhook data" }), {
+        status: 200, // Always return 200 to 360Dialog
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const agency = validation.agency;
+    // Status updates - just acknowledge
+    if (webhookData.isStatus) {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // 🔐 Ödeme / para birimi ile ilgili alanları agency’den çek
+    const userPhone = webhookData.from;
+    const rawMessage = webhookData.message;
+
+    if (!userPhone || !rawMessage) {
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Resolve agency from webhook metadata
+    const { agency, error: agencyError } = await resolveAgencyByPhone(supabase, '', body);
+
+    if (agencyError || !agency) {
+      console.error(`🚫 Agency not found: ${agencyError}`);
+      return new Response(JSON.stringify({ error: "Agency not found" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check agency has 360Dialog API key
+    const agencyApiKey = agency.whatsapp_api_key;
+    if (!agencyApiKey) {
+      console.error(`❌ Agency ${agency.name} has no WhatsApp API key configured`);
+      return new Response(JSON.stringify({ error: "WhatsApp not configured" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const message = sanitizeInput(rawMessage);
+    console.log("📱 WhatsApp FSM:", userPhone.slice(-4));
+    console.log(`🏢 Agency: ${agency.name}`);
+
+    // 🔐 Payment fields from agency
     const paymentInstructions = agency.payment_instructions ?? null;
     const languageCurrencies = agency.language_currencies ?? null;
     const primaryCurrency = agency.primary_currency ?? "TRY";
 
-    // System prompt içinde kullanılacak sade paymentInfo metni (opsiyonel)
     let paymentInfo: string | undefined = undefined;
     if (typeof paymentInstructions === "string") {
       paymentInfo = paymentInstructions;
@@ -71,19 +121,6 @@ serve(async (req) => {
     ) {
       paymentInfo = (paymentInstructions as any).text;
     }
-
-    // Extract request data
-    const userPhone = formData.get("From")?.toString() || "";
-    const rawMessage = formData.get("Body")?.toString() || "";
-
-    if (!userPhone || !rawMessage) {
-      return new Response("Missing required fields", { status: 400 });
-    }
-
-    const message = sanitizeInput(rawMessage);
-    console.log("📱 WhatsApp FSM:", userPhone.slice(-4));
-
-    console.log(`🏢 Agency: ${agency.name}`);
 
     // Get plan features
     const { data: planFeatures } = await supabase
@@ -136,7 +173,6 @@ serve(async (req) => {
       .eq("agency_id", agency.id);
 
     const toursRaw = dbTours || [];
-
     console.log(`📦 Tours: ${toursRaw.length}`);
 
     // === FSM-based conversation ===
@@ -164,13 +200,11 @@ serve(async (req) => {
         if (isValidContext(parsed)) {
           context = parsed;
 
-          // Handle explicit language change request
           if (languageChangeIntent && languageChangeIntent !== context.language) {
             console.log(`🌐 Language change: ${context.language} → ${languageChangeIntent}`);
             context.language = languageChangeIntent;
             context.tone = getDefaultToneForLanguage(languageChangeIntent) as ConversationTone;
           } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
-            // Update language if detected language is different
             console.log(`🌐 Language detected: ${context.language} → ${runtimeDetectedLang}`);
             context.language = runtimeDetectedLang;
           }
@@ -228,9 +262,11 @@ serve(async (req) => {
             content: response,
             agency_id: agency.id,
           });
-          return new Response(createTwiMLResponse(truncateForWhatsApp(response)), {
+          // Send via 360Dialog
+          await send360Message(agencyApiKey, userPhone, truncateForWhatsApp(response));
+          return new Response(JSON.stringify({ success: true }), {
             status: 200,
-            headers: createTwiMLHeaders(),
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
       }
@@ -243,9 +279,10 @@ serve(async (req) => {
           content: faqResponse,
           agency_id: agency.id,
         });
-        return new Response(createTwiMLResponse(truncateForWhatsApp(faqResponse)), {
+        await send360Message(agencyApiKey, userPhone, truncateForWhatsApp(faqResponse));
+        return new Response(JSON.stringify({ success: true }), {
           status: 200,
-          headers: createTwiMLHeaders(),
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
@@ -285,7 +322,6 @@ serve(async (req) => {
         nluContext += ` Reservation info collected: ${collected.join(', ')}.`;
       }
     }
-    // If all info collected, indicate ready for confirmation
     if (context.collectionStep === 'ready_for_confirmation' || 
         (context.reservationInfo?.fullName && context.reservationInfo?.phone && 
          context.reservationInfo?.paxAdult && context.reservationInfo?.dateId)) {
@@ -296,7 +332,6 @@ serve(async (req) => {
 
     // Analyze with NLU
     const nluResult = await analyzeUserMessage(message, nluContext, context.stage, context.currentTour, tours);
-
     console.log("🧠 Intent:", nluResult.intent);
 
     const fsmIntent = mapNLUIntentToFSMIntent(nluResult.intent);
@@ -304,7 +339,6 @@ serve(async (req) => {
     // === Save complaint to database if detected ===
     if (nluResult.intent === "complaint_feedback") {
       console.log("📝 Saving complaint to database...");
-
       const { error: complaintError } = await supabase.from("complaints").insert({
         agency_id: agency.id,
         phone: userPhone,
@@ -312,7 +346,6 @@ serve(async (req) => {
         type: "complaint",
         status: "new",
       });
-
       if (complaintError) {
         console.error("❌ Error saving complaint:", complaintError);
       } else {
@@ -321,10 +354,8 @@ serve(async (req) => {
     }
 
     // Match tours - CRITICAL: Two-layer strategy
-    // Strategy 1: NLU entities (tour_name, destination)
-    // Strategy 2: Direct matching (numbers, keywords) via matchTour
     let selectedTour: any = null;
-    let multipleTourMatches: any[] = []; // Track multiple matches
+    let multipleTourMatches: any[] = [];
 
     if (nluResult.entities.tour_name) {
       const matchingTours = tours.filter((t) => t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()));
@@ -332,12 +363,8 @@ serve(async (req) => {
       if (matchingTours.length === 1) {
         const found = matchingTours[0];
         selectedTour = {
-          id: found.id,
-          title: found.title,
-          destination: found.destination,
-          dates: found.dates,
-          program_kisa: found.program_kisa,
-          gezilecek_yerler: found.gezilecek_yerler,
+          id: found.id, title: found.title, destination: found.destination,
+          dates: found.dates, program_kisa: found.program_kisa, gezilecek_yerler: found.gezilecek_yerler,
         };
         console.log("🎫 Tour matched by NLU name (single):", selectedTour.title);
       } else if (matchingTours.length > 1) {
@@ -355,12 +382,8 @@ serve(async (req) => {
       if (matchingTours.length === 1) {
         const found = matchingTours[0];
         selectedTour = {
-          id: found.id,
-          title: found.title,
-          destination: found.destination,
-          dates: found.dates,
-          program_kisa: found.program_kisa,
-          gezilecek_yerler: found.gezilecek_yerler,
+          id: found.id, title: found.title, destination: found.destination,
+          dates: found.dates, program_kisa: found.program_kisa, gezilecek_yerler: found.gezilecek_yerler,
         };
         console.log("🎫 Tour matched by NLU destination (single):", selectedTour.title);
       } else if (matchingTours.length > 1) {
@@ -369,13 +392,11 @@ serve(async (req) => {
       }
     }
 
-    // FALLBACK: direct matching (only if no multiple matches)
-    // CRITICAL: Skip fallback if we already found multiple matches - we need to ask user to choose!
+    // FALLBACK: direct matching
     if (!selectedTour && multipleTourMatches.length === 0) {
       const expectedInput = getNextExpectedInput(context);
       const matchedTour = matchTour(message, tours, expectedInput);
       if (matchedTour) {
-        // Check if this keyword matches multiple tours
         const lowerMessage = message.toLowerCase().trim();
         const allMatches = tours.filter(tour => 
           tour.title.toLowerCase().includes(lowerMessage) ||
@@ -383,20 +404,14 @@ serve(async (req) => {
         );
         
         if (allMatches.length > 1) {
-          // Multiple tours match - store them and don't auto-select
           multipleTourMatches = allMatches;
           console.log("🎫 Fallback found multiple matches:", allMatches.map(t => t.title).join(", "));
         } else {
-          // Single match - safe to select
           const fullTour = findTourById(matchedTour.id, tours);
           if (fullTour) {
             selectedTour = {
-              id: fullTour.id,
-              title: fullTour.title,
-              destination: fullTour.destination,
-              dates: fullTour.dates,
-              program_kisa: fullTour.program_kisa,
-              gezilecek_yerler: fullTour.gezilecek_yerler,
+              id: fullTour.id, title: fullTour.title, destination: fullTour.destination,
+              dates: fullTour.dates, program_kisa: fullTour.program_kisa, gezilecek_yerler: fullTour.gezilecek_yerler,
             };
             console.log("🎯 Tour matched by direct matching:", selectedTour.title);
           }
@@ -405,7 +420,7 @@ serve(async (req) => {
         console.log("❌ No tour match found via NLU or direct matching");
       }
     } else if (multipleTourMatches.length > 0) {
-      console.log("⏭️ Skipping fallback - multiple tour matches found, need user to choose");
+      console.log("⏭️ Skipping fallback - multiple tour matches found");
     }
 
     // Extract info
@@ -415,38 +430,31 @@ serve(async (req) => {
       console.log("📅 Date from NLU:", nluResult.entities.dates[0]);
     }
 
-    // Simple fallback for name, phone, pax, and date (NLU sometimes misses these)
     const simpleExtraction = extractNameAndPhone(message);
     if (simpleExtraction.fullName && !extractedInfo.fullName) {
       extractedInfo.fullName = simpleExtraction.fullName;
-      console.log("👤 Name from regex:", simpleExtraction.fullName);
     }
     if (simpleExtraction.phone && !extractedInfo.phone) {
       extractedInfo.phone = simpleExtraction.phone;
-      console.log("📞 Phone from regex:", simpleExtraction.phone);
     }
     if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) {
       extractedInfo.paxAdult = simpleExtraction.paxAdult;
-      console.log("👥 Pax from regex:", simpleExtraction.paxAdult);
     }
     if (simpleExtraction.selectedDate && !extractedInfo.selectedDate) {
       extractedInfo.selectedDate = simpleExtraction.selectedDate;
-      console.log("📅 Date from regex:", simpleExtraction.selectedDate);
     }
 
-    // Get expected input for context-aware extraction
     const expectedInput = getNextExpectedInput(context);
 
-    // CRITICAL: Handle plain number input when expecting pax
+    // Handle plain number input when expecting pax
     if (!extractedInfo.paxAdult && expectedInput === 'pax') {
       const plainNumber = parseInt(message.trim());
       if (!isNaN(plainNumber) && plainNumber >= 1 && plainNumber <= 50) {
         extractedInfo.paxAdult = plainNumber;
-        console.log("👥 Pax from plain number:", plainNumber);
       }
     }
 
-    // Resolve date_X format (e.g., "date_0", "date_1")
+    // Resolve date_X format
     if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
       const tour = findTourById(context.currentTour.id, tours);
       if (tour?.dates) {
@@ -455,12 +463,11 @@ serve(async (req) => {
           const selectedDate = tour.dates[dateIndex];
           extractedInfo.selectedDate = selectedDate.departure_date;
           extractedInfo.dateId = selectedDate.id;
-          console.log("📅 Resolved date from index:", selectedDate.departure_date);
         }
       }
     }
 
-    // Handle numeric date selection (1, 2, 3) when expecting date
+    // Handle numeric date selection
     if (!extractedInfo.dateId && context.currentTour && 
         (expectedInput === 'date' || expectedInput === 'date_selection')) {
       const dateNumber = parseInt(message.trim());
@@ -470,19 +477,16 @@ serve(async (req) => {
           const selectedDate = tour.dates[dateNumber - 1];
           extractedInfo.selectedDate = selectedDate.departure_date;
           extractedInfo.dateId = selectedDate.id;
-          console.log("📅 Date selected by number:", selectedDate.departure_date);
         }
       }
     }
 
-    // Match ISO date (YYYY-MM-DD) or text date with available tour dates
+    // Match ISO date with available tour dates
     if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
       const tour = findTourById(context.currentTour.id, tours);
       if (tour?.dates && tour.dates.length > 0) {
         const matchedDate = tour.dates.find((d: any) => {
-          // Direct match
           if (d.departure_date === extractedInfo.selectedDate) return true;
-          // Parse both dates for comparison
           try {
             const targetDate = new Date(extractedInfo.selectedDate);
             const tourDate = new Date(d.departure_date);
@@ -496,21 +500,17 @@ serve(async (req) => {
         if (matchedDate) {
           extractedInfo.selectedDate = matchedDate.departure_date;
           extractedInfo.dateId = matchedDate.id;
-          console.log("📅 Matched date with tour date:", matchedDate.departure_date);
-        } else {
-          console.log("⚠️ Date not found in tour dates, will prompt user to select");
         }
       }
     }
 
-    // Auto-select date if there's only one and user is confirming/providing info
+    // Auto-select date if only one available
     if (!extractedInfo.dateId && !extractedInfo.selectedDate && 
         context.currentTour?.dates?.length === 1 &&
         (fsmIntent === "provide_info" || fsmIntent === "confirm" || fsmIntent === "reservation_intent")) {
       const singleDate = context.currentTour.dates[0];
       extractedInfo.selectedDate = singleDate.departure_date;
       extractedInfo.dateId = singleDate.id;
-      console.log("📅 Auto-selected single available date:", singleDate.departure_date);
     }
 
     console.log("📝 Extracted info:", extractedInfo);
@@ -527,7 +527,6 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 ${context.stage} → ${newContext.stage}`);
 
-    // Store detected intent for conversation insights
     const detectedIntent = fsmIntent;
 
     // Build prompt
@@ -553,7 +552,7 @@ serve(async (req) => {
       multipleTourMatches: multipleTourMatches.length > 1 ? multipleTourMatches : undefined,
     };
 
-    // CRITICAL: Prevent accidental tour switching during reservation
+    // Tour switch warning
     let tourSwitchWarning = "";
 
     if (
@@ -647,7 +646,6 @@ NEVER switch tours automatically, only ask for confirmation!`;
 
     const aiData = await aiResponse.json();
     let reply: string = aiData.choices[0].message.content;
-
     console.log("🤖 Reply:", reply.substring(0, 80));
 
     // === APPEND PAYMENT MESSAGE IF COMPLETED ===
@@ -667,9 +665,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
           (paymentInstructions as any).deposit_percentage) ||
         30;
 
-      // Get selected tour date to calculate price
       const tourForReservation = toursRaw.find((t: any) => t.id === newContext.reservationInfo.tourId);
-
       const selectedTourDate = tourForReservation?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
 
       if (selectedTourDate) {
@@ -681,20 +677,15 @@ NEVER switch tours automatically, only ask for confirmation!`;
         const totalPrice = paxAdult * priceAdult + paxChild * priceChild;
         const depositAmount = Math.ceil((totalPrice * depositPercentage) / 100);
 
-        // Turun kendi para birimi
         const tourCurrency = tourForReservation?.currency || "TRY";
 
-        // Yeni async, çoklu para birimi destekli payment message
         const paymentMessage = await generatePaymentMessage(
           paymentInstructions,
           newContext.language,
           totalPrice,
           depositAmount,
           tourCurrency,
-          {
-            languageCurrencies,
-            primaryCurrency,
-          },
+          { languageCurrencies, primaryCurrency },
         );
 
         if (paymentMessage) {
@@ -705,8 +696,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
       }
     }
 
-    // Save reservation if JUST transitioned to COMPLETED (not if already in COMPLETED)
-    // This prevents duplicate reservations when user sends more messages after completion
+    // Save reservation if JUST transitioned to COMPLETED
     const justCompletedReservation = newContext.stage === "COMPLETED" && 
                                       newContext.reservationConfirmed && 
                                       context.stage !== "COMPLETED";
@@ -715,7 +705,6 @@ NEVER switch tours automatically, only ask for confirmation!`;
       const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
       const reservationPhone = regPhone || userPhone;
       
-      // CRITICAL: Validate all required fields before saving
       if (tourId && dateId && fullName && reservationPhone && paxAdult) {
         console.log("💾 Saving reservation...", { tourId, dateId, fullName, paxAdult });
 
@@ -740,7 +729,6 @@ NEVER switch tours automatically, only ask for confirmation!`;
       } else {
         console.log("✅ Reservation saved");
 
-        // Send reservation confirmation template if available (only if templates enabled)
         if (planFeatures?.has_templates) {
           const { data: template } = await supabase
             .from("message_templates")
@@ -752,9 +740,6 @@ NEVER switch tours automatically, only ask for confirmation!`;
             .maybeSingle();
 
           if (template && newRegistration) {
-            console.log("📧 Sending reservation confirmation template...");
-
-            // Replace template variables
             const selectedTourForTemplate = tours.find((t) => t.id === newContext.reservationInfo.tourId);
             const selectedDateForTemplate = selectedTourForTemplate?.dates?.find(
               (d: any) => d.id === newContext.reservationInfo.dateId,
@@ -769,14 +754,12 @@ NEVER switch tours automatically, only ask for confirmation!`;
               String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)),
             );
 
-            // Append template message to final reply BEFORE saving
             finalReply = finalReply + "\n\n" + templateContent;
             console.log("✅ Template message appended");
           }
         }
       }
 
-        // Update profile (only if user profiles feature is enabled)
         if (planFeatures?.has_user_profiles) {
           await supabase.from("whatsapp_user_profiles").upsert(
             {
@@ -786,9 +769,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
               total_bookings: 1,
               last_interaction_at: new Date().toISOString(),
             },
-            {
-              onConflict: "phone,agency_id",
-            },
+            { onConflict: "phone,agency_id" },
           );
           console.log("✅ User profile updated with booking");
         }
@@ -797,7 +778,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
       }
     }
 
-    // Save response (now includes template/payment if applicable)
+    // Save response
     await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
       role: "assistant",
@@ -805,17 +786,11 @@ NEVER switch tours automatically, only ask for confirmation!`;
       agency_id: agency.id,
     });
 
-    // Enrich conversation insights (only if user profiles feature is enabled)
+    // Enrich conversation insights
     if (planFeatures?.has_user_profiles) {
       await enrichConversationInsights(
-        supabase,
-        userPhone,
-        agency.id,
-        message,
-        finalReply,
-        detectedIntent || "general",
+        supabase, userPhone, agency.id, message, finalReply, detectedIntent || "general",
       );
-      console.log("✅ Conversation insights enriched");
     }
 
     // Save context
@@ -826,15 +801,19 @@ NEVER switch tours automatically, only ask for confirmation!`;
       agency_id: agency.id,
     });
 
-    return new Response(createTwiMLResponse(truncateForWhatsApp(finalReply)), {
+    // Send reply via 360Dialog API
+    const truncatedReply = truncateForWhatsApp(finalReply);
+    await send360Message(agencyApiKey, userPhone, truncatedReply);
+
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: createTwiMLHeaders(),
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("❌ Error:", error);
-    return new Response(createTwiMLResponse("Üzgünüm, bir hata oluştu."), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: createTwiMLHeaders(),
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
