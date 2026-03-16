@@ -190,6 +190,12 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?`;
 - Tekrar bilgi toplama (zaten tüm bilgiler alındı)
 - IBAN, kapora, tutar yazma
 
+🚫 İPTAL TALEBİ GELİRSE:
+- ASLA "iptal edildi" veya "iptal edebilirim" DEME
+- "İptal işlemleri için doğrudan acentemizle iletişime geçmeniz gerekmektedir" de
+- Acente telefon numarası ve çalışma saatlerini paylaş (varsa)
+- İptal koşullarını kısaca özetle (varsa)
+
 NOT: Kullanıcı başka tur isterse sistem otomatik olarak yeni akışa geçecek.`;
 
       case "ASKING_NEW_RESERVATION":
