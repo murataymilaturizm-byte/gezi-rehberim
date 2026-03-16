@@ -369,8 +369,8 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    → View WhatsApp logs for errors
 
 ❌ Payment link not working:
-   → Verify Sipay credentials in Settings
-   → Check Sipay merchant account status
+   → Verify PayTR credentials in Settings
+   → Check PayTR merchant account status
    → Test payment in test mode first
 
 ❌ Wrong language responses:
