@@ -36,7 +36,7 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 - 5 Konuşma Stili: Standart, Kurumsal, Dinamik, Premium, Samimi
 - AI Destekli Yanıtlama: Google Gemini 2.5 Flash ile akıllı cevaplar
 - WhatsApp Business API: Tam entegrasyon (Twilio hesabı gerektirmez)
-- Otomatik Ödeme: Sipay entegrasyonu ile güvenli online ödeme
+- Otomatik Ödeme: PayTR entegrasyonu ile güvenli online ödeme
 - Demo Chat: Sistem test edilebilir
 - Çok kısa ve öz yanıtlar: Maksimum 2-3 cümle
 
@@ -97,7 +97,7 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 - FAQ yönetimi
 - Dil ayarları
 - Konuşma stili seçimi
-- Ödeme ayarları (Sipay)
+- Ödeme ayarları (PayTR)
 - WhatsApp ayarları
 
 🎯 PLAN ÖZELLİKLERİ:
@@ -133,7 +133,7 @@ YOUR TASKS:
 - Provide step-by-step guidance for all features
 - Direct to /yardim page for detailed documentation
 - Help with WhatsApp integration issues
-- Guide on payment setup (Sipay)
+- Guide on payment setup (PayTR)
 - Assist with tour and date management
 - Explain reporting and analytics features
 - Help understand plan differences and limitations
@@ -158,7 +158,7 @@ MAIN TOPICS AND SOLUTIONS:
    - Set quota
 ✅ Step 5: Choose language preferences and conversation style
 ✅ Step 6: Send test message to verify system
-✅ Step 7: Configure Sipay payment (optional but recommended)
+✅ Step 7: Configure PayTR payment (optional but recommended)
 
 2. TOUR MANAGEMENT - DETAILED
 ➕ Adding New Tour:
@@ -229,7 +229,7 @@ MAIN TOPICS AND SOLUTIONS:
    7. Bot confirms all details
    8. Customer confirms
    9. Bot creates reservation
-   10. Bot sends payment link (if Sipay configured)
+   10. Bot sends payment link (if PayTR configured)
 
 💬 Message Templates:
    - Navigate to "Templates" tab
@@ -333,12 +333,12 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    - Bot auto-detects and responds in customer's language
    - Tour info should be translated for enabled languages
 
-10. SIPAY PAYMENT INTEGRATION
+10. PAYTR PAYMENT INTEGRATION
 💳 Setup Process:
-   - Sign up at Sipay.com.tr
-   - Get Merchant ID and App Secret
+   - Sign up at PayTR.com
+   - Get Merchant ID, Merchant Key and Merchant Salt
    - Enter in Settings > Payment Settings
-   - Test payment to verify
+   - Test payment to verify (test mode available)
    - Bot will automatically send payment links
 
 💰 How It Works:
@@ -369,8 +369,8 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    → View WhatsApp logs for errors
 
 ❌ Payment link not working:
-   → Verify Sipay credentials in Settings
-   → Check Sipay merchant account status
+   → Verify PayTR credentials in Settings
+   → Check PayTR merchant account status
    → Test payment in test mode first
 
 ❌ Wrong language responses:

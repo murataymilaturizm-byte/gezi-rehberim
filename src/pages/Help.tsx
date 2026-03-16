@@ -201,7 +201,7 @@ const Help = () => {
    
 2. **Fiyat Bilgisi**: Otomatik fiyat ve tarih bilgisi verir
 3. **Rezervasyon**: Adım adım rehberlikle rezervasyon alır
-4. **Ödeme Linki**: SiPay ile güvenli ödeme linki gönderir (opsiyonel)
+4. **Ödeme Linki**: PayTR ile güvenli ödeme linki gönderir (opsiyonel)
 5. **Çoklu Dil**: Müşterinin dilini otomatik algılar (7 dil destekli)
 
 **Desteklenen Diller:**
@@ -411,7 +411,7 @@ Her şablonda kullanılabilen değişkenler:
    ✓ Sınırsız tur ekleme
    ✓ Temel analitik
    ✓ E-posta desteği
-   ✓ Sipay ödeme entegrasyonu
+   ✓ PayTR ödeme entegrasyonu
    → Küçük acenteler için ideal
 
 2. **PROFESYONEL PAKET - 7.999 TL/ay** (EN POPÜLER)
@@ -663,7 +663,7 @@ Her şablonda kullanılabilen değişkenler:
 → Çözüm: Şablon ayarlarını kontrol edin
 
 **"Ödeme alınamıyor"**
-✓ SiPay entegrasyonu aktif mi?
+✓ PayTR entegrasyonu aktif mi?
 ✓ API bilgileri doğru mu?
 → Çözüm: Ayarlar > Ödeme Entegrasyonu kontrol
 
