@@ -411,7 +411,7 @@ Her şablonda kullanılabilen değişkenler:
    ✓ Sınırsız tur ekleme
    ✓ Temel analitik
    ✓ E-posta desteği
-   ✓ Sipay ödeme entegrasyonu
+   ✓ PayTR ödeme entegrasyonu
    → Küçük acenteler için ideal
 
 2. **PROFESYONEL PAKET - 7.999 TL/ay** (EN POPÜLER)
