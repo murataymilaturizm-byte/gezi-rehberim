@@ -753,11 +753,19 @@ export const AgencyManagement = () => {
                 <h4 className="font-medium mb-3">WhatsApp Bilgileri</h4>
                 <div className="text-sm space-y-2">
                   <div>
-                    <span className="text-muted-foreground">Telefon:</span>
+                    <span className="text-muted-foreground">WhatsApp Numarası:</span>
                     <p className="font-mono">
-                      {viewingAgency.twilio_phone_number && viewingAgency.twilio_phone_number !== "TEMP_PHONE" 
-                        ? viewingAgency.twilio_phone_number 
+                      {viewingAgency.whatsapp_phone_number 
+                        ? viewingAgency.whatsapp_phone_number 
                         : <span className="text-muted-foreground">Eklenmedi</span>}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">API Anahtarı:</span>
+                    <p className="font-mono">
+                      {viewingAgency.whatsapp_api_key 
+                        ? "••••" + (viewingAgency.whatsapp_api_key as string).slice(-8) 
+                        : <span className="text-muted-foreground">Yapılandırılmamış</span>}
                     </p>
                   </div>
                   {viewingAgency.whatsapp_status && (
