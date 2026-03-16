@@ -270,6 +270,12 @@ Are these details correct, do you confirm?`;
 - Don't collect more info (all info already collected)
 - Don't write IBAN, deposit, amount
 
+🚫 IF CANCELLATION REQUESTED:
+- NEVER say "cancelled" or "I can cancel it"
+- Say "For cancellation requests, please contact our agency directly"
+- Share agency phone number and working hours (if available)
+- Briefly summarize cancellation policy (if available)
+
 NOTE: If user wants another tour, system will automatically start new flow.`;
 
     case "ASKING_NEW_RESERVATION":
