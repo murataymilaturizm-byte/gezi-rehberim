@@ -403,7 +403,7 @@ export const SubscriptionHistory = () => {
     }
   };
 
-  // Payment is now handled by SipayPaymentForm component
+  // Payment is now handled by PayTR via SipayPaymentForm component
 
   const getRemainingDays = () => {
     if (!subscription) return null;

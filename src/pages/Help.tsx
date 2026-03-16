@@ -663,7 +663,7 @@ Her şablonda kullanılabilen değişkenler:
 → Çözüm: Şablon ayarlarını kontrol edin
 
 **"Ödeme alınamıyor"**
-✓ SiPay entegrasyonu aktif mi?
+✓ PayTR entegrasyonu aktif mi?
 ✓ API bilgileri doğru mu?
 → Çözüm: Ayarlar > Ödeme Entegrasyonu kontrol
 

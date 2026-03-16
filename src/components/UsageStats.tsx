@@ -88,8 +88,8 @@ export const UsageStats = () => {
 
       if (!agency) throw new Error("Agency not found");
 
-      // Call sipay-payment edge function with quota purchase type
-      const { data, error } = await supabase.functions.invoke('sipay-payment', {
+      // Call paytr-payment-init edge function with quota purchase type
+      const { data, error } = await supabase.functions.invoke('paytr-payment-init', {
         body: {
           purchaseType: 'extra_quota',
           quotaAmount: parseInt(selectedQuotaPackage),
@@ -99,9 +99,9 @@ export const UsageStats = () => {
 
       if (error) throw error;
 
-      if (data?.payment_url) {
-        // Redirect to Sipay payment page
-        window.location.href = data.payment_url;
+      if (data?.paytrUrl) {
+        // Redirect to PayTR payment page
+        window.location.href = data.paytrUrl;
       } else {
         throw new Error("Payment URL not received");
       }
