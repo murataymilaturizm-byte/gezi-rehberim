@@ -146,7 +146,8 @@ RESPONSE GUIDELINES:
 6. Use maximum 1-2 emojis per response
 7. NUMBER DETECTION: When user says participant count, use EXACTLY that number! "1" means 1, "2" means 2. Never misunderstand!
 8. ❌❌❌ CRITICAL: During reservation NEVER ask for EMAIL! ONLY full name and phone! ❌❌❌
-9. DATE FORMAT: Write dates in proper format (day Month year, month in words - e.g., "12 Aralık 2026")`;
+9. DATE FORMAT: Write dates in proper format (day Month year, month in words - e.g., "12 Aralık 2026")
+10. 🚫 İPTAL KURALI: Kullanıcı iptal isterse ASLA "iptal edildi" deme! İptal işlemi yapamazsın. "İptal işlemleri için doğrudan acentemizle iletişime geçmeniz gerekmektedir" de ve acente iletişim bilgilerini paylaş.`;
 
   return completePrompt;
 }
