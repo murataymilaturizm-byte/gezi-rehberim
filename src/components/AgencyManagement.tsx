@@ -490,37 +490,18 @@ export const AgencyManagement = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="twilio_account_sid">Twilio Account SID</Label>
-                    <Input
-                      id="twilio_account_sid"
-                      value={formData.twilio_account_sid}
-                      onChange={(e) => setFormData({ ...formData, twilio_account_sid: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="twilio_auth_token">Twilio Auth Token</Label>
-                    <Input
-                      id="twilio_auth_token"
-                      type="password"
-                      value={formData.twilio_auth_token}
-                      onChange={(e) => setFormData({ ...formData, twilio_auth_token: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="twilio_phone_number">Twilio Telefon Numarası</Label>
+                  <Label htmlFor="whatsapp_api_key">360Dialog API Anahtarı (opsiyonel)</Label>
                   <Input
-                    id="twilio_phone_number"
-                    value={formData.twilio_phone_number}
-                    onChange={(e) => setFormData({ ...formData, twilio_phone_number: e.target.value })}
-                    placeholder="+14155238886"
-                    required
+                    id="whatsapp_api_key"
+                    type="password"
+                    value={formData.whatsapp_api_key}
+                    onChange={(e) => setFormData({ ...formData, whatsapp_api_key: e.target.value })}
+                    placeholder="Acente kendi bağlantısını yapabilir"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Acente kendi dashboard'undan da bağlayabilir
+                  </p>
                 </div>
 
                 <div className="flex gap-2 justify-end">
