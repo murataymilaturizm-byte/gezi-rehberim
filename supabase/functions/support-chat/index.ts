@@ -158,7 +158,7 @@ MAIN TOPICS AND SOLUTIONS:
    - Set quota
 ✅ Step 5: Choose language preferences and conversation style
 ✅ Step 6: Send test message to verify system
-✅ Step 7: Configure Sipay payment (optional but recommended)
+✅ Step 7: Configure PayTR payment (optional but recommended)
 
 2. TOUR MANAGEMENT - DETAILED
 ➕ Adding New Tour:
