@@ -229,7 +229,7 @@ MAIN TOPICS AND SOLUTIONS:
    7. Bot confirms all details
    8. Customer confirms
    9. Bot creates reservation
-   10. Bot sends payment link (if Sipay configured)
+   10. Bot sends payment link (if PayTR configured)
 
 💬 Message Templates:
    - Navigate to "Templates" tab
