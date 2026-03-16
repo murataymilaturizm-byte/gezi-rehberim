@@ -133,7 +133,7 @@ YOUR TASKS:
 - Provide step-by-step guidance for all features
 - Direct to /yardim page for detailed documentation
 - Help with WhatsApp integration issues
-- Guide on payment setup (Sipay)
+- Guide on payment setup (PayTR)
 - Assist with tour and date management
 - Explain reporting and analytics features
 - Help understand plan differences and limitations
