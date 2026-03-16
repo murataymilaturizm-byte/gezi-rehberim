@@ -201,7 +201,7 @@ const Help = () => {
    
 2. **Fiyat Bilgisi**: Otomatik fiyat ve tarih bilgisi verir
 3. **Rezervasyon**: Adım adım rehberlikle rezervasyon alır
-4. **Ödeme Linki**: SiPay ile güvenli ödeme linki gönderir (opsiyonel)
+4. **Ödeme Linki**: PayTR ile güvenli ödeme linki gönderir (opsiyonel)
 5. **Çoklu Dil**: Müşterinin dilini otomatik algılar (7 dil destekli)
 
 **Desteklenen Diller:**
