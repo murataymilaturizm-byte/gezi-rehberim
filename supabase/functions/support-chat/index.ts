@@ -97,7 +97,7 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 - FAQ yönetimi
 - Dil ayarları
 - Konuşma stili seçimi
-- Ödeme ayarları (Sipay)
+- Ödeme ayarları (PayTR)
 - WhatsApp ayarları
 
 🎯 PLAN ÖZELLİKLERİ:
