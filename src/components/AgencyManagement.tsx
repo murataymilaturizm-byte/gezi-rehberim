@@ -106,7 +106,7 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("id, name, city, region, twilio_account_sid, twilio_auth_token, twilio_phone_number, whatsapp_phone_number, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .select("id, name, city, region, whatsapp_phone_number, whatsapp_api_key, threesixty_client_id, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
