@@ -256,9 +256,7 @@ export const AgencyManagement = () => {
       name: agency.name,
       city: agency.city || "",
       region: agency.region || "",
-      twilio_account_sid: agency.twilio_account_sid,
-      twilio_auth_token: agency.twilio_auth_token,
-      twilio_phone_number: agency.twilio_phone_number,
+      whatsapp_api_key: (agency as any).whatsapp_api_key || "",
     });
     setDialogOpen(true);
   };
