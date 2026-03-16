@@ -663,8 +663,8 @@ const Admin = () => {
               <TicketManagement />
             ) : activeTab === "super_tickets" && isSuperAdmin ? (
               <SuperAdminTickets />
-            ) : activeTab === "twilio_settings" && isSuperAdmin ? (
-              <SuperAdminTwilioSettings />
+            ) : activeTab === "whatsapp_settings" && isSuperAdmin ? (
+              <SuperAdminWhatsAppSettings />
             ) : activeTab === "agencies" && isSuperAdmin ? (
               <AgencyManagement />
             ) : activeTab === "contact_forms" && isSuperAdmin ? (

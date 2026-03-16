@@ -135,7 +135,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   const superAdminItems = [
     { id: "agencies", icon: Building2, label: t("admin.tabs.agencies") },
     { id: "contact_forms", icon: Mail, label: t("admin.tabs.contactForms") },
-    { id: "twilio_settings", icon: Phone, label: t("admin.tabs.twilioSettings") },
+    { id: "whatsapp_settings", icon: Phone, label: "WhatsApp Ayarları" },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
   ];
 
