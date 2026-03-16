@@ -333,12 +333,12 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    - Bot auto-detects and responds in customer's language
    - Tour info should be translated for enabled languages
 
-10. SIPAY PAYMENT INTEGRATION
+10. PAYTR PAYMENT INTEGRATION
 💳 Setup Process:
-   - Sign up at Sipay.com.tr
-   - Get Merchant ID and App Secret
+   - Sign up at PayTR.com
+   - Get Merchant ID, Merchant Key and Merchant Salt
    - Enter in Settings > Payment Settings
-   - Test payment to verify
+   - Test payment to verify (test mode available)
    - Bot will automatically send payment links
 
 💰 How It Works:
