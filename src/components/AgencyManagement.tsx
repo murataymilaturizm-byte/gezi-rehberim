@@ -154,9 +154,7 @@ export const AgencyManagement = () => {
             name: formData.name,
             city: formData.city,
             region: formData.region || null,
-            twilio_account_sid: formData.twilio_account_sid,
-            twilio_auth_token: formData.twilio_auth_token,
-            twilio_phone_number: formData.twilio_phone_number,
+            whatsapp_api_key: formData.whatsapp_api_key || null,
           })
           .eq("id", editingAgency.id);
 
