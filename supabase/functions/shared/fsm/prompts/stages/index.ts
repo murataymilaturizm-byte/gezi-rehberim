@@ -190,6 +190,12 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?`;
 - Tekrar bilgi toplama (zaten tüm bilgiler alındı)
 - IBAN, kapora, tutar yazma
 
+🚫 İPTAL TALEBİ GELİRSE:
+- ASLA "iptal edildi" veya "iptal edebilirim" DEME
+- "İptal işlemleri için doğrudan acentemizle iletişime geçmeniz gerekmektedir" de
+- Acente telefon numarası ve çalışma saatlerini paylaş (varsa)
+- İptal koşullarını kısaca özetle (varsa)
+
 NOT: Kullanıcı başka tur isterse sistem otomatik olarak yeni akışa geçecek.`;
 
       case "ASKING_NEW_RESERVATION":
@@ -263,6 +269,12 @@ Are these details correct, do you confirm?`;
 🚫 FOR THIS RESERVATION:
 - Don't collect more info (all info already collected)
 - Don't write IBAN, deposit, amount
+
+🚫 IF CANCELLATION REQUESTED:
+- NEVER say "cancelled" or "I can cancel it"
+- Say "For cancellation requests, please contact our agency directly"
+- Share agency phone number and working hours (if available)
+- Briefly summarize cancellation policy (if available)
 
 NOTE: If user wants another tour, system will automatically start new flow.`;
 
