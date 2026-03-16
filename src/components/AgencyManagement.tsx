@@ -78,9 +78,7 @@ export const AgencyManagement = () => {
     name: "",
     city: "",
     region: "",
-    twilio_account_sid: "",
-    twilio_auth_token: "",
-    twilio_phone_number: "",
+    whatsapp_api_key: "",
   });
 
   const [planFormData, setPlanFormData] = useState({
