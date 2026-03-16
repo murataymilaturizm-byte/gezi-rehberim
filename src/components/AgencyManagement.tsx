@@ -38,9 +38,8 @@ interface Agency {
   name: string;
   city?: string;
   region?: string;
-  twilio_account_sid: string;
-  twilio_auth_token: string;
-  twilio_phone_number: string;
+  whatsapp_api_key?: string;
+  threesixty_client_id?: string;
   whatsapp_phone_number?: string;
   whatsapp_status?: 'pending' | 'active' | 'rejected';
   conversation_style?: 'friendly' | 'professional' | 'energetic' | 'helpful';
