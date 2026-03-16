@@ -36,7 +36,7 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 - 5 Konuşma Stili: Standart, Kurumsal, Dinamik, Premium, Samimi
 - AI Destekli Yanıtlama: Google Gemini 2.5 Flash ile akıllı cevaplar
 - WhatsApp Business API: Tam entegrasyon (Twilio hesabı gerektirmez)
-- Otomatik Ödeme: Sipay entegrasyonu ile güvenli online ödeme
+- Otomatik Ödeme: PayTR entegrasyonu ile güvenli online ödeme
 - Demo Chat: Sistem test edilebilir
 - Çok kısa ve öz yanıtlar: Maksimum 2-3 cümle
 
