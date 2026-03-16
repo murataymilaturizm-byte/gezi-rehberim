@@ -21,7 +21,6 @@ serve(async (req) => {
 
     console.log('Send template message request:', { registrationId, templateKey });
 
-    // Rezervasyon bilgilerini al
     const { data: registration, error: regError } = await supabase
       .from('registrations')
       .select(`
@@ -39,6 +38,7 @@ serve(async (req) => {
         agencies:agency_id (
           id,
           whatsapp_phone_number,
+          whatsapp_api_key,
           name
         )
       `)
@@ -55,8 +55,8 @@ serve(async (req) => {
 
     console.log('Registration found:', registration);
 
-    // Kullanıcı profilinden dil tercihini al
-    let language = 'tr'; // Varsayılan dil
+    // Get user language preference
+    let language = 'tr';
     
     const { data: userProfile } = await supabase
       .from('whatsapp_user_profiles')
@@ -67,12 +67,9 @@ serve(async (req) => {
     
     if (userProfile?.language_preference) {
       language = userProfile.language_preference;
-      console.log('User language preference found:', language);
-    } else {
-      console.log('No user profile found, using default language:', language);
     }
 
-    // Şablonu al
+    // Get template
     const { data: template, error: templateError } = await (supabase as any)
       .from('message_templates')
       .select('*')
@@ -90,17 +87,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Template found:', template.subject);
-
-    // Değişkenleri doldur
+    // Fill variables
     const variables: Record<string, string> = {
       full_name: registration.full_name,
       tour_name: registration.tours?.title || '',
       date: registration.tour_dates?.departure_date 
         ? new Date(registration.tour_dates.departure_date).toLocaleDateString('tr-TR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+            year: 'numeric', month: 'long', day: 'numeric'
           })
         : '',
       pax: registration.pax.toString(),
@@ -111,8 +104,6 @@ serve(async (req) => {
     };
 
     let message = template.content;
-    
-    // Tüm değişkenleri değiştir
     Object.keys(variables).forEach(key => {
       const regex = new RegExp(`\\{${key}\\}`, 'g');
       message = message.replace(regex, variables[key]);
@@ -120,55 +111,51 @@ serve(async (req) => {
 
     console.log('Message prepared:', message.substring(0, 100));
 
-    // WhatsApp mesajı gönder (Twilio üzerinden)
-    const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-    const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+    // Send via 360Dialog API
+    const agency = registration.agencies as any;
+    const apiKey = agency?.whatsapp_api_key;
 
-    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-      console.error('Twilio credentials not configured');
+    if (!apiKey) {
+      console.error('360Dialog API key not configured for agency');
       return new Response(
-        JSON.stringify({ error: 'Twilio not configured' }),
+        JSON.stringify({ error: 'WhatsApp API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Telefon numarasını düzenle (başında + yoksa ekle)
+    // Normalize phone
     let phoneNumber = registration.phone;
-    if (!phoneNumber.startsWith('+')) {
-      phoneNumber = '+' + phoneNumber;
-    }
+    phoneNumber = phoneNumber.replace('whatsapp:', '').replace('+', '').trim();
 
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
-    
-    const formData = new URLSearchParams();
-    formData.append('From', `whatsapp:${twilioPhoneNumber}`);
-    formData.append('To', `whatsapp:${phoneNumber}`);
-    formData.append('Body', message);
-
-    const twilioResponse = await fetch(twilioUrl, {
+    const d360Response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'D360-API-KEY': apiKey,
+        'Content-Type': 'application/json',
       },
-      body: formData.toString(),
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: phoneNumber,
+        type: 'text',
+        text: { body: message },
+      }),
     });
 
-    if (!twilioResponse.ok) {
-      const errorText = await twilioResponse.text();
-      console.error('Twilio error:', errorText);
-      throw new Error(`Twilio error: ${twilioResponse.status}`);
+    if (!d360Response.ok) {
+      const errorText = await d360Response.text();
+      console.error('360Dialog error:', errorText);
+      throw new Error(`360Dialog error: ${d360Response.status}`);
     }
 
-    const twilioData = await twilioResponse.json();
-    console.log('Message sent via Twilio:', twilioData.sid);
+    const d360Data = await d360Response.json();
+    const messageId = d360Data?.messages?.[0]?.id || 'unknown';
+    console.log('Message sent via 360Dialog:', messageId);
 
-    // Mesajı veritabanına kaydet
+    // Save to database
     await supabase
       .from('whatsapp_conversations')
       .insert({
-        phone: phoneNumber.replace('whatsapp:', '').replace('+', ''),
+        phone: phoneNumber,
         role: 'assistant',
         content: message,
         agency_id: registration.agency_id
@@ -177,7 +164,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageSid: twilioData.sid,
+        messageId: messageId,
         template: template.subject 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

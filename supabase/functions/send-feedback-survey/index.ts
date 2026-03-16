@@ -19,7 +19,6 @@ serve(async (req) => {
 
     console.log('Starting feedback survey task...');
 
-    // Dün biten turları bul
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
@@ -50,9 +49,7 @@ serve(async (req) => {
 
     let sentCount = 0;
 
-    // Her tamamlanan tur için
     for (const tourDate of completedTourDates || []) {
-      // Bu tura katılan onaylanmış rezervasyonları bul
       const { data: registrations, error: regError } = await supabase
         .from('registrations')
         .select('phone, full_name')
@@ -67,10 +64,10 @@ serve(async (req) => {
       const tour = Array.isArray(tourDate.tours) ? tourDate.tours[0] : tourDate.tours;
       console.log(`Tour ${tour.title}: ${registrations?.length || 0} participants`);
 
-      // Check if feedback surveys are enabled for this agency's plan
+      // Get agency with API key
       const { data: agency } = await supabase
         .from('agencies')
-        .select('plan_type')
+        .select('plan_type, whatsapp_api_key')
         .eq('id', tour.agency_id)
         .single();
 
@@ -87,9 +84,7 @@ serve(async (req) => {
         }
       }
 
-      // Her katılımcıya anket gönder
       for (const registration of registrations || []) {
-        // Kullanıcı profilini kontrol et
         const { data: userProfile } = await supabase
           .from('whatsapp_user_profiles')
           .select('id, phone, language_preference, last_feedback_sent_at')
@@ -99,7 +94,6 @@ serve(async (req) => {
 
         if (!userProfile) continue;
 
-        // Son 7 gün içinde anket gönderdiyse atla
         if (userProfile.last_feedback_sent_at) {
           const lastSent = new Date(userProfile.last_feedback_sent_at);
           const daysSince = (Date.now() - lastSent.getTime()) / (1000 * 60 * 60 * 24);
@@ -109,22 +103,19 @@ serve(async (req) => {
           }
         }
 
-        // Anket mesajını hazırla
         const surveyMessage = await formatSurveyMessage(
           registration.full_name,
           tour.title,
           userProfile.language_preference || 'tr'
         );
 
-        // WhatsApp mesajı gönder
         const sent = await sendWhatsAppMessage(
-          tour.agency_id,
           registration.phone,
-          surveyMessage
+          surveyMessage,
+          agency?.whatsapp_api_key || null
         );
 
         if (sent) {
-          // Gönderim kaydını güncelle
           await supabase
             .from('whatsapp_user_profiles')
             .update({ last_feedback_sent_at: new Date().toISOString() })
@@ -134,33 +125,22 @@ serve(async (req) => {
           console.log(`✓ Survey sent to ${registration.phone}`);
         }
 
-        // Rate limiting - 1 saniye bekle
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
     console.log(`✓ Feedback survey task completed. Sent ${sentCount} surveys.`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        toursProcessed: completedTourDates?.length || 0,
-        surveysSent: sentCount 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({ success: true, toursProcessed: completedTourDates?.length || 0, surveysSent: sentCount }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
     console.error('Error in send-feedback-survey function:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
@@ -281,41 +261,30 @@ Solo escribe el número. ¡También puedes agregar comentarios detallados! 😊`
 }
 
 async function sendWhatsAppMessage(
-  agencyId: string,
   phoneNumber: string,
-  message: string
+  message: string,
+  apiKey: string | null
 ): Promise<boolean> {
+  if (!apiKey) {
+    console.error('❌ No WhatsApp API key provided');
+    return false;
+  }
+
+  const normalizedTo = phoneNumber.replace('whatsapp:', '').replace('+', '').trim();
+
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Get agency Twilio credentials
-    const { data: agency } = await supabase
-      .from('agencies')
-      .select('twilio_account_sid, twilio_auth_token, whatsapp_phone_number')
-      .eq('id', agencyId)
-      .single();
-
-    if (!agency) return false;
-
-    // Send via Twilio
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${agency.twilio_account_sid}/Messages.json`;
-    const auth = btoa(`${agency.twilio_account_sid}:${agency.twilio_auth_token}`);
-
-    const formData = new URLSearchParams();
-    formData.append('From', `whatsapp:${agency.whatsapp_phone_number}`);
-    formData.append('To', `whatsapp:${phoneNumber}`);
-    formData.append('Body', message);
-
-    const response = await fetch(twilioUrl, {
+    const response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'D360-API-KEY': apiKey,
+        'Content-Type': 'application/json',
       },
-      body: formData.toString(),
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: normalizedTo,
+        type: 'text',
+        text: { body: message },
+      }),
     });
 
     return response.ok;
