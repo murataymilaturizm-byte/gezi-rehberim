@@ -70,7 +70,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
-    const superAdminIds = ["agencies", "contact_forms", "twilio_settings", "super_tickets"];
+    const superAdminIds = ["agencies", "contact_forms", "whatsapp_settings", "super_tickets"];
     
     if (generalIds.includes(activeTab)) return "general";
     if (tourIds.includes(activeTab)) return "tours";
