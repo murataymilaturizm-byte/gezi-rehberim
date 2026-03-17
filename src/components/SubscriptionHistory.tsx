@@ -233,7 +233,7 @@ export const SubscriptionHistory = () => {
       if (!user) return;
 
       // Get user's agency with subscription info
-      let { data: agencyData, error: agencyError } = await supabase
+      const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
         .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name")
         .eq("user_id", user.id)
@@ -241,24 +241,6 @@ export const SubscriptionHistory = () => {
 
       if (agencyError) throw agencyError;
       
-      // If no agency exists, create one automatically
-      if (!agencyData) {
-        const agencyName = user.email?.split('@')[0] || 'Acenta';
-        const { data: newAgency, error: createError } = await supabase
-          .from("agencies")
-          .insert({
-            user_id: user.id,
-            name: agencyName,
-            plan_type: 'starter',
-            subscription_status: 'expired',
-          })
-          .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name")
-          .single();
-
-        if (createError) throw createError;
-        agencyData = newAgency;
-      }
-
       if (agencyData) {
         setAgencyId(agencyData.id);
         setSubscription(agencyData);
@@ -273,6 +255,7 @@ export const SubscriptionHistory = () => {
         if (historyError) throw historyError;
         setHistory(historyData || []);
       }
+      // If no agencyData, subscription stays null - show plan selection without payment
     } catch (error) {
       console.error("Error loading subscription history:", error);
     } finally {
@@ -524,7 +507,7 @@ export const SubscriptionHistory = () => {
                         </li>
                       ))}
                     </ul>
-                    {agencyId && (
+                    {agencyId ? (
                       <SipayPaymentForm
                         agencyId={agencyId}
                         planType={plan.id}
@@ -532,6 +515,13 @@ export const SubscriptionHistory = () => {
                         amount={calculatePrice(plan.price, isYearly)}
                         agencyName="Acenta"
                       />
+                    ) : (
+                      <Alert className="border-primary/20">
+                        <Building2 className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                          Ödeme yapabilmek için önce acente bilgilerinizi kaydetmeniz gerekmektedir. Lütfen "Acente Bilgileri" bölümünden bilgilerinizi girin.
+                        </AlertDescription>
+                      </Alert>
                     )}
                   </CardContent>
                 </Card>
