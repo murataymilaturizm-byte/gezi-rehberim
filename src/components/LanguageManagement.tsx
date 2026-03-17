@@ -149,7 +149,7 @@ export const LanguageManagement = () => {
     }
   };
 
-  const hasChanges = JSON.stringify(enabledLanguages.sort()) !== JSON.stringify(tempEnabledLanguages.sort());
+  const hasChanges = JSON.stringify([...enabledLanguages].sort()) !== JSON.stringify([...tempEnabledLanguages].sort());
 
   if (loading) {
     return (
