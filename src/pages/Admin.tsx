@@ -647,7 +647,7 @@ const Admin = () => {
             ) : activeTab === "complaints" ? (
               <ComplaintsManagement />
             ) : activeTab === "settings" ? (
-              <WhatsAppSettings />
+              <WhatsAppIntegrationPanel />
             ) : activeTab === "payment_settings" ? (
               <PaymentSettings />
             ) : activeTab === "languages" ? (
