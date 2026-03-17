@@ -205,21 +205,23 @@ export const SubscriptionHistory = () => {
     }
   ];
 
-  const calculatePrice = (basePrice: number, yearly: boolean) => {
-    if (yearly && basePrice > 0) {
-      const yearlyPrice = basePrice * 12;
+  const calculatePrice = (basePrice: number | null | undefined, yearly: boolean) => {
+    const price = basePrice || 0;
+    if (yearly && price > 0) {
+      const yearlyPrice = price * 12;
       const discountedPrice = yearlyPrice * 0.9; // %10 indirim
       return discountedPrice;
     }
-    return basePrice;
+    return price;
   };
 
-  const formatPrice = (price: number, yearly: boolean) => {
-    if (price === 0) return t("admin.subscription.customPrice");
+  const formatPrice = (price: number | null | undefined, yearly: boolean) => {
+    const safePrice = price || 0;
+    if (safePrice === 0) return t("admin.subscription.customPrice");
     if (yearly) {
-      return `${price.toLocaleString('tr-TR')}₺/${t("admin.subscription.yearly").toLowerCase()}`;
+      return `${safePrice.toLocaleString('tr-TR')}₺/${t("admin.subscription.yearly").toLowerCase()}`;
     }
-    return `${price.toLocaleString('tr-TR')}₺/${t("admin.subscription.monthly").toLowerCase()}`;
+    return `${safePrice.toLocaleString('tr-TR')}₺/${t("admin.subscription.monthly").toLowerCase()}`;
   };
 
   useEffect(() => {
