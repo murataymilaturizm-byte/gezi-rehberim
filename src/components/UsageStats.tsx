@@ -53,14 +53,22 @@ export const UsageStats = () => {
         setLoading(false);
         return;
       }
-      
-      setUsage(data);
-      
+
+      const normalizedUsage: UsageData = {
+        monthly_message_count: Number(data.monthly_message_count ?? 0),
+        message_limit: Number(data.message_limit ?? 0),
+        plan_type: data.plan_type || "starter",
+        last_message_reset_date: data.last_message_reset_date || new Date().toISOString(),
+        subscription_status: data.subscription_status || "trial",
+        trial_ends_at: data.trial_ends_at ?? undefined,
+        subscription_ends_at: data.subscription_ends_at ?? undefined,
+      };
+
+      setUsage(normalizedUsage);
+
       // Load plan features
-      if (data) {
-        const features = await getPlanFeatures(data.plan_type);
-        setPlanFeatures(features);
-      }
+      const features = await getPlanFeatures(normalizedUsage.plan_type);
+      setPlanFeatures(features);
     } catch (error) {
       console.error('Error loading usage data:', error);
       toast({
