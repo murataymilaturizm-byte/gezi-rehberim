@@ -267,8 +267,9 @@ export const WhatsAppIntegrationPanel = () => {
           </div>
         </CardContent>
       </Card>
+      )}
 
-      {/* Info Form - Only show when waiting_info */}
+      {/* Info Form */}
       {showForm && (
         <Card>
           <CardHeader>
