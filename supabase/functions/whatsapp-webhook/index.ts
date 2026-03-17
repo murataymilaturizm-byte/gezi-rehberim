@@ -82,6 +82,7 @@ serve(async (req) => {
     }
 
     // Resolve agency from webhook metadata
+    console.log(`🔍 Webhook phoneNumberId: "${webhookData.phoneNumberId}", from: "${userPhone}"`);
     const { agency, error: agencyError } = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
 
     if (agencyError || !agency) {
