@@ -273,9 +273,14 @@ export const WhatsAppIntegrationPanel = () => {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Kurulum Bilgileri</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              {integration ? "Kurulum Bilgileri" : "WhatsApp Entegrasyonu Başvurusu"}
+            </CardTitle>
             <CardDescription>
-              WhatsApp entegrasyonunuz için gerekli bilgileri doldurun.
+              {integration
+                ? "WhatsApp entegrasyonunuz için gerekli bilgileri doldurun."
+                : "Aşağıdaki formu doldurun, ekibimiz sizinle iletişime geçecek."}
             </CardDescription>
           </CardHeader>
           <CardContent>
