@@ -620,7 +620,7 @@ export const SubscriptionHistory = () => {
               </ul>
             </div>
 
-            {/* Warning for trial/expired status */}
+            {/* Warning for trial/expired status - show all plans with payment */}
             {(subscription.subscription_status === "trial" || 
               subscription.subscription_status === "expired" || 
               subscription.subscription_status === "cancelled") && (
@@ -635,19 +635,68 @@ export const SubscriptionHistory = () => {
                     )}
                     {(subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") && (
                       <>
-                        <strong>{t("admin.subscription.expired")}:</strong> {t("admin.subscription.expiredMessage")}
+                        <strong>{t("admin.subscription.expired")}:</strong> Aboneliğiniz sona erdi. Devam etmek için bir plan seçip ödeme yapın.
                       </>
                     )}
                   </AlertDescription>
                 </Alert>
                 
-                <SipayPaymentForm
-                  agencyId={agencyId}
-                  planType={subscription.plan_type}
-                  isYearly={isYearly}
-                  amount={calculatePrice(currentPlan?.price || 0, isYearly)}
-                  agencyName={subscription.name || "Acenta"}
-                />
+                <div className="grid md:grid-cols-3 gap-4">
+                  {planOptions.map((plan) => (
+                    <Card 
+                      key={plan.id} 
+                      className={`relative border-border hover:border-primary/50 transition-all ${
+                        plan.popular ? 'ring-2 ring-primary' : ''
+                      } ${plan.id === subscription.plan_type ? 'border-primary bg-primary/5' : ''}`}
+                    >
+                      {plan.popular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <Badge className="bg-gradient-ocean text-primary-foreground">
+                            {t("admin.subscription.popular")}
+                          </Badge>
+                        </div>
+                      )}
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <plan.icon className="h-5 w-5 text-primary" />
+                          <h5 className="font-semibold text-lg text-foreground">{plan.name}</h5>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-primary">
+                            {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
+                          </p>
+                          {isYearly && plan.price > 0 && (
+                            <div className="mt-1">
+                              <p className="text-xs text-muted-foreground line-through">
+                                {(plan.price * 12).toLocaleString('tr-TR')}₺/{t("admin.subscription.yearly").toLowerCase()}
+                              </p>
+                              <p className="text-xs text-green-600 font-medium">
+                                {t("admin.subscription.discounted")}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <ul className="space-y-2">
+                          {plan.features.map((feature, index) => (
+                            <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <CheckCircle2 className="h-3 w-3 text-primary flex-shrink-0" />
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                        {agencyId && (
+                          <SipayPaymentForm
+                            agencyId={agencyId}
+                            planType={plan.id}
+                            isYearly={isYearly}
+                            amount={calculatePrice(plan.price, isYearly)}
+                            agencyName={subscription.name || "Acenta"}
+                          />
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
 
