@@ -611,7 +611,7 @@ const Admin = () => {
           {/* Main Content */}
           <main className="flex-1 p-6 space-y-6">
           <ErrorBoundary fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
-            {!isSuperAdmin && <SubscriptionBanner />}
+            {!isSuperAdmin && <SubscriptionBanner onNavigateToPlan={() => setActiveTab("history")} />}
             
             {/* Language Selection Warning */}
             {!isSuperAdmin && enabledLanguages.length === 0 && (
