@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock, Phone, Wifi, Link2 } from "lucide-react";
+import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock, Phone, Wifi, Link2, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
 import {
   Select,
   SelectContent,
@@ -18,12 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getPlanFeatures } from "@/utils/planFeatures";
-
-const whatsappSchema = z.object({
-  whatsapp_phone_number: z.string()
-    .trim()
-    .regex(/^\+[1-9]\d{1,14}$/, { message: "Geçerli bir telefon numarası girin (örn: +905551234567)" })
-});
 
 export const WhatsAppSettings = () => {
   const { t } = useTranslation();
@@ -35,12 +28,14 @@ export const WhatsAppSettings = () => {
   const [whatsappStatus, setWhatsappStatus] = useState<'pending' | 'active' | 'rejected'>('pending');
   const [planType, setPlanType] = useState<string>('starter');
   const [availableStyles, setAvailableStyles] = useState<string[]>(['professional']);
-  const [hasMetaCredentials, setHasMetaCredentials] = useState(false);
   
   const [formData, setFormData] = useState({
     whatsapp_phone_number: "",
+    meta_phone_number_id: "",
     conversation_style: "professional" as 'friendly' | 'professional' | 'energetic' | 'helpful'
   });
+
+  const WEBHOOK_URL = `https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/whatsapp-webhook`;
 
   useEffect(() => {
     loadWhatsAppSettings();
@@ -54,7 +49,7 @@ export const WhatsAppSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, whatsapp_phone_number, whatsapp_status, active, conversation_style, plan_type, whatsapp_connected_at")
+        .select("id, whatsapp_phone_number, whatsapp_status, active, conversation_style, plan_type, whatsapp_connected_at, meta_phone_number_id")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -73,15 +68,15 @@ export const WhatsAppSettings = () => {
         const phoneNumber = agencyData.whatsapp_phone_number || "";
         const status = agencyData.whatsapp_status || "pending";
         const connectedAt = agencyData.whatsapp_connected_at;
+        const metaPhoneId = agencyData.meta_phone_number_id || "";
         
-        // Check if Meta credentials are configured (global or agency-level)
         const configured = phoneNumber !== "" && connectedAt !== null;
         setIsConfigured(configured);
         setWhatsappStatus(status as 'pending' | 'active' | 'rejected');
-        setHasMetaCredentials(!!connectedAt);
 
         setFormData({
           whatsapp_phone_number: phoneNumber,
+          meta_phone_number_id: metaPhoneId,
           conversation_style: (agencyData.conversation_style || 'professional') as 'friendly' | 'professional' | 'energetic' | 'helpful'
         });
       }
@@ -97,14 +92,13 @@ export const WhatsAppSettings = () => {
     }
   };
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  const handleSaveConnection = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validation = whatsappSchema.safeParse(formData);
-    if (!validation.success) {
+    if (!formData.whatsapp_phone_number.trim()) {
       toast({
-        title: t("common.error"),
-        description: validation.error.errors[0].message,
+        title: "Hata",
+        description: "Lütfen WhatsApp numaranızı girin",
         variant: "destructive"
       });
       return;
@@ -122,26 +116,24 @@ export const WhatsAppSettings = () => {
     setSaving(true);
     
     try {
-      const updateData: any = {
-        whatsapp_phone_number: formData.whatsapp_phone_number,
-        whatsapp_status: 'active',
-        whatsapp_connected_at: new Date().toISOString(),
-      };
-
       const { error } = await supabase
         .from("agencies")
-        .update(updateData)
+        .update({
+          whatsapp_phone_number: formData.whatsapp_phone_number,
+          meta_phone_number_id: formData.meta_phone_number_id || null,
+          whatsapp_status: 'active',
+          whatsapp_connected_at: new Date().toISOString(),
+        })
         .eq("id", agencyId);
 
       if (error) throw error;
 
       setIsConfigured(true);
       setWhatsappStatus('active');
-      setHasMetaCredentials(true);
 
       toast({
-        title: t("common.success"),
-        description: "WhatsApp ayarları kaydedildi",
+        title: "Başarılı",
+        description: "WhatsApp Meta Cloud API bağlantısı kaydedildi",
       });
 
       await loadWhatsAppSettings();
@@ -187,6 +179,11 @@ export const WhatsAppSettings = () => {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "Kopyalandı", description: "Panoya kopyalandı" });
+  };
+
   if (loading) {
     return (
       <Card>
@@ -205,46 +202,88 @@ export const WhatsAppSettings = () => {
 
   return (
     <div className="space-y-6">
-      {/* WhatsApp Business Number Section */}
+      {/* Connection Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wifi className="h-5 w-5" />
-            WhatsApp Business Bağlantısı
+            Meta Cloud API Bağlantısı
           </CardTitle>
           <CardDescription>
-            Meta Cloud API üzerinden WhatsApp Business numaranızı bağlayın
+            WhatsApp Business hesabınızı Meta Cloud API üzerinden bağlayın
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!isConfigured && (
+          {isConfigured && whatsappStatus === 'active' ? (
+            <Alert className="mb-6 border-green-500/50 bg-green-500/10">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <AlertDescription className="text-green-600">
+                ✅ Meta Cloud API bağlantısı aktif! Mesajlar otomatik olarak AI chatbot tarafından yanıtlanıyor.
+              </AlertDescription>
+            </Alert>
+          ) : (
             <Alert className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                WhatsApp entegrasyonu henüz yapılandırılmamış. WhatsApp Business numaranızı girerek başlayın.
+                WhatsApp entegrasyonu henüz yapılandırılmamış. Aşağıdaki adımları takip ederek bağlantıyı kurun.
               </AlertDescription>
             </Alert>
           )}
 
-          {isConfigured && whatsappStatus === 'active' && (
-            <Alert className="mb-6 border-green-500/50 bg-green-500/10">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-              <AlertDescription className="text-green-500">
-                ✅ WhatsApp bağlantısı aktif! Mesajlar Meta Cloud API üzerinden gönderilecek.
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* Setup Steps */}
+          <div className="space-y-4 mb-6">
+            <h4 className="font-semibold text-sm">📋 Kurulum Adımları</h4>
+            <div className="space-y-3 text-sm">
+              <div className="flex gap-3 items-start">
+                <Badge variant="outline" className="shrink-0 mt-0.5">1</Badge>
+                <div>
+                  <p className="font-medium">Meta Developer Hesabı</p>
+                  <p className="text-muted-foreground">
+                    <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+                      Meta for Developers <ExternalLink className="h-3 w-3" />
+                    </a> 
+                    {" "}adresinden bir uygulama oluşturun ve WhatsApp ürünü ekleyin.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start">
+                <Badge variant="outline" className="shrink-0 mt-0.5">2</Badge>
+                <div>
+                  <p className="font-medium">Webhook URL'ini Yapıştırın</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="text-xs bg-muted px-2 py-1 rounded break-all flex-1">{WEBHOOK_URL}</code>
+                    <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7" onClick={() => copyToClipboard(WEBHOOK_URL)}>
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <p className="text-muted-foreground mt-1">
+                    Meta Developer Console → WhatsApp → Configuration → Webhook URL
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start">
+                <Badge variant="outline" className="shrink-0 mt-0.5">3</Badge>
+                <div>
+                  <p className="font-medium">Verify Token</p>
+                  <p className="text-muted-foreground">
+                    Webhook doğrulama token'ı olarak süper admin tarafından belirlenen token'ı girin.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start">
+                <Badge variant="outline" className="shrink-0 mt-0.5">4</Badge>
+                <div>
+                  <p className="font-medium">Aşağıdaki bilgileri doldurun</p>
+                  <p className="text-muted-foreground">
+                    WhatsApp Business numaranızı ve Phone Number ID'nizi girin.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          {isConfigured && whatsappStatus === 'pending' && (
-            <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
-              <AlertCircle className="h-4 w-4 text-yellow-500" />
-              <AlertDescription className="text-yellow-600">
-                {t("admin.whatsapp.status.requestReceived")}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <form onSubmit={handlePhoneSubmit} className="space-y-4">
+          {/* Connection Form */}
+          <form onSubmit={handleSaveConnection} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="whatsapp_phone_number">
                 WhatsApp Business Numarası
@@ -259,24 +298,56 @@ export const WhatsAppSettings = () => {
                 required
               />
               <p className="text-sm text-muted-foreground">
-                Meta Cloud API'ye bağlı WhatsApp Business numaranız
+                Ülke kodu ile başlayan WhatsApp Business numaranız
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="meta_phone_number_id">
+                Meta Phone Number ID
+              </Label>
+              <Input
+                id="meta_phone_number_id"
+                placeholder="123456789012345"
+                value={formData.meta_phone_number_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, meta_phone_number_id: e.target.value })
+                }
+              />
+              <p className="text-sm text-muted-foreground">
+                Meta Developer Console → WhatsApp → Getting Started bölümünden bulabilirsiniz
               </p>
             </div>
 
             <Button type="submit" disabled={saving} className="w-full">
-              {saving ? t("admin.whatsapp.settings.saving") : isConfigured ? "Güncelle" : "Kaydet ve Bağla"}
+              {saving ? t("admin.whatsapp.settings.saving") : isConfigured ? "Bağlantıyı Güncelle" : "Meta Cloud API'ye Bağlan"}
             </Button>
           </form>
 
+          {/* Status Info */}
           {isConfigured && whatsappStatus === 'active' && (
-            <div className="mt-6 p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-2">✅ Entegrasyon Tamamlandı</h4>
-              <p className="text-sm text-muted-foreground">
-                WhatsApp Business numaranız ({formData.whatsapp_phone_number}) Meta Cloud API üzerinden bağlı. 
-                Gelen mesajlar otomatik olarak AI chatbot tarafından yanıtlanacak.
-              </p>
+            <div className="mt-6 p-4 bg-muted rounded-lg space-y-2">
+              <h4 className="font-semibold text-sm">📊 Bağlantı Bilgileri</h4>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>• <strong>Numara:</strong> {formData.whatsapp_phone_number}</p>
+                {formData.meta_phone_number_id && (
+                  <p>• <strong>Phone Number ID:</strong> {formData.meta_phone_number_id}</p>
+                )}
+                <p>• <strong>API:</strong> Meta Cloud API v18.0</p>
+                <p>• <strong>Durum:</strong> <span className="text-green-600 font-medium">Aktif</span></p>
+              </div>
             </div>
           )}
+
+          {/* Important Notes */}
+          <div className="mt-4 p-4 bg-muted rounded-lg">
+            <h4 className="font-semibold text-sm mb-2">⚠️ Önemli Notlar</h4>
+            <ul className="text-xs text-muted-foreground space-y-1">
+              <li>• 24 saat kuralı: Müşteriden son mesajın üzerinden 24 saat geçtiyse sadece şablon mesajı gönderilebilir</li>
+              <li>• Access Token süresi dolabilir — periyodik olarak yenilenmesi gerekebilir</li>
+              <li>• Webhook aboneliğinde <strong>messages</strong> alanını seçmeyi unutmayın</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
 
@@ -285,35 +356,22 @@ export const WhatsAppSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />
-            WhatsApp Hesabınızı Bağlayın
+            Tek Tıkla Bağlantı (Embedded Signup)
           </CardTitle>
           <CardDescription>
-            WhatsApp Business hesabınızı bağlamak için aşağıdaki butona tıklayın. 
-            Kendi numaranızla müşterilerinize mesaj gönderebilirsiniz.
+            İleride WhatsApp Business hesabınızı tek tıkla bağlayabileceksiniz
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Badge variant={hasMetaCredentials ? "default" : "secondary"}>
-                {hasMetaCredentials ? "✅ Bağlı" : "❌ Bağlı Değil"}
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                {hasMetaCredentials 
-                  ? "WhatsApp Business hesabınız başarıyla bağlandı" 
-                  : "Henüz bir WhatsApp Business hesabı bağlanmadı"
-                }
-              </span>
-            </div>
-
             <Button disabled className="w-full" variant="outline">
               <Phone className="h-4 w-4 mr-2" />
-              WhatsApp Bağla
+              WhatsApp Bağla (Embedded Signup)
               <Badge variant="outline" className="ml-2 text-xs">Yakında</Badge>
             </Button>
             
             <p className="text-xs text-muted-foreground text-center">
-              Embedded Signup özelliği yakında aktif olacak. Şu anda WhatsApp bağlantısı admin tarafından yapılmaktadır.
+              Bu özellik yakında aktif olacak. Şu anda yukarıdaki manuel kurulum adımlarını kullanabilirsiniz.
             </p>
           </div>
         </CardContent>
