@@ -183,37 +183,7 @@ export const WhatsAppIntegrationPanel = () => {
     );
   }
 
-  // No integration yet - show request button
-  if (!integration) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            WhatsApp Entegrasyonu
-          </CardTitle>
-          <CardDescription>
-            WhatsApp Business hesabınızı bağlayarak müşterilerinize AI destekli otomatik yanıtlar sunun.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-6 border border-dashed rounded-lg text-center space-y-4">
-            <Phone className="h-12 w-12 mx-auto text-muted-foreground" />
-            <div>
-              <h3 className="font-semibold text-lg">WhatsApp Entegrasyonu Başlatın</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Ekibimiz WhatsApp Business API hesabınızı yapılandıracak ve AI chatbot'unuzu aktif edecek.
-              </p>
-            </div>
-            <Button onClick={handleRequestIntegration} disabled={saving} size="lg">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-              Entegrasyon Talep Et
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const showForm = !integration || integration.status === "waiting_info";
 
   return (
     <div className="space-y-6">
