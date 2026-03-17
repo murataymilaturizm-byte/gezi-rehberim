@@ -103,7 +103,7 @@ const Admin = () => {
   const { toast } = useToast();
   
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "my_plan" | "agencies" | "contact_forms" | "whatsapp_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "whatsapp_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   
   // Auth & User state
   const [session, setSession] = useState<Session | null>(null);
