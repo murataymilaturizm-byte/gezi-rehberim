@@ -1,4 +1,4 @@
-// WhatsApp webhook - Clean FSM with shared core (360Dialog)
+// WhatsApp webhook - Clean FSM with shared core (Meta Cloud API)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -13,8 +13,8 @@ import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } 
 import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
-// 360Dialog utilities
-import { extract360WebhookData, send360Message, resolveAgencyByPhone } from "./utils/threesixty.ts";
+// Meta Cloud API utilities
+import { extractMetaWebhookData, sendWhatsAppMessage, resolveAgencyByPhoneNumberId, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
 
 // WhatsApp services
@@ -35,7 +35,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // 360Dialog webhook verification (GET)
+  // Meta webhook verification (GET)
   if (req.method === "GET") {
     const url = new URL(req.url);
     const mode = url.searchParams.get("hub.mode");
@@ -56,12 +56,12 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
-    // Extract message from 360Dialog webhook format
-    const webhookData = extract360WebhookData(body);
+    // Extract message from Meta Cloud API webhook format
+    const webhookData = extractMetaWebhookData(body);
 
     if (!webhookData) {
       return new Response(JSON.stringify({ error: "Invalid webhook data" }), {
-        status: 200, // Always return 200 to 360Dialog
+        status: 200, // Always return 200 to Meta
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -82,7 +82,7 @@ serve(async (req) => {
     }
 
     // Resolve agency from webhook metadata
-    const { agency, error: agencyError } = await resolveAgencyByPhone(supabase, '', body);
+    const { agency, error: agencyError } = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
 
     if (agencyError || !agency) {
       console.error(`🚫 Agency not found: ${agencyError}`);
@@ -92,10 +92,10 @@ serve(async (req) => {
       });
     }
 
-    // Check agency has 360Dialog API key
-    const agencyApiKey = agency.whatsapp_api_key;
-    if (!agencyApiKey) {
-      console.error(`❌ Agency ${agency.name} has no WhatsApp API key configured`);
+    // Get Meta WhatsApp credentials
+    const metaCredentials = getMetaCredentials(agency);
+    if (!metaCredentials.accessToken || !metaCredentials.phoneNumberId) {
+      console.error(`❌ Agency ${agency.name} has no Meta WhatsApp credentials configured`);
       return new Response(JSON.stringify({ error: "WhatsApp not configured" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -262,8 +262,8 @@ serve(async (req) => {
             content: response,
             agency_id: agency.id,
           });
-          // Send via 360Dialog
-          await send360Message(agencyApiKey, userPhone, truncateForWhatsApp(response));
+          // Send via Meta Cloud API
+          await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(response));
           return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -279,7 +279,7 @@ serve(async (req) => {
           content: faqResponse,
           agency_id: agency.id,
         });
-        await send360Message(agencyApiKey, userPhone, truncateForWhatsApp(faqResponse));
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(faqResponse));
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -801,9 +801,9 @@ NEVER switch tours automatically, only ask for confirmation!`;
       agency_id: agency.id,
     });
 
-    // Send reply via 360Dialog API
+    // Send reply via Meta Cloud API
     const truncatedReply = truncateForWhatsApp(finalReply);
-    await send360Message(agencyApiKey, userPhone, truncatedReply);
+    await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncatedReply);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

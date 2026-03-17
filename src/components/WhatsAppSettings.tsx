@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock, Phone, Wifi } from "lucide-react";
+import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock, Phone, Wifi, Link2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import {
@@ -35,11 +35,10 @@ export const WhatsAppSettings = () => {
   const [whatsappStatus, setWhatsappStatus] = useState<'pending' | 'active' | 'rejected'>('pending');
   const [planType, setPlanType] = useState<string>('starter');
   const [availableStyles, setAvailableStyles] = useState<string[]>(['professional']);
-  const [hasApiKey, setHasApiKey] = useState(false);
+  const [hasMetaCredentials, setHasMetaCredentials] = useState(false);
   
   const [formData, setFormData] = useState({
     whatsapp_phone_number: "",
-    whatsapp_api_key: "",
     conversation_style: "professional" as 'friendly' | 'professional' | 'energetic' | 'helpful'
   });
 
@@ -55,7 +54,7 @@ export const WhatsAppSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, whatsapp_phone_number, whatsapp_status, whatsapp_api_key, active, conversation_style, plan_type")
+        .select("id, whatsapp_phone_number, whatsapp_status, active, conversation_style, plan_type, whatsapp_connected_at")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -63,7 +62,7 @@ export const WhatsAppSettings = () => {
 
       if (agencyData) {
         setAgencyId(agencyData.id);
-        const currentPlanType = (agencyData as any).plan_type || 'starter';
+        const currentPlanType = agencyData.plan_type || 'starter';
         setPlanType(currentPlanType);
         
         const features = await getPlanFeatures(currentPlanType);
@@ -71,19 +70,19 @@ export const WhatsAppSettings = () => {
           setAvailableStyles(features.available_styles);
         }
         
-        const phoneNumber = (agencyData as any).whatsapp_phone_number || "";
-        const status = (agencyData as any).whatsapp_status || "pending";
-        const apiKey = (agencyData as any).whatsapp_api_key || "";
-        const configured = phoneNumber !== "" && apiKey !== "";
+        const phoneNumber = agencyData.whatsapp_phone_number || "";
+        const status = agencyData.whatsapp_status || "pending";
+        const connectedAt = agencyData.whatsapp_connected_at;
         
+        // Check if Meta credentials are configured (global or agency-level)
+        const configured = phoneNumber !== "" && connectedAt !== null;
         setIsConfigured(configured);
-        setWhatsappStatus(status);
-        setHasApiKey(!!apiKey);
+        setWhatsappStatus(status as 'pending' | 'active' | 'rejected');
+        setHasMetaCredentials(!!connectedAt);
 
         setFormData({
           whatsapp_phone_number: phoneNumber,
-          whatsapp_api_key: apiKey ? "••••••••" + apiKey.slice(-8) : "",
-          conversation_style: (agencyData as any).conversation_style || 'professional'
+          conversation_style: agencyData.conversation_style || 'professional'
         });
       }
     } catch (error) {
@@ -125,15 +124,9 @@ export const WhatsAppSettings = () => {
     try {
       const updateData: any = {
         whatsapp_phone_number: formData.whatsapp_phone_number,
-        whatsapp_status: 'pending'
+        whatsapp_status: 'active',
+        whatsapp_connected_at: new Date().toISOString(),
       };
-
-      // Only update API key if it's not the masked version
-      if (formData.whatsapp_api_key && !formData.whatsapp_api_key.startsWith("••••")) {
-        updateData.whatsapp_api_key = formData.whatsapp_api_key;
-        updateData.whatsapp_connected_at = new Date().toISOString();
-        updateData.whatsapp_status = 'active';
-      }
 
       const { error } = await supabase
         .from("agencies")
@@ -143,10 +136,8 @@ export const WhatsAppSettings = () => {
       if (error) throw error;
 
       setIsConfigured(true);
-      if (updateData.whatsapp_api_key) {
-        setWhatsappStatus('active');
-        setHasApiKey(true);
-      }
+      setWhatsappStatus('active');
+      setHasMetaCredentials(true);
 
       toast({
         title: t("common.success"),
@@ -214,15 +205,15 @@ export const WhatsAppSettings = () => {
 
   return (
     <div className="space-y-6">
-      {/* WhatsApp Business Number & API Key Section */}
+      {/* WhatsApp Business Number Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wifi className="h-5 w-5" />
-            WhatsApp 360Dialog Bağlantısı
+            WhatsApp Business Bağlantısı
           </CardTitle>
           <CardDescription>
-            360Dialog API anahtarınızı ve WhatsApp Business numaranızı girin
+            Meta Cloud API üzerinden WhatsApp Business numaranızı bağlayın
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -230,16 +221,16 @@ export const WhatsAppSettings = () => {
             <Alert className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                WhatsApp entegrasyonu henüz yapılandırılmamış. 360Dialog hesabınızdaki API anahtarınızı girerek başlayın.
+                WhatsApp entegrasyonu henüz yapılandırılmamış. WhatsApp Business numaranızı girerek başlayın.
               </AlertDescription>
             </Alert>
           )}
 
-          {isConfigured && whatsappStatus === 'active' && hasApiKey && (
+          {isConfigured && whatsappStatus === 'active' && (
             <Alert className="mb-6 border-green-500/50 bg-green-500/10">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               <AlertDescription className="text-green-500">
-                ✅ WhatsApp bağlantısı aktif! Mesajlar 360Dialog üzerinden gönderilecek.
+                ✅ WhatsApp bağlantısı aktif! Mesajlar Meta Cloud API üzerinden gönderilecek.
               </AlertDescription>
             </Alert>
           )}
@@ -268,26 +259,7 @@ export const WhatsAppSettings = () => {
                 required
               />
               <p className="text-sm text-muted-foreground">
-                360Dialog'a bağlı WhatsApp Business numaranız
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp_api_key">
-                360Dialog API Anahtarı (D360-API-KEY)
-              </Label>
-              <Input
-                id="whatsapp_api_key"
-                type="password"
-                placeholder="API anahtarınızı girin"
-                value={formData.whatsapp_api_key}
-                onChange={(e) =>
-                  setFormData({ ...formData, whatsapp_api_key: e.target.value })
-                }
-                required
-              />
-              <p className="text-sm text-muted-foreground">
-                360Dialog hesabınızdaki API anahtarını buraya girin
+                Meta Cloud API'ye bağlı WhatsApp Business numaranız
               </p>
             </div>
 
@@ -300,11 +272,50 @@ export const WhatsAppSettings = () => {
             <div className="mt-6 p-4 bg-muted rounded-lg">
               <h4 className="font-semibold mb-2">✅ Entegrasyon Tamamlandı</h4>
               <p className="text-sm text-muted-foreground">
-                WhatsApp Business numaranız ({formData.whatsapp_phone_number}) 360Dialog üzerinden bağlı. 
+                WhatsApp Business numaranız ({formData.whatsapp_phone_number}) Meta Cloud API üzerinden bağlı. 
                 Gelen mesajlar otomatik olarak AI chatbot tarafından yanıtlanacak.
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Embedded Signup Placeholder */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Link2 className="h-5 w-5" />
+            WhatsApp Hesabınızı Bağlayın
+          </CardTitle>
+          <CardDescription>
+            WhatsApp Business hesabınızı bağlamak için aşağıdaki butona tıklayın. 
+            Kendi numaranızla müşterilerinize mesaj gönderebilirsiniz.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Badge variant={hasMetaCredentials ? "default" : "secondary"}>
+                {hasMetaCredentials ? "✅ Bağlı" : "❌ Bağlı Değil"}
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                {hasMetaCredentials 
+                  ? "WhatsApp Business hesabınız başarıyla bağlandı" 
+                  : "Henüz bir WhatsApp Business hesabı bağlanmadı"
+                }
+              </span>
+            </div>
+
+            <Button disabled className="w-full" variant="outline">
+              <Phone className="h-4 w-4 mr-2" />
+              WhatsApp Bağla
+              <Badge variant="outline" className="ml-2 text-xs">Yakında</Badge>
+            </Button>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              Embedded Signup özelliği yakında aktif olacak. Şu anda WhatsApp bağlantısı admin tarafından yapılmaktadır.
+            </p>
+          </div>
         </CardContent>
       </Card>
 

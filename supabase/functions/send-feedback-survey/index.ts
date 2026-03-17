@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendWhatsAppMessage, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -64,10 +65,10 @@ serve(async (req) => {
       const tour = Array.isArray(tourDate.tours) ? tourDate.tours[0] : tourDate.tours;
       console.log(`Tour ${tour.title}: ${registrations?.length || 0} participants`);
 
-      // Get agency with API key
+      // Get agency with credentials
       const { data: agency } = await supabase
         .from('agencies')
-        .select('plan_type, whatsapp_api_key')
+        .select('id, plan_type, meta_phone_number_id, meta_access_token')
         .eq('id', tour.agency_id)
         .single();
 
@@ -103,19 +104,27 @@ serve(async (req) => {
           }
         }
 
-        const surveyMessage = await formatSurveyMessage(
+        const surveyMessage = formatSurveyMessage(
           registration.full_name,
           tour.title,
           userProfile.language_preference || 'tr'
         );
 
-        const sent = await sendWhatsAppMessage(
+        const credentials = getMetaCredentials(agency);
+        
+        if (!credentials.accessToken || !credentials.phoneNumberId) {
+          console.error(`❌ No Meta credentials for agency`);
+          continue;
+        }
+
+        const result = await sendWhatsAppMessage(
+          credentials.phoneNumberId,
+          credentials.accessToken,
           registration.phone,
-          surveyMessage,
-          agency?.whatsapp_api_key || null
+          surveyMessage
         );
 
-        if (sent) {
+        if (result.success) {
           await supabase
             .from('whatsapp_user_profiles')
             .update({ last_feedback_sent_at: new Date().toISOString() })
@@ -145,11 +154,11 @@ serve(async (req) => {
   }
 });
 
-async function formatSurveyMessage(
+function formatSurveyMessage(
   customerName: string,
   tourTitle: string,
   language: string
-): Promise<string> {
+): string {
   const messages: Record<string, string> = {
     tr: `Merhaba ${customerName}! 👋
 
@@ -258,38 +267,4 @@ Solo escribe el número. ¡También puedes agregar comentarios detallados! 😊`
   };
 
   return messages[language] || messages.tr;
-}
-
-async function sendWhatsAppMessage(
-  phoneNumber: string,
-  message: string,
-  apiKey: string | null
-): Promise<boolean> {
-  if (!apiKey) {
-    console.error('❌ No WhatsApp API key provided');
-    return false;
-  }
-
-  const normalizedTo = phoneNumber.replace('whatsapp:', '').replace('+', '').trim();
-
-  try {
-    const response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
-      method: 'POST',
-      headers: {
-        'D360-API-KEY': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to: normalizedTo,
-        type: 'text',
-        text: { body: message },
-      }),
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error('Error sending WhatsApp message:', error);
-    return false;
-  }
 }
