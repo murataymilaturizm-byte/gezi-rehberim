@@ -9,6 +9,7 @@ import Admin from "./pages/Admin";
 import GettingStarted from "./pages/GettingStarted";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import "./i18n";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/nasil-baslarim" element={<GettingStarted />} />
           <Route path="/yardim" element={<Help />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
