@@ -801,6 +801,7 @@ const Admin = () => {
                 </CardContent>
               </Card>
             ) : null}
+          </ErrorBoundary>
           </main>
 
       {/* Dialogs */}
