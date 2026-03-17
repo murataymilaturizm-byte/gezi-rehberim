@@ -26,30 +26,34 @@ serve(async (req) => {
       throw new Error("PayTR credentials not configured");
     }
 
+    // Get user IP
     const forwardedFor = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "127.0.0.1";
     const userIp = forwardedFor.split(",")[0].trim();
 
+    // Generate order ID
     const merchantOid = `ORDER${agencyId.replace(/-/g, "").slice(0, 8)}${Date.now()}`;
-    const paymentAmount = Math.round(amount * 100);
+    
+    // Payment details - Direct API uses decimal format like "999.00"
+    const paymentAmount = amount.toFixed(2);
     const email = "billing@turzzai.com";
-    const debugOn = "1";
     const testMode = "1";
-    const noInstallment = "0";
-    const maxInstallment = "0";
-    const timeoutLimit = "30";
+    const non3d = "0"; // Use 3D Secure
     const currency = "TL";
+    const paymentType = "card";
+    const installmentCount = "0"; // No installment
+
     const appBaseUrl = req.headers.get("origin") || "https://gezi-rehberim.lovable.app";
     const merchantOkUrl = `${appBaseUrl}/admin?payment=success`;
     const merchantFailUrl = `${appBaseUrl}/admin?payment=failed`;
-    const cleanAgencyName = (agencyName || "Agency").replace(/[^\x00-\x7F]/g, "");
 
-    const userBasket = btoa(
-      JSON.stringify([[`${planType} Plan - ${isYearly ? "Yillik" : "Aylik"}`, amount.toFixed(2), 1]])
-    );
+    // Sanitize for safe encoding
+    const cleanAgencyName = (agencyName || "Agency").replace(/[^\x00-\x7F]/g, "A");
+    const planLabel = `${planType} Plan ${isYearly ? "Yillik" : "Aylik"}`;
 
-    // PayTR docs: hash_str = merchant_id + user_ip + merchant_oid + email + payment_amount + user_basket + no_installment + max_installment + currency + test_mode
-    // paytr_token = base64(hmac_sha256(hash_str + merchant_salt, merchant_key))
-    const hashStr = `${merchantId}${userIp}${merchantOid}${email}${paymentAmount}${userBasket}${noInstallment}${maxInstallment}${currency}${testMode}`;
+    const userBasket = JSON.stringify([[planLabel, paymentAmount, 1]]);
+
+    // Direct API hash: merchant_id + user_ip + merchant_oid + email + payment_amount + payment_type + installment_count + currency + test_mode + non_3d
+    const hashStr = `${merchantId}${userIp}${merchantOid}${email}${paymentAmount}${paymentType}${installmentCount}${currency}${testMode}${non3d}`;
 
     const encoder = new TextEncoder();
     const keyData = encoder.encode(merchantKey);
@@ -66,52 +70,12 @@ serve(async (req) => {
     const signature = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
     const paytrToken = btoa(String.fromCharCode(...Array.from(new Uint8Array(signature))));
 
-    const postValues = new URLSearchParams({
-      merchant_id: merchantId,
-      user_ip: userIp,
-      merchant_oid: merchantOid,
-      email,
-      payment_amount: paymentAmount.toString(),
-      paytr_token: paytrToken,
-      user_basket: userBasket,
-      debug_on: debugOn,
-      no_installment: noInstallment,
-      max_installment: maxInstallment,
-      user_name: cleanAgencyName,
-      user_address: "Turkiye",
-      user_phone: "5551234567",
-      merchant_ok_url: merchantOkUrl,
-      merchant_fail_url: merchantFailUrl,
-      timeout_limit: timeoutLimit,
-      currency,
-      test_mode: testMode,
-      lang: "tr",
-    });
-
-    const paytrResponse = await fetch("https://www.paytr.com/odeme/api/get-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: postValues.toString(),
-    });
-
-    const paytrRaw = await paytrResponse.text();
-    let paytrJson: { status?: string; token?: string; reason?: string } = {};
-
-    try {
-      paytrJson = JSON.parse(paytrRaw);
-    } catch {
-      throw new Error(`PayTR yanıtı okunamadı: ${paytrRaw.slice(0, 120)}`);
-    }
-
-    if (!paytrResponse.ok || paytrJson.status !== "success" || !paytrJson.token) {
-      throw new Error(paytrJson.reason || "PayTR token alınamadı");
-    }
-
+    // Save transaction to DB
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { error: dbError } = await supabase.from("payment_transactions").insert({
+    await supabase.from("payment_transactions").insert({
       agency_id: agencyId,
       order_id: merchantOid,
       amount,
@@ -119,19 +83,38 @@ serve(async (req) => {
       plan_type: planType,
       is_yearly: isYearly,
       status: "pending",
-      sipay_response: { provider: "paytr", test_mode: 1, token_created: true },
+      sipay_response: { provider: "paytr_direct", test_mode: 1 },
     });
 
-    if (dbError) {
-      throw dbError;
-    }
-
-    const iframeUrl = `https://www.paytr.com/odeme/guvenli/${paytrJson.token}`;
+    // Return all form fields needed for Direct API POST to https://www.paytr.com/odeme
+    const formFields = {
+      merchant_id: merchantId,
+      user_ip: userIp,
+      merchant_oid: merchantOid,
+      email,
+      payment_type: paymentType,
+      payment_amount: paymentAmount,
+      currency,
+      test_mode: testMode,
+      non_3d: non3d,
+      merchant_ok_url: merchantOkUrl,
+      merchant_fail_url: merchantFailUrl,
+      user_name: cleanAgencyName,
+      user_address: "Turkiye",
+      user_phone: "5551234567",
+      user_basket: userBasket,
+      debug_on: "1",
+      client_lang: "tr",
+      paytr_token: paytrToken,
+      non3d_test_failed: "0",
+      installment_count: installmentCount,
+    };
 
     return new Response(
       JSON.stringify({
         success: true,
-        iframeUrl,
+        formFields,
+        postUrl: "https://www.paytr.com/odeme",
         orderId: merchantOid,
       }),
       {
