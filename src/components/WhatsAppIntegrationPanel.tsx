@@ -187,7 +187,8 @@ export const WhatsAppIntegrationPanel = () => {
 
   return (
     <div className="space-y-6">
-      {/* Progress Tracker */}
+      {/* Progress Tracker - only when integration exists */}
+      {integration && (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
