@@ -655,7 +655,7 @@ const Admin = () => {
               <MessageTemplates />
             ) : activeTab === "faq" ? (
               <FAQManagement />
-            ) : activeTab === "my_plan" || activeTab === "history" ? (
+            ) : activeTab === "history" ? (
               <SubscriptionHistory />
             ) : activeTab === "customer-feedback" && (planFeatures?.has_feedback || isSuperAdmin) ? (
               <CustomerFeedback />
