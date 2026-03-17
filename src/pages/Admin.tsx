@@ -54,6 +54,7 @@ import { AgencyInfoSettings } from "@/components/AgencyInfoSettings";
 import { ComplaintsManagement } from "@/components/ComplaintsManagement";
 import { getMaxTours, getPlanFeatures, PlanFeatures } from "@/utils/planFeatures";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminSidebar } from "@/components/AdminSidebar";
 
 interface Tour {
