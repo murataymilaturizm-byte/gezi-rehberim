@@ -53,14 +53,22 @@ export const UsageStats = () => {
         setLoading(false);
         return;
       }
-      
-      setUsage(data);
-      
+
+      const normalizedUsage: UsageData = {
+        monthly_message_count: Number(data.monthly_message_count ?? 0),
+        message_limit: Number(data.message_limit ?? 0),
+        plan_type: data.plan_type || "starter",
+        last_message_reset_date: data.last_message_reset_date || new Date().toISOString(),
+        subscription_status: data.subscription_status || "trial",
+        trial_ends_at: data.trial_ends_at ?? undefined,
+        subscription_ends_at: data.subscription_ends_at ?? undefined,
+      };
+
+      setUsage(normalizedUsage);
+
       // Load plan features
-      if (data) {
-        const features = await getPlanFeatures(data.plan_type);
-        setPlanFeatures(features);
-      }
+      const features = await getPlanFeatures(normalizedUsage.plan_type);
+      setPlanFeatures(features);
     } catch (error) {
       console.error('Error loading usage data:', error);
       toast({
@@ -138,12 +146,12 @@ export const UsageStats = () => {
     return null;
   }
 
-  const usagePercentage = usage.message_limit === -1 
-    ? 0 
+  const usagePercentage = usage.message_limit <= 0 || usage.message_limit === -1
+    ? 0
     : (usage.monthly_message_count / usage.message_limit) * 100;
 
-  const isNearLimit = usagePercentage >= 80 && usage.message_limit !== -1;
-  const isOverLimit = usagePercentage >= 100 && usage.message_limit !== -1;
+  const isNearLimit = usagePercentage >= 80 && usage.message_limit > 0;
+  const isOverLimit = usagePercentage >= 100 && usage.message_limit > 0;
 
   const getPlanBadgeColor = (planType: string) => {
     switch (planType) {
