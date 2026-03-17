@@ -47,26 +47,13 @@ export const PayTRPaymentForm = ({
 
       console.log("✅ PayTR payment data received from backend");
 
-      // Create iframe for PayTR
+      // Create iframe for PayTR token URL
       const iframe = document.createElement('iframe');
       iframe.style.width = '100%';
       iframe.style.height = '600px';
       iframe.style.border = 'none';
       iframe.id = 'paytr-iframe';
-
-      // Create form to post to PayTR
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = data.paytrUrl;
-      form.target = 'paytr-iframe';
-      
-      Object.entries(data.paymentData).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = String(value);
-        form.appendChild(input);
-      });
+      iframe.src = data.iframeUrl;
 
       // Create a modal container
       const modal = document.createElement('div');
@@ -120,16 +107,9 @@ export const PayTRPaymentForm = ({
       container.appendChild(iframe);
       modal.appendChild(container);
       document.body.appendChild(modal);
-      document.body.appendChild(form);
 
       setPaymentStatus("processing");
       toast.success("PayTR ödeme sayfasına yönlendiriliyorsunuz...");
-      
-      // Submit form
-      setTimeout(() => {
-        form.submit();
-        document.body.removeChild(form);
-      }, 500);
 
     } catch (error: any) {
       console.error("Payment initialization error:", error);
