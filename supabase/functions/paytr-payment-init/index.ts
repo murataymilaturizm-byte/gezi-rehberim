@@ -43,7 +43,7 @@ serve(async (req) => {
 
     // User basket (required by PayTR)
     const userBasket = btoa(JSON.stringify([
-      [`${planType} Plan - ${isYearly ? 'Yıllık' : 'Aylık'}`, amount.toFixed(2), 1]
+      [`${planType} Plan - ${isYearly ? 'Yillik' : 'Aylik'}`, amount.toFixed(2), 1]
     ]));
 
     // Payment amount in kuruş (cents)
