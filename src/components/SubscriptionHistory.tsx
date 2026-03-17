@@ -233,7 +233,7 @@ export const SubscriptionHistory = () => {
       if (!user) return;
 
       // Get user's agency with subscription info
-      const { data: agencyData, error: agencyError } = await supabase
+      let { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
         .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name")
         .eq("user_id", user.id)
@@ -241,6 +241,24 @@ export const SubscriptionHistory = () => {
 
       if (agencyError) throw agencyError;
       
+      // If no agency exists, create one automatically
+      if (!agencyData) {
+        const agencyName = user.email?.split('@')[0] || 'Acenta';
+        const { data: newAgency, error: createError } = await supabase
+          .from("agencies")
+          .insert({
+            user_id: user.id,
+            name: agencyName,
+            plan_type: 'starter',
+            subscription_status: 'expired',
+          })
+          .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name")
+          .single();
+
+        if (createError) throw createError;
+        agencyData = newAgency;
+      }
+
       if (agencyData) {
         setAgencyId(agencyData.id);
         setSubscription(agencyData);
@@ -255,7 +273,6 @@ export const SubscriptionHistory = () => {
         if (historyError) throw historyError;
         setHistory(historyData || []);
       }
-      // If no agencyData, subscription stays null - we'll show plan selection
     } catch (error) {
       console.error("Error loading subscription history:", error);
     } finally {
