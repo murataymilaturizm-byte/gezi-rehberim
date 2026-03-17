@@ -34,7 +34,9 @@ import { AgencyManagement } from "@/components/AgencyManagement";
 import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { WhatsAppSettings } from "@/components/WhatsAppSettings";
+import { WhatsAppIntegrationPanel } from "@/components/WhatsAppIntegrationPanel";
 import { SuperAdminWhatsAppSettings } from "@/components/SuperAdminWhatsAppSettings";
+import { SuperAdminWhatsAppIntegrations } from "@/components/SuperAdminWhatsAppIntegrations";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
 import FAQManagement from "@/components/FAQManagement";
@@ -104,7 +106,7 @@ const Admin = () => {
   const { toast } = useToast();
   
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "whatsapp_settings" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "whatsapp_settings" | "whatsapp_integrations" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
   
   // Auth & User state
   const [session, setSession] = useState<Session | null>(null);
@@ -645,7 +647,7 @@ const Admin = () => {
             ) : activeTab === "complaints" ? (
               <ComplaintsManagement />
             ) : activeTab === "settings" ? (
-              <WhatsAppSettings />
+              <WhatsAppIntegrationPanel />
             ) : activeTab === "payment_settings" ? (
               <PaymentSettings />
             ) : activeTab === "languages" ? (
@@ -664,6 +666,8 @@ const Admin = () => {
               <TicketManagement />
             ) : activeTab === "super_tickets" && isSuperAdmin ? (
               <SuperAdminTickets />
+            ) : activeTab === "whatsapp_integrations" && isSuperAdmin ? (
+              <SuperAdminWhatsAppIntegrations />
             ) : activeTab === "whatsapp_settings" && isSuperAdmin ? (
               <SuperAdminWhatsAppSettings />
             ) : activeTab === "agencies" && isSuperAdmin ? (

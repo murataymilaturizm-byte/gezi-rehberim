@@ -973,6 +973,71 @@ export type Database = {
           },
         ]
       }
+      whatsapp_integrations: {
+        Row: {
+          activated_at: string | null
+          admin_notes: string | null
+          agency_id: string
+          business_manager_id: string | null
+          company_name: string | null
+          contact_email: string | null
+          has_business_manager: boolean | null
+          id: string
+          meta_access_token: string | null
+          meta_phone_number_id: string | null
+          meta_waba_id: string | null
+          notes: string | null
+          requested_at: string
+          status: Database["public"]["Enums"]["whatsapp_integration_status"]
+          updated_at: string
+          whatsapp_phone: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          admin_notes?: string | null
+          agency_id: string
+          business_manager_id?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          has_business_manager?: boolean | null
+          id?: string
+          meta_access_token?: string | null
+          meta_phone_number_id?: string | null
+          meta_waba_id?: string | null
+          notes?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["whatsapp_integration_status"]
+          updated_at?: string
+          whatsapp_phone?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          admin_notes?: string | null
+          agency_id?: string
+          business_manager_id?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          has_business_manager?: boolean | null
+          id?: string
+          meta_access_token?: string | null
+          meta_phone_number_id?: string | null
+          meta_waba_id?: string | null
+          notes?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["whatsapp_integration_status"]
+          updated_at?: string
+          whatsapp_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_integrations_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: true
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_user_profiles: {
         Row: {
           agency_id: string
@@ -1087,6 +1152,12 @@ export type Database = {
       ticket_priority: "low" | "medium" | "high"
       ticket_status: "open" | "in_progress" | "resolved" | "closed"
       tour_type: "DAYTRIP" | "N2" | "N3"
+      whatsapp_integration_status:
+        | "pending_review"
+        | "waiting_info"
+        | "in_progress"
+        | "testing"
+        | "active"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1219,6 +1290,13 @@ export const Constants = {
       ticket_priority: ["low", "medium", "high"],
       ticket_status: ["open", "in_progress", "resolved", "closed"],
       tour_type: ["DAYTRIP", "N2", "N3"],
+      whatsapp_integration_status: [
+        "pending_review",
+        "waiting_info",
+        "in_progress",
+        "testing",
+        "active",
+      ],
     },
   },
 } as const
