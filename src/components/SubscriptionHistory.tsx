@@ -507,7 +507,7 @@ export const SubscriptionHistory = () => {
                         </li>
                       ))}
                     </ul>
-                    {agencyId && (
+                    {agencyId ? (
                       <SipayPaymentForm
                         agencyId={agencyId}
                         planType={plan.id}
@@ -515,6 +515,13 @@ export const SubscriptionHistory = () => {
                         amount={calculatePrice(plan.price, isYearly)}
                         agencyName="Acenta"
                       />
+                    ) : (
+                      <Alert className="border-primary/20">
+                        <Building2 className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                          Ödeme yapabilmek için önce acente bilgilerinizi kaydetmeniz gerekmektedir. Lütfen "Acente Bilgileri" bölümünden bilgilerinizi girin.
+                        </AlertDescription>
+                      </Alert>
                     )}
                   </CardContent>
                 </Card>
