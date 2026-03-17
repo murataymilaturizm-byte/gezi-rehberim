@@ -39,7 +39,8 @@ serve(async (req) => {
     console.log("📍 Callback URLs:", { merchantOkUrl, merchantFailUrl });
 
     // Get client IP (required by PayTR)
-    const userIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+    const forwardedFor = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+    const userIp = forwardedFor.split(',')[0].trim();
 
     // User basket (required by PayTR)
     const userBasket = btoa(JSON.stringify([
@@ -49,8 +50,18 @@ serve(async (req) => {
     // Payment amount in kuruş (cents)
     const paymentAmount = Math.round(amount * 100);
 
-    // Generate PayTR token (hash)
-    const hashStr = `${userBasket}${merchantOid}${paymentAmount}${merchantOkUrl}${merchantFailUrl}${merchantSalt}`;
+    const email = 'billing@turzzai.com';
+    const noInstallment = '0';
+    const maxInstallment = '0';
+    const currency = 'TL';
+    const testMode = '1';
+
+    // PayTR token hash string format (official documentation order):
+    // merchant_id + user_ip + merchant_oid + email + payment_amount + user_basket + no_installment + max_installment + currency + test_mode + merchant_salt
+    const hashStr = `${merchantId}${userIp}${merchantOid}${email}${paymentAmount}${userBasket}${noInstallment}${maxInstallment}${currency}${testMode}${merchantSalt}`;
+    
+    console.log("🔑 Hash string components:", { merchantId, userIp, merchantOid, email, paymentAmount, noInstallment, maxInstallment, currency, testMode });
+    
     const encoder = new TextEncoder();
     const keyData = encoder.encode(merchantKey);
     const msgData = encoder.encode(hashStr);
@@ -98,11 +109,12 @@ serve(async (req) => {
       merchant_id: merchantId,
       user_ip: userIp,
       merchant_oid: merchantOid,
-      email: 'billing@turzzai.com',
+      email,
       payment_amount: paymentAmount.toString(),
       user_basket: userBasket,
-      no_installment: '0',
-      max_installment: '0',
+      no_installment: noInstallment,
+      max_installment: maxInstallment,
+      currency,
       user_name: agencyName.replace(/[^\x00-\x7F]/g, '') || 'Agency',
       user_address: 'Turkiye',
       user_phone: '5551234567',
@@ -110,7 +122,7 @@ serve(async (req) => {
       merchant_fail_url: merchantFailUrl,
       timeout_limit: '30',
       debug_on: '1',
-      test_mode: '1', // Test mode enabled
+      test_mode: testMode,
       lang: 'tr',
       paytr_token: paytrToken,
     };
