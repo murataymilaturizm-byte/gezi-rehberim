@@ -82,7 +82,7 @@ export const WhatsAppSettings = () => {
 
         setFormData({
           whatsapp_phone_number: phoneNumber,
-          conversation_style: agencyData.conversation_style || 'professional'
+          conversation_style: (agencyData.conversation_style || 'professional') as 'friendly' | 'professional' | 'energetic' | 'helpful'
         });
       }
     } catch (error) {
