@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendWhatsAppMessage, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -55,7 +56,7 @@ serve(async (req) => {
 
       const { data: agency } = await supabase
         .from('agencies')
-        .select('id, name, plan_type, whatsapp_api_key')
+        .select('id, name, plan_type, meta_phone_number_id, meta_access_token')
         .eq('id', customer.agency_id)
         .single();
 
@@ -72,7 +73,7 @@ serve(async (req) => {
         continue;
       }
 
-      const followUpMessage = await formatFollowUpMessage(
+      const followUpMessage = formatFollowUpMessage(
         customer.full_name,
         customer.preferred_destinations,
         customer.last_search_query,
@@ -80,13 +81,21 @@ serve(async (req) => {
         agency.name
       );
 
-      const sent = await sendWhatsAppMessage(
+      const credentials = getMetaCredentials(agency);
+      
+      if (!credentials.accessToken || !credentials.phoneNumberId) {
+        console.error(`❌ No Meta credentials for agency: ${agency.name}`);
+        continue;
+      }
+
+      const result = await sendWhatsAppMessage(
+        credentials.phoneNumberId,
+        credentials.accessToken,
         customer.phone,
-        followUpMessage,
-        agency.whatsapp_api_key
+        followUpMessage
       );
 
-      if (sent) {
+      if (result.success) {
         await supabase
           .from('whatsapp_user_profiles')
           .update({ last_follow_up_sent_at: new Date().toISOString() })
@@ -115,13 +124,13 @@ serve(async (req) => {
   }
 });
 
-async function formatFollowUpMessage(
+function formatFollowUpMessage(
   customerName: string | null,
   preferredDestinations: string[] | null,
   lastSearchQuery: string | null,
   language: string,
   agencyName: string
-): Promise<string> {
+): string {
   const name = customerName || '';
   const destinations = preferredDestinations?.join(', ') || '';
   const lastSearch = lastSearchQuery || '';
@@ -197,38 +206,4 @@ async function formatFollowUpMessage(
 
   const messageFunc = messages[language] || messages.tr;
   return messageFunc();
-}
-
-async function sendWhatsAppMessage(
-  phoneNumber: string,
-  message: string,
-  apiKey: string | null
-): Promise<boolean> {
-  if (!apiKey) {
-    console.error('❌ No WhatsApp API key provided');
-    return false;
-  }
-
-  const normalizedTo = phoneNumber.replace('whatsapp:', '').replace('+', '').trim();
-
-  try {
-    const response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
-      method: 'POST',
-      headers: {
-        'D360-API-KEY': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to: normalizedTo,
-        type: 'text',
-        text: { body: message },
-      }),
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error('Error sending WhatsApp message:', error);
-    return false;
-  }
 }

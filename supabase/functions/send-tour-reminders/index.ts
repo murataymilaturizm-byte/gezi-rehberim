@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendWhatsAppMessage, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,9 +48,11 @@ Deno.serve(async (req) => {
           )
         ),
         agencies!inner (
+          id,
           whatsapp_phone_number,
-          whatsapp_api_key,
-          name
+          name,
+          meta_phone_number_id,
+          meta_access_token
         )
       `)
       .eq('reminder_sent', false)
@@ -125,9 +128,23 @@ Deno.serve(async (req) => {
         message += `📞 Sorularınız için bizimle iletişime geçebilirsiniz.\n\n`;
         message += `🙏 İyi yolculuklar dileriz!`;
 
-        const sent = await sendWhatsAppMessage(registration.phone, message, agency);
+        // Get Meta credentials
+        const credentials = getMetaCredentials(agency);
+        
+        if (!credentials.accessToken || !credentials.phoneNumberId) {
+          console.error(`❌ No Meta WhatsApp credentials for agency: ${agency.name}`);
+          errorCount++;
+          continue;
+        }
 
-        if (sent) {
+        const result = await sendWhatsAppMessage(
+          credentials.phoneNumberId,
+          credentials.accessToken,
+          registration.phone,
+          message
+        );
+
+        if (result.success) {
           await supabase
             .from('registrations')
             .update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() })
@@ -137,7 +154,7 @@ Deno.serve(async (req) => {
           console.log(`✅ Reminder sent to ${registration.phone} for tour: ${tour.title}`);
         } else {
           errorCount++;
-          console.error(`❌ Failed to send reminder to ${registration.phone}`);
+          console.error(`❌ Failed to send reminder to ${registration.phone}: ${result.error}`);
         }
 
         // Rate limiting
@@ -164,43 +181,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
-// WhatsApp mesajı gönder - 360Dialog API ile
-async function sendWhatsAppMessage(to: string, message: string, agency: any): Promise<boolean> {
-  const apiKey = agency.whatsapp_api_key;
-  
-  if (!apiKey) {
-    console.error('❌ Agency WhatsApp API key not configured:', agency.name);
-    return false;
-  }
-
-  // Normalize phone: remove + and whatsapp: prefix
-  const normalizedTo = to.replace('whatsapp:', '').replace('+', '').trim();
-
-  try {
-    const response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
-      method: 'POST',
-      headers: {
-        'D360-API-KEY': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to: normalizedTo,
-        type: 'text',
-        text: { body: message },
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('❌ 360Dialog API error:', error);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending WhatsApp message:', error);
-    return false;
-  }
-}

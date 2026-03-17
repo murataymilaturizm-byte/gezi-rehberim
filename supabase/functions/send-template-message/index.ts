@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendWhatsAppMessage, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,8 +39,9 @@ serve(async (req) => {
         agencies:agency_id (
           id,
           whatsapp_phone_number,
-          whatsapp_api_key,
-          name
+          name,
+          meta_phone_number_id,
+          meta_access_token
         )
       `)
       .eq('id', registrationId)
@@ -111,14 +113,14 @@ serve(async (req) => {
 
     console.log('Message prepared:', message.substring(0, 100));
 
-    // Send via 360Dialog API
+    // Send via Meta Cloud API
     const agency = registration.agencies as any;
-    const apiKey = agency?.whatsapp_api_key;
+    const credentials = getMetaCredentials(agency);
 
-    if (!apiKey) {
-      console.error('360Dialog API key not configured for agency');
+    if (!credentials.accessToken || !credentials.phoneNumberId) {
+      console.error('Meta WhatsApp credentials not configured for agency');
       return new Response(
-        JSON.stringify({ error: 'WhatsApp API key not configured' }),
+        JSON.stringify({ error: 'WhatsApp credentials not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -127,29 +129,19 @@ serve(async (req) => {
     let phoneNumber = registration.phone;
     phoneNumber = phoneNumber.replace('whatsapp:', '').replace('+', '').trim();
 
-    const d360Response = await fetch('https://waba-v2.360dialog.io/v1/messages', {
-      method: 'POST',
-      headers: {
-        'D360-API-KEY': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to: phoneNumber,
-        type: 'text',
-        text: { body: message },
-      }),
-    });
+    const result = await sendWhatsAppMessage(
+      credentials.phoneNumberId,
+      credentials.accessToken,
+      phoneNumber,
+      message
+    );
 
-    if (!d360Response.ok) {
-      const errorText = await d360Response.text();
-      console.error('360Dialog error:', errorText);
-      throw new Error(`360Dialog error: ${d360Response.status}`);
+    if (!result.success) {
+      console.error('Meta WhatsApp error:', result.error);
+      throw new Error(`WhatsApp error: ${result.error}`);
     }
 
-    const d360Data = await d360Response.json();
-    const messageId = d360Data?.messages?.[0]?.id || 'unknown';
-    console.log('Message sent via 360Dialog:', messageId);
+    console.log('Message sent via Meta Cloud API:', result.messageId);
 
     // Save to database
     await supabase
@@ -164,7 +156,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: messageId,
+        messageId: result.messageId,
         template: template.subject 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

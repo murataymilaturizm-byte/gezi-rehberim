@@ -1,76 +1,72 @@
-// 360Dialog WhatsApp API utilities
+// Meta Cloud API WhatsApp utilities
 
-const DEFAULT_BASE_URL = 'https://waba-v2.360dialog.io';
+const GRAPH_API_VERSION = 'v18.0';
+const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 
 /**
- * Send a text message via 360Dialog WhatsApp API
+ * Send a text message via Meta Cloud API
  */
-export async function send360Message(
-  apiKey: string,
+export async function sendWhatsAppMessage(
+  phoneNumberId: string,
+  accessToken: string,
   to: string,
-  messageText: string,
-  baseUrl?: string
+  message: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    // Normalize phone: remove + prefix and whatsapp: prefix
-    const normalizedTo = to
-      .replace('whatsapp:', '')
-      .replace('+', '')
-      .trim();
+    const normalizedTo = to.replace('whatsapp:', '').replace('+', '').trim();
 
-    const url = `${baseUrl || DEFAULT_BASE_URL}/v1/messages`;
-    
+    const url = `${GRAPH_API_BASE}/${phoneNumberId}/messages`;
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'D360-API-KEY': apiKey,
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         messaging_product: 'whatsapp',
+        recipient_type: 'individual',
         to: normalizedTo,
         type: 'text',
-        text: { body: messageText },
+        text: { body: message },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ 360Dialog API error:', response.status, errorText);
-      return { success: false, error: `360Dialog error: ${response.status} - ${errorText}` };
+      console.error('❌ Meta WhatsApp API error:', response.status, errorText);
+      return { success: false, error: `Meta API error: ${response.status} - ${errorText}` };
     }
 
     const data = await response.json();
     const messageId = data?.messages?.[0]?.id;
     return { success: true, messageId };
   } catch (error) {
-    console.error('❌ Error sending 360Dialog message:', error);
+    console.error('❌ Error sending Meta WhatsApp message:', error);
     return { success: false, error: String(error) };
   }
 }
 
 /**
- * Send a template message via 360Dialog WhatsApp API
+ * Send a template message via Meta Cloud API
  * Used when 24-hour window has passed
  */
-export async function send360Template(
-  apiKey: string,
+export async function sendWhatsAppTemplate(
+  phoneNumberId: string,
+  accessToken: string,
   to: string,
   templateName: string,
   languageCode: string,
-  components?: any[],
-  baseUrl?: string
+  components?: any[]
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const normalizedTo = to
-      .replace('whatsapp:', '')
-      .replace('+', '')
-      .trim();
+    const normalizedTo = to.replace('whatsapp:', '').replace('+', '').trim();
 
-    const url = `${baseUrl || DEFAULT_BASE_URL}/v1/messages`;
+    const url = `${GRAPH_API_BASE}/${phoneNumberId}/messages`;
 
     const body: any = {
       messaging_product: 'whatsapp',
+      recipient_type: 'individual',
       to: normalizedTo,
       type: 'template',
       template: {
@@ -86,7 +82,7 @@ export async function send360Template(
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'D360-API-KEY': apiKey,
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
@@ -94,36 +90,43 @@ export async function send360Template(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ 360Dialog template error:', response.status, errorText);
-      return { success: false, error: `360Dialog error: ${response.status} - ${errorText}` };
+      console.error('❌ Meta WhatsApp template error:', response.status, errorText);
+      return { success: false, error: `Meta API error: ${response.status} - ${errorText}` };
     }
 
     const data = await response.json();
     const messageId = data?.messages?.[0]?.id;
     return { success: true, messageId };
   } catch (error) {
-    console.error('❌ Error sending 360Dialog template:', error);
+    console.error('❌ Error sending Meta WhatsApp template:', error);
     return { success: false, error: String(error) };
   }
 }
 
 /**
- * Extract incoming message data from 360Dialog webhook payload
+ * Extract incoming message data from Meta Cloud API webhook payload
  */
-export function extract360WebhookData(body: any): {
+export function extractMetaWebhookData(body: any): {
   from: string;
   message: string;
   messageId: string;
   isStatus: boolean;
+  phoneNumberId: string;
 } | null {
   try {
+    if (body?.object !== 'whatsapp_business_account') {
+      return null;
+    }
+
     const entry = body?.entry?.[0];
     const changes = entry?.changes?.[0];
     const value = changes?.value;
 
+    const phoneNumberId = value?.metadata?.phone_number_id || '';
+
     // Status updates - ignore
     if (value?.statuses && !value?.messages) {
-      return { from: '', message: '', messageId: '', isStatus: true };
+      return { from: '', message: '', messageId: '', isStatus: true, phoneNumberId };
     }
 
     const messages = value?.messages;
@@ -139,7 +142,6 @@ export function extract360WebhookData(body: any): {
     if (msg.type === 'text') {
       message = msg.text?.body || '';
     } else if (msg.type === 'interactive') {
-      // Handle button replies and list replies
       if (msg.interactive?.type === 'button_reply') {
         message = msg.interactive.button_reply?.title || '';
       } else if (msg.interactive?.type === 'list_reply') {
@@ -149,57 +151,40 @@ export function extract360WebhookData(body: any): {
       message = msg[msg.type]?.caption || `[${msg.type}]`;
     }
 
-    return { from, message, messageId, isStatus: false };
+    return { from, message, messageId, isStatus: false, phoneNumberId };
   } catch (error) {
-    console.error('❌ Error extracting 360Dialog webhook data:', error);
+    console.error('❌ Error extracting Meta webhook data:', error);
     return null;
   }
 }
 
 /**
- * Resolve agency by phone number from webhook
+ * Resolve agency by phone_number_id or fallback
  */
-export async function resolveAgencyByPhone(
+export async function resolveAgencyByPhoneNumberId(
   supabase: any,
-  phoneNumberId: string,
-  webhookBody: any
+  phoneNumberId: string
 ): Promise<{ agency: any; error: string | null }> {
-  // Try to get the business phone number from the webhook
-  const displayPhone = webhookBody?.entry?.[0]?.changes?.[0]?.value?.metadata?.display_phone_number;
-  const phoneId = webhookBody?.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
-
-  if (displayPhone) {
-    // Normalize: remove + and spaces
-    const normalized = displayPhone.replace(/[\s+\-()]/g, '');
-    
+  // Try matching by meta_phone_number_id
+  if (phoneNumberId) {
     const { data: agency, error } = await supabase
       .from('agencies')
       .select('*')
-      .eq('whatsapp_phone_number', displayPhone)
+      .eq('meta_phone_number_id', phoneNumberId)
+      .eq('active', true)
       .single();
 
     if (!error && agency) {
       return { agency, error: null };
     }
-
-    // Try with normalized version
-    const { data: agency2, error: error2 } = await supabase
-      .from('agencies')
-      .select('*')
-      .like('whatsapp_phone_number', `%${normalized.slice(-10)}`)
-      .single();
-
-    if (!error2 && agency2) {
-      return { agency: agency2, error: null };
-    }
   }
 
-  // Fallback: find agency that has whatsapp_api_key set (for single-agency setups)
+  // Fallback: find agency that has meta_access_token or whatsapp_api_key set (single-agency setups)
   const { data: agencies } = await supabase
     .from('agencies')
     .select('*')
-    .not('whatsapp_api_key', 'is', null)
-    .eq('active', true);
+    .eq('active', true)
+    .or('meta_access_token.not.is.null,whatsapp_api_key.not.is.null');
 
   if (agencies && agencies.length === 1) {
     return { agency: agencies[0], error: null };
@@ -207,4 +192,26 @@ export async function resolveAgencyByPhone(
 
   console.error('❌ Could not resolve agency from webhook');
   return { agency: null, error: 'Agency not found' };
+}
+
+/**
+ * Get Meta WhatsApp credentials - from agency or global env
+ */
+export function getMetaCredentials(agency: any): {
+  phoneNumberId: string;
+  accessToken: string;
+} {
+  // Agency-level credentials (future: Embedded Signup)
+  if (agency.meta_phone_number_id && agency.meta_access_token) {
+    return {
+      phoneNumberId: agency.meta_phone_number_id,
+      accessToken: agency.meta_access_token,
+    };
+  }
+
+  // Global credentials from environment
+  return {
+    phoneNumberId: Deno.env.get('WHATSAPP_PHONE_NUMBER_ID') || '',
+    accessToken: Deno.env.get('WHATSAPP_ACCESS_TOKEN') || '',
+  };
 }
