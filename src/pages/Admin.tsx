@@ -54,6 +54,7 @@ import { AgencyInfoSettings } from "@/components/AgencyInfoSettings";
 import { ComplaintsManagement } from "@/components/ComplaintsManagement";
 import { getMaxTours, getPlanFeatures, PlanFeatures } from "@/utils/planFeatures";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminSidebar } from "@/components/AdminSidebar";
 
 interface Tour {
@@ -609,7 +610,7 @@ const Admin = () => {
 
           {/* Main Content */}
           <main className="flex-1 p-6 space-y-6">
-            {/* Subscription Banner */}
+          <ErrorBoundary fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
             {!isSuperAdmin && <SubscriptionBanner />}
             
             {/* Language Selection Warning */}
@@ -800,6 +801,7 @@ const Admin = () => {
                 </CardContent>
               </Card>
             ) : null}
+          </ErrorBoundary>
           </main>
 
       {/* Dialogs */}

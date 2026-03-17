@@ -43,7 +43,7 @@ serve(async (req) => {
 
     // User basket (required by PayTR)
     const userBasket = btoa(JSON.stringify([
-      [`${planType} Plan - ${isYearly ? 'Yıllık' : 'Aylık'}`, amount.toFixed(2), 1]
+      [`${planType} Plan - ${isYearly ? 'Yillik' : 'Aylik'}`, amount.toFixed(2), 1]
     ]));
 
     // Payment amount in kuruş (cents)
@@ -103,8 +103,8 @@ serve(async (req) => {
       user_basket: userBasket,
       no_installment: '0',
       max_installment: '0',
-      user_name: agencyName,
-      user_address: 'Türkiye',
+      user_name: agencyName.replace(/[^\x00-\x7F]/g, '') || 'Agency',
+      user_address: 'Turkiye',
       user_phone: '5551234567',
       merchant_ok_url: merchantOkUrl,
       merchant_fail_url: merchantFailUrl,
