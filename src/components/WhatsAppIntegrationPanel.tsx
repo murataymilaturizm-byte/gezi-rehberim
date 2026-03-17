@@ -116,54 +116,47 @@ export const WhatsAppIntegrationPanel = () => {
     }
   };
 
-  const handleRequestIntegration = async () => {
-    if (!agencyId) return;
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from("whatsapp_integrations")
-        .insert({
-          agency_id: agencyId,
-          status: "pending_review" as any,
-        } as any);
-
-      if (error) throw error;
-
-      toast({ title: "Başarılı", description: "WhatsApp entegrasyon talebiniz alındı!" });
-      await loadIntegration();
-    } catch (error: any) {
-      console.error("Request error:", error);
-      toast({ title: "Hata", description: "Talep oluşturulamadı.", variant: "destructive" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleSubmitInfo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!integration) return;
 
     if (!formData.whatsapp_phone.trim() || !formData.company_name.trim() || !formData.contact_email.trim()) {
       toast({ title: "Hata", description: "Zorunlu alanları doldurun.", variant: "destructive" });
       return;
     }
 
+    if (!agencyId) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("whatsapp_integrations")
-        .update({
-          whatsapp_phone: formData.whatsapp_phone,
-          company_name: formData.company_name,
-          has_business_manager: formData.has_business_manager,
-          business_manager_id: formData.business_manager_id || null,
-          contact_email: formData.contact_email,
-          notes: formData.notes || null,
-          status: "in_progress" as any,
-        } as any)
-        .eq("id", integration.id);
-
-      if (error) throw error;
+      if (integration) {
+        // Update existing
+        const { error } = await supabase
+          .from("whatsapp_integrations")
+          .update({
+            whatsapp_phone: formData.whatsapp_phone,
+            company_name: formData.company_name,
+            has_business_manager: formData.has_business_manager,
+            business_manager_id: formData.business_manager_id || null,
+            contact_email: formData.contact_email,
+            notes: formData.notes || null,
+          } as any)
+          .eq("id", integration.id);
+        if (error) throw error;
+      } else {
+        // Create new with pending_review
+        const { error } = await supabase
+          .from("whatsapp_integrations")
+          .insert({
+            agency_id: agencyId,
+            status: "pending_review" as any,
+            whatsapp_phone: formData.whatsapp_phone,
+            company_name: formData.company_name,
+            has_business_manager: formData.has_business_manager,
+            business_manager_id: formData.business_manager_id || null,
+            contact_email: formData.contact_email,
+            notes: formData.notes || null,
+          } as any);
+        if (error) throw error;
+      }
 
       toast({ title: "Başarılı", description: "Bilgileriniz alındı, ekibimiz sizinle iletişime geçecek." });
       await loadIntegration();
@@ -190,41 +183,12 @@ export const WhatsAppIntegrationPanel = () => {
     );
   }
 
-  // No integration yet - show request button
-  if (!integration) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            WhatsApp Entegrasyonu
-          </CardTitle>
-          <CardDescription>
-            WhatsApp Business hesabınızı bağlayarak müşterilerinize AI destekli otomatik yanıtlar sunun.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-6 border border-dashed rounded-lg text-center space-y-4">
-            <Phone className="h-12 w-12 mx-auto text-muted-foreground" />
-            <div>
-              <h3 className="font-semibold text-lg">WhatsApp Entegrasyonu Başlatın</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Ekibimiz WhatsApp Business API hesabınızı yapılandıracak ve AI chatbot'unuzu aktif edecek.
-              </p>
-            </div>
-            <Button onClick={handleRequestIntegration} disabled={saving} size="lg">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-              Entegrasyon Talep Et
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const showForm = !integration || integration.status === "waiting_info";
 
   return (
     <div className="space-y-6">
-      {/* Progress Tracker */}
+      {/* Progress Tracker - only when integration exists */}
+      {integration && (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -303,14 +267,20 @@ export const WhatsAppIntegrationPanel = () => {
           </div>
         </CardContent>
       </Card>
+      )}
 
-      {/* Info Form - Only show when waiting_info */}
-      {integration.status === "waiting_info" && (
+      {/* Info Form */}
+      {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Kurulum Bilgileri</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              {integration ? "Kurulum Bilgileri" : "WhatsApp Entegrasyonu Başvurusu"}
+            </CardTitle>
             <CardDescription>
-              WhatsApp entegrasyonunuz için gerekli bilgileri doldurun.
+              {integration
+                ? "WhatsApp entegrasyonunuz için gerekli bilgileri doldurun."
+                : "Aşağıdaki formu doldurun, ekibimiz sizinle iletişime geçecek."}
             </CardDescription>
           </CardHeader>
           <CardContent>
