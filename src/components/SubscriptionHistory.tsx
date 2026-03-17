@@ -240,21 +240,22 @@ export const SubscriptionHistory = () => {
         .maybeSingle();
 
       if (agencyError) throw agencyError;
-      if (!agencyData) return;
+      
+      if (agencyData) {
+        setAgencyId(agencyData.id);
+        setSubscription(agencyData);
 
-      setAgencyId(agencyData.id);
-      setSubscription(agencyData);
+        // Load subscription history
+        const { data: historyData, error: historyError } = await supabase
+          .from("subscription_history")
+          .select("*")
+          .eq("agency_id", agencyData.id)
+          .order("created_at", { ascending: false });
 
-      // Load subscription history
-      const { data: historyData, error: historyError } = await supabase
-        .from("subscription_history")
-        .select("*")
-        .eq("agency_id", agencyData.id)
-        .order("created_at", { ascending: false });
-
-      if (historyError) throw historyError;
-
-      setHistory(historyData || []);
+        if (historyError) throw historyError;
+        setHistory(historyData || []);
+      }
+      // If no agencyData, subscription stays null - we'll show plan selection
     } catch (error) {
       console.error("Error loading subscription history:", error);
     } finally {
