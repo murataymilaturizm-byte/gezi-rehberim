@@ -31,6 +31,9 @@ export type Database = {
           longitude: number | null
           maps_url: string | null
           message_limit: number | null
+          meta_access_token: string | null
+          meta_phone_number_id: string | null
+          meta_waba_id: string | null
           monthly_message_count: number | null
           name: string
           payment_instructions: Json | null
@@ -70,6 +73,9 @@ export type Database = {
           longitude?: number | null
           maps_url?: string | null
           message_limit?: number | null
+          meta_access_token?: string | null
+          meta_phone_number_id?: string | null
+          meta_waba_id?: string | null
           monthly_message_count?: number | null
           name: string
           payment_instructions?: Json | null
@@ -109,6 +115,9 @@ export type Database = {
           longitude?: number | null
           maps_url?: string | null
           message_limit?: number | null
+          meta_access_token?: string | null
+          meta_phone_number_id?: string | null
+          meta_waba_id?: string | null
           monthly_message_count?: number | null
           name?: string
           payment_instructions?: Json | null
