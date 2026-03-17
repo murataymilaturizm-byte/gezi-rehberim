@@ -116,54 +116,47 @@ export const WhatsAppIntegrationPanel = () => {
     }
   };
 
-  const handleRequestIntegration = async () => {
-    if (!agencyId) return;
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from("whatsapp_integrations")
-        .insert({
-          agency_id: agencyId,
-          status: "pending_review" as any,
-        } as any);
-
-      if (error) throw error;
-
-      toast({ title: "Başarılı", description: "WhatsApp entegrasyon talebiniz alındı!" });
-      await loadIntegration();
-    } catch (error: any) {
-      console.error("Request error:", error);
-      toast({ title: "Hata", description: "Talep oluşturulamadı.", variant: "destructive" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleSubmitInfo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!integration) return;
 
     if (!formData.whatsapp_phone.trim() || !formData.company_name.trim() || !formData.contact_email.trim()) {
       toast({ title: "Hata", description: "Zorunlu alanları doldurun.", variant: "destructive" });
       return;
     }
 
+    if (!agencyId) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("whatsapp_integrations")
-        .update({
-          whatsapp_phone: formData.whatsapp_phone,
-          company_name: formData.company_name,
-          has_business_manager: formData.has_business_manager,
-          business_manager_id: formData.business_manager_id || null,
-          contact_email: formData.contact_email,
-          notes: formData.notes || null,
-          status: "in_progress" as any,
-        } as any)
-        .eq("id", integration.id);
-
-      if (error) throw error;
+      if (integration) {
+        // Update existing
+        const { error } = await supabase
+          .from("whatsapp_integrations")
+          .update({
+            whatsapp_phone: formData.whatsapp_phone,
+            company_name: formData.company_name,
+            has_business_manager: formData.has_business_manager,
+            business_manager_id: formData.business_manager_id || null,
+            contact_email: formData.contact_email,
+            notes: formData.notes || null,
+          } as any)
+          .eq("id", integration.id);
+        if (error) throw error;
+      } else {
+        // Create new with pending_review
+        const { error } = await supabase
+          .from("whatsapp_integrations")
+          .insert({
+            agency_id: agencyId,
+            status: "pending_review" as any,
+            whatsapp_phone: formData.whatsapp_phone,
+            company_name: formData.company_name,
+            has_business_manager: formData.has_business_manager,
+            business_manager_id: formData.business_manager_id || null,
+            contact_email: formData.contact_email,
+            notes: formData.notes || null,
+          } as any);
+        if (error) throw error;
+      }
 
       toast({ title: "Başarılı", description: "Bilgileriniz alındı, ekibimiz sizinle iletişime geçecek." });
       await loadIntegration();
