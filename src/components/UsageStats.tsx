@@ -146,12 +146,12 @@ export const UsageStats = () => {
     return null;
   }
 
-  const usagePercentage = usage.message_limit === -1 
-    ? 0 
+  const usagePercentage = usage.message_limit <= 0 || usage.message_limit === -1
+    ? 0
     : (usage.monthly_message_count / usage.message_limit) * 100;
 
-  const isNearLimit = usagePercentage >= 80 && usage.message_limit !== -1;
-  const isOverLimit = usagePercentage >= 100 && usage.message_limit !== -1;
+  const isNearLimit = usagePercentage >= 80 && usage.message_limit > 0;
+  const isOverLimit = usagePercentage >= 100 && usage.message_limit > 0;
 
   const getPlanBadgeColor = (planType: string) => {
     switch (planType) {
