@@ -506,124 +506,103 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      {/* Advanced Features Section */}
+      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-14 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">{t("advanced.badge")}</span>
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">{t("advanced.badge")}</span>
             </div>
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
               {t("advanced.title")}
             </h3>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-sm max-w-xl mx-auto">
               {t("advanced.subtitle")}
             </p>
           </div>
 
-          <div className="max-w-6xl mx-auto space-y-12">
-            {/* Intelligent User Profiles */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <Card className="border-border/50 shadow-card p-8 order-2 md:order-1">
-                <CardContent className="p-0 space-y-4">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
-                    <Users className="w-6 h-6 text-primary-foreground" />
-                  </div>
-                  <h4 className="text-2xl font-bold text-foreground">{t("advanced.userProfiles.title")}</h4>
-                  <p className="text-muted-foreground">
-                    {t("advanced.userProfiles.description")}
-                  </p>
-                  <div className="space-y-3 pt-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.userProfiles.feature1")}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.userProfiles.feature2")}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.userProfiles.feature3")}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <div className="hidden md:flex order-1 md:order-2 md:justify-center">
-                <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center">
-                  <Users className="w-32 h-32 text-primary/40" />
+          <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {/* User Profiles */}
+            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
+              <CardContent className="p-5 space-y-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                  <Users className="w-5 h-5 text-primary-foreground" />
                 </div>
-              </div>
-            </div>
+                <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{t("advanced.userProfiles.title")}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t("advanced.userProfiles.description")}
+                </p>
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.userProfiles.feature1")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.userProfiles.feature2")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.userProfiles.feature3")}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Conversation Analytics */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="hidden md:flex md:justify-center">
-                <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl flex items-center justify-center">
-                  <BarChart3 className="w-32 h-32 text-secondary/40" />
+            {/* Analytics */}
+            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
+              <CardContent className="p-5 space-y-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                  <TrendingUp className="w-5 h-5 text-primary-foreground" />
                 </div>
-              </div>
-              <Card className="border-border/50 shadow-card p-8">
-                <CardContent className="p-0 space-y-4">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-primary-foreground" />
+                <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{t("advanced.analytics.title")}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t("advanced.analytics.description")}
+                </p>
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.analytics.feature1")}</span>
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground">{t("advanced.analytics.title")}</h4>
-                  <p className="text-muted-foreground">
-                    {t("advanced.analytics.description")}
-                  </p>
-                  <div className="space-y-3 pt-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.analytics.feature1")}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.analytics.feature2")}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.analytics.feature3")}</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.analytics.feature2")}</span>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.analytics.feature3")}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Auto Reminders */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <Card className="border-border/50 shadow-card p-8 order-2 md:order-1">
-                <CardContent className="p-0 space-y-4">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-ocean flex items-center justify-center">
-                    <Bell className="w-6 h-6 text-primary-foreground" />
-                  </div>
-                  <h4 className="text-2xl font-bold text-foreground">{t("advanced.reminders.title")}</h4>
-                  <p className="text-muted-foreground">
-                    {t("advanced.reminders.description")}
-                  </p>
-                  <div className="space-y-3 pt-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.reminders.feature1")}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.reminders.feature2")}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="text-sm text-foreground">{t("advanced.reminders.feature3")}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <div className="hidden md:flex order-1 md:order-2 md:justify-center">
-                <div className="w-full max-w-sm aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center">
-                  <Bell className="w-32 h-32 text-primary/40" />
+            {/* Reminders */}
+            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
+              <CardContent className="p-5 space-y-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                  <Bell className="w-5 h-5 text-primary-foreground" />
                 </div>
-              </div>
-            </div>
+                <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{t("advanced.reminders.title")}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t("advanced.reminders.description")}
+                </p>
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.reminders.feature1")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.reminders.feature2")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-xs text-foreground">{t("advanced.reminders.feature3")}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
