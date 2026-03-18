@@ -329,13 +329,23 @@ function extractDate(
     // Format as ISO date
     const isoDate = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
     
-    // Try to match with tour dates
+    // Try to match with tour dates (exact match)
     const matchingDate = tourDates.find((d) => d.departure_date === isoDate);
     if (matchingDate) {
       result.dateId = matchingDate.id;
       result.selectedDate = matchingDate.departure_date;
     } else {
-      result.selectedDate = isoDate;
+      // Try partial match (same day and month, ignore year)
+      const partialMatch = tourDates.find((d) => {
+        const parts = d.departure_date?.match(/(\d{4})-(\d{2})-(\d{2})/);
+        return parts && parseInt(parts[2]) === month && parseInt(parts[3]) === day;
+      });
+      if (partialMatch) {
+        result.dateId = partialMatch.id;
+        result.selectedDate = partialMatch.departure_date;
+      } else {
+        result.selectedDate = isoDate;
+      }
     }
   }
 
