@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/nasil-baslarim" element={<GettingStarted />} />
           <Route path="/yardim" element={<Help />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/data-deletion" element={<DataDeletion />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
