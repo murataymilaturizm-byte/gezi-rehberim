@@ -37,6 +37,7 @@ import { WhatsAppSettings } from "@/components/WhatsAppSettings";
 import { WhatsAppIntegrationPanel } from "@/components/WhatsAppIntegrationPanel";
 import { SuperAdminWhatsAppSettings } from "@/components/SuperAdminWhatsAppSettings";
 import { SuperAdminWhatsAppIntegrations } from "@/components/SuperAdminWhatsAppIntegrations";
+import { WhatsAppTestPanel } from "@/components/WhatsAppTestPanel";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
 import FAQManagement from "@/components/FAQManagement";
