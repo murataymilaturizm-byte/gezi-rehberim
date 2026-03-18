@@ -56,6 +56,31 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
+    // === Test Mode: Send a direct message via Meta API ===
+    if (body?.testMode === true) {
+      const phoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") || "";
+      const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN") || "";
+      
+      if (!phoneNumberId || !accessToken) {
+        return new Response(JSON.stringify({ error: "Missing WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const testPhone = body.testPhone?.replace('+', '').trim();
+      const testMessage = body.testMessage || "🧪 Test mesajı";
+
+      console.log(`📤 Test mode: Sending message to ${testPhone}`);
+      
+      const result = await sendWhatsAppMessage(phoneNumberId, accessToken, testPhone, testMessage);
+      
+      return new Response(JSON.stringify({ success: result.success, ...result }), {
+        status: result.success ? 200 : 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Extract message from Meta Cloud API webhook format
     const webhookData = extractMetaWebhookData(body);
 
