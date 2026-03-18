@@ -274,6 +274,25 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
             </SidebarGroup>
           </Collapsible>
         )}
+
+        {/* Test - Sadece super adminler için */}
+        {isSuperAdmin && (
+          <Collapsible open={openGroups.test} onOpenChange={() => toggleGroup("test")}>
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                  {!isCollapsed && "Test"}
+                  {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.test ? "rotate-180" : ""}`} />}
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  {renderMenuItems(testItems)}
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        )}
       </SidebarContent>
     </Sidebar>
   );
