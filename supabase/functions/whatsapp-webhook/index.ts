@@ -770,6 +770,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
         // Reset context so user can retry
         newContext.stage = context.stage;
         newContext.reservationConfirmed = false;
+      } else {
         console.log("✅ Reservation saved");
 
         if (planFeatures?.has_templates) {
