@@ -218,8 +218,27 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const isNewlyCompleted = context.stage !== "COMPLETED" && 
                               newContext.stage === "COMPLETED" && 
                               newContext.reservationConfirmed;
+    let reservationFailed = false;
     if (isNewlyCompleted && newContext.reservationInfo) {
-      await saveReservation(supabase, newContext);
+      const saveResult = await saveReservation(supabase, newContext);
+      if (!saveResult.success) {
+        reservationFailed = true;
+        logger.error("Reservation save failed, will not confirm to user", { error: saveResult.error });
+        // Override AI response to not confirm a reservation that wasn't actually saved
+        const errorMessages: Record<string, string> = {
+          tr: "Üzgünüm, rezervasyonunuzu kaydederken bir sorun oluştu. Lütfen daha sonra tekrar deneyin veya bizimle iletişime geçin.",
+          en: "Sorry, there was an issue saving your reservation. Please try again later or contact us directly.",
+          de: "Entschuldigung, beim Speichern Ihrer Reservierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+          ar: "عذرًا، حدثت مشكلة أثناء حفظ حجزك. يرجى المحاولة مرة أخرى لاحقًا.",
+          fr: "Désolé, un problème est survenu lors de l'enregistrement de votre réservation. Veuillez réessayer plus tard.",
+          es: "Lo sentimos, hubo un problema al guardar su reserva. Por favor, inténtelo de nuevo más tarde.",
+          ru: "Извините, при сохранении бронирования произошла ошибка. Пожалуйста, попробуйте позже.",
+        };
+        finalResponse = errorMessages[language] || errorMessages["tr"];
+        // Reset context so user can retry
+        newContext.stage = context.stage;
+        newContext.reservationConfirmed = false;
+      }
     }
 
     // 16. Save complaint if detected
