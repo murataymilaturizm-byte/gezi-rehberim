@@ -138,7 +138,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   const superAdminItems = [
     { id: "agencies", icon: Building2, label: t("admin.tabs.agencies") },
     { id: "contact_forms", icon: Mail, label: t("admin.tabs.contactForms") },
-    { id: "whatsapp_integrations", icon: Phone, label: "WhatsApp Entegrasyonları" },
+    { id: "whatsapp_management", icon: Phone, label: "WhatsApp Yönetimi" },
     { id: "whatsapp_settings", icon: Phone, label: "WhatsApp Ayarları" },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
   ];
