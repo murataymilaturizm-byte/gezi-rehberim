@@ -318,13 +318,13 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
     console.error("Error in sales-chat function:", error);
 
     const errorMessages: Record<string, string> = {
-      tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@turzz.ai adresinden bizimle iletişime geçin.",
-      en: "Sorry, I'm experiencing an issue right now. Please contact us at info@turzz.ai.",
-      de: "Entschuldigung, ich habe gerade ein Problem. Bitte kontaktieren Sie uns unter info@turzz.ai.",
-      ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@turzz.ai.",
-      ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@turzz.ai.",
-      fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@turzz.ai.",
-      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@turzz.ai.",
+      tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@ai.turzz.com adresinden bizimle iletişime geçin.",
+      en: "Sorry, I'm experiencing an issue right now. Please contact us at info@ai.turzz.com.",
+      de: "Entschuldigung, ich habe gerade ein Problem. Bitte kontaktieren Sie uns unter info@ai.turzz.com.",
+      ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@ai.turzz.com.",
+      ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@ai.turzz.com.",
+      fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@ai.turzz.com.",
+      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@ai.turzz.com.",
     };
 
     return new Response(

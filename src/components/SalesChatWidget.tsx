@@ -102,13 +102,13 @@ export const SalesChatWidget = () => {
       console.error("Error:", error);
 
       const errorMessages: Record<string, string> = {
-        tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya info@turzz.ai adresinden bizimle iletişime geçin.",
-        en: "Sorry, something went wrong. Please try again or contact us at info@turzz.ai.",
-        de: "Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns unter info@turzz.ai.",
-        ru: "Извините, произошла ошибка. Пожалуйста, попробуйте еще раз или свяжитесь с нами по адресу info@turzz.ai.",
-        ar: "عذراً، حدث خطأ ما. يرجى المحاولة مرة أخرى أو التواصل معنا عبر info@turzz.ai.",
-        fr: "Désolé, une erreur s'est produite. Veuillez réessayer ou nous contacter à info@turzz.ai.",
-        es: "Lo siento, ocurrió un error. Inténtalo de nuevo o contáctanos en info@turzz.ai.",
+        tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya info@ai.turzz.com adresinden bizimle iletişime geçin.",
+        en: "Sorry, something went wrong. Please try again or contact us at info@ai.turzz.com.",
+        de: "Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns unter info@ai.turzz.com.",
+        ru: "Извините, произошла ошибка. Пожалуйста, попробуйте еще раз или свяжитесь с нами по адресу info@ai.turzz.com.",
+        ar: "عذراً، حدث خطأ ما. يرجى المحاولة مرة أخرى أو التواصل معنا عبر info@ai.turzz.com.",
+        fr: "Désolé, une erreur s'est produite. Veuillez réessayer ou nous contacter à info@ai.turzz.com.",
+        es: "Lo siento, ocurrió un error. Inténtalo de nuevo o contáctanos en info@ai.turzz.com.",
       };
 
       setMessages((prev) => [
