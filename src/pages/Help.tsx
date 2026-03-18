@@ -431,7 +431,7 @@ Her şablonda kullanılabilen değişkenler:
    ✓ 7/24 premium destek
    ✓ Özel eğitim ve danışmanlık
    → Büyük organizasyonlar için
-   → Fiyat için info@turzz.ai
+   → Fiyat için info@ai.turzz.com
 
 **Ücretsiz Deneme:**
 - 14 gün ücretsiz
@@ -601,7 +601,7 @@ Her şablonda kullanılabilen değişkenler:
 **Destek Kanalları:**
 
 1. **E-posta Desteği:**
-   - info@turzz.ai
+   - info@ai.turzz.com
    - Yanıt süresi: 24 saat içinde
    - Tüm paketlerde mevcut
 
@@ -631,7 +631,7 @@ Her şablonda kullanılabilen değişkenler:
 - WhatsApp bağlantısı çalışmıyor
 - Ödeme hatası
 - Veri kayboldu
-→ Hemen info@turzz.ai adresine yazın
+→ Hemen info@ai.turzz.com adresine yazın
           `
         },
         {
@@ -673,7 +673,7 @@ Her şablonda kullanılabilen değişkenler:
 → Çözüm: Filtreleri kontrol edin
 
 **Hala Çözüm Bulamadınız mı?**
-→ info@turzz.ai adresine detaylı açıklama ile yazın
+→ info@ai.turzz.com adresine detaylı açıklama ile yazın
 → Ekran görüntüsü eklerseniz daha hızlı çözüm buluruz
           `
         }
@@ -793,7 +793,7 @@ Her şablonda kullanılabilen değişkenler:
                   <div className="flex flex-wrap gap-4 justify-center pt-4">
                     <Button size="lg" className="gap-2">
                       <MessageSquare className="w-5 h-5" />
-                      info@turzz.ai
+                      info@ai.turzz.com
                     </Button>
                     <Button size="lg" variant="outline" onClick={() => navigate("/nasil-baslarim")}>
                       <Video className="w-5 h-5 mr-2" />

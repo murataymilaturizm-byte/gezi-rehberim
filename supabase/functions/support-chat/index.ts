@@ -139,14 +139,14 @@ YOUR TASKS:
 - Help understand plan differences and limitations
 
 HELP RESOURCES:
-- Comprehensive Help Center: www.turzz.ai/yardim - Detailed guide on ALL topics
-- Getting Started Guide: www.turzz.ai/nasil-baslarim - Initial setup steps
-- Support Email: info@turzz.ai - For technical support and urgent issues
+- Comprehensive Help Center: ai.turzz.com/yardim - Detailed guide on ALL topics
+- Getting Started Guide: ai.turzz.com/nasil-baslarim - Initial setup steps
+- Support Email: info@ai.turzz.com - For technical support and urgent issues
 
 MAIN TOPICS AND SOLUTIONS:
 
 1. INSTALLATION AND SETUP (5-10 minutes)
-✅ Step 1: Register at www.turzz.ai/admin
+✅ Step 1: Register at ai.turzz.com/admin
 ✅ Step 2: Choose your plan (14-day free trial)
 ✅ Step 3: Connect WhatsApp Business number (Settings > WhatsApp Settings)
    - Just enter your WhatsApp Business number
@@ -382,7 +382,7 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    → View usage in Dashboard
    → Upgrade plan if needed
    → Limits reset monthly
-   → Contact info@turzz.ai for urgent increase
+   → Contact info@ai.turzz.com for urgent increase
 
 12. PLAN LIMITS AND UPGRADES
 📦 Understanding Limits:
@@ -410,12 +410,12 @@ CONVERSATION STYLE:
 - Be patient and helpful
 - Give SHORT but COMPLETE answers
 - Suggest /yardim page for in-depth guides
-- Direct to info@turzz.ai for urgent technical issues
+- Direct to info@ai.turzz.com for urgent technical issues
 - Use emojis sparingly (1-2 per message)
 
 IMPORTANT GUIDELINES:
 ✅ Always give accurate, up-to-date information
-✅ If unsure, direct to info@turzz.ai - don't guess
+✅ If unsure, direct to info@ai.turzz.com - don't guess
 ✅ Focus on HELPING, not selling
 ✅ Assume customer already purchased - provide support
 ✅ Be proactive - suggest related features
@@ -521,13 +521,13 @@ serve(async (req) => {
     console.error('Error in support-chat function:', error);
     
     const errorMessages: Record<string, string> = {
-      tr: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin veya info@turzz.ai adresinden bizimle iletişime geçin.',
-      en: 'Sorry, an error occurred. Please try again or contact us at info@turzz.ai.',
-      de: 'Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns unter info@turzz.ai.',
-      ru: 'Извините, произошла ошибка. Пожалуйста, попробуйте снова или свяжитесь с нами по адресу info@turzz.ai.',
-      ar: 'آسف، حدث خطأ. يرجى المحاولة مرة أخرى أو الاتصال بنا على info@turzz.ai.',
-      fr: 'Désolé, une erreur s\'est produite. Veuillez réessayer ou nous contacter à info@turzz.ai.',
-      es: 'Lo siento, ocurrió un error. Por favor intente de nuevo o contáctenos en info@turzz.ai.'
+      tr: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin veya info@ai.turzz.com adresinden bizimle iletişime geçin.',
+      en: 'Sorry, an error occurred. Please try again or contact us at info@ai.turzz.com.',
+      de: 'Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns unter info@ai.turzz.com.',
+      ru: 'Извините, произошла ошибка. Пожалуйста, попробуйте снова или свяжитесь с нами по адресу info@ai.turzz.com.',
+      ar: 'آسف، حدث خطأ. يرجى المحاولة مرة أخرى أو الاتصال بنا على info@ai.turzz.com.',
+      fr: 'Désolé, une erreur s\'est produite. Veuillez réessayer ou nous contacter à info@ai.turzz.com.',
+      es: 'Lo siento, ocurrió un error. Por favor intente de nuevo o contáctenos en info@ai.turzz.com.'
     };
     
     // Extract language from request if available

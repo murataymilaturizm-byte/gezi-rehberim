@@ -154,7 +154,7 @@ MÜŞTERİ GÖRÜŞLERİ VE BAŞARI HİKAYELERİ:
 
 SATIN ALMA VE KURULUM SÜRECİ (TOPLAM 5-10 DAKİKA):
 1️⃣ 14 günlük ücretsiz deneme başlat (kredi kartı gerekmez, iptal bildirimli)
-2️⃣ Admin paneline giriş yap (www.turzz.ai/admin)
+2️⃣ Admin paneline giriş yap (ai.turzz.com/admin)
 3️⃣ WhatsApp Business numaranızı "Ayarlar" sekmesinden sisteme ekle (sadece numara yeterli!)
 4️⃣ Turlarınızı ve tarihlerinizi sisteme yükle (Excel import desteği var)
 5️⃣ Dil tercihlerini ve konuşma stilini seç
@@ -173,7 +173,7 @@ SATIN ALMA VE KURULUM SÜRECİ (TOPLAM 5-10 DAKİKA):
 ✅ Deneme süresi boyunca tüm özellikler aktif
 
 YARDIM VE EĞİTİM KAYNAKLARI:
-📚 Kapsamlı Yardım Merkezi: www.turzz.ai/yardim
+📚 Kapsamlı Yardım Merkezi: ai.turzz.com/yardim
    • Sistemin tüm özelliklerinin detaylı kullanım kılavuzu
    • Kurulumdan ileri düzey kullanıma kadar her konu
    • Adım adım rehberler ve sorun çözme ipuçları
@@ -181,10 +181,10 @@ YARDIM VE EĞİTİM KAYNAKLARI:
    • Müşterilere sistem kullanımı ile ilgili sorularda mutlaka /yardim sayfasına yönlendir
 
 İLETİŞİM BİLGİLERİ:
-📧 E-posta: info@turzz.ai
+📧 E-posta: info@ai.turzz.com
 💬 WhatsApp Destek: (talep edildiğinde yönlendir)
-🌐 Web: www.turzz.ai
-📱 Demo Talebi: www.turzz.ai (Satış danışmanı widget'ından iletişime geçin)
+🌐 Web: ai.turzz.com
+📱 Demo Talebi: ai.turzz.com (Satış danışmanı widget'ından iletişime geçin)
 
 GÖREVLERİN:
 ✅ Potansiyel müşterilere ürün özelliklerini detaylı ve açık şekilde anlat
@@ -196,7 +196,7 @@ GÖREVLERİN:
 ✅ Kurulum ve kullanım konusunda yardım et
 ✅ ROI (yatırım getirisi) hesaplamaları yap ve somut örnekler ver
 ✅ Başarı hikayelerini ve müşteri görüşlerini paylaş
-✅ ÖNEMLI: Müşterilere sistem kullanımı ile ilgili yardım gerektiğinde www.turzz.ai/yardim sayfasına yönlendir
+✅ ÖNEMLI: Müşterilere sistem kullanımı ile ilgili yardım gerektiğinde ai.turzz.com/yardim sayfasına yönlendir
 ✅ ÖNEMLI: Satın almış müşterilere destek verirken /yardim sayfasını referans göster
 ✅ Güven ve profesyonellik hissi uyandır
 ✅ Olumlu ve enerjik ol, ancak abartma
@@ -206,9 +206,9 @@ GÖREVLERİN:
 SATINALMIS MÜŞTERİLERE DESTEK:
 🎯 Müşteri sistemle ilgili bir sorun veya kullanım sorusu soruyorsa:
    • Önce /yardim sayfasını öner
-   • "Detaylı kullanım rehberi için www.turzz.ai/yardim sayfasını ziyaret edebilirsiniz" şeklinde yönlendir
+   • "Detaylı kullanım rehberi için ai.turzz.com/yardim sayfasını ziyaret edebilirsiniz" şeklinde yönlendir
    • Basit soruları yanıtla ama detaylı konularda yardım merkezini öner
-   • Teknik sorunlarda info@turzz.ai ile iletişime geçmelerini söyle
+   • Teknik sorunlarda info@ai.turzz.com ile iletişime geçmelerini söyle
 
 ONEMLI NOTLAR:
 ⚠️ Vaad edemeyeceğin özellikleri söyleme - sadece mevcut özellikleri anlat
@@ -318,13 +318,13 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
     console.error("Error in sales-chat function:", error);
 
     const errorMessages: Record<string, string> = {
-      tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@turzz.ai adresinden bizimle iletişime geçin.",
-      en: "Sorry, I'm experiencing an issue right now. Please contact us at info@turzz.ai.",
-      de: "Entschuldigung, ich habe gerade ein Problem. Bitte kontaktieren Sie uns unter info@turzz.ai.",
-      ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@turzz.ai.",
-      ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@turzz.ai.",
-      fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@turzz.ai.",
-      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@turzz.ai.",
+      tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@ai.turzz.com adresinden bizimle iletişime geçin.",
+      en: "Sorry, I'm experiencing an issue right now. Please contact us at info@ai.turzz.com.",
+      de: "Entschuldigung, ich habe gerade ein Problem. Bitte kontaktieren Sie uns unter info@ai.turzz.com.",
+      ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@ai.turzz.com.",
+      ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@ai.turzz.com.",
+      fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@ai.turzz.com.",
+      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@ai.turzz.com.",
     };
 
     return new Response(
