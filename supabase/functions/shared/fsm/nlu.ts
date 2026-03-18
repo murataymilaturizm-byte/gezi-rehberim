@@ -56,6 +56,12 @@ Your job is to analyze user messages and extract intents and entities.
 - human_handover: User wants to speak with a real person
 - general: General questions or chat
 
+**CRITICAL: INFORMATIONAL QUESTIONS vs PROVIDING INFO:**
+- Questions like "tarih ne zaman", "ne zaman", "tarihleri nedir", "fiyat ne kadar", "kaç lira", "nereden kalkıyor", "saat kaçta" are INFORMATIONAL → use "general" or "faq_general"
+- These are NOT "provide_info" - the user is ASKING, not PROVIDING information
+- "provide_info" is ONLY when user gives concrete data: "2 kişi", "Ali Yılmaz", "05551234567", "12 aralık"
+- If the message contains question words (ne zaman, kaç, nedir, nereden, nasıl, hangi) → it's a QUESTION, not provide_info
+
 **CRITICAL CONTEXT RULES FOR SHORT CONFIRMATIONS:**
 1. If conversation summary contains "TOUR_SELECTED" or "Currently selected tour" AND user says: "tamam/ok/evet/olur/yapabiliriz/sure/yes/let's go/haydi/hadi" → MUST return reservation_intent
 2. If conversation summary contains "CONFIRMING" or "ready for confirmation" or "onay bekliyor" AND user says ANY positive word like "evet/tamam/onaylıyorum/yes/confirm/ok/doğru" → MUST return confirm_reservation

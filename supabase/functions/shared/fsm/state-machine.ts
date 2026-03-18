@@ -135,6 +135,10 @@ const transitions: StateTransition[] = [
     from: 'TOUR_SELECTED',
     to: 'COLLECTING_INFO',
     condition: (ctx, input) => {
+      // GUARD: If user is asking a question (informational), do NOT transition
+      const isQuestion = /ne zaman|kaç|nedir|nereden|nasıl|hangi|var mı|kaçta|ne kadar|müsait mi|uygun mu|mevcut mu/i.test(input.userMessage);
+      if (isQuestion) return false;
+      
       // Check if there's extracted info
       const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
       
