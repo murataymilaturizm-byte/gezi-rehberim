@@ -631,7 +631,7 @@ Her şablonda kullanılabilen değişkenler:
 - WhatsApp bağlantısı çalışmıyor
 - Ödeme hatası
 - Veri kayboldu
-→ Hemen info@turzz.ai adresine yazın
+→ Hemen info@ai.turzz.com adresine yazın
           `
         },
         {
