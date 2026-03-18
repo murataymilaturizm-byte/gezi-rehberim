@@ -448,7 +448,7 @@ const Index = () => {
       </section>
 
       {/* Advanced Features Section */}
-      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-14 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[3] = el)} className="py-14 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3">
