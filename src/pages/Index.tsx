@@ -646,7 +646,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
