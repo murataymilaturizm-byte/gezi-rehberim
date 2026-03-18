@@ -671,6 +671,8 @@ const Admin = () => {
               <SuperAdminWhatsAppIntegrations />
             ) : activeTab === "whatsapp_settings" && isSuperAdmin ? (
               <SuperAdminWhatsAppSettings />
+            ) : activeTab === "whatsapp_test" && isSuperAdmin ? (
+              <WhatsAppTestPanel />
             ) : activeTab === "agencies" && isSuperAdmin ? (
               <AgencyManagement />
             ) : activeTab === "contact_forms" && isSuperAdmin ? (
