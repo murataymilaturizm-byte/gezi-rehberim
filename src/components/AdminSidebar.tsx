@@ -91,6 +91,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     reporting: defaultOpen === "reporting",
     support: defaultOpen === "support",
     superAdmin: defaultOpen === "superAdmin",
+    test: defaultOpen === "test",
   });
   
   const toggleGroup = (groupId: string) => {
