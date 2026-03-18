@@ -815,7 +815,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[7] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
         <div className="absolute inset-0 bg-gradient-ocean opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <Card className="max-w-4xl mx-auto border-border/50 shadow-card bg-gradient-to-br from-card to-accent/10">
