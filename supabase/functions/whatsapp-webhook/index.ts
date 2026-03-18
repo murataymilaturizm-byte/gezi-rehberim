@@ -262,17 +262,20 @@ serve(async (req) => {
       context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
     }
 
-    // Localized tours
-    const tours = toursRaw.map((tour: any) => ({
-      id: tour.id,
-      title: pickLocalized(tour, "title", context.language),
-      destination: pickLocalized(tour, "destination", context.language),
-      type: tour.type,
-      currency: tour.currency,
-      program_kisa: pickLocalized(tour, "program_kisa", context.language),
-      gezilecek_yerler: tour.gezilecek_yerler,
-      dates: tour.dates || [],
-    }));
+    // Localized tours - filter out past dates
+    const today = new Date().toISOString().split('T')[0];
+    const tours = toursRaw
+      .map((tour: any) => ({
+        id: tour.id,
+        title: pickLocalized(tour, "title", context.language),
+        destination: pickLocalized(tour, "destination", context.language),
+        type: tour.type,
+        currency: tour.currency,
+        program_kisa: pickLocalized(tour, "program_kisa", context.language),
+        gezilecek_yerler: tour.gezilecek_yerler,
+        dates: (tour.dates || []).filter((d: any) => d.departure_date >= today),
+      }))
+      .filter((tour: any) => tour.dates.length > 0);
 
     // === Legacy features (canned responses, FAQ) - with dynamic language ===
     const currentLang = context.language || "tr";
@@ -752,6 +755,21 @@ NEVER switch tours automatically, only ask for confirmation!`;
 
       if (regError) {
         console.error("❌ Save error:", regError);
+        // Override AI response - don't confirm a reservation that wasn't saved
+        const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : '';
+        const errorMsgs: Record<string, string> = {
+          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
+          en: `There was an issue creating your reservation. Please contact ${agency.name} directly.${agPhone}`,
+          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+          ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
+          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
+          fr: `Un problème est survenu lors de la création de votre réservation. Veuillez contacter ${agency.name}.${agPhone}`,
+          es: `Hubo un problema al crear su reserva. Por favor contacte a ${agency.name}.${agPhone}`,
+        };
+        finalReply = errorMsgs[newContext.language] || errorMsgs.tr;
+        // Reset context so user can retry
+        newContext.stage = context.stage;
+        newContext.reservationConfirmed = false;
       } else {
         console.log("✅ Reservation saved");
 
