@@ -241,6 +241,30 @@ export type Database = {
         }
         Relationships: []
       }
+      data_deletion_requests: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       faq_templates: {
         Row: {
           agency_id: string
