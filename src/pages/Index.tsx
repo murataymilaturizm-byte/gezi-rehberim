@@ -373,7 +373,7 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="max-w-4xl mx-auto space-y-4">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-4">
             {features.map((feature, index) => (
               <div 
                 key={index} 

@@ -49,8 +49,23 @@
     },
     "multi": {
       "title": "Çoklu Dil Desteği",
-      "description": "7 farklı dilde otomatik mesajlaşma: Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca. Sistem müşterinizin dilini otomatik algılıyor.",
+      "description": "7 farklı dilde otomatik mesajlaşma. Sistem müşterinizin dilini otomatik algılıyor.",
       "metric": "7 dilde akıcı iletişim"
+    },
+    "reservation": {
+      "title": "Akıllı Rezervasyon Sistemi",
+      "description": "WhatsApp üzerinden adım adım wizard ile müşteri bilgilerini toplayın, otomatik kayıt oluşturun.",
+      "metric": "Otomatik kayıt & takip"
+    },
+    "reminders": {
+      "title": "Otomatik Hatırlatmalar",
+      "description": "Tur tarihi yaklaştığında müşterilerinize otomatik WhatsApp hatırlatması gönderin.",
+      "metric": "İptal oranında %40 düşüş"
+    },
+    "payment": {
+      "title": "Ödeme Takibi",
+      "description": "Kapora, kısmi ve tam ödeme durumlarını takip edin, ödeme hatırlatmaları gönderin.",
+      "metric": "Anlık ödeme durumu"
     }
   },
   "howItWorks": {
