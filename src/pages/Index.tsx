@@ -343,11 +343,11 @@ const Index = () => {
       </section>
 
 
-      {/* Features Section */}
-      <section ref={(el) => (sectionsRef.current[1] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
+      {/* Features Section - Horizontal cards with accent left border */}
+      <section ref={(el) => (sectionsRef.current[1] = el)} className="py-16 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-10">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
               {t("features.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -355,33 +355,33 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="max-w-4xl mx-auto space-y-4">
             {features.map((feature, index) => (
-              <Card 
+              <div 
                 key={index} 
-                className="border-border/50 shadow-card hover:shadow-xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-card to-card/50 group cursor-pointer"
+                className="flex items-center gap-5 p-5 rounded-xl border border-border/50 bg-card hover:shadow-lg transition-all duration-300 hover:border-primary/30 group"
               >
-                <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                    <feature.icon className="w-7 h-7 text-primary-foreground" />
-                  </div>
-                  <h4 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">{feature.title}</h4>
-                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-                  <div className="pt-2 border-t border-border/50">
-                    <p className="text-sm font-semibold text-primary">{feature.metric}</p>
-                  </div>
-                </CardContent>
-              </Card>
+                <div className="w-12 h-12 rounded-xl bg-gradient-ocean flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+                  <feature.icon className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{feature.title}</h4>
+                  <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
+                </div>
+                <Badge className="hidden sm:flex bg-primary/10 text-primary border-primary/20 whitespace-nowrap flex-shrink-0">
+                  {feature.metric}
+                </Badge>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-20 bg-gradient-to-br from-secondary/5 to-primary/5 opacity-0 translate-y-8 transition-all duration-700">
+      {/* How It Works Section - Timeline style */}
+      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-16 bg-card/50 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
               {t("howItWorks.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -389,57 +389,31 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
-            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 relative">
-              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
-                1
-              </div>
-              <CardContent className="p-6 pt-8 space-y-4">
-                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
-                  <MessageSquare className="w-7 h-7 text-primary" />
+          <div className="max-w-3xl mx-auto relative">
+            {/* Vertical line */}
+            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-border hidden md:block" />
+            
+            {[
+              { icon: MessageSquare, step: 1, title: t("howItWorks.step1.title"), desc: t("howItWorks.step1.description") },
+              { icon: Brain, step: 2, title: t("howItWorks.step2.title"), desc: t("howItWorks.step2.description") },
+              { icon: CheckCircle2, step: 3, title: t("howItWorks.step3.title"), desc: t("howItWorks.step3.description") },
+            ].map((item, index) => (
+              <div key={index} className={`flex items-start gap-4 mb-8 last:mb-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-10 md:ml-0' : 'md:pl-10 md:ml-auto'}`}>
+                <div className="md:hidden w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-lg flex-shrink-0 shadow-md">
+                  {item.step}
                 </div>
-                <h4 className="text-xl font-semibold text-foreground text-center">{t("howItWorks.step1.title")}</h4>
-                <p className="text-muted-foreground text-center">
-                  {t("howItWorks.step1.description")}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 relative">
-              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
-                2
-              </div>
-              <CardContent className="p-6 pt-8 space-y-4">
-                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
-                  <Brain className="w-7 h-7 text-primary" />
+                <div className={`hidden md:flex absolute left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-gradient-ocean items-center justify-center text-primary-foreground font-bold shadow-md`} style={{ top: `${index * 96 + 8}px` }}>
+                  {item.step}
                 </div>
-                <h4 className="text-xl font-semibold text-foreground text-center">{t("howItWorks.step2.title")}</h4>
-                <p className="text-muted-foreground text-center">
-                  {t("howItWorks.step2.description")}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 relative">
-              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
-                3
-              </div>
-              <CardContent className="p-6 pt-8 space-y-4">
-                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-7 h-7 text-primary" />
+                <div className="space-y-1.5">
+                  <h4 className="text-lg font-bold text-foreground">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                 </div>
-                <h4 className="text-xl font-semibold text-foreground text-center">{t("howItWorks.step3.title")}</h4>
-                <p className="text-muted-foreground text-center">
-                  {t("howItWorks.step3.description")}
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-16 text-center">
-            <p className="text-lg text-muted-foreground mb-6">
-              {t("howItWorks.footer")}
-            </p>
+          <div className="mt-10 text-center">
             <Button size="lg" className="bg-gradient-ocean hover:opacity-90" onClick={scrollToDemo}>
               {t("howItWorks.demoButton")}
             </Button>
@@ -447,10 +421,45 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Advanced Features Section */}
-      <section ref={(el) => (sectionsRef.current[3] = el)} className="py-14 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
+      {/* Live Demo Section */}
+      <section ref={(el) => {
+        sectionsRef.current[3] = el;
+        if (el) demoRef.current = el as HTMLDivElement;
+      }} className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-border mb-3">
+              <MessageSquare className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-accent-foreground">{t("demo.badge")}</span>
+            </div>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+              {t("demo.title")}
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {t("demo.subtitle")}
+            </p>
+          </div>
+
+          <DemoChat />
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-muted-foreground mb-4">
+              {t("demo.note")}
+            </p>
+            <Button size="lg" className="bg-gradient-ocean hover:opacity-90" asChild>
+              <a href="/auth?mode=signup">
+                {t("demo.cta")}
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Advanced Features Section - Compact icon grid, no cards */}
+      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-14 opacity-0 translate-y-8 transition-all duration-700">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               <span className="text-xs font-medium text-primary">{t("advanced.badge")}</span>
@@ -458,101 +467,38 @@ const Index = () => {
             <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
               {t("advanced.title")}
             </h3>
-            <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-              {t("advanced.subtitle")}
-            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            {/* User Profiles */}
-            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
-              <CardContent className="p-5 space-y-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                  <Users className="w-5 h-5 text-primary-foreground" />
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
+            {[
+              { icon: Users, color: "text-primary", title: t("advanced.userProfiles.title"), features: [t("advanced.userProfiles.feature1"), t("advanced.userProfiles.feature2"), t("advanced.userProfiles.feature3")] },
+              { icon: TrendingUp, color: "text-secondary", title: t("advanced.analytics.title"), features: [t("advanced.analytics.feature1"), t("advanced.analytics.feature2"), t("advanced.analytics.feature3")] },
+              { icon: Bell, color: "text-primary", title: t("advanced.reminders.title"), features: [t("advanced.reminders.feature1"), t("advanced.reminders.feature2"), t("advanced.reminders.feature3")] },
+            ].map((item, index) => (
+              <div key={index} className="space-y-3">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-ocean flex items-center justify-center mx-auto">
+                  <item.icon className="w-7 h-7 text-primary-foreground" />
                 </div>
-                <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{t("advanced.userProfiles.title")}</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t("advanced.userProfiles.description")}
-                </p>
-                <div className="space-y-2 pt-2 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.userProfiles.feature1")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.userProfiles.feature2")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.userProfiles.feature3")}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Analytics */}
-            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
-              <CardContent className="p-5 space-y-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                  <TrendingUp className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{t("advanced.analytics.title")}</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t("advanced.analytics.description")}
-                </p>
-                <div className="space-y-2 pt-2 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.analytics.feature1")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.analytics.feature2")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.analytics.feature3")}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Reminders */}
-            <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
-              <CardContent className="p-5 space-y-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-ocean flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                  <Bell className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{t("advanced.reminders.title")}</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t("advanced.reminders.description")}
-                </p>
-                <div className="space-y-2 pt-2 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.reminders.feature1")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.reminders.feature2")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                    <span className="text-xs text-foreground">{t("advanced.reminders.feature3")}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                <h4 className="text-lg font-bold text-foreground">{item.title}</h4>
+                <ul className="space-y-1.5 text-left inline-block">
+                  {item.features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Check className={`w-3.5 h-3.5 ${item.color} flex-shrink-0`} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-16 bg-card/50 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-10">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
               {t("testimonials.title")}
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -601,46 +547,11 @@ const Index = () => {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-10">
             <div className="inline-flex items-center gap-2 text-muted-foreground">
               <CheckCircle2 className="w-5 h-5 text-primary" />
               <span>{t("advanced.stats")}</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Live Demo Section */}
-      <section ref={(el) => {
-        sectionsRef.current[5] = el;
-        if (el) demoRef.current = el as HTMLDivElement;
-      }} className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-border mb-4">
-              <MessageSquare className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-accent-foreground">{t("demo.badge")}</span>
-            </div>
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {t("demo.title")}
-            </h3>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {t("demo.subtitle")}
-            </p>
-          </div>
-
-          <DemoChat />
-
-          <div className="text-center mt-8">
-            <p className="text-sm text-muted-foreground mb-4">
-              {t("demo.note")}
-            </p>
-            <Button size="lg" className="bg-gradient-ocean hover:opacity-90" asChild>
-              <a href="/auth?mode=signup">
-                {t("demo.cta")}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </a>
-            </Button>
           </div>
         </div>
       </section>
