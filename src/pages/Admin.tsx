@@ -59,6 +59,7 @@ import { getMaxTours, getPlanFeatures, PlanFeatures } from "@/utils/planFeatures
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { WhatsAppBusinessManagement } from "@/components/WhatsAppBusinessManagement";
 
 interface Tour {
   id: string;
