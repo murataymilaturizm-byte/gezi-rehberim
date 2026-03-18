@@ -224,15 +224,20 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       if (!saveResult.success) {
         reservationFailed = true;
         logger.error("Reservation save failed, will not confirm to user", { error: saveResult.error });
-        // Override AI response to not confirm a reservation that wasn't actually saved
+        
+        // Build user-friendly error with agency contact info
+        const agencyPhone = agencyData?.phone_public || "";
+        const agencyName = agencyData?.name || "";
+        const phoneInfo = agencyPhone ? ` 📞 ${agencyPhone}` : "";
+        
         const errorMessages: Record<string, string> = {
-          tr: "Üzgünüm, rezervasyonunuzu kaydederken bir sorun oluştu. Lütfen daha sonra tekrar deneyin veya bizimle iletişime geçin.",
-          en: "Sorry, there was an issue saving your reservation. Please try again later or contact us directly.",
-          de: "Entschuldigung, beim Speichern Ihrer Reservierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-          ar: "عذرًا، حدثت مشكلة أثناء حفظ حجزك. يرجى المحاولة مرة أخرى لاحقًا.",
-          fr: "Désolé, un problème est survenu lors de l'enregistrement de votre réservation. Veuillez réessayer plus tard.",
-          es: "Lo sentimos, hubo un problema al guardar su reserva. Por favor, inténtelo de nuevo más tarde.",
-          ru: "Извините, при сохранении бронирования произошла ошибка. Пожалуйста, попробуйте позже.",
+          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agencyName} ile iletişime geçiniz.${phoneInfo}`,
+          en: `There was an issue creating your reservation. Please contact ${agencyName} directly.${phoneInfo}`,
+          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
+          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agencyName}.${phoneInfo}`,
+          fr: `Un problème est survenu lors de la création de votre réservation. Veuillez contacter ${agencyName}.${phoneInfo}`,
+          es: `Hubo un problema al crear su reserva. Por favor contacte a ${agencyName}.${phoneInfo}`,
+          ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agencyName}.${phoneInfo}`,
         };
         finalResponse = errorMessages[language] || errorMessages["tr"];
         // Reset context so user can retry
