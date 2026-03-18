@@ -657,7 +657,7 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section ref={(el) => (sectionsRef.current[7] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
