@@ -343,35 +343,8 @@ const Index = () => {
       </section>
 
 
-      {/* Stats Section */}
-      <section ref={(el) => (sectionsRef.current[1] = el)} className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {stats.map((stat, index) => (
-              <Card 
-                key={index} 
-                className="border-border/50 shadow-card text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
-              >
-                <CardContent className="p-6 space-y-2">
-                  <stat.icon className={`w-8 h-8 ${stat.color} mx-auto transition-transform duration-300 group-hover:scale-110`} />
-                  <div className="text-3xl md:text-4xl font-bold text-foreground">
-                    {stat.value}
-                  </div>
-                  <p className="text-sm font-medium text-foreground">
-                    {stat.label}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {stat.subtext}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
-      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[1] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -404,40 +377,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section ref={(el) => (sectionsRef.current[3] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {t("benefits.title")}
-            </h3>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {t("benefits.subtitle")}
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <benefit.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="space-y-2 flex-1">
-                      <h4 className="text-lg font-bold text-foreground">{benefit.title}</h4>
-                      <p className="text-muted-foreground">{benefit.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
-      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 bg-gradient-to-br from-secondary/5 to-primary/5 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-20 bg-gradient-to-br from-secondary/5 to-primary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -507,7 +448,7 @@ const Index = () => {
       </section>
 
       {/* Advanced Features Section */}
-      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-14 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[3] = el)} className="py-14 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3">
@@ -608,7 +549,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -671,7 +612,7 @@ const Index = () => {
 
       {/* Live Demo Section */}
       <section ref={(el) => {
-        sectionsRef.current[7] = el;
+        sectionsRef.current[5] = el;
         if (el) demoRef.current = el as HTMLDivElement;
       }} className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
@@ -705,7 +646,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -825,7 +766,7 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section ref={(el) => (sectionsRef.current[9] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[7] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
@@ -983,7 +924,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section ref={(el) => (sectionsRef.current[10] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[8] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
         <div className="absolute inset-0 bg-gradient-ocean opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <Card className="max-w-4xl mx-auto border-border/50 shadow-card bg-gradient-to-br from-card to-accent/10">
