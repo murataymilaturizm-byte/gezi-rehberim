@@ -804,7 +804,7 @@ NEVER switch tours automatically, only ask for confirmation!`;
         }
       }
 
-        if (planFeatures?.has_user_profiles) {
+        if (!regError && planFeatures?.has_user_profiles) {
           await supabase.from("whatsapp_user_profiles").upsert(
             {
               phone: userPhone,
