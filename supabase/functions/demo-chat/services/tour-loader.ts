@@ -49,8 +49,23 @@ export function createLocalizedTour(tour: any, lang: string): Tour {
 }
 
 /**
- * Get localized tours for a specific language
+ * Filter out past dates from tours and remove tours with no future dates
+ */
+export function filterFutureTours(tours: any[]): any[] {
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+  return tours
+    .map((tour) => ({
+      ...tour,
+      dates: (tour.dates || []).filter((d: any) => d.departure_date >= today),
+    }))
+    .filter((tour) => tour.dates.length > 0);
+}
+
+/**
+ * Get localized tours for a specific language (only future-dated tours)
  */
 export function getLocalizedTours(rawTours: any[], language: string): Tour[] {
-  return rawTours.map((tour) => createLocalizedTour(tour, language));
+  const futureTours = filterFutureTours(rawTours);
+  return futureTours.map((tour) => createLocalizedTour(tour, language));
 }
