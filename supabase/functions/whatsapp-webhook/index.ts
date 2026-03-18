@@ -262,17 +262,20 @@ serve(async (req) => {
       context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
     }
 
-    // Localized tours
-    const tours = toursRaw.map((tour: any) => ({
-      id: tour.id,
-      title: pickLocalized(tour, "title", context.language),
-      destination: pickLocalized(tour, "destination", context.language),
-      type: tour.type,
-      currency: tour.currency,
-      program_kisa: pickLocalized(tour, "program_kisa", context.language),
-      gezilecek_yerler: tour.gezilecek_yerler,
-      dates: tour.dates || [],
-    }));
+    // Localized tours - filter out past dates
+    const today = new Date().toISOString().split('T')[0];
+    const tours = toursRaw
+      .map((tour: any) => ({
+        id: tour.id,
+        title: pickLocalized(tour, "title", context.language),
+        destination: pickLocalized(tour, "destination", context.language),
+        type: tour.type,
+        currency: tour.currency,
+        program_kisa: pickLocalized(tour, "program_kisa", context.language),
+        gezilecek_yerler: tour.gezilecek_yerler,
+        dates: (tour.dates || []).filter((d: any) => d.departure_date >= today),
+      }))
+      .filter((tour: any) => tour.dates.length > 0);
 
     // === Legacy features (canned responses, FAQ) - with dynamic language ===
     const currentLang = context.language || "tr";
