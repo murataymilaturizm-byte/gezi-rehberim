@@ -601,7 +601,7 @@ Her şablonda kullanılabilen değişkenler:
 **Destek Kanalları:**
 
 1. **E-posta Desteği:**
-   - info@turzz.ai
+   - info@ai.turzz.com
    - Yanıt süresi: 24 saat içinde
    - Tüm paketlerde mevcut
 
