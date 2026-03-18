@@ -382,7 +382,7 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    → View usage in Dashboard
    → Upgrade plan if needed
    → Limits reset monthly
-   → Contact info@turzz.ai for urgent increase
+   → Contact info@ai.turzz.com for urgent increase
 
 12. PLAN LIMITS AND UPGRADES
 📦 Understanding Limits:
