@@ -140,6 +140,10 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
   ];
 
+  const testItems = [
+    { id: "whatsapp_test", icon: MessageSquare, label: "WhatsApp Test" },
+  ];
+
   const renderMenuItems = (items: typeof generalItems) => (
     <SidebarMenu>
       {items.map((item) => {
