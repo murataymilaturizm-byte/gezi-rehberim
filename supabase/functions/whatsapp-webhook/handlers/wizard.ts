@@ -647,9 +647,27 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
   if (error) {
     console.error('Error creating registration:', error);
     await clearWizardState(supabase, phone, agencyId);
-    return language === 'tr'
-      ? 'Rezervasyon sırasında bir hata oluştu. Lütfen tekrar deneyin.'
-      : 'An error occurred during reservation. Please try again.';
+    
+    // Fetch agency info for user-friendly error message
+    const { data: agencyInfo } = await supabase
+      .from('agencies')
+      .select('name, phone_public')
+      .eq('id', agencyId)
+      .single();
+    
+    const agName = agencyInfo?.name || '';
+    const agPhone = agencyInfo?.phone_public ? ` 📞 ${agencyInfo.phone_public}` : '';
+    
+    const errorMessages = {
+      tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agName} ile iletişime geçiniz.${agPhone}`,
+      en: `There was an issue creating your reservation. Please contact ${agName} directly.${agPhone}`,
+      de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agName}.${agPhone}`,
+      ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agName}.${agPhone}`,
+      ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agName}.${agPhone}`,
+      fr: `Un problème est survenu lors de la création de votre réservation. Veuillez contacter ${agName}.${agPhone}`,
+      es: `Hubo un problema al crear su reserva. Por favor contacte a ${agName}.${agPhone}`
+    };
+    return errorMessages[language as keyof typeof errorMessages] || errorMessages.tr;
   }
 
   // Update quota
