@@ -11,6 +11,7 @@ import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DataDeletion from "./pages/DataDeletion";
+import TermsOfService from "./pages/TermsOfService";
 import "./i18n";
 
 const queryClient = new QueryClient();
