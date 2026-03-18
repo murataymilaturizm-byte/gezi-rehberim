@@ -431,7 +431,7 @@ Her şablonda kullanılabilen değişkenler:
    ✓ 7/24 premium destek
    ✓ Özel eğitim ve danışmanlık
    → Büyük organizasyonlar için
-   → Fiyat için info@turzz.ai
+   → Fiyat için info@ai.turzz.com
 
 **Ücretsiz Deneme:**
 - 14 gün ücretsiz
