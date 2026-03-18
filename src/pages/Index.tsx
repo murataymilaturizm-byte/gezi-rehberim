@@ -474,46 +474,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Advanced Features Section - Compact icon grid, no cards */}
-      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-14 opacity-0 translate-y-8 transition-all duration-700">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">{t("advanced.badge")}</span>
-            </div>
-            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-              {t("advanced.title")}
-            </h3>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
-            {[
-              { icon: Users, color: "text-primary", title: t("advanced.userProfiles.title"), features: [t("advanced.userProfiles.feature1"), t("advanced.userProfiles.feature2"), t("advanced.userProfiles.feature3")] },
-              { icon: TrendingUp, color: "text-secondary", title: t("advanced.analytics.title"), features: [t("advanced.analytics.feature1"), t("advanced.analytics.feature2"), t("advanced.analytics.feature3")] },
-              { icon: Bell, color: "text-primary", title: t("advanced.reminders.title"), features: [t("advanced.reminders.feature1"), t("advanced.reminders.feature2"), t("advanced.reminders.feature3")] },
-            ].map((item, index) => (
-              <div key={index} className="space-y-3">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-ocean flex items-center justify-center mx-auto">
-                  <item.icon className="w-7 h-7 text-primary-foreground" />
-                </div>
-                <h4 className="text-lg font-bold text-foreground">{item.title}</h4>
-                <ul className="space-y-1.5 text-left inline-block">
-                  {item.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Check className={`w-3.5 h-3.5 ${item.color} flex-shrink-0`} />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Testimonials Section */}
-      <section ref={(el) => (sectionsRef.current[5] = el)} className="py-16 bg-card/50 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[4] = el)} className="py-16 bg-card/50 opacity-0 translate-y-8 transition-all duration-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
