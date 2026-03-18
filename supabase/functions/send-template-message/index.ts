@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendWhatsAppMessage, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
+import { sendWhatsAppMessage, sendWhatsAppTemplate, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +18,39 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { registrationId, templateKey } = await req.json();
+    const body = await req.json();
+
+    // === Direct Meta Template Mode (for testing / direct sends) ===
+    if (body.phone && body.templateName) {
+      const phoneNumberId = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID') || '';
+      const accessToken = Deno.env.get('WHATSAPP_ACCESS_TOKEN') || '';
+
+      if (!phoneNumberId || !accessToken) {
+        return new Response(
+          JSON.stringify({ error: 'Missing WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const phone = body.phone.replace('+', '').trim();
+      const templateName = body.templateName;
+      const languageCode = body.languageCode || 'en_US';
+      const components = body.components || [];
+
+      console.log(`📤 Direct template send: ${templateName} to ${phone} (${languageCode})`);
+
+      const result = await sendWhatsAppTemplate(
+        phoneNumberId, accessToken, phone, templateName, languageCode, components
+      );
+
+      return new Response(
+        JSON.stringify({ success: result.success, messageId: result.messageId, error: result.error }),
+        { status: result.success ? 200 : 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // === Registration-based Template Mode (existing logic) ===
+    const { registrationId, templateKey } = body;
 
     console.log('Send template message request:', { registrationId, templateKey });
 
