@@ -71,6 +71,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
+    const testIds = ["whatsapp_test"];
     
     if (generalIds.includes(activeTab)) return "general";
     if (tourIds.includes(activeTab)) return "tours";
