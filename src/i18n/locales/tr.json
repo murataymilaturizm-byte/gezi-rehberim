@@ -45,7 +45,7 @@
     "analytics": {
       "title": "Gelir Takibi & Analiz",
       "description": "Hangi turlar kazandırıyor? Hangi günler daha çok satış oluyor? Tüm gelir ve performans verilerinizi anlık görün.",
-      "metric": "Günlük, haftalık, aylık ciro raporları"
+      "metric": "Anlık ciro raporları"
     },
     "multi": {
       "title": "Çoklu Dil Desteği",
