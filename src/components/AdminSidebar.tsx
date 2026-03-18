@@ -70,7 +70,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
-    const superAdminIds = ["agencies", "contact_forms", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
+    const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
     const testIds = ["whatsapp_test"];
     
     if (generalIds.includes(activeTab)) return "general";
@@ -138,7 +138,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
   const superAdminItems = [
     { id: "agencies", icon: Building2, label: t("admin.tabs.agencies") },
     { id: "contact_forms", icon: Mail, label: t("admin.tabs.contactForms") },
-    { id: "whatsapp_integrations", icon: Phone, label: "WhatsApp Entegrasyonları" },
+    { id: "whatsapp_management", icon: Phone, label: "WhatsApp Yönetimi" },
     { id: "whatsapp_settings", icon: Phone, label: "WhatsApp Ayarları" },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
   ];
