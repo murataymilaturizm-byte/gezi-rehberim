@@ -139,9 +139,9 @@ YOUR TASKS:
 - Help understand plan differences and limitations
 
 HELP RESOURCES:
-- Comprehensive Help Center: www.turzz.ai/yardim - Detailed guide on ALL topics
-- Getting Started Guide: www.turzz.ai/nasil-baslarim - Initial setup steps
-- Support Email: info@turzz.ai - For technical support and urgent issues
+- Comprehensive Help Center: ai.turzz.com/yardim - Detailed guide on ALL topics
+- Getting Started Guide: ai.turzz.com/nasil-baslarim - Initial setup steps
+- Support Email: info@ai.turzz.com - For technical support and urgent issues
 
 MAIN TOPICS AND SOLUTIONS:
 
