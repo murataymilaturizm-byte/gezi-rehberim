@@ -37,6 +37,7 @@ import { WhatsAppSettings } from "@/components/WhatsAppSettings";
 import { WhatsAppIntegrationPanel } from "@/components/WhatsAppIntegrationPanel";
 import { SuperAdminWhatsAppSettings } from "@/components/SuperAdminWhatsAppSettings";
 import { SuperAdminWhatsAppIntegrations } from "@/components/SuperAdminWhatsAppIntegrations";
+import { WhatsAppTestPanel } from "@/components/WhatsAppTestPanel";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
 import FAQManagement from "@/components/FAQManagement";
@@ -106,7 +107,7 @@ const Admin = () => {
   const { toast } = useToast();
   
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "whatsapp_settings" | "whatsapp_integrations" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "whatsapp_settings" | "whatsapp_integrations" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics" | "whatsapp_test">("dashboard");
   
   // Auth & User state
   const [session, setSession] = useState<Session | null>(null);
@@ -670,6 +671,8 @@ const Admin = () => {
               <SuperAdminWhatsAppIntegrations />
             ) : activeTab === "whatsapp_settings" && isSuperAdmin ? (
               <SuperAdminWhatsAppSettings />
+            ) : activeTab === "whatsapp_test" && isSuperAdmin ? (
+              <WhatsAppTestPanel />
             ) : activeTab === "agencies" && isSuperAdmin ? (
               <AgencyManagement />
             ) : activeTab === "contact_forms" && isSuperAdmin ? (

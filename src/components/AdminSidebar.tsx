@@ -71,6 +71,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
+    const testIds = ["whatsapp_test"];
     
     if (generalIds.includes(activeTab)) return "general";
     if (tourIds.includes(activeTab)) return "tours";
@@ -78,6 +79,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     if (reportingIds.includes(activeTab)) return "reporting";
     if (supportIds.includes(activeTab)) return "support";
     if (superAdminIds.includes(activeTab)) return "superAdmin";
+    if (testIds.includes(activeTab)) return "test";
     return "general";
   };
   
@@ -89,6 +91,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     reporting: defaultOpen === "reporting",
     support: defaultOpen === "support",
     superAdmin: defaultOpen === "superAdmin",
+    test: defaultOpen === "test",
   });
   
   const toggleGroup = (groupId: string) => {
@@ -138,6 +141,10 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     { id: "whatsapp_integrations", icon: Phone, label: "WhatsApp Entegrasyonları" },
     { id: "whatsapp_settings", icon: Phone, label: "WhatsApp Ayarları" },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
+  ];
+
+  const testItems = [
+    { id: "whatsapp_test", icon: MessageSquare, label: "WhatsApp Test" },
   ];
 
   const renderMenuItems = (items: typeof generalItems) => (
@@ -262,6 +269,25 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
               <CollapsibleContent>
                 <SidebarGroupContent>
                   {renderMenuItems(superAdminItems)}
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        )}
+
+        {/* Test - Sadece super adminler için */}
+        {isSuperAdmin && (
+          <Collapsible open={openGroups.test} onOpenChange={() => toggleGroup("test")}>
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                  {!isCollapsed && "Test"}
+                  {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.test ? "rotate-180" : ""}`} />}
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  {renderMenuItems(testItems)}
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
