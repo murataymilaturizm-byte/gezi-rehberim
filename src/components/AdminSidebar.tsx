@@ -79,6 +79,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
     if (reportingIds.includes(activeTab)) return "reporting";
     if (supportIds.includes(activeTab)) return "support";
     if (superAdminIds.includes(activeTab)) return "superAdmin";
+    if (testIds.includes(activeTab)) return "test";
     return "general";
   };
   
