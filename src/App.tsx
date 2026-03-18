@@ -10,6 +10,7 @@ import GettingStarted from "./pages/GettingStarted";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DataDeletion from "./pages/DataDeletion";
 import "./i18n";
 
 const queryClient = new QueryClient();
