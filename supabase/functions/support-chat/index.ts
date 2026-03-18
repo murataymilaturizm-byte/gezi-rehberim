@@ -146,7 +146,7 @@ HELP RESOURCES:
 MAIN TOPICS AND SOLUTIONS:
 
 1. INSTALLATION AND SETUP (5-10 minutes)
-✅ Step 1: Register at www.turzz.ai/admin
+✅ Step 1: Register at ai.turzz.com/admin
 ✅ Step 2: Choose your plan (14-day free trial)
 ✅ Step 3: Connect WhatsApp Business number (Settings > WhatsApp Settings)
    - Just enter your WhatsApp Business number
