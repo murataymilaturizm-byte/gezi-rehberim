@@ -673,7 +673,7 @@ Her şablonda kullanılabilen değişkenler:
 → Çözüm: Filtreleri kontrol edin
 
 **Hala Çözüm Bulamadınız mı?**
-→ info@turzz.ai adresine detaylı açıklama ile yazın
+→ info@ai.turzz.com adresine detaylı açıklama ile yazın
 → Ekran görüntüsü eklerseniz daha hızlı çözüm buluruz
           `
         }
