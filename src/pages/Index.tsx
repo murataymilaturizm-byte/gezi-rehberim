@@ -93,6 +93,24 @@ const Index = () => {
       title: t("features.multi.title"),
       description: t("features.multi.description"),
       metric: t("features.multi.metric")
+    },
+    {
+      icon: CheckCircle2,
+      title: t("features.reservation.title"),
+      description: t("features.reservation.description"),
+      metric: t("features.reservation.metric")
+    },
+    {
+      icon: Bell,
+      title: t("features.reminders.title"),
+      description: t("features.reminders.description"),
+      metric: t("features.reminders.metric")
+    },
+    {
+      icon: Shield,
+      title: t("features.payment.title"),
+      description: t("features.payment.description"),
+      metric: t("features.payment.metric")
     }
   ];
 
@@ -355,7 +373,7 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="max-w-4xl mx-auto space-y-4">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-4">
             {features.map((feature, index) => (
               <div 
                 key={index} 
