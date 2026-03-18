@@ -117,7 +117,8 @@ const TermsOfService = () => {
         </div>
 
         <p className="text-xs text-muted-foreground mt-8 text-center">
-          Bu kullanım şartları Turzz AI platformunu kullanan tüm acenteler ve kullanıcılar için geçerlidir.
+          Bu kullanım şartları Aymila Bilgisayar İtriyat Turizm İthalat İhracat Ticaret ve Sanayi Limited Şirketi
+          tarafından işletilen Turzz AI platformunu kullanan tüm acenteler ve kullanıcılar için geçerlidir.
         </p>
       </div>
     </div>
