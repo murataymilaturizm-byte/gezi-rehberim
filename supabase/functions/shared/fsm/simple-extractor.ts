@@ -1,31 +1,70 @@
 // Simple fallback extractor for name, phone, pax, and date (when NLU misses them)
 import type { ReservationInfo } from "./types.ts";
 
+/**
+ * Telefon numarasını temizle ve normalize et
+ * Türkiye: 05xxxxxxxxx veya +905xxxxxxxxx
+ * Uluslararası: +[ülke kodu][numara]
+ * Genel: 7-15 hane arası rakam
+ */
+function normalizePhone(raw: string): string | null {
+  // Boşluk, tire, parantez temizle
+  const cleaned = raw.replace(/[\s\-\(\)\.]/g, "");
+
+  // + ile başlıyorsa uluslararası format
+  if (cleaned.startsWith("+")) {
+    const digits = cleaned.replace("+", "");
+    if (digits.length >= 7 && digits.length <= 15 && /^\d+$/.test(digits)) {
+      return cleaned; // +905321234567 gibi sakla
+    }
+    return null;
+  }
+
+  // Sadece rakam kaldıysa
+  if (!/^\d+$/.test(cleaned)) return null;
+
+  // 7-15 hane arası kabul et
+  if (cleaned.length < 7 || cleaned.length > 15) return null;
+
+  return cleaned;
+}
+
 export function extractNameAndPhone(
   message: string,
   collectionStep?: string,
 ): { fullName?: string; phone?: string; paxAdult?: number; selectedDate?: string } {
   const result: { fullName?: string; phone?: string; paxAdult?: number; selectedDate?: string } = {};
 
-  // Extract phone
-  const phonePatterns = [
-    /\b(05\d{9})\b/,
-    /\b(\+90[\s\-]?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})\b/,
-    /\b(\d{10,11})\b/,
-  ];
+  // === TELEFON ÇIKARMA ===
+  // Önce + ile başlayan uluslararası numaraları bul
+  const intlMatch = message.match(/\+\d[\d\s\-\.]{6,17}/);
+  if (intlMatch) {
+    const phone = normalizePhone(intlMatch[0]);
+    if (phone) result.phone = phone;
+  }
 
-  for (const pattern of phonePatterns) {
-    const match = message.match(pattern);
-    if (match) {
-      let phone = match[1].replace(/[\s\-]/g, "");
-      if (phone.length >= 10 && phone.length <= 11 && /^\d+$/.test(phone)) {
-        result.phone = phone;
-        break;
+  // Sonra yerel formatları dene (Türkiye ve genel)
+  if (!result.phone) {
+    const localPatterns = [
+      /\b(05\d{9})\b/, // Türkiye mobil: 05xxxxxxxxx
+      /\b(0[1-9]\d{8,9})\b/, // Türkiye sabit/mobil: 0x ile başlayan
+      /\b(\d{10,11})\b/, // 10-11 haneli
+      /\b(\d{7,9})\b/, // 7-9 haneli (bazı ülkeler)
+    ];
+
+    for (const pattern of localPatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        const phone = normalizePhone(match[1]);
+        if (phone) {
+          result.phone = phone;
+          break;
+        }
       }
     }
   }
 
-  // Extract pax
+  // === PAX ÇIKARMA ===
   const paxPatterns = [
     /(\d+)\s*(?:kişi|kisi|person|people|yetişkin|adult)/i,
     /(\d+)\s*kişilik/i,
@@ -44,7 +83,7 @@ export function extractNameAndPhone(
     }
   }
 
-  // Extract date
+  // === TARİH ÇIKARMA ===
   const monthNames: Record<string, number> = {
     ocak: 1,
     şubat: 2,
@@ -101,10 +140,9 @@ export function extractNameAndPhone(
   }
 
   // === İSİM ÇIKARMA ===
-  // waiting_for_name aşamasında: esnek mod - chatbot isim sordu, kullanıcı cevapladı
+  // waiting_for_name aşamasında: esnek mod
   if (collectionStep === "waiting_for_name") {
     const words = message.trim().split(/\s+/);
-    // 2-4 kelime, sayı yok, soru işareti yok, her kelime en az 2 karakter
     if (
       words.length >= 2 &&
       words.length <= 4 &&
@@ -112,7 +150,6 @@ export function extractNameAndPhone(
       !/\d/.test(message) &&
       words.every((w) => w.length >= 2)
     ) {
-      // Sadece temel blacklist kontrolü - çok sıkı değil
       const basicBlacklist = [
         "evet",
         "hayır",
@@ -130,11 +167,9 @@ export function extractNameAndPhone(
         "change",
       ];
       const lowerMsg = message.toLowerCase();
-      const hasBlacklisted = basicBlacklist.some((w) => lowerMsg.includes(w));
-
-      if (!hasBlacklisted) {
+      if (!basicBlacklist.some((w) => lowerMsg.includes(w))) {
         result.fullName = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
-        return result; // İsim alındı, diğer kontrollere gerek yok
+        return result;
       }
     }
   }
@@ -155,7 +190,6 @@ export function extractNameAndPhone(
 
 function isValidName(name: string, fullMessage: string): boolean {
   const words = name.split(/\s+/);
-
   if (words.length < 2 || words.length > 3) return false;
   if (words.some((w) => w.length < 2)) return false;
   if (name.length < 5 || name.length > 50) return false;
@@ -264,7 +298,6 @@ function isValidName(name: string, fullMessage: string): boolean {
   if (blacklist.some((word) => lowerName.includes(word))) return false;
   if (fullMessage.includes("?")) return false;
 
-  // Açık isim bağlamı veya kısa mesaj kontrolü
   const nameContextPatterns = /adım|ismim|benim adım|my name is|isim:/i;
   const messageIsShort = fullMessage.trim().split(/\s+/).length <= 4;
   if (!nameContextPatterns.test(fullMessage) && !messageIsShort) return false;
