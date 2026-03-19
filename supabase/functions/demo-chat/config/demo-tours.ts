@@ -102,8 +102,9 @@ export const DEMO_TOURS = [
     ulasim: 'Klimalı otobüs',
     konaklama: 'Pamukkale\'de 4* termal otel, yarım pansiyon',
     dates: [
-      { id: 'demo-date-4', departure_date: '2025-12-10', price_adult: 3500, price_child: 2800, quota: 15 },
-      { id: 'demo-date-5', departure_date: '2025-12-20', price_adult: 3500, price_child: 2800, quota: 12 }
+      { id: 'demo-date-4', departure_date: '2026-04-10', price_adult: 3500, price_child: 2800, quota: 15 },
+      { id: 'demo-date-5', departure_date: '2026-04-25', price_adult: 3500, price_child: 2800, quota: 12 },
+      { id: 'demo-date-5b', departure_date: '2026-05-22', price_adult: 3800, price_child: 3000, quota: 14 }
     ]
   },
   {
