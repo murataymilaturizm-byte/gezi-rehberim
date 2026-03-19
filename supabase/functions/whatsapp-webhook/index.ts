@@ -766,7 +766,7 @@ Never say anything about the previous booking.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: message },
         ],
-        temperature: 0.7,
+        
       }),
     });
 

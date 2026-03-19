@@ -294,7 +294,7 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
       body: JSON.stringify({
         model: "openai/gpt-5-mini",
         messages: messages,
-        temperature: 0.7,
+        
         max_tokens: 500,
       }),
     });
