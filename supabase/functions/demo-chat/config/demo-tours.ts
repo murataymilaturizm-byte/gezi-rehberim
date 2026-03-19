@@ -63,8 +63,10 @@ export const DEMO_TOURS = [
     ulasim: 'Otelden alım-bırakım dahil',
     konaklama: 'Günübirlik tur - konaklama yok',
     dates: [
-      { id: 'demo-date-1', departure_date: '2025-12-15', price_adult: 1500, price_child: 1200, quota: 20 },
-      { id: 'demo-date-2', departure_date: '2025-12-22', price_adult: 1500, price_child: 1200, quota: 15 }
+      { id: 'demo-date-1', departure_date: '2026-04-15', price_adult: 1500, price_child: 1200, quota: 20 },
+      { id: 'demo-date-2', departure_date: '2026-04-22', price_adult: 1500, price_child: 1200, quota: 15 },
+      { id: 'demo-date-1b', departure_date: '2026-05-10', price_adult: 1600, price_child: 1300, quota: 20 },
+      { id: 'demo-date-1c', departure_date: '2026-06-07', price_adult: 1800, price_child: 1400, quota: 18 }
     ]
   },
   {
