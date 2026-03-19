@@ -52,6 +52,34 @@ function isInformationalMessage(userMessage: string, detectedIntent: string): bo
   return questionWords.test(userMessage);
 }
 
+/**
+ * Mevcut context ile yeni extracted info'yu birleştir
+ * Mevcut bilgileri ASLA silme, sadece eksik olanları ekle
+ */
+function mergeReservationInfo(existing: ReservationInfo, extracted: Partial<ReservationInfo>): ReservationInfo {
+  return {
+    ...existing,
+    ...Object.fromEntries(Object.entries(extracted).filter(([_, v]) => v !== undefined && v !== null)),
+  };
+}
+
+/**
+ * Bir sonraki toplanması gereken adımı belirle
+ * KRITIK: Mevcut bilgileri kontrol et, varsa o adımı atla
+ */
+function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
+  const hasDate = !!(info.selectedDate || info.dateId);
+  if (!hasDate) return "waiting_for_date";
+  if (!info.paxAdult) return "waiting_for_pax";
+  if (!info.fullName) return "waiting_for_name";
+  if (!info.phone) return "waiting_for_phone";
+  return "ready_for_confirmation";
+}
+
+function isAllInfoCollected(info: ReservationInfo): boolean {
+  return !!(info.tourId && info.dateId && info.selectedDate && info.paxAdult && info.fullName && info.phone);
+}
+
 const transitions: StateTransition[] = [
   // GREETING → TOUR_SELECTED
   {
@@ -153,12 +181,13 @@ const transitions: StateTransition[] = [
       if (!reservationIntents.includes(input.detectedIntent)) {
         const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
         const hasPaxPattern = /\d+\s*(kişi|person|people|yetişkin|adult|çocuk|child)/i.test(input.userMessage);
-        const hasPhonePattern = /\b05\d{9}\b|\b\+90/i.test(input.userMessage);
+        const hasPhonePattern = /\b05\d{9}\b|\b\+\d{7,}/i.test(input.userMessage);
         return hasExtractedInfo && (hasPaxPattern || hasPhonePattern);
       }
       return true;
     },
     action: (ctx, input) => {
+      // Mevcut bilgileri koru, yeni bilgileri üzerine ekle
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
       if (!merged.dateId && !merged.selectedDate && ctx.currentTour?.dates?.length === 1) {
         const singleDate = ctx.currentTour.dates[0];
@@ -214,18 +243,23 @@ const transitions: StateTransition[] = [
   },
 
   // COLLECTING_INFO → COLLECTING_INFO
+  // KRİTİK: Mevcut bilgileri koru, sadece eksik olanı topla
   {
     from: "COLLECTING_INFO",
     to: "COLLECTING_INFO",
     condition: (ctx, input) => {
+      // Yeni bilgileri mevcut ile birleştir
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
       return !isAllInfoCollected(merged);
     },
     action: (ctx, input) => {
+      // Mevcut bilgileri KORU, yeni bilgileri ekle
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo);
       return {
         ...ctx,
         reservationInfo: merged,
+        // collectionStep'i merged bilgilere göre güncelle
+        // Bu sayede verilen bilgi zaten varsa bir sonraki adıma geçer
         collectionStep: determineCollectionStep(merged),
       };
     },
@@ -268,13 +302,11 @@ const transitions: StateTransition[] = [
       input.detectedIntent === "change_info" || /değiştir|change|modify|edit/i.test(input.userMessage.toLowerCase()),
     action: (ctx) => ({
       ...ctx,
-      collectionStep: "waiting_for_date" as InfoCollectionStep,
+      collectionStep: determineCollectionStep(ctx.reservationInfo),
     }),
   },
 
-  // COMPLETED → TOUR_SELECTED
-  // Farklı tur seçildi → direkt geçiş, tüm eski rezervasyon bilgisi temizlenir
-  // Bilgi soruları bu geçişi tetiklemez
+  // COMPLETED → TOUR_SELECTED (farklı tur - eski bilgileri sıfırla)
   {
     from: "COMPLETED",
     to: "TOUR_SELECTED",
@@ -286,7 +318,6 @@ const transitions: StateTransition[] = [
       ...ctx,
       currentTour: input.selectedTour,
       viewedTours: [input.selectedTour!.id],
-      // Eski rezervasyon bilgilerini TAMAMEN sıfırla
       reservationInfo: {
         tourId: input.selectedTour!.id,
         tourTitle: input.selectedTour!.title,
@@ -297,8 +328,7 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COMPLETED → BROWSING
-  // Kullanıcı açıkça yeni tur aramak istediğini belirtiyor ama spesifik tur seçmedi
+  // COMPLETED → BROWSING (açık yeni tur niyeti)
   {
     from: "COMPLETED",
     to: "BROWSING",
@@ -326,6 +356,19 @@ export function processTransition(context: ConversationContext, input: Processin
   const transition = transitions.find((t) => t.from === context.stage && t.condition(context, input));
 
   if (!transition) {
+    // Geçiş yok ama COLLECTING_INFO'daysa mevcut bilgileri güncelle
+    if (context.stage === "COLLECTING_INFO" && Object.keys(input.extractedInfo).length > 0) {
+      const merged = mergeReservationInfo(context.reservationInfo, input.extractedInfo);
+      return {
+        ...context,
+        reservationInfo: merged,
+        collectionStep: determineCollectionStep(merged),
+        lastUserMessage: input.userMessage,
+        messageCount: context.messageCount + 1,
+        lastUpdated: new Date().toISOString(),
+      };
+    }
+
     return {
       ...context,
       lastUserMessage: input.userMessage,
@@ -347,26 +390,6 @@ export function processTransition(context: ConversationContext, input: Processin
   }
 
   return newContext;
-}
-
-function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
-  const hasDate = !!(info.selectedDate || info.dateId);
-  if (!hasDate) return "waiting_for_date";
-  if (!info.paxAdult) return "waiting_for_pax";
-  if (!info.fullName) return "waiting_for_name";
-  if (!info.phone) return "waiting_for_phone";
-  return "ready_for_confirmation";
-}
-
-function isAllInfoCollected(info: ReservationInfo): boolean {
-  return !!(info.tourId && info.dateId && info.selectedDate && info.paxAdult && info.fullName && info.phone);
-}
-
-function mergeReservationInfo(existing: ReservationInfo, extracted: Partial<ReservationInfo>): ReservationInfo {
-  return {
-    ...existing,
-    ...Object.fromEntries(Object.entries(extracted).filter(([_, v]) => v !== undefined && v !== null)),
-  };
 }
 
 export function getNextExpectedInput(context: ConversationContext): string {
