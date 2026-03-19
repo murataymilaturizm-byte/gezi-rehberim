@@ -125,8 +125,24 @@ function getCollectionStepPrompt(collectionStep: string, language: string): stri
 export function getStagePrompt(context: PromptContext): string {
   const { stage, collectionStep, currentTour, reservationInfo, language, tone, availableTours } = context;
 
-  if (stage === "GREETING") return getGreetingPrompt(context);
-  if (stage === "BROWSING") return getBrowsingPrompt(context);
+  // === UYDURMA YASAĞI - Tüm stage'lerde geçerli ===
+  const hallucinationGuard =
+    language === "tr"
+      ? `\n\n🚫 KRİTİK KURAL - UYDURMA YASAĞI:
+- ASLA veritabanında olmayan tur, tarih, fiyat veya bilgi UYDURMA.
+- Sadece sana verilen tur listesindeki bilgileri kullan.
+- Listede olmayan bir tur sorulursa "Bu tur sistemimizde bulunmuyor" de.
+- Tarih veya fiyat bilgisi verilmemişse "Bilgi mevcut değil" de, asla tahmin etme veya uydurma.
+- "Her hafta", "her Cuma", "her ayın 1'i" gibi bilgileri VERİTABANINDA YOKSA söyleme.`
+      : `\n\n🚫 CRITICAL RULE - NO HALLUCINATION:
+- NEVER invent tours, dates, prices or information not in the database.
+- Only use information from the tour list provided to you.
+- If asked about a tour not in the list, say "This tour is not in our system".
+- If no date or price is available, say "Information not available", never guess or invent.
+- Do NOT say "every week", "every Friday" or similar unless it's explicitly in the database.`;
+
+  if (stage === "GREETING") return getGreetingPrompt(context) + hallucinationGuard;
+  if (stage === "BROWSING") return getBrowsingPrompt(context) + hallucinationGuard;
 
   const tourDetails = currentTour ? formatTourDetails(currentTour, language, tone) : "";
   const collectedInfo = formatCollectedInfo(reservationInfo, language);
@@ -136,7 +152,8 @@ export function getStagePrompt(context: PromptContext): string {
   if (language === "tr") {
     switch (stage) {
       case "TOUR_SELECTED":
-        return `📍 DURUM: Tur seçildi
+        return (
+          `📍 DURUM: Tur seçildi
 
 ${tourDetails}
 
@@ -156,33 +173,41 @@ ${tourDetails}
 Örnek format:
 "1) 15 Aralık 2025 - 1500₺/kişi
 2) 22 Aralık 2025 - 1500₺/kişi
-Hangi tarihi tercih edersiniz?"`;
+Hangi tarihi tercih edersiniz?"` + hallucinationGuard
+        );
 
       case "DATE_SELECTION":
-        return `📍 DURUM: Tarih seçimi
+        return (
+          `📍 DURUM: Tarih seçimi
 - NET bir tarih belirle.
 - Tarihleri listele ve seçim iste.
-- YENİ TARİH UYDURMA.`;
+- YENİ TARİH UYDURMA.` + hallucinationGuard
+        );
 
       case "COLLECTING_INFO":
         const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr");
-        return `📍 DURUM: Bilgi toplama
+        return (
+          `📍 DURUM: Bilgi toplama
 ${stepPrompt}
 
 Toplanan bilgiler:
 ${collectedInfo}
 
-⚠️ Kullanıcı bilgi verdiğinde önce KABUL ET.`;
+⚠️ Kullanıcı bilgi verdiğinde önce KABUL ET.` + hallucinationGuard
+        );
 
       case "CONFIRMING":
-        return `📍 DURUM: Onay bekleniyor
+        return (
+          `📍 DURUM: Onay bekleniyor
 
 ${summary}
 
-Bu bilgiler doğru mudur, onaylıyor musunuz?`;
+Bu bilgiler doğru mudur, onaylıyor musunuz?` + hallucinationGuard
+        );
 
       case "COMPLETED":
-        return `📍 DURUM: Kayıt tamamlandı ✅
+        return (
+          `📍 DURUM: Kayıt tamamlandı ✅
 
 🎯 YAPILACAK:
 - Kayıt tamamlandı mesajı ver (SADECE ilk kez COMPLETED'a geçildiğinde)
@@ -207,17 +232,19 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?`;
 - ASLA "iptal edildi" veya "iptal edebilirim" DEME
 - "İptal işlemleri için doğrudan acentemizle iletişime geçmeniz gerekmektedir" de
 - Acente telefon numarası ve çalışma saatlerini paylaş (varsa)
-- İptal koşullarını kısaca özetle (varsa)`;
+- İptal koşullarını kısaca özetle (varsa)` + hallucinationGuard
+        );
 
       default:
-        return "";
+        return "" + hallucinationGuard;
     }
   }
 
   // English prompts
   switch (stage) {
     case "TOUR_SELECTED":
-      return `📍 STATUS: Tour selected
+      return (
+        `📍 STATUS: Tour selected
 
 ${tourDetails}
 
@@ -237,33 +264,41 @@ ${tourDetails}
 Example format:
 "1) December 15, 2025 - $150/person
 2) December 22, 2025 - $150/person
-Which date do you prefer?"`;
+Which date do you prefer?"` + hallucinationGuard
+      );
 
     case "DATE_SELECTION":
-      return `📍 STATUS: Date selection
+      return (
+        `📍 STATUS: Date selection
 - Confirm a clear date.
 - List dates and ask to choose.
-- Don't invent dates.`;
+- Don't invent dates.` + hallucinationGuard
+      );
 
     case "COLLECTING_INFO":
       const stepPromptEn = getCollectionStepPrompt(collectionStep || "default", "en");
-      return `📍 STATUS: Collecting information
+      return (
+        `📍 STATUS: Collecting information
 ${stepPromptEn}
 
 Collected info:
 ${collectedInfo}
 
-⚠️ ACCEPT user info first, then ask for next.`;
+⚠️ ACCEPT user info first, then ask for next.` + hallucinationGuard
+      );
 
     case "CONFIRMING":
-      return `📍 STATUS: Awaiting confirmation
+      return (
+        `📍 STATUS: Awaiting confirmation
 
 ${summary}
 
-Are these details correct, do you confirm?`;
+Are these details correct, do you confirm?` + hallucinationGuard
+      );
 
     case "COMPLETED":
-      return `📍 STATUS: Registration completed ✅
+      return (
+        `📍 STATUS: Registration completed ✅
 
 🎯 DO:
 - Confirm registration is complete (ONLY when first entering COMPLETED stage)
@@ -288,9 +323,10 @@ Are these details correct, do you confirm?`;
 - NEVER say "cancelled" or "I can cancel it"
 - Say "For cancellation requests, please contact our agency directly"
 - Share agency phone number and working hours (if available)
-- Briefly summarize cancellation policy (if available)`;
+- Briefly summarize cancellation policy (if available)` + hallucinationGuard
+      );
 
     default:
-      return "";
+      return "" + hallucinationGuard;
   }
 }
