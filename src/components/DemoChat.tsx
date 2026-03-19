@@ -197,60 +197,34 @@ export const DemoChat = () => {
     setIsLoading(true);
 
     try {
-      const maxAttempts = 2;
-      let response: Response | null = null;
-      let lastNetworkError: unknown = null;
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          sessionId: sessionId,
+          conversationStyle: conversationStyle,
+          conversationState: conversationState,
+        }),
+      });
 
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMsg = "Yanıt alınamadı";
+        let errorDetails = "";
+
         try {
-          response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-chat`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({
-              message: userMessage,
-              sessionId: sessionId,
-              conversationStyle: conversationStyle,
-              conversationState: conversationState,
-            }),
-          });
-
-          if (response.ok) break;
-
-          if (response.status >= 500 && attempt < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, attempt * 600));
-            continue;
-          }
-
-          const errorText = await response.text();
-          let errorMsg = "Yanıt alınamadı";
-          let errorDetails = "";
-
-          try {
-            const errorData = JSON.parse(errorText);
-            errorMsg = errorData.error || errorMsg;
-            errorDetails = errorData.details || "";
-          } catch {
-            errorDetails = errorText;
-          }
-
-          throw new Error(errorDetails ? `${errorMsg}\n${errorDetails}` : errorMsg);
-        } catch (networkError) {
-          lastNetworkError = networkError;
-
-          if (attempt < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, attempt * 600));
-            continue;
-          }
-
-          throw networkError;
+          const errorData = JSON.parse(errorText);
+          errorMsg = errorData.error || errorMsg;
+          errorDetails = errorData.details || "";
+        } catch {
+          errorDetails = errorText;
         }
-      }
 
-      if (!response || !response.ok) {
-        throw (lastNetworkError instanceof Error ? lastNetworkError : new Error("Mesaj gönderilemedi"));
+        throw new Error(errorDetails ? `${errorMsg}\n${errorDetails}` : errorMsg);
       }
 
       const data = await response.json();
