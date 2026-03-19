@@ -68,8 +68,12 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 3. Load tours from database
-    const rawTours = await loadToursFromDatabase(supabase);
+    // 3. Load tours from database, fallback to demo tours if none found
+    let rawTours = await loadToursFromDatabase(supabase);
+    if (!rawTours || rawTours.length === 0) {
+      logger.info("No tours in DB for demo agency, using static DEMO_TOURS");
+      rawTours = DEMO_TOURS as any[];
+    }
 
     // 4. Load or create context
     const { context, runtimeDetectedLang } = await loadOrCreateContext({
