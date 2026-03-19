@@ -12,7 +12,7 @@ export async function callAI(
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const requestBody: any = {
-        model: "openai/gpt-4o-mini",
+        model: "google/gemini-2.5-flash",
         messages,
         temperature,
       };
