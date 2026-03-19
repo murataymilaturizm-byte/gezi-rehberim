@@ -59,6 +59,9 @@ export interface ConversationContext {
   reservationConfirmed: boolean;
   paymentInfoSent: boolean;
   
+  // New reservation flag - set when starting a new reservation after COMPLETED
+  isNewReservation?: boolean;
+  
   // Language & Style
   language: string; // tr, en, de, ru, ar, fr, es
   tone: ConversationTone; // standart, kurumsal, dinamik, premium
