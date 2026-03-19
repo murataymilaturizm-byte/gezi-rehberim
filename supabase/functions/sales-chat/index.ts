@@ -292,7 +292,7 @@ WHATSAPP ENTEGRASYONU HAKKINDA COK ONEMLI:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        model: "google/gemini-3-flash-preview",
         messages: messages,
         
         max_tokens: 500,
