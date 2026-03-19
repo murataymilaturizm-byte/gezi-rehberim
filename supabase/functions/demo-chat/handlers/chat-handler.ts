@@ -29,7 +29,7 @@ import { createErrorResponse, createSuccessResponse, DemoChatError } from "./err
 
 import type { RequestData, Tour, ChatResponse } from "../types/index.ts";
 
-const VERSION = "v3.1.0";
+const VERSION = "v3.2.0";
 
 /**
  * Parse and validate incoming request
@@ -37,11 +37,11 @@ const VERSION = "v3.1.0";
 async function parseRequest(req: Request): Promise<RequestData> {
   const body = await req.json();
   const { message: rawMessage, sessionId, conversationState, conversationStyle } = body;
-  
+
   if (!sessionId) {
     throw new DemoChatError("VALIDATION", "Session ID required", 400);
   }
-  
+
   return {
     message: sanitizeInput(rawMessage),
     sessionId,
@@ -55,7 +55,7 @@ async function parseRequest(req: Request): Promise<RequestData> {
  */
 export async function handleChatRequest(req: Request): Promise<Response> {
   let language = "tr";
-  
+
   try {
     // 1. Parse and validate request
     const requestData = await parseRequest(req);
@@ -83,29 +83,26 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     });
     language = context.language;
 
+    // Önceki context'i sakla — COMPLETED sonrası prompt uyarıları için
+    const previousContext: ConversationContext = { ...context };
+
     // 5. Create localized tours
     const availableTours = getLocalizedTours(rawTours, context.language);
     logger.info(`Using ${availableTours.length} tours (localized to: ${context.language})`);
 
-    logger.debug("Message received", { 
-      message, 
-      stage: context.stage, 
-      lang: context.language, 
-      tone: context.tone, 
-      collectionStep: context.collectionStep 
+    logger.debug("Message received", {
+      message,
+      stage: context.stage,
+      lang: context.language,
+      tone: context.tone,
+      collectionStep: context.collectionStep,
     });
 
     // 6. Build NLU context and analyze message
     const nluContext = buildNLUContext(context);
     logger.debug("NLU Context", nluContext);
 
-    const nluResult = await analyzeUserMessage(
-      message,
-      nluContext,
-      context.stage,
-      context.currentTour,
-      DEMO_TOURS
-    );
+    const nluResult = await analyzeUserMessage(message, nluContext, context.stage, context.currentTour, DEMO_TOURS);
 
     const detectedIntent = mapNLUIntentToFSMIntent(nluResult.intent);
     logger.intent(nluResult.intent, detectedIntent);
@@ -119,7 +116,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       nluResult.entities,
       availableTours,
       expectedInput,
-      nluResult.intent
+      nluResult.intent,
     );
 
     // 8. Extract reservation info
@@ -152,9 +149,107 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const paymentInstructions = agencyData?.payment_instructions ?? DEMO_PAYMENT_INSTRUCTIONS ?? null;
     const paymentInfo = extractPaymentInfoText(paymentInstructions);
 
-    // 11. Build system prompt
+    // 11. === KOTA KONTROLÜ ===
+    // Rezervasyon tamamlanmadan önce kota var mı kontrol et
+    if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED") {
+      const { dateId, paxAdult } = newContext.reservationInfo;
+      if (dateId && paxAdult) {
+        const { data: tourDate } = await supabase.from("tour_dates").select("quota").eq("id", dateId).single();
+
+        if (tourDate?.quota !== null && tourDate?.quota !== undefined) {
+          const { count: existingPax } = await supabase
+            .from("registrations")
+            .select("pax", { count: "exact" })
+            .eq("tour_date_id", dateId)
+            .neq("status", "CANCELLED");
+
+          const usedQuota = existingPax || 0;
+          const remainingQuota = tourDate.quota - usedQuota;
+
+          if (remainingQuota < paxAdult) {
+            logger.info(`Quota exceeded: ${remainingQuota} remaining, ${paxAdult} requested`);
+
+            const today = new Date().toISOString().split("T")[0];
+            const agencyPhone = agencyData?.phone_public ? ` 📞 ${agencyData.phone_public}` : "";
+            const currentTourRaw = rawTours.find((t: any) => t.id === newContext.reservationInfo.tourId);
+
+            // Diğer müsait tarihleri bul
+            const otherDates = (currentTourRaw?.dates || []).filter((d: any) => {
+              if (d.id === dateId) return false;
+              if (d.departure_date < today) return false;
+              return true;
+            });
+
+            const availableDatesList: string[] = [];
+            for (const d of otherDates) {
+              const { count: usedForDate } = await supabase
+                .from("registrations")
+                .select("pax", { count: "exact" })
+                .eq("tour_date_id", d.id)
+                .neq("status", "CANCELLED");
+
+              const available = (d.quota || 999) - (usedForDate || 0);
+              if (available >= paxAdult) {
+                const dateStr = new Date(d.departure_date).toLocaleDateString(
+                  newContext.language === "tr"
+                    ? "tr-TR"
+                    : newContext.language === "de"
+                      ? "de-DE"
+                      : newContext.language === "ru"
+                        ? "ru-RU"
+                        : "en-GB",
+                  { day: "numeric", month: "long", year: "numeric" },
+                );
+                const priceStr = d.price_adult ? ` (${d.price_adult} ${currentTourRaw?.currency || "TRY"})` : "";
+                availableDatesList.push(`• ${dateStr}${priceStr}`);
+              }
+            }
+
+            const lang = newContext.language || "tr";
+            let quotaMsg = "";
+
+            if (availableDatesList.length > 0) {
+              const dateListStr = availableDatesList.join("\n");
+              const msgs: Record<string, string> = {
+                tr: `Üzgünüz, seçtiğiniz tarih için yeterli kontenjan bulunmamaktadır (kalan: ${remainingQuota} kişi).\n\n📅 *Müsait Diğer Tarihler:*\n${dateListStr}\n\nBu tarihlerden birini seçmek ister misiniz?`,
+                en: `Sorry, the selected date doesn't have enough spots (remaining: ${remainingQuota}).\n\n📅 *Available Dates:*\n${dateListStr}\n\nWould you like to choose one of these dates?`,
+                de: `Das gewählte Datum hat leider nicht genügend Plätze (verbleibend: ${remainingQuota}).\n\n📅 *Verfügbare Termine:*\n${dateListStr}\n\nMöchten Sie einen dieser Termine wählen?`,
+                ru: `На выбранную дату недостаточно мест (осталось: ${remainingQuota}).\n\n📅 *Доступные даты:*\n${dateListStr}\n\nХотите выбрать одну из этих дат?`,
+                ar: `عذراً، لا توجد أماكن كافية (المتبقي: ${remainingQuota}).\n\n📅 *التواريخ المتاحة:*\n${dateListStr}\n\nهل تريد اختيار أحد هذه التواريخ؟`,
+              };
+              quotaMsg = msgs[lang] || msgs["tr"];
+            } else {
+              const msgs: Record<string, string> = {
+                tr: `Üzgünüz, seçtiğiniz tarih için yeterli kontenjan bulunmamaktadır (kalan: ${remainingQuota} kişi). Şu an bu tur için müsait başka tarih de bulunmuyor.\n\nLütfen ${agencyData?.name || ""} ile iletişime geçiniz.${agencyPhone}`,
+                en: `Sorry, there are not enough spots (remaining: ${remainingQuota}). There are no other available dates.\n\nPlease contact ${agencyData?.name || ""}.${agencyPhone}`,
+                de: `Nicht genügend Plätze (verbleibend: ${remainingQuota}). Keine weiteren Termine verfügbar.\n\nBitte kontaktieren Sie ${agencyData?.name || ""}.${agencyPhone}`,
+                ru: `Недостаточно мест (осталось: ${remainingQuota}). Других дат нет.\n\nСвяжитесь с ${agencyData?.name || ""}.${agencyPhone}`,
+                ar: `لا توجد أماكن كافية (المتبقي: ${remainingQuota}). لا تواريخ أخرى.\n\nتواصل مع ${agencyData?.name || ""}.${agencyPhone}`,
+              };
+              quotaMsg = msgs[lang] || msgs["tr"];
+            }
+
+            // Context'i geri al
+            newContext.stage = "COLLECTING_INFO";
+            newContext.reservationConfirmed = false;
+            newContext.reservationInfo.dateId = undefined;
+            newContext.reservationInfo.selectedDate = undefined;
+            newContext.collectionStep = "waiting_for_date";
+
+            const responseData: ChatResponse = {
+              response: quotaMsg,
+              conversationState: newContext,
+            };
+            return createSuccessResponse(responseData);
+          }
+        }
+      }
+    }
+
+    // 12. Build system prompt — previousContext'i geç
     const systemPrompt = buildCompleteSystemPrompt({
       context: newContext,
+      previousContext,
       availableTours,
       agencyData,
       paymentInfo,
@@ -162,10 +257,10 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       selectedTour,
     });
 
-    // 12. Get conversation history
+    // 13. Get conversation history
     const conversationHistory = await getConversationHistory(supabase, sessionId);
 
-    // 13. Call AI
+    // 14. Call AI
     const messagesForAI = [
       { role: "system", content: systemPrompt },
       ...conversationHistory,
@@ -175,7 +270,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     logger.info("Calling AI...");
     const aiResponse = await callAI(messagesForAI, CONFIG.DEFAULT_AI_TEMPERATURE);
 
-    // 14. Handle payment info for completed reservations
+    // 15. Handle payment info for completed reservations
     let finalResponse = aiResponse;
 
     if (newContext.stage === "COMPLETED" && !newContext.paymentInfoSent && paymentInstructions) {
@@ -194,9 +289,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
       const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
 
-      const currentTourData = newContext.currentTour 
-        ? findTourById(newContext.currentTour.id, availableTours) 
-        : null;
+      const currentTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null;
       const tourCurrency = currentTourData?.currency || "TRY";
 
       const paymentMessage = await generatePaymentMessage(
@@ -208,7 +301,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
         {
           languageCurrencies: agencyData?.language_currencies,
           primaryCurrency: agencyData?.primary_currency || "TRY",
-        }
+        },
       );
 
       if (paymentMessage) {
@@ -217,23 +310,18 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       }
     }
 
-    // 15. Save reservation ONLY when transitioning TO COMPLETED (not when already completed)
-    // This prevents duplicate reservations when user sends more messages after completion
-    const isNewlyCompleted = context.stage !== "COMPLETED" && 
-                              newContext.stage === "COMPLETED" && 
-                              newContext.reservationConfirmed;
-    let reservationFailed = false;
+    // 16. Save reservation ONLY when transitioning TO COMPLETED
+    const isNewlyCompleted =
+      context.stage !== "COMPLETED" && newContext.stage === "COMPLETED" && newContext.reservationConfirmed;
     if (isNewlyCompleted && newContext.reservationInfo) {
       const saveResult = await saveReservation(supabase, newContext);
       if (!saveResult.success) {
-        reservationFailed = true;
-        logger.error("Reservation save failed, will not confirm to user", { error: saveResult.error });
-        
-        // Build user-friendly error with agency contact info
+        logger.error("Reservation save failed", { error: saveResult.error });
+
         const agencyPhone = agencyData?.phone_public || "";
         const agencyName = agencyData?.name || "";
         const phoneInfo = agencyPhone ? ` 📞 ${agencyPhone}` : "";
-        
+
         const errorMessages: Record<string, string> = {
           tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agencyName} ile iletişime geçiniz.${phoneInfo}`,
           en: `There was an issue creating your reservation. Please contact ${agencyName} directly.${phoneInfo}`,
@@ -244,33 +332,31 @@ export async function handleChatRequest(req: Request): Promise<Response> {
           ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agencyName}.${phoneInfo}`,
         };
         finalResponse = errorMessages[language] || errorMessages["tr"];
-        // Reset context so user can retry
         newContext.stage = context.stage;
         newContext.reservationConfirmed = false;
       }
     }
 
-    // 16. Save complaint if detected
+    // 17. Save complaint if detected
     if (nluResult.intent === "complaint_feedback") {
       await saveComplaint(supabase, sessionId, message);
     }
 
-    // 17. Save conversation messages
+    // 18. Save conversation messages
     await saveConversation(supabase, sessionId, message, finalResponse);
 
-    // 18. Return response
+    // 19. Return response
     const responseData: ChatResponse = {
       response: finalResponse,
       conversationState: newContext,
     };
 
     return createSuccessResponse(responseData);
-
   } catch (error) {
     if (error instanceof DemoChatError) {
       return createErrorResponse(error.type, error.statusCode, language, error);
     }
-    
+
     logger.error("Chat request failed", error);
     return createErrorResponse("UNKNOWN", 500, language, error);
   }
