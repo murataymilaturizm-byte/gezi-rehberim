@@ -59,7 +59,7 @@ function isInformationalMessage(userMessage: string, detectedIntent: string): bo
 function mergeReservationInfo(existing: ReservationInfo, extracted: Partial<ReservationInfo>): ReservationInfo {
   return {
     ...existing,
-    ...Object.fromEntries(Object.entries(extracted).filter(([_, v]) => v !== undefined && v !== null)),
+    ...Object.fromEntries(Object.entries(extracted).filter(([_, v]) => v !== undefined && v !== null && v !== '')),
   };
 }
 
