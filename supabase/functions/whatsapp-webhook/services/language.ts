@@ -31,7 +31,7 @@ Return ONLY the language code (e.g., "tr", "en", "de"). No other explanation.`
             content: message
           }
         ],
-        temperature: 0.1
+        
       })
     });
 

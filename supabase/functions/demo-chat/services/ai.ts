@@ -2,7 +2,7 @@
 
 export async function callAI(
   messages: any[],
-  temperature: number = 0.7,
+  _temperature: number = 1,
   tools?: any[],
   toolChoice?: any,
 ): Promise<any> {
@@ -14,7 +14,6 @@ export async function callAI(
       const requestBody: any = {
         model: "openai/gpt-5-mini",
         messages,
-        temperature,
       };
 
       if (tools) {

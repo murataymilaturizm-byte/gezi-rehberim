@@ -205,7 +205,7 @@ export async function analyzeUserMessage(
         ],
         tools: [nluTool],
         tool_choice: { type: "function", function: { name: "analyze_message" } },
-        temperature: 0.3,
+        
       }),
     });
 
