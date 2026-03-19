@@ -125,11 +125,9 @@ function getCollectionStepPrompt(collectionStep: string, language: string): stri
 export function getStagePrompt(context: PromptContext): string {
   const { stage, collectionStep, currentTour, reservationInfo, language, tone, availableTours } = context;
 
-  // Handle greeting and browsing
   if (stage === "GREETING") return getGreetingPrompt(context);
   if (stage === "BROWSING") return getBrowsingPrompt(context);
 
-  // Format helpers with tone support
   const tourDetails = currentTour ? formatTourDetails(currentTour, language, tone) : "";
   const collectedInfo = formatCollectedInfo(reservationInfo, language);
   const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
@@ -142,8 +140,14 @@ export function getStagePrompt(context: PromptContext): string {
 
 ${tourDetails}
 
-🚨 KRİTİK KURAL - TARİH SEÇİMİ:
-- TÜMMM müsait tarihleri numaralı liste halinde göster.
+🚨 KRİTİK KURAL - KULLANICI NİYETİ BELİRSİZSE:
+- Eğer kullanıcı sadece tur adını yazdıysa veya tur hakkında genel bir şey söylediyse (örn: "Kapadokya turu", "bu tur", "o tur") ve rezervasyon mu yoksa bilgi mi istediği BELİRSİZSE:
+  → "Bu tur hakkında bilgi almak mı, yoksa rezervasyon yaptırmak mı istiyorsunuz?" diye sor.
+- Eğer kullanıcı açıkça rezervasyon istiyorsa (örn: "kayıt olayım", "rezervasyon yaptırmak istiyorum", "tura katılmak istiyorum") tarihleri listele.
+- Eğer kullanıcı sadece bilgi istiyorsa tur detaylarını ver, rezervasyon başlatma.
+
+🚨 KRİTİK KURAL - TARİH SEÇİMİ (rezervasyon niyeti netleşince):
+- TÜM müsait tarihleri numaralı liste halinde göster.
 - Her tarih için fiyat bilgisi de ver.
 - Kullanıcının seçim yapmasını BEKLE.
 - Tarih seçilmeden önce kişi sayısı, isim, telefon SORMA.
@@ -153,7 +157,6 @@ ${tourDetails}
 "1) 15 Aralık 2025 - 1500₺/kişi
 2) 22 Aralık 2025 - 1500₺/kişi
 Hangi tarihi tercih edersiniz?"`;
-
 
       case "DATE_SELECTION":
         return `📍 DURUM: Tarih seçimi
@@ -182,34 +185,29 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?`;
         return `📍 DURUM: Kayıt tamamlandı ✅
 
 🎯 YAPILACAK:
-- Kayıt tamamlandı mesajı ver
+- Kayıt tamamlandı mesajı ver (SADECE ilk kez COMPLETED'a geçildiğinde)
 - "Acentemiz en kısa sürede iletişime geçecek" de
-- Başka sorusu veya başka tur isteği var mı diye sor
+- Başka sorusu var mı diye sor
+
+🚨 KRİTİK - KULLANICI SORU SORARSA:
+- Kullanıcı mevcut tur veya başka tur hakkında soru sorarsa SADECE soruyu cevapla
+- "Rezervasyonunuz tamamlandı" veya "Kaydınız oluşturuldu" TEKRAR SÖYLEME
+- Normal bir konuşma gibi devam et
+
+🚨 KRİTİK - KULLANICI BAŞKA TUR SORARSA:
+- Eğer kullanıcı başka bir tur hakkında bilgi soruyorsa → sadece o turun bilgisini ver
+- Eğer kullanıcı başka tura rezervasyon yaptırmak istiyorsa → "Elbette! [Tur adı] için rezervasyon başlatıyorum" de ve sistem otomatik yeni akışa geçecek
+- Eğer kullanıcının niyeti belirsizse (sadece tur adı yazdı) → "Bu tur hakkında bilgi almak mı, yoksa rezervasyon yaptırmak mı istiyorsunuz?" diye sor
 
 🚫 BU REZERVASYON İÇİN:
 - Tekrar bilgi toplama (zaten tüm bilgiler alındı)
-- IBAN, kapora, tutar yazma
+- IBAN, kapora, tutar yazma (ödeme bilgileri ayrıca gönderildi)
 
 🚫 İPTAL TALEBİ GELİRSE:
 - ASLA "iptal edildi" veya "iptal edebilirim" DEME
 - "İptal işlemleri için doğrudan acentemizle iletişime geçmeniz gerekmektedir" de
 - Acente telefon numarası ve çalışma saatlerini paylaş (varsa)
-- İptal koşullarını kısaca özetle (varsa)
-
-NOT: Kullanıcı başka tur isterse sistem otomatik olarak yeni akışa geçecek.`;
-
-      case "ASKING_NEW_RESERVATION":
-        return `📍 DURUM: Yeni rezervasyon sorgusu
-
-Kullanıcı mevcut rezervasyonunu tamamladıktan sonra farklı bir tur hakkında sordu.
-
-🎯 YAPILACAK:
-- Kibarca "Farklı bir tur için bilgi almak veya yeni bir rezervasyon yapmak mı istiyorsunuz?" diye sor.
-- Önceki rezervasyonlarının tamamlandığını hatırlat.
-- Kullanıcının cevabını bekle.
-
-Örnek yanıt:
-"Kapadokya Kültür Turu rezervasyonunuz tamamlandı. Başka bir tur için bilgi almak veya yeni rezervasyon yapmak ister misiniz?"`;
+- İptal koşullarını kısaca özetle (varsa)`;
 
       default:
         return "";
@@ -223,7 +221,13 @@ Kullanıcı mevcut rezervasyonunu tamamladıktan sonra farklı bir tur hakkında
 
 ${tourDetails}
 
-🚨 CRITICAL RULE - DATE SELECTION:
+🚨 CRITICAL RULE - WHEN USER INTENT IS UNCLEAR:
+- If user just wrote the tour name or said something vague about the tour (e.g. "Cappadocia tour", "this tour") and it's UNCLEAR whether they want info or a reservation:
+  → Ask: "Would you like to get information about this tour, or would you like to make a reservation?"
+- If user clearly wants a reservation (e.g. "I want to book", "sign me up") → list the dates.
+- If user just wants information → provide tour details, do NOT start reservation flow.
+
+🚨 CRITICAL RULE - DATE SELECTION (once reservation intent is clear):
 - List ALL available dates in numbered format.
 - Show price for each date.
 - WAIT for user to choose.
@@ -262,34 +266,29 @@ Are these details correct, do you confirm?`;
       return `📍 STATUS: Registration completed ✅
 
 🎯 DO:
-- Confirm registration is complete
+- Confirm registration is complete (ONLY when first entering COMPLETED stage)
 - Say "Our team will contact you shortly"
-- Ask if they have other questions or want another tour
+- Ask if they have other questions
+
+🚨 CRITICAL - IF USER ASKS A QUESTION:
+- If user asks about current or another tour, just ANSWER the question
+- Do NOT repeat "Your reservation is confirmed" or "Booking completed"
+- Continue naturally like a normal conversation
+
+🚨 CRITICAL - IF USER ASKS ABOUT ANOTHER TOUR:
+- If asking for info → just provide that tour's info
+- If wants to book → say "Of course! Starting reservation for [Tour name]" and system will switch automatically
+- If intent is unclear (just wrote tour name) → ask "Would you like info about this tour, or make a reservation?"
 
 🚫 FOR THIS RESERVATION:
 - Don't collect more info (all info already collected)
-- Don't write IBAN, deposit, amount
+- Don't write IBAN, deposit, amount (payment info already sent)
 
 🚫 IF CANCELLATION REQUESTED:
 - NEVER say "cancelled" or "I can cancel it"
 - Say "For cancellation requests, please contact our agency directly"
 - Share agency phone number and working hours (if available)
-- Briefly summarize cancellation policy (if available)
-
-NOTE: If user wants another tour, system will automatically start new flow.`;
-
-    case "ASKING_NEW_RESERVATION":
-      return `📍 STATUS: New reservation inquiry
-
-User asked about a different tour after completing their current reservation.
-
-🎯 ACTION:
-- Politely ask "Would you like to get info about a different tour or make a new reservation?"
-- Remind them their previous reservation is complete.
-- Wait for user's response.
-
-Example response:
-"Your Cappadocia Culture Tour reservation is complete. Would you like to get info about another tour or make a new reservation?"`;
+- Briefly summarize cancellation policy (if available)`;
 
     default:
       return "";
