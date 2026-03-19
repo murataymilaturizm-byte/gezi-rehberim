@@ -493,7 +493,7 @@ serve(async (req) => {
         'X-Title': 'Turzz Support Chat'
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-mini',
         messages: messages,
         temperature: 0.7,
         max_tokens: 1000
