@@ -71,7 +71,7 @@ Return ONLY a JSON object with this exact structure (no markdown, no code blocks
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "openai/gpt-5-mini",
           messages: [
             {
               role: "system",
