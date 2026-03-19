@@ -136,5 +136,53 @@ export function buildCompleteSystemPrompt(options: PromptBuilderOptions): string
   const tourSwitchWarning = buildTourSwitchWarning(context, selectedTour || null);
   const completedStagePrompt = buildCompletedStagePrompt(context, previousContext);
 
-  return basePrompt + tourSwitchWarning + completedStagePrompt;
+  // When in COMPLETED state and user asks about a different tour, include that tour's details
+  let selectedTourInfo = "";
+  if (
+    context.stage === "COMPLETED" &&
+    selectedTour &&
+    selectedTour.id !== context.currentTour?.id
+  ) {
+    const matchedTourData = findTourById(selectedTour.id, availableTours);
+    if (matchedTourData) {
+      const today = new Date().toISOString().split("T")[0];
+      const futureDates = (matchedTourData.dates || []).filter(
+        (d: any) => d.departure_date >= today
+      );
+      const lang = context.language;
+      const dateLabel = lang === "tr" ? "Tarihler" : lang === "de" ? "Termine" : lang === "ru" ? "Даты" : "Dates";
+      const priceLabel = lang === "tr" ? "Fiyat" : lang === "de" ? "Preis" : lang === "ru" ? "Цена" : "Price";
+
+      let tourDetail = `\n\n📋 KULLANICININ SORDUĞU TUR BİLGİLERİ:\n`;
+      tourDetail += `Tur: ${matchedTourData.title}\n`;
+      tourDetail += `Destinasyon: ${matchedTourData.destination}\n`;
+      if (matchedTourData.program_kisa) tourDetail += `Program: ${matchedTourData.program_kisa}\n`;
+      if (matchedTourData.gezilecek_yerler) tourDetail += `Gezilecek Yerler: ${matchedTourData.gezilecek_yerler}\n`;
+      if (matchedTourData.tur_sure) tourDetail += `Süre: ${matchedTourData.tur_sure}\n`;
+      if (matchedTourData.konaklama) tourDetail += `Konaklama: ${matchedTourData.konaklama}\n`;
+      if (matchedTourData.ulasim) tourDetail += `Ulaşım: ${matchedTourData.ulasim}\n`;
+      if (matchedTourData.hareket_noktasi) tourDetail += `Hareket: ${matchedTourData.hareket_noktasi}\n`;
+      if (matchedTourData.toplanma_saati) tourDetail += `Toplanma: ${matchedTourData.toplanma_saati}\n`;
+
+      if (futureDates.length > 0) {
+        tourDetail += `\n${dateLabel}:\n`;
+        for (const d of futureDates) {
+          const dateStr = new Date(d.departure_date).toLocaleDateString(
+            lang === "tr" ? "tr-TR" : lang === "de" ? "de-DE" : lang === "ru" ? "ru-RU" : "en-GB",
+            { day: "numeric", month: "long", year: "numeric" }
+          );
+          tourDetail += `• ${dateStr} — ${priceLabel}: ${d.price_adult} ${matchedTourData.currency || "TRY"}/kişi`;
+          if (d.price_child) tourDetail += ` (çocuk: ${d.price_child} ${matchedTourData.currency || "TRY"})`;
+          tourDetail += `\n`;
+        }
+      } else {
+        tourDetail += `\n⚠️ Bu tur için şu an müsait tarih bulunmuyor.\n`;
+      }
+
+      tourDetail += `\nBu bilgileri kullanarak kullanıcının sorusunu yanıtla. Tarih ve fiyat bilgilerini paylaş.\n`;
+      selectedTourInfo = tourDetail;
+    }
+  }
+
+  return basePrompt + tourSwitchWarning + completedStagePrompt + selectedTourInfo;
 }
