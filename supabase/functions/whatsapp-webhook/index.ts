@@ -2,7 +2,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Shared FSM
 import { createInitialContext, processTransition, getNextExpectedInput } from "../shared/fsm/state-machine.ts";
 import { sanitizeInput } from "../shared/fsm/validator.ts";
 import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
@@ -13,15 +12,15 @@ import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } 
 import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
-// Meta Cloud API utilities
-import { extractMetaWebhookData, sendWhatsAppMessage, resolveAgencyByPhoneNumberId, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
+import {
+  extractMetaWebhookData,
+  sendWhatsAppMessage,
+  resolveAgencyByPhoneNumberId,
+  getMetaCredentials,
+} from "../_shared/metaWhatsapp.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
-
-// WhatsApp services
 import { generatePaymentMessage } from "./services/payment-message.ts";
 import { upsertUserProfile, enrichConversationInsights } from "./services/profile.ts";
-
-// Legacy services (backward compatibility)
 import { checkFAQ } from "./services/faq.ts";
 import { detectCannedResponseTrigger, getCannedResponse } from "./services/canned-responses.ts";
 
@@ -30,18 +29,31 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// === MESAJ TEKRARı ÖNLEMESİ ===
+const recentMessageIds = new Map<string, number>();
+function isDuplicateMessage(messageId: string): boolean {
+  const now = Date.now();
+  const lastSeen = recentMessageIds.get(messageId);
+  if (lastSeen && now - lastSeen < 5000) return true;
+  recentMessageIds.set(messageId, now);
+  if (recentMessageIds.size > 100) {
+    for (const [key, time] of recentMessageIds.entries()) {
+      if (now - time > 60000) recentMessageIds.delete(key);
+    }
+  }
+  return false;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Meta webhook verification (GET)
   if (req.method === "GET") {
     const url = new URL(req.url);
     const mode = url.searchParams.get("hub.mode");
     const token = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
-
     const verifyToken = Deno.env.get("WHATSAPP_VERIFY_TOKEN");
     if (mode === "subscribe" && token === verifyToken) {
       console.log("✅ Webhook verified");
@@ -52,47 +64,45 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-
-    // Initialize Supabase client
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
-    // === Test Mode: Send a direct message via Meta API ===
+    // === Test Mode ===
     if (body?.testMode === true) {
       const phoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") || "";
       const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN") || "";
-      
       if (!phoneNumberId || !accessToken) {
         return new Response(JSON.stringify({ error: "Missing WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      const testPhone = body.testPhone?.replace('+', '').trim();
+      const testPhone = body.testPhone?.replace("+", "").trim();
       const testMessage = body.testMessage || "🧪 Test mesajı";
-
-      console.log(`📤 Test mode: Sending message to ${testPhone}`);
-      
       const result = await sendWhatsAppMessage(phoneNumberId, accessToken, testPhone, testMessage);
-      
       return new Response(JSON.stringify({ success: result.success, ...result }), {
         status: result.success ? 200 : 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Extract message from Meta Cloud API webhook format
     const webhookData = extractMetaWebhookData(body);
-
     if (!webhookData) {
       return new Response(JSON.stringify({ error: "Invalid webhook data" }), {
-        status: 200, // Always return 200 to Meta
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Status updates - just acknowledge
     if (webhookData.isStatus) {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // === MESAJ TEKRARı ÖNLEMESİ ===
+    if (webhookData.messageId && isDuplicateMessage(webhookData.messageId)) {
+      console.log(`⚡ Duplicate message ignored: ${webhookData.messageId}`);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -103,10 +113,12 @@ serve(async (req) => {
     const rawMessage = webhookData.message;
 
     if (!userPhone || !rawMessage) {
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Resolve agency from webhook metadata
     console.log(`🔍 Webhook phoneNumberId: "${webhookData.phoneNumberId}", from: "${userPhone}"`);
     const { agency, error: agencyError } = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
 
@@ -118,7 +130,6 @@ serve(async (req) => {
       });
     }
 
-    // Get Meta WhatsApp credentials
     const metaCredentials = getMetaCredentials(agency);
     if (!metaCredentials.accessToken || !metaCredentials.phoneNumberId) {
       console.error(`❌ Agency ${agency.name} has no Meta WhatsApp credentials configured`);
@@ -132,7 +143,6 @@ serve(async (req) => {
     console.log("📱 WhatsApp FSM:", userPhone.slice(-4));
     console.log(`🏢 Agency: ${agency.name}`);
 
-    // 🔐 Payment fields from agency
     const paymentInstructions = agency.payment_instructions ?? null;
     const languageCurrencies = agency.language_currencies ?? null;
     const primaryCurrency = agency.primary_currency ?? "TRY";
@@ -148,7 +158,6 @@ serve(async (req) => {
       paymentInfo = (paymentInstructions as any).text;
     }
 
-    // Get plan features
     const { data: planFeatures } = await supabase
       .from("plan_features")
       .select("*")
@@ -164,7 +173,6 @@ serve(async (req) => {
       analytics: planFeatures?.has_analytics,
     });
 
-    // Save incoming message
     await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
       role: "user",
@@ -172,38 +180,35 @@ serve(async (req) => {
       agency_id: agency.id,
     });
 
-    // Upsert user profile (only if user profiles feature is enabled)
+    // === KULLANICI PROFİLİ - SADECE İSİMLE SELAMLAMA ===
+    let returningUserName: string | null = null;
     if (planFeatures?.has_user_profiles) {
       await upsertUserProfile(supabase, userPhone, agency.id, message, agency?.enabled_languages || ["tr"]);
       console.log("✅ User profile updated");
+
+      const { data: userProfile } = await supabase
+        .from("whatsapp_user_profiles")
+        .select("full_name, total_bookings")
+        .eq("phone", userPhone)
+        .eq("agency_id", agency.id)
+        .single();
+
+      if (userProfile?.full_name && userProfile?.total_bookings > 0) {
+        returningUserName = userProfile.full_name.split(" ")[0];
+        console.log(`👤 Returning user: ${returningUserName}`);
+      }
     } else {
       console.log("⏭️ User profiles disabled for plan:", agency.plan_type);
     }
 
-    // Load tours
     const { data: dbTours } = await supabase
       .from("tours")
-      .select(
-        `
-        *,
-        dates:tour_dates(
-          id,
-          departure_date,
-          return_date,
-          price_adult,
-          price_child,
-          quota
-        )
-      `,
-      )
+      .select(`*, dates:tour_dates(id, departure_date, return_date, price_adult, price_child, quota)`)
       .eq("agency_id", agency.id);
 
     const toursRaw = dbTours || [];
     console.log(`📦 Tours: ${toursRaw.length}`);
 
-    // === FSM-based conversation ===
-
-    // Load context (sessionId = phone)
     const { data: existingState } = await supabase
       .from("whatsapp_conversations")
       .select("content")
@@ -215,8 +220,6 @@ serve(async (req) => {
       .single();
 
     let context: ConversationContext;
-
-    // Detect language change intent and runtime language
     const languageChangeIntent = detectLanguageChangeIntent(message);
     const runtimeDetectedLang = await detectLanguage(message);
 
@@ -225,16 +228,12 @@ serve(async (req) => {
         const parsed = JSON.parse(existingState.content);
         if (isValidContext(parsed)) {
           context = parsed;
-
           if (languageChangeIntent && languageChangeIntent !== context.language) {
-            console.log(`🌐 Language change: ${context.language} → ${languageChangeIntent}`);
             context.language = languageChangeIntent;
             context.tone = getDefaultToneForLanguage(languageChangeIntent) as ConversationTone;
           } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
-            console.log(`🌐 Language detected: ${context.language} → ${runtimeDetectedLang}`);
             context.language = runtimeDetectedLang;
           }
-
           console.log(`✅ Loaded context - Stage: ${context.stage}, Lang: ${context.language}`);
         } else {
           throw new Error("Invalid context");
@@ -242,28 +241,21 @@ serve(async (req) => {
       } catch (_e) {
         console.log("⚠️ Creating fresh context");
         const initialLang = languageChangeIntent || runtimeDetectedLang || "tr";
-        const tone = getDefaultToneForLanguage(initialLang) as ConversationTone;
-        context = createInitialContext(initialLang, tone);
+        context = createInitialContext(initialLang, getDefaultToneForLanguage(initialLang) as ConversationTone);
       }
     } else {
       console.log("🆕 Fresh context");
       const initialLang = languageChangeIntent || runtimeDetectedLang || "tr";
-      const tone = getDefaultToneForLanguage(initialLang) as ConversationTone;
-      context = createInitialContext(initialLang, tone);
+      context = createInitialContext(initialLang, getDefaultToneForLanguage(initialLang) as ConversationTone);
     }
 
-    // Check if detected language is enabled for this agency
     const enabledLanguages = (agency as any).enabled_languages || ["tr"];
     if (!enabledLanguages.includes(context.language)) {
-      console.log(
-        `⚠️ Language ${context.language} not enabled for agency. Falling back to first enabled: ${enabledLanguages[0]}`,
-      );
       context.language = enabledLanguages[0];
       context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
     }
 
-    // Localized tours - filter out past dates
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const tours = toursRaw
       .map((tour: any) => ({
         id: tour.id,
@@ -277,7 +269,6 @@ serve(async (req) => {
       }))
       .filter((tour: any) => tour.dates.length > 0);
 
-    // === Legacy features (canned responses, FAQ) - with dynamic language ===
     const currentLang = context.language || "tr";
 
     if (planFeatures?.has_templates) {
@@ -285,14 +276,15 @@ serve(async (req) => {
       if (cannedTrigger) {
         const response = getCannedResponse(cannedTrigger, currentLang);
         if (response) {
-          await supabase.from("whatsapp_conversations").insert({
-            phone: userPhone,
-            role: "assistant",
-            content: response,
-            agency_id: agency.id,
-          });
-          // Send via Meta Cloud API
-          await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(response));
+          await supabase
+            .from("whatsapp_conversations")
+            .insert({ phone: userPhone, role: "assistant", content: response, agency_id: agency.id });
+          await sendWhatsAppMessage(
+            metaCredentials.phoneNumberId,
+            metaCredentials.accessToken,
+            userPhone,
+            truncateForWhatsApp(response),
+          );
           return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -302,13 +294,15 @@ serve(async (req) => {
 
       const faqResponse = await checkFAQ(supabase, message, agency.id, currentLang);
       if (faqResponse) {
-        await supabase.from("whatsapp_conversations").insert({
-          phone: userPhone,
-          role: "assistant",
-          content: faqResponse,
-          agency_id: agency.id,
-        });
-        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(faqResponse));
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "assistant", content: faqResponse, agency_id: agency.id });
+        await sendWhatsAppMessage(
+          metaCredentials.phoneNumberId,
+          metaCredentials.accessToken,
+          userPhone,
+          truncateForWhatsApp(faqResponse),
+        );
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -316,8 +310,7 @@ serve(async (req) => {
       }
     }
 
-    // Get conversation history
-    const { data: recentMessages } = await supabase
+    const { data: recentMsgs } = await supabase
       .from("whatsapp_conversations")
       .select("role, content")
       .eq("phone", userPhone)
@@ -326,20 +319,15 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(10);
 
-    const conversationSummary = (recentMessages || [])
+    const conversationSummary = (recentMsgs || [])
       .reverse()
       .map((m) => `${m.role}: ${m.content}`)
       .join("\n");
 
-    // === Build rich context for NLU ===
     let nluContext = conversationSummary;
     nluContext += `\n\nCurrent stage: ${context.stage}.`;
-    if (context.collectionStep) {
-      nluContext += ` Collection step: ${context.collectionStep}.`;
-    }
-    if (context.currentTour) {
-      nluContext += ` Selected tour: ${context.currentTour.title}.`;
-    }
+    if (context.collectionStep) nluContext += ` Collection step: ${context.collectionStep}.`;
+    if (context.currentTour) nluContext += ` Selected tour: ${context.currentTour.title}.`;
     if (context.reservationInfo) {
       const info = context.reservationInfo;
       const collected = [];
@@ -347,27 +335,29 @@ serve(async (req) => {
       if (info.paxAdult) collected.push(`pax: ${info.paxAdult}`);
       if (info.fullName) collected.push(`name: ${info.fullName}`);
       if (info.phone) collected.push(`phone: ${info.phone}`);
-      if (collected.length > 0) {
-        nluContext += ` Reservation info collected: ${collected.join(', ')}.`;
-      }
+      if (collected.length > 0) nluContext += ` Reservation info collected: ${collected.join(", ")}.`;
     }
-    if (context.collectionStep === 'ready_for_confirmation' || 
-        (context.reservationInfo?.fullName && context.reservationInfo?.phone && 
-         context.reservationInfo?.paxAdult && context.reservationInfo?.dateId)) {
+    if (context.stage === "COMPLETED" && context.reservationConfirmed) {
+      nluContext += ` STATUS: RESERVATION COMPLETED - any tour questions are purely informational.`;
+    }
+    if (
+      context.collectionStep === "ready_for_confirmation" ||
+      (context.reservationInfo?.fullName &&
+        context.reservationInfo?.phone &&
+        context.reservationInfo?.paxAdult &&
+        context.reservationInfo?.dateId)
+    ) {
       nluContext += ` STATUS: READY FOR CONFIRMATION - waiting for user to confirm booking.`;
     }
 
     console.log("📋 NLU Context (stage):", context.stage, context.collectionStep);
 
-    // Analyze with NLU
     const nluResult = await analyzeUserMessage(message, nluContext, context.stage, context.currentTour, tours);
     console.log("🧠 Intent:", nluResult.intent);
 
     const fsmIntent = mapNLUIntentToFSMIntent(nluResult.intent);
 
-    // === Save complaint to database if detected ===
     if (nluResult.intent === "complaint_feedback") {
-      console.log("📝 Saving complaint to database...");
       const { error: complaintError } = await supabase.from("complaints").insert({
         agency_id: agency.id,
         phone: userPhone,
@@ -375,72 +365,76 @@ serve(async (req) => {
         type: "complaint",
         status: "new",
       });
-      if (complaintError) {
-        console.error("❌ Error saving complaint:", complaintError);
-      } else {
-        console.log("✅ Complaint saved successfully");
-      }
+      if (complaintError) console.error("❌ Error saving complaint:", complaintError);
+      else console.log("✅ Complaint saved successfully");
     }
 
-    // Match tours - CRITICAL: Two-layer strategy
     let selectedTour: any = null;
     let multipleTourMatches: any[] = [];
 
     if (nluResult.entities.tour_name) {
-      const matchingTours = tours.filter((t) => t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()));
-      
-      if (matchingTours.length === 1) {
-        const found = matchingTours[0];
-        selectedTour = {
-          id: found.id, title: found.title, destination: found.destination,
-          dates: found.dates, program_kisa: found.program_kisa, gezilecek_yerler: found.gezilecek_yerler,
-        };
-        console.log("🎫 Tour matched by NLU name (single):", selectedTour.title);
-      } else if (matchingTours.length > 1) {
-        multipleTourMatches = matchingTours;
-        console.log("🎫 Multiple tours matched by NLU name:", matchingTours.map(t => t.title).join(", "));
-      }
-    } 
-    
-    if (!selectedTour && !multipleTourMatches.length && nluResult.entities.destination) {
       const matchingTours = tours.filter((t) =>
-        t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()) ||
-        t.title.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()),
+        t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()),
       );
-      
       if (matchingTours.length === 1) {
         const found = matchingTours[0];
         selectedTour = {
-          id: found.id, title: found.title, destination: found.destination,
-          dates: found.dates, program_kisa: found.program_kisa, gezilecek_yerler: found.gezilecek_yerler,
+          id: found.id,
+          title: found.title,
+          destination: found.destination,
+          dates: found.dates,
+          program_kisa: found.program_kisa,
+          gezilecek_yerler: found.gezilecek_yerler,
         };
-        console.log("🎫 Tour matched by NLU destination (single):", selectedTour.title);
+        console.log("🎫 Tour matched by NLU name:", selectedTour.title);
       } else if (matchingTours.length > 1) {
         multipleTourMatches = matchingTours;
-        console.log("🎫 Multiple tours matched by destination:", matchingTours.map(t => t.title).join(", "));
       }
     }
 
-    // FALLBACK: direct matching
+    if (!selectedTour && !multipleTourMatches.length && nluResult.entities.destination) {
+      const matchingTours = tours.filter(
+        (t) =>
+          t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()) ||
+          t.title.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()),
+      );
+      if (matchingTours.length === 1) {
+        const found = matchingTours[0];
+        selectedTour = {
+          id: found.id,
+          title: found.title,
+          destination: found.destination,
+          dates: found.dates,
+          program_kisa: found.program_kisa,
+          gezilecek_yerler: found.gezilecek_yerler,
+        };
+        console.log("🎫 Tour matched by NLU destination:", selectedTour.title);
+      } else if (matchingTours.length > 1) {
+        multipleTourMatches = matchingTours;
+      }
+    }
+
     if (!selectedTour && multipleTourMatches.length === 0) {
       const expectedInput = getNextExpectedInput(context);
       const matchedTour = matchTour(message, tours, expectedInput);
       if (matchedTour) {
         const lowerMessage = message.toLowerCase().trim();
-        const allMatches = tours.filter(tour => 
-          tour.title.toLowerCase().includes(lowerMessage) ||
-          tour.destination.toLowerCase().includes(lowerMessage)
+        const allMatches = tours.filter(
+          (tour) =>
+            tour.title.toLowerCase().includes(lowerMessage) || tour.destination.toLowerCase().includes(lowerMessage),
         );
-        
         if (allMatches.length > 1) {
           multipleTourMatches = allMatches;
-          console.log("🎫 Fallback found multiple matches:", allMatches.map(t => t.title).join(", "));
         } else {
           const fullTour = findTourById(matchedTour.id, tours);
           if (fullTour) {
             selectedTour = {
-              id: fullTour.id, title: fullTour.title, destination: fullTour.destination,
-              dates: fullTour.dates, program_kisa: fullTour.program_kisa, gezilecek_yerler: fullTour.gezilecek_yerler,
+              id: fullTour.id,
+              title: fullTour.title,
+              destination: fullTour.destination,
+              dates: fullTour.dates,
+              program_kisa: fullTour.program_kisa,
+              gezilecek_yerler: fullTour.gezilecek_yerler,
             };
             console.log("🎯 Tour matched by direct matching:", selectedTour.title);
           }
@@ -448,42 +442,60 @@ serve(async (req) => {
       } else {
         console.log("❌ No tour match found via NLU or direct matching");
       }
-    } else if (multipleTourMatches.length > 0) {
-      console.log("⏭️ Skipping fallback - multiple tour matches found");
     }
 
-    // Extract info
     const extractedInfo: any = { ...nluResult.updates };
     if (nluResult.entities.dates && nluResult.entities.dates.length > 0) {
       extractedInfo.selectedDate = nluResult.entities.dates[0];
-      console.log("📅 Date from NLU:", nluResult.entities.dates[0]);
     }
 
-    const simpleExtraction = extractNameAndPhone(message);
-    if (simpleExtraction.fullName && !extractedInfo.fullName) {
-      extractedInfo.fullName = simpleExtraction.fullName;
-    }
-    if (simpleExtraction.phone && !extractedInfo.phone) {
-      extractedInfo.phone = simpleExtraction.phone;
-    }
-    if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) {
-      extractedInfo.paxAdult = simpleExtraction.paxAdult;
-    }
-    if (simpleExtraction.selectedDate && !extractedInfo.selectedDate) {
+    // === İSİM ÇIKARMA - collectionStep'i geç ===
+    const simpleExtraction = extractNameAndPhone(message, context.collectionStep);
+    if (simpleExtraction.fullName && !extractedInfo.fullName) extractedInfo.fullName = simpleExtraction.fullName;
+    if (simpleExtraction.phone && !extractedInfo.phone) extractedInfo.phone = simpleExtraction.phone;
+    if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) extractedInfo.paxAdult = simpleExtraction.paxAdult;
+    if (simpleExtraction.selectedDate && !extractedInfo.selectedDate)
       extractedInfo.selectedDate = simpleExtraction.selectedDate;
-    }
 
     const expectedInput = getNextExpectedInput(context);
 
-    // Handle plain number input when expecting pax
-    if (!extractedInfo.paxAdult && expectedInput === 'pax') {
+    // waiting_for_name aşamasında isim NLU'dan da gelmemişse mesajı direkt isim kabul et
+    if (expectedInput === "name" && !extractedInfo.fullName) {
+      const words = message.trim().split(/\s+/);
+      if (
+        words.length >= 2 &&
+        words.length <= 4 &&
+        !message.includes("?") &&
+        !/\d/.test(message) &&
+        words.every((w) => w.length >= 2)
+      ) {
+        const basicBlacklist = [
+          "evet",
+          "hayır",
+          "tamam",
+          "olur",
+          "haydi",
+          "hadi",
+          "rezervasyon",
+          "onaylıyorum",
+          "iptal",
+          "cancel",
+        ];
+        const lowerMsg = message.toLowerCase();
+        if (!basicBlacklist.some((w) => lowerMsg.includes(w))) {
+          extractedInfo.fullName = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+          console.log("📝 Name extracted (loose mode):", extractedInfo.fullName);
+        }
+      }
+    }
+
+    if (!extractedInfo.paxAdult && expectedInput === "pax") {
       const plainNumber = parseInt(message.trim());
       if (!isNaN(plainNumber) && plainNumber >= 1 && plainNumber <= 50) {
         extractedInfo.paxAdult = plainNumber;
       }
     }
 
-    // Resolve date_X format
     if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
       const tour = findTourById(context.currentTour.id, tours);
       if (tour?.dates) {
@@ -496,9 +508,11 @@ serve(async (req) => {
       }
     }
 
-    // Handle numeric date selection
-    if (!extractedInfo.dateId && context.currentTour && 
-        (expectedInput === 'date' || expectedInput === 'date_selection')) {
+    if (
+      !extractedInfo.dateId &&
+      context.currentTour &&
+      (expectedInput === "date" || expectedInput === "date_selection")
+    ) {
       const dateNumber = parseInt(message.trim());
       if (!isNaN(dateNumber) && dateNumber >= 1) {
         const tour = findTourById(context.currentTour.id, tours);
@@ -510,7 +524,6 @@ serve(async (req) => {
       }
     }
 
-    // Match ISO date with available tour dates
     if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
       const tour = findTourById(context.currentTour.id, tours);
       if (tour?.dates && tour.dates.length > 0) {
@@ -519,13 +532,11 @@ serve(async (req) => {
           try {
             const targetDate = new Date(extractedInfo.selectedDate);
             const tourDate = new Date(d.departure_date);
-            return targetDate.getDate() === tourDate.getDate() && 
-                   targetDate.getMonth() === tourDate.getMonth();
+            return targetDate.getDate() === tourDate.getDate() && targetDate.getMonth() === tourDate.getMonth();
           } catch {
             return false;
           }
         });
-        
         if (matchedDate) {
           extractedInfo.selectedDate = matchedDate.departure_date;
           extractedInfo.dateId = matchedDate.id;
@@ -533,10 +544,12 @@ serve(async (req) => {
       }
     }
 
-    // Auto-select date if only one available
-    if (!extractedInfo.dateId && !extractedInfo.selectedDate && 
-        context.currentTour?.dates?.length === 1 &&
-        (fsmIntent === "provide_info" || fsmIntent === "confirm" || fsmIntent === "reservation_intent")) {
+    if (
+      !extractedInfo.dateId &&
+      !extractedInfo.selectedDate &&
+      context.currentTour?.dates?.length === 1 &&
+      (fsmIntent === "provide_info" || fsmIntent === "confirm" || fsmIntent === "reservation_intent")
+    ) {
       const singleDate = context.currentTour.dates[0];
       extractedInfo.selectedDate = singleDate.departure_date;
       extractedInfo.dateId = singleDate.id;
@@ -544,7 +557,6 @@ serve(async (req) => {
 
     console.log("📝 Extracted info:", extractedInfo);
 
-    // Process transition
     const input: ProcessingInput = {
       userMessage: message,
       detectedIntent: fsmIntent,
@@ -556,9 +568,112 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 ${context.stage} → ${newContext.stage}`);
 
-    const detectedIntent = fsmIntent;
+    // === KOTA KONTROLÜ ===
+    if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED") {
+      const { dateId, paxAdult } = newContext.reservationInfo;
+      if (dateId && paxAdult) {
+        const { data: tourDate } = await supabase.from("tour_dates").select("quota").eq("id", dateId).single();
+        if (tourDate?.quota !== null && tourDate?.quota !== undefined) {
+          const { count: existingPax } = await supabase
+            .from("registrations")
+            .select("pax", { count: "exact" })
+            .eq("tour_date_id", dateId)
+            .neq("status", "CANCELLED");
 
-    // Build prompt
+          const usedQuota = existingPax || 0;
+          const remainingQuota = tourDate.quota - usedQuota;
+
+          if (remainingQuota < paxAdult) {
+            console.log(`⚠️ Quota exceeded: ${remainingQuota} remaining, ${paxAdult} requested`);
+            const agencyPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+
+            // Aynı turun diğer müsait tarihlerini bul
+            const currentTourData = toursRaw.find((t: any) => t.id === newContext.reservationInfo.tourId);
+            const otherAvailableDates = (currentTourData?.dates || []).filter((d: any) => {
+              if (d.id === dateId) return false; // Dolu olan tarihi atla
+              if (d.departure_date < today) return false; // Geçmiş tarihleri atla
+              return true;
+            });
+
+            // Her tarih için kota kontrolü yap
+            const availableDatesList: string[] = [];
+            for (const d of otherAvailableDates) {
+              const { count: usedForDate } = await supabase
+                .from("registrations")
+                .select("pax", { count: "exact" })
+                .eq("tour_date_id", d.id)
+                .neq("status", "CANCELLED");
+
+              const usedCount = usedForDate || 0;
+              const available = (d.quota || 999) - usedCount;
+              if (available >= paxAdult) {
+                // Tarihi formatla
+                const dateStr = new Date(d.departure_date).toLocaleDateString(
+                  newContext.language === "tr"
+                    ? "tr-TR"
+                    : newContext.language === "de"
+                      ? "de-DE"
+                      : newContext.language === "ru"
+                        ? "ru-RU"
+                        : "en-GB",
+                  { day: "numeric", month: "long", year: "numeric" },
+                );
+                const priceStr = d.price_adult ? ` (${d.price_adult} ${currentTourData?.currency || "TRY"})` : "";
+                availableDatesList.push(`• ${dateStr}${priceStr}`);
+              }
+            }
+
+            // Mesajı oluştur
+            let quotaMsg = "";
+            const lang = newContext.language || "tr";
+
+            if (availableDatesList.length > 0) {
+              const dateListStr = availableDatesList.join("\n");
+              const msgs: Record<string, string> = {
+                tr: `Üzgünüz, seçtiğiniz tarih için yeterli kontenjan bulunmamaktadır (kalan: ${remainingQuota} kişi).\n\n📅 *Müsait Diğer Tarihler:*\n${dateListStr}\n\nBu tarihlerden birini seçmek ister misiniz?`,
+                en: `Sorry, the selected date doesn't have enough spots (remaining: ${remainingQuota}).\n\n📅 *Available Dates:*\n${dateListStr}\n\nWould you like to choose one of these dates?`,
+                de: `Das gewählte Datum hat leider nicht genügend Plätze (verbleibend: ${remainingQuota}).\n\n📅 *Verfügbare Termine:*\n${dateListStr}\n\nMöchten Sie einen dieser Termine wählen?`,
+                ru: `К сожалению, на выбранную дату недостаточно мест (осталось: ${remainingQuota}).\n\n📅 *Доступные даты:*\n${dateListStr}\n\nХотите выбрать одну из этих дат?`,
+                ar: `عذراً، لا توجد أماكن كافية للتاريخ المحدد (المتبقي: ${remainingQuota}).\n\n📅 *التواريخ المتاحة:*\n${dateListStr}\n\nهل تريد اختيار أحد هذه التواريخ؟`,
+              };
+              quotaMsg = msgs[lang] || msgs["tr"];
+            } else {
+              // Hiç müsait tarih yok — acenteyle iletişime geç
+              const msgs: Record<string, string> = {
+                tr: `Üzgünüz, seçtiğiniz tarih için yeterli kontenjan bulunmamaktadır (kalan: ${remainingQuota} kişi). Şu an bu tur için müsait başka tarih de bulunmuyor.\n\nLütfen ${agency.name} ile iletişime geçiniz.${agencyPhone}`,
+                en: `Sorry, there are not enough spots for your selected date (remaining: ${remainingQuota}). There are no other available dates for this tour at the moment.\n\nPlease contact ${agency.name}.${agencyPhone}`,
+                de: `Für das gewählte Datum sind nicht genügend Plätze verfügbar (verbleibend: ${remainingQuota}). Aktuell sind keine weiteren Termine verfügbar.\n\nBitte kontaktieren Sie ${agency.name}.${agencyPhone}`,
+                ru: `На выбранную дату недостаточно мест (осталось: ${remainingQuota}). Других доступных дат для этого тура нет.\n\nПожалуйста, свяжитесь с ${agency.name}.${agencyPhone}`,
+                ar: `لا توجد أماكن كافية للتاريخ المحدد (المتبقي: ${remainingQuota}). لا توجد تواريخ أخرى متاحة حالياً.\n\nيرجى التواصل مع ${agency.name}.${agencyPhone}`,
+              };
+              quotaMsg = msgs[lang] || msgs["tr"];
+            }
+            await supabase
+              .from("whatsapp_conversations")
+              .insert({ phone: userPhone, role: "assistant", content: quotaMsg, agency_id: agency.id });
+            await sendWhatsAppMessage(
+              metaCredentials.phoneNumberId,
+              metaCredentials.accessToken,
+              userPhone,
+              truncateForWhatsApp(quotaMsg),
+            );
+            newContext.stage = "COLLECTING_INFO";
+            newContext.reservationConfirmed = false;
+            newContext.reservationInfo.dateId = undefined;
+            newContext.reservationInfo.selectedDate = undefined;
+            newContext.collectionStep = "waiting_for_date";
+            await supabase
+              .from("whatsapp_conversations")
+              .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+            return new Response(JSON.stringify({ success: true }), {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
+      }
+    }
+
     const currentTourFull = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
 
     const promptContext = {
@@ -581,9 +696,8 @@ serve(async (req) => {
       multipleTourMatches: multipleTourMatches.length > 1 ? multipleTourMatches : undefined,
     };
 
-    // Tour switch warning
+    // Tur değişikliği uyarısı
     let tourSwitchWarning = "";
-
     if (
       newContext.stage === "COLLECTING_INFO" &&
       selectedTour &&
@@ -592,73 +706,60 @@ serve(async (req) => {
     ) {
       tourSwitchWarning =
         newContext.language === "tr"
-          ? `\n\n🚨 KRİTİK UYARI: Kullanıcı şu anda "${newContext.currentTour.title}" için rezervasyon YAPIYOR (tarih: ${
-              newContext.reservationInfo.selectedDate || "belirtilmedi"
-            }, kişi: ${newContext.reservationInfo.paxAdult || "belirtilmedi"}).
-        
-Ama kullanıcı "${selectedTour.title}" hakkında bir şey söyledi.
+          ? `\n\n🚨 KRİTİK UYARI: Kullanıcı "${newContext.currentTour.title}" için rezervasyon yapıyor ama "${selectedTour.title}" hakkında bir şey söyledi. Tur değişikliği için onay iste, otomatik değiştirme!`
+          : `\n\n🚨 CRITICAL: User is booking "${newContext.currentTour.title}" but mentioned "${selectedTour.title}". Ask for confirmation before switching. NEVER switch automatically!`;
+    }
 
-MUTLAKA ŞUNU SOR:
-"Şu anda ${newContext.currentTour.title} için rezervasyon yapıyoruz. ${selectedTour.title} turuna geçmek ister misiniz? 
-Geçerseniz mevcut rezervasyon bilgileriniz (${
-              newContext.reservationInfo.selectedDate
-                ? "tarih: " + newContext.reservationInfo.selectedDate
-                : "girdiğiniz bilgiler"
-            }) silinecek.
-
-Cevabınız: 
-- Evet, ${selectedTour.title} turuna geç → Ben tur değiştirme yapacağım
-- Hayır, ${newContext.currentTour.title} ile devam → Mevcut rezervasyona devam"
-
-ASLA tur değişikliği yapma, sadece kullanıcıdan onay iste!`
-          : `\n\n🚨 CRITICAL WARNING: User is currently making a reservation for "${
-              newContext.currentTour.title
-            }" (date: ${newContext.reservationInfo.selectedDate || "not specified"}, pax: ${
-              newContext.reservationInfo.paxAdult || "not specified"
-            }).
-
-But user mentioned "${selectedTour.title}".
-
-YOU MUST ASK:
-"You're currently making a reservation for ${newContext.currentTour.title}. Would you like to switch to ${selectedTour.title}? 
-If you switch, your current reservation info (${
-              newContext.reservationInfo.selectedDate
-                ? "date: " + newContext.reservationInfo.selectedDate
-                : "entered details"
-            }) will be deleted.
-
-Your answer:
-- Yes, switch to ${selectedTour.title} → I'll switch the tour
-- No, continue with ${newContext.currentTour.title} → Continue current reservation"
-
-NEVER switch tours automatically, only ask for confirmation!`;
-    } else if (
-      newContext.stage === "TOUR_SELECTED" &&
-      selectedTour &&
-      newContext.currentTour &&
-      selectedTour.id !== newContext.currentTour.id &&
-      Object.keys(newContext.reservationInfo).length > 2
-    ) {
-      tourSwitchWarning =
+    // === COMPLETED AŞAMASI: ESKİ REZERVASYONDAN BAHSETME ===
+    let completedStagePrompt = "";
+    if (context.stage === "COMPLETED" && newContext.stage === "COMPLETED") {
+      // Aynı tur hakkında soru - bilgi ver
+      completedStagePrompt =
         newContext.language === "tr"
-          ? `\n\n⚠️ DİKKAT: Kullanıcı "${newContext.currentTour.title}" seçmişti, şimdi "${selectedTour.title}" sordu. Netleştir: "Hangi tur için devam etmek istersiniz?"`
-          : `\n\n⚠️ ATTENTION: User had selected "${newContext.currentTour.title}", now asked about "${selectedTour.title}". Clarify: "Which tour would you like to continue with?"`;
+          ? `\n\n✅ TAMAMLANAN REZERVASYon SONRASI:
+Kullanıcının ${context.currentTour?.title || "önceki tur"} için rezervasyonu tamamlandı.
+Kullanıcı şu an soru soruyor. Sadece sorusunu yanıtla.
+KESİNLİKLE "rezervasyonunuz tamamlandı" veya "kaydınız oluşturuldu" DEME - bu zaten yapıldı.
+Doğal bir konuşma gibi devam et.`
+          : `\n\n✅ POST-RESERVATION STATE:
+User's reservation for ${context.currentTour?.title || "previous tour"} is already completed.
+User is asking a question now. Just answer their question naturally.
+DO NOT say "your reservation is confirmed" or "booking completed" - that already happened.
+Continue naturally.`;
+    } else if (context.stage === "COMPLETED" && newContext.stage === "TOUR_SELECTED") {
+      // Farklı tura geçiş - eski rezervasyondan hiç bahsetme
+      completedStagePrompt =
+        newContext.language === "tr"
+          ? `\n\n🔄 YENİ TUR SEÇİLDİ:
+Kullanıcı yeni bir tur seçti: ${newContext.currentTour?.title}.
+Önceki rezervasyondan (${context.currentTour?.title}) KESİNLİKLE bahsetme.
+Sanki yeni bir konuşma başlıyormuş gibi sadece yeni tura odaklan.
+"Kaydınız tamamlandı" veya önceki tura dair HİÇBİR ŞEY söyleme.`
+          : `\n\n🔄 NEW TOUR SELECTED:
+User selected a new tour: ${newContext.currentTour?.title}.
+DO NOT mention the previous reservation (${context.currentTour?.title}) at all.
+Focus only on the new tour as if starting fresh.
+Never say anything about the previous booking.`;
     }
 
-    const systemPrompt = buildSystemPrompt(promptContext) + tourSwitchWarning;
+    // === DÖNEN KULLANICI SELAMLAMA ===
+    let returningUserPrompt = "";
+    if (returningUserName && context.stage === "GREETING") {
+      returningUserPrompt =
+        newContext.language === "tr"
+          ? `\n\n👤 DÖNEN MÜŞTERİ: Adı "${returningUserName}". Sadece selamlarken adıyla hitap et. Önceki rezervasyon bilgilerini ASLA hatırlatma veya sorma. Sıfırdan başla.`
+          : `\n\n👤 RETURNING CUSTOMER: Name is "${returningUserName}". Only greet by name. NEVER mention previous reservations. Start fresh.`;
+    }
 
-    // Call AI
+    const systemPrompt =
+      buildSystemPrompt(promptContext) + tourSwitchWarning + completedStagePrompt + returningUserPrompt;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY not configured");
-    }
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
@@ -669,160 +770,162 @@ NEVER switch tours automatically, only ask for confirmation!`;
       }),
     });
 
-    if (!aiResponse.ok) {
-      throw new Error(`AI error: ${aiResponse.status}`);
-    }
+    if (!aiResponse.ok) throw new Error(`AI error: ${aiResponse.status}`);
 
     const aiData = await aiResponse.json();
     let reply: string = aiData.choices[0].message.content;
     console.log("🤖 Reply:", reply.substring(0, 80));
 
-    // === APPEND PAYMENT MESSAGE IF COMPLETED ===
     let finalReply = reply;
 
+    // Ödeme mesajı ekle
     if (
       newContext.stage === "COMPLETED" &&
       newContext.reservationConfirmed &&
       !newContext.paymentInfoSent &&
       paymentInstructions
     ) {
-      console.log("💳 Appending payment info...");
-
       const depositPercentage =
         (paymentInstructions &&
           typeof paymentInstructions === "object" &&
           (paymentInstructions as any).deposit_percentage) ||
         30;
-
       const tourForReservation = toursRaw.find((t: any) => t.id === newContext.reservationInfo.tourId);
       const selectedTourDate = tourForReservation?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
 
       if (selectedTourDate) {
         const paxAdult = newContext.reservationInfo.paxAdult || 0;
         const paxChild = newContext.reservationInfo.paxChild || 0;
-        const priceAdult = selectedTourDate.price_adult || 0;
-        const priceChild = selectedTourDate.price_child || priceAdult;
-
-        const totalPrice = paxAdult * priceAdult + paxChild * priceChild;
+        const totalPrice =
+          paxAdult * (selectedTourDate.price_adult || 0) +
+          paxChild * (selectedTourDate.price_child || selectedTourDate.price_adult || 0);
         const depositAmount = Math.ceil((totalPrice * depositPercentage) / 100);
-
-        const tourCurrency = tourForReservation?.currency || "TRY";
-
         const paymentMessage = await generatePaymentMessage(
           paymentInstructions,
           newContext.language,
           totalPrice,
           depositAmount,
-          tourCurrency,
+          tourForReservation?.currency || "TRY",
           { languageCurrencies, primaryCurrency },
         );
-
         if (paymentMessage) {
           finalReply = reply + paymentMessage;
           newContext.paymentInfoSent = true;
-          console.log("✅ Payment info appended");
         }
       }
     }
 
-    // Save reservation if JUST transitioned to COMPLETED
-    const justCompletedReservation = newContext.stage === "COMPLETED" && 
-                                      newContext.reservationConfirmed && 
-                                      context.stage !== "COMPLETED";
-    
+    // === ÇİFT REZERVASYon ÖNLEMESİ ===
+    const justCompletedReservation =
+      newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED";
+
     if (justCompletedReservation) {
       const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
       const reservationPhone = regPhone || userPhone;
-      
+
       if (tourId && dateId && fullName && reservationPhone && paxAdult) {
         console.log("💾 Saving reservation...", { tourId, dateId, fullName, paxAdult });
 
-        const { data: newRegistration, error: regError } = await supabase
+        // Çift rezervasyon kontrolü
+        const { data: existingReservation } = await supabase
           .from("registrations")
-          .insert({
-            tour_id: tourId,
-            tour_date_id: dateId,
-            full_name: fullName,
-            phone: reservationPhone,
-            pax: (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
-            agency_id: agency.id,
-            status: "NEW",
-            source_channel: "WHATSAPP",
-            payment_status: "UNPAID"
-          })
-          .select()
-          .single();
+          .select("id")
+          .eq("tour_date_id", dateId)
+          .eq("phone", reservationPhone)
+          .neq("status", "CANCELLED")
+          .maybeSingle();
 
-      if (regError) {
-        console.error("❌ Save error:", regError);
-        // Override AI response - don't confirm a reservation that wasn't saved
-        const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : '';
-        const errorMsgs: Record<string, string> = {
-          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
-          en: `There was an issue creating your reservation. Please contact ${agency.name} directly.${agPhone}`,
-          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
-          ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
-          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
-          fr: `Un problème est survenu lors de la création de votre réservation. Veuillez contacter ${agency.name}.${agPhone}`,
-          es: `Hubo un problema al crear su reserva. Por favor contacte a ${agency.name}.${agPhone}`,
-        };
-        finalReply = errorMsgs[newContext.language] || errorMsgs.tr;
-        // Reset context so user can retry
-        newContext.stage = context.stage;
-        newContext.reservationConfirmed = false;
-      } else {
-        console.log("✅ Reservation saved");
+        if (existingReservation) {
+          console.log("⚠️ Duplicate reservation detected");
+          const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+          const dupMessages: Record<string, string> = {
+            tr: `Bu tura zaten kayıtlısınız! Rezervasyon bilgileriniz için lütfen ${agency.name} ile iletişime geçin.${agPhone}`,
+            en: `You are already registered for this tour! Please contact ${agency.name}.${agPhone}`,
+          };
+          finalReply = dupMessages[newContext.language] || dupMessages["tr"];
+        } else {
+          const { data: newRegistration, error: regError } = await supabase
+            .from("registrations")
+            .insert({
+              tour_id: tourId,
+              tour_date_id: dateId,
+              full_name: fullName,
+              phone: reservationPhone,
+              pax: (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
+              agency_id: agency.id,
+              status: "NEW",
+              source_channel: "WHATSAPP",
+              payment_status: "UNPAID",
+            })
+            .select()
+            .single();
 
-        if (planFeatures?.has_templates) {
-          const { data: template } = await supabase
-            .from("message_templates")
-            .select("*")
-            .eq("agency_id", agency.id)
-            .eq("template_key", "reservation_confirmed")
-            .eq("language", newContext.language)
-            .eq("is_active", true)
-            .maybeSingle();
+          if (regError) {
+            console.error("❌ Save error:", regError);
+            // === FALLBACK MESAJI - Acente iletişim bilgisiyle ===
+            const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+            const errorMsgs: Record<string, string> = {
+              tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
+              en: `There was an issue creating your reservation. Please contact ${agency.name} directly.${agPhone}`,
+              de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+              ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
+              ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
+              fr: `Un problème est survenu. Veuillez contacter ${agency.name}.${agPhone}`,
+              es: `Hubo un problema. Por favor contacte a ${agency.name}.${agPhone}`,
+            };
+            finalReply = errorMsgs[newContext.language] || errorMsgs.tr;
+            newContext.stage = context.stage;
+            newContext.reservationConfirmed = false;
+          } else {
+            console.log("✅ Reservation saved");
+            if (planFeatures?.has_templates) {
+              const { data: template } = await supabase
+                .from("message_templates")
+                .select("*")
+                .eq("agency_id", agency.id)
+                .eq("template_key", "reservation_confirmed")
+                .eq("language", newContext.language)
+                .eq("is_active", true)
+                .maybeSingle();
 
-          if (template && newRegistration) {
-            const selectedTourForTemplate = tours.find((t) => t.id === newContext.reservationInfo.tourId);
-            const selectedDateForTemplate = selectedTourForTemplate?.dates?.find(
-              (d: any) => d.id === newContext.reservationInfo.dateId,
-            );
+              if (template && newRegistration) {
+                const selectedTourForTemplate = tours.find((t) => t.id === newContext.reservationInfo.tourId);
+                const selectedDateForTemplate = selectedTourForTemplate?.dates?.find(
+                  (d: any) => d.id === newContext.reservationInfo.dateId,
+                );
+                let templateContent = template.content;
+                templateContent = templateContent.replace("{customer_name}", newContext.reservationInfo.fullName || "");
+                templateContent = templateContent.replace("{tour_name}", selectedTourForTemplate?.title || "");
+                templateContent = templateContent.replace("{tour_date}", selectedDateForTemplate?.departure_date || "");
+                templateContent = templateContent.replace(
+                  "{pax}",
+                  String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)),
+                );
+                finalReply = finalReply + "\n\n" + templateContent;
+              }
+            }
+          }
 
-            let templateContent = template.content;
-            templateContent = templateContent.replace("{customer_name}", newContext.reservationInfo.fullName || "");
-            templateContent = templateContent.replace("{tour_name}", selectedTourForTemplate?.title || "");
-            templateContent = templateContent.replace("{tour_date}", selectedDateForTemplate?.departure_date || "");
-            templateContent = templateContent.replace(
-              "{pax}",
-              String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)),
-            );
-
-            finalReply = finalReply + "\n\n" + templateContent;
-            console.log("✅ Template message appended");
+          if (!regError && planFeatures?.has_user_profiles) {
+            await supabase
+              .from("whatsapp_user_profiles")
+              .upsert(
+                {
+                  phone: userPhone,
+                  agency_id: agency.id,
+                  full_name: newContext.reservationInfo.fullName,
+                  total_bookings: 1,
+                  last_interaction_at: new Date().toISOString(),
+                },
+                { onConflict: "phone,agency_id" },
+              );
           }
         }
-      }
-
-        if (!regError && planFeatures?.has_user_profiles) {
-          await supabase.from("whatsapp_user_profiles").upsert(
-            {
-              phone: userPhone,
-              agency_id: agency.id,
-              full_name: newContext.reservationInfo.fullName,
-              total_bookings: 1,
-              last_interaction_at: new Date().toISOString(),
-            },
-            { onConflict: "phone,agency_id" },
-          );
-          console.log("✅ User profile updated with booking");
-        }
       } else {
-        console.error("❌ Missing required fields for reservation:", { tourId, dateId, fullName, paxAdult });
+        console.error("❌ Missing required fields:", { tourId, dateId, fullName, paxAdult });
       }
     }
 
-    // Save response
     await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
       role: "assistant",
@@ -830,14 +933,10 @@ NEVER switch tours automatically, only ask for confirmation!`;
       agency_id: agency.id,
     });
 
-    // Enrich conversation insights
     if (planFeatures?.has_user_profiles) {
-      await enrichConversationInsights(
-        supabase, userPhone, agency.id, message, finalReply, detectedIntent || "general",
-      );
+      await enrichConversationInsights(supabase, userPhone, agency.id, message, finalReply, fsmIntent || "general");
     }
 
-    // Save context
     await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
       role: "system",
@@ -845,9 +944,12 @@ NEVER switch tours automatically, only ask for confirmation!`;
       agency_id: agency.id,
     });
 
-    // Send reply via Meta Cloud API
-    const truncatedReply = truncateForWhatsApp(finalReply);
-    await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncatedReply);
+    await sendWhatsAppMessage(
+      metaCredentials.phoneNumberId,
+      metaCredentials.accessToken,
+      userPhone,
+      truncateForWhatsApp(finalReply),
+    );
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
