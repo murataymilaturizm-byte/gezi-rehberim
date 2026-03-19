@@ -141,7 +141,9 @@ export const DEMO_TOURS = [
     ulasim: 'Klimalı minibüs',
     konaklama: 'Çeşme\'de 5* resort otel, her şey dahil',
     dates: [
-      { id: 'demo-date-8', departure_date: '2025-12-14', price_adult: 4500, price_child: 3600, quota: 10 }
+      { id: 'demo-date-8', departure_date: '2026-04-24', price_adult: 4500, price_child: 3600, quota: 10 },
+      { id: 'demo-date-8b', departure_date: '2026-05-29', price_adult: 4800, price_child: 3800, quota: 12 },
+      { id: 'demo-date-8c', departure_date: '2026-07-03', price_adult: 5200, price_child: 4000, quota: 10 }
     ]
   }
 ];
