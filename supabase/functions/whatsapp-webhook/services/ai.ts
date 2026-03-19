@@ -8,7 +8,7 @@ export async function callAI(
 ): Promise<any> {
   try {
     const requestBody: any = {
-      model: 'openai/gpt-4o-mini',
+      model: 'google/gemini-2.5-flash',
       messages,
       temperature
     };
