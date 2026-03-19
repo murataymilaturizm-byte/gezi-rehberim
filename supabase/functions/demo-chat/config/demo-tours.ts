@@ -83,7 +83,9 @@ export const DEMO_TOURS = [
     ulasim: 'Klimalı otobüs',
     konaklama: 'Göreme\'de 4* otel, kahvaltı dahil',
     dates: [
-      { id: 'demo-date-3', departure_date: '2025-12-18', price_adult: 2500, price_child: 2000, quota: 18 }
+      { id: 'demo-date-3', departure_date: '2026-04-18', price_adult: 2500, price_child: 2000, quota: 18 },
+      { id: 'demo-date-3b', departure_date: '2026-05-16', price_adult: 2700, price_child: 2200, quota: 16 },
+      { id: 'demo-date-3c', departure_date: '2026-06-20', price_adult: 2900, price_child: 2300, quota: 14 }
     ]
   },
   {
