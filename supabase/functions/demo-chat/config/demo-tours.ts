@@ -63,8 +63,10 @@ export const DEMO_TOURS = [
     ulasim: 'Otelden alım-bırakım dahil',
     konaklama: 'Günübirlik tur - konaklama yok',
     dates: [
-      { id: 'demo-date-1', departure_date: '2025-12-15', price_adult: 1500, price_child: 1200, quota: 20 },
-      { id: 'demo-date-2', departure_date: '2025-12-22', price_adult: 1500, price_child: 1200, quota: 15 }
+      { id: 'demo-date-1', departure_date: '2026-04-15', price_adult: 1500, price_child: 1200, quota: 20 },
+      { id: 'demo-date-2', departure_date: '2026-04-22', price_adult: 1500, price_child: 1200, quota: 15 },
+      { id: 'demo-date-1b', departure_date: '2026-05-10', price_adult: 1600, price_child: 1300, quota: 20 },
+      { id: 'demo-date-1c', departure_date: '2026-06-07', price_adult: 1800, price_child: 1400, quota: 18 }
     ]
   },
   {
@@ -81,7 +83,9 @@ export const DEMO_TOURS = [
     ulasim: 'Klimalı otobüs',
     konaklama: 'Göreme\'de 4* otel, kahvaltı dahil',
     dates: [
-      { id: 'demo-date-3', departure_date: '2025-12-18', price_adult: 2500, price_child: 2000, quota: 18 }
+      { id: 'demo-date-3', departure_date: '2026-04-18', price_adult: 2500, price_child: 2000, quota: 18 },
+      { id: 'demo-date-3b', departure_date: '2026-05-16', price_adult: 2700, price_child: 2200, quota: 16 },
+      { id: 'demo-date-3c', departure_date: '2026-06-20', price_adult: 2900, price_child: 2300, quota: 14 }
     ]
   },
   {
@@ -98,8 +102,9 @@ export const DEMO_TOURS = [
     ulasim: 'Klimalı otobüs',
     konaklama: 'Pamukkale\'de 4* termal otel, yarım pansiyon',
     dates: [
-      { id: 'demo-date-4', departure_date: '2025-12-10', price_adult: 3500, price_child: 2800, quota: 15 },
-      { id: 'demo-date-5', departure_date: '2025-12-20', price_adult: 3500, price_child: 2800, quota: 12 }
+      { id: 'demo-date-4', departure_date: '2026-04-10', price_adult: 3500, price_child: 2800, quota: 15 },
+      { id: 'demo-date-5', departure_date: '2026-04-25', price_adult: 3500, price_child: 2800, quota: 12 },
+      { id: 'demo-date-5b', departure_date: '2026-05-22', price_adult: 3800, price_child: 3000, quota: 14 }
     ]
   },
   {
@@ -116,8 +121,10 @@ export const DEMO_TOURS = [
     ulasim: 'Otelden alım-bırakım',
     konaklama: 'Günübirlik - konaklama yok',
     dates: [
-      { id: 'demo-date-6', departure_date: '2025-12-05', price_adult: 800, price_child: 600, quota: 30 },
-      { id: 'demo-date-7', departure_date: '2025-12-12', price_adult: 800, price_child: 600, quota: 25 }
+      { id: 'demo-date-6', departure_date: '2026-04-05', price_adult: 800, price_child: 600, quota: 30 },
+      { id: 'demo-date-7', departure_date: '2026-04-19', price_adult: 800, price_child: 600, quota: 25 },
+      { id: 'demo-date-7b', departure_date: '2026-05-03', price_adult: 900, price_child: 700, quota: 28 },
+      { id: 'demo-date-7c', departure_date: '2026-06-14', price_adult: 1000, price_child: 750, quota: 25 }
     ]
   },
   {
@@ -134,7 +141,9 @@ export const DEMO_TOURS = [
     ulasim: 'Klimalı minibüs',
     konaklama: 'Çeşme\'de 5* resort otel, her şey dahil',
     dates: [
-      { id: 'demo-date-8', departure_date: '2025-12-14', price_adult: 4500, price_child: 3600, quota: 10 }
+      { id: 'demo-date-8', departure_date: '2026-04-24', price_adult: 4500, price_child: 3600, quota: 10 },
+      { id: 'demo-date-8b', departure_date: '2026-05-29', price_adult: 4800, price_child: 3800, quota: 12 },
+      { id: 'demo-date-8c', departure_date: '2026-07-03', price_adult: 5200, price_child: 4000, quota: 10 }
     ]
   }
 ];
