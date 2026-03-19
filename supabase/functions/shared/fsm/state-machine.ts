@@ -306,12 +306,38 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COMPLETED → TOUR_SELECTED (farklı tur - eski bilgileri sıfırla)
+  // COMPLETED → BROWSING (açık yeni tur niyeti - bu TOUR_SELECTED'dan ÖNCE olmalı)
+  {
+    from: "COMPLETED",
+    to: "BROWSING",
+    condition: (ctx, input) => {
+      // Kullanıcı açıkça yeni/farklı tur veya yeni rezervasyon istiyorsa
+      const wantsNewReservation =
+        /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci rez|başka bir rez|bir daha|tekrar rez/i.test(
+          input.userMessage,
+        );
+      // reservation_intent ile gelen ve selectedTour olmayan mesajlar da yeni rez demek
+      const isReservationIntentWithoutTour =
+        input.detectedIntent === "reservation_intent" && input.selectedTour === null;
+      return wantsNewReservation || isReservationIntentWithoutTour;
+    },
+    action: (ctx) => ({
+      ...ctx,
+      currentTour: null,
+      reservationInfo: {},
+      reservationConfirmed: false,
+      paymentInfoSent: false,
+      collectionStep: undefined,
+      viewedTours: [],
+    }),
+  },
+
+  // COMPLETED → TOUR_SELECTED (farklı tur seçimi - bilgi sorusu dahil)
   {
     from: "COMPLETED",
     to: "TOUR_SELECTED",
     condition: (ctx, input) => {
-      if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
+      // Farklı bir tur seçildiyse (bilgi sorusu olsa bile geçiş yap)
       return input.selectedTour !== null && input.selectedTour.id !== ctx.currentTour?.id;
     },
     action: (ctx, input) => ({
@@ -328,27 +354,42 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COMPLETED → BROWSING (açık yeni tur niyeti)
+  // COMPLETED → COLLECTING_INFO (farklı tur + reservation_intent birlikte)
   {
     from: "COMPLETED",
-    to: "BROWSING",
+    to: "COLLECTING_INFO",
     condition: (ctx, input) => {
-      if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
+      if (!input.selectedTour || input.selectedTour.id === ctx.currentTour?.id) return false;
       return (
-        /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation/i.test(
-          input.userMessage,
-        ) && input.selectedTour === null
+        input.detectedIntent === "reservation_intent" ||
+        input.detectedIntent === "provide_info" ||
+        input.detectedIntent === "confirm"
       );
     },
-    action: (ctx) => ({
-      ...ctx,
-      currentTour: null,
-      reservationInfo: {},
-      reservationConfirmed: false,
-      paymentInfoSent: false,
-      collectionStep: undefined,
-      viewedTours: [],
-    }),
+    action: (ctx, input) => {
+      const tour = input.selectedTour!;
+      const merged: ReservationInfo = {
+        tourId: tour.id,
+        tourTitle: tour.title,
+        ...Object.fromEntries(
+          Object.entries(input.extractedInfo).filter(([_, v]) => v !== undefined && v !== null && v !== ""),
+        ),
+      };
+      // Tek tarih varsa otomatik seç
+      if (!merged.dateId && !merged.selectedDate && tour.dates?.length === 1) {
+        merged.dateId = tour.dates[0].id;
+        merged.selectedDate = tour.dates[0].departure_date;
+      }
+      return {
+        ...ctx,
+        currentTour: tour,
+        viewedTours: [tour.id],
+        reservationInfo: merged,
+        reservationConfirmed: false,
+        paymentInfoSent: false,
+        collectionStep: determineCollectionStep(merged),
+      };
+    },
   },
 ];
 
