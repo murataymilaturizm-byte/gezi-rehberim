@@ -84,20 +84,22 @@ Continue naturally.`;
     }
   }
 
-  // User selected a different tour after completing reservation
-  if (previousContext.stage === "COMPLETED" && context.stage === "TOUR_SELECTED") {
+  // New reservation started after a completed one
+  if (context.isNewReservation || (previousContext.stage === "COMPLETED" && context.stage !== "COMPLETED")) {
     if (lang === "tr") {
-      return `\n\n🔄 YENİ TUR SEÇİLDİ:
-Kullanıcı yeni bir tur seçti: ${context.currentTour?.title || ""}.
-Önceki rezervasyondan (${previousContext.currentTour?.title || ""}) KESİNLİKLE bahsetme.
-Sanki yeni bir konuşma başlıyormuş gibi sadece yeni tura odaklan.
-"Kaydınız tamamlandı" veya önceki tura dair HİÇBİR ŞEY söyleme.`;
+      return `\n\n🔄 YENİ REZERVASYON BAŞLADI:
+Kullanıcı yeni bir tur için işlem başlattı: ${context.currentTour?.title || "henüz seçilmedi"}.
+ÖNCEKİ REZERVASYONDAN KESİNLİKLE BAHSETMEKİN. Önceki müşteri bilgilerini (isim, telefon, kişi sayısı) KULLANMA.
+Bu tamamen yeni bir rezervasyon. TÜM bilgileri (tarih, kişi sayısı, isim, telefon) SIFIRDAN topla.
+"Kaydınız tamamlandı" veya önceki tura dair HİÇBİR ŞEY söyleme.
+Sanki yeni bir konuşma başlıyormuş gibi sadece yeni tura odaklan.`;
     } else {
-      return `\n\n🔄 NEW TOUR SELECTED:
-User selected a new tour: ${context.currentTour?.title || ""}.
-DO NOT mention the previous reservation (${previousContext.currentTour?.title || ""}) at all.
-Focus only on the new tour as if starting fresh.
-Never say anything about the previous booking.`;
+      return `\n\n🔄 NEW RESERVATION STARTED:
+User started a new tour process: ${context.currentTour?.title || "not yet selected"}.
+DO NOT mention the previous reservation AT ALL. DO NOT use previous customer info (name, phone, pax count).
+This is a completely new reservation. Collect ALL info (date, pax, name, phone) from scratch.
+Never say anything about the previous booking.
+Focus only on the new tour as if starting fresh.`;
     }
   }
 
