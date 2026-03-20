@@ -331,7 +331,7 @@ const GettingStarted = () => {
             <div className="flex items-center gap-3">
               <img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto" />
               <p className="text-sm text-muted-foreground">
-                © 2024 Turzz. Tüm hakları saklıdır.
+                © 2025 Turzz. Tüm hakları saklıdır.
               </p>
             </div>
             <div className="flex gap-6 text-sm">
