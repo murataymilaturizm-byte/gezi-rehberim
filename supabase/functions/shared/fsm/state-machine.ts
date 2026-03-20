@@ -344,11 +344,34 @@ const transitions: StateTransition[] = [
     from: "CONFIRMING",
     to: "COLLECTING_INFO",
     condition: (ctx, input) =>
-      input.detectedIntent === "change_info" || /değiştir|change|modify|edit/i.test(input.userMessage.toLowerCase()),
-    action: (ctx) => ({
-      ...ctx,
-      collectionStep: determineCollectionStep(ctx.reservationInfo),
-    }),
+      input.detectedIntent === "change_info" || /değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı/i.test(input.userMessage.toLowerCase()),
+    action: (ctx, input) => {
+      const msg = input.userMessage.toLowerCase();
+      const info = { ...ctx.reservationInfo };
+
+      // Kullanıcının hangi alanı değiştirmek istediğini tespit et ve o alanı temizle
+      if (/isim|ad|name|soyad|surname/i.test(msg)) {
+        delete info.fullName;
+      } else if (/telefon|numara|phone|gsm|cep/i.test(msg)) {
+        delete info.phone;
+      } else if (/kişi|pax|person|people|yetişkin|adult|çocuk|child/i.test(msg)) {
+        delete info.paxAdult;
+        delete info.paxChild;
+      } else if (/tarih|date|gün|day/i.test(msg)) {
+        delete info.dateId;
+        delete info.selectedDate;
+      } else {
+        // Hangi alan olduğu anlaşılamadıysa, tüm kişisel bilgileri temizle (tarih ve tur hariç)
+        delete info.fullName;
+        delete info.phone;
+      }
+
+      return {
+        ...ctx,
+        reservationInfo: info,
+        collectionStep: determineCollectionStep(info),
+      };
+    },
   },
 
   // ========== COMPLETED STATE TRANSITIONS ==========
