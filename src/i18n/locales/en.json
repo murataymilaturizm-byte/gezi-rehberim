@@ -236,23 +236,23 @@
     "items": {
       "salesIncrease": {
         "question": "Will my sales really increase in the first month?",
-        "answer": "Yes! Our average agencies see a 120-150% reservation increase in the first month. Because now you're serving your customers at midnight, on weekends, anytime. You don't miss any opportunity."
+        "answer": "Yes! Our average agencies see a 120-150% reservation increase in the first month. Your AI-powered WhatsApp bot serves customers 24/7 — midnight, weekends, holidays, it doesn't matter. You never miss an opportunity."
       },
       "setup": {
-        "question": "Can I do the setup myself?",
-        "answer": "Absolutely! Setup takes 5-10 minutes and is very simple. Add your WhatsApp Business number, upload your tours - that's it. We manage all the technical infrastructure. Our support team will help you if you get stuck."
+        "question": "How does the setup work?",
+        "answer": "Very easy! Create your account, add your tours, and submit an integration request from the WhatsApp Management panel. Our team handles the Meta Cloud API setup for you. You just manage your tours — all the technical infrastructure is on us."
       },
       "whatsappCost": {
         "question": "Is there an extra fee for WhatsApp integration?",
-        "answer": "No! We manage the WhatsApp Business API infrastructure. All you need to do is add your own WhatsApp Business number to the system. API usage fees are on us, you only pay your chosen plan fee."
+        "answer": "No! We manage the WhatsApp Business API infrastructure (Meta Cloud API). Submit your request from the WhatsApp Management panel, and our team handles the setup. API usage fees are on us — you only pay your chosen plan fee."
       },
       "payment": {
         "question": "Can I collect payments directly from customers?",
-        "answer": "Yes! With SiPay integration, you can send instant payment links via WhatsApp and collect payments in 2 minutes. Payment tracking and invoicing are automatic."
+        "answer": "Yes! With our payment integration, you can send instant payment links via WhatsApp and collect payments within minutes. Payment tracking is handled automatically."
       },
       "tourLimit": {
         "question": "How many tours can I add?",
-        "answer": "You can add unlimited tours in all plans. The difference is only in the monthly WhatsApp message limit. You can upgrade your plan anytime based on your needs."
+        "answer": "Up to 10 tours on the Starter plan, unlimited tours on Professional and Enterprise plans. The difference is in message limits and language count. You can upgrade your plan anytime based on your needs."
       },
       "cancellation": {
         "question": "What happens if I cancel?",
