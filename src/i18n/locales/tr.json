@@ -338,23 +338,23 @@
     "items": {
       "salesIncrease": {
         "question": "Gerçekten ilk ayda satışlarım artacak mı?",
-        "answer": "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. Çünkü artık gece yarısı, hafta sonu, her an müşterilerinize hizmet veriyorsunuz. Hiçbir fırsat kaçmıyor."
+        "answer": "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. AI destekli WhatsApp botunuz 7/24 müşterilerinize hizmet veriyor — gece yarısı, hafta sonu, tatil günleri fark etmez. Hiçbir fırsat kaçmıyor."
       },
       "setup": {
-        "question": "Kurulumu ben yapabilir miyim?",
-        "answer": "Kesinlikle! Kurulum 5-10 dakika sürüyor ve çok basit. WhatsApp Business numaranızı ekleyin, turlarınızı yükleyin - hepsi bu. Tüm teknik altyapıyı biz yönetiyoruz. Takıldığınız yerde destek ekibimiz size yardımcı olur."
+        "question": "Kurulum nasıl yapılıyor?",
+        "answer": "Çok kolay! Hesabınızı oluşturun, turlarınızı ekleyin ve WhatsApp Yönetimi panelinden entegrasyon talebi gönderin. Ekibimiz Meta Cloud API kurulumunu sizin için yapar. Siz sadece turlarınızı yönetirsiniz, tüm teknik altyapı bize ait."
       },
       "whatsappCost": {
         "question": "WhatsApp entegrasyonu için ek ücret var mı?",
-        "answer": "Hayır! WhatsApp Business API altyapısını biz yönetiyoruz. Tek yapmanız gereken kendi WhatsApp Business numaranızı sisteme eklemek. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
+        "answer": "Hayır! WhatsApp Business API altyapısını (Meta Cloud API) biz yönetiyoruz. WhatsApp Yönetimi panelinden talebinizi gönderin, kurulumu ekibimiz yapar. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
       },
       "payment": {
         "question": "Müşterilerden direkt ödeme alabilir miyim?",
-        "answer": "Evet! SiPay entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, 2 dakika içinde ödeme alabilirsiniz. Ödeme takibi ve fatura otomatik."
+        "answer": "Evet! Ödeme entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, dakikalar içinde ödeme alabilirsiniz. Ödeme takibi otomatik olarak yapılır."
       },
       "tourLimit": {
         "question": "Kaç tur ekleyebilirim?",
-        "answer": "Tüm planlarda sınırsız tur ekleyebilirsiniz. Fark sadece aylık WhatsApp mesaj limitinde. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
+        "answer": "Starter planda 10 tura kadar, Professional ve Enterprise planlarda sınırsız tur ekleyebilirsiniz. Fark mesaj limiti ve dil sayısındadır. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
       },
       "cancellation": {
         "question": "İptal edersem ne olur?",
