@@ -48,22 +48,22 @@ const Help = () => {
 - Email adresinize gelen doğrulama linkine tıklayın
 - 14 günlük ücretsiz deneme otomatik başlar (kredi kartı gerekmez)
 
-**Adım 2: WhatsApp Bağlantısı**
-- Admin paneline giriş yapın
-- Üst menüden "Ayarlar" sekmesine gidin
-- "WhatsApp Numarası" alanına WhatsApp Business numaranızı girin (ör: +905551234567)
-- "Kaydet" butonuna tıklayın
-- Not: Twilio hesabı veya API ayarı yapmanıza gerek yok, tüm altyapıyı biz yönetiyoruz!
-
-**Adım 3: İlk Turunuzu Ekleyin**
+**Adım 2: Turlarınızı Ekleyin**
 - "Turlar" sekmesine gidin
 - "Yeni Tur Ekle" butonuna tıklayın
 - Tur bilgilerini doldurun (başlık, açıklama, destinasyon, fiyat, vb.)
 - Tur tarihlerini ekleyin
 - Kaydedin
 
+**Adım 3: WhatsApp Entegrasyonu Talep Edin**
+- Sol menüden "WhatsApp Yönetimi" sekmesine gidin
+- WhatsApp Business telefon numaranızı, şirket adınızı girin
+- Entegrasyon talebini gönderin
+- Ekibimiz Meta Cloud API bağlantınızı kuracak (genelde 1-2 iş günü)
+- Not: Tüm teknik altyapıyı biz yönetiyoruz, ekstra API kurulumu gerekmez!
+
 **Adım 4: Test Edin**
-- WhatsApp üzerinden kendi numaranıza "Merhaba" yazın
+- Entegrasyon aktif olduktan sonra kendi numaranızdan "Merhaba" yazın
 - Bot yanıt veriyorsa kurulum tamamdır!
 - "Kapadokya turları" gibi bir arama yaparak sistemi test edin
           `
@@ -75,13 +75,13 @@ const Help = () => {
 1. App Store veya Google Play'den "WhatsApp Business" uygulamasını indirin
 2. İş telefon numaranızla kaydolun
 3. İşletme bilgilerinizi girin
-4. Bu numarayı Turzz sistemine ekleyin
+4. Turzz admin panelinden WhatsApp Yönetimi üzerinden entegrasyon talebini gönderin
 
 **Önemli Notlar:**
 - Normal WhatsApp değil, WhatsApp Business kullanmalısınız
 - Aynı numara normal WhatsApp'ta da kullanılabilir ama önerilmez
 - Bir numara sadece bir cihazda WhatsApp Business olarak kullanılabilir
-- Twilio API veya özel kurulum yapmanıza gerek yok!
+- Tüm Meta API altyapısını ve kurulumu biz yönetiyoruz!
           `
         }
       ]
