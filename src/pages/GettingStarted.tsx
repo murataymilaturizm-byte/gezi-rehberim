@@ -167,7 +167,7 @@ const GettingStarted = () => {
               {t("gettingStarted.subtitle")}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Sadece 10-15 dakika içinde WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.
+              Birkaç basit adımda WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <CheckCircle2 className="w-5 h-5 text-primary" />
