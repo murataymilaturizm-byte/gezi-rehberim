@@ -508,22 +508,21 @@ Her şablonda kullanılabilen değişkenler:
 1. "Ayarlar" > "Acente Bilgileri" sekmesine gidin
 2. Düzenleyebileceğiniz alanlar:
    - Acente adı
-   - WhatsApp telefon numarası
-   - E-posta adresi
+   - Telefon numarası
    - Adres bilgileri
-   - Logo (yakında)
+   - Çalışma saatleri
+   - Web sitesi URL
+   - Google Maps linki
 
 **WhatsApp Ayarları:**
-- WhatsApp Business numaranızı girin
-- Numara formatı: +905551234567
-- Değişiklikler anında aktif olur
-- Eski numaradan gelen mesajlar otomatik yönlendirilmez
+- WhatsApp entegrasyonu "WhatsApp Yönetimi" sekmesinden talep edilir
+- Entegrasyon durumunu aynı sayfadan takip edebilirsiniz
+- Meta Cloud API bağlantısını ekibimiz yönetir
 
 **Bildirim Ayarları:**
 - Yeni rezervasyon bildirimleri
 - Sistem bildirimleri
 - Kullanım uyarıları
-- E-posta tercihleri
           `
         },
         {
