@@ -637,11 +637,10 @@ Her şablonda kullanılabilen değişkenler:
           question: "Sık Karşılaşılan Sorunlar ve Çözümleri",
           answer: `
 **"Bot yanıt vermiyor"**
-✓ WhatsApp numaranızı doğru girdiniz mi?
-✓ Numara formatı: +905551234567
+✓ WhatsApp entegrasyonunuz aktif mi? (WhatsApp Yönetimi'nden kontrol edin)
 ✓ WhatsApp Business kullanıyor musunuz?
 ✓ Mesaj kotanız dolmuş olabilir mi?
-→ Çözüm: Ayarları kontrol edin, desteğe yazın
+→ Çözüm: WhatsApp Yönetimi sayfasından durumu kontrol edin, desteğe yazın
 
 **"Turlar listelenmiyor"**
 ✓ En az 1 tur ve tarih eklediniz mi?
