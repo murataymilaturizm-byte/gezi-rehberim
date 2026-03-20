@@ -22,28 +22,28 @@ const GettingStarted = () => {
   const steps = [
     {
       number: 1,
-      title: "WhatsApp Business Numaranızı Ekleyin",
-      icon: Smartphone,
+      title: "Hesap Oluşturun ve Giriş Yapın",
+      icon: Settings,
       duration: "2 dakika",
-      description: "WhatsApp Business numaranızı sisteme tanıtın ve müşterilerinizle iletişime başlayın.",
+      description: "Ücretsiz deneme hesabınızı oluşturun ve admin paneline giriş yapın.",
       substeps: [
         {
-          title: "WhatsApp Business oluşturun",
-          description: "Henüz yoksa WhatsApp Business uygulamasını indirin ve iş numaranızı kaydedin."
+          title: "Ücretsiz kaydolun",
+          description: "Anasayfadan 'Ücretsiz Dene' butonuna tıklayın, email ve şifrenizle kayıt olun."
+        },
+        {
+          title: "Email doğrulaması yapın",
+          description: "Email adresinize gelen doğrulama linkine tıklayarak hesabınızı aktifleştirin."
         },
         {
           title: "Admin paneline giriş yapın",
-          description: "Hesabınızla giriş yapıp 'Ayarlar' sekmesine gidin."
-        },
-        {
-          title: "WhatsApp numaranızı ekleyin",
-          description: "WhatsApp Business numaranızı (örn: +905551234567) 'WhatsApp Numarası' alanına yazın ve kaydedin."
+          description: "Giriş yaparak admin panelinize erişin. 14 günlük ücretsiz deneme otomatik başlar."
         }
       ],
       tips: [
-        "Numarayı +90 ile başlayan uluslararası formatta yazın",
-        "WhatsApp Business hesabınızın aktif olduğundan emin olun",
-        "Tüm teknik altyapıyı biz yönetiyoruz, ekstra kurulum gerekmez"
+        "14 gün ücretsiz deneme — kredi kartı gerekmez",
+        "Tüm özellikler deneme süresince aktif",
+        "Acente bilgilerinizi 'Ayarlar' sekmesinden güncelleyebilirsiniz"
       ]
     },
     {
@@ -74,28 +74,54 @@ const GettingStarted = () => {
     },
     {
       number: 3,
-      title: "İlk Mesajı Gönderin ve Test Edin",
-      icon: Send,
-      duration: "1 dakika",
-      description: "Sisteminizin çalıştığından emin olmak için test mesajı gönderin.",
+      title: "WhatsApp Entegrasyonunu Talep Edin",
+      icon: Smartphone,
+      duration: "3 dakika",
+      description: "WhatsApp Business bağlantısı için talep formu doldurun. Ekibimiz kurulumu sizin için tamamlayacak.",
       substeps: [
         {
-          title: "Kendi numaranızdan mesaj gönderin",
-          description: "WhatsApp'tan kaydettiğiniz iş numaranıza 'Merhaba' yazın."
+          title: "WhatsApp Yönetimi sayfasına gidin",
+          description: "Admin panelinde sol menüden 'WhatsApp Yönetimi' sekmesine tıklayın."
         },
         {
-          title: "Bot yanıtını kontrol edin",
-          description: "Bot size hoş geldin mesajı ve hızlı butonlar gönderecek. 'Turları Gör' seçeneğini deneyin."
+          title: "Entegrasyon talebini gönderin",
+          description: "WhatsApp Business telefon numaranızı, şirket adınızı ve iletişim bilgilerinizi girin ve talebi gönderin."
         },
         {
-          title: "Tur araması yapın",
-          description: "'Günübirlik Kapadokya' gibi bir mesaj gönderin ve turlarınızın listelendiğini görün."
+          title: "Kurulumu bekleyin",
+          description: "Ekibimiz talebinizi inceleyip Meta Cloud API bağlantınızı kuracak. Süreç genelde 1-2 iş günü sürer."
         }
       ],
       tips: [
-        "WhatsApp Yönetim panelinden tüm konuşmaları takip edebilirsiniz",
-        "Bot 7/24 çalışır, siz çevrimdışı olsanız bile",
-        "Müşteri profilleri otomatik oluşturulur ve tercihler kaydedilir"
+        "WhatsApp Business hesabınızın aktif olduğundan emin olun",
+        "Tüm Meta API altyapısını ve kurulumu biz yönetiyoruz",
+        "Talep durumunuzu WhatsApp Yönetimi sayfasından takip edebilirsiniz"
+      ]
+    },
+    {
+      number: 4,
+      title: "Test Edin ve Kullanmaya Başlayın",
+      icon: Send,
+      duration: "1 dakika",
+      description: "Entegrasyon aktif olduktan sonra sistemi test edin ve müşterilerinize hizmet vermeye başlayın.",
+      substeps: [
+        {
+          title: "Kendi numaranızdan mesaj gönderin",
+          description: "WhatsApp'tan iş numaranıza 'Merhaba' yazın ve AI botun yanıt verdiğini doğrulayın."
+        },
+        {
+          title: "Tur araması yapın",
+          description: "'Kapadokya turları' gibi bir mesaj göndererek turlarınızın doğru listelendiğini kontrol edin."
+        },
+        {
+          title: "Rezervasyon akışını deneyin",
+          description: "'Rezervasyon yapmak istiyorum' yazarak tarih, kişi sayısı, isim ve telefon adımlarını test edin."
+        }
+      ],
+      tips: [
+        "Bot 7/24 çalışır, siz çevrimdışı olsanız bile müşterilerinize hizmet verir",
+        "Müşteri profilleri otomatik oluşturulur ve tercihler kaydedilir",
+        "WhatsApp Konuşmaları sekmesinden tüm sohbetleri takip edebilirsiniz"
       ]
     }
   ];
@@ -141,7 +167,7 @@ const GettingStarted = () => {
               {t("gettingStarted.subtitle")}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Sadece 10-15 dakika içinde WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.
+              Birkaç basit adımda WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <CheckCircle2 className="w-5 h-5 text-primary" />
@@ -305,7 +331,7 @@ const GettingStarted = () => {
             <div className="flex items-center gap-3">
               <img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto" />
               <p className="text-sm text-muted-foreground">
-                © 2024 Turzz. Tüm hakları saklıdır.
+                © 2025 Turzz. Tüm hakları saklıdır.
               </p>
             </div>
             <div className="flex gap-6 text-sm">
