@@ -629,20 +629,29 @@ Si desea información sobre otro tour, estoy aquí para ayudarle. 🙂`
   const fullName = state.full_name;
 
   // Create registration
-  const { data: registration, error } = await supabase
-    .from('registrations')
-    .insert({
-      agency_id: agencyId,
-      tour_id: state.selected_tour.id,
-      tour_date_id: state.selected_date.id,
-      phone: phone,
-      full_name: fullName,
-      pax: state.pax_adult,
-      status: 'NEW',
-      note: state.special_requests ? `WhatsApp Wizard: ${state.special_requests}` : 'WhatsApp Wizard Rezervasyon'
-    })
-    .select()
-    .single();
+  let registration: any;
+  let error: any;
+  try {
+    const result = await supabase
+      .from('registrations')
+      .insert({
+        agency_id: agencyId,
+        tour_id: state.selected_tour.id,
+        tour_date_id: state.selected_date.id,
+        phone: phone,
+        full_name: fullName,
+        pax: state.pax_adult,
+        status: 'NEW',
+        note: state.special_requests ? `WhatsApp Wizard: ${state.special_requests}` : 'WhatsApp Wizard Rezervasyon'
+      })
+      .select()
+      .single();
+    registration = result.data;
+    error = result.error;
+  } catch (err) {
+    console.error('Unexpected error creating registration:', err);
+    error = err;
+  }
 
   if (error) {
     console.error('Error creating registration:', error);
