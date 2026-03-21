@@ -246,7 +246,42 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       }
     }
 
-    // 12. Build system prompt — previousContext'i geç
+    // 12. === RESERVATION SAVE — AI'DAN ÖNCE ===
+    // Rezervasyon kaydını AI çağrısından ÖNCE yap, böylece hata olursa AI "tamamlandı" demez
+    const isNewlyCompleted =
+      context.stage !== "COMPLETED" && newContext.stage === "COMPLETED" && newContext.reservationConfirmed;
+
+    let reservationSaveFailed = false;
+    let reservationErrorMessage = "";
+
+    if (isNewlyCompleted && newContext.reservationInfo) {
+      const saveResult = await saveReservation(supabase, newContext);
+      if (!saveResult.success) {
+        logger.error("Reservation save failed", { error: saveResult.error });
+
+        const agencyPhone = agencyData?.phone_public || "";
+        const agencyName = agencyData?.name || "";
+        const phoneInfo = agencyPhone ? ` 📞 ${agencyPhone}` : "";
+
+        const errorMessages: Record<string, string> = {
+          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agencyName} ile iletişime geçiniz.${phoneInfo}`,
+          en: `There was an issue creating your reservation. Please contact ${agencyName} directly.${phoneInfo}`,
+          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
+          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agencyName}.${phoneInfo}`,
+          fr: `Un problème est survenu lors de la création de votre réservation. Veuillez contacter ${agencyName}.${phoneInfo}`,
+          es: `Hubo un problema al crear su reserva. Por favor contacte a ${agencyName}.${phoneInfo}`,
+          ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agencyName}.${phoneInfo}`,
+        };
+        reservationErrorMessage = errorMessages[language] || errorMessages["tr"];
+        reservationSaveFailed = true;
+
+        // Context'i geri al — AI'a COMPLETED gösterme
+        newContext.stage = context.stage;
+        newContext.reservationConfirmed = false;
+      }
+    }
+
+    // 13. Build system prompt — previousContext'i geç
     const systemPrompt = buildCompleteSystemPrompt({
       context: newContext,
       previousContext,
@@ -257,10 +292,21 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       selectedTour,
     });
 
-    // 13. Get conversation history
+    // 14. Get conversation history
     const conversationHistory = await getConversationHistory(supabase, sessionId);
 
-    // 14. Call AI
+    // 15. If reservation save failed, return error directly — AI çağırmaya gerek yok
+    if (reservationSaveFailed) {
+      await saveConversation(supabase, sessionId, message, reservationErrorMessage);
+
+      const responseData: ChatResponse = {
+        response: reservationErrorMessage,
+        conversationState: newContext,
+      };
+      return createSuccessResponse(responseData);
+    }
+
+    // 16. Call AI
     const messagesForAI = [
       { role: "system", content: systemPrompt },
       ...conversationHistory,
@@ -270,7 +316,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     logger.info("Calling AI...");
     const aiResponse = await callAI(messagesForAI, CONFIG.DEFAULT_AI_TEMPERATURE);
 
-    // 15. Handle payment info for completed reservations
+    // 17. Handle payment info for completed reservations
     let finalResponse = aiResponse;
 
     if (newContext.stage === "COMPLETED" && !newContext.paymentInfoSent && paymentInstructions) {
@@ -310,42 +356,15 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       }
     }
 
-    // 16. Save reservation ONLY when transitioning TO COMPLETED
-    const isNewlyCompleted =
-      context.stage !== "COMPLETED" && newContext.stage === "COMPLETED" && newContext.reservationConfirmed;
-    if (isNewlyCompleted && newContext.reservationInfo) {
-      const saveResult = await saveReservation(supabase, newContext);
-      if (!saveResult.success) {
-        logger.error("Reservation save failed", { error: saveResult.error });
-
-        const agencyPhone = agencyData?.phone_public || "";
-        const agencyName = agencyData?.name || "";
-        const phoneInfo = agencyPhone ? ` 📞 ${agencyPhone}` : "";
-
-        const errorMessages: Record<string, string> = {
-          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agencyName} ile iletişime geçiniz.${phoneInfo}`,
-          en: `There was an issue creating your reservation. Please contact ${agencyName} directly.${phoneInfo}`,
-          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
-          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agencyName}.${phoneInfo}`,
-          fr: `Un problème est survenu lors de la création de votre réservation. Veuillez contacter ${agencyName}.${phoneInfo}`,
-          es: `Hubo un problema al crear su reserva. Por favor contacte a ${agencyName}.${phoneInfo}`,
-          ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agencyName}.${phoneInfo}`,
-        };
-        finalResponse = errorMessages[language] || errorMessages["tr"];
-        newContext.stage = context.stage;
-        newContext.reservationConfirmed = false;
-      }
-    }
-
-    // 17. Save complaint if detected
+    // 18. Save complaint if detected
     if (nluResult.intent === "complaint_feedback") {
       await saveComplaint(supabase, sessionId, message);
     }
 
-    // 18. Save conversation messages
+    // 19. Save conversation messages
     await saveConversation(supabase, sessionId, message, finalResponse);
 
-    // 19. Return response
+    // 20. Return response
     const responseData: ChatResponse = {
       response: finalResponse,
       conversationState: newContext,

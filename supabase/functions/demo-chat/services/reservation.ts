@@ -32,28 +32,33 @@ export async function saveReservation(
     return { success: false, error: "Missing required fields" };
   }
 
-  logger.info("Saving reservation to database...");
+  try {
+    logger.info("Saving reservation to database...");
 
-  const { error } = await supabase.from("registrations").insert({
-    agency_id: agencyId,
-    tour_id: tour.id,
-    tour_date_id: dateId,
-    full_name: fullName,
-    phone: phone,
-    pax: paxAdult,
-    status: CONFIG.DEFAULT_STATUS,
-    source_channel: CONFIG.SOURCE_CHANNEL,
-    payment_status: CONFIG.DEFAULT_PAYMENT_STATUS,
-    note: "Demo chat reservation",
-  });
+    const { error } = await supabase.from("registrations").insert({
+      agency_id: agencyId,
+      tour_id: tour.id,
+      tour_date_id: dateId,
+      full_name: fullName,
+      phone: phone,
+      pax: paxAdult,
+      status: CONFIG.DEFAULT_STATUS,
+      source_channel: CONFIG.SOURCE_CHANNEL,
+      payment_status: CONFIG.DEFAULT_PAYMENT_STATUS,
+      note: "Demo chat reservation",
+    });
 
-  if (error) {
-    logger.error("Error saving reservation", error);
-    return { success: false, error: error.message };
+    if (error) {
+      logger.error("Error saving reservation", error);
+      return { success: false, error: error.message };
+    }
+
+    logger.info("Reservation saved successfully");
+    return { success: true };
+  } catch (err) {
+    logger.error("Unexpected error saving reservation", err);
+    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
   }
-
-  logger.info("Reservation saved successfully");
-  return { success: true };
 }
 
 /**
