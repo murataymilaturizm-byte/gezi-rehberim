@@ -64,15 +64,12 @@ export const WhatsAppSettings = () => {
         const phoneNumber = agencyData.whatsapp_phone_number || "";
         const status = agencyData.whatsapp_status || "pending";
         const connectedAt = agencyData.whatsapp_connected_at;
-        const metaPhoneId = agencyData.meta_phone_number_id || "";
         
         const configured = phoneNumber !== "" && connectedAt !== null;
         setIsConfigured(configured);
         setWhatsappStatus(status as 'pending' | 'active' | 'rejected');
 
         setFormData({
-          whatsapp_phone_number: phoneNumber,
-          meta_phone_number_id: metaPhoneId,
           conversation_style: (agencyData.conversation_style || 'professional') as 'friendly' | 'professional' | 'energetic' | 'helpful'
         });
       }
