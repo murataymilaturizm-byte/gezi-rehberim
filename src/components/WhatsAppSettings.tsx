@@ -85,63 +85,6 @@ export const WhatsAppSettings = () => {
     }
   };
 
-  const handleSaveConnection = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.whatsapp_phone_number.trim()) {
-      toast({
-        title: "Hata",
-        description: "Lütfen WhatsApp numaranızı girin",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!agencyId) {
-      toast({
-        title: t("common.error"),
-        description: t("admin.whatsapp.settings.agencyNotFound"),
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setSaving(true);
-    
-    try {
-      const { error } = await supabase
-        .from("agencies")
-        .update({
-          whatsapp_phone_number: formData.whatsapp_phone_number,
-          meta_phone_number_id: formData.meta_phone_number_id || null,
-          whatsapp_status: 'active',
-          whatsapp_connected_at: new Date().toISOString(),
-        })
-        .eq("id", agencyId);
-
-      if (error) throw error;
-
-      setIsConfigured(true);
-      setWhatsappStatus('active');
-
-      toast({
-        title: "Başarılı",
-        description: "WhatsApp Meta Cloud API bağlantısı kaydedildi",
-      });
-
-      await loadWhatsAppSettings();
-    } catch (error: any) {
-      console.error("WhatsApp Settings - Error:", error);
-      toast({
-        title: t("common.error"),
-        description: t("admin.whatsapp.settings.phoneUpdateError"),
-        variant: "destructive"
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleStyleUpdate = async () => {
     if (!agencyId) return;
     
@@ -170,11 +113,6 @@ export const WhatsAppSettings = () => {
     } finally {
       setSaving(false);
     }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: "Kopyalandı", description: "Panoya kopyalandı" });
   };
 
   if (loading) {
