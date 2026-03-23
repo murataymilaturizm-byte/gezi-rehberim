@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock, Phone, Wifi, Link2, Copy, ExternalLink } from "lucide-react";
+import { Settings, CheckCircle2, AlertCircle, MessageSquare, Lock, Phone, Wifi, Copy, ExternalLink } from "lucide-react";
+import { WhatsAppEmbeddedSignup } from "./WhatsAppEmbeddedSignup";
 import { useToast } from "@/hooks/use-toast";
 import {
   Select,
@@ -351,31 +352,15 @@ export const WhatsAppSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Embedded Signup Placeholder */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
-            Tek Tıkla Bağlantı (Embedded Signup)
-          </CardTitle>
-          <CardDescription>
-            İleride WhatsApp Business hesabınızı tek tıkla bağlayabileceksiniz
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Button disabled className="w-full" variant="outline">
-              <Phone className="h-4 w-4 mr-2" />
-              WhatsApp Bağla (Embedded Signup)
-              <Badge variant="outline" className="ml-2 text-xs">Yakında</Badge>
-            </Button>
-            
-            <p className="text-xs text-muted-foreground text-center">
-              Bu özellik yakında aktif olacak. Şu anda yukarıdaki manuel kurulum adımlarını kullanabilirsiniz.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Embedded Signup */}
+      {agencyId && (
+        <WhatsAppEmbeddedSignup
+          agencyId={agencyId}
+          currentStatus={whatsappStatus}
+          currentPhone={formData.whatsapp_phone_number || null}
+          onConnected={loadWhatsAppSettings}
+        />
+      )}
 
       {/* Conversation Style Section */}
       <Card>
