@@ -30,12 +30,8 @@ export const WhatsAppSettings = () => {
   const [availableStyles, setAvailableStyles] = useState<string[]>(['professional']);
   
   const [formData, setFormData] = useState({
-    whatsapp_phone_number: "",
-    meta_phone_number_id: "",
     conversation_style: "professional" as 'friendly' | 'professional' | 'energetic' | 'helpful'
   });
-
-  const WEBHOOK_URL = `https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/whatsapp-webhook`;
 
   useEffect(() => {
     loadWhatsAppSettings();
