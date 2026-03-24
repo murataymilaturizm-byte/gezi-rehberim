@@ -613,8 +613,8 @@ const Admin = () => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 space-y-6">
-          <ErrorBoundary fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
+          <main className="flex-1 p-3 sm:p-6 space-y-4 sm:space-y-6">
+          <ErrorBoundary key={activeTab} fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
             {!isSuperAdmin && <SubscriptionBanner onNavigateToPlan={() => setActiveTab("history")} />}
             
             {/* Language Selection Warning */}
