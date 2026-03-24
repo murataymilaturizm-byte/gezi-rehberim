@@ -567,6 +567,7 @@ const Admin = () => {
           isSuperAdmin={isSuperAdmin} 
           activeTab={activeTab} 
           onTabChange={(tab) => setActiveTab(tab as any)}
+          agencyName={agencyName}
           planFeatures={planFeatures}
         />
         
