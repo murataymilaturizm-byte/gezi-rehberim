@@ -570,50 +570,67 @@ const Admin = () => {
           planFeatures={planFeatures}
         />
         
-        <SidebarInset>
+        <SidebarInset className="flex flex-col">
           {/* Header */}
-          <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-2 border-b px-3 py-2 sm:h-16 sm:flex-nowrap sm:px-4 sm:py-0">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex flex-1 items-center justify-between min-w-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300 shrink-0">
-                  <a href="/">
-                    <ArrowLeft className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">{t("admin.home")}</span>
-                  </a>
-                </Button>
+          <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b shadow-sm">
+            <div className="flex h-12 sm:h-14 items-center gap-2 px-3 sm:px-4">
+              <SidebarTrigger className="-ml-1 shrink-0" />
+              
+              <div className="flex flex-1 items-center justify-between min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
-                  <img 
-                    src={turzzLogo} 
-                    alt="Turzz AI Logo" 
-                    className="h-8 sm:h-10 w-auto object-contain shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <h1 className="text-sm sm:text-lg font-bold truncate">{t("admin.title")}</h1>
-                    {agencyName && (
-                      <p className="text-xs text-muted-foreground truncate">{agencyName}</p>
-                    )}
+                  <Button variant="ghost" size="icon" asChild className="shrink-0 h-8 w-8 sm:hidden">
+                    <a href="/">
+                      <ArrowLeft className="w-4 h-4" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300 shrink-0 hidden sm:inline-flex">
+                    <a href="/">
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      {t("admin.home")}
+                    </a>
+                  </Button>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <img 
+                      src={turzzLogo} 
+                      alt="Turzz AI Logo" 
+                      className="h-7 sm:h-9 w-auto object-contain shrink-0"
+                    />
+                    <div className="min-w-0 hidden sm:block">
+                      <h1 className="text-sm sm:text-base font-bold truncate">{t("admin.title")}</h1>
+                      {agencyName && (
+                        <p className="text-xs text-muted-foreground truncate max-w-[160px]">{agencyName}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                <LanguageSelector />
-                <ThemeToggle />
-                <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-                  <a href="/yardim" target="_blank">
-                    {t("admin.help")}
-                  </a>
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">{t("admin.logout")}</span>
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <LanguageSelector />
+                  <ThemeToggle />
+                  <Button variant="ghost" size="sm" asChild className="hidden lg:inline-flex">
+                    <a href="/yardim" target="_blank">
+                      {t("admin.help")}
+                    </a>
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8 sm:hidden">
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleLogout} className="hidden sm:inline-flex">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t("admin.logout")}
+                  </Button>
+                </div>
               </div>
             </div>
+            {/* Mobile agency name bar */}
+            {agencyName && (
+              <div className="sm:hidden px-3 pb-2 -mt-1">
+                <p className="text-xs text-muted-foreground truncate">{agencyName}</p>
+              </div>
+            )}
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-3 sm:p-6 space-y-4 sm:space-y-6">
+          <main className="flex-1 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 overflow-x-hidden">
           <ErrorBoundary key={activeTab} fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
             {!isSuperAdmin && <SubscriptionBanner onNavigateToPlan={() => setActiveTab("history")} />}
             
