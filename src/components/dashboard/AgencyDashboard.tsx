@@ -308,37 +308,11 @@ export const AgencyDashboard = () => {
           </CollapsibleContent>
         </Card>
       </Collapsible>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="space-y-2">
-              {recentRegistrations.length === 0 ? (
-                <div className="text-center text-muted-foreground py-6 text-sm">{t("admin.registrations.noRegistrations")}</div>
-              ) : (
-                recentRegistrations.map((reg) => (
-                  <div key={reg.id} className="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-lg hover:bg-accent/50 transition-colors">
-                    <div className={cn(
-                      "h-2 w-2 rounded-full shrink-0",
-                      reg.status === "CONFIRMED" ? "bg-green-500" :
-                      reg.status === "CANCELLED" ? "bg-red-500" :
-                      reg.status === "PENDING" ? "bg-yellow-500" : "bg-blue-500"
-                    )} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium leading-none truncate">{reg.full_name}</p>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{reg.tours?.title}</p>
-                    </div>
-                    <Badge
-                      className="shrink-0 text-[10px] px-1.5 py-0"
-                      variant={reg.status === "CONFIRMED" ? "default" : reg.status === "CANCELLED" ? "destructive" : "secondary"}
-                    >
-                      {statusLabels[reg.status] || reg.status}
-                    </Badge>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+
+      <UsageStats />
+    </div>
+  );
+};
 
       <UsageStats />
     </div>
