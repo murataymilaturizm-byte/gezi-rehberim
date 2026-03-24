@@ -45,6 +45,7 @@ interface AdminSidebarProps {
   isSuperAdmin: boolean;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  agencyName?: string;
   planFeatures?: {
     has_user_profiles: boolean;
     has_analytics: boolean;
@@ -53,7 +54,7 @@ interface AdminSidebarProps {
   } | null;
 }
 
-export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeatures }: AdminSidebarProps) {
+export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName, planFeatures }: AdminSidebarProps) {
   const { state, setOpenMobile } = useSidebar();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -160,10 +161,13 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
                 onTabChange(item.id);
                 if (isMobile) setOpenMobile(false);
               }}
-              className={isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}
+              className={`h-9 ${isActive 
+                ? "bg-primary/10 text-primary font-medium border-l-2 border-primary rounded-l-none" 
+                : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <item.icon className="h-4 w-4" />
-              {!isCollapsed && <span>{item.label}</span>}
+              <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+              {!isCollapsed && <span className="text-sm">{item.label}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         );
@@ -173,7 +177,14 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
 
   return (
     <Sidebar className={isCollapsed ? "w-14" : "w-64"}>
-      <SidebarContent>
+      <SidebarContent className="pt-2">
+        {/* Mobile header inside sidebar */}
+        {!isCollapsed && isMobile && agencyName && (
+          <div className="px-4 py-3 mb-2 border-b border-border/50">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("admin.groups.general")}</p>
+            <p className="text-sm font-semibold truncate mt-1">{agencyName}</p>
+          </div>
+        )}
         {/* Genel Yönetim */}
         <Collapsible open={openGroups.general} onOpenChange={() => toggleGroup("general")}>
           <SidebarGroup>
