@@ -156,7 +156,10 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
         return (
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton 
-              onClick={() => onTabChange(item.id)}
+              onClick={() => {
+                onTabChange(item.id);
+                if (isMobile) setOpenMobile(false);
+              }}
               className={isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}
             >
               <item.icon className="h-4 w-4" />
