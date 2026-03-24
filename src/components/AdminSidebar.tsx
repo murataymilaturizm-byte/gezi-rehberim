@@ -22,6 +22,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import {
   Sidebar,
@@ -53,8 +54,9 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeatures }: AdminSidebarProps) {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const isCollapsed = state === "collapsed";
   
   // Filter items based on plan features
@@ -154,7 +156,10 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeature
         return (
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton 
-              onClick={() => onTabChange(item.id)}
+              onClick={() => {
+                onTabChange(item.id);
+                if (isMobile) setOpenMobile(false);
+              }}
               className={isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}
             >
               <item.icon className="h-4 w-4" />
