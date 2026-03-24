@@ -572,31 +572,31 @@ const Admin = () => {
         
         <SidebarInset>
           {/* Header */}
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-2 border-b px-3 py-2 sm:h-16 sm:flex-nowrap sm:px-4 sm:py-0">
             <SidebarTrigger className="-ml-1" />
-            <div className="flex flex-1 items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300">
+            <div className="flex flex-1 items-center justify-between min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <Button variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-300 shrink-0">
                   <a href="/">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4 sm:mr-2" />
                     <span className="hidden sm:inline">{t("admin.home")}</span>
                   </a>
                 </Button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <img 
                     src={turzzLogo} 
                     alt="Turzz AI Logo" 
-                    className="h-10 w-auto object-contain"
+                    className="h-8 sm:h-10 w-auto object-contain shrink-0"
                   />
-                  <div>
-                    <h1 className="text-lg font-bold">{t("admin.title")}</h1>
+                  <div className="min-w-0">
+                    <h1 className="text-sm sm:text-lg font-bold truncate">{t("admin.title")}</h1>
                     {agencyName && (
-                      <p className="text-xs text-muted-foreground">{agencyName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{agencyName}</p>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                 <LanguageSelector />
                 <ThemeToggle />
                 <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
