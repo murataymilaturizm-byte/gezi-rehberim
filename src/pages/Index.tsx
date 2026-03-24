@@ -838,14 +838,14 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 bg-card/50 py-8">
+      <footer className="border-t border-border/50 bg-card/50 py-8 pb-24 md:pb-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <img src={turzzLogo} alt="TurzzAI Logo" className="w-8 h-8 object-contain" />
               <span className="font-semibold text-foreground">TurzzAI</span>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
               <a href="/nasil-baslarim" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 {t("footer.gettingStarted")}
               </a>
@@ -856,7 +856,7 @@ const Index = () => {
                 {t("footer.login")}
               </a>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground text-center">
               {t("footer.rights")}
             </p>
           </div>
