@@ -45,6 +45,7 @@ interface AdminSidebarProps {
   isSuperAdmin: boolean;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  agencyName?: string;
   planFeatures?: {
     has_user_profiles: boolean;
     has_analytics: boolean;
