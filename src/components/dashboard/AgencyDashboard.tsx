@@ -313,8 +313,3 @@ export const AgencyDashboard = () => {
     </div>
   );
 };
-
-      <UsageStats />
-    </div>
-  );
-};
