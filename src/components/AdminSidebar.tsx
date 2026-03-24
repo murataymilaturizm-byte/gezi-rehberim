@@ -22,6 +22,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import {
   Sidebar,
