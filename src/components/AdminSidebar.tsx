@@ -54,7 +54,7 @@ interface AdminSidebarProps {
   } | null;
 }
 
-export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeatures }: AdminSidebarProps) {
+export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName, planFeatures }: AdminSidebarProps) {
   const { state, setOpenMobile } = useSidebar();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
