@@ -24,7 +24,9 @@ export const AgencyDashboard = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const { stats, recentRegistrations, popularTours, chartData, loading } = useAgencyDashboardData(dateRange);
   const [showSecondary, setShowSecondary] = useState(false);
-  const [showChart, setShowChart] = useState(true);
+  const [showChart, setShowChart] = useState(false);
+  const [showPopular, setShowPopular] = useState(false);
+  const [showRecent, setShowRecent] = useState(false);
 
   const statusLabels: Record<string, string> = {
     NEW: t("admin.status.new"),
