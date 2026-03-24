@@ -164,7 +164,8 @@ export const AgencyDashboard = () => {
           <CardHeader className="p-3 sm:p-6 pb-0 sm:pb-0">
             <CollapsibleTrigger asChild>
               <button className="flex items-center justify-between w-full text-left">
-                <CardTitle className="text-sm sm:text-base">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-primary" />
                   {dateRange?.from && dateRange?.to
                     ? `${format(dateRange.from, "d MMM", { locale: tr })} - ${format(dateRange.to, "d MMM", { locale: tr })} ${t("admin.dashboard.registrationsTitle")}`
                     : t("admin.dashboard.last7Days")}
@@ -196,44 +197,59 @@ export const AgencyDashboard = () => {
         </Card>
       </Collapsible>
 
-      {/* Popular & Recent */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Popular Destinations */}
+      {/* Popular Destinations - Collapsible */}
+      <Collapsible open={showPopular} onOpenChange={setShowPopular}>
         <Card className="shadow-card">
           <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-              <MapPin className="h-4 w-4 text-primary" />{t("admin.dashboard.popularDestinations")}
-            </CardTitle>
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center justify-between w-full text-left">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                  <MapPin className="h-4 w-4 text-primary" />{t("admin.dashboard.popularDestinations")}
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">{popularTours.length}</Badge>
+                </CardTitle>
+                <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform shrink-0 ml-2", showPopular && "rotate-180")} />
+              </button>
+            </CollapsibleTrigger>
           </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="space-y-2">
-              {popularTours.length === 0 ? (
-                <div className="text-center text-muted-foreground py-6 text-sm">{t("admin.dashboard.noData")}</div>
-              ) : (
-                popularTours.map((tour, index) => (
-                  <div key={tour.id} className="flex items-center gap-3 p-2 sm:p-2.5 rounded-lg hover:bg-accent/50 transition-colors group">
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
-                      {index + 1}
+          <CollapsibleContent>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="space-y-2">
+                {popularTours.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-6 text-sm">{t("admin.dashboard.noData")}</div>
+                ) : (
+                  popularTours.map((tour, index) => (
+                    <div key={tour.id} className="flex items-center gap-3 p-2 sm:p-2.5 rounded-lg hover:bg-accent/50 transition-colors group">
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium leading-none truncate">{tour.title}</p>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">{tour.destination}</p>
+                      </div>
+                      <Badge variant="secondary" className="shrink-0 text-xs">{tour.registrationCount}</Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium leading-none truncate">{tour.title}</p>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{tour.destination}</p>
-                    </div>
-                    <Badge variant="secondary" className="shrink-0 text-xs">{tour.registrationCount}</Badge>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
         </Card>
+      </Collapsible>
 
-        {/* Recent Registrations */}
+      {/* Recent Registrations - Collapsible */}
+      <Collapsible open={showRecent} onOpenChange={setShowRecent}>
         <Card className="shadow-card">
           <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <Users className="h-4 w-4 text-primary" />{t("admin.dashboard.recentRegistrations")}
-              </CardTitle>
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center gap-2 text-left flex-1">
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                    <Users className="h-4 w-4 text-primary" />{t("admin.dashboard.recentRegistrations")}
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">{recentRegistrations.length}</Badge>
+                  </CardTitle>
+                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform shrink-0", showRecent && "rotate-180")} />
+                </button>
+              </CollapsibleTrigger>
               <div className="flex items-center gap-1">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -259,6 +275,39 @@ export const AgencyDashboard = () => {
                 )}
               </div>
             </div>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="space-y-2">
+                {recentRegistrations.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-6 text-sm">{t("admin.registrations.noRegistrations")}</div>
+                ) : (
+                  recentRegistrations.map((reg) => (
+                    <div key={reg.id} className="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-lg hover:bg-accent/50 transition-colors">
+                      <div className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        reg.status === "CONFIRMED" ? "bg-green-500" :
+                        reg.status === "CANCELLED" ? "bg-destructive" :
+                        reg.status === "PENDING" ? "bg-yellow-500" : "bg-primary"
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium leading-none truncate">{reg.full_name}</p>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">{reg.tours?.title}</p>
+                      </div>
+                      <Badge
+                        className="shrink-0 text-[10px] px-1.5 py-0"
+                        variant={reg.status === "CONFIRMED" ? "default" : reg.status === "CANCELLED" ? "destructive" : "secondary"}
+                      >
+                        {statusLabels[reg.status] || reg.status}
+                      </Badge>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
             <div className="space-y-2">
