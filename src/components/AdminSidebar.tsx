@@ -54,8 +54,9 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, planFeatures }: AdminSidebarProps) {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const isCollapsed = state === "collapsed";
   
   // Filter items based on plan features
