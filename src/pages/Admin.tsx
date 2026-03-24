@@ -699,23 +699,26 @@ const Admin = () => {
               <ContactFormsManagement />
             ) : activeTab === "tours" || activeTab === "registrations" ? (
               <Card className="shadow-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>
+                <CardHeader className="p-3 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <CardTitle className="text-base sm:text-lg">
                       {activeTab === "tours" ? t("admin.tours.title") : t("admin.registrations.title")}
                     </CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {activeTab === "tours" ? (
                         <>
                           <Button
                             onClick={() => exportToursToExcel(tours)}
                             variant="outline"
+                            size="sm"
                             disabled={tours.length === 0}
                           >
-                            <Download className="w-4 h-4 mr-2" />
-                            {t("admin.tours.export")}
+                            <Download className="w-4 h-4 mr-1" />
+                            <span className="hidden sm:inline">{t("admin.tours.export")}</span>
+                            <span className="sm:hidden">Excel</span>
                           </Button>
                           <Button
+                            size="sm"
                             onClick={() => {
                               if (!isSuperAdmin && tours.length >= maxTours) {
                                 const planNames = {
@@ -738,28 +741,32 @@ const Admin = () => {
                             }}
                             className="bg-gradient-ocean hover:opacity-90"
                           >
-                            <Plus className="w-4 h-4 mr-2" />
+                            <Plus className="w-4 h-4 mr-1" />
                             {t("admin.tours.addNew")}
                           </Button>
                         </>
                       ) : (
-                        <div className="flex gap-2">
+                        <>
                           <Button
+                            size="sm"
                             onClick={() => setManualRegistrationDialogOpen(true)}
                             className="bg-gradient-ocean hover:opacity-90"
                           >
-                            <Plus className="w-4 h-4 mr-2" />
-                            {t("admin.registrations.addManual")}
+                            <Plus className="w-4 h-4 mr-1" />
+                            <span className="hidden sm:inline">{t("admin.registrations.addManual")}</span>
+                            <span className="sm:hidden">Ekle</span>
                           </Button>
                           <Button
                             onClick={() => exportRegistrationsToExcel(registrations)}
                             variant="outline"
+                            size="sm"
                             disabled={registrations.length === 0}
                           >
-                            <Download className="w-4 h-4 mr-2" />
-                            {t("admin.registrations.export")}
+                            <Download className="w-4 h-4 mr-1" />
+                            <span className="hidden sm:inline">{t("admin.registrations.export")}</span>
+                            <span className="sm:hidden">Excel</span>
                           </Button>
-                        </div>
+                        </>
                       )}
                     </div>
                   </div>
