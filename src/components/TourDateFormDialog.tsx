@@ -121,10 +121,10 @@ export const TourDateFormDialog = ({
         tour_id: tourId,
         departure_date: formData.departure_date,
         return_date: formData.return_date || null,
-        price_adult: formData.price_adult,
-        price_child: formData.price_child || null,
-        price_single: formData.price_single || null,
-        quota: formData.quota,
+        price_adult: parseFloat(formData.price_adult) || 0,
+        price_child: formData.price_child ? parseFloat(formData.price_child) : null,
+        price_single: formData.price_single ? parseFloat(formData.price_single) : null,
+        quota: parseInt(formData.quota) || 0,
         agency_id: agencyData.id
       };
 
