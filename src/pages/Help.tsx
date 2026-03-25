@@ -16,17 +16,14 @@ import {
   Settings, 
   Upload, 
   BarChart3, 
-  Users, 
-  Bell,
   CreditCard,
-  Globe,
   Shield,
-  ArrowLeft,
   Video,
   CheckCircle2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
+import { getHelpContent } from "@/data/helpContent";
 
 const Help = () => {
   const navigate = useNavigate();
