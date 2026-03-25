@@ -113,12 +113,25 @@ export const ToursList = ({
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <h3 className="font-semibold text-lg">{tour.title}</h3>
-                <div className="flex gap-2 text-sm text-muted-foreground">
+                <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                   <span>{tour.destination}</span>
                   <span>•</span>
                   <Badge variant="secondary" className="text-xs">
                     {tourTypeLabels[tour.type] || tour.type}
                   </Badge>
+                  {tour.tur_kategorisi && (() => {
+                    const cat = TOUR_CATEGORIES.find(c => c.value === tour.tur_kategorisi);
+                    return cat ? (
+                      <Badge variant="outline" className="text-xs">
+                        {cat.icon} {cat.label}
+                      </Badge>
+                    ) : null;
+                  })()}
+                  {tour.hotel_name && (
+                    <Badge variant="outline" className="text-xs">
+                      🏨 {tour.hotel_name} {tour.hotel_stars ? `${"⭐".repeat(tour.hotel_stars)}` : ""}
+                    </Badge>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2">
