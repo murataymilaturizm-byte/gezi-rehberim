@@ -147,7 +147,7 @@ const helpContent: HelpContent = {
 **Şablon Değişkenleri:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
 
 **Şablonları Özelleştirmek:**
-- "Ayarlar" > "Mesaj Şablonları" sekmesine gidin
+- "Chat Bot Ayarları" > "Mesaj Şablonları" sekmesine gidin
 - Dili seçin, içeriği düzenleyin ve kaydedin
 - Her dil için ayrı şablon oluşturabilirsiniz
 
