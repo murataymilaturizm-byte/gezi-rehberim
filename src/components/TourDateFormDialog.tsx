@@ -87,10 +87,10 @@ export const TourDateFormDialog = ({
     
     const validation = tourDateSchema.safeParse({
       departure_date: formData.departure_date,
-      price_adult: formData.price_adult,
-      price_child: formData.price_child,
-      price_single: formData.price_single,
-      quota: formData.quota
+      price_adult: parseFloat(formData.price_adult) || 0,
+      price_child: formData.price_child ? parseFloat(formData.price_child) : undefined,
+      price_single: formData.price_single ? parseFloat(formData.price_single) : undefined,
+      quota: parseInt(formData.quota) || 0
     });
     
     if (!validation.success) {
