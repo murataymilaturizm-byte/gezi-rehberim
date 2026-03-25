@@ -835,6 +835,8 @@
       "addDate": "Datum Hinzufügen",
       "dates": "Daten",
       "quota": "Kontingent",
+      "sold": "verkauft",
+      "remaining": "verbleibend",
       "deleteSuccess": "Tour gelöscht",
       "deleteError": "Löschvorgang fehlgeschlagen",
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Tour löschen möchten?",

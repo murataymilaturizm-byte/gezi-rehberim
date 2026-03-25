@@ -827,6 +827,8 @@
       "addDate": "Agregar Fecha",
       "dates": "Fechas",
       "quota": "Cuota",
+      "sold": "vendido",
+      "remaining": "restante",
       "deleteSuccess": "Tour eliminado",
       "deleteError": "Error al eliminar",
       "deleteConfirm": "¿Está seguro de eliminar este tour?",
