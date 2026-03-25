@@ -154,9 +154,9 @@ const Help = () => {
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
               <CardContent className="p-8">
                 <div className="text-center space-y-4">
-                  <h3 className="text-2xl font-bold text-foreground">Hala Yardıma İhtiyacınız Var mı?</h3>
-                  <p className="text-muted-foreground">
-                    Destek ekibimiz size yardımcı olmak için hazır
+                   <h3 className="text-2xl font-bold text-foreground">{t("help.needMoreHelp")}</h3>
+                   <p className="text-muted-foreground">
+                     {t("help.contactSupport")}
                   </p>
                   <div className="flex flex-wrap gap-4 justify-center pt-4">
                     <Button size="lg" className="gap-2">
