@@ -252,11 +252,11 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Acente Bilgileri ve Ayarları",
-          answer: `**Temel Bilgiler:** "Ayarlar" > "Acente Bilgileri" sekmesinden düzenlenebilir:
+          answer: `**Temel Bilgiler:** "Chat Bot Ayarları" > "Acente Bilgileri" sekmesinden düzenlenebilir:
 - Acente adı, telefon, adres, çalışma saatleri, web sitesi, Google Maps linki
 
-**WhatsApp Ayarları:**
-- "WhatsApp Yönetimi" sekmesinden Meta Embedded Signup ile self-servis bağlantı
+**WhatsApp Entegrasyonu:**
+- "Chat Bot Ayarları" > "WhatsApp Entegrasyonu" sekmesinden Meta Embedded Signup ile self-servis bağlantı
 - Bağlantı durumunu aynı sayfadan takip edebilirsiniz
 
 **Dil Ayarları:**
