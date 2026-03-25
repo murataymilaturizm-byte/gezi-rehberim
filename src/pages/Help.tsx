@@ -87,23 +87,23 @@ const Help = () => {
               {t("help.title")}
             </Badge>
             <h2 className="text-4xl font-bold text-foreground">
-              Turzz AI Kullanım Kılavuzu
+              {t("help.heroTitle")}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Sistemin tüm özelliklerini adım adım öğrenin. Kurulumdan ileri düzey kullanıma kadar her şey burada.
+              {t("help.heroDescription")}
             </p>
             <div className="flex flex-wrap gap-3 justify-center pt-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="w-4 h-4 text-primary" />
-                Adım adım rehber
+                {t("help.stepByStep")}
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="w-4 h-4 text-primary" />
-                Görsel açıklamalar
+                {t("help.visualGuides")}
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="w-4 h-4 text-primary" />
-                Sorun çözme ipuçları
+                {t("help.troubleshooting")}
               </div>
             </div>
           </div>
