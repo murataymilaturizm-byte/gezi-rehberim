@@ -3,6 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
+interface TourDate {
+  id: string;
+  departure_date: string;
+  return_date?: string;
+  price_adult: number;
+  quota: number;
+  sold_pax?: number;
+}
+
 interface Tour {
   id: string;
   title: string;
@@ -13,13 +22,7 @@ interface Tour {
   visa_required: boolean;
   program_url?: string;
   created_at: string;
-  tour_dates?: Array<{
-    id: string;
-    departure_date: string;
-    return_date?: string;
-    price_adult: number;
-    quota: number;
-  }>;
+  tour_dates?: TourDate[];
 }
 
 export const useTours = (activeTab: string, session: any) => {
