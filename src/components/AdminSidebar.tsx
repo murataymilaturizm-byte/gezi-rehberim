@@ -68,9 +68,9 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   
   // Determine which group should be open based on active tab
   const getDefaultOpenGroup = () => {
-    const generalIds = ["dashboard", "settings", "languages", "history"];
+    const generalIds = ["dashboard", "languages", "history"];
     const tourIds = ["tours", "registrations"];
-    const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings"];
+    const communicationIds = ["settings", "whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
