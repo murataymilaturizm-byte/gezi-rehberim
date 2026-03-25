@@ -128,7 +128,7 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
           size="sm"
           className="flex-1 bg-gradient-sunset hover:opacity-90 transition-smooth"
           onClick={() => onRegister(tour.id, firstDate.id)}
-          disabled={firstDate.quota === 0}
+          disabled={(firstDate.quota - (firstDate.sold_pax || 0)) <= 0}
         >
           {t("admin.tours.preRegistration")}
         </Button>
