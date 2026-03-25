@@ -430,7 +430,7 @@ const helpContent: HelpContent = {
 **Template Variables:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
 
 **Customizing Templates:**
-- Go to "Settings" > "Message Templates"
+- Go to "Chat Bot Settings" > "Message Templates"
 - Select language, edit content, and save
 
 **Note:** Message templates are available in Professional and Enterprise plans.`
