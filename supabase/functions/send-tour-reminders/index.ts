@@ -102,31 +102,21 @@ Deno.serve(async (req) => {
           }
         }
 
-        const departureDate = new Date(tourDate.departure_date).toLocaleDateString('tr-TR', {
-          day: '2-digit', month: 'long', year: 'numeric', weekday: 'long'
-        });
+        // Get customer language preference
+        let customerLang = 'tr';
+        const normalizedPhone = registration.phone.replace('+', '').replace(/\s/g, '');
+        const { data: userProfile } = await supabase
+          .from('whatsapp_user_profiles')
+          .select('language_preference')
+          .eq('phone', normalizedPhone)
+          .eq('agency_id', registration.agency_id)
+          .single();
 
-        let message = `🔔 *TUR HATIRLATMASI*\n\n`;
-        message += `Merhaba ${registration.full_name}! 👋\n\n`;
-        message += `📅 *${departureDate}* tarihinde başlayacak turunuza *3 gün* kaldı!\n\n`;
-        message += `🎯 *Tur:* ${tour.title}\n`;
-        message += `📍 *Destinasyon:* ${tour.destination}\n`;
-        message += `👥 *Kişi Sayısı:* ${registration.pax}\n\n`;
-
-        if (tour.hareket_noktasi) {
-          message += `🚌 *Hareket Noktası:* ${tour.hareket_noktasi}\n`;
-        }
-        if (tour.toplanma_saati) {
-          message += `🕐 *Toplanma Saati:* ${tour.toplanma_saati}\n`;
+        if (userProfile?.language_preference) {
+          customerLang = userProfile.language_preference;
         }
 
-        message += `\n📋 *Rezervasyon No:* ${registration.id.substring(0, 8)}\n\n`;
-        message += `💼 *Hazırlıklar:*\n`;
-        message += `✅ Kimliğinizi yanınıza almayı unutmayın\n`;
-        message += `✅ Hava durumuna göre giyinin\n`;
-        message += `✅ Gerekli ilaçlarınızı yanınıza alın\n\n`;
-        message += `📞 Sorularınız için bizimle iletişime geçebilirsiniz.\n\n`;
-        message += `🙏 İyi yolculuklar dileriz!`;
+        const message = formatReminderMessage(registration, tourDate, tour, customerLang);
 
         // Get Meta credentials
         const credentials = getMetaCredentials(agency);
