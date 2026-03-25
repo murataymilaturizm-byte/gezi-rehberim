@@ -141,6 +141,8 @@ export const exportToursToExcel = (tours: Tour[]) => {
         [t('admin.excel.currency')]: tour.currency,
         [t('admin.excel.childPrice')]: '-',
         [t('admin.tours.quota')]: '-',
+        [t('admin.tours.sold')]: '-',
+        [t('admin.tours.remaining')]: '-',
         [t('admin.excel.minPax')]: tour.min_pax,
         [t('admin.registrations.createdAt')]: format(new Date(tour.created_at), 'dd MMMM yyyy', { locale })
       });
