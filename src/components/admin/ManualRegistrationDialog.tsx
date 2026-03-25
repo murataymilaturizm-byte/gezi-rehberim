@@ -115,6 +115,11 @@ export const ManualRegistrationDialog = ({
       return;
     }
 
+    if (formData.paymentStatus === "PAID" && !formData.paymentMethod) {
+      toast({ title: "Hata", description: "Lütfen ödeme yöntemi seçin", variant: "destructive" });
+      return;
+    }
+
     if (formData.paymentStatus === "DEPOSIT" && (!formData.depositAmount || parseFloat(formData.depositAmount) <= 0)) {
       toast({ title: "Hata", description: t("admin.registrations.enterDepositAmount"), variant: "destructive" });
       return;
