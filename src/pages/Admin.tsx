@@ -239,6 +239,7 @@ const Admin = () => {
     setFilterTour("ALL");
     setFilterTourDate("ALL");
     setFilterSourceChannel("ALL");
+    setFilterCategory("ALL");
     setFilterDateFrom(undefined);
     setFilterDateTo(undefined);
     setFilterPriceMin("");
@@ -250,38 +251,39 @@ const Admin = () => {
     new Set(
       tours
         .filter(tour => {
-          // If a tour is selected, only show dates for that tour
           if (filterTour !== "ALL" && tour.id !== filterTour) return false;
+          if (filterCategory !== "ALL" && tour.tur_kategorisi !== filterCategory) return false;
           return true;
         })
         .flatMap(tour => tour.tour_dates?.map(td => td.departure_date) || [])
-        .filter(date => date) // Remove any undefined/null dates
+        .filter(date => date)
     )
   ).sort();
 
+  // Filter tours list based on category
+  const filteredToursForDropdown = filterCategory !== "ALL"
+    ? tours.filter(t => t.tur_kategorisi === filterCategory)
+    : tours;
 
   const getFilteredRegistrations = () => {
     return registrations.filter(reg => {
-      // Status filter
       if (filterStatus !== "ALL" && reg.status !== filterStatus) return false;
-      
-      // Tour filter - CRITICAL: Only filter if a tour is selected
       if (filterTour !== "ALL" && reg.tour_id !== filterTour) return false;
-      
-      // Tour Date filter - CRITICAL: Only filter if a date is selected
       if (filterTourDate !== "ALL" && reg.tour_dates?.departure_date !== filterTourDate) return false;
-      
-      // Source channel filter
       if (filterSourceChannel !== "ALL" && reg.source_channel !== filterSourceChannel) return false;
       
-      // Registration date range filter
+      // Category filter
+      if (filterCategory !== "ALL") {
+        const tour = tours.find(t => t.id === reg.tour_id);
+        if (tour?.tur_kategorisi !== filterCategory) return false;
+      }
+      
       if (filterDateFrom || filterDateTo) {
         const regDate = new Date(reg.created_at);
         if (filterDateFrom && regDate < filterDateFrom) return false;
         if (filterDateTo && regDate > filterDateTo) return false;
       }
       
-      // Price range filter
       if (filterPriceMin || filterPriceMax) {
         const totalPrice = (reg.tour_dates?.price_adult || 0) * reg.pax;
         if (filterPriceMin && totalPrice < parseFloat(filterPriceMin)) return false;
