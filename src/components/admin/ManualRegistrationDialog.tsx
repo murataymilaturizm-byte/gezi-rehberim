@@ -94,10 +94,6 @@ export const ManualRegistrationDialog = ({
     }
   }, [open]);
 
-  const filteredTours = categoryFilter !== "ALL"
-    ? tours.filter(t => t.tur_kategorisi === categoryFilter)
-    : tours;
-
   const selectedTour = tours.find(t => t.id === formData.tourId);
   const availableDates = selectedTour?.tour_dates || [];
   const selectedDate = availableDates.find(d => d.id === formData.tourDateId);
