@@ -82,24 +82,33 @@ const tourTypeLabels: Record<string, string> = {
 };
 
 export const exportRegistrationsToExcel = (registrations: Registration[]) => {
-  const data = registrations.map((reg) => ({
-    'Kayıt No': reg.id.substring(0, 8),
-    'Ad Soyad': reg.full_name,
-    'Telefon': reg.phone,
-    'Tur': reg.tours.title,
-    'Destinasyon': reg.tours.destination,
-    'Tarih': format(new Date(reg.tour_dates.departure_date), 'dd MMMM yyyy', { locale: tr }),
-    'Kişi Sayısı': reg.pax,
-    'Fiyat': `${reg.tour_dates.price_adult} TL`,
-    'Toplam Tutar': `${reg.tour_dates.price_adult * reg.pax} TL`,
-    'Durum': statusLabels[reg.status] || reg.status,
-    'Not': reg.note || '-',
-    'Kayıt Tarihi': format(new Date(reg.created_at), 'dd MMMM yyyy HH:mm', { locale: tr })
-  }));
+  const data = registrations.map((reg) => {
+    const totalAmount = reg.total_amount || (reg.tour_dates.price_adult * reg.pax);
+    const paidAmount = reg.paid_amount || 0;
+    const remainingAmount = totalAmount - paidAmount;
+
+    return {
+      'Kayıt No': reg.id.substring(0, 8),
+      'Ad Soyad': reg.full_name,
+      'Telefon': reg.phone,
+      'Tur': reg.tours.title,
+      'Destinasyon': reg.tours.destination,
+      'Tarih': format(new Date(reg.tour_dates.departure_date), 'dd MMMM yyyy', { locale: tr }),
+      'Kişi Sayısı': reg.pax,
+      'Birim Fiyat (TL)': reg.tour_dates.price_adult,
+      'Toplam Tutar (TL)': totalAmount,
+      'Ödenen (TL)': paidAmount,
+      'Kalan (TL)': remainingAmount,
+      'Ödeme Durumu': paymentStatusLabels[reg.payment_status || 'UNPAID'],
+      'Kayıt Durumu': statusLabels[reg.status] || reg.status,
+      'Kaynak': sourceChannelLabels[reg.source_channel || 'WHATSAPP'],
+      'Not': reg.note || '-',
+      'Kayıt Tarihi': format(new Date(reg.created_at), 'dd MMMM yyyy HH:mm', { locale: tr })
+    };
+  });
 
   const worksheet = XLSX.utils.json_to_sheet(data);
   
-  // Kolon genişliklerini ayarla
   const columnWidths = [
     { wch: 12 }, // Kayıt No
     { wch: 20 }, // Ad Soyad
@@ -108,9 +117,13 @@ export const exportRegistrationsToExcel = (registrations: Registration[]) => {
     { wch: 15 }, // Destinasyon
     { wch: 15 }, // Tarih
     { wch: 12 }, // Kişi Sayısı
-    { wch: 12 }, // Fiyat
+    { wch: 14 }, // Birim Fiyat
     { wch: 15 }, // Toplam Tutar
-    { wch: 12 }, // Durum
+    { wch: 14 }, // Ödenen
+    { wch: 14 }, // Kalan
+    { wch: 14 }, // Ödeme Durumu
+    { wch: 12 }, // Kayıt Durumu
+    { wch: 12 }, // Kaynak
     { wch: 30 }, // Not
     { wch: 18 }  // Kayıt Tarihi
   ];
