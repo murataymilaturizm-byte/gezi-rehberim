@@ -10,6 +10,11 @@ interface Registration {
   status: string;
   note?: string;
   created_at: string;
+  source_channel?: string;
+  payment_status?: string;
+  total_amount?: number;
+  paid_amount?: number;
+  deposit_amount?: number;
   tours: {
     title: string;
     destination: string;
