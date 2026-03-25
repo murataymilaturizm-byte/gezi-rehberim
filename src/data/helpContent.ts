@@ -239,7 +239,7 @@ const helpContent: HelpContent = {
         {
           question: "Abonelik Yönetimi",
           answer: `**Paket Değiştirme:**
-- "Ayarlar" > "Abonelik" sekmesinden yeni paketi seçin
+- "Abonelik Geçmişi" sekmesinden yeni paketi seçin
 - Yükseltme anında aktif olur
 - Düşürme mevcut dönem sonunda geçerli olur
 
