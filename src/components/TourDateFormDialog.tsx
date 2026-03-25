@@ -250,7 +250,8 @@ export const TourDateFormDialog = ({
               type="number"
               min="0"
               value={formData.quota}
-              onChange={(e) => setFormData({ ...formData, quota: parseInt(e.target.value) || 0 })}
+              onChange={(e) => setFormData({ ...formData, quota: e.target.value })}
+              placeholder="0"
               required
             />
           </div>
