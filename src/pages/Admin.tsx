@@ -787,7 +787,9 @@ const Admin = () => {
                         availableTourDates={availableTourDates}
                         filterSourceChannel={filterSourceChannel}
                         setFilterSourceChannel={setFilterSourceChannel}
-                        tours={tours}
+                        filterCategory={filterCategory}
+                        setFilterCategory={setFilterCategory}
+                        tours={filteredToursForDropdown}
                         filterDateFrom={filterDateFrom}
                         setFilterDateFrom={setFilterDateFrom}
                         filterDateTo={filterDateTo}
