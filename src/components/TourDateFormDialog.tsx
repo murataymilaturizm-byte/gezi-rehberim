@@ -56,19 +56,19 @@ export const TourDateFormDialog = ({
       setFormData({
         departure_date: tourDate.departure_date,
         return_date: tourDate.return_date || "",
-        price_adult: tourDate.price_adult,
-        price_child: tourDate.price_child || 0,
-        price_single: tourDate.price_single || 0,
-        quota: tourDate.quota
+        price_adult: String(tourDate.price_adult),
+        price_child: tourDate.price_child ? String(tourDate.price_child) : "",
+        price_single: tourDate.price_single ? String(tourDate.price_single) : "",
+        quota: String(tourDate.quota)
       });
     } else {
       setFormData({
         departure_date: "",
         return_date: "",
-        price_adult: 0,
-        price_child: 0,
-        price_single: 0,
-        quota: 0
+        price_adult: "",
+        price_child: "",
+        price_single: "",
+        quota: ""
       });
     }
   }, [tourDate, isOpen]);
