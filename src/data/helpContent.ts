@@ -33,7 +33,7 @@ const helpContent: HelpContent = {
 - Tur tarihlerini ekleyin ve kaydedin
 
 **Adım 3: WhatsApp Bağlantısı (Meta Embedded Signup)**
-- Sol menüden "WhatsApp Yönetimi" sekmesine gidin
+- Sol menüden "Chat Bot Ayarları" > "WhatsApp Entegrasyonu" sekmesine gidin
 - "Connect with Facebook" butonuna tıklayın
 - Facebook/Meta Business hesabınızla giriş yapın
 - WhatsApp Business numaranızı seçin ve izinleri onaylayın
