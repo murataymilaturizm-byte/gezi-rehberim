@@ -61,6 +61,20 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "İptal"
 };
 
+const paymentStatusLabels: Record<string, string> = {
+  UNPAID: "Ödenmedi",
+  DEPOSIT: "Kısmi Ödeme",
+  PAID: "Ödendi"
+};
+
+const sourceChannelLabels: Record<string, string> = {
+  WHATSAPP: "WhatsApp",
+  PHONE: "Telefon",
+  OFFICE: "Ofis",
+  INSTAGRAM: "Instagram",
+  OTHER: "Diğer"
+};
+
 const tourTypeLabels: Record<string, string> = {
   DAYTRIP: "Günübirlik",
   N2: "2 Gece",
