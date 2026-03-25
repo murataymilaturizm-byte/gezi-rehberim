@@ -124,7 +124,7 @@ const Help = () => {
                     <div>
                       <CardTitle className="text-2xl">{section.title}</CardTitle>
                       <CardDescription>
-                        {section.items.length} konuda detaylı açıklama
+                        {t("help.topicsCount", { count: section.items.length })}
                       </CardDescription>
                     </div>
                   </div>
