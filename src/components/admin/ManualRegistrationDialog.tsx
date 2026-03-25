@@ -61,7 +61,6 @@ export const ManualRegistrationDialog = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
-  const [categoryFilter, setCategoryFilter] = useState("ALL");
   
   const [formData, setFormData] = useState({
     tourId: "",
