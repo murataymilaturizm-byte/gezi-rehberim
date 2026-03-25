@@ -45,10 +45,10 @@ export const TourDateFormDialog = ({
   const [formData, setFormData] = useState({
     departure_date: "",
     return_date: "",
-    price_adult: 0,
-    price_child: 0,
-    price_single: 0,
-    quota: 0
+    price_adult: "",
+    price_child: "",
+    price_single: "",
+    quota: ""
   });
 
   useEffect(() => {
