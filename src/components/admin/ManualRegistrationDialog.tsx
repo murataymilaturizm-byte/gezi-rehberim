@@ -178,25 +178,6 @@ export const ManualRegistrationDialog = ({
           {step === 0 && (
             <>
               <div className="space-y-2">
-                <Label>Tur Kategorisi</Label>
-                <Select value={categoryFilter} onValueChange={(v) => {
-                  setCategoryFilter(v);
-                  set("tourId", "");
-                  set("tourDateId", "");
-                }}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Tüm Kategoriler</SelectItem>
-                    {TOUR_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.icon} {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label>Tur *</Label>
                 <Select value={formData.tourId} onValueChange={(v) => {
                   set("tourId", v);
@@ -204,7 +185,7 @@ export const ManualRegistrationDialog = ({
                 }}>
                   <SelectTrigger><SelectValue placeholder="Tur seçin" /></SelectTrigger>
                   <SelectContent>
-                    {filteredTours.map((tour) => (
+                    {tours.map((tour) => (
                       <SelectItem key={tour.id} value={tour.id}>{tour.title}</SelectItem>
                     ))}
                   </SelectContent>
