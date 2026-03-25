@@ -152,7 +152,8 @@ export const exportToursToExcel = (tours: Tour[]) => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   worksheet['!cols'] = [
     { wch: 35 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 },
-    { wch: 15 }, { wch: 8 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 18 }
+    { wch: 15 }, { wch: 8 }, { wch: 15 }, { wch: 12 }, { wch: 10 }, { wch: 10 },
+    { wch: 12 }, { wch: 18 }
   ];
 
   const workbook = XLSX.utils.book_new();
