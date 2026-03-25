@@ -156,7 +156,7 @@ export const RegistrationsList = ({
                             {reg.paid_amount.toLocaleString('tr-TR')}₺
                           </span>
                           <span className="block text-[10px] text-orange-500">
-                            Kalan: {(totalPrice - reg.paid_amount).toLocaleString('tr-TR')}₺
+                            {t('admin.registrations.remainingAmount')}: {(totalPrice - reg.paid_amount).toLocaleString('tr-TR')}₺
                           </span>
                         </>
                       ) : (

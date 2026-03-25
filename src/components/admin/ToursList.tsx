@@ -183,7 +183,7 @@ export const ToursList = ({
                           </span>
                           {displayCurrency !== tour.currency && (
                             <span className="text-xs text-muted-foreground">
-                              Orijinal: {date.price_adult} {tour.currency}
+                              {t('admin.excel.originalPrice')}: {date.price_adult} {tour.currency}
                             </span>
                           )}
                         </div>
