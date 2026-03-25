@@ -117,7 +117,8 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   ];
 
   const communicationItems = [
-    { id: "whatsapp", icon: MessageSquare, label: t("admin.tabs.whatsapp") },
+    { id: "settings", icon: Phone, label: "WhatsApp Entegrasyonu" },
+    { id: "whatsapp", icon: MessageSquare, label: "WhatsApp Kayıtları" },
     { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo") },
     { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
