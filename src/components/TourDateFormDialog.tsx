@@ -223,8 +223,9 @@ export const TourDateFormDialog = ({
                 type="number"
                 min="0"
                 step="0.01"
-                value={formData.price_child}
-                onChange={(e) => setFormData({ ...formData, price_child: parseFloat(e.target.value) || 0 })}
+              value={formData.price_child}
+              onChange={(e) => setFormData({ ...formData, price_child: e.target.value })}
+              placeholder="0.00"
               />
             </div>
 
