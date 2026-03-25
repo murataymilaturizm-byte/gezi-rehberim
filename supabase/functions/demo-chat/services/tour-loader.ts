@@ -27,6 +27,36 @@ export async function loadToursFromDatabase(supabase: any): Promise<Tour[]> {
 }
 
 /**
+ * Enrich tour dates with sold pax from registrations
+ */
+export async function enrichToursWithSoldPax(supabase: any, tours: any[]): Promise<any[]> {
+  const allDateIds = tours.flatMap(t => (t.dates || []).map((d: any) => d.id));
+  if (allDateIds.length === 0) return tours;
+
+  const { data: regData } = await supabase
+    .from('registrations')
+    .select('tour_date_id, pax')
+    .in('tour_date_id', allDateIds)
+    .neq('status', 'CANCELLED');
+
+  const soldMap: Record<string, number> = {};
+  if (regData) {
+    for (const reg of regData) {
+      soldMap[reg.tour_date_id] = (soldMap[reg.tour_date_id] || 0) + reg.pax;
+    }
+  }
+
+  return tours.map(tour => ({
+    ...tour,
+    dates: (tour.dates || []).map((d: any) => ({
+      ...d,
+      sold_pax: soldMap[d.id] || 0,
+      remaining_quota: d.quota - (soldMap[d.id] || 0)
+    }))
+  }));
+}
+
+/**
  * Create localized tour object from raw tour data
  */
 export function createLocalizedTour(tour: any, lang: string): Tour {
@@ -49,7 +79,7 @@ export function createLocalizedTour(tour: any, lang: string): Tour {
 }
 
 /**
- * Filter out past dates from tours and remove tours with no future dates
+ * Filter out past dates and dates with no remaining quota
  */
 export function filterFutureTours(tours: any[]): any[] {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -57,13 +87,17 @@ export function filterFutureTours(tours: any[]): any[] {
   return tours
     .map((tour) => ({
       ...tour,
-      dates: (tour.dates || []).filter((d: any) => d.departure_date >= today),
+      dates: (tour.dates || []).filter((d: any) => {
+        const isFuture = d.departure_date >= today;
+        const hasQuota = (d.remaining_quota !== undefined) ? d.remaining_quota > 0 : d.quota > 0;
+        return isFuture && hasQuota;
+      }),
     }))
     .filter((tour) => tour.dates.length > 0);
 }
 
 /**
- * Get localized tours for a specific language (only future-dated tours)
+ * Get localized tours for a specific language (only future-dated tours with available quota)
  */
 export function getLocalizedTours(rawTours: any[], language: string): Tour[] {
   const futureTours = filterFutureTours(rawTours);

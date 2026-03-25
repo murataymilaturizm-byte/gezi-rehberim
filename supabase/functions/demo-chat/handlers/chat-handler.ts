@@ -9,7 +9,7 @@ import { DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from "../config/demo-tours.ts";
 
 // Services
 import { loadOrCreateContext, buildNLUContext } from "../services/context-manager.ts";
-import { loadToursFromDatabase, getLocalizedTours } from "../services/tour-loader.ts";
+import { loadToursFromDatabase, getLocalizedTours, enrichToursWithSoldPax } from "../services/tour-loader.ts";
 import { findMatchingTours, findTourById } from "../services/tour-matching.ts";
 import { extractReservationInfo } from "../services/info-extractor.ts";
 import { getAgencyData, extractPaymentInfoText } from "../services/agency-cache.ts";
@@ -74,6 +74,8 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       logger.info("No tours in DB for demo agency, using static DEMO_TOURS");
       rawTours = DEMO_TOURS as any[];
     }
+    // Enrich with sold pax data for accurate quota
+    rawTours = await enrichToursWithSoldPax(supabase, rawTours);
 
     // 4. Load or create context
     const { context, runtimeDetectedLang } = await loadOrCreateContext({

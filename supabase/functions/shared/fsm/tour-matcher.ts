@@ -73,13 +73,17 @@ export function findTourById(tourId: string, availableTours: any[]): any | null 
 }
 
 export function formatTourList(tours: any[], language: string = 'tr'): string {
-  if (language === 'tr') {
-    return tours.map((tour, idx) => 
-      `${idx + 1}. ${tour.title} - ${tour.destination} (${tour.dates?.[0]?.price_adult}₺)`
-    ).join('\n');
-  }
-  
-  return tours.map((tour, idx) => 
-    `${idx + 1}. ${tour.title} - ${tour.destination} (${tour.dates?.[0]?.price_adult}₺)`
-  ).join('\n');
+  return tours.map((tour, idx) => {
+    const date = tour.dates?.[0];
+    const price = date?.price_adult ? `${date.price_adult}₺` : '';
+    const remaining = date?.remaining_quota !== undefined 
+      ? date.remaining_quota 
+      : date?.quota;
+    
+    const quotaInfo = remaining !== undefined
+      ? (language === 'tr' ? ` - ${remaining} kişilik yer` : ` - ${remaining} spots left`)
+      : '';
+    
+    return `${idx + 1}. ${tour.title} - ${tour.destination} (${price}${quotaInfo})`;
+  }).join('\n');
 }
