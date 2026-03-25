@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TOUR_CATEGORIES } from "@/components/admin/tour-form/TourCategories";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
@@ -62,7 +61,6 @@ export const ManualRegistrationDialog = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
-  const [categoryFilter, setCategoryFilter] = useState("ALL");
   
   const [formData, setFormData] = useState({
     tourId: "",
@@ -82,7 +80,6 @@ export const ManualRegistrationDialog = ({
   useEffect(() => {
     if (open) {
       setStep(0);
-      setCategoryFilter("ALL");
       setFormData({
         tourId: "",
         tourDateId: "",
@@ -96,10 +93,6 @@ export const ManualRegistrationDialog = ({
       });
     }
   }, [open]);
-
-  const filteredTours = categoryFilter !== "ALL"
-    ? tours.filter(t => t.tur_kategorisi === categoryFilter)
-    : tours;
 
   const selectedTour = tours.find(t => t.id === formData.tourId);
   const availableDates = selectedTour?.tour_dates || [];
@@ -185,25 +178,6 @@ export const ManualRegistrationDialog = ({
           {step === 0 && (
             <>
               <div className="space-y-2">
-                <Label>Tur Kategorisi</Label>
-                <Select value={categoryFilter} onValueChange={(v) => {
-                  setCategoryFilter(v);
-                  set("tourId", "");
-                  set("tourDateId", "");
-                }}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Tüm Kategoriler</SelectItem>
-                    {TOUR_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.icon} {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label>Tur *</Label>
                 <Select value={formData.tourId} onValueChange={(v) => {
                   set("tourId", v);
@@ -211,7 +185,7 @@ export const ManualRegistrationDialog = ({
                 }}>
                   <SelectTrigger><SelectValue placeholder="Tur seçin" /></SelectTrigger>
                   <SelectContent>
-                    {filteredTours.map((tour) => (
+                    {tours.map((tour) => (
                       <SelectItem key={tour.id} value={tour.id}>{tour.title}</SelectItem>
                     ))}
                   </SelectContent>
