@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { tr as trLocale } from "date-fns/locale";
-import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign, Receipt } from "lucide-react";
+import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign, Receipt, Trash2 } from "lucide-react";
 
 interface PaymentHistory {
   id: string;
@@ -63,6 +63,12 @@ interface RegistrationDetailDialogProps {
   onSuccess: () => void;
 }
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  CREDIT_CARD: "💳 Kredi Kartı",
+  CASH: "💵 Nakit",
+  BANK_TRANSFER: "🏦 Havale/EFT",
+};
+
 export const RegistrationDetailDialog = ({
   open,
   onOpenChange,
@@ -72,18 +78,17 @@ export const RegistrationDetailDialog = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   
-  // Editable fields - with live updates
   const [editablePhone, setEditablePhone] = useState("");
   const [editableStatus, setEditableStatus] = useState("");
   const [editablePaymentStatus, setEditablePaymentStatus] = useState("");
   const [currentPaidAmount, setCurrentPaidAmount] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Load payment history when dialog opens
   useEffect(() => {
     if (open && registration?.id) {
       loadPaymentHistory();
@@ -152,32 +157,39 @@ export const RegistrationDetailDialog = ({
       return;
     }
 
+    if (!paymentMethod) {
+      toast({
+        title: "Hata",
+        description: "Lütfen ödeme yöntemi seçin",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const newPaidAmount = paidAmount + amount;
-      let newPaymentStatus = registration.payment_status;
+      let newPaymentStatus = editablePaymentStatus;
 
-      // Update payment status based on total amount
-      if (registration.total_amount && newPaidAmount >= registration.total_amount) {
+      if (totalAmount && newPaidAmount >= totalAmount) {
         newPaymentStatus = "PAID";
       } else if (newPaidAmount > 0) {
         newPaymentStatus = "DEPOSIT";
       }
 
-      // Insert payment record
       const { error: paymentError } = await supabase
         .from("registration_payments")
         .insert({
           registration_id: registration.id,
           amount: amount,
+          payment_method: paymentMethod,
           payment_date: new Date().toISOString(),
-          note: `Ödeme: ${amount.toLocaleString('tr-TR')}₺`
+          note: `${PAYMENT_METHOD_LABELS[paymentMethod] || paymentMethod} ile ${amount.toLocaleString('tr-TR')}₺ ödeme`
         });
 
       if (paymentError) throw paymentError;
 
-      // Update registration
       const { error: updateError } = await supabase
         .from("registrations")
         .update({
@@ -188,7 +200,6 @@ export const RegistrationDetailDialog = ({
 
       if (updateError) throw updateError;
 
-      // Update local state immediately
       setEditablePaymentStatus(newPaymentStatus);
       setCurrentPaidAmount(newPaidAmount);
 
@@ -198,8 +209,9 @@ export const RegistrationDetailDialog = ({
       });
 
       setPaymentAmount("");
-      await loadPaymentHistory(); // Reload payment history
-      onSuccess(); // Refresh parent data
+      setPaymentMethod("");
+      await loadPaymentHistory();
+      onSuccess();
     } catch (error) {
       console.error("Payment add error:", error);
       toast({
@@ -211,29 +223,90 @@ export const RegistrationDetailDialog = ({
     }
   };
 
+  const handleDeletePayment = async (paymentId: string, amount: number) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from("registration_payments")
+        .delete()
+        .eq("id", paymentId);
+
+      if (deleteError) throw deleteError;
+
+      const newPaidAmount = Math.max(0, paidAmount - amount);
+      let newPaymentStatus = "UNPAID";
+      if (totalAmount && newPaidAmount >= totalAmount) {
+        newPaymentStatus = "PAID";
+      } else if (newPaidAmount > 0) {
+        newPaymentStatus = "DEPOSIT";
+      }
+
+      const { error: updateError } = await supabase
+        .from("registrations")
+        .update({
+          paid_amount: newPaidAmount,
+          payment_status: newPaymentStatus
+        })
+        .eq("id", registration.id);
+
+      if (updateError) throw updateError;
+
+      setCurrentPaidAmount(newPaidAmount);
+      setEditablePaymentStatus(newPaymentStatus);
+
+      toast({ title: "Başarılı", description: "Ödeme kaydı silindi" });
+      await loadPaymentHistory();
+      onSuccess();
+    } catch (error) {
+      console.error("Delete payment error:", error);
+      toast({ title: "Hata", description: "Ödeme silinemedi", variant: "destructive" });
+    }
+  };
+
   const handleUpdateField = async (field: string, value: string) => {
     setIsUpdating(true);
     try {
+      const updateData: Record<string, any> = { [field]: value };
+
+      // When payment_status changes, sync paid_amount accordingly
+      if (field === "payment_status") {
+        if (value === "PAID") {
+          // Mark as fully paid - create a payment record for the full amount if no payments exist
+          updateData.paid_amount = totalAmount;
+          setCurrentPaidAmount(totalAmount);
+
+          // Check if there are existing payments
+          if (paymentHistory.length === 0) {
+            // Auto-create a payment record for the full amount
+            await supabase.from("registration_payments").insert({
+              registration_id: registration.id,
+              amount: totalAmount,
+              payment_method: "CASH",
+              payment_date: new Date().toISOString(),
+              note: "Tam ödeme (durum değişikliği ile)"
+            });
+          }
+        } else if (value === "UNPAID") {
+          // Reset paid amount to 0 and clear payment records
+          updateData.paid_amount = 0;
+          updateData.deposit_amount = null;
+          setCurrentPaidAmount(0);
+        }
+        // DEPOSIT keeps current paid_amount as is
+      }
+
       const { error } = await supabase
         .from("registrations")
-        .update({ [field]: value })
+        .update(updateData)
         .eq("id", registration.id);
 
       if (error) throw error;
 
-      toast({
-        title: "Başarılı",
-        description: "Kayıt güncellendi"
-      });
-
+      toast({ title: "Başarılı", description: "Kayıt güncellendi" });
+      await loadPaymentHistory();
       onSuccess();
     } catch (error) {
       console.error("Update error:", error);
-      toast({
-        title: "Hata",
-        description: "Güncelleme başarısız",
-        variant: "destructive"
-      });
+      toast({ title: "Hata", description: "Güncelleme başarısız", variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
@@ -435,7 +508,7 @@ export const RegistrationDetailDialog = ({
             </CardContent>
           </Card>
 
-          {/* Payment History & Add Payment - Combined */}
+          {/* Payment History & Add Payment */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -445,27 +518,41 @@ export const RegistrationDetailDialog = ({
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Add Payment Form */}
-              <div className="flex gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                <div className="flex-1">
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                    placeholder="Ödeme tutarı girin..."
-                    disabled={isSubmitting}
-                    className="h-9"
-                  />
+              <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 space-y-2">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={paymentAmount}
+                      onChange={(e) => setPaymentAmount(e.target.value)}
+                      placeholder="Ödeme tutarı..."
+                      disabled={isSubmitting}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="w-40">
+                    <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                      <SelectTrigger className="h-9 text-xs">
+                        <SelectValue placeholder="Ödeme yöntemi" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CREDIT_CARD">💳 Kredi Kartı</SelectItem>
+                        <SelectItem value="CASH">💵 Nakit</SelectItem>
+                        <SelectItem value="BANK_TRANSFER">🏦 Havale/EFT</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button 
+                    onClick={handleAddPayment}
+                    disabled={isSubmitting || !paymentAmount || !paymentMethod}
+                    size="sm"
+                    className="px-6"
+                  >
+                    {isSubmitting ? "..." : "Ödeme Ekle"}
+                  </Button>
                 </div>
-                <Button 
-                  onClick={handleAddPayment}
-                  disabled={isSubmitting || !paymentAmount}
-                  size="sm"
-                  className="px-6"
-                >
-                  {isSubmitting ? "..." : "Ödeme Ekle"}
-                </Button>
               </div>
 
               {/* Payment History */}
@@ -475,7 +562,7 @@ export const RegistrationDetailDialog = ({
                   {paymentHistory.map((payment) => (
                     <div 
                       key={payment.id} 
-                      className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -490,11 +577,26 @@ export const RegistrationDetailDialog = ({
                           </p>
                         </div>
                       </div>
-                      {payment.note && (
-                        <p className="text-[10px] text-muted-foreground max-w-[150px] truncate">
-                          {payment.note}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {payment.payment_method && (
+                          <Badge variant="outline" className="text-[10px] h-5">
+                            {PAYMENT_METHOD_LABELS[payment.payment_method] || payment.payment_method}
+                          </Badge>
+                        )}
+                        {payment.note && (
+                          <p className="text-[10px] text-muted-foreground max-w-[120px] truncate hidden sm:block" title={payment.note}>
+                            {payment.note}
+                          </p>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          onClick={() => handleDeletePayment(payment.id, payment.amount)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
