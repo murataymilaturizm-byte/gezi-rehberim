@@ -341,7 +341,7 @@ const helpContent: HelpContent = {
         {
           question: "How to Connect a WhatsApp Business Number?",
           answer: `**Connect via Meta Embedded Signup (Recommended):**
-1. Go to "WhatsApp Management" tab in admin panel
+1. Go to "Chat Bot Settings" > "WhatsApp Integration" tab in admin panel
 2. Click "Connect with Facebook" button
 3. Log in with your Facebook account
 4. Select your Meta Business account (will be created if you don't have one)
