@@ -358,14 +358,14 @@ const Auth = () => {
                           <span className="font-semibold text-foreground">{t("admin.agency.plans.starter")}</span>
                           <div className="text-right">
                             <span className="text-sm text-muted-foreground line-through">
-                              {isYearly ? "32.388₺" + t("auth.perYear") : "2.999₺" + t("auth.perMonth")}
+                              {isYearly ? "35.988₺" + t("auth.perYear") : "2.999₺" + t("auth.perMonth")}
                             </span>
                             <div className="text-lg font-bold text-primary">{t("auth.trialInfo")}</div>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">{t("admin.subscription.planOptions.starter.features.0")} • {t("admin.subscription.planOptions.starter.features.1")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {isYearly ? "29.149₺" + t("auth.perYear") + " - " + t("auth.discount10") : "2.999₺" + t("auth.perMonth")}
+                          {isYearly ? "32.389₺" + t("auth.perYear") + " - " + t("auth.discount10") : "2.999₺" + t("auth.perMonth")}
                         </p>
                       </div>
                     </label>
