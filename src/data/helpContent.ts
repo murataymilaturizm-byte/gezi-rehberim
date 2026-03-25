@@ -327,7 +327,7 @@ const helpContent: HelpContent = {
 - Add tour dates and save
 
 **Step 3: Connect WhatsApp (Meta Embedded Signup)**
-- Go to "WhatsApp Management" from the left menu
+- Go to "Chat Bot Settings" > "WhatsApp Integration" from the left menu
 - Click the "Connect with Facebook" button
 - Log in with your Facebook/Meta Business account
 - Select your WhatsApp Business number and approve permissions
