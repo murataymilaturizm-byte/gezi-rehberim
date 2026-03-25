@@ -95,7 +95,7 @@ export const ToursList = ({
         <div className="text-sm text-muted-foreground">
           {displayCurrency !== 'TRY' && (
             <span className="text-xs">
-              💱 Fiyatlar anlık kurla {displayCurrency} cinsinden gösteriliyor
+              💱 {t('admin.excel.currencyConversionNote', { currency: displayCurrency })}
             </span>
           )}
         </div>
@@ -183,7 +183,7 @@ export const ToursList = ({
                           </span>
                           {displayCurrency !== tour.currency && (
                             <span className="text-xs text-muted-foreground">
-                              Orijinal: {date.price_adult} {tour.currency}
+                              {t('admin.excel.originalPrice')}: {date.price_adult} {tour.currency}
                             </span>
                           )}
                         </div>

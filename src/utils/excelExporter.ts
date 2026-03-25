@@ -1,6 +1,15 @@
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS, de, fr, es, ru, ar } from 'date-fns/locale';
+import i18next from 'i18next';
+
+const getDateLocale = () => {
+  const lang = i18next.language || 'tr';
+  const locales: Record<string, typeof tr> = { tr, en: enUS, de, fr, es, ru, ar };
+  return locales[lang] || tr;
+};
+
+const t = (key: string) => i18next.t(key);
 
 interface Registration {
   id: string;
@@ -54,174 +63,119 @@ interface ConversationSummary {
   message_count: number;
 }
 
-const statusLabels: Record<string, string> = {
-  NEW: "Yeni",
-  PENDING: "Beklemede",
-  CONFIRMED: "Onaylandı",
-  CANCELLED: "İptal"
-};
-
-const paymentStatusLabels: Record<string, string> = {
-  UNPAID: "Ödenmedi",
-  DEPOSIT: "Kısmi Ödeme",
-  PAID: "Ödendi"
-};
-
-const sourceChannelLabels: Record<string, string> = {
-  WHATSAPP: "WhatsApp",
-  PHONE: "Telefon",
-  OFFICE: "Ofis",
-  INSTAGRAM: "Instagram",
-  OTHER: "Diğer"
-};
-
-const tourTypeLabels: Record<string, string> = {
-  DAYTRIP: "Günübirlik",
-  N2: "2 Gece",
-  N3: "3 Gece"
-};
-
 export const exportRegistrationsToExcel = (registrations: Registration[]) => {
+  const locale = getDateLocale();
   const data = registrations.map((reg) => {
     const totalAmount = reg.total_amount || (reg.tour_dates.price_adult * reg.pax);
     const paidAmount = reg.paid_amount || 0;
     const remainingAmount = totalAmount - paidAmount;
 
     return {
-      'Kayıt No': reg.id.substring(0, 8),
-      'Ad Soyad': reg.full_name,
-      'Telefon': reg.phone,
-      'Tur': reg.tours.title,
-      'Destinasyon': reg.tours.destination,
-      'Tarih': format(new Date(reg.tour_dates.departure_date), 'dd MMMM yyyy', { locale: tr }),
-      'Kişi Sayısı': reg.pax,
-      'Birim Fiyat (TL)': reg.tour_dates.price_adult,
-      'Toplam Tutar (TL)': totalAmount,
-      'Ödenen (TL)': paidAmount,
-      'Kalan (TL)': remainingAmount,
-      'Ödeme Durumu': paymentStatusLabels[reg.payment_status || 'UNPAID'],
-      'Kayıt Durumu': statusLabels[reg.status] || reg.status,
-      'Kaynak': sourceChannelLabels[reg.source_channel || 'WHATSAPP'],
-      'Not': reg.note || '-',
-      'Kayıt Tarihi': format(new Date(reg.created_at), 'dd MMMM yyyy HH:mm', { locale: tr })
+      [t('admin.excel.registrationId')]: reg.id.substring(0, 8),
+      [t('admin.registrations.name')]: reg.full_name,
+      [t('admin.registrations.phone')]: reg.phone,
+      [t('admin.registrations.tour')]: reg.tours.title,
+      [t('admin.excel.destination')]: reg.tours.destination,
+      [t('admin.registrations.date')]: format(new Date(reg.tour_dates.departure_date), 'dd MMMM yyyy', { locale }),
+      [t('admin.registrations.pax')]: reg.pax,
+      [t('admin.registrations.unitPrice')]: reg.tour_dates.price_adult,
+      [t('admin.registrations.totalAmount')]: totalAmount,
+      [t('admin.registrations.paidAmount')]: paidAmount,
+      [t('admin.registrations.remainingAmount')]: remainingAmount,
+      [t('admin.registrations.paymentStatus')]: t(`admin.paymentStatusLabels.${reg.payment_status || 'UNPAID'}`),
+      [t('admin.registrations.status')]: t(`admin.status.${(reg.status || 'NEW').toLowerCase()}`),
+      [t('admin.registrations.source')]: t(`admin.sourceChannel.${reg.source_channel || 'WHATSAPP'}`),
+      [t('admin.registrations.note')]: reg.note || '-',
+      [t('admin.registrations.createdAt')]: format(new Date(reg.created_at), 'dd MMMM yyyy HH:mm', { locale })
     };
   });
 
   const worksheet = XLSX.utils.json_to_sheet(data);
-  
-  const columnWidths = [
-    { wch: 12 }, // Kayıt No
-    { wch: 20 }, // Ad Soyad
-    { wch: 15 }, // Telefon
-    { wch: 30 }, // Tur
-    { wch: 15 }, // Destinasyon
-    { wch: 15 }, // Tarih
-    { wch: 12 }, // Kişi Sayısı
-    { wch: 14 }, // Birim Fiyat
-    { wch: 15 }, // Toplam Tutar
-    { wch: 14 }, // Ödenen
-    { wch: 14 }, // Kalan
-    { wch: 14 }, // Ödeme Durumu
-    { wch: 12 }, // Kayıt Durumu
-    { wch: 12 }, // Kaynak
-    { wch: 30 }, // Not
-    { wch: 18 }  // Kayıt Tarihi
+  worksheet['!cols'] = [
+    { wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 30 }, { wch: 15 },
+    { wch: 15 }, { wch: 12 }, { wch: 14 }, { wch: 15 }, { wch: 14 },
+    { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 18 }
   ];
-  worksheet['!cols'] = columnWidths;
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Kayıtlar');
+  XLSX.utils.book_append_sheet(workbook, worksheet, t('admin.excel.registrationsSheet'));
 
-  const fileName = `kayitlar_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
+  const fileName = `${t('admin.excel.registrationsFile')}_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 };
 
 export const exportToursToExcel = (tours: Tour[]) => {
+  const locale = getDateLocale();
   const data: any[] = [];
 
   tours.forEach((tour) => {
     if (tour.tour_dates && tour.tour_dates.length > 0) {
       tour.tour_dates.forEach((date) => {
         data.push({
-          'Tur Adı': tour.title,
-          'Destinasyon': tour.destination,
-          'Tip': tourTypeLabels[tour.type] || tour.type,
-          'Kalkış Tarihi': format(new Date(date.departure_date), 'dd MMMM yyyy', { locale: tr }),
-          'Dönüş Tarihi': date.return_date ? format(new Date(date.return_date), 'dd MMMM yyyy', { locale: tr }) : '-',
-          'Yetişkin Fiyat': `${date.price_adult} ${tour.currency}`,
-          'Çocuk Fiyat': date.price_child ? `${date.price_child} ${tour.currency}` : '-',
-          'Kontenjan': date.quota,
-          'Min. Kişi': tour.min_pax,
-          'Oluşturma Tarihi': format(new Date(tour.created_at), 'dd MMMM yyyy', { locale: tr })
+          [t('admin.excel.tourName')]: tour.title,
+          [t('admin.excel.destination')]: tour.destination,
+          [t('admin.excel.type')]: t(`admin.tourTypes.${tour.type === 'DAYTRIP' ? 'daytrip' : tour.type === 'N2' ? 'n2' : 'n3'}`),
+          [t('admin.excel.departureDate')]: format(new Date(date.departure_date), 'dd MMMM yyyy', { locale }),
+          [t('admin.excel.returnDate')]: date.return_date ? format(new Date(date.return_date), 'dd MMMM yyyy', { locale }) : '-',
+          [t('admin.excel.adultPrice')]: date.price_adult,
+          [t('admin.excel.currency')]: tour.currency,
+          [t('admin.excel.childPrice')]: date.price_child || '-',
+          [t('admin.tours.quota')]: date.quota,
+          [t('admin.excel.minPax')]: tour.min_pax,
+          [t('admin.registrations.createdAt')]: format(new Date(tour.created_at), 'dd MMMM yyyy', { locale })
         });
       });
     } else {
       data.push({
-        'Tur Adı': tour.title,
-        'Destinasyon': tour.destination,
-        'Tip': tourTypeLabels[tour.type] || tour.type,
-        'Kalkış Tarihi': 'Tarih Yok',
-        'Dönüş Tarihi': '-',
-        'Yetişkin Fiyat': '-',
-        'Çocuk Fiyat': '-',
-        'Kontenjan': '-',
-        'Min. Kişi': tour.min_pax,
-        'Oluşturma Tarihi': format(new Date(tour.created_at), 'dd MMMM yyyy', { locale: tr })
+        [t('admin.excel.tourName')]: tour.title,
+        [t('admin.excel.destination')]: tour.destination,
+        [t('admin.excel.type')]: t(`admin.tourTypes.${tour.type === 'DAYTRIP' ? 'daytrip' : tour.type === 'N2' ? 'n2' : 'n3'}`),
+        [t('admin.excel.departureDate')]: t('admin.excel.noDate'),
+        [t('admin.excel.returnDate')]: '-',
+        [t('admin.excel.adultPrice')]: '-',
+        [t('admin.excel.currency')]: tour.currency,
+        [t('admin.excel.childPrice')]: '-',
+        [t('admin.tours.quota')]: '-',
+        [t('admin.excel.minPax')]: tour.min_pax,
+        [t('admin.registrations.createdAt')]: format(new Date(tour.created_at), 'dd MMMM yyyy', { locale })
       });
     }
   });
 
   const worksheet = XLSX.utils.json_to_sheet(data);
-  
-  const columnWidths = [
-    { wch: 35 }, // Tur Adı
-    { wch: 15 }, // Destinasyon
-    { wch: 12 }, // Tip
-    { wch: 15 }, // Kalkış Tarihi
-    { wch: 15 }, // Dönüş Tarihi
-    { wch: 15 }, // Yetişkin Fiyat
-    { wch: 15 }, // Çocuk Fiyat
-    { wch: 12 }, // Kontenjan
-    { wch: 12 }, // Min. Kişi
-    { wch: 18 }  // Oluşturma Tarihi
+  worksheet['!cols'] = [
+    { wch: 35 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 },
+    { wch: 15 }, { wch: 8 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 18 }
   ];
-  worksheet['!cols'] = columnWidths;
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Turlar');
+  XLSX.utils.book_append_sheet(workbook, worksheet, t('admin.excel.toursSheet'));
 
-  const fileName = `turlar_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
+  const fileName = `${t('admin.excel.toursFile')}_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 };
 
 export const exportConversationSummariesToExcel = (summaries: ConversationSummary[]) => {
+  const locale = getDateLocale();
   const data = summaries.map((summary) => ({
-    'Telefon': summary.phone,
-    'Tarih': format(new Date(summary.conversation_date), 'dd MMMM yyyy', { locale: tr }),
-    'Özet': summary.summary,
-    'Konular': summary.topics?.join(', ') || '-',
-    'Bahsedilen Turlar': summary.mentioned_tours?.join(', ') || '-',
-    'Duygu Durumu': summary.sentiment || '-',
-    'Mesaj Sayısı': summary.message_count
+    [t('admin.registrations.phone')]: summary.phone,
+    [t('admin.registrations.date')]: format(new Date(summary.conversation_date), 'dd MMMM yyyy', { locale }),
+    [t('admin.excel.summary')]: summary.summary,
+    [t('admin.excel.topics')]: summary.topics?.join(', ') || '-',
+    [t('admin.excel.mentionedTours')]: summary.mentioned_tours?.join(', ') || '-',
+    [t('admin.excel.sentiment')]: summary.sentiment || '-',
+    [t('admin.excel.messageCount')]: summary.message_count
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data);
-  
-  const columnWidths = [
-    { wch: 15 }, // Telefon
-    { wch: 15 }, // Tarih
-    { wch: 50 }, // Özet
-    { wch: 30 }, // Konular
-    { wch: 30 }, // Bahsedilen Turlar
-    { wch: 15 }, // Duygu Durumu
-    { wch: 12 }  // Mesaj Sayısı
+  worksheet['!cols'] = [
+    { wch: 15 }, { wch: 15 }, { wch: 50 }, { wch: 30 }, { wch: 30 }, { wch: 15 }, { wch: 12 }
   ];
-  worksheet['!cols'] = columnWidths;
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Konuşma Özetleri');
+  XLSX.utils.book_append_sheet(workbook, worksheet, t('admin.excel.conversationsSheet'));
 
-  const fileName = `konusma_ozetleri_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
+  const fileName = `${t('admin.excel.conversationsFile')}_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 };
 
@@ -232,39 +186,36 @@ export const exportAnalyticsToExcel = (analytics: {
 }) => {
   const workbook = XLSX.utils.book_new();
 
-  // Aylık gelir sayfası
   const revenueData = analytics.revenueByMonth.map((item) => ({
-    'Ay': item.month,
-    'Gelir (TL)': item.revenue,
-    'Kayıt Sayısı': item.registrations,
-    'Ortalama Gelir': Math.round(item.revenue / (item.registrations || 1))
+    [t('admin.excel.month')]: item.month,
+    [t('admin.excel.revenue')]: item.revenue,
+    [t('admin.excel.registrationCount')]: item.registrations,
+    [t('admin.excel.avgRevenue')]: Math.round(item.revenue / (item.registrations || 1))
   }));
   const revenueSheet = XLSX.utils.json_to_sheet(revenueData);
   revenueSheet['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 }];
-  XLSX.utils.book_append_sheet(workbook, revenueSheet, 'Aylık Gelir');
+  XLSX.utils.book_append_sheet(workbook, revenueSheet, t('admin.excel.monthlyRevenueSheet'));
 
-  // Popüler destinasyonlar sayfası
   const destinationData = analytics.topDestinations.map((item) => ({
-    'Destinasyon': item.destination,
-    'Kayıt Sayısı': item.count,
-    'Toplam Gelir (TL)': item.revenue,
-    'Ortalama Gelir': Math.round(item.revenue / (item.count || 1))
+    [t('admin.excel.destination')]: item.destination,
+    [t('admin.excel.registrationCount')]: item.count,
+    [t('admin.excel.totalRevenue')]: item.revenue,
+    [t('admin.excel.avgRevenue')]: Math.round(item.revenue / (item.count || 1))
   }));
   const destinationSheet = XLSX.utils.json_to_sheet(destinationData);
   destinationSheet['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 18 }];
-  XLSX.utils.book_append_sheet(workbook, destinationSheet, 'Popüler Destinasyonlar');
+  XLSX.utils.book_append_sheet(workbook, destinationSheet, t('admin.excel.popularDestinationsSheet'));
 
-  // Dönüşüm oranları sayfası
   const conversionData = analytics.conversionRates.map((item) => ({
-    'Tarih': item.date,
-    'Konuşma': item.conversations,
-    'Kayıt': item.registrations,
-    'Dönüşüm Oranı (%)': (item.rate * 100).toFixed(2)
+    [t('admin.registrations.date')]: item.date,
+    [t('admin.excel.conversations')]: item.conversations,
+    [t('admin.excel.registrationCount')]: item.registrations,
+    [t('admin.excel.conversionRate')]: (item.rate * 100).toFixed(2)
   }));
   const conversionSheet = XLSX.utils.json_to_sheet(conversionData);
   conversionSheet['!cols'] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 18 }];
-  XLSX.utils.book_append_sheet(workbook, conversionSheet, 'Dönüşüm Oranları');
+  XLSX.utils.book_append_sheet(workbook, conversionSheet, t('admin.excel.conversionRatesSheet'));
 
-  const fileName = `analitikler_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
+  const fileName = `${t('admin.excel.analyticsFile')}_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 };
