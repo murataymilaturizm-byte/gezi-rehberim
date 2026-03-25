@@ -37,6 +37,7 @@ interface Tour {
     return_date?: string;
     price_adult: number;
     quota: number;
+    sold_pax?: number;
   }>;
 }
 
