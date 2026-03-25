@@ -19,6 +19,7 @@ interface TourCardProps {
       return_date?: string;
       price_adult: number;
       quota: number;
+      sold_pax?: number;
     }>;
     currency: string;
     program_url?: string;
