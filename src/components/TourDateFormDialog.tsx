@@ -45,10 +45,10 @@ export const TourDateFormDialog = ({
   const [formData, setFormData] = useState({
     departure_date: "",
     return_date: "",
-    price_adult: 0,
-    price_child: 0,
-    price_single: 0,
-    quota: 0
+    price_adult: "",
+    price_child: "",
+    price_single: "",
+    quota: ""
   });
 
   useEffect(() => {
@@ -56,19 +56,19 @@ export const TourDateFormDialog = ({
       setFormData({
         departure_date: tourDate.departure_date,
         return_date: tourDate.return_date || "",
-        price_adult: tourDate.price_adult,
-        price_child: tourDate.price_child || 0,
-        price_single: tourDate.price_single || 0,
-        quota: tourDate.quota
+        price_adult: String(tourDate.price_adult),
+        price_child: tourDate.price_child ? String(tourDate.price_child) : "",
+        price_single: tourDate.price_single ? String(tourDate.price_single) : "",
+        quota: String(tourDate.quota)
       });
     } else {
       setFormData({
         departure_date: "",
         return_date: "",
-        price_adult: 0,
-        price_child: 0,
-        price_single: 0,
-        quota: 0
+        price_adult: "",
+        price_child: "",
+        price_single: "",
+        quota: ""
       });
     }
   }, [tourDate, isOpen]);
@@ -87,10 +87,10 @@ export const TourDateFormDialog = ({
     
     const validation = tourDateSchema.safeParse({
       departure_date: formData.departure_date,
-      price_adult: formData.price_adult,
-      price_child: formData.price_child,
-      price_single: formData.price_single,
-      quota: formData.quota
+      price_adult: parseFloat(formData.price_adult) || 0,
+      price_child: formData.price_child ? parseFloat(formData.price_child) : undefined,
+      price_single: formData.price_single ? parseFloat(formData.price_single) : undefined,
+      quota: parseInt(formData.quota) || 0
     });
     
     if (!validation.success) {
@@ -121,10 +121,10 @@ export const TourDateFormDialog = ({
         tour_id: tourId,
         departure_date: formData.departure_date,
         return_date: formData.return_date || null,
-        price_adult: formData.price_adult,
-        price_child: formData.price_child || null,
-        price_single: formData.price_single || null,
-        quota: formData.quota,
+        price_adult: parseFloat(formData.price_adult) || 0,
+        price_child: formData.price_child ? parseFloat(formData.price_child) : null,
+        price_single: formData.price_single ? parseFloat(formData.price_single) : null,
+        quota: parseInt(formData.quota) || 0,
         agency_id: agencyData.id
       };
 
@@ -209,7 +209,8 @@ export const TourDateFormDialog = ({
               min="0"
               step="0.01"
               value={formData.price_adult}
-              onChange={(e) => setFormData({ ...formData, price_adult: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => setFormData({ ...formData, price_adult: e.target.value })}
+              placeholder="0.00"
               required
             />
           </div>
@@ -222,8 +223,9 @@ export const TourDateFormDialog = ({
                 type="number"
                 min="0"
                 step="0.01"
-                value={formData.price_child}
-                onChange={(e) => setFormData({ ...formData, price_child: parseFloat(e.target.value) || 0 })}
+              value={formData.price_child}
+              onChange={(e) => setFormData({ ...formData, price_child: e.target.value })}
+              placeholder="0.00"
               />
             </div>
 
@@ -234,8 +236,9 @@ export const TourDateFormDialog = ({
                 type="number"
                 min="0"
                 step="0.01"
-                value={formData.price_single}
-                onChange={(e) => setFormData({ ...formData, price_single: parseFloat(e.target.value) || 0 })}
+              value={formData.price_single}
+              onChange={(e) => setFormData({ ...formData, price_single: e.target.value })}
+              placeholder="0.00"
               />
             </div>
           </div>
@@ -247,7 +250,8 @@ export const TourDateFormDialog = ({
               type="number"
               min="0"
               value={formData.quota}
-              onChange={(e) => setFormData({ ...formData, quota: parseInt(e.target.value) || 0 })}
+              onChange={(e) => setFormData({ ...formData, quota: e.target.value })}
+              placeholder="0"
               required
             />
           </div>
