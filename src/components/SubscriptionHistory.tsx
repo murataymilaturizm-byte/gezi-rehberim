@@ -170,7 +170,7 @@ export const SubscriptionHistory = () => {
     {
       id: "professional",
       name: "Profesyonel",
-      price: 7999,
+      price: 4999,
       features: [
         "💬 5.000 mesaj/ay",
         "🏨 Sınırsız tur",
@@ -188,7 +188,7 @@ export const SubscriptionHistory = () => {
     {
       id: "enterprise",
       name: "Kurumsal",
-      price: 14999,
+      price: 7999,
       features: [
         "💬 Sınırsız mesaj",
         "🏨 Sınırsız tur",

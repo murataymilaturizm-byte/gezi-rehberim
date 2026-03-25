@@ -407,31 +407,31 @@ Her şablonda kullanılabilen değişkenler:
 **Mevcut Paketler:**
 
 1. **BAŞLANGIÇ PAKETİ - 2.999 TL/ay**
-   ✓ 500 WhatsApp mesajı/ay
-   ✓ Sınırsız tur ekleme
+   ✓ 1.000 WhatsApp mesajı/ay
+   ✓ En fazla 10 tur
+   ✓ 1 dil seçimi
    ✓ Temel analitik
    ✓ E-posta desteği
-   ✓ PayTR ödeme entegrasyonu
    → Küçük acenteler için ideal
 
-2. **PROFESYONEL PAKET - 7.999 TL/ay** (EN POPÜLER)
-   ✓ 3.000 WhatsApp mesajı/ay
-   ✓ Tüm Başlangıç özellikleri
+2. **PROFESYONEL PAKET - 4.999 TL/ay** (EN POPÜLER)
+   ✓ 5.000 WhatsApp mesajı/ay
+   ✓ Sınırsız tur
+   ✓ 3 dile kadar destek
+   ✓ 4 konuşma üslubu
+   ✓ Kullanıcı profilleri ve takip
+   ✓ Otomatik hatırlatıcılar ve takip mesajları
    ✓ Gelişmiş analitik ve raporlama
-   ✓ Öncelikli destek
-   ✓ Özel mesaj şablonları
-   ✓ Çoklu dil desteği
    → Büyüyen işletmeler için ideal
 
-3. **KURUMSAL PAKET - Özel Fiyat**
+3. **KURUMSAL PAKET - 7.999 TL/ay**
    ✓ Sınırsız WhatsApp mesajı
-   ✓ Tüm Profesyonel özellikler
-   ✓ Özel yazılım geliştirme
-   ✓ API erişimi
+   ✓ Sınırsız tur
+   ✓ Tüm 7 dil desteği
+   ✓ 5 konuşma üslubu
+   ✓ Müşteri memnuniyet anketleri
    ✓ 7/24 premium destek
-   ✓ Özel eğitim ve danışmanlık
    → Büyük organizasyonlar için
-   → Fiyat için info@ai.turzz.com
 
 **Ücretsiz Deneme:**
 - 14 gün ücretsiz
@@ -454,9 +454,10 @@ Her şablonda kullanılabilen değişkenler:
 - "Ayarlar" > "Fatura Geçmişi" bölümünden görüntülenebilir
 
 **Yıllık Ödeme İndirimi:**
-- Yıllık ödeme yaparsanız 2 ay ücretsiz
-- Başlangıç: 29.990 TL (2 ay bedava = %17 indirim)
-- Profesyonel: 79.990 TL (2 ay bedava = %17 indirim)
+- Yıllık ödeme yaparsanız %10 indirim
+- Başlangıç: 32.389 TL/yıl (2.699 TL/ay)
+- Profesyonel: 53.989 TL/yıl (4.499 TL/ay)
+- Kurumsal: 86.389 TL/yıl (7.199 TL/ay)
 
 **Ödeme Güvenliği:**
 - Tüm ödemeler SSL ile korunur
