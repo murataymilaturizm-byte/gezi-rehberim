@@ -896,7 +896,13 @@ const Admin = () => {
         tours={tours.map(t => ({
           id: t.id,
           title: t.title,
-          tour_dates: t.tour_dates || []
+          tur_kategorisi: t.tur_kategorisi,
+          currency: t.currency,
+          tour_dates: t.tour_dates?.map(td => ({
+            id: td.id,
+            departure_date: td.departure_date,
+            price_adult: td.price_adult
+          })) || []
         }))}
         onSuccess={() => {
           if (session && activeTab === "registrations") {
