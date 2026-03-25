@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TOUR_CATEGORIES } from "@/components/admin/tour-form/TourCategories";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
