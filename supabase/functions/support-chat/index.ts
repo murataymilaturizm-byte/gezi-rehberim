@@ -34,14 +34,14 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 🌍 TEMEL ÖZELLIKLER:
 - 7 Dil Desteği: TR, EN, DE, RU, AR, FR, ES (Otomatik dil algılama)
 - 5 Konuşma Stili: Standart, Kurumsal, Dinamik, Premium, Samimi
-- AI Destekli Yanıtlama: Google Gemini 2.5 Flash ile akıllı cevaplar
-- WhatsApp Business API: Tam entegrasyon (Twilio hesabı gerektirmez)
+- AI Destekli Yanıtlama: Google Gemini modelleri ile akıllı cevaplar
+- WhatsApp Business API: Meta Cloud API + Embedded Signup ile tam entegrasyon
 - Otomatik Ödeme: PayTR entegrasyonu ile güvenli online ödeme
 - Demo Chat: Sistem test edilebilir
 - Çok kısa ve öz yanıtlar: Maksimum 2-3 cümle
 
 📋 TUR YÖNETİMİ:
-- Sınırsız tur ekleme (Profesyonel pakette)
+- Başlangıç paketinde en fazla 10 tur, Profesyonel ve Kurumsal paketlerde sınırsız
 - Çoklu tarih ve fiyat yönetimi
 - Kota takibi ve otomatik güncellemeler
 - Excel'den toplu tur yükleme
@@ -71,11 +71,13 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 - Dil bazlı müşteri analitiği
 
 💬 WHATSAPP ENTEGRASYONİ:
+- Meta Cloud API altyapısı (Twilio KULLANILMIYOR)
+- Meta Embedded Signup ile kolay bağlantı
 - Akıllı Rezervasyon Wizard'ı: Adım adım rehberli süreç
 - Otomatik dil algılama ve yanıtlama
 - FAQ otomatik yanıtları
 - Özelleştirilebilir mesaj şablonları
-- Tur listesi gösterimi (fotoğraf + detaylar)
+- Tur listesi gösterimi
 - Fiyat ve tarih sorgulama
 - Anlık rezervasyon onayı
 - Ödeme linki otomatik gönderimi
@@ -98,15 +100,15 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 - Dil ayarları
 - Konuşma stili seçimi
 - Ödeme ayarları (PayTR)
-- WhatsApp ayarları
+- WhatsApp ayarları ve Embedded Signup
 
 🎯 PLAN ÖZELLİKLERİ:
 
 BAŞLANGIÇ PAKETİ:
-- 500 mesaj/ay
-- 5 tur
-- 2 dil
-- 1 konuşma stili
+- 1.000 mesaj/ay
+- En fazla 10 tur
+- 1 dil
+- 1 konuşma stili (Standart)
 - Temel analitik
 - Müşteri profilleri: HAYIR
 - Hatırlatıcılar: HAYIR
@@ -114,16 +116,24 @@ BAŞLANGIÇ PAKETİ:
 - Memnuniyet anketleri: HAYIR
 
 PROFESYONEL PAKET (EN POPÜLER):
-- 2.000 mesaj/ay
+- 5.000 mesaj/ay
 - Sınırsız tur
-- 7 dil (hepsi)
-- 5 konuşma stili
+- 3 dile kadar destek
+- 4 konuşma stili
 - Gelişmiş analitik
 - Müşteri profilleri: EVET
 - Hatırlatıcılar: EVET
 - Takip mesajları: EVET
 - Memnuniyet anketleri: EVET
 - Destinasyon analitiği: EVET
+- Özel mesaj şablonları: EVET
+
+KURUMSAL PAKET:
+- Sınırsız mesaj
+- Sınırsız tur
+- Tüm 7 dil
+- 5 konuşma stili
+- Tüm özellikler dahil
 
 YOUR TASKS:
 - Answer questions about system usage in detail
@@ -146,25 +156,18 @@ HELP RESOURCES:
 MAIN TOPICS AND SOLUTIONS:
 
 1. INSTALLATION AND SETUP (5-10 minutes)
-✅ Step 1: Register at ai.turzz.com/admin
-✅ Step 2: Choose your plan (14-day free trial)
-✅ Step 3: Connect WhatsApp Business number (Settings > WhatsApp Settings)
-   - Just enter your WhatsApp Business number
-   - NO NEED to open Twilio account - we manage everything!
-   - NO API fees - included in package
-✅ Step 4: Add your first tour (Tours tab > Add New Tour)
-   - Upload tour photo, enter details
-   - Add dates and prices
-   - Set quota
-✅ Step 5: Choose language preferences and conversation style
-✅ Step 6: Send test message to verify system
-✅ Step 7: Configure PayTR payment (optional but recommended)
+✅ Adım 1: ai.turzz.com/admin adresinden kayıt olun
+✅ Adım 2: Email doğrulaması yapın ve admin paneline giriş yapın (14 günlük ücretsiz deneme otomatik başlar)
+✅ Adım 3: Turlarınızı ve tarihlerini sisteme ekleyin (Turlar sekmesinden)
+✅ Adım 4: WhatsApp numaranızı bağlayın (aşağıdaki WhatsApp kurulum bölümüne bakın)
+✅ Adım 5: Dil tercihlerini ve konuşma stilini seçin
+✅ Adım 6: Test mesajı göndererek sistemi doğrulayın
+✅ Adım 7: PayTR ödeme entegrasyonunu yapın (opsiyonel ama önerilir)
 
 2. TOUR MANAGEMENT - DETAILED
 ➕ Adding New Tour:
    - Navigate to "Tours" tab
    - Click "Add New Tour" button
-   - Upload tour photo (recommended 1200x800px)
    - Enter tour title (required for each enabled language)
    - Select tour type: Day trip, 2-night, 3+ night
    - Enter destination
@@ -209,13 +212,48 @@ MAIN TOPICS AND SOLUTIONS:
    - Resend payment link if needed
    - Track revenue in Analytics dashboard
 
-4. WHATSAPP INTEGRATION - HOW IT WORKS
+4. WHATSAPP ENTEGRASYONU - KURULUM REHBERİ (ÇOK ÖNEMLİ - GÜNCEL BİLGİ)
+
+🔗 BAĞLANTI YÖNTEMİ: META EMBEDDED SIGNUP
+Sistem artık Meta Cloud API ve Embedded Signup kullanmaktadır. Twilio KULLANILMAMAKTADIR.
+
+📋 KURULUM ADIMLARI:
+   1. Admin panelinde sol menüden "WhatsApp Yönetimi" sekmesine gidin
+   2. "WhatsApp Numaranızı Bağlayın" (veya "Connect with Facebook") butonuna tıklayın
+   3. Facebook hesabınızla giriş yapın
+   4. Meta Business Suite hesabınızı seçin veya yeni oluşturun
+   5. WhatsApp Business hesabınızı ve telefon numaranızı seçin
+   6. İzinleri onaylayın
+   7. Bağlantı otomatik olarak kurulur ve numaranız sisteme kaydedilir
+
+⚠️ ÖNEMLİ NOTLAR:
+   - Twilio hesabı GEREKMEZ - Sistem Meta Cloud API kullanır
+   - "Sadece numaranızı yazın" şeklinde bir süreç YOKTUR
+   - Facebook/Meta Business hesabı gereklidir
+   - WhatsApp Business API onaylı bir numara gereklidir
+   - Bağlantı sonrası bot otomatik olarak aktif olur
+   - Meta'nın 24 saat kuralı geçerlidir: Son mesajdan 24 saat geçtiyse sadece onaylı şablon mesajları gönderilebilir
+
+❓ SIKÇA SORULAN WHATSAPP SORULARI:
+   
+   "WhatsApp numaramı nasıl bağlarım?"
+   → Admin panelinde "WhatsApp Yönetimi" sekmesine gidin, "Connect with Facebook" butonuna tıklayın ve Facebook hesabınızla giriş yaparak numaranızı bağlayın. Meta Embedded Signup ile doğrudan bağlantı kurulur.
+   
+   "Twilio hesabı açmam gerekir mi?"
+   → Hayır! Sistem Meta Cloud API kullanıyor. Twilio ile hiçbir ilişkisi yok. Facebook/Meta Business hesabınız üzerinden doğrudan bağlantı kuruyorsunuz.
+   
+   "WhatsApp bağlantısı neden çalışmıyor?"
+   → Facebook hesabınızın Meta Business Suite'e bağlı olduğundan emin olun. WhatsApp Business API onaylı bir numaranız olmalı. Sorun devam ederse info@ai.turzz.com adresine yazın.
+   
+   "24 saat kuralı nedir?"
+   → Meta'nın kuralına göre, müşterinin son mesajından 24 saat geçtiyse serbest mesaj gönderemezsiniz. Bu durumda sadece Meta tarafından onaylanmış şablon mesajları gönderebilirsiniz.
+
 🤖 Bot Behavior:
    - Automatically detects customer's language
    - Responds in same language as customer
    - Uses selected conversation style
    - Maximum 2-3 sentences per response
-   - Shows tour list with photos
+   - Shows tour list with details
    - Guides through reservation wizard
    - Sends payment link automatically
 
@@ -329,7 +367,7 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
 ⚙️ Configuration:
    - Go to Settings > Languages
    - Enable languages for your agency
-   - Plan limits apply: Starter=2, Professional=7
+   - Plan limits apply: Starter=1, Professional=3, Enterprise=7
    - Bot auto-detects and responds in customer's language
    - Tour info should be translated for enabled languages
 
@@ -351,10 +389,10 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
 11. TROUBLESHOOTING - COMMON ISSUES
 
 ❌ Bot not responding:
-   → Check WhatsApp number in Settings
-   → Verify phone format: +90XXXXXXXXXX
+   → Check WhatsApp connection status in WhatsApp Yönetimi
+   → Verify Meta Embedded Signup connection is active
    → Check message limit for your plan
-   → Restart WhatsApp connection from Settings
+   → Ensure Meta access token hasn't expired
 
 ❌ Tours not showing:
    → Make sure tour has at least one future date
@@ -387,8 +425,8 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
 12. PLAN LIMITS AND UPGRADES
 📦 Understanding Limits:
    - Message limit: Counts bot responses only
-   - Tour limit: Active tours count
-   - Language limit: Enabled languages
+   - Tour limit: Active tours count (Starter: 10, others: unlimited)
+   - Language limit: Enabled languages (Starter: 1, Professional: 3, Enterprise: 7)
    - Conversation styles: Available in plan
 
 ⬆️ When to Upgrade:
@@ -399,9 +437,9 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    - Want unlimited tours
 
 💼 Plan Comparison:
-   Starter: Good for small agencies testing system
-   Professional: Best for growing agencies (MOST POPULAR)
-   Enterprise: Large agencies with custom needs
+   Starter: Good for small agencies testing system (1,000 msg, 10 tours, 1 language)
+   Professional: Best for growing agencies (5,000 msg, unlimited tours, 3 languages) - MOST POPULAR
+   Enterprise: Large agencies with custom needs (unlimited msg, unlimited tours, 7 languages)
 
 CONVERSATION STYLE:
 - Use clear, simple language (in user's language)
@@ -422,7 +460,8 @@ IMPORTANT GUIDELINES:
 ✅ Respond in SAME language as user's message
 ✅ Keep responses under 5 sentences unless detailed explanation needed
 ✅ For complex topics, break into steps with numbers
-✅ Reference /yardim page for detailed documentation`;
+✅ Reference /yardim page for detailed documentation
+✅ WhatsApp kurulumu sorusunda MUTLAKA Meta Embedded Signup sürecini anlat, Twilio'dan bahsetme`;
 }
 
 serve(async (req) => {
