@@ -48,7 +48,7 @@ const helpContent: HelpContent = {
         {
           question: "WhatsApp Business Numarası Nasıl Bağlanır?",
           answer: `**Meta Embedded Signup ile Bağlantı (Önerilen):**
-1. Admin panelinde "WhatsApp Yönetimi" sekmesine gidin
+1. Admin panelinde "Chat Bot Ayarları" > "WhatsApp Entegrasyonu" sekmesine gidin
 2. "Connect with Facebook" butonuna tıklayın
 3. Facebook hesabınızla giriş yapın
 4. Meta Business hesabınızı seçin (yoksa oluşturulacak)
