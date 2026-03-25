@@ -70,6 +70,7 @@ export const ManualRegistrationDialog = ({
     paxAdult: "1",
     sourceChannel: "PHONE",
     paymentStatus: "UNPAID",
+    paymentMethod: "",
     depositAmount: "",
     notes: ""
   });
