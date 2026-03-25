@@ -532,11 +532,11 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Agency Information and Settings",
-          answer: `**Basic Info:** Edit from "Settings" > "Agency Information":
+          answer: `**Basic Info:** Edit from "Chat Bot Settings" > "Agency Information":
 - Agency name, phone, address, working hours, website, Google Maps link
 
-**WhatsApp Settings:**
-- Self-service connection via Meta Embedded Signup in "WhatsApp Management"
+**WhatsApp Integration:**
+- Self-service connection via Meta Embedded Signup in "Chat Bot Settings" > "WhatsApp Integration"
 - Track connection status on the same page
 
 **Language Settings:**
