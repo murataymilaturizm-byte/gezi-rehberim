@@ -151,6 +151,7 @@ const Admin = () => {
   const [filterTour, setFilterTour] = useState<string>("ALL");
   const [filterTourDate, setFilterTourDate] = useState<string>("ALL");
   const [filterSourceChannel, setFilterSourceChannel] = useState<string>("ALL");
+  const [filterCategory, setFilterCategory] = useState<string>("ALL");
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>();
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
   const [filterPriceMin, setFilterPriceMin] = useState<string>("");
