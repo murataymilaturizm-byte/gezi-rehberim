@@ -284,6 +284,7 @@ export const ManualRegistrationDialog = ({
                 <Select value={formData.paymentStatus} onValueChange={(v) => {
                   set("paymentStatus", v);
                   set("depositAmount", "");
+                  if (v !== "PAID") set("paymentMethod", "");
                 }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -293,6 +294,20 @@ export const ManualRegistrationDialog = ({
                   </SelectContent>
                 </Select>
               </div>
+
+              {formData.paymentStatus === "PAID" && (
+                <div className="space-y-2">
+                  <Label>Ödeme Yöntemi *</Label>
+                  <Select value={formData.paymentMethod} onValueChange={(v) => set("paymentMethod", v)}>
+                    <SelectTrigger><SelectValue placeholder="Ödeme yöntemi seçin" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CREDIT_CARD">💳 Kredi Kartı</SelectItem>
+                      <SelectItem value="CASH">💵 Nakit</SelectItem>
+                      <SelectItem value="BANK_TRANSFER">🏦 Havale/EFT</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {formData.paymentStatus === "DEPOSIT" && (
                 <div className="space-y-2">
