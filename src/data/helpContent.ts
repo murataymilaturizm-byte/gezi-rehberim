@@ -570,9 +570,9 @@ const helpContent: HelpContent = {
         {
           question: "Common Issues and Solutions",
           answer: `**"Bot is not responding"**
-✓ Is your WhatsApp connection active? (Check in WhatsApp Management)
+✓ Is your WhatsApp connection active? (Check in Chat Bot Settings > WhatsApp Integration)
 ✓ Has your message quota run out?
-→ Solution: Check status in WhatsApp Management page
+→ Solution: Check status in WhatsApp Integration page
 
 **"Tours are not listed"**
 ✓ Have you added at least 1 tour with a future date?
