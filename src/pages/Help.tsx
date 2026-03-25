@@ -454,9 +454,10 @@ Her şablonda kullanılabilen değişkenler:
 - "Ayarlar" > "Fatura Geçmişi" bölümünden görüntülenebilir
 
 **Yıllık Ödeme İndirimi:**
-- Yıllık ödeme yaparsanız 2 ay ücretsiz
-- Başlangıç: 29.990 TL (2 ay bedava = %17 indirim)
-- Profesyonel: 79.990 TL (2 ay bedava = %17 indirim)
+- Yıllık ödeme yaparsanız %10 indirim
+- Başlangıç: 32.389 TL/yıl (2.699 TL/ay)
+- Profesyonel: 53.989 TL/yıl (4.499 TL/ay)
+- Kurumsal: 86.389 TL/yıl (7.199 TL/ay)
 
 **Ödeme Güvenliği:**
 - Tüm ödemeler SSL ile korunur
