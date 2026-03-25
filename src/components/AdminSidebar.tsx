@@ -68,9 +68,9 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   
   // Determine which group should be open based on active tab
   const getDefaultOpenGroup = () => {
-    const generalIds = ["dashboard", "settings", "languages", "history"];
+    const generalIds = ["dashboard", "languages", "history"];
     const tourIds = ["tours", "registrations"];
-    const communicationIds = ["whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings"];
+    const communicationIds = ["settings", "whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
@@ -106,7 +106,6 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
-    { id: "settings", icon: Settings, label: "WhatsApp Entegrasyonu" },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
     { id: "language_currencies", icon: CreditCard, label: "Dil Para Birimleri" },
     { id: "history", icon: History, label: t("admin.tabs.history") },
@@ -118,7 +117,8 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   ];
 
   const communicationItems = [
-    { id: "whatsapp", icon: MessageSquare, label: t("admin.tabs.whatsapp") },
+    { id: "settings", icon: Phone, label: "WhatsApp Entegrasyonu" },
+    { id: "whatsapp", icon: MessageSquare, label: "WhatsApp Kayıtları" },
     { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo") },
     { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },

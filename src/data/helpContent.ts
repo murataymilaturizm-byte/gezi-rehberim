@@ -33,7 +33,7 @@ const helpContent: HelpContent = {
 - Tur tarihlerini ekleyin ve kaydedin
 
 **Adım 3: WhatsApp Bağlantısı (Meta Embedded Signup)**
-- Sol menüden "WhatsApp Yönetimi" sekmesine gidin
+- Sol menüden "Chat Bot Ayarları" > "WhatsApp Entegrasyonu" sekmesine gidin
 - "Connect with Facebook" butonuna tıklayın
 - Facebook/Meta Business hesabınızla giriş yapın
 - WhatsApp Business numaranızı seçin ve izinleri onaylayın
@@ -48,7 +48,7 @@ const helpContent: HelpContent = {
         {
           question: "WhatsApp Business Numarası Nasıl Bağlanır?",
           answer: `**Meta Embedded Signup ile Bağlantı (Önerilen):**
-1. Admin panelinde "WhatsApp Yönetimi" sekmesine gidin
+1. Admin panelinde "Chat Bot Ayarları" > "WhatsApp Entegrasyonu" sekmesine gidin
 2. "Connect with Facebook" butonuna tıklayın
 3. Facebook hesabınızla giriş yapın
 4. Meta Business hesabınızı seçin (yoksa oluşturulacak)
@@ -147,7 +147,7 @@ const helpContent: HelpContent = {
 **Şablon Değişkenleri:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
 
 **Şablonları Özelleştirmek:**
-- "Ayarlar" > "Mesaj Şablonları" sekmesine gidin
+- "Chat Bot Ayarları" > "Mesaj Şablonları" sekmesine gidin
 - Dili seçin, içeriği düzenleyin ve kaydedin
 - Her dil için ayrı şablon oluşturabilirsiniz
 
@@ -239,7 +239,7 @@ const helpContent: HelpContent = {
         {
           question: "Abonelik Yönetimi",
           answer: `**Paket Değiştirme:**
-- "Ayarlar" > "Abonelik" sekmesinden yeni paketi seçin
+- "Abonelik Geçmişi" sekmesinden yeni paketi seçin
 - Yükseltme anında aktif olur
 - Düşürme mevcut dönem sonunda geçerli olur
 
@@ -252,11 +252,11 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Acente Bilgileri ve Ayarları",
-          answer: `**Temel Bilgiler:** "Ayarlar" > "Acente Bilgileri" sekmesinden düzenlenebilir:
+          answer: `**Temel Bilgiler:** "Chat Bot Ayarları" > "Acente Bilgileri" sekmesinden düzenlenebilir:
 - Acente adı, telefon, adres, çalışma saatleri, web sitesi, Google Maps linki
 
-**WhatsApp Ayarları:**
-- "WhatsApp Yönetimi" sekmesinden Meta Embedded Signup ile self-servis bağlantı
+**WhatsApp Entegrasyonu:**
+- "Chat Bot Ayarları" > "WhatsApp Entegrasyonu" sekmesinden Meta Embedded Signup ile self-servis bağlantı
 - Bağlantı durumunu aynı sayfadan takip edebilirsiniz
 
 **Dil Ayarları:**
@@ -290,9 +290,9 @@ const helpContent: HelpContent = {
         {
           question: "Sık Karşılaşılan Sorunlar ve Çözümleri",
           answer: `**"Bot yanıt vermiyor"**
-✓ WhatsApp bağlantınız aktif mi? (WhatsApp Yönetimi'nden kontrol edin)
+✓ WhatsApp bağlantınız aktif mi? (Chat Bot Ayarları > WhatsApp Entegrasyonu'ndan kontrol edin)
 ✓ Mesaj kotanız dolmuş olabilir mi?
-→ Çözüm: WhatsApp Yönetimi sayfasından durumu kontrol edin
+→ Çözüm: WhatsApp Entegrasyonu sayfasından durumu kontrol edin
 
 **"Turlar listelenmiyor"**
 ✓ En az 1 tur ve gelecek tarih eklediniz mi?
@@ -327,7 +327,7 @@ const helpContent: HelpContent = {
 - Add tour dates and save
 
 **Step 3: Connect WhatsApp (Meta Embedded Signup)**
-- Go to "WhatsApp Management" from the left menu
+- Go to "Chat Bot Settings" > "WhatsApp Integration" from the left menu
 - Click the "Connect with Facebook" button
 - Log in with your Facebook/Meta Business account
 - Select your WhatsApp Business number and approve permissions
@@ -341,7 +341,7 @@ const helpContent: HelpContent = {
         {
           question: "How to Connect a WhatsApp Business Number?",
           answer: `**Connect via Meta Embedded Signup (Recommended):**
-1. Go to "WhatsApp Management" tab in admin panel
+1. Go to "Chat Bot Settings" > "WhatsApp Integration" tab in admin panel
 2. Click "Connect with Facebook" button
 3. Log in with your Facebook account
 4. Select your Meta Business account (will be created if you don't have one)
@@ -430,7 +430,7 @@ const helpContent: HelpContent = {
 **Template Variables:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
 
 **Customizing Templates:**
-- Go to "Settings" > "Message Templates"
+- Go to "Chat Bot Settings" > "Message Templates"
 - Select language, edit content, and save
 
 **Note:** Message templates are available in Professional and Enterprise plans.`
@@ -519,7 +519,7 @@ const helpContent: HelpContent = {
         {
           question: "Subscription Management",
           answer: `**Changing Plans:**
-- Select new plan from "Settings" > "Subscription"
+- Select new plan from "Subscription History"
 - Upgrades activate immediately
 - Downgrades apply at end of current period
 
@@ -532,11 +532,11 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Agency Information and Settings",
-          answer: `**Basic Info:** Edit from "Settings" > "Agency Information":
+          answer: `**Basic Info:** Edit from "Chat Bot Settings" > "Agency Information":
 - Agency name, phone, address, working hours, website, Google Maps link
 
-**WhatsApp Settings:**
-- Self-service connection via Meta Embedded Signup in "WhatsApp Management"
+**WhatsApp Integration:**
+- Self-service connection via Meta Embedded Signup in "Chat Bot Settings" > "WhatsApp Integration"
 - Track connection status on the same page
 
 **Language Settings:**
@@ -570,9 +570,9 @@ const helpContent: HelpContent = {
         {
           question: "Common Issues and Solutions",
           answer: `**"Bot is not responding"**
-✓ Is your WhatsApp connection active? (Check in WhatsApp Management)
+✓ Is your WhatsApp connection active? (Check in Chat Bot Settings > WhatsApp Integration)
 ✓ Has your message quota run out?
-→ Solution: Check status in WhatsApp Management page
+→ Solution: Check status in WhatsApp Integration page
 
 **"Tours are not listed"**
 ✓ Have you added at least 1 tour with a future date?

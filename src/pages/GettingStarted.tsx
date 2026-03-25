@@ -43,7 +43,7 @@ const GettingStarted = () => {
       tips: [
         "14 gün ücretsiz deneme — kredi kartı gerekmez",
         "Tüm özellikler deneme süresince aktif",
-        "Acente bilgilerinizi 'Ayarlar' sekmesinden güncelleyebilirsiniz"
+        "Acente bilgilerinizi 'Chat Bot Ayarları' > 'Acente Bilgileri' sekmesinden güncelleyebilirsiniz"
       ]
     },
     {
