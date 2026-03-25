@@ -8,6 +8,7 @@ import { tr } from "date-fns/locale";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useState } from "react";
+import { TOUR_CATEGORIES } from "@/components/admin/tour-form/TourCategories";
 
 interface Tour {
   id: string;
