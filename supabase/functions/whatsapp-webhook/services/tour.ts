@@ -5,6 +5,33 @@ import { callAI } from './ai.ts';
 import { getConversationHistory } from './conversation.ts';
 import { getLanguageName } from './language.ts';
 
+/**
+ * Calculate remaining quota for a tour date by subtracting sold registrations
+ */
+async function enrichDatesWithSoldPax(supabase: any, dates: any[]): Promise<any[]> {
+  if (!dates || dates.length === 0) return [];
+  
+  const dateIds = dates.map(d => d.id);
+  const { data: regData } = await supabase
+    .from('registrations')
+    .select('tour_date_id, pax')
+    .in('tour_date_id', dateIds)
+    .neq('status', 'CANCELLED');
+  
+  const soldMap: Record<string, number> = {};
+  if (regData) {
+    for (const reg of regData) {
+      soldMap[reg.tour_date_id] = (soldMap[reg.tour_date_id] || 0) + reg.pax;
+    }
+  }
+  
+  return dates.map(d => ({
+    ...d,
+    sold_pax: soldMap[d.id] || 0,
+    remaining_quota: d.quota - (soldMap[d.id] || 0)
+  }));
+}
+
 export async function searchToursWithAI(
   supabase: any,
   userMessage: string,
@@ -130,17 +157,24 @@ IMPORTANT:
       matchedIds = (allTours || []).map((t: any) => t.id);
     }
 
-    // Filter matched tours
-    const matchedTours = (allTours || [])
-      .filter((tour: any) => matchedIds.includes(tour.id))
-      .map((tour: any) => ({
-        ...tour,
-        dates: (tour.dates || []).filter((d: any) => {
-          const depDate = new Date(d.departure_date);
-          return depDate >= new Date() && d.quota > 0;
-        })
-      }))
-      .filter((tour: any) => tour.dates.length > 0);
+    // Filter matched tours and enrich with sold pax
+    const matchedToursRaw = (allTours || []).filter((tour: any) => matchedIds.includes(tour.id));
+    
+    const matchedTours = [];
+    for (const tour of matchedToursRaw) {
+      const enrichedDates = await enrichDatesWithSoldPax(supabase, tour.dates || []);
+      const availableDates = enrichedDates.filter((d: any) => {
+        const depDate = new Date(d.departure_date);
+        return depDate >= new Date() && d.remaining_quota > 0;
+      });
+      
+      if (availableDates.length > 0) {
+        matchedTours.push({
+          ...tour,
+          dates: availableDates
+        });
+      }
+    }
 
     return matchedTours.slice(0, 5); // Max 5 tours
   } catch (error) {
@@ -170,18 +204,23 @@ export async function getAllActiveTours(
 
     if (error) throw error;
 
-    // Filter tours with available dates
-    return (tours || [])
-      .map((tour: any) => ({
-        ...tour,
-        dates: (tour.dates || [])
-          .filter((d: any) => {
-            const depDate = new Date(d.departure_date);
-            return depDate >= new Date() && d.quota > 0;
-          })
-          .slice(0, 2) // Only first 2 dates
-      }))
-      .filter((tour: any) => tour.dates.length > 0);
+    // Enrich with sold pax and filter available dates
+    const result = [];
+    for (const tour of (tours || [])) {
+      const enrichedDates = await enrichDatesWithSoldPax(supabase, tour.dates || []);
+      const availableDates = enrichedDates
+        .filter((d: any) => {
+          const depDate = new Date(d.departure_date);
+          return depDate >= new Date() && d.remaining_quota > 0;
+        })
+        .slice(0, 2); // Only first 2 dates
+      
+      if (availableDates.length > 0) {
+        result.push({ ...tour, dates: availableDates });
+      }
+    }
+
+    return result;
   } catch (error) {
     console.error('Error getting tours:', error);
     return [];
