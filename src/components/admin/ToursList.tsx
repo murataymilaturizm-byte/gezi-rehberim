@@ -15,6 +15,21 @@ interface Tour {
   destination: string;
   type: string;
   currency: string;
+  min_pax: number;
+  visa_required: boolean;
+  program_url?: string;
+  program_kisa?: string;
+  hareket_noktasi?: string;
+  toplanma_saati?: string;
+  tur_sure?: string;
+  konaklama?: string;
+  ulasim?: string;
+  tur_kategorisi?: string;
+  gezilecek_yerler?: string;
+  visa_notes?: string;
+  hotel_name?: string;
+  hotel_stars?: number;
+  created_at: string;
   tour_dates?: Array<{
     id: string;
     departure_date: string;
