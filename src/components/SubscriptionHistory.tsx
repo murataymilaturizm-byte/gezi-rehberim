@@ -188,7 +188,7 @@ export const SubscriptionHistory = () => {
     {
       id: "enterprise",
       name: "Kurumsal",
-      price: 14999,
+      price: 7999,
       features: [
         "💬 Sınırsız mesaj",
         "🏨 Sınırsız tur",

@@ -95,8 +95,8 @@ export const RevenueAnalytics = () => {
       // Plan fiyatları
       const planPrices: Record<string, number> = {
         starter: 2999,
-        professional: 7999,
-        enterprise: 14999,
+        professional: 4999,
+        enterprise: 7999,
       };
 
       // Trial'dan aktife dönüşüm oranını hesaba kat

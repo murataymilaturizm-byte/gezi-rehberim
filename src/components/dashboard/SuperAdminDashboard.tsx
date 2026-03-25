@@ -34,7 +34,7 @@ export const SuperAdminDashboard = ({ planFeatures }: SuperAdminDashboardProps) 
 
   if (!superAdminStats) return null;
 
-  const planPrices = { starter: 2999, professional: 7999, enterprise: 14999 };
+  const planPrices = { starter: 2999, professional: 4999, enterprise: 7999 };
   const monthlyRevenue =
     superAdminStats.agenciesByPlan.starter * planPrices.starter +
     superAdminStats.agenciesByPlan.professional * planPrices.professional +
