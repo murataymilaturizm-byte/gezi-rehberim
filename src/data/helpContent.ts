@@ -290,9 +290,9 @@ const helpContent: HelpContent = {
         {
           question: "Sık Karşılaşılan Sorunlar ve Çözümleri",
           answer: `**"Bot yanıt vermiyor"**
-✓ WhatsApp bağlantınız aktif mi? (WhatsApp Yönetimi'nden kontrol edin)
+✓ WhatsApp bağlantınız aktif mi? (Chat Bot Ayarları > WhatsApp Entegrasyonu'ndan kontrol edin)
 ✓ Mesaj kotanız dolmuş olabilir mi?
-→ Çözüm: WhatsApp Yönetimi sayfasından durumu kontrol edin
+→ Çözüm: WhatsApp Entegrasyonu sayfasından durumu kontrol edin
 
 **"Turlar listelenmiyor"**
 ✓ En az 1 tur ve gelecek tarih eklediniz mi?
