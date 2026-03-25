@@ -798,6 +798,8 @@
       "addDate": "Ajouter une Date",
       "dates": "Dates",
       "quota": "Quota",
+      "sold": "vendu",
+      "remaining": "restant",
       "deleteSuccess": "Tour supprimé",
       "deleteError": "Échec de la suppression",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce tour?",

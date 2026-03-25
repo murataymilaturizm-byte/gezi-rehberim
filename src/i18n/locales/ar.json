@@ -794,6 +794,8 @@
       "addDate": "إضافة تاريخ",
       "dates": "التواريخ",
       "quota": "الحصة",
+      "sold": "مباع",
+      "remaining": "متبقي",
       "deleteSuccess": "تم حذف الرحلة",
       "deleteError": "فشلت عملية الحذف",
       "deleteConfirm": "هل أنت متأكد من حذف هذه الرحلة؟",

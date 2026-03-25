@@ -3,6 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
+interface TourDate {
+  id: string;
+  departure_date: string;
+  return_date?: string;
+  price_adult: number;
+  quota: number;
+  sold_pax?: number;
+}
+
 interface Tour {
   id: string;
   title: string;
@@ -13,13 +22,7 @@ interface Tour {
   visa_required: boolean;
   program_url?: string;
   created_at: string;
-  tour_dates?: Array<{
-    id: string;
-    departure_date: string;
-    return_date?: string;
-    price_adult: number;
-    quota: number;
-  }>;
+  tour_dates?: TourDate[];
 }
 
 export const useTours = (activeTab: string, session: any) => {
@@ -56,7 +59,35 @@ export const useTours = (activeTab: string, session: any) => {
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      setTours(data || []);
+
+      // Fetch sold pax per tour_date from registrations (exclude CANCELLED)
+      const tourDateIds = (data || []).flatMap(t => t.tour_dates?.map((d: any) => d.id) || []);
+      let soldMap: Record<string, number> = {};
+      
+      if (tourDateIds.length > 0) {
+        const { data: regData } = await supabase
+          .from("registrations")
+          .select("tour_date_id, pax")
+          .in("tour_date_id", tourDateIds)
+          .neq("status", "CANCELLED");
+        
+        if (regData) {
+          for (const reg of regData) {
+            soldMap[reg.tour_date_id] = (soldMap[reg.tour_date_id] || 0) + reg.pax;
+          }
+        }
+      }
+
+      // Merge sold_pax into tour_dates
+      const toursWithSold = (data || []).map(tour => ({
+        ...tour,
+        tour_dates: tour.tour_dates?.map((d: any) => ({
+          ...d,
+          sold_pax: soldMap[d.id] || 0
+        }))
+      }));
+
+      setTours(toursWithSold);
     } catch (error) {
       console.error("Error loading tours:", error);
     } finally {

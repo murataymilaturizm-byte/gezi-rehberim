@@ -820,6 +820,8 @@
       "addDate": "Add Date",
       "dates": "Dates",
       "quota": "Quota",
+      "sold": "sold",
+      "remaining": "remaining",
       "deleteSuccess": "Tour deleted",
       "deleteError": "Delete operation failed",
       "deleteConfirm": "Are you sure you want to delete this tour?",

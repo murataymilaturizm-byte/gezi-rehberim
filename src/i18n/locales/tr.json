@@ -1049,6 +1049,8 @@
       "addDate": "Tarih Ekle",
       "dates": "Tarihler",
       "quota": "Kontenjan",
+      "sold": "satıldı",
+      "remaining": "kalan",
       "deleteSuccess": "Tur silindi",
       "deleteError": "Tur silinirken hata oluştu",
       "deleteConfirm": "Bu turu silmek istediğinize emin misiniz?",

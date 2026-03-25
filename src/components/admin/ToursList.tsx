@@ -37,6 +37,7 @@ interface Tour {
     return_date?: string;
     price_adult: number;
     quota: number;
+    sold_pax?: number;
   }>;
 }
 
@@ -187,7 +188,18 @@ export const ToursList = ({
                             </span>
                           )}
                         </div>
-                        <span className="text-muted-foreground">{t("admin.tours.quota")}: {date.quota}</span>
+                        <span className="text-muted-foreground">
+                          {t("admin.tours.quota")}: {date.quota}
+                          {(date.sold_pax && date.sold_pax > 0) ? (
+                            <span className="ml-1">
+                              (<span className="text-green-600 font-medium">{date.sold_pax} {t("admin.tours.sold")}</span>
+                              {" / "}
+                              <span className={`font-medium ${(date.quota - (date.sold_pax || 0)) <= 3 ? 'text-orange-500' : 'text-foreground'}`}>
+                                {date.quota - (date.sold_pax || 0)} {t("admin.tours.remaining")}
+                              </span>)
+                            </span>
+                          ) : null}
+                        </span>
                       </div>
                       <div className="flex gap-2">
                         <Button
