@@ -112,6 +112,8 @@ export const exportToursToExcel = (tours: Tour[]) => {
   tours.forEach((tour) => {
     if (tour.tour_dates && tour.tour_dates.length > 0) {
       tour.tour_dates.forEach((date) => {
+        const soldPax = date.sold_pax || 0;
+        const remainingQuota = date.quota - soldPax;
         data.push({
           [t('admin.excel.tourName')]: tour.title,
           [t('admin.excel.destination')]: tour.destination,
@@ -122,6 +124,8 @@ export const exportToursToExcel = (tours: Tour[]) => {
           [t('admin.excel.currency')]: tour.currency,
           [t('admin.excel.childPrice')]: date.price_child || '-',
           [t('admin.tours.quota')]: date.quota,
+          [t('admin.tours.sold')]: soldPax,
+          [t('admin.tours.remaining')]: remainingQuota,
           [t('admin.excel.minPax')]: tour.min_pax,
           [t('admin.registrations.createdAt')]: format(new Date(tour.created_at), 'dd MMMM yyyy', { locale })
         });
