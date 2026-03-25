@@ -149,9 +149,22 @@ export const RegistrationsList = ({
                 </TableCell>
                 <TableCell className="text-right hidden sm:table-cell">
                   {totalPrice > 0 ? (
-                    <span className="text-base font-semibold">
-                      {totalPrice.toLocaleString('tr-TR')}₺
-                    </span>
+                    <div>
+                      {(reg.paid_amount && reg.paid_amount > 0 && reg.paid_amount < totalPrice) ? (
+                        <>
+                          <span className="text-base font-semibold text-green-600">
+                            {reg.paid_amount.toLocaleString('tr-TR')}₺
+                          </span>
+                          <span className="block text-[10px] text-orange-500">
+                            Kalan: {(totalPrice - reg.paid_amount).toLocaleString('tr-TR')}₺
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-base font-semibold">
+                          {totalPrice.toLocaleString('tr-TR')}₺
+                        </span>
+                      )}
+                    </div>
                   ) : '-'}
                 </TableCell>
                 <TableCell className="text-center">
