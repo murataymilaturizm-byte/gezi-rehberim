@@ -16,14 +16,11 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { TOUR_CATEGORIES } from "@/components/admin/tour-form/TourCategories";
 
 interface Tour {
   id: string;
   title: string;
-}
-
-interface TourDate {
-  departure_date: string;
 }
 
 interface RegistrationFiltersProps {
@@ -37,6 +34,8 @@ interface RegistrationFiltersProps {
   setFilterTourDate: (value: string) => void;
   filterSourceChannel: string;
   setFilterSourceChannel: (value: string) => void;
+  filterCategory: string;
+  setFilterCategory: (value: string) => void;
   filterDateFrom: Date | undefined;
   setFilterDateFrom: (date: Date | undefined) => void;
   filterDateTo: Date | undefined;
@@ -59,6 +58,8 @@ export const RegistrationFilters = ({
   setFilterTourDate,
   filterSourceChannel,
   setFilterSourceChannel,
+  filterCategory,
+  setFilterCategory,
   filterDateFrom,
   setFilterDateFrom,
   filterDateTo,
@@ -83,6 +84,7 @@ export const RegistrationFilters = ({
     filterTour !== "ALL" || 
     filterTourDate !== "ALL" ||
     filterSourceChannel !== "ALL" ||
+    filterCategory !== "ALL" ||
     filterDateFrom || 
     filterDateTo || 
     filterPriceMin || 
@@ -92,8 +94,35 @@ export const RegistrationFilters = ({
     <div className="bg-card rounded-lg border p-4 space-y-4">
       <h3 className="text-sm font-semibold">{t("admin.filters.title")}</h3>
       
-      {/* Primary Filters - Tur ve Tur Tarihi */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* Primary Filters - Kategori, Tur ve Tur Tarihi */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* Category Filter */}
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-foreground">
+            Tur Kategorisi
+          </label>
+          <Select 
+            value={filterCategory} 
+            onValueChange={(value) => {
+              setFilterCategory(value);
+              setFilterTour("ALL");
+              setFilterTourDate("ALL");
+            }}
+          >
+            <SelectTrigger className="h-10 border-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tüm Kategoriler</SelectItem>
+              {TOUR_CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  {cat.icon} {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Tour Filter */}
         <div className="space-y-1">
           <label className="text-xs font-semibold text-foreground">
@@ -103,7 +132,6 @@ export const RegistrationFilters = ({
             value={filterTour} 
             onValueChange={(value) => {
               setFilterTour(value);
-              // Tur değiştiğinde tarihi sıfırla
               setFilterTourDate("ALL");
             }}
           >

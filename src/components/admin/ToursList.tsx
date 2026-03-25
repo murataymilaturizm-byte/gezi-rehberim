@@ -8,6 +8,7 @@ import { tr } from "date-fns/locale";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useState } from "react";
+import { TOUR_CATEGORIES } from "@/components/admin/tour-form/TourCategories";
 
 interface Tour {
   id: string;
@@ -15,6 +16,21 @@ interface Tour {
   destination: string;
   type: string;
   currency: string;
+  min_pax: number;
+  visa_required: boolean;
+  program_url?: string;
+  program_kisa?: string;
+  hareket_noktasi?: string;
+  toplanma_saati?: string;
+  tur_sure?: string;
+  konaklama?: string;
+  ulasim?: string;
+  tur_kategorisi?: string;
+  gezilecek_yerler?: string;
+  visa_notes?: string;
+  hotel_name?: string;
+  hotel_stars?: number;
+  created_at: string;
   tour_dates?: Array<{
     id: string;
     departure_date: string;
@@ -97,12 +113,25 @@ export const ToursList = ({
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <h3 className="font-semibold text-lg">{tour.title}</h3>
-                <div className="flex gap-2 text-sm text-muted-foreground">
+                <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                   <span>{tour.destination}</span>
                   <span>•</span>
                   <Badge variant="secondary" className="text-xs">
                     {tourTypeLabels[tour.type] || tour.type}
                   </Badge>
+                  {tour.tur_kategorisi && (() => {
+                    const cat = TOUR_CATEGORIES.find(c => c.value === tour.tur_kategorisi);
+                    return cat ? (
+                      <Badge variant="outline" className="text-xs">
+                        {cat.icon} {cat.label}
+                      </Badge>
+                    ) : null;
+                  })()}
+                  {tour.hotel_name && (
+                    <Badge variant="outline" className="text-xs">
+                      🏨 {tour.hotel_name} {tour.hotel_stars ? `${"⭐".repeat(tour.hotel_stars)}` : ""}
+                    </Badge>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2">
