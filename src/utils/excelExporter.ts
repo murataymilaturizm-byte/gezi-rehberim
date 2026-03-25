@@ -49,6 +49,7 @@ interface Tour {
     price_adult: number;
     price_child?: number;
     quota: number;
+    sold_pax?: number;
   }>;
 }
 
