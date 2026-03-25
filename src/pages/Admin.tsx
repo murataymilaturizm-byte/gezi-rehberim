@@ -406,7 +406,34 @@ const Admin = () => {
         .order("created_at", { ascending: false });
       
       if (toursError) throw toursError;
-      setTours(toursData || []);
+
+      // Fetch sold pax per tour_date from registrations (exclude CANCELLED)
+      const tourDateIds = (toursData || []).flatMap((t: any) => t.tour_dates?.map((d: any) => d.id) || []);
+      let soldMap: Record<string, number> = {};
+      
+      if (tourDateIds.length > 0) {
+        const { data: regSoldData } = await supabase
+          .from("registrations")
+          .select("tour_date_id, pax")
+          .in("tour_date_id", tourDateIds)
+          .neq("status", "CANCELLED");
+        
+        if (regSoldData) {
+          for (const reg of regSoldData) {
+            soldMap[reg.tour_date_id] = (soldMap[reg.tour_date_id] || 0) + reg.pax;
+          }
+        }
+      }
+
+      const toursWithSold = (toursData || []).map((tour: any) => ({
+        ...tour,
+        tour_dates: tour.tour_dates?.map((d: any) => ({
+          ...d,
+          sold_pax: soldMap[d.id] || 0
+        }))
+      }));
+
+      setTours(toursWithSold);
 
       if (activeTab === "registrations") {
         const { data, error } = await supabase
