@@ -163,9 +163,9 @@ const Help = () => {
                       <MessageSquare className="w-5 h-5" />
                       info@ai.turzz.com
                     </Button>
-                    <Button size="lg" variant="outline" onClick={() => navigate("/nasil-baslarim")}>
-                      <Video className="w-5 h-5 mr-2" />
-                      Başlangıç Rehberi
+                     <Button size="lg" variant="outline" onClick={() => navigate("/nasil-baslarim")}>
+                       <Video className="w-5 h-5 mr-2" />
+                       {t("help.quickLinks")}
                     </Button>
                   </div>
                 </div>
