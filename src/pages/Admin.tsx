@@ -258,18 +258,6 @@ const Admin = () => {
     )
   ).sort();
 
-  console.log("🔍 Filter Debug:", {
-    filterTour,
-    toursCount: tours.length,
-    selectedTour: tours.find(t => t.id === filterTour),
-    availableTourDatesCount: availableTourDates.length,
-    availableTourDates,
-    sampleTour: tours[0] ? {
-      id: tours[0].id,
-      title: tours[0].title,
-      tour_dates: tours[0].tour_dates
-    } : null
-  });
 
   const getFilteredRegistrations = () => {
     return registrations.filter(reg => {
