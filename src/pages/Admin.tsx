@@ -815,7 +815,7 @@ const Admin = () => {
                         setDateFormOpen(true);
                       }}
                       onEditTour={(tour) => {
-                        setSelectedTour(tour as any);
+                        setSelectedTour(tour);
                         setTourFormOpen(true);
                       }}
                       onDeleteTour={(tourId) => setDeleteDialog({ open: true, id: tourId, type: "tour" })}
