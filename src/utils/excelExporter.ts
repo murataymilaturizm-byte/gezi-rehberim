@@ -5,7 +5,7 @@ import i18next from 'i18next';
 
 const getDateLocale = () => {
   const lang = i18next.language || 'tr';
-  const locales: Record<string, Locale> = { tr, en: enUS, de, fr, es, ru, ar };
+  const locales: Record<string, typeof tr> = { tr, en: enUS, de, fr, es, ru, ar };
   return locales[lang] || tr;
 };
 
