@@ -80,7 +80,6 @@ export const ManualRegistrationDialog = ({
   useEffect(() => {
     if (open) {
       setStep(0);
-      setCategoryFilter("ALL");
       setFormData({
         tourId: "",
         tourDateId: "",
