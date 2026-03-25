@@ -78,11 +78,22 @@ export const TourCard = ({ tour, onRegister }: TourCardProps) => {
         <div className="flex items-center gap-2 text-sm">
           <Users className="w-4 h-4 text-secondary" />
           <span className="text-muted-foreground">
-            {firstDate.quota > 0 ? (
-              <span className="text-foreground font-medium">{firstDate.quota} {t("admin.tours.quota")}</span>
-            ) : (
-              <span className="text-destructive">{t("admin.tours.quotaFull")}</span>
-            )}
+            {(() => {
+              const remaining = firstDate.quota - (firstDate.sold_pax || 0);
+              if (remaining <= 0) {
+                return <span className="text-destructive">{t("admin.tours.quotaFull")}</span>;
+              }
+              return (
+                <span className="text-foreground font-medium">
+                  {remaining} {t("admin.tours.quota")}
+                  {firstDate.sold_pax && firstDate.sold_pax > 0 && (
+                    <span className="text-muted-foreground font-normal ml-1">
+                      ({firstDate.sold_pax} {t("admin.tours.sold")})
+                    </span>
+                  )}
+                </span>
+              );
+            })()}
           </span>
         </div>
 
