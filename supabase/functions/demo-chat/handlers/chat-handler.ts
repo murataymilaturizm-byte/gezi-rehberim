@@ -74,6 +74,8 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       logger.info("No tours in DB for demo agency, using static DEMO_TOURS");
       rawTours = DEMO_TOURS as any[];
     }
+    // Enrich with sold pax data for accurate quota
+    rawTours = await enrichToursWithSoldPax(supabase, rawTours);
 
     // 4. Load or create context
     const { context, runtimeDetectedLang } = await loadOrCreateContext({
