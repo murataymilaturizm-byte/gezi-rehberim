@@ -519,7 +519,7 @@ const helpContent: HelpContent = {
         {
           question: "Subscription Management",
           answer: `**Changing Plans:**
-- Select new plan from "Settings" > "Subscription"
+- Select new plan from "Subscription History"
 - Upgrades activate immediately
 - Downgrades apply at end of current period
 
