@@ -428,24 +428,7 @@ export const PaymentSettings = () => {
               </p>
             </div>
 
-            <Tabs defaultValue="tr" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="tr">
-                  {t("admin.paymentSettings.languages.tr")}
-                </TabsTrigger>
-                <TabsTrigger value="en">
-                  {t("admin.paymentSettings.languages.en")}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="tr" className="space-y-4 mt-4">
-                {renderLanguageForm("tr", "Türkçe")}
-              </TabsContent>
-
-              <TabsContent value="en" className="space-y-4 mt-4">
-                {renderLanguageForm("en", "English")}
-              </TabsContent>
-            </Tabs>
+            {renderLanguageForm("tr", "Türkçe")}
           </div>
         </div>
 
