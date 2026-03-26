@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, MessageSquare, Lock, Wifi } from "lucide-react";
+import { Settings, CheckCircle2, MessageSquare, Lock, Wifi, FileDown, Phone } from "lucide-react";
 import { WhatsAppEmbeddedSignup } from "./WhatsAppEmbeddedSignup";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -169,6 +169,53 @@ export const WhatsAppSettings = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* PDF Guide */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileDown className="h-5 w-5" />
+            Entegrasyon Rehberi
+          </CardTitle>
+          <CardDescription>
+            WhatsApp Business entegrasyonu için adım adım rehber
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <a
+            href="/docs/whatsapp_embedded_signup_rehberi.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="outline" className="w-full">
+              <FileDown className="mr-2 h-4 w-4" />
+              📄 WhatsApp Entegrasyon Rehberini İndir (PDF)
+            </Button>
+          </a>
+        </CardContent>
+      </Card>
+
+      {/* Support Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="h-5 w-5" />
+            Desteğe ihtiyacınız mı var?
+          </CardTitle>
+          <CardDescription>
+            Entegrasyon sürecinde yardıma ihtiyaç duyarsanız bize ulaşın
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+            <Phone className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-semibold">0541 650 03 03</p>
+              <p className="text-sm text-muted-foreground">WhatsApp veya telefon ile destek alın</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Conversation Style Section */}
       <Card>
