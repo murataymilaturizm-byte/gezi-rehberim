@@ -1,6 +1,38 @@
 // Agency information prompts
 import type { PromptContext } from "./types.ts";
 
+const DAY_NAMES_TR: Record<string, string> = {
+  monday: "Pazartesi", tuesday: "Salı", wednesday: "Çarşamba",
+  thursday: "Perşembe", friday: "Cuma", saturday: "Cumartesi", sunday: "Pazar",
+};
+
+const DAY_NAMES_EN: Record<string, string> = {
+  monday: "Monday", tuesday: "Tuesday", wednesday: "Wednesday",
+  thursday: "Thursday", friday: "Friday", saturday: "Saturday", sunday: "Sunday",
+};
+
+function formatWorkingHours(raw: string | undefined, language: string): string {
+  if (!raw) return "";
+  try {
+    const data = JSON.parse(raw);
+    if (data && typeof data === "object" && data.monday !== undefined) {
+      const dayNames = language === "tr" ? DAY_NAMES_TR : DAY_NAMES_EN;
+      const closed = language === "tr" ? "Kapalı" : "Closed";
+      const lines: string[] = [];
+      for (const [key, name] of Object.entries(dayNames)) {
+        const day = data[key];
+        if (day && day.enabled) {
+          lines.push(`${name}: ${day.open} - ${day.close}`);
+        } else {
+          lines.push(`${name}: ${closed}`);
+        }
+      }
+      return lines.join("\n");
+    }
+  } catch {}
+  return raw;
+}
+
 export function getAgencyInfo(context: PromptContext, language: string): string {
   const {
     agencyName,
@@ -16,6 +48,7 @@ export function getAgencyInfo(context: PromptContext, language: string): string 
   if (!agencyName) return "";
 
   const cityText = agencyCity ? ` (${agencyCity})` : "";
+  const formattedHours = formatWorkingHours(agencyWorkingHours, language);
 
   if (language === "tr") {
     return `\n\n🏢 ACENTE BİLGİSİ:
@@ -23,7 +56,7 @@ Acente görünen adı: ${agencyName}${cityText}
 ${agencyAddress ? `Adres: ${agencyAddress}` : "Adres: Henüz eklenmemiş"}
 ${agencyPhone ? `Telefon: ${agencyPhone}` : "Telefon: Henüz eklenmemiş"}
 ${agencyWebsite ? `Web: ${agencyWebsite}` : ""}
-${agencyWorkingHours ? `Çalışma Saatleri: ${agencyWorkingHours}` : "Çalışma Saatleri: Henüz eklenmemiş"}
+${formattedHours ? `Çalışma Saatleri:\n${formattedHours}` : "Çalışma Saatleri: Henüz eklenmemiş"}
 ${agencyMapsUrl ? `Konum: ${agencyMapsUrl}` : ""}
 ${agencyCancellationPolicy ? `İptal Koşulları: ${agencyCancellationPolicy}` : "İptal Koşulları: Henüz eklenmemiş"}
 
@@ -46,7 +79,7 @@ Agency display name: ${agencyName}${cityText}
 ${agencyAddress ? `Address: ${agencyAddress}` : "Address: Not available"}
 ${agencyPhone ? `Phone: ${agencyPhone}` : "Phone: Not available"}
 ${agencyWebsite ? `Website: ${agencyWebsite}` : ""}
-${agencyWorkingHours ? `Working Hours: ${agencyWorkingHours}` : "Working Hours: Not available"}
+${formattedHours ? `Working Hours:\n${formattedHours}` : "Working Hours: Not available"}
 ${agencyMapsUrl ? `Location: ${agencyMapsUrl}` : ""}
 ${agencyCancellationPolicy ? `Cancellation Policy: ${agencyCancellationPolicy}` : "Cancellation Policy: Not available"}
 
