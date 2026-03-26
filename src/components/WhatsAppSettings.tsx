@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, MessageSquare, Lock, Wifi } from "lucide-react";
+import { Settings, CheckCircle2, MessageSquare, Lock, Wifi, FileDown, Phone } from "lucide-react";
 import { WhatsAppEmbeddedSignup } from "./WhatsAppEmbeddedSignup";
 import { useToast } from "@/hooks/use-toast";
 import {
