@@ -5,9 +5,64 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Building2, MapPin, Phone, Globe, Clock, XCircle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface DaySchedule {
+  enabled: boolean;
+  open: string;
+  close: string;
+}
+
+interface WorkingHoursData {
+  [key: string]: DaySchedule;
+}
+
+const DAYS = [
+  { key: "monday", label: "Pazartesi" },
+  { key: "tuesday", label: "Salı" },
+  { key: "wednesday", label: "Çarşamba" },
+  { key: "thursday", label: "Perşembe" },
+  { key: "friday", label: "Cuma" },
+  { key: "saturday", label: "Cumartesi" },
+  { key: "sunday", label: "Pazar" },
+];
+
+const HOURS = Array.from({ length: 24 }, (_, i) => {
+  const h = i.toString().padStart(2, "0");
+  return [`${h}:00`, `${h}:30`];
+}).flat();
+
+const DEFAULT_HOURS: WorkingHoursData = {
+  monday: { enabled: true, open: "09:00", close: "18:00" },
+  tuesday: { enabled: true, open: "09:00", close: "18:00" },
+  wednesday: { enabled: true, open: "09:00", close: "18:00" },
+  thursday: { enabled: true, open: "09:00", close: "18:00" },
+  friday: { enabled: true, open: "09:00", close: "18:00" },
+  saturday: { enabled: true, open: "09:00", close: "14:00" },
+  sunday: { enabled: false, open: "09:00", close: "18:00" },
+};
+
+function parseWorkingHours(raw: string): WorkingHoursData {
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && parsed.monday) return parsed;
+  } catch {}
+  return { ...DEFAULT_HOURS };
+}
+
+function formatWorkingHoursForDisplay(data: WorkingHoursData): string {
+  return JSON.stringify(data);
+}
 
 interface AgencyInfo {
   address?: string;
@@ -32,6 +87,7 @@ export function AgencyInfoSettings() {
     maps_url: "",
     cancellation_policy: ""
   });
+  const [workingHours, setWorkingHours] = useState<WorkingHoursData>(DEFAULT_HOURS);
 
   useEffect(() => {
     fetchAgencyInfo();
@@ -53,6 +109,8 @@ export function AgencyInfoSettings() {
 
       if (agency) {
         setAgencyId(agency.id);
+        const parsed = parseWorkingHours(agency.working_hours || "");
+        setWorkingHours(parsed);
         setAgencyInfo({
           address: agency.address || "",
           phone_public: agency.phone_public || "",
@@ -79,9 +137,10 @@ export function AgencyInfoSettings() {
 
     setSaving(true);
     try {
+      const serialized = formatWorkingHoursForDisplay(workingHours);
       const { error } = await supabase
         .from('agencies')
-        .update(agencyInfo)
+        .update({ ...agencyInfo, working_hours: serialized })
         .eq('id', agencyId);
 
       if (error) throw error;
@@ -100,6 +159,13 @@ export function AgencyInfoSettings() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const updateDay = (day: string, field: keyof DaySchedule, value: any) => {
+    setWorkingHours(prev => ({
+      ...prev,
+      [day]: { ...prev[day], [field]: value }
+    }));
   };
 
   if (loading) {
@@ -188,17 +254,54 @@ export function AgencyInfoSettings() {
             {t("agencyInfo.workingHours")}
           </CardTitle>
           <CardDescription>
-            {t("agencyInfo.workingHoursPlaceholder")}
+            Günlere göre çalışma saatlerinizi belirleyin
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Textarea
-            id="working_hours"
-            placeholder={t("agencyInfo.workingHoursPlaceholder")}
-            value={agencyInfo.working_hours}
-            onChange={(e) => setAgencyInfo({ ...agencyInfo, working_hours: e.target.value })}
-            rows={3}
-          />
+          <div className="space-y-3">
+            {DAYS.map(day => (
+              <div key={day.key} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <Switch
+                  checked={workingHours[day.key]?.enabled ?? false}
+                  onCheckedChange={(checked) => updateDay(day.key, "enabled", checked)}
+                />
+                <span className="w-24 text-sm font-medium">{day.label}</span>
+                {workingHours[day.key]?.enabled ? (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={workingHours[day.key]?.open || "09:00"}
+                      onValueChange={(v) => updateDay(day.key, "open", v)}
+                    >
+                      <SelectTrigger className="w-24 h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HOURS.map(h => (
+                          <SelectItem key={h} value={h}>{h}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-muted-foreground text-sm">-</span>
+                    <Select
+                      value={workingHours[day.key]?.close || "18:00"}
+                      onValueChange={(v) => updateDay(day.key, "close", v)}
+                    >
+                      <SelectTrigger className="w-24 h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HOURS.map(h => (
+                          <SelectItem key={h} value={h}>{h}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Kapalı</span>
+                )}
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
