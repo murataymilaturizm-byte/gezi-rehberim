@@ -171,17 +171,22 @@ export function formatTourDetails(tour: any, language: string, tone: string = "s
 
   let datesSection = "";
   if (dates.length > 0) {
+    const isTR = language === "tr";
     const formattedDates = dates
       .map((d: any, idx: number) => {
         const formattedDate = formatDateForLanguage(d.departure_date, language);
-        const datePrice = d.price_adult ? ` (${d.price_adult}₺)` : "";
+        const datePrice = d.price_adult ? ` - ${d.price_adult}₺` : "";
+        const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
+        const quotaText = remaining !== undefined
+          ? (isTR ? ` (${remaining} kişilik yer)` : ` (${remaining} spots)`)
+          : "";
 
         if (tone === "kurumsal") {
-          return `  ${idx + 1}) ${formattedDate}${datePrice}`;
+          return `  ${idx + 1}) ${formattedDate}${datePrice}${quotaText}`;
         } else if (tone === "dinamik") {
-          return `  ${getNumberEmoji(idx + 1)} ${formattedDate}${datePrice}`;
+          return `  ${getNumberEmoji(idx + 1)} ${formattedDate}${datePrice}${quotaText}`;
         } else {
-          return `  ${idx + 1}) ${formattedDate}${datePrice}`;
+          return `  ${idx + 1}) ${formattedDate}${datePrice}${quotaText}`;
         }
       })
       .join("\n");

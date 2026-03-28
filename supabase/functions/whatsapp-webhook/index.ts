@@ -256,6 +256,23 @@ serve(async (req) => {
     }
 
     const today = new Date().toISOString().split("T")[0];
+
+    // Enrich tour dates with sold pax for accurate quota display
+    const allDateIds = toursRaw.flatMap((t: any) => (t.dates || []).map((d: any) => d.id));
+    let soldMap: Record<string, number> = {};
+    if (allDateIds.length > 0) {
+      const { data: regData } = await supabase
+        .from("registrations")
+        .select("tour_date_id, pax")
+        .in("tour_date_id", allDateIds)
+        .neq("status", "CANCELLED");
+      if (regData) {
+        for (const reg of regData) {
+          soldMap[reg.tour_date_id] = (soldMap[reg.tour_date_id] || 0) + reg.pax;
+        }
+      }
+    }
+
     const tours = toursRaw
       .map((tour: any) => ({
         id: tour.id,
@@ -265,7 +282,18 @@ serve(async (req) => {
         currency: tour.currency,
         program_kisa: pickLocalized(tour, "program_kisa", context.language),
         gezilecek_yerler: tour.gezilecek_yerler,
-        dates: (tour.dates || []).filter((d: any) => d.departure_date >= today),
+        toplanma_saati: tour.toplanma_saati,
+        hareket_noktasi: tour.hareket_noktasi,
+        tur_sure: tour.tur_sure,
+        konaklama: tour.konaklama,
+        ulasim: tour.ulasim,
+        dates: (tour.dates || [])
+          .map((d: any) => ({
+            ...d,
+            sold_pax: soldMap[d.id] || 0,
+            remaining_quota: d.quota - (soldMap[d.id] || 0),
+          }))
+          .filter((d: any) => d.departure_date >= today && d.remaining_quota > 0),
       }))
       .filter((tour: any) => tour.dates.length > 0);
 
