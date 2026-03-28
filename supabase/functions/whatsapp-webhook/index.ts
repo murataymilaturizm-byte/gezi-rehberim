@@ -256,6 +256,23 @@ serve(async (req) => {
     }
 
     const today = new Date().toISOString().split("T")[0];
+
+    // Enrich tour dates with sold pax for accurate quota display
+    const allDateIds = toursRaw.flatMap((t: any) => (t.dates || []).map((d: any) => d.id));
+    let soldMap: Record<string, number> = {};
+    if (allDateIds.length > 0) {
+      const { data: regData } = await supabase
+        .from("registrations")
+        .select("tour_date_id, pax")
+        .in("tour_date_id", allDateIds)
+        .neq("status", "CANCELLED");
+      if (regData) {
+        for (const reg of regData) {
+          soldMap[reg.tour_date_id] = (soldMap[reg.tour_date_id] || 0) + reg.pax;
+        }
+      }
+    }
+
     const tours = toursRaw
       .map((tour: any) => ({
         id: tour.id,
@@ -265,7 +282,18 @@ serve(async (req) => {
         currency: tour.currency,
         program_kisa: pickLocalized(tour, "program_kisa", context.language),
         gezilecek_yerler: tour.gezilecek_yerler,
-        dates: (tour.dates || []).filter((d: any) => d.departure_date >= today),
+        toplanma_saati: tour.toplanma_saati,
+        hareket_noktasi: tour.hareket_noktasi,
+        tur_sure: tour.tur_sure,
+        konaklama: tour.konaklama,
+        ulasim: tour.ulasim,
+        dates: (tour.dates || [])
+          .map((d: any) => ({
+            ...d,
+            sold_pax: soldMap[d.id] || 0,
+            remaining_quota: d.quota - (soldMap[d.id] || 0),
+          }))
+          .filter((d: any) => d.departure_date >= today && d.remaining_quota > 0),
       }))
       .filter((tour: any) => tour.dates.length > 0);
 
@@ -757,6 +785,12 @@ Never say anything about the previous booking.`;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    // Build conversation history for AI context
+    const conversationMessages = (recentMsgs || [])
+      .reverse()
+      .filter((m) => m.role !== "system")
+      .map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }));
+
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -764,9 +798,9 @@ Never say anything about the previous booking.`;
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
+          ...conversationMessages,
           { role: "user", content: message },
         ],
-        
       }),
     });
 
