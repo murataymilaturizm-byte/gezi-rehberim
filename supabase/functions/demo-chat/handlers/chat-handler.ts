@@ -1,13 +1,11 @@
-// Main Chat Handler
+// Main Chat Handler v3.4.0
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Config & Utils
 import { CONFIG, corsHeaders } from "../config/constants.ts";
 import { logger } from "../utils/logger.ts";
 import { DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from "../config/demo-tours.ts";
 
-// Services
 import { loadOrCreateContext, buildNLUContext } from "../services/context-manager.ts";
 import { loadToursFromDatabase, getLocalizedTours, enrichToursWithSoldPax } from "../services/tour-loader.ts";
 import { findMatchingTours, findTourById } from "../services/tour-matching.ts";
@@ -18,28 +16,21 @@ import { buildCompleteSystemPrompt } from "../services/prompt-builder-helper.ts"
 import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage } from "../services/payment.ts";
 
-// FSM imports
 import { processTransition, getNextExpectedInput } from "../../shared/fsm/state-machine.ts";
 import { sanitizeInput } from "../../shared/fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../../shared/fsm/nlu.ts";
 import { formatDateForLanguage } from "../../shared/fsm/localization.ts";
 import type { ProcessingInput, ConversationContext } from "../../shared/fsm/types.ts";
 
-// Handlers
 import { createErrorResponse, createSuccessResponse, DemoChatError } from "./error-handler.ts";
-
 import type { RequestData, Tour, ChatResponse } from "../types/index.ts";
 
-const VERSION = "v3.3.0";
+const VERSION = "v3.4.0";
 
 async function parseRequest(req: Request): Promise<RequestData> {
   const body = await req.json();
   const { message: rawMessage, sessionId, conversationState, conversationStyle } = body;
-
-  if (!sessionId) {
-    throw new DemoChatError("VALIDATION", "Session ID required", 400);
-  }
-
+  if (!sessionId) throw new DemoChatError("VALIDATION", "Session ID required", 400);
   return {
     message: sanitizeInput(rawMessage),
     sessionId,
@@ -49,8 +40,8 @@ async function parseRequest(req: Request): Promise<RequestData> {
 }
 
 /**
- * Deterministik tarih listesi oluştur
- * AI'ya bırakmadan doğrudan tarih listesi mesajı döner
+ * Deterministik tarih listesi mesajı
+ * Tek tarih olsa bile kullanıcıya göster — otomatik seçme
  */
 function buildDateSelectionMessage(tour: any, language: string): string {
   const dateLines = tour.dates
@@ -64,7 +55,7 @@ function buildDateSelectionMessage(tour: any, language: string): string {
     })
     .join("\n");
 
-  const messages: Record<string, string> = {
+  const msgs: Record<string, string> = {
     tr: `*${tour.title}* için müsait tarihler:\n${dateLines}\n\nHangi tarihi tercih edersiniz?`,
     en: `Available dates for *${tour.title}*:\n${dateLines}\n\nWhich date do you prefer?`,
     de: `Verfügbare Termine für *${tour.title}*:\n${dateLines}\n\nWelches Datum bevorzugen Sie?`,
@@ -73,8 +64,7 @@ function buildDateSelectionMessage(tour: any, language: string): string {
     fr: `Dates disponibles pour *${tour.title}* :\n${dateLines}\n\nQuelle date préférez-vous ?`,
     es: `Fechas disponibles para *${tour.title}*:\n${dateLines}\n\n¿Qué fecha prefieres?`,
   };
-
-  return messages[language] || messages.tr;
+  return msgs[language] || msgs.tr;
 }
 
 export async function handleChatRequest(req: Request): Promise<Response> {
@@ -90,7 +80,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Tours yükle
+    // Tours
     let rawTours = await loadToursFromDatabase(supabase);
     if (!rawTours || rawTours.length === 0) {
       logger.info("No tours in DB, using DEMO_TOURS");
@@ -98,37 +88,23 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     }
     rawTours = await enrichToursWithSoldPax(supabase, rawTours);
 
-    // Context yükle
-    const { context, runtimeDetectedLang } = await loadOrCreateContext({
+    // Context
+    const { context } = await loadOrCreateContext({
       clientState: conversationState,
       message,
       conversationStyle,
     });
     language = context.language;
-
     const previousContext: ConversationContext = { ...context };
 
-    // Turları lokalize et
     const availableTours = getLocalizedTours(rawTours, context.language);
     logger.info(`Using ${availableTours.length} tours (lang: ${context.language})`);
 
-    logger.debug("Message received", {
-      message,
-      stage: context.stage,
-      lang: context.language,
-      tone: context.tone,
-      collectionStep: context.collectionStep,
-    });
+    logger.debug("Message", { message, stage: context.stage, collectionStep: context.collectionStep });
 
-    // NLU — availableTours kullan (DEMO_TOURS değil!)
+    // NLU — availableTours kullan (DEMO_TOURS DEĞİL)
     const nluContext = buildNLUContext(context);
-    const nluResult = await analyzeUserMessage(
-      message,
-      nluContext,
-      context.stage,
-      context.currentTour,
-      availableTours, // ← Düzeltildi: DEMO_TOURS yerine availableTours
-    );
+    const nluResult = await analyzeUserMessage(message, nluContext, context.stage, context.currentTour, availableTours);
 
     const detectedIntent = mapNLUIntentToFSMIntent(nluResult.intent);
     logger.intent(nluResult.intent, detectedIntent);
@@ -169,8 +145,9 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const newContext = processTransition(context, input);
     logger.transition(context.stage, newContext.stage);
 
-    // === DEterministik TARIH LİSTESİ ===
-    // COLLECTING_INFO + waiting_for_date → AI'ya bırakma, direkt listele
+    // === DETERMİNİSTİK TARİH LİSTESİ ===
+    // COLLECTING_INFO + waiting_for_date → Her zaman tarih listesi göster
+    // Tek tarih olsa bile! Otomatik seçme, kullanıcıya göster.
     if (
       newContext.stage === "COLLECTING_INFO" &&
       newContext.collectionStep === "waiting_for_date" &&
@@ -180,14 +157,11 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       if (tourForDates?.dates?.length) {
         const dateReply = buildDateSelectionMessage(tourForDates, newContext.language);
         await saveConversation(supabase, sessionId, message, dateReply);
-        return createSuccessResponse({
-          response: dateReply,
-          conversationState: newContext,
-        });
+        return createSuccessResponse({ response: dateReply, conversationState: newContext });
       }
     }
 
-    // Agency data yükle
+    // Agency data
     const agencyData = await getAgencyData(supabase);
     const paymentInstructions = agencyData?.payment_instructions ?? DEMO_PAYMENT_INSTRUCTIONS ?? null;
     const paymentInfo = extractPaymentInfoText(paymentInstructions);
@@ -214,7 +188,6 @@ export async function handleChatRequest(req: Request): Promise<Response> {
             const today = new Date().toISOString().split("T")[0];
             const agencyPhone = agencyData?.phone_public ? ` 📞 ${agencyData.phone_public}` : "";
             const currentTourRaw = rawTours.find((t: any) => t.id === newContext.reservationInfo.tourId);
-
             const otherDates = (currentTourRaw?.dates || []).filter((d: any) => {
               if (d.id === dateId) return false;
               if (d.departure_date < today) return false;
@@ -228,7 +201,6 @@ export async function handleChatRequest(req: Request): Promise<Response> {
                 .select("pax", { count: "exact" })
                 .eq("tour_date_id", d.id)
                 .neq("status", "CANCELLED");
-
               const available = (d.quota || 999) - (usedForDate || 0);
               if (available >= paxAdult) {
                 const dateStr = new Date(d.departure_date).toLocaleDateString(
@@ -248,18 +220,16 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
             const lang = newContext.language || "tr";
             let quotaMsg = "";
-
             if (availableDatesList.length > 0) {
-              const dateListStr = availableDatesList.join("\n");
               const msgs: Record<string, string> = {
-                tr: `Üzgünüz, seçtiğiniz tarih için yeterli kontenjan bulunmamaktadır (kalan: ${remainingQuota} kişi).\n\n📅 *Müsait Diğer Tarihler:*\n${dateListStr}\n\nBu tarihlerden birini seçmek ister misiniz?`,
-                en: `Sorry, the selected date doesn't have enough spots (remaining: ${remainingQuota}).\n\n📅 *Available Dates:*\n${dateListStr}\n\nWould you like to choose one of these dates?`,
+                tr: `Üzgünüz, seçtiğiniz tarih için yeterli kontenjan bulunmamaktadır (kalan: ${remainingQuota} kişi).\n\n📅 *Müsait Diğer Tarihler:*\n${availableDatesList.join("\n")}\n\nBu tarihlerden birini seçmek ister misiniz?`,
+                en: `Sorry, the selected date doesn't have enough spots (remaining: ${remainingQuota}).\n\n📅 *Available Dates:*\n${availableDatesList.join("\n")}\n\nWould you like to choose one of these dates?`,
               };
               quotaMsg = msgs[lang] || msgs["tr"];
             } else {
               const msgs: Record<string, string> = {
                 tr: `Üzgünüz, seçtiğiniz tarih için yeterli kontenjan bulunmamaktadır (kalan: ${remainingQuota} kişi). Şu an bu tur için müsait başka tarih de bulunmuyor.\n\nLütfen ${agencyData?.name || ""} ile iletişime geçiniz.${agencyPhone}`,
-                en: `Sorry, there are not enough spots (remaining: ${remainingQuota}). There are no other available dates.\n\nPlease contact ${agencyData?.name || ""}.${agencyPhone}`,
+                en: `Sorry, there are not enough spots (remaining: ${remainingQuota}). No other dates available.\n\nPlease contact ${agencyData?.name || ""}.${agencyPhone}`,
               };
               quotaMsg = msgs[lang] || msgs["tr"];
             }
@@ -288,19 +258,17 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       const saveResult = await saveReservation(supabase, newContext);
       if (!saveResult.success) {
         logger.error("Reservation save failed", { error: saveResult.error });
-
         const agencyPhone = agencyData?.phone_public || "";
         const agencyName = agencyData?.name || "";
         const phoneInfo = agencyPhone ? ` 📞 ${agencyPhone}` : "";
-
         const errorMessages: Record<string, string> = {
           tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agencyName} ile iletişime geçiniz.${phoneInfo}`,
-          en: `There was an issue creating your reservation. Please contact ${agencyName} directly.${phoneInfo}`,
-          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
-          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agencyName}.${phoneInfo}`,
+          en: `There was an issue creating your reservation. Please contact ${agencyName}.${phoneInfo}`,
+          de: `Problem bei der Reservierung. Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
+          ar: `حدثت مشكلة. يرجى التواصل مع ${agencyName}.${phoneInfo}`,
           fr: `Un problème est survenu. Veuillez contacter ${agencyName}.${phoneInfo}`,
           es: `Hubo un problema. Por favor contacte a ${agencyName}.${phoneInfo}`,
-          ru: `При создании бронирования возникла проблема. Свяжитесь с ${agencyName}.${phoneInfo}`,
+          ru: `Проблема при создании. Свяжитесь с ${agencyName}.${phoneInfo}`,
         };
         reservationErrorMessage = errorMessages[language] || errorMessages["tr"];
         reservationSaveFailed = true;
@@ -309,7 +277,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       }
     }
 
-    // System prompt oluştur
+    // System prompt
     const systemPrompt = buildCompleteSystemPrompt({
       context: newContext,
       previousContext,
@@ -320,16 +288,15 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       selectedTour,
     });
 
-    // Konuşma geçmişi
     const conversationHistory = await getConversationHistory(supabase, sessionId);
 
-    // Rezervasyon kaydı başarısız → AI çağırma
+    // Rezervasyon hatası
     if (reservationSaveFailed) {
       await saveConversation(supabase, sessionId, message, reservationErrorMessage);
       return createSuccessResponse({ response: reservationErrorMessage, conversationState: newContext });
     }
 
-    // === DEterministik TAMAMLAMA MESAJI ===
+    // === DETERMİNİSTİK TAMAMLAMA MESAJI ===
     if (isNewlyCompleted && !reservationSaveFailed && newContext.reservationInfo) {
       const selectedTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null;
       const selectedDateData = selectedTourData?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
@@ -347,7 +314,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
       const completionMessages: Record<string, string> = {
         tr: `Bilgilerinizi aldım ${newContext.reservationInfo.fullName || ""}, çok teşekkür ederim! 😊\n*${selectedTourData?.title || newContext.reservationInfo.tourTitle || "Tur"}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${selectedTourData?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${newContext.reservationInfo.fullName || "-"}\n• *Telefon:* ${newContext.reservationInfo.phone || "-"}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
-        en: `Thank you, ${newContext.reservationInfo.fullName || ""}! 😊\nYour pre-registration for *${selectedTourData?.title || newContext.reservationInfo.tourTitle || "Tour"}* has been created successfully.\n\n*Registration Summary:*\n• *Tour:* ${selectedTourData?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${newContext.reservationInfo.fullName || "-"}\n• *Phone:* ${newContext.reservationInfo.phone || "-"}\n\nOur team will contact you shortly for final booking and payment details.`,
+        en: `Thank you, ${newContext.reservationInfo.fullName || ""}! 😊\nYour pre-registration for *${selectedTourData?.title || newContext.reservationInfo.tourTitle || "Tour"}* has been created successfully.\n\n*Registration Summary:*\n• *Tour:* ${selectedTourData?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${newContext.reservationInfo.fullName || "-"}\n• *Phone:* ${newContext.reservationInfo.phone || "-"}\n\nOur team will contact you shortly.`,
       };
 
       let deterministicReply = completionMessages[newContext.language] || completionMessages.tr;
@@ -356,14 +323,12 @@ export async function handleChatRequest(req: Request): Promise<Response> {
         const adultPrice = selectedDateData?.price_adult || 0;
         const childPrice = selectedDateData?.price_child ?? adultPrice;
         const totalPrice = adultCount * adultPrice + childCount * childPrice;
-
         const depositPercentage =
           typeof paymentInstructions === "object" &&
           paymentInstructions !== null &&
           typeof (paymentInstructions as any).deposit_percentage === "number"
             ? (paymentInstructions as any).deposit_percentage
             : CONFIG.DEFAULT_DEPOSIT_PERCENTAGE;
-
         const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
         const tourCurrency = selectedTourData?.currency || "TRY";
 
@@ -379,7 +344,6 @@ export async function handleChatRequest(req: Request): Promise<Response> {
               primaryCurrency: agencyData?.primary_currency || "TRY",
             },
           );
-
           if (paymentMessage) {
             deterministicReply += paymentMessage;
             newContext.paymentInfoSent = true;
@@ -403,20 +367,18 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
     let finalResponse = aiResponse;
 
-    // Ödeme bilgisi ekle (COMPLETED ama deterministik bloktan geçmedi)
+    // Ödeme bilgisi (gerekirse)
     if (newContext.stage === "COMPLETED" && !newContext.paymentInfoSent && paymentInstructions) {
       const priceAdult =
         newContext.currentTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId)?.price_adult || 0;
       const paxAdult = newContext.reservationInfo.paxAdult || 1;
       const totalPrice = priceAdult * paxAdult;
-
       const depositPercentage =
         typeof paymentInstructions === "object" &&
         paymentInstructions !== null &&
         typeof (paymentInstructions as any).deposit_percentage === "number"
           ? (paymentInstructions as any).deposit_percentage
           : CONFIG.DEFAULT_DEPOSIT_PERCENTAGE;
-
       const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
       const currentTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null;
       const tourCurrency = currentTourData?.currency || "TRY";
@@ -432,19 +394,16 @@ export async function handleChatRequest(req: Request): Promise<Response> {
           primaryCurrency: agencyData?.primary_currency || "TRY",
         },
       );
-
       if (paymentMessage) {
         finalResponse = aiResponse + paymentMessage;
         newContext.paymentInfoSent = true;
       }
     }
 
-    // Şikayet kaydet
     if (nluResult.intent === "complaint_feedback") {
       await saveComplaint(supabase, sessionId, message);
     }
 
-    // Konuşmayı kaydet
     await saveConversation(supabase, sessionId, message, finalResponse);
 
     return createSuccessResponse({ response: finalResponse, conversationState: newContext });
