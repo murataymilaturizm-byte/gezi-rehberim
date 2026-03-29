@@ -8,7 +8,12 @@ import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
 import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
-import { pickLocalized, detectLanguageChangeIntent, getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
+import {
+  pickLocalized,
+  detectLanguageChangeIntent,
+  getDefaultToneForLanguage,
+  formatDateForLanguage,
+} from "../shared/fsm/localization.ts";
 import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
@@ -596,6 +601,58 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 ${context.stage} → ${newContext.stage}`);
 
+    // Deterministic date listing (do not depend on AI for this step)
+    if (
+      newContext.stage === "COLLECTING_INFO" &&
+      newContext.collectionStep === "waiting_for_date" &&
+      newContext.currentTour
+    ) {
+      const selectedTourForDates = findTourById(newContext.currentTour.id, tours);
+      if (selectedTourForDates?.dates?.length) {
+        const dateLines = selectedTourForDates.dates
+          .map((d: any, idx: number) => {
+            const dateText = formatDateForLanguage(d.departure_date, newContext.language);
+            const priceText = d.price_adult ? ` - ${d.price_adult} ${selectedTourForDates.currency || "TRY"}` : "";
+            const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
+            const quotaText =
+              remaining !== undefined
+                ? newContext.language === "tr"
+                  ? ` (${remaining} kişilik yer)`
+                  : ` (${remaining} spots)`
+                : "";
+            return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
+          })
+          .join("\n");
+
+        const dateSelectionMessages: Record<string, string> = {
+          tr: `*${selectedTourForDates.title}* için müsait tarihler:\n${dateLines}\n\nHangi tarihi tercih edersiniz?`,
+          en: `Available dates for *${selectedTourForDates.title}*:\n${dateLines}\n\nWhich date do you prefer?`,
+          de: `Verfügbare Termine für *${selectedTourForDates.title}*:\n${dateLines}\n\nWelches Datum bevorzugen Sie?`,
+          ru: `Доступные даты для *${selectedTourForDates.title}*:\n${dateLines}\n\nКакую дату вы предпочитаете?`,
+          ar: `التواريخ المتاحة لـ *${selectedTourForDates.title}*:\n${dateLines}\n\nما التاريخ الذي تفضله؟`,
+          fr: `Dates disponibles pour *${selectedTourForDates.title}* :\n${dateLines}\n\nQuelle date préférez-vous ?`,
+          es: `Fechas disponibles para *${selectedTourForDates.title}*:\n${dateLines}\n\n¿Qué fecha prefieres?`,
+        };
+
+        const dateReply = dateSelectionMessages[newContext.language] || dateSelectionMessages.tr;
+
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "assistant", content: dateReply, agency_id: agency.id });
+
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(dateReply));
+
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // === KOTA KONTROLÜ ===
     if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED") {
       const { dateId, paxAdult } = newContext.reservationInfo;
@@ -700,6 +757,220 @@ serve(async (req) => {
           }
         }
       }
+    }
+
+    // Deterministic completion handling (save first, then respond)
+    const justCompletedReservation =
+      newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED";
+
+    if (justCompletedReservation) {
+      const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
+      const reservationPhone = regPhone || userPhone;
+
+      const missingOrder = !dateId
+        ? "waiting_for_date"
+        : !paxAdult
+          ? "waiting_for_pax"
+          : !fullName
+            ? "waiting_for_name"
+            : !reservationPhone
+              ? "waiting_for_phone"
+              : null;
+
+      if (missingOrder) {
+        const missingMsgs: Record<string, string> = {
+          tr: "Rezervasyonu tamamlayabilmem için eksik bilgileri adım adım tamamlayalım.",
+          en: "Let's complete the missing details step by step to finalize your reservation.",
+        };
+        newContext.stage = "COLLECTING_INFO";
+        newContext.reservationConfirmed = false;
+        newContext.collectionStep = missingOrder as any;
+
+        const missingReply = missingMsgs[newContext.language] || missingMsgs.tr;
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "assistant", content: missingReply, agency_id: agency.id });
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(missingReply));
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: existingReservation } = await supabase
+        .from("registrations")
+        .select("id")
+        .eq("tour_date_id", dateId)
+        .eq("phone", reservationPhone)
+        .neq("status", "CANCELLED")
+        .maybeSingle();
+
+      if (existingReservation) {
+        const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+        const dupMessages: Record<string, string> = {
+          tr: `Bu tura zaten kayıtlısınız! Rezervasyon bilgileriniz için lütfen ${agency.name} ile iletişime geçin.${agPhone}`,
+          en: `You are already registered for this tour! Please contact ${agency.name}.${agPhone}`,
+        };
+        const duplicateReply = dupMessages[newContext.language] || dupMessages.tr;
+
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "assistant", content: duplicateReply, agency_id: agency.id });
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(duplicateReply));
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: newRegistration, error: regError } = await supabase
+        .from("registrations")
+        .insert({
+          tour_id: tourId,
+          tour_date_id: dateId,
+          full_name: fullName,
+          phone: reservationPhone,
+          pax: (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
+          agency_id: agency.id,
+          status: "NEW",
+          source_channel: "WHATSAPP",
+          payment_status: "UNPAID",
+        })
+        .select()
+        .single();
+
+      if (regError) {
+        const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+        const errorMsgs: Record<string, string> = {
+          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
+          en: `There was an issue creating your reservation. Please contact ${agency.name} directly.${agPhone}`,
+          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+          ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
+          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
+          fr: `Un problème est survenu. Veuillez contacter ${agency.name}.${agPhone}`,
+          es: `Hubo un problema. Por favor contacte a ${agency.name}.${agPhone}`,
+        };
+
+        newContext.stage = "COLLECTING_INFO";
+        newContext.reservationConfirmed = false;
+        newContext.collectionStep = "waiting_for_date";
+
+        const errorReply = errorMsgs[newContext.language] || errorMsgs.tr;
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "assistant", content: errorReply, agency_id: agency.id });
+        await supabase
+          .from("whatsapp_conversations")
+          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(errorReply));
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const selectedTourForSummary = tours.find((t: any) => t.id === tourId);
+      const selectedDateForSummary = selectedTourForSummary?.dates?.find((d: any) => d.id === dateId);
+      const formattedDate = selectedDateForSummary?.departure_date
+        ? formatDateForLanguage(selectedDateForSummary.departure_date, newContext.language)
+        : newContext.reservationInfo.selectedDate || "-";
+
+      const adultCount = newContext.reservationInfo.paxAdult || 0;
+      const childCount = newContext.reservationInfo.paxChild || 0;
+      const paxText =
+        newContext.language === "tr"
+          ? `${adultCount} yetişkin${childCount ? `, ${childCount} çocuk` : ""}`
+          : `${adultCount} adult${childCount ? `, ${childCount} child` : ""}`;
+
+      const completionMessages: Record<string, string> = {
+        tr: `Bilgilerinizi aldım ${fullName || ""}, çok teşekkür ederim! 😊\n*${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "Tur"}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
+        en: `Thank you ${fullName || ""}! 😊\nYour pre-registration for *${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "Tour"}* is completed.\n\n*Reservation Summary:*\n• *Tour:* ${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Phone:* ${reservationPhone || "-"}\n\nOur team will contact you shortly for final booking and payment details.`,
+      };
+
+      let finalReply = completionMessages[newContext.language] || completionMessages.tr;
+
+      if (paymentInstructions && selectedDateForSummary) {
+        const depositPercentage =
+          (paymentInstructions &&
+            typeof paymentInstructions === "object" &&
+            (paymentInstructions as any).deposit_percentage) ||
+          30;
+        const totalPrice =
+          adultCount * (selectedDateForSummary.price_adult || 0) +
+          childCount * (selectedDateForSummary.price_child || selectedDateForSummary.price_adult || 0);
+        const depositAmount = Math.ceil((totalPrice * depositPercentage) / 100);
+
+        if (totalPrice > 0) {
+          const paymentMessage = await generatePaymentMessage(
+            paymentInstructions,
+            newContext.language,
+            totalPrice,
+            depositAmount,
+            selectedTourForSummary?.currency || "TRY",
+            { languageCurrencies, primaryCurrency },
+          );
+          if (paymentMessage) {
+            finalReply += paymentMessage;
+            newContext.paymentInfoSent = true;
+          }
+        }
+      }
+
+      if (planFeatures?.has_templates && newRegistration) {
+        const { data: template } = await supabase
+          .from("message_templates")
+          .select("*")
+          .eq("agency_id", agency.id)
+          .eq("template_key", "reservation_confirmed")
+          .eq("language", newContext.language)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (template) {
+          let templateContent = template.content;
+          templateContent = templateContent.replace("{customer_name}", fullName || "");
+          templateContent = templateContent.replace("{tour_name}", selectedTourForSummary?.title || "");
+          templateContent = templateContent.replace("{tour_date}", selectedDateForSummary?.departure_date || "");
+          templateContent = templateContent.replace("{pax}", String(adultCount + childCount));
+          finalReply += "\n\n" + templateContent;
+        }
+      }
+
+      if (planFeatures?.has_user_profiles) {
+        await supabase
+          .from("whatsapp_user_profiles")
+          .upsert(
+            {
+              phone: userPhone,
+              agency_id: agency.id,
+              full_name: fullName,
+              total_bookings: 1,
+              last_interaction_at: new Date().toISOString(),
+            },
+            { onConflict: "phone,agency_id" },
+          );
+      }
+
+      await supabase
+        .from("whatsapp_conversations")
+        .insert({ phone: userPhone, role: "assistant", content: finalReply, agency_id: agency.id });
+
+      await supabase
+        .from("whatsapp_conversations")
+        .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+
+      await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(finalReply));
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const currentTourFull = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
@@ -849,116 +1120,7 @@ Never say anything about the previous booking.`;
       }
     }
 
-    // === ÇİFT REZERVASYon ÖNLEMESİ ===
-    const justCompletedReservation =
-      newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED";
-
-    if (justCompletedReservation) {
-      const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
-      const reservationPhone = regPhone || userPhone;
-
-      if (tourId && dateId && fullName && reservationPhone && paxAdult) {
-        console.log("💾 Saving reservation...", { tourId, dateId, fullName, paxAdult });
-
-        // Çift rezervasyon kontrolü
-        const { data: existingReservation } = await supabase
-          .from("registrations")
-          .select("id")
-          .eq("tour_date_id", dateId)
-          .eq("phone", reservationPhone)
-          .neq("status", "CANCELLED")
-          .maybeSingle();
-
-        if (existingReservation) {
-          console.log("⚠️ Duplicate reservation detected");
-          const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
-          const dupMessages: Record<string, string> = {
-            tr: `Bu tura zaten kayıtlısınız! Rezervasyon bilgileriniz için lütfen ${agency.name} ile iletişime geçin.${agPhone}`,
-            en: `You are already registered for this tour! Please contact ${agency.name}.${agPhone}`,
-          };
-          finalReply = dupMessages[newContext.language] || dupMessages["tr"];
-        } else {
-          const { data: newRegistration, error: regError } = await supabase
-            .from("registrations")
-            .insert({
-              tour_id: tourId,
-              tour_date_id: dateId,
-              full_name: fullName,
-              phone: reservationPhone,
-              pax: (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
-              agency_id: agency.id,
-              status: "NEW",
-              source_channel: "WHATSAPP",
-              payment_status: "UNPAID",
-            })
-            .select()
-            .single();
-
-          if (regError) {
-            console.error("❌ Save error:", regError);
-            // === FALLBACK MESAJI - Acente iletişim bilgisiyle ===
-            const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
-            const errorMsgs: Record<string, string> = {
-              tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
-              en: `There was an issue creating your reservation. Please contact ${agency.name} directly.${agPhone}`,
-              de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
-              ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
-              ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
-              fr: `Un problème est survenu. Veuillez contacter ${agency.name}.${agPhone}`,
-              es: `Hubo un problema. Por favor contacte a ${agency.name}.${agPhone}`,
-            };
-            finalReply = errorMsgs[newContext.language] || errorMsgs.tr;
-            newContext.stage = context.stage;
-            newContext.reservationConfirmed = false;
-          } else {
-            console.log("✅ Reservation saved");
-            if (planFeatures?.has_templates) {
-              const { data: template } = await supabase
-                .from("message_templates")
-                .select("*")
-                .eq("agency_id", agency.id)
-                .eq("template_key", "reservation_confirmed")
-                .eq("language", newContext.language)
-                .eq("is_active", true)
-                .maybeSingle();
-
-              if (template && newRegistration) {
-                const selectedTourForTemplate = tours.find((t) => t.id === newContext.reservationInfo.tourId);
-                const selectedDateForTemplate = selectedTourForTemplate?.dates?.find(
-                  (d: any) => d.id === newContext.reservationInfo.dateId,
-                );
-                let templateContent = template.content;
-                templateContent = templateContent.replace("{customer_name}", newContext.reservationInfo.fullName || "");
-                templateContent = templateContent.replace("{tour_name}", selectedTourForTemplate?.title || "");
-                templateContent = templateContent.replace("{tour_date}", selectedDateForTemplate?.departure_date || "");
-                templateContent = templateContent.replace(
-                  "{pax}",
-                  String((newContext.reservationInfo.paxAdult || 0) + (newContext.reservationInfo.paxChild || 0)),
-                );
-                finalReply = finalReply + "\n\n" + templateContent;
-              }
-            }
-          }
-
-          if (!regError && planFeatures?.has_user_profiles) {
-            await supabase
-              .from("whatsapp_user_profiles")
-              .upsert(
-                {
-                  phone: userPhone,
-                  agency_id: agency.id,
-                  full_name: newContext.reservationInfo.fullName,
-                  total_bookings: 1,
-                  last_interaction_at: new Date().toISOString(),
-                },
-                { onConflict: "phone,agency_id" },
-              );
-          }
-        }
-      } else {
-        console.error("❌ Missing required fields:", { tourId, dateId, fullName, paxAdult });
-      }
-    }
+    // Reservation completion save/response is handled deterministically above.
 
     await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,

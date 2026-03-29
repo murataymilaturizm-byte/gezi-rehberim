@@ -22,6 +22,7 @@ import { generatePaymentMessage } from "../services/payment.ts";
 import { processTransition, getNextExpectedInput } from "../../shared/fsm/state-machine.ts";
 import { sanitizeInput } from "../../shared/fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../../shared/fsm/nlu.ts";
+import { formatDateForLanguage } from "../../shared/fsm/localization.ts";
 import type { ProcessingInput, ConversationContext } from "../../shared/fsm/types.ts";
 
 // Handlers
@@ -145,6 +146,51 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
     const newContext = processTransition(context, input);
     logger.transition(context.stage, newContext.stage);
+
+    // 9.1 Date selection must be deterministic (no AI dependency)
+    if (
+      newContext.stage === "COLLECTING_INFO" &&
+      newContext.collectionStep === "waiting_for_date" &&
+      newContext.currentTour
+    ) {
+      const selectedTourForDates = findTourById(newContext.currentTour.id, availableTours);
+      if (selectedTourForDates?.dates?.length) {
+        const dateLines = selectedTourForDates.dates
+          .map((d: any, idx: number) => {
+            const dateText = formatDateForLanguage(d.departure_date, newContext.language);
+            const priceText = d.price_adult
+              ? ` - ${d.price_adult} ${selectedTourForDates.currency || "TRY"}`
+              : "";
+            const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
+            const quotaText =
+              remaining !== undefined
+                ? newContext.language === "tr"
+                  ? ` (${remaining} kişilik yer)`
+                  : ` (${remaining} spots)`
+                : "";
+            return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
+          })
+          .join("\n");
+
+        const dateMessages: Record<string, string> = {
+          tr: `*${selectedTourForDates.title}* için müsait tarihler:\n${dateLines}\n\nHangi tarihi tercih edersiniz?`,
+          en: `Available dates for *${selectedTourForDates.title}*:\n${dateLines}\n\nWhich date do you prefer?`,
+          de: `Verfügbare Termine für *${selectedTourForDates.title}*:\n${dateLines}\n\nWelches Datum bevorzugen Sie?`,
+          ru: `Доступные даты для *${selectedTourForDates.title}*:\n${dateLines}\n\nКакую дату вы предпочитаете?`,
+          ar: `التواريخ المتاحة لـ *${selectedTourForDates.title}*:\n${dateLines}\n\nما التاريخ الذي تفضله؟`,
+          fr: `Dates disponibles pour *${selectedTourForDates.title}* :\n${dateLines}\n\nQuelle date préférez-vous ?`,
+          es: `Fechas disponibles para *${selectedTourForDates.title}*:\n${dateLines}\n\n¿Qué fecha prefieres?`,
+        };
+
+        const dateSelectionReply = dateMessages[newContext.language] || dateMessages.tr;
+        await saveConversation(supabase, sessionId, message, dateSelectionReply);
+
+        return createSuccessResponse({
+          response: dateSelectionReply,
+          conversationState: newContext,
+        });
+      }
+    }
 
     // 10. Load agency data
     const agencyData = await getAgencyData(supabase);
@@ -306,6 +352,73 @@ export async function handleChatRequest(req: Request): Promise<Response> {
         conversationState: newContext,
       };
       return createSuccessResponse(responseData);
+    }
+
+    // 15.1 First-time completion response should be deterministic (no AI hallucination)
+    if (isNewlyCompleted && !reservationSaveFailed && newContext.reservationInfo) {
+      const selectedTourData = newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null;
+      const selectedDateData = selectedTourData?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
+
+      const formattedDate = selectedDateData?.departure_date
+        ? formatDateForLanguage(selectedDateData.departure_date, newContext.language)
+        : (newContext.reservationInfo.selectedDate || "-");
+
+      const adultCount = newContext.reservationInfo.paxAdult || 0;
+      const childCount = newContext.reservationInfo.paxChild || 0;
+      const paxText =
+        newContext.language === "tr"
+          ? `${adultCount} Yetişkin${childCount ? `, ${childCount} Çocuk` : ""}`
+          : `${adultCount} Adult${childCount ? `, ${childCount} Child` : ""}`;
+
+      const completionMessages: Record<string, string> = {
+        tr: `Bilgilerinizi aldım ${newContext.reservationInfo.fullName || ""}, çok teşekkür ederim! 😊\n*${selectedTourData?.title || newContext.reservationInfo.tourTitle || "Tur"}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${selectedTourData?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${newContext.reservationInfo.fullName || "-"}\n• *Telefon:* ${newContext.reservationInfo.phone || "-"}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
+        en: `Thank you, ${newContext.reservationInfo.fullName || ""}! 😊\nYour pre-registration for *${selectedTourData?.title || newContext.reservationInfo.tourTitle || "Tour"}* has been created successfully.\n\n*Registration Summary:*\n• *Tour:* ${selectedTourData?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${newContext.reservationInfo.fullName || "-"}\n• *Phone:* ${newContext.reservationInfo.phone || "-"}\n\nOur team will contact you shortly for final booking and payment details.`,
+      };
+
+      let deterministicReply = completionMessages[newContext.language] || completionMessages.tr;
+
+      if (paymentInstructions) {
+        const totalPax = adultCount + childCount;
+        const adultPrice = selectedDateData?.price_adult || 0;
+        const childPrice = selectedDateData?.price_child ?? adultPrice;
+        const totalPrice = adultCount * adultPrice + childCount * childPrice;
+
+        const depositPercentage =
+          typeof paymentInstructions === "object" &&
+          paymentInstructions !== null &&
+          typeof (paymentInstructions as any).deposit_percentage === "number"
+            ? (paymentInstructions as any).deposit_percentage
+            : CONFIG.DEFAULT_DEPOSIT_PERCENTAGE;
+
+        const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+        const tourCurrency = selectedTourData?.currency || "TRY";
+
+        if (totalPax > 0 && totalPrice > 0) {
+          const paymentMessage = await generatePaymentMessage(
+            paymentInstructions,
+            newContext.language,
+            totalPrice,
+            depositAmount,
+            tourCurrency,
+            {
+              languageCurrencies: agencyData?.language_currencies,
+              primaryCurrency: agencyData?.primary_currency || "TRY",
+            },
+          );
+
+          if (paymentMessage) {
+            deterministicReply += paymentMessage;
+            newContext.paymentInfoSent = true;
+          }
+        }
+      }
+
+      await saveConversation(supabase, sessionId, message, deterministicReply);
+
+      return createSuccessResponse({
+        response: deterministicReply,
+        conversationState: newContext,
+      });
     }
 
     // 16. Call AI

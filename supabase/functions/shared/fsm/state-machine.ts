@@ -375,6 +375,28 @@ const transitions: StateTransition[] = [
   },
 
   // ========== COMPLETED STATE TRANSITIONS ==========
+  // COMPLETED → TOUR_SELECTED (aynı veya farklı tur için yeni rezervasyon niyeti)
+  {
+    from: "COMPLETED",
+    to: "TOUR_SELECTED",
+    condition: (ctx, input) => {
+      const reservationIntents = ["reservation_intent", "tour_selected", "provide_info", "confirm"];
+      return input.selectedTour !== null && reservationIntents.includes(input.detectedIntent);
+    },
+    action: (ctx, input) => ({
+      ...ctx,
+      ...resetForNewReservation(ctx),
+      stage: "TOUR_SELECTED" as ConversationStage,
+      currentTour: input.selectedTour,
+      viewedTours: [input.selectedTour!.id],
+      reservationInfo: {
+        tourId: input.selectedTour!.id,
+        tourTitle: input.selectedTour!.title,
+      },
+      collectionStep: "waiting_for_date" as InfoCollectionStep,
+    }),
+  },
+
   // COMPLETED → BROWSING (açık yeni tur niyeti)
   {
     from: "COMPLETED",

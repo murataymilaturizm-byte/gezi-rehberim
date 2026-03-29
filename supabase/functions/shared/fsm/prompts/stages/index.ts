@@ -75,7 +75,9 @@ function getCollectionStepPrompt(collectionStep: string, language: string): stri
   const prompts: Record<string, Record<string, string>> = {
     tr: {
       waiting_for_date: `📝 ADIM: Tarih seçimi
-- Kullanıcıdan hangi tarihte katılmak istediğini sor.
+- ÖNCE mevcut turun TÜM müsait tarihlerini NUMARALI olarak listele.
+- Her tarih için fiyatı da yaz.
+- Son satırda "Hangi tarihi tercih edersiniz?" diye sor.
 ⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
 
       waiting_for_pax: `📝 ADIM: Kişi sayısı
@@ -95,7 +97,9 @@ function getCollectionStepPrompt(collectionStep: string, language: string): stri
     },
     en: {
       waiting_for_date: `📝 STEP: Date selection
-- Ask which date they prefer.
+- FIRST list ALL available dates of the selected tour in numbered format.
+- Include price for each date.
+- End with "Which date do you prefer?"
 ⚠️ If user provided other info, ACKNOWLEDGE it first.`,
 
       waiting_for_pax: `📝 STEP: Pax count
@@ -186,9 +190,15 @@ Hangi tarihi tercih edersiniz?"` + hallucinationGuard
 
       case "COLLECTING_INFO":
         const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr");
+        const dateListReinforcementTr =
+          collectionStep === "waiting_for_date" && currentTour
+            ? `\n\nSEÇİLİ TURUN TARİHLERİ:\n${tourDetails}\n\n🚨 ZORUNLU: Bu yanıtta tarihleri tekrar numaralı listele ve kullanıcıdan seçim iste.`
+            : "";
         return (
           `📍 DURUM: Bilgi toplama
 ${stepPrompt}
+
+${dateListReinforcementTr}
 
 Toplanan bilgiler:
 ${collectedInfo}
@@ -280,6 +290,8 @@ Which date do you prefer?"` + hallucinationGuard
       return (
         `📍 STATUS: Collecting information
 ${stepPromptEn}
+
+${collectionStep === "waiting_for_date" && currentTour ? `SELECTED TOUR DATES:\n${tourDetails}\n\n🚨 MANDATORY: In this reply, list these dates in numbered format and ask the user to choose one.` : ""}
 
 Collected info:
 ${collectedInfo}
