@@ -52,6 +52,13 @@ function getBrowsingPrompt(context: PromptContext): string {
 - Kullanıcı "tura katılmak istiyorum" derse ÖNCE tur seçmesini iste.
 - ASLA tarih sorma!
 
+🚨 KRİTİK KURAL - TUR KARIŞTIRMA YASAĞI:
+- Kullanıcı X turu hakkında soru soruyorsa SADECE X turunun bilgisini ver.
+- Kullanıcının sormadığı başka bir turun tarih veya fiyat bilgisini ASLA gösterme.
+- "Her cuma var mı?", "tarihler nedir?" gibi sorularda SADECE sorulan turun bilgisini ver.
+- Sistemde olmayan bir tur sorulursa "Bu tur sistemimizde bulunmuyor" de.
+- Olmayan tur için başka turun tarihlerini ASLA önerme veya listeleme.
+
 Mevcut turlar:
 ${toursList}`;
   }
@@ -59,6 +66,12 @@ ${toursList}`;
   return `📍 STATUS: Tour browsing
 - The user is exploring tours, do NOT ask for personal details yet.
 - List relevant tours according to their interest.
+
+🚨 CRITICAL RULE - NO TOUR MIXING:
+- If user asks about tour X, ONLY provide info about tour X.
+- NEVER show dates or prices of a different tour than what was asked.
+- If a tour is not in the system, say "This tour is not available" - NEVER suggest another tour's dates.
+- For questions like "every Friday?" or "what are the dates?" - only answer about the tour being asked.
 
 🚨 CRITICAL RULE:
 - If user wants to join, ask them to select a tour FIRST.
@@ -137,13 +150,15 @@ export function getStagePrompt(context: PromptContext): string {
 - Sadece sana verilen tur listesindeki bilgileri kullan.
 - Listede olmayan bir tur sorulursa "Bu tur sistemimizde bulunmuyor" de.
 - Tarih veya fiyat bilgisi verilmemişse "Bilgi mevcut değil" de, asla tahmin etme veya uydurma.
-- "Her hafta", "her Cuma", "her ayın 1'i" gibi bilgileri VERİTABANINDA YOKSA söyleme.`
+- "Her hafta", "her Cuma", "her ayın 1'i" gibi bilgileri VERİTABANINDA YOKSA söyleme.
+- Kullanıcının sormadığı turun tarih veya fiyat bilgisini ASLA gösterme.`
       : `\n\n🚫 CRITICAL RULE - NO HALLUCINATION:
 - NEVER invent tours, dates, prices or information not in the database.
 - Only use information from the tour list provided to you.
 - If asked about a tour not in the list, say "This tour is not in our system".
 - If no date or price is available, say "Information not available", never guess or invent.
-- Do NOT say "every week", "every Friday" or similar unless it's explicitly in the database.`;
+- Do NOT say "every week", "every Friday" or similar unless it's explicitly in the database.
+- NEVER show dates or prices of a tour the user did not ask about.`;
 
   if (stage === "GREETING") return getGreetingPrompt(context) + hallucinationGuard;
   if (stage === "BROWSING") return getBrowsingPrompt(context) + hallucinationGuard;
@@ -231,8 +246,8 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?` + hallucinationGuard
 
 🚨 KRİTİK - KULLANICI BAŞKA TUR SORARSA:
 - Eğer kullanıcı başka bir tur hakkında bilgi soruyorsa → sadece o turun bilgisini ver
-- Eğer kullanıcı başka tura rezervasyon yaptırmak istiyorsa → "Elbette! [Tur adı] için rezervasyon başlatıyorum" de ve sistem otomatik yeni akışa geçecek
-- Eğer kullanıcının niyeti belirsizse (sadece tur adı yazdı) → "Bu tur hakkında bilgi almak mı, yoksa rezervasyon yaptırmak mı istiyorsunuz?" diye sor
+- Eğer kullanıcı başka tura rezervasyon yaptırmak istiyorsa → "Elbette! [Tur adı] için rezervasyon başlatıyorum" de
+- Eğer kullanıcının niyeti belirsizse → "Bu tur hakkında bilgi almak mı, yoksa rezervasyon yaptırmak mı istiyorsunuz?" diye sor
 
 🚫 BU REZERVASYON İÇİN:
 - Tekrar bilgi toplama (zaten tüm bilgiler alındı)
@@ -241,8 +256,7 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?` + hallucinationGuard
 🚫 İPTAL TALEBİ GELİRSE:
 - ASLA "iptal edildi" veya "iptal edebilirim" DEME
 - "İptal işlemleri için doğrudan acentemizle iletişime geçmeniz gerekmektedir" de
-- Acente telefon numarası ve çalışma saatlerini paylaş (varsa)
-- İptal koşullarını kısaca özetle (varsa)` + hallucinationGuard
+- Acente telefon numarası ve çalışma saatlerini paylaş (varsa)` + hallucinationGuard
         );
 
       default:
@@ -259,9 +273,9 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?` + hallucinationGuard
 ${tourDetails}
 
 🚨 CRITICAL RULE - WHEN USER INTENT IS UNCLEAR:
-- If user just wrote the tour name or said something vague about the tour (e.g. "Cappadocia tour", "this tour") and it's UNCLEAR whether they want info or a reservation:
+- If user just wrote the tour name or said something vague and it's UNCLEAR whether they want info or a reservation:
   → Ask: "Would you like to get information about this tour, or would you like to make a reservation?"
-- If user clearly wants a reservation (e.g. "I want to book", "sign me up") → list the dates.
+- If user clearly wants a reservation → list the dates.
 - If user just wants information → provide tour details, do NOT start reservation flow.
 
 🚨 CRITICAL RULE - DATE SELECTION (once reservation intent is clear):
@@ -269,12 +283,7 @@ ${tourDetails}
 - Show price for each date.
 - WAIT for user to choose.
 - Do NOT ask for pax, name or phone before date is selected.
-- Always ask "Which date do you prefer?"
-
-Example format:
-"1) December 15, 2025 - $150/person
-2) December 22, 2025 - $150/person
-Which date do you prefer?"` + hallucinationGuard
+- Always ask "Which date do you prefer?"` + hallucinationGuard
       );
 
     case "DATE_SELECTION":
@@ -291,7 +300,7 @@ Which date do you prefer?"` + hallucinationGuard
         `📍 STATUS: Collecting information
 ${stepPromptEn}
 
-${collectionStep === "waiting_for_date" && currentTour ? `SELECTED TOUR DATES:\n${tourDetails}\n\n🚨 MANDATORY: In this reply, list these dates in numbered format and ask the user to choose one.` : ""}
+${collectionStep === "waiting_for_date" && currentTour ? `SELECTED TOUR DATES:\n${tourDetails}\n\n🚨 MANDATORY: List these dates in numbered format and ask user to choose.` : ""}
 
 Collected info:
 ${collectedInfo}
@@ -318,24 +327,21 @@ Are these details correct, do you confirm?` + hallucinationGuard
 - Ask if they have other questions
 
 🚨 CRITICAL - IF USER ASKS A QUESTION:
-- If user asks about current or another tour, just ANSWER the question
-- Do NOT repeat "Your reservation is confirmed" or "Booking completed"
-- Continue naturally like a normal conversation
+- Just ANSWER the question naturally
+- Do NOT repeat "Your reservation is confirmed"
 
 🚨 CRITICAL - IF USER ASKS ABOUT ANOTHER TOUR:
 - If asking for info → just provide that tour's info
-- If wants to book → say "Of course! Starting reservation for [Tour name]" and system will switch automatically
-- If intent is unclear (just wrote tour name) → ask "Would you like info about this tour, or make a reservation?"
+- If wants to book → say "Of course! Starting reservation for [Tour name]"
+- If intent is unclear → ask "Would you like info about this tour, or make a reservation?"
 
 🚫 FOR THIS RESERVATION:
-- Don't collect more info (all info already collected)
-- Don't write IBAN, deposit, amount (payment info already sent)
+- Don't collect more info
+- Don't write IBAN, deposit, amount
 
 🚫 IF CANCELLATION REQUESTED:
 - NEVER say "cancelled" or "I can cancel it"
-- Say "For cancellation requests, please contact our agency directly"
-- Share agency phone number and working hours (if available)
-- Briefly summarize cancellation policy (if available)` + hallucinationGuard
+- Say "For cancellation requests, please contact our agency directly"` + hallucinationGuard
       );
 
     default:
