@@ -22,6 +22,7 @@ import { generatePaymentMessage } from "../services/payment.ts";
 import { processTransition, getNextExpectedInput } from "../../shared/fsm/state-machine.ts";
 import { sanitizeInput } from "../../shared/fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../../shared/fsm/nlu.ts";
+import { formatDateForLanguage } from "../../shared/fsm/localization.ts";
 import type { ProcessingInput, ConversationContext } from "../../shared/fsm/types.ts";
 
 // Handlers
@@ -145,6 +146,51 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
     const newContext = processTransition(context, input);
     logger.transition(context.stage, newContext.stage);
+
+    // 9.1 Date selection must be deterministic (no AI dependency)
+    if (
+      newContext.stage === "COLLECTING_INFO" &&
+      newContext.collectionStep === "waiting_for_date" &&
+      newContext.currentTour
+    ) {
+      const selectedTourForDates = findTourById(newContext.currentTour.id, availableTours);
+      if (selectedTourForDates?.dates?.length) {
+        const dateLines = selectedTourForDates.dates
+          .map((d: any, idx: number) => {
+            const dateText = formatDateForLanguage(d.departure_date, newContext.language);
+            const priceText = d.price_adult
+              ? ` - ${d.price_adult} ${selectedTourForDates.currency || "TRY"}`
+              : "";
+            const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
+            const quotaText =
+              remaining !== undefined
+                ? newContext.language === "tr"
+                  ? ` (${remaining} kişilik yer)`
+                  : ` (${remaining} spots)`
+                : "";
+            return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
+          })
+          .join("\n");
+
+        const dateMessages: Record<string, string> = {
+          tr: `*${selectedTourForDates.title}* için müsait tarihler:\n${dateLines}\n\nHangi tarihi tercih edersiniz?`,
+          en: `Available dates for *${selectedTourForDates.title}*:\n${dateLines}\n\nWhich date do you prefer?`,
+          de: `Verfügbare Termine für *${selectedTourForDates.title}*:\n${dateLines}\n\nWelches Datum bevorzugen Sie?`,
+          ru: `Доступные даты для *${selectedTourForDates.title}*:\n${dateLines}\n\nКакую дату вы предпочитаете?`,
+          ar: `التواريخ المتاحة لـ *${selectedTourForDates.title}*:\n${dateLines}\n\nما التاريخ الذي تفضله؟`,
+          fr: `Dates disponibles pour *${selectedTourForDates.title}* :\n${dateLines}\n\nQuelle date préférez-vous ?`,
+          es: `Fechas disponibles para *${selectedTourForDates.title}*:\n${dateLines}\n\n¿Qué fecha prefieres?`,
+        };
+
+        const dateSelectionReply = dateMessages[newContext.language] || dateMessages.tr;
+        await saveConversation(supabase, sessionId, message, dateSelectionReply);
+
+        return createSuccessResponse({
+          response: dateSelectionReply,
+          conversationState: newContext,
+        });
+      }
+    }
 
     // 10. Load agency data
     const agencyData = await getAgencyData(supabase);
