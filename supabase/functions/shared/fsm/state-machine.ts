@@ -54,26 +54,17 @@ function isInformationalMessage(userMessage: string, detectedIntent: string): bo
 }
 
 /**
- * Sıralı bilgi birleştirme (Sequential Merge)
- * 
- * KRİTİK: Bilgiler sıralı olarak kabul edilir:
- *   tarih → kişi sayısı → isim → telefon
- * 
- * Önceki adım dolmadan sonraki adımın bilgisi kabul edilmez.
- * Bu sayede konuşma geçmişinden sızan eski veriler (isim/telefon)
- * yeni bir rezervasyonda yanlışlıkla kabul edilmez.
- * 
- * Aynı mesajda birden fazla bilgi verilirse cascade çalışır:
- *   Ör: "15 Temmuz, 2 kişi, Ali Yılmaz" → date set → pax accepted → name accepted
+ * Sıralı bilgi birleştirme
+ * Bilgiler sıralı olarak kabul edilir: tarih → kişi → isim → telefon
  */
 function mergeReservationInfo(existing: ReservationInfo, extracted: Partial<ReservationInfo>): ReservationInfo {
   const merged = { ...existing };
 
   // Tour info: her zaman kabul et
-  if (extracted.tourId && extracted.tourId !== '') merged.tourId = extracted.tourId;
-  if (extracted.tourTitle && extracted.tourTitle !== '') merged.tourTitle = extracted.tourTitle;
+  if (extracted.tourId && extracted.tourId !== "") merged.tourId = extracted.tourId;
+  if (extracted.tourTitle && extracted.tourTitle !== "") merged.tourTitle = extracted.tourTitle;
 
-  // 1. Tarih: her zaman kabul et (ilk toplanan bilgi)
+  // 1. Tarih: her zaman kabul et
   if (extracted.dateId && !merged.dateId) merged.dateId = extracted.dateId;
   if (extracted.selectedDate && !merged.selectedDate) merged.selectedDate = extracted.selectedDate;
 
@@ -86,22 +77,19 @@ function mergeReservationInfo(existing: ReservationInfo, extracted: Partial<Rese
 
   // 3. İsim: sadece kişi sayısı varsa kabul et
   const hasPax = !!merged.paxAdult;
-  if (hasPax && extracted.fullName && extracted.fullName !== '' && !merged.fullName) {
+  if (hasPax && extracted.fullName && extracted.fullName !== "" && !merged.fullName) {
     merged.fullName = extracted.fullName;
   }
 
   // 4. Telefon: sadece isim varsa kabul et
   const hasName = !!merged.fullName;
-  if (hasName && extracted.phone && extracted.phone !== '' && !merged.phone) {
+  if (hasName && extracted.phone && extracted.phone !== "" && !merged.phone) {
     merged.phone = extracted.phone;
   }
 
   return merged;
 }
 
-/**
- * Bir sonraki toplanması gereken adımı belirle
- */
 function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
   const hasDate = !!(info.selectedDate || info.dateId);
   if (!hasDate) return "waiting_for_date";
@@ -116,7 +104,7 @@ function isAllInfoCollected(info: ReservationInfo): boolean {
 }
 
 /**
- * COMPLETED'dan çıkış için context'i tamamen sıfırla
+ * Yeni rezervasyon için context'i tamamen sıfırla
  */
 function resetForNewReservation(ctx: ConversationContext): Partial<ConversationContext> {
   return {
@@ -175,13 +163,7 @@ const transitions: StateTransition[] = [
     },
     action: (ctx, input) => {
       const tour = input.selectedTour || ctx.currentTour;
-      const merged = mergeReservationInfo(
-        {
-          tourId: tour!.id,
-          tourTitle: tour!.title,
-        },
-        input.extractedInfo,
-      );
+      const merged = mergeReservationInfo({ tourId: tour!.id, tourTitle: tour!.title }, input.extractedInfo);
 
       if (!merged.dateId && !merged.selectedDate && tour?.dates?.length === 1) {
         const singleDate = tour.dates[0];
@@ -226,7 +208,6 @@ const transitions: StateTransition[] = [
     to: "COLLECTING_INFO",
     condition: (ctx, input) => {
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
-
       const reservationIntents = ["reservation_intent", "provide_info", "confirm", "tour_selected"];
       if (!reservationIntents.includes(input.detectedIntent)) {
         const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
@@ -247,7 +228,7 @@ const transitions: StateTransition[] = [
         ...ctx,
         reservationInfo: merged,
         collectionStep: determineCollectionStep(merged),
-        isNewReservation: false, // İlk COLLECTING_INFO geçişinde flag'i kaldır
+        isNewReservation: false,
       };
     },
   },
@@ -344,12 +325,12 @@ const transitions: StateTransition[] = [
     from: "CONFIRMING",
     to: "COLLECTING_INFO",
     condition: (ctx, input) =>
-      input.detectedIntent === "change_info" || /değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı/i.test(input.userMessage.toLowerCase()),
+      input.detectedIntent === "change_info" ||
+      /değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı/i.test(input.userMessage.toLowerCase()),
     action: (ctx, input) => {
       const msg = input.userMessage.toLowerCase();
       const info = { ...ctx.reservationInfo };
 
-      // Kullanıcının hangi alanı değiştirmek istediğini tespit et ve o alanı temizle
       if (/isim|ad|name|soyad|surname/i.test(msg)) {
         delete info.fullName;
       } else if (/telefon|numara|phone|gsm|cep/i.test(msg)) {
@@ -361,7 +342,6 @@ const transitions: StateTransition[] = [
         delete info.dateId;
         delete info.selectedDate;
       } else {
-        // Hangi alan olduğu anlaşılamadıysa, tüm kişisel bilgileri temizle (tarih ve tur hariç)
         delete info.fullName;
         delete info.phone;
       }
@@ -374,12 +354,34 @@ const transitions: StateTransition[] = [
     },
   },
 
-  // ========== COMPLETED STATE TRANSITIONS ==========
-  // COMPLETED → TOUR_SELECTED (aynı veya farklı tur için yeni rezervasyon niyeti)
+  // ===== COMPLETED STATE TRANSITIONS =====
+
+  // COMPLETED → BROWSING (yeni tur niyeti, tur seçilmemiş)
+  {
+    from: "COMPLETED",
+    to: "BROWSING",
+    condition: (ctx, input) => {
+      if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
+      const wantsNew =
+        /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci|tekrar rez/i.test(
+          input.userMessage,
+        );
+      const isReservationWithoutTour = input.detectedIntent === "reservation_intent" && input.selectedTour === null;
+      return wantsNew || isReservationWithoutTour;
+    },
+    action: (ctx) => ({
+      ...ctx,
+      ...resetForNewReservation(ctx),
+      stage: "BROWSING" as ConversationStage,
+    }),
+  },
+
+  // COMPLETED → TOUR_SELECTED (belirli tur seçildi, rezervasyon niyeti var)
   {
     from: "COMPLETED",
     to: "TOUR_SELECTED",
     condition: (ctx, input) => {
+      if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
       const reservationIntents = ["reservation_intent", "tour_selected", "provide_info", "confirm"];
       return input.selectedTour !== null && reservationIntents.includes(input.detectedIntent);
     },
@@ -397,32 +399,20 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COMPLETED → BROWSING (açık yeni tur niyeti)
-  {
-    from: "COMPLETED",
-    to: "BROWSING",
-    condition: (ctx, input) => {
-      const wantsNewReservation =
-        /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci rez|başka bir rez|bir daha|tekrar rez/i.test(
-          input.userMessage,
-        );
-      const isReservationIntentWithoutTour =
-        input.detectedIntent === "reservation_intent" && input.selectedTour === null;
-      return wantsNewReservation || isReservationIntentWithoutTour;
-    },
-    action: (ctx) => ({
-      ...ctx,
-      ...resetForNewReservation(ctx),
-      stage: "BROWSING" as ConversationStage,
-    }),
-  },
-
-  // COMPLETED → TOUR_SELECTED (farklı tur seçimi)
+  // COMPLETED → TOUR_SELECTED (farklı tur hakkında bilgi — informational)
+  // NOT: Bu transition sadece tur bilgisi için, rezervasyon başlatmaz
   {
     from: "COMPLETED",
     to: "TOUR_SELECTED",
     condition: (ctx, input) => {
-      return input.selectedTour !== null && input.selectedTour.id !== ctx.currentTour?.id;
+      // Sadece farklı bir tur seçildiyse ve informational değilse
+      // Informational ise COMPLETED'da kal, sadece bilgi ver
+      if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
+      return (
+        input.selectedTour !== null &&
+        input.selectedTour.id !== ctx.currentTour?.id &&
+        !["reservation_intent", "tour_selected", "provide_info", "confirm"].includes(input.detectedIntent)
+      );
     },
     action: (ctx, input) => ({
       ...ctx,
@@ -442,7 +432,6 @@ export function processTransition(context: ConversationContext, input: Processin
   const transition = transitions.find((t) => t.from === context.stage && t.condition(context, input));
 
   if (!transition) {
-    // Geçiş yok ama COLLECTING_INFO'daysa mevcut bilgileri güncelle
     if (context.stage === "COLLECTING_INFO" && Object.keys(input.extractedInfo).length > 0) {
       const merged = mergeReservationInfo(context.reservationInfo, input.extractedInfo);
       return {
