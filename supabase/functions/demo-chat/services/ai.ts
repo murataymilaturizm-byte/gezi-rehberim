@@ -1,5 +1,28 @@
 // AI service for chat completions with tool calling support
 
+import { CONFIG } from "../config/constants.ts";
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("AI_TIMEOUT");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 export async function callAI(
   messages: any[],
   _temperature: number = 1,
@@ -24,14 +47,14 @@ export async function callAI(
         requestBody.tool_choice = toolChoice;
       }
 
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
         },
         body: JSON.stringify(requestBody),
-      });
+      }, CONFIG.AI_TIMEOUT_MS);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -54,7 +77,7 @@ export async function callAI(
         }
 
         // Wait before retry (exponential backoff)
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        await delay(1000 * attempt);
         continue;
       }
 
@@ -71,14 +94,16 @@ export async function callAI(
       lastError = error instanceof Error ? error : new Error("AI_UNKNOWN_ERROR");
 
       // Check if it's a service unavailable error and we should retry
-      const shouldRetry = lastError.message?.includes("AI_SERVICE_UNAVAILABLE") && attempt < maxRetries;
+      const shouldRetry =
+        (lastError.message?.includes("AI_SERVICE_UNAVAILABLE") || lastError.message?.includes("AI_TIMEOUT")) &&
+        attempt < maxRetries;
 
       if (!shouldRetry) {
         throw lastError;
       }
 
       // Wait before retry
-      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      await delay(1000 * attempt);
     }
   }
 

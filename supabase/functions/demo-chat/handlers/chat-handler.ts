@@ -67,6 +67,35 @@ function buildDateSelectionMessage(tour: any, language: string): string {
   return msgs[language] || msgs.tr;
 }
 
+function buildFallbackResponse(options: {
+  language: string;
+  nluIntent: string;
+  availableTours: Tour[];
+  currentTour: Tour | null;
+}): string {
+  const { language, nluIntent, availableTours, currentTour } = options;
+
+  if (currentTour?.dates?.length) {
+    return buildDateSelectionMessage(currentTour, language);
+  }
+
+  if (nluIntent === "greeting" || nluIntent === "browse_tours") {
+    const list = availableTours.slice(0, 6).map((tour) => `• ${tour.title}`).join("\n");
+    const msgs: Record<string, string> = {
+      tr: `Merhaba! Şu an size hızlıca yardımcı olayım. Mevcut turlarımız:\n${list}\n\nHangi tur hakkında bilgi almak istersiniz?`,
+      en: `Hello! Here are our available tours:\n${list}\n\nWhich tour would you like to learn about?`,
+    };
+    return msgs[language] || msgs.tr;
+  }
+
+  const msgs: Record<string, string> = {
+    tr: "Şu anda sistem yoğunluğu var ama devam edebiliriz. İsterseniz tur adını tekrar yazın, size uygun tarihleri hemen listeleyeyim.",
+    en: "The system is a bit busy right now, but we can continue. Please send the tour name again and I’ll list the available dates right away.",
+  };
+
+  return msgs[language] || msgs.tr;
+}
+
 export async function handleChatRequest(req: Request): Promise<Response> {
   let language = "tr";
 
@@ -80,8 +109,18 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const [loadedTours, agencyData, contextResult] = await Promise.all([
+      loadToursFromDatabase(supabase),
+      getAgencyData(supabase),
+      loadOrCreateContext({
+        clientState: conversationState,
+        message,
+        conversationStyle,
+      }),
+    ]);
+
     // Tours
-    let rawTours = await loadToursFromDatabase(supabase);
+    let rawTours = loadedTours;
     if (!rawTours || rawTours.length === 0) {
       logger.info("No tours in DB, using DEMO_TOURS");
       rawTours = DEMO_TOURS as any[];
@@ -89,11 +128,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     rawTours = await enrichToursWithSoldPax(supabase, rawTours);
 
     // Context
-    const { context } = await loadOrCreateContext({
-      clientState: conversationState,
-      message,
-      conversationStyle,
-    });
+    const { context } = contextResult;
     language = context.language;
     const previousContext: ConversationContext = { ...context };
 
@@ -145,6 +180,20 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const newContext = processTransition(context, input);
     logger.transition(context.stage, newContext.stage);
 
+    if (
+      newContext.stage === "TOUR_SELECTED" &&
+      newContext.currentTour &&
+      ["tour_search", "select_tour", "reservation_intent"].includes(nluResult.intent) &&
+      newContext.currentTour.id !== context.currentTour?.id
+    ) {
+      const selectedTourData = findTourById(newContext.currentTour.id, availableTours);
+      if (selectedTourData?.dates?.length) {
+        const dateReply = buildDateSelectionMessage(selectedTourData, newContext.language);
+        await saveConversation(supabase, sessionId, message, dateReply);
+        return createSuccessResponse({ response: dateReply, conversationState: newContext });
+      }
+    }
+
     // === DETERMİNİSTİK TARİH LİSTESİ ===
     // COLLECTING_INFO + waiting_for_date → Her zaman tarih listesi göster
     // Tek tarih olsa bile! Otomatik seçme, kullanıcıya göster.
@@ -161,8 +210,6 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       }
     }
 
-    // Agency data
-    const agencyData = await getAgencyData(supabase);
     const paymentInstructions = agencyData?.payment_instructions ?? DEMO_PAYMENT_INSTRUCTIONS ?? null;
     const paymentInfo = extractPaymentInfoText(paymentInstructions);
 
@@ -362,8 +409,21 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       { role: "user", content: message },
     ];
 
-    logger.info("Calling AI...");
-    const aiResponse = await callAI(messagesForAI, CONFIG.DEFAULT_AI_TEMPERATURE);
+    let aiResponse = "";
+    try {
+      logger.info("Calling AI...");
+      aiResponse = await callAI(messagesForAI, CONFIG.DEFAULT_AI_TEMPERATURE);
+    } catch (error) {
+      logger.error("AI call failed, using fallback response", error);
+      const fallbackResponse = buildFallbackResponse({
+        language: newContext.language,
+        nluIntent: nluResult.intent,
+        availableTours,
+        currentTour: newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null,
+      });
+      await saveConversation(supabase, sessionId, message, fallbackResponse);
+      return createSuccessResponse({ response: fallbackResponse, conversationState: newContext });
+    }
 
     let finalResponse = aiResponse;
 
