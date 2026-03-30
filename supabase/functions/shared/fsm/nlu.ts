@@ -14,6 +14,70 @@ export interface NLUResult {
   clarification_needed?: string;
 }
 
+const NLU_TIMEOUT_MS = 5000;
+
+function detectFallbackLanguage(message: string): string {
+  const lower = message.toLowerCase();
+  if (/hello|hi|when|price|book/.test(lower)) return "en";
+  if (/hallo|wann|preis|buchen/.test(lower)) return "de";
+  if (/привет|когда|сколько/.test(lower)) return "ru";
+  if (/مرحبا|متى|كم/.test(lower)) return "ar";
+  if (/bonjour|quand|prix/.test(lower)) return "fr";
+  if (/hola|cuándo|precio/.test(lower)) return "es";
+  return "tr";
+}
+
+function buildFallbackNLU(userMessage: string, availableTours?: any[]): NLUResult {
+  const lower = userMessage.toLowerCase().trim();
+  const language = detectFallbackLanguage(userMessage);
+  const matchedTour = availableTours?.find(
+    (tour) =>
+      lower.includes(String(tour.title || "").toLowerCase()) ||
+      lower.includes(String(tour.destination || "").toLowerCase()),
+  );
+
+  if (/merhaba|selam|günaydın|iyi akşamlar|hello|hi|hallo|bonjour|hola|привет|مرحبا/.test(lower)) {
+    return { intent: "greeting", language, entities: {}, updates: {} };
+  }
+
+  if (/turlar|turları|hangi turlar|listele|show tours|available tours/.test(lower)) {
+    return { intent: "browse_tours", language, entities: {}, updates: {} };
+  }
+
+  if (matchedTour) {
+    const entities = {
+      destination: matchedTour.destination,
+      tour_name: matchedTour.title,
+    };
+
+    if (/katılmak istiyorum|rezervasyon|ayırt|book|join|reserve|booking/.test(lower)) {
+      return { intent: "reservation_intent", language, entities, updates: {} };
+    }
+
+    return { intent: "tour_search", language, entities, updates: {} };
+  }
+
+  if (/\b\d+\b/.test(lower) || /\+?\d[\d\s()-]{8,}/.test(lower)) {
+    return { intent: "provide_info", language, entities: {}, updates: {} };
+  }
+
+  return { intent: "general", language, entities: {}, updates: {} };
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 const NLU_SYSTEM_PROMPT = `You are an NLU (Natural Language Understanding) system for a travel agency chatbot. 
 Your job is to analyze user messages and extract intents and entities.
 
@@ -191,7 +255,7 @@ export async function analyzeUserMessage(
       },
     };
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -207,7 +271,7 @@ export async function analyzeUserMessage(
         tool_choice: { type: "function", function: { name: "analyze_message" } },
         
       }),
-    });
+    }, NLU_TIMEOUT_MS);
 
     if (!response.ok) {
       throw new Error(`AI API error: ${response.status}`);
@@ -237,7 +301,7 @@ export async function analyzeUserMessage(
     };
   } catch (error) {
     console.error("NLU error:", error);
-    return { intent: "general", language: "tr", entities: {}, updates: {} };
+    return buildFallbackNLU(userMessage, availableTours);
   }
 }
 

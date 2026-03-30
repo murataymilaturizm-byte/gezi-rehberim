@@ -17,6 +17,7 @@ export const CONFIG = {
   
   // AI
   DEFAULT_AI_TEMPERATURE: 0.7,
+  AI_TIMEOUT_MS: 12000,
   
   // Source
   SOURCE_CHANNEL: "WHATSAPP",
