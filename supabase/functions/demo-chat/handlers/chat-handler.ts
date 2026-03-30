@@ -425,7 +425,16 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       return createSuccessResponse({ response: fallbackResponse, conversationState: newContext });
     }
 
-    let finalResponse = aiResponse;
+    let finalResponse = typeof aiResponse === "string" ? aiResponse.trim() : "";
+
+    if (!finalResponse) {
+      finalResponse = buildFallbackResponse({
+        language: newContext.language,
+        nluIntent: nluResult.intent,
+        availableTours,
+        currentTour: newContext.currentTour ? findTourById(newContext.currentTour.id, availableTours) : null,
+      });
+    }
 
     // Ödeme bilgisi (gerekirse)
     if (newContext.stage === "COMPLETED" && !newContext.paymentInfoSent && paymentInstructions) {
@@ -455,7 +464,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
         },
       );
       if (paymentMessage) {
-        finalResponse = aiResponse + paymentMessage;
+        finalResponse = finalResponse + paymentMessage;
         newContext.paymentInfoSent = true;
       }
     }
