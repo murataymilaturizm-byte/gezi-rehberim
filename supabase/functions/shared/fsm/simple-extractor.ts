@@ -1,57 +1,48 @@
-// Simple fallback extractor for name, phone, pax, and date (when NLU misses them)
+// Simple fallback extractor for name, phone, pax, and date
 import type { ReservationInfo } from "./types.ts";
 
-/**
- * Telefon numarasını temizle ve normalize et
- * Türkiye: 05xxxxxxxxx veya +905xxxxxxxxx
- * Uluslararası: +[ülke kodu][numara]
- * Genel: 7-15 hane arası rakam
- */
 function normalizePhone(raw: string): string | null {
-  // Boşluk, tire, parantez temizle
   const cleaned = raw.replace(/[\s\-\(\)\.]/g, "");
-
-  // + ile başlıyorsa uluslararası format
   if (cleaned.startsWith("+")) {
     const digits = cleaned.replace("+", "");
-    if (digits.length >= 7 && digits.length <= 15 && /^\d+$/.test(digits)) {
-      return cleaned; // +905321234567 gibi sakla
-    }
+    if (digits.length >= 7 && digits.length <= 15 && /^\d+$/.test(digits)) return cleaned;
     return null;
   }
-
-  // Sadece rakam kaldıysa
   if (!/^\d+$/.test(cleaned)) return null;
-
-  // 7-15 hane arası kabul et
   if (cleaned.length < 7 || cleaned.length > 15) return null;
-
   return cleaned;
 }
 
 export function extractNameAndPhone(
   message: string,
   collectionStep?: string,
-): { fullName?: string; phone?: string; paxAdult?: number; selectedDate?: string } {
-  const result: { fullName?: string; phone?: string; paxAdult?: number; selectedDate?: string } = {};
+  tourDates?: any[], // tourDates opsiyonel olarak geçilir
+): {
+  fullName?: string;
+  phone?: string;
+  paxAdult?: number;
+  selectedDate?: string;
+  dateId?: string;
+  needsMonthClarification?: boolean;
+} {
+  const result: {
+    fullName?: string;
+    phone?: string;
+    paxAdult?: number;
+    selectedDate?: string;
+    dateId?: string;
+    needsMonthClarification?: boolean;
+  } = {};
 
-  // === TELEFON ÇIKARMA ===
-  // Önce + ile başlayan uluslararası numaraları bul
+  // === TELEFON ===
   const intlMatch = message.match(/\+\d[\d\s\-\.]{6,17}/);
   if (intlMatch) {
     const phone = normalizePhone(intlMatch[0]);
     if (phone) result.phone = phone;
   }
 
-  // Sonra yerel formatları dene (Türkiye ve genel)
   if (!result.phone) {
-    const localPatterns = [
-      /\b(05\d{9})\b/, // Türkiye mobil: 05xxxxxxxxx
-      /\b(0[1-9]\d{8,9})\b/, // Türkiye sabit/mobil: 0x ile başlayan
-      /\b(\d{10,11})\b/, // 10-11 haneli
-      /\b(\d{7,9})\b/, // 7-9 haneli (bazı ülkeler)
-    ];
-
+    const localPatterns = [/\b(05\d{9})\b/, /\b(0[1-9]\d{8,9})\b/, /\b(\d{10,11})\b/];
     for (const pattern of localPatterns) {
       const match = message.match(pattern);
       if (match) {
@@ -64,14 +55,13 @@ export function extractNameAndPhone(
     }
   }
 
-  // === PAX ÇIKARMA ===
+  // === PAX ===
   const paxPatterns = [
     /(\d+)\s*(?:kişi|kisi|person|people|yetişkin|adult)/i,
     /(\d+)\s*kişilik/i,
     /\b(\d+)\s*(?:yetişkin|adult)/i,
     /(?:evet|yes|ok|tamam)?\s*(\d+)\s*kişi/i,
   ];
-
   for (const pattern of paxPatterns) {
     const match = message.match(pattern);
     if (match) {
@@ -83,7 +73,7 @@ export function extractNameAndPhone(
     }
   }
 
-  // === TARİH ÇIKARMA ===
+  // === TARİH ===
   const monthNames: Record<string, number> = {
     ocak: 1,
     şubat: 2,
@@ -111,36 +101,109 @@ export function extractNameAndPhone(
     december: 12,
   };
 
-  const monthPatternMatch = message
-    .toLowerCase()
-    .match(
+  const lower = message.toLowerCase().trim();
+
+  // "ayın 22'si", "ayın 22si", "22'sinde", "ayın 22" gibi ifadeler
+  const ayinMatch = lower.match(/ay[ıi]n?\s*(\d{1,2})(?:'?s[ıi](?:nde)?)?/);
+  if (ayinMatch) {
+    const day = parseInt(ayinMatch[1]);
+    if (day >= 1 && day <= 31) {
+      if (tourDates && tourDates.length > 0) {
+        // tourDates varsa: aynı gün numarasına sahip tarihleri bul
+        const matchedDates = tourDates.filter((d) => {
+          const parts = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
+          return parts && parseInt(parts[1]) === day;
+        });
+
+        if (matchedDates.length === 1) {
+          // Tek eşleşme → direkt seç
+          result.dateId = matchedDates[0].id;
+          result.selectedDate = matchedDates[0].departure_date;
+        } else if (matchedDates.length > 1) {
+          // Birden fazla eşleşme → netleştirme gerekli, hiçbir şey seçme
+          result.needsMonthClarification = true;
+        }
+        // matchedDates.length === 0 → tarih bulunamadı, result boş kalır
+      } else {
+        // tourDates yoksa: özel format döndür, webhook'ta eşleştirilecek
+        result.selectedDate = `day_${day}`;
+      }
+    }
+  }
+
+  // "22 aralık", "15 ocak" standart format
+  if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
+    const monthPatternMatch = lower.match(
       /(\d{1,2})\s*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)/i,
     );
-  if (monthPatternMatch) {
-    const day = parseInt(monthPatternMatch[1]);
-    const monthName = monthPatternMatch[2].toLowerCase();
-    const month = monthNames[monthName];
-    if (day >= 1 && day <= 31 && month) {
-      const year = new Date().getFullYear();
-      const currentMonth = new Date().getMonth() + 1;
-      const adjustedYear = month < currentMonth ? year + 1 : year;
-      result.selectedDate = `${adjustedYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    if (monthPatternMatch) {
+      const day = parseInt(monthPatternMatch[1]);
+      const monthName = monthPatternMatch[2].toLowerCase();
+      const month = monthNames[monthName];
+      if (day >= 1 && day <= 31 && month) {
+        const year = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        const adjustedYear = month < currentMonth ? year + 1 : year;
+        result.selectedDate = `${adjustedYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      }
     }
   }
 
-  const numericDateMatch = message.match(/(\d{1,2})[\.\/-](\d{1,2})(?:[\.\/-](\d{2,4}))?/);
-  if (!result.selectedDate && numericDateMatch) {
-    const day = parseInt(numericDateMatch[1]);
-    const month = parseInt(numericDateMatch[2]);
-    let year = numericDateMatch[3] ? parseInt(numericDateMatch[3]) : new Date().getFullYear();
-    if (year < 100) year += 2000;
-    if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
-      result.selectedDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  // "aralık 22" ters format
+  if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
+    const reverseMatch = lower.match(
+      /(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)\s*(\d{1,2})/i,
+    );
+    if (reverseMatch) {
+      const monthName = reverseMatch[1].toLowerCase();
+      const day = parseInt(reverseMatch[2]);
+      const month = monthNames[monthName];
+      if (day >= 1 && day <= 31 && month) {
+        const year = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        const adjustedYear = month < currentMonth ? year + 1 : year;
+        result.selectedDate = `${adjustedYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      }
     }
   }
 
-  // === İSİM ÇIKARMA ===
-  // waiting_for_name aşamasında: esnek mod
+  // "ikinci tarih", "second option" sıralı ifadeler
+  if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
+    const ordinalMap: Record<string, number> = {
+      birinci: 0,
+      ikinci: 1,
+      üçüncü: 2,
+      dördüncü: 3,
+      beşinci: 4,
+      first: 0,
+      second: 1,
+      third: 2,
+      fourth: 3,
+      fifth: 4,
+    };
+    for (const [word, idx] of Object.entries(ordinalMap)) {
+      if (lower.includes(word)) {
+        result.selectedDate = `index_${idx}`;
+        break;
+      }
+    }
+  }
+
+  // Sayısal tarih: "22.12.2026", "22/12/2026"
+  if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
+    const numericMatch = message.match(/(\d{1,2})[\.\/-](\d{1,2})(?:[\.\/-](\d{2,4}))?/);
+    if (numericMatch) {
+      const day = parseInt(numericMatch[1]);
+      const month = parseInt(numericMatch[2]);
+      let year = numericMatch[3] ? parseInt(numericMatch[3]) : new Date().getFullYear();
+      if (year < 100) year += 2000;
+      if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+        result.selectedDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      }
+    }
+  }
+
+  // === İSİM ===
   if (collectionStep === "waiting_for_name") {
     const words = message.trim().split(/\s+/);
     if (
@@ -174,15 +237,13 @@ export function extractNameAndPhone(
     }
   }
 
-  // Diğer aşamalarda: sıkı isim doğrulama
+  // Diğer aşamalarda sıkı isim doğrulama
   const nameMatch = message.match(
     /\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]{1,}\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]{1,}(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]{1,})?)\b/,
   );
   if (nameMatch) {
     const name = nameMatch[1].trim();
-    if (isValidName(name, message)) {
-      result.fullName = formatName(name);
-    }
+    if (isValidName(name, message)) result.fullName = formatName(name);
   }
 
   return result;
@@ -217,12 +278,6 @@ function isValidName(name: string, fullMessage: string): boolean {
     "kim",
     "neden",
     "nerede",
-    "hareket",
-    "ediyor",
-    "yapıyor",
-    "gidiyor",
-    "kalkıyor",
-    "varıyor",
     "istiyorum",
     "istiyor",
     "ister",
@@ -265,21 +320,6 @@ function isValidName(name: string, fullMessage: string): boolean {
     "have",
     "will",
     "would",
-    "could",
-    "should",
-    "about",
-    "which",
-    "there",
-    "their",
-    "what",
-    "when",
-    "where",
-    "want",
-    "like",
-    "just",
-    "also",
-    "your",
-    "more",
     "kapadokya",
     "istanbul",
     "ankara",
@@ -308,6 +348,6 @@ function isValidName(name: string, fullMessage: string): boolean {
 function formatName(name: string): string {
   return name
     .split(/\s+/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(" ");
 }
