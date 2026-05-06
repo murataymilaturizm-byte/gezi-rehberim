@@ -117,13 +117,27 @@ const Auth = () => {
         // Sign up
         const redirectUrl = `${window.location.origin}/admin`;
         
+        // Agency verileri handle_new_user trigger'ı tarafından okunacak.
+        // signUp sonrası session null olduğu için (email doğrulaması bekliyor)
+        // doğrudan agencies INSERT yapılamaz. Tüm veriler raw_user_meta_data'ya
+        // gömülüyor, trigger SECURITY DEFINER ile DB'de agency'yi oluşturuyor.
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+        const languagePreference = getCityRegionLanguage(city.trim(), region.trim());
+
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             emailRedirectTo: redirectUrl,
             data: {
-              full_name: fullName.trim()
+              full_name:           fullName.trim(),
+              agency_name:         agencyName.trim(),
+              agency_city:         city.trim(),
+              agency_region:       region.trim() || null,
+              agency_lang:         languagePreference,
+              agency_plan:         planType,
+              agency_trial_ends:   trialEndsAt.toISOString(),
             }
           }
         });
@@ -136,35 +150,6 @@ const Auth = () => {
         }
 
         if (!authData.user) {
-          throw new Error(t("auth.errors.signupFailed"));
-        }
-
-        // Create agency with plan information
-        const trialEndsAt = new Date();
-        trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 days trial
-
-        // Determine language preference from city/region
-        const languagePreference = getCityRegionLanguage(city.trim(), region.trim());
-
-        const { error: agencyError } = await supabase
-          .from("agencies")
-          .insert({
-            user_id: authData.user.id,
-            name: agencyName.trim(),
-            city: city.trim(),
-            region: region.trim() || null,
-            language_preference: languagePreference,
-            twilio_account_sid: "TEMP_SID",
-            twilio_auth_token: "TEMP_TOKEN",
-            twilio_phone_number: "TEMP_PHONE",
-            active: false,
-            plan_type: planType,
-            trial_ends_at: trialEndsAt.toISOString(),
-            subscription_status: "trial"
-          });
-
-        if (agencyError) {
-          console.error("Agency creation error:", agencyError);
           throw new Error(t("auth.errors.signupFailed"));
         }
 
