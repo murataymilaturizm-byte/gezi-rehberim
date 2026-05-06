@@ -16,10 +16,10 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    const anthropicApiKey = Deno.env.get("ANTHROPIC_API_KEY");
 
-    if (!lovableApiKey) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!anthropicApiKey) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -64,19 +64,19 @@ Return ONLY a JSON object with this exact structure (no markdown, no code blocks
   "keywords": ["keyword1", "keyword2", "keyword3"]
 }`;
 
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
+          "x-api-key": anthropicApiKey,
+          "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "claude-sonnet-4-5",
+          max_tokens: 4000,
+          system:
+            "You are a professional translator. Your response MUST be valid JSON only — no markdown, no code fences, no explanations, no prose before or after. Output the JSON object directly.",
           messages: [
-            {
-              role: "system",
-              content: "You are a professional translator. Always respond with valid JSON only, no markdown formatting.",
-            },
             { role: "user", content: prompt },
           ],
         }),
@@ -88,7 +88,10 @@ Return ONLY a JSON object with this exact structure (no markdown, no code blocks
       }
 
       const aiData = await aiResponse.json();
-      const content = aiData.choices[0].message.content.trim();
+      const content = ((aiData.content || [])
+        .filter((b: any) => b?.type === "text")
+        .map((b: any) => b.text)
+        .join("") || "").trim();
       
       // Remove markdown code blocks if present
       let jsonContent = content;

@@ -630,7 +630,14 @@ const Index = () => {
                     }`}
                     asChild
                   >
-                    <a href={`/auth?mode=signup&plan=${plan.name.toLowerCase().replace('ı', 'i')}&billing=${isYearly ? 'yearly' : 'monthly'}`}>
+                    <a
+                      href={
+                        plan.name === t("pricing.enterprise.name")
+                          ? "mailto:info@turzzai.com?subject=Kurumsal%20Plan%20Talebi"
+                          : `/auth?mode=signup&plan=${plan.name.toLowerCase().replace('ı', 'i')}&billing=${isYearly ? 'yearly' : 'monthly'}`
+                      }
+                      target={plan.name === t("pricing.enterprise.name") ? undefined : undefined}
+                    >
                       {plan.name === t("pricing.enterprise.name") ? t("pricing.cta.contact") : t("pricing.cta.start")}
                     </a>
                   </Button>

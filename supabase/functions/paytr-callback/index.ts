@@ -128,7 +128,7 @@ serve(async (req) => {
       console.log("✅ Subscription activated successfully");
 
       // Redirect to success page
-      const redirectUrl = `https://turzzai.lovable.app/admin?payment=success&order_id=${merchant_oid}`;
+      const redirectUrl = `https://turzzai.com/admin?payment=success&order_id=${merchant_oid}`;
       return new Response(null, {
         status: 302,
         headers: {
@@ -164,7 +164,7 @@ serve(async (req) => {
         });
 
       // Redirect to failure page
-      const redirectUrl = `https://turzzai.lovable.app/admin?payment=failed&order_id=${merchant_oid}`;
+      const redirectUrl = `https://turzzai.com/admin?payment=failed&order_id=${merchant_oid}`;
       return new Response(null, {
         status: 302,
         headers: {

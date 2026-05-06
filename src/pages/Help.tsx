@@ -161,7 +161,7 @@ const Help = () => {
                   <div className="flex flex-wrap gap-4 justify-center pt-4">
                     <Button size="lg" className="gap-2">
                       <MessageSquare className="w-5 h-5" />
-                      info@ai.turzz.com
+                      info@turzzai.com
                     </Button>
                      <Button size="lg" variant="outline" onClick={() => navigate("/nasil-baslarim")}>
                        <Video className="w-5 h-5 mr-2" />

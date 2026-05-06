@@ -111,7 +111,7 @@ const TermsOfService = () => {
             </CardHeader>
             <CardContent className="text-muted-foreground">
               <p>Kullanım şartları hakkında sorularınız için bizimle iletişime geçebilirsiniz:</p>
-              <p className="mt-2 font-medium text-foreground">info@turzz.com</p>
+              <p className="mt-2 font-medium text-foreground">info@turzzai.com</p>
             </CardContent>
           </Card>
         </div>

@@ -110,8 +110,8 @@ export const SupportChatWidget = () => {
       .catch((error) => {
         console.error("Error:", error);
         const fallbackMessages: Record<string, string> = {
-          tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://ai.turzz.com/yardim sayfasını ziyaret edin.",
-          en: "Sorry, something went wrong. Please try again or visit https://ai.turzz.com/help.",
+          tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin.",
+          en: "Sorry, something went wrong. Please try again or visit https://turzzai.com/help.",
         };
         setMessages((prev) => [
           ...prev,
@@ -156,8 +156,8 @@ export const SupportChatWidget = () => {
     } catch (error) {
       console.error("Error:", error);
       const fallbackMessages: Record<string, string> = {
-        tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://ai.turzz.com/yardim sayfasını ziyaret edin.",
-        en: "Sorry, something went wrong. Please try again or visit https://ai.turzz.com/help.",
+        tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin.",
+        en: "Sorry, something went wrong. Please try again or visit https://turzzai.com/help.",
       };
       setMessages((prev) => [
         ...prev,

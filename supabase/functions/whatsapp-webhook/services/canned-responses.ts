@@ -64,13 +64,13 @@ export const cannedResponses: Record<string, Record<string, string>> = {
   },
   
   contact_info: {
-    tr: '📞 İletişim Bilgileri:\n📱 Telefon: +90 XXX XXX XX XX\n📧 Email: info@turzz.com\n🌐 Web: www.turzz.com\n📍 Adres: [Adres buraya]',
-    en: '📞 Contact Information:\n📱 Phone: +90 XXX XXX XX XX\n📧 Email: info@turzz.com\n🌐 Web: www.turzz.com\n📍 Address: [Address here]',
-    de: '📞 Kontaktinformationen:\n📱 Telefon: +90 XXX XXX XX XX\n📧 E-Mail: info@turzz.com\n🌐 Web: www.turzz.com\n📍 Adresse: [Adresse hier]',
-    ru: '📞 Контактная информация:\n📱 Телефон: +90 XXX XXX XX XX\n📧 Email: info@turzz.com\n🌐 Веб: www.turzz.com\n📍 Адрес: [Адрес здесь]',
-    ar: '📞 معلومات الاتصال:\n📱 الهاتف: +90 XXX XXX XX XX\n📧 البريد الإلكتروني: info@turzz.com\n🌐 الموقع: www.turzz.com\n📍 العنوان: [العنوان هنا]',
-    fr: '📞 Coordonnées:\n📱 Téléphone: +90 XXX XXX XX XX\n📧 Email: info@turzz.com\n🌐 Web: www.turzz.com\n📍 Adresse: [Adresse ici]',
-    es: '📞 Información de contacto:\n📱 Teléfono: +90 XXX XXX XX XX\n📧 Email: info@turzz.com\n🌐 Web: www.turzz.com\n📍 Dirección: [Dirección aquí]'
+    tr: '📞 İletişim Bilgileri:\n📱 Telefon: +90 XXX XXX XX XX\n📧 Email: info@turzzai.com\n🌐 Web: turzzai.com\n📍 Adres: [Adres buraya]',
+    en: '📞 Contact Information:\n📱 Phone: +90 XXX XXX XX XX\n📧 Email: info@turzzai.com\n🌐 Web: turzzai.com\n📍 Address: [Address here]',
+    de: '📞 Kontaktinformationen:\n📱 Telefon: +90 XXX XXX XX XX\n📧 E-Mail: info@turzzai.com\n🌐 Web: turzzai.com\n📍 Adresse: [Adresse hier]',
+    ru: '📞 Контактная информация:\n📱 Телефон: +90 XXX XXX XX XX\n📧 Email: info@turzzai.com\n🌐 Веб: turzzai.com\n📍 Адрес: [Адрес здесь]',
+    ar: '📞 معلومات الاتصال:\n📱 الهاتف: +90 XXX XXX XX XX\n📧 البريد الإلكتروني: info@turzzai.com\n🌐 الموقع: turzzai.com\n📍 العنوان: [العنوان هنا]',
+    fr: '📞 Coordonnées:\n📱 Téléphone: +90 XXX XXX XX XX\n📧 Email: info@turzzai.com\n🌐 Web: turzzai.com\n📍 Adresse: [Adresse ici]',
+    es: '📞 Información de contacto:\n📱 Teléfono: +90 XXX XXX XX XX\n📧 Email: info@turzzai.com\n🌐 Web: turzzai.com\n📍 Dirección: [Dirección aquí]'
   }
 };
 

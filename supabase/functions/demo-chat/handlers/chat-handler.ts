@@ -14,6 +14,7 @@ import { getAgencyData, extractPaymentInfoText } from "../services/agency-cache.
 import { saveReservation, saveComplaint, saveConversation, getConversationHistory } from "../services/reservation.ts";
 import { buildCompleteSystemPrompt } from "../services/prompt-builder-helper.ts";
 import { callAI } from "../services/ai.ts";
+import { validateAIResponse } from "../../shared/fsm/response-validator.ts";
 import { generatePaymentMessage } from "../services/payment.ts";
 
 import { processTransition, getNextExpectedInput } from "../../shared/fsm/state-machine.ts";
@@ -141,7 +142,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const nluContext = buildNLUContext(context);
     const nluResult = await analyzeUserMessage(message, nluContext, context.stage, context.currentTour, availableTours);
 
-    const detectedIntent = mapNLUIntentToFSMIntent(nluResult.intent);
+    let detectedIntent = mapNLUIntentToFSMIntent(nluResult.intent);
     logger.intent(nluResult.intent, detectedIntent);
 
     const expectedInput = getNextExpectedInput(context);
@@ -155,6 +156,24 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       nluResult.intent,
     );
 
+    // Stage koruma: COLLECTING_INFO / CONFIRMING'de NLU yanlışlıkla tour_search döndürdüyse
+    // provide_info'ya dönüştür. Kullanıcı pax/isim/telefon veriyor, tur araması değil.
+    // COLLECTING_INFO → TOUR_SELECTED regex geçişi bu override'dan etkilenmez (kendi pattern'ini kullanır).
+    if (
+      (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
+      nluResult.intent === "tour_search"
+    ) {
+      logger.info("INTENT_OVERRIDE", {
+        from: "tour_search",
+        to: "provide_info",
+        reason: "stage_protection",
+        stage: context.stage,
+        collectionStep: context.collectionStep,
+      });
+      nluResult.intent = "provide_info";
+      detectedIntent = mapNLUIntentToFSMIntent("provide_info");
+    }
+
     // Bilgi çıkar
     const extractedInfo = extractReservationInfo({
       message,
@@ -167,6 +186,29 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     });
 
     logger.debug("Extracted info", extractedInfo);
+
+    // CONTEXT_AFTER_NLU — NLU + extraction sonrası tam durum
+    logger.info("CONTEXT_AFTER_NLU", {
+      stage: context.stage,
+      collectionStep: context.collectionStep,
+      nluIntent: nluResult.intent,
+      mappedIntent: detectedIntent,
+      // NLU'dan gelen ham entity'ler
+      nluEntities: nluResult.entities,
+      nluUpdates: nluResult.updates,
+      // Extraction sonucu
+      extractedDate: extractedInfo.selectedDate,
+      extractedDateId: extractedInfo.dateId,
+      extractedPax: extractedInfo.paxAdult,
+      extractedName: extractedInfo.fullName,
+      extractedPhone: extractedInfo.phone ? "[MASKED]" : undefined,
+      // Mevcut context'teki rezervasyon bilgisi
+      existingDateId: context.reservationInfo?.dateId,
+      existingPax: context.reservationInfo?.paxAdult,
+      existingName: context.reservationInfo?.fullName,
+      currentTourId: context.currentTour?.id,
+      selectedTourFromNLU: selectedTour ? (selectedTour as any).id : null,
+    });
 
     // FSM geçişi
     const input: ProcessingInput = {
@@ -195,12 +237,13 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     }
 
     // === DETERMİNİSTİK TARİH LİSTESİ ===
-    // COLLECTING_INFO + waiting_for_date → Her zaman tarih listesi göster
-    // Tek tarih olsa bile! Otomatik seçme, kullanıcıya göster.
+    // COLLECTING_INFO + waiting_for_date → tarih listesi göster
+    // Guard: dateId zaten set ise (kullanıcı az önce tarih verdi) listeyi tekrar GÖSTERME
     if (
       newContext.stage === "COLLECTING_INFO" &&
       newContext.collectionStep === "waiting_for_date" &&
-      newContext.currentTour
+      newContext.currentTour &&
+      !newContext.reservationInfo?.dateId
     ) {
       const tourForDates = findTourById(newContext.currentTour.id, availableTours);
       if (tourForDates?.dates?.length) {
@@ -367,33 +410,41 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       let deterministicReply = completionMessages[newContext.language] || completionMessages.tr;
 
       if (paymentInstructions) {
-        const adultPrice = selectedDateData?.price_adult || 0;
-        const childPrice = selectedDateData?.price_child ?? adultPrice;
-        const totalPrice = adultCount * adultPrice + childCount * childPrice;
-        const depositPercentage =
-          typeof paymentInstructions === "object" &&
-          paymentInstructions !== null &&
-          typeof (paymentInstructions as any).deposit_percentage === "number"
-            ? (paymentInstructions as any).deposit_percentage
-            : CONFIG.DEFAULT_DEPOSIT_PERCENTAGE;
-        const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
-        const tourCurrency = selectedTourData?.currency || "TRY";
+        if (!selectedDateData) {
+          logger.error("PAYMENT_BLOCK_SKIPPED_NULL_DATE", {
+            tourId: newContext.currentTour?.id,
+            dateId: newContext.reservationInfo.dateId,
+            language: newContext.language,
+          });
+        } else {
+          const adultPrice = selectedDateData.price_adult || 0;
+          const childPrice = selectedDateData.price_child ?? adultPrice;
+          const totalPrice = adultCount * adultPrice + childCount * childPrice;
+          const depositPercentage =
+            typeof paymentInstructions === "object" &&
+            paymentInstructions !== null &&
+            typeof (paymentInstructions as any).deposit_percentage === "number"
+              ? (paymentInstructions as any).deposit_percentage
+              : CONFIG.DEFAULT_DEPOSIT_PERCENTAGE;
+          const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+          const tourCurrency = selectedTourData?.currency || "TRY";
 
-        if (totalPrice > 0) {
-          const paymentMessage = await generatePaymentMessage(
-            paymentInstructions,
-            newContext.language,
-            totalPrice,
-            depositAmount,
-            tourCurrency,
-            {
-              languageCurrencies: agencyData?.language_currencies,
-              primaryCurrency: agencyData?.primary_currency || "TRY",
-            },
-          );
-          if (paymentMessage) {
-            deterministicReply += paymentMessage;
-            newContext.paymentInfoSent = true;
+          if (totalPrice > 0) {
+            const paymentMessage = await generatePaymentMessage(
+              paymentInstructions,
+              newContext.language,
+              totalPrice,
+              depositAmount,
+              tourCurrency,
+              {
+                languageCurrencies: agencyData?.language_currencies,
+                primaryCurrency: agencyData?.primary_currency || "TRY",
+              },
+            );
+            if (paymentMessage) {
+              deterministicReply += paymentMessage;
+              newContext.paymentInfoSent = true;
+            }
           }
         }
       }
@@ -426,6 +477,15 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     }
 
     let finalResponse = typeof aiResponse === "string" ? aiResponse.trim() : "";
+
+    // Katman 2 güvenlik: AI'nın yetkisiz rezervasyon onayı iddiasını engelle.
+    if (finalResponse) {
+      const validation = validateAIResponse(finalResponse, newContext.language, newContext.stage);
+      if (validation.wasModified) {
+        logger.error("Response validator modified AI output", { stage: newContext.stage });
+        finalResponse = validation.text;
+      }
+    }
 
     if (!finalResponse) {
       finalResponse = buildFallbackResponse({

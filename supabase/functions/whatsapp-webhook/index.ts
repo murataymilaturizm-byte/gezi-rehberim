@@ -15,6 +15,7 @@ import {
   formatDateForLanguage,
 } from "../shared/fsm/localization.ts";
 import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
+import { validateAIResponse } from "../shared/fsm/response-validator.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 
 import {
@@ -388,7 +389,7 @@ serve(async (req) => {
     const nluResult = await analyzeUserMessage(message, nluContext, context.stage, context.currentTour, tours);
     console.log("🧠 Intent:", nluResult.intent);
 
-    const fsmIntent = mapNLUIntentToFSMIntent(nluResult.intent);
+    let fsmIntent = mapNLUIntentToFSMIntent(nluResult.intent);
 
     if (nluResult.intent === "complaint_feedback") {
       const { error: complaintError } = await supabase.from("complaints").insert({
@@ -475,6 +476,23 @@ serve(async (req) => {
       } else {
         console.log("❌ No tour match found via NLU or direct matching");
       }
+    }
+
+    // Stage koruma: COLLECTING_INFO / CONFIRMING'de NLU yanlışlıkla tour_search döndürdüyse
+    // provide_info'ya dönüştür. Demo-chat ile aynı mantık.
+    if (
+      (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
+      nluResult.intent === "tour_search"
+    ) {
+      console.info("INTENT_OVERRIDE", {
+        from: "tour_search",
+        to: "provide_info",
+        reason: "stage_protection",
+        stage: context.stage,
+        collectionStep: context.collectionStep,
+      });
+      nluResult.intent = "provide_info";
+      fsmIntent = mapNLUIntentToFSMIntent("provide_info");
     }
 
     const extractedInfo: any = { ...nluResult.updates };
@@ -1053,8 +1071,8 @@ Never say anything about the previous booking.`;
     const systemPrompt =
       buildSystemPrompt(promptContext) + tourSwitchWarning + completedStagePrompt + returningUserPrompt;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not configured");
 
     // Build conversation history for AI context
     const conversationMessages = (recentMsgs || [])
@@ -1062,13 +1080,18 @@ Never say anything about the previous booking.`;
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }));
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "claude-sonnet-4-5",
+        max_tokens: 2000,
+        system: systemPrompt,
         messages: [
-          { role: "system", content: systemPrompt },
           ...conversationMessages,
           { role: "user", content: message },
         ],
@@ -1078,8 +1101,21 @@ Never say anything about the previous booking.`;
     if (!aiResponse.ok) throw new Error(`AI error: ${aiResponse.status}`);
 
     const aiData = await aiResponse.json();
-    let reply: string = aiData.choices[0].message.content;
+    let reply: string = (aiData.content || [])
+      .filter((b: any) => b?.type === "text")
+      .map((b: any) => b.text)
+      .join("");
     console.log("🤖 Reply:", reply.substring(0, 80));
+
+    // Demo-chat ile aynı güvenlik katmanı: AI yetkisiz rezervasyon onayı iddiasını engelle.
+    const validationResult = validateAIResponse(reply, newContext.language, newContext.stage);
+    if (validationResult.wasModified) {
+      console.error("WA_AI_FALSE_RESERVATION_CLAIM", {
+        stage: newContext.stage,
+        matchedPattern: validationResult.matchedPattern,
+      });
+      reply = validationResult.text;
+    }
 
     let finalReply = reply;
 
@@ -1098,7 +1134,13 @@ Never say anything about the previous booking.`;
       const tourForReservation = toursRaw.find((t: any) => t.id === newContext.reservationInfo.tourId);
       const selectedTourDate = tourForReservation?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
 
-      if (selectedTourDate) {
+      if (!selectedTourDate) {
+        console.error("WA_PAYMENT_BLOCK_SKIPPED_NULL_DATE", {
+          tourId: newContext.reservationInfo.tourId,
+          dateId: newContext.reservationInfo.dateId,
+          language: newContext.language,
+        });
+      } else {
         const paxAdult = newContext.reservationInfo.paxAdult || 0;
         const paxChild = newContext.reservationInfo.paxChild || 0;
         const totalPrice =

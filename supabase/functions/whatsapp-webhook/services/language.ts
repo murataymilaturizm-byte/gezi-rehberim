@@ -2,18 +2,7 @@
 
 export async function detectLanguage(message: string): Promise<string | null> {
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-lite',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a language detection assistant. Detect the language of the user's message.
+    const systemPrompt = `You are a language detection assistant. Detect the language of the user's message.
 
 Supported languages and codes:
 - tr: Turkish
@@ -24,14 +13,22 @@ Supported languages and codes:
 - fr: French
 - es: Spanish
 
-Return ONLY the language code (e.g., "tr", "en", "de"). No other explanation.`
-          },
-          {
-            role: 'user',
-            content: message
-          }
+Return ONLY the language code (e.g., "tr", "en", "de"). No other explanation.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': Deno.env.get('ANTHROPIC_API_KEY') || '',
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 10,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: message }
         ],
-        
       })
     });
 
@@ -41,13 +38,17 @@ Return ONLY the language code (e.g., "tr", "en", "de"). No other explanation.`
     }
 
     const data = await response.json();
-    const detectedLang = data.choices[0]?.message?.content?.trim().toLowerCase();
-    
+    const text = (data.content || [])
+      .filter((b: any) => b?.type === 'text')
+      .map((b: any) => b.text)
+      .join('');
+    const detectedLang = text?.trim().toLowerCase();
+
     const validLanguages = ['tr', 'en', 'de', 'ru', 'ar', 'fr', 'es'];
     if (detectedLang && validLanguages.includes(detectedLang)) {
       return detectedLang;
     }
-    
+
     return null;
   } catch (error) {
     console.error('Error detecting language:', error);

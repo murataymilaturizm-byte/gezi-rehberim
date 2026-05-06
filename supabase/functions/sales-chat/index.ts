@@ -32,9 +32,9 @@ serve(async (req) => {
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
       .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "");
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
     const languageNames: Record<string, string> = {
@@ -143,7 +143,7 @@ MÜŞTERİ GÖRÜŞLERİ VE BAŞARI HİKAYELERİ:
 
 SATIN ALMA VE KURULUM SÜRECİ (5-10 DAKİKA):
 1️⃣ 14 günlük ücretsiz deneme başlat (kredi kartı gerekmez)
-2️⃣ Admin paneline giriş yap (ai.turzz.com/admin)
+2️⃣ Admin paneline giriş yap (turzzai.com/admin)
 3️⃣ Turlarınızı ve tarihlerini sisteme yükle
 4️⃣ WhatsApp numaranızı Meta Embedded Signup ile bağlayın:
    - Admin panelinde "WhatsApp Yönetimi" sekmesine gidin
@@ -175,10 +175,10 @@ WHATSAPP ENTEGRASYONU HAKKINDA ÇOK ÖNEMLİ:
    → İstediğiniz zaman iptal edebilirsiniz. Taahhüt yok.
 
 YARDIM VE EĞİTİM KAYNAKLARI:
-📚 Kapsamlı Yardım Merkezi: ai.turzz.com/yardim
-🚀 Nasıl Başlarım: ai.turzz.com/nasil-baslarim
-📧 E-posta: info@ai.turzz.com
-🌐 Web: ai.turzz.com
+📚 Kapsamlı Yardım Merkezi: turzzai.com/yardim
+🚀 Nasıl Başlarım: turzzai.com/nasil-baslarim
+📧 E-posta: info@turzzai.com
+🌐 Web: turzzai.com
 
 GÖREVLERİN:
 ✅ Potansiyel müşterilere ürün özelliklerini detaylı ve açık şekilde anlat
@@ -187,7 +187,7 @@ GÖREVLERİN:
 ✅ Demo talepleri topla (isim, telefon, acente adı)
 ✅ Teknik soruları basit ve anlaşılır şekilde yanıtla
 ✅ Kurulum ve kullanım konusunda yardım et
-✅ Müşterilere sistem kullanımı ile ilgili yardım gerektiğinde ai.turzz.com/yardim sayfasına yönlendir
+✅ Müşterilere sistem kullanımı ile ilgili yardım gerektiğinde turzzai.com/yardim sayfasına yönlendir
 ✅ Kısa ve öz cevaplar ver (maksimum 3-4 cümle)
 ✅ Emoji kullan ama aşırıya kaçma (mesaj başına 2-3 emoji yeter)
 
@@ -201,40 +201,45 @@ GÖREVLERİN:
 ⚠️ 14 günlük ücretsiz denemeyi her fırsatta vurgula
 ⚠️ Müşterinin yazdığı dilde cevap ver`;
 
-    // Prepare messages for AI
+    // Anthropic Messages API: only user/assistant turns belong in `messages`.
     const messages = [
-      { role: "system", content: systemPrompt },
-      ...conversationHistory.map((msg: any) => ({
-        role: msg.role,
-        content: msg.content,
-      })),
+      ...conversationHistory
+        .filter((msg: any) => msg?.role === "user" || msg?.role === "assistant")
+        .map((msg: any) => ({
+          role: msg.role,
+          content: msg.content,
+        })),
       { role: "user", content: sanitizedMessage },
     ];
 
-    console.log("Calling Lovable AI with sales chat request");
+    console.log("Calling Anthropic API with sales chat request");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: messages,
-        
+        model: "claude-sonnet-4-5",
         max_tokens: 500,
+        system: systemPrompt,
+        messages: messages,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Lovable AI error:", response.status, errorText);
+      console.error("Anthropic API error:", response.status, errorText);
       throw new Error(`AI request failed: ${response.status}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = (data.content || [])
+      .filter((b: any) => b?.type === "text")
+      .map((b: any) => b.text)
+      .join("");
 
     console.log("Sales chat response generated successfully");
 
@@ -246,13 +251,13 @@ GÖREVLERİN:
     console.error("Error in sales-chat function:", error);
 
     const errorMessages: Record<string, string> = {
-      tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@ai.turzz.com adresinden bizimle iletişime geçin.",
-      en: "Sorry, I'm experiencing an issue right now. Please contact us at info@ai.turzz.com.",
-      de: "Entschuldigung, ich habe gerade ein Problem. Bitte kontaktieren Sie uns unter info@ai.turzz.com.",
-      ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@ai.turzz.com.",
-      ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@ai.turzz.com.",
-      fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@ai.turzz.com.",
-      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@ai.turzz.com.",
+      tr: "Üzgünüm, şu anda bir sorun yaşıyorum. Lütfen info@turzzai.com adresinden bizimle iletişime geçin.",
+      en: "Sorry, I'm experiencing an issue right now. Please contact us at info@turzzai.com.",
+      de: "Entschuldigung, ich habe gerade ein Problem. Bitte kontaktieren Sie uns unter info@turzzai.com.",
+      ru: "Извините, у меня сейчас возникла проблема. Пожалуйста, свяжитесь с нами по адресу info@turzzai.com.",
+      ar: "آسف، أواجه مشكلة الآن. يرجى الاتصال بنا على info@turzzai.com.",
+      fr: "Désolé, je rencontre un problème pour le moment. Veuillez nous contacter à info@turzzai.com.",
+      es: "Lo siento, estoy experimentando un problema en este momento. Por favor contáctenos en info@turzzai.com.",
     };
 
     return new Response(

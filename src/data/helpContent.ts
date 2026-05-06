@@ -278,7 +278,7 @@ const helpContent: HelpContent = {
         {
           question: "Destek ve Yardım Alma",
           answer: `**Destek Kanalları:**
-- **E-posta:** info@ai.turzz.com (tüm paketlerde, 24 saat içinde yanıt)
+- **E-posta:** info@turzzai.com (tüm paketlerde, 24 saat içinde yanıt)
 - **WhatsApp Destek:** Profesyonel ve Kurumsal paketlerde (09:00-18:00)
 - **7/24 Premium Destek:** Sadece Kurumsal pakette
 
@@ -303,7 +303,7 @@ const helpContent: HelpContent = {
 → Çözüm: Kota ve tarih kontrolü yapın
 
 **Hala çözüm bulamadınız mı?**
-→ info@ai.turzz.com adresine ekran görüntüsü ile yazın`
+→ info@turzzai.com adresine ekran görüntüsü ile yazın`
         }
       ]
     }
@@ -558,7 +558,7 @@ const helpContent: HelpContent = {
         {
           question: "Support and Getting Help",
           answer: `**Support Channels:**
-- **Email:** info@ai.turzz.com (all plans, response within 24 hours)
+- **Email:** info@turzzai.com (all plans, response within 24 hours)
 - **WhatsApp Support:** Professional and Enterprise plans (09:00-18:00)
 - **24/7 Premium Support:** Enterprise plan only
 
@@ -583,7 +583,7 @@ const helpContent: HelpContent = {
 → Solution: Check quota and dates
 
 **Still can't find a solution?**
-→ Write to info@ai.turzz.com with a screenshot`
+→ Write to info@turzzai.com with a screenshot`
         }
       ]
     }
@@ -724,7 +724,7 @@ const helpContent: HelpContent = {
         {
           question: "Support und Hilfe",
           answer: `**Support-Kanäle:**
-- **E-Mail:** info@ai.turzz.com (alle Pakete)
+- **E-Mail:** info@turzzai.com (alle Pakete)
 - **WhatsApp-Support:** Professional und Enterprise
 - **24/7 Premium-Support:** Nur Enterprise
 
@@ -834,7 +834,7 @@ const helpContent: HelpContent = {
         {
           question: "Поддержка и помощь",
           answer: `**Каналы поддержки:**
-- **Email:** info@ai.turzz.com (все планы)
+- **Email:** info@turzzai.com (все планы)
 - **WhatsApp:** Professional и Enterprise
 - **Премиум 24/7:** Только Enterprise
 
@@ -923,7 +923,7 @@ const helpContent: HelpContent = {
         {
           question: "الدعم والمساعدة",
           answer: `**قنوات الدعم:**
-- **البريد الإلكتروني:** info@ai.turzz.com (جميع الباقات)
+- **البريد الإلكتروني:** info@turzzai.com (جميع الباقات)
 - **دعم واتساب:** الباقات الاحترافية والمؤسسية
 - **دعم بريميوم 24/7:** المؤسسية فقط`
         }
@@ -1010,7 +1010,7 @@ const helpContent: HelpContent = {
         {
           question: "Support et aide",
           answer: `**Canaux de support :**
-- **Email :** info@ai.turzz.com (tous les forfaits)
+- **Email :** info@turzzai.com (tous les forfaits)
 - **Support WhatsApp :** Professional et Enterprise
 - **Support Premium 24/7 :** Enterprise uniquement`
         }
@@ -1097,7 +1097,7 @@ const helpContent: HelpContent = {
         {
           question: "Soporte y ayuda",
           answer: `**Canales de soporte:**
-- **Email:** info@ai.turzz.com (todos los planes)
+- **Email:** info@turzzai.com (todos los planes)
 - **Soporte WhatsApp:** Professional y Enterprise
 - **Soporte Premium 24/7:** Solo Enterprise`
         }

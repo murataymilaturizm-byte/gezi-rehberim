@@ -14,7 +14,10 @@ export interface NLUResult {
   clarification_needed?: string;
 }
 
-const NLU_TIMEOUT_MS = 5000;
+const NLU_TIMEOUT_MS = 15000;
+const NLU_MAX_RETRIES = 2;
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function detectFallbackLanguage(message: string): string {
   const lower = message.toLowerCase();
@@ -64,15 +67,27 @@ function buildFallbackNLU(userMessage: string, availableTours?: any[]): NLUResul
   return { intent: "general", language, entities: {}, updates: {} };
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+  meta?: { messageLength?: number; attempt?: number },
+): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(url, {
-      ...init,
-      signal: controller.signal,
-    });
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      console.warn("NLU_TIMEOUT", {
+        timeoutMs,
+        messageLength: meta?.messageLength,
+        attempt: meta?.attempt,
+      });
+      throw new Error("NLU_TIMEOUT");
+    }
+    throw error;
   } finally {
     clearTimeout(timeoutId);
   }
@@ -136,6 +151,12 @@ The user is just browsing/asking for info, NOT starting a new reservation.
 - human_handover: User wants to speak with a real person
 - general: General questions or chat
 
+**CRITICAL: SHORT NUMBERS AND COLLECTING INFO:**
+- If user message is ONLY a number (1–50) — e.g. "3", "2", "5" — or a number + person word ("3 kişi", "2 person", "4 yetişkin", "1 çocuk") → intent MUST be "provide_info". NEVER "tour_search".
+- A single number cannot be a tour name or destination. Do not extract tour_name or destination from it.
+- If conversation shows stage=COLLECTING_INFO or CONFIRMING (or collectionStep is set), strongly prefer "provide_info" or "confirm_reservation" over "tour_search" or "general" — unless user explicitly names a DIFFERENT tour/destination that is not the currently selected one.
+- Only return "tour_search" in COLLECTING_INFO/CONFIRMING if user clearly says they want a completely different tour (e.g. "başka bir tur istiyorum", "Bodrum turuna geçelim").
+
 **CRITICAL CONTEXT RULES FOR SHORT CONFIRMATIONS:**
 1. If conversation summary contains "TOUR_SELECTED" or "Currently selected tour" AND user says: "tamam/ok/evet/olur/yapabiliriz/sure/yes/let's go/haydi/hadi" → MUST return reservation_intent
 2. If conversation summary contains "CONFIRMING" or "ready for confirmation" or "onay bekliyor" AND user says ANY positive word like "evet/tamam/onaylıyorum/yes/confirm/ok/doğru" → MUST return confirm_reservation
@@ -168,9 +189,9 @@ export async function analyzeUserMessage(
   availableTours?: any[],
 ): Promise<NLUResult> {
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY not configured");
     }
 
     let contextPrompt = `User message: "${userMessage}"\n\n`;
@@ -191,111 +212,150 @@ export async function analyzeUserMessage(
       contextPrompt += `Available tours:\n${availableTours.map((t) => `- ${t.title} (${t.destination})`).join("\n")}\n\n`;
     }
 
+    // Anthropic tool format: top-level name/description/input_schema (no nested "function" wrapper)
     const nluTool = {
-      type: "function" as const,
-      function: {
-        name: "analyze_message",
-        description: "Analyze user message and extract intent and entities",
-        parameters: {
-          type: "object",
-          properties: {
-            intent: {
-              type: "string",
-              enum: [
-                "greeting",
-                "browse_tours",
-                "tour_search",
-                "select_tour",
-                "reservation_intent",
-                "provide_info",
-                "confirm_reservation",
-                "change_info",
-                "agency_info",
-                "working_hours",
-                "payment_methods",
-                "cancellation_policy",
-                "visa_support",
-                "hotel_details",
-                "transport_details",
-                "custom_package",
-                "after_sales",
-                "complaint_feedback",
-                "faq_general",
-                "human_handover",
-                "general",
-              ],
-              description: "The detected user intent",
-            },
-            language: {
-              type: "string",
-              enum: ["tr", "en", "de", "ru", "ar", "fr", "es"],
-              description: "The detected language",
-            },
-            entities: {
-              type: "object",
-              properties: {
-                destination: { type: "string" },
-                tour_name: { type: "string" },
-                dates: { type: "array", items: { type: "string" } },
-                people_count: {
-                  type: "object",
-                  properties: {
-                    adults: { type: "number" },
-                    children: { type: "number" },
-                  },
-                },
-                full_name: { type: "string" },
-                phone: { type: "string" },
-              },
-            },
-            clarification_needed: { type: "string" },
+      name: "analyze_message",
+      description: "Analyze user message and extract intent and entities",
+      input_schema: {
+        type: "object",
+        properties: {
+          intent: {
+            type: "string",
+            enum: [
+              "greeting",
+              "browse_tours",
+              "tour_search",
+              "select_tour",
+              "reservation_intent",
+              "provide_info",
+              "confirm_reservation",
+              "change_info",
+              "agency_info",
+              "working_hours",
+              "payment_methods",
+              "cancellation_policy",
+              "visa_support",
+              "hotel_details",
+              "transport_details",
+              "custom_package",
+              "after_sales",
+              "complaint_feedback",
+              "faq_general",
+              "human_handover",
+              "general",
+            ],
+            description: "The detected user intent",
           },
-          required: ["intent", "language", "entities"],
+          language: {
+            type: "string",
+            enum: ["tr", "en", "de", "ru", "ar", "fr", "es"],
+            description: "The detected language",
+          },
+          entities: {
+            type: "object",
+            properties: {
+              destination: { type: "string" },
+              tour_name: { type: "string" },
+              dates: { type: "array", items: { type: "string" } },
+              people_count: {
+                type: "object",
+                properties: {
+                  adults: { type: "number" },
+                  children: { type: "number" },
+                },
+              },
+              full_name: { type: "string" },
+              phone: { type: "string" },
+            },
+          },
+          clarification_needed: { type: "string" },
         },
+        required: ["intent", "language", "entities"],
       },
     };
 
-    const response = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: NLU_SYSTEM_PROMPT },
-          { role: "user", content: contextPrompt },
-        ],
-        tools: [nluTool],
-        tool_choice: { type: "function", function: { name: "analyze_message" } },
-        
-      }),
-    }, NLU_TIMEOUT_MS);
+    let lastError: Error | null = null;
+    let toolUseBlock: any = null;
 
-    if (!response.ok) {
-      throw new Error(`AI API error: ${response.status}`);
+    for (let attempt = 1; attempt <= NLU_MAX_RETRIES; attempt++) {
+      const response = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 500,
+          system: NLU_SYSTEM_PROMPT,
+          messages: [
+            { role: "user", content: contextPrompt },
+          ],
+          tools: [nluTool],
+          // Force the model to use the analyze_message tool
+          tool_choice: { type: "tool", name: "analyze_message" },
+        }),
+      }, NLU_TIMEOUT_MS, { messageLength: userMessage.length, attempt });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "");
+        console.error(`NLU API error (attempt ${attempt}/${NLU_MAX_RETRIES}):`, response.status, errorText);
+        lastError = new Error(`AI API error: ${response.status}`);
+
+        const isTransient = response.status === 503 || response.status === 529;
+        if (!isTransient || attempt === NLU_MAX_RETRIES) {
+          throw lastError;
+        }
+        await delay(500 * attempt);
+        continue;
+      }
+
+      const data = await response.json();
+      // Anthropic returns content as an array of blocks; find the tool_use block
+      toolUseBlock = (data.content || []).find((b: any) => b?.type === "tool_use");
+
+      if (!toolUseBlock) {
+        // No tool call returned — treat as a soft fallback
+        return { intent: "general", language: "tr", entities: {}, updates: {} };
+      }
+      break;
     }
 
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall) {
-      return { intent: "general", language: "tr", entities: {}, updates: {} };
+    if (!toolUseBlock) {
+      throw lastError || new Error("NLU_NO_TOOL_USE");
     }
 
-    const analysis = JSON.parse(toolCall.function.arguments);
+    // Anthropic returns tool input as a parsed object (not a JSON string)
+    const analysis = toolUseBlock.input || {};
+    const entities = analysis.entities || {};
 
     const updates: Partial<ReservationInfo> = {};
-    if (analysis.entities.people_count?.adults) updates.paxAdult = analysis.entities.people_count.adults;
-    if (analysis.entities.people_count?.children) updates.paxChild = analysis.entities.people_count.children;
-    if (analysis.entities.full_name) updates.fullName = analysis.entities.full_name;
-    if (analysis.entities.phone) updates.phone = analysis.entities.phone;
+    if (entities.people_count?.adults) updates.paxAdult = entities.people_count.adults;
+    if (entities.people_count?.children) updates.paxChild = entities.people_count.children;
+    if (entities.full_name) updates.fullName = entities.full_name;
+    if (entities.phone) updates.phone = entities.phone;
+
+    // NLU_ENTITIES — tarih extraction debug için kritik
+    console.info("NLU_ENTITIES", {
+      intent: analysis.intent,
+      language: analysis.language,
+      // dates: NLU tool schema'sında "dates" (array) olarak tanımlı
+      dates: entities.dates,        // array mi geliyor?
+      // date: info-extractor "nluEntities.date" (singular) bekliyor — mismatch şüphesi
+      date_singular: entities.date, // bu alan hiç geliyor mu?
+      tour_name: entities.tour_name,
+      destination: entities.destination,
+      people_count: entities.people_count,
+      full_name: entities.full_name,
+      phone: entities.phone,
+      updates,
+    });
 
     return {
       intent: analysis.intent,
       language: analysis.language,
-      entities: analysis.entities,
+      entities,
       updates,
       clarification_needed: analysis.clarification_needed,
     };

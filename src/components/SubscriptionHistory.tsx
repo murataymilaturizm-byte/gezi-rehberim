@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { SipayPaymentForm } from "./SipayPaymentForm";
+import { LemonSqueezyButton } from "./LemonSqueezyButton";
 import type { PaymentStatus } from "./PaymentStatusIndicator";
 import {
   Table,
@@ -68,6 +69,7 @@ interface AgencySubscription {
   subscription_status: string;
   subscription_ends_at: string | null;
   name?: string;
+  lemonsqueezy_customer_id?: string | null;
 }
 
 interface PlanOption {
@@ -150,6 +152,8 @@ export const SubscriptionHistory = () => {
   const [selectedPlan, setSelectedPlan] = useState<PlanOption | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [loadingPortal, setLoadingPortal] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
 
   const planOptions: PlanOption[] = [
@@ -233,11 +237,12 @@ export const SubscriptionHistory = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setUserEmail(user.email ?? "");
 
       // Get user's agency with subscription info
       const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
-        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name")
+        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name, lemonsqueezy_customer_id")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -320,6 +325,26 @@ export const SubscriptionHistory = () => {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(amount);
+  };
+
+  const handleManageSubscription = async () => {
+    if (!agencyId) return;
+    setLoadingPortal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("lemonsqueezy-portal", {
+        body: { agencyId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+      } else {
+        throw new Error("Portal URL alınamadı");
+      }
+    } catch (err: any) {
+      toast({ title: "Hata", description: err.message || "Abonelik portalı açılamadı", variant: "destructive" });
+    } finally {
+      setLoadingPortal(false);
+    }
   };
 
   const handlePlanChange = (plan: PlanOption) => {
@@ -510,12 +535,13 @@ export const SubscriptionHistory = () => {
                       ))}
                     </ul>
                     {agencyId ? (
-                      <SipayPaymentForm
-                        agencyId={agencyId}
-                        planType={plan.id}
+                      <LemonSqueezyButton
+                        planId={plan.id}
                         isYearly={isYearly}
-                        amount={calculatePrice(plan.price, isYearly)}
-                        agencyName="Acenta"
+                        agencyId={agencyId}
+                        userEmail={userEmail}
+                        label="Abone Ol"
+                        className="w-full"
                       />
                     ) : (
                       <Alert className="border-primary/20">
@@ -612,6 +638,20 @@ export const SubscriptionHistory = () => {
               </ul>
             </div>
 
+            {/* Aboneliği Yönet — sadece LS müşterisiyse göster */}
+            {subscription.subscription_status === "active" && subscription.lemonsqueezy_customer_id && (
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManageSubscription}
+                  disabled={loadingPortal}
+                >
+                  {loadingPortal ? "Yükleniyor..." : "Aboneliği Yönet →"}
+                </Button>
+              </div>
+            )}
+
             {/* Warning for trial/expired status - show all plans with payment */}
             {(subscription.subscription_status === "trial" || 
               subscription.subscription_status === "expired" || 
@@ -677,12 +717,13 @@ export const SubscriptionHistory = () => {
                           ))}
                         </ul>
                         {agencyId && (
-                          <SipayPaymentForm
-                            agencyId={agencyId}
-                            planType={plan.id}
+                          <LemonSqueezyButton
+                            planId={plan.id}
                             isYearly={isYearly}
-                            amount={calculatePrice(plan.price, isYearly)}
-                            agencyName={subscription.name || "Acenta"}
+                            agencyId={agencyId}
+                            userEmail={userEmail}
+                            label="Abone Ol"
+                            className="w-full"
                           />
                         )}
                       </CardContent>

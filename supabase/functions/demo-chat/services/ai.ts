@@ -32,12 +32,29 @@ export async function callAI(
   const maxRetries = 2;
   let lastError: Error | null = null;
 
+  // Anthropic requires "system" as a top-level parameter, not a message role.
+  // Extract any system messages from the array and concatenate them.
+  let systemPrompt = "";
+  const conversationMessages: any[] = [];
+  for (const m of messages) {
+    if (m?.role === "system") {
+      systemPrompt = systemPrompt ? `${systemPrompt}\n\n${m.content}` : m.content;
+    } else if (m?.role === "user" || m?.role === "assistant") {
+      conversationMessages.push({ role: m.role, content: m.content });
+    }
+  }
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const requestBody: any = {
-        model: "google/gemini-3-flash-preview",
-        messages,
+        model: "claude-sonnet-4-5",
+        max_tokens: 4096,
+        messages: conversationMessages,
       };
+
+      if (systemPrompt) {
+        requestBody.system = systemPrompt;
+      }
 
       if (tools) {
         requestBody.tools = tools;
@@ -47,11 +64,12 @@ export async function callAI(
         requestBody.tool_choice = toolChoice;
       }
 
-      const response = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
+          "x-api-key": Deno.env.get("ANTHROPIC_API_KEY") || "",
+          "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify(requestBody),
       }, CONFIG.AI_TIMEOUT_MS);
@@ -61,18 +79,19 @@ export async function callAI(
         console.error(`AI API error (attempt ${attempt}/${maxRetries}):`, response.status, errorText);
 
         // Check for specific error codes
-        if (response.status === 503) {
+        if (response.status === 503 || response.status === 529) {
           lastError = new Error("AI_SERVICE_UNAVAILABLE");
         } else if (response.status === 429) {
           lastError = new Error("AI_RATE_LIMIT");
-        } else if (response.status === 402) {
+        } else if (response.status === 401 || response.status === 403) {
           lastError = new Error("AI_PAYMENT_REQUIRED");
         } else {
           lastError = new Error(`AI_ERROR_${response.status}`);
         }
 
-        // Retry for 503 errors, throw immediately for others
-        if (response.status !== 503 || attempt === maxRetries) {
+        // Retry for transient overload errors, throw immediately for others
+        const isTransient = response.status === 503 || response.status === 529;
+        if (!isTransient || attempt === maxRetries) {
           throw lastError;
         }
 
@@ -83,12 +102,17 @@ export async function callAI(
 
       const data = await response.json();
 
-      // If tool was called, return the full message for processing
-      if (data.choices[0]?.message?.tool_calls) {
-        return data.choices[0].message;
+      // If a tool was used, return the full response for processing
+      if (data.stop_reason === "tool_use") {
+        return data;
       }
 
-      return data.choices[0]?.message?.content || "";
+      // Anthropic returns content as an array of blocks; pick the text block(s)
+      const text = (data.content || [])
+        .filter((b: any) => b?.type === "text")
+        .map((b: any) => b.text)
+        .join("");
+      return text || "";
     } catch (error) {
       console.error(`Error calling AI (attempt ${attempt}/${maxRetries}):`, error);
       lastError = error instanceof Error ? error : new Error("AI_UNKNOWN_ERROR");

@@ -84,12 +84,16 @@ export const UsageStats = () => {
       const { data: agency } = await supabase.from('agencies').select('id').eq('user_id', user.id).single();
       if (!agency) throw new Error("Agency not found");
 
-      const { data, error } = await supabase.functions.invoke('paytr-payment-init', {
-        body: { purchaseType: 'extra_quota', quotaAmount: parseInt(selectedQuotaPackage), agencyId: agency.id },
+      // Extra kota için Professional plana yönlendir (LS starter monthly variant)
+      const storeSlug = (import.meta as any).env?.VITE_LS_STORE_SLUG ?? "turzz";
+      const variantId = "1031857"; // Başlangıç aylık — kullanıcı mevcut planını korur
+      const params = new URLSearchParams({
+        "checkout[email]": user.email ?? "",
+        "checkout[custom][agency_id]": agency.id,
+        "checkout[custom][purchase_type]": "extra_quota",
+        "checkout[custom][quota_amount]": selectedQuotaPackage,
       });
-      if (error) throw error;
-      if (data?.paytrUrl) { window.location.href = data.paytrUrl; } 
-      else { throw new Error("Payment URL not received"); }
+      window.open(`https://${storeSlug}.lemonsqueezy.com/buy/${variantId}?${params.toString()}`, "_blank");
     } catch (error: any) {
       console.error('Error purchasing quota:', error);
       toast({ title: t("admin.toast.error"), description: error.message || t("admin.usageStats.paymentError"), variant: "destructive" });

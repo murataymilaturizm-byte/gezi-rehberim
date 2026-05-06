@@ -57,7 +57,7 @@ function isInformationalMessage(userMessage: string, detectedIntent: string): bo
  */
 function hasNewReservationIntent(userMessage: string, detectedIntent: string): boolean {
   const newReservationPatterns =
-    /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci rez|başka bir rez|bir daha|tekrar rez|başka bir tura|farklı bir tura|diğer bir tur/i;
+    /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci rez|başka bir rez|bir daha|tekrar rez|başka bir tura|farklı bir tura|diğer bir tur|bir (kayıt|tur|rezervasyon)? daha|daha (bir|tane) (tur|kayıt|rezervasyon)|(başka|farklı|yeni) (kayıt|rezervasyon)|(arkadaşım|eşim|ailem|annem|babam|kardeşim|çocuğum)\s+için|(ekleyelim|ekleyeyim)\b|one more (booking|reservation|tour)|add (another|one more)|for my (friend|wife|husband|family|mother|father|sibling)/i;
   if (newReservationPatterns.test(userMessage)) return true;
   if (detectedIntent === "reservation_intent") return true;
   return false;
@@ -131,6 +131,31 @@ function isAllInfoCollected(info: ReservationInfo): boolean {
   return !!(info.tourId && info.dateId && info.selectedDate && info.paxAdult && info.fullName && info.phone);
 }
 
+/**
+ * NLU'dan tamamen bağımsız deterministik onay tespiti.
+ * SADECE CONFIRMING → COMPLETED geçişinde kullanılır.
+ * NLU timeout/hata olsa bile "evet" gibi açık onay kelimeleri yakalar.
+ */
+function detectConfirmation(message: string, language: string): boolean {
+  const msg = message.toLowerCase().trim();
+  const patterns: Record<string, RegExp> = {
+    tr: /\b(evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla|tasdik|kesinlikle|tamamdır|onaylıorum)\b/i,
+    en: /\b(yes|confirm|approve|ok|okay|sure|right|correct|definitely|agreed|deal)\b/i,
+    de: /\b(ja|best[äa]tigen|ok|richtig|genau|stimmt|einverstanden)\b/i,
+    fr: /\b(oui|confirme|d'accord|ok|exact|parfait)\b/i,
+    es: /\b(si|s[íi]|confirmo|vale|ok|correcto|claro)\b/i,
+    ru: /\b(да|подтверждаю|ок|верно|правильно|согласен)\b/i,
+    ar: /\b(نعم|أكد|موافق|تمام|صحيح)\b/i,
+  };
+  const langPattern = patterns[language];
+  // Dile özgü + TR + EN fallback (karışık dil kullanımı için)
+  return (
+    (langPattern?.test(msg) ?? false) ||
+    patterns.tr.test(msg) ||
+    patterns.en.test(msg)
+  );
+}
+
 function resetForNewReservation(ctx: ConversationContext): Partial<ConversationContext> {
   return {
     currentTour: null,
@@ -194,7 +219,7 @@ const transitions: StateTransition[] = [
         currentTour: tour,
         viewedTours: input.selectedTour ? [...ctx.viewedTours, input.selectedTour.id] : ctx.viewedTours,
         reservationInfo: merged,
-        collectionStep: "waiting_for_date" as InfoCollectionStep,
+        collectionStep: determineCollectionStep(merged),
       };
     },
   },
@@ -240,7 +265,7 @@ const transitions: StateTransition[] = [
       return {
         ...ctx,
         reservationInfo: merged,
-        collectionStep: "waiting_for_date" as InfoCollectionStep,
+        collectionStep: determineCollectionStep(merged),
         isNewReservation: false,
       };
     },
@@ -333,19 +358,19 @@ const transitions: StateTransition[] = [
   },
 
   // CONFIRMING → COMPLETED
-  // KRİTİK: Sadece açık onay kelimesiyle tetiklenir
+  // KRİTİK: Sadece açık onay kelimesiyle tetiklenir.
+  // detectConfirmation NLU'dan bağımsız çalışır — NLU timeout olsa bile "evet" yakalar.
   {
     from: "CONFIRMING",
     to: "COMPLETED",
     condition: (ctx, input) => {
-      // Kesinlikle bilgi sorusu değil
+      // 1. Deterministik onay tespiti — NLU'ya bakmadan ÖNCE kontrol et.
+      //    Kullanıcı açıkça onay verdiyse NLU intent'ten bağımsız geç.
+      if (detectConfirmation(input.userMessage, ctx.language)) return true;
+      // 2. Bilgi sorusu gelirse kesinlikle CONFIRMING'de kal.
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
-      return (
-        input.detectedIntent === "confirm_reservation" ||
-        /^(evet|yes|da|oui|si|sim|はい|onaylıyorum|onay|tamam|doğru|kesinleştir|confirm)\b/i.test(
-          input.userMessage.toLowerCase().trim(),
-        )
-      );
+      // 3. NLU açıkça confirm_reservation döndürdüyse geç.
+      return input.detectedIntent === "confirm_reservation";
     },
     action: (ctx) => ({
       ...ctx,
@@ -388,7 +413,7 @@ const transitions: StateTransition[] = [
 
   // ===== COMPLETED STATE TRANSITIONS =====
 
-  // COMPLETED → BROWSING
+  // COMPLETED → BROWSING (yeni rezervasyon niyeti, tur belirtilmemiş)
   {
     from: "COMPLETED",
     to: "BROWSING",
@@ -401,7 +426,22 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COMPLETED → TOUR_SELECTED (rezervasyon niyetiyle)
+  // COMPLETED → BROWSING (tour_search intent — kullanıcı yeni tur arıyor, tur seçilmedi)
+  // "ege turu istiyorum" gibi mesajlarda NLU tour_search döndürür ama isInformationalMessage
+  // bunu bilgi sorusu sayıp diğer transition'ları engeller. Bu geçiş generic kaçış kapısı.
+  {
+    from: "COMPLETED",
+    to: "BROWSING",
+    condition: (ctx, input) =>
+      input.detectedIntent === "tour_search" && input.selectedTour === null,
+    action: (ctx) => ({
+      ...ctx,
+      ...resetForNewReservation(ctx),
+      stage: "BROWSING" as ConversationStage,
+    }),
+  },
+
+  // COMPLETED → TOUR_SELECTED (rezervasyon niyetiyle — aynı veya farklı tur)
   {
     from: "COMPLETED",
     to: "TOUR_SELECTED",
@@ -424,7 +464,8 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COMPLETED → TOUR_SELECTED (farklı tur — bilgi amaçlı değil)
+  // COMPLETED → TOUR_SELECTED (herhangi tur seçildi, bilgi amaçlı değil, rezervasyon intent dışı)
+  // id eşleşme kontrolü KALDIRILDI: aynı turu tekrar seçme de artık çalışır.
   {
     from: "COMPLETED",
     to: "TOUR_SELECTED",
@@ -432,7 +473,6 @@ const transitions: StateTransition[] = [
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
       return (
         input.selectedTour !== null &&
-        input.selectedTour.id !== ctx.currentTour?.id &&
         !["reservation_intent", "tour_selected", "provide_info", "confirm"].includes(input.detectedIntent)
       );
     },
@@ -451,6 +491,27 @@ const transitions: StateTransition[] = [
 ];
 
 export function processTransition(context: ConversationContext, input: ProcessingInput): ConversationContext {
+  // STATE_INPUT — FSM geçişi öncesi tam input durumu (tarih debug için kritik)
+  console.info("STATE_INPUT", {
+    currentStage: context.stage,
+    collectionStep: context.collectionStep,
+    detectedIntent: input.detectedIntent,
+    // Tarih bilgisi hangi kaynaktan geliyor?
+    hasExtractedDate: !!(input.extractedInfo as any)?.selectedDate,
+    hasExtractedDateId: !!(input.extractedInfo as any)?.dateId,
+    extractedDate: (input.extractedInfo as any)?.selectedDate,
+    // Context'te mevcut tarih
+    hasContextDate: !!(context.reservationInfo as any)?.selectedDate,
+    hasContextDateId: !!(context.reservationInfo as any)?.dateId,
+    // Diğer reservation bilgileri
+    hasName: !!(input.extractedInfo as any)?.fullName || !!context.reservationInfo?.fullName,
+    hasPhone: !!(input.extractedInfo as any)?.phone || !!context.reservationInfo?.phone,
+    hasPax: !!(input.extractedInfo as any)?.paxAdult || !!context.reservationInfo?.paxAdult,
+    // Seçili tur
+    currentTourId: context.currentTour?.id,
+    inputTourId: (input as any).selectedTour?.id,
+  });
+
   const transition = transitions.find((t) => t.from === context.stage && t.condition(context, input));
 
   if (!transition) {
@@ -487,6 +548,17 @@ export function processTransition(context: ConversationContext, input: Processin
   if (transition.action) {
     newContext = transition.action(newContext, input);
   }
+
+  // STATE_OUTPUT — geçiş sonrası yeni durum (tarih "kayboldu mu?" kontrolü)
+  console.info("STATE_OUTPUT", {
+    fromStage: context.stage,
+    toStage: newContext.stage,
+    newCollectionStep: newContext.collectionStep,
+    reservationDateId: newContext.reservationInfo?.dateId,
+    reservationDate: newContext.reservationInfo?.selectedDate,
+    reservationPax: newContext.reservationInfo?.paxAdult,
+    reservationName: newContext.reservationInfo?.fullName,
+  });
 
   return newContext;
 }

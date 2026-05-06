@@ -70,9 +70,18 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
       const phone = normalizePhone(nluEntities.phone);
       if (phone) result.phone = phone;
     }
-    if (typeof nluEntities.date === "string" && !result.selectedDate) {
-      result.selectedDate = nluEntities.date;
-      const matchedDate = matchDateWithTourDates(nluEntities.date, tourDates);
+    // NLU tool schema "dates" (plural array) döndürüyor; eski "date" (singular) da kontrol et.
+    const candidateDate =
+      (Array.isArray(nluEntities.dates) && typeof nluEntities.dates[0] === "string" && nluEntities.dates[0]
+        ? nluEntities.dates[0]
+        : null) ||
+      (typeof (nluEntities as any).date === "string" && (nluEntities as any).date
+        ? (nluEntities as any).date
+        : null);
+
+    if (candidateDate && !result.selectedDate) {
+      result.selectedDate = candidateDate;
+      const matchedDate = matchDateWithTourDates(candidateDate, tourDates);
       if (matchedDate) {
         result.dateId = matchedDate.id;
         result.selectedDate = matchedDate.departure_date;
@@ -337,11 +346,20 @@ function extractDate(
 
   const optionMatch = lower.match(/^(\d+)\.?\s*(seçenek|option|tarih)?$/);
   if (optionMatch && tourDates.length > 0) {
-    const index = parseInt(optionMatch[1]) - 1;
-    if (index >= 0 && index < tourDates.length) {
-      result.dateId = tourDates[index].id;
-      result.selectedDate = tourDates[index].departure_date;
-      return result;
+    const num = parseInt(optionMatch[1]);
+    const hasKeyword = !!optionMatch[2]; // "seçenek", "option" veya "tarih" geçiyor mu?
+    // 1-9 arası bare sayı ("3" gibi) pax count ile karışır.
+    // Keyword varsa ("3. seçenek") veya waiting_for_date'deysek tarih seçimi kabul et.
+    // Aksi hâlde (pax/isim/telefon aşamasında bare sayı) tarih seçimi OLARAK YORUMLAMA.
+    const isAmbiguous = num >= 1 && num <= 9 && !hasKeyword;
+    const isDateStep = context.collectionStep === "waiting_for_date" || !context.collectionStep;
+    if (!isAmbiguous || isDateStep) {
+      const index = num - 1;
+      if (index >= 0 && index < tourDates.length) {
+        result.dateId = tourDates[index].id;
+        result.selectedDate = tourDates[index].departure_date;
+        return result;
+      }
     }
   }
 

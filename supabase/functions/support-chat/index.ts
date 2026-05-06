@@ -149,14 +149,14 @@ YOUR TASKS:
 - Help understand plan differences and limitations
 
 HELP RESOURCES:
-- Comprehensive Help Center: ai.turzz.com/yardim - Detailed guide on ALL topics
-- Getting Started Guide: ai.turzz.com/nasil-baslarim - Initial setup steps
-- Support Email: info@ai.turzz.com - For technical support and urgent issues
+- Comprehensive Help Center: turzzai.com/yardim - Detailed guide on ALL topics
+- Getting Started Guide: turzzai.com/nasil-baslarim - Initial setup steps
+- Support Email: info@turzzai.com - For technical support and urgent issues
 
 MAIN TOPICS AND SOLUTIONS:
 
 1. INSTALLATION AND SETUP (5-10 minutes)
-✅ Adım 1: ai.turzz.com/admin adresinden kayıt olun
+✅ Adım 1: turzzai.com/admin adresinden kayıt olun
 ✅ Adım 2: Email doğrulaması yapın ve admin paneline giriş yapın (14 günlük ücretsiz deneme otomatik başlar)
 ✅ Adım 3: Turlarınızı ve tarihlerini sisteme ekleyin (Turlar sekmesinden)
 ✅ Adım 4: WhatsApp numaranızı bağlayın (aşağıdaki WhatsApp kurulum bölümüne bakın)
@@ -243,7 +243,7 @@ Sistem artık Meta Cloud API ve Embedded Signup kullanmaktadır. Twilio KULLANIL
    → Hayır! Sistem Meta Cloud API kullanıyor. Twilio ile hiçbir ilişkisi yok. Facebook/Meta Business hesabınız üzerinden doğrudan bağlantı kuruyorsunuz.
    
    "WhatsApp bağlantısı neden çalışmıyor?"
-   → Facebook hesabınızın Meta Business Suite'e bağlı olduğundan emin olun. WhatsApp Business API onaylı bir numaranız olmalı. Sorun devam ederse info@ai.turzz.com adresine yazın.
+   → Facebook hesabınızın Meta Business Suite'e bağlı olduğundan emin olun. WhatsApp Business API onaylı bir numaranız olmalı. Sorun devam ederse info@turzzai.com adresine yazın.
    
    "24 saat kuralı nedir?"
    → Meta'nın kuralına göre, müşterinin son mesajından 24 saat geçtiyse serbest mesaj gönderemezsiniz. Bu durumda sadece Meta tarafından onaylanmış şablon mesajları gönderebilirsiniz.
@@ -420,7 +420,7 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
    → View usage in Dashboard
    → Upgrade plan if needed
    → Limits reset monthly
-   → Contact info@ai.turzz.com for urgent increase
+   → Contact info@turzzai.com for urgent increase
 
 12. PLAN LIMITS AND UPGRADES
 📦 Understanding Limits:
@@ -448,12 +448,12 @@ CONVERSATION STYLE:
 - Be patient and helpful
 - Give SHORT but COMPLETE answers
 - Suggest /yardim page for in-depth guides
-- Direct to info@ai.turzz.com for urgent technical issues
+- Direct to info@turzzai.com for urgent technical issues
 - Use emojis sparingly (1-2 per message)
 
 IMPORTANT GUIDELINES:
 ✅ Always give accurate, up-to-date information
-✅ If unsure, direct to info@ai.turzz.com - don't guess
+✅ If unsure, direct to info@turzzai.com - don't guess
 ✅ Focus on HELPING, not selling
 ✅ Assume customer already purchased - provide support
 ✅ Be proactive - suggest related features
@@ -510,32 +510,35 @@ serve(async (req) => {
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
     
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY is not configured');
     }
 
     const systemPrompt = getSystemPrompt();
 
+    // Anthropic Messages API: only user/assistant turns belong in `messages`.
+    const conversationMessages = (conversationHistory || [])
+      .filter((m: any) => m?.role === 'user' || m?.role === 'assistant')
+      .map((m: any) => ({ role: m.role, content: m.content }));
+
     const messages = [
-      { role: "system", content: systemPrompt },
-      ...(conversationHistory || []),
+      ...conversationMessages,
       { role: "user", content: sanitizedMessage }
     ];
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
         'Content-Type': 'application/json',
-        'HTTP-Referer': Deno.env.get('SUPABASE_URL') || '',
-        'X-Title': 'Turzz Support Chat'
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1000,
+        system: systemPrompt,
         messages: messages,
-        
-        max_tokens: 1000
       })
     });
 
@@ -546,7 +549,10 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0]?.message?.content || 'Uzgunum, bir hata olustu.';
+    const aiResponse = (data.content || [])
+      .filter((b: any) => b?.type === 'text')
+      .map((b: any) => b.text)
+      .join('') || 'Uzgunum, bir hata olustu.';
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
@@ -560,13 +566,13 @@ serve(async (req) => {
     console.error('Error in support-chat function:', error);
     
     const errorMessages: Record<string, string> = {
-      tr: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin veya info@ai.turzz.com adresinden bizimle iletişime geçin.',
-      en: 'Sorry, an error occurred. Please try again or contact us at info@ai.turzz.com.',
-      de: 'Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns unter info@ai.turzz.com.',
-      ru: 'Извините, произошла ошибка. Пожалуйста, попробуйте снова или свяжитесь с нами по адресу info@ai.turzz.com.',
-      ar: 'آسف، حدث خطأ. يرجى المحاولة مرة أخرى أو الاتصال بنا على info@ai.turzz.com.',
-      fr: 'Désolé, une erreur s\'est produite. Veuillez réessayer ou nous contacter à info@ai.turzz.com.',
-      es: 'Lo siento, ocurrió un error. Por favor intente de nuevo o contáctenos en info@ai.turzz.com.'
+      tr: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin veya info@turzzai.com adresinden bizimle iletişime geçin.',
+      en: 'Sorry, an error occurred. Please try again or contact us at info@turzzai.com.',
+      de: 'Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns unter info@turzzai.com.',
+      ru: 'Извините, произошла ошибка. Пожалуйста, попробуйте снова или свяжитесь с нами по адресу info@turzzai.com.',
+      ar: 'آسف، حدث خطأ. يرجى المحاولة مرة أخرى أو الاتصال بنا على info@turzzai.com.',
+      fr: 'Désolé, une erreur s\'est produite. Veuillez réessayer ou nous contacter à info@turzzai.com.',
+      es: 'Lo siento, ocurrió un error. Por favor intente de nuevo o contáctenos en info@turzzai.com.'
     };
     
     // Extract language from request if available

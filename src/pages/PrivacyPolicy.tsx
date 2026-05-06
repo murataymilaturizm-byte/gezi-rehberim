@@ -97,7 +97,7 @@ const PrivacyPolicy = () => {
                 geçebilirsiniz:
               </p>
               <p className="mt-2 font-medium text-foreground">
-                info@turzz.com
+                info@turzzai.com
               </p>
             </CardContent>
           </Card>
