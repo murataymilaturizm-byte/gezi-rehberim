@@ -10,7 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon } from "lucide-react";
+import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon, Globe } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DemoChat } from "@/components/DemoChat";
@@ -21,6 +21,7 @@ import { SalesChatWidget } from "@/components/SalesChatWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { contactFormSchema, checkRateLimit, sanitizeHtml } from "@/utils/validation";
+import { IndexBlogSection } from "@/components/IndexBlogSection";
 
 const Index = () => {
   const { t } = useTranslation();
@@ -318,11 +319,17 @@ const Index = () => {
             <div className="flex items-center gap-2 sm:gap-3">
               <LanguageSelector />
               <ThemeToggle />
+              <a href="/whatsapp-chatbot-seyahat-acentesi" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
+                Özellikler
+              </a>
+              <a href="/karsilastir/turzz-vs-manuel-whatsapp" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
+                Karşılaştır
+              </a>
+              <a href="/blog" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
+                Blog
+              </a>
               <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
                 <a href="/yardim">{t("nav.help")}</a>
-              </Button>
-              <Button asChild variant="outline" className="hidden lg:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/nasil-baslarim">{t("nav.gettingStarted")}</a>
               </Button>
               <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
                 <a href="/auth">{t("auth.login")}</a>
@@ -359,7 +366,7 @@ const Index = () => {
                 {t("hero.demo")}
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 transition-all duration-300 hover:scale-105" asChild>
-                <a href="/nasil-baslarim">{t("nav.gettingStarted")}</a>
+                <a href="/whatsapp-chatbot-seyahat-acentesi">Özelliklerimizi Keşfet</a>
               </Button>
             </div>
           </div>
@@ -827,6 +834,138 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ── Özellikler Section ───────────────────────────────────── */}
+      <section id="ozellikler" className="py-20 bg-card/30">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Acentenize Özel Çözümler</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              WhatsApp üzerinden satış, rezervasyon ve müşteri hizmetini tek platformda yönetin.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              {
+                icon: MessageSquare,
+                title: "WhatsApp Business Chatbot",
+                desc: "Müşteri mesajlarını 7/24 otomatik yanıtlayın. Gece 2'de gelen sorulara bile anında cevap.",
+                href: "/whatsapp-chatbot-seyahat-acentesi",
+                color: "text-green-500",
+                bg: "bg-green-500/10",
+              },
+              {
+                icon: Brain,
+                title: "AI Destekli Rezervasyon",
+                desc: "Yapay zeka tarih, kişi, isim ve telefon bilgilerini adım adım toplayarak otomatik rezervasyon oluşturur.",
+                href: "/ai-tur-rezervasyonu",
+                color: "text-purple-500",
+                bg: "bg-purple-500/10",
+              },
+              {
+                icon: Globe,
+                title: "7 Dilde Müşteri Hizmetleri",
+                desc: "Alman, Rus, Arap turist kendi dilinde yazar, chatbot aynı dilde yanıt verir. Çevirmen gerekmez.",
+                href: "/cok-dilli-musteri-hizmetleri",
+                color: "text-blue-500",
+                bg: "bg-blue-500/10",
+              },
+              {
+                icon: Zap,
+                title: "Otomatik Tur Yönetimi",
+                desc: "Kontenjan takibi, tur hatırlatıcıları, müşteri segmentasyonu — hepsi otomatik.",
+                href: "/tur-otomasyonu",
+                color: "text-orange-500",
+                bg: "bg-orange-500/10",
+              },
+            ].map((item) => (
+              <Card
+                key={item.href}
+                className="border-border/50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                onClick={() => window.location.href = item.href}
+              >
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                  </div>
+                  <h3 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground flex-1">{item.desc}</p>
+                  <a href={item.href} className={`text-sm ${item.color} mt-4 inline-flex items-center gap-1 hover:underline font-medium`}>
+                    Detaylı bilgi <ArrowRight className="w-3 h-3" />
+                  </a>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Çözümler Section ──────────────────────────────────────── */}
+      <section id="cozumler" className="py-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Sektöre Özel Çözümler</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Her acente tipine uygun özelleştirilmiş yapılar.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: TrendingUp,
+                title: "İncoming Acenteler",
+                desc: "Yabancı turistlere 7 dilde, 7/24 hizmet. Kültürel hassasiyetle, anında yanıt.",
+                bullets: ["Almanca, Rusça, Arapça otomatik", "Saat farkı sorun değil — 7/24 aktif", "Yabancı turist pazarına direkt erişim"],
+                href: "/cozum/incoming-acenteler",
+                color: "text-teal-500",
+                bg: "from-teal-500/10 to-teal-500/5",
+              },
+              {
+                icon: Clock,
+                title: "Günübirlik Tur Operatörleri",
+                desc: "Hızlı rezervasyon, son dakika satışları, dinamik kontenjan yönetimi.",
+                bullets: ["Anlık yer sorgulama ve rezervasyon", "Son dakika doluluğu otomatik kapanır", "Gece satışlarını da kaçırmayın"],
+                href: "/cozum/gunubirlik-tur",
+                color: "text-yellow-500",
+                bg: "from-yellow-500/10 to-yellow-500/5",
+              },
+              {
+                icon: Star,
+                title: "Butik Acenteler",
+                desc: "Kişisel dokunuş + modern teknoloji. Küçük bütçeyle büyük şirket görünümü.",
+                bullets: ["2.999₺/ay'dan başlayan paket", "Kurulum 5-10 dakika", "1 çalışan maliyetinin %20'si"],
+                href: "/cozum/butik-acenteler",
+                color: "text-pink-500",
+                bg: "from-pink-500/10 to-pink-500/5",
+              },
+            ].map((item) => (
+              <Card key={item.href} className={`border-border/50 bg-gradient-to-b ${item.bg} hover:shadow-lg hover:-translate-y-1 transition-all duration-300`}>
+                <CardContent className="p-7 flex flex-col h-full">
+                  <div className="flex items-center gap-3 mb-4">
+                    <item.icon className={`w-8 h-8 ${item.color}`} />
+                    <h3 className="font-bold text-foreground text-lg">{item.title}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">{item.desc}</p>
+                  <ul className="space-y-2 flex-1">
+                    {item.bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-2 text-sm text-foreground/80">
+                        <CheckCircle2 className={`w-4 h-4 ${item.color} flex-shrink-0 mt-0.5`} />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <a href={item.href} className={`text-sm ${item.color} mt-5 inline-flex items-center gap-1 hover:underline font-medium`}>
+                    Daha fazla <ArrowRight className="w-3 h-3" />
+                  </a>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Blog Section ──────────────────────────────────────────── */}
+      <IndexBlogSection />
+
       {/* CTA Section */}
       <section ref={(el) => (sectionsRef.current[7] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
         <div className="absolute inset-0 bg-gradient-ocean opacity-5"></div>
@@ -851,26 +990,80 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 bg-card/50 py-8 pb-24 md:pb-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-border/50 bg-card/50 py-12 pb-24 md:pb-12">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+            {/* Ürün */}
+            <div>
+              <h4 className="font-semibold text-foreground text-sm mb-3 uppercase tracking-wider">Ürün</h4>
+              <ul className="space-y-2">
+                {[
+                  { href: "/whatsapp-chatbot-seyahat-acentesi", label: "WhatsApp Chatbot" },
+                  { href: "/ai-tur-rezervasyonu", label: "AI Tur Rezervasyonu" },
+                  { href: "/cok-dilli-musteri-hizmetleri", label: "Çok Dilli Hizmet" },
+                  { href: "/tur-otomasyonu", label: "Tur Otomasyonu" },
+                ].map((item) => (
+                  <li key={item.href}>
+                    <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Çözümler */}
+            <div>
+              <h4 className="font-semibold text-foreground text-sm mb-3 uppercase tracking-wider">Çözümler</h4>
+              <ul className="space-y-2">
+                {[
+                  { href: "/cozum/incoming-acenteler", label: "İncoming Acenteler" },
+                  { href: "/cozum/gunubirlik-tur", label: "Günübirlik Tur" },
+                  { href: "/cozum/butik-acenteler", label: "Butik Acenteler" },
+                  { href: "/karsilastir/turzz-vs-manuel-whatsapp", label: "Karşılaştırma" },
+                ].map((item) => (
+                  <li key={item.href}>
+                    <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Şirket */}
+            <div>
+              <h4 className="font-semibold text-foreground text-sm mb-3 uppercase tracking-wider">Şirket</h4>
+              <ul className="space-y-2">
+                {[
+                  { href: "/#hakkimizda", label: "Hakkımızda" },
+                  { href: "mailto:info@turzzai.com", label: "İletişim" },
+                  { href: "/privacy-policy", label: "KVKK Politikası" },
+                  { href: "/terms-of-service", label: "Kullanım Koşulları" },
+                ].map((item) => (
+                  <li key={item.href}>
+                    <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Kaynaklar */}
+            <div>
+              <h4 className="font-semibold text-foreground text-sm mb-3 uppercase tracking-wider">Kaynaklar</h4>
+              <ul className="space-y-2">
+                {[
+                  { href: "/blog", label: "Blog" },
+                  { href: "/yardim", label: "Yardım Merkezi" },
+                  { href: "/nasil-baslarim", label: "Nasıl Başlarım?" },
+                  { href: "/auth?mode=signup", label: "Demo İste" },
+                ].map((item) => (
+                  <li key={item.href}>
+                    <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <img src={turzzLogo} alt="TurzzAI Logo" className="w-8 h-8 object-contain" />
-              <span className="font-semibold text-foreground">TurzzAI</span>
+              <img src={turzzLogo} alt="Turzz AI" className="h-8 w-auto" />
             </div>
-            <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
-              <a href="/nasil-baslarim" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t("footer.gettingStarted")}
-              </a>
-              <a href="/yardim" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t("footer.help")}
-              </a>
-              <a href="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t("footer.login")}
-              </a>
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              {t("footer.rights")}
+            <p className="text-xs text-muted-foreground text-center">
+              © {new Date().getFullYear()} Turzz AI. Tüm hakları saklıdır.
             </p>
           </div>
         </div>
