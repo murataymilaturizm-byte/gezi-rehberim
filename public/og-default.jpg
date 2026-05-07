@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0a2e"/>
+      <stop offset="50%" style="stop-color:#0d2b4e"/>
+      <stop offset="100%" style="stop-color:#0a3d3d"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#fb923c"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="200" fill="#f97316" opacity="0.06"/>
+  <circle cx="1100" cy="530" r="250" fill="#06b6d4" opacity="0.07"/>
+  <circle cx="600" cy="315" r="400" fill="#7c3aed" opacity="0.04"/>
+
+  <!-- Grid pattern -->
+  <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" stroke-width="0.4" opacity="0.05"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- WhatsApp icon area -->
+  <circle cx="600" cy="200" r="60" fill="#25D366" opacity="0.15"/>
+  <text x="600" y="216" font-family="system-ui,sans-serif" font-size="52" text-anchor="middle" fill="#25D366" opacity="0.6">💬</text>
+
+  <!-- Main title -->
+  <text x="600" y="320" font-family="system-ui,-apple-system,sans-serif" font-size="72" font-weight="800" text-anchor="middle" fill="white" filter="url(#glow)">Turzz AI</text>
+
+  <!-- Orange underline accent -->
+  <rect x="480" y="335" width="240" height="4" rx="2" fill="url(#accent)"/>
+
+  <!-- Subtitle -->
+  <text x="600" y="400" font-family="system-ui,-apple-system,sans-serif" font-size="30" font-weight="400" text-anchor="middle" fill="#94a3b8">Seyahat Acenteleri için WhatsApp Chatbot</text>
+
+  <!-- Bottom badges -->
+  <rect x="310" y="450" width="170" height="44" rx="22" fill="#f97316" opacity="0.2"/>
+  <text x="395" y="477" font-family="system-ui,sans-serif" font-size="18" text-anchor="middle" fill="#fb923c">7 Dil Desteği</text>
+
+  <rect x="510" y="450" width="180" height="44" rx="22" fill="#06b6d4" opacity="0.2"/>
+  <text x="600" y="477" font-family="system-ui,sans-serif" font-size="18" text-anchor="middle" fill="#22d3ee">7/24 Otomatik</text>
+
+  <rect x="720" y="450" width="170" height="44" rx="22" fill="#7c3aed" opacity="0.2"/>
+  <text x="805" y="477" font-family="system-ui,sans-serif" font-size="18" text-anchor="middle" fill="#a78bfa">AI Destekli</text>
+
+  <!-- URL -->
+  <text x="600" y="580" font-family="system-ui,sans-serif" font-size="22" text-anchor="middle" fill="#64748b">turzzai.com</text>
+</svg>

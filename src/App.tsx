@@ -1,18 +1,35 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./i18n";
+
+// Eager loaded (kritik yol)
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
-import GettingStarted from "./pages/GettingStarted";
-import Help from "./pages/Help";
-import NotFound from "./pages/NotFound";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import DataDeletion from "./pages/DataDeletion";
-import TermsOfService from "./pages/TermsOfService";
-import "./i18n";
+
+// Lazy loaded (code splitting)
+const Admin           = lazy(() => import("./pages/Admin"));
+const GettingStarted  = lazy(() => import("./pages/GettingStarted"));
+const Help            = lazy(() => import("./pages/Help"));
+const NotFound        = lazy(() => import("./pages/NotFound"));
+const PrivacyPolicy   = lazy(() => import("./pages/PrivacyPolicy"));
+const DataDeletion    = lazy(() => import("./pages/DataDeletion"));
+const TermsOfService  = lazy(() => import("./pages/TermsOfService"));
+
+// SEO sayfaları
+const WhatsAppChatbot     = lazy(() => import("./pages/WhatsAppChatbot"));
+const AITurRezervasyonu   = lazy(() => import("./pages/AITurRezervasyonu"));
+const CokDilliHizmet      = lazy(() => import("./pages/CokDilliHizmet"));
+const TurOtomasyonu       = lazy(() => import("./pages/TurOtomasyonu"));
+const IncomingAcenteler   = lazy(() => import("./pages/cozum/IncomingAcenteler"));
+const GunubirlikTur       = lazy(() => import("./pages/cozum/GunubirlikTur"));
+const ButikAcenteler      = lazy(() => import("./pages/cozum/ButikAcenteler"));
+const TurzzVsManuel       = lazy(() => import("./pages/karsilastir/TurzzVsManuel"));
+const Blog                = lazy(() => import("./pages/Blog"));
+const BlogPost            = lazy(() => import("./pages/BlogPost"));
 
 const queryClient = new QueryClient();
 
@@ -21,22 +38,41 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter future={{ 
-        v7_startTransition: true,
-        v7_relativeSplatPath: true 
-      }}>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/nasil-baslarim" element={<GettingStarted />} />
-          <Route path="/yardim" element={<Help />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/data-deletion" element={<DataDeletion />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>}>
+          <Routes>
+            {/* Core */}
+            <Route path="/"            element={<Index />} />
+            <Route path="/auth"        element={<Auth />} />
+            <Route path="/admin"       element={<Admin />} />
+            <Route path="/nasil-baslarim" element={<GettingStarted />} />
+            <Route path="/yardim"      element={<Help />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/data-deletion"  element={<DataDeletion />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+
+            {/* SEO — Özellikler */}
+            <Route path="/whatsapp-chatbot-seyahat-acentesi" element={<WhatsAppChatbot />} />
+            <Route path="/ai-tur-rezervasyonu"               element={<AITurRezervasyonu />} />
+            <Route path="/cok-dilli-musteri-hizmetleri"      element={<CokDilliHizmet />} />
+            <Route path="/tur-otomasyonu"                    element={<TurOtomasyonu />} />
+
+            {/* SEO — Çözümler */}
+            <Route path="/cozum/incoming-acenteler" element={<IncomingAcenteler />} />
+            <Route path="/cozum/gunubirlik-tur"     element={<GunubirlikTur />} />
+            <Route path="/cozum/butik-acenteler"    element={<ButikAcenteler />} />
+
+            {/* SEO — Karşılaştırma */}
+            <Route path="/karsilastir/turzz-vs-manuel-whatsapp" element={<TurzzVsManuel />} />
+
+            {/* Blog */}
+            <Route path="/blog"       element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

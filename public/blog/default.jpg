@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="200" cy="150" r="300" fill="#f97316" opacity="0.04"/>
+  <circle cx="1000" cy="480" r="280" fill="#06b6d4" opacity="0.05"/>
+
+  <rect x="0" y="0" width="6" height="630" fill="url(#bar)"/>
+
+  <text x="100" y="240" font-family="system-ui,-apple-system,sans-serif" font-size="26" fill="#64748b" font-weight="500">Turzz AI Blog</text>
+  <rect x="100" y="258" width="80" height="3" rx="1.5" fill="#f97316"/>
+
+  <text x="100" y="340" font-family="system-ui,-apple-system,sans-serif" font-size="52" font-weight="700" fill="white">Turizm Teknolojisi</text>
+  <text x="100" y="405" font-family="system-ui,-apple-system,sans-serif" font-size="52" font-weight="700" fill="white">ve Dijital Dönüşüm</text>
+
+  <text x="100" y="470" font-family="system-ui,sans-serif" font-size="24" fill="#64748b">turzzai.com/blog</text>
+</svg>

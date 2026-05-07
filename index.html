@@ -1,22 +1,60 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.png" type="image/png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tur Satış Asistanı - Akıllı Tatil Planlama</title>
-    <meta name="description" content="Yapay zeka destekli tur asistanımızla hayalinizdeki tatili bulun. Kapadokya, Ayvalık ve daha fazlası için uygun fiyatlı turlar." />
-    <meta name="author" content="Lovable" />
 
-    <meta property="og:title" content="Tur Satış Asistanı - Akıllı Tatil Planlama" />
-    <meta property="og:description" content="Yapay zeka destekli tur asistanımızla hayalinizdeki tatili bulun. Kapadokya, Ayvalık ve daha fazlası için uygun fiyatlı turlar." />
+    <!-- Primary Meta -->
+    <title>Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot</title>
+    <meta name="description" content="Turzz AI ile WhatsApp üzerinden 7/24 otomatik tur satışı yapın. 7 dil desteği, AI destekli rezervasyon asistanı, tur operatörleri için akıllı chatbot. 14 gün ücretsiz dene." />
+    <meta name="keywords" content="whatsapp chatbot seyahat acentesi, ai tur rezervasyonu, tur operatörü yazılımı, otomatik tur satışı, whatsapp bot turizm, seyahat acentesi yazılımı" />
+    <meta name="author" content="Turzz AI" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://turzzai.com/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot" />
+    <meta property="og:description" content="WhatsApp üzerinden 7/24 otomatik tur satışı. 7 dil desteği, AI rezervasyon asistanı. 14 gün ücretsiz dene." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:url" content="https://turzzai.com/" />
+    <meta property="og:image" content="https://turzzai.com/og-default.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Turzz AI" />
+    <meta property="og:locale" content="tr_TR" />
 
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    
+    <meta name="twitter:title" content="Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot" />
+    <meta name="twitter:description" content="WhatsApp üzerinden 7/24 otomatik tur satışı. 7 dil desteği, AI rezervasyon asistanı." />
+    <meta name="twitter:image" content="https://turzzai.com/og-default.svg" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+
+    <!-- JSON-LD Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Turzz AI",
+      "url": "https://turzzai.com",
+      "logo": "https://turzzai.com/favicon.png",
+      "description": "Seyahat acenteleri için WhatsApp chatbot ve AI destekli tur rezervasyon yazılımı.",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "info@turzzai.com",
+        "contactType": "customer support",
+        "availableLanguage": ["Turkish", "English"]
+      },
+      "sameAs": []
+    }
+    </script>
+
     <!-- Meta Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s)
@@ -30,31 +68,23 @@
       fbq('init', '1240169247981795');
       fbq('track', 'PageView');
     </script>
-    <!-- End Meta Pixel Code -->
-    
+
+    <!-- Theme persistence -->
     <script>
-      // Apply theme before React loads to prevent flash
       (function() {
         const theme = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const isDark = theme === 'dark' || (!theme && prefersDark);
-        
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-          document.documentElement.classList.remove('light');
-        } else {
-          document.documentElement.classList.add('light');
-          document.documentElement.classList.remove('dark');
-        }
+        document.documentElement.classList.add(isDark ? 'dark' : 'light');
       })();
     </script>
   </head>
 
   <body>
     <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=1240169247981795&ev=PageView&noscript=1"
+      src="https://www.facebook.com/tr?id=1240169247981795&ev=PageView&noscript=1"
     /></noscript>
-    
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
