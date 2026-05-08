@@ -2138,6 +2138,191 @@
         "description": "14 jours gratuits, aucune carte bancaire requise.",
         "button": "Commencer maintenant"
       }
+    },
+    "cozum": {
+      "incoming": {
+        "meta": {
+          "title": "Logiciel pour agences de tourisme réceptif — Turzz AI",
+          "description": "Chatbot WhatsApp en 7 langues pour les tour-opérateurs réceptifs. Communication 24/7 sans barrière linguistique. Réponses automatiques en allemand, russe, arabe.",
+          "keywords": "logiciel agence tourisme réceptif, chatbot touriste étranger, tourisme inbound logiciel"
+        },
+        "badge": "Agences réceptives",
+        "hero": {
+          "title1": "Communiquez avec les touristes étrangers",
+          "title2": "sans",
+          "title3": "barrière linguistique",
+          "subtitle": "Répondez instantanément aux touristes allemands, russes, arabes ou français dans leur propre langue. Turzz AI résout le principal défi des agences réceptives.",
+          "cta": "Essayer gratuitement 14 jours"
+        },
+        "featuresSection": {
+          "heading": "Avantages spéciaux pour les agences réceptives",
+          "items": [
+            {
+              "title": "7 langues, zéro coût de traduction",
+              "description": "Allemand, russe, arabe, français, espagnol. Pas d'interprète ni de logiciel de traduction."
+            },
+            {
+              "title": "Avantage du fuseau horaire",
+              "description": "La Russie est en avance de 3h, le Golfe en retard d'1h. Le chatbot répond en dehors de vos heures de travail."
+            },
+            {
+              "title": "Adaptation du ton culturel",
+              "description": "Formel pour les touristes arabes, dense en informations pour les Allemands. Communication culturellement adaptée."
+            },
+            {
+              "title": "Listing multi-circuits",
+              "description": "Tous les circuits sont automatiquement listés avec dates et prix pour les touristes entrants."
+            }
+          ]
+        },
+        "scenariosSection": {
+          "heading": "Scénario typique pour une agence réceptive",
+          "scenarios": [
+            {
+              "who": "🇩🇪 Touriste allemand, 22h30",
+              "message": "\"Haben Sie Ballonfahrten in Kappadokien für 2 Personen?\"",
+              "response": "Turzz AI liste les circuits en montgolfière en Cappadoce, les dates et les prix en allemand"
+            },
+            {
+              "who": "🇸🇦 Touriste arabe, 02h15",
+              "message": "\"هل لديكم جولات في أنطاليا للعائلات؟\"",
+              "response": "Turzz AI affiche les options de circuits familiaux en arabe et oriente vers la réservation"
+            },
+            {
+              "who": "🇷🇺 Touriste russe, 08h00",
+              "message": "\"Есть ли туры в Стамбул из Анталии?\"",
+              "response": "Turzz AI liste les circuits Istanbul en russe et oriente vers le choix de date"
+            }
+          ],
+          "turzAiLabel": "Turzz AI :"
+        },
+        "cta": {
+          "heading": "Conquérez le marché étranger sans barrières linguistiques",
+          "description": "14 jours gratuits, aucune carte bancaire requise.",
+          "button": "Commencer maintenant"
+        }
+      },
+      "daytrip": {
+        "meta": {
+          "title": "Système de réservation d'excursions à la journée — Rapide et automatique",
+          "description": "Chatbot WhatsApp pour les opérateurs d'excursions journée. Réservation rapide, ventes de dernière minute, suivi des disponibilités en temps réel. Vente automatique 24/7.",
+          "keywords": "système réservation excursions journée, réservation excursion jour, ventes dernière minute"
+        },
+        "badge": "Excursions journée",
+        "hero": {
+          "title1": "Réservation rapide",
+          "title2": "pour les excursions journée",
+          "subtitle": "Répondez en quelques secondes à \"Y a-t-il des places disponibles pour demain ?\" Ne manquez plus de ventes de dernière minute. Maximisez vos excursions journée avec Turzz AI.",
+          "cta": "Commencer gratuitement"
+        },
+        "featuresSection": {
+          "heading": "Fonctionnalités pour les opérateurs d'excursions journée",
+          "items": [
+            {
+              "title": "Réservation instantanée",
+              "description": "Le client demande la disponibilité, le chatbot répond immédiatement : \"Oui, 3 places restantes — on réserve ?\""
+            },
+            {
+              "title": "Ventes de dernière minute",
+              "description": "Réponse automatique à 7h00 à \"Y a-t-il des places aujourd'hui ?\". Les places vides se vendent, les revenus augmentent."
+            },
+            {
+              "title": "Gestion quotidienne des disponibilités",
+              "description": "Capacité distincte par jour. Fermeture automatique à saturation, proposition d'alternatives."
+            },
+            {
+              "title": "Quels jours sont complets, lesquels sont libres ?",
+              "description": "Voyez sur le tableau de bord analytique quel jour et quelle langue génèrent le plus de demandes."
+            }
+          ]
+        },
+        "scenarioSection": {
+          "heading": "Scénario typique",
+          "intro": "22h45 — Le touriste regarde son téléphone à l'hôtel :",
+          "messages": [
+            {
+              "sender": "user",
+              "text": "Y a-t-il une excursion en Cappadoce demain ? Pour 2 personnes"
+            },
+            {
+              "sender": "bot",
+              "text": "Bonjour ! Il reste 4 places pour le vol en montgolfière en Cappadoce le 8 mai. Départ à 05h30, prix ₺3 000 pour 2 personnes. On réserve ?"
+            },
+            {
+              "sender": "user",
+              "text": "Oui, réservez"
+            },
+            {
+              "sender": "bot",
+              "text": "Parfait ! Puis-je avoir votre nom et numéro de téléphone ?"
+            }
+          ],
+          "footnote": "Réservation effectuée pendant votre sommeil ✅"
+        },
+        "cta": {
+          "heading": "Ne manquez plus les ventes de dernière minute",
+          "description": "14 jours gratuits, aucune carte bancaire requise.",
+          "button": "Essayer maintenant"
+        }
+      },
+      "boutique": {
+        "meta": {
+          "title": "Logiciel pour petites agences de voyage et boutiques — Turzz AI",
+          "description": "Chatbot WhatsApp abordable pour les petites agences et agences boutique. Accédez à la technologie des grandes entreprises à faible coût pour un look professionnel.",
+          "keywords": "logiciel petite agence voyage, automatisation agence boutique, logiciel tour abordable"
+        },
+        "badge": "Agences boutique",
+        "hero": {
+          "title1": "Technologie des grandes entreprises,",
+          "title2": "budget d'une petite agence",
+          "subtitle": "Votre agence boutique de 1 à 3 personnes peut offrir un service professionnel 24/7 comme une grande société. Le plan Starter de Turzz AI est conçu spécialement pour les petites entreprises.",
+          "cta": "Commencer à partir de ₺2 999",
+          "ctaNote": "Inclut 14 jours d'essai gratuit"
+        },
+        "whySection": {
+          "heading": "Pourquoi les petites agences choisissent-elles Turzz AI ?",
+          "items": [
+            {
+              "title": "Abonnement logiciel, pas de salaire",
+              "description": "Coût mensuel d'un employé : €2 000-3 000. Turzz AI Starter : €80/mois — une économie claire."
+            },
+            {
+              "title": "Configuration en 5-10 minutes",
+              "description": "Aucune connaissance technique requise. Entrez vos circuits, connectez WhatsApp, c'est prêt."
+            },
+            {
+              "title": "Image professionnelle",
+              "description": "Quand un client écrit, il reçoit une réponse immédiate — comme si un grand centre d'appels existait."
+            },
+            {
+              "title": "Évolue avec vous",
+              "description": "Un clic pour passer de Starter à Professional ou Enterprise."
+            }
+          ]
+        },
+        "starterSection": {
+          "heading": "Que contient le plan Starter ?",
+          "planName": "Plan Starter",
+          "planTagline": "Point de départ idéal pour les petites agences",
+          "price": "₺2 999",
+          "pricePeriod": "/mois",
+          "features": [
+            "1 000 messages WhatsApp/mois",
+            "Jusqu'à 10 circuits",
+            "1 langue prise en charge",
+            "Assistant de réservation automatisé",
+            "Rapports analytiques de base",
+            "Support e-mail",
+            "14 jours d'essai gratuit"
+          ],
+          "ctaButton": "Démarrer l'essai"
+        },
+        "cta": {
+          "heading": "Numérisez votre agence boutique",
+          "description": "14 jours gratuits, aucune carte bancaire requise.",
+          "button": "Commencer gratuitement"
+        }
+      }
     }
   }
 }

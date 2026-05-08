@@ -1933,6 +1933,191 @@
         "description": "14 días gratis, sin tarjeta de crédito.",
         "button": "Empezar ahora"
       }
+    },
+    "cozum": {
+      "incoming": {
+        "meta": {
+          "title": "Software para agencias de turismo receptivo — Turzz AI",
+          "description": "Chatbot de WhatsApp en 7 idiomas para operadores de turismo receptivo. Comunicación 24/7 sin barreras idiomáticas. Respuestas automáticas en alemán, ruso, árabe.",
+          "keywords": "software agencia turismo receptivo, chatbot turista extranjero, software inbound turismo"
+        },
+        "badge": "Agencias receptivas",
+        "hero": {
+          "title1": "Comunícate con turistas extranjeros",
+          "title2": "sin",
+          "title3": "barreras idiomáticas",
+          "subtitle": "Responde al instante a turistas alemanes, rusos, árabes o franceses en su propio idioma. Turzz AI resuelve el mayor desafío de las agencias receptivas.",
+          "cta": "Probar gratis 14 días"
+        },
+        "featuresSection": {
+          "heading": "Beneficios especiales para agencias receptivas",
+          "items": [
+            {
+              "title": "7 idiomas, cero costos de traducción",
+              "description": "Alemán, ruso, árabe, francés, español. Sin intérprete ni software de traducción."
+            },
+            {
+              "title": "Ventaja de zona horaria",
+              "description": "Rusia 3 horas adelante, Golfo 1 hora atrás. El chatbot responde en tus horas libres."
+            },
+            {
+              "title": "Adaptación de tono cultural",
+              "description": "Formal para turistas árabes, rico en información para los alemanes. Comunicación culturalmente apropiada."
+            },
+            {
+              "title": "Listado de múltiples tours",
+              "description": "Todas las opciones de tours se listan automáticamente para el turista entrante con fechas y precios."
+            }
+          ]
+        },
+        "scenariosSection": {
+          "heading": "Escenario típico para una agencia receptiva",
+          "scenarios": [
+            {
+              "who": "🇩🇪 Turista alemán, 22:30",
+              "message": "\"Haben Sie Ballonfahrten in Kappadokien für 2 Personen?\"",
+              "response": "Turzz AI lista tours en globo de Capadocia, fechas y precios en alemán"
+            },
+            {
+              "who": "🇸🇦 Turista árabe, 02:15",
+              "message": "\"هل لديكم جولات في أنطاليا للعائلات؟\"",
+              "response": "Turzz AI muestra opciones de tours familiares en árabe y guía hacia la reserva"
+            },
+            {
+              "who": "🇷🇺 Turista ruso, 08:00",
+              "message": "\"Есть ли туры в Стамбул из Анталии?\"",
+              "response": "Turzz AI lista tours de Estambul en ruso y guía para seleccionar fecha"
+            }
+          ],
+          "turzAiLabel": "Turzz AI:"
+        },
+        "cta": {
+          "heading": "Conquista el mercado extranjero sin barreras idiomáticas",
+          "description": "14 días gratis, sin tarjeta de crédito.",
+          "button": "Empezar ahora"
+        }
+      },
+      "daytrip": {
+        "meta": {
+          "title": "Sistema de reservas de excursiones de un día — Rápido y automático",
+          "description": "Chatbot de WhatsApp para operadores de excursiones de un día. Reservas rápidas, ventas de último minuto, seguimiento de disponibilidad en tiempo real. Ventas automáticas 24/7.",
+          "keywords": "sistema reservas excursiones día, reserva tour día, ventas último minuto"
+        },
+        "badge": "Excursiones de día",
+        "hero": {
+          "title1": "Reservas rápidas",
+          "title2": "para excursiones de un día",
+          "subtitle": "Responde en segundos a \"¿Hay plazas para mañana?\" No pierdas ventas de último minuto. Maximiza tus excursiones diarias con Turzz AI.",
+          "cta": "Empezar gratis"
+        },
+        "featuresSection": {
+          "heading": "Funciones para operadores de excursiones de día",
+          "items": [
+            {
+              "title": "Reserva instantánea",
+              "description": "El cliente pregunta disponibilidad, el chatbot responde al instante: \"Sí, quedan 3 plazas — ¿reservamos?\""
+            },
+            {
+              "title": "Ventas de último minuto",
+              "description": "Respuesta automática a las 7:00 a \"¿Hay plazas hoy?\". Las plazas vacías se venden, los ingresos suben."
+            },
+            {
+              "title": "Gestión diaria de disponibilidad",
+              "description": "Configuración de capacidad separada por día. Cierre automático al llenarse y sugerencia de alternativas."
+            },
+            {
+              "title": "¿Qué días están llenos, cuáles libres?",
+              "description": "Véalo en el panel de análisis: qué día y qué idioma generan más demanda."
+            }
+          ]
+        },
+        "scenarioSection": {
+          "heading": "Escenario típico",
+          "intro": "22:45 — Turista mirando el móvil en el hotel:",
+          "messages": [
+            {
+              "sender": "user",
+              "text": "¿Hay tour a Capadocia mañana? Para 2 personas"
+            },
+            {
+              "sender": "bot",
+              "text": "¡Hola! Quedan 4 plazas en el Tour en Globo de Capadocia el 8 de mayo. Salida a las 05:30, precio ₺3.000 para 2 personas. ¿Reservamos?"
+            },
+            {
+              "sender": "user",
+              "text": "Sí, reserven"
+            },
+            {
+              "sender": "bot",
+              "text": "¡Perfecto! ¿Puedo pedirte tu nombre y número de teléfono?"
+            }
+          ],
+          "footnote": "Reserva completada mientras dormías ✅"
+        },
+        "cta": {
+          "heading": "No pierdas más ventas de último minuto",
+          "description": "14 días gratis, sin tarjeta de crédito.",
+          "button": "Probar ahora"
+        }
+      },
+      "boutique": {
+        "meta": {
+          "title": "Software para agencias de viajes pequeñas y boutique — Turzz AI",
+          "description": "Chatbot de WhatsApp asequible para agencias pequeñas y boutique. Accede a la tecnología de grandes empresas a bajo costo con imagen profesional.",
+          "keywords": "software agencia viajes pequeña, automatización agencia boutique, software tours asequible"
+        },
+        "badge": "Agencias boutique",
+        "hero": {
+          "title1": "Tecnología de grandes empresas,",
+          "title2": "presupuesto de agencia pequeña",
+          "subtitle": "Tu agencia boutique de 1-3 personas puede ofrecer servicio profesional 24/7 como una gran empresa. El plan Starter de Turzz AI está diseñado especialmente para pequeños negocios.",
+          "cta": "Empezar desde ₺2.999",
+          "ctaNote": "Incluye prueba gratuita de 14 días"
+        },
+        "whySection": {
+          "heading": "¿Por qué las agencias pequeñas eligen Turzz AI?",
+          "items": [
+            {
+              "title": "Suscripción de software, no salario",
+              "description": "Costo mensual de un empleado: €1.500-3.000. Turzz AI Starter: €80/mes — ahorro directo."
+            },
+            {
+              "title": "Configuración en 5-10 minutos",
+              "description": "Sin conocimientos técnicos. Ingresa tus tours, conecta WhatsApp, listo."
+            },
+            {
+              "title": "Imagen profesional",
+              "description": "Cuando un cliente escribe, recibe respuesta inmediata — como si hubiera un gran call center."
+            },
+            {
+              "title": "Crece contigo",
+              "description": "Un clic para pasar de Starter a Professional o Enterprise."
+            }
+          ]
+        },
+        "starterSection": {
+          "heading": "¿Qué incluye el plan Starter?",
+          "planName": "Plan Starter",
+          "planTagline": "Punto de partida ideal para agencias pequeñas",
+          "price": "₺2.999",
+          "pricePeriod": "/mes",
+          "features": [
+            "1.000 mensajes de WhatsApp/mes",
+            "Hasta 10 tours",
+            "Soporte de 1 idioma",
+            "Asistente de reservas automatizado",
+            "Informes analíticos básicos",
+            "Soporte por correo electrónico",
+            "Prueba gratuita de 14 días"
+          ],
+          "ctaButton": "Iniciar prueba"
+        },
+        "cta": {
+          "heading": "Digitaliza tu agencia boutique",
+          "description": "14 días gratis, sin tarjeta de crédito.",
+          "button": "Empezar gratis"
+        }
+      }
     }
   }
 }

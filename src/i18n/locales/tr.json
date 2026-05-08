@@ -2105,6 +2105,191 @@
         "description": "14 gün ücretsiz, kredi kartı gerekmez.",
         "button": "Hemen Başla"
       }
+    },
+    "cozum": {
+      "incoming": {
+        "meta": {
+          "title": "Incoming Tour Operatörleri için Yazılım — Turzz AI",
+          "description": "Incoming tour operatörleri için 7 dilli WhatsApp chatbot. Yabancı turistlerle dil engeli olmadan 7/24 iletişim. Almanca, Rusça, Arapça otomatik yanıt.",
+          "keywords": "incoming tour operatörü yazılımı, yabancı turist chatbot, incoming acentesi, çok dilli tur yazılımı"
+        },
+        "badge": "Incoming Acenteler",
+        "hero": {
+          "title1": "Yabancı Turistlerle",
+          "title2": "Dil Engeli Olmadan",
+          "title3": "İletişim",
+          "subtitle": "Almanca, Rusça, Arapça veya Fransızca yazan turiste kendi dilinde anında yanıt verin. Turzz AI, incoming acentelerinin en büyük sorununu çözüyor.",
+          "cta": "14 Gün Ücretsiz Dene"
+        },
+        "featuresSection": {
+          "heading": "Incoming Acenteler için Özel Avantajlar",
+          "items": [
+            {
+              "title": "7 Dil, Sıfır Çeviri Maliyeti",
+              "description": "Almanca, Rusça, Arapça, Fransızca, İspanyolca. Tercüman veya çeviri yazılımı gerekmez."
+            },
+            {
+              "title": "Farklı Saat Dilimi Avantajı",
+              "description": "Rusya 3 saat ileri, Körfez 1 saat geri. Çalışmadığınız saatlerde chatbot yanıtlıyor."
+            },
+            {
+              "title": "Kültürel Ton Uyumu",
+              "description": "Arap turiste resmi, Alman turiste bilgi yoğun yanıt. Kültüre uygun iletişim."
+            },
+            {
+              "title": "Çoklu Tur Listeleme",
+              "description": "Gelen turiste tüm tur seçenekleri otomatik listelenir, tarih ve fiyatlarla birlikte."
+            }
+          ]
+        },
+        "scenariosSection": {
+          "heading": "Incoming Acente için Tipik Senaryo",
+          "scenarios": [
+            {
+              "who": "🇩🇪 Alman Turist, 22:30",
+              "message": "\"Haben Sie Ballonfahrten in Kappadokien für 2 Personen?\"",
+              "response": "Turzz AI Almanca olarak Kapadokya balon turlarını, tarihleri ve fiyatları listeler"
+            },
+            {
+              "who": "🇸🇦 Arap Turist, 02:15",
+              "message": "\"هل لديكم جولات في أنطاليا للعائلات؟\"",
+              "response": "Turzz AI Arapça olarak aile turları seçeneklerini gösterir ve rezervasyona yönlendirir"
+            },
+            {
+              "who": "🇷🇺 Rus Turist, 08:00",
+              "message": "\"Есть ли туры в Стамбул из Анталии?\"",
+              "response": "Turzz AI Rusça olarak İstanbul turlarını listeler, tarih seçimine yönlendirir"
+            }
+          ],
+          "turzAiLabel": "Turzz AI:"
+        },
+        "cta": {
+          "heading": "Yabancı Pazarı Dil Engeli Olmadan Yakalayın",
+          "description": "14 gün ücretsiz, kredi kartı gerekmez.",
+          "button": "Hemen Başla"
+        }
+      },
+      "daytrip": {
+        "meta": {
+          "title": "Günübirlik Tur Rezervasyon Sistemi — Hızlı ve Otomatik",
+          "description": "Günübirlik tur operatörleri için WhatsApp chatbot. Hızlı rezervasyon, son dakika satışları, anlık kontenjan takibi. 7/24 otomatik tur satışı.",
+          "keywords": "günübirlik tur rezervasyon sistemi, day trip rezervasyon, günlük tur satışı, anlık rezervasyon"
+        },
+        "badge": "Günübirlik Tur",
+        "hero": {
+          "title1": "Günübirlik Turlar için",
+          "title2": "Hızlı Rezervasyon",
+          "subtitle": "\"Yarın için yer var mı?\" sorusuna saniyeler içinde yanıt. Kontenjan dolmadan son dakika satışlarını kaçırmayın. Turzz AI ile günübirlik turlarınızı maksimize edin.",
+          "cta": "Ücretsiz Başla"
+        },
+        "featuresSection": {
+          "heading": "Günübirlik Tur Operatörlerine Özel Özellikler",
+          "items": [
+            {
+              "title": "Anlık Rezervasyon",
+              "description": "Müşteri yer soruyor, chatbot anında \"Evet, 3 yer kaldı, rezervasyon yapalım mı?\" yanıtı veriyor."
+            },
+            {
+              "title": "Son Dakika Satışları",
+              "description": "Sabah 07:00'da \"bugün için yer var mı?\" sorusuna otomatik yanıt. Boş yer satılıyor, gelir artıyor."
+            },
+            {
+              "title": "Günlük Kontenjan Yönetimi",
+              "description": "Her gün için ayrı kapasite ayarı. Kapasite dolduğunda otomatik kapatma, alternatifleri önerme."
+            },
+            {
+              "title": "Hangi Günler Dolu, Hangileri Boş?",
+              "description": "Analytics dashboardundan hangi güne, hangi dil müşterisinin daha çok talep ettiğini görün."
+            }
+          ]
+        },
+        "scenarioSection": {
+          "heading": "Tipik Senaryo",
+          "intro": "Saat 22:45 — Turist otelde telefona bakıyor:",
+          "messages": [
+            {
+              "sender": "user",
+              "text": "Yarın Kapadokya tur var mı? 2 kişilik"
+            },
+            {
+              "sender": "bot",
+              "text": "Merhaba! Yarın 8 Mayıs için Kapadokya Balon Turu'nda 4 yer kaldı. Kalkış 05:30, fiyat 2 kişi için 3.000₺. Rezervasyon yapalım mı?"
+            },
+            {
+              "sender": "user",
+              "text": "Evet yapayım"
+            },
+            {
+              "sender": "bot",
+              "text": "Harika! Adınızı ve telefon numaranızı alabilir miyim?"
+            }
+          ],
+          "footnote": "Siz uyurken rezervasyon tamamlandı ✅"
+        },
+        "cta": {
+          "heading": "Son Dakika Satışlarını Kaçırmayın",
+          "description": "14 gün ücretsiz, kredi kartı gerekmez.",
+          "button": "Hemen Dene"
+        }
+      },
+      "boutique": {
+        "meta": {
+          "title": "Küçük ve Butik Seyahat Acentesi Yazılımı — Turzz AI",
+          "description": "Küçük ve butik seyahat acenteleri için uygun fiyatlı WhatsApp chatbot. Büyük kurumların teknolojisine erişin, düşük maliyetle profesyonel görünüm kazanın.",
+          "keywords": "küçük seyahat acentesi yazılımı, butik acente otomasyonu, uygun fiyatlı tur yazılımı, küçük işletme chatbot"
+        },
+        "badge": "Butik Acenteler",
+        "hero": {
+          "title1": "Büyük Şirketlerin Teknolojisi,",
+          "title2": "Küçük Acentenin Bütçesi",
+          "subtitle": "1-3 kişilik butik acenteniz büyük şirketler gibi 7/24 profesyonel hizmet verebilir. Turzz AI, küçük işletmeler için özel tasarlanmış başlangıç paketi ile başlangıç.",
+          "cta": "2.999₺'dan Başla",
+          "ctaNote": "14 gün ücretsiz deneme dahil"
+        },
+        "whySection": {
+          "heading": "Neden Küçük Acenteler Turzz AI'ı Tercih Ediyor?",
+          "items": [
+            {
+              "title": "Çalışan Maaşı Değil, Yazılım Aboneliği",
+              "description": "Bir çalışanın aylık maliyeti 15.000-20.000₺. Turzz AI Başlangıç paketi 2.999₺/ay."
+            },
+            {
+              "title": "Kurulum 5-10 Dakika",
+              "description": "Teknik bilgi gerekmez. Turlarınızı sisteme girin, WhatsApp'ı bağlayın, hazır."
+            },
+            {
+              "title": "Profesyonel Görünüm",
+              "description": "Müşteri size yazıyor, sanki büyük bir call center varmış gibi anında yanıt alıyor."
+            },
+            {
+              "title": "Büyüdükçe Skalablıyor",
+              "description": "Başlangıç paketinden Profesyonel veya Kurumsal'a tek tıkla geçiş."
+            }
+          ]
+        },
+        "starterSection": {
+          "heading": "Başlangıç Paketi Ne İçeriyor?",
+          "planName": "Başlangıç Paketi",
+          "planTagline": "Küçük acenteler için ideal başlangıç",
+          "price": "2.999₺",
+          "pricePeriod": "/ay",
+          "features": [
+            "1.000 WhatsApp mesajı/ay",
+            "En fazla 10 tur",
+            "1 dil desteği",
+            "Otomatik rezervasyon sihirbazı",
+            "Temel analitik raporları",
+            "E-posta destek",
+            "14 gün ücretsiz deneme"
+          ],
+          "ctaButton": "Denemeyi Başlat"
+        },
+        "cta": {
+          "heading": "Butik Acentenizi Dijitalleştirin",
+          "description": "14 gün ücretsiz, kredi kartı gerekmez.",
+          "button": "Ücretsiz Başla"
+        }
+      }
     }
   }
 }

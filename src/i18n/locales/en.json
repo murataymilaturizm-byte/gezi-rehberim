@@ -1992,6 +1992,191 @@
         "description": "14 days free, no credit card required.",
         "button": "Get Started Now"
       }
+    },
+    "cozum": {
+      "incoming": {
+        "meta": {
+          "title": "Software for Incoming Tour Operators — Turzz AI",
+          "description": "7-language WhatsApp chatbot for incoming tour operators. Communicate with foreign tourists 24/7 without language barriers. German, Russian, Arabic automatic responses.",
+          "keywords": "incoming tour operator software, foreign tourist chatbot, multilingual tour software, inbound tourism software"
+        },
+        "badge": "Incoming Agencies",
+        "hero": {
+          "title1": "Communicate with Foreign Tourists",
+          "title2": "Without",
+          "title3": "Language Barriers",
+          "subtitle": "Respond instantly in German, Russian, Arabic or French to tourists writing in their own language. Turzz AI solves the biggest challenge for incoming agencies.",
+          "cta": "Try Free for 14 Days"
+        },
+        "featuresSection": {
+          "heading": "Special Benefits for Incoming Agencies",
+          "items": [
+            {
+              "title": "7 Languages, Zero Translation Cost",
+              "description": "German, Russian, Arabic, French, Spanish. No interpreter or translation software needed."
+            },
+            {
+              "title": "Time Zone Advantage",
+              "description": "Russia is 3 hours ahead, Gulf is 1 hour behind. Chatbot responds while you're off hours."
+            },
+            {
+              "title": "Cultural Tone Matching",
+              "description": "Formal for Arab tourists, information-dense for German tourists. Culturally appropriate communication."
+            },
+            {
+              "title": "Multi-Tour Listing",
+              "description": "All tour options automatically listed for incoming tourists, with dates and prices."
+            }
+          ]
+        },
+        "scenariosSection": {
+          "heading": "Typical Scenario for an Incoming Agency",
+          "scenarios": [
+            {
+              "who": "🇩🇪 German Tourist, 22:30",
+              "message": "\"Haben Sie Ballonfahrten in Kappadokien für 2 Personen?\"",
+              "response": "Turzz AI lists Cappadocia balloon tours, dates and prices in German"
+            },
+            {
+              "who": "🇸🇦 Arab Tourist, 02:15",
+              "message": "\"هل لديكم جولات في أنطاليا للعائلات؟\"",
+              "response": "Turzz AI shows family tour options in Arabic and guides to booking"
+            },
+            {
+              "who": "🇷🇺 Russian Tourist, 08:00",
+              "message": "\"Есть ли туры в Стамбул из Анталии?\"",
+              "response": "Turzz AI lists Istanbul tours in Russian and guides to date selection"
+            }
+          ],
+          "turzAiLabel": "Turzz AI:"
+        },
+        "cta": {
+          "heading": "Capture the Foreign Market Without Language Barriers",
+          "description": "14 days free, no credit card required.",
+          "button": "Get Started"
+        }
+      },
+      "daytrip": {
+        "meta": {
+          "title": "Day Trip Booking System — Fast and Automated",
+          "description": "WhatsApp chatbot for day trip operators. Fast booking, last-minute sales, real-time availability tracking. 24/7 automated tour sales.",
+          "keywords": "day trip booking system, day tour reservation, last-minute tour sales, instant reservation"
+        },
+        "badge": "Day Trips",
+        "hero": {
+          "title1": "Fast Booking",
+          "title2": "for Day Trips",
+          "subtitle": "Respond in seconds to \"Is there a spot available for tomorrow?\" Stop missing last-minute sales before they fill up. Maximize your day trips with Turzz AI.",
+          "cta": "Start Free"
+        },
+        "featuresSection": {
+          "heading": "Features Built for Day Trip Operators",
+          "items": [
+            {
+              "title": "Instant Booking",
+              "description": "Customer asks about availability, chatbot instantly replies \"Yes, 3 spots left — shall we book?\""
+            },
+            {
+              "title": "Last-Minute Sales",
+              "description": "Automatic reply to \"Any spots for today?\" at 7 AM. Empty spots get sold, revenue increases."
+            },
+            {
+              "title": "Daily Availability Management",
+              "description": "Separate capacity settings per day. Automatically closes when full and suggests alternatives."
+            },
+            {
+              "title": "Which Days Are Full, Which Aren't?",
+              "description": "See from the analytics dashboard which day and which language customers demand the most."
+            }
+          ]
+        },
+        "scenarioSection": {
+          "heading": "Typical Scenario",
+          "intro": "22:45 — Tourist checking their phone at the hotel:",
+          "messages": [
+            {
+              "sender": "user",
+              "text": "Is there a Cappadocia tour tomorrow? For 2 people"
+            },
+            {
+              "sender": "bot",
+              "text": "Hello! There are 4 spots left for the Cappadocia Balloon Tour on 8 May. Departure at 05:30, price ₺3,000 for 2 people. Shall we book?"
+            },
+            {
+              "sender": "user",
+              "text": "Yes, let's book"
+            },
+            {
+              "sender": "bot",
+              "text": "Great! Could I get your name and phone number?"
+            }
+          ],
+          "footnote": "Reservation completed while you slept ✅"
+        },
+        "cta": {
+          "heading": "Stop Missing Last-Minute Sales",
+          "description": "14 days free, no credit card required.",
+          "button": "Try Now"
+        }
+      },
+      "boutique": {
+        "meta": {
+          "title": "Small and Boutique Travel Agency Software — Turzz AI",
+          "description": "Affordable WhatsApp chatbot for small and boutique travel agencies. Access enterprise technology at low cost and gain a professional image.",
+          "keywords": "small travel agency software, boutique agency automation, affordable tour software, small business chatbot"
+        },
+        "badge": "Boutique Agencies",
+        "hero": {
+          "title1": "Enterprise Technology,",
+          "title2": "Small Agency Budget",
+          "subtitle": "Your 1-3 person boutique agency can deliver 24/7 professional service like a big company. Turzz AI's starter plan is designed specifically for small businesses.",
+          "cta": "Start from ₺2,999",
+          "ctaNote": "Includes 14-day free trial"
+        },
+        "whySection": {
+          "heading": "Why Do Small Agencies Choose Turzz AI?",
+          "items": [
+            {
+              "title": "Software Subscription, Not Staff Salary",
+              "description": "Monthly staff cost is ₺15,000-20,000. Turzz AI Starter plan is ₺2,999/month."
+            },
+            {
+              "title": "5-10 Minute Setup",
+              "description": "No technical knowledge needed. Enter your tours, connect WhatsApp, you're ready."
+            },
+            {
+              "title": "Professional Appearance",
+              "description": "When a customer writes to you, they get an instant response as if a large call centre exists."
+            },
+            {
+              "title": "Scales as You Grow",
+              "description": "One-click upgrade from Starter to Professional or Enterprise."
+            }
+          ]
+        },
+        "starterSection": {
+          "heading": "What's Included in the Starter Plan?",
+          "planName": "Starter Plan",
+          "planTagline": "Ideal starting point for small agencies",
+          "price": "₺2,999",
+          "pricePeriod": "/month",
+          "features": [
+            "1,000 WhatsApp messages/month",
+            "Up to 10 tours",
+            "1 language support",
+            "Automated booking wizard",
+            "Basic analytics reports",
+            "Email support",
+            "14-day free trial"
+          ],
+          "ctaButton": "Start Trial"
+        },
+        "cta": {
+          "heading": "Digitalize Your Boutique Agency",
+          "description": "14 days free, no credit card required.",
+          "button": "Start Free"
+        }
+      }
     }
   }
 }
