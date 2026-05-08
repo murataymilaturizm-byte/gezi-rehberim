@@ -1529,5 +1529,269 @@
       "ctaDesc": "14 days free, no credit card required.",
       "ctaButton": "Start Free"
     }
+  },
+  "pages": {
+    "whatsappBot": {
+      "meta": {
+        "title": "WhatsApp Chatbot for Travel Agencies — 24/7 Automated Tour Sales",
+        "description": "WhatsApp chatbot for your travel agency. 7 language support, AI-powered booking wizard, 24/7 automated responses. Boost your tour sales with Turzz AI.",
+        "keywords": "whatsapp chatbot travel agency, tour sales chatbot, whatsapp bot tourism, automated whatsapp response"
+      },
+      "badge": "WhatsApp Chatbot",
+      "hero": {
+        "title1": "Your Travel Agency's Personal",
+        "title2": "WhatsApp Chatbot",
+        "subtitle": "When customers ask about tours at 11 PM, Turzz AI responds instantly. 7 language support, AI-powered booking wizard and 24/7 uninterrupted service.",
+        "ctaPrimary": "Try Free for 14 Days",
+        "ctaSecondary": "Explore Demo",
+        "note": "No credit card required • 5-minute setup"
+      },
+      "whySection": {
+        "heading": "Why a WhatsApp Chatbot for Travel Agencies?",
+        "paragraph": "The vast majority of travel agencies still answer WhatsApp messages manually. Every minute of delay means a lost sale.",
+        "stats": [
+          {
+            "value": "78%",
+            "text": "Rate at which agencies use WhatsApp as their primary communication channel"
+          },
+          {
+            "value": "8 hrs",
+            "text": "Average wait time for manual replies — customers move to another agency in this time"
+          },
+          {
+            "value": "3x",
+            "text": "Booking increase rate for agencies using a chatbot (first 3 months)"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Turzz AI WhatsApp Chatbot Features",
+        "items": [
+          {
+            "title": "AI-Powered NLU",
+            "description": "Understands customer messages with natural language processing and asks the right questions."
+          },
+          {
+            "title": "7 Language Support",
+            "description": "Turkish, English, German, Russian, Arabic, French, Spanish."
+          },
+          {
+            "title": "24/7 Uninterrupted Service",
+            "description": "Instant response even to messages at 2 AM. Never miss a sales opportunity."
+          },
+          {
+            "title": "Automated Booking",
+            "description": "Collects date, headcount, name, and phone step by step and creates the reservation."
+          },
+          {
+            "title": "Customer Profiles",
+            "description": "Tracks each customer's history, preferences, and spending."
+          },
+          {
+            "title": "Instant Notifications",
+            "description": "Immediately notifies you when a new reservation comes in."
+          }
+        ]
+      },
+      "howSection": {
+        "heading": "How Does the WhatsApp Chatbot Work?",
+        "subtitle": "Customer sends a message, Turzz AI automatically manages the entire booking process.",
+        "steps": [
+          {
+            "title": "Customer Writes on WhatsApp",
+            "description": "They send a natural message like \"Any hot air balloon tours in Cappadocia?\""
+          },
+          {
+            "title": "Chatbot Detects the Language",
+            "description": "Turkish, English, German... it replies in whatever language they write in."
+          },
+          {
+            "title": "Shows Tour Options",
+            "description": "Automatically lists available tours, dates, and prices from your system."
+          },
+          {
+            "title": "Collects Booking Details",
+            "description": "Gathers date, headcount, full name, and phone number step by step."
+          },
+          {
+            "title": "Creates the Reservation",
+            "description": "Once all details are collected, a reservation record is automatically saved to your system."
+          }
+        ]
+      },
+      "comparisonSection": {
+        "heading": "Manual WhatsApp vs Turzz AI Chatbot",
+        "columns": {
+          "topic": "Topic",
+          "manual": "Manual WhatsApp",
+          "chatbot": "Turzz AI Chatbot"
+        },
+        "rows": [
+          {
+            "topic": "Message response time",
+            "manual": "Average 8 hours",
+            "chatbot": "Instant (within seconds)"
+          },
+          {
+            "topic": "Night response",
+            "manual": "None",
+            "chatbot": "24/7 active"
+          },
+          {
+            "topic": "Simultaneous customers",
+            "manual": "1",
+            "chatbot": "Unlimited"
+          },
+          {
+            "topic": "Language support",
+            "manual": "1-2 languages",
+            "chatbot": "7 languages"
+          },
+          {
+            "topic": "Monthly cost",
+            "manual": "$200-500 (staff salary)",
+            "chatbot": "From $80/month"
+          }
+        ],
+        "detailLink": "See detailed comparison →"
+      },
+      "relatedSection": {
+        "heading": "Related Solutions",
+        "links": [
+          {
+            "title": "AI Tour Booking",
+            "description": "How does the automated booking process work?"
+          },
+          {
+            "title": "Multi-Language Service",
+            "description": "Serve foreign tourists in 7 languages"
+          },
+          {
+            "title": "Tour Automation",
+            "description": "Automate your operations"
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Set Up Your WhatsApp Chatbot Today",
+        "description": "Start with a 14-day free trial. No credit card required, 5-minute setup.",
+        "button": "Start Free Trial"
+      }
+    },
+    "aiBooking": {
+      "meta": {
+        "title": "AI Tour Booking System — Automated Reservation Assistant",
+        "description": "Get 24/7 automatic reservations with an AI-powered tour booking system. NLU technology, 7 language support, real-time availability tracking. Meet Turzz AI.",
+        "keywords": "ai tour booking system, automated reservation, artificial intelligence tourism, online tour booking, tour reservation software"
+      },
+      "badge": "Artificial Intelligence",
+      "hero": {
+        "title1": "With AI Tour Booking System,",
+        "title2": "24/7 Automated Sales",
+        "subtitle": "Turzz AI's artificial intelligence engine understands customer messages and creates automatic reservations. Tour sales continue even while your staff sleeps.",
+        "ctaPrimary": "Start Free",
+        "ctaSecondary": "Explore WhatsApp Chatbot"
+      },
+      "comparisonSection": {
+        "heading": "Classic Booking vs AI Booking System",
+        "subtitle": "The difference between traditional methods and an AI-powered system is enormous.",
+        "classicTitle": "❌ Classic Method",
+        "aiTitle": "✅ With Turzz AI",
+        "classicItems": [
+          "Customer writes on WhatsApp, waits until staff checks their phone",
+          "Staff manually opens a price list to send information",
+          "Customer asks about dates, staff checks the Excel file",
+          "Booking form goes back and forth via email",
+          "Payment tracking is kept in a separate spreadsheet",
+          "No sales at night or on weekends"
+        ],
+        "aiItems": [
+          "Customer writes, AI responds in the correct language within seconds",
+          "System automatically presents tour list, prices, and dates",
+          "Available dates show in real-time, availability tracking is automatic",
+          "Booking details are collected step by step by the chatbot",
+          "Payment link is sent automatically",
+          "At 2 AM, on weekends, on holidays — 24/7 sales"
+        ]
+      },
+      "nluSection": {
+        "heading": "What is NLU Technology? A Simple Explanation",
+        "subtitle": "NLU (Natural Language Understanding) technology enables computers to understand sentences written by humans.",
+        "exampleLabel": "Example: The customer writes:",
+        "exampleMessage": "\"Any hot air balloon tours in Cappadocia in June? Looking for 2 people\"",
+        "aiUnderstandsLabel": "AI understands:",
+        "entities": [
+          {
+            "label": "Tour",
+            "value": "Cappadocia Balloon"
+          },
+          {
+            "label": "Month",
+            "value": "June"
+          },
+          {
+            "label": "People",
+            "value": "2 Adults"
+          },
+          {
+            "label": "Intent",
+            "value": "Information"
+          }
+        ],
+        "conclusion": "This way the system understands the customer and directly lists Cappadocia tours in June. No need to ask again or do a manual search."
+      },
+      "langSection": {
+        "heading": "Automatic Booking in 7 Languages",
+        "subtitle": "Complete the booking process with foreign tourists without language barriers.",
+        "languages": [
+          {
+            "language": "Turkish",
+            "flag": "🇹🇷",
+            "market": "Domestic Market"
+          },
+          {
+            "language": "English",
+            "flag": "🇬🇧",
+            "market": "International"
+          },
+          {
+            "language": "German",
+            "flag": "🇩🇪",
+            "market": "Europe"
+          },
+          {
+            "language": "Russian",
+            "flag": "🇷🇺",
+            "market": "Russia/CIS"
+          },
+          {
+            "language": "Arabic",
+            "flag": "🇸🇦",
+            "market": "Middle East"
+          },
+          {
+            "language": "French",
+            "flag": "🇫🇷",
+            "market": "France"
+          },
+          {
+            "language": "Spanish",
+            "flag": "🇪🇸",
+            "market": "Spain/LatAm"
+          },
+          {
+            "language": "Coming Soon",
+            "flag": "🌍",
+            "market": "More"
+          }
+        ],
+        "linkText": "Learn more about multi-language service →"
+      },
+      "cta": {
+        "heading": "Set Up Your AI Booking System",
+        "description": "Test the AI tour booking system with a 14-day free trial.",
+        "button": "Start Free Trial"
+      }
+    }
   }
 }

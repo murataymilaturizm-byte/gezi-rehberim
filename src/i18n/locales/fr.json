@@ -1675,5 +1675,269 @@
       "ctaDesc": "14 jours gratuits, aucune carte bancaire requise.",
       "ctaButton": "Commencer gratuitement"
     }
+  },
+  "pages": {
+    "whatsappBot": {
+      "meta": {
+        "title": "Chatbot WhatsApp pour Agences de Voyage — Vente de Circuits 24/7",
+        "description": "Chatbot WhatsApp pour votre agence de voyage. 7 langues, assistant de réservation IA, réponses automatiques 24/7. Augmentez vos ventes avec Turzz AI.",
+        "keywords": "chatbot whatsapp agence voyage, vente circuits chatbot, bot whatsapp tourisme, réponse automatique whatsapp"
+      },
+      "badge": "Chatbot WhatsApp",
+      "hero": {
+        "title1": "Le chatbot WhatsApp dédié",
+        "title2": "à votre agence de voyage",
+        "subtitle": "Quand vos clients s'enquièrent de circuits à 23h, Turzz AI répond instantanément. 7 langues, assistant de réservation IA et service 24/7 ininterrompu.",
+        "ctaPrimary": "Essayer gratuitement 14 jours",
+        "ctaSecondary": "Voir la démo",
+        "note": "Aucune carte bancaire requise • Installation en 5 minutes"
+      },
+      "whySection": {
+        "heading": "Pourquoi un chatbot WhatsApp pour les agences de voyage ?",
+        "paragraph": "La grande majorité des agences de voyage répondent encore manuellement aux messages WhatsApp. Chaque minute de délai signifie une vente perdue.",
+        "stats": [
+          {
+            "value": "78 %",
+            "text": "Part des agences utilisant WhatsApp comme canal de communication principal"
+          },
+          {
+            "value": "8 h",
+            "text": "Temps d'attente moyen pour les réponses manuelles — le client passe chez un concurrent en ce temps"
+          },
+          {
+            "value": "3x",
+            "text": "Taux d'augmentation des réservations pour les agences utilisant un chatbot (3 premiers mois)"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Fonctionnalités du chatbot WhatsApp Turzz AI",
+        "items": [
+          {
+            "title": "NLU propulsé par l'IA",
+            "description": "Comprend les messages des clients par traitement du langage naturel et pose les bonnes questions."
+          },
+          {
+            "title": "7 langues",
+            "description": "Turc, anglais, allemand, russe, arabe, français, espagnol."
+          },
+          {
+            "title": "Service 24/7 ininterrompu",
+            "description": "Réponses instantanées même aux messages à 2h du matin. Aucune opportunité de vente manquée."
+          },
+          {
+            "title": "Réservation automatique",
+            "description": "Collecte date, nombre de personnes, nom et téléphone étape par étape et crée la réservation."
+          },
+          {
+            "title": "Profils clients",
+            "description": "Conserve l'historique, les préférences et les dépenses de chaque client."
+          },
+          {
+            "title": "Notifications instantanées",
+            "description": "Vous avertit immédiatement dès qu'une nouvelle réservation arrive."
+          }
+        ]
+      },
+      "howSection": {
+        "heading": "Comment fonctionne le chatbot WhatsApp ?",
+        "subtitle": "Le client envoie un message, Turzz AI gère automatiquement tout le processus de réservation.",
+        "steps": [
+          {
+            "title": "Le client écrit sur WhatsApp",
+            "description": "Il envoie un message naturel comme « Y a-t-il des circuits en montgolfière en Cappadoce ? »"
+          },
+          {
+            "title": "Le chatbot détecte la langue",
+            "description": "Français, anglais, allemand... il répond dans la langue utilisée."
+          },
+          {
+            "title": "Affiche les options de circuits",
+            "description": "Liste automatiquement les circuits disponibles, les dates et les prix de votre système."
+          },
+          {
+            "title": "Collecte les données de réservation",
+            "description": "Recueille date, nombre de personnes, nom complet et téléphone étape par étape."
+          },
+          {
+            "title": "Crée la réservation",
+            "description": "Une fois toutes les données collectées, un enregistrement de réservation est automatiquement sauvegardé dans votre système."
+          }
+        ]
+      },
+      "comparisonSection": {
+        "heading": "WhatsApp manuel vs chatbot Turzz AI",
+        "columns": {
+          "topic": "Critère",
+          "manual": "WhatsApp manuel",
+          "chatbot": "Chatbot Turzz AI"
+        },
+        "rows": [
+          {
+            "topic": "Temps de réponse",
+            "manual": "En moyenne 8 heures",
+            "chatbot": "Instantané (secondes)"
+          },
+          {
+            "topic": "Réponse nocturne",
+            "manual": "Aucune",
+            "chatbot": "Actif 24/7"
+          },
+          {
+            "topic": "Clients simultanés",
+            "manual": "1",
+            "chatbot": "Illimité"
+          },
+          {
+            "topic": "Support linguistique",
+            "manual": "1-2 langues",
+            "chatbot": "7 langues"
+          },
+          {
+            "topic": "Coût mensuel",
+            "manual": "2 000-4 000 € (salaire)",
+            "chatbot": "À partir de 80 €/mois"
+          }
+        ],
+        "detailLink": "Voir la comparaison détaillée →"
+      },
+      "relatedSection": {
+        "heading": "Solutions connexes",
+        "links": [
+          {
+            "title": "Réservation IA de circuits",
+            "description": "Comment fonctionne le processus de réservation automatique ?"
+          },
+          {
+            "title": "Service multilingue",
+            "description": "Accueillez les touristes étrangers en 7 langues"
+          },
+          {
+            "title": "Automatisation des circuits",
+            "description": "Automatisez vos opérations"
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Installez votre chatbot WhatsApp aujourd'hui",
+        "description": "Commencez avec un essai gratuit de 14 jours. Aucune carte bancaire requise, installation en 5 minutes.",
+        "button": "Démarrer l'essai gratuit"
+      }
+    },
+    "aiBooking": {
+      "meta": {
+        "title": "Système de réservation IA pour circuits — Assistant de réservation automatique",
+        "description": "Obtenez des réservations automatiques 24/7 avec un système IA. Technologie NLU, 7 langues, suivi des disponibilités en temps réel. Découvrez Turzz AI.",
+        "keywords": "système réservation ia circuits, réservation automatique, intelligence artificielle tourisme"
+      },
+      "badge": "Intelligence Artificielle",
+      "hero": {
+        "title1": "Avec le système IA de réservation de circuits,",
+        "title2": "Ventes automatiques 24/7",
+        "subtitle": "Le moteur IA de Turzz AI comprend les messages des clients et crée des réservations automatiquement. Les ventes de circuits continuent même pendant le sommeil de vos équipes.",
+        "ctaPrimary": "Commencer gratuitement",
+        "ctaSecondary": "Voir le chatbot WhatsApp"
+      },
+      "comparisonSection": {
+        "heading": "Réservation classique vs système IA",
+        "subtitle": "La différence entre les méthodes traditionnelles et un système IA est considérable.",
+        "classicTitle": "❌ Méthode classique",
+        "aiTitle": "✅ Avec Turzz AI",
+        "classicItems": [
+          "Le client écrit sur WhatsApp, attend que l'employé regarde son téléphone",
+          "L'employé ouvre manuellement la liste des prix et envoie les informations",
+          "Le client demande les dates, l'employé consulte Excel",
+          "Le formulaire de réservation fait l'aller-retour par e-mail",
+          "Le suivi des paiements est dans un tableur séparé",
+          "Pas de ventes la nuit et le week-end"
+        ],
+        "aiItems": [
+          "Le client écrit, l'IA répond en secondes dans la bonne langue",
+          "Le système présente automatiquement la liste des circuits, les prix et les dates",
+          "Les dates disponibles s'affichent en temps réel, disponibilité automatique",
+          "Les données de réservation sont collectées par le chatbot étape par étape",
+          "Le lien de paiement est envoyé automatiquement",
+          "À 2h du matin, le week-end, les jours fériés — ventes 24/7"
+        ]
+      },
+      "nluSection": {
+        "heading": "Qu'est-ce que la technologie NLU ? En termes simples",
+        "subtitle": "La technologie NLU (Natural Language Understanding — Compréhension du langage naturel) permet aux ordinateurs de comprendre les phrases écrites par les humains.",
+        "exampleLabel": "Exemple : le client écrit :",
+        "exampleMessage": "« Y a-t-il des circuits en montgolfière en Cappadoce en juin ? Je cherche pour 2 personnes »",
+        "aiUnderstandsLabel": "L'IA comprend :",
+        "entities": [
+          {
+            "label": "Circuit",
+            "value": "Cappadoce montgolfière"
+          },
+          {
+            "label": "Mois",
+            "value": "Juin"
+          },
+          {
+            "label": "Personnes",
+            "value": "2 adultes"
+          },
+          {
+            "label": "Intention",
+            "value": "Information"
+          }
+        ],
+        "conclusion": "Ainsi le système comprend le client et liste directement les circuits en Cappadoce en juin. Inutile de redemander ou de faire une recherche manuelle."
+      },
+      "langSection": {
+        "heading": "Réservation automatique en 7 langues",
+        "subtitle": "Finalisez le processus de réservation avec les touristes étrangers sans barrière linguistique.",
+        "languages": [
+          {
+            "language": "Turc",
+            "flag": "🇹🇷",
+            "market": "Marché intérieur"
+          },
+          {
+            "language": "Anglais",
+            "flag": "🇬🇧",
+            "market": "International"
+          },
+          {
+            "language": "Allemand",
+            "flag": "🇩🇪",
+            "market": "Europe"
+          },
+          {
+            "language": "Russe",
+            "flag": "🇷🇺",
+            "market": "Russie/CEI"
+          },
+          {
+            "language": "Arabe",
+            "flag": "🇸🇦",
+            "market": "Moyen-Orient"
+          },
+          {
+            "language": "Français",
+            "flag": "🇫🇷",
+            "market": "France"
+          },
+          {
+            "language": "Espagnol",
+            "flag": "🇪🇸",
+            "market": "Espagne/LatAm"
+          },
+          {
+            "language": "Bientôt",
+            "flag": "🌍",
+            "market": "Plus"
+          }
+        ],
+        "linkText": "En savoir plus sur le service multilingue →"
+      },
+      "cta": {
+        "heading": "Installez votre système de réservation IA",
+        "description": "Testez le système de réservation IA de circuits avec un essai gratuit de 14 jours.",
+        "button": "Démarrer l'essai gratuit"
+      }
+    }
   }
 }

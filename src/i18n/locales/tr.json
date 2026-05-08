@@ -1642,5 +1642,269 @@
       "ctaDesc": "14 gün ücretsiz, kredi kartı gerekmez.",
       "ctaButton": "Ücretsiz Başla"
     }
+  },
+  "pages": {
+    "whatsappBot": {
+      "meta": {
+        "title": "WhatsApp Chatbot Seyahat Acentesi — 7/24 Otomatik Tur Satışı",
+        "description": "Seyahat acenteniz için WhatsApp chatbot. 7 dil desteği, AI destekli rezervasyon sihirbazı, 7/24 otomatik yanıt. Turzz AI ile tur satışlarınızı artırın.",
+        "keywords": "whatsapp chatbot seyahat acentesi, tur satışı chatbot, whatsapp bot turizm, otomatik whatsapp yanıt"
+      },
+      "badge": "WhatsApp Chatbot",
+      "hero": {
+        "title1": "Seyahat Acentenize Özel",
+        "title2": "WhatsApp Chatbot",
+        "subtitle": "Müşterileriniz saat 23:00'da tur soruyorsa, Turzz AI anında yanıt veriyor. 7 dil desteği, AI destekli rezervasyon sihirbazı ve 7/24 kesintisiz hizmet.",
+        "ctaPrimary": "14 Gün Ücretsiz Dene",
+        "ctaSecondary": "Demo'yu İncele",
+        "note": "Kredi kartı gerekmez • 5 dakikada kurulum"
+      },
+      "whySection": {
+        "heading": "Neden Seyahat Acentesi İçin WhatsApp Chatbot?",
+        "paragraph": "Türkiye'deki seyahat acentelerinin büyük çoğunluğu hâlâ WhatsApp mesajlarını manuel olarak yanıtlıyor. Bu her geçen dakika kaçan satış demek.",
+        "stats": [
+          {
+            "value": "%78",
+            "text": "Türk acentelerinin WhatsApp'ı ana iletişim kanalı olarak kullandığı oran"
+          },
+          {
+            "value": "8 saat",
+            "text": "Manuel yanıtlarda ortalama bekleme süresi — müşteri bu sürede başka acenteye geçiyor"
+          },
+          {
+            "value": "3x",
+            "text": "Chatbot kullanan acentelerin rezervasyon artış oranı (ilk 3 ay)"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Turzz AI WhatsApp Chatbot Özellikleri",
+        "items": [
+          {
+            "title": "Yapay Zeka Destekli NLU",
+            "description": "Müşteri mesajlarını doğal dil işleme ile anlar, doğru soruları sorar."
+          },
+          {
+            "title": "7 Dil Desteği",
+            "description": "Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca."
+          },
+          {
+            "title": "7/24 Kesintisiz Hizmet",
+            "description": "Gece 2'de gelen sorulara bile anında yanıt. Satış fırsatı kaçmaz."
+          },
+          {
+            "title": "Otomatik Rezervasyon",
+            "description": "Tarih, kişi sayısı, isim, telefon bilgilerini adım adım toplar ve rezervasyon oluşturur."
+          },
+          {
+            "title": "Müşteri Profilleri",
+            "description": "Her müşterinin geçmişini, tercihlerini ve harcamalarını kayıt altında tutar."
+          },
+          {
+            "title": "Anlık Bildirimler",
+            "description": "Yeni rezervasyon geldiğinde sizi anında haberdar eder."
+          }
+        ]
+      },
+      "howSection": {
+        "heading": "WhatsApp Chatbot Nasıl Çalışır?",
+        "subtitle": "Müşteri mesaj atıyor, Turzz AI otomatik olarak tüm rezervasyon sürecini yönetiyor.",
+        "steps": [
+          {
+            "title": "Müşteri WhatsApp'tan Yazıyor",
+            "description": "\"Kapadokya balonlu tur var mı?\" gibi doğal bir mesaj atıyor."
+          },
+          {
+            "title": "Chatbot Dili Algılıyor",
+            "description": "Türkçe, İngilizce, Almanca... hangi dilde yazarsa aynı dilde yanıtlıyor."
+          },
+          {
+            "title": "Tur Seçeneklerini Gösteriyor",
+            "description": "Sistemizdeki müsait turları, tarihleri ve fiyatları otomatik listeliyor."
+          },
+          {
+            "title": "Rezervasyon Bilgilerini Topluyor",
+            "description": "Tarih, kişi sayısı, ad-soyad ve telefon numarasını adım adım alıyor."
+          },
+          {
+            "title": "Rezervasyonu Oluşturuyor",
+            "description": "Tüm bilgiler alındıktan sonra sisteminize otomatik rezervasyon kaydı düşüyor."
+          }
+        ]
+      },
+      "comparisonSection": {
+        "heading": "Manuel WhatsApp vs Turzz AI Chatbot",
+        "columns": {
+          "topic": "Konu",
+          "manual": "Manuel WhatsApp",
+          "chatbot": "Turzz AI Chatbot"
+        },
+        "rows": [
+          {
+            "topic": "Mesaj yanıtlama süresi",
+            "manual": "Ortalama 8 saat",
+            "chatbot": "Anlık (saniyeler içinde)"
+          },
+          {
+            "topic": "Gece yanıtı",
+            "manual": "Yok",
+            "chatbot": "7/24 aktif"
+          },
+          {
+            "topic": "Aynı anda yanıtlanabilen müşteri",
+            "manual": "1",
+            "chatbot": "Sınırsız"
+          },
+          {
+            "topic": "Dil desteği",
+            "manual": "1-2 dil",
+            "chatbot": "7 dil"
+          },
+          {
+            "topic": "Aylık maliyet",
+            "manual": "8.000-15.000 ₺ (çalışan ücreti)",
+            "chatbot": "2.999 ₺'dan başlayan"
+          }
+        ],
+        "detailLink": "Detaylı karşılaştırmayı incele →"
+      },
+      "relatedSection": {
+        "heading": "İlgili Çözümler",
+        "links": [
+          {
+            "title": "AI Tur Rezervasyonu",
+            "description": "Otomatik rezervasyon süreci nasıl çalışır?"
+          },
+          {
+            "title": "Çok Dilli Hizmet",
+            "description": "7 dilde yabancı turist hizmeti"
+          },
+          {
+            "title": "Tur Otomasyonu",
+            "description": "Operasyonları otomatikleştir"
+          }
+        ]
+      },
+      "cta": {
+        "heading": "WhatsApp Chatbot'unuzu Bugün Kurun",
+        "description": "14 günlük ücretsiz deneme ile başlayın. Kredi kartı gerekmez, kurulum 5 dakika.",
+        "button": "Ücretsiz Denemeyi Başlat"
+      }
+    },
+    "aiBooking": {
+      "meta": {
+        "title": "AI Tur Rezervasyon Sistemi — Otomatik Rezervasyon Asistanı",
+        "description": "AI tabanlı tur rezervasyon sistemi ile 7/24 otomatik rezervasyon alın. NLU teknolojisi, 7 dil desteği, anlık kontenjan takibi. Turzz AI ile tanışın.",
+        "keywords": "ai tur rezervasyon sistemi, otomatik rezervasyon, yapay zeka turizm, online tur rezervasyonu"
+      },
+      "badge": "Yapay Zeka",
+      "hero": {
+        "title1": "AI Tur Rezervasyon Sistemi ile",
+        "title2": "7/24 Otomatik Satış",
+        "subtitle": "Turzz AI'ın yapay zeka motoru, müşteri mesajlarını anlayarak otomatik rezervasyon oluşturur. Çalışanlarınız uyurken bile tur satışı devam eder.",
+        "ctaPrimary": "Ücretsiz Başla",
+        "ctaSecondary": "WhatsApp Chatbot'u İncele"
+      },
+      "comparisonSection": {
+        "heading": "Klasik Rezervasyon vs AI Rezervasyon Sistemi",
+        "subtitle": "Geleneksel yöntemler ile yapay zeka destekli sistem arasındaki fark çok büyük.",
+        "classicTitle": "❌ Klasik Yöntem",
+        "aiTitle": "✅ Turzz AI ile",
+        "classicItems": [
+          "Müşteri WhatsApp'tan yazıyor, çalışan telefona bakana kadar bekliyor",
+          "Çalışan manuel fiyat listesi açıp bilgi gönderiyor",
+          "Müşteri tarih soruyor, çalışan Excel'e bakıyor",
+          "Rezervasyon formu e-posta ile gidip geliyor",
+          "Ödeme takibi ayrı spreadsheet'te tutuluyor",
+          "Gece ve hafta sonu satış yok"
+        ],
+        "aiItems": [
+          "Müşteri yazıyor, AI saniyeler içinde doğru dilde yanıtlıyor",
+          "Sistem tur listesini, fiyatları ve tarihleri otomatik sunuyor",
+          "Müsait tarihler anlık olarak görünüyor, kontenjan takibi otomatik",
+          "Rezervasyon bilgileri chatbot tarafından adım adım toplanıyor",
+          "Ödeme linki otomatik gönderiliyor",
+          "Gece 2'de, hafta sonu, tatilde — 7/24 satış"
+        ]
+      },
+      "nluSection": {
+        "heading": "NLU Teknolojisi Nedir? Basit Anlatımla",
+        "subtitle": "NLU (Natural Language Understanding — Doğal Dil Anlama) teknolojisi, insanların yazdığı cümleleri bilgisayarın anlamasını sağlar.",
+        "exampleLabel": "Örnek: Müşteri şunu yazıyor:",
+        "exampleMessage": "\"Haziranda Kapadokya balonlu tur var mı, 2 kişi için bakıyorum\"",
+        "aiUnderstandsLabel": "AI şunları anlıyor:",
+        "entities": [
+          {
+            "label": "Tur",
+            "value": "Kapadokya Balonlu"
+          },
+          {
+            "label": "Ay",
+            "value": "Haziran"
+          },
+          {
+            "label": "Kişi",
+            "value": "2 Yetişkin"
+          },
+          {
+            "label": "Niyet",
+            "value": "Bilgi Alma"
+          }
+        ],
+        "conclusion": "Bu sayede sistem müşteriyi anlar ve doğrudan Haziran tarihli Kapadokya turlarını listeler. Ne tekrar sormaya, ne de manuel aramaya gerek yok."
+      },
+      "langSection": {
+        "heading": "7 Dilde Otomatik Rezervasyon",
+        "subtitle": "Yabancı turistlerle dil engeli olmadan rezervasyon sürecini tamamlayın.",
+        "languages": [
+          {
+            "language": "Türkçe",
+            "flag": "🇹🇷",
+            "market": "Yerli Pazar"
+          },
+          {
+            "language": "İngilizce",
+            "flag": "🇬🇧",
+            "market": "Uluslararası"
+          },
+          {
+            "language": "Almanca",
+            "flag": "🇩🇪",
+            "market": "Avrupa"
+          },
+          {
+            "language": "Rusça",
+            "flag": "🇷🇺",
+            "market": "Rusya/BDT"
+          },
+          {
+            "language": "Arapça",
+            "flag": "🇸🇦",
+            "market": "Orta Doğu"
+          },
+          {
+            "language": "Fransızca",
+            "flag": "🇫🇷",
+            "market": "Fransa"
+          },
+          {
+            "language": "İspanyolca",
+            "flag": "🇪🇸",
+            "market": "İspanya/LatAm"
+          },
+          {
+            "language": "Yakında",
+            "flag": "🌍",
+            "market": "Daha Fazla"
+          }
+        ],
+        "linkText": "Çok dilli hizmet hakkında detaylı bilgi →"
+      },
+      "cta": {
+        "heading": "AI Rezervasyon Sisteminizi Kurun",
+        "description": "14 günlük ücretsiz deneme ile AI tur rezervasyon sistemini test edin.",
+        "button": "Ücretsiz Denemeyi Başlat"
+      }
+    }
   }
 }

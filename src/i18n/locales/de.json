@@ -1471,5 +1471,269 @@
       "ctaDesc": "14 Tage kostenlos, keine Kreditkarte erforderlich.",
       "ctaButton": "Kostenlos starten"
     }
+  },
+  "pages": {
+    "whatsappBot": {
+      "meta": {
+        "title": "WhatsApp Chatbot für Reisebüros — 24/7 Automatischer Tourverkauf",
+        "description": "WhatsApp Chatbot für Ihr Reisebüro. 7 Sprachen, KI-gestützter Buchungsassistent, 24/7-Automatik. Steigern Sie Ihre Tourverkäufe mit Turzz AI.",
+        "keywords": "whatsapp chatbot reisebüro, tourverkauf chatbot, whatsapp bot tourismus, automatische whatsapp-antwort"
+      },
+      "badge": "WhatsApp Chatbot",
+      "hero": {
+        "title1": "Der WhatsApp Chatbot",
+        "title2": "Für Ihr Reisebüro",
+        "subtitle": "Wenn Kunden um 23 Uhr nach Touren fragen, antwortet Turzz AI sofort. 7 Sprachen, KI-Buchungsassistent und 24/7-Service.",
+        "ctaPrimary": "14 Tage kostenlos testen",
+        "ctaSecondary": "Demo ansehen",
+        "note": "Keine Kreditkarte erforderlich • 5 Minuten Einrichtung"
+      },
+      "whySection": {
+        "heading": "Warum ein WhatsApp Chatbot für Reisebüros?",
+        "paragraph": "Die meisten Reisebüros beantworten WhatsApp-Nachrichten immer noch manuell. Jede Verzögerung bedeutet entgangene Verkäufe.",
+        "stats": [
+          {
+            "value": "78%",
+            "text": "Anteil der Agenturen, die WhatsApp als primären Kommunikationskanal nutzen"
+          },
+          {
+            "value": "8 Std.",
+            "text": "Durchschnittliche Wartezeit bei manuellen Antworten — in dieser Zeit wechseln Kunden zur Konkurrenz"
+          },
+          {
+            "value": "3x",
+            "text": "Buchungssteigerungsrate bei Agenturen mit Chatbot (erste 3 Monate)"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Turzz AI WhatsApp Chatbot Funktionen",
+        "items": [
+          {
+            "title": "KI-gestützte NLU",
+            "description": "Versteht Kundennachrichten mit natürlicher Sprachverarbeitung und stellt die richtigen Fragen."
+          },
+          {
+            "title": "7 Sprachen",
+            "description": "Türkisch, Englisch, Deutsch, Russisch, Arabisch, Französisch, Spanisch."
+          },
+          {
+            "title": "24/7 ununterbrochener Service",
+            "description": "Sofortige Antworten selbst auf Nachrichten um 2 Uhr morgens. Kein Verkauf geht verloren."
+          },
+          {
+            "title": "Automatische Buchung",
+            "description": "Sammelt Datum, Personenzahl, Name und Telefon Schritt für Schritt und erstellt die Reservierung."
+          },
+          {
+            "title": "Kundenprofile",
+            "description": "Protokolliert Geschichte, Präferenzen und Ausgaben jedes Kunden."
+          },
+          {
+            "title": "Sofortbenachrichtigungen",
+            "description": "Benachrichtigt Sie sofort, wenn eine neue Buchung eingeht."
+          }
+        ]
+      },
+      "howSection": {
+        "heading": "Wie funktioniert der WhatsApp Chatbot?",
+        "subtitle": "Der Kunde sendet eine Nachricht, Turzz AI verwaltet automatisch den gesamten Buchungsprozess.",
+        "steps": [
+          {
+            "title": "Kunde schreibt auf WhatsApp",
+            "description": "Er sendet eine natürliche Nachricht wie \"Gibt es Ballontouren in Kappadokien?\""
+          },
+          {
+            "title": "Chatbot erkennt die Sprache",
+            "description": "Türkisch, Englisch, Deutsch... antwortet in der Sprache, in der geschrieben wird."
+          },
+          {
+            "title": "Zeigt Touroptionen",
+            "description": "Listet automatisch verfügbare Touren, Termine und Preise aus Ihrem System."
+          },
+          {
+            "title": "Sammelt Buchungsdaten",
+            "description": "Erfasst Datum, Personenzahl, Name und Telefon Schritt für Schritt."
+          },
+          {
+            "title": "Erstellt die Buchung",
+            "description": "Sobald alle Daten erfasst sind, wird automatisch ein Buchungseintrag in Ihrem System gespeichert."
+          }
+        ]
+      },
+      "comparisonSection": {
+        "heading": "Manuelles WhatsApp vs Turzz AI Chatbot",
+        "columns": {
+          "topic": "Thema",
+          "manual": "Manuelles WhatsApp",
+          "chatbot": "Turzz AI Chatbot"
+        },
+        "rows": [
+          {
+            "topic": "Antwortzeit",
+            "manual": "Durchschnittlich 8 Stunden",
+            "chatbot": "Sofort (in Sekunden)"
+          },
+          {
+            "topic": "Nachtantwort",
+            "manual": "Keine",
+            "chatbot": "24/7 aktiv"
+          },
+          {
+            "topic": "Gleichzeitige Kunden",
+            "manual": "1",
+            "chatbot": "Unbegrenzt"
+          },
+          {
+            "topic": "Sprachunterstützung",
+            "manual": "1-2 Sprachen",
+            "chatbot": "7 Sprachen"
+          },
+          {
+            "topic": "Monatliche Kosten",
+            "manual": "2.000-4.000 € (Gehaltskosten)",
+            "chatbot": "Ab 80 €/Monat"
+          }
+        ],
+        "detailLink": "Detaillierten Vergleich ansehen →"
+      },
+      "relatedSection": {
+        "heading": "Verwandte Lösungen",
+        "links": [
+          {
+            "title": "KI-Tourbuchung",
+            "description": "Wie funktioniert der automatische Buchungsprozess?"
+          },
+          {
+            "title": "Mehrsprachiger Service",
+            "description": "Ausländische Touristen in 7 Sprachen bedienen"
+          },
+          {
+            "title": "Tour-Automatisierung",
+            "description": "Betrieb automatisieren"
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Richten Sie Ihren WhatsApp Chatbot noch heute ein",
+        "description": "Starten Sie mit einer 14-tägigen kostenlosen Testversion. Keine Kreditkarte erforderlich, 5-Minuten-Einrichtung.",
+        "button": "Kostenlose Testversion starten"
+      }
+    },
+    "aiBooking": {
+      "meta": {
+        "title": "KI-Tourbuchungssystem — Automatischer Reservierungsassistent",
+        "description": "24/7 automatische Buchungen mit einem KI-gestützten Tourbuchungssystem. NLU-Technologie, 7 Sprachen, Echtzeit-Verfügbarkeit. Lernen Sie Turzz AI kennen.",
+        "keywords": "ki tourbuchung, automatische reservierung, künstliche intelligenz tourismus, online tourbuchung"
+      },
+      "badge": "Künstliche Intelligenz",
+      "hero": {
+        "title1": "Mit KI-Tourbuchungssystem",
+        "title2": "24/7 automatischer Verkauf",
+        "subtitle": "Turzz AIs KI-Motor versteht Kundennachrichten und erstellt automatische Buchungen. Der Tourverkauf läuft weiter, auch wenn Ihre Mitarbeiter schlafen.",
+        "ctaPrimary": "Kostenlos starten",
+        "ctaSecondary": "WhatsApp Chatbot ansehen"
+      },
+      "comparisonSection": {
+        "heading": "Klassische vs. KI-Buchungssystem",
+        "subtitle": "Der Unterschied zwischen traditionellen Methoden und einem KI-gestützten System ist enorm.",
+        "classicTitle": "❌ Klassische Methode",
+        "aiTitle": "✅ Mit Turzz AI",
+        "classicItems": [
+          "Kunde schreibt auf WhatsApp, wartet bis Mitarbeiter aufs Handy schaut",
+          "Mitarbeiter öffnet manuell die Preisliste und sendet Informationen",
+          "Kunde fragt nach Terminen, Mitarbeiter schaut in Excel nach",
+          "Buchungsformular geht per E-Mail hin und her",
+          "Zahlungsverfolgung in separater Tabelle",
+          "Kein Verkauf nachts und am Wochenende"
+        ],
+        "aiItems": [
+          "Kunde schreibt, KI antwortet in Sekunden in der richtigen Sprache",
+          "System präsentiert Tourliste, Preise und Termine automatisch",
+          "Verfügbare Termine erscheinen in Echtzeit, Verfügbarkeit automatisch",
+          "Buchungsdaten werden vom Chatbot Schritt für Schritt erfasst",
+          "Zahlungslink wird automatisch gesendet",
+          "Um 2 Uhr, am Wochenende, an Feiertagen — 24/7 Verkauf"
+        ]
+      },
+      "nluSection": {
+        "heading": "Was ist NLU-Technologie? Einfach erklärt",
+        "subtitle": "NLU (Natural Language Understanding) ermöglicht Computern, von Menschen geschriebene Sätze zu verstehen.",
+        "exampleLabel": "Beispiel: Der Kunde schreibt:",
+        "exampleMessage": "\"Gibt es Ballontouren in Kappadokien im Juni? Schaue für 2 Personen\"",
+        "aiUnderstandsLabel": "Die KI versteht:",
+        "entities": [
+          {
+            "label": "Tour",
+            "value": "Kappadokien Ballon"
+          },
+          {
+            "label": "Monat",
+            "value": "Juni"
+          },
+          {
+            "label": "Personen",
+            "value": "2 Erwachsene"
+          },
+          {
+            "label": "Absicht",
+            "value": "Information"
+          }
+        ],
+        "conclusion": "So versteht das System den Kunden und listet direkt Kappadokien-Touren im Juni. Kein erneutes Nachfragen, keine manuelle Suche nötig."
+      },
+      "langSection": {
+        "heading": "Automatische Buchung in 7 Sprachen",
+        "subtitle": "Schließen Sie den Buchungsprozess mit ausländischen Touristen ohne Sprachbarriere ab.",
+        "languages": [
+          {
+            "language": "Türkisch",
+            "flag": "🇹🇷",
+            "market": "Inland"
+          },
+          {
+            "language": "Englisch",
+            "flag": "🇬🇧",
+            "market": "International"
+          },
+          {
+            "language": "Deutsch",
+            "flag": "🇩🇪",
+            "market": "Europa"
+          },
+          {
+            "language": "Russisch",
+            "flag": "🇷🇺",
+            "market": "Russland/GUS"
+          },
+          {
+            "language": "Arabisch",
+            "flag": "🇸🇦",
+            "market": "Naher Osten"
+          },
+          {
+            "language": "Französisch",
+            "flag": "🇫🇷",
+            "market": "Frankreich"
+          },
+          {
+            "language": "Spanisch",
+            "flag": "🇪🇸",
+            "market": "Spanien/LatAm"
+          },
+          {
+            "language": "Demnächst",
+            "flag": "🌍",
+            "market": "Mehr"
+          }
+        ],
+        "linkText": "Mehr über mehrsprachigen Service erfahren →"
+      },
+      "cta": {
+        "heading": "Richten Sie Ihr KI-Buchungssystem ein",
+        "description": "Testen Sie das KI-Tourbuchungssystem mit einer 14-tägigen kostenlosen Testversion.",
+        "button": "Kostenlose Testversion starten"
+      }
+    }
   }
 }

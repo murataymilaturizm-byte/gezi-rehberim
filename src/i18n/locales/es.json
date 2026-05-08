@@ -1470,5 +1470,269 @@
       "ctaDesc": "14 días gratis, sin tarjeta de crédito.",
       "ctaButton": "Empezar gratis"
     }
+  },
+  "pages": {
+    "whatsappBot": {
+      "meta": {
+        "title": "Chatbot de WhatsApp para Agencias de Viajes — Ventas de Tours 24/7",
+        "description": "Chatbot de WhatsApp para tu agencia de viajes. 7 idiomas, asistente de reservas IA, respuestas automáticas 24/7. Aumenta tus ventas con Turzz AI.",
+        "keywords": "chatbot whatsapp agencia viajes, venta tours chatbot, bot whatsapp turismo, respuesta automática whatsapp"
+      },
+      "badge": "Chatbot de WhatsApp",
+      "hero": {
+        "title1": "El chatbot de WhatsApp",
+        "title2": "para tu agencia de viajes",
+        "subtitle": "Cuando tus clientes preguntan por tours a las 11 de la noche, Turzz AI responde al instante. 7 idiomas, asistente de reservas IA y servicio 24/7 ininterrumpido.",
+        "ctaPrimary": "Prueba gratis 14 días",
+        "ctaSecondary": "Ver demostración",
+        "note": "Sin tarjeta de crédito • Configuración en 5 minutos"
+      },
+      "whySection": {
+        "heading": "¿Por qué un chatbot de WhatsApp para agencias de viajes?",
+        "paragraph": "La gran mayoría de las agencias de viajes aún responden los mensajes de WhatsApp manualmente. Cada minuto de retraso significa una venta perdida.",
+        "stats": [
+          {
+            "value": "78%",
+            "text": "Porcentaje de agencias que usan WhatsApp como canal de comunicación principal"
+          },
+          {
+            "value": "8 horas",
+            "text": "Tiempo de espera promedio en respuestas manuales — en ese tiempo el cliente se va a otra agencia"
+          },
+          {
+            "value": "3x",
+            "text": "Tasa de aumento de reservas en agencias que usan chatbot (primeros 3 meses)"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Funciones del Chatbot de WhatsApp Turzz AI",
+        "items": [
+          {
+            "title": "NLU impulsado por IA",
+            "description": "Entiende los mensajes de los clientes con procesamiento de lenguaje natural y hace las preguntas correctas."
+          },
+          {
+            "title": "7 idiomas",
+            "description": "Turco, inglés, alemán, ruso, árabe, francés, español."
+          },
+          {
+            "title": "Servicio 24/7 ininterrumpido",
+            "description": "Respuestas instantáneas incluso a mensajes de las 2 AM. Nunca se pierde una oportunidad de venta."
+          },
+          {
+            "title": "Reserva automática",
+            "description": "Recopila fecha, número de personas, nombre y teléfono paso a paso y crea la reserva."
+          },
+          {
+            "title": "Perfiles de clientes",
+            "description": "Guarda el historial, preferencias y gastos de cada cliente."
+          },
+          {
+            "title": "Notificaciones instantáneas",
+            "description": "Te avisa de inmediato cuando llega una nueva reserva."
+          }
+        ]
+      },
+      "howSection": {
+        "heading": "¿Cómo funciona el chatbot de WhatsApp?",
+        "subtitle": "El cliente envía un mensaje, Turzz AI gestiona automáticamente todo el proceso de reserva.",
+        "steps": [
+          {
+            "title": "El cliente escribe en WhatsApp",
+            "description": "Envía un mensaje natural como «¿Hay tours en globo por Capadocia?»"
+          },
+          {
+            "title": "El chatbot detecta el idioma",
+            "description": "Español, inglés, alemán... responde en el idioma en que se escribió."
+          },
+          {
+            "title": "Muestra opciones de tours",
+            "description": "Lista automáticamente los tours disponibles, fechas y precios de tu sistema."
+          },
+          {
+            "title": "Recopila datos de reserva",
+            "description": "Obtiene fecha, número de personas, nombre completo y teléfono paso a paso."
+          },
+          {
+            "title": "Crea la reserva",
+            "description": "Una vez recopilados todos los datos, se guarda automáticamente un registro de reserva en tu sistema."
+          }
+        ]
+      },
+      "comparisonSection": {
+        "heading": "WhatsApp manual vs chatbot Turzz AI",
+        "columns": {
+          "topic": "Criterio",
+          "manual": "WhatsApp manual",
+          "chatbot": "Chatbot Turzz AI"
+        },
+        "rows": [
+          {
+            "topic": "Tiempo de respuesta",
+            "manual": "Promedio 8 horas",
+            "chatbot": "Instantáneo (segundos)"
+          },
+          {
+            "topic": "Respuesta nocturna",
+            "manual": "Ninguna",
+            "chatbot": "Activo 24/7"
+          },
+          {
+            "topic": "Clientes simultáneos",
+            "manual": "1",
+            "chatbot": "Ilimitado"
+          },
+          {
+            "topic": "Soporte de idiomas",
+            "manual": "1-2 idiomas",
+            "chatbot": "7 idiomas"
+          },
+          {
+            "topic": "Costo mensual",
+            "manual": "1.500-3.000 € (salario)",
+            "chatbot": "Desde 80 €/mes"
+          }
+        ],
+        "detailLink": "Ver comparación detallada →"
+      },
+      "relatedSection": {
+        "heading": "Soluciones relacionadas",
+        "links": [
+          {
+            "title": "Reserva IA de tours",
+            "description": "¿Cómo funciona el proceso de reserva automática?"
+          },
+          {
+            "title": "Servicio multilingüe",
+            "description": "Atender turistas extranjeros en 7 idiomas"
+          },
+          {
+            "title": "Automatización de tours",
+            "description": "Automatiza tus operaciones"
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Configura tu chatbot de WhatsApp hoy",
+        "description": "Empieza con una prueba gratuita de 14 días. Sin tarjeta de crédito, configuración en 5 minutos.",
+        "button": "Iniciar prueba gratuita"
+      }
+    },
+    "aiBooking": {
+      "meta": {
+        "title": "Sistema de Reservas IA para Tours — Asistente de Reservas Automático",
+        "description": "Obtén reservas automáticas 24/7 con un sistema IA de reservas de tours. NLU, 7 idiomas, seguimiento de disponibilidad en tiempo real. Conoce Turzz AI.",
+        "keywords": "sistema reservas ia tours, reserva automática, inteligencia artificial turismo"
+      },
+      "badge": "Inteligencia Artificial",
+      "hero": {
+        "title1": "Con el sistema IA de reservas de tours,",
+        "title2": "Ventas automáticas 24/7",
+        "subtitle": "El motor IA de Turzz AI entiende los mensajes de los clientes y crea reservas automáticas. Las ventas de tours continúan incluso mientras tu equipo duerme.",
+        "ctaPrimary": "Empezar gratis",
+        "ctaSecondary": "Ver chatbot de WhatsApp"
+      },
+      "comparisonSection": {
+        "heading": "Reserva clásica vs sistema IA",
+        "subtitle": "La diferencia entre los métodos tradicionales y un sistema IA es enorme.",
+        "classicTitle": "❌ Método clásico",
+        "aiTitle": "✅ Con Turzz AI",
+        "classicItems": [
+          "El cliente escribe en WhatsApp, espera hasta que el empleado mire su teléfono",
+          "El empleado abre manualmente la lista de precios y envía información",
+          "El cliente pregunta por fechas, el empleado consulta Excel",
+          "El formulario de reserva va y viene por correo electrónico",
+          "El seguimiento de pagos está en una hoja de cálculo separada",
+          "Sin ventas por la noche ni los fines de semana"
+        ],
+        "aiItems": [
+          "El cliente escribe, la IA responde en el idioma correcto en segundos",
+          "El sistema presenta automáticamente la lista de tours, precios y fechas",
+          "Las fechas disponibles aparecen en tiempo real, disponibilidad automática",
+          "Los datos de reserva los recopila el chatbot paso a paso",
+          "El enlace de pago se envía automáticamente",
+          "A las 2 AM, fines de semana, festivos — ventas 24/7"
+        ]
+      },
+      "nluSection": {
+        "heading": "¿Qué es la tecnología NLU? En términos sencillos",
+        "subtitle": "La tecnología NLU (Natural Language Understanding — Comprensión del Lenguaje Natural) permite a los ordenadores entender frases escritas por humanos.",
+        "exampleLabel": "Ejemplo: el cliente escribe:",
+        "exampleMessage": "«¿Hay tours en globo por Capadocia en junio? Busco para 2 personas»",
+        "aiUnderstandsLabel": "La IA entiende:",
+        "entities": [
+          {
+            "label": "Tour",
+            "value": "Capadocia globo"
+          },
+          {
+            "label": "Mes",
+            "value": "Junio"
+          },
+          {
+            "label": "Personas",
+            "value": "2 adultos"
+          },
+          {
+            "label": "Intención",
+            "value": "Información"
+          }
+        ],
+        "conclusion": "Así el sistema entiende al cliente y lista directamente los tours de Capadocia en junio. Sin necesidad de preguntar de nuevo ni de hacer una búsqueda manual."
+      },
+      "langSection": {
+        "heading": "Reserva automática en 7 idiomas",
+        "subtitle": "Completa el proceso de reserva con turistas extranjeros sin barreras idiomáticas.",
+        "languages": [
+          {
+            "language": "Turco",
+            "flag": "🇹🇷",
+            "market": "Mercado nacional"
+          },
+          {
+            "language": "Inglés",
+            "flag": "🇬🇧",
+            "market": "Internacional"
+          },
+          {
+            "language": "Alemán",
+            "flag": "🇩🇪",
+            "market": "Europa"
+          },
+          {
+            "language": "Ruso",
+            "flag": "🇷🇺",
+            "market": "Rusia/CEI"
+          },
+          {
+            "language": "Árabe",
+            "flag": "🇸🇦",
+            "market": "Oriente Medio"
+          },
+          {
+            "language": "Francés",
+            "flag": "🇫🇷",
+            "market": "Francia"
+          },
+          {
+            "language": "Español",
+            "flag": "🇪🇸",
+            "market": "España/LatAm"
+          },
+          {
+            "language": "Próximamente",
+            "flag": "🌍",
+            "market": "Más"
+          }
+        ],
+        "linkText": "Saber más sobre el servicio multilingüe →"
+      },
+      "cta": {
+        "heading": "Instala tu sistema IA de reservas",
+        "description": "Prueba el sistema IA de reservas de tours con una prueba gratuita de 14 días.",
+        "button": "Iniciar prueba gratuita"
+      }
+    }
   }
 }
