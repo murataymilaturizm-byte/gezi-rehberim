@@ -1792,6 +1792,206 @@
         "description": "Test the AI tour booking system with a 14-day free trial.",
         "button": "Start Free Trial"
       }
+    },
+    "multilingual": {
+      "meta": {
+        "title": "Multilingual Customer Service — Tour Sales in 7 Languages",
+        "description": "Automated WhatsApp customer service in 7 languages. Serve foreign tourists in Turkish, English, German, Russian, Arabic, French and Spanish with zero language barrier.",
+        "keywords": "multilingual customer service travel agency, foreign tourist service, automated translation chatbot, incoming agency software"
+      },
+      "badge": "Multilingual Service",
+      "hero": {
+        "title1": "Automated Customer Service",
+        "title2": "in 7 Languages",
+        "subtitle": "Communicate with foreign tourists without language barriers. Turzz AI automatically detects the language the customer writes in and responds in the same language.",
+        "cta": "Try for Free"
+      },
+      "langSection": {
+        "heading": "7 Supported Languages",
+        "subtitle": "Whatever language the customer writes in, Turzz AI automatically replies in the same language. No manual language selection or translator needed.",
+        "languages": [
+          {
+            "flag": "🇹🇷",
+            "code": "TR",
+            "name": "Turkish",
+            "description": "Primary language support for domestic customers"
+          },
+          {
+            "flag": "🇬🇧",
+            "code": "EN",
+            "name": "English",
+            "description": "Standard language for international tourists"
+          },
+          {
+            "flag": "🇩🇪",
+            "code": "DE",
+            "name": "German",
+            "description": "Turkish diaspora in Germany and German tourists"
+          },
+          {
+            "flag": "🇷🇺",
+            "code": "RU",
+            "name": "Russian",
+            "description": "Tourists from Russia and CIS countries"
+          },
+          {
+            "flag": "🇸🇦",
+            "code": "AR",
+            "name": "Arabic",
+            "description": "Gulf and Middle East market"
+          },
+          {
+            "flag": "🇫🇷",
+            "code": "FR",
+            "name": "French",
+            "description": "France and Francophone markets"
+          },
+          {
+            "flag": "🇪🇸",
+            "code": "ES",
+            "name": "Spanish",
+            "description": "Spain and Latin America"
+          }
+        ]
+      },
+      "statsSection": {
+        "heading": "Why Does the Foreign Tourist Market Matter?",
+        "stats": [
+          {
+            "value": "45M+",
+            "text": "Foreign tourists visiting Turkey (annually)"
+          },
+          {
+            "value": "62%",
+            "text": "Rate at which foreign tourists use WhatsApp for tour services"
+          },
+          {
+            "value": "3x",
+            "text": "More foreign bookings for agencies offering multilingual support"
+          }
+        ]
+      },
+      "benefitsSection": {
+        "heading": "Benefits of Multilingual Service",
+        "items": [
+          "Respond instantly to German, Russian or Arabic tourists in their own language",
+          "Eliminate translator costs entirely",
+          "The entire booking process proceeds in the customer's language",
+          "Culturally appropriate responses (formal/casual) per audience",
+          "Especially critical advantage for incoming travel agencies",
+          "Separate FAQ and message templates for each language"
+        ],
+        "tipLabel": "Tip:",
+        "tipText": "Starter plan supports 1 language, Professional supports 4, Enterprise supports all 7.",
+        "tipLink": "Compare plans →"
+      },
+      "cta": {
+        "heading": "Serve Foreign Tourists in Their Own Language",
+        "description": "Try free for 14 days, no credit card required.",
+        "button": "Start Free"
+      }
+    },
+    "tourAutomation": {
+      "meta": {
+        "title": "Tour Operator Automation Software — Turzz AI",
+        "description": "Comprehensive automation for tour operators. Availability tracking, automatic reminders, customer segmentation, sales analytics. Save time and money.",
+        "keywords": "tour operator automation software, tour management software, availability tracking system, travel agency automation"
+      },
+      "badge": "Automation",
+      "hero": {
+        "title1": "Automate Your",
+        "title2": "Tour Operations",
+        "subtitle": "From availability management to customer follow-ups, from reminders to analytics — automate 80% of your tour operations.",
+        "cta": "Try for Free",
+        "metrics": [
+          {
+            "value": "40+",
+            "text": "Hours/Month Saved"
+          },
+          {
+            "value": "80%",
+            "text": "Repetitive Work Reduced"
+          },
+          {
+            "value": "0",
+            "text": "Missed Reminders"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Turzz AI Automation Features",
+        "items": [
+          {
+            "title": "Availability Tracking",
+            "description": "Separate capacity management per tour date. Automatically closes when full and suggests alternatives."
+          },
+          {
+            "title": "Automatic Reminders",
+            "description": "3 days before, 1 day before the tour — automatic WhatsApp reminder to the customer."
+          },
+          {
+            "title": "Customer Follow-up Messages",
+            "description": "Post-tour satisfaction survey and re-booking incentive sent automatically."
+          },
+          {
+            "title": "Customer Segmentation",
+            "description": "VIP, regular, potential, passive customers tagged automatically. Run targeted campaigns."
+          },
+          {
+            "title": "Sales Analytics",
+            "description": "Which tour, which language, which day sells the most? Make data-driven decisions."
+          },
+          {
+            "title": "Bulk Message Campaigns",
+            "description": "Send bulk campaign messages to specific customer segments (Meta-approved templates)."
+          }
+        ]
+      },
+      "timeTable": {
+        "heading": "How Much Time Do You Spend Without Automation?",
+        "columns": {
+          "task": "Task",
+          "manual": "Manual (min/day)",
+          "ai": "Turzz AI"
+        },
+        "rows": [
+          [
+            "WhatsApp responses",
+            "120 min",
+            "0 min (automatic)"
+          ],
+          [
+            "Availability updates",
+            "30 min",
+            "0 min (instant)"
+          ],
+          [
+            "Sending reminders",
+            "20 min",
+            "0 min (automatic)"
+          ],
+          [
+            "Report preparation",
+            "45 min",
+            "Live dashboard"
+          ],
+          [
+            "Customer follow-up",
+            "30 min",
+            "Auto-tagging"
+          ]
+        ],
+        "totalRow": [
+          "Total",
+          "245 min/day",
+          "~15 min/day"
+        ]
+      },
+      "cta": {
+        "heading": "Automate Your Operations",
+        "description": "14 days free, no credit card required.",
+        "button": "Get Started Now"
+      }
     }
   }
 }

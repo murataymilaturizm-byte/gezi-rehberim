@@ -1905,6 +1905,206 @@
         "description": "14 günlük ücretsiz deneme ile AI tur rezervasyon sistemini test edin.",
         "button": "Ücretsiz Denemeyi Başlat"
       }
+    },
+    "multilingual": {
+      "meta": {
+        "title": "Çok Dilli Müşteri Hizmetleri — 7 Dilde Tur Satışı",
+        "description": "7 dilde otomatik WhatsApp müşteri hizmetleri. Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca. Yabancı turistlerle dil engeli olmadan iletişim.",
+        "keywords": "çok dilli müşteri hizmetleri tur acentesi, yabancı turist hizmeti, otomatik tercüme chatbot, incoming acentesi yazılımı"
+      },
+      "badge": "Çok Dilli Hizmet",
+      "hero": {
+        "title1": "7 Dilde",
+        "title2": "Otomatik Müşteri Hizmetleri",
+        "subtitle": "Yabancı turistlerle dil bariyeri olmadan iletişim kurun. Turzz AI, müşterinin yazdığı dili otomatik algılar ve aynı dilde yanıt verir.",
+        "cta": "Ücretsiz Dene"
+      },
+      "langSection": {
+        "heading": "Desteklenen 7 Dil",
+        "subtitle": "Müşteri hangi dilde yazarsa Turzz AI otomatik olarak aynı dilde yanıtlar. Manuel dil seçimi veya çevirmen gerekmiyor.",
+        "languages": [
+          {
+            "flag": "🇹🇷",
+            "code": "TR",
+            "name": "Türkçe",
+            "description": "Yerli müşteriler için ana dil desteği"
+          },
+          {
+            "flag": "🇬🇧",
+            "code": "EN",
+            "name": "İngilizce",
+            "description": "Uluslararası turistler için standart dil"
+          },
+          {
+            "flag": "🇩🇪",
+            "code": "DE",
+            "name": "Almanca",
+            "description": "Almanya Türk diasporası ve Alman turistler"
+          },
+          {
+            "flag": "🇷🇺",
+            "code": "RU",
+            "name": "Rusça",
+            "description": "Rusya ve BDT ülkelerinden gelen turistler"
+          },
+          {
+            "flag": "🇸🇦",
+            "code": "AR",
+            "name": "Arapça",
+            "description": "Körfez ve Orta Doğu pazarı"
+          },
+          {
+            "flag": "🇫🇷",
+            "code": "FR",
+            "name": "Fransızca",
+            "description": "Fransa ve Frankofonlar"
+          },
+          {
+            "flag": "🇪🇸",
+            "code": "ES",
+            "name": "İspanyolca",
+            "description": "İspanya ve Latin Amerika"
+          }
+        ]
+      },
+      "statsSection": {
+        "heading": "Yabancı Turist Pazarı Neden Önemli?",
+        "stats": [
+          {
+            "value": "45M+",
+            "text": "Türkiye'ye gelen yabancı turist (yıllık)"
+          },
+          {
+            "value": "%62",
+            "text": "Yabancı turistlerin tur hizmetleri için WhatsApp kullandığı oran"
+          },
+          {
+            "value": "3x",
+            "text": "Çok dilli destek sunan acentelerin daha fazla yabancı rezervasyon aldığı oran"
+          }
+        ]
+      },
+      "benefitsSection": {
+        "heading": "Çok Dilli Hizmetin Faydaları",
+        "items": [
+          "Alman, Rus veya Arap turiste kendi dilinde anında yanıt verin",
+          "Çevirmen maliyetinden kurtulun",
+          "Rezervasyon sürecinin tamamı hedef dilde ilerler",
+          "Kültürel tonlamaya uygun yanıtlar (resmi/samimi)",
+          "İncoming acenteleri için özellikle kritik avantaj",
+          "Her dil için ayrı FAQ ve mesaj şablonları"
+        ],
+        "tipLabel": "İpucu:",
+        "tipText": "Başlangıç paketi 1 dil, Profesyonel paket 4 dil, Kurumsal paket tüm 7 dili destekler.",
+        "tipLink": "Paketleri karşılaştır →"
+      },
+      "cta": {
+        "heading": "Yabancı Turistlere Kendi Dillerinde Hizmet Verin",
+        "description": "14 gün ücretsiz deneyin, kredi kartı gerekmez.",
+        "button": "Ücretsiz Başla"
+      }
+    },
+    "tourAutomation": {
+      "meta": {
+        "title": "Tur Operatörü Otomasyon Yazılımı — Turzz AI",
+        "description": "Tur operatörleri için kapsamlı otomasyon. Kontenjan takibi, otomatik hatırlatmalar, müşteri segmentasyonu, satış analitiği. Zamandan ve paradan tasarruf edin.",
+        "keywords": "tur operatörü otomasyon yazılımı, tur yönetim yazılımı, kontenjan takip sistemi, seyahat acentesi otomasyon"
+      },
+      "badge": "Otomasyon",
+      "hero": {
+        "title1": "Tur Operasyonlarınızı",
+        "title2": "Otomatikleştirin",
+        "subtitle": "Kontenjan yönetiminden müşteri takibine, hatırlatmalardan analitiklere kadar tur operasyonunuzun %80'ini otomatik hale getirin.",
+        "cta": "Ücretsiz Dene",
+        "metrics": [
+          {
+            "value": "40+",
+            "text": "Saat/Ay Tasarruf"
+          },
+          {
+            "value": "%80",
+            "text": "Tekrarlayan İş Azaltma"
+          },
+          {
+            "value": "0",
+            "text": "Kaçırılan Hatırlatma"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Turzz AI Otomasyon Özellikleri",
+        "items": [
+          {
+            "title": "Kontenjan Takibi",
+            "description": "Her tur tarihi için ayrı kapasite yönetimi. Dolunca otomatik kapanır, alternatif sunar."
+          },
+          {
+            "title": "Otomatik Hatırlatmalar",
+            "description": "Tur 3 gün önce, 1 gün önce — müşteriye otomatik WhatsApp hatırlatıcısı."
+          },
+          {
+            "title": "Müşteri Takip Mesajları",
+            "description": "Tur sonrası memnuniyet anketi ve tekrar rezervasyon teşviği otomatik gider."
+          },
+          {
+            "title": "Müşteri Segmentasyonu",
+            "description": "VIP, düzenli, potansiyel, pasif müşteri otomatik etiketlenir. Özel kampanyalar yapılır."
+          },
+          {
+            "title": "Satış Analitiği",
+            "description": "Hangi tur, hangi dil, hangi gün en çok satar? Veritabanlı karar alın."
+          },
+          {
+            "title": "Toplu Mesaj Kampanyaları",
+            "description": "Belirli segment müşterilere toplu kampanya mesajı gönderin (Meta şablon onaylı)."
+          }
+        ]
+      },
+      "timeTable": {
+        "heading": "Otomasyon Olmadan Ne Kadar Vakit Harcıyorsunuz?",
+        "columns": {
+          "task": "Görev",
+          "manual": "Manuel (dk/gün)",
+          "ai": "Turzz AI"
+        },
+        "rows": [
+          [
+            "WhatsApp yanıtlama",
+            "120 dk",
+            "0 dk (otomatik)"
+          ],
+          [
+            "Kontenjan güncelleme",
+            "30 dk",
+            "0 dk (anlık)"
+          ],
+          [
+            "Hatırlatma gönderimi",
+            "20 dk",
+            "0 dk (otomatik)"
+          ],
+          [
+            "Rapor hazırlama",
+            "45 dk",
+            "Anlık dashboard"
+          ],
+          [
+            "Müşteri takibi",
+            "30 dk",
+            "Otomatik etiketleme"
+          ]
+        ],
+        "totalRow": [
+          "Toplam",
+          "245 dk/gün",
+          "~15 dk/gün"
+        ]
+      },
+      "cta": {
+        "heading": "Operasyonlarınızı Otomatikleştirin",
+        "description": "14 gün ücretsiz, kredi kartı gerekmez.",
+        "button": "Hemen Başla"
+      }
     }
   }
 }

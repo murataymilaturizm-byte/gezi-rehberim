@@ -1734,6 +1734,206 @@
         "description": "Testen Sie das KI-Tourbuchungssystem mit einer 14-tägigen kostenlosen Testversion.",
         "button": "Kostenlose Testversion starten"
       }
+    },
+    "multilingual": {
+      "meta": {
+        "title": "Mehrsprachiger Kundenservice — Tourverkauf in 7 Sprachen",
+        "description": "Automatischer WhatsApp-Kundenservice in 7 Sprachen. Kommunizieren Sie mit ausländischen Touristen ohne Sprachbarriere. Turzz AI erkennt die Sprache automatisch.",
+        "keywords": "mehrsprachiger Kundenservice Reisebüro, ausländischer Touristenservice, automatisierter Übersetzungschatbot"
+      },
+      "badge": "Mehrsprachiger Service",
+      "hero": {
+        "title1": "Automatischer Kundenservice",
+        "title2": "in 7 Sprachen",
+        "subtitle": "Kommunizieren Sie mit ausländischen Touristen ohne Sprachbarrieren. Turzz AI erkennt automatisch die Sprache des Kunden und antwortet in derselben Sprache.",
+        "cta": "Kostenlos testen"
+      },
+      "langSection": {
+        "heading": "7 unterstützte Sprachen",
+        "subtitle": "In welcher Sprache der Kunde schreibt, antwortet Turzz AI automatisch in derselben. Keine manuelle Sprachauswahl oder Übersetzer erforderlich.",
+        "languages": [
+          {
+            "flag": "🇹🇷",
+            "code": "TR",
+            "name": "Türkisch",
+            "description": "Hauptsprachunterstützung für einheimische Kunden"
+          },
+          {
+            "flag": "🇬🇧",
+            "code": "EN",
+            "name": "Englisch",
+            "description": "Standardsprache für internationale Touristen"
+          },
+          {
+            "flag": "🇩🇪",
+            "code": "DE",
+            "name": "Deutsch",
+            "description": "Türkische Diaspora in Deutschland und deutsche Touristen"
+          },
+          {
+            "flag": "🇷🇺",
+            "code": "RU",
+            "name": "Russisch",
+            "description": "Touristen aus Russland und GUS-Ländern"
+          },
+          {
+            "flag": "🇸🇦",
+            "code": "AR",
+            "name": "Arabisch",
+            "description": "Golf- und Naher-Osten-Markt"
+          },
+          {
+            "flag": "🇫🇷",
+            "code": "FR",
+            "name": "Französisch",
+            "description": "Frankreich und frankophone Märkte"
+          },
+          {
+            "flag": "🇪🇸",
+            "code": "ES",
+            "name": "Spanisch",
+            "description": "Spanien und Lateinamerika"
+          }
+        ]
+      },
+      "statsSection": {
+        "heading": "Warum ist der ausländische Tourismusmarkt wichtig?",
+        "stats": [
+          {
+            "value": "45M+",
+            "text": "Ausländische Touristen in der Türkei (jährlich)"
+          },
+          {
+            "value": "62 %",
+            "text": "Anteil ausländischer Touristen, die WhatsApp für Tourservices nutzen"
+          },
+          {
+            "value": "3x",
+            "text": "Mehr ausländische Buchungen für Agenturen mit mehrsprachigem Support"
+          }
+        ]
+      },
+      "benefitsSection": {
+        "heading": "Vorteile des mehrsprachigen Service",
+        "items": [
+          "Antworten Sie deutschen, russischen und arabischen Touristen sofort in ihrer Muttersprache",
+          "Übersetzerkosten vollständig eliminieren — klare Kostenersparnis",
+          "Der gesamte Buchungsprozess läuft planmäßig in der Zielsprache ab",
+          "Kulturell angepasste Antworten (formell/informell) für jede Zielgruppe",
+          "Besonders entscheidender Vorteil für Incoming-Agenturen",
+          "Separate FAQ-Dokumente und Nachrichtenvorlagen für jede Sprache"
+        ],
+        "tipLabel": "Hinweis:",
+        "tipText": "Starter-Plan unterstützt 1 Sprache, Professional 4 Sprachen, Enterprise alle 7.",
+        "tipLink": "Pläne vergleichen →"
+      },
+      "cta": {
+        "heading": "Bedienen Sie ausländische Touristen in ihrer Muttersprache",
+        "description": "14 Tage kostenlos testen, keine Kreditkarte erforderlich.",
+        "button": "Kostenlos starten"
+      }
+    },
+    "tourAutomation": {
+      "meta": {
+        "title": "Tourenoperator Automatisierungssoftware — Turzz AI",
+        "description": "Umfassende Automatisierung für Reiseveranstalter. Kapazitätsverwaltung, automatische Erinnerungen, Kundensegmentierung, Verkaufsanalysen. Zeit und Geld sparen.",
+        "keywords": "Tourenoperator Automatisierungssoftware, Tourverwaltungssoftware, Kapazitätsüberwachung, Reisebüroautomatisierung"
+      },
+      "badge": "Automatisierung",
+      "hero": {
+        "title1": "Automatisieren Sie Ihre",
+        "title2": "Reiseoperationen",
+        "subtitle": "Von der Kapazitätsverwaltung bis zur Kundenpflege, von Erinnerungen bis zu Analysen — automatisieren Sie 80 % Ihrer Touroperationen.",
+        "cta": "Kostenlos testen",
+        "metrics": [
+          {
+            "value": "40+",
+            "text": "Stunden/Monat gespart"
+          },
+          {
+            "value": "80 %",
+            "text": "Wiederholende Arbeit reduziert"
+          },
+          {
+            "value": "0",
+            "text": "Verpasste Erinnerungen"
+          }
+        ]
+      },
+      "featuresSection": {
+        "heading": "Turzz AI Automatisierungsfunktionen",
+        "items": [
+          {
+            "title": "Kapazitätsverwaltung",
+            "description": "Separate Kapazitätsverwaltung pro Reisedatum. Schließt automatisch bei Vollbelegung und schlägt Alternativen vor."
+          },
+          {
+            "title": "Automatische Erinnerungen",
+            "description": "3 Tage vor, 1 Tag vor der Tour — automatische WhatsApp-Erinnerung an den Kunden."
+          },
+          {
+            "title": "Kunden-Nachverfolgung",
+            "description": "Nachreise-Zufriedenheitsumfrage und Buchungsanreiz werden automatisch gesendet."
+          },
+          {
+            "title": "Kundensegmentierung",
+            "description": "VIP, Stammkunden, potenzielle, passive Kunden werden automatisch markiert. Gezielte Kampagnen möglich."
+          },
+          {
+            "title": "Verkaufsanalysen",
+            "description": "Welche Tour, welche Sprache, welcher Tag verkauft am besten? Datenbasierte Entscheidungen treffen."
+          },
+          {
+            "title": "Massen-Kampagnennachrichten",
+            "description": "Senden Sie Massen-Kampagnennachrichten an bestimmte Kundensegmente (Meta-genehmigte Vorlagen)."
+          }
+        ]
+      },
+      "timeTable": {
+        "heading": "Wie viel Zeit verbringen Sie ohne Automatisierung?",
+        "columns": {
+          "task": "Aufgabe",
+          "manual": "Manuell (Min./Tag)",
+          "ai": "Turzz AI"
+        },
+        "rows": [
+          [
+            "WhatsApp-Antworten",
+            "120 Min.",
+            "0 Min. (automatisch)"
+          ],
+          [
+            "Kapazitätsaktualisierungen",
+            "30 Min.",
+            "0 Min. (sofort)"
+          ],
+          [
+            "Erinnerungen senden",
+            "20 Min.",
+            "0 Min. (automatisch)"
+          ],
+          [
+            "Berichterstellung",
+            "45 Min.",
+            "Live-Dashboard"
+          ],
+          [
+            "Kundenpflege",
+            "30 Min.",
+            "Auto-Tagging"
+          ]
+        ],
+        "totalRow": [
+          "Gesamt",
+          "245 Min./Tag",
+          "~15 Min./Tag"
+        ]
+      },
+      "cta": {
+        "heading": "Automatisieren Sie Ihre Operationen",
+        "description": "14 Tage kostenlos, keine Kreditkarte erforderlich.",
+        "button": "Jetzt starten"
+      }
     }
   }
 }
