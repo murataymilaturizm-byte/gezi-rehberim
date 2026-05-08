@@ -38,8 +38,9 @@
     "title": "Fonctionnalités",
     "subtitle": "Renforcez Votre Entreprise",
     "whatsapp": {
-      "title": "Intégration WhatsApp",
-      "description": "Communiquez directement avec vos clients via WhatsApp"
+      "title": "Ventes Automatisées 24/7",
+      "description": "Les clients demandent des tours et font des réservations même à minuit. Vendez pendant votre sommeil - ne manquez jamais une opportunité.",
+      "metric": "Augmentation moyenne de 120% des réservations au premier mois"
     },
     "ai": {
       "title": "Propulsé par l'IA",
@@ -50,8 +51,9 @@
       "description": "Vos clients peuvent facilement réserver des tours"
     },
     "analytics": {
-      "title": "Analyses Détaillées",
-      "description": "Suivez les performances de votre entreprise"
+      "title": "Suivi des Revenus et Analyses",
+      "description": "Quels tours sont rentables? Quels jours voient plus de ventes? Voyez toutes les données de revenus et de performance en temps réel.",
+      "metric": "Rapports de revenus quotidiens, hebdomadaires, mensuels"
     },
     "templates": {
       "title": "Modèles de Messages",
@@ -62,15 +64,20 @@
       "description": "Servez vos clients dans 7 langues différentes",
       "metric": "Communication fluide en 7 langues"
     },
-    "analytics": {
-      "title": "Suivi des Revenus et Analyses",
-      "description": "Quels tours sont rentables? Quels jours voient plus de ventes? Voyez toutes les données de revenus et de performance en temps réel.",
-      "metric": "Rapports de revenus quotidiens, hebdomadaires, mensuels"
+    "reservation": {
+      "title": "Système de réservation intelligent",
+      "description": "Collectez les informations clients étape par étape via WhatsApp et créez des réservations automatiquement.",
+      "metric": "Enregistrement et suivi automatiques"
     },
-    "whatsapp": {
-      "title": "Ventes Automatisées 24/7",
-      "description": "Les clients demandent des tours et font des réservations même à minuit. Vendez pendant votre sommeil - ne manquez jamais une opportunité.",
-      "metric": "Augmentation moyenne de 120% des réservations au premier mois"
+    "reminders": {
+      "title": "Rappels automatiques",
+      "description": "Envoyez des rappels WhatsApp automatiques à vos clients lorsque la date du circuit approche.",
+      "metric": "Réduction de 40 % des annulations"
+    },
+    "payment": {
+      "title": "Suivi des paiements",
+      "description": "Suivez les statuts de paiement (acompte, partiel, total) et envoyez des rappels de paiement.",
+      "metric": "Statut de paiement en temps réel"
     }
   },
   "howItWorks": {
@@ -405,25 +412,26 @@
     "responses": "Réponses",
     "percentage": "Pourcentage",
     "noTrendData": "Pas de données de tendance",
-    "noDistributionData": "Pas de données de distribution"
+    "noDistributionData": "Pas de données de distribution",
+    "dateFilter": "Filtre de plage de dates"
   },
   "tickets": {
-    "title": "Demandes de Support",
-    "adminTitle": "Toutes les Demandes de Support",
-    "createNew": "Créer une Nouvelle Demande",
-    "noTickets": "Pas encore de demandes de support",
+    "title": "Tickets de Support",
+    "adminTitle": "Tous les Tickets",
+    "createNew": "Créer un Nouveau Ticket",
+    "noTickets": "Aucun ticket pour le moment",
     "viewDetails": "Voir les Détails",
     "created": "Créé",
     "fillAllFields": "Veuillez remplir tous les champs",
-    "createSuccess": "Demande de support créée avec succès",
-    "createError": "Échec de la création de la demande de support",
-    "loadError": "Échec du chargement des demandes de support",
-    "updateError": "Échec de la mise à jour du statut",
-    "messageError": "Échec de l'envoi du message",
+    "createSuccess": "Ticket créé avec succès",
+    "createError": "Impossible de créer le ticket",
+    "loadError": "Impossible de charger les tickets",
+    "updateError": "Impossible de mettre à jour le statut",
+    "messageError": "Impossible d'envoyer le message",
     "messageSent": "Message envoyé",
     "statusUpdated": "Statut mis à jour",
     "titleLabel": "Titre",
-    "titlePlaceholder": "Résumez brièvement votre problème",
+    "titlePlaceholder": "Décrivez brièvement votre problème",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Décrivez votre problème en détail...",
     "priorityLabel": "Priorité",
@@ -442,9 +450,9 @@
       "closed": "Fermé"
     },
     "priority": {
-      "low": "Faible",
-      "medium": "Moyen",
-      "high": "Élevé"
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute"
     }
   },
   "admin": {
@@ -469,7 +477,11 @@
       "all": "Tout",
       "allStatuses": "Tous les statuts",
       "allTours": "Tous les tours",
-      "clear": "Effacer les filtres"
+      "clear": "Effacer les filtres",
+      "title": "Filtres",
+      "tourDate": "Date du circuit",
+      "sourceChannel": "Canal source",
+      "allDates": "Toutes les dates"
     },
     "payment": {
       "status": {
@@ -723,7 +735,39 @@
         "lastSearchQuery": "Dernière Recherche",
         "notSpecified": "Non Spécifié",
         "messagesPerDay": "Messages/Jour",
-        "activeDays": "Jours Actifs"
+        "activeDays": "Jours Actifs",
+        "tabs": {
+          "profile": "Informations du profil",
+          "preferences": "Préférences",
+          "tags": "Étiquettes",
+          "conversations": "Historique des conversations"
+        },
+        "salesStats": "Statistiques de vente",
+        "totalBookings": "Réservations totales",
+        "totalSpent": "Total dépensé",
+        "averageSpending": "Dépense moyenne",
+        "communicationMetrics": "Statistiques de communication",
+        "dailyAverage": "Moyenne quotidienne",
+        "firstInteraction": "Premier contact",
+        "lastInteraction": "Dernier contact",
+        "preferencesInterests": "Préférences et centres d'intérêt",
+        "interestedDestinations": "Destinations d'intérêt",
+        "lastSearch": "Dernière recherche",
+        "customerSatisfaction": "Satisfaction client",
+        "feedbackScore": "Score de satisfaction",
+        "feedbackComment": "Commentaire",
+        "noFeedback": "Aucun retour pour l'instant",
+        "customerTags": "Étiquettes client",
+        "addTag": "Ajouter une étiquette",
+        "tagAdded": "Étiquette ajoutée",
+        "tagRemoved": "Étiquette supprimée",
+        "tagError": "Échec de l'opération d'étiquetage",
+        "conversationHistory": "Historique des conversations",
+        "loadingConversations": "Chargement des conversations...",
+        "noConversations": "Aucune conversation pour l'instant",
+        "conversationError": "Erreur lors du chargement des conversations",
+        "customer": "Client",
+        "assistant": "Assistant"
       },
       "status": {
         "pending": "En attente",
@@ -779,16 +823,121 @@
       "destinationAnalytics": "Analyses de Destinations"
     },
     "dashboard": {
+      "whatsappSettings": "Paramètres WhatsApp",
       "title": "Tableau de Bord",
-      "whatsappSettings": "Paramètres WhatsApp"
+      "totalRevenue": "Revenu Total",
+      "avgBasket": "Panier Moyen",
+      "conversionRate": "Taux de Conversion",
+      "confirmedReservations": "Réservations confirmées",
+      "avgPerBooking": "Par réservation",
+      "registrations": "inscription",
+      "totalTours": "Total Tours",
+      "activeTourCount": "Nombre de tours actifs",
+      "totalRegistrations": "Total Inscriptions",
+      "allRegistrations": "Toutes les inscriptions",
+      "activeDates": "Dates Actives",
+      "tourDates": "Dates des tours",
+      "pendingRegistrations": "Inscriptions en Attente",
+      "awaitingReview": "En attente d'examen",
+      "registrationsTitle": "Inscriptions",
+      "last7Days": "7 Derniers Jours - Inscriptions",
+      "chartRegistrations": "Inscriptions",
+      "popularDestinations": "Destinations Populaires",
+      "mostRegisteredPlaces": "Lieux les plus réservés",
+      "registration": "Inscription",
+      "recentRegistrations": "Inscriptions Récentes",
+      "filterByDate": "Filtrer par date",
+      "allTime": "Tout le temps",
+      "today": "Aujourd'hui",
+      "thisWeek": "Cette semaine",
+      "thisMonth": "Ce mois",
+      "totalAgencies": "Total des Agences",
+      "allRegisteredAgencies": "Toutes les agences enregistrées",
+      "trialAgencies": "Agences d'Essai",
+      "trialStatusAgencies": "Agences en statut d'essai",
+      "messagesUsed": "Messages Utilisés",
+      "totalMessagesThisMonth": "Total des messages utilisés ce mois",
+      "activeRate": "Taux Actif",
+      "activeAgencyRate": "Taux d'agences actives",
+      "starterPlan": "Plan Débutant",
+      "professionalPlan": "Plan Professionnel",
+      "enterprisePlan": "Plan Entreprise",
+      "monthlyRevenue": "Revenu Mensuel (Estimation)",
+      "activeSubscriptionsOnly": "Uniquement les abonnements actifs et payants (hors essai)",
+      "trialAgenciesLabel": "Agences d'essai:",
+      "agency": "agence",
+      "month": "mois",
+      "active": "actif",
+      "inactive": "inactif",
+      "trialVersion": "Version d'Essai",
+      "agenciesInTrial": "Agences en période d'essai",
+      "totalMessages": "Total des Messages",
+      "messagesUsedThisMonth": "Messages utilisés ce mois",
+      "realPaymentDataAnalysis": "Analyse basée sur les données de paiement réelles",
+      "filters": "Filtres",
+      "dateRange": "Plage de Dates",
+      "last3Months": "3 Derniers Mois",
+      "last6Months": "6 Derniers Mois",
+      "last12Months": "12 Derniers Mois",
+      "last24Months": "24 Derniers Mois",
+      "planTypes": "Types de Plans",
+      "starterPlanPrice": "Débutant (2 999₺/mois)",
+      "professionalPlanPrice": "Professionnel (7 999₺/mois)",
+      "enterprisePlanPrice": "Entreprise (14 999₺/mois)",
+      "compareWithPrevious": "Comparer avec la période précédente",
+      "revenue": "Revenu",
+      "activeFilter": "Filtre Actif:",
+      "only": "Seulement",
+      "plansShowing": "plans sont affichés",
+      "geographicDistributionTitle": "Distribution Géographique des Agences",
+      "geographicDistributionDesc": "Distribution des agences par villes et régions (Top 10 des emplacements)",
+      "agencies": "agences",
+      "noLocationInfo": "Aucune Information de Localisation Trouvée",
+      "noLocationInfoDesc": "Aucune information de localisation d'agence n'a encore été saisie. La distribution géographique sera affichée ici lorsque les informations de ville et de région seront ajoutées aux agences.",
+      "status": "Statut",
+      "trialPeriod": "Période d'essai",
+      "messagesPerMonth": "500 messages/mois",
+      "conversationHistory": "Historique de 30 jours",
+      "emailSupport": "Support email",
+      "revenueGrowthTrend": "Tendance des Revenus et de la Croissance",
+      "superAdminDescription": "Vous pouvez surveiller le statut général et les statistiques d'utilisation de toutes les agences ici. Utilisez l'onglet 'Agences' pour une gestion détaillée.",
+      "selectDateRange": "Sélectionner la Plage de Dates",
+      "filter": "Filtrer",
+      "plans": "Plans:",
+      "starter": "Débutant",
+      "professional": "Professionnel",
+      "enterprise": "Entreprise",
+      "unspecified": "Non spécifié",
+      "noData": "Aucune donnée",
+      "yearlyRevenue": "Revenu Annuel (Estimation)",
+      "yearlyValueText": "Valeur annuelle des abonnements payants actuels",
+      "allPlans": "Tous les Plans",
+      "city": "Ville",
+      "allCities": "Toutes les Villes",
+      "totalPotentialYearlyRevenue": "Revenu annuel potentiel total",
+      "totalActiveAgencies": "Total des agences actives :",
+      "avgAgencyValue": "Valeur moyenne par agence :",
+      "revenueTrend": "Tendance des revenus",
+      "monthlyRevenueLabel": "Revenus mensuels",
+      "newAgencies": "Nouvelles agences",
+      "last": "Derniers",
+      "months": "mois",
+      "geographicDistribution": "Distribution géographique",
+      "topCitiesByAgencies": "Villes avec le plus d'agences",
+      "location": "Emplacement",
+      "agencyCount": "Nombre d'agences"
     },
     "toast": {
-      "success": "Succès",
-      "error": "Erreur"
+      "success": "Succès! ✅",
+      "error": "Erreur",
+      "statusUpdated": "Statut mis à jour",
+      "statusUpdateError": "Échec de la mise à jour du statut",
+      "messagesSent": "Messages envoyés",
+      "messagesSentError": "Échec de l'envoi des messages"
     },
     "date": {
-      "deleteSuccess": "Date supprimée avec succès",
-      "deleteError": "Erreur lors de la suppression de la date"
+      "deleteSuccess": "Date supprimée",
+      "deleteError": "Échec de la suppression"
     },
     "tours": {
       "title": "Tours",
@@ -853,7 +1002,8 @@
       "paymentError": "Erreur lors de l'ajout du paiement",
       "note": "Note",
       "createdAt": "Créé",
-      "actions": "Actions"
+      "actions": "Actions",
+      "addManual": "Ajouter une inscription manuelle"
     },
     "status": {
       "new": "Nouveau",
@@ -980,15 +1130,30 @@
       "planOptions": {
         "starter": {
           "name": "Débutant",
-          "features": ["500 messages/mois", "1 utilisateur", "Rapports de base", "Support par e-mail"]
+          "features": [
+            "500 messages/mois",
+            "1 utilisateur",
+            "Rapports de base",
+            "Support par e-mail"
+          ]
         },
         "professional": {
           "name": "Professionnel",
-          "features": ["2 000 messages/mois", "5 utilisateurs", "Rapports avancés", "Support prioritaire"]
+          "features": [
+            "2 000 messages/mois",
+            "5 utilisateurs",
+            "Rapports avancés",
+            "Support prioritaire"
+          ]
         },
         "enterprise": {
           "name": "Entreprise",
-          "features": ["Messages illimités", "Utilisateurs illimités", "Rapports personnalisés", "Support 24/7"]
+          "features": [
+            "Messages illimités",
+            "Utilisateurs illimités",
+            "Rapports personnalisés",
+            "Support 24/7"
+          ]
         }
       },
       "eventTypes": {
@@ -1000,13 +1165,41 @@
         "subscription_activated": "Abonnement Activé",
         "subscription_expired": "Abonnement Expiré",
         "subscription_cancelled": "Abonnement Annulé"
+      },
+      "planFeatures": "Fonctionnalités de l'abonnement",
+      "activePlan": "Abonnement actif",
+      "savings": "économies",
+      "trialEndsIn": "La période d'essai se termine",
+      "subscriptionEndsIn": "L'abonnement se termine",
+      "daysLeft": "jours restants",
+      "renewSubscription": "Renouveler l'abonnement",
+      "noTransactions": "Aucun historique de transaction pour le moment",
+      "actions": "Actions",
+      "downloadInvoice": "Télécharger la facture",
+      "statuses": {
+        "success": "Réussi",
+        "failed": "Échoué",
+        "pending": "En attente",
+        "cancelled": "Annulé"
       }
     },
     "agency": {
       "title": "Gestion des Agences",
       "addNew": "Ajouter une Nouvelle Agence",
       "edit": "Modifier",
-      "plan": "Plan",
+      "plan": {
+        "monthlyLimit": "Limite Mensuelle de Messages",
+        "defaultLimit": "Limite par défaut du plan: {{limit}} messages",
+        "extraMessages": "Ajouter un Quota de Messages Supplémentaire",
+        "extraPlaceholder": "ex: 500",
+        "extraHelp": "Ajouter un quota de messages supplémentaire à la limite actuelle",
+        "newTotalLimit": "Nouvelle Limite Totale",
+        "messagesPerMonth": "messages/mois",
+        "unlimitedMessages": "Messages Illimités",
+        "enterpriseNoLimit": "Le plan Entreprise n'a pas de limite de messages",
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+      },
       "delete": "Supprimer",
       "editAgency": "Modifier l'Agence",
       "addNewAgency": "Ajouter une Nouvelle Agence",
@@ -1027,7 +1220,9 @@
         "cancel": "Annuler",
         "save": "Enregistrer",
         "update": "Mettre à Jour",
-        "saving": "Enregistrement..."
+        "saving": "Enregistrement...",
+        "cityPlaceholder": "Istanbul",
+        "regionPlaceholder": "Marmara"
       },
       "tableHeaders": {
         "name": "Nom de l'Agence",
@@ -1036,12 +1231,22 @@
         "subscription": "Abonnement",
         "messages": "Messages",
         "remaining": "Restant",
-        "actions": "Actions"
+        "actions": "Actions",
+        "agencyName": "Nom de l'agence",
+        "authorized": "Autorisé",
+        "phone": "Téléphone",
+        "whatsappNo": "N° WhatsApp",
+        "messageQuota": "Quota de messages",
+        "remainingTime": "Temps restant",
+        "status": "Statut"
       },
       "plans": {
         "starter": "Débutant",
         "professional": "Professionnel",
-        "enterprise": "Entreprise"
+        "enterprise": "Entreprise",
+        "starterWithLimit": "Débutant (500 messages/mois)",
+        "professionalWithLimit": "Professionnel (2 000 messages/mois)",
+        "enterpriseWithLimit": "Entreprise (Illimité)"
       },
       "subscriptionStatus": {
         "trial": "Essai",
@@ -1058,128 +1263,16 @@
         "quotaFull": "Quota Plein",
         "percentUsed": "utilisé"
       },
-      "plan": {
-        "monthlyLimit": "Limite Mensuelle de Messages",
-        "defaultLimit": "Limite par défaut du plan: {{limit}} messages",
-        "extraMessages": "Ajouter un Quota de Messages Supplémentaire",
-        "extraPlaceholder": "ex: 500",
-        "extraHelp": "Ajouter un quota de messages supplémentaire à la limite actuelle",
-        "newTotalLimit": "Nouvelle Limite Totale",
-        "messagesPerMonth": "messages/mois",
-        "unlimitedMessages": "Messages Illimités",
-        "enterpriseNoLimit": "Le plan Entreprise n'a pas de limite de messages",
-        "cancel": "Annuler",
-        "save": "Enregistrer"
-      }
-    },
-    "dashboard": {
-      "whatsappSettings": "Paramètres WhatsApp",
-      "title": "Tableau de Bord",
-      "totalRevenue": "Revenu Total",
-      "avgBasket": "Panier Moyen",
-      "conversionRate": "Taux de Conversion",
-      "confirmedReservations": "Réservations confirmées",
-      "avgPerBooking": "Par réservation",
-      "registrations": "inscription",
-      "totalTours": "Total Tours",
-      "activeTourCount": "Nombre de tours actifs",
-      "totalRegistrations": "Total Inscriptions",
-      "allRegistrations": "Toutes les inscriptions",
-      "activeDates": "Dates Actives",
-      "tourDates": "Dates des tours",
-      "pendingRegistrations": "Inscriptions en Attente",
-      "awaitingReview": "En attente d'examen",
-      "registrationsTitle": "Inscriptions",
-      "last7Days": "7 Derniers Jours - Inscriptions",
-      "chartRegistrations": "Inscriptions",
-      "popularDestinations": "Destinations Populaires",
-      "mostRegisteredPlaces": "Lieux les plus réservés",
-      "registration": "Inscription",
-      "recentRegistrations": "Inscriptions Récentes",
-      "filterByDate": "Filtrer par date",
-      "allTime": "Tout le temps",
-      "today": "Aujourd'hui",
-      "thisWeek": "Cette semaine",
-      "thisMonth": "Ce mois",
-      "totalAgencies": "Total des Agences",
-      "allRegisteredAgencies": "Toutes les agences enregistrées",
-      "trialAgencies": "Agences d'Essai",
-      "trialStatusAgencies": "Agences en statut d'essai",
-      "messagesUsed": "Messages Utilisés",
-      "totalMessagesThisMonth": "Total des messages utilisés ce mois",
-      "activeRate": "Taux Actif",
-      "activeAgencyRate": "Taux d'agences actives",
-      "starterPlan": "Plan Débutant",
-      "professionalPlan": "Plan Professionnel",
-      "enterprisePlan": "Plan Entreprise",
-      "monthlyRevenue": "Revenu Mensuel (Estimation)",
-      "activeSubscriptionsOnly": "Uniquement les abonnements actifs et payants (hors essai)",
-      "trialAgenciesLabel": "Agences d'essai:",
-      "agency": "agence",
-      "month": "mois",
-      "active": "actif",
-      "inactive": "inactif",
-      "trialVersion": "Version d'Essai",
-      "agenciesInTrial": "Agences en période d'essai",
-      "totalMessages": "Total des Messages",
-      "messagesUsedThisMonth": "Messages utilisés ce mois",
-      "realPaymentDataAnalysis": "Analyse basée sur les données de paiement réelles",
-      "filters": "Filtres",
-      "dateRange": "Plage de Dates",
-      "last3Months": "3 Derniers Mois",
-      "last6Months": "6 Derniers Mois",
-      "last12Months": "12 Derniers Mois",
-      "last24Months": "24 Derniers Mois",
-      "planTypes": "Types de Plans",
-      "starterPlanPrice": "Débutant (2 999₺/mois)",
-      "professionalPlanPrice": "Professionnel (7 999₺/mois)",
-      "enterprisePlanPrice": "Entreprise (14 999₺/mois)",
-      "compareWithPrevious": "Comparer avec la période précédente",
-      "revenue": "Revenu",
-      "activeFilter": "Filtre Actif:",
-      "only": "Seulement",
-      "plansShowing": "plans sont affichés",
-      "geographicDistributionTitle": "Distribution Géographique des Agences",
-      "geographicDistributionDesc": "Distribution des agences par villes et régions (Top 10 des emplacements)",
-      "agencies": "agences",
-      "noLocationInfo": "Aucune Information de Localisation Trouvée",
-      "noLocationInfoDesc": "Aucune information de localisation d'agence n'a encore été saisie. La distribution géographique sera affichée ici lorsque les informations de ville et de région seront ajoutées aux agences.",
-      "status": "Statut",
-      "trialPeriod": "Période d'essai",
-      "messagesPerMonth": "500 messages/mois",
-      "conversationHistory": "Historique de 30 jours",
-      "emailSupport": "Support email",
-      "whatsappSettings": "Paramètres WhatsApp",
-      "revenueGrowthTrend": "Tendance des Revenus et de la Croissance",
-      "superAdminDescription": "Vous pouvez surveiller le statut général et les statistiques d'utilisation de toutes les agences ici. Utilisez l'onglet 'Agences' pour une gestion détaillée.",
-      "selectDateRange": "Sélectionner la Plage de Dates",
-      "filter": "Filtrer",
-      "plans": "Plans:",
-      "starter": "Débutant",
-      "professional": "Professionnel",
-      "enterprise": "Entreprise",
-      "unspecified": "Non spécifié",
-      "noData": "Aucune donnée",
-      "active": "actif",
-      "inactive": "inactif",
-      "trialVersion": "Version d'Essai",
-      "agenciesInTrial": "Agences en période d'essai",
-      "totalMessages": "Total des Messages",
-      "messagesUsedThisMonth": "Messages utilisés ce mois",
-      "yearlyRevenue": "Revenu Annuel (Estimation)",
-      "yearlyValueText": "Valeur annuelle des abonnements payants actuels",
-      "revenueGrowthTrend": "Tendance des Revenus et de la Croissance",
-      "realPaymentDataAnalysis": "Analyse basée sur les données de paiement réelles",
-      "filters": "Filtres",
-      "dateRange": "Plage de Dates",
-      "last3Months": "3 Derniers Mois",
-      "last6Months": "6 Derniers Mois",
-      "last12Months": "12 Derniers Mois",
-      "last24Months": "24 Derniers Mois",
-      "planTypes": "Types de Plans",
-      "allPlans": "Tous les Plans",
+      "updateInfo": "Mettre à jour les informations de l'agence",
+      "createAccount": "Créer un nouveau compte d'agence",
+      "name": "Nom de l'agence",
+      "owner": "Propriétaire de l'agence",
       "city": "Ville",
-      "allCities": "Toutes les Villes"
+      "region": "Région",
+      "status": "Statut",
+      "messageQuota": "Quota de messages",
+      "remainingTime": "Temps restant",
+      "actions": "Actions"
     },
     "tourForm": {
       "addTour": "Ajouter un Nouveau Tour",
@@ -1223,23 +1316,6 @@
     "dateForm": {
       "addDate": "Ajouter une Nouvelle Date",
       "editDate": "Modifier la Date",
-      "description": "Remplir les détails de la date",
-      "departureDate": "Date de Départ",
-      "returnDate": "Date de Retour",
-      "priceAdult": "Prix Adulte",
-      "priceChild": "Prix Enfant (Optionnel)",
-      "quota": "Quota",
-      "cancel": "Annuler",
-      "save": "Enregistrer",
-      "saving": "Enregistrement...",
-      "error": "Erreur",
-      "fillRequired": "Veuillez remplir les champs obligatoires",
-      "addSuccess": "Date ajoutée avec succès",
-      "updateSuccess": "Date mise à jour avec succès"
-    },
-    "dateForm": {
-      "addDate": "Ajouter une Nouvelle Date",
-      "editDate": "Modifier la Date",
       "description": "Entrez la date et les tarifs du tour.",
       "departureDate": "Date de Départ",
       "returnDate": "Date de Retour",
@@ -1279,18 +1355,6 @@
       "quotaErrorMessage": "Il ne reste que {quota} places pour cette date. Veuillez réduire le nombre de personnes ou sélectionner une autre date.",
       "userNotFound": "Utilisateur non trouvé",
       "agencyNotFound": "Agence non trouvée"
-    },
-    "date": {
-      "deleteSuccess": "Date supprimée",
-      "deleteError": "Échec de la suppression"
-    },
-    "toast": {
-      "success": "Succès! ✅",
-      "error": "Erreur",
-      "statusUpdated": "Statut mis à jour",
-      "statusUpdateError": "Échec de la mise à jour du statut",
-      "messagesSent": "Messages envoyés",
-      "messagesSentError": "Échec de l'envoi des messages"
     },
     "usageStats": {
       "loadError": "Erreur lors du chargement des statistiques d'utilisation",
@@ -1362,17 +1426,22 @@
         "messageTemplates": "Modèles de messages",
         "feedbackSurveys": "Enquêtes de satisfaction client",
         "followUpMessages": "Messages de suivi"
-      }
+      },
+      "extraQuotaLabel": "Quota de messages supplémentaires"
+    },
+    "subtitle": "Vue d'ensemble",
+    "totalAgencies": "Total des agences",
+    "activeAgencies": "Agences actives",
+    "totalMessages": "Total des messages",
+    "conversionRate": "Taux de conversion",
+    "agencyManagement": {
+      "title": "Gestion des agences",
+      "addNewAgency": "Ajouter une nouvelle agence"
+    },
+    "subscriptionHistory": {
+      "title": "Historique des abonnements",
+      "description": "Historique des paiements et transactions"
     }
-  },
-  "auth": {
-    "login": "Se Connecter",
-    "signup": "S'Inscrire",
-    "email": "Email",
-    "password": "Mot de Passe",
-    "forgotPassword": "Mot de Passe Oublié",
-    "noAccount": "Pas de compte?",
-    "hasAccount": "Vous avez déjà un compte?"
   },
   "auth": {
     "login": "Se Connecter",
@@ -1512,37 +1581,6 @@
     "export": "Exporter",
     "import": "Importer"
   },
-  "tickets": {
-    "title": "Tickets de Support",
-    "adminTitle": "Tous les Tickets",
-    "createNew": "Créer un Nouveau Ticket",
-    "noTickets": "Aucun ticket pour le moment",
-    "viewDetails": "Voir les Détails",
-    "created": "Créé",
-    "fillAllFields": "Veuillez remplir tous les champs",
-    "createSuccess": "Ticket créé avec succès",
-    "createError": "Impossible de créer le ticket",
-    "loadError": "Impossible de charger les tickets",
-    "updateError": "Impossible de mettre à jour le statut",
-    "messageError": "Impossible d'envoyer le message",
-    "messageSent": "Message envoyé",
-    "statusUpdated": "Statut mis à jour",
-    "titleLabel": "Titre",
-    "titlePlaceholder": "Décrivez brièvement votre problème",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Décrivez votre problème en détail...",
-    "priorityLabel": "Priorité",
-    "submit": "Soumettre",
-    "messages": "Messages",
-    "writeMessage": "Écrivez votre message...",
-    "writeReply": "Écrivez votre réponse...",
-    "send": "Envoyer",
-    "admin": "Admin",
-    "you": "Vous",
-    "user": "Utilisateur",
-    "status": {"open": "Ouvert", "in_progress": "En Cours", "resolved": "Résolu", "closed": "Fermé"},
-    "priority": {"low": "Basse", "medium": "Moyenne", "high": "Haute"}
-  },
   "agencyInfo": {
     "title": "Informations sur l'agence",
     "description": "Mettez à jour les informations de votre agence. Ces informations seront utilisées par le chatbot WhatsApp.",
@@ -1588,5 +1626,34 @@
       "reviewed": "Examiné",
       "resolved": "Résolu"
     }
+  },
+  "cta": {
+    "title": "Prêt à commencer ?",
+    "subtitle": "Créez un compte démo et essayez toutes les fonctionnalités gratuitement. Aucune carte bancaire requise.",
+    "button": "Essayer gratuitement"
+  },
+  "contact": {
+    "question": "D'autres questions ?",
+    "nameLabel": "Nom complet",
+    "namePlaceholder": "Votre nom",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "email@exemple.com",
+    "messageLabel": "Votre message",
+    "messagePlaceholder": "Écrivez votre message ici...",
+    "sendButton": "Envoyer le message",
+    "sending": "Envoi en cours...",
+    "successTitle": "Message envoyé ! ✅",
+    "successMessage": "Nous vous répondrons dès que possible.",
+    "errorTitle": "Erreur",
+    "errorMessage": "Le message n'a pas pu être envoyé. Veuillez réessayer.",
+    "formErrorTitle": "Erreur de formulaire"
+  },
+  "validation": {
+    "nameRequired": "Le nom est requis",
+    "nameMaxLength": "Le nom ne peut pas dépasser 100 caractères",
+    "emailInvalid": "Veuillez entrer une adresse e-mail valide",
+    "emailMaxLength": "L'e-mail ne peut pas dépasser 255 caractères",
+    "messageMinLength": "Le message doit contenir au moins 10 caractères",
+    "messageMaxLength": "Le message ne peut pas dépasser 1 000 caractères"
   }
 }

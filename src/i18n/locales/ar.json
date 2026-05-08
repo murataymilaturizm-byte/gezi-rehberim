@@ -38,8 +38,9 @@
     "title": "الميزات",
     "subtitle": "عزز عملك",
     "whatsapp": {
-      "title": "تكامل واتساب",
-      "description": "تواصل مباشرة مع عملائك عبر واتساب"
+      "title": "مبيعات تلقائية على مدار الساعة",
+      "description": "العملاء يسألون عن الجولات ويقومون بالحجوزات حتى في منتصف الليل. بع أثناء نومك - لا تفوت أي فرصة أبداً.",
+      "metric": "متوسط زيادة 120% في الحجوزات في الشهر الأول"
     },
     "ai": {
       "title": "مدعوم بالذكاء الاصطناعي",
@@ -50,8 +51,9 @@
       "description": "يمكن لعملائك حجز الرحلات بسهولة"
     },
     "analytics": {
-      "title": "تحليلات مفصلة",
-      "description": "تتبع أداء عملك"
+      "title": "تتبع الإيرادات والتحليلات",
+      "description": "أي جولات مربحة؟ أي أيام تشهد مزيداً من المبيعات؟ انظر جميع بيانات الإيرادات والأداء في الوقت الفعلي.",
+      "metric": "تقارير الإيرادات اليومية والأسبوعية والشهرية"
     },
     "templates": {
       "title": "قوالب الرسائل",
@@ -62,15 +64,20 @@
       "description": "اخدم عملائك بـ 7 لغات مختلفة",
       "metric": "تواصل طلق بـ 7 لغات"
     },
-    "analytics": {
-      "title": "تتبع الإيرادات والتحليلات",
-      "description": "أي جولات مربحة؟ أي أيام تشهد مزيداً من المبيعات؟ انظر جميع بيانات الإيرادات والأداء في الوقت الفعلي.",
-      "metric": "تقارير الإيرادات اليومية والأسبوعية والشهرية"
+    "reservation": {
+      "title": "نظام الحجز الذكي",
+      "description": "اجمع بيانات العملاء خطوة بخطوة عبر WhatsApp وأنشئ الحجوزات تلقائياً.",
+      "metric": "تسجيل وتتبع تلقائي"
     },
-    "whatsapp": {
-      "title": "مبيعات تلقائية على مدار الساعة",
-      "description": "العملاء يسألون عن الجولات ويقومون بالحجوزات حتى في منتصف الليل. بع أثناء نومك - لا تفوت أي فرصة أبداً.",
-      "metric": "متوسط زيادة 120% في الحجوزات في الشهر الأول"
+    "reminders": {
+      "title": "التذكيرات التلقائية",
+      "description": "أرسل تذكيرات WhatsApp تلقائية لعملائك عندما يقترب موعد الجولة.",
+      "metric": "انخفاض 40% في معدل الإلغاء"
+    },
+    "payment": {
+      "title": "متابعة المدفوعات",
+      "description": "تتبع حالات الدفع المسبق والجزئي والكامل، وأرسل تذكيرات الدفع.",
+      "metric": "حالة الدفع الفورية"
     }
   },
   "howItWorks": {
@@ -299,6 +306,10 @@
         "apiAccess": "✅ وصول API (قريباً)",
         "paymentCollection": "✅ تحصيل المدفوعات (قريباً)"
       }
+    },
+    "cta": {
+      "start": "ابدأ الآن",
+      "contact": "تواصل معنا"
     }
   },
   "footer": {
@@ -401,25 +412,26 @@
     "responses": "الردود",
     "percentage": "النسبة المئوية",
     "noTrendData": "لا توجد بيانات الاتجاه",
-    "noDistributionData": "لا توجد بيانات التوزيع"
+    "noDistributionData": "لا توجد بيانات التوزيع",
+    "dateFilter": "فلتر نطاق التاريخ"
   },
   "tickets": {
-    "title": "طلبات الدعم",
-    "adminTitle": "جميع طلبات الدعم",
-    "createNew": "إنشاء طلب جديد",
-    "noTickets": "لا توجد طلبات دعم بعد",
+    "title": "تذاكر الدعم",
+    "adminTitle": "جميع التذاكر",
+    "createNew": "إنشاء تذكرة جديدة",
+    "noTickets": "لا توجد تذاكر بعد",
     "viewDetails": "عرض التفاصيل",
     "created": "تم الإنشاء",
     "fillAllFields": "يرجى ملء جميع الحقول",
-    "createSuccess": "تم إنشاء طلب الدعم بنجاح",
-    "createError": "فشل في إنشاء طلب الدعم",
-    "loadError": "فشل في تحميل طلبات الدعم",
-    "updateError": "فشل في تحديث الحالة",
-    "messageError": "فشل في إرسال الرسالة",
+    "createSuccess": "تم إنشاء التذكرة بنجاح",
+    "createError": "تعذر إنشاء التذكرة",
+    "loadError": "تعذر تحميل التذاكر",
+    "updateError": "تعذر تحديث الحالة",
+    "messageError": "تعذر إرسال الرسالة",
     "messageSent": "تم إرسال الرسالة",
     "statusUpdated": "تم تحديث الحالة",
     "titleLabel": "العنوان",
-    "titlePlaceholder": "لخص مشكلتك بإيجاز",
+    "titlePlaceholder": "صف مشكلتك بإيجاز",
     "descriptionLabel": "الوصف",
     "descriptionPlaceholder": "صف مشكلتك بالتفصيل...",
     "priorityLabel": "الأولوية",
@@ -428,9 +440,9 @@
     "writeMessage": "اكتب رسالتك...",
     "writeReply": "اكتب ردك...",
     "send": "إرسال",
-    "admin": "مسؤول",
+    "admin": "المسؤول",
     "you": "أنت",
-    "user": "مستخدم",
+    "user": "المستخدم",
     "status": {
       "open": "مفتوح",
       "in_progress": "قيد المعالجة",
@@ -440,7 +452,7 @@
     "priority": {
       "low": "منخفض",
       "medium": "متوسط",
-      "high": "عالٍ"
+      "high": "عالي"
     }
   },
   "admin": {
@@ -465,7 +477,11 @@
       "all": "الكل",
       "allStatuses": "جميع الحالات",
       "allTours": "جميع الرحلات",
-      "clear": "مسح الفلاتر"
+      "clear": "مسح الفلاتر",
+      "title": "الفلاتر",
+      "tourDate": "تاريخ الجولة",
+      "sourceChannel": "قناة المصدر",
+      "allDates": "كل التواريخ"
     },
     "payment": {
       "status": {
@@ -719,7 +735,39 @@
         "lastSearchQuery": "آخر بحث",
         "notSpecified": "غير محدد",
         "messagesPerDay": "رسائل/يوم",
-        "activeDays": "أيام نشطة"
+        "activeDays": "أيام نشطة",
+        "tabs": {
+          "profile": "معلومات الملف الشخصي",
+          "preferences": "التفضيلات",
+          "tags": "الوسوم",
+          "conversations": "سجل المحادثات"
+        },
+        "salesStats": "إحصائيات المبيعات",
+        "totalBookings": "إجمالي الحجوزات",
+        "totalSpent": "إجمالي الإنفاق",
+        "averageSpending": "متوسط الإنفاق",
+        "communicationMetrics": "إحصائيات التواصل",
+        "dailyAverage": "المتوسط اليومي",
+        "firstInteraction": "أول تواصل",
+        "lastInteraction": "آخر تواصل",
+        "preferencesInterests": "التفضيلات والاهتمامات",
+        "interestedDestinations": "الوجهات المفضلة",
+        "lastSearch": "آخر بحث",
+        "customerSatisfaction": "رضا العملاء",
+        "feedbackScore": "درجة الرضا",
+        "feedbackComment": "التعليق",
+        "noFeedback": "لا توجد ملاحظات بعد",
+        "customerTags": "وسوم العميل",
+        "addTag": "إضافة وسم",
+        "tagAdded": "تمت إضافة الوسم",
+        "tagRemoved": "تم حذف الوسم",
+        "tagError": "فشلت عملية الوسم",
+        "conversationHistory": "سجل المحادثات",
+        "loadingConversations": "جارٍ تحميل المحادثات...",
+        "noConversations": "لا توجد محادثات بعد",
+        "conversationError": "حدث خطأ أثناء تحميل المحادثات",
+        "customer": "العميل",
+        "assistant": "المساعد"
       },
       "status": {
         "pending": "قيد الانتظار",
@@ -775,16 +823,121 @@
       "destinationAnalytics": "تحليلات الوجهات"
     },
     "dashboard": {
-      "title": "لوحة القيادة",
-      "whatsappSettings": "إعدادات واتساب"
+      "whatsappSettings": "إعدادات واتساب",
+      "title": "لوحة التحكم",
+      "totalRevenue": "إجمالي الإيرادات",
+      "avgBasket": "متوسط السلة",
+      "conversionRate": "معدل التحويل",
+      "confirmedReservations": "الحجوزات المؤكدة",
+      "avgPerBooking": "لكل حجز",
+      "registrations": "تسجيل",
+      "totalTours": "إجمالي الرحلات",
+      "activeTourCount": "عدد الرحلات النشطة",
+      "totalRegistrations": "إجمالي التسجيلات",
+      "allRegistrations": "جميع التسجيلات",
+      "activeDates": "التواريخ النشطة",
+      "tourDates": "تواريخ الرحلات",
+      "pendingRegistrations": "التسجيلات المعلقة",
+      "awaitingReview": "في انتظار المراجعة",
+      "registrationsTitle": "التسجيلات",
+      "last7Days": "آخر 7 أيام - التسجيلات",
+      "chartRegistrations": "التسجيلات",
+      "popularDestinations": "الوجهات الشعبية",
+      "mostRegisteredPlaces": "الأماكن الأكثر حجزًا",
+      "registration": "تسجيل",
+      "recentRegistrations": "التسجيلات الأخيرة",
+      "filterByDate": "تصفية حسب التاريخ",
+      "allTime": "كل الوقت",
+      "today": "اليوم",
+      "thisWeek": "هذا الأسبوع",
+      "thisMonth": "هذا الشهر",
+      "totalAgencies": "إجمالي الوكالات",
+      "allRegisteredAgencies": "جميع الوكالات المسجلة",
+      "trialAgencies": "وكالات تجريبية",
+      "trialStatusAgencies": "الوكالات في الحالة التجريبية",
+      "messagesUsed": "الرسائل المستخدمة",
+      "totalMessagesThisMonth": "إجمالي الرسائل المستخدمة هذا الشهر",
+      "activeRate": "المعدل النشط",
+      "activeAgencyRate": "معدل الوكالات النشطة",
+      "starterPlan": "خطة المبتدئ",
+      "professionalPlan": "خطة المحترف",
+      "enterprisePlan": "خطة المؤسسات",
+      "monthlyRevenue": "الإيرادات الشهرية (تقدير)",
+      "activeSubscriptionsOnly": "الاشتراكات النشطة والمدفوعة فقط (باستثناء التجريبية)",
+      "trialAgenciesLabel": "الوكالات التجريبية:",
+      "agency": "وكالة",
+      "month": "شهر",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "trialVersion": "نسخة تجريبية",
+      "agenciesInTrial": "الوكالات في الفترة التجريبية",
+      "totalMessages": "إجمالي الرسائل",
+      "messagesUsedThisMonth": "الرسائل المستخدمة هذا الشهر",
+      "realPaymentDataAnalysis": "تحليل بناءً على بيانات الدفع الفعلية",
+      "filters": "الفلاتر",
+      "dateRange": "نطاق التاريخ",
+      "last3Months": "آخر 3 أشهر",
+      "last6Months": "آخر 6 أشهر",
+      "last12Months": "آخر 12 شهراً",
+      "last24Months": "آخر 24 شهراً",
+      "planTypes": "أنواع الخطط",
+      "starterPlanPrice": "المبتدئ (2,999₺/شهر)",
+      "professionalPlanPrice": "المحترف (7,999₺/شهر)",
+      "enterprisePlanPrice": "المؤسسات (14,999₺/شهر)",
+      "compareWithPrevious": "قارن مع الفترة السابقة",
+      "revenue": "الإيرادات",
+      "activeFilter": "فلتر نشط:",
+      "only": "فقط",
+      "plansShowing": "الخطط معروضة",
+      "geographicDistributionTitle": "التوزيع الجغرافي للوكالات",
+      "geographicDistributionDesc": "توزيع الوكالات حسب المدن والمناطق (أفضل 10 مواقع)",
+      "agencies": "وكالات",
+      "noLocationInfo": "لم يتم العثور على معلومات الموقع",
+      "noLocationInfoDesc": "لم يتم إدخال أي معلومات موقع للوكالات بعد. سيتم عرض التوزيع الجغرافي هنا عند إضافة معلومات المدينة والمنطقة إلى الوكالات.",
+      "status": "الحالة",
+      "trialPeriod": "فترة تجريبية",
+      "messagesPerMonth": "500 رسالة/شهر",
+      "conversationHistory": "سجل المحادثات لمدة 30 يوماً",
+      "emailSupport": "دعم البريد الإلكتروني",
+      "revenueGrowthTrend": "اتجاه الإيرادات والنمو",
+      "superAdminDescription": "يمكنك مراقبة الحالة العامة وإحصاءات الاستخدام لجميع الوكالات هنا. استخدم علامة التبويب 'الوكالات' للإدارة التفصيلية.",
+      "selectDateRange": "حدد نطاق التاريخ",
+      "filter": "تصفية",
+      "plans": "الخطط:",
+      "starter": "مبتدئ",
+      "professional": "محترف",
+      "enterprise": "مؤسسي",
+      "unspecified": "غير محدد",
+      "noData": "لا توجد بيانات",
+      "yearlyRevenue": "الإيرادات السنوية (تقدير)",
+      "yearlyValueText": "القيمة السنوية للاشتراكات المدفوعة الحالية",
+      "allPlans": "جميع الخطط",
+      "city": "المدينة",
+      "allCities": "جميع المدن",
+      "totalPotentialYearlyRevenue": "إجمالي الإيرادات السنوية المحتملة",
+      "totalActiveAgencies": "إجمالي الوكالات النشطة:",
+      "avgAgencyValue": "متوسط قيمة الوكالة:",
+      "revenueTrend": "اتجاه الإيرادات",
+      "monthlyRevenueLabel": "الإيرادات الشهرية",
+      "newAgencies": "الوكالات الجديدة",
+      "last": "آخر",
+      "months": "أشهر",
+      "geographicDistribution": "التوزيع الجغرافي",
+      "topCitiesByAgencies": "أكثر المدن التي تضم وكالات",
+      "location": "الموقع",
+      "agencyCount": "عدد الوكالات"
     },
     "toast": {
-      "success": "نجح",
-      "error": "خطأ"
+      "success": "نجح! ✅",
+      "error": "خطأ",
+      "statusUpdated": "تم تحديث الحالة",
+      "statusUpdateError": "فشل تحديث الحالة",
+      "messagesSent": "تم إرسال الرسائل",
+      "messagesSentError": "فشل إرسال الرسائل"
     },
     "date": {
-      "deleteSuccess": "تم حذف التاريخ بنجاح",
-      "deleteError": "خطأ في حذف التاريخ"
+      "deleteSuccess": "تم حذف التاريخ",
+      "deleteError": "فشلت عملية الحذف"
     },
     "tours": {
       "title": "الرحلات",
@@ -849,7 +1002,8 @@
       "paymentError": "خطأ في إضافة الدفعة",
       "note": "ملاحظة",
       "createdAt": "تاريخ الإنشاء",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "addManual": "إضافة تسجيل يدوي"
     },
     "status": {
       "new": "جديد",
@@ -976,15 +1130,30 @@
       "planOptions": {
         "starter": {
           "name": "المبتدئ",
-          "features": ["500 رسالة/شهر", "مستخدم واحد", "تقارير أساسية", "دعم البريد الإلكتروني"]
+          "features": [
+            "500 رسالة/شهر",
+            "مستخدم واحد",
+            "تقارير أساسية",
+            "دعم البريد الإلكتروني"
+          ]
         },
         "professional": {
           "name": "المحترف",
-          "features": ["2,000 رسالة/شهر", "5 مستخدمين", "تقارير متقدمة", "دعم ذو أولوية"]
+          "features": [
+            "2,000 رسالة/شهر",
+            "5 مستخدمين",
+            "تقارير متقدمة",
+            "دعم ذو أولوية"
+          ]
         },
         "enterprise": {
           "name": "المؤسسات",
-          "features": ["رسائل غير محدودة", "مستخدمون غير محدودون", "تقارير مخصصة", "دعم 24/7"]
+          "features": [
+            "رسائل غير محدودة",
+            "مستخدمون غير محدودون",
+            "تقارير مخصصة",
+            "دعم 24/7"
+          ]
         }
       },
       "eventTypes": {
@@ -996,13 +1165,41 @@
         "subscription_activated": "تم تفعيل الاشتراك",
         "subscription_expired": "انتهت صلاحية الاشتراك",
         "subscription_cancelled": "تم إلغاء الاشتراك"
+      },
+      "planFeatures": "مميزات الباقة",
+      "activePlan": "الباقة النشطة",
+      "savings": "توفير",
+      "trialEndsIn": "ينتهي الوقت التجريبي",
+      "subscriptionEndsIn": "ينتهي الاشتراك",
+      "daysLeft": "يوم متبقٍ",
+      "renewSubscription": "تجديد الاشتراك",
+      "noTransactions": "لا يوجد سجل معاملات بعد",
+      "actions": "الإجراءات",
+      "downloadInvoice": "تنزيل الفاتورة",
+      "statuses": {
+        "success": "ناجح",
+        "failed": "فاشل",
+        "pending": "قيد الانتظار",
+        "cancelled": "ملغى"
       }
     },
     "agency": {
       "title": "إدارة الوكالات",
       "addNew": "إضافة وكالة جديدة",
       "edit": "تعديل",
-      "plan": "خطة",
+      "plan": {
+        "monthlyLimit": "الحد الشهري للرسائل",
+        "defaultLimit": "الحد الافتراضي للخطة: {{limit}} رسالة",
+        "extraMessages": "إضافة حصة رسائل إضافية",
+        "extraPlaceholder": "مثال: 500",
+        "extraHelp": "أضف حصة رسائل إضافية إلى الحد الحالي",
+        "newTotalLimit": "الحد الإجمالي الجديد",
+        "messagesPerMonth": "رسالة/شهر",
+        "unlimitedMessages": "رسائل غير محدودة",
+        "enterpriseNoLimit": "خطة المؤسسات ليس لها حد للرسائل",
+        "cancel": "إلغاء",
+        "save": "حفظ"
+      },
       "delete": "حذف",
       "editAgency": "تعديل الوكالة",
       "addNewAgency": "إضافة وكالة جديدة",
@@ -1023,7 +1220,9 @@
         "cancel": "إلغاء",
         "save": "حفظ",
         "update": "تحديث",
-        "saving": "جاري الحفظ..."
+        "saving": "جاري الحفظ...",
+        "cityPlaceholder": "إسطنبول",
+        "regionPlaceholder": "مرمرة"
       },
       "tableHeaders": {
         "name": "اسم الوكالة",
@@ -1032,12 +1231,22 @@
         "subscription": "الاشتراك",
         "messages": "الرسائل",
         "remaining": "المتبقي",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "agencyName": "اسم الوكالة",
+        "authorized": "المفوض",
+        "phone": "الهاتف",
+        "whatsappNo": "رقم WhatsApp",
+        "messageQuota": "حصة الرسائل",
+        "remainingTime": "الوقت المتبقي",
+        "status": "الحالة"
       },
       "plans": {
         "starter": "المبتدئ",
         "professional": "المحترف",
-        "enterprise": "المؤسسات"
+        "enterprise": "المؤسسات",
+        "starterWithLimit": "المبتدئ (500 رسالة/شهر)",
+        "professionalWithLimit": "الاحترافي (2.000 رسالة/شهر)",
+        "enterpriseWithLimit": "المؤسسي (غير محدود)"
       },
       "subscriptionStatus": {
         "trial": "تجريبي",
@@ -1054,127 +1263,16 @@
         "quotaFull": "الحصة ممتلئة",
         "percentUsed": "مستخدم"
       },
-      "plan": {
-        "monthlyLimit": "الحد الشهري للرسائل",
-        "defaultLimit": "الحد الافتراضي للخطة: {{limit}} رسالة",
-        "extraMessages": "إضافة حصة رسائل إضافية",
-        "extraPlaceholder": "مثال: 500",
-        "extraHelp": "أضف حصة رسائل إضافية إلى الحد الحالي",
-        "newTotalLimit": "الحد الإجمالي الجديد",
-        "messagesPerMonth": "رسالة/شهر",
-        "unlimitedMessages": "رسائل غير محدودة",
-        "enterpriseNoLimit": "خطة المؤسسات ليس لها حد للرسائل",
-        "cancel": "إلغاء",
-        "save": "حفظ"
-      }
-    },
-    "dashboard": {
-      "whatsappSettings": "إعدادات الواتساب",
-      "title": "لوحة التحكم",
-      "totalRevenue": "إجمالي الإيرادات",
-      "avgBasket": "متوسط السلة",
-      "conversionRate": "معدل التحويل",
-      "confirmedReservations": "الحجوزات المؤكدة",
-      "avgPerBooking": "لكل حجز",
-      "registrations": "تسجيل",
-      "totalTours": "إجمالي الرحلات",
-      "activeTourCount": "عدد الرحلات النشطة",
-      "totalRegistrations": "إجمالي التسجيلات",
-      "allRegistrations": "جميع التسجيلات",
-      "activeDates": "التواريخ النشطة",
-      "tourDates": "تواريخ الرحلات",
-      "pendingRegistrations": "التسجيلات المعلقة",
-      "awaitingReview": "في انتظار المراجعة",
-      "registrationsTitle": "التسجيلات",
-      "last7Days": "آخر 7 أيام - التسجيلات",
-      "chartRegistrations": "التسجيلات",
-      "popularDestinations": "الوجهات الشعبية",
-      "mostRegisteredPlaces": "الأماكن الأكثر حجزًا",
-      "registration": "تسجيل",
-      "recentRegistrations": "التسجيلات الأخيرة",
-      "filterByDate": "تصفية حسب التاريخ",
-      "allTime": "كل الوقت",
-      "today": "اليوم",
-      "thisWeek": "هذا الأسبوع",
-      "thisMonth": "هذا الشهر",
-      "totalAgencies": "إجمالي الوكالات",
-      "allRegisteredAgencies": "جميع الوكالات المسجلة",
-      "trialAgencies": "وكالات تجريبية",
-      "trialStatusAgencies": "الوكالات في الحالة التجريبية",
-      "messagesUsed": "الرسائل المستخدمة",
-      "totalMessagesThisMonth": "إجمالي الرسائل المستخدمة هذا الشهر",
-      "activeRate": "المعدل النشط",
-      "activeAgencyRate": "معدل الوكالات النشطة",
-      "starterPlan": "خطة المبتدئ",
-      "professionalPlan": "خطة المحترف",
-      "enterprisePlan": "خطة المؤسسات",
-      "monthlyRevenue": "الإيرادات الشهرية (تقدير)",
-      "activeSubscriptionsOnly": "الاشتراكات النشطة والمدفوعة فقط (باستثناء التجريبية)",
-      "trialAgenciesLabel": "الوكالات التجريبية:",
-      "agency": "وكالة",
-      "month": "شهر",
-      "active": "نشط",
-      "inactive": "غير نشط",
-      "trialVersion": "نسخة تجريبية",
-      "agenciesInTrial": "الوكالات في الفترة التجريبية",
-      "totalMessages": "إجمالي الرسائل",
-      "messagesUsedThisMonth": "الرسائل المستخدمة هذا الشهر",
-      "realPaymentDataAnalysis": "تحليل بناءً على بيانات الدفع الفعلية",
-      "filters": "مرشحات",
-      "dateRange": "نطاق التاريخ",
-      "last3Months": "آخر 3 أشهر",
-      "last6Months": "آخر 6 أشهر",
-      "last12Months": "آخر 12 شهرًا",
-      "last24Months": "آخر 24 شهرًا",
-      "planTypes": "أنواع الخطط",
-      "starterPlanPrice": "المبتدئ (2,999₺/شهر)",
-      "professionalPlanPrice": "المحترف (7,999₺/شهر)",
-      "enterprisePlanPrice": "المؤسسات (14,999₺/شهر)",
-      "compareWithPrevious": "قارن مع الفترة السابقة",
-      "revenue": "الإيرادات",
-      "activeFilter": "فلتر نشط:",
-      "only": "فقط",
-      "plansShowing": "الخطط معروضة",
-      "geographicDistributionTitle": "التوزيع الجغرافي للوكالات",
-      "geographicDistributionDesc": "توزيع الوكالات حسب المدن والمناطق (أفضل 10 مواقع)",
-      "agencies": "وكالات",
-      "noLocationInfo": "لم يتم العثور على معلومات الموقع",
-      "noLocationInfoDesc": "لم يتم إدخال أي معلومات موقع للوكالات بعد. سيتم عرض التوزيع الجغرافي هنا عند إضافة معلومات المدينة والمنطقة إلى الوكالات.",
-      "status": "الحالة",
-      "trialPeriod": "فترة تجريبية",
-      "messagesPerMonth": "500 رسالة/شهر",
-      "conversationHistory": "سجل المحادثات لمدة 30 يوماً",
-      "emailSupport": "دعم البريد الإلكتروني",
-      "whatsappSettings": "إعدادات واتساب",
-      "revenueGrowthTrend": "اتجاه الإيرادات والنمو",
-      "superAdminDescription": "يمكنك مراقبة الحالة العامة وإحصاءات الاستخدام لجميع الوكالات هنا. استخدم علامة التبويب 'الوكالات' للإدارة التفصيلية.",
-      "selectDateRange": "حدد نطاق التاريخ",
-      "filter": "تصفية",
-      "plans": "الخطط:",
-      "starter": "مبتدئ",
-      "professional": "محترف",
-      "enterprise": "مؤسسي",
-      "unspecified": "غير محدد",
-      "noData": "لا توجد بيانات",
-      "active": "نشط",
-      "inactive": "غير نشط",
-      "trialVersion": "نسخة تجريبية",
-      "agenciesInTrial": "الوكالات في الفترة التجريبية",
-      "totalMessages": "إجمالي الرسائل",
-      "messagesUsedThisMonth": "الرسائل المستخدمة هذا الشهر",
-      "yearlyRevenue": "الإيرادات السنوية (تقدير)",
-      "yearlyValueText": "القيمة السنوية للاشتراكات المدفوعة الحالية",
-      "realPaymentDataAnalysis": "تحليل بناءً على بيانات الدفع الفعلية",
-      "filters": "الفلاتر",
-      "dateRange": "نطاق التاريخ",
-      "last3Months": "آخر 3 أشهر",
-      "last6Months": "آخر 6 أشهر",
-      "last12Months": "آخر 12 شهراً",
-      "last24Months": "آخر 24 شهراً",
-      "planTypes": "أنواع الخطط",
-      "allPlans": "جميع الخطط",
+      "updateInfo": "تحديث معلومات الوكالة",
+      "createAccount": "إنشاء حساب وكالة جديد",
+      "name": "اسم الوكالة",
+      "owner": "مالك الوكالة",
       "city": "المدينة",
-      "allCities": "جميع المدن"
+      "region": "المنطقة",
+      "status": "الحالة",
+      "messageQuota": "حصة الرسائل",
+      "remainingTime": "الوقت المتبقي",
+      "actions": "الإجراءات"
     },
     "tourForm": {
       "addTour": "إضافة رحلة جديدة",
@@ -1218,23 +1316,6 @@
     "dateForm": {
       "addDate": "إضافة تاريخ جديد",
       "editDate": "تعديل التاريخ",
-      "description": "املأ تفاصيل التاريخ",
-      "departureDate": "تاريخ المغادرة",
-      "returnDate": "تاريخ العودة",
-      "priceAdult": "سعر البالغين",
-      "priceChild": "سعر الأطفال (اختياري)",
-      "quota": "الحصة",
-      "cancel": "إلغاء",
-      "save": "حفظ",
-      "saving": "جاري الحفظ...",
-      "error": "خطأ",
-      "fillRequired": "يرجى ملء الحقول المطلوبة",
-      "addSuccess": "تمت إضافة التاريخ بنجاح",
-      "updateSuccess": "تم تحديث التاريخ بنجاح"
-    },
-    "dateForm": {
-      "addDate": "إضافة تاريخ جديد",
-      "editDate": "تعديل التاريخ",
       "description": "أدخل تاريخ وأسعار الرحلة.",
       "departureDate": "تاريخ المغادرة",
       "returnDate": "تاريخ العودة",
@@ -1274,18 +1355,6 @@
       "quotaErrorMessage": "يتبقى فقط {quota} أماكن لهذا التاريخ. يرجى تقليل عدد الأشخاص أو اختيار تاريخ آخر.",
       "userNotFound": "المستخدم غير موجود",
       "agencyNotFound": "الوكالة غير موجودة"
-    },
-    "date": {
-      "deleteSuccess": "تم حذف التاريخ",
-      "deleteError": "فشلت عملية الحذف"
-    },
-    "toast": {
-      "success": "نجح! ✅",
-      "error": "خطأ",
-      "statusUpdated": "تم تحديث الحالة",
-      "statusUpdateError": "فشل تحديث الحالة",
-      "messagesSent": "تم إرسال الرسائل",
-      "messagesSentError": "فشل إرسال الرسائل"
     },
     "usageStats": {
       "loadError": "خطأ في تحميل إحصائيات الاستخدام",
@@ -1357,17 +1426,22 @@
         "messageTemplates": "قوالب الرسائل",
         "feedbackSurveys": "استطلاعات رضا العملاء",
         "followUpMessages": "رسائل المتابعة"
-      }
+      },
+      "extraQuotaLabel": "حصة الرسائل الإضافية"
+    },
+    "subtitle": "نظرة عامة",
+    "totalAgencies": "إجمالي الوكالات",
+    "activeAgencies": "الوكالات النشطة",
+    "totalMessages": "إجمالي الرسائل",
+    "conversionRate": "معدل التحويل",
+    "agencyManagement": {
+      "title": "إدارة الوكالات",
+      "addNewAgency": "إضافة وكالة جديدة"
+    },
+    "subscriptionHistory": {
+      "title": "سجل الاشتراكات",
+      "description": "سجل المدفوعات والمعاملات"
     }
-  },
-  "auth": {
-    "login": "تسجيل الدخول",
-    "signup": "إنشاء حساب",
-    "email": "البريد الإلكتروني",
-    "password": "كلمة المرور",
-    "forgotPassword": "نسيت كلمة المرور",
-    "noAccount": "ليس لديك حساب؟",
-    "hasAccount": "لديك حساب بالفعل؟"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -1507,37 +1581,6 @@
     "export": "تصدير",
     "import": "استيراد"
   },
-  "tickets": {
-    "title": "تذاكر الدعم",
-    "adminTitle": "جميع التذاكر",
-    "createNew": "إنشاء تذكرة جديدة",
-    "noTickets": "لا توجد تذاكر بعد",
-    "viewDetails": "عرض التفاصيل",
-    "created": "تم الإنشاء",
-    "fillAllFields": "يرجى ملء جميع الحقول",
-    "createSuccess": "تم إنشاء التذكرة بنجاح",
-    "createError": "تعذر إنشاء التذكرة",
-    "loadError": "تعذر تحميل التذاكر",
-    "updateError": "تعذر تحديث الحالة",
-    "messageError": "تعذر إرسال الرسالة",
-    "messageSent": "تم إرسال الرسالة",
-    "statusUpdated": "تم تحديث الحالة",
-    "titleLabel": "العنوان",
-    "titlePlaceholder": "صف مشكلتك بإيجاز",
-    "descriptionLabel": "الوصف",
-    "descriptionPlaceholder": "صف مشكلتك بالتفصيل...",
-    "priorityLabel": "الأولوية",
-    "submit": "إرسال",
-    "messages": "الرسائل",
-    "writeMessage": "اكتب رسالتك...",
-    "writeReply": "اكتب ردك...",
-    "send": "إرسال",
-    "admin": "المسؤول",
-    "you": "أنت",
-    "user": "المستخدم",
-    "status": {"open": "مفتوح", "in_progress": "قيد المعالجة", "resolved": "تم الحل", "closed": "مغلق"},
-    "priority": {"low": "منخفض", "medium": "متوسط", "high": "عالي"}
-  },
   "agencyInfo": {
     "title": "معلومات الوكالة",
     "description": "قم بتحديث معلومات وكالتك. سيتم استخدام هذه المعلومات بواسطة روبوت الدردشة على WhatsApp.",
@@ -1583,5 +1626,34 @@
       "reviewed": "تمت المراجعة",
       "resolved": "تم الحل"
     }
+  },
+  "cta": {
+    "title": "هل أنت مستعد للبدء؟",
+    "subtitle": "أنشئ حساباً تجريبياً وجرب جميع الميزات مجاناً. لا حاجة لبطاقة ائتمان.",
+    "button": "جرّب مجاناً"
+  },
+  "contact": {
+    "question": "هل لديك أسئلة أخرى؟",
+    "nameLabel": "الاسم الكامل",
+    "namePlaceholder": "اسمك",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "email@example.com",
+    "messageLabel": "رسالتك",
+    "messagePlaceholder": "اكتب رسالتك هنا...",
+    "sendButton": "إرسال الرسالة",
+    "sending": "جارٍ الإرسال...",
+    "successTitle": "تم إرسال الرسالة! ✅",
+    "successMessage": "سنرد عليك في أقرب وقت ممكن.",
+    "errorTitle": "خطأ",
+    "errorMessage": "تعذر إرسال الرسالة. يرجى المحاولة مجدداً.",
+    "formErrorTitle": "خطأ في النموذج"
+  },
+  "validation": {
+    "nameRequired": "الاسم مطلوب",
+    "nameMaxLength": "يجب ألا يتجاوز الاسم 100 حرف",
+    "emailInvalid": "أدخل عنوان بريد إلكتروني صحيح",
+    "emailMaxLength": "يجب ألا يتجاوز البريد الإلكتروني 255 حرف",
+    "messageMinLength": "يجب أن تحتوي الرسالة على 10 أحرف على الأقل",
+    "messageMaxLength": "يجب ألا تتجاوز الرسالة 1000 حرف"
   }
 }
