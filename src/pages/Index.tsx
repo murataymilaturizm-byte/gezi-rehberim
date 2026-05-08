@@ -386,22 +386,22 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-4">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-4 items-stretch">
             {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className="flex items-center gap-5 p-5 rounded-xl border border-border/50 bg-card hover:shadow-lg transition-all duration-300 hover:border-primary/30 group"
+              <div
+                key={index}
+                className="flex items-start gap-5 p-5 rounded-xl border border-border/50 bg-card hover:shadow-lg transition-all duration-300 hover:border-primary/30 group h-full"
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-ocean flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+                <div className="w-12 h-12 rounded-xl bg-gradient-ocean flex items-center justify-center flex-shrink-0 mt-0.5 transition-transform duration-300 group-hover:scale-110">
                   <feature.icon className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{feature.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
+                  <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{feature.title}</h4>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{feature.description}</p>
+                  <Badge className="hidden sm:inline-flex mt-2 bg-primary/10 text-primary border-primary/20">
+                    {feature.metric}
+                  </Badge>
                 </div>
-                <Badge className="hidden sm:flex bg-primary/10 text-primary border-primary/20 whitespace-nowrap flex-shrink-0">
-                  {feature.metric}
-                </Badge>
               </div>
             ))}
           </div>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Menu, X } from "lucide-react";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const cozumler = [
   { href: "/cozum/incoming-acenteler", label: "Incoming Acenteler" },
@@ -96,6 +97,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
+            <LanguageSelector />
             <Button variant="ghost" asChild size="sm">
               <Link to="/auth">Giriş Yap</Link>
             </Button>
@@ -134,7 +136,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/blog" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>Blog</Link>
               <Link to="/#pricing" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>Fiyatlandırma</Link>
             </div>
-            <div className="flex gap-2 pt-3">
+            <div className="pt-3">
+              <LanguageSelector />
+            </div>
+            <div className="flex gap-2 pt-2">
               <Button variant="outline" asChild size="sm" className="flex-1">
                 <Link to="/auth" onClick={() => setMobileOpen(false)}>Giriş Yap</Link>
               </Button>
