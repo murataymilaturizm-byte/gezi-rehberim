@@ -2290,6 +2290,140 @@
           "button": "Ücretsiz Başla"
         }
       }
+    },
+    "karsilastir": {
+      "turzzVsManuel": {
+        "meta": {
+          "title": "Manuel WhatsApp vs Turzz AI Chatbot — Karşılaştırma",
+          "description": "Seyahat acentenizde manuel WhatsApp kullanımı mı yoksa chatbot mu? Detaylı karşılaştırma: maliyet, zaman, verimlilik, satış performansı.",
+          "keywords": "manuel whatsapp vs AI chatbot, otomasyon karşılaştırma, whatsapp chatbot fark, turizm chatbot avantajları"
+        },
+        "badge": "Karşılaştırma",
+        "hero": {
+          "title1": "Manuel WhatsApp vs",
+          "title2": "Turzz AI",
+          "subtitle": "Seyahat acentenizde hangi yöntem daha verimli? Maliyet, zaman ve satış performansı açısından objektif karşılaştırma."
+        },
+        "comparisonSection": {
+          "heading": "12 Kritik Faktörde Karşılaştırma",
+          "columns": {
+            "topic": "Konu",
+            "manual": "❌ Manuel WhatsApp",
+            "ai": "✅ Turzz AI"
+          },
+          "rows": [
+            {
+              "topic": "Yanıt süresi",
+              "manual": "Ortalama 4-8 saat",
+              "ai": "Saniyeler içinde"
+            },
+            {
+              "topic": "Gece/hafta sonu hizmet",
+              "manual": "Yok",
+              "ai": "7/24 aktif"
+            },
+            {
+              "topic": "Aynı anda kaç müşteri",
+              "manual": "1 (sırayla)",
+              "ai": "Sınırsız"
+            },
+            {
+              "topic": "Dil desteği",
+              "manual": "1-2 dil (bildiğiniz)",
+              "ai": "7 dil otomatik"
+            },
+            {
+              "topic": "Rezervasyon süreci",
+              "manual": "Manuel, hata riski",
+              "ai": "Otomatik, sistematik"
+            },
+            {
+              "topic": "Kontenjan takibi",
+              "manual": "Excel/not defteri",
+              "ai": "Anlık, otomatik"
+            },
+            {
+              "topic": "Müşteri geçmiş takibi",
+              "manual": "Yok/zor",
+              "ai": "Otomatik profil"
+            },
+            {
+              "topic": "Hatırlatma gönderimi",
+              "manual": "Manuel, unutulabilir",
+              "ai": "Otomatik programlanmış"
+            },
+            {
+              "topic": "Aylık maliyet (1 kişi)",
+              "manual": "15.000-20.000₺ maaş",
+              "ai": "2.999₺'dan başlayan"
+            },
+            {
+              "topic": "Kurulum süresi",
+              "manual": "Hemen (ama verimlilik yok)",
+              "ai": "5-10 dakika"
+            },
+            {
+              "topic": "Raporlama",
+              "manual": "Excel, zaman alıcı",
+              "ai": "Anlık dashboard"
+            },
+            {
+              "topic": "Ölçekleme",
+              "manual": "Yeni çalışan gerekir",
+              "ai": "Plan yükseltme yeterli"
+            }
+          ]
+        },
+        "costSection": {
+          "heading": "Gerçek Maliyet Hesabı",
+          "manualCard": {
+            "heading": "❌ Manuel WhatsApp (Yıllık)",
+            "items": [
+              {
+                "label": "Çalışan maaşı (1 kişi)",
+                "value": "180.000₺"
+              },
+              {
+                "label": "SGK ve ek maliyetler",
+                "value": "54.000₺"
+              },
+              {
+                "label": "Eğitim ve zaman kaybı",
+                "value": "12.000₺"
+              }
+            ],
+            "totalLabel": "Toplam",
+            "totalValue": "246.000₺/yıl"
+          },
+          "aiCard": {
+            "heading": "✅ Turzz AI (Yıllık)",
+            "items": [
+              {
+                "label": "Profesyonel Plan (aylık 4.999₺)",
+                "value": "59.988₺"
+              },
+              {
+                "label": "Kurulum ve öğrenme",
+                "value": "0₺"
+              },
+              {
+                "label": "Ek destek/bakım",
+                "value": "0₺"
+              }
+            ],
+            "totalLabel": "Toplam",
+            "totalValue": "59.988₺/yıl"
+          },
+          "savingsNote": "Turzz AI ile yıllık ~186.000₺ tasarruf potansiyeli."
+        },
+        "conclusionSection": {
+          "heading": "Sonuç",
+          "para1": "Manuel WhatsApp yönetimi, seyahat acentelerinin büyümesini engelleyen en büyük faktörlerden biri. 7/24 yanıt veremeyen, dil bariyeriyle mücadele eden ve tekrarlayan işlere zaman harcayan acenteler rekabette geri kalıyor.",
+          "para2": "Turzz AI bu sorunların tamamını çözüyor — ve maliyeti, eleman maaşının yalnızca %25'i.",
+          "ctaPrimary": "14 Gün Ücretsiz Dene",
+          "ctaSecondary": "Chatbot Özelliklerini İncele"
+        }
+      }
     }
   }
 }

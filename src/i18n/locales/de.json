@@ -2119,6 +2119,140 @@
           "button": "Kostenlos starten"
         }
       }
+    },
+    "karsilastir": {
+      "turzzVsManuel": {
+        "meta": {
+          "title": "Manuelles WhatsApp vs Turzz AI Chatbot — Vergleich",
+          "description": "Manuelles WhatsApp oder Chatbot für Ihr Reisebüro? Detaillierter Vergleich: Kosten, Zeit, Effizienz und Verkaufsleistung.",
+          "keywords": "manuelles WhatsApp vs AI-Chatbot, Automatisierung Vergleich, WhatsApp Chatbot Unterschied, Tourismus Chatbot Vorteile"
+        },
+        "badge": "Vergleich",
+        "hero": {
+          "title1": "Manuelles WhatsApp vs",
+          "title2": "Turzz AI",
+          "subtitle": "Welche Methode ist für Ihr Reisebüro effizienter? Ein objektiver Vergleich von Kosten, Zeit und Verkaufsleistung."
+        },
+        "comparisonSection": {
+          "heading": "Vergleich in 12 kritischen Faktoren",
+          "columns": {
+            "topic": "Faktor",
+            "manual": "❌ Manuelles WhatsApp",
+            "ai": "✅ Turzz AI"
+          },
+          "rows": [
+            {
+              "topic": "Antwortzeit",
+              "manual": "Durchschnittlich 4-8 Stunden",
+              "ai": "Innerhalb von Sekunden"
+            },
+            {
+              "topic": "Nacht-/Wochenendservice",
+              "manual": "Keiner",
+              "ai": "24/7 aktiv"
+            },
+            {
+              "topic": "Gleichzeitige Kunden",
+              "manual": "1 (nacheinander)",
+              "ai": "Unbegrenzt"
+            },
+            {
+              "topic": "Sprachunterstützung",
+              "manual": "1-2 Sprachen (Ihre)",
+              "ai": "7 Sprachen automatisch"
+            },
+            {
+              "topic": "Buchungsprozess",
+              "manual": "Manuell, Fehlerrisiko",
+              "ai": "Automatisch, systematisch"
+            },
+            {
+              "topic": "Kapazitätsverfolgung",
+              "manual": "Excel/Notizbuch",
+              "ai": "Echtzeit, automatisch"
+            },
+            {
+              "topic": "Kundenverlaufsverfolgung",
+              "manual": "Nicht vorhanden/schwierig",
+              "ai": "Automatisches Profil"
+            },
+            {
+              "topic": "Erinnerungen senden",
+              "manual": "Manuell, kann vergessen werden",
+              "ai": "Automatisch geplant"
+            },
+            {
+              "topic": "Monatliche Kosten (1 Person)",
+              "manual": "Gehalt €1.500-3.000",
+              "ai": "Ab €80/Monat"
+            },
+            {
+              "topic": "Einrichtungszeit",
+              "manual": "Sofort (aber keine Effizienz)",
+              "ai": "5-10 Minuten"
+            },
+            {
+              "topic": "Berichterstattung",
+              "manual": "Excel, zeitaufwendig",
+              "ai": "Live-Dashboard"
+            },
+            {
+              "topic": "Skalierung",
+              "manual": "Neue Mitarbeiter erforderlich",
+              "ai": "Plan-Upgrade ausreichend"
+            }
+          ]
+        },
+        "costSection": {
+          "heading": "Reale Kostenrechnung",
+          "manualCard": {
+            "heading": "❌ Manuelles WhatsApp (Jährlich)",
+            "items": [
+              {
+                "label": "Mitarbeitergehalt (1 Person)",
+                "value": "₺180.000"
+              },
+              {
+                "label": "Sozialversicherung & Extras",
+                "value": "₺54.000"
+              },
+              {
+                "label": "Schulung & Zeitverlust",
+                "value": "₺12.000"
+              }
+            ],
+            "totalLabel": "Gesamt",
+            "totalValue": "₺246.000/Jahr"
+          },
+          "aiCard": {
+            "heading": "✅ Turzz AI (Jährlich)",
+            "items": [
+              {
+                "label": "Professional-Plan (₺4.999/Monat)",
+                "value": "₺59.988"
+              },
+              {
+                "label": "Einrichtung & Einarbeitung",
+                "value": "₺0"
+              },
+              {
+                "label": "Zusätzlicher Support/Wartung",
+                "value": "₺0"
+              }
+            ],
+            "totalLabel": "Gesamt",
+            "totalValue": "₺59.988/Jahr"
+          },
+          "savingsNote": "Jährliches Einsparpotenzial von ~₺186.000 mit Turzz AI."
+        },
+        "conclusionSection": {
+          "heading": "Fazit",
+          "para1": "Manuelles WhatsApp-Management ist einer der größten Wachstumshindernisse für Reisebüros. Büros, die nicht 24/7 antworten können, mit Sprachbarrieren kämpfen und Zeit für Routineaufgaben verschwenden, fallen im Wettbewerb zurück.",
+          "para2": "Turzz AI löst all diese Probleme — und kostet nur 25 % eines Mitarbeitergehalts.",
+          "ctaPrimary": "14 Tage kostenlos testen",
+          "ctaSecondary": "Chatbot-Funktionen erkunden"
+        }
+      }
     }
   }
 }

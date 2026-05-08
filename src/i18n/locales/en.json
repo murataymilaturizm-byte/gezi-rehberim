@@ -2177,6 +2177,140 @@
           "button": "Start Free"
         }
       }
+    },
+    "karsilastir": {
+      "turzzVsManuel": {
+        "meta": {
+          "title": "Manual WhatsApp vs Turzz AI Chatbot — Comparison",
+          "description": "Manual WhatsApp vs chatbot for your travel agency? Detailed comparison: cost, time, efficiency, and sales performance.",
+          "keywords": "manual WhatsApp vs AI chatbot, automation comparison, WhatsApp chatbot difference, tourism chatbot advantages"
+        },
+        "badge": "Comparison",
+        "hero": {
+          "title1": "Manual WhatsApp vs",
+          "title2": "Turzz AI",
+          "subtitle": "Which method is more efficient for your travel agency? An objective comparison of cost, time, and sales performance."
+        },
+        "comparisonSection": {
+          "heading": "Comparison Across 12 Critical Factors",
+          "columns": {
+            "topic": "Factor",
+            "manual": "❌ Manual WhatsApp",
+            "ai": "✅ Turzz AI"
+          },
+          "rows": [
+            {
+              "topic": "Response time",
+              "manual": "Average 4-8 hours",
+              "ai": "Within seconds"
+            },
+            {
+              "topic": "Night/weekend service",
+              "manual": "None",
+              "ai": "24/7 active"
+            },
+            {
+              "topic": "Simultaneous customers",
+              "manual": "1 (one at a time)",
+              "ai": "Unlimited"
+            },
+            {
+              "topic": "Language support",
+              "manual": "1-2 languages (yours)",
+              "ai": "7 languages automatic"
+            },
+            {
+              "topic": "Booking process",
+              "manual": "Manual, risk of errors",
+              "ai": "Automatic, systematic"
+            },
+            {
+              "topic": "Availability tracking",
+              "manual": "Excel/notepad",
+              "ai": "Real-time, automatic"
+            },
+            {
+              "topic": "Customer history tracking",
+              "manual": "None / difficult",
+              "ai": "Automatic profile"
+            },
+            {
+              "topic": "Sending reminders",
+              "manual": "Manual, can be forgotten",
+              "ai": "Automatically scheduled"
+            },
+            {
+              "topic": "Monthly cost (1 person)",
+              "manual": "Staff salary $500-1,000",
+              "ai": "From $80/month"
+            },
+            {
+              "topic": "Setup time",
+              "manual": "Immediate (but no efficiency)",
+              "ai": "5-10 minutes"
+            },
+            {
+              "topic": "Reporting",
+              "manual": "Excel, time-consuming",
+              "ai": "Live dashboard"
+            },
+            {
+              "topic": "Scaling",
+              "manual": "Requires new staff",
+              "ai": "Plan upgrade sufficient"
+            }
+          ]
+        },
+        "costSection": {
+          "heading": "Real Cost Calculation",
+          "manualCard": {
+            "heading": "❌ Manual WhatsApp (Annual)",
+            "items": [
+              {
+                "label": "Staff salary (1 person)",
+                "value": "₺180,000"
+              },
+              {
+                "label": "Social security & extras",
+                "value": "₺54,000"
+              },
+              {
+                "label": "Training & time lost",
+                "value": "₺12,000"
+              }
+            ],
+            "totalLabel": "Total",
+            "totalValue": "₺246,000/year"
+          },
+          "aiCard": {
+            "heading": "✅ Turzz AI (Annual)",
+            "items": [
+              {
+                "label": "Professional Plan (₺4,999/month)",
+                "value": "₺59,988"
+              },
+              {
+                "label": "Setup & onboarding",
+                "value": "₺0"
+              },
+              {
+                "label": "Additional support/maintenance",
+                "value": "₺0"
+              }
+            ],
+            "totalLabel": "Total",
+            "totalValue": "₺59,988/year"
+          },
+          "savingsNote": "Potential annual savings of ~₺186,000 with Turzz AI."
+        },
+        "conclusionSection": {
+          "heading": "Conclusion",
+          "para1": "Manual WhatsApp management is one of the biggest obstacles to travel agency growth. Agencies that cannot respond 24/7, struggle with language barriers, and spend time on repetitive tasks fall behind in competition.",
+          "para2": "Turzz AI solves all of these problems — at just 25% of a staff member's salary.",
+          "ctaPrimary": "Try Free for 14 Days",
+          "ctaSecondary": "Explore Chatbot Features"
+        }
+      }
     }
   }
 }
