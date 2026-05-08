@@ -76,42 +76,15 @@
       "description": "WhatsApp üzerinden \"Kapadokya turları\" gibi doğal dilde arama yapar"
     },
     "step2": {
-      "title": "AI Analiz Yapar",
-      "description": "Yapay zeka mesajı anlayıp en uygun turları önerir, fiyat ve tarih bilgisi verir"
+      "title": "AI Analiz Eder",
+      "description": "AI mesajı anlar ve en uygun turları önerir, fiyat ve tarih bilgisi verir"
     },
     "step3": {
-      "title": "Rezervasyon Oluşur",
-      "description": "Wizard rehberliğinde müşteri bilgileri alınır, rezervasyon tamamlanır"
+      "title": "Rezervasyon Oluşturulur",
+      "description": "Müşteri bilgileri sihirbaz rehberliğinde toplanır, rezervasyon tamamlanır"
     },
     "footer": "Tüm süreç otomatik ve 7/24 çalışır 🚀",
-    "demoButton": "Canlı Demo'yu İncele"
-  },
-  "demo": {
-    "badge": "Canlı Demo",
-    "title": "Hemen Test Edin",
-    "subtitle": "Yapay zeka destekli asistanımızı şimdi deneyin. Tur sorguları yapın, rezervasyon simülasyonu yapın.",
-    "note": "Bu bir demo chatbot'tur. Gerçek sisteminizde kendi turlarınızı ve ayarlarınızı kullanabilirsiniz.",
-    "cta": "Hemen Başlayın"
-  },
-  "benefits": {
-    "title": "Somut Sonuçlar, Gerçek Değer",
-    "subtitle": "Sadece özellikler değil - işinize kattığı değer",
-    "timeSaving": {
-      "title": "Ayda 40+ Saat Tasarruf",
-      "description": "Tekrar eden soruları yanıtlamak, turları anlatmak, fiyat sormak... Artık bunların hepsi otomatik."
-    },
-    "moreSales": {
-      "title": "İlk Ayda 2-3x Daha Fazla Satış",
-      "description": "Gece yarısı bile satış yapın. Hiçbir müşteriyi ve fırsatı kaçırmayın."
-    },
-    "customerTracking": {
-      "title": "Her Müşteri Kişisel Takip",
-      "description": "Kim ne aradı? Bütçesi ne? Geçmişte ne aldı? AI her müşteriyi tanıyor, size özel öneriler yapıyor."
-    },
-    "roi": {
-      "title": "Sadece 2 Tur = Kendini Ödüyor",
-      "description": "Başlangıç planı sadece 2.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
-    }
+    "demoButton": "Canlı Demo'yu İnceleyin"
   },
   "demo": {
     "badge": "Canlı Demo",
@@ -136,6 +109,26 @@
       "kurumsal": "💼 Size nasıl yardımcı olabilirim?",
       "dinamik": "⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀",
       "premium": "💎 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz."
+    }
+  },
+  "benefits": {
+    "title": "Somut Sonuçlar, Gerçek Değer",
+    "subtitle": "Sadece özellikler değil - işinize kattığı değer",
+    "timeSaving": {
+      "title": "Ayda 40+ Saat Tasarruf",
+      "description": "Tekrar eden soruları yanıtlamak, turları anlatmak, fiyat sormak... Artık bunların hepsi otomatik."
+    },
+    "moreSales": {
+      "title": "İlk Ayda 2-3x Daha Fazla Satış",
+      "description": "Gece yarısı bile satış yapın. Hiçbir müşteriyi ve fırsatı kaçırmayın."
+    },
+    "customerTracking": {
+      "title": "Her Müşteri Kişisel Takip",
+      "description": "Kim ne aradı? Bütçesi ne? Geçmişte ne aldı? AI her müşteriyi tanıyor, size özel öneriler yapıyor."
+    },
+    "roi": {
+      "title": "Sadece 2 Tur = Kendini Ödüyor",
+      "description": "Başlangıç planı sadece 2.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
     }
   },
   "advanced": {
@@ -187,31 +180,62 @@
       "subtext": "Otomatik kayıt ve takip"
     }
   },
-  "howItWorks": {
-    "title": "Nasıl Çalışır?",
-    "subtitle": "WhatsApp'tan rezervasyona 3 basit adımda",
-    "step1": {
-      "title": "Müşteri Mesaj Gönderir",
-      "description": "WhatsApp üzerinden \"Kapadokya turları\" gibi doğal dilde arama yapar"
-    },
-    "step2": {
-      "title": "AI Analiz Eder",
-      "description": "AI mesajı anlar ve en uygun turları önerir, fiyat ve tarih bilgisi verir"
-    },
-    "step3": {
-      "title": "Rezervasyon Oluşturulur",
-      "description": "Müşteri bilgileri sihirbaz rehberliğinde toplanır, rezervasyon tamamlanır"
-    },
-    "footer": "Tüm süreç otomatik ve 7/24 çalışır 🚀",
-    "demoButton": "Canlı Demo'yu İnceleyin"
-  },
   "testimonials": {
     "title": "Gerçek Sonuçlar",
-    "subtitle": "Acentelerimizin başarı hikayeleri"
+    "subtitle": "Acentelerimizin başarı hikayeleri",
+    "items": {
+      "yasinCetin": {
+        "name": "Yasin Çetin",
+        "company": "Kampüs Travel",
+        "role": "İşletme Sahibi",
+        "content": "İlk ayda 18 yeni rezervasyon aldık. Daha önce gece mesaj atanlar 'yarın ararsınız' deyip başka acenteden alıyordu. Şimdi gece 2'de bile satış yapıyoruz!",
+        "result": "+18 rezervasyon ilk ayda"
+      },
+      "sitkiOgrak": {
+        "name": "Sıtkı Murat OĞRAK",
+        "company": "Aymila Turizm",
+        "role": "İşletme Müdürü",
+        "content": "Müşteriler 'çok hızlı cevap veriyorsunuz' diyor. Ayda 40+ saat zaman kazanıyorum. Artık gerçekten önemli işlere odaklanabiliyorum.",
+        "result": "40+ saat/ay tasarruf"
+      },
+      "mustafaGulmez": {
+        "name": "Mustafa Gülmez",
+        "company": "4 Eylül Turizm",
+        "role": "İşletme Sahibi",
+        "content": "Hangi turlar daha çok satıyor, hangi gün daha çok talep var - her şeyi görebiliyorum. Artık tahmine değil, veriye göre karar veriyorum. Gelir analizleri muhteşem!",
+        "result": "Veri odaklı karar"
+      }
+    }
   },
   "faq": {
     "title": "Sık Sorulan Sorular",
-    "subtitle": "Merak ettiklerinizin yanıtlarını burada bulabilirsiniz"
+    "subtitle": "Merak ettiklerinizin yanıtlarını burada bulabilirsiniz",
+    "items": {
+      "salesIncrease": {
+        "question": "Gerçekten ilk ayda satışlarım artacak mı?",
+        "answer": "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. AI destekli WhatsApp botunuz 7/24 müşterilerinize hizmet veriyor — gece yarısı, hafta sonu, tatil günleri fark etmez. Hiçbir fırsat kaçmıyor."
+      },
+      "setup": {
+        "question": "Kurulum nasıl yapılıyor?",
+        "answer": "Çok kolay! Hesabınızı oluşturun, turlarınızı ekleyin ve WhatsApp Yönetimi panelinden entegrasyon talebi gönderin. Ekibimiz Meta Cloud API kurulumunu sizin için yapar. Siz sadece turlarınızı yönetirsiniz, tüm teknik altyapı bize ait."
+      },
+      "whatsappCost": {
+        "question": "WhatsApp entegrasyonu için ek ücret var mı?",
+        "answer": "Hayır! WhatsApp Business API altyapısını (Meta Cloud API) biz yönetiyoruz. WhatsApp Yönetimi panelinden talebinizi gönderin, kurulumu ekibimiz yapar. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
+      },
+      "payment": {
+        "question": "Müşterilerden direkt ödeme alabilir miyim?",
+        "answer": "Evet! Ödeme entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, dakikalar içinde ödeme alabilirsiniz. Ödeme takibi otomatik olarak yapılır."
+      },
+      "tourLimit": {
+        "question": "Kaç tur ekleyebilirim?",
+        "answer": "Starter planda 10 tura kadar, Professional ve Enterprise planlarda sınırsız tur ekleyebilirsiniz. Fark mesaj limiti ve dil sayısındadır. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
+      },
+      "cancellation": {
+        "question": "İptal edersem ne olur?",
+        "answer": "İstediğiniz zaman iptal edebilirsiniz, sözleşme yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz. 14 gün ücretsiz deneme sırasında kredi kartı bile istemiyoruz."
+      }
+    }
   },
   "cta": {
     "title": "Hemen Başlamaya Hazır mısınız?",
@@ -302,63 +326,6 @@
         "multiAgency": "✅ Multi-agency yönetimi (gelecekte)",
         "apiAccess": "✅ API erişimi (gelecekte)",
         "paymentCollection": "✅ Ödeme Alabilme (gelecekte)"
-      }
-    }
-  },
-  "testimonials": {
-    "title": "Gerçek Sonuçlar",
-    "subtitle": "Acentelerimizin başarı hikayeleri",
-    "items": {
-      "yasinCetin": {
-        "name": "Yasin Çetin",
-        "company": "Kampüs Travel",
-        "role": "İşletme Sahibi",
-        "content": "İlk ayda 18 yeni rezervasyon aldık. Daha önce gece mesaj atanlar 'yarın ararsınız' deyip başka acenteden alıyordu. Şimdi gece 2'de bile satış yapıyoruz!",
-        "result": "+18 rezervasyon ilk ayda"
-      },
-      "sitkiOgrak": {
-        "name": "Sıtkı Murat OĞRAK",
-        "company": "Aymila Turizm",
-        "role": "İşletme Müdürü",
-        "content": "Müşteriler 'çok hızlı cevap veriyorsunuz' diyor. Ayda 40+ saat zaman kazanıyorum. Artık gerçekten önemli işlere odaklanabiliyorum.",
-        "result": "40+ saat/ay tasarruf"
-      },
-      "mustafaGulmez": {
-        "name": "Mustafa Gülmez",
-        "company": "4 Eylül Turizm",
-        "role": "İşletme Sahibi",
-        "content": "Hangi turlar daha çok satıyor, hangi gün daha çok talep var - her şeyi görebiliyorum. Artık tahmine değil, veriye göre karar veriyorum. Gelir analizleri muhteşem!",
-        "result": "Veri odaklı karar"
-      }
-    }
-  },
-  "faq": {
-    "title": "Sık Sorulan Sorular",
-    "subtitle": "Merak ettiklerinizin yanıtlarını burada bulabilirsiniz",
-    "items": {
-      "salesIncrease": {
-        "question": "Gerçekten ilk ayda satışlarım artacak mı?",
-        "answer": "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. AI destekli WhatsApp botunuz 7/24 müşterilerinize hizmet veriyor — gece yarısı, hafta sonu, tatil günleri fark etmez. Hiçbir fırsat kaçmıyor."
-      },
-      "setup": {
-        "question": "Kurulum nasıl yapılıyor?",
-        "answer": "Çok kolay! Hesabınızı oluşturun, turlarınızı ekleyin ve WhatsApp Yönetimi panelinden entegrasyon talebi gönderin. Ekibimiz Meta Cloud API kurulumunu sizin için yapar. Siz sadece turlarınızı yönetirsiniz, tüm teknik altyapı bize ait."
-      },
-      "whatsappCost": {
-        "question": "WhatsApp entegrasyonu için ek ücret var mı?",
-        "answer": "Hayır! WhatsApp Business API altyapısını (Meta Cloud API) biz yönetiyoruz. WhatsApp Yönetimi panelinden talebinizi gönderin, kurulumu ekibimiz yapar. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
-      },
-      "payment": {
-        "question": "Müşterilerden direkt ödeme alabilir miyim?",
-        "answer": "Evet! Ödeme entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, dakikalar içinde ödeme alabilirsiniz. Ödeme takibi otomatik olarak yapılır."
-      },
-      "tourLimit": {
-        "question": "Kaç tur ekleyebilirim?",
-        "answer": "Starter planda 10 tura kadar, Professional ve Enterprise planlarda sınırsız tur ekleyebilirsiniz. Fark mesaj limiti ve dil sayısındadır. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
-      },
-      "cancellation": {
-        "question": "İptal edersem ne olur?",
-        "answer": "İstediğiniz zaman iptal edebilirsiniz, sözleşme yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz. 14 gün ücretsiz deneme sırasında kredi kartı bile istemiyoruz."
       }
     }
   },
@@ -466,7 +433,7 @@
     "dateFilter": "Tarih Aralığı Filtresi"
   },
   "admin": {
-    "title": "Yönetim Paneli",
+    "title": "Acente Paneli",
     "groups": {
       "general": "Genel Yönetim",
       "tours": "Tur Yönetimi",
@@ -693,10 +660,10 @@
         "conversationStyle": "Konuşma Üslubu",
         "conversationStyleHelp": "Botunuzun müşterilerle nasıl konuşacağını belirleyin",
         "style": {
-          "friendly": "Samimi/Dostane",
-          "professional": "Profesyonel/Kurumsal",
-          "energetic": "Enerjik/Dinamik",
-          "helpful": "Nazik/Yardımsever"
+          "standart": "Samimi/Dostane",
+          "kurumsal": "Profesyonel/Kurumsal",
+          "dinamik": "Enerjik/Dinamik",
+          "premium": "Nazik/Yardımsever"
         },
         "saving": "Kaydediliyor...",
         "update": "Güncelle",
@@ -800,7 +767,99 @@
     "totalMessages": "Toplam Mesaj",
     "conversionRate": "Dönüşüm Oranı",
     "dashboard": {
-      "title": "Gösterge Paneli",
+      "title": "Dashboard",
+      "totalRevenue": "Toplam Gelir",
+      "avgBasket": "Ortalama Sepet",
+      "conversionRate": "Dönüşüm Oranı",
+      "confirmedReservations": "Onaylanmış rezervasyonlar",
+      "avgPerBooking": "Rezervasyon başına",
+      "registrations": "kayıt",
+      "totalTours": "Toplam Turlar",
+      "activeTourCount": "Aktif tur sayısı",
+      "totalRegistrations": "Toplam Kayıtlar",
+      "allRegistrations": "Tüm kayıtlar",
+      "activeDates": "Aktif Tarihler",
+      "tourDates": "Tur tarihleri",
+      "pendingRegistrations": "Bekleyen Kayıtlar",
+      "awaitingReview": "İnceleme bekliyor",
+      "registrationsTitle": "Kayıtları",
+      "last7Days": "Son 7 Gün - Kayıtlar",
+      "chartRegistrations": "Kayıtlar",
+      "popularDestinations": "En Popüler Destinasyonlar",
+      "mostRegisteredPlaces": "En çok kayıt alan yerler",
+      "registration": "Kayıt",
+      "recentRegistrations": "Son Kayıtlar",
+      "filterByDate": "Tarih Filtrele",
+      "allTime": "Tüm Zamanlı",
+      "today": "Bugün",
+      "thisWeek": "Bu Hafta",
+      "thisMonth": "Bu Ay",
+      "totalAgencies": "Toplam Acenteler",
+      "allRegisteredAgencies": "Tüm kayıtlı acenteler",
+      "trialAgencies": "Deneme Acenteleri",
+      "trialStatusAgencies": "Trial durumundaki acenteler",
+      "messagesUsed": "Kullanılan Mesajlar",
+      "totalMessagesThisMonth": "Bu ay kullanılan toplam mesajlar",
+      "activeRate": "Aktif Oran",
+      "activeAgencyRate": "Aktif acente oranı",
+      "starterPlan": "Başlangıç Planı",
+      "professionalPlan": "Profesyonel Planı",
+      "enterprisePlan": "Kurumsal Planı",
+      "monthlyRevenue": "Aylık Gelir (Tahmin)",
+      "activeSubscriptionsOnly": "Sadece aktif ve ücretli abonelikler (trial hariç)",
+      "trialAgenciesLabel": "Deneme acenteler:",
+      "agency": "acente",
+      "yearlyRevenue": "Yıllık Gelir (Tahmin)",
+      "totalPotentialYearlyRevenue": "Toplam potansiyel yıllık gelir",
+      "totalActiveAgencies": "Toplam aktif acente:",
+      "avgAgencyValue": "Ortalama acente değeri:",
+      "month": "ay",
+      "revenueTrend": "Gelir Trendi",
+      "monthlyRevenueLabel": "Aylık Gelir",
+      "newAgencies": "Yeni Acenteler",
+      "last": "Son",
+      "months": "ay",
+      "geographicDistribution": "Coğrafi Dağılım",
+      "topCitiesByAgencies": "En Çok Acente Bulunan Şehirler",
+      "location": "Konum",
+      "agencyCount": "Acente Sayısı",
+      "filter": "Filtrele",
+      "plans": "Planlar:",
+      "starter": "Başlangıç",
+      "professional": "Profesyonel",
+      "enterprise": "Kurumsal",
+      "unspecified": "Belirtilmemiş",
+      "noData": "Veri yok",
+      "active": "aktif",
+      "inactive": "pasif",
+      "trialVersion": "Deneme Sürümü",
+      "agenciesInTrial": "Deneme sürecindeki acenteler",
+      "totalMessages": "Toplam Mesaj",
+      "messagesUsedThisMonth": "Bu ay kullanılan mesaj",
+      "yearlyValueText": "Mevcut ücretli aboneliklerin yıllık değeri",
+      "revenueGrowthTrend": "Gelir ve Büyüme Trendi",
+      "realPaymentDataAnalysis": "Gerçek ödeme verilerine dayalı analiz",
+      "filters": "Filtreler",
+      "dateRange": "Tarih Aralığı",
+      "last3Months": "Son 3 Ay",
+      "last6Months": "Son 6 Ay",
+      "last12Months": "Son 12 Ay",
+      "last24Months": "Son 24 Ay",
+      "planTypes": "Plan Tipleri",
+      "starterPlanPrice": "Başlangıç (2.999₺/ay)",
+      "professionalPlanPrice": "Profesyonel (7.999₺/ay)",
+      "enterprisePlanPrice": "Kurumsal (14.999₺/ay)",
+      "compareWithPrevious": "Önceki dönem ile karşılaştır",
+      "revenue": "Gelir",
+      "activeFilter": "Aktif Filtre:",
+      "only": "Sadece",
+      "plansShowing": "planları gösteriliyor",
+      "geographicDistributionTitle": "Acente Coğrafi Dağılımı",
+      "geographicDistributionDesc": "Acentelerin illere ve bölgelere göre dağılımı (En çok 10 lokasyon)",
+      "agencies": "acente",
+      "noLocationInfo": "Konum Bilgisi Bulunamadı",
+      "noLocationInfoDesc": "Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi eklendiğinde coğrafi dağılım burada görüntülenecek.",
+      "superAdminDescription": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için 'Acenteler' sekmesini kullanın.",
       "status": "Durum",
       "trialPeriod": "Deneme Süresi",
       "messagesPerMonth": "500 mesaj/ay",
@@ -809,11 +868,15 @@
       "whatsappSettings": "WhatsApp Ayarları"
     },
     "toast": {
-      "success": "Başarılı",
-      "error": "Hata"
+      "success": "Başarılı! ✅",
+      "error": "Hata",
+      "statusUpdated": "Durum güncellendi",
+      "statusUpdateError": "Durum güncellenemedi",
+      "messagesSent": "Mesajlar gönderildi",
+      "messagesSentError": "Mesajlar gönderilemedi"
     },
     "date": {
-      "deleteSuccess": "Tarih başarıyla silindi",
+      "deleteSuccess": "Tarih silindi",
       "deleteError": "Tarih silinirken hata oluştu"
     },
     "agency": {
@@ -828,7 +891,19 @@
       "owner": "Acente Sahibi",
       "city": "Şehir",
       "region": "Bölge",
-      "plan": "Plan",
+      "plan": {
+        "monthlyLimit": "Aylık Mesaj Limiti",
+        "defaultLimit": "Planın varsayılan limiti: {{limit}} mesaj",
+        "extraMessages": "Ekstra Mesaj Kotası Ekle",
+        "extraPlaceholder": "Örn: 500",
+        "extraHelp": "Mevcut limite ekstra mesaj kotası ekleyin",
+        "newTotalLimit": "Yeni Toplam Limit",
+        "messagesPerMonth": "mesaj/ay",
+        "unlimitedMessages": "Sınırsız Mesaj",
+        "enterpriseNoLimit": "Kurumsal plan ile mesaj limiti yoktur",
+        "cancel": "İptal",
+        "save": "Kaydet"
+      },
       "status": "Durum",
       "messageQuota": "Mesaj Kotası",
       "remainingTime": "Kalan Süre",
@@ -878,19 +953,6 @@
         "notAdded": "Eklenmedi",
         "quotaFull": "Kota Doldu",
         "percentUsed": "kullanıldı"
-      },
-      "plan": {
-        "monthlyLimit": "Aylık Mesaj Limiti",
-        "defaultLimit": "Planın varsayılan limiti: {{limit}} mesaj",
-        "extraMessages": "Ekstra Mesaj Kotası Ekle",
-        "extraPlaceholder": "Örn: 500",
-        "extraHelp": "Mevcut limite ekstra mesaj kotası ekleyin",
-        "newTotalLimit": "Yeni Toplam Limit",
-        "messagesPerMonth": "mesaj/ay",
-        "unlimitedMessages": "Sınırsız Mesaj",
-        "enterpriseNoLimit": "Kurumsal plan ile mesaj limiti yoktur",
-        "cancel": "İptal",
-        "save": "Kaydet"
       }
     },
     "agencyManagement": {
@@ -969,15 +1031,30 @@
       "planOptions": {
         "starter": {
           "name": "Başlangıç",
-          "features": ["500 mesaj/ay", "1 kullanıcı", "Temel raporlama", "Email destek"]
+          "features": [
+            "500 mesaj/ay",
+            "1 kullanıcı",
+            "Temel raporlama",
+            "Email destek"
+          ]
         },
         "professional": {
           "name": "Profesyonel",
-          "features": ["2.000 mesaj/ay", "5 kullanıcı", "Gelişmiş raporlama", "Öncelikli destek"]
+          "features": [
+            "2.000 mesaj/ay",
+            "5 kullanıcı",
+            "Gelişmiş raporlama",
+            "Öncelikli destek"
+          ]
         },
         "enterprise": {
           "name": "Kurumsal",
-          "features": ["Sınırsız mesaj", "Sınırsız kullanıcı", "Özel raporlama", "7/24 destek"]
+          "features": [
+            "Sınırsız mesaj",
+            "Sınırsız kullanıcı",
+            "Özel raporlama",
+            "7/24 destek"
+          ]
         }
       },
       "trialEndsIn": "Deneme süresi bitiyor",
@@ -1004,7 +1081,6 @@
         "cancelled": "İptal"
       }
     },
-    "title": "Acente Paneli",
     "welcome": "Hoşgeldiniz",
     "back": "Geri",
     "home": "Ana Sayfa",
@@ -1167,110 +1243,6 @@
       "currencyConversionNote": "Fiyatlar anlık kurla {{currency}} cinsinden gösteriliyor",
       "originalPrice": "Orijinal"
     },
-    "dashboard": {
-      "title": "Dashboard",
-      "totalRevenue": "Toplam Gelir",
-      "avgBasket": "Ortalama Sepet",
-      "conversionRate": "Dönüşüm Oranı",
-      "confirmedReservations": "Onaylanmış rezervasyonlar",
-      "avgPerBooking": "Rezervasyon başına",
-      "registrations": "kayıt",
-      "totalTours": "Toplam Turlar",
-      "activeTourCount": "Aktif tur sayısı",
-      "totalRegistrations": "Toplam Kayıtlar",
-      "allRegistrations": "Tüm kayıtlar",
-      "activeDates": "Aktif Tarihler",
-      "tourDates": "Tur tarihleri",
-      "pendingRegistrations": "Bekleyen Kayıtlar",
-      "awaitingReview": "İnceleme bekliyor",
-      "registrationsTitle": "Kayıtları",
-      "last7Days": "Son 7 Gün - Kayıtlar",
-      "chartRegistrations": "Kayıtlar",
-      "popularDestinations": "En Popüler Destinasyonlar",
-      "mostRegisteredPlaces": "En çok kayıt alan yerler",
-      "registration": "Kayıt",
-      "recentRegistrations": "Son Kayıtlar",
-      "filterByDate": "Tarih Filtrele",
-      "allTime": "Tüm Zamanlı",
-      "today": "Bugün",
-      "thisWeek": "Bu Hafta",
-      "thisMonth": "Bu Ay",
-      "totalAgencies": "Toplam Acente",
-      "allRegisteredAgencies": "Tüm kayıtlı acenteler",
-      "trialAgencies": "Deneme Acenteleri",
-      "trialStatusAgencies": "Trial durumundaki acenteler",
-      "messagesUsed": "Kullanılan Mesajlar",
-      "totalMessagesThisMonth": "Bu ay kullanılan toplam mesajlar",
-      "activeRate": "Aktif Oran",
-      "activeAgencyRate": "Aktif acente oranı",
-      "starterPlan": "Başlangıç Planı",
-      "professionalPlan": "Profesyonel Planı",
-      "enterprisePlan": "Kurumsal Planı",
-      "monthlyRevenue": "Aylık Gelir (Tahmin)",
-      "activeSubscriptionsOnly": "Sadece aktif ve ücretli abonelikler (trial hariç)",
-      "trialAgenciesLabel": "Deneme acenteler:",
-      "agency": "acente",
-      "yearlyRevenue": "Yıllık Gelir (Tahmin)",
-      "totalPotentialYearlyRevenue": "Toplam potansiyel yıllık gelir",
-      "totalActiveAgencies": "Toplam aktif acente:",
-      "avgAgencyValue": "Ortalama acente değeri:",
-      "month": "ay",
-      "revenueTrend": "Gelir Trendi",
-      "monthlyRevenueLabel": "Aylık Gelir",
-      "newAgencies": "Yeni Acenteler",
-      "last": "Son",
-      "months": "ay",
-      "geographicDistribution": "Coğrafi Dağılım",
-      "topCitiesByAgencies": "En Çok Acente Bulunan Şehirler",
-      "location": "Konum",
-      "agencyCount": "Acente Sayısı",
-      "filter": "Filtrele",
-      "plans": "Planlar:",
-      "starter": "Başlangıç",
-      "professional": "Profesyonel",
-      "enterprise": "Kurumsal",
-      "unspecified": "Belirtilmemiş",
-      "noData": "Veri yok",
-      "totalAgencies": "Toplam Acenteler",
-      "active": "aktif",
-      "inactive": "pasif",
-      "trialVersion": "Deneme Sürümü",
-      "agenciesInTrial": "Deneme sürecindeki acenteler",
-      "totalMessages": "Toplam Mesaj",
-      "messagesUsedThisMonth": "Bu ay kullanılan mesaj",
-      "yearlyRevenue": "Yıllık Gelir (Tahmin)",
-      "yearlyValueText": "Mevcut ücretli aboneliklerin yıllık değeri",
-      "avgAgencyValue": "Ortalama acente değeri:",
-      "revenueGrowthTrend": "Gelir ve Büyüme Trendi",
-      "realPaymentDataAnalysis": "Gerçek ödeme verilerine dayalı analiz",
-      "filters": "Filtreler",
-      "dateRange": "Tarih Aralığı",
-      "last3Months": "Son 3 Ay",
-      "last6Months": "Son 6 Ay",
-      "last12Months": "Son 12 Ay",
-      "last24Months": "Son 24 Ay",
-      "planTypes": "Plan Tipleri",
-      "starterPlanPrice": "Başlangıç (2.999₺/ay)",
-      "professionalPlanPrice": "Profesyonel (7.999₺/ay)",
-      "enterprisePlanPrice": "Kurumsal (14.999₺/ay)",
-      "compareWithPrevious": "Önceki dönem ile karşılaştır",
-      "revenue": "Gelir",
-      "activeFilter": "Aktif Filtre:",
-      "only": "Sadece",
-      "plansShowing": "planları gösteriliyor",
-      "geographicDistributionTitle": "Acente Coğrafi Dağılımı",
-      "geographicDistributionDesc": "Acentelerin illere ve bölgelere göre dağılımı (En çok 10 lokasyon)",
-      "agencies": "acente",
-      "noLocationInfo": "Konum Bilgisi Bulunamadı",
-      "noLocationInfoDesc": "Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi eklendiğinde coğrafi dağılım burada görüntülenecek.",
-      "superAdminDescription": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için 'Acenteler' sekmesini kullanın.",
-      "status": "Durum",
-      "trialPeriod": "Deneme Süresi",
-      "messagesPerMonth": "500 mesaj/ay",
-      "conversationHistory": "30 gün konuşma geçmişi",
-      "emailSupport": "Email destek",
-      "whatsappSettings": "WhatsApp Ayarları"
-    },
     "usageStats": {
       "packageUsage": "Paket Kullanımı",
       "activePackage": "Aktif Paket",
@@ -1284,8 +1256,8 @@
       "trialPeriod": "Deneme Süresi",
       "daysRemaining": "gün kaldı",
       "renewalDate": "Yenileme Tarihi",
-      "loadError": "Kullanım verileri yüklenirken hata oluştu",
-      "paymentError": "Ödeme işlemi sırasında hata oluştu",
+      "loadError": "Kullanım bilgileri yüklenemedi",
+      "paymentError": "Ödeme işlemi başlatılamadı",
       "features": {
         "starter": {
           "messages": "500 mesaj/ay",
@@ -1327,8 +1299,6 @@
       "estimatedDuration": "Tahmini Süre",
       "notUsedYet": "Henüz kullanılmadı",
       "days": "gün",
-      "loadError": "Kullanım bilgileri yüklenemedi",
-      "paymentError": "Ödeme işlemi başlatılamadı",
       "dynamicFeatures": {
         "messagesPerMonth": "{{count}} mesaj/ay",
         "unlimitedMessages": "Sınırsız mesaj",
@@ -1427,28 +1397,7 @@
       "quotaErrorMessage": "Bu tarih için sadece {quota} kişilik yer kalmıştır. Lütfen kişi sayısını azaltın veya başka bir tarih seçin.",
       "userNotFound": "Kullanıcı bulunamadı",
       "agencyNotFound": "Acente bulunamadı"
-    },
-    "date": {
-      "deleteSuccess": "Tarih silindi",
-      "deleteError": "Tarih silinirken hata oluştu"
-    },
-    "toast": {
-      "success": "Başarılı! ✅",
-      "error": "Hata",
-      "statusUpdated": "Durum güncellendi",
-      "statusUpdateError": "Durum güncellenemedi",
-      "messagesSent": "Mesajlar gönderildi",
-      "messagesSentError": "Mesajlar gönderilemedi"
     }
-  },
-  "auth": {
-    "login": "Giriş Yap",
-    "signup": "Kayıt Ol",
-    "email": "E-posta",
-    "password": "Şifre",
-    "forgotPassword": "Şifremi Unuttum",
-    "noAccount": "Hesabınız yok mu?",
-    "hasAccount": "Hesabınız var mı?"
   },
   "auth": {
     "login": "Giriş Yap",

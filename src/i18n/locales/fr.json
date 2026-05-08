@@ -680,10 +680,10 @@
         "conversationStyle": "Style de Conversation",
         "conversationStyleHelp": "Choisissez comment votre bot communique avec les clients",
         "style": {
-          "friendly": "Amical/Cordial",
-          "professional": "Professionnel/Entreprise",
-          "energetic": "Énergique/Dynamique",
-          "helpful": "Aimable/Serviable"
+          "standart": "Amical/Cordial",
+          "kurumsal": "Professionnel/Entreprise",
+          "dinamik": "Énergique/Dynamique",
+          "premium": "Aimable/Serviable"
         },
         "saving": "Enregistrement...",
         "update": "Mettre à Jour",

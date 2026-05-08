@@ -38,8 +38,9 @@
     "title": "Features",
     "subtitle": "Empower Your Business",
     "whatsapp": {
-      "title": "WhatsApp Integration",
-      "description": "Communicate directly with your customers via WhatsApp"
+      "title": "24/7 Automated Sales",
+      "description": "Customers asking about tours and making reservations even at midnight. Sell while you sleep - never miss an opportunity.",
+      "metric": "Average 120% reservation increase in first month"
     },
     "ai": {
       "title": "AI-Powered",
@@ -50,8 +51,9 @@
       "description": "Your customers can easily book tours"
     },
     "analytics": {
-      "title": "Detailed Analytics",
-      "description": "Track your business performance"
+      "title": "Revenue Tracking & Analytics",
+      "description": "Which tours are profitable? Which days see more sales? See all revenue and performance data in real-time.",
+      "metric": "Daily, weekly, monthly revenue reports"
     },
     "templates": {
       "title": "Message Templates",
@@ -61,16 +63,6 @@
       "title": "Multi-Language Support",
       "description": "Serve your customers in 7 different languages",
       "metric": "Fluent communication in 7 languages"
-    },
-    "analytics": {
-      "title": "Revenue Tracking & Analytics",
-      "description": "Which tours are profitable? Which days see more sales? See all revenue and performance data in real-time.",
-      "metric": "Daily, weekly, monthly revenue reports"
-    },
-    "whatsapp": {
-      "title": "24/7 Automated Sales",
-      "description": "Customers asking about tours and making reservations even at midnight. Sell while you sleep - never miss an opportunity.",
-      "metric": "Average 120% reservation increase in first month"
     }
   },
   "howItWorks": {
@@ -157,24 +149,6 @@
       "label": "Customer Profiles",
       "subtext": "Auto-tracked & recorded"
     }
-  },
-  "howItWorks": {
-    "title": "How It Works?",
-    "subtitle": "From WhatsApp to reservation in 3 simple steps",
-    "step1": {
-      "title": "Customer Sends Message",
-      "description": "Searches in natural language like \"Cappadocia tours\" via WhatsApp"
-    },
-    "step2": {
-      "title": "AI Analyzes",
-      "description": "AI understands the message and recommends the most suitable tours, provides price and date information"
-    },
-    "step3": {
-      "title": "Reservation Created",
-      "description": "Customer information is collected with wizard guidance, reservation is completed"
-    },
-    "footer": "The entire process is automatic and works 24/7 🚀",
-    "demoButton": "Explore Live Demo"
   },
   "advanced": {
     "badge": "Advanced Features",
@@ -427,22 +401,22 @@
     "dateFilter": "Date Range Filter"
   },
   "tickets": {
-    "title": "Support Requests",
-    "adminTitle": "All Support Requests",
-    "createNew": "Create New Request",
-    "noTickets": "No support requests yet",
+    "title": "Support Tickets",
+    "adminTitle": "All Support Tickets",
+    "createNew": "Create New Ticket",
+    "noTickets": "No support tickets yet",
     "viewDetails": "View Details",
     "created": "Created",
-    "fillAllFields": "Please fill all fields",
-    "createSuccess": "Support request created successfully",
-    "createError": "Failed to create support request",
-    "loadError": "Failed to load support requests",
-    "updateError": "Failed to update status",
-    "messageError": "Failed to send message",
+    "fillAllFields": "Please fill in all fields",
+    "createSuccess": "Support ticket created successfully",
+    "createError": "Could not create support ticket",
+    "loadError": "Could not load support tickets",
+    "updateError": "Could not update status",
+    "messageError": "Could not send message",
     "messageSent": "Message sent",
     "statusUpdated": "Status updated",
     "titleLabel": "Title",
-    "titlePlaceholder": "Briefly summarize your issue",
+    "titlePlaceholder": "Briefly describe your issue",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Describe your issue in detail...",
     "priorityLabel": "Priority",
@@ -690,10 +664,10 @@
         "conversationStyle": "Conversation Style",
         "conversationStyleHelp": "Choose how your bot communicates with customers",
         "style": {
-          "friendly": "Friendly/Warm",
-          "professional": "Professional/Corporate",
-          "energetic": "Energetic/Dynamic",
-          "helpful": "Kind/Helpful"
+          "standart": "Friendly/Warm",
+          "kurumsal": "Professional/Corporate",
+          "dinamik": "Energetic/Dynamic",
+          "premium": "Kind/Helpful"
         },
         "saving": "Saving...",
         "update": "Update",
@@ -801,16 +775,61 @@
       "destinationAnalytics": "Destination Analytics"
     },
     "dashboard": {
-      "title": "Dashboard",
-      "whatsappSettings": "WhatsApp Settings"
+      "whatsappSettings": "WhatsApp Settings",
+      "totalRevenue": "Total Revenue",
+      "avgBasket": "Average Basket",
+      "conversionRate": "Conversion Rate",
+      "confirmedReservations": "Confirmed reservations",
+      "avgPerBooking": "Average per booking",
+      "registrations": "registrations",
+      "totalTours": "Total Tours",
+      "activeTourCount": "Active tour count",
+      "totalRegistrations": "Total Registrations",
+      "allRegistrations": "All registrations",
+      "activeDates": "Active Dates",
+      "tourDates": "Tour dates",
+      "pendingRegistrations": "Pending Registrations",
+      "awaitingReview": "Awaiting review",
+      "registrationsTitle": "Registrations",
+      "last7Days": "Last 7 Days - Registrations",
+      "chartRegistrations": "Registrations",
+      "popularDestinations": "Popular Destinations",
+      "registration": "Registration",
+      "recentRegistrations": "Recent Registrations",
+      "filter": "Filter",
+      "totalAgencies": "Total Agencies",
+      "allRegisteredAgencies": "All registered agencies",
+      "trialAgencies": "Trial Agencies",
+      "trialStatusAgencies": "Agencies in trial status",
+      "messagesUsed": "Messages Used",
+      "totalMessagesThisMonth": "Total messages used this month",
+      "activeRate": "Active Rate",
+      "activeAgencyRate": "Active agency rate",
+      "starterPlan": "Starter Plan",
+      "professionalPlan": "Professional Plan",
+      "enterprisePlan": "Enterprise Plan",
+      "monthlyRevenue": "Monthly Revenue (Estimate)",
+      "activeSubscriptionsOnly": "Active and paid subscriptions only (trial excluded)",
+      "trialAgenciesLabel": "Trial agencies:",
+      "agency": "agency",
+      "month": "month",
+      "status": "Status",
+      "trialPeriod": "Trial Period",
+      "messagesPerMonth": "500 messages/month",
+      "conversationHistory": "30 days conversation history",
+      "emailSupport": "Email support"
     },
     "toast": {
-      "success": "Success",
-      "error": "Error"
+      "success": "Success! ✅",
+      "error": "Error",
+      "statusUpdated": "Status updated",
+      "statusUpdateError": "Status could not be updated",
+      "messagesSent": "Messages sent",
+      "messagesSentError": "Messages could not be sent"
     },
     "date": {
-      "deleteSuccess": "Date deleted successfully",
-      "deleteError": "Error deleting date"
+      "deleteSuccess": "Date deleted",
+      "deleteError": "Delete operation failed"
     },
     "tours": {
       "title": "Tours",
@@ -1003,15 +1022,30 @@
       "planOptions": {
         "starter": {
           "name": "Starter",
-          "features": ["500 messages/month", "1 user", "Basic reporting", "Email support"]
+          "features": [
+            "500 messages/month",
+            "1 user",
+            "Basic reporting",
+            "Email support"
+          ]
         },
         "professional": {
           "name": "Professional",
-          "features": ["2,000 messages/month", "5 users", "Advanced reporting", "Priority support"]
+          "features": [
+            "2,000 messages/month",
+            "5 users",
+            "Advanced reporting",
+            "Priority support"
+          ]
         },
         "enterprise": {
           "name": "Enterprise",
-          "features": ["Unlimited messages", "Unlimited users", "Custom reporting", "24/7 support"]
+          "features": [
+            "Unlimited messages",
+            "Unlimited users",
+            "Custom reporting",
+            "24/7 support"
+          ]
         }
       },
       "eventTypes": {
@@ -1029,7 +1063,19 @@
       "title": "Agency Management",
       "addNew": "Add New Agency",
       "edit": "Edit",
-      "plan": "Plan",
+      "plan": {
+        "monthlyLimit": "Monthly Message Limit",
+        "defaultLimit": "Plan default limit: {{limit}} messages",
+        "extraMessages": "Add Extra Message Quota",
+        "extraPlaceholder": "e.g: 500",
+        "extraHelp": "Add extra message quota to current limit",
+        "newTotalLimit": "New Total Limit",
+        "messagesPerMonth": "messages/month",
+        "unlimitedMessages": "Unlimited Messages",
+        "enterpriseNoLimit": "Enterprise plan has no message limit",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
       "delete": "Delete",
       "editAgency": "Edit Agency",
       "addNewAgency": "Add New Agency",
@@ -1086,65 +1132,7 @@
         "notAdded": "Not Added",
         "quotaFull": "Quota Full",
         "percentUsed": "used"
-      },
-      "plan": {
-        "monthlyLimit": "Monthly Message Limit",
-        "defaultLimit": "Plan default limit: {{limit}} messages",
-        "extraMessages": "Add Extra Message Quota",
-        "extraPlaceholder": "e.g: 500",
-        "extraHelp": "Add extra message quota to current limit",
-        "newTotalLimit": "New Total Limit",
-        "messagesPerMonth": "messages/month",
-        "unlimitedMessages": "Unlimited Messages",
-        "enterpriseNoLimit": "Enterprise plan has no message limit",
-        "cancel": "Cancel",
-        "save": "Save"
       }
-    },
-    "dashboard": {
-      "whatsappSettings": "WhatsApp Settings",
-      "totalRevenue": "Total Revenue",
-      "avgBasket": "Average Basket",
-      "conversionRate": "Conversion Rate",
-      "confirmedReservations": "Confirmed reservations",
-      "avgPerBooking": "Average per booking",
-      "registrations": "registrations",
-      "totalTours": "Total Tours",
-      "activeTourCount": "Active tour count",
-      "totalRegistrations": "Total Registrations",
-      "allRegistrations": "All registrations",
-      "activeDates": "Active Dates",
-      "tourDates": "Tour dates",
-      "pendingRegistrations": "Pending Registrations",
-      "awaitingReview": "Awaiting review",
-      "registrationsTitle": "Registrations",
-      "last7Days": "Last 7 Days - Registrations",
-      "chartRegistrations": "Registrations",
-      "popularDestinations": "Popular Destinations",
-      "registration": "Registration",
-      "recentRegistrations": "Recent Registrations",
-      "filter": "Filter",
-      "totalAgencies": "Total Agencies",
-      "allRegisteredAgencies": "All registered agencies",
-      "trialAgencies": "Trial Agencies",
-      "trialStatusAgencies": "Agencies in trial status",
-      "messagesUsed": "Messages Used",
-      "totalMessagesThisMonth": "Total messages used this month",
-      "activeRate": "Active Rate",
-      "activeAgencyRate": "Active agency rate",
-      "starterPlan": "Starter Plan",
-      "professionalPlan": "Professional Plan",
-      "enterprisePlan": "Enterprise Plan",
-      "monthlyRevenue": "Monthly Revenue (Estimate)",
-      "activeSubscriptionsOnly": "Active and paid subscriptions only (trial excluded)",
-      "trialAgenciesLabel": "Trial agencies:",
-      "agency": "agency",
-      "month": "month",
-      "status": "Status",
-      "trialPeriod": "Trial Period",
-      "messagesPerMonth": "500 messages/month",
-      "conversationHistory": "30 days conversation history",
-      "emailSupport": "Email support"
     },
     "usageStats": {
       "packageUsage": "Package Usage",
@@ -1159,8 +1147,8 @@
       "trialPeriod": "Trial Period",
       "daysRemaining": "days remaining",
       "renewalDate": "Renewal Date",
-      "loadError": "Error loading usage data",
-      "paymentError": "Error processing payment",
+      "loadError": "Could not load usage information",
+      "paymentError": "Could not initiate payment",
       "features": {
         "starter": {
           "messages": "500 messages/month",
@@ -1180,9 +1168,6 @@
           "api": "API access"
         }
       },
-      "trialPeriod": "Trial Period",
-      "daysRemaining": "days remaining",
-      "renewalDate": "Renewal Date",
       "usedThisMonth": "Used This Month",
       "unlimited": "Unlimited",
       "quotaFull": "Your message quota is full! You need to upgrade your package.",
@@ -1205,8 +1190,6 @@
       "estimatedDuration": "Estimated Duration",
       "notUsedYet": "Not used yet",
       "days": "days",
-      "loadError": "Could not load usage information",
-      "paymentError": "Could not initiate payment",
       "dynamicFeatures": {
         "messagesPerMonth": "{{count}} messages/month",
         "unlimitedMessages": "Unlimited messages",
@@ -1266,28 +1249,7 @@
       "quotaErrorMessage": "Only {quota} spots remaining for this date. Please reduce the number of people or select another date.",
       "userNotFound": "User not found",
       "agencyNotFound": "Agency not found"
-    },
-    "date": {
-      "deleteSuccess": "Date deleted",
-      "deleteError": "Delete operation failed"
-    },
-    "toast": {
-      "success": "Success! ✅",
-      "error": "Error",
-      "statusUpdated": "Status updated",
-      "statusUpdateError": "Status could not be updated",
-      "messagesSent": "Messages sent",
-      "messagesSentError": "Messages could not be sent"
     }
-  },
-  "auth": {
-    "login": "Login",
-    "signup": "Sign Up",
-    "email": "Email",
-    "password": "Password",
-    "forgotPassword": "Forgot Password",
-    "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?"
   },
   "auth": {
     "login": "Login",
@@ -1501,46 +1463,6 @@
     "emailMaxLength": "Email can be maximum 255 characters",
     "messageMinLength": "Message must be at least 10 characters",
     "messageMaxLength": "Message can be maximum 1000 characters"
-  },
-  "tickets": {
-    "title": "Support Tickets",
-    "adminTitle": "All Support Tickets",
-    "createNew": "Create New Ticket",
-    "noTickets": "No support tickets yet",
-    "viewDetails": "View Details",
-    "created": "Created",
-    "fillAllFields": "Please fill in all fields",
-    "createSuccess": "Support ticket created successfully",
-    "createError": "Could not create support ticket",
-    "loadError": "Could not load support tickets",
-    "updateError": "Could not update status",
-    "messageError": "Could not send message",
-    "messageSent": "Message sent",
-    "statusUpdated": "Status updated",
-    "titleLabel": "Title",
-    "titlePlaceholder": "Briefly describe your issue",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Describe your issue in detail...",
-    "priorityLabel": "Priority",
-    "submit": "Submit",
-    "messages": "Messages",
-    "writeMessage": "Write your message...",
-    "writeReply": "Write your reply...",
-    "send": "Send",
-    "admin": "Admin",
-    "you": "You",
-    "user": "User",
-    "status": {
-      "open": "Open",
-      "in_progress": "In Progress",
-      "resolved": "Resolved",
-      "closed": "Closed"
-    },
-    "priority": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High"
-    }
   },
   "agencyInfo": {
     "title": "Agency Information",

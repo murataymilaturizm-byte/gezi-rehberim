@@ -38,8 +38,9 @@
     "title": "Funktionen",
     "subtitle": "Stärken Sie Ihr Geschäft",
     "whatsapp": {
-      "title": "WhatsApp-Integration",
-      "description": "Kommunizieren Sie direkt mit Ihren Kunden über WhatsApp"
+      "title": "24/7 Automatischer Verkauf",
+      "description": "Kunden fragen auch um Mitternacht nach Touren und buchen. Verkaufen Sie, während Sie schlafen - verpassen Sie keine Gelegenheit.",
+      "metric": "Durchschnittlich 120% mehr Buchungen im ersten Monat"
     },
     "ai": {
       "title": "KI-Gestützt",
@@ -50,8 +51,9 @@
       "description": "Ihre Kunden können einfach Touren buchen"
     },
     "analytics": {
-      "title": "Detaillierte Analysen",
-      "description": "Verfolgen Sie die Leistung Ihres Unternehmens"
+      "title": "Umsatzverfolgung & Analyse",
+      "description": "Welche Touren sind rentabel? An welchen Tagen gibt es mehr Verkäufe? Sehen Sie alle Umsatz- und Leistungsdaten in Echtzeit.",
+      "metric": "Tägliche, wöchentliche, monatliche Umsatzberichte"
     },
     "templates": {
       "title": "Nachrichtenvorlagen",
@@ -61,16 +63,6 @@
       "title": "Mehrsprachiger Support",
       "description": "Bedienen Sie Ihre Kunden in 7 verschiedenen Sprachen",
       "metric": "Fließende Kommunikation in 7 Sprachen"
-    },
-    "analytics": {
-      "title": "Umsatzverfolgung & Analyse",
-      "description": "Welche Touren sind rentabel? An welchen Tagen gibt es mehr Verkäufe? Sehen Sie alle Umsatz- und Leistungsdaten in Echtzeit.",
-      "metric": "Tägliche, wöchentliche, monatliche Umsatzberichte"
-    },
-    "whatsapp": {
-      "title": "24/7 Automatischer Verkauf",
-      "description": "Kunden fragen auch um Mitternacht nach Touren und buchen. Verkaufen Sie, während Sie schlafen - verpassen Sie keine Gelegenheit.",
-      "metric": "Durchschnittlich 120% mehr Buchungen im ersten Monat"
     }
   },
   "howItWorks": {
@@ -78,15 +70,15 @@
     "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten",
     "step1": {
       "title": "Kunde sendet Nachricht",
-      "description": "Sucht in natürlicher Sprache wie \"Kappadokien Touren\" über WhatsApp"
+      "description": "Sucht in natürlicher Sprache wie \"Kappadokien-Touren\" über WhatsApp"
     },
     "step2": {
       "title": "KI analysiert",
-      "description": "KI versteht die Nachricht und empfiehlt die am besten geeigneten Touren, liefert Preis- und Datumsinformationen"
+      "description": "KI versteht die Nachricht und empfiehlt die am besten geeigneten Touren, liefert Preis- und Termininformationen"
     },
     "step3": {
       "title": "Buchung erstellt",
-      "description": "Kundeninformationen werden mit Wizard-Führung gesammelt, Buchung wird abgeschlossen"
+      "description": "Kundeninformationen werden mit Assistentenführung erfasst, Buchung wird abgeschlossen"
     },
     "footer": "Der gesamte Prozess ist automatisch und funktioniert 24/7 🚀",
     "demoButton": "Live-Demo erkunden"
@@ -143,24 +135,6 @@
     },
     "stats": "250+ zufriedene Agenturen"
   },
-  "howItWorks": {
-    "title": "Wie funktioniert es?",
-    "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten",
-    "step1": {
-      "title": "Kunde sendet Nachricht",
-      "description": "Sucht in natürlicher Sprache wie \"Kappadokien-Touren\" über WhatsApp"
-    },
-    "step2": {
-      "title": "KI analysiert",
-      "description": "KI versteht die Nachricht und empfiehlt die am besten geeigneten Touren, liefert Preis- und Termininformationen"
-    },
-    "step3": {
-      "title": "Buchung erstellt",
-      "description": "Kundeninformationen werden mit Assistentenführung erfasst, Buchung wird abgeschlossen"
-    },
-    "footer": "Der gesamte Prozess ist automatisch und funktioniert 24/7 🚀",
-    "demoButton": "Live-Demo erkunden"
-  },
   "benefits": {
     "title": "Konkrete Ergebnisse, Echter Wert",
     "subtitle": "Nicht nur Funktionen - der Wert für Ihr Geschäft",
@@ -202,24 +176,6 @@
       "label": "Kundenprofile",
       "subtext": "Automatisch verfolgt"
     }
-  },
-  "howItWorks": {
-    "title": "Wie funktioniert es?",
-    "subtitle": "Von WhatsApp zur Buchung in 3 einfachen Schritten",
-    "step1": {
-      "title": "Kunde sendet Nachricht",
-      "description": "Sucht in natürlicher Sprache wie \"Kappadokien-Touren\" über WhatsApp"
-    },
-    "step2": {
-      "title": "KI analysiert",
-      "description": "KI versteht die Nachricht und empfiehlt die am besten geeigneten Touren, liefert Preis- und Termininformationen"
-    },
-    "step3": {
-      "title": "Buchung erstellt",
-      "description": "Kundeninformationen werden mit Assistentenführung erfasst, Buchung wird abgeschlossen"
-    },
-    "footer": "Der gesamte Prozess ist automatisch und funktioniert 24/7 🚀",
-    "demoButton": "Live-Demo erkunden"
   },
   "testimonials": {
     "title": "Echte Ergebnisse",
@@ -445,22 +401,22 @@
     "dateFilter": "Datumsbereichsfilter"
   },
   "tickets": {
-    "title": "Support-Anfragen",
-    "adminTitle": "Alle Support-Anfragen",
-    "createNew": "Neue Anfrage Erstellen",
-    "noTickets": "Noch keine Support-Anfragen",
-    "viewDetails": "Details Anzeigen",
+    "title": "Support-Tickets",
+    "adminTitle": "Alle Support-Tickets",
+    "createNew": "Neues Ticket erstellen",
+    "noTickets": "Noch keine Support-Tickets",
+    "viewDetails": "Details anzeigen",
     "created": "Erstellt",
     "fillAllFields": "Bitte füllen Sie alle Felder aus",
-    "createSuccess": "Support-Anfrage erfolgreich erstellt",
-    "createError": "Support-Anfrage konnte nicht erstellt werden",
-    "loadError": "Support-Anfragen konnten nicht geladen werden",
+    "createSuccess": "Support-Ticket erfolgreich erstellt",
+    "createError": "Support-Ticket konnte nicht erstellt werden",
+    "loadError": "Support-Tickets konnten nicht geladen werden",
     "updateError": "Status konnte nicht aktualisiert werden",
     "messageError": "Nachricht konnte nicht gesendet werden",
     "messageSent": "Nachricht gesendet",
     "statusUpdated": "Status aktualisiert",
     "titleLabel": "Titel",
-    "titlePlaceholder": "Fassen Sie Ihr Problem kurz zusammen",
+    "titlePlaceholder": "Beschreiben Sie Ihr Problem kurz",
     "descriptionLabel": "Beschreibung",
     "descriptionPlaceholder": "Beschreiben Sie Ihr Problem im Detail...",
     "priorityLabel": "Priorität",
@@ -705,10 +661,10 @@
         "conversationStyle": "Konversationsstil",
         "conversationStyleHelp": "Wählen Sie, wie Ihr Bot mit Kunden kommuniziert",
         "style": {
-          "friendly": "Freundlich/Herzlich",
-          "professional": "Professionell/Geschäftlich",
-          "energetic": "Energisch/Dynamisch",
-          "helpful": "Hilfsbereit/Freundlich"
+          "standart": "Freundlich/Herzlich",
+          "kurumsal": "Professionell/Geschäftlich",
+          "dinamik": "Energisch/Dynamisch",
+          "premium": "Hilfsbereit/Freundlich"
         },
         "saving": "Wird gespeichert...",
         "update": "Aktualisieren",
@@ -816,16 +772,65 @@
       "destinationAnalytics": "Reisezielanalysen"
     },
     "dashboard": {
+      "whatsappSettings": "WhatsApp-Einstellungen",
       "title": "Dashboard",
-      "whatsappSettings": "WhatsApp-Einstellungen"
+      "totalRevenue": "Gesamtumsatz",
+      "avgBasket": "Durchschnittlicher Warenkorb",
+      "conversionRate": "Konversionsrate",
+      "confirmedReservations": "Bestätigte Reservierungen",
+      "avgPerBooking": "Pro Buchung",
+      "registrations": "Registrierung",
+      "totalTours": "Gesamte Touren",
+      "activeTourCount": "Anzahl aktiver Touren",
+      "totalRegistrations": "Gesamte Registrierungen",
+      "allRegistrations": "Alle Registrierungen",
+      "activeDates": "Aktive Daten",
+      "tourDates": "Tour-Daten",
+      "pendingRegistrations": "Ausstehende Registrierungen",
+      "awaitingReview": "Warten auf Überprüfung",
+      "registrationsTitle": "Registrierungen",
+      "last7Days": "Letzte 7 Tage - Registrierungen",
+      "chartRegistrations": "Registrierungen",
+      "popularDestinations": "Beliebte Reiseziele",
+      "mostRegisteredPlaces": "Meistgebuchte Orte",
+      "registration": "Registrierung",
+      "recentRegistrations": "Neueste Registrierungen",
+      "filter": "Filter",
+      "totalAgencies": "Gesamte Agenturen",
+      "allRegisteredAgencies": "Alle registrierten Agenturen",
+      "trialAgencies": "Test-Agenturen",
+      "trialStatusAgencies": "Agenturen im Teststatus",
+      "messagesUsed": "Verwendete Nachrichten",
+      "totalMessagesThisMonth": "Gesamte Nachrichten in diesem Monat",
+      "activeRate": "Aktivrate",
+      "activeAgencyRate": "Aktive Agenturrate",
+      "starterPlan": "Starter-Plan",
+      "professionalPlan": "Professional-Plan",
+      "enterprisePlan": "Enterprise-Plan",
+      "monthlyRevenue": "Monatlicher Umsatz (Schätzung)",
+      "activeSubscriptionsOnly": "Nur aktive und bezahlte Abonnements (Test ausgeschlossen)",
+      "trialAgenciesLabel": "Test-Agenturen:",
+      "agency": "Agentur",
+      "month": "Monat",
+      "status": "Status",
+      "trialPeriod": "Testzeitraum",
+      "messagesPerMonth": "500 Nachrichten/Monat",
+      "conversationHistory": "30 Tage Gesprächsverlauf",
+      "emailSupport": "E-Mail-Support",
+      "revenueGrowthTrend": "Umsatz- und Wachstumstrend",
+      "superAdminDescription": "Überwachen Sie den allgemeinen Status und die Nutzungsstatistiken aller Agenturen hier. Verwenden Sie die Registerkarte 'Agenturen' für eine detaillierte Verwaltung."
     },
     "toast": {
-      "success": "Erfolgreich",
-      "error": "Fehler"
+      "success": "Erfolgreich! ✅",
+      "error": "Fehler",
+      "statusUpdated": "Status aktualisiert",
+      "statusUpdateError": "Status konnte nicht aktualisiert werden",
+      "messagesSent": "Nachrichten gesendet",
+      "messagesSentError": "Nachrichten konnten nicht gesendet werden"
     },
     "date": {
-      "deleteSuccess": "Datum erfolgreich gelöscht",
-      "deleteError": "Fehler beim Löschen des Datums"
+      "deleteSuccess": "Datum gelöscht",
+      "deleteError": "Löschvorgang fehlgeschlagen"
     },
     "tours": {
       "title": "Touren",
@@ -1012,15 +1017,30 @@
       "planOptions": {
         "starter": {
           "name": "Starter",
-          "features": ["500 Nachrichten/Monat", "1 Benutzer", "Basis-Berichterstattung", "E-Mail-Support"]
+          "features": [
+            "500 Nachrichten/Monat",
+            "1 Benutzer",
+            "Basis-Berichterstattung",
+            "E-Mail-Support"
+          ]
         },
         "professional": {
           "name": "Professionell",
-          "features": ["2.000 Nachrichten/Monat", "5 Benutzer", "Erweiterte Berichterstattung", "Vorrangiger Support"]
+          "features": [
+            "2.000 Nachrichten/Monat",
+            "5 Benutzer",
+            "Erweiterte Berichterstattung",
+            "Vorrangiger Support"
+          ]
         },
         "enterprise": {
           "name": "Enterprise",
-          "features": ["Unbegrenzte Nachrichten", "Unbegrenzte Benutzer", "Benutzerdefinierte Berichterstattung", "24/7 Support"]
+          "features": [
+            "Unbegrenzte Nachrichten",
+            "Unbegrenzte Benutzer",
+            "Benutzerdefinierte Berichterstattung",
+            "24/7 Support"
+          ]
         }
       },
       "eventTypes": {
@@ -1038,7 +1058,19 @@
       "title": "Agentenverwaltung",
       "addNew": "Neue Agentur Hinzufügen",
       "edit": "Bearbeiten",
-      "plan": "Plan",
+      "plan": {
+        "monthlyLimit": "Monatliches Nachrichtenlimit",
+        "defaultLimit": "Standardlimit des Plans: {{limit}} Nachrichten",
+        "extraMessages": "Zusätzliches Nachrichtenkontingent Hinzufügen",
+        "extraPlaceholder": "z.B: 500",
+        "extraHelp": "Fügen Sie dem aktuellen Limit zusätzliches Nachrichtenkontingent hinzu",
+        "newTotalLimit": "Neues Gesamtlimit",
+        "messagesPerMonth": "Nachrichten/Monat",
+        "unlimitedMessages": "Unbegrenzte Nachrichten",
+        "enterpriseNoLimit": "Der Unternehmensplan hat kein Nachrichtenlimit",
+        "cancel": "Abbrechen",
+        "save": "Speichern"
+      },
       "delete": "Löschen",
       "editAgency": "Agentur Bearbeiten",
       "addNewAgency": "Neue Agentur Hinzufügen",
@@ -1089,81 +1121,7 @@
         "notAdded": "Nicht Hinzugefügt",
         "quotaFull": "Kontingent Voll",
         "percentUsed": "verwendet"
-      },
-      "plan": {
-        "monthlyLimit": "Monatliches Nachrichtenlimit",
-        "defaultLimit": "Standardlimit des Plans: {{limit}} Nachrichten",
-        "extraMessages": "Zusätzliches Nachrichtenkontingent Hinzufügen",
-        "extraPlaceholder": "z.B: 500",
-        "extraHelp": "Fügen Sie dem aktuellen Limit zusätzliches Nachrichtenkontingent hinzu",
-        "newTotalLimit": "Neues Gesamtlimit",
-        "messagesPerMonth": "Nachrichten/Monat",
-        "unlimitedMessages": "Unbegrenzte Nachrichten",
-        "enterpriseNoLimit": "Der Unternehmensplan hat kein Nachrichtenlimit",
-        "cancel": "Abbrechen",
-        "save": "Speichern"
       }
-    },
-    "dashboard": {
-      "whatsappSettings": "WhatsApp-Einstellungen",
-      "title": "Dashboard",
-      "totalRevenue": "Gesamtumsatz",
-      "avgBasket": "Durchschnittlicher Warenkorb",
-      "conversionRate": "Konversionsrate",
-      "confirmedReservations": "Bestätigte Reservierungen",
-      "avgPerBooking": "Pro Buchung",
-      "registrations": "Registrierung",
-      "totalTours": "Gesamte Touren",
-      "activeTourCount": "Anzahl aktiver Touren",
-      "totalRegistrations": "Gesamte Registrierungen",
-      "allRegistrations": "Alle Registrierungen",
-      "activeDates": "Aktive Daten",
-      "tourDates": "Tour-Daten",
-      "pendingRegistrations": "Ausstehende Registrierungen",
-      "awaitingReview": "Warten auf Überprüfung",
-      "registrationsTitle": "Registrierungen",
-      "last7Days": "Letzte 7 Tage - Registrierungen",
-      "chartRegistrations": "Registrierungen",
-      "popularDestinations": "Beliebte Reiseziele",
-      "mostRegisteredPlaces": "Meistgebuchte Orte",
-      "registration": "Registrierung",
-      "recentRegistrations": "Neueste Registrierungen",
-      "filter": "Filter",
-      "totalAgencies": "Gesamte Agenturen",
-      "allRegisteredAgencies": "Alle registrierten Agenturen",
-      "trialAgencies": "Test-Agenturen",
-      "trialStatusAgencies": "Agenturen im Teststatus",
-      "messagesUsed": "Verwendete Nachrichten",
-      "totalMessagesThisMonth": "Gesamte Nachrichten in diesem Monat",
-      "activeRate": "Aktivrate",
-      "activeAgencyRate": "Aktive Agenturrate",
-      "starterPlan": "Starter-Plan",
-      "professionalPlan": "Professional-Plan",
-      "enterprisePlan": "Enterprise-Plan",
-      "monthlyRevenue": "Monatlicher Umsatz (Schätzung)",
-      "activeSubscriptionsOnly": "Nur aktive und bezahlte Abonnements (Test ausgeschlossen)",
-      "trialAgenciesLabel": "Test-Agenturen:",
-      "agency": "Agentur",
-      "month": "Monat",
-      "status": "Status",
-      "trialPeriod": "Testzeitraum",
-      "messagesPerMonth": "500 Nachrichten/Monat",
-      "conversationHistory": "30 Tage Gesprächsverlauf",
-      "emailSupport": "E-Mail-Support",
-      "revenueGrowthTrend": "Umsatz- und Wachstumstrend",
-      "superAdminDescription": "Überwachen Sie den allgemeinen Status und die Nutzungsstatistiken aller Agenturen hier. Verwenden Sie die Registerkarte 'Agenturen' für eine detaillierte Verwaltung."
-    },
-    "date": {
-      "deleteSuccess": "Datum gelöscht",
-      "deleteError": "Löschvorgang fehlgeschlagen"
-    },
-    "toast": {
-      "success": "Erfolgreich! ✅",
-      "error": "Fehler",
-      "statusUpdated": "Status aktualisiert",
-      "statusUpdateError": "Status konnte nicht aktualisiert werden",
-      "messagesSent": "Nachrichten gesendet",
-      "messagesSentError": "Nachrichten konnten nicht gesendet werden"
     },
     "usageStats": {
       "loadError": "Fehler beim Laden der Nutzungsstatistiken",
@@ -1280,15 +1238,6 @@
       "userNotFound": "Benutzer nicht gefunden",
       "agencyNotFound": "Agentur nicht gefunden"
     }
-  },
-  "auth": {
-    "login": "Anmelden",
-    "signup": "Registrieren",
-    "email": "E-Mail",
-    "password": "Passwort",
-    "forgotPassword": "Passwort Vergessen",
-    "noAccount": "Noch kein Konto?",
-    "hasAccount": "Haben Sie bereits ein Konto?"
   },
   "auth": {
     "login": "Anmelden",
@@ -1456,46 +1405,6 @@
     "emailMaxLength": "E-Mail kann maximal 255 Zeichen lang sein",
     "messageMinLength": "Nachricht muss mindestens 10 Zeichen lang sein",
     "messageMaxLength": "Nachricht kann maximal 1000 Zeichen lang sein"
-  },
-  "tickets": {
-    "title": "Support-Tickets",
-    "adminTitle": "Alle Support-Tickets",
-    "createNew": "Neues Ticket erstellen",
-    "noTickets": "Noch keine Support-Tickets",
-    "viewDetails": "Details anzeigen",
-    "created": "Erstellt",
-    "fillAllFields": "Bitte füllen Sie alle Felder aus",
-    "createSuccess": "Support-Ticket erfolgreich erstellt",
-    "createError": "Support-Ticket konnte nicht erstellt werden",
-    "loadError": "Support-Tickets konnten nicht geladen werden",
-    "updateError": "Status konnte nicht aktualisiert werden",
-    "messageError": "Nachricht konnte nicht gesendet werden",
-    "messageSent": "Nachricht gesendet",
-    "statusUpdated": "Status aktualisiert",
-    "titleLabel": "Titel",
-    "titlePlaceholder": "Beschreiben Sie Ihr Problem kurz",
-    "descriptionLabel": "Beschreibung",
-    "descriptionPlaceholder": "Beschreiben Sie Ihr Problem im Detail...",
-    "priorityLabel": "Priorität",
-    "submit": "Absenden",
-    "messages": "Nachrichten",
-    "writeMessage": "Schreiben Sie Ihre Nachricht...",
-    "writeReply": "Schreiben Sie Ihre Antwort...",
-    "send": "Senden",
-    "admin": "Admin",
-    "you": "Sie",
-    "user": "Benutzer",
-    "status": {
-      "open": "Offen",
-      "in_progress": "In Bearbeitung",
-      "resolved": "Gelöst",
-      "closed": "Geschlossen"
-    },
-    "priority": {
-      "low": "Niedrig",
-      "medium": "Mittel",
-      "high": "Hoch"
-    }
   },
   "agencyInfo": {
     "title": "Agenturinformationen",

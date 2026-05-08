@@ -27,10 +27,10 @@ export const WhatsAppSettings = () => {
   const [isConfigured, setIsConfigured] = useState(false);
   const [whatsappStatus, setWhatsappStatus] = useState<'pending' | 'active' | 'rejected'>('pending');
   const [planType, setPlanType] = useState<string>('starter');
-  const [availableStyles, setAvailableStyles] = useState<string[]>(['professional']);
-  
+  const [availableStyles, setAvailableStyles] = useState<string[]>(['kurumsal']);
+
   const [formData, setFormData] = useState({
-    conversation_style: "professional" as 'friendly' | 'professional' | 'energetic' | 'helpful'
+    conversation_style: "kurumsal" as 'standart' | 'kurumsal' | 'dinamik' | 'premium'
   });
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export const WhatsAppSettings = () => {
         setWhatsappStatus(status as 'pending' | 'active' | 'rejected');
 
         setFormData({
-          conversation_style: (agencyData.conversation_style || 'professional') as 'friendly' | 'professional' | 'energetic' | 'helpful'
+          conversation_style: (agencyData.conversation_style || 'kurumsal') as 'standart' | 'kurumsal' | 'dinamik' | 'premium'
         });
       }
     } catch (error) {
@@ -243,7 +243,7 @@ export const WhatsAppSettings = () => {
             </div>
             <Select
               value={formData.conversation_style}
-              onValueChange={(value: 'friendly' | 'professional' | 'energetic' | 'helpful') =>
+              onValueChange={(value: 'standart' | 'kurumsal' | 'dinamik' | 'premium') =>
                 setFormData({ ...formData, conversation_style: value })
               }
             >
@@ -251,31 +251,31 @@ export const WhatsAppSettings = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="professional">
+                <SelectItem value="kurumsal">
                   <div className="flex items-center gap-2">
                     <span>👔</span>
-                    <span>{t("admin.whatsapp.settings.style.professional")}</span>
+                    <span>{t("admin.whatsapp.settings.style.kurumsal")}</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="friendly" disabled={!availableStyles.includes('friendly')}>
+                <SelectItem value="standart" disabled={!availableStyles.includes('standart')}>
                   <div className="flex items-center gap-2">
                     <span>🤝</span>
-                    <span>{t("admin.whatsapp.settings.style.friendly")}</span>
-                    {!availableStyles.includes('friendly') && <Lock className="w-3 h-3 ml-1" />}
+                    <span>{t("admin.whatsapp.settings.style.standart")}</span>
+                    {!availableStyles.includes('standart') && <Lock className="w-3 h-3 ml-1" />}
                   </div>
                 </SelectItem>
-                <SelectItem value="energetic" disabled={!availableStyles.includes('energetic')}>
+                <SelectItem value="dinamik" disabled={!availableStyles.includes('dinamik')}>
                   <div className="flex items-center gap-2">
                     <span>⚡</span>
-                    <span>{t("admin.whatsapp.settings.style.energetic")}</span>
-                    {!availableStyles.includes('energetic') && <Lock className="w-3 h-3 ml-1" />}
+                    <span>{t("admin.whatsapp.settings.style.dinamik")}</span>
+                    {!availableStyles.includes('dinamik') && <Lock className="w-3 h-3 ml-1" />}
                   </div>
                 </SelectItem>
-                <SelectItem value="helpful" disabled={!availableStyles.includes('helpful')}>
+                <SelectItem value="premium" disabled={!availableStyles.includes('premium')}>
                   <div className="flex items-center gap-2">
-                    <span>😊</span>
-                    <span>{t("admin.whatsapp.settings.style.helpful")}</span>
-                    {!availableStyles.includes('helpful') && <Lock className="w-3 h-3 ml-1" />}
+                    <span>💎</span>
+                    <span>{t("admin.whatsapp.settings.style.premium")}</span>
+                    {!availableStyles.includes('premium') && <Lock className="w-3 h-3 ml-1" />}
                   </div>
                 </SelectItem>
               </SelectContent>

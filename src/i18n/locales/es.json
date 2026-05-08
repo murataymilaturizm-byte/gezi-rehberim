@@ -38,8 +38,9 @@
     "title": "Características",
     "subtitle": "Potencia Tu Negocio",
     "whatsapp": {
-      "title": "Integración de WhatsApp",
-      "description": "Comunícate directamente con tus clientes a través de WhatsApp"
+      "title": "Ventas Automatizadas 24/7",
+      "description": "Los clientes preguntan sobre tours y hacen reservas incluso a medianoche. Vende mientras duermes - nunca pierdas una oportunidad.",
+      "metric": "Aumento promedio del 120% en reservas en el primer mes"
     },
     "ai": {
       "title": "Impulsado por IA",
@@ -50,8 +51,9 @@
       "description": "Tus clientes pueden reservar tours fácilmente"
     },
     "analytics": {
-      "title": "Análisis Detallados",
-      "description": "Rastrea el rendimiento de tu negocio"
+      "title": "Seguimiento de Ingresos y Análisis",
+      "description": "¿Qué tours son rentables? ¿Qué días tienen más ventas? Vea todos los datos de ingresos y rendimiento en tiempo real.",
+      "metric": "Informes de ingresos diarios, semanales, mensuales"
     },
     "templates": {
       "title": "Plantillas de Mensajes",
@@ -61,16 +63,6 @@
       "title": "Soporte Multiidioma",
       "description": "Sirve a tus clientes en 7 idiomas diferentes",
       "metric": "Comunicación fluida en 7 idiomas"
-    },
-    "analytics": {
-      "title": "Seguimiento de Ingresos y Análisis",
-      "description": "¿Qué tours son rentables? ¿Qué días tienen más ventas? Vea todos los datos de ingresos y rendimiento en tiempo real.",
-      "metric": "Informes de ingresos diarios, semanales, mensuales"
-    },
-    "whatsapp": {
-      "title": "Ventas Automatizadas 24/7",
-      "description": "Los clientes preguntan sobre tours y hacen reservas incluso a medianoche. Vende mientras duermes - nunca pierdas una oportunidad.",
-      "metric": "Aumento promedio del 120% en reservas en el primer mes"
     }
   },
   "howItWorks": {
@@ -307,7 +299,7 @@
   },
   "cta": {
     "title": "¿Listo para Comenzar?",
-    "subtitle": "Crea una cuenta demo y prueba todas las características gratis. No se requiere tarjeta de crédito.",
+    "subtitle": "Crea una cuenta demo y prueba todas las funciones gratis. No se requiere tarjeta de crédito.",
     "button": "Probar Gratis"
   },
   "contact": {
@@ -437,22 +429,22 @@
     "noDistributionData": "No hay datos de distribución"
   },
   "tickets": {
-    "title": "Solicitudes de Soporte",
-    "adminTitle": "Todas las Solicitudes de Soporte",
-    "createNew": "Crear Nueva Solicitud",
-    "noTickets": "Aún no hay solicitudes de soporte",
+    "title": "Tickets de Soporte",
+    "adminTitle": "Todos los Tickets",
+    "createNew": "Crear Nuevo Ticket",
+    "noTickets": "Aún no hay tickets",
     "viewDetails": "Ver Detalles",
     "created": "Creado",
     "fillAllFields": "Por favor complete todos los campos",
-    "createSuccess": "Solicitud de soporte creada exitosamente",
-    "createError": "Error al crear la solicitud de soporte",
-    "loadError": "Error al cargar las solicitudes de soporte",
-    "updateError": "Error al actualizar el estado",
-    "messageError": "Error al enviar el mensaje",
+    "createSuccess": "Ticket creado exitosamente",
+    "createError": "No se pudo crear el ticket",
+    "loadError": "No se pudieron cargar los tickets",
+    "updateError": "No se pudo actualizar el estado",
+    "messageError": "No se pudo enviar el mensaje",
     "messageSent": "Mensaje enviado",
     "statusUpdated": "Estado actualizado",
     "titleLabel": "Título",
-    "titlePlaceholder": "Resuma brevemente su problema",
+    "titlePlaceholder": "Describa brevemente su problema",
     "descriptionLabel": "Descripción",
     "descriptionPlaceholder": "Describa su problema en detalle...",
     "priorityLabel": "Prioridad",
@@ -697,10 +689,10 @@
         "conversationStyle": "Estilo de Conversación",
         "conversationStyleHelp": "Elija cómo su bot se comunica con los clientes",
         "style": {
-          "friendly": "Amistoso/Cordial",
-          "professional": "Profesional/Corporativo",
-          "energetic": "Enérgico/Dinámico",
-          "helpful": "Amable/Servicial"
+          "standart": "Amistoso/Cordial",
+          "kurumsal": "Profesional/Corporativo",
+          "dinamik": "Enérgico/Dinámico",
+          "premium": "Amable/Servicial"
         },
         "saving": "Guardando...",
         "update": "Actualizar",
@@ -808,16 +800,65 @@
       "destinationAnalytics": "Análisis de Destinos"
     },
     "dashboard": {
+      "whatsappSettings": "Configuración de WhatsApp",
       "title": "Panel de Control",
-      "whatsappSettings": "Configuración de WhatsApp"
+      "totalRevenue": "Ingresos Totales",
+      "avgBasket": "Cesta Promedio",
+      "conversionRate": "Tasa de Conversión",
+      "confirmedReservations": "Reservas confirmadas",
+      "avgPerBooking": "Por reserva",
+      "registrations": "registro",
+      "totalTours": "Total de Tours",
+      "activeTourCount": "Número de tours activos",
+      "totalRegistrations": "Total de Registros",
+      "allRegistrations": "Todos los registros",
+      "activeDates": "Fechas Activas",
+      "tourDates": "Fechas de tours",
+      "pendingRegistrations": "Registros Pendientes",
+      "awaitingReview": "Esperando revisión",
+      "registrationsTitle": "Registros",
+      "last7Days": "Últimos 7 Días - Registros",
+      "chartRegistrations": "Registros",
+      "popularDestinations": "Destinos Populares",
+      "mostRegisteredPlaces": "Lugares más reservados",
+      "registration": "Registro",
+      "recentRegistrations": "Registros Recientes",
+      "filter": "Filtrar",
+      "totalAgencies": "Total de Agencias",
+      "allRegisteredAgencies": "Todas las agencias registradas",
+      "trialAgencies": "Agencias de Prueba",
+      "trialStatusAgencies": "Agencias en estado de prueba",
+      "messagesUsed": "Mensajes Utilizados",
+      "totalMessagesThisMonth": "Total de mensajes utilizados este mes",
+      "activeRate": "Tasa Activa",
+      "activeAgencyRate": "Tasa de agencias activas",
+      "starterPlan": "Plan Inicial",
+      "professionalPlan": "Plan Profesional",
+      "enterprisePlan": "Plan Empresarial",
+      "monthlyRevenue": "Ingresos Mensuales (Estimación)",
+      "activeSubscriptionsOnly": "Solo suscripciones activas y de pago (sin prueba)",
+      "trialAgenciesLabel": "Agencias de prueba:",
+      "agency": "agencia",
+      "month": "mes",
+      "status": "Estado",
+      "trialPeriod": "Período de prueba",
+      "messagesPerMonth": "500 mensajes/mes",
+      "conversationHistory": "Historial de 30 días",
+      "emailSupport": "Soporte por correo",
+      "revenueGrowthTrend": "Tendencia de Ingresos y Crecimiento",
+      "superAdminDescription": "Puede monitorear el estado general y las estadísticas de uso de todas las agencias aquí. Use la pestaña 'Agencias' para gestión detallada."
     },
     "toast": {
-      "success": "Éxito",
-      "error": "Error"
+      "success": "¡Éxito! ✅",
+      "error": "Error",
+      "statusUpdated": "Estado actualizado",
+      "statusUpdateError": "No se pudo actualizar el estado",
+      "messagesSent": "Mensajes enviados",
+      "messagesSentError": "No se pudieron enviar los mensajes"
     },
     "date": {
-      "deleteSuccess": "Fecha eliminada exitosamente",
-      "deleteError": "Error al eliminar la fecha"
+      "deleteSuccess": "Fecha eliminada",
+      "deleteError": "Error al eliminar"
     },
     "tours": {
       "title": "Tours",
@@ -1004,15 +1045,30 @@
       "planOptions": {
         "starter": {
           "name": "Inicial",
-          "features": ["500 mensajes/mes", "1 usuario", "Informes básicos", "Soporte por correo"]
+          "features": [
+            "500 mensajes/mes",
+            "1 usuario",
+            "Informes básicos",
+            "Soporte por correo"
+          ]
         },
         "professional": {
           "name": "Profesional",
-          "features": ["2.000 mensajes/mes", "5 usuarios", "Informes avanzados", "Soporte prioritario"]
+          "features": [
+            "2.000 mensajes/mes",
+            "5 usuarios",
+            "Informes avanzados",
+            "Soporte prioritario"
+          ]
         },
         "enterprise": {
           "name": "Empresarial",
-          "features": ["Mensajes ilimitados", "Usuarios ilimitados", "Informes personalizados", "Soporte 24/7"]
+          "features": [
+            "Mensajes ilimitados",
+            "Usuarios ilimitados",
+            "Informes personalizados",
+            "Soporte 24/7"
+          ]
         }
       },
       "eventTypes": {
@@ -1030,7 +1086,19 @@
       "title": "Gestión de Agencias",
       "addNew": "Agregar Nueva Agencia",
       "edit": "Editar",
-      "plan": "Plan",
+      "plan": {
+        "monthlyLimit": "Límite Mensual de Mensajes",
+        "defaultLimit": "Límite predeterminado del plan: {{limit}} mensajes",
+        "extraMessages": "Agregar Cuota de Mensajes Extra",
+        "extraPlaceholder": "ej: 500",
+        "extraHelp": "Agregar cuota de mensajes extra al límite actual",
+        "newTotalLimit": "Nuevo Límite Total",
+        "messagesPerMonth": "mensajes/mes",
+        "unlimitedMessages": "Mensajes Ilimitados",
+        "enterpriseNoLimit": "El plan Empresarial no tiene límite de mensajes",
+        "cancel": "Cancelar",
+        "save": "Guardar"
+      },
       "delete": "Eliminar",
       "editAgency": "Editar Agencia",
       "addNewAgency": "Agregar Nueva Agencia",
@@ -1081,81 +1149,7 @@
         "notAdded": "No Agregado",
         "quotaFull": "Cuota Llena",
         "percentUsed": "usado"
-      },
-      "plan": {
-        "monthlyLimit": "Límite Mensual de Mensajes",
-        "defaultLimit": "Límite predeterminado del plan: {{limit}} mensajes",
-        "extraMessages": "Agregar Cuota de Mensajes Extra",
-        "extraPlaceholder": "ej: 500",
-        "extraHelp": "Agregar cuota de mensajes extra al límite actual",
-        "newTotalLimit": "Nuevo Límite Total",
-        "messagesPerMonth": "mensajes/mes",
-        "unlimitedMessages": "Mensajes Ilimitados",
-        "enterpriseNoLimit": "El plan Empresarial no tiene límite de mensajes",
-        "cancel": "Cancelar",
-        "save": "Guardar"
       }
-    },
-    "dashboard": {
-      "whatsappSettings": "Configuración de WhatsApp",
-      "title": "Panel de Control",
-      "totalRevenue": "Ingresos Totales",
-      "avgBasket": "Cesta Promedio",
-      "conversionRate": "Tasa de Conversión",
-      "confirmedReservations": "Reservas confirmadas",
-      "avgPerBooking": "Por reserva",
-      "registrations": "registro",
-      "totalTours": "Total de Tours",
-      "activeTourCount": "Número de tours activos",
-      "totalRegistrations": "Total de Registros",
-      "allRegistrations": "Todos los registros",
-      "activeDates": "Fechas Activas",
-      "tourDates": "Fechas de tours",
-      "pendingRegistrations": "Registros Pendientes",
-      "awaitingReview": "Esperando revisión",
-      "registrationsTitle": "Registros",
-      "last7Days": "Últimos 7 Días - Registros",
-      "chartRegistrations": "Registros",
-      "popularDestinations": "Destinos Populares",
-      "mostRegisteredPlaces": "Lugares más reservados",
-      "registration": "Registro",
-      "recentRegistrations": "Registros Recientes",
-      "filter": "Filtrar",
-      "totalAgencies": "Total de Agencias",
-      "allRegisteredAgencies": "Todas las agencias registradas",
-      "trialAgencies": "Agencias de Prueba",
-      "trialStatusAgencies": "Agencias en estado de prueba",
-      "messagesUsed": "Mensajes Utilizados",
-      "totalMessagesThisMonth": "Total de mensajes utilizados este mes",
-      "activeRate": "Tasa Activa",
-      "activeAgencyRate": "Tasa de agencias activas",
-      "starterPlan": "Plan Inicial",
-      "professionalPlan": "Plan Profesional",
-      "enterprisePlan": "Plan Empresarial",
-      "monthlyRevenue": "Ingresos Mensuales (Estimación)",
-      "activeSubscriptionsOnly": "Solo suscripciones activas y de pago (sin prueba)",
-      "trialAgenciesLabel": "Agencias de prueba:",
-      "agency": "agencia",
-      "month": "mes",
-      "status": "Estado",
-      "trialPeriod": "Período de prueba",
-      "messagesPerMonth": "500 mensajes/mes",
-      "conversationHistory": "Historial de 30 días",
-      "emailSupport": "Soporte por correo",
-      "revenueGrowthTrend": "Tendencia de Ingresos y Crecimiento",
-      "superAdminDescription": "Puede monitorear el estado general y las estadísticas de uso de todas las agencias aquí. Use la pestaña 'Agencias' para gestión detallada."
-    },
-    "date": {
-      "deleteSuccess": "Fecha eliminada",
-      "deleteError": "Error al eliminar"
-    },
-    "toast": {
-      "success": "¡Éxito! ✅",
-      "error": "Error",
-      "statusUpdated": "Estado actualizado",
-      "statusUpdateError": "No se pudo actualizar el estado",
-      "messagesSent": "Mensajes enviados",
-      "messagesSentError": "No se pudieron enviar los mensajes"
     },
     "usageStats": {
       "loadError": "Error al cargar las estadísticas de uso",
@@ -1272,15 +1266,6 @@
       "userNotFound": "Usuario no encontrado",
       "agencyNotFound": "Agencia no encontrada"
     }
-  },
-  "auth": {
-    "login": "Iniciar Sesión",
-    "signup": "Registrarse",
-    "email": "Email",
-    "password": "Contraseña",
-    "forgotPassword": "Olvidé mi Contraseña",
-    "noAccount": "¿No tienes cuenta?",
-    "hasAccount": "¿Ya tienes una cuenta?"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -1419,66 +1404,6 @@
     "filter": "Filtrar",
     "export": "Exportar",
     "import": "Importar"
-  },
-  "cta": {
-    "title": "¿Listo para Comenzar?",
-    "subtitle": "Crea una cuenta demo y prueba todas las funciones gratis. No se requiere tarjeta de crédito.",
-    "button": "Probar Gratis"
-  },
-  "contact": {
-    "question": "¿Tienes otras preguntas?",
-    "nameLabel": "Nombre Completo",
-    "namePlaceholder": "Tu nombre",
-    "emailLabel": "Email",
-    "emailPlaceholder": "email@ejemplo.com",
-    "messageLabel": "Tu Mensaje",
-    "messagePlaceholder": "Escribe tu mensaje aquí...",
-    "sendButton": "Enviar Mensaje",
-    "sending": "Enviando...",
-    "successTitle": "¡Mensaje Enviado! ✅",
-    "successMessage": "Nos pondremos en contacto contigo lo antes posible.",
-    "errorTitle": "Error",
-    "errorMessage": "No se pudo enviar el mensaje. Por favor, inténtalo de nuevo.",
-    "formErrorTitle": "Error de Formulario"
-  },
-  "validation": {
-    "nameRequired": "El nombre es obligatorio",
-    "nameMaxLength": "El nombre puede tener máximo 100 caracteres",
-    "emailInvalid": "Ingresa una dirección de email válida",
-    "emailMaxLength": "El email puede tener máximo 255 caracteres",
-    "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
-    "messageMaxLength": "El mensaje puede tener máximo 1000 caracteres"
-  },
-  "tickets": {
-    "title": "Tickets de Soporte",
-    "adminTitle": "Todos los Tickets",
-    "createNew": "Crear Nuevo Ticket",
-    "noTickets": "Aún no hay tickets",
-    "viewDetails": "Ver Detalles",
-    "created": "Creado",
-    "fillAllFields": "Por favor complete todos los campos",
-    "createSuccess": "Ticket creado exitosamente",
-    "createError": "No se pudo crear el ticket",
-    "loadError": "No se pudieron cargar los tickets",
-    "updateError": "No se pudo actualizar el estado",
-    "messageError": "No se pudo enviar el mensaje",
-    "messageSent": "Mensaje enviado",
-    "statusUpdated": "Estado actualizado",
-    "titleLabel": "Título",
-    "titlePlaceholder": "Describa brevemente su problema",
-    "descriptionLabel": "Descripción",
-    "descriptionPlaceholder": "Describa su problema en detalle...",
-    "priorityLabel": "Prioridad",
-    "submit": "Enviar",
-    "messages": "Mensajes",
-    "writeMessage": "Escriba su mensaje...",
-    "writeReply": "Escriba su respuesta...",
-    "send": "Enviar",
-    "admin": "Admin",
-    "you": "Usted",
-    "user": "Usuario",
-    "status": {"open": "Abierto", "in_progress": "En Progreso", "resolved": "Resuelto", "closed": "Cerrado"},
-    "priority": {"low": "Baja", "medium": "Media", "high": "Alta"}
   },
   "agencyInfo": {
     "title": "Información de la agencia",

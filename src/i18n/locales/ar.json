@@ -680,10 +680,10 @@
         "conversationStyle": "نمط المحادثة",
         "conversationStyleHelp": "اختر كيف يتواصل البوت مع العملاء",
         "style": {
-          "friendly": "ودود/حميم",
-          "professional": "محترف/مؤسسي",
-          "energetic": "نشيط/ديناميكي",
-          "helpful": "لطيف/متعاون"
+          "standart": "ودود/حميم",
+          "kurumsal": "محترف/مؤسسي",
+          "dinamik": "نشيط/ديناميكي",
+          "premium": "لطيف/متعاون"
         },
         "saving": "جاري الحفظ...",
         "update": "تحديث",

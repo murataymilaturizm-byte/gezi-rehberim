@@ -264,6 +264,9 @@ serve(async (req) => {
     const languageChangeIntent = detectLanguageChangeIntent(message);
     const runtimeDetectedLang = await detectLanguage(message);
 
+    // Problem 2 fix: Agency'nin seçtiği üslubu önceliklendir
+    const _agencyTone = ((agency as any).conversation_style || null) as ConversationTone | null;
+
     if (existingState?.content) {
       try {
         const parsed = JSON.parse(existingState.content);
@@ -271,23 +274,26 @@ serve(async (req) => {
           context = parsed;
           if (languageChangeIntent && languageChangeIntent !== context.language) {
             context.language = languageChangeIntent;
-            context.tone = getDefaultToneForLanguage(languageChangeIntent) as ConversationTone;
+            // Dil değişse de agency tonu korunur
+            context.tone = (_agencyTone ?? getDefaultToneForLanguage(languageChangeIntent)) as ConversationTone;
           } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
             context.language = runtimeDetectedLang;
           }
-          console.log(`✅ Loaded context - Stage: ${context.stage}, Lang: ${context.language}`);
+          // Her yüklemede agency tone override: DB'deki üslup context'i güncel tutar
+          if (_agencyTone) context.tone = _agencyTone;
+          console.log(`✅ Loaded context - Stage: ${context.stage}, Lang: ${context.language}, Tone: ${context.tone}`);
         } else {
           throw new Error("Invalid context");
         }
       } catch (_e) {
         console.log("⚠️ Creating fresh context");
         const initialLang = languageChangeIntent || runtimeDetectedLang || "tr";
-        context = createInitialContext(initialLang, getDefaultToneForLanguage(initialLang) as ConversationTone);
+        context = createInitialContext(initialLang, (_agencyTone ?? getDefaultToneForLanguage(initialLang)) as ConversationTone);
       }
     } else {
       console.log("🆕 Fresh context");
       const initialLang = languageChangeIntent || runtimeDetectedLang || "tr";
-      context = createInitialContext(initialLang, getDefaultToneForLanguage(initialLang) as ConversationTone);
+      context = createInitialContext(initialLang, (_agencyTone ?? getDefaultToneForLanguage(initialLang)) as ConversationTone);
     }
 
     const enabledLanguages = (agency as any).enabled_languages || ["tr"];
@@ -297,7 +303,8 @@ serve(async (req) => {
         `🌐 Language fallback: detected="${context.language}" not in enabled=[${enabledLanguages.join(",")}] for agency="${agency.name}". Falling back to "${enabledLanguages[0]}".`,
       );
       context.language = enabledLanguages[0];
-      context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
+      // Agency tonu language fallback'te de korunur
+      context.tone = (_agencyTone ?? getDefaultToneForLanguage(context.language)) as ConversationTone;
     }
 
     const today = new Date().toISOString().split("T")[0];
@@ -753,14 +760,12 @@ serve(async (req) => {
               const available = (d.quota || 999) - usedCount;
               if (available >= paxAdult) {
                 // Tarihi formatla
+                const _dateLocaleMap: Record<string, string> = {
+                  tr: "tr-TR", en: "en-GB", de: "de-DE", ru: "ru-RU",
+                  ar: "ar-SA", fr: "fr-FR", es: "es-ES",
+                };
                 const dateStr = new Date(d.departure_date).toLocaleDateString(
-                  newContext.language === "tr"
-                    ? "tr-TR"
-                    : newContext.language === "de"
-                      ? "de-DE"
-                      : newContext.language === "ru"
-                        ? "ru-RU"
-                        : "en-GB",
+                  _dateLocaleMap[newContext.language] || "en-GB",
                   { day: "numeric", month: "long", year: "numeric" },
                 );
                 const priceStr = d.price_adult ? ` (${d.price_adult} ${currentTourData?.currency || "TRY"})` : "";
@@ -780,6 +785,8 @@ serve(async (req) => {
                 de: `Das gewählte Datum hat leider nicht genügend Plätze (verbleibend: ${remainingQuota}).\n\n📅 *Verfügbare Termine:*\n${dateListStr}\n\nMöchten Sie einen dieser Termine wählen?`,
                 ru: `К сожалению, на выбранную дату недостаточно мест (осталось: ${remainingQuota}).\n\n📅 *Доступные даты:*\n${dateListStr}\n\nХотите выбрать одну из этих дат?`,
                 ar: `عذراً، لا توجد أماكن كافية للتاريخ المحدد (المتبقي: ${remainingQuota}).\n\n📅 *التواريخ المتاحة:*\n${dateListStr}\n\nهل تريد اختيار أحد هذه التواريخ؟`,
+                fr: `Désolé, il n'y a pas assez de places pour la date sélectionnée (restantes : ${remainingQuota}).\n\n📅 *Dates disponibles :*\n${dateListStr}\n\nSouhaitez-vous choisir l'une de ces dates ?`,
+                es: `Lo sentimos, no hay suficientes plazas para la fecha seleccionada (restantes: ${remainingQuota}).\n\n📅 *Fechas disponibles:*\n${dateListStr}\n\n¿Le gustaría elegir una de estas fechas?`,
               };
               quotaMsg = msgs[lang] || msgs["tr"];
             } else {
@@ -790,6 +797,8 @@ serve(async (req) => {
                 de: `Für das gewählte Datum sind nicht genügend Plätze verfügbar (verbleibend: ${remainingQuota}). Aktuell sind keine weiteren Termine verfügbar.\n\nBitte kontaktieren Sie ${agency.name}.${agencyPhone}`,
                 ru: `На выбранную дату недостаточно мест (осталось: ${remainingQuota}). Других доступных дат для этого тура нет.\n\nПожалуйста, свяжитесь с ${agency.name}.${agencyPhone}`,
                 ar: `لا توجد أماكن كافية للتاريخ المحدد (المتبقي: ${remainingQuota}). لا توجد تواريخ أخرى متاحة حالياً.\n\nيرجى التواصل مع ${agency.name}.${agencyPhone}`,
+                fr: `Désolé, il n'y a pas assez de places pour la date sélectionnée (restantes : ${remainingQuota}). Il n'y a actuellement pas d'autres dates disponibles pour ce circuit.\n\nVeuillez contacter ${agency.name}.${agencyPhone}`,
+                es: `Lo sentimos, no hay suficientes plazas para la fecha seleccionada (restantes: ${remainingQuota}). Actualmente no hay otras fechas disponibles para este tour.\n\nPor favor, contacte a ${agency.name}.${agencyPhone}`,
               };
               quotaMsg = msgs[lang] || msgs["tr"];
             }
@@ -943,14 +952,26 @@ serve(async (req) => {
 
       const adultCount = newContext.reservationInfo.paxAdult || 0;
       const childCount = newContext.reservationInfo.paxChild || 0;
-      const paxText =
-        newContext.language === "tr"
-          ? `${adultCount} yetişkin${childCount ? `, ${childCount} çocuk` : ""}`
-          : `${adultCount} adult${childCount ? `, ${childCount} child` : ""}`;
+      const paxTextMap: Record<string, string> = {
+        tr: `${adultCount} yetişkin${childCount ? `, ${childCount} çocuk` : ""}`,
+        en: `${adultCount} adult${childCount ? `, ${childCount} child` : ""}`,
+        de: `${adultCount} Erwachsene${childCount ? `, ${childCount} Kind${childCount > 1 ? "er" : ""}` : ""}`,
+        ru: `${adultCount} взросл${adultCount === 1 ? "ый" : "ых"}${childCount ? `, ${childCount} ребёнок` : ""}`,
+        ar: `${adultCount} بالغ${childCount ? `، ${childCount} طفل` : ""}`,
+        fr: `${adultCount} adulte${adultCount > 1 ? "s" : ""}${childCount ? `, ${childCount} enfant${childCount > 1 ? "s" : ""}` : ""}`,
+        es: `${adultCount} adulto${adultCount > 1 ? "s" : ""}${childCount ? `, ${childCount} niño${childCount > 1 ? "s" : ""}` : ""}`,
+      };
+      const paxText = paxTextMap[newContext.language] || paxTextMap.en;
 
+      const _tourTitle = selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "-";
       const completionMessages: Record<string, string> = {
-        tr: `Bilgilerinizi aldım ${fullName || ""}, çok teşekkür ederim! 😊\n*${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "Tur"}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
-        en: `Thank you ${fullName || ""}! 😊\nYour pre-registration for *${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "Tour"}* is completed.\n\n*Reservation Summary:*\n• *Tour:* ${selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Phone:* ${reservationPhone || "-"}\n\nOur team will contact you shortly for final booking and payment details.`,
+        tr: `Bilgilerinizi aldım ${fullName || ""}, çok teşekkür ederim! 😊\n*${_tourTitle}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${_tourTitle}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
+        en: `Thank you ${fullName || ""}! 😊\nYour pre-registration for *${_tourTitle}* is completed.\n\n*Reservation Summary:*\n• *Tour:* ${_tourTitle}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Phone:* ${reservationPhone || "-"}\n\nOur team will contact you shortly for final booking and payment details.`,
+        de: `Vielen Dank, ${fullName || ""}! 😊\nIhre Voranmeldung für *${_tourTitle}* wurde erfolgreich abgeschlossen.\n\n*Buchungsübersicht:*\n• *Tour:* ${_tourTitle}\n• *Datum:* ${formattedDate}\n• *Personen:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}\n\nUnser Team wird sich in Kürze mit Ihnen in Verbindung setzen, um die Buchung und Zahlungsdetails zu besprechen.`,
+        ru: `Спасибо, ${fullName || ""}! 😊\nВаша предварительная запись на тур *${_tourTitle}* успешно оформлена.\n\n*Сводка бронирования:*\n• *Тур:* ${_tourTitle}\n• *Дата:* ${formattedDate}\n• *Количество:* ${paxText}\n• *Имя:* ${fullName || "-"}\n• *Телефон:* ${reservationPhone || "-"}\n\nНаши специалисты свяжутся с вами в ближайшее время для подтверждения бронирования и уточнения деталей оплаты.`,
+        ar: `شكراً لك، ${fullName || ""}! 😊\nتم تسجيل طلبك المسبق لجولة *${_tourTitle}* بنجاح.\n\n*ملخص الحجز:*\n• *الجولة:* ${_tourTitle}\n• *التاريخ:* ${formattedDate}\n• *عدد الأشخاص:* ${paxText}\n• *الاسم:* ${fullName || "-"}\n• *الهاتف:* ${reservationPhone || "-"}\n\nسيتواصل معك فريقنا في أقرب وقت لتأكيد الحجز وتفاصيل الدفع.`,
+        fr: `Merci, ${fullName || ""}! 😊\nVotre pré-inscription pour *${_tourTitle}* a été réalisée avec succès.\n\n*Récapitulatif de réservation :*\n• *Circuit :* ${_tourTitle}\n• *Date :* ${formattedDate}\n• *Personnes :* ${paxText}\n• *Nom :* ${fullName || "-"}\n• *Téléphone :* ${reservationPhone || "-"}\n\nNotre équipe vous contactera très prochainement pour finaliser la réservation et les modalités de paiement.`,
+        es: `¡Gracias, ${fullName || ""}! 😊\nSu registro previo para *${_tourTitle}* ha sido completado con éxito.\n\n*Resumen de reserva:*\n• *Tour:* ${_tourTitle}\n• *Fecha:* ${formattedDate}\n• *Personas:* ${paxText}\n• *Nombre:* ${fullName || "-"}\n• *Teléfono:* ${reservationPhone || "-"}\n\nNuestro equipo se pondrá en contacto con usted muy pronto para finalizar la reserva y los detalles de pago.`,
       };
 
       let finalReply = completionMessages[newContext.language] || completionMessages.tr;

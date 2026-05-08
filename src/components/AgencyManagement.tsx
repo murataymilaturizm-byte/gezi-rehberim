@@ -42,7 +42,7 @@ interface Agency {
   threesixty_client_id?: string;
   whatsapp_phone_number?: string;
   whatsapp_status?: 'pending' | 'active' | 'rejected';
-  conversation_style?: 'friendly' | 'professional' | 'energetic' | 'helpful';
+  conversation_style?: 'standart' | 'kurumsal' | 'dinamik' | 'premium';
   active: boolean;
   created_at: string;
   plan_type: string;
@@ -69,7 +69,7 @@ export const AgencyManagement = () => {
   const [editingPlanAgency, setEditingPlanAgency] = useState<Agency | null>(null);
   const [editingStyleAgency, setEditingStyleAgency] = useState<Agency | null>(null);
   const [viewingAgency, setViewingAgency] = useState<Agency | null>(null);
-  const [selectedStyle, setSelectedStyle] = useState<'friendly' | 'professional' | 'energetic' | 'helpful'>('professional');
+  const [selectedStyle, setSelectedStyle] = useState<'standart' | 'kurumsal' | 'dinamik' | 'premium'>('kurumsal');
   
   const [formData, setFormData] = useState({
     email: "",
@@ -123,7 +123,7 @@ export const AgencyManagement = () => {
           return {
             ...agency,
             whatsapp_status: (agency as any).whatsapp_status as 'pending' | 'active' | 'rejected' | undefined,
-            conversation_style: (agency as any).conversation_style as 'friendly' | 'professional' | 'energetic' | 'helpful' | undefined,
+            conversation_style: (agency as any).conversation_style as 'standart' | 'kurumsal' | 'dinamik' | 'premium' | undefined,
             profiles: profile || { full_name: null },
           };
         })
@@ -359,7 +359,7 @@ export const AgencyManagement = () => {
 
   const handleStyleEdit = (agency: Agency) => {
     setEditingStyleAgency(agency);
-    setSelectedStyle(agency.conversation_style || 'professional');
+    setSelectedStyle((agency.conversation_style || 'kurumsal') as 'standart' | 'kurumsal' | 'dinamik' | 'premium');
     setStyleDialogOpen(true);
   };
 
@@ -812,7 +812,7 @@ export const AgencyManagement = () => {
                   )}
                   <div>
                     <span className="text-muted-foreground">Konuşma Üslubu:</span>
-                    <p className="font-medium capitalize">{viewingAgency.conversation_style || "professional"}</p>
+                    <p className="font-medium capitalize">{viewingAgency.conversation_style || "kurumsal"}</p>
                   </div>
                 </div>
               </div>
@@ -988,30 +988,48 @@ export const AgencyManagement = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-3">
-              {[
-                { value: 'friendly', icon: '🤝', label: 'Samimi/Dostane', desc: 'Arkadaşça, sıcak, emoji kullanımlı' },
-                { value: 'professional', icon: '👔', label: 'Profesyonel/Kurumsal', desc: 'Resmi, saygılı, net iletişim' },
-                { value: 'energetic', icon: '⚡', label: 'Enerjik/Dinamik', desc: 'Heyecanlı, motive edici, coşkulu' },
-                { value: 'helpful', icon: '😊', label: 'Nazik/Yardımsever', desc: 'Sabırlı, detaylı, empatik' }
-              ].map(style => (
-                <button
-                  key={style.value}
-                  onClick={() => setSelectedStyle(style.value as any)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                    selectedStyle === style.value 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl">{style.icon}</span>
-                    <div className="flex-1">
-                      <p className="font-medium">{style.label}</p>
-                      <p className="text-sm text-muted-foreground">{style.desc}</p>
-                    </div>
-                  </div>
-                </button>
-              ))}
+              {(() => {
+                const planStyles: Record<string, string[]> = {
+                  starter:      ['kurumsal'],
+                  professional: ['standart', 'kurumsal', 'dinamik', 'premium'],
+                  enterprise:   ['standart', 'kurumsal', 'dinamik', 'premium'],
+                };
+                const agencyPlan = editingStyleAgency?.plan_type || 'starter';
+                const allowed = planStyles[agencyPlan] || ['kurumsal'];
+                return [
+                  { value: 'kurumsal', icon: '👔', label: 'Profesyonel/Kurumsal', desc: 'Resmi, saygılı, net iletişim' },
+                  { value: 'standart', icon: '🤝', label: 'Samimi/Dostane',       desc: 'Arkadaşça, sıcak, emoji kullanımlı' },
+                  { value: 'dinamik',  icon: '⚡', label: 'Enerjik/Dinamik',      desc: 'Heyecanlı, motive edici, coşkulu' },
+                  { value: 'premium',  icon: '💎', label: 'Premium/Lüks',         desc: 'Zarif, özel, lüks his' },
+                ].map(style => {
+                  const locked = !allowed.includes(style.value);
+                  return (
+                    <button
+                      key={style.value}
+                      onClick={() => !locked && setSelectedStyle(style.value as any)}
+                      disabled={locked}
+                      className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                        locked
+                          ? 'border-border opacity-40 cursor-not-allowed'
+                          : selectedStyle === style.value
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">{style.icon}</span>
+                        <div className="flex-1">
+                          <p className="font-medium flex items-center gap-1">
+                            {style.label}
+                            {locked && <span className="text-xs text-muted-foreground">(Pro/Kurumsal paket)</span>}
+                          </p>
+                          <p className="text-sm text-muted-foreground">{style.desc}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                });
+              })()}
             </div>
             <div className="flex gap-2 justify-end pt-4">
               <Button variant="outline" onClick={() => setStyleDialogOpen(false)}>
