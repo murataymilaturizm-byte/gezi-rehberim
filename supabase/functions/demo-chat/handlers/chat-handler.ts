@@ -145,6 +145,19 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     let detectedIntent = mapNLUIntentToFSMIntent(nluResult.intent);
     logger.intent(nluResult.intent, detectedIntent);
 
+    // NLU dil tespitini context'e yaz.
+    // Haiku regex'ten çok daha doğru tespit eder — birincil kaynak olarak kullan.
+    const SUPPORTED_LANGS = ["tr", "en", "de", "ru", "ar", "fr", "es"] as const;
+    type SupportedLang = typeof SUPPORTED_LANGS[number];
+    const nluLang = nluResult.language as string | undefined;
+    if (nluLang && (SUPPORTED_LANGS as readonly string[]).includes(nluLang)) {
+      const typed = nluLang as SupportedLang;
+      if (typed !== context.language) {
+        logger.info("LANGUAGE_FROM_NLU", { prev: context.language, next: typed });
+        context.language = typed;
+      }
+    }
+
     const expectedInput = getNextExpectedInput(context);
 
     // Tur eşleştir

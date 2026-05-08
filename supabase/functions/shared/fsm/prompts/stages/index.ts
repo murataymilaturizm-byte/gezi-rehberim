@@ -155,7 +155,7 @@ export function getStagePrompt(context: PromptContext): string {
   // === UYDURMA YASAĞI + KALKI YERİ KURALI - Tüm stage'lerde geçerli ===
   const hallucinationGuard =
     language === "tr"
-      ? `\n\n🚫 KRİTİK KURAL - UYDURMA YASAĞI:
+      ? `\n\n🌐 DİL HATIRLATMASI: Kullanıcının yazdığı dilde yanıt ver. Hangi dilde yazıyorsa o dilde cevap ver.\n\n🚫 KRİTİK KURAL - UYDURMA YASAĞI:
 - ASLA veritabanında olmayan tur, tarih, fiyat veya bilgi UYDURMA.
 - Sadece sana verilen tur listesindeki bilgileri kullan.
 - Listede olmayan bir tur sorulursa "Bu tur sistemimizde bulunmuyor" de.
@@ -174,7 +174,7 @@ export function getStagePrompt(context: PromptContext): string {
 - Tur programı, gezilecek yerler için SADECE gezilecek_yerler ve program_kisa alanlarını kullan.
 - Bu alanlar boşsa "Detaylı program için acentemizle iletişime geçiniz" de.
 - ASLA program uydurma.`
-      : `\n\n🚫 CRITICAL RULE - NO HALLUCINATION:
+      : `\n\n🌐 LANGUAGE REMINDER: Respond in the user's language. Always match the language of their message.\n\n🚫 CRITICAL RULE - NO HALLUCINATION:
 - NEVER invent tours, dates, prices or information not in the database.
 - Only use information from the tour list provided to you.
 - If asked about a tour not in the list, say "This tour is not in our system".

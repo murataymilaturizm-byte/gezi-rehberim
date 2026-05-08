@@ -74,8 +74,12 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
     }
   };
 
-  // Eğer trial veya aktif değilse ve süresi dolduysa kritik uyarı göster
-  if (subscriptionInfo.subscription_status === 'expired' || remainingDays !== null && remainingDays <= 0) {
+  // Eğer trial veya aktif değilse ve süresi dolduysa/iptal edildiyse kritik uyarı göster
+  if (
+    subscriptionInfo.subscription_status === 'expired' ||
+    subscriptionInfo.subscription_status === 'cancelled' ||
+    (remainingDays !== null && remainingDays <= 0)
+  ) {
     return (
       <Alert variant="destructive" className="mb-6">
         <AlertCircle className="h-4 w-4" />

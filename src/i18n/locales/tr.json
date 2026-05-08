@@ -278,7 +278,7 @@
       "features": {
         "messages": "💬 5.000 mesaj/ay",
         "tours": "🗂️ Sınırsız tur",
-        "languages": "🌍 3 Dile Kadar Destek",
+        "languages": "🌍 4 Dile Kadar Destek",
         "allStyles": "🎨 4 farklı konuşma üslubu",
         "userProfiles": "👤 Kullanıcı profilleri ve takip",
         "reminders": "⏰ Otomatik tur hatırlatıcıları",
@@ -908,7 +908,7 @@
       "willEnd": "sonra sona erecek",
       "activatePlan": "Planı Aktifleştir",
       "expired": "Abonelik Süresi Doldu",
-      "expiredMessage": "Hizmetlerimize devam etmek için lütfen aboneliğinizi yenileyin.",
+      "expiredMessage": "WhatsApp botunuz şu anda devre dışıdır. Hizmetinize devam etmek için lütfen aboneliğinizi yenileyin.",
       "makePayment": "Ödeme Yap",
       "currentPlan": "Mevcut Planınız",
       "transactionHistory": "İşlem Geçmişi",

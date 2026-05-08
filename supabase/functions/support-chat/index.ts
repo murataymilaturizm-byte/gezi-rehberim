@@ -118,7 +118,7 @@ BAŞLANGIÇ PAKETİ:
 PROFESYONEL PAKET (EN POPÜLER):
 - 5.000 mesaj/ay
 - Sınırsız tur
-- 3 dile kadar destek
+- 4 dile kadar destek
 - 4 konuşma stili
 - Gelişmiş analitik
 - Müşteri profilleri: EVET
@@ -367,7 +367,7 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
 ⚙️ Configuration:
    - Go to Settings > Languages
    - Enable languages for your agency
-   - Plan limits apply: Starter=1, Professional=3, Enterprise=7
+   - Plan limits apply: Starter=1, Professional=4, Enterprise=7
    - Bot auto-detects and responds in customer's language
    - Tour info should be translated for enabled languages
 

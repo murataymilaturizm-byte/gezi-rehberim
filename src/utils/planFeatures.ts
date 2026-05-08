@@ -65,7 +65,7 @@ export async function getMaxLanguages(planType: string): Promise<number> {
 
 export async function getMaxTours(planType: string): Promise<number> {
   const features = await getPlanFeatures(planType);
-  return features ? features.max_tours : 5;
+  return features ? features.max_tours : 10;
 }
 
 export function clearPlanFeaturesCache() {

@@ -296,7 +296,7 @@
       "features": {
         "messages": "💬 5,000 messages/month",
         "tours": "🗂️ Unlimited tours",
-        "languages": "🌍 Up to 3 Languages",
+        "languages": "🌍 Up to 4 Languages",
         "allStyles": "🎨 4 different conversation styles",
         "userProfiles": "👤 User profiles and tracking",
         "reminders": "⏰ Automatic tour reminders",
@@ -951,7 +951,7 @@
       "customPrice": "Custom Price",
       "trialPeriod": "Trial Period",
       "expired": "Subscription Expired",
-      "expiredMessage": "Please renew your subscription to continue using our services.",
+      "expiredMessage": "Your WhatsApp bot is currently inactive. Please renew your subscription to resume service.",
       "trialWarning": "To activate your subscription, please make a payment.",
       "makePayment": "Make Payment",
       "popular": "Popular",

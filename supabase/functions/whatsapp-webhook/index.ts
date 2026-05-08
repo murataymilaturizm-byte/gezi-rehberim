@@ -179,6 +179,41 @@ serve(async (req) => {
       analytics: planFeatures?.has_analytics,
     });
 
+    // === FIX 7: Monthly message counter reset ===
+    const _now = new Date();
+    const _lastReset = (agency as any).last_message_reset_date
+      ? new Date((agency as any).last_message_reset_date)
+      : null;
+    if (!_lastReset || _lastReset.getMonth() !== _now.getMonth() || _lastReset.getFullYear() !== _now.getFullYear()) {
+      await supabase.from("agencies").update({
+        monthly_message_count: 0,
+        last_message_reset_date: _now.toISOString(),
+      }).eq("id", agency.id);
+      (agency as any).monthly_message_count = 0;
+      console.log(`🔄 Monthly message count reset for: ${agency.name}`);
+    }
+
+    // === FIX 3: Subscription status check ===
+    const _subStatus: string = (agency as any).subscription_status ?? "active";
+    if (_subStatus === "expired" || _subStatus === "cancelled" || _subStatus === "suspended") {
+      console.warn(`🚫 Agency "${agency.name}" blocked — subscription_status=${_subStatus}`);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // === FIX 2: Message limit check ===
+    const _msgLimit: number = planFeatures?.message_limit ?? ((agency as any).message_limit ?? -1);
+    const _msgCount: number = (agency as any).monthly_message_count ?? 0;
+    if (_msgLimit !== -1 && _msgCount >= _msgLimit) {
+      console.warn(`⚠️ Agency "${agency.name}" monthly message limit reached: ${_msgCount}/${_msgLimit}`);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     await supabase.from("whatsapp_conversations").insert({
       phone: userPhone,
       role: "user",
@@ -257,6 +292,10 @@ serve(async (req) => {
 
     const enabledLanguages = (agency as any).enabled_languages || ["tr"];
     if (!enabledLanguages.includes(context.language)) {
+      // FIX 5: Log language fallback so we can diagnose plan/language mismatches
+      console.warn(
+        `🌐 Language fallback: detected="${context.language}" not in enabled=[${enabledLanguages.join(",")}] for agency="${agency.name}". Falling back to "${enabledLanguages[0]}".`,
+      );
       context.language = enabledLanguages[0];
       context.tone = getDefaultToneForLanguage(context.language) as ConversationTone;
     }
@@ -664,6 +703,9 @@ serve(async (req) => {
 
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(dateReply));
 
+        // FIX 2: Increment monthly message counter (fire-and-forget)
+        supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -985,6 +1027,9 @@ serve(async (req) => {
 
       await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(finalReply));
 
+      // FIX 2: Increment monthly message counter (fire-and-forget)
+      supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -1188,6 +1233,9 @@ Never say anything about the previous booking.`;
       userPhone,
       truncateForWhatsApp(finalReply),
     );
+
+    // FIX 2: Increment monthly message counter (fire-and-forget)
+    supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
