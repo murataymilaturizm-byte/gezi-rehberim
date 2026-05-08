@@ -106,7 +106,9 @@
       "kurumsal": "💼 Wie kann ich Ihnen helfen?",
       "dinamik": "⚡ Bereit, unsere fantastischen Touren zu entdecken?! 🚀",
       "premium": "💎 Ich bin hier, um Ihnen zu helfen. Fragen Sie ruhig!"
-    }
+    },
+    "inputPlaceholder": "Geben Sie Ihre Nachricht ein...",
+    "disclaimer": "Dies ist ein Demo-Chatbot. Er zeigt keine echten Tourdaten."
   },
   "advanced": {
     "badge": "Erweiterte Funktionen",
@@ -1450,6 +1452,24 @@
       "new": "Neu",
       "reviewed": "Überprüft",
       "resolved": "Gelöst"
+    }
+  },
+  "blog": {
+    "minutesRead": "{{count}} Min. Lesezeit",
+    "readMore": "Lesen →",
+    "noPosts": "Noch keine Beiträge in dieser Kategorie.",
+    "ctaQuestion": "Haben Sie Turzz AI schon ausprobiert?",
+    "ctaButton": "14 Tage kostenlos starten",
+    "categories": {
+      "all": "Alle"
+    },
+    "post": {
+      "backToBlog": "Zurück zum Blog",
+      "relatedPosts": "Ähnliche Beiträge",
+      "share": "Teilen",
+      "ctaTitle": "Haben Sie Turzz AI schon ausprobiert?",
+      "ctaDesc": "14 Tage kostenlos, keine Kreditkarte erforderlich.",
+      "ctaButton": "Kostenlos starten"
     }
   }
 }

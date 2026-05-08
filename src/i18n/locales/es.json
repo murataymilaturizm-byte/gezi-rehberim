@@ -106,7 +106,9 @@
       "kurumsal": "💼 ¿Cómo puedo ayudarle?",
       "dinamik": "⚡ ¿Listo para explorar nuestros tours fantásticos?! 🚀",
       "premium": "💎 Estoy aquí para ayudarte. ¡No dudes en hacer tus preguntas!"
-    }
+    },
+    "inputPlaceholder": "Escribe tu mensaje...",
+    "disclaimer": "Este es un chatbot de demostración. No muestra datos reales de tours."
   },
   "advanced": {
     "badge": "Características Avanzadas",
@@ -1449,6 +1451,24 @@
       "new": "Nuevo",
       "reviewed": "Revisado",
       "resolved": "Resuelto"
+    }
+  },
+  "blog": {
+    "minutesRead": "{{count}} min de lectura",
+    "readMore": "Leer →",
+    "noPosts": "Aún no hay artículos en esta categoría.",
+    "ctaQuestion": "¿Ya probaste Turzz AI?",
+    "ctaButton": "Empieza gratis 14 días",
+    "categories": {
+      "all": "Todos"
+    },
+    "post": {
+      "backToBlog": "Volver al blog",
+      "relatedPosts": "Artículos relacionados",
+      "share": "Compartir",
+      "ctaTitle": "¿Ya probaste Turzz AI?",
+      "ctaDesc": "14 días gratis, sin tarjeta de crédito.",
+      "ctaButton": "Empezar gratis"
     }
   }
 }

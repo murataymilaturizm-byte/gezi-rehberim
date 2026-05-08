@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Layout } from "@/components/Layout";
 import { SEOHead } from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +19,15 @@ const schema = {
   "publisher": { "@type": "Organization", "name": "Turzz AI" },
 };
 
+const DATE_LOCALES: Record<string, string> = {
+  tr: "tr-TR", en: "en-GB", de: "de-DE", ru: "ru-RU",
+  ar: "ar-SA", fr: "fr-FR", es: "es-ES",
+};
+
 function BlogCard({ post }: { post: BlogPost }) {
+  const { t, i18n } = useTranslation();
+  const dateLocale = DATE_LOCALES[i18n.language] || "en-GB";
+
   return (
     <Card className="border-border/50 hover:border-orange-300 transition-all hover:-translate-y-0.5 overflow-hidden">
       <BlogCoverImage
@@ -31,11 +40,11 @@ function BlogCard({ post }: { post: BlogPost }) {
         <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
           <span className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
-            {new Date(post.date).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
+            {new Date(post.date).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" })}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            {post.readingTime} dk okuma
+            {t("blog.minutesRead", { count: post.readingTime })}
           </span>
         </div>
         <h2 className="font-semibold text-foreground mb-2 line-clamp-2 leading-snug">
@@ -51,7 +60,7 @@ function BlogCard({ post }: { post: BlogPost }) {
             ))}
           </div>
           <Link to={`/blog/${post.slug}`} className="text-sm text-orange-500 hover:underline font-medium">
-            Oku →
+            {t("blog.readMore")}
           </Link>
         </div>
       </CardContent>
@@ -59,7 +68,11 @@ function BlogCard({ post }: { post: BlogPost }) {
   );
 }
 
+const ALL_CATEGORY = "__all__";
+
 export default function Blog() {
+  const { t } = useTranslation();
+
   let allPosts: BlogPost[] = [];
   try {
     allPosts = getAllPosts();
@@ -67,10 +80,10 @@ export default function Blog() {
     console.error("Blog posts yüklenemedi:", err);
   }
 
-  const categories = ["Tümü", ...getAllCategories()];
-  const [activeCategory, setActiveCategory] = useState("Tümü");
+  const categories = getAllCategories();
+  const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY);
 
-  const filtered = activeCategory === "Tümü"
+  const filtered = activeCategory === ALL_CATEGORY
     ? allPosts
     : allPosts.filter((p) => p.category === activeCategory);
 
@@ -96,6 +109,14 @@ export default function Blog() {
       <section className="py-8 container mx-auto px-4 max-w-5xl">
         {/* Kategori filtresi */}
         <div className="flex gap-2 flex-wrap mb-8">
+          <Button
+            variant={activeCategory === ALL_CATEGORY ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveCategory(ALL_CATEGORY)}
+            className={activeCategory === ALL_CATEGORY ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}
+          >
+            {t("blog.categories.all")}
+          </Button>
           {categories.map((cat) => (
             <Button
               key={cat}
@@ -111,7 +132,7 @@ export default function Blog() {
 
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
-            Bu kategoride henüz yazı yok.
+            {t("blog.noPosts")}
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,9 +146,9 @@ export default function Blog() {
       {/* CTA */}
       <section className="py-12 bg-muted/30 text-center">
         <div className="container mx-auto px-4">
-          <p className="text-muted-foreground mb-4">Turzz AI'ı denediniz mi?</p>
+          <p className="text-muted-foreground mb-4">{t("blog.ctaQuestion")}</p>
           <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white">
-            <Link to="/auth?mode=signup">14 Gün Ücretsiz Başla</Link>
+            <Link to="/auth?mode=signup">{t("blog.ctaButton")}</Link>
           </Button>
         </div>
       </section>

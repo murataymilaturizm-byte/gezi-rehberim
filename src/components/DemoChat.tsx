@@ -427,7 +427,7 @@ export const DemoChat = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Mesajınızı yazın..."
+                placeholder={t("demo.inputPlaceholder")}
                 disabled={isLoading}
                 className="flex-1 h-12 md:h-10"
               />
@@ -440,7 +440,7 @@ export const DemoChat = () => {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Bu bir demo chatbot'tur. Gerçek tur verileri göstermez.
+              {t("demo.disclaimer")}
             </p>
           </div>
         </CardContent>

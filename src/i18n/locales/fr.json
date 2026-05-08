@@ -121,7 +121,9 @@
       "kurumsal": "💼 Comment puis-je vous aider?",
       "dinamik": "⚡ Prêt à découvrir nos tours fantastiques?! 🚀",
       "premium": "💎 Je suis là pour vous aider. N'hésitez pas à poser vos questions!"
-    }
+    },
+    "inputPlaceholder": "Tapez votre message...",
+    "disclaimer": "Ceci est un chatbot de démonstration. Il n'affiche pas de vraies données de circuits."
   },
   "advanced": {
     "badge": "Fonctionnalités Avancées",
@@ -1655,5 +1657,23 @@
     "emailMaxLength": "L'e-mail ne peut pas dépasser 255 caractères",
     "messageMinLength": "Le message doit contenir au moins 10 caractères",
     "messageMaxLength": "Le message ne peut pas dépasser 1 000 caractères"
+  },
+  "blog": {
+    "minutesRead": "{{count}} min de lecture",
+    "readMore": "Lire →",
+    "noPosts": "Aucun article dans cette catégorie pour l'instant.",
+    "ctaQuestion": "Avez-vous essayé Turzz AI ?",
+    "ctaButton": "Commencer gratuitement 14 jours",
+    "categories": {
+      "all": "Tous"
+    },
+    "post": {
+      "backToBlog": "Retour au blog",
+      "relatedPosts": "Articles connexes",
+      "share": "Partager",
+      "ctaTitle": "Avez-vous essayé Turzz AI ?",
+      "ctaDesc": "14 jours gratuits, aucune carte bancaire requise.",
+      "ctaButton": "Commencer gratuitement"
+    }
   }
 }

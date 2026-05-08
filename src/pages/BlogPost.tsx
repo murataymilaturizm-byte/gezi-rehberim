@@ -1,4 +1,5 @@
 import { useParams, Link, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Layout } from "@/components/Layout";
@@ -9,20 +10,30 @@ import { Calendar, Clock, ArrowLeft, Share2, Tag } from "lucide-react";
 import { getPostBySlug, getAllPosts, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
 
+const DATE_LOCALES: Record<string, string> = {
+  tr: "tr-TR", en: "en-GB", de: "de-DE", ru: "ru-RU",
+  ar: "ar-SA", fr: "fr-FR", es: "es-ES",
+};
+
 function RelatedPosts({ current }: { current: BlogPost }) {
+  const { t } = useTranslation();
   const related = getAllPosts()
     .filter((p) => p.slug !== current.slug && p.category === current.category)
     .slice(0, 3);
   if (related.length === 0) return null;
   return (
     <aside>
-      <h3 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wider">İlgili Yazılar</h3>
+      <h3 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wider">
+        {t("blog.post.relatedPosts")}
+      </h3>
       <ul className="space-y-3">
         {related.map((p) => (
           <li key={p.slug}>
             <Link to={`/blog/${p.slug}`} className="block group">
               <p className="text-sm font-medium text-foreground group-hover:text-orange-500 transition-colors line-clamp-2">{p.title}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{p.readingTime} dk okuma</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("blog.minutesRead", { count: p.readingTime })}
+              </p>
             </Link>
           </li>
         ))}
@@ -32,11 +43,14 @@ function RelatedPosts({ current }: { current: BlogPost }) {
 }
 
 export default function BlogPost() {
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   if (!slug) return <Navigate to="/blog" replace />;
 
   const post = getPostBySlug(slug);
   if (!post) return <Navigate to="/blog" replace />;
+
+  const dateLocale = DATE_LOCALES[i18n.language] || "en-GB";
 
   const schema = {
     "@context": "https://schema.org",
@@ -66,7 +80,7 @@ export default function BlogPost() {
 
       <div className="container mx-auto px-4 max-w-6xl py-8">
         <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-orange-500 transition-colors mb-6">
-          <ArrowLeft className="w-4 h-4" /> Blog'a Dön
+          <ArrowLeft className="w-4 h-4" /> {t("blog.post.backToBlog")}
         </Link>
 
         <div className="flex flex-col lg:flex-row gap-10">
@@ -83,11 +97,11 @@ export default function BlogPost() {
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {new Date(post.date).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
+                  {new Date(post.date).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" })}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  {post.readingTime} dakika okuma
+                  {t("blog.minutesRead", { count: post.readingTime })}
                 </span>
                 <span>{post.author}</span>
               </div>
@@ -138,7 +152,7 @@ export default function BlogPost() {
                 size="sm"
                 onClick={() => navigator.share?.({ title: post.title, url: shareUrl }) || window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`, "_blank")}
               >
-                <Share2 className="w-4 h-4 mr-1" /> Paylaş
+                <Share2 className="w-4 h-4 mr-1" /> {t("blog.post.share")}
               </Button>
             </div>
           </article>
@@ -149,12 +163,12 @@ export default function BlogPost() {
 
             {/* CTA */}
             <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-900 rounded-xl p-5">
-              <h3 className="font-semibold text-foreground mb-2 text-sm">Turzz AI'ı Denediniz mi?</h3>
+              <h3 className="font-semibold text-foreground mb-2 text-sm">{t("blog.post.ctaTitle")}</h3>
               <p className="text-xs text-muted-foreground mb-4">
-                14 gün ücretsiz, kredi kartı gerekmez.
+                {t("blog.post.ctaDesc")}
               </p>
               <Button asChild size="sm" className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                <Link to="/auth?mode=signup">Ücretsiz Başla</Link>
+                <Link to="/auth?mode=signup">{t("blog.post.ctaButton")}</Link>
               </Button>
             </div>
           </aside>

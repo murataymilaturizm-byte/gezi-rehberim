@@ -109,7 +109,9 @@
       "kurumsal": "💼 Size nasıl yardımcı olabilirim?",
       "dinamik": "⚡ Harika turlarımızı keşfetmeye hazır mısın?! 🚀",
       "premium": "💎 Size yardımcı olmak için buradayım. Sorularınızı çekinmeden sorabilirsiniz."
-    }
+    },
+    "inputPlaceholder": "Mesajınızı yazın...",
+    "disclaimer": "Bu bir demo chatbot'tur. Gerçek tur verileri göstermez."
   },
   "benefits": {
     "title": "Somut Sonuçlar, Gerçek Değer",
@@ -1622,5 +1624,23 @@
     "filter": "Filtrele",
     "export": "Dışa Aktar",
     "import": "İçe Aktar"
+  },
+  "blog": {
+    "minutesRead": "{{count}} dakika okuma",
+    "readMore": "Oku →",
+    "noPosts": "Bu kategoride henüz yazı yok.",
+    "ctaQuestion": "Turzz AI'ı denediniz mi?",
+    "ctaButton": "14 Gün Ücretsiz Başla",
+    "categories": {
+      "all": "Tümü"
+    },
+    "post": {
+      "backToBlog": "Blog'a Dön",
+      "relatedPosts": "İlgili Yazılar",
+      "share": "Paylaş",
+      "ctaTitle": "Turzz AI'ı Denediniz mi?",
+      "ctaDesc": "14 gün ücretsiz, kredi kartı gerekmez.",
+      "ctaButton": "Ücretsiz Başla"
+    }
   }
 }

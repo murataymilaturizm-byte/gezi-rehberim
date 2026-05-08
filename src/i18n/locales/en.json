@@ -106,7 +106,9 @@
       "kurumsal": "💼 How can I assist you?",
       "dinamik": "⚡ Ready to explore our amazing tours?! 🚀",
       "premium": "💎 I'm here to help you. Feel free to ask your questions!"
-    }
+    },
+    "inputPlaceholder": "Type your message...",
+    "disclaimer": "This is a demo chatbot. It does not show real tour data."
   },
   "benefits": {
     "title": "Concrete Results, Real Value",
@@ -1508,6 +1510,24 @@
       "new": "New",
       "reviewed": "Reviewed",
       "resolved": "Resolved"
+    }
+  },
+  "blog": {
+    "minutesRead": "{{count}} min read",
+    "readMore": "Read →",
+    "noPosts": "No posts in this category yet.",
+    "ctaQuestion": "Have you tried Turzz AI?",
+    "ctaButton": "Start Free for 14 Days",
+    "categories": {
+      "all": "All"
+    },
+    "post": {
+      "backToBlog": "Back to Blog",
+      "relatedPosts": "Related Posts",
+      "share": "Share",
+      "ctaTitle": "Have you tried Turzz AI?",
+      "ctaDesc": "14 days free, no credit card required.",
+      "ctaButton": "Start Free"
     }
   }
 }
