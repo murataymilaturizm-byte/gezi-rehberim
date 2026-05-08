@@ -1,4 +1,4 @@
-// Blog utility — gray-matter kullanmıyor, saf tarayıcı uyumlu parser
+// Blog utility — browser-compatible multilingual parser
 
 export interface BlogPost {
   slug: string;
@@ -11,9 +11,12 @@ export interface BlogPost {
   author: string;
   readingTime: number;
   content: string;
+  lang: string;
+  isFallback?: boolean;
+  originalLang?: string;
 }
 
-// --- Minimal frontmatter parser (browser uyumlu) ---
+// --- Minimal frontmatter parser (browser compatible) ---
 
 function parseFrontmatter(raw: string): { data: Record<string, unknown>; content: string } {
   if (!raw.trimStart().startsWith("---")) {
@@ -40,7 +43,6 @@ function parseFrontmatter(raw: string): { data: Record<string, unknown>; content
 
     if (!key) continue;
 
-    // Array: [a, b, c] veya ["a", "b"]
     if (rawVal.startsWith("[") && rawVal.endsWith("]")) {
       data[key] = rawVal
         .slice(1, -1)
@@ -50,10 +52,8 @@ function parseFrontmatter(raw: string): { data: Record<string, unknown>; content
       continue;
     }
 
-    // String tırnak kaldır
     const unquoted = rawVal.replace(/^["']|["']$/g, "");
 
-    // Sayı
     if (unquoted !== "" && !isNaN(Number(unquoted))) {
       data[key] = Number(unquoted);
       continue;
@@ -65,65 +65,144 @@ function parseFrontmatter(raw: string): { data: Record<string, unknown>; content
   return { data, content: body };
 }
 
-// --- import.meta.glob ile tüm .md'leri raw string olarak yükle ---
+// --- Per-language module maps (must be static strings for Vite) ---
 
-const modules = import.meta.glob("../blog/posts/*.md", {
-  query: "?raw",
-  import: "default",
-  eager: true,
+const modulesTr = import.meta.glob("../blog/posts/tr/*.md", {
+  query: "?raw", import: "default", eager: true,
 }) as Record<string, string>;
 
-function parsePost(raw: string, slug: string): BlogPost {
-  const { data, content } = parseFrontmatter(raw);
+const modulesEn = import.meta.glob("../blog/posts/en/*.md", {
+  query: "?raw", import: "default", eager: true,
+}) as Record<string, string>;
 
+const modulesDe = import.meta.glob("../blog/posts/de/*.md", {
+  query: "?raw", import: "default", eager: true,
+}) as Record<string, string>;
+
+const modulesRu = import.meta.glob("../blog/posts/ru/*.md", {
+  query: "?raw", import: "default", eager: true,
+}) as Record<string, string>;
+
+const modulesAr = import.meta.glob("../blog/posts/ar/*.md", {
+  query: "?raw", import: "default", eager: true,
+}) as Record<string, string>;
+
+const modulesFr = import.meta.glob("../blog/posts/fr/*.md", {
+  query: "?raw", import: "default", eager: true,
+}) as Record<string, string>;
+
+const modulesEs = import.meta.glob("../blog/posts/es/*.md", {
+  query: "?raw", import: "default", eager: true,
+}) as Record<string, string>;
+
+const LANG_MODULES: Record<string, Record<string, string>> = {
+  tr: modulesTr,
+  en: modulesEn,
+  de: modulesDe,
+  ru: modulesRu,
+  ar: modulesAr,
+  fr: modulesFr,
+  es: modulesEs,
+};
+
+function parsePost(raw: string, slug: string, lang: string, isFallback = false, originalLang?: string): BlogPost {
+  const { data, content } = parseFrontmatter(raw);
   const wordCount = content.split(/\s+/).length;
 
   return {
     slug,
-    title:        (data.title as string)       ?? "Başlıksız",
-    description:  (data.description as string) ?? "",
-    date:         String(data.date              ?? ""),
-    category:     (data.category as string)    ?? "Genel",
-    tags:         (data.tags as string[])      ?? [],
-    image:        (data.image as string)       ?? "/blog/default.jpg",
-    author:       (data.author as string)      ?? "Turzz AI",
-    readingTime:  (data.readingTime as number) ?? Math.ceil(wordCount / 200),
+    title:       (data.title as string)       ?? "Başlıksız",
+    description: (data.description as string) ?? "",
+    date:        String(data.date             ?? ""),
+    category:    (data.category as string)    ?? "Genel",
+    tags:        (data.tags as string[])      ?? [],
+    image:       (data.image as string)       ?? "/blog/default.jpg",
+    author:      (data.author as string)      ?? "Turzz AI",
+    readingTime: (data.readingTime as number) ?? Math.ceil(wordCount / 200),
     content,
+    lang,
+    isFallback,
+    originalLang,
   };
 }
 
-export function getAllPosts(): BlogPost[] {
-  const entries = Object.entries(modules);
-  if (entries.length === 0) return [];
-
-  return entries
-    .map(([path, raw]) => {
-      const slug = path.replace("../blog/posts/", "").replace(".md", "");
-      try {
-        return parsePost(raw, slug);
-      } catch {
-        return null;
-      }
-    })
-    .filter((p): p is BlogPost => p !== null)
-    .sort((a, b) => {
-      const da = a.date ? new Date(a.date).getTime() : 0;
-      const db = b.date ? new Date(b.date).getTime() : 0;
-      return db - da;
-    });
+function getModulesForLang(lang: string): Record<string, string> {
+  return LANG_MODULES[lang] ?? {};
 }
 
-export function getPostBySlug(slug: string): BlogPost | undefined {
-  const key = `../blog/posts/${slug}.md`;
-  const raw = modules[key];
-  if (!raw) return undefined;
-  try {
-    return parsePost(raw, slug);
-  } catch {
-    return undefined;
+function slugFromPath(path: string, lang: string): string {
+  return path.replace(`../blog/posts/${lang}/`, "").replace(".md", "");
+}
+
+// --- Public API ---
+
+export function getAllPosts(lang = "tr"): BlogPost[] {
+  const mods = getModulesForLang(lang);
+  const entries = Object.entries(mods);
+
+  if (entries.length > 0) {
+    return entries
+      .map(([path, raw]) => {
+        try {
+          return parsePost(raw, slugFromPath(path, lang), lang);
+        } catch {
+          return null;
+        }
+      })
+      .filter((p): p is BlogPost => p !== null)
+      .sort((a, b) => {
+        const da = a.date ? new Date(a.date).getTime() : 0;
+        const db = b.date ? new Date(b.date).getTime() : 0;
+        return db - da;
+      });
   }
+
+  // Fallback to TR
+  if (lang !== "tr") {
+    return getAllPosts("tr").map((p) => ({ ...p, lang, isFallback: true, originalLang: "tr" }));
+  }
+
+  return [];
 }
 
-export function getAllCategories(): string[] {
-  return [...new Set(getAllPosts().map((p) => p.category))];
+export function getPostBySlug(slug: string, lang = "tr"): BlogPost | undefined {
+  // Try requested language first
+  const mods = getModulesForLang(lang);
+  const key = `../blog/posts/${lang}/${slug}.md`;
+  const raw = mods[key];
+
+  if (raw) {
+    try {
+      return parsePost(raw, slug, lang);
+    } catch {
+      return undefined;
+    }
+  }
+
+  // Fallback to TR
+  if (lang !== "tr") {
+    const trKey = `../blog/posts/tr/${slug}.md`;
+    const trRaw = modulesTr[trKey];
+    if (trRaw) {
+      try {
+        return parsePost(trRaw, slug, "tr", true, "tr");
+      } catch {
+        return undefined;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+export function getAllCategories(lang = "tr"): string[] {
+  return [...new Set(getAllPosts(lang).map((p) => p.category))];
+}
+
+/** Returns all langs that have a post for the given slug */
+export function getAvailableLangsForSlug(slug: string): string[] {
+  return Object.keys(LANG_MODULES).filter((lang) => {
+    const key = `../blog/posts/${lang}/${slug}.md`;
+    return !!LANG_MODULES[lang][key];
+  });
 }

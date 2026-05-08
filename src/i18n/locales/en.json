@@ -1528,7 +1528,10 @@
       "ctaTitle": "Have you tried Turzz AI?",
       "ctaDesc": "14 days free, no credit card required.",
       "ctaButton": "Start Free"
-    }
+    },
+    "fallbackNotice": "This article hasn't been translated into {{lang}} yet. Showing the Turkish version.",
+    "fallbackBadge": "Turkish",
+    "availableIn": "This article is available in:"
   },
   "pages": {
     "whatsappBot": {

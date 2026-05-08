@@ -6,8 +6,8 @@ import { Layout } from "@/components/Layout";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, ArrowLeft, Share2, Tag } from "lucide-react";
-import { getPostBySlug, getAllPosts, type BlogPost } from "@/lib/blog";
+import { Calendar, Clock, ArrowLeft, Share2, Tag, AlertCircle } from "lucide-react";
+import { getPostBySlug, getAllPosts, getAvailableLangsForSlug, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
 
 const DATE_LOCALES: Record<string, string> = {
@@ -15,9 +15,23 @@ const DATE_LOCALES: Record<string, string> = {
   ar: "ar-SA", fr: "fr-FR", es: "es-ES",
 };
 
-function RelatedPosts({ current }: { current: BlogPost }) {
+const LANG_DISPLAY_NAMES: Record<string, Record<string, string>> = {
+  tr: { tr: "Türkçe", en: "İngilizce", de: "Almanca", ru: "Rusça", ar: "Arapça", fr: "Fransızca", es: "İspanyolca" },
+  en: { tr: "Turkish", en: "English", de: "German", ru: "Russian", ar: "Arabic", fr: "French", es: "Spanish" },
+  de: { tr: "Türkisch", en: "Englisch", de: "Deutsch", ru: "Russisch", ar: "Arabisch", fr: "Französisch", es: "Spanisch" },
+  ru: { tr: "Турецкий", en: "Английский", de: "Немецкий", ru: "Русский", ar: "Арабский", fr: "Французский", es: "Испанский" },
+  ar: { tr: "التركية", en: "الإنجليزية", de: "الألمانية", ru: "الروسية", ar: "العربية", fr: "الفرنسية", es: "الإسبانية" },
+  fr: { tr: "Turc", en: "Anglais", de: "Allemand", ru: "Russe", ar: "Arabe", fr: "Français", es: "Espagnol" },
+  es: { tr: "Turco", en: "Inglés", de: "Alemán", ru: "Ruso", ar: "Árabe", fr: "Francés", es: "Español" },
+};
+
+function getLangDisplayName(uiLang: string, targetLang: string): string {
+  return LANG_DISPLAY_NAMES[uiLang]?.[targetLang] ?? targetLang.toUpperCase();
+}
+
+function RelatedPosts({ current, lang }: { current: BlogPost; lang: string }) {
   const { t } = useTranslation();
-  const related = getAllPosts()
+  const related = getAllPosts(lang)
     .filter((p) => p.slug !== current.slug && p.category === current.category)
     .slice(0, 3);
   if (related.length === 0) return null;
@@ -47,10 +61,12 @@ export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   if (!slug) return <Navigate to="/blog" replace />;
 
-  const post = getPostBySlug(slug);
+  const currentLang = i18n.language || "tr";
+  const post = getPostBySlug(slug, currentLang);
   if (!post) return <Navigate to="/blog" replace />;
 
-  const dateLocale = DATE_LOCALES[i18n.language] || "en-GB";
+  const dateLocale = DATE_LOCALES[currentLang] || "en-GB";
+  const availableLangs = getAvailableLangsForSlug(slug);
 
   const schema = {
     "@context": "https://schema.org",
@@ -62,9 +78,17 @@ export default function BlogPost() {
     "publisher": { "@type": "Organization", "name": "Turzz AI", "url": "https://turzzai.com" },
     "datePublished": post.date,
     "keywords": post.tags.join(", "),
+    "inLanguage": post.lang,
   };
 
-  const shareUrl = `https://turzzai.com/blog/${post.slug}`;
+  // hreflang links for available languages
+  const hreflangLinks = availableLangs.map((lang) => ({
+    rel: "alternate",
+    hreflang: lang,
+    href: `https://turzzai.com/blog/${slug}`,
+  }));
+
+  const shareUrl = `https://turzzai.com/blog/${slug}`;
 
   return (
     <Layout>
@@ -73,9 +97,10 @@ export default function BlogPost() {
         description={post.description}
         keywords={post.tags.join(", ")}
         ogImage={`https://turzzai.com${post.image}`}
-        canonical={`/blog/${post.slug}`}
+        canonical={`/blog/${slug}`}
         schema={schema}
         type="article"
+        extraLinks={hreflangLinks}
       />
 
       <div className="container mx-auto px-4 max-w-6xl py-8">
@@ -83,10 +108,25 @@ export default function BlogPost() {
           <ArrowLeft className="w-4 h-4" /> {t("blog.post.backToBlog")}
         </Link>
 
+        {/* Fallback uyarı bandı */}
+        {post.isFallback && currentLang !== "tr" && (
+          <div className="mb-6 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-start gap-3">
+            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                {t("blog.fallbackNotice", { lang: getLangDisplayName(currentLang, currentLang) })}
+              </p>
+              {availableLangs.length > 0 && (
+                <p className="text-xs text-amber-600 mt-1">
+                  {t("blog.availableIn")} {availableLangs.map((l) => getLangDisplayName(currentLang, l)).join(", ")}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* Main content */}
           <article className="flex-1 min-w-0">
-            {/* Header */}
             <header className="mb-8">
               <Badge className="mb-3 bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 border-0">
                 {post.category}
@@ -104,10 +144,14 @@ export default function BlogPost() {
                   {t("blog.minutesRead", { count: post.readingTime })}
                 </span>
                 <span>{post.author}</span>
+                {post.isFallback && (
+                  <Badge variant="outline" className="text-xs border-amber-400 text-amber-600">
+                    {t("blog.fallbackBadge")}
+                  </Badge>
+                )}
               </div>
             </header>
 
-            {/* Cover image — kendi aspect-ratio wrapper'ı var */}
             <BlogCoverImage
               title={post.title}
               category={post.category}
@@ -116,7 +160,6 @@ export default function BlogPost() {
               className="mb-8"
             />
 
-            {/* Markdown Content */}
             <div className="prose prose-lg prose-slate dark:prose-invert max-w-none
               prose-h1:text-3xl prose-h1:font-bold prose-h1:text-foreground
               prose-h2:text-2xl prose-h2:font-bold prose-h2:text-foreground prose-h2:mt-8 prose-h2:mb-4
@@ -136,7 +179,6 @@ export default function BlogPost() {
               </ReactMarkdown>
             </div>
 
-            {/* Tags */}
             <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-border">
               {post.tags.map((tag) => (
                 <span key={tag} className="flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
@@ -145,7 +187,6 @@ export default function BlogPost() {
               ))}
             </div>
 
-            {/* Paylaş */}
             <div className="flex gap-2 mt-4">
               <Button
                 variant="outline"
@@ -157,11 +198,9 @@ export default function BlogPost() {
             </div>
           </article>
 
-          {/* Sidebar */}
           <aside className="lg:w-72 space-y-8">
-            <RelatedPosts current={post} />
+            <RelatedPosts current={post} lang={currentLang} />
 
-            {/* CTA */}
             <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-900 rounded-xl p-5">
               <h3 className="font-semibold text-foreground mb-2 text-sm">{t("blog.post.ctaTitle")}</h3>
               <p className="text-xs text-muted-foreground mb-4">

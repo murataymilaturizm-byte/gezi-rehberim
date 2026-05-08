@@ -1,5 +1,11 @@
 import { Helmet } from "react-helmet-async";
 
+interface HreflangLink {
+  rel: string;
+  hreflang: string;
+  href: string;
+}
+
 interface SEOHeadProps {
   title?: string;
   description?: string;
@@ -8,6 +14,7 @@ interface SEOHeadProps {
   canonical?: string;
   schema?: object;
   type?: "website" | "article";
+  extraLinks?: HreflangLink[];
 }
 
 const SITE_NAME = "Turzz AI";
@@ -27,6 +34,7 @@ export const SEOHead = ({
   canonical,
   schema,
   type = "website",
+  extraLinks,
 }: SEOHeadProps) => {
   const fullTitle = title === DEFAULT_TITLE ? title : `${title} | ${SITE_NAME}`;
   const canonicalUrl = canonical ? `${SITE_URL}${canonical}` : undefined;
@@ -55,6 +63,11 @@ export const SEOHead = ({
 
       {/* Canonical */}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+      {/* hreflang alternate links */}
+      {extraLinks?.map((link, i) => (
+        <link key={i} rel={link.rel} hrefLang={link.hreflang} href={link.href} />
+      ))}
 
       {/* JSON-LD Schema */}
       {schema && (

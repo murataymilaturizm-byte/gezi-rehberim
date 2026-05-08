@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <!-- Ana Sayfa -->
   <url>
@@ -91,6 +92,96 @@
     <lastmod>2026-05-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+
+  <!-- Blog Ana Sayfa -->
+  <url>
+    <loc>https://turzzai.com/blog</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://turzzai.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://turzzai.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://turzzai.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://turzzai.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog"/>
+  </url>
+
+  <!-- Blog Yazıları (TR — x-default) -->
+  <url>
+    <loc>https://turzzai.com/blog/seyahat-acentesi-whatsapp-musteri-yonetimi-rehberi</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/seyahat-acentesi-whatsapp-musteri-yonetimi-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/seyahat-acentesi-whatsapp-musteri-yonetimi-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/ai-chatbot-ile-tur-satisini-nasil-arttirirsiniz</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/ai-chatbot-ile-tur-satisini-nasil-arttirirsiniz"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/ai-chatbot-ile-tur-satisini-nasil-arttirirsiniz"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/seyahat-acentesi-dijital-donusum-adimlari</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/seyahat-acentesi-dijital-donusum-adimlari"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/seyahat-acentesi-dijital-donusum-adimlari"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/tur-operatoru-otomasyon-yazilimi-karsilastirma</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/tur-operatoru-otomasyon-yazilimi-karsilastirma"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/tur-operatoru-otomasyon-yazilimi-karsilastirma"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/turkiye-turizm-sektoru-2026-trendleri</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/turkiye-turizm-sektoru-2026-trendleri"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/turkiye-turizm-sektoru-2026-trendleri"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/whatsapp-business-api-acente-rehberi</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/whatsapp-business-api-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/whatsapp-business-api-acente-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/whatsapp-chatbot-tur-satis-rehberi</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/whatsapp-chatbot-tur-satis-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/whatsapp-chatbot-tur-satis-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/yabanci-turistlere-cok-dilli-hizmet-rehberi</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/yabanci-turistlere-cok-dilli-hizmet-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/blog/yabanci-turistlere-cok-dilli-hizmet-rehberi"/>
   </url>
 
   <!-- Yasal -->

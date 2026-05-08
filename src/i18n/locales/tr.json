@@ -1641,7 +1641,10 @@
       "ctaTitle": "Turzz AI'ı Denediniz mi?",
       "ctaDesc": "14 gün ücretsiz, kredi kartı gerekmez.",
       "ctaButton": "Ücretsiz Başla"
-    }
+    },
+    "fallbackNotice": "Bu yazı henüz {{lang}} diline çevrilmedi. Türkçe versiyonu gösteriliyor.",
+    "fallbackBadge": "Türkçe",
+    "availableIn": "Bu yazı şu dillerde mevcut:"
   },
   "pages": {
     "whatsappBot": {

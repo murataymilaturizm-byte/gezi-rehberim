@@ -1674,7 +1674,10 @@
       "ctaTitle": "Avez-vous essayé Turzz AI ?",
       "ctaDesc": "14 jours gratuits, aucune carte bancaire requise.",
       "ctaButton": "Commencer gratuitement"
-    }
+    },
+    "fallbackNotice": "Cet article n'a pas encore été traduit en {{lang}}. La version turque est affichée.",
+    "fallbackBadge": "Turc",
+    "availableIn": "Cet article est disponible en :"
   },
   "pages": {
     "whatsappBot": {

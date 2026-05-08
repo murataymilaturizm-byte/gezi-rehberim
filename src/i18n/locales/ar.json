@@ -1674,7 +1674,10 @@
       "ctaTitle": "هل جربت Turzz AI؟",
       "ctaDesc": "14 يوماً مجاناً، لا حاجة لبطاقة ائتمان.",
       "ctaButton": "ابدأ مجاناً"
-    }
+    },
+    "fallbackNotice": "لم تُترجم هذه المقالة إلى {{lang}} بعد. يتم عرض النسخة التركية.",
+    "fallbackBadge": "التركية",
+    "availableIn": "هذه المقالة متاحة بـ:"
   },
   "pages": {
     "whatsappBot": {

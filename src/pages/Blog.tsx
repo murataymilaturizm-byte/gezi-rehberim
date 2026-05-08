@@ -6,7 +6,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Tag } from "lucide-react";
+import { Calendar, Clock, Tag, AlertCircle } from "lucide-react";
 import { getAllPosts, getAllCategories, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
 
@@ -24,12 +24,34 @@ const DATE_LOCALES: Record<string, string> = {
   ar: "ar-SA", fr: "fr-FR", es: "es-ES",
 };
 
+const LANG_DISPLAY_NAMES: Record<string, Record<string, string>> = {
+  tr: { tr: "Türkçe", en: "İngilizce", de: "Almanca", ru: "Rusça", ar: "Arapça", fr: "Fransızca", es: "İspanyolca" },
+  en: { tr: "Turkish", en: "English", de: "German", ru: "Russian", ar: "Arabic", fr: "French", es: "Spanish" },
+  de: { tr: "Türkisch", en: "Englisch", de: "Deutsch", ru: "Russisch", ar: "Arabisch", fr: "Französisch", es: "Spanisch" },
+  ru: { tr: "Турецкий", en: "Английский", de: "Немецкий", ru: "Русский", ar: "Арабский", fr: "Французский", es: "Испанский" },
+  ar: { tr: "التركية", en: "الإنجليزية", de: "الألمانية", ru: "الروسية", ar: "العربية", fr: "الفرنسية", es: "الإسبانية" },
+  fr: { tr: "Turc", en: "Anglais", de: "Allemand", ru: "Russe", ar: "Arabe", fr: "Français", es: "Espagnol" },
+  es: { tr: "Turco", en: "Inglés", de: "Alemán", ru: "Ruso", ar: "Árabe", fr: "Francés", es: "Español" },
+};
+
+function getLangDisplayName(uiLang: string, targetLang: string): string {
+  return LANG_DISPLAY_NAMES[uiLang]?.[targetLang] ?? targetLang.toUpperCase();
+}
+
 function BlogCard({ post }: { post: BlogPost }) {
   const { t, i18n } = useTranslation();
   const dateLocale = DATE_LOCALES[i18n.language] || "en-GB";
 
   return (
     <Card className="border-border/50 hover:border-orange-300 transition-all hover:-translate-y-0.5 overflow-hidden">
+      {post.isFallback && (
+        <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center gap-2">
+          <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            {t("blog.fallbackNotice", { lang: getLangDisplayName(i18n.language, i18n.language) })}
+          </p>
+        </div>
+      )}
       <BlogCoverImage
         title={post.title}
         category={post.category}
@@ -71,21 +93,24 @@ function BlogCard({ post }: { post: BlogPost }) {
 const ALL_CATEGORY = "__all__";
 
 export default function Blog() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || "tr";
 
   let allPosts: BlogPost[] = [];
   try {
-    allPosts = getAllPosts();
+    allPosts = getAllPosts(currentLang);
   } catch (err) {
     console.error("Blog posts yüklenemedi:", err);
   }
 
-  const categories = getAllCategories();
+  const categories = getAllCategories(currentLang);
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY);
 
   const filtered = activeCategory === ALL_CATEGORY
     ? allPosts
     : allPosts.filter((p) => p.category === activeCategory);
+
+  const hasFallbacks = allPosts.some((p) => p.isFallback);
 
   return (
     <Layout>
@@ -106,8 +131,19 @@ export default function Blog() {
         </div>
       </section>
 
+      {/* Fallback uyarısı — tüm içerik TR'den geliyor */}
+      {hasFallbacks && currentLang !== "tr" && (
+        <div className="container mx-auto px-4 max-w-5xl mt-4">
+          <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-start gap-3">
+            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-400">
+              {t("blog.fallbackNotice", { lang: getLangDisplayName(currentLang, currentLang) })}
+            </p>
+          </div>
+        </div>
+      )}
+
       <section className="py-8 container mx-auto px-4 max-w-5xl">
-        {/* Kategori filtresi */}
         <div className="flex gap-2 flex-wrap mb-8">
           <Button
             variant={activeCategory === ALL_CATEGORY ? "default" : "outline"}
@@ -143,7 +179,6 @@ export default function Blog() {
         )}
       </section>
 
-      {/* CTA */}
       <section className="py-12 bg-muted/30 text-center">
         <div className="container mx-auto px-4">
           <p className="text-muted-foreground mb-4">{t("blog.ctaQuestion")}</p>
