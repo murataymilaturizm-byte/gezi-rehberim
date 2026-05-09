@@ -410,14 +410,27 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
       const adultCount = newContext.reservationInfo.paxAdult || 0;
       const childCount = newContext.reservationInfo.paxChild || 0;
-      const paxText =
-        newContext.language === "tr"
-          ? `${adultCount} Yetişkin${childCount ? `, ${childCount} Çocuk` : ""}`
-          : `${adultCount} Adult${childCount ? `, ${childCount} Child` : ""}`;
+      const paxTextMap: Record<string, string> = {
+        tr: `${adultCount} Yetişkin${childCount ? `, ${childCount} Çocuk` : ""}`,
+        en: `${adultCount} Adult${childCount ? `, ${childCount} Child` : ""}`,
+        de: `${adultCount} Erwachsene${childCount ? `, ${childCount} Kind${childCount > 1 ? "er" : ""}` : ""}`,
+        ru: `${adultCount} взросл${adultCount === 1 ? "ый" : "ых"}${childCount ? `, ${childCount} ребёнок` : ""}`,
+        ar: `${adultCount} بالغ${childCount ? `، ${childCount} طفل` : ""}`,
+        fr: `${adultCount} adulte${adultCount > 1 ? "s" : ""}${childCount ? `, ${childCount} enfant${childCount > 1 ? "s" : ""}` : ""}`,
+        es: `${adultCount} adulto${adultCount > 1 ? "s" : ""}${childCount ? `, ${childCount} niño${childCount > 1 ? "s" : ""}` : ""}`,
+      };
+      const paxText = paxTextMap[newContext.language] || paxTextMap.en;
 
+      const _demoTourTitle = selectedTourData?.title || newContext.reservationInfo.tourTitle || "-";
+      const _name = newContext.reservationInfo.fullName || "";
       const completionMessages: Record<string, string> = {
-        tr: `Bilgilerinizi aldım ${newContext.reservationInfo.fullName || ""}, çok teşekkür ederim! 😊\n*${selectedTourData?.title || newContext.reservationInfo.tourTitle || "Tur"}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${selectedTourData?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${newContext.reservationInfo.fullName || "-"}\n• *Telefon:* ${newContext.reservationInfo.phone || "-"}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
-        en: `Thank you, ${newContext.reservationInfo.fullName || ""}! 😊\nYour pre-registration for *${selectedTourData?.title || newContext.reservationInfo.tourTitle || "Tour"}* has been created successfully.\n\n*Registration Summary:*\n• *Tour:* ${selectedTourData?.title || newContext.reservationInfo.tourTitle || "-"}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${newContext.reservationInfo.fullName || "-"}\n• *Phone:* ${newContext.reservationInfo.phone || "-"}\n\nOur team will contact you shortly.`,
+        tr: `Bilgilerinizi aldım ${_name}, çok teşekkür ederim! 😊\n*${_demoTourTitle}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${_demoTourTitle}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${_name || "-"}\n• *Telefon:* ${newContext.reservationInfo.phone || "-"}\n\nEkip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
+        en: `Thank you, ${_name}! 😊\nYour pre-registration for *${_demoTourTitle}* has been created successfully.\n\n*Registration Summary:*\n• *Tour:* ${_demoTourTitle}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${_name || "-"}\n• *Phone:* ${newContext.reservationInfo.phone || "-"}\n\nOur team will contact you shortly.`,
+        de: `Vielen Dank, ${_name}! 😊\nIhre Voranmeldung für *${_demoTourTitle}* wurde erfolgreich erstellt.\n\n*Buchungsübersicht:*\n• *Tour:* ${_demoTourTitle}\n• *Datum:* ${formattedDate}\n• *Personen:* ${paxText}\n• *Name:* ${_name || "-"}\n• *Telefon:* ${newContext.reservationInfo.phone || "-"}\n\nUnser Team wird sich in Kürze bei Ihnen melden.`,
+        ru: `Спасибо, ${_name}! 😊\nВаша предварительная запись на *${_demoTourTitle}* успешно оформлена.\n\n*Сводка бронирования:*\n• *Тур:* ${_demoTourTitle}\n• *Дата:* ${formattedDate}\n• *Количество:* ${paxText}\n• *Имя:* ${_name || "-"}\n• *Телефон:* ${newContext.reservationInfo.phone || "-"}\n\nНаши специалисты свяжутся с вами в ближайшее время.`,
+        ar: `شكراً لك، ${_name}! 😊\nتم تسجيل طلبك المسبق لجولة *${_demoTourTitle}* بنجاح.\n\n*ملخص الحجز:*\n• *الجولة:* ${_demoTourTitle}\n• *التاريخ:* ${formattedDate}\n• *عدد الأشخاص:* ${paxText}\n• *الاسم:* ${_name || "-"}\n• *الهاتف:* ${newContext.reservationInfo.phone || "-"}\n\nسيتواصل معك فريقنا في أقرب وقت.`,
+        fr: `Merci, ${_name}! 😊\nVotre pré-inscription pour *${_demoTourTitle}* a été créée avec succès.\n\n*Récapitulatif :*\n• *Circuit :* ${_demoTourTitle}\n• *Date :* ${formattedDate}\n• *Personnes :* ${paxText}\n• *Nom :* ${_name || "-"}\n• *Téléphone :* ${newContext.reservationInfo.phone || "-"}\n\nNotre équipe vous contactera très prochainement.`,
+        es: `¡Gracias, ${_name}! 😊\nSu registro previo para *${_demoTourTitle}* ha sido creado con éxito.\n\n*Resumen:*\n• *Tour:* ${_demoTourTitle}\n• *Fecha:* ${formattedDate}\n• *Personas:* ${paxText}\n• *Nombre:* ${_name || "-"}\n• *Teléfono:* ${newContext.reservationInfo.phone || "-"}\n\nNuestro equipo se pondrá en contacto pronto.`,
       };
 
       let deterministicReply = completionMessages[newContext.language] || completionMessages.tr;

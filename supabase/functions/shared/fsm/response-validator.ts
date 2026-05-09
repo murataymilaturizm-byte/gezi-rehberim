@@ -9,7 +9,8 @@
 import type { ConversationStage } from "./types.ts";
 
 // Stage'ler validator çalıştırılacak
-const ACTIVE_STAGES: ConversationStage[] = ["COLLECTING_INFO", "CONFIRMING"];
+// TOUR_SELECTED eklendi: AI'nın "rezervasyonunuz oluşturuldu" demesini bu aşamada da engelle
+const ACTIVE_STAGES: ConversationStage[] = ["TOUR_SELECTED", "COLLECTING_INFO", "CONFIRMING"];
 
 // ─── TR pattern'leri ──────────────────────────────────────────────────────────
 const TR_PATTERNS: RegExp[] = [

@@ -135,25 +135,52 @@ function isAllInfoCollected(info: ReservationInfo): boolean {
  * NLU'dan tamamen bağımsız deterministik onay tespiti.
  * SADECE CONFIRMING → COMPLETED geçişinde kullanılır.
  * NLU timeout/hata olsa bile "evet" gibi açık onay kelimeleri yakalar.
+ *
+ * Negative guard: "evet AMA", "yes BUT change", "tamam FAKAT başka tarih" gibi
+ * ifadeler onay sayılmaz — müşteri aslında değiştirmek istiyor.
  */
 function detectConfirmation(message: string, language: string): boolean {
   const msg = message.toLowerCase().trim();
-  const patterns: Record<string, RegExp> = {
-    tr: /\b(evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla|tasdik|kesinlikle|tamamdır|onaylıorum)\b/i,
-    en: /\b(yes|confirm|approve|ok|okay|sure|right|correct|definitely|agreed|deal)\b/i,
-    de: /\b(ja|best[äa]tigen|ok|richtig|genau|stimmt|einverstanden)\b/i,
-    fr: /\b(oui|confirme|d'accord|ok|exact|parfait)\b/i,
-    es: /\b(si|s[íi]|confirmo|vale|ok|correcto|claro)\b/i,
-    ru: /\b(да|подтверждаю|ок|верно|правильно|согласен)\b/i,
-    ar: /\b(نعم|أكد|موافق|تمام|صحيح)\b/i,
+
+  // Negative patterns — bunlar varsa onay değil
+  const negativePatterns: Record<string, RegExp> = {
+    tr: /\b(ama|fakat|ancak|lakin|değil|yok|hayır|istemiyorum|vazgeçtim|olmaz|bekle|dur|aslında|sanki|acaba|mı\?|mi\?|değil mi|yanlış|hata|hatalı)\b/i,
+    en: /\b(but|however|except|not|no|don't|wait|hold|change|actually|wrong|mistake|rather|instead|unless)\b/i,
+    de: /\b(aber|jedoch|nicht|nein|warte|ändern|eigentlich|falsch|stattdessen)\b/i,
+    fr: /\b(mais|cependant|non|pas|attends|changer|plutôt|en fait|faux)\b/i,
+    es: /\b(pero|sin embargo|no|espera|cambiar|en realidad|incorrecto|equivocado)\b/i,
+    ru: /\b(но|однако|нет|не|подожди|изменить|вообще-то|неправильно|ошибка)\b/i,
+    ar: /\b(لكن|لا|ليس|انتظر|تغيير|في الواقع|خطأ)\b/i,
   };
-  const langPattern = patterns[language];
-  // Dile özgü + TR + EN fallback (karışık dil kullanımı için)
-  return (
-    (langPattern?.test(msg) ?? false) ||
-    patterns.tr.test(msg) ||
-    patterns.en.test(msg)
-  );
+
+  // Positive patterns
+  const positivePatterns: Record<string, RegExp> = {
+    tr: /\b(evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla|tasdik|kesinlikle|tamamdır|onaylıorum|peki|tabii)\b/i,
+    en: /\b(yes|confirm|approve|ok|okay|sure|right|correct|definitely|agreed|deal|absolutely)\b/i,
+    de: /\b(ja|best[äa]tigen|ok|richtig|genau|stimmt|einverstanden|natürlich)\b/i,
+    fr: /\b(oui|confirme|d'accord|ok|exact|parfait|absolument)\b/i,
+    es: /\b(si|s[íi]|confirmo|vale|ok|correcto|claro|exacto)\b/i,
+    ru: /\b(да|подтверждаю|ок|верно|правильно|согласен|конечно)\b/i,
+    ar: /\b(نعم|أكد|موافق|تمام|صحيح|بالتأكيد)\b/i,
+  };
+
+  const langKey = language as keyof typeof positivePatterns;
+
+  // Dile özgü + TR + EN fallback (karışık dil için)
+  const hasPositive =
+    (positivePatterns[langKey]?.test(msg) ?? false) ||
+    positivePatterns.tr.test(msg) ||
+    positivePatterns.en.test(msg);
+
+  if (!hasPositive) return false;
+
+  // Negative check — dile özgü + EN fallback
+  const hasNegative =
+    (negativePatterns[langKey]?.test(msg) ?? false) ||
+    negativePatterns.en.test(msg);
+
+  // "evet ama..." veya "yes but..." → onay değil
+  return !hasNegative;
 }
 
 function resetForNewReservation(ctx: ConversationContext): Partial<ConversationContext> {

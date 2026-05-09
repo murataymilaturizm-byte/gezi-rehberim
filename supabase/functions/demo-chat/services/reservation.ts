@@ -7,6 +7,7 @@ import type { ConversationContext } from "../../shared/fsm/types.ts";
 interface ReservationResult {
   success: boolean;
   error?: string;
+  remaining?: number;
 }
 
 /**
@@ -33,27 +34,34 @@ export async function saveReservation(
   }
 
   try {
-    logger.info("Saving reservation to database...");
+    logger.info("Saving reservation via atomic RPC...");
 
-    const { error } = await supabase.from("registrations").insert({
-      agency_id: agencyId,
-      tour_id: tour.id,
-      tour_date_id: dateId,
-      full_name: fullName,
-      phone: phone,
-      pax: paxAdult,
-      status: CONFIG.DEFAULT_STATUS,
-      source_channel: CONFIG.SOURCE_CHANNEL,
-      payment_status: CONFIG.DEFAULT_PAYMENT_STATUS,
-      note: "Demo chat reservation",
-    });
+    const { data: result, error } = await supabase.rpc(
+      "create_reservation_with_quota_check",
+      {
+        p_tour_id: tour.id,
+        p_tour_date_id: dateId,
+        p_full_name: fullName,
+        p_phone: phone,
+        p_pax: paxAdult,
+        p_agency_id: agencyId,
+        p_source_channel: CONFIG.SOURCE_CHANNEL,
+        p_note: "Demo chat reservation",
+      }
+    );
 
     if (error) {
-      logger.error("Error saving reservation", error);
+      logger.error("RPC error saving reservation", error);
       return { success: false, error: error.message };
     }
 
-    logger.info("Reservation saved successfully");
+    if (!result?.success) {
+      const errCode = result?.error || "UNKNOWN";
+      logger.warn("Reservation rejected by RPC", { errCode, remaining: result?.remaining });
+      return { success: false, error: errCode, remaining: result?.remaining };
+    }
+
+    logger.info("Reservation saved successfully", { registrationId: result.registration_id });
     return { success: true };
   } catch (err) {
     logger.error("Unexpected error saving reservation", err);

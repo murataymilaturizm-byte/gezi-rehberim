@@ -869,62 +869,56 @@ serve(async (req) => {
         });
       }
 
-      const { data: existingReservation } = await supabase
-        .from("registrations")
-        .select("id")
-        .eq("tour_date_id", dateId)
-        .eq("phone", reservationPhone)
-        .neq("status", "CANCELLED")
-        .maybeSingle();
+      const totalPax = (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0);
+      const { data: rpcResult, error: rpcError } = await supabase.rpc(
+        "create_reservation_with_quota_check",
+        {
+          p_tour_id: tourId,
+          p_tour_date_id: dateId,
+          p_full_name: fullName,
+          p_phone: reservationPhone,
+          p_pax: totalPax,
+          p_agency_id: agency.id,
+          p_source_channel: "WHATSAPP",
+        }
+      );
 
-      if (existingReservation) {
+      if (rpcError || !rpcResult?.success) {
+        const errCode = rpcResult?.error || "UNKNOWN";
         const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
-        const dupMessages: Record<string, string> = {
-          tr: `Bu tura zaten kayıtlısınız! Rezervasyon bilgileriniz için lütfen ${agency.name} ile iletişime geçin.${agPhone}`,
-          en: `You are already registered for this tour! Please contact ${agency.name}.${agPhone}`,
-        };
-        const duplicateReply = dupMessages[newContext.language] || dupMessages.tr;
 
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "assistant", content: duplicateReply, agency_id: agency.id });
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
-        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(duplicateReply));
-        return new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const { data: newRegistration, error: regError } = await supabase
-        .from("registrations")
-        .insert({
-          tour_id: tourId,
-          tour_date_id: dateId,
-          full_name: fullName,
-          phone: reservationPhone,
-          pax: (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0),
-          agency_id: agency.id,
-          status: "NEW",
-          source_channel: "WHATSAPP",
-          payment_status: "UNPAID",
-        })
-        .select()
-        .single();
-
-      if (regError) {
-        const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
-        const errorMsgs: Record<string, string> = {
-          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
-          en: `There was an issue creating your reservation. Please contact ${agency.name} directly.${agPhone}`,
-          de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
-          ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
-          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
-          fr: `Un problème est survenu. Veuillez contacter ${agency.name}.${agPhone}`,
-          es: `Hubo un problema. Por favor contacte a ${agency.name}.${agPhone}`,
-        };
+        let errorMsgs: Record<string, string>;
+        if (errCode === "DUPLICATE") {
+          errorMsgs = {
+            tr: `Bu tura zaten kayıtlısınız! Rezervasyon bilgileriniz için lütfen ${agency.name} ile iletişime geçin.${agPhone}`,
+            en: `You are already registered for this tour! Please contact ${agency.name}.${agPhone}`,
+            de: `Sie sind bereits für diese Tour angemeldet! Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+            ru: `Вы уже зарегистрированы на этот тур! Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
+            ar: `أنت مسجل بالفعل في هذه الجولة! يرجى التواصل مع ${agency.name}.${agPhone}`,
+            fr: `Vous êtes déjà inscrit pour ce circuit ! Veuillez contacter ${agency.name}.${agPhone}`,
+            es: `¡Ya está registrado para este tour! Por favor contacte a ${agency.name}.${agPhone}`,
+          };
+        } else if (errCode === "QUOTA_EXCEEDED") {
+          errorMsgs = {
+            tr: `Üzgünüz, bu tur için yeterli kontenjan kalmadı. Lütfen ${agency.name} ile iletişime geçin.${agPhone}`,
+            en: `Sorry, there is not enough availability for this tour. Please contact ${agency.name}.${agPhone}`,
+            de: `Entschuldigung, für diese Tour sind keine Plätze mehr verfügbar. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+            ru: `К сожалению, на этот тур не осталось мест. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
+            ar: `عذراً، لا تتوفر أماكن كافية لهذه الجولة. يرجى التواصل مع ${agency.name}.${agPhone}`,
+            fr: `Désolé, il n'y a plus de disponibilité pour ce circuit. Veuillez contacter ${agency.name}.${agPhone}`,
+            es: `Lo sentimos, no hay disponibilidad para este tour. Por favor contacte a ${agency.name}.${agPhone}`,
+          };
+        } else {
+          errorMsgs = {
+            tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
+            en: `There was an issue creating your reservation. Please contact ${agency.name} directly.${agPhone}`,
+            de: `Bei der Erstellung Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+            ru: `При создании бронирования возникла проблема. Пожалуйста, свяжитесь с ${agency.name}.${agPhone}`,
+            ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
+            fr: `Un problème est survenu. Veuillez contacter ${agency.name}.${agPhone}`,
+            es: `Hubo un problema. Por favor contacte a ${agency.name}.${agPhone}`,
+          };
+        }
 
         newContext.stage = "COLLECTING_INFO";
         newContext.reservationConfirmed = false;
@@ -1003,7 +997,7 @@ serve(async (req) => {
         }
       }
 
-      if (planFeatures?.has_templates && newRegistration) {
+      if (planFeatures?.has_templates && rpcResult?.registration_id) {
         const { data: template } = await supabase
           .from("message_templates")
           .select("*")
