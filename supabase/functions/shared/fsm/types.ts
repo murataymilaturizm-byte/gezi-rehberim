@@ -61,6 +61,9 @@ export interface ConversationContext {
   
   // New reservation flag - set when starting a new reservation after COMPLETED
   isNewReservation?: boolean;
+
+  // Cancellation flag — set when user cancels mid-flow; handler uses this to send cancellation message without AI
+  justCancelled?: boolean;
   
   // Language & Style
   language: string; // tr, en, de, ru, ar, fr, es

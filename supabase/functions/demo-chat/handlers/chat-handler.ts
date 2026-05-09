@@ -17,13 +17,13 @@ import { callAI } from "../services/ai.ts";
 import { validateAIResponse } from "../../shared/fsm/response-validator.ts";
 import { generatePaymentMessage } from "../services/payment.ts";
 
-import { processTransition, getNextExpectedInput } from "../../shared/fsm/state-machine.ts";
+import { processTransition, getNextExpectedInput, getCancellationMessage } from "../../shared/fsm/state-machine.ts";
 import { sanitizeInput } from "../../shared/fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../../shared/fsm/nlu.ts";
 import { formatDateForLanguage } from "../../shared/fsm/localization.ts";
 import type { ProcessingInput, ConversationContext } from "../../shared/fsm/types.ts";
 
-import { createErrorResponse, createSuccessResponse, DemoChatError } from "./error-handler.ts";
+import { createErrorResponse, createSuccessResponse, createUserFacingErrorResponse, DemoChatError } from "./error-handler.ts";
 import type { RequestData, Tour, ChatResponse } from "../types/index.ts";
 
 const VERSION = "v3.4.0";
@@ -234,6 +234,14 @@ export async function handleChatRequest(req: Request): Promise<Response> {
 
     const newContext = processTransition(context, input);
     logger.transition(context.stage, newContext.stage);
+
+    // Kullanıcı iptal etti → AI çağırmadan direkt yanıt dön
+    if (newContext.justCancelled) {
+      newContext.justCancelled = false;
+      const cancelReply = getCancellationMessage(newContext.language);
+      await saveConversation(supabase, sessionId, message, cancelReply);
+      return createSuccessResponse({ response: cancelReply, conversationState: newContext });
+    }
 
     if (
       newContext.stage === "TOUR_SELECTED" &&
@@ -564,9 +572,9 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     return createSuccessResponse({ response: finalResponse, conversationState: newContext });
   } catch (error) {
     if (error instanceof DemoChatError) {
-      return createErrorResponse(error.type, error.statusCode, language, error);
+      return createUserFacingErrorResponse(error.type, language, error);
     }
     logger.error("Chat request failed", error);
-    return createErrorResponse("UNKNOWN", 500, language, error);
+    return createUserFacingErrorResponse("UNKNOWN", language, error);
   }
 }

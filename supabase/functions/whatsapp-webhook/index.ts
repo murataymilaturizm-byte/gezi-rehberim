@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-import { createInitialContext, processTransition, getNextExpectedInput } from "../shared/fsm/state-machine.ts";
+import { createInitialContext, processTransition, getNextExpectedInput, getCancellationMessage } from "../shared/fsm/state-machine.ts";
 import { sanitizeInput } from "../shared/fsm/validator.ts";
 import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
@@ -68,6 +68,11 @@ serve(async (req) => {
     return new Response("Forbidden", { status: 403 });
   }
 
+  // Catch bloğundan hata mesajı göndermek için hoist edilmiş değişkenler
+  let _catchPhone: string | undefined;
+  let _catchLang = "tr";
+  let _catchMeta: { phoneNumberId: string; accessToken: string } | undefined;
+
   try {
     const body = await req.json();
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
@@ -116,6 +121,7 @@ serve(async (req) => {
     }
 
     const userPhone = webhookData.from;
+    _catchPhone = userPhone;
     const rawMessage = webhookData.message;
 
     if (!userPhone || !rawMessage) {
@@ -137,6 +143,7 @@ serve(async (req) => {
     }
 
     const metaCredentials = getMetaCredentials(agency);
+    _catchMeta = metaCredentials;
     if (!metaCredentials.accessToken || !metaCredentials.phoneNumberId) {
       console.error(`❌ Agency ${agency.name} has no Meta WhatsApp credentials configured`);
       return new Response(JSON.stringify({ error: "WhatsApp not configured" }), {
@@ -281,6 +288,7 @@ serve(async (req) => {
           }
           // Her yüklemede agency tone override: DB'deki üslup context'i güncel tutar
           if (_agencyTone) context.tone = _agencyTone;
+          _catchLang = context.language;
           console.log(`✅ Loaded context - Stage: ${context.stage}, Lang: ${context.language}, Tone: ${context.tone}`);
         } else {
           throw new Error("Invalid context");
@@ -664,6 +672,24 @@ serve(async (req) => {
 
     const newContext = processTransition(context, input);
     console.log(`🔄 ${context.stage} → ${newContext.stage}`);
+
+    // Kullanıcı iptal etti → AI çağırmadan direkt yanıt dön
+    if (newContext.justCancelled) {
+      newContext.justCancelled = false;
+      const cancelReply = getCancellationMessage(newContext.language);
+      await supabase
+        .from("whatsapp_conversations")
+        .insert({ phone: userPhone, role: "assistant", content: cancelReply, agency_id: agency.id });
+      await supabase
+        .from("whatsapp_conversations")
+        .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+      await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, cancelReply);
+      supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Deterministic date listing (do not depend on AI for this step)
     if (
@@ -1257,7 +1283,27 @@ Never say anything about the previous booking.`;
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("❌ Critical error:", error);
+
+    // Müşteriye nazik hata mesajı gönder (phone ve meta bilgileri varsa)
+    if (_catchPhone && _catchMeta?.accessToken && _catchMeta?.phoneNumberId) {
+      const errorMessages: Record<string, string> = {
+        tr: "Üzgünüm, şu anda teknik bir sorun yaşıyorum. Lütfen birkaç dakika sonra tekrar deneyin.",
+        en: "Sorry, I'm experiencing a technical issue. Please try again in a few minutes.",
+        de: "Entschuldigung, ich habe gerade ein technisches Problem. Bitte in wenigen Minuten erneut versuchen.",
+        ru: "Извините, у меня техническая проблема. Пожалуйста, попробуйте через несколько минут.",
+        ar: "آسف، أواجه مشكلة تقنية. يرجى المحاولة بعد بضع دقائق.",
+        fr: "Désolé, je rencontre un problème technique. Veuillez réessayer dans quelques minutes.",
+        es: "Lo siento, tengo un problema técnico. Por favor intenta de nuevo en unos minutos.",
+      };
+      const errMsg = errorMessages[_catchLang] || errorMessages.tr;
+      try {
+        await sendWhatsAppMessage(_catchMeta.phoneNumberId, _catchMeta.accessToken, _catchPhone, errMsg);
+      } catch (sendErr) {
+        console.error("❌ Failed to send error message to customer:", sendErr);
+      }
+    }
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

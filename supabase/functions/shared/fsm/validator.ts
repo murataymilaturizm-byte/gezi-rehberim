@@ -42,16 +42,13 @@ export function validateReservationInfo(info: ReservationInfo): ValidationResult
     }
   }
   
-  // Check phone
+  // Check phone — E.164 / uluslararası format: 7-15 hane (Türkiye ve yabancı numaralar)
   if (!info.phone) {
     missingFields.push('phone');
   } else {
-    const cleaned = info.phone.replace(/[\s\-]/g, '');
-    if (cleaned.length < 10 || cleaned.length > 11) {
+    const digitsOnly = info.phone.replace(/\D/g, '');
+    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
       errors.push('Invalid phone number length');
-    }
-    if (!/^\d+$/.test(cleaned)) {
-      errors.push('Phone must contain only digits');
     }
   }
   

@@ -1,6 +1,152 @@
 // Simple fallback extractor for name, phone, pax, and date
 import type { ReservationInfo } from "./types.ts";
 
+// ─── Göreceli tarih çıkarımı ─────────────────────────────────────────────────
+function extractRelativeDate(text: string, language: string): Date | null {
+  const lower = text.toLowerCase();
+
+  const tomorrowPatterns: Record<string, RegExp> = {
+    tr: /\b(yarın|yarin)\b/,
+    en: /\b(tomorrow)\b/,
+    de: /\b(morgen)\b/,
+    ru: /\b(завтра)\b/,
+    ar: /\b(غدا|غداً)\b/,
+    fr: /\b(demain)\b/,
+    es: /\b(mañana|manana)\b/,
+  };
+
+  const dayAfterTomorrowPatterns: Record<string, RegExp> = {
+    tr: /\b(öbür\s*gün|obur\s*gun|ertesi\s*gün)\b/,
+    en: /\b(day\s*after\s*tomorrow)\b/,
+    de: /\b(übermorgen|uebermorgen)\b/,
+    ru: /\b(послезавтра)\b/,
+    fr: /\b(après[\s-]?demain|apres[\s-]?demain)\b/,
+    es: /\b(pasado\s*ma[nñ]ana)\b/,
+  };
+
+  const nextWeekPatterns: Record<string, RegExp> = {
+    tr: /\b(haftaya|gelecek\s*hafta|önümüzdeki\s*hafta)\b/,
+    en: /\b(next\s*week)\b/,
+    de: /\b(nächste\s*woche|naechste\s*woche)\b/,
+    ru: /\b(следующ\S+\s+недел\S+|на\s+следующ\S+\s+недел\S+)\b/,
+    fr: /\b(la\s*semaine\s*prochaine|semaine\s*prochaine)\b/,
+    es: /\b(la\s*pr[oó]xima\s*semana|pr[oó]xima\s*semana)\b/,
+  };
+
+  const langKey = language as keyof typeof tomorrowPatterns;
+  const now = new Date();
+
+  if (tomorrowPatterns[langKey]?.test(lower) || tomorrowPatterns.en.test(lower)) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 1);
+    return d;
+  }
+
+  if (dayAfterTomorrowPatterns[langKey]?.test(lower) || dayAfterTomorrowPatterns.en.test(lower)) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 2);
+    return d;
+  }
+
+  if (nextWeekPatterns[langKey]?.test(lower) || nextWeekPatterns.en.test(lower)) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 7);
+    return d;
+  }
+
+  // Gün isimleri: "pazartesi", "monday" → bir sonraki o gün
+  const dayNames: Record<string, string[]> = {
+    tr: ["pazar", "pazartesi", "salı", "çarşamba", "perşembe", "cuma", "cumartesi"],
+    en: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+    de: ["sonntag", "montag", "dienstag", "mittwoch", "donnerstag", "freitag", "samstag"],
+    ru: ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"],
+    fr: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+    es: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+  };
+  for (const days of Object.values(dayNames)) {
+    for (let i = 0; i < days.length; i++) {
+      if (new RegExp(`\\b${days[i]}\\b`, "i").test(lower)) {
+        const currentDay = now.getDay();
+        let daysUntil = i - currentDay;
+        if (daysUntil <= 0) daysUntil += 7;
+        const d = new Date(now);
+        d.setDate(d.getDate() + daysUntil);
+        return d;
+      }
+    }
+  }
+
+  return null;
+}
+
+// ─── Yazıyla sayı çıkarımı (fallback) ────────────────────────────────────────
+const NUMBER_WORDS: Record<string, Record<string, number>> = {
+  tr: {
+    bir: 1, iki: 2, üç: 3, uc: 3, dört: 4, dort: 4,
+    beş: 5, bes: 5, altı: 6, alti: 6, yedi: 7, sekiz: 8,
+    dokuz: 9, on: 10, "on bir": 11, "on iki": 12, "on üç": 13,
+    "on dört": 14, "on beş": 15, yirmi: 20, otuz: 30,
+  },
+  en: {
+    one: 1, two: 2, three: 3, four: 4, five: 5, six: 6,
+    seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+    thirteen: 13, fourteen: 14, fifteen: 15, twenty: 20, thirty: 30,
+  },
+  de: {
+    eins: 1, ein: 1, eine: 1, zwei: 2, drei: 3, vier: 4,
+    fünf: 5, funf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9,
+    zehn: 10, elf: 11, zwölf: 12, zwanzig: 20,
+  },
+  ru: {
+    один: 1, одна: 1, два: 2, двое: 2, три: 3, трое: 3,
+    четыре: 4, пять: 5, шесть: 6, семь: 7, восемь: 8,
+    девять: 9, десять: 10,
+  },
+  ar: {
+    واحد: 1, اثنان: 2, اثنين: 2, ثلاثة: 3, أربعة: 4,
+    خمسة: 5, ستة: 6, سبعة: 7, ثمانية: 8, تسعة: 9, عشرة: 10,
+  },
+  fr: {
+    un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5,
+    six: 6, sept: 7, huit: 8, neuf: 9, dix: 10,
+  },
+  es: {
+    uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5,
+    seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10,
+  },
+};
+
+function extractPaxFromWords(text: string, language: string): number | null {
+  const lower = text.toLowerCase();
+  const words = NUMBER_WORDS[language] || NUMBER_WORDS.en;
+  const peopleContext =
+    /\b(ki[şs]i|insan|person|people|kinder|kind|adult|yetişkin|kişiyiz|kişiyim|اشخاص|personas|personnes|человек|гостей)\b/i;
+
+  // Çok kelimeli sayıları önce dene ("on iki")
+  const multiWordEntries = Object.entries(words)
+    .filter(([w]) => w.includes(" "))
+    .sort((a, b) => b[0].length - a[0].length);
+
+  for (const [word, value] of multiWordEntries) {
+    if (lower.includes(word)) {
+      if (peopleContext.test(lower) || lower.trim().split(/\s+/).length <= 4) {
+        return value;
+      }
+    }
+  }
+
+  // Tek kelimeli sayılar
+  for (const [word, value] of Object.entries(words).filter(([w]) => !w.includes(" "))) {
+    if (new RegExp(`\\b${word}\\b`, "i").test(lower)) {
+      if (peopleContext.test(lower) || lower.trim().split(/\s+/).length <= 3) {
+        return value;
+      }
+    }
+  }
+
+  return null;
+}
+
 function normalizePhone(raw: string): string | null {
   const cleaned = raw.replace(/[\s\-\(\)\.]/g, "");
   if (cleaned.startsWith("+")) {
@@ -72,8 +218,48 @@ export function extractNameAndPhone(
       }
     }
   }
+  // Fallback: yazıyla yazılmış sayılar ("üç kişi", "three people")
+  if (!result.paxAdult) {
+    // TR + EN + DE + RU dene — dil bilinmediğinden sırayla kontrol
+    for (const lang of ["tr", "en", "de", "ru", "ar", "fr", "es"]) {
+      const wordPax = extractPaxFromWords(message, lang);
+      if (wordPax !== null && wordPax >= 1 && wordPax <= 50) {
+        result.paxAdult = wordPax;
+        break;
+      }
+    }
+  }
 
   // === TARİH ===
+
+  // Göreceli tarihler: "yarın", "öbür gün", "haftaya pazartesi" vb.
+  // language bilgisi burada yok; TR + EN dene, tourDates varsa eşleştir
+  if (!result.selectedDate && !result.dateId) {
+    const relDate =
+      extractRelativeDate(lower, "tr") ||
+      extractRelativeDate(lower, "en") ||
+      extractRelativeDate(lower, "de") ||
+      extractRelativeDate(lower, "ru") ||
+      extractRelativeDate(lower, "ar") ||
+      extractRelativeDate(lower, "fr") ||
+      extractRelativeDate(lower, "es");
+    if (relDate) {
+      const relDateStr = relDate.toISOString().split("T")[0];
+      if (tourDates && tourDates.length > 0) {
+        const matched = tourDates.find((d: any) => d.departure_date === relDateStr);
+        if (matched) {
+          result.dateId = matched.id;
+          result.selectedDate = matched.departure_date;
+        } else {
+          // Tarih yok ama relative niyeti var — "relative_YYYY-MM-DD" döndür ki handler mesaj üretsin
+          result.selectedDate = `relative_${relDateStr}`;
+        }
+      } else {
+        result.selectedDate = relDateStr;
+      }
+    }
+  }
+
   const monthNames: Record<string, number> = {
     ocak: 1,
     şubat: 2,

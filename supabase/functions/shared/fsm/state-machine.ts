@@ -183,6 +183,37 @@ function detectConfirmation(message: string, language: string): boolean {
   return !hasNegative;
 }
 
+/**
+ * Kullanıcı iptal mi ediyor? "vazgeçtim", "iptal", "istemiyorum" gibi ifadeler.
+ * CONFIRMING → COLLECTING_INFO → TOUR_SELECTED gibi aktif state'lerde BROWSING'e dönüş için kullanılır.
+ */
+export function detectCancellation(text: string, language: string): boolean {
+  const patterns: Record<string, RegExp> = {
+    tr: /\b(vazge[cç]tim|vazgeçiyorum|iptal|istemiyorum|olmas[ıi]n|gerek yok|bo[sş] ver|ba[sş]ka zaman|d[uü][sş][uü]neyim|d[uü][sş][uü]neyim de|pas|paslıyorum)\b/i,
+    en: /\b(cancel|nevermind|never mind|forget it|don'?t want|skip it|maybe later|not now|pass|leave it)\b/i,
+    de: /\b(abbrechen|stornieren|möchte nicht|will nicht|vergiss es|vergessen|später|nicht mehr|lass es sein)\b/i,
+    ru: /\b(отмена|отменить|не хочу|неважно|забудь|забудьте|позже|потом|не надо)\b/i,
+    ar: /\b(إلغاء|لا أريد|انس الأمر|لاحقا|ليس الآن|اتركها)\b/i,
+    fr: /\b(annuler|j'abandonne|peu importe|laisse tomber|laissez tomber|plus tard|pas maintenant|oublie)\b/i,
+    es: /\b(cancelar|olvídalo|olvidalo|no quiero|déjalo|dejalo|más tarde|otro día|olvida)\b/i,
+  };
+  const langKey = language as keyof typeof patterns;
+  return (patterns[langKey]?.test(text) ?? false) || patterns.en.test(text);
+}
+
+export function getCancellationMessage(language: string): string {
+  const messages: Record<string, string> = {
+    tr: "Tamam, sorun değil! 😊 Başka bir konuda yardımcı olabilirim. Hangi tur ilginizi çeker?",
+    en: "No problem! 😊 I can help you with something else. Which tour interests you?",
+    de: "Kein Problem! 😊 Ich kann Ihnen mit etwas anderem helfen. Welche Tour interessiert Sie?",
+    ru: "Без проблем! 😊 Я могу помочь вам с чем-то другим. Какой тур вас интересует?",
+    ar: "لا مشكلة! 😊 يمكنني مساعدتك في شيء آخر. ما الجولة التي تهمك؟",
+    fr: "Pas de problème ! 😊 Je peux vous aider avec autre chose. Quel circuit vous intéresse ?",
+    es: "¡No hay problema! 😊 Puedo ayudarte con otra cosa. ¿Qué tour te interesa?",
+  };
+  return messages[language] || messages.en;
+}
+
 function resetForNewReservation(ctx: ConversationContext): Partial<ConversationContext> {
   return {
     currentTour: null,
@@ -196,6 +227,48 @@ function resetForNewReservation(ctx: ConversationContext): Partial<ConversationC
 }
 
 const transitions: StateTransition[] = [
+  // ── İPTAL GEÇİŞLERİ (en üstte — önce kontrol edilir) ────────────────────
+  // Kullanıcı aktif bir flow'dayken "vazgeçtim/iptal/istemiyorum" derse BROWSING'e dön.
+  {
+    from: "TOUR_SELECTED",
+    to: "BROWSING",
+    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    action: (ctx) => ({
+      ...ctx,
+      currentTour: null,
+      reservationInfo: {},
+      collectionStep: undefined,
+      justCancelled: true,
+    }),
+  },
+  {
+    from: "COLLECTING_INFO",
+    to: "BROWSING",
+    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    action: (ctx) => ({
+      ...ctx,
+      currentTour: null,
+      reservationInfo: {},
+      reservationConfirmed: false,
+      collectionStep: undefined,
+      justCancelled: true,
+    }),
+  },
+  {
+    from: "CONFIRMING",
+    to: "BROWSING",
+    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    action: (ctx) => ({
+      ...ctx,
+      currentTour: null,
+      reservationInfo: {},
+      reservationConfirmed: false,
+      collectionStep: undefined,
+      justCancelled: true,
+    }),
+  },
+  // ─────────────────────────────────────────────────────────────────────────
+
   // GREETING → TOUR_SELECTED
   {
     from: "GREETING",
