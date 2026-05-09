@@ -128,7 +128,10 @@ function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
 }
 
 function isAllInfoCollected(info: ReservationInfo): boolean {
-  return !!(info.tourId && info.dateId && info.selectedDate && info.paxAdult && info.fullName && info.phone);
+  // determineCollectionStep ile uyumlu: tarih için dateId VEYA selectedDate yeterli.
+  // (Kayıt aşamasında dateId ayrıca doğrulanır.)
+  const hasDate = !!(info.dateId || info.selectedDate);
+  return !!(info.tourId && hasDate && info.paxAdult && info.fullName && info.phone);
 }
 
 /**
@@ -489,20 +492,30 @@ const transitions: StateTransition[] = [
     action: (ctx, input) => {
       const msg = input.userMessage.toLowerCase();
       const info = { ...ctx.reservationInfo };
-      if (/isim|ad|name|soyad|surname/i.test(msg)) {
+
+      // Çok dilli alan pattern'leri (TR + EN + DE + RU + AR + FR + ES)
+      const namePattern   = /\b(isim|ad[ıi]m?|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre)\b/i;
+      const phonePattern  = /\b(telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono)\b/i;
+      const paxPattern    = /\b(ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)\b/i;
+      const datePattern   = /\b(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha)\b/i;
+
+      if (namePattern.test(msg)) {
         delete info.fullName;
-      } else if (/telefon|numara|phone|gsm|cep/i.test(msg)) {
+      } else if (phonePattern.test(msg)) {
         delete info.phone;
-      } else if (/kişi|pax|person|people|yetişkin|adult|çocuk|child/i.test(msg)) {
+      } else if (paxPattern.test(msg)) {
         delete info.paxAdult;
         delete info.paxChild;
-      } else if (/tarih|date|gün|day/i.test(msg)) {
+      } else if (datePattern.test(msg)) {
         delete info.dateId;
         delete info.selectedDate;
       } else {
-        delete info.fullName;
-        delete info.phone;
+        // Belirsiz "değiştir" isteği — en yaygın senaryo tarih değiştirme.
+        // Phone ve isim korunur; müşteri yeni tarih seçer.
+        delete info.dateId;
+        delete info.selectedDate;
       }
+
       return {
         ...ctx,
         reservationInfo: info,
