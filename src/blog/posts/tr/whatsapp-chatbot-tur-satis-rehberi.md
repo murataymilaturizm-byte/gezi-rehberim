@@ -7,6 +7,7 @@ tags: ["whatsapp chatbot", "tur satışı", "seyahat acentesi", "dijital dönü�
 image: "/blog/whatsapp-musteri-yonetimi.jpg"
 author: "Turzz AI Ekibi"
 readingTime: 7
+slug: "whatsapp-chatbot-tur-satis-rehberi"
 ---
 
 # WhatsApp Chatbot ile Tur Satışlarını 3x Artırmanın Yolları
