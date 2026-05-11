@@ -18,7 +18,9 @@
     "saveSuccessDesc": "Configuración de moneda guardada",
     "saveError": "Error",
     "saveErrorDesc": "Ocurrió un error al guardar la configuración",
-    "loadError": "Ocurrió un error al cargar la configuración"
+    "loadError": "Ocurrió un error al cargar la configuración",
+    "multiDisplay": "Visualización de múltiples monedas",
+    "multiDisplayHelp": "Mostrar precios en la moneda del cliente y en la moneda de la agencia"
   },
   "nav": {
     "home": "Inicio",
@@ -1325,7 +1327,9 @@
       "phone": "+34 555 123 4567",
       "city": "Madrid",
       "region": "Centro"
-    }
+    },
+    "currency": "Su moneda",
+    "currencyHelp": "Moneda para almacenar los precios de sus tours"
   },
   "gettingStarted": {
     "title": "¿Cómo Empezar?",

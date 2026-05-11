@@ -18,7 +18,9 @@
     "saveSuccessDesc": "Währungseinstellungen gespeichert",
     "saveError": "Fehler",
     "saveErrorDesc": "Beim Speichern der Einstellungen ist ein Fehler aufgetreten",
-    "loadError": "Beim Laden der Einstellungen ist ein Fehler aufgetreten"
+    "loadError": "Beim Laden der Einstellungen ist ein Fehler aufgetreten",
+    "multiDisplay": "Mehrfach-Währungsanzeige",
+    "multiDisplayHelp": "Preise in der Kundenwährung und in Ihrer Agenturwährung anzeigen"
   },
   "nav": {
     "home": "Startseite",
@@ -1297,7 +1299,9 @@
       "phone": "+49 555 123 4567",
       "city": "Berlin",
       "region": "Brandenburg"
-    }
+    },
+    "currency": "Ihre Währung",
+    "currencyHelp": "Währung für die Speicherung Ihrer Tourpreise"
   },
   "gettingStarted": {
     "title": "Wie Fange Ich An?",

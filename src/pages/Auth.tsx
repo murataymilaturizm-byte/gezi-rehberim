@@ -14,11 +14,18 @@ import { z } from "zod";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCityRegionLanguage } from "@/utils/cityLanguageMapper";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Dile göre varsayılan para birimi (signup formu için)
+const LANG_DEFAULT_CURRENCY: Record<string, string> = {
+  tr: 'TRY', en: 'USD', de: 'EUR', fr: 'EUR',
+  es: 'EUR', ru: 'RUB', ar: 'SAR',
+};
 
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
 
   const authSchema = z.object({
@@ -50,6 +57,7 @@ const Auth = () => {
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
   const [isYearly, setIsYearly] = useState(billingParam === "yearly");
+  const [currency, setCurrency] = useState(() => LANG_DEFAULT_CURRENCY[i18n.language] || 'USD');
   const [planType, setPlanType] = useState<"starter" | "professional" | "enterprise">(
     (planParam === "başlangıç" ? "starter" : 
      planParam === "profesyonel" ? "professional" : 
@@ -138,6 +146,7 @@ const Auth = () => {
               agency_lang:         languagePreference,
               agency_plan:         planType,
               agency_trial_ends:   trialEndsAt.toISOString(),
+              agency_currency:     currency,
             }
           }
         });
@@ -421,6 +430,31 @@ const Auth = () => {
                       </div>
                     </label>
                   </div>
+                </div>
+
+                {/* Para birimi seçimi */}
+                <div className="space-y-2">
+                  <Label htmlFor="currency">{t("auth.currency")}</Label>
+                  <Select value={currency} onValueChange={setCurrency} disabled={isLoading}>
+                    <SelectTrigger id="currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TRY">₺ Türk Lirası (TRY)</SelectItem>
+                      <SelectItem value="USD">$ US Dollar (USD)</SelectItem>
+                      <SelectItem value="EUR">€ Euro (EUR)</SelectItem>
+                      <SelectItem value="GBP">£ British Pound (GBP)</SelectItem>
+                      <SelectItem value="SAR">﷼ Saudi Riyal (SAR)</SelectItem>
+                      <SelectItem value="AED">د.إ UAE Dirham (AED)</SelectItem>
+                      <SelectItem value="RUB">₽ Russian Ruble (RUB)</SelectItem>
+                      <SelectItem value="CHF">CHF Swiss Franc</SelectItem>
+                      <SelectItem value="JPY">¥ Japanese Yen (JPY)</SelectItem>
+                      <SelectItem value="CNY">¥ Chinese Yuan (CNY)</SelectItem>
+                      <SelectItem value="KWD">KD Kuwaiti Dinar (KWD)</SelectItem>
+                      <SelectItem value="QAR">QR Qatari Riyal (QAR)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{t("auth.currencyHelp")}</p>
                 </div>
               </>
             )}

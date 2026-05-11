@@ -18,7 +18,9 @@
     "saveSuccessDesc": "Paramètres de devise enregistrés",
     "saveError": "Erreur",
     "saveErrorDesc": "Une erreur s'est produite lors de l'enregistrement des paramètres",
-    "loadError": "Une erreur s'est produite lors du chargement des paramètres"
+    "loadError": "Une erreur s'est produite lors du chargement des paramètres",
+    "multiDisplay": "Affichage multi-devises",
+    "multiDisplayHelp": "Afficher les prix dans la devise du client et dans la devise de l'agence"
   },
   "nav": {
     "home": "Accueil",
@@ -1501,7 +1503,9 @@
       "phone": "+33 555 123 4567",
       "city": "Paris",
       "region": "Île-de-France"
-    }
+    },
+    "currency": "Votre devise",
+    "currencyHelp": "Devise pour stocker les prix de vos circuits"
   },
   "gettingStarted": {
     "title": "Comment Commencer?",

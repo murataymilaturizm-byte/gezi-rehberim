@@ -24,7 +24,9 @@
     "saveSuccessDesc": "Para birimi ayarları kaydedildi",
     "saveError": "Hata",
     "saveErrorDesc": "Ayarlar kaydedilirken bir hata oluştu",
-    "loadError": "Ayarlar yüklenirken bir hata oluştu"
+    "loadError": "Ayarlar yüklenirken bir hata oluştu",
+    "multiDisplay": "Çoklu Para Birimi Gösterimi",
+    "multiDisplayHelp": "Yabancı dildeki müşterilere fiyatları hem kendi para biriminde hem sizin para biriminizde göster"
   },
   "hero": {
     "title": "WhatsApp ile Otomatik Tur Satışı",
@@ -1457,7 +1459,9 @@
       "phone": "0555 123 45 67",
       "city": "İstanbul",
       "region": "Marmara"
-    }
+    },
+    "currency": "Para Biriminiz",
+    "currencyHelp": "Tur fiyatlarınızın saklanacağı para birimi"
   },
   "gettingStarted": {
     "title": "Nasıl Başlarım?",

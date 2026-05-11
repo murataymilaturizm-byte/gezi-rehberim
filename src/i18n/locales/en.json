@@ -24,7 +24,9 @@
     "saveSuccessDesc": "Currency settings saved",
     "saveError": "Error",
     "saveErrorDesc": "An error occurred while saving settings",
-    "loadError": "An error occurred while loading settings"
+    "loadError": "An error occurred while loading settings",
+    "multiDisplay": "Multi-Currency Display",
+    "multiDisplayHelp": "Show prices in both the customer's currency and your agency currency"
   },
   "hero": {
     "title": "Automate WhatsApp Tour Sales",
@@ -1309,7 +1311,9 @@
       "phone": "+1 555 123 4567",
       "city": "New York",
       "region": "Northeast"
-    }
+    },
+    "currency": "Your Currency",
+    "currencyHelp": "Currency for storing your tour prices"
   },
   "gettingStarted": {
     "title": "How to Get Started?",

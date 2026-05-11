@@ -43,6 +43,8 @@ export function LanguageCurrencySettings() {
     fetchSettings();
   }, []);
 
+  const [showMultiCurrency, setShowMultiCurrency] = useState(true);
+
   const fetchSettings = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -50,7 +52,7 @@ export function LanguageCurrencySettings() {
 
       const { data: agency, error } = await supabase
         .from('agencies')
-        .select('id, primary_currency, language_currencies, enabled_languages')
+        .select('id, primary_currency, language_currencies, enabled_languages, show_multi_currency')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -65,6 +67,7 @@ export function LanguageCurrencySettings() {
 
       setAgencyId(agency.id);
       setPrimaryCurrency(agency.primary_currency || 'TRY');
+      setShowMultiCurrency((agency as any).show_multi_currency !== false);
       const currenciesData = (agency.language_currencies as LanguageCurrencyMapping) || {};
       setLanguageCurrencies(currenciesData);
       
@@ -101,9 +104,10 @@ export function LanguageCurrencySettings() {
 
       const { error } = await supabase
         .from('agencies')
-        .update({ 
+        .update({
           primary_currency: primaryCurrency,
-          language_currencies: finalCurrencies 
+          language_currencies: finalCurrencies,
+          show_multi_currency: showMultiCurrency,
         })
         .eq('id', agencyId);
 
@@ -191,6 +195,20 @@ export function LanguageCurrencySettings() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Çoklu Para Birimi Gösterimi Toggle */}
+        <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/20">
+          <div className="space-y-1">
+            <Label className="text-base font-semibold">{t('currency.multiDisplay')}</Label>
+            <p className="text-sm text-muted-foreground max-w-md">
+              {t('currency.multiDisplayHelp')}
+            </p>
+          </div>
+          <Switch
+            checked={showMultiCurrency}
+            onCheckedChange={setShowMultiCurrency}
+          />
         </div>
 
         {/* Dil Bazlı Para Birimi Seçimi */}
