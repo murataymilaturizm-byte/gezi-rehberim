@@ -1,10 +1,23 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import "./i18n";
+
+// HTML root'unda dir ve lang attribute'unu i18n diline göre günceller.
+// Arapça seçilince dir="rtl" olur, tarayıcı RTL layout'a geçer.
+function RtlEffect() {
+  const { i18n } = useTranslation();
+  useEffect(() => {
+    const isRTL = i18n.language === "ar";
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+    document.documentElement.lang = i18n.language || "tr";
+  }, [i18n.language]);
+  return null;
+}
 
 // Eager loaded (kritik yol)
 import Index from "./pages/Index";
@@ -39,6 +52,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <RtlEffect />
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>}>
           <Routes>
             {/* Core */}

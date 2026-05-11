@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── RTL (Arapça) Global Kurallar ──────────────────────────────────────────── */
+
+/* Arapça font */
+html[dir="rtl"] {
+  font-family: 'Cairo', system-ui, sans-serif;
+}
+
+/* Flex row yönü — yatay sıralı container'lar RTL'de otomatik ters döner */
+html[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+/* Margin/padding logical properties için shorthand:
+   Tailwind RTL variant (rtl:) ile birlikte kullanılır.
+   Aşağıdaki selector'lar Tailwind rtl: prefix olmadan çalışan fallback'lerdir. */
+
+/* Navigasyon öğeleri arasındaki boşluk */
+html[dir="rtl"] nav.flex { gap: inherit; }
+
+/* Input icon konumlandırma (sol ikon → sağa geçer) */
+html[dir="rtl"] input[type="text"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="password"],
+html[dir="rtl"] textarea {
+  text-align: right;
+}
+
+/* Badge, chip, tag gibi elemanlarda text hizalama */
+html[dir="rtl"] .text-left { text-align: right; }
+html[dir="rtl"] .text-right { text-align: left; }
+
+/* Absolute positioned elements (sağa/sola hizalanmış ikonlar) */
+html[dir="rtl"] .left-0 { left: auto; right: 0; }
+html[dir="rtl"] .right-0 { right: auto; left: 0; }
+html[dir="rtl"] .left-4 { left: auto; right: 1rem; }
+html[dir="rtl"] .right-4 { right: auto; left: 1rem; }
+
+/* Radix/Shadcn dropdown menü konumu */
+html[dir="rtl"] [data-radix-popper-content-wrapper] {
+  direction: rtl;
+}
+
+/* Scrollbar RTL */
+html[dir="rtl"] {
+  scrollbar-width: thin;
+}
+
+/* ── RTL Arrow Flip ─────────────────────────────────────────────────────────── */
+/* Tailwind rtl:rotate-180 ile aynı etki — bu global CSS'de fallback olarak */
+html[dir="rtl"] .arrow-rtl {
+  transform: rotate(180deg);
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */

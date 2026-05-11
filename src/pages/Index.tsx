@@ -393,7 +393,7 @@ const Index = () => {
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 text-lg px-8" asChild>
                 <a href="/auth?mode=signup">
                   {t("hero.cta")}
-                  <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="w-5 h-5 ms-2 rtl:rotate-180 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 transition-all duration-300 hover:scale-105" onClick={scrollToDemo}>
@@ -463,7 +463,7 @@ const Index = () => {
               { icon: Brain, step: 2, title: t("howItWorks.step2.title"), desc: t("howItWorks.step2.description") },
               { icon: CheckCircle2, step: 3, title: t("howItWorks.step3.title"), desc: t("howItWorks.step3.description") },
             ].map((item, index) => (
-              <div key={index} className={`flex items-start gap-4 mb-8 last:mb-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-10 md:ml-0' : 'md:pl-10 md:ml-auto'}`}>
+              <div key={index} className={`flex items-start gap-4 mb-8 last:mb-0 md:w-1/2 ${index % 2 === 0 ? 'md:pe-10 md:ms-0' : 'md:ps-10 md:ms-auto'}`}>
                 <div className="md:hidden w-12 h-12 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground font-bold text-lg flex-shrink-0 shadow-md">
                   {item.step}
                 </div>
@@ -514,7 +514,7 @@ const Index = () => {
             <Button size="lg" className="bg-gradient-ocean hover:opacity-90" asChild>
               <a href="/auth?mode=signup">
                 {t("demo.cta")}
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-5 h-5 ms-2 rtl:rotate-180" />
               </a>
             </Button>
           </div>
@@ -1035,7 +1035,7 @@ const Index = () => {
               <Button size="lg" className="bg-gradient-ocean hover:opacity-90 text-lg px-8" asChild>
                 <a href="/auth?mode=signup">
                   {t("cta.button")}
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <ArrowRight className="w-5 h-5 ms-2 rtl:rotate-180" />
                 </a>
               </Button>
             </CardContent>
