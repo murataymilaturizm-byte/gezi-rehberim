@@ -2283,5 +2283,32 @@
       "title": "Marketing-Cookies",
       "description": "Wird verwendet, um relevantere Anzeigen zu schalten (Facebook Pixel)."
     }
+  },
+  "legal": {
+    "email": "E-Mail-Adresse",
+    "phone": "Telefonnummer",
+    "error": "Fehler",
+    "sending": "Wird gesendet...",
+    "dataDeletion": {
+      "title": "Datenlöschungsanfrage",
+      "description": "Füllen Sie das Formular aus, um die Löschung Ihrer Daten zu beantragen.",
+      "button": "Datenlöschung beantragen",
+      "fillOne": "Bitte geben Sie Ihre E-Mail oder Telefonnummer ein.",
+      "error": "Anfrage konnte nicht gesendet werden.",
+      "notice": "Mindestens ein Feld erforderlich. Bearbeitung innerhalb von 30 Tagen.",
+      "successTitle": "Anfrage erhalten",
+      "successDesc": "Ihre Datenlöschungsanfrage wurde übermittelt."
+    },
+    "dataExport": {
+      "title": "Daten herunterladen",
+      "description": "Gemäß DSGVO Art. 20 können Sie Ihre Daten als JSON herunterladen.",
+      "button": "Meine Daten herunterladen",
+      "fillOne": "Bitte geben Sie Ihre E-Mail oder Telefonnummer ein.",
+      "error": "Export fehlgeschlagen.",
+      "notice": "Enthält alle mit Ihren Kennungen verknüpften Daten.",
+      "success": "Download gestartet",
+      "successTitle": "Download abgeschlossen",
+      "successDesc": "Ihre Daten wurden als JSON-Datei heruntergeladen."
+    }
   }
 }

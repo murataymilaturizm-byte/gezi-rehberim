@@ -2454,5 +2454,32 @@
       "title": "Pazarlama Çerezleri",
       "description": "Daha alakalı reklamlar göstermek için kullanılır (Facebook Pixel)."
     }
+  },
+  "legal": {
+    "email": "E-posta Adresi",
+    "phone": "Telefon Numarası",
+    "error": "Hata",
+    "sending": "Gönderiliyor...",
+    "dataDeletion": {
+      "title": "Veri Silme Talebi",
+      "description": "Kişisel verilerinizin silinmesini talep etmek için formu doldurun.",
+      "button": "Veri Silme Talebinde Bulun",
+      "fillOne": "Lütfen e-posta veya telefon numarası girin.",
+      "error": "Talep gönderilemedi. Lütfen tekrar deneyin.",
+      "notice": "En az bir alan zorunludur. Talebiniz 30 gün içinde işleme alınır.",
+      "successTitle": "Talebiniz Alındı",
+      "successDesc": "Veri silme talebiniz başarıyla kaydedildi."
+    },
+    "dataExport": {
+      "title": "Verilerinizi İndirin",
+      "description": "GDPR Madde 20 kapsamında verilerinizi JSON formatında indirebilirsiniz.",
+      "button": "Verileri İndir",
+      "fillOne": "Lütfen e-posta veya telefon numarası girin.",
+      "error": "Veriler indirilemedi. Lütfen tekrar deneyin.",
+      "notice": "İndirme, sistemdeki kayıtlı verilerinizi içerir.",
+      "success": "İndirme başladı",
+      "successTitle": "İndirme Tamamlandı",
+      "successDesc": "Verileriniz JSON dosyası olarak indirildi."
+    }
   }
 }

@@ -2341,5 +2341,32 @@
       "title": "Marketing Cookies",
       "description": "Used to show more relevant ads (Facebook Pixel)."
     }
+  },
+  "legal": {
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "error": "Error",
+    "sending": "Sending...",
+    "dataDeletion": {
+      "title": "Data Deletion Request",
+      "description": "Fill in the form to request deletion of your personal data.",
+      "button": "Request Data Deletion",
+      "fillOne": "Please enter your email or phone number.",
+      "error": "Request could not be sent. Please try again.",
+      "notice": "At least one field is required. Processed within 30 days.",
+      "successTitle": "Request Received",
+      "successDesc": "Your data deletion request has been submitted."
+    },
+    "dataExport": {
+      "title": "Download Your Data",
+      "description": "Under GDPR Article 20, download your personal data as JSON.",
+      "button": "Download My Data",
+      "fillOne": "Please enter your email or phone number.",
+      "error": "Export failed. Please try again.",
+      "notice": "Includes all data linked to your identifiers.",
+      "success": "Download started",
+      "successTitle": "Download Complete",
+      "successDesc": "Your data has been downloaded as a JSON file."
+    }
   }
 }

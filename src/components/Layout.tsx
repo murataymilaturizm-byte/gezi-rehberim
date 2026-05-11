@@ -189,6 +189,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 <li><a href="mailto:info@turzzai.com" className="text-sm text-muted-foreground hover:text-primary transition-colors">İletişim</a></li>
                 <li><Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Gizlilik Politikası</Link></li>
                 <li><Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kullanım Şartları</Link></li>
+                <li><Link to="/data-deletion" className="text-sm text-muted-foreground hover:text-primary transition-colors">Veri Silme</Link></li>
+                <li><Link to="/data-export" className="text-sm text-muted-foreground hover:text-primary transition-colors">Veri İndirme</Link></li>
               </ul>
             </div>
             <div>

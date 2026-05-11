@@ -32,6 +32,7 @@ const Help            = lazy(() => import("./pages/Help"));
 const NotFound        = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy   = lazy(() => import("./pages/PrivacyPolicy"));
 const DataDeletion    = lazy(() => import("./pages/DataDeletion"));
+const DataExport      = lazy(() => import("./pages/DataExport"));
 const TermsOfService  = lazy(() => import("./pages/TermsOfService"));
 
 // SEO sayfaları
@@ -65,8 +66,9 @@ const App = () => (
             <Route path="/admin"       element={<Admin />} />
             <Route path="/nasil-baslarim" element={<GettingStarted />} />
             <Route path="/yardim"      element={<Help />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/data-deletion"  element={<DataDeletion />} />
+            <Route path="/privacy-policy"   element={<PrivacyPolicy />} />
+            <Route path="/data-deletion"    element={<DataDeletion />} />
+            <Route path="/data-export"      element={<DataExport />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
 
             {/* SEO — Özellikler */}

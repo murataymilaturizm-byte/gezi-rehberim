@@ -2282,5 +2282,32 @@
       "title": "Cookies de marketing",
       "description": "Se usan para mostrar anuncios más relevantes (Facebook Pixel)."
     }
+  },
+  "legal": {
+    "email": "Correo electrónico",
+    "phone": "Número de teléfono",
+    "error": "Error",
+    "sending": "Enviando...",
+    "dataDeletion": {
+      "title": "Solicitud de eliminación de datos",
+      "description": "Complete el formulario para solicitar la eliminación de sus datos.",
+      "button": "Solicitar eliminación",
+      "fillOne": "Introduzca su correo electrónico o número de teléfono.",
+      "error": "No se pudo enviar la solicitud.",
+      "notice": "Se requiere un campo. Procesado en 30 días.",
+      "successTitle": "Solicitud recibida",
+      "successDesc": "Su solicitud de eliminación fue enviada."
+    },
+    "dataExport": {
+      "title": "Descargar sus datos",
+      "description": "Según el art. 20 RGPD puede descargar sus datos en JSON.",
+      "button": "Descargar mis datos",
+      "fillOne": "Introduzca su correo electrónico o número de teléfono.",
+      "error": "Export fallido.",
+      "notice": "Incluye todos los datos vinculados a sus identificadores.",
+      "success": "Descarga iniciada",
+      "successTitle": "Descarga completada",
+      "successDesc": "Sus datos han sido descargados en JSON."
+    }
   }
 }

@@ -2487,5 +2487,32 @@
       "title": "Cookies marketing",
       "description": "Utilisés pour afficher des publicités plus pertinentes (Facebook Pixel)."
     }
+  },
+  "legal": {
+    "email": "Adresse e-mail",
+    "phone": "Numéro de téléphone",
+    "error": "Erreur",
+    "sending": "Envoi en cours...",
+    "dataDeletion": {
+      "title": "Demande de suppression de données",
+      "description": "Remplissez le formulaire pour demander la suppression de vos données.",
+      "button": "Demander la suppression",
+      "fillOne": "Veuillez saisir votre e-mail ou numéro de téléphone.",
+      "error": "La demande n'a pas pu être envoyée.",
+      "notice": "Au moins un champ requis. Traité sous 30 jours.",
+      "successTitle": "Demande reçue",
+      "successDesc": "Votre demande de suppression a été soumise."
+    },
+    "dataExport": {
+      "title": "Télécharger vos données",
+      "description": "Conformément à l'art. 20 RGPD, téléchargez vos données en JSON.",
+      "button": "Télécharger mes données",
+      "fillOne": "Veuillez saisir votre e-mail ou numéro de téléphone.",
+      "error": "Export impossible.",
+      "notice": "Inclut toutes les données liées à vos identifiants.",
+      "success": "Téléchargement démarré",
+      "successTitle": "Téléchargement terminé",
+      "successDesc": "Vos données ont été téléchargées en JSON."
+    }
   }
 }
