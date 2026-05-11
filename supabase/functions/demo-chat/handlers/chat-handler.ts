@@ -16,6 +16,8 @@ import { buildCompleteSystemPrompt } from "../services/prompt-builder-helper.ts"
 import { callAI } from "../services/ai.ts";
 import { validateAIResponse } from "../../shared/fsm/response-validator.ts";
 import { generatePaymentMessage } from "../services/payment.ts";
+import { formatPriceSync } from "../../shared/utils/currency-display.ts";
+import { getExchangeRatesOnce } from "../../shared/utils/exchange-rates.ts";
 
 import { processTransition, getNextExpectedInput, getCancellationMessage } from "../../shared/fsm/state-machine.ts";
 import { sanitizeInput } from "../../shared/fsm/validator.ts";
@@ -44,11 +46,19 @@ async function parseRequest(req: Request): Promise<RequestData> {
  * Deterministik tarih listesi mesajı
  * Tek tarih olsa bile kullanıcıya göster — otomatik seçme
  */
-function buildDateSelectionMessage(tour: any, language: string): string {
+function buildDateSelectionMessage(
+  tour: any,
+  language: string,
+  exRates: Record<string, number> = {},
+  showDual = false,
+): string {
+  const tourCurrency = tour.currency || "TRY";
   const dateLines = tour.dates
     .map((d: any, idx: number) => {
       const dateText = formatDateForLanguage(d.departure_date, language);
-      const priceText = d.price_adult ? ` - ${d.price_adult} ${tour.currency || "TRY"}` : "";
+      const priceText = d.price_adult
+        ? ` - ${formatPriceSync(d.price_adult, tourCurrency, language, exRates, showDual)}`
+        : "";
       const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
       const quotaText =
         remaining !== undefined ? (language === "tr" ? ` (${remaining} kişilik yer)` : ` (${remaining} spots)`) : "";
@@ -235,6 +245,10 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const newContext = processTransition(context, input);
     logger.transition(context.stage, newContext.stage);
 
+    // Çoklu para birimi için döviz kurları (bir kez al, aşağıda paylaş)
+    const _showDualCurrency = (agencyData as any)?.show_multi_currency !== false;
+    const _exRates = _showDualCurrency ? await getExchangeRatesOnce().catch(() => ({})) : {};
+
     // Kullanıcı iptal etti → AI çağırmadan direkt yanıt dön
     if (newContext.justCancelled) {
       newContext.justCancelled = false;
@@ -251,7 +265,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     ) {
       const selectedTourData = findTourById(newContext.currentTour.id, availableTours);
       if (selectedTourData?.dates?.length) {
-        const dateReply = buildDateSelectionMessage(selectedTourData, newContext.language);
+        const dateReply = buildDateSelectionMessage(selectedTourData, newContext.language, _exRates, _showDualCurrency);
         await saveConversation(supabase, sessionId, message, dateReply);
         return createSuccessResponse({ response: dateReply, conversationState: newContext });
       }
@@ -268,7 +282,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     ) {
       const tourForDates = findTourById(newContext.currentTour.id, availableTours);
       if (tourForDates?.dates?.length) {
-        const dateReply = buildDateSelectionMessage(tourForDates, newContext.language);
+        const dateReply = buildDateSelectionMessage(tourForDates, newContext.language, _exRates, _showDualCurrency);
         await saveConversation(supabase, sessionId, message, dateReply);
         return createSuccessResponse({ response: dateReply, conversationState: newContext });
       }

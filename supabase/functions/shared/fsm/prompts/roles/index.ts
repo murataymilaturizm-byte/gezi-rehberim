@@ -1,13 +1,11 @@
-// Export all role prompts
+// Role prompts — her dil için kendi sistem prompt dosyası
 import { TR_ROLE } from "./tr.ts";
 import { EN_ROLE } from "./en.ts";
-
-// Placeholder for other languages (add as needed)
-const DE_ROLE = EN_ROLE; // Use English as fallback for now
-const RU_ROLE = EN_ROLE;
-const AR_ROLE = EN_ROLE;
-const FR_ROLE = EN_ROLE;
-const ES_ROLE = EN_ROLE;
+import { DE_ROLE } from "./de.ts";
+import { RU_ROLE } from "./ru.ts";
+import { AR_ROLE } from "./ar.ts";
+import { FR_ROLE } from "./fr.ts";
+import { ES_ROLE } from "./es.ts";
 
 export const ROLE_PROMPTS: Record<string, string> = {
   tr: TR_ROLE,
@@ -20,5 +18,5 @@ export const ROLE_PROMPTS: Record<string, string> = {
 };
 
 export function getRolePrompt(language: string): string {
-  return ROLE_PROMPTS[language] || ROLE_PROMPTS.tr;
+  return ROLE_PROMPTS[language] ?? ROLE_PROMPTS.en;
 }

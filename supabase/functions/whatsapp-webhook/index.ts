@@ -17,6 +17,8 @@ import {
 import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
 import { validateAIResponse } from "../shared/fsm/response-validator.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
+import { getExchangeRatesOnce } from "../shared/utils/exchange-rates.ts";
+import { formatPriceSync, CONVERSION_NOTES } from "../shared/utils/currency-display.ts";
 
 import {
   extractMetaWebhookData,
@@ -699,10 +701,15 @@ serve(async (req) => {
     ) {
       const selectedTourForDates = findTourById(newContext.currentTour.id, tours);
       if (selectedTourForDates?.dates?.length) {
+        const _exRates = await getExchangeRatesOnce().catch(() => ({}));
+        const _tourCurrency = selectedTourForDates.currency || "TRY";
+        const _showDual = (agency as any).show_multi_currency !== false;
         const dateLines = selectedTourForDates.dates
           .map((d: any, idx: number) => {
             const dateText = formatDateForLanguage(d.departure_date, newContext.language);
-            const priceText = d.price_adult ? ` - ${d.price_adult} ${selectedTourForDates.currency || "TRY"}` : "";
+            const priceText = d.price_adult
+              ? ` - ${formatPriceSync(d.price_adult, _tourCurrency, newContext.language, _exRates, _showDual)}`
+              : "";
             const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
             const quotaText =
               remaining !== undefined
@@ -794,7 +801,11 @@ serve(async (req) => {
                   _dateLocaleMap[newContext.language] || "en-GB",
                   { day: "numeric", month: "long", year: "numeric" },
                 );
-                const priceStr = d.price_adult ? ` (${d.price_adult} ${currentTourData?.currency || "TRY"})` : "";
+                const _quotaCurrency = currentTourData?.currency || "TRY";
+                const _quotaRates = await getExchangeRatesOnce().catch(() => ({}));
+                const priceStr = d.price_adult
+                  ? ` (${formatPriceSync(d.price_adult, _quotaCurrency, newContext.language, _quotaRates, (agency as any).show_multi_currency !== false)})`
+                  : "";
                 availableDatesList.push(`• ${dateStr}${priceStr}`);
               }
             }

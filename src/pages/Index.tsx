@@ -22,11 +22,21 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { contactFormSchema, checkRateLimit, sanitizeHtml } from "@/utils/validation";
 import { IndexBlogSection } from "@/components/IndexBlogSection";
+import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+
+// Dile göre varsayılan para birimi (frontend / edge ile tutarlı)
+const LANG_TO_CURRENCY: Record<string, string> = {
+  tr: "TRY", en: "USD", de: "EUR", fr: "EUR",
+  es: "EUR", ru: "RUB", ar: "SAR",
+};
+
+const PLAN_PRICES_TRY = { starter: 2999, professional: 4999, enterprise: 7999 } as const;
 
 const Index = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
   const [isYearly, setIsYearly] = useState(true);
+  const { convert, convertAndFormat, loading: ratesLoading } = useCurrencyConverter("USD");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const demoRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -141,20 +151,44 @@ const Index = () => {
 
   const calculatePrice = (basePrice: number, yearly: boolean) => {
     if (yearly && typeof basePrice === 'number' && !isNaN(basePrice)) {
-      const yearlyPrice = basePrice * 12;
-      const discountedPrice = yearlyPrice * 0.9; // %10 indirim
-      return discountedPrice;
+      return basePrice * 12 * 0.9; // %10 yıllık indirim
     }
     return basePrice;
   };
 
+  // Kullanıcının diline göre para birimi
+  const userCurrency = LANG_TO_CURRENCY[i18n.language] || "USD";
+  const showInUserCurrency = userCurrency !== "TRY";
+
+  // Plan için gösterim fiyatı: kullanıcı diline göre otomatik dönüşüm
+  const getPlanDisplayPrice = (planKey: keyof typeof PLAN_PRICES_TRY, yearly: boolean): string => {
+    const baseTRY = PLAN_PRICES_TRY[planKey];
+    const finalTRY = calculatePrice(baseTRY, yearly);
+
+    if (!showInUserCurrency || ratesLoading) {
+      return finalTRY.toLocaleString("tr-TR");
+    }
+
+    const converted = convert(finalTRY, "TRY", userCurrency);
+    // Yuvarla: 0 ondalık (USD/EUR büyük fiyatlar için yeterli)
+    return Math.round(converted).toLocaleString("en-US");
+  };
+
+  const getCurrencyUnit = (yearly: boolean): string => {
+    const sym: Record<string, string> = {
+      TRY: "₺", USD: "$", EUR: "€", SAR: "﷼", RUB: "₽", GBP: "£",
+    };
+    const s = sym[userCurrency] ?? userCurrency;
+    const period = yearly ? (i18n.language === "tr" ? "/yıl" : "/yr") : (i18n.language === "tr" ? "/ay" : "/mo");
+    return `${s}${period}`;
+  };
+
+  // Eski formatPrice — "custom" etiketi için hâlâ kullanılıyor
   const formatPrice = (priceStr: string, yearly: boolean) => {
     if (priceStr === t("pricing.custom")) return t("pricing.custom");
-    const price = parseFloat(priceStr.replace(".", "").replace("€", "").replace(",", ""));
+    const price = parseFloat(priceStr.replace(/[^\d]/g, ""));
     if (isNaN(price)) return priceStr;
-    
-    const finalPrice = calculatePrice(price, yearly);
-    return finalPrice.toLocaleString('tr-TR');
+    return calculatePrice(price, yearly).toLocaleString("tr-TR");
   };
 
   const pricingPlans = [
@@ -615,23 +649,43 @@ const Index = () => {
                   </div>
                   
                   <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-foreground">
-                        {formatPrice(plan.price, isYearly)}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {plan.price === t("pricing.custom") ? plan.period : isYearly ? "₺/yıl" : "₺/ay"}
-                      </span>
-                    </div>
-                    {isYearly && plan.monthlyPrice > 0 && (
-                      <div className="mt-2">
-                        <p className="text-sm text-muted-foreground line-through">
-                          {(plan.monthlyPrice * 12).toLocaleString('tr-TR')}₺/yıl
-                        </p>
-                        <p className="text-sm text-success font-medium">
-                          {(plan.monthlyPrice * 12 * 0.1).toLocaleString('tr-TR')}₺ {t("pricing.savings")}
-                        </p>
+                    {plan.price === t("pricing.custom") ? (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-4xl font-bold text-foreground">{t("pricing.custom")}</span>
+                        <span className="text-muted-foreground">{plan.period}</span>
                       </div>
+                    ) : (
+                      <>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-bold text-foreground">
+                            {getPlanDisplayPrice(
+                              plan.name === t("pricing.starter.name")
+                                ? "starter"
+                                : plan.name === t("pricing.professional.name")
+                                  ? "professional"
+                                  : "enterprise",
+                              isYearly,
+                            )}
+                          </span>
+                          <span className="text-muted-foreground">{getCurrencyUnit(isYearly)}</span>
+                        </div>
+                        {/* TRY dışındaki para birimlerinde TL karşılığını göster */}
+                        {showInUserCurrency && plan.monthlyPrice > 0 && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            ≈ ₺{calculatePrice(plan.monthlyPrice, isYearly).toLocaleString("tr-TR")}
+                          </p>
+                        )}
+                        {isYearly && plan.monthlyPrice > 0 && (
+                          <div className="mt-1">
+                            <p className="text-sm text-success font-medium">
+                              {t("pricing.savings")}: {showInUserCurrency
+                                ? `${Math.round(convert(plan.monthlyPrice * 12 * 0.1, "TRY", userCurrency)).toLocaleString("en-US")} ${userCurrency}`
+                                : `${(plan.monthlyPrice * 12 * 0.1).toLocaleString("tr-TR")}₺`
+                              }
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 
