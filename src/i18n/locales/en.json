@@ -2319,5 +2319,27 @@
         }
       }
     }
+  },
+  "cookies": {
+    "title": "Your Cookie Preferences",
+    "description": "We use cookies to improve our website and provide a better experience.",
+    "learnMore": "Privacy policy",
+    "acceptAll": "Accept All",
+    "rejectAll": "Reject All",
+    "customize": "Customize",
+    "customizeTitle": "Customize Cookie Settings",
+    "savePreferences": "Save Preferences",
+    "necessary": {
+      "title": "Necessary Cookies",
+      "description": "Required for core site functionality. Cannot be disabled."
+    },
+    "analytics": {
+      "title": "Analytics Cookies",
+      "description": "Help us understand site usage. Collects anonymous statistics."
+    },
+    "marketing": {
+      "title": "Marketing Cookies",
+      "description": "Used to show more relevant ads (Facebook Pixel)."
+    }
   }
 }

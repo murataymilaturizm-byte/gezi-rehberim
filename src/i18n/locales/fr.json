@@ -2465,5 +2465,27 @@
         }
       }
     }
+  },
+  "cookies": {
+    "title": "Vos préférences de cookies",
+    "description": "Nous utilisons des cookies pour améliorer notre site et vous offrir une meilleure expérience.",
+    "learnMore": "Politique de confidentialité",
+    "acceptAll": "Tout accepter",
+    "rejectAll": "Tout refuser",
+    "customize": "Personnaliser",
+    "customizeTitle": "Personnaliser les cookies",
+    "savePreferences": "Enregistrer les préférences",
+    "necessary": {
+      "title": "Cookies nécessaires",
+      "description": "Requis pour les fonctionnalités de base du site. Ne peuvent pas être désactivés."
+    },
+    "analytics": {
+      "title": "Cookies analytiques",
+      "description": "Nous aident à comprendre l'utilisation du site. Collectent des statistiques anonymes."
+    },
+    "marketing": {
+      "title": "Cookies marketing",
+      "description": "Utilisés pour afficher des publicités plus pertinentes (Facebook Pixel)."
+    }
   }
 }

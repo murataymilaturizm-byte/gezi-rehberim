@@ -2432,5 +2432,27 @@
         }
       }
     }
+  },
+  "cookies": {
+    "title": "Çerez Tercihleriniz",
+    "description": "Web sitemizi geliştirmek ve size daha iyi hizmet sunmak için çerezler kullanıyoruz.",
+    "learnMore": "Gizlilik politikamız",
+    "acceptAll": "Tümünü Kabul Et",
+    "rejectAll": "Tümünü Reddet",
+    "customize": "Özelleştir",
+    "customizeTitle": "Çerez Ayarlarını Özelleştir",
+    "savePreferences": "Tercihleri Kaydet",
+    "necessary": {
+      "title": "Gerekli Çerezler",
+      "description": "Sitenin temel işlevleri için gereklidir. Devre dışı bırakılamaz."
+    },
+    "analytics": {
+      "title": "Analitik Çerezler",
+      "description": "Site kullanımını anlamamıza yardımcı olur. Anonim istatistikler toplar."
+    },
+    "marketing": {
+      "title": "Pazarlama Çerezleri",
+      "description": "Daha alakalı reklamlar göstermek için kullanılır (Facebook Pixel)."
+    }
   }
 }
