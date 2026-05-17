@@ -412,9 +412,10 @@ function extractDate(
       if (partialMatch) {
         result.dateId = partialMatch.id;
         result.selectedDate = partialMatch.departure_date;
-      } else {
-        result.selectedDate = isoDate;
       }
+      // Tarih parse edildi ama tur tarihlerinde mevcut değil:
+      // selectedDate ve dateId set ETME. Sistem "waiting_for_date" döndürür
+      // ve kullanıcıya mevcut tarihleri yeniden listeler.
     }
   }
 

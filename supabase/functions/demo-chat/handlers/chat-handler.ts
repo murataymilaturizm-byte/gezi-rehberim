@@ -165,6 +165,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       if (typed !== context.language) {
         logger.info("LANGUAGE_FROM_NLU", { prev: context.language, next: typed });
         context.language = typed;
+        language = typed; // local primitive'i de sync et — hata mesajları stale "tr" kullanmasın
       }
     }
 
@@ -282,7 +283,22 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     ) {
       const tourForDates = findTourById(newContext.currentTour.id, availableTours);
       if (tourForDates?.dates?.length) {
-        const dateReply = buildDateSelectionMessage(tourForDates, newContext.language, _exRates, _showDualCurrency);
+        // Kullanıcı var olmayan tarih girdiyse (selectedDate set ama dateId yok) bilgilendirici preamble
+        const requestedDate = newContext.reservationInfo?.selectedDate;
+        const unavailablePreambles: Record<string, string> = {
+          tr: requestedDate ? `"${requestedDate}" tarihi bu tur için müsait değil.\n\n` : "",
+          en: requestedDate ? `The date "${requestedDate}" is not available for this tour.\n\n` : "",
+          de: requestedDate ? `Das Datum "${requestedDate}" ist für diese Tour nicht verfügbar.\n\n` : "",
+          ru: requestedDate ? `Дата "${requestedDate}" недоступна для этого тура.\n\n` : "",
+          ar: requestedDate ? `التاريخ "${requestedDate}" غير متاح لهذه الجولة.\n\n` : "",
+          fr: requestedDate ? `La date "${requestedDate}" n'est pas disponible pour ce circuit.\n\n` : "",
+          es: requestedDate ? `La fecha "${requestedDate}" no está disponible para este tour.\n\n` : "",
+        };
+        const preamble = unavailablePreambles[newContext.language] ?? unavailablePreambles.en;
+        const dateListMsg = buildDateSelectionMessage(tourForDates, newContext.language, _exRates, _showDualCurrency);
+        const dateReply = preamble + dateListMsg;
+        // selectedDate temizle: DB'de olmayan tarih context'e bırakılmamalı
+        newContext.reservationInfo = { ...newContext.reservationInfo, selectedDate: undefined };
         await saveConversation(supabase, sessionId, message, dateReply);
         return createSuccessResponse({ response: dateReply, conversationState: newContext });
       }

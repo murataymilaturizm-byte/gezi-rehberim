@@ -119,8 +119,9 @@ function mergeReservationInfo(
 }
 
 function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
-  const hasDate = !!(info.selectedDate || info.dateId);
-  if (!hasDate) return "waiting_for_date";
+  // dateId ZORUNLU: selectedDate parse edilmiş olabilir ama DB'de eşleşen tur tarihi yoksa
+  // dateId null kalır ve bu "tarih hâlâ eksik" anlamına gelir.
+  if (!info.dateId) return "waiting_for_date";
   if (!info.paxAdult) return "waiting_for_pax";
   if (!info.fullName) return "waiting_for_name";
   if (!info.phone) return "waiting_for_phone";
@@ -128,10 +129,9 @@ function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
 }
 
 function isAllInfoCollected(info: ReservationInfo): boolean {
-  // determineCollectionStep ile uyumlu: tarih için dateId VEYA selectedDate yeterli.
-  // (Kayıt aşamasında dateId ayrıca doğrulanır.)
-  const hasDate = !!(info.dateId || info.selectedDate);
-  return !!(info.tourId && hasDate && info.paxAdult && info.fullName && info.phone);
+  // dateId ZORUNLU: DB'de gerçekten mevcut bir tarih olduğunu garantiler.
+  // selectedDate tek başına yeterli değil — DB'de eşleşmeyen tarih rezervasyon kaydında başarısız olur.
+  return !!(info.tourId && info.dateId && info.paxAdult && info.fullName && info.phone);
 }
 
 /**
