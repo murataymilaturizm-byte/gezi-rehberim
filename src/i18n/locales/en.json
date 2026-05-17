@@ -3,7 +3,16 @@
     "home": "Home",
     "admin": "Admin Panel",
     "gettingStarted": "Getting Started",
-    "help": "Help"
+    "help": "Help",
+    "features": "Features",
+    "solutions": "Solutions",
+    "compare": "Compare",
+    "blog": "Blog",
+    "pricing": "Pricing",
+    "login": "Log In",
+    "freeTrial": "Free Trial",
+    "menu": "Menu",
+    "discoverFeatures": "Discover Features"
   },
   "currency": {
     "management": "Currency Management",
@@ -299,7 +308,8 @@
         "apiAccess": "✅ API access (coming soon)",
         "paymentCollection": "✅ Payment Collection (coming soon)"
       }
-    }
+    },
+    "mostPopular": "Most Popular"
   },
   "footer": {
     "description": "Modern WhatsApp integration and reservation management system for travel agencies.",
@@ -316,7 +326,25 @@
     "terms": "Terms of Service",
     "rights": "© 2025 TurzzAI. All rights reserved.",
     "gettingStarted": "Getting Started",
-    "login": "Login"
+    "login": "Login",
+    "company": "Company",
+    "resources": "Resources",
+    "about": "About Us",
+    "kvkk": "Privacy Policy",
+    "termsOfUse": "Terms of Service",
+    "helpCenter": "Help Center",
+    "requestDemo": "Request Demo",
+    "whatsappChatbot": "WhatsApp Chatbot",
+    "aiReservation": "AI Tour Booking",
+    "multilingualService": "Multilingual Service",
+    "tourAutomation": "Tour Automation",
+    "incomingAgencies": "Incoming Agencies",
+    "dayTours": "Day Tours",
+    "boutiqueAgencies": "Boutique Agencies",
+    "comparison": "Comparison",
+    "copyright": "© {year} Turzz AI. All rights reserved.",
+    "dataDeletion": "Data Deletion",
+    "dataExport": "Data Export"
   },
   "customerAnalytics": {
     "title": "Customer Analytics",
@@ -1398,7 +1426,9 @@
   "cta": {
     "title": "Ready to Get Started?",
     "subtitle": "Create a demo account and try all features for free. No credit card required.",
-    "button": "Try for Free"
+    "button": "Try for Free",
+    "learnMore": "Learn more",
+    "more": "More"
   },
   "userProfiles": {
     "title": "Customer Profiles (CRM)",
@@ -2367,6 +2397,57 @@
       "success": "Download started",
       "successTitle": "Download Complete",
       "successDesc": "Your data has been downloaded as a JSON file."
+    }
+  },
+  "indexFeatures": {
+    "title": "Built for Travel Agencies",
+    "subtitle": "Manage sales, bookings and customer service via WhatsApp — all in one platform.",
+    "whatsapp": {
+      "title": "WhatsApp Business Chatbot",
+      "desc": "Auto-respond to customer messages 24/7. Even 2am inquiries get instant answers."
+    },
+    "ai": {
+      "title": "AI-Powered Booking",
+      "desc": "AI collects date, pax count, name and phone step by step — and creates the reservation automatically."
+    },
+    "multilingual": {
+      "title": "7-Language Customer Service",
+      "desc": "German, Russian, Arabic tourists write in their own language — chatbot replies the same. No translator needed."
+    },
+    "automation": {
+      "title": "Automated Tour Management",
+      "desc": "Quota tracking, tour reminders, customer segmentation — all automatic."
+    }
+  },
+  "indexSolutions": {
+    "title": "Industry-Specific Solutions",
+    "subtitle": "Tailored setups for every type of travel agency.",
+    "incoming": {
+      "title": "Incoming Agencies",
+      "desc": "Serve foreign tourists in 7 languages, 24/7. Culturally aware, instant responses.",
+      "bullets": [
+        "German, Russian, Arabic — automated",
+        "Time zones are no obstacle — 24/7 active",
+        "Direct access to the international market"
+      ]
+    },
+    "dayTour": {
+      "title": "Day Tour Operators",
+      "desc": "Fast bookings, last-minute sales, dynamic quota management.",
+      "bullets": [
+        "Real-time seat check and booking",
+        "Last-minute availability closes automatically",
+        "Never miss a late-night booking"
+      ]
+    },
+    "boutique": {
+      "title": "Boutique Agencies",
+      "desc": "Personal touch + modern technology. Big-company presence on a small budget.",
+      "bullets": [
+        "Plans from ₺2,999/mo",
+        "Setup in 5–10 minutes",
+        "20% of the cost of one employee"
+      ]
     }
   }
 }

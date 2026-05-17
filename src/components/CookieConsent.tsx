@@ -118,7 +118,7 @@ export function CookieConsent() {
               <h2 className="text-sm font-semibold">{t("cookies.customizeTitle")}</h2>
               <button
                 onClick={() => setShowDetails(false)}
-                aria-label="Kapat"
+                aria-label={t("common.close") || "Close"}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />

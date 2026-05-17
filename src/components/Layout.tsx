@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -27,6 +28,7 @@ const ozellikler = [
 ];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -44,7 +46,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent">Özellikler</NavigationMenuTrigger>
+                  <NavigationMenuTrigger className="bg-transparent">{t("nav.features")}</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="w-56 p-2">
                       {ozellikler.map((item) => (
@@ -64,7 +66,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent">Çözümler</NavigationMenuTrigger>
+                  <NavigationMenuTrigger className="bg-transparent">{t("nav.solutions")}</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="w-64 p-2">
                       {cozumler.map((item) => (
@@ -86,23 +88,23 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             </NavigationMenu>
 
             <Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="px-3 py-2 text-sm hover:text-primary transition-colors">
-              Karşılaştırma
+              {t("nav.compare")}
             </Link>
             <Link to="/blog" className="px-3 py-2 text-sm hover:text-primary transition-colors">
-              Blog
+              {t("nav.blog")}
             </Link>
             <Link to="/#pricing" className="px-3 py-2 text-sm hover:text-primary transition-colors">
-              Fiyatlandırma
+              {t("nav.pricing")}
             </Link>
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
             <LanguageSelector />
             <Button variant="ghost" asChild size="sm">
-              <Link to="/auth">Giriş Yap</Link>
+              <Link to="/auth">{t("nav.login")}</Link>
             </Button>
             <Button asChild size="sm" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90 text-white">
-              <Link to="/auth?mode=signup">Ücretsiz Dene</Link>
+              <Link to="/auth?mode=signup">{t("nav.freeTrial")}</Link>
             </Button>
           </div>
 
@@ -110,7 +112,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           <button
             className="md:hidden p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menü"
+            aria-label={t("nav.menu")}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -119,32 +121,32 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden border-t border-border bg-card px-4 py-4 space-y-1">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider py-1">Özellikler</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider py-1">{t("nav.features")}</p>
             {ozellikler.map((item) => (
               <Link key={item.href} to={item.href} className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>
                 {item.label}
               </Link>
             ))}
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider py-1 mt-2">Çözümler</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider py-1 mt-2">{t("nav.solutions")}</p>
             {cozumler.map((item) => (
               <Link key={item.href} to={item.href} className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>
                 {item.label}
               </Link>
             ))}
             <div className="border-t border-border pt-3 mt-2 space-y-1">
-              <Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>Karşılaştırma</Link>
-              <Link to="/blog" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>Blog</Link>
-              <Link to="/#pricing" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>Fiyatlandırma</Link>
+              <Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.compare")}</Link>
+              <Link to="/blog" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.blog")}</Link>
+              <Link to="/#pricing" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.pricing")}</Link>
             </div>
             <div className="pt-3">
               <LanguageSelector />
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" asChild size="sm" className="flex-1">
-                <Link to="/auth" onClick={() => setMobileOpen(false)}>Giriş Yap</Link>
+                <Link to="/auth" onClick={() => setMobileOpen(false)}>{t("nav.login")}</Link>
               </Button>
               <Button asChild size="sm" className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-                <Link to="/auth?mode=signup" onClick={() => setMobileOpen(false)}>Ücretsiz Dene</Link>
+                <Link to="/auth?mode=signup" onClick={() => setMobileOpen(false)}>{t("nav.freeTrial")}</Link>
               </Button>
             </div>
           </div>
@@ -159,7 +161,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold text-foreground mb-3 text-sm">Ürün</h3>
+              <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.product")}</h3>
               <ul className="space-y-2">
                 {ozellikler.map((item) => (
                   <li key={item.href}>
@@ -171,7 +173,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground mb-3 text-sm">Çözümler</h3>
+              <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.solutions")}</h3>
               <ul className="space-y-2">
                 {cozumler.map((item) => (
                   <li key={item.href}>
@@ -183,18 +185,18 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground mb-3 text-sm">Şirket</h3>
+              <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.company")}</h3>
               <ul className="space-y-2">
-                <li><Link to="/#about" className="text-sm text-muted-foreground hover:text-primary transition-colors">Hakkımızda</Link></li>
-                <li><a href="mailto:info@turzzai.com" className="text-sm text-muted-foreground hover:text-primary transition-colors">İletişim</a></li>
-                <li><Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Gizlilik Politikası</Link></li>
-                <li><Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kullanım Şartları</Link></li>
-                <li><Link to="/data-deletion" className="text-sm text-muted-foreground hover:text-primary transition-colors">Veri Silme</Link></li>
-                <li><Link to="/data-export" className="text-sm text-muted-foreground hover:text-primary transition-colors">Veri İndirme</Link></li>
+                <li><Link to="/#about" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.about")}</Link></li>
+                <li><a href="mailto:info@turzzai.com" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.contact")}</a></li>
+                <li><Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.kvkk")}</Link></li>
+                <li><Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.termsOfUse")}</Link></li>
+                <li><Link to="/data-deletion" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.dataDeletion")}</Link></li>
+                <li><Link to="/data-export" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.dataExport")}</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground mb-3 text-sm">Kaynaklar</h3>
+              <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.resources")}</h3>
               <ul className="space-y-2">
                 <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-primary transition-colors">Blog</Link></li>
                 <li><Link to="/yardim" className="text-sm text-muted-foreground hover:text-primary transition-colors">Yardım Merkezi</Link></li>
@@ -208,7 +210,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <img src={turzzLogo} alt="Turzz AI" className="h-8 w-auto" />
             </Link>
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Turzz AI. Tüm hakları saklıdır.
+              {t("footer.copyright", { year: new Date().getFullYear() })}
             </p>
           </div>
         </div>

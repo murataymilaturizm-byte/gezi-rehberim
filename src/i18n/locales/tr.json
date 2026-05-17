@@ -3,7 +3,16 @@
     "home": "Ana Sayfa",
     "admin": "Admin Paneli",
     "gettingStarted": "Nasıl Başlarım?",
-    "help": "Yardım"
+    "help": "Yardım",
+    "features": "Özellikler",
+    "solutions": "Çözümler",
+    "compare": "Karşılaştır",
+    "blog": "Blog",
+    "pricing": "Fiyatlandırma",
+    "login": "Giriş Yap",
+    "freeTrial": "Ücretsiz Dene",
+    "menu": "Menü",
+    "discoverFeatures": "Özelliklerimizi Keşfet"
   },
   "currency": {
     "management": "Para Birimi Yönetimi",
@@ -244,7 +253,9 @@
   "cta": {
     "title": "Hemen Başlamaya Hazır mısınız?",
     "subtitle": "Demo hesap oluşturun ve tüm özellikleri ücretsiz deneyin. Kredi kartı bilgisi gerekmez.",
-    "button": "Ücretsiz Deneyin"
+    "button": "Ücretsiz Deneyin",
+    "learnMore": "Detaylı bilgi",
+    "more": "Daha fazla"
   },
   "contact": {
     "question": "Başka sorularınız mı var?",
@@ -331,7 +342,8 @@
         "apiAccess": "✅ API erişimi (gelecekte)",
         "paymentCollection": "✅ Ödeme Alabilme (gelecekte)"
       }
-    }
+    },
+    "mostPopular": "En Popüler"
   },
   "footer": {
     "description": "Seyahat acenteleri için modern WhatsApp entegrasyonu ve rezervasyon yönetim sistemi.",
@@ -348,7 +360,25 @@
     "terms": "Kullanım Koşulları",
     "rights": "© 2025 TurzzAI. Tüm hakları saklıdır.",
     "gettingStarted": "Nasıl Başlarım?",
-    "login": "Giriş Yap"
+    "login": "Giriş Yap",
+    "company": "Şirket",
+    "resources": "Kaynaklar",
+    "about": "Hakkımızda",
+    "kvkk": "KVKK Politikası",
+    "termsOfUse": "Kullanım Koşulları",
+    "helpCenter": "Yardım Merkezi",
+    "requestDemo": "Demo İste",
+    "whatsappChatbot": "WhatsApp Chatbot",
+    "aiReservation": "AI Tur Rezervasyonu",
+    "multilingualService": "Çok Dilli Hizmet",
+    "tourAutomation": "Tur Otomasyonu",
+    "incomingAgencies": "İncoming Acenteler",
+    "dayTours": "Günübirlik Tur",
+    "boutiqueAgencies": "Butik Acenteler",
+    "comparison": "Karşılaştırma",
+    "copyright": "© {year} Turzz AI. Tüm hakları saklıdır.",
+    "dataDeletion": "Veri Silme",
+    "dataExport": "Veri İndirme"
   },
   "customerAnalytics": {
     "title": "Müşteri Analizleri",
@@ -2480,6 +2510,57 @@
       "success": "İndirme başladı",
       "successTitle": "İndirme Tamamlandı",
       "successDesc": "Verileriniz JSON dosyası olarak indirildi."
+    }
+  },
+  "indexFeatures": {
+    "title": "Acentenize Özel Çözümler",
+    "subtitle": "WhatsApp üzerinden satış, rezervasyon ve müşteri hizmetini tek platformda yönetin.",
+    "whatsapp": {
+      "title": "WhatsApp Business Chatbot",
+      "desc": "Müşteri mesajlarını 7/24 otomatik yanıtlayın. Gece 2'de gelen sorulara bile anında cevap."
+    },
+    "ai": {
+      "title": "AI Destekli Rezervasyon",
+      "desc": "Yapay zeka tarih, kişi, isim ve telefon bilgilerini adım adım toplayarak otomatik rezervasyon oluşturur."
+    },
+    "multilingual": {
+      "title": "7 Dilde Müşteri Hizmetleri",
+      "desc": "Alman, Rus, Arap turist kendi dilinde yazar, chatbot aynı dilde yanıt verir. Çevirmen gerekmez."
+    },
+    "automation": {
+      "title": "Otomatik Tur Yönetimi",
+      "desc": "Kontenjan takibi, tur hatırlatıcıları, müşteri segmentasyonu — hepsi otomatik."
+    }
+  },
+  "indexSolutions": {
+    "title": "Sektöre Özel Çözümler",
+    "subtitle": "Her acente tipine uygun özelleştirilmiş yapılar.",
+    "incoming": {
+      "title": "İncoming Acenteler",
+      "desc": "Yabancı turistlere 7 dilde, 7/24 hizmet. Kültürel hassasiyetle, anında yanıt.",
+      "bullets": [
+        "Almanca, Rusça, Arapça otomatik",
+        "Saat farkı sorun değil — 7/24 aktif",
+        "Yabancı turist pazarına direkt erişim"
+      ]
+    },
+    "dayTour": {
+      "title": "Günübirlik Tur Operatörleri",
+      "desc": "Hızlı rezervasyon, son dakika satışları, dinamik kontenjan yönetimi.",
+      "bullets": [
+        "Anlık yer sorgulama ve rezervasyon",
+        "Son dakika doluluğu otomatik kapanır",
+        "Gece satışlarını da kaçırmayın"
+      ]
+    },
+    "boutique": {
+      "title": "Butik Acenteler",
+      "desc": "Kişisel dokunuş + modern teknoloji. Küçük bütçeyle büyük şirket görünümü.",
+      "bullets": [
+        "2.999₺/ay'dan başlayan paket",
+        "Kurulum 5-10 dakika",
+        "1 çalışan maliyetinin %20'si"
+      ]
     }
   }
 }

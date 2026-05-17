@@ -26,7 +26,16 @@
     "home": "Inicio",
     "admin": "Panel de Admin",
     "gettingStarted": "Comenzar",
-    "help": "Ayuda"
+    "help": "Ayuda",
+    "features": "Características",
+    "solutions": "Soluciones",
+    "compare": "Comparar",
+    "blog": "Blog",
+    "pricing": "Precios",
+    "login": "Iniciar sesión",
+    "freeTrial": "Prueba gratis",
+    "menu": "Menú",
+    "discoverFeatures": "Descubrir características"
   },
   "hero": {
     "title": "Automatizar Ventas de Tours por WhatsApp",
@@ -299,12 +308,15 @@
         "apiAccess": "✅ Acceso API (próximamente)",
         "paymentCollection": "✅ Cobro de Pagos (próximamente)"
       }
-    }
+    },
+    "mostPopular": "Más popular"
   },
   "cta": {
     "title": "¿Listo para Comenzar?",
     "subtitle": "Crea una cuenta demo y prueba todas las funciones gratis. No se requiere tarjeta de crédito.",
-    "button": "Probar Gratis"
+    "button": "Probar Gratis",
+    "learnMore": "Más información",
+    "more": "Más"
   },
   "contact": {
     "question": "¿Tienes otras preguntas?",
@@ -345,7 +357,25 @@
     "terms": "Términos de Servicio",
     "rights": "© 2025 TurzzAI. Todos los derechos reservados.",
     "gettingStarted": "Comenzar",
-    "login": "Iniciar Sesión"
+    "login": "Iniciar Sesión",
+    "company": "Empresa",
+    "resources": "Recursos",
+    "about": "Sobre nosotros",
+    "kvkk": "Política de privacidad",
+    "termsOfUse": "Términos de servicio",
+    "helpCenter": "Centro de ayuda",
+    "requestDemo": "Solicitar demo",
+    "whatsappChatbot": "Chatbot de WhatsApp",
+    "aiReservation": "Reserva con IA",
+    "multilingualService": "Servicio multilingüe",
+    "tourAutomation": "Automatización de tours",
+    "incomingAgencies": "Agencias receptivas",
+    "dayTours": "Tours de día",
+    "boutiqueAgencies": "Agencias boutique",
+    "comparison": "Comparativa",
+    "copyright": "© {year} Turzz AI. Todos los derechos reservados.",
+    "dataDeletion": "Eliminación de datos",
+    "dataExport": "Exportar datos"
   },
   "customerAnalytics": {
     "title": "Análisis de Clientes",
@@ -2308,6 +2338,57 @@
       "success": "Descarga iniciada",
       "successTitle": "Descarga completada",
       "successDesc": "Sus datos han sido descargados en JSON."
+    }
+  },
+  "indexFeatures": {
+    "title": "Diseñado para agencias de viajes",
+    "subtitle": "Gestione ventas, reservas y atención al cliente por WhatsApp — todo en una plataforma.",
+    "whatsapp": {
+      "title": "Chatbot de WhatsApp Business",
+      "desc": "Responda mensajes de clientes automáticamente 24/7. Incluso las consultas a las 2 de la madrugada reciben respuesta instantánea."
+    },
+    "ai": {
+      "title": "Reserva impulsada por IA",
+      "desc": "La IA recopila fecha, número de personas, nombre y teléfono paso a paso — y crea la reserva automáticamente."
+    },
+    "multilingual": {
+      "title": "Atención al cliente en 7 idiomas",
+      "desc": "Los turistas alemanes, rusos, árabes escriben en su idioma — el chatbot responde igual. No se necesita traductor."
+    },
+    "automation": {
+      "title": "Gestión automatizada de tours",
+      "desc": "Seguimiento de cupos, recordatorios de tours, segmentación de clientes — todo automático."
+    }
+  },
+  "indexSolutions": {
+    "title": "Soluciones específicas del sector",
+    "subtitle": "Configuraciones personalizadas para cada tipo de agencia.",
+    "incoming": {
+      "title": "Agencias receptivas",
+      "desc": "Atienda a turistas extranjeros en 7 idiomas, 24/7. Culturalmente adaptado, respuestas inmediatas.",
+      "bullets": [
+        "Alemán, ruso, árabe — automatizado",
+        "La diferencia horaria no es problema — 24/7",
+        "Acceso directo al mercado internacional"
+      ]
+    },
+    "dayTour": {
+      "title": "Operadores de tours de día",
+      "desc": "Reservas rápidas, ventas de último momento, gestión dinámica de cupos.",
+      "bullets": [
+        "Consulta de plazas y reserva en tiempo real",
+        "Los últimos cupos se cierran automáticamente",
+        "No pierda reservas nocturnas"
+      ]
+    },
+    "boutique": {
+      "title": "Agencias boutique",
+      "desc": "Toque personal + tecnología moderna. Imagen de gran empresa con pequeño presupuesto.",
+      "bullets": [
+        "Planes desde ₺2.999/mes",
+        "Configuración en 5-10 minutos",
+        "20% del coste de un empleado"
+      ]
     }
   }
 }

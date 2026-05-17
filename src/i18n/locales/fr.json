@@ -26,7 +26,16 @@
     "home": "Accueil",
     "admin": "Panneau Admin",
     "gettingStarted": "Commencer",
-    "help": "Aide"
+    "help": "Aide",
+    "features": "Fonctionnalités",
+    "solutions": "Solutions",
+    "compare": "Comparer",
+    "blog": "Blog",
+    "pricing": "Tarifs",
+    "login": "Se connecter",
+    "freeTrial": "Essai gratuit",
+    "menu": "Menu",
+    "discoverFeatures": "Découvrir les fonctionnalités"
   },
   "hero": {
     "title": "Automatiser les Ventes de Tours WhatsApp",
@@ -314,7 +323,8 @@
         "apiAccess": "✅ Accès API (bientôt disponible)",
         "paymentCollection": "✅ Collecte de paiements (bientôt disponible)"
       }
-    }
+    },
+    "mostPopular": "Le plus populaire"
   },
   "footer": {
     "description": "Système moderne d'intégration WhatsApp et de gestion des réservations pour les agences de voyage.",
@@ -331,7 +341,25 @@
     "terms": "Conditions d'Utilisation",
     "rights": "© 2025 TurzzAI. Tous droits réservés.",
     "gettingStarted": "Commencer",
-    "login": "Se Connecter"
+    "login": "Se Connecter",
+    "company": "Entreprise",
+    "resources": "Ressources",
+    "about": "À propos",
+    "kvkk": "Politique de confidentialité",
+    "termsOfUse": "Conditions d'utilisation",
+    "helpCenter": "Centre d'aide",
+    "requestDemo": "Demander une démo",
+    "whatsappChatbot": "Chatbot WhatsApp",
+    "aiReservation": "Réservation IA",
+    "multilingualService": "Service multilingue",
+    "tourAutomation": "Automatisation des circuits",
+    "incomingAgencies": "Agences réceptives",
+    "dayTours": "Circuits journaliers",
+    "boutiqueAgencies": "Agences boutique",
+    "comparison": "Comparatif",
+    "copyright": "© {year} Turzz AI. Tous droits réservés.",
+    "dataDeletion": "Suppression des données",
+    "dataExport": "Export des données"
   },
   "customerAnalytics": {
     "title": "Analyses Clients",
@@ -1636,7 +1664,9 @@
   "cta": {
     "title": "Prêt à commencer ?",
     "subtitle": "Créez un compte démo et essayez toutes les fonctionnalités gratuitement. Aucune carte bancaire requise.",
-    "button": "Essayer gratuitement"
+    "button": "Essayer gratuitement",
+    "learnMore": "En savoir plus",
+    "more": "Plus"
   },
   "contact": {
     "question": "D'autres questions ?",
@@ -2513,6 +2543,57 @@
       "success": "Téléchargement démarré",
       "successTitle": "Téléchargement terminé",
       "successDesc": "Vos données ont été téléchargées en JSON."
+    }
+  },
+  "indexFeatures": {
+    "title": "Conçu pour les agences de voyage",
+    "subtitle": "Gérez ventes, réservations et service client via WhatsApp — tout sur une seule plateforme.",
+    "whatsapp": {
+      "title": "Chatbot WhatsApp Business",
+      "desc": "Répondez automatiquement aux messages clients 24h/24. Même les demandes à 2h du matin reçoivent une réponse instantanée."
+    },
+    "ai": {
+      "title": "Réservation assistée par IA",
+      "desc": "L'IA collecte date, nombre de personnes, nom et téléphone étape par étape — et crée la réservation automatiquement."
+    },
+    "multilingual": {
+      "title": "Service client en 7 langues",
+      "desc": "Les touristes allemands, russes, arabes écrivent dans leur langue — le chatbot répond pareil. Pas besoin de traducteur."
+    },
+    "automation": {
+      "title": "Gestion automatisée des circuits",
+      "desc": "Suivi des quotas, rappels de circuits, segmentation des clients — tout automatiquement."
+    }
+  },
+  "indexSolutions": {
+    "title": "Solutions spécifiques au secteur",
+    "subtitle": "Des configurations personnalisées pour chaque type d'agence.",
+    "incoming": {
+      "title": "Agences réceptives",
+      "desc": "Servez les touristes étrangers en 7 langues, 24h/24. Culturellement adapté, réponses immédiates.",
+      "bullets": [
+        "Allemand, russe, arabe — automatique",
+        "Le décalage horaire n'est plus un obstacle — 24/7",
+        "Accès direct au marché international"
+      ]
+    },
+    "dayTour": {
+      "title": "Opérateurs de circuits journaliers",
+      "desc": "Réservations rapides, ventes de dernière minute, gestion dynamique des quotas.",
+      "bullets": [
+        "Disponibilité en temps réel et réservation",
+        "Les dernières places se ferment automatiquement",
+        "Ne manquez plus les réservations nocturnes"
+      ]
+    },
+    "boutique": {
+      "title": "Agences boutique",
+      "desc": "Touche personnelle + technologie moderne. Image grande entreprise avec petit budget.",
+      "bullets": [
+        "Formules à partir de ₺2 999/mois",
+        "Installation en 5-10 minutes",
+        "20% du coût d'un employé"
+      ]
     }
   }
 }
