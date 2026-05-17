@@ -37,19 +37,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// === MESAJ TEKRARı ÖNLEMESİ ===
-const recentMessageIds = new Map<string, number>();
-function isDuplicateMessage(messageId: string): boolean {
-  const now = Date.now();
-  const lastSeen = recentMessageIds.get(messageId);
-  if (lastSeen && now - lastSeen < 5000) return true;
-  recentMessageIds.set(messageId, now);
-  if (recentMessageIds.size > 100) {
-    for (const [key, time] of recentMessageIds.entries()) {
-      if (now - time > 60000) recentMessageIds.delete(key);
-    }
+// Atomic save: assistant mesajı + system context TEK transaction'da
+// Birinin başarısız olup diğerinin kalması engellenir (bot konuştu ama state kayboldu bugunu çözer)
+async function saveConversationAtomic(
+  supabase: any,
+  phone: string,
+  agencyId: string,
+  assistantMessage: string,
+  context: ConversationContext,
+): Promise<void> {
+  const { data, error } = await supabase.rpc("save_conversation_atomic", {
+    p_phone: phone,
+    p_agency_id: agencyId,
+    p_assistant_message: assistantMessage,
+    p_context: JSON.stringify(context),
+  });
+  if (error || !data?.success) {
+    console.error("[save_atomic_fallback]", error?.message || data?.error);
+    // Fallback: ayrı ayrı kaydet (eski davranış, atomik değil ama veri kaybı önlenir)
+    await supabase.from("whatsapp_conversations").insert({ phone, agency_id: agencyId, role: "assistant", content: assistantMessage });
+    await supabase.from("whatsapp_conversations").insert({ phone, agency_id: agencyId, role: "system", content: JSON.stringify(context) });
   }
-  return false;
 }
 
 serve(async (req) => {
@@ -113,15 +121,6 @@ serve(async (req) => {
       });
     }
 
-    // === MESAJ TEKRARı ÖNLEMESİ ===
-    if (webhookData.messageId && isDuplicateMessage(webhookData.messageId)) {
-      console.log(`⚡ Duplicate message ignored: ${webhookData.messageId}`);
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const userPhone = webhookData.from;
     _catchPhone = userPhone;
     const rawMessage = webhookData.message;
@@ -157,6 +156,34 @@ serve(async (req) => {
     const message = sanitizeInput(rawMessage);
     console.log("📱 WhatsApp FSM:", userPhone.slice(-4));
     console.log(`🏢 Agency: ${agency.name}`);
+
+    // === DB-TABANLI DEDUP + CONTEXT/HİSTORY PRELOAD ===
+    // Aynı messageId bir kez işlenir (cold start'ta sıfırlanan Map'in aksine kalıcı)
+    // Advisory lock context yükleme sırasında race'i önler (xact sonunda serbest kalır)
+    let _preloadedContext: string | null = null;
+    let _preloadedHistory: Array<{ role: string; content: string }> | null = null;
+
+    if (webhookData.messageId) {
+      const { data: _ar, error: _ae } = await supabase.rpc("process_whatsapp_message_atomic", {
+        p_message_id: webhookData.messageId,
+        p_agency_id: agency.id,
+        p_phone: userPhone,
+      });
+      if (_ae) {
+        console.error("[process_atomic_failed]", _ae.message);
+        // RPC başarısız → DB bağlantı sorunu vs. Best effort ile devam et
+      } else if (_ar?.error === "DUPLICATE_MESSAGE") {
+        console.log(`[dedup] Duplicate messageId skipped: ${webhookData.messageId}`);
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else if (_ar?.success) {
+        _preloadedContext = typeof _ar.context === "string" ? _ar.context : null;
+        _preloadedHistory = Array.isArray(_ar.history) ? _ar.history : null;
+        console.log(`[dedup] Registered messageId: ${webhookData.messageId}`);
+      }
+    }
 
     const paymentInstructions = agency.payment_instructions ?? null;
     const languageCurrencies = agency.language_currencies ?? null;
@@ -259,15 +286,21 @@ serve(async (req) => {
     const toursRaw = dbTours || [];
     console.log(`📦 Tours: ${toursRaw.length}`);
 
-    const { data: existingState } = await supabase
-      .from("whatsapp_conversations")
-      .select("content")
-      .eq("phone", userPhone)
-      .eq("agency_id", agency.id)
-      .eq("role", "system")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+    // Preload'dan gelen context kullan; RPC başarısız olduysa DB'den al
+    let _ctxContent: string | null = _preloadedContext;
+    if (_ctxContent === null) {
+      const { data: _esc } = await supabase
+        .from("whatsapp_conversations")
+        .select("content")
+        .eq("phone", userPhone)
+        .eq("agency_id", agency.id)
+        .eq("role", "system")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      _ctxContent = _esc?.content ?? null;
+    }
+    const existingState = _ctxContent ? { content: _ctxContent } : null;
 
     let context: ConversationContext;
     const languageChangeIntent = detectLanguageChangeIntent(message);
@@ -400,14 +433,19 @@ serve(async (req) => {
       }
     }
 
-    const { data: recentMsgs } = await supabase
-      .from("whatsapp_conversations")
-      .select("role, content")
-      .eq("phone", userPhone)
-      .eq("agency_id", agency.id)
-      .neq("role", "system")
-      .order("created_at", { ascending: false })
-      .limit(10);
+    // Preload'dan gelen history kullan; RPC başarısız olduysa DB'den al
+    let recentMsgs: Array<{ role: string; content: string }> | null = _preloadedHistory;
+    if (recentMsgs === null) {
+      const { data: _rmData } = await supabase
+        .from("whatsapp_conversations")
+        .select("role, content")
+        .eq("phone", userPhone)
+        .eq("agency_id", agency.id)
+        .neq("role", "system")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      recentMsgs = _rmData ?? null;
+    }
 
     const conversationSummary = (recentMsgs || [])
       .reverse()
@@ -679,12 +717,7 @@ serve(async (req) => {
     if (newContext.justCancelled) {
       newContext.justCancelled = false;
       const cancelReply = getCancellationMessage(newContext.language);
-      await supabase
-        .from("whatsapp_conversations")
-        .insert({ phone: userPhone, role: "assistant", content: cancelReply, agency_id: agency.id });
-      await supabase
-        .from("whatsapp_conversations")
-        .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+      await saveConversationAtomic(supabase, userPhone, agency.id, cancelReply, newContext);
       await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, cancelReply);
       supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
       return new Response(JSON.stringify({ success: true }), {
@@ -733,14 +766,7 @@ serve(async (req) => {
 
         const dateReply = dateSelectionMessages[newContext.language] || dateSelectionMessages.tr;
 
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "assistant", content: dateReply, agency_id: agency.id });
-
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
-
+        await saveConversationAtomic(supabase, userPhone, agency.id, dateReply, newContext);
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(dateReply));
 
         // FIX 2: Increment monthly message counter (fire-and-forget)
@@ -839,23 +865,18 @@ serve(async (req) => {
               };
               quotaMsg = msgs[lang] || msgs["tr"];
             }
-            await supabase
-              .from("whatsapp_conversations")
-              .insert({ phone: userPhone, role: "assistant", content: quotaMsg, agency_id: agency.id });
+            newContext.stage = "COLLECTING_INFO";
+            newContext.reservationConfirmed = false;
+            newContext.reservationInfo.dateId = undefined;
+            newContext.reservationInfo.selectedDate = undefined;
+            newContext.collectionStep = "waiting_for_date";
+            await saveConversationAtomic(supabase, userPhone, agency.id, quotaMsg, newContext);
             await sendWhatsAppMessage(
               metaCredentials.phoneNumberId,
               metaCredentials.accessToken,
               userPhone,
               truncateForWhatsApp(quotaMsg),
             );
-            newContext.stage = "COLLECTING_INFO";
-            newContext.reservationConfirmed = false;
-            newContext.reservationInfo.dateId = undefined;
-            newContext.reservationInfo.selectedDate = undefined;
-            newContext.collectionStep = "waiting_for_date";
-            await supabase
-              .from("whatsapp_conversations")
-              .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
             return new Response(JSON.stringify({ success: true }), {
               status: 200,
               headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -893,12 +914,7 @@ serve(async (req) => {
         newContext.collectionStep = missingOrder as any;
 
         const missingReply = missingMsgs[newContext.language] || missingMsgs.tr;
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "assistant", content: missingReply, agency_id: agency.id });
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+        await saveConversationAtomic(supabase, userPhone, agency.id, missingReply, newContext);
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(missingReply));
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
@@ -962,12 +978,7 @@ serve(async (req) => {
         newContext.collectionStep = "waiting_for_date";
 
         const errorReply = errorMsgs[newContext.language] || errorMsgs.tr;
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "assistant", content: errorReply, agency_id: agency.id });
-        await supabase
-          .from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
+        await saveConversationAtomic(supabase, userPhone, agency.id, errorReply, newContext);
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(errorReply));
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
@@ -1069,14 +1080,7 @@ serve(async (req) => {
           );
       }
 
-      await supabase
-        .from("whatsapp_conversations")
-        .insert({ phone: userPhone, role: "assistant", content: finalReply, agency_id: agency.id });
-
-      await supabase
-        .from("whatsapp_conversations")
-        .insert({ phone: userPhone, role: "system", content: JSON.stringify(newContext), agency_id: agency.id });
-
+      await saveConversationAtomic(supabase, userPhone, agency.id, finalReply, newContext);
       await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(finalReply));
 
       // FIX 2: Increment monthly message counter (fire-and-forget)
@@ -1261,23 +1265,11 @@ Never say anything about the previous booking.`;
 
     // Reservation completion save/response is handled deterministically above.
 
-    await supabase.from("whatsapp_conversations").insert({
-      phone: userPhone,
-      role: "assistant",
-      content: finalReply,
-      agency_id: agency.id,
-    });
+    await saveConversationAtomic(supabase, userPhone, agency.id, finalReply, newContext);
 
     if (planFeatures?.has_user_profiles) {
       await enrichConversationInsights(supabase, userPhone, agency.id, message, finalReply, fsmIntent || "general");
     }
-
-    await supabase.from("whatsapp_conversations").insert({
-      phone: userPhone,
-      role: "system",
-      content: JSON.stringify(newContext),
-      agency_id: agency.id,
-    });
 
     await sendWhatsAppMessage(
       metaCredentials.phoneNumberId,
