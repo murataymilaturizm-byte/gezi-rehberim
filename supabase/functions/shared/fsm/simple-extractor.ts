@@ -180,6 +180,9 @@ export function extractNameAndPhone(
     needsMonthClarification?: boolean;
   } = {};
 
+  // Fonksiyon boyunca kullanılır — TDZ hatasını önlemek için en başta tanımla
+  const lower = message.toLowerCase().trim();
+
   // === TELEFON ===
   const intlMatch = message.match(/\+\d[\d\s\-\.]{6,17}/);
   if (intlMatch) {
@@ -287,8 +290,6 @@ export function extractNameAndPhone(
     november: 11,
     december: 12,
   };
-
-  const lower = message.toLowerCase().trim();
 
   // "ayın 22'si", "ayın 22si", "22'sinde", "ayın 22" gibi ifadeler
   const ayinMatch = lower.match(/ay[ıi]n?\s*(\d{1,2})(?:'?s[ıi](?:nde)?)?/);
