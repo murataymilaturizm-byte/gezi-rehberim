@@ -70,13 +70,52 @@ serve(async (req) => {
   if (req.method === "GET") {
     const url = new URL(req.url);
     const mode = url.searchParams.get("hub.mode");
-    const token = url.searchParams.get("hub.verify_token");
+    const incomingToken = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
-    const verifyToken = Deno.env.get("WHATSAPP_VERIFY_TOKEN");
-    if (mode === "subscribe" && token === verifyToken) {
-      console.log("✅ Webhook verified");
-      return new Response(challenge, { status: 200 });
+
+    if (mode !== "subscribe" || !incomingToken) {
+      return new Response("Bad Request", { status: 400 });
     }
+
+    // Önce DB'den agencies.meta_verify_token ile eşleşen kaydı ara (multi-tenant)
+    let verified = false;
+    let agencyName = "";
+    try {
+      const supabaseVerify = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      );
+      const { data: agencyRow } = await supabaseVerify
+        .from("agencies")
+        .select("id, name")
+        .eq("meta_verify_token", incomingToken)
+        .maybeSingle();
+      if (agencyRow) {
+        verified = true;
+        agencyName = agencyRow.name;
+      }
+    } catch (_e) {
+      // DB sorgusu başarısız → env var fallback'e düş
+    }
+
+    // Fallback: WHATSAPP_VERIFY_TOKEN veya META_VERIFY_TOKEN env var
+    if (!verified) {
+      const envToken = Deno.env.get("WHATSAPP_VERIFY_TOKEN") || Deno.env.get("META_VERIFY_TOKEN");
+      if (envToken && incomingToken === envToken) {
+        verified = true;
+        agencyName = "env-configured";
+      }
+    }
+
+    if (verified) {
+      console.log(`✅ Webhook verified for: ${agencyName}`);
+      return new Response(challenge, {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      });
+    }
+
+    console.warn(`[webhook] Verify failed — no match for token: ${incomingToken.slice(0, 8)}***`);
     return new Response("Forbidden", { status: 403 });
   }
 
