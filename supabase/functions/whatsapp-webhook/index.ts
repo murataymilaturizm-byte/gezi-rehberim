@@ -1,4 +1,13 @@
 // WhatsApp webhook - Clean FSM with shared core (Meta Cloud API)
+
+/** DD.MM.YYYY veya DD/MM/YYYY → YYYY-MM-DD. Zaten ISO formatındaysa dokunma. */
+function normalizeDateString(dateStr: string): string {
+  if (!dateStr) return dateStr;
+  const m = dateStr.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return dateStr;
+}
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -691,7 +700,7 @@ serve(async (req) => {
 
     const extractedInfo: any = { ...nluResult.updates };
     if (nluResult.entities.dates && nluResult.entities.dates.length > 0) {
-      extractedInfo.selectedDate = nluResult.entities.dates[0];
+      extractedInfo.selectedDate = normalizeDateString(nluResult.entities.dates[0]);
     }
 
     // === İSİM ÇIKARMA - collectionStep'i geç ===
@@ -801,15 +810,14 @@ serve(async (req) => {
     if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
       const tour = findTourById(context.currentTour.id, tours);
       if (tour?.dates && tour.dates.length > 0) {
+        const _normalizedSel = normalizeDateString(extractedInfo.selectedDate);
         const matchedDate = tour.dates.find((d: any) => {
-          if (d.departure_date === extractedInfo.selectedDate) return true;
-          try {
-            const targetDate = new Date(extractedInfo.selectedDate);
-            const tourDate = new Date(d.departure_date);
-            return targetDate.getDate() === tourDate.getDate() && targetDate.getMonth() === tourDate.getMonth();
-          } catch {
-            return false;
-          }
+          if (d.departure_date === _normalizedSel) return true;
+          // Year-agnostic fallback: "15 Aralık" gibi yılsız tarihler için (sadece gün+ay eşleştir)
+          const isoSel = _normalizedSel.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          const isoDB = d.departure_date?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          if (isoSel && isoDB) return isoSel[2] === isoDB[2] && isoSel[3] === isoDB[3];
+          return false;
         });
         if (matchedDate) {
           extractedInfo.selectedDate = matchedDate.departure_date;

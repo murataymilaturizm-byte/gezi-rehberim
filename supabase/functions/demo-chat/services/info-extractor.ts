@@ -228,6 +228,12 @@ function matchDateWithTourDates(dateStr: string, tourDates: any[]): any | null {
 }
 
 function parseFlexibleDate(dateStr: string): Date | null {
+  // DD.MM.YYYY veya DD/MM/YYYY veya DD-MM-YYYY
+  const dmyFull = dateStr.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+  if (dmyFull) {
+    return new Date(parseInt(dmyFull[3]), parseInt(dmyFull[2]) - 1, parseInt(dmyFull[1]));
+  }
+
   const monthNames: Record<string, number> = {
     ocak: 0,
     şubat: 1,
