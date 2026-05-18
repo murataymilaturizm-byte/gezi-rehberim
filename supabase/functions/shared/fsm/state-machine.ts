@@ -524,7 +524,7 @@ const transitions: StateTransition[] = [
       return {
         ...ctx,
         reservationInfo: info,
-        collectionStep: determineCollectionStep(info),
+        collectionStep: determineCollectionStep(info, ctx.collectEmail),
       };
     },
   },
@@ -640,7 +640,7 @@ export function processTransition(context: ConversationContext, input: Processin
       return {
         ...context,
         reservationInfo: merged,
-        collectionStep: determineCollectionStep(merged, ctx.collectEmail),
+        collectionStep: determineCollectionStep(merged, context.collectEmail),
         lastUserMessage: input.userMessage,
         messageCount: context.messageCount + 1,
         lastUpdated: new Date().toISOString(),

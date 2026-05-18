@@ -206,6 +206,27 @@ serve(async (req) => {
       }).catch(() => {});
     }
 
+    // === INPUT UZUNLUK KONTROLÜ: sanitize ve DB işlemlerinden ÖNCE ===
+    if (isInputTooLong(rawMessage)) {
+      const _tlLang = detectLanguageChangeIntent(rawMessage.slice(0, 200)) || "tr";
+      const _tlMsgs: Record<string, string> = {
+        tr: "Mesajınız çok uzun, lütfen daha kısa bir mesaj gönderin (maksimum 2000 karakter).",
+        en: "Your message is too long. Please send a shorter message (max 2000 characters).",
+        de: "Ihre Nachricht ist zu lang. Bitte senden Sie eine kürzere Nachricht (max. 2000 Zeichen).",
+        ru: "Ваше сообщение слишком длинное. Отправьте более короткое сообщение (макс. 2000 символов).",
+        ar: "رسالتك طويلة جداً، يرجى إرسال رسالة أقصر (الحد الأقصى 2000 حرف).",
+        fr: "Votre message est trop long, veuillez envoyer un message plus court (max 2000 caractères).",
+        es: "Su mensaje es demasiado largo, envíe un mensaje más corto (máx. 2000 caracteres).",
+      };
+      await sendWhatsAppMessage(
+        metaCredentials.phoneNumberId, metaCredentials.accessToken,
+        userPhone, _tlMsgs[_tlLang] || _tlMsgs.tr,
+      );
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const message = sanitizeInput(rawMessage);
     console.log("📱 WhatsApp FSM:", userPhone.slice(-4));
     console.log(`🏢 Agency: ${agency.name}`);
@@ -249,6 +270,9 @@ serve(async (req) => {
       });
       if (_rle) {
         console.error("[rate_limit_rpc_error]", _rle.message);
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       } else if (_rl && !_rl.allowed) {
         console.warn(`[rate_limit] Phone ${userPhone.slice(-4)} hit limit (${_rl.count}/${_rl.max})`);
         const _rlLang = (() => {
@@ -274,32 +298,6 @@ serve(async (req) => {
           status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-    }
-
-    // === INPUT UZUNLUK KONTROLÜ: maks 2000 karakter ===
-    if (isInputTooLong(rawMessage)) {
-      const _tlLang = (() => {
-        if (_preloadedContext) {
-          try { return (JSON.parse(_preloadedContext) as any).language || "tr"; } catch {}
-        }
-        return detectLanguageChangeIntent(message) || "tr";
-      })();
-      const _tlMsgs: Record<string, string> = {
-        tr: "Mesajınız çok uzun, lütfen daha kısa bir mesaj gönderin (maksimum 2000 karakter).",
-        en: "Your message is too long. Please send a shorter message (max 2000 characters).",
-        de: "Ihre Nachricht ist zu lang. Bitte senden Sie eine kürzere Nachricht (max. 2000 Zeichen).",
-        ru: "Ваше сообщение слишком длинное. Отправьте более короткое сообщение (макс. 2000 символов).",
-        ar: "رسالتك طويلة جداً، يرجى إرسال رسالة أقصر (الحد الأقصى 2000 حرف).",
-        fr: "Votre message est trop long, veuillez envoyer un message plus court (max 2000 caractères).",
-        es: "Su mensaje es demasiado largo, envíe un mensaje más corto (máx. 2000 caracteres).",
-      };
-      await sendWhatsAppMessage(
-        metaCredentials.phoneNumberId, metaCredentials.accessToken,
-        userPhone, _tlMsgs[_tlLang] || _tlMsgs.tr,
-      );
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
     const paymentInstructions = agency.payment_instructions ?? null;

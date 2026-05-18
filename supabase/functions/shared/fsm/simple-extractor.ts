@@ -281,7 +281,7 @@ export function extractNameAndPhone(
     enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
     julio: 7, agosto: 8, septiembre: 9, noviembre: 11, diciembre: 12,
     // RU
-    январь: 1, февраль: 2, апрель: 4, июнь: 6,
+    январь: 1, февраль: 2, март: 3, апрель: 4, май: 5, июнь: 6,
     июль: 7, август: 8, сентябрь: 9, октябрь: 10, ноябрь: 11, декабрь: 12,
     // AR
     يناير: 1, فبراير: 2, مارس: 3, أبريل: 4, مايو: 5, يونيو: 6,
@@ -319,7 +319,7 @@ export function extractNameAndPhone(
   // "22 aralık", "15 ocak", "15. März", "15 septembre" standart format (7 dil)
   if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
     const monthPatternMatch = lower.match(
-      /(\d{1,2})[\s.]+(?:de\s+|du\s+|d[e']\s+)?(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|märz|maerz|mai|juni|juli|oktober|dezember|janvier|f[ée]vrier|mars|avril|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|noviembre|diciembre|январь|февраль|апрель|август|сентябрь|октябрь|ноябрь|декабрь|يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/i,
+      /(\d{1,2})[\s.]+(?:de\s+|du\s+|d[e']\s+)?(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|märz|maerz|mai|juni|juli|oktober|dezember|janvier|f[ée]vrier|mars|avril|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|noviembre|diciembre|январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь|يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/i,
     );
     if (monthPatternMatch) {
       const day = parseInt(monthPatternMatch[1]);
@@ -337,7 +337,7 @@ export function extractNameAndPhone(
   // "aralık 22" ters format
   if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
     const reverseMatch = lower.match(
-      /(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)\s*(\d{1,2})/i,
+      /(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь)\s*(\d{1,2})/i,
     );
     if (reverseMatch) {
       const monthName = reverseMatch[1].toLowerCase();
