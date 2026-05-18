@@ -20,6 +20,7 @@ import type { ConversationContext, ProcessingInput, ConversationTone } from "../
 import { getExchangeRatesOnce } from "../shared/utils/exchange-rates.ts";
 import { formatPriceSync, CONVERSION_NOTES } from "../shared/utils/currency-display.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
+import { markAsRead, showTypingIndicator } from "../shared/utils/whatsapp-status.ts";
 
 import {
   extractMetaWebhookData,
@@ -152,6 +153,18 @@ serve(async (req) => {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // === READ RECEIPT + TYPING INDICATOR — Fire-and-forget ===
+    // Ana akışı yavaşlatmaz; hata olursa sessiz geç
+    if (webhookData.messageId) {
+      const _pid = metaCredentials.phoneNumberId;
+      const _tok = metaCredentials.accessToken;
+      const _mid = webhookData.messageId;
+      // Önce garantili read receipt, ardından opsiyonel typing
+      markAsRead(_pid, _tok, _mid).then((ok) => {
+        if (ok) showTypingIndicator(_pid, _tok, _mid).catch(() => {});
+      }).catch(() => {});
     }
 
     const message = sanitizeInput(rawMessage);
@@ -1297,27 +1310,43 @@ Never say anything about the previous booking.`;
       .filter((m) => m.role !== "system")
       .map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }));
 
-    const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [
-          ...conversationMessages,
-          { role: "user", content: message },
-        ],
-      }),
-    });
+    // AI 10 saniyeden uzun sürerse müşteriye tekrar "yazıyor..." gönder
+    let _typingRepeatTimer: ReturnType<typeof setTimeout> | null = null;
+    if (webhookData.messageId) {
+      const _p2 = metaCredentials.phoneNumberId;
+      const _t2 = metaCredentials.accessToken;
+      const _m2 = webhookData.messageId;
+      _typingRepeatTimer = setTimeout(() => {
+        showTypingIndicator(_p2, _t2, _m2).catch(() => {});
+      }, 8000);
+    }
 
-    if (!aiResponse.ok) throw new Error(`AI error: ${aiResponse.status}`);
+    let aiResponse: Response;
+    try {
+      aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5",
+          max_tokens: 2000,
+          system: systemPrompt,
+          messages: [
+            ...conversationMessages,
+            { role: "user", content: message },
+          ],
+        }),
+      });
+    } finally {
+      if (_typingRepeatTimer) clearTimeout(_typingRepeatTimer);
+    }
 
-    const aiData = await aiResponse.json();
+    if (!aiResponse!.ok) throw new Error(`AI error: ${aiResponse!.status}`);
+
+    const aiData = await aiResponse!.json();
     let reply: string = (aiData.content || [])
       .filter((b: any) => b?.type === "text")
       .map((b: any) => b.text)
