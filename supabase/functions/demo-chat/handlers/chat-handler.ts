@@ -402,19 +402,94 @@ export async function handleChatRequest(req: Request): Promise<Response> {
         const agencyPhone = agencyData?.phone_public || "";
         const agencyName = agencyData?.name || "";
         const phoneInfo = agencyPhone ? ` 📞 ${agencyPhone}` : "";
-        const errorMessages: Record<string, string> = {
-          tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agencyName} ile iletişime geçiniz.${phoneInfo}`,
-          en: `There was an issue creating your reservation. Please contact ${agencyName}.${phoneInfo}`,
-          de: `Problem bei der Reservierung. Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
-          ar: `حدثت مشكلة. يرجى التواصل مع ${agencyName}.${phoneInfo}`,
-          fr: `Un problème est survenu. Veuillez contacter ${agencyName}.${phoneInfo}`,
-          es: `Hubo un problema. Por favor contacte a ${agencyName}.${phoneInfo}`,
-          ru: `Проблема при создании. Свяжитесь с ${agencyName}.${phoneInfo}`,
-        };
-        reservationErrorMessage = errorMessages[language] || errorMessages["tr"];
+        const errCode = saveResult.error || "UNKNOWN";
+        const lang = language || "tr";
+
+        if (errCode === "QUOTA_EXCEEDED") {
+          // Sadece tarih sil — isim/telefon/kişi sayısı KORUNUR
+          newContext.reservationInfo.dateId = undefined;
+          newContext.reservationInfo.selectedDate = undefined;
+          newContext.stage = "COLLECTING_INFO";
+          newContext.reservationConfirmed = false;
+          newContext.collectionStep = "waiting_for_date";
+          const _msgs: Record<string, string> = {
+            tr: `Üzgünüm, seçtiğiniz tarih için kontenjan dolmuş. 😔 Başka bir tarih seçer misiniz?`,
+            en: `Sorry, the date you selected is fully booked. 😔 Could you choose another date?`,
+            de: `Es tut mir leid, das gewählte Datum ist ausgebucht. 😔 Können Sie ein anderes Datum wählen?`,
+            ru: `Извините, выбранная дата забронирована. 😔 Можете выбрать другую дату?`,
+            ar: `آسف، التاريخ محجوز بالكامل. 😔 هل يمكنك اختيار تاريخ آخر؟`,
+            fr: `Désolé, la date est complète. 😔 Pouvez-vous choisir une autre date ?`,
+            es: `Lo siento, la fecha está reservada. 😔 ¿Puede elegir otra fecha?`,
+          };
+          reservationErrorMessage = _msgs[lang] || _msgs.tr;
+
+        } else if (errCode === "DUPLICATE") {
+          // Zaten kayıtlı → BROWSING'e geç
+          newContext.stage = "BROWSING";
+          newContext.reservationConfirmed = false;
+          newContext.reservationInfo = {};
+          const _msgs: Record<string, string> = {
+            tr: `Bu tur için zaten kayıtlı görünüyorsunuz. ℹ️ Detaylar için ${agencyName} ile iletişime geçin.${phoneInfo}`,
+            en: `You appear to already be registered for this tour. ℹ️ Please contact ${agencyName}.${phoneInfo}`,
+            de: `Sie scheinen bereits angemeldet zu sein. ℹ️ Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
+            ru: `Похоже, вы уже зарегистрированы. ℹ️ Свяжитесь с ${agencyName}.${phoneInfo}`,
+            ar: `يبدو أنك مسجل بالفعل. ℹ️ يرجى التواصل مع ${agencyName}.${phoneInfo}`,
+            fr: `Vous semblez déjà inscrit. ℹ️ Veuillez contacter ${agencyName}.${phoneInfo}`,
+            es: `Parece que ya está registrado. ℹ️ Contacte a ${agencyName}.${phoneInfo}`,
+          };
+          reservationErrorMessage = _msgs[lang] || _msgs.tr;
+
+        } else if (errCode === "TOUR_DATE_NOT_FOUND") {
+          // Tarih DB'de artık yok — tarih sil, bilgiler koru
+          newContext.reservationInfo.dateId = undefined;
+          newContext.reservationInfo.selectedDate = undefined;
+          newContext.stage = "COLLECTING_INFO";
+          newContext.reservationConfirmed = false;
+          newContext.collectionStep = "waiting_for_date";
+          const _msgs: Record<string, string> = {
+            tr: `Seçtiğiniz tarih artık mevcut değil. 😔 Lütfen başka bir tarih seçin.`,
+            en: `The date you selected is no longer available. 😔 Please choose another date.`,
+            de: `Das gewählte Datum ist nicht mehr verfügbar. 😔 Bitte wählen Sie ein anderes.`,
+            ru: `Выбранная дата больше не доступна. 😔 Выберите другую.`,
+            ar: `التاريخ لم يعد متاحاً. 😔 يرجى اختيار تاريخ آخر.`,
+            fr: `La date n'est plus disponible. 😔 Veuillez en choisir une autre.`,
+            es: `La fecha ya no está disponible. 😔 Elija otra por favor.`,
+          };
+          reservationErrorMessage = _msgs[lang] || _msgs.tr;
+
+        } else if (errCode === "TOUR_NOT_FOUND") {
+          // Tur DB'de artık yok — tümünü temizle, BROWSING'e geç
+          newContext.stage = "BROWSING";
+          newContext.currentTour = null;
+          newContext.reservationInfo = {};
+          newContext.reservationConfirmed = false;
+          const _msgs: Record<string, string> = {
+            tr: `Seçtiğiniz tur artık mevcut değil. 😔 Güncel turlarımıza bakabilirsiniz.`,
+            en: `The tour you selected is no longer available. 😔 Please check our current tours.`,
+            de: `Die gewählte Tour ist nicht mehr verfügbar. 😔 Bitte sehen Sie unsere aktuellen Touren.`,
+            ru: `Выбранный тур больше не доступен. 😔 Посмотрите наши актуальные туры.`,
+            ar: `الجولة لم تعد متاحة. 😔 يرجى الاطلاع على جولاتنا الحالية.`,
+            fr: `Le circuit n'est plus disponible. 😔 Consultez nos circuits actuels.`,
+            es: `El tour ya no está disponible. 😔 Consulte nuestros tours actuales.`,
+          };
+          reservationErrorMessage = _msgs[lang] || _msgs.tr;
+
+        } else {
+          // Bilinmeyen hata — önceki stage'e geri dön, tekrar denenebilir
+          newContext.stage = context.stage;
+          newContext.reservationConfirmed = false;
+          const _msgs: Record<string, string> = {
+            tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agencyName} ile iletişime geçiniz.${phoneInfo}`,
+            en: `There was an issue creating your reservation. Please contact ${agencyName}.${phoneInfo}`,
+            de: `Problem bei der Reservierung. Bitte kontaktieren Sie ${agencyName}.${phoneInfo}`,
+            ru: `Проблема при создании. Свяжитесь с ${agencyName}.${phoneInfo}`,
+            ar: `حدثت مشكلة. يرجى التواصل مع ${agencyName}.${phoneInfo}`,
+            fr: `Un problème est survenu. Veuillez contacter ${agencyName}.${phoneInfo}`,
+            es: `Hubo un problema. Por favor contacte a ${agencyName}.${phoneInfo}`,
+          };
+          reservationErrorMessage = _msgs[lang] || _msgs.tr;
+        }
         reservationSaveFailed = true;
-        newContext.stage = context.stage;
-        newContext.reservationConfirmed = false;
       }
     }
 
