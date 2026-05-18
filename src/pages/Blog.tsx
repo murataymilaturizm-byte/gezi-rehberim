@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Layout } from "@/components/Layout";
 import { SEOHead } from "@/components/SEOHead";
@@ -18,6 +18,20 @@ const schema = {
   "url": "https://turzzai.com/blog",
   "publisher": { "@type": "Organization", "name": "Turzz AI" },
 };
+
+const SUPPORTED_LANGS = ["tr", "en", "de", "ru", "ar", "fr", "es"];
+
+/** URL'den dil kodunu çıkarır. /en/blog → "en", /blog → null (TR default) */
+function getLangFromPath(pathname: string): string | null {
+  const m = pathname.match(/^\/([a-z]{2})\//);
+  return m && SUPPORTED_LANGS.includes(m[1]) ? m[1] : null;
+}
+
+/** Blog URL'si oluşturur. TR prefix'siz, diğerleri prefix'li. */
+function buildBlogUrl(lang: string, slug?: string): string {
+  const base = lang === "tr" ? "/blog" : `/${lang}/blog`;
+  return slug ? `${base}/${slug}` : base;
+}
 
 const DATE_LOCALES: Record<string, string> = {
   tr: "tr-TR", en: "en-GB", de: "de-DE", ru: "ru-RU",
@@ -38,9 +52,9 @@ function getLangDisplayName(uiLang: string, targetLang: string): string {
   return LANG_DISPLAY_NAMES[uiLang]?.[targetLang] ?? targetLang.toUpperCase();
 }
 
-function BlogCard({ post }: { post: BlogPost }) {
-  const { t, i18n } = useTranslation();
-  const dateLocale = DATE_LOCALES[i18n.language] || "en-GB";
+function BlogCard({ post, lang }: { post: BlogPost; lang: string }) {
+  const { t } = useTranslation();
+  const dateLocale = DATE_LOCALES[lang] || "en-GB";
 
   return (
     <Card className="border-border/50 hover:border-orange-300 transition-all hover:-translate-y-0.5 overflow-hidden">
@@ -81,7 +95,7 @@ function BlogCard({ post }: { post: BlogPost }) {
               </span>
             ))}
           </div>
-          <Link to={`/blog/${post.slug}`} className="text-sm text-orange-500 hover:underline font-medium">
+          <Link to={buildBlogUrl(lang, post.slug)} className="text-sm text-orange-500 hover:underline font-medium">
             {t("blog.readMore")}
           </Link>
         </div>
@@ -94,16 +108,25 @@ const ALL_CATEGORY = "__all__";
 
 export default function Blog() {
   const { t, i18n } = useTranslation();
-  const currentLang = i18n.language || "tr";
+  const location = useLocation();
 
-  let allPosts: BlogPost[] = [];
-  try {
-    allPosts = getAllPosts(currentLang);
-  } catch (err) {
-    console.error("Blog posts yüklenemedi:", err);
-  }
+  // URL'den dili al (örn: /en/blog → "en"), yoksa i18n diline bak
+  const urlLang = getLangFromPath(location.pathname);
+  const lang = urlLang ?? i18n.language ?? "tr";
 
-  const categories = getAllCategories(currentLang);
+  // URL'deki dil i18n state'iyle farklıysa senkronize et
+  useEffect(() => {
+    if (urlLang && urlLang !== i18n.language) {
+      i18n.changeLanguage(urlLang);
+    }
+  }, [urlLang, i18n]);
+
+  const allPosts: BlogPost[] = useMemo(() => {
+    try { return getAllPosts(lang); }
+    catch (err) { console.error("Blog posts yüklenemedi:", err); return []; }
+  }, [lang]);
+
+  const categories = useMemo(() => getAllCategories(lang), [lang]);
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY);
 
   const filtered = activeCategory === ALL_CATEGORY
@@ -118,7 +141,7 @@ export default function Blog() {
         title="Blog — WhatsApp Chatbot ve Turizm Teknolojisi Rehberleri"
         description="Seyahat acenteleri için WhatsApp chatbot rehberleri, AI turizm teknolojisi, dijital dönüşüm ipuçları. Turzz AI Blog."
         keywords="whatsapp chatbot blog, turizm teknolojisi, seyahat acentesi dijital dönüşüm, tur yazılımı rehber"
-        canonical="/blog"
+        canonical={buildBlogUrl(lang)}
         schema={schema}
       />
 
@@ -132,12 +155,12 @@ export default function Blog() {
       </section>
 
       {/* Fallback uyarısı — tüm içerik TR'den geliyor */}
-      {hasFallbacks && currentLang !== "tr" && (
+      {hasFallbacks && lang !== "tr" && (
         <div className="container mx-auto px-4 max-w-5xl mt-4">
           <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-start gap-3">
             <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-amber-700 dark:text-amber-400">
-              {t("blog.fallbackNotice", { lang: getLangDisplayName(currentLang, currentLang) })}
+              {t("blog.fallbackNotice", { lang: getLangDisplayName(lang, lang) })}
             </p>
           </div>
         </div>
@@ -173,7 +196,7 @@ export default function Blog() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((post) => (
-              <BlogCard key={post.slug} post={post} />
+              <BlogCard key={post.slug} post={post} lang={lang} />
             ))}
           </div>
         )}

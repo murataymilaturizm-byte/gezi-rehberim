@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -20,10 +21,21 @@ const languages = [
 
 export const LanguageSelector = () => {
   const { i18n } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleLanguageChange = (langCode: string) => {
     i18n.changeLanguage(langCode);
     localStorage.setItem("preferred-language", langCode);
+
+    // Blog sayfasındaysak URL'i de güncelle
+    // /blog/... veya /{lang}/blog/... → /{newLang}/blog/...
+    const blogMatch = location.pathname.match(/^(?:\/[a-z]{2})?(\/blog(?:\/.+)?)$/);
+    if (blogMatch) {
+      const blogPart = blogMatch[1]; // "/blog" veya "/blog/slug"
+      const newPath = langCode === "tr" ? blogPart : `/${langCode}${blogPart}`;
+      navigate(newPath);
+    }
   };
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language);

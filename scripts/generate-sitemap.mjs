@@ -1,7 +1,6 @@
 /**
  * Sitemap Generator — otomatik olarak build öncesinde çalışır.
- * src/blog/posts/tr/*.md dosyalarını tarar, frontmatter'dan slug ve
- * tarihi çeker, EN versiyonu varsa hreflang ekler, public/sitemap.xml üretir.
+ * Tüm 7 dil için ayrı URL girişleri + doğru hreflang alternates üretir.
  *
  * Çalıştırma:
  *   npm run generate-sitemap   (manuel)
@@ -17,9 +16,9 @@ const ROOT = join(__dirname, '..');
 
 const SITE_URL = 'https://turzzai.com';
 const TODAY = new Date().toISOString().split('T')[0];
+const ALL_LANGS = ['tr', 'en', 'de', 'ru', 'ar', 'fr', 'es'];
 
 // ─── Statik sayfa listesi ──────────────────────────────────────────────────
-// Yeni sayfa eklendiğinde buraya bir satır ekle.
 const STATIC_PAGES = [
   { path: '/',                                        priority: '1.0', changefreq: 'weekly'  },
   { path: '/auth',                                    priority: '0.5', changefreq: 'monthly' },
@@ -31,38 +30,38 @@ const STATIC_PAGES = [
   { path: '/cozum/gunubirlik-tur',                    priority: '0.8', changefreq: 'monthly' },
   { path: '/cozum/butik-acenteler',                   priority: '0.8', changefreq: 'monthly' },
   { path: '/karsilastir/turzz-vs-manuel-whatsapp',    priority: '0.8', changefreq: 'monthly' },
-  { path: '/blog',                                    priority: '0.9', changefreq: 'weekly'  },
   { path: '/nasil-baslarim',                          priority: '0.7', changefreq: 'monthly' },
   { path: '/yardim',                                  priority: '0.7', changefreq: 'monthly' },
   { path: '/privacy-policy',                          priority: '0.3', changefreq: 'yearly'  },
   { path: '/terms-of-service',                        priority: '0.3', changefreq: 'yearly'  },
 ];
 
+// ─── URL yardımcısı ────────────────────────────────────────────────────────
+// TR prefix yok (default), diğerleri /lang/blog/...
+function buildLangUrl(lang, slug) {
+  const base = lang === 'tr' ? `${SITE_URL}/blog` : `${SITE_URL}/${lang}/blog`;
+  return slug ? `${base}/${slug}` : base;
+}
+
 // ─── Frontmatter parser ────────────────────────────────────────────────────
-// gray-matter dependency olmadan basit YAML frontmatter okur.
-// Sadece tek-satırlık skaler değerleri (string, sayı) çeker.
 function parseFrontmatter(content) {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return {};
-
   const result = {};
   for (const line of match[1].split(/\r?\n/)) {
     const colonIdx = line.indexOf(':');
     if (colonIdx === -1) continue;
     const key = line.slice(0, colonIdx).trim();
     let value = line.slice(colonIdx + 1).trim();
-    // Tırnak işaretlerini kaldır
     value = value.replace(/^["']|["']$/g, '');
     if (key && value) result[key] = value;
   }
   return result;
 }
 
-// ─── Blog yazılarını tara ─────────────────────────────────────────────────
+// ─── Blog yazılarını tara — tüm 7 dil ────────────────────────────────────
 function getBlogPosts() {
   const trDir = join(ROOT, 'src/blog/posts/tr');
-  const enDir = join(ROOT, 'src/blog/posts/en');
-
   if (!existsSync(trDir)) {
     console.warn('⚠️  src/blog/posts/tr dizini bulunamadı, blog yazıları atlanıyor.');
     return [];
@@ -74,42 +73,35 @@ function getBlogPosts() {
   for (const file of trFiles) {
     const content = readFileSync(join(trDir, file), 'utf-8');
     const fm = parseFrontmatter(content);
-
     if (!fm.slug) {
       console.warn(`⚠️  ${file}: slug bulunamadı, atlandı.`);
       continue;
     }
 
-    const hasEn = existsSync(join(enDir, file));
+    // Hangi dillerde bu yazı mevcut?
+    const availableLangs = ALL_LANGS.filter(lang =>
+      existsSync(join(ROOT, `src/blog/posts/${lang}/${file}`))
+    );
 
     posts.push({
-      slug:    fm.slug,
-      lastmod: fm.date || TODAY,
-      hasEn,
+      slug:           fm.slug,
+      lastmod:        fm.date || TODAY,
+      availableLangs,
     });
   }
 
-  // Tarihe göre sırala (yeniden eskiye)
   posts.sort((a, b) => b.lastmod.localeCompare(a.lastmod));
   return posts;
 }
 
-// ─── XML yardımcı ─────────────────────────────────────────────────────────
-function urlEntry({ loc, lastmod, changefreq, priority, hreflang }) {
-  let entry = `  <url>\n`;
-  entry += `    <loc>${loc}</loc>\n`;
-  entry += `    <lastmod>${lastmod}</lastmod>\n`;
-  entry += `    <changefreq>${changefreq}</changefreq>\n`;
-  entry += `    <priority>${priority}</priority>\n`;
-
-  if (hreflang) {
-    entry += `    <xhtml:link rel="alternate" hreflang="tr"        href="${loc}"/>\n`;
-    entry += `    <xhtml:link rel="alternate" hreflang="en"        href="${loc}"/>\n`;
-    entry += `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc}"/>\n`;
-  }
-
-  entry += `  </url>\n`;
-  return entry;
+// ─── XML yardımcı (statik sayfalar için) ──────────────────────────────────
+function urlEntry({ loc, lastmod, changefreq, priority }) {
+  return `  <url>
+    <loc>${loc}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>\n`;
 }
 
 // ─── Ana fonksiyon ────────────────────────────────────────────────────────
@@ -120,7 +112,7 @@ function generateSitemap() {
   xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n`;
   xml += `        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n\n`;
 
-  // Statik sayfalar
+  // ── Statik sayfalar (TR) ──
   xml += `  <!-- Statik sayfalar -->\n`;
   for (const page of STATIC_PAGES) {
     xml += urlEntry({
@@ -128,20 +120,49 @@ function generateSitemap() {
       lastmod:    TODAY,
       changefreq: page.changefreq,
       priority:   page.priority,
-      hreflang:   false,
     });
   }
 
-  // Blog yazıları
-  xml += `\n  <!-- Blog yazıları (TR${posts.some(p => p.hasEn) ? ' + EN hreflang' : ''}) -->\n`;
-  for (const post of posts) {
+  // ── Blog index sayfaları (her dil için) ──
+  xml += `\n  <!-- Blog index sayfaları (7 dil) -->\n`;
+  for (const lang of ALL_LANGS) {
     xml += urlEntry({
-      loc:        `${SITE_URL}/blog/${post.slug}`,
-      lastmod:    post.lastmod,
-      changefreq: 'monthly',
-      priority:   '0.7',
-      hreflang:   post.hasEn,
+      loc:        buildLangUrl(lang),
+      lastmod:    TODAY,
+      changefreq: 'weekly',
+      priority:   '0.8',
     });
+  }
+
+  // ── Blog yazıları — her dil için ayrı URL + hreflang alternates ──
+  const totalEntries = posts.reduce((sum, p) => sum + p.availableLangs.length, 0);
+  xml += `\n  <!-- Blog yazıları (${posts.length} yazı, ${totalEntries} URL girişi) -->\n`;
+
+  for (const post of posts) {
+    const langs = post.availableLangs;
+    if (langs.length === 0) continue;
+
+    // x-default: EN varsa EN, yoksa TR
+    const xDefaultLang = langs.includes('en') ? 'en' : 'tr';
+
+    for (const lang of langs) {
+      const loc = buildLangUrl(lang, post.slug);
+
+      xml += `  <url>\n`;
+      xml += `    <loc>${loc}</loc>\n`;
+      xml += `    <lastmod>${post.lastmod}</lastmod>\n`;
+      xml += `    <changefreq>monthly</changefreq>\n`;
+      xml += `    <priority>0.7</priority>\n`;
+
+      // Mevcut diller için hreflang alternates
+      for (const altLang of langs) {
+        xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${buildLangUrl(altLang, post.slug)}"/>\n`;
+      }
+      // x-default
+      xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${buildLangUrl(xDefaultLang, post.slug)}"/>\n`;
+
+      xml += `  </url>\n`;
+    }
   }
 
   xml += `</urlset>\n`;
@@ -149,8 +170,10 @@ function generateSitemap() {
   const outPath = join(ROOT, 'public/sitemap.xml');
   writeFileSync(outPath, xml, 'utf-8');
 
-  const enCount = posts.filter(p => p.hasEn).length;
-  console.log(`✅ Sitemap oluşturuldu: ${STATIC_PAGES.length} statik sayfa + ${posts.length} blog yazısı (${enCount} EN hreflang)`);
+  const langStats = ALL_LANGS.map(l => `${l}:${posts.filter(p => p.availableLangs.includes(l)).length}`).join(' ');
+  console.log(`✅ Sitemap oluşturuldu:`);
+  console.log(`   ${STATIC_PAGES.length} statik + ${ALL_LANGS.length} blog-index + ${totalEntries} blog URL girişi`);
+  console.log(`   Dil dağılımı: ${langStats}`);
   console.log(`   → ${outPath}`);
 }
 

@@ -85,9 +85,23 @@ const App = () => (
             {/* SEO — Karşılaştırma */}
             <Route path="/karsilastir/turzz-vs-manuel-whatsapp" element={<TurzzVsManuel />} />
 
-            {/* Blog */}
+            {/* Blog — Türkçe (prefix yok, default) */}
             <Route path="/blog"       element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+
+            {/* Blog — Dil-prefix'li rotalar (EN/DE/RU/AR/FR/ES) */}
+            <Route path="/en/blog"       element={<Blog />} />
+            <Route path="/en/blog/:slug" element={<BlogPost />} />
+            <Route path="/de/blog"       element={<Blog />} />
+            <Route path="/de/blog/:slug" element={<BlogPost />} />
+            <Route path="/ru/blog"       element={<Blog />} />
+            <Route path="/ru/blog/:slug" element={<BlogPost />} />
+            <Route path="/ar/blog"       element={<Blog />} />
+            <Route path="/ar/blog/:slug" element={<BlogPost />} />
+            <Route path="/fr/blog"       element={<Blog />} />
+            <Route path="/fr/blog/:slug" element={<BlogPost />} />
+            <Route path="/es/blog"       element={<Blog />} />
+            <Route path="/es/blog/:slug" element={<BlogPost />} />
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

@@ -1,4 +1,5 @@
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useParams, Link, Navigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -9,6 +10,24 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, ArrowLeft, Share2, Tag, AlertCircle } from "lucide-react";
 import { getPostBySlug, getAllPosts, getAvailableLangsForSlug, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
+
+const SUPPORTED_LANGS = ["tr", "en", "de", "ru", "ar", "fr", "es"];
+
+function getLangFromPath(pathname: string): string | null {
+  const m = pathname.match(/^\/([a-z]{2})\//);
+  return m && SUPPORTED_LANGS.includes(m[1]) ? m[1] : null;
+}
+
+/** Blog URL'si oluşturur: TR prefix'siz, diğerleri prefix'li */
+function buildBlogUrl(lang: string, slug?: string): string {
+  const base = lang === "tr" ? "/blog" : `/${lang}/blog`;
+  return slug ? `${base}/${slug}` : base;
+}
+
+/** Tam URL (hreflang ve canonical için) */
+function buildAbsoluteBlogUrl(lang: string, slug: string): string {
+  return `https://turzzai.com${buildBlogUrl(lang, slug)}`;
+}
 
 const DATE_LOCALES: Record<string, string> = {
   tr: "tr-TR", en: "en-GB", de: "de-DE", ru: "ru-RU",
@@ -43,7 +62,7 @@ function RelatedPosts({ current, lang }: { current: BlogPost; lang: string }) {
       <ul className="space-y-3">
         {related.map((p) => (
           <li key={p.slug}>
-            <Link to={`/blog/${p.slug}`} className="block group">
+            <Link to={buildBlogUrl(lang, p.slug)} className="block group">
               <p className="text-sm font-medium text-foreground group-hover:text-orange-500 transition-colors line-clamp-2">{p.title}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {t("blog.minutesRead", { count: p.readingTime })}
@@ -59,13 +78,24 @@ function RelatedPosts({ current, lang }: { current: BlogPost; lang: string }) {
 export default function BlogPost() {
   const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
+
+  // Tüm hook'lar early return'dan ÖNCE çağrılmalı
+  const urlLang = getLangFromPath(location.pathname);
+  const lang = urlLang ?? i18n.language ?? "tr";
+
+  useEffect(() => {
+    if (urlLang && urlLang !== i18n.language) {
+      i18n.changeLanguage(urlLang);
+    }
+  }, [urlLang, i18n]);
+
   if (!slug) return <Navigate to="/blog" replace />;
 
-  const currentLang = i18n.language || "tr";
-  const post = getPostBySlug(slug, currentLang);
+  const post = getPostBySlug(slug, lang);
   if (!post) return <Navigate to="/blog" replace />;
 
-  const dateLocale = DATE_LOCALES[currentLang] || "en-GB";
+  const dateLocale = DATE_LOCALES[lang] || "en-GB";
   const availableLangs = getAvailableLangsForSlug(slug);
 
   const schema = {
@@ -81,14 +111,22 @@ export default function BlogPost() {
     "inLanguage": post.lang,
   };
 
-  // hreflang links for available languages
-  const hreflangLinks = availableLangs.map((lang) => ({
-    rel: "alternate",
-    hreflang: lang,
-    href: `https://turzzai.com/blog/${slug}`,
-  }));
+  // Hreflang: her dil kendi URL'ine işaret eder (artık tümü aynı URL değil)
+  const hreflangLinks = [
+    ...availableLangs.map((l) => ({
+      rel: "alternate",
+      hreflang: l,
+      href: buildAbsoluteBlogUrl(l, slug),
+    })),
+    // x-default: TR veya EN — hangisi varsa (Google için önemli)
+    {
+      rel: "alternate",
+      hreflang: "x-default",
+      href: buildAbsoluteBlogUrl(availableLangs.includes("en") ? "en" : "tr", slug),
+    },
+  ];
 
-  const shareUrl = `https://turzzai.com/blog/${slug}`;
+  const shareUrl = buildAbsoluteBlogUrl(lang, slug);
 
   return (
     <Layout>
@@ -97,7 +135,7 @@ export default function BlogPost() {
         description={post.description}
         keywords={post.tags.join(", ")}
         ogImage={`https://turzzai.com${post.image}`}
-        canonical={`/blog/${slug}`}
+        canonical={buildBlogUrl(lang, slug)}
         schema={schema}
         type="article"
         extraLinks={hreflangLinks}
@@ -109,16 +147,16 @@ export default function BlogPost() {
         </Link>
 
         {/* Fallback uyarı bandı */}
-        {post.isFallback && currentLang !== "tr" && (
+        {post.isFallback && lang !== "tr" && (
           <div className="mb-6 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-start gap-3">
             <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm text-amber-700 dark:text-amber-400">
-                {t("blog.fallbackNotice", { lang: getLangDisplayName(currentLang, currentLang) })}
+                {t("blog.fallbackNotice", { lang: getLangDisplayName(lang, lang) })}
               </p>
               {availableLangs.length > 0 && (
                 <p className="text-xs text-amber-600 mt-1">
-                  {t("blog.availableIn")} {availableLangs.map((l) => getLangDisplayName(currentLang, l)).join(", ")}
+                  {t("blog.availableIn")} {availableLangs.map((l) => getLangDisplayName(lang, l)).join(", ")}
                 </p>
               )}
             </div>
@@ -199,7 +237,7 @@ export default function BlogPost() {
           </article>
 
           <aside className="lg:w-72 space-y-8">
-            <RelatedPosts current={post} lang={currentLang} />
+            <RelatedPosts current={post} lang={lang} />
 
             <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-900 rounded-xl p-5">
               <h3 className="font-semibold text-foreground mb-2 text-sm">{t("blog.post.ctaTitle")}</h3>
