@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import { createInitialContext, processTransition, getNextExpectedInput, getCancellationMessage } from "../shared/fsm/state-machine.ts";
-import { sanitizeInput } from "../shared/fsm/validator.ts";
+import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
@@ -183,6 +183,70 @@ serve(async (req) => {
         _preloadedHistory = Array.isArray(_ar.history) ? _ar.history : null;
         console.log(`[dedup] Registered messageId: ${webhookData.messageId}`);
       }
+    }
+
+    // === PER-PHONE RATE LİMİT: 30 mesaj/dakika ===
+    {
+      const { data: _rl, error: _rle } = await supabase.rpc("check_rate_limit", {
+        p_identifier: userPhone,
+        p_identifier_type: "phone",
+        p_window_seconds: 60,
+        p_max_requests: 30,
+        p_agency_id: agency.id,
+      });
+      if (_rle) {
+        console.error("[rate_limit_rpc_error]", _rle.message);
+      } else if (_rl && !_rl.allowed) {
+        console.warn(`[rate_limit] Phone ${userPhone.slice(-4)} hit limit (${_rl.count}/${_rl.max})`);
+        const _rlLang = (() => {
+          if (_preloadedContext) {
+            try { return (JSON.parse(_preloadedContext) as any).language || "tr"; } catch {}
+          }
+          return detectLanguageChangeIntent(message) || "tr";
+        })();
+        const _rlMsgs: Record<string, string> = {
+          tr: "Çok hızlı mesaj gönderiyorsunuz. 🙏 Lütfen bir dakika bekleyin.",
+          en: "You're sending messages too quickly. 🙏 Please wait a moment.",
+          de: "Sie senden Nachrichten zu schnell. 🙏 Bitte warten Sie einen Moment.",
+          ru: "Вы отправляете сообщения слишком быстро. 🙏 Подождите минуту.",
+          ar: "أنت ترسل الرسائل بسرعة كبيرة. 🙏 يرجى الانتظار لحظة.",
+          fr: "Vous envoyez des messages trop rapidement. 🙏 Veuillez attendre un moment.",
+          es: "Está enviando mensajes muy rápido. 🙏 Por favor espere un momento.",
+        };
+        await sendWhatsAppMessage(
+          metaCredentials.phoneNumberId, metaCredentials.accessToken,
+          userPhone, _rlMsgs[_rlLang] || _rlMsgs.tr,
+        );
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // === INPUT UZUNLUK KONTROLÜ: maks 2000 karakter ===
+    if (isInputTooLong(rawMessage)) {
+      const _tlLang = (() => {
+        if (_preloadedContext) {
+          try { return (JSON.parse(_preloadedContext) as any).language || "tr"; } catch {}
+        }
+        return detectLanguageChangeIntent(message) || "tr";
+      })();
+      const _tlMsgs: Record<string, string> = {
+        tr: "Mesajınız çok uzun, lütfen daha kısa bir mesaj gönderin (maksimum 2000 karakter).",
+        en: "Your message is too long. Please send a shorter message (max 2000 characters).",
+        de: "Ihre Nachricht ist zu lang. Bitte senden Sie eine kürzere Nachricht (max. 2000 Zeichen).",
+        ru: "Ваше сообщение слишком длинное. Отправьте более короткое сообщение (макс. 2000 символов).",
+        ar: "رسالتك طويلة جداً، يرجى إرسال رسالة أقصر (الحد الأقصى 2000 حرف).",
+        fr: "Votre message est trop long, veuillez envoyer un message plus court (max 2000 caractères).",
+        es: "Su mensaje es demasiado largo, envíe un mensaje más corto (máx. 2000 caracteres).",
+      };
+      await sendWhatsAppMessage(
+        metaCredentials.phoneNumberId, metaCredentials.accessToken,
+        userPhone, _tlMsgs[_tlLang] || _tlMsgs.tr,
+      );
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const paymentInstructions = agency.payment_instructions ?? null;

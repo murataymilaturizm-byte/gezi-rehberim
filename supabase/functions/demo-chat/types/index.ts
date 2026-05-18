@@ -32,6 +32,7 @@ export interface RequestData {
   sessionId: string;
   conversationState?: unknown;
   conversationStyle?: string;
+  inputTooLong?: boolean;
 }
 
 export interface AgencyData {

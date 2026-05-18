@@ -20,7 +20,7 @@ import { formatPriceSync } from "../../shared/utils/currency-display.ts";
 import { getExchangeRatesOnce } from "../../shared/utils/exchange-rates.ts";
 
 import { processTransition, getNextExpectedInput, getCancellationMessage } from "../../shared/fsm/state-machine.ts";
-import { sanitizeInput } from "../../shared/fsm/validator.ts";
+import { sanitizeInput, isInputTooLong } from "../../shared/fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../../shared/fsm/nlu.ts";
 import { formatDateForLanguage } from "../../shared/fsm/localization.ts";
 import type { ProcessingInput, ConversationContext } from "../../shared/fsm/types.ts";
@@ -39,6 +39,7 @@ async function parseRequest(req: Request): Promise<RequestData> {
     sessionId,
     conversationState,
     conversationStyle,
+    inputTooLong: isInputTooLong(rawMessage),
   };
 }
 
@@ -119,6 +120,79 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // === INPUT UZUNLUK KONTROLÜ ===
+    if (requestData.inputTooLong) {
+      const _reqLang = (conversationState as any)?.language || "tr";
+      const _tlMsgs: Record<string, string> = {
+        tr: "Mesajınız çok uzun, lütfen daha kısa bir mesaj gönderin (maksimum 2000 karakter).",
+        en: "Your message is too long. Please send a shorter message (max 2000 characters).",
+        de: "Ihre Nachricht ist zu lang. Bitte senden Sie eine kürzere Nachricht (max. 2000 Zeichen).",
+        ru: "Ваше сообщение слишком длинное. Отправьте более короткое сообщение (макс. 2000 символов).",
+        ar: "رسالتك طويلة جداً، يرجى إرسال رسالة أقصر (الحد الأقصى 2000 حرف).",
+        fr: "Votre message est trop long, veuillez envoyer un message plus court (max 2000 caractères).",
+        es: "Su mensaje es demasiado largo, envíe un mensaje más corto (máx. 2000 caracteres).",
+      };
+      return new Response(JSON.stringify({
+        response: _tlMsgs[_reqLang] || _tlMsgs.tr,
+        conversationState,
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // === IP RATE LİMİT: 20 istek/dakika ===
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || req.headers.get("x-real-ip")
+      || "unknown";
+    if (clientIP !== "unknown") {
+      const { data: _ipRl, error: _ipRle } = await supabase.rpc("check_rate_limit", {
+        p_identifier: clientIP,
+        p_identifier_type: "ip",
+        p_window_seconds: 60,
+        p_max_requests: 20,
+      });
+      if (!_ipRle && _ipRl && !_ipRl.allowed) {
+        const _rlLang = (conversationState as any)?.language || "tr";
+        const _rlMsgs: Record<string, string> = {
+          tr: "Çok hızlı istek gönderiyorsunuz. 🙏 Lütfen bir dakika bekleyin.",
+          en: "You're sending requests too quickly. 🙏 Please wait a moment.",
+          de: "Sie senden Anfragen zu schnell. 🙏 Bitte warten Sie einen Moment.",
+          ru: "Вы отправляете запросы слишком быстро. 🙏 Подождите минуту.",
+          ar: "أنت ترسل الطلبات بسرعة كبيرة. 🙏 يرجى الانتظار لحظة.",
+          fr: "Vous envoyez des requêtes trop rapidement. 🙏 Veuillez attendre un moment.",
+          es: "Está enviando solicitudes muy rápido. 🙏 Por favor espere un momento.",
+        };
+        return new Response(JSON.stringify({
+          response: _rlMsgs[_rlLang] || _rlMsgs.tr,
+          conversationState,
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // === SESSION RATE LİMİT: 50 mesaj/saat ===
+    {
+      const { data: _sessRl, error: _sessRle } = await supabase.rpc("check_rate_limit", {
+        p_identifier: sessionId,
+        p_identifier_type: "session",
+        p_window_seconds: 3600,
+        p_max_requests: 50,
+      });
+      if (!_sessRle && _sessRl && !_sessRl.allowed) {
+        const _sLang = (conversationState as any)?.language || "tr";
+        const _sMsgs: Record<string, string> = {
+          tr: "Bu oturumda çok fazla mesaj gönderdiniz. Lütfen daha sonra tekrar deneyin.",
+          en: "You've sent too many messages in this session. Please try again later.",
+          de: "Sie haben in dieser Sitzung zu viele Nachrichten gesendet. Bitte versuchen Sie es später erneut.",
+          ru: "Вы отправили слишком много сообщений в этом сеансе. Попробуйте позже.",
+          ar: "لقد أرسلت رسائل كثيرة جداً في هذه الجلسة. يرجى المحاولة لاحقاً.",
+          fr: "Vous avez envoyé trop de messages dans cette session. Veuillez réessayer plus tard.",
+          es: "Ha enviado demasiados mensajes en esta sesión. Por favor intente más tarde.",
+        };
+        return new Response(JSON.stringify({
+          response: _sMsgs[_sLang] || _sMsgs.tr,
+          conversationState,
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
 
     const [loadedTours, agencyData, contextResult] = await Promise.all([
       loadToursFromDatabase(supabase),

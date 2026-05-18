@@ -59,12 +59,21 @@ export function validateReservationInfo(info: ReservationInfo): ValidationResult
   };
 }
 
+const MAX_INPUT_LENGTH = 2000;
+
+export function isInputTooLong(input: string): boolean {
+  return typeof input === "string" && input.length > MAX_INPUT_LENGTH;
+}
+
 export function sanitizeInput(input: string): string {
-  // Remove potential script tags and dangerous characters
-  return input
-    .replace(/<script[^>]*>.*?<\/script>/gi, '')
-    .replace(/[<>]/g, '')
+  if (!input || typeof input !== "string") return "";
+  // Hard length cap — token şişmesini ve prompt injection saldırılarını önle
+  let sanitized = input.slice(0, MAX_INPUT_LENGTH);
+  sanitized = sanitized
+    .replace(/<script[^>]*>.*?<\/script>/gi, "")
+    .replace(/[<>]/g, "")
     .trim();
+  return sanitized;
 }
 
 export function isValidEmail(email: string): boolean {

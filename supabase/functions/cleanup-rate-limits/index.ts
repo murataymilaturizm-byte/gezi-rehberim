@@ -19,13 +19,15 @@ serve(async (req) => {
 
     console.log('Starting rate limit cleanup...');
 
-    // Cleanup old rate limit records
-    const { error } = await supabase.rpc('cleanup_old_rate_limits');
+    // rate_limit_events tablosunu temizle (1 saat TTL)
+    const { data: deletedRl, error: rlError } = await supabase.rpc('cleanup_old_rate_limit_events');
+    // processed_whatsapp_messages tablosunu temizle (24 saat TTL)
+    const { data: deletedPwm, error: pwmError } = await supabase.rpc('cleanup_old_processed_messages');
 
-    if (error) {
-      console.error('Cleanup error:', error);
+    if (rlError || pwmError) {
+      console.error('Cleanup error:', rlError || pwmError);
       return new Response(
-        JSON.stringify({ success: false, error: error.message }),
+        JSON.stringify({ success: false, error: (rlError || pwmError)?.message }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -33,13 +35,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Rate limit cleanup completed successfully');
+    console.log(`Cleanup completed: rate_limit_events=${deletedRl}, processed_messages=${deletedPwm}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Old rate limit records cleaned up successfully',
-        timestamp: new Date().toISOString()
+      JSON.stringify({
+        success: true,
+        deleted: { rate_limit_events: deletedRl, processed_messages: deletedPwm },
+        timestamp: new Date().toISOString(),
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
