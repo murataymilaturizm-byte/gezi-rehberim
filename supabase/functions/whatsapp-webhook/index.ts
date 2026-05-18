@@ -7,7 +7,7 @@ import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
-import { extractNameAndPhone, extractEmail, isEmailSkipRequest } from "../shared/fsm/simple-extractor.ts";
+import { extractNameAndPhone, extractEmail, isEmailSkipRequest, isNegativePaxMessage } from "../shared/fsm/simple-extractor.ts";
 import {
   pickLocalized,
   detectLanguageChangeIntent,
@@ -393,7 +393,13 @@ serve(async (req) => {
             // Dil değişse de agency tonu korunur
             context.tone = (_agencyTone ?? getDefaultToneForLanguage(languageChangeIntent)) as ConversationTone;
           } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
-            context.language = runtimeDetectedLang;
+            // Guard: uzun ASCII metinler (lorem ipsum vb.) dil değişimi tetiklemesin.
+            // Kısa mesajlar (<200 karakter) veya Latin dışı karakter içeren metinler için dil değişimi kabul edilir.
+            const _hasNonAscii = /[^\x00-\x7F]/.test(message);
+            const _isShortMessage = message.length < 200;
+            if (_hasNonAscii || _isShortMessage) {
+              context.language = runtimeDetectedLang;
+            }
           }
           // Her yüklemede agency tone override: DB'deki üslup context'i güncel tutar
           if (_agencyTone) context.tone = _agencyTone;
@@ -658,6 +664,27 @@ serve(async (req) => {
     if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) extractedInfo.paxAdult = simpleExtraction.paxAdult;
     if (simpleExtraction.selectedDate && !extractedInfo.selectedDate)
       extractedInfo.selectedDate = simpleExtraction.selectedDate;
+
+    // Negatif / geçersiz kişi sayısı kontrolü — FSM'den önce yakala
+    if (context.collectionStep === "waiting_for_pax" && isNegativePaxMessage(message)) {
+      const _negLang = context.language || "tr";
+      const _negMsgs: Record<string, string> = {
+        tr: "Geçerli bir kişi sayısı belirtmelisiniz (en az 1 kişi).",
+        en: "Please enter a valid number of people (at least 1).",
+        de: "Bitte geben Sie eine gültige Personenzahl an (mindestens 1).",
+        ru: "Укажите корректное количество человек (минимум 1).",
+        ar: "يرجى إدخال عدد صحيح من الأشخاص (1 على الأقل).",
+        fr: "Veuillez indiquer un nombre valide de personnes (au moins 1).",
+        es: "Por favor indique un número válido de personas (mínimo 1).",
+      };
+      const _negReply = _negMsgs[_negLang] || _negMsgs.tr;
+      await saveConversationAtomic(supabase, userPhone, agency.id, _negReply, context);
+      await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, _negReply);
+      supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Email adımı: email veya skip çıkar
     if (context.collectionStep === "waiting_for_email") {

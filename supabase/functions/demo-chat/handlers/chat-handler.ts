@@ -21,7 +21,7 @@ import { getExchangeRatesOnce } from "../../shared/utils/exchange-rates.ts";
 
 import { processTransition, getNextExpectedInput, getCancellationMessage } from "../../shared/fsm/state-machine.ts";
 import { sanitizeInput, isInputTooLong } from "../../shared/fsm/validator.ts";
-import { extractEmail, isEmailSkipRequest } from "../../shared/fsm/simple-extractor.ts";
+import { extractEmail, isEmailSkipRequest, isNegativePaxMessage } from "../../shared/fsm/simple-extractor.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../../shared/fsm/nlu.ts";
 import { formatDateForLanguage } from "../../shared/fsm/localization.ts";
 import type { ProcessingInput, ConversationContext } from "../../shared/fsm/types.ts";
@@ -126,17 +126,18 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     if (requestData.inputTooLong) {
       const _reqLang = (conversationState as any)?.language || "tr";
       const _tlMsgs: Record<string, string> = {
-        tr: "Mesajınız çok uzun, lütfen daha kısa bir mesaj gönderin (maksimum 2000 karakter).",
-        en: "Your message is too long. Please send a shorter message (max 2000 characters).",
-        de: "Ihre Nachricht ist zu lang. Bitte senden Sie eine kürzere Nachricht (max. 2000 Zeichen).",
-        ru: "Ваше сообщение слишком длинное. Отправьте более короткое сообщение (макс. 2000 символов).",
-        ar: "رسالتك طويلة جداً، يرجى إرسال رسالة أقصر (الحد الأقصى 2000 حرف).",
-        fr: "Votre message est trop long, veuillez envoyer un message plus court (max 2000 caractères).",
-        es: "Su mensaje es demasiado largo, envíe un mensaje más corto (máx. 2000 caracteres).",
+        tr: "Mesajınız çok uzun (max 2000 karakter), lütfen daha kısa yazın.",
+        en: "Your message is too long (max 2000 chars), please shorten it.",
+        de: "Ihre Nachricht ist zu lang (max 2000 Zeichen), bitte kürzen.",
+        ru: "Сообщение слишком длинное (макс. 2000 символов).",
+        ar: "رسالتك طويلة جداً (الحد الأقصى 2000 حرف).",
+        fr: "Votre message est trop long (max 2000 caractères).",
+        es: "Su mensaje es demasiado largo (máx 2000 caracteres).",
       };
       return new Response(JSON.stringify({
         response: _tlMsgs[_reqLang] || _tlMsgs.tr,
         conversationState,
+        isError: true,
       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -239,9 +240,15 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     if (nluLang && (SUPPORTED_LANGS as readonly string[]).includes(nluLang)) {
       const typed = nluLang as SupportedLang;
       if (typed !== context.language) {
-        logger.info("LANGUAGE_FROM_NLU", { prev: context.language, next: typed });
-        context.language = typed;
-        language = typed; // local primitive'i de sync et — hata mesajları stale "tr" kullanmasın
+        // Guard: uzun ASCII metin (lorem ipsum vb.) dil değişimi tetiklemesin.
+        // Kısa mesaj (<200 karakter) veya Latin dışı karakter içeren metinler için dil değişimi kabul edilir.
+        const _hasNonAscii = /[^\x00-\x7F]/.test(message);
+        const _isShortMsg = message.length < 200;
+        if (_hasNonAscii || _isShortMsg) {
+          logger.info("LANGUAGE_FROM_NLU", { prev: context.language, next: typed });
+          context.language = typed;
+          language = typed;
+        }
       }
     }
 
@@ -289,6 +296,22 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     });
 
     logger.debug("Extracted info", extractedInfo);
+
+    // Negatif / geçersiz kişi sayısı kontrolü — FSM'den önce yakala
+    if (context.collectionStep === "waiting_for_pax" && isNegativePaxMessage(message)) {
+      const _negMsgs: Record<string, string> = {
+        tr: "Geçerli bir kişi sayısı belirtmelisiniz (en az 1 kişi).",
+        en: "Please enter a valid number of people (at least 1).",
+        de: "Bitte geben Sie eine gültige Personenzahl an (mindestens 1).",
+        ru: "Укажите корректное количество человек (минимум 1).",
+        ar: "يرجى إدخال عدد صحيح من الأشخاص (1 على الأقل).",
+        fr: "Veuillez indiquer un nombre valide de personnes (au moins 1).",
+        es: "Por favor indique un número válido de personas (mínimo 1).",
+      };
+      const _negReply = _negMsgs[language] || _negMsgs.tr;
+      await saveConversation(supabase, sessionId, message, _negReply);
+      return createSuccessResponse({ response: _negReply, conversationState: context });
+    }
 
     // Email adımı: email veya skip çıkar
     if (context.collectionStep === "waiting_for_email") {

@@ -202,11 +202,12 @@ export function extractNameAndPhone(
   }
 
   // === PAX ===
+  // Negative lookbehind (?<![-\d]) : "-3 kişi" gibi negatif sayıları engelle
   const paxPatterns = [
-    /(\d+)\s*(?:kişi|kisi|person|people|yetişkin|adult)/i,
-    /(\d+)\s*kişilik/i,
-    /\b(\d+)\s*(?:yetişkin|adult)/i,
-    /(?:evet|yes|ok|tamam)?\s*(\d+)\s*kişi/i,
+    /(?<![-\d])(\d+)\s*(?:kişi|kisi|person|people|yetişkin|adult)/i,
+    /(?<![-\d])(\d+)\s*kişilik/i,
+    /(?<![^\s])\b(\d+)\s*(?:yetişkin|adult)/i,
+    /(?:evet|yes|ok|tamam)?\s*(?<![-])(\d+)\s*kişi/i,
   ];
   for (const pattern of paxPatterns) {
     const match = message.match(pattern);
@@ -569,4 +570,14 @@ const _SKIP_EMAIL: Record<string, RegExp> = {
 export function isEmailSkipRequest(text: string, language: string): boolean {
   const pattern = _SKIP_EMAIL[language] || _SKIP_EMAIL.en;
   return pattern.test(text);
+}
+
+// ─── Negatif / geçersiz kişi sayısı tespiti ──────────────────────────────────
+
+/**
+ * Kullanıcı negatif veya sıfır kişi sayısı belirttiyse true döner.
+ * "-3 kişi", "- 5 person", "0 kişi" gibi girdileri yakalar.
+ */
+export function isNegativePaxMessage(text: string): boolean {
+  return /(?:^|\s)-\s*\d+|\b0\s*(?:kişi|person|people|yetişkin|adult|personas|personnes|человек)/i.test(text);
 }
