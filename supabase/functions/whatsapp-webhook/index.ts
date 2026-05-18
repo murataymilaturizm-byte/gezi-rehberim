@@ -36,6 +36,7 @@ import { detectCannedResponseTrigger, getCannedResponse } from "./services/canne
 import { findMatchingTours } from "../shared/services/tour-matching.ts";
 import { extractAllInfo } from "../shared/services/info-extractor.ts";
 import { buildNLUContextBase, getConversationHistory } from "../shared/services/context-manager.ts";
+import { buildAIFallbackResponse } from "../shared/services/fallback-response.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -631,6 +632,19 @@ serve(async (req) => {
     const newContext = processTransition(context, input);
     console.log(`🔄 ${context.stage} → ${newContext.stage}`);
 
+    // FIX 2+3: Geçersiz tarih temizliği — dateId olmayan selectedDate context'te kalmasın.
+    // Temizlemeden önce preamble için kaydet (FIX 3: "X tarihi müsait değil" mesajı).
+    const _invalidDateForPreamble =
+      newContext.collectionStep === "waiting_for_date" &&
+      newContext.reservationInfo?.selectedDate &&
+      !newContext.reservationInfo?.dateId
+        ? newContext.reservationInfo.selectedDate
+        : undefined;
+    if (_invalidDateForPreamble) {
+      newContext.reservationInfo = { ...newContext.reservationInfo, selectedDate: undefined };
+      console.log("[webhook] Cleared unmatched selectedDate:", _invalidDateForPreamble);
+    }
+
     // Kullanıcı iptal etti → AI çağırmadan direkt yanıt dön
     if (newContext.justCancelled) {
       newContext.justCancelled = false;
@@ -682,7 +696,20 @@ serve(async (req) => {
           es: `Fechas disponibles para *${selectedTourForDates.title}*:\n${dateLines}\n\n¿Qué fecha prefieres?`,
         };
 
-        const dateReply = dateSelectionMessages[newContext.language] || dateSelectionMessages.tr;
+        // FIX 3: Kullanıcının girdiği tarih DB'de yoksa preamble göster
+        let dateReply = dateSelectionMessages[newContext.language] || dateSelectionMessages.tr;
+        if (_invalidDateForPreamble) {
+          const _preambles: Record<string, string> = {
+            tr: `"${_invalidDateForPreamble}" tarihi bu tur için müsait değil. 😔\n\n`,
+            en: `Sorry, "${_invalidDateForPreamble}" is not available for this tour. 😔\n\n`,
+            de: `Leider ist "${_invalidDateForPreamble}" für diese Tour nicht verfügbar. 😔\n\n`,
+            ru: `К сожалению, "${_invalidDateForPreamble}" недоступно для этого тура. 😔\n\n`,
+            ar: `للأسف، "${_invalidDateForPreamble}" غير متاح لهذه الجولة. 😔\n\n`,
+            fr: `Désolé, "${_invalidDateForPreamble}" n'est pas disponible pour ce circuit. 😔\n\n`,
+            es: `Lo siento, "${_invalidDateForPreamble}" no está disponible para este tour. 😔\n\n`,
+          };
+          dateReply = (_preambles[newContext.language] || _preambles.tr) + dateReply;
+        }
 
         await saveConversationAtomic(supabase, userPhone, agency.id, dateReply, newContext);
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, truncateForWhatsApp(dateReply));
@@ -1246,9 +1273,11 @@ Never say anything about the previous booking.`;
       }, 8000);
     }
 
-    let aiResponse: Response;
+    if (_typingRepeatTimer) clearTimeout(_typingRepeatTimer);
+
+    let reply: string;
     try {
-      aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      const _aiRes = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "x-api-key": ANTHROPIC_API_KEY,
@@ -1265,18 +1294,25 @@ Never say anything about the previous booking.`;
           ],
         }),
       });
-    } finally {
-      if (_typingRepeatTimer) clearTimeout(_typingRepeatTimer);
+
+      if (!_aiRes.ok) throw new Error(`AI HTTP ${_aiRes.status}`);
+
+      const _aiData = await _aiRes.json();
+      reply = (_aiData.content || [])
+        .filter((b: any) => b?.type === "text")
+        .map((b: any) => b.text)
+        .join("");
+      console.log("🤖 Reply:", reply.substring(0, 80));
+    } catch (_aiErr) {
+      console.error("[webhook] AI call failed:", _aiErr);
+      const _fallback = buildAIFallbackResponse(newContext, agency.phone_public || undefined);
+      await saveConversationAtomic(supabase, userPhone, agency.id, _fallback, newContext);
+      await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, _fallback);
+      supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-
-    if (!aiResponse!.ok) throw new Error(`AI error: ${aiResponse!.status}`);
-
-    const aiData = await aiResponse!.json();
-    let reply: string = (aiData.content || [])
-      .filter((b: any) => b?.type === "text")
-      .map((b: any) => b.text)
-      .join("");
-    console.log("🤖 Reply:", reply.substring(0, 80));
 
     // Demo-chat ile aynı güvenlik katmanı: AI yetkisiz rezervasyon onayı iddiasını engelle.
     const validationResult = validateAIResponse(reply, newContext.language, newContext.stage);
