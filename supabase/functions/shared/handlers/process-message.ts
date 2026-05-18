@@ -327,15 +327,29 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const justCompleted =
     newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED";
 
+  console.log("[process-message] justCompleted check:", {
+    justCompleted,
+    newStage: newContext.stage,
+    reservationConfirmed: newContext.reservationConfirmed,
+    oldStage: context.stage,
+    tourId: newContext.reservationInfo?.tourId,
+    dateId: newContext.reservationInfo?.dateId,
+    hasPax: !!newContext.reservationInfo?.paxAdult,
+    hasName: !!newContext.reservationInfo?.fullName,
+    hasPhone: !!newContext.reservationInfo?.phone,
+  });
+
   if (justCompleted) {
     const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
-    const reservationPhone = regPhone || (adapter as any).phone || "";
+    const reservationPhone = regPhone || adapter.identifier || "";
 
-    const missingStep = !dateId ? "waiting_for_date"
+    const missingStep = !tourId ? "waiting_for_date"  // tourId yoksa tur seçimi eksik
+      : !dateId ? "waiting_for_date"
       : !paxAdult ? "waiting_for_pax"
       : !fullName ? "waiting_for_name"
       : !reservationPhone ? "waiting_for_phone"
       : null;
+    console.log("[process-message] reservation missingStep:", missingStep, "| tourId:", tourId, "| dateId:", dateId);
 
     if (missingStep) {
       newContext.stage = "COLLECTING_INFO";
@@ -352,6 +366,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
 
     const totalPax = (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0);
+    console.log("[process-message] calling create_reservation RPC:", { tourId, dateId, fullName, totalPax, agencyId: agency.id });
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
       "create_reservation_with_quota_check",
       {
@@ -366,6 +381,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       }
     );
 
+    console.log("[process-message] create_reservation RPC result:", { success: rpcResult?.success, error: rpcResult?.error, rpcError: rpcError?.message });
     if (rpcError || !rpcResult?.success) {
       const errCode = rpcResult?.error || "UNKNOWN";
       const lang = newContext.language || "tr";

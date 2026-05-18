@@ -38,8 +38,9 @@ async function saveConversationAtomic(
 
 export class WhatsAppAdapter implements ChannelAdapter {
   readonly channel = "whatsapp" as const;
-
-  /** phone number — processChatMessage'ın reservation'da kullanması için public */
+  /** ChannelAdapter.identifier = WhatsApp phone number */
+  readonly identifier: string;
+  /** Convenience alias — adapter içi kullanım için */
   readonly phone: string;
 
   constructor(
@@ -52,6 +53,7 @@ export class WhatsAppAdapter implements ChannelAdapter {
     private preloadedHistory: Array<{ role: string; content: string }> | null,
   ) {
     this.phone = phone;
+    this.identifier = phone;
   }
 
   async loadContext(): Promise<ConversationContext | null> {

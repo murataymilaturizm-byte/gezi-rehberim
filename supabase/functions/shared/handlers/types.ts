@@ -4,6 +4,8 @@
 import type { ConversationContext } from "../fsm/types.ts";
 
 export interface ChannelAdapter {
+  /** Kullanıcı tanımlayıcı: WhatsApp için phone, demo için sessionId */
+  readonly identifier: string;
   /** Channel tanımlayıcı (debug/log için) */
   readonly channel: "demo" | "whatsapp";
 
