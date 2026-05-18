@@ -49,16 +49,18 @@ export function buildNLUContextBase(context: ConversationContext): string {
 }
 
 /**
- * Konuşma geçmişini döndürür.
- * Preloaded varsa onu kullanır; yoksa DB'den çeker.
- * Döndürülen array DB DESC sorgusunun ham halidir — çağıran .reverse() uygular.
+ * Konuşma geçmişini DESC sırayla döndürür (yeniden eskiye).
+ * Preloaded: process_whatsapp_message_atomic RPC DESC döndürür — olduğu gibi geçer.
+ * DB fallback: DESC sorgular.
+ * Çağıran taraf (webhook) tek bir .reverse() ile ASC'ye çevirerek kullanır.
+ * Limit 20: bir rezervasyon akışı 12-14 mesaj, 10 ile tarih seçimi kayboluyordu.
  */
 export async function getConversationHistory(
   supabase: any,
   phone: string,
   agencyId: string,
   preloaded: Array<{ role: string; content: string }> | null,
-  limit = 10,
+  limit = 20,
 ): Promise<Array<{ role: string; content: string }>> {
   if (preloaded !== null) return preloaded;
 

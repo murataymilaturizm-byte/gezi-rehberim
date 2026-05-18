@@ -537,11 +537,14 @@ serve(async (req) => {
       }
     }
 
-    // Preload'dan gelen history kullan; yoksa DB'den çek
-    const recentMsgs = await getConversationHistory(supabase, userPhone, agency.id, _preloadedHistory, 10);
+    // Preload'dan gelen history kullan; yoksa DB'den çek.
+    // Her iki kaynak da DESC (yeniden eskiye) döndürür — tek reverse ile ASC yapılır.
+    // Double-reverse bug: daha önce NLU'da bir, AI'da bir reverse yapılıyordu;
+    // ikincisi birincisini iptal edip AI DESC history alıyordu → hallucination.
+    const recentMsgs = await getConversationHistory(supabase, userPhone, agency.id, _preloadedHistory, 20);
+    const historyAsc = [...recentMsgs].reverse(); // DESC → ASC, recentMsgs'i mutate ETMİYOR
 
-    const conversationSummary = (recentMsgs || [])
-      .reverse()
+    const conversationSummary = historyAsc
       .map((m: { role: string; content: string }) => `${m.role}: ${m.content}`)
       .join("\n");
 
@@ -1256,11 +1259,13 @@ Never say anything about the previous booking.`;
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not configured");
 
-    // Build conversation history for AI context
-    const conversationMessages = (recentMsgs || [])
-      .reverse()
+    // Build conversation history for AI context — historyAsc zaten ASC sıralı
+    const conversationMessages = historyAsc
       .filter((m) => m.role !== "system")
-      .map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }));
+      .map((m: { role: string; content: string }) => ({
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.content,
+      }));
 
     // AI 10 saniyeden uzun sürerse müşteriye tekrar "yazıyor..." gönder
     let _typingRepeatTimer: ReturnType<typeof setTimeout> | null = null;
