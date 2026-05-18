@@ -1,13 +1,4 @@
 // WhatsApp webhook - Clean FSM with shared core (Meta Cloud API)
-
-/** DD.MM.YYYY veya DD/MM/YYYY → YYYY-MM-DD. Zaten ISO formatındaysa dokunma. */
-function normalizeDateString(dateStr: string): string {
-  if (!dateStr) return dateStr;
-  const m = dateStr.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
-  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
-  return dateStr;
-}
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -16,14 +7,14 @@ import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
-import { extractNameAndPhone, extractEmail, isEmailSkipRequest, isNegativePaxMessage } from "../shared/fsm/simple-extractor.ts";
+import { extractEmail, isNegativePaxMessage } from "../shared/fsm/simple-extractor.ts";
 import {
   pickLocalized,
   detectLanguageChangeIntent,
   getDefaultToneForLanguage,
   formatDateForLanguage,
 } from "../shared/fsm/localization.ts";
-import { matchTour, findTourById } from "../shared/fsm/tour-matcher.ts";
+import { findTourById } from "../shared/fsm/tour-matcher.ts";
 import { validateAIResponse } from "../shared/fsm/response-validator.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 import { getExchangeRatesOnce } from "../shared/utils/exchange-rates.ts";
@@ -42,6 +33,9 @@ import { generatePaymentMessage } from "./services/payment-message.ts";
 import { upsertUserProfile, enrichConversationInsights } from "./services/profile.ts";
 import { checkFAQ } from "./services/faq.ts";
 import { detectCannedResponseTrigger, getCannedResponse } from "./services/canned-responses.ts";
+import { findMatchingTours } from "../shared/services/tour-matching.ts";
+import { extractAllInfo } from "../shared/services/info-extractor.ts";
+import { buildNLUContextBase, getConversationHistory } from "../shared/services/context-manager.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -542,50 +536,15 @@ serve(async (req) => {
       }
     }
 
-    // Preload'dan gelen history kullan; RPC başarısız olduysa DB'den al
-    let recentMsgs: Array<{ role: string; content: string }> | null = _preloadedHistory;
-    if (recentMsgs === null) {
-      const { data: _rmData } = await supabase
-        .from("whatsapp_conversations")
-        .select("role, content")
-        .eq("phone", userPhone)
-        .eq("agency_id", agency.id)
-        .neq("role", "system")
-        .order("created_at", { ascending: false })
-        .limit(10);
-      recentMsgs = _rmData ?? null;
-    }
+    // Preload'dan gelen history kullan; yoksa DB'den çek
+    const recentMsgs = await getConversationHistory(supabase, userPhone, agency.id, _preloadedHistory, 10);
 
     const conversationSummary = (recentMsgs || [])
       .reverse()
-      .map((m) => `${m.role}: ${m.content}`)
+      .map((m: { role: string; content: string }) => `${m.role}: ${m.content}`)
       .join("\n");
 
-    let nluContext = conversationSummary;
-    nluContext += `\n\nCurrent stage: ${context.stage}.`;
-    if (context.collectionStep) nluContext += ` Collection step: ${context.collectionStep}.`;
-    if (context.currentTour) nluContext += ` Selected tour: ${context.currentTour.title}.`;
-    if (context.reservationInfo) {
-      const info = context.reservationInfo;
-      const collected = [];
-      if (info.selectedDate) collected.push(`date: ${info.selectedDate}`);
-      if (info.paxAdult) collected.push(`pax: ${info.paxAdult}`);
-      if (info.fullName) collected.push(`name: ${info.fullName}`);
-      if (info.phone) collected.push(`phone: ${info.phone}`);
-      if (collected.length > 0) nluContext += ` Reservation info collected: ${collected.join(", ")}.`;
-    }
-    if (context.stage === "COMPLETED" && context.reservationConfirmed) {
-      nluContext += ` STATUS: RESERVATION COMPLETED - any tour questions are purely informational.`;
-    }
-    if (
-      context.collectionStep === "ready_for_confirmation" ||
-      (context.reservationInfo?.fullName &&
-        context.reservationInfo?.phone &&
-        context.reservationInfo?.paxAdult &&
-        context.reservationInfo?.dateId)
-    ) {
-      nluContext += ` STATUS: READY FOR CONFIRMATION - waiting for user to confirm booking.`;
-    }
+    const nluContext = (conversationSummary ? conversationSummary + "\n\n" : "") + buildNLUContextBase(context);
 
     console.log("📋 NLU Context (stage):", context.stage, context.collectionStep);
 
@@ -606,80 +565,16 @@ serve(async (req) => {
       else console.log("✅ Complaint saved successfully");
     }
 
-    let selectedTour: any = null;
-    let multipleTourMatches: any[] = [];
-
-    if (nluResult.entities.tour_name) {
-      const matchingTours = tours.filter((t) =>
-        t.title.toLowerCase().includes(nluResult.entities.tour_name!.toLowerCase()),
-      );
-      if (matchingTours.length === 1) {
-        const found = matchingTours[0];
-        selectedTour = {
-          id: found.id,
-          title: found.title,
-          destination: found.destination,
-          dates: found.dates,
-          program_kisa: found.program_kisa,
-          gezilecek_yerler: found.gezilecek_yerler,
-        };
-        console.log("🎫 Tour matched by NLU name:", selectedTour.title);
-      } else if (matchingTours.length > 1) {
-        multipleTourMatches = matchingTours;
-      }
-    }
-
-    if (!selectedTour && !multipleTourMatches.length && nluResult.entities.destination) {
-      const matchingTours = tours.filter(
-        (t) =>
-          t.destination.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()) ||
-          t.title.toLowerCase().includes(nluResult.entities.destination!.toLowerCase()),
-      );
-      if (matchingTours.length === 1) {
-        const found = matchingTours[0];
-        selectedTour = {
-          id: found.id,
-          title: found.title,
-          destination: found.destination,
-          dates: found.dates,
-          program_kisa: found.program_kisa,
-          gezilecek_yerler: found.gezilecek_yerler,
-        };
-        console.log("🎫 Tour matched by NLU destination:", selectedTour.title);
-      } else if (matchingTours.length > 1) {
-        multipleTourMatches = matchingTours;
-      }
-    }
-
-    if (!selectedTour && multipleTourMatches.length === 0) {
-      const expectedInput = getNextExpectedInput(context);
-      const matchedTour = matchTour(message, tours, expectedInput);
-      if (matchedTour) {
-        const lowerMessage = message.toLowerCase().trim();
-        const allMatches = tours.filter(
-          (tour) =>
-            tour.title.toLowerCase().includes(lowerMessage) || tour.destination.toLowerCase().includes(lowerMessage),
-        );
-        if (allMatches.length > 1) {
-          multipleTourMatches = allMatches;
-        } else {
-          const fullTour = findTourById(matchedTour.id, tours);
-          if (fullTour) {
-            selectedTour = {
-              id: fullTour.id,
-              title: fullTour.title,
-              destination: fullTour.destination,
-              dates: fullTour.dates,
-              program_kisa: fullTour.program_kisa,
-              gezilecek_yerler: fullTour.gezilecek_yerler,
-            };
-            console.log("🎯 Tour matched by direct matching:", selectedTour.title);
-          }
-        }
-      } else {
-        console.log("❌ No tour match found via NLU or direct matching");
-      }
-    }
+    const { selectedTour, multipleMatches: multipleTourMatches } = findMatchingTours(
+      message,
+      nluResult.entities,
+      tours,
+      getNextExpectedInput(context),
+      nluResult.intent,
+    );
+    if (selectedTour) console.log("🎫 Tour matched:", selectedTour.title);
+    else if (multipleTourMatches.length > 1) console.log("🎫 Multiple tours matched:", multipleTourMatches.length);
+    else console.log("❌ No tour match found");
 
     // Stage koruma: COLLECTING_INFO / CONFIRMING'de NLU yanlışlıkla tour_search döndürdüyse
     // provide_info'ya dönüştür. Demo-chat ile aynı mantık.
@@ -698,18 +593,8 @@ serve(async (req) => {
       fsmIntent = mapNLUIntentToFSMIntent("provide_info");
     }
 
-    const extractedInfo: any = { ...nluResult.updates };
-    if (nluResult.entities.dates && nluResult.entities.dates.length > 0) {
-      extractedInfo.selectedDate = normalizeDateString(nluResult.entities.dates[0]);
-    }
-
-    // === İSİM ÇIKARMA - collectionStep'i geç ===
-    const simpleExtraction = extractNameAndPhone(message, context.collectionStep);
-    if (simpleExtraction.fullName && !extractedInfo.fullName) extractedInfo.fullName = simpleExtraction.fullName;
-    if (simpleExtraction.phone && !extractedInfo.phone) extractedInfo.phone = simpleExtraction.phone;
-    if (simpleExtraction.paxAdult && !extractedInfo.paxAdult) extractedInfo.paxAdult = simpleExtraction.paxAdult;
-    if (simpleExtraction.selectedDate && !extractedInfo.selectedDate)
-      extractedInfo.selectedDate = simpleExtraction.selectedDate;
+    // Tüm bilgi çıkarma (10 inline blok → tek servis çağrısı)
+    const extractedInfo = extractAllInfo({ message, nluResult, fsmIntent, context, tours });
 
     // Negatif / geçersiz kişi sayısı kontrolü — FSM'den önce yakala
     if (context.collectionStep === "waiting_for_pax" && isNegativePaxMessage(message)) {
@@ -732,111 +617,7 @@ serve(async (req) => {
       });
     }
 
-    // Email adımı: email veya skip çıkar
-    if (context.collectionStep === "waiting_for_email") {
-      const _emailFound = extractEmail(message);
-      const _skipFound = isEmailSkipRequest(message, context.language);
-      if (_emailFound) extractedInfo.email = _emailFound;
-      else if (_skipFound) extractedInfo.emailSkipped = true;
-    }
-
     const expectedInput = getNextExpectedInput(context);
-
-    // waiting_for_name aşamasında isim NLU'dan da gelmemişse mesajı direkt isim kabul et
-    if (expectedInput === "name" && !extractedInfo.fullName) {
-      const words = message.trim().split(/\s+/);
-      if (
-        words.length >= 2 &&
-        words.length <= 4 &&
-        !message.includes("?") &&
-        !/\d/.test(message) &&
-        words.every((w) => w.length >= 2)
-      ) {
-        const basicBlacklist = [
-          "evet",
-          "hayır",
-          "tamam",
-          "olur",
-          "haydi",
-          "hadi",
-          "rezervasyon",
-          "onaylıyorum",
-          "iptal",
-          "cancel",
-        ];
-        const lowerMsg = message.toLowerCase();
-        if (!basicBlacklist.some((w) => lowerMsg.includes(w))) {
-          extractedInfo.fullName = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
-          console.log("📝 Name extracted (loose mode):", extractedInfo.fullName);
-        }
-      }
-    }
-
-    if (!extractedInfo.paxAdult && expectedInput === "pax") {
-      const plainNumber = parseInt(message.trim());
-      if (!isNaN(plainNumber) && plainNumber >= 1 && plainNumber <= 50) {
-        extractedInfo.paxAdult = plainNumber;
-      }
-    }
-
-    if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
-      const tour = findTourById(context.currentTour.id, tours);
-      if (tour?.dates) {
-        const dateIndex = parseInt(extractedInfo.selectedDate.split("_")[1]);
-        if (dateIndex >= 0 && dateIndex < tour.dates.length) {
-          const selectedDate = tour.dates[dateIndex];
-          extractedInfo.selectedDate = selectedDate.departure_date;
-          extractedInfo.dateId = selectedDate.id;
-        }
-      }
-    }
-
-    if (
-      !extractedInfo.dateId &&
-      context.currentTour &&
-      (expectedInput === "date" || expectedInput === "date_selection")
-    ) {
-      const dateNumber = parseInt(message.trim());
-      if (!isNaN(dateNumber) && dateNumber >= 1) {
-        const tour = findTourById(context.currentTour.id, tours);
-        if (tour?.dates && dateNumber <= tour.dates.length) {
-          const selectedDate = tour.dates[dateNumber - 1];
-          extractedInfo.selectedDate = selectedDate.departure_date;
-          extractedInfo.dateId = selectedDate.id;
-        }
-      }
-    }
-
-    if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
-      const tour = findTourById(context.currentTour.id, tours);
-      if (tour?.dates && tour.dates.length > 0) {
-        const _normalizedSel = normalizeDateString(extractedInfo.selectedDate);
-        const matchedDate = tour.dates.find((d: any) => {
-          if (d.departure_date === _normalizedSel) return true;
-          // Year-agnostic fallback: "15 Aralık" gibi yılsız tarihler için (sadece gün+ay eşleştir)
-          const isoSel = _normalizedSel.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-          const isoDB = d.departure_date?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-          if (isoSel && isoDB) return isoSel[2] === isoDB[2] && isoSel[3] === isoDB[3];
-          return false;
-        });
-        if (matchedDate) {
-          extractedInfo.selectedDate = matchedDate.departure_date;
-          extractedInfo.dateId = matchedDate.id;
-        }
-      }
-    }
-
-    if (
-      !extractedInfo.dateId &&
-      !extractedInfo.selectedDate &&
-      context.currentTour?.dates?.length === 1 &&
-      (fsmIntent === "provide_info" || fsmIntent === "confirm" || fsmIntent === "reservation_intent")
-    ) {
-      const singleDate = context.currentTour.dates[0];
-      extractedInfo.selectedDate = singleDate.departure_date;
-      extractedInfo.dateId = singleDate.id;
-    }
-
     console.log("📝 Extracted info:", extractedInfo);
 
     const input: ProcessingInput = {
