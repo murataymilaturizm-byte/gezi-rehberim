@@ -47,6 +47,7 @@ export interface AgencyData {
   payment_instructions?: PaymentInstructions | string | null;
   language_currencies?: Record<string, string> | null;
   primary_currency: string;
+  collect_email?: boolean;
 }
 
 export interface PaymentInstructions {

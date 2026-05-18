@@ -21,6 +21,7 @@ export type InfoCollectionStep =
   | 'waiting_for_pax'
   | 'waiting_for_name'
   | 'waiting_for_phone'
+  | 'waiting_for_email'     // Opsiyonel — acente collect_email=true ise
   | 'ready_for_confirmation';
 
 export interface TourReference {
@@ -43,6 +44,8 @@ export interface ReservationInfo {
   paxChild?: number;
   fullName?: string;
   phone?: string;
+  email?: string;           // Opsiyonel — acente collect_email=true ise toplanır
+  emailSkipped?: boolean;   // Müşteri "geç" derse true
 }
 
 export interface ConversationContext {
@@ -64,6 +67,9 @@ export interface ConversationContext {
 
   // Cancellation flag — set when user cancels mid-flow; handler uses this to send cancellation message without AI
   justCancelled?: boolean;
+
+  // Agency's email collection setting — mirrored into context to drive FSM
+  collectEmail?: boolean;
   
   // Language & Style
   language: string; // tr, en, de, ru, ar, fr, es

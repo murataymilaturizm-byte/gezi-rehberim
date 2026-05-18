@@ -732,7 +732,11 @@
         "loadError": "تعذر تحميل إعدادات واتساب",
         "phoneUpdateError": "تعذر حفظ رقم واتساب",
         "styleUpdateSuccess": "تم تحديث أسلوب المحادثة",
-        "styleUpdateError": "تعذر تحديث أسلوب المحادثة"
+        "styleUpdateError": "تعذر تحديث أسلوب المحادثة",
+        "emailCollectionTitle": "جمع البريد الإلكتروني",
+        "emailCollectionDesc": "اجمع عناوين البريد أثناء الحجز. اختياري — يمكن للعملاء التخطي.",
+        "emailCollectionToggle": "طلب البريد الإلكتروني أثناء الحجز",
+        "emailCollectionSaved": "تم تحديث إعداد البريد الإلكتروني"
       },
       "conversations": {
         "title": "محادثات الواتساب",

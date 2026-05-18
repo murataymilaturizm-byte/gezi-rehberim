@@ -21,6 +21,7 @@ import { getExchangeRatesOnce } from "../../shared/utils/exchange-rates.ts";
 
 import { processTransition, getNextExpectedInput, getCancellationMessage } from "../../shared/fsm/state-machine.ts";
 import { sanitizeInput, isInputTooLong } from "../../shared/fsm/validator.ts";
+import { extractEmail, isEmailSkipRequest } from "../../shared/fsm/simple-extractor.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../../shared/fsm/nlu.ts";
 import { formatDateForLanguage } from "../../shared/fsm/localization.ts";
 import type { ProcessingInput, ConversationContext } from "../../shared/fsm/types.ts";
@@ -244,6 +245,9 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       }
     }
 
+    // Agency email toplama ayarını context'e yaz (admin toggle anlık etki etsin)
+    context.collectEmail = agencyData?.collect_email === true;
+
     const expectedInput = getNextExpectedInput(context);
 
     // Tur eşleştir
@@ -285,6 +289,14 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     });
 
     logger.debug("Extracted info", extractedInfo);
+
+    // Email adımı: email veya skip çıkar
+    if (context.collectionStep === "waiting_for_email") {
+      const _emailFound = extractEmail(message);
+      const _skipFound = isEmailSkipRequest(message, language);
+      if (_emailFound) (extractedInfo as any).email = _emailFound;
+      else if (_skipFound) (extractedInfo as any).emailSkipped = true;
+    }
 
     // CONTEXT_AFTER_NLU — NLU + extraction sonrası tam durum
     logger.info("CONTEXT_AFTER_NLU", {
@@ -331,6 +343,42 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       const cancelReply = getCancellationMessage(newContext.language);
       await saveConversation(supabase, sessionId, message, cancelReply);
       return createSuccessResponse({ response: cancelReply, conversationState: newContext });
+    }
+
+    // === EMAIL TOPLAMA ADIMI (deterministik) ===
+    if (newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_email") {
+      const _lang = newContext.language || "tr";
+
+      if (context.collectionStep !== "waiting_for_email") {
+        // İlk kez bu adıma girdi → email iste
+        const _askMsgs: Record<string, string> = {
+          tr: `Son olarak, email adresinizi paylaşmak ister misiniz? 📧 Özel fırsatları iletebiliriz.\n\n(Atlamak için \"geç\" yazabilirsiniz)`,
+          en: `Finally, would you like to share your email? 📧 We can send you special offers.\n\n(Type "skip" to pass)`,
+          de: `Möchten Sie zum Schluss Ihre E-Mail teilen? 📧 Wir senden Ihnen exklusive Angebote.\n\n(\"überspringen\" zum Auslassen)`,
+          ru: `Напоследок, хотите поделиться email? 📧 Будем отправлять специальные предложения.\n\n(Напишите \"пропустить\" для пропуска)`,
+          ar: `أخيراً، هل ترغب في مشاركة بريدك الإلكتروني؟ 📧 سنرسل لك عروضاً خاصة.\n\n(اكتب \"تخطي\" للتجاوز)`,
+          fr: `Enfin, souhaitez-vous partager votre email? 📧 Nous vous enverrons des offres spéciales.\n\n(Tapez \"passer\" pour ignorer)`,
+          es: `Por último, ¿desea compartir su email? 📧 Le enviaremos ofertas especiales.\n\n(Escriba \"saltar\" para omitir)`,
+        };
+        const _askReply = _askMsgs[_lang] || _askMsgs.tr;
+        await saveConversation(supabase, sessionId, message, _askReply);
+        return createSuccessResponse({ response: _askReply, conversationState: newContext });
+      }
+
+      if (message.includes("@") && !extractEmail(message)) {
+        const _invalidMsgs: Record<string, string> = {
+          tr: "Bu email adresi geçersiz görünüyor. Doğru formatta tekrar girer misiniz? (örn: ad@domain.com)",
+          en: "This email address looks invalid. Could you enter it in the correct format? (e.g., name@domain.com)",
+          de: "Diese E-Mail-Adresse scheint ungültig. Bitte im richtigen Format eingeben. (z.B. name@domain.com)",
+          ru: "Этот email выглядит неверным. Введите в правильном формате. (напр. name@domain.com)",
+          ar: "هذا البريد الإلكتروني يبدو غير صحيح. (مثال: name@domain.com)",
+          fr: "Cette adresse email semble invalide. Veuillez l'entrer au bon format. (ex: nom@domain.com)",
+          es: "Esta dirección de email parece inválida. (ej: nombre@domain.com)",
+        };
+        const _invalidReply = _invalidMsgs[_lang] || _invalidMsgs.tr;
+        await saveConversation(supabase, sessionId, message, _invalidReply);
+        return createSuccessResponse({ response: _invalidReply, conversationState: newContext });
+      }
     }
 
     if (

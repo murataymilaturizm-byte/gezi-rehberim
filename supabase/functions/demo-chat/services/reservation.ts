@@ -47,6 +47,7 @@ export async function saveReservation(
         p_agency_id: agencyId,
         p_source_channel: CONFIG.SOURCE_CHANNEL,
         p_note: "Demo chat reservation",
+        p_email: context.reservationInfo?.email || null,
       }
     );
 

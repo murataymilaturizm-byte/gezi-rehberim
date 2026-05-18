@@ -743,7 +743,11 @@
         "loadError": "Не удалось загрузить настройки WhatsApp",
         "phoneUpdateError": "Не удалось сохранить номер WhatsApp",
         "styleUpdateSuccess": "Стиль общения обновлен",
-        "styleUpdateError": "Не удалось обновить стиль общения"
+        "styleUpdateError": "Не удалось обновить стиль общения",
+        "emailCollectionTitle": "Сбор Email",
+        "emailCollectionDesc": "Собирайте email при бронировании. Необязательно — клиенты могут пропустить.",
+        "emailCollectionToggle": "Запрашивать email при бронировании",
+        "emailCollectionSaved": "Настройка email обновлена"
       },
       "conversations": {
         "title": "Беседы WhatsApp",

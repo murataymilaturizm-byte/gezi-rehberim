@@ -716,7 +716,11 @@
         "loadError": "WhatsApp settings could not be loaded",
         "phoneUpdateError": "WhatsApp number could not be saved",
         "styleUpdateSuccess": "Conversation style updated",
-        "styleUpdateError": "Conversation style could not be updated"
+        "styleUpdateError": "Conversation style could not be updated",
+        "emailCollectionTitle": "Email Collection",
+        "emailCollectionDesc": "Collect email addresses from customers during reservation. Optional — customers can skip.",
+        "emailCollectionToggle": "Ask for email during reservation",
+        "emailCollectionSaved": "Email setting updated"
       },
       "conversations": {
         "title": "WhatsApp Conversations",

@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, MessageSquare, Lock, Wifi, FileDown, Phone } from "lucide-react";
+import { Settings, CheckCircle2, MessageSquare, Lock, Wifi, FileDown, Phone, Mail } from "lucide-react";
 import { WhatsAppEmbeddedSignup } from "./WhatsAppEmbeddedSignup";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -33,6 +34,9 @@ export const WhatsAppSettings = () => {
     conversation_style: "kurumsal" as 'standart' | 'kurumsal' | 'dinamik' | 'premium'
   });
 
+  const [collectEmail, setCollectEmail] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
+
   useEffect(() => {
     loadWhatsAppSettings();
   }, []);
@@ -45,7 +49,7 @@ export const WhatsAppSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, whatsapp_phone_number, whatsapp_status, active, conversation_style, plan_type, whatsapp_connected_at, meta_phone_number_id")
+        .select("id, whatsapp_phone_number, whatsapp_status, active, conversation_style, plan_type, whatsapp_connected_at, meta_phone_number_id, collect_email")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -72,6 +76,7 @@ export const WhatsAppSettings = () => {
         setFormData({
           conversation_style: (agencyData.conversation_style || 'kurumsal') as 'standart' | 'kurumsal' | 'dinamik' | 'premium'
         });
+        setCollectEmail((agencyData as any).collect_email === true);
       }
     } catch (error) {
       console.error("Error loading WhatsApp settings:", error);
@@ -85,9 +90,28 @@ export const WhatsAppSettings = () => {
     }
   };
 
+  const handleEmailToggle = async (checked: boolean) => {
+    if (!agencyId) return;
+    setSavingEmail(true);
+    try {
+      const { error } = await supabase
+        .from("agencies")
+        .update({ collect_email: checked } as any)
+        .eq("id", agencyId);
+      if (error) throw error;
+      setCollectEmail(checked);
+      toast({ title: t("common.success"), description: t("admin.whatsapp.settings.emailCollectionSaved") });
+    } catch (err: any) {
+      console.error("Email toggle error:", err);
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
   const handleStyleUpdate = async () => {
     if (!agencyId) return;
-    
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -285,13 +309,40 @@ export const WhatsAppSettings = () => {
             </p>
           </div>
 
-          <Button 
-            onClick={handleStyleUpdate} 
-            disabled={saving} 
+          <Button
+            onClick={handleStyleUpdate}
+            disabled={saving}
             className="w-full"
           >
             {saving ? t("admin.whatsapp.settings.saving") : t("admin.whatsapp.settings.updateStyle")}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Email Toplama */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            {t("admin.whatsapp.settings.emailCollectionTitle")}
+          </CardTitle>
+          <CardDescription>
+            {t("admin.whatsapp.settings.emailCollectionDesc")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <Label className="font-medium">
+                {t("admin.whatsapp.settings.emailCollectionToggle")}
+              </Label>
+            </div>
+            <Switch
+              checked={collectEmail}
+              onCheckedChange={handleEmailToggle}
+              disabled={savingEmail || loading}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>

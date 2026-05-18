@@ -709,6 +709,10 @@
         "phoneUpdateError": "WhatsApp numarası kaydedilemedi",
         "styleUpdateSuccess": "Konuşma üslubu güncellendi",
         "styleUpdateError": "Konuşma üslubu güncellenemedi",
+        "emailCollectionTitle": "Email Toplama",
+        "emailCollectionDesc": "Rezervasyon sırasında müşterilerden email adresi toplayın. Müşteri atlayabilir, zorunlu değil.",
+        "emailCollectionToggle": "Rezervasyon sırasında email iste",
+        "emailCollectionSaved": "Email ayarı güncellendi",
         "integrationComplete": "Entegrasyon Tamamlandı",
         "integrationCompleteDesc": "WhatsApp Business numaranız {phone} sisteme tanımlandı."
       },

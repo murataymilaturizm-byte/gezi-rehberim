@@ -743,7 +743,11 @@
         "loadError": "No se pudo cargar la configuración de WhatsApp",
         "phoneUpdateError": "No se pudo guardar el número de WhatsApp",
         "styleUpdateSuccess": "Estilo de conversación actualizado",
-        "styleUpdateError": "No se pudo actualizar el estilo de conversación"
+        "styleUpdateError": "No se pudo actualizar el estilo de conversación",
+        "emailCollectionTitle": "Recopilación de Emails",
+        "emailCollectionDesc": "Recopile emails durante la reserva. Opcional — los clientes pueden omitir.",
+        "emailCollectionToggle": "Solicitar email durante la reserva",
+        "emailCollectionSaved": "Configuración de email actualizada"
       },
       "conversations": {
         "title": "Conversaciones de WhatsApp",

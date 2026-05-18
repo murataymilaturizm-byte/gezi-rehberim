@@ -28,17 +28,18 @@ export async function getAgencyData(
   const { data, error } = await supabase
     .from("agencies")
     .select(`
-      name, 
-      city, 
-      payment_instructions, 
-      primary_currency, 
-      language_currencies, 
-      address, 
-      phone_public, 
-      website_url, 
-      working_hours, 
-      maps_url, 
-      cancellation_policy
+      name,
+      city,
+      payment_instructions,
+      primary_currency,
+      language_currencies,
+      address,
+      phone_public,
+      website_url,
+      working_hours,
+      maps_url,
+      cancellation_policy,
+      collect_email
     `)
     .eq("id", agencyId)
     .single();
@@ -61,6 +62,7 @@ export async function getAgencyData(
     payment_instructions: data?.payment_instructions ?? null,
     language_currencies: data?.language_currencies ?? null,
     primary_currency: data?.primary_currency ?? "TRY",
+    collect_email: data?.collect_email ?? false,
   };
   cacheTime = now;
   

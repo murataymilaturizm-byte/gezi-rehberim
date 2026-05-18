@@ -7,7 +7,7 @@ import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { buildSystemPrompt } from "../shared/fsm/prompt-builder.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../shared/fsm/nlu.ts";
-import { extractNameAndPhone } from "../shared/fsm/simple-extractor.ts";
+import { extractNameAndPhone, extractEmail, isEmailSkipRequest } from "../shared/fsm/simple-extractor.ts";
 import {
   pickLocalized,
   detectLanguageChangeIntent,
@@ -424,6 +424,9 @@ serve(async (req) => {
       context.tone = (_agencyTone ?? getDefaultToneForLanguage(context.language)) as ConversationTone;
     }
 
+    // Agency email toplama ayarını her mesajda context'e yaz (admin toggle anlık etki etsin)
+    context.collectEmail = (agency as any).collect_email === true;
+
     const today = new Date().toISOString().split("T")[0];
 
     // getCachedTours'dan gelen toursRaw'da sold_pax + remaining_quota zaten var
@@ -656,6 +659,14 @@ serve(async (req) => {
     if (simpleExtraction.selectedDate && !extractedInfo.selectedDate)
       extractedInfo.selectedDate = simpleExtraction.selectedDate;
 
+    // Email adımı: email veya skip çıkar
+    if (context.collectionStep === "waiting_for_email") {
+      const _emailFound = extractEmail(message);
+      const _skipFound = isEmailSkipRequest(message, context.language);
+      if (_emailFound) extractedInfo.email = _emailFound;
+      else if (_skipFound) extractedInfo.emailSkipped = true;
+    }
+
     const expectedInput = getNextExpectedInput(context);
 
     // waiting_for_name aşamasında isim NLU'dan da gelmemişse mesajı direkt isim kabul et
@@ -833,6 +844,52 @@ serve(async (req) => {
       }
     }
 
+    // === EMAIL TOPLAMA ADIMI ===
+    if (newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_email") {
+      const _lang = newContext.language || "tr";
+
+      if (context.collectionStep !== "waiting_for_email") {
+        // İlk kez bu adıma girdi → email iste (deterministik)
+        const _askMsgs: Record<string, string> = {
+          tr: `Son olarak, email adresinizi paylaşmak ister misiniz? 📧 Özel fırsatları iletebiliriz.\n\n(Atlamak için \"geç\" yazabilirsiniz)`,
+          en: `Finally, would you like to share your email? 📧 We can send you special offers.\n\n(Type "skip" to pass)`,
+          de: `Möchten Sie zum Schluss Ihre E-Mail teilen? 📧 Wir senden Ihnen exklusive Angebote.\n\n(\"überspringen\" zum Auslassen)`,
+          ru: `Напоследок, хотите поделиться email? 📧 Будем отправлять специальные предложения.\n\n(Напишите \"пропустить\" для пропуска)`,
+          ar: `أخيراً، هل ترغب في مشاركة بريدك الإلكتروني؟ 📧 سنرسل لك عروضاً خاصة.\n\n(اكتب \"تخطي\" للتجاوز)`,
+          fr: `Enfin, souhaitez-vous partager votre email? 📧 Nous vous enverrons des offres spéciales.\n\n(Tapez \"passer\" pour ignorer)`,
+          es: `Por último, ¿desea compartir su email? 📧 Le enviaremos ofertas especiales.\n\n(Escriba \"saltar\" para omitir)`,
+        };
+        const _askReply = _askMsgs[_lang] || _askMsgs.tr;
+        await saveConversationAtomic(supabase, userPhone, agency.id, _askReply, newContext);
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, _askReply);
+        supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Kullanıcı zaten email adımındaydı ve @ içeriyordu ama format geçersiz
+      if (message.includes("@") && !extractEmail(message)) {
+        const _invalidMsgs: Record<string, string> = {
+          tr: "Bu email adresi geçersiz görünüyor. Doğru formatta tekrar girer misiniz? (örn: ad@domain.com)",
+          en: "This email address looks invalid. Could you enter it in the correct format? (e.g., name@domain.com)",
+          de: "Diese E-Mail-Adresse scheint ungültig. Bitte im richtigen Format eingeben. (z.B. name@domain.com)",
+          ru: "Этот email адрес выглядит неверным. Введите в правильном формате. (напр. name@domain.com)",
+          ar: "هذا البريد الإلكتروني يبدو غير صحيح. هل يمكنك إدخاله بالشكل الصحيح؟ (مثال: name@domain.com)",
+          fr: "Cette adresse email semble invalide. Veuillez l'entrer au bon format. (ex: nom@domain.com)",
+          es: "Esta dirección de email parece inválida. ¿Puede ingresarla en el formato correcto? (ej: nombre@domain.com)",
+        };
+        const _invalidReply = _invalidMsgs[_lang] || _invalidMsgs.tr;
+        await saveConversationAtomic(supabase, userPhone, agency.id, _invalidReply, newContext);
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, _invalidReply);
+        supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Geçerli email veya skip: FSM extractedInfo'yu işledi, normal akış devam eder
+    }
+
     // === KOTA KONTROLÜ ===
     if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED") {
       const { dateId, paxAdult } = newContext.reservationInfo;
@@ -987,6 +1044,7 @@ serve(async (req) => {
           p_pax: totalPax,
           p_agency_id: agency.id,
           p_source_channel: "WHATSAPP",
+          p_email: newContext.reservationInfo.email || null,
         }
       );
 
@@ -1135,14 +1193,15 @@ serve(async (req) => {
       const paxText = paxTextMap[newContext.language] || paxTextMap.en;
 
       const _tourTitle = selectedTourForSummary?.title || newContext.reservationInfo.tourTitle || "-";
+      const _emailLine = newContext.reservationInfo.email ? `\n• *Email:* ${newContext.reservationInfo.email}` : "";
       const completionMessages: Record<string, string> = {
-        tr: `Bilgilerinizi aldım ${fullName || ""}, çok teşekkür ederim! 😊\n*${_tourTitle}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${_tourTitle}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
-        en: `Thank you ${fullName || ""}! 😊\nYour pre-registration for *${_tourTitle}* is completed.\n\n*Reservation Summary:*\n• *Tour:* ${_tourTitle}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Phone:* ${reservationPhone || "-"}\n\nOur team will contact you shortly for final booking and payment details.`,
-        de: `Vielen Dank, ${fullName || ""}! 😊\nIhre Voranmeldung für *${_tourTitle}* wurde erfolgreich abgeschlossen.\n\n*Buchungsübersicht:*\n• *Tour:* ${_tourTitle}\n• *Datum:* ${formattedDate}\n• *Personen:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}\n\nUnser Team wird sich in Kürze mit Ihnen in Verbindung setzen, um die Buchung und Zahlungsdetails zu besprechen.`,
-        ru: `Спасибо, ${fullName || ""}! 😊\nВаша предварительная запись на тур *${_tourTitle}* успешно оформлена.\n\n*Сводка бронирования:*\n• *Тур:* ${_tourTitle}\n• *Дата:* ${formattedDate}\n• *Количество:* ${paxText}\n• *Имя:* ${fullName || "-"}\n• *Телефон:* ${reservationPhone || "-"}\n\nНаши специалисты свяжутся с вами в ближайшее время для подтверждения бронирования и уточнения деталей оплаты.`,
-        ar: `شكراً لك، ${fullName || ""}! 😊\nتم تسجيل طلبك المسبق لجولة *${_tourTitle}* بنجاح.\n\n*ملخص الحجز:*\n• *الجولة:* ${_tourTitle}\n• *التاريخ:* ${formattedDate}\n• *عدد الأشخاص:* ${paxText}\n• *الاسم:* ${fullName || "-"}\n• *الهاتف:* ${reservationPhone || "-"}\n\nسيتواصل معك فريقنا في أقرب وقت لتأكيد الحجز وتفاصيل الدفع.`,
-        fr: `Merci, ${fullName || ""}! 😊\nVotre pré-inscription pour *${_tourTitle}* a été réalisée avec succès.\n\n*Récapitulatif de réservation :*\n• *Circuit :* ${_tourTitle}\n• *Date :* ${formattedDate}\n• *Personnes :* ${paxText}\n• *Nom :* ${fullName || "-"}\n• *Téléphone :* ${reservationPhone || "-"}\n\nNotre équipe vous contactera très prochainement pour finaliser la réservation et les modalités de paiement.`,
-        es: `¡Gracias, ${fullName || ""}! 😊\nSu registro previo para *${_tourTitle}* ha sido completado con éxito.\n\n*Resumen de reserva:*\n• *Tour:* ${_tourTitle}\n• *Fecha:* ${formattedDate}\n• *Personas:* ${paxText}\n• *Nombre:* ${fullName || "-"}\n• *Teléfono:* ${reservationPhone || "-"}\n\nNuestro equipo se pondrá en contacto con usted muy pronto para finalizar la reserva y los detalles de pago.`,
+        tr: `Bilgilerinizi aldım ${fullName || ""}, çok teşekkür ederim! 😊\n*${_tourTitle}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${_tourTitle}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}${_emailLine}\n\nKesin rezervasyon ve ödeme detayları için ekip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
+        en: `Thank you ${fullName || ""}! 😊\nYour pre-registration for *${_tourTitle}* is completed.\n\n*Reservation Summary:*\n• *Tour:* ${_tourTitle}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Phone:* ${reservationPhone || "-"}${_emailLine}\n\nOur team will contact you shortly for final booking and payment details.`,
+        de: `Vielen Dank, ${fullName || ""}! 😊\nIhre Voranmeldung für *${_tourTitle}* wurde erfolgreich abgeschlossen.\n\n*Buchungsübersicht:*\n• *Tour:* ${_tourTitle}\n• *Datum:* ${formattedDate}\n• *Personen:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}${_emailLine}\n\nUnser Team wird sich in Kürze mit Ihnen in Verbindung setzen, um die Buchung und Zahlungsdetails zu besprechen.`,
+        ru: `Спасибо, ${fullName || ""}! 😊\nВаша предварительная запись на тур *${_tourTitle}* успешно оформлена.\n\n*Сводка бронирования:*\n• *Тур:* ${_tourTitle}\n• *Дата:* ${formattedDate}\n• *Количество:* ${paxText}\n• *Имя:* ${fullName || "-"}\n• *Телефон:* ${reservationPhone || "-"}${_emailLine}\n\nНаши специалисты свяжутся с вами в ближайшее время для подтверждения бронирования и уточнения деталей оплаты.`,
+        ar: `شكراً لك، ${fullName || ""}! 😊\nتم تسجيل طلبك المسبق لجولة *${_tourTitle}* بنجاح.\n\n*ملخص الحجز:*\n• *الجولة:* ${_tourTitle}\n• *التاريخ:* ${formattedDate}\n• *عدد الأشخاص:* ${paxText}\n• *الاسم:* ${fullName || "-"}\n• *الهاتف:* ${reservationPhone || "-"}${_emailLine}\n\nسيتواصل معك فريقنا في أقرب وقت لتأكيد الحجز وتفاصيل الدفع.`,
+        fr: `Merci, ${fullName || ""}! 😊\nVotre pré-inscription pour *${_tourTitle}* a été réalisée avec succès.\n\n*Récapitulatif de réservation :*\n• *Circuit :* ${_tourTitle}\n• *Date :* ${formattedDate}\n• *Personnes :* ${paxText}\n• *Nom :* ${fullName || "-"}\n• *Téléphone :* ${reservationPhone || "-"}${_emailLine}\n\nNotre équipe vous contactera très prochainement pour finaliser la réservation et les modalités de paiement.`,
+        es: `¡Gracias, ${fullName || ""}! 😊\nSu registro previo para *${_tourTitle}* ha sido completado con éxito.\n\n*Resumen de reserva:*\n• *Tour:* ${_tourTitle}\n• *Fecha:* ${formattedDate}\n• *Personas:* ${paxText}\n• *Nombre:* ${fullName || "-"}\n• *Teléfono:* ${reservationPhone || "-"}${_emailLine}\n\nNuestro equipo se pondrá en contacto con usted muy pronto para finalizar la reserva y los detalles de pago.`,
       };
 
       let finalReply = completionMessages[newContext.language] || completionMessages.tr;
@@ -1204,6 +1263,8 @@ serve(async (req) => {
               full_name: fullName,
               total_bookings: 1,
               last_interaction_at: new Date().toISOString(),
+              email: newContext.reservationInfo.email || null,
+              email_opted_in: !!newContext.reservationInfo.email,
             },
             { onConflict: "phone,agency_id" },
           );

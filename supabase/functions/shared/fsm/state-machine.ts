@@ -118,20 +118,25 @@ function mergeReservationInfo(
   return merged;
 }
 
-function determineCollectionStep(info: ReservationInfo): InfoCollectionStep {
+function determineCollectionStep(info: ReservationInfo, collectEmail?: boolean): InfoCollectionStep {
   // dateId ZORUNLU: selectedDate parse edilmiş olabilir ama DB'de eşleşen tur tarihi yoksa
   // dateId null kalır ve bu "tarih hâlâ eksik" anlamına gelir.
   if (!info.dateId) return "waiting_for_date";
   if (!info.paxAdult) return "waiting_for_pax";
   if (!info.fullName) return "waiting_for_name";
   if (!info.phone) return "waiting_for_phone";
+  // Email opsiyonel: acente collect_email=true ise, ya email alındı ya da skip edildi olmalı
+  if (collectEmail && !info.email && !info.emailSkipped) return "waiting_for_email";
   return "ready_for_confirmation";
 }
 
-function isAllInfoCollected(info: ReservationInfo): boolean {
+function isAllInfoCollected(info: ReservationInfo, collectEmail?: boolean): boolean {
   // dateId ZORUNLU: DB'de gerçekten mevcut bir tarih olduğunu garantiler.
   // selectedDate tek başına yeterli değil — DB'de eşleşmeyen tarih rezervasyon kaydında başarısız olur.
-  return !!(info.tourId && info.dateId && info.paxAdult && info.fullName && info.phone);
+  const basicDone = !!(info.tourId && info.dateId && info.paxAdult && info.fullName && info.phone);
+  if (!basicDone) return false;
+  if (collectEmail) return !!(info.email || info.emailSkipped);
+  return true;
 }
 
 /**
@@ -322,7 +327,7 @@ const transitions: StateTransition[] = [
         currentTour: tour,
         viewedTours: input.selectedTour ? [...ctx.viewedTours, input.selectedTour.id] : ctx.viewedTours,
         reservationInfo: merged,
-        collectionStep: determineCollectionStep(merged),
+        collectionStep: determineCollectionStep(merged, ctx.collectEmail),
       };
     },
   },
@@ -368,7 +373,7 @@ const transitions: StateTransition[] = [
       return {
         ...ctx,
         reservationInfo: merged,
-        collectionStep: determineCollectionStep(merged),
+        collectionStep: determineCollectionStep(merged, ctx.collectEmail),
         isNewReservation: false,
       };
     },
@@ -424,7 +429,7 @@ const transitions: StateTransition[] = [
       // Bilgi sorusu gelirse her zaman bu geçişe gir (bilgileri koru)
       if (isInfo) return true;
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
-      return !isAllInfoCollected(merged);
+      return !isAllInfoCollected(merged, ctx.collectEmail);
     },
     action: (ctx, input) => {
       const isInfo = isInformationalMessage(input.userMessage, input.detectedIntent);
@@ -433,7 +438,7 @@ const transitions: StateTransition[] = [
       return {
         ...ctx,
         reservationInfo: merged,
-        collectionStep: determineCollectionStep(merged),
+        collectionStep: determineCollectionStep(merged, ctx.collectEmail),
       };
     },
   },
@@ -451,7 +456,7 @@ const transitions: StateTransition[] = [
       const validIntents = ["provide_info", "confirm", "confirm_reservation", "general"];
       if (!validIntents.includes(input.detectedIntent)) return false;
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
-      return isAllInfoCollected(merged);
+      return isAllInfoCollected(merged, ctx.collectEmail);
     },
     action: (ctx, input) => ({
       ...ctx,
@@ -635,7 +640,7 @@ export function processTransition(context: ConversationContext, input: Processin
       return {
         ...context,
         reservationInfo: merged,
-        collectionStep: determineCollectionStep(merged),
+        collectionStep: determineCollectionStep(merged, ctx.collectEmail),
         lastUserMessage: input.userMessage,
         messageCount: context.messageCount + 1,
         lastUpdated: new Date().toISOString(),

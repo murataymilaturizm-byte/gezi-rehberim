@@ -537,3 +537,36 @@ function formatName(name: string): string {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(" ");
 }
+
+// ─── Email çıkarımı ───────────────────────────────────────────────────────────
+
+const _EMAIL_RE = /\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/i;
+
+/**
+ * Mesajdan ilk geçerli email adresini çıkarır.
+ * Bulunamazsa null döner.
+ */
+export function extractEmail(text: string): string | null {
+  const m = text.match(_EMAIL_RE);
+  return m ? m[0].toLowerCase() : null;
+}
+
+// 7 dilde "geçmek istiyorum" kalıpları
+const _SKIP_EMAIL: Record<string, RegExp> = {
+  tr: /\b(ge[çc]|atla|istemiyorum|yok|bo[şs]\s*ver|atlayım|geçelim|emailim\s*yok|mailim\s*yok|e-?posta\s*yok)\b/i,
+  en: /\b(skip|pass|no\s*email|don'?t\s*have|no\s*thanks|later|never\s*mind|without)\b/i,
+  de: /\b(überspringen|nein|kein|später|habe\s*keine|egal|ohne)\b/i,
+  ru: /\b(пропустить|нет|без|пропусти|не\s*надо|пропускаю)\b/i,
+  ar: /\b(تخطي|لا|ليس\s*لدي|تجاوز|تخطى)\b/i,
+  fr: /\b(passer|non|sans|plus\s*tard|pas\s*d'email|ignorer)\b/i,
+  es: /\b(saltar|no|sin|más\s*tarde|no\s*tengo|omitir)\b/i,
+};
+
+/**
+ * Kullanıcı email adımını atlamak istiyorsa true döner.
+ * "geç", "skip", "pass", "no thanks" vb. kalıpları yakalar.
+ */
+export function isEmailSkipRequest(text: string, language: string): boolean {
+  const pattern = _SKIP_EMAIL[language] || _SKIP_EMAIL.en;
+  return pattern.test(text);
+}

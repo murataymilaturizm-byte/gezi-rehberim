@@ -732,7 +732,11 @@
         "loadError": "Les paramètres WhatsApp n'ont pas pu être chargés",
         "phoneUpdateError": "Le numéro WhatsApp n'a pas pu être enregistré",
         "styleUpdateSuccess": "Style de conversation mis à jour",
-        "styleUpdateError": "Le style de conversation n'a pas pu être mis à jour"
+        "styleUpdateError": "Le style de conversation n'a pas pu être mis à jour",
+        "emailCollectionTitle": "Collecte d'Emails",
+        "emailCollectionDesc": "Collectez les emails lors de la réservation. Optionnel — les clients peuvent ignorer.",
+        "emailCollectionToggle": "Demander l'email lors de la réservation",
+        "emailCollectionSaved": "Paramètre email mis à jour"
       },
       "conversations": {
         "title": "Conversations WhatsApp",
