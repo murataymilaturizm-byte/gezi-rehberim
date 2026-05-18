@@ -38,9 +38,13 @@ export interface ChannelAdapter {
    */
   getCompletionTemplateAddendum?(params: {
     tourId: string;
+    tourTitle: string;
     dateId: string;
+    formattedDate: string;
     fullName: string;
     pax: number;
+    totalPrice: number;
+    currency: string;
     language: string;
     agencyId: string;
   }): Promise<string | null>;

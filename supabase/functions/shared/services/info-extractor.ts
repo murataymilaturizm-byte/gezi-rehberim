@@ -17,12 +17,81 @@ function normalizeNluField(value: any): string[] {
   return [];
 }
 
-/** DD.MM.YYYY / DD/MM/YYYY / DD-MM-YYYY → YYYY-MM-DD. Zaten ISO ise dokunma. */
+/** 7 dil ay ismi → ay numarası */
+const TEXT_MONTHS: Record<string, number> = {
+  // TR
+  ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6,
+  temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12,
+  // EN
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  // DE
+  januar: 1, februar: 2, märz: 3, mai: 5, juni: 6, juli: 7,
+  oktober: 10, dezember: 12,
+  // FR
+  janvier: 1, "février": 2, mars: 3, avril: 4, juin: 6, juillet: 7,
+  "août": 8, septembre: 9, octobre: 10, novembre: 11, "décembre": 12,
+  // ES
+  enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
+  julio: 7, agosto: 8, septiembre: 9, noviembre: 11, diciembre: 12,
+  // RU
+  "январь": 1, "февраль": 2,
+  "март": 3, "апрель": 4,
+  "май": 5, "июнь": 6, "июль": 7,
+  "август": 8, "сентябрь": 9,
+  "октябрь": 10, "ноябрь": 11,
+  "декабрь": 12,
+  // AR
+  "يناير": 1, "فبراير": 2,
+  "مارس": 3, "أبريل": 4,
+  "مايو": 5, "يونيو": 6,
+  "يوليو": 7, "أغسطس": 8,
+  "سبتمبر": 9, "أكتوبر": 10,
+  "نوفمبر": 11, "ديسمبر": 12,
+};
+
+const TEXT_MONTH_REGEX = new RegExp(
+  `(\\d{1,2})\\s+(${Object.keys(TEXT_MONTHS).join("|")})(?:\\s+(\\d{4}))?`,
+  "i",
+);
+
+/**
+ * Tarih string'ini YYYY-MM-DD formatına normalize eder.
+ * Desteklenen formatlar:
+ * - YYYY-MM-DD (zaten ISO — dokunma)
+ * - DD.MM.YYYY / DD/MM/YYYY / DD-MM-YYYY
+ * - "20 aralık", "20 december", "20 марта" vb. (7 dil metin ay)
+ * - Tanınmayan format → olduğu gibi döner
+ */
 export function normalizeDateString(dateStr: string): string {
   if (!dateStr) return dateStr;
-  const m = dateStr.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
-  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
-  return dateStr;
+  const cleaned = dateStr.toLowerCase().trim();
+
+  // 1. Zaten ISO formatı
+  if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) return cleaned;
+
+  // 2. DD.MM.YYYY / DD/MM/YYYY / DD-MM-YYYY
+  const dmy = dateStr.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+  if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
+
+  // 3. "20 aralık", "20 december 2026", "20 декабря" vb.
+  const textMatch = cleaned.match(TEXT_MONTH_REGEX);
+  if (textMatch) {
+    const day = parseInt(textMatch[1]);
+    const monthName = textMatch[2].toLowerCase();
+    const month = TEXT_MONTHS[monthName];
+    if (month && day >= 1 && day <= 31) {
+      let year = textMatch[3] ? parseInt(textMatch[3]) : new Date().getFullYear();
+      if (!textMatch[3]) {
+        // Yıl belirtilmemişse: tarih geçmişse bir sonraki yılı kullan
+        const candidate = new Date(year, month - 1, day);
+        if (candidate < new Date()) year++;
+      }
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+  }
+
+  return dateStr; // Tanınmayan format — olduğu gibi bırak
 }
 
 /**

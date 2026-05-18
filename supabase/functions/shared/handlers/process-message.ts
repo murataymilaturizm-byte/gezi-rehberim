@@ -501,11 +501,18 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
     // Kanal-spesifik template eki (WhatsApp message_templates)
     if (adapter.getCompletionTemplateAddendum) {
+      const _depPct2 = (typeof paymentInstructions === "object" && paymentInstructions?.deposit_percentage) || 30;
+      const _tPrice = adultCount * (selectedDateFull?.price_adult || 0) +
+        childCount * (selectedDateFull?.price_child || selectedDateFull?.price_adult || 0);
       const tmpl = await adapter.getCompletionTemplateAddendum({
         tourId: tourId || "",
+        tourTitle: tourTitle,
         dateId: dateId || "",
+        formattedDate: formattedDate,
         fullName: fullName || "",
         pax: adultCount + childCount,
+        totalPrice: _tPrice,
+        currency: selectedTourFull?.currency || "TRY",
         language: newContext.language,
         agencyId: agency.id,
       }).catch(() => null);
