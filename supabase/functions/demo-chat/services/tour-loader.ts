@@ -3,27 +3,21 @@
 import { CONFIG } from "../config/constants.ts";
 import { logger } from "../utils/logger.ts";
 import { pickLocalized } from "../../shared/fsm/localization.ts";
+import { getCachedTours } from "../../shared/utils/tour-cache.ts";
 import type { Tour } from "../types/index.ts";
 
 /**
- * Load tours from database for demo agency
+ * Tur listesini cache'den veya DB'den yükler.
+ * getCachedTours: tur yapısını 10 dk cache'ler, quota'yı her seferinde taze çeker.
+ * enrichToursWithSoldPax artık çağrılmaz — quota zaten burada yenileniyor.
  */
 export async function loadToursFromDatabase(supabase: any): Promise<Tour[]> {
-  const { data: dbTours, error } = await supabase
-    .from("tours")
-    .select(`
-      *,
-      dates:tour_dates(*)
-    `)
-    .eq("agency_id", CONFIG.DEMO_AGENCY_ID)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    logger.error("Error loading tours", error);
+  try {
+    return await getCachedTours(supabase, CONFIG.DEMO_AGENCY_ID);
+  } catch (err) {
+    logger.error("Error loading tours", err);
     throw new Error("Failed to load tours");
   }
-
-  return dbTours || [];
 }
 
 /**

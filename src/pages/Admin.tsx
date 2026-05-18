@@ -457,18 +457,24 @@ const Admin = () => {
 
   const handleDeleteTour = async () => {
     try {
+      const tourToDelete = tours.find(t => t.id === deleteDialog.id);
       const { error } = await supabase
         .from("tours")
         .delete()
         .eq("id", deleteDialog.id);
-      
+
       if (error) throw error;
+
+      // Tour cache'ini temizle — chatbot yeni listeyi görsün
+      if (tourToDelete?.agency_id) {
+        supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId: tourToDelete.agency_id } }).catch(() => {});
+      }
 
       toast({
         title: t("admin.toast.success"),
         description: t("admin.tours.deleteSuccess"),
       });
-      
+
       loadData();
       setDeleteDialog({ open: false, id: null, type: null });
     } catch (error) {
@@ -483,18 +489,24 @@ const Admin = () => {
 
   const handleDeleteDate = async () => {
     try {
+      const tourOfDate = tours.find(t => t.tour_dates?.some((d: any) => d.id === deleteDialog.id));
       const { error } = await supabase
         .from("tour_dates")
         .delete()
         .eq("id", deleteDialog.id);
-      
+
       if (error) throw error;
+
+      // Tour cache'ini temizle — chatbot güncel tarihleri görsün
+      if (tourOfDate?.agency_id) {
+        supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId: tourOfDate.agency_id } }).catch(() => {});
+      }
 
       toast({
         title: t("admin.toast.success"),
         description: t("admin.date.deleteSuccess"),
       });
-      
+
       loadData();
       setDeleteDialog({ open: false, id: null, type: null });
     } catch (error) {

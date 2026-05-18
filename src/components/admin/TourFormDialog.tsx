@@ -204,9 +204,12 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         hotel_stars: formData.hotel_stars || null,
       };
 
+      let _agencyIdForCache: string | undefined;
+
       if (tour) {
         const { error } = await supabase.from("tours").update(payload).eq("id", tour.id);
         if (error) throw error;
+        _agencyIdForCache = (tour as any).agency_id;
         toast({ title: t("admin.toast.success"), description: t("admin.tourForm.updateSuccess") });
       } else {
         const { data: { user } } = await supabase.auth.getUser();
@@ -221,7 +224,13 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
 
         const { error } = await supabase.from("tours").insert({ ...payload, agency_id: agencyData.id });
         if (error) throw error;
+        _agencyIdForCache = agencyData.id;
         toast({ title: t("admin.toast.success"), description: t("admin.tourForm.addSuccess") });
+      }
+
+      // Tour cache'ini temizle — chatbot hemen yeni turu görsün
+      if (_agencyIdForCache) {
+        supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId: _agencyIdForCache } }).catch(() => {});
       }
 
       onSuccess();

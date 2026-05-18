@@ -19,6 +19,7 @@ import { validateAIResponse } from "../shared/fsm/response-validator.ts";
 import type { ConversationContext, ProcessingInput, ConversationTone } from "../shared/fsm/types.ts";
 import { getExchangeRatesOnce } from "../shared/utils/exchange-rates.ts";
 import { formatPriceSync, CONVERSION_NOTES } from "../shared/utils/currency-display.ts";
+import { getCachedTours } from "../shared/utils/tour-cache.ts";
 
 import {
   extractMetaWebhookData,
@@ -342,12 +343,8 @@ serve(async (req) => {
       console.log("⏭️ User profiles disabled for plan:", agency.plan_type);
     }
 
-    const { data: dbTours } = await supabase
-      .from("tours")
-      .select(`*, dates:tour_dates(id, departure_date, return_date, price_adult, price_child, quota)`)
-      .eq("agency_id", agency.id);
-
-    const toursRaw = dbTours || [];
+    // getCachedTours: tur yapısını 10 dakika cache'ler, quota'yı her seferinde taze çeker
+    const toursRaw = await getCachedTours(supabase, agency.id);
     console.log(`📦 Tours: ${toursRaw.length}`);
 
     // Preload'dan gelen context kullan; RPC başarısız olduysa DB'den al
@@ -416,22 +413,7 @@ serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // Enrich tour dates with sold pax for accurate quota display
-    const allDateIds = toursRaw.flatMap((t: any) => (t.dates || []).map((d: any) => d.id));
-    let soldMap: Record<string, number> = {};
-    if (allDateIds.length > 0) {
-      const { data: regData } = await supabase
-        .from("registrations")
-        .select("tour_date_id, pax")
-        .in("tour_date_id", allDateIds)
-        .neq("status", "CANCELLED");
-      if (regData) {
-        for (const reg of regData) {
-          soldMap[reg.tour_date_id] = (soldMap[reg.tour_date_id] || 0) + reg.pax;
-        }
-      }
-    }
-
+    // getCachedTours'dan gelen toursRaw'da sold_pax + remaining_quota zaten var
     const tours = toursRaw
       .map((tour: any) => ({
         id: tour.id,
@@ -447,11 +429,6 @@ serve(async (req) => {
         konaklama: tour.konaklama,
         ulasim: tour.ulasim,
         dates: (tour.dates || [])
-          .map((d: any) => ({
-            ...d,
-            sold_pax: soldMap[d.id] || 0,
-            remaining_quota: d.quota - (soldMap[d.id] || 0),
-          }))
           .filter((d: any) => d.departure_date >= today && d.remaining_quota > 0),
       }))
       .filter((tour: any) => tour.dates.length > 0);

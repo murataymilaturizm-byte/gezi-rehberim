@@ -7,7 +7,7 @@ import { logger } from "../utils/logger.ts";
 import { DEMO_TOURS, DEMO_PAYMENT_INSTRUCTIONS } from "../config/demo-tours.ts";
 
 import { loadOrCreateContext, buildNLUContext } from "../services/context-manager.ts";
-import { loadToursFromDatabase, getLocalizedTours, enrichToursWithSoldPax } from "../services/tour-loader.ts";
+import { loadToursFromDatabase, getLocalizedTours, enrichToursWithSoldPax } from "../services/tour-loader.ts"; // enrichToursWithSoldPax: DEMO_TOURS fallback için tutuldu
 import { findMatchingTours, findTourById } from "../services/tour-matching.ts";
 import { extractReservationInfo } from "../services/info-extractor.ts";
 import { getAgencyData, extractPaymentInfoText } from "../services/agency-cache.ts";
@@ -209,8 +209,9 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     if (!rawTours || rawTours.length === 0) {
       logger.info("No tours in DB, using DEMO_TOURS");
       rawTours = DEMO_TOURS as any[];
+      // DEMO_TOURS'ta gerçek quota yok; enrichToursWithSoldPax gerekmez
     }
-    rawTours = await enrichToursWithSoldPax(supabase, rawTours);
+    // loadToursFromDatabase artık getCachedTours kullanıyor — quota zaten yenilendi
 
     // Context
     const { context } = contextResult;
