@@ -4,6 +4,17 @@
 export { findTourById } from "../fsm/tour-matcher.ts";
 import { matchTour } from "../fsm/tour-matcher.ts";
 
+/**
+ * NLU field'ını string listesine normalize eder.
+ * NLU bazen string, bazen string[], bazen null/undefined döndürebilir.
+ */
+function normalizeNluField(value: any): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter((v) => typeof v === "string" && v.trim().length > 0);
+  if (typeof value === "string" && value.trim().length > 0) return [value];
+  return [];
+}
+
 export interface TourMatchResult {
   selectedTour: any | null;
   multipleMatches: any[];
@@ -44,17 +55,20 @@ export function findMatchingTours(
     "reservation_intent",
   ];
 
-  const shouldMatch = tourIntents.includes(intent) || nluEntities?.tour_name || nluEntities?.destination;
+  const tourNames = normalizeNluField(nluEntities?.tour_name);
+  const destinations = normalizeNluField(nluEntities?.destination);
+
+  const shouldMatch = tourIntents.includes(intent) || tourNames.length > 0 || destinations.length > 0;
   if (!shouldMatch) return { selectedTour: null, multipleMatches: [] };
 
   let selectedTour: any = null;
   let multipleMatches: any[] = [];
 
-  // Strateji 1: NLU tour_name
-  if (nluEntities?.tour_name) {
-    const matches = availableTours.filter((t) =>
-      t.title.toLowerCase().includes(nluEntities.tour_name.toLowerCase()),
-    );
+  // Strateji 1: NLU tour_name (her olası isim için dene)
+  for (const name of tourNames) {
+    if (selectedTour || multipleMatches.length > 0) break;
+    const lower = name.toLowerCase();
+    const matches = availableTours.filter((t) => t.title.toLowerCase().includes(lower));
     if (matches.length === 1) {
       selectedTour = createTourRef(matches[0]);
     } else if (matches.length > 1) {
@@ -63,11 +77,11 @@ export function findMatchingTours(
   }
 
   // Strateji 2: NLU destination
-  if (!selectedTour && multipleMatches.length === 0 && nluEntities?.destination) {
+  for (const dest of destinations) {
+    if (selectedTour || multipleMatches.length > 0) break;
+    const lower = dest.toLowerCase();
     const matches = availableTours.filter(
-      (t) =>
-        t.destination.toLowerCase().includes(nluEntities.destination.toLowerCase()) ||
-        t.title.toLowerCase().includes(nluEntities.destination.toLowerCase()),
+      (t) => t.destination.toLowerCase().includes(lower) || t.title.toLowerCase().includes(lower),
     );
     if (matches.length === 1) {
       selectedTour = createTourRef(matches[0]);

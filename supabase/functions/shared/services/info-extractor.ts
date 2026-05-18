@@ -6,6 +6,17 @@ import { extractNameAndPhone, extractEmail, isEmailSkipRequest } from "../fsm/si
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
 
+/**
+ * NLU field'ını string listesine normalize eder.
+ * NLU bazen string, bazen string[], bazen null/undefined döndürebilir.
+ */
+function normalizeNluField(value: any): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter((v) => typeof v === "string" && v.trim().length > 0);
+  if (typeof value === "string" && value.trim().length > 0) return [value];
+  return [];
+}
+
 /** DD.MM.YYYY / DD/MM/YYYY / DD-MM-YYYY → YYYY-MM-DD. Zaten ISO ise dokunma. */
 export function normalizeDateString(dateStr: string): string {
   if (!dateStr) return dateStr;
@@ -80,9 +91,10 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // === Blok 1: NLU updates (en yüksek öncelik) ===
   const extractedInfo: Record<string, any> = { ...(nluResult.updates || {}) };
 
-  // === Blok 2: NLU entities.dates → normalize ===
-  if (nluResult.entities?.dates?.length > 0) {
-    extractedInfo.selectedDate = normalizeDateString(nluResult.entities.dates[0]);
+  // === Blok 2: NLU entities.dates → normalize (string veya string[] olabilir) ===
+  const nluDates = normalizeNluField(nluResult.entities?.dates);
+  if (nluDates.length > 0) {
+    extractedInfo.selectedDate = normalizeDateString(nluDates[0]);
   }
 
   // === Blok 3: simple-extractor (isim, telefon, paxAdult, tarih) ===
