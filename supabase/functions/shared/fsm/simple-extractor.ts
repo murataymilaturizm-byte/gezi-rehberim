@@ -265,30 +265,27 @@ export function extractNameAndPhone(
   }
 
   const monthNames: Record<string, number> = {
-    ocak: 1,
-    şubat: 2,
-    mart: 3,
-    nisan: 4,
-    mayıs: 5,
-    haziran: 6,
-    temmuz: 7,
-    ağustos: 8,
-    eylül: 9,
-    ekim: 10,
-    kasım: 11,
-    aralık: 12,
-    january: 1,
-    february: 2,
-    march: 3,
-    april: 4,
-    may: 5,
-    june: 6,
-    july: 7,
-    august: 8,
-    september: 9,
-    october: 10,
-    november: 11,
-    december: 12,
+    // TR
+    ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6,
+    temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12,
+    // EN
+    january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+    july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+    // DE
+    januar: 1, februar: 2, märz: 3, maerz: 3, mai: 5, juni: 6,
+    juli: 7, oktober: 10, dezember: 12,
+    // FR
+    janvier: 1, février: 2, fevrier: 2, mars: 3, avril: 4, juin: 6,
+    juillet: 7, août: 8, aout: 8, septembre: 9, octobre: 10, novembre: 11, décembre: 12, decembre: 12,
+    // ES
+    enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
+    julio: 7, agosto: 8, septiembre: 9, noviembre: 11, diciembre: 12,
+    // RU
+    январь: 1, февраль: 2, апрель: 4, июнь: 6,
+    июль: 7, август: 8, сентябрь: 9, октябрь: 10, ноябрь: 11, декабрь: 12,
+    // AR
+    يناير: 1, فبراير: 2, مارس: 3, أبريل: 4, مايو: 5, يونيو: 6,
+    يوليو: 7, أغسطس: 8, سبتمبر: 9, أكتوبر: 10, نوفمبر: 11, ديسمبر: 12,
   };
 
   // "ayın 22'si", "ayın 22si", "22'sinde", "ayın 22" gibi ifadeler
@@ -319,10 +316,10 @@ export function extractNameAndPhone(
     }
   }
 
-  // "22 aralık", "15 ocak" standart format
+  // "22 aralık", "15 ocak", "15. März", "15 septembre" standart format (7 dil)
   if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
     const monthPatternMatch = lower.match(
-      /(\d{1,2})\s*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)/i,
+      /(\d{1,2})[\s.]+(?:de\s+|du\s+|d[e']\s+)?(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|märz|maerz|mai|juni|juli|oktober|dezember|janvier|f[ée]vrier|mars|avril|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|noviembre|diciembre|январь|февраль|апрель|август|сентябрь|октябрь|ноябрь|декабрь|يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/i,
     );
     if (monthPatternMatch) {
       const day = parseInt(monthPatternMatch[1]);

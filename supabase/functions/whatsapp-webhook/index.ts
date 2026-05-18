@@ -1425,8 +1425,19 @@ Never say anything about the previous booking.`;
           : `\n\n👤 RETURNING CUSTOMER: Name is "${returningUserName}". Only greet by name. NEVER mention previous reservations. Start fresh.`;
     }
 
+    // === KENDİ KENDİNE ÇELİŞME ÖNLEME ===
+    // Bot bu konuşmada tur listesi gösterdiyse asla "tur yok" dememeli.
+    // "başka tarih var mı", "diğer turlar" soruları mevcut tur bağlamında yanıtlanmalı.
+    let antiContradictionPrompt = "";
+    if (tours.length > 0 && newContext.stage !== "GREETING") {
+      const _tourTitles = tours.slice(0, 5).map((t: any) => t.title).join(", ");
+      antiContradictionPrompt = newContext.language === "tr"
+        ? `\n\n🔄 TUR TUTARLILIK KURALI: Sistemde aktif turlar var (${_tourTitles}). Kullanıcı "başka tarih var mı", "diğer tarihler", "başka seçenek" vb. sorarsa ASLA "tur yok" ya da "tarih bulunamadı" deme. Hangi tura ait tarih sorduğunu netleştir veya mevcut tarihleri göster.`
+        : `\n\n🔄 TOUR CONSISTENCY RULE: Active tours exist (${_tourTitles}). If user asks "any other dates?", "other options", etc., NEVER say "no tours" or "no dates found". Clarify which tour they mean or show available dates.`;
+    }
+
     const systemPrompt =
-      buildSystemPrompt(promptContext) + tourSwitchWarning + completedStagePrompt + returningUserPrompt;
+      buildSystemPrompt(promptContext) + tourSwitchWarning + completedStagePrompt + returningUserPrompt + antiContradictionPrompt;
 
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not configured");

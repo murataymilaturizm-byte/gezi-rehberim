@@ -640,7 +640,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     }
 
     // System prompt
-    const systemPrompt = buildCompleteSystemPrompt({
+    let systemPrompt = buildCompleteSystemPrompt({
       context: newContext,
       previousContext,
       availableTours,
@@ -649,6 +649,14 @@ export async function handleChatRequest(req: Request): Promise<Response> {
       multipleTourMatches: multipleMatches,
       selectedTour,
     });
+
+    // Kendi kendine çelişme önleme: turlar mevcutsa "tur yok" demesini engelle
+    if (availableTours.length > 0 && newContext.stage !== "GREETING") {
+      const _titles = availableTours.slice(0, 5).map((t) => t.title).join(", ");
+      systemPrompt += language === "tr"
+        ? `\n\n🔄 TUR TUTARLILIK KURALI: Sistemde aktif turlar var (${_titles}). Kullanıcı "başka tarih var mı", "diğer tarihler" vb. sorarsa ASLA "tur yok" ya da "tarih bulunamadı" deme. Hangi tura ait tarih sorduğunu netleştir veya mevcut tarihleri göster.`
+        : `\n\n🔄 TOUR CONSISTENCY RULE: Active tours exist (${_titles}). If user asks "any other dates?" or similar, NEVER say "no tours" or "no dates found". Clarify which tour or show available dates.`;
+    }
 
     const conversationHistory = await getConversationHistory(supabase, sessionId);
 
