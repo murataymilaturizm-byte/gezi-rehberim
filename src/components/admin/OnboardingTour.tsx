@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Joyride, STATUS } from "react-joyride";
+import { Joyride, STATUS, EVENTS } from "react-joyride";
 import type { CallBackProps, Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -121,10 +121,14 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     }
   }, [shouldRun]);
 
-  // Uncontrolled mode — Joyride yönetir, biz sadece bitişi yakalarız
+  // Uncontrolled mode — TOUR_END veya FINISHED/SKIPPED her türlü kapanışı yakalar
   const handleCallback = (data: CallBackProps) => {
-    const { status } = data;
-    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+    const { status, type } = data;
+    const ended =
+      type === EVENTS.TOUR_END ||
+      status === STATUS.FINISHED ||
+      status === STATUS.SKIPPED;
+    if (ended) {
       setRunTour(false);
       localStorage.setItem(STORAGE_KEY(agencyId), "1");
       onComplete();
