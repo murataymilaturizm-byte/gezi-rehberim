@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Joyride, STATUS, EVENTS, ACTIONS } from "react-joyride";
+import { Joyride, STATUS } from "react-joyride";
 import type { CallBackProps, Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -20,7 +20,6 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [runTour, setRunTour] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
   const isDark = getCurrentTheme() === "dark";
 
   const desktopSteps: Step[] = [
@@ -122,14 +121,11 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     }
   }, [shouldRun]);
 
+  // Uncontrolled mode — Joyride yönetir, biz sadece bitişi yakalarız
   const handleCallback = (data: CallBackProps) => {
-    const { status, type, action, index } = data;
-
-    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
-    } else if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+    const { status } = data;
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       setRunTour(false);
-      setStepIndex(0);
       localStorage.setItem(STORAGE_KEY(agencyId), "1");
       onComplete();
     }
@@ -143,13 +139,13 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
   return (
     <Joyride
       steps={steps}
-      stepIndex={stepIndex}
       run={runTour}
       continuous
       showSkipButton
       showProgress
       scrollToFirstStep
-      disableScrolling={false}
+      disableOverlayClose
+      spotlightClicks
       callback={handleCallback}
       locale={{
         back: t("onboardingTour.back"),
