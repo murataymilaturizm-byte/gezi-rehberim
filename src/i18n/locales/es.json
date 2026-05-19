@@ -1517,6 +1517,18 @@
     "success": "¡{{count}} tours agregados con éxito!",
     "errors": { "parseError": "No se pudo leer el archivo Excel", "noValid": "No hay tours válidos para importar", "importFailed": "La importación falló", "titleRequired": "El nombre del tour es obligatorio", "destinationRequired": "El destino es obligatorio" }
   },
+  "onboardingTour": {
+    "welcome": { "title": "🎉 ¡Bienvenido a Turzz AI!", "content": "Déjenos darle un recorrido rápido por el panel. Solo 30 segundos. Puede omitir en cualquier momento." },
+    "dashboard": { "title": "📊 Panel de control", "content": "Siga aquí las reservas diarias, ingresos y estadísticas del chatbot." },
+    "agencyInfo": { "title": "🏢 Información de la agencia", "content": "Empiece aquí: dirección, horarios, información de pago. Se muestra a sus clientes en WhatsApp." },
+    "tours": { "title": "🗺️ Sus tours", "content": "Administre tours, agregue fechas, importe desde Excel o duplique un tour existente." },
+    "whatsapp": { "title": "💬 Integración WhatsApp", "content": "Conecte su cuenta de WhatsApp Business. El bot funciona 24/7, puede tomar el control de cualquier conversación." },
+    "notifications": { "title": "🔔 Notificaciones", "content": "Alertas instantáneas para nuevas reservas. Haga clic para ver detalles." },
+    "commandPalette": { "title": "⚡ Acceso rápido", "content": "Ctrl+K (Mac: Cmd+K) para navegar instantáneamente o iniciar acciones." },
+    "mobileMenu": { "title": "☰ Menú", "content": "Toque aquí para acceder a todas las secciones del panel." },
+    "complete": { "title": "🚀 ¡Listo!", "content": "Explore el panel. Para ayuda: Ctrl+K → 'Reiniciar tour'." },
+    "next": "Siguiente →", "back": "← Atrás", "skip": "Omitir", "close": "Cerrar", "finish": "¡Vamos! 🚀"
+  },
   "commandPalette": {
     "placeholder": "Buscar páginas o comandos...",
     "empty": "Sin resultados",
@@ -1531,7 +1543,8 @@
     "darkMode": "Modo oscuro",
     "lightMode": "Modo claro",
     "gettingStarted": "Guía de inicio",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "restartTour": "Reiniciar tour de presentación"
   },
   "gettingStarted": {
     "title": "¿Cómo Empezar?",

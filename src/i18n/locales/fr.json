@@ -1691,6 +1691,18 @@
     "success": "{{count}} circuits ajoutés avec succès!",
     "errors": { "parseError": "Impossible de lire le fichier Excel", "noValid": "Aucun circuit valide à importer", "importFailed": "L'importation a échoué", "titleRequired": "Le nom du circuit est requis", "destinationRequired": "La destination est requise" }
   },
+  "onboardingTour": {
+    "welcome": { "title": "🎉 Bienvenue sur Turzz AI !", "content": "Laissez-nous vous faire une visite rapide du panneau. 30 secondes seulement. Vous pouvez ignorer à tout moment." },
+    "dashboard": { "title": "📊 Tableau de bord", "content": "Suivez les réservations quotidiennes, les revenus et les statistiques du chatbot ici." },
+    "agencyInfo": { "title": "🏢 Informations agence", "content": "Commencez ici : adresse, horaires, informations de paiement. Affiché à vos clients sur WhatsApp." },
+    "tours": { "title": "🗺️ Vos circuits", "content": "Gérez les circuits, ajoutez des dates, importez depuis Excel ou dupliquez un circuit existant." },
+    "whatsapp": { "title": "💬 Intégration WhatsApp", "content": "Connectez votre compte WhatsApp Business. Le bot fonctionne 24h/24, vous pouvez reprendre n'importe quelle conversation." },
+    "notifications": { "title": "🔔 Notifications", "content": "Alertes instantanées pour les nouvelles réservations. Cliquez pour voir les détails." },
+    "commandPalette": { "title": "⚡ Accès rapide", "content": "Ctrl+K (Mac: Cmd+K) pour naviguer instantanément ou lancer des actions." },
+    "mobileMenu": { "title": "☰ Menu", "content": "Appuyez ici pour accéder à toutes les sections du panneau." },
+    "complete": { "title": "🚀 Vous êtes prêt !", "content": "Explorez le panneau. Pour de l'aide : Ctrl+K → 'Relancer la visite'." },
+    "next": "Suivant →", "back": "← Retour", "skip": "Ignorer", "close": "Fermer", "finish": "C'est parti ! 🚀"
+  },
   "commandPalette": {
     "placeholder": "Rechercher des pages ou commandes...",
     "empty": "Aucun résultat",
@@ -1705,7 +1717,8 @@
     "darkMode": "Mode sombre",
     "lightMode": "Mode clair",
     "gettingStarted": "Guide de démarrage",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "restartTour": "Relancer la visite guidée"
   },
   "gettingStarted": {
     "title": "Comment Commencer?",

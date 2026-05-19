@@ -106,20 +106,20 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   };
 
   const generalItems = [
-    { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
+    { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard"), dataTour: "sidebar-dashboard" },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
     { id: "language_currencies", icon: CreditCard, label: t("admin.tabs.languageCurrencies") },
     { id: "history", icon: History, label: t("admin.tabs.history") },
   ];
 
   const tourItems = [
-    { id: "tours", icon: Plane, label: t("admin.tabs.tours") },
+    { id: "tours", icon: Plane, label: t("admin.tabs.tours"), dataTour: "sidebar-tours" },
     { id: "registrations", icon: Calendar, label: t("admin.tabs.registrations") },
   ];
 
   const communicationItems = [
-    { id: "whatsapp", icon: MessageSquare, label: "WhatsApp" },
-    { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo") },
+    { id: "whatsapp", icon: MessageSquare, label: "WhatsApp", dataTour: "sidebar-whatsapp" },
+    { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo"), dataTour: "sidebar-agency-info" },
     { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
     ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: User, label: t("admin.tabs.userProfiles") }] : []),
@@ -150,7 +150,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     { id: "whatsapp_test", icon: MessageSquare, label: t("admin.tabs.whatsappTest") },
   ];
 
-  const renderMenuItems = (items: typeof generalItems) => (
+  const renderMenuItems = (items: (typeof generalItems[0] & { dataTour?: string })[]) => (
     <SidebarMenu>
       {items.map((item) => {
         const isActive = activeTab === item.id;
@@ -164,6 +164,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
               ? "bg-primary/10 text-primary font-medium border-l-2 border-primary rounded-l-none"
               : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
             }`}
+            data-tour={item.dataTour}
           >
             <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
             {!isCollapsed && <span className="text-sm">{item.label}</span>}

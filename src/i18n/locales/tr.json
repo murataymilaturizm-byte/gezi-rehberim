@@ -1696,6 +1696,49 @@
       "destinationRequired": "Destinasyon zorunludur"
     }
   },
+  "onboardingTour": {
+    "welcome": {
+      "title": "🎉 Turzz AI'a Hoş Geldiniz!",
+      "content": "Size hızlı bir panel turu yapalım. Sadece 30 saniye sürecek. İstediğiniz zaman Atla diyebilirsiniz."
+    },
+    "dashboard": {
+      "title": "📊 Dashboard",
+      "content": "Günlük rezervasyonlarınızı, gelirinizi ve chatbot istatistiklerini buradan takip edin."
+    },
+    "agencyInfo": {
+      "title": "🏢 Acente Bilgileri",
+      "content": "İlk olarak buradan başlayın: adres, çalışma saatleri, ödeme bilgileri. Müşterilerinize WhatsApp'ta gösterilecek."
+    },
+    "tours": {
+      "title": "🗺️ Turlarınız",
+      "content": "Turları yönetin, tarih ekleyin, Excel'den toplu içe aktarın veya mevcut turu kopyalayın."
+    },
+    "whatsapp": {
+      "title": "💬 WhatsApp Entegrasyonu",
+      "content": "WhatsApp Business hesabınızı bağlayın. AI botunuz 7/24 çalışır, isterseniz konuşmayı devralabilirsiniz."
+    },
+    "notifications": {
+      "title": "🔔 Bildirimler",
+      "content": "Yeni rezervasyon geldiğinde anında bildirim alın. Tıklayarak detaylara geçin."
+    },
+    "commandPalette": {
+      "title": "⚡ Hızlı Erişim",
+      "content": "Ctrl+K (Mac: Cmd+K) ile anında sayfa değiştirin veya aksiyon başlatın. Power user özelliği!"
+    },
+    "mobileMenu": {
+      "title": "☰ Menü",
+      "content": "Buraya tıklayarak tüm panel bölümlerine ulaşabilirsiniz."
+    },
+    "complete": {
+      "title": "🚀 Hazırsınız!",
+      "content": "Artık paneli keşfedebilirsiniz. Yardım için Ctrl+K → 'Tanıtım Turunu Tekrar Başlat' seçeneğini kullanın."
+    },
+    "next": "İleri →",
+    "back": "← Geri",
+    "skip": "Atla",
+    "close": "Kapat",
+    "finish": "Başla! 🚀"
+  },
   "commandPalette": {
     "placeholder": "Sayfa veya komut ara...",
     "empty": "Sonuç bulunamadı",
@@ -1710,7 +1753,8 @@
     "darkMode": "Koyu Mod",
     "lightMode": "Açık Mod",
     "gettingStarted": "Başlangıç Kılavuzu",
-    "logout": "Çıkış Yap"
+    "logout": "Çıkış Yap",
+    "restartTour": "Tanıtım Turunu Tekrar Başlat"
   },
   "gettingStarted": {
     "title": "Nasıl Başlarım?",

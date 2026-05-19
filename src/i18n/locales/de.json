@@ -1487,6 +1487,18 @@
     "success": "{{count}} Touren erfolgreich hinzugefügt!",
     "errors": { "parseError": "Excel-Datei konnte nicht gelesen werden", "noValid": "Keine gültigen Touren zum Importieren", "importFailed": "Import fehlgeschlagen", "titleRequired": "Tourname ist erforderlich", "destinationRequired": "Reiseziel ist erforderlich" }
   },
+  "onboardingTour": {
+    "welcome": { "title": "🎉 Willkommen bei Turzz AI!", "content": "Wir geben Ihnen eine schnelle Panel-Tour. Dauert nur 30 Sekunden. Sie können jederzeit überspringen." },
+    "dashboard": { "title": "📊 Dashboard", "content": "Verfolgen Sie hier tägliche Buchungen, Einnahmen und Chatbot-Statistiken." },
+    "agencyInfo": { "title": "🏢 Agenturinformationen", "content": "Beginnen Sie hier: Adresse, Öffnungszeiten, Zahlungsinformationen. Wird Ihren Kunden auf WhatsApp angezeigt." },
+    "tours": { "title": "🗺️ Ihre Touren", "content": "Touren verwalten, Daten hinzufügen, Massenimport aus Excel oder bestehende Tour duplizieren." },
+    "whatsapp": { "title": "💬 WhatsApp-Integration", "content": "WhatsApp Business Konto verbinden. KI-Bot läuft 24/7, Sie können jedes Gespräch übernehmen." },
+    "notifications": { "title": "🔔 Benachrichtigungen", "content": "Sofortige Benachrichtigungen bei neuen Buchungen. Klicken Sie für Details." },
+    "commandPalette": { "title": "⚡ Schnellzugriff", "content": "Strg+K (Mac: Cmd+K) zum sofortigen Navigieren oder Aktionen starten." },
+    "mobileMenu": { "title": "☰ Menü", "content": "Tippen Sie hier, um alle Panel-Bereiche zu öffnen." },
+    "complete": { "title": "🚀 Bereit!", "content": "Erkunden Sie das Panel. Für Hilfe: Strg+K → 'Tour neu starten'." },
+    "next": "Weiter →", "back": "← Zurück", "skip": "Überspringen", "close": "Schließen", "finish": "Los geht's! 🚀"
+  },
   "commandPalette": {
     "placeholder": "Seiten oder Befehle suchen...",
     "empty": "Keine Ergebnisse",
@@ -1501,7 +1513,8 @@
     "darkMode": "Dunkelmodus",
     "lightMode": "Hellmodus",
     "gettingStarted": "Erste-Schritte-Anleitung",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "restartTour": "Einführungstour neu starten"
   },
   "gettingStarted": {
     "title": "Wie Fange Ich An?",

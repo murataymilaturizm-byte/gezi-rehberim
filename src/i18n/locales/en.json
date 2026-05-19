@@ -1510,6 +1510,18 @@
     "success": "{{count}} tours added successfully!",
     "errors": { "parseError": "Failed to read Excel file", "noValid": "No valid tours to import", "importFailed": "Import failed", "titleRequired": "Tour title is required", "destinationRequired": "Destination is required" }
   },
+  "onboardingTour": {
+    "welcome": { "title": "🎉 Welcome to Turzz AI!", "content": "Let us give you a quick panel tour. It only takes 30 seconds. You can skip at any time." },
+    "dashboard": { "title": "📊 Dashboard", "content": "Track daily reservations, revenue, and chatbot statistics here." },
+    "agencyInfo": { "title": "🏢 Agency Info", "content": "Start here: address, working hours, payment info. Displayed to your customers on WhatsApp." },
+    "tours": { "title": "🗺️ Your Tours", "content": "Manage tours, add dates, bulk import from Excel, or duplicate an existing tour." },
+    "whatsapp": { "title": "💬 WhatsApp Integration", "content": "Connect your WhatsApp Business account. AI bot runs 24/7, you can take over any conversation." },
+    "notifications": { "title": "🔔 Notifications", "content": "Get instant alerts for new reservations. Click to view details." },
+    "commandPalette": { "title": "⚡ Quick Access", "content": "Press Ctrl+K (Mac: Cmd+K) to instantly navigate or trigger actions. A power user feature!" },
+    "mobileMenu": { "title": "☰ Menu", "content": "Tap here to access all panel sections." },
+    "complete": { "title": "🚀 You're Ready!", "content": "Explore the panel. For help, press Ctrl+K → 'Restart Tour'." },
+    "next": "Next →", "back": "← Back", "skip": "Skip", "close": "Close", "finish": "Let's Go! 🚀"
+  },
   "commandPalette": {
     "placeholder": "Search pages or commands...",
     "empty": "No results found",
@@ -1524,7 +1536,8 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "gettingStarted": "Getting Started Guide",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "restartTour": "Restart Onboarding Tour"
   },
   "gettingStarted": {
     "title": "How to Get Started?",

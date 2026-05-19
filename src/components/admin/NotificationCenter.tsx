@@ -142,7 +142,7 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-8 w-8">
+        <Button variant="ghost" size="icon" className="relative h-8 w-8" data-tour="header-notifications">
           {unreadCount > 0 ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
           {unreadCount > 0 && (
             <Badge

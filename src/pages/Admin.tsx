@@ -65,6 +65,7 @@ import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { BulkTourImport } from "@/components/admin/BulkTourImport";
 import { NotificationCenter } from "@/components/admin/NotificationCenter";
 import { CommandPalette } from "@/components/admin/CommandPalette";
+import { OnboardingTour, tourStorageKey } from "@/components/admin/OnboardingTour";
 import { FileSpreadsheet } from "lucide-react";
 
 const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test"] as const;
@@ -176,6 +177,9 @@ const Admin = () => {
 
   // Bulk import state
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
+
+  // Onboarding tour state
+  const [shouldRunTour, setShouldRunTour] = useState(false);
 
   // Plan features state
   const [planType, setPlanType] = useState<string>('starter');
@@ -343,6 +347,17 @@ const Admin = () => {
   useEffect(() => {
     if (userAgencyId && !isSuperAdmin) {
       loadAgencyPlan();
+    }
+  }, [userAgencyId, isSuperAdmin]);
+
+  // Trigger onboarding tour for first-time users
+  useEffect(() => {
+    if (!userAgencyId || isSuperAdmin) return;
+    const done = localStorage.getItem(tourStorageKey(userAgencyId));
+    if (!done) {
+      // Small delay so sidebar is rendered
+      const t = setTimeout(() => setShouldRunTour(true), 600);
+      return () => clearTimeout(t);
     }
   }, [userAgencyId, isSuperAdmin]);
 
@@ -622,7 +637,7 @@ const Admin = () => {
           {/* Header */}
           <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b shadow-sm">
             <div className="flex h-12 sm:h-14 items-center gap-2 px-3 sm:px-4">
-              <SidebarTrigger className="-ml-1 shrink-0" />
+              <SidebarTrigger className="-ml-1 shrink-0" data-tour="mobile-menu-button" />
               
               <div className="flex flex-1 items-center justify-between min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
@@ -659,6 +674,13 @@ const Admin = () => {
                       onBulkImport={() => setBulkImportOpen(true)}
                       onManualReg={() => setManualRegistrationDialogOpen(true)}
                       onLogout={handleLogout}
+                      agencyId={userAgencyId ?? undefined}
+                      onRestartTour={() => {
+                        if (userAgencyId) {
+                          localStorage.removeItem(tourStorageKey(userAgencyId));
+                          setShouldRunTour(true);
+                        }
+                      }}
                     />
                   )}
                   {!isSuperAdmin && userAgencyId && (
@@ -950,6 +972,14 @@ const Admin = () => {
           open={bulkImportOpen}
           onClose={() => setBulkImportOpen(false)}
           onSuccess={loadData}
+        />
+      )}
+
+      {userAgencyId && (
+        <OnboardingTour
+          agencyId={userAgencyId}
+          shouldRun={shouldRunTour}
+          onComplete={() => setShouldRunTour(false)}
         />
       )}
 
