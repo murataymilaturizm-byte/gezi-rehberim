@@ -1566,6 +1566,39 @@
     "passwordsNotMatch": "Şifreler eşleşmiyor",
     "passwordResetSuccess": "Şifreniz başarıyla güncellendi"
   },
+  "conversations": {
+    "emptyTitle": "Henüz konuşma yok",
+    "emptyDescription": "WhatsApp üzerinden müşterilerinizle yapılan konuşmalar burada görünecek.",
+    "botActiveTitle": "Bot aktif",
+    "botActiveDescription": "AI otomatik cevap veriyor",
+    "botPausedTitle": "Bot duraklatıldı",
+    "botPausedDescription": "Müşteriye sadece siz cevap veriyorsunuz (24 saat)",
+    "pauseBot": "Bot'u duraklat",
+    "resumeBot": "Bot'u devreye al",
+    "botPaused": "Bot 24 saat süreyle duraklatıldı",
+    "botResumed": "Bot tekrar aktif",
+    "replyPlaceholder": "Mesajınızı yazın...",
+    "replyHint": "Ctrl+Enter ile gönder",
+    "sendReply": "Gönder",
+    "sending": "Gönderiliyor...",
+    "sendSuccess": "Mesaj gönderildi!",
+    "sendError": "Mesaj gönderilemedi",
+    "outside24h": "Müşteri son 24 saat içinde mesaj atmadı. Şablon mesaj kullanın."
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "markAllRead": "Tümünü okundu işaretle",
+    "empty": "Henüz bildirim yok",
+    "newReservation": "Yeni Rezervasyon",
+    "aiFailure": "AI cevap veremedi",
+    "cancellation": "İptal talebi",
+    "message": "Yeni mesaj"
+  },
+  "tours": {
+    "emptyTitle": "Henüz tur eklenmemiş",
+    "emptyDescription": "İlk turunuzu ekleyerek başlayın. Tek tur ekleyebilir veya Excel'den toplu yükleyebilirsiniz.",
+    "addFirstTour": "İlk Turu Ekle"
+  },
   "weekdays": {
     "monday": "Pazartesi",
     "tuesday": "Salı",

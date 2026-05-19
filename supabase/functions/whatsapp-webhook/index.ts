@@ -345,6 +345,30 @@ serve(async (req) => {
       }
     }
 
+    // === BOT PAUSE CHECK ===
+    // Acente panelden "takeover" yaptıysa bot cevap vermez.
+    {
+      const { data: profile } = await supabase
+        .from("whatsapp_user_profiles")
+        .select("bot_paused, bot_paused_until")
+        .eq("phone", userPhone)
+        .eq("agency_id", agency.id)
+        .maybeSingle();
+
+      if (profile?.bot_paused) {
+        const pausedUntil = profile.bot_paused_until ? new Date(profile.bot_paused_until) : null;
+        if (!pausedUntil || pausedUntil > new Date()) {
+          console.log(`[whatsapp-webhook] Bot paused for ${userPhone} — saving message, skipping AI`);
+          await supabase.from("whatsapp_conversations").insert({
+            phone: userPhone, role: "user", content: rawMessage, agency_id: agency.id,
+          });
+          return new Response(JSON.stringify({ success: true, skipped: "bot_paused" }), {
+            status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+    }
+
     // === CORE MESSAGE PROCESSING ===
     const adapter = new WhatsAppAdapter(
       supabase, agency, userPhone,

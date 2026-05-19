@@ -1,0 +1,126 @@
+// send-manual-message — Panelden manuel WhatsApp mesajı gönderme
+// POST { agencyId, phone, message, pauseBot? }
+// WhatsApp 24-saatlik mesajlaşma penceresi kontrolü yapılır.
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const { agencyId, phone, message, pauseBot = false } = await req.json();
+
+    if (!agencyId || !phone || !message) {
+      return new Response(JSON.stringify({ error: "Missing required fields: agencyId, phone, message" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Agency Meta credentials
+    const { data: agency, error: agErr } = await supabase
+      .from("agencies")
+      .select("meta_phone_number_id, meta_access_token, name")
+      .eq("id", agencyId)
+      .single();
+
+    if (agErr || !agency?.meta_access_token || !agency?.meta_phone_number_id) {
+      return new Response(JSON.stringify({ error: "WhatsApp credentials not configured for this agency" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // WhatsApp 24-hour session check
+    const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const normalizedPhone = phone.replace("whatsapp:", "").replace("+", "").trim();
+
+    const { data: recentMsgs } = await supabase
+      .from("whatsapp_conversations")
+      .select("id")
+      .eq("phone", normalizedPhone)
+      .eq("agency_id", agencyId)
+      .eq("role", "user")
+      .gte("created_at", windowStart)
+      .limit(1);
+
+    if (!recentMsgs || recentMsgs.length === 0) {
+      return new Response(
+        JSON.stringify({
+          error: "CUSTOMER_OUTSIDE_24H_WINDOW",
+          message: "Müşteri son 24 saat içinde mesaj atmadı. WhatsApp politikası gereği şablon mesaj kullanın.",
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Send via Meta Cloud API
+    const metaRes = await fetch(
+      `https://graph.facebook.com/v18.0/${agency.meta_phone_number_id}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${agency.meta_access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: normalizedPhone,
+          type: "text",
+          text: { body: message },
+        }),
+      }
+    );
+
+    if (!metaRes.ok) {
+      const errText = await metaRes.text();
+      console.error("[send-manual-message] Meta API error:", errText);
+      throw new Error(`Meta API error ${metaRes.status}: ${errText}`);
+    }
+
+    const metaResult = await metaRes.json();
+    const metaMessageId = metaResult.messages?.[0]?.id;
+
+    // Save to conversation history (role = 'assistant' so it shows on right side)
+    await supabase.from("whatsapp_conversations").insert({
+      phone: normalizedPhone,
+      agency_id: agencyId,
+      role: "assistant",
+      content: message,
+      metadata: { sent_by: "agency_manual", meta_message_id: metaMessageId },
+    });
+
+    // Bot pause (if requested)
+    if (pauseBot) {
+      const pausedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      await (supabase as any)
+        .from("whatsapp_user_profiles")
+        .upsert(
+          { phone: normalizedPhone, agency_id: agencyId, bot_paused: true, bot_paused_until: pausedUntil },
+          { onConflict: "phone,agency_id" }
+        );
+      console.log(`[send-manual-message] Bot paused for ${normalizedPhone} until ${pausedUntil}`);
+    }
+
+    console.log(`[send-manual-message] Sent to ${normalizedPhone}, msgId=${metaMessageId}`);
+
+    return new Response(
+      JSON.stringify({ success: true, messageId: metaMessageId }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err: any) {
+    console.error("[send-manual-message] Error:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

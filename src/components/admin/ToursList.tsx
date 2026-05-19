@@ -28,6 +28,8 @@ import { TOUR_CATEGORIES } from "@/components/admin/tour-form/TourCategories";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { BulkDateGenerator } from "./BulkDateGenerator";
+import { EmptyState } from "@/components/EmptyState";
+import { MapPin } from "lucide-react";
 
 interface Tour {
   id: string;
@@ -156,9 +158,12 @@ export const ToursList = ({
 
   if (tours.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        {t("admin.tours.noTours")}
-      </div>
+      <EmptyState
+        icon={MapPin}
+        title={t("tours.emptyTitle")}
+        description={t("tours.emptyDescription")}
+        action={onAddTour ? { label: t("tours.addFirstTour"), onClick: onAddTour } : undefined}
+      />
     );
   }
 

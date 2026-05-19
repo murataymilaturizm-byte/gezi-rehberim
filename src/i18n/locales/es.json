@@ -1434,6 +1434,28 @@
     "passwordsNotMatch": "Las contraseñas no coinciden",
     "passwordResetSuccess": "Su contraseña se ha actualizado con éxito"
   },
+  "conversations": {
+    "emptyTitle": "Aún no hay conversaciones",
+    "emptyDescription": "Las conversaciones con sus clientes vía WhatsApp aparecerán aquí.",
+    "botActiveTitle": "Bot activo", "botActiveDescription": "La IA responde automáticamente",
+    "botPausedTitle": "Bot pausado", "botPausedDescription": "Solo usted responde al cliente (24 horas)",
+    "pauseBot": "Pausar bot", "resumeBot": "Reanudar bot",
+    "botPaused": "Bot pausado por 24 horas", "botResumed": "Bot reanudado",
+    "replyPlaceholder": "Escriba su mensaje...", "replyHint": "Ctrl+Enter para enviar",
+    "sendReply": "Enviar", "sending": "Enviando...",
+    "sendSuccess": "¡Mensaje enviado!", "sendError": "Error al enviar el mensaje",
+    "outside24h": "El cliente no ha escrito en 24h. Use un mensaje de plantilla."
+  },
+  "notifications": {
+    "title": "Notificaciones", "markAllRead": "Marcar todo como leído",
+    "empty": "Aún no hay notificaciones", "newReservation": "Nueva reserva",
+    "aiFailure": "La IA no pudo responder", "cancellation": "Solicitud de cancelación", "message": "Nuevo mensaje"
+  },
+  "tours": {
+    "emptyTitle": "Aún no se han agregado tours",
+    "emptyDescription": "Comience agregando su primer tour.",
+    "addFirstTour": "Agregar primer tour"
+  },
   "weekdays": {
     "monday": "Lunes", "tuesday": "Martes", "wednesday": "Miércoles",
     "thursday": "Jueves", "friday": "Viernes", "saturday": "Sábado", "sunday": "Domingo"

@@ -63,6 +63,7 @@ import { WhatsAppBusinessManagement } from "@/components/WhatsAppBusinessManagem
 import { QuotaWarningBanner } from "@/components/QuotaWarningBanner";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { BulkTourImport } from "@/components/admin/BulkTourImport";
+import { NotificationCenter } from "@/components/admin/NotificationCenter";
 import { FileSpreadsheet } from "lucide-react";
 
 const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test"] as const;
@@ -660,6 +661,9 @@ const Admin = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  {!isSuperAdmin && userAgencyId && (
+                    <NotificationCenter agencyId={userAgencyId} onTabChange={handleTabChange} />
+                  )}
                   <LanguageSelector />
                   <ThemeToggle />
                   <Button variant="ghost" size="sm" asChild className="hidden lg:inline-flex">

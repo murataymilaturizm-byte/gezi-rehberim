@@ -1416,6 +1416,39 @@
     "passwordsNotMatch": "Passwords do not match",
     "passwordResetSuccess": "Your password has been successfully updated"
   },
+  "conversations": {
+    "emptyTitle": "No conversations yet",
+    "emptyDescription": "Conversations with your customers via WhatsApp will appear here.",
+    "botActiveTitle": "Bot active",
+    "botActiveDescription": "AI is responding automatically",
+    "botPausedTitle": "Bot paused",
+    "botPausedDescription": "Only you are responding to this customer (24 hours)",
+    "pauseBot": "Pause Bot",
+    "resumeBot": "Resume Bot",
+    "botPaused": "Bot paused for 24 hours",
+    "botResumed": "Bot resumed",
+    "replyPlaceholder": "Type your message...",
+    "replyHint": "Ctrl+Enter to send",
+    "sendReply": "Send",
+    "sending": "Sending...",
+    "sendSuccess": "Message sent!",
+    "sendError": "Failed to send message",
+    "outside24h": "Customer hasn't messaged in 24 hours. Use a template message."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications yet",
+    "newReservation": "New Reservation",
+    "aiFailure": "AI failed to respond",
+    "cancellation": "Cancellation request",
+    "message": "New message"
+  },
+  "tours": {
+    "emptyTitle": "No tours added yet",
+    "emptyDescription": "Start by adding your first tour. You can add one tour or bulk import from Excel.",
+    "addFirstTour": "Add First Tour"
+  },
   "weekdays": {
     "monday": "Monday", "tuesday": "Tuesday", "wednesday": "Wednesday",
     "thursday": "Thursday", "friday": "Friday", "saturday": "Saturday", "sunday": "Sunday"

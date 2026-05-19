@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -12,13 +14,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, User, Bot, Building2, ScrollText, Languages, Search, Settings, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MessageCircle, User, Bot, Building2, ScrollText, Languages,
+  Search, Settings, ChevronLeft, ChevronRight, Send, PauseCircle,
+  PlayCircle, Loader2,
+} from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { WhatsAppLogs } from "./WhatsAppLogs";
 import { LanguageStats } from "./LanguageStats";
 import { WhatsAppSettings } from "./WhatsAppSettings";
+import { EmptyState } from "./EmptyState";
 
 const PAGE_SIZE = 25;
 
@@ -47,6 +56,10 @@ interface WhatsAppConversationsProps {
 
 export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversationsProps) => {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const [conversations, setConversations] = useState<ConversationGroup[]>([]);
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,10 +68,28 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Mobile: list vs. detail view toggle
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
+
+  // Agency id for non-superadmin (for reply feature)
+  const [agencyId, setAgencyId] = useState<string>("");
+
+  // Reply / takeover state
+  const [replyMessage, setReplyMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [botPaused, setBotPaused] = useState(false);
+  const [botPauseLoading, setBotPauseLoading] = useState(false);
+
   useEffect(() => {
     if (isSuperAdmin) {
       loadAgencies();
     } else {
+      // Fetch current user's agencyId
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        supabase.from("agencies").select("id").eq("user_id", user.id).single()
+          .then(({ data }) => { if (data?.id) setAgencyId(data.id); });
+      });
       loadConversations();
     }
   }, [isSuperAdmin]);
@@ -68,6 +99,32 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
       loadConversations();
     }
   }, [selectedAgencyId]);
+
+  // Fetch bot pause status when selected phone changes
+  useEffect(() => {
+    if (!selectedPhone || (!agencyId && !selectedAgencyId)) return;
+    const aid = isSuperAdmin ? selectedAgencyId : agencyId;
+    if (!aid) return;
+    (supabase as any)
+      .from("whatsapp_user_profiles")
+      .select("bot_paused, bot_paused_until")
+      .eq("phone", selectedPhone.replace("whatsapp:", "").replace("+", "").trim())
+      .eq("agency_id", aid)
+      .maybeSingle()
+      .then(({ data }: any) => {
+        if (data) {
+          const pausedUntil = data.bot_paused_until ? new Date(data.bot_paused_until) : null;
+          setBotPaused(!!data.bot_paused && (!pausedUntil || pausedUntil > new Date()));
+        } else {
+          setBotPaused(false);
+        }
+      });
+  }, [selectedPhone, agencyId, selectedAgencyId, isSuperAdmin]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [selectedPhone, conversations]);
 
   const loadAgencies = async () => {
     try {
@@ -137,6 +194,66 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSendReply = async () => {
+    if (!replyMessage.trim() || !selectedPhone) return;
+    const aid = isSuperAdmin ? selectedAgencyId : agencyId;
+    if (!aid) return;
+
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-manual-message", {
+        body: { agencyId: aid, phone: selectedPhone.replace("whatsapp:", "").replace("+", "").trim(), message: replyMessage.trim() },
+      });
+      if (error) throw error;
+      toast({ title: t("conversations.sendSuccess") });
+      setReplyMessage("");
+      await loadConversations();
+    } catch (err: any) {
+      const msg = err.message?.includes("OUTSIDE_24H")
+        ? t("conversations.outside24h")
+        : err.message || t("conversations.sendError");
+      toast({ title: t("common.error"), description: msg, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleToggleBotPause = async () => {
+    if (!selectedPhone) return;
+    const aid = isSuperAdmin ? selectedAgencyId : agencyId;
+    if (!aid) return;
+
+    setBotPauseLoading(true);
+    try {
+      const normalizedPhone = selectedPhone.replace("whatsapp:", "").replace("+", "").trim();
+      const newPaused = !botPaused;
+      await (supabase as any)
+        .from("whatsapp_user_profiles")
+        .upsert(
+          {
+            phone: normalizedPhone,
+            agency_id: aid,
+            bot_paused: newPaused,
+            bot_paused_until: newPaused
+              ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+              : null,
+          },
+          { onConflict: "phone,agency_id" }
+        );
+      setBotPaused(newPaused);
+      toast({ title: newPaused ? t("conversations.botPaused") : t("conversations.botResumed") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setBotPauseLoading(false);
+    }
+  };
+
+  const handleSelectConversation = (phone: string) => {
+    setSelectedPhone(phone);
+    if (isMobile) setMobileView("detail");
   };
 
   const selectedConversation = conversations.find(c => c.phone === selectedPhone);
@@ -220,13 +337,15 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
           <CardContent>
             <TabsContent value="conversations" className="mt-0">
               {conversations.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  {t("admin.whatsapp.conversations.selectConversation")}
-                </div>
+                <EmptyState
+                  icon={MessageCircle}
+                  title={t("conversations.emptyTitle")}
+                  description={t("conversations.emptyDescription")}
+                />
               ) : (
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="flex gap-4 min-h-[600px]">
                   {/* Sol taraf - Konuşma listesi */}
-                  <div className="md:col-span-1 space-y-2">
+                  <div className={`${isMobile && mobileView === "detail" ? "hidden" : "flex"} flex-col w-full md:w-1/3 space-y-2`}>
                     {/* Search */}
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -245,7 +364,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                       {paginatedConversations.map((conv) => (
                         <button
                           key={conv.phone}
-                          onClick={() => setSelectedPhone(conv.phone)}
+                          onClick={() => handleSelectConversation(conv.phone)}
                           className={`w-full text-left p-3 rounded-lg border transition-colors ${
                             selectedPhone === conv.phone
                               ? "bg-primary/10 border-primary"
@@ -293,61 +412,119 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                     )}
                   </div>
 
-                  {/* Sağ taraf - Mesajlar */}
-                  <div className="md:col-span-2">
+                  {/* Sağ taraf - Mesajlar + Reply */}
+                  <div className={`${isMobile && mobileView === "list" ? "hidden" : "flex"} flex-col flex-1 min-h-0`}>
+                    {/* Mobile back button */}
+                    {isMobile && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="self-start mb-2"
+                        onClick={() => setMobileView("list")}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        {t("admin.back")}
+                      </Button>
+                    )}
+
                     {selectedConversation ? (
-                      <ScrollArea className="h-[600px] pr-4">
-                        <div className="space-y-3">
-                          {selectedConversation.messages.map((msg) => (
-                            <div
-                              key={msg.id}
-                              className={`flex gap-3 ${
-                                msg.role === "user" ? "justify-start" : "justify-end"
-                              }`}
-                            >
+                      <>
+                        <ScrollArea className="h-[440px] pr-4">
+                          <div className="space-y-3 pb-2">
+                            {selectedConversation.messages.map((msg) => (
                               <div
-                                className={`flex gap-2 max-w-[80%] ${
-                                  msg.role === "user" ? "flex-row" : "flex-row-reverse"
-                                }`}
+                                key={msg.id}
+                                className={`flex gap-3 ${msg.role === "user" ? "justify-start" : "justify-end"}`}
                               >
-                                <div
-                                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                    msg.role === "user"
-                                      ? "bg-secondary"
-                                      : "bg-primary"
-                                  }`}
-                                >
-                                  {msg.role === "user" ? (
-                                    <User className="h-4 w-4 text-secondary-foreground" />
-                                  ) : (
-                                    <Bot className="h-4 w-4 text-primary-foreground" />
-                                  )}
+                                <div className={`flex gap-2 max-w-[80%] ${msg.role === "user" ? "flex-row" : "flex-row-reverse"}`}>
+                                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.role === "user" ? "bg-secondary" : "bg-primary"}`}>
+                                    {msg.role === "user" ? (
+                                      <User className="h-4 w-4 text-secondary-foreground" />
+                                    ) : (
+                                      <Bot className="h-4 w-4 text-primary-foreground" />
+                                    )}
+                                  </div>
+                                  <div className={`rounded-lg p-3 ${msg.role === "user" ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"}`}>
+                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    <p className={`text-xs mt-1 ${msg.role === "user" ? "text-secondary-foreground/60" : "text-primary-foreground/60"}`}>
+                                      {format(new Date(msg.created_at), "HH:mm", { locale: tr })}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div
-                                  className={`rounded-lg p-3 ${
-                                    msg.role === "user"
-                                      ? "bg-secondary text-secondary-foreground"
-                                      : "bg-primary text-primary-foreground"
-                                  }`}
-                                >
-                                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                  <p
-                                    className={`text-xs mt-1 ${
-                                      msg.role === "user"
-                                        ? "text-secondary-foreground/60"
-                                        : "text-primary-foreground/60"
-                                    }`}
-                                  >
-                                    {format(new Date(msg.created_at), "HH:mm", { locale: tr })}
+                              </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                          </div>
+                        </ScrollArea>
+
+                        {/* Takeover panel */}
+                        {!isSuperAdmin && (
+                          <div className="border-t pt-3 mt-2 space-y-2">
+                            {/* Bot status */}
+                            <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                {botPaused ? (
+                                  <PauseCircle className="h-4 w-4 text-orange-500 shrink-0" />
+                                ) : (
+                                  <PlayCircle className="h-4 w-4 text-green-500 shrink-0" />
+                                )}
+                                <div>
+                                  <p className="text-xs font-medium">
+                                    {botPaused ? t("conversations.botPausedTitle") : t("conversations.botActiveTitle")}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {botPaused ? t("conversations.botPausedDescription") : t("conversations.botActiveDescription")}
                                   </p>
                                 </div>
                               </div>
+                              <Button
+                                variant={botPaused ? "default" : "outline"}
+                                size="sm"
+                                className="text-xs h-7"
+                                disabled={botPauseLoading}
+                                onClick={handleToggleBotPause}
+                              >
+                                {botPauseLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : botPaused ? t("conversations.resumeBot") : t("conversations.pauseBot")}
+                              </Button>
                             </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
+
+                            {/* Reply textarea */}
+                            <div className="space-y-1.5">
+                              <Textarea
+                                value={replyMessage}
+                                onChange={(e) => setReplyMessage(e.target.value)}
+                                placeholder={t("conversations.replyPlaceholder")}
+                                rows={2}
+                                disabled={sending}
+                                className="resize-none text-sm"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                                    e.preventDefault();
+                                    handleSendReply();
+                                  }
+                                }}
+                              />
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs text-muted-foreground">{t("conversations.replyHint")}</p>
+                                <Button
+                                  size="sm"
+                                  onClick={handleSendReply}
+                                  disabled={!replyMessage.trim() || sending}
+                                >
+                                  {sending ? (
+                                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                  ) : (
+                                    <Send className="h-3 w-3 mr-1" />
+                                  )}
+                                  {sending ? t("conversations.sending") : t("conversations.sendReply")}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     ) : (
-                      <div className="h-[600px] flex items-center justify-center text-muted-foreground">
+                      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
                         {t("admin.whatsapp.conversations.selectConversation")}
                       </div>
                     )}

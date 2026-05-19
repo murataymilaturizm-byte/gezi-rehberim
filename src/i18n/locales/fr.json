@@ -1608,6 +1608,28 @@
     "passwordsNotMatch": "Les mots de passe ne correspondent pas",
     "passwordResetSuccess": "Votre mot de passe a été mis à jour avec succès"
   },
+  "conversations": {
+    "emptyTitle": "Pas encore de conversations",
+    "emptyDescription": "Les conversations avec vos clients via WhatsApp apparaîtront ici.",
+    "botActiveTitle": "Bot actif", "botActiveDescription": "L'IA répond automatiquement",
+    "botPausedTitle": "Bot en pause", "botPausedDescription": "Seul vous répondez au client (24 h)",
+    "pauseBot": "Mettre le bot en pause", "resumeBot": "Reprendre le bot",
+    "botPaused": "Bot mis en pause pendant 24 heures", "botResumed": "Bot repris",
+    "replyPlaceholder": "Tapez votre message...", "replyHint": "Ctrl+Entrée pour envoyer",
+    "sendReply": "Envoyer", "sending": "Envoi en cours...",
+    "sendSuccess": "Message envoyé!", "sendError": "Échec de l'envoi du message",
+    "outside24h": "Le client n'a pas écrit depuis 24h. Utilisez un message modèle."
+  },
+  "notifications": {
+    "title": "Notifications", "markAllRead": "Tout marquer comme lu",
+    "empty": "Pas encore de notifications", "newReservation": "Nouvelle réservation",
+    "aiFailure": "L'IA n'a pas pu répondre", "cancellation": "Demande d'annulation", "message": "Nouveau message"
+  },
+  "tours": {
+    "emptyTitle": "Aucun circuit ajouté",
+    "emptyDescription": "Commencez par ajouter votre premier circuit.",
+    "addFirstTour": "Ajouter le premier circuit"
+  },
   "weekdays": {
     "monday": "Lundi", "tuesday": "Mardi", "wednesday": "Mercredi",
     "thursday": "Jeudi", "friday": "Vendredi", "saturday": "Samedi", "sunday": "Dimanche"

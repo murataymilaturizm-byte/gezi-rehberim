@@ -1434,6 +1434,28 @@
     "passwordsNotMatch": "Пароли не совпадают",
     "passwordResetSuccess": "Ваш пароль успешно обновлён"
   },
+  "conversations": {
+    "emptyTitle": "Разговоров пока нет",
+    "emptyDescription": "Разговоры с вашими клиентами в WhatsApp появятся здесь.",
+    "botActiveTitle": "Бот активен", "botActiveDescription": "ИИ отвечает автоматически",
+    "botPausedTitle": "Бот приостановлен", "botPausedDescription": "Только вы отвечаете клиенту (24 часа)",
+    "pauseBot": "Приостановить бота", "resumeBot": "Возобновить бота",
+    "botPaused": "Бот приостановлен на 24 часа", "botResumed": "Бот возобновлён",
+    "replyPlaceholder": "Введите сообщение...", "replyHint": "Ctrl+Enter для отправки",
+    "sendReply": "Отправить", "sending": "Отправляется...",
+    "sendSuccess": "Сообщение отправлено!", "sendError": "Не удалось отправить сообщение",
+    "outside24h": "Клиент не писал 24 часа. Используйте шаблонное сообщение."
+  },
+  "notifications": {
+    "title": "Уведомления", "markAllRead": "Отметить все прочитанными",
+    "empty": "Уведомлений пока нет", "newReservation": "Новое бронирование",
+    "aiFailure": "ИИ не смог ответить", "cancellation": "Запрос на отмену", "message": "Новое сообщение"
+  },
+  "tours": {
+    "emptyTitle": "Туров пока нет",
+    "emptyDescription": "Начните с добавления первого тура.",
+    "addFirstTour": "Добавить первый тур"
+  },
   "weekdays": {
     "monday": "Понедельник", "tuesday": "Вторник", "wednesday": "Среда",
     "thursday": "Четверг", "friday": "Пятница", "saturday": "Суббота", "sunday": "Воскресенье"

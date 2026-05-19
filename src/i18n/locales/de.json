@@ -1404,6 +1404,28 @@
     "passwordsNotMatch": "Passwörter stimmen nicht überein",
     "passwordResetSuccess": "Ihr Passwort wurde erfolgreich aktualisiert"
   },
+  "conversations": {
+    "emptyTitle": "Noch keine Gespräche",
+    "emptyDescription": "Gespräche mit Ihren Kunden über WhatsApp werden hier angezeigt.",
+    "botActiveTitle": "Bot aktiv", "botActiveDescription": "KI antwortet automatisch",
+    "botPausedTitle": "Bot pausiert", "botPausedDescription": "Nur Sie antworten dem Kunden (24 Std.)",
+    "pauseBot": "Bot pausieren", "resumeBot": "Bot fortsetzen",
+    "botPaused": "Bot für 24 Stunden pausiert", "botResumed": "Bot fortgesetzt",
+    "replyPlaceholder": "Nachricht eingeben...", "replyHint": "Strg+Enter zum Senden",
+    "sendReply": "Senden", "sending": "Wird gesendet...",
+    "sendSuccess": "Nachricht gesendet!", "sendError": "Nachricht konnte nicht gesendet werden",
+    "outside24h": "Kunde hat in 24 Std. keine Nachricht geschickt. Vorlage verwenden."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen", "markAllRead": "Alle als gelesen markieren",
+    "empty": "Noch keine Benachrichtigungen", "newReservation": "Neue Reservierung",
+    "aiFailure": "KI konnte nicht antworten", "cancellation": "Stornierungsanfrage", "message": "Neue Nachricht"
+  },
+  "tours": {
+    "emptyTitle": "Noch keine Touren hinzugefügt",
+    "emptyDescription": "Beginnen Sie damit, Ihre erste Tour hinzuzufügen.",
+    "addFirstTour": "Erste Tour hinzufügen"
+  },
   "weekdays": {
     "monday": "Montag", "tuesday": "Dienstag", "wednesday": "Mittwoch",
     "thursday": "Donnerstag", "friday": "Freitag", "saturday": "Samstag", "sunday": "Sonntag"

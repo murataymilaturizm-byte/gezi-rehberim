@@ -1608,6 +1608,28 @@
     "passwordsNotMatch": "كلمات المرور غير متطابقة",
     "passwordResetSuccess": "تم تحديث كلمة مرورك بنجاح"
   },
+  "conversations": {
+    "emptyTitle": "لا توجد محادثات بعد",
+    "emptyDescription": "ستظهر هنا محادثاتك مع العملاء عبر واتساب.",
+    "botActiveTitle": "البوت نشط", "botActiveDescription": "الذكاء الاصطناعي يرد تلقائيًا",
+    "botPausedTitle": "البوت متوقف مؤقتًا", "botPausedDescription": "أنت فقط من يرد على العميل (24 ساعة)",
+    "pauseBot": "إيقاف البوت مؤقتًا", "resumeBot": "استئناف البوت",
+    "botPaused": "تم إيقاف البوت مؤقتًا لمدة 24 ساعة", "botResumed": "تم استئناف البوت",
+    "replyPlaceholder": "اكتب رسالتك...", "replyHint": "Ctrl+Enter للإرسال",
+    "sendReply": "إرسال", "sending": "جارٍ الإرسال...",
+    "sendSuccess": "تم إرسال الرسالة!", "sendError": "فشل إرسال الرسالة",
+    "outside24h": "لم يرسل العميل رسالة منذ 24 ساعة. استخدم رسالة نموذجية."
+  },
+  "notifications": {
+    "title": "الإشعارات", "markAllRead": "تحديد الكل كمقروء",
+    "empty": "لا توجد إشعارات بعد", "newReservation": "حجز جديد",
+    "aiFailure": "فشل الذكاء الاصطناعي في الرد", "cancellation": "طلب إلغاء", "message": "رسالة جديدة"
+  },
+  "tours": {
+    "emptyTitle": "لم تُضف أي جولات بعد",
+    "emptyDescription": "ابدأ بإضافة جولتك الأولى.",
+    "addFirstTour": "إضافة الجولة الأولى"
+  },
   "weekdays": {
     "monday": "الاثنين", "tuesday": "الثلاثاء", "wednesday": "الأربعاء",
     "thursday": "الخميس", "friday": "الجمعة", "saturday": "السبت", "sunday": "الأحد"
