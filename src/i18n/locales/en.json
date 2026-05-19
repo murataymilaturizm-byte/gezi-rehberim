@@ -812,6 +812,18 @@
     "logout": "Logout",
     "loading": "Loading...",
     "superAdmin": "Super Admin",
+    "payment": {
+      "success": "Payment Successful! 🎉",
+      "successDesc": "Your subscription has been activated. Your invoice is being prepared.",
+      "successDescWithOrder": "Your subscription has been activated. Order No: {{orderId}}...",
+      "failed": "Payment Failed",
+      "failedBase": "The payment could not be completed.",
+      "insufficientFunds": "Your card has insufficient funds.",
+      "cardDeclined": "Your card was declined. Please contact your bank.",
+      "expiredCard": "Your card has expired.",
+      "invalidCvv": "Invalid CVV code.",
+      "failedGeneric": "Please try again or use a different card."
+    },
     "languageWarning": {
       "message": "You haven't selected any languages for your WhatsApp bot yet. You must select at least 1 language for your bot to work",
       "action": "Select Languages Now"
@@ -839,7 +851,11 @@
       "whatsappLogs": "WhatsApp Logs",
       "analytics": "Revenue & Performance Analytics",
       "customerAnalytics": "Customer Analytics",
-      "destinationAnalytics": "Destination Analytics"
+      "destinationAnalytics": "Destination Analytics",
+      "languageCurrencies": "Language Currencies",
+      "whatsappManagement": "WhatsApp Management",
+      "whatsappSettings": "WhatsApp Settings",
+      "whatsappTest": "WhatsApp Test"
     },
     "dashboard": {
       "whatsappSettings": "WhatsApp Settings",
@@ -1470,6 +1486,10 @@
     "moreDates": "more dates...", "generateButton": "Create {{count}} Dates", "generating": "Generating...",
     "success": "{{count}} dates added successfully!",
     "errors": { "noDates": "Please select a date range and pattern", "priceRequired": "Adult price is required", "tooManyDates": "Maximum 100 dates per batch", "generic": "Failed to create dates" }
+  },
+  "registrations": {
+    "emptyTitle": "No reservations yet",
+    "emptyDescription": "Reservations from WhatsApp or demo chat will appear here. You can also add them manually."
   },
   "tours": {
     "bulkDate": "Bulk Dates", "bulkImport": "Import from Excel",

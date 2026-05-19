@@ -809,6 +809,18 @@
     "logout": "Abmelden",
     "loading": "Wird geladen...",
     "superAdmin": "Super Admin",
+    "payment": {
+      "success": "Zahlung Erfolgreich! 🎉",
+      "successDesc": "Ihr Abonnement wurde aktiviert. Ihre Rechnung wird vorbereitet.",
+      "successDescWithOrder": "Ihr Abonnement wurde aktiviert. Bestellnr: {{orderId}}...",
+      "failed": "Zahlung Fehlgeschlagen",
+      "failedBase": "Die Zahlung konnte nicht abgeschlossen werden.",
+      "insufficientFunds": "Ihre Karte hat kein ausreichendes Guthaben.",
+      "cardDeclined": "Ihre Karte wurde abgelehnt. Bitte kontaktieren Sie Ihre Bank.",
+      "expiredCard": "Ihre Karte ist abgelaufen.",
+      "invalidCvv": "Ungültiger CVV-Code.",
+      "failedGeneric": "Bitte versuchen Sie es erneut oder verwenden Sie eine andere Karte."
+    },
     "languageWarning": {
       "message": "Sie haben noch keine Sprachen für Ihren WhatsApp-Bot ausgewählt. Sie müssen mindestens 1 Sprache auswählen, damit Ihr Bot funktioniert",
       "action": "Jetzt Sprachen Auswählen"
@@ -836,7 +848,11 @@
       "whatsappLogs": "WhatsApp-Protokolle",
       "analytics": "Umsatz- und Leistungsanalysen",
       "customerAnalytics": "Kundenanalysen",
-      "destinationAnalytics": "Reisezielanalysen"
+      "destinationAnalytics": "Reisezielanalysen",
+      "languageCurrencies": "Sprachwährungen",
+      "whatsappManagement": "WhatsApp-Verwaltung",
+      "whatsappSettings": "WhatsApp-Einstellungen",
+      "whatsappTest": "WhatsApp Test"
     },
     "dashboard": {
       "whatsappSettings": "WhatsApp-Einstellungen",
@@ -1447,6 +1463,10 @@
     "moreDates": "weitere Daten...", "generateButton": "{{count}} Daten erstellen", "generating": "Wird erstellt...",
     "success": "{{count}} Daten erfolgreich hinzugefügt!",
     "errors": { "noDates": "Bitte Datumsbereich und Muster auswählen", "priceRequired": "Erwachsenenpreis ist erforderlich", "tooManyDates": "Maximal 100 Daten pro Stapel", "generic": "Daten konnten nicht erstellt werden" }
+  },
+  "registrations": {
+    "emptyTitle": "Noch keine Reservierungen",
+    "emptyDescription": "Reservierungen über WhatsApp oder Demo-Chat erscheinen hier. Sie können auch manuell hinzufügen."
   },
   "tours": {
     "bulkDate": "Massendaten", "bulkImport": "Aus Excel importieren",

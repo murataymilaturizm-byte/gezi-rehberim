@@ -354,40 +354,30 @@ const Admin = () => {
     
     if (paymentStatus === "success") {
       toast({
-        title: "Ödeme Başarılı! 🎉",
+        title: t("admin.payment.success"),
         description: orderId
-          ? `Aboneliğiniz aktifleştirildi. Sipariş No: ${orderId.substring(0, 20)}...`
-          : "Aboneliğiniz aktifleştirildi. Faturanız hazırlanıyor.",
+          ? t("admin.payment.successDescWithOrder", { orderId: orderId.substring(0, 20) })
+          : t("admin.payment.successDesc"),
         duration: 5000,
       });
       handleTabChange("history");
     } else if (paymentStatus === "failed") {
-      let description = "Ödeme işlemi tamamlanamadı. ";
-      
-      // Add specific error messages based on error code
+      let description = t("admin.payment.failedBase") + " ";
+
       if (errorCode) {
         switch (errorCode) {
-          case "INSUFFICIENT_FUNDS":
-            description += "Kartınızda yeterli bakiye bulunmuyor.";
-            break;
-          case "CARD_DECLINED":
-            description += "Kartınız reddedildi. Lütfen bankanızla iletişime geçin.";
-            break;
-          case "EXPIRED_CARD":
-            description += "Kartınızın süresi dolmuş.";
-            break;
-          case "INVALID_CVV":
-            description += "CVV kodu hatalı.";
-            break;
-          default:
-            description += errorMessage ? decodeURIComponent(errorMessage) : "Lütfen tekrar deneyin veya farklı bir kart kullanın.";
+          case "INSUFFICIENT_FUNDS":  description += t("admin.payment.insufficientFunds"); break;
+          case "CARD_DECLINED":       description += t("admin.payment.cardDeclined"); break;
+          case "EXPIRED_CARD":        description += t("admin.payment.expiredCard"); break;
+          case "INVALID_CVV":         description += t("admin.payment.invalidCvv"); break;
+          default:                    description += errorMessage ? decodeURIComponent(errorMessage) : t("admin.payment.failedGeneric");
         }
       } else {
-        description += "Lütfen tekrar deneyin veya farklı bir kart kullanın.";
+        description += t("admin.payment.failedGeneric");
       }
-      
+
       toast({
-        title: "Ödeme Başarısız ❌",
+        title: t("admin.payment.failed"),
         description,
         variant: "destructive",
         duration: 7000,

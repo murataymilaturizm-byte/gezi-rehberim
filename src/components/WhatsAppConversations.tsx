@@ -390,11 +390,11 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 px-2"
+                          className="h-10 md:h-7 px-3 md:px-2"
                           disabled={currentPage === 1}
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         >
-                          <ChevronLeft className="h-3 w-3" />
+                          <ChevronLeft className="h-4 w-4 md:h-3 md:w-3" />
                         </Button>
                         <span className="text-xs text-muted-foreground">
                           {currentPage} / {totalPages}
@@ -402,11 +402,11 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 px-2"
+                          className="h-10 md:h-7 px-3 md:px-2"
                           disabled={currentPage === totalPages}
                           onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                         >
-                          <ChevronRight className="h-3 w-3" />
+                          <ChevronRight className="h-4 w-4 md:h-3 md:w-3" />
                         </Button>
                       </div>
                     )}
@@ -510,6 +510,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                                   size="sm"
                                   onClick={handleSendReply}
                                   disabled={!replyMessage.trim() || sending}
+                                  className="h-10 md:h-8"
                                 >
                                   {sending ? (
                                     <Loader2 className="h-3 w-3 animate-spin mr-1" />

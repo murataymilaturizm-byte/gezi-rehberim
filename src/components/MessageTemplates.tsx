@@ -226,11 +226,8 @@ export default function MessageTemplates() {
 
   const copyDefaultTemplates = async () => {
     try {
-      console.log('Starting to copy default templates...');
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('No user found');
         return;
       }
 
@@ -241,11 +238,8 @@ export default function MessageTemplates() {
         .single();
 
       if (!agency) {
-        console.error('No agency found');
         return;
       }
-
-      console.log('Agency ID:', agency.id);
 
       // Mevcut şablonları al
       const { data: existingTemplates } = await (supabase as any)
@@ -258,8 +252,6 @@ export default function MessageTemplates() {
         .from('message_templates')
         .select('*')
         .eq('agency_id', '00000000-0000-0000-0000-000000000000');
-
-      console.log('Default templates fetched:', defaultTemplates?.length, 'Error:', fetchError);
 
       if (fetchError) {
         console.error('Fetch error:', fetchError);
@@ -300,7 +292,6 @@ export default function MessageTemplates() {
         return;
       }
 
-      console.log('Inserting new templates:', newTemplates.length);
 
       const { error: insertError } = await (supabase as any)
         .from('message_templates')

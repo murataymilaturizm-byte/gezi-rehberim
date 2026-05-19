@@ -860,6 +860,18 @@
     "logout": "Déconnexion",
     "loading": "Chargement...",
     "superAdmin": "Super Admin",
+    "payment": {
+      "success": "Paiement Réussi! 🎉",
+      "successDesc": "Votre abonnement a été activé. Votre facture est en préparation.",
+      "successDescWithOrder": "Votre abonnement a été activé. N° commande: {{orderId}}...",
+      "failed": "Paiement Échoué",
+      "failedBase": "Le paiement n'a pas pu être complété.",
+      "insufficientFunds": "Votre carte n'a pas suffisamment de fonds.",
+      "cardDeclined": "Votre carte a été refusée. Veuillez contacter votre banque.",
+      "expiredCard": "Votre carte est expirée.",
+      "invalidCvv": "Code CVV invalide.",
+      "failedGeneric": "Veuillez réessayer ou utiliser une autre carte."
+    },
     "languageWarning": {
       "message": "Vous n'avez pas encore sélectionné de langues pour votre bot WhatsApp. Vous devez sélectionner au moins 1 langue pour que votre bot fonctionne",
       "action": "Sélectionner les Langues Maintenant"
@@ -887,7 +899,11 @@
       "whatsappLogs": "Journaux WhatsApp",
       "analytics": "Analyses de Revenus et Performance",
       "customerAnalytics": "Analyses Clients",
-      "destinationAnalytics": "Analyses de Destinations"
+      "destinationAnalytics": "Analyses de Destinations",
+      "languageCurrencies": "Devises par langue",
+      "whatsappManagement": "Gestion WhatsApp",
+      "whatsappSettings": "Paramètres WhatsApp",
+      "whatsappTest": "Test WhatsApp"
     },
     "dashboard": {
       "whatsappSettings": "Paramètres WhatsApp",
@@ -1651,6 +1667,10 @@
     "moreDates": "dates supplémentaires...", "generateButton": "Créer {{count}} dates", "generating": "Génération...",
     "success": "{{count}} dates ajoutées avec succès!",
     "errors": { "noDates": "Veuillez sélectionner une plage de dates et un modèle", "priceRequired": "Le prix adulte est requis", "tooManyDates": "Maximum 100 dates par lot", "generic": "Échec de la création des dates" }
+  },
+  "registrations": {
+    "emptyTitle": "Pas encore de réservations",
+    "emptyDescription": "Les réservations via WhatsApp ou le chat démo apparaîtront ici. Vous pouvez aussi les ajouter manuellement."
   },
   "tours": {
     "bulkDate": "Dates en masse", "bulkImport": "Importer depuis Excel",

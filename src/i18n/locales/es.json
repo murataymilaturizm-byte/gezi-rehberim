@@ -839,6 +839,18 @@
     "logout": "Cerrar Sesión",
     "loading": "Cargando...",
     "superAdmin": "Super Admin",
+    "payment": {
+      "success": "¡Pago Exitoso! 🎉",
+      "successDesc": "Su suscripción ha sido activada. Su factura está siendo preparada.",
+      "successDescWithOrder": "Su suscripción ha sido activada. N° pedido: {{orderId}}...",
+      "failed": "Pago Fallido",
+      "failedBase": "No se pudo completar el pago.",
+      "insufficientFunds": "Su tarjeta no tiene fondos suficientes.",
+      "cardDeclined": "Su tarjeta fue rechazada. Contacte a su banco.",
+      "expiredCard": "Su tarjeta está vencida.",
+      "invalidCvv": "Código CVV inválido.",
+      "failedGeneric": "Por favor intente nuevamente o use otra tarjeta."
+    },
     "languageWarning": {
       "message": "Aún no has seleccionado ningún idioma para tu bot de WhatsApp. Debes seleccionar al menos 1 idioma para que tu bot funcione",
       "action": "Seleccionar Idiomas Ahora"
@@ -866,7 +878,11 @@
       "whatsappLogs": "Registros de WhatsApp",
       "analytics": "Análisis de Ingresos y Rendimiento",
       "customerAnalytics": "Análisis de Clientes",
-      "destinationAnalytics": "Análisis de Destinos"
+      "destinationAnalytics": "Análisis de Destinos",
+      "languageCurrencies": "Monedas por idioma",
+      "whatsappManagement": "Gestión de WhatsApp",
+      "whatsappSettings": "Configuración de WhatsApp",
+      "whatsappTest": "Prueba de WhatsApp"
     },
     "dashboard": {
       "whatsappSettings": "Configuración de WhatsApp",
@@ -1477,6 +1493,10 @@
     "moreDates": "fechas más...", "generateButton": "Crear {{count}} fechas", "generating": "Generando...",
     "success": "¡{{count}} fechas agregadas con éxito!",
     "errors": { "noDates": "Seleccione un rango de fechas y un patrón", "priceRequired": "El precio de adulto es obligatorio", "tooManyDates": "Máximo 100 fechas por lote", "generic": "Error al crear fechas" }
+  },
+  "registrations": {
+    "emptyTitle": "Aún no hay reservas",
+    "emptyDescription": "Las reservas de WhatsApp o del chat de demostración aparecerán aquí. También puede agregarlas manualmente."
   },
   "tours": {
     "bulkDate": "Fechas masivas", "bulkImport": "Importar desde Excel",

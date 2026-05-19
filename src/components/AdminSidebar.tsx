@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -107,7 +108,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard") },
     { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
-    { id: "language_currencies", icon: CreditCard, label: "Dil Para Birimleri" },
+    { id: "language_currencies", icon: CreditCard, label: t("admin.tabs.languageCurrencies") },
     { id: "history", icon: History, label: t("admin.tabs.history") },
   ];
 
@@ -140,34 +141,47 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   const superAdminItems = [
     { id: "agencies", icon: Building2, label: t("admin.tabs.agencies") },
     { id: "contact_forms", icon: Mail, label: t("admin.tabs.contactForms") },
-    { id: "whatsapp_management", icon: Phone, label: "WhatsApp Yönetimi" },
-    { id: "whatsapp_settings", icon: Phone, label: "WhatsApp Ayarları" },
+    { id: "whatsapp_management", icon: Phone, label: t("admin.tabs.whatsappManagement") },
+    { id: "whatsapp_settings", icon: Phone, label: t("admin.tabs.whatsappSettings") },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
   ];
 
   const testItems = [
-    { id: "whatsapp_test", icon: MessageSquare, label: "WhatsApp Test" },
+    { id: "whatsapp_test", icon: MessageSquare, label: t("admin.tabs.whatsappTest") },
   ];
 
   const renderMenuItems = (items: typeof generalItems) => (
     <SidebarMenu>
       {items.map((item) => {
         const isActive = activeTab === item.id;
+        const button = (
+          <SidebarMenuButton
+            onClick={() => {
+              onTabChange(item.id);
+              if (isMobile) setOpenMobile(false);
+            }}
+            className={`h-9 ${isActive
+              ? "bg-primary/10 text-primary font-medium border-l-2 border-primary rounded-l-none"
+              : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+            {!isCollapsed && <span className="text-sm">{item.label}</span>}
+          </SidebarMenuButton>
+        );
+
         return (
           <SidebarMenuItem key={item.id}>
-            <SidebarMenuButton 
-              onClick={() => {
-                onTabChange(item.id);
-                if (isMobile) setOpenMobile(false);
-              }}
-              className={`h-9 ${isActive 
-                ? "bg-primary/10 text-primary font-medium border-l-2 border-primary rounded-l-none" 
-                : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-              {!isCollapsed && <span className="text-sm">{item.label}</span>}
-            </SidebarMenuButton>
+            {isCollapsed ? (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
+                <TooltipContent side="right" className="z-50 text-xs">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              button
+            )}
           </SidebarMenuItem>
         );
       })}

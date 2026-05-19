@@ -87,7 +87,6 @@ export function WhatsAppLogs() {
       // Get current user and check if super admin
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log('No user found');
         return;
       }
 
@@ -100,7 +99,6 @@ export function WhatsAppLogs() {
         .maybeSingle();
 
       const isSuperAdmin = !!roleData;
-      console.log('Is super admin:', isSuperAdmin);
 
       let query = supabase
         .from('whatsapp_conversations')
@@ -127,18 +125,15 @@ export function WhatsAppLogs() {
           .maybeSingle();
 
         if (!agencyData) {
-          console.log('No agency found for user');
           return;
         }
 
-        console.log('Filtering by agency:', agencyData.id);
         query = query.eq('agency_id', agencyData.id);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      console.log('Loaded logs:', data?.length);
       setLogs(data || []);
     } catch (error: any) {
       console.error('Error loading logs:', error);

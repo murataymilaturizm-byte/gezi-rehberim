@@ -18,6 +18,7 @@ import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { UsageStats } from "@/components/UsageStats";
 import { useAgencyDashboardData } from "@/hooks/useAgencyDashboardData";
+import { DashboardSkeleton } from "@/components/admin/skeletons/DashboardSkeleton";
 
 export const AgencyDashboard = () => {
   const { t } = useTranslation();
@@ -42,7 +43,7 @@ export const AgencyDashboard = () => {
     : "0";
 
   if (loading) {
-    return <div className="text-center py-8 text-muted-foreground">{t("admin.loading")}</div>;
+    return <DashboardSkeleton />;
   }
 
   return (

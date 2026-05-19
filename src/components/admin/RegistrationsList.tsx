@@ -1,5 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/EmptyState";
+import { ClipboardList } from "lucide-react";
+import { RegistrationsListSkeleton } from "./skeletons/RegistrationsListSkeleton";
 import {
   Table,
   TableBody,
@@ -83,10 +86,16 @@ export const RegistrationsList = ({
   };
 
   if (loading) {
+    return <RegistrationsListSkeleton />;
+  }
+
+  if (registrations.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        {t("admin.loading")}
-      </div>
+      <EmptyState
+        icon={ClipboardList}
+        title={t("registrations.emptyTitle")}
+        description={t("registrations.emptyDescription")}
+      />
     );
   }
 

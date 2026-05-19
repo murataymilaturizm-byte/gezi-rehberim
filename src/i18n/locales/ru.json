@@ -839,6 +839,18 @@
     "logout": "Выйти",
     "loading": "Загрузка...",
     "superAdmin": "Супер Админ",
+    "payment": {
+      "success": "Платёж Успешен! 🎉",
+      "successDesc": "Ваша подписка активирована. Счёт готовится.",
+      "successDescWithOrder": "Ваша подписка активирована. Номер заказа: {{orderId}}...",
+      "failed": "Платёж Не Выполнен",
+      "failedBase": "Не удалось завершить платёж.",
+      "insufficientFunds": "На карте недостаточно средств.",
+      "cardDeclined": "Карта отклонена. Обратитесь в банк.",
+      "expiredCard": "Срок действия карты истёк.",
+      "invalidCvv": "Неверный CVV-код.",
+      "failedGeneric": "Попробуйте снова или используйте другую карту."
+    },
     "languageWarning": {
       "message": "Вы еще не выбрали языки для вашего WhatsApp-бота. Вы должны выбрать хотя бы 1 язык для работы бота",
       "action": "Выбрать Языки Сейчас"
@@ -866,7 +878,11 @@
       "whatsappLogs": "Журналы WhatsApp",
       "analytics": "Аналитика Доходов и Производительности",
       "customerAnalytics": "Аналитика Клиентов",
-      "destinationAnalytics": "Аналитика Направлений"
+      "destinationAnalytics": "Аналитика Направлений",
+      "languageCurrencies": "Языковые валюты",
+      "whatsappManagement": "Управление WhatsApp",
+      "whatsappSettings": "Настройки WhatsApp",
+      "whatsappTest": "Тест WhatsApp"
     },
     "dashboard": {
       "whatsappSettings": "Настройки WhatsApp",
@@ -1477,6 +1493,10 @@
     "moreDates": "ещё дат...", "generateButton": "Создать {{count}} дат", "generating": "Создаётся...",
     "success": "{{count}} дат успешно добавлено!",
     "errors": { "noDates": "Выберите диапазон дат и шаблон", "priceRequired": "Цена взрослого обязательна", "tooManyDates": "Максимум 100 дат за один раз", "generic": "Не удалось создать даты" }
+  },
+  "registrations": {
+    "emptyTitle": "Бронирований пока нет",
+    "emptyDescription": "Бронирования через WhatsApp или демо-чат появятся здесь. Вы также можете добавить их вручную."
   },
   "tours": {
     "bulkDate": "Массовые даты", "bulkImport": "Импорт из Excel",

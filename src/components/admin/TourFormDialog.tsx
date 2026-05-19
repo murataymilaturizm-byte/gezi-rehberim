@@ -16,6 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ChevronRight, ChevronLeft, Check, ChevronDown, Globe } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { tourSchema } from "@/utils/validation";
 import { getAvailableCurrencies } from "@/utils/currency";
 import { TOUR_CATEGORIES, isInternationalCategory } from "./tour-form/TourCategories";
@@ -111,6 +113,8 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
   const isOvernight = formData.type !== "DAYTRIP";
   const isInternational = isInternationalCategory(formData.tur_kategorisi);
 
+  const isMobile = useIsMobile();
+
   // Dynamic steps: hide accommodation step for daytrips
   const activeSteps = isOvernight
     ? STEPS
@@ -175,7 +179,21 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
     }
   }, [formData.tur_kategorisi]);
 
-  const set = (field: string, value: any) => setFormData((prev) => ({ ...prev, [field]: value }));
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const set = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear field error on change
+    if (fieldErrors[field]) setFieldErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+  };
+
+  const validateStep0 = () => {
+    const errs: Record<string, string> = {};
+    if (formData.title.trim().length < 3) errs.title = t("admin.tourForm.titleMinLength");
+    if (formData.destination.trim().length < 2) errs.destination = t("admin.tourForm.destinationMinLength");
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const gezilecekYerlerArr = formData.gezilecek_yerler
     ? formData.gezilecek_yerler.split(",").map((s) => s.trim()).filter(Boolean)
@@ -267,19 +285,27 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
   };
 
   const canProceed = () => {
-    if (step === 0) return formData.title.length >= 3 && formData.destination.length >= 2;
+    if (step === 0) return formData.title.trim().length >= 3 && formData.destination.trim().length >= 2;
     return true;
+  };
+
+  const handleNext = () => {
+    if (step === 0 && !validateStep0()) return;
+    setStep(step + 1);
   };
 
   const currentStepKey = activeSteps[step]?.key;
 
+  const dialogTitle = tour ? t("admin.tourForm.editTour") : t("admin.tourForm.addTour");
+  const dialogSubtitle = `${activeSteps[step]?.label} (${step + 1}/${activeSteps.length})`;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[540px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className={`${isMobile ? "w-full max-w-none h-[95dvh] rounded-t-xl rounded-b-none mt-auto translate-y-0 bottom-0 top-auto" : "sm:max-w-[540px]"} max-h-[95dvh] overflow-y-auto`}>
         <DialogHeader>
-          <DialogTitle>{tour ? "Tur Düzenle" : "Yeni Tur Ekle"}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
-            {activeSteps[step]?.label} ({step + 1}/{activeSteps.length})
+            {dialogSubtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -301,22 +327,30 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
           {/* STEP 1: Basic Info */}
           {currentStepKey === "basic" && (
             <>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label>Tur Adı *</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => set("title", e.target.value)}
                   placeholder="Örn: Kapadokya Günübirlik Tur"
+                  className={fieldErrors.title ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                {fieldErrors.title && (
+                  <p className="text-xs text-destructive">{fieldErrors.title}</p>
+                )}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label>Destinasyon *</Label>
                 <Input
                   value={formData.destination}
                   onChange={(e) => set("destination", e.target.value)}
                   placeholder="Örn: Kapadokya"
+                  className={fieldErrors.destination ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                {fieldErrors.destination && (
+                  <p className="text-xs text-destructive">{fieldErrors.destination}</p>
+                )}
               </div>
 
               {/* Multilingual fields */}
@@ -572,7 +606,7 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
           {step < activeSteps.length - 1 ? (
             <Button
               type="button"
-              onClick={() => setStep(step + 1)}
+              onClick={handleNext}
               disabled={!canProceed()}
               className="bg-gradient-ocean hover:opacity-90"
             >

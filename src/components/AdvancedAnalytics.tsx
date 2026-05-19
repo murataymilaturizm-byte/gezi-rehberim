@@ -92,7 +92,6 @@ export const AdvancedAnalytics = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log('No user found for analytics');
         return;
       }
 
@@ -115,17 +114,13 @@ export const AdvancedAnalytics = () => {
         .maybeSingle();
 
         if (!agency) {
-          console.log('No agency found for user');
           return;
         }
         agencyId = agency.id;
       }
 
-      console.log('Loading analytics for agency:', agencyId || 'all (super admin)');
-
       // Tarih aralığını al
       const { startDate, endDate } = getDateRange();
-      console.log('Date range:', startDate, 'to', endDate);
       let registrationsQuery = supabase
         .from("registrations")
         .select(`
@@ -145,8 +140,6 @@ export const AdvancedAnalytics = () => {
       }
 
       const { data: registrations } = await registrationsQuery;
-
-      console.log('Loaded registrations:', registrations?.length);
 
       // Aylık gelir hesaplama
       const revenueByMonth: Record<string, { revenue: number; registrations: number }> = {};

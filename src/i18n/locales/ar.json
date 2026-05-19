@@ -860,6 +860,18 @@
     "logout": "خروج",
     "loading": "جاري التحميل...",
     "superAdmin": "مدير النظام",
+    "payment": {
+      "success": "تم الدفع بنجاح! 🎉",
+      "successDesc": "تم تفعيل اشتراكك. فاتورتك قيد التحضير.",
+      "successDescWithOrder": "تم تفعيل اشتراكك. رقم الطلب: {{orderId}}...",
+      "failed": "فشل الدفع",
+      "failedBase": "لم يتمكن من إتمام عملية الدفع.",
+      "insufficientFunds": "رصيد بطاقتك غير كافٍ.",
+      "cardDeclined": "تم رفض بطاقتك. يرجى التواصل مع البنك.",
+      "expiredCard": "انتهت صلاحية بطاقتك.",
+      "invalidCvv": "رمز CVV غير صحيح.",
+      "failedGeneric": "يرجى المحاولة مرة أخرى أو استخدام بطاقة مختلفة."
+    },
     "languageWarning": {
       "message": "لم تقم بعد باختيار أي لغات لبوت واتساب الخاص بك. يجب عليك اختيار لغة واحدة على الأقل لكي يعمل البوت",
       "action": "اختر اللغات الآن"
@@ -887,7 +899,11 @@
       "whatsappLogs": "سجلات واتساب",
       "analytics": "تحليلات الإيرادات والأداء",
       "customerAnalytics": "تحليلات العملاء",
-      "destinationAnalytics": "تحليلات الوجهات"
+      "destinationAnalytics": "تحليلات الوجهات",
+      "languageCurrencies": "عملات اللغات",
+      "whatsappManagement": "إدارة واتساب",
+      "whatsappSettings": "إعدادات واتساب",
+      "whatsappTest": "اختبار واتساب"
     },
     "dashboard": {
       "whatsappSettings": "إعدادات واتساب",
@@ -1651,6 +1667,10 @@
     "moreDates": "تواريخ أخرى...", "generateButton": "إنشاء {{count}} تاريخ", "generating": "جارٍ الإنشاء...",
     "success": "تمت إضافة {{count}} تاريخ بنجاح!",
     "errors": { "noDates": "يرجى تحديد نطاق تاريخ ونمط", "priceRequired": "سعر البالغ مطلوب", "tooManyDates": "الحد الأقصى 100 تاريخ في المرة الواحدة", "generic": "فشل إنشاء التواريخ" }
+  },
+  "registrations": {
+    "emptyTitle": "لا توجد حجوزات بعد",
+    "emptyDescription": "ستظهر هنا الحجوزات من واتساب أو الدردشة التجريبية. يمكنك أيضاً إضافتها يدوياً."
   },
   "tours": {
     "bulkDate": "تواريخ جماعية", "bulkImport": "استيراد من Excel",
