@@ -151,11 +151,13 @@ export function normalizePhone(raw: string): string | null {
   const cleaned = raw.replace(/[\s\-\(\)\.]/g, "");
   if (cleaned.startsWith("+")) {
     const digits = cleaned.replace("+", "");
+    // Uluslararası format: min 7 rakam (kısa alan kodları için)
     if (digits.length >= 7 && digits.length <= 15 && /^\d+$/.test(digits)) return cleaned;
     return null;
   }
   if (!/^\d+$/.test(cleaned)) return null;
-  if (cleaned.length < 7 || cleaned.length > 15) return null;
+  // Yerel format: min 10 rakam — "12345" gibi kısa sayılar reddedilir (BUG 4)
+  if (cleaned.length < 10 || cleaned.length > 15) return null;
   return cleaned;
 }
 

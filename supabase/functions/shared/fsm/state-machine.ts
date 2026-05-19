@@ -365,7 +365,9 @@ const transitions: StateTransition[] = [
         const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
         const hasPaxPattern = /\d+\s*(kişi|person|people|yetişkin|adult|çocuk|child)/i.test(input.userMessage);
         const hasPhonePattern = /\b05\d{9}\b|\b\+\d{7,}/i.test(input.userMessage);
-        return hasExtractedInfo && (hasPaxPattern || hasPhonePattern);
+        // Tarih bilgisi gelince geçiş yap — "5 Mart 2027" gibi geçersiz tarihler de yakalanır (BUG 1)
+        const hasDateInfo = !!(input.extractedInfo as any).selectedDate || !!(input.extractedInfo as any).dateId;
+        return hasExtractedInfo && (hasPaxPattern || hasPhonePattern || hasDateInfo);
       }
       return true;
     },
@@ -488,35 +490,48 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // CONFIRMING → COLLECTING_INFO (değişiklik)
+  // CONFIRMING → COLLECTING_INFO (değişiklik) — BUG 5
   {
     from: "CONFIRMING",
     to: "COLLECTING_INFO",
     condition: (ctx, input) =>
       input.detectedIntent === "change_info" ||
-      /değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|güncelle|update|fix|correct|корректировать|неправильно|ändern|falsch|corriger|corregir|تعديل|خطأ/i.test(input.userMessage.toLowerCase()),
+      /değiştir|olsun|olarak\s+değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|güncelle|update|fix|correct|корректировать|неправильно|ändern|falsch|corriger|corregir|تعديل|خطأ/i.test(input.userMessage.toLowerCase()),
     action: (ctx, input) => {
       const msg = input.userMessage.toLowerCase();
       const info = { ...ctx.reservationInfo };
 
-      // Çok dilli alan pattern'leri (TR + EN + DE + RU + AR + FR + ES)
-      const namePattern   = /\b(isim|ad[ıi]m?|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre)\b/i;
+      // Çok dilli alan pattern'leri — "ismi" "adı" gibi Türkçe çekimler eklendi
+      const namePattern   = /isim|ismi|adım|adı|adın|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre/i;
       const phonePattern  = /\b(telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono)\b/i;
       const paxPattern    = /\b(ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)\b/i;
       const datePattern   = /\b(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha)\b/i;
 
       if (namePattern.test(msg)) {
-        delete info.fullName;
+        // Yeni isim mesajda varsa (NLU çıkardıysa) direkt güncelle, waiting_for_name'e gerek yok
+        if ((input.extractedInfo as any).fullName) {
+          info.fullName = (input.extractedInfo as any).fullName;
+        } else {
+          delete info.fullName;
+        }
       } else if (phonePattern.test(msg)) {
-        delete info.phone;
+        if ((input.extractedInfo as any).phone) {
+          info.phone = (input.extractedInfo as any).phone;
+        } else {
+          delete info.phone;
+        }
       } else if (paxPattern.test(msg)) {
-        delete info.paxAdult;
-        delete info.paxChild;
+        if ((input.extractedInfo as any).paxAdult) {
+          info.paxAdult = (input.extractedInfo as any).paxAdult;
+        } else {
+          delete info.paxAdult;
+          delete info.paxChild;
+        }
       } else if (datePattern.test(msg)) {
         delete info.dateId;
         delete info.selectedDate;
       } else {
-        // Belirsiz "değiştir" isteği — en yaygın senaryo tarih değiştirme.
+        // Belirsiz "değiştir" / "olsun" isteği — en yaygın: tarih değiştirme.
         // Phone ve isim korunur; müşteri yeni tarih seçer.
         delete info.dateId;
         delete info.selectedDate;

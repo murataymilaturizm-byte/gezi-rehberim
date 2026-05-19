@@ -156,6 +156,25 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: negReply, newContext: context };
   }
 
+  // === MAX PAX KONTROLÜ (BUG 2) — 50+ kişi grubu için ofisle iletişim ===
+  const _extractedPax = extractedInfo.paxAdult ?? extractedInfo.pax;
+  if (_extractedPax && _extractedPax > 50) {
+    const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    const _maxPaxMsgs: Record<string, string> = {
+      tr: `${_extractedPax} kişilik grup için lütfen ofisimizle iletişime geçin.${_agPhone}\n\nBireysel online rezervasyonlar için kaç kişi istiyorsunuz? (maksimum 50)`,
+      en: `For a group of ${_extractedPax}, please contact our office for a special offer.${_agPhone}\n\nFor online booking, how many people? (max 50)`,
+      de: `Für ${_extractedPax} Personen kontaktieren Sie uns bitte für ein Gruppenangebot.${_agPhone}\n\nFür Online-Buchung: Wie viele Personen? (max. 50)`,
+      ru: `Для группы ${_extractedPax} человек свяжитесь с нами.${_agPhone}\n\nДля онлайн-бронирования: сколько человек? (макс. 50)`,
+      ar: `لحجز ${_extractedPax} أشخاص يرجى التواصل مع مكتبنا.${_agPhone}\n\nكم شخص تريد حجز؟ (الحد الأقصى 50)`,
+      fr: `Pour ${_extractedPax} personnes, contactez-nous pour une offre de groupe.${_agPhone}\n\nPour réservation en ligne : combien de personnes ? (max. 50)`,
+      es: `Para ${_extractedPax} personas, contáctenos para una oferta grupal.${_agPhone}\n\n¿Cuántas personas para reserva online? (máx. 50)`,
+    };
+    const _maxReply = _maxPaxMsgs[context.language] || _maxPaxMsgs.tr;
+    await _save(_maxReply, context);
+    await adapter.sendResponse(_maxReply);
+    return { success: true, response: _maxReply, newContext: context };
+  }
+
   // === 9. FSM GEÇİŞİ ===
   const fsmInput: ProcessingInput = {
     userMessage: message,
@@ -167,15 +186,46 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const newContext = processTransition(context, fsmInput);
   console.log(`[process-message] ${context.stage} → ${newContext.stage}`);
 
-  // FIX: Geçersiz tarih cleanup — dateId yoksa selectedDate her zaman invalid
-  // (collectionStep koşulu kaldırıldı: waiting_for_date dışında da sızabiliyordu)
+  // FIX: Geçersiz tarih cleanup — dateId yoksa selectedDate her zaman invalid (BUG 1)
+  // extractedInfo da kontrol edilir: TOUR_SELECTED'da FSM geçmeden gelen tarih de yakalanır
   const _invalidDateForPreamble =
-    newContext.reservationInfo?.selectedDate && !newContext.reservationInfo?.dateId
+    (newContext.reservationInfo?.selectedDate && !newContext.reservationInfo?.dateId)
       ? newContext.reservationInfo.selectedDate
-      : undefined;
+      : (extractedInfo.selectedDate && !extractedInfo.dateId && newContext.currentTour)
+        ? extractedInfo.selectedDate
+        : undefined;
   if (_invalidDateForPreamble) {
     newContext.reservationInfo = { ...newContext.reservationInfo, selectedDate: undefined };
+    // stage waiting_for_date'e çek ki date list deterministik olarak gösterilsin
+    if (newContext.stage === "TOUR_SELECTED" || newContext.stage === "COLLECTING_INFO") {
+      newContext.stage = "COLLECTING_INFO" as any;
+      newContext.collectionStep = "waiting_for_date" as any;
+    }
     console.log("[process-message] Invalid date cleaned up:", _invalidDateForPreamble);
+  }
+
+  // === 9b. GEÇERSİZ TELEFON KONTROLÜ (BUG 4) ===
+  // waiting_for_phone'dayken kullanıcı kısa/geçersiz numara girdiyse erken dön
+  if (
+    newContext.collectionStep === "waiting_for_phone" &&
+    context.collectionStep === "waiting_for_phone" &&
+    !extractedInfo.phone &&
+    /^\d+$/.test(message.trim()) &&
+    message.trim().length < 10
+  ) {
+    const _phInvalidMsgs: Record<string, string> = {
+      tr: `"${message.trim()}" geçerli bir telefon numarası değil. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,
+      en: `"${message.trim()}" is not a valid phone number. 📱\n\nPlease enter your full number (e.g. +90 532 123 45 67)`,
+      de: `"${message.trim()}" ist keine gültige Telefonnummer. 📱\n\nBitte vollständige Nummer eingeben (z.B. +90 532 123 45 67)`,
+      ru: `"${message.trim()}" — неверный номер телефона. 📱\n\nВведите полный номер (напр. +90 532 123 45 67)`,
+      ar: `"${message.trim()}" ليس رقم هاتف صحيح. 📱\n\nيرجى إدخال رقمك الكامل (مثال: +90 532 123 45 67)`,
+      fr: `"${message.trim()}" n'est pas un numéro valide. 📱\n\nVeuillez entrer votre numéro complet (ex: +90 532 123 45 67)`,
+      es: `"${message.trim()}" no es un número válido. 📱\n\nIngrese su número completo (ej: +90 532 123 45 67)`,
+    };
+    const _phReply = _phInvalidMsgs[newContext.language] || _phInvalidMsgs.tr;
+    await _save(_phReply, newContext);
+    await adapter.sendResponse(_phReply);
+    return { success: true, response: _phReply, newContext };
   }
 
   // === 10. İPTAL MESAJI (deterministik) ===
@@ -632,11 +682,20 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   // === 15. SYSTEM PROMPT ===
   const currentTourFull = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
+  // BUG 6: AI prompt'una giden reservationInfo'da tur adını hedef dile çevir
+  // Bu olmadan CONFIRMING özeti her zaman TR tur adı gösteriyor
+  const _promptReservationInfo = newContext.reservationInfo?.tourTitle
+    ? {
+        ...newContext.reservationInfo,
+        tourTitle: getLocalizedTourTitle(newContext.reservationInfo.tourTitle, newContext.language),
+      }
+    : newContext.reservationInfo;
+
   const promptContext = {
     stage: newContext.stage,
     collectionStep: newContext.collectionStep,
     currentTour: currentTourFull || newContext.currentTour,
-    reservationInfo: newContext.reservationInfo,
+    reservationInfo: _promptReservationInfo,
     availableTours: tours,
     language: newContext.language,
     tone: newContext.tone,

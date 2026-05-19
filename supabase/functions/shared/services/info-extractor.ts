@@ -58,9 +58,10 @@ const TEXT_MONTHS: Record<string, number> = {
 };
 
 const _monthPattern = Object.keys(TEXT_MONTHS).join("|");
-// DAY MONTH [YEAR] — "20 aralık", "22. Dezember", "20 december 2026"
+// DAY MONTH [YEAR] — "20 aralık", "22. Dezember", "22.Dezember", "20 december 2026"
+// [.\s]+ → nokta, boşluk veya ikisi (boşluksuz "22.Dezember" de kabul)
 const TEXT_MONTH_REGEX = new RegExp(
-  `(\\d{1,2})\\.?\\s+(${_monthPattern})(?:\\s+(\\d{4}))?`,
+  `(\\d{1,2})[.\\s]+(${_monthPattern})(?:[.\\s]+(\\d{4}))?`,
   "i",
 );
 // MONTH DAY [YEAR] — "december 22", "Dec 22" (EN gün-sonu format)
@@ -253,6 +254,9 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   for (const [k, v] of Object.entries(_rawUpdates)) {
     if (k === "fullName" && typeof v === "string" && v.trim()) {
       if (_isPlaceholder(v)) continue;
+      // Tek kelimeli isim (soyad yok) kabul etme — BUG 3
+      const _nameWords = v.trim().split(/\s+/);
+      if (_nameWords.length < 2) continue;
       extractedInfo[k] = formatName(v.trim());
     } else if (k === "phone" && typeof v === "string" && v.trim()) {
       // KRİTİK: normalizePhone null dönerse FALLBACK YOK — placeholder DB'ye sızmasın

@@ -64,8 +64,8 @@ function buildFallbackNLU(userMessage: string, availableTours?: any[]): NLUResul
     return { intent: "provide_info", language, entities: {}, updates: {} };
   }
 
-  // Değişiklik talebi: "isim yanlış", "değiştir", "modify" vb.
-  if (/değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı|değil|farklı|ändern|falsch|corriger|corregir|корректировать|تعديل/i.test(lower)) {
+  // Değişiklik talebi: "isim yanlış", "değiştir", "X olsun", "modify" vb. — BUG 5
+  if (/değiştir|olsun|olarak\s+değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı|değil|farklı|ändern|falsch|corriger|corregir|корректировать|تعديل/i.test(lower)) {
     return { intent: "change_info", language, entities: {}, updates: {} };
   }
 
@@ -358,9 +358,17 @@ export async function analyzeUserMessage(
     const entities = analysis.entities || {};
 
     const updates: Partial<ReservationInfo> = {};
-    if (entities.people_count?.adults) updates.paxAdult = entities.people_count.adults;
+    // Pax: NLU'dan gelen değer 50'yi geçemez — BUG 2
+    if (entities.people_count?.adults) {
+      const _pax = Number(entities.people_count.adults);
+      if (_pax >= 1 && _pax <= 50) updates.paxAdult = _pax;
+    }
     if (entities.people_count?.children) updates.paxChild = entities.people_count.children;
-    if (entities.full_name) updates.fullName = entities.full_name;
+    // FullName: en az 2 kelime olmalı — BUG 3
+    if (entities.full_name) {
+      const _fnWords = String(entities.full_name).trim().split(/\s+/);
+      if (_fnWords.length >= 2) updates.fullName = entities.full_name;
+    }
     if (entities.phone) updates.phone = entities.phone;
 
     // NLU_ENTITIES — tarih extraction debug için kritik
