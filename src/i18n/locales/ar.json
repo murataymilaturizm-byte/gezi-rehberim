@@ -1691,6 +1691,8 @@
     "success": "تمت إضافة {{count}} جولة بنجاح!",
     "errors": { "parseError": "تعذّر قراءة ملف Excel", "noValid": "لا توجد جولات صالحة للاستيراد", "importFailed": "فشل الاستيراد", "titleRequired": "عنوان الجولة مطلوب", "destinationRequired": "الوجهة مطلوبة" }
   },
+  "greetings": { "morning": "صباح الخير", "afternoon": "مساء الخير", "evening": "مساء الخير", "night": "تصبح على خير" },
+  "dashboard": { "kpi": { "vsLastWeek": "مقارنة بالأسبوع الماضي" }, "welcome": { "todayStats": "{{count}} حجز جديد اليوم", "revenue": "إيرادات", "pending": "قيد الانتظار", "noRegistrations": "لا حجوزات اليوم. روبوت واتساب يعمل! 💬" }, "salesTrend": { "title": "اتجاه المبيعات", "subtitle": "مقارنة الإيرادات", "currentPeriod": "الفترة الحالية", "previousPeriod": "الفترة السابقة", "noData": "بيانات غير كافية بعد" }, "recentRegistrations": { "title": "آخر الحجوزات", "emptyTitle": "لا حجوزات", "emptyDescription": "روبوت واتساب يستقبل العملاء" }, "tourPerformance": { "title": "أداء الجولات" }, "quickActions": { "title": "إجراءات سريعة" } },
   "onboardingTour": {
     "welcome": { "title": "🎉 مرحباً بك في Turzz AI!", "content": "دعنا نقدم لك جولة سريعة في اللوحة. تستغرق 30 ثانية فقط. يمكنك التخطي في أي وقت." },
     "dashboard": { "title": "📊 لوحة التحكم", "content": "تتبع الحجوزات اليومية والإيرادات وإحصائيات روبوت الدردشة من هنا." },
@@ -1798,7 +1800,10 @@
     "search": "بحث...",
     "filter": "تصفية",
     "export": "تصدير",
-    "import": "استيراد"
+    "import": "استيراد",
+    "weekly": "أسبوعي", "monthly": "شهري", "quarterly": "ربع سنوي",
+    "viewAll": "الكل", "justNow": "الآن", "minutesAgo": "د مضت",
+    "hoursAgo": "س مضت", "daysAgo": "ي مضت", "people": "أشخاص", "saving": "حفظ...", "back": "رجوع"
   },
   "agencyInfo": {
     "title": "معلومات الوكالة",

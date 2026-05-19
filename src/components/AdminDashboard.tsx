@@ -5,12 +5,30 @@ import { PlanFeatures } from "@/utils/planFeatures";
 interface AdminDashboardProps {
   isSuperAdmin?: boolean;
   planFeatures?: PlanFeatures | null;
+  onTabChange?: (tab: string) => void;
+  onNewTour?: () => void;
+  onBulkImport?: () => void;
+  onManualReg?: () => void;
 }
 
-export const AdminDashboard = ({ isSuperAdmin = false, planFeatures }: AdminDashboardProps) => {
+export const AdminDashboard = ({
+  isSuperAdmin = false,
+  planFeatures,
+  onTabChange,
+  onNewTour,
+  onBulkImport,
+  onManualReg,
+}: AdminDashboardProps) => {
   if (isSuperAdmin) {
     return <SuperAdminDashboard planFeatures={planFeatures} />;
   }
 
-  return <AgencyDashboard />;
+  return (
+    <AgencyDashboard
+      onTabChange={onTabChange}
+      onNewTour={onNewTour}
+      onBulkImport={onBulkImport}
+      onManualReg={onManualReg}
+    />
+  );
 };

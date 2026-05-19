@@ -739,7 +739,14 @@ const Admin = () => {
             
             
             {activeTab === "dashboard" ? (
-              <AdminDashboard isSuperAdmin={isSuperAdmin} planFeatures={planFeatures} />
+              <AdminDashboard
+                isSuperAdmin={isSuperAdmin}
+                planFeatures={planFeatures}
+                onTabChange={handleTabChange}
+                onNewTour={() => { setSelectedTour(undefined); setTourFormOpen(true); }}
+                onBulkImport={() => setBulkImportOpen(true)}
+                onManualReg={() => setManualRegistrationDialogOpen(true)}
+              />
             ) : activeTab === "whatsapp" ? (
               <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp_profiles" && (planFeatures?.has_user_profiles || isSuperAdmin) ? (

@@ -1691,6 +1691,8 @@
     "success": "{{count}} circuits ajoutés avec succès!",
     "errors": { "parseError": "Impossible de lire le fichier Excel", "noValid": "Aucun circuit valide à importer", "importFailed": "L'importation a échoué", "titleRequired": "Le nom du circuit est requis", "destinationRequired": "La destination est requise" }
   },
+  "greetings": { "morning": "Bonjour", "afternoon": "Bon après-midi", "evening": "Bonsoir", "night": "Bonne nuit" },
+  "dashboard": { "kpi": { "vsLastWeek": "vs semaine dernière" }, "welcome": { "todayStats": "{{count}} nouvelles réservations aujourd'hui", "revenue": "revenus", "pending": "en attente", "noRegistrations": "Aucune réservation aujourd'hui. Votre bot WhatsApp fonctionne ! 💬" }, "salesTrend": { "title": "Tendance des ventes", "subtitle": "Comparaison des revenus", "currentPeriod": "Période actuelle", "previousPeriod": "Période précédente", "noData": "Pas encore assez de données" }, "recentRegistrations": { "title": "Réservations récentes", "emptyTitle": "Pas de réservations", "emptyDescription": "Votre bot WhatsApp accueille les clients" }, "tourPerformance": { "title": "Performance des circuits" }, "quickActions": { "title": "Actions rapides" } },
   "onboardingTour": {
     "welcome": { "title": "🎉 Bienvenue sur Turzz AI !", "content": "Laissez-nous vous faire une visite rapide du panneau. 30 secondes seulement. Vous pouvez ignorer à tout moment." },
     "dashboard": { "title": "📊 Tableau de bord", "content": "Suivez les réservations quotidiennes, les revenus et les statistiques du chatbot ici." },
@@ -1798,7 +1800,10 @@
     "search": "Rechercher...",
     "filter": "Filtrer",
     "export": "Exporter",
-    "import": "Importer"
+    "import": "Importer",
+    "weekly": "Hebdomadaire", "monthly": "Mensuel", "quarterly": "Trimestriel",
+    "viewAll": "Tout voir", "justNow": "maintenant", "minutesAgo": "min",
+    "hoursAgo": "h", "daysAgo": "j", "people": "personnes", "saving": "Enregistrement...", "back": "Retour"
   },
   "agencyInfo": {
     "title": "Informations sur l'agence",

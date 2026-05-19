@@ -1517,6 +1517,8 @@
     "success": "¡{{count}} tours agregados con éxito!",
     "errors": { "parseError": "No se pudo leer el archivo Excel", "noValid": "No hay tours válidos para importar", "importFailed": "La importación falló", "titleRequired": "El nombre del tour es obligatorio", "destinationRequired": "El destino es obligatorio" }
   },
+  "greetings": { "morning": "Buenos días", "afternoon": "Buenas tardes", "evening": "Buenas tardes", "night": "Buenas noches" },
+  "dashboard": { "kpi": { "vsLastWeek": "vs semana pasada" }, "welcome": { "todayStats": "{{count}} nuevas reservas hoy", "revenue": "ingresos", "pending": "pendientes", "noRegistrations": "Sin reservas hoy. ¡Tu bot de WhatsApp está activo! 💬" }, "salesTrend": { "title": "Tendencia de ventas", "subtitle": "Comparación de ingresos", "currentPeriod": "Período actual", "previousPeriod": "Período anterior", "noData": "Aún no hay suficientes datos" }, "recentRegistrations": { "title": "Reservas recientes", "emptyTitle": "Sin reservas", "emptyDescription": "Tu bot de WhatsApp recibe clientes" }, "tourPerformance": { "title": "Rendimiento de tours" }, "quickActions": { "title": "Acciones rápidas" } },
   "onboardingTour": {
     "welcome": { "title": "🎉 ¡Bienvenido a Turzz AI!", "content": "Déjenos darle un recorrido rápido por el panel. Solo 30 segundos. Puede omitir en cualquier momento." },
     "dashboard": { "title": "📊 Panel de control", "content": "Siga aquí las reservas diarias, ingresos y estadísticas del chatbot." },
@@ -1624,7 +1626,10 @@
     "search": "Buscar...",
     "filter": "Filtrar",
     "export": "Exportar",
-    "import": "Importar"
+    "import": "Importar",
+    "weekly": "Semanal", "monthly": "Mensual", "quarterly": "Trimestral",
+    "viewAll": "Ver todo", "justNow": "ahora", "minutesAgo": "min",
+    "hoursAgo": "h", "daysAgo": "d", "people": "personas", "saving": "Guardando...", "back": "Volver"
   },
   "agencyInfo": {
     "title": "Información de la agencia",

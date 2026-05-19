@@ -1696,6 +1696,41 @@
       "destinationRequired": "Destinasyon zorunludur"
     }
   },
+  "greetings": {
+    "morning": "Günaydın",
+    "afternoon": "İyi öğleden sonralar",
+    "evening": "İyi akşamlar",
+    "night": "İyi geceler"
+  },
+  "dashboard": {
+    "kpi": {
+      "vsLastWeek": "geçen haftaya göre"
+    },
+    "welcome": {
+      "todayStats": "Bugün {{count}} yeni rezervasyon",
+      "revenue": "gelir",
+      "pending": "bekliyor",
+      "noRegistrations": "Bugün henüz rezervasyon yok. WhatsApp botunuz çalışıyor! 💬"
+    },
+    "salesTrend": {
+      "title": "Satış Trendi",
+      "subtitle": "Gelir karşılaştırması",
+      "currentPeriod": "Bu dönem",
+      "previousPeriod": "Önceki dönem",
+      "noData": "Henüz yeterli veri yok"
+    },
+    "recentRegistrations": {
+      "title": "Son Rezervasyonlar",
+      "emptyTitle": "Rezervasyon yok",
+      "emptyDescription": "WhatsApp botunuz müşterileri karşılıyor"
+    },
+    "tourPerformance": {
+      "title": "Tur Performansı"
+    },
+    "quickActions": {
+      "title": "Hızlı Aksiyonlar"
+    }
+  },
   "onboardingTour": {
     "welcome": {
       "title": "🎉 Turzz AI'a Hoş Geldiniz!",
@@ -1920,7 +1955,18 @@
     "search": "Ara...",
     "filter": "Filtrele",
     "export": "Dışa Aktar",
-    "import": "İçe Aktar"
+    "import": "İçe Aktar",
+    "weekly": "Haftalık",
+    "monthly": "Aylık",
+    "quarterly": "Çeyreklik",
+    "viewAll": "Tümü",
+    "justNow": "şimdi",
+    "minutesAgo": "dk önce",
+    "hoursAgo": "s önce",
+    "daysAgo": "g önce",
+    "people": "kişi",
+    "saving": "Kaydediliyor...",
+    "back": "Geri"
   },
   "blog": {
     "minutesRead": "{{count}} dakika okuma",

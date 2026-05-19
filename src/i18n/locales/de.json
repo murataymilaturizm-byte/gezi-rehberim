@@ -1487,6 +1487,8 @@
     "success": "{{count}} Touren erfolgreich hinzugefügt!",
     "errors": { "parseError": "Excel-Datei konnte nicht gelesen werden", "noValid": "Keine gültigen Touren zum Importieren", "importFailed": "Import fehlgeschlagen", "titleRequired": "Tourname ist erforderlich", "destinationRequired": "Reiseziel ist erforderlich" }
   },
+  "greetings": { "morning": "Guten Morgen", "afternoon": "Guten Nachmittag", "evening": "Guten Abend", "night": "Gute Nacht" },
+  "dashboard": { "kpi": { "vsLastWeek": "vs letzte Woche" }, "welcome": { "todayStats": "{{count}} neue Buchungen heute", "revenue": "Einnahmen", "pending": "ausstehend", "noRegistrations": "Heute noch keine Buchungen. Ihr WhatsApp-Bot läuft! 💬" }, "salesTrend": { "title": "Verkaufstrend", "subtitle": "Einnahmenvergleich", "currentPeriod": "Aktuelle Periode", "previousPeriod": "Vorherige Periode", "noData": "Noch nicht genug Daten" }, "recentRegistrations": { "title": "Letzte Buchungen", "emptyTitle": "Keine Buchungen", "emptyDescription": "Ihr WhatsApp-Bot empfängt Kunden" }, "tourPerformance": { "title": "Tour-Leistung" }, "quickActions": { "title": "Schnellaktionen" } },
   "onboardingTour": {
     "welcome": { "title": "🎉 Willkommen bei Turzz AI!", "content": "Wir geben Ihnen eine schnelle Panel-Tour. Dauert nur 30 Sekunden. Sie können jederzeit überspringen." },
     "dashboard": { "title": "📊 Dashboard", "content": "Verfolgen Sie hier tägliche Buchungen, Einnahmen und Chatbot-Statistiken." },
@@ -1594,7 +1596,10 @@
     "search": "Suchen...",
     "filter": "Filtern",
     "export": "Exportieren",
-    "import": "Importieren"
+    "import": "Importieren",
+    "weekly": "Wöchentlich", "monthly": "Monatlich", "quarterly": "Vierteljährlich",
+    "viewAll": "Alle anzeigen", "justNow": "gerade eben", "minutesAgo": "Min. vor",
+    "hoursAgo": "Std. vor", "daysAgo": "Tg. vor", "people": "Personen", "saving": "Speichern...", "back": "Zurück"
   },
   "cta": {
     "title": "Bereit loszulegen?",

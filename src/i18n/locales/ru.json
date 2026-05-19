@@ -1517,6 +1517,8 @@
     "success": "{{count}} туров успешно добавлено!",
     "errors": { "parseError": "Не удалось прочитать файл Excel", "noValid": "Нет валидных туров для импорта", "importFailed": "Импорт не удался", "titleRequired": "Название тура обязательно", "destinationRequired": "Направление обязательно" }
   },
+  "greetings": { "morning": "Доброе утро", "afternoon": "Добрый день", "evening": "Добрый вечер", "night": "Спокойной ночи" },
+  "dashboard": { "kpi": { "vsLastWeek": "к прошлой неделе" }, "welcome": { "todayStats": "{{count}} новых бронирований сегодня", "revenue": "доход", "pending": "ожидают", "noRegistrations": "Сегодня бронирований нет. Ваш WhatsApp-бот работает! 💬" }, "salesTrend": { "title": "Тренд продаж", "subtitle": "Сравнение доходов", "currentPeriod": "Текущий период", "previousPeriod": "Предыдущий период", "noData": "Пока недостаточно данных" }, "recentRegistrations": { "title": "Последние бронирования", "emptyTitle": "Нет бронирований", "emptyDescription": "Ваш WhatsApp-бот принимает клиентов" }, "tourPerformance": { "title": "Эффективность туров" }, "quickActions": { "title": "Быстрые действия" } },
   "onboardingTour": {
     "welcome": { "title": "🎉 Добро пожаловать в Turzz AI!", "content": "Позвольте провести быстрый тур по панели. Займёт всего 30 секунд. Вы можете пропустить в любой момент." },
     "dashboard": { "title": "📊 Панель управления", "content": "Отслеживайте ежедневные бронирования, доходы и статистику чат-бота." },
@@ -1624,7 +1626,10 @@
     "search": "Поиск...",
     "filter": "Фильтр",
     "export": "Экспорт",
-    "import": "Импорт"
+    "import": "Импорт",
+    "weekly": "Еженедельно", "monthly": "Ежемесячно", "quarterly": "Ежеквартально",
+    "viewAll": "Все", "justNow": "сейчас", "minutesAgo": "мин назад",
+    "hoursAgo": "ч назад", "daysAgo": "дн назад", "people": "чел.", "saving": "Сохранение...", "back": "Назад"
   },
   "agencyInfo": {
     "title": "Информация об агентстве",
