@@ -24,9 +24,9 @@ interface StepContentProps {
 }
 
 function StepContent({ description, bullets = [], tip, isDark }: StepContentProps) {
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const tipBg = isDark ? "rgba(249,115,22,0.12)" : "rgba(249,115,22,0.08)";
-  const tipBorder = "rgba(249,115,22,0.35)";
+  const muted = isDark ? "#94a3b8" : "#475569";
+  const tipBg = isDark ? "#2c1810" : "#fff7ed";
+  const tipBorder = isDark ? "#7c3a1a" : "#fed7aa";
 
   return (
     <div style={{ fontSize: 14, lineHeight: 1.65 }}>
@@ -113,7 +113,7 @@ function CompleteContent({ isDark }: { isDark: boolean }) {
     { icon: "🔔", label: "Yeni rezervasyonlarda bildirim" },
     { icon: "🔄", label: "Ctrl+K → Turu tekrar başlat" },
   ];
-  const bg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
+  const bg = isDark ? "#1e293b" : "#f1f5f9";
   return (
     <div>
       <p style={{ fontSize: 14, color: isDark ? "#94a3b8" : "#64748b", marginBottom: 14, lineHeight: 1.6 }}>
@@ -463,7 +463,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
           cursor: "pointer",
         },
         buttonBack: {
-          color: isDark ? "#64748b" : "#94a3b8",
+          color: isDark ? "#94a3b8" : "#64748b",
           fontSize: 13,
           marginRight: 10,
           background: "transparent",
@@ -471,14 +471,14 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
           cursor: "pointer",
         },
         buttonSkip: {
-          color: isDark ? "#64748b" : "#94a3b8",
+          color: isDark ? "#94a3b8" : "#64748b",
           fontSize: 13,
           background: "transparent",
           border: "none",
           cursor: "pointer",
         },
         buttonClose: {
-          color: isDark ? "#64748b" : "#94a3b8",
+          color: isDark ? "#94a3b8" : "#64748b",
           width: 28,
           height: 28,
         },
