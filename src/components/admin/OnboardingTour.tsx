@@ -70,12 +70,17 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
     { icon: "📊", text: "Gelir analizleri" },
     { icon: "⚡", text: "Toplu araçlar" },
   ];
-  const cardBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
+  // Solid renkler — isDark hangi değer olursa olsun görünür
+  const cardBg = isDark ? "#1e293b" : "#f1f5f9";
+  const cardText = isDark ? "#f8fafc" : "#1e293b";
+  const descColor = isDark ? "#94a3b8" : "#64748b";
+
   return (
     <div style={{ textAlign: "center" }}>
-      <p style={{ fontSize: 14, color: isDark ? "#94a3b8" : "#64748b", marginBottom: 16, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 14, color: descColor, marginBottom: 16, lineHeight: 1.6 }}>
         Bu kısa turda panelin tüm bölümlerini tanıyacaksınız.
-        <br />İstediğiniz zaman <strong>Atla</strong> veya <strong>Esc</strong> ile çıkabilirsiniz.
+        <br />İstediğiniz zaman <strong style={{ color: cardText }}>Atla</strong> veya{" "}
+        <strong style={{ color: cardText }}>Esc</strong> ile çıkabilirsiniz.
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 4 }}>
         {cards.map((c) => (
@@ -89,10 +94,11 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
               alignItems: "center",
               gap: 8,
               fontSize: 13,
-              color: isDark ? "#e2e8f0" : "#374151",
+              fontWeight: 500,
+              color: cardText,
             }}
           >
-            <span style={{ fontSize: 18 }}>{c.icon}</span>
+            <span style={{ fontSize: 18, lineHeight: 1 }}>{c.icon}</span>
             {c.text}
           </div>
         ))}
@@ -370,10 +376,14 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
 
   useEffect(() => {
     if (shouldRun) {
-      const timer = setTimeout(() => setRunTour(true), 900);
+      const timer = setTimeout(() => {
+        // localStorage'a hemen yaz — sekme kapansa bile bir daha gösterilmez
+        if (agencyId) localStorage.setItem(STORAGE_KEY(agencyId), "1");
+        setRunTour(true);
+      }, 900);
       return () => clearTimeout(timer);
     }
-  }, [shouldRun]);
+  }, [shouldRun, agencyId]);
 
   const handleCallback = (data: CallBackProps) => {
     const { status, type } = data;
