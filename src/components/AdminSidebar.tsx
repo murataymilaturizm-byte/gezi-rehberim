@@ -107,35 +107,35 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard"), dataTour: "sidebar-dashboard" },
-    { id: "languages", icon: Languages, label: t("admin.tabs.languages") },
+    { id: "languages", icon: Languages, label: t("admin.tabs.languages"), dataTour: "sidebar-languages" },
     { id: "language_currencies", icon: CreditCard, label: t("admin.tabs.languageCurrencies") },
-    { id: "history", icon: History, label: t("admin.tabs.history") },
+    { id: "history", icon: History, label: t("admin.tabs.history"), dataTour: "sidebar-history" },
   ];
 
   const tourItems = [
     { id: "tours", icon: Plane, label: t("admin.tabs.tours"), dataTour: "sidebar-tours" },
-    { id: "registrations", icon: Calendar, label: t("admin.tabs.registrations") },
+    { id: "registrations", icon: Calendar, label: t("admin.tabs.registrations"), dataTour: "sidebar-registrations" },
   ];
 
   const communicationItems = [
     { id: "whatsapp", icon: MessageSquare, label: "WhatsApp", dataTour: "sidebar-whatsapp" },
     { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo"), dataTour: "sidebar-agency-info" },
-    { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
+    { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings"), dataTour: "sidebar-payment" },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
     ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: User, label: t("admin.tabs.userProfiles") }] : []),
-    ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates") }] : []),
-    { id: "faq", icon: HelpCircle, label: t("admin.tabs.faq") },
+    ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates"), dataTour: "sidebar-templates" }] : []),
+    { id: "faq", icon: HelpCircle, label: t("admin.tabs.faq"), dataTour: "sidebar-faq" },
   ];
 
   const reportingItems = [
-    ...(shouldShowAnalytics ? [{ id: "analytics", icon: BarChart3, label: t("admin.tabs.analytics") }] : []),
+    ...(shouldShowAnalytics ? [{ id: "analytics", icon: BarChart3, label: t("admin.tabs.analytics"), dataTour: "sidebar-analytics" }] : []),
     ...(shouldShowAnalytics ? [{ id: "customer-analytics", icon: Users, label: t("admin.tabs.customerAnalytics") }] : []),
     ...(shouldShowAnalytics ? [{ id: "destination-analytics", icon: MapPin, label: t("admin.tabs.destinationAnalytics") }] : []),
     ...(shouldShowFeedback ? [{ id: "customer-feedback", icon: MessageCircle, label: t("admin.tabs.customerFeedback") }] : []),
   ];
 
   const supportItems = [
-    { id: "tickets", icon: HelpCircle, label: t("admin.tabs.tickets") },
+    { id: "tickets", icon: HelpCircle, label: t("admin.tabs.tickets"), dataTour: "sidebar-support" },
   ];
 
   const superAdminItems = [
