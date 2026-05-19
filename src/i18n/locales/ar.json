@@ -1608,6 +1608,47 @@
     "passwordsNotMatch": "كلمات المرور غير متطابقة",
     "passwordResetSuccess": "تم تحديث كلمة مرورك بنجاح"
   },
+  "weekdays": {
+    "monday": "الاثنين", "tuesday": "الثلاثاء", "wednesday": "الأربعاء",
+    "thursday": "الخميس", "friday": "الجمعة", "saturday": "السبت", "sunday": "الأحد"
+  },
+  "bulkDates": {
+    "title": "مولّد التواريخ الجماعي",
+    "subtitle": "أضف تواريخ جولات متعددة دفعةً واحدة",
+    "pattern": "نمط التكرار",
+    "patterns": { "weekly": "أسبوعيًا في أيام محددة", "monthly": "شهريًا في يوم محدد", "daily": "يوميًا (متتالي)" },
+    "selectDays": "أيّ أيام؟",
+    "dayOfMonth": "يوم الشهر (1-28)",
+    "monthlyHint": "مثال: 15 → كل شهر في اليوم 15",
+    "startDate": "تاريخ البداية", "endDate": "تاريخ الانتهاء",
+    "tourDuration": "مدة الجولة (أيام)", "durationHint": "يوم واحد: 1 — ليلتان 3 أيام: 3",
+    "pricingAndQuota": "الأسعار والحصة",
+    "priceAdult": "سعر البالغ *", "priceChild": "سعر الطفل", "quota": "الحصة",
+    "pricingNote": "سيتم تطبيق نفس السعر على جميع التواريخ",
+    "preview": "سيتم إنشاء {{count}} تاريخ",
+    "moreDates": "تواريخ أخرى...", "generateButton": "إنشاء {{count}} تاريخ", "generating": "جارٍ الإنشاء...",
+    "success": "تمت إضافة {{count}} تاريخ بنجاح!",
+    "errors": { "noDates": "يرجى تحديد نطاق تاريخ ونمط", "priceRequired": "سعر البالغ مطلوب", "tooManyDates": "الحد الأقصى 100 تاريخ في المرة الواحدة", "generic": "فشل إنشاء التواريخ" }
+  },
+  "tours": {
+    "bulkDate": "تواريخ جماعية", "bulkImport": "استيراد من Excel",
+    "duplicate": "تكرار", "duplicateTitleLabel": "اسم الجولة الجديد",
+    "copyDatesNote": "سيتم نسخ {{count}} تاريخ أيضًا",
+    "duplicateConfirm": "تكرار", "duplicateSuccess": "تم تكرار الجولة!", "duplicateError": "فشل التكرار"
+  },
+  "bulkImport": {
+    "title": "استيراد جولات جماعي من Excel",
+    "subtitle": "أضف جولات متعددة دفعةً واحدة من ملف Excel",
+    "needTemplate": "هل تحتاج إلى نموذج؟",
+    "templateDescription": "قم بتنزيل نموذج جاهز بالتنسيق الصحيح",
+    "downloadTemplate": "تنزيل النموذج",
+    "selectFile": "اختر ملف Excel", "fileHint": "صيغ .xlsx أو .xls مدعومة",
+    "parsedTours": "الجولات المعالجة", "parsed": "{{valid}}/{{total}} جولة صالحة",
+    "valid": "صالح", "invalid": "غير صالح",
+    "importButton": "استيراد {{count}} جولة", "importing": "جارٍ الاستيراد...",
+    "success": "تمت إضافة {{count}} جولة بنجاح!",
+    "errors": { "parseError": "تعذّر قراءة ملف Excel", "noValid": "لا توجد جولات صالحة للاستيراد", "importFailed": "فشل الاستيراد", "titleRequired": "عنوان الجولة مطلوب", "destinationRequired": "الوجهة مطلوبة" }
+  },
   "gettingStarted": {
     "title": "كيف أبدأ؟",
     "subtitle": "قم بإعداد النظام في 3 خطوات بسيطة وابدأ المبيعات التلقائية",

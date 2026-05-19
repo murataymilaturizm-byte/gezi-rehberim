@@ -1404,6 +1404,47 @@
     "passwordsNotMatch": "Passwörter stimmen nicht überein",
     "passwordResetSuccess": "Ihr Passwort wurde erfolgreich aktualisiert"
   },
+  "weekdays": {
+    "monday": "Montag", "tuesday": "Dienstag", "wednesday": "Mittwoch",
+    "thursday": "Donnerstag", "friday": "Freitag", "saturday": "Samstag", "sunday": "Sonntag"
+  },
+  "bulkDates": {
+    "title": "Massendaten-Generator",
+    "subtitle": "Mehrere Tourdaten auf einmal hinzufügen",
+    "pattern": "Wiederholungsmuster",
+    "patterns": { "weekly": "Wöchentlich an bestimmten Tagen", "monthly": "Monatlich an einem bestimmten Tag", "daily": "Täglich (aufeinanderfolgend)" },
+    "selectDays": "Welche Tage?",
+    "dayOfMonth": "Tag des Monats (1-28)",
+    "monthlyHint": "z.B. 15 → 15. jeden Monats",
+    "startDate": "Startdatum", "endDate": "Enddatum",
+    "tourDuration": "Tourdauer (Tage)", "durationHint": "Tagesausflug: 1 — 2 Nächte 3 Tage: 3",
+    "pricingAndQuota": "Preise & Kontingent",
+    "priceAdult": "Erwachsenenpreis *", "priceChild": "Kinderpreis", "quota": "Kontingent",
+    "pricingNote": "Für alle Daten wird derselbe Preis angewendet",
+    "preview": "{{count}} Daten werden erstellt",
+    "moreDates": "weitere Daten...", "generateButton": "{{count}} Daten erstellen", "generating": "Wird erstellt...",
+    "success": "{{count}} Daten erfolgreich hinzugefügt!",
+    "errors": { "noDates": "Bitte Datumsbereich und Muster auswählen", "priceRequired": "Erwachsenenpreis ist erforderlich", "tooManyDates": "Maximal 100 Daten pro Stapel", "generic": "Daten konnten nicht erstellt werden" }
+  },
+  "tours": {
+    "bulkDate": "Massendaten", "bulkImport": "Aus Excel importieren",
+    "duplicate": "Duplizieren", "duplicateTitleLabel": "Neuer Tourname",
+    "copyDatesNote": "{{count}} Daten werden ebenfalls kopiert",
+    "duplicateConfirm": "Duplizieren", "duplicateSuccess": "Tour dupliziert!", "duplicateError": "Duplizierung fehlgeschlagen"
+  },
+  "bulkImport": {
+    "title": "Massenimport aus Excel",
+    "subtitle": "Mehrere Touren auf einmal aus einer Excel-Datei hinzufügen",
+    "needTemplate": "Vorlage benötigt?",
+    "templateDescription": "Laden Sie eine fertige Vorlage im richtigen Format herunter",
+    "downloadTemplate": "Vorlage herunterladen",
+    "selectFile": "Excel-Datei auswählen", "fileHint": ".xlsx oder .xls Formate unterstützt",
+    "parsedTours": "Verarbeitete Touren", "parsed": "{{valid}}/{{total}} Touren gültig",
+    "valid": "Gültig", "invalid": "Ungültig",
+    "importButton": "{{count}} Touren importieren", "importing": "Importiere...",
+    "success": "{{count}} Touren erfolgreich hinzugefügt!",
+    "errors": { "parseError": "Excel-Datei konnte nicht gelesen werden", "noValid": "Keine gültigen Touren zum Importieren", "importFailed": "Import fehlgeschlagen", "titleRequired": "Tourname ist erforderlich", "destinationRequired": "Reiseziel ist erforderlich" }
+  },
   "gettingStarted": {
     "title": "Wie Fange Ich An?",
     "subtitle": "Richten Sie das System in 3 Einfachen Schritten Ein und Starten Sie den Automatischen Verkauf",

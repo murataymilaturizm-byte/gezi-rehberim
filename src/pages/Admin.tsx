@@ -62,6 +62,8 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { WhatsAppBusinessManagement } from "@/components/WhatsAppBusinessManagement";
 import { QuotaWarningBanner } from "@/components/QuotaWarningBanner";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
+import { BulkTourImport } from "@/components/admin/BulkTourImport";
+import { FileSpreadsheet } from "lucide-react";
 
 const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test"] as const;
 
@@ -169,6 +171,9 @@ const Admin = () => {
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>();
   const [filterPriceMin, setFilterPriceMin] = useState<string>("");
   const [filterPriceMax, setFilterPriceMax] = useState<string>("");
+
+  // Bulk import state
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
 
   // Plan features state
   const [planType, setPlanType] = useState<string>('starter');
@@ -774,6 +779,17 @@ const Admin = () => {
                             <span className="hidden sm:inline">{t("admin.tours.export")}</span>
                             <span className="sm:hidden">Excel</span>
                           </Button>
+                          {!isSuperAdmin && userAgencyId && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setBulkImportOpen(true)}
+                            >
+                              <FileSpreadsheet className="w-4 h-4 mr-1" />
+                              <span className="hidden sm:inline">{t("tours.bulkImport")}</span>
+                              <span className="sm:hidden">İçe Aktar</span>
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             onClick={() => {
@@ -863,6 +879,7 @@ const Admin = () => {
                     <ToursList
                       tours={tours}
                       loading={loading}
+                      agencyId={userAgencyId ?? undefined}
                       onAddDate={(tourId) => {
                         setSelectedTourForDate(tourId);
                         setSelectedDate(null);
@@ -879,6 +896,7 @@ const Admin = () => {
                         setDateFormOpen(true);
                       }}
                       onDeleteDate={(dateId) => setDeleteDialog({ open: true, id: dateId, type: "date" })}
+                      onRefresh={loadData}
                     />
                   ) : (
                     <RegistrationsList
@@ -919,6 +937,15 @@ const Admin = () => {
         tourId={selectedTourForDate}
         tourDate={selectedDate}
       />
+
+      {userAgencyId && (
+        <BulkTourImport
+          agencyId={userAgencyId}
+          open={bulkImportOpen}
+          onClose={() => setBulkImportOpen(false)}
+          onSuccess={loadData}
+        />
+      )}
 
       <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, id: null, type: null })}>
         <AlertDialogContent>

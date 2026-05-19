@@ -2,13 +2,32 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Pencil, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Calendar, Pencil, Trash2, Copy, Sparkles, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useState } from "react";
 import { TOUR_CATEGORIES } from "@/components/admin/tour-form/TourCategories";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { BulkDateGenerator } from "./BulkDateGenerator";
 
 interface Tour {
   id: string;
@@ -44,6 +63,7 @@ interface Tour {
 interface ToursListProps {
   tours: Tour[];
   loading: boolean;
+  agencyId?: string;
   onExport?: () => void;
   onAddTour?: () => void;
   onAddDate: (tourId: string) => void;
@@ -51,22 +71,74 @@ interface ToursListProps {
   onDeleteTour: (tourId: string) => void;
   onEditDate: (tourId: string, date: any) => void;
   onDeleteDate: (dateId: string) => void;
+  onRefresh?: () => void;
 }
 
 export const ToursList = ({
   tours,
   loading,
+  agencyId,
   onExport,
   onAddTour,
   onAddDate,
   onEditTour,
   onDeleteTour,
   onEditDate,
-  onDeleteDate
+  onDeleteDate,
+  onRefresh,
 }: ToursListProps) => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [displayCurrency, setDisplayCurrency] = useState<string>('TRY');
   const { convertAndFormat, loading: ratesLoading, refresh } = useCurrencyConverter('USD');
+
+  // Bulk date generator state
+  const [bulkDateTourId, setBulkDateTourId] = useState<string | null>(null);
+
+  // Duplicate dialog state
+  const [duplicateTour, setDuplicateTour] = useState<Tour | null>(null);
+  const [duplicateTitle, setDuplicateTitle] = useState("");
+  const [duplicating, setDuplicating] = useState(false);
+
+  const handleOpenDuplicate = (tour: Tour) => {
+    setDuplicateTour(tour);
+    setDuplicateTitle(`${tour.title} (Kopya)`);
+  };
+
+  const handleConfirmDuplicate = async () => {
+    if (!duplicateTour || !duplicateTitle.trim()) return;
+    setDuplicating(true);
+    try {
+      const { id: _id, created_at: _ca, tour_dates: _td, ...rest } = duplicateTour as any;
+      const { data: newTour, error } = await supabase
+        .from("tours")
+        .insert({ ...rest, title: duplicateTitle.trim() })
+        .select()
+        .single();
+      if (error) throw error;
+
+      // Copy dates if tour has any
+      if (duplicateTour.tour_dates && duplicateTour.tour_dates.length > 0 && newTour) {
+        const dateCopies = duplicateTour.tour_dates.map(({ id: _did, ...d }: any) => ({
+          ...d,
+          tour_id: newTour.id,
+        }));
+        await supabase.from("tour_dates").insert(dateCopies);
+      }
+
+      if (agencyId) {
+        supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId } }).catch(() => {});
+      }
+
+      toast({ title: t("common.success"), description: t("tours.duplicateSuccess") });
+      setDuplicateTour(null);
+      onRefresh?.();
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message || t("tours.duplicateError"), variant: "destructive" });
+    } finally {
+      setDuplicating(false);
+    }
+  };
 
   const tourTypeLabels: Record<string, string> = {
     DAYTRIP: t("admin.tourTypes.daytrip"),
@@ -135,29 +207,42 @@ export const ToursList = ({
                   )}
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onAddDate(tour.id)}
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {t("admin.tours.addDate")}
+              <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" size="sm" onClick={() => onAddDate(tour.id)}>
+                  <Calendar className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">{t("admin.tours.addDate")}</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEditTour(tour)}
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onDeleteTour(tour.id)}
-                >
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
+                {agencyId && (
+                  <Button variant="outline" size="sm" onClick={() => setBulkDateTourId(tour.id)}>
+                    <Sparkles className="w-4 h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">{t("tours.bulkDate")}</span>
+                  </Button>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onEditTour(tour)}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      {t("common.edit")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleOpenDuplicate(tour)}>
+                      <Copy className="w-4 h-4 mr-2" />
+                      {t("tours.duplicate")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => onDeleteTour(tour.id)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {t("common.delete")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </CardHeader>
@@ -229,6 +314,49 @@ export const ToursList = ({
           )}
         </Card>
       ))}
+
+      {/* Bulk date generator */}
+      {agencyId && bulkDateTourId && (
+        <BulkDateGenerator
+          tourId={bulkDateTourId}
+          agencyId={agencyId}
+          open={!!bulkDateTourId}
+          onClose={() => setBulkDateTourId(null)}
+          onSuccess={() => { setBulkDateTourId(null); onRefresh?.(); }}
+        />
+      )}
+
+      {/* Duplicate dialog */}
+      <Dialog open={!!duplicateTour} onOpenChange={(o) => !o && setDuplicateTour(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Copy className="h-5 w-5" />
+              {t("tours.duplicate")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-3 space-y-2">
+            <Label>{t("tours.duplicateTitleLabel")}</Label>
+            <Input
+              value={duplicateTitle}
+              onChange={(e) => setDuplicateTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleConfirmDuplicate()}
+              autoFocus
+            />
+            {duplicateTour?.tour_dates && duplicateTour.tour_dates.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {t("tours.copyDatesNote", { count: duplicateTour.tour_dates.length })}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDuplicateTour(null)}>{t("common.cancel")}</Button>
+            <Button onClick={handleConfirmDuplicate} disabled={duplicating || !duplicateTitle.trim()}>
+              {duplicating ? t("common.saving") : t("tours.duplicateConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

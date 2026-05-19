@@ -1434,6 +1434,47 @@
     "passwordsNotMatch": "Пароли не совпадают",
     "passwordResetSuccess": "Ваш пароль успешно обновлён"
   },
+  "weekdays": {
+    "monday": "Понедельник", "tuesday": "Вторник", "wednesday": "Среда",
+    "thursday": "Четверг", "friday": "Пятница", "saturday": "Суббота", "sunday": "Воскресенье"
+  },
+  "bulkDates": {
+    "title": "Массовый генератор дат",
+    "subtitle": "Добавьте несколько дат туров за раз",
+    "pattern": "Шаблон повторения",
+    "patterns": { "weekly": "Еженедельно в определённые дни", "monthly": "Ежемесячно в определённый день", "daily": "Ежедневно (последовательно)" },
+    "selectDays": "Какие дни?",
+    "dayOfMonth": "День месяца (1-28)",
+    "monthlyHint": "Напр. 15 → 15-е каждого месяца",
+    "startDate": "Дата начала", "endDate": "Дата окончания",
+    "tourDuration": "Продолжительность тура (дней)", "durationHint": "Однодневный: 1 — 2 ночи 3 дня: 3",
+    "pricingAndQuota": "Цены и квота",
+    "priceAdult": "Цена взрослого *", "priceChild": "Цена ребёнка", "quota": "Квота",
+    "pricingNote": "Для всех дат будет применена одинаковая цена",
+    "preview": "Будет создано {{count}} дат",
+    "moreDates": "ещё дат...", "generateButton": "Создать {{count}} дат", "generating": "Создаётся...",
+    "success": "{{count}} дат успешно добавлено!",
+    "errors": { "noDates": "Выберите диапазон дат и шаблон", "priceRequired": "Цена взрослого обязательна", "tooManyDates": "Максимум 100 дат за один раз", "generic": "Не удалось создать даты" }
+  },
+  "tours": {
+    "bulkDate": "Массовые даты", "bulkImport": "Импорт из Excel",
+    "duplicate": "Дублировать", "duplicateTitleLabel": "Новое название тура",
+    "copyDatesNote": "{{count}} дат также будут скопированы",
+    "duplicateConfirm": "Дублировать", "duplicateSuccess": "Тур скопирован!", "duplicateError": "Не удалось дублировать"
+  },
+  "bulkImport": {
+    "title": "Массовый импорт туров из Excel",
+    "subtitle": "Добавьте несколько туров из файла Excel за раз",
+    "needTemplate": "Нужен шаблон?",
+    "templateDescription": "Скачайте готовый шаблон в правильном формате",
+    "downloadTemplate": "Скачать шаблон",
+    "selectFile": "Выбрать файл Excel", "fileHint": "Поддерживаются форматы .xlsx или .xls",
+    "parsedTours": "Обработанные туры", "parsed": "{{valid}}/{{total}} туров валидны",
+    "valid": "Валидный", "invalid": "Невалидный",
+    "importButton": "Импортировать {{count}} туров", "importing": "Импортируется...",
+    "success": "{{count}} туров успешно добавлено!",
+    "errors": { "parseError": "Не удалось прочитать файл Excel", "noValid": "Нет валидных туров для импорта", "importFailed": "Импорт не удался", "titleRequired": "Название тура обязательно", "destinationRequired": "Направление обязательно" }
+  },
   "gettingStarted": {
     "title": "Как Начать?",
     "subtitle": "Настройте Систему за 3 Простых Шага и Начните Автоматические Продажи",

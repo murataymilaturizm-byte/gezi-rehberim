@@ -1416,6 +1416,47 @@
     "passwordsNotMatch": "Passwords do not match",
     "passwordResetSuccess": "Your password has been successfully updated"
   },
+  "weekdays": {
+    "monday": "Monday", "tuesday": "Tuesday", "wednesday": "Wednesday",
+    "thursday": "Thursday", "friday": "Friday", "saturday": "Saturday", "sunday": "Sunday"
+  },
+  "bulkDates": {
+    "title": "Bulk Date Generator",
+    "subtitle": "Add multiple tour dates at once",
+    "pattern": "Recurrence pattern",
+    "patterns": { "weekly": "Weekly on specific days", "monthly": "Monthly on a specific day", "daily": "Daily (consecutive)" },
+    "selectDays": "Which days?",
+    "dayOfMonth": "Day of month (1-28)",
+    "monthlyHint": "E.g. 15 → 15th of every month",
+    "startDate": "Start date", "endDate": "End date",
+    "tourDuration": "Tour duration (days)", "durationHint": "Day trip: 1 — 2 nights 3 days: 3",
+    "pricingAndQuota": "Pricing & Quota",
+    "priceAdult": "Adult price *", "priceChild": "Child price", "quota": "Quota",
+    "pricingNote": "Same price will be applied to all dates",
+    "preview": "{{count}} dates will be created",
+    "moreDates": "more dates...", "generateButton": "Create {{count}} Dates", "generating": "Generating...",
+    "success": "{{count}} dates added successfully!",
+    "errors": { "noDates": "Please select a date range and pattern", "priceRequired": "Adult price is required", "tooManyDates": "Maximum 100 dates per batch", "generic": "Failed to create dates" }
+  },
+  "tours": {
+    "bulkDate": "Bulk Dates", "bulkImport": "Import from Excel",
+    "duplicate": "Duplicate", "duplicateTitleLabel": "New tour name",
+    "copyDatesNote": "{{count}} dates will also be copied",
+    "duplicateConfirm": "Duplicate", "duplicateSuccess": "Tour duplicated!", "duplicateError": "Failed to duplicate"
+  },
+  "bulkImport": {
+    "title": "Bulk Tour Import from Excel",
+    "subtitle": "Add multiple tours at once from an Excel file",
+    "needTemplate": "Need a template?",
+    "templateDescription": "Download a ready-made template in the correct format",
+    "downloadTemplate": "Download Template",
+    "selectFile": "Select Excel File", "fileHint": ".xlsx or .xls formats supported",
+    "parsedTours": "Parsed Tours", "parsed": "{{valid}}/{{total}} tours valid",
+    "valid": "Valid", "invalid": "Invalid",
+    "importButton": "Import {{count}} Tours", "importing": "Importing...",
+    "success": "{{count}} tours added successfully!",
+    "errors": { "parseError": "Failed to read Excel file", "noValid": "No valid tours to import", "importFailed": "Import failed", "titleRequired": "Tour title is required", "destinationRequired": "Destination is required" }
+  },
   "gettingStarted": {
     "title": "How to Get Started?",
     "subtitle": "Set Up the System in 3 Simple Steps and Start Automated Sales",

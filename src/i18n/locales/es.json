@@ -1434,6 +1434,47 @@
     "passwordsNotMatch": "Las contraseñas no coinciden",
     "passwordResetSuccess": "Su contraseña se ha actualizado con éxito"
   },
+  "weekdays": {
+    "monday": "Lunes", "tuesday": "Martes", "wednesday": "Miércoles",
+    "thursday": "Jueves", "friday": "Viernes", "saturday": "Sábado", "sunday": "Domingo"
+  },
+  "bulkDates": {
+    "title": "Generador masivo de fechas",
+    "subtitle": "Agregue múltiples fechas de tour de una sola vez",
+    "pattern": "Patrón de recurrencia",
+    "patterns": { "weekly": "Semanal en días específicos", "monthly": "Mensual en un día específico", "daily": "Diario (consecutivo)" },
+    "selectDays": "¿Qué días?",
+    "dayOfMonth": "Día del mes (1-28)",
+    "monthlyHint": "Ej. 15 → día 15 de cada mes",
+    "startDate": "Fecha de inicio", "endDate": "Fecha de fin",
+    "tourDuration": "Duración del tour (días)", "durationHint": "Excursión: 1 — 2 noches 3 días: 3",
+    "pricingAndQuota": "Precios y cuota",
+    "priceAdult": "Precio adulto *", "priceChild": "Precio niño", "quota": "Cuota",
+    "pricingNote": "Se aplicará el mismo precio a todas las fechas",
+    "preview": "Se crearán {{count}} fechas",
+    "moreDates": "fechas más...", "generateButton": "Crear {{count}} fechas", "generating": "Generando...",
+    "success": "¡{{count}} fechas agregadas con éxito!",
+    "errors": { "noDates": "Seleccione un rango de fechas y un patrón", "priceRequired": "El precio de adulto es obligatorio", "tooManyDates": "Máximo 100 fechas por lote", "generic": "Error al crear fechas" }
+  },
+  "tours": {
+    "bulkDate": "Fechas masivas", "bulkImport": "Importar desde Excel",
+    "duplicate": "Duplicar", "duplicateTitleLabel": "Nuevo nombre del tour",
+    "copyDatesNote": "{{count}} fechas también se copiarán",
+    "duplicateConfirm": "Duplicar", "duplicateSuccess": "¡Tour duplicado!", "duplicateError": "Error al duplicar"
+  },
+  "bulkImport": {
+    "title": "Importación masiva de tours desde Excel",
+    "subtitle": "Agregue múltiples tours de una vez desde un archivo Excel",
+    "needTemplate": "¿Necesita una plantilla?",
+    "templateDescription": "Descargue una plantilla lista en el formato correcto",
+    "downloadTemplate": "Descargar plantilla",
+    "selectFile": "Seleccionar archivo Excel", "fileHint": "Formatos .xlsx o .xls compatibles",
+    "parsedTours": "Tours procesados", "parsed": "{{valid}}/{{total}} tours válidos",
+    "valid": "Válido", "invalid": "Inválido",
+    "importButton": "Importar {{count}} tours", "importing": "Importando...",
+    "success": "¡{{count}} tours agregados con éxito!",
+    "errors": { "parseError": "No se pudo leer el archivo Excel", "noValid": "No hay tours válidos para importar", "importFailed": "La importación falló", "titleRequired": "El nombre del tour es obligatorio", "destinationRequired": "El destino es obligatorio" }
+  },
   "gettingStarted": {
     "title": "¿Cómo Empezar?",
     "subtitle": "Configure el Sistema en 3 Pasos Simples y Comience las Ventas Automatizadas",

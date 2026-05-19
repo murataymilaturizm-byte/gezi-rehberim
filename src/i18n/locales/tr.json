@@ -1566,6 +1566,81 @@
     "passwordsNotMatch": "Şifreler eşleşmiyor",
     "passwordResetSuccess": "Şifreniz başarıyla güncellendi"
   },
+  "weekdays": {
+    "monday": "Pazartesi",
+    "tuesday": "Salı",
+    "wednesday": "Çarşamba",
+    "thursday": "Perşembe",
+    "friday": "Cuma",
+    "saturday": "Cumartesi",
+    "sunday": "Pazar"
+  },
+  "bulkDates": {
+    "title": "Toplu Tarih Oluştur",
+    "subtitle": "Bir kerede birden çok tur tarihi ekleyin",
+    "pattern": "Tekrar deseni",
+    "patterns": {
+      "weekly": "Her hafta belirli günler",
+      "monthly": "Her ayın belirli bir günü",
+      "daily": "Her gün (ardışık)"
+    },
+    "selectDays": "Hangi günler?",
+    "dayOfMonth": "Ayın hangi günü? (1-28)",
+    "monthlyHint": "Örn: 15 → her ayın 15'i",
+    "startDate": "Başlangıç tarihi",
+    "endDate": "Bitiş tarihi",
+    "tourDuration": "Tur süresi (gün)",
+    "durationHint": "Günübirlik: 1 — 2 Gece 3 Gün: 3",
+    "pricingAndQuota": "Fiyat ve Kontenjan",
+    "priceAdult": "Yetişkin fiyatı *",
+    "priceChild": "Çocuk fiyatı",
+    "quota": "Kontenjan",
+    "pricingNote": "Tüm tarihler için aynı fiyat uygulanacak",
+    "preview": "{{count}} tarih oluşturulacak",
+    "moreDates": "tarih daha...",
+    "generateButton": "{{count}} Tarih Oluştur",
+    "generating": "Oluşturuluyor...",
+    "success": "{{count}} tarih başarıyla eklendi!",
+    "errors": {
+      "noDates": "Lütfen tarih aralığı ve desen seçin",
+      "priceRequired": "Yetişkin fiyatı zorunludur",
+      "tooManyDates": "Tek seferde maksimum 100 tarih oluşturulabilir",
+      "generic": "Tarihler oluşturulamadı"
+    }
+  },
+  "tours": {
+    "bulkDate": "Toplu Tarih",
+    "bulkImport": "Excel'den İçe Aktar",
+    "duplicate": "Kopyala",
+    "duplicateTitleLabel": "Yeni tur adı",
+    "copyDatesNote": "{{count}} tarih de kopyalanacak",
+    "duplicateConfirm": "Kopyala",
+    "duplicateSuccess": "Tur başarıyla kopyalandı!",
+    "duplicateError": "Tur kopyalanamadı"
+  },
+  "bulkImport": {
+    "title": "Excel'den Toplu Tur İçe Aktar",
+    "subtitle": "Excel dosyasından birden çok turu tek seferde ekleyin",
+    "needTemplate": "Şablon Excel dosyası mı istiyorsunuz?",
+    "templateDescription": "Doğru formatta hazır bir şablon indirin",
+    "downloadTemplate": "Şablonu İndir",
+    "selectFile": "Excel Dosyası Seç",
+    "fileHint": ".xlsx veya .xls formatları desteklenir",
+    "parsedTours": "İşlenmiş Turlar",
+    "parsed": "{{valid}}/{{total}} tur geçerli",
+    "valid": "Geçerli",
+    "invalid": "Hatalı",
+    "importButton": "{{count}} Turu İçe Aktar",
+    "importing": "İçe aktarılıyor...",
+    "success": "{{count}} tur başarıyla eklendi!",
+    "errors": {
+      "parseError": "Excel dosyası okunamadı",
+      "noValid": "İçe aktarılabilecek geçerli tur bulunamadı",
+      "importFailed": "İçe aktarma başarısız",
+      "titleRequired": "Tur adı zorunludur",
+      "destinationRequired": "Destinasyon zorunludur"
+    }
+  },
   "gettingStarted": {
     "title": "Nasıl Başlarım?",
     "subtitle": "3 Basit Adımda Sistemi Kurun ve Otomatik Satışa Başlayın",

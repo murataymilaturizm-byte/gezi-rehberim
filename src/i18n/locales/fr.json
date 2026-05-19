@@ -1608,6 +1608,47 @@
     "passwordsNotMatch": "Les mots de passe ne correspondent pas",
     "passwordResetSuccess": "Votre mot de passe a été mis à jour avec succès"
   },
+  "weekdays": {
+    "monday": "Lundi", "tuesday": "Mardi", "wednesday": "Mercredi",
+    "thursday": "Jeudi", "friday": "Vendredi", "saturday": "Samedi", "sunday": "Dimanche"
+  },
+  "bulkDates": {
+    "title": "Générateur de dates en masse",
+    "subtitle": "Ajoutez plusieurs dates de circuit en une seule fois",
+    "pattern": "Modèle de récurrence",
+    "patterns": { "weekly": "Hebdomadaire des jours spécifiques", "monthly": "Mensuel un jour spécifique", "daily": "Quotidien (consécutif)" },
+    "selectDays": "Quels jours?",
+    "dayOfMonth": "Jour du mois (1-28)",
+    "monthlyHint": "Ex. 15 → le 15 de chaque mois",
+    "startDate": "Date de début", "endDate": "Date de fin",
+    "tourDuration": "Durée du circuit (jours)", "durationHint": "Excursion: 1 — 2 nuits 3 jours: 3",
+    "pricingAndQuota": "Prix et quota",
+    "priceAdult": "Prix adulte *", "priceChild": "Prix enfant", "quota": "Quota",
+    "pricingNote": "Le même prix sera appliqué à toutes les dates",
+    "preview": "{{count}} dates seront créées",
+    "moreDates": "dates supplémentaires...", "generateButton": "Créer {{count}} dates", "generating": "Génération...",
+    "success": "{{count}} dates ajoutées avec succès!",
+    "errors": { "noDates": "Veuillez sélectionner une plage de dates et un modèle", "priceRequired": "Le prix adulte est requis", "tooManyDates": "Maximum 100 dates par lot", "generic": "Échec de la création des dates" }
+  },
+  "tours": {
+    "bulkDate": "Dates en masse", "bulkImport": "Importer depuis Excel",
+    "duplicate": "Dupliquer", "duplicateTitleLabel": "Nouveau nom du circuit",
+    "copyDatesNote": "{{count}} dates seront également copiées",
+    "duplicateConfirm": "Dupliquer", "duplicateSuccess": "Circuit dupliqué!", "duplicateError": "La duplication a échoué"
+  },
+  "bulkImport": {
+    "title": "Import de circuits en masse depuis Excel",
+    "subtitle": "Ajoutez plusieurs circuits en une seule fois depuis un fichier Excel",
+    "needTemplate": "Besoin d'un modèle?",
+    "templateDescription": "Téléchargez un modèle prêt à l'emploi au bon format",
+    "downloadTemplate": "Télécharger le modèle",
+    "selectFile": "Sélectionner un fichier Excel", "fileHint": "Formats .xlsx ou .xls pris en charge",
+    "parsedTours": "Circuits analysés", "parsed": "{{valid}}/{{total}} circuits valides",
+    "valid": "Valide", "invalid": "Invalide",
+    "importButton": "Importer {{count}} circuits", "importing": "Importation...",
+    "success": "{{count}} circuits ajoutés avec succès!",
+    "errors": { "parseError": "Impossible de lire le fichier Excel", "noValid": "Aucun circuit valide à importer", "importFailed": "L'importation a échoué", "titleRequired": "Le nom du circuit est requis", "destinationRequired": "La destination est requise" }
+  },
   "gettingStarted": {
     "title": "Comment Commencer?",
     "subtitle": "Configurez le Système en 3 Étapes Simples et Commencez les Ventes Automatisées",
