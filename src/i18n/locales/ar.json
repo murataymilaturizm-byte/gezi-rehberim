@@ -1691,6 +1691,22 @@
     "success": "تمت إضافة {{count}} جولة بنجاح!",
     "errors": { "parseError": "تعذّر قراءة ملف Excel", "noValid": "لا توجد جولات صالحة للاستيراد", "importFailed": "فشل الاستيراد", "titleRequired": "عنوان الجولة مطلوب", "destinationRequired": "الوجهة مطلوبة" }
   },
+  "commandPalette": {
+    "placeholder": "ابحث عن صفحات أو أوامر...",
+    "empty": "لا توجد نتائج",
+    "search": "بحث",
+    "navigation": "الصفحات",
+    "actions": "إجراءات سريعة",
+    "preferences": "التفضيلات",
+    "help": "مساعدة",
+    "newTour": "إضافة جولة جديدة",
+    "bulkImport": "استيراد جماعي من Excel",
+    "manualRegistration": "إضافة حجز يدوي",
+    "darkMode": "الوضع الداكن",
+    "lightMode": "الوضع الفاتح",
+    "gettingStarted": "دليل البدء",
+    "logout": "تسجيل الخروج"
+  },
   "gettingStarted": {
     "title": "كيف أبدأ؟",
     "subtitle": "قم بإعداد النظام في 3 خطوات بسيطة وابدأ المبيعات التلقائية",

@@ -1510,6 +1510,22 @@
     "success": "{{count}} tours added successfully!",
     "errors": { "parseError": "Failed to read Excel file", "noValid": "No valid tours to import", "importFailed": "Import failed", "titleRequired": "Tour title is required", "destinationRequired": "Destination is required" }
   },
+  "commandPalette": {
+    "placeholder": "Search pages or commands...",
+    "empty": "No results found",
+    "search": "Search",
+    "navigation": "Pages",
+    "actions": "Quick Actions",
+    "preferences": "Preferences",
+    "help": "Help",
+    "newTour": "Add New Tour",
+    "bulkImport": "Bulk Import from Excel",
+    "manualRegistration": "Add Manual Reservation",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "gettingStarted": "Getting Started Guide",
+    "logout": "Log Out"
+  },
   "gettingStarted": {
     "title": "How to Get Started?",
     "subtitle": "Set Up the System in 3 Simple Steps and Start Automated Sales",

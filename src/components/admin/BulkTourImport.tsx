@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
@@ -54,6 +55,7 @@ const VALID_CURRENCIES = ["TRY", "USD", "EUR", "GBP", "SAR", "AED", "RUB"];
 export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourImportProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [parsedTours, setParsedTours] = useState<ParsedTour[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -215,7 +217,7 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={`${isMobile ? "w-full max-w-none h-[95dvh]" : "max-w-4xl max-h-[90vh]"} overflow-y-auto`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />

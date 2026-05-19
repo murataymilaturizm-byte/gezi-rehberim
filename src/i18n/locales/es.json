@@ -1517,6 +1517,22 @@
     "success": "¡{{count}} tours agregados con éxito!",
     "errors": { "parseError": "No se pudo leer el archivo Excel", "noValid": "No hay tours válidos para importar", "importFailed": "La importación falló", "titleRequired": "El nombre del tour es obligatorio", "destinationRequired": "El destino es obligatorio" }
   },
+  "commandPalette": {
+    "placeholder": "Buscar páginas o comandos...",
+    "empty": "Sin resultados",
+    "search": "Buscar",
+    "navigation": "Páginas",
+    "actions": "Acciones rápidas",
+    "preferences": "Preferencias",
+    "help": "Ayuda",
+    "newTour": "Agregar nuevo tour",
+    "bulkImport": "Importar en masa desde Excel",
+    "manualRegistration": "Agregar reserva manual",
+    "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro",
+    "gettingStarted": "Guía de inicio",
+    "logout": "Cerrar sesión"
+  },
   "gettingStarted": {
     "title": "¿Cómo Empezar?",
     "subtitle": "Configure el Sistema en 3 Pasos Simples y Comience las Ventas Automatizadas",

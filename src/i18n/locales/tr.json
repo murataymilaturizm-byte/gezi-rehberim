@@ -1696,6 +1696,22 @@
       "destinationRequired": "Destinasyon zorunludur"
     }
   },
+  "commandPalette": {
+    "placeholder": "Sayfa veya komut ara...",
+    "empty": "Sonuç bulunamadı",
+    "search": "Ara",
+    "navigation": "Sayfalar",
+    "actions": "Hızlı Aksiyonlar",
+    "preferences": "Tercihler",
+    "help": "Yardım",
+    "newTour": "Yeni Tur Ekle",
+    "bulkImport": "Excel'den Toplu İçe Aktar",
+    "manualRegistration": "Manuel Rezervasyon Ekle",
+    "darkMode": "Koyu Mod",
+    "lightMode": "Açık Mod",
+    "gettingStarted": "Başlangıç Kılavuzu",
+    "logout": "Çıkış Yap"
+  },
   "gettingStarted": {
     "title": "Nasıl Başlarım?",
     "subtitle": "3 Basit Adımda Sistemi Kurun ve Otomatik Satışa Başlayın",

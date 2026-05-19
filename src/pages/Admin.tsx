@@ -64,6 +64,7 @@ import { QuotaWarningBanner } from "@/components/QuotaWarningBanner";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { BulkTourImport } from "@/components/admin/BulkTourImport";
 import { NotificationCenter } from "@/components/admin/NotificationCenter";
+import { CommandPalette } from "@/components/admin/CommandPalette";
 import { FileSpreadsheet } from "lucide-react";
 
 const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test"] as const;
@@ -651,6 +652,15 @@ const Admin = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  {!isSuperAdmin && (
+                    <CommandPalette
+                      onTabChange={handleTabChange}
+                      onNewTour={() => { setSelectedTour(undefined); setTourFormOpen(true); }}
+                      onBulkImport={() => setBulkImportOpen(true)}
+                      onManualReg={() => setManualRegistrationDialogOpen(true)}
+                      onLogout={handleLogout}
+                    />
+                  )}
                   {!isSuperAdmin && userAgencyId && (
                     <NotificationCenter agencyId={userAgencyId} onTabChange={handleTabChange} />
                   )}
@@ -682,6 +692,7 @@ const Admin = () => {
           {/* Main Content */}
           <main className="flex-1 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 overflow-x-hidden">
           <ErrorBoundary key={activeTab} fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
+          <div key={activeTab} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
             {!isSuperAdmin && <SubscriptionBanner onNavigateToPlan={() => handleTabChange("history")} />}
             {!isSuperAdmin && userAgencyId && (
               <QuotaWarningBanner agencyId={userAgencyId} onNavigateToPlan={() => handleTabChange("history")} />
@@ -906,6 +917,7 @@ const Admin = () => {
                 </CardContent>
               </Card>
             ) : null}
+          </div>
           </ErrorBoundary>
           </main>
 

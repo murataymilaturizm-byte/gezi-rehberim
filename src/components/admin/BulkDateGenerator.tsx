@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarDays, Sparkles, AlertCircle, Loader2 } from "lucide-react";
 
@@ -58,6 +59,7 @@ export function BulkDateGenerator({ tourId, agencyId, open, onClose, onSuccess }
   const [quota, setQuota] = useState("20");
   const [isLoading, setIsLoading] = useState(false);
 
+  const isMobile = useIsMobile();
   const today = new Date().toISOString().split("T")[0];
 
   const previewDates = useMemo(() => {
@@ -159,7 +161,7 @@ export function BulkDateGenerator({ tourId, agencyId, open, onClose, onSuccess }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={`${isMobile ? "w-full max-w-none h-[95dvh]" : "max-w-2xl max-h-[90vh]"} overflow-y-auto`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />

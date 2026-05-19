@@ -1691,6 +1691,22 @@
     "success": "{{count}} circuits ajoutés avec succès!",
     "errors": { "parseError": "Impossible de lire le fichier Excel", "noValid": "Aucun circuit valide à importer", "importFailed": "L'importation a échoué", "titleRequired": "Le nom du circuit est requis", "destinationRequired": "La destination est requise" }
   },
+  "commandPalette": {
+    "placeholder": "Rechercher des pages ou commandes...",
+    "empty": "Aucun résultat",
+    "search": "Rechercher",
+    "navigation": "Pages",
+    "actions": "Actions rapides",
+    "preferences": "Préférences",
+    "help": "Aide",
+    "newTour": "Ajouter un circuit",
+    "bulkImport": "Import en masse depuis Excel",
+    "manualRegistration": "Ajouter une réservation manuelle",
+    "darkMode": "Mode sombre",
+    "lightMode": "Mode clair",
+    "gettingStarted": "Guide de démarrage",
+    "logout": "Se déconnecter"
+  },
   "gettingStarted": {
     "title": "Comment Commencer?",
     "subtitle": "Configurez le Système en 3 Étapes Simples et Commencez les Ventes Automatisées",

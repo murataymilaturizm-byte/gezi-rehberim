@@ -28,6 +28,7 @@ import { WhatsAppLogs } from "./WhatsAppLogs";
 import { LanguageStats } from "./LanguageStats";
 import { WhatsAppSettings } from "./WhatsAppSettings";
 import { EmptyState } from "./EmptyState";
+import { ConversationsEmptyIllustration } from "./illustrations/ConversationsEmptyIllustration";
 
 const PAGE_SIZE = 25;
 
@@ -338,7 +339,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
             <TabsContent value="conversations" className="mt-0">
               {conversations.length === 0 ? (
                 <EmptyState
-                  icon={MessageCircle}
+                  illustration={<ConversationsEmptyIllustration className="w-36 h-36" />}
                   title={t("conversations.emptyTitle")}
                   description={t("conversations.emptyDescription")}
                 />

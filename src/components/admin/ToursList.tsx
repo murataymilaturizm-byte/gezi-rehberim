@@ -30,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BulkDateGenerator } from "./BulkDateGenerator";
 import { EmptyState } from "@/components/EmptyState";
 import { MapPin } from "lucide-react";
+import { ToursEmptyIllustration } from "@/components/illustrations/ToursEmptyIllustration";
 
 interface Tour {
   id: string;
@@ -159,7 +160,7 @@ export const ToursList = ({
   if (tours.length === 0) {
     return (
       <EmptyState
-        icon={MapPin}
+        illustration={<ToursEmptyIllustration className="w-36 h-36" />}
         title={t("tours.emptyTitle")}
         description={t("tours.emptyDescription")}
         action={onAddTour ? { label: t("tours.addFirstTour"), onClick: onAddTour } : undefined}
@@ -186,7 +187,7 @@ export const ToursList = ({
       </div>
       
       {tours.map((tour) => (
-        <Card key={tour.id} className="border-border/50">
+        <Card key={tour.id} className="border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20">
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="space-y-1">

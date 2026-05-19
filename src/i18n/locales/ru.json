@@ -1517,6 +1517,22 @@
     "success": "{{count}} туров успешно добавлено!",
     "errors": { "parseError": "Не удалось прочитать файл Excel", "noValid": "Нет валидных туров для импорта", "importFailed": "Импорт не удался", "titleRequired": "Название тура обязательно", "destinationRequired": "Направление обязательно" }
   },
+  "commandPalette": {
+    "placeholder": "Поиск страниц или команд...",
+    "empty": "Результатов нет",
+    "search": "Поиск",
+    "navigation": "Страницы",
+    "actions": "Быстрые действия",
+    "preferences": "Настройки",
+    "help": "Помощь",
+    "newTour": "Добавить тур",
+    "bulkImport": "Массовый импорт из Excel",
+    "manualRegistration": "Добавить бронирование вручную",
+    "darkMode": "Тёмный режим",
+    "lightMode": "Светлый режим",
+    "gettingStarted": "Руководство по началу работы",
+    "logout": "Выйти"
+  },
   "gettingStarted": {
     "title": "Как Начать?",
     "subtitle": "Настройте Систему за 3 Простых Шага и Начните Автоматические Продажи",

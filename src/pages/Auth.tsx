@@ -48,6 +48,7 @@ const Auth = () => {
   const billingParam = searchParams.get("billing");
   
   const [isLogin, setIsLogin] = useState(modeParam !== "signup");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
@@ -89,19 +90,21 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate input
-    const validation = isLogin 
+    // Validate input — collect field-level errors for inline display
+    const validation = isLogin
       ? authSchema.safeParse({ email, password })
       : signupSchema.safeParse({ email, password, fullName, agencyName, phone, city, region, planType });
-      
+
     if (!validation.success) {
-      toast({
-        title: t("auth.errors.title"),
-        description: validation.error.errors[0].message,
-        variant: "destructive"
+      const errs: Record<string, string> = {};
+      validation.error.errors.forEach((e) => {
+        const field = e.path[0] as string;
+        if (!errs[field]) errs[field] = e.message;
       });
+      setFieldErrors(errs);
       return;
     }
+    setFieldErrors({});
 
     setIsLoading(true);
 
@@ -543,20 +546,21 @@ const Auth = () => {
               </>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors((p) => ({ ...p, email: "" })); }}
                 placeholder={t("auth.placeholders.email")}
-                required
                 disabled={isLoading}
+                className={fieldErrors.email ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{t("auth.password")}</Label>
                 {isLogin && (
@@ -574,12 +578,13 @@ const Auth = () => {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: "" })); }}
                 placeholder={t("auth.placeholders.password")}
-                required
                 disabled={isLoading}
                 minLength={6}
+                className={fieldErrors.password ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {fieldErrors.password && <p className="text-xs text-destructive">{fieldErrors.password}</p>}
             </div>
 
             <Button

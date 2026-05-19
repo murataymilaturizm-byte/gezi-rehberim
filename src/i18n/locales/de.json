@@ -1487,6 +1487,22 @@
     "success": "{{count}} Touren erfolgreich hinzugefügt!",
     "errors": { "parseError": "Excel-Datei konnte nicht gelesen werden", "noValid": "Keine gültigen Touren zum Importieren", "importFailed": "Import fehlgeschlagen", "titleRequired": "Tourname ist erforderlich", "destinationRequired": "Reiseziel ist erforderlich" }
   },
+  "commandPalette": {
+    "placeholder": "Seiten oder Befehle suchen...",
+    "empty": "Keine Ergebnisse",
+    "search": "Suchen",
+    "navigation": "Seiten",
+    "actions": "Schnellaktionen",
+    "preferences": "Einstellungen",
+    "help": "Hilfe",
+    "newTour": "Neue Tour hinzufügen",
+    "bulkImport": "Massenimport aus Excel",
+    "manualRegistration": "Manuelle Reservierung hinzufügen",
+    "darkMode": "Dunkelmodus",
+    "lightMode": "Hellmodus",
+    "gettingStarted": "Erste-Schritte-Anleitung",
+    "logout": "Abmelden"
+  },
   "gettingStarted": {
     "title": "Wie Fange Ich An?",
     "subtitle": "Richten Sie das System in 3 Einfachen Schritten Ein und Starten Sie den Automatischen Verkauf",

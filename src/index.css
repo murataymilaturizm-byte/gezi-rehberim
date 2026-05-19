@@ -2,10 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Font ───────────────────────────────────────────────────────────────────── */
+
+/* Latin diller için Inter (premium hissi — Stripe / Linear standardı) */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
 /* ── RTL (Arapça) Global Kurallar ──────────────────────────────────────────── */
 
 /* Arapça font */
-html[dir="rtl"] {
+html[dir="rtl"],
+html[dir="rtl"] body {
   font-family: 'Cairo', system-ui, sans-serif;
 }
 
