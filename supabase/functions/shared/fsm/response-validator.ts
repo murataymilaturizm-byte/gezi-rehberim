@@ -48,19 +48,47 @@ const EN_PATTERNS: RegExp[] = [
   /\b(payment|account)\s+(details|information)\s+(will\s+be|are\s+being|has\s+been)\s+(sent|shared|forwarded)/i,
 ];
 
-// ─── DE/FR/ES/RU/AR ek pattern'leri ─────────────────────────────────────────
+// ─── DE/FR/ES/RU/AR tam coverage ─────────────────────────────────────────────
 const EXTRA_PATTERNS: RegExp[] = [
-  // DE
-  /\b(ihre\s+)?(buchung|reservierung)\s+(wurde|ist|war)\s+(best[äa]tigt|gespeichert|abgeschlossen|erstellt)/i,
-  /\b(buchung|reservierung)\s+(erfolgreich|abgeschlossen|gespeichert|erstellt)/i,
-  // FR
-  /\b(votre\s+)?(r[ée]servation|demande)\s+(a\s+[ée]t[ée]|est)\s+(confirm[ée]e?|enregistr[ée]e?|cr[ée][ée]e?|trait[ée]e?)/i,
-  // ES
-  /\b(su\s+)?(reserva|solicitud)\s+(ha\s+sido|fue)\s+(confirmada|registrada|completada|creada)/i,
-  // RU
-  /\b(ваш\S*\s+)?бронирован\S+\s+(подтверждено|сохранено|создано|завершено)/i,
-  // AR
-  /\b(تم\s+)?(تأكيد|حجز|تسجيل)\s+(طلبك|حجزك)/i,
+  // DE — 6 pattern
+  /\b(ihre\s+)?(buchung|reservierung)\s+(wurde|ist|war)\s+(best[äa]tigt|gespeichert|abgeschlossen|erstellt|durchgef[üu]hrt)/i,
+  /\b(buchung|reservierung)\s+(erfolgreich|abgeschlossen|gespeichert|erstellt|best[äa]tigt)/i,
+  /\bwir\s+haben\s+ihre?\s+(buchung|reservierung|anfrage)\s+(erhalten|best[äa]tigt|bearbeitet)/i,
+  /\berfolgreich\s+(gebucht|reserviert|best[äa]tigt|abgeschlossen)/i,
+  /\bihre?\s+(reise|tour)\s+(wurde|ist)\s+(best[äa]tigt|gebucht|arrangiert)/i,
+  /\bunser\s+team\s+wird\s+sich\s+(bei\s+ihnen\s+)?(melden|kontaktieren)/i,
+
+  // FR — 6 pattern
+  /\b(votre\s+)?(r[ée]servation|demande)\s+(a\s+[ée]t[ée]|est)\s+(confirm[ée]e?|enregistr[ée]e?|cr[ée][ée]e?|trait[ée]e?|effectu[ée]e?)/i,
+  /\bnous\s+avons\s+(re[cç]u|confirm[ée]|trait[ée])\s+votre\s+(r[ée]servation|demande)/i,
+  /\b(avec\s+succ[eè]s|r[ée]ussie?)\s+(r[ée]serv[ée]e?|confirm[ée]e?|trait[ée]e?)/i,
+  /\bvotre\s+(voyage|circuit|tour)\s+(a\s+[ée]t[ée]|est)\s+(confirm[ée]e?|r[ée]serv[ée]e?)/i,
+  /\bnotre\s+[ée]quipe\s+(va|vous)\s+contacter/i,
+  /\bfélicitations.{0,40}(r[ée]servation|voyage|circuit)/i,
+
+  // ES — 6 pattern
+  /\b(su\s+)?(reserva|solicitud)\s+(ha\s+sido|fue)\s+(confirmada|registrada|completada|creada|realizada)/i,
+  /\bhemos\s+(recibido|confirmado|procesado)\s+su\s+(reserva|solicitud)/i,
+  /\b(exitosamente|con\s+[ée]xito)\s+(reservado|confirmado|procesado|completado)/i,
+  /\bsu\s+(viaje|tour)\s+(ha\s+sido|fue)\s+(confirmado|reservado|organizado)/i,
+  /\bnuestro\s+equipo\s+(se\s+pondr[aá]|le\s+contactar[aá])/i,
+  /\bfelicitaciones.{0,40}(reserva|viaje|tour)/i,
+
+  // RU — 6 pattern
+  /\b(ваше?\s+)?бронирование?\s+(подтверждено|сохранено|создано|завершено|оформлено)/i,
+  /\bмы\s+(получили|подтвердили|обработали)\s+ваш[еу]?\s*(бронирование|заявку|запрос)/i,
+  /\b(успешно)\s+(забронировано|подтверждено|обработано|оформлено)/i,
+  /\bваш[аея]?\s+(поездка|тур)\s+(подтвержден[оа]?|забронирован[оа]?)/i,
+  /\bнаш[аи]?\s+сотрудники?\s+(свяжутся|позвонят|напишут)/i,
+  /\bпоздравляем.{0,40}(бронирование|тур|поездка)/i,
+
+  // AR — 6 pattern
+  /\b(تم\s+)?(تأكيد|حجز|تسجيل)\s+(طلبك|حجزك|رحلتك)/i,
+  /\b(تلقينا|أكدنا|عالجنا)\s+(حجزك|طلبك)/i,
+  /\b(بنجاح)\s+(محجوز|مؤكد|معالج|مسجل)/i,
+  /\bحجزك\s+(مؤكد|مكتمل|تم|أنجز)/i,
+  /\bفريقنا\s+سيتواصل\s+(معك|بك)/i,
+  /\bتهانينا.{0,40}(الحجز|الرحلة|الجولة)/i,
 ];
 
 // ─── Redirect cümleleri ───────────────────────────────────────────────────────

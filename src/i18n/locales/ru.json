@@ -634,7 +634,38 @@
         "save": "Сохранить"
       },
       "notCreated": "Еще не создано",
-      "deleteConfirm": "Вы уверены, что хотите удалить этот шаблон?"
+      "deleteConfirm": "Вы уверены, что хотите удалить этот шаблон?",
+      "sendButton": "Отправить",
+      "send": {
+        "title": "Отправить шаблон",
+        "modeRecent": "Из бронирования",
+        "modeManual": "Ручной ввод",
+        "selectRegistration": "Выбрать бронирование",
+        "pickRegistration": "Выберите клиента...",
+        "recipientPhone": "Номер телефона",
+        "recipientName": "Имя",
+        "recipientNamePlaceholder": "Имя клиента",
+        "variables": "Переменные",
+        "preview": "Предпросмотр",
+        "metaWarning": "Это сообщение будет отправлено через Meta WhatsApp Business API.",
+        "sending": "Отправляется...",
+        "sendNow": "Отправить сейчас",
+        "success": "Сообщение успешно отправлено!",
+        "errors": {
+          "invalidPhone": "Введите действительный номер телефона",
+          "selectRegistration": "Пожалуйста, выберите бронирование",
+          "missingVariables": "Отсутствующие переменные: {{vars}}",
+          "generic": "Не удалось отправить сообщение"
+        }
+      },
+      "sync": {
+        "button": "Синхронизировать с Meta",
+        "success": "{{count}} шаблонов обновлено",
+        "error": "Синхронизация не удалась"
+      },
+      "status": {
+        "notSynced": "Не синхронизировано"
+      }
     },
     "faq": {
       "title": "Часто задаваемые вопросы",
@@ -1303,6 +1334,30 @@
       "quotaErrorMessage": "На эту дату осталось только {quota} мест. Пожалуйста, уменьшите количество человек или выберите другую дату.",
       "userNotFound": "Пользователь не найден",
       "agencyNotFound": "Агентство не найдено"
+    },
+    "quotaBanner": {
+      "warning": "Вы использовали {{percent}}% квоты сообщений. Скоро закончится.",
+      "critical": "Квота сообщений критически низка ({{percent}}%)! Новые сообщения могут быть заблокированы.",
+      "upgrade": "Обновить план"
+    },
+    "onboarding": {
+      "title": "Начало работы",
+      "progress": "{{percent}}% завершено",
+      "dismiss": "Закрыть",
+      "steps": {
+        "agencyInfo": "Заполнить данные агентства",
+        "payment": "Настроить оплату",
+        "addTour": "Добавить первый тур",
+        "addDates": "Добавить даты тура",
+        "whatsapp": "Подключить WhatsApp"
+      },
+      "actions": {
+        "agencyInfo": "Изменить",
+        "payment": "Настроить",
+        "addTour": "Добавить тур",
+        "addDates": "Добавить даты",
+        "whatsapp": "Подключить"
+      }
     }
   },
   "auth": {
@@ -1346,7 +1401,9 @@
       "invalidCredentials": "Неверный адрес электронной почты или пароль",
       "emailExists": "Этот адрес электронной почты уже используется",
       "signupFailed": "Регистрация не удалась",
-      "loginFailed": "Вход не удался"
+      "loginFailed": "Вход не удался",
+      "resetFailed": "Не удалось отправить ссылку для сброса",
+      "passwordUpdateFailed": "Не удалось обновить пароль"
     },
     "success": {
       "title": "Успешно",
@@ -1363,7 +1420,19 @@
       "region": "Центральный"
     },
     "currency": "Ваша валюта",
-    "currencyHelp": "Валюта для хранения цен туров"
+    "currencyHelp": "Валюта для хранения цен туров",
+    "forgotPassword": "Забыли пароль?",
+    "forgotPasswordTitle": "Сброс пароля",
+    "forgotPasswordDesc": "Введите адрес электронной почты вашего аккаунта.",
+    "sendResetLink": "Отправить ссылку сброса",
+    "resetLinkSent": "Ссылка для сброса отправлена! Проверьте почту.",
+    "backToLogin": "Вернуться к входу",
+    "resetPassword": "Установить новый пароль",
+    "newPasswordDesc": "Установите ваш новый пароль.",
+    "newPassword": "Новый пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "passwordsNotMatch": "Пароли не совпадают",
+    "passwordResetSuccess": "Ваш пароль успешно обновлён"
   },
   "gettingStarted": {
     "title": "Как Начать?",

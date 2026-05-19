@@ -1,43 +1,20 @@
-// Simple language detection
+// Karakter tabanlı dil tespiti — NLU response language ile override edilir.
+// Eski async/keyword tabanlı detectLanguage'in yerine geçer.
+// NLU sonucu PRIMARY; bu sadece NLU öncesi ilk bağlam için kullanılır.
 
-export async function detectLanguage(text: string): Promise<string | null> {
-  const lower = text.toLowerCase().trim();
-  
-  // Turkish patterns
-  if (/merhaba|selam|nasılsın|turlar|nerede|ne zaman|kaç para/.test(lower)) {
-    return 'tr';
-  }
-  
-  // English patterns
-  if (/hello|hi|tours|where|when|how much|price/.test(lower)) {
-    return 'en';
-  }
-  
-  // German patterns
-  if (/hallo|guten tag|touren|wo|wann|wie viel/.test(lower)) {
-    return 'de';
-  }
-  
-  // Russian patterns
-  if (/привет|здравствуйте|туры|где|когда|сколько/.test(lower)) {
-    return 'ru';
-  }
-  
-  // Arabic patterns
-  if (/مرحبا|السلام عليكم|جولات|أين|متى|كم/.test(lower)) {
-    return 'ar';
-  }
-  
-  // French patterns
-  if (/bonjour|salut|tours|où|quand|combien/.test(lower)) {
-    return 'fr';
-  }
-  
-  // Spanish patterns
-  if (/hola|buenos días|tours|dónde|cuándo|cuánto/.test(lower)) {
-    return 'es';
-  }
-  
-  // Default to Turkish
-  return 'tr';
+/**
+ * Unicode karakter setlerine bakarak dili tahmin eder.
+ * TR özel karakterler (ğüşıöç) → tr
+ * Kiril → ru, Arapça → ar, vb.
+ * Saf ASCII → null (belirsiz; NLU'ya bırak)
+ */
+export function detectLanguage(text: string): string | null {
+  if (/[ğüşıöçĞÜŞİÖÇ]/.test(text)) return "tr";
+  if (/[äöüßÄÖÜ]/.test(text)) return "de";
+  if (/[éèêëàâùûîïôœæçÉÈÊËÀÂÙÛÎÏÔŒÆ]/.test(text)) return "fr";
+  if (/[ñáéíóúüÑÁÉÍÓÚÜ¿¡]/.test(text)) return "es";
+  if (/[Ѐ-ӿ]/.test(text)) return "ru"; // Kiril
+  if (/[؀-ۿ]/.test(text)) return "ar"; // Arapça
+  // Saf ASCII → belirsiz; çağıran taraf NLU sonucunu kullanır
+  return null;
 }

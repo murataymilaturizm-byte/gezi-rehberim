@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Edit, Trash2, Copy } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Copy, Send, RefreshCw, CheckCircle2, Clock, XCircle, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SendTemplateDialog } from "./SendTemplateDialog";
 
 interface MessageTemplate {
   id: string;
@@ -33,6 +35,8 @@ interface MessageTemplate {
   content: string;
   variables: any;
   is_active: boolean;
+  meta_status?: string | null;
+  meta_template_id?: string | null;
 }
 
 const LANGUAGES = [
@@ -51,13 +55,38 @@ const getTemplateTypes = (t: any) => [
   { key: 'tour_reminder', name: t('admin.templates.types.tour_reminder') },
 ];
 
+function StatusBadge({ status }: { status?: string | null }) {
+  if (!status) return <Badge variant="outline" className="text-xs">{t_("admin.templates.status.notSynced")}</Badge>;
+  const cfg: Record<string, { className: string; icon: any }> = {
+    APPROVED: { className: "bg-green-500 hover:bg-green-600 text-white border-0", icon: CheckCircle2 },
+    PENDING: { className: "bg-yellow-500 hover:bg-yellow-600 text-white border-0", icon: Clock },
+    REJECTED: { className: "bg-red-500 hover:bg-red-600 text-white border-0", icon: XCircle },
+    IN_APPEAL: { className: "bg-blue-500 hover:bg-blue-600 text-white border-0", icon: AlertCircle },
+  };
+  const { className, icon: Icon } = cfg[status] || { className: "", icon: AlertCircle };
+  return (
+    <Badge className={`text-xs gap-1 ${className}`}>
+      <Icon className="h-2.5 w-2.5" />
+      {status}
+    </Badge>
+  );
+}
+
+// Module-level translation helper (used in StatusBadge before component mounts)
+let t_: (key: string) => string = (k) => k;
+
 export default function MessageTemplates() {
   const { t } = useTranslation();
+  t_ = t; // make t available to StatusBadge
+  const [agencyId, setAgencyId] = useState<string>("");
   const [templates, setTemplates] = useState<MessageTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('tr');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<MessageTemplate | null>(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [sendingTemplate, setSendingTemplate] = useState<MessageTemplate | null>(null);
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
   const { toast } = useToast();
 
@@ -87,6 +116,7 @@ export default function MessageTemplates() {
         .single();
 
       if (!agency) return;
+      setAgencyId(agency.id);
 
       const { data, error } = await (supabase as any)
         .from('message_templates')
@@ -297,6 +327,26 @@ export default function MessageTemplates() {
     }
   };
 
+  const handleSyncWithMeta = async () => {
+    if (!agencyId) return;
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-meta-templates', {
+        body: { agencyId },
+      });
+      if (error) throw error;
+      toast({
+        title: t("common.success"),
+        description: t("admin.templates.sync.success", { count: data?.updated ?? 0 }),
+      });
+      await fetchTemplates();
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message || t("admin.templates.sync.error"), variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const getTemplatesByLanguage = (lang: string) => {
     return templates.filter(t => t.language === lang);
   };
@@ -317,17 +367,23 @@ export default function MessageTemplates() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold">{t("admin.whatsapp.templates.title")}</h2>
           <p className="text-muted-foreground">
             {t("admin.whatsapp.templates.description")}
           </p>
         </div>
-        <Button onClick={copyDefaultTemplates} variant={templates.length === 0 ? "default" : "outline"}>
-          <Copy className="mr-2 h-4 w-4" />
-          {t("admin.whatsapp.templates.loadDefaults")}
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={handleSyncWithMeta} variant="outline" disabled={syncing || !agencyId}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+            {t("admin.templates.sync.button")}
+          </Button>
+          <Button onClick={copyDefaultTemplates} variant={templates.length === 0 ? "default" : "outline"}>
+            <Copy className="mr-2 h-4 w-4" />
+            {t("admin.whatsapp.templates.loadDefaults")}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage}>
@@ -350,14 +406,27 @@ export default function MessageTemplates() {
                 return (
                   <Card key={type.key}>
                     <CardHeader>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div>
-                          <CardTitle>{type.name}</CardTitle>
-                           <CardDescription>
+                          <div className="flex items-center gap-2">
+                            <CardTitle>{type.name}</CardTitle>
+                            {template && <StatusBadge status={template.meta_status} />}
+                          </div>
+                          <CardDescription>
                             {template ? template.subject : t('admin.templates.notCreated')}
-                           </CardDescription>
+                          </CardDescription>
                         </div>
                         <div className="flex gap-2">
+                          {template && template.is_active && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => { setSendingTemplate(template); setSendDialogOpen(true); }}
+                            >
+                              <Send className="h-4 w-4 mr-1" />
+                              {t("admin.templates.sendButton")}
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
@@ -521,6 +590,15 @@ export default function MessageTemplates() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {agencyId && (
+        <SendTemplateDialog
+          template={sendingTemplate}
+          agencyId={agencyId}
+          open={sendDialogOpen}
+          onClose={() => { setSendDialogOpen(false); setSendingTemplate(null); }}
+        />
+      )}
     </div>
   );
 }

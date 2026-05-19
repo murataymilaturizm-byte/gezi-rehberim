@@ -1,20 +1,224 @@
-// Demo Chat Edge Function - Modular FSM v3.1.0
+// Demo Chat — Slim HTTP wrapper (Faz 4)
+// Tüm core business logic shared/handlers/process-message.ts içinde.
+// DemoChatAdapter: frontend conversationState (stateless context) + DB history.
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { handleChatRequest } from "./handlers/chat-handler.ts";
-import { createErrorResponse } from "./handlers/error-handler.ts";
-import { corsHeaders } from "./config/constants.ts";
-import { logger } from "./utils/logger.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
+import { detectLanguageChangeIntent, pickLocalized } from "../shared/fsm/localization.ts";
+import { detectLanguage } from "../shared/fsm/language.ts";
+import { getCachedTours } from "../shared/utils/tour-cache.ts";
+import { processChatMessage } from "../shared/handlers/process-message.ts";
+import { DemoChatAdapter } from "./adapter.ts";
+import { CONFIG, corsHeaders } from "./config/constants.ts";
 
 serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
 
   try {
-    return await handleChatRequest(req);
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    );
+
+    const body = await req.json();
+    const {
+      message: rawMessage,
+      sessionId,
+      conversationState: incomingContext,
+      conversationStyle,
+      agencyId: bodyAgencyId,
+    } = body;
+
+    if (!sessionId) {
+      return new Response(JSON.stringify({ error: "sessionId required" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const agencyId: string = bodyAgencyId || CONFIG.DEMO_AGENCY_ID;
+    const currentLang: string = (incomingContext as any)?.language || "tr";
+
+    // === INPUT UZUNLUK KONTROLÜ ===
+    if (isInputTooLong(rawMessage)) {
+      const _tlMsgs: Record<string, string> = {
+        tr: "Mesajınız çok uzun (max 2000 karakter), lütfen daha kısa yazın.",
+        en: "Your message is too long (max 2000 chars), please shorten it.",
+        de: "Ihre Nachricht ist zu lang (max 2000 Zeichen), bitte kürzen.",
+        ru: "Сообщение слишком длинное (макс. 2000 символов).",
+        ar: "رسالتك طويلة جداً (الحد الأقصى 2000 حرف).",
+        fr: "Votre message est trop long (max 2000 caractères).",
+        es: "Su mensaje es demasiado largo (máx 2000 caracteres).",
+      };
+      return new Response(JSON.stringify({
+        response: _tlMsgs[currentLang] || _tlMsgs.tr,
+        conversationState: incomingContext,
+        isError: true,
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const message = sanitizeInput(rawMessage || "");
+
+    // === IP RATE LIMIT: 20 istek/dakika ===
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || req.headers.get("x-real-ip")
+      || null;
+    if (clientIP) {
+      const { data: _ipRl, error: _ipRle } = await supabase.rpc("check_rate_limit", {
+        p_identifier: clientIP,
+        p_identifier_type: "ip",
+        p_window_seconds: 60,
+        p_max_requests: 20,
+      });
+      if (!_ipRle && _ipRl && !_ipRl.allowed) {
+        const _rlMsgs: Record<string, string> = {
+          tr: "Çok hızlı istek gönderiyorsunuz. 🙏 Lütfen bir dakika bekleyin.",
+          en: "You're sending requests too quickly. 🙏 Please wait.",
+          de: "Zu viele Anfragen. 🙏 Bitte warten.",
+          ru: "Слишком много запросов. 🙏 Подождите.",
+          ar: "طلبات كثيرة جداً. 🙏 يرجى الانتظار.",
+          fr: "Trop de requêtes. 🙏 Patientez.",
+          es: "Demasiadas solicitudes. 🙏 Por favor espere.",
+        };
+        return new Response(JSON.stringify({
+          response: _rlMsgs[currentLang] || _rlMsgs.tr,
+          conversationState: incomingContext,
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // === SESSION RATE LIMIT: 50 mesaj/saat ===
+    {
+      const { data: _sessRl, error: _sessRle } = await supabase.rpc("check_rate_limit", {
+        p_identifier: sessionId,
+        p_identifier_type: "session",
+        p_window_seconds: 3600,
+        p_max_requests: 50,
+        p_agency_id: agencyId,
+      });
+      if (!_sessRle && _sessRl && !_sessRl.allowed) {
+        const _sMsgs: Record<string, string> = {
+          tr: "Bu oturumda çok fazla mesaj gönderdiniz. Lütfen daha sonra deneyin.",
+          en: "Too many messages this session. Please try again later.",
+          de: "Zu viele Nachrichten. Bitte später erneut versuchen.",
+          ru: "Слишком много сообщений. Попробуйте позже.",
+          ar: "رسائل كثيرة جداً. يرجى المحاولة لاحقاً.",
+          fr: "Trop de messages. Réessayez plus tard.",
+          es: "Demasiados mensajes. Intente más tarde.",
+        };
+        return new Response(JSON.stringify({
+          response: _sMsgs[currentLang] || _sMsgs.tr,
+          conversationState: incomingContext,
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // === AGENCY YÜKLE ===
+    const { data: agencyRaw } = await supabase
+      .from("agencies")
+      .select(
+        "id, name, city, address, phone_public, website_url, working_hours, maps_url, cancellation_policy, payment_instructions, primary_currency, language_currencies, collect_email, show_multi_currency, conversation_style, enabled_languages",
+      )
+      .eq("id", agencyId)
+      .single();
+
+    const agency = agencyRaw ?? {
+      id: agencyId,
+      name: "Demo Agency",
+      collect_email: false,
+      primary_currency: "TRY",
+      payment_instructions: null,
+      language_currencies: null,
+    };
+
+    // === HIZLI DİL TESPİTİ (tur localization için) ===
+    let _prelimLang = currentLang;
+    const _changeIntent = detectLanguageChangeIntent(message);
+    if (_changeIntent) {
+      _prelimLang = _changeIntent;
+    } else {
+      const _charLang = detectLanguage(rawMessage || "");
+      if (_charLang) _prelimLang = _charLang;
+    }
+
+    // === TURLARI YÜKLE + LOCALİZE ===
+    let toursRaw: any[];
+    try {
+      toursRaw = await getCachedTours(supabase, agencyId);
+    } catch (_cacheErr: any) {
+      if (_cacheErr?.message === "TOUR_DATA_UNAVAILABLE") {
+        const _unavMsgs: Record<string, string> = {
+          tr: "Üzgünüm, tur bilgilerini şu an yükleyemedim. Lütfen birkaç dakika sonra tekrar yazın.",
+          en: "Sorry, I couldn't load tour information right now. Please try again in a few minutes.",
+          de: "Entschuldigung, Tourdaten können gerade nicht geladen werden. Bitte in wenigen Minuten erneut versuchen.",
+          ru: "Извините, не удалось загрузить туры. Попробуйте через несколько минут.",
+          ar: "آسف، لا أستطيع تحميل بيانات الجولات الآن. يرجى المحاولة بعد دقائق.",
+          fr: "Désolé, impossible de charger les informations des circuits. Réessayez dans quelques minutes.",
+          es: "Lo siento, no puedo cargar la información de tours. Intente en unos minutos.",
+        };
+        return new Response(JSON.stringify({
+          response: _unavMsgs[currentLang] || _unavMsgs.tr,
+          conversationState: incomingContext,
+          isError: true,
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      throw _cacheErr;
+    }
+    const today = new Date().toISOString().split("T")[0];
+    const tours = toursRaw
+      .map((tour: any) => ({
+        id: tour.id,
+        title: pickLocalized(tour, "title", _prelimLang),
+        destination: pickLocalized(tour, "destination", _prelimLang),
+        type: tour.type,
+        currency: tour.currency,
+        program_kisa: pickLocalized(tour, "program_kisa", _prelimLang),
+        gezilecek_yerler: tour.gezilecek_yerler,
+        toplanma_saati: tour.toplanma_saati,
+        hareket_noktasi: tour.hareket_noktasi,
+        tur_sure: tour.tur_sure,
+        konaklama: tour.konaklama,
+        ulasim: tour.ulasim,
+        dates: (tour.dates || []).filter(
+          (d: any) => d.departure_date >= today && d.remaining_quota > 0,
+        ),
+      }))
+      .filter((t: any) => t.dates.length > 0);
+
+    // === ADAPTER + CORE PROCESSING ===
+    const adapter = new DemoChatAdapter(
+      supabase,
+      agencyId,
+      sessionId,
+      incomingContext,
+      conversationStyle,
+    );
+
+    const result = await processChatMessage({
+      message: rawMessage,       // process-message.ts sanitize eder
+      adapter,
+      agency,
+      supabase,
+      tours,
+      paymentInstructions: agency.payment_instructions ?? null,
+      languageCurrencies: agency.language_currencies ?? null,
+      primaryCurrency: agency.primary_currency ?? "TRY",
+      returningUserName: null,   // Demo-chat'te kullanıcı profili yok
+    });
+
+    return new Response(JSON.stringify({
+      response: result.response ?? "",
+      conversationState: result.newContext ?? incomingContext,
+      ...(result.success ? {} : { isError: true }),
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
   } catch (error) {
-    logger.error("Unhandled error in demo-chat", error);
-    return createErrorResponse("UNKNOWN", 500, "tr", error);
+    console.error("[demo-chat] Critical error:", error);
+    return new Response(JSON.stringify({
+      error: "Internal server error",
+      response: "Üzgünüm, şu anda yanıt veremiyorum. Lütfen tekrar deneyin.",
+    }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

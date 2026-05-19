@@ -27,6 +27,7 @@ import Auth from "./pages/Auth";
 
 // Lazy loaded (code splitting)
 const Admin           = lazy(() => import("./pages/Admin"));
+const ResetPassword   = lazy(() => import("./pages/ResetPassword"));
 const GettingStarted  = lazy(() => import("./pages/GettingStarted"));
 const Help            = lazy(() => import("./pages/Help"));
 const NotFound        = lazy(() => import("./pages/NotFound"));
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/"            element={<Index />} />
             <Route path="/auth"        element={<Auth />} />
             <Route path="/admin"       element={<Admin />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/nasil-baslarim" element={<GettingStarted />} />
             <Route path="/yardim"      element={<Help />} />
             <Route path="/privacy-policy"   element={<PrivacyPolicy />} />

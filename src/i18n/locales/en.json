@@ -607,7 +607,38 @@
         "save": "Save"
       },
       "notCreated": "Not created yet",
-      "deleteConfirm": "Are you sure you want to delete this template?"
+      "deleteConfirm": "Are you sure you want to delete this template?",
+      "sendButton": "Send",
+      "send": {
+        "title": "Send Template",
+        "modeRecent": "From Registration",
+        "modeManual": "Manual Entry",
+        "selectRegistration": "Select Registration",
+        "pickRegistration": "Pick a customer...",
+        "recipientPhone": "Phone Number",
+        "recipientName": "Full Name",
+        "recipientNamePlaceholder": "Customer name",
+        "variables": "Variables",
+        "preview": "Preview",
+        "metaWarning": "This message will be sent via Meta WhatsApp Business API.",
+        "sending": "Sending...",
+        "sendNow": "Send Now",
+        "success": "Message sent successfully!",
+        "errors": {
+          "invalidPhone": "Enter a valid phone number",
+          "selectRegistration": "Please select a registration",
+          "missingVariables": "Missing variables: {{vars}}",
+          "generic": "Failed to send message"
+        }
+      },
+      "sync": {
+        "button": "Sync with Meta",
+        "success": "{{count}} templates updated",
+        "error": "Synchronization failed"
+      },
+      "status": {
+        "notSynced": "Not Synced"
+      }
     },
     "faq": {
       "title": "Frequently Asked Questions",
@@ -1285,6 +1316,30 @@
       "quotaErrorMessage": "Only {quota} spots remaining for this date. Please reduce the number of people or select another date.",
       "userNotFound": "User not found",
       "agencyNotFound": "Agency not found"
+    },
+    "quotaBanner": {
+      "warning": "You've used {{percent}}% of your message quota. It will run out soon.",
+      "critical": "Your message quota is critically low ({{percent}}%)! New messages may be blocked.",
+      "upgrade": "Upgrade Plan"
+    },
+    "onboarding": {
+      "title": "Getting Started",
+      "progress": "{{percent}}% complete",
+      "dismiss": "Dismiss",
+      "steps": {
+        "agencyInfo": "Fill in agency info",
+        "payment": "Set up payment settings",
+        "addTour": "Add your first tour",
+        "addDates": "Add tour dates",
+        "whatsapp": "Connect WhatsApp"
+      },
+      "actions": {
+        "agencyInfo": "Edit",
+        "payment": "Set Up",
+        "addTour": "Add Tour",
+        "addDates": "Add Dates",
+        "whatsapp": "Connect"
+      }
     }
   },
   "auth": {
@@ -1328,7 +1383,9 @@
       "invalidCredentials": "Invalid email or password",
       "emailExists": "This email address is already in use",
       "signupFailed": "Signup failed",
-      "loginFailed": "Login failed"
+      "loginFailed": "Login failed",
+      "resetFailed": "Failed to send reset link",
+      "passwordUpdateFailed": "Failed to update password"
     },
     "success": {
       "title": "Success",
@@ -1345,7 +1402,19 @@
       "region": "Northeast"
     },
     "currency": "Your Currency",
-    "currencyHelp": "Currency for storing your tour prices"
+    "currencyHelp": "Currency for storing your tour prices",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordTitle": "Password Reset",
+    "forgotPasswordDesc": "Enter your account email address.",
+    "sendResetLink": "Send Reset Link",
+    "resetLinkSent": "Reset link sent! Check your email.",
+    "backToLogin": "Back to Login",
+    "resetPassword": "Set New Password",
+    "newPasswordDesc": "Set your new password.",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "passwordsNotMatch": "Passwords do not match",
+    "passwordResetSuccess": "Your password has been successfully updated"
   },
   "gettingStarted": {
     "title": "How to Get Started?",

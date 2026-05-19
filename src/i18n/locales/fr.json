@@ -623,7 +623,38 @@
         "save": "Enregistrer"
       },
       "notCreated": "Pas encore créé",
-      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle?"
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle?",
+      "sendButton": "Envoyer",
+      "send": {
+        "title": "Envoyer le modèle",
+        "modeRecent": "Depuis la réservation",
+        "modeManual": "Saisie manuelle",
+        "selectRegistration": "Sélectionner une réservation",
+        "pickRegistration": "Choisir un client...",
+        "recipientPhone": "Numéro de téléphone",
+        "recipientName": "Nom complet",
+        "recipientNamePlaceholder": "Nom du client",
+        "variables": "Variables",
+        "preview": "Aperçu",
+        "metaWarning": "Ce message sera envoyé via l'API Meta WhatsApp Business.",
+        "sending": "Envoi en cours...",
+        "sendNow": "Envoyer maintenant",
+        "success": "Message envoyé avec succès!",
+        "errors": {
+          "invalidPhone": "Entrez un numéro de téléphone valide",
+          "selectRegistration": "Veuillez sélectionner une réservation",
+          "missingVariables": "Variables manquantes: {{vars}}",
+          "generic": "Échec de l'envoi du message"
+        }
+      },
+      "sync": {
+        "button": "Synchroniser avec Meta",
+        "success": "{{count}} modèles mis à jour",
+        "error": "La synchronisation a échoué"
+      },
+      "status": {
+        "notSynced": "Non Synchronisé"
+      }
     },
     "faq": {
       "title": "Questions fréquemment posées",
@@ -1477,6 +1508,30 @@
     "subscriptionHistory": {
       "title": "Historique des abonnements",
       "description": "Historique des paiements et transactions"
+    },
+    "quotaBanner": {
+      "warning": "Vous avez utilisé {{percent}}% de votre quota de messages. Il sera bientôt épuisé.",
+      "critical": "Votre quota de messages est critiquement bas ({{percent}}%)! Les nouveaux messages pourraient être bloqués.",
+      "upgrade": "Améliorer le Plan"
+    },
+    "onboarding": {
+      "title": "Démarrage",
+      "progress": "{{percent}}% terminé",
+      "dismiss": "Fermer",
+      "steps": {
+        "agencyInfo": "Remplir les informations de l'agence",
+        "payment": "Configurer les paramètres de paiement",
+        "addTour": "Ajouter votre premier circuit",
+        "addDates": "Ajouter des dates de circuit",
+        "whatsapp": "Connecter WhatsApp"
+      },
+      "actions": {
+        "agencyInfo": "Modifier",
+        "payment": "Configurer",
+        "addTour": "Ajouter Circuit",
+        "addDates": "Ajouter Dates",
+        "whatsapp": "Connecter"
+      }
     }
   },
   "auth": {
@@ -1520,7 +1575,9 @@
       "invalidCredentials": "E-mail ou mot de passe invalide",
       "emailExists": "Cette adresse e-mail est déjà utilisée",
       "signupFailed": "L'inscription a échoué",
-      "loginFailed": "La connexion a échoué"
+      "loginFailed": "La connexion a échoué",
+      "resetFailed": "Échec de l'envoi du lien de réinitialisation",
+      "passwordUpdateFailed": "Échec de la mise à jour du mot de passe"
     },
     "success": {
       "title": "Succès",
@@ -1537,7 +1594,19 @@
       "region": "Île-de-France"
     },
     "currency": "Votre devise",
-    "currencyHelp": "Devise pour stocker les prix de vos circuits"
+    "currencyHelp": "Devise pour stocker les prix de vos circuits",
+    "forgotPassword": "Mot de passe oublié?",
+    "forgotPasswordTitle": "Réinitialisation du mot de passe",
+    "forgotPasswordDesc": "Entrez l'adresse e-mail de votre compte.",
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "resetLinkSent": "Lien de réinitialisation envoyé! Vérifiez votre e-mail.",
+    "backToLogin": "Retour à la connexion",
+    "resetPassword": "Définir un nouveau mot de passe",
+    "newPasswordDesc": "Définissez votre nouveau mot de passe.",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "passwordsNotMatch": "Les mots de passe ne correspondent pas",
+    "passwordResetSuccess": "Votre mot de passe a été mis à jour avec succès"
   },
   "gettingStarted": {
     "title": "Comment Commencer?",

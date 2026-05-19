@@ -1,4 +1,16 @@
-// Main Chat Handler v3.4.0
+/**
+ * @deprecated Faz 4 (Wave 4) sonrası bu dosya artık kullanılmıyor.
+ *
+ * YENİ MİMARİ:
+ *   Entry point : demo-chat/index.ts
+ *   Adapter     : demo-chat/adapter.ts
+ *   Core logic  : shared/handlers/process-message.ts
+ *
+ * Migration tarihi: 2026-05-19
+ * Bu dosya regresyon güvenliği için geçici olarak kalıyor.
+ * 2-3 hafta sonra silinebilir.
+ */
+// @deprecated — Faz 4 sonrası artık import edilmiyor.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -62,8 +74,9 @@ function buildDateSelectionMessage(
         ? ` - ${formatPriceSync(d.price_adult, tourCurrency, language, exRates, showDual)}`
         : "";
       const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
-      const quotaText =
-        remaining !== undefined ? (language === "tr" ? ` (${remaining} kişilik yer)` : ` (${remaining} spots)`) : "";
+      const quotaText = remaining !== undefined
+        ? ({ tr: ` (${remaining} kişilik yer)`, en: ` (${remaining} spots)`, de: ` (${remaining} Plätze)`, ru: ` (${remaining} мест)`, ar: ` (${remaining} مقاعد)`, fr: ` (${remaining} places)`, es: ` (${remaining} plazas)` }[language] ?? ` (${remaining} spots)`)
+        : "";
       return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
     })
     .join("\n");

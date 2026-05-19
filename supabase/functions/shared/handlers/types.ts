@@ -32,6 +32,13 @@ export interface ChannelAdapter {
   sendErrorResponse(message: string): Promise<void>;
 
   /**
+   * User + assistant + context'i tek atomik işlemle kaydet (opsiyonel).
+   * WhatsApp: save_conversation_atomic RPC (user+assistant+system birlikte)
+   * Demo: implement etmez → saveResponse fallback kullanılır
+   */
+  saveTransaction?(userMessage: string, reply: string, newContext: ConversationContext): Promise<void>;
+
+  /**
    * Rezervasyon tamamlandığında kanal-spesifik ek içerik (opsiyonel).
    * WhatsApp: DB'den message_templates tablosunu sorgular.
    * Demo: null döner.

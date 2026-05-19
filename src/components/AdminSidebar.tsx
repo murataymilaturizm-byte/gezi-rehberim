@@ -70,7 +70,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   const getDefaultOpenGroup = () => {
     const generalIds = ["dashboard", "languages", "history"];
     const tourIds = ["tours", "registrations"];
-    const communicationIds = ["settings", "whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings"];
+    const communicationIds = ["settings", "whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings", "language_currencies"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
@@ -117,8 +117,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   ];
 
   const communicationItems = [
-    { id: "settings", icon: Phone, label: "WhatsApp Entegrasyonu" },
-    { id: "whatsapp", icon: MessageSquare, label: "WhatsApp Kayıtları" },
+    { id: "whatsapp", icon: MessageSquare, label: "WhatsApp" },
     { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo") },
     { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings") },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },

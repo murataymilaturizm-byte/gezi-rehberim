@@ -49,8 +49,72 @@ serve(async (req) => {
       );
     }
 
+    // === Manual Agency Send Mode (agencyId + phone, no registration) ===
+    if (body.agencyId && body.phone && body.templateKey && !body.registrationId) {
+      const { agencyId, phone: rawPhone, templateKey: manualTemplateKey, language: manualLang, variableValues } = body;
+
+      const { data: agency } = await supabase
+        .from('agencies')
+        .select('meta_phone_number_id, meta_access_token')
+        .eq('id', agencyId)
+        .single();
+
+      if (!agency?.meta_access_token || !agency?.meta_phone_number_id) {
+        return new Response(
+          JSON.stringify({ error: 'WhatsApp credentials not configured' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data: manualTemplate } = await (supabase as any)
+        .from('message_templates')
+        .select('*')
+        .eq('agency_id', agencyId)
+        .eq('template_key', manualTemplateKey)
+        .eq('language', manualLang || 'tr')
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!manualTemplate) {
+        return new Response(
+          JSON.stringify({ error: 'Template not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      let manualMessage = manualTemplate.content;
+      Object.entries(variableValues || {}).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{${key}\\}`, 'g');
+        manualMessage = manualMessage.replace(regex, String(value));
+      });
+
+      const normalizedPhone = rawPhone.replace('whatsapp:', '').replace('+', '').trim();
+      const manualResult = await sendWhatsAppMessage(
+        agency.meta_phone_number_id,
+        agency.meta_access_token,
+        normalizedPhone,
+        manualMessage
+      );
+
+      if (!manualResult.success) {
+        throw new Error(`WhatsApp error: ${manualResult.error}`);
+      }
+
+      await supabase.from('whatsapp_conversations').insert({
+        phone: normalizedPhone,
+        role: 'assistant',
+        content: manualMessage,
+        agency_id: agencyId,
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, messageId: manualResult.messageId }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // === Registration-based Template Mode (existing logic) ===
-    const { registrationId, templateKey } = body;
+    const { registrationId, templateKey, language: bodyLanguage } = body;
 
     console.log('Send template message request:', { registrationId, templateKey });
 
@@ -89,16 +153,16 @@ serve(async (req) => {
 
     console.log('Registration found:', registration);
 
-    // Get user language preference
-    let language = 'tr';
-    
+    // Get user language preference — priority: whatsapp_user_profiles > body.language > 'tr'
+    let language = bodyLanguage || 'tr';
+
     const { data: userProfile } = await supabase
       .from('whatsapp_user_profiles')
       .select('language_preference')
       .eq('phone', registration.phone.replace('+', ''))
       .eq('agency_id', registration.agency_id)
       .maybeSingle();
-    
+
     if (userProfile?.language_preference) {
       language = userProfile.language_preference;
     }
@@ -114,11 +178,28 @@ serve(async (req) => {
       .single();
 
     if (templateError || !template) {
-      console.error('Template not found:', templateError);
-      return new Response(
-        JSON.stringify({ error: 'Template not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // Fall back to 'tr' template if language-specific one not found
+      if (language !== 'tr') {
+        const { data: fallbackTemplate } = await (supabase as any)
+          .from('message_templates')
+          .select('*')
+          .eq('agency_id', registration.agency_id)
+          .eq('template_key', templateKey)
+          .eq('language', 'tr')
+          .eq('is_active', true)
+          .single();
+        if (fallbackTemplate) {
+          console.log(`Template not found for language '${language}', using 'tr' fallback`);
+          (template as any) = fallbackTemplate;
+        }
+      }
+      if (!template) {
+        console.error('Template not found:', templateError);
+        return new Response(
+          JSON.stringify({ error: 'Template not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Fill variables

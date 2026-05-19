@@ -623,7 +623,38 @@
         "save": "حفظ"
       },
       "notCreated": "لم يتم الإنشاء بعد",
-      "deleteConfirm": "هل أنت متأكد من رغبتك في حذف هذا القالب؟"
+      "deleteConfirm": "هل أنت متأكد من رغبتك في حذف هذا القالب؟",
+      "sendButton": "إرسال",
+      "send": {
+        "title": "إرسال قالب",
+        "modeRecent": "من الحجز",
+        "modeManual": "إدخال يدوي",
+        "selectRegistration": "اختر الحجز",
+        "pickRegistration": "اختر عميلاً...",
+        "recipientPhone": "رقم الهاتف",
+        "recipientName": "الاسم الكامل",
+        "recipientNamePlaceholder": "اسم العميل",
+        "variables": "المتغيرات",
+        "preview": "معاينة",
+        "metaWarning": "سيتم إرسال هذه الرسالة عبر Meta WhatsApp Business API.",
+        "sending": "جاري الإرسال...",
+        "sendNow": "إرسال الآن",
+        "success": "تم إرسال الرسالة بنجاح!",
+        "errors": {
+          "invalidPhone": "أدخل رقم هاتف صحيح",
+          "selectRegistration": "يرجى اختيار حجز",
+          "missingVariables": "متغيرات مفقودة: {{vars}}",
+          "generic": "فشل إرسال الرسالة"
+        }
+      },
+      "sync": {
+        "button": "المزامنة مع Meta",
+        "success": "تم تحديث {{count}} قالب",
+        "error": "فشلت المزامنة"
+      },
+      "status": {
+        "notSynced": "غير متزامن"
+      }
     },
     "faq": {
       "title": "الأسئلة الشائعة",
@@ -1477,6 +1508,30 @@
     "subscriptionHistory": {
       "title": "سجل الاشتراكات",
       "description": "سجل المدفوعات والمعاملات"
+    },
+    "quotaBanner": {
+      "warning": "لقد استخدمت {{percent}}٪ من حصة الرسائل. ستنتهي قريباً.",
+      "critical": "حصة رسائلك منخفضة بشكل حرج ({{percent}}%)! قد تُحظر الرسائل الجديدة.",
+      "upgrade": "ترقية الخطة"
+    },
+    "onboarding": {
+      "title": "البدء",
+      "progress": "{{percent}}% مكتمل",
+      "dismiss": "إغلاق",
+      "steps": {
+        "agencyInfo": "أكمل معلومات الوكالة",
+        "payment": "إعداد إعدادات الدفع",
+        "addTour": "أضف جولتك الأولى",
+        "addDates": "أضف مواعيد الجولة",
+        "whatsapp": "ربط واتساب"
+      },
+      "actions": {
+        "agencyInfo": "تحرير",
+        "payment": "إعداد",
+        "addTour": "إضافة جولة",
+        "addDates": "إضافة مواعيد",
+        "whatsapp": "ربط"
+      }
     }
   },
   "auth": {
@@ -1520,7 +1575,9 @@
       "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صالحة",
       "emailExists": "عنوان البريد الإلكتروني هذا مستخدم بالفعل",
       "signupFailed": "فشل التسجيل",
-      "loginFailed": "فشل تسجيل الدخول"
+      "loginFailed": "فشل تسجيل الدخول",
+      "resetFailed": "فشل إرسال رابط الاسترداد",
+      "passwordUpdateFailed": "فشل تحديث كلمة المرور"
     },
     "success": {
       "title": "نجح",
@@ -1537,7 +1594,19 @@
       "region": "وسط"
     },
     "currency": "عملتك",
-    "currencyHelp": "العملة لتخزين أسعار الجولات"
+    "currencyHelp": "العملة لتخزين أسعار الجولات",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "forgotPasswordTitle": "إعادة تعيين كلمة المرور",
+    "forgotPasswordDesc": "أدخل عنوان بريدك الإلكتروني.",
+    "sendResetLink": "إرسال رابط الاسترداد",
+    "resetLinkSent": "تم إرسال رابط الاسترداد! تحقق من بريدك الإلكتروني.",
+    "backToLogin": "العودة إلى تسجيل الدخول",
+    "resetPassword": "تعيين كلمة مرور جديدة",
+    "newPasswordDesc": "قم بتعيين كلمة مرورك الجديدة.",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "passwordsNotMatch": "كلمات المرور غير متطابقة",
+    "passwordResetSuccess": "تم تحديث كلمة مرورك بنجاح"
   },
   "gettingStarted": {
     "title": "كيف أبدأ؟",

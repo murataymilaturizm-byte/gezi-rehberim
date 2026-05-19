@@ -27,7 +27,7 @@ export async function loadOrCreateContext(options: ContextLoadOptions): Promise<
   const languageChangeIntent = detectLanguageChangeIntent(message);
   
   // Detect language from message content
-  const runtimeDetectedLang = await detectLanguage(message);
+  const runtimeDetectedLang = detectLanguage(message);
   
   logger.debug("Language detection", { 
     runtimeDetectedLang, 
@@ -48,11 +48,16 @@ export async function loadOrCreateContext(options: ContextLoadOptions): Promise<
       context.tone = getDefaultToneForLanguage(languageChangeIntent) as any;
       logger.debug(`Tone updated to: ${context.tone}`);
     }
-    // Priority 2: Automatic detection (only if different and no explicit change)
+    // Priority 2: Automatic detection — ASCII guard ile (WhatsApp process-message.ts ile eşit)
     else if (runtimeDetectedLang && runtimeDetectedLang !== context.language && !languageChangeIntent) {
-      logger.info(`Auto language update: ${context.language} → ${runtimeDetectedLang}`);
-      context.language = runtimeDetectedLang;
-      (context as any).detectedLanguage = runtimeDetectedLang;
+      // Guard: uzun ASCII metin (lorem ipsum vb.) yanlış dil değişikliğine neden olmasın
+      const _hasNonAscii = /[^\x00-\x7F]/.test(message);
+      const _isShortMsg = message.length < 200;
+      if (_hasNonAscii || _isShortMsg) {
+        logger.info(`Auto language update: ${context.language} → ${runtimeDetectedLang}`);
+        context.language = runtimeDetectedLang;
+        (context as any).detectedLanguage = runtimeDetectedLang;
+      }
     }
     
     // Update tone from conversationStyle if provided

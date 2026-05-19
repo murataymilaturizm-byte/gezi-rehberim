@@ -13,7 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { Loader2, ChevronRight, ChevronLeft, Check, ChevronDown, Globe } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Textarea } from "@/components/ui/textarea";
 import { tourSchema } from "@/utils/validation";
 import { getAvailableCurrencies } from "@/utils/currency";
 import { TOUR_CATEGORIES, isInternationalCategory } from "./tour-form/TourCategories";
@@ -54,6 +56,9 @@ const STEPS = [
   { key: "accommodation", label: "Konaklama & Ekstra" },
 ];
 
+const LANGS = ["en", "de", "fr", "es", "ru", "ar"] as const;
+const LANG_FLAGS: Record<string, string> = { en: "🇬🇧", de: "🇩🇪", fr: "🇫🇷", es: "🇪🇸", ru: "🇷🇺", ar: "🇸🇦" };
+
 const INITIAL_FORM = {
   title: "",
   destination: "",
@@ -73,6 +78,10 @@ const INITIAL_FORM = {
   visa_notes: "",
   hotel_name: "",
   hotel_stars: 0,
+  // Multilingual fields
+  title_en: "", title_de: "", title_fr: "", title_es: "", title_ru: "", title_ar: "",
+  destination_en: "", destination_de: "", destination_fr: "", destination_es: "", destination_ru: "", destination_ar: "",
+  program_kisa_en: "", program_kisa_de: "", program_kisa_fr: "", program_kisa_es: "", program_kisa_ru: "", program_kisa_ar: "",
 };
 
 const TOUR_DURATIONS: Record<string, { value: string; label: string }[]> = {
@@ -109,6 +118,7 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
 
   useEffect(() => {
     if (tour) {
+      const t = tour as any;
       setFormData({
         title: tour.title,
         destination: tour.destination,
@@ -128,6 +138,12 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         visa_notes: tour.visa_notes || "",
         hotel_name: tour.hotel_name || "",
         hotel_stars: tour.hotel_stars || 0,
+        title_en: t.title_en || "", title_de: t.title_de || "", title_fr: t.title_fr || "",
+        title_es: t.title_es || "", title_ru: t.title_ru || "", title_ar: t.title_ar || "",
+        destination_en: t.destination_en || "", destination_de: t.destination_de || "", destination_fr: t.destination_fr || "",
+        destination_es: t.destination_es || "", destination_ru: t.destination_ru || "", destination_ar: t.destination_ar || "",
+        program_kisa_en: t.program_kisa_en || "", program_kisa_de: t.program_kisa_de || "", program_kisa_fr: t.program_kisa_fr || "",
+        program_kisa_es: t.program_kisa_es || "", program_kisa_ru: t.program_kisa_ru || "", program_kisa_ar: t.program_kisa_ar || "",
       });
     } else {
       setFormData({ ...INITIAL_FORM });
@@ -183,7 +199,7 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
 
     setIsLoading(true);
     try {
-      const payload = {
+      const payload: Record<string, any> = {
         title: formData.title,
         destination: formData.destination,
         type: formData.type,
@@ -203,6 +219,13 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
         hotel_name: formData.hotel_name || null,
         hotel_stars: formData.hotel_stars || null,
       };
+      // Multilingual fields — only include non-empty values
+      for (const lang of LANGS) {
+        const fd = formData as any;
+        if (fd[`title_${lang}`]) payload[`title_${lang}`] = fd[`title_${lang}`];
+        if (fd[`destination_${lang}`]) payload[`destination_${lang}`] = fd[`destination_${lang}`];
+        if (fd[`program_kisa_${lang}`]) payload[`program_kisa_${lang}`] = fd[`program_kisa_${lang}`];
+      }
 
       let _agencyIdForCache: string | undefined;
 
@@ -295,6 +318,52 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
                   placeholder="Örn: Kapadokya"
                 />
               </div>
+
+              {/* Multilingual fields */}
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group w-full">
+                  <Globe className="h-4 w-4" />
+                  <span>Çeviriler (EN / DE / FR / ES / RU / AR)</span>
+                  <ChevronDown className="h-3 w-3 ml-auto group-data-[state=open]:rotate-180 transition-transform" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-3 space-y-4">
+                  {LANGS.map((lang) => {
+                    const fd = formData as any;
+                    return (
+                      <div key={lang} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          {LANG_FLAGS[lang]} {lang.toUpperCase()}
+                        </p>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Tur Adı</Label>
+                          <Input
+                            value={fd[`title_${lang}`] || ""}
+                            onChange={(e) => set(`title_${lang}`, e.target.value)}
+                            placeholder={`Tur adı (${lang.toUpperCase()})`}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Destinasyon</Label>
+                          <Input
+                            value={fd[`destination_${lang}`] || ""}
+                            onChange={(e) => set(`destination_${lang}`, e.target.value)}
+                            placeholder={`Destinasyon (${lang.toUpperCase()})`}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Kısa Program</Label>
+                          <Textarea
+                            value={fd[`program_kisa_${lang}`] || ""}
+                            onChange={(e) => set(`program_kisa_${lang}`, e.target.value)}
+                            placeholder={`Kısa program (${lang.toUpperCase()})`}
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

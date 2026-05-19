@@ -64,6 +64,21 @@ function buildFallbackNLU(userMessage: string, availableTours?: any[]): NLUResul
     return { intent: "provide_info", language, entities: {}, updates: {} };
   }
 
+  // Değişiklik talebi: "isim yanlış", "değiştir", "modify" vb.
+  if (/değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı|değil|farklı|ändern|falsch|corriger|corregir|корректировать|تعديل/i.test(lower)) {
+    return { intent: "change_info", language, entities: {}, updates: {} };
+  }
+
+  // Kısa onay — NLU fail durumunda detectConfirmation() FSM'de zaten çalışır, bu ekstra güvenlik
+  if (/^(evet|tamam|onayl\S*|yes|confirm|okay|ok|sure|ja|oui|s[ií]|да|نعم|موافق)\b/i.test(lower)) {
+    return { intent: "confirm_reservation", language, entities: {}, updates: {} };
+  }
+
+  // Şikayet / geri bildirim
+  if (/şikayet|memnun\s+değil|complaint|beschwerde|жалоба|شكوى|plainte|queja/i.test(lower)) {
+    return { intent: "complaint_feedback", language, entities: {}, updates: {} };
+  }
+
   return { intent: "general", language, entities: {}, updates: {} };
 }
 
@@ -106,12 +121,24 @@ Your job is to analyze user messages and extract intents and entities.
   * Working hours (saat kaçta, ne zaman açık, working hours)
 - If a location is mentioned in context of visa/payment/agency questions, DO NOT extract it as destination
 
-**CRITICAL RULE FOR POST-RESERVATION STATE:**
-If the conversation shows a reservation is already COMPLETED (stage=COMPLETED or reservationConfirmed=true) 
-and the user asks ANY informational question about tours (ne zaman, tarih, fiyat, program, detay, kaç gün, 
-nerede, hangi otel, nasıl, kaç kişi, müsait mi, uygun mu, var mı, vb.) → intent MUST be 'faq_general' or 'general'.
-NEVER return 'tour_search', 'reservation_intent', or 'select_tour' for informational questions after a completed reservation.
-The user is just browsing/asking for info, NOT starting a new reservation.
+**POST-RESERVATION STATE GUIDANCE (stage=COMPLETED or reservationConfirmed=true):**
+
+A completed reservation does NOT lock the user. They can naturally start over, ask for info, or book another tour. Use context to distinguish:
+
+CASE 1 — User wants to START OVER / NEW RESERVATION:
+  - "yeni rezervasyon", "başka tur", "baştan başla", "iptal", "vazgeçtim", "merhaba", "konuşmaya yeniden başlayalım", "rezervasyon yapmak istiyorum"
+  - → Return 'reservation_intent' OR 'greeting' OR 'browse_tours' (whichever fits best)
+  - DO NOT force these to 'general' or 'faq_general'
+
+CASE 2 — User asks INFORMATIONAL question about existing reservation or general info:
+  - "ödeme ne zaman?", "nerede toplanacağız?", "saat kaçta?", "iptal şartı nedir?"
+  - → Return 'faq_general' or 'after_sales' or 'agency_info'
+
+CASE 3 — User wants a DIFFERENT tour:
+  - "Antalya tur var mı?", "başka bir tur istiyorum", "Pamukkale turu"
+  - → Return 'tour_search' or 'browse_tours'
+
+NEVER assume the user wants to stay in COMPLETED forever. Trust their words.
 
 **CRITICAL: INFORMATIONAL QUESTIONS vs PROVIDING INFO:**
 - Questions like "tarih ne zaman", "ne zaman", "tarihleri nedir", "fiyat ne kadar", "kaç lira", 
@@ -123,7 +150,7 @@ The user is just browsing/asking for info, NOT starting a new reservation.
 **Intents:**
 - greeting: User says hello or starts conversation
 - browse_tours: User wants to see available tours
-- tour_search: User searches for specific destination/tour (ONLY when explicitly asking about tours AND no reservation is completed)
+- tour_search: User searches for specific destination/tour (ONLY when explicitly asking about tours; after COMPLETED use only for actual new tour searches, NOT for post-reservation info questions)
 - select_tour: User selects a specific tour
 - reservation_intent: User wants to make a reservation. CRITICAL RULES:
   * EXPLICIT requests: "I want to book", "rezervasyon yapmak istiyorum", "book this tour", "let's book"
@@ -162,7 +189,7 @@ The user is just browsing/asking for info, NOT starting a new reservation.
 2. If conversation summary contains "CONFIRMING" or "ready for confirmation" or "onay bekliyor" AND user says ANY positive word like "evet/tamam/onaylıyorum/yes/confirm/ok/doğru" → MUST return confirm_reservation
 3. Short positive responses WITHOUT tour context → general
 4. "evet onaylıyorum" or just "evet" in CONFIRMING stage → confirm_reservation
-5. If stage is COMPLETED and user asks about any tour → faq_general (NOT reservation_intent or tour_search)
+5. If stage is COMPLETED and user asks an INFORMATIONAL question → faq_general. But if user wants to START OVER ("merhaba", "yeni rezervasyon", "başka tur") → return appropriate intent (greeting / browse_tours / reservation_intent), NOT general
 
 **Entities to extract:**
 - destination: City or country name (ONLY when user is asking about tours, NOT for visa/payment/agency questions)

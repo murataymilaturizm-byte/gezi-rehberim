@@ -43,7 +43,7 @@ export function extractReservationInfo(params: ExtractionParams): ExtractedInfo 
   if (nluUpdates) {
     if (typeof nluUpdates.paxAdult === "number") result.paxAdult = nluUpdates.paxAdult;
     if (typeof nluUpdates.paxChild === "number") result.paxChild = nluUpdates.paxChild;
-    if (typeof nluUpdates.fullName === "string") result.fullName = nluUpdates.fullName;
+    if (typeof nluUpdates.fullName === "string") result.fullName = formatName(nluUpdates.fullName.trim());
     if (typeof nluUpdates.phone === "string") {
       const phone = normalizePhone(nluUpdates.phone);
       if (phone) result.phone = phone;
@@ -280,16 +280,72 @@ function parseFlexibleDate(dateStr: string): Date | null {
   return null;
 }
 
-function extractPax(message: string): number | null {
-  const patterns = [/(\d+)\s*(yetişkin|adult|büyük)/i, /(\d+)\s*kişi/i, /^(\d+)$/];
+// 7 dilde yazıyla sayı eşleştirme (simple-extractor.ts NUMBER_WORDS ile eşit)
+const _PAX_NUMBER_WORDS: Record<string, number> = {
+  // TR
+  bir: 1, iki: 2, "üç": 3, uc: 3, "dört": 4, dort: 4,
+  "beş": 5, bes: 5, "altı": 6, alti: 6, yedi: 7, sekiz: 8, dokuz: 9, on: 10,
+  // EN
+  one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  // DE
+  ein: 1, eine: 1, eins: 1, zwei: 2, drei: 3, vier: 4,
+  "fünf": 5, funf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9, zehn: 10,
+  // FR
+  un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5,
+  sept: 7, huit: 8, neuf: 9, dix: 10,
+  // ES
+  uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5,
+  seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10,
+  // RU
+  "один": 1, "одна": 1, "два": 2, "две": 2, "три": 3,
+  "четыре": 4, "пять": 5, "шесть": 6, "семь": 7,
+  "восемь": 8, "девять": 9, "десять": 10,
+  // AR
+  "واحد": 1, "اثنان": 2, "اثنين": 2, "ثلاثة": 3, "أربعة": 4,
+  "خمسة": 5, "ستة": 6, "سبعة": 7, "ثمانية": 8, "تسعة": 9, "عشرة": 10,
+};
 
-  for (const pattern of patterns) {
+function extractPax(message: string): number | null {
+  const lower = message.toLowerCase().trim();
+
+  // 1. Sayı + kişi kelimesi (7 dil)
+  const numericPatterns = [
+    /(\d+)\s*(yetişkin|kişi|büyük)/i,               // TR
+    /(\d+)\s*(adult|person|people|pax|passenger)/i,  // EN
+    /(\d+)\s*(erwachsen|personen|person|leute)/i,     // DE
+    /(\d+)\s*(adulte|personne|personnes)/i,           // FR
+    /(\d+)\s*(adulto|persona|personas)/i,             // ES
+    /(\d+)\s*(человек|взросл|пассажир)/i,             // RU
+    /(\d+)\s*(شخص|بالغ|راكب)/,                       // AR
+  ];
+
+  for (const pattern of numericPatterns) {
     const match = message.match(pattern);
     if (match) {
       const pax = parseInt(match[1]);
-      if (pax >= 1 && pax <= 20) return pax;
+      if (pax >= 1 && pax <= 50) return pax;
     }
   }
+
+  // 2. Yazıyla sayı (7 dil)
+  const peopleContext = /\b(ki[şs]i|person|people|adult|yetişkin|personen|personnes|personas|человек|شخص)\b/i;
+  for (const [word, num] of Object.entries(_PAX_NUMBER_WORDS)) {
+    if (new RegExp(`\\b${word}\\b`, "i").test(lower)) {
+      // Kısa mesaj ya da kişi bağlamı varsa kabul et
+      if (peopleContext.test(lower) || lower.trim().split(/\s+/).length <= 3) {
+        return num;
+      }
+    }
+  }
+
+  // 3. Tek başına sayı (last resort)
+  const plainNum = lower.match(/^(\d+)$/);
+  if (plainNum) {
+    const pax = parseInt(plainNum[1]);
+    if (pax >= 1 && pax <= 50) return pax;
+  }
+
   return null;
 }
 
@@ -385,16 +441,18 @@ function extractDate(
     // ES
     enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
     julio: 7, agosto: 8, septiembre: 9, octubre: 10, noviembre: 11, diciembre: 12,
-    // RU (nominative)
+    // RU nominative + genitive ("20 марта", "20 мая" gibi formlar için)
     январь: 1, февраль: 2, март: 3, апрель: 4, май: 5, июнь: 6,
     июль: 7, август: 8, сентябрь: 9, октябрь: 10, ноябрь: 11, декабрь: 12,
+    января: 1, февраля: 2, марта: 3, апреля: 4, мая: 5, июня: 6,
+    июля: 7, августа: 8, сентября: 9, октября: 10, ноября: 11, декабря: 12,
     // AR
     يناير: 1, فبراير: 2, مارس: 3, أبريل: 4, مايو: 5, يونيو: 6,
     يوليو: 7, أغسطس: 8, سبتمبر: 9, أكتوبر: 10, نوفمبر: 11, ديسمبر: 12,
   };
 
   const textDateMatch = lower.match(
-    /(\d{1,2})[\s.]+(?:de\s+|du\s+|d[e']\s+)?(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|märz|maerz|mai|juni|juli|oktober|dezember|janvier|f[ée]vrier|mars|avril|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|noviembre|diciembre|январь|февраль|апрель|август|сентябрь|октябрь|ноябрь|декабрь|يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/i,
+    /(\d{1,2})[\s.]+(?:de\s+|du\s+|d[e']\s+)?(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|märz|maerz|mai|juni|juli|oktober|dezember|janvier|f[ée]vrier|mars|avril|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|noviembre|diciembre|январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь|января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря|يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/i,
   );
 
   if (textDateMatch) {

@@ -266,7 +266,8 @@ export async function generatePaymentMessage(
   const lang = labels[language] || labels.tr;
   const bankInfo = paymentInstructions[language] || paymentInstructions.tr || {};
 
-  let message = `\n\n${lang.title}\n\n`;
+  // Ayraç + başlık — completion mesajından görsel ayrım
+  let message = `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n${lang.title}\n\n`;
 
   // Payment amount info
   if (paymentType === "deposit") {

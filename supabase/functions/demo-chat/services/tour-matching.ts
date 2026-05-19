@@ -10,13 +10,66 @@ export function findTourById(tourId: string, availableTours: Tour[]): Tour | nul
   return availableTours.find((t) => t.id === tourId) || null;
 }
 
+// ─── Fuzzy match yardımcıları (shared/services/tour-matching.ts ile eşit) ──────
+
+function normalizeTurkishChars(text: string): string {
+  return text
+    .replace(/İ/g, "i").replace(/ı/g, "i")
+    .replace(/Ş/g, "s").replace(/ş/g, "s")
+    .replace(/Ğ/g, "g").replace(/ğ/g, "g")
+    .replace(/Ü/g, "u").replace(/ü/g, "u")
+    .replace(/Ö/g, "o").replace(/ö/g, "o")
+    .replace(/Ç/g, "c").replace(/ç/g, "c");
+}
+
+function normalizeForMatch(text: string): string {
+  if (!text) return "";
+  return normalizeTurkishChars(text.toLowerCase().trim());
+}
+
+const TOUR_NAME_TRANSLATIONS: Record<string, string[]> = {
+  kapadokya: ["cappadocia", "cappadoce", "kappadokien", "capadocia", "каппадокия", "كابادوكيا", "kappadokia", "kapadokia"],
+  efes: ["ephesus", "ephese", "efeso", "эфес", "أفسس"],
+  troya: ["troy", "troie", "troja", "троя", "طروادة"],
+  istanbul: ["istanbul", "istambul", "стамбул", "إسطنبول", "konstantinopel", "estambul"],
+  izmir: ["izmir", "smyrna", "smyrne", "измир", "إزمير"],
+  nemrut: ["nemrut", "nemrud", "немрут"],
+};
+
+function findTurkishEquivalent(input: string): string | null {
+  const normalized = normalizeForMatch(input);
+  if (TOUR_NAME_TRANSLATIONS[normalized]) return normalized;
+  for (const [trName, aliases] of Object.entries(TOUR_NAME_TRANSLATIONS)) {
+    if (aliases.some((a) => normalizeForMatch(a) === normalized)) return trName;
+  }
+  return null;
+}
+
+function levenshteinDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  if (Math.abs(a.length - b.length) > 3) return 99;
+  const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const curr = [i];
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+    }
+    prev.splice(0, prev.length, ...curr);
+  }
+  return prev[b.length];
+}
+
 /**
- * Direct matching by keywords or number (fallback strategy)
+ * Direct matching: numara → keyword → translation → fuzzy (fallback strategy)
  */
 function directMatchTour(userMessage: string, availableTours: Tour[], expectedInput: string): Tour | null {
   const lowerMessage = userMessage.toLowerCase().trim();
+  const normMsg = normalizeForMatch(userMessage);
 
-  // 1. Try to match by tour number (only if not expecting pax/name/phone)
+  // 1. Numara ile eşleştirme (pax/isim/telefon adımında değilse)
   if (!["pax_count", "pax", "phone_number", "phone", "full_name", "name"].includes(expectedInput)) {
     const tourNumber = parseInt(lowerMessage);
     if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= availableTours.length) {
@@ -25,33 +78,52 @@ function directMatchTour(userMessage: string, availableTours: Tour[], expectedIn
     }
   }
 
-  // 2. Try exact title match
-  let matchedTour = availableTours.find((tour) => tour.title.toLowerCase() === lowerMessage);
+  // 2. Exact match (normalize edilmiş)
+  let matchedTour = availableTours.find(
+    (t) => normalizeForMatch(t.title) === normMsg || normalizeForMatch(t.destination) === normMsg,
+  );
+  if (matchedTour) { logger.debug(`Exact match: ${matchedTour.title}`); return matchedTour; }
 
-  if (matchedTour) {
-    logger.debug(`Tour matched by exact title: ${matchedTour.title}`);
-    return matchedTour;
+  // 3. Partial match (normalize edilmiş)
+  matchedTour = availableTours.find(
+    (t) => normalizeForMatch(t.title).includes(normMsg) || normalizeForMatch(t.destination).includes(normMsg),
+  );
+  if (matchedTour) { logger.debug(`Partial match: ${matchedTour.title}`); return matchedTour; }
+
+  // 4. Translation match (Cappadocia → Kapadokya)
+  const trName = findTurkishEquivalent(userMessage.trim());
+  if (trName) {
+    matchedTour = availableTours.find(
+      (t) => normalizeForMatch(t.title).includes(trName) || normalizeForMatch(t.destination).includes(trName),
+    );
+    if (matchedTour) { logger.debug(`Translation match: ${matchedTour.title}`); return matchedTour; }
   }
 
-  // 3. Try destination match
-  matchedTour = availableTours.find((tour) => tour.destination.toLowerCase() === lowerMessage);
-
-  if (matchedTour) {
-    logger.debug(`Tour matched by destination: ${matchedTour.title}`);
-    return matchedTour;
-  }
-
-  // 4. Try keyword matching (partial match)
-  matchedTour = availableTours.find((tour) => {
-    const tourWords = [...tour.title.toLowerCase().split(/\s+/), ...tour.destination.toLowerCase().split(/\s+/)];
-
-    // Check if any significant word (>3 chars) from tour matches message
-    return tourWords.some((word) => word.length > 3 && lowerMessage.includes(word));
+  // 5. Kelime bazlı keyword match (normalize)
+  matchedTour = availableTours.find((t) => {
+    const words = [...normalizeForMatch(t.title).split(/\s+/), ...normalizeForMatch(t.destination).split(/\s+/)];
+    return words.some((w) => w.length > 3 && normMsg.includes(w));
   });
+  if (matchedTour) { logger.debug(`Keyword match: ${matchedTour.title}`); return matchedTour; }
 
-  if (matchedTour) {
-    logger.debug(`Tour matched by keyword: ${matchedTour.title}`);
-    return matchedTour;
+  // 6. Fuzzy match (Levenshtein-2) — yazım hatası toleransı
+  const msgWords = userMessage.split(/\s+/).filter((w) => w.length >= 4);
+  for (const word of msgWords) {
+    const nw = normalizeForMatch(word);
+    matchedTour = availableTours.find((t) => {
+      const tWords = [...normalizeForMatch(t.title).split(/\s+/), ...normalizeForMatch(t.destination).split(/\s+/)];
+      return tWords.some((tw) => tw.length >= 4 && levenshteinDistance(nw, tw) <= 2);
+    });
+    if (matchedTour) { logger.debug(`Fuzzy match: ${matchedTour.title}`); return matchedTour; }
+
+    // Translation + fuzzy kombinasyonu
+    const trEquiv = findTurkishEquivalent(word);
+    if (trEquiv) {
+      matchedTour = availableTours.find(
+        (t) => normalizeForMatch(t.title).includes(trEquiv) || normalizeForMatch(t.destination).includes(trEquiv),
+      );
+      if (matchedTour) { logger.debug(`Trans+fuzzy match: ${matchedTour.title}`); return matchedTour; }
+    }
   }
 
   return null;

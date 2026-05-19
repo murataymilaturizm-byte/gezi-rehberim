@@ -57,7 +57,7 @@ function isInformationalMessage(userMessage: string, detectedIntent: string): bo
  */
 function hasNewReservationIntent(userMessage: string, detectedIntent: string): boolean {
   const newReservationPatterns =
-    /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci rez|başka bir rez|bir daha|tekrar rez|başka bir tura|farklı bir tura|diğer bir tur|bir (kayıt|tur|rezervasyon)? daha|daha (bir|tane) (tur|kayıt|rezervasyon)|(başka|farklı|yeni) (kayıt|rezervasyon)|(arkadaşım|eşim|ailem|annem|babam|kardeşim|çocuğum)\s+için|(ekleyelim|ekleyeyim)\b|one more (booking|reservation|tour)|add (another|one more)|for my (friend|wife|husband|family|mother|father|sibling)/i;
+    /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci rez|başka bir rez|bir daha|tekrar rez|başka bir tura|farklı bir tura|diğer bir tur|bir (kayıt|tur|rezervasyon)? daha|daha (bir|tane) (tur|kayıt|rezervasyon)|(başka|farklı|yeni) (kayıt|rezervasyon)|(başka|farklı|diğer)\s+(bir\s+)?(tur|seyahat|destinasyon|kayıt|rezervasyon)|(başka|farklı|diğer)\s+nere|(arkadaşım|eşim|ailem|annem|babam|kardeşim|çocuğum)\s+için|(ekleyelim|ekleyeyim)\b|one more (booking|reservation|tour)|another (reservation|booking|trip)|add (another|one more)|for my (friend|wife|husband|family|mother|father|sibling)|rezervasyon\s+yap|kayıt\s+yap|rezervasyon\s+oluştur|rezervasyon\s+almak|rezervasyon\s+istiyorum|tur\s+rezervasyonu|make\s+a\s+(reservation|booking)|book\s+(a\s+)?(tour|trip|this)|tur\s+(ara|bak|göster|ist)|neue\s+(reservierung|buchung|tour)|(andere|weitere)\s+(reservierung|buchung|tour)|nouvelle\s+(réservation|reservation|voyage)|(autre|différente?)\s+(réservation|tour|voyage)|nueva\s+(reserva|reservación|viaje)|(otra|diferente)\s+(reserva|tour|viaje)|новая\s+(резервация|бронирование|поездка|тур)|друг(ая|ой)\s+(тур|резервация|поездка)/i;
   if (newReservationPatterns.test(userMessage)) return true;
   if (detectedIntent === "reservation_intent") return true;
   return false;
@@ -197,13 +197,14 @@ function detectConfirmation(message: string, language: string): boolean {
  */
 export function detectCancellation(text: string, language: string): boolean {
   const patterns: Record<string, RegExp> = {
-    tr: /\b(vazge[cç]tim|vazgeçiyorum|iptal|istemiyorum|olmas[ıi]n|gerek yok|bo[sş] ver|ba[sş]ka zaman|d[uü][sş][uü]neyim|d[uü][sş][uü]neyim de|pas|paslıyorum)\b/i,
-    en: /\b(cancel|nevermind|never mind|forget it|don'?t want|skip it|maybe later|not now|pass|leave it)\b/i,
-    de: /\b(abbrechen|stornieren|möchte nicht|will nicht|vergiss es|vergessen|später|nicht mehr|lass es sein)\b/i,
-    ru: /\b(отмена|отменить|не хочу|неважно|забудь|забудьте|позже|потом|не надо)\b/i,
-    ar: /\b(إلغاء|لا أريد|انس الأمر|لاحقا|ليس الآن|اتركها)\b/i,
-    fr: /\b(annuler|j'abandonne|peu importe|laisse tomber|laissez tomber|plus tard|pas maintenant|oublie)\b/i,
-    es: /\b(cancelar|olvídalo|olvidalo|no quiero|déjalo|dejalo|más tarde|otro día|olvida)\b/i,
+    // TR: iptal + reset/baştan başla kalıpları
+    tr: /\b(vazge[cç]tim|vazgeçiyorum|iptal|istemiyorum|olmas[ıi]n|gerek yok|bo[sş] ver|ba[sş]ka zaman|d[uü][sş][uü]neyim|d[uü][sş][uü]neyim de|pas|paslıyorum|ba[sş]tan ba[sş]la|ba[sş]tan ba[sş]lamak|ba[sş]tan ba[sş]layal[ıi]m|yeniden ba[sş]la|yeniden ba[sş]lamak|s[ıi]f[ıi]rla|ba[sş]a dön)\b/i,
+    en: /\b(cancel|nevermind|never mind|forget it|don'?t want|skip it|maybe later|not now|pass|leave it|restart|reset|start over|start fresh|begin again|from scratch|new conversation)\b/i,
+    de: /\b(abbrechen|stornieren|möchte nicht|will nicht|vergiss es|vergessen|später|nicht mehr|lass es sein|neu starten|von vorne|nochmal|neu anfangen)\b/i,
+    ru: /\b(отмена|отменить|не хочу|неважно|забудь|забудьте|позже|потом|не надо|заново|сначала|начать заново)\b/i,
+    ar: /\b(إلغاء|لا أريد|انس الأمر|لاحقا|ليس الآن|اتركها|البدء من جديد|إعادة|ابدأ من جديد)\b/i,
+    fr: /\b(annuler|j'abandonne|peu importe|laisse tomber|laissez tomber|plus tard|pas maintenant|oublie|recommencer|depuis le début|repartir)\b/i,
+    es: /\b(cancelar|olvídalo|olvidalo|no quiero|déjalo|dejalo|más tarde|otro día|olvida|reiniciar|empezar de nuevo|desde el principio)\b/i,
   };
   const langKey = language as keyof typeof patterns;
   return (patterns[langKey]?.test(text) ?? false) || patterns.en.test(text);
@@ -493,7 +494,7 @@ const transitions: StateTransition[] = [
     to: "COLLECTING_INFO",
     condition: (ctx, input) =>
       input.detectedIntent === "change_info" ||
-      /değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı/i.test(input.userMessage.toLowerCase()),
+      /değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|güncelle|update|fix|correct|корректировать|неправильно|ändern|falsch|corriger|corregir|تعديل|خطأ/i.test(input.userMessage.toLowerCase()),
     action: (ctx, input) => {
       const msg = input.userMessage.toLowerCase();
       const info = { ...ctx.reservationInfo };
@@ -530,6 +531,50 @@ const transitions: StateTransition[] = [
   },
 
   // ===== COMPLETED STATE TRANSITIONS =====
+
+  // COMPLETED → BROWSING (iptal / reset / baştan başla) — en yüksek öncelik
+  // "vazgeçtim", "baştan başlayalım", "sıfırla", "restart" gibi kalıpları yakalar
+  {
+    from: "COMPLETED",
+    to: "BROWSING",
+    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    action: (ctx) => ({
+      ...ctx,
+      ...resetForNewReservation(ctx),
+      stage: "BROWSING" as ConversationStage,
+      justCancelled: true,
+    }),
+  },
+
+  // COMPLETED → BROWSING (YENİ REZERVASYON KASTI — currentTour'u önemseme)
+  // "başka rezervasyon", "yeni tur", "başka nereler var" gibi mesajlarda selectedTour
+  // dolu olsa bile (örn. "pamukkale değil başka nereler"), FRESH START yap.
+  // Bu transition COMPLETED → TOUR_SELECTED #17'den ÖNCE çalışır — kasıt baskın.
+  {
+    from: "COMPLETED",
+    to: "BROWSING",
+    condition: (_ctx, input) => hasNewReservationIntent(input.userMessage, input.detectedIntent),
+    action: (ctx) => ({
+      ...ctx,
+      ...resetForNewReservation(ctx),
+      stage: "BROWSING" as ConversationStage,
+    }),
+  },
+
+  // COMPLETED → BROWSING (selamlama / tur araması / genel intent — tur seçilmemişse)
+  // "Merhaba", "Turları görmek istiyorum", "Turlarınızı öğrenebilir miyim" gibi mesajlar
+  {
+    from: "COMPLETED",
+    to: "BROWSING",
+    condition: (_ctx, input) =>
+      ["greeting", "browse_tours", "tour_search", "general"].includes(input.detectedIntent) &&
+      input.selectedTour === null,
+    action: (ctx) => ({
+      ...ctx,
+      ...resetForNewReservation(ctx),
+      stage: "BROWSING" as ConversationStage,
+    }),
+  },
 
   // COMPLETED → BROWSING (yeni rezervasyon niyeti, tur belirtilmemiş)
   {

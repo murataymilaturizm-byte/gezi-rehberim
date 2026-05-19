@@ -604,7 +604,38 @@
         "save": "Speichern"
       },
       "notCreated": "Noch nicht erstellt",
-      "deleteConfirm": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?"
+      "deleteConfirm": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?",
+      "sendButton": "Senden",
+      "send": {
+        "title": "Vorlage Senden",
+        "modeRecent": "Aus Reservierung",
+        "modeManual": "Manuelle Eingabe",
+        "selectRegistration": "Reservierung Auswählen",
+        "pickRegistration": "Kunde auswählen...",
+        "recipientPhone": "Telefonnummer",
+        "recipientName": "Vollständiger Name",
+        "recipientNamePlaceholder": "Kundenname",
+        "variables": "Variablen",
+        "preview": "Vorschau",
+        "metaWarning": "Diese Nachricht wird über die Meta WhatsApp Business API gesendet.",
+        "sending": "Wird gesendet...",
+        "sendNow": "Jetzt Senden",
+        "success": "Nachricht erfolgreich gesendet!",
+        "errors": {
+          "invalidPhone": "Gültige Telefonnummer eingeben",
+          "selectRegistration": "Bitte Reservierung auswählen",
+          "missingVariables": "Fehlende Variablen: {{vars}}",
+          "generic": "Nachricht konnte nicht gesendet werden"
+        }
+      },
+      "sync": {
+        "button": "Mit Meta Synchronisieren",
+        "success": "{{count}} Vorlagen aktualisiert",
+        "error": "Synchronisierung fehlgeschlagen"
+      },
+      "status": {
+        "notSynced": "Nicht Synchronisiert"
+      }
     },
     "faq": {
       "title": "Häufig gestellte Fragen",
@@ -1273,6 +1304,30 @@
       "quotaErrorMessage": "Für dieses Datum sind nur noch {quota} Plätze verfügbar. Bitte reduzieren Sie die Anzahl der Personen oder wählen Sie ein anderes Datum.",
       "userNotFound": "Benutzer nicht gefunden",
       "agencyNotFound": "Agentur nicht gefunden"
+    },
+    "quotaBanner": {
+      "warning": "Sie haben {{percent}}% Ihres Nachrichtenkontingents verbraucht. Es wird bald aufgebraucht.",
+      "critical": "Ihr Nachrichtenkontingent ist kritisch niedrig ({{percent}}%)! Neue Nachrichten könnten blockiert werden.",
+      "upgrade": "Plan Upgraden"
+    },
+    "onboarding": {
+      "title": "Erste Schritte",
+      "progress": "{{percent}}% abgeschlossen",
+      "dismiss": "Schließen",
+      "steps": {
+        "agencyInfo": "Agenturinformationen ausfüllen",
+        "payment": "Zahlungseinstellungen einrichten",
+        "addTour": "Erste Tour hinzufügen",
+        "addDates": "Reisedaten hinzufügen",
+        "whatsapp": "WhatsApp verbinden"
+      },
+      "actions": {
+        "agencyInfo": "Bearbeiten",
+        "payment": "Einrichten",
+        "addTour": "Tour Hinzufügen",
+        "addDates": "Datum Hinzufügen",
+        "whatsapp": "Verbinden"
+      }
     }
   },
   "auth": {
@@ -1316,7 +1371,9 @@
       "invalidCredentials": "Ungültige E-Mail oder Passwort",
       "emailExists": "Diese E-Mail-Adresse wird bereits verwendet",
       "signupFailed": "Registrierung fehlgeschlagen",
-      "loginFailed": "Anmeldung fehlgeschlagen"
+      "loginFailed": "Anmeldung fehlgeschlagen",
+      "resetFailed": "Fehler beim Senden des Reset-Links",
+      "passwordUpdateFailed": "Passwort konnte nicht aktualisiert werden"
     },
     "success": {
       "title": "Erfolg",
@@ -1333,7 +1390,19 @@
       "region": "Brandenburg"
     },
     "currency": "Ihre Währung",
-    "currencyHelp": "Währung für die Speicherung Ihrer Tourpreise"
+    "currencyHelp": "Währung für die Speicherung Ihrer Tourpreise",
+    "forgotPassword": "Passwort vergessen?",
+    "forgotPasswordTitle": "Passwort zurücksetzen",
+    "forgotPasswordDesc": "Geben Sie Ihre E-Mail-Adresse ein.",
+    "sendResetLink": "Reset-Link senden",
+    "resetLinkSent": "Reset-Link gesendet! Überprüfen Sie Ihre E-Mail.",
+    "backToLogin": "Zurück zur Anmeldung",
+    "resetPassword": "Neues Passwort festlegen",
+    "newPasswordDesc": "Legen Sie Ihr neues Passwort fest.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "passwordsNotMatch": "Passwörter stimmen nicht überein",
+    "passwordResetSuccess": "Ihr Passwort wurde erfolgreich aktualisiert"
   },
   "gettingStarted": {
     "title": "Wie Fange Ich An?",

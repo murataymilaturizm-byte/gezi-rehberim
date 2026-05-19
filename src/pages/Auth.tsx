@@ -48,6 +48,9 @@ const Auth = () => {
   const billingParam = searchParams.get("billing");
   
   const [isLogin, setIsLogin] = useState(modeParam !== "signup");
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -178,6 +181,26 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setForgotSent(true);
+    } catch (error: any) {
+      toast({
+        title: t("auth.errors.title"),
+        description: error.message || t("auth.errors.resetFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -208,6 +231,67 @@ const Auth = () => {
       </header>
 
       <div className="flex items-center justify-center p-4 py-12">
+      {isForgotPassword ? (
+        <Card className="w-full max-w-md shadow-card">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <img src={turzzLogo} alt="Turzz Logo" className="h-20 w-auto" />
+            </div>
+            <CardTitle className="text-2xl">{t("auth.forgotPasswordTitle")}</CardTitle>
+            <CardDescription>{t("auth.forgotPasswordDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {forgotSent ? (
+              <div className="space-y-4 text-center">
+                <p className="text-sm text-muted-foreground">{t("auth.resetLinkSent")}</p>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => { setIsForgotPassword(false); setForgotSent(false); }}
+                >
+                  {t("auth.backToLogin")}
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgotEmail">{t("auth.email")}</Label>
+                  <Input
+                    id="forgotEmail"
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder={t("auth.placeholders.email")}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-ocean hover:opacity-90 transition-smooth"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t("auth.processing")}</>
+                  ) : (
+                    t("auth.sendResetLink")
+                  )}
+                </Button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPassword(false)}
+                    className="text-sm text-primary hover:underline"
+                    disabled={isLoading}
+                  >
+                    {t("auth.backToLogin")}
+                  </button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
       <Card className="w-full max-w-2xl shadow-card">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -473,7 +557,19 @@ const Auth = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">{t("auth.password")}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{t("auth.password")}</Label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => { setIsForgotPassword(true); setForgotEmail(email); }}
+                    className="text-xs text-primary hover:underline"
+                    disabled={isLoading}
+                  >
+                    {t("auth.forgotPassword")}
+                  </button>
+                )}
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -516,6 +612,7 @@ const Auth = () => {
           </form>
         </CardContent>
       </Card>
+      )}
       </div>
     </div>
   );

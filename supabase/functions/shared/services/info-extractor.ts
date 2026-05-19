@@ -2,9 +2,12 @@
 // Davranış whatsapp-webhook/index.ts'deki inline bloklar ile EŞDEĞERDİR (Faz 1).
 
 import type { ConversationContext } from "../fsm/types.ts";
-import { extractNameAndPhone, extractEmail, isEmailSkipRequest } from "../fsm/simple-extractor.ts";
+import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
+
+// getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
+// normalizeDateString'den sonra yer almaktadır.
 
 /**
  * NLU field'ını string listesine normalize eder.
@@ -22,10 +25,14 @@ const TEXT_MONTHS: Record<string, number> = {
   // TR
   ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6,
   temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12,
-  // EN
+  // EN — tam form
   january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
   july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
-  // DE
+  // EN — kısa form ("Dec 22", "Jan 5" vb.)
+  jan: 1, feb: 2, mar: 3, apr: 4,
+  jun: 6, jul: 7, aug: 8, sep: 9, sept: 9,
+  oct: 10, nov: 11, dec: 12,
+  // DE — tam form (april/august/september/november EN ile aynı, kapsanmış)
   januar: 1, februar: 2, märz: 3, mai: 5, juni: 6, juli: 7,
   oktober: 10, dezember: 12,
   // FR
@@ -34,13 +41,13 @@ const TEXT_MONTHS: Record<string, number> = {
   // ES
   enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
   julio: 7, agosto: 8, septiembre: 9, noviembre: 11, diciembre: 12,
-  // RU
-  "январь": 1, "февраль": 2,
-  "март": 3, "апрель": 4,
-  "май": 5, "июнь": 6, "июль": 7,
-  "август": 8, "сентябрь": 9,
-  "октябрь": 10, "ноябрь": 11,
-  "декабрь": 12,
+  // RU (nominative + genitive)
+  "январь": 1, "января": 1, "февраль": 2, "февраля": 2,
+  "март": 3, "марта": 3, "апрель": 4, "апреля": 4,
+  "май": 5, "мая": 5, "июнь": 6, "июня": 6,
+  "июль": 7, "июля": 7, "август": 8, "августа": 8,
+  "сентябрь": 9, "сентября": 9, "октябрь": 10, "октября": 10,
+  "ноябрь": 11, "ноября": 11, "декабрь": 12, "декабря": 12,
   // AR
   "يناير": 1, "فبراير": 2,
   "مارس": 3, "أبريل": 4,
@@ -50,8 +57,15 @@ const TEXT_MONTHS: Record<string, number> = {
   "نوفمبر": 11, "ديسمبر": 12,
 };
 
+const _monthPattern = Object.keys(TEXT_MONTHS).join("|");
+// DAY MONTH [YEAR] — "20 aralık", "22. Dezember", "20 december 2026"
 const TEXT_MONTH_REGEX = new RegExp(
-  `(\\d{1,2})\\s+(${Object.keys(TEXT_MONTHS).join("|")})(?:\\s+(\\d{4}))?`,
+  `(\\d{1,2})\\.?\\s+(${_monthPattern})(?:\\s+(\\d{4}))?`,
+  "i",
+);
+// MONTH DAY [YEAR] — "december 22", "Dec 22" (EN gün-sonu format)
+const TEXT_MONTH_DAY_REGEX = new RegExp(
+  `(${_monthPattern})\\.?\\s+(\\d{1,2})(?:,?\\s+(\\d{4}))?`,
   "i",
 );
 
@@ -74,7 +88,7 @@ export function normalizeDateString(dateStr: string): string {
   const dmy = dateStr.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
   if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
 
-  // 3. "20 aralık", "20 december 2026", "20 декабря" vb.
+  // 3a. "20 aralık" / "22. Dezember" / "20 december 2026" vb. — DAY MONTH
   const textMatch = cleaned.match(TEXT_MONTH_REGEX);
   if (textMatch) {
     const day = parseInt(textMatch[1]);
@@ -83,7 +97,22 @@ export function normalizeDateString(dateStr: string): string {
     if (month && day >= 1 && day <= 31) {
       let year = textMatch[3] ? parseInt(textMatch[3]) : new Date().getFullYear();
       if (!textMatch[3]) {
-        // Yıl belirtilmemişse: tarih geçmişse bir sonraki yılı kullan
+        const candidate = new Date(year, month - 1, day);
+        if (candidate < new Date()) year++;
+      }
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+  }
+
+  // 3b. "december 22" / "Dec 22, 2026" vb. — MONTH DAY (EN formatı)
+  const monthDayMatch = cleaned.match(TEXT_MONTH_DAY_REGEX);
+  if (monthDayMatch) {
+    const monthName = monthDayMatch[1].toLowerCase();
+    const day = parseInt(monthDayMatch[2]);
+    const month = TEXT_MONTHS[monthName];
+    if (month && day >= 1 && day <= 31) {
+      let year = monthDayMatch[3] ? parseInt(monthDayMatch[3]) : new Date().getFullYear();
+      if (!monthDayMatch[3]) {
         const candidate = new Date(year, month - 1, day);
         if (candidate < new Date()) year++;
       }
@@ -93,6 +122,64 @@ export function normalizeDateString(dateStr: string): string {
 
   return dateStr; // Tanınmayan format — olduğu gibi bırak
 }
+
+/**
+ * Tur başlığını hedef dile çevirir.
+ * DB'de title_en/de/... boşsa translation map'ten otomatik çeviri yapar.
+ * Bilinmeyen turlar için TR orijinali döner (fallback).
+ */
+export function getLocalizedTourTitle(title: string, language: string): string {
+  if (!title || language === "tr") return title;
+  // 1. zaten localized (pickLocalized != TR): döner
+  // 2. TR ise map'e bak
+  const lower = title.toLowerCase().trim();
+  const map = _TOUR_TITLE_TRANSLATIONS[lower];
+  if (map?.[language]) return map[language];
+  // 3. Keyword-based replace (kısmi eşleşme için)
+  for (const [trKey, translations] of Object.entries(_TOUR_TITLE_TRANSLATIONS)) {
+    if (lower.includes(trKey) && translations[language]) {
+      return title.replace(new RegExp(trKey, "gi"), translations[language]);
+    }
+  }
+  return title;
+}
+
+/** Yaygın Türkçe tur başlıklarının çevirileri (DB'de title_en boşsa fallback) */
+const _TOUR_TITLE_TRANSLATIONS: Record<string, Record<string, string>> = {
+  "kapadokya balon turu": {
+    en: "Cappadocia Balloon Tour",
+    de: "Kappadokien Ballonfahrt",
+    ru: "Полёт на воздушном шаре в Каппадокии",
+    ar: "جولة بالون في كابادوكيا",
+    fr: "Tour en Ballon de Cappadoce",
+    es: "Tour en Globo de Capadocia",
+  },
+  "kapadokya turu": {
+    en: "Cappadocia Tour", de: "Kappadokien Tour",
+    ru: "Тур в Каппадокию", ar: "جولة كابادوكيا",
+    fr: "Circuit de Cappadoce", es: "Tour de Capadocia",
+  },
+  "pamukkale turu": {
+    en: "Pamukkale Tour", de: "Pamukkale Tour",
+    ru: "Тур в Памуккале", ar: "جولة باموكالي",
+    fr: "Circuit de Pamukkale", es: "Tour de Pamukkale",
+  },
+  "efes turu": {
+    en: "Ephesus Tour", de: "Ephesus Tour",
+    ru: "Тур в Эфес", ar: "جولة أفسس",
+    fr: "Circuit d'Éphèse", es: "Tour de Éfeso",
+  },
+  "istanbul turu": {
+    en: "Istanbul Tour", de: "Istanbul Tour",
+    ru: "Тур по Стамбулу", ar: "جولة إسطنبول",
+    fr: "Circuit d'Istanbul", es: "Tour de Estambul",
+  },
+  "antalya turu": {
+    en: "Antalya Tour", de: "Antalya Tour",
+    ru: "Тур в Анталию", ar: "جولة أنطاليا",
+    fr: "Circuit d'Antalya", es: "Tour de Antalya",
+  },
+};
 
 /**
  * 3-katmanlı tarih eşleştirme:
@@ -157,8 +244,24 @@ export interface ExtractAllInfoParams {
 export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any> {
   const { message, nluResult, fsmIntent, context, tours } = params;
 
-  // === Blok 1: NLU updates (en yüksek öncelik) ===
-  const extractedInfo: Record<string, any> = { ...(nluResult.updates || {}) };
+  // === Blok 1: NLU updates (en yüksek öncelik) — placeholder/hallucination koruması ===
+  const _rawUpdates: Record<string, any> = nluResult.updates || {};
+  const extractedInfo: Record<string, any> = {};
+  // AI bazen "<UNKNOWN>", "N/A", "bilinmiyor" gibi dummy değerler döndürür — reservationInfo'ya sızmasın
+  const _isPlaceholder = (s: string): boolean =>
+    /^<.*>$|^undefined$|^null$|^n\/?a$|^-+$|^\?+$|^bilinmiyor$|^belirtilmedi$|^not\s+provided$|^unknown$/i.test(s.trim());
+  for (const [k, v] of Object.entries(_rawUpdates)) {
+    if (k === "fullName" && typeof v === "string" && v.trim()) {
+      if (_isPlaceholder(v)) continue;
+      extractedInfo[k] = formatName(v.trim());
+    } else if (k === "phone" && typeof v === "string" && v.trim()) {
+      // KRİTİK: normalizePhone null dönerse FALLBACK YOK — placeholder DB'ye sızmasın
+      const normalized = normalizePhone(v.trim());
+      if (normalized) extractedInfo[k] = normalized;
+    } else {
+      extractedInfo[k] = v;
+    }
+  }
 
   // === Blok 2: NLU entities.dates → normalize (string veya string[] olabilir) ===
   const nluDates = normalizeNluField(nluResult.entities?.dates);

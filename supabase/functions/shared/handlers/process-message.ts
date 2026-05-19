@@ -17,12 +17,12 @@ import {
   formatDateForLanguage,
 } from "../fsm/localization.ts";
 import { detectLanguage } from "../fsm/language.ts";
-import { buildSystemPrompt } from "../fsm/prompt-builder.ts";
+import { buildSystemPrompt, buildTransitionPrompt } from "../fsm/prompt-builder.ts";
 import { validateAIResponse } from "../fsm/response-validator.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
-import { extractAllInfo } from "../services/info-extractor.ts";
+import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { callAI } from "../services/ai.ts";
@@ -52,12 +52,18 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   const message = sanitizeInput(rawMessage);
 
+  // _save: saveTransaction varsa atomik (user+assistant+ctx), yoksa sadece assistant+ctx
+  const _save = (reply: string, ctx: ConversationContext): Promise<void> =>
+    adapter.saveTransaction
+      ? adapter.saveTransaction(message, reply, ctx)
+      : adapter.saveResponse(reply, ctx);
+
   // === 2. CONTEXT YÜKLE ===
   const loadedContext = await adapter.loadContext();
 
   // === 3. DİL TESPİTİ ===
   const languageChangeIntent = detectLanguageChangeIntent(message);
-  const runtimeDetectedLang = await detectLanguage(message);
+  const runtimeDetectedLang = detectLanguage(message);
 
   // === 4. CONTEXT BAŞLAT / GÜNCELLE ===
   let context: ConversationContext;
@@ -79,8 +85,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // Agency email toplama ayarını her mesajda sync et (admin toggle anlık etki etsin)
   context.collectEmail = agency.collect_email === true;
 
+  // FIX 4: önceki stage'i AI prompt'una ver (demo-chat ile davranış paritesi)
+  const previousContext = { ...context };
+
   // === 5. HISTORY YÜKLE (NLU + AI için) ===
-  const historyAsc = await adapter.loadHistory(20); // Zaten ASC, adapter'dan geliyor
+  const historyAsc = await adapter.loadHistory(50);
 
   // === 6. NLU CONTEXT + ANALIZ ===
   const historySummary = historyAsc.map((m) => `${m.role}: ${m.content}`).join("\n");
@@ -105,7 +114,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   // Şikayet kaydı (fire-and-forget)
   if (nluResult.intent === "complaint_feedback") {
-    supabase.from("complaints").insert({ agency_id: agency.id, message, type: "complaint", status: "new" }).then(() => {});
+    supabase.from("complaints").insert({ agency_id: agency.id, phone: adapter.identifier, message, type: "complaint", status: "new" }).then(() => {});
   }
 
   // === 7. TUR EŞLEŞTİRME ===
@@ -142,7 +151,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       es: "Por favor indique un número válido de personas (mínimo 1).",
     };
     const negReply = _negMsgs[context.language] || _negMsgs.tr;
-    await adapter.saveResponse(negReply, context);
+    await _save(negReply, context);
     await adapter.sendResponse(negReply);
     return { success: true, response: negReply, newContext: context };
   }
@@ -158,22 +167,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const newContext = processTransition(context, fsmInput);
   console.log(`[process-message] ${context.stage} → ${newContext.stage}`);
 
-  // FIX: Geçersiz tarih cleanup (dateId olmadan context'e sızmayı engelle)
+  // FIX: Geçersiz tarih cleanup — dateId yoksa selectedDate her zaman invalid
+  // (collectionStep koşulu kaldırıldı: waiting_for_date dışında da sızabiliyordu)
   const _invalidDateForPreamble =
-    newContext.collectionStep === "waiting_for_date" &&
-    newContext.reservationInfo?.selectedDate &&
-    !newContext.reservationInfo?.dateId
+    newContext.reservationInfo?.selectedDate && !newContext.reservationInfo?.dateId
       ? newContext.reservationInfo.selectedDate
       : undefined;
   if (_invalidDateForPreamble) {
     newContext.reservationInfo = { ...newContext.reservationInfo, selectedDate: undefined };
+    console.log("[process-message] Invalid date cleaned up:", _invalidDateForPreamble);
   }
 
   // === 10. İPTAL MESAJI (deterministik) ===
   if (newContext.justCancelled) {
     newContext.justCancelled = false;
     const cancelReply = getCancellationMessage(newContext.language);
-    await adapter.saveResponse(cancelReply, newContext);
+    await _save(cancelReply, newContext);
     await adapter.sendResponse(cancelReply);
     return { success: true, response: cancelReply, newContext };
   }
@@ -197,20 +206,29 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
             : "";
           const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
           const quotaText = remaining !== undefined
-            ? newContext.language === "tr" ? ` (${remaining} kişilik yer)` : ` (${remaining} spots)`
+            ? ({
+                tr: ` (${remaining} kişilik yer)`,
+                en: ` (${remaining} spots)`,
+                de: ` (${remaining} Plätze)`,
+                ru: ` (${remaining} мест)`,
+                ar: ` (${remaining} مقاعد)`,
+                fr: ` (${remaining} places)`,
+                es: ` (${remaining} plazas)`,
+              }[newContext.language] ?? ` (${remaining} spots)`)
             : "";
           return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
         })
         .join("\n");
 
+      const _displayTitle = getLocalizedTourTitle(tourForDates.title, newContext.language);
       const dateSelMsgs: Record<string, string> = {
-        tr: `*${tourForDates.title}* için müsait tarihler:\n${dateLines}\n\nHangi tarihi tercih edersiniz?`,
-        en: `Available dates for *${tourForDates.title}*:\n${dateLines}\n\nWhich date do you prefer?`,
-        de: `Verfügbare Termine für *${tourForDates.title}*:\n${dateLines}\n\nWelches Datum bevorzugen Sie?`,
-        ru: `Доступные даты для *${tourForDates.title}*:\n${dateLines}\n\nКакую дату вы предпочитаете?`,
-        ar: `التواريخ المتاحة لـ *${tourForDates.title}*:\n${dateLines}\n\nما التاريخ الذي تفضله؟`,
-        fr: `Dates disponibles pour *${tourForDates.title}* :\n${dateLines}\n\nQuelle date préférez-vous ?`,
-        es: `Fechas disponibles para *${tourForDates.title}*:\n${dateLines}\n\n¿Qué fecha prefieres?`,
+        tr: `*${_displayTitle}* için müsait tarihler:\n${dateLines}\n\nHangi tarihi tercih edersiniz?`,
+        en: `Available dates for *${_displayTitle}*:\n${dateLines}\n\nWhich date do you prefer?`,
+        de: `Verfügbare Termine für *${_displayTitle}*:\n${dateLines}\n\nWelches Datum bevorzugen Sie?`,
+        ru: `Доступные даты для *${_displayTitle}*:\n${dateLines}\n\nКакую дату вы предпочитаете?`,
+        ar: `التواريخ المتاحة لـ *${_displayTitle}*:\n${dateLines}\n\nما التاريخ الذي تفضله؟`,
+        fr: `Dates disponibles pour *${_displayTitle}* :\n${dateLines}\n\nQuelle date préférez-vous ?`,
+        es: `Fechas disponibles para *${_displayTitle}*:\n${dateLines}\n\n¿Qué fecha prefieres?`,
       };
 
       let dateReply = dateSelMsgs[newContext.language] || dateSelMsgs.tr;
@@ -227,7 +245,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         dateReply = (_preambles[newContext.language] || _preambles.tr) + dateReply;
       }
 
-      await adapter.saveResponse(dateReply, newContext);
+      await _save(dateReply, newContext);
       await adapter.sendResponse(dateReply);
       return { success: true, response: dateReply, newContext };
     }
@@ -247,7 +265,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         es: `Por último, ¿desea compartir su email? 📧 Le enviaremos ofertas especiales.\n\n(Escriba "saltar" para omitir)`,
       };
       const askReply = _askMsgs[_lang] || _askMsgs.tr;
-      await adapter.saveResponse(askReply, newContext);
+      await _save(askReply, newContext);
       await adapter.sendResponse(askReply);
       return { success: true, response: askReply, newContext };
     }
@@ -262,7 +280,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         es: "Esta dirección de email parece inválida. (ej: nombre@domain.com)",
       };
       const invalidReply = _invalidMsgs[_lang] || _invalidMsgs.tr;
-      await adapter.saveResponse(invalidReply, newContext);
+      await _save(invalidReply, newContext);
       await adapter.sendResponse(invalidReply);
       return { success: true, response: invalidReply, newContext };
     }
@@ -315,7 +333,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           newContext.reservationConfirmed = false;
           newContext.collectionStep = "waiting_for_date";
           const qReply = _qMsgs[lang] || _qMsgs.tr;
-          await adapter.saveResponse(qReply, newContext);
+          await _save(qReply, newContext);
           await adapter.sendResponse(qReply);
           return { success: true, response: qReply, newContext };
         }
@@ -343,6 +361,32 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const { tourId, dateId, fullName, phone: regPhone, paxAdult } = newContext.reservationInfo;
     const reservationPhone = regPhone || adapter.identifier || "";
 
+    // KRİTİK: Telefon format koruması — placeholder/bozuk değer DB'ye yazılmasın
+    const _phoneDigits = reservationPhone.replace(/[\s\-\(\)\.]/g, "");
+    const _phoneOk = /^\+?\d{7,15}$/.test(_phoneDigits);
+    if (reservationPhone && !_phoneOk) {
+      console.error("[process-message] Invalid phone format — requeuing for phone collection", {
+        regPhone, identifier: adapter.identifier, reservationPhone,
+      });
+      newContext.stage = "COLLECTING_INFO";
+      newContext.reservationConfirmed = false;
+      newContext.collectionStep = "waiting_for_phone";
+      if (newContext.reservationInfo) newContext.reservationInfo.phone = undefined;
+      const _phMsgs: Record<string, string> = {
+        tr: "Telefon numaranızı net olarak alamadım, lütfen tekrar yazar mısınız? 📱 (örn: 0555 123 45 67)",
+        en: "I couldn't get your phone number clearly, please send it again. 📱 (e.g., +90 555 123 45 67)",
+        de: "Ich konnte Ihre Telefonnummer nicht klar erfassen, bitte erneut senden. 📱",
+        ru: "Не удалось получить номер телефона, отправьте ещё раз. 📱",
+        ar: "لم أتمكن من الحصول على رقم هاتفك بوضوح، يرجى إعادة كتابته. 📱",
+        fr: "Je n'ai pas pu obtenir votre numéro de téléphone, veuillez l'envoyer à nouveau. 📱",
+        es: "No pude obtener su número de teléfono, por favor envíelo de nuevo. 📱",
+      };
+      const _phReply = _phMsgs[newContext.language] || _phMsgs.tr;
+      await _save(_phReply, newContext);
+      await adapter.sendResponse(_phReply);
+      return { success: false, error: "invalid_phone", response: _phReply, newContext };
+    }
+
     const missingStep = !tourId ? "waiting_for_date"  // tourId yoksa tur seçimi eksik
       : !dateId ? "waiting_for_date"
       : !paxAdult ? "waiting_for_pax"
@@ -358,9 +402,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const missMsgs: Record<string, string> = {
         tr: "Rezervasyonu tamamlayabilmem için eksik bilgileri adım adım tamamlayalım.",
         en: "Let's complete the missing details to finalize your reservation.",
+        de: "Lassen Sie uns die fehlenden Angaben für Ihre Reservierung ergänzen.",
+        ru: "Давайте заполним недостающие данные для завершения бронирования.",
+        ar: "دعنا نكمل البيانات الناقصة لإتمام حجزك.",
+        fr: "Complétez les informations manquantes pour finaliser votre réservation.",
+        es: "Completemos los datos que faltan para finalizar su reserva.",
       };
       const missReply = missMsgs[newContext.language] || missMsgs.tr;
-      await adapter.saveResponse(missReply, newContext);
+      await _save(missReply, newContext);
       await adapter.sendResponse(missReply);
       return { success: true, response: missReply, newContext };
     }
@@ -411,6 +460,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _msgs: Record<string, string> = {
           tr: `Bu tur için zaten kayıtlı görünüyorsunuz. ℹ️ Detaylar için ${agency.name} ile iletişime geçin.${agPhone}`,
           en: `You appear to already be registered for this tour. ℹ️ Please contact ${agency.name}.${agPhone}`,
+          de: `Sie scheinen bereits für diese Tour angemeldet zu sein. ℹ️ Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+          ru: `Похоже, вы уже записаны на этот тур. ℹ️ Обратитесь в ${agency.name}.${agPhone}`,
+          ar: `يبدو أنك مسجل بالفعل في هذه الجولة. ℹ️ يرجى التواصل مع ${agency.name}.${agPhone}`,
+          fr: `Vous semblez déjà inscrit pour ce circuit. ℹ️ Contactez ${agency.name}.${agPhone}`,
+          es: `Parece que ya está registrado para este tour. ℹ️ Contacte con ${agency.name}.${agPhone}`,
         };
         errorReply = _msgs[lang] || _msgs.tr;
       } else if (errCode === "TOUR_DATE_NOT_FOUND") {
@@ -422,6 +476,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _msgs: Record<string, string> = {
           tr: "Seçtiğiniz tarih artık mevcut değil. 😔 Lütfen başka bir tarih seçin.",
           en: "The date you selected is no longer available. 😔 Please choose another date.",
+          de: "Das gewählte Datum ist nicht mehr verfügbar. 😔 Bitte wählen Sie ein anderes Datum.",
+          ru: "Выбранная дата больше недоступна. 😔 Выберите другую дату.",
+          ar: "التاريخ المحدد لم يعد متاحاً. 😔 يرجى اختيار تاريخ آخر.",
+          fr: "La date choisie n'est plus disponible. 😔 Veuillez choisir une autre date.",
+          es: "La fecha seleccionada ya no está disponible. 😔 Elija otra fecha.",
         };
         errorReply = _msgs[lang] || _msgs.tr;
       } else if (errCode === "TOUR_NOT_FOUND") {
@@ -432,6 +491,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _msgs: Record<string, string> = {
           tr: "Seçtiğiniz tur artık mevcut değil. 😔 Güncel turlarımıza bakabilirsiniz.",
           en: "The tour you selected is no longer available. 😔 Please check our current tours.",
+          de: "Die gewählte Tour ist nicht mehr verfügbar. 😔 Schauen Sie sich unsere aktuellen Touren an.",
+          ru: "Выбранный тур больше не доступен. 😔 Ознакомьтесь с нашими актуальными турами.",
+          ar: "الجولة المحددة لم تعد متاحة. 😔 يرجى الاطلاع على جولاتنا الحالية.",
+          fr: "Le circuit sélectionné n'est plus disponible. 😔 Consultez nos circuits actuels.",
+          es: "El tour seleccionado ya no está disponible. 😔 Consulte nuestros tours actuales.",
         };
         errorReply = _msgs[lang] || _msgs.tr;
       } else {
@@ -440,10 +504,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _msgs: Record<string, string> = {
           tr: `Rezervasyonunuz oluşturulurken bir sorun yaşandı. Lütfen ${agency.name} ile iletişime geçiniz.${agPhone}`,
           en: `There was an issue creating your reservation. Please contact ${agency.name}.${agPhone}`,
+          de: `Bei Ihrer Reservierung ist ein Problem aufgetreten. Bitte kontaktieren Sie ${agency.name}.${agPhone}`,
+          ru: `При создании бронирования возникла ошибка. Обратитесь в ${agency.name}.${agPhone}`,
+          ar: `حدثت مشكلة أثناء إنشاء حجزك. يرجى التواصل مع ${agency.name}.${agPhone}`,
+          fr: `Un problème est survenu lors de la réservation. Contactez ${agency.name}.${agPhone}`,
+          es: `Hubo un problema al crear su reserva. Contacte con ${agency.name}.${agPhone}`,
         };
         errorReply = _msgs[lang] || _msgs.tr;
       }
-      await adapter.saveResponse(errorReply, newContext);
+      await _save(errorReply, newContext);
       await adapter.sendResponse(errorReply);
       return { success: false, error: errCode, response: errorReply, newContext };
     }
@@ -467,16 +536,38 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       es: `${adultCount} adulto${adultCount > 1 ? "s" : ""}${childCount ? `, ${childCount} niño${childCount > 1 ? "s" : ""}` : ""}`,
     };
     const paxText = paxTextMap[newContext.language] || paxTextMap.en;
-    const tourTitle = selectedTourFull?.title || newContext.reservationInfo.tourTitle || "-";
+    const tourTitle = getLocalizedTourTitle(
+      selectedTourFull?.title || newContext.reservationInfo.tourTitle || "-",
+      newContext.language,
+    );
     const emailLine = newContext.reservationInfo.email ? `\n• *Email:* ${newContext.reservationInfo.email}` : "";
+
+    // Toplam tutar hesabı (completion mesajı için — payment block ile aynı formül)
+    const _totalPrice = adultCount * (selectedDateFull?.price_adult || 0) +
+      childCount * (selectedDateFull?.price_child || selectedDateFull?.price_adult || 0);
+    const _tourCurrencyCode = selectedTourFull?.currency || "TRY";
+    const _exRatesTotal = await getExchangeRatesOnce().catch(() => ({}));
+    const _showDualTotal = agency.show_multi_currency !== false;
+    const _totalText = _totalPrice > 0
+      ? formatPriceSync(_totalPrice, _tourCurrencyCode, newContext.language, _exRatesTotal, _showDualTotal)
+      : "";
+    const _totalLabels: Record<string, string> = {
+      tr: "Toplam", en: "Total", de: "Gesamt", ru: "Итого",
+      ar: "الإجمالي", fr: "Total", es: "Total",
+    };
+    const _totalLine = _totalText
+      ? `\n• *${_totalLabels[newContext.language] || _totalLabels.en}:* ${_totalText}`
+      : "";
+
+    // Yeni kompakt format: tek başlık + özet + toplam (tekrar YOK)
     const completionMsgs: Record<string, string> = {
-      tr: `Bilgilerinizi aldım ${fullName || ""}, çok teşekkür ederim! 😊\n*${tourTitle}* için ön kaydınızı başarıyla gerçekleştirdim.\n\n*Kayıt Özetiniz:*\n• *Tur:* ${tourTitle}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *İsim:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}${emailLine}\n\nEkip arkadaşlarımız size en kısa sürede ulaşacaktır.`,
-      en: `Thank you, ${fullName || ""}! 😊\nYour pre-registration for *${tourTitle}* is complete.\n\n*Summary:*\n• *Tour:* ${tourTitle}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Phone:* ${reservationPhone || "-"}${emailLine}\n\nOur team will contact you shortly.`,
-      de: `Vielen Dank, ${fullName || ""}! 😊\nIhre Voranmeldung für *${tourTitle}* wurde abgeschlossen.\n\n*Übersicht:*\n• *Tour:* ${tourTitle}\n• *Datum:* ${formattedDate}\n• *Personen:* ${paxText}\n• *Name:* ${fullName || "-"}\n• *Telefon:* ${reservationPhone || "-"}${emailLine}\n\nUnser Team meldet sich in Kürze.`,
-      ru: `Спасибо, ${fullName || ""}! 😊\nВаша предварительная запись на *${tourTitle}* оформлена.\n\n*Сводка:*\n• *Тур:* ${tourTitle}\n• *Дата:* ${formattedDate}\n• *Количество:* ${paxText}\n• *Имя:* ${fullName || "-"}\n• *Телефон:* ${reservationPhone || "-"}${emailLine}\n\nНаши специалисты свяжутся с вами.`,
-      ar: `شكراً، ${fullName || ""}! 😊\nتم تسجيل طلبك لـ *${tourTitle}*.\n\n*ملخص:*\n• *الجولة:* ${tourTitle}\n• *التاريخ:* ${formattedDate}\n• *الأشخاص:* ${paxText}\n• *الاسم:* ${fullName || "-"}\n• *الهاتف:* ${reservationPhone || "-"}${emailLine}\n\nسيتواصل معك فريقنا.`,
-      fr: `Merci, ${fullName || ""}! 😊\nVotre pré-inscription pour *${tourTitle}* est réalisée.\n\n*Récapitulatif:*\n• *Circuit:* ${tourTitle}\n• *Date:* ${formattedDate}\n• *Personnes:* ${paxText}\n• *Nom:* ${fullName || "-"}\n• *Téléphone:* ${reservationPhone || "-"}${emailLine}\n\nNotre équipe vous contactera prochainement.`,
-      es: `¡Gracias, ${fullName || ""}! 😊\nSu registro para *${tourTitle}* está completado.\n\n*Resumen:*\n• *Tour:* ${tourTitle}\n• *Fecha:* ${formattedDate}\n• *Personas:* ${paxText}\n• *Nombre:* ${fullName || "-"}\n• *Teléfono:* ${reservationPhone || "-"}${emailLine}\n\nNuestro equipo se pondrá en contacto.`,
+      tr: `✅ *Rezervasyonunuz onaylandı, ${fullName || ""}!* 🎉\n\n• *Tur:* ${tourTitle}\n• *Tarih:* ${formattedDate}\n• *Kişi:* ${paxText}\n• *Telefon:* ${reservationPhone || "-"}${emailLine}${_totalLine}`,
+      en: `✅ *Reservation confirmed, ${fullName || ""}!* 🎉\n\n• *Tour:* ${tourTitle}\n• *Date:* ${formattedDate}\n• *People:* ${paxText}\n• *Phone:* ${reservationPhone || "-"}${emailLine}${_totalLine}`,
+      de: `✅ *Reservierung bestätigt, ${fullName || ""}!* 🎉\n\n• *Tour:* ${tourTitle}\n• *Datum:* ${formattedDate}\n• *Personen:* ${paxText}\n• *Telefon:* ${reservationPhone || "-"}${emailLine}${_totalLine}`,
+      ru: `✅ *Бронирование подтверждено, ${fullName || ""}!* 🎉\n\n• *Тур:* ${tourTitle}\n• *Дата:* ${formattedDate}\n• *Количество:* ${paxText}\n• *Телефон:* ${reservationPhone || "-"}${emailLine}${_totalLine}`,
+      ar: `✅ *تم تأكيد حجزك، ${fullName || ""}!* 🎉\n\n• *الجولة:* ${tourTitle}\n• *التاريخ:* ${formattedDate}\n• *الأشخاص:* ${paxText}\n• *الهاتف:* ${reservationPhone || "-"}${emailLine}${_totalLine}`,
+      fr: `✅ *Réservation confirmée, ${fullName || ""}!* 🎉\n\n• *Circuit:* ${tourTitle}\n• *Date:* ${formattedDate}\n• *Personnes:* ${paxText}\n• *Téléphone:* ${reservationPhone || "-"}${emailLine}${_totalLine}`,
+      es: `✅ *Reserva confirmada, ${fullName || ""}!* 🎉\n\n• *Tour:* ${tourTitle}\n• *Fecha:* ${formattedDate}\n• *Personas:* ${paxText}\n• *Teléfono:* ${reservationPhone || "-"}${emailLine}${_totalLine}`,
     };
 
     let completionReply = completionMsgs[newContext.language] || completionMsgs.tr;
@@ -519,7 +610,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       if (tmpl) completionReply += "\n\n" + tmpl;
     }
 
-    await adapter.saveResponse(completionReply, newContext);
+    // İletişim footer (agency.phone_public varsa)
+    if (agency.phone_public) {
+      const _contactLabels: Record<string, string> = {
+        tr: "Sorularınız için",
+        en: "For questions",
+        de: "Bei Fragen",
+        ru: "По вопросам",
+        ar: "للأسئلة",
+        fr: "Pour vos questions",
+        es: "Para consultas",
+      };
+      const _contactLabel = _contactLabels[newContext.language] || _contactLabels.en;
+      completionReply += `\n\n📞 ${_contactLabel}: ${agency.phone_public}`;
+    }
+
+    await _save(completionReply, newContext);
     await adapter.sendResponse(completionReply);
     return { success: true, response: completionReply, newContext };
   }
@@ -545,6 +651,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     paymentInfo: typeof paymentInstructions === "string" ? paymentInstructions
       : (paymentInstructions as any)?.text || undefined,
     multipleTourMatches: multipleTourMatches.length > 1 ? multipleTourMatches : undefined,
+    previousContext,
   };
 
   let tourSwitchWarning = "";
@@ -555,12 +662,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       : `\n\n🚨 CRITICAL: User is booking "${newContext.currentTour.title}" but mentioned "${selectedTour.title}". Ask for confirmation!`;
   }
 
-  let completedStagePrompt = "";
-  if (context.stage === "COMPLETED" && newContext.stage === "COMPLETED") {
-    completedStagePrompt = newContext.language === "tr"
-      ? `\n\n✅ TAMAMLANAN REZERVASYON SONRASI: Sadece soruyu yanıtla. "Rezervasyonunuz tamamlandı" deme.`
-      : `\n\n✅ POST-RESERVATION: Just answer the question. DO NOT say "your reservation is confirmed".`;
-  }
+  // Stage geçiş farkındalığı: yeni rezervasyon, after-sales, bilgi değişikliği
+  const completedStagePrompt = buildTransitionPrompt(promptContext as any);
 
   let returningUserPrompt = "";
   if (returningUserName) {
@@ -588,7 +691,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   } catch (_aiErr) {
     console.error("[process-message] AI call failed:", _aiErr);
     reply = buildAIFallbackResponse(newContext, agency.phone_public || undefined);
-    await adapter.saveResponse(reply, newContext);
+    await _save(reply, newContext);
     await adapter.sendResponse(reply);
     return { success: true, response: reply, newContext };
   }
@@ -621,7 +724,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   // === 19. KAYDET VE GÖNDER ===
-  await adapter.saveResponse(reply, newContext);
+  await _save(reply, newContext);
   await adapter.sendResponse(reply);
   return { success: true, response: reply, newContext };
 }

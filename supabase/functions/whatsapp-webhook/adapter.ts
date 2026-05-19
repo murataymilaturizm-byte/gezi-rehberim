@@ -21,16 +21,20 @@ function isValidContext(obj: unknown): obj is ConversationContext {
 /** Webhook'un atomic save RPC'sini çağırır. Fallback: ayrı ayrı insert. */
 async function saveConversationAtomic(
   supabase: any, phone: string, agencyId: string,
-  assistantMessage: string, context: ConversationContext,
+  userMessage: string, assistantMessage: string, context: ConversationContext,
 ): Promise<void> {
   const { data, error } = await supabase.rpc("save_conversation_atomic", {
     p_phone: phone,
     p_agency_id: agencyId,
+    p_user_message: userMessage,
     p_assistant_message: assistantMessage,
     p_context: JSON.stringify(context),
   });
   if (error || !data?.success) {
     console.error("[adapter] save_conversation_atomic failed, fallback:", error?.message || data?.error);
+    if (userMessage) {
+      await supabase.from("whatsapp_conversations").insert({ phone, agency_id: agencyId, role: "user", content: userMessage });
+    }
     await supabase.from("whatsapp_conversations").insert({ phone, agency_id: agencyId, role: "assistant", content: assistantMessage });
     await supabase.from("whatsapp_conversations").insert({ phone, agency_id: agencyId, role: "system", content: JSON.stringify(context) });
   }
@@ -97,14 +101,18 @@ export class WhatsAppAdapter implements ChannelAdapter {
     }
   }
 
-  async loadHistory(limit = 20): Promise<Array<{ role: string; content: string }>> {
+  async loadHistory(limit = 50): Promise<Array<{ role: string; content: string }>> {
     // getConversationHistory DESC döndürür; reverse ile ASC yapılır (process-message bunu bekler)
     const raw = await getConversationHistory(this.supabase, this.phone, this.agency.id, this.preloadedHistory, limit);
     return [...raw].reverse(); // DESC → ASC
   }
 
   async saveResponse(reply: string, newContext: ConversationContext): Promise<void> {
-    await saveConversationAtomic(this.supabase, this.phone, this.agency.id, reply, newContext);
+    await saveConversationAtomic(this.supabase, this.phone, this.agency.id, "", reply, newContext);
+  }
+
+  async saveTransaction(userMessage: string, reply: string, newContext: ConversationContext): Promise<void> {
+    await saveConversationAtomic(this.supabase, this.phone, this.agency.id, userMessage, reply, newContext);
   }
 
   async sendResponse(reply: string): Promise<void> {

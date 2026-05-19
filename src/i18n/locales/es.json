@@ -634,7 +634,38 @@
         "save": "Guardar"
       },
       "notCreated": "Aún no creado",
-      "deleteConfirm": "¿Está seguro de que desea eliminar esta plantilla?"
+      "deleteConfirm": "¿Está seguro de que desea eliminar esta plantilla?",
+      "sendButton": "Enviar",
+      "send": {
+        "title": "Enviar plantilla",
+        "modeRecent": "Desde reserva",
+        "modeManual": "Entrada manual",
+        "selectRegistration": "Seleccionar reserva",
+        "pickRegistration": "Elegir cliente...",
+        "recipientPhone": "Número de teléfono",
+        "recipientName": "Nombre completo",
+        "recipientNamePlaceholder": "Nombre del cliente",
+        "variables": "Variables",
+        "preview": "Vista previa",
+        "metaWarning": "Este mensaje se enviará a través de la API de Meta WhatsApp Business.",
+        "sending": "Enviando...",
+        "sendNow": "Enviar ahora",
+        "success": "¡Mensaje enviado exitosamente!",
+        "errors": {
+          "invalidPhone": "Ingrese un número de teléfono válido",
+          "selectRegistration": "Por favor seleccione una reserva",
+          "missingVariables": "Variables faltantes: {{vars}}",
+          "generic": "No se pudo enviar el mensaje"
+        }
+      },
+      "sync": {
+        "button": "Sincronizar con Meta",
+        "success": "{{count}} plantillas actualizadas",
+        "error": "La sincronización falló"
+      },
+      "status": {
+        "notSynced": "No Sincronizado"
+      }
     },
     "faq": {
       "title": "Preguntas frecuentes",
@@ -1303,6 +1334,30 @@
       "quotaErrorMessage": "Solo quedan {quota} lugares para esta fecha. Por favor, reduzca el número de personas o seleccione otra fecha.",
       "userNotFound": "Usuario no encontrado",
       "agencyNotFound": "Agencia no encontrada"
+    },
+    "quotaBanner": {
+      "warning": "Ha usado el {{percent}}% de su cuota de mensajes. Se agotará pronto.",
+      "critical": "¡Su cuota de mensajes está críticamente baja ({{percent}}%)! Los nuevos mensajes pueden bloquearse.",
+      "upgrade": "Mejorar Plan"
+    },
+    "onboarding": {
+      "title": "Primeros Pasos",
+      "progress": "{{percent}}% completado",
+      "dismiss": "Cerrar",
+      "steps": {
+        "agencyInfo": "Completar información de la agencia",
+        "payment": "Configurar ajustes de pago",
+        "addTour": "Agregar primer tour",
+        "addDates": "Agregar fechas del tour",
+        "whatsapp": "Conectar WhatsApp"
+      },
+      "actions": {
+        "agencyInfo": "Editar",
+        "payment": "Configurar",
+        "addTour": "Agregar Tour",
+        "addDates": "Agregar Fechas",
+        "whatsapp": "Conectar"
+      }
     }
   },
   "auth": {
@@ -1346,7 +1401,9 @@
       "invalidCredentials": "Correo electrónico o contraseña inválidos",
       "emailExists": "Esta dirección de correo electrónico ya está en uso",
       "signupFailed": "Registro fallido",
-      "loginFailed": "Inicio de sesión fallido"
+      "loginFailed": "Inicio de sesión fallido",
+      "resetFailed": "Error al enviar el enlace de restablecimiento",
+      "passwordUpdateFailed": "Error al actualizar la contraseña"
     },
     "success": {
       "title": "Éxito",
@@ -1363,7 +1420,19 @@
       "region": "Centro"
     },
     "currency": "Su moneda",
-    "currencyHelp": "Moneda para almacenar los precios de sus tours"
+    "currencyHelp": "Moneda para almacenar los precios de sus tours",
+    "forgotPassword": "¿Olvidé mi contraseña?",
+    "forgotPasswordTitle": "Restablecer contraseña",
+    "forgotPasswordDesc": "Ingrese el correo electrónico de su cuenta.",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "resetLinkSent": "¡Enlace de restablecimiento enviado! Revise su correo.",
+    "backToLogin": "Volver al inicio de sesión",
+    "resetPassword": "Establecer nueva contraseña",
+    "newPasswordDesc": "Establezca su nueva contraseña.",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "passwordsNotMatch": "Las contraseñas no coinciden",
+    "passwordResetSuccess": "Su contraseña se ha actualizado con éxito"
   },
   "gettingStarted": {
     "title": "¿Cómo Empezar?",

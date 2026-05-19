@@ -262,11 +262,6 @@ serve(async (req) => {
       });
     }
 
-    // === Kullanıcı mesajını kaydet ===
-    await supabase.from("whatsapp_conversations").insert({
-      phone: userPhone, role: "user", content: message, agency_id: agency.id,
-    });
-
     // === Kullanıcı profili (plan özelliği) ===
     let returningUserName: string | null = null;
     if (planFeatures?.has_user_profiles) {
@@ -280,7 +275,27 @@ serve(async (req) => {
     }
 
     // === Turları yükle + localize ===
-    const toursRaw = await getCachedTours(supabase, agency.id);
+    let toursRaw: any[];
+    try {
+      toursRaw = await getCachedTours(supabase, agency.id);
+    } catch (_cacheErr: any) {
+      if (_cacheErr?.message === "TOUR_DATA_UNAVAILABLE") {
+        const _unavMsgs: Record<string, string> = {
+          tr: "Üzgünüm, tur bilgilerini şu an yükleyemedim. Lütfen birkaç dakika sonra tekrar yazın.",
+          en: "Sorry, I couldn't load tour information right now. Please try again in a few minutes.",
+          de: "Entschuldigung, Tourdaten können gerade nicht geladen werden. Bitte in wenigen Minuten erneut versuchen.",
+          ru: "Извините, не удалось загрузить туры. Попробуйте через несколько минут.",
+          ar: "آسف، لا أستطيع تحميل بيانات الجولات الآن. يرجى المحاولة بعد دقائق.",
+          fr: "Désolé, impossible de charger les informations des circuits. Réessayez dans quelques minutes.",
+          es: "Lo siento, no puedo cargar la información de tours. Intente en unos minutos.",
+        };
+        if (_catchMeta?.accessToken && _catchPhone) {
+          await sendWhatsAppMessage(_catchMeta.phoneNumberId, _catchMeta.accessToken, _catchPhone, _unavMsgs[_catchLang] || _unavMsgs.tr);
+        }
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      throw _cacheErr;
+    }
     const today = new Date().toISOString().split("T")[0];
     const tours = toursRaw
       .map((tour: any) => ({

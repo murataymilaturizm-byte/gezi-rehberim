@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -11,11 +13,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, User, Bot, Building2, ScrollText, Languages } from "lucide-react";
+import { MessageCircle, User, Bot, Building2, ScrollText, Languages, Search, Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { WhatsAppLogs } from "./WhatsAppLogs";
 import { LanguageStats } from "./LanguageStats";
+import { WhatsAppSettings } from "./WhatsAppSettings";
+
+const PAGE_SIZE = 25;
 
 interface Message {
   id: string;
@@ -47,6 +52,8 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
   const [loading, setLoading] = useState(true);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -134,6 +141,22 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
 
   const selectedConversation = conversations.find(c => c.phone === selectedPhone);
 
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) return conversations;
+    const q = searchQuery.toLowerCase();
+    return conversations.filter(
+      (c) =>
+        c.phone.toLowerCase().includes(q) ||
+        c.messages.some((m) => m.content.toLowerCase().includes(q))
+    );
+  }, [conversations, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredConversations.length / PAGE_SIZE));
+  const paginatedConversations = filteredConversations.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
   if (loading) {
     return (
       <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
@@ -171,19 +194,25 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                 )}
               </div>
               
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="conversations" className="flex items-center gap-2">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="conversations" className="flex items-center gap-1 text-xs sm:text-sm">
                   <MessageCircle className="h-4 w-4" />
-                  Konuşmalar
+                  <span className="hidden sm:inline">Konuşmalar</span>
                 </TabsTrigger>
-                <TabsTrigger value="logs" className="flex items-center gap-2">
+                <TabsTrigger value="logs" className="flex items-center gap-1 text-xs sm:text-sm">
                   <ScrollText className="h-4 w-4" />
-                  Loglar
+                  <span className="hidden sm:inline">Loglar</span>
                 </TabsTrigger>
-                <TabsTrigger value="language-stats" className="flex items-center gap-2">
+                <TabsTrigger value="language-stats" className="flex items-center gap-1 text-xs sm:text-sm">
                   <Languages className="h-4 w-4" />
-                  Dil İstatistikleri
+                  <span className="hidden sm:inline">Dil İstat.</span>
                 </TabsTrigger>
+                {!isSuperAdmin && (
+                  <TabsTrigger value="integration" className="flex items-center gap-1 text-xs sm:text-sm">
+                    <Settings className="h-4 w-4" />
+                    <span className="hidden sm:inline">Entegrasyon</span>
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
           </CardHeader>
@@ -198,8 +227,22 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                 <div className="grid md:grid-cols-3 gap-4">
                   {/* Sol taraf - Konuşma listesi */}
                   <div className="md:col-span-1 space-y-2">
-                    <ScrollArea className="h-[600px] pr-4">
-                      {conversations.map((conv) => (
+                    {/* Search */}
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        value={searchQuery}
+                        onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                        placeholder="Ara..."
+                        className="pl-8 h-8 text-sm"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredConversations.length} konuşma
+                      {totalPages > 1 && ` · Sayfa ${currentPage}/${totalPages}`}
+                    </p>
+                    <ScrollArea className="h-[540px] pr-4">
+                      {paginatedConversations.map((conv) => (
                         <button
                           key={conv.phone}
                           onClick={() => setSelectedPhone(conv.phone)}
@@ -222,6 +265,32 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                         </button>
                       ))}
                     </ScrollArea>
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2"
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        >
+                          <ChevronLeft className="h-3 w-3" />
+                        </Button>
+                        <span className="text-xs text-muted-foreground">
+                          {currentPage} / {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2"
+                          disabled={currentPage === totalPages}
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        >
+                          <ChevronRight className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Sağ taraf - Mesajlar */}
@@ -294,6 +363,12 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
             <TabsContent value="language-stats" className="mt-0">
               <LanguageStats isSuperAdmin={isSuperAdmin} />
             </TabsContent>
+
+            {!isSuperAdmin && (
+              <TabsContent value="integration" className="mt-0">
+                <WhatsAppSettings />
+              </TabsContent>
+            )}
           </CardContent>
         </Card>
       </Tabs>

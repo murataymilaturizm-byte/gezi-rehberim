@@ -601,7 +601,38 @@
         "save": "Kaydet"
       },
       "notCreated": "Henüz oluşturulmadı",
-      "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?"
+      "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?",
+      "sendButton": "Gönder",
+      "send": {
+        "title": "Şablon Gönder",
+        "modeRecent": "Rezervasyondan Seç",
+        "modeManual": "Manuel Giriş",
+        "selectRegistration": "Rezervasyon Seçin",
+        "pickRegistration": "Müşteri seçin...",
+        "recipientPhone": "Telefon Numarası",
+        "recipientName": "Ad Soyad",
+        "recipientNamePlaceholder": "Müşteri adı",
+        "variables": "Değişkenler",
+        "preview": "Önizleme",
+        "metaWarning": "Bu mesaj Meta WhatsApp Business API üzerinden gönderilecektir.",
+        "sending": "Gönderiliyor...",
+        "sendNow": "Şimdi Gönder",
+        "success": "Mesaj başarıyla gönderildi!",
+        "errors": {
+          "invalidPhone": "Geçerli bir telefon numarası girin",
+          "selectRegistration": "Lütfen bir rezervasyon seçin",
+          "missingVariables": "Eksik değişkenler: {{vars}}",
+          "generic": "Mesaj gönderilemedi"
+        }
+      },
+      "sync": {
+        "button": "Meta ile Senkronize Et",
+        "success": "{{count}} şablon güncellendi",
+        "error": "Senkronizasyon başarısız"
+      },
+      "status": {
+        "notSynced": "Senkronize Edilmedi"
+      }
     },
     "faq": {
       "title": "Sık Sorulan Sorular",
@@ -1435,6 +1466,30 @@
       "quotaErrorMessage": "Bu tarih için sadece {quota} kişilik yer kalmıştır. Lütfen kişi sayısını azaltın veya başka bir tarih seçin.",
       "userNotFound": "Kullanıcı bulunamadı",
       "agencyNotFound": "Acente bulunamadı"
+    },
+    "quotaBanner": {
+      "warning": "Mesaj kotanızın %{{percent}}'ine ulaştınız. Yakında dolacak.",
+      "critical": "Mesaj kotanız kritik seviyede (%{{percent}})! Yeni mesajlar engellenebilir.",
+      "upgrade": "Planı Yükselt"
+    },
+    "onboarding": {
+      "title": "Başlarken",
+      "progress": "%{{percent}} tamamlandı",
+      "dismiss": "Kapat",
+      "steps": {
+        "agencyInfo": "Acente bilgilerini doldur",
+        "payment": "Ödeme ayarlarını yap",
+        "addTour": "İlk turunu ekle",
+        "addDates": "Tur tarihleri ekle",
+        "whatsapp": "WhatsApp'ı bağla"
+      },
+      "actions": {
+        "agencyInfo": "Düzenle",
+        "payment": "Ayarla",
+        "addTour": "Tur Ekle",
+        "addDates": "Tarih Ekle",
+        "whatsapp": "Bağla"
+      }
     }
   },
   "auth": {
@@ -1478,7 +1533,9 @@
       "invalidCredentials": "Email veya şifre hatalı",
       "emailExists": "Bu email adresi zaten kullanılıyor",
       "signupFailed": "Kayıt başarısız oldu",
-      "loginFailed": "Giriş başarısız oldu"
+      "loginFailed": "Giriş başarısız oldu",
+      "resetFailed": "Sıfırlama linki gönderilemedi",
+      "passwordUpdateFailed": "Şifre güncellenemedi"
     },
     "success": {
       "title": "Başarılı",
@@ -1495,7 +1552,19 @@
       "region": "Marmara"
     },
     "currency": "Para Biriminiz",
-    "currencyHelp": "Tur fiyatlarınızın saklanacağı para birimi"
+    "currencyHelp": "Tur fiyatlarınızın saklanacağı para birimi",
+    "forgotPassword": "Şifremi unuttum?",
+    "forgotPasswordTitle": "Şifre Sıfırlama",
+    "forgotPasswordDesc": "Hesabınıza bağlı e-posta adresinizi girin.",
+    "sendResetLink": "Sıfırlama Linki Gönder",
+    "resetLinkSent": "Sıfırlama linki gönderildi! E-postanızı kontrol edin.",
+    "backToLogin": "Girişe Dön",
+    "resetPassword": "Yeni Şifre Belirle",
+    "newPasswordDesc": "Yeni şifrenizi belirleyin.",
+    "newPassword": "Yeni Şifre",
+    "confirmPassword": "Şifre Tekrar",
+    "passwordsNotMatch": "Şifreler eşleşmiyor",
+    "passwordResetSuccess": "Şifreniz başarıyla güncellendi"
   },
   "gettingStarted": {
     "title": "Nasıl Başlarım?",

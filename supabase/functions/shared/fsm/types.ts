@@ -1,14 +1,12 @@
 // Shared FSM type definitions for demo-chat and whatsapp-webhook
 
-export type ConversationStage = 
-  | 'GREETING'                 // Initial greeting
-  | 'BROWSING'                 // Browsing tours
-  | 'TOUR_SELECTED'            // Specific tour selected
-  | 'DATE_SELECTION'           // Selecting date
-  | 'COLLECTING_INFO'          // Gathering pax, name, phone
-  | 'CONFIRMING'               // Waiting for final confirmation
-  | 'COMPLETED'                // Reservation completed
-  | 'ASKING_NEW_RESERVATION';  // Asking if user wants to start new reservation
+export type ConversationStage =
+  | 'GREETING'        // İlk karşılama
+  | 'BROWSING'        // Tur gezintisi
+  | 'TOUR_SELECTED'   // Tur seçildi
+  | 'COLLECTING_INFO' // Tarih / kişi / isim / telefon toplama
+  | 'CONFIRMING'      // Onay bekleniyor
+  | 'COMPLETED';      // Rezervasyon tamamlandı
 
 export type ConversationTone = 
   | 'standart'
@@ -122,4 +120,5 @@ export interface AIPromptContext {
   agencyMapsUrl?: string;
   agencyCancellationPolicy?: string;
   multipleTourMatches?: any[]; // When multiple tours match user's query
+  previousContext?: ConversationContext;
 }

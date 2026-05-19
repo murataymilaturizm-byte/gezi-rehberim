@@ -147,7 +147,7 @@ function extractPaxFromWords(text: string, language: string): number | null {
   return null;
 }
 
-function normalizePhone(raw: string): string | null {
+export function normalizePhone(raw: string): string | null {
   const cleaned = raw.replace(/[\s\-\(\)\.]/g, "");
   if (cleaned.startsWith("+")) {
     const digits = cleaned.replace("+", "");
@@ -530,7 +530,7 @@ function isValidName(name: string, fullMessage: string): boolean {
   return true;
 }
 
-function formatName(name: string): string {
+export function formatName(name: string): string {
   return name
     .split(/\s+/)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())

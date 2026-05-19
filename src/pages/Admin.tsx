@@ -60,6 +60,10 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { WhatsAppBusinessManagement } from "@/components/WhatsAppBusinessManagement";
+import { QuotaWarningBanner } from "@/components/QuotaWarningBanner";
+import { OnboardingChecklist } from "@/components/OnboardingChecklist";
+
+const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test"] as const;
 
 interface Tour {
   id: string;
@@ -118,8 +122,17 @@ const Admin = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   
-  // Active tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "tours" | "registrations" | "whatsapp" | "whatsapp_profiles" | "agency_info" | "complaints" | "settings" | "payment_settings" | "history" | "agencies" | "contact_forms" | "whatsapp_settings" | "whatsapp_integrations" | "whatsapp_management" | "templates" | "faq" | "customer-feedback" | "languages" | "language_currencies" | "tickets" | "super_tickets" | "analytics" | "customer-analytics" | "destination-analytics" | "whatsapp_test">("dashboard");
+  // Active tab state — URL-synced via ?tab=
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<typeof VALID_TABS[number]>(
+    (VALID_TABS as readonly string[]).includes(tabParam ?? "") ? (tabParam as typeof VALID_TABS[number]) : "dashboard"
+  );
+
+  const handleTabChange = (tab: string) => {
+    const validTab = (VALID_TABS as readonly string[]).includes(tab) ? tab : "dashboard";
+    setActiveTab(validTab as typeof VALID_TABS[number]);
+    setSearchParams({ tab: validTab }, { replace: true });
+  };
   
   // Auth & User state
   const [session, setSession] = useState<Session | null>(null);
@@ -336,14 +349,12 @@ const Admin = () => {
     if (paymentStatus === "success") {
       toast({
         title: "Ödeme Başarılı! 🎉",
-        description: orderId 
+        description: orderId
           ? `Aboneliğiniz aktifleştirildi. Sipariş No: ${orderId.substring(0, 20)}...`
           : "Aboneliğiniz aktifleştirildi. Faturanız hazırlanıyor.",
         duration: 5000,
       });
-      setActiveTab("history");
-      // Clear URL params
-      setSearchParams({});
+      handleTabChange("history");
     } else if (paymentStatus === "failed") {
       let description = "Ödeme işlemi tamamlanamadı. ";
       
@@ -375,11 +386,9 @@ const Admin = () => {
         variant: "destructive",
         duration: 7000,
       });
-      setActiveTab("history");
-      // Clear URL params
-      setSearchParams({});
+      handleTabChange("history");
     }
-  }, [searchParams, setSearchParams, toast]);
+  }, [searchParams, toast]);
 
   useEffect(() => {
     if (session && (activeTab === "tours" || activeTab === "registrations")) {
@@ -537,7 +546,7 @@ const Admin = () => {
             body: {
               registrationId,
               templateKey,
-              language: 'tr' // Şimdilik Türkçe, ileride kullanıcı tercihinden alınabilir
+              // language omitted — edge function reads from whatsapp_user_profiles automatically
             }
           });
 
@@ -607,7 +616,7 @@ const Admin = () => {
         <AdminSidebar 
           isSuperAdmin={isSuperAdmin} 
           activeTab={activeTab} 
-          onTabChange={(tab) => setActiveTab(tab as any)}
+          onTabChange={handleTabChange}
           agencyName={agencyName}
           planFeatures={planFeatures}
         />
@@ -674,13 +683,19 @@ const Admin = () => {
           {/* Main Content */}
           <main className="flex-1 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 overflow-x-hidden">
           <ErrorBoundary key={activeTab} fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
-            {!isSuperAdmin && <SubscriptionBanner onNavigateToPlan={() => setActiveTab("history")} />}
-            
+            {!isSuperAdmin && <SubscriptionBanner onNavigateToPlan={() => handleTabChange("history")} />}
+            {!isSuperAdmin && userAgencyId && (
+              <QuotaWarningBanner agencyId={userAgencyId} onNavigateToPlan={() => handleTabChange("history")} />
+            )}
+            {!isSuperAdmin && userAgencyId && (
+              <OnboardingChecklist agencyId={userAgencyId} onNavigate={handleTabChange} />
+            )}
+
             {/* Language Selection Warning */}
             {!isSuperAdmin && enabledLanguages.length === 0 && (
               <Alert 
                 className="border-warning bg-warning/10 cursor-pointer hover:bg-warning/20 transition-colors"
-                onClick={() => setActiveTab("languages")}
+                onClick={() => handleTabChange("languages")}
               >
                 <AlertCircle className="h-5 w-5 text-warning" />
                 <AlertDescription className="ml-2 text-warning-foreground">
