@@ -35,7 +35,7 @@ export interface RecentRegistration {
   status: string;
   created_at: string;
   tours: { title: string };
-  tour_dates: { departure_date: string };
+  tour_dates: { departure_date: string; price_adult: number };
 }
 
 export interface PopularTour {
@@ -243,7 +243,7 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
       // ── Recent registrations ──────────────────────────────────────────────────
       let recentQuery = supabase
         .from("registrations")
-        .select("id, full_name, phone, pax, status, created_at, tours(title), tour_dates(departure_date)")
+        .select("id, full_name, phone, pax, status, created_at, tours(title), tour_dates(departure_date, price_adult)")
         .order("created_at", { ascending: false })
         .limit(10);
       if (startDate) recentQuery = recentQuery.gte("created_at", startDate);

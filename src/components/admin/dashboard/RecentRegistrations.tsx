@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ArrowRight } from "lucide-react";
+import { Users, Calendar, ArrowRight, Banknote } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import type { RecentRegistration } from "@/hooks/useAgencyDashboardData";
 
@@ -71,13 +71,28 @@ export function RecentRegistrations({ registrations, onViewAll }: RecentRegistra
                         {t(`admin.status.${reg.status?.toLowerCase()}`, { defaultValue: reg.status })}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                       {reg.tours?.title && (
-                        <><Calendar className="h-2.5 w-2.5" />{reg.tours.title}</>
+                        <span className="text-xs text-muted-foreground flex items-center gap-0.5 truncate">
+                          <Calendar className="h-2.5 w-2.5 shrink-0" />
+                          {reg.tours.title}
+                        </span>
                       )}
-                    </p>
+                      {reg.tour_dates?.departure_date && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {new Date(reg.tour_dates.departure_date).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-xs text-muted-foreground shrink-0">{timeAgo(reg.created_at)}</span>
+                  <div className="text-right shrink-0">
+                    {reg.tour_dates?.price_adult ? (
+                      <p className="text-sm font-semibold">
+                        {(reg.tour_dates.price_adult * reg.pax).toLocaleString("tr-TR")}₺
+                      </p>
+                    ) : null}
+                    <span className="text-xs text-muted-foreground">{timeAgo(reg.created_at)}</span>
+                  </div>
                 </div>
               );
             })}
