@@ -3040,6 +3040,12 @@
       "numberConnected": "Your number is connected",
       "partialSuccess": "Connected, but number activation is pending"
     },
+    "repair": {
+      "needed": "WhatsApp connection needs repair. Messages may not be received.",
+      "button": "Repair Connection",
+      "success": "Connection repaired successfully!",
+      "failed": "Repair failed. Please try reconnecting."
+    },
     "pin": {
       "title": "Verification PIN Required",
       "description": "A 6-digit PIN is required to activate your WhatsApp number. If you set up two-step verification, enter that PIN. Otherwise try 000000.",

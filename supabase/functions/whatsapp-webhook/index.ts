@@ -18,6 +18,7 @@ import {
   sendWhatsAppMessage,
   resolveAgencyByPhoneNumberId,
   getMetaCredentials,
+  subscribeAppToWabaWithRetry,
 } from "../_shared/metaWhatsapp.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
@@ -134,6 +135,20 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "WhatsApp not configured" }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Self-healing: mesaj geldi ama webhook_subscribed false → arka planda subscribe et
+    if (agency.meta_waba_id && !(agency as any).webhook_subscribed) {
+      subscribeAppToWabaWithRetry(agency.meta_waba_id, metaCredentials.accessToken)
+        .then((ok) => {
+          if (ok) {
+            supabase.from("agencies")
+              .update({ webhook_subscribed: true })
+              .eq("id", agency.id)
+              .then(() => console.info(`[self-heal] webhook_subscribed=true for agency ${agency.id}`));
+          }
+        })
+        .catch(() => {});
     }
 
     // === Read receipt + typing (fire-and-forget) ===

@@ -35,6 +35,7 @@ export const WhatsAppSettings = () => {
   });
 
   const [whatsappPhone, setWhatsappPhone] = useState<string | null>(null);
+  const [webhookSubscribed, setWebhookSubscribed] = useState<boolean>(false);
   const [collectEmail, setCollectEmail] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
 
@@ -50,7 +51,7 @@ export const WhatsAppSettings = () => {
 
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("id, whatsapp_phone_number, whatsapp_status, active, conversation_style, plan_type, whatsapp_connected_at, meta_phone_number_id, collect_email")
+        .select("id, whatsapp_phone_number, whatsapp_status, active, conversation_style, plan_type, whatsapp_connected_at, meta_phone_number_id, collect_email, webhook_subscribed")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -79,6 +80,7 @@ export const WhatsAppSettings = () => {
           conversation_style: (agencyData.conversation_style || 'kurumsal') as 'standart' | 'kurumsal' | 'dinamik' | 'premium'
         });
         setCollectEmail((agencyData as any).collect_email === true);
+        setWebhookSubscribed((agencyData as any).webhook_subscribed === true);
       }
     } catch (error) {
       console.error("Error loading WhatsApp settings:", error);
@@ -165,6 +167,7 @@ export const WhatsAppSettings = () => {
           agencyId={agencyId}
           currentStatus={whatsappStatus}
           currentPhone={whatsappPhone}
+          webhookSubscribed={webhookSubscribed}
           onConnected={loadWhatsAppSettings}
         />
       )}

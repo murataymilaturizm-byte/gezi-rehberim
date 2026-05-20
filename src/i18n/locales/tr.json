@@ -2966,6 +2966,12 @@
       "numberConnected": "Numaranız bağlı",
       "partialSuccess": "Bağlandı, ancak numara aktivasyonu bekliyor"
     },
+    "repair": {
+      "needed": "WhatsApp bağlantısı onarım gerektiriyor. Mesajlar alınmıyor olabilir.",
+      "button": "Bağlantıyı Onar",
+      "success": "Bağlantı başarıyla onarıldı!",
+      "failed": "Onarım başarısız oldu. Bağlantıyı yeniden kurmayı deneyin."
+    },
     "pin": {
       "title": "Doğrulama PIN'i Gerekli",
       "description": "WhatsApp numaranızı aktifleştirmek için 6 haneli doğrulama PIN'i gerekiyor. Daha önce iki adımlı doğrulama kurduysanız o PIN'i girin. Aksi halde 000000 deneyin.",

@@ -215,3 +215,97 @@ export function getMetaCredentials(agency: any): {
     accessToken: Deno.env.get('WHATSAPP_ACCESS_TOKEN') || '',
   };
 }
+
+/**
+ * Subscribe app to WABA webhook events.
+ * Content-Type + body + res.ok kontrolü — tam formatında.
+ */
+export async function subscribeAppToWaba(
+  wabaId: string,
+  accessToken: string
+): Promise<{ success: boolean; error?: string; httpStatus?: number }> {
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v18.0/${wabaId}/subscribed_apps`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subscribed_fields: "messages,message_template_status_update",
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // v18.0+ bazen { success: true }, bazen sadece 200 döner — res.ok yeterli
+      console.info("[subscribeAppToWaba] Success:", wabaId, JSON.stringify(data));
+      return { success: true };
+    } else {
+      const errMsg = data?.error?.message || `HTTP ${res.status}`;
+      console.error("[subscribeAppToWaba] Failed:", res.status, JSON.stringify(data));
+      return { success: false, error: errMsg, httpStatus: res.status };
+    }
+  } catch (err: any) {
+    console.error("[subscribeAppToWaba] Exception:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * GET subscribed_apps ile gerçekten abone olup olmadığını doğrula.
+ */
+export async function verifyWabaSubscription(
+  wabaId: string,
+  accessToken: string
+): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v18.0/${wabaId}/subscribed_apps`,
+      { method: "GET", headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!res.ok) return false;
+    const data = await res.json();
+    // data.data[] içinde en az 1 app varsa subscribe olmuş
+    return Array.isArray(data?.data) && data.data.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Retry'lı subscription — Meta propagation gecikmesi için 0/5/15s dener.
+ * POST + GET verify — gerçek sonuç döner.
+ */
+export async function subscribeAppToWabaWithRetry(
+  wabaId: string,
+  accessToken: string
+): Promise<boolean> {
+  const delays = [0, 5000, 15000];
+
+  for (let attempt = 0; attempt < delays.length; attempt++) {
+    if (delays[attempt] > 0) {
+      await new Promise((r) => setTimeout(r, delays[attempt]));
+    }
+
+    const result = await subscribeAppToWaba(wabaId, accessToken);
+
+    if (result.success) {
+      const verified = await verifyWabaSubscription(wabaId, accessToken);
+      if (verified) {
+        console.info(`[subscribeWithRetry] Confirmed on attempt ${attempt + 1} for WABA ${wabaId}`);
+        return true;
+      }
+      console.warn(`[subscribeWithRetry] POST ok but GET verify failed (attempt ${attempt + 1})`);
+    } else {
+      console.warn(`[subscribeWithRetry] Attempt ${attempt + 1} failed: ${result.error}`);
+    }
+  }
+
+  console.error(`[subscribeWithRetry] All ${delays.length} attempts failed for WABA ${wabaId}`);
+  return false;
+}

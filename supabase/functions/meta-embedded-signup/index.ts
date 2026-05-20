@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { subscribeAppToWabaWithRetry, verifyWabaSubscription } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -147,6 +148,14 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Step 6: Webhook subscription — retry'lı + doğrulamalı
+      let webhookSubscribed = false;
+      webhookSubscribed = await subscribeAppToWabaWithRetry(wabaInfo.wabaId, accessToken);
+
+      if (!webhookSubscribed) {
+        console.error(`[exchange-token] Webhook subscription FAILED for agency ${agencyId}, WABA ${wabaInfo.wabaId}`);
+      }
+
       // Step 5: Save to agency — her iki ID garanti dolu
       const updateData: Record<string, any> = {
         meta_access_token: accessToken,
@@ -155,6 +164,7 @@ Deno.serve(async (req) => {
         whatsapp_phone_number: phoneNumber || null,
         whatsapp_status: "active",
         whatsapp_connected_at: new Date().toISOString(),
+        webhook_subscribed: webhookSubscribed,
       };
 
       const { error: updateError } = await supabase
@@ -182,24 +192,6 @@ Deno.serve(async (req) => {
           activated_at: new Date().toISOString(),
         })
         .eq("agency_id", agencyId);
-
-      // Step 6: KRİTİK — Webhook subscription'ı garantile (Embedded Signup bazen atlıyor)
-      if (wabaInfo.wabaId) {
-        try {
-          const subRes = await fetch(
-            `https://graph.facebook.com/v18.0/${wabaInfo.wabaId}/subscribed_apps`,
-            { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } }
-          );
-          const subData = await subRes.json();
-          if (subData?.success) {
-            console.log("✅ Webhook subscription registered for WABA:", wabaInfo.wabaId);
-          } else {
-            console.warn("⚠️ Webhook subscription warning:", subData);
-          }
-        } catch (subErr) {
-          console.warn("⚠️ Webhook subscription failed (non-blocking):", subErr);
-        }
-      }
 
       // Step 7: Phone number'ı Cloud API'ye register et (non-blocking)
       let registerStatus = "skipped";
@@ -257,6 +249,7 @@ Deno.serve(async (req) => {
           wabaId: wabaInfo.wabaId,
           registerStatus,
           needsManualPin,
+          webhookSubscribed,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -395,6 +388,87 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ success: false, error: errMsg }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Mevcut bozuk acenteleri kurtarır: subscribed_apps + register yeniden tetikler
+    if (action === "repair-subscription") {
+      const { agencyId } = body;
+
+      if (!agencyId) {
+        return new Response(
+          JSON.stringify({ error: "agencyId required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: repairAgency } = await supabase
+        .from("agencies")
+        .select("id, user_id, meta_waba_id, meta_phone_number_id, meta_access_token")
+        .eq("id", agencyId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (!repairAgency) {
+        return new Response(
+          JSON.stringify({ error: "Agency not found or unauthorized" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!repairAgency.meta_waba_id) {
+        return new Response(
+          JSON.stringify({ error: "No WABA ID configured — run Embedded Signup first" }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const repairToken = repairAgency.meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+      if (!repairToken) {
+        return new Response(
+          JSON.stringify({ error: "No access token available" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // 1. Subscribe (retry'lı)
+      console.info(`[repair] Starting for agency ${agencyId}, WABA ${repairAgency.meta_waba_id}`);
+      const subscribed = await subscribeAppToWabaWithRetry(repairAgency.meta_waba_id, repairToken);
+
+      // 2. Register (phone varsa)
+      let registered = false;
+      if (repairAgency.meta_phone_number_id) {
+        try {
+          const regRes = await fetch(
+            `https://graph.facebook.com/v18.0/${repairAgency.meta_phone_number_id}/register`,
+            {
+              method: "POST",
+              headers: { Authorization: `Bearer ${repairToken}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ messaging_product: "whatsapp", pin: "000000" }),
+            }
+          );
+          const regData = await regRes.json();
+          // already_registered (133010) = başarılı say
+          registered = regRes.ok || regData?.error?.code === 133010 ||
+            (regData?.error?.message || "").toLowerCase().includes("already registered");
+          if (!registered) {
+            console.warn("[repair] Register failed:", JSON.stringify(regData));
+          }
+        } catch (regErr) {
+          console.warn("[repair] Register exception:", regErr);
+        }
+      }
+
+      // DB flag güncelle
+      await supabase.from("agencies")
+        .update({ webhook_subscribed: subscribed })
+        .eq("id", agencyId);
+
+      console.info(`[repair] Done — subscribed=${subscribed} registered=${registered}`);
+
+      return new Response(
+        JSON.stringify({ success: true, subscribed, registered }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, CheckCircle2, Loader2, MessageSquare, Smartphone, Unplug } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, MessageSquare, Smartphone, Unplug, Wrench } from "lucide-react";
 
 declare global {
   interface Window {
@@ -30,6 +30,7 @@ interface EmbeddedSignupProps {
   agencyId: string;
   currentStatus: string | null;
   currentPhone: string | null;
+  webhookSubscribed?: boolean;
   onConnected: () => void;
 }
 
@@ -37,6 +38,7 @@ export function WhatsAppEmbeddedSignup({
   agencyId,
   currentStatus,
   currentPhone,
+  webhookSubscribed = true,
   onConnected,
 }: EmbeddedSignupProps) {
   const [loading, setLoading] = useState(false);
@@ -49,6 +51,7 @@ export function WhatsAppEmbeddedSignup({
   const [needsPin, setNeedsPin] = useState(false);
   const [pinValue, setPinValue] = useState("");
   const [pinSubmitting, setPinSubmitting] = useState(false);
+  const [repairing, setRepairing] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -244,6 +247,35 @@ export function WhatsAppEmbeddedSignup({
     }
   };
 
+  const handleRepair = async () => {
+    setRepairing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("meta-embedded-signup", {
+        body: { action: "repair-subscription", agencyId },
+      });
+      if (error) throw error;
+
+      if (data?.subscribed) {
+        toast({ title: t("whatsapp.repair.success") });
+        onConnected();
+      } else {
+        toast({
+          title: t("whatsapp.connect.errorTitle"),
+          description: t("whatsapp.repair.failed"),
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: t("whatsapp.connect.errorTitle"),
+        description: t("whatsapp.repair.failed"),
+        variant: "destructive",
+      });
+    } finally {
+      setRepairing(false);
+    }
+  };
+
   const handleDisconnect = async () => {
     setDisconnecting(true);
     try {
@@ -297,6 +329,29 @@ export function WhatsAppEmbeddedSignup({
                   </span>
                 </AlertDescription>
               </Alert>
+
+              {/* Webhook bağlantısı bozuksa onarım uyarısı */}
+              {!webhookSubscribed && (
+                <Alert className="border-amber-500/50 bg-amber-500/5">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertDescription className="text-amber-700 dark:text-amber-400">
+                    <span className="font-medium block mb-2">{t("whatsapp.repair.needed")}</span>
+                    <Button
+                      size="sm"
+                      onClick={handleRepair}
+                      disabled={repairing}
+                      className="bg-amber-500 hover:bg-amber-600 text-white"
+                    >
+                      {repairing ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Wrench className="h-4 w-4 mr-2" />
+                      )}
+                      {t("whatsapp.repair.button")}
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <div className="flex items-center justify-between">
                 <Badge variant="default" className="bg-green-600">

@@ -2997,6 +2997,12 @@
       "numberConnected": "Votre numéro est connecté",
       "partialSuccess": "Connecté, mais l'activation du numéro est en attente"
     },
+    "repair": {
+      "needed": "La connexion WhatsApp nécessite une réparation. Les messages peuvent ne pas être reçus.",
+      "button": "Réparer la connexion",
+      "success": "Connexion réparée avec succès !",
+      "failed": "La réparation a échoué. Essayez de vous reconnecter."
+    },
     "pin": {
       "title": "Code PIN de vérification requis",
       "description": "Un PIN à 6 chiffres est nécessaire pour activer votre numéro WhatsApp. Si vous avez configuré la vérification en deux étapes, entrez ce PIN. Sinon essayez 000000.",

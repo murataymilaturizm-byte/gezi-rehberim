@@ -2993,6 +2993,12 @@
       "numberConnected": "Ihre Nummer ist verbunden",
       "partialSuccess": "Verbunden, aber Nummernaktivierung ausstehend"
     },
+    "repair": {
+      "needed": "Die WhatsApp-Verbindung benötigt Reparatur. Nachrichten werden möglicherweise nicht empfangen.",
+      "button": "Verbindung reparieren",
+      "success": "Verbindung erfolgreich repariert!",
+      "failed": "Reparatur fehlgeschlagen. Versuchen Sie, die Verbindung neu herzustellen."
+    },
     "pin": {
       "title": "Verifizierungs-PIN erforderlich",
       "description": "Eine 6-stellige PIN ist erforderlich, um Ihre WhatsApp-Nummer zu aktivieren. Wenn Sie die Zwei-Schritt-Verifizierung eingerichtet haben, geben Sie diese PIN ein. Andernfalls versuchen Sie 000000.",
