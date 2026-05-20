@@ -1973,7 +1973,11 @@
     "warning": "Warning",
     "next": "Next",
     "prev": "Back",
-    "saveLoading": "Saving..."
+    "saveLoading": "Saving...",
+    "refresh": "Refresh",
+    "filters": "Filters",
+    "all": "All",
+    "selectDate": "Select date"
   },
   "cta": {
     "title": "Ready to Get Started?",
@@ -3055,6 +3059,58 @@
       "disconnecting": "Disconnecting...",
       "success": "WhatsApp disconnected successfully",
       "error": "Could not disconnect WhatsApp"
+    },
+    "management": {
+      "title": "WhatsApp Management"
+    },
+    "tabs": {
+      "conversations": "Conversations",
+      "logs": "Logs",
+      "languageStats": "Language Stats",
+      "integration": "Integration"
+    },
+    "conversations": {
+      "search": "Search...",
+      "count": "{{count}} conversations",
+      "page": "Page {{current}}/{{total}}",
+      "selectAgency": "Select Agency"
+    },
+    "logs": {
+      "title": "WhatsApp Message Logs",
+      "subtitle": "View and filter all WhatsApp conversations",
+      "phoneNumber": "Phone Number",
+      "phoneSearch": "Search phone...",
+      "agency": "Agency",
+      "agencySelect": "Select agency",
+      "role": "Role",
+      "roleSelect": "Select role",
+      "dateRange": "Date Range",
+      "clearFilters": "Clear Filters",
+      "results": "Message Logs ({{count}} results)",
+      "loading": "Loading logs...",
+      "empty": "No logs found",
+      "loadError": "Error loading logs",
+      "unknown": "Unknown",
+      "fullMessage": "Full Message:",
+      "colDate": "Date",
+      "colAgency": "Agency",
+      "colPhone": "Phone",
+      "colRole": "Role",
+      "colMessage": "Message",
+      "roleUser": "User",
+      "roleAssistant": "Assistant",
+      "roleSystem": "System"
+    },
+    "languageStats": {
+      "title": "Language-Based Statistics",
+      "totalUsers": "Total Users",
+      "totalMessages": "Total Messages",
+      "chartTitle": "User Count (by Language)",
+      "chartBar": "User Count",
+      "detailTitle": "Detailed Language Distribution",
+      "userCount": "{{count}} users",
+      "messageCount": "{{count}} messages",
+      "empty": "No language data yet"
     }
   }
 }

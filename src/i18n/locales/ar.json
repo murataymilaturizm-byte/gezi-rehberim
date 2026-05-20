@@ -1978,7 +1978,11 @@
     "warning": "تحذير",
     "next": "التالي",
     "prev": "رجوع",
-    "saveLoading": "جارٍ الحفظ..."
+    "saveLoading": "جارٍ الحفظ...",
+    "refresh": "تحديث",
+    "filters": "الفلاتر",
+    "all": "الكل",
+    "selectDate": "اختر تاريخاً"
   },
   "agencyInfo": {
     "title": "معلومات الوكالة",
@@ -3014,6 +3018,58 @@
       "disconnecting": "جارٍ القطع...",
       "success": "تم قطع اتصال واتساب بنجاح",
       "error": "تعذّر قطع اتصال واتساب"
+    },
+    "management": {
+      "title": "إدارة واتساب"
+    },
+    "tabs": {
+      "conversations": "المحادثات",
+      "logs": "السجلات",
+      "languageStats": "إحصاء اللغة",
+      "integration": "التكامل"
+    },
+    "conversations": {
+      "search": "بحث...",
+      "count": "{{count}} محادثة",
+      "page": "صفحة {{current}}/{{total}}",
+      "selectAgency": "اختر وكالة"
+    },
+    "logs": {
+      "title": "سجلات رسائل واتساب",
+      "subtitle": "عرض وتصفية جميع محادثات واتساب",
+      "phoneNumber": "رقم الهاتف",
+      "phoneSearch": "البحث بالهاتف...",
+      "agency": "الوكالة",
+      "agencySelect": "اختر وكالة",
+      "role": "الدور",
+      "roleSelect": "اختر دوراً",
+      "dateRange": "نطاق التاريخ",
+      "clearFilters": "مسح الفلاتر",
+      "results": "سجلات الرسائل ({{count}} نتيجة)",
+      "loading": "جارٍ تحميل السجلات...",
+      "empty": "لا توجد سجلات",
+      "loadError": "خطأ في تحميل السجلات",
+      "unknown": "غير معروف",
+      "fullMessage": "الرسالة الكاملة:",
+      "colDate": "التاريخ",
+      "colAgency": "الوكالة",
+      "colPhone": "الهاتف",
+      "colRole": "الدور",
+      "colMessage": "الرسالة",
+      "roleUser": "مستخدم",
+      "roleAssistant": "مساعد",
+      "roleSystem": "نظام"
+    },
+    "languageStats": {
+      "title": "إحصاءات حسب اللغة",
+      "totalUsers": "إجمالي المستخدمين",
+      "totalMessages": "إجمالي الرسائل",
+      "chartTitle": "عدد المستخدمين (حسب اللغة)",
+      "chartBar": "عدد المستخدمين",
+      "detailTitle": "التوزيع اللغوي التفصيلي",
+      "userCount": "{{count}} مستخدم",
+      "messageCount": "{{count}} رسالة",
+      "empty": "لا توجد بيانات لغوية بعد"
     }
   }
 }

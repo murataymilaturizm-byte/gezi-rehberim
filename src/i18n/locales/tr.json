@@ -2022,7 +2022,11 @@
     "warning": "Uyarı",
     "next": "İleri",
     "prev": "Geri",
-    "saveLoading": "Kaydediliyor..."
+    "saveLoading": "Kaydediliyor...",
+    "refresh": "Yenile",
+    "filters": "Filtreler",
+    "all": "Tümü",
+    "selectDate": "Tarih seçin"
   },
   "blog": {
     "minutesRead": "{{count}} dakika okuma",
@@ -2981,6 +2985,58 @@
       "disconnecting": "Kopuyor...",
       "success": "WhatsApp bağlantısı koparıldı",
       "error": "Bağlantı koparılamadı"
+    },
+    "management": {
+      "title": "WhatsApp Yönetimi"
+    },
+    "tabs": {
+      "conversations": "Konuşmalar",
+      "logs": "Loglar",
+      "languageStats": "Dil İstat.",
+      "integration": "Entegrasyon"
+    },
+    "conversations": {
+      "search": "Ara...",
+      "count": "{{count}} konuşma",
+      "page": "Sayfa {{current}}/{{total}}",
+      "selectAgency": "Acente Seçin"
+    },
+    "logs": {
+      "title": "WhatsApp Mesaj Logları",
+      "subtitle": "Tüm WhatsApp konuşmalarını görüntüleyin ve filtreleyin",
+      "phoneNumber": "Telefon Numarası",
+      "phoneSearch": "Telefon ara...",
+      "agency": "Acente",
+      "agencySelect": "Acente seçin",
+      "role": "Rol",
+      "roleSelect": "Rol seçin",
+      "dateRange": "Tarih Aralığı",
+      "clearFilters": "Filtreleri Temizle",
+      "results": "Mesaj Logları ({{count}} sonuç)",
+      "loading": "Loglar yükleniyor...",
+      "empty": "Gösterilecek log bulunamadı",
+      "loadError": "Loglar yüklenirken bir hata oluştu",
+      "unknown": "Bilinmiyor",
+      "fullMessage": "Tam Mesaj:",
+      "colDate": "Tarih",
+      "colAgency": "Acente",
+      "colPhone": "Telefon",
+      "colRole": "Rol",
+      "colMessage": "Mesaj",
+      "roleUser": "Kullanıcı",
+      "roleAssistant": "Asistan",
+      "roleSystem": "Sistem"
+    },
+    "languageStats": {
+      "title": "Dil Bazlı İstatistikler",
+      "totalUsers": "Toplam Kullanıcı",
+      "totalMessages": "Toplam Mesaj",
+      "chartTitle": "Kullanıcı Sayısı (Dil Bazlı)",
+      "chartBar": "Kullanıcı Sayısı",
+      "detailTitle": "Detaylı Dil Dağılımı",
+      "userCount": "{{count}} kullanıcı",
+      "messageCount": "{{count}} mesaj",
+      "empty": "Henüz dil verisi bulunmuyor"
     }
   }
 }

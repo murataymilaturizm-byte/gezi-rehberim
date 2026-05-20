@@ -172,7 +172,7 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Languages className="h-5 w-5" />
-            Dil Bazlı İstatistikler
+            {t("whatsapp.languageStats.title")}
           </CardTitle>
           {isSuperAdmin && agencies.length > 0 && (
             <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
@@ -197,14 +197,14 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
             <div className="bg-muted/50 rounded-lg p-4">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Users className="h-4 w-4" />
-                <span className="text-sm">Toplam Kullanıcı</span>
+                <span className="text-sm">{t("whatsapp.languageStats.totalUsers")}</span>
               </div>
               <div className="text-2xl font-bold">{totalUsers}</div>
             </div>
             <div className="bg-muted/50 rounded-lg p-4">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <MessageSquare className="h-4 w-4" />
-                <span className="text-sm">Toplam Mesaj</span>
+                <span className="text-sm">{t("whatsapp.languageStats.totalMessages")}</span>
               </div>
               <div className="text-2xl font-bold">{totalMessages.toLocaleString()}</div>
             </div>
@@ -213,21 +213,16 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
           {/* Grafik */}
           {languageData.length > 0 && (
             <div className="space-y-4">
-              <h4 className="font-medium">Kullanıcı Sayısı (Dil Bazlı)</h4>
+              <h4 className="font-medium">{t("whatsapp.languageStats.chartTitle")}</h4>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={languageData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="languageName" />
                   <YAxis />
-                  <Tooltip 
-                    formatter={(value: number, name: string) => {
-                      if (name === "Kullanıcı Sayısı") {
-                        return [value, name];
-                      }
-                      return [value.toLocaleString(), name];
-                    }}
+                  <Tooltip
+                    formatter={(value: number) => [value.toLocaleString(), t("whatsapp.languageStats.chartBar")]}
                   />
-                  <Bar dataKey="userCount" name="Kullanıcı Sayısı" radius={[8, 8, 0, 0]}>
+                  <Bar dataKey="userCount" name={t("whatsapp.languageStats.chartBar")} radius={[8, 8, 0, 0]}>
                     {languageData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -239,7 +234,7 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
 
           {/* Detaylı Liste */}
           <div className="space-y-3">
-            <h4 className="font-medium">Detaylı Dil Dağılımı</h4>
+            <h4 className="font-medium">{t("whatsapp.languageStats.detailTitle")}</h4>
             <div className="space-y-2">
               {languageData.map((lang) => (
                 <div
@@ -254,7 +249,7 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
                     <div>
                       <div className="font-medium">{lang.languageName}</div>
                       <div className="text-sm text-muted-foreground">
-                        {lang.userCount} kullanıcı • {lang.messageCount.toLocaleString()} mesaj
+                        {t("whatsapp.languageStats.userCount", { count: lang.userCount })} • {t("whatsapp.languageStats.messageCount", { count: lang.messageCount.toLocaleString() })}
                       </div>
                     </div>
                   </div>
@@ -270,7 +265,7 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
 
           {languageData.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              Henüz dil verisi bulunmuyor
+              {t("whatsapp.languageStats.empty")}
             </div>
           )}
         </div>

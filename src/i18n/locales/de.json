@@ -1974,7 +1974,11 @@
     "warning": "Warnung",
     "next": "Weiter",
     "prev": "Zurück",
-    "saveLoading": "Wird gespeichert..."
+    "saveLoading": "Wird gespeichert...",
+    "refresh": "Aktualisieren",
+    "filters": "Filter",
+    "all": "Alle",
+    "selectDate": "Datum auswählen"
   },
   "cta": {
     "title": "Bereit loszulegen?",
@@ -3010,6 +3014,58 @@
       "disconnecting": "Wird getrennt...",
       "success": "WhatsApp erfolgreich getrennt",
       "error": "Verbindung konnte nicht getrennt werden"
+    },
+    "management": {
+      "title": "WhatsApp-Verwaltung"
+    },
+    "tabs": {
+      "conversations": "Gespräche",
+      "logs": "Protokolle",
+      "languageStats": "Sprachstat.",
+      "integration": "Integration"
+    },
+    "conversations": {
+      "search": "Suchen...",
+      "count": "{{count}} Gespräche",
+      "page": "Seite {{current}}/{{total}}",
+      "selectAgency": "Agentur auswählen"
+    },
+    "logs": {
+      "title": "WhatsApp-Nachrichtenprotokolle",
+      "subtitle": "Alle WhatsApp-Gespräche anzeigen und filtern",
+      "phoneNumber": "Telefonnummer",
+      "phoneSearch": "Telefon suchen...",
+      "agency": "Agentur",
+      "agencySelect": "Agentur auswählen",
+      "role": "Rolle",
+      "roleSelect": "Rolle auswählen",
+      "dateRange": "Datumsbereich",
+      "clearFilters": "Filter löschen",
+      "results": "Nachrichtenprotokolle ({{count}} Ergebnisse)",
+      "loading": "Protokolle werden geladen...",
+      "empty": "Keine Protokolle gefunden",
+      "loadError": "Fehler beim Laden der Protokolle",
+      "unknown": "Unbekannt",
+      "fullMessage": "Vollständige Nachricht:",
+      "colDate": "Datum",
+      "colAgency": "Agentur",
+      "colPhone": "Telefon",
+      "colRole": "Rolle",
+      "colMessage": "Nachricht",
+      "roleUser": "Benutzer",
+      "roleAssistant": "Assistent",
+      "roleSystem": "System"
+    },
+    "languageStats": {
+      "title": "Sprachbasierte Statistiken",
+      "totalUsers": "Benutzer gesamt",
+      "totalMessages": "Nachrichten gesamt",
+      "chartTitle": "Benutzeranzahl (nach Sprache)",
+      "chartBar": "Benutzeranzahl",
+      "detailTitle": "Detaillierte Sprachverteilung",
+      "userCount": "{{count}} Benutzer",
+      "messageCount": "{{count}} Nachrichten",
+      "empty": "Noch keine Sprachdaten"
     }
   }
 }

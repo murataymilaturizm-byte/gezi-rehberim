@@ -2005,7 +2005,11 @@
     "warning": "Advertencia",
     "next": "Siguiente",
     "prev": "Atrás",
-    "saveLoading": "Guardando..."
+    "saveLoading": "Guardando...",
+    "refresh": "Actualizar",
+    "filters": "Filtros",
+    "all": "Todos",
+    "selectDate": "Seleccionar fecha"
   },
   "agencyInfo": {
     "title": "Información de la agencia",
@@ -3010,6 +3014,58 @@
       "disconnecting": "Desconectando...",
       "success": "WhatsApp desconectado correctamente",
       "error": "No se pudo desconectar WhatsApp"
+    },
+    "management": {
+      "title": "Gestión de WhatsApp"
+    },
+    "tabs": {
+      "conversations": "Conversaciones",
+      "logs": "Registros",
+      "languageStats": "Est. idioma",
+      "integration": "Integración"
+    },
+    "conversations": {
+      "search": "Buscar...",
+      "count": "{{count}} conversaciones",
+      "page": "Página {{current}}/{{total}}",
+      "selectAgency": "Seleccionar agencia"
+    },
+    "logs": {
+      "title": "Registros de mensajes de WhatsApp",
+      "subtitle": "Ver y filtrar todas las conversaciones de WhatsApp",
+      "phoneNumber": "Número de teléfono",
+      "phoneSearch": "Buscar teléfono...",
+      "agency": "Agencia",
+      "agencySelect": "Seleccionar agencia",
+      "role": "Rol",
+      "roleSelect": "Seleccionar rol",
+      "dateRange": "Rango de fechas",
+      "clearFilters": "Borrar filtros",
+      "results": "Registros de mensajes ({{count}} resultados)",
+      "loading": "Cargando registros...",
+      "empty": "No se encontraron registros",
+      "loadError": "Error al cargar los registros",
+      "unknown": "Desconocido",
+      "fullMessage": "Mensaje completo:",
+      "colDate": "Fecha",
+      "colAgency": "Agencia",
+      "colPhone": "Teléfono",
+      "colRole": "Rol",
+      "colMessage": "Mensaje",
+      "roleUser": "Usuario",
+      "roleAssistant": "Asistente",
+      "roleSystem": "Sistema"
+    },
+    "languageStats": {
+      "title": "Estadísticas por idioma",
+      "totalUsers": "Total de usuarios",
+      "totalMessages": "Total de mensajes",
+      "chartTitle": "Número de usuarios (por idioma)",
+      "chartBar": "Número de usuarios",
+      "detailTitle": "Distribución lingüística detallada",
+      "userCount": "{{count}} usuarios",
+      "messageCount": "{{count}} mensajes",
+      "empty": "Aún no hay datos de idioma"
     }
   }
 }

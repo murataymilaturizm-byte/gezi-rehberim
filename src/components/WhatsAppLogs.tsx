@@ -138,8 +138,8 @@ export function WhatsAppLogs() {
     } catch (error: any) {
       console.error('Error loading logs:', error);
       toast({
-        title: "Hata",
-        description: "Loglar yüklenirken bir hata oluştu: " + error.message,
+        title: t("common.error"),
+        description: t("whatsapp.logs.loadError"),
         variant: "destructive",
       });
     } finally {
@@ -203,14 +203,10 @@ export function WhatsAppLogs() {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'user':
-        return 'Kullanıcı';
-      case 'assistant':
-        return 'Asistan';
-      case 'system':
-        return 'Sistem';
-      default:
-        return role;
+      case 'user': return t("whatsapp.logs.roleUser");
+      case 'assistant': return t("whatsapp.logs.roleAssistant");
+      case 'system': return t("whatsapp.logs.roleSystem");
+      default: return role;
     }
   };
 
@@ -223,14 +219,12 @@ export function WhatsAppLogs() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">WhatsApp Mesaj Logları</h2>
-          <p className="text-muted-foreground">
-            Tüm WhatsApp konuşmalarını görüntüleyin ve filtreleyin
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("whatsapp.logs.title")}</h2>
+          <p className="text-muted-foreground">{t("whatsapp.logs.subtitle")}</p>
         </div>
         <Button onClick={loadLogs} variant="outline" size="sm">
           <RefreshCw className="h-4 w-4 mr-2" />
-          Yenile
+          {t("common.refresh")}
         </Button>
       </div>
 
@@ -239,7 +233,7 @@ export function WhatsAppLogs() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
-            Filtreler
+            {t("common.filters")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -248,10 +242,10 @@ export function WhatsAppLogs() {
             <div>
               <label className="text-sm font-medium mb-2 block">
                 <User className="h-4 w-4 inline mr-1" />
-                Telefon Numarası
+                {t("whatsapp.logs.phoneNumber")}
               </label>
               <Input
-                placeholder="Telefon ara..."
+                placeholder={t("whatsapp.logs.phoneSearch")}
                 value={searchPhone}
                 onChange={(e) => setSearchPhone(e.target.value)}
               />
@@ -261,14 +255,14 @@ export function WhatsAppLogs() {
             <div>
               <label className="text-sm font-medium mb-2 block">
                 <Building2 className="h-4 w-4 inline mr-1" />
-                Acente
+                {t("whatsapp.logs.agency")}
               </label>
               <Select value={selectedAgency} onValueChange={setSelectedAgency}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Acente seçin" />
+                  <SelectValue placeholder={t("whatsapp.logs.agencySelect")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tümü</SelectItem>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
                   {agencies.map((agency) => (
                     <SelectItem key={agency.id} value={agency.id}>
                       {agency.name}
@@ -282,17 +276,17 @@ export function WhatsAppLogs() {
             <div>
               <label className="text-sm font-medium mb-2 block">
                 <MessageSquare className="h-4 w-4 inline mr-1" />
-                Rol
+                {t("whatsapp.logs.role")}
               </label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Rol seçin" />
+                  <SelectValue placeholder={t("whatsapp.logs.roleSelect")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tümü</SelectItem>
-                  <SelectItem value="user">Kullanıcı</SelectItem>
-                  <SelectItem value="assistant">Asistan</SelectItem>
-                  <SelectItem value="system">Sistem</SelectItem>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="user">{t("whatsapp.logs.roleUser")}</SelectItem>
+                  <SelectItem value="assistant">{t("whatsapp.logs.roleAssistant")}</SelectItem>
+                  <SelectItem value="system">{t("whatsapp.logs.roleSystem")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -301,7 +295,7 @@ export function WhatsAppLogs() {
             <div>
               <label className="text-sm font-medium mb-2 block">
                 <CalendarIcon className="h-4 w-4 inline mr-1" />
-                Tarih Aralığı
+                {t("whatsapp.logs.dateRange")}
               </label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -323,7 +317,7 @@ export function WhatsAppLogs() {
                         format(dateRange.from, "dd MMM yyyy", { locale: tr })
                       )
                     ) : (
-                      <span>Tarih seçin</span>
+                      <span>{t("common.selectDate")}</span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -347,7 +341,7 @@ export function WhatsAppLogs() {
             <div className="mt-4">
               <Button onClick={clearFilters} variant="ghost" size="sm">
                 <X className="h-4 w-4 mr-2" />
-                Filtreleri Temizle
+                {t("whatsapp.logs.clearFilters")}
               </Button>
             </div>
           )}
@@ -358,30 +352,30 @@ export function WhatsAppLogs() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Mesaj Logları ({filteredLogs.length} sonuç)
+            {t("whatsapp.logs.results", { count: filteredLogs.length })}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-12">
               <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Loglar yükleniyor...</p>
+              <p className="text-muted-foreground">{t("whatsapp.logs.loading")}</p>
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="text-center py-12">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Gösterilecek log bulunamadı</p>
+              <p className="text-muted-foreground">{t("whatsapp.logs.empty")}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Acente</TableHead>
-                    <TableHead>Telefon</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead>Mesaj</TableHead>
+                    <TableHead>{t("whatsapp.logs.colDate")}</TableHead>
+                    <TableHead>{t("whatsapp.logs.colAgency")}</TableHead>
+                    <TableHead>{t("whatsapp.logs.colPhone")}</TableHead>
+                    <TableHead>{t("whatsapp.logs.colRole")}</TableHead>
+                    <TableHead>{t("whatsapp.logs.colMessage")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -393,7 +387,7 @@ export function WhatsAppLogs() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
-                          {log.agencies?.name || 'Bilinmiyor'}
+                          {log.agencies?.name || t("whatsapp.logs.unknown")}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -416,7 +410,7 @@ export function WhatsAppLogs() {
                           </PopoverTrigger>
                           <PopoverContent className="w-96" side="left">
                             <div className="space-y-2">
-                              <div className="font-semibold">Tam Mesaj:</div>
+                              <div className="font-semibold">{t("whatsapp.logs.fullMessage")}</div>
                               <div className="text-sm whitespace-pre-wrap break-words">
                                 {log.content}
                               </div>

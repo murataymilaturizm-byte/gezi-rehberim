@@ -277,7 +277,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
+      <div className="text-center py-8 text-muted-foreground">{t("common.loading")}</div>
     );
   }
 
@@ -290,15 +290,15 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
-                  WhatsApp Yönetimi
+                  {t("whatsapp.management.title")}
                 </CardTitle>
-                
+
                 {isSuperAdmin && agencies.length > 0 && (
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                     <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
                       <SelectTrigger className="w-[250px]">
-                        <SelectValue placeholder="Acente Seçin" />
+                        <SelectValue placeholder={t("whatsapp.conversations.selectAgency")} />
                       </SelectTrigger>
                       <SelectContent>
                         {agencies.map((agency) => (
@@ -315,20 +315,20 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="conversations" className="flex items-center gap-1 text-xs sm:text-sm">
                   <MessageCircle className="h-4 w-4" />
-                  <span className="hidden sm:inline">Konuşmalar</span>
+                  <span className="hidden sm:inline">{t("whatsapp.tabs.conversations")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="flex items-center gap-1 text-xs sm:text-sm">
                   <ScrollText className="h-4 w-4" />
-                  <span className="hidden sm:inline">Loglar</span>
+                  <span className="hidden sm:inline">{t("whatsapp.tabs.logs")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="language-stats" className="flex items-center gap-1 text-xs sm:text-sm">
                   <Languages className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dil İstat.</span>
+                  <span className="hidden sm:inline">{t("whatsapp.tabs.languageStats")}</span>
                 </TabsTrigger>
                 {!isSuperAdmin && (
                   <TabsTrigger value="integration" className="flex items-center gap-1 text-xs sm:text-sm">
                     <Settings className="h-4 w-4" />
-                    <span className="hidden sm:inline">Entegrasyon</span>
+                    <span className="hidden sm:inline">{t("whatsapp.tabs.integration")}</span>
                   </TabsTrigger>
                 )}
               </TabsList>
@@ -353,13 +353,13 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                       <Input
                         value={searchQuery}
                         onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                        placeholder="Ara..."
+                        placeholder={t("whatsapp.conversations.search")}
                         className="pl-8 h-8 text-sm"
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {filteredConversations.length} konuşma
-                      {totalPages > 1 && ` · Sayfa ${currentPage}/${totalPages}`}
+                      {t("whatsapp.conversations.count", { count: filteredConversations.length })}
+                      {totalPages > 1 && ` · ${t("whatsapp.conversations.page", { current: currentPage, total: totalPages })}`}
                     </p>
                     <ScrollArea className="h-[540px] pr-4">
                       {paginatedConversations.map((conv) => (
@@ -490,14 +490,14 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                             </div>
 
                             {/* Reply textarea */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                               <Textarea
                                 value={replyMessage}
                                 onChange={(e) => setReplyMessage(e.target.value)}
                                 placeholder={t("conversations.replyPlaceholder")}
                                 rows={2}
                                 disabled={sending}
-                                className="resize-none text-sm"
+                                className="w-full resize-none text-sm"
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                                     e.preventDefault();
@@ -505,13 +505,13 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                                   }
                                 }}
                               />
-                              <div className="flex items-center justify-between">
-                                <p className="text-xs text-muted-foreground">{t("conversations.replyHint")}</p>
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-xs text-muted-foreground flex-1">{t("conversations.replyHint")}</p>
                                 <Button
                                   size="sm"
                                   onClick={handleSendReply}
                                   disabled={!replyMessage.trim() || sending}
-                                  className="h-10 md:h-8"
+                                  className="flex-shrink-0 h-8"
                                 >
                                   {sending ? (
                                     <Loader2 className="h-3 w-3 animate-spin mr-1" />

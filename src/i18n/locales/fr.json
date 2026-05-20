@@ -1978,7 +1978,11 @@
     "warning": "Avertissement",
     "next": "Suivant",
     "prev": "Retour",
-    "saveLoading": "Enregistrement..."
+    "saveLoading": "Enregistrement...",
+    "refresh": "Actualiser",
+    "filters": "Filtres",
+    "all": "Tous",
+    "selectDate": "Sélectionner une date"
   },
   "agencyInfo": {
     "title": "Informations sur l'agence",
@@ -3014,6 +3018,58 @@
       "disconnecting": "Déconnexion...",
       "success": "WhatsApp déconnecté avec succès",
       "error": "Impossible de déconnecter WhatsApp"
+    },
+    "management": {
+      "title": "Gestion WhatsApp"
+    },
+    "tabs": {
+      "conversations": "Conversations",
+      "logs": "Journaux",
+      "languageStats": "Stats langue",
+      "integration": "Intégration"
+    },
+    "conversations": {
+      "search": "Rechercher...",
+      "count": "{{count}} conversations",
+      "page": "Page {{current}}/{{total}}",
+      "selectAgency": "Sélectionner une agence"
+    },
+    "logs": {
+      "title": "Journaux de messages WhatsApp",
+      "subtitle": "Afficher et filtrer toutes les conversations WhatsApp",
+      "phoneNumber": "Numéro de téléphone",
+      "phoneSearch": "Rechercher un téléphone...",
+      "agency": "Agence",
+      "agencySelect": "Sélectionner une agence",
+      "role": "Rôle",
+      "roleSelect": "Sélectionner un rôle",
+      "dateRange": "Plage de dates",
+      "clearFilters": "Effacer les filtres",
+      "results": "Journaux de messages ({{count}} résultats)",
+      "loading": "Chargement des journaux...",
+      "empty": "Aucun journal trouvé",
+      "loadError": "Erreur lors du chargement des journaux",
+      "unknown": "Inconnu",
+      "fullMessage": "Message complet :",
+      "colDate": "Date",
+      "colAgency": "Agence",
+      "colPhone": "Téléphone",
+      "colRole": "Rôle",
+      "colMessage": "Message",
+      "roleUser": "Utilisateur",
+      "roleAssistant": "Assistant",
+      "roleSystem": "Système"
+    },
+    "languageStats": {
+      "title": "Statistiques par langue",
+      "totalUsers": "Utilisateurs totaux",
+      "totalMessages": "Messages totaux",
+      "chartTitle": "Nombre d'utilisateurs (par langue)",
+      "chartBar": "Nombre d'utilisateurs",
+      "detailTitle": "Distribution linguistique détaillée",
+      "userCount": "{{count}} utilisateurs",
+      "messageCount": "{{count}} messages",
+      "empty": "Aucune donnée linguistique pour l'instant"
     }
   }
 }

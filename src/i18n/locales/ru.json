@@ -2005,7 +2005,11 @@
     "warning": "Предупреждение",
     "next": "Далее",
     "prev": "Назад",
-    "saveLoading": "Сохранение..."
+    "saveLoading": "Сохранение...",
+    "refresh": "Обновить",
+    "filters": "Фильтры",
+    "all": "Все",
+    "selectDate": "Выбрать дату"
   },
   "agencyInfo": {
     "title": "Информация об агентстве",
@@ -3010,6 +3014,58 @@
       "disconnecting": "Отключение...",
       "success": "WhatsApp успешно отключён",
       "error": "Не удалось отключить WhatsApp"
+    },
+    "management": {
+      "title": "Управление WhatsApp"
+    },
+    "tabs": {
+      "conversations": "Разговоры",
+      "logs": "Журналы",
+      "languageStats": "Стат. языков",
+      "integration": "Интеграция"
+    },
+    "conversations": {
+      "search": "Поиск...",
+      "count": "{{count}} разговоров",
+      "page": "Стр. {{current}}/{{total}}",
+      "selectAgency": "Выберите агентство"
+    },
+    "logs": {
+      "title": "Журналы сообщений WhatsApp",
+      "subtitle": "Просмотр и фильтрация всех разговоров WhatsApp",
+      "phoneNumber": "Номер телефона",
+      "phoneSearch": "Поиск телефона...",
+      "agency": "Агентство",
+      "agencySelect": "Выберите агентство",
+      "role": "Роль",
+      "roleSelect": "Выберите роль",
+      "dateRange": "Диапазон дат",
+      "clearFilters": "Очистить фильтры",
+      "results": "Журналы сообщений ({{count}} результатов)",
+      "loading": "Загрузка журналов...",
+      "empty": "Журналы не найдены",
+      "loadError": "Ошибка загрузки журналов",
+      "unknown": "Неизвестно",
+      "fullMessage": "Полное сообщение:",
+      "colDate": "Дата",
+      "colAgency": "Агентство",
+      "colPhone": "Телефон",
+      "colRole": "Роль",
+      "colMessage": "Сообщение",
+      "roleUser": "Пользователь",
+      "roleAssistant": "Ассистент",
+      "roleSystem": "Система"
+    },
+    "languageStats": {
+      "title": "Статистика по языкам",
+      "totalUsers": "Всего пользователей",
+      "totalMessages": "Всего сообщений",
+      "chartTitle": "Количество пользователей (по языкам)",
+      "chartBar": "Количество пользователей",
+      "detailTitle": "Детальное языковое распределение",
+      "userCount": "{{count}} пользователей",
+      "messageCount": "{{count}} сообщений",
+      "empty": "Языковых данных пока нет"
     }
   }
 }
