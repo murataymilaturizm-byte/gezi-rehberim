@@ -2988,7 +2988,17 @@
       "disconnected": "Verbindung getrennt",
       "disconnectedDesc": "Ihre WhatsApp-Verbindung wurde entfernt.",
       "disconnectError": "Beim Trennen der Verbindung ist ein Fehler aufgetreten.",
-      "numberConnected": "Ihre Nummer ist verbunden"
+      "numberConnected": "Ihre Nummer ist verbunden",
+      "partialSuccess": "Verbunden, aber Nummernaktivierung ausstehend"
+    },
+    "pin": {
+      "title": "Verifizierungs-PIN erforderlich",
+      "description": "Eine 6-stellige PIN ist erforderlich, um Ihre WhatsApp-Nummer zu aktivieren. Wenn Sie die Zwei-Schritt-Verifizierung eingerichtet haben, geben Sie diese PIN ein. Andernfalls versuchen Sie 000000.",
+      "required": "Eine Verifizierungs-PIN wird benötigt, um Ihre Nummer zu aktivieren",
+      "submit": "Verifizieren",
+      "success": "Nummer erfolgreich aktiviert!",
+      "failed": "PIN-Verifizierung fehlgeschlagen. Bitte überprüfen Sie Ihre PIN.",
+      "invalidLength": "PIN muss 6 Ziffern haben"
     },
     "connectionInfo": {
       "title": "Verbindungsinformationen",

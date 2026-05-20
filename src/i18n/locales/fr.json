@@ -2992,7 +2992,17 @@
       "disconnected": "Déconnecté",
       "disconnectedDesc": "Votre connexion WhatsApp a été supprimée.",
       "disconnectError": "Une erreur s'est produite lors de la suppression de la connexion.",
-      "numberConnected": "Votre numéro est connecté"
+      "numberConnected": "Votre numéro est connecté",
+      "partialSuccess": "Connecté, mais l'activation du numéro est en attente"
+    },
+    "pin": {
+      "title": "Code PIN de vérification requis",
+      "description": "Un PIN à 6 chiffres est nécessaire pour activer votre numéro WhatsApp. Si vous avez configuré la vérification en deux étapes, entrez ce PIN. Sinon essayez 000000.",
+      "required": "Un PIN de vérification est nécessaire pour activer votre numéro",
+      "submit": "Vérifier",
+      "success": "Numéro activé avec succès !",
+      "failed": "Échec de la vérification du PIN. Veuillez vérifier votre PIN.",
+      "invalidLength": "Le PIN doit comporter 6 chiffres"
     },
     "connectionInfo": {
       "title": "Informations de connexion",

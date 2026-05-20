@@ -185,7 +185,53 @@ Deno.serve(async (req) => {
         }
       }
 
-      console.log("✅ Embedded Signup completed for agency:", agencyId);
+      // Step 7: Phone number'ı Cloud API'ye register et (non-blocking)
+      let registerStatus = "skipped";
+      let needsManualPin = false;
+
+      if (phoneNumberId) {
+        try {
+          const registerRes = await fetch(
+            `https://graph.facebook.com/v18.0/${phoneNumberId}/register`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                messaging_product: "whatsapp",
+                pin: "000000",
+              }),
+            }
+          );
+          const registerData = await registerRes.json();
+
+          if (registerRes.ok && registerData?.success) {
+            console.log("✅ Phone number registered successfully:", phoneNumberId);
+            registerStatus = "success";
+          } else {
+            const errCode = registerData?.error?.code;
+            const errMsg = (registerData?.error?.message || "").toLowerCase();
+            console.warn("⚠️ Register failed:", JSON.stringify(registerData));
+
+            if (errMsg.includes("already registered") || errCode === 133010) {
+              registerStatus = "already_registered";
+            } else if (errCode === 133005 || errCode === 133006 || errCode === 100) {
+              // PIN uyuşmazlığı veya 2FA zorunlu
+              needsManualPin = true;
+              registerStatus = "needs_pin";
+            } else {
+              registerStatus = "failed";
+            }
+          }
+        } catch (regErr) {
+          console.warn("⚠️ Register exception (non-blocking):", regErr);
+          registerStatus = "failed";
+        }
+      }
+
+      console.log(`✅ Embedded Signup completed for agency: ${agencyId} | register: ${registerStatus}`);
 
       return new Response(
         JSON.stringify({
@@ -193,6 +239,8 @@ Deno.serve(async (req) => {
           phoneNumber,
           phoneNumberId,
           wabaId: wabaInfo.wabaId,
+          registerStatus,
+          needsManualPin,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -255,6 +303,82 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ success: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Acente girdiği PIN ile register tekrar dener
+    if (action === "register-with-pin") {
+      const { agencyId, pin } = body;
+
+      if (!agencyId || !pin) {
+        return new Response(
+          JSON.stringify({ error: "agencyId and pin required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!/^\d{6}$/.test(pin)) {
+        return new Response(
+          JSON.stringify({ error: "PIN must be exactly 6 digits" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: agency, error: agencyErr } = await supabase
+        .from("agencies")
+        .select("id, user_id, meta_phone_number_id, meta_access_token")
+        .eq("id", agencyId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (agencyErr || !agency) {
+        return new Response(
+          JSON.stringify({ error: "Agency not found or unauthorized" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!agency.meta_phone_number_id) {
+        return new Response(
+          JSON.stringify({ error: "No phone number ID found for this agency" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const token = agency.meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+      if (!token) {
+        return new Response(
+          JSON.stringify({ error: "No access token available" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const registerRes = await fetch(
+        `https://graph.facebook.com/v18.0/${agency.meta_phone_number_id}/register`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ messaging_product: "whatsapp", pin }),
+        }
+      );
+      const registerData = await registerRes.json();
+
+      if (registerRes.ok && registerData?.success) {
+        console.log("✅ Phone registered with manual PIN for agency:", agencyId);
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const errMsg = registerData?.error?.message || "Register failed";
+      console.warn("⚠️ Manual PIN register failed:", JSON.stringify(registerData));
+      return new Response(
+        JSON.stringify({ success: false, error: errMsg }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

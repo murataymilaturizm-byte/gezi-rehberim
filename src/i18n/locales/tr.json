@@ -2959,7 +2959,17 @@
       "disconnected": "Bağlantı Kaldırıldı",
       "disconnectedDesc": "WhatsApp bağlantınız kaldırıldı.",
       "disconnectError": "Bağlantı kaldırılırken bir hata oluştu.",
-      "numberConnected": "Numaranız bağlı"
+      "numberConnected": "Numaranız bağlı",
+      "partialSuccess": "Bağlandı, ancak numara aktivasyonu bekliyor"
+    },
+    "pin": {
+      "title": "Doğrulama PIN'i Gerekli",
+      "description": "WhatsApp numaranızı aktifleştirmek için 6 haneli doğrulama PIN'i gerekiyor. Daha önce iki adımlı doğrulama kurduysanız o PIN'i girin. Aksi halde 000000 deneyin.",
+      "required": "Numaranızı aktifleştirmek için doğrulama PIN'i gerekiyor",
+      "submit": "Doğrula",
+      "success": "Numara başarıyla aktifleştirildi!",
+      "failed": "PIN doğrulaması başarısız. Lütfen PIN'inizi kontrol edin.",
+      "invalidLength": "PIN 6 haneli olmalı"
     },
     "connectionInfo": {
       "title": "Bağlantı Bilgileri",

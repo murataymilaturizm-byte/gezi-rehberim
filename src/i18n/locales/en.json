@@ -3033,7 +3033,17 @@
       "disconnected": "Disconnected",
       "disconnectedDesc": "Your WhatsApp connection has been removed.",
       "disconnectError": "An error occurred while removing the connection.",
-      "numberConnected": "Your number is connected"
+      "numberConnected": "Your number is connected",
+      "partialSuccess": "Connected, but number activation is pending"
+    },
+    "pin": {
+      "title": "Verification PIN Required",
+      "description": "A 6-digit PIN is required to activate your WhatsApp number. If you set up two-step verification, enter that PIN. Otherwise try 000000.",
+      "required": "A verification PIN is needed to activate your number",
+      "submit": "Verify",
+      "success": "Number activated successfully!",
+      "failed": "PIN verification failed. Please check your PIN.",
+      "invalidLength": "PIN must be 6 digits"
     },
     "connectionInfo": {
       "title": "Connection Information",

@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { Input } from "@/components/ui/input";
 import { AlertCircle, CheckCircle2, Loader2, MessageSquare, Smartphone, Unplug } from "lucide-react";
 
 declare global {
@@ -45,6 +46,9 @@ export function WhatsAppEmbeddedSignup({
   const [configError, setConfigError] = useState<string | null>(null);
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [needsPin, setNeedsPin] = useState(false);
+  const [pinValue, setPinValue] = useState("");
+  const [pinSubmitting, setPinSubmitting] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -158,16 +162,20 @@ export function WhatsAppEmbeddedSignup({
   const exchangeToken = async (code: string) => {
     try {
       const { data, error } = await supabase.functions.invoke("meta-embedded-signup", {
-        body: {
-          action: "exchange-token",
-          code,
-          agencyId,
-        },
+        body: { action: "exchange-token", code, agencyId },
       });
 
       if (error) throw error;
 
-      if (data?.success) {
+      if (!data?.success) throw new Error(data?.error || "Connection failed");
+
+      if (data.needsManualPin) {
+        setNeedsPin(true);
+        toast({
+          title: t("whatsapp.pin.required"),
+          description: t("whatsapp.pin.description"),
+        });
+      } else if (data.registerStatus === "success" || data.registerStatus === "already_registered") {
         toast({
           title: t("whatsapp.connect.success"),
           description: data.phoneNumber
@@ -176,7 +184,12 @@ export function WhatsAppEmbeddedSignup({
         });
         onConnected();
       } else {
-        throw new Error(data?.error || "Connection failed");
+        // register failed ama bağlantı kuruldu — uyarı göster
+        toast({
+          title: t("whatsapp.connect.success"),
+          description: t("whatsapp.connect.partialSuccess"),
+        });
+        onConnected();
       }
     } catch (err: any) {
       console.error("Token exchange error:", err);
@@ -187,6 +200,47 @@ export function WhatsAppEmbeddedSignup({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePinSubmit = async () => {
+    if (!/^\d{6}$/.test(pinValue)) {
+      toast({
+        title: t("whatsapp.connect.errorTitle"),
+        description: t("whatsapp.pin.invalidLength"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPinSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("meta-embedded-signup", {
+        body: { action: "register-with-pin", agencyId, pin: pinValue },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({ title: t("whatsapp.pin.success") });
+        setNeedsPin(false);
+        setPinValue("");
+        onConnected();
+      } else {
+        toast({
+          title: t("whatsapp.connect.errorTitle"),
+          description: data?.error || t("whatsapp.pin.failed"),
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: t("whatsapp.connect.errorTitle"),
+        description: t("whatsapp.pin.failed"),
+        variant: "destructive",
+      });
+    } finally {
+      setPinSubmitting(false);
     }
   };
 
@@ -307,6 +361,41 @@ export function WhatsAppEmbeddedSignup({
           )}
         </CardContent>
       </Card>
+
+      {/* PIN doğrulama formu */}
+      {needsPin && (
+        <Card className="border-orange-500/40 bg-orange-500/5">
+          <CardContent className="pt-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-500" />
+              <h4 className="font-semibold">{t("whatsapp.pin.title")}</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">{t("whatsapp.pin.description")}</p>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={pinValue}
+                onChange={(e) => setPinValue(e.target.value.replace(/\D/g, ""))}
+                placeholder="000000"
+                className="font-mono text-center text-lg tracking-widest max-w-[140px]"
+              />
+              <Button
+                onClick={handlePinSubmit}
+                disabled={pinValue.length !== 6 || pinSubmitting}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                {pinSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  t("whatsapp.pin.submit")
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Disconnect onay dialog'u */}
       <AlertDialog open={disconnectOpen} onOpenChange={setDisconnectOpen}>

@@ -2988,7 +2988,17 @@
       "disconnected": "Desconectado",
       "disconnectedDesc": "Su conexión de WhatsApp ha sido eliminada.",
       "disconnectError": "Ocurrió un error al eliminar la conexión.",
-      "numberConnected": "Su número está conectado"
+      "numberConnected": "Su número está conectado",
+      "partialSuccess": "Conectado, pero la activación del número está pendiente"
+    },
+    "pin": {
+      "title": "PIN de verificación requerido",
+      "description": "Se requiere un PIN de 6 dígitos para activar su número de WhatsApp. Si configuró la verificación en dos pasos, ingrese ese PIN. De lo contrario, intente con 000000.",
+      "required": "Se necesita un PIN de verificación para activar su número",
+      "submit": "Verificar",
+      "success": "¡Número activado con éxito!",
+      "failed": "Error en la verificación del PIN. Por favor revise su PIN.",
+      "invalidLength": "El PIN debe tener 6 dígitos"
     },
     "connectionInfo": {
       "title": "Información de conexión",
