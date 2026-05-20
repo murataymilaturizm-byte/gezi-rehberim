@@ -145,11 +145,11 @@ export const WhatsAppSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            WhatsApp Ayarları
+            {t("admin.whatsapp.settings.cardTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Yükleniyor...</p>
+          <p>{t("common.loading")}</p>
         </CardContent>
       </Card>
     );
@@ -173,21 +173,21 @@ export const WhatsAppSettings = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Wifi className="h-5 w-5" />
-              Bağlantı Bilgileri
+              {t("whatsapp.connectionInfo.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Alert className="border-primary/30 bg-primary/5">
               <CheckCircle2 className="h-4 w-4 text-primary" />
               <AlertDescription>
-                ✅ WhatsApp bağlantısı aktif! Mesajlar otomatik olarak AI chatbot tarafından yanıtlanıyor.
+                ✅ {t("whatsapp.connectionInfo.active")}
               </AlertDescription>
             </Alert>
             <div className="mt-4 p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold text-sm mb-2">⚠️ Önemli Notlar</h4>
+              <h4 className="font-semibold text-sm mb-2">{t("whatsapp.connectionInfo.importantNotes")}</h4>
               <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• 24 saat kuralı: Müşteriden son mesajın üzerinden 24 saat geçtiyse sadece şablon mesajı gönderilebilir</li>
-                <li>• Bağlantınız Embedded Signup ile otomatik yönetilmektedir</li>
+                <li>• {t("whatsapp.connectionInfo.rule24h")}</li>
+                <li>• {t("whatsapp.connectionInfo.autoManaged")}</li>
               </ul>
             </div>
           </CardContent>
@@ -199,10 +199,10 @@ export const WhatsAppSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileDown className="h-5 w-5" />
-            Entegrasyon Rehberi
+            {t("whatsapp.guide.title")}
           </CardTitle>
           <CardDescription>
-            WhatsApp Business entegrasyonu için adım adım rehber
+            {t("whatsapp.guide.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -213,7 +213,7 @@ export const WhatsAppSettings = () => {
           >
             <Button variant="outline" className="w-full">
               <FileDown className="mr-2 h-4 w-4" />
-              📄 WhatsApp Entegrasyon Rehberini İndir (PDF)
+              {t("whatsapp.guide.downloadPdf")}
             </Button>
           </a>
         </CardContent>
@@ -224,10 +224,10 @@ export const WhatsAppSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Phone className="h-5 w-5" />
-            Desteğe ihtiyacınız mı var?
+            {t("whatsapp.support.title")}
           </CardTitle>
           <CardDescription>
-            Entegrasyon sürecinde yardıma ihtiyaç duyarsanız bize ulaşın
+            {t("whatsapp.support.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -235,7 +235,7 @@ export const WhatsAppSettings = () => {
             <Phone className="h-5 w-5 text-primary" />
             <div>
               <p className="font-semibold">0541 650 03 03</p>
-              <p className="text-sm text-muted-foreground">WhatsApp veya telefon ile destek alın</p>
+              <p className="text-sm text-muted-foreground">{t("whatsapp.support.contactNote")}</p>
             </div>
           </div>
         </CardContent>

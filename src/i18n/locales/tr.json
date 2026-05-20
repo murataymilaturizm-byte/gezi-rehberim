@@ -741,7 +741,8 @@
         "emailCollectionToggle": "Rezervasyon sırasında email iste",
         "emailCollectionSaved": "Email ayarı güncellendi",
         "integrationComplete": "Entegrasyon Tamamlandı",
-        "integrationCompleteDesc": "WhatsApp Business numaranız {phone} sisteme tanımlandı."
+        "integrationCompleteDesc": "WhatsApp Business numaranız {phone} sisteme tanımlandı.",
+        "cardTitle": "WhatsApp Ayarları"
       },
       "conversations": {
         "title": "WhatsApp Konuşmaları",
@@ -2954,6 +2955,23 @@
       "disconnected": "Bağlantı Kaldırıldı",
       "disconnectedDesc": "WhatsApp bağlantınız kaldırıldı.",
       "disconnectError": "Bağlantı kaldırılırken bir hata oluştu."
+    },
+    "connectionInfo": {
+      "title": "Bağlantı Bilgileri",
+      "active": "WhatsApp bağlantısı aktif! Mesajlar otomatik olarak AI chatbot tarafından yanıtlanıyor.",
+      "importantNotes": "⚠️ Önemli Notlar",
+      "rule24h": "24 saat kuralı: Müşteriden son mesajın üzerinden 24 saat geçtiyse sadece şablon mesajı gönderilebilir",
+      "autoManaged": "Bağlantınız Embedded Signup ile otomatik yönetilmektedir"
+    },
+    "guide": {
+      "title": "Entegrasyon Rehberi",
+      "subtitle": "WhatsApp Business entegrasyonu için adım adım rehber",
+      "downloadPdf": "📄 WhatsApp Entegrasyon Rehberini İndir (PDF)"
+    },
+    "support": {
+      "title": "Desteğe ihtiyacınız mı var?",
+      "subtitle": "Entegrasyon sürecinde yardıma ihtiyaç duyarsanız bize ulaşın",
+      "contactNote": "WhatsApp veya telefon ile destek alın"
     }
   }
 }

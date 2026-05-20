@@ -763,7 +763,8 @@
         "emailCollectionTitle": "E-Mail-Sammlung",
         "emailCollectionDesc": "E-Mail-Adressen bei der Reservierung sammeln. Optional — Kunden können überspringen.",
         "emailCollectionToggle": "E-Mail bei Reservierung anfragen",
-        "emailCollectionSaved": "E-Mail-Einstellung aktualisiert"
+        "emailCollectionSaved": "E-Mail-Einstellung aktualisiert",
+        "cardTitle": "WhatsApp-Einstellungen"
       },
       "conversations": {
         "title": "WhatsApp-Gespräche",
@@ -2983,6 +2984,23 @@
       "disconnected": "Verbindung getrennt",
       "disconnectedDesc": "Ihre WhatsApp-Verbindung wurde entfernt.",
       "disconnectError": "Beim Trennen der Verbindung ist ein Fehler aufgetreten."
+    },
+    "connectionInfo": {
+      "title": "Verbindungsinformationen",
+      "active": "WhatsApp-Verbindung aktiv! Nachrichten werden automatisch vom KI-Chatbot beantwortet.",
+      "importantNotes": "⚠️ Wichtige Hinweise",
+      "rule24h": "24-Stunden-Regel: Wenn seit der letzten Nachricht des Kunden mehr als 24 Stunden vergangen sind, können nur Vorlagennachrichten gesendet werden",
+      "autoManaged": "Ihre Verbindung wird automatisch über Embedded Signup verwaltet"
+    },
+    "guide": {
+      "title": "Integrationsleitfaden",
+      "subtitle": "Schritt-für-Schritt-Anleitung für die WhatsApp Business-Integration",
+      "downloadPdf": "📄 WhatsApp-Integrationsleitfaden herunterladen (PDF)"
+    },
+    "support": {
+      "title": "Benötigen Sie Hilfe?",
+      "subtitle": "Kontaktieren Sie uns, wenn Sie während des Integrationsprozesses Hilfe benötigen",
+      "contactNote": "Erhalten Sie Support per WhatsApp oder Telefon"
     }
   }
 }

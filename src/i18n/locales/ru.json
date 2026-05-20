@@ -794,7 +794,8 @@
         "emailCollectionTitle": "Сбор Email",
         "emailCollectionDesc": "Собирайте email при бронировании. Необязательно — клиенты могут пропустить.",
         "emailCollectionToggle": "Запрашивать email при бронировании",
-        "emailCollectionSaved": "Настройка email обновлена"
+        "emailCollectionSaved": "Настройка email обновлена",
+        "cardTitle": "Настройки WhatsApp"
       },
       "conversations": {
         "title": "Беседы WhatsApp",
@@ -2983,6 +2984,23 @@
       "disconnected": "Отключено",
       "disconnectedDesc": "Ваше подключение WhatsApp было удалено.",
       "disconnectError": "При удалении подключения произошла ошибка."
+    },
+    "connectionInfo": {
+      "title": "Информация о подключении",
+      "active": "Подключение WhatsApp активно! На сообщения автоматически отвечает ИИ-чатбот.",
+      "importantNotes": "⚠️ Важные замечания",
+      "rule24h": "Правило 24 часов: Если с момента последнего сообщения клиента прошло более 24 часов, можно отправлять только шаблонные сообщения",
+      "autoManaged": "Ваше подключение автоматически управляется через Embedded Signup"
+    },
+    "guide": {
+      "title": "Руководство по интеграции",
+      "subtitle": "Пошаговое руководство по интеграции WhatsApp Business",
+      "downloadPdf": "📄 Скачать руководство по интеграции WhatsApp (PDF)"
+    },
+    "support": {
+      "title": "Нужна помощь?",
+      "subtitle": "Свяжитесь с нами, если вам нужна помощь в процессе интеграции",
+      "contactNote": "Получите поддержку через WhatsApp или по телефону"
     }
   }
 }

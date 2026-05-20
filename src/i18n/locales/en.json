@@ -762,7 +762,8 @@
         "emailCollectionTitle": "Email Collection",
         "emailCollectionDesc": "Collect email addresses from customers during reservation. Optional — customers can skip.",
         "emailCollectionToggle": "Ask for email during reservation",
-        "emailCollectionSaved": "Email setting updated"
+        "emailCollectionSaved": "Email setting updated",
+        "cardTitle": "WhatsApp Settings"
       },
       "conversations": {
         "title": "WhatsApp Conversations",
@@ -3028,6 +3029,23 @@
       "disconnected": "Disconnected",
       "disconnectedDesc": "Your WhatsApp connection has been removed.",
       "disconnectError": "An error occurred while removing the connection."
+    },
+    "connectionInfo": {
+      "title": "Connection Information",
+      "active": "WhatsApp connection active! Messages are automatically answered by the AI chatbot.",
+      "importantNotes": "⚠️ Important Notes",
+      "rule24h": "24-hour rule: If more than 24 hours have passed since the customer's last message, only template messages can be sent",
+      "autoManaged": "Your connection is automatically managed via Embedded Signup"
+    },
+    "guide": {
+      "title": "Integration Guide",
+      "subtitle": "Step-by-step guide for WhatsApp Business integration",
+      "downloadPdf": "📄 Download WhatsApp Integration Guide (PDF)"
+    },
+    "support": {
+      "title": "Need help?",
+      "subtitle": "Contact us if you need assistance during the integration process",
+      "contactNote": "Get support via WhatsApp or phone"
     }
   }
 }

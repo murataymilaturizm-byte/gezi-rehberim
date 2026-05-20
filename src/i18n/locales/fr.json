@@ -763,7 +763,8 @@
         "emailCollectionTitle": "Collecte d'Emails",
         "emailCollectionDesc": "Collectez les emails lors de la réservation. Optionnel — les clients peuvent ignorer.",
         "emailCollectionToggle": "Demander l'email lors de la réservation",
-        "emailCollectionSaved": "Paramètre email mis à jour"
+        "emailCollectionSaved": "Paramètre email mis à jour",
+        "cardTitle": "Paramètres WhatsApp"
       },
       "conversations": {
         "title": "Conversations WhatsApp",
@@ -2987,6 +2988,23 @@
       "disconnected": "Déconnecté",
       "disconnectedDesc": "Votre connexion WhatsApp a été supprimée.",
       "disconnectError": "Une erreur s'est produite lors de la suppression de la connexion."
+    },
+    "connectionInfo": {
+      "title": "Informations de connexion",
+      "active": "Connexion WhatsApp active ! Les messages sont automatiquement répondus par le chatbot IA.",
+      "importantNotes": "⚠️ Notes importantes",
+      "rule24h": "Règle des 24 heures : Si plus de 24 heures se sont écoulées depuis le dernier message du client, seuls les messages modèles peuvent être envoyés",
+      "autoManaged": "Votre connexion est gérée automatiquement via Embedded Signup"
+    },
+    "guide": {
+      "title": "Guide d'intégration",
+      "subtitle": "Guide étape par étape pour l'intégration WhatsApp Business",
+      "downloadPdf": "📄 Télécharger le guide d'intégration WhatsApp (PDF)"
+    },
+    "support": {
+      "title": "Besoin d'aide ?",
+      "subtitle": "Contactez-nous si vous avez besoin d'aide pendant le processus d'intégration",
+      "contactNote": "Obtenez de l'aide via WhatsApp ou par téléphone"
     }
   }
 }
