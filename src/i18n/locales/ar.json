@@ -414,7 +414,34 @@
       "last6Months": "آخر 6 أشهر",
       "last1Year": "آخر سنة",
       "customDate": "تاريخ مخصص",
-      "showingData": "عرض البيانات"
+      "showingData": "عرض البيانات",
+      "today": "اليوم"
+    },
+    "advanced": {
+      "dateFilter": "فلتر النطاق الزمني",
+      "totalRevenue": "إجمالي الإيرادات",
+      "totalRevenueDesc": "{{count}} تسجيلات • {{period}}",
+      "periodGrowth": "نمو الفترة",
+      "vsPreviousHalf": "مقارنة بالنصف السابق",
+      "averageBasket": "متوسط السلة",
+      "perRegistration": "لكل تسجيل",
+      "conversionRate": "معدل التحويل",
+      "conversionDesc": "{{registrations}}/{{conversations}} محادثة",
+      "monthlyTrend": "اتجاه الإيرادات الشهرية",
+      "revenueLabel": "الإيرادات",
+      "destinationDetails": "تفاصيل الوجهات",
+      "registrationCount": "{{count}} تسجيلات",
+      "average": "متوسط",
+      "noData": "لا توجد بيانات تحليلية بعد",
+      "noDataDescription": "ستظهر التحليلات هنا بمجرد إجراء أول تسجيل لك",
+      "export": "تنزيل CSV",
+      "exportFilename": "التقارير"
+    },
+    "tags": {
+      "vip": "VIP",
+      "regular": "منتظم",
+      "potential": "محتمل",
+      "inactive": "غير نشط"
     }
   },
   "customerFeedback": {
@@ -1953,6 +1980,7 @@
     "backHome": "العودة إلى الصفحة الرئيسية"
   },
   "common": {
+    "unspecified": "غير محدد",
     "loading": "جاري التحميل...",
     "error": "خطأ",
     "success": "نجح",

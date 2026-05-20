@@ -460,7 +460,34 @@
       "last6Months": "Son 6 Ay",
       "last1Year": "Son 1 Yıl",
       "customDate": "Özel Tarih",
-      "showingData": "Gösterilen veriler"
+      "showingData": "Gösterilen veriler",
+      "today": "Bugün"
+    },
+    "advanced": {
+      "dateFilter": "Tarih Aralığı Filtresi",
+      "totalRevenue": "Toplam Gelir",
+      "totalRevenueDesc": "{{count}} kayıt • {{period}}",
+      "periodGrowth": "Dönem Büyümesi",
+      "vsPreviousHalf": "Önceki yarıya göre",
+      "averageBasket": "Ortalama Sepet",
+      "perRegistration": "Kayıt başına",
+      "conversionRate": "Dönüşüm Oranı",
+      "conversionDesc": "{{registrations}}/{{conversations}} konuşma",
+      "monthlyTrend": "Aylık Gelir Trendi",
+      "revenueLabel": "Gelir",
+      "destinationDetails": "Destinasyon Detayları",
+      "registrationCount": "{{count}} kayıt",
+      "average": "Ort",
+      "noData": "Henüz analiz verisi yok",
+      "noDataDescription": "İlk rezervasyonunuz oluştuğunda analitikler burada görünecek",
+      "export": "CSV İndir",
+      "exportFilename": "raporlar"
+    },
+    "tags": {
+      "vip": "VIP",
+      "regular": "Düzenli",
+      "potential": "Potansiyel",
+      "inactive": "İnaktif"
     }
   },
   "customerFeedback": {
@@ -2005,6 +2032,7 @@
     "save": "Kaydet",
     "cancel": "İptal",
     "delete": "Sil",
+    "unspecified": "Belirtilmemiş",
     "edit": "Düzenle",
     "add": "Ekle",
     "search": "Ara...",

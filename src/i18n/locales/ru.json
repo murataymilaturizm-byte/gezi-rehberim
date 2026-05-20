@@ -445,7 +445,34 @@
       "last6Months": "Последние 6 Месяцев",
       "last1Year": "Последний 1 Год",
       "customDate": "Пользовательская Дата",
-      "showingData": "Показ данных"
+      "showingData": "Показ данных",
+      "today": "Сегодня"
+    },
+    "advanced": {
+      "dateFilter": "Фильтр диапазона дат",
+      "totalRevenue": "Общая выручка",
+      "totalRevenueDesc": "{{count}} регистраций • {{period}}",
+      "periodGrowth": "Рост периода",
+      "vsPreviousHalf": "По сравнению с предыдущей половиной",
+      "averageBasket": "Средняя корзина",
+      "perRegistration": "На регистрацию",
+      "conversionRate": "Коэффициент конверсии",
+      "conversionDesc": "{{registrations}}/{{conversations}} разговоров",
+      "monthlyTrend": "Месячная тенденция доходов",
+      "revenueLabel": "Доход",
+      "destinationDetails": "Детали направлений",
+      "registrationCount": "{{count}} регистраций",
+      "average": "Сред",
+      "noData": "Пока нет данных аналитики",
+      "noDataDescription": "Аналитика появится здесь после первой регистрации",
+      "export": "Скачать CSV",
+      "exportFilename": "отчеты"
+    },
+    "tags": {
+      "vip": "VIP",
+      "regular": "Постоянный",
+      "potential": "Потенциальный",
+      "inactive": "Неактивный"
     }
   },
   "customerFeedback": {
@@ -1980,6 +2007,7 @@
     "backHome": "Вернуться на Главную"
   },
   "common": {
+    "unspecified": "Не указано",
     "loading": "Загрузка...",
     "error": "Ошибка",
     "success": "Успешно",

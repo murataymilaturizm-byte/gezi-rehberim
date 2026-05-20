@@ -6,6 +6,7 @@ import { Users, TrendingUp, MessageSquare, Star, Award, Calendar as CalendarIcon
 import { useTranslation } from "react-i18next";
 import { format, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+import { formatPrice } from "@/utils/currency";
 import {
   BarChart,
   Bar,
@@ -61,12 +62,20 @@ interface CustomerStats {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d'];
 
+// Tag çevirisi helper — vip/regular/potential/inactive → i18n
+const translateTag = (tag: string, t: any): string => {
+  const knownTags = ['vip', 'regular', 'potential', 'inactive'];
+  if (knownTags.includes(tag)) return t(`analytics.tags.${tag}`);
+  return tag;
+};
+
 export const CustomerAnalytics = () => {
   const { t, i18n } = useTranslation();
   const [stats, setStats] = useState<CustomerStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  const [currency, setCurrency] = useState<string>('TRY');
 
   useEffect(() => {
     loadCustomerStats();
@@ -131,12 +140,13 @@ export const CustomerAnalytics = () => {
       if (!isSuperAdmin) {
         const { data: agency } = await supabase
           .from("agencies")
-          .select("id")
+          .select("id, primary_currency")
           .eq("user_id", user.id)
           .maybeSingle();
 
         if (!agency) return;
         agencyId = agency.id;
+        setCurrency((agency as any).primary_currency || 'TRY');
       }
 
       // Get date range
@@ -186,7 +196,7 @@ export const CustomerAnalytics = () => {
       // Customers by language
       const languageCounts: Record<string, number> = {};
       profiles.forEach(p => {
-        const lang = p.language_preference || 'Belirtilmemiş';
+        const lang = p.language_preference || t('common.unspecified');
         languageCounts[lang] = (languageCounts[lang] || 0) + 1;
       });
 
@@ -446,15 +456,15 @@ export const CustomerAnalytics = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={stats.customersByTag}
+                  data={stats.customersByTag.map(s => ({ ...s, displayTag: translateTag(s.tag, t) }))}
                   dataKey="count"
-                  nameKey="tag"
+                  nameKey="displayTag"
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
-                  label={(entry) => `${entry.tag}: ${entry.count}`}
+                  label={(entry: any) => `${entry.displayTag}: ${entry.count}`}
                 >
-                  {stats.customersByTag.map((entry, index) => (
+                  {stats.customersByTag.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -506,7 +516,7 @@ export const CustomerAnalytics = () => {
                     <div className="flex gap-1 mt-1">
                       {customer.tags.map(tag => (
                         <span key={tag} className="text-xs px-2 py-1 rounded-full bg-secondary text-secondary-foreground">
-                          {tag}
+                          {translateTag(tag, t)}
                         </span>
                       ))}
                     </div>
@@ -514,7 +524,7 @@ export const CustomerAnalytics = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-green-600">
-                    {new Intl.NumberFormat('tr-TR').format(customer.total_spent)} TL
+                    {formatPrice(customer.total_spent, currency)}
                   </p>
                   <p className="text-sm text-muted-foreground">{customer.total_bookings} {t("customerAnalytics.reservations")}</p>
                 </div>

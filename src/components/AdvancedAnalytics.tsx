@@ -2,23 +2,19 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, DollarSign, Users, MessageSquare, Target, Award, Calendar as CalendarIcon, MapPin, Filter } from "lucide-react";
-import { format, startOfMonth, endOfMonth, subMonths, subDays, subYears, startOfDay, endOfDay } from "date-fns";
-import { tr } from "date-fns/locale";
+import { TrendingUp, TrendingDown, DollarSign, Users, Target, Award, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { format, startOfMonth, endOfMonth, subMonths, subYears, startOfDay, endOfDay, differenceInMilliseconds } from "date-fns";
+import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import {
-  BarChart,
-  Bar,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 import {
   Popover,
@@ -28,12 +24,13 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import { formatPrice } from "@/utils/currency";
 
 interface AnalyticsData {
   revenueByMonth: Array<{ month: string; revenue: number; registrations: number }>;
   topDestinations: Array<{ destination: string; count: number; revenue: number }>;
   conversionRate: { conversations: number; registrations: number; rate: number };
-  monthlyGrowth: number;
+  periodGrowth: number;
   averageOrderValue: number;
   totalRevenue: number;
   totalRegistrations: number;
@@ -44,11 +41,20 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 type DateFilterType = '1month' | '3months' | '6months' | '1year' | 'custom';
 
+const localeMap = { tr, en: enUS, de, ru, ar, fr, es };
+
+// Tüm rapor query'lerinde aynı status filter — tutarlılık için
+const ACTIVE_REGISTRATION_STATUSES = ["CONFIRMED", "NEW", "PENDING"];
+
 export const AdvancedAnalytics = () => {
+  const { t, i18n } = useTranslation();
+  const locale = localeMap[i18n.language as keyof typeof localeMap] || tr;
+
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  const [currency, setCurrency] = useState<string>('TRY');
 
   useEffect(() => {
     loadAnalytics();
@@ -88,14 +94,31 @@ export const AdvancedAnalytics = () => {
     return { startDate: startOfDay(startDate), endDate: endOfDay(endDate) };
   };
 
+  const getDateFilterLabel = () => {
+    switch (dateFilter) {
+      case '1month': return t('analytics.filter.last1Month');
+      case '3months': return t('analytics.filter.last3Months');
+      case '6months': return t('analytics.filter.last6Months');
+      case '1year': return t('analytics.filter.last1Year');
+      case 'custom':
+        if (customDateRange?.from) {
+          const fromDate = format(customDateRange.from, 'dd MMM yyyy', { locale });
+          const toDate = customDateRange.to
+            ? format(customDateRange.to, 'dd MMM yyyy', { locale })
+            : t('analytics.filter.today');
+          return `${fromDate} - ${toDate}`;
+        }
+        return t('analytics.filter.customDate');
+      default: return t('analytics.filter.last6Months');
+    }
+  };
+
   const loadAnalytics = async () => {
+    setIsLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return;
-      }
+      if (!user) return;
 
-      // Check if super admin
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -105,22 +128,25 @@ export const AdvancedAnalytics = () => {
 
       const isSuperAdmin = !!roleData;
 
-      let agencyId = null;
+      let agencyId: string | null = null;
       if (!isSuperAdmin) {
-      const { data: agency } = await supabase
-        .from("agencies")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+        const { data: agency } = await supabase
+          .from("agencies")
+          .select("id, primary_currency")
+          .eq("user_id", user.id)
+          .maybeSingle();
 
         if (!agency) {
+          setIsLoading(false);
           return;
         }
         agencyId = agency.id;
+        setCurrency((agency as any).primary_currency || 'TRY');
       }
 
-      // Tarih aralığını al
       const { startDate, endDate } = getDateRange();
+
+      // Registrations — left join (silinmiş tour/tour_date'i atmasın)
       let registrationsQuery = supabase
         .from("registrations")
         .select(`
@@ -128,12 +154,12 @@ export const AdvancedAnalytics = () => {
           pax,
           created_at,
           status,
-          tours!inner(destination),
-          tour_dates!inner(price_adult)
+          tours(destination),
+          tour_dates(price_adult)
         `)
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString())
-        .in("status", ["CONFIRMED", "NEW", "PENDING"]);
+        .in("status", ACTIVE_REGISTRATION_STATUSES);
 
       if (agencyId) {
         registrationsQuery = registrationsQuery.eq("agency_id", agencyId);
@@ -141,13 +167,14 @@ export const AdvancedAnalytics = () => {
 
       const { data: registrations } = await registrationsQuery;
 
-      // Aylık gelir hesaplama
+      // Aylık gelir (silinmiş tour_dates için 0 ekle, kayıt sayılır)
       const revenueByMonth: Record<string, { revenue: number; registrations: number }> = {};
       let totalRevenue = 0;
 
       registrations?.forEach((reg: any) => {
-        const month = format(new Date(reg.created_at), 'MMM yyyy', { locale: tr });
-        const revenue = reg.tour_dates.price_adult * reg.pax;
+        const month = format(new Date(reg.created_at), 'MMM yyyy', { locale });
+        const price = reg.tour_dates?.price_adult || 0;
+        const revenue = price * reg.pax;
         totalRevenue += revenue;
 
         if (!revenueByMonth[month]) {
@@ -161,7 +188,7 @@ export const AdvancedAnalytics = () => {
         .map(([month, data]) => ({
           month,
           revenue: Math.round(data.revenue),
-          registrations: data.registrations
+          registrations: data.registrations,
         }))
         .sort((a, b) => {
           const dateA = new Date(a.month);
@@ -169,11 +196,12 @@ export const AdvancedAnalytics = () => {
           return dateA.getTime() - dateB.getTime();
         });
 
-      // Popüler destinasyonlar
+      // Destinasyon detayları
       const destinationMap: Record<string, { count: number; revenue: number }> = {};
       registrations?.forEach((reg: any) => {
-        const dest = reg.tours.destination;
-        const revenue = reg.tour_dates.price_adult * reg.pax;
+        const dest = reg.tours?.destination || t('common.unspecified');
+        const price = reg.tour_dates?.price_adult || 0;
+        const revenue = price * reg.pax;
 
         if (!destinationMap[dest]) {
           destinationMap[dest] = { count: 0, revenue: 0 };
@@ -183,15 +211,15 @@ export const AdvancedAnalytics = () => {
       });
 
       const topDestinations = Object.entries(destinationMap)
-        .map(([destination, data]) => ({ 
-          destination, 
+        .map(([destination, data]) => ({
+          destination,
           count: data.count,
-          revenue: Math.round(data.revenue)
+          revenue: Math.round(data.revenue),
         }))
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 5);
 
-      // Dönüşüm oranı (seçili tarih aralığı)
+      // === Dönüşüm Oranı — AYNI status filter ===
       let conversationQuery = supabase
         .from("whatsapp_conversations")
         .select("*", { count: 'exact', head: true })
@@ -204,36 +232,50 @@ export const AdvancedAnalytics = () => {
 
       const { count: conversationCount } = await conversationQuery;
 
-      let registrationQuery = supabase
+      // Registration count: AYNI status filter (CANCELLED hariç) — TUTARLILIK
+      let registrationCountQuery = supabase
         .from("registrations")
         .select("*", { count: 'exact', head: true })
         .gte("created_at", startDate.toISOString())
-        .lte("created_at", endDate.toISOString());
+        .lte("created_at", endDate.toISOString())
+        .in("status", ACTIVE_REGISTRATION_STATUSES);
 
       if (agencyId) {
-        registrationQuery = registrationQuery.eq("agency_id", agencyId);
+        registrationCountQuery = registrationCountQuery.eq("agency_id", agencyId);
       }
 
-      const { count: registrationCount } = await registrationQuery;
+      const { count: registrationCount } = await registrationCountQuery;
 
       const conversionRate = {
         conversations: conversationCount || 0,
         registrations: registrationCount || 0,
-        rate: conversationCount ? (registrationCount || 0) / conversationCount : 0
+        rate: conversationCount ? ((registrationCount || 0) / conversationCount) * 100 : 0,
       };
 
-      // Aylık büyüme oranı
-      const currentMonth = format(new Date(), 'MMM yyyy', { locale: tr });
-      const lastMonth = format(subMonths(new Date(), 1), 'MMM yyyy', { locale: tr });
-      
-      const currentMonthRevenue = revenueByMonth[currentMonth]?.revenue || 0;
-      const lastMonthRevenue = revenueByMonth[lastMonth]?.revenue || 0;
-      
-      const monthlyGrowth = lastMonthRevenue 
-        ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
-        : 0;
+      // === Dönem Büyümesi — filtre dönemini İKİYE BÖL ===
+      // İlk yarı vs ikinci yarı (filtre dönemiyle tutarlı)
+      const periodMs = differenceInMilliseconds(endDate, startDate);
+      const midPoint = new Date(startDate.getTime() + periodMs / 2);
 
-      // Ortalama sepet değeri
+      let firstHalfRevenue = 0;
+      let secondHalfRevenue = 0;
+
+      registrations?.forEach((reg: any) => {
+        const regDate = new Date(reg.created_at);
+        const price = reg.tour_dates?.price_adult || 0;
+        const revenue = price * reg.pax;
+
+        if (regDate < midPoint) {
+          firstHalfRevenue += revenue;
+        } else {
+          secondHalfRevenue += revenue;
+        }
+      });
+
+      const periodGrowth = firstHalfRevenue > 0
+        ? ((secondHalfRevenue - firstHalfRevenue) / firstHalfRevenue) * 100
+        : (secondHalfRevenue > 0 ? 100 : 0);
+
       const averageOrderValue = registrations && registrations.length > 0
         ? totalRevenue / registrations.length
         : 0;
@@ -242,11 +284,11 @@ export const AdvancedAnalytics = () => {
         revenueByMonth: revenueArray,
         topDestinations,
         conversionRate,
-        monthlyGrowth,
+        periodGrowth,
         averageOrderValue,
         totalRevenue,
         totalRegistrations: registrations?.length || 0,
-        totalConversations: conversationCount || 0
+        totalConversations: conversationCount || 0,
       });
     } catch (error) {
       console.error("Analytics error:", error);
@@ -255,126 +297,79 @@ export const AdvancedAnalytics = () => {
     }
   };
 
-  const getDateFilterLabel = () => {
-    switch (dateFilter) {
-      case '1month': return 'Son 1 Ay';
-      case '3months': return 'Son 3 Ay';
-      case '6months': return 'Son 6 Ay';
-      case '1year': return 'Son 1 Yıl';
-      case 'custom':
-        if (customDateRange?.from) {
-          const fromDate = format(customDateRange.from, 'dd MMM yyyy', { locale: tr });
-          const toDate = customDateRange.to 
-            ? format(customDateRange.to, 'dd MMM yyyy', { locale: tr })
-            : 'Bugün';
-          return `${fromDate} - ${toDate}`;
-        }
-        return 'Özel Tarih';
-      default: return 'Son 6 Ay';
-    }
-  };
+  // ─── Date Filter UI (tek yerde, hem loading hem normal state'de aynı) ───
+  const dateFilterCard = (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Filter className="h-5 w-5" />
+          {t('analytics.advanced.dateFilter')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: '1month' as const, label: 'last1Month' },
+            { id: '3months' as const, label: 'last3Months' },
+            { id: '6months' as const, label: 'last6Months' },
+            { id: '1year' as const, label: 'last1Year' },
+          ].map((opt) => (
+            <Button
+              key={opt.id}
+              variant={dateFilter === opt.id ? 'default' : 'outline'}
+              onClick={() => {
+                setDateFilter(opt.id);
+                setCustomDateRange(undefined);
+              }}
+              size="sm"
+            >
+              {t(`analytics.filter.${opt.label}`)}
+            </Button>
+          ))}
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={dateFilter === 'custom' ? 'default' : 'outline'}
+                size="sm"
+                className="gap-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                {dateFilter === 'custom' && customDateRange?.from
+                  ? getDateFilterLabel()
+                  : <span>{t('analytics.filter.customDate')}</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={customDateRange}
+                onSelect={(range) => {
+                  setCustomDateRange(range);
+                  if (range?.from) setDateFilter('custom');
+                }}
+                numberOfMonths={2}
+                locale={locale}
+                disabled={(date) => date > new Date()}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <p className="text-sm text-muted-foreground mt-4">
+          {t('analytics.filter.showingData')}: <span className="font-medium">{getDateFilterLabel()}</span>
+        </p>
+      </CardContent>
+    </Card>
+  );
 
   if (isLoading) {
-  return (
-    <div className="space-y-6">
-      {/* Tarih Filtreleme */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Tarih Aralığı Filtresi
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={dateFilter === '1month' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1month');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 1 Ay
-            </Button>
-            <Button
-              variant={dateFilter === '3months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('3months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 3 Ay
-            </Button>
-            <Button
-              variant={dateFilter === '6months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('6months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 6 Ay
-            </Button>
-            <Button
-              variant={dateFilter === '1year' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1year');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 1 Yıl
-            </Button>
-            
-            {/* Özel Tarih Aralığı */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
-                  size="sm"
-                  className={cn(
-                    "justify-start text-left font-normal",
-                    !customDateRange && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateFilter === 'custom' && customDateRange?.from ? (
-                    getDateFilterLabel()
-                  ) : (
-                    <span>Özel Tarih</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={customDateRange}
-                  onSelect={(range) => {
-                    setCustomDateRange(range);
-                    if (range?.from) {
-                      setDateFilter('custom');
-                    }
-                  }}
-                  numberOfMonths={2}
-                  locale={tr}
-                  disabled={(date) => date > new Date()}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mt-4">
-            Gösterilen veriler: <span className="font-medium">{getDateFilterLabel()}</span>
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Özet Kartlar */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    return (
+      <div className="space-y-6">
+        {dateFilterCard}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="h-20 bg-muted" />
@@ -386,174 +381,93 @@ export const AdvancedAnalytics = () => {
     );
   }
 
-  if (!analytics) {
+  if (!analytics || analytics.totalRegistrations === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Award className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">Henüz analiz verisi yok</p>
-          <p className="text-sm text-muted-foreground mt-2">İlk rezervasyonunuz oluştuğunda analitikler burada görünecek</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        {dateFilterCard}
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Award className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium text-muted-foreground">{t('analytics.advanced.noData')}</p>
+            <p className="text-sm text-muted-foreground mt-2">{t('analytics.advanced.noDataDescription')}</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Tarih Filtreleme */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Tarih Aralığı Filtresi
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={dateFilter === '1month' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1month');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 1 Ay
-            </Button>
-            <Button
-              variant={dateFilter === '3months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('3months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 3 Ay
-            </Button>
-            <Button
-              variant={dateFilter === '6months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('6months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 6 Ay
-            </Button>
-            <Button
-              variant={dateFilter === '1year' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1year');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              Son 1 Yıl
-            </Button>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
-                  size="sm"
-                  className="gap-2"
-                >
-                  <CalendarIcon className="h-4 w-4" />
-                  {dateFilter === 'custom' && customDateRange?.from ? (
-                    getDateFilterLabel()
-                  ) : (
-                    <span>Özel Tarih</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={customDateRange}
-                  onSelect={(range) => {
-                    setCustomDateRange(range);
-                    if (range?.from) {
-                      setDateFilter('custom');
-                    }
-                  }}
-                  numberOfMonths={2}
-                  locale={tr}
-                  disabled={(date) => date > new Date()}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mt-4">
-            Gösterilen veriler: <span className="font-medium">{getDateFilterLabel()}</span>
-          </p>
-        </CardContent>
-      </Card>
+      {dateFilterCard}
 
       {/* Özet Kartlar */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('analytics.advanced.totalRevenue')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('tr-TR').format(analytics.totalRevenue)} TL
+              {formatPrice(analytics.totalRevenue, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {analytics.totalRegistrations} kayıt • {getDateFilterLabel()}
+              {t('analytics.advanced.totalRevenueDesc', {
+                count: analytics.totalRegistrations,
+                period: getDateFilterLabel(),
+              })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aylık Büyüme</CardTitle>
-            {analytics.monthlyGrowth >= 0 ? (
+            <CardTitle className="text-sm font-medium">{t('analytics.advanced.periodGrowth')}</CardTitle>
+            {analytics.periodGrowth >= 0 ? (
               <TrendingUp className="h-4 w-4 text-green-500" />
             ) : (
               <TrendingDown className="h-4 w-4 text-red-500" />
             )}
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${analytics.monthlyGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {analytics.monthlyGrowth >= 0 ? '+' : ''}{analytics.monthlyGrowth.toFixed(1)}%
+            <div className={`text-2xl font-bold ${analytics.periodGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {analytics.periodGrowth >= 0 ? '+' : ''}{analytics.periodGrowth.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Geçen aya göre
+              {t('analytics.advanced.vsPreviousHalf')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ortalama Sepet</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('analytics.advanced.averageBasket')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('tr-TR').format(Math.round(analytics.averageOrderValue))} TL
+              {formatPrice(Math.round(analytics.averageOrderValue), currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Kayıt başına
+              {t('analytics.advanced.perRegistration')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dönüşüm Oranı</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">{t('analytics.advanced.conversionRate')}</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {analytics.conversionRate.rate.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {analytics.conversionRate.registrations}/{analytics.conversionRate.conversations} konuşma
+              {t('analytics.advanced.conversionDesc', {
+                registrations: analytics.conversionRate.registrations,
+                conversations: analytics.conversionRate.conversations,
+              })}
             </p>
           </CardContent>
         </Card>
@@ -563,7 +477,7 @@ export const AdvancedAnalytics = () => {
       {analytics.revenueByMonth.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Aylık Gelir Trendi</CardTitle>
+            <CardTitle>{t('analytics.advanced.monthlyTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -571,17 +485,17 @@ export const AdvancedAnalytics = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip 
-                  formatter={(value: number) => new Intl.NumberFormat('tr-TR').format(value) + ' TL'}
+                <Tooltip
+                  formatter={(value: number) => formatPrice(value, currency)}
                   labelStyle={{ color: '#000' }}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#8884d8" 
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#8884d8"
                   strokeWidth={2}
-                  name="Gelir (TL)"
+                  name={t('analytics.advanced.revenueLabel')}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -593,26 +507,28 @@ export const AdvancedAnalytics = () => {
       {analytics.topDestinations.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Destinasyon Detayları</CardTitle>
+            <CardTitle>{t('analytics.advanced.destinationDetails')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {analytics.topDestinations.map((dest, index) => (
                 <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-accent/50">
                   <div className="flex items-center gap-4">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
+                    <div
+                      className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
                     <div>
                       <p className="font-medium">{dest.destination}</p>
-                      <p className="text-sm text-muted-foreground">{dest.count} kayıt</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('analytics.advanced.registrationCount', { count: dest.count })}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">{new Intl.NumberFormat('tr-TR').format(dest.revenue)} TL</p>
+                    <p className="font-bold">{formatPrice(dest.revenue, currency)}</p>
                     <p className="text-sm text-muted-foreground">
-                      Ort: {new Intl.NumberFormat('tr-TR').format(Math.round(dest.revenue / dest.count))} TL
+                      {t('analytics.advanced.average')}: {formatPrice(Math.round(dest.revenue / dest.count), currency)}
                     </p>
                   </div>
                 </div>

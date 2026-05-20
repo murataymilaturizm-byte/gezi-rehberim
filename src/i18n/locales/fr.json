@@ -414,7 +414,34 @@
       "last6Months": "Derniers 6 Mois",
       "last1Year": "Dernière 1 Année",
       "customDate": "Date Personnalisée",
-      "showingData": "Données affichées"
+      "showingData": "Données affichées",
+      "today": "Aujourd'hui"
+    },
+    "advanced": {
+      "dateFilter": "Filtre de plage de dates",
+      "totalRevenue": "Revenu total",
+      "totalRevenueDesc": "{{count}} inscriptions • {{period}}",
+      "periodGrowth": "Croissance de la période",
+      "vsPreviousHalf": "Vs moitié précédente",
+      "averageBasket": "Panier moyen",
+      "perRegistration": "Par inscription",
+      "conversionRate": "Taux de conversion",
+      "conversionDesc": "{{registrations}}/{{conversations}} conversations",
+      "monthlyTrend": "Tendance mensuelle des revenus",
+      "revenueLabel": "Revenu",
+      "destinationDetails": "Détails des destinations",
+      "registrationCount": "{{count}} inscriptions",
+      "average": "Moy",
+      "noData": "Aucune donnée d'analyse pour le moment",
+      "noDataDescription": "Les analyses apparaîtront ici dès votre première inscription",
+      "export": "Télécharger CSV",
+      "exportFilename": "rapports"
+    },
+    "tags": {
+      "vip": "VIP",
+      "regular": "Régulier",
+      "potential": "Potentiel",
+      "inactive": "Inactif"
     }
   },
   "customerFeedback": {
@@ -1953,6 +1980,7 @@
     "backHome": "Retour à l'Accueil"
   },
   "common": {
+    "unspecified": "Non spécifié",
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",

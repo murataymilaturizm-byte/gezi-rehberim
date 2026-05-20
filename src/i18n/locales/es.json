@@ -445,7 +445,34 @@
       "last6Months": "Últimos 6 Meses",
       "last1Year": "Último 1 Año",
       "customDate": "Fecha Personalizada",
-      "showingData": "Mostrando datos"
+      "showingData": "Mostrando datos",
+      "today": "Hoy"
+    },
+    "advanced": {
+      "dateFilter": "Filtro de rango de fechas",
+      "totalRevenue": "Ingresos totales",
+      "totalRevenueDesc": "{{count}} registros • {{period}}",
+      "periodGrowth": "Crecimiento del período",
+      "vsPreviousHalf": "Vs. la mitad anterior",
+      "averageBasket": "Cesta promedio",
+      "perRegistration": "Por registro",
+      "conversionRate": "Tasa de conversión",
+      "conversionDesc": "{{registrations}}/{{conversations}} conversaciones",
+      "monthlyTrend": "Tendencia mensual de ingresos",
+      "revenueLabel": "Ingresos",
+      "destinationDetails": "Detalles de destinos",
+      "registrationCount": "{{count}} registros",
+      "average": "Prom",
+      "noData": "Aún no hay datos de análisis",
+      "noDataDescription": "Las analíticas aparecerán aquí cuando tenga su primer registro",
+      "export": "Descargar CSV",
+      "exportFilename": "informes"
+    },
+    "tags": {
+      "vip": "VIP",
+      "regular": "Regular",
+      "potential": "Potencial",
+      "inactive": "Inactivo"
     }
   },
   "customerFeedback": {
@@ -1980,6 +2007,7 @@
     "backHome": "Volver al Inicio"
   },
   "common": {
+    "unspecified": "No especificado",
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",

@@ -441,7 +441,34 @@
       "last6Months": "Last 6 Months",
       "last1Year": "Last 1 Year",
       "customDate": "Custom Date",
-      "showingData": "Showing data"
+      "showingData": "Showing data",
+      "today": "Today"
+    },
+    "advanced": {
+      "dateFilter": "Date Range Filter",
+      "totalRevenue": "Total Revenue",
+      "totalRevenueDesc": "{{count}} registrations • {{period}}",
+      "periodGrowth": "Period Growth",
+      "vsPreviousHalf": "vs. previous half",
+      "averageBasket": "Average Basket",
+      "perRegistration": "Per registration",
+      "conversionRate": "Conversion Rate",
+      "conversionDesc": "{{registrations}}/{{conversations}} conversations",
+      "monthlyTrend": "Monthly Revenue Trend",
+      "revenueLabel": "Revenue",
+      "destinationDetails": "Destination Details",
+      "registrationCount": "{{count}} registrations",
+      "average": "Avg",
+      "noData": "No analytics data yet",
+      "noDataDescription": "Analytics will appear here once you have your first registration",
+      "export": "Download CSV",
+      "exportFilename": "reports"
+    },
+    "tags": {
+      "vip": "VIP",
+      "regular": "Regular",
+      "potential": "Potential",
+      "inactive": "Inactive"
     }
   },
   "customerFeedback": {
@@ -1953,6 +1980,7 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
+    "unspecified": "Unspecified",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",

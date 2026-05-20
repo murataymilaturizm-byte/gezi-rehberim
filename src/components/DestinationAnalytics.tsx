@@ -6,6 +6,7 @@ import { MapPin, TrendingUp, DollarSign, Users, Calendar as CalendarIcon, Filter
 import { useTranslation } from "react-i18next";
 import { format, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+import { formatPrice } from "@/utils/currency";
 import {
   BarChart,
   Bar,
@@ -68,6 +69,7 @@ export const DestinationAnalytics = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  const [currency, setCurrency] = useState<string>('TRY');
 
   useEffect(() => {
     loadDestinationStats();
@@ -132,22 +134,29 @@ export const DestinationAnalytics = () => {
       if (!isSuperAdmin) {
         const { data: agency } = await supabase
           .from("agencies")
-          .select("id")
+          .select("id, primary_currency")
           .eq("user_id", user.id)
           .maybeSingle();
 
         if (!agency) return;
         agencyId = agency.id;
+        setCurrency((agency as any).primary_currency || 'TRY');
       }
 
-      // Get all registrations with tour details
+      // Tarih filtreyi de uygula
+      const { startDate, endDate } = getDateRange();
+
+      // Get all registrations with tour details (left join — silinmiş tour'lar kaybolmasın)
       let registrationsQuery = supabase
         .from("registrations")
         .select(`
           *,
           tours (destination, title, currency),
           tour_dates (price_adult, departure_date)
-        `);
+        `)
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString())
+        .in("status", ["CONFIRMED", "NEW", "PENDING"]);
 
       if (agencyId) {
         registrationsQuery = registrationsQuery.eq("agency_id", agencyId);
@@ -226,14 +235,15 @@ export const DestinationAnalytics = () => {
       const top3Destinations = topDestinations.slice(0, 3);
       const monthlyData: Record<string, any> = {};
 
+      const currentLocale = localeMap[i18n.language as keyof typeof localeMap] || tr;
       registrations.forEach((reg: any) => {
         if (!reg.tour_dates?.departure_date) return;
-        
+
         const destination = reg.tours?.destination;
         if (!top3Destinations.find(d => d.destination === destination)) return;
 
         const date = new Date(reg.tour_dates.departure_date);
-        const monthKey = date.toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' });
+        const monthKey = format(date, 'MMM yyyy', { locale: currentLocale });
         const price = (reg.tour_dates?.price_adult || 0) * reg.pax;
 
         if (!monthlyData[monthKey]) {
@@ -408,7 +418,7 @@ export const DestinationAnalytics = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('tr-TR').format(stats.totalRevenue)} TL
+              {formatPrice(stats.totalRevenue, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">{t("destinationAnalytics.allDestinations")}</p>
           </CardContent>
@@ -432,7 +442,7 @@ export const DestinationAnalytics = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('tr-TR').format(Math.round(stats.averageBookingValue))} TL
+              {formatPrice(Math.round(stats.averageBookingValue), currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">{t("destinationAnalytics.perBooking")}</p>
           </CardContent>
@@ -459,8 +469,8 @@ export const DestinationAnalytics = () => {
                   height={100}
                 />
                 <YAxis />
-                <Tooltip 
-                  formatter={(value: number) => new Intl.NumberFormat('tr-TR').format(value) + ' TL'}
+                <Tooltip
+                  formatter={(value: number) => formatPrice(value, currency)}
                   labelStyle={{ color: '#000' }}
                 />
                 <Bar dataKey="revenue" fill="#82ca9d" name={t("destinationAnalytics.revenue")} />
@@ -515,8 +525,8 @@ export const DestinationAnalytics = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip 
-                  formatter={(value: number) => new Intl.NumberFormat('tr-TR').format(value) + ' TL'}
+                <Tooltip
+                  formatter={(value: number) => formatPrice(value, currency)}
                   labelStyle={{ color: '#000' }}
                 />
                 <Legend />
@@ -562,13 +572,13 @@ export const DestinationAnalytics = () => {
                       <span>•</span>
                       <span>{destination.totalPax} {t("destinationAnalytics.people")}</span>
                       <span>•</span>
-                      <span>{t("destinationAnalytics.average")}: {new Intl.NumberFormat('tr-TR').format(Math.round(destination.averagePrice))} TL</span>
+                      <span>{t("destinationAnalytics.average")}: {formatPrice(Math.round(destination.averagePrice), currency)}</span>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-bold text-green-600">
-                    {new Intl.NumberFormat('tr-TR').format(destination.revenue)} TL
+                    {formatPrice(destination.revenue, currency)}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     {destination.growthRate >= 0 ? (

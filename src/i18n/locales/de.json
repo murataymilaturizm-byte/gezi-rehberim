@@ -441,7 +441,34 @@
       "last6Months": "Letzte 6 Monate",
       "last1Year": "Letztes 1 Jahr",
       "customDate": "Benutzerdefiniertes Datum",
-      "showingData": "Angezeigte Daten"
+      "showingData": "Angezeigte Daten",
+      "today": "Heute"
+    },
+    "advanced": {
+      "dateFilter": "Datumsbereichsfilter",
+      "totalRevenue": "Gesamtumsatz",
+      "totalRevenueDesc": "{{count}} Anmeldungen • {{period}}",
+      "periodGrowth": "Wachstum im Zeitraum",
+      "vsPreviousHalf": "Vs. vorherige Hälfte",
+      "averageBasket": "Durchschnittlicher Warenkorb",
+      "perRegistration": "Pro Anmeldung",
+      "conversionRate": "Konversionsrate",
+      "conversionDesc": "{{registrations}}/{{conversations}} Konversationen",
+      "monthlyTrend": "Monatlicher Umsatztrend",
+      "revenueLabel": "Umsatz",
+      "destinationDetails": "Reiseziel-Details",
+      "registrationCount": "{{count}} Anmeldungen",
+      "average": "Ø",
+      "noData": "Noch keine Analysedaten",
+      "noDataDescription": "Analysen werden hier angezeigt, sobald Sie Ihre erste Anmeldung haben",
+      "export": "CSV herunterladen",
+      "exportFilename": "berichte"
+    },
+    "tags": {
+      "vip": "VIP",
+      "regular": "Regulär",
+      "potential": "Potenziell",
+      "inactive": "Inaktiv"
     }
   },
   "customerFeedback": {
@@ -1949,6 +1976,7 @@
     "backHome": "Zurück zur Startseite"
   },
   "common": {
+    "unspecified": "Nicht angegeben",
     "loading": "Wird geladen...",
     "error": "Fehler",
     "success": "Erfolgreich",
