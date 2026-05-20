@@ -295,7 +295,7 @@ export const UsageStats = () => {
               <div className="grid grid-cols-2 gap-1.5 pt-2">
                 {[
                   { icon: MessageSquare, text: planFeatures.message_limit === -1 ? t("admin.usageStats.dynamicFeatures.unlimitedMessages") : t("admin.usageStats.dynamicFeatures.messagesPerMonth", { count: planFeatures.message_limit }), show: true },
-                  { icon: Database, text: planFeatures.max_tours >= 9999 ? t("admin.usageStats.dynamicFeatures.unlimitedTours") : t("admin.usageStats.dynamicFeatures.maxTours", { count: planFeatures.max_tours }), show: true },
+                  { icon: Database, text: (planFeatures.max_tours === -1 || planFeatures.max_tours >= 9999) ? t("admin.usageStats.dynamicFeatures.unlimitedTours") : t("admin.usageStats.dynamicFeatures.maxTours", { count: planFeatures.max_tours }), show: true },
                   { icon: Globe, text: planFeatures.max_languages >= 7 ? t("admin.usageStats.dynamicFeatures.allLanguages") : t("admin.usageStats.dynamicFeatures.languageSupport", { count: planFeatures.max_languages }), show: true },
                   { icon: Palette, text: planFeatures.available_styles.length >= 4 ? t("admin.usageStats.dynamicFeatures.allStyles") : t("admin.usageStats.dynamicFeatures.limitedStyles", { count: planFeatures.available_styles.length }), show: true },
                   { icon: Users, text: t("admin.usageStats.dynamicFeatures.userProfiles"), show: planFeatures.has_user_profiles },

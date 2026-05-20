@@ -55,7 +55,7 @@ import { TicketManagement } from "@/components/TicketManagement";
 import { SuperAdminTickets } from "@/components/SuperAdminTickets";
 import { AgencyInfoSettings } from "@/components/AgencyInfoSettings";
 import { ComplaintsManagement } from "@/components/ComplaintsManagement";
-import { getMaxTours, getPlanFeatures, PlanFeatures } from "@/utils/planFeatures";
+import { getMaxTours, getPlanFeatures, PlanFeatures, isWithinTourLimit } from "@/utils/planFeatures";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminSidebar } from "@/components/AdminSidebar";
@@ -827,7 +827,7 @@ const Admin = () => {
                           <Button
                             size="sm"
                             onClick={() => {
-                              if (!isSuperAdmin && tours.length >= maxTours) {
+                              if (!isSuperAdmin && !isWithinTourLimit(tours.length, maxTours)) {
                                 const planNames = {
                                   'starter': t("admin.planLimits.starterPlan"),
                                   'professional': t("admin.planLimits.professionalPlan"),

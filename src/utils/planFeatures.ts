@@ -71,3 +71,14 @@ export async function getMaxTours(planType: string): Promise<number> {
 export function clearPlanFeaturesCache() {
   cachedFeatures = null;
 }
+
+// -1 veya 9999+ = sınırsız. Tur ekleme kontrolü ve gösterim için kullan.
+export function isUnlimitedTours(maxTours: number): boolean {
+  return maxTours === -1 || maxTours >= 9999;
+}
+
+// Mevcut tur sayısı limit dahilinde mi?
+export function isWithinTourLimit(currentCount: number, maxTours: number): boolean {
+  if (isUnlimitedTours(maxTours)) return true;
+  return currentCount < maxTours;
+}
