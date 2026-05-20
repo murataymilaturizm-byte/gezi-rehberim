@@ -167,6 +167,24 @@ Deno.serve(async (req) => {
         })
         .eq("agency_id", agencyId);
 
+      // Step 6: KRİTİK — Webhook subscription'ı garantile (Embedded Signup bazen atlıyor)
+      if (wabaInfo.wabaId) {
+        try {
+          const subRes = await fetch(
+            `https://graph.facebook.com/v18.0/${wabaInfo.wabaId}/subscribed_apps`,
+            { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          const subData = await subRes.json();
+          if (subData?.success) {
+            console.log("✅ Webhook subscription registered for WABA:", wabaInfo.wabaId);
+          } else {
+            console.warn("⚠️ Webhook subscription warning:", subData);
+          }
+        } catch (subErr) {
+          console.warn("⚠️ Webhook subscription failed (non-blocking):", subErr);
+        }
+      }
+
       console.log("✅ Embedded Signup completed for agency:", agencyId);
 
       return new Response(
