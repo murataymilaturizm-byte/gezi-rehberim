@@ -117,8 +117,8 @@ Deno.serve(async (req) => {
 
       const accessToken = longTokenData.access_token || shortLivedToken;
 
-      // Step 3: Get shared WABA info using debug_token or /me/businesses
-      const wabaInfo = await getSharedWABAInfo(accessToken, metaAppId);
+      // Step 3: Get shared WABA info — debug_token öncelikli, fallback /me/businesses
+      const wabaInfo = await getSharedWABAInfo(accessToken, metaAppId, metaAppSecret!);
 
       // Step 4: Get phone number info from WABA
       let phoneNumberId = "";
@@ -130,16 +130,32 @@ Deno.serve(async (req) => {
         phoneNumber = phoneInfo.phoneNumber || "";
       }
 
-      // Step 5: Save to agency
+      // Validation: waba_id ve phone_id zorunlu — null yazılmasına izin verme
+      if (!wabaInfo.wabaId || !phoneNumberId) {
+        console.error("[exchange-token] Critical IDs missing after all resolution attempts", {
+          wabaId: wabaInfo.wabaId || "MISSING",
+          phoneNumberId: phoneNumberId || "MISSING",
+          agencyId,
+        });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Could not retrieve phone number or WABA ID from Meta. Please contact support.",
+            needsManualSetup: true,
+          }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Step 5: Save to agency — her iki ID garanti dolu
       const updateData: Record<string, any> = {
         meta_access_token: accessToken,
+        meta_waba_id: wabaInfo.wabaId,
+        meta_phone_number_id: phoneNumberId,
+        whatsapp_phone_number: phoneNumber || null,
         whatsapp_status: "active",
         whatsapp_connected_at: new Date().toISOString(),
       };
-
-      if (wabaInfo.wabaId) updateData.meta_waba_id = wabaInfo.wabaId;
-      if (phoneNumberId) updateData.meta_phone_number_id = phoneNumberId;
-      if (phoneNumber) updateData.whatsapp_phone_number = phoneNumber;
 
       const { error: updateError } = await supabase
         .from("agencies")
@@ -396,51 +412,86 @@ Deno.serve(async (req) => {
 });
 
 /**
- * Get shared WABA info from the Embedded Signup flow
+ * Get shared WABA info from the Embedded Signup flow.
+ *
+ * Strategy 1 — debug_token granular_scopes (en güvenilir Embedded Signup yöntemi):
+ *   App token ile /debug_token?input_token=USER_TOKEN&fields=granular_scopes
+ *   whatsapp_business_management scope'unun target_ids → WABA ID'leri
+ *
+ * Strategy 2 — /me/owned_whatsapp_business_accounts (System User token için çalışır)
+ * Strategy 3 — /me/client_whatsapp_business_accounts (shared WABAs)
  */
 async function getSharedWABAInfo(
   accessToken: string,
-  _appId: string
+  appId: string,
+  appSecret: string
 ): Promise<{ wabaId: string }> {
   try {
-    // Try to get WABA via /me endpoint with business scopes
-    const res = await fetch(
+    // ── Strategy 1: debug_token granular_scopes ──────────────────────────────
+    try {
+      const appToken = `${appId}|${appSecret}`;
+      const debugRes = await fetch(
+        `https://graph.facebook.com/v18.0/debug_token?input_token=${accessToken}&access_token=${encodeURIComponent(appToken)}&fields=granular_scopes`
+      );
+      const debugData = await debugRes.json();
+      const wabaScope = (debugData?.data?.granular_scopes as any[] || [])
+        .find((s: any) => s.scope === "whatsapp_business_management");
+
+      if (wabaScope?.target_ids?.[0]) {
+        const wabaId = String(wabaScope.target_ids[0]);
+        console.log("✅ [waba-discovery] debug_token granular_scopes → WABA:", wabaId);
+        return { wabaId };
+      }
+      console.warn("⚠️ [waba-discovery] debug_token: no whatsapp_business_management target_ids", debugData?.data);
+    } catch (dbgErr) {
+      console.warn("⚠️ [waba-discovery] debug_token failed:", dbgErr);
+    }
+
+    // ── Strategy 2 & 3: /me + owned/client endpoints ─────────────────────────
+    const meRes = await fetch(
       `https://graph.facebook.com/v18.0/me?fields=id,name&access_token=${accessToken}`
     );
-    const userData = await res.json();
-    console.log("📘 User data from token:", userData?.id, userData?.name);
+    const meData = await meRes.json();
+    console.log("📘 [waba-discovery] /me →", meData?.id, meData?.name);
 
-    // Get shared WABAs
-    const wabaRes = await fetch(
-      `https://graph.facebook.com/v18.0/${userData.id}/owned_whatsapp_business_accounts?access_token=${accessToken}`
-    );
-    const wabaData = await wabaRes.json();
-
-    if (wabaData?.data?.[0]?.id) {
-      return { wabaId: wabaData.data[0].id };
+    if (!meData?.id) {
+      console.warn("⚠️ [waba-discovery] /me returned no id");
+      return { wabaId: "" };
     }
 
-    // Try client_whatsapp_business_accounts as fallback
+    const ownedRes = await fetch(
+      `https://graph.facebook.com/v18.0/${meData.id}/owned_whatsapp_business_accounts?access_token=${accessToken}`
+    );
+    const ownedData = await ownedRes.json();
+    if (ownedData?.data?.[0]?.id) {
+      console.log("✅ [waba-discovery] owned_whatsapp_business_accounts → WABA:", ownedData.data[0].id);
+      return { wabaId: ownedData.data[0].id };
+    }
+    console.warn("⚠️ [waba-discovery] owned_whatsapp_business_accounts:", ownedData?.error || "empty");
+
     const clientRes = await fetch(
-      `https://graph.facebook.com/v18.0/${userData.id}/client_whatsapp_business_accounts?access_token=${accessToken}`
+      `https://graph.facebook.com/v18.0/${meData.id}/client_whatsapp_business_accounts?access_token=${accessToken}`
     );
     const clientData = await clientRes.json();
-
     if (clientData?.data?.[0]?.id) {
+      console.log("✅ [waba-discovery] client_whatsapp_business_accounts → WABA:", clientData.data[0].id);
       return { wabaId: clientData.data[0].id };
     }
+    console.warn("⚠️ [waba-discovery] client_whatsapp_business_accounts:", clientData?.error || "empty");
 
-    console.warn("⚠️ Could not find WABA from token, will need manual entry");
+    console.error("❌ [waba-discovery] All strategies failed — WABA ID could not be resolved");
     return { wabaId: "" };
   } catch (error) {
-    console.error("❌ Error getting WABA info:", error);
+    console.error("❌ [waba-discovery] Exception:", error);
     return { wabaId: "" };
   }
 }
 
 /**
- * Get phone numbers registered under a WABA
- * Test sandbox numaraları (+1 555...) atlanır — production numaraları öncelikli
+ * Get phone numbers registered under a WABA.
+ * Öncelik: sandbox olmayan numara (VERIFIED veya PENDING — ikisi de kabul edilir).
+ * PENDING numaralar Step 7'de /register ile aktif edilecek.
+ * Sandbox (+1 555... veya NOT_APPLICABLE) son çare olarak seçilir.
  */
 async function getWABAPhoneNumbers(
   wabaId: string,
@@ -453,28 +504,32 @@ async function getWABAPhoneNumbers(
     const data = await res.json();
     const phones: any[] = data?.data || [];
 
+    console.info(`[phone-resolution] WABA ${wabaId}: ${phones.length} phone(s) found`);
+    for (const p of phones) {
+      console.info(`[phone-resolution]  → ${p.display_phone_number} | status=${p.code_verification_status} | platform=${p.platform_type}`);
+    }
+
     if (phones.length === 0) {
+      console.warn("[phone-resolution] No phones returned from WABA");
       return { phoneNumberId: "", phoneNumber: "" };
     }
 
-    // 1. Önce production numarayı bul (GREEN/YELLOW quality + VERIFIED + platform_type !== NOT_APPLICABLE)
-    // 2. Yoksa VERIFIED ama UNKNOWN rating'i kabul et
-    // 3. En son test sandbox (+1 555 ile başlayan veya platform_type=NOT_APPLICABLE)
     const isSandbox = (p: any) =>
       p.platform_type === "NOT_APPLICABLE" ||
       (p.display_phone_number || "").startsWith("+1 555");
 
-    const production = phones.filter((p) => !isSandbox(p) && p.code_verification_status === "VERIFIED");
-    const anyVerified = phones.filter((p) => p.code_verification_status === "VERIFIED");
+    // VERIFIED şartı kaldırıldı — PENDING de kabul edilir (Step 7 register eder)
+    const nonSandbox = phones.filter((p) => !isSandbox(p));
+    const best = nonSandbox[0] || phones[0];
 
-    const best = production[0] || anyVerified[0] || phones[0];
+    console.info(`[phone-resolution] selected: ${best.display_phone_number} | id=${best.id} | status=${best.code_verification_status}`);
 
     return {
       phoneNumberId: best.id || "",
       phoneNumber: best.display_phone_number?.replace(/[\s\-+]/g, "") || "",
     };
   } catch (error) {
-    console.error("❌ Error getting phone numbers:", error);
+    console.error("❌ [phone-resolution] Exception:", error);
     return { phoneNumberId: "", phoneNumber: "" };
   }
 }
