@@ -316,6 +316,7 @@ async function getSharedWABAInfo(
 
 /**
  * Get phone numbers registered under a WABA
+ * Test sandbox numaraları (+1 555...) atlanır — production numaraları öncelikli
  */
 async function getWABAPhoneNumbers(
   wabaId: string,
@@ -323,18 +324,31 @@ async function getWABAPhoneNumbers(
 ): Promise<{ phoneNumberId: string; phoneNumber: string }> {
   try {
     const res = await fetch(
-      `https://graph.facebook.com/v18.0/${wabaId}/phone_numbers?access_token=${accessToken}`
+      `https://graph.facebook.com/v18.0/${wabaId}/phone_numbers?fields=id,display_phone_number,verified_name,code_verification_status,quality_rating,platform_type&access_token=${accessToken}`
     );
     const data = await res.json();
+    const phones: any[] = data?.data || [];
 
-    if (data?.data?.[0]) {
-      return {
-        phoneNumberId: data.data[0].id || "",
-        phoneNumber: data.data[0].display_phone_number?.replace(/[\s\-\+]/g, "") || "",
-      };
+    if (phones.length === 0) {
+      return { phoneNumberId: "", phoneNumber: "" };
     }
 
-    return { phoneNumberId: "", phoneNumber: "" };
+    // 1. Önce production numarayı bul (GREEN/YELLOW quality + VERIFIED + platform_type !== NOT_APPLICABLE)
+    // 2. Yoksa VERIFIED ama UNKNOWN rating'i kabul et
+    // 3. En son test sandbox (+1 555 ile başlayan veya platform_type=NOT_APPLICABLE)
+    const isSandbox = (p: any) =>
+      p.platform_type === "NOT_APPLICABLE" ||
+      (p.display_phone_number || "").startsWith("+1 555");
+
+    const production = phones.filter((p) => !isSandbox(p) && p.code_verification_status === "VERIFIED");
+    const anyVerified = phones.filter((p) => p.code_verification_status === "VERIFIED");
+
+    const best = production[0] || anyVerified[0] || phones[0];
+
+    return {
+      phoneNumberId: best.id || "",
+      phoneNumber: best.display_phone_number?.replace(/[\s\-+]/g, "") || "",
+    };
   } catch (error) {
     console.error("❌ Error getting phone numbers:", error);
     return { phoneNumberId: "", phoneNumber: "" };
