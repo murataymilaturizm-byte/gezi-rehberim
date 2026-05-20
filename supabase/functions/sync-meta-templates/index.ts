@@ -56,29 +56,48 @@ serve(async (req) => {
 
     console.log(`[sync-meta-templates] Fetched ${metaTemplates.length} templates from Meta for agency ${agencyId.slice(0, 8)}`);
 
+    // Meta 'en_US', 'tr_TR' formatı döndürüyor — 2 harfe indir
+    const normalizeLang = (lang: string): string =>
+      (lang || "tr").split("_")[0].split("-")[0].toLowerCase();
+
     let inserted = 0;
     let updated = 0;
     let failed = 0;
 
     for (const mt of metaTemplates) {
+      const lang = normalizeLang(mt.language); // 'en_US' → 'en', 'tr_TR' → 'tr'
+
       // Meta template body içeriğini ve değişkenleri çıkar
-      const components: any[] = mt.components || [];
+      const components: any[] = (mt as any).components || [];
       const bodyComponent = components.find((c: any) => c.type === "BODY");
       const content = bodyComponent?.text || "";
       const variableMatches = content.match(/\{\{\d+\}\}/g) || [];
       const variables = variableMatches.map((v: string) => v.replace(/\{\{|\}\}/g, ""));
 
-      // Önce var mı kontrol et
+      console.log(`[sync] Processing: ${mt.name}/${mt.language} → normalized lang: ${lang}`);
+
+      // Eski normalize edilmemiş kayıt varsa sil (örn. 'en_US' → 'en'e geçiş)
+      if (mt.language !== lang) {
+        await (supabase as any)
+          .from("message_templates")
+          .delete()
+          .eq("agency_id", agencyId)
+          .eq("template_key", mt.name)
+          .eq("language", mt.language); // eski: 'en_US'
+        console.log(`[sync] Cleaned up old non-normalized record: ${mt.name}/${mt.language}`);
+      }
+
+      // Normalize edilmiş dil ile kayıt var mı kontrol et
       const { data: existing } = await (supabase as any)
         .from("message_templates")
         .select("id")
         .eq("agency_id", agencyId)
         .eq("template_key", mt.name)
-        .eq("language", mt.language)
+        .eq("language", lang) // normalize: 'en'
         .maybeSingle();
 
       if (existing) {
-        // VAR → sadece meta alanlarını güncelle (content değişmişse onu da)
+        // VAR → meta alanları + content güncelle
         const updatePayload: Record<string, any> = {
           meta_template_id: mt.id,
           meta_status: mt.status,
@@ -93,21 +112,21 @@ serve(async (req) => {
           .eq("id", existing.id);
 
         if (error) {
-          console.warn(`[sync] Update failed for ${mt.name}/${mt.language}:`, error.message);
+          console.warn(`[sync] Update failed for ${mt.name}/${lang}:`, error.message);
           failed++;
         } else {
           updated++;
         }
       } else {
-        // YOK → INSERT (Meta'dan gelen tam kayıt)
+        // YOK → INSERT (normalize edilmiş dil ile)
         const { error } = await (supabase as any)
           .from("message_templates")
           .insert({
             agency_id: agencyId,
             template_key: mt.name,
-            language: mt.language,
+            language: lang, // normalize: 'en'
             subject: mt.name.replace(/_/g, " "),
-            content,
+            content: content || mt.name,
             variables,
             is_active: mt.status === "APPROVED",
             meta_template_id: mt.id,
@@ -117,11 +136,11 @@ serve(async (req) => {
           });
 
         if (error) {
-          console.error(`[sync] Insert failed for ${mt.name}/${mt.language}:`, error.message);
+          console.error(`[sync] Insert failed for ${mt.name}/${lang}:`, error.message);
           failed++;
         } else {
           inserted++;
-          console.log(`[sync] Inserted new template: ${mt.name}/${mt.language}`);
+          console.log(`[sync] Inserted: ${mt.name}/${lang}`);
         }
       }
     }
