@@ -122,21 +122,15 @@ export default function MessageTemplates() {
   const fetchTemplates = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log("[Templates] auth user:", user?.id, user?.email);
       if (!user) return;
 
-      const { data: agency, error: agencyErr } = await supabase
+      const { data: agency } = await supabase
         .from('agencies')
-        .select('id, name')
+        .select('id')
         .eq('user_id', user.id)
         .single();
 
-      console.log("[Templates] agency lookup:", { agency, error: agencyErr });
-
-      if (!agency) {
-        console.warn("[Templates] No agency found for user — fetch aborted");
-        return;
-      }
+      if (!agency) return;
       setAgencyId(agency.id);
 
       const { data, error } = await (supabase as any)
@@ -146,15 +140,7 @@ export default function MessageTemplates() {
         .order('template_key')
         .order('language');
 
-      console.log("[Templates] fetched", data?.length, "templates for agency", agency.id);
-      console.log("[Templates] templates list:", data?.map((t: any) => ({
-        key: t.template_key, lang: t.language, status: t.meta_status, active: t.is_active
-      })));
-
-      if (error) {
-        console.error("[Templates] fetch error:", error);
-        throw error;
-      }
+      if (error) throw error;
       setTemplates(data || []);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
@@ -405,25 +391,6 @@ export default function MessageTemplates() {
           </Button>
         </div>
       </div>
-
-      {/* DEBUG paneli — sorun teşhisi için (sonra kaldırılacak) */}
-      <Card className="border-orange-500/40 bg-orange-500/5">
-        <CardContent className="pt-4 text-xs font-mono space-y-1">
-          <div><b>agencyId:</b> {agencyId || "(none)"}</div>
-          <div><b>total templates:</b> {templates.length}</div>
-          <div><b>selectedLanguage:</b> {selectedLanguage}</div>
-          <div><b>templateKeys:</b> [{templateKeys.join(", ")}]</div>
-          <div><b>EN tab templates:</b> {templates.filter(t => t.language === 'en').map(t => t.template_key).join(", ") || "(none)"}</div>
-          <div className="pt-1 border-t border-orange-500/20">
-            <b>Tüm satırlar:</b>
-            {templates.map((t, i) => (
-              <div key={i} className="ml-2">
-                {i + 1}. key=<b>{t.template_key}</b> lang=<b>{t.language}</b> status={t.meta_status || "-"} active={String(t.is_active)}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
       <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <TabsList className="grid grid-cols-7 w-full">
