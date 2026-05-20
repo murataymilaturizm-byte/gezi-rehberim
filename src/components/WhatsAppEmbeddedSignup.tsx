@@ -106,8 +106,8 @@ export function WhatsAppEmbeddedSignup({
   const handleEmbeddedSignup = useCallback(() => {
     if (!window.FB || !sdkLoaded) {
       toast({
-        title: "Hata",
-        description: "Facebook SDK yüklenemedi. Lütfen sayfayı yenileyin.",
+        title: t("whatsapp.connect.errorTitle"),
+        description: t("whatsapp.connect.sdkError"),
         variant: "destructive",
       });
       return;
@@ -124,8 +124,8 @@ export function WhatsAppEmbeddedSignup({
           console.error("[EmbeddedSignup] User cancelled or no authResponse", response);
           setLoading(false);
           toast({
-            title: "İptal Edildi",
-            description: "WhatsApp bağlantısı iptal edildi.",
+            title: t("whatsapp.connect.cancelled"),
+            description: t("whatsapp.connect.cancelledDesc"),
           });
         }
       },
@@ -140,7 +140,7 @@ export function WhatsAppEmbeddedSignup({
         },
       }
     );
-  }, [sdkLoaded, configId, agencyId]);
+  }, [sdkLoaded, configId, agencyId, t]);
 
   const exchangeToken = async (code: string) => {
     try {
@@ -156,18 +156,20 @@ export function WhatsAppEmbeddedSignup({
 
       if (data?.success) {
         toast({
-          title: "Başarılı! ✅",
-          description: `WhatsApp numaranız başarıyla bağlandı${data.phoneNumber ? `: ${data.phoneNumber}` : ""}`,
+          title: t("whatsapp.connect.success"),
+          description: data.phoneNumber
+            ? t("whatsapp.connect.successDescPhone", { phone: data.phoneNumber })
+            : t("whatsapp.connect.successDesc"),
         });
         onConnected();
       } else {
-        throw new Error(data?.error || "Bağlantı başarısız");
+        throw new Error(data?.error || "Connection failed");
       }
     } catch (err: any) {
       console.error("Token exchange error:", err);
       toast({
-        title: "Hata",
-        description: "WhatsApp bağlantısı sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+        title: t("whatsapp.connect.errorTitle"),
+        description: t("whatsapp.connect.exchangeError"),
         variant: "destructive",
       });
     } finally {
@@ -193,14 +195,14 @@ export function WhatsAppEmbeddedSignup({
       if (error) throw error;
 
       toast({
-        title: "Bağlantı Kaldırıldı",
-        description: "WhatsApp bağlantınız kaldırıldı.",
+        title: t("whatsapp.connect.disconnected"),
+        description: t("whatsapp.connect.disconnectedDesc"),
       });
       onConnected();
     } catch (err) {
       toast({
-        title: "Hata",
-        description: "Bağlantı kaldırılırken bir hata oluştu.",
+        title: t("whatsapp.connect.errorTitle"),
+        description: t("whatsapp.connect.disconnectError"),
         variant: "destructive",
       });
     } finally {
@@ -213,11 +215,10 @@ export function WhatsAppEmbeddedSignup({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
-          WhatsApp Numaranızı Bağlayın
+          {t("whatsapp.connect.cardTitle")}
         </CardTitle>
         <CardDescription>
-          Meta Embedded Signup ile WhatsApp Business numaranızı birkaç adımda bağlayın.
-          Teknik bilgi gerektirmez.
+          {t("whatsapp.connect.cardDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -226,15 +227,15 @@ export function WhatsAppEmbeddedSignup({
             <Alert className="border-green-500/50 bg-green-500/10">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               <AlertDescription className="text-green-600">
-                <span className="font-medium">WhatsApp bağlantısı aktif!</span>
+                <span className="font-medium">{t("whatsapp.connect.activeTitle")}</span>
                 <br />
-                <span className="text-sm">Numara: {currentPhone}</span>
+                <span className="text-sm">{t("whatsapp.connect.activeNumber")}: {currentPhone}</span>
               </AlertDescription>
             </Alert>
 
             <div className="flex gap-2">
               <Badge variant="default" className="bg-green-600">
-                <CheckCircle2 className="h-3 w-3 mr-1" /> Bağlı
+                <CheckCircle2 className="h-3 w-3 mr-1" /> {t("whatsapp.connect.connected")}
               </Badge>
             </div>
 
@@ -250,7 +251,7 @@ export function WhatsAppEmbeddedSignup({
               ) : (
                 <Unlink className="h-4 w-4 mr-1" />
               )}
-              Bağlantıyı Kaldır
+              {t("whatsapp.connect.disconnect")}
             </Button>
           </>
         ) : (
@@ -258,10 +259,9 @@ export function WhatsAppEmbeddedSignup({
             <div className="rounded-lg border border-dashed p-6 text-center space-y-4">
               <Smartphone className="h-12 w-12 mx-auto text-muted-foreground" />
               <div>
-                <h4 className="font-semibold">WhatsApp Business Numaranızı Bağlayın</h4>
+                <h4 className="font-semibold">{t("whatsapp.connect.h4Title")}</h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Aşağıdaki butona tıklayın, Meta hesabınızla giriş yapın ve
-                  WhatsApp Business numaranızı seçin. İşlem birkaç dakika sürer.
+                  {t("whatsapp.connect.h4Desc")}
                 </p>
               </div>
 
@@ -283,7 +283,7 @@ export function WhatsAppEmbeddedSignup({
                     <MessageSquare className="h-5 w-5 mr-2" />
                   )}
                   {loading
-                    ? "Bağlanıyor..."
+                    ? t("whatsapp.connect.connecting")
                     : !sdkLoaded
                       ? t("whatsapp.sdkLoading")
                       : t("whatsapp.connectButton")}
@@ -292,13 +292,8 @@ export function WhatsAppEmbeddedSignup({
             </div>
 
             <div className="text-xs text-muted-foreground space-y-1">
-              <p>
-                📌 <strong>Not:</strong> Bu işlem için bir Meta Business hesabınızın olması gerekir.
-                Hesabınız yoksa, işlem sırasında otomatik oluşturulur.
-              </p>
-              <p>
-                🔒 Bilgileriniz güvenli şekilde saklanır ve yalnızca WhatsApp mesajlaşma için kullanılır.
-              </p>
+              <p>{t("whatsapp.connect.note")}</p>
+              <p>{t("whatsapp.connect.security")}</p>
             </div>
           </>
         )}

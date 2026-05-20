@@ -2885,6 +2885,30 @@
   "whatsapp": {
     "configError": "Impossible de charger la configuration WhatsApp. Veuillez réessayer plus tard.",
     "sdkLoading": "Chargement...",
-    "connectButton": "Connecter mon numéro WhatsApp"
+    "connectButton": "Connecter mon numéro WhatsApp",
+    "connect": {
+      "cardTitle": "Connecter votre numéro WhatsApp",
+      "cardDescription": "Connectez votre numéro WhatsApp Business en quelques étapes avec Meta Embedded Signup. Aucune connaissance technique requise.",
+      "activeTitle": "La connexion WhatsApp est active !",
+      "activeNumber": "Numéro",
+      "connected": "Connecté",
+      "disconnect": "Déconnecter",
+      "h4Title": "Connecter votre numéro WhatsApp Business",
+      "h4Desc": "Cliquez sur le bouton, connectez-vous avec votre compte Meta et sélectionnez votre numéro WhatsApp Business. Le processus prend quelques minutes.",
+      "connecting": "Connexion...",
+      "note": "Remarque : Vous avez besoin d'un compte Meta Business. S'il n'existe pas, il sera créé automatiquement.",
+      "security": "Vos informations sont stockées en toute sécurité et utilisées uniquement pour la messagerie WhatsApp.",
+      "sdkError": "Le SDK Facebook n'a pas pu être chargé. Veuillez actualiser la page.",
+      "cancelled": "Annulé",
+      "cancelledDesc": "La connexion WhatsApp a été annulée.",
+      "success": "Succès !",
+      "successDesc": "Votre numéro WhatsApp a été connecté avec succès",
+      "successDescPhone": "Votre numéro WhatsApp a été connecté avec succès : {{phone}}",
+      "errorTitle": "Erreur",
+      "exchangeError": "Une erreur s'est produite lors de la connexion WhatsApp. Veuillez réessayer.",
+      "disconnected": "Déconnecté",
+      "disconnectedDesc": "Votre connexion WhatsApp a été supprimée.",
+      "disconnectError": "Une erreur s'est produite lors de la suppression de la connexion."
+    }
   }
 }

@@ -782,7 +782,39 @@
         "lastSearchQuery": "Last Search",
         "notSpecified": "Not Specified",
         "messagesPerDay": "Messages/Day",
-        "activeDays": "Active Days"
+        "activeDays": "Active Days",
+        "tabs": {
+          "profile": "Profile Info",
+          "preferences": "Preferences",
+          "tags": "Tags",
+          "conversations": "Conversation History"
+        },
+        "salesStats": "Sales Statistics",
+        "totalBookings": "Total Bookings",
+        "totalSpent": "Total Spent",
+        "averageSpending": "Average Spending",
+        "communicationMetrics": "Communication Metrics",
+        "dailyAverage": "Daily Average",
+        "firstInteraction": "First Interaction",
+        "lastInteraction": "Last Interaction",
+        "preferencesInterests": "Preferences & Interests",
+        "interestedDestinations": "Interested Destinations",
+        "lastSearch": "Last Search",
+        "customerSatisfaction": "Customer Satisfaction",
+        "feedbackScore": "Feedback Score",
+        "feedbackComment": "Comment",
+        "noFeedback": "No feedback yet",
+        "customerTags": "Customer Tags",
+        "addTag": "Add Tag",
+        "tagAdded": "Tag added",
+        "tagRemoved": "Tag removed",
+        "tagError": "Tag operation failed",
+        "conversationHistory": "Conversation History",
+        "loadingConversations": "Loading conversations...",
+        "noConversations": "No conversations yet",
+        "conversationError": "Error loading conversations",
+        "customer": "Customer",
+        "assistant": "Assistant"
       },
       "status": {
         "pending": "Pending",
@@ -2739,6 +2771,30 @@
   "whatsapp": {
     "configError": "Failed to load WhatsApp configuration. Please try again later.",
     "sdkLoading": "Loading...",
-    "connectButton": "Connect My WhatsApp Number"
+    "connectButton": "Connect My WhatsApp Number",
+    "connect": {
+      "cardTitle": "Connect Your WhatsApp Number",
+      "cardDescription": "Connect your WhatsApp Business number in a few steps with Meta Embedded Signup. No technical knowledge required.",
+      "activeTitle": "WhatsApp connection is active!",
+      "activeNumber": "Number",
+      "connected": "Connected",
+      "disconnect": "Disconnect",
+      "h4Title": "Connect Your WhatsApp Business Number",
+      "h4Desc": "Click the button below, log in with your Meta account and select your WhatsApp Business number. The process takes a few minutes.",
+      "connecting": "Connecting...",
+      "note": "Note: You need a Meta Business account for this process. If you do not have one, it will be created automatically during the process.",
+      "security": "Your information is stored securely and used only for WhatsApp messaging.",
+      "sdkError": "Facebook SDK could not be loaded. Please refresh the page.",
+      "cancelled": "Cancelled",
+      "cancelledDesc": "WhatsApp connection was cancelled.",
+      "success": "Success!",
+      "successDesc": "Your WhatsApp number was connected successfully",
+      "successDescPhone": "Your WhatsApp number was connected successfully: {{phone}}",
+      "errorTitle": "Error",
+      "exchangeError": "An error occurred during WhatsApp connection. Please try again.",
+      "disconnected": "Disconnected",
+      "disconnectedDesc": "Your WhatsApp connection has been removed.",
+      "disconnectError": "An error occurred while removing the connection."
+    }
   }
 }

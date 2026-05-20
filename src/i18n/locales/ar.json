@@ -2885,6 +2885,30 @@
   "whatsapp": {
     "configError": "فشل تحميل إعدادات WhatsApp. يرجى المحاولة مرة أخرى لاحقاً.",
     "sdkLoading": "جارٍ التحميل...",
-    "connectButton": "ربط رقم واتساب الخاص بي"
+    "connectButton": "ربط رقم واتساب الخاص بي",
+    "connect": {
+      "cardTitle": "ربط رقم واتساب الخاص بك",
+      "cardDescription": "اربط رقم واتساب Business الخاص بك في خطوات قليلة باستخدام Meta Embedded Signup. لا تتطلب معرفة تقنية.",
+      "activeTitle": "اتصال واتساب نشط!",
+      "activeNumber": "الرقم",
+      "connected": "متصل",
+      "disconnect": "قطع الاتصال",
+      "h4Title": "ربط رقم واتساب Business الخاص بك",
+      "h4Desc": "انقر على الزر، سجّل الدخول بحساب Meta واختر رقم واتساب Business. تستغرق العملية بضع دقائق.",
+      "connecting": "جارٍ الاتصال...",
+      "note": "ملاحظة: تحتاج إلى حساب Meta Business. إذا لم يكن لديك حساب، سيتم إنشاؤه تلقائياً.",
+      "security": "تُحفظ معلوماتك بأمان وتُستخدم فقط لمراسلة واتساب.",
+      "sdkError": "تعذّر تحميل Facebook SDK. يرجى تحديث الصفحة.",
+      "cancelled": "ملغى",
+      "cancelledDesc": "تم إلغاء اتصال واتساب.",
+      "success": "نجاح!",
+      "successDesc": "تم ربط رقم واتساب الخاص بك بنجاح",
+      "successDescPhone": "تم ربط رقم واتساب الخاص بك بنجاح: {{phone}}",
+      "errorTitle": "خطأ",
+      "exchangeError": "حدث خطأ أثناء اتصال واتساب. يرجى المحاولة مرة أخرى.",
+      "disconnected": "تم قطع الاتصال",
+      "disconnectedDesc": "تم إزالة اتصال واتساب الخاص بك.",
+      "disconnectError": "حدث خطأ أثناء إزالة الاتصال."
+    }
   }
 }

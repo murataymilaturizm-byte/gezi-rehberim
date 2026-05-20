@@ -2854,6 +2854,30 @@
   "whatsapp": {
     "configError": "WhatsApp yapılandırması yüklenemedi. Lütfen daha sonra tekrar deneyin.",
     "sdkLoading": "Yükleniyor...",
-    "connectButton": "WhatsApp Numaramı Bağla"
+    "connectButton": "WhatsApp Numaramı Bağla",
+    "connect": {
+      "cardTitle": "WhatsApp Numaranızı Bağlayın",
+      "cardDescription": "Meta Embedded Signup ile WhatsApp Business numaranızı birkaç adımda bağlayın. Teknik bilgi gerektirmez.",
+      "activeTitle": "WhatsApp bağlantısı aktif!",
+      "activeNumber": "Numara",
+      "connected": "Bağlı",
+      "disconnect": "Bağlantıyı Kaldır",
+      "h4Title": "WhatsApp Business Numaranızı Bağlayın",
+      "h4Desc": "Aşağıdaki butona tıklayın, Meta hesabınızla giriş yapın ve WhatsApp Business numaranızı seçin. İşlem birkaç dakika sürer.",
+      "connecting": "Bağlanıyor...",
+      "note": "Not: Bu işlem için bir Meta Business hesabınızın olması gerekir. Hesabınız yoksa, işlem sırasında otomatik oluşturulur.",
+      "security": "Bilgileriniz güvenli şekilde saklanır ve yalnızca WhatsApp mesajlaşma için kullanılır.",
+      "sdkError": "Facebook SDK yüklenemedi. Lütfen sayfayı yenileyin.",
+      "cancelled": "İptal Edildi",
+      "cancelledDesc": "WhatsApp bağlantısı iptal edildi.",
+      "success": "Başarılı!",
+      "successDesc": "WhatsApp numaranız başarıyla bağlandı",
+      "successDescPhone": "WhatsApp numaranız başarıyla bağlandı: {{phone}}",
+      "errorTitle": "Hata",
+      "exchangeError": "WhatsApp bağlantısı sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+      "disconnected": "Bağlantı Kaldırıldı",
+      "disconnectedDesc": "WhatsApp bağlantınız kaldırıldı.",
+      "disconnectError": "Bağlantı kaldırılırken bir hata oluştu."
+    }
   }
 }

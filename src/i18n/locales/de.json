@@ -2679,8 +2679,32 @@
     }
   },
   "whatsapp": {
-    "configError": "WhatsApp-Konfiguration konnte nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "configError": "WhatsApp-Konfiguration konnte nicht geladen werden. Bitte später erneut versuchen.",
     "sdkLoading": "Wird geladen...",
-    "connectButton": "Meine WhatsApp-Nummer verbinden"
+    "connectButton": "Meine WhatsApp-Nummer verbinden",
+    "connect": {
+      "cardTitle": "Ihre WhatsApp-Nummer verbinden",
+      "cardDescription": "Verbinden Sie Ihre WhatsApp Business-Nummer in wenigen Schritten mit Meta Embedded Signup. Kein technisches Wissen erforderlich.",
+      "activeTitle": "WhatsApp-Verbindung ist aktiv!",
+      "activeNumber": "Nummer",
+      "connected": "Verbunden",
+      "disconnect": "Verbindung trennen",
+      "h4Title": "Ihre WhatsApp Business-Nummer verbinden",
+      "h4Desc": "Klicken Sie auf die Schaltfläche, melden Sie sich mit Ihrem Meta-Konto an und wählen Sie Ihre WhatsApp Business-Nummer. Der Vorgang dauert einige Minuten.",
+      "connecting": "Verbinden...",
+      "note": "Hinweis: Für diesen Vorgang benötigen Sie ein Meta Business-Konto. Falls Sie keines haben, wird es automatisch erstellt.",
+      "security": "Ihre Daten werden sicher gespeichert und nur für WhatsApp-Nachrichten verwendet.",
+      "sdkError": "Facebook SDK konnte nicht geladen werden. Bitte aktualisieren Sie die Seite.",
+      "cancelled": "Abgebrochen",
+      "cancelledDesc": "WhatsApp-Verbindung wurde abgebrochen.",
+      "success": "Erfolgreich!",
+      "successDesc": "Ihre WhatsApp-Nummer wurde erfolgreich verbunden",
+      "successDescPhone": "Ihre WhatsApp-Nummer wurde erfolgreich verbunden: {{phone}}",
+      "errorTitle": "Fehler",
+      "exchangeError": "Bei der WhatsApp-Verbindung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+      "disconnected": "Verbindung getrennt",
+      "disconnectedDesc": "Ihre WhatsApp-Verbindung wurde entfernt.",
+      "disconnectError": "Beim Trennen der Verbindung ist ein Fehler aufgetreten."
+    }
   }
 }

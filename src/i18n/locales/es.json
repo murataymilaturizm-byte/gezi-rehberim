@@ -2680,6 +2680,30 @@
   "whatsapp": {
     "configError": "No se pudo cargar la configuración de WhatsApp. Por favor, inténtelo más tarde.",
     "sdkLoading": "Cargando...",
-    "connectButton": "Conectar mi número de WhatsApp"
+    "connectButton": "Conectar mi número de WhatsApp",
+    "connect": {
+      "cardTitle": "Conectar su número de WhatsApp",
+      "cardDescription": "Conecte su número de WhatsApp Business en pocos pasos con Meta Embedded Signup. No se requieren conocimientos técnicos.",
+      "activeTitle": "¡La conexión de WhatsApp está activa!",
+      "activeNumber": "Número",
+      "connected": "Conectado",
+      "disconnect": "Desconectar",
+      "h4Title": "Conectar su número de WhatsApp Business",
+      "h4Desc": "Haga clic en el botón, inicie sesión con su cuenta Meta y seleccione su número de WhatsApp Business. El proceso toma unos minutos.",
+      "connecting": "Conectando...",
+      "note": "Nota: Necesita una cuenta de Meta Business. Si no tiene una, se creará automáticamente.",
+      "security": "Su información se almacena de forma segura y se utiliza únicamente para mensajería de WhatsApp.",
+      "sdkError": "No se pudo cargar el SDK de Facebook. Por favor, actualice la página.",
+      "cancelled": "Cancelado",
+      "cancelledDesc": "La conexión de WhatsApp fue cancelada.",
+      "success": "¡Éxito!",
+      "successDesc": "Su número de WhatsApp se conectó correctamente",
+      "successDescPhone": "Su número de WhatsApp se conectó correctamente: {{phone}}",
+      "errorTitle": "Error",
+      "exchangeError": "Ocurrió un error durante la conexión de WhatsApp. Por favor, inténtelo de nuevo.",
+      "disconnected": "Desconectado",
+      "disconnectedDesc": "Su conexión de WhatsApp ha sido eliminada.",
+      "disconnectError": "Ocurrió un error al eliminar la conexión."
+    }
   }
 }

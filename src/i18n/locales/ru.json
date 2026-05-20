@@ -2680,6 +2680,30 @@
   "whatsapp": {
     "configError": "Не удалось загрузить конфигурацию WhatsApp. Повторите попытку позже.",
     "sdkLoading": "Загрузка...",
-    "connectButton": "Подключить номер WhatsApp"
+    "connectButton": "Подключить мой номер WhatsApp",
+    "connect": {
+      "cardTitle": "Подключить ваш номер WhatsApp",
+      "cardDescription": "Подключите свой номер WhatsApp Business за несколько шагов с помощью Meta Embedded Signup. Технические знания не требуются.",
+      "activeTitle": "Подключение WhatsApp активно!",
+      "activeNumber": "Номер",
+      "connected": "Подключено",
+      "disconnect": "Отключить",
+      "h4Title": "Подключить номер WhatsApp Business",
+      "h4Desc": "Нажмите кнопку, войдите в учётную запись Meta и выберите номер WhatsApp Business. Процесс занимает несколько минут.",
+      "connecting": "Подключение...",
+      "note": "Примечание: Нужна учётная запись Meta Business. Если её нет, она будет создана автоматически.",
+      "security": "Ваши данные хранятся в безопасности и используются только для сообщений WhatsApp.",
+      "sdkError": "Не удалось загрузить Facebook SDK. Пожалуйста, обновите страницу.",
+      "cancelled": "Отменено",
+      "cancelledDesc": "Подключение WhatsApp было отменено.",
+      "success": "Успешно!",
+      "successDesc": "Ваш номер WhatsApp успешно подключён",
+      "successDescPhone": "Ваш номер WhatsApp успешно подключён: {{phone}}",
+      "errorTitle": "Ошибка",
+      "exchangeError": "При подключении WhatsApp произошла ошибка. Пожалуйста, попробуйте снова.",
+      "disconnected": "Отключено",
+      "disconnectedDesc": "Ваше подключение WhatsApp было удалено.",
+      "disconnectError": "При удалении подключения произошла ошибка."
+    }
   }
 }
