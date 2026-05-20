@@ -2954,7 +2954,8 @@
       "exchangeError": "WhatsApp bağlantısı sırasında bir hata oluştu. Lütfen tekrar deneyin.",
       "disconnected": "Bağlantı Kaldırıldı",
       "disconnectedDesc": "WhatsApp bağlantınız kaldırıldı.",
-      "disconnectError": "Bağlantı kaldırılırken bir hata oluştu."
+      "disconnectError": "Bağlantı kaldırılırken bir hata oluştu.",
+      "numberConnected": "Numaranız bağlı"
     },
     "connectionInfo": {
       "title": "Bağlantı Bilgileri",
@@ -2972,6 +2973,14 @@
       "title": "Desteğe ihtiyacınız mı var?",
       "subtitle": "Entegrasyon sürecinde yardıma ihtiyaç duyarsanız bize ulaşın",
       "contactNote": "WhatsApp veya telefon ile destek alın"
+    },
+    "disconnect": {
+      "title": "WhatsApp Bağlantısını Kopar?",
+      "description": "WhatsApp Business bağlantınız kaldırılacak. Yeniden bağlanana kadar müşteriler size mesaj gönderemez. Konuşma geçmişiniz korunur.",
+      "confirm": "Evet, Bağlantıyı Kopar",
+      "disconnecting": "Kopuyor...",
+      "success": "WhatsApp bağlantısı koparıldı",
+      "error": "Bağlantı koparılamadı"
     }
   }
 }

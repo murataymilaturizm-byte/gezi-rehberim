@@ -3028,7 +3028,8 @@
       "exchangeError": "An error occurred during WhatsApp connection. Please try again.",
       "disconnected": "Disconnected",
       "disconnectedDesc": "Your WhatsApp connection has been removed.",
-      "disconnectError": "An error occurred while removing the connection."
+      "disconnectError": "An error occurred while removing the connection.",
+      "numberConnected": "Your number is connected"
     },
     "connectionInfo": {
       "title": "Connection Information",
@@ -3046,6 +3047,14 @@
       "title": "Need help?",
       "subtitle": "Contact us if you need assistance during the integration process",
       "contactNote": "Get support via WhatsApp or phone"
+    },
+    "disconnect": {
+      "title": "Disconnect WhatsApp?",
+      "description": "Your WhatsApp Business connection will be removed. Customers will not be able to message you until you reconnect. Your conversation history will be preserved.",
+      "confirm": "Yes, Disconnect",
+      "disconnecting": "Disconnecting...",
+      "success": "WhatsApp disconnected successfully",
+      "error": "Could not disconnect WhatsApp"
     }
   }
 }

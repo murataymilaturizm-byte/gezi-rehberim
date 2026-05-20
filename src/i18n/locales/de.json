@@ -2983,7 +2983,8 @@
       "exchangeError": "Bei der WhatsApp-Verbindung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "disconnected": "Verbindung getrennt",
       "disconnectedDesc": "Ihre WhatsApp-Verbindung wurde entfernt.",
-      "disconnectError": "Beim Trennen der Verbindung ist ein Fehler aufgetreten."
+      "disconnectError": "Beim Trennen der Verbindung ist ein Fehler aufgetreten.",
+      "numberConnected": "Ihre Nummer ist verbunden"
     },
     "connectionInfo": {
       "title": "Verbindungsinformationen",
@@ -3001,6 +3002,14 @@
       "title": "Benötigen Sie Hilfe?",
       "subtitle": "Kontaktieren Sie uns, wenn Sie während des Integrationsprozesses Hilfe benötigen",
       "contactNote": "Erhalten Sie Support per WhatsApp oder Telefon"
+    },
+    "disconnect": {
+      "title": "WhatsApp-Verbindung trennen?",
+      "description": "Ihre WhatsApp Business-Verbindung wird getrennt. Kunden können Ihnen keine Nachrichten senden, bis Sie sich erneut verbinden. Ihr Gesprächsverlauf bleibt erhalten.",
+      "confirm": "Ja, Verbindung trennen",
+      "disconnecting": "Wird getrennt...",
+      "success": "WhatsApp erfolgreich getrennt",
+      "error": "Verbindung konnte nicht getrennt werden"
     }
   }
 }

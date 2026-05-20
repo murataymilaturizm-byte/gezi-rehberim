@@ -2987,7 +2987,8 @@
       "exchangeError": "Une erreur s'est produite lors de la connexion WhatsApp. Veuillez réessayer.",
       "disconnected": "Déconnecté",
       "disconnectedDesc": "Votre connexion WhatsApp a été supprimée.",
-      "disconnectError": "Une erreur s'est produite lors de la suppression de la connexion."
+      "disconnectError": "Une erreur s'est produite lors de la suppression de la connexion.",
+      "numberConnected": "Votre numéro est connecté"
     },
     "connectionInfo": {
       "title": "Informations de connexion",
@@ -3005,6 +3006,14 @@
       "title": "Besoin d'aide ?",
       "subtitle": "Contactez-nous si vous avez besoin d'aide pendant le processus d'intégration",
       "contactNote": "Obtenez de l'aide via WhatsApp ou par téléphone"
+    },
+    "disconnect": {
+      "title": "Déconnecter WhatsApp ?",
+      "description": "Votre connexion WhatsApp Business sera supprimée. Les clients ne pourront pas vous envoyer de messages jusqu'à ce que vous vous reconnectiez. Votre historique de conversation sera conservé.",
+      "confirm": "Oui, déconnecter",
+      "disconnecting": "Déconnexion...",
+      "success": "WhatsApp déconnecté avec succès",
+      "error": "Impossible de déconnecter WhatsApp"
     }
   }
 }

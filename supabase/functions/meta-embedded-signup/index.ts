@@ -180,6 +180,66 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Disconnect WhatsApp — Meta bilgilerini temizle
+    if (action === "disconnect") {
+      const { agencyId } = body;
+
+      if (!agencyId) {
+        return new Response(
+          JSON.stringify({ error: "agencyId required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Agency sahipliği doğrula
+      const { data: agencyCheck } = await supabase
+        .from("agencies")
+        .select("id")
+        .eq("id", agencyId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (!agencyCheck) {
+        return new Response(
+          JSON.stringify({ error: "Agency not found or unauthorized" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { error: agencyError } = await supabase
+        .from("agencies")
+        .update({
+          meta_access_token: null,
+          meta_phone_number_id: null,
+          meta_waba_id: null,
+          whatsapp_phone_number: null,
+          whatsapp_status: "pending",
+          whatsapp_connected_at: null,
+        })
+        .eq("id", agencyId);
+
+      if (agencyError) {
+        console.error("[disconnect] Agency update failed:", agencyError);
+        return new Response(
+          JSON.stringify({ error: "Failed to disconnect" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // whatsapp_integrations tablosunu da temizle
+      await supabase
+        .from("whatsapp_integrations")
+        .update({ status: "pending", meta_access_token: null, meta_phone_number_id: null, meta_waba_id: null, whatsapp_phone: null })
+        .eq("agency_id", agencyId);
+
+      console.info("[disconnect] WhatsApp disconnected for agency:", agencyId);
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: "Unknown action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

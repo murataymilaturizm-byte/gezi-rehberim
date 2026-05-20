@@ -34,6 +34,7 @@ export const WhatsAppSettings = () => {
     conversation_style: "kurumsal" as 'standart' | 'kurumsal' | 'dinamik' | 'premium'
   });
 
+  const [whatsappPhone, setWhatsappPhone] = useState<string | null>(null);
   const [collectEmail, setCollectEmail] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
 
@@ -68,10 +69,11 @@ export const WhatsAppSettings = () => {
         const phoneNumber = agencyData.whatsapp_phone_number || "";
         const status = agencyData.whatsapp_status || "pending";
         const connectedAt = agencyData.whatsapp_connected_at;
-        
+
         const configured = phoneNumber !== "" && connectedAt !== null;
         setIsConfigured(configured);
         setWhatsappStatus(status as 'pending' | 'active' | 'rejected');
+        setWhatsappPhone(phoneNumber || null);
 
         setFormData({
           conversation_style: (agencyData.conversation_style || 'kurumsal') as 'standart' | 'kurumsal' | 'dinamik' | 'premium'
@@ -162,7 +164,7 @@ export const WhatsAppSettings = () => {
         <WhatsAppEmbeddedSignup
           agencyId={agencyId}
           currentStatus={whatsappStatus}
-          currentPhone={null}
+          currentPhone={whatsappPhone}
           onConnected={loadWhatsAppSettings}
         />
       )}
