@@ -565,36 +565,36 @@ const Admin = () => {
           if (messageError) {
             console.error('Template message error:', messageError);
             toast({
-              title: "Uyarı",
-              description: "Durum güncellendi ama WhatsApp mesajı gönderilemedi",
+              title: t("common.warning"),
+              description: t("admin.registrations.statusUpdateWarning"),
               variant: "default",
             });
           } else {
             toast({
-              title: "Başarılı! ✅",
-              description: `Kayıt durumu güncellendi ve müşteriye WhatsApp mesajı gönderildi`,
+              title: t("common.successTitle"),
+              description: t("admin.registrations.statusUpdatedWithMsg"),
             });
           }
         } catch (msgError) {
           console.error('Message send error:', msgError);
           toast({
-            title: "Başarılı! ✅",
-            description: "Kayıt durumu güncellendi (mesaj gönderilemedi)",
+            title: t("common.successTitle"),
+            description: t("admin.registrations.statusUpdatedNoMsg"),
           });
         }
       } else {
         toast({
-          title: "Başarılı! ✅",
-          description: "Kayıt durumu güncellendi",
+          title: t("common.successTitle"),
+          description: t("admin.registrations.statusUpdated"),
         });
       }
-      
+
       loadData();
     } catch (error) {
       console.error("Update status error:", error);
       toast({
-        title: "Hata",
-        description: "Durum güncellenemedi",
+        title: t("common.error"),
+        description: t("admin.registrations.statusUpdateError"),
         variant: "destructive"
       });
     }
@@ -604,15 +604,15 @@ const Admin = () => {
     try {
       await supabase.auth.signOut();
       toast({
-        title: "Başarılı! ✅",
-        description: "Çıkış yapıldı",
+        title: t("common.successTitle"),
+        description: t("auth.loggedOut"),
       });
       navigate("/auth");
     } catch (error) {
       console.error("Logout error:", error);
       toast({
-        title: "Hata",
-        description: "Çıkış yapılamadı",
+        title: t("common.error"),
+        description: t("auth.logoutFailed"),
         variant: "destructive"
       });
     }

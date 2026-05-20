@@ -74,6 +74,21 @@
       "title": "Mehrsprachiger Support",
       "description": "Bedienen Sie Ihre Kunden in 7 verschiedenen Sprachen",
       "metric": "Fließende Kommunikation in 7 Sprachen"
+    },
+    "reservation": {
+      "title": "KI-gestützte Reservierung",
+      "description": "Kunden können Reservierungen rund um die Uhr über WhatsApp in 7 Sprachen abschließen.",
+      "metric": "24/7 Automatisiert"
+    },
+    "reminders": {
+      "title": "Automatische Erinnerungen",
+      "description": "Automatische Erinnerungen vor der Tour und Feedback-Anfragen nach der Tour.",
+      "metric": "3x Höhere Interaktion"
+    },
+    "payment": {
+      "title": "Zahlungsanweisungen",
+      "description": "Zahlungsdetails werden nach der Reservierungsbestätigung automatisch gesendet.",
+      "metric": "Sofortige Benachrichtigung"
     }
   },
   "howItWorks": {
@@ -494,7 +509,11 @@
       "all": "Alle",
       "allStatuses": "Alle Status",
       "allTours": "Alle Touren",
-      "clear": "Filter löschen"
+      "clear": "Filter löschen",
+      "title": "Filter",
+      "tourDate": "Reisedatum",
+      "sourceChannel": "Kanal",
+      "allDates": "Alle Daten"
     },
     "payment": {
       "success": "Zahlung Erfolgreich! 🎉",
@@ -779,7 +798,39 @@
         "lastSearchQuery": "Letzte Suche",
         "notSpecified": "Nicht Angegeben",
         "messagesPerDay": "Nachrichten/Tag",
-        "activeDays": "Aktive Tage"
+        "activeDays": "Aktive Tage",
+        "tabs": {
+          "profile": "Profilinformationen",
+          "preferences": "Präferenzen",
+          "tags": "Tags",
+          "conversations": "Gesprächsverlauf"
+        },
+        "salesStats": "Verkaufsstatistiken",
+        "totalBookings": "Gesamtbuchungen",
+        "totalSpent": "Gesamtausgaben",
+        "averageSpending": "Durchschnittliche Ausgaben",
+        "communicationMetrics": "Kommunikationsstatistiken",
+        "dailyAverage": "Tagesdurchschnitt",
+        "firstInteraction": "Erste Interaktion",
+        "lastInteraction": "Letzte Interaktion",
+        "preferencesInterests": "Präferenzen & Interessen",
+        "interestedDestinations": "Interessante Reiseziele",
+        "lastSearch": "Letzte Suche",
+        "customerSatisfaction": "Kundenzufriedenheit",
+        "feedbackScore": "Bewertungspunkt",
+        "feedbackComment": "Kommentar",
+        "noFeedback": "Noch kein Feedback",
+        "customerTags": "Kunden-Tags",
+        "addTag": "Tag hinzufügen",
+        "tagAdded": "Tag hinzugefügt",
+        "tagRemoved": "Tag entfernt",
+        "tagError": "Tag-Vorgang fehlgeschlagen",
+        "conversationHistory": "Gesprächsverlauf",
+        "loadingConversations": "Gespräche werden geladen...",
+        "noConversations": "Noch keine Gespräche",
+        "conversationError": "Fehler beim Laden der Gespräche",
+        "customer": "Kunde",
+        "assistant": "Assistent"
       },
       "status": {
         "pending": "Ausstehend",
@@ -885,7 +936,59 @@
       "conversationHistory": "30 Tage Gesprächsverlauf",
       "emailSupport": "E-Mail-Support",
       "revenueGrowthTrend": "Umsatz- und Wachstumstrend",
-      "superAdminDescription": "Überwachen Sie den allgemeinen Status und die Nutzungsstatistiken aller Agenturen hier. Verwenden Sie die Registerkarte 'Agenturen' für eine detaillierte Verwaltung."
+      "superAdminDescription": "Überwachen Sie den allgemeinen Status und die Nutzungsstatistiken aller Agenturen hier. Verwenden Sie die Registerkarte 'Agenturen' für eine detaillierte Verwaltung.",
+      "filterByDate": "Nach Datum filtern",
+      "allTime": "Alle Zeiten",
+      "today": "Heute",
+      "thisWeek": "Diese Woche",
+      "thisMonth": "Diesen Monat",
+      "yearlyRevenue": "Jahresumsatz (Schätzung)",
+      "totalPotentialYearlyRevenue": "Gesamtes potenzielles Jahreseinkommen",
+      "totalActiveAgencies": "Aktive Agenturen gesamt:",
+      "avgAgencyValue": "Durchschnittlicher Agentureinkommen:",
+      "revenueTrend": "Umsatztrend",
+      "monthlyRevenueLabel": "Monatlicher Umsatz",
+      "newAgencies": "Neue Agenturen",
+      "last": "Letzte",
+      "months": "Monate",
+      "geographicDistribution": "Geografische Verteilung",
+      "topCitiesByAgencies": "Top-Städte nach Agenturen",
+      "location": "Standort",
+      "agencyCount": "Anzahl der Agenturen",
+      "plans": "Pläne:",
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise",
+      "unspecified": "Nicht angegeben",
+      "noData": "Keine Daten",
+      "active": "aktiv",
+      "inactive": "inaktiv",
+      "trialVersion": "Testversion",
+      "agenciesInTrial": "Agenturen im Test",
+      "totalMessages": "Nachrichten gesamt",
+      "messagesUsedThisMonth": "Diesen Monat verwendete Nachrichten",
+      "yearlyValueText": "Jahreswert der aktuellen kostenpflichtigen Abonnements",
+      "realPaymentDataAnalysis": "Analyse auf Basis echter Zahlungsdaten",
+      "filters": "Filter",
+      "dateRange": "Datumsbereich",
+      "last3Months": "Letzte 3 Monate",
+      "last6Months": "Letzte 6 Monate",
+      "last12Months": "Letzte 12 Monate",
+      "last24Months": "Letzte 24 Monate",
+      "planTypes": "Plantypen",
+      "starterPlanPrice": "Starter",
+      "professionalPlanPrice": "Professional",
+      "enterprisePlanPrice": "Enterprise",
+      "compareWithPrevious": "Mit Vorperiode vergleichen",
+      "revenue": "Umsatz",
+      "activeFilter": "Aktiver Filter:",
+      "only": "Nur",
+      "plansShowing": "Pläne angezeigt",
+      "geographicDistributionTitle": "Geografische Verteilung der Agenturen",
+      "geographicDistributionDesc": "Verteilung der Agenturen nach Stadt und Region (Top 10 Standorte)",
+      "agencies": "Agenturen",
+      "noLocationInfo": "Keine Standortdaten gefunden",
+      "noLocationInfoDesc": "Noch keine Agentur hat Standortdaten eingegeben."
     },
     "toast": {
       "success": "Erfolgreich! ✅",
@@ -912,7 +1015,12 @@
       "deleteSuccess": "Tour gelöscht",
       "deleteError": "Löschvorgang fehlgeschlagen",
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Tour löschen möchten?",
-      "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden."
+      "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "perPerson": "pro Person",
+      "quotaFull": "Kontingent voll",
+      "otherDates": "Andere Termine:",
+      "program": "Programm",
+      "preRegistration": "Vorregistrierung"
     },
     "planLimits": {
       "tourLimitReached": "Tourlimit erreicht",
@@ -957,7 +1065,13 @@
       "paymentError": "Fehler beim Hinzufügen der Zahlung",
       "note": "Notiz",
       "createdAt": "Erstellt",
-      "actions": "Aktionen"
+      "actions": "Aktionen",
+      "statusUpdated": "Buchungsstatus aktualisiert",
+      "statusUpdatedWithMsg": "Status aktualisiert und WhatsApp-Nachricht gesendet",
+      "statusUpdatedNoMsg": "Status aktualisiert (Nachricht konnte nicht gesendet werden)",
+      "statusUpdateWarning": "Status aktualisiert, aber WhatsApp-Nachricht fehlgeschlagen",
+      "statusUpdateError": "Status konnte nicht aktualisiert werden",
+      "addManual": "Manuelle Buchung hinzufügen"
     },
     "status": {
       "new": "Neu",
@@ -1119,6 +1233,22 @@
         "subscription_activated": "Abonnement Aktiviert",
         "subscription_expired": "Abonnement Abgelaufen",
         "subscription_cancelled": "Abonnement Storniert"
+      },
+      "planFeatures": "Paketfunktionen",
+      "activePlan": "Aktives Paket",
+      "savings": "Ersparnis",
+      "trialEndsIn": "Testphase endet in",
+      "subscriptionEndsIn": "Abonnement endet in",
+      "daysLeft": "Tage verbleibend",
+      "renewSubscription": "Abonnement verlängern",
+      "noTransactions": "Noch kein Transaktionsverlauf",
+      "actions": "Aktionen",
+      "downloadInvoice": "Rechnung herunterladen",
+      "statuses": {
+        "success": "Erfolgreich",
+        "failed": "Fehlgeschlagen",
+        "pending": "Ausstehend",
+        "cancelled": "Storniert"
       }
     },
     "agency": {
@@ -1158,7 +1288,9 @@
         "cancel": "Abbrechen",
         "save": "Speichern",
         "update": "Aktualisieren",
-        "saving": "Wird Gespeichert..."
+        "saving": "Wird Gespeichert...",
+        "cityPlaceholder": "Istanbul",
+        "regionPlaceholder": "Marmara"
       },
       "tableHeaders": {
         "name": "Agenturname",
@@ -1167,12 +1299,22 @@
         "subscription": "Abonnement",
         "messages": "Nachrichten",
         "remaining": "Verbleibend",
-        "actions": "Aktionen"
+        "actions": "Aktionen",
+        "agencyName": "Agenturname",
+        "authorized": "Bevollmächtigt",
+        "phone": "Telefon",
+        "whatsappNo": "WhatsApp-Nr.",
+        "messageQuota": "Nachrichtenkontingent",
+        "remainingTime": "Verbleibende Zeit",
+        "status": "Status"
       },
       "plans": {
         "starter": "Starter",
         "professional": "Professionell",
-        "enterprise": "Unternehmen"
+        "enterprise": "Unternehmen",
+        "starterWithLimit": "Starter (500 Nachrichten/Monat)",
+        "professionalWithLimit": "Professional (2.000 Nachrichten/Monat)",
+        "enterpriseWithLimit": "Enterprise (Unbegrenzt)"
       },
       "subscriptionStatus": {
         "trial": "Test",
@@ -1188,7 +1330,17 @@
         "notAdded": "Nicht Hinzugefügt",
         "quotaFull": "Kontingent Voll",
         "percentUsed": "verwendet"
-      }
+      },
+      "updateInfo": "Agenturinformationen aktualisieren",
+      "createAccount": "Neues Agentverkonto erstellen",
+      "name": "Agenturname",
+      "owner": "Agentureigentümer",
+      "city": "Stadt",
+      "region": "Region",
+      "status": "Status",
+      "messageQuota": "Nachrichtenkontingent",
+      "remainingTime": "Verbleibende Zeit",
+      "actions": "Aktionen"
     },
     "usageStats": {
       "loadError": "Fehler beim Laden der Nutzungsstatistiken",
@@ -1260,7 +1412,8 @@
         "messageTemplates": "Nachrichtenvorlagen",
         "feedbackSurveys": "Kundenzufriedenheitsumfragen",
         "followUpMessages": "Folgenachrichten"
-      }
+      },
+      "extraQuotaLabel": "Zusätzliches Nachrichtenkontingent"
     },
     "dateForm": {
       "addDate": "Neues Datum Hinzufügen",
@@ -1328,7 +1481,125 @@
         "addDates": "Datum Hinzufügen",
         "whatsapp": "Verbinden"
       }
-    }
+    },
+    "tourForm": {
+      "addTour": "Neue Tour hinzufügen",
+      "editTour": "Tour bearbeiten",
+      "description": "Tour-Details ausfüllen",
+      "title": "Tour-Titel",
+      "titlePlaceholder": "Kappadokien-Tour",
+      "destination": "Reiseziel",
+      "destinationPlaceholder": "Kappadokien",
+      "type": "Tourtyp",
+      "selectType": "Typ auswählen",
+      "currency": "Währung",
+      "minPax": "Mindest-Teilnehmeranzahl",
+      "visaRequired": "Visum erforderlich",
+      "programUrl": "Programm-PDF-Link",
+      "programUrlPlaceholder": "https://...",
+      "shortProgram": "Kurzes Programm",
+      "shortProgramPlaceholder": "Kurzbeschreibung...",
+      "departurePoint": "Abfahrtsort",
+      "departurePlaceholder": "Flughafen Antalya",
+      "meetingTime": "Treffpunkt-Zeit",
+      "meetingPlaceholder": "08:00",
+      "duration": "Tour-Dauer",
+      "durationPlaceholder": "3 Tage 2 Nächte",
+      "accommodation": "Unterkunft",
+      "accommodationPlaceholder": "5* Hotel",
+      "transportation": "Transport",
+      "transportationPlaceholder": "Flug + Bus",
+      "category": "Tour-Kategorie",
+      "categoryPlaceholder": "Kulturtour",
+      "places": "Besuchsorte",
+      "placesPlaceholder": "Ort 1, Ort 2...",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Wird gespeichert...",
+      "error": "Fehler",
+      "titleMinLength": "Tour-Name muss mindestens 3 Zeichen lang sein",
+      "destinationMinLength": "Reiseziel muss mindestens 2 Zeichen lang sein",
+      "fillRequired": "Bitte füllen Sie alle Pflichtfelder aus",
+      "addSuccess": "Tour erfolgreich hinzugefügt",
+      "updateSuccess": "Tour erfolgreich aktualisiert"
+    },
+    "agencyManagement": {
+      "title": "Agenturverwaltung",
+      "addNewAgency": "Neue Agentur hinzufügen"
+    },
+    "subscriptionHistory": {
+      "title": "Abonnementverlauf",
+      "description": "Zahlungs- und Transaktionsverlauf"
+    },
+    "manualReg": {
+      "title": "Manuelle Buchung hinzufügen",
+      "steps": {
+        "tourDate": "Tour & Datum",
+        "customer": "Kundendaten",
+        "payment": "Zahlung & Notizen"
+      },
+      "agencyNotFound": "Agenturinformationen nicht gefunden",
+      "noPaymentMethod": "Bitte Zahlungsmethode auswählen",
+      "success": "Buchung erfolgreich hinzugefügt",
+      "error": "Fehler beim Hinzufügen der Buchung",
+      "selectTour": "Tour auswählen",
+      "selectDate": "Datum auswählen",
+      "pricePerPerson": "Pro Person:",
+      "customerName": "Kundenname *",
+      "namePlaceholder": "Vor- und Nachname",
+      "phone": "Telefon *",
+      "phonePlaceholder": "+90 555 123 4567",
+      "paxCount": "Personenzahl",
+      "channel": "Herkunftskanal",
+      "channels": {
+        "phone": "📞 Telefon",
+        "office": "🏢 Büro",
+        "instagram": "📸 Instagram",
+        "whatsapp": "💬 WhatsApp",
+        "other": "📋 Sonstiges"
+      },
+      "total": "Gesamt:",
+      "people": "Personen ×",
+      "paymentStatus": "Zahlungsstatus",
+      "paymentMethod": "Zahlungsmethode *",
+      "selectPayment": "Zahlungsmethode auswählen",
+      "payments": {
+        "creditCard": "💳 Kreditkarte",
+        "cash": "💵 Bargeld",
+        "transfer": "🏦 Banküberweisung"
+      },
+      "notes": "Notizen",
+      "notesPlaceholder": "Optionale Notizen...",
+      "summary": "Buchungsübersicht",
+      "summaryTour": "Tour:",
+      "summaryDate": "Datum:",
+      "summaryCustomer": "Kunde:",
+      "summaryPax": "Personen:",
+      "summaryTotal": "Gesamt:"
+    },
+    "regDetail": {
+      "contact": "Kontakt",
+      "nameLabel": "Name",
+      "phoneLabel": "Telefon",
+      "call": "Anrufen",
+      "status": "Status",
+      "registrationStatus": "Buchungsstatus",
+      "paymentStatus": "Zahlungsstatus",
+      "source": "Quelle",
+      "payments": "Zahlungstransaktionen",
+      "paymentAmount": "Zahlungsbetrag...",
+      "paymentMethod": "Zahlungsmethode",
+      "addPayment": "Zahlung hinzufügen",
+      "pastPayments": "Vergangene Zahlungen",
+      "paymentAdded": "Zahlung hinzugefügt",
+      "paymentDeleted": "Zahlungseintrag gelöscht",
+      "paymentDeleteError": "Zahlung konnte nicht gelöscht werden"
+    },
+    "subtitle": "Übersicht",
+    "totalAgencies": "Agenturen gesamt",
+    "activeAgencies": "Aktive Agenturen",
+    "totalMessages": "Nachrichten gesamt",
+    "conversionRate": "Konversionsrate"
   },
   "auth": {
     "login": "Anmelden",
@@ -1402,7 +1673,9 @@
     "newPassword": "Neues Passwort",
     "confirmPassword": "Passwort bestätigen",
     "passwordsNotMatch": "Passwörter stimmen nicht überein",
-    "passwordResetSuccess": "Ihr Passwort wurde erfolgreich aktualisiert"
+    "passwordResetSuccess": "Ihr Passwort wurde erfolgreich aktualisiert",
+    "loggedOut": "Erfolgreich abgemeldet",
+    "logoutFailed": "Abmeldung fehlgeschlagen"
   },
   "conversations": {
     "emptyTitle": "Noch keine Gespräche",
@@ -1695,7 +1968,12 @@
     "daysAgo": "Tg. vor",
     "people": "Personen",
     "saving": "Speichern...",
-    "back": "Zurück"
+    "back": "Zurück",
+    "successTitle": "Erfolgreich! ✅",
+    "warning": "Warnung",
+    "next": "Weiter",
+    "prev": "Zurück",
+    "saveLoading": "Wird gespeichert..."
   },
   "cta": {
     "title": "Bereit loszulegen?",

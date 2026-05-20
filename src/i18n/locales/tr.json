@@ -1250,7 +1250,12 @@
       "paymentError": "Ödeme eklenirken hata oluştu",
       "note": "Not",
       "createdAt": "Oluşturma",
-      "actions": "İşlemler"
+      "actions": "İşlemler",
+      "statusUpdated": "Kayıt durumu güncellendi",
+      "statusUpdatedWithMsg": "Kayıt durumu güncellendi ve müşteriye WhatsApp mesajı gönderildi",
+      "statusUpdatedNoMsg": "Kayıt durumu güncellendi (mesaj gönderilemedi)",
+      "statusUpdateWarning": "Durum güncellendi ama WhatsApp mesajı gönderilemedi",
+      "statusUpdateError": "Durum güncellenemedi"
     },
     "status": {
       "new": "Yeni",
@@ -1492,6 +1497,70 @@
         "addDates": "Tarih Ekle",
         "whatsapp": "Bağla"
       }
+    },
+    "manualReg": {
+      "title": "Manuel Kayıt Ekle",
+      "steps": {
+        "tourDate": "Tur & Tarih",
+        "customer": "Müşteri Bilgileri",
+        "payment": "Ödeme & Not"
+      },
+      "agencyNotFound": "Acente bilgisi bulunamadı",
+      "noPaymentMethod": "Lütfen ödeme yöntemi seçin",
+      "success": "Kayıt başarıyla eklendi",
+      "error": "Kayıt eklenirken bir hata oluştu",
+      "selectTour": "Tur seçin",
+      "selectDate": "Tarih seçin",
+      "pricePerPerson": "Kişi başı:",
+      "customerName": "Müşteri Adı *",
+      "namePlaceholder": "Ad Soyad",
+      "phone": "Telefon *",
+      "phonePlaceholder": "+90 555 123 4567",
+      "paxCount": "Kişi Sayısı",
+      "channel": "Kaynak Kanal",
+      "channels": {
+        "phone": "📞 Telefon",
+        "office": "🏢 Ofis",
+        "instagram": "📸 Instagram",
+        "whatsapp": "💬 WhatsApp",
+        "other": "📋 Diğer"
+      },
+      "total": "Toplam:",
+      "people": "kişi ×",
+      "paymentStatus": "Ödeme Durumu",
+      "paymentMethod": "Ödeme Yöntemi *",
+      "selectPayment": "Ödeme yöntemi seçin",
+      "payments": {
+        "creditCard": "💳 Kredi Kartı",
+        "cash": "💵 Nakit",
+        "transfer": "🏦 Havale/EFT"
+      },
+      "notes": "Notlar",
+      "notesPlaceholder": "İsteğe bağlı notlar...",
+      "summary": "Kayıt Özeti",
+      "summaryTour": "Tur:",
+      "summaryDate": "Tarih:",
+      "summaryCustomer": "Müşteri:",
+      "summaryPax": "Kişi:",
+      "summaryTotal": "Toplam:"
+    },
+    "regDetail": {
+      "contact": "İletişim",
+      "nameLabel": "İsim",
+      "phoneLabel": "Telefon",
+      "call": "Ara",
+      "status": "Durum",
+      "registrationStatus": "Kayıt Durumu",
+      "paymentStatus": "Ödeme Durumu",
+      "source": "Kaynak",
+      "payments": "Ödeme İşlemleri",
+      "paymentAmount": "Ödeme tutarı...",
+      "paymentMethod": "Ödeme yöntemi",
+      "addPayment": "Ödeme Ekle",
+      "pastPayments": "Geçmiş Ödemeler",
+      "paymentAdded": "Ödeme eklendi",
+      "paymentDeleted": "Ödeme kaydı silindi",
+      "paymentDeleteError": "Ödeme silinemedi"
     }
   },
   "auth": {
@@ -1566,7 +1635,9 @@
     "newPassword": "Yeni Şifre",
     "confirmPassword": "Şifre Tekrar",
     "passwordsNotMatch": "Şifreler eşleşmiyor",
-    "passwordResetSuccess": "Şifreniz başarıyla güncellendi"
+    "passwordResetSuccess": "Şifreniz başarıyla güncellendi",
+    "loggedOut": "Çıkış yapıldı",
+    "logoutFailed": "Çıkış yapılamadı"
   },
   "conversations": {
     "emptyTitle": "Henüz konuşma yok",
@@ -1945,7 +2016,12 @@
     "daysAgo": "g önce",
     "people": "kişi",
     "saving": "Kaydediliyor...",
-    "back": "Geri"
+    "back": "Geri",
+    "successTitle": "Başarılı! ✅",
+    "warning": "Uyarı",
+    "next": "İleri",
+    "prev": "Geri",
+    "saveLoading": "Kaydediliyor..."
   },
   "blog": {
     "minutesRead": "{{count}} dakika okuma",

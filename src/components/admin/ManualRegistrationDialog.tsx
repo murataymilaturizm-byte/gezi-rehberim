@@ -45,12 +45,6 @@ interface ManualRegistrationDialogProps {
   agencyId: string | null;
 }
 
-const STEPS = [
-  { key: "tour", label: "Tur & Tarih" },
-  { key: "customer", label: "Müşteri Bilgileri" },
-  { key: "payment", label: "Ödeme & Not" },
-];
-
 export const ManualRegistrationDialog = ({
   open,
   onOpenChange,
@@ -61,7 +55,13 @@ export const ManualRegistrationDialog = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
-  
+
+  const STEPS = [
+    { key: "tour", label: t("admin.manualReg.steps.tourDate") },
+    { key: "customer", label: t("admin.manualReg.steps.customer") },
+    { key: "payment", label: t("admin.manualReg.steps.payment") },
+  ];
+
   const [formData, setFormData] = useState({
     tourId: "",
     tourDateId: "",
@@ -74,10 +74,9 @@ export const ManualRegistrationDialog = ({
     depositAmount: "",
     notes: ""
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset on open
   useEffect(() => {
     if (open) {
       setStep(0);
@@ -111,17 +110,17 @@ export const ManualRegistrationDialog = ({
 
   const handleSubmit = async () => {
     if (!agencyId) {
-      toast({ title: "Hata", description: "Ajans bilgisi bulunamadı", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("admin.manualReg.agencyNotFound"), variant: "destructive" });
       return;
     }
 
     if (formData.paymentStatus === "PAID" && !formData.paymentMethod) {
-      toast({ title: "Hata", description: "Lütfen ödeme yöntemi seçin", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("admin.manualReg.noPaymentMethod"), variant: "destructive" });
       return;
     }
 
     if (formData.paymentStatus === "DEPOSIT" && (!formData.depositAmount || parseFloat(formData.depositAmount) <= 0)) {
-      toast({ title: "Hata", description: t("admin.registrations.enterDepositAmount"), variant: "destructive" });
+      toast({ title: t("common.error"), description: t("admin.registrations.enterDepositAmount"), variant: "destructive" });
       return;
     }
 
@@ -129,7 +128,7 @@ export const ManualRegistrationDialog = ({
     try {
       const pax = parseInt(formData.paxAdult);
       const depositAmount = formData.paymentStatus === "DEPOSIT" ? parseFloat(formData.depositAmount) : null;
-      const paidAmount = formData.paymentStatus === "DEPOSIT" ? parseFloat(formData.depositAmount) : 
+      const paidAmount = formData.paymentStatus === "DEPOSIT" ? parseFloat(formData.depositAmount) :
                         formData.paymentStatus === "PAID" ? totalAmount : 0;
 
       const { error } = await supabase.from("registrations").insert({
@@ -150,12 +149,12 @@ export const ManualRegistrationDialog = ({
 
       if (error) throw error;
 
-      toast({ title: "Başarılı", description: "Kayıt başarıyla eklendi" });
+      toast({ title: t("common.successTitle"), description: t("admin.manualReg.success") });
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Manual registration error:", error);
-      toast({ title: "Hata", description: "Kayıt eklenirken bir hata oluştu", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("admin.manualReg.error"), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -165,7 +164,7 @@ export const ManualRegistrationDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[540px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Manuel Kayıt Ekle</DialogTitle>
+          <DialogTitle>{t("admin.manualReg.title")}</DialogTitle>
           <DialogDescription>
             {STEPS[step].label} ({step + 1}/{STEPS.length})
           </DialogDescription>
@@ -181,16 +180,16 @@ export const ManualRegistrationDialog = ({
         </div>
 
         <div className="space-y-4 pt-2 min-h-[220px]">
-          {/* STEP 1: Tour & Date Selection */}
+          {/* STEP 1: Tour & Date */}
           {step === 0 && (
             <>
               <div className="space-y-2">
-                <Label>Tur *</Label>
+                <Label>{t("admin.registrations.tour")} *</Label>
                 <Select value={formData.tourId} onValueChange={(v) => {
                   set("tourId", v);
                   set("tourDateId", "");
                 }}>
-                  <SelectTrigger><SelectValue placeholder="Tur seçin" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("admin.manualReg.selectTour")} /></SelectTrigger>
                   <SelectContent>
                     {tours.map((tour) => (
                       <SelectItem key={tour.id} value={tour.id}>{tour.title}</SelectItem>
@@ -200,9 +199,9 @@ export const ManualRegistrationDialog = ({
               </div>
 
               <div className="space-y-2">
-                <Label>Tur Tarihi *</Label>
+                <Label>{t("admin.registrations.date")} *</Label>
                 <Select value={formData.tourDateId} onValueChange={(v) => set("tourDateId", v)} disabled={!formData.tourId}>
-                  <SelectTrigger><SelectValue placeholder="Tarih seçin" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("admin.manualReg.selectDate")} /></SelectTrigger>
                   <SelectContent>
                     {availableDates.map((date) => (
                       <SelectItem key={date.id} value={date.id}>
@@ -219,7 +218,7 @@ export const ManualRegistrationDialog = ({
                   <div className="text-muted-foreground">
                     {format(new Date(selectedDate.departure_date), "d MMMM yyyy", { locale: tr })}
                   </div>
-                  <div className="text-muted-foreground">Kişi başı: {selectedDate.price_adult} {selectedTour?.currency || "TRY"}</div>
+                  <div className="text-muted-foreground">{t("admin.manualReg.pricePerPerson")} {selectedDate.price_adult} {selectedTour?.currency || "TRY"}</div>
                 </div>
               )}
             </>
@@ -229,26 +228,26 @@ export const ManualRegistrationDialog = ({
           {step === 1 && (
             <>
               <div className="space-y-2">
-                <Label>Müşteri Adı *</Label>
+                <Label>{t("admin.manualReg.customerName")}</Label>
                 <Input
                   value={formData.fullName}
                   onChange={(e) => set("fullName", e.target.value)}
-                  placeholder="Ad Soyad"
+                  placeholder={t("admin.manualReg.namePlaceholder")}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Telefon *</Label>
+                <Label>{t("admin.manualReg.phone")}</Label>
                 <Input
                   value={formData.phone}
                   onChange={(e) => set("phone", e.target.value)}
-                  placeholder="+90 555 123 4567"
+                  placeholder={t("admin.manualReg.phonePlaceholder")}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Kişi Sayısı</Label>
+                  <Label>{t("admin.manualReg.paxCount")}</Label>
                   <Input
                     type="number"
                     min="1"
@@ -258,15 +257,15 @@ export const ManualRegistrationDialog = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Kaynak Kanal</Label>
+                  <Label>{t("admin.manualReg.channel")}</Label>
                   <Select value={formData.sourceChannel} onValueChange={(v) => set("sourceChannel", v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PHONE">📞 Telefon</SelectItem>
-                      <SelectItem value="OFFICE">🏢 Ofis</SelectItem>
-                      <SelectItem value="INSTAGRAM">📸 Instagram</SelectItem>
-                      <SelectItem value="WHATSAPP">💬 WhatsApp</SelectItem>
-                      <SelectItem value="OTHER">📋 Diğer</SelectItem>
+                      <SelectItem value="PHONE">{t("admin.manualReg.channels.phone")}</SelectItem>
+                      <SelectItem value="OFFICE">{t("admin.manualReg.channels.office")}</SelectItem>
+                      <SelectItem value="INSTAGRAM">{t("admin.manualReg.channels.instagram")}</SelectItem>
+                      <SelectItem value="WHATSAPP">{t("admin.manualReg.channels.whatsapp")}</SelectItem>
+                      <SelectItem value="OTHER">{t("admin.manualReg.channels.other")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -274,8 +273,8 @@ export const ManualRegistrationDialog = ({
 
               {selectedDate && (
                 <div className="p-3 rounded-lg bg-accent/50 text-sm">
-                  <span className="font-medium">Toplam: </span>
-                  {totalAmount} {selectedTour?.currency || "TRY"} ({formData.paxAdult} kişi × {selectedDate.price_adult})
+                  <span className="font-medium">{t("admin.manualReg.total")} </span>
+                  {totalAmount} {selectedTour?.currency || "TRY"} ({formData.paxAdult} {t("admin.manualReg.people")} {selectedDate.price_adult})
                 </div>
               )}
             </>
@@ -285,7 +284,7 @@ export const ManualRegistrationDialog = ({
           {step === 2 && (
             <>
               <div className="space-y-2">
-                <Label>Ödeme Durumu</Label>
+                <Label>{t("admin.manualReg.paymentStatus")}</Label>
                 <Select value={formData.paymentStatus} onValueChange={(v) => {
                   set("paymentStatus", v);
                   set("depositAmount", "");
@@ -302,13 +301,13 @@ export const ManualRegistrationDialog = ({
 
               {formData.paymentStatus === "PAID" && (
                 <div className="space-y-2">
-                  <Label>Ödeme Yöntemi *</Label>
+                  <Label>{t("admin.manualReg.paymentMethod")}</Label>
                   <Select value={formData.paymentMethod} onValueChange={(v) => set("paymentMethod", v)}>
-                    <SelectTrigger><SelectValue placeholder="Ödeme yöntemi seçin" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("admin.manualReg.selectPayment")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CREDIT_CARD">💳 Kredi Kartı</SelectItem>
-                      <SelectItem value="CASH">💵 Nakit</SelectItem>
-                      <SelectItem value="BANK_TRANSFER">🏦 Havale/EFT</SelectItem>
+                      <SelectItem value="CREDIT_CARD">{t("admin.manualReg.payments.creditCard")}</SelectItem>
+                      <SelectItem value="CASH">{t("admin.manualReg.payments.cash")}</SelectItem>
+                      <SelectItem value="BANK_TRANSFER">{t("admin.manualReg.payments.transfer")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -329,23 +328,23 @@ export const ManualRegistrationDialog = ({
               )}
 
               <div className="space-y-2">
-                <Label>Notlar</Label>
+                <Label>{t("admin.manualReg.notes")}</Label>
                 <Textarea
                   value={formData.notes}
                   onChange={(e) => set("notes", e.target.value)}
-                  placeholder="İsteğe bağlı notlar..."
+                  placeholder={t("admin.manualReg.notesPlaceholder")}
                   rows={3}
                 />
               </div>
 
               {/* Summary */}
               <div className="p-3 rounded-lg border border-border bg-accent/30 space-y-1 text-sm">
-                <div className="font-semibold mb-2">Kayıt Özeti</div>
-                <div><span className="text-muted-foreground">Tur:</span> {selectedTour?.title}</div>
-                <div><span className="text-muted-foreground">Tarih:</span> {selectedDate && format(new Date(selectedDate.departure_date), "d MMMM yyyy", { locale: tr })}</div>
-                <div><span className="text-muted-foreground">Müşteri:</span> {formData.fullName} — {formData.phone}</div>
-                <div><span className="text-muted-foreground">Kişi:</span> {formData.paxAdult}</div>
-                <div><span className="text-muted-foreground">Toplam:</span> {totalAmount} {selectedTour?.currency || "TRY"}</div>
+                <div className="font-semibold mb-2">{t("admin.manualReg.summary")}</div>
+                <div><span className="text-muted-foreground">{t("admin.manualReg.summaryTour")}</span> {selectedTour?.title}</div>
+                <div><span className="text-muted-foreground">{t("admin.manualReg.summaryDate")}</span> {selectedDate && format(new Date(selectedDate.departure_date), "d MMMM yyyy", { locale: tr })}</div>
+                <div><span className="text-muted-foreground">{t("admin.manualReg.summaryCustomer")}</span> {formData.fullName} — {formData.phone}</div>
+                <div><span className="text-muted-foreground">{t("admin.manualReg.summaryPax")}</span> {formData.paxAdult}</div>
+                <div><span className="text-muted-foreground">{t("admin.manualReg.summaryTotal")}</span> {totalAmount} {selectedTour?.currency || "TRY"}</div>
               </div>
             </>
           )}
@@ -358,7 +357,7 @@ export const ManualRegistrationDialog = ({
             variant="outline"
             onClick={() => (step === 0 ? onOpenChange(false) : setStep(step - 1))}
           >
-            {step === 0 ? "İptal" : <><ChevronLeft className="w-4 h-4 mr-1" /> Geri</>}
+            {step === 0 ? t("common.cancel") : <><ChevronLeft className="w-4 h-4 mr-1" /> {t("common.prev")}</>}
           </Button>
 
           {step < STEPS.length - 1 ? (
@@ -368,7 +367,7 @@ export const ManualRegistrationDialog = ({
               disabled={!canProceed()}
               className="bg-gradient-ocean hover:opacity-90"
             >
-              İleri <ChevronRight className="w-4 h-4 ml-1" />
+              {t("common.next")} <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
             <Button
@@ -378,9 +377,9 @@ export const ManualRegistrationDialog = ({
               className="bg-gradient-ocean hover:opacity-90"
             >
               {isSubmitting ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Kaydediliyor...</>
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.saveLoading")}</>
               ) : (
-                <><Check className="w-4 h-4 mr-1" /> Kaydet</>
+                <><Check className="w-4 h-4 mr-1" /> {t("common.save")}</>
               )}
             </Button>
           )}

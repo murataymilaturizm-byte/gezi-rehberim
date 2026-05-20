@@ -74,6 +74,21 @@
       "title": "Многоязычная Поддержка",
       "description": "Обслуживайте клиентов на 7 разных языках",
       "metric": "Свободное общение на 7 языках"
+    },
+    "reservation": {
+      "title": "Бронирование на базе ИИ",
+      "description": "Клиенты могут оформить бронирование туров 24/7 через WhatsApp на 7 языках.",
+      "metric": "24/7 Автоматически"
+    },
+    "reminders": {
+      "title": "Автоматические напоминания",
+      "description": "Автоматические напоминания перед туром и запросы отзывов после тура.",
+      "metric": "В 3 раза выше вовлечённость"
+    },
+    "payment": {
+      "title": "Инструкции по оплате",
+      "description": "Реквизиты оплаты отправляются автоматически после подтверждения бронирования.",
+      "metric": "Мгновенное уведомление"
     }
   },
   "howItWorks": {
@@ -460,7 +475,8 @@
     "responses": "Ответы",
     "percentage": "Процент",
     "noTrendData": "Нет данных о тренде",
-    "noDistributionData": "Нет данных о распределении"
+    "noDistributionData": "Нет данных о распределении",
+    "dateFilter": "Фильтр по дате"
   },
   "tickets": {
     "title": "Тикеты Поддержки",
@@ -524,7 +540,11 @@
       "all": "Все",
       "allStatuses": "Все статусы",
       "allTours": "Все туры",
-      "clear": "Очистить фильтры"
+      "clear": "Очистить фильтры",
+      "title": "Фильтры",
+      "tourDate": "Дата тура",
+      "sourceChannel": "Канал источника",
+      "allDates": "Все даты"
     },
     "payment": {
       "success": "Платёж Успешен! 🎉",
@@ -809,7 +829,39 @@
         "lastSearchQuery": "Последний Поиск",
         "notSpecified": "Не Указано",
         "messagesPerDay": "Сообщений/День",
-        "activeDays": "Активных Дней"
+        "activeDays": "Активных Дней",
+        "tabs": {
+          "profile": "Информация профиля",
+          "preferences": "Предпочтения",
+          "tags": "Теги",
+          "conversations": "История разговоров"
+        },
+        "salesStats": "Статистика продаж",
+        "totalBookings": "Всего бронирований",
+        "totalSpent": "Всего потрачено",
+        "averageSpending": "Средние расходы",
+        "communicationMetrics": "Коммуникационная статистика",
+        "dailyAverage": "Ежедневное среднее",
+        "firstInteraction": "Первое взаимодействие",
+        "lastInteraction": "Последнее взаимодействие",
+        "preferencesInterests": "Предпочтения и интересы",
+        "interestedDestinations": "Интересующие направления",
+        "lastSearch": "Последний поиск",
+        "customerSatisfaction": "Удовлетворённость клиента",
+        "feedbackScore": "Оценка удовлетворённости",
+        "feedbackComment": "Комментарий",
+        "noFeedback": "Пока нет отзывов",
+        "customerTags": "Теги клиента",
+        "addTag": "Добавить тег",
+        "tagAdded": "Тег добавлен",
+        "tagRemoved": "Тег удалён",
+        "tagError": "Ошибка операции с тегом",
+        "conversationHistory": "История разговоров",
+        "loadingConversations": "Загрузка разговоров...",
+        "noConversations": "Разговоров пока нет",
+        "conversationError": "Ошибка загрузки разговоров",
+        "customer": "Клиент",
+        "assistant": "Ассистент"
       },
       "status": {
         "pending": "В ожидании",
@@ -915,7 +967,59 @@
       "conversationHistory": "История разговоров за 30 дней",
       "emailSupport": "Поддержка по электронной почте",
       "revenueGrowthTrend": "Тренд Доходов и Роста",
-      "superAdminDescription": "Вы можете отслеживать общий статус и статистику использования всех агентств здесь. Используйте вкладку 'Агентства' для детального управления."
+      "superAdminDescription": "Вы можете отслеживать общий статус и статистику использования всех агентств здесь. Используйте вкладку 'Агентства' для детального управления.",
+      "filterByDate": "Фильтр по дате",
+      "allTime": "За всё время",
+      "today": "Сегодня",
+      "thisWeek": "На этой неделе",
+      "thisMonth": "В этом месяце",
+      "yearlyRevenue": "Годовой доход (оценка)",
+      "totalPotentialYearlyRevenue": "Общий потенциальный годовой доход",
+      "totalActiveAgencies": "Всего активных агентств:",
+      "avgAgencyValue": "Средняя стоимость агентства:",
+      "revenueTrend": "Тренд доходов",
+      "monthlyRevenueLabel": "Ежемесячный доход",
+      "newAgencies": "Новые агентства",
+      "last": "Последние",
+      "months": "месяцев",
+      "geographicDistribution": "Географическое распределение",
+      "topCitiesByAgencies": "Топ-города по агентствам",
+      "location": "Местоположение",
+      "agencyCount": "Количество агентств",
+      "plans": "Планы:",
+      "starter": "Стартовый",
+      "professional": "Профессиональный",
+      "enterprise": "Корпоративный",
+      "unspecified": "Не указано",
+      "noData": "Нет данных",
+      "active": "активный",
+      "inactive": "неактивный",
+      "trialVersion": "Пробная версия",
+      "agenciesInTrial": "Агентства на пробном периоде",
+      "totalMessages": "Всего сообщений",
+      "messagesUsedThisMonth": "Использовано сообщений в этом месяце",
+      "yearlyValueText": "Годовая стоимость текущих платных подписок",
+      "realPaymentDataAnalysis": "Анализ на основе реальных данных о платежах",
+      "filters": "Фильтры",
+      "dateRange": "Диапазон дат",
+      "last3Months": "Последние 3 месяца",
+      "last6Months": "Последние 6 месяцев",
+      "last12Months": "Последние 12 месяцев",
+      "last24Months": "Последние 24 месяца",
+      "planTypes": "Типы планов",
+      "starterPlanPrice": "Стартовый",
+      "professionalPlanPrice": "Профессиональный",
+      "enterprisePlanPrice": "Корпоративный",
+      "compareWithPrevious": "Сравнить с предыдущим периодом",
+      "revenue": "Доход",
+      "activeFilter": "Активный фильтр:",
+      "only": "Только",
+      "plansShowing": "планов показано",
+      "geographicDistributionTitle": "Географическое распределение агентств",
+      "geographicDistributionDesc": "Распределение агентств по городу и региону (Топ-10 мест)",
+      "agencies": "агентств",
+      "noLocationInfo": "Данные о местоположении не найдены",
+      "noLocationInfoDesc": "Ещё ни одно агентство не ввело данные о местоположении."
     },
     "toast": {
       "success": "Успешно! ✅",
@@ -942,7 +1046,12 @@
       "deleteSuccess": "Тур удален",
       "deleteError": "Ошибка удаления",
       "deleteConfirm": "Вы уверены, что хотите удалить этот тур?",
-      "deleteWarning": "Это действие нельзя отменить."
+      "deleteWarning": "Это действие нельзя отменить.",
+      "perPerson": "на человека",
+      "quotaFull": "Квота заполнена",
+      "otherDates": "Другие даты:",
+      "program": "Программа",
+      "preRegistration": "Предварительная регистрация"
     },
     "planLimits": {
       "tourLimitReached": "Лимит туров достигнут",
@@ -987,7 +1096,13 @@
       "paymentError": "Ошибка при добавлении платежа",
       "note": "Заметка",
       "createdAt": "Создано",
-      "actions": "Действия"
+      "actions": "Действия",
+      "statusUpdated": "Статус бронирования обновлён",
+      "statusUpdatedWithMsg": "Статус обновлён и WhatsApp-сообщение отправлено",
+      "statusUpdatedNoMsg": "Статус обновлён (сообщение не отправлено)",
+      "statusUpdateWarning": "Статус обновлён, но WhatsApp-сообщение не отправлено",
+      "statusUpdateError": "Не удалось обновить статус",
+      "addManual": "Добавить ручное бронирование"
     },
     "status": {
       "new": "Новый",
@@ -1149,6 +1264,22 @@
         "subscription_activated": "Подписка Активирована",
         "subscription_expired": "Подписка Истекла",
         "subscription_cancelled": "Подписка Отменена"
+      },
+      "planFeatures": "Функции плана",
+      "activePlan": "Активный план",
+      "savings": "экономия",
+      "trialEndsIn": "Пробный период заканчивается",
+      "subscriptionEndsIn": "Подписка заканчивается",
+      "daysLeft": "дней осталось",
+      "renewSubscription": "Продлить подписку",
+      "noTransactions": "История транзакций пока отсутствует",
+      "actions": "Действия",
+      "downloadInvoice": "Скачать счёт",
+      "statuses": {
+        "success": "Успешно",
+        "failed": "Неудачно",
+        "pending": "Ожидание",
+        "cancelled": "Отменено"
       }
     },
     "agency": {
@@ -1188,7 +1319,9 @@
         "cancel": "Отмена",
         "save": "Сохранить",
         "update": "Обновить",
-        "saving": "Сохранение..."
+        "saving": "Сохранение...",
+        "cityPlaceholder": "Стамбул",
+        "regionPlaceholder": "Мармара"
       },
       "tableHeaders": {
         "name": "Название Агентства",
@@ -1197,12 +1330,22 @@
         "subscription": "Подписка",
         "messages": "Сообщения",
         "remaining": "Осталось",
-        "actions": "Действия"
+        "actions": "Действия",
+        "agencyName": "Название агентства",
+        "authorized": "Уполномоченный",
+        "phone": "Телефон",
+        "whatsappNo": "Номер WhatsApp",
+        "messageQuota": "Квота сообщений",
+        "remainingTime": "Оставшееся время",
+        "status": "Статус"
       },
       "plans": {
         "starter": "Стартовый",
         "professional": "Профессиональный",
-        "enterprise": "Корпоративный"
+        "enterprise": "Корпоративный",
+        "starterWithLimit": "Стартовый (500 сообщений/месяц)",
+        "professionalWithLimit": "Профессиональный (2 000 сообщений/месяц)",
+        "enterpriseWithLimit": "Корпоративный (Безлимитный)"
       },
       "subscriptionStatus": {
         "trial": "Пробный",
@@ -1218,7 +1361,17 @@
         "notAdded": "Не Добавлено",
         "quotaFull": "Квота Заполнена",
         "percentUsed": "использовано"
-      }
+      },
+      "updateInfo": "Обновить информацию об агентстве",
+      "createAccount": "Создать новый аккаунт агентства",
+      "name": "Название агентства",
+      "owner": "Владелец агентства",
+      "city": "Город",
+      "region": "Регион",
+      "status": "Статус",
+      "messageQuota": "Квота сообщений",
+      "remainingTime": "Оставшееся время",
+      "actions": "Действия"
     },
     "usageStats": {
       "loadError": "Ошибка загрузки статистики использования",
@@ -1290,7 +1443,8 @@
         "messageTemplates": "Шаблоны сообщений",
         "feedbackSurveys": "Опросы удовлетворенности клиентов",
         "followUpMessages": "Последующие сообщения"
-      }
+      },
+      "extraQuotaLabel": "Дополнительная квота сообщений"
     },
     "dateForm": {
       "addDate": "Добавить Новую Дату",
@@ -1358,7 +1512,125 @@
         "addDates": "Добавить даты",
         "whatsapp": "Подключить"
       }
-    }
+    },
+    "tourForm": {
+      "addTour": "Добавить новый тур",
+      "editTour": "Редактировать тур",
+      "description": "Заполните детали тура",
+      "title": "Название тура",
+      "titlePlaceholder": "Тур в Каппадокию",
+      "destination": "Направление",
+      "destinationPlaceholder": "Каппадокия",
+      "type": "Тип тура",
+      "selectType": "Выберите тип",
+      "currency": "Валюта",
+      "minPax": "Минимальное количество участников",
+      "visaRequired": "Требуется виза",
+      "programUrl": "Ссылка на PDF программы",
+      "programUrlPlaceholder": "https://...",
+      "shortProgram": "Краткая программа",
+      "shortProgramPlaceholder": "Краткое описание...",
+      "departurePoint": "Место отправления",
+      "departurePlaceholder": "Аэропорт Анталии",
+      "meetingTime": "Время встречи",
+      "meetingPlaceholder": "08:00",
+      "duration": "Продолжительность тура",
+      "durationPlaceholder": "3 дня 2 ночи",
+      "accommodation": "Проживание",
+      "accommodationPlaceholder": "Отель 5*",
+      "transportation": "Транспорт",
+      "transportationPlaceholder": "Самолёт + Автобус",
+      "category": "Категория тура",
+      "categoryPlaceholder": "Культурный тур",
+      "places": "Места посещения",
+      "placesPlaceholder": "Место 1, Место 2...",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "saving": "Сохранение...",
+      "error": "Ошибка",
+      "titleMinLength": "Название тура должно содержать не менее 3 символов",
+      "destinationMinLength": "Направление должно содержать не менее 2 символов",
+      "fillRequired": "Пожалуйста, заполните все обязательные поля",
+      "addSuccess": "Тур успешно добавлен",
+      "updateSuccess": "Тур успешно обновлён"
+    },
+    "agencyManagement": {
+      "title": "Управление агентствами",
+      "addNewAgency": "Добавить новое агентство"
+    },
+    "subscriptionHistory": {
+      "title": "История подписок",
+      "description": "История платежей и транзакций"
+    },
+    "manualReg": {
+      "title": "Добавить ручное бронирование",
+      "steps": {
+        "tourDate": "Тур и дата",
+        "customer": "Данные клиента",
+        "payment": "Оплата и заметки"
+      },
+      "agencyNotFound": "Информация об агентстве не найдена",
+      "noPaymentMethod": "Выберите способ оплаты",
+      "success": "Бронирование успешно добавлено",
+      "error": "Ошибка при добавлении бронирования",
+      "selectTour": "Выбрать тур",
+      "selectDate": "Выбрать дату",
+      "pricePerPerson": "На человека:",
+      "customerName": "Имя клиента *",
+      "namePlaceholder": "Имя и фамилия",
+      "phone": "Телефон *",
+      "phonePlaceholder": "+90 555 123 4567",
+      "paxCount": "Количество людей",
+      "channel": "Канал источника",
+      "channels": {
+        "phone": "📞 Телефон",
+        "office": "🏢 Офис",
+        "instagram": "📸 Instagram",
+        "whatsapp": "💬 WhatsApp",
+        "other": "📋 Другое"
+      },
+      "total": "Итого:",
+      "people": "чел. ×",
+      "paymentStatus": "Статус оплаты",
+      "paymentMethod": "Способ оплаты *",
+      "selectPayment": "Выбрать способ оплаты",
+      "payments": {
+        "creditCard": "💳 Кредитная карта",
+        "cash": "💵 Наличные",
+        "transfer": "🏦 Банковский перевод"
+      },
+      "notes": "Заметки",
+      "notesPlaceholder": "Необязательные заметки...",
+      "summary": "Сводка бронирования",
+      "summaryTour": "Тур:",
+      "summaryDate": "Дата:",
+      "summaryCustomer": "Клиент:",
+      "summaryPax": "Люди:",
+      "summaryTotal": "Итого:"
+    },
+    "regDetail": {
+      "contact": "Контакт",
+      "nameLabel": "Имя",
+      "phoneLabel": "Телефон",
+      "call": "Позвонить",
+      "status": "Статус",
+      "registrationStatus": "Статус бронирования",
+      "paymentStatus": "Статус оплаты",
+      "source": "Источник",
+      "payments": "Платёжные транзакции",
+      "paymentAmount": "Сумма оплаты...",
+      "paymentMethod": "Способ оплаты",
+      "addPayment": "Добавить оплату",
+      "pastPayments": "Прошлые платежи",
+      "paymentAdded": "Оплата добавлена",
+      "paymentDeleted": "Запись об оплате удалена",
+      "paymentDeleteError": "Не удалось удалить оплату"
+    },
+    "subtitle": "Обзор",
+    "totalAgencies": "Всего агентств",
+    "activeAgencies": "Активные агентства",
+    "totalMessages": "Всего сообщений",
+    "conversionRate": "Коэффициент конверсии"
   },
   "auth": {
     "login": "Войти",
@@ -1432,7 +1704,9 @@
     "newPassword": "Новый пароль",
     "confirmPassword": "Подтвердите пароль",
     "passwordsNotMatch": "Пароли не совпадают",
-    "passwordResetSuccess": "Ваш пароль успешно обновлён"
+    "passwordResetSuccess": "Ваш пароль успешно обновлён",
+    "loggedOut": "Выход выполнен успешно",
+    "logoutFailed": "Не удалось выйти"
   },
   "conversations": {
     "emptyTitle": "Разговоров пока нет",
@@ -1725,7 +1999,12 @@
     "daysAgo": "дн назад",
     "people": "чел.",
     "saving": "Сохранение...",
-    "back": "Назад"
+    "back": "Назад",
+    "successTitle": "Успешно! ✅",
+    "warning": "Предупреждение",
+    "next": "Далее",
+    "prev": "Назад",
+    "saveLoading": "Сохранение..."
   },
   "agencyInfo": {
     "title": "Информация об агентстве",

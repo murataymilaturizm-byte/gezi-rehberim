@@ -1070,7 +1070,12 @@
       "note": "Note",
       "createdAt": "Créé",
       "actions": "Actions",
-      "addManual": "Ajouter une inscription manuelle"
+      "addManual": "Ajouter une inscription manuelle",
+      "statusUpdated": "Statut de réservation mis à jour",
+      "statusUpdatedWithMsg": "Statut mis à jour et message WhatsApp envoyé",
+      "statusUpdatedNoMsg": "Statut mis à jour (message non envoyé)",
+      "statusUpdateWarning": "Statut mis à jour mais message WhatsApp non envoyé",
+      "statusUpdateError": "Impossible de mettre à jour le statut"
     },
     "status": {
       "new": "Nouveau",
@@ -1378,7 +1383,9 @@
       "error": "Erreur",
       "fillRequired": "Veuillez remplir les champs obligatoires",
       "addSuccess": "Tour ajouté avec succès",
-      "updateSuccess": "Tour mis à jour avec succès"
+      "updateSuccess": "Tour mis à jour avec succès",
+      "titleMinLength": "Le nom de la visite doit contenir au moins 3 caractères",
+      "destinationMinLength": "La destination doit contenir au moins 2 caractères"
     },
     "dateForm": {
       "addDate": "Ajouter une Nouvelle Date",
@@ -1532,6 +1539,70 @@
         "addDates": "Ajouter Dates",
         "whatsapp": "Connecter"
       }
+    },
+    "manualReg": {
+      "title": "Ajouter une réservation manuelle",
+      "steps": {
+        "tourDate": "Circuit & Date",
+        "customer": "Informations client",
+        "payment": "Paiement & Notes"
+      },
+      "agencyNotFound": "Informations de l'agence introuvables",
+      "noPaymentMethod": "Veuillez sélectionner un mode de paiement",
+      "success": "Réservation ajoutée avec succès",
+      "error": "Erreur lors de l'ajout de la réservation",
+      "selectTour": "Sélectionner un circuit",
+      "selectDate": "Sélectionner une date",
+      "pricePerPerson": "Par personne :",
+      "customerName": "Nom du client *",
+      "namePlaceholder": "Prénom et nom",
+      "phone": "Téléphone *",
+      "phonePlaceholder": "+90 555 123 4567",
+      "paxCount": "Nombre de personnes",
+      "channel": "Canal source",
+      "channels": {
+        "phone": "📞 Téléphone",
+        "office": "🏢 Bureau",
+        "instagram": "📸 Instagram",
+        "whatsapp": "💬 WhatsApp",
+        "other": "📋 Autre"
+      },
+      "total": "Total :",
+      "people": "personnes ×",
+      "paymentStatus": "Statut de paiement",
+      "paymentMethod": "Mode de paiement *",
+      "selectPayment": "Sélectionner un mode de paiement",
+      "payments": {
+        "creditCard": "💳 Carte de crédit",
+        "cash": "💵 Espèces",
+        "transfer": "🏦 Virement bancaire"
+      },
+      "notes": "Notes",
+      "notesPlaceholder": "Notes optionnelles...",
+      "summary": "Résumé de la réservation",
+      "summaryTour": "Circuit :",
+      "summaryDate": "Date :",
+      "summaryCustomer": "Client :",
+      "summaryPax": "Personnes :",
+      "summaryTotal": "Total :"
+    },
+    "regDetail": {
+      "contact": "Contact",
+      "nameLabel": "Nom",
+      "phoneLabel": "Téléphone",
+      "call": "Appeler",
+      "status": "Statut",
+      "registrationStatus": "Statut de réservation",
+      "paymentStatus": "Statut de paiement",
+      "source": "Source",
+      "payments": "Transactions de paiement",
+      "paymentAmount": "Montant du paiement...",
+      "paymentMethod": "Mode de paiement",
+      "addPayment": "Ajouter un paiement",
+      "pastPayments": "Paiements passés",
+      "paymentAdded": "Paiement ajouté",
+      "paymentDeleted": "Enregistrement de paiement supprimé",
+      "paymentDeleteError": "Impossible de supprimer le paiement"
     }
   },
   "auth": {
@@ -1606,7 +1677,9 @@
     "newPassword": "Nouveau mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
     "passwordsNotMatch": "Les mots de passe ne correspondent pas",
-    "passwordResetSuccess": "Votre mot de passe a été mis à jour avec succès"
+    "passwordResetSuccess": "Votre mot de passe a été mis à jour avec succès",
+    "loggedOut": "Déconnexion réussie",
+    "logoutFailed": "Déconnexion impossible"
   },
   "conversations": {
     "emptyTitle": "Pas encore de conversations",
@@ -1899,7 +1972,12 @@
     "daysAgo": "j",
     "people": "personnes",
     "saving": "Enregistrement...",
-    "back": "Retour"
+    "back": "Retour",
+    "successTitle": "Succès ! ✅",
+    "warning": "Avertissement",
+    "next": "Suivant",
+    "prev": "Retour",
+    "saveLoading": "Enregistrement..."
   },
   "agencyInfo": {
     "title": "Informations sur l'agence",

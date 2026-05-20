@@ -74,6 +74,21 @@
       "title": "Multi-Language Support",
       "description": "Serve your customers in 7 different languages",
       "metric": "Fluent communication in 7 languages"
+    },
+    "reservation": {
+      "title": "AI-Powered Reservation",
+      "description": "Customers can complete tour reservations 24/7 via WhatsApp in 7 languages.",
+      "metric": "24/7 Automated"
+    },
+    "reminders": {
+      "title": "Automatic Reminders",
+      "description": "Automated pre-tour reminders and post-tour feedback requests sent to customers.",
+      "metric": "3x Higher Engagement"
+    },
+    "payment": {
+      "title": "Payment Instructions",
+      "description": "Payment details sent automatically after reservation confirmation.",
+      "metric": "Instant Notification"
     }
   },
   "howItWorks": {
@@ -916,7 +931,63 @@
       "trialPeriod": "Trial Period",
       "messagesPerMonth": "500 messages/month",
       "conversationHistory": "30 days conversation history",
-      "emailSupport": "Email support"
+      "emailSupport": "Email support",
+      "title": "Dashboard",
+      "mostRegisteredPlaces": "Most Registered Destinations",
+      "filterByDate": "Filter by Date",
+      "allTime": "All Time",
+      "today": "Today",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "yearlyRevenue": "Annual Revenue (Estimate)",
+      "totalPotentialYearlyRevenue": "Total potential annual revenue",
+      "totalActiveAgencies": "Total active agencies:",
+      "avgAgencyValue": "Average agency value:",
+      "revenueTrend": "Revenue Trend",
+      "monthlyRevenueLabel": "Monthly Revenue",
+      "newAgencies": "New Agencies",
+      "last": "Last",
+      "months": "months",
+      "geographicDistribution": "Geographic Distribution",
+      "topCitiesByAgencies": "Top Cities by Agencies",
+      "location": "Location",
+      "agencyCount": "Agency Count",
+      "plans": "Plans:",
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise",
+      "unspecified": "Unspecified",
+      "noData": "No data",
+      "active": "active",
+      "inactive": "inactive",
+      "trialVersion": "Trial Version",
+      "agenciesInTrial": "Agencies in trial",
+      "totalMessages": "Total Messages",
+      "messagesUsedThisMonth": "Messages used this month",
+      "yearlyValueText": "Annual value of current paid subscriptions",
+      "revenueGrowthTrend": "Revenue & Growth Trend",
+      "realPaymentDataAnalysis": "Analysis based on real payment data",
+      "filters": "Filters",
+      "dateRange": "Date Range",
+      "last3Months": "Last 3 Months",
+      "last6Months": "Last 6 Months",
+      "last12Months": "Last 12 Months",
+      "last24Months": "Last 24 Months",
+      "planTypes": "Plan Types",
+      "starterPlanPrice": "Starter",
+      "professionalPlanPrice": "Professional",
+      "enterprisePlanPrice": "Enterprise",
+      "compareWithPrevious": "Compare with previous period",
+      "revenue": "Revenue",
+      "activeFilter": "Active Filter:",
+      "only": "Only",
+      "plansShowing": "plans shown",
+      "geographicDistributionTitle": "Agency Geographic Distribution",
+      "geographicDistributionDesc": "Distribution of agencies by city and region (Top 10 locations)",
+      "agencies": "agencies",
+      "noLocationInfo": "No Location Data Found",
+      "noLocationInfoDesc": "No agency has entered location information yet. Geographic distribution will be shown here once agencies add city and region data.",
+      "superAdminDescription": "Monitor the overall status and usage statistics of all agencies here. Use the \"Agencies\" tab for detailed management."
     },
     "toast": {
       "success": "Success! ✅",
@@ -994,7 +1065,12 @@
       "paymentError": "Error adding payment",
       "note": "Note",
       "createdAt": "Created",
-      "actions": "Actions"
+      "actions": "Actions",
+      "statusUpdated": "Registration status updated",
+      "statusUpdatedWithMsg": "Status updated and WhatsApp message sent to customer",
+      "statusUpdatedNoMsg": "Status updated (message could not be sent)",
+      "statusUpdateWarning": "Status updated but WhatsApp message could not be sent",
+      "statusUpdateError": "Could not update status"
     },
     "status": {
       "new": "New",
@@ -1156,6 +1232,22 @@
         "subscription_activated": "Subscription Activated",
         "subscription_expired": "Subscription Expired",
         "subscription_cancelled": "Subscription Cancelled"
+      },
+      "planFeatures": "Plan Features",
+      "activePlan": "Active Plan",
+      "savings": "savings",
+      "trialEndsIn": "Trial ends in",
+      "subscriptionEndsIn": "Subscription ends in",
+      "daysLeft": "days left",
+      "renewSubscription": "Renew Subscription",
+      "noTransactions": "No transaction history yet",
+      "actions": "Actions",
+      "downloadInvoice": "Download Invoice",
+      "statuses": {
+        "success": "Successful",
+        "failed": "Failed",
+        "pending": "Pending",
+        "cancelled": "Cancelled"
       }
     },
     "agency": {
@@ -1195,7 +1287,9 @@
         "cancel": "Cancel",
         "save": "Save",
         "update": "Update",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "cityPlaceholder": "Istanbul",
+        "regionPlaceholder": "Marmara"
       },
       "tableHeaders": {
         "agencyName": "Agency Name",
@@ -1210,12 +1304,16 @@
         "remainingTime": "Remaining Time",
         "remaining": "Remaining",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "phone": "Phone"
       },
       "plans": {
         "starter": "Starter",
         "professional": "Professional",
-        "enterprise": "Enterprise"
+        "enterprise": "Enterprise",
+        "starterWithLimit": "Starter (500 messages/month)",
+        "professionalWithLimit": "Professional (2,000 messages/month)",
+        "enterpriseWithLimit": "Enterprise (Unlimited)"
       },
       "subscriptionStatus": {
         "trial": "Trial",
@@ -1231,7 +1329,17 @@
         "notAdded": "Not Added",
         "quotaFull": "Quota Full",
         "percentUsed": "used"
-      }
+      },
+      "updateInfo": "Update agency information",
+      "createAccount": "Create new agency account",
+      "name": "Agency Name",
+      "owner": "Agency Owner",
+      "city": "City",
+      "region": "Region",
+      "status": "Status",
+      "messageQuota": "Message Quota",
+      "remainingTime": "Remaining Time",
+      "actions": "Actions"
     },
     "usageStats": {
       "packageUsage": "Package Usage",
@@ -1372,6 +1480,124 @@
         "addDates": "Add Dates",
         "whatsapp": "Connect"
       }
+    },
+    "tourForm": {
+      "addTour": "Add New Tour",
+      "editTour": "Edit Tour",
+      "description": "Fill in the tour details",
+      "title": "Tour Title",
+      "titlePlaceholder": "Cappadocia Tour",
+      "destination": "Destination",
+      "destinationPlaceholder": "Cappadocia",
+      "type": "Tour Type",
+      "selectType": "Select type",
+      "currency": "Currency",
+      "minPax": "Minimum Participants",
+      "visaRequired": "Visa Required",
+      "programUrl": "Program PDF Link",
+      "programUrlPlaceholder": "https://...",
+      "shortProgram": "Short Itinerary",
+      "shortProgramPlaceholder": "Brief description...",
+      "departurePoint": "Departure Point",
+      "departurePlaceholder": "Antalya Airport",
+      "meetingTime": "Meeting Time",
+      "meetingPlaceholder": "08:00",
+      "duration": "Tour Duration",
+      "durationPlaceholder": "3 days 2 nights",
+      "accommodation": "Accommodation",
+      "accommodationPlaceholder": "5* Hotel",
+      "transportation": "Transportation",
+      "transportationPlaceholder": "Flight + Bus",
+      "category": "Tour Category",
+      "categoryPlaceholder": "Cultural Tour",
+      "places": "Places to Visit",
+      "placesPlaceholder": "Place 1, Place 2...",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "error": "Error",
+      "titleMinLength": "Tour name must be at least 3 characters",
+      "destinationMinLength": "Destination must be at least 2 characters",
+      "fillRequired": "Please fill in all required fields",
+      "addSuccess": "Tour added successfully",
+      "updateSuccess": "Tour updated successfully"
+    },
+    "agencyManagement": {
+      "title": "Agency Management",
+      "addNewAgency": "Add New Agency"
+    },
+    "subscriptionHistory": {
+      "title": "Subscription History",
+      "description": "Payment and transaction history"
+    },
+    "subtitle": "Overview",
+    "totalAgencies": "Total Agencies",
+    "activeAgencies": "Active Agencies",
+    "totalMessages": "Total Messages",
+    "conversionRate": "Conversion Rate",
+    "manualReg": {
+      "title": "Add Manual Registration",
+      "steps": {
+        "tourDate": "Tour & Date",
+        "customer": "Customer Info",
+        "payment": "Payment & Notes"
+      },
+      "agencyNotFound": "Agency information not found",
+      "noPaymentMethod": "Please select a payment method",
+      "success": "Registration added successfully",
+      "error": "An error occurred while adding the registration",
+      "selectTour": "Select tour",
+      "selectDate": "Select date",
+      "pricePerPerson": "Per person:",
+      "customerName": "Customer Name *",
+      "namePlaceholder": "Full Name",
+      "phone": "Phone *",
+      "phonePlaceholder": "+90 555 123 4567",
+      "paxCount": "Number of People",
+      "channel": "Source Channel",
+      "channels": {
+        "phone": "📞 Phone",
+        "office": "🏢 Office",
+        "instagram": "📸 Instagram",
+        "whatsapp": "💬 WhatsApp",
+        "other": "📋 Other"
+      },
+      "total": "Total:",
+      "people": "people ×",
+      "paymentStatus": "Payment Status",
+      "paymentMethod": "Payment Method *",
+      "selectPayment": "Select payment method",
+      "payments": {
+        "creditCard": "💳 Credit Card",
+        "cash": "💵 Cash",
+        "transfer": "🏦 Bank Transfer"
+      },
+      "notes": "Notes",
+      "notesPlaceholder": "Optional notes...",
+      "summary": "Registration Summary",
+      "summaryTour": "Tour:",
+      "summaryDate": "Date:",
+      "summaryCustomer": "Customer:",
+      "summaryPax": "People:",
+      "summaryTotal": "Total:"
+    },
+    "regDetail": {
+      "contact": "Contact",
+      "nameLabel": "Name",
+      "phoneLabel": "Phone",
+      "call": "Call",
+      "status": "Status",
+      "registrationStatus": "Registration Status",
+      "paymentStatus": "Payment Status",
+      "source": "Source",
+      "payments": "Payment Transactions",
+      "paymentAmount": "Payment amount...",
+      "paymentMethod": "Payment method",
+      "addPayment": "Add Payment",
+      "pastPayments": "Past Payments",
+      "paymentAdded": "Payment added",
+      "paymentDeleted": "Payment record deleted",
+      "paymentDeleteError": "Payment could not be deleted"
     }
   },
   "auth": {
@@ -1446,7 +1672,9 @@
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password",
     "passwordsNotMatch": "Passwords do not match",
-    "passwordResetSuccess": "Your password has been successfully updated"
+    "passwordResetSuccess": "Your password has been successfully updated",
+    "loggedOut": "Logged out successfully",
+    "logoutFailed": "Could not log out"
   },
   "conversations": {
     "emptyTitle": "No conversations yet",
@@ -1739,7 +1967,12 @@
     "daysAgo": "d ago",
     "people": "people",
     "saving": "Saving...",
-    "back": "Back"
+    "back": "Back",
+    "successTitle": "Success! ✅",
+    "warning": "Warning",
+    "next": "Next",
+    "prev": "Back",
+    "saveLoading": "Saving..."
   },
   "cta": {
     "title": "Ready to Get Started?",

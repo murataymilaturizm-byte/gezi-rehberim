@@ -1070,7 +1070,12 @@
       "note": "ملاحظة",
       "createdAt": "تاريخ الإنشاء",
       "actions": "الإجراءات",
-      "addManual": "إضافة تسجيل يدوي"
+      "addManual": "إضافة تسجيل يدوي",
+      "statusUpdated": "تم تحديث حالة الحجز",
+      "statusUpdatedWithMsg": "تم تحديث الحالة وإرسال رسالة واتساب",
+      "statusUpdatedNoMsg": "تم تحديث الحالة (لم يتم إرسال الرسالة)",
+      "statusUpdateWarning": "تم تحديث الحالة لكن رسالة واتساب فشلت",
+      "statusUpdateError": "تعذّر تحديث الحالة"
     },
     "status": {
       "new": "جديد",
@@ -1378,7 +1383,9 @@
       "error": "خطأ",
       "fillRequired": "يرجى ملء الحقول المطلوبة",
       "addSuccess": "تمت إضافة الرحلة بنجاح",
-      "updateSuccess": "تم تحديث الرحلة بنجاح"
+      "updateSuccess": "تم تحديث الرحلة بنجاح",
+      "titleMinLength": "يجب أن يحتوي اسم الجولة على 3 أحرف على الأقل",
+      "destinationMinLength": "يجب أن يحتوي الوجهة على حرفين على الأقل"
     },
     "dateForm": {
       "addDate": "إضافة تاريخ جديد",
@@ -1532,6 +1539,70 @@
         "addDates": "إضافة مواعيد",
         "whatsapp": "ربط"
       }
+    },
+    "manualReg": {
+      "title": "إضافة حجز يدوي",
+      "steps": {
+        "tourDate": "الجولة والتاريخ",
+        "customer": "بيانات العميل",
+        "payment": "الدفع والملاحظات"
+      },
+      "agencyNotFound": "لم يتم العثور على معلومات الوكالة",
+      "noPaymentMethod": "يرجى اختيار طريقة الدفع",
+      "success": "تمت إضافة الحجز بنجاح",
+      "error": "حدث خطأ أثناء إضافة الحجز",
+      "selectTour": "اختر جولة",
+      "selectDate": "اختر تاريخاً",
+      "pricePerPerson": "للشخص:",
+      "customerName": "اسم العميل *",
+      "namePlaceholder": "الاسم الكامل",
+      "phone": "الهاتف *",
+      "phonePlaceholder": "+90 555 123 4567",
+      "paxCount": "عدد الأشخاص",
+      "channel": "قناة المصدر",
+      "channels": {
+        "phone": "📞 هاتف",
+        "office": "🏢 مكتب",
+        "instagram": "📸 إنستغرام",
+        "whatsapp": "💬 واتساب",
+        "other": "📋 أخرى"
+      },
+      "total": "الإجمالي:",
+      "people": "أشخاص ×",
+      "paymentStatus": "حالة الدفع",
+      "paymentMethod": "طريقة الدفع *",
+      "selectPayment": "اختر طريقة الدفع",
+      "payments": {
+        "creditCard": "💳 بطاقة ائتمان",
+        "cash": "💵 نقداً",
+        "transfer": "🏦 حوالة بنكية"
+      },
+      "notes": "ملاحظات",
+      "notesPlaceholder": "ملاحظات اختيارية...",
+      "summary": "ملخص الحجز",
+      "summaryTour": "الجولة:",
+      "summaryDate": "التاريخ:",
+      "summaryCustomer": "العميل:",
+      "summaryPax": "الأشخاص:",
+      "summaryTotal": "الإجمالي:"
+    },
+    "regDetail": {
+      "contact": "التواصل",
+      "nameLabel": "الاسم",
+      "phoneLabel": "الهاتف",
+      "call": "اتصال",
+      "status": "الحالة",
+      "registrationStatus": "حالة الحجز",
+      "paymentStatus": "حالة الدفع",
+      "source": "المصدر",
+      "payments": "معاملات الدفع",
+      "paymentAmount": "مبلغ الدفع...",
+      "paymentMethod": "طريقة الدفع",
+      "addPayment": "إضافة دفعة",
+      "pastPayments": "المدفوعات السابقة",
+      "paymentAdded": "تمت إضافة الدفعة",
+      "paymentDeleted": "تم حذف سجل الدفع",
+      "paymentDeleteError": "تعذّر حذف الدفعة"
     }
   },
   "auth": {
@@ -1606,7 +1677,9 @@
     "newPassword": "كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور",
     "passwordsNotMatch": "كلمات المرور غير متطابقة",
-    "passwordResetSuccess": "تم تحديث كلمة مرورك بنجاح"
+    "passwordResetSuccess": "تم تحديث كلمة مرورك بنجاح",
+    "loggedOut": "تم تسجيل الخروج بنجاح",
+    "logoutFailed": "تعذّر تسجيل الخروج"
   },
   "conversations": {
     "emptyTitle": "لا توجد محادثات بعد",
@@ -1899,7 +1972,12 @@
     "daysAgo": "ي مضت",
     "people": "أشخاص",
     "saving": "حفظ...",
-    "back": "رجوع"
+    "back": "رجوع",
+    "successTitle": "نجاح! ✅",
+    "warning": "تحذير",
+    "next": "التالي",
+    "prev": "رجوع",
+    "saveLoading": "جارٍ الحفظ..."
   },
   "agencyInfo": {
     "title": "معلومات الوكالة",

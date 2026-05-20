@@ -1,0 +1,538 @@
+{
+  "admin.subtitle": {
+    "tr": "Genel Bakış",
+    "en": "Genel Bakış"
+  },
+  "admin.totalAgencies": {
+    "tr": "Toplam Acente",
+    "en": "Toplam Acente"
+  },
+  "admin.activeAgencies": {
+    "tr": "Aktif Acente",
+    "en": "Aktif Acente"
+  },
+  "admin.totalMessages": {
+    "tr": "Toplam Mesaj",
+    "en": "Toplam Mesaj"
+  },
+  "admin.conversionRate": {
+    "tr": "Dönüşüm Oranı",
+    "en": "Dönüşüm Oranı"
+  },
+  "admin.dashboard.title": {
+    "tr": "Dashboard",
+    "en": "Dashboard"
+  },
+  "admin.dashboard.mostRegisteredPlaces": {
+    "tr": "En çok kayıt alan yerler",
+    "en": "En çok kayıt alan yerler"
+  },
+  "admin.dashboard.filterByDate": {
+    "tr": "Tarih Filtrele",
+    "en": "Tarih Filtrele"
+  },
+  "admin.dashboard.allTime": {
+    "tr": "Tüm Zamanlı",
+    "en": "Tüm Zamanlı"
+  },
+  "admin.dashboard.today": {
+    "tr": "Bugün",
+    "en": "Bugün"
+  },
+  "admin.dashboard.thisWeek": {
+    "tr": "Bu Hafta",
+    "en": "Bu Hafta"
+  },
+  "admin.dashboard.thisMonth": {
+    "tr": "Bu Ay",
+    "en": "Bu Ay"
+  },
+  "admin.dashboard.yearlyRevenue": {
+    "tr": "Yıllık Gelir (Tahmin)",
+    "en": "Yıllık Gelir (Tahmin)"
+  },
+  "admin.dashboard.totalPotentialYearlyRevenue": {
+    "tr": "Toplam potansiyel yıllık gelir",
+    "en": "Toplam potansiyel yıllık gelir"
+  },
+  "admin.dashboard.totalActiveAgencies": {
+    "tr": "Toplam aktif acente:",
+    "en": "Toplam aktif acente:"
+  },
+  "admin.dashboard.avgAgencyValue": {
+    "tr": "Ortalama acente değeri:",
+    "en": "Ortalama acente değeri:"
+  },
+  "admin.dashboard.revenueTrend": {
+    "tr": "Gelir Trendi",
+    "en": "Gelir Trendi"
+  },
+  "admin.dashboard.monthlyRevenueLabel": {
+    "tr": "Aylık Gelir",
+    "en": "Aylık Gelir"
+  },
+  "admin.dashboard.newAgencies": {
+    "tr": "Yeni Acenteler",
+    "en": "Yeni Acenteler"
+  },
+  "admin.dashboard.last": {
+    "tr": "Son",
+    "en": "Son"
+  },
+  "admin.dashboard.months": {
+    "tr": "ay",
+    "en": "ay"
+  },
+  "admin.dashboard.geographicDistribution": {
+    "tr": "Coğrafi Dağılım",
+    "en": "Coğrafi Dağılım"
+  },
+  "admin.dashboard.topCitiesByAgencies": {
+    "tr": "En Çok Acente Bulunan Şehirler",
+    "en": "En Çok Acente Bulunan Şehirler"
+  },
+  "admin.dashboard.location": {
+    "tr": "Konum",
+    "en": "Konum"
+  },
+  "admin.dashboard.agencyCount": {
+    "tr": "Acente Sayısı",
+    "en": "Acente Sayısı"
+  },
+  "admin.dashboard.plans": {
+    "tr": "Planlar:",
+    "en": "Planlar:"
+  },
+  "admin.dashboard.starter": {
+    "tr": "Başlangıç",
+    "en": "Başlangıç"
+  },
+  "admin.dashboard.professional": {
+    "tr": "Profesyonel",
+    "en": "Profesyonel"
+  },
+  "admin.dashboard.enterprise": {
+    "tr": "Kurumsal",
+    "en": "Kurumsal"
+  },
+  "admin.dashboard.unspecified": {
+    "tr": "Belirtilmemiş",
+    "en": "Belirtilmemiş"
+  },
+  "admin.dashboard.noData": {
+    "tr": "Veri yok",
+    "en": "Veri yok"
+  },
+  "admin.dashboard.active": {
+    "tr": "aktif",
+    "en": "aktif"
+  },
+  "admin.dashboard.inactive": {
+    "tr": "pasif",
+    "en": "pasif"
+  },
+  "admin.dashboard.trialVersion": {
+    "tr": "Deneme Sürümü",
+    "en": "Deneme Sürümü"
+  },
+  "admin.dashboard.agenciesInTrial": {
+    "tr": "Deneme sürecindeki acenteler",
+    "en": "Deneme sürecindeki acenteler"
+  },
+  "admin.dashboard.totalMessages": {
+    "tr": "Toplam Mesaj",
+    "en": "Toplam Mesaj"
+  },
+  "admin.dashboard.messagesUsedThisMonth": {
+    "tr": "Bu ay kullanılan mesaj",
+    "en": "Bu ay kullanılan mesaj"
+  },
+  "admin.dashboard.yearlyValueText": {
+    "tr": "Mevcut ücretli aboneliklerin yıllık değeri",
+    "en": "Mevcut ücretli aboneliklerin yıllık değeri"
+  },
+  "admin.dashboard.revenueGrowthTrend": {
+    "tr": "Gelir ve Büyüme Trendi",
+    "en": "Gelir ve Büyüme Trendi"
+  },
+  "admin.dashboard.realPaymentDataAnalysis": {
+    "tr": "Gerçek ödeme verilerine dayalı analiz",
+    "en": "Gerçek ödeme verilerine dayalı analiz"
+  },
+  "admin.dashboard.filters": {
+    "tr": "Filtreler",
+    "en": "Filtreler"
+  },
+  "admin.dashboard.dateRange": {
+    "tr": "Tarih Aralığı",
+    "en": "Tarih Aralığı"
+  },
+  "admin.dashboard.last3Months": {
+    "tr": "Son 3 Ay",
+    "en": "Son 3 Ay"
+  },
+  "admin.dashboard.last6Months": {
+    "tr": "Son 6 Ay",
+    "en": "Son 6 Ay"
+  },
+  "admin.dashboard.last12Months": {
+    "tr": "Son 12 Ay",
+    "en": "Son 12 Ay"
+  },
+  "admin.dashboard.last24Months": {
+    "tr": "Son 24 Ay",
+    "en": "Son 24 Ay"
+  },
+  "admin.dashboard.planTypes": {
+    "tr": "Plan Tipleri",
+    "en": "Plan Tipleri"
+  },
+  "admin.dashboard.starterPlanPrice": {
+    "tr": "Başlangıç (2.999₺/ay)",
+    "en": "Başlangıç (2.999₺/ay)"
+  },
+  "admin.dashboard.professionalPlanPrice": {
+    "tr": "Profesyonel (7.999₺/ay)",
+    "en": "Profesyonel (7.999₺/ay)"
+  },
+  "admin.dashboard.enterprisePlanPrice": {
+    "tr": "Kurumsal (14.999₺/ay)",
+    "en": "Kurumsal (14.999₺/ay)"
+  },
+  "admin.dashboard.compareWithPrevious": {
+    "tr": "Önceki dönem ile karşılaştır",
+    "en": "Önceki dönem ile karşılaştır"
+  },
+  "admin.dashboard.revenue": {
+    "tr": "Gelir",
+    "en": "Gelir"
+  },
+  "admin.dashboard.activeFilter": {
+    "tr": "Aktif Filtre:",
+    "en": "Aktif Filtre:"
+  },
+  "admin.dashboard.only": {
+    "tr": "Sadece",
+    "en": "Sadece"
+  },
+  "admin.dashboard.plansShowing": {
+    "tr": "planları gösteriliyor",
+    "en": "planları gösteriliyor"
+  },
+  "admin.dashboard.geographicDistributionTitle": {
+    "tr": "Acente Coğrafi Dağılımı",
+    "en": "Acente Coğrafi Dağılımı"
+  },
+  "admin.dashboard.geographicDistributionDesc": {
+    "tr": "Acentelerin illere ve bölgelere göre dağılımı (En çok 10 lokasyon)",
+    "en": "Acentelerin illere ve bölgelere göre dağılımı (En çok 10 lokasyon)"
+  },
+  "admin.dashboard.agencies": {
+    "tr": "acente",
+    "en": "acente"
+  },
+  "admin.dashboard.noLocationInfo": {
+    "tr": "Konum Bilgisi Bulunamadı",
+    "en": "Konum Bilgisi Bulunamadı"
+  },
+  "admin.dashboard.noLocationInfoDesc": {
+    "tr": "Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi eklendiğinde coğrafi dağılım burada görüntülenecek.",
+    "en": "Henüz hiçbir acentenin konum bilgisi girilmemiş. Acentelere şehir ve bölge bilgisi eklendiğinde coğrafi dağılım burada görüntülenecek."
+  },
+  "admin.dashboard.superAdminDescription": {
+    "tr": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için 'Acenteler' sekmesini kullanın.",
+    "en": "Tüm acentelerin genel durumunu ve kullanım istatistiklerini buradan takip edebilirsiniz. Detaylı yönetim için 'Acenteler' sekmesini kullanın."
+  },
+  "admin.agency.updateInfo": {
+    "tr": "Acente bilgilerini güncelleyin",
+    "en": "Acente bilgilerini güncelleyin"
+  },
+  "admin.agency.createAccount": {
+    "tr": "Yeni acente hesabı oluşturun",
+    "en": "Yeni acente hesabı oluşturun"
+  },
+  "admin.agency.name": {
+    "tr": "Acente Adı",
+    "en": "Acente Adı"
+  },
+  "admin.agency.owner": {
+    "tr": "Acente Sahibi",
+    "en": "Acente Sahibi"
+  },
+  "admin.agency.city": {
+    "tr": "Şehir",
+    "en": "Şehir"
+  },
+  "admin.agency.region": {
+    "tr": "Bölge",
+    "en": "Bölge"
+  },
+  "admin.agency.status": {
+    "tr": "Durum",
+    "en": "Durum"
+  },
+  "admin.agency.messageQuota": {
+    "tr": "Mesaj Kotası",
+    "en": "Mesaj Kotası"
+  },
+  "admin.agency.remainingTime": {
+    "tr": "Kalan Süre",
+    "en": "Kalan Süre"
+  },
+  "admin.agency.actions": {
+    "tr": "İşlemler",
+    "en": "İşlemler"
+  },
+  "admin.agency.form.cityPlaceholder": {
+    "tr": "İstanbul",
+    "en": "İstanbul"
+  },
+  "admin.agency.form.regionPlaceholder": {
+    "tr": "Marmara",
+    "en": "Marmara"
+  },
+  "admin.agency.tableHeaders.phone": {
+    "tr": "Telefon",
+    "en": "Telefon"
+  },
+  "admin.agency.plans.starterWithLimit": {
+    "tr": "Başlangıç (500 mesaj/ay)",
+    "en": "Başlangıç (500 mesaj/ay)"
+  },
+  "admin.agency.plans.professionalWithLimit": {
+    "tr": "Profesyonel (2.000 mesaj/ay)",
+    "en": "Profesyonel (2.000 mesaj/ay)"
+  },
+  "admin.agency.plans.enterpriseWithLimit": {
+    "tr": "Kurumsal (Sınırsız)",
+    "en": "Kurumsal (Sınırsız)"
+  },
+  "admin.agencyManagement.title": {
+    "tr": "Acente Yönetimi",
+    "en": "Acente Yönetimi"
+  },
+  "admin.agencyManagement.addNewAgency": {
+    "tr": "Yeni Acente Ekle",
+    "en": "Yeni Acente Ekle"
+  },
+  "admin.subscriptionHistory.title": {
+    "tr": "Abonelik Geçmişi",
+    "en": "Abonelik Geçmişi"
+  },
+  "admin.subscriptionHistory.description": {
+    "tr": "Ödeme ve işlem geçmişi",
+    "en": "Ödeme ve işlem geçmişi"
+  },
+  "admin.subscription.planFeatures": {
+    "tr": "Paket Özellikleri",
+    "en": "Paket Özellikleri"
+  },
+  "admin.subscription.activePlan": {
+    "tr": "Aktif Paket",
+    "en": "Aktif Paket"
+  },
+  "admin.subscription.savings": {
+    "tr": "tasarruf",
+    "en": "tasarruf"
+  },
+  "admin.subscription.trialEndsIn": {
+    "tr": "Deneme süresi bitiyor",
+    "en": "Deneme süresi bitiyor"
+  },
+  "admin.subscription.subscriptionEndsIn": {
+    "tr": "Abonelik bitiyor",
+    "en": "Abonelik bitiyor"
+  },
+  "admin.subscription.daysLeft": {
+    "tr": "gün kaldı",
+    "en": "gün kaldı"
+  },
+  "admin.subscription.renewSubscription": {
+    "tr": "Aboneliği Yenile",
+    "en": "Aboneliği Yenile"
+  },
+  "admin.subscription.noTransactions": {
+    "tr": "Henüz işlem geçmişi bulunmuyor",
+    "en": "Henüz işlem geçmişi bulunmuyor"
+  },
+  "admin.subscription.actions": {
+    "tr": "İşlemler",
+    "en": "İşlemler"
+  },
+  "admin.subscription.downloadInvoice": {
+    "tr": "Faturayı İndir",
+    "en": "Faturayı İndir"
+  },
+  "admin.subscription.statuses.success": {
+    "tr": "Başarılı",
+    "en": "Başarılı"
+  },
+  "admin.subscription.statuses.failed": {
+    "tr": "Başarısız",
+    "en": "Başarısız"
+  },
+  "admin.subscription.statuses.pending": {
+    "tr": "Beklemede",
+    "en": "Beklemede"
+  },
+  "admin.subscription.statuses.cancelled": {
+    "tr": "İptal",
+    "en": "İptal"
+  },
+  "admin.tourForm.addTour": {
+    "tr": "Yeni Tur Ekle",
+    "en": "Yeni Tur Ekle"
+  },
+  "admin.tourForm.editTour": {
+    "tr": "Tur Düzenle",
+    "en": "Tur Düzenle"
+  },
+  "admin.tourForm.description": {
+    "tr": "Tur bilgilerini doldurun",
+    "en": "Tur bilgilerini doldurun"
+  },
+  "admin.tourForm.title": {
+    "tr": "Tur Başlığı",
+    "en": "Tur Başlığı"
+  },
+  "admin.tourForm.titlePlaceholder": {
+    "tr": "Kapadokya Turu",
+    "en": "Kapadokya Turu"
+  },
+  "admin.tourForm.destination": {
+    "tr": "Destinasyon",
+    "en": "Destinasyon"
+  },
+  "admin.tourForm.destinationPlaceholder": {
+    "tr": "Kapadokya",
+    "en": "Kapadokya"
+  },
+  "admin.tourForm.type": {
+    "tr": "Tur Tipi",
+    "en": "Tur Tipi"
+  },
+  "admin.tourForm.selectType": {
+    "tr": "Tip seçin",
+    "en": "Tip seçin"
+  },
+  "admin.tourForm.currency": {
+    "tr": "Para Birimi",
+    "en": "Para Birimi"
+  },
+  "admin.tourForm.minPax": {
+    "tr": "Minimum Kişi Sayısı",
+    "en": "Minimum Kişi Sayısı"
+  },
+  "admin.tourForm.visaRequired": {
+    "tr": "Vize Gerekli",
+    "en": "Vize Gerekli"
+  },
+  "admin.tourForm.programUrl": {
+    "tr": "Program PDF Linki",
+    "en": "Program PDF Linki"
+  },
+  "admin.tourForm.programUrlPlaceholder": {
+    "tr": "https://...",
+    "en": "https://..."
+  },
+  "admin.tourForm.shortProgram": {
+    "tr": "Kısa Program",
+    "en": "Kısa Program"
+  },
+  "admin.tourForm.shortProgramPlaceholder": {
+    "tr": "Kısa açıklama...",
+    "en": "Kısa açıklama..."
+  },
+  "admin.tourForm.departurePoint": {
+    "tr": "Hareket Noktası",
+    "en": "Hareket Noktası"
+  },
+  "admin.tourForm.departurePlaceholder": {
+    "tr": "Antalya Havalimanı",
+    "en": "Antalya Havalimanı"
+  },
+  "admin.tourForm.meetingTime": {
+    "tr": "Toplanma Saati",
+    "en": "Toplanma Saati"
+  },
+  "admin.tourForm.meetingPlaceholder": {
+    "tr": "08:00",
+    "en": "08:00"
+  },
+  "admin.tourForm.duration": {
+    "tr": "Tur Süresi",
+    "en": "Tur Süresi"
+  },
+  "admin.tourForm.durationPlaceholder": {
+    "tr": "3 gün 2 gece",
+    "en": "3 gün 2 gece"
+  },
+  "admin.tourForm.accommodation": {
+    "tr": "Konaklama",
+    "en": "Konaklama"
+  },
+  "admin.tourForm.accommodationPlaceholder": {
+    "tr": "5* Otel",
+    "en": "5* Otel"
+  },
+  "admin.tourForm.transportation": {
+    "tr": "Ulaşım",
+    "en": "Ulaşım"
+  },
+  "admin.tourForm.transportationPlaceholder": {
+    "tr": "Uçak + Otobüs",
+    "en": "Uçak + Otobüs"
+  },
+  "admin.tourForm.category": {
+    "tr": "Tur Kategorisi",
+    "en": "Tur Kategorisi"
+  },
+  "admin.tourForm.categoryPlaceholder": {
+    "tr": "Kültür Turu",
+    "en": "Kültür Turu"
+  },
+  "admin.tourForm.places": {
+    "tr": "Gezilecek Yerler",
+    "en": "Gezilecek Yerler"
+  },
+  "admin.tourForm.placesPlaceholder": {
+    "tr": "Yer 1, Yer 2...",
+    "en": "Yer 1, Yer 2..."
+  },
+  "admin.tourForm.cancel": {
+    "tr": "İptal",
+    "en": "İptal"
+  },
+  "admin.tourForm.save": {
+    "tr": "Kaydet",
+    "en": "Kaydet"
+  },
+  "admin.tourForm.saving": {
+    "tr": "Kaydediliyor...",
+    "en": "Kaydediliyor..."
+  },
+  "admin.tourForm.error": {
+    "tr": "Hata",
+    "en": "Hata"
+  },
+  "admin.tourForm.titleMinLength": {
+    "tr": "Tur adı en az 3 karakter olmalıdır",
+    "en": "Tur adı en az 3 karakter olmalıdır"
+  },
+  "admin.tourForm.destinationMinLength": {
+    "tr": "Destinasyon en az 2 karakter olmalıdır",
+    "en": "Destinasyon en az 2 karakter olmalıdır"
+  },
+  "admin.tourForm.fillRequired": {
+    "tr": "Lütfen zorunlu alanları doldurun",
+    "en": "Lütfen zorunlu alanları doldurun"
+  },
+  "admin.tourForm.addSuccess": {
+    "tr": "Tur başarıyla eklendi",
+    "en": "Tur başarıyla eklendi"
+  },
+  "admin.tourForm.updateSuccess": {
+    "tr": "Tur başarıyla güncellendi",
+    "en": "Tur başarıyla güncellendi"
+  }
+}
