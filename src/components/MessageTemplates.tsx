@@ -395,7 +395,6 @@ export default function MessageTemplates() {
       <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <TabsList className="grid grid-cols-7 w-full">
           {LANGUAGES.map((lang) => {
-            // Bu dilde en az 1 custom (Meta) template varsa count göster
             const metaCount = templates.filter(
               tmpl => tmpl.language === lang.code && !(tmpl.template_key in KNOWN_TEMPLATE_TYPES)
             ).length;
@@ -421,8 +420,7 @@ export default function MessageTemplates() {
                 );
                 const isKnownType = key in KNOWN_TEMPLATE_TYPES;
 
-                // Custom/Meta template'ler: sadece kendi dilinin tab'ında görünsün
-                // (TR tab'ında EN template boş kart olarak çıkmasın)
+                // Custom/Meta template: sadece kendi dilinin tab'ında göster
                 if (!isKnownType && !template) return null;
 
                 const label = getTemplateLabel(key, t);

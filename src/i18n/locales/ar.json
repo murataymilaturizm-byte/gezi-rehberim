@@ -618,6 +618,7 @@
         "cancel": "إلغاء",
         "save": "حفظ"
       },
+      "metaSection": { "title": "قوالب Meta" },
       "notCreated": "لم يتم الإنشاء بعد",
       "deleteConfirm": "هل أنت متأكد من رغبتك في حذف هذا القالب؟",
       "sendButton": "إرسال",

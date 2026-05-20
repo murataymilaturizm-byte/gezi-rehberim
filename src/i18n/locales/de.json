@@ -618,6 +618,7 @@
         "cancel": "Abbrechen",
         "save": "Speichern"
       },
+      "metaSection": { "title": "Meta-Vorlagen" },
       "notCreated": "Noch nicht erstellt",
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?",
       "sendButton": "Senden",

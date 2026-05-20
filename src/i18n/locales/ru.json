@@ -649,6 +649,7 @@
         "cancel": "Отмена",
         "save": "Сохранить"
       },
+      "metaSection": { "title": "Шаблоны Meta" },
       "notCreated": "Еще не создано",
       "deleteConfirm": "Вы уверены, что хотите удалить этот шаблон?",
       "sendButton": "Отправить",

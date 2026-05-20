@@ -618,6 +618,7 @@
         "cancel": "Annuler",
         "save": "Enregistrer"
       },
+      "metaSection": { "title": "Modèles Meta" },
       "notCreated": "Pas encore créé",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle?",
       "sendButton": "Envoyer",

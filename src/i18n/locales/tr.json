@@ -596,6 +596,9 @@
         "cancel": "İptal",
         "save": "Kaydet"
       },
+      "metaSection": {
+        "title": "Meta Şablonları"
+      },
       "notCreated": "Henüz oluşturulmadı",
       "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?",
       "sendButton": "Gönder",

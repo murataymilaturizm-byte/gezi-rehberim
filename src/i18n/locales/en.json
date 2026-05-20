@@ -617,6 +617,9 @@
         "cancel": "Cancel",
         "save": "Save"
       },
+      "metaSection": {
+        "title": "Meta Templates"
+      },
       "notCreated": "Not created yet",
       "deleteConfirm": "Are you sure you want to delete this template?",
       "sendButton": "Send",

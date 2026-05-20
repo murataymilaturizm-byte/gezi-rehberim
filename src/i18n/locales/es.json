@@ -649,6 +649,7 @@
         "cancel": "Cancelar",
         "save": "Guardar"
       },
+      "metaSection": { "title": "Plantillas de Meta" },
       "notCreated": "Aún no creado",
       "deleteConfirm": "¿Está seguro de que desea eliminar esta plantilla?",
       "sendButton": "Enviar",
