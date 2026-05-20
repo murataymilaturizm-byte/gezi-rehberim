@@ -516,20 +516,16 @@
       "allDates": "Toutes les dates"
     },
     "payment": {
-      "status": {
-        "pending": "Paiement en Attente",
-        "processing": "Traitement du Paiement",
-        "completed": "Paiement Terminé",
-        "failed": "Échec du Paiement"
-      },
-      "messages": {
-        "pending": "Redirection vers la page de paiement...",
-        "processing": "Vérification de votre paiement...",
-        "completed": "Paiement effectué avec succès!",
-        "failed": "Le processus de paiement a échoué."
-      },
-      "redirecting": "Redirection",
-      "pleaseWait": "Veuillez patienter"
+      "success": "Paiement Réussi! 🎉",
+      "successDesc": "Votre abonnement a été activé. Votre facture est en préparation.",
+      "successDescWithOrder": "Votre abonnement a été activé. N° commande: {{orderId}}...",
+      "failed": "Paiement Échoué",
+      "failedBase": "Le paiement n'a pas pu être complété.",
+      "insufficientFunds": "Votre carte n'a pas suffisamment de fonds.",
+      "cardDeclined": "Votre carte a été refusée. Veuillez contacter votre banque.",
+      "expiredCard": "Votre carte est expirée.",
+      "invalidCvv": "Code CVV invalide.",
+      "failedGeneric": "Veuillez réessayer ou utiliser une autre carte."
     },
     "paymentSettings": {
       "title": "Paramètres d'Informations de Paiement",
@@ -860,18 +856,6 @@
     "logout": "Déconnexion",
     "loading": "Chargement...",
     "superAdmin": "Super Admin",
-    "payment": {
-      "success": "Paiement Réussi! 🎉",
-      "successDesc": "Votre abonnement a été activé. Votre facture est en préparation.",
-      "successDescWithOrder": "Votre abonnement a été activé. N° commande: {{orderId}}...",
-      "failed": "Paiement Échoué",
-      "failedBase": "Le paiement n'a pas pu être complété.",
-      "insufficientFunds": "Votre carte n'a pas suffisamment de fonds.",
-      "cardDeclined": "Votre carte a été refusée. Veuillez contacter votre banque.",
-      "expiredCard": "Votre carte est expirée.",
-      "invalidCvv": "Code CVV invalide.",
-      "failedGeneric": "Veuillez réessayer ou utiliser une autre carte."
-    },
     "languageWarning": {
       "message": "Vous n'avez pas encore sélectionné de langues pour votre bot WhatsApp. Vous devez sélectionner au moins 1 langue pour que votre bot fonctionne",
       "action": "Sélectionner les Langues Maintenant"
@@ -1627,56 +1611,86 @@
   "conversations": {
     "emptyTitle": "Pas encore de conversations",
     "emptyDescription": "Les conversations avec vos clients via WhatsApp apparaîtront ici.",
-    "botActiveTitle": "Bot actif", "botActiveDescription": "L'IA répond automatiquement",
-    "botPausedTitle": "Bot en pause", "botPausedDescription": "Seul vous répondez au client (24 h)",
-    "pauseBot": "Mettre le bot en pause", "resumeBot": "Reprendre le bot",
-    "botPaused": "Bot mis en pause pendant 24 heures", "botResumed": "Bot repris",
-    "replyPlaceholder": "Tapez votre message...", "replyHint": "Ctrl+Entrée pour envoyer",
-    "sendReply": "Envoyer", "sending": "Envoi en cours...",
-    "sendSuccess": "Message envoyé!", "sendError": "Échec de l'envoi du message",
+    "botActiveTitle": "Bot actif",
+    "botActiveDescription": "L'IA répond automatiquement",
+    "botPausedTitle": "Bot en pause",
+    "botPausedDescription": "Seul vous répondez au client (24 h)",
+    "pauseBot": "Mettre le bot en pause",
+    "resumeBot": "Reprendre le bot",
+    "botPaused": "Bot mis en pause pendant 24 heures",
+    "botResumed": "Bot repris",
+    "replyPlaceholder": "Tapez votre message...",
+    "replyHint": "Ctrl+Entrée pour envoyer",
+    "sendReply": "Envoyer",
+    "sending": "Envoi en cours...",
+    "sendSuccess": "Message envoyé!",
+    "sendError": "Échec de l'envoi du message",
     "outside24h": "Le client n'a pas écrit depuis 24h. Utilisez un message modèle."
   },
   "notifications": {
-    "title": "Notifications", "markAllRead": "Tout marquer comme lu",
-    "empty": "Pas encore de notifications", "newReservation": "Nouvelle réservation",
-    "aiFailure": "L'IA n'a pas pu répondre", "cancellation": "Demande d'annulation", "message": "Nouveau message"
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "empty": "Pas encore de notifications",
+    "newReservation": "Nouvelle réservation",
+    "aiFailure": "L'IA n'a pas pu répondre",
+    "cancellation": "Demande d'annulation",
+    "message": "Nouveau message"
   },
   "tours": {
-    "emptyTitle": "Aucun circuit ajouté",
-    "emptyDescription": "Commencez par ajouter votre premier circuit.",
-    "addFirstTour": "Ajouter le premier circuit"
+    "bulkDate": "Dates en masse",
+    "bulkImport": "Importer depuis Excel",
+    "duplicate": "Dupliquer",
+    "duplicateTitleLabel": "Nouveau nom du circuit",
+    "copyDatesNote": "{{count}} dates seront également copiées",
+    "duplicateConfirm": "Dupliquer",
+    "duplicateSuccess": "Circuit dupliqué!",
+    "duplicateError": "La duplication a échoué"
   },
   "weekdays": {
-    "monday": "Lundi", "tuesday": "Mardi", "wednesday": "Mercredi",
-    "thursday": "Jeudi", "friday": "Vendredi", "saturday": "Samedi", "sunday": "Dimanche"
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi",
+    "saturday": "Samedi",
+    "sunday": "Dimanche"
   },
   "bulkDates": {
     "title": "Générateur de dates en masse",
     "subtitle": "Ajoutez plusieurs dates de circuit en une seule fois",
     "pattern": "Modèle de récurrence",
-    "patterns": { "weekly": "Hebdomadaire des jours spécifiques", "monthly": "Mensuel un jour spécifique", "daily": "Quotidien (consécutif)" },
+    "patterns": {
+      "weekly": "Hebdomadaire des jours spécifiques",
+      "monthly": "Mensuel un jour spécifique",
+      "daily": "Quotidien (consécutif)"
+    },
     "selectDays": "Quels jours?",
     "dayOfMonth": "Jour du mois (1-28)",
     "monthlyHint": "Ex. 15 → le 15 de chaque mois",
-    "startDate": "Date de début", "endDate": "Date de fin",
-    "tourDuration": "Durée du circuit (jours)", "durationHint": "Excursion: 1 — 2 nuits 3 jours: 3",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "tourDuration": "Durée du circuit (jours)",
+    "durationHint": "Excursion: 1 — 2 nuits 3 jours: 3",
     "pricingAndQuota": "Prix et quota",
-    "priceAdult": "Prix adulte *", "priceChild": "Prix enfant", "quota": "Quota",
+    "priceAdult": "Prix adulte *",
+    "priceChild": "Prix enfant",
+    "quota": "Quota",
     "pricingNote": "Le même prix sera appliqué à toutes les dates",
     "preview": "{{count}} dates seront créées",
-    "moreDates": "dates supplémentaires...", "generateButton": "Créer {{count}} dates", "generating": "Génération...",
+    "moreDates": "dates supplémentaires...",
+    "generateButton": "Créer {{count}} dates",
+    "generating": "Génération...",
     "success": "{{count}} dates ajoutées avec succès!",
-    "errors": { "noDates": "Veuillez sélectionner une plage de dates et un modèle", "priceRequired": "Le prix adulte est requis", "tooManyDates": "Maximum 100 dates par lot", "generic": "Échec de la création des dates" }
+    "errors": {
+      "noDates": "Veuillez sélectionner une plage de dates et un modèle",
+      "priceRequired": "Le prix adulte est requis",
+      "tooManyDates": "Maximum 100 dates par lot",
+      "generic": "Échec de la création des dates"
+    }
   },
   "registrations": {
     "emptyTitle": "Pas encore de réservations",
     "emptyDescription": "Les réservations via WhatsApp ou le chat démo apparaîtront ici. Vous pouvez aussi les ajouter manuellement."
-  },
-  "tours": {
-    "bulkDate": "Dates en masse", "bulkImport": "Importer depuis Excel",
-    "duplicate": "Dupliquer", "duplicateTitleLabel": "Nouveau nom du circuit",
-    "copyDatesNote": "{{count}} dates seront également copiées",
-    "duplicateConfirm": "Dupliquer", "duplicateSuccess": "Circuit dupliqué!", "duplicateError": "La duplication a échoué"
   },
   "bulkImport": {
     "title": "Import de circuits en masse depuis Excel",
@@ -1684,26 +1698,100 @@
     "needTemplate": "Besoin d'un modèle?",
     "templateDescription": "Téléchargez un modèle prêt à l'emploi au bon format",
     "downloadTemplate": "Télécharger le modèle",
-    "selectFile": "Sélectionner un fichier Excel", "fileHint": "Formats .xlsx ou .xls pris en charge",
-    "parsedTours": "Circuits analysés", "parsed": "{{valid}}/{{total}} circuits valides",
-    "valid": "Valide", "invalid": "Invalide",
-    "importButton": "Importer {{count}} circuits", "importing": "Importation...",
+    "selectFile": "Sélectionner un fichier Excel",
+    "fileHint": "Formats .xlsx ou .xls pris en charge",
+    "parsedTours": "Circuits analysés",
+    "parsed": "{{valid}}/{{total}} circuits valides",
+    "valid": "Valide",
+    "invalid": "Invalide",
+    "importButton": "Importer {{count}} circuits",
+    "importing": "Importation...",
     "success": "{{count}} circuits ajoutés avec succès!",
-    "errors": { "parseError": "Impossible de lire le fichier Excel", "noValid": "Aucun circuit valide à importer", "importFailed": "L'importation a échoué", "titleRequired": "Le nom du circuit est requis", "destinationRequired": "La destination est requise" }
+    "errors": {
+      "parseError": "Impossible de lire le fichier Excel",
+      "noValid": "Aucun circuit valide à importer",
+      "importFailed": "L'importation a échoué",
+      "titleRequired": "Le nom du circuit est requis",
+      "destinationRequired": "La destination est requise"
+    }
   },
-  "greetings": { "morning": "Bonjour", "afternoon": "Bon après-midi", "evening": "Bonsoir", "night": "Bonne nuit" },
-  "dashboard": { "kpi": { "vsLastWeek": "vs semaine dernière" }, "welcome": { "todayStats": "{{count}} nouvelles réservations aujourd'hui", "revenue": "revenus", "pending": "en attente", "noRegistrations": "Aucune réservation aujourd'hui. Votre bot WhatsApp fonctionne ! 💬" }, "salesTrend": { "title": "Tendance des ventes", "subtitle": "Comparaison des revenus", "currentPeriod": "Période actuelle", "previousPeriod": "Période précédente", "noData": "Pas encore assez de données" }, "recentRegistrations": { "title": "Réservations récentes", "emptyTitle": "Pas de réservations", "emptyDescription": "Votre bot WhatsApp accueille les clients" }, "tourPerformance": { "title": "Performance des circuits" }, "quickActions": { "title": "Actions rapides" } },
+  "greetings": {
+    "morning": "Bonjour",
+    "afternoon": "Bon après-midi",
+    "evening": "Bonsoir",
+    "night": "Bonne nuit"
+  },
+  "dashboard": {
+    "kpi": {
+      "vsLastWeek": "vs semaine dernière"
+    },
+    "welcome": {
+      "todayStats": "{{count}} nouvelles réservations aujourd'hui",
+      "revenue": "revenus",
+      "pending": "en attente",
+      "noRegistrations": "Aucune réservation aujourd'hui. Votre bot WhatsApp fonctionne ! 💬"
+    },
+    "salesTrend": {
+      "title": "Tendance des ventes",
+      "subtitle": "Comparaison des revenus",
+      "currentPeriod": "Période actuelle",
+      "previousPeriod": "Période précédente",
+      "noData": "Pas encore assez de données"
+    },
+    "recentRegistrations": {
+      "title": "Réservations récentes",
+      "emptyTitle": "Pas de réservations",
+      "emptyDescription": "Votre bot WhatsApp accueille les clients"
+    },
+    "tourPerformance": {
+      "title": "Performance des circuits"
+    },
+    "quickActions": {
+      "title": "Actions rapides"
+    }
+  },
   "onboardingTour": {
-    "welcome": { "title": "🎉 Bienvenue sur Turzz AI !", "content": "Laissez-nous vous faire une visite rapide du panneau. 30 secondes seulement. Vous pouvez ignorer à tout moment." },
-    "dashboard": { "title": "📊 Tableau de bord", "content": "Suivez les réservations quotidiennes, les revenus et les statistiques du chatbot ici." },
-    "agencyInfo": { "title": "🏢 Informations agence", "content": "Commencez ici : adresse, horaires, informations de paiement. Affiché à vos clients sur WhatsApp." },
-    "tours": { "title": "🗺️ Vos circuits", "content": "Gérez les circuits, ajoutez des dates, importez depuis Excel ou dupliquez un circuit existant." },
-    "whatsapp": { "title": "💬 Intégration WhatsApp", "content": "Connectez votre compte WhatsApp Business. Le bot fonctionne 24h/24, vous pouvez reprendre n'importe quelle conversation." },
-    "notifications": { "title": "🔔 Notifications", "content": "Alertes instantanées pour les nouvelles réservations. Cliquez pour voir les détails." },
-    "commandPalette": { "title": "⚡ Accès rapide", "content": "Ctrl+K (Mac: Cmd+K) pour naviguer instantanément ou lancer des actions." },
-    "mobileMenu": { "title": "☰ Menu", "content": "Appuyez ici pour accéder à toutes les sections du panneau." },
-    "complete": { "title": "🚀 Vous êtes prêt !", "content": "Explorez le panneau. Pour de l'aide : Ctrl+K → 'Relancer la visite'." },
-    "next": "Suivant →", "back": "← Retour", "skip": "Ignorer", "close": "Fermer", "finish": "C'est parti ! 🚀"
+    "welcome": {
+      "title": "🎉 Bienvenue sur Turzz AI !",
+      "content": "Laissez-nous vous faire une visite rapide du panneau. 30 secondes seulement. Vous pouvez ignorer à tout moment."
+    },
+    "dashboard": {
+      "title": "📊 Tableau de bord",
+      "content": "Suivez les réservations quotidiennes, les revenus et les statistiques du chatbot ici."
+    },
+    "agencyInfo": {
+      "title": "🏢 Informations agence",
+      "content": "Commencez ici : adresse, horaires, informations de paiement. Affiché à vos clients sur WhatsApp."
+    },
+    "tours": {
+      "title": "🗺️ Vos circuits",
+      "content": "Gérez les circuits, ajoutez des dates, importez depuis Excel ou dupliquez un circuit existant."
+    },
+    "whatsapp": {
+      "title": "💬 Intégration WhatsApp",
+      "content": "Connectez votre compte WhatsApp Business. Le bot fonctionne 24h/24, vous pouvez reprendre n'importe quelle conversation."
+    },
+    "notifications": {
+      "title": "🔔 Notifications",
+      "content": "Alertes instantanées pour les nouvelles réservations. Cliquez pour voir les détails."
+    },
+    "commandPalette": {
+      "title": "⚡ Accès rapide",
+      "content": "Ctrl+K (Mac: Cmd+K) pour naviguer instantanément ou lancer des actions."
+    },
+    "mobileMenu": {
+      "title": "☰ Menu",
+      "content": "Appuyez ici pour accéder à toutes les sections du panneau."
+    },
+    "complete": {
+      "title": "🚀 Vous êtes prêt !",
+      "content": "Explorez le panneau. Pour de l'aide : Ctrl+K → 'Relancer la visite'."
+    },
+    "next": "Suivant →",
+    "back": "← Retour",
+    "skip": "Ignorer",
+    "close": "Fermer",
+    "finish": "C'est parti ! 🚀"
   },
   "commandPalette": {
     "placeholder": "Rechercher des pages ou commandes...",
@@ -1801,9 +1889,17 @@
     "filter": "Filtrer",
     "export": "Exporter",
     "import": "Importer",
-    "weekly": "Hebdomadaire", "monthly": "Mensuel", "quarterly": "Trimestriel",
-    "viewAll": "Tout voir", "justNow": "maintenant", "minutesAgo": "min",
-    "hoursAgo": "h", "daysAgo": "j", "people": "personnes", "saving": "Enregistrement...", "back": "Retour"
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "quarterly": "Trimestriel",
+    "viewAll": "Tout voir",
+    "justNow": "maintenant",
+    "minutesAgo": "min",
+    "hoursAgo": "h",
+    "daysAgo": "j",
+    "people": "personnes",
+    "saving": "Enregistrement...",
+    "back": "Retour"
   },
   "agencyInfo": {
     "title": "Informations sur l'agence",
@@ -2785,5 +2881,10 @@
         "20% du coût d'un employé"
       ]
     }
+  },
+  "whatsapp": {
+    "configError": "Impossible de charger la configuration WhatsApp. Veuillez réessayer plus tard.",
+    "sdkLoading": "Chargement...",
+    "connectButton": "Connecter mon numéro WhatsApp"
   }
 }

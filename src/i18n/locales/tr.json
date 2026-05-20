@@ -494,20 +494,16 @@
       "clear": "Filtreleri Temizle"
     },
     "payment": {
-      "status": {
-        "pending": "Ödeme Bekleniyor",
-        "processing": "Ödeme İşleniyor",
-        "completed": "Ödeme Tamamlandı",
-        "failed": "Ödeme Başarısız"
-      },
-      "messages": {
-        "pending": "Ödeme sayfasına yönlendiriliyorsunuz...",
-        "processing": "Ödeme işleminiz kontrol ediliyor...",
-        "completed": "Ödeme başarıyla tamamlandı!",
-        "failed": "Ödeme işlemi başarısız oldu."
-      },
-      "redirecting": "Yönlendiriliyor",
-      "pleaseWait": "Lütfen bekleyin"
+      "success": "Ödeme Başarılı! 🎉",
+      "successDesc": "Aboneliğiniz aktifleştirildi. Faturanız hazırlanıyor.",
+      "successDescWithOrder": "Aboneliğiniz aktifleştirildi. Sipariş No: {{orderId}}...",
+      "failed": "Ödeme Başarısız",
+      "failedBase": "Ödeme işlemi tamamlanamadı.",
+      "insufficientFunds": "Kartınızda yeterli bakiye bulunmuyor.",
+      "cardDeclined": "Kartınız reddedildi. Lütfen bankanızla iletişime geçin.",
+      "expiredCard": "Kartınızın süresi dolmuş.",
+      "invalidCvv": "CVV kodu hatalı.",
+      "failedGeneric": "Lütfen tekrar deneyin veya farklı bir kart kullanın."
     },
     "paymentSettings": {
       "title": "Ödeme Bilgileri Ayarları",
@@ -1157,18 +1153,6 @@
     "logout": "Çıkış",
     "loading": "Yükleniyor...",
     "superAdmin": "Super Admin",
-    "payment": {
-      "success": "Ödeme Başarılı! 🎉",
-      "successDesc": "Aboneliğiniz aktifleştirildi. Faturanız hazırlanıyor.",
-      "successDescWithOrder": "Aboneliğiniz aktifleştirildi. Sipariş No: {{orderId}}...",
-      "failed": "Ödeme Başarısız",
-      "failedBase": "Ödeme işlemi tamamlanamadı.",
-      "insufficientFunds": "Kartınızda yeterli bakiye bulunmuyor.",
-      "cardDeclined": "Kartınız reddedildi. Lütfen bankanızla iletişime geçin.",
-      "expiredCard": "Kartınızın süresi dolmuş.",
-      "invalidCvv": "CVV kodu hatalı.",
-      "failedGeneric": "Lütfen tekrar deneyin veya farklı bir kart kullanın."
-    },
     "languageWarning": {
       "message": "WhatsApp botunuz için henüz bir dil seçmediniz. Botunuzun çalışabilmesi için en az 1 dil seçmelisiniz",
       "action": "Şimdi Dil Seç"
@@ -1613,9 +1597,14 @@
     "message": "Yeni mesaj"
   },
   "tours": {
-    "emptyTitle": "Henüz tur eklenmemiş",
-    "emptyDescription": "İlk turunuzu ekleyerek başlayın. Tek tur ekleyebilir veya Excel'den toplu yükleyebilirsiniz.",
-    "addFirstTour": "İlk Turu Ekle"
+    "bulkDate": "Toplu Tarih",
+    "bulkImport": "Excel'den İçe Aktar",
+    "duplicate": "Kopyala",
+    "duplicateTitleLabel": "Yeni tur adı",
+    "copyDatesNote": "{{count}} tarih de kopyalanacak",
+    "duplicateConfirm": "Kopyala",
+    "duplicateSuccess": "Tur başarıyla kopyalandı!",
+    "duplicateError": "Tur kopyalanamadı"
   },
   "weekdays": {
     "monday": "Pazartesi",
@@ -1662,16 +1651,6 @@
   "registrations": {
     "emptyTitle": "Henüz rezervasyon yok",
     "emptyDescription": "WhatsApp veya demo chat üzerinden gelen rezervasyonlar burada görünecek. Manuel olarak da ekleyebilirsiniz."
-  },
-  "tours": {
-    "bulkDate": "Toplu Tarih",
-    "bulkImport": "Excel'den İçe Aktar",
-    "duplicate": "Kopyala",
-    "duplicateTitleLabel": "Yeni tur adı",
-    "copyDatesNote": "{{count}} tarih de kopyalanacak",
-    "duplicateConfirm": "Kopyala",
-    "duplicateSuccess": "Tur başarıyla kopyalandı!",
-    "duplicateError": "Tur kopyalanamadı"
   },
   "bulkImport": {
     "title": "Excel'den Toplu Tur İçe Aktar",
@@ -2871,5 +2850,10 @@
         "1 çalışan maliyetinin %20'si"
       ]
     }
+  },
+  "whatsapp": {
+    "configError": "WhatsApp yapılandırması yüklenemedi. Lütfen daha sonra tekrar deneyin.",
+    "sdkLoading": "Yükleniyor...",
+    "connectButton": "WhatsApp Numaramı Bağla"
   }
 }

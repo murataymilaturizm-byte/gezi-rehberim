@@ -500,20 +500,16 @@
       "clear": "Clear Filters"
     },
     "payment": {
-      "status": {
-        "pending": "Payment Pending",
-        "processing": "Processing Payment",
-        "completed": "Payment Completed",
-        "failed": "Payment Failed"
-      },
-      "messages": {
-        "pending": "Redirecting to payment page...",
-        "processing": "Verifying your payment...",
-        "completed": "Payment completed successfully!",
-        "failed": "Payment process failed."
-      },
-      "redirecting": "Redirecting",
-      "pleaseWait": "Please wait"
+      "success": "Payment Successful! 🎉",
+      "successDesc": "Your subscription has been activated. Your invoice is being prepared.",
+      "successDescWithOrder": "Your subscription has been activated. Order No: {{orderId}}...",
+      "failed": "Payment Failed",
+      "failedBase": "The payment could not be completed.",
+      "insufficientFunds": "Your card has insufficient funds.",
+      "cardDeclined": "Your card was declined. Please contact your bank.",
+      "expiredCard": "Your card has expired.",
+      "invalidCvv": "Invalid CVV code.",
+      "failedGeneric": "Please try again or use a different card."
     },
     "paymentSettings": {
       "title": "Payment Information Settings",
@@ -812,18 +808,6 @@
     "logout": "Logout",
     "loading": "Loading...",
     "superAdmin": "Super Admin",
-    "payment": {
-      "success": "Payment Successful! 🎉",
-      "successDesc": "Your subscription has been activated. Your invoice is being prepared.",
-      "successDescWithOrder": "Your subscription has been activated. Order No: {{orderId}}...",
-      "failed": "Payment Failed",
-      "failedBase": "The payment could not be completed.",
-      "insufficientFunds": "Your card has insufficient funds.",
-      "cardDeclined": "Your card was declined. Please contact your bank.",
-      "expiredCard": "Your card has expired.",
-      "invalidCvv": "Invalid CVV code.",
-      "failedGeneric": "Please try again or use a different card."
-    },
     "languageWarning": {
       "message": "You haven't selected any languages for your WhatsApp bot yet. You must select at least 1 language for your bot to work",
       "action": "Select Languages Now"
@@ -1461,41 +1445,60 @@
     "message": "New message"
   },
   "tours": {
-    "emptyTitle": "No tours added yet",
-    "emptyDescription": "Start by adding your first tour. You can add one tour or bulk import from Excel.",
-    "addFirstTour": "Add First Tour"
+    "bulkDate": "Bulk Dates",
+    "bulkImport": "Import from Excel",
+    "duplicate": "Duplicate",
+    "duplicateTitleLabel": "New tour name",
+    "copyDatesNote": "{{count}} dates will also be copied",
+    "duplicateConfirm": "Duplicate",
+    "duplicateSuccess": "Tour duplicated!",
+    "duplicateError": "Failed to duplicate"
   },
   "weekdays": {
-    "monday": "Monday", "tuesday": "Tuesday", "wednesday": "Wednesday",
-    "thursday": "Thursday", "friday": "Friday", "saturday": "Saturday", "sunday": "Sunday"
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
   },
   "bulkDates": {
     "title": "Bulk Date Generator",
     "subtitle": "Add multiple tour dates at once",
     "pattern": "Recurrence pattern",
-    "patterns": { "weekly": "Weekly on specific days", "monthly": "Monthly on a specific day", "daily": "Daily (consecutive)" },
+    "patterns": {
+      "weekly": "Weekly on specific days",
+      "monthly": "Monthly on a specific day",
+      "daily": "Daily (consecutive)"
+    },
     "selectDays": "Which days?",
     "dayOfMonth": "Day of month (1-28)",
     "monthlyHint": "E.g. 15 → 15th of every month",
-    "startDate": "Start date", "endDate": "End date",
-    "tourDuration": "Tour duration (days)", "durationHint": "Day trip: 1 — 2 nights 3 days: 3",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "tourDuration": "Tour duration (days)",
+    "durationHint": "Day trip: 1 — 2 nights 3 days: 3",
     "pricingAndQuota": "Pricing & Quota",
-    "priceAdult": "Adult price *", "priceChild": "Child price", "quota": "Quota",
+    "priceAdult": "Adult price *",
+    "priceChild": "Child price",
+    "quota": "Quota",
     "pricingNote": "Same price will be applied to all dates",
     "preview": "{{count}} dates will be created",
-    "moreDates": "more dates...", "generateButton": "Create {{count}} Dates", "generating": "Generating...",
+    "moreDates": "more dates...",
+    "generateButton": "Create {{count}} Dates",
+    "generating": "Generating...",
     "success": "{{count}} dates added successfully!",
-    "errors": { "noDates": "Please select a date range and pattern", "priceRequired": "Adult price is required", "tooManyDates": "Maximum 100 dates per batch", "generic": "Failed to create dates" }
+    "errors": {
+      "noDates": "Please select a date range and pattern",
+      "priceRequired": "Adult price is required",
+      "tooManyDates": "Maximum 100 dates per batch",
+      "generic": "Failed to create dates"
+    }
   },
   "registrations": {
     "emptyTitle": "No reservations yet",
     "emptyDescription": "Reservations from WhatsApp or demo chat will appear here. You can also add them manually."
-  },
-  "tours": {
-    "bulkDate": "Bulk Dates", "bulkImport": "Import from Excel",
-    "duplicate": "Duplicate", "duplicateTitleLabel": "New tour name",
-    "copyDatesNote": "{{count}} dates will also be copied",
-    "duplicateConfirm": "Duplicate", "duplicateSuccess": "Tour duplicated!", "duplicateError": "Failed to duplicate"
   },
   "bulkImport": {
     "title": "Bulk Tour Import from Excel",
@@ -1503,34 +1506,100 @@
     "needTemplate": "Need a template?",
     "templateDescription": "Download a ready-made template in the correct format",
     "downloadTemplate": "Download Template",
-    "selectFile": "Select Excel File", "fileHint": ".xlsx or .xls formats supported",
-    "parsedTours": "Parsed Tours", "parsed": "{{valid}}/{{total}} tours valid",
-    "valid": "Valid", "invalid": "Invalid",
-    "importButton": "Import {{count}} Tours", "importing": "Importing...",
+    "selectFile": "Select Excel File",
+    "fileHint": ".xlsx or .xls formats supported",
+    "parsedTours": "Parsed Tours",
+    "parsed": "{{valid}}/{{total}} tours valid",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "importButton": "Import {{count}} Tours",
+    "importing": "Importing...",
     "success": "{{count}} tours added successfully!",
-    "errors": { "parseError": "Failed to read Excel file", "noValid": "No valid tours to import", "importFailed": "Import failed", "titleRequired": "Tour title is required", "destinationRequired": "Destination is required" }
+    "errors": {
+      "parseError": "Failed to read Excel file",
+      "noValid": "No valid tours to import",
+      "importFailed": "Import failed",
+      "titleRequired": "Tour title is required",
+      "destinationRequired": "Destination is required"
+    }
   },
-  "greetings": { "morning": "Good morning", "afternoon": "Good afternoon", "evening": "Good evening", "night": "Good night" },
+  "greetings": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "night": "Good night"
+  },
   "dashboard": {
-    "kpi": { "vsLastWeek": "vs last week" },
-    "welcome": { "todayStats": "{{count}} new reservations today", "revenue": "revenue", "pending": "pending", "noRegistrations": "No reservations today. Your WhatsApp bot is running! 💬" },
-    "salesTrend": { "title": "Sales Trend", "subtitle": "Revenue comparison", "currentPeriod": "This period", "previousPeriod": "Previous period", "noData": "Not enough data yet" },
-    "recentRegistrations": { "title": "Recent Reservations", "emptyTitle": "No reservations", "emptyDescription": "Your WhatsApp bot is receiving customers" },
-    "tourPerformance": { "title": "Tour Performance" },
-    "quickActions": { "title": "Quick Actions" }
+    "kpi": {
+      "vsLastWeek": "vs last week"
+    },
+    "welcome": {
+      "todayStats": "{{count}} new reservations today",
+      "revenue": "revenue",
+      "pending": "pending",
+      "noRegistrations": "No reservations today. Your WhatsApp bot is running! 💬"
+    },
+    "salesTrend": {
+      "title": "Sales Trend",
+      "subtitle": "Revenue comparison",
+      "currentPeriod": "This period",
+      "previousPeriod": "Previous period",
+      "noData": "Not enough data yet"
+    },
+    "recentRegistrations": {
+      "title": "Recent Reservations",
+      "emptyTitle": "No reservations",
+      "emptyDescription": "Your WhatsApp bot is receiving customers"
+    },
+    "tourPerformance": {
+      "title": "Tour Performance"
+    },
+    "quickActions": {
+      "title": "Quick Actions"
+    }
   },
-
   "onboardingTour": {
-    "welcome": { "title": "🎉 Welcome to Turzz AI!", "content": "Let us give you a quick panel tour. It only takes 30 seconds. You can skip at any time." },
-    "dashboard": { "title": "📊 Dashboard", "content": "Track daily reservations, revenue, and chatbot statistics here." },
-    "agencyInfo": { "title": "🏢 Agency Info", "content": "Start here: address, working hours, payment info. Displayed to your customers on WhatsApp." },
-    "tours": { "title": "🗺️ Your Tours", "content": "Manage tours, add dates, bulk import from Excel, or duplicate an existing tour." },
-    "whatsapp": { "title": "💬 WhatsApp Integration", "content": "Connect your WhatsApp Business account. AI bot runs 24/7, you can take over any conversation." },
-    "notifications": { "title": "🔔 Notifications", "content": "Get instant alerts for new reservations. Click to view details." },
-    "commandPalette": { "title": "⚡ Quick Access", "content": "Press Ctrl+K (Mac: Cmd+K) to instantly navigate or trigger actions. A power user feature!" },
-    "mobileMenu": { "title": "☰ Menu", "content": "Tap here to access all panel sections." },
-    "complete": { "title": "🚀 You're Ready!", "content": "Explore the panel. For help, press Ctrl+K → 'Restart Tour'." },
-    "next": "Next →", "back": "← Back", "skip": "Skip", "close": "Close", "finish": "Let's Go! 🚀"
+    "welcome": {
+      "title": "🎉 Welcome to Turzz AI!",
+      "content": "Let us give you a quick panel tour. It only takes 30 seconds. You can skip at any time."
+    },
+    "dashboard": {
+      "title": "📊 Dashboard",
+      "content": "Track daily reservations, revenue, and chatbot statistics here."
+    },
+    "agencyInfo": {
+      "title": "🏢 Agency Info",
+      "content": "Start here: address, working hours, payment info. Displayed to your customers on WhatsApp."
+    },
+    "tours": {
+      "title": "🗺️ Your Tours",
+      "content": "Manage tours, add dates, bulk import from Excel, or duplicate an existing tour."
+    },
+    "whatsapp": {
+      "title": "💬 WhatsApp Integration",
+      "content": "Connect your WhatsApp Business account. AI bot runs 24/7, you can take over any conversation."
+    },
+    "notifications": {
+      "title": "🔔 Notifications",
+      "content": "Get instant alerts for new reservations. Click to view details."
+    },
+    "commandPalette": {
+      "title": "⚡ Quick Access",
+      "content": "Press Ctrl+K (Mac: Cmd+K) to instantly navigate or trigger actions. A power user feature!"
+    },
+    "mobileMenu": {
+      "title": "☰ Menu",
+      "content": "Tap here to access all panel sections."
+    },
+    "complete": {
+      "title": "🚀 You're Ready!",
+      "content": "Explore the panel. For help, press Ctrl+K → 'Restart Tour'."
+    },
+    "next": "Next →",
+    "back": "← Back",
+    "skip": "Skip",
+    "close": "Close",
+    "finish": "Let's Go! 🚀"
   },
   "commandPalette": {
     "placeholder": "Search pages or commands...",
@@ -2666,5 +2735,10 @@
         "20% of the cost of one employee"
       ]
     }
+  },
+  "whatsapp": {
+    "configError": "Failed to load WhatsApp configuration. Please try again later.",
+    "sdkLoading": "Loading...",
+    "connectButton": "Connect My WhatsApp Number"
   }
 }

@@ -43,7 +43,9 @@ Deno.serve(async (req) => {
     // Return app config for frontend SDK initialization
     if (action === "get-config") {
       const metaAppId = Deno.env.get("META_APP_ID");
-      const metaBusinessId = Deno.env.get("META_BUSINESS_ID");
+      // META_CONFIG_ID = Embedded Signup Configuration ID (öncelikli)
+      // META_BUSINESS_ID = fallback (eski secret adı)
+      const metaConfigId = Deno.env.get("META_CONFIG_ID") || Deno.env.get("META_BUSINESS_ID");
 
       if (!metaAppId) {
         return new Response(
@@ -53,7 +55,7 @@ Deno.serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ appId: metaAppId, configId: metaBusinessId }),
+        JSON.stringify({ appId: metaAppId, configId: metaConfigId }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

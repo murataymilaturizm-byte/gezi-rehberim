@@ -497,20 +497,16 @@
       "clear": "Filter löschen"
     },
     "payment": {
-      "status": {
-        "pending": "Zahlung Ausstehend",
-        "processing": "Zahlung wird Verarbeitet",
-        "completed": "Zahlung Abgeschlossen",
-        "failed": "Zahlung Fehlgeschlagen"
-      },
-      "messages": {
-        "pending": "Weiterleitung zur Zahlungsseite...",
-        "processing": "Ihre Zahlung wird überprüft...",
-        "completed": "Zahlung erfolgreich abgeschlossen!",
-        "failed": "Zahlungsvorgang fehlgeschlagen."
-      },
-      "redirecting": "Weiterleiten",
-      "pleaseWait": "Bitte warten"
+      "success": "Zahlung Erfolgreich! 🎉",
+      "successDesc": "Ihr Abonnement wurde aktiviert. Ihre Rechnung wird vorbereitet.",
+      "successDescWithOrder": "Ihr Abonnement wurde aktiviert. Bestellnr: {{orderId}}...",
+      "failed": "Zahlung Fehlgeschlagen",
+      "failedBase": "Die Zahlung konnte nicht abgeschlossen werden.",
+      "insufficientFunds": "Ihre Karte hat kein ausreichendes Guthaben.",
+      "cardDeclined": "Ihre Karte wurde abgelehnt. Bitte kontaktieren Sie Ihre Bank.",
+      "expiredCard": "Ihre Karte ist abgelaufen.",
+      "invalidCvv": "Ungültiger CVV-Code.",
+      "failedGeneric": "Bitte versuchen Sie es erneut oder verwenden Sie eine andere Karte."
     },
     "paymentSettings": {
       "title": "Zahlungsinformationseinstellungen",
@@ -809,18 +805,6 @@
     "logout": "Abmelden",
     "loading": "Wird geladen...",
     "superAdmin": "Super Admin",
-    "payment": {
-      "success": "Zahlung Erfolgreich! 🎉",
-      "successDesc": "Ihr Abonnement wurde aktiviert. Ihre Rechnung wird vorbereitet.",
-      "successDescWithOrder": "Ihr Abonnement wurde aktiviert. Bestellnr: {{orderId}}...",
-      "failed": "Zahlung Fehlgeschlagen",
-      "failedBase": "Die Zahlung konnte nicht abgeschlossen werden.",
-      "insufficientFunds": "Ihre Karte hat kein ausreichendes Guthaben.",
-      "cardDeclined": "Ihre Karte wurde abgelehnt. Bitte kontaktieren Sie Ihre Bank.",
-      "expiredCard": "Ihre Karte ist abgelaufen.",
-      "invalidCvv": "Ungültiger CVV-Code.",
-      "failedGeneric": "Bitte versuchen Sie es erneut oder verwenden Sie eine andere Karte."
-    },
     "languageWarning": {
       "message": "Sie haben noch keine Sprachen für Ihren WhatsApp-Bot ausgewählt. Sie müssen mindestens 1 Sprache auswählen, damit Ihr Bot funktioniert",
       "action": "Jetzt Sprachen Auswählen"
@@ -1423,56 +1407,86 @@
   "conversations": {
     "emptyTitle": "Noch keine Gespräche",
     "emptyDescription": "Gespräche mit Ihren Kunden über WhatsApp werden hier angezeigt.",
-    "botActiveTitle": "Bot aktiv", "botActiveDescription": "KI antwortet automatisch",
-    "botPausedTitle": "Bot pausiert", "botPausedDescription": "Nur Sie antworten dem Kunden (24 Std.)",
-    "pauseBot": "Bot pausieren", "resumeBot": "Bot fortsetzen",
-    "botPaused": "Bot für 24 Stunden pausiert", "botResumed": "Bot fortgesetzt",
-    "replyPlaceholder": "Nachricht eingeben...", "replyHint": "Strg+Enter zum Senden",
-    "sendReply": "Senden", "sending": "Wird gesendet...",
-    "sendSuccess": "Nachricht gesendet!", "sendError": "Nachricht konnte nicht gesendet werden",
+    "botActiveTitle": "Bot aktiv",
+    "botActiveDescription": "KI antwortet automatisch",
+    "botPausedTitle": "Bot pausiert",
+    "botPausedDescription": "Nur Sie antworten dem Kunden (24 Std.)",
+    "pauseBot": "Bot pausieren",
+    "resumeBot": "Bot fortsetzen",
+    "botPaused": "Bot für 24 Stunden pausiert",
+    "botResumed": "Bot fortgesetzt",
+    "replyPlaceholder": "Nachricht eingeben...",
+    "replyHint": "Strg+Enter zum Senden",
+    "sendReply": "Senden",
+    "sending": "Wird gesendet...",
+    "sendSuccess": "Nachricht gesendet!",
+    "sendError": "Nachricht konnte nicht gesendet werden",
     "outside24h": "Kunde hat in 24 Std. keine Nachricht geschickt. Vorlage verwenden."
   },
   "notifications": {
-    "title": "Benachrichtigungen", "markAllRead": "Alle als gelesen markieren",
-    "empty": "Noch keine Benachrichtigungen", "newReservation": "Neue Reservierung",
-    "aiFailure": "KI konnte nicht antworten", "cancellation": "Stornierungsanfrage", "message": "Neue Nachricht"
+    "title": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "empty": "Noch keine Benachrichtigungen",
+    "newReservation": "Neue Reservierung",
+    "aiFailure": "KI konnte nicht antworten",
+    "cancellation": "Stornierungsanfrage",
+    "message": "Neue Nachricht"
   },
   "tours": {
-    "emptyTitle": "Noch keine Touren hinzugefügt",
-    "emptyDescription": "Beginnen Sie damit, Ihre erste Tour hinzuzufügen.",
-    "addFirstTour": "Erste Tour hinzufügen"
+    "bulkDate": "Massendaten",
+    "bulkImport": "Aus Excel importieren",
+    "duplicate": "Duplizieren",
+    "duplicateTitleLabel": "Neuer Tourname",
+    "copyDatesNote": "{{count}} Daten werden ebenfalls kopiert",
+    "duplicateConfirm": "Duplizieren",
+    "duplicateSuccess": "Tour dupliziert!",
+    "duplicateError": "Duplizierung fehlgeschlagen"
   },
   "weekdays": {
-    "monday": "Montag", "tuesday": "Dienstag", "wednesday": "Mittwoch",
-    "thursday": "Donnerstag", "friday": "Freitag", "saturday": "Samstag", "sunday": "Sonntag"
+    "monday": "Montag",
+    "tuesday": "Dienstag",
+    "wednesday": "Mittwoch",
+    "thursday": "Donnerstag",
+    "friday": "Freitag",
+    "saturday": "Samstag",
+    "sunday": "Sonntag"
   },
   "bulkDates": {
     "title": "Massendaten-Generator",
     "subtitle": "Mehrere Tourdaten auf einmal hinzufügen",
     "pattern": "Wiederholungsmuster",
-    "patterns": { "weekly": "Wöchentlich an bestimmten Tagen", "monthly": "Monatlich an einem bestimmten Tag", "daily": "Täglich (aufeinanderfolgend)" },
+    "patterns": {
+      "weekly": "Wöchentlich an bestimmten Tagen",
+      "monthly": "Monatlich an einem bestimmten Tag",
+      "daily": "Täglich (aufeinanderfolgend)"
+    },
     "selectDays": "Welche Tage?",
     "dayOfMonth": "Tag des Monats (1-28)",
     "monthlyHint": "z.B. 15 → 15. jeden Monats",
-    "startDate": "Startdatum", "endDate": "Enddatum",
-    "tourDuration": "Tourdauer (Tage)", "durationHint": "Tagesausflug: 1 — 2 Nächte 3 Tage: 3",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "tourDuration": "Tourdauer (Tage)",
+    "durationHint": "Tagesausflug: 1 — 2 Nächte 3 Tage: 3",
     "pricingAndQuota": "Preise & Kontingent",
-    "priceAdult": "Erwachsenenpreis *", "priceChild": "Kinderpreis", "quota": "Kontingent",
+    "priceAdult": "Erwachsenenpreis *",
+    "priceChild": "Kinderpreis",
+    "quota": "Kontingent",
     "pricingNote": "Für alle Daten wird derselbe Preis angewendet",
     "preview": "{{count}} Daten werden erstellt",
-    "moreDates": "weitere Daten...", "generateButton": "{{count}} Daten erstellen", "generating": "Wird erstellt...",
+    "moreDates": "weitere Daten...",
+    "generateButton": "{{count}} Daten erstellen",
+    "generating": "Wird erstellt...",
     "success": "{{count}} Daten erfolgreich hinzugefügt!",
-    "errors": { "noDates": "Bitte Datumsbereich und Muster auswählen", "priceRequired": "Erwachsenenpreis ist erforderlich", "tooManyDates": "Maximal 100 Daten pro Stapel", "generic": "Daten konnten nicht erstellt werden" }
+    "errors": {
+      "noDates": "Bitte Datumsbereich und Muster auswählen",
+      "priceRequired": "Erwachsenenpreis ist erforderlich",
+      "tooManyDates": "Maximal 100 Daten pro Stapel",
+      "generic": "Daten konnten nicht erstellt werden"
+    }
   },
   "registrations": {
     "emptyTitle": "Noch keine Reservierungen",
     "emptyDescription": "Reservierungen über WhatsApp oder Demo-Chat erscheinen hier. Sie können auch manuell hinzufügen."
-  },
-  "tours": {
-    "bulkDate": "Massendaten", "bulkImport": "Aus Excel importieren",
-    "duplicate": "Duplizieren", "duplicateTitleLabel": "Neuer Tourname",
-    "copyDatesNote": "{{count}} Daten werden ebenfalls kopiert",
-    "duplicateConfirm": "Duplizieren", "duplicateSuccess": "Tour dupliziert!", "duplicateError": "Duplizierung fehlgeschlagen"
   },
   "bulkImport": {
     "title": "Massenimport aus Excel",
@@ -1480,26 +1494,100 @@
     "needTemplate": "Vorlage benötigt?",
     "templateDescription": "Laden Sie eine fertige Vorlage im richtigen Format herunter",
     "downloadTemplate": "Vorlage herunterladen",
-    "selectFile": "Excel-Datei auswählen", "fileHint": ".xlsx oder .xls Formate unterstützt",
-    "parsedTours": "Verarbeitete Touren", "parsed": "{{valid}}/{{total}} Touren gültig",
-    "valid": "Gültig", "invalid": "Ungültig",
-    "importButton": "{{count}} Touren importieren", "importing": "Importiere...",
+    "selectFile": "Excel-Datei auswählen",
+    "fileHint": ".xlsx oder .xls Formate unterstützt",
+    "parsedTours": "Verarbeitete Touren",
+    "parsed": "{{valid}}/{{total}} Touren gültig",
+    "valid": "Gültig",
+    "invalid": "Ungültig",
+    "importButton": "{{count}} Touren importieren",
+    "importing": "Importiere...",
     "success": "{{count}} Touren erfolgreich hinzugefügt!",
-    "errors": { "parseError": "Excel-Datei konnte nicht gelesen werden", "noValid": "Keine gültigen Touren zum Importieren", "importFailed": "Import fehlgeschlagen", "titleRequired": "Tourname ist erforderlich", "destinationRequired": "Reiseziel ist erforderlich" }
+    "errors": {
+      "parseError": "Excel-Datei konnte nicht gelesen werden",
+      "noValid": "Keine gültigen Touren zum Importieren",
+      "importFailed": "Import fehlgeschlagen",
+      "titleRequired": "Tourname ist erforderlich",
+      "destinationRequired": "Reiseziel ist erforderlich"
+    }
   },
-  "greetings": { "morning": "Guten Morgen", "afternoon": "Guten Nachmittag", "evening": "Guten Abend", "night": "Gute Nacht" },
-  "dashboard": { "kpi": { "vsLastWeek": "vs letzte Woche" }, "welcome": { "todayStats": "{{count}} neue Buchungen heute", "revenue": "Einnahmen", "pending": "ausstehend", "noRegistrations": "Heute noch keine Buchungen. Ihr WhatsApp-Bot läuft! 💬" }, "salesTrend": { "title": "Verkaufstrend", "subtitle": "Einnahmenvergleich", "currentPeriod": "Aktuelle Periode", "previousPeriod": "Vorherige Periode", "noData": "Noch nicht genug Daten" }, "recentRegistrations": { "title": "Letzte Buchungen", "emptyTitle": "Keine Buchungen", "emptyDescription": "Ihr WhatsApp-Bot empfängt Kunden" }, "tourPerformance": { "title": "Tour-Leistung" }, "quickActions": { "title": "Schnellaktionen" } },
+  "greetings": {
+    "morning": "Guten Morgen",
+    "afternoon": "Guten Nachmittag",
+    "evening": "Guten Abend",
+    "night": "Gute Nacht"
+  },
+  "dashboard": {
+    "kpi": {
+      "vsLastWeek": "vs letzte Woche"
+    },
+    "welcome": {
+      "todayStats": "{{count}} neue Buchungen heute",
+      "revenue": "Einnahmen",
+      "pending": "ausstehend",
+      "noRegistrations": "Heute noch keine Buchungen. Ihr WhatsApp-Bot läuft! 💬"
+    },
+    "salesTrend": {
+      "title": "Verkaufstrend",
+      "subtitle": "Einnahmenvergleich",
+      "currentPeriod": "Aktuelle Periode",
+      "previousPeriod": "Vorherige Periode",
+      "noData": "Noch nicht genug Daten"
+    },
+    "recentRegistrations": {
+      "title": "Letzte Buchungen",
+      "emptyTitle": "Keine Buchungen",
+      "emptyDescription": "Ihr WhatsApp-Bot empfängt Kunden"
+    },
+    "tourPerformance": {
+      "title": "Tour-Leistung"
+    },
+    "quickActions": {
+      "title": "Schnellaktionen"
+    }
+  },
   "onboardingTour": {
-    "welcome": { "title": "🎉 Willkommen bei Turzz AI!", "content": "Wir geben Ihnen eine schnelle Panel-Tour. Dauert nur 30 Sekunden. Sie können jederzeit überspringen." },
-    "dashboard": { "title": "📊 Dashboard", "content": "Verfolgen Sie hier tägliche Buchungen, Einnahmen und Chatbot-Statistiken." },
-    "agencyInfo": { "title": "🏢 Agenturinformationen", "content": "Beginnen Sie hier: Adresse, Öffnungszeiten, Zahlungsinformationen. Wird Ihren Kunden auf WhatsApp angezeigt." },
-    "tours": { "title": "🗺️ Ihre Touren", "content": "Touren verwalten, Daten hinzufügen, Massenimport aus Excel oder bestehende Tour duplizieren." },
-    "whatsapp": { "title": "💬 WhatsApp-Integration", "content": "WhatsApp Business Konto verbinden. KI-Bot läuft 24/7, Sie können jedes Gespräch übernehmen." },
-    "notifications": { "title": "🔔 Benachrichtigungen", "content": "Sofortige Benachrichtigungen bei neuen Buchungen. Klicken Sie für Details." },
-    "commandPalette": { "title": "⚡ Schnellzugriff", "content": "Strg+K (Mac: Cmd+K) zum sofortigen Navigieren oder Aktionen starten." },
-    "mobileMenu": { "title": "☰ Menü", "content": "Tippen Sie hier, um alle Panel-Bereiche zu öffnen." },
-    "complete": { "title": "🚀 Bereit!", "content": "Erkunden Sie das Panel. Für Hilfe: Strg+K → 'Tour neu starten'." },
-    "next": "Weiter →", "back": "← Zurück", "skip": "Überspringen", "close": "Schließen", "finish": "Los geht's! 🚀"
+    "welcome": {
+      "title": "🎉 Willkommen bei Turzz AI!",
+      "content": "Wir geben Ihnen eine schnelle Panel-Tour. Dauert nur 30 Sekunden. Sie können jederzeit überspringen."
+    },
+    "dashboard": {
+      "title": "📊 Dashboard",
+      "content": "Verfolgen Sie hier tägliche Buchungen, Einnahmen und Chatbot-Statistiken."
+    },
+    "agencyInfo": {
+      "title": "🏢 Agenturinformationen",
+      "content": "Beginnen Sie hier: Adresse, Öffnungszeiten, Zahlungsinformationen. Wird Ihren Kunden auf WhatsApp angezeigt."
+    },
+    "tours": {
+      "title": "🗺️ Ihre Touren",
+      "content": "Touren verwalten, Daten hinzufügen, Massenimport aus Excel oder bestehende Tour duplizieren."
+    },
+    "whatsapp": {
+      "title": "💬 WhatsApp-Integration",
+      "content": "WhatsApp Business Konto verbinden. KI-Bot läuft 24/7, Sie können jedes Gespräch übernehmen."
+    },
+    "notifications": {
+      "title": "🔔 Benachrichtigungen",
+      "content": "Sofortige Benachrichtigungen bei neuen Buchungen. Klicken Sie für Details."
+    },
+    "commandPalette": {
+      "title": "⚡ Schnellzugriff",
+      "content": "Strg+K (Mac: Cmd+K) zum sofortigen Navigieren oder Aktionen starten."
+    },
+    "mobileMenu": {
+      "title": "☰ Menü",
+      "content": "Tippen Sie hier, um alle Panel-Bereiche zu öffnen."
+    },
+    "complete": {
+      "title": "🚀 Bereit!",
+      "content": "Erkunden Sie das Panel. Für Hilfe: Strg+K → 'Tour neu starten'."
+    },
+    "next": "Weiter →",
+    "back": "← Zurück",
+    "skip": "Überspringen",
+    "close": "Schließen",
+    "finish": "Los geht's! 🚀"
   },
   "commandPalette": {
     "placeholder": "Seiten oder Befehle suchen...",
@@ -1597,9 +1685,17 @@
     "filter": "Filtern",
     "export": "Exportieren",
     "import": "Importieren",
-    "weekly": "Wöchentlich", "monthly": "Monatlich", "quarterly": "Vierteljährlich",
-    "viewAll": "Alle anzeigen", "justNow": "gerade eben", "minutesAgo": "Min. vor",
-    "hoursAgo": "Std. vor", "daysAgo": "Tg. vor", "people": "Personen", "saving": "Speichern...", "back": "Zurück"
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "quarterly": "Vierteljährlich",
+    "viewAll": "Alle anzeigen",
+    "justNow": "gerade eben",
+    "minutesAgo": "Min. vor",
+    "hoursAgo": "Std. vor",
+    "daysAgo": "Tg. vor",
+    "people": "Personen",
+    "saving": "Speichern...",
+    "back": "Zurück"
   },
   "cta": {
     "title": "Bereit loszulegen?",
@@ -2581,5 +2677,10 @@
         "20% der Kosten eines Mitarbeiters"
       ]
     }
+  },
+  "whatsapp": {
+    "configError": "WhatsApp-Konfiguration konnte nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "sdkLoading": "Wird geladen...",
+    "connectButton": "Meine WhatsApp-Nummer verbinden"
   }
 }

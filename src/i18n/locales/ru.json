@@ -527,20 +527,16 @@
       "clear": "Очистить фильтры"
     },
     "payment": {
-      "status": {
-        "pending": "Ожидание Платежа",
-        "processing": "Обработка Платежа",
-        "completed": "Платёж Завершён",
-        "failed": "Платёж Не Удался"
-      },
-      "messages": {
-        "pending": "Перенаправление на страницу оплаты...",
-        "processing": "Проверка вашего платежа...",
-        "completed": "Платёж успешно завершён!",
-        "failed": "Процесс оплаты не удался."
-      },
-      "redirecting": "Перенаправление",
-      "pleaseWait": "Пожалуйста, подождите"
+      "success": "Платёж Успешен! 🎉",
+      "successDesc": "Ваша подписка активирована. Счёт готовится.",
+      "successDescWithOrder": "Ваша подписка активирована. Номер заказа: {{orderId}}...",
+      "failed": "Платёж Не Выполнен",
+      "failedBase": "Не удалось завершить платёж.",
+      "insufficientFunds": "На карте недостаточно средств.",
+      "cardDeclined": "Карта отклонена. Обратитесь в банк.",
+      "expiredCard": "Срок действия карты истёк.",
+      "invalidCvv": "Неверный CVV-код.",
+      "failedGeneric": "Попробуйте снова или используйте другую карту."
     },
     "paymentSettings": {
       "title": "Настройки Платёжной Информации",
@@ -839,18 +835,6 @@
     "logout": "Выйти",
     "loading": "Загрузка...",
     "superAdmin": "Супер Админ",
-    "payment": {
-      "success": "Платёж Успешен! 🎉",
-      "successDesc": "Ваша подписка активирована. Счёт готовится.",
-      "successDescWithOrder": "Ваша подписка активирована. Номер заказа: {{orderId}}...",
-      "failed": "Платёж Не Выполнен",
-      "failedBase": "Не удалось завершить платёж.",
-      "insufficientFunds": "На карте недостаточно средств.",
-      "cardDeclined": "Карта отклонена. Обратитесь в банк.",
-      "expiredCard": "Срок действия карты истёк.",
-      "invalidCvv": "Неверный CVV-код.",
-      "failedGeneric": "Попробуйте снова или используйте другую карту."
-    },
     "languageWarning": {
       "message": "Вы еще не выбрали языки для вашего WhatsApp-бота. Вы должны выбрать хотя бы 1 язык для работы бота",
       "action": "Выбрать Языки Сейчас"
@@ -1453,56 +1437,86 @@
   "conversations": {
     "emptyTitle": "Разговоров пока нет",
     "emptyDescription": "Разговоры с вашими клиентами в WhatsApp появятся здесь.",
-    "botActiveTitle": "Бот активен", "botActiveDescription": "ИИ отвечает автоматически",
-    "botPausedTitle": "Бот приостановлен", "botPausedDescription": "Только вы отвечаете клиенту (24 часа)",
-    "pauseBot": "Приостановить бота", "resumeBot": "Возобновить бота",
-    "botPaused": "Бот приостановлен на 24 часа", "botResumed": "Бот возобновлён",
-    "replyPlaceholder": "Введите сообщение...", "replyHint": "Ctrl+Enter для отправки",
-    "sendReply": "Отправить", "sending": "Отправляется...",
-    "sendSuccess": "Сообщение отправлено!", "sendError": "Не удалось отправить сообщение",
+    "botActiveTitle": "Бот активен",
+    "botActiveDescription": "ИИ отвечает автоматически",
+    "botPausedTitle": "Бот приостановлен",
+    "botPausedDescription": "Только вы отвечаете клиенту (24 часа)",
+    "pauseBot": "Приостановить бота",
+    "resumeBot": "Возобновить бота",
+    "botPaused": "Бот приостановлен на 24 часа",
+    "botResumed": "Бот возобновлён",
+    "replyPlaceholder": "Введите сообщение...",
+    "replyHint": "Ctrl+Enter для отправки",
+    "sendReply": "Отправить",
+    "sending": "Отправляется...",
+    "sendSuccess": "Сообщение отправлено!",
+    "sendError": "Не удалось отправить сообщение",
     "outside24h": "Клиент не писал 24 часа. Используйте шаблонное сообщение."
   },
   "notifications": {
-    "title": "Уведомления", "markAllRead": "Отметить все прочитанными",
-    "empty": "Уведомлений пока нет", "newReservation": "Новое бронирование",
-    "aiFailure": "ИИ не смог ответить", "cancellation": "Запрос на отмену", "message": "Новое сообщение"
+    "title": "Уведомления",
+    "markAllRead": "Отметить все прочитанными",
+    "empty": "Уведомлений пока нет",
+    "newReservation": "Новое бронирование",
+    "aiFailure": "ИИ не смог ответить",
+    "cancellation": "Запрос на отмену",
+    "message": "Новое сообщение"
   },
   "tours": {
-    "emptyTitle": "Туров пока нет",
-    "emptyDescription": "Начните с добавления первого тура.",
-    "addFirstTour": "Добавить первый тур"
+    "bulkDate": "Массовые даты",
+    "bulkImport": "Импорт из Excel",
+    "duplicate": "Дублировать",
+    "duplicateTitleLabel": "Новое название тура",
+    "copyDatesNote": "{{count}} дат также будут скопированы",
+    "duplicateConfirm": "Дублировать",
+    "duplicateSuccess": "Тур скопирован!",
+    "duplicateError": "Не удалось дублировать"
   },
   "weekdays": {
-    "monday": "Понедельник", "tuesday": "Вторник", "wednesday": "Среда",
-    "thursday": "Четверг", "friday": "Пятница", "saturday": "Суббота", "sunday": "Воскресенье"
+    "monday": "Понедельник",
+    "tuesday": "Вторник",
+    "wednesday": "Среда",
+    "thursday": "Четверг",
+    "friday": "Пятница",
+    "saturday": "Суббота",
+    "sunday": "Воскресенье"
   },
   "bulkDates": {
     "title": "Массовый генератор дат",
     "subtitle": "Добавьте несколько дат туров за раз",
     "pattern": "Шаблон повторения",
-    "patterns": { "weekly": "Еженедельно в определённые дни", "monthly": "Ежемесячно в определённый день", "daily": "Ежедневно (последовательно)" },
+    "patterns": {
+      "weekly": "Еженедельно в определённые дни",
+      "monthly": "Ежемесячно в определённый день",
+      "daily": "Ежедневно (последовательно)"
+    },
     "selectDays": "Какие дни?",
     "dayOfMonth": "День месяца (1-28)",
     "monthlyHint": "Напр. 15 → 15-е каждого месяца",
-    "startDate": "Дата начала", "endDate": "Дата окончания",
-    "tourDuration": "Продолжительность тура (дней)", "durationHint": "Однодневный: 1 — 2 ночи 3 дня: 3",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания",
+    "tourDuration": "Продолжительность тура (дней)",
+    "durationHint": "Однодневный: 1 — 2 ночи 3 дня: 3",
     "pricingAndQuota": "Цены и квота",
-    "priceAdult": "Цена взрослого *", "priceChild": "Цена ребёнка", "quota": "Квота",
+    "priceAdult": "Цена взрослого *",
+    "priceChild": "Цена ребёнка",
+    "quota": "Квота",
     "pricingNote": "Для всех дат будет применена одинаковая цена",
     "preview": "Будет создано {{count}} дат",
-    "moreDates": "ещё дат...", "generateButton": "Создать {{count}} дат", "generating": "Создаётся...",
+    "moreDates": "ещё дат...",
+    "generateButton": "Создать {{count}} дат",
+    "generating": "Создаётся...",
     "success": "{{count}} дат успешно добавлено!",
-    "errors": { "noDates": "Выберите диапазон дат и шаблон", "priceRequired": "Цена взрослого обязательна", "tooManyDates": "Максимум 100 дат за один раз", "generic": "Не удалось создать даты" }
+    "errors": {
+      "noDates": "Выберите диапазон дат и шаблон",
+      "priceRequired": "Цена взрослого обязательна",
+      "tooManyDates": "Максимум 100 дат за один раз",
+      "generic": "Не удалось создать даты"
+    }
   },
   "registrations": {
     "emptyTitle": "Бронирований пока нет",
     "emptyDescription": "Бронирования через WhatsApp или демо-чат появятся здесь. Вы также можете добавить их вручную."
-  },
-  "tours": {
-    "bulkDate": "Массовые даты", "bulkImport": "Импорт из Excel",
-    "duplicate": "Дублировать", "duplicateTitleLabel": "Новое название тура",
-    "copyDatesNote": "{{count}} дат также будут скопированы",
-    "duplicateConfirm": "Дублировать", "duplicateSuccess": "Тур скопирован!", "duplicateError": "Не удалось дублировать"
   },
   "bulkImport": {
     "title": "Массовый импорт туров из Excel",
@@ -1510,26 +1524,100 @@
     "needTemplate": "Нужен шаблон?",
     "templateDescription": "Скачайте готовый шаблон в правильном формате",
     "downloadTemplate": "Скачать шаблон",
-    "selectFile": "Выбрать файл Excel", "fileHint": "Поддерживаются форматы .xlsx или .xls",
-    "parsedTours": "Обработанные туры", "parsed": "{{valid}}/{{total}} туров валидны",
-    "valid": "Валидный", "invalid": "Невалидный",
-    "importButton": "Импортировать {{count}} туров", "importing": "Импортируется...",
+    "selectFile": "Выбрать файл Excel",
+    "fileHint": "Поддерживаются форматы .xlsx или .xls",
+    "parsedTours": "Обработанные туры",
+    "parsed": "{{valid}}/{{total}} туров валидны",
+    "valid": "Валидный",
+    "invalid": "Невалидный",
+    "importButton": "Импортировать {{count}} туров",
+    "importing": "Импортируется...",
     "success": "{{count}} туров успешно добавлено!",
-    "errors": { "parseError": "Не удалось прочитать файл Excel", "noValid": "Нет валидных туров для импорта", "importFailed": "Импорт не удался", "titleRequired": "Название тура обязательно", "destinationRequired": "Направление обязательно" }
+    "errors": {
+      "parseError": "Не удалось прочитать файл Excel",
+      "noValid": "Нет валидных туров для импорта",
+      "importFailed": "Импорт не удался",
+      "titleRequired": "Название тура обязательно",
+      "destinationRequired": "Направление обязательно"
+    }
   },
-  "greetings": { "morning": "Доброе утро", "afternoon": "Добрый день", "evening": "Добрый вечер", "night": "Спокойной ночи" },
-  "dashboard": { "kpi": { "vsLastWeek": "к прошлой неделе" }, "welcome": { "todayStats": "{{count}} новых бронирований сегодня", "revenue": "доход", "pending": "ожидают", "noRegistrations": "Сегодня бронирований нет. Ваш WhatsApp-бот работает! 💬" }, "salesTrend": { "title": "Тренд продаж", "subtitle": "Сравнение доходов", "currentPeriod": "Текущий период", "previousPeriod": "Предыдущий период", "noData": "Пока недостаточно данных" }, "recentRegistrations": { "title": "Последние бронирования", "emptyTitle": "Нет бронирований", "emptyDescription": "Ваш WhatsApp-бот принимает клиентов" }, "tourPerformance": { "title": "Эффективность туров" }, "quickActions": { "title": "Быстрые действия" } },
+  "greetings": {
+    "morning": "Доброе утро",
+    "afternoon": "Добрый день",
+    "evening": "Добрый вечер",
+    "night": "Спокойной ночи"
+  },
+  "dashboard": {
+    "kpi": {
+      "vsLastWeek": "к прошлой неделе"
+    },
+    "welcome": {
+      "todayStats": "{{count}} новых бронирований сегодня",
+      "revenue": "доход",
+      "pending": "ожидают",
+      "noRegistrations": "Сегодня бронирований нет. Ваш WhatsApp-бот работает! 💬"
+    },
+    "salesTrend": {
+      "title": "Тренд продаж",
+      "subtitle": "Сравнение доходов",
+      "currentPeriod": "Текущий период",
+      "previousPeriod": "Предыдущий период",
+      "noData": "Пока недостаточно данных"
+    },
+    "recentRegistrations": {
+      "title": "Последние бронирования",
+      "emptyTitle": "Нет бронирований",
+      "emptyDescription": "Ваш WhatsApp-бот принимает клиентов"
+    },
+    "tourPerformance": {
+      "title": "Эффективность туров"
+    },
+    "quickActions": {
+      "title": "Быстрые действия"
+    }
+  },
   "onboardingTour": {
-    "welcome": { "title": "🎉 Добро пожаловать в Turzz AI!", "content": "Позвольте провести быстрый тур по панели. Займёт всего 30 секунд. Вы можете пропустить в любой момент." },
-    "dashboard": { "title": "📊 Панель управления", "content": "Отслеживайте ежедневные бронирования, доходы и статистику чат-бота." },
-    "agencyInfo": { "title": "🏢 Данные агентства", "content": "Начните здесь: адрес, рабочие часы, платёжные данные. Отображается клиентам в WhatsApp." },
-    "tours": { "title": "🗺️ Ваши туры", "content": "Управляйте турами, добавляйте даты, импортируйте из Excel или дублируйте существующий тур." },
-    "whatsapp": { "title": "💬 Интеграция WhatsApp", "content": "Подключите аккаунт WhatsApp Business. Бот работает 24/7, вы можете взять управление разговором." },
-    "notifications": { "title": "🔔 Уведомления", "content": "Мгновенные уведомления о новых бронированиях. Нажмите для просмотра деталей." },
-    "commandPalette": { "title": "⚡ Быстрый доступ", "content": "Ctrl+K (Mac: Cmd+K) для мгновенной навигации или запуска действий." },
-    "mobileMenu": { "title": "☰ Меню", "content": "Нажмите здесь для доступа ко всем разделам панели." },
-    "complete": { "title": "🚀 Готово!", "content": "Исследуйте панель. Для помощи: Ctrl+K → 'Перезапустить тур'." },
-    "next": "Далее →", "back": "← Назад", "skip": "Пропустить", "close": "Закрыть", "finish": "Начинаем! 🚀"
+    "welcome": {
+      "title": "🎉 Добро пожаловать в Turzz AI!",
+      "content": "Позвольте провести быстрый тур по панели. Займёт всего 30 секунд. Вы можете пропустить в любой момент."
+    },
+    "dashboard": {
+      "title": "📊 Панель управления",
+      "content": "Отслеживайте ежедневные бронирования, доходы и статистику чат-бота."
+    },
+    "agencyInfo": {
+      "title": "🏢 Данные агентства",
+      "content": "Начните здесь: адрес, рабочие часы, платёжные данные. Отображается клиентам в WhatsApp."
+    },
+    "tours": {
+      "title": "🗺️ Ваши туры",
+      "content": "Управляйте турами, добавляйте даты, импортируйте из Excel или дублируйте существующий тур."
+    },
+    "whatsapp": {
+      "title": "💬 Интеграция WhatsApp",
+      "content": "Подключите аккаунт WhatsApp Business. Бот работает 24/7, вы можете взять управление разговором."
+    },
+    "notifications": {
+      "title": "🔔 Уведомления",
+      "content": "Мгновенные уведомления о новых бронированиях. Нажмите для просмотра деталей."
+    },
+    "commandPalette": {
+      "title": "⚡ Быстрый доступ",
+      "content": "Ctrl+K (Mac: Cmd+K) для мгновенной навигации или запуска действий."
+    },
+    "mobileMenu": {
+      "title": "☰ Меню",
+      "content": "Нажмите здесь для доступа ко всем разделам панели."
+    },
+    "complete": {
+      "title": "🚀 Готово!",
+      "content": "Исследуйте панель. Для помощи: Ctrl+K → 'Перезапустить тур'."
+    },
+    "next": "Далее →",
+    "back": "← Назад",
+    "skip": "Пропустить",
+    "close": "Закрыть",
+    "finish": "Начинаем! 🚀"
   },
   "commandPalette": {
     "placeholder": "Поиск страниц или команд...",
@@ -1627,9 +1715,17 @@
     "filter": "Фильтр",
     "export": "Экспорт",
     "import": "Импорт",
-    "weekly": "Еженедельно", "monthly": "Ежемесячно", "quarterly": "Ежеквартально",
-    "viewAll": "Все", "justNow": "сейчас", "minutesAgo": "мин назад",
-    "hoursAgo": "ч назад", "daysAgo": "дн назад", "people": "чел.", "saving": "Сохранение...", "back": "Назад"
+    "weekly": "Еженедельно",
+    "monthly": "Ежемесячно",
+    "quarterly": "Ежеквартально",
+    "viewAll": "Все",
+    "justNow": "сейчас",
+    "minutesAgo": "мин назад",
+    "hoursAgo": "ч назад",
+    "daysAgo": "дн назад",
+    "people": "чел.",
+    "saving": "Сохранение...",
+    "back": "Назад"
   },
   "agencyInfo": {
     "title": "Информация об агентстве",
@@ -2580,5 +2676,10 @@
         "20% от стоимости одного сотрудника"
       ]
     }
+  },
+  "whatsapp": {
+    "configError": "Не удалось загрузить конфигурацию WhatsApp. Повторите попытку позже.",
+    "sdkLoading": "Загрузка...",
+    "connectButton": "Подключить номер WhatsApp"
   }
 }

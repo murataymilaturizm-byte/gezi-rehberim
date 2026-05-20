@@ -5,7 +5,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, Loader2, MessageSquare, Smartphone, Unlink } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { AlertCircle, CheckCircle2, Loader2, MessageSquare, Smartphone, Unlink } from "lucide-react";
 
 declare global {
   interface Window {
@@ -31,7 +32,9 @@ export function WhatsAppEmbeddedSignup({
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [appId, setAppId] = useState<string>("");
   const [configId, setConfigId] = useState<string>("");
+  const [configError, setConfigError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const isConnected = currentStatus === "active" && currentPhone;
 
@@ -46,17 +49,22 @@ export function WhatsAppEmbeddedSignup({
           body: { action: "get-config" },
         });
 
-        if (error) throw error;
-        if (data?.appId) {
-          setAppId(data.appId);
-          setConfigId(data.configId || "");
+        if (error || !data?.appId) {
+          console.error("Failed to load Meta config:", error || "No appId returned");
+          setConfigError(t("whatsapp.configError"));
+          return;
         }
+
+        setAppId(data.appId);
+        setConfigId(data.configId || "");
+        setConfigError(null);
       } catch (err) {
         console.error("Failed to load Meta config:", err);
+        setConfigError(t("whatsapp.configError"));
       }
     };
     loadConfig();
-  }, []);
+  }, [t]);
 
   // Load Facebook SDK
   useEffect(() => {
@@ -113,6 +121,7 @@ export function WhatsAppEmbeddedSignup({
           const code = response.authResponse.code;
           exchangeToken(code);
         } else {
+          console.error("[EmbeddedSignup] User cancelled or no authResponse", response);
           setLoading(false);
           toast({
             title: "İptal Edildi",
@@ -125,10 +134,8 @@ export function WhatsAppEmbeddedSignup({
         response_type: "code",
         override_default_response_type: true,
         extras: {
-          setup: {
-            // Embedded Signup specific params
-          },
-          featureType: "",
+          setup: {},
+          featureType: "whatsapp_business_app_onboarding",
           sessionInfoVersion: 2,
         },
       }
@@ -258,23 +265,30 @@ export function WhatsAppEmbeddedSignup({
                 </p>
               </div>
 
-              <Button
-                size="lg"
-                onClick={handleEmbeddedSignup}
-                disabled={loading || !sdkLoaded}
-                className="bg-[#25D366] hover:bg-[#128C7E] text-white"
-              >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                ) : (
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                )}
-                {loading
-                  ? "Bağlanıyor..."
-                  : !sdkLoaded
-                    ? "SDK Yükleniyor..."
-                    : "WhatsApp Numaramı Bağla"}
-              </Button>
+              {configError ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{configError}</AlertDescription>
+                </Alert>
+              ) : (
+                <Button
+                  size="lg"
+                  onClick={handleEmbeddedSignup}
+                  disabled={loading || !sdkLoaded}
+                  className="bg-[#25D366] hover:bg-[#128C7E] text-white"
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  ) : (
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                  )}
+                  {loading
+                    ? "Bağlanıyor..."
+                    : !sdkLoaded
+                      ? t("whatsapp.sdkLoading")
+                      : t("whatsapp.connectButton")}
+                </Button>
+              )}
             </div>
 
             <div className="text-xs text-muted-foreground space-y-1">
