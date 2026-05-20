@@ -646,6 +646,7 @@
       "sync": {
         "button": "Mit Meta Synchronisieren",
         "success": "{{count}} Vorlagen aktualisiert",
+        "successWithNew": "{{inserted}} neu hinzugefügt, {{updated}} aktualisiert",
         "error": "Synchronisierung fehlgeschlagen"
       },
       "status": {

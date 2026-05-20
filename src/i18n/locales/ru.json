@@ -677,6 +677,7 @@
       "sync": {
         "button": "Синхронизировать с Meta",
         "success": "{{count}} шаблонов обновлено",
+        "successWithNew": "{{inserted}} новых добавлено, {{updated}} обновлено",
         "error": "Синхронизация не удалась"
       },
       "status": {

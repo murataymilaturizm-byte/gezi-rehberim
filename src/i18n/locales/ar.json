@@ -646,6 +646,7 @@
       "sync": {
         "button": "المزامنة مع Meta",
         "success": "تم تحديث {{count}} قالب",
+        "successWithNew": "تمت إضافة {{inserted}} جديد، وتحديث {{updated}}",
         "error": "فشلت المزامنة"
       },
       "status": {

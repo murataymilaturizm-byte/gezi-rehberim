@@ -49,11 +49,26 @@ const LANGUAGES = [
   { code: 'ar', name: 'العربية', flag: '🇸🇦' },
 ];
 
-const getTemplateTypes = (t: any) => [
-  { key: 'reservation_confirmed', name: t('admin.templates.types.reservation_confirmed') },
-  { key: 'reservation_cancelled', name: t('admin.templates.types.reservation_cancelled') },
-  { key: 'tour_reminder', name: t('admin.templates.types.tour_reminder') },
-];
+// Bilinen sistem tipleri — i18n label'ı var
+const KNOWN_TEMPLATE_TYPES: Record<string, string> = {
+  reservation_confirmed: 'admin.templates.types.reservation_confirmed',
+  reservation_cancelled: 'admin.templates.types.reservation_cancelled',
+  tour_reminder: 'admin.templates.types.tour_reminder',
+};
+
+// DB'deki tüm unique template_key'leri döndür (bilinen + Meta'dan gelenler)
+const getAllTemplateKeys = (templates: MessageTemplate[]): string[] => {
+  const keys = new Set<string>(Object.keys(KNOWN_TEMPLATE_TYPES));
+  templates.forEach(t => { if (t.template_key) keys.add(t.template_key); });
+  return Array.from(keys);
+};
+
+// Label: bilinen tip → i18n, custom → okunabilir key
+const getTemplateLabel = (key: string, t: any): string => {
+  const i18nKey = KNOWN_TEMPLATE_TYPES[key];
+  if (i18nKey) return t(i18nKey);
+  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+};
 
 function StatusBadge({ status }: { status?: string | null }) {
   if (!status) return <Badge variant="outline" className="text-xs">{t_("admin.templates.status.notSynced")}</Badge>;
@@ -90,7 +105,7 @@ export default function MessageTemplates() {
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
   const { toast } = useToast();
 
-  const TEMPLATE_TYPES = getTemplateTypes(t);
+  const templateKeys = getAllTemplateKeys(templates);
 
   useEffect(() => {
     fetchTemplates();
@@ -326,10 +341,10 @@ export default function MessageTemplates() {
         body: { agencyId },
       });
       if (error) throw error;
-      toast({
-        title: t("common.success"),
-        description: t("admin.templates.sync.success", { count: data?.updated ?? 0 }),
-      });
+      const description = (data?.inserted ?? 0) > 0
+        ? t("admin.templates.sync.successWithNew", { inserted: data.inserted, updated: data.updated ?? 0 })
+        : t("admin.templates.sync.success", { count: data?.updated ?? 0 });
+      toast({ title: t("common.success"), description });
       await fetchTemplates();
     } catch (err: any) {
       toast({ title: t("common.error"), description: err.message || t("admin.templates.sync.error"), variant: "destructive" });
@@ -389,18 +404,19 @@ export default function MessageTemplates() {
         {LANGUAGES.map((lang) => (
           <TabsContent key={lang.code} value={lang.code} className="space-y-4">
             <div className="grid gap-4">
-              {TEMPLATE_TYPES.map((type) => {
+              {templateKeys.map((key) => {
                 const template = getTemplatesByLanguage(lang.code).find(
-                  t => t.template_key === type.key
+                  tmpl => tmpl.template_key === key
                 );
+                const label = getTemplateLabel(key, t);
 
                 return (
-                  <Card key={type.key}>
+                  <Card key={key}>
                     <CardHeader>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div>
                           <div className="flex items-center gap-2">
-                            <CardTitle>{type.name}</CardTitle>
+                            <CardTitle>{label}</CardTitle>
                             {template && <StatusBadge status={template.meta_status} />}
                           </div>
                           <CardDescription>
@@ -424,7 +440,7 @@ export default function MessageTemplates() {
                             onClick={() => {
                               setEditingTemplate(template || {
                                 id: '',
-                                template_key: type.key,
+                                template_key: key,
                                 language: lang.code,
                                 subject: '',
                                 content: '',
@@ -501,9 +517,9 @@ export default function MessageTemplates() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {TEMPLATE_TYPES.map((type) => (
-                      <SelectItem key={type.key} value={type.key}>
-                        {type.name}
+                    {templateKeys.map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {getTemplateLabel(key, t)}
                       </SelectItem>
                     ))}
                   </SelectContent>

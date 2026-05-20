@@ -645,6 +645,7 @@
       "sync": {
         "button": "Sync with Meta",
         "success": "{{count}} templates updated",
+        "successWithNew": "{{inserted}} new added, {{updated}} updated",
         "error": "Synchronization failed"
       },
       "status": {

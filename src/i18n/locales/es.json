@@ -677,6 +677,7 @@
       "sync": {
         "button": "Sincronizar con Meta",
         "success": "{{count}} plantillas actualizadas",
+        "successWithNew": "{{inserted}} nuevas agregadas, {{updated}} actualizadas",
         "error": "La sincronización falló"
       },
       "status": {

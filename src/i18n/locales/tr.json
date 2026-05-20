@@ -624,6 +624,7 @@
       "sync": {
         "button": "Meta ile Senkronize Et",
         "success": "{{count}} şablon güncellendi",
+        "successWithNew": "{{inserted}} yeni eklendi, {{updated}} güncellendi",
         "error": "Senkronizasyon başarısız"
       },
       "status": {

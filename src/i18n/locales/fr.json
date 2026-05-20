@@ -646,6 +646,7 @@
       "sync": {
         "button": "Synchroniser avec Meta",
         "success": "{{count}} modèles mis à jour",
+        "successWithNew": "{{inserted}} nouveaux ajoutés, {{updated}} mis à jour",
         "error": "La synchronisation a échoué"
       },
       "status": {
