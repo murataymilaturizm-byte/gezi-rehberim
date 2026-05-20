@@ -70,7 +70,7 @@ function ConnectedAccountsTab() {
     setLoading(true);
     const { data, error } = await supabase
       .from("agencies")
-      .select("id, name, whatsapp_phone_number, meta_phone_number_id, meta_waba_id, meta_access_token, whatsapp_status")
+      .select("id, name, whatsapp_phone_number, meta_phone_number_id, meta_waba_id, whatsapp_status")
       .order("name");
 
     if (error) {

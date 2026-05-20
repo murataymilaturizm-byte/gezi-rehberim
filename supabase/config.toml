@@ -35,3 +35,6 @@ verify_jwt = true
 
 [functions.send-feedback-survey]
 verify_jwt = false
+
+[functions.create-meta-template]
+verify_jwt = false

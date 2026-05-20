@@ -4,6 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,14 +28,21 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Agency Meta credentials
+    // Agency Meta credentials (DB önce, global env fallback — Aymila gibi)
     const { data: agency, error: agErr } = await supabase
       .from("agencies")
-      .select("meta_phone_number_id, meta_access_token, name")
+      .select("id, name, meta_phone_number_id, meta_access_token")
       .eq("id", agencyId)
       .single();
 
-    if (agErr || !agency?.meta_access_token || !agency?.meta_phone_number_id) {
+    if (agErr) {
+      return new Response(JSON.stringify({ error: "Agency not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const creds = getMetaCredentials(agency);
+    if (!creds.accessToken || !creds.phoneNumberId) {
       return new Response(JSON.stringify({ error: "WhatsApp credentials not configured for this agency" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -65,11 +73,11 @@ serve(async (req) => {
 
     // Send via Meta Cloud API
     const metaRes = await fetch(
-      `https://graph.facebook.com/v18.0/${agency.meta_phone_number_id}/messages`,
+      `https://graph.facebook.com/v18.0/${creds.phoneNumberId}/messages`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${agency.meta_access_token}`,
+          Authorization: `Bearer ${creds.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

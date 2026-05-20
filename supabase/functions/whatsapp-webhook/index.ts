@@ -250,6 +250,14 @@ serve(async (req) => {
     // === Abonelik + mesaj limiti ===
     const _subStatus: string = (agency as any).subscription_status ?? "active";
     if (_subStatus === "expired" || _subStatus === "cancelled" || _subStatus === "suspended") {
+      console.warn(`[webhook] Message dropped — agency "${agency.name}" subscription: ${_subStatus}`);
+      // Geçmişe sistem notu bırak (acente neden cevap gelmediğini anlasın)
+      supabase.from("whatsapp_conversations").insert({
+        agency_id: agency.id, phone: userPhone,
+        role: "system",
+        content: `[Abonelik ${_subStatus}] Mesaj alındı ancak işlenmedi. Aboneliğinizi yenileyin.`,
+        metadata: { dropped_reason: `subscription_${_subStatus}` },
+      }).catch(() => {});
       return new Response(JSON.stringify({ success: true }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
