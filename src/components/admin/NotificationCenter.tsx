@@ -36,13 +36,18 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const load = useCallback(async () => {
-    const { data } = await (supabase as any)
-      .from("admin_notifications")
-      .select("*")
-      .eq("agency_id", agencyId)
-      .order("created_at", { ascending: false })
-      .limit(50);
-    setNotifications(data || []);
+    if (!agencyId) return;
+    try {
+      const { data } = await (supabase as any)
+        .from("admin_notifications")
+        .select("*")
+        .eq("agency_id", agencyId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      setNotifications(data || []);
+    } catch (err) {
+      console.warn("Notifications load error (non-critical):", err);
+    }
   }, [agencyId]);
 
   useEffect(() => {
@@ -65,7 +70,7 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
               agency_id: agencyId,
               type: "new_reservation",
               title: `🎉 ${t("notifications.newReservation")}: ${reg.full_name || "—"}`,
-              description: `${reg.pax} ${t("admin.tours.people", { defaultValue: "kişi" })} · ${reg.phone || ""}`,
+              description: `${reg.pax} ${t("notificationCenter.people")} · ${reg.phone || ""}`,
               metadata: { registration_id: reg.id },
             })
             .select()
@@ -78,7 +83,7 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
           // Browser notification
           if ("Notification" in window && Notification.permission === "granted") {
             const bn = new Notification(`🎉 ${t("notifications.newReservation")}`, {
-              body: `${reg.full_name || "Müşteri"} · ${reg.pax} kişi`,
+              body: `${reg.full_name || t("notificationCenter.customer")} · ${reg.pax} ${t("notificationCenter.people")}`,
               icon: "/favicon.ico",
               tag: "new-reservation",
             });
@@ -88,7 +93,7 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
           // Toast
           toast({
             title: `🎉 ${t("notifications.newReservation")}`,
-            description: `${reg.full_name || "—"} · ${reg.pax} kişi`,
+            description: `${reg.full_name || "—"} · ${reg.pax} ${t("notificationCenter.people")}`,
           });
         }
       )
@@ -116,6 +121,7 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
   }, [agencyId, load, t, toast, onTabChange]);
 
   const markAsRead = async (id: string) => {
+    if (!agencyId) return;
     await (supabase as any)
       .from("admin_notifications")
       .update({ is_read: true })
@@ -124,6 +130,7 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
   };
 
   const markAllAsRead = async () => {
+    if (!agencyId) return;
     await (supabase as any)
       .from("admin_notifications")
       .update({ is_read: true })

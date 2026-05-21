@@ -553,7 +553,11 @@
       "communication": "Configuración del Chatbot",
       "reporting": "Informes",
       "support": "Soporte",
-      "superAdmin": "Super Admin"
+      "superAdmin": "Super Admin",
+      "test": "Prueba"
+    },
+    "errorBoundary": {
+      "message": "Se produjo un error al cargar esta sección. Por favor, actualiza la página."
     },
     "filters": {
       "status": "Estado",
@@ -565,7 +569,6 @@
       "min": "Mín",
       "max": "Máx",
       "all": "Todo",
-      "allStatuses": "Todos los estados",
       "allTours": "Todos los tours",
       "clear": "Limpiar filtros",
       "title": "Filtros",
@@ -1351,7 +1354,8 @@
         "update": "Actualizar",
         "saving": "Guardando...",
         "cityPlaceholder": "Estambul",
-        "regionPlaceholder": "Mármara"
+        "regionPlaceholder": "Mármara",
+        "whatsappNote": "La conexión de WhatsApp es realizada por la agencia a través de su propio panel de control."
       },
       "tableHeaders": {
         "name": "Nombre de la Agencia",
@@ -2060,7 +2064,18 @@
     "cancellationPolicyPlaceholder": "Escriba su política de cancelación y reembolso en detalle",
     "saveSuccess": "Información de la agencia guardada",
     "saveError": "Error al guardar",
-    "loadError": "No se pudo cargar la información"
+    "loadError": "No se pudo cargar la información",
+    "workingHoursDesc": "Establece tu horario de trabajo por día",
+    "closedLabel": "Cerrado",
+    "days": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    }
   },
   "complaints": {
     "title": "Quejas y comentarios",
@@ -3113,5 +3128,211 @@
       "messageCount": "{{count}} mensajes",
       "empty": "Aún no hay datos de idioma"
     }
+  },
+  "superAdmin": {
+    "integrations": {
+      "title": "Integraciones de WhatsApp",
+      "tokenLabel": "Meta Access Token (el existente se conserva, puede dejarse en blanco)",
+      "tokenPlaceholder": "Introduce un nuevo token (vacío = conservar el existente)",
+      "statusLabels": {
+        "pendingReview": "Solicitud recibida",
+        "waitingInfo": "Esperando información",
+        "inProgress": "Configurando",
+        "testing": "Probando",
+        "active": "Activo"
+      },
+      "loading": "Cargando...",
+      "noData": "Aún no hay solicitudes de integración.",
+      "editTitle": "Editar integración",
+      "editDescription": "Ver información de la agencia y actualizar el estado.",
+      "filterPlaceholder": "Filtrar por estado",
+      "allFilter": "Todos",
+      "saveSuccess": "Integración actualizada.",
+      "saveError": "No se pudo actualizar.",
+      "internalNoteLabel": "Nota interna (la agencia no la ve)",
+      "internalNotePlaceholder": "Notas internas..."
+    },
+    "whatsapp": {
+      "title": "Configuración de WhatsApp Meta Cloud API",
+      "description": "Gestión de integración de WhatsApp a través de Meta Cloud API",
+      "testPhone": "Número de teléfono",
+      "testButton": "Enviar mensaje de prueba",
+      "testSending": "Enviando...",
+      "testSuccess": "¡Mensaje de prueba enviado correctamente!",
+      "testError": "No se pudo enviar el mensaje de prueba",
+      "phoneRequired": "Por favor, introduce un número de teléfono"
+    },
+    "business": {
+      "title": "Gestión de WhatsApp Business",
+      "description": "Gestionar cuentas de WhatsApp Business de agencias",
+      "connectedTab": "Cuentas conectadas",
+      "integrationsTab": "Solicitudes de integración",
+      "connectedTitle": "Cuentas de WhatsApp Business conectadas",
+      "noAccounts": "Aún no hay agencias registradas.",
+      "manageButton": "Gestionar",
+      "loadError": "No se pudieron cargar las cuentas",
+      "updateSuccess": "Información de la cuenta actualizada",
+      "updateError": "Error al guardar",
+      "dialogTitle": "Gestión de cuenta de WhatsApp"
+    },
+    "contactForms": {
+      "title": "Formularios de contacto",
+      "loadError": "No se pudieron cargar los formularios de contacto",
+      "updateSuccess": "Formulario actualizado",
+      "updateError": "No se pudo actualizar el formulario",
+      "noForms": "Aún no hay envíos de formularios",
+      "notesPlaceholder": "Introduce tus notas aquí...",
+      "statusNew": "Nuevo",
+      "statusInProgress": "En revisión",
+      "statusReplied": "Respondido",
+      "statusClosed": "Cerrado"
+    },
+    "testPanel": {
+      "configStatus": "Estado de configuración",
+      "configDesc": "Credenciales requeridas para WhatsApp Meta Cloud API",
+      "freeMessage": "Mensaje libre",
+      "templateMessage": "Mensaje de plantilla",
+      "sendFreeTitle": "Enviar mensaje de texto libre",
+      "sendFreeDesc": "Envía mensajes de texto libres a números con una ventana de 24 horas abierta.",
+      "sendFreeWarning": "No puedes enviar mensajes libres a números de los que no has recibido mensajes en las últimas 24 horas. Usa mensajes de plantilla.",
+      "phoneLabel": "Número de teléfono",
+      "phonePlaceholder": "905551234567",
+      "phoneHint": "Con código de país, sin +",
+      "messageLabel": "Contenido del mensaje",
+      "messagePlaceholder": "Escribe un mensaje de prueba...",
+      "sendFreeButton": "Enviar mensaje libre",
+      "sendTemplateTitle": "Enviar mensaje de plantilla",
+      "sendTemplateDesc": "Envía mensajes de plantilla aprobados por Meta. Funciona independientemente de la regla de 24 horas.",
+      "sendTemplateNote": "Los mensajes de plantilla siempre se pueden enviar.",
+      "templateNameLabel": "Nombre de la plantilla",
+      "templateLangLabel": "Código de idioma",
+      "sendTemplateButton": "Enviar mensaje de plantilla",
+      "sending": "Enviando...",
+      "webhookInfo": "Información del Webhook",
+      "webhookDesc": "Información requerida para Meta App Review",
+      "apiResponse": "Respuesta API (detalles)",
+      "secretsConfigured": "Todos los secretos requeridos están configurados."
+    }
+  },
+  "subscription": {
+    "planTitle": "Seleccionar plan",
+    "noPlan": "Tu cuenta aún no está vinculada a un plan. Elige un plan a continuación para comenzar.",
+    "needAgencyInfo": "Primero debes guardar la información de tu agencia para realizar un pago.",
+    "pricePerYear": "₺/año",
+    "managePlan": "Gestionar suscripción →",
+    "loading": "Cargando...",
+    "expired": "Tu suscripción ha expirado. Elige un plan y paga para continuar.",
+    "noHistory": "Aún no hay historial de transacciones",
+    "historyHint": "Los pagos, cambios de plan y otras transacciones aparecerán aquí.",
+    "confirmTitle": "Confirmar cambio de plan",
+    "confirmFrom": "Tu plan de",
+    "confirmTo": "plan a",
+    "confirmFeatures": "Características del nuevo plan:",
+    "confirmNote": "El cambio de plan tendrá efecto inmediatamente.",
+    "confirmButton": "Cambiar plan",
+    "confirmChanging": "Cambiando...",
+    "invoiceError": "No se pudo generar la factura",
+    "portalError": "No se pudo abrir el portal de suscripción",
+    "trialChangeError": "No puedes cambiar de plan durante el período de prueba. Por favor, realiza un pago primero.",
+    "inactiveError": "Tu suscripción no está activa. Por favor, realiza un pago primero.",
+    "sameplanError": "Ya estás en este plan.",
+    "planChanged": "Plan cambiado correctamente.",
+    "planChangeError": "No se pudo cambiar el plan"
+  },
+  "registration": {
+    "paymentMethods": {
+      "creditCard": "💳 Tarjeta de crédito",
+      "cash": "💵 Efectivo",
+      "transfer": "🏦 Transferencia bancaria"
+    },
+    "paymentTitle": "Transacciones de pago",
+    "paymentSelectMethod": "Por favor, selecciona un método de pago",
+    "paymentAdded": "pago añadido",
+    "paymentRemoved": "Registro de pago eliminado",
+    "paymentRemoveError": "No se pudo eliminar el pago",
+    "updateSuccess": "Registro actualizado",
+    "updateError": "Error al actualizar"
+  },
+  "filters": {
+    "all": "Todos",
+    "category": "Categoría",
+    "allCategories": "Todas las categorías",
+    "clear": "Limpiar",
+    "detailed": "Detallado",
+    "noDate": "Sin fecha",
+    "start": "Inicio",
+    "end": "Fin",
+    "channelPhone": "Teléfono",
+    "channelOffice": "Oficina",
+    "channelOther": "Otro"
+  },
+  "whatsappIntegration": {
+    "active": "¡Tu integración de WhatsApp está activa! Los mensajes son respondidos automáticamente por el chatbot de IA.",
+    "notFound": "Agencia no encontrada.",
+    "loading": "Cargando..."
+  },
+  "bulk": {
+    "importSheetName": "Tours",
+    "importFilename": "turzz_plantilla_tours",
+    "invalidType": "tipo de tour inválido",
+    "invalidCurrency": "moneda inválida"
+  },
+  "faq": {
+    "validationError": "Por favor, completa todos los campos obligatorios"
+  },
+  "notificationCenter": {
+    "people": "personas",
+    "customer": "Cliente"
+  },
+  "support": {
+    "subtitle": "Estamos aquí para ayudarte",
+    "quickOptions": "Opciones rápidas:",
+    "error": "Lo sentimos, algo salió mal. Por favor, inténtalo de nuevo o visita https://turzzai.com/help."
+  },
+  "userProfiles": {
+    "title": "Perfiles de clientes (CRM)",
+    "users": "clientes",
+    "loadingUsers": "Cargando perfiles de usuarios...",
+    "noUsers": "Aún no hay perfiles de usuarios",
+    "selectAgency": "Seleccionar agencia",
+    "todayActive": "Activo hoy",
+    "yesterdayActive": "Activo ayer",
+    "daysAgo": "días atrás",
+    "tabs": {
+      "profile": "Información del perfil",
+      "conversations": "Historial de conversaciones",
+      "tags": "Etiquetas",
+      "preferences": "Preferencias"
+    },
+    "totalMessages": "Mensajes totales",
+    "totalBookings": "Reservas totales",
+    "totalSpent": "Total gastado",
+    "averageSpending": "Gasto promedio",
+    "budgetRange": "Rango de presupuesto",
+    "preferredTourType": "Tipo de tour preferido",
+    "interestedDestinations": "Destinos de interés",
+    "lastSearch": "Última búsqueda",
+    "firstInteraction": "Primera interacción",
+    "lastInteraction": "Última interacción",
+    "communicationMetrics": "Métricas de comunicación",
+    "dailyAverage": "Promedio diario",
+    "salesStats": "Estadísticas de ventas",
+    "customerSatisfaction": "Satisfacción del cliente",
+    "feedbackScore": "Puntuación de feedback",
+    "feedbackComment": "Comentario",
+    "noFeedback": "Sin feedback aún",
+    "customerTags": "Etiquetas del cliente",
+    "addTag": "Añadir etiqueta",
+    "tagAdded": "Etiqueta añadida",
+    "tagRemoved": "Etiqueta eliminada",
+    "tagError": "Operación de etiqueta fallida",
+    "noConversations": "Aún no hay conversaciones",
+    "loadingConversations": "Cargando conversaciones...",
+    "conversationHistory": "Historial de conversaciones",
+    "conversationError": "Error al cargar conversaciones",
+    "customer": "Cliente",
+    "assistant": "Asistente",
+    "unnamed": "Usuario sin nombre",
+    "preferencesInterests": "Preferencias e intereses"
   }
 }

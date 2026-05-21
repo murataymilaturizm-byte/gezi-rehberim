@@ -85,19 +85,23 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
     if (isSuperAdmin) {
       loadAgencies();
     } else {
-      // Fetch current user's agencyId
+      // Fetch current user's agencyId first, then load conversations with filter
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!user) return;
         supabase.from("agencies").select("id").eq("user_id", user.id).single()
-          .then(({ data }) => { if (data?.id) setAgencyId(data.id); });
+          .then(({ data }) => {
+            if (data?.id) {
+              setAgencyId(data.id);
+              loadConversations(data.id);
+            }
+          });
       });
-      loadConversations();
     }
   }, [isSuperAdmin]);
 
   useEffect(() => {
     if (selectedAgencyId) {
-      loadConversations();
+      loadConversations(selectedAgencyId);
     }
   }, [selectedAgencyId]);
 
@@ -143,20 +147,21 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
       }
     } catch (error) {
       console.error("Error loading agencies:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     }
   };
 
-  const loadConversations = async () => {
+  const loadConversations = async (agencyIdOverride?: string) => {
     setLoading(true);
     try {
+      const effectiveAgencyId = agencyIdOverride || (isSuperAdmin ? selectedAgencyId : agencyId);
       let query = supabase
         .from("whatsapp_conversations")
-        .select("*")
+        .select("id, phone, role, content, created_at, agency_id")
         .order("created_at", { ascending: false });
 
-      // Süper admin ise seçilen acente için filtrele
-      if (isSuperAdmin && selectedAgencyId) {
-        query = query.eq("agency_id", selectedAgencyId);
+      if (effectiveAgencyId) {
+        query = query.eq("agency_id", effectiveAgencyId);
       }
 
       const { data, error } = await query;
@@ -192,6 +197,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
       }
     } catch (error) {
       console.error("Error loading conversations:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     } finally {
       setLoading(false);
     }

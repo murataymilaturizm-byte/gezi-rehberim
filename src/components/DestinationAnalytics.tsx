@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, TrendingUp, DollarSign, Users, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@/hooks/use-toast";
 import { format, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import { formatPrice } from "@/utils/currency";
@@ -50,6 +51,7 @@ interface DestinationStats {
 
 export const DestinationAnalytics = () => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [stats, setStats] = useState<DestinationStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
@@ -254,6 +256,7 @@ export const DestinationAnalytics = () => {
       });
     } catch (error) {
       console.error("Destination analytics error:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

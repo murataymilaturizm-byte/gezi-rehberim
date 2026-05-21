@@ -431,7 +431,7 @@ const Admin = () => {
     setLoading(true);
     try {
       // Always load tours for the registration filters
-      const { data: toursData, error: toursError } = await supabase
+      let toursQueryBuilder = supabase
         .from("tours")
         .select(`
           *,
@@ -444,6 +444,10 @@ const Admin = () => {
           )
         `)
         .order("created_at", { ascending: false });
+      if (!isSuperAdmin && userAgencyId) {
+        toursQueryBuilder = toursQueryBuilder.eq("agency_id", userAgencyId);
+      }
+      const { data: toursData, error: toursError } = await toursQueryBuilder;
       
       if (toursError) throw toursError;
 
@@ -476,7 +480,7 @@ const Admin = () => {
       setTours(toursWithSold);
 
       if (activeTab === "registrations") {
-        const { data, error } = await supabase
+        let regsQueryBuilder = supabase
           .from("registrations")
           .select(`
             *,
@@ -484,7 +488,10 @@ const Admin = () => {
             tour_dates (departure_date, price_adult)
           `)
           .order("created_at", { ascending: false });
-        
+        if (!isSuperAdmin && userAgencyId) {
+          regsQueryBuilder = regsQueryBuilder.eq("agency_id", userAgencyId);
+        }
+        const { data, error } = await regsQueryBuilder;
         if (error) throw error;
         setRegistrations(data || []);
       }
@@ -732,7 +739,7 @@ const Admin = () => {
 
           {/* Main Content */}
           <main className="flex-1 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 overflow-x-hidden">
-          <ErrorBoundary key={activeTab} fallbackMessage="Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.">
+          <ErrorBoundary key={activeTab} fallbackMessage={t("admin.errorBoundary.message")}>
           <div key={activeTab} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
             {!isSuperAdmin && <SubscriptionBanner onNavigateToPlan={() => handleTabChange("history")} />}
             {!isSuperAdmin && userAgencyId && (
@@ -765,6 +772,7 @@ const Admin = () => {
                 onNewTour={() => { setSelectedTour(undefined); setTourFormOpen(true); }}
                 onBulkImport={() => setBulkImportOpen(true)}
                 onManualReg={() => setManualRegistrationDialogOpen(true)}
+                agencyId={userAgencyId}
               />
             ) : activeTab === "whatsapp" ? (
               <WhatsAppConversations isSuperAdmin={isSuperAdmin} />
@@ -799,19 +807,19 @@ const Admin = () => {
             ) : activeTab === "tickets" && !isSuperAdmin ? (
               <TicketManagement />
             ) : activeTab === "super_tickets" && isSuperAdmin ? (
-              <SuperAdminTickets />
+              <SuperAdminTickets isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp_management" && isSuperAdmin ? (
-              <WhatsAppBusinessManagement />
+              <WhatsAppBusinessManagement isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp_integrations" && isSuperAdmin ? (
-              <SuperAdminWhatsAppIntegrations />
+              <SuperAdminWhatsAppIntegrations isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp_settings" && isSuperAdmin ? (
-              <SuperAdminWhatsAppSettings />
+              <SuperAdminWhatsAppSettings isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp_test" && isSuperAdmin ? (
               <WhatsAppTestPanel />
             ) : activeTab === "agencies" && isSuperAdmin ? (
-              <AgencyManagement />
+              <AgencyManagement isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "contact_forms" && isSuperAdmin ? (
-              <ContactFormsManagement />
+              <ContactFormsManagement isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "tours" || activeTab === "registrations" ? (
               <Card className="shadow-card">
                 <CardHeader className="p-3 sm:p-6">

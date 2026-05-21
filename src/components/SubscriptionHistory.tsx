@@ -265,6 +265,7 @@ export const SubscriptionHistory = () => {
       // If no agencyData, subscription stays null - show plan selection without payment
     } catch (error) {
       console.error("Error loading subscription history:", error);
+      toast({ title: t("common.error"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -304,14 +305,14 @@ export const SubscriptionHistory = () => {
       });
 
       toast({
-        title: "Başarılı! ✅",
-        description: "Fatura indirildi",
+        title: t("common.successTitle"),
+        description: t("admin.subscription.invoiceDownloaded"),
       });
     } catch (error) {
       console.error("Error generating invoice:", error);
       toast({
-        title: "Hata",
-        description: "Fatura oluşturulamadı",
+        title: t("common.error"),
+        description: t("subscription.invoiceError"),
         variant: "destructive"
       });
     }
@@ -341,7 +342,7 @@ export const SubscriptionHistory = () => {
         throw new Error("Portal URL alınamadı");
       }
     } catch (err: any) {
-      toast({ title: "Hata", description: err.message || "Abonelik portalı açılamadı", variant: "destructive" });
+      toast({ title: t("common.error"), description: err.message || t("subscription.portalError"), variant: "destructive" });
     } finally {
       setLoadingPortal(false);
     }
@@ -353,8 +354,8 @@ export const SubscriptionHistory = () => {
     // Check if trial or expired
     if (subscription.subscription_status === "trial") {
       toast({
-        title: "Uyarı",
-        description: "Deneme süresindeyken plan değiştiremezsiniz. Önce ödeme yapmalısınız.",
+        title: t("common.warning"),
+        description: t("subscription.trialChangeError"),
         variant: "destructive"
       });
       return;
@@ -362,8 +363,8 @@ export const SubscriptionHistory = () => {
 
     if (subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") {
       toast({
-        title: "Uyarı",
-        description: "Aboneliğiniz aktif değil. Önce ödeme yapmalısınız.",
+        title: t("common.warning"),
+        description: t("subscription.inactiveError"),
         variant: "destructive"
       });
       return;
@@ -371,8 +372,8 @@ export const SubscriptionHistory = () => {
 
     if (plan.id === subscription.plan_type) {
       toast({
-        title: "Bilgi",
-        description: "Zaten bu plandayınız.",
+        title: t("common.success"),
+        description: t("subscription.sameplanError"),
       });
       return;
     }
@@ -411,8 +412,8 @@ export const SubscriptionHistory = () => {
       if (historyError) throw historyError;
 
       toast({
-        title: "Başarılı! ✅",
-        description: `Planınız ${selectedPlan.name} olarak değiştirildi`,
+        title: t("common.successTitle"),
+        description: t("subscription.planChanged"),
       });
 
       // Refresh data
@@ -422,8 +423,8 @@ export const SubscriptionHistory = () => {
     } catch (error: any) {
       console.error("Error changing plan:", error);
       toast({
-        title: "Hata",
-        description: error.message || "Plan değiştirilemedi",
+        title: t("common.error"),
+        description: t("subscription.planChangeError"),
         variant: "destructive"
       });
     } finally {
@@ -462,9 +463,9 @@ export const SubscriptionHistory = () => {
             <div className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-primary" />
               <div>
-                <CardTitle>Plan Seçin</CardTitle>
+                <CardTitle>{t("subscription.planTitle")}</CardTitle>
                 <CardDescription>
-                  Hesabınız henüz bir plana bağlı değil. Aşağıdan bir plan seçerek başlayın.
+                  {t("subscription.noPlan")}
                 </CardDescription>
               </div>
             </div>
@@ -547,7 +548,7 @@ export const SubscriptionHistory = () => {
                       <Alert className="border-primary/20">
                         <Building2 className="h-4 w-4" />
                         <AlertDescription className="text-xs">
-                          Ödeme yapabilmek için önce acente bilgilerinizi kaydetmeniz gerekmektedir. Lütfen "Acente Bilgileri" bölümünden bilgilerinizi girin.
+                          {t("subscription.needAgencyInfo")}
                         </AlertDescription>
                       </Alert>
                     )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,12 @@ import { Settings, AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export const SuperAdminWhatsAppSettings = () => {
+interface SuperAdminWhatsAppSettingsProps {
+  isSuperAdmin?: boolean;
+}
+
+export const SuperAdminWhatsAppSettings = ({ isSuperAdmin = false }: SuperAdminWhatsAppSettingsProps) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [testPhone, setTestPhone] = useState("");
   const [testSending, setTestSending] = useState(false);
@@ -18,8 +24,8 @@ export const SuperAdminWhatsAppSettings = () => {
   const handleTestMessage = async () => {
     if (!testPhone) {
       toast({
-        title: "Hata",
-        description: "Lütfen bir telefon numarası girin",
+        title: t("common.error"),
+        description: t("superAdmin.whatsapp.phoneRequired"),
         variant: "destructive",
       });
       return;
@@ -45,8 +51,8 @@ export const SuperAdminWhatsAppSettings = () => {
       });
 
       toast({
-        title: "Başarılı",
-        description: "Test mesajı gönderildi",
+        title: t("common.success"),
+        description: t("superAdmin.whatsapp.testSuccess"),
       });
     } catch (error: any) {
       console.error("Test message error:", error);
@@ -56,8 +62,8 @@ export const SuperAdminWhatsAppSettings = () => {
       });
 
       toast({
-        title: "Hata",
-        description: "Test mesajı gönderilemedi",
+        title: t("common.error"),
+        description: t("superAdmin.whatsapp.testError"),
         variant: "destructive",
       });
     } finally {
@@ -65,16 +71,18 @@ export const SuperAdminWhatsAppSettings = () => {
     }
   };
 
+  if (!isSuperAdmin) return null;
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Meta Cloud API WhatsApp Ayarları
+            {t("superAdmin.whatsapp.title")}
           </CardTitle>
           <CardDescription>
-            Meta Cloud API üzerinden WhatsApp entegrasyonu yönetimi
+            {t("superAdmin.whatsapp.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -134,7 +142,7 @@ export const SuperAdminWhatsAppSettings = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="test_phone">Telefon Numarası</Label>
+            <Label htmlFor="test_phone">{t("superAdmin.whatsapp.testPhone")}</Label>
             <Input
               id="test_phone"
               placeholder="905551234567"
@@ -146,12 +154,12 @@ export const SuperAdminWhatsAppSettings = () => {
             </p>
           </div>
 
-          <Button 
-            onClick={handleTestMessage} 
+          <Button
+            onClick={handleTestMessage}
             disabled={testSending || !testPhone}
             className="w-full"
           >
-            {testSending ? "Gönderiliyor..." : "Test Mesajı Gönder"}
+            {testSending ? t("superAdmin.whatsapp.testSending") : t("superAdmin.whatsapp.testButton")}
           </Button>
 
           {testResult && (

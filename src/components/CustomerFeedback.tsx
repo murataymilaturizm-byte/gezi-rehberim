@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,6 +72,7 @@ const localeMap = {
 
 export const CustomerFeedback = () => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
   const [stats, setStats] = useState<FeedbackStats>({
     totalResponses: 0,
@@ -164,6 +166,7 @@ export const CustomerFeedback = () => {
       calculateScoreDistribution(data || []);
     } catch (error) {
       console.error("Error loading feedbacks:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -436,7 +439,7 @@ export const CustomerFeedback = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.totalResponses > 0 ? Math.round((stats.totalResponses / (stats.totalResponses * 1.5)) * 100) : 0}%
+              {stats.totalResponses}
             </div>
           </CardContent>
         </Card>

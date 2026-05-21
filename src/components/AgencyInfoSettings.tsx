@@ -27,15 +27,7 @@ interface WorkingHoursData {
   [key: string]: DaySchedule;
 }
 
-const DAYS = [
-  { key: "monday", label: "Pazartesi" },
-  { key: "tuesday", label: "Salı" },
-  { key: "wednesday", label: "Çarşamba" },
-  { key: "thursday", label: "Perşembe" },
-  { key: "friday", label: "Cuma" },
-  { key: "saturday", label: "Cumartesi" },
-  { key: "sunday", label: "Pazar" },
-];
+// DAYS is now computed inside component using t()
 
 const HOURS = Array.from({ length: 24 }, (_, i) => {
   const h = i.toString().padStart(2, "0");
@@ -78,6 +70,16 @@ export function AgencyInfoSettings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const DAYS = [
+    { key: "monday", label: t("agencyInfo.days.monday") },
+    { key: "tuesday", label: t("agencyInfo.days.tuesday") },
+    { key: "wednesday", label: t("agencyInfo.days.wednesday") },
+    { key: "thursday", label: t("agencyInfo.days.thursday") },
+    { key: "friday", label: t("agencyInfo.days.friday") },
+    { key: "saturday", label: t("agencyInfo.days.saturday") },
+    { key: "sunday", label: t("agencyInfo.days.sunday") },
+  ];
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [agencyInfo, setAgencyInfo] = useState<AgencyInfo>({
     address: "",
@@ -254,7 +256,7 @@ export function AgencyInfoSettings() {
             {t("agencyInfo.workingHours")}
           </CardTitle>
           <CardDescription>
-            Günlere göre çalışma saatlerinizi belirleyin
+            {t("agencyInfo.workingHoursDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -297,7 +299,7 @@ export function AgencyInfoSettings() {
                     </Select>
                   </div>
                 ) : (
-                  <span className="text-sm text-muted-foreground">Kapalı</span>
+                  <span className="text-sm text-muted-foreground">{t("agencyInfo.closedLabel")}</span>
                 )}
               </div>
             ))}

@@ -53,6 +53,18 @@
       "description": "Gece yarısı bile müşteriler tur soruyor, rezervasyon yapıyor. Siz uyurken bile satış yapın - hiçbir fırsatı kaçırmayın.",
       "metric": "%120 rezervasyon artışı"
     },
+    "ai": {
+      "title": "Yapay Zeka Destekli",
+      "description": "Akıllı chatbot ile 7/24 müşteri desteği sağlayın"
+    },
+    "booking": {
+      "title": "Kolay Rezervasyon",
+      "description": "Müşterileriniz turları kolayca rezerve edebilir"
+    },
+    "templates": {
+      "title": "Mesaj Şablonları",
+      "description": "Hazır mesaj şablonları ile zamandan tasarruf edin"
+    },
     "analytics": {
       "title": "Gelir Takibi & Analiz",
       "description": "Hangi turlar kazandırıyor? Hangi günler daha çok satış oluyor? Tüm gelir ve performans verilerinizi anlık görün.",
@@ -501,7 +513,8 @@
       "communication": "Chat Bot Ayarları",
       "reporting": "Raporlama",
       "support": "Destek",
-      "superAdmin": "Süper Yönetici"
+      "superAdmin": "Süper Yönetici",
+      "test": "Test"
     },
     "filters": {
       "title": "Filtreler",
@@ -834,6 +847,7 @@
         "lastContact": "Son İletişim",
         "activity": "Aktivite",
         "activityStatus": "Aktivite Durumu",
+        "preferences": "Tercihler",
         "preferredDestinations": "Tercih Edilen Destinasyonlar",
         "statistics": "İstatistikler",
         "lastSearchQuery": "Son Arama",
@@ -857,6 +871,9 @@
         "rejected": "WhatsApp entegrasyonu reddedildi",
         "updateError": "Durum güncellenemedi"
       }
+    },
+    "errorBoundary": {
+      "message": "Bu bölüm yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin."
     },
     "subtitle": "Genel Bakış",
     "totalAgencies": "Toplam Acente",
@@ -1005,6 +1022,7 @@
       "messageQuota": "Mesaj Kotası",
       "remainingTime": "Kalan Süre",
       "actions": "İşlemler",
+      "addNewAgency": "Yeni Acente Ekle",
       "form": {
         "fullName": "Ad Soyad",
         "email": "Email",
@@ -1013,18 +1031,33 @@
         "city": "Şehir",
         "cityPlaceholder": "İstanbul",
         "region": "Bölge (İsteğe Bağlı)",
-        "regionPlaceholder": "Marmara"
+        "regionPlaceholder": "Marmara",
+        "planType": "Plan Tipi",
+        "selectPlan": "Plan Seçin",
+        "subscriptionStatus": "Abonelik Durumu",
+        "selectStatus": "Durum Seçin",
+        "startDate": "Başlangıç Tarihi",
+        "expiryDate": "Bitiş Tarihi",
+        "selectDate": "Tarih Seçin",
+        "cancel": "İptal",
+        "save": "Kaydet",
+        "update": "Güncelle",
+        "saving": "Kaydediliyor...",
+        "whatsappNote": "WhatsApp bağlantısı acente tarafından kendi dashboard'undan yapılır."
       },
       "tableHeaders": {
         "agencyName": "Acente Adı",
+        "name": "Acente Adı",
         "authorized": "Yetkili",
         "owner": "Sahibi",
         "phone": "Telefon",
         "whatsappNo": "WhatsApp No",
         "plan": "Plan",
         "messageQuota": "Mesaj Kotası",
+        "messages": "Mesajlar",
         "subscription": "Abonelik",
         "remainingTime": "Kalan Süre",
+        "remaining": "Kalan",
         "status": "Durum",
         "actions": "İşlemler"
       },
@@ -1998,7 +2031,18 @@
     "cancellationPolicyPlaceholder": "İptal ve iade koşullarınızı detaylı yazın",
     "saveSuccess": "Acente bilgileri kaydedildi",
     "saveError": "Kaydetme hatası",
-    "loadError": "Bilgiler yüklenemedi"
+    "loadError": "Bilgiler yüklenemedi",
+    "workingHoursDesc": "Günlere göre çalışma saatlerinizi belirleyin",
+    "closedLabel": "Kapalı",
+    "days": {
+      "monday": "Pazartesi",
+      "tuesday": "Salı",
+      "wednesday": "Çarşamba",
+      "thursday": "Perşembe",
+      "friday": "Cuma",
+      "saturday": "Cumartesi",
+      "sunday": "Pazar"
+    }
   },
   "complaints": {
     "title": "Şikayetler ve Geri Bildirimler",
@@ -3086,5 +3130,220 @@
       "messageCount": "{{count}} mesaj",
       "empty": "Henüz dil verisi bulunmuyor"
     }
+  },
+  "userProfiles": {
+    "title": "Müşteri Profilleri (CRM)",
+    "users": "müşteri",
+    "loadingUsers": "Kullanıcı profilleri yükleniyor...",
+    "noUsers": "Henüz kullanıcı profili yok",
+    "selectAgency": "Acente Seçin",
+    "todayActive": "Bugün aktif",
+    "yesterdayActive": "Dün aktif",
+    "daysAgo": "gün önce",
+    "tabs": {
+      "profile": "Profil Bilgileri",
+      "conversations": "Konuşma Geçmişi",
+      "tags": "Etiketler",
+      "preferences": "Tercihler"
+    },
+    "totalMessages": "Toplam Mesaj",
+    "totalBookings": "Toplam Rezervasyon",
+    "totalSpent": "Toplam Harcama",
+    "averageSpending": "Ortalama Harcama",
+    "budgetRange": "Bütçe Aralığı",
+    "preferredTourType": "Tercih Edilen Tur Tipi",
+    "interestedDestinations": "İlgilendiği Destinasyonlar",
+    "lastSearch": "Son Arama",
+    "firstInteraction": "İlk İletişim",
+    "lastInteraction": "Son İletişim",
+    "communicationMetrics": "İletişim İstatistikleri",
+    "dailyAverage": "Günlük Ortalama",
+    "salesStats": "Satış İstatistikleri",
+    "customerSatisfaction": "Müşteri Memnuniyeti",
+    "feedbackScore": "Memnuniyet Puanı",
+    "feedbackComment": "Yorum",
+    "noFeedback": "Henüz geri bildirim yok",
+    "customerTags": "Müşteri Etiketleri",
+    "addTag": "Etiket Ekle",
+    "tagAdded": "Etiket eklendi",
+    "tagRemoved": "Etiket silindi",
+    "tagError": "Etiket işlemi başarısız",
+    "noConversations": "Henüz konuşma yok",
+    "loadingConversations": "Konuşmalar yükleniyor...",
+    "conversationHistory": "Konuşma Geçmişi",
+    "conversationError": "Konuşmalar yüklenirken hata oluştu",
+    "customer": "Müşteri",
+    "assistant": "Asistan",
+    "unnamed": "İsimsiz Kullanıcı",
+    "preferencesInterests": "Tercihler & İlgi Alanları"
+  },
+  "superAdmin": {
+    "integrations": {
+      "title": "WhatsApp Entegrasyonları",
+      "tokenLabel": "Meta Access Token (mevcut korunur, boş bırakabilirsiniz)",
+      "tokenPlaceholder": "Yeni token girin (boş = mevcut korunur)",
+      "statusLabels": {
+        "pendingReview": "Talep Alındı",
+        "waitingInfo": "Bilgi Bekleniyor",
+        "inProgress": "Kurulum Yapılıyor",
+        "testing": "Test Ediliyor",
+        "active": "Aktif"
+      },
+      "loading": "Yükleniyor...",
+      "noData": "Henüz entegrasyon talebi yok.",
+      "editTitle": "Entegrasyon Düzenle",
+      "editDescription": "Acente bilgilerini görüntüleyin ve durumu güncelleyin.",
+      "filterPlaceholder": "Duruma göre filtrele",
+      "allFilter": "Tümü",
+      "saveSuccess": "Entegrasyon güncellendi.",
+      "saveError": "Güncellenemedi.",
+      "internalNoteLabel": "Dahili Not (acente görmez)",
+      "internalNotePlaceholder": "İç notlar..."
+    },
+    "whatsapp": {
+      "title": "Meta Cloud API WhatsApp Ayarları",
+      "description": "Meta Cloud API üzerinden WhatsApp entegrasyonu yönetimi",
+      "testPhone": "Telefon Numarası",
+      "testButton": "Test Mesajı Gönder",
+      "testSending": "Gönderiliyor...",
+      "testSuccess": "Test mesajı başarıyla gönderildi!",
+      "testError": "Test mesajı gönderilemedi",
+      "phoneRequired": "Lütfen bir telefon numarası girin"
+    },
+    "business": {
+      "title": "WhatsApp Business Yönetimi",
+      "description": "İşletmelerin WhatsApp Business hesaplarını yönetin",
+      "connectedTab": "Bağlı Hesaplar",
+      "integrationsTab": "Entegrasyon Talepleri",
+      "connectedTitle": "Bağlı WhatsApp Business Hesapları",
+      "noAccounts": "Henüz kayıtlı acente yok.",
+      "manageButton": "Yönet",
+      "loadError": "Hesaplar yüklenemedi",
+      "updateSuccess": "Hesap bilgileri güncellendi",
+      "updateError": "Kayıt başarısız",
+      "dialogTitle": "WhatsApp Hesap Yönetimi"
+    },
+    "contactForms": {
+      "title": "İletişim Formları",
+      "loadError": "İletişim formları yüklenemedi",
+      "updateSuccess": "Form güncellendi",
+      "updateError": "Form güncellenemedi",
+      "noForms": "Henüz form gönderimi yok",
+      "notesPlaceholder": "Notlarınızı buraya yazın...",
+      "statusNew": "Yeni",
+      "statusInProgress": "İnceleniyor",
+      "statusReplied": "Yanıtlandı",
+      "statusClosed": "Kapatıldı"
+    },
+    "testPanel": {
+      "configStatus": "Yapılandırma Durumu",
+      "configDesc": "WhatsApp Meta Cloud API için gerekli kimlik bilgileri",
+      "freeMessage": "Serbest Mesaj",
+      "templateMessage": "Template Mesaj",
+      "sendFreeTitle": "Serbest Metin Mesajı Gönder",
+      "sendFreeDesc": "24 saat penceresi açık olan numaralara serbest metin mesajı gönderin.",
+      "sendFreeWarning": "Son 24 saat içinde mesaj almadığınız numaralara serbest mesaj gönderemezsiniz. Template mesajı kullanın.",
+      "phoneLabel": "Telefon Numarası",
+      "phonePlaceholder": "905551234567",
+      "phoneHint": "Ülke kodu ile, + işareti olmadan",
+      "messageLabel": "Mesaj İçeriği",
+      "messagePlaceholder": "Test mesajı yazın...",
+      "sendFreeButton": "Serbest Mesaj Gönder",
+      "sendTemplateTitle": "Template Mesajı Gönder",
+      "sendTemplateDesc": "Meta tarafından onaylanmış template mesajları gönderin. 24 saat kuralından bağımsız çalışır.",
+      "sendTemplateNote": "Template mesajları her zaman gönderilebilir.",
+      "templateNameLabel": "Template Adı",
+      "templateLangLabel": "Dil Kodu",
+      "sendTemplateButton": "Template Mesaj Gönder",
+      "sending": "Gönderiliyor...",
+      "webhookInfo": "Webhook Bilgileri",
+      "webhookDesc": "Meta App Review için gerekli bilgiler",
+      "apiResponse": "API Yanıtı (detay)",
+      "secretsConfigured": "Tüm gerekli secret'lar yapılandırılmış."
+    }
+  },
+  "subscription": {
+    "planTitle": "Plan Seçin",
+    "noPlan": "Hesabınız henüz bir plana bağlı değil. Aşağıdan bir plan seçerek başlayın.",
+    "needAgencyInfo": "Ödeme yapabilmek için önce acente bilgilerinizi kaydetmeniz gerekmektedir.",
+    "pricePerYear": "₺/yıl",
+    "managePlan": "Aboneliği Yönet →",
+    "loading": "Yükleniyor...",
+    "expired": "Aboneliğiniz sona erdi. Devam etmek için bir plan seçip ödeme yapın.",
+    "noHistory": "Henüz işlem geçmişi yok",
+    "historyHint": "Ödemeler, plan değişiklikleri ve diğer işlemler burada görünecek.",
+    "confirmTitle": "Plan Değişikliğini Onayla",
+    "confirmFrom": "Planınızı",
+    "confirmTo": "planından",
+    "confirmFeatures": "Yeni Plan Özellikleri:",
+    "confirmNote": "Plan değişikliği hemen aktif olacaktır.",
+    "confirmButton": "Planı Değiştir",
+    "confirmChanging": "Değiştiriliyor...",
+    "invoiceError": "Fatura oluşturulamadı",
+    "portalError": "Abonelik portalı açılamadı",
+    "trialChangeError": "Deneme süresindeyken plan değiştiremezsiniz. Önce ödeme yapmalısınız.",
+    "inactiveError": "Aboneliğiniz aktif değil. Önce ödeme yapmalısınız.",
+    "sameplanError": "Zaten bu plandayınız.",
+    "planChanged": "Plan başarıyla değiştirildi.",
+    "planChangeError": "Plan değiştirilemedi"
+  },
+  "registration": {
+    "paymentMethods": {
+      "creditCard": "💳 Kredi Kartı",
+      "cash": "💵 Nakit",
+      "transfer": "🏦 Havale/EFT"
+    },
+    "paymentTitle": "Ödeme İşlemleri",
+    "paymentSelectMethod": "Lütfen ödeme yöntemi seçin",
+    "paymentAdded": "ödeme eklendi",
+    "paymentRemoved": "Ödeme kaydı silindi",
+    "paymentRemoveError": "Ödeme silinemedi",
+    "updateSuccess": "Kayıt güncellendi",
+    "updateError": "Güncelleme başarısız"
+  },
+  "filters": {
+    "all": "Tümü",
+    "category": "Kategori",
+    "allCategories": "Tüm Kategoriler",
+    "clear": "Temizle",
+    "detailed": "Detaylı",
+    "noDate": "Tarih yok",
+    "start": "Başlangıç",
+    "end": "Bitiş",
+    "channelPhone": "Telefon",
+    "channelOffice": "Ofis",
+    "channelOther": "Diğer"
+  },
+  "whatsappIntegration": {
+    "active": "WhatsApp entegrasyonunuz aktif! Mesajlar otomatik olarak AI chatbot tarafından yanıtlanıyor.",
+    "notFound": "Acente bulunamadı.",
+    "loading": "Yükleniyor..."
+  },
+  "bulk": {
+    "importSheetName": "Turlar",
+    "importFilename": "turzz_tur_sablonu",
+    "invalidType": "geçersiz tur tipi",
+    "invalidCurrency": "geçersiz para birimi"
+  },
+  "faq": {
+    "validationError": "Lütfen tüm gerekli alanları doldurun"
+  },
+  "notificationCenter": {
+    "people": "kişi",
+    "customer": "Müşteri"
+  },
+  "support": {
+    "welcome": {
+      "tr": "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
+      "en": "Hello! How can I help you? I can answer your questions about system usage, features, or technical topics. 📚",
+      "de": "Hallo! Wie kann ich Ihnen helfen? Ich kann Ihre Fragen zur Systemnutzung, zu Funktionen oder technischen Themen beantworten. 📚",
+      "ru": "Здравствуйте! Чем я могу помочь? Я могу ответить на ваши вопросы об использовании системы, функциях или технических темах. 📚",
+      "ar": "مرحبا! كيف يمكنني مساعدتك؟ يمكنني الإجابة على أسئلتك حول استخدام النظام أو الميزات أو المواضيع الفنية. 📚",
+      "fr": "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
+      "es": "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
+    },
+    "subtitle": "Size yardımcı olmak için buradayız",
+    "quickOptions": "Hızlı Seçenekler:",
+    "error": "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin."
   }
 }

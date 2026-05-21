@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,7 +15,7 @@ interface Message {
 }
 
 export const SupportChatWidget = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const getInitialMessage = () => {
@@ -109,15 +110,11 @@ export const SupportChatWidget = () => {
       })
       .catch((error) => {
         console.error("Error:", error);
-        const fallbackMessages: Record<string, string> = {
-          tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin.",
-          en: "Sorry, something went wrong. Please try again or visit https://turzzai.com/help.",
-        };
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: fallbackMessages[i18n.language] || fallbackMessages.tr,
+            content: t("support.error", "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin."),
           },
         ]);
       })
@@ -155,15 +152,11 @@ export const SupportChatWidget = () => {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
-      const fallbackMessages: Record<string, string> = {
-        tr: "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin.",
-        en: "Sorry, something went wrong. Please try again or visit https://turzzai.com/help.",
-      };
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: fallbackMessages[i18n.language] || fallbackMessages.tr,
+          content: t("support.error", "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin."),
         },
       ]);
     } finally {
@@ -226,7 +219,7 @@ export const SupportChatWidget = () => {
               <div>
                 <h3 className="font-semibold text-white">Turzz Destek</h3>
                 <p className="text-xs text-white/80">
-                  {i18n.language === "tr" ? "Size yardımcı olmak için buradayız" : "We are here to help"}
+                  {t("support.subtitle", "Size yardımcı olmak için buradayız")}
                 </p>
               </div>
             </div>
@@ -244,7 +237,7 @@ export const SupportChatWidget = () => {
             {showQuickReplies && messages.length === 1 && (
               <div className="mb-4 p-3 bg-secondary/50 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-2">
-                  {i18n.language === "tr" ? "Hızlı Seçenekler:" : "Quick Options:"}
+                  {t("support.quickOptions", "Hızlı Seçenekler:")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {getQuickReplies().map((reply, index) => (
@@ -290,7 +283,7 @@ export const SupportChatWidget = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={i18n.language === "tr" ? "Nasıl yardımcı olabiliriz?" : "How can we help?"}
+                placeholder={t("support.inputPlaceholder", "Nasıl yardımcı olabiliriz?")}
                 disabled={isLoading}
                 className="flex-1 h-12 md:h-10"
               />

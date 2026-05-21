@@ -44,7 +44,16 @@ export const useTours = (activeTab: string, session: any) => {
   const loadTours = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "super_admin")
+        .maybeSingle();
+
+      const isSuperAdmin = !!roleData;
+
+      let toursQuery = supabase
         .from("tours")
         .select(`
           *,
@@ -57,7 +66,25 @@ export const useTours = (activeTab: string, session: any) => {
           )
         `)
         .order("created_at", { ascending: false });
-      
+
+      if (!isSuperAdmin) {
+        const { data: agencyData } = await supabase
+          .from("agencies")
+          .select("id")
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (!agencyData) {
+          setTours([]);
+          setLoading(false);
+          return;
+        }
+
+        toursQuery = toursQuery.eq("agency_id", agencyData.id);
+      }
+
+      const { data, error } = await toursQuery;
+
       if (error) throw error;
 
       // Fetch sold pax per tour_date from registrations (exclude CANCELLED)

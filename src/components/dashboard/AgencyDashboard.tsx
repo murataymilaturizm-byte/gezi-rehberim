@@ -15,6 +15,7 @@ interface AgencyDashboardProps {
   onNewTour?: () => void;
   onBulkImport?: () => void;
   onManualReg?: () => void;
+  agencyId?: string | null;
 }
 
 export const AgencyDashboard = ({
@@ -22,12 +23,13 @@ export const AgencyDashboard = ({
   onNewTour,
   onBulkImport,
   onManualReg,
+  agencyId,
 }: AgencyDashboardProps) => {
   const { t } = useTranslation();
   const {
     stats, comparison, recentRegistrations, popularTours,
     revenueSpark, regSpark, weekTrend, monthTrend, todayStats, loading,
-  } = useAgencyDashboardData(undefined);
+  } = useAgencyDashboardData(undefined, agencyId);
 
   if (loading) return <DashboardSkeleton />;
 

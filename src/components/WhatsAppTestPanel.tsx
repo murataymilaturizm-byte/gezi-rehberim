@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export const WhatsAppTestPanel = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   
   // Free text message state
@@ -37,7 +39,7 @@ export const WhatsAppTestPanel = () => {
 
   const handleSendTextMessage = async () => {
     if (!testPhone || !testMessage) {
-      toast({ title: "Hata", description: "Telefon numarası ve mesaj gerekli", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("superAdmin.whatsapp.phoneRequired"), variant: "destructive" });
       return;
     }
 
@@ -61,7 +63,7 @@ export const WhatsAppTestPanel = () => {
         details: JSON.stringify(data, null, 2)
       });
 
-      toast({ title: "Başarılı", description: "Test mesajı gönderildi" });
+      toast({ title: t("common.success"), description: t("superAdmin.whatsapp.testSuccess") });
     } catch (error: any) {
       console.error("Test message error:", error);
       setResult({
@@ -69,7 +71,7 @@ export const WhatsAppTestPanel = () => {
         message: `❌ Hata: ${error.message || 'Bilinmeyen hata'}`,
         details: JSON.stringify(error, null, 2)
       });
-      toast({ title: "Hata", description: "Test mesajı gönderilemedi", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("superAdmin.whatsapp.testError"), variant: "destructive" });
     } finally {
       setSending(false);
     }
@@ -77,7 +79,7 @@ export const WhatsAppTestPanel = () => {
 
   const handleSendTemplateMessage = async () => {
     if (!templatePhone || !templateName) {
-      toast({ title: "Hata", description: "Telefon numarası ve template adı gerekli", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("superAdmin.whatsapp.phoneRequired"), variant: "destructive" });
       return;
     }
 
@@ -102,7 +104,7 @@ export const WhatsAppTestPanel = () => {
         details: JSON.stringify(data, null, 2)
       });
 
-      toast({ title: "Başarılı", description: "Template mesajı gönderildi" });
+      toast({ title: t("common.success"), description: t("superAdmin.whatsapp.testSuccess") });
     } catch (error: any) {
       console.error("Template message error:", error);
       setTemplateResult({
@@ -110,7 +112,7 @@ export const WhatsAppTestPanel = () => {
         message: `❌ Hata: ${error.message || 'Bilinmeyen hata'}`,
         details: JSON.stringify(error, null, 2)
       });
-      toast({ title: "Hata", description: "Template mesajı gönderilemedi", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("superAdmin.whatsapp.testError"), variant: "destructive" });
     } finally {
       setTemplateSending(false);
     }
@@ -149,10 +151,10 @@ export const WhatsAppTestPanel = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Yapılandırma Durumu
+            {t("superAdmin.testPanel.configStatus")}
           </CardTitle>
           <CardDescription>
-            WhatsApp Meta Cloud API için gerekli kimlik bilgileri
+            {t("superAdmin.testPanel.configDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -165,7 +167,7 @@ export const WhatsAppTestPanel = () => {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            Tüm gerekli secret'lar yapılandırılmış. Değerleri güncellemek için Lovable Cloud ayarlarını kullanın.
+            {t("superAdmin.testPanel.secretsConfigured")}
           </p>
         </CardContent>
       </Card>
@@ -175,11 +177,11 @@ export const WhatsAppTestPanel = () => {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="text" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
-            Serbest Mesaj
+            {t("superAdmin.testPanel.freeMessage")}
           </TabsTrigger>
           <TabsTrigger value="template" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Template Mesaj
+            {t("superAdmin.testPanel.templateMessage")}
           </TabsTrigger>
         </TabsList>
 
@@ -189,7 +191,7 @@ export const WhatsAppTestPanel = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Send className="h-5 w-5" />
-                Serbest Metin Mesajı Gönder
+                {t("superAdmin.testPanel.sendFreeTitle")}
               </CardTitle>
               <CardDescription>
                 24 saat penceresi açık olan numaralara serbest metin mesajı gönderin.
@@ -199,21 +201,21 @@ export const WhatsAppTestPanel = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="test_phone">Telefon Numarası</Label>
+                <Label htmlFor="test_phone">{t("superAdmin.testPanel.phoneLabel")}</Label>
                 <Input
                   id="test_phone"
-                  placeholder="905551234567"
+                  placeholder={t("superAdmin.testPanel.phonePlaceholder")}
                   value={testPhone}
                   onChange={(e) => setTestPhone(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Ülke kodu ile, + işareti olmadan</p>
+                <p className="text-xs text-muted-foreground">{t("superAdmin.testPanel.phoneHint")}</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="test_message">Mesaj İçeriği</Label>
+                <Label htmlFor="test_message">{t("superAdmin.testPanel.messageLabel")}</Label>
                 <Textarea
                   id="test_message"
-                  placeholder="Test mesajı yazın..."
+                  placeholder={t("superAdmin.testPanel.messagePlaceholder")}
                   value={testMessage}
                   onChange={(e) => setTestMessage(e.target.value)}
                   rows={3}
@@ -225,7 +227,7 @@ export const WhatsAppTestPanel = () => {
                 disabled={sending || !testPhone || !testMessage}
                 className="w-full"
               >
-                {sending ? "Gönderiliyor..." : "Serbest Mesaj Gönder"}
+                {sending ? t("superAdmin.testPanel.sending") : t("superAdmin.testPanel.sendFreeButton")}
               </Button>
 
               <ResultAlert result={result} />
@@ -239,7 +241,7 @@ export const WhatsAppTestPanel = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Template Mesajı Gönder
+                {t("superAdmin.testPanel.sendTemplateTitle")}
               </CardTitle>
               <CardDescription>
                 Meta tarafından onaylanmış template mesajları gönderin. 24 saat kuralından bağımsız çalışır.
@@ -249,18 +251,18 @@ export const WhatsAppTestPanel = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="template_phone">Telefon Numarası</Label>
+                <Label htmlFor="template_phone">{t("superAdmin.testPanel.phoneLabel")}</Label>
                 <Input
                   id="template_phone"
-                  placeholder="905551234567"
+                  placeholder={t("superAdmin.testPanel.phonePlaceholder")}
                   value={templatePhone}
                   onChange={(e) => setTemplatePhone(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Ülke kodu ile, + işareti olmadan</p>
+                <p className="text-xs text-muted-foreground">{t("superAdmin.testPanel.phoneHint")}</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="template_name">Template Adı</Label>
+                <Label htmlFor="template_name">{t("superAdmin.testPanel.templateNameLabel")}</Label>
                 <Input
                   id="template_name"
                   placeholder="hello_world"
@@ -271,7 +273,7 @@ export const WhatsAppTestPanel = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="template_lang">Dil Kodu</Label>
+                <Label htmlFor="template_lang">{t("superAdmin.testPanel.templateLangLabel")}</Label>
                 <Input
                   id="template_lang"
                   placeholder="en_US"
@@ -286,7 +288,7 @@ export const WhatsAppTestPanel = () => {
                 disabled={templateSending || !templatePhone || !templateName}
                 className="w-full"
               >
-                {templateSending ? "Gönderiliyor..." : "Template Mesaj Gönder"}
+                {templateSending ? t("superAdmin.testPanel.sending") : t("superAdmin.testPanel.sendTemplateButton")}
               </Button>
 
               <ResultAlert result={templateResult} />

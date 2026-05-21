@@ -522,7 +522,11 @@
       "communication": "Paramètres du Chatbot",
       "reporting": "Rapports",
       "support": "Support",
-      "superAdmin": "Super Admin"
+      "superAdmin": "Super Admin",
+      "test": "Test"
+    },
+    "errorBoundary": {
+      "message": "Une erreur s'est produite lors du chargement de cette section. Veuillez actualiser la page."
     },
     "filters": {
       "status": "Statut",
@@ -534,7 +538,6 @@
       "min": "Min",
       "max": "Max",
       "all": "Tout",
-      "allStatuses": "Tous les statuts",
       "allTours": "Tous les tours",
       "clear": "Effacer les filtres",
       "title": "Filtres",
@@ -998,7 +1001,6 @@
       "emailSupport": "Support email",
       "revenueGrowthTrend": "Tendance des Revenus et de la Croissance",
       "superAdminDescription": "Vous pouvez surveiller le statut général et les statistiques d'utilisation de toutes les agences ici. Utilisez l'onglet 'Agences' pour une gestion détaillée.",
-      "selectDateRange": "Sélectionner la Plage de Dates",
       "filter": "Filtrer",
       "plans": "Plans:",
       "starter": "Débutant",
@@ -1008,9 +1010,6 @@
       "noData": "Aucune donnée",
       "yearlyRevenue": "Revenu Annuel (Estimation)",
       "yearlyValueText": "Valeur annuelle des abonnements payants actuels",
-      "allPlans": "Tous les Plans",
-      "city": "Ville",
-      "allCities": "Toutes les Villes",
       "totalPotentialYearlyRevenue": "Revenu annuel potentiel total",
       "totalActiveAgencies": "Total des agences actives :",
       "avgAgencyValue": "Valeur moyenne par agence :",
@@ -1324,7 +1323,8 @@
         "update": "Mettre à Jour",
         "saving": "Enregistrement...",
         "cityPlaceholder": "Istanbul",
-        "regionPlaceholder": "Marmara"
+        "regionPlaceholder": "Marmara",
+        "whatsappNote": "La connexion WhatsApp est effectuée par l'agence via son propre tableau de bord."
       },
       "tableHeaders": {
         "name": "Nom de l'Agence",
@@ -2033,7 +2033,18 @@
     "cancellationPolicyPlaceholder": "Décrivez en détail votre politique d'annulation et de remboursement",
     "saveSuccess": "Informations de l'agence enregistrées",
     "saveError": "Erreur d'enregistrement",
-    "loadError": "Les informations n'ont pas pu être chargées"
+    "loadError": "Les informations n'ont pas pu être chargées",
+    "workingHoursDesc": "Définissez vos heures de travail par jour",
+    "closedLabel": "Fermé",
+    "days": {
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi",
+      "saturday": "Samedi",
+      "sunday": "Dimanche"
+    }
   },
   "complaints": {
     "title": "Réclamations et commentaires",
@@ -3117,5 +3128,211 @@
       "messageCount": "{{count}} messages",
       "empty": "Aucune donnée linguistique pour l'instant"
     }
+  },
+  "superAdmin": {
+    "integrations": {
+      "title": "Intégrations WhatsApp",
+      "tokenLabel": "Meta Access Token (l'existant est conservé, peut être laissé vide)",
+      "tokenPlaceholder": "Entrer un nouveau token (vide = conserver l'existant)",
+      "statusLabels": {
+        "pendingReview": "Demande reçue",
+        "waitingInfo": "En attente d'informations",
+        "inProgress": "Configuration en cours",
+        "testing": "En cours de test",
+        "active": "Actif"
+      },
+      "loading": "Chargement...",
+      "noData": "Aucune demande d'intégration pour l'instant.",
+      "editTitle": "Modifier l'intégration",
+      "editDescription": "Voir les informations de l'agence et mettre à jour le statut.",
+      "filterPlaceholder": "Filtrer par statut",
+      "allFilter": "Tous",
+      "saveSuccess": "Intégration mise à jour.",
+      "saveError": "Impossible de mettre à jour.",
+      "internalNoteLabel": "Note interne (l'agence ne voit pas)",
+      "internalNotePlaceholder": "Notes internes..."
+    },
+    "whatsapp": {
+      "title": "Paramètres WhatsApp Meta Cloud API",
+      "description": "Gestion de l'intégration WhatsApp via Meta Cloud API",
+      "testPhone": "Numéro de téléphone",
+      "testButton": "Envoyer un message test",
+      "testSending": "Envoi en cours...",
+      "testSuccess": "Message test envoyé avec succès !",
+      "testError": "Impossible d'envoyer le message test",
+      "phoneRequired": "Veuillez saisir un numéro de téléphone"
+    },
+    "business": {
+      "title": "Gestion WhatsApp Business",
+      "description": "Gérer les comptes WhatsApp Business des agences",
+      "connectedTab": "Comptes connectés",
+      "integrationsTab": "Demandes d'intégration",
+      "connectedTitle": "Comptes WhatsApp Business connectés",
+      "noAccounts": "Aucune agence enregistrée pour l'instant.",
+      "manageButton": "Gérer",
+      "loadError": "Impossible de charger les comptes",
+      "updateSuccess": "Informations du compte mises à jour",
+      "updateError": "Échec de l'enregistrement",
+      "dialogTitle": "Gestion du compte WhatsApp"
+    },
+    "contactForms": {
+      "title": "Formulaires de contact",
+      "loadError": "Impossible de charger les formulaires de contact",
+      "updateSuccess": "Formulaire mis à jour",
+      "updateError": "Impossible de mettre à jour le formulaire",
+      "noForms": "Aucune soumission de formulaire pour l'instant",
+      "notesPlaceholder": "Entrez vos notes ici...",
+      "statusNew": "Nouveau",
+      "statusInProgress": "En cours d'examen",
+      "statusReplied": "Répondu",
+      "statusClosed": "Fermé"
+    },
+    "testPanel": {
+      "configStatus": "État de la configuration",
+      "configDesc": "Identifiants requis pour WhatsApp Meta Cloud API",
+      "freeMessage": "Message libre",
+      "templateMessage": "Message modèle",
+      "sendFreeTitle": "Envoyer un message texte libre",
+      "sendFreeDesc": "Envoyez des messages texte libres aux numéros avec une fenêtre de 24 heures ouverte.",
+      "sendFreeWarning": "Vous ne pouvez pas envoyer de messages libres à des numéros dont vous n'avez pas reçu de messages dans les dernières 24 heures. Utilisez des messages modèles.",
+      "phoneLabel": "Numéro de téléphone",
+      "phonePlaceholder": "905551234567",
+      "phoneHint": "Avec indicatif pays, sans +",
+      "messageLabel": "Contenu du message",
+      "messagePlaceholder": "Rédigez un message test...",
+      "sendFreeButton": "Envoyer un message libre",
+      "sendTemplateTitle": "Envoyer un message modèle",
+      "sendTemplateDesc": "Envoyez des messages modèles approuvés par Meta. Fonctionne indépendamment de la règle des 24 heures.",
+      "sendTemplateNote": "Les messages modèles peuvent toujours être envoyés.",
+      "templateNameLabel": "Nom du modèle",
+      "templateLangLabel": "Code de langue",
+      "sendTemplateButton": "Envoyer un message modèle",
+      "sending": "Envoi en cours...",
+      "webhookInfo": "Informations Webhook",
+      "webhookDesc": "Informations requises pour Meta App Review",
+      "apiResponse": "Réponse API (détails)",
+      "secretsConfigured": "Tous les secrets requis sont configurés."
+    }
+  },
+  "subscription": {
+    "planTitle": "Choisir un plan",
+    "noPlan": "Votre compte n'est pas encore lié à un plan. Choisissez un plan ci-dessous pour commencer.",
+    "needAgencyInfo": "Vous devez d'abord enregistrer les informations de votre agence pour effectuer un paiement.",
+    "pricePerYear": "₺/an",
+    "managePlan": "Gérer l'abonnement →",
+    "loading": "Chargement...",
+    "expired": "Votre abonnement a expiré. Choisissez un plan et payez pour continuer.",
+    "noHistory": "Aucun historique de transactions",
+    "historyHint": "Les paiements, changements de plan et autres transactions apparaîtront ici.",
+    "confirmTitle": "Confirmer le changement de plan",
+    "confirmFrom": "Votre plan de",
+    "confirmTo": "plan vers",
+    "confirmFeatures": "Fonctionnalités du nouveau plan :",
+    "confirmNote": "Le changement de plan prendra effet immédiatement.",
+    "confirmButton": "Changer de plan",
+    "confirmChanging": "Changement en cours...",
+    "invoiceError": "Impossible de générer la facture",
+    "portalError": "Impossible d'ouvrir le portail d'abonnement",
+    "trialChangeError": "Vous ne pouvez pas changer de plan pendant la période d'essai. Veuillez d'abord effectuer un paiement.",
+    "inactiveError": "Votre abonnement n'est pas actif. Veuillez d'abord effectuer un paiement.",
+    "sameplanError": "Vous êtes déjà sur ce plan.",
+    "planChanged": "Plan changé avec succès.",
+    "planChangeError": "Impossible de changer de plan"
+  },
+  "registration": {
+    "paymentMethods": {
+      "creditCard": "💳 Carte de crédit",
+      "cash": "💵 Espèces",
+      "transfer": "🏦 Virement bancaire"
+    },
+    "paymentTitle": "Transactions de paiement",
+    "paymentSelectMethod": "Veuillez sélectionner un mode de paiement",
+    "paymentAdded": "paiement ajouté",
+    "paymentRemoved": "Enregistrement de paiement supprimé",
+    "paymentRemoveError": "Impossible de supprimer le paiement",
+    "updateSuccess": "Inscription mise à jour",
+    "updateError": "Échec de la mise à jour"
+  },
+  "filters": {
+    "all": "Tous",
+    "category": "Catégorie",
+    "allCategories": "Toutes les catégories",
+    "clear": "Effacer",
+    "detailed": "Détaillé",
+    "noDate": "Pas de date",
+    "start": "Début",
+    "end": "Fin",
+    "channelPhone": "Téléphone",
+    "channelOffice": "Bureau",
+    "channelOther": "Autre"
+  },
+  "whatsappIntegration": {
+    "active": "Votre intégration WhatsApp est active ! Les messages sont automatiquement répondus par le chatbot IA.",
+    "notFound": "Agence introuvable.",
+    "loading": "Chargement..."
+  },
+  "bulk": {
+    "importSheetName": "Circuits",
+    "importFilename": "turzz_modele_circuits",
+    "invalidType": "type de circuit invalide",
+    "invalidCurrency": "devise invalide"
+  },
+  "faq": {
+    "validationError": "Veuillez remplir tous les champs obligatoires"
+  },
+  "notificationCenter": {
+    "people": "personnes",
+    "customer": "Client"
+  },
+  "support": {
+    "subtitle": "Nous sommes là pour vous aider",
+    "quickOptions": "Options rapides :",
+    "error": "Désolé, une erreur s'est produite. Veuillez réessayer ou visiter https://turzzai.com/help."
+  },
+  "userProfiles": {
+    "title": "Profils clients (CRM)",
+    "users": "clients",
+    "loadingUsers": "Chargement des profils utilisateurs...",
+    "noUsers": "Aucun profil utilisateur pour l'instant",
+    "selectAgency": "Sélectionner une agence",
+    "todayActive": "Actif aujourd'hui",
+    "yesterdayActive": "Actif hier",
+    "daysAgo": "jours passés",
+    "tabs": {
+      "profile": "Informations du profil",
+      "conversations": "Historique des conversations",
+      "tags": "Étiquettes",
+      "preferences": "Préférences"
+    },
+    "totalMessages": "Total messages",
+    "totalBookings": "Total réservations",
+    "totalSpent": "Total dépensé",
+    "averageSpending": "Dépenses moyennes",
+    "budgetRange": "Plage de budget",
+    "preferredTourType": "Type de circuit préféré",
+    "interestedDestinations": "Destinations d'intérêt",
+    "lastSearch": "Dernière recherche",
+    "firstInteraction": "Première interaction",
+    "lastInteraction": "Dernière interaction",
+    "communicationMetrics": "Métriques de communication",
+    "dailyAverage": "Moyenne quotidienne",
+    "salesStats": "Statistiques de ventes",
+    "customerSatisfaction": "Satisfaction client",
+    "feedbackScore": "Score de feedback",
+    "feedbackComment": "Commentaire",
+    "noFeedback": "Pas encore de feedback",
+    "customerTags": "Étiquettes client",
+    "addTag": "Ajouter une étiquette",
+    "tagAdded": "Étiquette ajoutée",
+    "tagRemoved": "Étiquette supprimée",
+    "tagError": "Opération d'étiquette échouée",
+    "noConversations": "Aucune conversation pour l'instant",
+    "loadingConversations": "Chargement des conversations...",
+    "conversationHistory": "Historique des conversations",
+    "conversationError": "Erreur de chargement des conversations",
+    "customer": "Client",
+    "assistant": "Assistant",
+    "unnamed": "Utilisateur sans nom",
+    "preferencesInterests": "Préférences et intérêts"
   }
 }

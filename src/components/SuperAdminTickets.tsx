@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MessageSquare, Clock, CheckCircle, XCircle, Building } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -33,7 +34,7 @@ interface Ticket {
   created_at: string;
   updated_at: string;
   agency_id: string;
-  agencies: { name: string };
+  agencies?: { name: string };
 }
 
 interface TicketMessage {
@@ -44,7 +45,11 @@ interface TicketMessage {
   user_id: string;
 }
 
-export const SuperAdminTickets = () => {
+interface SuperAdminTicketsProps {
+  isSuperAdmin?: boolean;
+}
+
+export const SuperAdminTickets = ({ isSuperAdmin = false }: SuperAdminTicketsProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -98,6 +103,7 @@ export const SuperAdminTickets = () => {
       setMessages(data || []);
     } catch (error) {
       console.error("Error loading messages:", error);
+      toast({ title: t("admin.toast.error"), variant: "destructive" });
     }
   };
 
@@ -210,8 +216,18 @@ export const SuperAdminTickets = () => {
     ? tickets 
     : tickets.filter(t => t.status === filterStatus);
 
+  if (!isSuperAdmin) return null;
+
   if (loading) {
-    return <div className="text-center py-8">{t("admin.loading")}</div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+      </div>
+    );
   }
 
   return (
@@ -234,8 +250,10 @@ export const SuperAdminTickets = () => {
 
       {filteredTickets.length === 0 ? (
         <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground">{t("tickets.noTickets")}</p>
+          <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
+            <MessageSquare className="w-12 h-12 text-muted-foreground/30" />
+            <p className="text-lg font-medium text-muted-foreground">{t("tickets.noTickets")}</p>
+            <p className="text-sm text-muted-foreground/70">{t("tickets.noTicketsAdminHint", "Henüz herhangi bir destek talebi bulunmuyor.")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -247,7 +265,7 @@ export const SuperAdminTickets = () => {
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2">
                       <Building className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{ticket.agencies.name}</span>
+                      <span className="text-sm text-muted-foreground">{ticket.agencies?.name ?? t("common.unknown", "Bilinmiyor")}</span>
                     </div>
                     <CardTitle className="text-lg">{ticket.title}</CardTitle>
                     <div className="flex gap-2">
@@ -288,7 +306,7 @@ export const SuperAdminTickets = () => {
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2">
                             <Building className="w-5 h-5" />
-                            {ticket.agencies.name} - {ticket.title}
+                            {ticket.agencies?.name ?? t("common.unknown", "Bilinmiyor")} - {ticket.title}
                           </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">

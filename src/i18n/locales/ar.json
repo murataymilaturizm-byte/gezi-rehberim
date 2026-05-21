@@ -522,7 +522,11 @@
       "communication": "إعدادات روبوت الدردشة",
       "reporting": "التقارير",
       "support": "الدعم",
-      "superAdmin": "المشرف الرئيسي"
+      "superAdmin": "المشرف الرئيسي",
+      "test": "اختبار"
+    },
+    "errorBoundary": {
+      "message": "حدث خطأ أثناء تحميل هذا القسم. يرجى تحديث الصفحة."
     },
     "filters": {
       "status": "الحالة",
@@ -534,7 +538,6 @@
       "min": "الحد الأدنى",
       "max": "الحد الأقصى",
       "all": "الكل",
-      "allStatuses": "جميع الحالات",
       "allTours": "جميع الرحلات",
       "clear": "مسح الفلاتر",
       "title": "الفلاتر",
@@ -998,7 +1001,6 @@
       "emailSupport": "دعم البريد الإلكتروني",
       "revenueGrowthTrend": "اتجاه الإيرادات والنمو",
       "superAdminDescription": "يمكنك مراقبة الحالة العامة وإحصاءات الاستخدام لجميع الوكالات هنا. استخدم علامة التبويب 'الوكالات' للإدارة التفصيلية.",
-      "selectDateRange": "حدد نطاق التاريخ",
       "filter": "تصفية",
       "plans": "الخطط:",
       "starter": "مبتدئ",
@@ -1008,9 +1010,6 @@
       "noData": "لا توجد بيانات",
       "yearlyRevenue": "الإيرادات السنوية (تقدير)",
       "yearlyValueText": "القيمة السنوية للاشتراكات المدفوعة الحالية",
-      "allPlans": "جميع الخطط",
-      "city": "المدينة",
-      "allCities": "جميع المدن",
       "totalPotentialYearlyRevenue": "إجمالي الإيرادات السنوية المحتملة",
       "totalActiveAgencies": "إجمالي الوكالات النشطة:",
       "avgAgencyValue": "متوسط قيمة الوكالة:",
@@ -1324,7 +1323,8 @@
         "update": "تحديث",
         "saving": "جاري الحفظ...",
         "cityPlaceholder": "إسطنبول",
-        "regionPlaceholder": "مرمرة"
+        "regionPlaceholder": "مرمرة",
+        "whatsappNote": "يتم إنشاء اتصال WhatsApp من قبل الوكالة من خلال لوحة التحكم الخاصة بها."
       },
       "tableHeaders": {
         "name": "اسم الوكالة",
@@ -2033,7 +2033,18 @@
     "cancellationPolicyPlaceholder": "اكتب سياسة الإلغاء والاسترداد بالتفصيل",
     "saveSuccess": "تم حفظ معلومات الوكالة",
     "saveError": "خطأ في الحفظ",
-    "loadError": "تعذر تحميل المعلومات"
+    "loadError": "تعذر تحميل المعلومات",
+    "workingHoursDesc": "حدد ساعات عملك حسب اليوم",
+    "closedLabel": "مغلق",
+    "days": {
+      "monday": "الاثنين",
+      "tuesday": "الثلاثاء",
+      "wednesday": "الأربعاء",
+      "thursday": "الخميس",
+      "friday": "الجمعة",
+      "saturday": "السبت",
+      "sunday": "الأحد"
+    }
   },
   "complaints": {
     "title": "الشكاوى والتعليقات",
@@ -3117,5 +3128,211 @@
       "messageCount": "{{count}} رسالة",
       "empty": "لا توجد بيانات لغوية بعد"
     }
+  },
+  "superAdmin": {
+    "integrations": {
+      "title": "تكاملات واتساب",
+      "tokenLabel": "رمز الوصول Meta (يتم الاحتفاظ بالموجود، يمكن تركه فارغاً)",
+      "tokenPlaceholder": "أدخل رمزاً جديداً (فارغ = الاحتفاظ بالموجود)",
+      "statusLabels": {
+        "pendingReview": "تم استلام الطلب",
+        "waitingInfo": "في انتظار المعلومات",
+        "inProgress": "جاري الإعداد",
+        "testing": "قيد الاختبار",
+        "active": "نشط"
+      },
+      "loading": "جارٍ التحميل...",
+      "noData": "لا توجد طلبات تكامل بعد.",
+      "editTitle": "تعديل التكامل",
+      "editDescription": "عرض معلومات الوكالة وتحديث الحالة.",
+      "filterPlaceholder": "تصفية حسب الحالة",
+      "allFilter": "الكل",
+      "saveSuccess": "تم تحديث التكامل.",
+      "saveError": "تعذّر التحديث.",
+      "internalNoteLabel": "ملاحظة داخلية (الوكالة لن تراها)",
+      "internalNotePlaceholder": "الملاحظات الداخلية..."
+    },
+    "whatsapp": {
+      "title": "إعدادات WhatsApp Meta Cloud API",
+      "description": "إدارة تكامل واتساب عبر Meta Cloud API",
+      "testPhone": "رقم الهاتف",
+      "testButton": "إرسال رسالة اختبار",
+      "testSending": "جارٍ الإرسال...",
+      "testSuccess": "تم إرسال رسالة الاختبار بنجاح!",
+      "testError": "تعذّر إرسال رسالة الاختبار",
+      "phoneRequired": "الرجاء إدخال رقم هاتف"
+    },
+    "business": {
+      "title": "إدارة WhatsApp Business",
+      "description": "إدارة حسابات WhatsApp Business للوكالات",
+      "connectedTab": "الحسابات المتصلة",
+      "integrationsTab": "طلبات التكامل",
+      "connectedTitle": "حسابات WhatsApp Business المتصلة",
+      "noAccounts": "لا توجد وكالات مسجلة بعد.",
+      "manageButton": "إدارة",
+      "loadError": "تعذّر تحميل الحسابات",
+      "updateSuccess": "تم تحديث معلومات الحساب",
+      "updateError": "فشل الحفظ",
+      "dialogTitle": "إدارة حساب واتساب"
+    },
+    "contactForms": {
+      "title": "نماذج الاتصال",
+      "loadError": "تعذّر تحميل نماذج الاتصال",
+      "updateSuccess": "تم تحديث النموذج",
+      "updateError": "تعذّر تحديث النموذج",
+      "noForms": "لا توجد إرسالات نماذج بعد",
+      "notesPlaceholder": "أدخل ملاحظاتك هنا...",
+      "statusNew": "جديد",
+      "statusInProgress": "قيد المراجعة",
+      "statusReplied": "تمت الإجابة",
+      "statusClosed": "مغلق"
+    },
+    "testPanel": {
+      "configStatus": "حالة التكوين",
+      "configDesc": "بيانات الاعتماد المطلوبة لـ WhatsApp Meta Cloud API",
+      "freeMessage": "رسالة حرة",
+      "templateMessage": "رسالة قالب",
+      "sendFreeTitle": "إرسال رسالة نصية حرة",
+      "sendFreeDesc": "أرسل رسائل نصية حرة إلى الأرقام ذات نافذة 24 ساعة مفتوحة.",
+      "sendFreeWarning": "لا يمكنك إرسال رسائل حرة إلى أرقام لم تتلقَّ منها رسائل خلال آخر 24 ساعة. استخدم رسائل القالب.",
+      "phoneLabel": "رقم الهاتف",
+      "phonePlaceholder": "905551234567",
+      "phoneHint": "مع رمز الدولة، بدون +",
+      "messageLabel": "محتوى الرسالة",
+      "messagePlaceholder": "اكتب رسالة اختبار...",
+      "sendFreeButton": "إرسال رسالة حرة",
+      "sendTemplateTitle": "إرسال رسالة قالب",
+      "sendTemplateDesc": "أرسل رسائل قالب معتمدة من Meta. تعمل بشكل مستقل عن قاعدة 24 ساعة.",
+      "sendTemplateNote": "يمكن إرسال رسائل القالب في أي وقت.",
+      "templateNameLabel": "اسم القالب",
+      "templateLangLabel": "رمز اللغة",
+      "sendTemplateButton": "إرسال رسالة قالب",
+      "sending": "جارٍ الإرسال...",
+      "webhookInfo": "معلومات Webhook",
+      "webhookDesc": "المعلومات المطلوبة لمراجعة تطبيق Meta",
+      "apiResponse": "استجابة API (التفاصيل)",
+      "secretsConfigured": "جميع الأسرار المطلوبة مُهيَّأة."
+    }
+  },
+  "subscription": {
+    "planTitle": "اختر خطة",
+    "noPlan": "حسابك غير مرتبط بخطة بعد. اختر خطة أدناه للبدء.",
+    "needAgencyInfo": "تحتاج إلى حفظ معلومات وكالتك أولاً لإجراء الدفع.",
+    "pricePerYear": "₺/سنة",
+    "managePlan": "إدارة الاشتراك →",
+    "loading": "جارٍ التحميل...",
+    "expired": "انتهت صلاحية اشتراكك. اختر خطة وادفع للمتابعة.",
+    "noHistory": "لا يوجد سجل معاملات بعد",
+    "historyHint": "ستظهر هنا المدفوعات وتغييرات الخطة والمعاملات الأخرى.",
+    "confirmTitle": "تأكيد تغيير الخطة",
+    "confirmFrom": "خطتك من",
+    "confirmTo": "خطة إلى",
+    "confirmFeatures": "ميزات الخطة الجديدة:",
+    "confirmNote": "سيسري تغيير الخطة فوراً.",
+    "confirmButton": "تغيير الخطة",
+    "confirmChanging": "جارٍ التغيير...",
+    "invoiceError": "تعذّر إنشاء الفاتورة",
+    "portalError": "تعذّر فتح بوابة الاشتراك",
+    "trialChangeError": "لا يمكنك تغيير الخطة خلال فترة التجربة. يرجى الدفع أولاً.",
+    "inactiveError": "اشتراكك غير نشط. يرجى الدفع أولاً.",
+    "sameplanError": "أنت بالفعل على هذه الخطة.",
+    "planChanged": "تم تغيير الخطة بنجاح.",
+    "planChangeError": "تعذّر تغيير الخطة"
+  },
+  "registration": {
+    "paymentMethods": {
+      "creditCard": "💳 بطاقة ائتمان",
+      "cash": "💵 نقداً",
+      "transfer": "🏦 تحويل بنكي"
+    },
+    "paymentTitle": "عمليات الدفع",
+    "paymentSelectMethod": "الرجاء اختيار طريقة الدفع",
+    "paymentAdded": "تمت إضافة الدفعة",
+    "paymentRemoved": "تم حذف سجل الدفع",
+    "paymentRemoveError": "تعذّر حذف الدفع",
+    "updateSuccess": "تم تحديث التسجيل",
+    "updateError": "فشل التحديث"
+  },
+  "filters": {
+    "all": "الكل",
+    "category": "الفئة",
+    "allCategories": "جميع الفئات",
+    "clear": "مسح",
+    "detailed": "تفصيلي",
+    "noDate": "لا يوجد تاريخ",
+    "start": "البداية",
+    "end": "النهاية",
+    "channelPhone": "هاتف",
+    "channelOffice": "مكتب",
+    "channelOther": "أخرى"
+  },
+  "whatsappIntegration": {
+    "active": "تكامل واتساب لديك نشط! يتم الرد على الرسائل تلقائياً من قبل روبوت الدردشة الذكي.",
+    "notFound": "الوكالة غير موجودة.",
+    "loading": "جارٍ التحميل..."
+  },
+  "bulk": {
+    "importSheetName": "الجولات",
+    "importFilename": "turzz_qaleb_aljawalat",
+    "invalidType": "نوع جولة غير صالح",
+    "invalidCurrency": "عملة غير صالحة"
+  },
+  "faq": {
+    "validationError": "يرجى ملء جميع الحقول المطلوبة"
+  },
+  "notificationCenter": {
+    "people": "أشخاص",
+    "customer": "عميل"
+  },
+  "support": {
+    "subtitle": "نحن هنا للمساعدة",
+    "quickOptions": "خيارات سريعة:",
+    "error": "عذراً، حدث خطأ. يرجى المحاولة مرة أخرى أو زيارة https://turzzai.com/help."
+  },
+  "userProfiles": {
+    "title": "ملفات العملاء (CRM)",
+    "users": "عملاء",
+    "loadingUsers": "جارٍ تحميل ملفات المستخدمين...",
+    "noUsers": "لا توجد ملفات مستخدمين بعد",
+    "selectAgency": "اختر وكالة",
+    "todayActive": "نشط اليوم",
+    "yesterdayActive": "نشط أمس",
+    "daysAgo": "أيام مضت",
+    "tabs": {
+      "profile": "معلومات الملف",
+      "conversations": "سجل المحادثات",
+      "tags": "الوسوم",
+      "preferences": "التفضيلات"
+    },
+    "totalMessages": "إجمالي الرسائل",
+    "totalBookings": "إجمالي الحجوزات",
+    "totalSpent": "إجمالي الإنفاق",
+    "averageSpending": "متوسط الإنفاق",
+    "budgetRange": "نطاق الميزانية",
+    "preferredTourType": "نوع الجولة المفضل",
+    "interestedDestinations": "الوجهات التي يهتم بها",
+    "lastSearch": "آخر بحث",
+    "firstInteraction": "أول تفاعل",
+    "lastInteraction": "آخر تفاعل",
+    "communicationMetrics": "إحصاءات التواصل",
+    "dailyAverage": "المتوسط اليومي",
+    "salesStats": "إحصاءات المبيعات",
+    "customerSatisfaction": "رضا العميل",
+    "feedbackScore": "نقاط التقييم",
+    "feedbackComment": "تعليق",
+    "noFeedback": "لا توجد تعليقات بعد",
+    "customerTags": "وسوم العميل",
+    "addTag": "إضافة وسم",
+    "tagAdded": "تم إضافة الوسم",
+    "tagRemoved": "تم حذف الوسم",
+    "tagError": "فشلت عملية الوسم",
+    "noConversations": "لا توجد محادثات بعد",
+    "loadingConversations": "جارٍ تحميل المحادثات...",
+    "conversationHistory": "سجل المحادثات",
+    "conversationError": "خطأ في تحميل المحادثات",
+    "customer": "عميل",
+    "assistant": "مساعد",
+    "unnamed": "مستخدم بدون اسم",
+    "preferencesInterests": "التفضيلات والاهتمامات"
   }
 }

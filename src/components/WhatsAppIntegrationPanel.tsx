@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { WhatsAppEmbeddedSignup } from "./WhatsAppEmbeddedSignup";
 
 export const WhatsAppIntegrationPanel = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [agencyId, setAgencyId] = useState<string | null>(null);
   const [whatsappStatus, setWhatsappStatus] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export const WhatsAppIntegrationPanel = () => {
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
           <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-          Yükleniyor...
+          {t("whatsappIntegration.loading")}
         </CardContent>
       </Card>
     );
@@ -54,7 +56,7 @@ export const WhatsAppIntegrationPanel = () => {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          Acente bulunamadı.
+          {t("whatsappIntegration.notFound")}
         </CardContent>
       </Card>
     );
@@ -73,7 +75,7 @@ export const WhatsAppIntegrationPanel = () => {
         <Alert className="border-primary/30 bg-primary/5">
           <CheckCircle2 className="h-4 w-4 text-primary" />
           <AlertDescription>
-            WhatsApp entegrasyonunuz aktif! Mesajlar otomatik olarak AI chatbot tarafından yanıtlanıyor.
+            {t("whatsappIntegration.active")}
             <span className="block mt-1 font-medium">Numara: {whatsappPhone}</span>
           </AlertDescription>
         </Alert>

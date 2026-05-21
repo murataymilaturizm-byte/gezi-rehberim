@@ -19,6 +19,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -103,6 +113,8 @@ export default function MessageTemplates() {
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [sendingTemplate, setSendingTemplate] = useState<MessageTemplate | null>(null);
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const templateKeys = getAllTemplateKeys(templates);
@@ -212,14 +224,18 @@ export default function MessageTemplates() {
     }
   };
 
-  const handleDeleteTemplate = async (id: string) => {
-    if (!confirm(t('admin.templates.deleteConfirm'))) return;
+  const handleDeleteTemplate = (id: string) => {
+    setPendingDeleteId(id);
+    setDeleteConfirmOpen(true);
+  };
 
+  const confirmDeleteTemplate = async () => {
+    if (!pendingDeleteId) return;
     try {
       const { error } = await (supabase as any)
         .from('message_templates')
         .delete()
-        .eq('id', id);
+        .eq('id', pendingDeleteId);
 
       if (error) throw error;
 
@@ -236,6 +252,8 @@ export default function MessageTemplates() {
         description: t("admin.templates.errors.deleteError"),
         variant: "destructive",
       });
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -621,6 +639,23 @@ export default function MessageTemplates() {
           onClose={() => { setSendDialogOpen(false); setSendingTemplate(null); }}
         />
       )}
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("admin.templates.deleteTitle", "Şablonu silmek istediğinize emin misiniz?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("admin.templates.deleteConfirm", "Bu şablon kalıcı olarak silinecek. Bu işlem geri alınamaz.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel", "İptal")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteTemplate} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t("common.delete", "Sil")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

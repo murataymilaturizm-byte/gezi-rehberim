@@ -311,7 +311,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
             <SidebarGroup>
               <SidebarGroupLabel asChild>
                 <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
-                  {!isCollapsed && "Test"}
+                  {!isCollapsed && t("admin.groups.test")}
                   {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.test ? "rotate-180" : ""}`} />}
                 </CollapsibleTrigger>
               </SidebarGroupLabel>

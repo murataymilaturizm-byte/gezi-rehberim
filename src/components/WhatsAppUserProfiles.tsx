@@ -63,6 +63,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
+  const [currentAgencyId, setCurrentAgencyId] = useState<string>("");
   const [newTag, setNewTag] = useState("");
   const [conversations, setConversations] = useState<ConversationMessage[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
@@ -71,13 +72,22 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
     if (isSuperAdmin) {
       loadAgencies();
     } else {
-      loadProfiles();
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        supabase.from("agencies").select("id").eq("user_id", user.id).single()
+          .then(({ data }) => {
+            if (data?.id) {
+              setCurrentAgencyId(data.id);
+              loadProfiles(data.id);
+            }
+          });
+      });
     }
   }, [isSuperAdmin]);
 
   useEffect(() => {
     if (selectedAgencyId) {
-      loadProfiles();
+      loadProfiles(selectedAgencyId);
     }
   }, [selectedAgencyId]);
 
@@ -103,20 +113,21 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       }
     } catch (error) {
       console.error("Error loading agencies:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     }
   };
 
-  const loadProfiles = async () => {
+  const loadProfiles = async (agencyIdOverride?: string) => {
     try {
       setLoading(true);
+      const effectiveAgencyId = agencyIdOverride || (isSuperAdmin ? selectedAgencyId : currentAgencyId);
       let query = supabase
         .from("whatsapp_user_profiles")
-        .select("*")
+        .select("id, phone, full_name, total_messages, last_interaction_at, first_interaction_at, preferred_destinations, budget_range, preferred_tour_type, last_search_query, tags, total_bookings, total_spent, feedback_score, feedback_comment, language_preference")
         .order("last_interaction_at", { ascending: false });
 
-      // Süper admin ise seçilen acente için filtrele
-      if (isSuperAdmin && selectedAgencyId) {
-        query = query.eq("agency_id", selectedAgencyId);
+      if (effectiveAgencyId) {
+        query = query.eq("agency_id", effectiveAgencyId);
       }
 
       const { data, error } = await query;
@@ -129,6 +140,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       }
     } catch (error) {
       console.error("Error loading profiles:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -137,6 +149,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   const loadConversations = async (phone: string) => {
     try {
       setLoadingConversations(true);
+      const effectiveAgencyId = isSuperAdmin ? selectedAgencyId : currentAgencyId;
       let query = supabase
         .from("whatsapp_conversations")
         .select("id, role, content, created_at")
@@ -144,9 +157,8 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
         .neq("role", "system")
         .order("created_at", { ascending: true });
 
-      // Süper admin değilse agency_id'ye göre filtrele
-      if (isSuperAdmin && selectedAgencyId) {
-        query = query.eq("agency_id", selectedAgencyId);
+      if (effectiveAgencyId) {
+        query = query.eq("agency_id", effectiveAgencyId);
       }
 
       const { data, error } = await query;
@@ -156,7 +168,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
     } catch (error) {
       console.error("Error loading conversations:", error);
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: "Konuşmalar yüklenirken bir hata oluştu",
         variant: "destructive",
       });

@@ -9,6 +9,7 @@ interface AdminDashboardProps {
   onNewTour?: () => void;
   onBulkImport?: () => void;
   onManualReg?: () => void;
+  agencyId?: string | null;
 }
 
 export const AdminDashboard = ({
@@ -18,6 +19,7 @@ export const AdminDashboard = ({
   onNewTour,
   onBulkImport,
   onManualReg,
+  agencyId,
 }: AdminDashboardProps) => {
   if (isSuperAdmin) {
     return <SuperAdminDashboard planFeatures={planFeatures} />;
@@ -29,6 +31,7 @@ export const AdminDashboard = ({
       onNewTour={onNewTour}
       onBulkImport={onBulkImport}
       onManualReg={onManualReg}
+      agencyId={agencyId}
     />
   );
 };

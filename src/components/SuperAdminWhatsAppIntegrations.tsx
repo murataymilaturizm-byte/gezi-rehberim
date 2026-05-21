@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { CheckCircle2, Clock, Edit, Loader2, MessageSquare, Phone, Settings, Wifi } from "lucide-react";
@@ -49,22 +50,26 @@ interface Integration {
   admin_notes: string | null;
   meta_phone_number_id: string | null;
   meta_waba_id: string | null;
-  meta_access_token: string | null;
   requested_at: string;
   activated_at: string | null;
   updated_at: string;
   agency_name?: string;
 }
 
-const STATUS_CONFIG: Record<IntegrationStatus, { label: string; color: string }> = {
-  pending_review: { label: "Talep Alındı", color: "bg-yellow-500/10 text-yellow-700 border-yellow-500/30" },
-  waiting_info: { label: "Bilgi Bekleniyor", color: "bg-orange-500/10 text-orange-700 border-orange-500/30" },
-  in_progress: { label: "Kurulum Yapılıyor", color: "bg-blue-500/10 text-blue-700 border-blue-500/30" },
-  testing: { label: "Test Ediliyor", color: "bg-purple-500/10 text-purple-700 border-purple-500/30" },
-  active: { label: "Aktif", color: "bg-green-500/10 text-green-700 border-green-500/30" },
+const STATUS_CONFIG: Record<IntegrationStatus, { labelKey: string; color: string }> = {
+  pending_review: { labelKey: "superAdmin.integrations.statusLabels.pendingReview", color: "bg-yellow-500/10 text-yellow-700 border-yellow-500/30" },
+  waiting_info: { labelKey: "superAdmin.integrations.statusLabels.waitingInfo", color: "bg-orange-500/10 text-orange-700 border-orange-500/30" },
+  in_progress: { labelKey: "superAdmin.integrations.statusLabels.inProgress", color: "bg-blue-500/10 text-blue-700 border-blue-500/30" },
+  testing: { labelKey: "superAdmin.integrations.statusLabels.testing", color: "bg-purple-500/10 text-purple-700 border-purple-500/30" },
+  active: { labelKey: "superAdmin.integrations.statusLabels.active", color: "bg-green-500/10 text-green-700 border-green-500/30" },
 };
 
-export const SuperAdminWhatsAppIntegrations = () => {
+interface SuperAdminWhatsAppIntegrationsProps {
+  isSuperAdmin?: boolean;
+}
+
+export const SuperAdminWhatsAppIntegrations = ({ isSuperAdmin = false }: SuperAdminWhatsAppIntegrationsProps) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -76,7 +81,7 @@ export const SuperAdminWhatsAppIntegrations = () => {
     status: "" as IntegrationStatus,
     meta_phone_number_id: "",
     meta_waba_id: "",
-    meta_access_token: "",
+    new_meta_access_token: "",
     admin_notes: "",
   });
 
@@ -89,7 +94,7 @@ export const SuperAdminWhatsAppIntegrations = () => {
     try {
       const { data, error } = await supabase
         .from("whatsapp_integrations")
-        .select("*")
+        .select("id, agency_id, status, whatsapp_phone, company_name, has_business_manager, business_manager_id, contact_email, notes, admin_notes, meta_phone_number_id, meta_waba_id, requested_at, activated_at, updated_at")
         .order("requested_at", { ascending: false });
 
       if (error) throw error;
@@ -121,7 +126,7 @@ export const SuperAdminWhatsAppIntegrations = () => {
       status: integration.status,
       meta_phone_number_id: integration.meta_phone_number_id || "",
       meta_waba_id: integration.meta_waba_id || "",
-      meta_access_token: integration.meta_access_token || "",
+      new_meta_access_token: "",
       admin_notes: integration.admin_notes || "",
     });
     setEditModal(integration);
@@ -135,9 +140,11 @@ export const SuperAdminWhatsAppIntegrations = () => {
         status: editForm.status,
         meta_phone_number_id: editForm.meta_phone_number_id || null,
         meta_waba_id: editForm.meta_waba_id || null,
-        meta_access_token: editForm.meta_access_token || null,
         admin_notes: editForm.admin_notes || null,
       };
+      if (editForm.new_meta_access_token.trim()) {
+        updateData.meta_access_token = editForm.new_meta_access_token.trim();
+      }
 
       if (editForm.status === "active" && editModal.status !== "active") {
         updateData.activated_at = new Date().toISOString();
@@ -162,8 +169,8 @@ export const SuperAdminWhatsAppIntegrations = () => {
         if (editForm.meta_waba_id) {
           agencyUpdate.meta_waba_id = editForm.meta_waba_id;
         }
-        if (editForm.meta_access_token) {
-          agencyUpdate.meta_access_token = editForm.meta_access_token;
+        if (editForm.new_meta_access_token.trim()) {
+          agencyUpdate.meta_access_token = editForm.new_meta_access_token.trim();
         }
         if (editModal.whatsapp_phone) {
           agencyUpdate.whatsapp_phone_number = editModal.whatsapp_phone;
@@ -175,12 +182,12 @@ export const SuperAdminWhatsAppIntegrations = () => {
           .eq("id", editModal.agency_id);
       }
 
-      toast({ title: "Başarılı", description: "Entegrasyon güncellendi." });
+      toast({ title: t("common.success"), description: t("superAdmin.integrations.saveSuccess") });
       setEditModal(null);
       await loadIntegrations();
     } catch (error: any) {
       console.error("Save error:", error);
-      toast({ title: "Hata", description: "Güncellenemedi.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("superAdmin.integrations.saveError"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -203,12 +210,14 @@ export const SuperAdminWhatsAppIntegrations = () => {
     thisMonth,
   };
 
+  if (!isSuperAdmin) return null;
+
   if (loading) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
           <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-          Yükleniyor...
+          {t("superAdmin.integrations.loading")}
         </CardContent>
       </Card>
     );
@@ -279,21 +288,20 @@ export const SuperAdminWhatsAppIntegrations = () => {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                WhatsApp Entegrasyonları
+                {t("superAdmin.integrations.title")}
               </CardTitle>
-              <CardDescription>Tüm acentelerin entegrasyon durumlarını yönetin</CardDescription>
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Duruma göre filtrele" />
+                <SelectValue placeholder={t("superAdmin.integrations.filterPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tümü ({integrations.length})</SelectItem>
+                <SelectItem value="all">{t("superAdmin.integrations.allFilter")} ({integrations.length})</SelectItem>
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                   const count = integrations.filter((i) => i.status === key).length;
                   return (
                     <SelectItem key={key} value={key}>
-                      {config.label} ({count})
+                      {t(config.labelKey)} ({count})
                     </SelectItem>
                   );
                 })}
@@ -304,7 +312,7 @@ export const SuperAdminWhatsAppIntegrations = () => {
         <CardContent>
           {filtered.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Henüz entegrasyon talebi yok.
+              {t("superAdmin.integrations.noData")}
             </div>
           ) : (
             <Table>
@@ -328,7 +336,7 @@ export const SuperAdminWhatsAppIntegrations = () => {
                         variant="outline"
                         className={STATUS_CONFIG[integration.status]?.color}
                       >
-                        {STATUS_CONFIG[integration.status]?.label}
+                        {t(STATUS_CONFIG[integration.status]?.labelKey)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
@@ -355,9 +363,9 @@ export const SuperAdminWhatsAppIntegrations = () => {
       <Dialog open={!!editModal} onOpenChange={(open) => !open && setEditModal(null)}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Entegrasyon Düzenle — {editModal?.agency_name}</DialogTitle>
+            <DialogTitle>{t("superAdmin.integrations.editTitle")} — {editModal?.agency_name}</DialogTitle>
             <DialogDescription>
-              Acente bilgilerini görüntüleyin ve durumu güncelleyin.
+              {t("superAdmin.integrations.editDescription")}
             </DialogDescription>
           </DialogHeader>
 
@@ -385,7 +393,7 @@ export const SuperAdminWhatsAppIntegrations = () => {
                   <SelectContent>
                     {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                       <SelectItem key={key} value={key}>
-                        {config.label}
+                        {t(config.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -410,22 +418,23 @@ export const SuperAdminWhatsAppIntegrations = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Meta Access Token</Label>
+                <Label>Meta Access Token {editModal?.meta_phone_number_id ? t("superAdmin.integrations.tokenLabel") : ""}</Label>
                 <Input
                   type="password"
-                  value={editForm.meta_access_token}
-                  onChange={(e) => setEditForm({ ...editForm, meta_access_token: e.target.value })}
-                  placeholder="EAAxxxxxxx..."
+                  value={editForm.new_meta_access_token}
+                  onChange={(e) => setEditForm({ ...editForm, new_meta_access_token: e.target.value })}
+                  placeholder={t("superAdmin.integrations.tokenPlaceholder")}
+                  autoComplete="new-password"
                 />
               </div>
 
               {/* Admin notes */}
               <div className="space-y-2">
-                <Label>Dahili Not (acente görmez)</Label>
+                <Label>{t("superAdmin.integrations.internalNoteLabel")}</Label>
                 <Textarea
                   value={editForm.admin_notes}
                   onChange={(e) => setEditForm({ ...editForm, admin_notes: e.target.value })}
-                  placeholder="İç notlar..."
+                  placeholder={t("superAdmin.integrations.internalNotePlaceholder")}
                   rows={3}
                 />
               </div>

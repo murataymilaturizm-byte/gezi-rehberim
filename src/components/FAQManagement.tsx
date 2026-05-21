@@ -22,6 +22,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Plus, Trash2, Edit, MessageSquare, TrendingUp } from "lucide-react";
 
@@ -49,6 +59,8 @@ export default function FAQManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<FAQTemplate | null>(null);
   const [translating, setTranslating] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -206,7 +218,7 @@ export default function FAQManagement() {
 
   const handleSubmit = async () => {
     if (!agencyId || !question.trim() || !answer.trim()) {
-      toast.error("Lütfen tüm gerekli alanları doldurun");
+      toast.error(t("faq.validationError"));
       return;
     }
 
@@ -289,28 +301,33 @@ export default function FAQManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     const faq = faqs.find(f => f.id === id);
     if (faq?.is_template) {
       toast.error(t("admin.faq.cannotDeleteTemplate"));
       return;
     }
+    setPendingDeleteId(id);
+    setDeleteConfirmOpen(true);
+  };
 
-    if (!confirm(t("admin.faq.messages.delete_confirm"))) return;
-
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
     try {
       const { error } = await supabase
         .from("faq_templates")
         .delete()
-        .eq("id", id);
+        .eq("id", pendingDeleteId);
 
       if (error) throw error;
-      
+
       toast.success(t("admin.faq.messages.deleted"));
       if (agencyId) await loadFaqs(agencyId);
     } catch (error) {
       console.error("Error deleting FAQ:", error);
       toast.error(t("common.error"));
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -671,6 +688,23 @@ export default function FAQManagement() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("admin.faq.deleteTitle", "Silmek istediğinize emin misiniz?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("admin.faq.messages.delete_confirm", "Bu SSS kalıcı olarak silinecek. Bu işlem geri alınamaz.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel", "İptal")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t("common.delete", "Sil")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, MessageSquare, Clock, CheckCircle, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -56,14 +57,24 @@ export const TicketManagement = () => {
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  
+  const [ownAgencyId, setOwnAgencyId] = useState<string | null>(null);
+
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
 
   useEffect(() => {
-    loadTickets();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from("agencies").select("id").eq("user_id", user.id).single()
+        .then(({ data }) => {
+          if (data?.id) {
+            setOwnAgencyId(data.id);
+            loadTickets(data.id);
+          }
+        });
+    });
   }, []);
 
   useEffect(() => {
@@ -72,12 +83,15 @@ export const TicketManagement = () => {
     }
   }, [selectedTicket]);
 
-  const loadTickets = async () => {
+  const loadTickets = async (agencyIdParam?: string) => {
+    const aid = agencyIdParam || ownAgencyId;
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tickets")
         .select("*, agencies(name)")
         .order("created_at", { ascending: false });
+      if (aid) query = query.eq("agency_id", aid);
+      const { data, error } = await query;
 
       if (error) throw error;
       setTickets(data || []);
@@ -105,6 +119,7 @@ export const TicketManagement = () => {
       setMessages(data || []);
     } catch (error) {
       console.error("Error loading messages:", error);
+      toast({ title: t("admin.toast.error"), variant: "destructive" });
     }
   };
 
@@ -232,7 +247,15 @@ export const TicketManagement = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">{t("admin.loading")}</div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+      </div>
+    );
   }
 
   return (
@@ -293,8 +316,10 @@ export const TicketManagement = () => {
 
       {tickets.length === 0 ? (
         <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground">{t("tickets.noTickets")}</p>
+          <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
+            <CheckCircle className="w-12 h-12 text-muted-foreground/30" />
+            <p className="text-lg font-medium text-muted-foreground">{t("tickets.noTickets")}</p>
+            <p className="text-sm text-muted-foreground/70">{t("tickets.noTicketsHint", "Yeni bir destek talebi oluşturmak için yukarıdaki butona tıklayın.")}</p>
           </CardContent>
         </Card>
       ) : (

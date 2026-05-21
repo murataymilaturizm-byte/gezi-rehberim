@@ -553,7 +553,11 @@
       "communication": "Настройки чат-бота",
       "reporting": "Отчетность",
       "support": "Поддержка",
-      "superAdmin": "Супер админ"
+      "superAdmin": "Супер админ",
+      "test": "Тест"
+    },
+    "errorBoundary": {
+      "message": "При загрузке этого раздела произошла ошибка. Пожалуйста, обновите страницу."
     },
     "filters": {
       "status": "Статус",
@@ -565,7 +569,6 @@
       "min": "Мин",
       "max": "Макс",
       "all": "Все",
-      "allStatuses": "Все статусы",
       "allTours": "Все туры",
       "clear": "Очистить фильтры",
       "title": "Фильтры",
@@ -1351,7 +1354,8 @@
         "update": "Обновить",
         "saving": "Сохранение...",
         "cityPlaceholder": "Стамбул",
-        "regionPlaceholder": "Мармара"
+        "regionPlaceholder": "Мармара",
+        "whatsappNote": "Подключение WhatsApp выполняется агентством через собственную панель управления."
       },
       "tableHeaders": {
         "name": "Название Агентства",
@@ -2060,7 +2064,18 @@
     "cancellationPolicyPlaceholder": "Подробно опишите условия отмены и возврата",
     "saveSuccess": "Информация об агентстве сохранена",
     "saveError": "Ошибка сохранения",
-    "loadError": "Не удалось загрузить информацию"
+    "loadError": "Не удалось загрузить информацию",
+    "workingHoursDesc": "Установите рабочее время по дням",
+    "closedLabel": "Закрыто",
+    "days": {
+      "monday": "Понедельник",
+      "tuesday": "Вторник",
+      "wednesday": "Среда",
+      "thursday": "Четверг",
+      "friday": "Пятница",
+      "saturday": "Суббота",
+      "sunday": "Воскресенье"
+    }
   },
   "complaints": {
     "title": "Жалобы и отзывы",
@@ -3113,5 +3128,211 @@
       "messageCount": "{{count}} сообщений",
       "empty": "Языковых данных пока нет"
     }
+  },
+  "superAdmin": {
+    "integrations": {
+      "title": "WhatsApp-интеграции",
+      "tokenLabel": "Meta Access Token (существующий сохраняется, можно оставить пустым)",
+      "tokenPlaceholder": "Введите новый токен (пусто = сохранить существующий)",
+      "statusLabels": {
+        "pendingReview": "Запрос получен",
+        "waitingInfo": "Ожидание информации",
+        "inProgress": "Настройка",
+        "testing": "Тестирование",
+        "active": "Активен"
+      },
+      "loading": "Загрузка...",
+      "noData": "Запросов на интеграцию пока нет.",
+      "editTitle": "Редактировать интеграцию",
+      "editDescription": "Просмотр информации об агентстве и обновление статуса.",
+      "filterPlaceholder": "Фильтр по статусу",
+      "allFilter": "Все",
+      "saveSuccess": "Интеграция обновлена.",
+      "saveError": "Не удалось обновить.",
+      "internalNoteLabel": "Внутренняя заметка (агентство не видит)",
+      "internalNotePlaceholder": "Внутренние заметки..."
+    },
+    "whatsapp": {
+      "title": "Настройки WhatsApp Meta Cloud API",
+      "description": "Управление интеграцией WhatsApp через Meta Cloud API",
+      "testPhone": "Номер телефона",
+      "testButton": "Отправить тестовое сообщение",
+      "testSending": "Отправка...",
+      "testSuccess": "Тестовое сообщение успешно отправлено!",
+      "testError": "Не удалось отправить тестовое сообщение",
+      "phoneRequired": "Пожалуйста, введите номер телефона"
+    },
+    "business": {
+      "title": "Управление WhatsApp Business",
+      "description": "Управление аккаунтами WhatsApp Business агентств",
+      "connectedTab": "Подключённые аккаунты",
+      "integrationsTab": "Запросы на интеграцию",
+      "connectedTitle": "Подключённые аккаунты WhatsApp Business",
+      "noAccounts": "Зарегистрированных агентств пока нет.",
+      "manageButton": "Управлять",
+      "loadError": "Не удалось загрузить аккаунты",
+      "updateSuccess": "Информация об аккаунте обновлена",
+      "updateError": "Сохранение не удалось",
+      "dialogTitle": "Управление аккаунтом WhatsApp"
+    },
+    "contactForms": {
+      "title": "Контактные формы",
+      "loadError": "Не удалось загрузить контактные формы",
+      "updateSuccess": "Форма обновлена",
+      "updateError": "Форму не удалось обновить",
+      "noForms": "Заявок через форму пока нет",
+      "notesPlaceholder": "Введите заметки здесь...",
+      "statusNew": "Новый",
+      "statusInProgress": "На рассмотрении",
+      "statusReplied": "Отвечен",
+      "statusClosed": "Закрыт"
+    },
+    "testPanel": {
+      "configStatus": "Статус конфигурации",
+      "configDesc": "Необходимые учётные данные для WhatsApp Meta Cloud API",
+      "freeMessage": "Свободное сообщение",
+      "templateMessage": "Шаблонное сообщение",
+      "sendFreeTitle": "Отправить свободное текстовое сообщение",
+      "sendFreeDesc": "Отправляйте свободные текстовые сообщения на номера с открытым 24-часовым окном.",
+      "sendFreeWarning": "Вы не можете отправлять свободные сообщения на номера, от которых не получали сообщений за последние 24 часа. Используйте шаблонные сообщения.",
+      "phoneLabel": "Номер телефона",
+      "phonePlaceholder": "905551234567",
+      "phoneHint": "С кодом страны, без +",
+      "messageLabel": "Содержание сообщения",
+      "messagePlaceholder": "Напишите тестовое сообщение...",
+      "sendFreeButton": "Отправить свободное сообщение",
+      "sendTemplateTitle": "Отправить шаблонное сообщение",
+      "sendTemplateDesc": "Отправляйте одобренные Meta шаблонные сообщения. Работает независимо от 24-часового правила.",
+      "sendTemplateNote": "Шаблонные сообщения можно отправлять в любое время.",
+      "templateNameLabel": "Название шаблона",
+      "templateLangLabel": "Код языка",
+      "sendTemplateButton": "Отправить шаблонное сообщение",
+      "sending": "Отправка...",
+      "webhookInfo": "Информация о вебхуке",
+      "webhookDesc": "Необходимая информация для Meta App Review",
+      "apiResponse": "Ответ API (подробности)",
+      "secretsConfigured": "Все необходимые секреты настроены."
+    }
+  },
+  "subscription": {
+    "planTitle": "Выберите план",
+    "noPlan": "Ваш аккаунт ещё не привязан к плану. Выберите план ниже, чтобы начать.",
+    "needAgencyInfo": "Вам необходимо сначала сохранить информацию об агентстве для оплаты.",
+    "pricePerYear": "₺/год",
+    "managePlan": "Управление подпиской →",
+    "loading": "Загрузка...",
+    "expired": "Срок подписки истёк. Выберите план и оплатите для продолжения.",
+    "noHistory": "История транзакций пока отсутствует",
+    "historyHint": "Платежи, изменения плана и другие транзакции появятся здесь.",
+    "confirmTitle": "Подтвердить смену плана",
+    "confirmFrom": "Ваш план с",
+    "confirmTo": "план на",
+    "confirmFeatures": "Функции нового плана:",
+    "confirmNote": "Смена плана вступит в силу немедленно.",
+    "confirmButton": "Сменить план",
+    "confirmChanging": "Меняется...",
+    "invoiceError": "Не удалось создать счёт",
+    "portalError": "Не удалось открыть портал подписки",
+    "trialChangeError": "Вы не можете сменить план во время пробного периода. Сначала оплатите.",
+    "inactiveError": "Ваша подписка не активна. Сначала оплатите.",
+    "sameplanError": "Вы уже используете этот план.",
+    "planChanged": "План успешно изменён.",
+    "planChangeError": "Не удалось изменить план"
+  },
+  "registration": {
+    "paymentMethods": {
+      "creditCard": "💳 Кредитная карта",
+      "cash": "💵 Наличные",
+      "transfer": "🏦 Банковский перевод"
+    },
+    "paymentTitle": "Платёжные операции",
+    "paymentSelectMethod": "Пожалуйста, выберите способ оплаты",
+    "paymentAdded": "платёж добавлен",
+    "paymentRemoved": "Запись платежа удалена",
+    "paymentRemoveError": "Платёж не удалось удалить",
+    "updateSuccess": "Регистрация обновлена",
+    "updateError": "Обновление не удалось"
+  },
+  "filters": {
+    "all": "Все",
+    "category": "Категория",
+    "allCategories": "Все категории",
+    "clear": "Очистить",
+    "detailed": "Подробно",
+    "noDate": "Нет даты",
+    "start": "Начало",
+    "end": "Конец",
+    "channelPhone": "Телефон",
+    "channelOffice": "Офис",
+    "channelOther": "Другое"
+  },
+  "whatsappIntegration": {
+    "active": "Ваша интеграция с WhatsApp активна! Сообщения автоматически обрабатываются AI-чатботом.",
+    "notFound": "Агентство не найдено.",
+    "loading": "Загрузка..."
+  },
+  "bulk": {
+    "importSheetName": "Туры",
+    "importFilename": "turzz_shablony_turov",
+    "invalidType": "недопустимый тип тура",
+    "invalidCurrency": "недопустимая валюта"
+  },
+  "faq": {
+    "validationError": "Пожалуйста, заполните все обязательные поля"
+  },
+  "notificationCenter": {
+    "people": "человек",
+    "customer": "Клиент"
+  },
+  "support": {
+    "subtitle": "Мы здесь, чтобы помочь",
+    "quickOptions": "Быстрые варианты:",
+    "error": "Извините, произошла ошибка. Повторите попытку или посетите https://turzzai.com/help."
+  },
+  "userProfiles": {
+    "title": "Профили клиентов (CRM)",
+    "users": "клиентов",
+    "loadingUsers": "Загрузка профилей пользователей...",
+    "noUsers": "Профилей пользователей пока нет",
+    "selectAgency": "Выберите агентство",
+    "todayActive": "Активен сегодня",
+    "yesterdayActive": "Активен вчера",
+    "daysAgo": "дней назад",
+    "tabs": {
+      "profile": "Информация профиля",
+      "conversations": "История разговоров",
+      "tags": "Метки",
+      "preferences": "Предпочтения"
+    },
+    "totalMessages": "Всего сообщений",
+    "totalBookings": "Всего бронирований",
+    "totalSpent": "Всего потрачено",
+    "averageSpending": "Средние расходы",
+    "budgetRange": "Диапазон бюджета",
+    "preferredTourType": "Предпочтительный тип тура",
+    "interestedDestinations": "Интересующие направления",
+    "lastSearch": "Последний поиск",
+    "firstInteraction": "Первый контакт",
+    "lastInteraction": "Последний контакт",
+    "communicationMetrics": "Статистика общения",
+    "dailyAverage": "Дневное среднее",
+    "salesStats": "Статистика продаж",
+    "customerSatisfaction": "Удовлетворённость клиента",
+    "feedbackScore": "Оценка отзыва",
+    "feedbackComment": "Комментарий",
+    "noFeedback": "Отзывов пока нет",
+    "customerTags": "Метки клиента",
+    "addTag": "Добавить метку",
+    "tagAdded": "Метка добавлена",
+    "tagRemoved": "Метка удалена",
+    "tagError": "Операция с меткой не удалась",
+    "noConversations": "Разговоров пока нет",
+    "loadingConversations": "Загрузка разговоров...",
+    "conversationHistory": "История разговоров",
+    "conversationError": "Ошибка загрузки разговоров",
+    "customer": "Клиент",
+    "assistant": "Ассистент",
+    "unnamed": "Безымянный пользователь",
+    "preferencesInterests": "Предпочтения и интересы"
   }
 }

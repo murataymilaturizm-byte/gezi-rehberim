@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, TrendingDown, DollarSign, Users, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@/hooks/use-toast";
 import { format, subMonths, subYears, startOfDay, endOfDay, differenceInMilliseconds } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import {
@@ -44,6 +45,7 @@ const ACTIVE_REGISTRATION_STATUSES = ["CONFIRMED", "NEW", "PENDING"];
 
 export const AdvancedAnalytics = () => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const locale = localeMap[i18n.language as keyof typeof localeMap] || tr;
 
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -233,6 +235,7 @@ export const AdvancedAnalytics = () => {
       });
     } catch (error) {
       console.error("Analytics error:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

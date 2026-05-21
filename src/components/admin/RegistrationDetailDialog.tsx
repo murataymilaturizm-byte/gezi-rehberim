@@ -63,11 +63,7 @@ interface RegistrationDetailDialogProps {
   onSuccess: () => void;
 }
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CREDIT_CARD: "💳 Kredi Kartı",
-  CASH: "💵 Nakit",
-  BANK_TRANSFER: "🏦 Havale/EFT",
-};
+// PAYMENT_METHOD_LABELS now uses t() inside the component
 
 export const RegistrationDetailDialog = ({
   open,
@@ -121,6 +117,12 @@ export const RegistrationDetailDialog = ({
 
   if (!registration) return null;
 
+  const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    CREDIT_CARD: t("registration.paymentMethods.creditCard"),
+    CASH: t("registration.paymentMethods.cash"),
+    BANK_TRANSFER: t("registration.paymentMethods.transfer"),
+  };
+
   const sourceChannelLabels: Record<string, string> = {
     WHATSAPP: t("admin.sourceChannel.WHATSAPP"),
     PHONE: t("admin.sourceChannel.PHONE"),
@@ -159,8 +161,8 @@ export const RegistrationDetailDialog = ({
 
     if (!paymentMethod) {
       toast({
-        title: "Hata",
-        description: "Lütfen ödeme yöntemi seçin",
+        title: t("common.error"),
+        description: t("registration.paymentSelectMethod"),
         variant: "destructive"
       });
       return;
@@ -205,7 +207,7 @@ export const RegistrationDetailDialog = ({
 
       toast({
         title: t("admin.registrations.paymentSuccess"),
-        description: `${amount.toLocaleString('tr-TR')}₺ ödeme eklendi`
+        description: `${amount.toLocaleString('tr-TR')}₺ ${t("registration.paymentAdded")}`
       });
 
       setPaymentAmount("");
@@ -253,12 +255,12 @@ export const RegistrationDetailDialog = ({
       setCurrentPaidAmount(newPaidAmount);
       setEditablePaymentStatus(newPaymentStatus);
 
-      toast({ title: "Başarılı", description: "Ödeme kaydı silindi" });
+      toast({ title: t("common.success"), description: t("registration.paymentRemoved") });
       await loadPaymentHistory();
       onSuccess();
     } catch (error) {
       console.error("Delete payment error:", error);
-      toast({ title: "Hata", description: "Ödeme silinemedi", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("registration.paymentRemoveError"), variant: "destructive" });
     }
   };
 
@@ -301,12 +303,12 @@ export const RegistrationDetailDialog = ({
 
       if (error) throw error;
 
-      toast({ title: "Başarılı", description: "Kayıt güncellendi" });
+      toast({ title: t("common.success"), description: t("registration.updateSuccess") });
       await loadPaymentHistory();
       onSuccess();
     } catch (error) {
       console.error("Update error:", error);
-      toast({ title: "Hata", description: "Güncelleme başarısız", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("registration.updateError"), variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }

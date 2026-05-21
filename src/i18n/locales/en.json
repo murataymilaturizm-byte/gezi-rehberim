@@ -522,7 +522,8 @@
       "communication": "Chat Bot Settings",
       "reporting": "Reporting",
       "support": "Support",
-      "superAdmin": "Super Admin"
+      "superAdmin": "Super Admin",
+      "test": "Test"
     },
     "filters": {
       "title": "Filters",
@@ -1321,7 +1322,8 @@
         "update": "Update",
         "saving": "Saving...",
         "cityPlaceholder": "Istanbul",
-        "regionPlaceholder": "Marmara"
+        "regionPlaceholder": "Marmara",
+        "whatsappNote": "WhatsApp connection is made by the agency through their own dashboard."
       },
       "tableHeaders": {
         "agencyName": "Agency Name",
@@ -1561,6 +1563,9 @@
     "subscriptionHistory": {
       "title": "Subscription History",
       "description": "Payment and transaction history"
+    },
+    "errorBoundary": {
+      "message": "An error occurred while loading this section. Please refresh the page."
     },
     "subtitle": "Overview",
     "totalAgencies": "Total Agencies",
@@ -2107,7 +2112,18 @@
     "cancellationPolicyPlaceholder": "Write your cancellation and refund policy in detail",
     "saveSuccess": "Agency information saved",
     "saveError": "Save error",
-    "loadError": "Information could not be loaded"
+    "loadError": "Information could not be loaded",
+    "workingHoursDesc": "Set your working hours by day",
+    "closedLabel": "Closed",
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    }
   },
   "complaints": {
     "title": "Complaints and Feedback",
@@ -3160,5 +3176,165 @@
       "messageCount": "{{count}} messages",
       "empty": "No language data yet"
     }
+  },
+  "superAdmin": {
+    "integrations": {
+      "title": "WhatsApp Integrations",
+      "tokenLabel": "Meta Access Token (existing preserved, can leave blank)",
+      "tokenPlaceholder": "Enter new token (blank = keep existing)",
+      "statusLabels": {
+        "pendingReview": "Request Received",
+        "waitingInfo": "Waiting for Info",
+        "inProgress": "Setting Up",
+        "testing": "Testing",
+        "active": "Active"
+      },
+      "loading": "Loading...",
+      "noData": "No integration requests yet.",
+      "editTitle": "Edit Integration",
+      "editDescription": "View agency info and update status.",
+      "filterPlaceholder": "Filter by status",
+      "allFilter": "All",
+      "saveSuccess": "Integration updated.",
+      "saveError": "Could not update.",
+      "internalNoteLabel": "Internal Note (agency won't see)",
+      "internalNotePlaceholder": "Internal notes..."
+    },
+    "whatsapp": {
+      "title": "Meta Cloud API WhatsApp Settings",
+      "description": "WhatsApp integration management via Meta Cloud API",
+      "testPhone": "Phone Number",
+      "testButton": "Send Test Message",
+      "testSending": "Sending...",
+      "testSuccess": "Test message sent successfully!",
+      "testError": "Test message could not be sent",
+      "phoneRequired": "Please enter a phone number"
+    },
+    "business": {
+      "title": "WhatsApp Business Management",
+      "description": "Manage WhatsApp Business accounts for agencies",
+      "connectedTab": "Connected Accounts",
+      "integrationsTab": "Integration Requests",
+      "connectedTitle": "Connected WhatsApp Business Accounts",
+      "noAccounts": "No registered agencies yet.",
+      "manageButton": "Manage",
+      "loadError": "Could not load accounts",
+      "updateSuccess": "Account information updated",
+      "updateError": "Save failed",
+      "dialogTitle": "WhatsApp Account Management"
+    },
+    "contactForms": {
+      "title": "Contact Forms",
+      "loadError": "Could not load contact forms",
+      "updateSuccess": "Form updated",
+      "updateError": "Form could not be updated",
+      "noForms": "No form submissions yet",
+      "notesPlaceholder": "Enter your notes here...",
+      "statusNew": "New",
+      "statusInProgress": "In Review",
+      "statusReplied": "Replied",
+      "statusClosed": "Closed"
+    },
+    "testPanel": {
+      "configStatus": "Configuration Status",
+      "configDesc": "Required credentials for WhatsApp Meta Cloud API",
+      "freeMessage": "Free Message",
+      "templateMessage": "Template Message",
+      "sendFreeTitle": "Send Free Text Message",
+      "sendFreeDesc": "Send free text messages to numbers with an open 24-hour window.",
+      "sendFreeWarning": "You cannot send free messages to numbers you haven't received messages from in the last 24 hours. Use template messages.",
+      "phoneLabel": "Phone Number",
+      "phonePlaceholder": "905551234567",
+      "phoneHint": "Include country code, without +",
+      "messageLabel": "Message Content",
+      "messagePlaceholder": "Write test message...",
+      "sendFreeButton": "Send Free Message",
+      "sendTemplateTitle": "Send Template Message",
+      "sendTemplateDesc": "Send Meta-approved template messages. Works independently of the 24-hour rule.",
+      "sendTemplateNote": "Template messages can always be sent.",
+      "templateNameLabel": "Template Name",
+      "templateLangLabel": "Language Code",
+      "sendTemplateButton": "Send Template Message",
+      "sending": "Sending...",
+      "webhookInfo": "Webhook Information",
+      "webhookDesc": "Required information for Meta App Review",
+      "apiResponse": "API Response (details)",
+      "secretsConfigured": "All required secrets are configured."
+    }
+  },
+  "subscription": {
+    "planTitle": "Select Plan",
+    "noPlan": "Your account is not linked to a plan yet. Choose a plan below to get started.",
+    "needAgencyInfo": "You need to save your agency information first to make a payment.",
+    "pricePerYear": "₺/year",
+    "managePlan": "Manage Subscription →",
+    "loading": "Loading...",
+    "expired": "Your subscription has expired. Choose a plan and make a payment to continue.",
+    "noHistory": "No transaction history yet",
+    "historyHint": "Payments, plan changes and other transactions will appear here.",
+    "confirmTitle": "Confirm Plan Change",
+    "confirmFrom": "Your plan from",
+    "confirmTo": "plan to",
+    "confirmFeatures": "New Plan Features:",
+    "confirmNote": "The plan change will take effect immediately.",
+    "confirmButton": "Change Plan",
+    "confirmChanging": "Changing...",
+    "invoiceError": "Invoice could not be generated",
+    "portalError": "Subscription portal could not be opened",
+    "trialChangeError": "You cannot change plans during trial. Please make a payment first.",
+    "inactiveError": "Your subscription is not active. Please make a payment first.",
+    "sameplanError": "You are already on this plan.",
+    "planChanged": "Plan changed successfully.",
+    "planChangeError": "Plan could not be changed"
+  },
+  "registration": {
+    "paymentMethods": {
+      "creditCard": "💳 Credit Card",
+      "cash": "💵 Cash",
+      "transfer": "🏦 Bank Transfer"
+    },
+    "paymentTitle": "Payment Transactions",
+    "paymentSelectMethod": "Please select a payment method",
+    "paymentAdded": "payment added",
+    "paymentRemoved": "Payment record deleted",
+    "paymentRemoveError": "Payment could not be deleted",
+    "updateSuccess": "Registration updated",
+    "updateError": "Update failed"
+  },
+  "filters": {
+    "all": "All",
+    "category": "Category",
+    "allCategories": "All Categories",
+    "clear": "Clear",
+    "detailed": "Detailed",
+    "noDate": "No date",
+    "start": "Start",
+    "end": "End",
+    "channelPhone": "Phone",
+    "channelOffice": "Office",
+    "channelOther": "Other"
+  },
+  "whatsappIntegration": {
+    "active": "Your WhatsApp integration is active! Messages are automatically answered by the AI chatbot.",
+    "notFound": "Agency not found.",
+    "loading": "Loading..."
+  },
+  "bulk": {
+    "importSheetName": "Tours",
+    "importFilename": "turzz_tour_template",
+    "invalidType": "invalid tour type",
+    "invalidCurrency": "invalid currency"
+  },
+  "faq": {
+    "validationError": "Please fill in all required fields"
+  },
+  "notificationCenter": {
+    "people": "people",
+    "customer": "Customer"
+  },
+  "support": {
+    "subtitle": "We are here to help",
+    "quickOptions": "Quick Options:",
+    "error": "Sorry, something went wrong. Please try again or visit https://turzzai.com/help."
   }
 }

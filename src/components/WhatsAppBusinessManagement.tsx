@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,24 +24,30 @@ interface ConnectedAccount {
   whatsapp_phone_number: string | null;
   meta_phone_number_id: string | null;
   meta_waba_id: string | null;
-  meta_access_token: string | null;
   whatsapp_status: string | null;
 }
 
-export function WhatsAppBusinessManagement() {
+interface WhatsAppBusinessManagementProps {
+  isSuperAdmin?: boolean;
+}
+
+export function WhatsAppBusinessManagement({ isSuperAdmin = false }: WhatsAppBusinessManagementProps) {
+  const { t } = useTranslation();
+  if (!isSuperAdmin) return null;
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">WhatsApp Business Yönetimi</h2>
+        <h2 className="text-2xl font-bold tracking-tight">{t("superAdmin.business.title")}</h2>
         <p className="text-muted-foreground">
-          İşletmelerin WhatsApp Business hesaplarını yönetin, numara kaydı ve konfigürasyon işlemlerini gerçekleştirin.
+          {t("superAdmin.business.description")}
         </p>
       </div>
 
       <Tabs defaultValue="connected" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="connected">Bağlı Hesaplar</TabsTrigger>
-          <TabsTrigger value="requests">Entegrasyon Talepleri</TabsTrigger>
+          <TabsTrigger value="connected">{t("superAdmin.business.connectedTab")}</TabsTrigger>
+          <TabsTrigger value="requests">{t("superAdmin.business.integrationsTab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="connected">
@@ -48,7 +55,7 @@ export function WhatsAppBusinessManagement() {
         </TabsContent>
 
         <TabsContent value="requests">
-          <SuperAdminWhatsAppIntegrations />
+          <SuperAdminWhatsAppIntegrations isSuperAdmin={true} />
         </TabsContent>
       </Tabs>
     </div>
@@ -56,6 +63,7 @@ export function WhatsAppBusinessManagement() {
 }
 
 function ConnectedAccountsTab() {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null);
@@ -74,7 +82,7 @@ function ConnectedAccountsTab() {
       .order("name");
 
     if (error) {
-      toast({ title: "Hata", description: "Hesaplar yüklenemedi", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("superAdmin.business.loadError"), variant: "destructive" });
     } else {
       setAccounts(data || []);
     }
@@ -98,8 +106,7 @@ function ConnectedAccountsTab() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Bağlı WhatsApp Business Hesapları</CardTitle>
-          <CardDescription>Tüm acentelerin WhatsApp Business hesap durumlarını görüntüleyin ve yönetin.</CardDescription>
+          <CardTitle>{t("superAdmin.business.connectedTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -117,7 +124,7 @@ function ConnectedAccountsTab() {
               {accounts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    Henüz kayıtlı acente yok.
+                    {t("superAdmin.business.noAccounts")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -134,7 +141,7 @@ function ConnectedAccountsTab() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button size="sm" variant="outline" onClick={() => openManageDialog(account)}>
-                        <Settings className="h-4 w-4 mr-1" /> Yönet
+                        <Settings className="h-4 w-4 mr-1" /> {t("superAdmin.business.manageButton")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -165,11 +172,12 @@ interface ManageAccountDialogProps {
 }
 
 function ManageAccountDialog({ account, open, onOpenChange, onSaved }: ManageAccountDialogProps) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     whatsapp_phone_number: account.whatsapp_phone_number || "",
     meta_phone_number_id: account.meta_phone_number_id || "",
     meta_waba_id: account.meta_waba_id || "",
-    meta_access_token: account.meta_access_token || "",
+    new_meta_access_token: "",
     whatsapp_status: account.whatsapp_status || "pending",
   });
   const [showToken, setShowToken] = useState(false);
@@ -183,7 +191,7 @@ function ManageAccountDialog({ account, open, onOpenChange, onSaved }: ManageAcc
       whatsapp_phone_number: account.whatsapp_phone_number || "",
       meta_phone_number_id: account.meta_phone_number_id || "",
       meta_waba_id: account.meta_waba_id || "",
-      meta_access_token: account.meta_access_token || "",
+      new_meta_access_token: "",
       whatsapp_status: account.whatsapp_status || "pending",
     });
     setShowToken(false);
@@ -193,21 +201,24 @@ function ManageAccountDialog({ account, open, onOpenChange, onSaved }: ManageAcc
 
   const handleSave = async () => {
     setSaving(true);
+    const updateData: any = {
+      whatsapp_phone_number: form.whatsapp_phone_number || null,
+      meta_phone_number_id: form.meta_phone_number_id || null,
+      meta_waba_id: form.meta_waba_id || null,
+      whatsapp_status: form.whatsapp_status,
+    };
+    if (form.new_meta_access_token.trim()) {
+      updateData.meta_access_token = form.new_meta_access_token.trim();
+    }
     const { error } = await supabase
       .from("agencies")
-      .update({
-        whatsapp_phone_number: form.whatsapp_phone_number || null,
-        meta_phone_number_id: form.meta_phone_number_id || null,
-        meta_waba_id: form.meta_waba_id || null,
-        meta_access_token: form.meta_access_token || null,
-        whatsapp_status: form.whatsapp_status,
-      })
+      .update(updateData)
       .eq("id", account.id);
 
     if (error) {
-      toast({ title: "Hata", description: "Kayıt başarısız", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("superAdmin.business.updateError"), variant: "destructive" });
     } else {
-      toast({ title: "Başarılı", description: "Hesap bilgileri güncellendi" });
+      toast({ title: t("common.success"), description: t("superAdmin.business.updateSuccess") });
       onSaved();
       onOpenChange(false);
     }
@@ -225,7 +236,7 @@ function ManageAccountDialog({ account, open, onOpenChange, onSaved }: ManageAcc
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>WhatsApp Hesap Yönetimi</DialogTitle>
+          <DialogTitle>{t("superAdmin.business.dialogTitle")}</DialogTitle>
           <DialogDescription>{account.name} — Hesap bilgilerini düzenleyin</DialogDescription>
         </DialogHeader>
 
@@ -269,14 +280,15 @@ function ManageAccountDialog({ account, open, onOpenChange, onSaved }: ManageAcc
               </div>
 
               <div>
-                <Label>Meta Access Token</Label>
+                <Label>Meta Access Token {account.meta_phone_number_id ? "(boş bırakırsanız mevcut korunur)" : ""}</Label>
                 <div className="relative">
                   <Input
                     type={showToken ? "text" : "password"}
-                    value={form.meta_access_token}
-                    onChange={(e) => setForm({ ...form, meta_access_token: e.target.value })}
-                    placeholder="Access Token"
+                    value={form.new_meta_access_token}
+                    onChange={(e) => setForm({ ...form, new_meta_access_token: e.target.value })}
+                    placeholder="Yeni token (boş = mevcut korunur)"
                     className="pr-10"
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"

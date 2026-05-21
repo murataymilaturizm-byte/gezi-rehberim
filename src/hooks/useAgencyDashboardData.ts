@@ -49,7 +49,7 @@ export interface ChartData { name: string; registrations: number }
 
 export interface TodayStats { registrations: number; revenue: number; pendingCount: number }
 
-export function useAgencyDashboardData(dateRange: DateRange | undefined) {
+export function useAgencyDashboardData(dateRange: DateRange | undefined, agencyId?: string | null) {
   const [stats, setStats] = useState<AgencyStats>({
     totalTours: 0, totalRegistrations: 0, activeDates: 0,
     pendingRegistrations: 0, totalRevenue: 0, avgBasket: 0, confirmedRegistrations: 0,
@@ -70,7 +70,7 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
 
   useEffect(() => {
     loadDashboardData();
-  }, [dateRange]);
+  }, [dateRange, agencyId]);
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -92,6 +92,12 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
         .select("id, status, created_at, tour_dates(price_adult), pax, phone", { count: "exact" });
       let datesQuery = supabase.from("tour_dates").select("id, departure_date", { count: "exact" });
 
+      if (agencyId) {
+        toursQuery = toursQuery.eq("agency_id", agencyId) as typeof toursQuery;
+        registrationsQuery = registrationsQuery.eq("agency_id", agencyId);
+        datesQuery = (datesQuery as any).eq("agency_id", agencyId);
+      }
+
       if (startDate) {
         registrationsQuery = registrationsQuery.gte("created_at", startDate);
         datesQuery = datesQuery.gte("departure_date", startDate);
@@ -102,17 +108,19 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
       }
 
       // ── Comparison 7-day window (only when no custom date range) ─────────────
-      const prevQuery = supabase
+      let prevQuery = supabase
         .from("registrations")
         .select("id, status, created_at, tour_dates(price_adult), pax, phone")
         .gte("created_at", twoWeeksAgo)
         .lt("created_at", weekAgo);
+      if (agencyId) prevQuery = prevQuery.eq("agency_id", agencyId);
 
       // ── Today stats ──────────────────────────────────────────────────────────
-      const todayQuery = supabase
+      let todayQuery = supabase
         .from("registrations")
         .select("id, status, tour_dates(price_adult), pax")
         .gte("created_at", todayStart);
+      if (agencyId) todayQuery = todayQuery.eq("agency_id", agencyId);
 
       const [toursResult, registrationsResult, datesResult, prevResult, todayResult] = await Promise.all([
         toursQuery, registrationsQuery, datesQuery, prevQuery, todayQuery,
@@ -174,11 +182,12 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
       });
 
       // ── Sparklines (daily, last 7 days) ──────────────────────────────────────
-      const last7 = supabase
+      let last7 = supabase
         .from("registrations")
         .select("created_at, status, tour_dates(price_adult), pax")
         .gte("created_at", weekAgo)
         .neq("status", "CANCELLED");
+      if (agencyId) last7 = last7.eq("agency_id", agencyId);
 
       const { data: sparkRaw } = await last7;
 
@@ -220,11 +229,13 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
       setWeekTrend(trend7);
 
       // Month trend (last 30 days daily)
-      const { data: month30Raw } = await supabase
+      let month30Query = supabase
         .from("registrations")
         .select("created_at, status, tour_dates(price_adult), pax")
         .gte("created_at", subDays(now, 60).toISOString())
         .neq("status", "CANCELLED");
+      if (agencyId) month30Query = month30Query.eq("agency_id", agencyId);
+      const { data: month30Raw } = await month30Query;
 
       const m30ByDay = (month30Raw || []).reduce<Record<string, number>>((acc, r: any) => {
         const key = format(new Date(r.created_at), "dd MMM", { locale: tr });
@@ -246,6 +257,7 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
         .select("id, full_name, phone, pax, status, created_at, tours(title), tour_dates(departure_date, price_adult)")
         .order("created_at", { ascending: false })
         .limit(10);
+      if (agencyId) recentQuery = recentQuery.eq("agency_id", agencyId);
       if (startDate) recentQuery = recentQuery.gte("created_at", startDate);
       if (endDate) recentQuery = recentQuery.lte("created_at", endDate);
       const { data: recentData } = await recentQuery;
@@ -255,6 +267,7 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined) {
       let popularQuery = supabase
         .from("registrations")
         .select("tour_id, created_at, tours(id, title, destination)");
+      if (agencyId) popularQuery = popularQuery.eq("agency_id", agencyId);
       if (startDate) popularQuery = popularQuery.gte("created_at", startDate);
       if (endDate) popularQuery = popularQuery.lte("created_at", endDate);
       const { data: popularData } = await popularQuery;

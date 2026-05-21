@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Joyride, STATUS, EVENTS } from "react-joyride";
 import type { CallBackProps, Step } from "react-joyride";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -148,6 +149,7 @@ function CompleteContent({ isDark }: { isDark: boolean }) {
 
 // ─── Main component ──────────────────────────────────────────────────────────
 export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTourProps) {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [runTour, setRunTour] = useState(false);
   const isDark = getCurrentTheme() === "dark";
@@ -176,7 +178,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     {
       target: "body",
       placement: "center",
-      title: "🎉 Turzz AI'a Hoş Geldiniz!",
+      title: t("onboardingTour.welcome.title"),
       content: <WelcomeContent isDark={isDark} />,
       disableBeacon: true,
     },
@@ -337,7 +339,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     {
       target: "body",
       placement: "center",
-      title: "🚀 Hazırsınız!",
+      title: t("onboardingTour.complete.title"),
       content: <CompleteContent isDark={isDark} />,
       disableBeacon: true,
     },
@@ -347,7 +349,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     {
       target: "body",
       placement: "center",
-      title: "🎉 Turzz AI'a Hoş Geldiniz!",
+      title: t("onboardingTour.welcome.title"),
       content: <WelcomeContent isDark={isDark} />,
       disableBeacon: true,
     },
@@ -366,7 +368,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     {
       target: "body",
       placement: "center",
-      title: "🚀 Hazırsınız!",
+      title: t("onboardingTour.complete.title"),
       content: <CompleteContent isDark={isDark} />,
       disableBeacon: true,
     },
@@ -412,11 +414,11 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       spotlightClicks
       callback={handleCallback}
       locale={{
-        back: "← Geri",
-        close: "Kapat",
-        last: "Başlayalım! 🚀",
-        next: "İleri →",
-        skip: "Atla",
+        back: t("onboardingTour.back"),
+        close: t("onboardingTour.close"),
+        last: t("onboardingTour.finish"),
+        next: t("onboardingTour.next"),
+        skip: t("onboardingTour.skip"),
       }}
       styles={{
         options: {

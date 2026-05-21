@@ -38,7 +38,6 @@ interface Agency {
   name: string;
   city?: string;
   region?: string;
-  whatsapp_api_key?: string;
   threesixty_client_id?: string;
   whatsapp_phone_number?: string;
   whatsapp_status?: 'pending' | 'active' | 'rejected';
@@ -56,7 +55,11 @@ interface Agency {
   };
 }
 
-export const AgencyManagement = () => {
+interface AgencyManagementProps {
+  isSuperAdmin?: boolean;
+}
+
+export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [agencies, setAgencies] = useState<Agency[]>([]);
@@ -78,7 +81,6 @@ export const AgencyManagement = () => {
     name: "",
     city: "",
     region: "",
-    whatsapp_api_key: "",
   });
 
   const [planFormData, setPlanFormData] = useState({
@@ -106,34 +108,30 @@ export const AgencyManagement = () => {
     try {
       const { data: agenciesData, error } = await supabase
         .from("agencies")
-        .select("id, name, city, region, whatsapp_phone_number, whatsapp_api_key, threesixty_client_id, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .select("id, name, city, region, whatsapp_phone_number, threesixty_client_id, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Get profiles separately
-      const agenciesWithProfiles = await Promise.all(
-        (agenciesData || []).map(async (agency) => {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("id", agency.user_id)
-            .single();
+      // Get profiles in a single batch query (N+1 fix)
+      const userIds = (agenciesData || []).map((a) => a.user_id).filter(Boolean);
+      const { data: profilesData } = userIds.length
+        ? await supabase.from("profiles").select("id, full_name").in("id", userIds)
+        : { data: [] };
+      const profileMap = new Map((profilesData || []).map((p) => [p.id, p.full_name]));
 
-          return {
-            ...agency,
-            whatsapp_status: (agency as any).whatsapp_status as 'pending' | 'active' | 'rejected' | undefined,
-            conversation_style: (agency as any).conversation_style as 'standart' | 'kurumsal' | 'dinamik' | 'premium' | undefined,
-            profiles: profile || { full_name: null },
-          };
-        })
-      );
+      const agenciesWithProfiles = (agenciesData || []).map((agency) => ({
+        ...agency,
+        whatsapp_status: (agency as any).whatsapp_status as 'pending' | 'active' | 'rejected' | undefined,
+        conversation_style: (agency as any).conversation_style as 'standart' | 'kurumsal' | 'dinamik' | 'premium' | undefined,
+        profiles: { full_name: profileMap.get(agency.user_id) ?? null },
+      }));
 
       setAgencies(agenciesWithProfiles);
     } catch (error) {
       console.error("Error loading agencies:", error);
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: "Acenteler yüklenemedi",
         variant: "destructive",
       });
@@ -154,14 +152,13 @@ export const AgencyManagement = () => {
             name: formData.name,
             city: formData.city,
             region: formData.region || null,
-            whatsapp_api_key: formData.whatsapp_api_key || null,
           })
           .eq("id", editingAgency.id);
 
         if (error) throw error;
 
         toast({
-          title: "Başarılı! ✅",
+          title: t("common.successTitle"),
           description: "Acente güncellendi",
         });
       } else {
@@ -187,7 +184,6 @@ export const AgencyManagement = () => {
             name: formData.name,
             city: formData.city,
             region: formData.region || null,
-            whatsapp_api_key: formData.whatsapp_api_key || null,
           });
 
         if (agencyError) throw agencyError;
@@ -203,7 +199,7 @@ export const AgencyManagement = () => {
         if (roleError) throw roleError;
 
         toast({
-          title: "Başarılı! ✅",
+          title: t("common.successTitle"),
           description: "Acente oluşturuldu",
         });
       }
@@ -214,7 +210,7 @@ export const AgencyManagement = () => {
     } catch (error: any) {
       console.error("Error saving agency:", error);
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: error.message || "İşlem başarısız",
         variant: "destructive",
       });
@@ -233,14 +229,14 @@ export const AgencyManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı! ✅",
+        title: t("common.successTitle"),
         description: "Acente silindi",
       });
       loadAgencies();
     } catch (error: any) {
       console.error("Error deleting agency:", error);
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: error.message || "Silme işlemi başarısız",
         variant: "destructive",
       });
@@ -256,7 +252,6 @@ export const AgencyManagement = () => {
       name: agency.name,
       city: agency.city || "",
       region: agency.region || "",
-      whatsapp_api_key: (agency as any).whatsapp_api_key || "",
     });
     setDialogOpen(true);
   };
@@ -270,7 +265,6 @@ export const AgencyManagement = () => {
       name: "",
       city: "",
       region: "",
-      whatsapp_api_key: "",
     });
   };
 
@@ -294,28 +288,28 @@ export const AgencyManagement = () => {
     if (!editingPlanAgency) return;
 
     try {
-      const defaultLimits: Record<string, number> = {
-        starter: 500,
-        professional: 3000,
-        enterprise: -1,
-      };
-
-      const newLimit = planFormData.plan_type === "enterprise" 
-        ? -1 
+      const newLimit = planFormData.plan_type === "enterprise"
+        ? -1
         : (planFormData.message_limit + planFormData.extra_messages);
+
+      const oneYearFromNow = new Date();
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
 
       const { error } = await supabase
         .from("agencies")
         .update({
           plan_type: planFormData.plan_type,
           message_limit: newLimit,
+          subscription_status: "active",
+          subscription_ends_at: oneYearFromNow.toISOString(),
+          trial_ends_at: null,
         })
         .eq("id", editingPlanAgency.id);
 
       if (error) throw error;
 
       toast({
-        title: "Başarılı! ✅",
+        title: t("common.successTitle"),
         description: `Plan güncellendi${planFormData.extra_messages > 0 ? ` (+${planFormData.extra_messages} mesaj eklendi)` : ""}`,
       });
 
@@ -325,7 +319,7 @@ export const AgencyManagement = () => {
     } catch (error: any) {
       console.error("Error updating plan:", error);
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: error.message || "Plan güncellenemedi",
         variant: "destructive",
       });
@@ -342,7 +336,7 @@ export const AgencyManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
+        title: t("common.success"),
         description: status === 'active' ? t("admin.whatsapp.messages.approved") : t("admin.whatsapp.messages.rejected"),
       });
 
@@ -350,7 +344,7 @@ export const AgencyManagement = () => {
     } catch (error: any) {
       console.error("Error updating WhatsApp status:", error);
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: error.message || t("admin.whatsapp.messages.updateError"),
         variant: "destructive",
       });
@@ -375,7 +369,7 @@ export const AgencyManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
+        title: t("common.success"),
         description: "Konuşma üslubu güncellendi",
       });
 
@@ -384,12 +378,14 @@ export const AgencyManagement = () => {
     } catch (error: any) {
       console.error("Error updating conversation style:", error);
       toast({
-        title: "Hata",
+        title: t("common.error"),
         description: error.message || "Konuşma üslubu güncellenemedi",
         variant: "destructive",
       });
     }
   };
+
+  if (!isSuperAdmin) return null;
 
   return (
     <Card className="shadow-card">
@@ -491,16 +487,8 @@ export const AgencyManagement = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="whatsapp_api_key">360Dialog API Anahtarı (opsiyonel)</Label>
-                  <Input
-                    id="whatsapp_api_key"
-                    type="password"
-                    value={formData.whatsapp_api_key}
-                    onChange={(e) => setFormData({ ...formData, whatsapp_api_key: e.target.value })}
-                    placeholder="Acente kendi bağlantısını yapabilir"
-                  />
                   <p className="text-xs text-muted-foreground">
-                    Acente kendi dashboard'undan da bağlayabilir
+                    {t("admin.agency.form.whatsappNote", "WhatsApp bağlantısı acente tarafından kendi dashboard'undan yapılır.")}
                   </p>
                 </div>
 
@@ -758,14 +746,6 @@ export const AgencyManagement = () => {
                       {viewingAgency.whatsapp_phone_number 
                         ? viewingAgency.whatsapp_phone_number 
                         : <span className="text-muted-foreground">Eklenmedi</span>}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">API Anahtarı:</span>
-                    <p className="font-mono">
-                      {viewingAgency.whatsapp_api_key 
-                        ? "••••" + (viewingAgency.whatsapp_api_key as string).slice(-8) 
-                        : <span className="text-muted-foreground">Yapılandırılmamış</span>}
                     </p>
                   </div>
                   {viewingAgency.whatsapp_status && (

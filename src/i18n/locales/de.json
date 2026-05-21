@@ -522,7 +522,11 @@
       "communication": "Chat Bot Einstellungen",
       "reporting": "Berichterstattung",
       "support": "Unterstützung",
-      "superAdmin": "Super-Admin"
+      "superAdmin": "Super-Admin",
+      "test": "Test"
+    },
+    "errorBoundary": {
+      "message": "Beim Laden dieses Abschnitts ist ein Fehler aufgetreten. Bitte aktualisieren Sie die Seite."
     },
     "filters": {
       "status": "Status",
@@ -534,7 +538,6 @@
       "min": "Min",
       "max": "Max",
       "all": "Alle",
-      "allStatuses": "Alle Status",
       "allTours": "Alle Touren",
       "clear": "Filter löschen",
       "title": "Filter",
@@ -1320,7 +1323,8 @@
         "update": "Aktualisieren",
         "saving": "Wird Gespeichert...",
         "cityPlaceholder": "Istanbul",
-        "regionPlaceholder": "Marmara"
+        "regionPlaceholder": "Marmara",
+        "whatsappNote": "Die WhatsApp-Verbindung wird von der Agentur über ihr eigenes Dashboard hergestellt."
       },
       "tableHeaders": {
         "name": "Agenturname",
@@ -2060,7 +2064,18 @@
     "cancellationPolicyPlaceholder": "Schreiben Sie Ihre Stornierungsbedingungen im Detail",
     "saveSuccess": "Agenturinformationen gespeichert",
     "saveError": "Speicherfehler",
-    "loadError": "Informationen konnten nicht geladen werden"
+    "loadError": "Informationen konnten nicht geladen werden",
+    "workingHoursDesc": "Legen Sie Ihre Arbeitszeiten nach Tag fest",
+    "closedLabel": "Geschlossen",
+    "days": {
+      "monday": "Montag",
+      "tuesday": "Dienstag",
+      "wednesday": "Mittwoch",
+      "thursday": "Donnerstag",
+      "friday": "Freitag",
+      "saturday": "Samstag",
+      "sunday": "Sonntag"
+    }
   },
   "complaints": {
     "title": "Beschwerden und Feedback",
@@ -3113,5 +3128,211 @@
       "messageCount": "{{count}} Nachrichten",
       "empty": "Noch keine Sprachdaten"
     }
+  },
+  "superAdmin": {
+    "integrations": {
+      "title": "WhatsApp-Integrationen",
+      "tokenLabel": "Meta Access Token (bestehender wird beibehalten, kann leer gelassen werden)",
+      "tokenPlaceholder": "Neuen Token eingeben (leer = bestehender bleibt)",
+      "statusLabels": {
+        "pendingReview": "Anfrage erhalten",
+        "waitingInfo": "Warte auf Informationen",
+        "inProgress": "Einrichtung läuft",
+        "testing": "Wird getestet",
+        "active": "Aktiv"
+      },
+      "loading": "Wird geladen...",
+      "noData": "Noch keine Integrationsanfragen.",
+      "editTitle": "Integration bearbeiten",
+      "editDescription": "Agenturinformationen anzeigen und Status aktualisieren.",
+      "filterPlaceholder": "Nach Status filtern",
+      "allFilter": "Alle",
+      "saveSuccess": "Integration aktualisiert.",
+      "saveError": "Konnte nicht aktualisiert werden.",
+      "internalNoteLabel": "Interne Notiz (Agentur sieht diese nicht)",
+      "internalNotePlaceholder": "Interne Notizen..."
+    },
+    "whatsapp": {
+      "title": "Meta Cloud API WhatsApp-Einstellungen",
+      "description": "WhatsApp-Integrationsverwaltung über Meta Cloud API",
+      "testPhone": "Telefonnummer",
+      "testButton": "Testnachricht senden",
+      "testSending": "Wird gesendet...",
+      "testSuccess": "Testnachricht erfolgreich gesendet!",
+      "testError": "Testnachricht konnte nicht gesendet werden",
+      "phoneRequired": "Bitte geben Sie eine Telefonnummer ein"
+    },
+    "business": {
+      "title": "WhatsApp Business-Verwaltung",
+      "description": "WhatsApp Business-Konten von Agenturen verwalten",
+      "connectedTab": "Verbundene Konten",
+      "integrationsTab": "Integrationsanfragen",
+      "connectedTitle": "Verbundene WhatsApp Business-Konten",
+      "noAccounts": "Noch keine registrierten Agenturen.",
+      "manageButton": "Verwalten",
+      "loadError": "Konten konnten nicht geladen werden",
+      "updateSuccess": "Kontoinformationen aktualisiert",
+      "updateError": "Speichern fehlgeschlagen",
+      "dialogTitle": "WhatsApp-Kontoverwaltung"
+    },
+    "contactForms": {
+      "title": "Kontaktformulare",
+      "loadError": "Kontaktformulare konnten nicht geladen werden",
+      "updateSuccess": "Formular aktualisiert",
+      "updateError": "Formular konnte nicht aktualisiert werden",
+      "noForms": "Noch keine Formulareinsendungen",
+      "notesPlaceholder": "Notizen hier eingeben...",
+      "statusNew": "Neu",
+      "statusInProgress": "In Bearbeitung",
+      "statusReplied": "Beantwortet",
+      "statusClosed": "Geschlossen"
+    },
+    "testPanel": {
+      "configStatus": "Konfigurationsstatus",
+      "configDesc": "Erforderliche Anmeldeinformationen für WhatsApp Meta Cloud API",
+      "freeMessage": "Freie Nachricht",
+      "templateMessage": "Vorlagennachricht",
+      "sendFreeTitle": "Freie Textnachricht senden",
+      "sendFreeDesc": "Senden Sie freie Textnachrichten an Nummern mit offenem 24-Stunden-Fenster.",
+      "sendFreeWarning": "Sie können keine freien Nachrichten an Nummern senden, von denen Sie in den letzten 24 Stunden keine Nachrichten erhalten haben. Verwenden Sie Vorlagennachrichten.",
+      "phoneLabel": "Telefonnummer",
+      "phonePlaceholder": "905551234567",
+      "phoneHint": "Mit Ländervorwahl, ohne +",
+      "messageLabel": "Nachrichteninhalt",
+      "messagePlaceholder": "Testnachricht schreiben...",
+      "sendFreeButton": "Freie Nachricht senden",
+      "sendTemplateTitle": "Vorlagennachricht senden",
+      "sendTemplateDesc": "Senden Sie von Meta genehmigte Vorlagennachrichten. Funktioniert unabhängig von der 24-Stunden-Regel.",
+      "sendTemplateNote": "Vorlagennachrichten können jederzeit gesendet werden.",
+      "templateNameLabel": "Vorlagenname",
+      "templateLangLabel": "Sprachcode",
+      "sendTemplateButton": "Vorlagennachricht senden",
+      "sending": "Wird gesendet...",
+      "webhookInfo": "Webhook-Informationen",
+      "webhookDesc": "Erforderliche Informationen für Meta App Review",
+      "apiResponse": "API-Antwort (Details)",
+      "secretsConfigured": "Alle erforderlichen Secrets sind konfiguriert."
+    }
+  },
+  "subscription": {
+    "planTitle": "Plan auswählen",
+    "noPlan": "Ihr Konto ist noch mit keinem Plan verknüpft. Wählen Sie unten einen Plan, um loszulegen.",
+    "needAgencyInfo": "Sie müssen zuerst Ihre Agenturinformationen speichern, um eine Zahlung vorzunehmen.",
+    "pricePerYear": "₺/Jahr",
+    "managePlan": "Abonnement verwalten →",
+    "loading": "Wird geladen...",
+    "expired": "Ihr Abonnement ist abgelaufen. Wählen Sie einen Plan und zahlen Sie, um fortzufahren.",
+    "noHistory": "Noch keine Transaktionshistorie",
+    "historyHint": "Zahlungen, Planänderungen und andere Transaktionen werden hier angezeigt.",
+    "confirmTitle": "Planwechsel bestätigen",
+    "confirmFrom": "Ihren Plan von",
+    "confirmTo": "Plan zu",
+    "confirmFeatures": "Neue Plan-Funktionen:",
+    "confirmNote": "Der Planwechsel wird sofort wirksam.",
+    "confirmButton": "Plan wechseln",
+    "confirmChanging": "Wird gewechselt...",
+    "invoiceError": "Rechnung konnte nicht erstellt werden",
+    "portalError": "Abonnementportal konnte nicht geöffnet werden",
+    "trialChangeError": "Während der Testphase können Sie den Plan nicht wechseln. Bitte zahlen Sie zuerst.",
+    "inactiveError": "Ihr Abonnement ist nicht aktiv. Bitte zahlen Sie zuerst.",
+    "sameplanError": "Sie sind bereits in diesem Plan.",
+    "planChanged": "Plan erfolgreich gewechselt.",
+    "planChangeError": "Plan konnte nicht gewechselt werden"
+  },
+  "registration": {
+    "paymentMethods": {
+      "creditCard": "💳 Kreditkarte",
+      "cash": "💵 Bargeld",
+      "transfer": "🏦 Banküberweisung"
+    },
+    "paymentTitle": "Zahlungstransaktionen",
+    "paymentSelectMethod": "Bitte wählen Sie eine Zahlungsmethode",
+    "paymentAdded": "Zahlung hinzugefügt",
+    "paymentRemoved": "Zahlungsdatensatz gelöscht",
+    "paymentRemoveError": "Zahlung konnte nicht gelöscht werden",
+    "updateSuccess": "Registrierung aktualisiert",
+    "updateError": "Aktualisierung fehlgeschlagen"
+  },
+  "filters": {
+    "all": "Alle",
+    "category": "Kategorie",
+    "allCategories": "Alle Kategorien",
+    "clear": "Löschen",
+    "detailed": "Detailliert",
+    "noDate": "Kein Datum",
+    "start": "Anfang",
+    "end": "Ende",
+    "channelPhone": "Telefon",
+    "channelOffice": "Büro",
+    "channelOther": "Andere"
+  },
+  "whatsappIntegration": {
+    "active": "Ihre WhatsApp-Integration ist aktiv! Nachrichten werden automatisch vom KI-Chatbot beantwortet.",
+    "notFound": "Agentur nicht gefunden.",
+    "loading": "Wird geladen..."
+  },
+  "bulk": {
+    "importSheetName": "Touren",
+    "importFilename": "turzz_tour_vorlage",
+    "invalidType": "ungültiger Tourtyp",
+    "invalidCurrency": "ungültige Währung"
+  },
+  "faq": {
+    "validationError": "Bitte füllen Sie alle erforderlichen Felder aus"
+  },
+  "notificationCenter": {
+    "people": "Personen",
+    "customer": "Kunde"
+  },
+  "support": {
+    "subtitle": "Wir sind hier, um zu helfen",
+    "quickOptions": "Schnelloptionen:",
+    "error": "Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder besuchen Sie https://turzzai.com/help."
+  },
+  "userProfiles": {
+    "title": "Kundenprofile (CRM)",
+    "users": "Kunden",
+    "loadingUsers": "Benutzerprofile werden geladen...",
+    "noUsers": "Noch keine Benutzerprofile",
+    "selectAgency": "Agentur auswählen",
+    "todayActive": "Heute aktiv",
+    "yesterdayActive": "Gestern aktiv",
+    "daysAgo": "Tage zuvor",
+    "tabs": {
+      "profile": "Profilinformationen",
+      "conversations": "Gesprächsverlauf",
+      "tags": "Tags",
+      "preferences": "Präferenzen"
+    },
+    "totalMessages": "Nachrichten gesamt",
+    "totalBookings": "Buchungen gesamt",
+    "totalSpent": "Ausgaben gesamt",
+    "averageSpending": "Durchschnittliche Ausgaben",
+    "budgetRange": "Budgetbereich",
+    "preferredTourType": "Bevorzugter Tourtyp",
+    "interestedDestinations": "Interessierte Reiseziele",
+    "lastSearch": "Letzte Suche",
+    "firstInteraction": "Erste Interaktion",
+    "lastInteraction": "Letzte Interaktion",
+    "communicationMetrics": "Kommunikationsstatistiken",
+    "dailyAverage": "Tagesdurchschnitt",
+    "salesStats": "Verkaufsstatistiken",
+    "customerSatisfaction": "Kundenzufriedenheit",
+    "feedbackScore": "Bewertungspunktzahl",
+    "feedbackComment": "Kommentar",
+    "noFeedback": "Noch kein Feedback",
+    "customerTags": "Kunden-Tags",
+    "addTag": "Tag hinzufügen",
+    "tagAdded": "Tag hinzugefügt",
+    "tagRemoved": "Tag entfernt",
+    "tagError": "Tag-Vorgang fehlgeschlagen",
+    "noConversations": "Noch keine Gespräche",
+    "loadingConversations": "Gespräche werden geladen...",
+    "conversationHistory": "Gesprächsverlauf",
+    "conversationError": "Fehler beim Laden der Gespräche",
+    "customer": "Kunde",
+    "assistant": "Assistent",
+    "unnamed": "Unbenannter Benutzer",
+    "preferencesInterests": "Präferenzen & Interessen"
   }
 }

@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { Mail, MessageSquare, Calendar } from "lucide-react";
 
 interface ContactForm {
@@ -34,13 +35,6 @@ interface ContactForm {
   created_at: string;
 }
 
-const statusLabels: Record<string, string> = {
-  new: "Yeni",
-  in_progress: "İnceleniyor",
-  replied: "Yanıtlandı",
-  closed: "Kapatıldı"
-};
-
 const statusColors: Record<string, string> = {
   new: "bg-blue-100 text-blue-700",
   in_progress: "bg-yellow-100 text-yellow-700",
@@ -48,16 +42,28 @@ const statusColors: Record<string, string> = {
   closed: "bg-gray-100 text-gray-700"
 };
 
-export const ContactFormsManagement = () => {
+interface ContactFormsManagementProps {
+  isSuperAdmin?: boolean;
+}
+
+export const ContactFormsManagement = ({ isSuperAdmin = false }: ContactFormsManagementProps) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
+
+  const statusLabels: Record<string, string> = {
+    new: t("superAdmin.contactForms.statusNew"),
+    in_progress: t("superAdmin.contactForms.statusInProgress"),
+    replied: t("superAdmin.contactForms.statusReplied"),
+    closed: t("superAdmin.contactForms.statusClosed")
+  };
   const [forms, setForms] = useState<ContactForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedForm, setSelectedForm] = useState<ContactForm | null>(null);
   const [editingNotes, setEditingNotes] = useState("");
 
   useEffect(() => {
-    loadForms();
-  }, []);
+    if (isSuperAdmin) loadForms();
+  }, [isSuperAdmin]);
 
   const loadForms = async () => {
     try {
@@ -71,8 +77,8 @@ export const ContactFormsManagement = () => {
     } catch (error) {
       console.error("Error loading contact forms:", error);
       toast({
-        title: "Hata",
-        description: "İletişim formları yüklenemedi",
+        title: t("common.error"),
+        description: t("superAdmin.contactForms.loadError"),
         variant: "destructive"
       });
     } finally {
@@ -90,16 +96,16 @@ export const ContactFormsManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
-        description: "Durum güncellendi"
+        title: t("common.success"),
+        description: t("superAdmin.contactForms.updateSuccess")
       });
 
       loadForms();
     } catch (error) {
       console.error("Error updating status:", error);
       toast({
-        title: "Hata",
-        description: "Durum güncellenemedi",
+        title: t("common.error"),
+        description: t("superAdmin.contactForms.updateError"),
         variant: "destructive"
       });
     }
@@ -117,8 +123,8 @@ export const ContactFormsManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Başarılı",
-        description: "Notlar güncellendi"
+        title: t("common.success"),
+        description: t("superAdmin.contactForms.updateSuccess")
       });
 
       setSelectedForm(null);
@@ -127,8 +133,8 @@ export const ContactFormsManagement = () => {
     } catch (error) {
       console.error("Error updating notes:", error);
       toast({
-        title: "Hata",
-        description: "Notlar güncellenemedi",
+        title: t("common.error"),
+        description: t("superAdmin.contactForms.updateError"),
         variant: "destructive"
       });
     }
@@ -141,11 +147,13 @@ export const ContactFormsManagement = () => {
     replied: forms.filter(f => f.status === 'replied').length
   };
 
+  if (!isSuperAdmin) return null;
+
   if (loading) {
     return (
       <Card>
         <CardContent className="p-8 text-center text-muted-foreground">
-          Yükleniyor...
+          {t("common.loading")}
         </CardContent>
       </Card>
     );
@@ -158,25 +166,25 @@ export const ContactFormsManagement = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-foreground">{stats.total}</div>
-            <p className="text-sm text-muted-foreground">Toplam Mesaj</p>
+            <p className="text-sm text-muted-foreground">{t("superAdmin.contactForms.title")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{stats.new}</div>
-            <p className="text-sm text-muted-foreground">Yeni</p>
+            <p className="text-sm text-muted-foreground">{t("superAdmin.contactForms.statusNew")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-yellow-600">{stats.inProgress}</div>
-            <p className="text-sm text-muted-foreground">İnceleniyor</p>
+            <p className="text-sm text-muted-foreground">{t("superAdmin.contactForms.statusInProgress")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{stats.replied}</div>
-            <p className="text-sm text-muted-foreground">Yanıtlandı</p>
+            <p className="text-sm text-muted-foreground">{t("superAdmin.contactForms.statusReplied")}</p>
           </CardContent>
         </Card>
       </div>
@@ -186,13 +194,13 @@ export const ContactFormsManagement = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
-            İletişim Formları
+            {t("superAdmin.contactForms.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {forms.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Henüz form gönderimi yok
+              {t("superAdmin.contactForms.noForms")}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -286,7 +294,7 @@ export const ContactFormsManagement = () => {
             <Textarea
               value={editingNotes}
               onChange={(e) => setEditingNotes(e.target.value)}
-              placeholder="Notlarınızı buraya yazın..."
+              placeholder={t("superAdmin.contactForms.notesPlaceholder")}
               rows={4}
             />
             <div className="flex gap-2">

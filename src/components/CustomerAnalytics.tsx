@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, TrendingUp, MessageSquare, Star, Award, Calendar, DollarSign } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@/hooks/use-toast";
 import { subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import { formatPrice } from "@/utils/currency";
@@ -56,6 +57,7 @@ const translateTag = (tag: string, t: any): string => {
 
 export const CustomerAnalytics = () => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [stats, setStats] = useState<CustomerStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
@@ -98,12 +100,6 @@ export const CustomerAnalytics = () => {
     }
 
     return { startDate: startOfDay(startDate), endDate: endOfDay(endDate) };
-  };
-
-  const getDateFilterLabel = () => {
-    const { startDate, endDate } = getDateRange();
-    const locale = localeMap[i18n.language as keyof typeof localeMap] || tr;
-    return `${format(startDate, 'dd MMM yyyy', { locale })} - ${format(endDate, 'dd MMM yyyy', { locale })}`;
   };
 
   const loadCustomerStats = async () => {
@@ -219,6 +215,7 @@ export const CustomerAnalytics = () => {
       });
     } catch (error) {
       console.error("Customer analytics error:", error);
+      toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

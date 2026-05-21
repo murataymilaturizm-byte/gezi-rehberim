@@ -101,7 +101,7 @@ export const RegistrationFilters = ({
       <div className="p-3 flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground mr-1">
           <Filter className="w-4 h-4" />
-          Filtre
+          {t("common.filters")}
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">{activeFilterCount}</Badge>
           )}
@@ -120,7 +120,7 @@ export const RegistrationFilters = ({
                   : "bg-background text-muted-foreground border-border hover:border-primary/50"
               )}
             >
-              {s === "ALL" ? "Tümü" : statusLabels[s]}
+              {s === "ALL" ? t("filters.all") : statusLabels[s]}
             </button>
           ))}
         </div>
@@ -128,7 +128,7 @@ export const RegistrationFilters = ({
         <div className="ml-auto flex items-center gap-1.5">
           {activeFilterCount > 0 && (
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={onClearFilters}>
-              <X className="w-3 h-3" /> Temizle
+              <X className="w-3 h-3" /> {t("filters.clear")}
             </Button>
           )}
           <Button
@@ -137,7 +137,7 @@ export const RegistrationFilters = ({
             className="h-7 text-xs gap-1"
             onClick={() => setExpanded(!expanded)}
           >
-            Detaylı
+            {t("filters.detailed")}
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </Button>
         </div>
@@ -149,7 +149,7 @@ export const RegistrationFilters = ({
           {/* Row 1: Category, Tour, Tour Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">Kategori</label>
+              <label className="text-[11px] font-medium text-muted-foreground">{t("filters.category")}</label>
               <Select
                 value={filterCategory}
                 onValueChange={(value) => {
@@ -162,7 +162,7 @@ export const RegistrationFilters = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">Tüm Kategoriler</SelectItem>
+                  <SelectItem value="ALL">{t("filters.allCategories")}</SelectItem>
                   {TOUR_CATEGORIES.map((cat) => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.icon} {cat.label}
@@ -201,7 +201,7 @@ export const RegistrationFilters = ({
                 disabled={availableTourDates.length === 0}
               >
                 <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder={availableTourDates.length === 0 ? "Tarih yok" : undefined} />
+                  <SelectValue placeholder={availableTourDates.length === 0 ? t("filters.noDate") : undefined} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">{t("admin.filters.allDates")}</SelectItem>
@@ -226,10 +226,10 @@ export const RegistrationFilters = ({
                 <SelectContent>
                   <SelectItem value="ALL">{t("admin.filters.all")}</SelectItem>
                   <SelectItem value="WHATSAPP">💬 WhatsApp</SelectItem>
-                  <SelectItem value="PHONE">📞 Telefon</SelectItem>
-                  <SelectItem value="OFFICE">🏢 Ofis</SelectItem>
+                  <SelectItem value="PHONE">📞 {t("filters.channelPhone")}</SelectItem>
+                  <SelectItem value="OFFICE">🏢 {t("filters.channelOffice")}</SelectItem>
                   <SelectItem value="INSTAGRAM">📸 Instagram</SelectItem>
-                  <SelectItem value="OTHER">📋 Diğer</SelectItem>
+                  <SelectItem value="OTHER">📋 {t("filters.channelOther")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -246,7 +246,7 @@ export const RegistrationFilters = ({
                         !filterDateFrom && "text-muted-foreground"
                       )}
                     >
-                      {filterDateFrom ? format(filterDateFrom, "d MMM", { locale: tr }) : "Başlangıç"}
+                      {filterDateFrom ? format(filterDateFrom, "d MMM", { locale: tr }) : t("filters.start")}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -269,7 +269,7 @@ export const RegistrationFilters = ({
                         !filterDateTo && "text-muted-foreground"
                       )}
                     >
-                      {filterDateTo ? format(filterDateTo, "d MMM", { locale: tr }) : "Bitiş"}
+                      {filterDateTo ? format(filterDateTo, "d MMM", { locale: tr }) : t("filters.end")}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">

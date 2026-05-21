@@ -82,8 +82,8 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
 
           if (!title) errors.push(t("bulkImport.errors.titleRequired"));
           if (!destination) errors.push(t("bulkImport.errors.destinationRequired"));
-          if (!VALID_TYPES.includes(rawType)) errors.push(`type: "${rawType}" geçersiz (DAYTRIP/N2/N3)`);
-          if (!VALID_CURRENCIES.includes(rawCurrency)) errors.push(`currency: "${rawCurrency}" geçersiz`);
+          if (!VALID_TYPES.includes(rawType)) errors.push(`type: "${rawType}" ${t("bulk.invalidType")} (DAYTRIP/N2/N3)`);
+          if (!VALID_CURRENCIES.includes(rawCurrency)) errors.push(`currency: "${rawCurrency}" ${t("bulk.invalidCurrency")}`);
 
           return {
             rowIndex: idx + 2,
@@ -208,8 +208,8 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
       { wch: 30 }, { wch: 30 }, { wch: 30 },
     ];
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Turlar");
-    XLSX.writeFile(wb, "turzz_tur_sablonu.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, t("bulk.importSheetName"));
+    XLSX.writeFile(wb, `${t("bulk.importFilename")}.xlsx`);
   };
 
   const validCount = parsedTours.filter((p) => p.isValid).length;
