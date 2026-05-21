@@ -43,7 +43,9 @@
     "highlight": "Automate Your Tour Sales",
     "description": "Sell tours 24/7 with an AI-powered WhatsApp assistant. Answer customer questions, take bookings, and manage payments automatically - even while you sleep.",
     "cta": "Try Free for 14 Days",
-    "demo": "Try Live Demo"
+    "demo": "Try Live Demo",
+    "priceHint": "from ₺2,999/month",
+    "watchDemo": "Watch demo"
   },
   "features": {
     "title": "Features",
@@ -2092,7 +2094,10 @@
     "successMessage": "We'll get back to you as soon as possible.",
     "errorTitle": "Error",
     "errorMessage": "Message could not be sent. Please try again.",
-    "formErrorTitle": "Form Error"
+    "formErrorTitle": "Form Error",
+    "rateLimitTitle": "⚠️ Too Many Attempts",
+    "rateLimitDesc": "Please try again in 10 minutes. Spam protection is active.",
+    "validationError": "Form validation error"
   },
   "validation": {
     "nameRequired": "Name is required",
@@ -3013,23 +3018,23 @@
     }
   },
   "indexFeatures": {
-    "title": "Built for Travel Agencies",
-    "subtitle": "Manage sales, bookings and customer service via WhatsApp — all in one platform.",
+    "title": "In-Depth Topic Guides",
+    "subtitle": "Detailed information, use cases and implementation specifics for each feature.",
     "whatsapp": {
-      "title": "WhatsApp Business Chatbot",
-      "desc": "Auto-respond to customer messages 24/7. Even 2am inquiries get instant answers."
+      "title": "WhatsApp Chatbot Guide",
+      "desc": "WhatsApp Business API setup, 24/7 auto-replies, and live integration walkthrough."
     },
     "ai": {
-      "title": "AI-Powered Booking",
-      "desc": "AI collects date, pax count, name and phone step by step — and creates the reservation automatically."
+      "title": "AI Reservation Walkthrough",
+      "desc": "How the AI collects date, pax, name and phone step by step to create reservations — end-to-end flow."
     },
     "multilingual": {
-      "title": "7-Language Customer Service",
-      "desc": "German, Russian, Arabic tourists write in their own language — chatbot replies the same. No translator needed."
+      "title": "Multilingual Service Details",
+      "desc": "How 7-language support works, which scenarios are covered, and example conversations."
     },
     "automation": {
-      "title": "Automated Tour Management",
-      "desc": "Quota tracking, tour reminders, customer segmentation — all automatic."
+      "title": "Tour Automation Guide",
+      "desc": "Quota, reminders, segmentation, reporting — how to fully automate tour operations."
     }
   },
   "indexSolutions": {
@@ -3364,5 +3369,21 @@
       "fr": "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
       "es": "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
     }
+  },
+  "heroDemo": {
+    "customerName": "Customer",
+    "botName": "Turzz AI",
+    "online": "online",
+    "typing": "typing...",
+    "msg1": "Hi, do you have a Cappadocia tour?",
+    "msg2": "Hello! 👋 Yes, we have a 2-day Cappadocia tour. June 15-16 is available. €120/person, balloon ride included. Interested?",
+    "msg3": "Sounds great! How do I book for 2?",
+    "msg4": "Booking now 🎯 May I have your name?"
+  },
+  "statsRibbon": {
+    "agencies": "Active Agencies",
+    "messages": "Monthly Messages",
+    "satisfaction": "Satisfaction",
+    "languages": "Language Support"
   }
 }

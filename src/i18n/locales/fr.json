@@ -43,7 +43,9 @@
     "highlight": "Automatisez Vos Ventes de Tours",
     "description": "Vendez des tours 24/7 avec un assistant WhatsApp alimenté par l'IA. Répondez aux questions des clients, prenez des réservations et gérez les paiements automatiquement - même pendant votre sommeil.",
     "cta": "Essayer Gratuitement 14 Jours",
-    "demo": "Essayer la Démo Live"
+    "demo": "Essayer la Démo Live",
+    "priceHint": "à partir de ₺2 999/mois",
+    "watchDemo": "Voir la démo"
   },
   "features": {
     "title": "Fonctionnalités",
@@ -2103,7 +2105,10 @@
     "successMessage": "Nous vous répondrons dès que possible.",
     "errorTitle": "Erreur",
     "errorMessage": "Le message n'a pas pu être envoyé. Veuillez réessayer.",
-    "formErrorTitle": "Erreur de formulaire"
+    "formErrorTitle": "Erreur de formulaire",
+    "rateLimitTitle": "⚠️ Trop de tentatives",
+    "rateLimitDesc": "Veuillez réessayer dans 10 minutes. La protection anti-spam est active.",
+    "validationError": "Erreur de validation du formulaire"
   },
   "validation": {
     "nameRequired": "Le nom est requis",
@@ -2967,23 +2972,23 @@
     }
   },
   "indexFeatures": {
-    "title": "Conçu pour les agences de voyage",
-    "subtitle": "Gérez ventes, réservations et service client via WhatsApp — tout sur une seule plateforme.",
+    "title": "Guides détaillés par thème",
+    "subtitle": "Informations approfondies, cas d'usage et détails de mise en œuvre pour chaque fonctionnalité.",
     "whatsapp": {
-      "title": "Chatbot WhatsApp Business",
-      "desc": "Répondez automatiquement aux messages clients 24h/24. Même les demandes à 2h du matin reçoivent une réponse instantanée."
+      "title": "Guide du chatbot WhatsApp",
+      "desc": "Configuration de l'API WhatsApp Business, réponses automatiques 24/7 et détails d'intégration en direct."
     },
     "ai": {
-      "title": "Réservation assistée par IA",
-      "desc": "L'IA collecte date, nombre de personnes, nom et téléphone étape par étape — et crée la réservation automatiquement."
+      "title": "Guide de réservation IA",
+      "desc": "Comment l'IA collecte la date, le nombre, le nom et le téléphone étape par étape — flux de bout en bout."
     },
     "multilingual": {
-      "title": "Service client en 7 langues",
-      "desc": "Les touristes allemands, russes, arabes écrivent dans leur langue — le chatbot répond pareil. Pas besoin de traducteur."
+      "title": "Détails du service multilingue",
+      "desc": "Comment fonctionne le service en 7 langues, les scénarios couverts et des exemples de conversations."
     },
     "automation": {
-      "title": "Gestion automatisée des circuits",
-      "desc": "Suivi des quotas, rappels de circuits, segmentation des clients — tout automatiquement."
+      "title": "Guide d'automatisation des tours",
+      "desc": "Quotas, rappels, segmentation, rapports — comment automatiser entièrement les opérations."
     }
   },
   "indexSolutions": {
@@ -3364,5 +3369,21 @@
     "assistant": "Assistant",
     "unnamed": "Utilisateur sans nom",
     "preferencesInterests": "Préférences et intérêts"
+  },
+  "heroDemo": {
+    "customerName": "Client",
+    "botName": "Turzz AI",
+    "online": "en ligne",
+    "typing": "écrit...",
+    "msg1": "Bonjour, avez-vous un tour en Cappadoce ?",
+    "msg2": "Bonjour ! 👋 Oui, nous avons un tour de 2 jours en Cappadoce. 15-16 juin disponible. €120/pers., vol en montgolfière inclus. Intéressé ?",
+    "msg3": "Super ! Comment réserver pour 2 ?",
+    "msg4": "Je réserve 🎯 Quel est votre nom ?"
+  },
+  "statsRibbon": {
+    "agencies": "Agences actives",
+    "messages": "Messages mensuels",
+    "satisfaction": "Satisfaction",
+    "languages": "Langues"
   }
 }

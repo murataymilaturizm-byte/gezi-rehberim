@@ -43,7 +43,9 @@
     "highlight": "Automatisieren Sie Ihren Tour-Verkauf",
     "description": "Verkaufen Sie 24/7 Touren mit einem KI-gestützten WhatsApp-Assistenten. Beantworten Sie Kundenfragen, nehmen Sie Buchungen entgegen und verwalten Sie Zahlungen automatisch - auch im Schlaf.",
     "cta": "14 Tage Kostenlos Testen",
-    "demo": "Live-Demo Testen"
+    "demo": "Live-Demo Testen",
+    "priceHint": "ab ₺2.999/Monat",
+    "watchDemo": "Demo ansehen"
   },
   "features": {
     "title": "Funktionen",
@@ -2046,7 +2048,10 @@
     "successMessage": "Wir werden uns so schnell wie möglich bei Ihnen melden.",
     "errorTitle": "Fehler",
     "errorMessage": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
-    "formErrorTitle": "Formularfehler"
+    "formErrorTitle": "Formularfehler",
+    "rateLimitTitle": "⚠️ Zu viele Versuche",
+    "rateLimitDesc": "Bitte versuchen Sie es in 10 Minuten erneut. Spam-Schutz ist aktiv.",
+    "validationError": "Formularvalidierungsfehler"
   },
   "validation": {
     "nameRequired": "Name ist erforderlich",
@@ -2967,23 +2972,23 @@
     }
   },
   "indexFeatures": {
-    "title": "Funktionen für Reisebüros",
-    "subtitle": "Verwalten Sie Verkäufe, Buchungen und Kundenservice über WhatsApp — alles auf einer Plattform.",
+    "title": "Themen-Guides im Detail",
+    "subtitle": "Detaillierte Informationen, Anwendungsfälle und Umsetzungsdetails zu jeder Funktion.",
     "whatsapp": {
-      "title": "WhatsApp Business Chatbot",
-      "desc": "Beantworten Sie Kundennachrichten automatisch rund um die Uhr. Sofortige Antworten auch um 2 Uhr nachts."
+      "title": "WhatsApp Chatbot Anleitung",
+      "desc": "Einrichtung der WhatsApp Business API, 24/7-Auto-Antworten und Live-Integration im Detail."
     },
     "ai": {
-      "title": "KI-gestützte Buchung",
-      "desc": "Die KI erfasst Datum, Personenzahl, Name und Telefon Schritt für Schritt und erstellt die Buchung automatisch."
+      "title": "KI-Reservierungs-Leitfaden",
+      "desc": "Wie die KI Datum, Personen, Namen und Telefon Schritt für Schritt erfasst — End-to-End-Ablauf."
     },
     "multilingual": {
-      "title": "Kundenservice in 7 Sprachen",
-      "desc": "Deutsche, russische, arabische Touristen schreiben in ihrer Sprache — der Chatbot antwortet genauso. Kein Übersetzer nötig."
+      "title": "Mehrsprachiger Service – Details",
+      "desc": "7-sprachiger Kundenservice: Funktionsweise, abgedeckte Szenarien und Beispielgespräche."
     },
     "automation": {
-      "title": "Automatisiertes Tourmanagement",
-      "desc": "Kapazitätsverwaltung, Tourerinnerungen, Kundensegmentierung — alles automatisch."
+      "title": "Tour-Automatisierungs-Anleitung",
+      "desc": "Kontingent, Erinnerungen, Segmentierung, Berichte — Touroperationen vollständig automatisieren."
     }
   },
   "indexSolutions": {
@@ -3364,5 +3369,21 @@
     "assistant": "Assistent",
     "unnamed": "Unbenannter Benutzer",
     "preferencesInterests": "Präferenzen & Interessen"
+  },
+  "heroDemo": {
+    "customerName": "Kunde",
+    "botName": "Turzz AI",
+    "online": "online",
+    "typing": "tippt...",
+    "msg1": "Hallo, gibt es eine Kappadokien-Tour?",
+    "msg2": "Hallo! 👋 Ja, wir haben eine 2-tägige Kappadokien-Tour. 15.-16. Juni verfügbar. €120/Person, Ballonfahrt inklusive. Interesse?",
+    "msg3": "Klingt super! Wie buche ich für 2?",
+    "msg4": "Ich buche jetzt 🎯 Wie ist Ihr Name?"
+  },
+  "statsRibbon": {
+    "agencies": "Aktive Agenturen",
+    "messages": "Monatliche Nachrichten",
+    "satisfaction": "Zufriedenheit",
+    "languages": "Sprachunterstützung"
   }
 }

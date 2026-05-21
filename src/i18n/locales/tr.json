@@ -43,7 +43,9 @@
     "highlight": "Tur Satışlarınızı Otomatikleştirin",
     "description": "Yapay zeka destekli WhatsApp asistanı ile 7/24 tur satışı yapın. Müşteri sorularını yanıtlayın, rezervasyon alın ve yönetin. - siz uyurken bile satış yapın.",
     "cta": "14 Gün Ücretsiz Dene",
-    "demo": "Canlı Test Et"
+    "demo": "Canlı Test Et",
+    "priceHint": "aydan ₺2.999'dan başlar",
+    "watchDemo": "Demoyu izle"
   },
   "features": {
     "title": "İşinizi Büyüten Özellikler",
@@ -256,7 +258,10 @@
     "successMessage": "En kısa sürede size geri dönüş yapacağız.",
     "errorTitle": "Hata",
     "errorMessage": "Mesaj gönderilemedi. Lütfen tekrar deneyin.",
-    "formErrorTitle": "Form Hatası"
+    "formErrorTitle": "Form Hatası",
+    "rateLimitTitle": "⚠️ Çok Fazla Deneme",
+    "rateLimitDesc": "Lütfen 10 dakika sonra tekrar deneyin. Spam koruması aktif.",
+    "validationError": "Form doğrulama hatası"
   },
   "validation": {
     "nameRequired": "İsim zorunludur",
@@ -2967,23 +2972,23 @@
     }
   },
   "indexFeatures": {
-    "title": "Acentenize Özel Çözümler",
-    "subtitle": "WhatsApp üzerinden satış, rezervasyon ve müşteri hizmetini tek platformda yönetin.",
+    "title": "Konuya Göre Detaylı Rehberler",
+    "subtitle": "Her özellik için derinlemesine bilgi, kullanım örnekleri ve uygulama detayları.",
     "whatsapp": {
-      "title": "WhatsApp Business Chatbot",
-      "desc": "Müşteri mesajlarını 7/24 otomatik yanıtlayın. Gece 2'de gelen sorulara bile anında cevap."
+      "title": "WhatsApp Chatbot Rehberi",
+      "desc": "WhatsApp Business API kurulumu, 7/24 otomatik yanıt ve canlı entegrasyon detayları."
     },
     "ai": {
-      "title": "AI Destekli Rezervasyon",
-      "desc": "Yapay zeka tarih, kişi, isim ve telefon bilgilerini adım adım toplayarak otomatik rezervasyon oluşturur."
+      "title": "AI Rezervasyon Kılavuzu",
+      "desc": "Yapay zeka tarih, kişi, isim ve telefon bilgilerini adım adım toplayarak nasıl rezervasyon oluşturur — uçtan uca akış."
     },
     "multilingual": {
-      "title": "7 Dilde Müşteri Hizmetleri",
-      "desc": "Alman, Rus, Arap turist kendi dilinde yazar, chatbot aynı dilde yanıt verir. Çevirmen gerekmez."
+      "title": "Çok Dilli Hizmet Detayları",
+      "desc": "7 dilde müşteri hizmetleri nasıl çalışır, hangi senaryolar destekleniyor ve örnek konuşmalar."
     },
     "automation": {
-      "title": "Otomatik Tur Yönetimi",
-      "desc": "Kontenjan takibi, tur hatırlatıcıları, müşteri segmentasyonu — hepsi otomatik."
+      "title": "Tur Otomasyon Rehberi",
+      "desc": "Kontenjan, hatırlatıcı, segmentasyon ve raporlama — tur operasyonunu otomatize etmenin yolları."
     }
   },
   "indexSolutions": {
@@ -3364,5 +3369,21 @@
     "subtitle": "Size yardımcı olmak için buradayız",
     "quickOptions": "Hızlı Seçenekler:",
     "error": "Özür dilerim, bir hata oluştu. Lütfen tekrar deneyin veya https://turzzai.com/yardim sayfasını ziyaret edin."
+  },
+  "heroDemo": {
+    "customerName": "Müşteri",
+    "botName": "Turzz AI",
+    "online": "çevrimiçi",
+    "typing": "yazıyor...",
+    "msg1": "Merhaba, Kapadokya turu var mı?",
+    "msg2": "Merhaba! 👋 Evet, 2 günlük Kapadokya turumuz var. 15-16 Haziran müsait. ₺3.500/kişi, balon turu dahil. Ne dersiniz?",
+    "msg3": "Harika! 2 kişi nasıl ayırırım?",
+    "msg4": "Hemen ayırıyorum 🎯 İsminizi alabilir miyim?"
+  },
+  "statsRibbon": {
+    "agencies": "Aktif Acente",
+    "messages": "Aylık Mesaj",
+    "satisfaction": "Memnuniyet",
+    "languages": "Dil Desteği"
   }
 }
