@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Check, Sparkles } from "lucide-react";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
+import { motion } from "framer-motion";
 
 // Dile göre varsayılan para birimi (frontend / edge ile tutarlı)
 const LANG_TO_CURRENCY: Record<string, string> = {
@@ -168,20 +169,33 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
 
       <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
         {pricingPlans.map((plan, index) => (
-          <Card
+          <motion.div
             key={index}
-            className={`border-border/50 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
-              plan.highlighted ? 'ring-2 ring-primary relative' : ''
-            }`}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.45, delay: index * 0.1, ease: "easeOut" }}
+            whileHover={{ y: -4 }}
+            className={`relative ${plan.highlighted ? "md:scale-105 md:-translate-y-2" : ""}`}
           >
+            {/* Popüler plan için animasyonlu gradient halka */}
             {plan.highlighted && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-ocean text-primary-foreground px-4 py-1">
-                  {t("pricing.mostPopular")}
-                </Badge>
-              </div>
+              <div className="absolute -inset-0.5 bg-gradient-ocean rounded-xl blur-md opacity-50 animate-pulse pointer-events-none" aria-hidden="true" />
             )}
-            <CardContent className="p-8 space-y-6">
+            <Card
+              className={`relative h-full border-border/50 shadow-card hover:shadow-xl transition-all duration-300 ${
+                plan.highlighted ? "ring-2 ring-primary border-primary/30" : ""
+              }`}
+            >
+              {plan.highlighted && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <Badge className="bg-gradient-ocean text-primary-foreground px-4 py-1 shadow-lg flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {t("pricing.mostPopular")}
+                  </Badge>
+                </div>
+              )}
+              <CardContent className="p-8 space-y-6">
               <div className="space-y-2">
                 <h4 className="text-2xl font-bold text-foreground">{plan.name}</h4>
                 <p className="text-muted-foreground text-sm">{plan.description}</p>
@@ -258,6 +272,7 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
               </div>
             </CardContent>
           </Card>
+          </motion.div>
         ))}
       </div>
 

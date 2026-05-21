@@ -12,6 +12,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { contactFormSchema, checkRateLimit, sanitizeHtml } from "@/utils/validation";
+import { motion } from "framer-motion";
+import { HelpCircle } from "lucide-react";
 
 export const FaqSection = () => {
   const { t } = useTranslation();
@@ -48,29 +50,45 @@ export const FaqSection = () => {
   return (
     <div className="container mx-auto px-4">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-ocean shadow-md mb-4">
+            <HelpCircle className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t("faq.title")}
-          </h3>
+          </h2>
           <p className="text-muted-foreground text-lg">
             {t("faq.subtitle")}
           </p>
-        </div>
+        </motion.div>
 
-        <Accordion type="single" collapsible className="space-y-4">
+        <Accordion type="single" collapsible className="space-y-3">
           {faqs.map((faq, index) => (
-            <AccordionItem
+            <motion.div
               key={index}
-              value={`item-${index}`}
-              className="border border-border/50 rounded-lg px-6 bg-card shadow-sm"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.35, delay: index * 0.05, ease: "easeOut" }}
             >
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-4">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-4">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
+              <AccordionItem
+                value={`item-${index}`}
+                className="border border-border/50 rounded-xl px-6 bg-card shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200 data-[state=open]:border-primary/50 data-[state=open]:shadow-md"
+              >
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-4 [&[data-state=open]]:text-primary">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-4 leading-relaxed">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            </motion.div>
           ))}
         </Accordion>
 

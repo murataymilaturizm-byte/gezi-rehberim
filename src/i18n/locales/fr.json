@@ -237,7 +237,34 @@
     }
   },
   "faq": {
-    "validationError": "Veuillez remplir tous les champs obligatoires"
+    "title": "Questions fréquentes",
+    "subtitle": "Réponses aux questions que se posent le plus les agences de voyage.",
+    "items": {
+      "salesIncrease": {
+        "question": "Turzz AI augmente-t-il vraiment mes ventes ?",
+        "answer": "Oui. Les clients obtiennent des réponses instantanées 24/7 — plus personne n'abandonne en attendant. Nos agences voient en moyenne 30-50% de réservations en plus le premier mois. Les messages de nuit et de week-end sont convertis entièrement automatiquement."
+      },
+      "setup": {
+        "question": "Combien de temps prend l'installation ?",
+        "answer": "Si votre compte WhatsApp Business est prêt, vous êtes en ligne en 15 minutes. Vous saisissez les infos de l'agence, les tours et les prix dans le panneau ; le bot apprend automatiquement et commence à répondre."
+      },
+      "whatsappCost": {
+        "question": "Y a-t-il des frais pour l'API WhatsApp Business ?",
+        "answer": "Meta facture de petits frais par message (~0,01-0,05 €). L'abonnement Turzz ne couvre pas cela — il est payé directement à Meta. Jusqu'à environ 1 000 conversations actives mensuelles sont généralement gratuites."
+      },
+      "payment": {
+        "question": "Comment recevons-nous le paiement ?",
+        "answer": "Trois options : (1) IBAN/virement, (2) espèces/carte au bureau, (3) espèces le jour du tour. Votre bot oriente le client vers la méthode choisie. Un module de paiement par carte intégré arrive bientôt."
+      },
+      "tourLimit": {
+        "question": "Y a-t-il une limite de tours ?",
+        "answer": "Starter : 10 tours ; Professionnel : 50 ; Entreprise : illimité. Vous pouvez upgrader à tout moment. Les tours inactifs ne comptent pas."
+      },
+      "cancellation": {
+        "question": "Puis-je annuler à tout moment ?",
+        "answer": "Oui. L'abonnement mensuel s'annule à la fin de n'importe quel mois. Plan annuel : remboursement au prorata des mois restants. Vous pouvez exporter vos données à tout moment."
+      }
+    }
   },
   "pricing": {
     "title": "Commencez Aujourd'hui, Voyez la Différence",
@@ -3397,5 +3424,12 @@
     "messages": "Messages mensuels",
     "satisfaction": "Satisfaction",
     "languages": "Langues"
+  },
+  "indexBlog": {
+    "title": "Contenus sectoriels",
+    "subtitle": "Guides précieux et conseils sur la gestion d'une agence de voyage.",
+    "readMore": "Lire la suite",
+    "allPosts": "Tous les articles",
+    "minutes": "min"
   }
 }

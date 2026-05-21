@@ -19,7 +19,10 @@ export const FooterSection = () => {
                 { href: "/tur-otomasyonu", label: t("footer.tourAutomation") },
               ].map((item) => (
                 <li key={item.href}>
-                  <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  <a href={item.href} className="group text-sm text-muted-foreground hover:text-primary inline-flex items-center transition-all duration-200">
+                    <span className="w-0 group-hover:w-2 h-px bg-primary me-0 group-hover:me-1.5 transition-all duration-200 rtl:hidden" />
+                    {item.label}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -35,7 +38,10 @@ export const FooterSection = () => {
                 { href: "/karsilastir/turzz-vs-manuel-whatsapp", label: t("footer.comparison") },
               ].map((item) => (
                 <li key={item.href}>
-                  <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  <a href={item.href} className="group text-sm text-muted-foreground hover:text-primary inline-flex items-center transition-all duration-200">
+                    <span className="w-0 group-hover:w-2 h-px bg-primary me-0 group-hover:me-1.5 transition-all duration-200 rtl:hidden" />
+                    {item.label}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -53,7 +59,10 @@ export const FooterSection = () => {
                 { href: "/data-export", label: t("footer.dataExport") },
               ].map((item) => (
                 <li key={item.href}>
-                  <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  <a href={item.href} className="group text-sm text-muted-foreground hover:text-primary inline-flex items-center transition-all duration-200">
+                    <span className="w-0 group-hover:w-2 h-px bg-primary me-0 group-hover:me-1.5 transition-all duration-200 rtl:hidden" />
+                    {item.label}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -69,7 +78,10 @@ export const FooterSection = () => {
                 { href: "/auth?mode=signup", label: t("footer.requestDemo") },
               ].map((item) => (
                 <li key={item.href}>
-                  <a href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{item.label}</a>
+                  <a href={item.href} className="group text-sm text-muted-foreground hover:text-primary inline-flex items-center transition-all duration-200">
+                    <span className="w-0 group-hover:w-2 h-px bg-primary me-0 group-hover:me-1.5 transition-all duration-200 rtl:hidden" />
+                    {item.label}
+                  </a>
                 </li>
               ))}
             </ul>

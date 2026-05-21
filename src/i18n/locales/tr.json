@@ -237,7 +237,34 @@
     }
   },
   "faq": {
-    "validationError": "Lütfen tüm gerekli alanları doldurun"
+    "title": "Sıkça Sorulan Sorular",
+    "subtitle": "Acentelerin en çok merak ettiği soruların yanıtları.",
+    "items": {
+      "salesIncrease": {
+        "question": "Turzz AI satışlarımı gerçekten artırır mı?",
+        "answer": "Evet. Müşteriler 7/24 anında yanıt aldığı için cevap bekleyip vazgeçen müşteri kalmaz. Acentelerimizin ilk ayında ortalama %30-50 rezervasyon artışı görülüyor. Özellikle gece/hafta sonu gelen mesajlar tamamen otomatik dönüşüyor."
+      },
+      "setup": {
+        "question": "Kurulum ne kadar sürer?",
+        "answer": "WhatsApp Business hesabınız hazırsa, 15 dakikada aktif olursunuz. Acente bilgilerinizi, turlarınızı ve fiyatlarınızı paneldan girersiniz; bot otomatik öğrenir ve yanıtlamaya başlar."
+      },
+      "whatsappCost": {
+        "question": "WhatsApp Business API ücreti var mı?",
+        "answer": "Meta WhatsApp Business API mesaj başına küçük bir ücret alır (yaklaşık 0,01-0,05 USD). Turzz aboneliği bu maliyeti kapsamaz — Meta'ya doğrudan ödenir. Aylık aktif konuşma 1.000'e kadar genelde ücretsiz."
+      },
+      "payment": {
+        "question": "Müşteriden nasıl ödeme alıyoruz?",
+        "answer": "Üç seçeneğiniz var: (1) IBAN bilgisi gönderip havale, (2) Ofiste nakit/kart, (3) Tur sırasında nakit. Botunuz seçtiğiniz yönteme göre müşteriye yönlendirme verir. İleride entegre kredi kartı modülü de geliyor."
+      },
+      "tourLimit": {
+        "question": "Tur sayısı sınırlı mı?",
+        "answer": "Başlangıç planında 10 tur, Profesyonel'de 50 tur, Kurumsal'da sınırsız. İstediğiniz zaman plan yükseltebilirsiniz. Aktif olmayan turlar bu limite dahil değildir."
+      },
+      "cancellation": {
+        "question": "İstediğim zaman iptal edebilir miyim?",
+        "answer": "Evet. Aylık aboneliği herhangi bir ayın sonunda iptal edebilirsiniz. Yıllık planda kalan ay sayısına göre iade yapılır. Veri ve müşteri kayıtlarınızı dışa aktarabilirsiniz."
+      }
+    }
   },
   "cta": {
     "title": "Hemen Başlamaya Hazır mısınız?",
@@ -3397,5 +3424,12 @@
     "messages": "Aylık Mesaj",
     "satisfaction": "Memnuniyet",
     "languages": "Dil Desteği"
+  },
+  "indexBlog": {
+    "title": "Sektörel İçerikler",
+    "subtitle": "Seyahat acentesi yönetimi hakkında değerli rehberler ve ipuçları.",
+    "readMore": "Devamını oku",
+    "allPosts": "Tüm Yazılar",
+    "minutes": "dk"
   }
 }

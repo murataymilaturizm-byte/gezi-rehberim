@@ -237,7 +237,34 @@
     }
   },
   "faq": {
-    "validationError": "Bitte füllen Sie alle erforderlichen Felder aus"
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Antworten auf die wichtigsten Fragen von Reisebüros.",
+    "items": {
+      "salesIncrease": {
+        "question": "Steigert Turzz AI meinen Umsatz wirklich?",
+        "answer": "Ja. Kunden erhalten rund um die Uhr sofort Antworten — niemand springt mehr ab. Unsere Agenturen sehen im ersten Monat durchschnittlich 30-50% mehr Buchungen. Nachrichten in der Nacht und am Wochenende werden vollständig automatisch konvertiert."
+      },
+      "setup": {
+        "question": "Wie lange dauert die Einrichtung?",
+        "answer": "Wenn Ihr WhatsApp-Business-Konto bereit ist, gehen Sie in 15 Minuten live. Sie tragen Agenturinfo, Touren und Preise im Panel ein; der Bot lernt automatisch und antwortet."
+      },
+      "whatsappCost": {
+        "question": "Gibt es eine Gebühr für die WhatsApp Business API?",
+        "answer": "Meta erhebt eine kleine Gebühr pro Nachricht (ca. 0,01-0,05 €). Das Turzz-Abo deckt dies nicht ab — die Zahlung erfolgt direkt an Meta. Bis zu ca. 1.000 monatliche aktive Konversationen sind in der Regel kostenlos."
+      },
+      "payment": {
+        "question": "Wie nehmen wir Zahlungen entgegen?",
+        "answer": "Drei Optionen: (1) IBAN/Überweisung, (2) Bar/Karte im Büro, (3) Bargeld am Tour-Tag. Ihr Bot leitet den Kunden zur gewählten Methode. Ein integriertes Kartenzahlungsmodul kommt bald."
+      },
+      "tourLimit": {
+        "question": "Gibt es ein Tour-Limit?",
+        "answer": "Starter: 10 Touren; Professional: 50 Touren; Enterprise: unbegrenzt. Sie können jederzeit upgraden. Inaktive Touren zählen nicht zum Limit."
+      },
+      "cancellation": {
+        "question": "Kann ich jederzeit kündigen?",
+        "answer": "Ja. Monatsabos zum Monatsende kündbar. Bei Jahresplänen erfolgt eine anteilige Rückerstattung. Sie können Ihre Daten und Kundenakten jederzeit exportieren."
+      }
+    }
   },
   "pricing": {
     "title": "Starten Sie heute, sehen Sie den Unterschied",
@@ -3397,5 +3424,12 @@
     "messages": "Monatliche Nachrichten",
     "satisfaction": "Zufriedenheit",
     "languages": "Sprachunterstützung"
+  },
+  "indexBlog": {
+    "title": "Branchen-Einblicke",
+    "subtitle": "Wertvolle Leitfäden und Tipps zur Verwaltung von Reisebüros.",
+    "readMore": "Weiterlesen",
+    "allPosts": "Alle Beiträge",
+    "minutes": "Min"
   }
 }

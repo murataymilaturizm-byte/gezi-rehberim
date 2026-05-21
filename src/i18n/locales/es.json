@@ -237,7 +237,34 @@
     }
   },
   "faq": {
-    "validationError": "Por favor, completa todos los campos obligatorios"
+    "title": "Preguntas frecuentes",
+    "subtitle": "Respuestas a las dudas más comunes de las agencias de viajes.",
+    "items": {
+      "salesIncrease": {
+        "question": "¿Turzz AI realmente aumenta mis ventas?",
+        "answer": "Sí. Los clientes reciben respuestas instantáneas 24/7 — nadie se va esperando. Nuestras agencias ven un 30-50% más de reservas en promedio el primer mes. Los mensajes nocturnos y de fin de semana se convierten completamente automáticos."
+      },
+      "setup": {
+        "question": "¿Cuánto tarda la configuración?",
+        "answer": "Si tu cuenta de WhatsApp Business está lista, estás en marcha en 15 minutos. Introduces datos de la agencia, tours y precios en el panel; el bot aprende automáticamente y empieza a responder."
+      },
+      "whatsappCost": {
+        "question": "¿Hay tarifas de WhatsApp Business API?",
+        "answer": "Meta cobra una pequeña tarifa por mensaje (~$0.01-$0.05). La suscripción Turzz no lo incluye — se paga directamente a Meta. Hasta ~1.000 conversaciones activas mensuales suelen ser gratis."
+      },
+      "payment": {
+        "question": "¿Cómo cobramos al cliente?",
+        "answer": "Tres opciones: (1) IBAN/transferencia, (2) efectivo/tarjeta en oficina, (3) efectivo el día del tour. Tu bot redirige al cliente al método elegido. Próximamente: módulo de pago con tarjeta integrado."
+      },
+      "tourLimit": {
+        "question": "¿Hay un límite de tours?",
+        "answer": "Starter: 10 tours; Profesional: 50; Empresarial: ilimitado. Puedes mejorar el plan en cualquier momento. Los tours inactivos no cuentan."
+      },
+      "cancellation": {
+        "question": "¿Puedo cancelar en cualquier momento?",
+        "answer": "Sí. Suscripción mensual cancelable al final de cualquier mes. Plan anual: reembolso proporcional por los meses restantes. Puedes exportar tus datos cuando quieras."
+      }
+    }
   },
   "pricing": {
     "title": "Comienza Hoy, Ve la Diferencia",
@@ -3397,5 +3424,12 @@
     "messages": "Mensajes mensuales",
     "satisfaction": "Satisfacción",
     "languages": "Idiomas"
+  },
+  "indexBlog": {
+    "title": "Contenidos del sector",
+    "subtitle": "Guías y consejos valiosos sobre gestión de agencias de viajes.",
+    "readMore": "Leer más",
+    "allPosts": "Todos los artículos",
+    "minutes": "min"
   }
 }

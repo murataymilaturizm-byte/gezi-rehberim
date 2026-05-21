@@ -237,7 +237,34 @@
     }
   },
   "faq": {
-    "validationError": "Please fill in all required fields"
+    "title": "Frequently Asked Questions",
+    "subtitle": "Answers to what travel agencies wonder about most.",
+    "items": {
+      "salesIncrease": {
+        "question": "Does Turzz AI really increase my sales?",
+        "answer": "Yes. Customers get instant 24/7 replies, so no one drops off waiting. Our agencies see 30-50% more bookings on average in the first month. Late-night and weekend messages are converted fully automatically."
+      },
+      "setup": {
+        "question": "How long does setup take?",
+        "answer": "If your WhatsApp Business account is ready, you go live in 15 minutes. You enter agency info, tours and prices in the panel; the bot learns automatically and starts responding."
+      },
+      "whatsappCost": {
+        "question": "Is there a WhatsApp Business API fee?",
+        "answer": "Meta WhatsApp Business API charges a small per-message fee (~$0.01–$0.05). Turzz subscription doesn't include this — it's paid directly to Meta. Up to ~1,000 monthly active conversations are usually free."
+      },
+      "payment": {
+        "question": "How do we collect payment?",
+        "answer": "Three options: (1) IBAN/bank transfer link, (2) cash/card at office, (3) cash on tour day. Your bot routes the customer to the chosen method. An integrated card payment module is coming."
+      },
+      "tourLimit": {
+        "question": "Is there a tour limit?",
+        "answer": "Starter plan: 10 tours; Professional: 50 tours; Enterprise: unlimited. You can upgrade anytime. Inactive tours don't count toward the limit."
+      },
+      "cancellation": {
+        "question": "Can I cancel anytime?",
+        "answer": "Yes. Monthly subscriptions can be cancelled at the end of any month. Yearly plans are refunded pro-rata for remaining months. You can export your data and customer records at any time."
+      }
+    }
   },
   "pricing": {
     "title": "Start Today, See the Difference",
@@ -3397,5 +3424,12 @@
     "messages": "Monthly Messages",
     "satisfaction": "Satisfaction",
     "languages": "Language Support"
+  },
+  "indexBlog": {
+    "title": "Industry Insights",
+    "subtitle": "Valuable guides and tips on travel agency management.",
+    "readMore": "Read more",
+    "allPosts": "All Posts",
+    "minutes": "min"
   }
 }
