@@ -140,8 +140,10 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section ref={(el) => (sectionsRef.current[0] = el)} className="relative overflow-hidden py-10 sm:py-16 md:py-24 lg:py-28 opacity-0 translate-y-8 transition-all duration-700">
+      {/* Hero Section
+          Mobile padding (py-10 sm:py-16) korundu — kullanıcı bozma talimatı.
+          Masaüstünde üst boşluğu kompaktlaştırıldı: md/lg'de pt küçük, pb makul. */}
+      <section ref={(el) => (sectionsRef.current[0] = el)} className="relative overflow-hidden py-10 sm:py-16 md:pt-10 md:pb-20 lg:pt-12 lg:pb-20 opacity-0 translate-y-8 transition-all duration-700">
         <HeroSection onDemoClick={scrollToDemo} />
       </section>
 

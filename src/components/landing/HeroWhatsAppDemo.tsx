@@ -125,10 +125,10 @@ export const HeroWhatsAppDemo = ({ onThinkingChange }: HeroWhatsAppDemoProps) =>
         </div>
       </div>
 
-      {/* Konuşma alanı — sabit yükseklik + auto-scroll */}
+      {/* Konuşma alanı — sabit yükseklik + auto-scroll, scrollbar gizli (profesyonel görünüm) */}
       <div
         ref={scrollRef}
-        className="relative px-3 py-4 h-[360px] sm:h-[400px] md:h-[420px] overflow-y-auto"
+        className="relative px-3 py-4 h-[360px] sm:h-[400px] md:h-[400px] lg:h-[380px] overflow-y-auto scrollbar-none"
         style={{
           backgroundImage:
             "radial-gradient(hsl(120 30% 90% / 0.4) 1.5px, transparent 1.5px)",

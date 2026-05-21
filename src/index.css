@@ -181,6 +181,15 @@ All colors MUST be HSL.
   }
 }
 
+/* Scrollbar gizleme yardımcısı (scroll fonksiyonu korunur, sadece çubuğu gizler) */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Erişilebilirlik: hareket azalması istenirse tüm dekoratif animasyonları kapat */
 @media (prefers-reduced-motion: reduce) {
   *,

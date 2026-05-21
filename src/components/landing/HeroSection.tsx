@@ -24,13 +24,13 @@ export const HeroSection = ({ onDemoClick }: HeroSectionProps) => {
     <>
       <AnimatedBackground />
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-10 lg:gap-8 items-center">
           {/* SOL — Değer önerisi + CTA */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="space-y-6 text-center lg:text-start"
+            className="space-y-5 lg:space-y-6 text-center lg:text-start"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-border">
               <Zap className="w-4 h-4 text-primary" />
@@ -79,11 +79,11 @@ export const HeroSection = ({ onDemoClick }: HeroSectionProps) => {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-            className="relative flex flex-col items-center gap-4 sm:gap-6"
+            className="relative flex flex-col items-center gap-3 sm:gap-4 lg:gap-3"
           >
-            {/* Mascot: mobilde küçük & demo'nun yanında flex, md+'da büyük & üstte */}
+            {/* Mascot: mobilde gizli (mobil zaten kompakt), md+'da büyük */}
             <div className="hidden sm:block">
-              <AIMascot thinking={mascotThinking} className="max-w-[140px] md:max-w-[160px] lg:max-w-[180px]" />
+              <AIMascot thinking={mascotThinking} className="max-w-[120px] md:max-w-[140px] lg:max-w-[150px]" />
             </div>
             <HeroWhatsAppDemo onThinkingChange={setMascotThinking} />
           </motion.div>
