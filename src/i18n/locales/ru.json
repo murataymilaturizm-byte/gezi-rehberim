@@ -3,14 +3,14 @@
     "management": "Управление валютами",
     "description": "Сначала выберите основную валюту. При желании вы можете использовать разные валюты для некоторых языков.",
     "howItWorks": "Как это работает:",
-    "howItWorksDesc": "По умолчанию ваша основная валюта - {currency}. Вы можете выбрать предпочитаемую валюту для каждого языка. Если вы не сделаете выбор, будет использоваться основная валюта.",
+    "howItWorksDesc": "По умолчанию ваша основная валюта - {{currency}}. Вы можете выбрать предпочитаемую валюту для каждого языка. Если вы не сделаете выбор, будет использоваться основная валюта.",
     "primaryCurrency": "Основная валюта",
     "primaryCurrencyDesc": "Валюта по умолчанию для всех языков",
     "selectPrimaryCurrency": "Выберите основную валюту",
     "languageBasedSettings": "Настройки валюты по языкам",
     "languageBasedSettingsDesc": "Включите, если хотите использовать индивидуальную валюту для каждого языка",
-    "customCurrency": "Пользовательская валюта: {currency}",
-    "usingPrimary": "Используется основная валюта: {currency}",
+    "customCurrency": "Пользовательская валюта: {{currency}}",
+    "usingPrimary": "Используется основная валюта: {{currency}}",
     "selectCurrencyForLanguage": "Выберите валюту для этого языка:",
     "save": "Сохранить",
     "saving": "Сохранение...",
@@ -233,34 +233,7 @@
     }
   },
   "faq": {
-    "title": "Часто Задаваемые Вопросы",
-    "subtitle": "Найдите ответы на ваши вопросы здесь",
-    "items": {
-      "salesIncrease": {
-        "question": "Действительно ли мои продажи вырастут в первый месяц?",
-        "answer": "Да! Наши средние агентства видят рост бронирований на 120-150% в первый месяц. Потому что теперь вы обслуживаете своих клиентов в полночь, в выходные, в любое время. Вы не упускаете возможностей."
-      },
-      "setup": {
-        "question": "Могу ли я выполнить настройку сам?",
-        "answer": "Абсолютно! Настройка занимает 5-10 минут и очень проста. Добавьте свой номер WhatsApp Business, загрузите туры - вот и всё. Мы управляем всей технической инфраструктурой. Наша команда поддержки поможет, если вы застрянете."
-      },
-      "whatsappCost": {
-        "question": "Есть ли дополнительная плата за интеграцию WhatsApp?",
-        "answer": "Нет! Мы управляем инфраструктурой WhatsApp Business API. Вам нужно только добавить свой номер WhatsApp Business в систему. Плата за использование API на нас, вы платите только за выбранный план."
-      },
-      "payment": {
-        "question": "Могу ли я получать платежи напрямую от клиентов?",
-        "answer": "Да! С интеграцией SiPay вы можете отправлять мгновенные платежные ссылки через WhatsApp и получать платежи за 2 минуты. Отслеживание платежей и выставление счетов автоматические."
-      },
-      "tourLimit": {
-        "question": "Сколько туров я могу добавить?",
-        "answer": "Вы можете добавлять неограниченное количество туров во всех планах. Разница только в ежемесячном лимите сообщений WhatsApp. Вы можете обновить план в любое время в зависимости от ваших потребностей."
-      },
-      "cancellation": {
-        "question": "Что произойдет, если я отменю?",
-        "answer": "Вы можете отменить в любое время, никакого контракта. Когда вы отменяете, вы продолжите получать сервис до конца текущего периода. Во время 14-дневной бесплатной пробной версии мы даже не просим кредитную карту."
-      }
-    }
+    "validationError": "Пожалуйста, заполните все обязательные поля"
   },
   "pricing": {
     "title": "Начните Сегодня, Увидьте Разницу",
@@ -388,7 +361,7 @@
     "dayTours": "Однодневные туры",
     "boutiqueAgencies": "Бутик-агентства",
     "comparison": "Сравнение",
-    "copyright": "© {year} Turzz AI. Все права защищены.",
+    "copyright": "© {{year}} Turzz AI. Все права защищены.",
     "dataDeletion": "Удаление данных",
     "dataExport": "Экспорт данных"
   },
@@ -451,17 +424,17 @@
     "advanced": {
       "dateFilter": "Фильтр диапазона дат",
       "totalRevenue": "Общая выручка",
-      "totalRevenueDesc": "{{count}} регистраций • {{period}}",
+      "totalRevenueDesc": "{{{count}}} регистраций • {{{period}}}",
       "periodGrowth": "Рост периода",
       "vsPreviousHalf": "По сравнению с предыдущей половиной",
       "averageBasket": "Средняя корзина",
       "perRegistration": "На регистрацию",
       "conversionRate": "Коэффициент конверсии",
-      "conversionDesc": "{{registrations}}/{{conversations}} разговоров",
+      "conversionDesc": "{{{registrations}}}/{{{conversations}}} разговоров",
       "monthlyTrend": "Месячная тенденция доходов",
       "revenueLabel": "Доход",
       "destinationDetails": "Детали направлений",
-      "registrationCount": "{{count}} регистраций",
+      "registrationCount": "{{{count}}} регистраций",
       "average": "Сред",
       "noData": "Пока нет данных аналитики",
       "noDataDescription": "Аналитика появится здесь после первой регистрации",
@@ -579,7 +552,7 @@
     "payment": {
       "success": "Платёж Успешен! 🎉",
       "successDesc": "Ваша подписка активирована. Счёт готовится.",
-      "successDescWithOrder": "Ваша подписка активирована. Номер заказа: {{orderId}}...",
+      "successDescWithOrder": "Ваша подписка активирована. Номер заказа: {{{orderId}}}...",
       "failed": "Платёж Не Выполнен",
       "failedBase": "Не удалось завершить платёж.",
       "insufficientFunds": "На карте недостаточно средств.",
@@ -679,7 +652,9 @@
         "cancel": "Отмена",
         "save": "Сохранить"
       },
-      "metaSection": { "title": "Шаблоны Meta" },
+      "metaSection": {
+        "title": "Шаблоны Meta"
+      },
       "notCreated": "Еще не создано",
       "deleteConfirm": "Вы уверены, что хотите удалить этот шаблон?",
       "sendButton": "Отправить",
@@ -701,19 +676,20 @@
         "errors": {
           "invalidPhone": "Введите действительный номер телефона",
           "selectRegistration": "Пожалуйста, выберите бронирование",
-          "missingVariables": "Отсутствующие переменные: {{vars}}",
+          "missingVariables": "Отсутствующие переменные: {{{vars}}}",
           "generic": "Не удалось отправить сообщение"
         }
       },
       "sync": {
         "button": "Синхронизировать с Meta",
-        "success": "{{count}} шаблонов обновлено",
-        "successWithNew": "{{inserted}} новых добавлено, {{updated}} обновлено",
+        "success": "{{{count}}} шаблонов обновлено",
+        "successWithNew": "{{{inserted}}} новых добавлено, {{{updated}}} обновлено",
         "error": "Синхронизация не удалась"
       },
       "status": {
         "notSynced": "Не синхронизировано"
-      }
+      },
+      "notApprovedTooltip": "Этот шаблон ещё не одобрен Meta и не может быть отправлен"
     },
     "faq": {
       "title": "Часто задаваемые вопросы",
@@ -811,7 +787,7 @@
         "update": "Обновить",
         "save": "Сохранить",
         "integrationComplete": "Интеграция Завершена",
-        "integrationCompleteDesc": "Ваш номер WhatsApp Business {phone} зарегистрирован в системе.",
+        "integrationCompleteDesc": "Ваш номер WhatsApp Business {{phone}} зарегистрирован в системе.",
         "phoneTitle": "Номер WhatsApp Business",
         "phoneDescription": "Введите номер WhatsApp Business, зарегистрированный в Twilio",
         "styleTitle": "Стиль Общения",
@@ -1088,7 +1064,7 @@
     },
     "planLimits": {
       "tourLimitReached": "Лимит туров достигнут",
-      "tourLimitMessage": "Ваш план {planName} позволяет максимум {maxTours} туров. Пожалуйста, обновите свой план, чтобы добавить больше туров.",
+      "tourLimitMessage": "Ваш план {{planName}} позволяет максимум {{maxTours}} туров. Пожалуйста, обновите свой план, чтобы добавить больше туров.",
       "starterPlan": "Начальный",
       "professionalPlan": "Профессиональный",
       "enterprisePlan": "Корпоративный",
@@ -1194,7 +1170,7 @@
       "conversations": "Беседы",
       "conversionRate": "Коэффициент Конверсии (%)",
       "conversionRatesSheet": "Коэффициенты Конверсии",
-      "currencyConversionNote": "Цены указаны в {{currency}} по текущему курсу",
+      "currencyConversionNote": "Цены указаны в {{{currency}}} по текущему курсу",
       "originalPrice": "Оригинал"
     },
     "subscription": {
@@ -1229,9 +1205,9 @@
       "invoiceInfo": "Счет и Квитанция",
       "invoiceDescription": "Мы отправляем квитанции об оплате и счета на ваш адрес электронной почты. Для получения прошлых счетов обратитесь в нашу службу поддержки.",
       "confirmPlanChange": "Подтвердить Изменение Плана",
-      "confirmChangeDescription": "Вы уверены, что хотите изменить план с {currentPlan} на {newPlan}?",
+      "confirmChangeDescription": "Вы уверены, что хотите изменить план с {{currentPlan}} на {{newPlan}}?",
       "newPlanFeatures": "Особенности Нового Плана:",
-      "discountWillApply": "Будет применена скидка 10% (экономия {amount}₺)",
+      "discountWillApply": "Будет применена скидка 10% (экономия {{amount}}₺)",
       "planChangeNote": "Изменение плана вступит в силу немедленно. Ваш расчетный цикл продолжится без изменений.",
       "cancel": "Отменить",
       "changing": "Изменяется...",
@@ -1241,7 +1217,7 @@
       "subscriptionNotActive": "Ваша подписка не активна. Пожалуйста, сначала произведите оплату.",
       "alreadyOnPlan": "Вы уже используете этот план.",
       "successTitle": "Успешно! ✅",
-      "planChangedSuccess": "Ваш план был изменен на {planName}",
+      "planChangedSuccess": "Ваш план был изменен на {{planName}}",
       "errorTitle": "Ошибка",
       "planChangeError": "План не может быть изменен",
       "paymentError": "Ошибка Оплаты",
@@ -1321,7 +1297,7 @@
       "edit": "Редактировать",
       "plan": {
         "monthlyLimit": "Месячный Лимит Сообщений",
-        "defaultLimit": "Стандартный лимит плана: {{limit}} сообщений",
+        "defaultLimit": "Стандартный лимит плана: {{{limit}}} сообщений",
         "extraMessages": "Добавить Дополнительную Квоту Сообщений",
         "extraPlaceholder": "например: 500",
         "extraHelp": "Добавить дополнительную квоту сообщений к текущему лимиту",
@@ -1389,8 +1365,8 @@
       },
       "messages": {
         "unlimited": "Неограниченно",
-        "used": "{{used}}/{{total}} использовано",
-        "daysLeft": "{{days}} дней осталось",
+        "used": "{{{used}}}/{{{total}}} использовано",
+        "daysLeft": "{{{days}}} дней осталось",
         "expired": "Истекло",
         "notAdded": "Не Добавлено",
         "quotaFull": "Квота Заполнена",
@@ -1405,7 +1381,24 @@
       "status": "Статус",
       "messageQuota": "Квота сообщений",
       "remainingTime": "Оставшееся время",
-      "actions": "Действия"
+      "actions": "Действия",
+      "deleteConfirm": "Вы уверены, что хотите удалить это агентство?",
+      "loadError": "Не удалось загрузить агентства",
+      "createSuccess": "Агентство создано",
+      "updateSuccess": "Агентство обновлено",
+      "createError": "Операция не выполнена",
+      "deleteSuccess": "Агентство удалено",
+      "deleteError": "Не удалось удалить",
+      "styleUpdated": "Стиль общения обновлён",
+      "styleError": "Не удалось обновить стиль",
+      "noAgencies": "Агентства ещё не добавлены",
+      "daysLeft": "{{days}} дней",
+      "expired": "Истёк",
+      "userCreateError": "Не удалось создать пользователя",
+      "planUpdateError": "Не удалось обновить план",
+      "update": "Обновить",
+      "create": "Создать",
+      "planManagement": "Управление планом"
     },
     "usageStats": {
       "loadError": "Ошибка загрузки статистики использования",
@@ -1463,13 +1456,13 @@
       "notUsedYet": "Еще не использовано",
       "days": "дней",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{count}} сообщений/месяц",
+        "messagesPerMonth": "{{{count}}} сообщений/месяц",
         "unlimitedMessages": "Неограниченные сообщения",
-        "maxTours": "До {{count}} туров",
+        "maxTours": "До {{{count}}} туров",
         "unlimitedTours": "Неограниченные туры",
-        "languageSupport": "Поддержка {{count}} языков",
+        "languageSupport": "Поддержка {{{count}}} языков",
         "allLanguages": "Все языки (7 языков)",
-        "limitedStyles": "{{count}} стилей общения",
+        "limitedStyles": "{{{count}}} стилей общения",
         "allStyles": "Все стили общения + Пользовательский стиль",
         "userProfiles": "Профили пользователей",
         "autoReminders": "Автоматические напоминания",
@@ -1503,7 +1496,7 @@
     },
     "registrationForm": {
       "title": "Форма Предварительной Регистрации",
-      "description": "Заполните форму предварительной регистрации для {tourTitle}.",
+      "description": "Заполните форму предварительной регистрации для {{tourTitle}}.",
       "fullName": "Полное Имя",
       "fullNamePlaceholder": "Ваше имя и фамилия",
       "phone": "Телефон",
@@ -1519,18 +1512,18 @@
       "error": "Ошибка",
       "errorMessage": "Произошла ошибка во время регистрации. Пожалуйста, попробуйте снова.",
       "quotaError": "Недостаточная Квота",
-      "quotaErrorMessage": "На эту дату осталось только {quota} мест. Пожалуйста, уменьшите количество человек или выберите другую дату.",
+      "quotaErrorMessage": "На эту дату осталось только {{quota}} мест. Пожалуйста, уменьшите количество человек или выберите другую дату.",
       "userNotFound": "Пользователь не найден",
       "agencyNotFound": "Агентство не найдено"
     },
     "quotaBanner": {
-      "warning": "Вы использовали {{percent}}% квоты сообщений. Скоро закончится.",
-      "critical": "Квота сообщений критически низка ({{percent}}%)! Новые сообщения могут быть заблокированы.",
+      "warning": "Вы использовали {{{percent}}}% квоты сообщений. Скоро закончится.",
+      "critical": "Квота сообщений критически низка ({{{percent}}}%)! Новые сообщения могут быть заблокированы.",
       "upgrade": "Обновить план"
     },
     "onboarding": {
       "title": "Начало работы",
-      "progress": "{{percent}}% завершено",
+      "progress": "{{{percent}}}% завершено",
       "dismiss": "Закрыть",
       "steps": {
         "agencyInfo": "Заполнить данные агентства",
@@ -1775,10 +1768,11 @@
     "bulkImport": "Импорт из Excel",
     "duplicate": "Дублировать",
     "duplicateTitleLabel": "Новое название тура",
-    "copyDatesNote": "{{count}} дат также будут скопированы",
+    "copyDatesNote": "{{{count}}} дат также будут скопированы",
     "duplicateConfirm": "Дублировать",
     "duplicateSuccess": "Тур скопирован!",
-    "duplicateError": "Не удалось дублировать"
+    "duplicateError": "Не удалось дублировать",
+    "addFirstTour": "Новый тур"
   },
   "weekdays": {
     "monday": "Понедельник",
@@ -1810,11 +1804,11 @@
     "priceChild": "Цена ребёнка",
     "quota": "Квота",
     "pricingNote": "Для всех дат будет применена одинаковая цена",
-    "preview": "Будет создано {{count}} дат",
+    "preview": "Будет создано {{{count}}} дат",
     "moreDates": "ещё дат...",
-    "generateButton": "Создать {{count}} дат",
+    "generateButton": "Создать {{{count}}} дат",
     "generating": "Создаётся...",
-    "success": "{{count}} дат успешно добавлено!",
+    "success": "{{{count}}} дат успешно добавлено!",
     "errors": {
       "noDates": "Выберите диапазон дат и шаблон",
       "priceRequired": "Цена взрослого обязательна",
@@ -1835,12 +1829,12 @@
     "selectFile": "Выбрать файл Excel",
     "fileHint": "Поддерживаются форматы .xlsx или .xls",
     "parsedTours": "Обработанные туры",
-    "parsed": "{{valid}}/{{total}} туров валидны",
+    "parsed": "{{{valid}}}/{{{total}}} туров валидны",
     "valid": "Валидный",
     "invalid": "Невалидный",
-    "importButton": "Импортировать {{count}} туров",
+    "importButton": "Импортировать {{{count}}} туров",
     "importing": "Импортируется...",
-    "success": "{{count}} туров успешно добавлено!",
+    "success": "{{{count}}} туров успешно добавлено!",
     "errors": {
       "parseError": "Не удалось прочитать файл Excel",
       "noValid": "Нет валидных туров для импорта",
@@ -1860,7 +1854,7 @@
       "vsLastWeek": "к прошлой неделе"
     },
     "welcome": {
-      "todayStats": "{{count}} новых бронирований сегодня",
+      "todayStats": "{{{count}}} новых бронирований сегодня",
       "revenue": "доход",
       "pending": "ожидают",
       "noRegistrations": "Сегодня бронирований нет. Ваш WhatsApp-бот работает! 💬"
@@ -1966,7 +1960,7 @@
     "stepByStep": "Пошаговое руководство",
     "visualGuides": "Визуальные пояснения",
     "troubleshooting": "Советы по устранению неполадок",
-    "topicsCount": "{{count}} подробных тем",
+    "topicsCount": "{{{count}}} подробных тем",
     "back": "Назад",
     "backToAdmin": "Вернуться в Панель Администратора",
     "quickLinks": "Руководство по началу работы",
@@ -1990,11 +1984,11 @@
     "planStarter": "Начальный",
     "planProfessional": "Профессиональный",
     "planEnterprise": "Корпоративный",
-    "maxLanguagesMessage": "вы можете активировать до {count} языков в вашем пакете.",
+    "maxLanguagesMessage": "вы можете активировать до {{count}} языков в вашем пакете.",
     "upgradePlan": "Обновите ваш пакет для большего количества языков.",
     "minLanguageWarning": "⚠️ Вы должны выбрать хотя бы 1 язык.",
     "languageLimitTitle": "Достигнут лимит языков",
-    "languageLimitMessage": "Вы можете активировать максимум {count} языков в вашем пакете {plan}. Обновите ваш пакет для большего количества языков.",
+    "languageLimitMessage": "Вы можете активировать максимум {{count}} языков в вашем пакете {{plan}}. Обновите ваш пакет для большего количества языков.",
     "minLanguageError": "Вы должны выбрать хотя бы 1 язык.",
     "loadError": "Не удалось загрузить языковые настройки",
     "saveSuccess": "Языковые настройки успешно сохранены",
@@ -2103,7 +2097,7 @@
     }
   },
   "blog": {
-    "minutesRead": "{{count}} мин чтения",
+    "minutesRead": "{{{count}}} мин чтения",
     "readMore": "Читать →",
     "noPosts": "В этой категории пока нет статей.",
     "ctaQuestion": "Вы уже попробовали Turzz AI?",
@@ -2119,7 +2113,7 @@
       "ctaDesc": "14 дней бесплатно, без кредитной карты.",
       "ctaButton": "Начать бесплатно"
     },
-    "fallbackNotice": "Эта статья ещё не переведена на {{lang}}. Показывается турецкая версия.",
+    "fallbackNotice": "Эта статья ещё не переведена на {{{lang}}}. Показывается турецкая версия.",
     "fallbackBadge": "Турецкий",
     "availableIn": "Эта статья доступна на:"
   },
@@ -3027,7 +3021,7 @@
       "cancelledDesc": "Подключение WhatsApp было отменено.",
       "success": "Успешно!",
       "successDesc": "Ваш номер WhatsApp успешно подключён",
-      "successDescPhone": "Ваш номер WhatsApp успешно подключён: {{phone}}",
+      "successDescPhone": "Ваш номер WhatsApp успешно подключён: {{{phone}}}",
       "errorTitle": "Ошибка",
       "exchangeError": "При подключении WhatsApp произошла ошибка. Пожалуйста, попробуйте снова.",
       "disconnected": "Отключено",
@@ -3087,8 +3081,8 @@
     },
     "conversations": {
       "search": "Поиск...",
-      "count": "{{count}} разговоров",
-      "page": "Стр. {{current}}/{{total}}",
+      "count": "{{{count}}} разговоров",
+      "page": "Стр. {{{current}}}/{{{total}}}",
       "selectAgency": "Выберите агентство"
     },
     "logs": {
@@ -3102,7 +3096,7 @@
       "roleSelect": "Выберите роль",
       "dateRange": "Диапазон дат",
       "clearFilters": "Очистить фильтры",
-      "results": "Журналы сообщений ({{count}} результатов)",
+      "results": "Журналы сообщений ({{{count}}} результатов)",
       "loading": "Загрузка журналов...",
       "empty": "Журналы не найдены",
       "loadError": "Ошибка загрузки журналов",
@@ -3124,8 +3118,8 @@
       "chartTitle": "Количество пользователей (по языкам)",
       "chartBar": "Количество пользователей",
       "detailTitle": "Детальное языковое распределение",
-      "userCount": "{{count}} пользователей",
-      "messageCount": "{{count}} сообщений",
+      "userCount": "{{{count}}} пользователей",
+      "messageCount": "{{{count}}} сообщений",
       "empty": "Языковых данных пока нет"
     }
   },
@@ -3277,9 +3271,6 @@
     "invalidType": "недопустимый тип тура",
     "invalidCurrency": "недопустимая валюта"
   },
-  "faq": {
-    "validationError": "Пожалуйста, заполните все обязательные поля"
-  },
   "notificationCenter": {
     "people": "человек",
     "customer": "Клиент"
@@ -3287,7 +3278,16 @@
   "support": {
     "subtitle": "Мы здесь, чтобы помочь",
     "quickOptions": "Быстрые варианты:",
-    "error": "Извините, произошла ошибка. Повторите попытку или посетите https://turzzai.com/help."
+    "error": "Извините, произошла ошибка. Повторите попытку или посетите https://turzzai.com/help.",
+    "welcome": {
+      "tr": "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
+      "en": "Hello! How can I help you? I can answer your questions about system usage, features, or technical topics. 📚",
+      "de": "Hallo! Wie kann ich Ihnen helfen? Ich kann Ihre Fragen zur Systemnutzung, zu Funktionen oder technischen Themen beantworten. 📚",
+      "ru": "Здравствуйте! Чем я могу помочь? Я могу ответить на ваши вопросы об использовании системы, функциях или технических темах. 📚",
+      "ar": "مرحبا! كيف يمكنني مساعدتك؟ يمكنني الإجابة على أسئلتك حول استخدام النظام أو الميزات أو المواضيع الفنية. 📚",
+      "fr": "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
+      "es": "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
+    }
   },
   "userProfiles": {
     "title": "Профили клиентов (CRM)",

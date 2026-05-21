@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Edit, Trash2, Copy, Send, RefreshCw, CheckCircle2, Clock, XCircle, AlertCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -457,7 +458,7 @@ export default function MessageTemplates() {
                           </CardDescription>
                         </div>
                         <div className="flex gap-2">
-                          {template && template.is_active && (
+                          {template && template.is_active && template.meta_status === 'APPROVED' && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -466,6 +467,19 @@ export default function MessageTemplates() {
                               <Send className="h-4 w-4 mr-1" />
                               {t("admin.templates.sendButton")}
                             </Button>
+                          )}
+                          {template && template.is_active && template.meta_status !== 'APPROVED' && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <Button variant="outline" size="sm" disabled className="pointer-events-none">
+                                    <Send className="h-4 w-4 mr-1" />
+                                    {t("admin.templates.sendButton")}
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>{t("admin.templates.notApprovedTooltip")}</TooltipContent>
+                            </Tooltip>
                           )}
                           <Button
                             variant="outline"

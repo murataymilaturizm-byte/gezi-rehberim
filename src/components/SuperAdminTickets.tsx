@@ -23,7 +23,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageSquare, Clock, CheckCircle, XCircle, Building } from "lucide-react";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+
+const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 
 interface Ticket {
   id: string;
@@ -50,8 +52,9 @@ interface SuperAdminTicketsProps {
 }
 
 export const SuperAdminTickets = ({ isSuperAdmin = false }: SuperAdminTicketsProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [messages, setMessages] = useState<TicketMessage[]>([]);
@@ -335,7 +338,7 @@ export const SuperAdminTickets = ({ isSuperAdmin = false }: SuperAdminTicketsPro
                                       {msg.is_admin ? t("tickets.admin") : t("tickets.user")}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                      {format(new Date(msg.created_at), "d MMM HH:mm", { locale: tr })}
+                                      {format(new Date(msg.created_at), "d MMM HH:mm", { locale: dateLocale })}
                                     </span>
                                   </div>
                                   <p className="text-sm">{msg.message}</p>
@@ -368,7 +371,7 @@ export const SuperAdminTickets = ({ isSuperAdmin = false }: SuperAdminTicketsPro
                   {ticket.description}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {t("tickets.created")}: {format(new Date(ticket.created_at), "d MMM yyyy HH:mm", { locale: tr })}
+                  {t("tickets.created")}: {format(new Date(ticket.created_at), "d MMM yyyy HH:mm", { locale: dateLocale })}
                 </p>
               </CardContent>
             </Card>

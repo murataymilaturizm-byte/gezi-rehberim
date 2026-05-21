@@ -18,14 +18,14 @@
     "management": "Currency Management",
     "description": "First select your primary currency. You can optionally use different currencies for some languages.",
     "howItWorks": "How It Works:",
-    "howItWorksDesc": "Your primary currency is {currency} by default. You can select your preferred currency for each language. If you don't make a selection, the primary currency will be used.",
+    "howItWorksDesc": "Your primary currency is {{currency}} by default. You can select your preferred currency for each language. If you don't make a selection, the primary currency will be used.",
     "primaryCurrency": "Primary Currency",
     "primaryCurrencyDesc": "Default currency to be used for all languages",
     "selectPrimaryCurrency": "Select primary currency",
     "languageBasedSettings": "Language-Based Currency Settings",
     "languageBasedSettingsDesc": "Enable if you want to use a custom currency for each language",
-    "customCurrency": "Custom currency: {currency}",
-    "usingPrimary": "Using primary currency: {currency}",
+    "customCurrency": "Custom currency: {{currency}}",
+    "usingPrimary": "Using primary currency: {{currency}}",
     "selectCurrencyForLanguage": "Select currency for this language:",
     "save": "Save",
     "saving": "Saving...",
@@ -233,34 +233,7 @@
     }
   },
   "faq": {
-    "title": "Frequently Asked Questions",
-    "subtitle": "Find answers to your questions here",
-    "items": {
-      "salesIncrease": {
-        "question": "Will my sales really increase in the first month?",
-        "answer": "Yes! Our average agencies see a 120-150% reservation increase in the first month. Your AI-powered WhatsApp bot serves customers 24/7 — midnight, weekends, holidays, it doesn't matter. You never miss an opportunity."
-      },
-      "setup": {
-        "question": "How does the setup work?",
-        "answer": "Very easy! Create your account, add your tours, and submit an integration request from the WhatsApp Management panel. Our team handles the Meta Cloud API setup for you. You just manage your tours — all the technical infrastructure is on us."
-      },
-      "whatsappCost": {
-        "question": "Is there an extra fee for WhatsApp integration?",
-        "answer": "No! We manage the WhatsApp Business API infrastructure (Meta Cloud API). Submit your request from the WhatsApp Management panel, and our team handles the setup. API usage fees are on us — you only pay your chosen plan fee."
-      },
-      "payment": {
-        "question": "Can I collect payments directly from customers?",
-        "answer": "Yes! With our payment integration, you can send instant payment links via WhatsApp and collect payments within minutes. Payment tracking is handled automatically."
-      },
-      "tourLimit": {
-        "question": "How many tours can I add?",
-        "answer": "Up to 10 tours on the Starter plan, unlimited tours on Professional and Enterprise plans. The difference is in message limits and language count. You can upgrade your plan anytime based on your needs."
-      },
-      "cancellation": {
-        "question": "What happens if I cancel?",
-        "answer": "You can cancel anytime, no contract. When you cancel, you'll continue to receive service until the end of the current period. We don't even ask for a credit card during the 14-day free trial."
-      }
-    }
+    "validationError": "Please fill in all required fields"
   },
   "pricing": {
     "title": "Start Today, See the Difference",
@@ -357,7 +330,7 @@
     "dayTours": "Day Tours",
     "boutiqueAgencies": "Boutique Agencies",
     "comparison": "Comparison",
-    "copyright": "© {year} Turzz AI. All rights reserved.",
+    "copyright": "© {{year}} Turzz AI. All rights reserved.",
     "dataDeletion": "Data Deletion",
     "dataExport": "Data Export"
   },
@@ -447,17 +420,17 @@
     "advanced": {
       "dateFilter": "Date Range Filter",
       "totalRevenue": "Total Revenue",
-      "totalRevenueDesc": "{{count}} registrations • {{period}}",
+      "totalRevenueDesc": "{{{count}}} registrations • {{{period}}}",
       "periodGrowth": "Period Growth",
       "vsPreviousHalf": "vs. previous half",
       "averageBasket": "Average Basket",
       "perRegistration": "Per registration",
       "conversionRate": "Conversion Rate",
-      "conversionDesc": "{{registrations}}/{{conversations}} conversations",
+      "conversionDesc": "{{{registrations}}}/{{{conversations}}} conversations",
       "monthlyTrend": "Monthly Revenue Trend",
       "revenueLabel": "Revenue",
       "destinationDetails": "Destination Details",
-      "registrationCount": "{{count}} registrations",
+      "registrationCount": "{{{count}}} registrations",
       "average": "Avg",
       "noData": "No analytics data yet",
       "noDataDescription": "Analytics will appear here once you have your first registration",
@@ -545,7 +518,7 @@
     "payment": {
       "success": "Payment Successful! 🎉",
       "successDesc": "Your subscription has been activated. Your invoice is being prepared.",
-      "successDescWithOrder": "Your subscription has been activated. Order No: {{orderId}}...",
+      "successDescWithOrder": "Your subscription has been activated. Order No: {{{orderId}}}...",
       "failed": "Payment Failed",
       "failedBase": "The payment could not be completed.",
       "insufficientFunds": "Your card has insufficient funds.",
@@ -669,19 +642,20 @@
         "errors": {
           "invalidPhone": "Enter a valid phone number",
           "selectRegistration": "Please select a registration",
-          "missingVariables": "Missing variables: {{vars}}",
+          "missingVariables": "Missing variables: {{{vars}}}",
           "generic": "Failed to send message"
         }
       },
       "sync": {
         "button": "Sync with Meta",
-        "success": "{{count}} templates updated",
-        "successWithNew": "{{inserted}} new added, {{updated}} updated",
+        "success": "{{{count}}} templates updated",
+        "successWithNew": "{{{inserted}}} new added, {{{updated}}} updated",
         "error": "Synchronization failed"
       },
       "status": {
         "notSynced": "Not Synced"
-      }
+      },
+      "notApprovedTooltip": "This template has not been approved by Meta yet and cannot be sent"
     },
     "faq": {
       "title": "Frequently Asked Questions",
@@ -779,7 +753,7 @@
         "update": "Update",
         "save": "Save",
         "integrationComplete": "Integration Complete",
-        "integrationCompleteDesc": "Your WhatsApp Business number {phone} has been registered in the system.",
+        "integrationCompleteDesc": "Your WhatsApp Business number {{phone}} has been registered in the system.",
         "phoneTitle": "WhatsApp Business Number",
         "phoneDescription": "Enter your WhatsApp Business number registered with Twilio",
         "styleTitle": "Conversation Style",
@@ -1056,7 +1030,7 @@
     },
     "planLimits": {
       "tourLimitReached": "Tour Limit Reached",
-      "tourLimitMessage": "Your {planName} plan allows a maximum of {maxTours} tours. Please upgrade your plan to add more tours.",
+      "tourLimitMessage": "Your {{planName}} plan allows a maximum of {{maxTours}} tours. Please upgrade your plan to add more tours.",
       "starterPlan": "Starter",
       "professionalPlan": "Professional",
       "enterprisePlan": "Enterprise",
@@ -1162,7 +1136,7 @@
       "conversations": "Conversations",
       "conversionRate": "Conversion Rate (%)",
       "conversionRatesSheet": "Conversion Rates",
-      "currencyConversionNote": "Prices shown in {{currency}} at current rate",
+      "currencyConversionNote": "Prices shown in {{{currency}}} at current rate",
       "originalPrice": "Original"
     },
     "subscription": {
@@ -1197,9 +1171,9 @@
       "invoiceInfo": "Invoice and Receipt",
       "invoiceDescription": "We send your payment receipts and invoices to your email address. For past invoices, please contact our support team.",
       "confirmPlanChange": "Confirm Plan Change",
-      "confirmChangeDescription": "Are you sure you want to change your plan from {currentPlan} to {newPlan}?",
+      "confirmChangeDescription": "Are you sure you want to change your plan from {{currentPlan}} to {{newPlan}}?",
       "newPlanFeatures": "New Plan Features:",
-      "discountWillApply": "10% discount will apply ({amount}₺ savings)",
+      "discountWillApply": "10% discount will apply ({{amount}}₺ savings)",
       "planChangeNote": "The plan change will be effective immediately. Your billing cycle will continue unchanged.",
       "cancel": "Cancel",
       "changing": "Changing...",
@@ -1209,7 +1183,7 @@
       "subscriptionNotActive": "Your subscription is not active. Please make a payment first.",
       "alreadyOnPlan": "You are already on this plan.",
       "successTitle": "Success! ✅",
-      "planChangedSuccess": "Your plan has been changed to {planName}",
+      "planChangedSuccess": "Your plan has been changed to {{planName}}",
       "errorTitle": "Error",
       "planChangeError": "Plan could not be changed",
       "paymentError": "Payment Error",
@@ -1289,7 +1263,7 @@
       "edit": "Edit",
       "plan": {
         "monthlyLimit": "Monthly Message Limit",
-        "defaultLimit": "Plan default limit: {{limit}} messages",
+        "defaultLimit": "Plan default limit: {{{limit}}} messages",
         "extraMessages": "Add Extra Message Quota",
         "extraPlaceholder": "e.g: 500",
         "extraHelp": "Add extra message quota to current limit",
@@ -1357,8 +1331,8 @@
       },
       "messages": {
         "unlimited": "Unlimited",
-        "used": "{{used}}/{{total}} used",
-        "daysLeft": "{{days}} days left",
+        "used": "{{{used}}}/{{{total}}} used",
+        "daysLeft": "{{{days}}} days left",
         "expired": "Expired",
         "notAdded": "Not Added",
         "quotaFull": "Quota Full",
@@ -1373,7 +1347,24 @@
       "status": "Status",
       "messageQuota": "Message Quota",
       "remainingTime": "Remaining Time",
-      "actions": "Actions"
+      "actions": "Actions",
+      "deleteConfirm": "Are you sure you want to delete this agency?",
+      "loadError": "Failed to load agencies",
+      "createSuccess": "Agency created",
+      "updateSuccess": "Agency updated",
+      "createError": "Operation failed",
+      "deleteSuccess": "Agency deleted",
+      "deleteError": "Failed to delete agency",
+      "styleUpdated": "Conversation style updated",
+      "styleError": "Failed to update style",
+      "noAgencies": "No agencies added yet",
+      "daysLeft": "{{days}} days",
+      "expired": "Expired",
+      "userCreateError": "Failed to create user",
+      "planUpdateError": "Failed to update plan",
+      "update": "Update",
+      "create": "Create",
+      "planManagement": "Plan Management"
     },
     "usageStats": {
       "packageUsage": "Package Usage",
@@ -1412,7 +1403,7 @@
       "usedThisMonth": "Used This Month",
       "unlimited": "Unlimited",
       "quotaFull": "Your message quota is full! You need to upgrade your package.",
-      "quotaNearLimit": "{{percent}}% of your message quota remaining.",
+      "quotaNearLimit": "{{{percent}}}% of your message quota remaining.",
       "lastReset": "Last Reset",
       "buyExtraQuota": "Buy Extra Message Quota",
       "extraQuotaTitle": "Extra Message Quota",
@@ -1432,13 +1423,13 @@
       "notUsedYet": "Not used yet",
       "days": "days",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{count}} messages/month",
+        "messagesPerMonth": "{{{count}}} messages/month",
         "unlimitedMessages": "Unlimited messages",
-        "maxTours": "Up to {{count}} tours",
+        "maxTours": "Up to {{{count}}} tours",
         "unlimitedTours": "Unlimited tours",
-        "languageSupport": "{{count}} language support",
+        "languageSupport": "{{{count}}} language support",
         "allLanguages": "All languages (7 languages)",
-        "limitedStyles": "{{count}} conversation styles",
+        "limitedStyles": "{{{count}}} conversation styles",
         "allStyles": "All conversation styles + Custom style",
         "userProfiles": "User profiles",
         "autoReminders": "Automatic reminders",
@@ -1471,7 +1462,7 @@
     },
     "registrationForm": {
       "title": "Pre-Registration Form",
-      "description": "Fill out the pre-registration form for {tourTitle}.",
+      "description": "Fill out the pre-registration form for {{tourTitle}}.",
       "fullName": "Full Name",
       "fullNamePlaceholder": "Your name and surname",
       "phone": "Phone",
@@ -1487,18 +1478,18 @@
       "error": "Error",
       "errorMessage": "An error occurred during registration. Please try again.",
       "quotaError": "Insufficient Quota",
-      "quotaErrorMessage": "Only {quota} spots remaining for this date. Please reduce the number of people or select another date.",
+      "quotaErrorMessage": "Only {{quota}} spots remaining for this date. Please reduce the number of people or select another date.",
       "userNotFound": "User not found",
       "agencyNotFound": "Agency not found"
     },
     "quotaBanner": {
-      "warning": "You've used {{percent}}% of your message quota. It will run out soon.",
-      "critical": "Your message quota is critically low ({{percent}}%)! New messages may be blocked.",
+      "warning": "You've used {{{percent}}}% of your message quota. It will run out soon.",
+      "critical": "Your message quota is critically low ({{{percent}}}%)! New messages may be blocked.",
       "upgrade": "Upgrade Plan"
     },
     "onboarding": {
       "title": "Getting Started",
-      "progress": "{{percent}}% complete",
+      "progress": "{{{percent}}}% complete",
       "dismiss": "Dismiss",
       "steps": {
         "agencyInfo": "Fill in agency info",
@@ -1746,10 +1737,11 @@
     "bulkImport": "Import from Excel",
     "duplicate": "Duplicate",
     "duplicateTitleLabel": "New tour name",
-    "copyDatesNote": "{{count}} dates will also be copied",
+    "copyDatesNote": "{{{count}}} dates will also be copied",
     "duplicateConfirm": "Duplicate",
     "duplicateSuccess": "Tour duplicated!",
-    "duplicateError": "Failed to duplicate"
+    "duplicateError": "Failed to duplicate",
+    "addFirstTour": "New Tour"
   },
   "weekdays": {
     "monday": "Monday",
@@ -1781,11 +1773,11 @@
     "priceChild": "Child price",
     "quota": "Quota",
     "pricingNote": "Same price will be applied to all dates",
-    "preview": "{{count}} dates will be created",
+    "preview": "{{{count}}} dates will be created",
     "moreDates": "more dates...",
-    "generateButton": "Create {{count}} Dates",
+    "generateButton": "Create {{{count}}} Dates",
     "generating": "Generating...",
-    "success": "{{count}} dates added successfully!",
+    "success": "{{{count}}} dates added successfully!",
     "errors": {
       "noDates": "Please select a date range and pattern",
       "priceRequired": "Adult price is required",
@@ -1806,12 +1798,12 @@
     "selectFile": "Select Excel File",
     "fileHint": ".xlsx or .xls formats supported",
     "parsedTours": "Parsed Tours",
-    "parsed": "{{valid}}/{{total}} tours valid",
+    "parsed": "{{{valid}}}/{{{total}}} tours valid",
     "valid": "Valid",
     "invalid": "Invalid",
-    "importButton": "Import {{count}} Tours",
+    "importButton": "Import {{{count}}} Tours",
     "importing": "Importing...",
-    "success": "{{count}} tours added successfully!",
+    "success": "{{{count}}} tours added successfully!",
     "errors": {
       "parseError": "Failed to read Excel file",
       "noValid": "No valid tours to import",
@@ -1831,7 +1823,7 @@
       "vsLastWeek": "vs last week"
     },
     "welcome": {
-      "todayStats": "{{count}} new reservations today",
+      "todayStats": "{{{count}}} new reservations today",
       "revenue": "revenue",
       "pending": "pending",
       "noRegistrations": "No reservations today. Your WhatsApp bot is running! 💬"
@@ -1937,7 +1929,7 @@
     "stepByStep": "Step-by-step guide",
     "visualGuides": "Visual explanations",
     "troubleshooting": "Troubleshooting tips",
-    "topicsCount": "{{count}} detailed topics",
+    "topicsCount": "{{{count}}} detailed topics",
     "back": "Go Back",
     "backToAdmin": "Back to Admin Panel",
     "quickLinks": "Getting Started Guide",
@@ -1961,11 +1953,11 @@
     "planStarter": "Starter",
     "planProfessional": "Professional",
     "planEnterprise": "Enterprise",
-    "maxLanguagesMessage": "you can activate up to {count} languages in your package.",
+    "maxLanguagesMessage": "you can activate up to {{count}} languages in your package.",
     "upgradePlan": "Upgrade your package for more languages.",
     "minLanguageWarning": "⚠️ You must select at least 1 language.",
     "languageLimitTitle": "Language Limit Reached",
-    "languageLimitMessage": "You can activate a maximum of {count} languages in your {plan} package. Upgrade your package for more languages.",
+    "languageLimitMessage": "You can activate a maximum of {{count}} languages in your {{plan}} package. Upgrade your package for more languages.",
     "minLanguageError": "You must select at least 1 language.",
     "loadError": "Language settings could not be loaded",
     "saveSuccess": "Language settings saved successfully",
@@ -2151,7 +2143,7 @@
     }
   },
   "blog": {
-    "minutesRead": "{{count}} min read",
+    "minutesRead": "{{{count}}} min read",
     "readMore": "Read →",
     "noPosts": "No posts in this category yet.",
     "ctaQuestion": "Have you tried Turzz AI?",
@@ -2167,7 +2159,7 @@
       "ctaDesc": "14 days free, no credit card required.",
       "ctaButton": "Start Free"
     },
-    "fallbackNotice": "This article hasn't been translated into {{lang}} yet. Showing the Turkish version.",
+    "fallbackNotice": "This article hasn't been translated into {{{lang}}} yet. Showing the Turkish version.",
     "fallbackBadge": "Turkish",
     "availableIn": "This article is available in:"
   },
@@ -3075,7 +3067,7 @@
       "cancelledDesc": "WhatsApp connection was cancelled.",
       "success": "Success!",
       "successDesc": "Your WhatsApp number was connected successfully",
-      "successDescPhone": "Your WhatsApp number was connected successfully: {{phone}}",
+      "successDescPhone": "Your WhatsApp number was connected successfully: {{{phone}}}",
       "errorTitle": "Error",
       "exchangeError": "An error occurred during WhatsApp connection. Please try again.",
       "disconnected": "Disconnected",
@@ -3135,8 +3127,8 @@
     },
     "conversations": {
       "search": "Search...",
-      "count": "{{count}} conversations",
-      "page": "Page {{current}}/{{total}}",
+      "count": "{{{count}}} conversations",
+      "page": "Page {{{current}}}/{{{total}}}",
       "selectAgency": "Select Agency"
     },
     "logs": {
@@ -3150,7 +3142,7 @@
       "roleSelect": "Select role",
       "dateRange": "Date Range",
       "clearFilters": "Clear Filters",
-      "results": "Message Logs ({{count}} results)",
+      "results": "Message Logs ({{{count}}} results)",
       "loading": "Loading logs...",
       "empty": "No logs found",
       "loadError": "Error loading logs",
@@ -3172,8 +3164,8 @@
       "chartTitle": "User Count (by Language)",
       "chartBar": "User Count",
       "detailTitle": "Detailed Language Distribution",
-      "userCount": "{{count}} users",
-      "messageCount": "{{count}} messages",
+      "userCount": "{{{count}}} users",
+      "messageCount": "{{{count}}} messages",
       "empty": "No language data yet"
     }
   },
@@ -3325,9 +3317,6 @@
     "invalidType": "invalid tour type",
     "invalidCurrency": "invalid currency"
   },
-  "faq": {
-    "validationError": "Please fill in all required fields"
-  },
   "notificationCenter": {
     "people": "people",
     "customer": "Customer"
@@ -3335,6 +3324,15 @@
   "support": {
     "subtitle": "We are here to help",
     "quickOptions": "Quick Options:",
-    "error": "Sorry, something went wrong. Please try again or visit https://turzzai.com/help."
+    "error": "Sorry, something went wrong. Please try again or visit https://turzzai.com/help.",
+    "welcome": {
+      "tr": "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
+      "en": "Hello! How can I help you? I can answer your questions about system usage, features, or technical topics. 📚",
+      "de": "Hallo! Wie kann ich Ihnen helfen? Ich kann Ihre Fragen zur Systemnutzung, zu Funktionen oder technischen Themen beantworten. 📚",
+      "ru": "Здравствуйте! Чем я могу помочь? Я могу ответить на ваши вопросы об использовании системы, функциях или технических темах. 📚",
+      "ar": "مرحبا! كيف يمكنني مساعدتك؟ يمكنني الإجابة على أسئلتك حول استخدام النظام أو الميزات أو المواضيع الفنية. 📚",
+      "fr": "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
+      "es": "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
+    }
   }
 }

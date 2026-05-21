@@ -114,6 +114,7 @@ interface Registration {
   tours: {
     title: string;
     destination: string;
+    currency?: string;
   };
   tour_dates: {
     departure_date: string;
@@ -484,7 +485,7 @@ const Admin = () => {
           .from("registrations")
           .select(`
             *,
-            tours (title, destination),
+            tours (title, destination, currency),
             tour_dates (departure_date, price_adult)
           `)
           .order("created_at", { ascending: false });

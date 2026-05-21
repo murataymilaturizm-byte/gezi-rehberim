@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Calendar, Pencil, Trash2, Copy, Sparkles, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+
+const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useState } from "react";
@@ -90,8 +92,9 @@ export const ToursList = ({
   onDeleteDate,
   onRefresh,
 }: ToursListProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   const [displayCurrency, setDisplayCurrency] = useState<string>('TRY');
   const { convertAndFormat, loading: ratesLoading, refresh } = useCurrencyConverter('USD');
 
@@ -264,9 +267,9 @@ export const ToursList = ({
                     >
                       <div className="flex gap-4">
                         <span>
-                          {format(new Date(date.departure_date), "d MMM yyyy", { locale: tr })}
+                          {format(new Date(date.departure_date), "d MMM yyyy", { locale: dateLocale })}
                           {date.return_date && date.return_date !== date.departure_date && (
-                            <> - {format(new Date(date.return_date), "d MMM yyyy", { locale: tr })}</>
+                            <> - {format(new Date(date.return_date), "d MMM yyyy", { locale: dateLocale })}</>
                           )}
                         </span>
                         <div className="flex flex-col gap-1">

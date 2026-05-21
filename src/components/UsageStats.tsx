@@ -15,6 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getPlanFeatures, type PlanFeatures } from "@/utils/planFeatures";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+
+const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 
 interface UsageData {
   monthly_message_count: number;
@@ -27,7 +31,8 @@ interface UsageData {
 }
 
 export const UsageStats = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [usage, setUsage] = useState<UsageData | null>(null);
@@ -138,7 +143,7 @@ export const UsageStats = () => {
     }
   };
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+  const formatDate = (dateString: string) => format(new Date(dateString), 'dd MMM yyyy', { locale: dateLocale });
 
   const getDaysRemaining = (endDate: string) => {
     const diff = Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));

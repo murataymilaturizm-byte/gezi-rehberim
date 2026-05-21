@@ -30,7 +30,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+
+const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
 import { 
   History, 
@@ -82,8 +84,9 @@ interface PlanOption {
 }
 
 export const SubscriptionHistory = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   
   const eventTypeLabels: Record<string, string> = {
     trial_started: t("admin.subscription.eventTypes.trial_started"),
@@ -854,7 +857,7 @@ export const SubscriptionHistory = () => {
                 {history.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="text-sm">
-                      {format(new Date(item.created_at), "d MMM yyyy, HH:mm", { locale: tr })}
+                      {format(new Date(item.created_at), "d MMM yyyy, HH:mm", { locale: dateLocale })}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

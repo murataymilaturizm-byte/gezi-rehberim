@@ -146,7 +146,7 @@ export const CustomerAnalytics = () => {
 
       const { data: profiles } = await profilesQuery;
 
-      if (!profiles) {
+      if (!profiles || profiles.length === 0) {
         setStats(null);
         return;
       }

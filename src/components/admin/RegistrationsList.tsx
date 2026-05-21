@@ -20,7 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+import { formatPrice } from "@/utils/currency";
+
+const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 import { useToast } from "@/hooks/use-toast";
 import { Eye } from "lucide-react";
 
@@ -41,6 +44,7 @@ interface Registration {
   tours: {
     title: string;
     destination: string;
+    currency?: string;
   };
   tour_dates: {
     departure_date: string;
@@ -61,8 +65,9 @@ export const RegistrationsList = ({
   onStatusChange,
   onViewDetail
 }: RegistrationsListProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
 
   const statusLabels: Record<string, string> = {
     NEW: t("admin.status.new"),
@@ -136,7 +141,7 @@ export const RegistrationsList = ({
                 </TableCell>
                 <TableCell>
                   {reg.tour_dates?.departure_date 
-                    ? format(new Date(reg.tour_dates.departure_date), "d MMM yyyy", { locale: tr })
+                    ? format(new Date(reg.tour_dates.departure_date), "d MMM yyyy", { locale: dateLocale })
                     : '-'}
                 </TableCell>
                 <TableCell className="text-center">
@@ -162,15 +167,15 @@ export const RegistrationsList = ({
                       {(reg.paid_amount && reg.paid_amount > 0 && reg.paid_amount < totalPrice) ? (
                         <>
                           <span className="text-base font-semibold text-green-600">
-                            {reg.paid_amount.toLocaleString('tr-TR')}₺
+                            {formatPrice(reg.paid_amount, reg.tours?.currency || 'TRY', { showCode: false })}
                           </span>
                           <span className="block text-[10px] text-orange-500">
-                            {t('admin.registrations.remainingAmount')}: {(totalPrice - reg.paid_amount).toLocaleString('tr-TR')}₺
+                            {t('admin.registrations.remainingAmount')}: {formatPrice(totalPrice - reg.paid_amount, reg.tours?.currency || 'TRY', { showCode: false })}
                           </span>
                         </>
                       ) : (
                         <span className="text-base font-semibold">
-                          {totalPrice.toLocaleString('tr-TR')}₺
+                          {formatPrice(totalPrice, reg.tours?.currency || 'TRY', { showCode: false })}
                         </span>
                       )}
                     </div>

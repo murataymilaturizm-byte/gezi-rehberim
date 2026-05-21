@@ -3,14 +3,14 @@
     "management": "Gestión de monedas",
     "description": "Primero seleccione su moneda principal. Opcionalmente, puede usar monedas diferentes para algunos idiomas.",
     "howItWorks": "Cómo funciona:",
-    "howItWorksDesc": "Su moneda principal es {currency} por defecto. Puede seleccionar su moneda preferida para cada idioma. Si no hace una selección, se usará la moneda principal.",
+    "howItWorksDesc": "Su moneda principal es {{currency}} por defecto. Puede seleccionar su moneda preferida para cada idioma. Si no hace una selección, se usará la moneda principal.",
     "primaryCurrency": "Moneda principal",
     "primaryCurrencyDesc": "Moneda predeterminada para todos los idiomas",
     "selectPrimaryCurrency": "Seleccione la moneda principal",
     "languageBasedSettings": "Configuración de moneda por idioma",
     "languageBasedSettingsDesc": "Active si desea usar una moneda personalizada para cada idioma",
-    "customCurrency": "Moneda personalizada: {currency}",
-    "usingPrimary": "Usando moneda principal: {currency}",
+    "customCurrency": "Moneda personalizada: {{currency}}",
+    "usingPrimary": "Usando moneda principal: {{currency}}",
     "selectCurrencyForLanguage": "Seleccione la moneda para este idioma:",
     "save": "Guardar",
     "saving": "Guardando...",
@@ -233,34 +233,7 @@
     }
   },
   "faq": {
-    "title": "Preguntas Frecuentes",
-    "subtitle": "Encuentra respuestas a tus preguntas aquí",
-    "items": {
-      "salesIncrease": {
-        "question": "¿Realmente aumentarán mis ventas en el primer mes?",
-        "answer": "¡Sí! Nuestras agencias promedio ven un aumento del 120-150% en reservas en el primer mes. Porque ahora sirves a tus clientes a medianoche, los fines de semana, en cualquier momento. No pierdes ninguna oportunidad."
-      },
-      "setup": {
-        "question": "¿Puedo hacer la configuración yo mismo?",
-        "answer": "¡Absolutamente! La configuración toma 5-10 minutos y es muy simple. Añade tu número de WhatsApp Business, sube tus tours - eso es todo. Gestionamos toda la infraestructura técnica. Nuestro equipo de soporte te ayudará si te atascas."
-      },
-      "whatsappCost": {
-        "question": "¿Hay una tarifa adicional por la integración de WhatsApp?",
-        "answer": "¡No! Gestionamos la infraestructura de la API de WhatsApp Business. Solo necesitas añadir tu número de WhatsApp Business al sistema. Las tarifas de uso de API corren por nuestra cuenta, solo pagas la tarifa de tu plan elegido."
-      },
-      "payment": {
-        "question": "¿Puedo cobrar pagos directamente de los clientes?",
-        "answer": "¡Sí! Con la integración SiPay, puedes enviar enlaces de pago instantáneos vía WhatsApp y cobrar pagos en 2 minutos. El seguimiento de pagos y facturación son automáticos."
-      },
-      "tourLimit": {
-        "question": "¿Cuántos tours puedo añadir?",
-        "answer": "Puedes añadir tours ilimitados en todos los planes. La diferencia está solo en el límite mensual de mensajes de WhatsApp. Puedes actualizar tu plan en cualquier momento según tus necesidades."
-      },
-      "cancellation": {
-        "question": "¿Qué pasa si cancelo?",
-        "answer": "Puedes cancelar en cualquier momento, sin contrato. Cuando cancelas, seguirás recibiendo servicio hasta el final del período actual. Durante el período de prueba gratuito de 14 días, ni siquiera pedimos tarjeta de crédito."
-      }
-    }
+    "validationError": "Por favor, completa todos los campos obligatorios"
   },
   "pricing": {
     "title": "Comienza Hoy, Ve la Diferencia",
@@ -388,7 +361,7 @@
     "dayTours": "Tours de día",
     "boutiqueAgencies": "Agencias boutique",
     "comparison": "Comparativa",
-    "copyright": "© {year} Turzz AI. Todos los derechos reservados.",
+    "copyright": "© {{year}} Turzz AI. Todos los derechos reservados.",
     "dataDeletion": "Eliminación de datos",
     "dataExport": "Exportar datos"
   },
@@ -451,17 +424,17 @@
     "advanced": {
       "dateFilter": "Filtro de rango de fechas",
       "totalRevenue": "Ingresos totales",
-      "totalRevenueDesc": "{{count}} registros • {{period}}",
+      "totalRevenueDesc": "{{{count}}} registros • {{{period}}}",
       "periodGrowth": "Crecimiento del período",
       "vsPreviousHalf": "Vs. la mitad anterior",
       "averageBasket": "Cesta promedio",
       "perRegistration": "Por registro",
       "conversionRate": "Tasa de conversión",
-      "conversionDesc": "{{registrations}}/{{conversations}} conversaciones",
+      "conversionDesc": "{{{registrations}}}/{{{conversations}}} conversaciones",
       "monthlyTrend": "Tendencia mensual de ingresos",
       "revenueLabel": "Ingresos",
       "destinationDetails": "Detalles de destinos",
-      "registrationCount": "{{count}} registros",
+      "registrationCount": "{{{count}}} registros",
       "average": "Prom",
       "noData": "Aún no hay datos de análisis",
       "noDataDescription": "Las analíticas aparecerán aquí cuando tenga su primer registro",
@@ -579,7 +552,7 @@
     "payment": {
       "success": "¡Pago Exitoso! 🎉",
       "successDesc": "Su suscripción ha sido activada. Su factura está siendo preparada.",
-      "successDescWithOrder": "Su suscripción ha sido activada. N° pedido: {{orderId}}...",
+      "successDescWithOrder": "Su suscripción ha sido activada. N° pedido: {{{orderId}}}...",
       "failed": "Pago Fallido",
       "failedBase": "No se pudo completar el pago.",
       "insufficientFunds": "Su tarjeta no tiene fondos suficientes.",
@@ -679,7 +652,9 @@
         "cancel": "Cancelar",
         "save": "Guardar"
       },
-      "metaSection": { "title": "Plantillas de Meta" },
+      "metaSection": {
+        "title": "Plantillas de Meta"
+      },
       "notCreated": "Aún no creado",
       "deleteConfirm": "¿Está seguro de que desea eliminar esta plantilla?",
       "sendButton": "Enviar",
@@ -701,19 +676,20 @@
         "errors": {
           "invalidPhone": "Ingrese un número de teléfono válido",
           "selectRegistration": "Por favor seleccione una reserva",
-          "missingVariables": "Variables faltantes: {{vars}}",
+          "missingVariables": "Variables faltantes: {{{vars}}}",
           "generic": "No se pudo enviar el mensaje"
         }
       },
       "sync": {
         "button": "Sincronizar con Meta",
-        "success": "{{count}} plantillas actualizadas",
-        "successWithNew": "{{inserted}} nuevas agregadas, {{updated}} actualizadas",
+        "success": "{{{count}}} plantillas actualizadas",
+        "successWithNew": "{{{inserted}}} nuevas agregadas, {{{updated}}} actualizadas",
         "error": "La sincronización falló"
       },
       "status": {
         "notSynced": "No Sincronizado"
-      }
+      },
+      "notApprovedTooltip": "Esta plantilla aún no ha sido aprobada por Meta y no se puede enviar"
     },
     "faq": {
       "title": "Preguntas frecuentes",
@@ -811,7 +787,7 @@
         "update": "Actualizar",
         "save": "Guardar",
         "integrationComplete": "Integración Completa",
-        "integrationCompleteDesc": "Su número de WhatsApp Business {phone} ha sido registrado en el sistema.",
+        "integrationCompleteDesc": "Su número de WhatsApp Business {{phone}} ha sido registrado en el sistema.",
         "phoneTitle": "Número de WhatsApp Business",
         "phoneDescription": "Ingrese su número de WhatsApp Business registrado en Twilio",
         "styleTitle": "Estilo de Conversación",
@@ -1088,7 +1064,7 @@
     },
     "planLimits": {
       "tourLimitReached": "Límite de tours alcanzado",
-      "tourLimitMessage": "Su plan {planName} permite un máximo de {maxTours} tours. Por favor, actualice su plan para añadir más tours.",
+      "tourLimitMessage": "Su plan {{planName}} permite un máximo de {{maxTours}} tours. Por favor, actualice su plan para añadir más tours.",
       "starterPlan": "Inicial",
       "professionalPlan": "Profesional",
       "enterprisePlan": "Empresarial",
@@ -1194,7 +1170,7 @@
       "conversations": "Conversaciones",
       "conversionRate": "Tasa de Conversión (%)",
       "conversionRatesSheet": "Tasas de Conversión",
-      "currencyConversionNote": "Precios mostrados en {{currency}} al tipo de cambio actual",
+      "currencyConversionNote": "Precios mostrados en {{{currency}}} al tipo de cambio actual",
       "originalPrice": "Original"
     },
     "subscription": {
@@ -1229,9 +1205,9 @@
       "invoiceInfo": "Factura y Recibo",
       "invoiceDescription": "Enviamos sus recibos de pago y facturas a su dirección de correo electrónico. Para facturas anteriores, póngase en contacto con nuestro equipo de soporte.",
       "confirmPlanChange": "Confirmar Cambio de Plan",
-      "confirmChangeDescription": "¿Está seguro de que desea cambiar su plan de {currentPlan} a {newPlan}?",
+      "confirmChangeDescription": "¿Está seguro de que desea cambiar su plan de {{currentPlan}} a {{newPlan}}?",
       "newPlanFeatures": "Características del Nuevo Plan:",
-      "discountWillApply": "Se aplicará un descuento del 10% (ahorro de {amount}₺)",
+      "discountWillApply": "Se aplicará un descuento del 10% (ahorro de {{amount}}₺)",
       "planChangeNote": "El cambio de plan será efectivo de inmediato. Su ciclo de facturación continuará sin cambios.",
       "cancel": "Cancelar",
       "changing": "Cambiando...",
@@ -1241,7 +1217,7 @@
       "subscriptionNotActive": "Su suscripción no está activa. Por favor, realice un pago primero.",
       "alreadyOnPlan": "Ya está en este plan.",
       "successTitle": "¡Éxito! ✅",
-      "planChangedSuccess": "Su plan ha sido cambiado a {planName}",
+      "planChangedSuccess": "Su plan ha sido cambiado a {{planName}}",
       "errorTitle": "Error",
       "planChangeError": "No se pudo cambiar el plan",
       "paymentError": "Error de Pago",
@@ -1321,7 +1297,7 @@
       "edit": "Editar",
       "plan": {
         "monthlyLimit": "Límite Mensual de Mensajes",
-        "defaultLimit": "Límite predeterminado del plan: {{limit}} mensajes",
+        "defaultLimit": "Límite predeterminado del plan: {{{limit}}} mensajes",
         "extraMessages": "Agregar Cuota de Mensajes Extra",
         "extraPlaceholder": "ej: 500",
         "extraHelp": "Agregar cuota de mensajes extra al límite actual",
@@ -1389,8 +1365,8 @@
       },
       "messages": {
         "unlimited": "Ilimitado",
-        "used": "{{used}}/{{total}} usado",
-        "daysLeft": "{{days}} días restantes",
+        "used": "{{{used}}}/{{{total}}} usado",
+        "daysLeft": "{{{days}}} días restantes",
         "expired": "Expirado",
         "notAdded": "No Agregado",
         "quotaFull": "Cuota Llena",
@@ -1405,7 +1381,24 @@
       "status": "Estado",
       "messageQuota": "Cuota de mensajes",
       "remainingTime": "Tiempo restante",
-      "actions": "Acciones"
+      "actions": "Acciones",
+      "deleteConfirm": "Seguro que desea eliminar esta agencia?",
+      "loadError": "No se pudieron cargar las agencias",
+      "createSuccess": "Agencia creada",
+      "updateSuccess": "Agencia actualizada",
+      "createError": "Operacion fallida",
+      "deleteSuccess": "Agencia eliminada",
+      "deleteError": "Eliminacion fallida",
+      "styleUpdated": "Estilo actualizado",
+      "styleError": "No se pudo actualizar el estilo",
+      "noAgencies": "Aun no hay agencias",
+      "daysLeft": "{{days}} dias",
+      "expired": "Expirado",
+      "userCreateError": "No se pudo crear usuario",
+      "planUpdateError": "No se pudo actualizar el plan",
+      "update": "Actualizar",
+      "create": "Crear",
+      "planManagement": "Gestion del plan"
     },
     "usageStats": {
       "loadError": "Error al cargar las estadísticas de uso",
@@ -1463,13 +1456,13 @@
       "notUsedYet": "Aún no usado",
       "days": "días",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{count}} mensajes/mes",
+        "messagesPerMonth": "{{{count}}} mensajes/mes",
         "unlimitedMessages": "Mensajes ilimitados",
-        "maxTours": "Hasta {{count}} tours",
+        "maxTours": "Hasta {{{count}}} tours",
         "unlimitedTours": "Tours ilimitados",
-        "languageSupport": "Soporte de {{count}} idiomas",
+        "languageSupport": "Soporte de {{{count}}} idiomas",
         "allLanguages": "Todos los idiomas (7 idiomas)",
-        "limitedStyles": "{{count}} estilos de conversación",
+        "limitedStyles": "{{{count}}} estilos de conversación",
         "allStyles": "Todos los estilos de conversación + Estilo personalizado",
         "userProfiles": "Perfiles de usuario",
         "autoReminders": "Recordatorios automáticos",
@@ -1503,7 +1496,7 @@
     },
     "registrationForm": {
       "title": "Formulario de Pre-registro",
-      "description": "Complete el formulario de pre-registro para {tourTitle}.",
+      "description": "Complete el formulario de pre-registro para {{tourTitle}}.",
       "fullName": "Nombre Completo",
       "fullNamePlaceholder": "Su nombre y apellido",
       "phone": "Teléfono",
@@ -1519,18 +1512,18 @@
       "error": "Error",
       "errorMessage": "Ocurrió un error durante el registro. Por favor, inténtelo de nuevo.",
       "quotaError": "Cuota Insuficiente",
-      "quotaErrorMessage": "Solo quedan {quota} lugares para esta fecha. Por favor, reduzca el número de personas o seleccione otra fecha.",
+      "quotaErrorMessage": "Solo quedan {{quota}} lugares para esta fecha. Por favor, reduzca el número de personas o seleccione otra fecha.",
       "userNotFound": "Usuario no encontrado",
       "agencyNotFound": "Agencia no encontrada"
     },
     "quotaBanner": {
-      "warning": "Ha usado el {{percent}}% de su cuota de mensajes. Se agotará pronto.",
-      "critical": "¡Su cuota de mensajes está críticamente baja ({{percent}}%)! Los nuevos mensajes pueden bloquearse.",
+      "warning": "Ha usado el {{{percent}}}% de su cuota de mensajes. Se agotará pronto.",
+      "critical": "¡Su cuota de mensajes está críticamente baja ({{{percent}}}%)! Los nuevos mensajes pueden bloquearse.",
       "upgrade": "Mejorar Plan"
     },
     "onboarding": {
       "title": "Primeros Pasos",
-      "progress": "{{percent}}% completado",
+      "progress": "{{{percent}}}% completado",
       "dismiss": "Cerrar",
       "steps": {
         "agencyInfo": "Completar información de la agencia",
@@ -1775,10 +1768,11 @@
     "bulkImport": "Importar desde Excel",
     "duplicate": "Duplicar",
     "duplicateTitleLabel": "Nuevo nombre del tour",
-    "copyDatesNote": "{{count}} fechas también se copiarán",
+    "copyDatesNote": "{{{count}}} fechas también se copiarán",
     "duplicateConfirm": "Duplicar",
     "duplicateSuccess": "¡Tour duplicado!",
-    "duplicateError": "Error al duplicar"
+    "duplicateError": "Error al duplicar",
+    "addFirstTour": "Nueva excursión"
   },
   "weekdays": {
     "monday": "Lunes",
@@ -1810,11 +1804,11 @@
     "priceChild": "Precio niño",
     "quota": "Cuota",
     "pricingNote": "Se aplicará el mismo precio a todas las fechas",
-    "preview": "Se crearán {{count}} fechas",
+    "preview": "Se crearán {{{count}}} fechas",
     "moreDates": "fechas más...",
-    "generateButton": "Crear {{count}} fechas",
+    "generateButton": "Crear {{{count}}} fechas",
     "generating": "Generando...",
-    "success": "¡{{count}} fechas agregadas con éxito!",
+    "success": "¡{{{count}}} fechas agregadas con éxito!",
     "errors": {
       "noDates": "Seleccione un rango de fechas y un patrón",
       "priceRequired": "El precio de adulto es obligatorio",
@@ -1835,12 +1829,12 @@
     "selectFile": "Seleccionar archivo Excel",
     "fileHint": "Formatos .xlsx o .xls compatibles",
     "parsedTours": "Tours procesados",
-    "parsed": "{{valid}}/{{total}} tours válidos",
+    "parsed": "{{{valid}}}/{{{total}}} tours válidos",
     "valid": "Válido",
     "invalid": "Inválido",
-    "importButton": "Importar {{count}} tours",
+    "importButton": "Importar {{{count}}} tours",
     "importing": "Importando...",
-    "success": "¡{{count}} tours agregados con éxito!",
+    "success": "¡{{{count}}} tours agregados con éxito!",
     "errors": {
       "parseError": "No se pudo leer el archivo Excel",
       "noValid": "No hay tours válidos para importar",
@@ -1860,7 +1854,7 @@
       "vsLastWeek": "vs semana pasada"
     },
     "welcome": {
-      "todayStats": "{{count}} nuevas reservas hoy",
+      "todayStats": "{{{count}}} nuevas reservas hoy",
       "revenue": "ingresos",
       "pending": "pendientes",
       "noRegistrations": "Sin reservas hoy. ¡Tu bot de WhatsApp está activo! 💬"
@@ -1966,7 +1960,7 @@
     "stepByStep": "Guía paso a paso",
     "visualGuides": "Explicaciones visuales",
     "troubleshooting": "Consejos de solución de problemas",
-    "topicsCount": "{{count}} temas detallados",
+    "topicsCount": "{{{count}}} temas detallados",
     "back": "Volver",
     "backToAdmin": "Volver al Panel de Administración",
     "quickLinks": "Guía de inicio",
@@ -1990,11 +1984,11 @@
     "planStarter": "Inicial",
     "planProfessional": "Profesional",
     "planEnterprise": "Empresarial",
-    "maxLanguagesMessage": "puede activar hasta {count} idiomas en su paquete.",
+    "maxLanguagesMessage": "puede activar hasta {{count}} idiomas en su paquete.",
     "upgradePlan": "Actualice su paquete para más idiomas.",
     "minLanguageWarning": "⚠️ Debe seleccionar al menos 1 idioma.",
     "languageLimitTitle": "Límite de idioma alcanzado",
-    "languageLimitMessage": "Puede activar un máximo de {count} idiomas en su paquete {plan}. Actualice su paquete para más idiomas.",
+    "languageLimitMessage": "Puede activar un máximo de {{count}} idiomas en su paquete {{plan}}. Actualice su paquete para más idiomas.",
     "minLanguageError": "Debe seleccionar al menos 1 idioma.",
     "loadError": "No se pudo cargar la configuración de idioma",
     "saveSuccess": "Configuración de idioma guardada exitosamente",
@@ -2103,7 +2097,7 @@
     }
   },
   "blog": {
-    "minutesRead": "{{count}} min de lectura",
+    "minutesRead": "{{{count}}} min de lectura",
     "readMore": "Leer →",
     "noPosts": "Aún no hay artículos en esta categoría.",
     "ctaQuestion": "¿Ya probaste Turzz AI?",
@@ -2119,7 +2113,7 @@
       "ctaDesc": "14 días gratis, sin tarjeta de crédito.",
       "ctaButton": "Empezar gratis"
     },
-    "fallbackNotice": "Este artículo aún no ha sido traducido al {{lang}}. Se muestra la versión turca.",
+    "fallbackNotice": "Este artículo aún no ha sido traducido al {{{lang}}}. Se muestra la versión turca.",
     "fallbackBadge": "Turco",
     "availableIn": "Este artículo está disponible en:"
   },
@@ -3027,7 +3021,7 @@
       "cancelledDesc": "La conexión de WhatsApp fue cancelada.",
       "success": "¡Éxito!",
       "successDesc": "Su número de WhatsApp se conectó correctamente",
-      "successDescPhone": "Su número de WhatsApp se conectó correctamente: {{phone}}",
+      "successDescPhone": "Su número de WhatsApp se conectó correctamente: {{{phone}}}",
       "errorTitle": "Error",
       "exchangeError": "Ocurrió un error durante la conexión de WhatsApp. Por favor, inténtelo de nuevo.",
       "disconnected": "Desconectado",
@@ -3087,8 +3081,8 @@
     },
     "conversations": {
       "search": "Buscar...",
-      "count": "{{count}} conversaciones",
-      "page": "Página {{current}}/{{total}}",
+      "count": "{{{count}}} conversaciones",
+      "page": "Página {{{current}}}/{{{total}}}",
       "selectAgency": "Seleccionar agencia"
     },
     "logs": {
@@ -3102,7 +3096,7 @@
       "roleSelect": "Seleccionar rol",
       "dateRange": "Rango de fechas",
       "clearFilters": "Borrar filtros",
-      "results": "Registros de mensajes ({{count}} resultados)",
+      "results": "Registros de mensajes ({{{count}}} resultados)",
       "loading": "Cargando registros...",
       "empty": "No se encontraron registros",
       "loadError": "Error al cargar los registros",
@@ -3124,8 +3118,8 @@
       "chartTitle": "Número de usuarios (por idioma)",
       "chartBar": "Número de usuarios",
       "detailTitle": "Distribución lingüística detallada",
-      "userCount": "{{count}} usuarios",
-      "messageCount": "{{count}} mensajes",
+      "userCount": "{{{count}}} usuarios",
+      "messageCount": "{{{count}}} mensajes",
       "empty": "Aún no hay datos de idioma"
     }
   },
@@ -3277,9 +3271,6 @@
     "invalidType": "tipo de tour inválido",
     "invalidCurrency": "moneda inválida"
   },
-  "faq": {
-    "validationError": "Por favor, completa todos los campos obligatorios"
-  },
   "notificationCenter": {
     "people": "personas",
     "customer": "Cliente"
@@ -3287,7 +3278,16 @@
   "support": {
     "subtitle": "Estamos aquí para ayudarte",
     "quickOptions": "Opciones rápidas:",
-    "error": "Lo sentimos, algo salió mal. Por favor, inténtalo de nuevo o visita https://turzzai.com/help."
+    "error": "Lo sentimos, algo salió mal. Por favor, inténtalo de nuevo o visita https://turzzai.com/help.",
+    "welcome": {
+      "tr": "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
+      "en": "Hello! How can I help you? I can answer your questions about system usage, features, or technical topics. 📚",
+      "de": "Hallo! Wie kann ich Ihnen helfen? Ich kann Ihre Fragen zur Systemnutzung, zu Funktionen oder technischen Themen beantworten. 📚",
+      "ru": "Здравствуйте! Чем я могу помочь? Я могу ответить на ваши вопросы об использовании системы, функциях или технических темах. 📚",
+      "ar": "مرحبا! كيف يمكنني مساعدتك؟ يمكنني الإجابة على أسئلتك حول استخدام النظام أو الميزات أو المواضيع الفنية. 📚",
+      "fr": "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
+      "es": "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
+    }
   },
   "userProfiles": {
     "title": "Perfiles de clientes (CRM)",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -22,8 +22,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { tr as trLocale } from "date-fns/locale";
+import { tr as trLocale, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+
+const DATE_LOCALE_MAP = { tr: trLocale, en: enUS, de, ru, ar, fr, es };
 import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign, Receipt, Trash2 } from "lucide-react";
+import { formatPrice } from "@/utils/currency";
 
 interface PaymentHistory {
   id: string;
@@ -49,6 +52,7 @@ interface Registration {
   tours: {
     title: string;
     destination: string;
+    currency?: string;
   };
   tour_dates: {
     departure_date: string;
@@ -71,8 +75,11 @@ export const RegistrationDetailDialog = ({
   registration,
   onSuccess
 }: RegistrationDetailDialogProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || trLocale;
+  const currency = registration?.tours?.currency || 'TRY';
+  const fmt = (amount: number) => formatPrice(amount, currency, { showCode: false });
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -187,7 +194,7 @@ export const RegistrationDetailDialog = ({
           amount: amount,
           payment_method: paymentMethod,
           payment_date: new Date().toISOString(),
-          note: `${PAYMENT_METHOD_LABELS[paymentMethod] || paymentMethod} ile ${amount.toLocaleString('tr-TR')}₺ ödeme`
+          note: `${PAYMENT_METHOD_LABELS[paymentMethod] || paymentMethod} ile ${fmt(amount)} ödeme`
         });
 
       if (paymentError) throw paymentError;
@@ -207,7 +214,7 @@ export const RegistrationDetailDialog = ({
 
       toast({
         title: t("admin.registrations.paymentSuccess"),
-        description: `${amount.toLocaleString('tr-TR')}₺ ${t("registration.paymentAdded")}`
+        description: `${fmt(amount)} ${t("registration.paymentAdded")}`
       });
 
       setPaymentAmount("");
@@ -355,14 +362,14 @@ export const RegistrationDetailDialog = ({
               <CardContent className="space-y-2">
                 <p className="font-medium text-sm">
                   {registration.tour_dates?.departure_date 
-                    ? format(new Date(registration.tour_dates.departure_date), "d MMM yyyy", { locale: trLocale })
+                    ? format(new Date(registration.tour_dates.departure_date), "d MMM yyyy", { locale: dateLocale })
                     : '-'}
                 </p>
                 <div className="flex items-center gap-2 text-xs">
                   <Users className="h-3 w-3" />
                   <span>{registration.pax} kişi</span>
                   <span className="text-muted-foreground">•</span>
-                  <span>{(registration.tour_dates?.price_adult || 0).toLocaleString('tr-TR')}₺/kişi</span>
+                  <span>{fmt((registration.tour_dates?.price_adult || 0))}/kişi</span>
                 </div>
               </CardContent>
             </Card>
@@ -483,27 +490,27 @@ export const RegistrationDetailDialog = ({
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Birim Fiyat</p>
-                  <p className="font-medium text-base">{(registration.tour_dates?.price_adult || 0).toLocaleString('tr-TR')}₺</p>
+                  <p className="font-medium text-base">{fmt((registration.tour_dates?.price_adult || 0))}</p>
                   <p className="text-xs text-muted-foreground">{registration.pax} kişi</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">{t("admin.registrations.totalAmount")}</p>
-                  <p className="font-semibold text-lg text-primary">{totalAmount.toLocaleString('tr-TR')}₺</p>
+                  <p className="font-semibold text-lg text-primary">{fmt(totalAmount)}</p>
                 </div>
                 {registration.deposit_amount && registration.deposit_amount > 0 && (
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">{t("admin.registrations.depositAmount")}</p>
-                    <p className="font-medium text-blue-600">{registration.deposit_amount.toLocaleString('tr-TR')}₺</p>
+                    <p className="font-medium text-blue-600">{fmt(registration.deposit_amount)}</p>
                   </div>
                 )}
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">{t("admin.registrations.paidAmount")}</p>
-                  <p className="font-medium text-green-600">{paidAmount.toLocaleString('tr-TR')}₺</p>
+                  <p className="font-medium text-green-600">{fmt(paidAmount)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">{t("admin.registrations.remainingAmount")}</p>
                   <p className={`font-bold text-xl ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                    {remainingAmount.toLocaleString('tr-TR')}₺
+                    {fmt(remainingAmount)}
                   </p>
                 </div>
               </div>
@@ -572,10 +579,10 @@ export const RegistrationDetailDialog = ({
                         </div>
                         <div>
                           <p className="font-medium text-sm">
-                            {payment.amount.toLocaleString('tr-TR')}₺
+                            {fmt(payment.amount)}
                           </p>
                           <p className="text-[10px] text-muted-foreground">
-                            {format(new Date(payment.payment_date), "d MMMM yyyy, HH:mm", { locale: trLocale })}
+                            {format(new Date(payment.payment_date), "d MMMM yyyy, HH:mm", { locale: dateLocale })}
                           </p>
                         </div>
                       </div>
@@ -610,3 +617,4 @@ export const RegistrationDetailDialog = ({
     </Dialog>
   );
 };
+

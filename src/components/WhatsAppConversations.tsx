@@ -288,7 +288,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       <Tabs defaultValue="conversations" className="w-full">
         <Card className="shadow-card">
           <CardHeader>
@@ -303,7 +303,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                     <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
-                      <SelectTrigger className="w-[250px]">
+                      <SelectTrigger className="w-full sm:w-[250px]">
                         <SelectValue placeholder={t("whatsapp.conversations.selectAgency")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -420,7 +420,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   </div>
 
                   {/* Sağ taraf - Mesajlar + Reply */}
-                  <div className={`${isMobile && mobileView === "list" ? "hidden" : "flex"} flex-col flex-1 min-h-0`}>
+                  <div className={`${isMobile && mobileView === "list" ? "hidden" : "flex"} flex-col flex-1 min-h-0 min-w-0`}>
                     {/* Mobile back button */}
                     {isMobile && (
                       <Button
@@ -452,7 +452,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                                     )}
                                   </div>
                                   <div className={`rounded-lg p-3 ${msg.role === "user" ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"}`}>
-                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                                     <p className={`text-xs mt-1 ${msg.role === "user" ? "text-secondary-foreground/60" : "text-primary-foreground/60"}`}>
                                       {format(new Date(msg.created_at), "HH:mm", { locale: tr })}
                                     </p>

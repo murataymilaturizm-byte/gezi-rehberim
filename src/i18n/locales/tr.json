@@ -18,14 +18,14 @@
     "management": "Para Birimi Yönetimi",
     "description": "Önce ana para biriminizi seçin. İsterseniz bazı diller için farklı para birimleri kullanabilirsiniz.",
     "howItWorks": "Nasıl Çalışır:",
-    "howItWorksDesc": "Ana para biriminiz {currency} olarak varsayılan değerdir. Her dil için istediğiniz para birimini seçebilirsiniz. Seçim yapmazsanız ana para birimi kullanılır.",
+    "howItWorksDesc": "Ana para biriminiz {{currency}} olarak varsayılan değerdir. Her dil için istediğiniz para birimini seçebilirsiniz. Seçim yapmazsanız ana para birimi kullanılır.",
     "primaryCurrency": "Ana Para Birimi",
     "primaryCurrencyDesc": "Tüm diller için varsayılan olarak kullanılacak para birimi",
     "selectPrimaryCurrency": "Ana para birimi seçin",
     "languageBasedSettings": "Dil Bazlı Para Birimi Ayarları",
     "languageBasedSettingsDesc": "Her dil için özel para birimi kullanmak istiyorsanız aktif edin",
-    "customCurrency": "Özel para birimi: {currency}",
-    "usingPrimary": "Ana para birimi kullanılıyor: {currency}",
+    "customCurrency": "Özel para birimi: {{currency}}",
+    "usingPrimary": "Ana para birimi kullanılıyor: {{currency}}",
     "selectCurrencyForLanguage": "Bu dil için para birimi seçin:",
     "save": "Kaydet",
     "saving": "Kaydediliyor...",
@@ -233,34 +233,7 @@
     }
   },
   "faq": {
-    "title": "Sık Sorulan Sorular",
-    "subtitle": "Merak ettiklerinizin yanıtlarını burada bulabilirsiniz",
-    "items": {
-      "salesIncrease": {
-        "question": "Gerçekten ilk ayda satışlarım artacak mı?",
-        "answer": "Evet! Ortalama acentelerimiz ilk ayda %120-150 rezervasyon artışı görüyor. AI destekli WhatsApp botunuz 7/24 müşterilerinize hizmet veriyor — gece yarısı, hafta sonu, tatil günleri fark etmez. Hiçbir fırsat kaçmıyor."
-      },
-      "setup": {
-        "question": "Kurulum nasıl yapılıyor?",
-        "answer": "Çok kolay! Hesabınızı oluşturun, turlarınızı ekleyin ve WhatsApp Yönetimi panelinden entegrasyon talebi gönderin. Ekibimiz Meta Cloud API kurulumunu sizin için yapar. Siz sadece turlarınızı yönetirsiniz, tüm teknik altyapı bize ait."
-      },
-      "whatsappCost": {
-        "question": "WhatsApp entegrasyonu için ek ücret var mı?",
-        "answer": "Hayır! WhatsApp Business API altyapısını (Meta Cloud API) biz yönetiyoruz. WhatsApp Yönetimi panelinden talebinizi gönderin, kurulumu ekibimiz yapar. API kullanım ücretleri bizden, siz sadece seçtiğiniz plan ücretini ödersiniz."
-      },
-      "payment": {
-        "question": "Müşterilerden direkt ödeme alabilir miyim?",
-        "answer": "Evet! Ödeme entegrasyonu ile WhatsApp üzerinden anında ödeme linki gönderebilir, dakikalar içinde ödeme alabilirsiniz. Ödeme takibi otomatik olarak yapılır."
-      },
-      "tourLimit": {
-        "question": "Kaç tur ekleyebilirim?",
-        "answer": "Starter planda 10 tura kadar, Professional ve Enterprise planlarda sınırsız tur ekleyebilirsiniz. Fark mesaj limiti ve dil sayısındadır. İhtiyacınıza göre planınızı istediğiniz zaman yükseltebilirsiniz."
-      },
-      "cancellation": {
-        "question": "İptal edersem ne olur?",
-        "answer": "İstediğiniz zaman iptal edebilirsiniz, sözleşme yok. İptal ettiğinizde mevcut dönem sonuna kadar hizmet almaya devam edersiniz. 14 gün ücretsiz deneme sırasında kredi kartı bile istemiyoruz."
-      }
-    }
+    "validationError": "Lütfen tüm gerekli alanları doldurun"
   },
   "cta": {
     "title": "Hemen Başlamaya Hazır mısınız?",
@@ -388,7 +361,7 @@
     "dayTours": "Günübirlik Tur",
     "boutiqueAgencies": "Butik Acenteler",
     "comparison": "Karşılaştırma",
-    "copyright": "© {year} Turzz AI. Tüm hakları saklıdır.",
+    "copyright": "© {{year}} Turzz AI. Tüm hakları saklıdır.",
     "dataDeletion": "Veri Silme",
     "dataExport": "Veri İndirme"
   },
@@ -478,17 +451,17 @@
     "advanced": {
       "dateFilter": "Tarih Aralığı Filtresi",
       "totalRevenue": "Toplam Gelir",
-      "totalRevenueDesc": "{{count}} kayıt • {{period}}",
+      "totalRevenueDesc": "{{{count}}} kayıt • {{{period}}}",
       "periodGrowth": "Dönem Büyümesi",
       "vsPreviousHalf": "Önceki yarıya göre",
       "averageBasket": "Ortalama Sepet",
       "perRegistration": "Kayıt başına",
       "conversionRate": "Dönüşüm Oranı",
-      "conversionDesc": "{{registrations}}/{{conversations}} konuşma",
+      "conversionDesc": "{{{registrations}}}/{{{conversations}}} konuşma",
       "monthlyTrend": "Aylık Gelir Trendi",
       "revenueLabel": "Gelir",
       "destinationDetails": "Destinasyon Detayları",
-      "registrationCount": "{{count}} kayıt",
+      "registrationCount": "{{{count}}} kayıt",
       "average": "Ort",
       "noData": "Henüz analiz verisi yok",
       "noDataDescription": "İlk rezervasyonunuz oluştuğunda analitikler burada görünecek",
@@ -536,7 +509,7 @@
     "payment": {
       "success": "Ödeme Başarılı! 🎉",
       "successDesc": "Aboneliğiniz aktifleştirildi. Faturanız hazırlanıyor.",
-      "successDescWithOrder": "Aboneliğiniz aktifleştirildi. Sipariş No: {{orderId}}...",
+      "successDescWithOrder": "Aboneliğiniz aktifleştirildi. Sipariş No: {{{orderId}}}...",
       "failed": "Ödeme Başarısız",
       "failedBase": "Ödeme işlemi tamamlanamadı.",
       "insufficientFunds": "Kartınızda yeterli bakiye bulunmuyor.",
@@ -660,19 +633,20 @@
         "errors": {
           "invalidPhone": "Geçerli bir telefon numarası girin",
           "selectRegistration": "Lütfen bir rezervasyon seçin",
-          "missingVariables": "Eksik değişkenler: {{vars}}",
+          "missingVariables": "Eksik değişkenler: {{{vars}}}",
           "generic": "Mesaj gönderilemedi"
         }
       },
       "sync": {
         "button": "Meta ile Senkronize Et",
-        "success": "{{count}} şablon güncellendi",
-        "successWithNew": "{{inserted}} yeni eklendi, {{updated}} güncellendi",
+        "success": "{{{count}}} şablon güncellendi",
+        "successWithNew": "{{{inserted}}} yeni eklendi, {{{updated}}} güncellendi",
         "error": "Senkronizasyon başarısız"
       },
       "status": {
         "notSynced": "Senkronize Edilmedi"
-      }
+      },
+      "notApprovedTooltip": "Bu şablon henüz Meta tarafından onaylanmadı, gönderilemez"
     },
     "faq": {
       "title": "Sık Sorulan Sorular",
@@ -785,7 +759,7 @@
         "emailCollectionToggle": "Rezervasyon sırasında email iste",
         "emailCollectionSaved": "Email ayarı güncellendi",
         "integrationComplete": "Entegrasyon Tamamlandı",
-        "integrationCompleteDesc": "WhatsApp Business numaranız {phone} sisteme tanımlandı.",
+        "integrationCompleteDesc": "WhatsApp Business numaranız {{phone}} sisteme tanımlandı.",
         "cardTitle": "WhatsApp Ayarları"
       },
       "conversations": {
@@ -1007,7 +981,7 @@
       "region": "Bölge",
       "plan": {
         "monthlyLimit": "Aylık Mesaj Limiti",
-        "defaultLimit": "Planın varsayılan limiti: {{limit}} mesaj",
+        "defaultLimit": "Planın varsayılan limiti: {{{limit}}} mesaj",
         "extraMessages": "Ekstra Mesaj Kotası Ekle",
         "extraPlaceholder": "Örn: 500",
         "extraHelp": "Mevcut limite ekstra mesaj kotası ekleyin",
@@ -1077,13 +1051,30 @@
       },
       "messages": {
         "unlimited": "Sınırsız",
-        "used": "{{used}}/{{total}} kullanıldı",
-        "daysLeft": "{{days}} gün kaldı",
+        "used": "{{{used}}}/{{{total}}} kullanıldı",
+        "daysLeft": "{{{days}}} gün kaldı",
         "expired": "Süresi doldu",
         "notAdded": "Eklenmedi",
         "quotaFull": "Kota Doldu",
         "percentUsed": "kullanıldı"
-      }
+      },
+      "deleteConfirm": "Bu acenteyi silmek istediğinize emin misiniz?",
+      "loadError": "Acenteler yüklenemedi",
+      "createSuccess": "Acente oluşturuldu",
+      "updateSuccess": "Acente güncellendi",
+      "createError": "İşlem başarısız",
+      "deleteSuccess": "Acente silindi",
+      "deleteError": "Silme işlemi başarısız",
+      "styleUpdated": "Konuşma üslubu güncellendi",
+      "styleError": "Konuşma üslubu güncellenemedi",
+      "noAgencies": "Henüz acente eklenmemiş",
+      "daysLeft": "{{days}} gün",
+      "expired": "Süresi doldu",
+      "userCreateError": "Kullanıcı oluşturulamadı",
+      "planUpdateError": "Plan güncellenemedi",
+      "update": "Güncelle",
+      "create": "Oluştur",
+      "planManagement": "Plan Yönetimi"
     },
     "agencyManagement": {
       "title": "Acente Yönetimi",
@@ -1131,9 +1122,9 @@
       "invoiceInfo": "Fatura ve Dekont",
       "invoiceDescription": "Ödeme dekontlarınızı ve faturalarınızı email adresinize gönderiyoruz. Geçmiş faturalar için destek ekibimizle iletişime geçebilirsiniz.",
       "confirmPlanChange": "Plan Değişikliğini Onayla",
-      "confirmChangeDescription": "Planınızı {currentPlan} planından {newPlan} planına değiştirmek istediğinize emin misiniz?",
+      "confirmChangeDescription": "Planınızı {{currentPlan}} planından {{newPlan}} planına değiştirmek istediğinize emin misiniz?",
       "newPlanFeatures": "Yeni Plan Özellikleri:",
-      "discountWillApply": "%10 indirim uygulanacak ({amount}₺ tasarruf)",
+      "discountWillApply": "%10 indirim uygulanacak ({{amount}}₺ tasarruf)",
       "planChangeNote": "Plan değişikliği hemen aktif olacaktır. Fatura döneminiz değişmeden devam edecektir.",
       "cancel": "İptal",
       "changing": "Değiştiriliyor...",
@@ -1143,7 +1134,7 @@
       "subscriptionNotActive": "Aboneliğiniz aktif değil. Önce ödeme yapmalısınız.",
       "alreadyOnPlan": "Zaten bu plandayınız.",
       "successTitle": "Başarılı! ✅",
-      "planChangedSuccess": "Planınız {planName} olarak değiştirildi",
+      "planChangedSuccess": "Planınız {{planName}} olarak değiştirildi",
       "errorTitle": "Hata",
       "planChangeError": "Plan değiştirilemedi",
       "paymentError": "Ödeme Hatası",
@@ -1273,7 +1264,7 @@
     },
     "planLimits": {
       "tourLimitReached": "Tur Limiti Doldu",
-      "tourLimitMessage": "{planName} paketinizde maksimum {maxTours} tur ekleyebilirsiniz. Daha fazla tur eklemek için paketinizi yükseltin.",
+      "tourLimitMessage": "{{planName}} paketinizde maksimum {{maxTours}} tur ekleyebilirsiniz. Daha fazla tur eklemek için paketinizi yükseltin.",
       "starterPlan": "Başlangıç",
       "professionalPlan": "Profesyonel",
       "enterprisePlan": "Kurumsal",
@@ -1379,7 +1370,7 @@
       "conversations": "Konuşma",
       "conversionRate": "Dönüşüm Oranı (%)",
       "conversionRatesSheet": "Dönüşüm Oranları",
-      "currencyConversionNote": "Fiyatlar anlık kurla {{currency}} cinsinden gösteriliyor",
+      "currencyConversionNote": "Fiyatlar anlık kurla {{{currency}}} cinsinden gösteriliyor",
       "originalPrice": "Orijinal"
     },
     "usageStats": {
@@ -1419,7 +1410,7 @@
       "usedThisMonth": "Bu Ay Kullanılan",
       "unlimited": "Sınırsız",
       "quotaFull": "Mesaj kotanız doldu! Paketinizi yükseltmeniz gerekiyor.",
-      "quotaNearLimit": "Mesaj kotanızın %{{percent}}'i kaldı.",
+      "quotaNearLimit": "Mesaj kotanızın %{{{percent}}}'i kaldı.",
       "lastReset": "Son Sıfırlama",
       "buyExtraQuota": "Ekstra Mesaj Kotası Satın Al",
       "extraQuotaTitle": "Ekstra Mesaj Kotası",
@@ -1439,13 +1430,13 @@
       "notUsedYet": "Henüz kullanılmadı",
       "days": "gün",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{count}} mesaj/ay",
+        "messagesPerMonth": "{{{count}}} mesaj/ay",
         "unlimitedMessages": "Sınırsız mesaj",
-        "maxTours": "{{count}} tura kadar",
+        "maxTours": "{{{count}}} tura kadar",
         "unlimitedTours": "Sınırsız tur",
-        "languageSupport": "{{count}} dil desteği",
+        "languageSupport": "{{{count}}} dil desteği",
         "allLanguages": "Tüm diller (7 dil)",
-        "limitedStyles": "{{count}} konuşma üslubu",
+        "limitedStyles": "{{{count}}} konuşma üslubu",
         "allStyles": "Tüm konuşma üslupları + Özel üslup",
         "userProfiles": "Kullanıcı profilleri",
         "autoReminders": "Otomatik hatırlatmalar",
@@ -1519,7 +1510,7 @@
     },
     "registrationForm": {
       "title": "Ön Kayıt Formu",
-      "description": "{tourTitle} için ön kayıt formunu doldurun.",
+      "description": "{{tourTitle}} için ön kayıt formunu doldurun.",
       "fullName": "Ad Soyad",
       "fullNamePlaceholder": "Adınız ve soyadınız",
       "phone": "Telefon",
@@ -1535,18 +1526,18 @@
       "error": "Hata",
       "errorMessage": "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.",
       "quotaError": "Yetersiz Kontenjan",
-      "quotaErrorMessage": "Bu tarih için sadece {quota} kişilik yer kalmıştır. Lütfen kişi sayısını azaltın veya başka bir tarih seçin.",
+      "quotaErrorMessage": "Bu tarih için sadece {{quota}} kişilik yer kalmıştır. Lütfen kişi sayısını azaltın veya başka bir tarih seçin.",
       "userNotFound": "Kullanıcı bulunamadı",
       "agencyNotFound": "Acente bulunamadı"
     },
     "quotaBanner": {
-      "warning": "Mesaj kotanızın %{{percent}}'ine ulaştınız. Yakında dolacak.",
-      "critical": "Mesaj kotanız kritik seviyede (%{{percent}})! Yeni mesajlar engellenebilir.",
+      "warning": "Mesaj kotanızın %{{{percent}}}'ine ulaştınız. Yakında dolacak.",
+      "critical": "Mesaj kotanız kritik seviyede (%{{{percent}}})! Yeni mesajlar engellenebilir.",
       "upgrade": "Planı Yükselt"
     },
     "onboarding": {
       "title": "Başlarken",
-      "progress": "%{{percent}} tamamlandı",
+      "progress": "%{{{percent}}} tamamlandı",
       "dismiss": "Kapat",
       "steps": {
         "agencyInfo": "Acente bilgilerini doldur",
@@ -1737,10 +1728,11 @@
     "bulkImport": "Excel'den İçe Aktar",
     "duplicate": "Kopyala",
     "duplicateTitleLabel": "Yeni tur adı",
-    "copyDatesNote": "{{count}} tarih de kopyalanacak",
+    "copyDatesNote": "{{{count}}} tarih de kopyalanacak",
     "duplicateConfirm": "Kopyala",
     "duplicateSuccess": "Tur başarıyla kopyalandı!",
-    "duplicateError": "Tur kopyalanamadı"
+    "duplicateError": "Tur kopyalanamadı",
+    "addFirstTour": "Yeni Tur"
   },
   "weekdays": {
     "monday": "Pazartesi",
@@ -1772,11 +1764,11 @@
     "priceChild": "Çocuk fiyatı",
     "quota": "Kontenjan",
     "pricingNote": "Tüm tarihler için aynı fiyat uygulanacak",
-    "preview": "{{count}} tarih oluşturulacak",
+    "preview": "{{{count}}} tarih oluşturulacak",
     "moreDates": "tarih daha...",
-    "generateButton": "{{count}} Tarih Oluştur",
+    "generateButton": "{{{count}}} Tarih Oluştur",
     "generating": "Oluşturuluyor...",
-    "success": "{{count}} tarih başarıyla eklendi!",
+    "success": "{{{count}}} tarih başarıyla eklendi!",
     "errors": {
       "noDates": "Lütfen tarih aralığı ve desen seçin",
       "priceRequired": "Yetişkin fiyatı zorunludur",
@@ -1797,12 +1789,12 @@
     "selectFile": "Excel Dosyası Seç",
     "fileHint": ".xlsx veya .xls formatları desteklenir",
     "parsedTours": "İşlenmiş Turlar",
-    "parsed": "{{valid}}/{{total}} tur geçerli",
+    "parsed": "{{{valid}}}/{{{total}}} tur geçerli",
     "valid": "Geçerli",
     "invalid": "Hatalı",
-    "importButton": "{{count}} Turu İçe Aktar",
+    "importButton": "{{{count}}} Turu İçe Aktar",
     "importing": "İçe aktarılıyor...",
-    "success": "{{count}} tur başarıyla eklendi!",
+    "success": "{{{count}}} tur başarıyla eklendi!",
     "errors": {
       "parseError": "Excel dosyası okunamadı",
       "noValid": "İçe aktarılabilecek geçerli tur bulunamadı",
@@ -1822,7 +1814,7 @@
       "vsLastWeek": "geçen haftaya göre"
     },
     "welcome": {
-      "todayStats": "Bugün {{count}} yeni rezervasyon",
+      "todayStats": "Bugün {{{count}}} yeni rezervasyon",
       "revenue": "gelir",
       "pending": "bekliyor",
       "noRegistrations": "Bugün henüz rezervasyon yok. WhatsApp botunuz çalışıyor! 💬"
@@ -1928,7 +1920,7 @@
     "stepByStep": "Adım adım rehber",
     "visualGuides": "Görsel açıklamalar",
     "troubleshooting": "Sorun çözme ipuçları",
-    "topicsCount": "{{count}} konuda detaylı açıklama",
+    "topicsCount": "{{{count}}} konuda detaylı açıklama",
     "back": "Geri Dön",
     "backToAdmin": "Admin Paneline Dön",
     "quickLinks": "Başlangıç Rehberi",
@@ -1952,11 +1944,11 @@
     "planStarter": "Başlangıç",
     "planProfessional": "Profesyonel",
     "planEnterprise": "Kurumsal",
-    "maxLanguagesMessage": "paketinizde maksimum {count} dil aktif edebilirsiniz.",
+    "maxLanguagesMessage": "paketinizde maksimum {{count}} dil aktif edebilirsiniz.",
     "upgradePlan": "Daha fazla dil için paketinizi yükseltin.",
     "minLanguageWarning": "⚠️ En az 1 dil seçmelisiniz.",
     "languageLimitTitle": "Dil Limiti Doldu",
-    "languageLimitMessage": "{plan} paketinizde maksimum {count} dil aktif edebilirsiniz. Daha fazla dil için paketinizi yükseltin.",
+    "languageLimitMessage": "{{plan}} paketinizde maksimum {{count}} dil aktif edebilirsiniz. Daha fazla dil için paketinizi yükseltin.",
     "minLanguageError": "En az 1 dil seçmelisiniz.",
     "loadError": "Dil ayarları yüklenemedi",
     "saveSuccess": "Dil ayarları kaydedildi",
@@ -2105,7 +2097,7 @@
     "selectDate": "Tarih seçin"
   },
   "blog": {
-    "minutesRead": "{{count}} dakika okuma",
+    "minutesRead": "{{{count}}} dakika okuma",
     "readMore": "Oku →",
     "noPosts": "Bu kategoride henüz yazı yok.",
     "ctaQuestion": "Turzz AI'ı denediniz mi?",
@@ -2121,7 +2113,7 @@
       "ctaDesc": "14 gün ücretsiz, kredi kartı gerekmez.",
       "ctaButton": "Ücretsiz Başla"
     },
-    "fallbackNotice": "Bu yazı henüz {{lang}} diline çevrilmedi. Türkçe versiyonu gösteriliyor.",
+    "fallbackNotice": "Bu yazı henüz {{{lang}}} diline çevrilmedi. Türkçe versiyonu gösteriliyor.",
     "fallbackBadge": "Türkçe",
     "availableIn": "Bu yazı şu dillerde mevcut:"
   },
@@ -3029,7 +3021,7 @@
       "cancelledDesc": "WhatsApp bağlantısı iptal edildi.",
       "success": "Başarılı!",
       "successDesc": "WhatsApp numaranız başarıyla bağlandı",
-      "successDescPhone": "WhatsApp numaranız başarıyla bağlandı: {{phone}}",
+      "successDescPhone": "WhatsApp numaranız başarıyla bağlandı: {{{phone}}}",
       "errorTitle": "Hata",
       "exchangeError": "WhatsApp bağlantısı sırasında bir hata oluştu. Lütfen tekrar deneyin.",
       "disconnected": "Bağlantı Kaldırıldı",
@@ -3089,8 +3081,8 @@
     },
     "conversations": {
       "search": "Ara...",
-      "count": "{{count}} konuşma",
-      "page": "Sayfa {{current}}/{{total}}",
+      "count": "{{{count}}} konuşma",
+      "page": "Sayfa {{{current}}}/{{{total}}}",
       "selectAgency": "Acente Seçin"
     },
     "logs": {
@@ -3104,7 +3096,7 @@
       "roleSelect": "Rol seçin",
       "dateRange": "Tarih Aralığı",
       "clearFilters": "Filtreleri Temizle",
-      "results": "Mesaj Logları ({{count}} sonuç)",
+      "results": "Mesaj Logları ({{{count}}} sonuç)",
       "loading": "Loglar yükleniyor...",
       "empty": "Gösterilecek log bulunamadı",
       "loadError": "Loglar yüklenirken bir hata oluştu",
@@ -3126,8 +3118,8 @@
       "chartTitle": "Kullanıcı Sayısı (Dil Bazlı)",
       "chartBar": "Kullanıcı Sayısı",
       "detailTitle": "Detaylı Dil Dağılımı",
-      "userCount": "{{count}} kullanıcı",
-      "messageCount": "{{count}} mesaj",
+      "userCount": "{{{count}}} kullanıcı",
+      "messageCount": "{{{count}}} mesaj",
       "empty": "Henüz dil verisi bulunmuyor"
     }
   },
@@ -3324,9 +3316,6 @@
     "importFilename": "turzz_tur_sablonu",
     "invalidType": "geçersiz tur tipi",
     "invalidCurrency": "geçersiz para birimi"
-  },
-  "faq": {
-    "validationError": "Lütfen tüm gerekli alanları doldurun"
   },
   "notificationCenter": {
     "people": "kişi",

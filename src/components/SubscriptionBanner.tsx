@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, Clock, CreditCard } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+
+const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 
 interface SubscriptionInfo {
   plan_type: string;
@@ -19,7 +21,8 @@ interface SubscriptionBannerProps {
 }
 
 export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -109,7 +112,7 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
             <strong>{remainingDays} {t("admin.subscription.days")}</strong> {t("admin.subscription.willEnd")}.
             {subscriptionInfo.trial_ends_at && (
               <span className="text-muted-foreground ml-1">
-                ({format(new Date(subscriptionInfo.trial_ends_at), "d MMMM yyyy", { locale: tr })})
+                ({format(new Date(subscriptionInfo.trial_ends_at), "d MMMM yyyy", { locale: dateLocale })})
               </span>
             )}
           </span>

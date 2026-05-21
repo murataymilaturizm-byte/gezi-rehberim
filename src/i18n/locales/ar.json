@@ -3,14 +3,14 @@
     "management": "إدارة العملات",
     "description": "اختر أولاً عملتك الأساسية. يمكنك اختيارياً استخدام عملات مختلفة لبعض اللغات.",
     "howItWorks": "كيف يعمل:",
-    "howItWorksDesc": "عملتك الأساسية هي {currency} افتراضياً. يمكنك اختيار العملة المفضلة لكل لغة. إذا لم تقم بالاختيار، سيتم استخدام العملة الأساسية.",
+    "howItWorksDesc": "عملتك الأساسية هي {{currency}} افتراضياً. يمكنك اختيار العملة المفضلة لكل لغة. إذا لم تقم بالاختيار، سيتم استخدام العملة الأساسية.",
     "primaryCurrency": "العملة الأساسية",
     "primaryCurrencyDesc": "العملة الافتراضية لجميع اللغات",
     "selectPrimaryCurrency": "اختر العملة الأساسية",
     "languageBasedSettings": "إعدادات العملة حسب اللغة",
     "languageBasedSettingsDesc": "قم بالتفعيل إذا كنت تريد استخدام عملة مخصصة لكل لغة",
-    "customCurrency": "عملة مخصصة: {currency}",
-    "usingPrimary": "استخدام العملة الأساسية: {currency}",
+    "customCurrency": "عملة مخصصة: {{currency}}",
+    "usingPrimary": "استخدام العملة الأساسية: {{currency}}",
     "selectCurrencyForLanguage": "اختر العملة لهذه اللغة:",
     "save": "حفظ",
     "saving": "جارٍ الحفظ...",
@@ -233,34 +233,7 @@
     }
   },
   "faq": {
-    "title": "الأسئلة المتكررة",
-    "subtitle": "اعثر على إجابات لأسئلتك هنا",
-    "items": {
-      "salesIncrease": {
-        "question": "هل ستزيد مبيعاتي حقاً في الشهر الأول؟",
-        "answer": "نعم! وكالاتنا المتوسطة تشهد زيادة في الحجوزات بنسبة 120-150% في الشهر الأول. لأنك الآن تخدم عملاءك في منتصف الليل، في عطلات نهاية الأسبوع، في أي وقت. لا تفوت أي فرصة."
-      },
-      "setup": {
-        "question": "هل يمكنني القيام بالإعداد بنفسي؟",
-        "answer": "بالتأكيد! الإعداد يستغرق 5-10 دقائق وسهل للغاية. أضف رقم واتساب للأعمال الخاص بك، قم بتحميل جولاتك - هذا كل شيء. نحن ندير كل البنية التحتية التقنية. فريق الدعم لدينا سيساعدك إذا واجهت صعوبة."
-      },
-      "whatsappCost": {
-        "question": "هل هناك رسوم إضافية لتكامل واتساب؟",
-        "answer": "لا! نحن ندير البنية التحتية لواجهة واتساب للأعمال API. كل ما عليك فعله هو إضافة رقم واتساب للأعمال الخاص بك إلى النظام. رسوم استخدام API علينا، أنت تدفع فقط رسوم الخطة المختارة."
-      },
-      "payment": {
-        "question": "هل يمكنني تحصيل المدفوعات مباشرة من العملاء؟",
-        "answer": "نعم! مع تكامل SiPay، يمكنك إرسال روابط دفع فورية عبر واتساب وتحصيل المدفوعات في دقيقتين. تتبع الدفع والفوترة تلقائيان."
-      },
-      "tourLimit": {
-        "question": "كم عدد الجولات التي يمكنني إضافتها؟",
-        "answer": "يمكنك إضافة جولات غير محدودة في جميع الخطط. الفرق فقط في حد الرسائل الشهرية لواتساب. يمكنك ترقية خطتك في أي وقت بناءً على احتياجاتك."
-      },
-      "cancellation": {
-        "question": "ماذا يحدث إذا ألغيت؟",
-        "answer": "يمكنك الإلغاء في أي وقت، لا يوجد عقد. عند الإلغاء، ستستمر في تلقي الخدمة حتى نهاية الفترة الحالية. خلال الفترة التجريبية المجانية لمدة 14 يوماً، لا نطلب حتى بطاقة ائتمان."
-      }
-    }
+    "validationError": "يرجى ملء جميع الحقول المطلوبة"
   },
   "pricing": {
     "title": "الأسعار",
@@ -357,7 +330,7 @@
     "dayTours": "الجولات اليومية",
     "boutiqueAgencies": "الوكالات الفاخرة",
     "comparison": "المقارنة",
-    "copyright": "© {year} Turzz AI. جميع الحقوق محفوظة.",
+    "copyright": "© {{year}} Turzz AI. جميع الحقوق محفوظة.",
     "dataDeletion": "حذف البيانات",
     "dataExport": "تصدير البيانات"
   },
@@ -420,17 +393,17 @@
     "advanced": {
       "dateFilter": "فلتر النطاق الزمني",
       "totalRevenue": "إجمالي الإيرادات",
-      "totalRevenueDesc": "{{count}} تسجيلات • {{period}}",
+      "totalRevenueDesc": "{{{count}}} تسجيلات • {{{period}}}",
       "periodGrowth": "نمو الفترة",
       "vsPreviousHalf": "مقارنة بالنصف السابق",
       "averageBasket": "متوسط السلة",
       "perRegistration": "لكل تسجيل",
       "conversionRate": "معدل التحويل",
-      "conversionDesc": "{{registrations}}/{{conversations}} محادثة",
+      "conversionDesc": "{{{registrations}}}/{{{conversations}}} محادثة",
       "monthlyTrend": "اتجاه الإيرادات الشهرية",
       "revenueLabel": "الإيرادات",
       "destinationDetails": "تفاصيل الوجهات",
-      "registrationCount": "{{count}} تسجيلات",
+      "registrationCount": "{{{count}}} تسجيلات",
       "average": "متوسط",
       "noData": "لا توجد بيانات تحليلية بعد",
       "noDataDescription": "ستظهر التحليلات هنا بمجرد إجراء أول تسجيل لك",
@@ -548,7 +521,7 @@
     "payment": {
       "success": "تم الدفع بنجاح! 🎉",
       "successDesc": "تم تفعيل اشتراكك. فاتورتك قيد التحضير.",
-      "successDescWithOrder": "تم تفعيل اشتراكك. رقم الطلب: {{orderId}}...",
+      "successDescWithOrder": "تم تفعيل اشتراكك. رقم الطلب: {{{orderId}}}...",
       "failed": "فشل الدفع",
       "failedBase": "لم يتمكن من إتمام عملية الدفع.",
       "insufficientFunds": "رصيد بطاقتك غير كافٍ.",
@@ -648,7 +621,9 @@
         "cancel": "إلغاء",
         "save": "حفظ"
       },
-      "metaSection": { "title": "قوالب Meta" },
+      "metaSection": {
+        "title": "قوالب Meta"
+      },
       "notCreated": "لم يتم الإنشاء بعد",
       "deleteConfirm": "هل أنت متأكد من رغبتك في حذف هذا القالب؟",
       "sendButton": "إرسال",
@@ -670,19 +645,20 @@
         "errors": {
           "invalidPhone": "أدخل رقم هاتف صحيح",
           "selectRegistration": "يرجى اختيار حجز",
-          "missingVariables": "متغيرات مفقودة: {{vars}}",
+          "missingVariables": "متغيرات مفقودة: {{{vars}}}",
           "generic": "فشل إرسال الرسالة"
         }
       },
       "sync": {
         "button": "المزامنة مع Meta",
-        "success": "تم تحديث {{count}} قالب",
-        "successWithNew": "تمت إضافة {{inserted}} جديد، وتحديث {{updated}}",
+        "success": "تم تحديث {{{count}}} قالب",
+        "successWithNew": "تمت إضافة {{{inserted}}} جديد، وتحديث {{{updated}}}",
         "error": "فشلت المزامنة"
       },
       "status": {
         "notSynced": "غير متزامن"
-      }
+      },
+      "notApprovedTooltip": "لم تتم الموافقة على هذا القالب من قبل Meta بعد ولا يمكن إرساله"
     },
     "faq": {
       "title": "الأسئلة الشائعة",
@@ -780,7 +756,7 @@
         "update": "تحديث",
         "save": "حفظ",
         "integrationComplete": "اكتمل التكامل",
-        "integrationCompleteDesc": "تم تسجيل رقم واتساب للأعمال {phone} في النظام.",
+        "integrationCompleteDesc": "تم تسجيل رقم واتساب للأعمال {{phone}} في النظام.",
         "phoneTitle": "رقم واتساب للأعمال",
         "phoneDescription": "أدخل رقم واتساب للأعمال المسجل في Twilio",
         "styleTitle": "أسلوب المحادثة",
@@ -1057,7 +1033,7 @@
     },
     "planLimits": {
       "tourLimitReached": "تم الوصول إلى حد الجولات",
-      "tourLimitMessage": "تتيح خطتك {planName} بحد أقصى {maxTours} جولة. يرجى ترقية خطتك لإضافة المزيد من الجولات.",
+      "tourLimitMessage": "تتيح خطتك {{planName}} بحد أقصى {{maxTours}} جولة. يرجى ترقية خطتك لإضافة المزيد من الجولات.",
       "starterPlan": "البداية",
       "professionalPlan": "المحترف",
       "enterprisePlan": "المؤسسة",
@@ -1163,7 +1139,7 @@
       "conversations": "المحادثات",
       "conversionRate": "معدل التحويل (%)",
       "conversionRatesSheet": "معدلات التحويل",
-      "currencyConversionNote": "الأسعار معروضة بـ {{currency}} بالسعر الحالي",
+      "currencyConversionNote": "الأسعار معروضة بـ {{{currency}}} بالسعر الحالي",
       "originalPrice": "الأصلي"
     },
     "subscription": {
@@ -1198,9 +1174,9 @@
       "invoiceInfo": "الفاتورة والإيصال",
       "invoiceDescription": "نرسل إيصالات الدفع والفواتير الخاصة بك إلى عنوان بريدك الإلكتروني. للحصول على الفواتير السابقة، يرجى الاتصال بفريق الدعم لدينا.",
       "confirmPlanChange": "تأكيد تغيير الخطة",
-      "confirmChangeDescription": "هل أنت متأكد من أنك تريد تغيير خطتك من {currentPlan} إلى {newPlan}؟",
+      "confirmChangeDescription": "هل أنت متأكد من أنك تريد تغيير خطتك من {{currentPlan}} إلى {{newPlan}}؟",
       "newPlanFeatures": "ميزات الخطة الجديدة:",
-      "discountWillApply": "سيتم تطبيق خصم 10% (توفير {amount}₺)",
+      "discountWillApply": "سيتم تطبيق خصم 10% (توفير {{amount}}₺)",
       "planChangeNote": "سيكون تغيير الخطة ساري المفعول فوراً. ستستمر دورة الفوترة الخاصة بك دون تغيير.",
       "cancel": "إلغاء",
       "changing": "جاري التغيير...",
@@ -1210,7 +1186,7 @@
       "subscriptionNotActive": "اشتراكك غير نشط. يرجى إجراء الدفع أولاً.",
       "alreadyOnPlan": "أنت بالفعل على هذه الخطة.",
       "successTitle": "نجح! ✅",
-      "planChangedSuccess": "تم تغيير خطتك إلى {planName}",
+      "planChangedSuccess": "تم تغيير خطتك إلى {{planName}}",
       "errorTitle": "خطأ",
       "planChangeError": "لم يتمكن من تغيير الخطة",
       "paymentError": "خطأ في الدفع",
@@ -1290,7 +1266,7 @@
       "edit": "تعديل",
       "plan": {
         "monthlyLimit": "الحد الشهري للرسائل",
-        "defaultLimit": "الحد الافتراضي للخطة: {{limit}} رسالة",
+        "defaultLimit": "الحد الافتراضي للخطة: {{{limit}}} رسالة",
         "extraMessages": "إضافة حصة رسائل إضافية",
         "extraPlaceholder": "مثال: 500",
         "extraHelp": "أضف حصة رسائل إضافية إلى الحد الحالي",
@@ -1358,8 +1334,8 @@
       },
       "messages": {
         "unlimited": "غير محدود",
-        "used": "{{used}}/{{total}} مستخدم",
-        "daysLeft": "{{days}} يوم متبقي",
+        "used": "{{{used}}}/{{{total}}} مستخدم",
+        "daysLeft": "{{{days}}} يوم متبقي",
         "expired": "منتهي",
         "notAdded": "لم يتم الإضافة",
         "quotaFull": "الحصة ممتلئة",
@@ -1374,7 +1350,24 @@
       "status": "الحالة",
       "messageQuota": "حصة الرسائل",
       "remainingTime": "الوقت المتبقي",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "deleteConfirm": "هل أنت متأكد من حذف هذه الوكالة؟",
+      "loadError": "فشل تحميل الوكالات",
+      "createSuccess": "تم إنشاء الوكالة",
+      "updateSuccess": "تم تحديث الوكالة",
+      "createError": "فشلت العملية",
+      "deleteSuccess": "تم حذف الوكالة",
+      "deleteError": "فشل الحذف",
+      "styleUpdated": "تم تحديث أسلوب المحادثة",
+      "styleError": "فشل تحديث الأسلوب",
+      "noAgencies": "لم تتم إضافة وكالات بعد",
+      "daysLeft": "{{days}} أيام",
+      "expired": "منتهي الصلاحية",
+      "userCreateError": "فشل إنشاء المستخدم",
+      "planUpdateError": "فشل تحديث الخطة",
+      "update": "تحديث",
+      "create": "إنشاء",
+      "planManagement": "إدارة الخطة"
     },
     "tourForm": {
       "addTour": "إضافة رحلة جديدة",
@@ -1440,7 +1433,7 @@
     },
     "registrationForm": {
       "title": "استمارة التسجيل المسبق",
-      "description": "املأ استمارة التسجيل المسبق لـ {tourTitle}.",
+      "description": "املأ استمارة التسجيل المسبق لـ {{tourTitle}}.",
       "fullName": "الاسم الكامل",
       "fullNamePlaceholder": "اسمك واسم العائلة",
       "phone": "الهاتف",
@@ -1456,7 +1449,7 @@
       "error": "خطأ",
       "errorMessage": "حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.",
       "quotaError": "حصة غير كافية",
-      "quotaErrorMessage": "يتبقى فقط {quota} أماكن لهذا التاريخ. يرجى تقليل عدد الأشخاص أو اختيار تاريخ آخر.",
+      "quotaErrorMessage": "يتبقى فقط {{quota}} أماكن لهذا التاريخ. يرجى تقليل عدد الأشخاص أو اختيار تاريخ آخر.",
       "userNotFound": "المستخدم غير موجود",
       "agencyNotFound": "الوكالة غير موجودة"
     },
@@ -1516,13 +1509,13 @@
       "notUsedYet": "لم يتم الاستخدام بعد",
       "days": "أيام",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{count}} رسالة/شهر",
+        "messagesPerMonth": "{{{count}}} رسالة/شهر",
         "unlimitedMessages": "رسائل غير محدودة",
-        "maxTours": "حتى {{count}} جولة",
+        "maxTours": "حتى {{{count}}} جولة",
         "unlimitedTours": "جولات غير محدودة",
-        "languageSupport": "دعم {{count}} لغات",
+        "languageSupport": "دعم {{{count}}} لغات",
         "allLanguages": "جميع اللغات (7 لغات)",
-        "limitedStyles": "{{count}} أنماط محادثة",
+        "limitedStyles": "{{{count}}} أنماط محادثة",
         "allStyles": "جميع أنماط المحادثة + نمط مخصص",
         "userProfiles": "ملفات المستخدمين",
         "autoReminders": "تذكيرات تلقائية",
@@ -1547,13 +1540,13 @@
       "description": "سجل المدفوعات والمعاملات"
     },
     "quotaBanner": {
-      "warning": "لقد استخدمت {{percent}}٪ من حصة الرسائل. ستنتهي قريباً.",
-      "critical": "حصة رسائلك منخفضة بشكل حرج ({{percent}}%)! قد تُحظر الرسائل الجديدة.",
+      "warning": "لقد استخدمت {{{percent}}}٪ من حصة الرسائل. ستنتهي قريباً.",
+      "critical": "حصة رسائلك منخفضة بشكل حرج ({{{percent}}}%)! قد تُحظر الرسائل الجديدة.",
       "upgrade": "ترقية الخطة"
     },
     "onboarding": {
       "title": "البدء",
-      "progress": "{{percent}}% مكتمل",
+      "progress": "{{{percent}}}% مكتمل",
       "dismiss": "إغلاق",
       "steps": {
         "agencyInfo": "أكمل معلومات الوكالة",
@@ -1744,10 +1737,11 @@
     "bulkImport": "استيراد من Excel",
     "duplicate": "تكرار",
     "duplicateTitleLabel": "اسم الجولة الجديد",
-    "copyDatesNote": "سيتم نسخ {{count}} تاريخ أيضًا",
+    "copyDatesNote": "سيتم نسخ {{{count}}} تاريخ أيضًا",
     "duplicateConfirm": "تكرار",
     "duplicateSuccess": "تم تكرار الجولة!",
-    "duplicateError": "فشل التكرار"
+    "duplicateError": "فشل التكرار",
+    "addFirstTour": "جولة جديدة"
   },
   "weekdays": {
     "monday": "الاثنين",
@@ -1779,11 +1773,11 @@
     "priceChild": "سعر الطفل",
     "quota": "الحصة",
     "pricingNote": "سيتم تطبيق نفس السعر على جميع التواريخ",
-    "preview": "سيتم إنشاء {{count}} تاريخ",
+    "preview": "سيتم إنشاء {{{count}}} تاريخ",
     "moreDates": "تواريخ أخرى...",
-    "generateButton": "إنشاء {{count}} تاريخ",
+    "generateButton": "إنشاء {{{count}}} تاريخ",
     "generating": "جارٍ الإنشاء...",
-    "success": "تمت إضافة {{count}} تاريخ بنجاح!",
+    "success": "تمت إضافة {{{count}}} تاريخ بنجاح!",
     "errors": {
       "noDates": "يرجى تحديد نطاق تاريخ ونمط",
       "priceRequired": "سعر البالغ مطلوب",
@@ -1804,12 +1798,12 @@
     "selectFile": "اختر ملف Excel",
     "fileHint": "صيغ .xlsx أو .xls مدعومة",
     "parsedTours": "الجولات المعالجة",
-    "parsed": "{{valid}}/{{total}} جولة صالحة",
+    "parsed": "{{{valid}}}/{{{total}}} جولة صالحة",
     "valid": "صالح",
     "invalid": "غير صالح",
-    "importButton": "استيراد {{count}} جولة",
+    "importButton": "استيراد {{{count}}} جولة",
     "importing": "جارٍ الاستيراد...",
-    "success": "تمت إضافة {{count}} جولة بنجاح!",
+    "success": "تمت إضافة {{{count}}} جولة بنجاح!",
     "errors": {
       "parseError": "تعذّر قراءة ملف Excel",
       "noValid": "لا توجد جولات صالحة للاستيراد",
@@ -1829,7 +1823,7 @@
       "vsLastWeek": "مقارنة بالأسبوع الماضي"
     },
     "welcome": {
-      "todayStats": "{{count}} حجز جديد اليوم",
+      "todayStats": "{{{count}}} حجز جديد اليوم",
       "revenue": "إيرادات",
       "pending": "قيد الانتظار",
       "noRegistrations": "لا حجوزات اليوم. روبوت واتساب يعمل! 💬"
@@ -1935,7 +1929,7 @@
     "stepByStep": "دليل خطوة بخطوة",
     "visualGuides": "شروحات مرئية",
     "troubleshooting": "نصائح حل المشكلات",
-    "topicsCount": "{{count}} مواضيع مفصلة",
+    "topicsCount": "{{{count}}} مواضيع مفصلة",
     "back": "رجوع",
     "backToAdmin": "العودة إلى لوحة الإدارة",
     "quickLinks": "دليل البدء",
@@ -1959,11 +1953,11 @@
     "planStarter": "المبتدئ",
     "planProfessional": "المحترف",
     "planEnterprise": "المؤسسي",
-    "maxLanguagesMessage": "يمكنك تفعيل ما يصل إلى {count} لغة في باقتك.",
+    "maxLanguagesMessage": "يمكنك تفعيل ما يصل إلى {{count}} لغة في باقتك.",
     "upgradePlan": "قم بترقية باقتك للحصول على المزيد من اللغات.",
     "minLanguageWarning": "⚠️ يجب عليك اختيار لغة واحدة على الأقل.",
     "languageLimitTitle": "تم الوصول إلى حد اللغة",
-    "languageLimitMessage": "يمكنك تفعيل حد أقصى {count} لغة في باقة {plan} الخاصة بك. قم بترقية باقتك للحصول على المزيد من اللغات.",
+    "languageLimitMessage": "يمكنك تفعيل حد أقصى {{count}} لغة في باقة {{plan}} الخاصة بك. قم بترقية باقتك للحصول على المزيد من اللغات.",
     "minLanguageError": "يجب عليك اختيار لغة واحدة على الأقل.",
     "loadError": "تعذر تحميل إعدادات اللغة",
     "saveSuccess": "تم حفظ إعدادات اللغة بنجاح",
@@ -2103,7 +2097,7 @@
     "messageMaxLength": "يجب ألا تتجاوز الرسالة 1000 حرف"
   },
   "blog": {
-    "minutesRead": "{{count}} دقيقة للقراءة",
+    "minutesRead": "{{{count}}} دقيقة للقراءة",
     "readMore": "اقرأ →",
     "noPosts": "لا توجد مقالات في هذه الفئة بعد.",
     "ctaQuestion": "هل جربت Turzz AI؟",
@@ -2119,7 +2113,7 @@
       "ctaDesc": "14 يوماً مجاناً، لا حاجة لبطاقة ائتمان.",
       "ctaButton": "ابدأ مجاناً"
     },
-    "fallbackNotice": "لم تُترجم هذه المقالة إلى {{lang}} بعد. يتم عرض النسخة التركية.",
+    "fallbackNotice": "لم تُترجم هذه المقالة إلى {{{lang}}} بعد. يتم عرض النسخة التركية.",
     "fallbackBadge": "التركية",
     "availableIn": "هذه المقالة متاحة بـ:"
   },
@@ -3027,7 +3021,7 @@
       "cancelledDesc": "تم إلغاء اتصال واتساب.",
       "success": "نجاح!",
       "successDesc": "تم ربط رقم واتساب الخاص بك بنجاح",
-      "successDescPhone": "تم ربط رقم واتساب الخاص بك بنجاح: {{phone}}",
+      "successDescPhone": "تم ربط رقم واتساب الخاص بك بنجاح: {{{phone}}}",
       "errorTitle": "خطأ",
       "exchangeError": "حدث خطأ أثناء اتصال واتساب. يرجى المحاولة مرة أخرى.",
       "disconnected": "تم قطع الاتصال",
@@ -3087,8 +3081,8 @@
     },
     "conversations": {
       "search": "بحث...",
-      "count": "{{count}} محادثة",
-      "page": "صفحة {{current}}/{{total}}",
+      "count": "{{{count}}} محادثة",
+      "page": "صفحة {{{current}}}/{{{total}}}",
       "selectAgency": "اختر وكالة"
     },
     "logs": {
@@ -3102,7 +3096,7 @@
       "roleSelect": "اختر دوراً",
       "dateRange": "نطاق التاريخ",
       "clearFilters": "مسح الفلاتر",
-      "results": "سجلات الرسائل ({{count}} نتيجة)",
+      "results": "سجلات الرسائل ({{{count}}} نتيجة)",
       "loading": "جارٍ تحميل السجلات...",
       "empty": "لا توجد سجلات",
       "loadError": "خطأ في تحميل السجلات",
@@ -3124,8 +3118,8 @@
       "chartTitle": "عدد المستخدمين (حسب اللغة)",
       "chartBar": "عدد المستخدمين",
       "detailTitle": "التوزيع اللغوي التفصيلي",
-      "userCount": "{{count}} مستخدم",
-      "messageCount": "{{count}} رسالة",
+      "userCount": "{{{count}}} مستخدم",
+      "messageCount": "{{{count}}} رسالة",
       "empty": "لا توجد بيانات لغوية بعد"
     }
   },
@@ -3277,9 +3271,6 @@
     "invalidType": "نوع جولة غير صالح",
     "invalidCurrency": "عملة غير صالحة"
   },
-  "faq": {
-    "validationError": "يرجى ملء جميع الحقول المطلوبة"
-  },
   "notificationCenter": {
     "people": "أشخاص",
     "customer": "عميل"
@@ -3287,7 +3278,16 @@
   "support": {
     "subtitle": "نحن هنا للمساعدة",
     "quickOptions": "خيارات سريعة:",
-    "error": "عذراً، حدث خطأ. يرجى المحاولة مرة أخرى أو زيارة https://turzzai.com/help."
+    "error": "عذراً، حدث خطأ. يرجى المحاولة مرة أخرى أو زيارة https://turzzai.com/help.",
+    "welcome": {
+      "tr": "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
+      "en": "Hello! How can I help you? I can answer your questions about system usage, features, or technical topics. 📚",
+      "de": "Hallo! Wie kann ich Ihnen helfen? Ich kann Ihre Fragen zur Systemnutzung, zu Funktionen oder technischen Themen beantworten. 📚",
+      "ru": "Здравствуйте! Чем я могу помочь? Я могу ответить на ваши вопросы об использовании системы, функциях или технических темах. 📚",
+      "ar": "مرحبا! كيف يمكنني مساعدتك؟ يمكنني الإجابة على أسئلتك حول استخدام النظام أو الميزات أو المواضيع الفنية. 📚",
+      "fr": "Bonjour! Comment puis-je vous aider? Je peux répondre à vos questions sur l'utilisation du système, les fonctionnalités ou les sujets techniques. 📚",
+      "es": "¡Hola! ¿Cómo puedo ayudarte? Puedo responder tus preguntas sobre el uso del sistema, características o temas técnicos. 📚"
+    }
   },
   "userProfiles": {
     "title": "ملفات العملاء (CRM)",

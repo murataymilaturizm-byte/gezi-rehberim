@@ -27,6 +27,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Pencil, Trash2, Building2, Clock, MessageSquare, Settings, Eye } from "lucide-react";
@@ -68,6 +78,8 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [styleDialogOpen, setStyleDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [editingPlanAgency, setEditingPlanAgency] = useState<Agency | null>(null);
   const [editingStyleAgency, setEditingStyleAgency] = useState<Agency | null>(null);
@@ -132,7 +144,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
       console.error("Error loading agencies:", error);
       toast({
         title: t("common.error"),
-        description: "Acenteler yüklenemedi",
+        description: t("admin.agency.loadError"),
         variant: "destructive",
       });
     } finally {
@@ -159,7 +171,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
         toast({
           title: t("common.successTitle"),
-          description: "Acente güncellendi",
+          description: t("admin.agency.updateSuccess"),
         });
       } else {
         // Create new user and agency
@@ -174,7 +186,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
         });
 
         if (authError) throw authError;
-        if (!authData.user) throw new Error("Kullanıcı oluşturulamadı");
+        if (!authData.user) throw new Error(t("admin.agency.userCreateError"));
 
         // Create agency
         const { error: agencyError } = await supabase
@@ -200,7 +212,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
         toast({
           title: t("common.successTitle"),
-          description: "Acente oluşturuldu",
+          description: t("admin.agency.createSuccess"),
         });
       }
 
@@ -211,14 +223,22 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
       console.error("Error saving agency:", error);
       toast({
         title: t("common.error"),
-        description: error.message || "İşlem başarısız",
+        description: error.message || t("admin.agency.createError"),
         variant: "destructive",
       });
     }
   };
 
-  const handleDelete = async (agencyId: string) => {
-    if (!confirm("Bu acenteyi silmek istediğinize emin misiniz?")) return;
+  const confirmDelete = (agencyId: string) => {
+    setPendingDeleteId(agencyId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!pendingDeleteId) return;
+    const agencyId = pendingDeleteId;
+    setPendingDeleteId(null);
+    setDeleteConfirmOpen(false);
 
     try {
       const { error } = await supabase
@@ -230,14 +250,14 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
       toast({
         title: t("common.successTitle"),
-        description: "Acente silindi",
+        description: t("admin.agency.deleteSuccess"),
       });
       loadAgencies();
     } catch (error: any) {
       console.error("Error deleting agency:", error);
       toast({
         title: t("common.error"),
-        description: error.message || "Silme işlemi başarısız",
+        description: error.message || t("admin.agency.deleteError"),
         variant: "destructive",
       });
     }
@@ -320,7 +340,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
       console.error("Error updating plan:", error);
       toast({
         title: t("common.error"),
-        description: error.message || "Plan güncellenemedi",
+        description: error.message || t("admin.agency.planUpdateError"),
         variant: "destructive",
       });
     }
@@ -370,7 +390,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
       toast({
         title: t("common.success"),
-        description: "Konuşma üslubu güncellendi",
+        description: t("admin.agency.styleUpdated"),
       });
 
       setStyleDialogOpen(false);
@@ -379,7 +399,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
       console.error("Error updating conversation style:", error);
       toast({
         title: t("common.error"),
-        description: error.message || "Konuşma üslubu güncellenemedi",
+        description: error.message || t("admin.agency.styleError"),
         variant: "destructive",
       });
     }
@@ -388,6 +408,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
   if (!isSuperAdmin) return null;
 
   return (
+    <>
     <Card className="shadow-card">
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -501,7 +522,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
                     İptal
                   </Button>
                   <Button type="submit" className="bg-gradient-ocean hover:opacity-90">
-                    {editingAgency ? "Güncelle" : "Oluştur"}
+                    {editingAgency ? t("admin.agency.update") : t("admin.agency.create")}
                   </Button>
                 </div>
               </form>
@@ -514,9 +535,10 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
           <div className="text-center py-8 text-muted-foreground">Yükleniyor...</div>
         ) : agencies.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            Henüz acente eklenmemiş
+            {t("admin.agency.noAgencies")}
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -620,7 +642,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
                           variant="outline"
                           size="sm"
                           onClick={() => handlePlanEdit(agency)}
-                          title="Plan Yönetimi"
+                          title={t("admin.agency.planManagement")}
                           className="hidden sm:inline-flex"
                         >
                           <Settings className="w-4 h-4" />
@@ -629,7 +651,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(agency)}
-                          title="Düzenle"
+                          title={t("admin.agency.edit")}
                           className="hidden sm:inline-flex"
                         >
                           <Pencil className="w-4 h-4" />
@@ -637,7 +659,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(agency.id)}
+                          onClick={() => confirmDelete(agency.id)}
                           title="Sil"
                           className="hidden sm:inline-flex"
                         >
@@ -650,6 +672,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
               })}
             </TableBody>
           </Table>
+          </div>
         )}
       </CardContent>
 
@@ -729,7 +752,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
                           : viewingAgency.subscription_ends_at;
                         if (!targetDate) return "-";
                         const days = differenceInDays(new Date(targetDate), new Date());
-                        return days > 0 ? `${days} gün` : "Süresi doldu";
+                        return days > 0 ? t("admin.agency.daysLeft", { days }) : t("admin.agency.expired");
                       })()}
                     </p>
                   </div>
@@ -837,7 +860,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
                   size="sm"
                   onClick={() => {
                     setDetailDialogOpen(false);
-                    handleDelete(viewingAgency.id);
+                    confirmDelete(viewingAgency.id);
                   }}
                   className="text-destructive"
                 >
@@ -1023,5 +1046,21 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
         </DialogContent>
       </Dialog>
     </Card>
+
+    <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("common.delete")}</AlertDialogTitle>
+          <AlertDialogDescription>{t("admin.agency.deleteConfirm")}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            {t("common.delete")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
