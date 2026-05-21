@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, TrendingUp, DollarSign, Users, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { MapPin, TrendingUp, DollarSign, Users, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import { formatPrice } from "@/utils/currency";
+import { DateRangeFilter, DateFilterType } from "@/components/admin/DateRangeFilter";
+import { AnalyticsSkeleton } from "@/components/admin/skeletons/AnalyticsSkeleton";
+import { AnalyticsEmptyIllustration } from "@/components/illustrations/AnalyticsEmptyIllustration";
+import { getChartColors } from "@/lib/chartColors";
+import { exportToCsv } from "@/utils/csvExport";
 import {
   BarChart,
   Bar,
@@ -22,26 +26,9 @@ import {
   LineChart,
   Line
 } from "recharts";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
-type DateFilterType = '1month' | '3months' | '6months' | '1year' | 'custom';
-
-const localeMap = {
-  tr: tr,
-  en: enUS,
-  de: de,
-  ru: ru,
-  ar: ar,
-  fr: fr,
-  es: es,
-};
+const localeMap = { tr, en: enUS, de, ru, ar, fr, es };
 
 interface DestinationData {
   destination: string;
@@ -60,8 +47,6 @@ interface DestinationStats {
   averageBookingValue: number;
   monthlyTrends: Array<{ month: string; [key: string]: string | number }>;
 }
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658', '#ff7c7c'];
 
 export const DestinationAnalytics = () => {
   const { t, i18n } = useTranslation();
@@ -274,129 +259,67 @@ export const DestinationAnalytics = () => {
     }
   };
 
+  const chartColors = useMemo(() => getChartColors(), []);
+
+  const handleExport = () => {
+    if (!stats) return;
+    exportToCsv(
+      stats.topDestinations,
+      [
+        { header: 'Destination', accessor: (r) => r.destination },
+        { header: 'Bookings', accessor: (r) => r.count },
+        { header: 'Pax', accessor: (r) => r.totalPax },
+        { header: 'Revenue', accessor: (r) => r.revenue },
+        { header: 'Avg Price', accessor: (r) => Math.round(r.averagePrice) },
+        { header: 'Growth %', accessor: (r) => r.growthRate.toFixed(1) },
+      ],
+      `destinations_${t('analytics.advanced.exportFilename')}`,
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="h-20 bg-muted" />
-              <CardContent className="h-24 bg-muted/50" />
-            </Card>
-          ))}
-        </div>
+        <DateRangeFilter
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+        />
+        <AnalyticsSkeleton kpiCount={4} showList />
       </div>
     );
   }
 
   if (!stats || stats.topDestinations.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">{t("destinationAnalytics.noDestinationData")}</p>
-          <p className="text-sm text-muted-foreground mt-2">{t("destinationAnalytics.noDestinationDataDescription")}</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <DateRangeFilter
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+        />
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AnalyticsEmptyIllustration className="w-32 h-32 mb-4" />
+            <p className="text-lg font-medium text-foreground">{t("destinationAnalytics.noDestinationData")}</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md text-center">{t("destinationAnalytics.noDestinationDataDescription")}</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Tarih Filtreleme */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            {t("destinationAnalytics.dateFilter")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={dateFilter === '1month' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1month');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last1Month")}
-            </Button>
-            <Button
-              variant={dateFilter === '3months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('3months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last3Months")}
-            </Button>
-            <Button
-              variant={dateFilter === '6months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('6months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last6Months")}
-            </Button>
-            <Button
-              variant={dateFilter === '1year' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1year');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last1Year")}
-            </Button>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
-                  size="sm"
-                  className={cn(
-                    "justify-start text-left font-normal",
-                    !customDateRange && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateFilter === 'custom' && customDateRange?.from ? (
-                    getDateFilterLabel()
-                  ) : (
-                    <span>{t("analytics.filter.customDate")}</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={customDateRange}
-                  onSelect={(range) => {
-                    setCustomDateRange(range);
-                    if (range?.from) {
-                      setDateFilter('custom');
-                    }
-                  }}
-                  numberOfMonths={2}
-                  locale={localeMap[i18n.language as keyof typeof localeMap] || tr}
-                  disabled={(date) => date > new Date()}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mt-4">
-            {t("analytics.filter.showingData")}: <span className="font-medium">{getDateFilterLabel()}</span>
-          </p>
-        </CardContent>
-      </Card>
+      <DateRangeFilter
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
+        customDateRange={customDateRange}
+        setCustomDateRange={setCustomDateRange}
+        onExport={handleExport}
+      />
 
       {/* Özet Kartlar */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -459,23 +382,22 @@ export const DestinationAnalytics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.topDestinations.slice(0, 8)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="destination" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: number) => formatPrice(value, currency)}
-                  labelStyle={{ color: '#000' }}
-                />
-                <Bar dataKey="revenue" fill="#82ca9d" name={t("destinationAnalytics.revenue")} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-x-auto">
+              <div style={{ minWidth: Math.max(400, stats.topDestinations.slice(0, 8).length * 70) }}>
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart data={stats.topDestinations.slice(0, 8)} margin={{ top: 10, right: 20, left: 0, bottom: 50 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="destination" angle={-35} textAnchor="end" height={90} tick={{ fontSize: 11 }} interval={0} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip
+                      formatter={(value: number) => formatPrice(value, currency)}
+                      contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}
+                    />
+                    <Bar dataKey="revenue" fill={chartColors[1]} name={t("destinationAnalytics.revenue")} radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -500,7 +422,7 @@ export const DestinationAnalytics = () => {
                   dataKey="count"
                 >
                   {stats.topDestinations.slice(0, 8).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -535,7 +457,7 @@ export const DestinationAnalytics = () => {
                     key={dest.destination}
                     type="monotone" 
                     dataKey={dest.destination} 
-                    stroke={COLORS[index]} 
+                    stroke={chartColors[index % chartColors.length]} 
                     strokeWidth={2}
                     name={dest.destination}
                   />

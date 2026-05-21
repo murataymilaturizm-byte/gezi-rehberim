@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, DollarSign, Users, Target, Award, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Users, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { format, startOfMonth, endOfMonth, subMonths, subYears, startOfDay, endOfDay, differenceInMilliseconds } from "date-fns";
+import { format, subMonths, subYears, startOfDay, endOfDay, differenceInMilliseconds } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import {
   LineChart,
@@ -16,15 +15,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { formatPrice } from "@/utils/currency";
+import { DateRangeFilter, DateFilterType } from "@/components/admin/DateRangeFilter";
+import { AnalyticsSkeleton } from "@/components/admin/skeletons/AnalyticsSkeleton";
+import { AnalyticsEmptyIllustration } from "@/components/illustrations/AnalyticsEmptyIllustration";
+import { getChartColors } from "@/lib/chartColors";
+import { exportToCsv } from "@/utils/csvExport";
 
 interface AnalyticsData {
   revenueByMonth: Array<{ month: string; revenue: number; registrations: number }>;
@@ -37,13 +34,12 @@ interface AnalyticsData {
   totalConversations: number;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-type DateFilterType = '1month' | '3months' | '6months' | '1year' | 'custom';
+type FilterDeps = {
+  dateFilter: DateFilterType;
+  customDateRange: DateRange | undefined;
+};
 
 const localeMap = { tr, en: enUS, de, ru, ar, fr, es };
-
-// Tüm rapor query'lerinde aynı status filter — tutarlılık için
 const ACTIVE_REGISTRATION_STATUSES = ["CONFIRMED", "NEW", "PENDING"];
 
 export const AdvancedAnalytics = () => {
@@ -56,43 +52,14 @@ export const AdvancedAnalytics = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   const [currency, setCurrency] = useState<string>('TRY');
 
+  const chartColors = useMemo(() => getChartColors(), []);
+
+  const dateRange = useMemo(() => getDateRangeFromFilter({ dateFilter, customDateRange }), [dateFilter, customDateRange]);
+
   useEffect(() => {
     loadAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateFilter, customDateRange]);
-
-  const getDateRange = () => {
-    const endDate = new Date();
-    let startDate: Date;
-
-    switch (dateFilter) {
-      case '1month':
-        startDate = subMonths(endDate, 1);
-        break;
-      case '3months':
-        startDate = subMonths(endDate, 3);
-        break;
-      case '6months':
-        startDate = subMonths(endDate, 6);
-        break;
-      case '1year':
-        startDate = subYears(endDate, 1);
-        break;
-      case 'custom':
-        if (customDateRange?.from) {
-          startDate = startOfDay(customDateRange.from);
-          if (customDateRange.to) {
-            return { startDate, endDate: endOfDay(customDateRange.to) };
-          }
-          return { startDate, endDate: endOfDay(endDate) };
-        }
-        startDate = subMonths(endDate, 6);
-        break;
-      default:
-        startDate = subMonths(endDate, 6);
-    }
-
-    return { startDate: startOfDay(startDate), endDate: endOfDay(endDate) };
-  };
 
   const getDateFilterLabel = () => {
     switch (dateFilter) {
@@ -144,9 +111,8 @@ export const AdvancedAnalytics = () => {
         setCurrency((agency as any).primary_currency || 'TRY');
       }
 
-      const { startDate, endDate } = getDateRange();
+      const { startDate, endDate } = dateRange;
 
-      // Registrations — left join (silinmiş tour/tour_date'i atmasın)
       let registrationsQuery = supabase
         .from("registrations")
         .select(`
@@ -161,13 +127,11 @@ export const AdvancedAnalytics = () => {
         .lte("created_at", endDate.toISOString())
         .in("status", ACTIVE_REGISTRATION_STATUSES);
 
-      if (agencyId) {
-        registrationsQuery = registrationsQuery.eq("agency_id", agencyId);
-      }
+      if (agencyId) registrationsQuery = registrationsQuery.eq("agency_id", agencyId);
 
       const { data: registrations } = await registrationsQuery;
 
-      // Aylık gelir (silinmiş tour_dates için 0 ekle, kayıt sayılır)
+      // Aylık gelir
       const revenueByMonth: Record<string, { revenue: number; registrations: number }> = {};
       let totalRevenue = 0;
 
@@ -177,9 +141,7 @@ export const AdvancedAnalytics = () => {
         const revenue = price * reg.pax;
         totalRevenue += revenue;
 
-        if (!revenueByMonth[month]) {
-          revenueByMonth[month] = { revenue: 0, registrations: 0 };
-        }
+        if (!revenueByMonth[month]) revenueByMonth[month] = { revenue: 0, registrations: 0 };
         revenueByMonth[month].revenue += revenue;
         revenueByMonth[month].registrations += 1;
       });
@@ -190,22 +152,16 @@ export const AdvancedAnalytics = () => {
           revenue: Math.round(data.revenue),
           registrations: data.registrations,
         }))
-        .sort((a, b) => {
-          const dateA = new Date(a.month);
-          const dateB = new Date(b.month);
-          return dateA.getTime() - dateB.getTime();
-        });
+        .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
-      // Destinasyon detayları
+      // Destinasyonlar
       const destinationMap: Record<string, { count: number; revenue: number }> = {};
       registrations?.forEach((reg: any) => {
         const dest = reg.tours?.destination || t('common.unspecified');
         const price = reg.tour_dates?.price_adult || 0;
         const revenue = price * reg.pax;
 
-        if (!destinationMap[dest]) {
-          destinationMap[dest] = { count: 0, revenue: 0 };
-        }
+        if (!destinationMap[dest]) destinationMap[dest] = { count: 0, revenue: 0 };
         destinationMap[dest].count += 1;
         destinationMap[dest].revenue += revenue;
       });
@@ -219,31 +175,22 @@ export const AdvancedAnalytics = () => {
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 5);
 
-      // === Dönüşüm Oranı — AYNI status filter ===
+      // Dönüşüm oranı — aynı status filter
       let conversationQuery = supabase
         .from("whatsapp_conversations")
         .select("*", { count: 'exact', head: true })
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString());
-
-      if (agencyId) {
-        conversationQuery = conversationQuery.eq("agency_id", agencyId);
-      }
-
+      if (agencyId) conversationQuery = conversationQuery.eq("agency_id", agencyId);
       const { count: conversationCount } = await conversationQuery;
 
-      // Registration count: AYNI status filter (CANCELLED hariç) — TUTARLILIK
       let registrationCountQuery = supabase
         .from("registrations")
         .select("*", { count: 'exact', head: true })
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString())
         .in("status", ACTIVE_REGISTRATION_STATUSES);
-
-      if (agencyId) {
-        registrationCountQuery = registrationCountQuery.eq("agency_id", agencyId);
-      }
-
+      if (agencyId) registrationCountQuery = registrationCountQuery.eq("agency_id", agencyId);
       const { count: registrationCount } = await registrationCountQuery;
 
       const conversionRate = {
@@ -252,24 +199,18 @@ export const AdvancedAnalytics = () => {
         rate: conversationCount ? ((registrationCount || 0) / conversationCount) * 100 : 0,
       };
 
-      // === Dönem Büyümesi — filtre dönemini İKİYE BÖL ===
-      // İlk yarı vs ikinci yarı (filtre dönemiyle tutarlı)
+      // Dönem büyümesi — filtre dönemini ikiye böl
       const periodMs = differenceInMilliseconds(endDate, startDate);
       const midPoint = new Date(startDate.getTime() + periodMs / 2);
 
       let firstHalfRevenue = 0;
       let secondHalfRevenue = 0;
-
       registrations?.forEach((reg: any) => {
         const regDate = new Date(reg.created_at);
         const price = reg.tour_dates?.price_adult || 0;
         const revenue = price * reg.pax;
-
-        if (regDate < midPoint) {
-          firstHalfRevenue += revenue;
-        } else {
-          secondHalfRevenue += revenue;
-        }
+        if (regDate < midPoint) firstHalfRevenue += revenue;
+        else secondHalfRevenue += revenue;
       });
 
       const periodGrowth = firstHalfRevenue > 0
@@ -297,86 +238,29 @@ export const AdvancedAnalytics = () => {
     }
   };
 
-  // ─── Date Filter UI (tek yerde, hem loading hem normal state'de aynı) ───
-  const dateFilterCard = (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="h-5 w-5" />
-          {t('analytics.advanced.dateFilter')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: '1month' as const, label: 'last1Month' },
-            { id: '3months' as const, label: 'last3Months' },
-            { id: '6months' as const, label: 'last6Months' },
-            { id: '1year' as const, label: 'last1Year' },
-          ].map((opt) => (
-            <Button
-              key={opt.id}
-              variant={dateFilter === opt.id ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter(opt.id);
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t(`analytics.filter.${opt.label}`)}
-            </Button>
-          ))}
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={dateFilter === 'custom' ? 'default' : 'outline'}
-                size="sm"
-                className="gap-2"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                {dateFilter === 'custom' && customDateRange?.from
-                  ? getDateFilterLabel()
-                  : <span>{t('analytics.filter.customDate')}</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="range"
-                selected={customDateRange}
-                onSelect={(range) => {
-                  setCustomDateRange(range);
-                  if (range?.from) setDateFilter('custom');
-                }}
-                numberOfMonths={2}
-                locale={locale}
-                disabled={(date) => date > new Date()}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <p className="text-sm text-muted-foreground mt-4">
-          {t('analytics.filter.showingData')}: <span className="font-medium">{getDateFilterLabel()}</span>
-        </p>
-      </CardContent>
-    </Card>
-  );
+  const handleExport = () => {
+    if (!analytics) return;
+    exportToCsv(
+      analytics.topDestinations,
+      [
+        { header: t('analytics.advanced.destinationDetails'), accessor: (r) => r.destination },
+        { header: t('analytics.advanced.registrationCount', { count: '' }).replace('{{count}}', '').trim() || 'Count', accessor: (r) => r.count },
+        { header: t('analytics.advanced.totalRevenue'), accessor: (r) => r.revenue },
+      ],
+      t('analytics.advanced.exportFilename'),
+    );
+  };
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        {dateFilterCard}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="h-20 bg-muted" />
-              <CardContent className="h-24 bg-muted/50" />
-            </Card>
-          ))}
-        </div>
+        <DateRangeFilter
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+        />
+        <AnalyticsSkeleton kpiCount={4} showList />
       </div>
     );
   }
@@ -384,12 +268,19 @@ export const AdvancedAnalytics = () => {
   if (!analytics || analytics.totalRegistrations === 0) {
     return (
       <div className="space-y-6">
-        {dateFilterCard}
+        <DateRangeFilter
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+        />
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Award className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-muted-foreground">{t('analytics.advanced.noData')}</p>
-            <p className="text-sm text-muted-foreground mt-2">{t('analytics.advanced.noDataDescription')}</p>
+            <AnalyticsEmptyIllustration className="w-32 h-32 mb-4" />
+            <p className="text-lg font-medium text-foreground">{t('analytics.advanced.noData')}</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md text-center">
+              {t('analytics.advanced.noDataDescription')}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -398,9 +289,15 @@ export const AdvancedAnalytics = () => {
 
   return (
     <div className="space-y-6">
-      {dateFilterCard}
+      <DateRangeFilter
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
+        customDateRange={customDateRange}
+        setCustomDateRange={setCustomDateRange}
+        onExport={handleExport}
+      />
 
-      {/* Özet Kartlar */}
+      {/* KPI Kartlar */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -408,9 +305,7 @@ export const AdvancedAnalytics = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatPrice(analytics.totalRevenue, currency)}
-            </div>
+            <div className="text-2xl font-bold">{formatPrice(analytics.totalRevenue, currency)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {t('analytics.advanced.totalRevenueDesc', {
                 count: analytics.totalRegistrations,
@@ -423,19 +318,15 @@ export const AdvancedAnalytics = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('analytics.advanced.periodGrowth')}</CardTitle>
-            {analytics.periodGrowth >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            )}
+            {analytics.periodGrowth >= 0
+              ? <TrendingUp className="h-4 w-4 text-green-500" />
+              : <TrendingDown className="h-4 w-4 text-red-500" />}
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${analytics.periodGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {analytics.periodGrowth >= 0 ? '+' : ''}{analytics.periodGrowth.toFixed(1)}%
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('analytics.advanced.vsPreviousHalf')}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{t('analytics.advanced.vsPreviousHalf')}</p>
           </CardContent>
         </Card>
 
@@ -445,12 +336,8 @@ export const AdvancedAnalytics = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatPrice(Math.round(analytics.averageOrderValue), currency)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('analytics.advanced.perRegistration')}
-            </p>
+            <div className="text-2xl font-bold">{formatPrice(Math.round(analytics.averageOrderValue), currency)}</div>
+            <p className="text-xs text-muted-foreground mt-1">{t('analytics.advanced.perRegistration')}</p>
           </CardContent>
         </Card>
 
@@ -460,9 +347,7 @@ export const AdvancedAnalytics = () => {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.conversionRate.rate.toFixed(1)}%
-            </div>
+            <div className="text-2xl font-bold">{analytics.conversionRate.rate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground mt-1">
               {t('analytics.advanced.conversionDesc', {
                 registrations: analytics.conversionRate.registrations,
@@ -480,25 +365,31 @@ export const AdvancedAnalytics = () => {
             <CardTitle>{t('analytics.advanced.monthlyTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analytics.revenueByMonth}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: number) => formatPrice(value, currency)}
-                  labelStyle={{ color: '#000' }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#8884d8"
-                  strokeWidth={2}
-                  name={t('analytics.advanced.revenueLabel')}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-x-auto">
+              <div style={{ minWidth: Math.max(300, analytics.revenueByMonth.length * 60) }}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={analytics.revenueByMonth} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" angle={-25} textAnchor="end" height={60} tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip
+                      formatter={(value: number) => formatPrice(value, currency)}
+                      contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke={chartColors[0]}
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                      name={t('analytics.advanced.revenueLabel')}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -510,22 +401,25 @@ export const AdvancedAnalytics = () => {
             <CardTitle>{t('analytics.advanced.destinationDetails')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {analytics.topDestinations.map((dest, index) => (
-                <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-accent/50">
-                  <div className="flex items-center gap-4">
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-3 p-4 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: chartColors[index % chartColors.length] }}
                     />
-                    <div>
-                      <p className="font-medium">{dest.destination}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{dest.destination}</p>
                       <p className="text-sm text-muted-foreground">
                         {t('analytics.advanced.registrationCount', { count: dest.count })}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <p className="font-bold">{formatPrice(dest.revenue, currency)}</p>
                     <p className="text-sm text-muted-foreground">
                       {t('analytics.advanced.average')}: {formatPrice(Math.round(dest.revenue / dest.count), currency)}
@@ -540,3 +434,27 @@ export const AdvancedAnalytics = () => {
     </div>
   );
 };
+
+// ─── Helper: date range calc ────────────────────────────────────────────────
+function getDateRangeFromFilter(deps: FilterDeps): { startDate: Date; endDate: Date } {
+  const endDate = new Date();
+  let startDate: Date;
+
+  switch (deps.dateFilter) {
+    case '1month': startDate = subMonths(endDate, 1); break;
+    case '3months': startDate = subMonths(endDate, 3); break;
+    case '6months': startDate = subMonths(endDate, 6); break;
+    case '1year': startDate = subYears(endDate, 1); break;
+    case 'custom':
+      if (deps.customDateRange?.from) {
+        startDate = startOfDay(deps.customDateRange.from);
+        if (deps.customDateRange.to) return { startDate, endDate: endOfDay(deps.customDateRange.to) };
+        return { startDate, endDate: endOfDay(endDate) };
+      }
+      startDate = subMonths(endDate, 6);
+      break;
+    default: startDate = subMonths(endDate, 6);
+  }
+
+  return { startDate: startOfDay(startDate), endDate: endOfDay(endDate) };
+}

@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, TrendingUp, MessageSquare, Star, Award, Calendar as CalendarIcon, DollarSign, Filter } from "lucide-react";
+import { Users, TrendingUp, MessageSquare, Star, Award, Calendar, DollarSign } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { format, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
+import { subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import { formatPrice } from "@/utils/currency";
+import { DateRangeFilter, DateFilterType } from "@/components/admin/DateRangeFilter";
+import { AnalyticsSkeleton } from "@/components/admin/skeletons/AnalyticsSkeleton";
+import { AnalyticsEmptyIllustration } from "@/components/illustrations/AnalyticsEmptyIllustration";
+import { getChartColors } from "@/lib/chartColors";
+import { exportToCsv } from "@/utils/csvExport";
 import {
   BarChart,
   Bar,
@@ -20,26 +24,9 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
-type DateFilterType = '1month' | '3months' | '6months' | '1year' | 'custom';
-
-const localeMap = {
-  tr: tr,
-  en: enUS,
-  de: de,
-  ru: ru,
-  ar: ar,
-  fr: fr,
-  es: es,
-};
+const localeMap = { tr, en: enUS, de, ru, ar, fr, es };
 
 interface CustomerStats {
   totalCustomers: number;
@@ -59,8 +46,6 @@ interface CustomerStats {
   customersByLanguage: Array<{ language: string; count: number }>;
   customersByTag: Array<{ tag: string; count: number }>;
 }
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d'];
 
 // Tag çevirisi helper — vip/regular/potential/inactive → i18n
 const translateTag = (tag: string, t: any): string => {
@@ -239,129 +224,66 @@ export const CustomerAnalytics = () => {
     }
   };
 
+  const chartColors = useMemo(() => getChartColors(), []);
+
+  const handleExport = () => {
+    if (!stats) return;
+    exportToCsv(
+      stats.topCustomers,
+      [
+        { header: 'Phone', accessor: (r) => r.phone },
+        { header: 'Name', accessor: (r) => r.full_name || '' },
+        { header: 'Bookings', accessor: (r) => r.total_bookings },
+        { header: 'Total Spent', accessor: (r) => r.total_spent },
+        { header: 'Tags', accessor: (r) => r.tags.join(';') },
+      ],
+      `customers_${t('analytics.advanced.exportFilename')}`,
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="h-20 bg-muted" />
-              <CardContent className="h-24 bg-muted/50" />
-            </Card>
-          ))}
-        </div>
+        <DateRangeFilter
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+        />
+        <AnalyticsSkeleton kpiCount={5} showList />
       </div>
     );
   }
 
-  if (!stats) {
+  if (!stats || stats.totalCustomers === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Users className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">{t("customerAnalytics.noCustomerData")}</p>
-          <p className="text-sm text-muted-foreground mt-2">{t("customerAnalytics.noCustomerDataDescription")}</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <DateRangeFilter
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+        />
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AnalyticsEmptyIllustration className="w-32 h-32 mb-4" />
+            <p className="text-lg font-medium text-foreground">{t("customerAnalytics.noCustomerData")}</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md text-center">{t("customerAnalytics.noCustomerDataDescription")}</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Tarih Filtreleme */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            {t("customerAnalytics.dateFilter")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={dateFilter === '1month' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1month');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last1Month")}
-            </Button>
-            <Button
-              variant={dateFilter === '3months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('3months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last3Months")}
-            </Button>
-            <Button
-              variant={dateFilter === '6months' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('6months');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last6Months")}
-            </Button>
-            <Button
-              variant={dateFilter === '1year' ? 'default' : 'outline'}
-              onClick={() => {
-                setDateFilter('1year');
-                setCustomDateRange(undefined);
-              }}
-              size="sm"
-            >
-              {t("analytics.filter.last1Year")}
-            </Button>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
-                  size="sm"
-                  className={cn(
-                    "justify-start text-left font-normal",
-                    !customDateRange && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateFilter === 'custom' && customDateRange?.from ? (
-                    getDateFilterLabel()
-                  ) : (
-                    <span>{t("analytics.filter.customDate")}</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={customDateRange}
-                  onSelect={(range) => {
-                    setCustomDateRange(range);
-                    if (range?.from) {
-                      setDateFilter('custom');
-                    }
-                  }}
-                  numberOfMonths={2}
-                  locale={localeMap[i18n.language as keyof typeof localeMap] || tr}
-                  disabled={(date) => date > new Date()}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mt-4">
-            {t("analytics.filter.showingData")}: <span className="font-medium">{getDateFilterLabel()}</span>
-          </p>
-        </CardContent>
-      </Card>
+      <DateRangeFilter
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
+        customDateRange={customDateRange}
+        setCustomDateRange={setCustomDateRange}
+        onExport={handleExport}
+      />
 
       {/* Özet Kartlar */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -465,7 +387,7 @@ export const CustomerAnalytics = () => {
                   label={(entry: any) => `${entry.displayTag}: ${entry.count}`}
                 >
                   {stats.customersByTag.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -487,7 +409,7 @@ export const CustomerAnalytics = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="#8884d8" name={t("customerAnalytics.customerCount")} />
+                <Bar dataKey="count" fill={chartColors[0]} name={t("customerAnalytics.customerCount")} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
