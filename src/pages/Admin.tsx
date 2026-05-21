@@ -186,6 +186,7 @@ const Admin = () => {
   const [maxTours, setMaxTours] = useState<number>(10);
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>([]);
+  const [whatsappStatus, setWhatsappStatus] = useState<string>('');
   
   // Check user role and load data
   const checkUserRole = async (userId: string) => {
@@ -238,7 +239,7 @@ const Admin = () => {
     try {
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("plan_type, enabled_languages")
+        .select("plan_type, enabled_languages, whatsapp_status")
         .eq("id", userAgencyId)
         .single();
 
@@ -252,6 +253,7 @@ const Admin = () => {
         setMaxTours(maxToursValue);
         setPlanFeatures(features);
         setEnabledLanguages(agencyData.enabled_languages || []);
+        setWhatsappStatus(agencyData.whatsapp_status || '');
       }
     } catch (error) {
       console.error("Error loading agency plan:", error);
@@ -348,6 +350,23 @@ const Admin = () => {
     if (userAgencyId && !isSuperAdmin) {
       loadAgencyPlan();
     }
+  }, [userAgencyId, isSuperAdmin]);
+
+  // Realtime: watch whatsapp_status to force OnboardingChecklist remount on connect
+  useEffect(() => {
+    if (!userAgencyId || isSuperAdmin) return;
+    const channel = supabase
+      .channel(`agency-whatsapp-${userAgencyId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'agencies', filter: `id=eq.${userAgencyId}` },
+        (payload) => {
+          const newStatus = (payload.new as { whatsapp_status?: string }).whatsapp_status;
+          if (newStatus !== undefined) setWhatsappStatus(newStatus);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [userAgencyId, isSuperAdmin]);
 
   // Trigger onboarding tour for first-time users
@@ -720,7 +739,7 @@ const Admin = () => {
               <QuotaWarningBanner agencyId={userAgencyId} onNavigateToPlan={() => handleTabChange("history")} />
             )}
             {!isSuperAdmin && userAgencyId && (
-              <OnboardingChecklist agencyId={userAgencyId} onNavigate={handleTabChange} />
+              <OnboardingChecklist key={`onboarding-${whatsappStatus}`} agencyId={userAgencyId} onNavigate={handleTabChange} />
             )}
 
             {/* Language Selection Warning */}

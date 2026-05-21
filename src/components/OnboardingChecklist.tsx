@@ -37,7 +37,7 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
     const [agencyRes, toursRes, datesRes] = await Promise.all([
       supabase
         .from("agencies")
-        .select("phone_public, address, payment_instructions, whatsapp_phone_number, whatsapp_status")
+        .select("phone_public, address, payment_instructions, whatsapp_status, meta_phone_number_id, whatsapp_api_key")
         .eq("id", agencyId)
         .single(),
       supabase
@@ -67,7 +67,7 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
       payment: !!(agency?.payment_instructions),
       addTour: tourCount > 0,
       addDates: dateCount > 0,
-      whatsapp: !!(agency?.whatsapp_phone_number && agency?.whatsapp_status === "active"),
+      whatsapp: agency?.whatsapp_status === "active" && !!(agency?.meta_phone_number_id || agency?.whatsapp_api_key),
     });
   };
 
