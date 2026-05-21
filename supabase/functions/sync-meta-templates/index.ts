@@ -13,6 +13,25 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+
+    // ── Auth: caller kimliği doğrula ──────────────────────────────────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") ?? "");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     const { agencyId } = await req.json();
     if (!agencyId) {
       return new Response(JSON.stringify({ error: "agencyId required" }), {
@@ -20,10 +39,21 @@ serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+
+    // ── Ownership: bu agency caller'a ait mi? ─────────────────────────────────
+    const { data: ownerCheck } = await supabase
+      .from("agencies")
+      .select("id")
+      .eq("id", agencyId)
+      .eq("user_id", user.id)
+      .single();
+    if (!ownerCheck) {
+      return new Response(JSON.stringify({ error: "Agency not found or unauthorized" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     const { data: agency } = await supabase
       .from("agencies")
