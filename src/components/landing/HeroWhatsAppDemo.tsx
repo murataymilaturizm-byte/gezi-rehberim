@@ -1,5 +1,7 @@
 // Hero'da pre-scripted müşteri ↔ bot WhatsApp konuşma animasyonu.
-// 9 mesajlı genişletilmiş senaryo: tur sorgusu → tarih → fiyat → rezervasyon → onay.
+// 14 mesajlı tam wizard akışı (gerçek bot wizard'ı taklit eder):
+// tour seçimi → tarih → kişi sayısı → isim → özel istek → onay özeti → onaylandı.
+// Telefon ADIMI YOK (gerçek bot WhatsApp'tan biliyor).
 // framer-motion ile baloncuk giriş, CSS keyframe ile typing dots, auto-scroll.
 // İçerik 7 dilde i18n'den geliyor (heroDemo namespace).
 // onThinkingChange callback ile AIMascot ile senkron çalışabilir.
@@ -35,22 +37,37 @@ export const HeroWhatsAppDemo = ({ onThinkingChange }: HeroWhatsAppDemoProps) =>
     let timers: ReturnType<typeof setTimeout>[] = [];
     let idCounter = 0;
 
-    // Script: (delay, bubble, thinking-flag)
+    // Script: wizard akışı — user→bot çiftler halinde 14 mesaj
+    // Her bot mesajından önce typing dots + mascot think true
     const script: { delay: number; bubble: Omit<Bubble, "id">; thinking?: boolean }[] = [
+      // 1-2: tur sorgusu → tur seçenekleri
       { delay: 500, bubble: { role: "user", text: t("heroDemo.msg1") } },
       { delay: 700, bubble: { role: "typing", from: "bot" }, thinking: true },
       { delay: 1500, bubble: { role: "bot", text: t("heroDemo.msg2") }, thinking: false },
-      { delay: 2200, bubble: { role: "user", text: t("heroDemo.msg3") } },
+      // 3-4: tur seçimi → tarih listesi
+      { delay: 1800, bubble: { role: "user", text: t("heroDemo.msg3") } },
       { delay: 700, bubble: { role: "typing", from: "bot" }, thinking: true },
-      { delay: 1400, bubble: { role: "bot", text: t("heroDemo.msg4") }, thinking: false },
-      { delay: 2200, bubble: { role: "user", text: t("heroDemo.msg5") } },
+      { delay: 1300, bubble: { role: "bot", text: t("heroDemo.msg4") }, thinking: false },
+      // 5-6: tarih seçimi → kişi sayısı sorusu
+      { delay: 1800, bubble: { role: "user", text: t("heroDemo.msg5") } },
       { delay: 700, bubble: { role: "typing", from: "bot" }, thinking: true },
-      { delay: 1600, bubble: { role: "bot", text: t("heroDemo.msg6") }, thinking: false },
-      { delay: 2000, bubble: { role: "user", text: t("heroDemo.msg7") } },
+      { delay: 1200, bubble: { role: "bot", text: t("heroDemo.msg6") }, thinking: false },
+      // 7-8: kişi sayısı → isim sorusu
+      { delay: 1500, bubble: { role: "user", text: t("heroDemo.msg7") } },
       { delay: 700, bubble: { role: "typing", from: "bot" }, thinking: true },
-      { delay: 1300, bubble: { role: "bot", text: t("heroDemo.msg8") }, thinking: false },
-      { delay: 2500, bubble: { role: "typing", from: "bot" }, thinking: true },
-      { delay: 1400, bubble: { role: "bot", text: t("heroDemo.msg9") }, thinking: false },
+      { delay: 1400, bubble: { role: "bot", text: t("heroDemo.msg8") }, thinking: false },
+      // 9-10: isim → özel istek sorusu
+      { delay: 2000, bubble: { role: "user", text: t("heroDemo.msg9") } },
+      { delay: 700, bubble: { role: "typing", from: "bot" }, thinking: true },
+      { delay: 1400, bubble: { role: "bot", text: t("heroDemo.msg10") }, thinking: false },
+      // 11-12: özel istek "yok" → REZERVASYON ÖZETİ
+      { delay: 1600, bubble: { role: "user", text: t("heroDemo.msg11") } },
+      { delay: 800, bubble: { role: "typing", from: "bot" }, thinking: true },
+      { delay: 1800, bubble: { role: "bot", text: t("heroDemo.msg12") }, thinking: false },
+      // 13-14: onay "evet" → onaylandı
+      { delay: 2200, bubble: { role: "user", text: t("heroDemo.msg13") } },
+      { delay: 700, bubble: { role: "typing", from: "bot" }, thinking: true },
+      { delay: 1500, bubble: { role: "bot", text: t("heroDemo.msg14") }, thinking: false },
     ];
 
     const run = () => {
@@ -74,12 +91,12 @@ export const HeroWhatsAppDemo = ({ onThinkingChange }: HeroWhatsAppDemoProps) =>
           }, acc),
         );
       });
-      // Sona ulaşınca 5 saniye bekle, başa dön
+      // Sona ulaşınca 6 saniye bekle (kullanıcı son özeti okusun), başa dön
       timers.push(
         setTimeout(() => {
           if (!mounted) return;
           run();
-        }, acc + 5000),
+        }, acc + 6000),
       );
     };
 
