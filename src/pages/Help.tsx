@@ -56,7 +56,7 @@ const Help = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
+              <a href="/"><img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer" /></a>
               <div className="hidden sm:block">
                 <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
               </div>

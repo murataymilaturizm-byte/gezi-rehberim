@@ -77,7 +77,7 @@ const ResetPassword = () => {
       <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <img src={turzzLogo} alt="Turzz Logo" className="h-14 w-auto" />
+            <a href="/"><img src={turzzLogo} alt="Turzz Logo" className="h-14 w-auto cursor-pointer" /></a>
             <div className="flex items-center gap-2">
               <LanguageSelector />
               <ThemeToggle />

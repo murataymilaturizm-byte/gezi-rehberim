@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "home": "Ana Sayfa",
     "admin": "Admin Paneli",
@@ -485,17 +485,17 @@
     "advanced": {
       "dateFilter": "Tarih Aralığı Filtresi",
       "totalRevenue": "Toplam Gelir",
-      "totalRevenueDesc": "{{{count}}} kayıt • {{{period}}}",
+      "totalRevenueDesc": "{{count}} kayıt • {{period}}",
       "periodGrowth": "Dönem Büyümesi",
       "vsPreviousHalf": "Önceki yarıya göre",
       "averageBasket": "Ortalama Sepet",
       "perRegistration": "Kayıt başına",
       "conversionRate": "Dönüşüm Oranı",
-      "conversionDesc": "{{{registrations}}}/{{{conversations}}} konuşma",
+      "conversionDesc": "{{registrations}}/{{conversations}} konuşma",
       "monthlyTrend": "Aylık Gelir Trendi",
       "revenueLabel": "Gelir",
       "destinationDetails": "Destinasyon Detayları",
-      "registrationCount": "{{{count}}} kayıt",
+      "registrationCount": "{{count}} kayıt",
       "average": "Ort",
       "noData": "Henüz analiz verisi yok",
       "noDataDescription": "İlk rezervasyonunuz oluştuğunda analitikler burada görünecek",
@@ -545,7 +545,7 @@
     "payment": {
       "success": "Ödeme Başarılı! 🎉",
       "successDesc": "Aboneliğiniz aktifleştirildi. Faturanız hazırlanıyor.",
-      "successDescWithOrder": "Aboneliğiniz aktifleştirildi. Sipariş No: {{{orderId}}}...",
+      "successDescWithOrder": "Aboneliğiniz aktifleştirildi. Sipariş No: {{orderId}}...",
       "failed": "Ödeme Başarısız",
       "failedBase": "Ödeme işlemi tamamlanamadı.",
       "insufficientFunds": "Kartınızda yeterli bakiye bulunmuyor.",
@@ -672,14 +672,14 @@
         "errors": {
           "invalidPhone": "Geçerli bir telefon numarası girin",
           "selectRegistration": "Lütfen bir rezervasyon seçin",
-          "missingVariables": "Eksik değişkenler: {{{vars}}}",
+          "missingVariables": "Eksik değişkenler: {{vars}}",
           "generic": "Mesaj gönderilemedi"
         }
       },
       "sync": {
         "button": "Meta ile Senkronize Et",
-        "success": "{{{count}}} şablon güncellendi",
-        "successWithNew": "{{{inserted}}} yeni eklendi, {{{updated}}} güncellendi",
+        "success": "{{count}} şablon güncellendi",
+        "successWithNew": "{{inserted}} yeni eklendi, {{updated}} güncellendi",
         "error": "Senkronizasyon başarısız"
       },
       "status": {
@@ -1020,7 +1020,7 @@
       "region": "Bölge",
       "plan": {
         "monthlyLimit": "Aylık Mesaj Limiti",
-        "defaultLimit": "Planın varsayılan limiti: {{{limit}}} mesaj",
+        "defaultLimit": "Planın varsayılan limiti: {{limit}} mesaj",
         "extraMessages": "Ekstra Mesaj Kotası Ekle",
         "extraPlaceholder": "Örn: 500",
         "extraHelp": "Mevcut limite ekstra mesaj kotası ekleyin",
@@ -1090,8 +1090,8 @@
       },
       "messages": {
         "unlimited": "Sınırsız",
-        "used": "{{{used}}}/{{{total}}} kullanıldı",
-        "daysLeft": "{{{days}}} gün kaldı",
+        "used": "{{used}}/{{total}} kullanıldı",
+        "daysLeft": "{{days}} gün kaldı",
         "expired": "Süresi doldu",
         "notAdded": "Eklenmedi",
         "quotaFull": "Kota Doldu",
@@ -1410,7 +1410,7 @@
       "conversations": "Konuşma",
       "conversionRate": "Dönüşüm Oranı (%)",
       "conversionRatesSheet": "Dönüşüm Oranları",
-      "currencyConversionNote": "Fiyatlar anlık kurla {{{currency}}} cinsinden gösteriliyor",
+      "currencyConversionNote": "Fiyatlar anlık kurla {{currency}} cinsinden gösteriliyor",
       "originalPrice": "Orijinal"
     },
     "usageStats": {
@@ -1450,7 +1450,7 @@
       "usedThisMonth": "Bu Ay Kullanılan",
       "unlimited": "Sınırsız",
       "quotaFull": "Mesaj kotanız doldu! Paketinizi yükseltmeniz gerekiyor.",
-      "quotaNearLimit": "Mesaj kotanızın %{{{percent}}}'i kaldı.",
+      "quotaNearLimit": "Mesaj kotanızın %{{percent}}'i kaldı.",
       "lastReset": "Son Sıfırlama",
       "buyExtraQuota": "Ekstra Mesaj Kotası Satın Al",
       "extraQuotaTitle": "Ekstra Mesaj Kotası",
@@ -1470,13 +1470,13 @@
       "notUsedYet": "Henüz kullanılmadı",
       "days": "gün",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{{count}}} mesaj/ay",
+        "messagesPerMonth": "{{count}} mesaj/ay",
         "unlimitedMessages": "Sınırsız mesaj",
-        "maxTours": "{{{count}}} tura kadar",
+        "maxTours": "{{count}} tura kadar",
         "unlimitedTours": "Sınırsız tur",
-        "languageSupport": "{{{count}}} dil desteği",
+        "languageSupport": "{{count}} dil desteği",
         "allLanguages": "Tüm diller (7 dil)",
-        "limitedStyles": "{{{count}}} konuşma üslubu",
+        "limitedStyles": "{{count}} konuşma üslubu",
         "allStyles": "Tüm konuşma üslupları + Özel üslup",
         "userProfiles": "Kullanıcı profilleri",
         "autoReminders": "Otomatik hatırlatmalar",
@@ -1571,13 +1571,13 @@
       "agencyNotFound": "Acente bulunamadı"
     },
     "quotaBanner": {
-      "warning": "Mesaj kotanızın %{{{percent}}}'ine ulaştınız. Yakında dolacak.",
-      "critical": "Mesaj kotanız kritik seviyede (%{{{percent}}})! Yeni mesajlar engellenebilir.",
+      "warning": "Mesaj kotanızın %{{percent}}'ine ulaştınız. Yakında dolacak.",
+      "critical": "Mesaj kotanız kritik seviyede (%{{percent}})! Yeni mesajlar engellenebilir.",
       "upgrade": "Planı Yükselt"
     },
     "onboarding": {
       "title": "Başlarken",
-      "progress": "%{{{percent}}} tamamlandı",
+      "progress": "%{{percent}} tamamlandı",
       "dismiss": "Kapat",
       "steps": {
         "agencyInfo": "Acente bilgilerini doldur",
@@ -1774,7 +1774,7 @@
     "bulkImport": "Excel'den İçe Aktar",
     "duplicate": "Kopyala",
     "duplicateTitleLabel": "Yeni tur adı",
-    "copyDatesNote": "{{{count}}} tarih de kopyalanacak",
+    "copyDatesNote": "{{count}} tarih de kopyalanacak",
     "duplicateConfirm": "Kopyala",
     "duplicateSuccess": "Tur başarıyla kopyalandı!",
     "duplicateError": "Tur kopyalanamadı",
@@ -1810,11 +1810,11 @@
     "priceChild": "Çocuk fiyatı",
     "quota": "Kontenjan",
     "pricingNote": "Tüm tarihler için aynı fiyat uygulanacak",
-    "preview": "{{{count}}} tarih oluşturulacak",
+    "preview": "{{count}} tarih oluşturulacak",
     "moreDates": "tarih daha...",
-    "generateButton": "{{{count}}} Tarih Oluştur",
+    "generateButton": "{{count}} Tarih Oluştur",
     "generating": "Oluşturuluyor...",
-    "success": "{{{count}}} tarih başarıyla eklendi!",
+    "success": "{{count}} tarih başarıyla eklendi!",
     "errors": {
       "noDates": "Lütfen tarih aralığı ve desen seçin",
       "priceRequired": "Yetişkin fiyatı zorunludur",
@@ -1835,12 +1835,12 @@
     "selectFile": "Excel Dosyası Seç",
     "fileHint": ".xlsx veya .xls formatları desteklenir",
     "parsedTours": "İşlenmiş Turlar",
-    "parsed": "{{{valid}}}/{{{total}}} tur geçerli",
+    "parsed": "{{valid}}/{{total}} tur geçerli",
     "valid": "Geçerli",
     "invalid": "Hatalı",
-    "importButton": "{{{count}}} Turu İçe Aktar",
+    "importButton": "{{count}} Turu İçe Aktar",
     "importing": "İçe aktarılıyor...",
-    "success": "{{{count}}} tur başarıyla eklendi!",
+    "success": "{{count}} tur başarıyla eklendi!",
     "errors": {
       "parseError": "Excel dosyası okunamadı",
       "noValid": "İçe aktarılabilecek geçerli tur bulunamadı",
@@ -1860,7 +1860,7 @@
       "vsLastWeek": "geçen haftaya göre"
     },
     "welcome": {
-      "todayStats": "Bugün {{{count}}} yeni rezervasyon",
+      "todayStats": "Bugün {{count}} yeni rezervasyon",
       "revenue": "gelir",
       "pending": "bekliyor",
       "noRegistrations": "Bugün henüz rezervasyon yok. WhatsApp botunuz çalışıyor! 💬"
@@ -1961,7 +1961,111 @@
     "readyDescription": "Sisteminiz kuruldu ve çalışıyor. Artık müşterileriniz WhatsApp üzerinden 7/24 tur araması yapabilir, rezervasyon oluşturabilir ve ödeme yapabilir.",
     "nextSteps": "Sonraki Adımlar",
     "watchVideo": "Video İzle",
-    "readDocs": "Dokümantasyon"
+    "readDocs": "Dokümantasyon",
+    "steps": {
+      "step1": {
+        "title": "Hesap Oluşturun ve Giriş Yapın",
+        "duration": "2 dakika",
+        "description": "Ücretsiz deneme hesabınızı oluşturun ve admin paneline giriş yapın.",
+        "substeps": {
+          "s1": {
+            "title": "Ücretsiz kaydolun",
+            "description": "Anasayfadan 'Ücretsiz Dene' butonuna tıklayın, email ve şifrenizle kayıt olun."
+          },
+          "s2": {
+            "title": "Email doğrulaması yapın",
+            "description": "Email adresinize gelen doğrulama linkine tıklayarak hesabınızı aktifleştirin."
+          },
+          "s3": {
+            "title": "Admin paneline giriş yapın",
+            "description": "Giriş yaparak admin panelinize erişin. 14 günlük ücretsiz deneme otomatik başlar."
+          }
+        },
+        "tips": {
+          "t1": "14 gün ücretsiz deneme — kredi kartı gerekmez",
+          "t2": "Tüm özellikler deneme süresince aktif",
+          "t3": "Acente bilgilerinizi 'Chat Bot Ayarları' > 'Acente Bilgileri' sekmesinden güncelleyebilirsiniz"
+        }
+      },
+      "step2": {
+        "title": "Turlarınızı ve Tarihlerini Yükleyin",
+        "duration": "5-10 dakika",
+        "description": "Tur bilgilerinizi ve müsait tarihlerinizi sisteme ekleyin. Müşteriler bu bilgilere WhatsApp'tan ulaşabilecek.",
+        "substeps": {
+          "s1": {
+            "title": "Yeni tur oluşturun",
+            "description": "'Turlar' sekmesine gidin ve 'Yeni Tur Ekle' butonuna tıklayın."
+          },
+          "s2": {
+            "title": "Tur bilgilerini doldurun",
+            "description": "Destinasyon, tur tipi (günübirlik/2-3 gece), açıklama, program URL'si gibi bilgileri girin."
+          },
+          "s3": {
+            "title": "Tarihleri ekleyin",
+            "description": "Her tur için kalkış tarihleri, fiyatlar (yetişkin, çocuk, tek kişilik) ve kontenjanları belirleyin."
+          }
+        },
+        "tips": {
+          "t1": "Detaylı program URL'si eklerseniz müşteriler daha fazla bilgi alabilir",
+          "t2": "Fiyatları güncel tutun, sistem otomatik olarak müşterilere gösterecek",
+          "t3": "Kontenjan bilgisi müşterilere gösterilir, acele etmelerini sağlar"
+        }
+      },
+      "step3": {
+        "title": "WhatsApp'ınızı Bağlayın",
+        "duration": "5-10 dakika",
+        "description": "Meta Embedded Signup ile WhatsApp Business numaranızı dakikalar içinde kendiniz bağlayın. Teknik bilgi gerekmez.",
+        "substeps": {
+          "s1": {
+            "title": "Admin panelinde WhatsApp Ayarları'na gidin",
+            "description": "'Chat Bot Ayarları' grubundaki 'WhatsApp Ayarları'na gidin veya kurulum sihirbazındaki WhatsApp adımına tıklayın."
+          },
+          "s2": {
+            "title": "'Connect with Facebook' butonuna tıklayın",
+            "description": "Facebook/Meta Business hesabınızla giriş yapın."
+          },
+          "s3": {
+            "title": "WhatsApp Business numaranızı seçin",
+            "description": "Meta Business hesabınızı seçin, WhatsApp Business numaranızı seçin ve izinleri onaylayın. Bağlantı otomatik kurulur."
+          }
+        },
+        "tips": {
+          "t1": "WhatsApp Business hesabınızın aktif olduğundan emin olun (normal WhatsApp değil)",
+          "t2": "Meta Business Suite hesabınız yoksa kayıt sırasında oluşturabilirsiniz",
+          "t3": "Bağlantı sorunu yaşarsanız info@turzzai.com adresine yazın"
+        }
+      },
+      "step4": {
+        "title": "Test Edin ve Kullanmaya Başlayın",
+        "duration": "1 dakika",
+        "description": "Entegrasyon aktif olduktan sonra sistemi test edin ve müşterilerinize hizmet vermeye başlayın.",
+        "substeps": {
+          "s1": {
+            "title": "Kendi numaranızdan mesaj gönderin",
+            "description": "WhatsApp'tan iş numaranıza 'Merhaba' yazın ve AI botun yanıt verdiğini doğrulayın."
+          },
+          "s2": {
+            "title": "Tur araması yapın",
+            "description": "'Kapadokya turları' gibi bir mesaj göndererek turlarınızın doğru listelendiğini kontrol edin."
+          },
+          "s3": {
+            "title": "Rezervasyon akışını deneyin",
+            "description": "'Rezervasyon yapmak istiyorum' yazarak tarih, kişi sayısı ve isim adımlarını test edin."
+          }
+        },
+        "tips": {
+          "t1": "Bot 7/24 çalışır, siz çevrimdışı olsanız bile müşterilerinize hizmet verir",
+          "t2": "Müşteri profilleri otomatik oluşturulur ve tercihler kaydedilir",
+          "t3": "WhatsApp Konuşmaları sekmesinden tüm sohbetleri takip edebilirsiniz"
+        }
+      }
+    },
+    "heroDescription": "Birkaç basit adımda WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.",
+    "badge1": "Teknik bilgi gerektirmez",
+    "badge2": "Tüm altyapıyı biz yönetiyoruz",
+    "footerRights": "Tüm hakları saklıdır.",
+    "footerHome": "Ana Sayfa",
+    "footerLogin": "Giriş"
   },
   "help": {
     "title": "Yardım Merkezi",
@@ -1971,7 +2075,7 @@
     "stepByStep": "Adım adım rehber",
     "visualGuides": "Görsel açıklamalar",
     "troubleshooting": "Sorun çözme ipuçları",
-    "topicsCount": "{{{count}}} konuda detaylı açıklama",
+    "topicsCount": "{{count}} konuda detaylı açıklama",
     "back": "Geri Dön",
     "backToAdmin": "Admin Paneline Dön",
     "quickLinks": "Başlangıç Rehberi",
@@ -2148,7 +2252,7 @@
     "selectDate": "Tarih seçin"
   },
   "blog": {
-    "minutesRead": "{{{count}}} dakika okuma",
+    "minutesRead": "{{count}} dakika okuma",
     "readMore": "Oku →",
     "noPosts": "Bu kategoride henüz yazı yok.",
     "ctaQuestion": "Turzz AI'ı denediniz mi?",
@@ -2164,7 +2268,7 @@
       "ctaDesc": "14 gün ücretsiz, kredi kartı gerekmez.",
       "ctaButton": "Ücretsiz Başla"
     },
-    "fallbackNotice": "Bu yazı henüz {{{lang}}} diline çevrilmedi. Türkçe versiyonu gösteriliyor.",
+    "fallbackNotice": "Bu yazı henüz {{lang}} diline çevrilmedi. Türkçe versiyonu gösteriliyor.",
     "fallbackBadge": "Türkçe",
     "availableIn": "Bu yazı şu dillerde mevcut:"
   },
@@ -3072,7 +3176,7 @@
       "cancelledDesc": "WhatsApp bağlantısı iptal edildi.",
       "success": "Başarılı!",
       "successDesc": "WhatsApp numaranız başarıyla bağlandı",
-      "successDescPhone": "WhatsApp numaranız başarıyla bağlandı: {{{phone}}}",
+      "successDescPhone": "WhatsApp numaranız başarıyla bağlandı: {{phone}}",
       "errorTitle": "Hata",
       "exchangeError": "WhatsApp bağlantısı sırasında bir hata oluştu. Lütfen tekrar deneyin.",
       "disconnected": "Bağlantı Kaldırıldı",
@@ -3132,8 +3236,8 @@
     },
     "conversations": {
       "search": "Ara...",
-      "count": "{{{count}}} konuşma",
-      "page": "Sayfa {{{current}}}/{{{total}}}",
+      "count": "{{count}} konuşma",
+      "page": "Sayfa {{current}}/{{total}}",
       "selectAgency": "Acente Seçin"
     },
     "logs": {
@@ -3147,7 +3251,7 @@
       "roleSelect": "Rol seçin",
       "dateRange": "Tarih Aralığı",
       "clearFilters": "Filtreleri Temizle",
-      "results": "Mesaj Logları ({{{count}}} sonuç)",
+      "results": "Mesaj Logları ({{count}} sonuç)",
       "loading": "Loglar yükleniyor...",
       "empty": "Gösterilecek log bulunamadı",
       "loadError": "Loglar yüklenirken bir hata oluştu",
@@ -3182,8 +3286,8 @@
       "chartTitle": "Kullanıcı Sayısı (Dil Bazlı)",
       "chartBar": "Kullanıcı Sayısı",
       "detailTitle": "Detaylı Dil Dağılımı",
-      "userCount": "{{{count}}} kullanıcı",
-      "messageCount": "{{{count}}} mesaj",
+      "userCount": "{{count}} kullanıcı",
+      "messageCount": "{{count}} mesaj",
       "empty": "Henüz dil verisi bulunmuyor"
     }
   },
@@ -3386,6 +3490,7 @@
     "customer": "Müşteri"
   },
   "support": {
+    "title": "Turzz Destek",
     "welcome": {
       "tr": "Merhaba! Size nasıl yardımcı olabilirim? Sistem kullanımı, özellikler veya teknik konularda sorularınızı yanıtlayabilirim. 📚",
       "en": "Hello! How can I help you? I can answer your questions about system usage, features, or technical topics. 📚",
@@ -3413,17 +3518,17 @@
     "msg7": "2 kişi",
     "msg8": "✅ 2 yetişkin kaydedildi.\n\n👤 Adınız ve soyadınız nedir?",
     "msg9": "Ahmet Yılmaz",
-    "msg10": "✅ Teşekkürler Ahmet!\n\n📝 Özel isteğiniz var mı? (Yoksa \"yok\" yazın)",
-    "msg11": "Yok",
-    "msg12": "📋 *REZERVASYON ÖZETİ*\n\n🏖️ Tur: Kapadokya 2 Gün\n📅 Tarih: 15 Haziran\n👥 Kişi: 2 Yetişkin\n👤 İsim: Ahmet Yılmaz\n💰 Toplam: ₺7.000\n\nOnaylamak için \"evet\" yazın.",
+    "msg10": "✅ Teşekkürler Ahmet!\n\n📱 Telefon numaranızı alabilir miyiz?",
+    "msg11": "+90 555 123 45 67",
+    "msg12": "📋 *REZERVASYON ÖZETİ*\n\n🏖️ Tur: Kapadokya 2 Gün\n📅 Tarih: 15 Haziran\n👥 Kişi: 2 Yetişkin\n👤 İsim: Ahmet Yılmaz\n📱 Tel: +90 555 123 45 67\n💰 Toplam: ₺7.000\n\nOnaylamak için \"evet\" yazın.",
     "msg13": "Evet",
-    "msg14": "✅ Rezervasyonunuz onaylandı! 🎉\nDetaylar WhatsApp ile size iletildi. İyi yolculuklar! 🌟"
+    "msg14": "✅ Rezervasyonunuz onaylandı! 🎉\n\n💳 Kapora: ₺2.100\n🏦 IBAN: TR12 3456 7890 1234 5678\n\n📞 Sorularınız için acentemizle iletişime geçin.\nİyi yolculuklar! 🌟"
   },
   "statsRibbon": {
-    "agencies": "Aktif Acente",
-    "messages": "Aylık Mesaj",
-    "satisfaction": "Memnuniyet",
-    "languages": "Dil Desteği"
+    "langs": "7 Dil Desteği",
+    "support": "7/24 Anında Yanıt",
+    "booking": "Saniyeler İçinde Rezervasyon",
+    "setup": "5 Dakikada Kurulum"
   },
   "indexBlog": {
     "title": "Sektörel İçerikler",

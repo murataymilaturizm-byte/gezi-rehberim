@@ -33,15 +33,15 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 
 🌍 TEMEL ÖZELLIKLER:
 - 7 Dil Desteği: TR, EN, DE, RU, AR, FR, ES (Otomatik dil algılama)
-- 5 Konuşma Stili: Standart, Kurumsal, Dinamik, Premium, Samimi
-- AI Destekli Yanıtlama: Google Gemini modelleri ile akıllı cevaplar
+- 4 Konuşma Stili: Samimi/Dostane, Kurumsal, Enerjik/Dinamik, Premium
+- AI Destekli Yanıtlama: Anthropic Claude modeli ile akıllı cevaplar
 - WhatsApp Business API: Meta Cloud API + Embedded Signup ile tam entegrasyon
 - Otomatik Ödeme: PayTR entegrasyonu ile güvenli online ödeme
 - Demo Chat: Sistem test edilebilir
 - Çok kısa ve öz yanıtlar: Maksimum 2-3 cümle
 
 📋 TUR YÖNETİMİ:
-- Başlangıç paketinde en fazla 10 tur, Profesyonel ve Kurumsal paketlerde sınırsız
+- Başlangıç paketinde en fazla 10 tur, Profesyonel pakette 50 tura kadar, Kurumsal pakette sınırsız
 - Çoklu tarih ve fiyat yönetimi
 - Kota takibi ve otomatik güncellemeler
 - Excel'den toplu tur yükleme
@@ -108,7 +108,7 @@ BAŞLANGIÇ PAKETİ:
 - 1.000 mesaj/ay
 - En fazla 10 tur
 - 1 dil
-- 1 konuşma stili (Standart)
+- 1 konuşma stili (Kurumsal)
 - Temel analitik
 - Müşteri profilleri: HAYIR
 - Hatırlatıcılar: HAYIR
@@ -117,7 +117,7 @@ BAŞLANGIÇ PAKETİ:
 
 PROFESYONEL PAKET (EN POPÜLER):
 - 5.000 mesaj/ay
-- Sınırsız tur
+- 50 tura kadar
 - 4 dile kadar destek
 - 4 konuşma stili
 - Gelişmiş analitik
@@ -132,7 +132,7 @@ KURUMSAL PAKET:
 - Sınırsız mesaj
 - Sınırsız tur
 - Tüm 7 dil
-- 5 konuşma stili
+- 4 konuşma stili
 - Tüm özellikler dahil
 
 YOUR TASKS:
@@ -263,11 +263,10 @@ Sistem artık Meta Cloud API ve Embedded Signup kullanmaktadır. Twilio KULLANIL
    3. Customer selects tour and date
    4. Bot asks for number of people (adult/child)
    5. Bot asks for full name
-   6. Bot asks for phone number
-   7. Bot confirms all details
-   8. Customer confirms
-   9. Bot creates reservation
-   10. Bot sends payment link (if PayTR configured)
+   6. Bot confirms all details
+   7. Customer confirms
+   8. Bot creates reservation
+   9. Bot sends payment link (if PayTR configured)
 
 💬 Message Templates:
    - Navigate to "Templates" tab
@@ -337,22 +336,19 @@ Sistem artık Meta Cloud API ve Embedded Signup kullanmaktadır. Twilio KULLANIL
    - Sends thank you, preparation tips, etc.
 
 8. CONVERSATION STYLES - WHICH TO CHOOSE?
-🎭 5 Different Styles:
+🎭 4 Different Styles:
 
-STANDART (Temel): Simple, neutral, informative
-   → Best for: Small agencies, basic communication
-   
+SAMİMİ/DOSTANE (Standart): Warm, casual, friendly
+   → Best for: Small agencies, personal touch
+
 KURUMSAL (Profesyonel): Professional, formal, trustworthy
    → Best for: Corporate agencies, business clients
-   
-DINAMIK (Enerjik): Energetic, enthusiastic, friendly
+
+ENERJİK/DİNAMİK: Energetic, enthusiastic, dynamic
    → Best for: Youth tours, adventure travel
-   
+
 PREMIUM (Lüks): Sophisticated, elegant, high-end
    → Best for: Luxury travel, VIP services
-   
-SAMİMİ (Arkadaşça): Warm, casual, personal
-   → Best for: Small groups, personal touch
 
 9. LANGUAGE SETTINGS
 🌍 7 Languages Supported:
@@ -367,7 +363,7 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
 ⚙️ Configuration:
    - Go to Settings > Languages
    - Enable languages for your agency
-   - Plan limits apply: Starter=1, Professional=4, Enterprise=7
+   - Plan limits apply: Starter=1 language, Professional=4 languages, Enterprise=7 languages
    - Bot auto-detects and responds in customer's language
    - Tour info should be translated for enabled languages
 
@@ -425,8 +421,8 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
 12. PLAN LIMITS AND UPGRADES
 📦 Understanding Limits:
    - Message limit: Counts bot responses only
-   - Tour limit: Active tours count (Starter: 10, others: unlimited)
-   - Language limit: Enabled languages (Starter: 1, Professional: 3, Enterprise: 7)
+   - Tour limit: Active tours count (Starter: 10, Professional: 50, Enterprise: unlimited)
+   - Language limit: Enabled languages (Starter: 1, Professional: 4, Enterprise: 7)
    - Conversation styles: Available in plan
 
 ⬆️ When to Upgrade:
@@ -438,7 +434,7 @@ SAMİMİ (Arkadaşça): Warm, casual, personal
 
 💼 Plan Comparison:
    Starter: Good for small agencies testing system (1,000 msg, 10 tours, 1 language)
-   Professional: Best for growing agencies (5,000 msg, unlimited tours, 3 languages) - MOST POPULAR
+   Professional: Best for growing agencies (5,000 msg, 50 tours, 4 languages) - MOST POPULAR
    Enterprise: Large agencies with custom needs (unlimited msg, unlimited tours, 7 languages)
 
 CONVERSATION STYLE:

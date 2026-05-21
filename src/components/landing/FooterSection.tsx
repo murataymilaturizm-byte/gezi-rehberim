@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 
 export const FooterSection = () => {
@@ -89,7 +90,7 @@ export const FooterSection = () => {
         </div>
         <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <img src={turzzLogo} alt="Turzz AI" className="h-8 w-auto" />
+            <Link to="/"><img src={turzzLogo} alt="Turzz AI" className="h-8 w-auto cursor-pointer" /></Link>
           </div>
           <p className="text-xs text-muted-foreground text-center">
             {t("footer.copyright", { year: new Date().getFullYear() })}

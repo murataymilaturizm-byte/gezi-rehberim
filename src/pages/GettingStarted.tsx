@@ -4,11 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { 
-  ArrowRight, 
-  CheckCircle2, 
-  Smartphone, 
-  Plus, 
+import {
+  ArrowRight,
+  CheckCircle2,
+  Smartphone,
+  Plus,
   MessageSquare,
   Settings,
   Upload,
@@ -22,108 +22,108 @@ const GettingStarted = () => {
   const steps = [
     {
       number: 1,
-      title: "Hesap Oluşturun ve Giriş Yapın",
+      title: t("gettingStarted.steps.step1.title"),
       icon: Settings,
-      duration: "2 dakika",
-      description: "Ücretsiz deneme hesabınızı oluşturun ve admin paneline giriş yapın.",
+      duration: t("gettingStarted.steps.step1.duration"),
+      description: t("gettingStarted.steps.step1.description"),
       substeps: [
         {
-          title: "Ücretsiz kaydolun",
-          description: "Anasayfadan 'Ücretsiz Dene' butonuna tıklayın, email ve şifrenizle kayıt olun."
+          title: t("gettingStarted.steps.step1.substeps.s1.title"),
+          description: t("gettingStarted.steps.step1.substeps.s1.description"),
         },
         {
-          title: "Email doğrulaması yapın",
-          description: "Email adresinize gelen doğrulama linkine tıklayarak hesabınızı aktifleştirin."
+          title: t("gettingStarted.steps.step1.substeps.s2.title"),
+          description: t("gettingStarted.steps.step1.substeps.s2.description"),
         },
         {
-          title: "Admin paneline giriş yapın",
-          description: "Giriş yaparak admin panelinize erişin. 14 günlük ücretsiz deneme otomatik başlar."
-        }
+          title: t("gettingStarted.steps.step1.substeps.s3.title"),
+          description: t("gettingStarted.steps.step1.substeps.s3.description"),
+        },
       ],
       tips: [
-        "14 gün ücretsiz deneme — kredi kartı gerekmez",
-        "Tüm özellikler deneme süresince aktif",
-        "Acente bilgilerinizi 'Chat Bot Ayarları' > 'Acente Bilgileri' sekmesinden güncelleyebilirsiniz"
-      ]
+        t("gettingStarted.steps.step1.tips.t1"),
+        t("gettingStarted.steps.step1.tips.t2"),
+        t("gettingStarted.steps.step1.tips.t3"),
+      ],
     },
     {
       number: 2,
-      title: "Turlarınızı ve Tarihlerini Yükleyin",
+      title: t("gettingStarted.steps.step2.title"),
       icon: Upload,
-      duration: "5-10 dakika",
-      description: "Tur bilgilerinizi ve müsait tarihlerinizi sisteme ekleyin. Müşteriler bu bilgilere WhatsApp'tan ulaşabilecek.",
+      duration: t("gettingStarted.steps.step2.duration"),
+      description: t("gettingStarted.steps.step2.description"),
       substeps: [
         {
-          title: "Yeni tur oluşturun",
-          description: "'Turlar' sekmesine gidin ve 'Yeni Tur Ekle' butonuna tıklayın."
+          title: t("gettingStarted.steps.step2.substeps.s1.title"),
+          description: t("gettingStarted.steps.step2.substeps.s1.description"),
         },
         {
-          title: "Tur bilgilerini doldurun",
-          description: "Destinasyon, tur tipi (günübirlik/2-3 gece), açıklama, program URL'si gibi bilgileri girin."
+          title: t("gettingStarted.steps.step2.substeps.s2.title"),
+          description: t("gettingStarted.steps.step2.substeps.s2.description"),
         },
         {
-          title: "Tarihleri ekleyin",
-          description: "Her tur için kalkış tarihleri, fiyatlar (yetişkin, çocuk, tek kişilik) ve kontenjanları belirleyin."
-        }
+          title: t("gettingStarted.steps.step2.substeps.s3.title"),
+          description: t("gettingStarted.steps.step2.substeps.s3.description"),
+        },
       ],
       tips: [
-        "Detaylı program URL'si eklerseniz müşteriler daha fazla bilgi alabilir",
-        "Fiyatları güncel tutun, sistem otomatik olarak müşterilere gösterecek",
-        "Kontenjan bilgisi müşterilere gösterilir, acele etmelerini sağlar"
-      ]
+        t("gettingStarted.steps.step2.tips.t1"),
+        t("gettingStarted.steps.step2.tips.t2"),
+        t("gettingStarted.steps.step2.tips.t3"),
+      ],
     },
     {
       number: 3,
-      title: "WhatsApp Entegrasyonunu Talep Edin",
+      title: t("gettingStarted.steps.step3.title"),
       icon: Smartphone,
-      duration: "3 dakika",
-      description: "WhatsApp Business bağlantısı için talep formu doldurun. Ekibimiz kurulumu sizin için tamamlayacak.",
+      duration: t("gettingStarted.steps.step3.duration"),
+      description: t("gettingStarted.steps.step3.description"),
       substeps: [
         {
-          title: "WhatsApp Yönetimi sayfasına gidin",
-          description: "Admin panelinde sol menüden 'WhatsApp Yönetimi' sekmesine tıklayın."
+          title: t("gettingStarted.steps.step3.substeps.s1.title"),
+          description: t("gettingStarted.steps.step3.substeps.s1.description"),
         },
         {
-          title: "Entegrasyon talebini gönderin",
-          description: "WhatsApp Business telefon numaranızı, şirket adınızı ve iletişim bilgilerinizi girin ve talebi gönderin."
+          title: t("gettingStarted.steps.step3.substeps.s2.title"),
+          description: t("gettingStarted.steps.step3.substeps.s2.description"),
         },
         {
-          title: "Kurulumu bekleyin",
-          description: "Ekibimiz talebinizi inceleyip Meta Cloud API bağlantınızı kuracak. Süreç genelde 1-2 iş günü sürer."
-        }
+          title: t("gettingStarted.steps.step3.substeps.s3.title"),
+          description: t("gettingStarted.steps.step3.substeps.s3.description"),
+        },
       ],
       tips: [
-        "WhatsApp Business hesabınızın aktif olduğundan emin olun",
-        "Tüm Meta API altyapısını ve kurulumu biz yönetiyoruz",
-        "Talep durumunuzu WhatsApp Yönetimi sayfasından takip edebilirsiniz"
-      ]
+        t("gettingStarted.steps.step3.tips.t1"),
+        t("gettingStarted.steps.step3.tips.t2"),
+        t("gettingStarted.steps.step3.tips.t3"),
+      ],
     },
     {
       number: 4,
-      title: "Test Edin ve Kullanmaya Başlayın",
+      title: t("gettingStarted.steps.step4.title"),
       icon: Send,
-      duration: "1 dakika",
-      description: "Entegrasyon aktif olduktan sonra sistemi test edin ve müşterilerinize hizmet vermeye başlayın.",
+      duration: t("gettingStarted.steps.step4.duration"),
+      description: t("gettingStarted.steps.step4.description"),
       substeps: [
         {
-          title: "Kendi numaranızdan mesaj gönderin",
-          description: "WhatsApp'tan iş numaranıza 'Merhaba' yazın ve AI botun yanıt verdiğini doğrulayın."
+          title: t("gettingStarted.steps.step4.substeps.s1.title"),
+          description: t("gettingStarted.steps.step4.substeps.s1.description"),
         },
         {
-          title: "Tur araması yapın",
-          description: "'Kapadokya turları' gibi bir mesaj göndererek turlarınızın doğru listelendiğini kontrol edin."
+          title: t("gettingStarted.steps.step4.substeps.s2.title"),
+          description: t("gettingStarted.steps.step4.substeps.s2.description"),
         },
         {
-          title: "Rezervasyon akışını deneyin",
-          description: "'Rezervasyon yapmak istiyorum' yazarak tarih, kişi sayısı, isim ve telefon adımlarını test edin."
-        }
+          title: t("gettingStarted.steps.step4.substeps.s3.title"),
+          description: t("gettingStarted.steps.step4.substeps.s3.description"),
+        },
       ],
       tips: [
-        "Bot 7/24 çalışır, siz çevrimdışı olsanız bile müşterilerinize hizmet verir",
-        "Müşteri profilleri otomatik oluşturulur ve tercihler kaydedilir",
-        "WhatsApp Konuşmaları sekmesinden tüm sohbetleri takip edebilirsiniz"
-      ]
-    }
+        t("gettingStarted.steps.step4.tips.t1"),
+        t("gettingStarted.steps.step4.tips.t2"),
+        t("gettingStarted.steps.step4.tips.t3"),
+      ],
+    },
   ];
 
   return (
@@ -133,7 +133,7 @@ const GettingStarted = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
+              <a href="/"><img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer" /></a>
               <div className="hidden sm:block">
                 <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
               </div>
@@ -167,14 +167,14 @@ const GettingStarted = () => {
               {t("gettingStarted.subtitle")}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Birkaç basit adımda WhatsApp tur satış sisteminizi kurun ve ilk müşterinize hizmet vermeye başlayın.
+              {t("gettingStarted.heroDescription")}
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span>Teknik bilgi gerektirmez</span>
+              <span>{t("gettingStarted.badge1")}</span>
               <span className="mx-2">•</span>
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span>Tüm altyapıyı biz yönetiyoruz</span>
+              <span>{t("gettingStarted.badge2")}</span>
             </div>
           </div>
         </div>
@@ -192,7 +192,7 @@ const GettingStarted = () => {
                   {index < steps.length - 1 && (
                     <div className="absolute left-8 top-24 bottom-0 w-0.5 bg-gradient-to-b from-primary/50 to-transparent hidden md:block" />
                   )}
-                  
+
                   <Card className="relative border-2 border-border/50 shadow-lg hover:shadow-xl transition-shadow">
                     <CardContent className="p-8 md:p-10">
                       <div className="flex flex-col md:flex-row gap-6">
@@ -284,8 +284,8 @@ const GettingStarted = () => {
                 {t("gettingStarted.readyDescription")}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-gradient-ocean hover:opacity-90 text-lg px-8"
                   asChild
                 >
@@ -294,8 +294,8 @@ const GettingStarted = () => {
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </a>
                 </Button>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
                   className="text-lg px-8"
                   asChild
@@ -329,17 +329,17 @@ const GettingStarted = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3">
-              <img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto" />
+              <a href="/"><img src={turzzLogo} alt="Turzz Logo" className="h-12 w-auto cursor-pointer" /></a>
               <p className="text-sm text-muted-foreground">
-                © 2025 Turzz. Tüm hakları saklıdır.
+                © {new Date().getFullYear()} Turzz. {t("gettingStarted.footerRights")}
               </p>
             </div>
             <div className="flex gap-6 text-sm">
               <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                Ana Sayfa
+                {t("gettingStarted.footerHome")}
               </a>
               <a href="/auth" className="text-muted-foreground hover:text-foreground transition-colors">
-                Giriş
+                {t("gettingStarted.footerLogin")}
               </a>
             </div>
           </div>

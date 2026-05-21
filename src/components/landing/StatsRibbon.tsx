@@ -1,21 +1,19 @@
-// Hero altı sayısal şerit — görünür olunca sayar.
-// NOT: Sayılar şu an PLACEHOLDER. Gerçek metrikler geldiğinde değiştirilmeli.
+// Hero altı özellik şeridi — sayısal placeholder'lar kaldırıldı, özellik kartları kullanılıyor.
 // Source of truth: src/components/landing/StatsRibbon.tsx (bu dosya).
 
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Building2, MessageSquare, Star, Globe } from "lucide-react";
-import { AnimatedCounter } from "./AnimatedCounter";
+import { Globe, Clock, Zap, Rocket } from "lucide-react";
 
 const ITEMS = [
-  { icon: Building2, value: 500, suffix: "+", labelKey: "statsRibbon.agencies", color: "text-primary" },
-  { icon: MessageSquare, value: 100000, suffix: "+", labelKey: "statsRibbon.messages", color: "text-secondary" },
-  { icon: Star, value: 4.9, suffix: " ★", labelKey: "statsRibbon.satisfaction", color: "text-primary", decimals: 1 },
-  { icon: Globe, value: 7, suffix: "", labelKey: "statsRibbon.languages", color: "text-secondary" },
+  { icon: Globe, labelKey: "statsRibbon.langs", color: "text-primary" },
+  { icon: Clock, labelKey: "statsRibbon.support", color: "text-secondary" },
+  { icon: Zap, labelKey: "statsRibbon.booking", color: "text-primary" },
+  { icon: Rocket, labelKey: "statsRibbon.setup", color: "text-secondary" },
 ] as const;
 
 export const StatsRibbon = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <div className="container mx-auto px-4">
@@ -35,16 +33,8 @@ export const StatsRibbon = () => {
             transition={{ duration: 0.4, delay: idx * 0.08, ease: "easeOut" }}
             className="flex flex-col items-center text-center gap-1.5"
           >
-            <item.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${item.color}`} />
-            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-              {"decimals" in item && item.decimals ? (
-                // AnimatedCounter şu an integer; star rating için sabit gösterim
-                <span>{item.value.toFixed(item.decimals)}{item.suffix}</span>
-              ) : (
-                <AnimatedCounter to={item.value} suffix={item.suffix} locale={i18n.language === "tr" ? "tr-TR" : "en-US"} />
-              )}
-            </div>
-            <div className="text-xs md:text-sm text-muted-foreground">{t(item.labelKey)}</div>
+            <item.icon className={`w-6 h-6 sm:w-7 sm:h-7 ${item.color}`} />
+            <div className="text-sm sm:text-base font-semibold text-foreground leading-tight">{t(item.labelKey)}</div>
           </motion.div>
         ))}
       </motion.div>

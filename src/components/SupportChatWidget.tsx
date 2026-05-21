@@ -81,6 +81,41 @@ export const SupportChatWidget = () => {
         "💬 WhatsApp Bot": "How does the WhatsApp bot work? What is language support?",
         "🔧 Technical Support": "I encountered a technical problem, can I get help?",
       },
+      de: {
+        "🚀 Einrichtung": "Wie richte ich das System ein? Wie verbinde ich WhatsApp?",
+        "🎯 Touren": "Wie füge ich Touren hinzu? Wie verwalte ich Tourdaten?",
+        "📅 Reservierungen": "Wie verwalte ich Reservierungen? Wie aktualisiere ich den Status?",
+        "💬 WhatsApp Bot": "Wie funktioniert der WhatsApp-Bot? Was ist der Sprachsupport?",
+        "🔧 Technische Unterstützung": "Ich habe ein technisches Problem, kann ich Hilfe bekommen?",
+      },
+      ru: {
+        "🚀 Настройка": "Как настроить систему? Как подключить WhatsApp?",
+        "🎯 Туры": "Как добавить туры? Как управлять датами туров?",
+        "📅 Бронирования": "Как управлять бронированиями? Как обновить статусы?",
+        "💬 WhatsApp Бот": "Как работает WhatsApp-бот? Какая языковая поддержка?",
+        "🔧 Техническая поддержка": "У меня техническая проблема, могу ли я получить помощь?",
+      },
+      ar: {
+        "🚀 الإعداد": "كيف أقوم بإعداد النظام؟ كيف أربط واتساب؟",
+        "🎯 الجولات": "كيف أضيف جولات؟ كيف أدير تواريخ الجولات؟",
+        "📅 الحجوزات": "كيف أدير الحجوزات؟ كيف أحدث الحالات؟",
+        "💬 بوت WhatsApp": "كيف يعمل بوت واتساب؟ ما هو دعم اللغات؟",
+        "🔧 الدعم الفني": "واجهت مشكلة تقنية، هل يمكنني الحصول على مساعدة؟",
+      },
+      fr: {
+        "🚀 Configuration": "Comment configurer le système? Comment connecter WhatsApp?",
+        "🎯 Circuits": "Comment ajouter des circuits? Comment gérer les dates?",
+        "📅 Réservations": "Comment gérer les réservations? Comment mettre à jour les statuts?",
+        "💬 Bot WhatsApp": "Comment fonctionne le bot WhatsApp? Quel est le support linguistique?",
+        "🔧 Support technique": "J'ai un problème technique, puis-je obtenir de l'aide?",
+      },
+      es: {
+        "🚀 Configuración": "¿Cómo configuro el sistema? ¿Cómo conecto WhatsApp?",
+        "🎯 Tours": "¿Cómo agrego tours? ¿Cómo gestiono las fechas?",
+        "📅 Reservas": "¿Cómo gestiono las reservas? ¿Cómo actualizo los estados?",
+        "💬 Bot de WhatsApp": "¿Cómo funciona el bot de WhatsApp? ¿Cuál es el soporte de idiomas?",
+        "🔧 Soporte técnico": "Tengo un problema técnico, ¿puedo obtener ayuda?",
+      },
     };
 
     const langMessages = fullMessages[i18n.language] || fullMessages.tr;
@@ -217,7 +252,7 @@ export const SupportChatWidget = () => {
                 <HelpCircle className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-white">Turzz Destek</h3>
+                <h3 className="font-semibold text-white">{t("support.title")}</h3>
                 <p className="text-xs text-white/80">
                   {t("support.subtitle", "Size yardımcı olmak için buradayız")}
                 </p>

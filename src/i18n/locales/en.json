@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "home": "Home",
     "admin": "Admin Panel",
@@ -451,17 +451,17 @@
     "advanced": {
       "dateFilter": "Date Range Filter",
       "totalRevenue": "Total Revenue",
-      "totalRevenueDesc": "{{{count}}} registrations • {{{period}}}",
+      "totalRevenueDesc": "{{count}} registrations • {{period}}",
       "periodGrowth": "Period Growth",
       "vsPreviousHalf": "vs. previous half",
       "averageBasket": "Average Basket",
       "perRegistration": "Per registration",
       "conversionRate": "Conversion Rate",
-      "conversionDesc": "{{{registrations}}}/{{{conversations}}} conversations",
+      "conversionDesc": "{{registrations}}/{{conversations}} conversations",
       "monthlyTrend": "Monthly Revenue Trend",
       "revenueLabel": "Revenue",
       "destinationDetails": "Destination Details",
-      "registrationCount": "{{{count}}} registrations",
+      "registrationCount": "{{count}} registrations",
       "average": "Avg",
       "noData": "No analytics data yet",
       "noDataDescription": "Analytics will appear here once you have your first registration",
@@ -551,7 +551,7 @@
     "payment": {
       "success": "Payment Successful! 🎉",
       "successDesc": "Your subscription has been activated. Your invoice is being prepared.",
-      "successDescWithOrder": "Your subscription has been activated. Order No: {{{orderId}}}...",
+      "successDescWithOrder": "Your subscription has been activated. Order No: {{orderId}}...",
       "failed": "Payment Failed",
       "failedBase": "The payment could not be completed.",
       "insufficientFunds": "Your card has insufficient funds.",
@@ -678,14 +678,14 @@
         "errors": {
           "invalidPhone": "Enter a valid phone number",
           "selectRegistration": "Please select a registration",
-          "missingVariables": "Missing variables: {{{vars}}}",
+          "missingVariables": "Missing variables: {{vars}}",
           "generic": "Failed to send message"
         }
       },
       "sync": {
         "button": "Sync with Meta",
-        "success": "{{{count}}} templates updated",
-        "successWithNew": "{{{inserted}}} new added, {{{updated}}} updated",
+        "success": "{{count}} templates updated",
+        "successWithNew": "{{inserted}} new added, {{updated}} updated",
         "error": "Synchronization failed"
       },
       "status": {
@@ -1173,7 +1173,7 @@
       "conversations": "Conversations",
       "conversionRate": "Conversion Rate (%)",
       "conversionRatesSheet": "Conversion Rates",
-      "currencyConversionNote": "Prices shown in {{{currency}}} at current rate",
+      "currencyConversionNote": "Prices shown in {{currency}} at current rate",
       "originalPrice": "Original"
     },
     "subscription": {
@@ -1300,7 +1300,7 @@
       "edit": "Edit",
       "plan": {
         "monthlyLimit": "Monthly Message Limit",
-        "defaultLimit": "Plan default limit: {{{limit}}} messages",
+        "defaultLimit": "Plan default limit: {{limit}} messages",
         "extraMessages": "Add Extra Message Quota",
         "extraPlaceholder": "e.g: 500",
         "extraHelp": "Add extra message quota to current limit",
@@ -1368,8 +1368,8 @@
       },
       "messages": {
         "unlimited": "Unlimited",
-        "used": "{{{used}}}/{{{total}}} used",
-        "daysLeft": "{{{days}}} days left",
+        "used": "{{used}}/{{total}} used",
+        "daysLeft": "{{days}} days left",
         "expired": "Expired",
         "notAdded": "Not Added",
         "quotaFull": "Quota Full",
@@ -1440,7 +1440,7 @@
       "usedThisMonth": "Used This Month",
       "unlimited": "Unlimited",
       "quotaFull": "Your message quota is full! You need to upgrade your package.",
-      "quotaNearLimit": "{{{percent}}}% of your message quota remaining.",
+      "quotaNearLimit": "{{percent}}% of your message quota remaining.",
       "lastReset": "Last Reset",
       "buyExtraQuota": "Buy Extra Message Quota",
       "extraQuotaTitle": "Extra Message Quota",
@@ -1460,13 +1460,13 @@
       "notUsedYet": "Not used yet",
       "days": "days",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{{count}}} messages/month",
+        "messagesPerMonth": "{{count}} messages/month",
         "unlimitedMessages": "Unlimited messages",
-        "maxTours": "Up to {{{count}}} tours",
+        "maxTours": "Up to {{count}} tours",
         "unlimitedTours": "Unlimited tours",
-        "languageSupport": "{{{count}}} language support",
+        "languageSupport": "{{count}} language support",
         "allLanguages": "All languages (7 languages)",
-        "limitedStyles": "{{{count}}} conversation styles",
+        "limitedStyles": "{{count}} conversation styles",
         "allStyles": "All conversation styles + Custom style",
         "userProfiles": "User profiles",
         "autoReminders": "Automatic reminders",
@@ -1520,13 +1520,13 @@
       "agencyNotFound": "Agency not found"
     },
     "quotaBanner": {
-      "warning": "You've used {{{percent}}}% of your message quota. It will run out soon.",
-      "critical": "Your message quota is critically low ({{{percent}}}%)! New messages may be blocked.",
+      "warning": "You've used {{percent}}% of your message quota. It will run out soon.",
+      "critical": "Your message quota is critically low ({{percent}}%)! New messages may be blocked.",
       "upgrade": "Upgrade Plan"
     },
     "onboarding": {
       "title": "Getting Started",
-      "progress": "{{{percent}}}% complete",
+      "progress": "{{percent}}% complete",
       "dismiss": "Dismiss",
       "steps": {
         "agencyInfo": "Fill in agency info",
@@ -1780,7 +1780,7 @@
     "bulkImport": "Import from Excel",
     "duplicate": "Duplicate",
     "duplicateTitleLabel": "New tour name",
-    "copyDatesNote": "{{{count}}} dates will also be copied",
+    "copyDatesNote": "{{count}} dates will also be copied",
     "duplicateConfirm": "Duplicate",
     "duplicateSuccess": "Tour duplicated!",
     "duplicateError": "Failed to duplicate",
@@ -1816,11 +1816,11 @@
     "priceChild": "Child price",
     "quota": "Quota",
     "pricingNote": "Same price will be applied to all dates",
-    "preview": "{{{count}}} dates will be created",
+    "preview": "{{count}} dates will be created",
     "moreDates": "more dates...",
-    "generateButton": "Create {{{count}}} Dates",
+    "generateButton": "Create {{count}} Dates",
     "generating": "Generating...",
-    "success": "{{{count}}} dates added successfully!",
+    "success": "{{count}} dates added successfully!",
     "errors": {
       "noDates": "Please select a date range and pattern",
       "priceRequired": "Adult price is required",
@@ -1841,12 +1841,12 @@
     "selectFile": "Select Excel File",
     "fileHint": ".xlsx or .xls formats supported",
     "parsedTours": "Parsed Tours",
-    "parsed": "{{{valid}}}/{{{total}}} tours valid",
+    "parsed": "{{valid}}/{{total}} tours valid",
     "valid": "Valid",
     "invalid": "Invalid",
-    "importButton": "Import {{{count}}} Tours",
+    "importButton": "Import {{count}} Tours",
     "importing": "Importing...",
-    "success": "{{{count}}} tours added successfully!",
+    "success": "{{count}} tours added successfully!",
     "errors": {
       "parseError": "Failed to read Excel file",
       "noValid": "No valid tours to import",
@@ -1866,7 +1866,7 @@
       "vsLastWeek": "vs last week"
     },
     "welcome": {
-      "todayStats": "{{{count}}} new reservations today",
+      "todayStats": "{{count}} new reservations today",
       "revenue": "revenue",
       "pending": "pending",
       "noRegistrations": "No reservations today. Your WhatsApp bot is running! 💬"
@@ -1967,7 +1967,111 @@
     "readyDescription": "Your system is set up and running. Now your customers can search for tours 24/7 via WhatsApp, create reservations, and make payments.",
     "nextSteps": "Next Steps",
     "watchVideo": "Watch Video",
-    "readDocs": "Documentation"
+    "readDocs": "Documentation",
+    "steps": {
+      "step1": {
+        "title": "Create Account and Log In",
+        "duration": "2 minutes",
+        "description": "Create your free trial account and log in to the admin panel.",
+        "substeps": {
+          "s1": {
+            "title": "Sign up for free",
+            "description": "Click 'Try Free' on the homepage, register with your email and password."
+          },
+          "s2": {
+            "title": "Verify your email",
+            "description": "Click the verification link sent to your email to activate your account."
+          },
+          "s3": {
+            "title": "Log in to admin panel",
+            "description": "Log in to access your admin panel. 14-day free trial starts automatically."
+          }
+        },
+        "tips": {
+          "t1": "14-day free trial — no credit card required",
+          "t2": "All features active during trial",
+          "t3": "Update agency info from 'Chat Bot Settings' > 'Agency Info'"
+        }
+      },
+      "step2": {
+        "title": "Upload Your Tours and Dates",
+        "duration": "5-10 minutes",
+        "description": "Add your tour information and available dates to the system. Customers will be able to access this via WhatsApp.",
+        "substeps": {
+          "s1": {
+            "title": "Create a new tour",
+            "description": "Go to 'Tours' tab and click 'Add New Tour'."
+          },
+          "s2": {
+            "title": "Fill in tour details",
+            "description": "Enter destination, tour type (day trip/2-3 nights), description, program URL."
+          },
+          "s3": {
+            "title": "Add dates",
+            "description": "Set departure dates, prices (adult, child, single room) and quotas for each tour."
+          }
+        },
+        "tips": {
+          "t1": "Adding a detailed program URL lets customers get more info",
+          "t2": "Keep prices updated, system shows them to customers automatically",
+          "t3": "Quota info is shown to customers, creating urgency"
+        }
+      },
+      "step3": {
+        "title": "Connect Your WhatsApp",
+        "duration": "5-10 minutes",
+        "description": "Connect your WhatsApp Business number yourself in minutes with Meta Embedded Signup. No technical knowledge required.",
+        "substeps": {
+          "s1": {
+            "title": "Go to WhatsApp Settings in admin panel",
+            "description": "Go to 'WhatsApp Settings' in 'Chat Bot Settings' group from the left menu, or click the WhatsApp step in the onboarding wizard."
+          },
+          "s2": {
+            "title": "Click 'Connect with Facebook' button",
+            "description": "Log in with your Facebook/Meta Business account."
+          },
+          "s3": {
+            "title": "Select your WhatsApp Business number",
+            "description": "Select your Meta Business account, choose your WhatsApp Business number and approve permissions. Connection is established automatically."
+          }
+        },
+        "tips": {
+          "t1": "Make sure your WhatsApp Business account is active (not regular WhatsApp)",
+          "t2": "If you don't have a Meta Business Suite account, you can create one during registration",
+          "t3": "If you have connection issues, write to info@turzzai.com"
+        }
+      },
+      "step4": {
+        "title": "Test and Start Using",
+        "duration": "1 minute",
+        "description": "After integration is active, test the system and start serving your customers.",
+        "substeps": {
+          "s1": {
+            "title": "Send a message from your own number",
+            "description": "Send 'Hello' to your business number on WhatsApp and verify the AI bot responds."
+          },
+          "s2": {
+            "title": "Search for tours",
+            "description": "Send a message like 'Cappadocia tours' to check your tours are listed correctly."
+          },
+          "s3": {
+            "title": "Try the reservation flow",
+            "description": "Write 'I want to make a reservation' to test the date, number of people and name steps."
+          }
+        },
+        "tips": {
+          "t1": "Bot works 24/7, serves your customers even when you're offline",
+          "t2": "Customer profiles are created automatically and preferences saved",
+          "t3": "Track all conversations from the WhatsApp Conversations tab"
+        }
+      }
+    },
+    "heroDescription": "Set up your WhatsApp tour sales system in a few simple steps and start serving your first customer.",
+    "badge1": "No technical knowledge required",
+    "badge2": "We manage all the infrastructure",
+    "footerRights": "All rights reserved.",
+    "footerHome": "Home",
+    "footerLogin": "Login"
   },
   "help": {
     "title": "Help Center",
@@ -1977,7 +2081,7 @@
     "stepByStep": "Step-by-step guide",
     "visualGuides": "Visual explanations",
     "troubleshooting": "Troubleshooting tips",
-    "topicsCount": "{{{count}}} detailed topics",
+    "topicsCount": "{{count}} detailed topics",
     "back": "Go Back",
     "backToAdmin": "Back to Admin Panel",
     "quickLinks": "Getting Started Guide",
@@ -2194,7 +2298,7 @@
     }
   },
   "blog": {
-    "minutesRead": "{{{count}}} min read",
+    "minutesRead": "{{count}} min read",
     "readMore": "Read →",
     "noPosts": "No posts in this category yet.",
     "ctaQuestion": "Have you tried Turzz AI?",
@@ -2210,7 +2314,7 @@
       "ctaDesc": "14 days free, no credit card required.",
       "ctaButton": "Start Free"
     },
-    "fallbackNotice": "This article hasn't been translated into {{{lang}}} yet. Showing the Turkish version.",
+    "fallbackNotice": "This article hasn't been translated into {{lang}} yet. Showing the Turkish version.",
     "fallbackBadge": "Turkish",
     "availableIn": "This article is available in:"
   },
@@ -3118,7 +3222,7 @@
       "cancelledDesc": "WhatsApp connection was cancelled.",
       "success": "Success!",
       "successDesc": "Your WhatsApp number was connected successfully",
-      "successDescPhone": "Your WhatsApp number was connected successfully: {{{phone}}}",
+      "successDescPhone": "Your WhatsApp number was connected successfully: {{phone}}",
       "errorTitle": "Error",
       "exchangeError": "An error occurred during WhatsApp connection. Please try again.",
       "disconnected": "Disconnected",
@@ -3178,8 +3282,8 @@
     },
     "conversations": {
       "search": "Search...",
-      "count": "{{{count}}} conversations",
-      "page": "Page {{{current}}}/{{{total}}}",
+      "count": "{{count}} conversations",
+      "page": "Page {{current}}/{{total}}",
       "selectAgency": "Select Agency"
     },
     "logs": {
@@ -3193,7 +3297,7 @@
       "roleSelect": "Select role",
       "dateRange": "Date Range",
       "clearFilters": "Clear Filters",
-      "results": "Message Logs ({{{count}}} results)",
+      "results": "Message Logs ({{count}} results)",
       "loading": "Loading logs...",
       "empty": "No logs found",
       "loadError": "Error loading logs",
@@ -3228,8 +3332,8 @@
       "chartTitle": "User Count (by Language)",
       "chartBar": "User Count",
       "detailTitle": "Detailed Language Distribution",
-      "userCount": "{{{count}}} users",
-      "messageCount": "{{{count}}} messages",
+      "userCount": "{{count}} users",
+      "messageCount": "{{count}} messages",
       "empty": "No language data yet"
     }
   },
@@ -3386,6 +3490,7 @@
     "customer": "Customer"
   },
   "support": {
+    "title": "Turzz Support",
     "subtitle": "We are here to help",
     "quickOptions": "Quick Options:",
     "error": "Sorry, something went wrong. Please try again or visit https://turzzai.com/help.",
@@ -3413,17 +3518,17 @@
     "msg7": "2 people",
     "msg8": "✅ 2 adults registered.\n\n👤 What's your full name?",
     "msg9": "John Smith",
-    "msg10": "✅ Thank you John!\n\n📝 Any special requests? (Type \"no\" if none)",
-    "msg11": "No",
-    "msg12": "📋 *RESERVATION SUMMARY*\n\n🏖️ Tour: Cappadocia 2-Day\n📅 Date: June 15\n👥 People: 2 Adults\n👤 Name: John Smith\n💰 Total: €240\n\nType \"yes\" to confirm.",
+    "msg10": "✅ Thank you John!\n\n📱 What is your phone number?",
+    "msg11": "+44 7700 900123",
+    "msg12": "📋 *RESERVATION SUMMARY*\n\n🏖️ Tour: Cappadocia 2-Day\n📅 Date: June 15\n👥 People: 2 Adults\n👤 Name: John Smith\n📱 Phone: +44 7700 900123\n💰 Total: €240\n\nType \"yes\" to confirm.",
     "msg13": "Yes",
-    "msg14": "✅ Your reservation is confirmed! 🎉\nDetails sent via WhatsApp. Safe travels! 🌟"
+    "msg14": "✅ Your reservation is confirmed! 🎉\n\n💳 Deposit: €72\n🏦 IBAN: TR12 3456 7890 1234 5678\n\n📞 Contact our agency for any questions.\nSafe travels! 🌟"
   },
   "statsRibbon": {
-    "agencies": "Active Agencies",
-    "messages": "Monthly Messages",
-    "satisfaction": "Satisfaction",
-    "languages": "Language Support"
+    "langs": "7 Language Support",
+    "support": "24/7 Instant Response",
+    "booking": "Reservation in Seconds",
+    "setup": "Setup in 5 Minutes"
   },
   "indexBlog": {
     "title": "Industry Insights",

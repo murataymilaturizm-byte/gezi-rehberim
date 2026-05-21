@@ -90,10 +90,10 @@ function mergeReservationInfo(
   if (extracted.dateId && !merged.dateId) merged.dateId = extracted.dateId;
   if (extracted.selectedDate && !merged.selectedDate) merged.selectedDate = extracted.selectedDate;
 
-  // 2. Kişi sayısı: tarih varsa ve henüz yoksa ekle
+  // 2. Kişi sayısı: tarih varsa ekle veya GÜNCELLE (K1: son verilen değer geçerli)
   const hasDate = !!(merged.dateId || merged.selectedDate);
-  if (hasDate && !merged.paxAdult) {
-    if (extracted.paxAdult) merged.paxAdult = extracted.paxAdult;
+  if (hasDate && extracted.paxAdult) {
+    merged.paxAdult = extracted.paxAdult;
   }
   if (extracted.paxChild !== undefined && extracted.paxChild !== null && merged.paxAdult) {
     merged.paxChild = extracted.paxChild;
@@ -147,7 +147,7 @@ function isAllInfoCollected(info: ReservationInfo, collectEmail?: boolean): bool
  * Negative guard: "evet AMA", "yes BUT change", "tamam FAKAT başka tarih" gibi
  * ifadeler onay sayılmaz — müşteri aslında değiştirmek istiyor.
  */
-function detectConfirmation(message: string, language: string): boolean {
+export function detectConfirmation(message: string, language: string): boolean {
   const msg = message.toLowerCase().trim();
 
   // Negative patterns — bunlar varsa onay değil
@@ -221,6 +221,56 @@ export function getCancellationMessage(language: string): string {
     es: "¡No hay problema! 😊 Puedo ayudarte con otra cosa. ¿Qué tour te interesa?",
   };
   return messages[language] || messages.en;
+}
+
+/**
+ * K6: After-sales mesajı mı? COMPLETED state'de mevcut rezervasyon context'ini korumak için.
+ * detectCancellation ve hasNewReservationIntent'ten sonra çağrılır — onlar önce yakalanır.
+ * Ödeme bildirimi, değişiklik/iptal isteği, durum sorma, buluşma/transfer soruları vs.
+ */
+/**
+ * K6: After-sales mesajı mı? COMPLETED state'de mevcut rezervasyon context'ini korumak için.
+ * detectCancellation ve hasNewReservationIntent'ten sonra çağrılır — onlar önce yakalanır.
+ * Kapsam: ödeme bildirimi, rezervasyon değişiklik/iptal isteği, durum sorma,
+ *          buluşma/transfer soruları, "ne zaman arayacaksınız" vb.
+ */
+function isAfterSalesMessage(userMessage: string, detectedIntent: string): boolean {
+  // NLU'dan after-sales intent geldiyse direkt yakala
+  const afterSalesIntents = [
+    "after_sales", "cancellation_policy", "payment_methods",
+    "agency_info", "working_hours", "change_info",
+  ];
+  if (afterSalesIntents.includes(detectedIntent)) return true;
+
+  const msg = userMessage.toLowerCase();
+
+  // ÖDEME BİLDİRİMİ — 7 dil
+  const paymentPatterns =
+    /\b(ödedim|ödeme\s+yaptım|havale\s+yaptım|para\s+gönderdim|eft\s+yaptım|banka\s+transfer|dekont|makbuz|paid\b|i\s+paid|payment\s+sent|transferred|receipt|bank\s+transfer|bezahlt|habe\s+bezahlt|überwiesen|beleg|оплатил|оплатила|перевёл|перевела|чек|квитанцию|دفعت|أرسلت\s+الدفع|payé|j['']ai\s+payé|reçu|pagué|hice\s+el\s+pago|recibo)\b/i;
+  if (paymentPatterns.test(msg)) return true;
+
+  // REZERVASYON SORGU / DEĞİŞİKLİK / İPTAL — Türkçe çekim ekleri dahil
+  // "rezervasyonum/rezervasyonumu/rezervasyonumuz" + eylem
+  const bookingActionPatterns =
+    /rezervasyon\w{0,8}\s+.{0,25}?(iptal|değiştir|değişiklik|sorgu|durum|teyit|onay|haber|ne\s+zaman|nasıl|hakkında)|rezervasyonum(u|uz|a|da|dan)?\s+(iptal|değiştir|değişiklik|durum|teyit|onay)/i;
+  if (bookingActionPatterns.test(msg)) return true;
+
+  // ZAMANLAMA / ACENTE İLETİŞİM SORULARI
+  const timingPatterns =
+    /ne\s+zaman\s+(arayacak|ulaşacak|haberleşecek|teyit\s+edecek|onaylayacak|yazacak)|arayacak\s*mısınız|haber\s+verecek\s*misiniz|ne\s+zaman\s+haber|teyit\s+(geldi|bekliyorum|edecek|gelecek)|onay\s+(bekliyorum|geldi|gelecek)|when\s+(will\s+)?(you\s+)?(call|contact|reach|confirm)|wann\s+(rufen|kontaktieren|bestätigen)|когда\s+(позвоните|свяжетесь)|متى\s+ستتصل|quand\s+allez[\s-]vous\s+appeler|cuándo\s+van\s+a\s+llamar/i;
+  if (timingPatterns.test(msg)) return true;
+
+  // BULUŞMA / KALKIŞ / TRANSFER / HAZIRLIK
+  const meetingPatterns =
+    /buluşma\s*(yeri|noktası|saati)|toplanma\s*(yeri|noktası|saati)|kalkış\s*(yeri|saati|noktası)|karşılama\s*(yeri|saati|noktası|transfer)?|havalimanı\s*(transfer|karşılama)|transfer\b|ne\s+getireyim|ne\s+giyeyim|yanımda\s+ne|hazırlık\s*(yapayım|nasıl)|meeting\s+point|pickup\s+(point|location|time)|pick[\s-]up|Treffpunkt|abholen|место\s+встречи|что\s+взять|نقطة\s+الاجتماع|point\s+de\s+rencontre|punto\s+de\s+encuentro/i;
+  if (meetingPatterns.test(msg)) return true;
+
+  // İNGİLİZCE / DİĞER DİL BOOKING ACTIONS
+  const intlBookingPatterns =
+    /booking\s+(change|cancel|status|confirm|modify)|cancel\s+(my\s+)?booking|change\s+(my\s+)?booking|modify\s+(my\s+)?booking|confirmation\s+(email|message|received)|what\s+to\s+(bring|wear|pack)|Buchung\s+(ändern|stornieren|status)|изменить\s+бронирование|отменить\s+бронирование|статус\s+брони|تعديل\s+الحجز|إلغاء\s+الحجز|changer\s+(ma\s+)?réservation|annuler\s+(ma\s+)?réservation|cambiar\s+(mi\s+)?reserva|cancelar\s+(mi\s+)?reserva/i;
+  if (intlBookingPatterns.test(msg)) return true;
+
+  return false;
 }
 
 function resetForNewReservation(ctx: ConversationContext): Partial<ConversationContext> {
@@ -402,14 +452,17 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COLLECTING_INFO → TOUR_SELECTED (tur değişimi onaylı)
+  // COLLECTING_INFO → TOUR_SELECTED (tur değişimi — B2: genişletilmiş pattern)
+  // "aslında başka tur" / "Kapadokya'ya geç" / "farklı tur" gibi geçişleri de yakalar.
+  // NOT: selectedTour null ise geçiş olmaz; o durumda B2 deterministik listesi devreye girer (process-message).
   {
     from: "COLLECTING_INFO",
     to: "TOUR_SELECTED",
     condition: (ctx, input) =>
       input.selectedTour !== null &&
       input.selectedTour.id !== ctx.currentTour?.id &&
-      /yeni tur|başka tur|tur değiştir|cancel|iptal|switch tour|change tour|different tour/i.test(input.userMessage),
+      (/yeni tur|başka tur|tur değiştir|switch tour|change tour|different tour|farklı tur|diğer tur|tur\s*değişt|aslında\s+.{0,20}?tur|bunun\s+yerine\s+.{0,20}?tur|andere tour|другой тур|tour différent|tour diferente|جولة أخرى/i.test(input.userMessage) ||
+       input.detectedIntent === "reservation_intent"),
     action: (ctx, input) => ({
       ...ctx,
       currentTour: input.selectedTour,
@@ -423,15 +476,18 @@ const transitions: StateTransition[] = [
   },
 
   // COLLECTING_INFO → COLLECTING_INFO
-  // KRİTİK: Bilgi sorusu gelince mevcut bilgileri KORU
+  // KRİTİK: Bilgi sorusu gelince mevcut bilgileri KORU.
+  // K7: Tüm bilgi doluysa (allInfoCollected) intent ne olursa olsun CONFIRMING'e geç.
   {
     from: "COLLECTING_INFO",
     to: "COLLECTING_INFO",
     condition: (ctx, input) => {
       const isInfo = isInformationalMessage(input.userMessage, input.detectedIntent);
-      // Bilgi sorusu gelirse her zaman bu geçişe gir (bilgileri koru)
-      if (isInfo) return true;
-      const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
+      // Bilgi sorusu gelirse ekstraksiyonu dışarıda bırak; sadece mevcut bilgilerle kontrol et
+      const merged = isInfo
+        ? { ...ctx.reservationInfo }
+        : mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
+      // K7: Tüm bilgi tamamsa bu transition'ı atla → COLLECTING_INFO→CONFIRMING devralır
       return !isAllInfoCollected(merged, ctx.collectEmail);
     },
     action: (ctx, input) => {
@@ -548,7 +604,8 @@ const transitions: StateTransition[] = [
   // ===== COMPLETED STATE TRANSITIONS =====
 
   // COMPLETED → BROWSING (iptal / reset / baştan başla) — en yüksek öncelik
-  // "vazgeçtim", "baştan başlayalım", "sıfırla", "restart" gibi kalıpları yakalar
+  // "vazgeçtim", "baştan başlayalım", "sıfırla", "restart" gibi kalıpları yakalar.
+  // NOT: after-sales'den ÖNCE kontrol edilir — "iptal" tek başına conversation reset anlamına gelir.
   {
     from: "COMPLETED",
     to: "BROWSING",
@@ -559,6 +616,17 @@ const transitions: StateTransition[] = [
       stage: "BROWSING" as ConversationStage,
       justCancelled: true,
     }),
+  },
+
+  // COMPLETED → COMPLETED (after-sales — mevcut rezervasyon context'ini koru)
+  // K6: "Rezervasyonumu değiştirmek istiyorum", "ödedim", "ne zaman arayacaksınız" vs.
+  // detectCancellation ve hasNewReservationIntent'ten SONRA kontrol edilir.
+  // Bu transition, COMPLETED → BROWSING (greeting/general) geçişinden ÖNCE çalışır.
+  {
+    from: "COMPLETED",
+    to: "COMPLETED",
+    condition: (_ctx, input) => isAfterSalesMessage(input.userMessage, input.detectedIntent),
+    action: (ctx) => ({ ...ctx }), // Tüm context (reservationInfo, currentTour) aynen korunur
   },
 
   // COMPLETED → BROWSING (YENİ REZERVASYON KASTI — currentTour'u önemseme)

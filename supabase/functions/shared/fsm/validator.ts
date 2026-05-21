@@ -76,6 +76,62 @@ export function sanitizeInput(input: string): string {
   return sanitized;
 }
 
+/**
+ * K4: Prompt injection tespiti — kullanıcı mesajında injection girişimi var mı?
+ * Tespit edilirse mesaj ENGELLENMEz, sadece flag döner.
+ * AI cevabı post-validate edilirken bu flag kullanılır.
+ */
+export function detectInjection(input: string): boolean {
+  if (!input || typeof input !== "string") return false;
+  const msg = input.toLowerCase();
+
+  // EN — temel injection kalıpları
+  const enPatterns = [
+    /\b(ignore|forget|disregard|skip|override)\s+(all\s+)?(previous|above|prior|earlier|your|any)\s+(instructions?|rules?|directives?|guidelines?|prompt|system|context)/i,
+    /\byou\s+are\s+now\s+(a\s+|an\s+)?\w/i,
+    /\bact\s+as\b.{0,40}(bot|ai|assistant|gpt|model|new\s+system)/i,
+    /\b(reveal|show|print|display|output)\s+(your\s+)?(system\s+prompt|instructions?|rules?|hidden\s+prompt)/i,
+    /\bpretend\s+(you\s+are|to\s+be|that)\b/i,
+    /\b(developer|admin|system|root|god|jailbreak|dan)\s+mode\b/i,
+    /\bnew\s+(instructions?|role|task|persona)\b/i,
+    /\byour\s+new\s+(instructions?|role|task)\b/i,
+    /\bgive\s+(me\s+)?(a\s+)?\d+\s*%\s*(discount|off)\b/i,
+    /\bmake\s+(it|this|everything)\s+free\b/i,
+  ];
+  if (enPatterns.some((p) => p.test(msg))) return true;
+
+  // TR — talimat değiştirme + indirim zorlaması
+  const trPatterns = [
+    /\b(önceki|tüm|mevcut|yukarıdaki|bütün)\s+(talimatlar?\w*|kurallar?\w*|direktifler?\w*)\s+(unut|yoksay|görmezden|iptal|sil)/i,
+    /\btalimatlar?\w*\s+(unut|yoksay|değiştir|sil)\b/i,
+    /\bsen\s+artık\s+\w/i,
+    /\brol\s+(değiştir|oyna|al)\b/i,
+    /\b(sistem\s+prompt\w*|talimatlar?\w*)\s+(göster|yaz|söyle|aç|oku)\b/i,
+    /\b%\s*\d+\s*indirim\s+(ver|yap|uygula)\b/i,
+    /\bbedavaya?\s+(ver|yap|sun)\b/i,
+    /\byeni\s+talimatlar?\b/i,
+    /\b(özel|gizli)\s+(mod|mode|komut)\b/i,
+  ];
+  if (trPatterns.some((p) => p.test(msg))) return true;
+
+  // DE / FR / ES / RU / AR — kısa özlü kalıplar
+  const multilangPatterns = [
+    /\b(ignoriere|vergiss)\s+(alle?\s+)?(anweisungen?|regeln?|system)\b/i,
+    /\bdu\s+bist\s+jetzt\b/i,
+    /\b(ignores?|oublies?)\s+(toutes?\s+les?\s+)?(instructions?|règles?)\b/i,
+    /\btu\s+es\s+maintenant\b/i,
+    /\b(ignora|olvida)\s+(todas?\s+las?\s+)?(instrucciones?|reglas?)\b/i,
+    /\bahora\s+eres?\b/i,
+    /\b(игнорируй|забудь)\s+(все\s+)?(инструкции|правила)\b/i,
+    /\bты\s+теперь\b/i,
+    /\b(تجاهل|انسَ)\s+(جميع\s+)?(التعليمات|القواعد)\b/i,
+    /\bأنت\s+الآن\b/i,
+  ];
+  if (multilangPatterns.some((p) => p.test(msg))) return true;
+
+  return false;
+}
+
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return emailRegex.test(email);

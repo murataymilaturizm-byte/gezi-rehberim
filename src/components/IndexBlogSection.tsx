@@ -17,7 +17,7 @@ export function IndexBlogSection() {
 
   let posts: ReturnType<typeof getAllPosts> = [];
   try {
-    posts = getAllPosts().slice(0, 3);
+    posts = getAllPosts(i18n.language).slice(0, 3);
   } catch {
     return null;
   }

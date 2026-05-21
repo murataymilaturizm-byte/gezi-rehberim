@@ -91,6 +91,57 @@ const EXTRA_PATTERNS: RegExp[] = [
   /\bتهانينا.{0,40}(الحجز|الرحلة|الجولة)/i,
 ];
 
+// ─── K4 Post-validation: injection şüphesi sonrası fiyat manipülasyon tespiti ──
+const PRICE_MANIP_PATTERNS: RegExp[] = [
+  // TR — indirim/bedava/ücretsiz
+  /\b%\s*\d+\s*indirim\b/i,
+  /\bindirimli\s+(fiyat|ücret)\b/i,
+  /\b(size\s+özel|sadece\s+siz|özel\s+teklif)\s+.{0,20}%(indirim|daha\s+ucuz)/i,
+  /\bücretsiz\s+(yapabilirim|sunabilirim|yapıyorum|veriyorum|yaptım)\b/i,
+  /\bbedavaya?\s+(alabilirim|sunabilirim|yapabilirim|veriyorum)\b/i,
+  // EN — discount/free
+  /\bgive\s+(you\s+)?(a\s+)?\d+\s*%\s*(off|discount)\b/i,
+  /\b(i\s+can|i'll)\s+(make|give|offer)\s+(it|you)\s+(free|at\s+no\s+cost)\b/i,
+  /\bspecial\s+(price|discount|offer)\s+of\s+\d+\s*%\b/i,
+  /\b\d+\s*%\s*off\s+(for\s+you|today)\b/i,
+  // DE
+  /\b(gebe\s+ihnen|biete\s+ihnen)\s+\d+\s*%\s*(rabatt|vergünstigung)\b/i,
+  /\bkostenlos\s+(für\s+sie|machen)\b/i,
+  // FR
+  /\bvous\s+offre\s+\d+\s*%\s*de\s+(réduction|remise)\b/i,
+  /\bgratuitement\s+pour\s+vous\b/i,
+  // ES
+  /\ble\s+doy\s+\d+\s*%\s*de\s+descuento\b/i,
+  /\bgratis\s+para\s+(usted|ti)\b/i,
+  // RU
+  /\bдам\s+вам\s+скидку\s+\d+\s*%\b/i,
+  /\bбесплатно\s+для\s+вас\b/i,
+  // AR
+  /\bأعطيك\s+خصم\s+\d+\s*%\b/i,
+];
+
+const PRICE_MANIP_SAFE: Record<string, string> = {
+  tr: "Fiyatlarımız sistemde tanımlıdır. Güncel fiyat ve kampanyalar için lütfen acentemizle iletişime geçin.",
+  en: "Our prices are defined in the system. Please contact our agency for current prices and offers.",
+  de: "Unsere Preise sind im System festgelegt. Für aktuelle Preise wenden Sie sich bitte an unsere Agentur.",
+  fr: "Nos prix sont définis dans le système. Pour les prix actuels, contactez notre agence.",
+  es: "Nuestros precios están definidos en el sistema. Para precios actuales, contacte nuestra agencia.",
+  ru: "Наши цены определены системой. Для актуальных цен свяжитесь с нашим агентством.",
+  ar: "أسعارنا محددة في النظام. للأسعار الحالية يرجى التواصل مع وكالتنا.",
+};
+
+/**
+ * K4: Injection şüphesi olan mesajlara karşı AI cevabında fiyat manipülasyonu var mı?
+ * Sadece isSuspectedInjection=true olduğunda çağrılır (false-positive riskini azaltır).
+ * Tespit edilirse güvenli fallback döner, null dönerse cevap geçerlid.
+ */
+export function validateInjectionResponse(text: string, language: string): string | null {
+  const hasManip = PRICE_MANIP_PATTERNS.some((p) => p.test(text));
+  if (!hasManip) return null;
+  console.error("K4_PRICE_MANIP_IN_AI_RESPONSE", { language, textSnippet: text.slice(0, 120) });
+  return PRICE_MANIP_SAFE[language] || PRICE_MANIP_SAFE.en;
+}
+
 // ─── Redirect cümleleri ───────────────────────────────────────────────────────
 const REDIRECT_MESSAGES: Record<string, string> = {
   tr: "Lütfen bilgilerinizi kontrol edip onaylar mısınız?",

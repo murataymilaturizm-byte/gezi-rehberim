@@ -163,6 +163,11 @@ export function getStagePrompt(context: PromptContext): string {
 - "Her hafta", "her Cuma" gibi bilgileri VERİTABANINDA YOKSA söyleme.
 - Kullanıcının sormadığı turun tarih veya fiyat bilgisini ASLA gösterme.
 
+🚨 KRİTİK KURAL - ACENTE BİLGİSİ:
+- Adres, çalışma saati, iptal/iade politikası, dahil olanlar/hizmetler → SADECE sana verilen Acente Bilgisi bölümündeki verileri kullan.
+- Bu bilgiler sana verilmemişse (listede yoksa): "Bu bilgi için lütfen acentemizle iletişime geçin" de. KESİNLİKLE tahmin veya uydurma yapma.
+- Özellikle: belirli adres bilgisi, açılış/kapanış saati, kişi başı dahil olan hizmetler için veri yoksa UYDURMA.
+
 🚨 KRİTİK KURAL - KALKI / TOPLANMA YERİ:
 - "Kalkış yeri", "nereden hareket", "toplanma yeri", "nerede buluşuyoruz" sorularında:
   → SADECE turun hareket_noktasi alanındaki bilgiyi ver
@@ -179,6 +184,11 @@ export function getStagePrompt(context: PromptContext): string {
 - Only use information from the tour list provided to you.
 - If asked about a tour not in the list, say "This tour is not in our system".
 - Never guess or invent. Never show another tour's dates.
+
+🚨 CRITICAL RULE - AGENCY INFORMATION:
+- Address, working hours, cancellation/refund policy, included services → ONLY use data from the Agency Info section provided to you.
+- If this information is not given to you (not in the list): say "Please contact our agency for this information." NEVER guess or invent.
+- Especially for: specific address, opening/closing hours, per-person inclusions — if not provided, DO NOT guess.
 
 🚨 CRITICAL RULE - DEPARTURE / MEETING POINT:
 - For questions about "departure point", "where to meet", "pickup location":
@@ -260,23 +270,24 @@ Bu bilgiler doğru mudur, onaylıyor musunuz?
         return (
           `📍 DURUM: Kayıt tamamlandı ✅
 
+${summary ? `📋 MEVCUT REZERVASYON:\n${summary}\n` : ""}
 🎯 YAPILACAK:
-- Kayıt tamamlandı mesajı ver (SADECE ilk kez)
-- "Acentemiz en kısa sürede iletişime geçecek" de
-- Başka sorusu var mı diye sor
+- Kullanıcının sorusunu yanıtla.
+- "Rezervasyonunuz tamamlandı" tekrar DEME (zaten söylendi).
+- Gerekirse "Acentemiz en kısa sürede sizinle iletişime geçecek" ekle.
 
-🚨 KRİTİK - SORU SORARSA:
-- Soruyu cevapla, "rezervasyonunuz tamamlandı" tekrar deme
-- Normal konuşma gibi devam et
+🚨 AFTER-SALES — ACENTE YÖNLENDİRME KURALLARI:
+- DEĞİŞİKLİK / İPTAL talebi: "Rezervasyon değişikliği ve iptali için lütfen doğrudan acentemizle iletişime geçin" de. Botu KENDIN değiştirme veya iptal etme — bu kritik iş kuralı.
+- "ÖDEDİM" / "DEKONT GÖNDERDİM": "Teşekkürler! Acentemiz ödemenizi teyit edecek ve en kısa sürede sizinle iletişime geçecek" de.
+- "NE ZAMAN ARAYACAKSINIŻ": Acentenin iletişim bilgisini ver + "En kısa sürede sizinle iletişime geçecekler" de.
+- "BULUŞMA YERİ / TRANSFER / NE GETİREYİM": Tur kalkış bilgisini ver; bilgi yoksa acenteye yönlendir.
 
 🚨 KRİTİK - BAŞKA TUR SORARSA:
 - Bilgi istiyorsa → o turun bilgisini ver
 - Rezervasyon istiyorsa → "Elbette, [tur adı] için başlatıyorum" de
 - Niyet belirsizse → "Bilgi mi, rezervasyon mu?" diye sor
 
-🚫 İPTAL TALEBİ:
-- "İptal ettim" veya "iptal edebilirim" DEME
-- "İptal için acentemizle iletişime geçin" de` + hallucinationGuard
+🚫 İPTAL / DEĞİŞİKLİK: ASLA kendin iptal etme veya değiştirme. Her zaman acenteye yönlendir.` + hallucinationGuard
         );
 
       default:
@@ -341,19 +352,24 @@ Are these details correct, do you confirm?
       return (
         `📍 STATUS: Registration completed ✅
 
+${summary ? `📋 CURRENT RESERVATION:\n${summary}\n` : ""}
 🎯 DO:
-- Confirm registration (ONLY first time)
-- Say "Our team will contact you shortly"
-- Ask if they have other questions
+- Answer the user's question.
+- Do NOT say "your reservation is confirmed" again (already confirmed).
+- If relevant, add "Our team will contact you shortly."
 
-🚨 IF USER ASKS A QUESTION: Just answer, don't repeat "reservation confirmed"
+🚨 AFTER-SALES — AGENCY REFERRAL RULES:
+- CHANGE / CANCELLATION request: Say "For booking changes and cancellations, please contact our agency directly." NEVER change or cancel the booking yourself — this is a critical business rule.
+- "I PAID" / "SENT RECEIPT": Say "Thank you! Our agency will confirm your payment and contact you shortly."
+- "WHEN WILL YOU CALL": Provide agency contact info + "They will contact you as soon as possible."
+- "MEETING POINT / TRANSFER / WHAT TO BRING": Provide tour departure details; if unavailable, refer to agency.
 
 🚨 IF USER WANTS ANOTHER TOUR:
 - Info → provide info
-- Booking → say "Starting reservation for [tour name]"
+- Booking → say "Of course, starting reservation for [tour name]"
 - Unclear → ask "Info or reservation?"
 
-🚫 CANCELLATION: Never say "I cancelled it". Say "Contact our agency for cancellations."` + hallucinationGuard
+🚫 CANCELLATION / CHANGES: NEVER perform cancellations or changes yourself. Always refer to agency.` + hallucinationGuard
       );
 
     default:

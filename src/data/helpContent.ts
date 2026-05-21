@@ -131,7 +131,7 @@ const helpContent: HelpContent = {
 5. **Müşteri Profilleri:** Otomatik tercih ve geçmiş takibi
 
 **Konuşma Üslupları:**
-- Standart, Kurumsal, Dinamik, Premium, Samimi (plan bazlı erişim)
+- Samimi/Dostane (Standart), Kurumsal, Enerjik/Dinamik, Premium (plan bazlı erişim; 4 stil)
 
 **Meta 24 Saat Kuralı:**
 - Müşteri mesaj attığında 24 saat içinde serbest mesaj gönderilebilir
@@ -211,13 +211,13 @@ const helpContent: HelpContent = {
 ✓ Temel analitik | E-posta desteği | Standart konuşma üslubu
 
 🚀 **PROFESYONEL - 4.999 TL/ay** (EN POPÜLER)
-✓ 5.000 mesaj/ay | Sınırsız tur | 3 dile kadar
+✓ 5.000 mesaj/ay | 50 tura kadar | 4 dile kadar
 ✓ 4 konuşma üslubu | Kullanıcı profilleri | Otomatik hatırlatıcılar
 ✓ Takip mesajları | Gelişmiş analitik | Mesaj şablonları
 
 ⭐ **KURUMSAL - 7.999 TL/ay**
 ✓ Sınırsız mesaj | Sınırsız tur | 7 dil
-✓ 5 konuşma üslubu | Müşteri memnuniyet anketleri | 7/24 destek
+✓ 4 konuşma üslubu | Müşteri memnuniyet anketleri | 7/24 destek
 
 **Yıllık Ödeme (%10 indirim):**
 - Başlangıç: 32.389 TL/yıl (2.699 TL/ay)
@@ -261,7 +261,7 @@ const helpContent: HelpContent = {
 
 **Dil Ayarları:**
 - "Dil Yönetimi" sekmesinden aktif dilleri seçin
-- Başlangıç: 1 dil | Profesyonel: 3 dil | Kurumsal: 7 dil`
+- Başlangıç: 1 dil | Profesyonel: 4 dil | Kurumsal: 7 dil`
         },
         {
           question: "Veri Güvenliği ve Gizlilik",
@@ -414,7 +414,7 @@ const helpContent: HelpContent = {
 4. **Multi-language:** Auto-detects customer's language (7 languages: TR, EN, DE, RU, AR, FR, ES)
 5. **Customer Profiles:** Automatic preference and history tracking
 
-**Conversation Styles:** Standard, Corporate, Dynamic, Premium, Friendly (plan-based access)
+**Conversation Styles:** Friendly/Warm (Standard), Corporate, Energetic/Dynamic, Premium (plan-based access)
 
 **Meta 24-Hour Rule:**
 - Free messages can be sent within 24 hours of customer message
@@ -491,13 +491,13 @@ const helpContent: HelpContent = {
 ✓ Basic analytics | Email support | Standard conversation style
 
 🚀 **PROFESSIONAL - 4,999 TL/month** (MOST POPULAR)
-✓ 5,000 msgs/month | Unlimited tours | Up to 3 languages
+✓ 5,000 msgs/month | Up to 50 tours | Up to 4 languages
 ✓ 4 conversation styles | User profiles | Auto reminders
 ✓ Follow-up messages | Advanced analytics | Message templates
 
 ⭐ **ENTERPRISE - 7,999 TL/month**
 ✓ Unlimited messages | Unlimited tours | All 7 languages
-✓ 5 conversation styles | Customer satisfaction surveys | 24/7 support
+✓ 4 conversation styles | Customer satisfaction surveys | 24/7 support
 
 **Annual Payment (10% discount):**
 - Starter: 32,389 TL/year (2,699 TL/month)
@@ -541,7 +541,7 @@ const helpContent: HelpContent = {
 
 **Language Settings:**
 - Select active languages from "Language Management"
-- Starter: 1 language | Professional: 3 languages | Enterprise: 7 languages`
+- Starter: 1 language | Professional: 4 languages | Enterprise: 7 languages`
         },
         {
           question: "Data Security and Privacy",
@@ -642,7 +642,21 @@ const helpContent: HelpContent = {
 2. Füllen Sie die Pflichtfelder aus: Titel, Ziel, Preis, Währung, Dauer
 3. Klicken Sie auf "Speichern"
 
-**Hinweis:** Starter-Paket: max. 10 Touren. Professional/Enterprise: unbegrenzt.`
+**Hinweis:** Starter-Paket: max. 10 Touren. Professional: bis zu 50 Touren. Enterprise: unbegrenzt.`
+        },
+        {
+          question: "Wie verwalte ich Tourdaten?",
+          answer: `**Neues Datum hinzufügen:**
+1. Wählen Sie eine Tour im Tab "Touren"
+2. Klicken Sie auf "Datum hinzufügen", wählen Sie das Abreisedatum und legen Sie Kontingent und Preise fest
+3. Klicken Sie auf "Speichern"
+
+**Kontingent-Tracking:**
+- Jede Reservierung reduziert automatisch das Kontingent
+- Ausgebuchte Termine werden für Kunden ausgeblendet
+- Kontingent kann jederzeit angepasst werden
+
+**Vergangene Daten:** Das System blendet vergangene Daten automatisch aus`
         },
         {
           question: "Wie verwalte ich Reservierungen?",
@@ -669,6 +683,21 @@ const helpContent: HelpContent = {
 5. **Kundenprofile:** Automatische Präferenz- und Verlaufsverfolgung
 
 **Gesprächsstile:** Standard, Unternehmen, Dynamisch, Premium, Freundlich (planabhängig)`
+        },
+        {
+          question: "Wie verwende ich Nachrichtenvorlagen?",
+          answer: `**Standardvorlagen:**
+1. **Reservierungsbestätigung:** Automatisch gesendet - Tourname, Datum, Teilnehmer, Betrag
+2. **Reservierungsstornierung:** Automatisch bei Stornierung gesendet
+3. **Tour-Erinnerung:** Erinnerung vor dem Tourdatum (Professional+ Pakete)
+
+**Vorlagenvariablen:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
+
+**Vorlagen anpassen:**
+- Gehen Sie zu "Chat Bot Einstellungen" > "Nachrichtenvorlagen"
+- Sprache auswählen, Inhalt bearbeiten und speichern
+
+**Hinweis:** Nachrichtenvorlagen sind in Professional und Enterprise Paketen verfügbar.`
         },
         {
           question: "Kundenprofile und Präferenzen",
@@ -706,7 +735,7 @@ const helpContent: HelpContent = {
 ✓ 1.000 Nachrichten/Monat | Max. 10 Touren | 1 Sprache
 
 🚀 **PROFESSIONAL - 4.999 TL/Monat** (BELIEBTESTE)
-✓ 5.000 Nachrichten/Monat | Unbegrenzte Touren | Bis zu 3 Sprachen
+✓ 5.000 Nachrichten/Monat | Bis zu 50 Touren | Bis zu 4 Sprachen
 ✓ Kundenprofile | Erinnerungen | Erweiterte Analysen
 
 ⭐ **ENTERPRISE - 7.999 TL/Monat**
@@ -715,6 +744,25 @@ const helpContent: HelpContent = {
 
 **Jährliche Zahlung: 10% Rabatt**
 **Kostenlose Testphase:** 14 Tage, keine Kreditkarte erforderlich`
+        },
+        {
+          question: "Zahlungsmethoden und Abrechnung",
+          answer: `**Zahlungsoptionen:**
+- Kredit-/Debitkarte (Visa, Mastercard)
+- Banküberweisung
+
+**Rechnung:** Automatisch monatlich per E-Mail gesendet
+
+**Zahlungssicherheit:** SSL-geschützt, PCI-DSS konform, Kartendaten werden nicht gespeichert`
+        },
+        {
+          question: "Abonnementverwaltung",
+          answer: `**Paket wechseln:**
+- Neues Paket im "Abonnementverlauf" auswählen
+- Upgrades werden sofort aktiviert
+- Downgrades gelten am Ende des aktuellen Zeitraums
+
+**Kündigung:** Jederzeit möglich, keine Verpflichtung. Nutzung läuft bis zum Ende des aktuellen Zeitraums. Daten werden 30 Tage gespeichert.`
         }
       ]
     },
@@ -729,6 +777,32 @@ const helpContent: HelpContent = {
 - **24/7 Premium-Support:** Nur Enterprise
 
 **Hilfsquellen:** Diese Hilfeseite, Startleitfaden (/nasil-baslarim)`
+        },
+        {
+          question: "Datensicherheit und Datenschutz",
+          answer: `**Sicherheitsmaßnahmen:**
+- SSL/TLS-Verschlüsselung (256-Bit)
+- DSGVO-konforme Datenverarbeitung
+- Regelmäßige Sicherheitsprüfungen und automatische Backups
+
+**Datenschutz:**
+- Kundendaten gehören nur Ihnen
+- Nicht an Dritte verkauft/weitergegeben
+- Alle Daten auf Anfrage gelöscht`
+        },
+        {
+          question: "Häufige Probleme und Lösungen",
+          answer: `**"Bot antwortet nicht"**
+✓ Ist Ihre WhatsApp-Verbindung aktiv? (Prüfen in Chat Bot Einstellungen > WhatsApp Integration)
+✓ Ist Ihr Nachrichtenkontingent aufgebraucht?
+→ Lösung: Status auf der WhatsApp Integrationsseite prüfen
+
+**"Touren werden nicht angezeigt"**
+✓ Haben Sie mindestens 1 Tour mit einem zukünftigen Datum hinzugefügt?
+→ Lösung: Tourliste und Termine prüfen
+
+**Noch keine Lösung gefunden?**
+→ Schreiben Sie an info@turzzai.com mit einem Screenshot`
         }
       ]
     }
@@ -767,13 +841,27 @@ const helpContent: HelpContent = {
           question: "Как управлять турами и бронированиями?",
           answer: `**Добавление тура:**
 - Вкладка "Туры" > "Добавить тур" > заполните данные и сохраните
-- Стартовый план: до 10 туров. Professional/Enterprise: без ограничений
+- Стартовый план: до 10 туров. Professional: до 50 туров. Enterprise: без ограничений
 
 **Статусы бронирования:**
 - НОВОЕ → ОЖИДАНИЕ → ПОДТВЕРЖДЕНО → ОТМЕНЕНО
 - Смена статуса автоматически уведомляет клиента
 
 **Экспорт в Excel:** Скачайте все бронирования с деталями`
+        },
+        {
+          question: "Как управлять датами туров?",
+          answer: `**Добавление новой даты:**
+1. Выберите тур на вкладке "Туры"
+2. Нажмите "Добавить дату", выберите дату отправления, установите квоту и цены
+3. Нажмите "Сохранить"
+
+**Отслеживание квоты:**
+- Каждое бронирование автоматически уменьшает квоту
+- Заполненные даты скрываются от клиентов
+- Квоту можно изменить в любое время
+
+**Прошедшие даты:** Система автоматически скрывает прошедшие даты`
         }
       ]
     },
@@ -789,9 +877,32 @@ const helpContent: HelpContent = {
 4. Мультиязычность: автоопределение языка (7 языков)
 5. Профили клиентов и отслеживание предпочтений
 
-**Стили общения:** Стандартный, Корпоративный, Динамичный, Премиум, Дружественный
+**Стили общения:** Дружественный/Тёплый (Стандарт), Корпоративный, Энергичный/Динамичный, Премиум
 
 **Правило Meta 24 часа:** Свободные сообщения в течение 24 часов после сообщения клиента`
+        },
+        {
+          question: "Как использовать шаблоны сообщений?",
+          answer: `**Стандартные шаблоны:**
+1. **Подтверждение бронирования:** Отправляется автоматически - название тура, дата, участники, сумма
+2. **Отмена бронирования:** Отправляется автоматически при отмене
+3. **Напоминание о туре:** Напоминание перед датой тура (планы Professional+)
+
+**Переменные шаблона:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
+
+**Настройка шаблонов:** Перейдите в "Настройки Chat Bot" > "Шаблоны сообщений", выберите язык, редактируйте и сохраните`
+        },
+        {
+          question: "Профили клиентов и предпочтения",
+          answer: `**Автоматическое создание профиля:**
+- Профиль создаётся автоматически для каждого WhatsApp-клиента
+- Отслеживаются: номер телефона, имя, языковые предпочтения, история взаимодействий
+
+**Автоматические теги:** VIP, постоянный клиент, потенциальный клиент
+
+**Просмотр профилей:** Перейдите на вкладку "Пользователи WhatsApp"
+
+**Примечание:** Профили клиентов доступны в планах Professional и Enterprise.`
         }
       ]
     },
@@ -817,7 +928,7 @@ const helpContent: HelpContent = {
 ✓ 1 000 сообщений/мес | До 10 туров | 1 язык
 
 🚀 **ПРОФЕССИОНАЛЬНЫЙ - 4 999 TL/мес** (САМЫЙ ПОПУЛЯРНЫЙ)
-✓ 5 000 сообщений/мес | Безлимитные туры | До 3 языков
+✓ 5 000 сообщений/мес | До 50 туров | До 4 языков
 ✓ Профили клиентов | Напоминания | Расширенная аналитика
 
 ⭐ **КОРПОРАТИВНЫЙ - 7 999 TL/мес**
@@ -825,6 +936,25 @@ const helpContent: HelpContent = {
 
 **Годовая оплата: скидка 10%**
 **Пробный период:** 14 дней бесплатно, без кредитной карты`
+        },
+        {
+          question: "Способы оплаты и выставление счетов",
+          answer: `**Варианты оплаты:**
+- Кредитная/дебетовая карта (Visa, Mastercard)
+- Банковский перевод
+
+**Счёт:** Автоматически ежемесячно отправляется по email
+
+**Безопасность платежей:** Защита SSL, соответствие PCI-DSS, данные карты не хранятся`
+        },
+        {
+          question: "Управление подпиской",
+          answer: `**Смена плана:**
+- Выберите новый план в "История подписки"
+- Апгрейды активируются немедленно
+- Даунгрейды применяются в конце текущего периода
+
+**Отмена:** В любое время, без обязательств. Использование продолжается до конца текущего периода. Данные хранятся 30 дней.`
         }
       ]
     },
@@ -839,6 +969,32 @@ const helpContent: HelpContent = {
 - **Премиум 24/7:** Только Enterprise
 
 **Ресурсы:** Эта страница помощи, руководство по началу работы`
+        },
+        {
+          question: "Безопасность данных и конфиденциальность",
+          answer: `**Меры безопасности:**
+- Шифрование SSL/TLS (256-бит)
+- Обработка данных в соответствии с GDPR
+- Регулярные проверки безопасности и автоматическое резервное копирование
+
+**Конфиденциальность:**
+- Данные клиентов принадлежат только вам
+- Не продаются/не передаются третьим лицам
+- Все данные удаляются по запросу`
+        },
+        {
+          question: "Распространённые проблемы и решения",
+          answer: `**"Бот не отвечает"**
+✓ Активно ли ваше подключение к WhatsApp? (Проверьте в Настройки Chat Bot > Интеграция WhatsApp)
+✓ Исчерпан ли лимит сообщений?
+→ Решение: Проверьте статус на странице интеграции WhatsApp
+
+**"Туры не отображаются"**
+✓ Добавили ли вы хотя бы 1 тур с будущей датой?
+→ Решение: Проверьте список туров и даты
+
+**Всё ещё не можете найти решение?**
+→ Напишите на info@turzzai.com со скриншотом`
         }
       ]
     }
@@ -875,10 +1031,24 @@ const helpContent: HelpContent = {
         {
           question: "كيف تدير الجولات والحجوزات؟",
           answer: `**إضافة جولة:** علامة التبويب "الجولات" > "إضافة جولة" > املأ البيانات واحفظ
-- الباقة الأساسية: حتى 10 جولات. Professional/Enterprise: غير محدود
+- الباقة الأساسية: حتى 10 جولات. Professional: حتى 50 جولة. Enterprise: غير محدود
 
 **حالات الحجز:** جديد → معلق → مؤكد → ملغى
 **تصدير إلى Excel:** تحميل جميع الحجوزات مع التفاصيل`
+        },
+        {
+          question: "كيف تدير تواريخ الجولات؟",
+          answer: `**إضافة تاريخ جديد:**
+1. اختر جولة في علامة التبويب "الجولات"
+2. انقر على "إضافة تاريخ"، اختر تاريخ المغادرة وحدد الحصة والأسعار
+3. انقر على "حفظ"
+
+**تتبع الحصة:**
+- كل حجز يقلل الحصة تلقائياً
+- التواريخ الممتلئة تُخفى عن العملاء
+- يمكن تعديل الحصة في أي وقت
+
+**التواريخ الماضية:** يخفي النظام التواريخ الماضية تلقائياً`
         }
       ]
     },
@@ -894,7 +1064,30 @@ const helpContent: HelpContent = {
 4. متعدد اللغات: كشف تلقائي للغة (7 لغات)
 5. ملفات تعريف العملاء وتتبع التفضيلات
 
-**أنماط المحادثة:** قياسي، مؤسسي، ديناميكي، بريميوم، ودي`
+**أنماط المحادثة:** ودي/دافئ (قياسي)، مؤسسي، نشيط/ديناميكي، بريميوم`
+        },
+        {
+          question: "كيف تستخدم قوالب الرسائل؟",
+          answer: `**القوالب الافتراضية:**
+1. **تأكيد الحجز:** يُرسل تلقائياً - اسم الجولة، التاريخ، المشاركون، المبلغ
+2. **إلغاء الحجز:** يُرسل تلقائياً عند الإلغاء
+3. **تذكير الجولة:** تذكير قبل تاريخ الجولة (خطط Professional+)
+
+**متغيرات القالب:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
+
+**تخصيص القوالب:** انتقل إلى "إعدادات Chat Bot" > "قوالب الرسائل"، اختر اللغة وعدّل واحفظ`
+        },
+        {
+          question: "ملفات تعريف العملاء والتفضيلات",
+          answer: `**إنشاء الملف الشخصي تلقائياً:**
+- يُنشأ ملف تعريف لكل عميل واتساب تلقائياً
+- يتتبع: رقم الهاتف، الاسم، تفضيل اللغة، تاريخ التفاعل
+
+**التصنيف التلقائي:** VIP، عميل منتظم، عميل محتمل
+
+**عرض الملفات:** انتقل إلى علامة التبويب "مستخدمو واتساب"
+
+**ملاحظة:** ملفات تعريف العملاء متاحة في خطتي Professional وEnterprise.`
         }
       ]
     },
@@ -907,13 +1100,32 @@ const helpContent: HelpContent = {
 ✓ 1,000 رسالة/شهر | حتى 10 جولات | لغة واحدة
 
 🚀 **الاحترافية - 4,999 ليرة/شهر** (الأكثر شعبية)
-✓ 5,000 رسالة/شهر | جولات غير محدودة | حتى 3 لغات
+✓ 5,000 رسالة/شهر | حتى 50 جولة | حتى 4 لغات
 
 ⭐ **المؤسسية - 7,999 ليرة/شهر**
 ✓ رسائل وجولات غير محدودة | جميع اللغات السبع | دعم 24/7
 
 **الدفع السنوي: خصم 10%**
 **فترة تجريبية:** 14 يوماً مجاناً`
+        },
+        {
+          question: "طرق الدفع والفوترة",
+          answer: `**خيارات الدفع:**
+- بطاقة ائتمان/خصم (Visa, Mastercard)
+- تحويل بنكي
+
+**الفاتورة:** تُرسل تلقائياً شهرياً عبر البريد الإلكتروني
+
+**أمان الدفع:** محمي بـ SSL، متوافق مع PCI-DSS، لا تُخزَّن بيانات البطاقة`
+        },
+        {
+          question: "إدارة الاشتراك",
+          answer: `**تغيير الخطة:**
+- اختر خطة جديدة من "سجل الاشتراكات"
+- الترقيات تُفعَّل فوراً
+- الخفض يُطبَّق في نهاية الفترة الحالية
+
+**الإلغاء:** في أي وقت، بدون التزامات. يستمر الاستخدام حتى نهاية الفترة الحالية. البيانات محفوظة 30 يوماً.`
         }
       ]
     },
@@ -926,6 +1138,32 @@ const helpContent: HelpContent = {
 - **البريد الإلكتروني:** info@turzzai.com (جميع الباقات)
 - **دعم واتساب:** الباقات الاحترافية والمؤسسية
 - **دعم بريميوم 24/7:** المؤسسية فقط`
+        },
+        {
+          question: "أمان البيانات والخصوصية",
+          answer: `**تدابير الأمان:**
+- تشفير SSL/TLS (256-بت)
+- معالجة البيانات وفق GDPR
+- مراجعات أمنية منتظمة ونسخ احتياطي تلقائي
+
+**الخصوصية:**
+- بيانات العملاء تخصك وحدك
+- لا تُباع/لا تُشارك مع أطراف ثالثة
+- يتم حذف جميع البيانات عند الطلب`
+        },
+        {
+          question: "المشكلات الشائعة والحلول",
+          answer: `**"البوت لا يستجيب"**
+✓ هل اتصال واتساب نشط؟ (تحقق في إعدادات Chat Bot > تكامل واتساب)
+✓ هل انتهت حصة رسائلك؟
+→ الحل: تحقق من الحالة في صفحة تكامل واتساب
+
+**"الجولات غير مدرجة"**
+✓ هل أضفت جولة واحدة على الأقل بتاريخ مستقبلي؟
+→ الحل: تحقق من قائمة الجولات والتواريخ
+
+**لم تجد حلاً؟**
+→ اكتب إلى info@turzzai.com مع لقطة شاشة`
         }
       ]
     }
@@ -962,10 +1200,24 @@ const helpContent: HelpContent = {
         {
           question: "Comment gérer les circuits et les réservations ?",
           answer: `**Ajouter un circuit :** Onglet "Circuits" > "Ajouter" > remplir et sauvegarder
-- Forfait Starter : max 10 circuits. Professional/Enterprise : illimité
+- Forfait Starter : max 10 circuits. Professional : jusqu'à 50 circuits. Enterprise : illimité
 
 **Statuts de réservation :** Nouveau → En attente → Confirmé → Annulé
 **Export Excel :** Téléchargez toutes les réservations avec les détails`
+        },
+        {
+          question: "Comment gérer les dates des circuits ?",
+          answer: `**Ajouter une nouvelle date :**
+1. Sélectionnez un circuit dans l'onglet "Circuits"
+2. Cliquez sur "Ajouter une date", sélectionnez la date de départ et définissez le quota et les prix
+3. Cliquez sur "Enregistrer"
+
+**Suivi du quota :**
+- Chaque réservation réduit automatiquement le quota
+- Les dates complètes sont masquées pour les clients
+- Le quota peut être ajusté à tout moment
+
+**Dates passées :** Le système masque automatiquement les dates passées`
         }
       ]
     },
@@ -981,7 +1233,30 @@ const helpContent: HelpContent = {
 4. Multilingue : détection automatique de la langue (7 langues)
 5. Profils clients et suivi des préférences
 
-**Styles de conversation :** Standard, Entreprise, Dynamique, Premium, Amical`
+**Styles de conversation :** Amical/Chaleureux (Standard), Entreprise, Énergique/Dynamique, Premium`
+        },
+        {
+          question: "Comment utiliser les modèles de messages ?",
+          answer: `**Modèles par défaut :**
+1. **Confirmation de réservation :** Envoyé automatiquement - nom du circuit, date, participants, montant
+2. **Annulation de réservation :** Envoyé automatiquement en cas d'annulation
+3. **Rappel de circuit :** Rappel avant la date du circuit (forfaits Professional+)
+
+**Variables de modèle :** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
+
+**Personnalisation :** Allez dans "Paramètres Chat Bot" > "Modèles de messages", sélectionnez la langue, modifiez et enregistrez`
+        },
+        {
+          question: "Profils clients et préférences",
+          answer: `**Création automatique du profil :**
+- Un profil est créé automatiquement pour chaque client WhatsApp
+- Suivi : numéro de téléphone, nom, préférence linguistique, historique d'interaction
+
+**Étiquettes automatiques :** VIP, client régulier, client potentiel
+
+**Affichage des profils :** Allez dans l'onglet "Utilisateurs WhatsApp"
+
+**Remarque :** Les profils clients sont disponibles dans les forfaits Professional et Enterprise.`
         }
       ]
     },
@@ -994,13 +1269,32 @@ const helpContent: HelpContent = {
 ✓ 1 000 messages/mois | Max 10 circuits | 1 langue
 
 🚀 **PROFESSIONNEL - 4 999 TL/mois** (LE PLUS POPULAIRE)
-✓ 5 000 messages/mois | Circuits illimités | Jusqu'à 3 langues
+✓ 5 000 messages/mois | Jusqu'à 50 circuits | Jusqu'à 4 langues
 
 ⭐ **ENTREPRISE - 7 999 TL/mois**
 ✓ Messages et circuits illimités | 7 langues | Support 24/7
 
 **Paiement annuel : 10% de réduction**
 **Essai gratuit :** 14 jours, sans carte de crédit`
+        },
+        {
+          question: "Méthodes de paiement et facturation",
+          answer: `**Options de paiement :**
+- Carte de crédit/débit (Visa, Mastercard)
+- Virement bancaire
+
+**Facture :** Automatiquement envoyée mensuellement par email
+
+**Sécurité des paiements :** Protégé par SSL, conforme PCI-DSS, données de carte non stockées`
+        },
+        {
+          question: "Gestion de l'abonnement",
+          answer: `**Changer de forfait :**
+- Sélectionnez un nouveau forfait dans "Historique des abonnements"
+- Les mises à niveau s'activent immédiatement
+- Les réductions s'appliquent à la fin de la période actuelle
+
+**Résiliation :** À tout moment, sans engagement. L'utilisation continue jusqu'à la fin de la période actuelle. Les données sont conservées 30 jours.`
         }
       ]
     },
@@ -1013,6 +1307,32 @@ const helpContent: HelpContent = {
 - **Email :** info@turzzai.com (tous les forfaits)
 - **Support WhatsApp :** Professional et Enterprise
 - **Support Premium 24/7 :** Enterprise uniquement`
+        },
+        {
+          question: "Sécurité des données et confidentialité",
+          answer: `**Mesures de sécurité :**
+- Chiffrement SSL/TLS (256-bit)
+- Traitement des données conforme au RGPD
+- Audits de sécurité réguliers et sauvegardes automatiques
+
+**Confidentialité :**
+- Les données clients vous appartiennent uniquement
+- Non vendues/partagées avec des tiers
+- Toutes les données supprimées sur demande`
+        },
+        {
+          question: "Problèmes courants et solutions",
+          answer: `**"Le bot ne répond pas"**
+✓ Votre connexion WhatsApp est-elle active ? (Vérifiez dans Paramètres Chat Bot > Intégration WhatsApp)
+✓ Votre quota de messages est-il épuisé ?
+→ Solution : Vérifiez l'état sur la page d'intégration WhatsApp
+
+**"Les circuits ne sont pas listés"**
+✓ Avez-vous ajouté au moins 1 circuit avec une date future ?
+→ Solution : Vérifiez votre liste de circuits et les dates
+
+**Toujours pas de solution ?**
+→ Écrivez à info@turzzai.com avec une capture d'écran`
         }
       ]
     }
@@ -1049,10 +1369,24 @@ const helpContent: HelpContent = {
         {
           question: "¿Cómo gestionar tours y reservas?",
           answer: `**Agregar tour:** Pestaña "Tours" > "Agregar" > completar y guardar
-- Plan Starter: máx. 10 tours. Professional/Enterprise: ilimitados
+- Plan Starter: máx. 10 tours. Professional: hasta 50 tours. Enterprise: ilimitados
 
 **Estados de reserva:** Nuevo → Pendiente → Confirmado → Cancelado
 **Exportar a Excel:** Descargue todas las reservas con detalles`
+        },
+        {
+          question: "¿Cómo gestionar las fechas de los tours?",
+          answer: `**Agregar nueva fecha:**
+1. Seleccione un tour en la pestaña "Tours"
+2. Haga clic en "Agregar fecha", seleccione la fecha de salida y establezca cuota y precios
+3. Haga clic en "Guardar"
+
+**Seguimiento de cuota:**
+- Cada reserva reduce automáticamente la cuota
+- Las fechas completas se ocultan a los clientes
+- La cuota se puede ajustar en cualquier momento
+
+**Fechas pasadas:** El sistema oculta automáticamente las fechas pasadas`
         }
       ]
     },
@@ -1068,7 +1402,30 @@ const helpContent: HelpContent = {
 4. Multilingüe: detección automática del idioma (7 idiomas)
 5. Perfiles de clientes y seguimiento de preferencias
 
-**Estilos de conversación:** Estándar, Corporativo, Dinámico, Premium, Amigable`
+**Estilos de conversación:** Amigable/Cálido (Estándar), Corporativo, Enérgico/Dinámico, Premium`
+        },
+        {
+          question: "¿Cómo usar las plantillas de mensajes?",
+          answer: `**Plantillas predeterminadas:**
+1. **Confirmación de reserva:** Enviada automáticamente - nombre del tour, fecha, participantes, monto
+2. **Cancelación de reserva:** Enviada automáticamente al cancelar
+3. **Recordatorio de tour:** Recordatorio antes de la fecha del tour (planes Professional+)
+
+**Variables de plantilla:** {full_name}, {tour_name}, {date}, {pax}, {total_amount}, {currency}
+
+**Personalizar plantillas:** Vaya a "Configuración Chat Bot" > "Plantillas de mensajes", seleccione el idioma, edite y guarde`
+        },
+        {
+          question: "Perfiles de clientes y preferencias",
+          answer: `**Creación automática de perfil:**
+- Se crea un perfil automáticamente para cada cliente de WhatsApp
+- Seguimiento: número de teléfono, nombre, preferencia de idioma, historial de interacciones
+
+**Etiquetas automáticas:** VIP, cliente regular, cliente potencial
+
+**Ver perfiles:** Vaya a la pestaña "Usuarios de WhatsApp"
+
+**Nota:** Los perfiles de clientes están disponibles en los planes Professional y Enterprise.`
         }
       ]
     },
@@ -1081,13 +1438,32 @@ const helpContent: HelpContent = {
 ✓ 1.000 mensajes/mes | Máx. 10 tours | 1 idioma
 
 🚀 **PROFESIONAL - 4.999 TL/mes** (MÁS POPULAR)
-✓ 5.000 mensajes/mes | Tours ilimitados | Hasta 3 idiomas
+✓ 5.000 mensajes/mes | Hasta 50 tours | Hasta 4 idiomas
 
 ⭐ **EMPRESARIAL - 7.999 TL/mes**
 ✓ Mensajes y tours ilimitados | 7 idiomas | Soporte 24/7
 
 **Pago anual: 10% de descuento**
 **Prueba gratuita:** 14 días, sin tarjeta de crédito`
+        },
+        {
+          question: "Métodos de pago y facturación",
+          answer: `**Opciones de pago:**
+- Tarjeta de crédito/débito (Visa, Mastercard)
+- Transferencia bancaria
+
+**Factura:** Enviada automáticamente cada mes por email
+
+**Seguridad de pago:** Protegido por SSL, cumple PCI-DSS, datos de tarjeta no almacenados`
+        },
+        {
+          question: "Gestión de suscripción",
+          answer: `**Cambiar plan:**
+- Seleccione un nuevo plan en "Historial de suscripciones"
+- Las actualizaciones se activan inmediatamente
+- Las reducciones se aplican al final del período actual
+
+**Cancelación:** En cualquier momento, sin compromiso. El uso continúa hasta el final del período actual. Los datos se conservan 30 días.`
         }
       ]
     },
@@ -1100,6 +1476,32 @@ const helpContent: HelpContent = {
 - **Email:** info@turzzai.com (todos los planes)
 - **Soporte WhatsApp:** Professional y Enterprise
 - **Soporte Premium 24/7:** Solo Enterprise`
+        },
+        {
+          question: "Seguridad de datos y privacidad",
+          answer: `**Medidas de seguridad:**
+- Cifrado SSL/TLS (256-bit)
+- Procesamiento de datos conforme a GDPR
+- Auditorías de seguridad regulares y copias de seguridad automáticas
+
+**Privacidad:**
+- Los datos de clientes son solo suyos
+- No se venden/comparten con terceros
+- Todos los datos eliminados bajo solicitud`
+        },
+        {
+          question: "Problemas comunes y soluciones",
+          answer: `**"El bot no responde"**
+✓ ¿Está activa su conexión de WhatsApp? (Verifique en Configuración Chat Bot > Integración WhatsApp)
+✓ ¿Se agotó su cuota de mensajes?
+→ Solución: Verifique el estado en la página de integración WhatsApp
+
+**"Los tours no aparecen listados"**
+✓ ¿Ha añadido al menos 1 tour con una fecha futura?
+→ Solución: Verifique su lista de tours y fechas
+
+**¿Todavía no encontró solución?**
+→ Escriba a info@turzzai.com con una captura de pantalla`
         }
       ]
     }

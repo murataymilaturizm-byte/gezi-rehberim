@@ -49,50 +49,61 @@ export function getAgencyInfo(context: PromptContext, language: string): string 
 
   const cityText = agencyCity ? ` (${agencyCity})` : "";
   const formattedHours = formatWorkingHours(agencyWorkingHours, language);
+  // Kullanılabilir iletişim referansı: telefon varsa göster, yoksa genel yönlendirme
+  const contactRef = agencyPhone
+    ? (language === "tr" ? `📞 ${agencyPhone}` : `📞 ${agencyPhone}`)
+    : (language === "tr" ? "acentemizle iletişime geçin" : "contact our agency");
 
   if (language === "tr") {
+    // Sadece gerçek değeri olan alanları prompt'a ekle — boş alanı AI görmez, uyduramaz
+    const lines: string[] = [`Acente görünen adı: ${agencyName}${cityText}`];
+    if (agencyAddress) lines.push(`Adres: ${agencyAddress}`);
+    if (agencyPhone) lines.push(`Telefon: ${agencyPhone}`);
+    if (agencyWebsite) lines.push(`Web: ${agencyWebsite}`);
+    if (formattedHours) lines.push(`Çalışma Saatleri:\n${formattedHours}`);
+    if (agencyMapsUrl) lines.push(`Konum: ${agencyMapsUrl}`);
+    if (agencyCancellationPolicy) lines.push(`İptal Koşulları: ${agencyCancellationPolicy}`);
+
     return `\n\n🏢 ACENTE BİLGİSİ:
-Acente görünen adı: ${agencyName}${cityText}
-${agencyAddress ? `Adres: ${agencyAddress}` : "Adres: Henüz eklenmemiş"}
-${agencyPhone ? `Telefon: ${agencyPhone}` : "Telefon: Henüz eklenmemiş"}
-${agencyWebsite ? `Web: ${agencyWebsite}` : ""}
-${formattedHours ? `Çalışma Saatleri:\n${formattedHours}` : "Çalışma Saatleri: Henüz eklenmemiş"}
-${agencyMapsUrl ? `Konum: ${agencyMapsUrl}` : ""}
-${agencyCancellationPolicy ? `İptal Koşulları: ${agencyCancellationPolicy}` : "İptal Koşulları: Henüz eklenmemiş"}
+${lines.join("\n")}
+
+⛔ UYDURMA YASAĞI — ACENTE BİLGİSİ:
+- Yukarıda LİSTELENMEYEN acente bilgilerini (adres, çalışma saati, iptal koşulları vb.) ASLA tahmin etme veya uydurma.
+- Bir bilgi yukarıda yoksa onu bilmiyorsun demektir — "Bu bilgi için ${contactRef} numarasına ulaşabilirsiniz" de.
+- Özellikle: adres, çalışma saati, iptal/iade politikası, dahil olanlar, karşılama/transfer detayları için veri yoksa KESİNLİKLE tahmin etme.
+- Telefon numarası da listede yoksa kullanıcıyı acentenin web sitesine veya WhatsApp'a yönlendir.
 
 KURALLAR:
-- Karşılama ve metinlerde bu ismi AYNEN kullan, çevirmeye çalışma.
-- İsmin sonuna ekstra "Travel Agency" vb. ekleme.
-- Acente bilgisi sorulduğunda yukarıdaki bilgileri kullan.
-- Eğer herhangi bir bilgi "Henüz eklenmemiş" ise, dürüst bir şekilde "Bu bilgi henüz sisteme girilmemiş" de.
+- Acente adını AYNEN kullan, çevirme veya "Travel Agency" vb. ekleme.
+- Acente bilgisi sorulunca yukarıdaki bilgileri kullan.
 
-📞 İLETİŞİM KURALLARI:
-- Kullanıcı iletişime geçmek istediğinde, mevcut tüm iletişim bilgilerini sıralı bir şekilde ver.
+📞 İLETİŞİM: Kullanıcı iletişime geçmek istediğinde mevcut tüm iletişim bilgilerini ver.
 
-💰 PARA BİRİMİ KABUL KURALLARI:
-- Ödeme yöntemleri hakkında sorulduğunda, sadece genel olarak nasıl ödeme yapılabileceğini anlat.
-- Euro, Dolar gibi yabancı para birimleri hakkında: "Para birimi kabul kurallarımız için lütfen ofisimizle iletişime geçin" de.`;
+💰 PARA BİRİMİ: Yabancı para birimleri için: "${contactRef} numarasından öğrenebilirsiniz" de.`;
   }
 
+  // English / other languages
+  const lines: string[] = [`Agency display name: ${agencyName}${cityText}`];
+  if (agencyAddress) lines.push(`Address: ${agencyAddress}`);
+  if (agencyPhone) lines.push(`Phone: ${agencyPhone}`);
+  if (agencyWebsite) lines.push(`Website: ${agencyWebsite}`);
+  if (formattedHours) lines.push(`Working Hours:\n${formattedHours}`);
+  if (agencyMapsUrl) lines.push(`Location: ${agencyMapsUrl}`);
+  if (agencyCancellationPolicy) lines.push(`Cancellation Policy: ${agencyCancellationPolicy}`);
+
   return `\n\n🏢 AGENCY INFO:
-Agency display name: ${agencyName}${cityText}
-${agencyAddress ? `Address: ${agencyAddress}` : "Address: Not available"}
-${agencyPhone ? `Phone: ${agencyPhone}` : "Phone: Not available"}
-${agencyWebsite ? `Website: ${agencyWebsite}` : ""}
-${formattedHours ? `Working Hours:\n${formattedHours}` : "Working Hours: Not available"}
-${agencyMapsUrl ? `Location: ${agencyMapsUrl}` : ""}
-${agencyCancellationPolicy ? `Cancellation Policy: ${agencyCancellationPolicy}` : "Cancellation Policy: Not available"}
+${lines.join("\n")}
+
+⛔ NO-HALLUCINATION — AGENCY INFO:
+- NEVER guess or invent agency details NOT listed above (address, hours, cancellation policy, etc.).
+- If a field is not shown here, you don't have that information — say "For this, please contact us at ${contactRef}".
+- Critical fields — if not provided, DO NOT guess: address, working hours, cancellation/refund policy, inclusions, pickup/transfer details.
 
 RULES:
-- Use this exact name in greetings and messages.
-- Do NOT translate or modify the name.
-- When asked about agency info, use the information above.
-- If any information is "Not available", tell the user honestly.
+- Use the exact agency name, do not translate or add "Travel Agency".
+- When asked about agency info, use only the information above.
 
-📞 CONTACT RULES:
-- When user wants to contact, provide all available contact information in a clear list.
+📞 CONTACT: Provide all available contact information when user asks.
 
-💰 CURRENCY ACCEPTANCE RULES:
-- When asked about payment methods, only explain general payment options.
-- For foreign currencies (Euro, Dollar, etc.): "For currency acceptance policies, please contact our office."`;
+💰 CURRENCY: For foreign currency queries: "Please contact us at ${contactRef} for currency policies."`;
 }

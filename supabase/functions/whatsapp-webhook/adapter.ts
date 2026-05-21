@@ -1,6 +1,9 @@
 // WhatsApp channel adapter — ChannelAdapter interface'ini WhatsApp için implement eder.
 // DB kayıt, Meta API gönderimi ve kanal-spesifik template logicini kapsüller.
 
+/** Context bu kadar saat eskiyse sıfırlanır (bayat state koruması) */
+const STALE_CONTEXT_HOURS = 2;
+
 import type { ConversationContext, ConversationTone } from "../shared/fsm/types.ts";
 import type { ChannelAdapter } from "../shared/handlers/types.ts";
 import { createInitialContext } from "../shared/fsm/state-machine.ts";
@@ -63,10 +66,11 @@ export class WhatsAppAdapter implements ChannelAdapter {
   async loadContext(): Promise<ConversationContext | null> {
     // Önce preloaded (atomic RPC'den gelen)
     let ctxStr = this.preloadedContextStr;
+    let dbCreatedAt: string | null = null;
     if (ctxStr === null) {
       const { data } = await this.supabase
         .from("whatsapp_conversations")
-        .select("content")
+        .select("content, created_at")
         .eq("phone", this.phone)
         .eq("agency_id", this.agency.id)
         .eq("role", "system")
@@ -74,6 +78,7 @@ export class WhatsAppAdapter implements ChannelAdapter {
         .limit(1)
         .single();
       ctxStr = data?.content ?? null;
+      dbCreatedAt = data?.created_at ?? null;
     }
 
     if (!ctxStr) return null;
@@ -81,6 +86,16 @@ export class WhatsAppAdapter implements ChannelAdapter {
     try {
       const parsed = JSON.parse(ctxStr);
       if (!isValidContext(parsed)) return null;
+
+      // FIX 1: Bayat state koruması — eskimiş context sıfırlanır
+      const _staleRef = parsed.lastUpdated || dbCreatedAt;
+      if (_staleRef) {
+        const _ageMs = Date.now() - new Date(_staleRef).getTime();
+        if (_ageMs > STALE_CONTEXT_HOURS * 3_600_000) {
+          console.warn(`[adapter] Context stale (${Math.round(_ageMs / 60000)}min old), resetting`);
+          return null;
+        }
+      }
 
       // Agency tone override (DB'deki üslup, her yüklemede güncellenir)
       const agencyTone = (this.agency as any).conversation_style as ConversationTone | null;

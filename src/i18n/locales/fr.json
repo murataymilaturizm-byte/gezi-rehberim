@@ -1,4 +1,4 @@
-{
+﻿{
   "currency": {
     "management": "Gestion des devises",
     "description": "Sélectionnez d'abord votre devise principale. Vous pouvez éventuellement utiliser des devises différentes pour certaines langues.",
@@ -424,17 +424,17 @@
     "advanced": {
       "dateFilter": "Filtre de plage de dates",
       "totalRevenue": "Revenu total",
-      "totalRevenueDesc": "{{{count}}} inscriptions • {{{period}}}",
+      "totalRevenueDesc": "{{count}} inscriptions • {{period}}",
       "periodGrowth": "Croissance de la période",
       "vsPreviousHalf": "Vs moitié précédente",
       "averageBasket": "Panier moyen",
       "perRegistration": "Par inscription",
       "conversionRate": "Taux de conversion",
-      "conversionDesc": "{{{registrations}}}/{{{conversations}}} conversations",
+      "conversionDesc": "{{registrations}}/{{conversations}} conversations",
       "monthlyTrend": "Tendance mensuelle des revenus",
       "revenueLabel": "Revenu",
       "destinationDetails": "Détails des destinations",
-      "registrationCount": "{{{count}}} inscriptions",
+      "registrationCount": "{{count}} inscriptions",
       "average": "Moy",
       "noData": "Aucune donnée d'analyse pour le moment",
       "noDataDescription": "Les analyses apparaîtront ici dès votre première inscription",
@@ -554,7 +554,7 @@
     "payment": {
       "success": "Paiement Réussi! 🎉",
       "successDesc": "Votre abonnement a été activé. Votre facture est en préparation.",
-      "successDescWithOrder": "Votre abonnement a été activé. N° commande: {{{orderId}}}...",
+      "successDescWithOrder": "Votre abonnement a été activé. N° commande: {{orderId}}...",
       "failed": "Paiement Échoué",
       "failedBase": "Le paiement n'a pas pu être complété.",
       "insufficientFunds": "Votre carte n'a pas suffisamment de fonds.",
@@ -681,14 +681,14 @@
         "errors": {
           "invalidPhone": "Entrez un numéro de téléphone valide",
           "selectRegistration": "Veuillez sélectionner une réservation",
-          "missingVariables": "Variables manquantes: {{{vars}}}",
+          "missingVariables": "Variables manquantes: {{vars}}",
           "generic": "Échec de l'envoi du message"
         }
       },
       "sync": {
         "button": "Synchroniser avec Meta",
-        "success": "{{{count}}} modèles mis à jour",
-        "successWithNew": "{{{inserted}}} nouveaux ajoutés, {{{updated}}} mis à jour",
+        "success": "{{count}} modèles mis à jour",
+        "successWithNew": "{{inserted}} nouveaux ajoutés, {{updated}} mis à jour",
         "error": "La synchronisation a échoué"
       },
       "status": {
@@ -1176,7 +1176,7 @@
       "conversations": "Conversations",
       "conversionRate": "Taux de Conversion (%)",
       "conversionRatesSheet": "Taux de Conversion",
-      "currencyConversionNote": "Prix affichés en {{{currency}}} au taux actuel",
+      "currencyConversionNote": "Prix affichés en {{currency}} au taux actuel",
       "originalPrice": "Original"
     },
     "subscription": {
@@ -1303,7 +1303,7 @@
       "edit": "Modifier",
       "plan": {
         "monthlyLimit": "Limite Mensuelle de Messages",
-        "defaultLimit": "Limite par défaut du plan: {{{limit}}} messages",
+        "defaultLimit": "Limite par défaut du plan: {{limit}} messages",
         "extraMessages": "Ajouter un Quota de Messages Supplémentaire",
         "extraPlaceholder": "ex: 500",
         "extraHelp": "Ajouter un quota de messages supplémentaire à la limite actuelle",
@@ -1371,8 +1371,8 @@
       },
       "messages": {
         "unlimited": "Illimité",
-        "used": "{{{used}}}/{{{total}}} utilisé",
-        "daysLeft": "{{{days}}} jours restants",
+        "used": "{{used}}/{{total}} utilisé",
+        "daysLeft": "{{days}} jours restants",
         "expired": "Expiré",
         "notAdded": "Non Ajouté",
         "quotaFull": "Quota Plein",
@@ -1546,13 +1546,13 @@
       "notUsedYet": "Pas encore utilisé",
       "days": "jours",
       "dynamicFeatures": {
-        "messagesPerMonth": "{{{count}}} messages/mois",
+        "messagesPerMonth": "{{count}} messages/mois",
         "unlimitedMessages": "Messages illimités",
-        "maxTours": "Jusqu'à {{{count}}} tours",
+        "maxTours": "Jusqu'à {{count}} tours",
         "unlimitedTours": "Tours illimités",
-        "languageSupport": "Support de {{{count}}} langues",
+        "languageSupport": "Support de {{count}} langues",
         "allLanguages": "Toutes les langues (7 langues)",
-        "limitedStyles": "{{{count}}} styles de conversation",
+        "limitedStyles": "{{count}} styles de conversation",
         "allStyles": "Tous les styles de conversation + Style personnalisé",
         "userProfiles": "Profils utilisateur",
         "autoReminders": "Rappels automatiques",
@@ -1577,13 +1577,13 @@
       "description": "Historique des paiements et transactions"
     },
     "quotaBanner": {
-      "warning": "Vous avez utilisé {{{percent}}}% de votre quota de messages. Il sera bientôt épuisé.",
-      "critical": "Votre quota de messages est critiquement bas ({{{percent}}}%)! Les nouveaux messages pourraient être bloqués.",
+      "warning": "Vous avez utilisé {{percent}}% de votre quota de messages. Il sera bientôt épuisé.",
+      "critical": "Votre quota de messages est critiquement bas ({{percent}}%)! Les nouveaux messages pourraient être bloqués.",
       "upgrade": "Améliorer le Plan"
     },
     "onboarding": {
       "title": "Démarrage",
-      "progress": "{{{percent}}}% terminé",
+      "progress": "{{percent}}% terminé",
       "dismiss": "Fermer",
       "steps": {
         "agencyInfo": "Remplir les informations de l'agence",
@@ -1780,7 +1780,7 @@
     "bulkImport": "Importer depuis Excel",
     "duplicate": "Dupliquer",
     "duplicateTitleLabel": "Nouveau nom du circuit",
-    "copyDatesNote": "{{{count}}} dates seront également copiées",
+    "copyDatesNote": "{{count}} dates seront également copiées",
     "duplicateConfirm": "Dupliquer",
     "duplicateSuccess": "Circuit dupliqué!",
     "duplicateError": "La duplication a échoué",
@@ -1816,11 +1816,11 @@
     "priceChild": "Prix enfant",
     "quota": "Quota",
     "pricingNote": "Le même prix sera appliqué à toutes les dates",
-    "preview": "{{{count}}} dates seront créées",
+    "preview": "{{count}} dates seront créées",
     "moreDates": "dates supplémentaires...",
-    "generateButton": "Créer {{{count}}} dates",
+    "generateButton": "Créer {{count}} dates",
     "generating": "Génération...",
-    "success": "{{{count}}} dates ajoutées avec succès!",
+    "success": "{{count}} dates ajoutées avec succès!",
     "errors": {
       "noDates": "Veuillez sélectionner une plage de dates et un modèle",
       "priceRequired": "Le prix adulte est requis",
@@ -1841,12 +1841,12 @@
     "selectFile": "Sélectionner un fichier Excel",
     "fileHint": "Formats .xlsx ou .xls pris en charge",
     "parsedTours": "Circuits analysés",
-    "parsed": "{{{valid}}}/{{{total}}} circuits valides",
+    "parsed": "{{valid}}/{{total}} circuits valides",
     "valid": "Valide",
     "invalid": "Invalide",
-    "importButton": "Importer {{{count}}} circuits",
+    "importButton": "Importer {{count}} circuits",
     "importing": "Importation...",
-    "success": "{{{count}}} circuits ajoutés avec succès!",
+    "success": "{{count}} circuits ajoutés avec succès!",
     "errors": {
       "parseError": "Impossible de lire le fichier Excel",
       "noValid": "Aucun circuit valide à importer",
@@ -1866,7 +1866,7 @@
       "vsLastWeek": "vs semaine dernière"
     },
     "welcome": {
-      "todayStats": "{{{count}}} nouvelles réservations aujourd'hui",
+      "todayStats": "{{count}} nouvelles réservations aujourd'hui",
       "revenue": "revenus",
       "pending": "en attente",
       "noRegistrations": "Aucune réservation aujourd'hui. Votre bot WhatsApp fonctionne ! 💬"
@@ -1967,7 +1967,111 @@
     "readyDescription": "Votre système est configuré et fonctionne. Maintenant, vos clients peuvent rechercher des circuits 24h/24 et 7j/7 via WhatsApp, créer des réservations et effectuer des paiements.",
     "nextSteps": "Prochaines Étapes",
     "watchVideo": "Regarder la Vidéo",
-    "readDocs": "Documentation"
+    "readDocs": "Documentation",
+    "steps": {
+      "step1": {
+        "title": "Créer un compte et se connecter",
+        "duration": "2 minutes",
+        "description": "Créez votre compte d'essai gratuit et connectez-vous au panneau d'administration.",
+        "substeps": {
+          "s1": {
+            "title": "S'inscrire gratuitement",
+            "description": "Cliquez sur «Essai gratuit», inscrivez-vous avec email et mot de passe."
+          },
+          "s2": {
+            "title": "Vérifier l'email",
+            "description": "Cliquez sur le lien de vérification dans votre email pour activer le compte."
+          },
+          "s3": {
+            "title": "Se connecter au panneau admin",
+            "description": "Connectez-vous pour accéder à votre panneau. L'essai gratuit de 14 jours commence automatiquement."
+          }
+        },
+        "tips": {
+          "t1": "14 jours gratuits — aucune carte de crédit requise",
+          "t2": "Toutes les fonctionnalités actives pendant l'essai",
+          "t3": "Mettez à jour les infos de l'agence dans «Paramètres du chatbot» > «Infos agence»"
+        }
+      },
+      "step2": {
+        "title": "Télécharger vos circuits et dates",
+        "duration": "5-10 minutes",
+        "description": "Ajoutez vos informations de circuits et dates disponibles. Les clients y accéderont via WhatsApp.",
+        "substeps": {
+          "s1": {
+            "title": "Créer un nouveau circuit",
+            "description": "Allez dans l'onglet «Circuits» et cliquez sur «Ajouter un circuit»."
+          },
+          "s2": {
+            "title": "Remplir les détails",
+            "description": "Saisissez la destination, le type de circuit, la description, l'URL du programme."
+          },
+          "s3": {
+            "title": "Ajouter des dates",
+            "description": "Définissez les dates de départ, prix et quotas pour chaque circuit."
+          }
+        },
+        "tips": {
+          "t1": "Une URL de programme détaillée donne plus d'infos aux clients",
+          "t2": "Gardez les prix à jour, le système les affiche automatiquement",
+          "t3": "Les infos de quota créent de l'urgence chez les clients"
+        }
+      },
+      "step3": {
+        "title": "Connecter votre WhatsApp",
+        "duration": "5-10 minutes",
+        "description": "Connectez votre numéro WhatsApp Business vous-même en minutes avec Meta Embedded Signup. Aucune connaissance technique requise.",
+        "substeps": {
+          "s1": {
+            "title": "Aller aux paramètres WhatsApp",
+            "description": "Allez dans «Paramètres WhatsApp» du groupe «Paramètres du chatbot» ou cliquez sur l'étape WhatsApp dans l'assistant de configuration."
+          },
+          "s2": {
+            "title": "Cliquer sur «Connecter avec Facebook»",
+            "description": "Connectez-vous avec votre compte Facebook/Meta Business."
+          },
+          "s3": {
+            "title": "Sélectionner votre numéro WhatsApp Business",
+            "description": "Choisissez votre compte Meta Business, le numéro WhatsApp Business et approuvez les autorisations. La connexion s'établit automatiquement."
+          }
+        },
+        "tips": {
+          "t1": "Assurez-vous que WhatsApp Business est actif (pas WhatsApp normal)",
+          "t2": "Le compte Meta Business Suite peut être créé lors de l'inscription",
+          "t3": "En cas de problème: info@turzzai.com"
+        }
+      },
+      "step4": {
+        "title": "Tester et commencer",
+        "duration": "1 minute",
+        "description": "Après l'activation, testez le système et commencez à servir vos clients.",
+        "substeps": {
+          "s1": {
+            "title": "Envoyer un message depuis votre numéro",
+            "description": "Écrivez «Bonjour» au numéro professionnel sur WhatsApp et vérifiez que le bot répond."
+          },
+          "s2": {
+            "title": "Rechercher des circuits",
+            "description": "Envoyez «Tours en Cappadoce» et vérifiez que vos circuits s'affichent."
+          },
+          "s3": {
+            "title": "Tester le processus de réservation",
+            "description": "Écrivez «Je veux réserver», testez les étapes de date, nombre de personnes et nom."
+          }
+        },
+        "tips": {
+          "t1": "Le bot fonctionne 24/7, même quand vous êtes hors ligne",
+          "t2": "Les profils clients sont créés automatiquement",
+          "t3": "Suivez toutes les conversations dans l'onglet «Conversations WhatsApp»"
+        }
+      }
+    },
+    "heroDescription": "Configurez votre système de vente de circuits WhatsApp en quelques étapes simples et commencez à servir votre premier client.",
+    "badge1": "Aucune connaissance technique requise",
+    "badge2": "Nous gérons toute l'infrastructure",
+    "footerRights": "Tous droits réservés.",
+    "footerHome": "Accueil",
+    "footerLogin": "Connexion"
   },
   "help": {
     "title": "Centre d'Aide",
@@ -1977,7 +2081,7 @@
     "stepByStep": "Guide étape par étape",
     "visualGuides": "Explications visuelles",
     "troubleshooting": "Conseils de dépannage",
-    "topicsCount": "{{{count}}} sujets détaillés",
+    "topicsCount": "{{count}} sujets détaillés",
     "back": "Retour",
     "backToAdmin": "Retour au Panneau d'Administration",
     "quickLinks": "Guide de démarrage",
@@ -2148,7 +2252,7 @@
     "messageMaxLength": "Le message ne peut pas dépasser 1 000 caractères"
   },
   "blog": {
-    "minutesRead": "{{{count}}} min de lecture",
+    "minutesRead": "{{count}} min de lecture",
     "readMore": "Lire →",
     "noPosts": "Aucun article dans cette catégorie pour l'instant.",
     "ctaQuestion": "Avez-vous essayé Turzz AI ?",
@@ -2164,7 +2268,7 @@
       "ctaDesc": "14 jours gratuits, aucune carte bancaire requise.",
       "ctaButton": "Commencer gratuitement"
     },
-    "fallbackNotice": "Cet article n'a pas encore été traduit en {{{lang}}}. La version turque est affichée.",
+    "fallbackNotice": "Cet article n'a pas encore été traduit en {{lang}}. La version turque est affichée.",
     "fallbackBadge": "Turc",
     "availableIn": "Cet article est disponible en :"
   },
@@ -3072,7 +3176,7 @@
       "cancelledDesc": "La connexion WhatsApp a été annulée.",
       "success": "Succès !",
       "successDesc": "Votre numéro WhatsApp a été connecté avec succès",
-      "successDescPhone": "Votre numéro WhatsApp a été connecté avec succès : {{{phone}}}",
+      "successDescPhone": "Votre numéro WhatsApp a été connecté avec succès : {{phone}}",
       "errorTitle": "Erreur",
       "exchangeError": "Une erreur s'est produite lors de la connexion WhatsApp. Veuillez réessayer.",
       "disconnected": "Déconnecté",
@@ -3132,8 +3236,8 @@
     },
     "conversations": {
       "search": "Rechercher...",
-      "count": "{{{count}}} conversations",
-      "page": "Page {{{current}}}/{{{total}}}",
+      "count": "{{count}} conversations",
+      "page": "Page {{current}}/{{total}}",
       "selectAgency": "Sélectionner une agence"
     },
     "logs": {
@@ -3147,7 +3251,7 @@
       "roleSelect": "Sélectionner un rôle",
       "dateRange": "Plage de dates",
       "clearFilters": "Effacer les filtres",
-      "results": "Journaux de messages ({{{count}}} résultats)",
+      "results": "Journaux de messages ({{count}} résultats)",
       "loading": "Chargement des journaux...",
       "empty": "Aucun journal trouvé",
       "loadError": "Erreur lors du chargement des journaux",
@@ -3182,8 +3286,8 @@
       "chartTitle": "Nombre d'utilisateurs (par langue)",
       "chartBar": "Nombre d'utilisateurs",
       "detailTitle": "Distribution linguistique détaillée",
-      "userCount": "{{{count}}} utilisateurs",
-      "messageCount": "{{{count}}} messages",
+      "userCount": "{{count}} utilisateurs",
+      "messageCount": "{{count}} messages",
       "empty": "Aucune donnée linguistique pour l'instant"
     }
   },
@@ -3340,6 +3444,7 @@
     "customer": "Client"
   },
   "support": {
+    "title": "Support Turzz",
     "subtitle": "Nous sommes là pour vous aider",
     "quickOptions": "Options rapides :",
     "error": "Désolé, une erreur s'est produite. Veuillez réessayer ou visiter https://turzzai.com/help.",
@@ -3413,17 +3518,17 @@
     "msg7": "2 personnes",
     "msg8": "✅ 2 adultes enregistrés.\n\n👤 Quel est votre nom complet ?",
     "msg9": "Pierre Dubois",
-    "msg10": "✅ Merci Pierre !\n\n📝 Avez-vous des demandes spéciales ? (Tapez \"non\" si aucune)",
-    "msg11": "Non",
+    "msg10": "✅ Merci Pierre !\n\n📱 Votre numéro de téléphone ?",
+    "msg11": "+33 6 12 34 56 78",
     "msg12": "📋 *RÉCAPITULATIF DE RÉSERVATION*\n\n🏖️ Tour : Cappadoce 2 jours\n📅 Date : 15 juin\n👥 Personnes : 2 adultes\n👤 Nom : Pierre Dubois\n💰 Total : €240\n\nTapez \"oui\" pour confirmer.",
     "msg13": "Oui",
     "msg14": "✅ Votre réservation est confirmée ! 🎉\nDétails envoyés via WhatsApp. Bon voyage ! 🌟"
   },
   "statsRibbon": {
-    "agencies": "Agences actives",
-    "messages": "Messages mensuels",
-    "satisfaction": "Satisfaction",
-    "languages": "Langues"
+    "langs": "Support 7 langues",
+    "support": "Réponse instantanée 24/7",
+    "booking": "Réservation en secondes",
+    "setup": "Configuration en 5 minutes"
   },
   "indexBlog": {
     "title": "Contenus sectoriels",

@@ -8,8 +8,9 @@ import {
   processTransition,
   getNextExpectedInput,
   getCancellationMessage,
+  detectConfirmation,
 } from "../fsm/state-machine.ts";
-import { sanitizeInput, isInputTooLong } from "../fsm/validator.ts";
+import { sanitizeInput, isInputTooLong, detectInjection } from "../fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../fsm/nlu.ts";
 import {
   detectLanguageChangeIntent,
@@ -18,7 +19,7 @@ import {
 } from "../fsm/localization.ts";
 import { detectLanguage } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt } from "../fsm/prompt-builder.ts";
-import { validateAIResponse } from "../fsm/response-validator.ts";
+import { validateAIResponse, validateInjectionResponse } from "../fsm/response-validator.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
@@ -51,6 +52,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   const message = sanitizeInput(rawMessage);
+
+  // K4: Prompt injection şüphesi tespiti — mesaj engellenmez, sadece flag set edilir
+  const _isSuspectedInjection = detectInjection(rawMessage);
+  if (_isSuspectedInjection) {
+    console.warn("[process-message] K4: Suspected prompt injection detected:", rawMessage.slice(0, 100));
+  }
 
   // _save: saveTransaction varsa atomik (user+assistant+ctx), yoksa sadece assistant+ctx
   const _save = (reply: string, ctx: ConversationContext): Promise<void> =>
@@ -89,7 +96,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const previousContext = { ...context };
 
   // === 5. HISTORY YÜKLE (NLU + AI için) ===
-  const historyAsc = await adapter.loadHistory(50);
+  // B3: 20 mesajla sınırla — off-topic konuşmalarda context şişmesini önle
+  const historyAsc = await adapter.loadHistory(20);
 
   // === 6. NLU CONTEXT + ANALIZ ===
   const historySummary = historyAsc.map((m) => `${m.role}: ${m.content}`).join("\n");
@@ -126,6 +134,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     nluResult.intent,
   );
   if (selectedTour) console.log("[process-message] Tour matched:", selectedTour.title);
+
+  // B2: Orijinal intent'i stage korumadan ÖNCE kaydet
+  const _prePromotionIntent = nluResult.intent;
 
   // Stage koruma: COLLECTING_INFO / CONFIRMING'de tour_search → provide_info
   if (
@@ -226,6 +237,72 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(_phReply, newContext);
     await adapter.sendResponse(_phReply);
     return { success: true, response: _phReply, newContext };
+  }
+
+  // === FIX O6: Aktif tur yoksa deterministik mesaj — AI uydurmasın ===
+  // COMPLETED stage hariç: after-sales mesajları tur listesine ihtiyaç duymaz.
+  if (tours.length === 0 && newContext.stage !== "COMPLETED") {
+    const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    const _noTourMsgs: Record<string, string> = {
+      tr: `Şu anda aktif turumuzu bulamıyoruz. Yeni tarihler ve bilgi için lütfen acentemizle iletişime geçin.${_agPhone}`,
+      en: `We currently don't have any available tours. Please contact our agency for new dates and information.${_agPhone}`,
+      de: `Wir haben derzeit keine verfügbaren Touren. Für neue Termine und Informationen wenden Sie sich bitte an unsere Agentur.${_agPhone}`,
+      ru: `В настоящее время у нас нет доступных туров. Пожалуйста, свяжитесь с нашим агентством для получения информации.${_agPhone}`,
+      ar: `لا تتوفر لدينا جولات متاحة حالياً. يرجى التواصل مع وكالتنا للحصول على معلومات.${_agPhone}`,
+      fr: `Nous n'avons actuellement aucun circuit disponible. Contactez notre agence pour de nouvelles dates et informations.${_agPhone}`,
+      es: `Actualmente no tenemos tours disponibles. Por favor contacte nuestra agencia para fechas y más información.${_agPhone}`,
+    };
+    const _noTourReply = _noTourMsgs[newContext.language] || _noTourMsgs.tr;
+    console.warn("[process-message] O6: No available tours — returning deterministic message");
+    await _save(_noTourReply, newContext);
+    await adapter.sendResponse(_noTourReply);
+    return { success: true, response: _noTourReply, newContext };
+  }
+
+  // === B2: Akış ortası tur listesi (deterministik) ===
+  // Müşteri COLLECTING_INFO/CONFIRMING'de genel "başka tur var mı?" sorusu sordu.
+  // Belirli bir tur eşleşmedi; mevcut akış state'i korunarak tur listesi gösteriliyor.
+  if (
+    _prePromotionIntent === "tour_search" &&
+    (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
+    newContext.stage === context.stage &&
+    !selectedTour &&
+    tours.length > 0
+  ) {
+    const _exRatesB2 = await getExchangeRatesOnce().catch(() => ({}));
+    const _showDualB2 = agency.show_multi_currency !== false;
+    const _tourListLines = tours.slice(0, 8).map((t: any, i: number) => {
+      const _firstDate = t.dates?.[0];
+      const _priceText = _firstDate?.price_adult
+        ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", newContext.language, _exRatesB2, _showDualB2)}`
+        : "";
+      return `${i + 1}) ${getLocalizedTourTitle(t.title, newContext.language)}${_priceText}`;
+    }).join("\n");
+
+    const _switchNotes: Record<string, string> = {
+      tr: `Mevcut turumuz: *${getLocalizedTourTitle(newContext.currentTour?.title || "", newContext.language)}*. Değiştirmek için tur adını yazın — tarih ve kişi bilgileriniz korunur.`,
+      en: `Current tour: *${getLocalizedTourTitle(newContext.currentTour?.title || "", newContext.language)}*. To switch, type the tour name — your date and pax info is preserved.`,
+      de: `Aktuelle Tour: *${getLocalizedTourTitle(newContext.currentTour?.title || "", newContext.language)}*. Zum Wechseln Tourname eingeben — Datum und Personenzahl bleiben erhalten.`,
+      ru: `Текущий тур: *${getLocalizedTourTitle(newContext.currentTour?.title || "", newContext.language)}*. Чтобы переключить, напишите название тура — дата и кол-во человек сохранятся.`,
+      ar: `الجولة الحالية: *${getLocalizedTourTitle(newContext.currentTour?.title || "", newContext.language)}*. للتبديل، اكتب اسم الجولة — بياناتك محفوظة.`,
+      fr: `Circuit actuel : *${getLocalizedTourTitle(newContext.currentTour?.title || "", newContext.language)}*. Pour changer, tapez le nom — vos date et participants sont conservés.`,
+      es: `Tour actual: *${getLocalizedTourTitle(newContext.currentTour?.title || "", newContext.language)}*. Para cambiar, escribe el nombre del tour — tu fecha y personas se conservan.`,
+    };
+    const _listHeaders: Record<string, string> = {
+      tr: "Müsait turlarımız:",
+      en: "Our available tours:",
+      de: "Unsere verfügbaren Touren:",
+      ru: "Доступные туры:",
+      ar: "جولاتنا المتاحة:",
+      fr: "Nos circuits disponibles :",
+      es: "Nuestros tours disponibles:",
+    };
+    const _b2Reply =
+      `${_listHeaders[newContext.language] || _listHeaders.tr}\n${_tourListLines}\n\n` +
+      (_switchNotes[newContext.language] || _switchNotes.en);
+    await _save(_b2Reply, newContext);
+    await adapter.sendResponse(_b2Reply);
+    return { success: true, response: _b2Reply, newContext };
   }
 
   // === 10. İPTAL MESAJI (deterministik) ===
@@ -336,61 +413,6 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
-  // === 13. KOTA KONTROLÜ (COMPLETED'a geçildi, ama RPC öncesi) ===
-  if (newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED") {
-    const { dateId, paxAdult } = newContext.reservationInfo;
-    if (dateId && paxAdult) {
-      const { data: tourDate } = await supabase.from("tour_dates").select("quota").eq("id", dateId).single();
-      if (tourDate?.quota !== null && tourDate?.quota !== undefined) {
-        const { count: existingPax } = await supabase
-          .from("registrations")
-          .select("pax", { count: "exact" })
-          .eq("tour_date_id", dateId)
-          .neq("status", "CANCELLED");
-        const usedQuota = existingPax || 0;
-        const remainingQuota = tourDate.quota - usedQuota;
-        if (remainingQuota < paxAdult) {
-          const lang = newContext.language || "tr";
-          const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
-          const _quotaTour = tours.find((t: any) => t.id === newContext.reservationInfo.tourId);
-          let _dateLines = "";
-          if (_quotaTour?.dates && _quotaTour.dates.length > 1) {
-            const _qRates = await getExchangeRatesOnce().catch(() => ({}));
-            const _qDual = agency.show_multi_currency !== false;
-            _dateLines = "\n\n" + _quotaTour.dates
-              .filter((d: any) => d.id !== dateId)
-              .map((d: any, i: number) => {
-                const dt = formatDateForLanguage(d.departure_date, lang);
-                const pr = d.price_adult
-                  ? ` - ${formatPriceSync(d.price_adult, _quotaTour.currency || "TRY", lang, _qRates, _qDual)}`
-                  : "";
-                return `${i + 1}) ${dt}${pr}`;
-              })
-              .join("\n");
-          }
-          const _qMsgs: Record<string, string> = {
-            tr: `Üzgünüm, seçtiğiniz tarih için kontenjan dolmuş. 😔 Başka bir tarih seçer misiniz?${_dateLines}`,
-            en: `Sorry, the date you selected is fully booked. 😔 Could you choose another date?${_dateLines}`,
-            de: `Das gewählte Datum ist ausgebucht. 😔 Bitte ein anderes Datum wählen.${_dateLines}`,
-            ru: `Извините, выбранная дата полностью занята. 😔 Выберите другую дату.${_dateLines}`,
-            ar: `آسف، التاريخ محجوز بالكامل. 😔 اختر تاريخاً آخر.${_dateLines}`,
-            fr: `Désolé, la date choisie est complète. 😔 Choisissez une autre date.${_dateLines}`,
-            es: `Lo siento, la fecha está completa. 😔 Elija otra fecha.${_dateLines}`,
-          };
-          newContext.reservationInfo.dateId = undefined;
-          newContext.reservationInfo.selectedDate = undefined;
-          newContext.stage = "COLLECTING_INFO";
-          newContext.reservationConfirmed = false;
-          newContext.collectionStep = "waiting_for_date";
-          const qReply = _qMsgs[lang] || _qMsgs.tr;
-          await _save(qReply, newContext);
-          await adapter.sendResponse(qReply);
-          return { success: true, response: qReply, newContext };
-        }
-      }
-    }
-  }
-
   // === 14. REZERVASYON KAYDET (COMPLETED) ===
   const justCompleted =
     newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED";
@@ -464,6 +486,31 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       return { success: true, response: missReply, newContext };
     }
 
+    // FIX 2: Tur ve tarih hâlâ yüklü listede var mı? Bayat state koruması.
+    const _tourInList = tours.find((t: any) => t.id === tourId);
+    const _dateInList = _tourInList?.dates?.find((d: any) => d.id === dateId);
+    if (!_tourInList || !_dateInList) {
+      console.warn("[process-message] Stale state: tour/date no longer in loaded list", { tourId, dateId });
+      newContext.stage = "BROWSING";
+      newContext.currentTour = null;
+      newContext.reservationInfo = {};
+      newContext.reservationConfirmed = false;
+      newContext.collectionStep = undefined;
+      const _staleMsgs: Record<string, string> = {
+        tr: "Bilgileriniz güncellenmiş olabilir, baştan bakalım — hangi turlar ilginizi çeker?",
+        en: "Your information may have been updated. Let's start fresh — which tours interest you?",
+        de: "Ihre Informationen haben sich möglicherweise geändert. Fangen wir von vorne an — welche Touren interessieren Sie?",
+        ru: "Ваши данные могли измениться. Начнём заново — какие туры вас интересуют?",
+        ar: "قد تكون معلوماتك قد تغيرت. لنبدأ من جديد — ما الجولات التي تهمك؟",
+        fr: "Vos informations ont peut-être changé. Recommençons — quels circuits vous intéressent ?",
+        es: "Su información puede haber cambiado. Empecemos de nuevo — ¿qué tours le interesan?",
+      };
+      const _staleReply = _staleMsgs[newContext.language] || _staleMsgs.tr;
+      await _save(_staleReply, newContext);
+      await adapter.sendResponse(_staleReply);
+      return { success: false, error: "stale_state", response: _staleReply, newContext };
+    }
+
     const totalPax = (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0);
     console.log("[process-message] calling create_reservation RPC:", { tourId, dateId, fullName, totalPax, agencyId: agency.id });
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
@@ -476,7 +523,6 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         p_pax: totalPax,
         p_agency_id: agency.id,
         p_source_channel: "WHATSAPP",
-        p_email: newContext.reservationInfo.email || null,
       }
     );
 
@@ -493,14 +539,30 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         newContext.stage = "COLLECTING_INFO";
         newContext.reservationConfirmed = false;
         newContext.collectionStep = "waiting_for_date";
+        const _quotaTour = tours.find((t: any) => t.id === tourId);
+        let _altDates = "";
+        if (_quotaTour?.dates && _quotaTour.dates.length > 1) {
+          const _qRates = await getExchangeRatesOnce().catch(() => ({}));
+          const _qDual = agency.show_multi_currency !== false;
+          _altDates = "\n\n" + _quotaTour.dates
+            .filter((d: any) => d.id !== dateId && (d.remaining_quota ?? d.quota ?? 1) > 0)
+            .map((d: any, i: number) => {
+              const dt = formatDateForLanguage(d.departure_date, lang);
+              const pr = d.price_adult
+                ? ` - ${formatPriceSync(d.price_adult, _quotaTour.currency || "TRY", lang, _qRates, _qDual)}`
+                : "";
+              return `${i + 1}) ${dt}${pr}`;
+            })
+            .join("\n");
+        }
         const _msgs: Record<string, string> = {
-          tr: "Üzgünüm, seçtiğiniz tarih için kontenjan dolmuş. 😔 Başka bir tarih seçer misiniz?",
-          en: "Sorry, the date you selected is fully booked. 😔 Could you choose another date?",
-          de: "Es tut mir leid, das gewählte Datum ist ausgebucht. 😔 Bitte ein anderes Datum wählen.",
-          ru: "Извините, выбранная дата уже занята. 😔 Выберите другую дату.",
-          ar: "آسف، التاريخ محجوز بالكامل. 😔 اختر تاريخاً آخر.",
-          fr: "Désolé, la date est complète. 😔 Choisissez une autre date.",
-          es: "Lo siento, la fecha está completa. 😔 Elija otra fecha.",
+          tr: `Üzgünüm, seçtiğiniz tarih için kontenjan dolmuş. 😔 Başka bir tarih seçer misiniz?${_altDates}`,
+          en: `Sorry, the date you selected is fully booked. 😔 Could you choose another date?${_altDates}`,
+          de: `Es tut mir leid, das gewählte Datum ist ausgebucht. 😔 Bitte ein anderes Datum wählen.${_altDates}`,
+          ru: `Извините, выбранная дата уже занята. 😔 Выберите другую дату.${_altDates}`,
+          ar: `آسف، التاريخ محجوز بالكامل. 😔 اختر تاريخاً آخر.${_altDates}`,
+          fr: `Désolé, la date est complète. 😔 Choisissez une autre date.${_altDates}`,
+          es: `Lo siento, la fecha está completa. 😔 Elija otra fecha.${_altDates}`,
         };
         errorReply = _msgs[lang] || _msgs.tr;
       } else if (errCode === "DUPLICATE") {
@@ -680,6 +742,35 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: completionReply, newContext };
   }
 
+  // === 14b. FIX 3 — SAHTE ONAY GUARD ===
+  // CONFIRMING stage'de "evet" verdi AMA justCompleted=false kaldı → FSM geçişi olmadı.
+  // AI'a bırakma: "onaylandı" uydurmadan önce state'i sıfırla, clean reset yap.
+  if (
+    context.stage === "CONFIRMING" &&
+    !justCompleted &&
+    detectConfirmation(message, context.language)
+  ) {
+    console.warn("[process-message] FIX3: Confirmation detected but FSM didn't transition — state inconsistency, resetting");
+    newContext.stage = "BROWSING";
+    newContext.currentTour = null;
+    newContext.reservationInfo = {};
+    newContext.reservationConfirmed = false;
+    newContext.collectionStep = undefined;
+    const _incMsgs: Record<string, string> = {
+      tr: "İşleminizde bir uyumsuzluk oluştu, baştan başlayalım — hangi turlar ilginizi çeker?",
+      en: "There was an issue processing your session. Let's start fresh — which tours interest you?",
+      de: "Bei der Verarbeitung Ihrer Sitzung ist ein Fehler aufgetreten. Fangen wir von vorne an — welche Touren interessieren Sie?",
+      ru: "Произошла ошибка при обработке вашей сессии. Начнём заново — какие туры вас интересуют?",
+      ar: "حدثت مشكلة في معالجة جلستك. لنبدأ من جديد — ما الجولات التي تهمك؟",
+      fr: "Un problème est survenu dans votre session. Recommençons — quels circuits vous intéressent ?",
+      es: "Hubo un problema al procesar su sesión. Empecemos de nuevo — ¿qué tours le interesan?",
+    };
+    const _incReply = _incMsgs[newContext.language] || _incMsgs.tr;
+    await _save(_incReply, newContext);
+    await adapter.sendResponse(_incReply);
+    return { success: false, error: "state_inconsistency", response: _incReply, newContext };
+  }
+
   // === 15. SYSTEM PROMPT ===
   const currentTourFull = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
   // BUG 6: AI prompt'una giden reservationInfo'da tur adını hedef dile çevir
@@ -739,8 +830,46 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       : `\n\n🔄 TOUR CONSISTENCY: Active tours exist (${_titles}). NEVER say "no tours" or "no dates found".`;
   }
 
+  // B1: Akış ortası bilgi sorusu — AI'ya adıma dönüş ipucu
+  let midFlowReturnPrompt = "";
+  if (
+    (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
+    newContext.stage === context.stage &&
+    newContext.collectionStep === context.collectionStep
+  ) {
+    const _stepHints: Record<string, Record<string, string>> = {
+      waiting_for_date:  { tr: "tarih seçimini", en: "date selection", de: "Datum", ru: "выбор даты", ar: "اختيار التاريخ", fr: "choix de la date", es: "selección de fecha" },
+      waiting_for_pax:   { tr: "kişi sayısını", en: "number of people", de: "Personenzahl", ru: "кол-во человек", ar: "عدد الأشخاص", fr: "nombre de personnes", es: "número de personas" },
+      waiting_for_name:  { tr: "adı soyadı", en: "full name", de: "Namen", ru: "полное имя", ar: "الاسم الكامل", fr: "nom complet", es: "nombre completo" },
+      waiting_for_phone: { tr: "telefon numarasını", en: "phone number", de: "Telefonnummer", ru: "номер телефона", ar: "رقم الهاتف", fr: "numéro de téléphone", es: "número de teléfono" },
+      waiting_for_email: { tr: "email adresini", en: "email address", de: "E-Mail-Adresse", ru: "email", ar: "البريد الإلكتروني", fr: "adresse e-mail", es: "correo electrónico" },
+      ready_for_confirmation: { tr: "bilgileri onaylamasını", en: "confirmation of details", de: "Bestätigung", ru: "подтверждение", ar: "التأكيد", fr: "confirmation", es: "confirmación" },
+    };
+    const _stepHint = newContext.collectionStep && _stepHints[newContext.collectionStep]
+      ? (_stepHints[newContext.collectionStep][newContext.language] || _stepHints[newContext.collectionStep].en)
+      : null;
+    if (_stepHint) {
+      midFlowReturnPrompt = newContext.language === "tr"
+        ? `\n\n↩️ AKIŞ İPUCU: Soruyu kısa ve net yanıtladıktan sonra MUTLAKA şu adıma dön ve "${_stepHint}" talep et. Toplanan bilgileri UNUTMA.`
+        : `\n\n↩️ FLOW HINT: After answering briefly and clearly, ALWAYS return to: request "${_stepHint}". Do NOT forget collected info.`;
+    }
+  }
+
+  // B3: Off-topic sorularda kısa yanıt direktifi — token israfını önle
+  let offTopicBrevityPrompt = "";
+  if (
+    ["general", "greeting"].includes(_prePromotionIntent) &&
+    newContext.stage !== "COMPLETED" &&
+    newContext.stage !== "CONFIRMING"
+  ) {
+    offTopicBrevityPrompt = newContext.language === "tr"
+      ? `\n\n⚡ KISA YANIT: Bu mesaj tur/rezervasyon dışı. Maksimum 2 cümle yanıt ver, sonra turlarımıza davet et.`
+      : `\n\n⚡ BRIEF REPLY: This message is off-topic. Respond in max 2 sentences, then invite to our tours.`;
+  }
+
   const systemPrompt = buildSystemPrompt(promptContext as any) +
-    tourSwitchWarning + completedStagePrompt + returningUserPrompt + antiContradictionPrompt;
+    tourSwitchWarning + completedStagePrompt + returningUserPrompt + antiContradictionPrompt +
+    midFlowReturnPrompt + offTopicBrevityPrompt;
 
   // === 16. AI ÇAĞRISI ===
   let reply: string;
@@ -760,6 +889,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (validation.wasModified) {
     console.warn("[process-message] Response validator modified AI output");
     reply = validation.text;
+  }
+
+  // === 17b. K4: Injection post-validation — şüpheli cevaplarda fiyat manipülasyonu bloğu ===
+  if (_isSuspectedInjection) {
+    const _injBlock = validateInjectionResponse(reply, newContext.language);
+    if (_injBlock) {
+      console.warn("[process-message] K4: Injection post-validation blocked suspicious price/discount claim in AI reply");
+      reply = _injBlock;
+    }
   }
 
   // === 18. ÖDEME MESAJI (AI cevabından sonra, daha önce gönderilmediyse) ===

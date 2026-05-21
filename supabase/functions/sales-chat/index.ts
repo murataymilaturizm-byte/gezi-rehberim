@@ -53,10 +53,10 @@ serve(async (req) => {
 
 ÜRÜNÜMÜZÜN ÖZELLİKLERİ:
 ✅ 7/24 WhatsApp üzerinden otomatik tur satışı ve müşteri desteği
-✅ Yapay zeka destekli akıllı müşteri yanıtlama (Google Gemini AI modelleri)
+✅ Yapay zeka destekli akıllı müşteri yanıtlama (Anthropic Claude AI modeli)
 ✅ 7 dil desteği (Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca)
 ✅ Otomatik dil algılama - Bot müşterinin yazdığı dilde otomatik cevap verir
-✅ 5 farklı konuşma stili (Standart, Kurumsal, Dinamik, Premium, Samimi)
+✅ 4 farklı konuşma stili (Samimi/Dostane, Kurumsal, Enerjik/Dinamik, Premium)
 ✅ Akıllı rezervasyon wizard'ı - Adım adım rehberli rezervasyon süreci
 ✅ WhatsApp'tan direkt rezervasyon alma ve onaylama
 ✅ Müşteri profili ve tercih takibi sistemi - Kişiselleştirilmiş deneyim
@@ -87,15 +87,15 @@ Yıllık: 32.389 TL/yıl (%10 indirimli - 2.699 TL/ay)
    • 1 Dil Seçimi (TR, EN, DE, FR, ES, RU, AR'dan herhangi biri)
    • Temel analitik raporları
    • E-posta desteği
-   • Sadece Standart konuşma üslubu
+   • Sadece Kurumsal konuşma üslubu
    • Küçük acenteler için ideal
 
 🚀 PROFESYONEL PAKET (EN POPÜLER)
 Aylık: 4.999 TL/ay
 Yıllık: 53.989 TL/yıl (%10 indirimli - 4.499 TL/ay)
    • 5.000 WhatsApp mesajı/ay dahil
-   • Sınırsız tur sayısı
-   • 3 Dile Kadar Destek
+   • 50 tura kadar
+   • 4 Dile Kadar Destek
    • Detaylı analitik ve gelir takibi
    • Öncelikli destek (WhatsApp + Email)
    • 4 farklı konuşma üslubu
@@ -114,7 +114,7 @@ Yıllık: 86.389 TL/yıl (%10 indirimli - 7.199 TL/ay)
    • Sınırsız WhatsApp mesajı
    • Sınırsız tur sayısı
    • Tüm 7 Dil Desteği
-   • 5 konuşma üslubu
+   • 4 konuşma üslubu
    • Otomatik müşteri memnuniyeti anketi
    • Öncelikli destek 7/24
    • Büyük organizasyonlar için özel çözümler

@@ -1,6 +1,9 @@
 // DemoChatAdapter — ChannelAdapter interface'ini demo-chat için implement eder.
 // WhatsApp'tan farkı: context stateless (frontend taşır), history DB'de, send HTTP response.
 
+/** Context bu kadar saat eskiyse sıfırlanır (bayat state koruması) */
+const STALE_CONTEXT_HOURS = 2;
+
 import type { ChannelAdapter } from "../shared/handlers/types.ts";
 import type { ConversationContext } from "../shared/fsm/types.ts";
 
@@ -33,6 +36,16 @@ export class DemoChatAdapter implements ChannelAdapter {
     if (typeof c.stage !== "string" || typeof c.language !== "string" || typeof c.tone !== "string") {
       return null;
     }
+
+    // FIX 1: Bayat state koruması (frontend'den gelen state)
+    if (c.lastUpdated) {
+      const _ageMs = Date.now() - new Date(c.lastUpdated).getTime();
+      if (_ageMs > STALE_CONTEXT_HOURS * 3_600_000) {
+        console.warn(`[demo-adapter] Context stale (${Math.round(_ageMs / 60000)}min old), resetting`);
+        return null;
+      }
+    }
+
     const context = { ...c } as ConversationContext;
     // Tone override: frontend'den gelen conversationStyle
     if (this._conversationStyle && context.tone !== this._conversationStyle) {
