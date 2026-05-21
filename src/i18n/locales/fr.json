@@ -136,7 +136,9 @@
       "premium": "💎 Je suis là pour vous aider. N'hésitez pas à poser vos questions!"
     },
     "inputPlaceholder": "Tapez votre message...",
-    "disclaimer": "Ceci est un chatbot de démonstration. Il n'affiche pas de vraies données de circuits."
+    "disclaimer": "Ceci est un chatbot de démonstration. Il n'affiche pas de vraies données de circuits.",
+    "aiOnline": "Propulsé par IA • En ligne",
+    "secureBadge": "Sécurisé"
   },
   "advanced": {
     "badge": "Fonctionnalités Avancées",
@@ -3376,9 +3378,14 @@
     "online": "en ligne",
     "typing": "écrit...",
     "msg1": "Bonjour, avez-vous un tour en Cappadoce ?",
-    "msg2": "Bonjour ! 👋 Oui, nous avons un tour de 2 jours en Cappadoce. 15-16 juin disponible. €120/pers., vol en montgolfière inclus. Intéressé ?",
-    "msg3": "Super ! Comment réserver pour 2 ?",
-    "msg4": "Je réserve 🎯 Quel est votre nom ?"
+    "msg2": "Bonjour ! 👋 Oui, nous proposons des tours en Cappadoce. Options de 2 ou 3 jours. Lequel vous intéresse ?",
+    "msg3": "Prenons celui de 2 jours. Quelles dates sont disponibles ?",
+    "msg4": "Dates disponibles : 📅\n• 15-16 juin\n• 22-23 juin",
+    "msg5": "Combien pour 2 personnes les 15-16 juin ?",
+    "msg6": "€120/pers. (€240 au total) 💰\nInclus : 2 nuits d'hôtel, vol en montgolfière, petit-déjeuner, guide.",
+    "msg7": "Parfait, réservons.",
+    "msg8": "Excellent ! 🎯 Puis-je avoir votre nom d'abord ?",
+    "msg9": "✅ Votre réservation est prête : 2 pers., 15-16 juin. Confirmation envoyée."
   },
   "statsRibbon": {
     "agencies": "Agences actives",

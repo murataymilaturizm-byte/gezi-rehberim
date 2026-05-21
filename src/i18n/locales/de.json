@@ -136,7 +136,9 @@
       "premium": "💎 Ich bin hier, um Ihnen zu helfen. Fragen Sie ruhig!"
     },
     "inputPlaceholder": "Geben Sie Ihre Nachricht ein...",
-    "disclaimer": "Dies ist ein Demo-Chatbot. Er zeigt keine echten Tourdaten."
+    "disclaimer": "Dies ist ein Demo-Chatbot. Er zeigt keine echten Tourdaten.",
+    "aiOnline": "KI-gestützt • Online",
+    "secureBadge": "Sicher"
   },
   "advanced": {
     "badge": "Erweiterte Funktionen",
@@ -3376,9 +3378,14 @@
     "online": "online",
     "typing": "tippt...",
     "msg1": "Hallo, gibt es eine Kappadokien-Tour?",
-    "msg2": "Hallo! 👋 Ja, wir haben eine 2-tägige Kappadokien-Tour. 15.-16. Juni verfügbar. €120/Person, Ballonfahrt inklusive. Interesse?",
-    "msg3": "Klingt super! Wie buche ich für 2?",
-    "msg4": "Ich buche jetzt 🎯 Wie ist Ihr Name?"
+    "msg2": "Hallo! 👋 Ja, wir bieten Kappadokien-Touren an. Es gibt 2-Tage- und 3-Tage-Optionen. Welche interessiert Sie?",
+    "msg3": "Die 2-tägige bitte. Welche Termine sind verfügbar?",
+    "msg4": "Verfügbare Termine: 📅\n• 15.-16. Juni\n• 22.-23. Juni",
+    "msg5": "Wie viel kostet es für 2 Personen am 15.-16. Juni?",
+    "msg6": "€120/Person (€240 insgesamt) 💰\nInklusive: 2 Übernachtungen, Ballonfahrt, Frühstück, Reiseleitung.",
+    "msg7": "Super, lassen Sie uns buchen.",
+    "msg8": "Perfekt! 🎯 Darf ich zuerst Ihren Namen wissen?",
+    "msg9": "✅ Ihre Buchung ist bereit: 2 Personen, 15.-16. Juni. Bestätigung gesendet."
   },
   "statsRibbon": {
     "agencies": "Aktive Agenturen",

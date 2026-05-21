@@ -36,17 +36,17 @@ export const HeroSection = ({ onDemoClick }: HeroSectionProps) => {
               <Zap className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-accent-foreground">{t("hero.title")}</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
               {t("hero.subtitle")} <br />
               <span className="bg-gradient-ocean bg-clip-text text-transparent">{t("hero.highlight")}</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl lg:max-w-none mx-auto lg:mx-0">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl lg:max-w-none mx-auto lg:mx-0">
               {t("hero.description")}
             </p>
-            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center lg:items-start gap-3 sm:gap-4 pt-2">
               <Button
                 size="lg"
-                className="group bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 text-lg px-8 animate-glow-pulse"
+                className="group bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 text-lg px-8 min-h-[52px] w-full sm:w-auto animate-glow-pulse"
                 asChild
               >
                 <a href="/auth?mode=signup">
@@ -57,7 +57,7 @@ export const HeroSection = ({ onDemoClick }: HeroSectionProps) => {
               <button
                 type="button"
                 onClick={onDemoClick}
-                className="inline-flex items-center gap-1 text-base font-medium text-foreground/80 hover:text-primary transition-colors group"
+                className="inline-flex items-center justify-center gap-1 text-base font-medium text-foreground/80 hover:text-primary transition-colors group min-h-[44px]"
               >
                 {t("hero.watchDemo")}
                 <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
@@ -79,9 +79,12 @@ export const HeroSection = ({ onDemoClick }: HeroSectionProps) => {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-            className="relative flex flex-col items-center gap-6"
+            className="relative flex flex-col items-center gap-4 sm:gap-6"
           >
-            <AIMascot thinking={mascotThinking} className="lg:max-w-[180px]" />
+            {/* Mascot: mobilde küçük & demo'nun yanında flex, md+'da büyük & üstte */}
+            <div className="hidden sm:block">
+              <AIMascot thinking={mascotThinking} className="max-w-[140px] md:max-w-[160px] lg:max-w-[180px]" />
+            </div>
             <HeroWhatsAppDemo onThinkingChange={setMascotThinking} />
           </motion.div>
         </div>

@@ -160,7 +160,7 @@ export const FaqSection = () => {
                   type="text"
                   required
                   maxLength={100}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2.5 min-h-[44px] border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-shadow focus:shadow-[0_0_0_4px_hsl(var(--primary)/0.08)]"
                   placeholder={t("contact.namePlaceholder")}
                 />
               </div>
@@ -172,7 +172,7 @@ export const FaqSection = () => {
                   type="email"
                   required
                   maxLength={255}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2.5 min-h-[44px] border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-shadow focus:shadow-[0_0_0_4px_hsl(var(--primary)/0.08)]"
                   placeholder={t("contact.emailPlaceholder")}
                 />
               </div>
@@ -184,13 +184,13 @@ export const FaqSection = () => {
                   required
                   maxLength={1000}
                   rows={4}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  className="w-full px-4 py-2.5 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none transition-shadow focus:shadow-[0_0_0_4px_hsl(var(--primary)/0.08)]"
                   placeholder={t("contact.messagePlaceholder")}
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-ocean hover:opacity-90"
+                className="w-full bg-gradient-ocean hover:opacity-90 min-h-[48px]"
                 disabled={isSubmittingForm}
               >
                 {isSubmittingForm ? t("contact.sending") : t("contact.sendButton")}

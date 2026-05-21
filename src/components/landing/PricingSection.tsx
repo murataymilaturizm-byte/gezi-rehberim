@@ -126,10 +126,10 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
   return (
     <div className="container mx-auto px-4">
       <div className="text-center mb-8">
-        <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4">
           {t("pricing.title")}
         </h3>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
+        <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
           {t("pricing.subtitle")}
         </p>
 
@@ -137,17 +137,17 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
         <div className="mb-6">
           <a
             href="/auth?mode=signup"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-ocean text-primary-foreground mb-4 animate-pulse hover:opacity-90 transition-opacity cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 rounded-full bg-gradient-ocean text-primary-foreground mb-4 animate-pulse hover:opacity-90 transition-opacity cursor-pointer min-h-[48px]"
           >
-            <Sparkles className="w-5 h-5" />
-            <span className="text-lg font-bold">{t("pricing.trial")}</span>
-            <Sparkles className="w-5 h-5" />
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-base sm:text-lg font-bold">{t("pricing.trial")}</span>
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </a>
         </div>
 
         {/* Billing Period Toggle */}
-        <div className="flex items-center justify-center gap-3 p-4 bg-card rounded-lg w-fit mx-auto border border-border">
-          <Label htmlFor="landing-billing-toggle" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-card rounded-lg w-fit mx-auto border border-border">
+          <Label htmlFor="landing-billing-toggle" className={`cursor-pointer ${!isYearly ? "font-semibold" : "text-muted-foreground"}`}>
             {t("pricing.monthly")}
           </Label>
           <Switch
@@ -155,18 +155,18 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
             checked={isYearly}
             onCheckedChange={setIsYearly}
           />
-          <Label htmlFor="landing-billing-toggle" className={isYearly ? "font-semibold" : "text-muted-foreground"}>
+          <Label htmlFor="landing-billing-toggle" className={`cursor-pointer ${isYearly ? "font-semibold" : "text-muted-foreground"}`}>
             {t("pricing.yearly")}
           </Label>
           {isYearly && (
-            <span className="ml-2 text-sm bg-success/10 text-success dark:text-success-foreground px-3 py-1 rounded-full font-medium border border-success/20">
+            <span className="text-xs sm:text-sm bg-success/10 text-success dark:text-success-foreground px-2 sm:px-3 py-1 rounded-full font-medium border border-success/20">
               {t("pricing.save")}
             </span>
           )}
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
         {pricingPlans.map((plan, index) => (
           <Card
             key={index}

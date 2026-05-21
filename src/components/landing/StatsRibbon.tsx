@@ -24,7 +24,7 @@ export const StatsRibbon = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 p-6 md:p-8 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm shadow-card"
+        className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 md:p-8 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm shadow-card"
       >
         {ITEMS.map((item, idx) => (
           <motion.div
@@ -35,8 +35,8 @@ export const StatsRibbon = () => {
             transition={{ duration: 0.4, delay: idx * 0.08, ease: "easeOut" }}
             className="flex flex-col items-center text-center gap-1.5"
           >
-            <item.icon className={`w-6 h-6 ${item.color}`} />
-            <div className="text-2xl md:text-3xl font-bold text-foreground">
+            <item.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${item.color}`} />
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
               {"decimals" in item && item.decimals ? (
                 // AnimatedCounter şu an integer; star rating için sabit gösterim
                 <span>{item.value.toFixed(item.decimals)}{item.suffix}</span>

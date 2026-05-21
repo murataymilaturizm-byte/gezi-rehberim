@@ -78,7 +78,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <SEOHead
         title="Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot"
         description="WhatsApp üzerinden 7/24 otomatik tur satışı. 7 dil desteği, AI destekli rezervasyon asistanı. 14 gün ücretsiz deneyin."
@@ -86,10 +86,10 @@ const Index = () => {
       />
       {/* Header */}
       <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3">
-              <img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105" />
+              <img src={turzzLogo} alt="Turzz Logo" className="h-10 sm:h-14 md:h-16 w-auto transition-transform duration-300 hover:scale-105" />
               <div className="hidden sm:block">
                 <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
               </div>
@@ -109,7 +109,7 @@ const Index = () => {
               <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
                 <a href="/yardim">{t("nav.help")}</a>
               </Button>
-              <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
+              <Button asChild size="sm" className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 sm:size-default">
                 <a href="/auth">{t("auth.login")}</a>
               </Button>
 
@@ -141,7 +141,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section ref={(el) => (sectionsRef.current[0] = el)} className="relative overflow-hidden py-20 md:py-28 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[0] = el)} className="relative overflow-hidden py-10 sm:py-16 md:py-24 lg:py-28 opacity-0 translate-y-8 transition-all duration-700">
         <HeroSection onDemoClick={scrollToDemo} />
       </section>
 

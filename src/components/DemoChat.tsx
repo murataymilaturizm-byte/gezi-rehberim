@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, MessageSquare, Bot, User, RotateCcw, X } from "lucide-react";
+import { Send, MessageSquare, Bot, User, RotateCcw, X, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   role: "user" | "assistant";
@@ -300,19 +301,36 @@ export const DemoChat = () => {
   };
 
   return (
-    <div className={`${isExpanded && isMobile ? "fixed inset-0 z-[60] bg-background p-4 animate-scale-in" : "container mx-auto py-8"}`}>
+    <div className={`${isExpanded && isMobile ? "fixed inset-0 z-[60] bg-background p-4 animate-scale-in" : "container mx-auto py-4 sm:py-8 px-4"}`}>
+      {/* Outer glow wrapper — premium gradient halka */}
+      <div className={`${isExpanded && isMobile ? "h-full" : "max-w-2xl mx-auto"} relative`}>
+        {/* Subtle outer glow ring (mobilde daha hafif) */}
+        <div className="absolute -inset-0.5 bg-gradient-ocean rounded-xl blur-md opacity-20 sm:opacity-30 pointer-events-none" aria-hidden="true" />
       <Card
-        className={`${isExpanded && isMobile ? "h-full" : "max-w-2xl mx-auto"} border-border shadow-card flex flex-col`}
+        className={`${isExpanded && isMobile ? "h-full" : ""} relative border-border/50 shadow-card flex flex-col overflow-hidden backdrop-blur-sm`}
       >
-        <CardHeader className="border-b border-border bg-gradient-ocean flex-shrink-0">
-          <div className="flex items-center justify-between">
+        <CardHeader className="border-b border-border bg-gradient-ocean flex-shrink-0 relative overflow-hidden">
+          {/* Decorative shimmer behind header */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_60%)] pointer-events-none" aria-hidden="true" />
+          <div className="flex items-center justify-between relative">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
-                <Bot className="w-5 h-5 text-primary" />
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center shadow-md ring-2 ring-white/30">
+                  <Bot className="w-5 h-5 text-primary" />
+                </div>
+                {/* Online pulse dot */}
+                <span className="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full bg-green-400 ring-2 ring-[hsl(16_95%_55%)]">
+                  <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-70" />
+                </span>
               </div>
               <div>
-                <CardTitle className="text-primary-foreground">TurzzAI Demo</CardTitle>
-                <p className="text-sm text-primary-foreground/80">{t("demo.subtitle2")}</p>
+                <CardTitle className="text-primary-foreground flex items-center gap-1.5">
+                  TurzzAI Demo
+                  <Sparkles className="w-4 h-4 text-primary-foreground/80" />
+                </CardTitle>
+                <p className="text-xs text-primary-foreground/80 flex items-center gap-1">
+                  {t("demo.aiOnline")}
+                </p>
               </div>
             </div>
             <div className={`flex items-center ${isMobile ? "flex-wrap gap-1.5" : "gap-2"}`}>
@@ -359,82 +377,87 @@ export const DemoChat = () => {
           </div>
         </CardHeader>
         <CardContent className={`p-0 flex flex-col ${isExpanded && isMobile ? "flex-1 min-h-0" : ""}`}>
-          <ScrollArea className={`${isExpanded && isMobile ? "flex-1" : "h-[400px]"} p-4`} ref={scrollRef}>
+          <ScrollArea
+            className={`${isExpanded && isMobile ? "flex-1" : "h-[340px] sm:h-[400px] max-h-[60vh]"} p-4`}
+            ref={scrollRef}
+            style={{
+              backgroundImage:
+                "radial-gradient(hsl(var(--primary) / 0.04) 1px, transparent 1px)",
+              backgroundSize: "22px 22px",
+            }}
+          >
             <div className="space-y-4">
-              {messages.map((msg, idx) => (
-                <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {msg.role === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-ocean flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-4 h-4 text-primary-foreground" />
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                      msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
-                    }`}
+              <AnimatePresence initial={false}>
+                {messages.map((msg, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                  {msg.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                      <User className="w-4 h-4 text-primary-foreground" />
+                    {msg.role === "assistant" && (
+                      <div className="w-8 h-8 rounded-full bg-gradient-ocean flex items-center justify-center flex-shrink-0 shadow-sm ring-1 ring-primary/20">
+                        <MessageSquare className="w-4 h-4 text-primary-foreground" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 shadow-sm ${
+                        msg.role === "user"
+                          ? "bg-gradient-ocean text-primary-foreground rounded-br-sm"
+                          : "bg-card border border-border/60 text-foreground rounded-bl-sm"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                     </div>
-                  )}
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex gap-3 justify-start animate-fade-in">
-                  <div className="w-8 h-8 rounded-full bg-gradient-ocean flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-4 h-4 text-primary-foreground animate-pulse" />
-                  </div>
-                  <div className="bg-muted rounded-lg px-4 py-3 animate-scale-in">
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-xs text-muted-foreground font-medium">
-                        {t("demo.typing") || "Yazıyor..."}
-                      </span>
-                      <div className="flex gap-1">
-                        <div
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{
-                            animationDelay: "0ms",
-                            animationDuration: "1s",
-                          }}
-                        />
-                        <div
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{
-                            animationDelay: "200ms",
-                            animationDuration: "1s",
-                          }}
-                        />
-                        <div
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{
-                            animationDelay: "400ms",
-                            animationDuration: "1s",
-                          }}
-                        />
+                    {msg.role === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <User className="w-4 h-4 text-primary-foreground" />
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+                {isLoading && (
+                  <motion.div
+                    key="typing"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex gap-3 justify-start"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-ocean flex items-center justify-center flex-shrink-0 shadow-sm ring-1 ring-primary/30">
+                      <MessageSquare className="w-4 h-4 text-primary-foreground animate-pulse" />
+                    </div>
+                    <div className="bg-card border border-border/60 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-typing-dot-1" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-typing-dot-2" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-typing-dot-3" />
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </ScrollArea>
-          <div className="p-4 border-t border-border flex-shrink-0">
-            <div className="flex gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={t("demo.inputPlaceholder")}
-                disabled={isLoading}
-                className="flex-1 h-12 md:h-10"
-              />
+          <div className="p-4 border-t border-border bg-card/50 flex-shrink-0">
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={t("demo.inputPlaceholder")}
+                  disabled={isLoading}
+                  className="h-12 md:h-11 pr-3 border-border/50 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 transition-all duration-200 focus-visible:shadow-[0_0_0_4px_hsl(var(--primary)/0.08)]"
+                />
+              </div>
               <Button
                 onClick={sendMessage}
                 disabled={!input.trim() || isLoading}
-                className="bg-gradient-ocean hover:opacity-90 h-12 w-12 md:h-10 md:w-10"
+                className="bg-gradient-ocean hover:opacity-90 h-12 w-12 md:h-11 md:w-11 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:hover:scale-100"
+                aria-label={t("demo.sendButton", "Send")}
               >
                 <Send className="w-5 h-5 md:w-4 md:h-4" />
               </Button>
@@ -445,6 +468,7 @@ export const DemoChat = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
