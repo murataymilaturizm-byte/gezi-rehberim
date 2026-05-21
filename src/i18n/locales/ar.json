@@ -418,7 +418,9 @@
     }
   },
   "customerFeedback": {
-    "dateFilter": "مرشح نطاق التاريخ"
+    "dateFilter": "مرشح نطاق التاريخ",
+    "emptyTitle": "لا توجد تعليقات من العملاء بعد",
+    "emptyDesc": "ستظهر هنا ردود الاستطلاع من العملاء الذين قاموا بجولات عبر WhatsApp."
   },
   "feedback": {
     "customerFeedback": "استطلاعات رضا العملاء",
@@ -554,7 +556,10 @@
         "workingHours": "ساعات العمل",
         "workingHoursPlaceholder": "مثال: الأحد-الخميس 9:00-18:00، السبت 10:00-16:00",
         "phoneNumber": "رقم الهاتف",
-        "phoneNumberPlaceholder": "مثال: +966 11 123 4567"
+        "phoneNumberPlaceholder": "مثال: +966 11 123 4567",
+        "cashOfficeNote": "يتم أخذ العنوان وساعات العمل تلقائيًا من \"معلومات الوكالة\". للتغيير، انتقل إلى صفحة معلومات الوكالة.",
+        "cashOfficeEmpty": "لم يتم إدخال عنوان أو ساعات عمل بعد. أضفها في صفحة معلومات الوكالة.",
+        "workingHoursFromAgency": "محدد في معلومات الوكالة"
       },
       "bankInfo": {
         "label": "المعلومات البنكية",
@@ -889,14 +894,15 @@
       "customerFeedback": "رضا العملاء",
       "tickets": "الدعم",
       "allTickets": "جميع تذاكر الدعم",
-      "whatsappLogs": "سجلات واتساب",
+      "whatsappLogs": "سجلات WhatsApp",
       "analytics": "تحليلات الإيرادات والأداء",
       "customerAnalytics": "تحليلات العملاء",
       "destinationAnalytics": "تحليلات الوجهات",
       "languageCurrencies": "عملات اللغات",
       "whatsappManagement": "إدارة واتساب",
       "whatsappSettings": "إعدادات واتساب",
-      "whatsappTest": "اختبار واتساب"
+      "whatsappTest": "اختبار واتساب",
+      "languageStats": "إحصائيات اللغة"
     },
     "dashboard": {
       "whatsappSettings": "إعدادات واتساب",
@@ -1553,14 +1559,20 @@
         "payment": "إعداد إعدادات الدفع",
         "addTour": "أضف جولتك الأولى",
         "addDates": "أضف مواعيد الجولة",
-        "whatsapp": "ربط واتساب"
+        "whatsapp": "ربط واتساب",
+        "selectLanguage": "اختر لغة",
+        "approveTemplate": "اعتماد قالب",
+        "addFaq": "إضافة سؤال شائع"
       },
       "actions": {
         "agencyInfo": "تحرير",
         "payment": "إعداد",
         "addTour": "إضافة جولة",
         "addDates": "إضافة مواعيد",
-        "whatsapp": "ربط"
+        "whatsapp": "ربط",
+        "selectLanguage": "انتقل →",
+        "approveTemplate": "انتقل →",
+        "addFaq": "انتقل →"
       }
     },
     "manualReg": {
@@ -1845,6 +1857,11 @@
     },
     "quickActions": {
       "title": "إجراءات سريعة"
+    },
+    "complaints": {
+      "badge": "{{count}} شكوى مفتوحة",
+      "hint": "شكاوى العملاء تنتظر الرد.",
+      "goto": "عرض الشكاوى →"
     }
   },
   "onboardingTour": {
@@ -3109,7 +3126,20 @@
       "colMessage": "الرسالة",
       "roleUser": "مستخدم",
       "roleAssistant": "مساعد",
-      "roleSystem": "نظام"
+      "roleSystem": "نظام",
+      "errors": {
+        "subscriptionDropped": "تم تجاهل الرسالة — حالة الاشتراك: {{status}}",
+        "subscriptionNote": "مشكلة في الاشتراك — لم تتم معالجة الرسالة",
+        "webhookNotSubscribed": "لا يوجد اشتراك في الويب هوك — تم استلام الرسالة لكن لم يمكن توجيهها",
+        "quotaExceeded": "تم الوصول إلى الحد الشهري للرسائل",
+        "botPaused": "البوت متوقف مؤقتًا (وضع التدخل اليدوي)",
+        "systemContext": "بيانات سياق الذكاء الاصطناعي (تقنية)",
+        "systemPrompt": "تعليمات نظام الذكاء الاصطناعي (تقنية)",
+        "outside24h": "خارج نافذة الـ24 ساعة — مطلوب رسالة قالب",
+        "meta403": "خطأ في تفويض Meta — قد تحتاج إلى التحقق من الرمز المميز",
+        "metaRateLimit": "تجاوز حد معدل API لـ Meta — حاول مرة أخرى بعد قليل",
+        "templateNotFound": "القالب غير موجود أو غير معتمد"
+      }
     },
     "languageStats": {
       "title": "إحصاءات حسب اللغة",

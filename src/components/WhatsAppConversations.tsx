@@ -24,8 +24,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import { WhatsAppLogs } from "./WhatsAppLogs";
-import { LanguageStats } from "./LanguageStats";
+// WhatsAppLogs and LanguageStats moved to Reporting menu (Admin.tsx routing)
 import { WhatsAppSettings } from "./WhatsAppSettings";
 import { EmptyState } from "./EmptyState";
 import { ConversationsEmptyIllustration } from "./illustrations/ConversationsEmptyIllustration";
@@ -318,18 +317,10 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                 )}
               </div>
               
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full ${isSuperAdmin ? "grid-cols-1" : "grid-cols-2"}`}>
                 <TabsTrigger value="conversations" className="flex items-center gap-1 text-xs sm:text-sm">
                   <MessageCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">{t("whatsapp.tabs.conversations")}</span>
-                </TabsTrigger>
-                <TabsTrigger value="logs" className="flex items-center gap-1 text-xs sm:text-sm">
-                  <ScrollText className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t("whatsapp.tabs.logs")}</span>
-                </TabsTrigger>
-                <TabsTrigger value="language-stats" className="flex items-center gap-1 text-xs sm:text-sm">
-                  <Languages className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t("whatsapp.tabs.languageStats")}</span>
                 </TabsTrigger>
                 {!isSuperAdmin && (
                   <TabsTrigger value="integration" className="flex items-center gap-1 text-xs sm:text-sm">
@@ -541,14 +532,6 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
               )}
             </TabsContent>
             
-            <TabsContent value="logs" className="mt-0">
-              <WhatsAppLogs />
-            </TabsContent>
-            
-            <TabsContent value="language-stats" className="mt-0">
-              <LanguageStats isSuperAdmin={isSuperAdmin} />
-            </TabsContent>
-
             {!isSuperAdmin && (
               <TabsContent value="integration" className="mt-0">
                 <WhatsAppSettings />

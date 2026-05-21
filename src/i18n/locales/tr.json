@@ -476,7 +476,9 @@
     }
   },
   "customerFeedback": {
-    "dateFilter": "Tarih Aralığı Filtresi"
+    "dateFilter": "Tarih Aralığı Filtresi",
+    "emptyTitle": "Henüz müşteri geri bildirimi yok",
+    "emptyDesc": "WhatsApp üzerinden tur yapan müşterilerden gelen anket yanıtları burada görünecek."
   },
   "admin": {
     "title": "Acente Paneli",
@@ -542,7 +544,10 @@
         "workingHours": "Çalışma Saatleri",
         "workingHoursPlaceholder": "Örn: Hafta içi 09:00-18:00, Cumartesi 10:00-16:00",
         "phoneNumber": "Telefon Numarası",
-        "phoneNumberPlaceholder": "Örn: +90 312 123 45 67"
+        "phoneNumberPlaceholder": "Örn: +90 312 123 45 67",
+        "cashOfficeNote": "Adres ve çalışma saatleri \"Acente Bilgileri\" bölümünden otomatik alınır. Değiştirmek için Acente Bilgileri sayfasına gidin.",
+        "cashOfficeEmpty": "Henüz adres veya çalışma saati girilmemiş. Acente Bilgileri sayfasından ekleyin.",
+        "workingHoursFromAgency": "Acente Bilgileri'nde tanımlı"
       },
       "bankInfo": {
         "label": "Banka Bilgileri",
@@ -1240,7 +1245,8 @@
       "languageCurrencies": "Dil Para Birimleri",
       "whatsappManagement": "WhatsApp Yönetimi",
       "whatsappSettings": "WhatsApp Ayarları",
-      "whatsappTest": "WhatsApp Test"
+      "whatsappTest": "WhatsApp Test",
+      "languageStats": "Dil İstatistikleri"
     },
     "tours": {
       "title": "Turlar",
@@ -1544,14 +1550,20 @@
         "payment": "Ödeme ayarlarını yap",
         "addTour": "İlk turunu ekle",
         "addDates": "Tur tarihleri ekle",
-        "whatsapp": "WhatsApp'ı bağla"
+        "whatsapp": "WhatsApp'ı bağla",
+        "selectLanguage": "Dil Seç",
+        "approveTemplate": "Şablon Onayla",
+        "addFaq": "SSS Ekle"
       },
       "actions": {
         "agencyInfo": "Düzenle",
         "payment": "Ayarla",
         "addTour": "Tur Ekle",
         "addDates": "Tarih Ekle",
-        "whatsapp": "Bağla"
+        "whatsapp": "Bağla",
+        "selectLanguage": "Git →",
+        "approveTemplate": "Git →",
+        "addFaq": "Git →"
       }
     },
     "manualReg": {
@@ -1836,6 +1848,11 @@
     },
     "quickActions": {
       "title": "Hızlı Aksiyonlar"
+    },
+    "complaints": {
+      "badge": "{{count}} açık şikayet/talep var",
+      "hint": "Müşterilerinizin şikayetleri yanıt bekliyor.",
+      "goto": "Şikayetlere git →"
     }
   },
   "onboardingTour": {
@@ -3109,7 +3126,20 @@
       "colMessage": "Mesaj",
       "roleUser": "Kullanıcı",
       "roleAssistant": "Asistan",
-      "roleSystem": "Sistem"
+      "roleSystem": "Sistem",
+      "errors": {
+        "subscriptionDropped": "Mesaj işlenmedi — abonelik durumu: {{status}}",
+        "subscriptionNote": "Abonelik sorunu — mesaj işlenmedi",
+        "webhookNotSubscribed": "Webhook aboneliği yok — mesaj alındı ancak yönlendirilemedi",
+        "quotaExceeded": "Aylık mesaj kotası doldu — mesaj işlenmedi",
+        "botPaused": "Bot duraklatıldı (manuel müdahale modu)",
+        "systemContext": "AI bağlam verisi (teknik)",
+        "systemPrompt": "AI sistem talimatları (teknik)",
+        "outside24h": "24 saatlik mesajlaşma penceresi dışı — şablon mesaj gerekli",
+        "meta403": "Meta yetkilendirme hatası — token kontrolü gerekebilir",
+        "metaRateLimit": "Meta API rate limit — kısa süre sonra tekrar deneyin",
+        "templateNotFound": "Şablon bulunamadı veya onaylanmamış"
+      }
     },
     "languageStats": {
       "title": "Dil Bazlı İstatistikler",

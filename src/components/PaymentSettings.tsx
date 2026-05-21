@@ -17,8 +17,6 @@ interface PaymentInstructions {
   payment_type?: "deposit" | "full";
   deposit_percentage?: number;
   payment_methods?: string[];
-  office_address?: string;
-  working_hours?: string;
   phone_number?: string;
   [language: string]: any;
 }
@@ -29,12 +27,12 @@ export const PaymentSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [agencyId, setAgencyId] = useState<string | null>(null);
+  const [agencyAddress, setAgencyAddress] = useState<string>("");
+  const [agencyWorkingHours, setAgencyWorkingHours] = useState<string>("");
   const [paymentInstructions, setPaymentInstructions] = useState<PaymentInstructions>({
     payment_type: "deposit",
     deposit_percentage: 30,
     payment_methods: ["bank_transfer"],
-    office_address: "",
-    working_hours: "",
     phone_number: "",
     tr: {
       bank_name: "",
@@ -62,7 +60,7 @@ export const PaymentSettings = () => {
 
       const { data: agency, error } = await supabase
         .from("agencies")
-        .select("id, payment_instructions")
+        .select("id, payment_instructions, address, working_hours")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -72,6 +70,14 @@ export const PaymentSettings = () => {
         setAgencyId(agency.id);
         if (agency.payment_instructions) {
           setPaymentInstructions(agency.payment_instructions as PaymentInstructions);
+        }
+        setAgencyAddress((agency as any).address || "");
+        // working_hours is stored as JSON object; flatten to readable string for display
+        const wh = (agency as any).working_hours;
+        if (typeof wh === "string") {
+          setAgencyWorkingHours(wh);
+        } else if (wh && typeof wh === "object") {
+          setAgencyWorkingHours(t("admin.paymentSettings.additionalInfo.workingHoursFromAgency"));
         }
       }
     } catch (error) {
@@ -356,41 +362,27 @@ export const PaymentSettings = () => {
               </div>
             </div>
 
-            {/* Additional Info for Cash Office */}
+            {/* Cash Office — show address/hours from AgencyInfo (single source of truth) */}
             {paymentInstructions.payment_methods?.includes("cash_office") && (
-              <div className="ml-6 space-y-4 mt-4 p-4 bg-muted/50 rounded-lg">
-                <div className="space-y-2">
-                  <Label htmlFor="office-address">
-                    {t("admin.paymentSettings.additionalInfo.officeAddress")}
-                  </Label>
-                  <Input
-                    id="office-address"
-                    value={paymentInstructions.office_address || ""}
-                    onChange={(e) =>
-                      setPaymentInstructions((prev) => ({
-                        ...prev,
-                        office_address: e.target.value,
-                      }))
-                    }
-                    placeholder={t("admin.paymentSettings.additionalInfo.officeAddressPlaceholder")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="working-hours">
-                    {t("admin.paymentSettings.additionalInfo.workingHours")}
-                  </Label>
-                  <Input
-                    id="working-hours"
-                    value={paymentInstructions.working_hours || ""}
-                    onChange={(e) =>
-                      setPaymentInstructions((prev) => ({
-                        ...prev,
-                        working_hours: e.target.value,
-                      }))
-                    }
-                    placeholder={t("admin.paymentSettings.additionalInfo.workingHoursPlaceholder")}
-                  />
-                </div>
+              <div className="ml-6 mt-4 p-4 bg-muted/50 rounded-lg space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  {t("admin.paymentSettings.additionalInfo.cashOfficeNote")}
+                </p>
+                {agencyAddress && (
+                  <div className="text-sm">
+                    <span className="font-medium">{t("admin.paymentSettings.additionalInfo.officeAddress")}: </span>
+                    <span>{agencyAddress}</span>
+                  </div>
+                )}
+                {agencyWorkingHours && (
+                  <div className="text-sm">
+                    <span className="font-medium">{t("admin.paymentSettings.additionalInfo.workingHours")}: </span>
+                    <span>{agencyWorkingHours}</span>
+                  </div>
+                )}
+                {!agencyAddress && !agencyWorkingHours && (
+                  <p className="text-sm text-amber-600">{t("admin.paymentSettings.additionalInfo.cashOfficeEmpty")}</p>
+                )}
               </div>
             )}
 

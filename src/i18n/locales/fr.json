@@ -418,7 +418,9 @@
     }
   },
   "customerFeedback": {
-    "dateFilter": "Filtre de Plage de Dates"
+    "dateFilter": "Filtre de Plage de Dates",
+    "emptyTitle": "Pas encore de retours clients",
+    "emptyDesc": "Les réponses aux enquêtes des clients ayant effectué des visites via WhatsApp apparaîtront ici."
   },
   "feedback": {
     "customerFeedback": "Enquêtes de satisfaction client",
@@ -554,7 +556,10 @@
         "workingHours": "Heures d'Ouverture",
         "workingHoursPlaceholder": "Ex: Lun-Ven 9:00-18:00, Sam 10:00-16:00",
         "phoneNumber": "Numéro de Téléphone",
-        "phoneNumberPlaceholder": "Ex: +33 1 23 45 67 89"
+        "phoneNumberPlaceholder": "Ex: +33 1 23 45 67 89",
+        "cashOfficeNote": "L'adresse et les heures d'ouverture sont automatiquement récupérées depuis \"Informations de l'agence\". Pour les modifier, accédez à la page Informations de l'agence.",
+        "cashOfficeEmpty": "Aucune adresse ni horaire de travail n'a encore été saisi. Ajoutez-les dans la page Informations de l'agence.",
+        "workingHoursFromAgency": "Défini dans les informations de l'agence"
       },
       "bankInfo": {
         "label": "Informations Bancaires",
@@ -896,7 +901,8 @@
       "languageCurrencies": "Devises par langue",
       "whatsappManagement": "Gestion WhatsApp",
       "whatsappSettings": "Paramètres WhatsApp",
-      "whatsappTest": "Test WhatsApp"
+      "whatsappTest": "Test WhatsApp",
+      "languageStats": "Statistiques linguistiques"
     },
     "dashboard": {
       "whatsappSettings": "Paramètres WhatsApp",
@@ -1553,14 +1559,20 @@
         "payment": "Configurer les paramètres de paiement",
         "addTour": "Ajouter votre premier circuit",
         "addDates": "Ajouter des dates de circuit",
-        "whatsapp": "Connecter WhatsApp"
+        "whatsapp": "Connecter WhatsApp",
+        "selectLanguage": "Choisir langue",
+        "approveTemplate": "Approuver modèle",
+        "addFaq": "Ajouter FAQ"
       },
       "actions": {
         "agencyInfo": "Modifier",
         "payment": "Configurer",
         "addTour": "Ajouter Circuit",
         "addDates": "Ajouter Dates",
-        "whatsapp": "Connecter"
+        "whatsapp": "Connecter",
+        "selectLanguage": "Aller →",
+        "approveTemplate": "Aller →",
+        "addFaq": "Aller →"
       }
     },
     "manualReg": {
@@ -1845,6 +1857,11 @@
     },
     "quickActions": {
       "title": "Actions rapides"
+    },
+    "complaints": {
+      "badge": "{{count}} plainte(s) ouverte(s)",
+      "hint": "Les plaintes des clients attendent une réponse.",
+      "goto": "Voir les plaintes →"
     }
   },
   "onboardingTour": {
@@ -3109,7 +3126,20 @@
       "colMessage": "Message",
       "roleUser": "Utilisateur",
       "roleAssistant": "Assistant",
-      "roleSystem": "Système"
+      "roleSystem": "Système",
+      "errors": {
+        "subscriptionDropped": "Message rejeté — statut abonnement: {{status}}",
+        "subscriptionNote": "Problème d'abonnement — message non traité",
+        "webhookNotSubscribed": "Pas d'abonnement webhook — message reçu mais non acheminé",
+        "quotaExceeded": "Quota mensuel de messages atteint",
+        "botPaused": "Bot en pause (mode prise en main manuelle)",
+        "systemContext": "Données contextuelles IA (technique)",
+        "systemPrompt": "Instructions système IA (technique)",
+        "outside24h": "En dehors de la fenêtre 24h — message modèle requis",
+        "meta403": "Erreur d'autorisation Meta — vérification du token requise",
+        "metaRateLimit": "Limite de débit API Meta — réessayez dans un moment",
+        "templateNotFound": "Modèle introuvable ou non approuvé"
+      }
     },
     "languageStats": {
       "title": "Statistiques par langue",

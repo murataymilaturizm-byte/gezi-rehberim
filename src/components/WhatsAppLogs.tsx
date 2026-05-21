@@ -38,6 +38,7 @@ interface WhatsAppLog {
   phone: string;
   role: string;
   content: string;
+  metadata?: Record<string, any> | null;
   created_at: string;
   agency_id: string;
   agencies?: {
@@ -107,6 +108,7 @@ export function WhatsAppLogs() {
           phone,
           role,
           content,
+          metadata,
           created_at,
           agency_id,
           agencies (
@@ -208,6 +210,62 @@ export function WhatsAppLogs() {
       case 'system': return t("whatsapp.logs.roleSystem");
       default: return role;
     }
+  };
+
+  // Map known error/system content patterns to user-friendly text
+  const getFriendlyContent = (log: WhatsAppLog): { display: string; isTechnical: boolean; badge?: string } => {
+    const c = log.content || "";
+    const meta = log.metadata as Record<string, any> | null;
+
+    // Subscription dropped (from whatsapp-webhook/index.ts:272)
+    if (meta?.dropped_reason?.startsWith("subscription_")) {
+      const sub = meta.dropped_reason.replace("subscription_", "");
+      return { display: t("whatsapp.logs.errors.subscriptionDropped", { status: sub }), isTechnical: true, badge: "subscription" };
+    }
+    if (c.startsWith("[Abonelik ")) {
+      return { display: t("whatsapp.logs.errors.subscriptionNote"), isTechnical: true, badge: "subscription" };
+    }
+
+    // Webhook subscription expired
+    if (meta?.dropped_reason === "webhook_not_subscribed" || c.includes("webhook_subscribed")) {
+      return { display: t("whatsapp.logs.errors.webhookNotSubscribed"), isTechnical: true, badge: "webhook" };
+    }
+
+    // Quota exceeded
+    if (meta?.dropped_reason === "quota_exceeded" || c.includes("message limit")) {
+      return { display: t("whatsapp.logs.errors.quotaExceeded"), isTechnical: true, badge: "quota" };
+    }
+
+    // Bot paused / human takeover
+    if (meta?.dropped_reason === "bot_paused" || c.includes("bot_paused")) {
+      return { display: t("whatsapp.logs.errors.botPaused"), isTechnical: true, badge: "takeover" };
+    }
+
+    // AI context data (JSON from adapter.ts) — very long JSON blobs
+    if (log.role === "system" && c.trimStart().startsWith("{") && c.length > 200) {
+      return { display: t("whatsapp.logs.errors.systemContext"), isTechnical: true, badge: "context" };
+    }
+
+    // Long system prompts (AI instructions)
+    if (log.role === "system" && (c.startsWith("You are") || c.startsWith("Sen bir") || c.length > 500)) {
+      return { display: t("whatsapp.logs.errors.systemPrompt"), isTechnical: true, badge: "prompt" };
+    }
+
+    // Meta / 24h window error in content
+    if (c.includes("OUTSIDE_24H") || c.includes("outside_24h")) {
+      return { display: t("whatsapp.logs.errors.outside24h"), isTechnical: true, badge: "meta" };
+    }
+    if (c.includes("META_403") || c.includes("meta_403")) {
+      return { display: t("whatsapp.logs.errors.meta403"), isTechnical: true, badge: "meta" };
+    }
+    if (c.includes("META_RATE_LIMIT") || c.includes("rate_limit")) {
+      return { display: t("whatsapp.logs.errors.metaRateLimit"), isTechnical: true, badge: "meta" };
+    }
+    if (c.includes("TEMPLATE_NOT_FOUND") || c.includes("template_not")) {
+      return { display: t("whatsapp.logs.errors.templateNotFound"), isTechnical: true, badge: "meta" };
+    }
+
+    return { display: c, isTechnical: false };
   };
 
   const truncateContent = (content: string, maxLength: number = 100) => {
@@ -402,21 +460,38 @@ export function WhatsAppLogs() {
                         </Badge>
                       </TableCell>
                       <TableCell className="max-w-md">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="text-left hover:text-primary transition-colors">
-                              {truncateContent(log.content)}
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-96" side="left">
-                            <div className="space-y-2">
-                              <div className="font-semibold">{t("whatsapp.logs.fullMessage")}</div>
-                              <div className="text-sm whitespace-pre-wrap break-words">
-                                {log.content}
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
+                        {(() => {
+                          const { display, isTechnical, badge } = getFriendlyContent(log);
+                          return (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button className={`text-left hover:text-primary transition-colors ${isTechnical ? "text-muted-foreground italic" : ""}`}>
+                                  {isTechnical ? (
+                                    <span className="flex items-center gap-1">
+                                      {badge && <Badge variant="outline" className="text-xs py-0 h-4">{badge}</Badge>}
+                                      {display}
+                                    </span>
+                                  ) : (
+                                    truncateContent(display)
+                                  )}
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-96" side="left">
+                                <div className="space-y-2">
+                                  <div className="font-semibold">{t("whatsapp.logs.fullMessage")}</div>
+                                  {isTechnical && (
+                                    <div className="text-xs text-muted-foreground p-2 bg-muted rounded font-mono break-all">
+                                      {log.content.slice(0, 500)}{log.content.length > 500 ? "…" : ""}
+                                    </div>
+                                  )}
+                                  {!isTechnical && (
+                                    <div className="text-sm whitespace-pre-wrap break-words">{log.content}</div>
+                                  )}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          );
+                        })()}
                       </TableCell>
                     </TableRow>
                   ))}

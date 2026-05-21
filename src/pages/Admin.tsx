@@ -42,6 +42,8 @@ import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
 import FAQManagement from "@/components/FAQManagement";
 import { CustomerFeedback } from "@/components/CustomerFeedback";
+import { LanguageStats } from "@/components/LanguageStats";
+import { WhatsAppLogs } from "@/components/WhatsAppLogs";
 import { PaymentSettings } from "@/components/PaymentSettings";
 import { LanguageCurrencySettings } from "@/components/LanguageCurrencySettings";
 import { useToast } from "@/hooks/use-toast";
@@ -68,7 +70,7 @@ import { CommandPalette } from "@/components/admin/CommandPalette";
 import { OnboardingTour, tourStorageKey } from "@/components/admin/OnboardingTour";
 import { FileSpreadsheet } from "lucide-react";
 
-const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test"] as const;
+const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test", "language-stats", "whatsapp-logs"] as const;
 
 interface Tour {
   id: string;
@@ -181,6 +183,9 @@ const Admin = () => {
 
   // Onboarding tour state
   const [shouldRunTour, setShouldRunTour] = useState(false);
+
+  // Complaints count (open/unresolved)
+  const [openComplaintsCount, setOpenComplaintsCount] = useState(0);
 
   // Plan features state
   const [planType, setPlanType] = useState<string>('starter');
@@ -352,6 +357,17 @@ const Admin = () => {
       loadAgencyPlan();
     }
   }, [userAgencyId, isSuperAdmin]);
+
+  // Load open complaints count for dashboard badge
+  useEffect(() => {
+    if (!userAgencyId || isSuperAdmin) return;
+    supabase
+      .from("complaints")
+      .select("id", { count: "exact", head: true })
+      .eq("agency_id", userAgencyId)
+      .in("status", ["new", "reviewed"])
+      .then(({ count }) => setOpenComplaintsCount(count ?? 0));
+  }, [userAgencyId, isSuperAdmin, activeTab]);
 
   // Realtime: watch whatsapp_status to force OnboardingChecklist remount on connect
   useEffect(() => {
@@ -750,6 +766,21 @@ const Admin = () => {
               <OnboardingChecklist key={`onboarding-${whatsappStatus}`} agencyId={userAgencyId} onNavigate={handleTabChange} />
             )}
 
+            {/* Open complaints badge */}
+            {!isSuperAdmin && openComplaintsCount > 0 && activeTab !== "complaints" && (
+              <Alert
+                className="border-orange-400/50 bg-orange-50 dark:bg-orange-950/20 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-950/30 transition-colors"
+                onClick={() => handleTabChange("complaints")}
+              >
+                <AlertCircle className="h-4 w-4 text-orange-500" />
+                <AlertDescription className="ml-2 text-orange-800 dark:text-orange-300">
+                  <strong>{t("dashboard.complaints.badge", { count: openComplaintsCount })}</strong>
+                  {" "}{t("dashboard.complaints.hint")}
+                  <span className="underline ml-2">{t("dashboard.complaints.goto")}</span>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Language Selection Warning */}
             {!isSuperAdmin && enabledLanguages.length === 0 && (
               <Alert 
@@ -805,6 +836,10 @@ const Admin = () => {
               <SubscriptionHistory />
             ) : activeTab === "customer-feedback" && (planFeatures?.has_feedback || isSuperAdmin) ? (
               <CustomerFeedback />
+            ) : activeTab === "language-stats" ? (
+              <LanguageStats isSuperAdmin={isSuperAdmin} />
+            ) : activeTab === "whatsapp-logs" ? (
+              <WhatsAppLogs />
             ) : activeTab === "tickets" && !isSuperAdmin ? (
               <TicketManagement />
             ) : activeTab === "super_tickets" && isSuperAdmin ? (

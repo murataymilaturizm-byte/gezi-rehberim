@@ -186,6 +186,7 @@ export const RegistrationsList = ({
                     variant="outline"
                     size="sm"
                     onClick={() => onViewDetail(reg)}
+                    aria-label={t("admin.registrations.viewDetail")}
                   >
                     <Eye className="w-4 h-4" />
                   </Button>

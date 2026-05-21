@@ -449,7 +449,9 @@
     }
   },
   "customerFeedback": {
-    "dateFilter": "Фильтр Диапазона Дат"
+    "dateFilter": "Фильтр Диапазона Дат",
+    "emptyTitle": "Пока нет отзывов клиентов",
+    "emptyDesc": "Ответы на опрос от клиентов, совершивших туры через WhatsApp, появятся здесь."
   },
   "feedback": {
     "customerFeedback": "Опросы удовлетворенности клиентов",
@@ -585,7 +587,10 @@
         "workingHours": "Часы Работы",
         "workingHoursPlaceholder": "Напр: Пн-Пт 9:00-18:00, Сб 10:00-16:00",
         "phoneNumber": "Номер Телефона",
-        "phoneNumberPlaceholder": "Напр: +7 495 123-45-67"
+        "phoneNumberPlaceholder": "Напр: +7 495 123-45-67",
+        "cashOfficeNote": "Адрес и часы работы автоматически берутся из раздела \"Информация об агентстве\". Для изменения перейдите на страницу информации об агентстве.",
+        "cashOfficeEmpty": "Адрес или часы работы ещё не введены. Добавьте их на странице информации об агентстве.",
+        "workingHoursFromAgency": "Определено в информации об агентстве"
       },
       "bankInfo": {
         "label": "Банковская Информация",
@@ -927,7 +932,8 @@
       "languageCurrencies": "Языковые валюты",
       "whatsappManagement": "Управление WhatsApp",
       "whatsappSettings": "Настройки WhatsApp",
-      "whatsappTest": "Тест WhatsApp"
+      "whatsappTest": "Тест WhatsApp",
+      "languageStats": "Языковая статистика"
     },
     "dashboard": {
       "whatsappSettings": "Настройки WhatsApp",
@@ -1530,14 +1536,20 @@
         "payment": "Настроить оплату",
         "addTour": "Добавить первый тур",
         "addDates": "Добавить даты тура",
-        "whatsapp": "Подключить WhatsApp"
+        "whatsapp": "Подключить WhatsApp",
+        "selectLanguage": "Выбрать язык",
+        "approveTemplate": "Одобрить шаблон",
+        "addFaq": "Добавить FAQ"
       },
       "actions": {
         "agencyInfo": "Изменить",
         "payment": "Настроить",
         "addTour": "Добавить тур",
         "addDates": "Добавить даты",
-        "whatsapp": "Подключить"
+        "whatsapp": "Подключить",
+        "selectLanguage": "Перейти →",
+        "approveTemplate": "Перейти →",
+        "addFaq": "Перейти →"
       }
     },
     "tourForm": {
@@ -1876,6 +1888,11 @@
     },
     "quickActions": {
       "title": "Быстрые действия"
+    },
+    "complaints": {
+      "badge": "{{count}} открытых жалоб",
+      "hint": "Жалобы клиентов ожидают ответа.",
+      "goto": "Перейти к жалобам →"
     }
   },
   "onboardingTour": {
@@ -3109,7 +3126,20 @@
       "colMessage": "Сообщение",
       "roleUser": "Пользователь",
       "roleAssistant": "Ассистент",
-      "roleSystem": "Система"
+      "roleSystem": "Система",
+      "errors": {
+        "subscriptionDropped": "Сообщение отклонено — статус подписки: {{status}}",
+        "subscriptionNote": "Проблема с подпиской — сообщение не обработано",
+        "webhookNotSubscribed": "Нет подписки на вебхук — сообщение получено, но не перенаправлено",
+        "quotaExceeded": "Месячный лимит сообщений достигнут",
+        "botPaused": "Бот на паузе (режим ручного управления)",
+        "systemContext": "Контекстные данные ИИ (технические)",
+        "systemPrompt": "Системные инструкции ИИ (технические)",
+        "outside24h": "За пределами 24-часового окна — требуется шаблонное сообщение",
+        "meta403": "Ошибка авторизации Meta — необходима проверка токена",
+        "metaRateLimit": "Превышен лимит запросов Meta API — попробуйте позже",
+        "templateNotFound": "Шаблон не найден или не одобрен"
+      }
     },
     "languageStats": {
       "title": "Статистика по языкам",

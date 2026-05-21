@@ -290,6 +290,20 @@ export const CustomerFeedback = () => {
     );
   }
 
+  if (!loading && stats.totalResponses === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4 text-center">
+        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+          <Star className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="font-medium text-foreground">{t("customerFeedback.emptyTitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("customerFeedback.emptyDesc")}</p>
+        </div>
+      </div>
+    );
+  }
+
   const currentLocale = localeMap[i18n.language as keyof typeof localeMap] || tr;
 
   return (

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -154,8 +155,17 @@ export const ToursList = ({
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        {t("admin.loading")}
+      <div className="space-y-3 py-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+            <Skeleton className="h-10 w-10 rounded" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <Skeleton className="h-6 w-20" />
+          </div>
+        ))}
       </div>
     );
   }

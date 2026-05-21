@@ -19,6 +19,9 @@ interface StepStatus {
   addTour: boolean;
   addDates: boolean;
   whatsapp: boolean;
+  selectLanguage: boolean;
+  approveTemplate: boolean;
+  addFaq: boolean;
 }
 
 export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklistProps) {
@@ -34,33 +37,49 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
   }, [agencyId, dismissed]);
 
   const loadSteps = async () => {
-    const [agencyRes, toursRes, datesRes] = await Promise.all([
+    const tourIdsRes = await supabase
+      .from("tours")
+      .select("id")
+      .eq("agency_id", agencyId);
+
+    const tourIds = tourIdsRes.data?.map((t) => t.id) ?? [];
+
+    const [agencyRes, toursRes, datesRes, langTemplateRes, faqRes] = await Promise.all([
       supabase
         .from("agencies")
-        .select("phone_public, address, payment_instructions, whatsapp_status, meta_phone_number_id, whatsapp_api_key")
+        .select("phone_public, address, payment_instructions, whatsapp_status, meta_phone_number_id, whatsapp_api_key, enabled_languages")
         .eq("id", agencyId)
         .single(),
       supabase
         .from("tours")
         .select("id", { count: "exact", head: true })
         .eq("agency_id", agencyId),
+      tourIds.length > 0
+        ? supabase
+            .from("tour_dates")
+            .select("id", { count: "exact", head: true })
+            .in("tour_id", tourIds)
+        : Promise.resolve({ count: 0 }),
+      // Check for at least 1 APPROVED Meta template
       supabase
-        .from("tour_dates")
+        .from("message_templates")
         .select("id", { count: "exact", head: true })
-        .in(
-          "tour_id",
-          (
-            await supabase
-              .from("tours")
-              .select("id")
-              .eq("agency_id", agencyId)
-          ).data?.map((t) => t.id) ?? []
-        ),
+        .eq("agency_id", agencyId)
+        .eq("meta_status", "APPROVED")
+        .eq("is_active", true),
+      // Check for at least 1 FAQ
+      supabase
+        .from("faq_templates")
+        .select("id", { count: "exact", head: true })
+        .eq("agency_id", agencyId)
+        .eq("is_active", true),
     ]);
 
     const agency = agencyRes.data;
     const tourCount = toursRes.count ?? 0;
     const dateCount = datesRes.count ?? 0;
+    const templateCount = langTemplateRes.count ?? 0;
+    const faqCount = faqRes.count ?? 0;
 
     setSteps({
       agencyInfo: !!(agency?.phone_public && agency?.address),
@@ -68,6 +87,9 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
       addTour: tourCount > 0,
       addDates: dateCount > 0,
       whatsapp: agency?.whatsapp_status === "active" && !!(agency?.meta_phone_number_id || agency?.whatsapp_api_key),
+      selectLanguage: Array.isArray(agency?.enabled_languages) && agency.enabled_languages.length > 0,
+      approveTemplate: templateCount > 0,
+      addFaq: faqCount > 0,
     });
   };
 
@@ -81,9 +103,12 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
   const stepList: { key: keyof StepStatus; tab: string }[] = [
     { key: "agencyInfo", tab: "agency_info" },
     { key: "payment", tab: "payment_settings" },
+    { key: "selectLanguage", tab: "languages" },
     { key: "addTour", tab: "tours" },
     { key: "addDates", tab: "tours" },
     { key: "whatsapp", tab: "settings" },
+    { key: "approveTemplate", tab: "templates" },
+    { key: "addFaq", tab: "faq" },
   ];
 
   const completedCount = stepList.filter((s) => steps[s.key]).length;
@@ -118,7 +143,7 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
         </div>
       </CardHeader>
       <CardContent className="px-4 pb-4">
-        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-1.5 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
           {stepList.map(({ key, tab }) => {
             const done = steps[key];
             return (

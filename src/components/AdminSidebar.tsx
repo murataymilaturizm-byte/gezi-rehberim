@@ -1,12 +1,12 @@
-import { 
-  LayoutDashboard, 
-  Plane, 
-  Calendar, 
-  MessageSquare, 
-  Settings, 
-  BarChart3, 
-  Users, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Plane,
+  Calendar,
+  MessageSquare,
+  Settings,
+  BarChart3,
+  Users,
+  FileText,
   Languages,
   History,
   Building2,
@@ -17,7 +17,8 @@ import {
   MessageCircle,
   ChevronDown,
   MapPin,
-  CreditCard
+  CreditCard,
+  ScrollText
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
@@ -72,7 +73,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     const generalIds = ["dashboard", "languages", "history"];
     const tourIds = ["tours", "registrations"];
     const communicationIds = ["settings", "whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings", "language_currencies"];
-    const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback"];
+    const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback", "language-stats", "whatsapp-logs"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
     const testIds = ["whatsapp_test"];
@@ -132,6 +133,8 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     ...(shouldShowAnalytics ? [{ id: "customer-analytics", icon: Users, label: t("admin.tabs.customerAnalytics") }] : []),
     ...(shouldShowAnalytics ? [{ id: "destination-analytics", icon: MapPin, label: t("admin.tabs.destinationAnalytics") }] : []),
     ...(shouldShowFeedback ? [{ id: "customer-feedback", icon: MessageCircle, label: t("admin.tabs.customerFeedback") }] : []),
+    { id: "language-stats", icon: Languages, label: t("admin.tabs.languageStats") },
+    { id: "whatsapp-logs", icon: ScrollText, label: t("admin.tabs.whatsappLogs") },
   ];
 
   const supportItems = [

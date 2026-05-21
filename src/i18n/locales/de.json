@@ -445,7 +445,9 @@
     }
   },
   "customerFeedback": {
-    "dateFilter": "Datumsbereichsfilter"
+    "dateFilter": "Datumsbereichsfilter",
+    "emptyTitle": "Noch kein Kundenfeedback",
+    "emptyDesc": "Umfrageantworten von Kunden, die über WhatsApp Touren gebucht haben, werden hier angezeigt."
   },
   "tickets": {
     "title": "Support-Tickets",
@@ -554,7 +556,10 @@
         "workingHours": "Öffnungszeiten",
         "workingHoursPlaceholder": "z.B: Mo-Fr 9:00-18:00, Sa 10:00-16:00",
         "phoneNumber": "Telefonnummer",
-        "phoneNumberPlaceholder": "z.B: +49 30 12345678"
+        "phoneNumberPlaceholder": "z.B: +49 30 12345678",
+        "cashOfficeNote": "Adresse und Öffnungszeiten werden automatisch aus \"Agenturinformationen\" übernommen. Zum Ändern gehen Sie zur Seite Agenturinformationen.",
+        "cashOfficeEmpty": "Noch keine Adresse oder Öffnungszeiten eingetragen. Fügen Sie sie auf der Seite Agenturinformationen hinzu.",
+        "workingHoursFromAgency": "In Agenturinformationen definiert"
       },
       "bankInfo": {
         "label": "Bankinformationen",
@@ -896,7 +901,8 @@
       "languageCurrencies": "Sprachwährungen",
       "whatsappManagement": "WhatsApp-Verwaltung",
       "whatsappSettings": "WhatsApp-Einstellungen",
-      "whatsappTest": "WhatsApp Test"
+      "whatsappTest": "WhatsApp Test",
+      "languageStats": "Sprachstatistiken"
     },
     "dashboard": {
       "whatsappSettings": "WhatsApp-Einstellungen",
@@ -1499,14 +1505,20 @@
         "payment": "Zahlungseinstellungen einrichten",
         "addTour": "Erste Tour hinzufügen",
         "addDates": "Reisedaten hinzufügen",
-        "whatsapp": "WhatsApp verbinden"
+        "whatsapp": "WhatsApp verbinden",
+        "selectLanguage": "Sprache wählen",
+        "approveTemplate": "Vorlage genehmigen",
+        "addFaq": "FAQ hinzufügen"
       },
       "actions": {
         "agencyInfo": "Bearbeiten",
         "payment": "Einrichten",
         "addTour": "Tour Hinzufügen",
         "addDates": "Datum Hinzufügen",
-        "whatsapp": "Verbinden"
+        "whatsapp": "Verbinden",
+        "selectLanguage": "Gehen →",
+        "approveTemplate": "Gehen →",
+        "addFaq": "Gehen →"
       }
     },
     "tourForm": {
@@ -1845,6 +1857,11 @@
     },
     "quickActions": {
       "title": "Schnellaktionen"
+    },
+    "complaints": {
+      "badge": "{{count}} offene Beschwerde(n)",
+      "hint": "Kundenbeschwerden warten auf eine Antwort.",
+      "goto": "Beschwerden anzeigen →"
     }
   },
   "onboardingTour": {
@@ -3109,7 +3126,20 @@
       "colMessage": "Nachricht",
       "roleUser": "Benutzer",
       "roleAssistant": "Assistent",
-      "roleSystem": "System"
+      "roleSystem": "System",
+      "errors": {
+        "subscriptionDropped": "Nachricht verworfen — Abonnementstatus: {{status}}",
+        "subscriptionNote": "Abonnementproblem — Nachricht nicht verarbeitet",
+        "webhookNotSubscribed": "Kein Webhook-Abonnement — Nachricht empfangen, konnte nicht weitergeleitet werden",
+        "quotaExceeded": "Monatliches Nachrichtenkontingent erreicht",
+        "botPaused": "Bot pausiert (manueller Übernahmemodus)",
+        "systemContext": "KI-Kontextdaten (technisch)",
+        "systemPrompt": "KI-Systemanweisungen (technisch)",
+        "outside24h": "Außerhalb des 24-Stunden-Fensters — Vorlagennachricht erforderlich",
+        "meta403": "Meta-Autorisierungsfehler — Token-Prüfung erforderlich",
+        "metaRateLimit": "Meta API Rate-Limit — bitte kurz warten",
+        "templateNotFound": "Vorlage nicht gefunden oder nicht genehmigt"
+      }
     },
     "languageStats": {
       "title": "Sprachbasierte Statistiken",

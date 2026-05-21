@@ -445,7 +445,9 @@
     }
   },
   "customerFeedback": {
-    "dateFilter": "Date Range Filter"
+    "dateFilter": "Date Range Filter",
+    "emptyTitle": "No customer feedback yet",
+    "emptyDesc": "Survey responses from customers who went on tours via WhatsApp will appear here."
   },
   "tickets": {
     "title": "Support Tickets",
@@ -551,7 +553,10 @@
         "workingHours": "Working Hours",
         "workingHoursPlaceholder": "E.g: Mon-Fri 9:00-18:00, Sat 10:00-16:00",
         "phoneNumber": "Phone Number",
-        "phoneNumberPlaceholder": "E.g: +1 (555) 123-4567"
+        "phoneNumberPlaceholder": "E.g: +1 (555) 123-4567",
+        "cashOfficeNote": "Address and working hours are automatically taken from \"Agency Info\". To change them, go to the Agency Info page.",
+        "cashOfficeEmpty": "No address or working hours have been entered yet. Add them in the Agency Info page.",
+        "workingHoursFromAgency": "Defined in Agency Info"
       },
       "bankInfo": {
         "label": "Bank Information",
@@ -893,7 +898,8 @@
       "languageCurrencies": "Language Currencies",
       "whatsappManagement": "WhatsApp Management",
       "whatsappSettings": "WhatsApp Settings",
-      "whatsappTest": "WhatsApp Test"
+      "whatsappTest": "WhatsApp Test",
+      "languageStats": "Language Statistics"
     },
     "dashboard": {
       "whatsappSettings": "WhatsApp Settings",
@@ -1496,14 +1502,20 @@
         "payment": "Set up payment settings",
         "addTour": "Add your first tour",
         "addDates": "Add tour dates",
-        "whatsapp": "Connect WhatsApp"
+        "whatsapp": "Connect WhatsApp",
+        "selectLanguage": "Select Language",
+        "approveTemplate": "Approve Template",
+        "addFaq": "Add FAQ"
       },
       "actions": {
         "agencyInfo": "Edit",
         "payment": "Set Up",
         "addTour": "Add Tour",
         "addDates": "Add Dates",
-        "whatsapp": "Connect"
+        "whatsapp": "Connect",
+        "selectLanguage": "Go →",
+        "approveTemplate": "Go →",
+        "addFaq": "Go →"
       }
     },
     "tourForm": {
@@ -1845,6 +1857,11 @@
     },
     "quickActions": {
       "title": "Quick Actions"
+    },
+    "complaints": {
+      "badge": "{{count}} open complaint(s)",
+      "hint": "Customer complaints are awaiting a response.",
+      "goto": "View complaints →"
     }
   },
   "onboardingTour": {
@@ -3155,7 +3172,20 @@
       "colMessage": "Message",
       "roleUser": "User",
       "roleAssistant": "Assistant",
-      "roleSystem": "System"
+      "roleSystem": "System",
+      "errors": {
+        "subscriptionDropped": "Message dropped — subscription status: {{status}}",
+        "subscriptionNote": "Subscription issue — message not processed",
+        "webhookNotSubscribed": "No webhook subscription — message received but could not be routed",
+        "quotaExceeded": "Monthly message quota reached — message not processed",
+        "botPaused": "Bot paused (human takeover mode)",
+        "systemContext": "AI context data (technical)",
+        "systemPrompt": "AI system instructions (technical)",
+        "outside24h": "Outside 24-hour messaging window — template message required",
+        "meta403": "Meta authorization error — token check may be required",
+        "metaRateLimit": "Meta API rate limit — try again shortly",
+        "templateNotFound": "Template not found or not approved"
+      }
     },
     "languageStats": {
       "title": "Language-Based Statistics",
