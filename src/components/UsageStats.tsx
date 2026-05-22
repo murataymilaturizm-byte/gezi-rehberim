@@ -193,7 +193,7 @@ export const UsageStats = () => {
             </div>
             <span className="text-xs font-semibold">
               {usage.monthly_message_count.toLocaleString('tr-TR')}
-              {usage.message_limit === -1 ? ` (${t("admin.usageStats.unlimited")})` : ` / ${usage.message_limit.toLocaleString('tr-TR')}`}
+              {usage.message_limit === -1 ? " / ∞" : ` / ${usage.message_limit.toLocaleString('tr-TR')}`}
             </span>
           </div>
 
