@@ -25,19 +25,22 @@ interface StepContentProps {
 }
 
 function StepContent({ description, bullets = [], tip, isDark }: StepContentProps) {
-  const muted = isDark ? "#94a3b8" : "#475569";
-  const tipBg = isDark ? "#2c1810" : "#fff7ed";
-  const tipBorder = isDark ? "#7c3a1a" : "#fed7aa";
+  // Use CSS variable-based color values that respect the theme
+  const textColor = isDark ? "hsl(214 32% 91%)" : "hsl(222 47% 11%)";
+  const mutedColor = isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)";
+  const tipBg = isDark ? "hsl(24 70% 12%)" : "hsl(38 92% 97%)";
+  const tipBorder = isDark ? "hsl(24 50% 28%)" : "hsl(24 97% 83%)";
+  const tipColor = isDark ? "hsl(24 94% 73%)" : "hsl(21 90% 40%)";
 
   return (
     <div style={{ fontSize: 14, lineHeight: 1.65 }}>
-      <p style={{ margin: "0 0 10px", color: isDark ? "#e2e8f0" : "#1e293b" }}>
+      <p style={{ margin: "0 0 10px", color: textColor }}>
         {description}
       </p>
       {bullets.length > 0 && (
         <ul style={{ margin: "0 0 10px", paddingLeft: 18 }}>
           {bullets.map((b, i) => (
-            <li key={i} style={{ marginBottom: 5, color: muted }}>{b}</li>
+            <li key={i} style={{ marginBottom: 5, color: mutedColor }}>{b}</li>
           ))}
         </ul>
       )}
@@ -49,14 +52,14 @@ function StepContent({ description, bullets = [], tip, isDark }: StepContentProp
             borderRadius: 8,
             padding: "8px 12px",
             fontSize: 12.5,
-            color: isDark ? "#fdba74" : "#c2410c",
+            color: tipColor,
             display: "flex",
             alignItems: "flex-start",
             gap: 6,
           }}
         >
           <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
-          <span>{tip}</span>
+          <span style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{tip}</span>
         </div>
       )}
     </div>
@@ -65,23 +68,23 @@ function StepContent({ description, bullets = [], tip, isDark }: StepContentProp
 
 // ─── Welcome / Complete screens ──────────────────────────────────────────────
 function WelcomeContent({ isDark }: { isDark: boolean }) {
+  const { t } = useTranslation();
+
   const cards = [
-    { icon: "🗺️", text: "Tur yönetimi" },
-    { icon: "💬", text: "WhatsApp entegrasyonu" },
-    { icon: "📊", text: "Gelir analizleri" },
-    { icon: "⚡", text: "Toplu araçlar" },
+    { icon: "🗺️", text: t("onboardingTour.welcome.cards.tours") },
+    { icon: "💬", text: t("onboardingTour.welcome.cards.whatsapp") },
+    { icon: "📊", text: t("onboardingTour.welcome.cards.analytics") },
+    { icon: "⚡", text: t("onboardingTour.welcome.cards.tools") },
   ];
-  // Solid renkler — isDark hangi değer olursa olsun görünür
-  const cardBg = isDark ? "#1e293b" : "#f1f5f9";
-  const cardText = isDark ? "#f8fafc" : "#1e293b";
-  const descColor = isDark ? "#94a3b8" : "#64748b";
+
+  const cardBg = isDark ? "hsl(222 47% 15%)" : "hsl(210 40% 96%)";
+  const cardText = isDark ? "hsl(210 40% 98%)" : "hsl(222 47% 11%)";
+  const descColor = isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)";
 
   return (
     <div style={{ textAlign: "center" }}>
       <p style={{ fontSize: 14, color: descColor, marginBottom: 16, lineHeight: 1.6 }}>
-        Bu kısa turda panelin tüm bölümlerini tanıyacaksınız.
-        <br />İstediğiniz zaman <strong style={{ color: cardText }}>Atla</strong> veya{" "}
-        <strong style={{ color: cardText }}>Esc</strong> ile çıkabilirsiniz.
+        {t("onboardingTour.welcome.description")}
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 4 }}>
         {cards.map((c) => (
@@ -97,9 +100,11 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
               fontSize: 13,
               fontWeight: 500,
               color: cardText,
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
             }}
           >
-            <span style={{ fontSize: 18, lineHeight: 1 }}>{c.icon}</span>
+            <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{c.icon}</span>
             {c.text}
           </div>
         ))}
@@ -109,16 +114,24 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
 }
 
 function CompleteContent({ isDark }: { isDark: boolean }) {
+  const { t } = useTranslation();
+
   const items = [
-    { icon: "⌘K", label: "Hızlı erişim için Ctrl+K" },
-    { icon: "🔔", label: "Yeni rezervasyonlarda bildirim" },
-    { icon: "🔄", label: "Ctrl+K → Turu tekrar başlat" },
+    { icon: "⌘K", label: t("onboardingTour.complete.shortcuts.cmdK") },
+    { icon: "🔔", label: t("onboardingTour.complete.shortcuts.notifications") },
+    { icon: "🔄", label: t("onboardingTour.complete.shortcuts.restart") },
   ];
-  const bg = isDark ? "#1e293b" : "#f1f5f9";
+
+  const bg = isDark ? "hsl(222 47% 15%)" : "hsl(210 40% 96%)";
+  const itemColor = isDark ? "hsl(214 32% 91%)" : "hsl(220 9% 22%)";
+  const descColor = isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)";
+  const codeBg = isDark ? "rgba(249,115,22,0.2)" : "rgba(249,115,22,0.12)";
+  const codeColor = isDark ? "hsl(21 94% 73%)" : "hsl(21 90% 46%)";
+
   return (
     <div>
-      <p style={{ fontSize: 14, color: isDark ? "#94a3b8" : "#64748b", marginBottom: 14, lineHeight: 1.6 }}>
-        Artık paneli kullanmaya hazırsınız! İşte aklınızda tutmanız gerekenler:
+      <p style={{ fontSize: 14, color: descColor, marginBottom: 14, lineHeight: 1.6 }}>
+        {t("onboardingTour.complete.description")}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {items.map((it) => (
@@ -127,14 +140,16 @@ function CompleteContent({ isDark }: { isDark: boolean }) {
             style={{
               display: "flex", alignItems: "center", gap: 10,
               background: bg, borderRadius: 8, padding: "8px 12px",
-              fontSize: 13, color: isDark ? "#e2e8f0" : "#374151",
+              fontSize: 13, color: itemColor,
+              wordBreak: "break-word", overflowWrap: "break-word",
             }}
           >
             <code
               style={{
-                background: isDark ? "rgba(249,115,22,0.2)" : "rgba(249,115,22,0.12)",
-                color: isDark ? "#fb923c" : "#ea580c",
+                background: codeBg,
+                color: codeColor,
                 borderRadius: 5, padding: "2px 7px", fontSize: 12, fontFamily: "monospace",
+                flexShrink: 0,
               }}
             >
               {it.icon}
@@ -154,8 +169,9 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
   const [runTour, setRunTour] = useState(false);
   const isDark = getCurrentTheme() === "dark";
 
-  const bg = isDark ? "#0f172a" : "#ffffff";
-  const fg = isDark ? "#f1f5f9" : "#1e293b";
+  // Theme-aware background and foreground using CSS variable equivalents
+  const bg = isDark ? "hsl(222 47% 7%)" : "hsl(0 0% 100%)";
+  const fg = isDark ? "hsl(210 40% 96%)" : "hsl(222 47% 11%)";
 
   // Helper to build a step with rich content
   const step = (
@@ -185,155 +201,97 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     // 2. Dashboard
     step(
       '[data-tour="sidebar-dashboard"]', "right",
-      "📊 Dashboard — Komuta Merkezi",
-      "Paneli her açtığınızda gördüğünüz genel bakış ekranıdır.",
-      [
-        "Günlük/haftalık gelir ve rezervasyon sayıları",
-        "Geçen haftaya göre değişim yüzdesi (sparkline grafik)",
-        "Satış trend grafiği — bu dönem vs önceki dönem",
-        "En çok satan turlar ve doluluk oranları",
-      ],
-      "Dashboard'daki \"Hızlı Aksiyonlar\" butonlarıyla doğrudan tur ekleyebilir veya rezervasyon yapabilirsiniz.",
+      t("onboardingTour.step.dashboard.title"),
+      t("onboardingTour.step.dashboard.desc"),
+      t("onboardingTour.step.dashboard.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.dashboard.tip"),
     ),
     // 3. Turlar
     step(
       '[data-tour="sidebar-tours"]', "right",
-      "🗺️ Turlar — Tur Yönetimi",
-      "Tüm turlarınızı bu bölümden yönetirsiniz.",
-      [
-        "Yeni tur ekle veya mevcut turu kopyala (≡ menü → Kopyala)",
-        "Excel'den toplu tur içe aktar (tüm alanlarla)",
-        "6 dilde tur adı / destinasyon / program girişi",
-        "\"Toplu Tarih Oluştur\" ile her cumartesi tüm ay tek tıkla",
-      ],
-      "Bir tur kopyalayıp sadece adını değiştirerek benzer turları dakikalar içinde oluşturabilirsiniz.",
+      t("onboardingTour.step.tours.title"),
+      t("onboardingTour.step.tours.desc"),
+      t("onboardingTour.step.tours.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.tours.tip"),
     ),
     // 4. Rezervasyonlar
     step(
       '[data-tour="sidebar-registrations"]', "right",
-      "📋 Rezervasyonlar — Kayıt Takibi",
-      "WhatsApp botu ve demo chat'ten gelen tüm rezervasyonlar burada listelenir.",
-      [
-        "Durum değiştir: Yeni → Onaylı / İptal",
-        "Onaylandığında müşteriye otomatik WhatsApp mesajı gider",
-        "Gelişmiş filtreleme: tur, tarih, durum, kaynak kanal",
-        "Excel'e aktar (tüm filtrelerle birlikte)",
-        "Manuel rezervasyon ekle (telefon veya ofis kayıtları için)",
-      ],
-      "Durumu ONAYLANDI yapınca müşteriye otomatik onay mesajı gönderilir — WhatsApp'a geçmenize gerek yok.",
+      t("onboardingTour.step.registrations.title"),
+      t("onboardingTour.step.registrations.desc"),
+      t("onboardingTour.step.registrations.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.registrations.tip"),
     ),
     // 5. WhatsApp
     step(
       '[data-tour="sidebar-whatsapp"]', "right",
-      "💬 WhatsApp — Tam Kontrol Merkezi",
-      "Tüm WhatsApp işlemlerinizi tek ekrandan yönetirsiniz.",
-      [
-        "Konuşmalar: Müşteri yazışmalarını gerçek zamanlı görün",
-        "Bot'u duraklat ve müşteriye kendiniz yanıt verin",
-        "Entegrasyon: WhatsApp Business hesabınızı bağlayın",
-        "Dil istatistikleri: Hangi dilde kaç müşteri geldi?",
-      ],
-      "\"Bot'u Duraklat\" özelliği ile AI'ı devre dışı bırakıp müşteriyle bizzat konuşabilirsiniz.",
+      t("onboardingTour.step.whatsapp.title"),
+      t("onboardingTour.step.whatsapp.desc"),
+      t("onboardingTour.step.whatsapp.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.whatsapp.tip"),
     ),
     // 6. Acente Bilgileri
     step(
       '[data-tour="sidebar-agency-info"]', "right",
-      "🏢 Acente Bilgileri — Profil Ayarları",
-      "Müşterilere WhatsApp üzerinden gösterilecek acente bilgilerinizi girin.",
-      [
-        "Adres, telefon, çalışma saatleri",
-        "Web sitesi ve Google Maps linki",
-        "İptal politikası metni",
-      ],
-      "Bu bilgiler müşteri 'Sizi nasıl bulabilirim?' dediğinde bot tarafından otomatik paylaşılır.",
+      t("onboardingTour.step.agencyInfo.title"),
+      t("onboardingTour.step.agencyInfo.desc"),
+      t("onboardingTour.step.agencyInfo.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.agencyInfo.tip"),
     ),
     // 7. Ödeme Ayarları
     step(
       '[data-tour="sidebar-payment"]', "right",
-      "💳 Ödeme Ayarları — Ödeme Bilgileri",
-      "Rezervasyon tamamlandığında müşteriye gönderilecek ödeme bilgilerini ayarlayın.",
-      [
-        "IBAN ve banka bilgileri",
-        "Ödeme talimatları metni (7 dilde ayrı ayrı girilebilir)",
-        "Dile göre farklı para birimi gösterimi",
-      ],
-      "Müşteri ödeme yapmak istediğinde bot bu bilgileri otomatik gönderir.",
+      t("onboardingTour.step.paymentSettings.title"),
+      t("onboardingTour.step.paymentSettings.desc"),
+      t("onboardingTour.step.paymentSettings.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.paymentSettings.tip"),
     ),
     // 8. Mesaj Şablonları
     step(
       '[data-tour="sidebar-templates"]', "right",
-      "📨 Mesaj Şablonları — Otomatik Mesajlar",
-      "Rezervasyon onayı, iptali ve tur hatırlatma mesajlarını özelleştirin.",
-      [
-        "7 dilde ayrı şablon yazın",
-        "Meta WhatsApp ile senkronize edin (ONAYLANDI/REDDEDİLDİ durumu)",
-        "Şablon gönder: Belirli bir müşteriye manuel şablon gönderin",
-        "Değişkenler: {full_name}, {tour_name}, {date}, {pax}",
-      ],
-      "\"Varsayılanları Yükle\" ile hazır şablonları 1 tıkla alabilirsiniz.",
+      t("onboardingTour.step.templates.title"),
+      t("onboardingTour.step.templates.desc"),
+      t("onboardingTour.step.templates.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.templates.tip"),
     ),
     // 9. SSS
     step(
       '[data-tour="sidebar-faq"]', "right",
-      "❓ SSS & Otomatik Yanıtlar",
-      "\"Fiyat ne kadar?\" gibi sık sorulan soruları AI'a öğretin.",
-      [
-        "Soru + otomatik yanıt çiftleri ekleyin",
-        "Kategori ve dil bazında organize edin",
-        "Bot bu soruları algılayınca direkt yanıtlar",
-        "AI'a yük azaltır, yanıt hızını artırır",
-      ],
-      "Ne kadar çok SSS girerseniz bot o kadar doğru ve hızlı yanıt verir.",
+      t("onboardingTour.step.faq.title"),
+      t("onboardingTour.step.faq.desc"),
+      t("onboardingTour.step.faq.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.faq.tip"),
     ),
     // 10. Dil Yönetimi
     step(
       '[data-tour="sidebar-languages"]', "right",
-      "🌍 Dil Yönetimi — Çok Dil Desteği",
-      "Botunuzun hangi dillerde hizmet vereceğini ayarlayın.",
-      [
-        "7 dil: TR, EN, DE, FR, ES, RU, AR",
-        "Her dil için ayrı para birimi tanımlayın",
-        "Müşteri dili otomatik algılanır",
-        "Arapça için RTL (sağdan sola) otomatik aktif",
-      ],
-      "En az 1 dil seçilmezse bot çalışmaz. Dashboard'daki uyarıya dikkat edin.",
+      t("onboardingTour.step.languages.title"),
+      t("onboardingTour.step.languages.desc"),
+      t("onboardingTour.step.languages.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.languages.tip"),
     ),
     // 11. Planım
     step(
       '[data-tour="sidebar-history"]', "right",
-      "💎 Planım — Abonelik & Kota",
-      "Mevcut planınızı ve mesaj kotanızı buradan takip edin.",
-      [
-        "Aylık mesaj kullanımı ve limit",
-        "Abonelik geçmişi ve fatura",
-        "Plan yükseltme seçenekleri",
-        "Ekstra kota satın alma",
-      ],
-      "Header'daki turuncu banner mesaj kotanız dolmadan uyarır.",
+      t("onboardingTour.step.subscription.title"),
+      t("onboardingTour.step.subscription.desc"),
+      t("onboardingTour.step.subscription.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.subscription.tip"),
     ),
     // 12. Bildirimler
     step(
       '[data-tour="header-notifications"]', "bottom",
-      "🔔 Bildirimler — Anlık Haberdar Ol",
-      "Yeni rezervasyon geldiğinde panelde ve tarayıcıda anında bildirim alırsınız.",
-      [
-        "Zil ikonundaki kırmızı badge okunmamış sayısını gösterir",
-        "Tıklayarak rezervasyonlar ekranına geçiş yapın",
-        "Tarayıcı izni verirseniz sayfa kapalıyken de bildirim gelir",
-      ],
+      t("onboardingTour.step.notificationsBell.title"),
+      t("onboardingTour.step.notificationsBell.desc"),
+      t("onboardingTour.step.notificationsBell.bullets", { returnObjects: true }) as string[],
     ),
     // 13. Cmd+K
     step(
       '[data-tour="header-command-palette"]', "bottom",
-      "⚡ Hızlı Erişim — Ctrl+K",
-      "Klavye kısayoluyla her şeye anında ulaşın.",
-      [
-        "Ctrl+K (Mac: Cmd+K) ile paleti açın",
-        "Sayfa adı yazarak anında geçiş yapın",
-        "Yeni tur, rezervasyon, Excel import başlatın",
-        "Koyu/açık mod değiştirin, dil seçin",
-      ],
-      "Power user özelliği: Mouse kullanmadan tüm paneli yönetebilirsiniz.",
+      t("onboardingTour.step.cmdK.title"),
+      t("onboardingTour.step.cmdK.desc"),
+      t("onboardingTour.step.cmdK.bullets", { returnObjects: true }) as string[],
+      t("onboardingTour.step.cmdK.tip"),
     ),
     // 14. Complete
     {
@@ -355,15 +313,15 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     },
     step(
       '[data-tour="mobile-menu-button"]', "bottom",
-      "☰ Sol Menü",
-      "Sol üstteki menü ikonuna dokunarak tüm panel bölümlerine ulaşabilirsiniz.",
-      ["Turlar, rezervasyonlar, WhatsApp, ayarlar ve daha fazlası"],
+      t("onboardingTour.step.mobileMenu.title"),
+      t("onboardingTour.step.mobileMenu.desc"),
+      t("onboardingTour.step.mobileMenu.bullets", { returnObjects: true }) as string[],
     ),
     step(
       '[data-tour="header-notifications"]', "bottom",
-      "🔔 Bildirimler",
-      "Yeni rezervasyon geldiğinde zil ikonunda kırmızı badge görünür.",
-      ["Tıklayarak rezervasyonlar ekranına geçiş yapın"],
+      t("onboardingTour.step.mobileNotifications.title"),
+      t("onboardingTour.step.mobileNotifications.desc"),
+      t("onboardingTour.step.mobileNotifications.bullets", { returnObjects: true }) as string[],
     ),
     {
       target: "body",
@@ -465,7 +423,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
           cursor: "pointer",
         },
         buttonBack: {
-          color: isDark ? "#94a3b8" : "#64748b",
+          color: isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)",
           fontSize: 13,
           marginRight: 10,
           background: "transparent",
@@ -473,14 +431,14 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
           cursor: "pointer",
         },
         buttonSkip: {
-          color: isDark ? "#94a3b8" : "#64748b",
+          color: isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)",
           fontSize: 13,
           background: "transparent",
           border: "none",
           cursor: "pointer",
         },
         buttonClose: {
-          color: isDark ? "#94a3b8" : "#64748b",
+          color: isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)",
           width: 28,
           height: 28,
         },

@@ -65,13 +65,14 @@ function buildDateSelectionMessage(
   language: string,
   exRates: Record<string, number> = {},
   showDual = false,
+  languageCurrencies?: Record<string, string> | null,
 ): string {
   const tourCurrency = tour.currency || "TRY";
   const dateLines = tour.dates
     .map((d: any, idx: number) => {
       const dateText = formatDateForLanguage(d.departure_date, language);
       const priceText = d.price_adult
-        ? ` - ${formatPriceSync(d.price_adult, tourCurrency, language, exRates, showDual)}`
+        ? ` - ${formatPriceSync(d.price_adult, tourCurrency, language, exRates, showDual, languageCurrencies)}`
         : "";
       const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
       const quotaText = remaining !== undefined
@@ -425,7 +426,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
     ) {
       const selectedTourData = findTourById(newContext.currentTour.id, availableTours);
       if (selectedTourData?.dates?.length) {
-        const dateReply = buildDateSelectionMessage(selectedTourData, newContext.language, _exRates, _showDualCurrency);
+        const dateReply = buildDateSelectionMessage(selectedTourData, newContext.language, _exRates, _showDualCurrency, (agencyData as any)?.language_currencies);
         await saveConversation(supabase, sessionId, message, dateReply);
         return createSuccessResponse({ response: dateReply, conversationState: newContext });
       }
@@ -454,7 +455,7 @@ export async function handleChatRequest(req: Request): Promise<Response> {
           es: requestedDate ? `La fecha "${requestedDate}" no está disponible para este tour.\n\n` : "",
         };
         const preamble = unavailablePreambles[newContext.language] ?? unavailablePreambles.en;
-        const dateListMsg = buildDateSelectionMessage(tourForDates, newContext.language, _exRates, _showDualCurrency);
+        const dateListMsg = buildDateSelectionMessage(tourForDates, newContext.language, _exRates, _showDualCurrency, (agencyData as any)?.language_currencies);
         const dateReply = preamble + dateListMsg;
         // selectedDate temizle: DB'de olmayan tarih context'e bırakılmamalı
         newContext.reservationInfo = { ...newContext.reservationInfo, selectedDate: undefined };

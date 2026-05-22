@@ -86,6 +86,12 @@ export const CustomerFeedback = () => {
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  const [agencyCurrency, setAgencyCurrency] = useState<string>("TRY");
+
+  const CURRENCY_SYM: Record<string, string> = {
+    TRY: "₺", USD: "$", EUR: "€", GBP: "£", SAR: "﷼", AED: "د.إ", RUB: "₽",
+  };
+  const currencySym = CURRENCY_SYM[agencyCurrency] ?? agencyCurrency;
 
   useEffect(() => {
     loadFeedbacks();
@@ -136,14 +142,15 @@ export const CustomerFeedback = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Get agency ID
+      // Get agency ID and primary currency
       const { data: agency } = await supabase
         .from("agencies")
-        .select("id")
+        .select("id, primary_currency")
         .eq("user_id", user.id)
         .single();
 
       if (!agency) return;
+      if (agency.primary_currency) setAgencyCurrency(agency.primary_currency);
 
       // Get date range
       const { startDate, endDate } = getDateRange();
@@ -586,7 +593,7 @@ export const CustomerFeedback = () => {
                       <div className="text-sm">
                         <div>{feedback.total_bookings} {t("feedback.tours")}</div>
                         <div className="text-muted-foreground">
-                          {feedback.total_spent.toLocaleString()} ₺
+                          {feedback.total_spent.toLocaleString()} {currencySym}
                         </div>
                       </div>
                     </TableCell>

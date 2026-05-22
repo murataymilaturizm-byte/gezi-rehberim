@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, X } from "lucide-react";
+import { CheckCircle2, Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "turzz_onboarding_dismissed";
@@ -20,6 +22,7 @@ interface StepStatus {
   addDates: boolean;
   whatsapp: boolean;
   selectLanguage: boolean;
+  currencyLanguage: boolean;
   approveTemplate: boolean;
   addFaq: boolean;
 }
@@ -47,7 +50,7 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
     const [agencyRes, toursRes, datesRes, langTemplateRes, faqRes] = await Promise.all([
       supabase
         .from("agencies")
-        .select("phone_public, address, payment_instructions, whatsapp_status, meta_phone_number_id, whatsapp_api_key, enabled_languages")
+        .select("phone_public, address, payment_instructions, whatsapp_status, meta_phone_number_id, whatsapp_api_key, enabled_languages, primary_currency, language_currencies")
         .eq("id", agencyId)
         .single(),
       supabase
@@ -60,14 +63,12 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
             .select("id", { count: "exact", head: true })
             .in("tour_id", tourIds)
         : Promise.resolve({ count: 0 }),
-      // Check for at least 1 APPROVED Meta template
       supabase
         .from("message_templates")
         .select("id", { count: "exact", head: true })
         .eq("agency_id", agencyId)
         .eq("meta_status", "APPROVED")
         .eq("is_active", true),
-      // Check for at least 1 FAQ
       supabase
         .from("faq_templates")
         .select("id", { count: "exact", head: true })
@@ -81,6 +82,11 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
     const templateCount = langTemplateRes.count ?? 0;
     const faqCount = faqRes.count ?? 0;
 
+    const langCurrencies = agency?.language_currencies as Record<string, string> | null;
+    const hasCurrencyLang =
+      !!(agency?.primary_currency) ||
+      (langCurrencies != null && Object.keys(langCurrencies).length > 0);
+
     setSteps({
       agencyInfo: !!(agency?.phone_public && agency?.address),
       payment: !!(agency?.payment_instructions),
@@ -88,6 +94,7 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
       addDates: dateCount > 0,
       whatsapp: agency?.whatsapp_status === "active" && !!(agency?.meta_phone_number_id || agency?.whatsapp_api_key),
       selectLanguage: Array.isArray(agency?.enabled_languages) && agency.enabled_languages.length > 0,
+      currencyLanguage: hasCurrencyLang,
       approveTemplate: templateCount > 0,
       addFaq: faqCount > 0,
     });
@@ -103,10 +110,11 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
   const stepList: { key: keyof StepStatus; tab: string }[] = [
     { key: "agencyInfo", tab: "agency_info" },
     { key: "payment", tab: "payment_settings" },
-    { key: "selectLanguage", tab: "languages" },
     { key: "addTour", tab: "tours" },
     { key: "addDates", tab: "tours" },
     { key: "whatsapp", tab: "settings" },
+    { key: "selectLanguage", tab: "languages" },
+    { key: "currencyLanguage", tab: "languages" },
     { key: "approveTemplate", tab: "templates" },
     { key: "addFaq", tab: "faq" },
   ];
@@ -119,22 +127,29 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
   const percent = Math.round((completedCount / stepList.length) * 100);
 
   return (
-    <Card className="border-primary/30 shadow-sm">
-      <CardHeader className="pb-2 pt-4 px-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 space-y-1">
-            <CardTitle className="text-sm font-semibold">
-              {t("admin.onboarding.title")} —{" "}
-              <span className="text-primary">
+    <Card className="border-primary/20 shadow-sm dark:border-primary/10">
+      <CardHeader className="pb-3 pt-4 px-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-semibold">
+                {t("admin.onboarding.title")}
+              </CardTitle>
+              <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
+                {completedCount}/{stepList.length}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Progress value={percent} className="h-1.5 flex-1" />
+              <span className="text-xs font-semibold text-primary shrink-0 tabular-nums">
                 {t("admin.onboarding.progress", { percent })}
               </span>
-            </CardTitle>
-            <Progress value={percent} className="h-1.5" />
+            </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+            className="h-7 w-7 shrink-0 -mt-0.5 text-muted-foreground hover:text-foreground"
             onClick={handleDismiss}
             title={t("admin.onboarding.dismiss")}
           >
@@ -142,35 +157,63 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
           </Button>
         </div>
       </CardHeader>
+
       <CardContent className="px-4 pb-4">
-        <div className="grid gap-1.5 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
-          {stepList.map(({ key, tab }) => {
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {stepList.map(({ key, tab }, index) => {
             const done = steps[key];
             return (
-              <button
+              <div
                 key={key}
-                onClick={() => !done && onNavigate(tab)}
-                disabled={done}
-                className={`flex items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs transition-colors ${
+                className={cn(
+                  "flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-all",
                   done
-                    ? "text-muted-foreground cursor-default"
-                    : "text-foreground hover:bg-accent cursor-pointer"
-                }`}
-              >
-                {done ? (
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
-                ) : (
-                  <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    ? "border-green-500/20 bg-green-500/5 dark:bg-green-500/[0.04]"
+                    : "border-border bg-card hover:border-primary/30 hover:bg-accent/30"
                 )}
-                <span className={done ? "line-through" : ""}>
+              >
+                {/* Step indicator: number or checkmark */}
+                <div
+                  className={cn(
+                    "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold",
+                    done
+                      ? "bg-green-500 text-white"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {done ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : (
+                    index + 1
+                  )}
+                </div>
+
+                {/* Step title */}
+                <span
+                  className={cn(
+                    "flex-1 text-xs font-medium leading-tight",
+                    done
+                      ? "text-muted-foreground line-through decoration-muted-foreground/40"
+                      : "text-foreground"
+                  )}
+                >
                   {t(`admin.onboarding.steps.${key}`)}
                 </span>
-                {!done && (
-                  <span className="ml-auto text-primary shrink-0">
+
+                {/* Right: action button or done checkmark */}
+                {done ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-[11px] text-primary hover:text-primary hover:bg-primary/10 shrink-0 font-semibold"
+                    onClick={() => onNavigate(tab)}
+                  >
                     {t(`admin.onboarding.actions.${key}`)}
-                  </span>
+                  </Button>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>

@@ -458,7 +458,8 @@ export default function MessageTemplates() {
                           </CardDescription>
                         </div>
                         <div className="flex gap-2">
-                          {template && template.is_active && template.meta_status === 'APPROVED' && (
+                          {/* Gönder butonu: Meta'da APPROVED + template_id dolu → aktif */}
+                          {template && template.meta_status === 'APPROVED' && template.meta_template_id && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -468,7 +469,8 @@ export default function MessageTemplates() {
                               {t("admin.templates.sendButton")}
                             </Button>
                           )}
-                          {template && template.is_active && template.meta_status !== 'APPROVED' && (
+                          {/* Onaylanmadı tooltip: template var ama meta_status APPROVED değil */}
+                          {template && template.meta_template_id && template.meta_status !== 'APPROVED' && (
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <span>

@@ -81,10 +81,8 @@ export const HeroSection = ({ onDemoClick }: HeroSectionProps) => {
             transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
             className="relative flex flex-col items-center gap-3 sm:gap-4 lg:gap-3"
           >
-            {/* Mascot: mobilde gizli (mobil zaten kompakt), md+'da büyük */}
-            <div className="hidden sm:block">
-              <AIMascot thinking={mascotThinking} className="max-w-[120px] md:max-w-[140px] lg:max-w-[150px]" />
-            </div>
+            {/* Mascot: mobilde küçük (demo'nun üstünde), sm+'da büyür */}
+            <AIMascot thinking={mascotThinking} className="max-w-[80px] sm:max-w-[120px] md:max-w-[140px] lg:max-w-[150px]" />
             <HeroWhatsAppDemo onThinkingChange={setMascotThinking} />
           </motion.div>
         </div>

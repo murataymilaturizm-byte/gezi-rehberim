@@ -88,7 +88,8 @@ export function RecentRegistrations({ registrations, onViewAll }: RecentRegistra
                   <div className="text-right shrink-0">
                     {reg.tour_dates?.price_adult ? (
                       <p className="text-sm font-semibold">
-                        {(reg.tour_dates.price_adult * reg.pax).toLocaleString("tr-TR")}₺
+                        {(reg.tour_dates.price_adult * reg.pax).toLocaleString("tr-TR")}
+                        {({ TRY: "₺", USD: "$", EUR: "€", GBP: "£", SAR: "﷼", AED: "د.إ", RUB: "₽" } as Record<string,string>)[reg.tours?.currency || "TRY"] ?? reg.tours?.currency ?? "₺"}
                       </p>
                     ) : null}
                     <span className="text-xs text-muted-foreground">{timeAgo(reg.created_at)}</span>

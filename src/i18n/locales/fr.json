@@ -45,7 +45,7 @@
     "cta": "Essayer Gratuitement 14 Jours",
     "demo": "Essayer la Démo Live",
     "priceHint": "à partir de ₺2 999/mois",
-    "watchDemo": "Voir la démo"
+    "watchDemo": "Essayer maintenant"
   },
   "features": {
     "title": "Fonctionnalités",
@@ -271,7 +271,7 @@
     "subtitle": "Un investissement qui apporte une valeur immédiate à votre entreprise",
     "monthly": "Mensuel",
     "yearly": "Annuel",
-    "save": "2 Mois Gratuits",
+    "save": "10% de réduction",
     "trial": "Essai gratuit de 14 jours sur tous les plans. Aucune carte de crédit requise.",
     "trialNote": "Essai gratuit de 14 jours sur tous les plans. Aucune carte de crédit requise.",
     "custom": "Personnalisé",
@@ -333,6 +333,7 @@
   "footer": {
     "description": "Système moderne d'intégration WhatsApp et de gestion des réservations pour les agences de voyage.",
     "product": "Produit",
+    "solutions": "Solutions",
     "features": "Fonctionnalités",
     "pricing": "Tarifs",
     "demo": "Démo",
@@ -1283,6 +1284,48 @@
       "planFeatures": "Fonctionnalités de l'abonnement",
       "activePlan": "Abonnement actif",
       "savings": "économies",
+      "subscribe": "S'abonner",
+      "paymentMethod": "Méthode de paiement",
+      "planChangedNote": "Plan modifié: {{from}} → {{to}}",
+      "plans": {
+        "starter": {
+          "features": [
+            "💬 1 000 msg/mois",
+            "🏨 Jusqu'à 10 circuits",
+            "🌍 1 langue",
+            "👔 Style professionnel",
+            "📊 Analyses de base",
+            "💾 30 jours d'historique"
+          ]
+        },
+        "professional": {
+          "features": [
+            "💬 5 000 msg/mois",
+            "🏨 Circuits illimités",
+            "🌍 3 langues",
+            "🎭 4 styles",
+            "👥 Profils clients",
+            "🔔 Rappels auto",
+            "📧 Suivi auto",
+            "📊 Analyses avancées",
+            "💾 90 jours"
+          ]
+        },
+        "enterprise": {
+          "features": [
+            "💬 Messages illimités",
+            "🏨 Circuits illimités",
+            "🌍 7 langues",
+            "🎨 4 styles",
+            "👥 Profils avancés",
+            "🔔 Rappels intelligents",
+            "📧 Suivi & sondages auto",
+            "📊 Analyses premium",
+            "🚀 Support 24/7",
+            "💾 Historique illimité"
+          ]
+        }
+      },
       "trialEndsIn": "La période d'essai se termine",
       "subscriptionEndsIn": "L'abonnement se termine",
       "daysLeft": "jours restants",
@@ -1592,6 +1635,7 @@
         "addDates": "Ajouter des dates de circuit",
         "whatsapp": "Connecter WhatsApp",
         "selectLanguage": "Choisir langue",
+        "currencyLanguage": "Configurer langue et devise",
         "approveTemplate": "Approuver modèle",
         "addFaq": "Ajouter FAQ"
       },
@@ -1602,6 +1646,7 @@
         "addDates": "Ajouter Dates",
         "whatsapp": "Connecter",
         "selectLanguage": "Aller →",
+        "currencyLanguage": "Configurer",
         "approveTemplate": "Aller →",
         "addFaq": "Aller →"
       }
@@ -1898,7 +1943,14 @@
   "onboardingTour": {
     "welcome": {
       "title": "🎉 Bienvenue sur Turzz AI !",
-      "content": "Laissez-nous vous faire une visite rapide du panneau. 30 secondes seulement. Vous pouvez ignorer à tout moment."
+      "content": "Laissez-nous vous faire une visite rapide du panneau. 30 secondes seulement. Vous pouvez ignorer à tout moment.",
+      "description": "Dans cette courte visite, vous découvrirez toutes les sections du panneau. Appuyez sur Ignorer ou Esc pour quitter.",
+      "cards": {
+        "tours": "Gestion des circuits",
+        "whatsapp": "Intégration WhatsApp",
+        "analytics": "Analyse des revenus",
+        "tools": "Outils en masse"
+      }
     },
     "dashboard": {
       "title": "📊 Tableau de bord",
@@ -1930,7 +1982,154 @@
     },
     "complete": {
       "title": "🚀 Vous êtes prêt !",
-      "content": "Explorez le panneau. Pour de l'aide : Ctrl+K → 'Relancer la visite'."
+      "content": "Explorez le panneau. Pour de l'aide : Ctrl+K → 'Relancer la visite'.",
+      "description": "Vous êtes prêt à utiliser le panneau ! Voici ce qu'il faut retenir :",
+      "shortcuts": {
+        "cmdK": "Accès rapide avec Ctrl+K",
+        "notifications": "Notifications pour les nouvelles réservations",
+        "restart": "Ctrl+K → Relancer la visite"
+      }
+    },
+    "step": {
+      "dashboard": {
+        "title": "📊 Tableau de bord — Centre de commandement",
+        "desc": "L'écran de vue d'ensemble que vous voyez à chaque ouverture du panneau.",
+        "bullets": [
+          "Revenus et réservations quotidiens/hebdomadaires",
+          "Variation en pourcentage par rapport à la semaine dernière (graphique sparkline)",
+          "Graphique de tendance des ventes — période actuelle vs précédente",
+          "Circuits les plus vendus et taux d'occupation"
+        ],
+        "tip": "Utilisez les boutons 'Actions rapides' sur le tableau de bord pour ajouter des circuits ou effectuer des réservations directement."
+      },
+      "tours": {
+        "title": "🗺️ Circuits — Gestion des circuits",
+        "desc": "Gérez tous vos circuits depuis cette section.",
+        "bullets": [
+          "Ajouter un nouveau circuit ou copier un existant (≡ menu → Copier)",
+          "Import en masse de circuits depuis Excel (avec tous les champs)",
+          "Saisir le nom du circuit / destination / programme en 6 langues",
+          "'Création de dates en masse' — chaque samedi du mois en un clic"
+        ],
+        "tip": "Copiez un circuit et changez uniquement le nom pour créer des circuits similaires en minutes."
+      },
+      "registrations": {
+        "title": "📋 Réservations — Suivi des réservations",
+        "desc": "Toutes les réservations du bot WhatsApp et du chat démo sont listées ici.",
+        "bullets": [
+          "Changer le statut : Nouveau → Confirmé / Annulé",
+          "Message WhatsApp automatique au client lors de la confirmation",
+          "Filtrage avancé : circuit, date, statut, canal source",
+          "Exporter vers Excel (avec tous les filtres appliqués)",
+          "Ajouter des réservations manuelles (pour les réservations téléphoniques ou en agence)"
+        ],
+        "tip": "Passer le statut à CONFIRMÉ envoie automatiquement une confirmation WhatsApp — inutile de basculer sur WhatsApp."
+      },
+      "whatsapp": {
+        "title": "💬 WhatsApp — Centre de contrôle complet",
+        "desc": "Gérez toutes vos opérations WhatsApp depuis un seul écran.",
+        "bullets": [
+          "Conversations : consultez les échanges clients en temps réel",
+          "Mettre le bot en pause et répondre vous-même au client",
+          "Intégration : connectez votre compte WhatsApp Business",
+          "Statistiques linguistiques : combien de clients par langue ?"
+        ],
+        "tip": "La fonction 'Mettre le bot en pause' vous permet de désactiver l'IA et de parler directement au client."
+      },
+      "agencyInfo": {
+        "title": "🏢 Informations agence — Paramètres du profil",
+        "desc": "Saisissez les informations de l'agence qui seront affichées aux clients via WhatsApp.",
+        "bullets": [
+          "Adresse, téléphone, horaires",
+          "Site web et lien Google Maps",
+          "Texte de politique d'annulation"
+        ],
+        "tip": "Ces informations sont automatiquement partagées par le bot quand un client demande 'Comment vous trouver ?'"
+      },
+      "paymentSettings": {
+        "title": "💳 Paramètres de paiement — Informations de paiement",
+        "desc": "Configurez les détails de paiement qui seront envoyés au client à la fin d'une réservation.",
+        "bullets": [
+          "IBAN et coordonnées bancaires",
+          "Texte des instructions de paiement (saisissable en 7 langues séparément)",
+          "Afficher différentes devises selon la langue"
+        ],
+        "tip": "Le bot envoie automatiquement ces informations quand un client souhaite effectuer un paiement."
+      },
+      "templates": {
+        "title": "📨 Modèles de messages — Messages automatisés",
+        "desc": "Personnalisez les messages de confirmation, d'annulation et de rappel de circuit.",
+        "bullets": [
+          "Rédiger des modèles séparés en 7 langues",
+          "Synchroniser avec Meta WhatsApp (statut APPROUVÉ/REFUSÉ)",
+          "Envoyer un modèle : envoyer manuellement un modèle à un client spécifique",
+          "Variables : {full_name}, {tour_name}, {date}, {pax}"
+        ],
+        "tip": "Utilisez 'Charger les valeurs par défaut' pour obtenir des modèles prêts à l'emploi en 1 clic."
+      },
+      "faq": {
+        "title": "❓ FAQ et réponses automatiques",
+        "desc": "Apprenez à l'IA les questions fréquentes comme 'Quel est le prix ?'",
+        "bullets": [
+          "Ajouter des paires question + réponse automatique",
+          "Organiser par catégorie et langue",
+          "Le bot répond directement quand il détecte ces questions",
+          "Réduit la charge de l'IA et augmente la vitesse de réponse"
+        ],
+        "tip": "Plus vous ajoutez de FAQ, plus les réponses du bot seront précises et rapides."
+      },
+      "languages": {
+        "title": "🌍 Gestion des langues — Support multilingue",
+        "desc": "Définissez dans quelles langues votre bot fournira ses services.",
+        "bullets": [
+          "7 langues : TR, EN, DE, FR, ES, RU, AR",
+          "Définir une devise séparée pour chaque langue",
+          "La langue du client est détectée automatiquement",
+          "RTL (droite à gauche) activé automatiquement pour l'arabe"
+        ],
+        "tip": "Si aucune langue n'est sélectionnée, le bot ne fonctionnera pas. Surveillez l'avertissement sur le tableau de bord."
+      },
+      "subscription": {
+        "title": "💎 Mon plan — Abonnement et quota",
+        "desc": "Suivez votre plan actuel et votre quota de messages ici.",
+        "bullets": [
+          "Utilisation mensuelle des messages et limite",
+          "Historique d'abonnement et factures",
+          "Options de mise à niveau du plan",
+          "Acheter du quota supplémentaire"
+        ],
+        "tip": "La bannière orange dans l'en-tête vous avertit avant que votre quota soit épuisé."
+      },
+      "notificationsBell": {
+        "title": "🔔 Notifications — Informé instantanément",
+        "desc": "Recevez des notifications instantanées dans le panneau et le navigateur à chaque nouvelle réservation.",
+        "bullets": [
+          "Le badge rouge sur l'icône cloche affiche le nombre de non-lus",
+          "Cliquez pour accéder à l'écran des réservations",
+          "Avec l'autorisation du navigateur, les notifications arrivent même quand la page est fermée"
+        ]
+      },
+      "cmdK": {
+        "title": "⚡ Accès rapide — Ctrl+K",
+        "desc": "Accédez instantanément à tout avec un raccourci clavier.",
+        "bullets": [
+          "Ouvrir la palette avec Ctrl+K (Mac : Cmd+K)",
+          "Saisir un nom de page pour naviguer instantanément",
+          "Démarrer un nouveau circuit, une réservation ou un import Excel",
+          "Basculer mode sombre/clair, changer la langue"
+        ],
+        "tip": "Fonction avancée : gérez tout le panneau sans utiliser la souris."
+      },
+      "mobileMenu": {
+        "title": "☰ Menu latéral",
+        "desc": "Appuyez sur l'icône de menu en haut à gauche pour accéder à toutes les sections du panneau.",
+        "bullets": ["Circuits, réservations, WhatsApp, paramètres et plus encore"]
+      },
+      "mobileNotifications": {
+        "title": "🔔 Notifications",
+        "desc": "Un badge rouge apparaît sur l'icône cloche à chaque nouvelle réservation.",
+        "bullets": ["Appuyez pour accéder à l'écran des réservations"]
+      }
     },
     "next": "Suivant →",
     "back": "← Retour",

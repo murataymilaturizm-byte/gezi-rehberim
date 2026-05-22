@@ -101,15 +101,18 @@ const Index = () => {
               <a href="/whatsapp-chatbot-seyahat-acentesi" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
                 {t("nav.features")}
               </a>
-              <a href="/karsilastir/turzz-vs-manuel-whatsapp" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
-                {t("nav.compare")}
+              <a href="/cozum/incoming-acenteler" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
+                {t("nav.solutions")}
               </a>
               <a href="/blog" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
                 {t("nav.blog")}
               </a>
-              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/yardim">{t("nav.help")}</a>
-              </Button>
+              <a href="/yardim" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
+                {t("nav.help")}
+              </a>
+              <a href="/#pricing" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
+                {t("nav.pricing")}
+              </a>
               <Button asChild size="sm" className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 sm:size-default">
                 <a href="/auth">{t("auth.login")}</a>
               </Button>
@@ -126,13 +129,16 @@ const Index = () => {
                     <a href="/whatsapp-chatbot-seyahat-acentesi">{t("nav.features")}</a>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <a href="/karsilastir/turzz-vs-manuel-whatsapp">{t("nav.compare")}</a>
+                    <a href="/cozum/incoming-acenteler">{t("nav.solutions")}</a>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <a href="/blog">{t("nav.blog")}</a>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="md:hidden">
+                  <DropdownMenuItem asChild>
                     <a href="/yardim">{t("nav.help")}</a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a href="/#pricing">{t("nav.pricing")}</a>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -383,7 +389,7 @@ const Index = () => {
       {showScrollTop && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-40 w-12 h-12 rounded-full bg-gradient-ocean hover:opacity-90 shadow-elegant hover:shadow-glow animate-fade-in transition-all duration-300 hover:scale-110 group"
+          className="fixed bottom-[4.5rem] right-4 md:bottom-20 md:right-6 z-40 w-12 h-12 rounded-full bg-gradient-ocean hover:opacity-90 shadow-elegant hover:shadow-glow animate-fade-in transition-all duration-300 hover:scale-110 group"
           size="icon"
           aria-label="Scroll to top"
         >

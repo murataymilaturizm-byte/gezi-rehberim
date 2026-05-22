@@ -67,6 +67,12 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   const [newTag, setNewTag] = useState("");
   const [conversations, setConversations] = useState<ConversationMessage[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
+  const [agencyCurrency, setAgencyCurrency] = useState<string>("TRY");
+
+  const CURRENCY_SYM: Record<string, string> = {
+    TRY: "₺", USD: "$", EUR: "€", GBP: "£", SAR: "﷼", AED: "د.إ", RUB: "₽",
+  };
+  const currencySym = CURRENCY_SYM[agencyCurrency] ?? agencyCurrency;
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -74,10 +80,11 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
     } else {
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!user) return;
-        supabase.from("agencies").select("id").eq("user_id", user.id).single()
+        supabase.from("agencies").select("id, primary_currency").eq("user_id", user.id).single()
           .then(({ data }) => {
             if (data?.id) {
               setCurrentAgencyId(data.id);
+              if (data.primary_currency) setAgencyCurrency(data.primary_currency);
               loadProfiles(data.id);
             }
           });
@@ -366,7 +373,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                             <p className="text-xs text-muted-foreground">{t("admin.whatsapp.userProfiles.totalSpent")}</p>
                           </div>
                           <p className="text-3xl font-bold text-green-700 dark:text-green-300">
-                            {selectedProfile.total_spent.toLocaleString()} ₺
+                            {selectedProfile.total_spent.toLocaleString()} {currencySym}
                           </p>
                         </CardContent>
                       </Card>
@@ -381,7 +388,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                             {selectedProfile.total_bookings > 0
                               ? Math.round(selectedProfile.total_spent / selectedProfile.total_bookings).toLocaleString()
                               : 0}{" "}
-                            ₺
+                            {currencySym}
                           </p>
                         </CardContent>
                       </Card>

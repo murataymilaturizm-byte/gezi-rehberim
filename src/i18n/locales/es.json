@@ -45,7 +45,7 @@
     "cta": "Prueba Gratis por 14 Días",
     "demo": "Probar Demo en Vivo",
     "priceHint": "desde ₺2.999/mes",
-    "watchDemo": "Ver demo"
+    "watchDemo": "Probar ahora"
   },
   "features": {
     "title": "Características",
@@ -271,7 +271,7 @@
     "subtitle": "Una inversión que añade valor inmediato a tu negocio",
     "monthly": "Mensual",
     "yearly": "Anual",
-    "save": "2 Meses Gratis",
+    "save": "10% descuento",
     "trial": "Prueba gratuita de 14 días en todos los planes. No se requiere tarjeta de crédito.",
     "trialNote": "Prueba gratuita de 14 días en todos los planes. No se requiere tarjeta de crédito.",
     "custom": "Personalizado",
@@ -367,6 +367,7 @@
   "footer": {
     "description": "Sistema moderno de integración de WhatsApp y gestión de reservas para agencias de viajes.",
     "product": "Producto",
+    "solutions": "Soluciones",
     "features": "Características",
     "pricing": "Precios",
     "demo": "Demo",
@@ -1317,6 +1318,48 @@
       "planFeatures": "Características del plan",
       "activePlan": "Plan activo",
       "savings": "ahorro",
+      "subscribe": "Suscribirse",
+      "paymentMethod": "Método de pago",
+      "planChangedNote": "Plan cambiado: {{from}} → {{to}}",
+      "plans": {
+        "starter": {
+          "features": [
+            "💬 1.000 msg/mes",
+            "🏨 Hasta 10 tours",
+            "🌍 1 idioma",
+            "👔 Estilo profesional",
+            "📊 Análisis básicos",
+            "💾 30 días de historial"
+          ]
+        },
+        "professional": {
+          "features": [
+            "💬 5.000 msg/mes",
+            "🏨 Tours ilimitados",
+            "🌍 3 idiomas",
+            "🎭 4 estilos",
+            "👥 Perfiles de usuarios",
+            "🔔 Recordatorios auto",
+            "📧 Seguimiento auto",
+            "📊 Análisis avanzados",
+            "💾 90 días"
+          ]
+        },
+        "enterprise": {
+          "features": [
+            "💬 Mensajes ilimitados",
+            "🏨 Tours ilimitados",
+            "🌍 7 idiomas",
+            "🎨 4 estilos",
+            "👥 Perfiles avanzados",
+            "🔔 Recordatorios inteligentes",
+            "📧 Seguimiento y encuestas auto",
+            "📊 Análisis premium",
+            "🚀 Soporte 24/7",
+            "💾 Historial ilimitado"
+          ]
+        }
+      },
       "trialEndsIn": "El período de prueba termina en",
       "subscriptionEndsIn": "La suscripción termina en",
       "daysLeft": "días restantes",
@@ -1572,6 +1615,7 @@
         "addDates": "Agregar fechas del tour",
         "whatsapp": "Conectar WhatsApp",
         "selectLanguage": "Seleccionar idioma",
+        "currencyLanguage": "Configurar idioma y moneda",
         "approveTemplate": "Aprobar plantilla",
         "addFaq": "Agregar FAQ"
       },
@@ -1582,6 +1626,7 @@
         "addDates": "Agregar Fechas",
         "whatsapp": "Conectar",
         "selectLanguage": "Ir →",
+        "currencyLanguage": "Configurar",
         "approveTemplate": "Ir →",
         "addFaq": "Ir →"
       }
@@ -1932,7 +1977,14 @@
   "onboardingTour": {
     "welcome": {
       "title": "🎉 ¡Bienvenido a Turzz AI!",
-      "content": "Déjenos darle un recorrido rápido por el panel. Solo 30 segundos. Puede omitir en cualquier momento."
+      "content": "Déjenos darle un recorrido rápido por el panel. Solo 30 segundos. Puede omitir en cualquier momento.",
+      "description": "En este breve recorrido descubrirá todas las secciones del panel. Pulse Omitir o Esc para salir en cualquier momento.",
+      "cards": {
+        "tours": "Gestión de tours",
+        "whatsapp": "Integración WhatsApp",
+        "analytics": "Análisis de ingresos",
+        "tools": "Herramientas masivas"
+      }
     },
     "dashboard": {
       "title": "📊 Panel de control",
@@ -1964,7 +2016,154 @@
     },
     "complete": {
       "title": "🚀 ¡Listo!",
-      "content": "Explore el panel. Para ayuda: Ctrl+K → 'Reiniciar tour'."
+      "content": "Explore el panel. Para ayuda: Ctrl+K → 'Reiniciar tour'.",
+      "description": "¡Está listo para usar el panel! Esto es lo que debe recordar:",
+      "shortcuts": {
+        "cmdK": "Acceso rápido con Ctrl+K",
+        "notifications": "Notificaciones para nuevas reservas",
+        "restart": "Ctrl+K → Reiniciar tour"
+      }
+    },
+    "step": {
+      "dashboard": {
+        "title": "📊 Panel de control — Centro de mando",
+        "desc": "La pantalla de resumen que ve cada vez que abre el panel.",
+        "bullets": [
+          "Ingresos y reservas diarios/semanales",
+          "Variación porcentual respecto a la semana pasada (gráfico sparkline)",
+          "Gráfico de tendencia de ventas — período actual vs anterior",
+          "Tours más vendidos y tasas de ocupación"
+        ],
+        "tip": "Use los botones de 'Acciones rápidas' en el panel para agregar tours o hacer reservas directamente."
+      },
+      "tours": {
+        "title": "🗺️ Tours — Gestión de tours",
+        "desc": "Gestione todos sus tours desde esta sección.",
+        "bullets": [
+          "Agregar un nuevo tour o copiar uno existente (≡ menú → Copiar)",
+          "Importación masiva de tours desde Excel (con todos los campos)",
+          "Introducir nombre del tour / destino / programa en 6 idiomas",
+          "'Creación masiva de fechas' — cada sábado del mes con un clic"
+        ],
+        "tip": "Copie un tour y cambie solo el nombre para crear tours similares en minutos."
+      },
+      "registrations": {
+        "title": "📋 Reservas — Seguimiento de reservas",
+        "desc": "Todas las reservas del bot de WhatsApp y el chat de demostración se listan aquí.",
+        "bullets": [
+          "Cambiar estado: Nuevo → Confirmado / Cancelado",
+          "Mensaje automático de WhatsApp al cliente al confirmar",
+          "Filtrado avanzado: tour, fecha, estado, canal de origen",
+          "Exportar a Excel (con todos los filtros aplicados)",
+          "Agregar reservas manuales (para reservas telefónicas o de oficina)"
+        ],
+        "tip": "Cambiar el estado a CONFIRMADO envía automáticamente una confirmación por WhatsApp — no necesita cambiar a WhatsApp."
+      },
+      "whatsapp": {
+        "title": "💬 WhatsApp — Centro de control completo",
+        "desc": "Gestione todas sus operaciones de WhatsApp desde una sola pantalla.",
+        "bullets": [
+          "Conversaciones: vea chats de clientes en tiempo real",
+          "Pausar el bot y responder usted mismo al cliente",
+          "Integración: conectar su cuenta de WhatsApp Business",
+          "Estadísticas de idioma: ¿cuántos clientes en cada idioma?"
+        ],
+        "tip": "La función 'Pausar bot' le permite desactivar la IA y hablar directamente con el cliente."
+      },
+      "agencyInfo": {
+        "title": "🏢 Información de la agencia — Configuración del perfil",
+        "desc": "Introduzca los datos de la agencia que se mostrarán a los clientes a través de WhatsApp.",
+        "bullets": [
+          "Dirección, teléfono, horarios",
+          "Sitio web y enlace de Google Maps",
+          "Texto de política de cancelación"
+        ],
+        "tip": "El bot comparte automáticamente esta información cuando un cliente pregunta '¿Cómo encontrarles?'"
+      },
+      "paymentSettings": {
+        "title": "💳 Configuración de pagos — Información de pago",
+        "desc": "Configure los detalles de pago que se enviarán al cliente al completar una reserva.",
+        "bullets": [
+          "IBAN y datos bancarios",
+          "Texto de instrucciones de pago (se puede introducir en 7 idiomas por separado)",
+          "Mostrar diferentes monedas por idioma"
+        ],
+        "tip": "El bot envía automáticamente esta información cuando un cliente desea realizar un pago."
+      },
+      "templates": {
+        "title": "📨 Plantillas de mensajes — Mensajes automatizados",
+        "desc": "Personalice los mensajes de confirmación, cancelación y recordatorio de tour.",
+        "bullets": [
+          "Escribir plantillas separadas en 7 idiomas",
+          "Sincronizar con Meta WhatsApp (estado APROBADO/RECHAZADO)",
+          "Enviar plantilla: enviar manualmente una plantilla a un cliente específico",
+          "Variables: {full_name}, {tour_name}, {date}, {pax}"
+        ],
+        "tip": "Use 'Cargar valores predeterminados' para obtener plantillas listas en 1 clic."
+      },
+      "faq": {
+        "title": "❓ FAQ y respuestas automáticas",
+        "desc": "Enseñe a la IA preguntas frecuentes como '¿Cuál es el precio?'",
+        "bullets": [
+          "Agregar pares de pregunta + respuesta automática",
+          "Organizar por categoría e idioma",
+          "El bot responde directamente cuando detecta estas preguntas",
+          "Reduce la carga de IA y aumenta la velocidad de respuesta"
+        ],
+        "tip": "Cuantas más FAQ agregue, más precisas y rápidas serán las respuestas del bot."
+      },
+      "languages": {
+        "title": "🌍 Gestión de idiomas — Soporte multilingüe",
+        "desc": "Configure en qué idiomas ofrecerá servicios su bot.",
+        "bullets": [
+          "7 idiomas: TR, EN, DE, FR, ES, RU, AR",
+          "Definir una moneda separada para cada idioma",
+          "El idioma del cliente se detecta automáticamente",
+          "RTL (de derecha a izquierda) habilitado automáticamente para árabe"
+        ],
+        "tip": "Si no se selecciona ningún idioma, el bot no funcionará. Preste atención a la advertencia en el panel."
+      },
+      "subscription": {
+        "title": "💎 Mi plan — Suscripción y cuota",
+        "desc": "Siga su plan actual y cuota de mensajes aquí.",
+        "bullets": [
+          "Uso mensual de mensajes y límite",
+          "Historial de suscripción y facturas",
+          "Opciones de actualización del plan",
+          "Comprar cuota adicional"
+        ],
+        "tip": "El banner naranja en el encabezado le avisa antes de que se agote su cuota."
+      },
+      "notificationsBell": {
+        "title": "🔔 Notificaciones — Informado al instante",
+        "desc": "Reciba notificaciones instantáneas en el panel y navegador cuando llegue una nueva reserva.",
+        "bullets": [
+          "La insignia roja en el ícono de campana muestra el conteo de no leídos",
+          "Haga clic para navegar a la pantalla de reservas",
+          "Con permiso del navegador, las notificaciones llegan incluso con la página cerrada"
+        ]
+      },
+      "cmdK": {
+        "title": "⚡ Acceso rápido — Ctrl+K",
+        "desc": "Acceda instantáneamente a todo con un atajo de teclado.",
+        "bullets": [
+          "Abrir la paleta con Ctrl+K (Mac: Cmd+K)",
+          "Escribir un nombre de página para navegar instantáneamente",
+          "Iniciar nuevo tour, reserva o importación de Excel",
+          "Cambiar modo oscuro/claro, cambiar idioma"
+        ],
+        "tip": "Función para usuarios avanzados: administre todo el panel sin usar el ratón."
+      },
+      "mobileMenu": {
+        "title": "☰ Menú lateral",
+        "desc": "Toque el ícono de menú en la parte superior izquierda para acceder a todas las secciones del panel.",
+        "bullets": ["Tours, reservas, WhatsApp, configuración y más"]
+      },
+      "mobileNotifications": {
+        "title": "🔔 Notificaciones",
+        "desc": "Aparece una insignia roja en el ícono de campana cuando llega una nueva reserva.",
+        "bullets": ["Toque para navegar a la pantalla de reservas"]
+      }
     },
     "next": "Siguiente →",
     "back": "← Atrás",

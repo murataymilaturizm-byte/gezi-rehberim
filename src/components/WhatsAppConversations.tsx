@@ -17,8 +17,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import {
-  MessageCircle, User, Bot, Building2, ScrollText, Languages,
+  MessageCircle, User, Bot, Building2,
   Search, Settings, ChevronLeft, ChevronRight, Send, PauseCircle,
   PlayCircle, Loader2,
 } from "lucide-react";
@@ -167,8 +168,19 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
 
       if (error) throw error;
 
+      // BUG 8b: system mesajlarını (bot internal state JSON) filtrele
+      const isSystemOrStateMsg = (msg: Message) => {
+        if (msg.role === "system") return true;
+        if (typeof msg.content === "string" && msg.content.trimStart().startsWith("{")) {
+          try { const p = JSON.parse(msg.content); return typeof p === "object" && p !== null && "stage" in p; }
+          catch { return false; }
+        }
+        return false;
+      };
+      const visibleData = (data || []).filter((msg) => !isSystemOrStateMsg(msg));
+
       // Konuşmaları telefon numarasına göre grupla
-      const grouped = (data || []).reduce((acc: Record<string, Message[]>, msg) => {
+      const grouped = visibleData.reduce((acc: Record<string, Message[]>, msg) => {
         if (!acc[msg.phone]) {
           acc[msg.phone] = [];
         }
@@ -341,94 +353,112 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   description={t("conversations.emptyDescription")}
                 />
               ) : (
-                <div className="flex gap-4 min-h-[600px]">
-                  {/* Sol taraf - Konuşma listesi */}
-                  <div className={`${isMobile && mobileView === "detail" ? "hidden" : "flex"} flex-col w-full md:w-1/3 space-y-2`}>
-                    {/* Search */}
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        value={searchQuery}
-                        onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                        placeholder={t("whatsapp.conversations.search")}
-                        className="pl-8 h-8 text-sm"
-                      />
+                /* Two-panel: outer h-[600px] gives flex-1 children a concrete height to fill */
+                <div className="flex h-[600px] rounded-lg border overflow-hidden divide-x divide-border">
+
+                  {/* LEFT — conversation list */}
+                  <div className={cn(
+                    "flex flex-col flex-shrink-0 w-full md:w-72",
+                    isMobile && mobileView === "detail" && "hidden"
+                  )}>
+                    {/* Search + count */}
+                    <div className="flex flex-col gap-2 p-3 border-b flex-shrink-0">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={searchQuery}
+                          onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                          placeholder={t("whatsapp.conversations.search")}
+                          className="pl-8 h-8 text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("whatsapp.conversations.count", { count: filteredConversations.length })}
+                        {totalPages > 1 && ` · ${t("whatsapp.conversations.page", { current: currentPage, total: totalPages })}`}
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("whatsapp.conversations.count", { count: filteredConversations.length })}
-                      {totalPages > 1 && ` · ${t("whatsapp.conversations.page", { current: currentPage, total: totalPages })}`}
-                    </p>
-                    <ScrollArea className="h-[540px] pr-4">
-                      {paginatedConversations.map((conv) => (
-                        <button
-                          key={conv.phone}
-                          onClick={() => handleSelectConversation(conv.phone)}
-                          className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                            selectedPhone === conv.phone
-                              ? "bg-primary/10 border-primary"
-                              : "hover:bg-muted border-border"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <User className="h-4 w-4" />
-                            <p className="font-medium text-sm">{conv.phone}</p>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {conv.messages.length} {t("admin.whatsapp.conversations.messages")}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(conv.lastMessageTime), "dd MMM yyyy, HH:mm", { locale: tr })}
-                          </p>
-                        </button>
-                      ))}
+
+                    {/* Scrollable list — flex-1 fills remaining height inside fixed-h parent */}
+                    <ScrollArea className="flex-1 min-h-0">
+                      <div className="p-2 space-y-1">
+                        {paginatedConversations.map((conv) => (
+                          <button
+                            key={conv.phone}
+                            onClick={() => handleSelectConversation(conv.phone)}
+                            className={cn(
+                              "w-full text-left p-3 rounded-lg border transition-colors",
+                              selectedPhone === conv.phone
+                                ? "bg-primary/10 border-primary"
+                                : "hover:bg-muted border-border"
+                            )}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <User className="h-4 w-4 shrink-0" />
+                              <p className="font-medium text-sm truncate">{conv.phone}</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {conv.messages.length} {t("admin.whatsapp.conversations.messages")}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(conv.lastMessageTime), "dd MMM yyyy, HH:mm", { locale: tr })}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
                     </ScrollArea>
-                    {/* Pagination */}
+
+                    {/* Pagination — pinned to bottom of left panel */}
                     {totalPages > 1 && (
-                      <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center justify-between p-2 border-t flex-shrink-0">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-10 md:h-7 px-3 md:px-2"
+                          className="h-7 px-2"
                           disabled={currentPage === 1}
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         >
-                          <ChevronLeft className="h-4 w-4 md:h-3 md:w-3" />
+                          <ChevronLeft className="h-3 w-3" />
                         </Button>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground tabular-nums">
                           {currentPage} / {totalPages}
                         </span>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-10 md:h-7 px-3 md:px-2"
+                          className="h-7 px-2"
                           disabled={currentPage === totalPages}
                           onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                         >
-                          <ChevronRight className="h-4 w-4 md:h-3 md:w-3" />
+                          <ChevronRight className="h-3 w-3" />
                         </Button>
                       </div>
                     )}
                   </div>
 
-                  {/* Sağ taraf - Mesajlar + Reply */}
-                  <div className={`${isMobile && mobileView === "list" ? "hidden" : "flex"} flex-col flex-1 min-h-0 min-w-0`}>
+                  {/* RIGHT — message area */}
+                  <div className={cn(
+                    "flex flex-col flex-1 min-w-0 min-h-0",
+                    isMobile && mobileView === "list" && "hidden"
+                  )}>
                     {/* Mobile back button */}
                     {isMobile && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="self-start mb-2"
-                        onClick={() => setMobileView("list")}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        {t("admin.back")}
-                      </Button>
+                      <div className="p-2 border-b flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setMobileView("list")}
+                        >
+                          <ChevronLeft className="h-4 w-4 mr-1" />
+                          {t("admin.back")}
+                        </Button>
+                      </div>
                     )}
 
                     {selectedConversation ? (
                       <>
-                        <ScrollArea className="h-[440px] pr-4">
-                          <div className="space-y-3 pb-2">
+                        {/* Messages — flex-1 takes all remaining height, scrolls inside */}
+                        <ScrollArea className="flex-1 min-h-0">
+                          <div className="p-4 space-y-3">
                             {selectedConversation.messages.map((msg) => (
                               <div
                                 key={msg.id}
@@ -455,9 +485,9 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                           </div>
                         </ScrollArea>
 
-                        {/* Takeover panel */}
+                        {/* Takeover panel — flex-shrink-0 so it never steals space from messages */}
                         {!isSuperAdmin && (
-                          <div className="border-t pt-3 mt-2 space-y-2">
+                          <div className="flex-shrink-0 border-t p-3 space-y-2">
                             {/* Bot status */}
                             <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                               <div className="flex items-center gap-2">

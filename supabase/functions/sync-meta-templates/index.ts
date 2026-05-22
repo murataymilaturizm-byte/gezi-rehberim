@@ -127,10 +127,11 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existing) {
-        // VAR → meta alanları + content güncelle
+        // VAR → meta alanları + content güncelle (is_active da güncellenir)
         const updatePayload: Record<string, any> = {
           meta_template_id: mt.id,
           meta_status: mt.status,
+          is_active: mt.status === "APPROVED",   // status değişince is_active senkronize et
           meta_category: mt.category,
           meta_last_synced_at: new Date().toISOString(),
         };

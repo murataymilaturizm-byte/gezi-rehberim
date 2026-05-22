@@ -87,11 +87,11 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               </NavigationMenuList>
             </NavigationMenu>
 
-            <Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="px-3 py-2 text-sm hover:text-primary transition-colors">
-              {t("nav.compare")}
-            </Link>
             <Link to="/blog" className="px-3 py-2 text-sm hover:text-primary transition-colors">
               {t("nav.blog")}
+            </Link>
+            <Link to="/yardim" className="px-3 py-2 text-sm hover:text-primary transition-colors">
+              {t("nav.help")}
             </Link>
             <Link to="/#pricing" className="px-3 py-2 text-sm hover:text-primary transition-colors">
               {t("nav.pricing")}
@@ -134,8 +134,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               </Link>
             ))}
             <div className="border-t border-border pt-3 mt-2 space-y-1">
-              <Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.compare")}</Link>
               <Link to="/blog" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.blog")}</Link>
+              <Link to="/yardim" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.help")}</Link>
               <Link to="/#pricing" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.pricing")}</Link>
             </div>
             <div className="pt-3">

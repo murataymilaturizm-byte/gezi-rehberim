@@ -72,20 +72,38 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const languageChangeIntent = detectLanguageChangeIntent(message);
   const runtimeDetectedLang = detectLanguage(message);
 
+  // === SORUN 4: enabled_languages yetkilendirme yardımcıları ===
+  // Acente enabled_languages boşsa/tanımsızsa kısıtlama yok (null = tüm diller serbest)
+  const _enabledLangs: string[] | null = (Array.isArray(agency.enabled_languages) && (agency.enabled_languages as string[]).length > 0)
+    ? (agency.enabled_languages as string[])
+    : null;
+  const _isLangEnabled = (lang: string): boolean =>
+    _enabledLangs === null || _enabledLangs.includes(lang);
+  // Tespit edilen dil kapalıysa → acentenin ilk açık diline veya "tr"'ye düş
+  const _bestLang = (detected: string): string =>
+    _isLangEnabled(detected) ? detected : (_enabledLangs?.[0] ?? "tr");
+
   // === 4. CONTEXT BAŞLAT / GÜNCELLE ===
   let context: ConversationContext;
   if (loadedContext) {
     context = loadedContext;
     if (languageChangeIntent && languageChangeIntent !== context.language) {
-      context.language = languageChangeIntent;
-      context.tone = getDefaultToneForLanguage(languageChangeIntent) as any;
+      // Müşteri açıkça dil değiştirdi — sadece acentenin açtığı dillere izin ver
+      if (_isLangEnabled(languageChangeIntent)) {
+        context.language = languageChangeIntent;
+        context.tone = getDefaultToneForLanguage(languageChangeIntent) as any;
+      }
     } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
       const _hasNonAscii = /[^\x00-\x7F]/.test(message);
       const _isShortMsg = message.length < 200;
-      if (_hasNonAscii || _isShortMsg) context.language = runtimeDetectedLang;
+      if (_hasNonAscii || _isShortMsg) {
+        if (_isLangEnabled(runtimeDetectedLang)) context.language = runtimeDetectedLang;
+        // Aksi hâlde mevcut context.language'ı koru (acente bu dili açmamış)
+      }
     }
   } else {
-    const lang = languageChangeIntent || runtimeDetectedLang || "tr";
+    const _detectedLang = languageChangeIntent || runtimeDetectedLang || "tr";
+    const lang = _bestLang(_detectedLang);
     context = createInitialContext(lang, getDefaultToneForLanguage(lang) as any);
   }
 
@@ -106,14 +124,19 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const nluResult = await analyzeUserMessage(message, nluContextStr, context.stage, context.currentTour, tours);
   console.log("[process-message] Intent:", nluResult.intent, "| Stage:", context.stage, "| Lang:", context.language);
 
-  // NLU dil tespitini uygula (ASCII guard ile)
+  // NLU dil tespitini uygula (ASCII guard + enabled_languages kontrolü)
   if (nluResult.language) {
     const SUPPORTED = ["tr", "en", "de", "ru", "ar", "fr", "es"];
     if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language) {
       const _hasNonAscii = /[^\x00-\x7F]/.test(message);
       const _isShortMsg = message.length < 200;
       if (_hasNonAscii || _isShortMsg) {
-        context.language = nluResult.language;
+        if (_isLangEnabled(nluResult.language)) {
+          context.language = nluResult.language;
+        } else {
+          // Acente bu dili açmamış — mevcut dili koru
+          console.log(`[process-message] S4: Detected lang ${nluResult.language} not in enabled_languages (${_enabledLangs}), keeping ${context.language}`);
+        }
       }
     }
   }
@@ -274,7 +297,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _tourListLines = tours.slice(0, 8).map((t: any, i: number) => {
       const _firstDate = t.dates?.[0];
       const _priceText = _firstDate?.price_adult
-        ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", newContext.language, _exRatesB2, _showDualB2)}`
+        ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", newContext.language, _exRatesB2, _showDualB2, languageCurrencies)}`
         : "";
       return `${i + 1}) ${getLocalizedTourTitle(t.title, newContext.language)}${_priceText}`;
     }).join("\n");
@@ -329,7 +352,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         .map((d: any, idx: number) => {
           const dateText = formatDateForLanguage(d.departure_date, newContext.language);
           const priceText = d.price_adult
-            ? ` - ${formatPriceSync(d.price_adult, _tourCurrency, newContext.language, _exRates, _showDual)}`
+            ? ` - ${formatPriceSync(d.price_adult, _tourCurrency, newContext.language, _exRates, _showDual, languageCurrencies)}`
             : "";
           const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
           const quotaText = remaining !== undefined
@@ -549,7 +572,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
             .map((d: any, i: number) => {
               const dt = formatDateForLanguage(d.departure_date, lang);
               const pr = d.price_adult
-                ? ` - ${formatPriceSync(d.price_adult, _quotaTour.currency || "TRY", lang, _qRates, _qDual)}`
+                ? ` - ${formatPriceSync(d.price_adult, _quotaTour.currency || "TRY", lang, _qRates, _qDual, languageCurrencies)}`
                 : "";
               return `${i + 1}) ${dt}${pr}`;
             })
@@ -661,7 +684,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _exRatesTotal = await getExchangeRatesOnce().catch(() => ({}));
     const _showDualTotal = agency.show_multi_currency !== false;
     const _totalText = _totalPrice > 0
-      ? formatPriceSync(_totalPrice, _tourCurrencyCode, newContext.language, _exRatesTotal, _showDualTotal)
+      ? formatPriceSync(_totalPrice, _tourCurrencyCode, newContext.language, _exRatesTotal, _showDualTotal, languageCurrencies)
       : "";
     const _totalLabels: Record<string, string> = {
       tr: "Toplam", en: "Total", de: "Gesamt", ru: "Итого",

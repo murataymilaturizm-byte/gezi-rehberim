@@ -62,11 +62,13 @@ function symbol(currency: string): string {
 /**
  * Tek fiyat alanını formatlar.
  *
- * @param amount        - Acentenin para biriminde tutar
- * @param agencyCurrency - Acentenin para birimi kodu (ör. "TRY")
- * @param userLanguage   - Müşterinin dili (ör. "de")
- * @param rates          - getExchangeRatesOnce() çıktısı (null ise dönüşüm yapılmaz)
- * @param showDual       - Çift para birimi gösterimi açık mı (acente ayarı)
+ * @param amount             - Acentenin para biriminde tutar
+ * @param agencyCurrency      - Acentenin para birimi kodu (ör. "TRY")
+ * @param userLanguage        - Müşterinin dili (ör. "de")
+ * @param rates               - getExchangeRatesOnce() çıktısı (null ise dönüşüm yapılmaz)
+ * @param showDual            - Çift para birimi gösterimi açık mı (acente ayarı)
+ * @param languageCurrencies  - Acentenin dil→para birimi override haritası (language_currencies DB kolonu)
+ *                              Verilirse LANG_TO_CURRENCY hardcoded tablosunun önüne geçer.
  * @returns Örn: "142€ (5.000₺)" veya "5.000₺"
  */
 export function formatPriceSync(
@@ -75,8 +77,10 @@ export function formatPriceSync(
   userLanguage: string,
   rates: Record<string, number> | null,
   showDual = true,
+  languageCurrencies?: Record<string, string> | null,
 ): string {
-  const userCurrency = LANG_TO_CURRENCY[userLanguage] ?? "USD";
+  // Acente override → hardcoded tablo sırası
+  const userCurrency = languageCurrencies?.[userLanguage] ?? LANG_TO_CURRENCY[userLanguage] ?? "USD";
   const agencySym = symbol(agencyCurrency);
 
   // Orijinal tutarı formatla

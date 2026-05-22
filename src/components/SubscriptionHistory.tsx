@@ -34,12 +34,12 @@ import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
-import { 
-  History, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  CreditCard, 
+import {
+  History,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  CreditCard,
   TrendingUp,
   Calendar,
   Ban,
@@ -48,7 +48,7 @@ import {
   Crown,
   ArrowRight,
   Download,
-  Building2
+  Building2,
 } from "lucide-react";
 
 interface SubscriptionHistoryItem {
@@ -83,42 +83,200 @@ interface PlanOption {
   popular?: boolean;
 }
 
+// ─── PlanCard ────────────────────────────────────────────────────────────────
+
+interface PlanCardProps {
+  plan: PlanOption;
+  isCurrentPlan: boolean;
+  isYearly: boolean;
+  /** compact = the "other plans" row inside an active subscription */
+  compact?: boolean;
+  /** If provided, show LemonSqueezy subscribe button */
+  agencyId?: string | null;
+  userEmail?: string;
+  /** If provided, show "switch" button (active-sub flow) */
+  onSwitch?: (plan: PlanOption) => void;
+  formatPrice: (price: number | null | undefined, yearly: boolean) => string;
+  calculatePrice: (base: number | null | undefined, yearly: boolean) => number;
+  t: (key: string) => string;
+}
+
+function PlanCard({
+  plan,
+  isCurrentPlan,
+  isYearly,
+  compact = false,
+  agencyId,
+  userEmail,
+  onSwitch,
+  formatPrice,
+  calculatePrice,
+  t,
+}: PlanCardProps) {
+  const IconComp = plan.icon;
+  const displayedFeatures = compact ? plan.features.slice(0, 3) : plan.features;
+
+  return (
+    <Card
+      className={[
+        "relative transition-all",
+        plan.popular
+          ? "ring-2 ring-primary shadow-lg shadow-primary/20"
+          : "border-border hover:border-primary/50",
+        isCurrentPlan ? "border-primary bg-primary/5" : "",
+        onSwitch ? "cursor-pointer" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      onClick={onSwitch ? () => onSwitch(plan) : undefined}
+    >
+      {plan.popular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <Badge className="bg-gradient-ocean text-primary-foreground">
+            {t("admin.subscription.popular")}
+          </Badge>
+        </div>
+      )}
+      {isCurrentPlan && (
+        <div className="absolute -top-3 right-3 z-10">
+          <Badge variant="default" className="bg-success text-success-foreground">
+            {t("admin.subscription.currentPlan")}
+          </Badge>
+        </div>
+      )}
+
+      <CardContent className={compact ? "p-4 space-y-3" : "p-6 space-y-4"}>
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <IconComp className="h-5 w-5 text-primary" />
+          <h5
+            className={`font-semibold text-foreground ${
+              compact ? "" : "text-lg"
+            }`}
+          >
+            {plan.name}
+          </h5>
+        </div>
+
+        {/* Price */}
+        <div>
+          <p className={`font-bold text-primary ${compact ? "text-xl" : "text-2xl"}`}>
+            {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
+          </p>
+          {isYearly && plan.price > 0 && (
+            <div className="mt-1">
+              <p className="text-xs text-muted-foreground line-through">
+                {(plan.price * 12).toLocaleString()}
+                /{t("admin.subscription.yearly").toLowerCase()}
+              </p>
+              <p className="text-xs text-success font-medium">
+                {t("admin.subscription.discounted")}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Features */}
+        <ul className={`space-y-${compact ? "1" : "2"}`}>
+          {displayedFeatures.map((feature, index) => (
+            <li
+              key={index}
+              className={`flex items-center gap-2 ${
+                compact ? "text-xs" : "text-sm"
+              } text-muted-foreground`}
+            >
+              <CheckCircle2
+                className={`${
+                  compact ? "h-3 w-3" : "h-3 w-3"
+                } text-success flex-shrink-0`}
+              />
+              {feature}
+            </li>
+          ))}
+        </ul>
+
+        {/* CTA */}
+        {agencyId && !onSwitch && (
+          <LemonSqueezyButton
+            planId={plan.id}
+            isYearly={isYearly}
+            agencyId={agencyId}
+            userEmail={userEmail ?? ""}
+            label={t("admin.subscription.subscribe")}
+            className="w-full"
+          />
+        )}
+        {!agencyId && !onSwitch && (
+          <Alert className="border-primary/20">
+            <Building2 className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              {t("subscription.needAgencyInfo")}
+            </AlertDescription>
+          </Alert>
+        )}
+        {onSwitch && (
+          <Button
+            className="w-full bg-gradient-ocean hover:opacity-90"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSwitch(plan);
+            }}
+          >
+            {t("admin.subscription.switchToPlan")}
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export const SubscriptionHistory = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
-  
+  const dateLocale =
+    DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
+
   const eventTypeLabels: Record<string, string> = {
     trial_started: t("admin.subscription.eventTypes.trial_started"),
     trial_ended: t("admin.subscription.eventTypes.trial_ended"),
     payment_success: t("admin.subscription.eventTypes.payment_success"),
     payment_failed: t("admin.subscription.eventTypes.payment_failed"),
     plan_changed: t("admin.subscription.eventTypes.plan_changed"),
-    subscription_activated: t("admin.subscription.eventTypes.subscription_activated"),
-    subscription_expired: t("admin.subscription.eventTypes.subscription_expired"),
-    subscription_cancelled: t("admin.subscription.eventTypes.subscription_cancelled")
+    subscription_activated: t(
+      "admin.subscription.eventTypes.subscription_activated"
+    ),
+    subscription_expired: t(
+      "admin.subscription.eventTypes.subscription_expired"
+    ),
+    subscription_cancelled: t(
+      "admin.subscription.eventTypes.subscription_cancelled"
+    ),
   };
-  
+
   const statusLabels: Record<string, string> = {
     success: t("admin.subscription.status.success"),
     failed: t("admin.subscription.status.failed"),
     pending: t("admin.subscription.status.pending"),
-    cancelled: t("admin.subscription.status.cancelled")
+    cancelled: t("admin.subscription.status.cancelled"),
   };
 
   const planLabels: Record<string, string> = {
     starter: t("admin.agency.plans.starter"),
     professional: t("admin.agency.plans.professional"),
-    enterprise: t("admin.agency.plans.enterprise")
+    enterprise: t("admin.agency.plans.enterprise"),
   };
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
       case "trial_started":
       case "subscription_activated":
-        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case "payment_success":
-        return <CreditCard className="h-4 w-4 text-green-600" />;
+        return <CreditCard className="h-4 w-4 text-success" />;
       case "payment_failed":
         return <XCircle className="h-4 w-4 text-destructive" />;
       case "plan_changed":
@@ -136,7 +294,11 @@ export const SubscriptionHistory = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "success":
-        return <Badge variant="default" className="bg-green-600">{statusLabels[status]}</Badge>;
+        return (
+          <Badge variant="default" className="bg-success text-success-foreground">
+            {statusLabels[status]}
+          </Badge>
+        );
       case "failed":
         return <Badge variant="destructive">{statusLabels[status]}</Badge>;
       case "pending":
@@ -150,7 +312,9 @@ export const SubscriptionHistory = () => {
 
   const [history, setHistory] = useState<SubscriptionHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [subscription, setSubscription] = useState<AgencySubscription | null>(null);
+  const [subscription, setSubscription] = useState<AgencySubscription | null>(
+    null
+  );
   const [changingPlan, setChangingPlan] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanOption | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -162,73 +326,63 @@ export const SubscriptionHistory = () => {
   const planOptions: PlanOption[] = [
     {
       id: "starter",
-      name: "Başlangıç",
+      name: t("admin.agency.plans.starter"),
       price: 2999,
-      features: [
-        "💬 1.000 mesaj/ay",
-        "🏨 10 tura kadar",
-        "🌍 1 dil (Türkçe)",
-        "👔 Profesyonel üslup",
-        "📊 Temel raporlama",
-        "💾 30 gün geçmiş"
-      ],
-      icon: Zap
+      features: (
+        t("admin.subscription.plans.starter.features", {
+          returnObjects: true,
+        }) as string[]
+      ),
+      icon: Zap,
     },
     {
       id: "professional",
-      name: "Profesyonel",
+      name: t("admin.agency.plans.professional"),
       price: 4999,
-      features: [
-        "💬 5.000 mesaj/ay",
-        "🏨 Sınırsız tur",
-        "🌍 3 dil desteği",
-        "🎭 4 konuşma üslubu",
-        "👥 Kullanıcı profilleri",
-        "🔔 Otomatik hatırlatmalar",
-        "📧 Otomatik takip mesajları",
-        "📊 Gelişmiş analizler",
-        "💾 90 gün geçmiş"
-      ],
+      features: (
+        t("admin.subscription.plans.professional.features", {
+          returnObjects: true,
+        }) as string[]
+      ),
       icon: TrendingUp,
-      popular: true
+      popular: true,
     },
     {
       id: "enterprise",
-      name: "Kurumsal",
+      name: t("admin.agency.plans.enterprise"),
       price: 7999,
-      features: [
-        "💬 Sınırsız mesaj",
-        "🏨 Sınırsız tur",
-        "🌍 7 dil desteği",
-        "🎨 4 konuşma üslubu",
-        "👥 Gelişmiş profiller",
-        "🔔 Akıllı hatırlatmalar",
-        "📧 Otomatik takip & anket",
-        "📊 Premium analizler",
-        "🚀 7/24 destek",
-        "💾 Sınırsız geçmiş"
-      ],
-      icon: Crown
-    }
+      features: (
+        t("admin.subscription.plans.enterprise.features", {
+          returnObjects: true,
+        }) as string[]
+      ),
+      icon: Crown,
+    },
   ];
 
-  const calculatePrice = (basePrice: number | null | undefined, yearly: boolean) => {
+  const calculatePrice = (
+    basePrice: number | null | undefined,
+    yearly: boolean
+  ) => {
     const price = basePrice || 0;
     if (yearly && price > 0) {
-      const yearlyPrice = price * 12;
-      const discountedPrice = yearlyPrice * 0.9; // %10 indirim
-      return discountedPrice;
+      return price * 12 * 0.9;
     }
     return price;
   };
 
-  const formatPrice = (price: number | null | undefined, yearly: boolean) => {
+  const formatPrice = (
+    price: number | null | undefined,
+    yearly: boolean
+  ) => {
     const safePrice = price || 0;
     if (safePrice === 0) return t("admin.subscription.customPrice");
-    if (yearly) {
-      return `${safePrice.toLocaleString('tr-TR')}₺/${t("admin.subscription.yearly").toLowerCase()}`;
-    }
-    return `${safePrice.toLocaleString('tr-TR')}₺/${t("admin.subscription.monthly").toLowerCase()}`;
+    const lang = i18n.language || "tr";
+    const formatted = safePrice.toLocaleString(lang);
+    const suffix = yearly
+      ? `/${t("admin.subscription.yearly").toLowerCase()}`
+      : `/${t("admin.subscription.monthly").toLowerCase()}`;
+    return `${formatted}₺${suffix}`;
   };
 
   useEffect(() => {
@@ -238,24 +392,26 @@ export const SubscriptionHistory = () => {
   const loadHistory = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
       setUserEmail(user.email ?? "");
 
-      // Get user's agency with subscription info
       const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
-        .select("id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name, lemonsqueezy_customer_id")
+        .select(
+          "id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name, lemonsqueezy_customer_id"
+        )
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (agencyError) throw agencyError;
-      
+
       if (agencyData) {
         setAgencyId(agencyData.id);
         setSubscription(agencyData);
 
-        // Load subscription history
         const { data: historyData, error: historyError } = await supabase
           .from("subscription_history")
           .select("*")
@@ -265,7 +421,6 @@ export const SubscriptionHistory = () => {
         if (historyError) throw historyError;
         setHistory(historyData || []);
       }
-      // If no agencyData, subscription stays null - show plan selection without payment
     } catch (error) {
       console.error("Error loading subscription history:", error);
       toast({ title: t("common.error"), variant: "destructive" });
@@ -278,18 +433,16 @@ export const SubscriptionHistory = () => {
     if (!subscription) return;
 
     try {
-      // Generate invoice number from transaction ID or item ID
-      const invoiceNumber = item.transaction_id 
+      const invoiceNumber = item.transaction_id
         ? `TRZ-${item.transaction_id.substring(0, 8).toUpperCase()}`
         : `TRZ-${item.id.substring(0, 8).toUpperCase()}`;
 
       const planNames: Record<string, string> = {
         starter: t("admin.agency.plans.starter"),
         professional: t("admin.agency.plans.professional"),
-        enterprise: t("admin.agency.plans.enterprise")
+        enterprise: t("admin.agency.plans.enterprise"),
       };
 
-      // Get agency name
       const { data: agencyData } = await supabase
         .from("agencies")
         .select("name")
@@ -300,11 +453,12 @@ export const SubscriptionHistory = () => {
         invoiceNumber,
         transactionId: item.transaction_id || item.id.substring(0, 12),
         date: item.created_at,
-        agencyName: agencyData?.name || "Acente",
+        agencyName: agencyData?.name || t("admin.logs.agency"),
         planName: item.plan_type ? planNames[item.plan_type] : "Standart",
         amount: item.amount || 0,
         currency: item.currency || "TRY",
-        paymentMethod: item.payment_method || "Kredi Kartı"
+        paymentMethod:
+          item.payment_method || t("admin.subscription.paymentMethod"),
       });
 
       toast({
@@ -316,18 +470,18 @@ export const SubscriptionHistory = () => {
       toast({
         title: t("common.error"),
         description: t("subscription.invoiceError"),
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   const formatAmount = (amount: number | null, currency: string | null) => {
     if (!amount) return "-";
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: currency || 'TRY',
+    return new Intl.NumberFormat(i18n.language || "tr-TR", {
+      style: "currency",
+      currency: currency || "TRY",
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -335,9 +489,10 @@ export const SubscriptionHistory = () => {
     if (!agencyId) return;
     setLoadingPortal(true);
     try {
-      const { data, error } = await supabase.functions.invoke("lemonsqueezy-portal", {
-        body: { agencyId },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "lemonsqueezy-portal",
+        { body: { agencyId } }
+      );
       if (error) throw error;
       if (data?.url) {
         window.open(data.url, "_blank", "noopener,noreferrer");
@@ -345,7 +500,11 @@ export const SubscriptionHistory = () => {
         throw new Error("Portal URL alınamadı");
       }
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message || t("subscription.portalError"), variant: "destructive" });
+      toast({
+        title: t("common.error"),
+        description: err.message || t("subscription.portalError"),
+        variant: "destructive",
+      });
     } finally {
       setLoadingPortal(false);
     }
@@ -354,21 +513,23 @@ export const SubscriptionHistory = () => {
   const handlePlanChange = (plan: PlanOption) => {
     if (!subscription) return;
 
-    // Check if trial or expired
     if (subscription.subscription_status === "trial") {
       toast({
         title: t("common.warning"),
         description: t("subscription.trialChangeError"),
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    if (subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") {
+    if (
+      subscription.subscription_status === "expired" ||
+      subscription.subscription_status === "cancelled"
+    ) {
       toast({
         title: t("common.warning"),
         description: t("subscription.inactiveError"),
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -391,17 +552,13 @@ export const SubscriptionHistory = () => {
     setChangingPlan(true);
 
     try {
-      // Update agency plan
       const { error: updateError } = await supabase
         .from("agencies")
-        .update({
-          plan_type: selectedPlan.id,
-        })
+        .update({ plan_type: selectedPlan.id })
         .eq("id", agencyId);
 
       if (updateError) throw updateError;
 
-      // Add to subscription history
       const { error: historyError } = await supabase
         .from("subscription_history")
         .insert({
@@ -409,7 +566,10 @@ export const SubscriptionHistory = () => {
           event_type: "plan_changed",
           plan_type: selectedPlan.id,
           status: "success",
-          notes: `Plan değiştirildi: ${subscription?.plan_type} → ${selectedPlan.id}`
+          notes: t("admin.subscription.planChangedNote", {
+            from: subscription?.plan_type,
+            to: selectedPlan.id,
+          }),
         });
 
       if (historyError) throw historyError;
@@ -419,7 +579,6 @@ export const SubscriptionHistory = () => {
         description: t("subscription.planChanged"),
       });
 
-      // Refresh data
       loadHistory();
       setConfirmDialogOpen(false);
       setSelectedPlan(null);
@@ -428,38 +587,63 @@ export const SubscriptionHistory = () => {
       toast({
         title: t("common.error"),
         description: t("subscription.planChangeError"),
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setChangingPlan(false);
     }
   };
 
-  // Payment is now handled by PayTR via SipayPaymentForm component
-
   const getRemainingDays = () => {
     if (!subscription) return null;
-    
-    const targetDate = subscription.subscription_status === 'trial' 
-      ? subscription.trial_ends_at 
-      : subscription.subscription_ends_at;
-    
+    const targetDate =
+      subscription.subscription_status === "trial"
+        ? subscription.trial_ends_at
+        : subscription.subscription_ends_at;
     if (!targetDate) return null;
     return differenceInDays(new Date(targetDate), new Date());
   };
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">{t("admin.subscription.loading")}</div>
+      <div className="text-center py-8 text-muted-foreground">
+        {t("admin.subscription.loading")}
+      </div>
     );
   }
 
   const remainingDays = getRemainingDays();
-  const currentPlan = planOptions.find(p => p.id === subscription?.plan_type);
+  const currentPlan = planOptions.find(
+    (p) => p.id === subscription?.plan_type
+  );
+
+  // Shared billing period toggle
+  const BillingToggle = ({ id }: { id: string }) => (
+    <div className="flex items-center justify-center gap-3 p-4 bg-muted/50 rounded-lg w-fit mx-auto">
+      <Label
+        htmlFor={id}
+        className={!isYearly ? "font-semibold" : "text-muted-foreground"}
+      >
+        {t("admin.subscription.monthly")}
+      </Label>
+      <Switch id={id} checked={isYearly} onCheckedChange={setIsYearly} />
+      <Label
+        htmlFor={id}
+        className={isYearly ? "font-semibold" : "text-muted-foreground"}
+      >
+        {t("admin.subscription.yearly")}
+      </Label>
+      {isYearly && (
+        <span className="ml-2 text-sm bg-success/10 text-success px-2 py-1 rounded-full font-medium">
+          {t("admin.subscription.discount10")}
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <>
-      {/* No Agency / No Subscription - Show plan selection */}
+      {/* ── No subscription: show plan selection ─────────────────────────── */}
       {!subscription && (
         <Card className="shadow-card mb-6">
           <CardHeader>
@@ -467,198 +651,139 @@ export const SubscriptionHistory = () => {
               <AlertCircle className="h-5 w-5 text-primary" />
               <div>
                 <CardTitle>{t("subscription.planTitle")}</CardTitle>
-                <CardDescription>
-                  {t("subscription.noPlan")}
-                </CardDescription>
+                <CardDescription>{t("subscription.noPlan")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Billing Period Toggle */}
-            <div className="flex items-center justify-center gap-3 p-4 bg-muted/50 rounded-lg w-fit mx-auto">
-              <Label htmlFor="billing-toggle-no-sub" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
-                {t("admin.subscription.monthly")}
-              </Label>
-              <Switch
-                id="billing-toggle-no-sub"
-                checked={isYearly}
-                onCheckedChange={setIsYearly}
-              />
-              <Label htmlFor="billing-toggle-no-sub" className={isYearly ? "font-semibold" : "text-muted-foreground"}>
-                {t("admin.subscription.yearly")}
-              </Label>
-              {isYearly && (
-                <span className="ml-2 text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                  {t("admin.subscription.discount10")}
-                </span>
-              )}
-            </div>
-
-            {/* Plan Cards */}
-            <div className="grid md:grid-cols-3 gap-4">
+            <BillingToggle id="billing-toggle-no-sub" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {planOptions.map((plan) => (
-                <Card 
-                  key={plan.id} 
-                  className={`relative border-border hover:border-primary/50 transition-all ${
-                    plan.popular ? 'ring-2 ring-primary' : ''
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-gradient-ocean text-primary-foreground">
-                        {t("admin.subscription.popular")}
-                      </Badge>
-                    </div>
-                  )}
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <plan.icon className="h-5 w-5 text-primary" />
-                      <h5 className="font-semibold text-lg text-foreground">{plan.name}</h5>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-primary">
-                        {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
-                      </p>
-                      {isYearly && plan.price > 0 && (
-                        <div className="mt-1">
-                          <p className="text-xs text-muted-foreground line-through">
-                            {(plan.price * 12).toLocaleString('tr-TR')}₺/{t("admin.subscription.yearly").toLowerCase()}
-                          </p>
-                          <p className="text-xs text-green-600 font-medium">
-                            {t("admin.subscription.discounted")}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <ul className="space-y-2">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 text-primary flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    {agencyId ? (
-                      <LemonSqueezyButton
-                        planId={plan.id}
-                        isYearly={isYearly}
-                        agencyId={agencyId}
-                        userEmail={userEmail}
-                        label="Abone Ol"
-                        className="w-full"
-                      />
-                    ) : (
-                      <Alert className="border-primary/20">
-                        <Building2 className="h-4 w-4" />
-                        <AlertDescription className="text-xs">
-                          {t("subscription.needAgencyInfo")}
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </CardContent>
-                </Card>
+                <PlanCard
+                  key={plan.id}
+                  plan={plan}
+                  isCurrentPlan={false}
+                  isYearly={isYearly}
+                  agencyId={agencyId}
+                  userEmail={userEmail}
+                  formatPrice={formatPrice}
+                  calculatePrice={calculatePrice}
+                  t={t}
+                />
               ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Current Plan Card */}
+      {/* ── Has subscription ──────────────────────────────────────────────── */}
       {subscription && (
         <Card className="shadow-card mb-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                {currentPlan?.icon && <currentPlan.icon className="h-5 w-5 text-primary" />}
+                {currentPlan?.icon && (
+                  <currentPlan.icon className="h-5 w-5 text-primary" />
+                )}
                 <div>
                   <CardTitle>{t("admin.subscription.currentPlan")}</CardTitle>
                   <CardDescription>
-                    {subscription.subscription_status === "trial" 
+                    {subscription.subscription_status === "trial"
                       ? t("admin.subscription.inTrialPeriod")
                       : subscription.subscription_status === "active"
                       ? t("admin.subscription.activeSubscription")
-                      : t("admin.subscription.subscriptionStatus") + " " + subscription.subscription_status
-                    }
+                      : t("admin.subscription.subscriptionStatus") +
+                        " " +
+                        subscription.subscription_status}
                   </CardDescription>
                 </div>
               </div>
               {remainingDays !== null && remainingDays > 0 && (
-                <Badge variant={remainingDays <= 7 ? "destructive" : "secondary"}>
+                <Badge
+                  variant={remainingDays <= 7 ? "destructive" : "secondary"}
+                  className={
+                    remainingDays <= 7
+                      ? "animate-pulse text-sm px-3 py-1"
+                      : "text-sm px-3 py-1"
+                  }
+                >
                   {remainingDays} {t("admin.subscription.daysRemaining")}
                 </Badge>
               )}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Billing Period Toggle */}
-            <div className="flex items-center justify-center gap-3 p-4 bg-muted/50 rounded-lg w-fit mx-auto">
-              <Label htmlFor="billing-toggle" className={!isYearly ? "font-semibold" : "text-muted-foreground"}>
-                {t("admin.subscription.monthly")}
-              </Label>
-              <Switch
-                id="billing-toggle"
-                checked={isYearly}
-                onCheckedChange={setIsYearly}
-              />
-              <Label htmlFor="billing-toggle" className={isYearly ? "font-semibold" : "text-muted-foreground"}>
-                {t("admin.subscription.yearly")}
-              </Label>
-              {isYearly && (
-                <span className="ml-2 text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                  {t("admin.subscription.discount10")}
-                </span>
-              )}
-            </div>
-            {/* Current Plan Info */}
+            <BillingToggle id="billing-toggle" />
+
+            {/* Current plan highlight box */}
             <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div>
-                  <h3 className="text-xl font-bold text-foreground">{currentPlan?.name}</h3>
-                  <div className="mt-1">
-                    <p className="text-2xl font-bold text-primary">
-                      {currentPlan && formatPrice(calculatePrice(currentPlan.price, isYearly), isYearly)}
-                    </p>
-                    {isYearly && currentPlan && currentPlan.price > 0 && (
-                      <div className="mt-1">
-                        <p className="text-sm text-muted-foreground line-through">
-                          {(currentPlan.price * 12).toLocaleString('tr-TR')}₺/yıl
-                        </p>
-                        <p className="text-sm text-green-600 font-medium">
-                          %10 indirimli ({(currentPlan.price * 12 * 0.1).toLocaleString('tr-TR')}₺ tasarruf)
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  <h3 className="text-xl font-bold text-foreground">
+                    {currentPlan?.name}
+                  </h3>
+                  <p className="text-2xl font-bold text-primary mt-1">
+                    {currentPlan &&
+                      formatPrice(
+                        calculatePrice(currentPlan.price, isYearly),
+                        isYearly
+                      )}
+                  </p>
+                  {isYearly && currentPlan && currentPlan.price > 0 && (
+                    <div className="mt-1">
+                      <p className="text-sm text-muted-foreground line-through">
+                        {(currentPlan.price * 12).toLocaleString(
+                          i18n.language || "tr"
+                        )}
+                        ₺/{t("admin.subscription.yearly").toLowerCase()}
+                      </p>
+                      <p className="text-sm text-success font-medium">
+                        {t("admin.subscription.discounted")} —{" "}
+                        {(
+                          currentPlan.price *
+                          12 *
+                          0.1
+                        ).toLocaleString(i18n.language || "tr")}
+                        ₺ {t("admin.subscription.savings")}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
               <ul className="space-y-2">
                 {currentPlan?.features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm text-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                  <li
+                    key={index}
+                    className="flex items-center gap-2 text-sm text-foreground"
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Aboneliği Yönet — sadece LS müşterisiyse göster */}
-            {subscription.subscription_status === "active" && subscription.lemonsqueezy_customer_id && (
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleManageSubscription}
-                  disabled={loadingPortal}
-                >
-                  {loadingPortal ? "Yükleniyor..." : "Aboneliği Yönet →"}
-                </Button>
-              </div>
-            )}
+            {/* Manage subscription (LemonSqueezy customers only) */}
+            {subscription.subscription_status === "active" &&
+              subscription.lemonsqueezy_customer_id && (
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleManageSubscription}
+                    disabled={loadingPortal}
+                  >
+                    {loadingPortal
+                      ? t("admin.subscription.loading")
+                      : t("admin.subscription.renewSubscription") + " →"}
+                  </Button>
+                </div>
+              )}
 
-            {/* Warning for trial/expired status - show all plans with payment */}
-            {(subscription.subscription_status === "trial" || 
-              subscription.subscription_status === "expired" || 
+            {/* Trial / expired / cancelled: show all plans with payment */}
+            {(subscription.subscription_status === "trial" ||
+              subscription.subscription_status === "expired" ||
               subscription.subscription_status === "cancelled") && (
               <div className="space-y-4">
                 <Alert className="border-primary/50 bg-primary/5">
@@ -666,143 +791,67 @@ export const SubscriptionHistory = () => {
                   <AlertDescription>
                     {subscription.subscription_status === "trial" && (
                       <>
-                        <strong>{t("admin.subscription.trialPeriod")}:</strong> {t("admin.subscription.trialWarning").replace('Deneme Süresi: ', '')}
+                        <strong>{t("admin.subscription.trialPeriod")}:</strong>{" "}
+                        {t("admin.subscription.trialWarning").replace(
+                          "Deneme Süresi: ",
+                          ""
+                        )}
                       </>
                     )}
-                    {(subscription.subscription_status === "expired" || subscription.subscription_status === "cancelled") && (
+                    {(subscription.subscription_status === "expired" ||
+                      subscription.subscription_status === "cancelled") && (
                       <>
-                        <strong>{t("admin.subscription.expired")}:</strong> Aboneliğiniz sona erdi. Devam etmek için bir plan seçip ödeme yapın.
+                        <strong>{t("admin.subscription.expired")}:</strong>{" "}
+                        {t("admin.subscription.expiredMessage")}
                       </>
                     )}
                   </AlertDescription>
                 </Alert>
-                
-                <div className="grid md:grid-cols-3 gap-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {planOptions.map((plan) => (
-                    <Card 
-                      key={plan.id} 
-                      className={`relative border-border hover:border-primary/50 transition-all ${
-                        plan.popular ? 'ring-2 ring-primary' : ''
-                      } ${plan.id === subscription.plan_type ? 'border-primary bg-primary/5' : ''}`}
-                    >
-                      {plan.popular && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                          <Badge className="bg-gradient-ocean text-primary-foreground">
-                            {t("admin.subscription.popular")}
-                          </Badge>
-                        </div>
-                      )}
-                      <CardContent className="p-6 space-y-4">
-                        <div className="flex items-center gap-2">
-                          <plan.icon className="h-5 w-5 text-primary" />
-                          <h5 className="font-semibold text-lg text-foreground">{plan.name}</h5>
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-primary">
-                            {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
-                          </p>
-                          {isYearly && plan.price > 0 && (
-                            <div className="mt-1">
-                              <p className="text-xs text-muted-foreground line-through">
-                                {(plan.price * 12).toLocaleString('tr-TR')}₺/{t("admin.subscription.yearly").toLowerCase()}
-                              </p>
-                              <p className="text-xs text-green-600 font-medium">
-                                {t("admin.subscription.discounted")}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        <ul className="space-y-2">
-                          {plan.features.map((feature, index) => (
-                            <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <CheckCircle2 className="h-3 w-3 text-primary flex-shrink-0" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                        {agencyId && (
-                          <LemonSqueezyButton
-                            planId={plan.id}
-                            isYearly={isYearly}
-                            agencyId={agencyId}
-                            userEmail={userEmail}
-                            label="Abone Ol"
-                            className="w-full"
-                          />
-                        )}
-                      </CardContent>
-                    </Card>
+                    <PlanCard
+                      key={plan.id}
+                      plan={plan}
+                      isCurrentPlan={plan.id === subscription.plan_type}
+                      isYearly={isYearly}
+                      agencyId={agencyId}
+                      userEmail={userEmail}
+                      formatPrice={formatPrice}
+                      calculatePrice={calculatePrice}
+                      t={t}
+                    />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Other Plans */}
+            {/* Active subscription: show other plans for switching */}
             {subscription.subscription_status === "active" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-foreground">{t("admin.subscription.availablePlans")}</h4>
-                  <p className="text-sm text-muted-foreground">{t("admin.subscription.planChangeNote").split('.')[0]}</p>
+                  <h4 className="font-semibold text-foreground">
+                    {t("admin.subscription.availablePlans")}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {t("admin.subscription.planChangeNote").split(".")[0]}
+                  </p>
                 </div>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {planOptions
-                    .filter(plan => plan.id !== subscription.plan_type)
+                    .filter((plan) => plan.id !== subscription.plan_type)
                     .map((plan) => (
-                      <Card 
-                        key={plan.id} 
-                        className={`relative border-border hover:border-primary/50 transition-all cursor-pointer ${
-                          plan.popular ? 'ring-2 ring-primary' : ''
-                        }`}
-                        onClick={() => handlePlanChange(plan)}
-                      >
-                        {plan.popular && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                            <Badge className="bg-gradient-ocean text-primary-foreground">
-                              {t("admin.subscription.popular")}
-                            </Badge>
-                          </div>
-                        )}
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <plan.icon className="h-5 w-5 text-primary" />
-                            <h5 className="font-semibold text-foreground">{plan.name}</h5>
-                          </div>
-                          <div>
-                            <p className="text-xl font-bold text-primary">
-                              {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
-                            </p>
-                            {isYearly && plan.price > 0 && (
-                              <div className="mt-1">
-                                <p className="text-xs text-muted-foreground line-through">
-                                  {(plan.price * 12).toLocaleString('tr-TR')}₺/{t("admin.subscription.yearly").toLowerCase()}
-                                </p>
-                                <p className="text-xs text-green-600 font-medium">
-                                  {t("admin.subscription.discounted")}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                          <ul className="space-y-1">
-                            {plan.features.slice(0, 3).map((feature, index) => (
-                              <li key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <CheckCircle2 className="h-3 w-3 text-primary flex-shrink-0" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                          <Button 
-                            className="w-full bg-gradient-ocean hover:opacity-90" 
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePlanChange(plan);
-                            }}
-                          >
-                            {t("admin.subscription.switchToPlan")}
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </Button>
-                        </CardContent>
-                      </Card>
+                      <PlanCard
+                        key={plan.id}
+                        plan={plan}
+                        isCurrentPlan={false}
+                        isYearly={isYearly}
+                        compact
+                        onSwitch={handlePlanChange}
+                        formatPrice={formatPrice}
+                        calculatePrice={calculatePrice}
+                        t={t}
+                      />
                     ))}
                 </div>
               </div>
@@ -811,7 +860,7 @@ export const SubscriptionHistory = () => {
         </Card>
       )}
 
-      {/* Subscription History */}
+      {/* ── Transaction history ───────────────────────────────────────────── */}
       <Card className="shadow-card">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -825,157 +874,183 @@ export const SubscriptionHistory = () => {
           </div>
         </CardHeader>
         <CardContent>
-        {history.length === 0 ? (
-          <div className="text-center py-12 space-y-4">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                <History className="h-8 w-8 text-muted-foreground" />
+          {history.length === 0 ? (
+            <div className="text-center py-12 space-y-4">
+              <div className="flex justify-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <History className="h-8 w-8 text-muted-foreground" />
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-foreground font-medium">Henüz işlem geçmişi yok</p>
-              <p className="text-sm text-muted-foreground">
-                Ödemeler, plan değişiklikleri ve diğer işlemler burada görünecek
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tarih</TableHead>
-                  <TableHead>İşlem</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Tutar</TableHead>
-                  <TableHead>Durum</TableHead>
-                  <TableHead>İşlem No</TableHead>
-                  <TableHead className="text-right">Fatura</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="text-sm">
-                      {format(new Date(item.created_at), "d MMM yyyy, HH:mm", { locale: dateLocale })}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getEventIcon(item.event_type)}
-                        <span className="text-sm font-medium">
-                          {eventTypeLabels[item.event_type] || item.event_type}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {item.plan_type ? (
-                        <Badge variant="outline">
-                          {planLabels[item.plan_type] || item.plan_type}
-                        </Badge>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {formatAmount(item.amount, item.currency)}
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(item.status)}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground font-mono">
-                      {item.transaction_id || "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {/* Show download button only for successful payments */}
-                      {(item.event_type === "payment_success" || 
-                        item.event_type === "subscription_activated") && 
-                        item.status === "success" && 
-                        item.amount ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDownloadInvoice(item)}
-                          className="hover:bg-primary/10"
-                        >
-                          <Download className="h-4 w-4 text-primary" />
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-
-        {history.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <div className="flex items-start gap-3 text-sm">
-              <div className="flex-1 space-y-2">
-                <p className="font-medium text-foreground">Fatura ve Dekont</p>
-                <p className="text-muted-foreground">
-                  Ödeme dekontlarınızı ve faturalarınızı email adresinize gönderiyoruz.
-                  Geçmiş faturalar için destek ekibimizle iletişime geçebilirsiniz.
+              <div className="space-y-2">
+                <p className="text-foreground font-medium">
+                  {t("admin.subscription.noTransactionsYet")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t("admin.subscription.firstTransactionHint")}
                 </p>
               </div>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-
-    {/* Confirmation Dialog */}
-    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Plan Değişikliğini Onayla</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <p>
-              Planınızı <strong>{currentPlan?.name}</strong> planından{" "}
-              <strong>{selectedPlan?.name}</strong> planına değiştirmek istediğinize emin misiniz?
-            </p>
-            {selectedPlan && (
-              <div className="p-3 rounded-lg bg-muted space-y-2">
-                <p className="text-sm font-medium text-foreground">Yeni Plan Özellikleri:</p>
-                <ul className="space-y-1">
-                  {selectedPlan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3 w-3 text-primary flex-shrink-0" />
-                      {feature}
-                    </li>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("admin.subscription.date")}</TableHead>
+                    <TableHead>{t("admin.subscription.event")}</TableHead>
+                    <TableHead>{t("admin.subscription.plan")}</TableHead>
+                    <TableHead>{t("admin.subscription.amount")}</TableHead>
+                    <TableHead>{t("admin.subscription.subscriptionStatus").replace(":", "")}</TableHead>
+                    <TableHead>{t("admin.subscription.method")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("admin.subscription.invoice")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {history.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-sm">
+                        {format(new Date(item.created_at), "d MMM yyyy, HH:mm", {
+                          locale: dateLocale,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getEventIcon(item.event_type)}
+                          <span className="text-sm font-medium">
+                            {eventTypeLabels[item.event_type] || item.event_type}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {item.plan_type ? (
+                          <Badge variant="outline">
+                            {planLabels[item.plan_type] || item.plan_type}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {formatAmount(item.amount, item.currency)}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(item.status)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground font-mono">
+                        {item.transaction_id || "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {(item.event_type === "payment_success" ||
+                          item.event_type === "subscription_activated") &&
+                        item.status === "success" &&
+                        item.amount ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDownloadInvoice(item)}
+                            className="hover:bg-primary/10"
+                          >
+                            <Download className="h-4 w-4 text-primary" />
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </ul>
-                <div className="mt-2">
-                  <p className="text-lg font-bold text-primary">
-                    {formatPrice(calculatePrice(selectedPlan.price, isYearly), isYearly)}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {history.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <div className="flex items-start gap-3 text-sm">
+                <div className="flex-1 space-y-2">
+                  <p className="font-medium text-foreground">
+                    {t("admin.subscription.invoiceInfo")}
                   </p>
-                  {isYearly && selectedPlan.price > 0 && (
-                    <p className="text-sm text-green-600 font-medium">
-                      %10 indirim uygulanacak ({(selectedPlan.price * 12 * 0.1).toLocaleString('tr-TR')}₺ tasarruf)
-                    </p>
-                  )}
+                  <p className="text-muted-foreground">
+                    {t("admin.subscription.invoiceDescription")}
+                  </p>
                 </div>
               </div>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Plan değişikliği hemen aktif olacaktır. Fatura döneminiz değişmeden devam edecektir.
-            </p>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={changingPlan}>İptal</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={confirmPlanChange}
-            disabled={changingPlan}
-            className="bg-gradient-ocean hover:opacity-90"
-          >
-            {changingPlan ? "Değiştiriliyor..." : "Planı Değiştir"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  </>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Plan change confirmation dialog ──────────────────────────────── */}
+      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("admin.subscription.confirmPlanChange")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                {t("admin.subscription.confirmChangeDescription", {
+                  currentPlan: currentPlan?.name,
+                  newPlan: selectedPlan?.name,
+                })}
+              </p>
+              {selectedPlan && (
+                <div className="p-3 rounded-lg bg-muted space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    {t("admin.subscription.newPlanFeatures")}
+                  </p>
+                  <ul className="space-y-1">
+                    {selectedPlan.features.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
+                      >
+                        <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-2">
+                    <p className="text-lg font-bold text-primary">
+                      {formatPrice(
+                        calculatePrice(selectedPlan.price, isYearly),
+                        isYearly
+                      )}
+                    </p>
+                    {isYearly && selectedPlan.price > 0 && (
+                      <p className="text-sm text-success font-medium">
+                        {t("admin.subscription.discountWillApply", {
+                          amount: (
+                            selectedPlan.price *
+                            12 *
+                            0.1
+                          ).toLocaleString(i18n.language || "tr"),
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {t("admin.subscription.planChangeNote")}
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={changingPlan}>
+              {t("admin.subscription.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmPlanChange}
+              disabled={changingPlan}
+              className="bg-gradient-ocean hover:opacity-90"
+            >
+              {changingPlan
+                ? t("admin.subscription.changing")
+                : t("admin.subscription.changePlan")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
