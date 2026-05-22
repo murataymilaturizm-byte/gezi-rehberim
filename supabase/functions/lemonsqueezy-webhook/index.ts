@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// K2 + K3: webhook handler fail'lerini görünür yap (failed_events + system_errors).
+import { logCritical } from "../_shared/error-sink.ts";
 
 // ─── Variant ID → Plan mapping (sabit) ───────────────────────────────────────
 // Güncelleme: Lemon Squeezy Dashboard'dan alınan variant ID'leri
@@ -363,20 +365,24 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // Idempotency: payment olayları için aynı event tekrar işlenmesin
-  if (eventName === "subscription_payment_success" || eventName === "subscription_payment_failed") {
-    const { data: existing } = await supabase
-      .from("payment_transactions")
-      .select("id")
-      .eq("order_id", `LS-${eventId}`)
+  // K2: Idempotency — TÜM event tipleri için aynı event_id tekrar işlenmesin.
+  // ls_processed_events PK=event_id (migration 20260522000005).
+  // Önceden sadece payment_* event'leri kontrol ediliyordu; subscription_created vb. retry'da
+  // duplicate subscription_history kaydı atılıyordu. Artık yok.
+  {
+    const { data: dup } = await supabase
+      .from("ls_processed_events")
+      .select("event_id")
+      .eq("event_id", eventId)
       .maybeSingle();
 
-    if (existing) {
-      console.info("LS_EVENT_DUPLICATE_SKIP", { eventId });
-      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    if (dup) {
+      console.info("LS_EVENT_DUPLICATE_SKIP", { eventId, eventName });
+      return new Response(JSON.stringify({ ok: true, dedup: true }), { status: 200 });
     }
   }
 
+  let _processedOk = false;
   try {
     switch (eventName) {
       case "order_created":                await handleOrderCreated(supabase, payload, agencyId); break;
@@ -388,9 +394,51 @@ serve(async (req) => {
       case "subscription_payment_failed":  await handlePaymentFailed(supabase, payload, agencyId, eventId); break;
       default: console.info("LS_EVENT_UNHANDLED", { eventName });
     }
+    _processedOk = true;
   } catch (error) {
-    // Hata olsa bile 200 dön — LS tekrar göndermsin, biz log'dan düzeltiriz
-    console.error("LS_HANDLER_ERROR", { eventName, eventId, error: String(error) });
+    // K2: Hata olsa bile 200 dön (LS retry storm önleme) AMA artık SESSİZ DEĞİL —
+    // fail event lemonsqueezy_failed_events tablosuna kaydedilir (admin manuel reprocess yapabilir)
+    // ayrıca system_errors tablosuna kritik hata olarak gider.
+    const _errMsg = error instanceof Error ? error.message : String(error);
+    console.error("LS_HANDLER_ERROR", { eventName, eventId, error: _errMsg });
+
+    // 1. Tam payload + hata → lemonsqueezy_failed_events (yeniden işleme için)
+    try {
+      await supabase.from("lemonsqueezy_failed_events").insert({
+        event_id:      eventId,
+        event_name:    eventName,
+        payload:       payload,
+        error_message: _errMsg.slice(0, 2000),
+      });
+    } catch (insertErr) {
+      // failed_events insert kendisi fail ederse en azından log'a kalsın
+      console.error("LS_FAILED_EVENT_INSERT_ERROR", insertErr instanceof Error ? insertErr.message : String(insertErr));
+    }
+
+    // 2. Kritik hata sink → görünürlük
+    await logCritical({
+      event: "LS_HANDLER_ERROR",
+      error: _errMsg,
+      context: { eventName, eventId, agencyId },
+      agencyId: agencyId ?? null,
+      severity: "critical",
+    });
+  }
+
+  // K2: Başarılı işlemden sonra dedup marker insert.
+  // Fail durumunda marker YAZILMIYOR → manuel reprocess'te tekrar denenebilir.
+  if (_processedOk) {
+    try {
+      await supabase.from("ls_processed_events").insert({
+        event_id:   eventId,
+        event_name: eventName,
+        agency_id:  agencyId ?? null,
+      });
+    } catch (markerErr) {
+      // Marker insert fail → sonraki retry duplicate işlem yapacak ama handler'lar
+      // idempotent yapıdadır (upsert + dedup query'leri). Risk düşük, log yeterli.
+      console.warn("LS_PROCESSED_MARKER_INSERT_WARN", markerErr instanceof Error ? markerErr.message : String(markerErr));
+    }
   }
 
   return new Response(JSON.stringify({ ok: true }), {

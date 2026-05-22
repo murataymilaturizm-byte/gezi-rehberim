@@ -1928,11 +1928,18 @@
     "botOffline": "Bağlı değil",
     "kpi": {
       "vsLastWeek": "geçen haftaya göre",
-      "noTodaySales": "henüz satış yok"
+      "noTodaySales": "henüz tahsilat yok",
+      "paidShort": "Tahsilat",
+      "reservedShort": "Rezerve"
+    },
+    "error": {
+      "title": "Veriler yüklenemedi",
+      "description": "Sunucuya bağlanırken bir hata oluştu. Bağlantınızı kontrol edip tekrar deneyin."
     },
     "welcome": {
       "todayStats": "Bugün {{count}} yeni rezervasyon",
       "revenue": "gelir",
+      "collected": "tahsilat",
       "pending": "bekliyor",
       "noRegistrations": "Bugün henüz rezervasyon yok. WhatsApp botunuz çalışıyor! 💬",
       "botNotConnected": "WhatsApp henüz bağlı değil. İlk müşterilerinizi karşılamak için ayarlardan bağlayın."

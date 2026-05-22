@@ -3,6 +3,8 @@
 import { CONFIG } from "../config/constants.ts";
 import { logger } from "../utils/logger.ts";
 import type { ConversationContext } from "../../shared/fsm/types.ts";
+// K3 + K4: total_amount snapshot + tek finansal kaynak
+import { calculateTotal } from "../../shared/utils/finance.ts";
 
 interface ReservationResult {
   success: boolean;
@@ -36,6 +38,16 @@ export async function saveReservation(
   try {
     logger.info("Saving reservation via atomic RPC...");
 
+    // K3: total_amount SNAPSHOT — RPC'ye caller-side hesaplı tutarı geç.
+    const _selDate = (tour as any)?.dates?.find((d: any) => d.id === dateId);
+    const _paxChild = (context.reservationInfo as any)?.paxChild || 0;
+    const _totalAmount = calculateTotal(
+      paxAdult,
+      _selDate?.price_adult,
+      _paxChild,
+      _selDate?.price_child,
+    );
+
     const { data: result, error } = await supabase.rpc(
       "create_reservation_with_quota_check",
       {
@@ -48,6 +60,7 @@ export async function saveReservation(
         p_source_channel: CONFIG.SOURCE_CHANNEL,
         p_note: "Demo chat reservation",
         p_email: context.reservationInfo?.email || null,
+        p_total_amount: _totalAmount > 0 ? _totalAmount : null,
       }
     );
 

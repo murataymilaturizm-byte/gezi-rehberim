@@ -28,6 +28,8 @@ const DATE_LOCALE_MAP = { tr: trLocale, en: enUS, de, ru, ar, fr, es };
 import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign, Receipt, Trash2, MessageCircle } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
+// K4: TEK finansal kaynak — bot/template/admin/dashboard hepsi aynı helper kullanır.
+import { calculateTotal, calculateRemaining, isOverpayment } from "@/lib/finance";
 
 interface PaymentHistory {
   id: string;
@@ -152,9 +154,15 @@ export const RegistrationDetailDialog = ({
     CANCELLED: t("admin.status.cancelled")
   };
 
-  const totalAmount = registration.total_amount || (registration.tour_dates?.price_adult || 0) * registration.pax;
+  // K3 + K4: DB snapshot total_amount varsa onu kullan, yoksa merkezi calculateTotal.
+  // K4: calculateRemaining → Math.max(0, ...) — negatif gösterilmez.
+  const totalAmount = (registration.total_amount && registration.total_amount > 0)
+    ? registration.total_amount
+    : calculateTotal(registration.pax, registration.tour_dates?.price_adult);
   const paidAmount = currentPaidAmount;
-  const remainingAmount = totalAmount - paidAmount;
+  const remainingAmount = calculateRemaining(totalAmount, paidAmount);
+  // K2: Aşırı ödeme tespiti — UI badge için, hesap negatife düşmez.
+  const hasOverpayment = isOverpayment(totalAmount, paidAmount);
 
   const handleAddPayment = async () => {
     const amount = parseFloat(paymentAmount);
@@ -176,10 +184,26 @@ export const RegistrationDetailDialog = ({
       return;
     }
 
+    // K2: Aşırı ödeme koruması — toplam tutarı aşarsa kullanıcıya onay sor.
+    // Daha önce çift kayıt riski vardı (aynı dekont iki kez girilirse paid_amount > total_amount).
+    const _projectedPaid = paidAmount + amount;
+    if (isOverpayment(totalAmount, _projectedPaid)) {
+      const _diff = _projectedPaid - totalAmount;
+      const _confirmMsg = t("admin.registrations.overpaymentConfirm", {
+        diff: fmt(_diff),
+        total: fmt(totalAmount),
+        paid: fmt(_projectedPaid),
+        defaultValue: "Bu ödeme toplam tutarı {{diff}} aşıyor (Toplam: {{total}}, Toplam ödenecek: {{paid}}). Yine de kaydedilsin mi?",
+      });
+      if (!window.confirm(_confirmMsg)) {
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
-      const newPaidAmount = paidAmount + amount;
+      const newPaidAmount = _projectedPaid;
       let newPaymentStatus = editablePaymentStatus;
 
       if (totalAmount && newPaidAmount >= totalAmount) {
@@ -531,6 +555,15 @@ export const RegistrationDetailDialog = ({
                   <p className={`font-bold text-xl ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
                     {fmt(remainingAmount)}
                   </p>
+                  {/* K2: Aşırı ödeme rozeti — negatif sayı yerine açık etiket */}
+                  {hasOverpayment && (
+                    <Badge variant="destructive" className="text-[10px] h-5 mt-1">
+                      {t("admin.registrations.overpaid", {
+                        amount: fmt(paidAmount - totalAmount),
+                        defaultValue: "Fazla ödeme: {{amount}}",
+                      })}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </CardContent>

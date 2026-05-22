@@ -1936,11 +1936,18 @@
     "botOffline": "Not connected",
     "kpi": {
       "vsLastWeek": "vs last week",
-      "noTodaySales": "no sales yet"
+      "noTodaySales": "no collections yet",
+      "paidShort": "Collected",
+      "reservedShort": "Reserved"
+    },
+    "error": {
+      "title": "Failed to load data",
+      "description": "Could not connect to the server. Please check your connection and try again."
     },
     "welcome": {
       "todayStats": "{{count}} new reservations today",
       "revenue": "revenue",
+      "collected": "collected",
       "pending": "pending",
       "noRegistrations": "No reservations today. Your WhatsApp bot is running! 💬",
       "botNotConnected": "WhatsApp is not connected yet. Connect it from settings to welcome your first customers."

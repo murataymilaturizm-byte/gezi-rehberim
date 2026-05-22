@@ -1970,11 +1970,18 @@
     "botOffline": "No conectado",
     "kpi": {
       "vsLastWeek": "vs semana pasada",
-      "noTodaySales": "sin ventas todavía"
+      "noTodaySales": "sin cobros todavía",
+      "paidShort": "Cobrado",
+      "reservedShort": "Reservado"
+    },
+    "error": {
+      "title": "No se pudieron cargar los datos",
+      "description": "Error al conectar con el servidor. Verifica tu conexión e inténtalo de nuevo."
     },
     "welcome": {
       "todayStats": "{{count}} nuevas reservas hoy",
       "revenue": "ingresos",
+      "collected": "cobrado",
       "pending": "pendientes",
       "noRegistrations": "Sin reservas hoy. ¡Tu bot de WhatsApp está activo! 💬",
       "botNotConnected": "WhatsApp aún no está conectado. Conéctalo desde ajustes para recibir a tus primeros clientes."

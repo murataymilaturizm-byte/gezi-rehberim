@@ -3,6 +3,45 @@
 const GRAPH_API_VERSION = 'v18.0';
 const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 
+// K1: Meta gönderim için timeout + retry sabitleri.
+// 15s timeout: Meta yavaşsa edge function asılı kalmasın (whatsapp-webhook total budget'ı kısıtlı).
+// Tek retry: ağ flicker'ı veya 429 (rate limit) geçici → 2. denemede çoğunlukla geçer.
+const META_SEND_TIMEOUT_MS = 15000;
+const META_RETRY_MAX_DELAY_MS = 5000;     // Retry-After saniyesinin üst sınırı
+
+/** AbortController ile timeout'lu fetch (Meta send için). */
+async function _fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(`META_TIMEOUT_${timeoutMs}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(tid);
+  }
+}
+
+/**
+ * K1: 429 Retry-After header'ı parse. Saniye veya HTTP-date olabilir; saniye varsayıyoruz (Meta).
+ * Üst sınır META_RETRY_MAX_DELAY_MS — edge function budget'ını koru.
+ */
+function _parseRetryAfter(header: string | null): number {
+  if (!header) return 1500;
+  const sec = Number(header);
+  if (Number.isFinite(sec) && sec > 0) {
+    return Math.min(sec * 1000, META_RETRY_MAX_DELAY_MS);
+  }
+  return 1500;
+}
+
+function _sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 /**
  * K1: Meta webhook HMAC-SHA256 imza doğrulama
  *
@@ -53,47 +92,83 @@ export async function verifyMetaSignature(
 }
 
 /**
- * Send a text message via Meta Cloud API
+ * Send a text message via Meta Cloud API.
+ *
+ * K1 hardening:
+ *   - Timeout (15s) — Meta yavaşsa edge function asılı kalmasın.
+ *   - 429 + 5xx için TEK retry (Retry-After header'ı respekt eder).
+ *   - 4xx (401/403/404) retry edilmez — token/permission sorunu, beklemek anlamsız.
+ *   - status kodu sonuca eklenir → caller log/error-sink'e geçirebilir.
  */
 export async function sendWhatsAppMessage(
   phoneNumberId: string,
   accessToken: string,
   to: string,
   message: string
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  try {
-    const normalizedTo = to.replace('whatsapp:', '').replace('+', '').trim();
+): Promise<{ success: boolean; messageId?: string; error?: string; status?: number }> {
+  const normalizedTo = to.replace('whatsapp:', '').replace('+', '').trim();
+  const url = `${GRAPH_API_BASE}/${phoneNumberId}/messages`;
+  const body = JSON.stringify({
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to: normalizedTo,
+    type: 'text',
+    text: { body: message },
+  });
 
-    const url = `${GRAPH_API_BASE}/${phoneNumberId}/messages`;
+  const MAX_ATTEMPTS = 2;
+  let lastStatus: number | undefined;
+  let lastError = '';
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to: normalizedTo,
-        type: 'text',
-        text: { body: message },
-      }),
-    });
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const response = await _fetchWithTimeout(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body,
+        },
+        META_SEND_TIMEOUT_MS,
+      );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Meta WhatsApp API error:', response.status, errorText);
-      return { success: false, error: `Meta API error: ${response.status} - ${errorText}` };
+      if (response.ok) {
+        const data = await response.json();
+        const messageId = data?.messages?.[0]?.id;
+        return { success: true, messageId, status: response.status };
+      }
+
+      lastStatus = response.status;
+      const errorText = await response.text().catch(() => '');
+      lastError = errorText;
+      console.error(`❌ Meta send error (attempt ${attempt}/${MAX_ATTEMPTS}):`, response.status, errorText.slice(0, 200));
+
+      // K1: 429 (rate limit) ve 5xx (geçici) → retry. 4xx (auth/perm) → instant fail.
+      const isRetryable = response.status === 429 || response.status >= 500;
+      if (!isRetryable || attempt === MAX_ATTEMPTS) {
+        return { success: false, error: `Meta API ${response.status}: ${errorText.slice(0, 300)}`, status: response.status };
+      }
+
+      const retryAfter = _parseRetryAfter(response.headers.get('retry-after'));
+      console.warn(`[meta-send] Retrying after ${retryAfter}ms (status=${response.status})`);
+      await _sleep(retryAfter);
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Meta send exception (attempt ${attempt}/${MAX_ATTEMPTS}):`, lastError);
+
+      // Timeout veya network → retry (1. denemede). Diğerinde fail.
+      const isNetworkLike = lastError.includes('META_TIMEOUT') || lastError.includes('network') || lastError.includes('fetch');
+      if (!isNetworkLike || attempt === MAX_ATTEMPTS) {
+        return { success: false, error: lastError, status: lastStatus };
+      }
+      await _sleep(1000 * attempt);
     }
-
-    const data = await response.json();
-    const messageId = data?.messages?.[0]?.id;
-    return { success: true, messageId };
-  } catch (error) {
-    console.error('❌ Error sending Meta WhatsApp message:', error);
-    return { success: false, error: String(error) };
   }
+
+  return { success: false, error: lastError || 'unknown', status: lastStatus };
 }
 
 /**

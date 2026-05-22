@@ -25,12 +25,16 @@ import { getChartColors } from "@/lib/chartColors";
 import { exportToCsv } from "@/utils/csvExport";
 
 interface AnalyticsData {
-  revenueByMonth: Array<{ month: string; revenue: number; registrations: number }>;
-  topDestinations: Array<{ destination: string; count: number; revenue: number }>;
+  /** K1: aylık trend — paid (tahsilat) + reserved (hacim) ayrı */
+  revenueByMonth: Array<{ month: string; revenue: number; reservedVolume: number; registrations: number }>;
+  topDestinations: Array<{ destination: string; count: number; revenue: number; reservedVolume: number }>;
   conversionRate: { conversations: number; registrations: number; rate: number };
   periodGrowth: number;
   averageOrderValue: number;
+  /** K1: GERÇEK TAHSİLAT — paid_amount toplamı (vergi/muhasebe için doğru rakam) */
   totalRevenue: number;
+  /** K1: REZERVASYON HACMİ — total_amount snapshot toplamı (CANCELLED hariç) */
+  reservedVolume: number;
   totalRegistrations: number;
   totalConversations: number;
 }
@@ -41,6 +45,8 @@ type FilterDeps = {
 };
 
 const localeMap = { tr, en: enUS, de, ru, ar, fr, es };
+// K1: Hacim hesabı için aktif rezervasyonlar (CANCELLED hariç tüm statüler).
+// Tahsilat hesabı paid_amount > 0 olanları otomatik kapsar — ayrı filter gerekmez.
 const ACTIVE_REGISTRATION_STATUSES = ["CONFIRMED", "NEW", "PENDING"];
 
 export const AdvancedAnalytics = () => {
@@ -115,6 +121,7 @@ export const AdvancedAnalytics = () => {
 
       const { startDate, endDate } = dateRange;
 
+      // K1 + K3: paid_amount (tahsilat) + total_amount snapshot (hacim) seçildi
       let registrationsQuery = supabase
         .from("registrations")
         .select(`
@@ -122,6 +129,8 @@ export const AdvancedAnalytics = () => {
           pax,
           created_at,
           status,
+          paid_amount,
+          total_amount,
           tours(destination),
           tour_dates(price_adult)
         `)
@@ -133,18 +142,22 @@ export const AdvancedAnalytics = () => {
 
       const { data: registrations } = await registrationsQuery;
 
-      // Aylık gelir
-      const revenueByMonth: Record<string, { revenue: number; registrations: number }> = {};
-      let totalRevenue = 0;
+      // K1: Aylık trend — paid (tahsilat) + reserved (hacim) ayrı
+      const revenueByMonth: Record<string, { revenue: number; reserved: number; registrations: number }> = {};
+      let totalRevenue = 0;       // K1: gerçek tahsilat (paid_amount)
+      let reservedVolume = 0;     // K1: rezervasyon hacmi (total_amount snapshot, yoksa fallback)
 
       registrations?.forEach((reg: any) => {
         const month = format(new Date(reg.created_at), 'MMM yyyy', { locale });
-        const price = reg.tour_dates?.price_adult || 0;
-        const revenue = price * reg.pax;
-        totalRevenue += revenue;
+        const _paid = Number(reg.paid_amount) || 0;
+        const _snap = Number(reg.total_amount) || 0;
+        const _reserved = _snap > 0 ? _snap : (reg.tour_dates?.price_adult || 0) * (reg.pax || 1);
+        totalRevenue += _paid;
+        reservedVolume += _reserved;
 
-        if (!revenueByMonth[month]) revenueByMonth[month] = { revenue: 0, registrations: 0 };
-        revenueByMonth[month].revenue += revenue;
+        if (!revenueByMonth[month]) revenueByMonth[month] = { revenue: 0, reserved: 0, registrations: 0 };
+        revenueByMonth[month].revenue += _paid;
+        revenueByMonth[month].reserved += _reserved;
         revenueByMonth[month].registrations += 1;
       });
 
@@ -152,20 +165,23 @@ export const AdvancedAnalytics = () => {
         .map(([month, data]) => ({
           month,
           revenue: Math.round(data.revenue),
+          reservedVolume: Math.round(data.reserved),
           registrations: data.registrations,
         }))
         .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
-      // Destinasyonlar
-      const destinationMap: Record<string, { count: number; revenue: number }> = {};
+      // Destinasyonlar — K1: revenue=tahsilat, reservedVolume=hacim
+      const destinationMap: Record<string, { count: number; revenue: number; reserved: number }> = {};
       registrations?.forEach((reg: any) => {
         const dest = reg.tours?.destination || t('common.unspecified');
-        const price = reg.tour_dates?.price_adult || 0;
-        const revenue = price * reg.pax;
+        const _paid = Number(reg.paid_amount) || 0;
+        const _snap = Number(reg.total_amount) || 0;
+        const _reserved = _snap > 0 ? _snap : (reg.tour_dates?.price_adult || 0) * (reg.pax || 1);
 
-        if (!destinationMap[dest]) destinationMap[dest] = { count: 0, revenue: 0 };
+        if (!destinationMap[dest]) destinationMap[dest] = { count: 0, revenue: 0, reserved: 0 };
         destinationMap[dest].count += 1;
-        destinationMap[dest].revenue += revenue;
+        destinationMap[dest].revenue += _paid;
+        destinationMap[dest].reserved += _reserved;
       });
 
       const topDestinations = Object.entries(destinationMap)
@@ -173,8 +189,10 @@ export const AdvancedAnalytics = () => {
           destination,
           count: data.count,
           revenue: Math.round(data.revenue),
+          reservedVolume: Math.round(data.reserved),
         }))
-        .sort((a, b) => b.revenue - a.revenue)
+        // Sıralama hacme göre — "en büyük bölgeler" iş anlamında daha karar verici
+        .sort((a, b) => b.reservedVolume - a.reservedVolume)
         .slice(0, 5);
 
       // Dönüşüm oranı — aynı status filter
@@ -201,7 +219,7 @@ export const AdvancedAnalytics = () => {
         rate: conversationCount ? ((registrationCount || 0) / conversationCount) * 100 : 0,
       };
 
-      // Dönem büyümesi — filtre dönemini ikiye böl
+      // Dönem büyümesi — TAHSİLAT (paid_amount) bazlı (gerçek kasa hareketi)
       const periodMs = differenceInMilliseconds(endDate, startDate);
       const midPoint = new Date(startDate.getTime() + periodMs / 2);
 
@@ -209,18 +227,18 @@ export const AdvancedAnalytics = () => {
       let secondHalfRevenue = 0;
       registrations?.forEach((reg: any) => {
         const regDate = new Date(reg.created_at);
-        const price = reg.tour_dates?.price_adult || 0;
-        const revenue = price * reg.pax;
-        if (regDate < midPoint) firstHalfRevenue += revenue;
-        else secondHalfRevenue += revenue;
+        const _paid = Number(reg.paid_amount) || 0;
+        if (regDate < midPoint) firstHalfRevenue += _paid;
+        else secondHalfRevenue += _paid;
       });
 
       const periodGrowth = firstHalfRevenue > 0
         ? ((secondHalfRevenue - firstHalfRevenue) / firstHalfRevenue) * 100
         : (secondHalfRevenue > 0 ? 100 : 0);
 
+      // K1: ortalama sepet — hacim üzerinden (mantıklı iş tanımı, tahsilat henüz tam olmayabilir)
       const averageOrderValue = registrations && registrations.length > 0
-        ? totalRevenue / registrations.length
+        ? reservedVolume / registrations.length
         : 0;
 
       setAnalytics({
@@ -230,6 +248,7 @@ export const AdvancedAnalytics = () => {
         periodGrowth,
         averageOrderValue,
         totalRevenue,
+        reservedVolume,
         totalRegistrations: registrations?.length || 0,
         totalConversations: conversationCount || 0,
       });
@@ -248,7 +267,9 @@ export const AdvancedAnalytics = () => {
       [
         { header: t('analytics.advanced.destinationDetails'), accessor: (r) => r.destination },
         { header: t('analytics.advanced.registrationCount', { count: '' }).replace('{{count}}', '').trim() || 'Count', accessor: (r) => r.count },
-        { header: t('analytics.advanced.totalRevenue'), accessor: (r) => r.revenue },
+        // K1: tahsilat (paid) + hacim (reserved) ayrı sütun
+        { header: t('analytics.advanced.collectedRevenue', { defaultValue: 'Tahsilat' }), accessor: (r) => r.revenue },
+        { header: t('analytics.advanced.reservedVolumeShort', { defaultValue: 'Rezerve hacim' }), accessor: (r) => r.reservedVolume },
       ],
       t('analytics.advanced.exportFilename'),
     );
@@ -300,21 +321,34 @@ export const AdvancedAnalytics = () => {
         onExport={handleExport}
       />
 
-      {/* KPI Kartlar */}
+      {/* KPI Kartlar — K1: Tahsilat + Hacim ayrı */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('analytics.advanced.totalRevenue')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('analytics.advanced.collectedRevenue', { defaultValue: 'Tahsilat' })}
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatPrice(analytics.totalRevenue, currency)}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {formatPrice(analytics.totalRevenue, currency)}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {t('analytics.advanced.totalRevenueDesc', {
-                count: analytics.totalRegistrations,
+              {t('analytics.advanced.collectedRevenueDesc', {
+                defaultValue: 'Gerçek tahsilat (paid_amount) · {{period}}',
                 period: getDateFilterLabel(),
               })}
             </p>
+            {/* K1: ikincil — rezervasyon hacmi (henüz tahsil edilmemiş olabilir) */}
+            <div className="mt-2 pt-2 border-t border-border/40">
+              <p className="text-[11px] text-muted-foreground">
+                {t('analytics.advanced.reservedVolumeShort', { defaultValue: 'Rezerve hacim' })}:{' '}
+                <span className="font-semibold text-foreground">
+                  {formatPrice(analytics.reservedVolume, currency)}
+                </span>
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -380,6 +414,7 @@ export const AdvancedAnalytics = () => {
                       contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}
                     />
                     <Legend />
+                    {/* K1: Tahsilat çizgisi (gerçek kasa) */}
                     <Line
                       type="monotone"
                       dataKey="revenue"
@@ -387,7 +422,18 @@ export const AdvancedAnalytics = () => {
                       strokeWidth={2}
                       dot={{ r: 4 }}
                       activeDot={{ r: 6 }}
-                      name={t('analytics.advanced.revenueLabel')}
+                      name={t('analytics.advanced.collectedRevenue', { defaultValue: 'Tahsilat' })}
+                    />
+                    {/* K1: Rezerve hacim çizgisi (toplam beklenen ciro) */}
+                    <Line
+                      type="monotone"
+                      dataKey="reservedVolume"
+                      stroke={chartColors[1] || 'hsl(38 92% 50%)'}
+                      strokeWidth={2}
+                      strokeDasharray="4 4"
+                      dot={{ r: 3 }}
+                      activeDot={{ r: 5 }}
+                      name={t('analytics.advanced.reservedVolumeShort', { defaultValue: 'Rezerve hacim' })}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -423,9 +469,13 @@ export const AdvancedAnalytics = () => {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="font-bold">{formatPrice(dest.revenue, currency)}</p>
+                    {/* K1: önce hacim (büyük), altında tahsilat (gerçekleşen) */}
+                    <p className="font-bold">{formatPrice(dest.reservedVolume, currency)}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {t('analytics.advanced.collectedRevenue', { defaultValue: 'Tahsilat' })}: {formatPrice(dest.revenue, currency)}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {t('analytics.advanced.average')}: {formatPrice(Math.round(dest.revenue / dest.count), currency)}
+                      {t('analytics.advanced.average')}: {formatPrice(Math.round(dest.reservedVolume / dest.count), currency)}
                     </p>
                   </div>
                 </div>

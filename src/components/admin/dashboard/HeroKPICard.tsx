@@ -15,6 +15,12 @@ interface HeroKPICardProps {
   previousValue: number;
   currentValue: number;
   comparisonLabel?: string;
+  /**
+   * K1: İkincil metrik (Tahsilat vs Rezervasyon Hacmi ayrımı için).
+   * Tahsilat kartında "Rezerve: X₺", Bugün kartında "Hacim: Y₺" vb.
+   * Spakline'ın altında küçük puntoda gösterilir; opsiyoneldir.
+   */
+  secondaryLabel?: string;
   sparkline?: SparkPoint[];
   colorClass?: string;       // tailwind text color class e.g. "text-primary"
   strokeColor?: string;      // CSS color for chart line
@@ -31,6 +37,7 @@ export function HeroKPICard({
   previousValue,
   currentValue,
   comparisonLabel,
+  secondaryLabel,
   sparkline = [],
   colorClass = "text-primary",
   strokeColor = "hsl(16 95% 55%)",
@@ -89,6 +96,13 @@ export function HeroKPICard({
             <span className="text-xs text-muted-foreground">{comparisonLabel}</span>
           )}
         </div>
+
+        {/* K1: ikincil metrik — Tahsilat vs Rezervasyon Hacmi ayrımı */}
+        {secondaryLabel && (
+          <p className="text-[11px] text-muted-foreground mt-1 truncate" title={secondaryLabel}>
+            {secondaryLabel}
+          </p>
+        )}
 
         {sparkline.length > 0 && (
           <div className="h-10 -mx-1 mt-2">

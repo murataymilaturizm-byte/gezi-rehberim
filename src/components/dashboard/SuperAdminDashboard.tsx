@@ -37,6 +37,9 @@ export const SuperAdminDashboard = ({ planFeatures }: SuperAdminDashboardProps) 
 
   // K6 fix: tek kaynak — src/lib/planPricing.ts
   const planPrices = PLAN_PRICES_TRY;
+  // O1: POTANSİYEL MRR — aktif acente sayısı × plan fiyatı (snapshot).
+  // Gerçekleşen tahsilat aşağıdaki "Gelir Büyüme Trendi" grafiğinden (payment_transactions) gelir.
+  // İki metrik AYNI ŞEY DEĞİL — etiketle ayrıştırılmalı.
   const monthlyRevenue =
     superAdminStats.agenciesByPlan.starter * planPrices.starter +
     superAdminStats.agenciesByPlan.professional * planPrices.professional +
@@ -124,13 +127,19 @@ export const SuperAdminDashboard = ({ planFeatures }: SuperAdminDashboardProps) 
         })}
       </div>
 
-      {/* Revenue Cards */}
+      {/* Revenue Cards — O1: "Potansiyel MRR (plan dağılımı)" vs "Gerçekleşen Tahsilat" net ayrım */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="shadow-card bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
-              <TrendingUp className="w-5 h-5" />{t("admin.dashboard.monthlyRevenue")}
+              <TrendingUp className="w-5 h-5" />
+              {t("admin.dashboard.potentialMonthlyRevenue", { defaultValue: "Potansiyel MRR" })}
             </CardTitle>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {t("admin.dashboard.potentialMRRHint", {
+                defaultValue: "Aktif acente sayısı × plan fiyatı (snapshot). Gerçekleşen tahsilat aşağıdaki grafikte.",
+              })}
+            </p>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-green-600 dark:text-green-400">{monthlyRevenue.toLocaleString("tr-TR")}₺</div>
@@ -147,8 +156,14 @@ export const SuperAdminDashboard = ({ planFeatures }: SuperAdminDashboardProps) 
         <Card className="shadow-card bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
-              <TrendingUp className="w-5 h-5" />{t("admin.dashboard.yearlyRevenue")}
+              <TrendingUp className="w-5 h-5" />
+              {t("admin.dashboard.potentialYearlyRevenue", { defaultValue: "Potansiyel Yıllık (×12)" })}
             </CardTitle>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {t("admin.dashboard.potentialYearlyHint", {
+                defaultValue: "Mevcut plan dağılımı 12 ay korunursa elde edilebilir hacim.",
+              })}
+            </p>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">{yearlyRevenue.toLocaleString("tr-TR")}₺</div>
@@ -175,8 +190,18 @@ export const SuperAdminDashboard = ({ planFeatures }: SuperAdminDashboardProps) 
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
             <div>
-              <CardTitle>{t("admin.dashboard.revenueGrowthTrend")}</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">{t("admin.dashboard.realPaymentDataAnalysis")}</p>
+              <CardTitle>
+                {t("admin.dashboard.actualCollectedRevenue", { defaultValue: "Gerçekleşen Tahsilat" })}
+                {" — "}
+                <span className="text-sm font-normal text-muted-foreground">
+                  {t("admin.dashboard.revenueGrowthTrend")}
+                </span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("admin.dashboard.actualCollectedHint", {
+                  defaultValue: "payment_transactions tablosundan — başarılı ödemelerin toplamı.",
+                })}
+              </p>
             </div>
             <Popover>
               <PopoverTrigger asChild>

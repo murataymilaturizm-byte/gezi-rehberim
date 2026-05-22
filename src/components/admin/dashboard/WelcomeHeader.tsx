@@ -75,7 +75,9 @@ export function WelcomeHeader({
               <span className="font-medium text-foreground">
                 {todayRevenue.toLocaleString("tr-TR")}{currency}
               </span>{" "}
-              {t("dashboard.welcome.revenue", { defaultValue: "gelir" })}
+              {/* K1: WelcomeHeader bugünkü "tahsilat" (gerçek paid_amount) gösterir.
+                  Hacim ayrımı KPI kartlarında ayrıntılı görülür. */}
+              {t("dashboard.welcome.collected", { defaultValue: "tahsilat" })}
               {pendingCount > 0 && (
                 <span className="ml-2 text-orange-600 dark:text-orange-400 font-medium">
                   · {pendingCount} {t("dashboard.welcome.pending", { defaultValue: "bekliyor" })}

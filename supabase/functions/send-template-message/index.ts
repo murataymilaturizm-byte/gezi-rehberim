@@ -5,6 +5,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendWhatsAppTemplate, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
+// K4: tek finansal kaynak
+import { calculateTotal } from "../shared/utils/finance.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -296,7 +298,13 @@ serve(async (req) => {
                            .toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })
                        : '',
       pax:           String(registration.pax || ''),
-      total_amount:  String((registration.tour_dates?.price_adult || 0) * (registration.pax || 0)),
+      // K3 + K4: Önce DB snapshot (total_amount), yoksa K4 merkezi hesap.
+      // Frontend ile aynı kural — pax × price_adult, Math.round.
+      total_amount:  String(
+        (registration as any).total_amount && Number((registration as any).total_amount) > 0
+          ? Number((registration as any).total_amount)
+          : calculateTotal(registration.pax, registration.tour_dates?.price_adult)
+      ),
       currency:      'TRY',
       meeting_time:  registration.tours?.toplanma_saati || '09:00',
       meeting_point: registration.tours?.hareket_noktasi || 'Belirlenen toplanma noktası',

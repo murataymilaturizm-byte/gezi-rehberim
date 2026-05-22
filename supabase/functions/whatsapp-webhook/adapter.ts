@@ -11,6 +11,8 @@ import { getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
 import { getConversationHistory } from "../shared/services/context-manager.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
 import { sendWhatsAppMessage } from "../_shared/metaWhatsapp.ts";
+// K1: Meta gönderim fail'lerini görünür yapmak için merkezi error sink.
+import { logCritical } from "../_shared/error-sink.ts";
 
 function isValidContext(obj: unknown): obj is ConversationContext {
   return (
@@ -131,11 +133,42 @@ export class WhatsAppAdapter implements ChannelAdapter {
   }
 
   async sendResponse(reply: string): Promise<void> {
-    await sendWhatsAppMessage(this.metaPhoneNumberId, this.metaAccessToken, this.phone, truncateForWhatsApp(reply));
+    // K1: Meta gönderim sonucunu KONTROL et. Önceden silent loss vardı —
+    // token expired/429/5xx olduğunda webhook OK dönüyor ama müşteri mesaj almıyordu.
+    const _result = await sendWhatsAppMessage(
+      this.metaPhoneNumberId, this.metaAccessToken, this.phone, truncateForWhatsApp(reply),
+    );
+    if (!_result.success) {
+      // K1 + K3: hata error sink'e gider → admin panelinde "Sistem Hataları"nda görünür.
+      // PII (phone) burada maskelenmez — error-sink içinde log-mask.ts otomatik maskeler.
+      await logCritical({
+        event: "META_SEND_FAIL",
+        error: _result.error || `Meta send failed status=${_result.status}`,
+        context: {
+          phone: this.phone,                  // log-mask.ts otomatik mask
+          status: _result.status,
+          replyLen: reply.length,
+          channel: "whatsapp",
+        },
+        agencyId: this.agency?.id ?? null,
+        severity: "critical",
+      });
+      // throw etmiyoruz — process-message akışı bozulmasın, webhook 200 dönsün
+      // (Meta retry storm önleme). Görünürlük log + DB üzerinden sağlanır.
+    }
   }
 
   async sendErrorResponse(message: string): Promise<void> {
-    await sendWhatsAppMessage(this.metaPhoneNumberId, this.metaAccessToken, this.phone, message);
+    // sendErrorResponse zaten hata akışı içinde çağrılır — yeni hata logu üst üste yığılmasın.
+    // Sadece console.error yap, error-sink'e gönderme.
+    const _result = await sendWhatsAppMessage(
+      this.metaPhoneNumberId, this.metaAccessToken, this.phone, message,
+    );
+    if (!_result.success) {
+      console.error("[adapter] sendErrorResponse: Meta send also failed", {
+        status: _result.status, error: _result.error,
+      });
+    }
   }
 
   async getCompletionTemplateAddendum(params: {

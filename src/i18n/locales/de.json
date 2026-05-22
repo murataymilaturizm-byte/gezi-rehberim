@@ -1936,11 +1936,18 @@
     "botOffline": "Nicht verbunden",
     "kpi": {
       "vsLastWeek": "vs letzte Woche",
-      "noTodaySales": "noch keine Verkäufe"
+      "noTodaySales": "noch keine Einnahmen",
+      "paidShort": "Eingenommen",
+      "reservedShort": "Reserviert"
+    },
+    "error": {
+      "title": "Daten konnten nicht geladen werden",
+      "description": "Verbindung zum Server fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
     },
     "welcome": {
       "todayStats": "{{count}} neue Buchungen heute",
       "revenue": "Einnahmen",
+      "collected": "eingenommen",
       "pending": "ausstehend",
       "noRegistrations": "Heute noch keine Buchungen. Ihr WhatsApp-Bot läuft! 💬",
       "botNotConnected": "WhatsApp ist noch nicht verbunden. Verbinden Sie es in den Einstellungen, um Ihre ersten Kunden zu begrüßen."

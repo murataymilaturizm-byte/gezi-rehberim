@@ -31,6 +31,8 @@ import { generatePaymentMessage, safeDepositPercentage } from "../services/payme
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
 import { formatPriceSync } from "../utils/currency-display.ts";
 import { maskPhone } from "../utils/log-mask.ts";
+// K4: TEK yuvarlama kuralı — tüm kapora/toplam hesapları buradan.
+import { calculateTotal, calculateDeposit } from "../utils/finance.ts";
 import type { ChannelAdapter, ProcessMessageInput, ProcessMessageResult } from "./types.ts";
 
 export async function processChatMessage(input: ProcessMessageInput): Promise<ProcessMessageResult> {
@@ -540,8 +542,19 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
 
     const totalPax = (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0);
+    // K3: total_amount SNAPSHOT — rezervasyon kaydında "o anki fiyat" korunur.
+    // tours.find ile child fiyatına da ulaşırız (calculateTotal pax dağılımını destekler).
+    const _selDateForRpc = tours
+      .find((tr: any) => tr.id === tourId)
+      ?.dates?.find((d: any) => d.id === dateId);
+    const _totalAmountForRpc = calculateTotal(
+      paxAdult || 0,
+      _selDateForRpc?.price_adult,
+      newContext.reservationInfo.paxChild || 0,
+      _selDateForRpc?.price_child,
+    );
     // K6: fullName loga çıkmasın, sadece "var/yok" durumu
-    console.log("[process-message] calling create_reservation RPC:", { tourId, dateId, hasName: !!fullName, totalPax, agencyId: agency.id });
+    console.log("[process-message] calling create_reservation RPC:", { tourId, dateId, hasName: !!fullName, totalPax, totalAmount: _totalAmountForRpc, agencyId: agency.id });
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
       "create_reservation_with_quota_check",
       {
@@ -552,6 +565,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         p_pax: totalPax,
         p_agency_id: agency.id,
         p_source_channel: "WHATSAPP",
+        p_total_amount: _totalAmountForRpc > 0 ? _totalAmountForRpc : null,
       }
     );
 
@@ -719,9 +733,23 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const depPct = safeDepositPercentage(
         typeof paymentInstructions === "object" ? paymentInstructions?.deposit_percentage : null
       );
-      const totalPrice = adultCount * (selectedDateFull.price_adult || 0) +
-        childCount * (selectedDateFull.price_child || selectedDateFull.price_adult || 0);
-      const depositAmt = Math.ceil((totalPrice * depPct) / 100);
+      // K4: TEK kaynak — calculateTotal/Deposit (önceki Math.ceil tutarsızlığı giderildi)
+      const totalPrice = calculateTotal(
+        adultCount,
+        selectedDateFull.price_adult,
+        childCount,
+        selectedDateFull.price_child,
+      );
+      const depositAmt = calculateDeposit(totalPrice, depPct);
+      // O3: price NULL/0 ise totalPrice=0 → ödeme mesajı atlanır (rezervasyon halen kayıtlı
+      // ama müşteri yanlış kapora görmez). Acente paneli "Birim Fiyat boş" uyarısı verir.
+      if (totalPrice <= 0) {
+        console.warn("[process-message] O3: skipping payment message — totalPrice=0", {
+          adultCount, childCount,
+          priceAdult: selectedDateFull.price_adult, priceChild: selectedDateFull.price_child,
+          dateId: selectedDateFull.id,
+        });
+      }
       if (totalPrice > 0) {
         const payMsg = await generatePaymentMessage(
           paymentInstructions, newContext.language, totalPrice, depositAmt,
@@ -741,8 +769,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _depPct2 = safeDepositPercentage(
         typeof paymentInstructions === "object" ? paymentInstructions?.deposit_percentage : null
       );
-      const _tPrice = adultCount * (selectedDateFull?.price_adult || 0) +
-        childCount * (selectedDateFull?.price_child || selectedDateFull?.price_adult || 0);
+      // K4: tek kaynak
+      const _tPrice = calculateTotal(
+        adultCount,
+        selectedDateFull?.price_adult,
+        childCount,
+        selectedDateFull?.price_child,
+      );
       const tmpl = await adapter.getCompletionTemplateAddendum({
         tourId: tourId || "",
         tourTitle: tourTitle,
@@ -982,15 +1015,25 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   // === 18. ÖDEME MESAJI (AI cevabından sonra, daha önce gönderilmediyse) ===
   if (newContext.stage === "COMPLETED" && !newContext.paymentInfoSent && paymentInstructions) {
-    const priceAdult = newContext.currentTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId)?.price_adult || 0;
+    const _selDate = newContext.currentTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId);
+    const priceAdult = _selDate?.price_adult ?? null;
+    const priceChild = _selDate?.price_child ?? null;
     const paxAdult = newContext.reservationInfo.paxAdult || 1;
-    const totalPrice = priceAdult * paxAdult;
+    const paxChild = newContext.reservationInfo.paxChild || 0;
+    // K4: tek kaynak (calculateTotal/Deposit)
+    const totalPrice = calculateTotal(paxAdult, priceAdult, paxChild, priceChild);
     // K5: deposit_percentage 0-100 dışındaysa güvenli varsayılan
     const depPct = safeDepositPercentage(
       typeof paymentInstructions === "object" ? (paymentInstructions as any)?.deposit_percentage : null
     );
-    const depositAmt = Math.round((totalPrice * depPct) / 100);
+    const depositAmt = calculateDeposit(totalPrice, depPct);
     const tourCurr = (currentTourFull as any)?.currency || "TRY";
+    // O3: NULL/0 fiyat ise ödeme mesajı atlanır
+    if (totalPrice <= 0) {
+      console.warn("[process-message] O3 (AI-path): skipping payment message — totalPrice=0", {
+        paxAdult, paxChild, priceAdult, priceChild,
+      });
+    }
     if (totalPrice > 0) {
       const payMsg = await generatePaymentMessage(
         paymentInstructions, newContext.language, totalPrice, depositAmt,

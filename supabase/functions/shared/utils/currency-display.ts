@@ -86,13 +86,17 @@ export function formatPriceSync(
   // Orijinal tutarı formatla
   const originalFormatted = `${amount.toLocaleString("tr-TR")}${agencySym}`;
 
-  // Aynı para birimi, toggle kapalı veya kurlar yüklenememiş → tek format
-  if (
-    userCurrency === agencyCurrency ||
-    !showDual ||
-    !rates ||
-    Object.keys(rates).length === 0
-  ) {
+  // Aynı para birimi VEYA toggle kapalı → tek format (normal davranış)
+  if (userCurrency === agencyCurrency || !showDual) {
+    return originalFormatted;
+  }
+
+  // O2: Kur fetch BAŞARISIZ → müşteri farklı para biriminde fiyat göremedi.
+  // Sessiz dönüş yerine GÖZLEMLENEBİLİR log + tek para biriminde devam et.
+  if (!rates || Object.keys(rates).length === 0) {
+    console.warn(
+      `[currency-display] O2: dual-currency UNAVAILABLE (no rates) — userLang=${userLanguage} userCur=${userCurrency} agencyCur=${agencyCurrency} amount=${amount}`,
+    );
     return originalFormatted;
   }
 

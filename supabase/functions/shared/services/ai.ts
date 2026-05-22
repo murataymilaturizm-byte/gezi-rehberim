@@ -5,6 +5,9 @@ const AI_TIMEOUT_MS = 25000;
 const AI_MAX_RETRIES = 2;
 const AI_MODEL = "claude-sonnet-4-5";
 const AI_MAX_TOKENS = 2000;
+// O1: 429 Retry-After header'ı üst sınırı (Anthropic genelde 5-30s döner; biz max 10s'a sınırlıyoruz
+// çünkü edge function budget'ı sınırlı + müşteri 30s beklesin istemiyoruz).
+const AI_RATE_LIMIT_MAX_DELAY_MS = 10000;
 
 function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -72,14 +75,31 @@ export async function callAI(params: {
         const errText = await response.text().catch(() => "");
         console.error(`[ai] HTTP ${response.status} attempt ${attempt}/${AI_MAX_RETRIES}: ${errText.slice(0, 200)}`);
 
+        // O1: 429 (rate limit) artık retry edilebilir. Retry-After header respekt edilir.
+        const isRateLimit = response.status === 429;
         const isTransient = response.status === 503 || response.status === 529;
+        const isRetryable = isRateLimit || isTransient;
+
         lastError = new Error(
-          response.status === 429 ? "AI_RATE_LIMIT" :
+          isRateLimit ? "AI_RATE_LIMIT" :
           isTransient ? "AI_SERVICE_UNAVAILABLE" :
           `AI_HTTP_${response.status}`
         );
-        if (!isTransient || attempt === AI_MAX_RETRIES) throw lastError;
-        await delay(1000 * attempt);
+        if (!isRetryable || attempt === AI_MAX_RETRIES) throw lastError;
+
+        // O1: 429 için Retry-After header'ı oku (saniye), yoksa exponential backoff.
+        let waitMs = 1000 * attempt;
+        if (isRateLimit) {
+          const ra = response.headers.get("retry-after");
+          const sec = ra ? Number(ra) : NaN;
+          if (Number.isFinite(sec) && sec > 0) {
+            waitMs = Math.min(sec * 1000, AI_RATE_LIMIT_MAX_DELAY_MS);
+          } else {
+            waitMs = Math.min(2000 * attempt, AI_RATE_LIMIT_MAX_DELAY_MS);
+          }
+          console.warn(`[ai] 429 rate limit — waiting ${waitMs}ms before retry (attempt ${attempt})`);
+        }
+        await delay(waitMs);
         continue;
       }
 
@@ -90,8 +110,12 @@ export async function callAI(params: {
         .join("") || "";
     } catch (err) {
       lastError = err instanceof Error ? err : new Error("AI_UNKNOWN");
+      // O1: 429 da retry edilebilir (üst blokta zaten retry yapıldı; burası catch içine düşen
+      // throw'ları yakalıyor — örn. network exception). RATE_LIMIT mesajı varsa retry'a izin ver.
       const shouldRetry =
-        (lastError.message.includes("AI_SERVICE_UNAVAILABLE") || lastError.message === "AI_TIMEOUT") &&
+        (lastError.message.includes("AI_SERVICE_UNAVAILABLE") ||
+         lastError.message === "AI_TIMEOUT" ||
+         lastError.message === "AI_RATE_LIMIT") &&
         attempt < AI_MAX_RETRIES;
       if (!shouldRetry) throw lastError;
       console.warn(`[ai] Retrying after error (attempt ${attempt}):`, lastError.message);

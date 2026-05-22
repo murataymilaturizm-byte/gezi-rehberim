@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { DollarSign, Users, TrendingUp, Target, Sun } from "lucide-react";
+import { DollarSign, Users, TrendingUp, Target, Sun, AlertCircle, RefreshCw } from "lucide-react";
 import { useAgencyDashboardData } from "@/hooks/useAgencyDashboardData";
 import { DashboardSkeleton } from "@/components/admin/skeletons/DashboardSkeleton";
 import { WelcomeHeader } from "@/components/admin/dashboard/WelcomeHeader";
@@ -9,6 +9,8 @@ import { RecentRegistrations } from "@/components/admin/dashboard/RecentRegistra
 import { TourPerformance } from "@/components/admin/dashboard/TourPerformance";
 import { QuickActions } from "@/components/admin/dashboard/QuickActions";
 import { UsageStats } from "@/components/UsageStats";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 interface AgencyDashboardProps {
   onTabChange?: (tab: string) => void;
@@ -33,6 +35,7 @@ export const AgencyDashboard = ({
   const {
     stats, comparison, recentRegistrations, popularTours,
     revenueSpark, regSpark, weekTrend, monthTrend, todayStats, loading,
+    error, reload,   // O2: hata banner'ı + reload butonu
   } = useAgencyDashboardData(undefined, agencyId);
 
   if (loading) return <DashboardSkeleton />;
@@ -49,6 +52,27 @@ export const AgencyDashboard = ({
 
   return (
     <div className="space-y-4 sm:space-y-5">
+      {/* O2: Veri yükleme hatası — sessiz boş veri yerine görünür uyarı + tekrar dene */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>
+            {t("dashboard.error.title", { defaultValue: "Veriler yüklenemedi" })}
+          </AlertTitle>
+          <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
+            <span className="text-sm">
+              {t("dashboard.error.description", {
+                defaultValue: "Sunucuya bağlanırken bir hata oluştu. Bağlantınızı kontrol edip tekrar deneyin.",
+              })}
+            </span>
+            <Button variant="outline" size="sm" onClick={() => reload?.()} className="shrink-0">
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+              {t("common.retry", { defaultValue: "Tekrar dene" })}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* 1. Welcome Header — AIMascot + bot status + greeting (sol taraf) */}
       <WelcomeHeader
         agencyName={agencyName}
@@ -58,7 +82,7 @@ export const AgencyDashboard = ({
         whatsappStatus={whatsappStatus}
       />
 
-      {/* 2. Hero KPI Cards — 5 kart (Bugün eklendi) */}
+      {/* 2. Hero KPI Cards — 5 kart (Bugün + Tahsilat + Hacim ayrı) */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <HeroKPICard
           title={t("admin.dashboard.todaySales", { defaultValue: "Bugün" })}
@@ -67,8 +91,14 @@ export const AgencyDashboard = ({
           currentValue={todayStats.registrations}
           comparisonLabel={
             todayStats.revenue > 0
-              ? `${todayStats.revenue.toLocaleString("tr-TR")}₺`
-              : t("dashboard.kpi.noTodaySales", { defaultValue: "henüz satış yok" })
+              ? `${t("dashboard.kpi.paidShort", { defaultValue: "Tahsilat" })}: ${todayStats.revenue.toLocaleString("tr-TR")}₺`
+              : t("dashboard.kpi.noTodaySales", { defaultValue: "henüz tahsilat yok" })
+          }
+          // K1: Bugün rezerve edilen hacim — tahsilattan farklı olabilir
+          secondaryLabel={
+            todayStats.bookingVolume > 0
+              ? `${t("dashboard.kpi.reservedShort", { defaultValue: "Rezerve" })}: ${todayStats.bookingVolume.toLocaleString("tr-TR")}₺`
+              : undefined
           }
           strokeColor="hsl(38 92% 50%)"
           gradientId="today-grad"
@@ -76,12 +106,19 @@ export const AgencyDashboard = ({
           onClick={() => onTabChange?.("registrations")}
         />
         <HeroKPICard
-          title={t("admin.dashboard.totalRevenue", { defaultValue: "Gelir (Onaylı)" })}
+          // K1: "Gelir (Onaylı)" → "Tahsilat" (gerçek paid_amount toplamı)
+          title={t("admin.dashboard.collectedRevenue", { defaultValue: "Tahsilat" })}
           value={stats.totalRevenue}
           suffix="₺"
           previousValue={comparison.previousRevenue}
           currentValue={stats.totalRevenue}
           comparisonLabel={t("dashboard.kpi.vsLastWeek", { defaultValue: "geçen haftaya göre" })}
+          // K1: ikincil olarak rezervasyon hacmi (henüz tahsil edilmemiş ciro)
+          secondaryLabel={
+            stats.bookingVolume > 0
+              ? `${t("dashboard.kpi.reservedShort", { defaultValue: "Rezerve" })}: ${Math.round(stats.bookingVolume).toLocaleString("tr-TR")}₺`
+              : undefined
+          }
           sparkline={revenueSpark}
           strokeColor="hsl(16 95% 55%)"
           gradientId="rev-grad"
