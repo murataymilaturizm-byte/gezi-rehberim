@@ -725,7 +725,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       if (totalPrice > 0) {
         const payMsg = await generatePaymentMessage(
           paymentInstructions, newContext.language, totalPrice, depositAmt,
-          selectedTourFull?.currency || "TRY", { languageCurrencies, primaryCurrency }
+          selectedTourFull?.currency || "TRY",
+          { languageCurrencies, primaryCurrency, agencyPhone: agency.phone_public }
         );
         if (payMsg) {
           completionReply += payMsg;
@@ -993,7 +994,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (totalPrice > 0) {
       const payMsg = await generatePaymentMessage(
         paymentInstructions, newContext.language, totalPrice, depositAmt,
-        tourCurr, { languageCurrencies, primaryCurrency }
+        tourCurr, { languageCurrencies, primaryCurrency, agencyPhone: agency.phone_public }
       );
       if (payMsg) {
         reply = reply + payMsg;

@@ -1965,14 +1965,18 @@
     "night": "Спокойной ночи"
   },
   "dashboard": {
+    "botOnline": "В сети",
+    "botOffline": "Не подключён",
     "kpi": {
-      "vsLastWeek": "к прошлой неделе"
+      "vsLastWeek": "к прошлой неделе",
+      "noTodaySales": "продаж пока нет"
     },
     "welcome": {
       "todayStats": "{{count}} новых бронирований сегодня",
       "revenue": "доход",
       "pending": "ожидают",
-      "noRegistrations": "Сегодня бронирований нет. Ваш WhatsApp-бот работает! 💬"
+      "noRegistrations": "Сегодня бронирований нет. Ваш WhatsApp-бот работает! 💬",
+      "botNotConnected": "WhatsApp ещё не подключён. Подключите его в настройках, чтобы встречать первых клиентов."
     },
     "salesTrend": {
       "title": "Тренд продаж",

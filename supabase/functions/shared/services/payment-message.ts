@@ -99,6 +99,23 @@ async function convertPrice(price: number, fromCurrency: string, toCurrency: str
   }
 }
 
+// Payment bilgisi YOKKEN müşteriye gösterilecek güvenli fallback (7 dil)
+// Önceden boş string dönüyordu → müşteri ödeme talimatı alamıyor + sebebini bilemiyordu.
+// Şimdi: "Ödeme bilgileri için acenteye iletişime geçin" + (varsa) acente telefonu.
+function buildPaymentFallbackMessage(language: string, agencyPhone?: string | null): string {
+  const _phone = (typeof agencyPhone === "string" && agencyPhone.trim()) ? ` 📞 ${agencyPhone}` : "";
+  const _msgs: Record<string, string> = {
+    tr: `\n\n💳 *Ödeme Bilgileri*\nÖdeme detayları için lütfen acentemizle iletişime geçin.${_phone}`,
+    en: `\n\n💳 *Payment Information*\nPlease contact our agency for payment details.${_phone}`,
+    de: `\n\n💳 *Zahlungsinformationen*\nBitte kontaktieren Sie unsere Agentur für Zahlungsdetails.${_phone}`,
+    ru: `\n\n💳 *Информация об оплате*\nДля деталей оплаты, пожалуйста, свяжитесь с нашим агентством.${_phone}`,
+    ar: `\n\n💳 *معلومات الدفع*\nيرجى التواصل مع وكالتنا للحصول على تفاصيل الدفع.${_phone}`,
+    fr: `\n\n💳 *Informations de paiement*\nVeuillez contacter notre agence pour les détails de paiement.${_phone}`,
+    es: `\n\n💳 *Información de pago*\nPor favor contacte con nuestra agencia para detalles de pago.${_phone}`,
+  };
+  return _msgs[language] || _msgs.tr;
+}
+
 export async function generatePaymentMessage(
   paymentInstructions: any,
   language: string,
@@ -108,14 +125,17 @@ export async function generatePaymentMessage(
   options?: {
     languageCurrencies?: any;
     primaryCurrency?: string;
+    agencyPhone?: string | null;   // YENİ: fallback mesajında göstermek için
   },
 ): Promise<string> {
+  // payment_instructions boşsa: sessiz boş yerine güvenli fallback mesaj döner.
+  // Müşteri "Ödeme bilgileri için iletişime geçin" yazısını görür, kafa karışıklığı önlenir.
   if (
     !paymentInstructions ||
     !paymentInstructions.payment_methods ||
     paymentInstructions.payment_methods.length === 0
   ) {
-    return "";
+    return buildPaymentFallbackMessage(language, options?.agencyPhone);
   }
 
   // Bu dili kullanan kullanıcı için hedef para birimini bul

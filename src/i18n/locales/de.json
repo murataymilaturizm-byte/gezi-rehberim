@@ -1931,14 +1931,18 @@
     "night": "Gute Nacht"
   },
   "dashboard": {
+    "botOnline": "Online",
+    "botOffline": "Nicht verbunden",
     "kpi": {
-      "vsLastWeek": "vs letzte Woche"
+      "vsLastWeek": "vs letzte Woche",
+      "noTodaySales": "noch keine Verkäufe"
     },
     "welcome": {
       "todayStats": "{{count}} neue Buchungen heute",
       "revenue": "Einnahmen",
       "pending": "ausstehend",
-      "noRegistrations": "Heute noch keine Buchungen. Ihr WhatsApp-Bot läuft! 💬"
+      "noRegistrations": "Heute noch keine Buchungen. Ihr WhatsApp-Bot läuft! 💬",
+      "botNotConnected": "WhatsApp ist noch nicht verbunden. Verbinden Sie es in den Einstellungen, um Ihre ersten Kunden zu begrüßen."
     },
     "salesTrend": {
       "title": "Verkaufstrend",

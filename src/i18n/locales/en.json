@@ -1931,14 +1931,18 @@
     "night": "Good night"
   },
   "dashboard": {
+    "botOnline": "Online",
+    "botOffline": "Not connected",
     "kpi": {
-      "vsLastWeek": "vs last week"
+      "vsLastWeek": "vs last week",
+      "noTodaySales": "no sales yet"
     },
     "welcome": {
       "todayStats": "{{count}} new reservations today",
       "revenue": "revenue",
       "pending": "pending",
-      "noRegistrations": "No reservations today. Your WhatsApp bot is running! 💬"
+      "noRegistrations": "No reservations today. Your WhatsApp bot is running! 💬",
+      "botNotConnected": "WhatsApp is not connected yet. Connect it from settings to welcome your first customers."
     },
     "salesTrend": {
       "title": "Sales Trend",

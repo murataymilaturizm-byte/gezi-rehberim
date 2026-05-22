@@ -10,6 +10,8 @@ interface AdminDashboardProps {
   onBulkImport?: () => void;
   onManualReg?: () => void;
   agencyId?: string | null;
+  agencyName?: string;
+  whatsappStatus?: string;
 }
 
 export const AdminDashboard = ({
@@ -20,6 +22,8 @@ export const AdminDashboard = ({
   onBulkImport,
   onManualReg,
   agencyId,
+  agencyName,
+  whatsappStatus,
 }: AdminDashboardProps) => {
   if (isSuperAdmin) {
     return <SuperAdminDashboard planFeatures={planFeatures} />;
@@ -32,6 +36,8 @@ export const AdminDashboard = ({
       onBulkImport={onBulkImport}
       onManualReg={onManualReg}
       agencyId={agencyId}
+      agencyName={agencyName}
+      whatsappStatus={whatsappStatus}
     />
   );
 };

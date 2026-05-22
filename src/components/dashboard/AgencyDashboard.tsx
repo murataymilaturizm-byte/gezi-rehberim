@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { DollarSign, Users, TrendingUp, Target } from "lucide-react";
+import { DollarSign, Users, TrendingUp, Target, Sun } from "lucide-react";
 import { useAgencyDashboardData } from "@/hooks/useAgencyDashboardData";
 import { DashboardSkeleton } from "@/components/admin/skeletons/DashboardSkeleton";
 import { WelcomeHeader } from "@/components/admin/dashboard/WelcomeHeader";
@@ -16,6 +16,8 @@ interface AgencyDashboardProps {
   onBulkImport?: () => void;
   onManualReg?: () => void;
   agencyId?: string | null;
+  agencyName?: string;
+  whatsappStatus?: string;
 }
 
 export const AgencyDashboard = ({
@@ -24,6 +26,8 @@ export const AgencyDashboard = ({
   onBulkImport,
   onManualReg,
   agencyId,
+  agencyName = "",
+  whatsappStatus,
 }: AgencyDashboardProps) => {
   const { t } = useTranslation();
   const {
@@ -45,16 +49,32 @@ export const AgencyDashboard = ({
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      {/* 1. Welcome Header */}
+      {/* 1. Welcome Header — AIMascot + bot status + greeting (sol taraf) */}
       <WelcomeHeader
-        agencyName=""
+        agencyName={agencyName}
         todayRegistrations={todayStats.registrations}
         todayRevenue={todayStats.revenue}
         pendingCount={todayStats.pendingCount}
+        whatsappStatus={whatsappStatus}
       />
 
-      {/* 2. Hero KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* 2. Hero KPI Cards — 5 kart (Bugün eklendi) */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <HeroKPICard
+          title={t("admin.dashboard.todaySales", { defaultValue: "Bugün" })}
+          value={todayStats.registrations}
+          previousValue={0}
+          currentValue={todayStats.registrations}
+          comparisonLabel={
+            todayStats.revenue > 0
+              ? `${todayStats.revenue.toLocaleString("tr-TR")}₺`
+              : t("dashboard.kpi.noTodaySales", { defaultValue: "henüz satış yok" })
+          }
+          strokeColor="hsl(38 92% 50%)"
+          gradientId="today-grad"
+          icon={<Sun className="h-4 w-4 text-amber-500" />}
+          onClick={() => onTabChange?.("registrations")}
+        />
         <HeroKPICard
           title={t("admin.dashboard.totalRevenue", { defaultValue: "Gelir (Onaylı)" })}
           value={stats.totalRevenue}

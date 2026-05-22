@@ -1923,14 +1923,18 @@
     "night": "İyi geceler"
   },
   "dashboard": {
+    "botOnline": "Çevrimiçi",
+    "botOffline": "Bağlı değil",
     "kpi": {
-      "vsLastWeek": "geçen haftaya göre"
+      "vsLastWeek": "geçen haftaya göre",
+      "noTodaySales": "henüz satış yok"
     },
     "welcome": {
       "todayStats": "Bugün {{count}} yeni rezervasyon",
       "revenue": "gelir",
       "pending": "bekliyor",
-      "noRegistrations": "Bugün henüz rezervasyon yok. WhatsApp botunuz çalışıyor! 💬"
+      "noRegistrations": "Bugün henüz rezervasyon yok. WhatsApp botunuz çalışıyor! 💬",
+      "botNotConnected": "WhatsApp henüz bağlı değil. İlk müşterilerinizi karşılamak için ayarlardan bağlayın."
     },
     "salesTrend": {
       "title": "Satış Trendi",

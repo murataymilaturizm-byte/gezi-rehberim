@@ -8,10 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-import { Loader2, CreditCard, Building2, Percent } from "lucide-react";
+import { Loader2, CreditCard, Building2, Percent, Bot } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PaymentInstructions {
   payment_type?: "deposit" | "full";
@@ -109,6 +110,33 @@ export const PaymentSettings = () => {
     ) {
       toast({
         title: t("admin.paymentSettings.messages.invalidDepositPct"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // IBAN format validation (varsa) — ^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$
+    const _ibanRe = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
+    for (const lang of ["tr", "en"]) {
+      const _iban = (paymentInstructions[lang]?.iban || "").replace(/\s+/g, "").toUpperCase();
+      if (_iban && !_ibanRe.test(_iban)) {
+        toast({
+          title: t("admin.paymentSettings.messages.invalidIban", {
+            defaultValue: "IBAN formatı geçersiz (örnek: TR00 0000 0000 0000 0000 0000 00)"
+          }),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Cross-form: cash_office seçildiyse acente adresi zorunlu — bot adres göstermek için
+    const _methods: string[] = paymentInstructions.payment_methods || [];
+    if (_methods.includes("cash_office") && !agencyAddress.trim()) {
+      toast({
+        title: t("admin.paymentSettings.messages.cashOfficeNeedsAddress", {
+          defaultValue: "Ofiste ödeme seçildi, ancak Acente Bilgileri'nde adres boş. Lütfen önce adres girin."
+        }),
         variant: "destructive",
       });
       return;
@@ -262,6 +290,16 @@ export const PaymentSettings = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
+          {/* Bot uyarısı: ödeme bilgilerinin müşteriye yansıyacağını vurgula */}
+          <Alert className="border-primary/40 bg-primary/5">
+            <Bot className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-sm">
+              {t("admin.paymentSettings.botUsageWarning", {
+                defaultValue: "🤖 Bot, rezervasyon sonrası müşteriye bu ödeme bilgilerini gönderir. Boş bırakırsanız müşteri detaylı ödeme talimatı alamaz."
+              })}
+            </AlertDescription>
+          </Alert>
+
           {/* Payment Type Section */}
           <div className="space-y-4 pb-6 border-b">
             <div>

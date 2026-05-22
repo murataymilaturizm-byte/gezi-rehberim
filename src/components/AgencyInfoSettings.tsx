@@ -137,6 +137,54 @@ export function AgencyInfoSettings() {
   const handleSave = async () => {
     if (!agencyId) return;
 
+    // Validation (silent failure önleme): bot bunları müşteriye gösterir.
+    const _phone = (agencyInfo.phone_public || "").trim();
+    if (_phone) {
+      const _cleaned = _phone.replace(/[\s\-()]/g, "");
+      // E.164 + yerel format toleransı (10-15 hane, başında + opsiyonel)
+      if (!/^\+?\d{10,15}$/.test(_cleaned)) {
+        toast({
+          title: t("agencyInfo.invalidPhone", {
+            defaultValue: "Telefon formatı geçersiz. Örnek: +90 555 123 45 67"
+          }),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const _website = (agencyInfo.website_url || "").trim();
+    if (_website) {
+      try {
+        const _u = new URL(_website);
+        if (!["http:", "https:"].includes(_u.protocol)) throw new Error("invalid_protocol");
+      } catch {
+        toast({
+          title: t("agencyInfo.invalidUrl", {
+            defaultValue: "Web sitesi adresi geçersiz. Örnek: https://acente.com"
+          }),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const _maps = (agencyInfo.maps_url || "").trim();
+    if (_maps) {
+      try {
+        const _u = new URL(_maps);
+        if (!["http:", "https:"].includes(_u.protocol)) throw new Error("invalid_protocol");
+      } catch {
+        toast({
+          title: t("agencyInfo.invalidMapsUrl", {
+            defaultValue: "Harita bağlantısı geçersiz. Örnek: https://maps.google.com/..."
+          }),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const serialized = formatWorkingHoursForDisplay(workingHours);

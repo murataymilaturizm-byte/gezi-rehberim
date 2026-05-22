@@ -1931,14 +1931,18 @@
     "night": "تصبح على خير"
   },
   "dashboard": {
+    "botOnline": "متصل",
+    "botOffline": "غير متصل",
     "kpi": {
-      "vsLastWeek": "مقارنة بالأسبوع الماضي"
+      "vsLastWeek": "مقارنة بالأسبوع الماضي",
+      "noTodaySales": "لا مبيعات بعد"
     },
     "welcome": {
       "todayStats": "{{count}} حجز جديد اليوم",
       "revenue": "إيرادات",
       "pending": "قيد الانتظار",
-      "noRegistrations": "لا حجوزات اليوم. روبوت واتساب يعمل! 💬"
+      "noRegistrations": "لا حجوزات اليوم. روبوت واتساب يعمل! 💬",
+      "botNotConnected": "واتساب غير متصل بعد. قم بربطه من الإعدادات لاستقبال عملائك الأوائل."
     },
     "salesTrend": {
       "title": "اتجاه المبيعات",

@@ -805,6 +805,8 @@ const Admin = () => {
                 onBulkImport={() => setBulkImportOpen(true)}
                 onManualReg={() => setManualRegistrationDialogOpen(true)}
                 agencyId={userAgencyId}
+                agencyName={agencyName}
+                whatsappStatus={whatsappStatus}
               />
             ) : activeTab === "whatsapp" ? (
               <WhatsAppConversations isSuperAdmin={isSuperAdmin} />

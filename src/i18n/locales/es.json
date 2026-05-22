@@ -1965,14 +1965,18 @@
     "night": "Buenas noches"
   },
   "dashboard": {
+    "botOnline": "En línea",
+    "botOffline": "No conectado",
     "kpi": {
-      "vsLastWeek": "vs semana pasada"
+      "vsLastWeek": "vs semana pasada",
+      "noTodaySales": "sin ventas todavía"
     },
     "welcome": {
       "todayStats": "{{count}} nuevas reservas hoy",
       "revenue": "ingresos",
       "pending": "pendientes",
-      "noRegistrations": "Sin reservas hoy. ¡Tu bot de WhatsApp está activo! 💬"
+      "noRegistrations": "Sin reservas hoy. ¡Tu bot de WhatsApp está activo! 💬",
+      "botNotConnected": "WhatsApp aún no está conectado. Conéctalo desde ajustes para recibir a tus primeros clientes."
     },
     "salesTrend": {
       "title": "Tendencia de ventas",
