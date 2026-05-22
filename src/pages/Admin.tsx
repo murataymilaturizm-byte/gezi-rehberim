@@ -835,7 +835,7 @@ const Admin = () => {
             ) : activeTab === "history" ? (
               <SubscriptionHistory />
             ) : activeTab === "customer-feedback" && (planFeatures?.has_feedback || isSuperAdmin) ? (
-              <CustomerFeedback />
+              <CustomerFeedback isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "language-stats" ? (
               <LanguageStats isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp-logs" ? (

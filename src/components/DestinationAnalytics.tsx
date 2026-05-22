@@ -251,7 +251,7 @@ export const DestinationAnalytics = () => {
         totalDestinations: topDestinations.length,
         totalRevenue,
         totalBookings,
-        averageBookingValue: totalRevenue / totalBookings,
+        averageBookingValue: totalBookings > 0 ? totalRevenue / totalBookings : 0,
         monthlyTrends
       });
     } catch (error) {

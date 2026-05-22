@@ -2332,6 +2332,8 @@
     "adminTitle": "Tüm Destek Talepleri",
     "createNew": "Yeni Talep Oluştur",
     "noTickets": "Henüz destek talebi bulunmuyor",
+    "noTicketsHint": "Yeni bir destek talebi oluşturmak için yukarıdaki butona tıklayın.",
+    "noTicketsAdminHint": "Henüz herhangi bir destek talebi bulunmuyor.",
     "viewDetails": "Detayları Gör",
     "created": "Oluşturulma",
     "fillAllFields": "Lütfen tüm alanları doldurun",
@@ -2430,6 +2432,7 @@
     }
   },
   "common": {
+    "unknown": "Bilinmiyor",
     "loading": "Yükleniyor...",
     "error": "Hata",
     "success": "Başarılı",

@@ -486,6 +486,8 @@
     "adminTitle": "All Support Tickets",
     "createNew": "Create New Ticket",
     "noTickets": "No support tickets yet",
+    "noTicketsHint": "Click the button above to create a new support ticket.",
+    "noTicketsAdminHint": "There are no support tickets yet.",
     "viewDetails": "View Details",
     "created": "Created",
     "fillAllFields": "Please fill in all fields",
@@ -2339,6 +2341,7 @@
     "backHome": "Return to Home"
   },
   "common": {
+    "unknown": "Unknown",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",

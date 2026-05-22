@@ -279,16 +279,18 @@ export const RegistrationDetailDialog = ({
       // When payment_status changes, sync paid_amount accordingly
       if (field === "payment_status") {
         if (value === "PAID") {
+          // Guard: totalAmount undefined/NaN → 0'a düş, DB'ye NaN gitmesin
+          const _safeTotal = Number.isFinite(totalAmount) && totalAmount > 0 ? totalAmount : 0;
           // Mark as fully paid - create a payment record for the full amount if no payments exist
-          updateData.paid_amount = totalAmount;
-          setCurrentPaidAmount(totalAmount);
+          updateData.paid_amount = _safeTotal;
+          setCurrentPaidAmount(_safeTotal);
 
           // Check if there are existing payments
-          if (paymentHistory.length === 0) {
+          if (paymentHistory.length === 0 && _safeTotal > 0) {
             // Auto-create a payment record for the full amount
             await supabase.from("registration_payments").insert({
               registration_id: registration.id,
-              amount: totalAmount,
+              amount: _safeTotal,
               payment_method: "CASH",
               payment_date: new Date().toISOString(),
               note: "Tam ödeme (durum değişikliği ile)"

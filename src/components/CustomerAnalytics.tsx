@@ -158,8 +158,12 @@ export const CustomerAnalytics = () => {
       const potentialCustomers = profiles.filter(p => p.tags?.includes('potential')).length;
       const inactiveCustomers = profiles.filter(p => p.tags?.includes('inactive')).length;
 
-      const averageMessages = profiles.reduce((sum, p) => sum + (p.total_messages || 0), 0) / totalCustomers;
-      const averageBookings = profiles.reduce((sum, p) => sum + (p.total_bookings || 0), 0) / totalCustomers;
+      const averageMessages = totalCustomers > 0
+        ? profiles.reduce((sum, p) => sum + (p.total_messages || 0), 0) / totalCustomers
+        : 0;
+      const averageBookings = totalCustomers > 0
+        ? profiles.reduce((sum, p) => sum + (p.total_bookings || 0), 0) / totalCustomers
+        : 0;
 
       // Top customers by spending
       const topCustomers = profiles

@@ -34,6 +34,7 @@ import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
+import { clearPlanFeaturesCache } from "@/utils/planFeatures";
 import {
   History,
   CheckCircle2,
@@ -573,6 +574,11 @@ export const SubscriptionHistory = () => {
         });
 
       if (historyError) throw historyError;
+
+      // K2 fix: plan özellikleri cache'ini temizle — yeni limit/style/feature anında etkili
+      clearPlanFeaturesCache();
+      // whatsapp-webhook her istekte agency'i fresh okuyor (cache yok),
+      // demo-chat ise plan_type kullanmıyor — frontend cache temizliği yeterli
 
       toast({
         title: t("common.successTitle"),

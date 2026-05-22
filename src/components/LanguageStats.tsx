@@ -56,6 +56,7 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
   const [loading, setLoading] = useState(true);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
+  const [ownAgencyId, setOwnAgencyId] = useState<string>(""); // K3: normal kullanıcının kendi acentesi
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalMessages, setTotalMessages] = useState(0);
 
@@ -63,15 +64,25 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
     if (isSuperAdmin) {
       loadAgencies();
     } else {
-      loadLanguageStats();
+      // K3 fix: önce kendi acente ID'sini al, sonra sorgu yap
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        supabase.from("agencies").select("id").eq("user_id", user.id).maybeSingle()
+          .then(({ data }) => {
+            if (data?.id) setOwnAgencyId(data.id);
+          });
+      });
     }
   }, [isSuperAdmin]);
 
   useEffect(() => {
-    if (selectedAgencyId || !isSuperAdmin) {
+    // Super admin: selectedAgencyId varsa yükle. Normal: ownAgencyId varsa yükle.
+    if (isSuperAdmin && selectedAgencyId) {
+      loadLanguageStats();
+    } else if (!isSuperAdmin && ownAgencyId) {
       loadLanguageStats();
     }
-  }, [selectedAgencyId]);
+  }, [selectedAgencyId, ownAgencyId, isSuperAdmin]);
 
   const loadAgencies = async () => {
     try {
@@ -98,8 +109,18 @@ export const LanguageStats = ({ isSuperAdmin = false }: LanguageStatsProps) => {
         .from("whatsapp_user_profiles")
         .select("language_preference, total_messages");
 
+      // K3 fix: defense-in-depth — her durumda agency_id filtresi
       if (isSuperAdmin && selectedAgencyId) {
         query = query.eq("agency_id", selectedAgencyId);
+      } else if (!isSuperAdmin && ownAgencyId) {
+        query = query.eq("agency_id", ownAgencyId);
+      } else {
+        // Filtre yoksa hiç sorgu yapma (RLS koruyor ama explicit guard)
+        setLanguageData([]);
+        setTotalUsers(0);
+        setTotalMessages(0);
+        setLoading(false);
+        return;
       }
 
       const { data, error } = await query;

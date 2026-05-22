@@ -12,6 +12,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Star, MessageSquare, TrendingUp, Users, Calendar as CalendarIcon, Filter } from "lucide-react";
 import { format, startOfMonth, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
@@ -70,7 +77,11 @@ const localeMap = {
   es: es,
 };
 
-export const CustomerFeedback = () => {
+interface CustomerFeedbackProps {
+  isSuperAdmin?: boolean;
+}
+
+export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps = {}) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
@@ -88,14 +99,34 @@ export const CustomerFeedback = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   const [agencyCurrency, setAgencyCurrency] = useState<string>("TRY");
 
+  // Super admin: acente seçimi (K1 fix)
+  const [agencies, setAgencies] = useState<{ id: string; name: string }[]>([]);
+  const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
+
   const CURRENCY_SYM: Record<string, string> = {
     TRY: "₺", USD: "$", EUR: "€", GBP: "£", SAR: "﷼", AED: "د.إ", RUB: "₽",
   };
   const currencySym = CURRENCY_SYM[agencyCurrency] ?? agencyCurrency;
 
+  // Super admin için acente listesini yükle
   useEffect(() => {
+    if (!isSuperAdmin) return;
+    supabase
+      .from("agencies")
+      .select("id, name")
+      .order("name")
+      .then(({ data }) => {
+        const list = (data || []) as { id: string; name: string }[];
+        setAgencies(list);
+        if (list.length > 0 && !selectedAgencyId) setSelectedAgencyId(list[0].id);
+      });
+  }, [isSuperAdmin]);
+
+  useEffect(() => {
+    // Normal acente: kendi verisi (agency by user_id). Super admin: seçili acente.
+    if (isSuperAdmin && !selectedAgencyId) return;
     loadFeedbacks();
-  }, [dateFilter, customDateRange]);
+  }, [dateFilter, customDateRange, selectedAgencyId, isSuperAdmin]);
 
   const getDateRange = () => {
     const endDate = new Date();
@@ -139,18 +170,34 @@ export const CustomerFeedback = () => {
 
   const loadFeedbacks = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // K1: Super admin → selectedAgencyId üzerinden acente sorgula
+      //     Normal acente → user_id ile kendi acentesi
+      let agencyId: string;
+      let primaryCurrency: string | null = null;
 
-      // Get agency ID and primary currency
-      const { data: agency } = await supabase
-        .from("agencies")
-        .select("id, primary_currency")
-        .eq("user_id", user.id)
-        .single();
+      if (isSuperAdmin) {
+        if (!selectedAgencyId) return;
+        agencyId = selectedAgencyId;
+        const { data: agency } = await supabase
+          .from("agencies")
+          .select("primary_currency")
+          .eq("id", selectedAgencyId)
+          .maybeSingle();
+        primaryCurrency = agency?.primary_currency ?? null;
+      } else {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: agency } = await supabase
+          .from("agencies")
+          .select("id, primary_currency")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!agency) return;
+        agencyId = agency.id;
+        primaryCurrency = agency.primary_currency ?? null;
+      }
 
-      if (!agency) return;
-      if (agency.primary_currency) setAgencyCurrency(agency.primary_currency);
+      if (primaryCurrency) setAgencyCurrency(primaryCurrency);
 
       // Get date range
       const { startDate, endDate } = getDateRange();
@@ -159,7 +206,7 @@ export const CustomerFeedback = () => {
       const { data, error } = await supabase
         .from("whatsapp_user_profiles")
         .select("*")
-        .eq("agency_id", agency.id)
+        .eq("agency_id", agencyId)
         .not("feedback_score", "is", null)
         .gte('last_feedback_sent_at', startDate.toISOString())
         .lte('last_feedback_sent_at', endDate.toISOString())
@@ -315,6 +362,30 @@ export const CustomerFeedback = () => {
 
   return (
     <div className="space-y-6">
+      {/* Super admin: acente seçimi */}
+      {isSuperAdmin && agencies.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                {t("admin.dashboard.activeAgencies")}
+              </CardTitle>
+              <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
+                <SelectTrigger className="w-full sm:w-[280px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {agencies.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
+
       {/* Tarih Filtreleme */}
       <Card>
         <CardHeader>

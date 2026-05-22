@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Check, Sparkles } from "lucide-react";
 import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { motion } from "framer-motion";
+import { PLAN_PRICES_TRY } from "@/lib/planPricing";
 
 // Dile göre varsayılan para birimi (frontend / edge ile tutarlı)
 const LANG_TO_CURRENCY: Record<string, string> = {
@@ -14,7 +15,7 @@ const LANG_TO_CURRENCY: Record<string, string> = {
   es: "EUR", ru: "RUB", ar: "SAR",
 };
 
-const PLAN_PRICES_TRY = { starter: 2999, professional: 4999, enterprise: 7999 } as const;
+// K6: PLAN_PRICES_TRY artık @/lib/planPricing'den merkezi import ediliyor
 
 interface PricingSectionProps {
   isYearly: boolean;

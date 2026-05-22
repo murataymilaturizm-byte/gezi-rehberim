@@ -520,6 +520,8 @@
     "adminTitle": "Todos los Tickets",
     "createNew": "Crear Nuevo Ticket",
     "noTickets": "Aún no hay tickets",
+    "noTicketsHint": "Haz clic en el botón de arriba para crear un nuevo ticket.",
+    "noTicketsAdminHint": "Aún no hay tickets de soporte.",
     "viewDetails": "Ver Detalles",
     "created": "Creado",
     "fillAllFields": "Por favor complete todos los campos",
@@ -2373,6 +2375,7 @@
     "backHome": "Volver al Inicio"
   },
   "common": {
+    "unknown": "Desconocido",
     "unspecified": "No especificado",
     "loading": "Cargando...",
     "error": "Error",

@@ -486,6 +486,8 @@
     "adminTitle": "جميع التذاكر",
     "createNew": "إنشاء تذكرة جديدة",
     "noTickets": "لا توجد تذاكر بعد",
+    "noTicketsHint": "انقر على الزر أعلاه لإنشاء تذكرة دعم جديدة.",
+    "noTicketsAdminHint": "لا توجد تذاكر دعم بعد.",
     "viewDetails": "عرض التفاصيل",
     "created": "تم الإنشاء",
     "fillAllFields": "يرجى ملء جميع الحقول",
@@ -2339,6 +2341,7 @@
     "backHome": "العودة إلى الصفحة الرئيسية"
   },
   "common": {
+    "unknown": "غير معروف",
     "unspecified": "غير محدد",
     "loading": "جاري التحميل...",
     "error": "خطأ",

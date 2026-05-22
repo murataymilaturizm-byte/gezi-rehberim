@@ -14,6 +14,7 @@ import { Users, TrendingUp, Building2, MessageSquare, CheckCircle, XCircle, Filt
 import { useSuperAdminDashboardData } from "@/hooks/useSuperAdminDashboardData";
 import { RevenueAnalytics } from "@/components/RevenueAnalytics";
 import { PlanFeatures } from "@/utils/planFeatures";
+import { PLAN_PRICES_TRY } from "@/lib/planPricing";
 
 interface SuperAdminDashboardProps {
   planFeatures?: PlanFeatures | null;
@@ -34,7 +35,8 @@ export const SuperAdminDashboard = ({ planFeatures }: SuperAdminDashboardProps) 
 
   if (!superAdminStats) return null;
 
-  const planPrices = { starter: 2999, professional: 4999, enterprise: 7999 };
+  // K6 fix: tek kaynak — src/lib/planPricing.ts
+  const planPrices = PLAN_PRICES_TRY;
   const monthlyRevenue =
     superAdminStats.agenciesByPlan.starter * planPrices.starter +
     superAdminStats.agenciesByPlan.professional * planPrices.professional +

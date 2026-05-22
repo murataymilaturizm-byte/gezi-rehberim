@@ -486,6 +486,8 @@
     "adminTitle": "Alle Support-Tickets",
     "createNew": "Neues Ticket erstellen",
     "noTickets": "Noch keine Support-Tickets",
+    "noTicketsHint": "Klicken Sie oben auf die Schaltfläche, um ein neues Support-Ticket zu erstellen.",
+    "noTicketsAdminHint": "Es gibt noch keine Support-Tickets.",
     "viewDetails": "Details anzeigen",
     "created": "Erstellt",
     "fillAllFields": "Bitte füllen Sie alle Felder aus",
@@ -2339,6 +2341,7 @@
     "backHome": "Zurück zur Startseite"
   },
   "common": {
+    "unknown": "Unbekannt",
     "unspecified": "Nicht angegeben",
     "loading": "Wird geladen...",
     "error": "Fehler",

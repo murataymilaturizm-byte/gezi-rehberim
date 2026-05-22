@@ -118,7 +118,11 @@ export function BulkDateGenerator({ tourId, agencyId, open, onClose, onSuccess }
       toast({ title: t("common.error"), description: t("bulkDates.errors.noDates"), variant: "destructive" });
       return;
     }
-    if (!priceAdult || isNaN(parseFloat(priceAdult))) {
+    if (!priceAdult || isNaN(parseFloat(priceAdult)) || parseFloat(priceAdult) <= 0) {
+      toast({ title: t("common.error"), description: t("bulkDates.errors.priceRequired"), variant: "destructive" });
+      return;
+    }
+    if (priceChild && (isNaN(parseFloat(priceChild)) || parseFloat(priceChild) < 0)) {
       toast({ title: t("common.error"), description: t("bulkDates.errors.priceRequired"), variant: "destructive" });
       return;
     }
