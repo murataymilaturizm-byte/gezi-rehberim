@@ -95,17 +95,35 @@ function levenshteinDistance(a: string, b: string): number {
 }
 
 /**
+ * BUG #2 FIX: Bir turun tüm dil varyantlarını matching için topla.
+ * Hem aktif lokalize alanlar (title, destination), hem de DB'de tutulan
+ * tüm title_xx (title_tr/en/de/ru/ar/fr/es) ve destination_tr alanlarına bakar.
+ * Yabancı müşteri kendi dilinde tur adı yazınca eşleştirme yapılabilsin.
+ */
+function getTourSearchableTexts(t: any): string[] {
+  const fields = [
+    t.title,
+    t.destination,
+    t.title_tr, t.title_en, t.title_de, t.title_ru, t.title_ar, t.title_fr, t.title_es,
+    t.destination_tr,
+  ];
+  return fields.filter((s) => typeof s === "string" && s.trim().length > 0);
+}
+
+/**
  * Sorgu ile tur listesini fuzzy eşleştir (Levenshtein ≤ maxDist).
  * Her tur başlığındaki ve destinasyonundaki kelimelerle karşılaştırır.
+ * BUG #2: tüm dil varyantları da fuzzy havuzunda.
  */
 function fuzzyMatchTours(query: string, tours: any[], maxDist = 2): any[] {
   const nq = normalizeForMatch(query);
   if (nq.length < 4) return []; // çok kısa kelimeler için bypass
   return tours.filter((t) => {
-    const words = [
-      ...normalizeForMatch(t.title).split(/\s+/),
-      ...normalizeForMatch(t.destination).split(/\s+/),
-    ];
+    const allTexts = getTourSearchableTexts(t);
+    const words: string[] = [];
+    for (const text of allTexts) {
+      words.push(...normalizeForMatch(text).split(/\s+/));
+    }
     return words.some((w) => w.length >= 4 && levenshteinDistance(nq, w) <= maxDist);
   });
 }
@@ -121,25 +139,28 @@ function fuzzyMatchTours(query: string, tours: any[], maxDist = 2): any[] {
 function matchByQuery(query: string, tours: any[], checkDest = false): any[] {
   const normalized = normalizeForMatch(query);
 
-  // 1. Exact (normalize)
+  // 1. Exact (normalize) — BUG #2 FIX: tüm dil varyantlarına bak
   let hits = tours.filter((t) => {
-    const titleMatch = normalizeForMatch(t.title).includes(normalized);
-    const destMatch = checkDest && normalizeForMatch(t.destination).includes(normalized);
-    return titleMatch || destMatch;
+    const allTexts = getTourSearchableTexts(t);
+    return allTexts.some((text) => {
+      const nText = normalizeForMatch(text);
+      // checkDest=false ise sadece title alanları sayılır, destination'lara TR-eşdeğer üzerinden bakılır
+      return nText.includes(normalized);
+    });
   });
   if (hits.length > 0) return hits;
 
-  // 2. Translation map
+  // 2. Translation map (TR-eşdeğeri)
   const trName = findTurkishEquivalent(query);
   if (trName) {
-    hits = tours.filter((t) =>
-      normalizeForMatch(t.title).includes(trName) ||
-      normalizeForMatch(t.destination).includes(trName),
-    );
+    hits = tours.filter((t) => {
+      const allTexts = getTourSearchableTexts(t);
+      return allTexts.some((text) => normalizeForMatch(text).includes(trName));
+    });
     if (hits.length > 0) return hits;
   }
 
-  // 3. Fuzzy match
+  // 3. Fuzzy match (tüm dil varyantları havuzda)
   hits = fuzzyMatchTours(query, tours, 2);
   return hits;
 }
@@ -223,11 +244,11 @@ export function findMatchingTours(
     const matchedRef = matchTour(message, availableTours, expectedInput);
     if (matchedRef) {
       const normMsg = normalizeForMatch(message);
-      const allMatches = availableTours.filter(
-        (t) =>
-          normalizeForMatch(t.title).includes(normMsg) ||
-          normalizeForMatch(t.destination).includes(normMsg),
-      );
+      // BUG #2 FIX: tüm dil varyantlarına bak
+      const allMatches = availableTours.filter((t) => {
+        const allTexts = getTourSearchableTexts(t);
+        return allTexts.some((text) => normalizeForMatch(text).includes(normMsg));
+      });
       if (allMatches.length > 1) {
         multipleMatches = allMatches;
       } else {

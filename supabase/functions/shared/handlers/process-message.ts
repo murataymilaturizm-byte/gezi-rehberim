@@ -906,11 +906,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   // B1: Akış ortası bilgi sorusu — AI'ya adıma dönüş ipucu
+  // T10 FIX: collectionStep tutma şartı KALDIRILDI — sadece stage korunması yeterli.
+  // NLU soruyu farklı intent'e maplerse (örn. provide_info→general_question) collectionStep
+  // değişebilir; B1 yine de enjekte edilmeli ki AI soruyu cevaplayıp toplanan adıma dönsün.
+  // Yeni-rezervasyon (B2) / iptal (justCancelled) / sahte-onay (FIX3) yolları yukarıdaki erken
+  // return'lerle zaten yakalanır — buraya düşmez, B1 yanlışlıkla onları yakalamaz.
   let midFlowReturnPrompt = "";
   if (
     (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
-    newContext.stage === context.stage &&
-    newContext.collectionStep === context.collectionStep
+    newContext.stage === context.stage
   ) {
     const _stepHints: Record<string, Record<string, string>> = {
       waiting_for_date:  { tr: "tarih seçimini", en: "date selection", de: "Datum", ru: "выбор даты", ar: "اختيار التاريخ", fr: "choix de la date", es: "selección de fecha" },

@@ -172,6 +172,10 @@ serve(async (req) => {
         id: tour.id,
         title: pickLocalized(tour, "title", _prelimLang),
         destination: pickLocalized(tour, "destination", _prelimLang),
+        // BUG #2 FIX: tüm dil varyantları matching için
+        title_tr: tour.title, title_en: tour.title_en, title_de: tour.title_de,
+        title_ru: tour.title_ru, title_ar: tour.title_ar, title_fr: tour.title_fr, title_es: tour.title_es,
+        destination_tr: tour.destination,
         type: tour.type,
         currency: tour.currency,
         program_kisa: pickLocalized(tour, "program_kisa", _prelimLang),

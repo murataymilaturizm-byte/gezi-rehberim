@@ -318,6 +318,32 @@ export function extractNameAndPhone(
     }
   }
 
+  // BUG #1 FIX (T4): "15.12.2026" / "15/12/2026" / "15-12-2026" — DD.MM.YYYY sayısal format
+  // NLU entities.dates döndermezse fallback. ISO format (2026-12-15) zaten NLU üzerinden çalışır.
+  if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
+    const numericDateMatch = lower.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})\b/);
+    if (numericDateMatch) {
+      const day = parseInt(numericDateMatch[1]);
+      const month = parseInt(numericDateMatch[2]);
+      const year = parseInt(numericDateMatch[3]);
+      if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2100) {
+        const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        if (tourDates && tourDates.length > 0) {
+          const matched = tourDates.find((d: any) => d.departure_date === iso);
+          if (matched) {
+            result.dateId = matched.id;
+            result.selectedDate = matched.departure_date;
+          } else {
+            // tourDates'te eşleşme yoksa selectedDate'i ISO'ya çevirip set et — info-extractor da bunu kullanabilir
+            result.selectedDate = iso;
+          }
+        } else {
+          result.selectedDate = iso;
+        }
+      }
+    }
+  }
+
   // "22 aralık", "15 ocak", "15. März", "15 septembre" standart format (7 dil)
   if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
     const monthPatternMatch = lower.match(
