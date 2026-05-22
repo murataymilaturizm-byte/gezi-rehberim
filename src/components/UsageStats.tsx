@@ -3,20 +3,20 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { MessageSquare, Database, TrendingUp, AlertCircle, ShoppingCart, ChevronDown, Crown, Zap, Globe, Palette, Users, Bell, BarChart3, FileText, Star, Send } from "lucide-react";
+import { MessageSquare, Database, AlertCircle, ChevronDown, Crown, Zap, Globe, Palette, Users, Bell, BarChart3, FileText, Star, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getPlanFeatures, type PlanFeatures } from "@/utils/planFeatures";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
+// Sorun 2: ek-kota satın alma ortak bileşene taşındı (Dashboard + Planım'da kullanılır)
+import { ExtraQuotaPurchase } from "@/components/ExtraQuotaPurchase";
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 
@@ -37,10 +37,12 @@ export const UsageStats = () => {
   const [loading, setLoading] = useState(true);
   const [usage, setUsage] = useState<UsageData | null>(null);
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
-  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
-  const [purchasing, setPurchasing] = useState(false);
-  const [selectedQuotaPackage, setSelectedQuotaPackage] = useState<"500" | "1000">("500");
+  // Sorun 2: ek-kota state'i (purchaseDialogOpen / purchasing / selectedQuotaPackage)
+  // ExtraQuotaPurchase bileşenine taşındı — burada gereksiz.
   const [showFeatures, setShowFeatures] = useState(false);
+  // Sorun 2: ExtraQuotaPurchase agency_id ister — burada saklayıp prop olarak iletiyoruz.
+  const [agencyId, setAgencyId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
     loadUsageData();
@@ -50,15 +52,18 @@ export const UsageStats = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setUserEmail(user.email ?? "");
 
       const { data, error } = await supabase
         .from('agencies')
-        .select('monthly_message_count, message_limit, plan_type, last_message_reset_date, subscription_status, trial_ends_at, subscription_ends_at')
+        // Sorun 2: id eklendi (ExtraQuotaPurchase'a prop olarak verilecek — agencyId)
+        .select('id, monthly_message_count, message_limit, plan_type, last_message_reset_date, subscription_status, trial_ends_at, subscription_ends_at')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (error) throw error;
       if (!data) { setUsage(null); setLoading(false); return; }
+      setAgencyId((data as any).id ?? null);
 
       const normalizedUsage: UsageData = {
         monthly_message_count: Number(data.monthly_message_count ?? 0),
@@ -81,31 +86,8 @@ export const UsageStats = () => {
     }
   };
 
-  const handlePurchaseExtraQuota = async () => {
-    setPurchasing(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: agency } = await supabase.from('agencies').select('id').eq('user_id', user.id).single();
-      if (!agency) throw new Error("Agency not found");
-
-      // Extra kota için Professional plana yönlendir (LS starter monthly variant)
-      const storeSlug = (import.meta as any).env?.VITE_LS_STORE_SLUG ?? "turzz";
-      const variantId = "1031857"; // Başlangıç aylık — kullanıcı mevcut planını korur
-      const params = new URLSearchParams({
-        "checkout[email]": user.email ?? "",
-        "checkout[custom][agency_id]": agency.id,
-        "checkout[custom][purchase_type]": "extra_quota",
-        "checkout[custom][quota_amount]": selectedQuotaPackage,
-      });
-      window.open(`https://${storeSlug}.lemonsqueezy.com/buy/${variantId}?${params.toString()}`, "_blank");
-    } catch (error: any) {
-      console.error('Error purchasing quota:', error);
-      toast({ title: t("admin.toast.error"), description: error.message || t("admin.usageStats.paymentError"), variant: "destructive" });
-    } finally {
-      setPurchasing(false);
-    }
-  };
+  // Sorun 2: handlePurchaseExtraQuota → ExtraQuotaPurchase bileşenine taşındı.
+  // Buradan kaldırıldı — davranış aynı, sadece yer değişti.
 
   if (loading) {
     return (
@@ -233,56 +215,16 @@ export const UsageStats = () => {
           </div>
         </div>
 
-        {/* Extra Quota Button */}
-        {usage.subscription_status === 'active' && usage.message_limit !== -1 && (
-          <Dialog open={purchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="w-full h-8 text-xs">
-                <ShoppingCart className="w-3.5 h-3.5 mr-1.5" />
-                {t("admin.usageStats.buyExtraQuota")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t("admin.usageStats.extraQuotaTitle")}</DialogTitle>
-                <DialogDescription>{t("admin.usageStats.extraQuotaDescription")}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-3">
-                  {[{ amount: "500", price: "1.500 ₺" }, { amount: "1000", price: "2.699 ₺", popular: true, discount: true }].map((pkg) => (
-                    <button
-                      key={pkg.amount}
-                      onClick={() => setSelectedQuotaPackage(pkg.amount as "500" | "1000")}
-                      className={cn(
-                        "w-full p-4 border-2 rounded-lg transition-all",
-                        selectedQuotaPackage === pkg.amount ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <div className="font-semibold text-lg">{t(`admin.usageStats.quota${pkg.amount}Messages`)}</div>
-                          <div className="text-sm text-muted-foreground">{t("admin.usageStats.extraQuotaLabel")}</div>
-                          {pkg.popular && <Badge variant="secondary" className="mt-1">{t("admin.usageStats.popular")}</Badge>}
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-xl">{pkg.price}</div>
-                          <div className="text-xs text-muted-foreground">{t("admin.usageStats.oneTime")}</div>
-                          {pkg.discount && <div className="text-xs text-green-600 font-medium">{t("admin.usageStats.discount10")}</div>}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <div className="bg-muted/50 p-3 rounded-lg text-sm">
-                  <p className="text-muted-foreground">{t("admin.usageStats.quotaInfo")}</p>
-                </div>
-                <Button onClick={handlePurchaseExtraQuota} disabled={purchasing} className="w-full">
-                  {purchasing ? t("admin.usageStats.redirecting") : t("admin.usageStats.goToPayment")}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+        {/* Sorun 2: Ek-kota satın alma artık ortak bileşende.
+            Dashboard'da compact buton; Planım'da normal buton (compact=false). */}
+        <ExtraQuotaPurchase
+          agencyId={agencyId}
+          userEmail={userEmail}
+          messageLimit={usage.message_limit}
+          subscriptionStatus={usage.subscription_status}
+          compact
+        />
+        {/* Bileşen kendi içinde "active + sınırlı plan" koşulunu kontrol eder; aksi halde null döner. */}
 
         {/* Package Features - Collapsible */}
         {planFeatures && (

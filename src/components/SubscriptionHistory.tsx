@@ -7,6 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { SipayPaymentForm } from "./SipayPaymentForm";
 import { LemonSqueezyButton } from "./LemonSqueezyButton";
+// Sorun 2: ek-kota satın alma — Dashboard ile aynı bileşen.
+import { ExtraQuotaPurchase } from "./ExtraQuotaPurchase";
 import type { PaymentStatus } from "./PaymentStatusIndicator";
 import {
   Table,
@@ -73,6 +75,13 @@ interface AgencySubscription {
   subscription_ends_at: string | null;
   name?: string;
   lemonsqueezy_customer_id?: string | null;
+  /**
+   * Sorun 1: DB-driven faturalama periyodu. Hero card bu değere göre fiyat gösterir,
+   * ekrandaki isYearly toggle'a değil. LS webhook variant_id'den okuyarak buraya yazacak
+   * (LS bağlantısı sonra). Default: 'monthly'.
+   */
+  billing_cycle?: 'monthly' | 'yearly';
+  message_limit?: number | null;
 }
 
 interface PlanOption {
@@ -444,7 +453,9 @@ export const SubscriptionHistory = () => {
       const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
         .select(
-          "id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name, lemonsqueezy_customer_id"
+          // Sorun 1: billing_cycle eklendi (hero card DB-driven fiyat için)
+          // Sorun 2: message_limit eklendi (ExtraQuotaPurchase görünürlük koşulu için)
+          "id, plan_type, trial_ends_at, subscription_status, subscription_ends_at, name, lemonsqueezy_customer_id, billing_cycle, message_limit"
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -486,17 +497,14 @@ export const SubscriptionHistory = () => {
         enterprise: t("admin.agency.plans.enterprise"),
       };
 
-      const { data: agencyData } = await supabase
-        .from("agencies")
-        .select("name")
-        .eq("id", agencyId)
-        .single();
+      // Sorun 3: subscription.name zaten loadHistory'de yüklü (line 74 select'inde 'name').
+      // Ekstra agency name re-query KALDIRILDI — gereksiz round-trip.
 
       generateInvoicePDF({
         invoiceNumber,
         transactionId: item.transaction_id || item.id.substring(0, 12),
         date: item.created_at,
-        agencyName: agencyData?.name || t("admin.logs.agency"),
+        agencyName: subscription.name || t("admin.logs.agency"),
         planName: item.plan_type ? planNames[item.plan_type] : "Standart",
         amount: item.amount || 0,
         currency: item.currency || "TRY",
@@ -664,6 +672,15 @@ export const SubscriptionHistory = () => {
   const currentPlan = planOptions.find(
     (p) => p.id === subscription?.plan_type
   );
+  // Sorun 1c: Hero card için DB-driven faturalama periyodu.
+  // Ekrandaki isYearly state'i ASLA hero card'ı etkilemez — sadece "Diğer Planlar" grid'ini.
+  const isSubscriptionYearly = subscription?.billing_cycle === 'yearly';
+  // Sorun 1f: Trial veya henüz aktif olmayan abonelikte fiyat göstermek yanıltıcı —
+  // "Deneme sürümü" gösterimi kullanılır, billing_cycle değerine bakılmaz.
+  const isTrialOrInactive =
+    subscription?.subscription_status === 'trial' ||
+    subscription?.subscription_status === 'expired' ||
+    subscription?.subscription_status === 'cancelled';
 
   // Shared billing period toggle
   const BillingToggle = ({ id }: { id: string }) => (
@@ -761,9 +778,12 @@ export const SubscriptionHistory = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <BillingToggle id="billing-toggle" />
+            {/* Sorun 1c: BillingToggle hero card'tan KALDIRILDI — artık her grid'in
+                üstünde ayrı ayrı görünüyor. Hero card sabit, DB-driven. */}
 
-            {/* Current plan HERO — landing kalitesinde premium özet kart */}
+            {/* Current plan HERO — landing kalitesinde premium özet kart.
+                Sorun 1c: fiyat/periyot ekrandaki isYearly state'inden DEĞİL,
+                subscription.billing_cycle DB değerinden okunur. */}
             <div className="relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 sm:p-7 shadow-lg">
               {/* Decorative blob (subtle premium feel) */}
               <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" aria-hidden />
@@ -783,19 +803,43 @@ export const SubscriptionHistory = () => {
                     <h3 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
                       {currentPlan?.name}
                     </h3>
-                    <p className="text-2xl sm:text-3xl font-bold bg-gradient-ocean bg-clip-text text-transparent mt-2 leading-none">
-                      {currentPlan &&
-                        formatPrice(calculatePrice(currentPlan.price, isYearly), isYearly)}
-                    </p>
-                    {isYearly && currentPlan && currentPlan.price > 0 && (
-                      <div className="mt-2 space-y-0.5">
-                        <p className="text-xs text-muted-foreground line-through">
-                          {(currentPlan.price * 12).toLocaleString(i18n.language || "tr")}₺/{t("admin.subscription.yearly").toLowerCase()}
+
+                    {/* Sorun 1f: TRIAL/expired/cancelled → fiyat göstermek yanıltıcı.
+                        "Deneme sürümü — henüz aktif abonelik yok" gösterimi. */}
+                    {isTrialOrInactive ? (
+                      <p className="text-sm text-muted-foreground mt-2 leading-snug">
+                        {subscription.subscription_status === 'trial'
+                          ? t("admin.subscription.trialNoActive", { defaultValue: "Deneme sürümü — henüz aktif abonelik yok" })
+                          : t("admin.subscription.subscriptionInactive", { defaultValue: "Abonelik aktif değil" })}
+                      </p>
+                    ) : (
+                      <>
+                        {/* Sorun 1c: DB-driven fiyat — isSubscriptionYearly = subscription.billing_cycle === 'yearly' */}
+                        <p className="text-2xl sm:text-3xl font-bold bg-gradient-ocean bg-clip-text text-transparent mt-2 leading-none">
+                          {currentPlan &&
+                            formatPrice(calculatePrice(currentPlan.price, isSubscriptionYearly), isSubscriptionYearly)}
                         </p>
-                        <p className="text-xs text-success font-semibold flex items-center gap-1">
-                          💰 {t("admin.subscription.discounted")} — {(currentPlan.price * 12 * 0.1).toLocaleString(i18n.language || "tr")}₺ {t("admin.subscription.savings")}
-                        </p>
-                      </div>
+
+                        {/* Sorun 1d: Faturalama periyodu rozeti (DB-driven, 7 dil) */}
+                        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
+                          <Calendar className="h-3 w-3" />
+                          {t("admin.subscription.billingCycle", { defaultValue: "Faturalama" })}:{" "}
+                          {isSubscriptionYearly
+                            ? t("admin.subscription.yearly")
+                            : t("admin.subscription.monthly")}
+                        </div>
+
+                        {isSubscriptionYearly && currentPlan && currentPlan.price > 0 && (
+                          <div className="mt-2 space-y-0.5">
+                            <p className="text-xs text-muted-foreground line-through">
+                              {(currentPlan.price * 12).toLocaleString(i18n.language || "tr")}₺/{t("admin.subscription.yearly").toLowerCase()}
+                            </p>
+                            <p className="text-xs text-success font-semibold flex items-center gap-1">
+                              💰 {t("admin.subscription.discounted")} — {(currentPlan.price * 12 * 0.1).toLocaleString(i18n.language || "tr")}₺ {t("admin.subscription.savings")}
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -832,6 +876,16 @@ export const SubscriptionHistory = () => {
                 </div>
               )}
 
+            {/* Sorun 2: Ek-kota satın alma — Dashboard ile aynı bileşen, Planım'da da var.
+                Bileşen kendi içinde "active + sınırlı plan" koşulunu kontrol eder; aksi halde null. */}
+            <ExtraQuotaPurchase
+              agencyId={agencyId}
+              userEmail={userEmail}
+              messageLimit={Number(subscription.message_limit ?? 0)}
+              subscriptionStatus={subscription.subscription_status}
+            />
+
+
             {/* Trial / expired / cancelled: show all plans with payment */}
             {(subscription.subscription_status === "trial" ||
               subscription.subscription_status === "expired" ||
@@ -859,6 +913,14 @@ export const SubscriptionHistory = () => {
                   </AlertDescription>
                 </Alert>
 
+                {/* Sorun 1e: Toggle bu grid'in ÜSTÜNDE — kapsamı net (sadece bu planlar). */}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground text-center">
+                    {t("admin.subscription.toggleHint", { defaultValue: "Yeni plan için faturalama periyodu seçin:" })}
+                  </p>
+                  <BillingToggle id="billing-toggle-trial" />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 pt-3 px-1">
                   {planOptions.map((plan) => (
                     <PlanCard
@@ -880,13 +942,21 @@ export const SubscriptionHistory = () => {
             {/* Active subscription: show other plans for switching */}
             {subscription.subscription_status === "active" && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <h4 className="font-semibold text-foreground">
                     {t("admin.subscription.availablePlans")}
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     {t("admin.subscription.planChangeNote").split(".")[0]}
                   </p>
+                </div>
+                {/* Sorun 1e: Toggle "Diğer Planlar" grid'inin ÜSTÜNDE — sadece bu grid'i etkiler.
+                    Hero card (mevcut plan) toggle değişiminden ETKİLENMEZ. */}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground text-center">
+                    {t("admin.subscription.toggleHint", { defaultValue: "Yeni plan için faturalama periyodu seçin:" })}
+                  </p>
+                  <BillingToggle id="billing-toggle-active" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 pt-3 px-1">
                   {planOptions
