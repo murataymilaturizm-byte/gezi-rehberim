@@ -104,17 +104,31 @@ export function SendTemplateDialog({ template, agencyId, open, onClose }: SendTe
     }
   };
 
+  const POSITIONAL_NAMED_ORDER = ["full_name", "tour_name", "date", "pax", "phone"] as const;
+
   const handleRegistrationSelect = (regId: string) => {
     setSelectedRegistrationId(regId);
     const reg = recentRegistrations.find((r) => r.id === regId);
     if (reg) {
-      setVariableValues({
+      const namedValues: Record<string, string> = {
         full_name: reg.full_name || "",
         tour_name: (reg.tours as any)?.title || "",
         date: (reg.tour_dates as any)?.departure_date || "",
         pax: String(reg.pax || ""),
         phone: reg.phone || "",
-      });
+      };
+      // Positional variables (["1","2","3"]) → map to named values in order
+      const isPositional = variableList.length > 0 && variableList.every((v) => /^\d+$/.test(v));
+      if (isPositional) {
+        const positionalValues: Record<string, string> = {};
+        variableList.forEach((v, i) => {
+          const key = POSITIONAL_NAMED_ORDER[i];
+          positionalValues[v] = key ? (namedValues[key] ?? "") : "";
+        });
+        setVariableValues(positionalValues);
+      } else {
+        setVariableValues(namedValues);
+      }
     }
   };
 

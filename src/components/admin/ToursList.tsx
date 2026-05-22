@@ -34,6 +34,8 @@ import { BulkDateGenerator } from "./BulkDateGenerator";
 import { EmptyState } from "@/components/EmptyState";
 import { MapPin } from "lucide-react";
 import { ToursEmptyIllustration } from "@/components/illustrations/ToursEmptyIllustration";
+import { TourFilters, EMPTY_TOUR_FILTERS } from "./TourFilters";
+import type { TourFilterState } from "./TourFilters";
 
 interface Tour {
   id: string;
@@ -98,6 +100,27 @@ export const ToursList = ({
   const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   const [displayCurrency, setDisplayCurrency] = useState<string>('TRY');
   const { convertAndFormat, loading: ratesLoading, refresh } = useCurrencyConverter('USD');
+
+  // Filter state
+  const [filters, setFilters] = useState<TourFilterState>(EMPTY_TOUR_FILTERS);
+
+  // Derived filter helpers
+  const availableDestinations = Array.from(new Set(tours.map((t) => t.destination).filter(Boolean)));
+  const availableCurrencies = Array.from(new Set(tours.map((t) => t.currency).filter(Boolean)));
+
+  const filteredTours = tours.filter((tour) => {
+    if (filters.searchQuery && !tour.title.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
+    if (filters.filterDestination !== "ALL" && tour.destination !== filters.filterDestination) return false;
+    if (filters.filterCategory !== "ALL" && tour.tur_kategorisi !== filters.filterCategory) return false;
+    if (filters.filterType !== "ALL" && tour.type !== filters.filterType) return false;
+    if (filters.filterCurrency !== "ALL" && tour.currency !== filters.filterCurrency) return false;
+    if (filters.filterPriceMin || filters.filterPriceMax) {
+      const minPrice = tour.tour_dates?.reduce((min, d) => Math.min(min, d.price_adult ?? Infinity), Infinity) ?? 0;
+      if (filters.filterPriceMin && minPrice < Number(filters.filterPriceMin)) return false;
+      if (filters.filterPriceMax && minPrice > Number(filters.filterPriceMax)) return false;
+    }
+    return true;
+  });
 
   // Bulk date generator state
   const [bulkDateTourId, setBulkDateTourId] = useState<string | null>(null);
@@ -183,23 +206,49 @@ export const ToursList = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-sm text-muted-foreground">
+      {/* Filters */}
+      <TourFilters
+        {...filters}
+        availableDestinations={availableDestinations}
+        availableCurrencies={availableCurrencies}
+        onSearchChange={(v) => setFilters((f) => ({ ...f, searchQuery: v }))}
+        onFilterDestinationChange={(v) => setFilters((f) => ({ ...f, filterDestination: v }))}
+        onFilterCategoryChange={(v) => setFilters((f) => ({ ...f, filterCategory: v }))}
+        onFilterTypeChange={(v) => setFilters((f) => ({ ...f, filterType: v }))}
+        onFilterCurrencyChange={(v) => setFilters((f) => ({ ...f, filterCurrency: v }))}
+        onFilterPriceMinChange={(v) => setFilters((f) => ({ ...f, filterPriceMin: v }))}
+        onFilterPriceMaxChange={(v) => setFilters((f) => ({ ...f, filterPriceMax: v }))}
+        onClearFilters={() => setFilters(EMPTY_TOUR_FILTERS)}
+      />
+
+      <div className="flex justify-between items-center">
+        <p className="text-xs text-muted-foreground">
+          {filteredTours.length !== tours.length
+            ? t("tours.filters.showing", { count: filteredTours.length, total: tours.length })
+            : `${tours.length} ${t("tours.filters.total")}`}
+        </p>
+        <div className="flex items-center gap-2">
           {displayCurrency !== 'TRY' && (
-            <span className="text-xs">
+            <span className="text-xs text-muted-foreground">
               💱 {t('admin.excel.currencyConversionNote', { currency: displayCurrency })}
             </span>
           )}
+          <CurrencySelector
+            value={displayCurrency}
+            onChange={setDisplayCurrency}
+            onRefresh={refresh}
+            loading={ratesLoading}
+          />
         </div>
-        <CurrencySelector
-          value={displayCurrency}
-          onChange={setDisplayCurrency}
-          onRefresh={refresh}
-          loading={ratesLoading}
-        />
       </div>
-      
-      {tours.map((tour) => (
+
+      {filteredTours.length === 0 && tours.length > 0 && (
+        <div className="text-center py-8 text-muted-foreground text-sm">
+          {t("tours.filters.noResults")}
+        </div>
+      )}
+
+      {filteredTours.map((tour) => (
         <Card key={tour.id} className="border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20">
           <CardHeader>
             <div className="flex items-start justify-between">

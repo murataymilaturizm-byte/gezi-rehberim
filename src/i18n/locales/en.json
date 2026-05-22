@@ -1821,6 +1821,20 @@
     "message": "New message"
   },
   "tours": {
+    "emptyTitle": "No tours yet",
+    "emptyDescription": "Start by adding your first tour to offer to customers.",
+    "filters": {
+      "searchPlaceholder": "Search tour name...",
+      "destination": "Destination",
+      "allDestinations": "All Destinations",
+      "type": "Tour Type",
+      "currency": "Currency",
+      "minPrice": "Min Price",
+      "maxPrice": "Max Price",
+      "showing": "Showing {{count}} of {{total}} tours",
+      "total": "tours",
+      "noResults": "No tours match the selected filters."
+    },
     "bulkDate": "Bulk Dates",
     "bulkImport": "Import from Excel",
     "duplicate": "Duplicate",

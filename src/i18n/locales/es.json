@@ -1855,6 +1855,20 @@
     "message": "Nuevo mensaje"
   },
   "tours": {
+    "emptyTitle": "Aún no hay tours",
+    "emptyDescription": "Comience añadiendo su primer tour para ofrecerlo a los clientes.",
+    "filters": {
+      "searchPlaceholder": "Buscar por nombre...",
+      "destination": "Destino",
+      "allDestinations": "Todos los destinos",
+      "type": "Tipo de tour",
+      "currency": "Moneda",
+      "minPrice": "Precio mín.",
+      "maxPrice": "Precio máx.",
+      "showing": "Mostrando {{count}} de {{total}} tours",
+      "total": "tours",
+      "noResults": "No hay tours que coincidan con los filtros."
+    },
     "bulkDate": "Fechas masivas",
     "bulkImport": "Importar desde Excel",
     "duplicate": "Duplicar",

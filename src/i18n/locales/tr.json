@@ -1815,6 +1815,20 @@
     "message": "Yeni mesaj"
   },
   "tours": {
+    "emptyTitle": "Henüz tur eklenmemiş",
+    "emptyDescription": "İlk turunuzu ekleyerek müşterilere sunmaya başlayın.",
+    "filters": {
+      "searchPlaceholder": "Tur adı ara...",
+      "destination": "Destinasyon",
+      "allDestinations": "Tüm Destinasyonlar",
+      "type": "Tur Tipi",
+      "currency": "Para Birimi",
+      "minPrice": "Min Fiyat",
+      "maxPrice": "Max Fiyat",
+      "showing": "{{count}} / {{total}} tur gösteriliyor",
+      "total": "tur",
+      "noResults": "Filtreyle eşleşen tur bulunamadı."
+    },
     "bulkDate": "Toplu Tarih",
     "bulkImport": "Excel'den İçe Aktar",
     "duplicate": "Kopyala",

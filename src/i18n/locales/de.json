@@ -1821,6 +1821,20 @@
     "message": "Neue Nachricht"
   },
   "tours": {
+    "emptyTitle": "Noch keine Touren",
+    "emptyDescription": "Beginnen Sie mit dem Hinzufügen Ihrer ersten Tour.",
+    "filters": {
+      "searchPlaceholder": "Tourname suchen...",
+      "destination": "Reiseziel",
+      "allDestinations": "Alle Reiseziele",
+      "type": "Tourtyp",
+      "currency": "Währung",
+      "minPrice": "Min. Preis",
+      "maxPrice": "Max. Preis",
+      "showing": "{{count}} von {{total}} Touren",
+      "total": "Touren",
+      "noResults": "Keine Touren entsprechen den Filtern."
+    },
     "bulkDate": "Massendaten",
     "bulkImport": "Aus Excel importieren",
     "duplicate": "Duplizieren",

@@ -1855,6 +1855,20 @@
     "message": "Новое сообщение"
   },
   "tours": {
+    "emptyTitle": "Туры ещё не добавлены",
+    "emptyDescription": "Начните с добавления вашего первого тура.",
+    "filters": {
+      "searchPlaceholder": "Поиск по названию...",
+      "destination": "Направление",
+      "allDestinations": "Все направления",
+      "type": "Тип тура",
+      "currency": "Валюта",
+      "minPrice": "Мин. цена",
+      "maxPrice": "Макс. цена",
+      "showing": "{{count}} из {{total}} туров",
+      "total": "туров",
+      "noResults": "Туры не найдены по выбранным фильтрам."
+    },
     "bulkDate": "Массовые даты",
     "bulkImport": "Импорт из Excel",
     "duplicate": "Дублировать",

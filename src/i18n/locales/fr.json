@@ -1821,6 +1821,20 @@
     "message": "Nouveau message"
   },
   "tours": {
+    "emptyTitle": "Aucun circuit pour l'instant",
+    "emptyDescription": "Commencez par ajouter votre premier circuit.",
+    "filters": {
+      "searchPlaceholder": "Rechercher un circuit...",
+      "destination": "Destination",
+      "allDestinations": "Toutes les destinations",
+      "type": "Type de circuit",
+      "currency": "Devise",
+      "minPrice": "Prix min.",
+      "maxPrice": "Prix max.",
+      "showing": "{{count}} sur {{total}} circuits",
+      "total": "circuits",
+      "noResults": "Aucun circuit ne correspond aux filtres."
+    },
     "bulkDate": "Dates en masse",
     "bulkImport": "Importer depuis Excel",
     "duplicate": "Dupliquer",

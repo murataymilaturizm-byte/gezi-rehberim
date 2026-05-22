@@ -1821,6 +1821,20 @@
     "message": "رسالة جديدة"
   },
   "tours": {
+    "emptyTitle": "لا توجد جولات بعد",
+    "emptyDescription": "ابدأ بإضافة جولتك الأولى لتقديمها للعملاء.",
+    "filters": {
+      "searchPlaceholder": "بحث باسم الجولة...",
+      "destination": "الوجهة",
+      "allDestinations": "جميع الوجهات",
+      "type": "نوع الجولة",
+      "currency": "العملة",
+      "minPrice": "أدنى سعر",
+      "maxPrice": "أعلى سعر",
+      "showing": "عرض {{count}} من {{total}} جولة",
+      "total": "جولة",
+      "noResults": "لا توجد جولات تطابق الفلاتر."
+    },
     "bulkDate": "تواريخ جماعية",
     "bulkImport": "استيراد من Excel",
     "duplicate": "تكرار",

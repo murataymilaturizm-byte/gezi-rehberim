@@ -23,10 +23,19 @@ function extractOrderedVariables(content: string): string[] {
 }
 
 // Named variable değerlerini → Meta body.parameters formatına çevir
+// Pozisyonel değişken ("1","2") varsa → önceden tanımlı isimli alanlara sırayla map et
+const POSITIONAL_VAR_ORDER = ["full_name", "tour_name", "date", "pax", "total_amount", "currency", "meeting_time", "meeting_point"];
+
 function buildTemplateComponents(content: string, values: Record<string, string>): any[] {
   const vars = extractOrderedVariables(content);
   if (vars.length === 0) return [];
-  return [{ type: 'body', parameters: vars.map(v => ({ type: 'text', text: values[v] || '' })) }];
+
+  const isPositional = vars.every(v => /^\d+$/.test(v));
+  const parameters = isPositional
+    ? vars.map((_, i) => ({ type: 'text', text: (POSITIONAL_VAR_ORDER[i] ? values[POSITIONAL_VAR_ORDER[i]] : undefined) ?? '' }))
+    : vars.map(v => ({ type: 'text', text: values[v] || '' }));
+
+  return [{ type: 'body', parameters }];
 }
 
 // Normalize edilmiş DB dil kodu → Meta API dil kodu
