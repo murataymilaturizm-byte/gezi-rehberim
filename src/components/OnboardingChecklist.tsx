@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Check, X } from "lucide-react";
+import { CheckCircle2, Check, X, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const STORAGE_KEY = "turzz_onboarding_dismissed";
 
@@ -126,8 +127,29 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
 
   const percent = Math.round((completedCount / stepList.length) * 100);
 
+  // KRİTİK ADIMLAR: WhatsApp bağlamadan önce dolması GEREKEN setup adımları
+  // (agencyInfo, payment, selectLanguage). Eksikse uyarı çıkar.
+  // WhatsApp adımı yapıldıysa veya tüm kritikler tamamsa uyarı yumuşar/kaybolur.
+  const _criticalDone = steps.agencyInfo && steps.payment && steps.selectLanguage;
+  const _whatsappDone = steps.whatsapp;
+  const _showCriticalWarning = !_criticalDone && !_whatsappDone;
+
   return (
-    <Card className="border-primary/20 shadow-sm dark:border-primary/10">
+    <div className="space-y-3">
+      {/* KRİTİK SETUP UYARISI — kullanıcı kararı: teşvik, wizard değil */}
+      {_showCriticalWarning && (
+        <Alert className="border-amber-500/40 bg-amber-500/5 dark:bg-amber-500/10">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertDescription className="text-sm text-amber-900 dark:text-amber-200">
+            {t("admin.onboarding.criticalSetupWarning", {
+              defaultValue:
+                "Ayarlarınızı (acente bilgileri, ödeme, dil) tamamlamadan WhatsApp'ı bağlarsanız, bot müşterilere eksik veya yanlış bilgi verebilir. Önce kurulumu tamamlamanız önerilir.",
+            })}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Card className="border-primary/20 shadow-sm dark:border-primary/10">
       <CardHeader className="pb-3 pt-4 px-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0 space-y-2">
@@ -219,5 +241,6 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }

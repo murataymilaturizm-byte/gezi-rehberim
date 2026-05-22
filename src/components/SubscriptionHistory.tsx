@@ -117,86 +117,112 @@ function PlanCard({
   const IconComp = plan.icon;
   const displayedFeatures = compact ? plan.features.slice(0, 3) : plan.features;
 
+  // Köklü tasarım: landing PricingSection kalitesinde — gradient, glow, scale,
+  // premium typography. compact mode (mevcut sub'da diğer planlar) için sade.
   return (
     <Card
       className={[
-        "relative transition-all",
-        plan.popular
-          ? "ring-2 ring-primary shadow-lg shadow-primary/20"
-          : "border-border hover:border-primary/50",
-        isCurrentPlan ? "border-primary bg-primary/5" : "",
-        onSwitch ? "cursor-pointer" : "",
+        "relative overflow-hidden motion-safe:transition-all motion-safe:duration-300",
+        // Popüler plan: glow + ring + scale + premium gradient
+        plan.popular && !compact
+          ? "ring-2 ring-primary shadow-2xl shadow-primary/30 lg:scale-[1.04] z-10"
+          : "border-border",
+        // Mevcut plan: yeşil ring + success bg
+        isCurrentPlan ? "ring-2 ring-success shadow-lg shadow-success/20 bg-success/5" : "",
+        // Hover lift (popüler ve mevcut hariç — onlar zaten vurgulu)
+        !plan.popular && !isCurrentPlan ? "motion-safe:hover:shadow-xl motion-safe:hover:-translate-y-1 motion-safe:hover:border-primary/40" : "",
+        onSwitch ? "cursor-pointer motion-safe:hover:scale-[1.02]" : "",
       ]
         .filter(Boolean)
         .join(" ")}
       onClick={onSwitch ? () => onSwitch(plan) : undefined}
     >
-      {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-          <Badge className="bg-gradient-ocean text-primary-foreground">
-            {t("admin.subscription.popular")}
-          </Badge>
-        </div>
+      {/* Popüler için arka plan gradient blur — premium his */}
+      {plan.popular && !compact && (
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/8 via-transparent to-secondary/8 pointer-events-none" aria-hidden />
       )}
-      {isCurrentPlan && (
-        <div className="absolute -top-3 right-3 z-10">
-          <Badge variant="default" className="bg-success text-success-foreground">
-            {t("admin.subscription.currentPlan")}
+
+      {/* Popüler badge */}
+      {plan.popular && !compact && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+          <Badge className="bg-gradient-ocean text-primary-foreground shadow-md font-semibold px-3 py-1 motion-safe:animate-glow-pulse">
+            ⭐ {t("admin.subscription.popular")}
           </Badge>
         </div>
       )}
 
-      <CardContent className={compact ? "p-4 space-y-3" : "p-6 space-y-4"}>
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <IconComp className="h-5 w-5 text-primary" />
-          <h5
-            className={`font-semibold text-foreground ${
-              compact ? "" : "text-lg"
-            }`}
-          >
+      {/* Mevcut plan badge */}
+      {isCurrentPlan && (
+        <div className="absolute -top-3 right-3 z-20">
+          <Badge className="bg-success text-success-foreground shadow-md font-semibold px-3 py-1">
+            ✓ {t("admin.subscription.currentPlan")}
+          </Badge>
+        </div>
+      )}
+
+      <CardContent className={compact ? "p-4 space-y-3" : "p-6 sm:p-7 space-y-5"}>
+        {/* Header — Icon kutusunda + plan adı premium */}
+        <div className="flex items-center gap-2.5">
+          <div className={[
+            "rounded-lg p-2 flex items-center justify-center shrink-0",
+            plan.popular ? "bg-gradient-ocean text-white shadow-md" : "bg-primary/10 text-primary",
+          ].join(" ")}>
+            <IconComp className={compact ? "h-4 w-4" : "h-5 w-5"} />
+          </div>
+          <h5 className={[
+            "font-bold text-foreground leading-tight",
+            compact ? "text-base" : "text-xl",
+          ].join(" ")}>
             {plan.name}
           </h5>
         </div>
 
-        {/* Price */}
-        <div>
-          <p className={`font-bold text-primary ${compact ? "text-xl" : "text-2xl"}`}>
+        {/* Price — premium typography */}
+        <div className="space-y-1">
+          <p className={[
+            "font-bold tracking-tight",
+            plan.popular && !compact
+              ? "bg-gradient-ocean bg-clip-text text-transparent"
+              : "text-foreground",
+            compact ? "text-2xl" : "text-4xl",
+          ].join(" ")}>
             {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
           </p>
           {isYearly && plan.price > 0 && (
-            <div className="mt-1">
+            <div className="space-y-0.5">
               <p className="text-xs text-muted-foreground line-through">
-                {(plan.price * 12).toLocaleString()}
-                /{t("admin.subscription.yearly").toLowerCase()}
+                {(plan.price * 12).toLocaleString()}/{t("admin.subscription.yearly").toLowerCase()}
               </p>
-              <p className="text-xs text-success font-medium">
-                {t("admin.subscription.discounted")}
+              <p className="text-xs text-success font-semibold flex items-center gap-1">
+                💰 {t("admin.subscription.discounted")}
               </p>
             </div>
           )}
         </div>
 
-        {/* Features */}
-        <ul className={`space-y-${compact ? "1" : "2"}`}>
+        {/* Features — daha okunaklı + Check ikon */}
+        <ul className={compact ? "space-y-1.5" : "space-y-2.5"}>
           {displayedFeatures.map((feature, index) => (
             <li
               key={index}
-              className={`flex items-center gap-2 ${
-                compact ? "text-xs" : "text-sm"
-              } text-muted-foreground`}
+              className={[
+                "flex items-start gap-2 leading-snug",
+                compact ? "text-xs" : "text-sm",
+                "text-foreground/80",
+              ].join(" ")}
             >
               <CheckCircle2
-                className={`${
-                  compact ? "h-3 w-3" : "h-3 w-3"
-                } text-success flex-shrink-0`}
+                className={[
+                  "shrink-0 mt-0.5 text-success",
+                  compact ? "h-3.5 w-3.5" : "h-4 w-4",
+                ].join(" ")}
               />
-              {feature}
+              <span>{feature}</span>
             </li>
           ))}
         </ul>
 
-        {/* CTA */}
+        {/* CTA — popüler için gradient ocean (landing CTA stiliyle aynı) */}
         {agencyId && !onSwitch && (
           <LemonSqueezyButton
             planId={plan.id}
@@ -204,7 +230,10 @@ function PlanCard({
             agencyId={agencyId}
             userEmail={userEmail ?? ""}
             label={t("admin.subscription.subscribe")}
-            className="w-full"
+            className={[
+              "w-full motion-safe:transition-all motion-safe:duration-200",
+              plan.popular ? "bg-gradient-ocean hover:opacity-90 text-primary-foreground shadow-md" : "",
+            ].join(" ")}
           />
         )}
         {!agencyId && !onSwitch && (
@@ -663,7 +692,7 @@ export const SubscriptionHistory = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <BillingToggle id="billing-toggle-no-sub" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 pt-3 px-1">
               {planOptions.map((plan) => (
                 <PlanCard
                   key={plan.id}
@@ -721,50 +750,53 @@ export const SubscriptionHistory = () => {
           <CardContent className="space-y-6">
             <BillingToggle id="billing-toggle" />
 
-            {/* Current plan highlight box */}
-            <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
-              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <div>
-                  <h3 className="text-xl font-bold text-foreground">
-                    {currentPlan?.name}
-                  </h3>
-                  <p className="text-2xl font-bold text-primary mt-1">
-                    {currentPlan &&
-                      formatPrice(
-                        calculatePrice(currentPlan.price, isYearly),
-                        isYearly
-                      )}
-                  </p>
-                  {isYearly && currentPlan && currentPlan.price > 0 && (
-                    <div className="mt-1">
-                      <p className="text-sm text-muted-foreground line-through">
-                        {(currentPlan.price * 12).toLocaleString(
-                          i18n.language || "tr"
-                        )}
-                        ₺/{t("admin.subscription.yearly").toLowerCase()}
-                      </p>
-                      <p className="text-sm text-success font-medium">
-                        {t("admin.subscription.discounted")} —{" "}
-                        {(
-                          currentPlan.price *
-                          12 *
-                          0.1
-                        ).toLocaleString(i18n.language || "tr")}
-                        ₺ {t("admin.subscription.savings")}
-                      </p>
+            {/* Current plan HERO — landing kalitesinde premium özet kart */}
+            <div className="relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 sm:p-7 shadow-lg">
+              {/* Decorative blob (subtle premium feel) */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" aria-hidden />
+
+              <div className="relative flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                  {/* Büyük ikon kutusu */}
+                  {currentPlan?.icon && (
+                    <div className="rounded-xl p-3 bg-gradient-ocean text-white shadow-md shrink-0">
+                      <currentPlan.icon className="h-6 w-6 sm:h-7 sm:w-7" />
                     </div>
                   )}
+                  <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                      {t("admin.subscription.currentPlan")}
+                    </p>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+                      {currentPlan?.name}
+                    </h3>
+                    <p className="text-2xl sm:text-3xl font-bold bg-gradient-ocean bg-clip-text text-transparent mt-2 leading-none">
+                      {currentPlan &&
+                        formatPrice(calculatePrice(currentPlan.price, isYearly), isYearly)}
+                    </p>
+                    {isYearly && currentPlan && currentPlan.price > 0 && (
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-xs text-muted-foreground line-through">
+                          {(currentPlan.price * 12).toLocaleString(i18n.language || "tr")}₺/{t("admin.subscription.yearly").toLowerCase()}
+                        </p>
+                        <p className="text-xs text-success font-semibold flex items-center gap-1">
+                          💰 {t("admin.subscription.discounted")} — {(currentPlan.price * 12 * 0.1).toLocaleString(i18n.language || "tr")}₺ {t("admin.subscription.savings")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <CheckCircle2 className="h-8 w-8 text-primary" />
+                <div className="shrink-0">
+                  <CheckCircle2 className="h-7 w-7 sm:h-9 sm:w-9 text-success" />
+                </div>
               </div>
-              <ul className="space-y-2">
+
+              {/* Features — yatay grid (geniş ekranda 2 sütun, mobile 1 sütun) */}
+              <ul className="relative mt-5 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                 {currentPlan?.features.map((feature, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center gap-2 text-sm text-foreground"
-                  >
-                    <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
-                    {feature}
+                  <li key={index} className="flex items-start gap-2 text-sm text-foreground/90">
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                    <span className="leading-snug">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -814,7 +846,7 @@ export const SubscriptionHistory = () => {
                   </AlertDescription>
                 </Alert>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 pt-3 px-1">
                   {planOptions.map((plan) => (
                     <PlanCard
                       key={plan.id}
@@ -843,7 +875,7 @@ export const SubscriptionHistory = () => {
                     {t("admin.subscription.planChangeNote").split(".")[0]}
                   </p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 pt-3 px-1">
                   {planOptions
                     .filter((plan) => plan.id !== subscription.plan_type)
                     .map((plan) => (

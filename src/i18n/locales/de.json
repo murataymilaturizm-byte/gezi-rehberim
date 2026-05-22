@@ -1577,6 +1577,7 @@
       "title": "Erste Schritte",
       "progress": "{{percent}}% abgeschlossen",
       "dismiss": "Schließen",
+      "criticalSetupWarning": "⚠️ Wenn Sie WhatsApp vor Abschluss Ihrer Einstellungen (Agenturinfos, Zahlung, Sprache) verbinden, kann der Bot unvollständige oder falsche Informationen an Kunden senden. Wir empfehlen, die Einrichtung zuerst abzuschließen.",
       "steps": {
         "agencyInfo": "Agenturinformationen ausfüllen",
         "payment": "Zahlungseinstellungen einrichten",

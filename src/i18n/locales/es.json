@@ -1611,6 +1611,7 @@
       "title": "Primeros Pasos",
       "progress": "{{percent}}% completado",
       "dismiss": "Cerrar",
+      "criticalSetupWarning": "⚠️ Si conecta WhatsApp antes de completar sus ajustes (información de la agencia, pago, idioma), el bot puede enviar información incompleta o incorrecta a los clientes. Recomendamos terminar la configuración primero.",
       "steps": {
         "agencyInfo": "Completar información de la agencia",
         "payment": "Configurar ajustes de pago",

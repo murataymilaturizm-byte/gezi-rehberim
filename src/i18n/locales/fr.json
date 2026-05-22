@@ -1631,6 +1631,7 @@
       "title": "Démarrage",
       "progress": "{{percent}}% terminé",
       "dismiss": "Fermer",
+      "criticalSetupWarning": "⚠️ Si vous connectez WhatsApp avant de terminer vos paramètres (informations de l'agence, paiement, langue), le bot peut envoyer des informations incomplètes ou incorrectes aux clients. Nous recommandons de terminer la configuration d'abord.",
       "steps": {
         "agencyInfo": "Remplir les informations de l'agence",
         "payment": "Configurer les paramètres de paiement",

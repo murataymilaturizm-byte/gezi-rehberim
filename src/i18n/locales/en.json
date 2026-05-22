@@ -1574,6 +1574,7 @@
       "title": "Getting Started",
       "progress": "{{percent}}% complete",
       "dismiss": "Dismiss",
+      "criticalSetupWarning": "⚠️ If you connect WhatsApp before completing your settings (agency info, payment, language), the bot may send incomplete or incorrect information to customers. We recommend finishing setup first.",
       "steps": {
         "agencyInfo": "Fill in agency info",
         "payment": "Set up payment settings",

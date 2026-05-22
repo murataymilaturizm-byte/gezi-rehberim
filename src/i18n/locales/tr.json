@@ -1623,6 +1623,7 @@
       "title": "Başlarken",
       "progress": "%{{percent}} tamamlandı",
       "dismiss": "Kapat",
+      "criticalSetupWarning": "⚠️ Ayarlarınızı (acente bilgileri, ödeme, dil) tamamlamadan WhatsApp'ı bağlarsanız, bot müşterilere eksik veya yanlış bilgi verebilir. Önce kurulumu tamamlamanız önerilir.",
       "steps": {
         "agencyInfo": "Acente bilgilerini doldur",
         "payment": "Ödeme ayarlarını yap",
