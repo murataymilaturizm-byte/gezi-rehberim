@@ -119,10 +119,11 @@ function PlanCard({
 
   // Köklü tasarım: landing PricingSection kalitesinde — gradient, glow, scale,
   // premium typography. compact mode (mevcut sub'da diğer planlar) için sade.
+  // h-full + flex-col: kartlar yan yana aynı yüksekte, CTA butonu altta hizalı.
   return (
     <Card
       className={[
-        "relative overflow-hidden motion-safe:transition-all motion-safe:duration-300",
+        "relative overflow-hidden h-full flex flex-col motion-safe:transition-all motion-safe:duration-300",
         // Popüler plan: glow + ring + scale + premium gradient
         plan.popular && !compact
           ? "ring-2 ring-primary shadow-2xl shadow-primary/30 lg:scale-[1.04] z-10"
@@ -160,7 +161,11 @@ function PlanCard({
         </div>
       )}
 
-      <CardContent className={compact ? "p-4 space-y-3" : "p-6 sm:p-7 space-y-5"}>
+      {/* flex-1 + flex-col: features esnek alan, CTA mt-auto ile alta sabit */}
+      <CardContent className={[
+        "flex-1 flex flex-col",
+        compact ? "p-4 space-y-3" : "p-6 sm:p-7 space-y-5",
+      ].join(" ")}>
         {/* Header — Icon kutusunda + plan adı premium */}
         <div className="flex items-center gap-2.5">
           <div className={[
@@ -200,8 +205,11 @@ function PlanCard({
           )}
         </div>
 
-        {/* Features — daha okunaklı + Check ikon */}
-        <ul className={compact ? "space-y-1.5" : "space-y-2.5"}>
+        {/* Features — flex-1 ile esner, CTA hep altta hizalı kalır */}
+        <ul className={[
+          "flex-1",
+          compact ? "space-y-1.5" : "space-y-2.5",
+        ].join(" ")}>
           {displayedFeatures.map((feature, index) => (
             <li
               key={index}
@@ -222,31 +230,36 @@ function PlanCard({
           ))}
         </ul>
 
-        {/* CTA — popüler için gradient ocean (landing CTA stiliyle aynı) */}
+        {/* CTA — mt-auto: kart yüksekliği farklı olsa bile buton ALTTA hizalı.
+            popüler için gradient ocean (landing CTA stiliyle aynı) */}
         {agencyId && !onSwitch && (
-          <LemonSqueezyButton
-            planId={plan.id}
-            isYearly={isYearly}
-            agencyId={agencyId}
-            userEmail={userEmail ?? ""}
-            label={t("admin.subscription.subscribe")}
-            className={[
-              "w-full motion-safe:transition-all motion-safe:duration-200",
-              plan.popular ? "bg-gradient-ocean hover:opacity-90 text-primary-foreground shadow-md" : "",
-            ].join(" ")}
-          />
+          <div className="mt-auto pt-2">
+            <LemonSqueezyButton
+              planId={plan.id}
+              isYearly={isYearly}
+              agencyId={agencyId}
+              userEmail={userEmail ?? ""}
+              label={t("admin.subscription.subscribe")}
+              className={[
+                "w-full motion-safe:transition-all motion-safe:duration-200",
+                plan.popular ? "bg-gradient-ocean hover:opacity-90 text-primary-foreground shadow-md" : "",
+              ].join(" ")}
+            />
+          </div>
         )}
         {!agencyId && !onSwitch && (
-          <Alert className="border-primary/20">
-            <Building2 className="h-4 w-4" />
-            <AlertDescription className="text-xs">
-              {t("subscription.needAgencyInfo")}
-            </AlertDescription>
-          </Alert>
+          <div className="mt-auto pt-2">
+            <Alert className="border-primary/20">
+              <Building2 className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                {t("subscription.needAgencyInfo")}
+              </AlertDescription>
+            </Alert>
+          </div>
         )}
         {onSwitch && (
           <Button
-            className="w-full bg-gradient-ocean hover:opacity-90"
+            className="w-full bg-gradient-ocean hover:opacity-90 mt-auto"
             size="sm"
             onClick={(e) => {
               e.stopPropagation();

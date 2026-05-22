@@ -125,22 +125,65 @@ serve(async (req) => {
         .maybeSingle();
 
       if (!tmpl) {
+        // is_active=false olabilir → sync-meta-templates eski bug'ı, SQL fix gerekli olabilir
+        const { data: anyTmpl } = await (supabase as any)
+          .from('message_templates')
+          .select('id, language, is_active, meta_status')
+          .eq('agency_id', agencyId)
+          .eq('template_key', templateKey)
+          .eq('language', lang || 'tr')
+          .maybeSingle();
         return new Response(
-          JSON.stringify({ error: 'Template not found or not approved (is_active=false)' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({
+            error: 'Template not found or not active (is_active=false)',
+            debug: {
+              templateKey, language: lang || 'tr', agencyId,
+              foundButInactive: !!anyTmpl,
+              foundStatus: anyTmpl ? { is_active: anyTmpl.is_active, meta_status: anyTmpl.meta_status } : null,
+              hint: anyTmpl && !anyTmpl.is_active
+                ? "Template exists but is_active=false. Run SQL: UPDATE message_templates SET is_active=true WHERE meta_status='APPROVED'"
+                : "Template does not exist for this agency+key+language. Check sync-meta-templates was run.",
+            },
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const normalizedPhone = rawPhone.replace('whatsapp:', '').replace('+', '').trim();
       const langCode        = toMetaLang(tmpl.language);
       const comps           = buildTemplateComponents(tmpl.content, variableValues || {});
+      const _varCount       = comps[0]?.parameters?.length ?? 0;
+      const _emptyParams    = comps[0]?.parameters?.filter((p: any) => !p.text || p.text === '').length ?? 0;
 
       console.log(`📤 [MODE2] Manual template: ${tmpl.template_key} → ${normalizedPhone} (${langCode})`);
       console.log(`[MODE2] Components:`, JSON.stringify(comps));
 
       const result = await sendWhatsAppTemplate(creds.phoneNumberId, creds.accessToken, normalizedPhone, tmpl.template_key, langCode, comps);
 
-      if (!result.success) throw new Error(`Template send failed: ${result.error}`);
+      if (!result.success) {
+        // Meta'nın gerçek hatasını detayla — frontend'in görmesi için
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: `Meta API: ${result.error || 'unknown error'}`,
+            debug: {
+              mode: 'MODE2_manual',
+              templateKey: tmpl.template_key,
+              dbLanguage: tmpl.language,
+              metaLangCode: langCode,
+              normalizedPhone,
+              paramCount: _varCount,
+              emptyParamCount: _emptyParams,
+              metaStatus: tmpl.meta_status,
+              isActive: tmpl.is_active,
+              hasPhoneNumberId: !!creds.phoneNumberId,
+              hasAccessToken: !!creds.accessToken,
+              metaError: result.error,
+            },
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       // Konuşma geçmişi
       await supabase.from('whatsapp_conversations').insert({
@@ -257,6 +300,8 @@ serve(async (req) => {
     const normalizedPhone = registration.phone.replace('whatsapp:', '').replace('+', '').trim();
     const langCode        = toMetaLang(tmpl.language);
     const comps           = buildTemplateComponents(tmpl.content, varValues);
+    const _varCount       = comps[0]?.parameters?.length ?? 0;
+    const _emptyParams    = comps[0]?.parameters?.filter((p: any) => !p.text || p.text === '').length ?? 0;
 
     console.log(`📤 [MODE3] Reg template: ${tmpl.template_key} → ${normalizedPhone} (${langCode})`);
     console.log(`[MODE3] Components:`, JSON.stringify(comps));
@@ -266,7 +311,29 @@ serve(async (req) => {
       normalizedPhone, tmpl.template_key, langCode, comps
     );
 
-    if (!result.success) throw new Error(`Template send failed: ${result.error}`);
+    if (!result.success) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Meta API: ${result.error || 'unknown error'}`,
+          debug: {
+            mode: 'MODE3_registration',
+            templateKey: tmpl.template_key,
+            dbLanguage: tmpl.language,
+            metaLangCode: langCode,
+            normalizedPhone,
+            paramCount: _varCount,
+            emptyParamCount: _emptyParams,
+            metaStatus: tmpl.meta_status,
+            isActive: tmpl.is_active,
+            hasPhoneNumberId: !!credentials.phoneNumberId,
+            hasAccessToken: !!credentials.accessToken,
+            metaError: result.error,
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Preview (variables doldurulmuş)
     let preview = tmpl.content;

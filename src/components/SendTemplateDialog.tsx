@@ -161,13 +161,33 @@ export function SendTemplateDialog({ template, agencyId, open, onClose }: SendTe
           ? { registrationId: selectedRegistrationId, templateKey: template.template_key, language: template.language }
           : { agencyId, phone: manualPhone, templateKey: template.template_key, language: template.language, variableValues, recipientName: manualName };
 
-      const { error } = await supabase.functions.invoke("send-template-message", { body: payload });
+      const { data, error } = await supabase.functions.invoke("send-template-message", { body: payload });
+
+      // Edge function 200 ile success:false döndürebilir (debug bilgisi için).
+      // Hem HTTP error hem body içindeki error'u kontrol et — kullanıcıya gerçek hatayı göster.
       if (error) throw error;
+      if (data && (data as any).success === false) {
+        const _dbg = (data as any).debug || {};
+        const _hint = (data as any).debug?.hint;
+        // Kullanıcıya görünür kısa hata + console'a tam debug
+        console.error("[send-template-message] failure:", { error: (data as any).error, debug: _dbg });
+        const _detail = [
+          (data as any).error,
+          _hint ? `İpucu: ${_hint}` : null,
+          _dbg.metaError ? `Meta hatası: ${_dbg.metaError}` : null,
+        ].filter(Boolean).join(" — ");
+        throw new Error(_detail || t("admin.templates.send.errors.generic"));
+      }
 
       toast({ title: t("common.success"), description: t("admin.templates.send.success") });
       onClose();
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message || t("admin.templates.send.errors.generic"), variant: "destructive" });
+      toast({
+        title: t("common.error"),
+        description: err?.message || t("admin.templates.send.errors.generic"),
+        variant: "destructive",
+        duration: 10000,   // Hata mesajı daha uzun süre kalsın — debug bilgisi okunabilsin
+      });
     } finally {
       setIsLoading(false);
     }
