@@ -1818,6 +1818,13 @@
   "tours": {
     "emptyTitle": "Henüz tur eklenmemiş",
     "emptyDescription": "İlk turunuzu ekleyerek müşterilere sunmaya başlayın.",
+    "titleEnLabel": "İngilizce Başlık",
+    "titleEnHint": "Yurtdışı müşteriniz varsa İngilizce başlık önerilir.",
+    "translateAI": "🌐 AI ile Çevir",
+    "translating": "Çeviriliyor...",
+    "translateSuccess": "Çeviriler hazırlandı, lütfen kontrol edip kaydedin.",
+    "translateError": "Çeviri başarısız oldu, tekrar deneyin.",
+    "translateNoSource": "Çevirmek için Türkçe başlık veya açıklama girin.",
     "filters": {
       "searchPlaceholder": "Tur adı ara...",
       "destination": "Destinasyon",

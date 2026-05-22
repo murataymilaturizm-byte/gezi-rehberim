@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ChevronRight, ChevronLeft, Check, ChevronDown, Globe } from "lucide-react";
+import { Loader2, ChevronRight, ChevronLeft, Check, ChevronDown, Globe, Sparkles } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -109,6 +109,9 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
   const [isLoading, setIsLoading] = useState(false);
   const availableCurrencies = getAvailableCurrencies();
   const [formData, setFormData] = useState({ ...INITIAL_FORM });
+  // AI çeviri state — translate-tour edge function ile
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationsExpanded, setTranslationsExpanded] = useState(false);
 
   const isOvernight = formData.type !== "DAYTRIP";
   const isInternational = isInternationalCategory(formData.tur_kategorisi);
@@ -185,6 +188,64 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear field error on change
     if (fieldErrors[field]) setFieldErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+  };
+
+  // AI ile Çevir — translate-tour edge function'ı çağır, 6 dile çevir
+  const handleAITranslate = async () => {
+    if (!formData.title.trim() && !formData.destination.trim() && !formData.program_kisa.trim()) {
+      toast({
+        title: t("common.error"),
+        description: t("tours.translateNoSource"),
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsTranslating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("translate-tour", {
+        body: {
+          title: formData.title.trim(),
+          destination: formData.destination.trim(),
+          program_kisa: formData.program_kisa.trim(),
+          sourceLanguage: "tr",
+          targetLanguages: ["en", "de", "fr", "es", "ru", "ar"],
+        },
+      });
+      if (error) throw error;
+      const translations = (data?.translations || []) as Array<{
+        language: string;
+        title?: string;
+        destination?: string;
+        program_kisa?: string;
+      }>;
+      if (translations.length === 0) throw new Error("No translations returned");
+
+      // Form alanlarına yaz — acente düzenleyebilir, kayıt MANUEL
+      setFormData((prev) => {
+        const next: any = { ...prev };
+        for (const tr of translations) {
+          if (tr.title) next[`title_${tr.language}`] = tr.title;
+          if (tr.destination) next[`destination_${tr.language}`] = tr.destination;
+          if (tr.program_kisa) next[`program_kisa_${tr.language}`] = tr.program_kisa;
+        }
+        return next;
+      });
+      // Collapsible'ı otomatik aç — acente sonucu görsün
+      setTranslationsExpanded(true);
+      toast({
+        title: t("common.success"),
+        description: t("tours.translateSuccess"),
+      });
+    } catch (err: any) {
+      console.error("[translate-tour] error:", err);
+      toast({
+        title: t("common.error"),
+        description: err?.message || t("tours.translateError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsTranslating(false);
+    }
   };
 
   const validateStep0 = () => {
@@ -353,8 +414,37 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
                 )}
               </div>
 
+              {/* Yurtdışı pazara hazırlık: title_en her zaman görünür (collapsible dışında) */}
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  🇬🇧 {t("tours.titleEnLabel")}
+                </Label>
+                <Input
+                  value={(formData as any).title_en || ""}
+                  onChange={(e) => set("title_en", e.target.value)}
+                  placeholder="e.g. Cappadocia Day Tour"
+                />
+                <p className="text-xs text-muted-foreground">{t("tours.titleEnHint")}</p>
+              </div>
+
+              {/* AI ile Çevir butonu — collapsible header'ın hemen üstünde */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAITranslate}
+                disabled={isTranslating}
+                className="w-full motion-safe:transition-all border-primary/30 text-primary hover:bg-primary/5"
+              >
+                {isTranslating ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("tours.translating")}</>
+                ) : (
+                  <><Sparkles className="h-4 w-4 mr-2" />{t("tours.translateAI")}</>
+                )}
+              </Button>
+
               {/* Multilingual fields */}
-              <Collapsible>
+              <Collapsible open={translationsExpanded} onOpenChange={setTranslationsExpanded}>
                 <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group w-full">
                   <Globe className="h-4 w-4" />
                   <span>Çeviriler (EN / DE / FR / ES / RU / AR)</span>

@@ -1860,6 +1860,13 @@
   "tours": {
     "emptyTitle": "Aún no hay tours",
     "emptyDescription": "Comience añadiendo su primer tour para ofrecerlo a los clientes.",
+    "titleEnLabel": "Título en inglés",
+    "titleEnHint": "Recomendado si tiene clientes internacionales.",
+    "translateAI": "🌐 Traducir con IA",
+    "translating": "Traduciendo...",
+    "translateSuccess": "Traducciones listas, revísalas y guárdalas.",
+    "translateError": "La traducción falló, inténtelo de nuevo.",
+    "translateNoSource": "Por favor, introduzca un título o descripción en turco.",
     "filters": {
       "searchPlaceholder": "Buscar por nombre...",
       "destination": "Destino",

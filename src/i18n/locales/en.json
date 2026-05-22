@@ -1826,6 +1826,13 @@
   "tours": {
     "emptyTitle": "No tours yet",
     "emptyDescription": "Start by adding your first tour to offer to customers.",
+    "titleEnLabel": "English Title",
+    "titleEnHint": "Recommended if you have international customers.",
+    "translateAI": "🌐 Translate with AI",
+    "translating": "Translating...",
+    "translateSuccess": "Translations ready, please review and save.",
+    "translateError": "Translation failed, please try again.",
+    "translateNoSource": "Please enter a Turkish title or description to translate.",
     "filters": {
       "searchPlaceholder": "Search tour name...",
       "destination": "Destination",

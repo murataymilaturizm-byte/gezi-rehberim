@@ -389,10 +389,13 @@ serve(async (req) => {
         id: tour.id,
         title: pickLocalized(tour, "title", _prelimLang),
         destination: pickLocalized(tour, "destination", _prelimLang),
-        // BUG #2 FIX: tüm dil varyantları matching için (yabancı müşteri kendi dilinde tur adı yazsa eşleşsin)
+        // BUG #2/#3 FIX: tüm dil varyantları matching için (title + destination)
         title_tr: tour.title, title_en: tour.title_en, title_de: tour.title_de,
         title_ru: tour.title_ru, title_ar: tour.title_ar, title_fr: tour.title_fr, title_es: tour.title_es,
         destination_tr: tour.destination,
+        destination_en: tour.destination_en, destination_de: tour.destination_de,
+        destination_ru: tour.destination_ru, destination_ar: tour.destination_ar,
+        destination_fr: tour.destination_fr, destination_es: tour.destination_es,
         type: tour.type,
         currency: tour.currency,
         program_kisa: pickLocalized(tour, "program_kisa", _prelimLang),

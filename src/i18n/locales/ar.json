@@ -1826,6 +1826,13 @@
   "tours": {
     "emptyTitle": "لا توجد جولات بعد",
     "emptyDescription": "ابدأ بإضافة جولتك الأولى لتقديمها للعملاء.",
+    "titleEnLabel": "العنوان بالإنجليزية",
+    "titleEnHint": "موصى به إذا كان لديك عملاء دوليون.",
+    "translateAI": "🌐 ترجم بالذكاء الاصطناعي",
+    "translating": "جارٍ الترجمة...",
+    "translateSuccess": "الترجمات جاهزة، يرجى المراجعة والحفظ.",
+    "translateError": "فشلت الترجمة، يرجى المحاولة مرة أخرى.",
+    "translateNoSource": "يرجى إدخال عنوان أو وصف بالتركية للترجمة.",
     "filters": {
       "searchPlaceholder": "بحث باسم الجولة...",
       "destination": "الوجهة",

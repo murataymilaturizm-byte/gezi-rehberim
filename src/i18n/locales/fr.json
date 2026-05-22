@@ -1826,6 +1826,13 @@
   "tours": {
     "emptyTitle": "Aucun circuit pour l'instant",
     "emptyDescription": "Commencez par ajouter votre premier circuit.",
+    "titleEnLabel": "Titre en anglais",
+    "titleEnHint": "Recommandé si vous avez des clients internationaux.",
+    "translateAI": "🌐 Traduire avec l'IA",
+    "translating": "Traduction en cours...",
+    "translateSuccess": "Traductions prêtes, veuillez vérifier et enregistrer.",
+    "translateError": "Échec de la traduction, veuillez réessayer.",
+    "translateNoSource": "Veuillez saisir un titre ou une description en turc.",
     "filters": {
       "searchPlaceholder": "Rechercher un circuit...",
       "destination": "Destination",

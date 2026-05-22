@@ -39,7 +39,11 @@ function normalizeForMatch(text: string): string {
  * Türkçe tur/destinasyon anahtar kelimesi → diğer dillerdeki eşdeğerleri.
  * EN/DE/FR/ES/RU/AR kullanıcıların Türkçe tur isimlerine match etmesi için.
  */
+// BUG #4 FIX: Genişletilmiş fallback map — Türkiye'nin yaygın turistik destinasyonları.
+// title_xx alanları boş kaldığında yabancı müşterinin kelimelerini TR karşılığına eşler.
+// title_xx doluysa zaten direkt matching → bu map fallback'tir.
 const TOUR_NAME_TRANSLATIONS: Record<string, string[]> = {
+  // Ana destinasyonlar (eski)
   kapadokya: [
     "cappadocia", "cappadoce", "kappadokien", "capadocia",
     "каппадокия", "كابادوكيا", "kappadokia", "kapadokia",
@@ -58,6 +62,41 @@ const TOUR_NAME_TRANSLATIONS: Record<string, string[]> = {
   alanya: ["alanya", "алания", "ألانيا"],
   antalya_belek: ["belek"],
   kapadokya_balon: ["cappadocia balloon", "kappadokien ballon", "hot air balloon cappadocia"],
+
+  // YENİ — Akdeniz/Ege turistik yerleri
+  likya: ["lycia", "lycian way", "lykischer weg", "voie lycienne", "ликийская тропа", "الطريق الليكي", "vía licia"],
+  oludeniz: ["oludeniz", "blue lagoon", "ölüdeniz", "blaue lagune", "lagon bleu", "голубая лагуна"],
+  saklikent: ["saklikent", "saklıkent canyon", "saklikent canyon"],
+  demre: ["demre", "myra", "kekova", "santa claus", "sunken city", "battık şehir"],
+  konya: ["konya", "mevlana", "rumi", "whirling dervishes", "derwische", "дервиши", "konia"],
+  bursa: ["bursa", "uludag", "uludağ", "брusa", "бурса"],
+  trabzon: ["trabzon", "trabzond", "трабзон"],
+  uzungol: ["uzungol", "uzungöl", "long lake", "узунгёль"],
+  ayder: ["ayder", "ayder plateau", "айдер"],
+  sumela: ["sumela", "sumela monastery", "sümela", "сумелa"],
+  mardin: ["mardin", "midyat", "мардин", "ماردين"],
+  hasankeyf: ["hasankeyf", "hasankef"],
+  sanliurfa: ["urfa", "sanliurfa", "şanlıurfa", "санлыурфа"],
+  gobeklitepe: ["gobekli", "göbekli", "gobeklitepe", "göbeklitepe", "göbekli tepe", "гёбекли"],
+  gaziantep: ["gaziantep", "antep", "газиантеп"],
+  van: ["van lake", "van gölü", "van gölü", "vansee"],
+  abant: ["abant", "abant lake"],
+  sapanca: ["sapanca", "sapanca lake", "сапанджа"],
+  sile: ["sile", "şile"],
+  agva: ["agva", "ağva"],
+  salda: ["salda", "salda lake", "salda gölü", "salda see"],
+
+  // YENİ — Aktivite tabanlı turlar
+  trekking: ["trekking", "hiking", "wandern", "randonnée", "senderismo", "треккинг"],
+  yayla: ["highland", "plateau", "hochland", "плато"],
+  kanyon: ["canyon", "schlucht", "ущелье"],
+  gol: ["lake", "see", "lac", "lago", "озеро"],
+  tekne: ["boat tour", "boat trip", "bootstour", "excursion en bateau", "лодка", "yacht"],
+  paragliding: ["paragliding", "parapente", "gleitschirm", "параплан"],
+  cruise: ["cruise", "kreuzfahrt", "croisière", "круиз"],
+  dalis: ["diving", "scuba", "tauchen", "plongée", "buceo", "дайвинг"],
+  safari: ["safari", "jeep safari", "сафари"],
+  rafting: ["rafting", "river rafting", "wildwasser"],
 };
 
 /**
@@ -105,7 +144,9 @@ function getTourSearchableTexts(t: any): string[] {
     t.title,
     t.destination,
     t.title_tr, t.title_en, t.title_de, t.title_ru, t.title_ar, t.title_fr, t.title_es,
-    t.destination_tr,
+    // BUG #3 FIX: destination_xx alanları da matching havuzunda
+    t.destination_tr, t.destination_en, t.destination_de, t.destination_ru,
+    t.destination_ar, t.destination_fr, t.destination_es,
   ];
   return fields.filter((s) => typeof s === "string" && s.trim().length > 0);
 }

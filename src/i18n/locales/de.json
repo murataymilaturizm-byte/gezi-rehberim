@@ -1826,6 +1826,13 @@
   "tours": {
     "emptyTitle": "Noch keine Touren",
     "emptyDescription": "Beginnen Sie mit dem Hinzufügen Ihrer ersten Tour.",
+    "titleEnLabel": "Englischer Titel",
+    "titleEnHint": "Empfohlen, wenn Sie internationale Kunden haben.",
+    "translateAI": "🌐 Mit KI übersetzen",
+    "translating": "Übersetze...",
+    "translateSuccess": "Übersetzungen sind bereit. Bitte prüfen und speichern.",
+    "translateError": "Übersetzung fehlgeschlagen, bitte erneut versuchen.",
+    "translateNoSource": "Bitte geben Sie einen türkischen Titel oder eine Beschreibung ein.",
     "filters": {
       "searchPlaceholder": "Tourname suchen...",
       "destination": "Reiseziel",
