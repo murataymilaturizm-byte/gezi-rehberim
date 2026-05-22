@@ -619,7 +619,8 @@
         "loadError": "Une erreur s'est produite lors du chargement des informations de paiement",
         "saveSuccess": "Informations de paiement mises à jour avec succès",
         "saveError": "Une erreur s'est produite lors de l'enregistrement des informations de paiement",
-        "agencyNotFound": "Informations de l'agence introuvables"
+        "agencyNotFound": "Informations de l'agence introuvables",
+        "invalidDepositPct": "Le pourcentage d'acompte doit être entre 0 et 100 (par exemple, 30)."
       },
       "tip": {
         "title": "💡 Astuce",

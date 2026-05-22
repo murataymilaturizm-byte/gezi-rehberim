@@ -653,7 +653,8 @@
         "loadError": "Ocurrió un error al cargar la información de pago",
         "saveSuccess": "Información de pago actualizada exitosamente",
         "saveError": "Ocurrió un error al guardar la información de pago",
-        "agencyNotFound": "Información de la agencia no encontrada"
+        "agencyNotFound": "Información de la agencia no encontrada",
+        "invalidDepositPct": "El porcentaje de depósito debe estar entre 0 y 100 (por ejemplo, 30)."
       },
       "tip": {
         "title": "💡 Consejo",

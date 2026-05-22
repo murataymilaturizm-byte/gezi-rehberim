@@ -100,6 +100,20 @@ export const PaymentSettings = () => {
       return;
     }
 
+    // K5: deposit_percentage 0-100 dışındaysa kaydetme (Select bypass guard'ı)
+    const _depPct = paymentInstructions.deposit_percentage;
+    if (
+      paymentInstructions.payment_type === "deposit" &&
+      _depPct != null &&
+      (!Number.isFinite(_depPct) || _depPct < 0 || _depPct > 100)
+    ) {
+      toast({
+        title: t("admin.paymentSettings.messages.invalidDepositPct"),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -145,9 +159,12 @@ export const PaymentSettings = () => {
   };
 
   const handleDepositPercentageChange = (value: string) => {
+    // K5: 0-100 dışındaysa clamp + makul varsayılan (Select bypass durumunda da güvenli)
+    const parsed = parseInt(value);
+    const clamped = !Number.isFinite(parsed) ? 30 : Math.max(0, Math.min(100, parsed));
     setPaymentInstructions((prev) => ({
       ...prev,
-      deposit_percentage: parseInt(value) || 30,
+      deposit_percentage: clamped,
     }));
   };
 

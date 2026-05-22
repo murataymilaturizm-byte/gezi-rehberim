@@ -619,7 +619,8 @@
         "loadError": "Fehler beim Laden der Zahlungsinformationen",
         "saveSuccess": "Zahlungsinformationen erfolgreich aktualisiert",
         "saveError": "Fehler beim Speichern der Zahlungsinformationen",
-        "agencyNotFound": "Agenturinformationen nicht gefunden"
+        "agencyNotFound": "Agenturinformationen nicht gefunden",
+        "invalidDepositPct": "Anzahlungsprozent muss zwischen 0 und 100 liegen (z. B. 30)."
       },
       "tip": {
         "title": "💡 Tipp",

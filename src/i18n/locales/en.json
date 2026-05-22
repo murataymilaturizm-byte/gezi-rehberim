@@ -616,7 +616,8 @@
         "loadError": "An error occurred while loading payment information",
         "saveSuccess": "Payment information updated successfully",
         "saveError": "An error occurred while saving payment information",
-        "agencyNotFound": "Agency information not found"
+        "agencyNotFound": "Agency information not found",
+        "invalidDepositPct": "Deposit percentage must be between 0 and 100 (e.g., 30)."
       },
       "tip": {
         "title": "💡 Tip",

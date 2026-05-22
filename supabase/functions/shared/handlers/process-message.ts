@@ -27,7 +27,7 @@ import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extracto
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { callAI } from "../services/ai.ts";
-import { generatePaymentMessage } from "../services/payment-message.ts";
+import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
 import { formatPriceSync } from "../utils/currency-display.ts";
 import { maskPhone } from "../utils/log-mask.ts";
@@ -715,7 +715,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
     // Ödeme bilgisi
     if (paymentInstructions && selectedDateFull) {
-      const depPct = (typeof paymentInstructions === "object" && paymentInstructions?.deposit_percentage) || 30;
+      // K5: deposit_percentage 0-100 dışındaysa güvenli varsayılan
+      const depPct = safeDepositPercentage(
+        typeof paymentInstructions === "object" ? paymentInstructions?.deposit_percentage : null
+      );
       const totalPrice = adultCount * (selectedDateFull.price_adult || 0) +
         childCount * (selectedDateFull.price_child || selectedDateFull.price_adult || 0);
       const depositAmt = Math.ceil((totalPrice * depPct) / 100);
@@ -733,7 +736,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
     // Kanal-spesifik template eki (WhatsApp message_templates)
     if (adapter.getCompletionTemplateAddendum) {
-      const _depPct2 = (typeof paymentInstructions === "object" && paymentInstructions?.deposit_percentage) || 30;
+      // K5: deposit_percentage 0-100 dışındaysa güvenli varsayılan
+      const _depPct2 = safeDepositPercentage(
+        typeof paymentInstructions === "object" ? paymentInstructions?.deposit_percentage : null
+      );
       const _tPrice = adultCount * (selectedDateFull?.price_adult || 0) +
         childCount * (selectedDateFull?.price_child || selectedDateFull?.price_adult || 0);
       const tmpl = await adapter.getCompletionTemplateAddendum({
@@ -974,7 +980,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const priceAdult = newContext.currentTour?.dates?.find((d: any) => d.id === newContext.reservationInfo.dateId)?.price_adult || 0;
     const paxAdult = newContext.reservationInfo.paxAdult || 1;
     const totalPrice = priceAdult * paxAdult;
-    const depPct = (typeof paymentInstructions === "object" && (paymentInstructions as any)?.deposit_percentage) || 30;
+    // K5: deposit_percentage 0-100 dışındaysa güvenli varsayılan
+    const depPct = safeDepositPercentage(
+      typeof paymentInstructions === "object" ? (paymentInstructions as any)?.deposit_percentage : null
+    );
     const depositAmt = Math.round((totalPrice * depPct) / 100);
     const tourCurr = (currentTourFull as any)?.currency || "TRY";
     if (totalPrice > 0) {

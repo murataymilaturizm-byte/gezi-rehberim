@@ -1,5 +1,21 @@
 // Simple payment message generator for WhatsApp (multi-currency + multi-language)
 
+/**
+ * K5: deposit_percentage güvenli okuma
+ * payment_instructions JSON içindeki değer 0-100 aralığında ve sonlu sayı olmalı.
+ * Geçersizse 30 (makul varsayılan) döndür — bot ASLA negatif/saçma kapora hesaplamasın.
+ */
+export function safeDepositPercentage(input: any): number {
+  const n = typeof input === "number" ? input : Number(input);
+  if (!Number.isFinite(n) || n < 0 || n > 100) {
+    if (input != null && input !== "") {
+      console.warn(`[safeDepositPercentage] Invalid deposit_percentage=${input} — falling back to 30`);
+    }
+    return 30;
+  }
+  return Math.round(n);
+}
+
 // Modular currency formatting
 interface CurrencyConfig {
   code: string;
@@ -111,7 +127,9 @@ export async function generatePaymentMessage(
 
   const methods = paymentInstructions.payment_methods;
   const paymentType = paymentInstructions.payment_type || "deposit";
-  const depositPercentage = paymentInstructions.deposit_percentage || 30;
+  // K5: deposit_percentage 0-100 dışındaysa güvenli varsayılan (30).
+  // Negatif/saçma değer ASLA müşteriye yansımasın — sessiz fallback + warn.
+  const depositPercentage = safeDepositPercentage(paymentInstructions.deposit_percentage);
 
   const labels: Record<string, any> = {
     tr: {

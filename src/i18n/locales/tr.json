@@ -608,7 +608,8 @@
         "loadError": "Ödeme bilgileri yüklenirken bir hata oluştu",
         "saveSuccess": "Ödeme bilgileri başarıyla güncellendi",
         "saveError": "Ödeme bilgileri kaydedilirken bir hata oluştu",
-        "agencyNotFound": "Acente bilgisi bulunamadı"
+        "agencyNotFound": "Acente bilgisi bulunamadı",
+        "invalidDepositPct": "Kapora yüzdesi 0 ile 100 arasında olmalı (örn. 30)."
       },
       "tip": {
         "title": "💡 İpucu",
