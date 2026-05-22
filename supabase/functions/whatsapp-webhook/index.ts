@@ -19,7 +19,9 @@ import {
   resolveAgencyByPhoneNumberId,
   getMetaCredentials,
   subscribeAppToWabaWithRetry,
+  verifyMetaSignature,
 } from "../_shared/metaWhatsapp.ts";
+import { maskPhone, maskMessage } from "../shared/utils/log-mask.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
 import { WhatsAppAdapter } from "./adapter.ts";
@@ -75,7 +77,35 @@ serve(async (req) => {
   let _catchMeta: { phoneNumberId: string; accessToken: string } | undefined;
 
   try {
-    const body = await req.json();
+    // K1: Raw body önce string olarak al — HMAC doğrulaması için
+    const rawBody = await req.text();
+
+    // K1: Meta webhook HMAC-SHA256 imza doğrulaması
+    // testMode (Supabase Studio test çağrıları) için imza zorunlu değil
+    const _signature = req.headers.get("x-hub-signature-256");
+    const _appSecret = Deno.env.get("META_APP_SECRET") || Deno.env.get("WHATSAPP_APP_SECRET") || "";
+    const _isTestModeRaw = rawBody.includes('"testMode"') && rawBody.includes("true");
+    if (_signature && _appSecret) {
+      const _valid = await verifyMetaSignature(rawBody, _signature, _appSecret);
+      if (!_valid) {
+        console.warn("[webhook] ❌ Invalid HMAC signature — rejecting request");
+        return new Response(JSON.stringify({ error: "Invalid signature" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else if (_appSecret && !_isTestModeRaw) {
+      // App secret config'li ama imza yok → reject (gerçek Meta her zaman imza yollar)
+      console.warn("[webhook] ❌ Missing x-hub-signature-256 header — rejecting");
+      return new Response(JSON.stringify({ error: "Missing signature" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // App secret YOKSA: backward-compat (eski deployment) — sadece logla, geçişe izin ver
+    else if (!_appSecret) {
+      console.warn("[webhook] ⚠️  META_APP_SECRET not configured — signature verification SKIPPED");
+    }
+
+    const body = JSON.parse(rawBody);
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -181,7 +211,8 @@ serve(async (req) => {
     }
 
     const message = sanitizeInput(rawMessage);
-    console.log("📱 WhatsApp FSM:", userPhone.slice(-4));
+    // K6: PII masking — telefon son 4 hane görünür, ham mesaj loglara çıkmıyor
+    console.log("📱 WhatsApp FSM:", maskPhone(userPhone), "| msg:", maskMessage(rawMessage));
     console.log(`🏢 Agency: ${agency.name}`);
 
     // === DB-tabanlı dedup + context/history preload ===
@@ -263,23 +294,56 @@ serve(async (req) => {
     }
 
     // === Abonelik + mesaj limiti ===
+    // K2: müşteriye günde 1 kez "hizmet kapalı" canlı bildirim (spam değil)
     const _subStatus: string = (agency as any).subscription_status ?? "active";
-    if (_subStatus === "expired" || _subStatus === "cancelled" || _subStatus === "suspended") {
-      console.warn(`[webhook] Message dropped — agency "${agency.name}" subscription: ${_subStatus}`);
-      // Geçmişe sistem notu bırak (acente neden cevap gelmediğini anlasın)
-      supabase.from("whatsapp_conversations").insert({
-        agency_id: agency.id, phone: userPhone,
-        role: "system",
-        content: `[Abonelik ${_subStatus}] Mesaj alındı ancak işlenmedi. Aboneliğinizi yenileyin.`,
-        metadata: { dropped_reason: `subscription_${_subStatus}` },
-      }).catch(() => {});
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
     const _msgLimit: number = planFeatures?.message_limit ?? ((agency as any).message_limit ?? -1);
-    if (_msgLimit > 0 && _msgCount >= _msgLimit) {
-      console.warn(`Agency "${agency.name}" monthly message limit reached`);
+    const _isExpired = _subStatus === "expired" || _subStatus === "cancelled" || _subStatus === "suspended";
+    const _isLimitReached = _msgLimit > 0 && _msgCount >= _msgLimit;
+
+    if (_isExpired || _isLimitReached) {
+      const _reason = _isExpired ? `subscription_${_subStatus}` : "message_limit_reached";
+      console.warn(`[webhook] Message dropped — agency "${agency.name}" reason: ${_reason}`);
+
+      // 24h cooldown: bu müşteriye son 24 saatte aynı bildirim atıldı mı?
+      const _since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: _recentNotice } = await supabase
+        .from("whatsapp_conversations")
+        .select("id")
+        .eq("agency_id", agency.id)
+        .eq("phone", userPhone)
+        .eq("role", "system")
+        .like("content", "[unavailable]%")
+        .gte("created_at", _since)
+        .limit(1)
+        .maybeSingle();
+
+      if (!_recentNotice) {
+        // Canlı bildirim — 7 dil canned response
+        const _unavMsgs: Record<string, string> = {
+          tr: "Üzgünüm, hizmetimiz şu anda geçici olarak kullanılamıyor. 🙏 Lütfen daha sonra tekrar yazın veya doğrudan acentemizle iletişime geçin.",
+          en: "Sorry, our service is temporarily unavailable. 🙏 Please try again later or contact our agency directly.",
+          de: "Entschuldigung, unser Service ist vorübergehend nicht verfügbar. 🙏 Bitte später erneut versuchen oder direkt unsere Agentur kontaktieren.",
+          ru: "Извините, наш сервис временно недоступен. 🙏 Попробуйте позже или свяжитесь с нашим агентством напрямую.",
+          ar: "آسف، خدمتنا غير متوفرة مؤقتاً. 🙏 يرجى المحاولة لاحقاً أو التواصل مع وكالتنا مباشرة.",
+          fr: "Désolé, notre service est temporairement indisponible. 🙏 Veuillez réessayer plus tard ou contacter directement notre agence.",
+          es: "Lo sentimos, nuestro servicio está temporalmente no disponible. 🙏 Por favor intente más tarde o contacte directamente con nuestra agencia.",
+        };
+        const _unavMsg = _unavMsgs[_prelimLang] || _unavMsgs.tr;
+        // Meta 24h penceresi: müşteri az önce bize yazdığı için pencere AÇIK — free text gönderilebilir
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
+          userPhone, _unavMsg).catch((e) => console.error("[K2 unav send fail]", e));
+        // Conversations'a işaretle (cooldown takibi)
+        supabase.from("whatsapp_conversations").insert({
+          agency_id: agency.id, phone: userPhone,
+          role: "system",
+          content: `[unavailable] ${_reason}`,
+          metadata: { dropped_reason: _reason, customer_notified: true },
+        }).catch(() => {});
+      } else {
+        // 24h içinde zaten bildirim atılmış — sessiz
+        console.log("[K2] Suppressed unav notice (24h cooldown)", maskPhone(userPhone));
+      }
+
       return new Response(JSON.stringify({ success: true }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -348,7 +412,7 @@ serve(async (req) => {
             .insert({ phone: userPhone, role: "assistant", content: canned, agency_id: agency.id });
           await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
             userPhone, truncateForWhatsApp(canned));
-          supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+          supabase.rpc("increment_agency_message_count", { p_agency_id: agency.id }).then(() => {}); // K3: atomic
           return new Response(JSON.stringify({ success: true }), {
             status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });

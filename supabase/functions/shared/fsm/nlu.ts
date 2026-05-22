@@ -372,19 +372,23 @@ export async function analyzeUserMessage(
     if (entities.phone) updates.phone = entities.phone;
 
     // NLU_ENTITIES — tarih extraction debug için kritik
+    // K6: PII masking — full_name/phone maskelenir, sadece "var/yok" durumu loglanır
     console.info("NLU_ENTITIES", {
       intent: analysis.intent,
       language: analysis.language,
-      // dates: NLU tool schema'sında "dates" (array) olarak tanımlı
-      dates: entities.dates,        // array mi geliyor?
-      // date: info-extractor "nluEntities.date" (singular) bekliyor — mismatch şüphesi
-      date_singular: entities.date, // bu alan hiç geliyor mu?
+      dates: entities.dates,
+      date_singular: entities.date,
       tour_name: entities.tour_name,
       destination: entities.destination,
       people_count: entities.people_count,
-      full_name: entities.full_name,
-      phone: entities.phone,
-      updates,
+      has_full_name: !!entities.full_name,
+      has_phone: !!entities.phone,
+      // updates objesi de phone/fullName içerebilir — maskele
+      updates: {
+        ...updates,
+        ...(updates.phone ? { phone: "***" + String(updates.phone).slice(-4) } : {}),
+        ...(updates.fullName ? { fullName: String(updates.fullName).charAt(0) + "***" } : {}),
+      },
     });
 
     return {

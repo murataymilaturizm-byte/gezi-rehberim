@@ -4,6 +4,55 @@ const GRAPH_API_VERSION = 'v18.0';
 const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 
 /**
+ * K1: Meta webhook HMAC-SHA256 imza doğrulama
+ *
+ * Meta her webhook POST'unda `x-hub-signature-256: sha256=<hex>` header'ı yollar.
+ * Bu imza, raw request body üzerinde APP_SECRET ile HMAC-SHA256 olarak üretilir.
+ *
+ * @param rawBody  Parse edilmemiş ham string body (req.text() sonucu)
+ * @param signature  x-hub-signature-256 header değeri ("sha256=..." formatı)
+ * @param appSecret  META_APP_SECRET env değişkeni (Facebook App Settings'de "App Secret")
+ * @returns true imza geçerli, false aksi halde
+ */
+export async function verifyMetaSignature(
+  rawBody: string,
+  signature: string | null,
+  appSecret: string,
+): Promise<boolean> {
+  if (!signature || !appSecret) return false;
+  if (!signature.startsWith('sha256=')) return false;
+
+  const provided = signature.slice('sha256='.length).trim().toLowerCase();
+  if (!/^[0-9a-f]+$/.test(provided)) return false;
+
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      enc.encode(appSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign'],
+    );
+    const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(rawBody));
+    const computed = Array.from(new Uint8Array(sigBuf))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    // Timing-safe compare (uzunluk eşitse char-by-char XOR)
+    if (computed.length !== provided.length) return false;
+    let diff = 0;
+    for (let i = 0; i < computed.length; i++) {
+      diff |= computed.charCodeAt(i) ^ provided.charCodeAt(i);
+    }
+    return diff === 0;
+  } catch (e) {
+    console.error('[verifyMetaSignature] error:', e);
+    return false;
+  }
+}
+
+/**
  * Send a text message via Meta Cloud API
  */
 export async function sendWhatsAppMessage(

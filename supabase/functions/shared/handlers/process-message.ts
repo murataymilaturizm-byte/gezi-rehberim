@@ -30,6 +30,7 @@ import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage } from "../services/payment-message.ts";
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
 import { formatPriceSync } from "../utils/currency-display.ts";
+import { maskPhone } from "../utils/log-mask.ts";
 import type { ChannelAdapter, ProcessMessageInput, ProcessMessageResult } from "./types.ts";
 
 export async function processChatMessage(input: ProcessMessageInput): Promise<ProcessMessageResult> {
@@ -440,6 +441,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const justCompleted =
     newContext.stage === "COMPLETED" && newContext.reservationConfirmed && context.stage !== "COMPLETED";
 
+  // K6: PII masking — isim/telefon log'a çıkmasın, sadece "var/yok" durumu
   console.log("[process-message] justCompleted check:", {
     justCompleted,
     newStage: newContext.stage,
@@ -460,8 +462,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _phoneDigits = reservationPhone.replace(/[\s\-\(\)\.]/g, "");
     const _phoneOk = /^\+?\d{7,15}$/.test(_phoneDigits);
     if (reservationPhone && !_phoneOk) {
+      // K6: PII masking
       console.error("[process-message] Invalid phone format — requeuing for phone collection", {
-        regPhone, identifier: adapter.identifier, reservationPhone,
+        regPhone: maskPhone(regPhone),
+        identifier: maskPhone(adapter.identifier),
+        reservationPhone: maskPhone(reservationPhone),
       });
       newContext.stage = "COLLECTING_INFO";
       newContext.reservationConfirmed = false;
@@ -535,7 +540,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
 
     const totalPax = (paxAdult || 0) + (newContext.reservationInfo.paxChild || 0);
-    console.log("[process-message] calling create_reservation RPC:", { tourId, dateId, fullName, totalPax, agencyId: agency.id });
+    // K6: fullName loga çıkmasın, sadece "var/yok" durumu
+    console.log("[process-message] calling create_reservation RPC:", { tourId, dateId, hasName: !!fullName, totalPax, agencyId: agency.id });
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
       "create_reservation_with_quota_check",
       {
@@ -763,6 +769,46 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(completionReply, newContext);
     await adapter.sendResponse(completionReply);
     return { success: true, response: completionReply, newContext };
+  }
+
+  // === 14a. O9 — AFTER-SALES İPTAL/DEĞİŞİKLİK DETERMİNİSTİK MESAJ ===
+  // Müşteri COMPLETED stage'inde "iptal et", "değiştir" gibi mesaj attı.
+  // BOT DB'DE STATUS DEĞİŞTİRMEZ (güvenlik). Talebi acenteye yönlendirir +
+  // complaints tablosuna kayıt bırakır (panel'de görünür). Kontenjan/K4 trigger'ı
+  // acente CANCELLED yaptığında zaten doğru çalışıyor.
+  if (
+    context.stage === "COMPLETED" &&
+    newContext.stage === "COMPLETED"
+  ) {
+    const _msgLower = message.toLowerCase();
+    const _bookingActionRe = /\b(iptal|cancel|annul|annuler|cancelar|stornier|отмен|إلغاء|إلغ)|değiştir|change|modif|cambiar|ändern|изменить|تعديل|تغيير\b/i;
+    const _isCancelOrChange = _bookingActionRe.test(_msgLower);
+    if (_isCancelOrChange) {
+      const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _ackMsgs: Record<string, string> = {
+        tr: `Talebinizi aldık ✅ Acentemiz en kısa sürede sizinle iletişime geçecek. Acil durumlar için doğrudan arayabilirsiniz.${_agPhone}`,
+        en: `We've received your request ✅ Our agency will contact you shortly. For urgent matters, please call us directly.${_agPhone}`,
+        de: `Wir haben Ihre Anfrage erhalten ✅ Unsere Agentur wird sich in Kürze mit Ihnen in Verbindung setzen. Bei dringenden Anliegen rufen Sie uns bitte direkt an.${_agPhone}`,
+        ru: `Мы получили ваш запрос ✅ Наше агентство свяжется с вами в ближайшее время. По срочным вопросам звоните напрямую.${_agPhone}`,
+        ar: `لقد استلمنا طلبك ✅ ستتواصل وكالتنا معك في أقرب وقت. للأمور العاجلة يرجى الاتصال مباشرة.${_agPhone}`,
+        fr: `Nous avons bien reçu votre demande ✅ Notre agence vous contactera prochainement. Pour les urgences, appelez-nous directement.${_agPhone}`,
+        es: `Hemos recibido su solicitud ✅ Nuestra agencia se pondrá en contacto con usted en breve. Para asuntos urgentes, llámenos directamente.${_agPhone}`,
+      };
+      const _ackReply = _ackMsgs[newContext.language] || _ackMsgs.tr;
+
+      // Complaint kaydı (panel'de "açık talep" olarak görünür)
+      supabase.from("complaints").insert({
+        agency_id: agency.id,
+        phone: adapter.identifier,
+        message,
+        type: "after_sales_action",
+        status: "new",
+      }).then(() => {}, () => {});
+
+      await _save(_ackReply, newContext);
+      await adapter.sendResponse(_ackReply);
+      return { success: true, response: _ackReply, newContext };
+    }
   }
 
   // === 14b. FIX 3 — SAHTE ONAY GUARD ===
