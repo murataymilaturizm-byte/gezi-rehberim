@@ -2343,6 +2343,7 @@
   },
   "common": {
     "unknown": "Unknown",
+    "openWhatsApp": "Open in WhatsApp",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",

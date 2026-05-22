@@ -2377,6 +2377,7 @@
   },
   "common": {
     "unknown": "Desconocido",
+    "openWhatsApp": "Abrir en WhatsApp",
     "unspecified": "No especificado",
     "loading": "Cargando...",
     "error": "Error",

@@ -29,6 +29,7 @@ import { tr } from "date-fns/locale";
 import { WhatsAppSettings } from "./WhatsAppSettings";
 import { EmptyState } from "./EmptyState";
 import { ConversationsEmptyIllustration } from "./illustrations/ConversationsEmptyIllustration";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const PAGE_SIZE = 25;
 
@@ -488,6 +489,29 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                         {/* Takeover panel — flex-shrink-0 so it never steals space from messages */}
                         {!isSuperAdmin && (
                           <div className="flex-shrink-0 border-t p-3 space-y-2">
+                            {/* Müşteri + WhatsApp quick link (hızlı manuel cevap için) */}
+                            {(() => {
+                              const _waUrl = selectedPhone ? buildWhatsAppUrl(selectedPhone) : null;
+                              return _waUrl ? (
+                                <div className="flex items-center justify-between gap-2 px-1">
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    <User className="h-3 w-3 inline mr-1" />
+                                    {selectedPhone}
+                                  </p>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2.5 text-[11px] border-green-500/40 text-green-700 dark:text-green-400 hover:bg-green-500/5 shrink-0"
+                                    asChild
+                                  >
+                                    <a href={_waUrl} target="_blank" rel="noopener noreferrer">
+                                      <MessageCircle className="w-3 h-3 mr-1" />
+                                      {t("common.openWhatsApp")}
+                                    </a>
+                                  </Button>
+                                </div>
+                              ) : null;
+                            })()}
                             {/* Bot status */}
                             <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                               <div className="flex items-center gap-2">

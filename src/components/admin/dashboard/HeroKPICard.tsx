@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
+import { AnimatedCounter } from "@/components/landing/AnimatedCounter";
 
 interface SparkPoint { date: string; value: number }
 
@@ -52,11 +53,13 @@ export function HeroKPICard({
     ? "text-green-600 dark:text-green-400"
     : "text-red-600 dark:text-red-400";
 
+  // Visual polish: tüm KPI kartlarda yumuşak hover lift (tıklanabilir/olmayan fark etmez,
+  // ama tıklanabilirler daha belirgin). motion-safe ile reduced-motion'a saygı.
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-200",
-        onClick && "cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+        "overflow-hidden motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:shadow-lg",
+        onClick && "cursor-pointer motion-safe:hover:-translate-y-0.5"
       )}
       onClick={onClick}
     >
@@ -69,9 +72,12 @@ export function HeroKPICard({
         </div>
 
         <p className="text-2xl sm:text-3xl font-bold tracking-tight mb-1">
-          {prefix}
-          {typeof value === "number" ? value.toLocaleString("tr-TR") : value}
-          {suffix}
+          {/* AnimatedCounter sayısal değerlerde 0'dan animasyonla sayar; string ise olduğu gibi render */}
+          {typeof value === "number" ? (
+            <AnimatedCounter to={value} prefix={prefix} suffix={suffix} duration={1.2} />
+          ) : (
+            <>{prefix}{value}{suffix}</>
+          )}
         </p>
 
         <div className="flex items-center gap-1.5">

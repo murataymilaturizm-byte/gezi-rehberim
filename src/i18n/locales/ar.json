@@ -2343,6 +2343,7 @@
   },
   "common": {
     "unknown": "غير معروف",
+    "openWhatsApp": "فتح في واتساب",
     "unspecified": "غير محدد",
     "loading": "جاري التحميل...",
     "error": "خطأ",

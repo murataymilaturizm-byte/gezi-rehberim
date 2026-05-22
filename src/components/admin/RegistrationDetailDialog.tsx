@@ -25,8 +25,9 @@ import { format } from "date-fns";
 import { tr as trLocale, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 
 const DATE_LOCALE_MAP = { tr: trLocale, en: enUS, de, ru, ar, fr, es };
-import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign, Receipt, Trash2 } from "lucide-react";
+import { User, Phone, Users, Calendar, MapPin, CreditCard, Wallet, DollarSign, Receipt, Trash2, MessageCircle } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 interface PaymentHistory {
   id: string;
@@ -331,8 +332,24 @@ export const RegistrationDetailDialog = ({
             <User className="h-5 w-5" />
             {t("admin.registrations.detailTitle")}
           </DialogTitle>
-          <DialogDescription className="flex items-center gap-2 text-base">
-            {registration.full_name} • {registration.phone}
+          <DialogDescription className="flex items-center gap-2 text-base flex-wrap">
+            <span>{registration.full_name} • {registration.phone}</span>
+            {(() => {
+              const waUrl = buildWhatsAppUrl(registration.phone);
+              return waUrl ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2.5 text-xs border-green-500/40 text-green-700 dark:text-green-400 hover:bg-green-500/5"
+                  asChild
+                >
+                  <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="w-3.5 h-3.5 mr-1" />
+                    {t("common.openWhatsApp")}
+                  </a>
+                </Button>
+              ) : null;
+            })()}
           </DialogDescription>
         </DialogHeader>
 

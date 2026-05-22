@@ -106,7 +106,7 @@ export function CommandPalette({ onTabChange, onNewTour, onBulkImport, onManualR
           <CommandGroup heading={t("commandPalette.navigation")}>
             <CommandItem onSelect={() => run(() => onTabChange("dashboard"))}>
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              Dashboard
+              {t("admin.tabs.dashboard", { defaultValue: "Dashboard" })}
               <CommandShortcut>⌘D</CommandShortcut>
             </CommandItem>
             <CommandItem onSelect={() => run(() => onTabChange("tours"))}>

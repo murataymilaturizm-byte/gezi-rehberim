@@ -13,30 +13,32 @@ interface QuickActionsProps {
 export function QuickActions({ onNewTour, onBulkImport, onManualReg, onNavigateWhatsApp }: QuickActionsProps) {
   const { t } = useTranslation();
 
+  // Visual polish: birinci aksiyon (Yeni Tur) primary CTA — gradient ocean + glow.
+  // Diğerleri outline kalır (ikincil aksiyon, görsel hiyerarşi).
   const actions = [
     {
       icon: Plus,
       label: t("tours.addFirstTour", { defaultValue: "Yeni Tur" }),
       onClick: onNewTour,
-      className: "hover:border-primary hover:bg-primary/5",
+      primary: true,
     },
     {
       icon: FileSpreadsheet,
       label: t("tours.bulkImport", { defaultValue: "Excel İçe Aktar" }),
       onClick: onBulkImport,
-      className: "hover:border-green-500 hover:bg-green-500/5",
+      className: "hover:border-green-500/60 hover:bg-green-500/5",
     },
     {
       icon: Sparkles,
       label: t("commandPalette.manualRegistration", { defaultValue: "Manuel Rezervasyon" }),
       onClick: onManualReg,
-      className: "hover:border-orange-500 hover:bg-orange-500/5",
+      className: "hover:border-orange-500/60 hover:bg-orange-500/5",
     },
     {
       icon: MessageSquare,
       label: "WhatsApp",
       onClick: onNavigateWhatsApp,
-      className: "hover:border-blue-500 hover:bg-blue-500/5",
+      className: "hover:border-blue-500/60 hover:bg-blue-500/5",
     },
   ];
 
@@ -50,17 +52,28 @@ export function QuickActions({ onNewTour, onBulkImport, onManualReg, onNavigateW
       </CardHeader>
       <CardContent className="pt-0">
         <div className="grid grid-cols-2 gap-2">
-          {actions.map((action) => (
-            <Button
-              key={action.label}
-              variant="outline"
-              className={`h-auto py-3 flex-col gap-1.5 text-xs transition-all duration-150 ${action.className}`}
-              onClick={action.onClick}
-            >
-              <action.icon className="h-4 w-4" />
-              <span className="leading-tight text-center">{action.label}</span>
-            </Button>
-          ))}
+          {actions.map((action) =>
+            action.primary ? (
+              <Button
+                key={action.label}
+                className="h-auto py-3 flex-col gap-1.5 text-xs motion-safe:transition-all motion-safe:duration-200 bg-gradient-ocean text-primary-foreground hover:opacity-90 motion-safe:hover:scale-[1.02] shadow-sm"
+                onClick={action.onClick}
+              >
+                <action.icon className="h-4 w-4" />
+                <span className="leading-tight text-center font-semibold">{action.label}</span>
+              </Button>
+            ) : (
+              <Button
+                key={action.label}
+                variant="outline"
+                className={`h-auto py-3 flex-col gap-1.5 text-xs motion-safe:transition-all motion-safe:duration-150 ${action.className}`}
+                onClick={action.onClick}
+              >
+                <action.icon className="h-4 w-4" />
+                <span className="leading-tight text-center">{action.label}</span>
+              </Button>
+            )
+          )}
         </div>
       </CardContent>
     </Card>

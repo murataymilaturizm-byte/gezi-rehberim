@@ -2377,6 +2377,7 @@
   },
   "common": {
     "unknown": "Неизвестно",
+    "openWhatsApp": "Открыть в WhatsApp",
     "unspecified": "Не указано",
     "loading": "Загрузка...",
     "error": "Ошибка",
