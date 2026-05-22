@@ -38,13 +38,14 @@ function buildTemplateComponents(content: string, values: Record<string, string>
   return [{ type: 'body', parameters }];
 }
 
-// Normalize edilmiş DB dil kodu → Meta API dil kodu
-function toMetaLang(lang: string): string {
-  const map: Record<string, string> = {
-    en: 'en_US', tr: 'tr', de: 'de', fr: 'fr', es: 'es', ru: 'ru', ar: 'ar',
-  };
-  return map[lang] || lang;
-}
+// KÖKEN SEBEP FIX (Meta log kanıtladı: "(#132001) template name (X) does not exist in en_US"):
+// Önceki versiyonda toMetaLang fonksiyonu 'en' → 'en_US' çeviriyordu, AMA sync-meta-templates
+// Meta'dan template'leri çekerken normalizeLang ile 'en_US' → 'en' indiriyor (DB'ye basit kod yazar).
+// Yani Meta'da template kayıtlı dil = DB'deki language (örn. 'en'). Geri gönderirken 'en_US'
+// yapmak yanlış idi — Meta o dilde template bulamıyordu.
+//
+// ÇÖZÜM: Hiçbir dönüşüm yapma. DB'deki language değerini Meta'ya AYNEN gönder.
+// (Bu helper artık identity; çağrı yerleri tmpl.language direkt kullanır — fonksiyon kaldırıldı.)
 
 // template_send_log'a kayıt at (non-blocking)
 async function logSend(supabase: any, payload: {
@@ -84,7 +85,9 @@ serve(async (req) => {
       }
 
       const phone    = body.phone.replace('+', '').trim();
-      const langCode = body.languageCode || 'en_US';
+      // FIX: default basit kod 'en' (DB normalize edilmiş formatla tutarlı).
+      // Arayan farklı bir kod gönderirse (body.languageCode) onu kullanır — flex.
+      const langCode = body.languageCode || 'en';
       const comps    = body.components || [];
 
       console.log(`📤 [MODE1] Direct template: ${body.templateName} → ${phone} (${langCode})`);
@@ -150,7 +153,9 @@ serve(async (req) => {
       }
 
       const normalizedPhone = rawPhone.replace('whatsapp:', '').replace('+', '').trim();
-      const langCode        = toMetaLang(tmpl.language);
+      // FIX: DB'deki language değeri Meta'da template'in kayıtlı olduğu dil ile aynı
+      // (sync-meta-templates'in normalize ettiği basit kod). Dönüşüm YOK.
+      const langCode        = tmpl.language;
       const comps           = buildTemplateComponents(tmpl.content, variableValues || {});
       const _varCount       = comps[0]?.parameters?.length ?? 0;
       const _emptyParams    = comps[0]?.parameters?.filter((p: any) => !p.text || p.text === '').length ?? 0;
@@ -298,7 +303,8 @@ serve(async (req) => {
     };
 
     const normalizedPhone = registration.phone.replace('whatsapp:', '').replace('+', '').trim();
-    const langCode        = toMetaLang(tmpl.language);
+    // FIX: DB language değeri Meta'da kayıtlı dil ile aynı — dönüşüm YOK.
+    const langCode        = tmpl.language;
     const comps           = buildTemplateComponents(tmpl.content, varValues);
     const _varCount       = comps[0]?.parameters?.length ?? 0;
     const _emptyParams    = comps[0]?.parameters?.filter((p: any) => !p.text || p.text === '').length ?? 0;
