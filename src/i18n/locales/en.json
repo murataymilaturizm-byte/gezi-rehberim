@@ -262,7 +262,11 @@
       },
       "cancellation": {
         "question": "Can I cancel anytime?",
-        "answer": "Yes. Monthly subscriptions can be cancelled at the end of any month. Yearly plans are refunded pro-rata for remaining months. You can export your data and customer records at any time."
+        "answer": "Yes. Monthly subscriptions can be cancelled at the end of any month; your service continues until the end of the current billing period. You can export your data and customer records at any time."
+      },
+      "addingTours": {
+        "question": "How do I add my tours?",
+        "answer": "Two options: (1) Manual entry — Use \"New Tour\" in the \"Tours\" tab to add tours one by one (title, price, program, transport, multilingual fields). (2) Bulk Excel import — For dozens of tours, click \"Bulk Import\", download the template, fill it in, and upload. Required fields (title, destination, type, currency) are marked in the template. Dates and prices are added separately for each tour."
       }
     }
   },
@@ -1929,7 +1933,16 @@
       "noValid": "No valid tours to import",
       "importFailed": "Import failed",
       "titleRequired": "Tour title is required",
-      "destinationRequired": "Destination is required"
+      "destinationRequired": "Destination is required",
+      "hotelStarsRange": "Hotel stars must be between 1 and 5"
+    },
+    "guide": {
+      "title": "Bulk tour upload in 3 steps:",
+      "step1": "Download the template below (Excel, .xlsx)",
+      "step2": "Fill in your tours — 4 required fields: title, destination, type, currency. Other fields are optional.",
+      "step3": "Upload the file — review the preview and confirm.",
+      "tip": "Tour dates and prices are added separately for each tour (Tours page edit or \"Bulk Date Generator\").",
+      "alternative": "For a single tour, \"New Tour\" button may be faster."
     }
   },
   "greetings": {

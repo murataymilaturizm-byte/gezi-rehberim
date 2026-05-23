@@ -209,6 +209,9 @@ export const DemoChat = () => {
           sessionId: sessionId,
           conversationStyle: conversationStyle,
           conversationState: conversationState,
+          // FIX: Kullanıcının demo dropdown'ından seçtiği dil — backend tahmin etmek yerine bunu öncelik alır.
+          // Aksi halde ilk mesajda ASCII İngilizce/diğer için detection fail edip TR'ye düşüyordu.
+          language: i18n.language,
         }),
       });
 

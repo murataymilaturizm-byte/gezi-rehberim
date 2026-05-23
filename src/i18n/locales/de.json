@@ -262,7 +262,11 @@
       },
       "cancellation": {
         "question": "Kann ich jederzeit kündigen?",
-        "answer": "Ja. Monatsabos zum Monatsende kündbar. Bei Jahresplänen erfolgt eine anteilige Rückerstattung. Sie können Ihre Daten und Kundenakten jederzeit exportieren."
+        "answer": "Ja. Monatsabos sind zum Monatsende kündbar; Ihr Service läuft bis zum Ende der aktuellen Abrechnungsperiode. Sie können Ihre Daten und Kundenakten jederzeit exportieren."
+      },
+      "addingTours": {
+        "question": "Wie füge ich meine Touren hinzu?",
+        "answer": "Zwei Möglichkeiten: (1) Manuell — Mit \"Neue Tour\" im Tab \"Touren\" Touren einzeln hinzufügen (Titel, Preis, Programm, Transport, mehrsprachige Felder). (2) Excel-Massenimport — Bei Dutzenden Touren \"Massenimport\" klicken, Vorlage herunterladen, ausfüllen, hochladen. Pflichtfelder (Titel, Ziel, Typ, Währung) sind in der Vorlage markiert. Termine und Preise werden je Tour separat hinzugefügt."
       }
     }
   },
@@ -1929,7 +1933,16 @@
       "noValid": "Keine gültigen Touren zum Importieren",
       "importFailed": "Import fehlgeschlagen",
       "titleRequired": "Tourname ist erforderlich",
-      "destinationRequired": "Reiseziel ist erforderlich"
+      "destinationRequired": "Reiseziel ist erforderlich",
+      "hotelStarsRange": "Hotelsterne müssen zwischen 1 und 5 liegen"
+    },
+    "guide": {
+      "title": "Touren-Massenimport in 3 Schritten:",
+      "step1": "Laden Sie die Vorlage unten herunter (Excel, .xlsx)",
+      "step2": "Füllen Sie Ihre Touren aus — 4 Pflichtfelder: Titel, Ziel, Typ, Währung. Andere Felder sind optional.",
+      "step3": "Laden Sie die Datei hoch — prüfen Sie die Vorschau und bestätigen Sie.",
+      "tip": "Termine und Preise werden je Tour separat hinzugefügt (Touren-Seite bearbeiten oder \"Massentermin-Generator\").",
+      "alternative": "Für eine einzelne Tour ist die Schaltfläche \"Neue Tour\" eventuell schneller."
     }
   },
   "greetings": {

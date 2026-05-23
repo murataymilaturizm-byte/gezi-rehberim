@@ -36,7 +36,7 @@ import { calculateTotal, calculateDeposit } from "../utils/finance.ts";
 import type { ChannelAdapter, ProcessMessageInput, ProcessMessageResult } from "./types.ts";
 
 export async function processChatMessage(input: ProcessMessageInput): Promise<ProcessMessageResult> {
-  const { message: rawMessage, adapter, agency, supabase, tours, paymentInstructions, languageCurrencies, primaryCurrency, returningUserName } = input;
+  const { message: rawMessage, adapter, agency, supabase, tours, paymentInstructions, languageCurrencies, primaryCurrency, returningUserName, seedLanguage } = input;
 
   // === 1. INPUT UZUNLUK KONTROLÜ ===
   if (isInputTooLong(rawMessage)) {
@@ -74,6 +74,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const loadedContext = _loadResult.context;
 
   // === 3. DİL TESPİTİ ===
+  // Öncelik: explicit "english please" intent > karakter tabanlı script > frontend seedLanguage (demo dropdown).
+  // seedLanguage WhatsApp'ta yok; demo-chat'te kullanıcının i18n.language seçimi.
+  // Bu hiyerarşi sayesinde ASCII metinli ilk mesajda da doğru dilde cevap üretilir.
   const languageChangeIntent = detectLanguageChangeIntent(message);
   const runtimeDetectedLang = detectLanguage(message);
 
@@ -94,8 +97,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // Yeni davranış: stale sentinel varsa kullanıcıya AÇIK mesaj + AI'ya hiç gitme (history sızıntısı kesilir).
   if (_loadResult.stale) {
     const _stale = _loadResult.stale;
-    // Dil seçimi: önceki state'in dili öncelikli, yoksa runtime tespit, yoksa enabled[0]/tr
-    const _lang = _bestLang(_stale.lastLanguage || languageChangeIntent || runtimeDetectedLang || "tr");
+    // FIX: Frontend explicit dil (demo dropdown) > açık dil değiştirme niyeti > script-based
+    // tespit > stale'in son dili > "tr". Önceki sıralama lastLanguage'i ilk koyuyordu, bu da
+    // kullanıcı bayatlamadan beri dili değiştirmişse stale reset'i eski dilde yapıyordu.
+    const _seedHere = seedLanguage && (Array.isArray(agency.enabled_languages) && agency.enabled_languages.length > 0
+      ? agency.enabled_languages.includes(seedLanguage)
+      : true) ? seedLanguage : undefined;
+    const _lang = _bestLang(languageChangeIntent || runtimeDetectedLang || _seedHere || _stale.lastLanguage || "tr");
     const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
 
     // Yarım rezervasyon vardıysa: "iptal edildi, baştan başlayalım" — kullanıcı tarihi/pax'ı yeniden seçmeli
@@ -131,6 +139,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   // === 4. CONTEXT BAŞLAT / GÜNCELLE ===
+  // FIX: seedLanguage (frontend explicit) — detection'ı yenmek için. Demo dropdown'unda
+  // kullanıcı "EN" seçtiyse ve mesaj saf ASCII İngilizce ise detection null döner; eskiden
+  // ilk mesajda TR'ye düşüyordu, ikinci mesajda NLU dili düzeltiyordu (one-message delay).
+  const _effectiveSeed = seedLanguage && _isLangEnabled(seedLanguage) ? seedLanguage : undefined;
+
   let context: ConversationContext;
   if (loadedContext) {
     context = loadedContext;
@@ -147,9 +160,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         if (_isLangEnabled(runtimeDetectedLang)) context.language = runtimeDetectedLang;
         // Aksi hâlde mevcut context.language'ı koru (acente bu dili açmamış)
       }
+    } else if (_effectiveSeed && _effectiveSeed !== context.language && !runtimeDetectedLang) {
+      // Detection sinyali yok ama frontend explicit dil göndermiş — kullanıcının seçimi otorite.
+      context.language = _effectiveSeed;
+      context.tone = getDefaultToneForLanguage(_effectiveSeed) as any;
     }
   } else {
-    const _detectedLang = languageChangeIntent || runtimeDetectedLang || "tr";
+    // Yeni context: explicit change > script-based > frontend seed > tr.
+    const _detectedLang = languageChangeIntent || runtimeDetectedLang || _effectiveSeed || "tr";
     const lang = _bestLang(_detectedLang);
     context = createInitialContext(lang, getDefaultToneForLanguage(lang) as any);
   }

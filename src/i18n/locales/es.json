@@ -262,7 +262,11 @@
       },
       "cancellation": {
         "question": "¿Puedo cancelar en cualquier momento?",
-        "answer": "Sí. Suscripción mensual cancelable al final de cualquier mes. Plan anual: reembolso proporcional por los meses restantes. Puedes exportar tus datos cuando quieras."
+        "answer": "Sí. La suscripción mensual puede cancelarse al final de cualquier mes; tu servicio continúa hasta el final del período de facturación actual. Puedes exportar tus datos y registros de clientes cuando quieras."
+      },
+      "addingTours": {
+        "question": "¿Cómo añado mis tours?",
+        "answer": "Dos opciones: (1) Manual — Usa \"Nuevo Tour\" en la pestaña \"Tours\" para añadir uno por uno (título, precio, programa, transporte, campos multilingües). (2) Importación masiva por Excel — Para muchos tours, haz clic en \"Importación masiva\", descarga la plantilla, complétala y súbela. Los campos obligatorios (título, destino, tipo, moneda) están marcados. Las fechas y precios se añaden por separado para cada tour."
       }
     }
   },
@@ -1963,7 +1967,16 @@
       "noValid": "No hay tours válidos para importar",
       "importFailed": "La importación falló",
       "titleRequired": "El nombre del tour es obligatorio",
-      "destinationRequired": "El destino es obligatorio"
+      "destinationRequired": "El destino es obligatorio",
+      "hotelStarsRange": "Las estrellas del hotel deben estar entre 1 y 5"
+    },
+    "guide": {
+      "title": "Carga masiva de tours en 3 pasos:",
+      "step1": "Descarga la plantilla abajo (Excel, .xlsx)",
+      "step2": "Completa tus tours — 4 campos obligatorios: título, destino, tipo, moneda. Los demás campos son opcionales.",
+      "step3": "Sube el archivo — revisa la vista previa y confirma.",
+      "tip": "Las fechas y precios se añaden por separado para cada tour (página de Tours o \"Generador masivo de fechas\").",
+      "alternative": "Para un solo tour, el botón \"Nuevo Tour\" puede ser más rápido."
     }
   },
   "greetings": {

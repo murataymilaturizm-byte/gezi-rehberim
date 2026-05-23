@@ -103,6 +103,13 @@ export interface ProcessMessageInput {
   primaryCurrency: string;
   /** Dönen kullanıcı adı (WhatsApp profil tablosundan, demo için null) */
   returningUserName?: string | null;
+  /**
+   * Kanalın bildiği "explicit" kullanıcı dili (demo'da i18n.language; WhatsApp'ta yok).
+   * Ham mesajdan tahmin etmek yerine bu kullanılır — özellikle ilk mesajda
+   * ASCII metin için detection cold-start'ta TR fallback'a düşmesini önler.
+   * Mevcut conversation context'in dilinden üstündür (kullanıcı dil seçimi otoritedir).
+   */
+  seedLanguage?: string;
 }
 
 export interface ProcessMessageResult {

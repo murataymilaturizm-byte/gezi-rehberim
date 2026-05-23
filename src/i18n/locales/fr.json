@@ -262,7 +262,11 @@
       },
       "cancellation": {
         "question": "Puis-je annuler à tout moment ?",
-        "answer": "Oui. L'abonnement mensuel s'annule à la fin de n'importe quel mois. Plan annuel : remboursement au prorata des mois restants. Vous pouvez exporter vos données à tout moment."
+        "answer": "Oui. L'abonnement mensuel peut être annulé à la fin de n'importe quel mois ; votre service continue jusqu'à la fin de la période de facturation en cours. Vous pouvez exporter vos données et fiches clients à tout moment."
+      },
+      "addingTours": {
+        "question": "Comment ajouter mes circuits ?",
+        "answer": "Deux options : (1) Manuel — Utilisez \"Nouveau circuit\" dans l'onglet \"Circuits\" pour ajouter un par un (titre, prix, programme, transport, champs multilingues). (2) Import Excel en masse — Pour des dizaines de circuits, cliquez \"Import en masse\", téléchargez le modèle, remplissez et téléchargez. Les champs obligatoires (titre, destination, type, devise) sont indiqués. Les dates et prix s'ajoutent séparément pour chaque circuit."
       }
     }
   },
@@ -1929,7 +1933,16 @@
       "noValid": "Aucun circuit valide à importer",
       "importFailed": "L'importation a échoué",
       "titleRequired": "Le nom du circuit est requis",
-      "destinationRequired": "La destination est requise"
+      "destinationRequired": "La destination est requise",
+      "hotelStarsRange": "Les étoiles de l'hôtel doivent être entre 1 et 5"
+    },
+    "guide": {
+      "title": "Import en masse en 3 étapes :",
+      "step1": "Téléchargez le modèle ci-dessous (Excel, .xlsx)",
+      "step2": "Remplissez vos circuits — 4 champs obligatoires : titre, destination, type, devise. Les autres champs sont facultatifs.",
+      "step3": "Téléchargez le fichier — vérifiez l'aperçu et confirmez.",
+      "tip": "Les dates et prix sont ajoutés séparément pour chaque circuit (page Circuits ou \"Générateur de dates en masse\").",
+      "alternative": "Pour un seul circuit, le bouton \"Nouveau circuit\" peut être plus rapide."
     }
   },
   "greetings": {

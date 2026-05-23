@@ -30,6 +30,12 @@ export const FaqSection = () => {
       answer: t("faq.items.setup.answer")
     },
     {
+      // Müşteri talebi: "Turlarımı nasıl eklerim?" — onboarding sürtünmesini önle.
+      // Cevap: manuel + Excel toplu seçeneklerini birlikte belirt.
+      question: t("faq.items.addingTours.question"),
+      answer: t("faq.items.addingTours.answer")
+    },
+    {
       question: t("faq.items.whatsappCost.question"),
       answer: t("faq.items.whatsappCost.answer")
     },

@@ -30,7 +30,14 @@ serve(async (req) => {
       conversationState: incomingContext,
       conversationStyle,
       agencyId: bodyAgencyId,
+      // FIX: Frontend i18n.language — ilk mesajda detection'ı override eder.
+      language: bodyLanguage,
     } = body;
+    // 7 dil whitelist'i — diğer girdiler güvenle yoksayılır.
+    const SUPPORTED_LANGS = ["tr", "en", "de", "ru", "ar", "fr", "es"];
+    const seedLanguage = (typeof bodyLanguage === "string" && SUPPORTED_LANGS.includes(bodyLanguage))
+      ? bodyLanguage
+      : undefined;
 
     if (!sessionId) {
       return new Response(JSON.stringify({ error: "sessionId required" }), {
@@ -39,7 +46,8 @@ serve(async (req) => {
     }
 
     const agencyId: string = bodyAgencyId || CONFIG.DEMO_AGENCY_ID;
-    const currentLang: string = (incomingContext as any)?.language || "tr";
+    // currentLang error-response için: önce mevcut context, sonra frontend seed, son çare tr.
+    const currentLang: string = (incomingContext as any)?.language || seedLanguage || "tr";
 
     // === INPUT UZUNLUK KONTROLÜ ===
     if (isInputTooLong(rawMessage)) {
@@ -134,6 +142,7 @@ serve(async (req) => {
     };
 
     // === HIZLI DİL TESPİTİ (tur localization için) ===
+    // Öncelik: explicit language-change ("english please") > karakter tabanlı > frontend seed > context default.
     let _prelimLang = currentLang;
     const _changeIntent = detectLanguageChangeIntent(message);
     if (_changeIntent) {
@@ -141,6 +150,7 @@ serve(async (req) => {
     } else {
       const _charLang = detectLanguage(rawMessage || "");
       if (_charLang) _prelimLang = _charLang;
+      else if (seedLanguage) _prelimLang = seedLanguage;
     }
 
     // === TURLARI YÜKLE + LOCALİZE ===
@@ -213,6 +223,8 @@ serve(async (req) => {
       languageCurrencies: agency.language_currencies ?? null,
       primaryCurrency: agency.primary_currency ?? "TRY",
       returningUserName: null,   // Demo-chat'te kullanıcı profili yok
+      // FIX: Frontend explicit dili → ilk mesajda detection'ı override eder.
+      seedLanguage,
     });
 
     return new Response(JSON.stringify({

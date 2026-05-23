@@ -262,7 +262,11 @@
       },
       "cancellation": {
         "question": "İstediğim zaman iptal edebilir miyim?",
-        "answer": "Evet. Aylık aboneliği herhangi bir ayın sonunda iptal edebilirsiniz. Yıllık planda kalan ay sayısına göre iade yapılır. Veri ve müşteri kayıtlarınızı dışa aktarabilirsiniz."
+        "answer": "Evet. Aylık aboneliği herhangi bir ayın sonunda iptal edebilirsiniz; mevcut fatura dönemi sonuna kadar hizmetiniz devam eder. Veri ve müşteri kayıtlarınızı dışa aktarabilirsiniz."
+      },
+      "addingTours": {
+        "question": "Turlarımı nasıl eklerim?",
+        "answer": "İki yöntem var: (1) Manuel ekleme — \"Turlar\" sekmesinden \"Yeni Tur\" ile tek tur ekleyebilirsiniz (başlık, fiyat, program, ulaşım, çok dilli alanlar). (2) Excel ile toplu yükleme — Onlarca tur varsa \"Toplu İçe Aktar\" butonundan şablonu indirip doldurabilir, tek seferde yükleyebilirsiniz. Şablonda zorunlu alanlar belirtilmiştir (başlık, destinasyon, tip, para birimi). Tarih ve fiyatlar her tur için ayrıca eklenir."
       }
     }
   },
@@ -1921,7 +1925,39 @@
       "noValid": "İçe aktarılabilecek geçerli tur bulunamadı",
       "importFailed": "İçe aktarma başarısız",
       "titleRequired": "Tur adı zorunludur",
-      "destinationRequired": "Destinasyon zorunludur"
+      "destinationRequired": "Destinasyon zorunludur",
+      "hotelStarsRange": "Otel yıldızı 1-5 arasında olmalı"
+    },
+    "guide": {
+      "title": "3 adımda toplu tur yükleme:",
+      "step1": "Aşağıdan şablonu indirin (Excel, .xlsx)",
+      "step2": "Turlarınızı doldurun — 4 zorunlu alan: başlık, destinasyon, tip, para birimi. Diğer alanlar opsiyonel.",
+      "step3": "Dosyayı yükleyin — önizlemede kontrol edip onaylayın.",
+      "tip": "Tur tarihleri ve fiyatlar her tur için ayrıca eklenir (Turlar sayfasından düzenleme veya \"Toplu Tarih Oluştur\").",
+      "alternative": "Tek tur eklemek için \"Yeni Tur\" butonu daha hızlı olabilir."
+    },
+    "tpl": {
+      "sheetInstructions": "Talimatlar",
+      "title": "Tur başlığı (Türkçe)",
+      "destination": "Şehir/bölge",
+      "type": "Tur tipi: DAYTRIP (günübirlik), N2 (2 gece), N3 (3 gece)",
+      "currency": "Para birimi: TRY, USD, EUR, GBP, SAR, AED, RUB",
+      "program": "Tur programı/içeriği — botun müşteriye anlattığı kısa açıklama",
+      "transport": "Ulaşım şekli",
+      "places": "Virgülle ayrılmış yer listesi",
+      "meetingPoint": "Kalkış/buluşma yeri",
+      "meetingTime": "Saat — HH:MM formatı",
+      "duration": "Tur süresi",
+      "category": "Kültür / Doğa / Macera / Deniz vb.",
+      "minPax": "Minimum kişi sayısı (sayı)",
+      "accommodation": "Konaklama açıklaması (oda tipi, yemek dahil mi)",
+      "hotelName": "Otel adı (varsa)",
+      "hotelStars": "Otel yıldızı (1-5 arası sayı)",
+      "visa": "Vize gerekli mi: evet / hayır",
+      "visaNotes": "Vize ile ilgili açıklama",
+      "titleMulti": "Yurtdışı müşteri için tur başlığı çevirisi (boş bırakılabilir)",
+      "destMulti": "Yurtdışı müşteri için destinasyon çevirisi",
+      "programMulti": "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)"
     }
   },
   "greetings": {
