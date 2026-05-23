@@ -19,7 +19,7 @@ import {
   resolveAgencyByPhoneNumberId,
   getMetaCredentials,
   subscribeAppToWabaWithRetry,
-  verifyMetaSignature,
+  verifyMetaSignatureDetailed,
 } from "../_shared/metaWhatsapp.ts";
 import { maskPhone, maskMessage } from "../shared/utils/log-mask.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
@@ -85,20 +85,50 @@ serve(async (req) => {
     const _signature = req.headers.get("x-hub-signature-256");
     const _appSecret = Deno.env.get("META_APP_SECRET") || Deno.env.get("WHATSAPP_APP_SECRET") || "";
     const _isTestModeRaw = rawBody.includes('"testMode"') && rawBody.includes("true");
+    // K1 EMERGENCY MODE: META_SIGNATURE_VERIFY_MODE env'i ile davranış kontrol edilir.
+    //   "enforce" (DEFAULT): fail → 401 reject (production'da olması gereken)
+    //   "warn":              fail → log + geçişe izin (acil kurtarma — secret düzelene kadar geçici)
+    // Secret'ı düzeltip "enforce"a dönmek ŞART — "warn" güvenlik açığıdır.
+    const _verifyMode = (Deno.env.get("META_SIGNATURE_VERIFY_MODE") || "enforce").toLowerCase();
+    const _enforce = _verifyMode !== "warn";
+
     if (_signature && _appSecret) {
-      const _valid = await verifyMetaSignature(rawBody, _signature, _appSecret);
-      if (!_valid) {
-        console.warn("[webhook] ❌ Invalid HMAC signature — rejecting request");
-        return new Response(JSON.stringify({ error: "Invalid signature" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const _result = await verifyMetaSignatureDetailed(rawBody, _signature, _appSecret);
+      if (!_result.valid) {
+        // K1: DETAYLI debug log — kullanıcı kök sebebi anlayabilsin.
+        // - reason: hangi aşamada fail (LENGTH_MISMATCH, HASH_MISMATCH, BAD_PREFIX, ...)
+        // - computedPrefix/providedPrefix: ilk 8 char (tam hash sızmaz, karşılaştırma için yeterli)
+        // - secretFingerprint: sha256(secret) ilk 8 char — secret değeri sızmaz, "doğru secret mı?" karşılaştırması için
+        // - bodyLength: Meta gerçekten body gönderdi mi
+        console.warn("[webhook] ❌ HMAC signature verification FAILED", {
+          reason: _result.reason,
+          computedPrefix: _result.computedPrefix,
+          providedPrefix: _result.providedPrefix,
+          bodyLength: _result.bodyLength,
+          secretLength: _result.secretLength,
+          secretFingerprint: _result.secretFingerprint,
+          verifyMode: _verifyMode,
         });
+        if (_enforce) {
+          return new Response(JSON.stringify({ error: "Invalid signature" }), {
+            status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // warn modunda devam et — bot ayağa kalksın ama log'da görünür kalsın
+        console.warn("[webhook] ⚠️  Signature INVALID but MODE=warn — request PASSING (TEMPORARY, fix secret then switch to enforce)");
+      } else {
+        // Başarılı verify — log düzeyi info, sadece secret fingerprint görünür (debugging için ipucu)
+        console.log(`[webhook] ✓ HMAC verified (fp=${_result.secretFingerprint})`);
       }
     } else if (_appSecret && !_isTestModeRaw) {
       // App secret config'li ama imza yok → reject (gerçek Meta her zaman imza yollar)
       console.warn("[webhook] ❌ Missing x-hub-signature-256 header — rejecting");
-      return new Response(JSON.stringify({ error: "Missing signature" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (_enforce) {
+        return new Response(JSON.stringify({ error: "Missing signature" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.warn("[webhook] ⚠️  Signature MISSING but MODE=warn — request PASSING");
     }
     // App secret YOKSA: backward-compat (eski deployment) — sadece logla, geçişe izin ver
     else if (!_appSecret) {

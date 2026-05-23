@@ -170,6 +170,25 @@ export function WhatsAppEmbeddedSignup({
 
       if (error) throw error;
 
+      // L2: Edge function 409 errorCode="DUPLICATE_PHONE_NUMBER" dönerse → i18n localized toast.
+      // Çift güvenlik: hem invoke 'data' ile döner (success:false), hem network 'error' yoluyla
+      // (Supabase functions invoke 2xx olmayan response'ları error olarak parse edebilir).
+      if (data?.errorCode === "DUPLICATE_PHONE_NUMBER") {
+        const _names = Array.isArray(data?.conflictAgencies)
+          ? data.conflictAgencies.map((a: any) => a?.name).filter(Boolean).join(", ")
+          : "";
+        toast({
+          title: t("whatsapp.connect.errorTitle"),
+          description: _names
+            ? t("whatsapp.connect.duplicatePhoneNumberWithName", { names: _names })
+            : t("whatsapp.connect.duplicatePhoneNumber"),
+          variant: "destructive",
+          duration: 10000,  // Uzun süreli — kullanıcı diğer acente adını okuyabilsin
+        });
+        setLoading(false);
+        return;
+      }
+
       if (!data?.success) throw new Error(data?.error || "Connection failed");
 
       if (data.needsManualPin) {

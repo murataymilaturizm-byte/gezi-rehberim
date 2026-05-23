@@ -3420,6 +3420,8 @@
       "successDescPhone": "WhatsApp numaranız başarıyla bağlandı: {{phone}}",
       "errorTitle": "Hata",
       "exchangeError": "WhatsApp bağlantısı sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+      "duplicatePhoneNumber": "Bu WhatsApp numarası başka bir acentede kayıtlı. Önce o acentenin bağlantısını koparın.",
+      "duplicatePhoneNumberWithName": "Bu WhatsApp numarası \"{{names}}\" acentesinde kayıtlı. Önce o acentenin bağlantısını koparın.",
       "disconnected": "Bağlantı Kaldırıldı",
       "disconnectedDesc": "WhatsApp bağlantınız kaldırıldı.",
       "disconnectError": "Bağlantı kaldırılırken bir hata oluştu.",

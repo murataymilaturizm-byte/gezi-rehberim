@@ -148,20 +148,61 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Step 6: Webhook subscription — retry'lı + doğrulamalı
-      let webhookSubscribed = false;
-      webhookSubscribed = await subscribeAppToWabaWithRetry(wabaInfo.wabaId, accessToken);
+      // L5: Meta yanıtı defansif TRIM (Meta normalde clean döner ama belt-and-suspenders;
+      // bugün trailing-space sorunu DB'de manuel girilen bir kayıttan geldi ama buradan
+      // da gelebileceği için aynı temizliği uygula).
+      const cleanWabaId = String(wabaInfo.wabaId).trim();
+      const cleanPhoneNumberId = String(phoneNumberId).trim();
+      const cleanPhoneNumber = phoneNumber ? String(phoneNumber).trim() : "";
 
-      if (!webhookSubscribed) {
-        console.error(`[exchange-token] Webhook subscription FAILED for agency ${agencyId}, WABA ${wabaInfo.wabaId}`);
+      // L2: DUPLICATE ÖN-KONTROL — aynı meta_phone_number_id BAŞKA acentede zaten var mı?
+      // UNIQUE constraint (L1) DB seviyesinde de yakalar ama burada erkenden anlamlı hata mesajı veririz.
+      // Mevcut acentenin kendi numarası tekrar bağlanırsa OK (sadece UPDATE).
+      const { data: conflictAgencies, error: conflictErr } = await supabase
+        .from("agencies")
+        .select("id, name")
+        .eq("meta_phone_number_id", cleanPhoneNumberId)
+        .neq("id", agencyId);
+
+      if (conflictErr) {
+        console.error("[exchange-token] L2 duplicate check query error:", conflictErr.message);
+        // Query hatası → yine de devam etme (DB seviyesi UNIQUE yakalar)
+        return new Response(
+          JSON.stringify({ success: false, error: "DB query failed during duplicate check" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (conflictAgencies && conflictAgencies.length > 0) {
+        const _conflictNames = conflictAgencies.map((a: any) => a.name).join(", ");
+        console.warn(`[exchange-token] L2: phone_number_id ${cleanPhoneNumberId} already used by: ${_conflictNames}`);
+        // L2: 200 + success:false + errorCode pattern — Supabase functions.invoke 4xx'i
+        // 'error' field'ına çevirip body'i kaybedebiliyor (K1 send-template-message'da
+        // aynı sorun yaşandı). 200 ile body kontrolü frontend için daha güvenilir.
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "This WhatsApp number is already registered to another agency. Please disconnect it from that agency first.",
+            errorCode: "DUPLICATE_PHONE_NUMBER",
+            conflictAgencies: conflictAgencies.map((a: any) => ({ id: a.id, name: a.name })),
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      // Step 5: Save to agency — her iki ID garanti dolu
+      // Step 6: Webhook subscription — retry'lı + doğrulamalı
+      let webhookSubscribed = false;
+      webhookSubscribed = await subscribeAppToWabaWithRetry(cleanWabaId, accessToken);
+
+      if (!webhookSubscribed) {
+        console.error(`[exchange-token] Webhook subscription FAILED for agency ${agencyId}, WABA ${cleanWabaId}`);
+      }
+
+      // Step 5: Save to agency — her iki ID garanti dolu, TRIM edilmiş, duplicate yok.
       const updateData: Record<string, any> = {
         meta_access_token: accessToken,
-        meta_waba_id: wabaInfo.wabaId,
-        meta_phone_number_id: phoneNumberId,
-        whatsapp_phone_number: phoneNumber || null,
+        meta_waba_id: cleanWabaId,
+        meta_phone_number_id: cleanPhoneNumberId,
+        whatsapp_phone_number: cleanPhoneNumber || null,
         whatsapp_status: "active",
         whatsapp_connected_at: new Date().toISOString(),
         webhook_subscribed: webhookSubscribed,
@@ -180,27 +221,27 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Also update whatsapp_integrations if exists
+      // Also update whatsapp_integrations if exists — TRIM'li değerlerle
       await supabase
         .from("whatsapp_integrations")
         .update({
           status: "active",
           meta_access_token: accessToken,
-          meta_waba_id: wabaInfo.wabaId || null,
-          meta_phone_number_id: phoneNumberId || null,
-          whatsapp_phone: phoneNumber || null,
+          meta_waba_id: cleanWabaId || null,
+          meta_phone_number_id: cleanPhoneNumberId || null,
+          whatsapp_phone: cleanPhoneNumber || null,
           activated_at: new Date().toISOString(),
         })
         .eq("agency_id", agencyId);
 
-      // Step 7: Phone number'ı Cloud API'ye register et (non-blocking)
+      // Step 7: Phone number'ı Cloud API'ye register et (non-blocking) — TRIM'li phoneNumberId
       let registerStatus = "skipped";
       let needsManualPin = false;
 
-      if (phoneNumberId) {
+      if (cleanPhoneNumberId) {
         try {
           const registerRes = await fetch(
-            `https://graph.facebook.com/v18.0/${phoneNumberId}/register`,
+            `https://graph.facebook.com/v18.0/${cleanPhoneNumberId}/register`,
             {
               method: "POST",
               headers: {
@@ -216,7 +257,7 @@ Deno.serve(async (req) => {
           const registerData = await registerRes.json();
 
           if (registerRes.ok && registerData?.success) {
-            console.log("✅ Phone number registered successfully:", phoneNumberId);
+            console.log("✅ Phone number registered successfully:", cleanPhoneNumberId);
             registerStatus = "success";
           } else {
             const errCode = registerData?.error?.code;
@@ -244,9 +285,10 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: true,
-          phoneNumber,
-          phoneNumberId,
-          wabaId: wabaInfo.wabaId,
+          // L5: response'ta da clean değerler — frontend her zaman trimmed alır
+          phoneNumber: cleanPhoneNumber,
+          phoneNumberId: cleanPhoneNumberId,
+          wabaId: cleanWabaId,
           registerStatus,
           needsManualPin,
           webhookSubscribed,

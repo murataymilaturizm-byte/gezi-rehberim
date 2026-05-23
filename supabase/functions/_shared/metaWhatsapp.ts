@@ -53,22 +53,58 @@ function _sleep(ms: number): Promise<void> {
  * @param appSecret  META_APP_SECRET env değişkeni (Facebook App Settings'de "App Secret")
  * @returns true imza geçerli, false aksi halde
  */
-export async function verifyMetaSignature(
+/**
+ * Verify sonucu — sadece boolean değil, debug bilgisi de döner.
+ * Sebep: signature fail olduğunda kullanıcı "secret yanlış mı, body mi bozuldu" görebilsin.
+ * `secretFingerprint` PII güvenli: tam secret değil, secret'ın SHA-256'sının ilk 8 karakteri.
+ */
+export interface VerifyResult {
+  valid: boolean;
+  reason?: string;            // "MISSING_SIGNATURE" | "MISSING_SECRET" | "BAD_PREFIX" | "BAD_HEX" | "LENGTH_MISMATCH" | "HASH_MISMATCH" | "CRYPTO_ERROR"
+  computedPrefix?: string;    // beklenen hash ilk 8 char (debug)
+  providedPrefix?: string;    // gelen hash ilk 8 char (debug)
+  bodyLength?: number;
+  secretLength?: number;
+  secretFingerprint?: string; // sha256(secret) ilk 8 char — secret değerini sızdırmadan "doğru mu" karşılaştır
+}
+
+/** İç hash hesabı (16-bit hex). */
+async function _sha256Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * K1: Meta webhook HMAC-SHA256 imza doğrulama (detaylı sonuç).
+ *
+ * @param rawBody  req.text() çıktısı — parse edilmemiş raw string
+ * @param signature  x-hub-signature-256 header
+ * @param appSecret  META_APP_SECRET — bu fonksiyon kendi içinde TRIM eder
+ */
+export async function verifyMetaSignatureDetailed(
   rawBody: string,
   signature: string | null,
   appSecret: string,
-): Promise<boolean> {
-  if (!signature || !appSecret) return false;
-  if (!signature.startsWith('sha256=')) return false;
+): Promise<VerifyResult> {
+  // Defansif TRIM — Supabase secrets'a yapıştırırken trailing newline/space
+  // (en yaygın K1 sebebidir) silinsin. Meşru secret'ta whitespace olmaz.
+  const _secret = (appSecret || '').trim();
+
+  if (!signature) return { valid: false, reason: 'MISSING_SIGNATURE' };
+  if (!_secret) return { valid: false, reason: 'MISSING_SECRET' };
+  if (!signature.startsWith('sha256=')) return { valid: false, reason: 'BAD_PREFIX' };
 
   const provided = signature.slice('sha256='.length).trim().toLowerCase();
-  if (!/^[0-9a-f]+$/.test(provided)) return false;
+  if (!/^[0-9a-f]+$/.test(provided)) return { valid: false, reason: 'BAD_HEX' };
+
+  // PII-güvenli secret fingerprint (debug log'da gözükecek — secret sızmaz)
+  const secretFingerprint = (await _sha256Hex(_secret)).slice(0, 8);
 
   try {
     const enc = new TextEncoder();
     const key = await crypto.subtle.importKey(
       'raw',
-      enc.encode(appSecret),
+      enc.encode(_secret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
       ['sign'],
@@ -78,17 +114,43 @@ export async function verifyMetaSignature(
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
 
-    // Timing-safe compare (uzunluk eşitse char-by-char XOR)
-    if (computed.length !== provided.length) return false;
+    const baseDebug = {
+      computedPrefix: computed.slice(0, 8),
+      providedPrefix: provided.slice(0, 8),
+      bodyLength: rawBody.length,
+      secretLength: _secret.length,
+      secretFingerprint,
+    };
+
+    if (computed.length !== provided.length) {
+      return { valid: false, reason: 'LENGTH_MISMATCH', ...baseDebug };
+    }
+    // Timing-safe compare
     let diff = 0;
     for (let i = 0; i < computed.length; i++) {
       diff |= computed.charCodeAt(i) ^ provided.charCodeAt(i);
     }
-    return diff === 0;
+    if (diff !== 0) {
+      return { valid: false, reason: 'HASH_MISMATCH', ...baseDebug };
+    }
+    return { valid: true, ...baseDebug };
   } catch (e) {
-    console.error('[verifyMetaSignature] error:', e);
-    return false;
+    console.error('[verifyMetaSignature] crypto error:', e);
+    return { valid: false, reason: 'CRYPTO_ERROR' };
   }
+}
+
+/**
+ * Backward-compatible wrapper — eski caller'lar (sadece boolean bekleyen) için.
+ * Yeni kullanım için verifyMetaSignatureDetailed tercih edilir.
+ */
+export async function verifyMetaSignature(
+  rawBody: string,
+  signature: string | null,
+  appSecret: string,
+): Promise<boolean> {
+  const result = await verifyMetaSignatureDetailed(rawBody, signature, appSecret);
+  return result.valid;
 }
 
 /**
@@ -283,24 +345,68 @@ export function extractMetaWebhookData(body: any): {
 }
 
 /**
- * Resolve agency by phone_number_id or fallback
+ * Resolve agency by phone_number_id or fallback.
+ *
+ * L4: AMBIGUITY HANDLING
+ *   - Eskiden .single() kullanılıyordu → iki kayıt eşleşirse PGRST116 patlardı,
+ *     `agency` null dönerdi, bot "Agency not found" diye sessiz kalırdı (sebep belirsiz).
+ *   - Şimdi multi-fetch:
+ *       length === 1  → o acente
+ *       length > 1   → AMBIGUOUS — logCritical + spesifik hata ("AMBIGUOUS_PHONE_NUMBER_ID")
+ *                     yanlış-seçim yapılmaz; admin görünür hata alır
+ *       length === 0 → mevcut fallback (single-agency env credentials)
+ *   - Defense in depth: gelen phoneNumberId TRIM edilir (Meta normalde clean döner ama belt-and-suspenders).
+ *
+ * NOT: logCritical _shared/error-sink.ts'te tanımlı — burada dynamic import ile çağrılır,
+ * çünkü tüm sender'lar (send-template-message, send-feedback-survey vb.) bu modülü kullanıyor;
+ * error-sink import'unu zorunlu kılmak gereksiz coupling yaratır.
  */
 export async function resolveAgencyByPhoneNumberId(
   supabase: any,
   phoneNumberId: string
 ): Promise<{ agency: any; error: string | null }> {
-  // Try matching by meta_phone_number_id
-  if (phoneNumberId) {
-    const { data: agency, error } = await supabase
+  // L4: Defansif TRIM — Meta normalde clean gönderir, ama belt-and-suspenders.
+  const trimmedId = (phoneNumberId || '').trim();
+
+  if (trimmedId) {
+    const { data, error } = await supabase
       .from('agencies')
       .select('*')
-      .eq('meta_phone_number_id', phoneNumberId)
-      .eq('active', true)
-      .single();
+      .eq('meta_phone_number_id', trimmedId)
+      .eq('active', true);
 
-    if (!error && agency) {
-      return { agency, error: null };
+    if (error) {
+      console.error('[resolveAgency] query error:', error.message);
+      // Hata DB query'de — fallback'e düş
+    } else if (data && data.length === 1) {
+      return { agency: data[0], error: null };
+    } else if (data && data.length > 1) {
+      // L4: AMBIGUOUS — iki+ acente aynı phone_number_id'de.
+      // .single() patlamasından farkı: sessiz yanlış seçim yapmıyoruz, spesifik hata + log.
+      // UNIQUE constraint (L1) eklenince bu duruma normalde DÜŞMEMELİ — ama eski veri varsa görünür kalır.
+      const ids = data.map((a: any) => a.id);
+      const names = data.map((a: any) => a.name);
+      console.error(`[resolveAgency] L4: AMBIGUOUS — ${data.length} agencies match phone_number_id`, {
+        phoneNumberId: trimmedId,
+        agencyIds: ids,
+        agencyNames: names,
+      });
+      // Error sink (kritik görünürlük — admin sistem hatalarında görür)
+      try {
+        const { logCritical } = await import('./error-sink.ts');
+        await logCritical({
+          event: 'AMBIGUOUS_PHONE_NUMBER_ID',
+          error: `${data.length} agencies match phone_number_id=${trimmedId}`,
+          context: { phoneNumberId: trimmedId, agencyIds: ids, agencyNames: names },
+          severity: 'critical',
+        });
+      } catch (_sinkErr) {
+        // Sink fail etse bile console.error yukarıda var
+      }
+      // Sessiz yanlış-seçim YAPMA → "Agency not found" gibi davran (webhook 200 dönecek, log'da görünür).
+      return { agency: null, error: 'AMBIGUOUS_PHONE_NUMBER_ID' };
     }
+    // length === 0 → fallback'e düş
   }
 
   // Fallback: find agency that has meta_access_token or whatsapp_api_key set (single-agency setups)

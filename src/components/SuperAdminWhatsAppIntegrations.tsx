@@ -136,14 +136,21 @@ export const SuperAdminWhatsAppIntegrations = ({ isSuperAdmin = false }: SuperAd
     if (!editModal) return;
     setSaving(true);
     try {
+      // L3: Manuel girişte TRIM — Meta Console'dan copy-paste'te trailing space riski.
+      // Aymila case bu yoldan geldi. DB trigger (L1b) zaten yakalar ama UI'da temizlemek
+      // kullanıcıya da doğru değeri gösterir, çift güvenlik.
+      const _trimmedPhoneId = editForm.meta_phone_number_id?.trim() || null;
+      const _trimmedWabaId = editForm.meta_waba_id?.trim() || null;
+      const _trimmedAccessToken = editForm.new_meta_access_token.trim();
+
       const updateData: any = {
         status: editForm.status,
-        meta_phone_number_id: editForm.meta_phone_number_id || null,
-        meta_waba_id: editForm.meta_waba_id || null,
+        meta_phone_number_id: _trimmedPhoneId,
+        meta_waba_id: _trimmedWabaId,
         admin_notes: editForm.admin_notes || null,
       };
-      if (editForm.new_meta_access_token.trim()) {
-        updateData.meta_access_token = editForm.new_meta_access_token.trim();
+      if (_trimmedAccessToken) {
+        updateData.meta_access_token = _trimmedAccessToken;
       }
 
       if (editForm.status === "active" && editModal.status !== "active") {
@@ -157,23 +164,23 @@ export const SuperAdminWhatsAppIntegrations = ({ isSuperAdmin = false }: SuperAd
 
       if (error) throw error;
 
-      // If activating, also update agency's whatsapp fields
+      // If activating, also update agency's whatsapp fields — TRIM'li değerlerle
       if (editForm.status === "active") {
         const agencyUpdate: any = {
           whatsapp_status: "active",
           whatsapp_connected_at: new Date().toISOString(),
         };
-        if (editForm.meta_phone_number_id) {
-          agencyUpdate.meta_phone_number_id = editForm.meta_phone_number_id;
+        if (_trimmedPhoneId) {
+          agencyUpdate.meta_phone_number_id = _trimmedPhoneId;
         }
-        if (editForm.meta_waba_id) {
-          agencyUpdate.meta_waba_id = editForm.meta_waba_id;
+        if (_trimmedWabaId) {
+          agencyUpdate.meta_waba_id = _trimmedWabaId;
         }
-        if (editForm.new_meta_access_token.trim()) {
-          agencyUpdate.meta_access_token = editForm.new_meta_access_token.trim();
+        if (_trimmedAccessToken) {
+          agencyUpdate.meta_access_token = _trimmedAccessToken;
         }
         if (editModal.whatsapp_phone) {
-          agencyUpdate.whatsapp_phone_number = editModal.whatsapp_phone;
+          agencyUpdate.whatsapp_phone_number = editModal.whatsapp_phone.trim();
         }
 
         await supabase

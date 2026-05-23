@@ -3420,6 +3420,8 @@
       "successDescPhone": "Votre numéro WhatsApp a été connecté avec succès : {{phone}}",
       "errorTitle": "Erreur",
       "exchangeError": "Une erreur s'est produite lors de la connexion WhatsApp. Veuillez réessayer.",
+      "duplicatePhoneNumber": "Ce numéro WhatsApp est déjà enregistré pour une autre agence. Veuillez d'abord déconnecter cette agence.",
+      "duplicatePhoneNumberWithName": "Ce numéro WhatsApp est enregistré pour l'agence \"{{names}}\". Veuillez d'abord déconnecter cette agence.",
       "disconnected": "Déconnecté",
       "disconnectedDesc": "Votre connexion WhatsApp a été supprimée.",
       "disconnectError": "Une erreur s'est produite lors de la suppression de la connexion.",

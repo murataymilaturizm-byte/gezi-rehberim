@@ -3466,6 +3466,8 @@
       "successDescPhone": "Your WhatsApp number was connected successfully: {{phone}}",
       "errorTitle": "Error",
       "exchangeError": "An error occurred during WhatsApp connection. Please try again.",
+      "duplicatePhoneNumber": "This WhatsApp number is already registered to another agency. Please disconnect it from that agency first.",
+      "duplicatePhoneNumberWithName": "This WhatsApp number is registered to \"{{names}}\". Please disconnect it from that agency first.",
       "disconnected": "Disconnected",
       "disconnectedDesc": "Your WhatsApp connection has been removed.",
       "disconnectError": "An error occurred while removing the connection.",
