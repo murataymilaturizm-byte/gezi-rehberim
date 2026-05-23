@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DollarSign, Users, TrendingUp, Target, Sun, AlertCircle, RefreshCw } from "lucide-react";
 import { useAgencyDashboardData } from "@/hooks/useAgencyDashboardData";
@@ -11,6 +12,8 @@ import { QuickActions } from "@/components/admin/dashboard/QuickActions";
 import { UsageStats } from "@/components/UsageStats";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+// Madde 5: Dashboard'dan da rezervasyon detayı (ödeme + WhatsApp + güncelleme)
+import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 
 interface AgencyDashboardProps {
   onTabChange?: (tab: string) => void;
@@ -37,6 +40,11 @@ export const AgencyDashboard = ({
     revenueSpark, regSpark, weekTrend, monthTrend, todayStats, loading,
     error, reload,   // O2: hata banner'ı + reload butonu
   } = useAgencyDashboardData(undefined, agencyId);
+
+  // Madde 5: Rezervasyon detay dialog'u — Rezervasyonlar sayfasıyla AYNI bileşen.
+  // Ödeme ekleme + WhatsApp butonu + durum güncelleme buradan da çalışır.
+  const [detailReg, setDetailReg] = useState<any | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -179,12 +187,26 @@ export const AgencyDashboard = ({
         <RecentRegistrations
           registrations={recentRegistrations}
           onViewAll={() => onTabChange?.("registrations")}
+          // Madde 5: satıra tıklanınca aynı dialog (ödeme + WhatsApp + güncelleme) açılır
+          onRowClick={(reg) => {
+            setDetailReg(reg);
+            setDetailOpen(true);
+          }}
         />
         <TourPerformance tours={popularTours} />
       </div>
 
       {/* 5. Usage stats */}
       <UsageStats />
+
+      {/* Madde 5: Rezervasyon detay dialog'u — Rezervasyonlar sayfasıyla AYNI bileşen.
+          Dashboard'dan tıklanan satır burada açılır. onSuccess'te data reload. */}
+      <RegistrationDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        registration={detailReg}
+        onSuccess={() => reload?.()}
+      />
     </div>
   );
 };

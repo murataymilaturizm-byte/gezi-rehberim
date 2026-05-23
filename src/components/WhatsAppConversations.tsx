@@ -220,16 +220,65 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
     const aid = isSuperAdmin ? selectedAgencyId : agencyId;
     if (!aid) return;
 
+    // BUG FIX: Optimistic update — mesaj DB'ye yazılana kadar beklemeden UI'a ekle.
+    // Önceden sadece `await loadConversations()` ile DB'den re-fetch ediyorduk;
+    // DB insert SILENT FAIL ettiğinde (metadata kolonu yoktu) mesaj hiç görünmüyordu.
+    // Şimdi: hemen ekle → fail olursa rollback. Migration ile DB insert de düzeldi.
+    const _normalizedPhone = selectedPhone.replace("whatsapp:", "").replace("+", "").trim();
+    const _trimmedMsg = replyMessage.trim();
+    const _tempId = `optimistic-${Date.now()}`;
+    const _tempMsg: Message = {
+      id: _tempId,
+      phone: _normalizedPhone,
+      role: "assistant",
+      content: _trimmedMsg,
+      created_at: new Date().toISOString(),
+    };
+    // UI'da hemen göster — gönderim başarısız olursa filter ile çıkar
+    setConversations((prev) => prev.map((conv) =>
+      conv.phone === selectedPhone
+        ? {
+            ...conv,
+            messages: [...conv.messages, _tempMsg],
+            lastMessageTime: _tempMsg.created_at,
+          }
+        : conv
+    ));
+
     setSending(true);
     try {
-      const { error } = await supabase.functions.invoke("send-manual-message", {
-        body: { agencyId: aid, phone: selectedPhone.replace("whatsapp:", "").replace("+", "").trim(), message: replyMessage.trim() },
+      const { data, error } = await supabase.functions.invoke("send-manual-message", {
+        body: { agencyId: aid, phone: _normalizedPhone, message: _trimmedMsg },
       });
       if (error) throw error;
-      toast({ title: t("conversations.sendSuccess") });
+
+      // BUG FIX: DB insert fail durumunda edge function warning döner — gösterelim
+      if (data?.warning === "DB_INSERT_FAILED") {
+        console.warn("[send-manual-message] DB kayıt fail:", data?.warningDetail);
+        toast({
+          title: t("conversations.sendSuccess"),
+          description: t("conversations.dbWarning", {
+            defaultValue: "Mesaj WhatsApp'tan gönderildi ama panel kaydı yapılamadı.",
+          }),
+          variant: "destructive",
+          duration: 7000,
+        });
+      } else {
+        toast({ title: t("conversations.sendSuccess") });
+      }
+
       setReplyMessage("");
-      await loadConversations();
+      // Re-fetch — gerçek DB id ile değiştirsin (optimistic temp id yerine).
+      // Eğer DB insert başarılıysa loadConversations gerçek mesajı getirir.
+      // Argument olarak aid geç — state race condition önle.
+      await loadConversations(aid);
     } catch (err: any) {
+      // Rollback: optimistic eklenen mesajı kaldır
+      setConversations((prev) => prev.map((conv) =>
+        conv.phone === selectedPhone
+          ? { ...conv, messages: conv.messages.filter((m) => m.id !== _tempId) }
+          : conv
+      ));
       const msg = err.message?.includes("OUTSIDE_24H")
         ? t("conversations.outside24h")
         : err.message || t("conversations.sendError");

@@ -44,7 +44,7 @@
     "description": "Venda tours 24/7 con un asistente de WhatsApp impulsado por IA. Responda preguntas de clientes, tome reservas y gestione pagos automáticamente - incluso mientras duerme.",
     "cta": "Prueba Gratis por 14 Días",
     "demo": "Probar Demo en Vivo",
-    "priceHint": "desde ₺2.999/mes",
+    "priceHint": "desde {{sym}}{{price}}/mes",
     "watchDemo": "Probar ahora"
   },
   "features": {
@@ -275,6 +275,8 @@
     "trial": "Prueba gratuita de 14 días en todos los planes. No se requiere tarjeta de crédito.",
     "trialNote": "Prueba gratuita de 14 días en todos los planes. No se requiere tarjeta de crédito.",
     "custom": "Personalizado",
+    "contactForPricing": "Contáctenos",
+    "contactForPricingHint": "Precio personalizado para su empresa",
     "savings": "ahorro",
     "cta": {
       "start": "Comenzar",
@@ -301,8 +303,8 @@
       "description": "Para empresas en crecimiento y agencias activas",
       "features": {
         "messages": "💬 5,000 mensajes/mes",
-        "tours": "🗂️ Tours ilimitados",
-        "languages": "🌍 Hasta 3 Idiomas",
+        "tours": "🗂️ Hasta 50 tours",
+        "languages": "🌍 Hasta 4 Idiomas",
         "allStyles": "🎨 4 estilos de conversación diferentes",
         "userProfiles": "👤 Perfiles de usuario y seguimiento",
         "reminders": "⏰ Recordatorios automáticos de tours",
@@ -318,7 +320,7 @@
       "description": "Para grandes agencias y empresas en cadena",
       "features": {
         "allProFeatures": "Todas las características del plan Profesional y,",
-        "messages": "💬 Mensajes ilimitados",
+        "messages": "💬 50.000 mensajes/mes (alto volumen)",
         "allLanguages": "🌍 Los 7 Idiomas (Turco, Inglés, Alemán, Francés, Español, Ruso, Árabe)",
         "customStyles": "🎨 + 1 Estilo de Conversación Personalizado",
         "feedback": "⭐ Encuesta automática de satisfacción del cliente",
@@ -1287,27 +1289,27 @@
         "starter": {
           "name": "Inicial",
           "features": [
-            "500 mensajes/mes",
-            "1 usuario",
-            "Informes básicos",
+            "1.000 mensajes/mes",
+            "10 tours",
+            "1 idioma",
             "Soporte por correo"
           ]
         },
         "professional": {
           "name": "Profesional",
           "features": [
-            "2.000 mensajes/mes",
-            "5 usuarios",
-            "Informes avanzados",
+            "5.000 mensajes/mes",
+            "50 tours",
+            "4 idiomas",
             "Soporte prioritario"
           ]
         },
         "enterprise": {
           "name": "Empresarial",
           "features": [
-            "Mensajes ilimitados",
-            "Usuarios ilimitados",
-            "Informes personalizados",
+            "50.000 mensajes/mes",
+            "Tours ilimitados",
+            "7 idiomas",
             "Soporte 24/7"
           ]
         }
@@ -1342,8 +1344,8 @@
         "professional": {
           "features": [
             "💬 5.000 msg/mes",
-            "🏨 Tours ilimitados",
-            "🌍 3 idiomas",
+            "🏨 Hasta 50 tours",
+            "🌍 4 idiomas",
             "🎭 4 estilos",
             "👥 Perfiles de usuarios",
             "🔔 Recordatorios auto",
@@ -1354,7 +1356,7 @@
         },
         "enterprise": {
           "features": [
-            "💬 Mensajes ilimitados",
+            "💬 50.000 mensajes/mes",
             "🏨 Tours ilimitados",
             "🌍 7 idiomas",
             "🎨 4 estilos",
@@ -1850,6 +1852,7 @@
     "sendReply": "Enviar",
     "sending": "Enviando...",
     "sendSuccess": "¡Mensaje enviado!",
+    "dbWarning": "Mensaje enviado por WhatsApp pero falló el registro en el panel.",
     "sendError": "Error al enviar el mensaje",
     "outside24h": "El cliente no ha escrito en 24h. Use un mensaje de plantilla."
   },

@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ShoppingCart } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ShoppingCart, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -49,9 +50,35 @@ export function ExtraQuotaPurchase({
   const [purchasing, setPurchasing] = useState(false);
   const [selectedQuotaPackage, setSelectedQuotaPackage] = useState<"500" | "1000">("500");
 
-  // Görünürlük: sadece aktif abonelikte, sınırsız değilse, agencyId varsa.
-  if (subscriptionStatus !== "active" || messageLimit === -1 || !agencyId) {
+  // Sınırsız plan (enterprise) → bileşen tamamen gizli (ek kota anlamsız).
+  // agencyId yoksa render edilmez (henüz user data yüklenmemiş).
+  if (messageLimit === -1 || !agencyId) {
     return null;
+  }
+
+  // Trial / expired / cancelled durumda: satın alma kapalı ama bilgilendirme göster.
+  // Önceden tamamen null dönüyordu → test edenler "ek kota nerede" diye kafa karıştırıyordu.
+  if (subscriptionStatus !== "active") {
+    // compact mode (Dashboard) → bilgi gösterme, yer kısıtlı; sadece Planım'da göster
+    if (compact) return null;
+    return (
+      <Alert className="border-primary/20 bg-primary/5">
+        <Info className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-sm">
+          <span className="font-medium">
+            {t("admin.usageStats.extraQuotaTitle")}
+          </span>
+          {" — "}
+          {subscriptionStatus === "trial"
+            ? t("admin.usageStats.extraQuotaTrialHint", {
+                defaultValue: "Deneme süresi bitip abonelik aktifleştikten sonra ek mesaj kotası satın alabilirsiniz.",
+              })
+            : t("admin.usageStats.extraQuotaInactiveHint", {
+                defaultValue: "Abonelik aktif olduğunda ek mesaj kotası satın alabilirsiniz.",
+              })}
+        </AlertDescription>
+      </Alert>
+    );
   }
 
   const handlePurchase = async () => {

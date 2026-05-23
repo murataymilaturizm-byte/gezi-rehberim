@@ -128,14 +128,30 @@ serve(async (req) => {
     const metaResult = await metaRes.json();
     const metaMessageId = metaResult.messages?.[0]?.id;
 
-    // Save to conversation history (role = 'assistant' so it shows on right side)
-    await supabase.from("whatsapp_conversations").insert({
+    // Save to conversation history (role = 'assistant' so it shows on right side).
+    // BUG FIX: Önceden insert error kontrolü YOKTU. Metadata kolonu DB'de eksikse
+    // veya başka hata olursa SILENT FAIL ediyordu → mesaj Meta'ya gidiyor ama DB'ye
+    // yazılmıyor → frontend ekranında görünmüyordu. Şimdi { error } destructure +
+    // log + response'a uyarı (Meta gönderimi başarılı, sadece kayıt fail).
+    const { error: _insertErr } = await supabase.from("whatsapp_conversations").insert({
       phone: normalizedPhone,
       agency_id: agencyId,
       role: "assistant",
       content: message,
       metadata: { sent_by: "agency_manual", meta_message_id: metaMessageId },
     });
+    if (_insertErr) {
+      // Meta'ya gönderim başarılı ama DB kayıt fail — kritik. Frontend'in re-fetch'i
+      // mesajı görmez, kullanıcı tekrar yazmaya kalkışabilir → çift gönderim riski.
+      console.error("[send-manual-message] DB insert FAILED (Meta send succeeded):", _insertErr.message);
+      // Hala 200 dön (Meta'ya gerçekten gitti) ama frontend warning gösterebilsin
+      return new Response(JSON.stringify({
+        success: true,
+        messageId: metaMessageId,
+        warning: "DB_INSERT_FAILED",
+        warningDetail: _insertErr.message,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Bot pause (if requested)
     if (pauseBot) {

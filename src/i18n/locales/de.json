@@ -44,7 +44,7 @@
     "description": "Verkaufen Sie 24/7 Touren mit einem KI-gestützten WhatsApp-Assistenten. Beantworten Sie Kundenfragen, nehmen Sie Buchungen entgegen und verwalten Sie Zahlungen automatisch - auch im Schlaf.",
     "cta": "14 Tage Kostenlos Testen",
     "demo": "Live-Demo Testen",
-    "priceHint": "ab ₺2.999/Monat",
+    "priceHint": "ab {{sym}}{{price}}/Monat",
     "watchDemo": "Jetzt testen"
   },
   "features": {
@@ -275,6 +275,8 @@
     "trial": "14 Tage kostenlose Testversion für alle Pläne. Keine Kreditkarte erforderlich.",
     "trialNote": "14 Tage kostenlose Testversion für alle Pläne. Keine Kreditkarte erforderlich.",
     "custom": "Individuell",
+    "contactForPricing": "Kontaktieren Sie uns",
+    "contactForPricingHint": "Individuelle Preisgestaltung",
     "savings": "Ersparnis",
     "cta": {
       "start": "Loslegen",
@@ -301,8 +303,8 @@
       "description": "Für wachsende Unternehmen und aktive Agenturen",
       "features": {
         "messages": "💬 5.000 Nachrichten/Monat",
-        "tours": "🗂️ Unbegrenzte Touren",
-        "languages": "🌍 Bis zu 3 Sprachen",
+        "tours": "🗂️ Bis zu 50 Touren",
+        "languages": "🌍 Bis zu 4 Sprachen",
         "allStyles": "🎨 4 verschiedene Gesprächsstile",
         "userProfiles": "👤 Benutzerprofile und Tracking",
         "reminders": "⏰ Automatische Tour-Erinnerungen",
@@ -318,7 +320,7 @@
       "description": "Für große Agenturen und Kettenunternehmen",
       "features": {
         "allProFeatures": "Alle Professional-Funktionen und,",
-        "messages": "💬 Unbegrenzte Nachrichten",
+        "messages": "💬 50.000 Nachrichten/Monat (hohes Volumen)",
         "allLanguages": "🌍 Alle 7 Sprachen (Türkisch, Englisch, Deutsch, Französisch, Spanisch, Russisch, Arabisch)",
         "customStyles": "🎨 + 1 Benutzerdefinierter Gesprächsstil",
         "feedback": "⭐ Automatische Kundenzufriedenheitsumfrage",
@@ -1253,27 +1255,27 @@
         "starter": {
           "name": "Starter",
           "features": [
-            "500 Nachrichten/Monat",
-            "1 Benutzer",
-            "Basis-Berichterstattung",
+            "1.000 Nachrichten/Monat",
+            "10 Touren",
+            "1 Sprache",
             "E-Mail-Support"
           ]
         },
         "professional": {
           "name": "Professionell",
           "features": [
-            "2.000 Nachrichten/Monat",
-            "5 Benutzer",
-            "Erweiterte Berichterstattung",
+            "5.000 Nachrichten/Monat",
+            "50 Touren",
+            "4 Sprachen",
             "Vorrangiger Support"
           ]
         },
         "enterprise": {
           "name": "Enterprise",
           "features": [
-            "Unbegrenzte Nachrichten",
-            "Unbegrenzte Benutzer",
-            "Benutzerdefinierte Berichterstattung",
+            "50.000 Nachrichten/Monat",
+            "Unbegrenzte Touren",
+            "7 Sprachen",
             "24/7 Support"
           ]
         }
@@ -1308,8 +1310,8 @@
         "professional": {
           "features": [
             "💬 5.000 Nachr./Mo.",
-            "🏨 Unbegrenzt Touren",
-            "🌍 3 Sprachen",
+            "🏨 Bis zu 50 Touren",
+            "🌍 4 Sprachen",
             "🎭 4 Gesprächsstile",
             "👥 Nutzerprofile",
             "🔔 Auto-Erinnerungen",
@@ -1320,7 +1322,7 @@
         },
         "enterprise": {
           "features": [
-            "💬 Unbegrenzt Nachr.",
+            "💬 50.000 Nachr./Mo.",
             "🏨 Unbegrenzt Touren",
             "🌍 7 Sprachen",
             "🎨 4 Stile",
@@ -1816,6 +1818,7 @@
     "sendReply": "Senden",
     "sending": "Wird gesendet...",
     "sendSuccess": "Nachricht gesendet!",
+    "dbWarning": "Nachricht über WhatsApp gesendet, aber Panel-Eintrag fehlgeschlagen.",
     "sendError": "Nachricht konnte nicht gesendet werden",
     "outside24h": "Kunde hat in 24 Std. keine Nachricht geschickt. Vorlage verwenden."
   },

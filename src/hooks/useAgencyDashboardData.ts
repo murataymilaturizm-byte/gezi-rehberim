@@ -314,9 +314,12 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined, agencyI
       setMonthTrend(trend30);
 
       // ── Recent registrations ──────────────────────────────────────────────────
+      // Madde 5: Dashboard'dan satıra tıklandığında RegistrationDetailDialog açılır.
+      // Dialog ek alanları okuyor (note, source_channel, payment_status, paid_amount,
+      // total_amount, deposit_amount, tours.destination) → select genişletildi.
       let recentQuery = supabase
         .from("registrations")
-        .select("id, full_name, phone, pax, status, created_at, tours(title, currency), tour_dates(departure_date, price_adult)")
+        .select("id, full_name, phone, pax, status, created_at, note, source_channel, payment_status, paid_amount, total_amount, deposit_amount, tours(title, destination, currency), tour_dates(departure_date, price_adult)")
         .order("created_at", { ascending: false })
         .limit(10);
       if (agencyId) recentQuery = recentQuery.eq("agency_id", agencyId);

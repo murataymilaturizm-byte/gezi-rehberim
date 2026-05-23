@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+// Madde 2: Dile göre para birimi dönüşümü (PricingSection ile aynı pattern)
+import { useCurrencyConverter } from "@/hooks/useCurrencyConverter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,7 +109,8 @@ interface PlanCardProps {
   onSwitch?: (plan: PlanOption) => void;
   formatPrice: (price: number | null | undefined, yearly: boolean) => string;
   calculatePrice: (base: number | null | undefined, yearly: boolean) => number;
-  t: (key: string) => string;
+  // i18next t() signature — defaultValue + interpolation options destekler
+  t: (key: string, options?: any) => string;
 }
 
 function PlanCard({
@@ -190,28 +193,44 @@ function PlanCard({
           </h5>
         </div>
 
-        {/* Price — premium typography */}
-        <div className="space-y-1">
-          <p className={[
-            "font-bold tracking-tight",
-            plan.popular && !compact
-              ? "bg-gradient-ocean bg-clip-text text-transparent"
-              : "text-foreground",
-            compact ? "text-2xl" : "text-4xl",
-          ].join(" ")}>
-            {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
-          </p>
-          {isYearly && plan.price > 0 && (
-            <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground line-through">
-                {(plan.price * 12).toLocaleString()}/{t("admin.subscription.yearly").toLowerCase()}
-              </p>
-              <p className="text-xs text-success font-semibold flex items-center gap-1">
-                💰 {t("admin.subscription.discounted")}
-              </p>
-            </div>
-          )}
-        </div>
+        {/* Madde 2: Enterprise için sabit fiyat YOK — "İletişime Geçin".
+            Firmaya özel fiyatlandırma; LemonSqueezy üzerinden self-service değil. */}
+        {plan.id === "enterprise" ? (
+          <div className="space-y-1">
+            <p className={[
+              "font-bold tracking-tight",
+              "bg-gradient-ocean bg-clip-text text-transparent",
+              compact ? "text-lg" : "text-2xl",
+            ].join(" ")}>
+              {t("pricing.contactForPricing", { defaultValue: "İletişime Geçin" })}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("pricing.contactForPricingHint", { defaultValue: "Firmaya özel fiyatlandırma" })}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <p className={[
+              "font-bold tracking-tight",
+              plan.popular && !compact
+                ? "bg-gradient-ocean bg-clip-text text-transparent"
+                : "text-foreground",
+              compact ? "text-2xl" : "text-4xl",
+            ].join(" ")}>
+              {formatPrice(calculatePrice(plan.price, isYearly), isYearly)}
+            </p>
+            {isYearly && plan.price > 0 && (
+              <div className="space-y-0.5">
+                <p className="text-xs text-muted-foreground line-through">
+                  {(plan.price * 12).toLocaleString()}/{t("admin.subscription.yearly").toLowerCase()}
+                </p>
+                <p className="text-xs text-success font-semibold flex items-center gap-1">
+                  💰 {t("admin.subscription.discounted")}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Features — flex-1 ile esner, CTA hep altta hizalı kalır */}
         <ul className={[
@@ -239,8 +258,19 @@ function PlanCard({
         </ul>
 
         {/* CTA — mt-auto: kart yüksekliği farklı olsa bile buton ALTTA hizalı.
-            popüler için gradient ocean (landing CTA stiliyle aynı) */}
-        {agencyId && !onSwitch && (
+            popüler için gradient ocean (landing CTA stiliyle aynı).
+            Madde 2: Enterprise için LemonSqueezy yerine iletişim CTA (mailto). */}
+        {plan.id === "enterprise" && !onSwitch && (
+          <div className="mt-auto pt-2">
+            <Button asChild className="w-full bg-gradient-ocean hover:opacity-90">
+              <a href="mailto:info@turzzai.com?subject=Kurumsal%20Plan%20Talebi">
+                {t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </a>
+            </Button>
+          </div>
+        )}
+        {plan.id !== "enterprise" && agencyId && !onSwitch && (
           <div className="mt-auto pt-2">
             <LemonSqueezyButton
               planId={plan.id}
@@ -265,7 +295,19 @@ function PlanCard({
             </Alert>
           </div>
         )}
-        {onSwitch && (
+        {onSwitch && plan.id === "enterprise" && (
+          // Madde 2: Aktif abonelikten Enterprise'a geçiş self-service değil — mailto.
+          <Button asChild className="w-full bg-gradient-ocean hover:opacity-90 mt-auto" size="sm">
+            <a
+              href="mailto:info@turzzai.com?subject=Kurumsal%20Plana%20Ge%C3%A7i%C5%9F%20Talebi"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </a>
+          </Button>
+        )}
+        {onSwitch && plan.id !== "enterprise" && (
           <Button
             className="w-full bg-gradient-ocean hover:opacity-90 mt-auto"
             size="sm"
@@ -285,8 +327,23 @@ function PlanCard({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+// Madde 2: Dile göre varsayılan para birimi (PricingSection ile aynı tablo)
+const LANG_TO_CURRENCY: Record<string, string> = {
+  tr: "TRY", en: "USD", de: "EUR", fr: "EUR",
+  es: "EUR", ru: "RUB", ar: "SAR",
+};
+const CURRENCY_SYM: Record<string, string> = {
+  TRY: "₺", USD: "$", EUR: "€", SAR: "﷼", RUB: "₽", GBP: "£",
+};
+
 export const SubscriptionHistory = () => {
   const { t, i18n } = useTranslation();
+  // Madde 2: Plan fiyatlarını kullanıcı diline göre dönüştür (Dashboard ile tutarlı).
+  // LemonSqueezy TRY tahsil eder (gerçek tahsilat TL) — ama GÖSTERİM dile göre döner.
+  const { convert, loading: ratesLoading } = useCurrencyConverter("USD");
+  const _userLang = i18n.language || "tr";
+  const _userCurrency = LANG_TO_CURRENCY[_userLang] || "USD";
+  const _showInUserCurrency = _userCurrency !== "TRY";
   const { toast } = useToast();
   const dateLocale =
     DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
@@ -422,18 +479,28 @@ export const SubscriptionHistory = () => {
     return price;
   };
 
+  // Madde 2: formatPrice — TRY tabanlı plan fiyatını kullanıcı diline göre döndür.
+  // Kurlar yüklenmediyse TRY göster (PricingSection'da aynı davranış).
   const formatPrice = (
     price: number | null | undefined,
     yearly: boolean
   ) => {
     const safePrice = price || 0;
     if (safePrice === 0) return t("admin.subscription.customPrice");
-    const lang = i18n.language || "tr";
-    const formatted = safePrice.toLocaleString(lang);
     const suffix = yearly
       ? `/${t("admin.subscription.yearly").toLowerCase()}`
       : `/${t("admin.subscription.monthly").toLowerCase()}`;
-    return `${formatted}₺${suffix}`;
+
+    // TRY veya kurlar henüz yüklenmemiş → kullanıcı diline TRY göster
+    if (!_showInUserCurrency || ratesLoading) {
+      const _formatted = safePrice.toLocaleString(_userLang);
+      return `${_formatted}₺${suffix}`;
+    }
+    // Diğer para birimlerinde göster (USD/EUR/RUB/SAR vb.)
+    const _converted = Math.round(convert(safePrice, "TRY", _userCurrency));
+    const _formatted = _converted.toLocaleString("en-US");
+    const _sym = CURRENCY_SYM[_userCurrency] ?? _userCurrency;
+    return `${_formatted}${_sym}${suffix}`;
   };
 
   useEffect(() => {

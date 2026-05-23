@@ -44,7 +44,7 @@
     "description": "Sell tours 24/7 with an AI-powered WhatsApp assistant. Answer customer questions, take bookings, and manage payments automatically - even while you sleep.",
     "cta": "Try Free for 14 Days",
     "demo": "Try Live Demo",
-    "priceHint": "from ₺2,999/month",
+    "priceHint": "from {{sym}}{{price}}/month",
     "watchDemo": "Try It Now"
   },
   "features": {
@@ -275,6 +275,8 @@
     "trial": "14-day free trial on all plans. No credit card required.",
     "trialNote": "14-day free trial on all plans. No credit card required.",
     "custom": "Custom",
+    "contactForPricing": "Contact Us",
+    "contactForPricingHint": "Custom pricing for your business",
     "savings": "savings",
     "cta": {
       "start": "Get Started",
@@ -301,7 +303,7 @@
       "description": "For growing businesses and active agencies",
       "features": {
         "messages": "💬 5,000 messages/month",
-        "tours": "🗂️ Unlimited tours",
+        "tours": "🗂️ Up to 50 tours",
         "languages": "🌍 Up to 4 Languages",
         "allStyles": "🎨 4 different conversation styles",
         "userProfiles": "👤 User profiles and tracking",
@@ -318,7 +320,7 @@
       "description": "For large agencies and chain businesses",
       "features": {
         "allProFeatures": "All Professional plan features and,",
-        "messages": "💬 Unlimited messages",
+        "messages": "💬 50,000 messages/month (high volume)",
         "allLanguages": "🌍 All 7 Languages (Turkish, English, German, French, Spanish, Russian, Arabic)",
         "customStyles": "🎨 + 1 Custom Conversation Style",
         "feedback": "⭐ Automatic customer satisfaction survey",
@@ -1250,27 +1252,27 @@
         "starter": {
           "name": "Starter",
           "features": [
-            "500 messages/month",
-            "1 user",
-            "Basic reporting",
+            "1,000 messages/month",
+            "10 tours",
+            "1 language",
             "Email support"
           ]
         },
         "professional": {
           "name": "Professional",
           "features": [
-            "2,000 messages/month",
-            "5 users",
-            "Advanced reporting",
+            "5,000 messages/month",
+            "50 tours",
+            "4 languages",
             "Priority support"
           ]
         },
         "enterprise": {
           "name": "Enterprise",
           "features": [
-            "Unlimited messages",
-            "Unlimited users",
-            "Custom reporting",
+            "50,000 messages/month",
+            "Unlimited tours",
+            "7 languages",
             "24/7 support"
           ]
         }
@@ -1305,8 +1307,8 @@
         "professional": {
           "features": [
             "💬 5,000 msgs/mo",
-            "🏨 Unlimited tours",
-            "🌍 3 languages",
+            "🏨 Up to 50 tours",
+            "🌍 4 languages",
             "🎭 4 conversation styles",
             "👥 User profiles",
             "🔔 Auto reminders",
@@ -1317,7 +1319,7 @@
         },
         "enterprise": {
           "features": [
-            "💬 Unlimited messages",
+            "💬 50,000 messages/month",
             "🏨 Unlimited tours",
             "🌍 7 languages",
             "🎨 4 styles",
@@ -1816,6 +1818,7 @@
     "sendReply": "Send",
     "sending": "Sending...",
     "sendSuccess": "Message sent!",
+    "dbWarning": "Message sent via WhatsApp but panel record failed.",
     "sendError": "Failed to send message",
     "outside24h": "Customer hasn't messaged in 24 hours. Use a template message."
   },

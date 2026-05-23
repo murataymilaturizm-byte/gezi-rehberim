@@ -9,6 +9,8 @@ import type { RecentRegistration } from "@/hooks/useAgencyDashboardData";
 interface RecentRegistrationsProps {
   registrations: RecentRegistration[];
   onViewAll: () => void;
+  /** Madde 5: Satıra tıklanınca detay dialog'unu aç (RegistrationDetailDialog parent'ta tutulur) */
+  onRowClick?: (reg: RecentRegistration) => void;
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -27,7 +29,7 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(mins / 1440)}g`;
 }
 
-export function RecentRegistrations({ registrations, onViewAll }: RecentRegistrationsProps) {
+export function RecentRegistrations({ registrations, onViewAll, onRowClick }: RecentRegistrationsProps) {
   const { t } = useTranslation();
 
   return (
@@ -59,7 +61,18 @@ export function RecentRegistrations({ registrations, onViewAll }: RecentRegistra
               return (
                 <div
                   key={reg.id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors"
+                  // Madde 5: Tıklanabilir satır — onRowClick varsa RegistrationDetailDialog açılır.
+                  // Keyboard a11y için role + tabIndex + Enter/Space handle.
+                  className={`flex items-center gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors ${onRowClick ? "cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50" : ""}`}
+                  role={onRowClick ? "button" : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  onClick={onRowClick ? () => onRowClick(reg) : undefined}
+                  onKeyDown={onRowClick ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onRowClick(reg);
+                    }
+                  } : undefined}
                 >
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
                     {initials}

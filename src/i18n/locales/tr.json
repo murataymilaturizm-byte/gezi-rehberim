@@ -44,7 +44,7 @@
     "description": "Yapay zeka destekli WhatsApp asistanı ile 7/24 tur satışı yapın. Müşteri sorularını yanıtlayın, rezervasyon alın ve yönetin. - siz uyurken bile satış yapın.",
     "cta": "14 Gün Ücretsiz Dene",
     "demo": "Canlı Test Et",
-    "priceHint": "aydan ₺2.999'dan başlar",
+    "priceHint": "{{sym}}{{price}}/aydan başlar",
     "watchDemo": "Hemen Test Et"
   },
   "features": {
@@ -309,6 +309,8 @@
     "trial": "Tüm planlarda 14 gün ücretsiz deneme. Kredi kartı bilgisi gerekmez.",
     "trialNote": "Tüm planlarda 14 gün ücretsiz deneme. Kredi kartı bilgisi gerekmez.",
     "custom": "Özel",
+    "contactForPricing": "İletişime Geçin",
+    "contactForPricingHint": "Firmaya özel fiyatlandırma",
     "savings": "tasarruf",
     "cta": {
       "start": "Başlayın",
@@ -335,7 +337,7 @@
       "description": "Büyüyen işletmeler ve aktif acenteler için",
       "features": {
         "messages": "💬 5.000 mesaj/ay",
-        "tours": "🗂️ Sınırsız tur",
+        "tours": "🗂️ 50 tura kadar",
         "languages": "🌍 4 Dile Kadar Destek",
         "allStyles": "🎨 4 farklı konuşma üslubu",
         "userProfiles": "👤 Kullanıcı profilleri ve takip",
@@ -352,7 +354,7 @@
       "description": "Büyük acenteler ve zincir işletmeler için",
       "features": {
         "allProFeatures": "Profesyonel paketin tüm özellikleri ve,",
-        "messages": "💬 Sınırsız mesaj",
+        "messages": "💬 50.000 mesaj/ay (yüksek hacim)",
         "allLanguages": "🌍 Tüm 7 Dil (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça)",
         "customStyles": "🎨 + 1 Özel Konuşma Üslubu",
         "feedback": "⭐ Otomatik müşteri memnuniyeti anketi",
@@ -1198,27 +1200,27 @@
         "starter": {
           "name": "Başlangıç",
           "features": [
-            "500 mesaj/ay",
-            "1 kullanıcı",
-            "Temel raporlama",
+            "1.000 mesaj/ay",
+            "10 tur",
+            "1 dil",
             "Email destek"
           ]
         },
         "professional": {
           "name": "Profesyonel",
           "features": [
-            "2.000 mesaj/ay",
-            "5 kullanıcı",
-            "Gelişmiş raporlama",
+            "5.000 mesaj/ay",
+            "50 tur",
+            "4 dil",
             "Öncelikli destek"
           ]
         },
         "enterprise": {
           "name": "Kurumsal",
           "features": [
-            "Sınırsız mesaj",
-            "Sınırsız kullanıcı",
-            "Özel raporlama",
+            "50.000 mesaj/ay",
+            "Sınırsız tur",
+            "7 dil",
             "7/24 destek"
           ]
         }
@@ -1240,8 +1242,8 @@
         "professional": {
           "features": [
             "💬 5.000 mesaj/ay",
-            "🏨 Sınırsız tur",
-            "🌍 3 dil desteği",
+            "🏨 50 tura kadar",
+            "🌍 4 dil desteği",
             "🎭 4 konuşma üslubu",
             "👥 Kullanıcı profilleri",
             "🔔 Otomatik hatırlatmalar",
@@ -1252,7 +1254,7 @@
         },
         "enterprise": {
           "features": [
-            "💬 Sınırsız mesaj",
+            "💬 50.000 mesaj/ay",
             "🏨 Sınırsız tur",
             "🌍 7 dil desteği",
             "🎨 4 konuşma üslubu",
@@ -1808,6 +1810,7 @@
     "sendReply": "Gönder",
     "sending": "Gönderiliyor...",
     "sendSuccess": "Mesaj gönderildi!",
+    "dbWarning": "Mesaj WhatsApp'tan gönderildi ama panel kaydı yapılamadı.",
     "sendError": "Mesaj gönderilemedi",
     "outside24h": "Müşteri son 24 saat içinde mesaj atmadı. Şablon mesaj kullanın."
   },

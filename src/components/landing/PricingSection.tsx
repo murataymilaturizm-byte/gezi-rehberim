@@ -203,10 +203,16 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
               </div>
 
               <div>
-                {plan.price === t("pricing.custom") ? (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">{t("pricing.custom")}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                {/* Madde 2: Enterprise için sabit fiyat YOK — "İletişime Geçin" göster.
+                    Firma boyutuna göre özel fiyatlandırma. mailto CTA aşağıda zaten var. */}
+                {plan.name === t("pricing.enterprise.name") || plan.price === t("pricing.custom") ? (
+                  <div className="flex flex-col">
+                    <span className="text-3xl sm:text-4xl font-bold bg-gradient-ocean bg-clip-text text-transparent">
+                      {t("pricing.contactForPricing", { defaultValue: "İletişime Geçin" })}
+                    </span>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      {t("pricing.contactForPricingHint", { defaultValue: "Firmaya özel fiyatlandırma" })}
+                    </span>
                   </div>
                 ) : (
                   <>
