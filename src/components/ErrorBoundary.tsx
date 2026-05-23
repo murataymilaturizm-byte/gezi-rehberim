@@ -2,6 +2,8 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw } from "lucide-react";
+// Class component hook kullanamaz — i18next.t doğrudan import. Fallback default-value'lar TR.
+import i18next from "i18next";
 
 interface Props {
   children: ReactNode;
@@ -29,12 +31,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      const _t = i18next.t.bind(i18next);
       return (
         <Alert variant="destructive" className="m-4">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Bir hata oluştu</AlertTitle>
+          <AlertTitle>{_t("common.error", { defaultValue: "Hata" })}</AlertTitle>
           <AlertDescription className="flex items-center justify-between">
-            <span>{this.props.fallbackMessage || "Sayfa yüklenirken bir hata oluştu."}</span>
+            <span>
+              {this.props.fallbackMessage
+                || _t("common.unexpectedError", { defaultValue: "Beklenmedik bir sorun oluştu. Lütfen destek ekibimizle iletişime geçin." })}
+            </span>
             <Button
               size="sm"
               variant="outline"
@@ -45,7 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
               }}
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Yenile
+              {_t("common.refresh", { defaultValue: "Yenile" })}
             </Button>
           </AlertDescription>
         </Alert>

@@ -155,7 +155,13 @@ export function BulkDateGenerator({ tourId, agencyId, open, onClose, onSuccess }
       // reset
       setStartDate(""); setEndDate(""); setPriceAdult(""); setPriceChild(""); setQuota("20");
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message || t("bulkDates.errors.generic"), variant: "destructive" });
+      // Madde 1: Ham DB hatası kullanıcıya sızmasın — console'a yaz, UI'da i18n mesaj.
+      console.error("[BulkDateGenerator] save failed:", err?.message || err);
+      toast({
+        title: t("common.error"),
+        description: t("bulkDates.errors.generic"),
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

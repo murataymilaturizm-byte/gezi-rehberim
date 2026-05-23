@@ -97,17 +97,19 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
   const [planFormData, setPlanFormData] = useState({
     plan_type: "starter" as "starter" | "professional" | "enterprise",
-    message_limit: 500,
+    message_limit: 1000,
     extra_messages: 0,
   });
 
-  // Get default message limit based on plan type
+  // Get default message limit based on plan type.
+  // DB plan_features ile uyumlu (migration 20260508000001 + 20260523000005).
+  // Enterprise artık -1 (sınırsız) DEĞİL → 50.000 token maliyeti tavanı.
   const getDefaultMessageLimit = (planType: string) => {
     switch (planType) {
-      case "starter": return 500;
-      case "professional": return 3000;
-      case "enterprise": return -1; // unlimited
-      default: return 500;
+      case "starter": return 1000;
+      case "professional": return 5000;
+      case "enterprise": return 50000;
+      default: return 1000;
     }
   };
 

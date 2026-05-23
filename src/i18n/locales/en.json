@@ -2370,6 +2370,12 @@
   "common": {
     "unknown": "Unknown",
     "openWhatsApp": "Open in WhatsApp",
+    "refresh": "Refresh",
+    "retry": "Try again",
+    "unexpectedError": "An unexpected problem occurred. Please contact our support team.",
+    "contactSupport": "Contact support",
+    "authError": "Session issue. Please sign in again.",
+    "dbError": "Could not save data. Please check your connection and try again.",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",

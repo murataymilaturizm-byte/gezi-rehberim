@@ -164,7 +164,12 @@ export const ToursList = ({
       setDuplicateTour(null);
       onRefresh?.();
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message || t("tours.duplicateError"), variant: "destructive" });
+      console.error("[ToursList] duplicate failed:", err?.message || err);
+      toast({
+        title: t("common.error"),
+        description: t("tours.duplicateError"),
+        variant: "destructive",
+      });
     } finally {
       setDuplicating(false);
     }

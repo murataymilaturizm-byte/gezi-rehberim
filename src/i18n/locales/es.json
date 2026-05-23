@@ -2404,6 +2404,12 @@
   "common": {
     "unknown": "Desconocido",
     "openWhatsApp": "Abrir en WhatsApp",
+    "refresh": "Actualizar",
+    "retry": "Reintentar",
+    "unexpectedError": "Ocurrió un problema inesperado. Por favor, contacte con nuestro equipo de soporte.",
+    "contactSupport": "Contactar al soporte",
+    "authError": "Problema de sesión. Por favor, inicie sesión de nuevo.",
+    "dbError": "No se pudieron guardar los datos. Verifique su conexión e inténtelo de nuevo.",
     "unspecified": "No especificado",
     "loading": "Cargando...",
     "error": "Error",

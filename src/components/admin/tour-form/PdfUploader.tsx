@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,7 @@ interface PdfUploaderProps {
 }
 
 export const PdfUploader = ({ value, onChange }: PdfUploaderProps) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [mode, setMode] = useState<"upload" | "url">(value && !value.includes("tour-programs") ? "url" : "upload");
@@ -18,11 +20,19 @@ export const PdfUploader = ({ value, onChange }: PdfUploaderProps) => {
 
   const handleUpload = async (file: File) => {
     if (!file.type.includes("pdf")) {
-      toast({ title: "Hata", description: "Sadece PDF dosyaları yüklenebilir", variant: "destructive" });
+      toast({
+        title: t("common.error"),
+        description: t("admin.tourForm.pdfOnly", { defaultValue: "Sadece PDF dosyaları yüklenebilir." }),
+        variant: "destructive",
+      });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "Hata", description: "Dosya boyutu 10MB'dan küçük olmalı", variant: "destructive" });
+      toast({
+        title: t("common.error"),
+        description: t("admin.tourForm.fileTooLarge", { defaultValue: "Dosya boyutu 10MB'dan küçük olmalı." }),
+        variant: "destructive",
+      });
       return;
     }
 
@@ -30,7 +40,7 @@ export const PdfUploader = ({ value, onChange }: PdfUploaderProps) => {
     try {
       const ext = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      
+
       const { error } = await supabase.storage
         .from("tour-programs")
         .upload(fileName, file, { contentType: "application/pdf" });
@@ -39,10 +49,17 @@ export const PdfUploader = ({ value, onChange }: PdfUploaderProps) => {
 
       const { data: urlData } = supabase.storage.from("tour-programs").getPublicUrl(fileName);
       onChange(urlData.publicUrl);
-      toast({ title: "Başarılı", description: "PDF yüklendi" });
+      toast({
+        title: t("common.success"),
+        description: t("admin.tourForm.pdfUploaded", { defaultValue: "PDF yüklendi." }),
+      });
     } catch (err) {
       console.error("Upload error:", err);
-      toast({ title: "Hata", description: "PDF yüklenemedi", variant: "destructive" });
+      toast({
+        title: t("common.error"),
+        description: t("admin.tourForm.pdfUploadFailed", { defaultValue: "PDF yüklenemedi. Lütfen tekrar deneyin." }),
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }

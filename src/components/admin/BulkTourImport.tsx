@@ -155,8 +155,13 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
       onClose();
       setParsedTours([]);
     } catch (err: any) {
-      console.error("Import failed:", err);
-      toast({ title: t("common.error"), description: err.message || t("bulkImport.errors.importFailed"), variant: "destructive" });
+      // Madde 1: Ham hata kullanıcıya gösterilmesin
+      console.error("Import failed:", err?.message || err);
+      toast({
+        title: t("common.error"),
+        description: t("bulkImport.errors.importFailed"),
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

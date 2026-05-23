@@ -190,7 +190,7 @@ const helpContent: HelpContent = {
           question: "Kullanım İstatistikleri",
           answer: `**Mesaj Kullanımı:**
 - "Kullanım" sekmesinden mesaj kotanızı görün
-- Başlangıç: 1.000 mesaj/ay | Profesyonel: 5.000 mesaj/ay | Kurumsal: Sınırsız
+- Başlangıç: 1.000 mesaj/ay | Profesyonel: 5.000 mesaj/ay | Kurumsal: 50.000 mesaj/ay
 
 **Uyarılar:**
 - Kota %80'e ulaştığında bildirim
@@ -215,8 +215,8 @@ const helpContent: HelpContent = {
 ✓ 4 konuşma üslubu | Kullanıcı profilleri | Otomatik hatırlatıcılar
 ✓ Takip mesajları | Gelişmiş analitik | Mesaj şablonları
 
-⭐ **KURUMSAL - 7.999 TL/ay**
-✓ Sınırsız mesaj | Sınırsız tur | 7 dil
+⭐ **KURUMSAL - İletişime Geçin**
+✓ 50.000 mesaj/ay | Sınırsız tur | 7 dil
 ✓ 4 konuşma üslubu | Müşteri memnuniyet anketleri | 7/24 destek
 
 **Yıllık Ödeme (%10 indirim):**
@@ -470,7 +470,7 @@ const helpContent: HelpContent = {
           question: "Usage Statistics",
           answer: `**Message Usage:**
 - View your message quota from the "Usage" tab
-- Starter: 1,000 msgs/month | Professional: 5,000 msgs/month | Enterprise: Unlimited
+- Starter: 1,000 msgs/month | Professional: 5,000 msgs/month | Enterprise: 50,000 msgs/month
 
 **Alerts:**
 - Notification when quota reaches 80%
@@ -495,8 +495,8 @@ const helpContent: HelpContent = {
 ✓ 4 conversation styles | User profiles | Auto reminders
 ✓ Follow-up messages | Advanced analytics | Message templates
 
-⭐ **ENTERPRISE - 7,999 TL/month**
-✓ Unlimited messages | Unlimited tours | All 7 languages
+⭐ **ENTERPRISE - Contact Us**
+✓ 50,000 messages/month | Unlimited tours | All 7 languages
 ✓ 4 conversation styles | Customer satisfaction surveys | 24/7 support
 
 **Annual Payment (10% discount):**
@@ -738,8 +738,8 @@ const helpContent: HelpContent = {
 ✓ 5.000 Nachrichten/Monat | Bis zu 50 Touren | Bis zu 4 Sprachen
 ✓ Kundenprofile | Erinnerungen | Erweiterte Analysen
 
-⭐ **ENTERPRISE - 7.999 TL/Monat**
-✓ Unbegrenzte Nachrichten | Unbegrenzte Touren | Alle 7 Sprachen
+⭐ **ENTERPRISE - Kontaktieren Sie uns**
+✓ 50.000 Nachrichten/Monat | Unbegrenzte Touren | Alle 7 Sprachen
 ✓ 24/7 Support | Kundenzufriedenheitsumfragen
 
 **Jährliche Zahlung: 10% Rabatt**
@@ -931,8 +931,8 @@ const helpContent: HelpContent = {
 ✓ 5 000 сообщений/мес | До 50 туров | До 4 языков
 ✓ Профили клиентов | Напоминания | Расширенная аналитика
 
-⭐ **КОРПОРАТИВНЫЙ - 7 999 TL/мес**
-✓ Безлимитные сообщения и туры | Все 7 языков | Поддержка 24/7
+⭐ **КОРПОРАТИВНЫЙ - Связаться с нами**
+✓ 50 000 сообщений/мес | Безлимитные туры | Все 7 языков | Поддержка 24/7
 
 **Годовая оплата: скидка 10%**
 **Пробный период:** 14 дней бесплатно, без кредитной карты`
@@ -1102,8 +1102,8 @@ const helpContent: HelpContent = {
 🚀 **الاحترافية - 4,999 ليرة/شهر** (الأكثر شعبية)
 ✓ 5,000 رسالة/شهر | حتى 50 جولة | حتى 4 لغات
 
-⭐ **المؤسسية - 7,999 ليرة/شهر**
-✓ رسائل وجولات غير محدودة | جميع اللغات السبع | دعم 24/7
+⭐ **المؤسسية - تواصل معنا**
+✓ 50,000 رسالة/شهر | جولات غير محدودة | جميع اللغات السبع | دعم 24/7
 
 **الدفع السنوي: خصم 10%**
 **فترة تجريبية:** 14 يوماً مجاناً`
@@ -1271,8 +1271,8 @@ const helpContent: HelpContent = {
 🚀 **PROFESSIONNEL - 4 999 TL/mois** (LE PLUS POPULAIRE)
 ✓ 5 000 messages/mois | Jusqu'à 50 circuits | Jusqu'à 4 langues
 
-⭐ **ENTREPRISE - 7 999 TL/mois**
-✓ Messages et circuits illimités | 7 langues | Support 24/7
+⭐ **ENTREPRISE - Contactez-nous**
+✓ 50 000 messages/mois | Circuits illimités | 7 langues | Support 24/7
 
 **Paiement annuel : 10% de réduction**
 **Essai gratuit :** 14 jours, sans carte de crédit`
@@ -1440,8 +1440,8 @@ const helpContent: HelpContent = {
 🚀 **PROFESIONAL - 4.999 TL/mes** (MÁS POPULAR)
 ✓ 5.000 mensajes/mes | Hasta 50 tours | Hasta 4 idiomas
 
-⭐ **EMPRESARIAL - 7.999 TL/mes**
-✓ Mensajes y tours ilimitados | 7 idiomas | Soporte 24/7
+⭐ **EMPRESARIAL - Contáctenos**
+✓ 50.000 mensajes/mes | Tours ilimitados | 7 idiomas | Soporte 24/7
 
 **Pago anual: 10% de descuento**
 **Prueba gratuita:** 14 días, sin tarjeta de crédito`

@@ -313,7 +313,14 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
       setBotPaused(newPaused);
       toast({ title: newPaused ? t("conversations.botPaused") : t("conversations.botResumed") });
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      // Madde 1: Ham err.message kullanıcıya sızmasın (Supabase auth/DB iç hataları teknik).
+      // Konsol debug için tutulur; UI'da müşteri-dostu mesaj + destek yönlendirme.
+      console.error("[bot-pause] toggle failed:", err?.message || err);
+      toast({
+        title: t("common.error"),
+        description: t("common.unexpectedError"),
+        variant: "destructive",
+      });
     } finally {
       setBotPauseLoading(false);
     }
