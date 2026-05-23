@@ -3,14 +3,46 @@
 
 import type { ConversationContext } from "../fsm/types.ts";
 
+/**
+ * Stale state bilgisi — context yaş eşiğini aştığında loadContext döner.
+ * process-message bunu görüp kullanıcıya net "yeniden başlıyoruz" mesajı atar
+ * ve AI'ya gitmeden early return yapar (history sızıntısı önlenir).
+ */
+export interface StaleInfo {
+  /** Drop edilen state'in son stage'i (debug + mesaj seçimi için) */
+  lastStage: string;
+  /** Yarım rezervasyon var mıydı? Mesaj farklılaşır */
+  hadReservationInProgress: boolean;
+  /** Drop sebebini debug log için */
+  ageMinutes: number;
+  /** Drop edilen state'in dili (mesaj 7 dil seçiminde fallback) */
+  lastLanguage?: string;
+}
+
+/**
+ * loadContext dönüş tipi: context yüklenmişse `context` dolu, stale ise `stale` dolu.
+ * - Normal yüklenme: { context: <ConversationContext> }
+ * - Hiç state yok: { context: null }
+ * - Stale (TTL aşımı): { context: null, stale: {...} } → process-message early return
+ */
+export interface LoadContextResult {
+  context: ConversationContext | null;
+  stale?: StaleInfo;
+}
+
 export interface ChannelAdapter {
   /** Kullanıcı tanımlayıcı: WhatsApp için phone, demo için sessionId */
   readonly identifier: string;
   /** Channel tanımlayıcı (debug/log için) */
   readonly channel: "demo" | "whatsapp";
 
-  /** Kayıtlı conversation context'i yükle (yoksa null) */
-  loadContext(): Promise<ConversationContext | null>;
+  /**
+   * Kayıtlı conversation context'i yükle.
+   * - Normal: { context: <ConvCtx> }
+   * - Hiç state yok: { context: null }
+   * - Stage-aware TTL aşılmış (bayat): { context: null, stale: {...} } — process-message visible reset yapar
+   */
+  loadContext(): Promise<LoadContextResult>;
 
   /**
    * Conversation history yükle — ASC sıralı (eski → yeni), system rolü hariç.

@@ -69,7 +69,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       : adapter.saveResponse(reply, ctx);
 
   // === 2. CONTEXT YÜKLE ===
-  const loadedContext = await adapter.loadContext();
+  // KATMAN 1: loadContext artık { context, stale? } döner. Stale varsa visible reset + early return.
+  const _loadResult = await adapter.loadContext();
+  const loadedContext = _loadResult.context;
 
   // === 3. DİL TESPİTİ ===
   const languageChangeIntent = detectLanguageChangeIntent(message);
@@ -85,6 +87,48 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // Tespit edilen dil kapalıysa → acentenin ilk açık diline veya "tr"'ye düş
   const _bestLang = (detected: string): string =>
     _isLangEnabled(detected) ? detected : (_enabledLangs?.[0] ?? "tr");
+
+  // === KATMAN 1: STALE STATE GÖRÜNÜR RESET ===
+  // Eski davranış: loadContext null dönerse sessizce fresh context + AI çalışırdı.
+  // AI history'i okuyup eski yarım rezervasyon bilgilerini sızdırırdı ("müsait değil" saçmalığı).
+  // Yeni davranış: stale sentinel varsa kullanıcıya AÇIK mesaj + AI'ya hiç gitme (history sızıntısı kesilir).
+  if (_loadResult.stale) {
+    const _stale = _loadResult.stale;
+    // Dil seçimi: önceki state'in dili öncelikli, yoksa runtime tespit, yoksa enabled[0]/tr
+    const _lang = _bestLang(_stale.lastLanguage || languageChangeIntent || runtimeDetectedLang || "tr");
+    const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+
+    // Yarım rezervasyon vardıysa: "iptal edildi, baştan başlayalım" — kullanıcı tarihi/pax'ı yeniden seçmeli
+    // Yarım rezervasyon yoksa: yumuşak "tekrar hoş geldiniz" — kullanıcı muhtemelen yeni iş için yazıyor
+    const _hadReservation = _stale.hadReservationInProgress;
+    const _resetMsgs: Record<string, string> = _hadReservation
+      ? {
+          tr: `Önceki yarım rezervasyonunuz iptal edildi (${_stale.ageMinutes} dakikadır yanıt alınmadı). Yeniden başlayalım — hangi tur ilginizi çeker?${_agPhone}`,
+          en: `Your previous incomplete reservation has been cancelled (no response for ${_stale.ageMinutes} minutes). Let's start over — which tour interests you?${_agPhone}`,
+          de: `Ihre vorherige unvollständige Reservierung wurde storniert (keine Antwort seit ${_stale.ageMinutes} Minuten). Beginnen wir neu — welche Tour interessiert Sie?${_agPhone}`,
+          ru: `Ваше предыдущее незавершённое бронирование отменено (нет ответа ${_stale.ageMinutes} мин.). Начнём заново — какой тур вас интересует?${_agPhone}`,
+          ar: `تم إلغاء حجزك السابق غير المكتمل (لا استجابة منذ ${_stale.ageMinutes} دقيقة). لنبدأ من جديد — ما الجولة التي تهمك؟${_agPhone}`,
+          fr: `Votre réservation précédente incomplète a été annulée (pas de réponse depuis ${_stale.ageMinutes} minutes). Recommençons — quel circuit vous intéresse ?${_agPhone}`,
+          es: `Su reserva incompleta anterior ha sido cancelada (sin respuesta durante ${_stale.ageMinutes} minutos). Empecemos de nuevo — ¿qué tour le interesa?${_agPhone}`,
+        }
+      : {
+          tr: `Tekrar hoş geldiniz! 👋 Size nasıl yardımcı olabilirim?${_agPhone}`,
+          en: `Welcome back! 👋 How can I help you?${_agPhone}`,
+          de: `Willkommen zurück! 👋 Wie kann ich Ihnen helfen?${_agPhone}`,
+          ru: `С возвращением! 👋 Чем могу помочь?${_agPhone}`,
+          ar: `أهلاً بعودتك! 👋 كيف يمكنني مساعدتك؟${_agPhone}`,
+          fr: `Bon retour ! 👋 Comment puis-je vous aider ?${_agPhone}`,
+          es: `¡Bienvenido de nuevo! 👋 ¿Cómo puedo ayudarle?${_agPhone}`,
+        };
+    const _resetReply = _resetMsgs[_lang] || _resetMsgs.tr;
+    // Fresh context — yeni stage GREETING/BROWSING'e dönmüş gibi
+    const _freshCtx = createInitialContext(_lang, getDefaultToneForLanguage(_lang) as any);
+    _freshCtx.collectEmail = agency.collect_email === true;
+    console.log(`[process-message] L1 stale reset: lastStage=${_stale.lastStage} age=${_stale.ageMinutes}min hadReservation=${_hadReservation}`);
+    await _save(_resetReply, _freshCtx);
+    await adapter.sendResponse(_resetReply);
+    return { success: true, response: _resetReply, newContext: _freshCtx };
+  }
 
   // === 4. CONTEXT BAŞLAT / GÜNCELLE ===
   let context: ConversationContext;
@@ -112,6 +156,67 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   // Agency email toplama ayarını her mesajda sync et (admin toggle anlık etki etsin)
   context.collectEmail = agency.collect_email === true;
+
+  // === KATMAN 3: ERKEN REVALIDATION ===
+  // Stale değil ama reservationInfo.dateId set → seçilen tarih hâlâ geçerli mi?
+  // Mevcut Check B (line ~570) sadece RPC öncesi çalışıyordu — kullanıcı yarım yolda
+  // "müsait" gibi davranıp son adımda "müsait değil" şokuyla karşılaşıyordu.
+  // Bunu BAŞA çekerek tarih dolduysa/silindiyse erken haber ver + alternatif tarihleri öner.
+  if (context.reservationInfo?.dateId && context.reservationInfo?.tourId) {
+    const _resTour = tours.find((t: any) => t.id === context.reservationInfo!.tourId);
+    const _resDate = _resTour?.dates?.find((d: any) => d.id === context.reservationInfo!.dateId);
+    const _today = new Date().toISOString().slice(0, 10);
+    const _isPast = _resDate && _resDate.departure_date < _today;
+    const _quotaFull = _resDate && (_resDate.remaining_quota ?? _resDate.quota ?? 1) <= 0;
+    const _stillValid = _resTour && _resDate && !_isPast && !_quotaFull;
+
+    if (!_stillValid) {
+      console.log("[process-message] L3 early revalidation FAIL:", {
+        hasTour: !!_resTour, hasDate: !!_resDate, isPast: _isPast, quotaFull: _quotaFull,
+        tourId: context.reservationInfo.tourId, dateId: context.reservationInfo.dateId,
+      });
+
+      // Alternatif tarihleri topla (sadece geçmemiş + kontenjanı olan)
+      const _alts = (_resTour?.dates || [])
+        .filter((d: any) => d.id !== context.reservationInfo!.dateId
+          && d.departure_date >= _today
+          && (d.remaining_quota ?? d.quota ?? 1) > 0)
+        .slice(0, 5);
+      const _altList = _alts.length > 0
+        ? "\n\n" + _alts.map((d: any, i: number) => {
+            const _dt = d.departure_date;
+            const _pr = d.price_adult ? ` – ${d.price_adult.toLocaleString("tr-TR")} ${(_resTour as any).currency || "TRY"}` : "";
+            return `${i + 1}) ${_dt}${_pr}`;
+          }).join("\n")
+        : "";
+
+      // reservationInfo'daki tarihi temizle — kullanıcı yeni tarih seçecek
+      // Tur kalsın (kullanıcı aynı tura ilgileniyor olabilir)
+      context.reservationInfo = {
+        ...context.reservationInfo,
+        dateId: undefined,
+        selectedDate: undefined,
+      };
+      context.stage = "COLLECTING_INFO";
+      context.collectionStep = "waiting_for_date";
+      context.reservationConfirmed = false;
+
+      const _revLang = context.language || "tr";
+      const _revalMsgs: Record<string, string> = {
+        tr: `Seçtiğiniz tarih artık mevcut değil veya kontenjan dolmuş. ${_resTour ? `*${_resTour.title}* için` : ""} müsait tarihler:${_altList || "\n\nŞu anda başka müsait tarih bulunmuyor. Lütfen başka bir tur seçer misiniz?"}`,
+        en: `The date you selected is no longer available or fully booked. Available dates ${_resTour ? `for *${_resTour.title}*` : ""}:${_altList || "\n\nNo other dates available right now. Could you pick another tour?"}`,
+        de: `Das gewählte Datum ist nicht mehr verfügbar oder ausgebucht. Verfügbare Termine ${_resTour ? `für *${_resTour.title}*` : ""}:${_altList || "\n\nAktuell keine weiteren Termine verfügbar. Bitte wählen Sie eine andere Tour."}`,
+        ru: `Выбранная дата больше недоступна или полностью забронирована. Доступные даты ${_resTour ? `для *${_resTour.title}*` : ""}:${_altList || "\n\nДругих доступных дат нет. Выберите другой тур, пожалуйста."}`,
+        ar: `التاريخ المحدد لم يعد متاحاً أو محجوزاً بالكامل. التواريخ المتاحة ${_resTour ? `لـ *${_resTour.title}*` : ""}:${_altList || "\n\nلا توجد تواريخ متاحة أخرى حالياً. يرجى اختيار جولة أخرى."}`,
+        fr: `La date sélectionnée n'est plus disponible ou complète. Dates disponibles ${_resTour ? `pour *${_resTour.title}*` : ""}:${_altList || "\n\nAucune autre date disponible. Veuillez choisir un autre circuit."}`,
+        es: `La fecha seleccionada ya no está disponible o está completa. Fechas disponibles ${_resTour ? `para *${_resTour.title}*` : ""}:${_altList || "\n\nNo hay otras fechas disponibles. Por favor elija otro tour."}`,
+      };
+      const _revalReply = _revalMsgs[_revLang] || _revalMsgs.tr;
+      await _save(_revalReply, context);
+      await adapter.sendResponse(_revalReply);
+      return { success: true, response: _revalReply, newContext: context };
+    }
+  }
 
   // FIX 4: önceki stage'i AI prompt'una ver (demo-chat ile davranış paritesi)
   const previousContext = { ...context };

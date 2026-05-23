@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { SipayPaymentForm } from "./SipayPaymentForm";
 import { LemonSqueezyButton } from "./LemonSqueezyButton";
 // Sorun 2: ek-kota satın alma — Dashboard ile aynı bileşen.
 import { ExtraQuotaPurchase } from "./ExtraQuotaPurchase";

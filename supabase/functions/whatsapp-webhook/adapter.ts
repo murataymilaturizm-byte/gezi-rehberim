@@ -1,11 +1,24 @@
 // WhatsApp channel adapter — ChannelAdapter interface'ini WhatsApp için implement eder.
 // DB kayıt, Meta API gönderimi ve kanal-spesifik template logicini kapsüller.
 
-/** Context bu kadar saat eskiyse sıfırlanır (bayat state koruması) */
-const STALE_CONTEXT_HOURS = 2;
+/**
+ * KATMAN 2: Stage-aware TTL — yarım rezervasyon hassas (45dk), gezinme uzun (24h).
+ * Önceki tek STALE_CONTEXT_HOURS=2 hem yarım rezervasyon için fazla uzundu (kullanıcı
+ * 1.5hr sonra "müsait değil" şokuyla karşılaşıyordu), hem statik bilgi (tur listesi
+ * görüntüleme) için kısaydı (kullanıcı ertesi gün dönerse her şey kayboluyor).
+ */
+const STAGE_TTL_MS: Record<string, number> = {
+  GREETING:        24 * 60 * 60_000,   // Statik bilgi — kullanıcı tur listesine bakmış olabilir
+  BROWSING:        24 * 60 * 60_000,   // Soru-cevap, tur araştırma
+  COLLECTING_INFO: 45 * 60_000,        // Yarım rezervasyon — niyet hassas, veri eskir
+  CONFIRMING:      45 * 60_000,        // Onay bekleyen rezervasyon
+  COMPLETED:       12 * 60 * 60_000,   // Rezervasyon bitmiş — sonraki mesaj genelde yeni iş
+};
+/** Bilinmeyen stage için emniyetli default — yarım rezervasyon riski varsayımı */
+const DEFAULT_TTL_MS = 45 * 60_000;
 
 import type { ConversationContext, ConversationTone } from "../shared/fsm/types.ts";
-import type { ChannelAdapter } from "../shared/handlers/types.ts";
+import type { ChannelAdapter, LoadContextResult } from "../shared/handlers/types.ts";
 import { createInitialContext } from "../shared/fsm/state-machine.ts";
 import { getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
 import { getConversationHistory } from "../shared/services/context-manager.ts";
@@ -65,7 +78,7 @@ export class WhatsAppAdapter implements ChannelAdapter {
     this.identifier = phone;
   }
 
-  async loadContext(): Promise<ConversationContext | null> {
+  async loadContext(): Promise<LoadContextResult> {
     // Önce preloaded (atomic RPC'den gelen)
     let ctxStr = this.preloadedContextStr;
     let dbCreatedAt: string | null = null;
@@ -83,19 +96,35 @@ export class WhatsAppAdapter implements ChannelAdapter {
       dbCreatedAt = data?.created_at ?? null;
     }
 
-    if (!ctxStr) return null;
+    if (!ctxStr) return { context: null };
 
     try {
       const parsed = JSON.parse(ctxStr);
-      if (!isValidContext(parsed)) return null;
+      if (!isValidContext(parsed)) return { context: null };
 
-      // FIX 1: Bayat state koruması — eskimiş context sıfırlanır
+      // KATMAN 2: Stage-aware TTL — stage'e göre eşik seç (yarım rezervasyon hassas).
+      // Önceki davranış tek STALE_CONTEXT_HOURS=2'ydi → yarım rezervasyonda fazla uzun,
+      // gezinmede fazla kısa. Şimdi parsed.stage'e göre TTL.
       const _staleRef = parsed.lastUpdated || dbCreatedAt;
       if (_staleRef) {
         const _ageMs = Date.now() - new Date(_staleRef).getTime();
-        if (_ageMs > STALE_CONTEXT_HOURS * 3_600_000) {
-          console.warn(`[adapter] Context stale (${Math.round(_ageMs / 60000)}min old), resetting`);
-          return null;
+        const _stage = String(parsed.stage || "BROWSING");
+        const _ttlMs = STAGE_TTL_MS[_stage] ?? DEFAULT_TTL_MS;
+        if (_ageMs > _ttlMs) {
+          const _ageMin = Math.round(_ageMs / 60000);
+          const _ttlMin = Math.round(_ttlMs / 60000);
+          console.warn(`[adapter] Context stale: stage=${_stage} age=${_ageMin}min > ttl=${_ttlMin}min — resetting with sentinel`);
+          // KATMAN 1: sentinel dön → process-message visible reset yapar
+          // (eski davranış silent null'du → AI history sızıntısıyla saçmalardı).
+          return {
+            context: null,
+            stale: {
+              lastStage: _stage,
+              hadReservationInProgress: !!(parsed.reservationInfo && parsed.reservationInfo.dateId),
+              ageMinutes: _ageMin,
+              lastLanguage: parsed.language,
+            },
+          };
         }
       }
 
@@ -111,10 +140,10 @@ export class WhatsAppAdapter implements ChannelAdapter {
         parsed.tone = (agencyTone ?? getDefaultToneForLanguage(parsed.language)) as ConversationTone;
       }
 
-      return parsed as ConversationContext;
+      return { context: parsed as ConversationContext };
     } catch (_e) {
       console.warn("[adapter] Context parse failed, will create fresh");
-      return null;
+      return { context: null };
     }
   }
 

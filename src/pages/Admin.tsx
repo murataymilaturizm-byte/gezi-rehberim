@@ -245,7 +245,11 @@ const Admin = () => {
     try {
       const { data: agencyData, error } = await supabase
         .from("agencies")
-        .select("plan_type, enabled_languages, whatsapp_status")
+        // BUG FIX (Madde 1): Bağlantı durumu için sadece whatsapp_status alanı yetmiyor.
+        // Acente disconnect-reconnect yaptığında bu alan bazen "pending" kalıyor ama
+        // gerçek bağlantı göstergeleri (meta_access_token + meta_phone_number_id) dolu.
+        // Meta credentials varsa gerçekten bağlı → "active" göster.
+        .select("plan_type, enabled_languages, whatsapp_status, meta_access_token, meta_phone_number_id, webhook_subscribed")
         .eq("id", userAgencyId)
         .single();
 
@@ -259,7 +263,12 @@ const Admin = () => {
         setMaxTours(maxToursValue);
         setPlanFeatures(features);
         setEnabledLanguages(agencyData.enabled_languages || []);
-        setWhatsappStatus(agencyData.whatsapp_status || '');
+        // BUG FIX (Madde 1): Tek kaynaklı bağlantı durumu hesabı.
+        // Meta'da hem token hem phone_number_id varsa = gerçekten bağlı, "active" göster
+        // (whatsapp_status alanı "pending" kalmış olsa bile — disconnect-reconnect race condition).
+        const _hasMetaCreds = !!(agencyData as any).meta_access_token && !!(agencyData as any).meta_phone_number_id;
+        const _effectiveStatus = _hasMetaCreds ? "active" : (agencyData.whatsapp_status || "");
+        setWhatsappStatus(_effectiveStatus);
       }
     } catch (error) {
       console.error("Error loading agency plan:", error);
@@ -369,7 +378,10 @@ const Admin = () => {
       .then(({ count }) => setOpenComplaintsCount(count ?? 0));
   }, [userAgencyId, isSuperAdmin, activeTab]);
 
-  // Realtime: watch whatsapp_status to force OnboardingChecklist remount on connect
+  // Realtime: watch whatsapp_status to force OnboardingChecklist remount on connect.
+  // BUG FIX (Madde 1): Sadece whatsapp_status'a değil, Meta credentials değişimine de bak.
+  // Embedded signup token yenilemesi whatsapp_status'u her zaman "active" yapmayabilir,
+  // ama meta_access_token/meta_phone_number_id güncellenir → effective status hesabı.
   useEffect(() => {
     if (!userAgencyId || isSuperAdmin) return;
     const channel = supabase
@@ -378,8 +390,18 @@ const Admin = () => {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'agencies', filter: `id=eq.${userAgencyId}` },
         (payload) => {
-          const newStatus = (payload.new as { whatsapp_status?: string }).whatsapp_status;
-          if (newStatus !== undefined) setWhatsappStatus(newStatus);
+          const _row = payload.new as {
+            whatsapp_status?: string;
+            meta_access_token?: string | null;
+            meta_phone_number_id?: string | null;
+          };
+          // Aynı hesap mantığı: token + phone_id varsa "active", yoksa DB status'u kullan
+          const _hasMetaCreds = !!_row.meta_access_token && !!_row.meta_phone_number_id;
+          if (_hasMetaCreds) {
+            setWhatsappStatus("active");
+          } else if (_row.whatsapp_status !== undefined) {
+            setWhatsappStatus(_row.whatsapp_status || "");
+          }
         }
       )
       .subscribe();

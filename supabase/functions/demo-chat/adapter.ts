@@ -1,10 +1,21 @@
 // DemoChatAdapter — ChannelAdapter interface'ini demo-chat için implement eder.
 // WhatsApp'tan farkı: context stateless (frontend taşır), history DB'de, send HTTP response.
 
-/** Context bu kadar saat eskiyse sıfırlanır (bayat state koruması) */
-const STALE_CONTEXT_HOURS = 2;
+/**
+ * KATMAN 2: Stage-aware TTL — WhatsApp adapter ile aynı eşikler.
+ * Demo-chat'te de yarım rezervasyon 45dk, gezinme 24h.
+ * (Demo'da kullanıcı genelde tek seferlik test ediyor ama yine de tutarlı olsun.)
+ */
+const STAGE_TTL_MS: Record<string, number> = {
+  GREETING:        24 * 60 * 60_000,
+  BROWSING:        24 * 60 * 60_000,
+  COLLECTING_INFO: 45 * 60_000,
+  CONFIRMING:      45 * 60_000,
+  COMPLETED:       12 * 60 * 60_000,
+};
+const DEFAULT_TTL_MS = 45 * 60_000;
 
-import type { ChannelAdapter } from "../shared/handlers/types.ts";
+import type { ChannelAdapter, LoadContextResult } from "../shared/handlers/types.ts";
 import type { ConversationContext } from "../shared/fsm/types.ts";
 
 export class DemoChatAdapter implements ChannelAdapter {
@@ -27,22 +38,37 @@ export class DemoChatAdapter implements ChannelAdapter {
   /**
    * Context frontend'den (stateless) gelir — DB sorgusu yok.
    * conversationStyle varsa tone override edilir.
+   *
+   * KATMAN 1+2: stage-aware stale check, sentinel ile process-message visible reset yapar.
    */
-  async loadContext(): Promise<ConversationContext | null> {
+  async loadContext(): Promise<LoadContextResult> {
     const raw = this._incomingContext;
-    if (!raw || typeof raw !== "object") return null;
+    if (!raw || typeof raw !== "object") return { context: null };
     const c = raw as any;
     // Minimum geçerlilik kontrolü
     if (typeof c.stage !== "string" || typeof c.language !== "string" || typeof c.tone !== "string") {
-      return null;
+      return { context: null };
     }
 
-    // FIX 1: Bayat state koruması (frontend'den gelen state)
+    // KATMAN 2: Stage-aware TTL (önceki tek STALE_CONTEXT_HOURS=2'nin yerine)
     if (c.lastUpdated) {
       const _ageMs = Date.now() - new Date(c.lastUpdated).getTime();
-      if (_ageMs > STALE_CONTEXT_HOURS * 3_600_000) {
-        console.warn(`[demo-adapter] Context stale (${Math.round(_ageMs / 60000)}min old), resetting`);
-        return null;
+      const _stage = String(c.stage || "BROWSING");
+      const _ttlMs = STAGE_TTL_MS[_stage] ?? DEFAULT_TTL_MS;
+      if (_ageMs > _ttlMs) {
+        const _ageMin = Math.round(_ageMs / 60000);
+        const _ttlMin = Math.round(_ttlMs / 60000);
+        console.warn(`[demo-adapter] Context stale: stage=${_stage} age=${_ageMin}min > ttl=${_ttlMin}min — resetting with sentinel`);
+        // KATMAN 1: sentinel — process-message visible reset
+        return {
+          context: null,
+          stale: {
+            lastStage: _stage,
+            hadReservationInProgress: !!(c.reservationInfo && c.reservationInfo.dateId),
+            ageMinutes: _ageMin,
+            lastLanguage: c.language,
+          },
+        };
       }
     }
 
@@ -51,7 +77,7 @@ export class DemoChatAdapter implements ChannelAdapter {
     if (this._conversationStyle && context.tone !== this._conversationStyle) {
       context.tone = this._conversationStyle as any;
     }
-    return context;
+    return { context };
   }
 
   /**

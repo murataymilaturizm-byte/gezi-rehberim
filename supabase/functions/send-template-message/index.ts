@@ -49,16 +49,24 @@ function buildTemplateComponents(content: string, values: Record<string, string>
 // ÇÖZÜM: Hiçbir dönüşüm yapma. DB'deki language değerini Meta'ya AYNEN gönder.
 // (Bu helper artık identity; çağrı yerleri tmpl.language direkt kullanır — fonksiyon kaldırıldı.)
 
-// template_send_log'a kayıt at (non-blocking)
+// template_send_log'a kayıt at (non-blocking).
+// REGRESYON FIX: Önceki versiyonda `.insert(...).catch(...)` yazılmıştı.
+// Supabase PostgrestBuilder thenable AMA .catch() metodu YOK (Promise değil) →
+// "catch is not a function" fırlatıyor, template gönderimi çöküyordu.
+// Doğru pattern: await + try/catch ile sar.
 async function logSend(supabase: any, payload: {
   agency_id: string; template_type: string; language: string;
   recipient_phone: string; recipient_name?: string | null;
   registration_id?: string | null; success: boolean; error_message?: string | null;
 }) {
-  await supabase.from('template_send_log').insert({
-    ...payload,
-    sent_at: new Date().toISOString(),
-  }).catch((e: any) => console.error('[send-template] log insert failed:', e.message));
+  try {
+    await supabase.from('template_send_log').insert({
+      ...payload,
+      sent_at: new Date().toISOString(),
+    });
+  } catch (e: any) {
+    console.error('[send-template] log insert failed:', e?.message || String(e));
+  }
 }
 
 serve(async (req) => {

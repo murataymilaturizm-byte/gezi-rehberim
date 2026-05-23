@@ -22,6 +22,8 @@ import {
   verifyMetaSignatureDetailed,
 } from "../_shared/metaWhatsapp.ts";
 import { maskPhone, maskMessage } from "../shared/utils/log-mask.ts";
+// R2: fire-and-forget mesaj sayacı RPC fail'lerini görünür kıl (billing drift önle)
+import { logCritical } from "../_shared/error-sink.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
 import { WhatsAppAdapter } from "./adapter.ts";
@@ -449,7 +451,20 @@ serve(async (req) => {
             .insert({ phone: userPhone, role: "assistant", content: canned, agency_id: agency.id });
           await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
             userPhone, truncateForWhatsApp(canned));
-          supabase.rpc("increment_agency_message_count", { p_agency_id: agency.id }).then(() => {}); // K3: atomic
+          // R2: await + try/catch — RPC fail olursa sessiz kayıp yerine error-sink'e gider.
+          // Akış bozulmasın (sayaç hatası mesaj göndermeyi engellemesin) ama görünür kalsın.
+          try {
+            const { error: _cntErr } = await supabase.rpc("increment_agency_message_count", { p_agency_id: agency.id });
+            if (_cntErr) throw _cntErr;
+          } catch (_cntErr: any) {
+            await logCritical({
+              event: "MESSAGE_COUNTER_FAIL",
+              error: _cntErr?.message || String(_cntErr),
+              context: { agencyId: agency.id, path: "canned_response" },
+              agencyId: agency.id,
+              severity: "error",
+            });
+          }
           return new Response(JSON.stringify({ success: true }), {
             status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
@@ -462,7 +477,21 @@ serve(async (req) => {
           .insert({ phone: userPhone, role: "assistant", content: faqResponse, agency_id: agency.id });
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
           userPhone, truncateForWhatsApp(faqResponse));
-        supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+        // R2: aynı pattern — billing drift önle
+        try {
+          const { error: _cntErr } = await supabase.from("agencies")
+            .update({ monthly_message_count: (_msgCount ?? 0) + 1 })
+            .eq("id", agency.id);
+          if (_cntErr) throw _cntErr;
+        } catch (_cntErr: any) {
+          await logCritical({
+            event: "MESSAGE_COUNTER_FAIL",
+            error: _cntErr?.message || String(_cntErr),
+            context: { agencyId: agency.id, path: "faq_response" },
+            agencyId: agency.id,
+            severity: "error",
+          });
+        }
         return new Response(JSON.stringify({ success: true }), {
           status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -518,8 +547,23 @@ serve(async (req) => {
       await enrichConversationInsights(supabase, userPhone, agency.id, message, result.response, intent);
     }
 
-    // === Monthly counter increment (her başarılı işlemde, fire-and-forget) ===
-    supabase.from("agencies").update({ monthly_message_count: (_msgCount ?? 0) + 1 }).eq("id", agency.id).then(() => {});
+    // === Monthly counter increment (her başarılı işlemde) ===
+    // R2: Önceden .then(() => {}) fire-and-forget'ti — RPC fail olursa sessizce kaybolup
+    // billing drift yapıyordu. Şimdi await + try/catch + error-sink (akış bozulmaz).
+    try {
+      const { error: _cntErr } = await supabase.from("agencies")
+        .update({ monthly_message_count: (_msgCount ?? 0) + 1 })
+        .eq("id", agency.id);
+      if (_cntErr) throw _cntErr;
+    } catch (_cntErr: any) {
+      await logCritical({
+        event: "MESSAGE_COUNTER_FAIL",
+        error: _cntErr?.message || String(_cntErr),
+        context: { agencyId: agency.id, path: "main_flow" },
+        agencyId: agency.id,
+        severity: "error",
+      });
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
