@@ -1933,7 +1933,8 @@
       "step1": "Aşağıdan şablonu indirin (Excel, .xlsx)",
       "step2": "Turlarınızı doldurun — 4 zorunlu alan: başlık, destinasyon, tip, para birimi. Diğer alanlar opsiyonel.",
       "step3": "Dosyayı yükleyin — önizlemede kontrol edip onaylayın.",
-      "tip": "Tur tarihleri ve fiyatlar her tur için ayrıca eklenir (Turlar sayfasından düzenleme veya \"Toplu Tarih Oluştur\").",
+      "tip": "Bu Excel SADECE tur bilgisi içindir. Tur TARİHLERİ, FİYAT ve KONTENJAN panelden \"Toplu Tarih Oluştur\" ile eklenir.",
+      "readonly": "__tour_id ve created_at sistem alanlarıdır — değiştirmeyin/silmeyin.",
       "alternative": "Tek tur eklemek için \"Yeni Tur\" butonu daha hızlı olabilir."
     },
     "tpl": {
@@ -3771,7 +3772,37 @@
     "importSheetName": "Turlar",
     "importFilename": "turzz_tur_sablonu",
     "invalidType": "geçersiz tur tipi",
-    "invalidCurrency": "geçersiz para birimi"
+    "invalidCurrency": "geçersiz para birimi",
+    "tpl": {
+      "sheetInstructions": "Talimatlar",
+      "req": "ZORUNLU",
+      "opt": "Opsiyonel",
+      "n23": "N2/N3 önerilir",
+      "__tour_id": "Sistem kimliği — DEĞİŞTİRMEYİN/SİLMEYİN. Mevcut turu güncellemek için gereklidir (Etap 2).",
+      "created_at": "Tur oluşturma tarihi — sistem alanı, salt-okunur.",
+      "title": "Tur başlığı (Türkçe)",
+      "destination": "Şehir/bölge",
+      "type": "Tur tipi: DAYTRIP (günübirlik), N2 (2 gece), N3 (3+ gece)",
+      "currency": "Para birimi: TRY, USD, EUR, GBP, SAR, AED, RUB",
+      "minPax": "Minimum kişi sayısı (sayı)",
+      "visa": "Vize gerekli mi: evet / hayır",
+      "programUrl": "Tur programı PDF/web linki (opsiyonel)",
+      "program": "Tur programı/içeriği — botun müşteriye anlattığı kısa açıklama",
+      "meetingPoint": "Kalkış/buluşma yeri",
+      "meetingTime": "Saat — HH:MM formatı",
+      "duration": "Tur süresi",
+      "category": "Kültür / Doğa / Macera / Deniz vb.",
+      "places": "Virgülle ayrılmış yer listesi",
+      "transport": "Ulaşım şekli",
+      "accommodation": "Konaklama açıklaması (oda tipi, yemek dahil mi)",
+      "hotelName": "Otel adı (varsa)",
+      "hotelStars": "Otel yıldızı (1-5 arası sayı)",
+      "visaNotes": "Vize ile ilgili açıklama",
+      "titleMulti": "Yurtdışı müşteri için tur başlığı çevirisi (boş bırakılabilir)",
+      "destMulti": "Yurtdışı müşteri için destinasyon çevirisi",
+      "programMulti": "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)",
+      "dateNotice": "Tur TARİHLERİ, FİYAT ve KONTENJAN bu Excel'de YOKTUR. Tarihleri panelden 'Toplu Tarih Oluştur' ile ekleyin."
+    }
   },
   "notificationCenter": {
     "people": "kişi",

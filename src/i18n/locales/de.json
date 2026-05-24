@@ -1941,7 +1941,8 @@
       "step1": "Laden Sie die Vorlage unten herunter (Excel, .xlsx)",
       "step2": "Füllen Sie Ihre Touren aus — 4 Pflichtfelder: Titel, Ziel, Typ, Währung. Andere Felder sind optional.",
       "step3": "Laden Sie die Datei hoch — prüfen Sie die Vorschau und bestätigen Sie.",
-      "tip": "Termine und Preise werden je Tour separat hinzugefügt (Touren-Seite bearbeiten oder \"Massentermin-Generator\").",
+      "tip": "Diese Excel ist NUR für Tourinfos. Tour-TERMINE, PREISE und KONTINGENT werden über das Panel via \"Massentermin-Generator\" hinzugefügt.",
+      "readonly": "__tour_id und created_at sind Systemfelder — NICHT bearbeiten oder löschen.",
       "alternative": "Für eine einzelne Tour ist die Schaltfläche \"Neue Tour\" eventuell schneller."
     }
   },
@@ -3702,7 +3703,37 @@
     "importSheetName": "Touren",
     "importFilename": "turzz_tour_vorlage",
     "invalidType": "ungültiger Tourtyp",
-    "invalidCurrency": "ungültige Währung"
+    "invalidCurrency": "ungültige Währung",
+    "tpl": {
+      "sheetInstructions": "Anleitung",
+      "req": "ERFORDERLICH",
+      "opt": "Optional",
+      "n23": "N2/N3 empfohlen",
+      "__tour_id": "System-ID — NICHT BEARBEITEN/LÖSCHEN. Wird zum Aktualisieren einer Tour benötigt (Phase 2).",
+      "created_at": "Tour-Erstellungsdatum — Systemfeld, schreibgeschützt.",
+      "title": "Tourtitel (Türkisch)",
+      "destination": "Stadt/Region",
+      "type": "Tourtyp: DAYTRIP (Tagestour), N2 (2 Nächte), N3 (3+ Nächte)",
+      "currency": "Währung: TRY, USD, EUR, GBP, SAR, AED, RUB",
+      "minPax": "Mindestpersonen (Zahl)",
+      "visa": "Visum erforderlich: evet / hayır (ja/nein)",
+      "programUrl": "Tourprogramm PDF/Web-Link (optional)",
+      "program": "Tourprogramm — Kurzbeschreibung für den Bot",
+      "meetingPoint": "Abfahrts-/Treffpunkt",
+      "meetingTime": "Uhrzeit — HH:MM-Format",
+      "duration": "Tourdauer",
+      "category": "Kultur / Natur / Abenteuer / Strand usw.",
+      "places": "Kommagetrennte Ortsliste",
+      "transport": "Transportmittel",
+      "accommodation": "Unterkunftsdetails (Zimmertyp, Mahlzeiten)",
+      "hotelName": "Hotelname (falls vorhanden)",
+      "hotelStars": "Hotelsterne (1-5)",
+      "visaNotes": "Visum-Hinweise",
+      "titleMulti": "Tourtitel-Übersetzung für ausländische Kunden (kann leer bleiben)",
+      "destMulti": "Reiseziel-Übersetzung für ausländische Kunden",
+      "programMulti": "Programm-Übersetzung für ausländische Kunden (mindestens EN empfohlen)",
+      "dateNotice": "Tour-TERMINE, PREISE und KONTINGENT sind NICHT in dieser Excel-Datei. Termine im Panel über 'Termine im Bulk anlegen' hinzufügen."
+    }
   },
   "notificationCenter": {
     "people": "Personen",

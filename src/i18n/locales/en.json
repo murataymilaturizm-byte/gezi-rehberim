@@ -1941,7 +1941,8 @@
       "step1": "Download the template below (Excel, .xlsx)",
       "step2": "Fill in your tours — 4 required fields: title, destination, type, currency. Other fields are optional.",
       "step3": "Upload the file — review the preview and confirm.",
-      "tip": "Tour dates and prices are added separately for each tour (Tours page edit or \"Bulk Date Generator\").",
+      "tip": "This Excel is for TOUR INFO ONLY. Tour DATES, PRICES and QUOTA are added from the panel via \"Bulk Date Generator\".",
+      "readonly": "__tour_id and created_at are system fields — DO NOT edit or delete.",
       "alternative": "For a single tour, \"New Tour\" button may be faster."
     }
   },
@@ -3748,7 +3749,37 @@
     "importSheetName": "Tours",
     "importFilename": "turzz_tour_template",
     "invalidType": "invalid tour type",
-    "invalidCurrency": "invalid currency"
+    "invalidCurrency": "invalid currency",
+    "tpl": {
+      "sheetInstructions": "Instructions",
+      "req": "REQUIRED",
+      "opt": "Optional",
+      "n23": "N2/N3 recommended",
+      "__tour_id": "System ID — DO NOT EDIT/DELETE. Required to update an existing tour (Phase 2).",
+      "created_at": "Tour creation date — system field, read-only.",
+      "title": "Tour title (Turkish)",
+      "destination": "City/region",
+      "type": "Tour type: DAYTRIP (day trip), N2 (2 nights), N3 (3+ nights)",
+      "currency": "Currency: TRY, USD, EUR, GBP, SAR, AED, RUB",
+      "minPax": "Minimum participants (number)",
+      "visa": "Visa required: evet / hayır (yes/no)",
+      "programUrl": "Tour program PDF/web link (optional)",
+      "program": "Tour program/content — short description the bot uses with customers",
+      "meetingPoint": "Departure/meeting location",
+      "meetingTime": "Time — HH:MM format",
+      "duration": "Tour duration",
+      "category": "Culture / Nature / Adventure / Beach etc.",
+      "places": "Comma-separated list of places",
+      "transport": "Transport mode",
+      "accommodation": "Accommodation details (room type, meals included)",
+      "hotelName": "Hotel name (if applicable)",
+      "hotelStars": "Hotel stars (1-5)",
+      "visaNotes": "Visa-related notes",
+      "titleMulti": "Foreign-market tour title translation (can be empty)",
+      "destMulti": "Foreign-market destination translation",
+      "programMulti": "Foreign-market program summary translation (at least EN recommended)",
+      "dateNotice": "Tour DATES, PRICES and QUOTA are NOT in this Excel. Add dates from the panel via 'Bulk Create Dates'."
+    }
   },
   "notificationCenter": {
     "people": "people",

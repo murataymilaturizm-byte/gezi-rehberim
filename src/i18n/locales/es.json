@@ -1975,7 +1975,8 @@
       "step1": "Descarga la plantilla abajo (Excel, .xlsx)",
       "step2": "Completa tus tours — 4 campos obligatorios: título, destino, tipo, moneda. Los demás campos son opcionales.",
       "step3": "Sube el archivo — revisa la vista previa y confirma.",
-      "tip": "Las fechas y precios se añaden por separado para cada tour (página de Tours o \"Generador masivo de fechas\").",
+      "tip": "Este Excel contiene SOLO información del tour. Las FECHAS, PRECIOS y CUPOS se añaden desde el panel mediante \"Generador masivo de fechas\".",
+      "readonly": "__tour_id y created_at son campos del sistema — NO editar ni eliminar.",
       "alternative": "Para un solo tour, el botón \"Nuevo Tour\" puede ser más rápido."
     }
   },
@@ -3702,7 +3703,37 @@
     "importSheetName": "Tours",
     "importFilename": "turzz_plantilla_tours",
     "invalidType": "tipo de tour inválido",
-    "invalidCurrency": "moneda inválida"
+    "invalidCurrency": "moneda inválida",
+    "tpl": {
+      "sheetInstructions": "Instrucciones",
+      "req": "OBLIGATORIO",
+      "opt": "Opcional",
+      "n23": "Recomendado para N2/N3",
+      "__tour_id": "ID del sistema — NO EDITAR/ELIMINAR. Requerido para actualizar un tour existente (Fase 2).",
+      "created_at": "Fecha de creación del tour — campo del sistema, solo lectura.",
+      "title": "Título del tour (turco)",
+      "destination": "Ciudad/región",
+      "type": "Tipo de tour: DAYTRIP (un día), N2 (2 noches), N3 (3+ noches)",
+      "currency": "Moneda: TRY, USD, EUR, GBP, SAR, AED, RUB",
+      "minPax": "Participantes mínimos (número)",
+      "visa": "Visa requerida: evet / hayır (sí/no)",
+      "programUrl": "Enlace PDF/web del programa (opcional)",
+      "program": "Programa/contenido del tour — descripción corta usada por el bot",
+      "meetingPoint": "Punto de salida/encuentro",
+      "meetingTime": "Hora — formato HH:MM",
+      "duration": "Duración del tour",
+      "category": "Cultura / Naturaleza / Aventura / Playa etc.",
+      "places": "Lista de lugares separados por comas",
+      "transport": "Modo de transporte",
+      "accommodation": "Detalles de alojamiento (tipo de habitación, comidas)",
+      "hotelName": "Nombre del hotel (si aplica)",
+      "hotelStars": "Estrellas del hotel (1-5)",
+      "visaNotes": "Notas sobre la visa",
+      "titleMulti": "Traducción del título para clientes extranjeros (puede estar vacío)",
+      "destMulti": "Traducción del destino para clientes extranjeros",
+      "programMulti": "Traducción del programa para clientes extranjeros (mínimo EN recomendado)",
+      "dateNotice": "Las FECHAS, PRECIOS y CUPOS del tour NO están en este Excel. Añade fechas desde el panel mediante 'Creación masiva de fechas'."
+    }
   },
   "notificationCenter": {
     "people": "personas",

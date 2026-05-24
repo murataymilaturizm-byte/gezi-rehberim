@@ -1941,7 +1941,8 @@
       "step1": "Téléchargez le modèle ci-dessous (Excel, .xlsx)",
       "step2": "Remplissez vos circuits — 4 champs obligatoires : titre, destination, type, devise. Les autres champs sont facultatifs.",
       "step3": "Téléchargez le fichier — vérifiez l'aperçu et confirmez.",
-      "tip": "Les dates et prix sont ajoutés séparément pour chaque circuit (page Circuits ou \"Générateur de dates en masse\").",
+      "tip": "Cet Excel contient UNIQUEMENT les infos du circuit. Les DATES, PRIX et QUOTAS s'ajoutent depuis le panneau via \"Générateur de dates en masse\".",
+      "readonly": "__tour_id et created_at sont des champs système — ne PAS modifier ni supprimer.",
       "alternative": "Pour un seul circuit, le bouton \"Nouveau circuit\" peut être plus rapide."
     }
   },
@@ -3702,7 +3703,37 @@
     "importSheetName": "Circuits",
     "importFilename": "turzz_modele_circuits",
     "invalidType": "type de circuit invalide",
-    "invalidCurrency": "devise invalide"
+    "invalidCurrency": "devise invalide",
+    "tpl": {
+      "sheetInstructions": "Instructions",
+      "req": "OBLIGATOIRE",
+      "opt": "Optionnel",
+      "n23": "N2/N3 recommandé",
+      "__tour_id": "ID système — NE PAS MODIFIER/SUPPRIMER. Requis pour mettre à jour un circuit existant (Phase 2).",
+      "created_at": "Date de création du circuit — champ système, lecture seule.",
+      "title": "Titre du circuit (turc)",
+      "destination": "Ville/région",
+      "type": "Type de circuit : DAYTRIP (journée), N2 (2 nuits), N3 (3+ nuits)",
+      "currency": "Devise : TRY, USD, EUR, GBP, SAR, AED, RUB",
+      "minPax": "Nombre minimum de participants (numérique)",
+      "visa": "Visa requis : evet / hayır (oui/non)",
+      "programUrl": "Lien PDF/web du programme (optionnel)",
+      "program": "Programme/contenu du circuit — description courte utilisée par le bot",
+      "meetingPoint": "Lieu de départ/rendez-vous",
+      "meetingTime": "Heure — format HH:MM",
+      "duration": "Durée du circuit",
+      "category": "Culture / Nature / Aventure / Plage etc.",
+      "places": "Liste de lieux séparés par des virgules",
+      "transport": "Moyen de transport",
+      "accommodation": "Détails d'hébergement (type de chambre, repas inclus)",
+      "hotelName": "Nom de l'hôtel (le cas échéant)",
+      "hotelStars": "Étoiles de l'hôtel (1-5)",
+      "visaNotes": "Notes sur le visa",
+      "titleMulti": "Traduction du titre pour clients étrangers (peut être vide)",
+      "destMulti": "Traduction de la destination pour clients étrangers",
+      "programMulti": "Traduction du programme pour clients étrangers (au moins EN recommandé)",
+      "dateNotice": "Les DATES, PRIX et QUOTAS du circuit ne sont PAS dans cet Excel. Ajoutez les dates depuis le panneau via 'Création de dates en masse'."
+    }
   },
   "notificationCenter": {
     "people": "personnes",

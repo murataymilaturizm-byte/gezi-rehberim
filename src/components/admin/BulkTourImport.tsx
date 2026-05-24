@@ -26,16 +26,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, Loader2, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Madde 2: Excel şablonu zenginleştirildi — manuel formdaki kritik alanlar dahil edildi.
-// DB tours tablosundaki alanlarla uyumlu (Insert tipi).
+// ETAP 1: Excel master-only format. Tarih/fiyat/kontenjan (tour_dates) YOK.
+// Export = Şablon = Import AYNI kolon yapısını paylaşır. TourFormDialog'un istediği
+// tüm master alanlar + 18 çok dilli + __tour_id (sistem, salt-okunur) içerir.
 interface ParsedTour {
   rowIndex: number;
+  // Sistem (salt-okunur — Etap 1'de YOKSAYILIR, Etap 2'de UPSERT eşleşmesi için kullanılacak)
+  __tour_id?: string;
   // Zorunlu
   title: string;
   destination: string;
   type: "DAYTRIP" | "N2" | "N3";
   currency: string;
   // Tur detayı (opsiyonel)
+  program_url?: string;          // PDF/web link (TourFormDialog'da var)
   program_kisa?: string;
   ulasim?: string;             // ulaşım (otobüs/uçak/araba vb.)
   gezilecek_yerler?: string;   // virgüllü liste
@@ -147,10 +151,14 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
 
           return {
             rowIndex: idx + 2,
+            // Sistem alanı: __tour_id Excel'den okunur ama Etap 1'de YOKSAYILIR (insert akışı). Etap 2'de
+            // UPSERT eşleşmesi için saklanır. Acente silmemeli; silinirse satır yeni tur olarak insert edilir.
+            __tour_id: _str(row.__tour_id || row.tour_id),
             title,
             destination,
             type: VALID_TYPES.includes(rawType) ? (rawType as "DAYTRIP" | "N2" | "N3") : "DAYTRIP",
             currency: VALID_CURRENCIES.includes(rawCurrency) ? rawCurrency : "TRY",
+            program_url: _str(row.program_url || row.ProgramUrl),
             program_kisa: _str(row.program_kisa || row.Program || row.Description),
             // Madde 2: yeni opsiyonel alanlar
             ulasim: _str(row.ulasim || row.Ulasim || row.Transport),
@@ -216,7 +224,9 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
 
     setIsLoading(true);
     try {
-      // Madde 2: Tüm yeni opsiyonel alanlar DB'ye yazılır.
+      // ETAP 1: Tüm master alanları DB'ye INSERT edilir (pure insert, UPSERT yok).
+      // __tour_id BİLİNÇLİ olarak GÖNDERİLMEZ — bu etapta yeni tur eklenir, DB yeni id üretir.
+      // Etap 2 UPSERT eklendiğinde __tour_id varsa update / yoksa insert ayrımı yapılacak.
       // Undefined olanlar `null` olarak gönderilir (Supabase Insert tipi opsiyoneli kabul eder).
       const rows = valid.map((p) => ({
         agency_id: agencyId,
@@ -224,6 +234,7 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         destination: p.destination,
         type: p.type,
         currency: p.currency,
+        program_url: p.program_url ?? null,
         program_kisa: p.program_kisa ?? null,
         ulasim: p.ulasim ?? null,
         gezilecek_yerler: p.gezilecek_yerler ?? null,
@@ -279,157 +290,175 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
     }
   };
 
-  // Madde 2: Zenginleştirilmiş şablon. Tur detayı için TÜM önemli alanlar dahil.
-  // - 4 zorunlu kolon (title, destination, type, currency) ÖNDE
-  // - Tur içeriği (program, ulaşım, gezilecek yerler, hareket noktası vb.) — opsiyonel
-  // - Otel + konaklama (N2/N3 turları için)
-  // - Vize + kategori + süre
-  // - Çok dilli alanlar (yurtdışı pazar için, opsiyonel)
-  // - Ayrı "Talimatlar" sheet'i — acentenin nereyi nasıl dolduracağını anlatır
+  // ETAP 1: Master-only şablon — TARİH YOK.
+  // Format birebir excelExporter.ts:exportToursToExcel ile aynı kolon setini paylaşır.
+  // Acente "Excel'e İndir" derse mevcut turlar bu formatta döker; "Şablonu İndir" derse
+  // aşağıdaki 3 örnek satır boş gelir. AYNI dosya = AYNI parser.
+  //
+  // __tour_id ve created_at sistem kolonları — şablonda örnek satırlar için BOŞ. Export'tan
+  // gelen dosyada bu alanlar dolu olur (Etap 2'de UPSERT için kullanılacak).
   const downloadTemplate = () => {
     const template = [
       {
+        // === SİSTEM (boş bırakılır — yeni tur için) ===
+        __tour_id: "",
+        created_at: "",
         // === ZORUNLU ===
         title: "Kapadokya Balon Turu",
         destination: "Kapadokya",
         type: "DAYTRIP",
         currency: "TRY",
-        // === TUR İÇERİĞİ ===
+        // === MASTER DETAY ===
+        min_pax: 2,
+        visa_required: "hayır",
+        program_url: "",
         program_kisa: "Sabah 04:30 otelden alış, balon uçuşu (1 saat), kahvaltı, otel transferi",
-        ulasim: "Otobüs / VIP araç",
-        gezilecek_yerler: "Göreme Vadisi, Peri Bacaları, Uçhisar Kalesi",
         hareket_noktasi: "Otel lobi",
         toplanma_saati: "04:30",
         tur_sure: "1 gün",
         tur_kategorisi: "Macera",
-        min_pax: 2,
+        gezilecek_yerler: "Göreme Vadisi, Peri Bacaları, Uçhisar Kalesi",
+        ulasim: "Otobüs / VIP araç",
         konaklama: "",
         hotel_name: "",
         hotel_stars: "",
-        // === VİZE ===
-        visa_required: "hayır",
         visa_notes: "",
-        // === ÇOK DİLLİ BAŞLIK (opsiyonel, yurtdışı pazar) ===
+        // === ÇOK DİLLİ BAŞLIK ===
         title_en: "Cappadocia Balloon Tour",
         title_de: "Kappadokien Ballonfahrt",
         title_fr: "Tour en montgolfière en Cappadoce",
         title_es: "Tour en globo por Capadocia",
         title_ru: "Тур на воздушном шаре в Каппадокии",
         title_ar: "جولة بالمنطاد في كابادوكيا",
-        // === ÇOK DİLLİ DESTİNASYON (opsiyonel) ===
+        // === ÇOK DİLLİ DESTİNASYON ===
         destination_en: "Cappadocia",
         destination_de: "Kappadokien",
         destination_fr: "Cappadoce",
         destination_es: "Capadocia",
         destination_ru: "Каппадокия",
         destination_ar: "كابادوكيا",
-        // === ÇOK DİLLİ PROGRAM (opsiyonel) ===
+        // === ÇOK DİLLİ PROGRAM ===
         program_kisa_en: "04:30 hotel pickup, 1-hour balloon flight, breakfast, transfer back",
+        program_kisa_de: "", program_kisa_fr: "", program_kisa_es: "",
+        program_kisa_ru: "", program_kisa_ar: "",
       },
       {
+        __tour_id: "",
+        created_at: "",
         title: "İstanbul 2 Gece Klasik Tur",
         destination: "İstanbul",
         type: "N2",
         currency: "USD",
+        min_pax: 1,
+        visa_required: "hayır",
+        program_url: "",
         program_kisa: "1. gün: Sultanahmet, Aya Sofya. 2. gün: Topkapı, Kapalı Çarşı. 3. gün: Boğaz turu, transfer",
-        ulasim: "Klimalı otobüs + tekne (boğaz turu)",
-        gezilecek_yerler: "Sultanahmet Camii, Aya Sofya, Topkapı Sarayı, Kapalı Çarşı, Boğaz turu",
         hareket_noktasi: "Havaalanı transfer dahil",
         toplanma_saati: "10:00",
         tur_sure: "2 gece 3 gün",
         tur_kategorisi: "Kültür",
-        min_pax: 1,
+        gezilecek_yerler: "Sultanahmet Camii, Aya Sofya, Topkapı Sarayı, Kapalı Çarşı, Boğaz turu",
+        ulasim: "Klimalı otobüs + tekne (boğaz turu)",
         konaklama: "2 gece çift kişilik oda + kahvaltı",
         hotel_name: "Hotel Sultanahmet Palace",
         hotel_stars: 4,
-        visa_required: "hayır",
         visa_notes: "",
         title_en: "Istanbul 2-Night Classic Tour",
         title_de: "Istanbul 2-Nächte Klassische Tour",
+        title_fr: "", title_es: "", title_ru: "", title_ar: "",
         destination_en: "Istanbul",
+        destination_de: "", destination_fr: "", destination_es: "",
+        destination_ru: "", destination_ar: "",
+        program_kisa_en: "", program_kisa_de: "", program_kisa_fr: "",
+        program_kisa_es: "", program_kisa_ru: "", program_kisa_ar: "",
       },
       {
         // Minimum örnek — sadece zorunlu alanlar
+        __tour_id: "",
+        created_at: "",
         title: "Pamukkale Günübirlik",
         destination: "Pamukkale",
         type: "DAYTRIP",
         currency: "TRY",
+        min_pax: "",
+        visa_required: "",
+        program_url: "",
         program_kisa: "",
-        ulasim: "",
-        gezilecek_yerler: "",
         hareket_noktasi: "",
         toplanma_saati: "",
         tur_sure: "",
         tur_kategorisi: "",
-        min_pax: "",
+        gezilecek_yerler: "",
+        ulasim: "",
         konaklama: "",
         hotel_name: "",
         hotel_stars: "",
-        visa_required: "",
         visa_notes: "",
-        title_en: "",
-        title_de: "",
-        title_fr: "",
-        title_es: "",
-        title_ru: "",
-        title_ar: "",
-        destination_en: "",
-        destination_de: "",
-        destination_fr: "",
-        destination_es: "",
-        destination_ru: "",
-        destination_ar: "",
-        program_kisa_en: "",
+        title_en: "", title_de: "", title_fr: "", title_es: "", title_ru: "", title_ar: "",
+        destination_en: "", destination_de: "", destination_fr: "",
+        destination_es: "", destination_ru: "", destination_ar: "",
+        program_kisa_en: "", program_kisa_de: "", program_kisa_fr: "",
+        program_kisa_es: "", program_kisa_ru: "", program_kisa_ar: "",
       },
     ];
 
     const ws = XLSX.utils.json_to_sheet(template);
-    // Column widths — content'e göre dengeli
+    // Sütun genişlikleri — sistem alanları en başta, sonra zorunlular, sonra master detay,
+    // sonra çok dilli alanlar. Sıra excelExporter.ts:exportToursToExcel ile birebir aynı.
     ws["!cols"] = [
-      { wch: 28 }, { wch: 18 }, { wch: 10 }, { wch: 8 },     // title, destination, type, currency
-      { wch: 60 }, { wch: 25 }, { wch: 35 }, { wch: 18 },    // program, ulasim, gezilecek, hareket
-      { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 8 },     // saat, sure, kategori, min_pax
-      { wch: 30 }, { wch: 22 }, { wch: 6 },                  // konaklama, hotel, stars
-      { wch: 12 }, { wch: 30 },                              // visa_req, visa_notes
-      { wch: 28 }, { wch: 28 }, { wch: 28 },                 // title_en/de/fr
-      { wch: 28 }, { wch: 28 }, { wch: 28 },                 // title_es/ru/ar
-      { wch: 22 }, { wch: 22 }, { wch: 22 },                 // dest_en/de/fr
-      { wch: 22 }, { wch: 22 }, { wch: 22 },                 // dest_es/ru/ar
-      { wch: 60 },                                            // program_en
+      { wch: 38 }, { wch: 12 },                            // __tour_id, created_at
+      { wch: 30 }, { wch: 18 }, { wch: 10 }, { wch: 10 },  // title, destination, type, currency
+      { wch: 8 },  { wch: 10 }, { wch: 30 }, { wch: 60 },  // min_pax, visa_required, program_url, program_kisa
+      { wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 16 },  // hareket_noktasi, toplanma_saati, tur_sure, tur_kategorisi
+      { wch: 40 }, { wch: 22 }, { wch: 30 }, { wch: 22 },  // gezilecek_yerler, ulasim, konaklama, hotel_name
+      { wch: 10 }, { wch: 30 },                            // hotel_stars, visa_notes
+      { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, // title_xx
+      { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, // destination_xx
+      { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, // program_kisa_xx
     ];
 
-    // Madde 2c: Ayrı Talimatlar sheet'i — acentenin nasıl doldurması gerektiğini açıkla.
+    // Talimatlar sheet'i — yerel dilde açıklama. Kolon başlıkları teknik (snake_case)
+    // sabit kalır; sadece "Tip" ve "Açıklama" sütunları yerelleşir.
+    const _req = t("bulk.tpl.req", { defaultValue: "ZORUNLU" });
+    const _opt = t("bulk.tpl.opt", { defaultValue: "Opsiyonel" });
+    const _ro  = "🔒";
+    const _info = "ℹ️";
     const instructions = [
-      { Kolon: "title", Zorunlu: "EVET", Açıklama: t("bulkImport.tpl.title", { defaultValue: "Tur başlığı (Türkçe)" }), Örnek: "Kapadokya Balon Turu" },
-      { Kolon: "destination", Zorunlu: "EVET", Açıklama: t("bulkImport.tpl.destination", { defaultValue: "Şehir/bölge" }), Örnek: "Kapadokya" },
-      { Kolon: "type", Zorunlu: "EVET", Açıklama: t("bulkImport.tpl.type", { defaultValue: "Tur tipi: DAYTRIP (günübirlik), N2 (2 gece), N3 (3 gece)" }), Örnek: "DAYTRIP" },
-      { Kolon: "currency", Zorunlu: "EVET", Açıklama: t("bulkImport.tpl.currency", { defaultValue: "Para birimi: TRY, USD, EUR, GBP, SAR, AED, RUB" }), Örnek: "TRY" },
-      { Kolon: "program_kisa", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.program", { defaultValue: "Tur programı/içeriği — botun müşteriye anlattığı kısa açıklama" }), Örnek: "Sabah 04:30 alış, balon uçuşu, kahvaltı..." },
-      { Kolon: "ulasim", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.transport", { defaultValue: "Ulaşım şekli" }), Örnek: "Klimalı otobüs" },
-      { Kolon: "gezilecek_yerler", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.places", { defaultValue: "Virgülle ayrılmış yer listesi" }), Örnek: "Göreme, Uçhisar, Peri Bacaları" },
-      { Kolon: "hareket_noktasi", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.meetingPoint", { defaultValue: "Kalkış/buluşma yeri" }), Örnek: "Otel lobisi" },
-      { Kolon: "toplanma_saati", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.meetingTime", { defaultValue: "Saat — HH:MM formatı" }), Örnek: "09:00" },
-      { Kolon: "tur_sure", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.duration", { defaultValue: "Tur süresi" }), Örnek: "1 gün / 2 gece 3 gün" },
-      { Kolon: "tur_kategorisi", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.category", { defaultValue: "Kültür / Doğa / Macera / Deniz vb." }), Örnek: "Macera" },
-      { Kolon: "min_pax", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.minPax", { defaultValue: "Minimum kişi sayısı (sayı)" }), Örnek: "2" },
-      { Kolon: "konaklama", Zorunlu: "N2/N3 önerilir", Açıklama: t("bulkImport.tpl.accommodation", { defaultValue: "Konaklama açıklaması (oda tipi, yemek dahil mi)" }), Örnek: "2 gece çift kişilik oda + kahvaltı" },
-      { Kolon: "hotel_name", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.hotelName", { defaultValue: "Otel adı (varsa)" }), Örnek: "Hotel Sultanahmet Palace" },
-      { Kolon: "hotel_stars", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.hotelStars", { defaultValue: "Otel yıldızı (1-5 arası sayı)" }), Örnek: "4" },
-      { Kolon: "visa_required", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.visa", { defaultValue: "Vize gerekli mi: evet / hayır" }), Örnek: "hayır" },
-      { Kolon: "visa_notes", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.visaNotes", { defaultValue: "Vize ile ilgili açıklama" }), Örnek: "Schengen vizesi şart" },
-      { Kolon: "title_en/de/fr/es/ru/ar", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.titleMulti", { defaultValue: "Yurtdışı müşteri için tur başlığı çevirisi (boş bırakılabilir)" }), Örnek: "Cappadocia Balloon Tour" },
-      { Kolon: "destination_en/de/fr/es/ru/ar", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.destMulti", { defaultValue: "Yurtdışı müşteri için destinasyon çevirisi" }), Örnek: "Cappadocia" },
-      { Kolon: "program_kisa_en/de/fr/es/ru/ar", Zorunlu: "Hayır", Açıklama: t("bulkImport.tpl.programMulti", { defaultValue: "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)" }), Örnek: "04:30 pickup, 1-hour balloon flight..." },
+      { Kolon: "__tour_id",      Tip: _ro, Açıklama: t("bulk.tpl.__tour_id", { defaultValue: "Sistem kimliği — DEĞİŞTİRMEYİN/SİLMEYİN. Mevcut turu güncellemek için gereklidir (Etap 2)." }), Örnek: "(otomatik)" },
+      { Kolon: "created_at",     Tip: _ro, Açıklama: t("bulk.tpl.created_at", { defaultValue: "Tur oluşturma tarihi — sistem alanı, salt-okunur." }), Örnek: "2026-05-24" },
+      { Kolon: "title",          Tip: _req, Açıklama: t("bulk.tpl.title", { defaultValue: "Tur başlığı (Türkçe)" }), Örnek: "Kapadokya Balon Turu" },
+      { Kolon: "destination",    Tip: _req, Açıklama: t("bulk.tpl.destination", { defaultValue: "Şehir/bölge" }), Örnek: "Kapadokya" },
+      { Kolon: "type",           Tip: _req, Açıklama: t("bulk.tpl.type", { defaultValue: "Tur tipi: DAYTRIP (günübirlik), N2 (2 gece), N3 (3+ gece)" }), Örnek: "DAYTRIP" },
+      { Kolon: "currency",       Tip: _req, Açıklama: t("bulk.tpl.currency", { defaultValue: "Para birimi: TRY, USD, EUR, GBP, SAR, AED, RUB" }), Örnek: "TRY" },
+      { Kolon: "min_pax",        Tip: _opt, Açıklama: t("bulk.tpl.minPax", { defaultValue: "Minimum kişi sayısı (sayı)" }), Örnek: "2" },
+      { Kolon: "visa_required",  Tip: _opt, Açıklama: t("bulk.tpl.visa", { defaultValue: "Vize gerekli mi: evet / hayır" }), Örnek: "hayır" },
+      { Kolon: "program_url",    Tip: _opt, Açıklama: t("bulk.tpl.programUrl", { defaultValue: "Tur programı PDF/web linki (opsiyonel)" }), Örnek: "https://..." },
+      { Kolon: "program_kisa",   Tip: _opt, Açıklama: t("bulk.tpl.program", { defaultValue: "Tur programı/içeriği — botun müşteriye anlattığı kısa açıklama" }), Örnek: "Sabah 04:30 alış, balon uçuşu..." },
+      { Kolon: "hareket_noktasi",Tip: _opt, Açıklama: t("bulk.tpl.meetingPoint", { defaultValue: "Kalkış/buluşma yeri" }), Örnek: "Otel lobisi" },
+      { Kolon: "toplanma_saati", Tip: _opt, Açıklama: t("bulk.tpl.meetingTime", { defaultValue: "Saat — HH:MM formatı" }), Örnek: "09:00" },
+      { Kolon: "tur_sure",       Tip: _opt, Açıklama: t("bulk.tpl.duration", { defaultValue: "Tur süresi" }), Örnek: "1 gün / 2 gece 3 gün" },
+      { Kolon: "tur_kategorisi", Tip: _opt, Açıklama: t("bulk.tpl.category", { defaultValue: "Kültür / Doğa / Macera / Deniz vb." }), Örnek: "Macera" },
+      { Kolon: "gezilecek_yerler",Tip: _opt, Açıklama: t("bulk.tpl.places", { defaultValue: "Virgülle ayrılmış yer listesi" }), Örnek: "Göreme, Uçhisar, Peri Bacaları" },
+      { Kolon: "ulasim",         Tip: _opt, Açıklama: t("bulk.tpl.transport", { defaultValue: "Ulaşım şekli" }), Örnek: "Klimalı otobüs" },
+      { Kolon: "konaklama",      Tip: t("bulk.tpl.n23", { defaultValue: "N2/N3 önerilir" }), Açıklama: t("bulk.tpl.accommodation", { defaultValue: "Konaklama açıklaması (oda tipi, yemek dahil mi)" }), Örnek: "2 gece çift kişilik oda + kahvaltı" },
+      { Kolon: "hotel_name",     Tip: _opt, Açıklama: t("bulk.tpl.hotelName", { defaultValue: "Otel adı (varsa)" }), Örnek: "Hotel Sultanahmet Palace" },
+      { Kolon: "hotel_stars",    Tip: _opt, Açıklama: t("bulk.tpl.hotelStars", { defaultValue: "Otel yıldızı (1-5 arası sayı)" }), Örnek: "4" },
+      { Kolon: "visa_notes",     Tip: _opt, Açıklama: t("bulk.tpl.visaNotes", { defaultValue: "Vize ile ilgili açıklama" }), Örnek: "Schengen vizesi şart" },
+      { Kolon: "title_{en,de,fr,es,ru,ar}",        Tip: _opt, Açıklama: t("bulk.tpl.titleMulti", { defaultValue: "Yurtdışı müşteri için tur başlığı çevirisi (boş bırakılabilir)" }), Örnek: "Cappadocia Balloon Tour" },
+      { Kolon: "destination_{en,de,fr,es,ru,ar}",  Tip: _opt, Açıklama: t("bulk.tpl.destMulti", { defaultValue: "Yurtdışı müşteri için destinasyon çevirisi" }), Örnek: "Cappadocia" },
+      { Kolon: "program_kisa_{en,de,fr,es,ru,ar}", Tip: _opt, Açıklama: t("bulk.tpl.programMulti", { defaultValue: "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)" }), Örnek: "04:30 pickup, 1-hour balloon flight..." },
+      // En altta KRİTİK uyarı: tarih notu
+      { Kolon: "—", Tip: _info, Açıklama: t("bulk.tpl.dateNotice", { defaultValue: "Tur TARİHLERİ, FİYAT ve KONTENJAN bu Excel'de YOKTUR. Tarihleri panelden 'Toplu Tarih Oluştur' ile ekleyin." }), Örnek: "" },
     ];
     const wsInstructions = XLSX.utils.json_to_sheet(instructions);
-    wsInstructions["!cols"] = [{ wch: 30 }, { wch: 18 }, { wch: 70 }, { wch: 50 }];
+    wsInstructions["!cols"] = [{ wch: 32 }, { wch: 14 }, { wch: 70 }, { wch: 50 }];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, t("bulk.importSheetName"));
     XLSX.utils.book_append_sheet(
       wb,
       wsInstructions,
-      t("bulkImport.tpl.sheetInstructions", { defaultValue: "Talimatlar" }),
+      t("bulk.tpl.sheetInstructions", { defaultValue: "Talimatlar" }),
     );
     XLSX.writeFile(wb, `${t("bulk.importFilename")}.xlsx`);
   };
@@ -462,7 +491,10 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
                 <li>{t("bulkImport.guide.step3", { defaultValue: "Dosyayı yükleyin — önizlemede kontrol edip onaylayın." })}</li>
               </ol>
               <p className="text-xs text-muted-foreground/80 pt-1 border-t border-border/40 mt-2">
-                💡 {t("bulkImport.guide.tip", { defaultValue: "Tur tarihleri ve fiyatlar her tur için ayrıca eklenir (Turlar sayfasından düzenleme veya \"Toplu Tarih Oluştur\")." })}
+                💡 {t("bulkImport.guide.tip", { defaultValue: "Bu Excel SADECE tur bilgisi içindir. Tur TARİHLERİ, FİYAT ve KONTENJAN panelden \"Toplu Tarih Oluştur\" ile eklenir." })}
+              </p>
+              <p className="text-xs text-muted-foreground/80">
+                🔒 {t("bulkImport.guide.readonly", { defaultValue: "__tour_id ve created_at sistem alanlarıdır — değiştirmeyin/silmeyin." })}
               </p>
               <p className="text-xs text-muted-foreground/80">
                 ✏️ {t("bulkImport.guide.alternative", { defaultValue: "Tek tur eklemek için \"Yeni Tur\" butonu daha hızlı olabilir." })}
