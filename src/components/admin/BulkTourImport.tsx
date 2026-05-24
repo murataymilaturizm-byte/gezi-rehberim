@@ -25,6 +25,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, Loader2, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { normalizeRow, COLUMN_ORDER } from "@/utils/excelColumnDictionary";
+import i18next from "i18next";
 
 // ETAP 1: Excel master-only format. Tarih/fiyat/kontenjan (tour_dates) YOK.
 // Export = Şablon = Import AYNI kolon yapısını paylaşır. TourFormDialog'un istediği
@@ -107,7 +109,7 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const rows: any[] = XLSX.utils.sheet_to_json(worksheet);
+        const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet);
 
         // Helper: opsiyonel string okuma (boş ise undefined)
         const _str = (v: any): string | undefined => {
@@ -124,19 +126,25 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         const _bool = (v: any): boolean | undefined => {
           if (v == null || v === "") return undefined;
           const s = String(v).trim().toLowerCase();
-          if (["evet", "yes", "true", "1", "var", "gerekli"].includes(s)) return true;
-          if (["hayır", "hayir", "no", "false", "0", "yok", "gerekmez"].includes(s)) return false;
+          if (["evet", "yes", "true", "1", "var", "gerekli", "ja", "oui", "sí", "si", "да", "نعم"].includes(s)) return true;
+          if (["hayır", "hayir", "no", "false", "0", "yok", "gerekmez", "nein", "non", "нет", "لا"].includes(s)) return false;
           return undefined;
         };
+
+        // ETAP 1.5a: Her satırı SÖZLÜK ile normalize et — yerel başlıklar (Programa breve,
+        // Kurzprogramm, Программа, …) teknik isimlere çözülür. Tanınmayan başlıklar
+        // toplanır ve parser sonunda kullanıcıya gösterilir.
+        const unknownHeaders = new Set<string>();
+        const rows = rawRows.map((rawRow) => normalizeRow(rawRow, unknownHeaders));
 
         const parsed: ParsedTour[] = rows.map((row, idx) => {
           const errors: string[] = [];
 
-          // Zorunlu alanlar
-          const title = String(row.title || row.Title || "").trim();
-          const destination = String(row.destination || row.Destination || "").trim();
-          const rawType = String(row.type || row.Type || "DAYTRIP").trim().toUpperCase();
-          const rawCurrency = String(row.currency || row.Currency || "TRY").trim().toUpperCase();
+          // Zorunlu alanlar — sözlük zaten teknik isme çözdüğü için tek lookup yeterli.
+          const title = String(row.title ?? "").trim();
+          const destination = String(row.destination ?? "").trim();
+          const rawType = String(row.type ?? "DAYTRIP").trim().toUpperCase();
+          const rawCurrency = String(row.currency ?? "TRY").trim().toUpperCase();
 
           if (!title) errors.push(t("bulkImport.errors.titleRequired"));
           if (!destination) errors.push(t("bulkImport.errors.destinationRequired"));
@@ -144,56 +152,53 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
           if (!VALID_CURRENCIES.includes(rawCurrency)) errors.push(`currency: "${rawCurrency}" ${t("bulk.invalidCurrency")}`);
 
           // Opsiyonel sayısal kontrol — geçersizse uyarı ama tur valid kalır
-          const hotelStars = _num(row.hotel_stars || row.HotelStars);
+          const hotelStars = _num(row.hotel_stars);
           if (hotelStars !== undefined && (hotelStars < 1 || hotelStars > 5)) {
             errors.push(t("bulkImport.errors.hotelStarsRange", { defaultValue: "Otel yıldızı 1-5 arasında olmalı" }));
           }
 
           return {
             rowIndex: idx + 2,
-            // Sistem alanı: __tour_id Excel'den okunur ama Etap 1'de YOKSAYILIR (insert akışı). Etap 2'de
-            // UPSERT eşleşmesi için saklanır. Acente silmemeli; silinirse satır yeni tur olarak insert edilir.
-            __tour_id: _str(row.__tour_id || row.tour_id),
+            // Sistem alanı: __tour_id Excel'den okunur ama Etap 1'de YOKSAYILIR (insert akışı).
+            // Etap 2'de UPSERT eşleşmesi için saklanır. Acente silmemeli; silinirse satır
+            // yeni tur olarak insert edilir.
+            __tour_id: _str(row.__tour_id),
             title,
             destination,
             type: VALID_TYPES.includes(rawType) ? (rawType as "DAYTRIP" | "N2" | "N3") : "DAYTRIP",
             currency: VALID_CURRENCIES.includes(rawCurrency) ? rawCurrency : "TRY",
-            program_url: _str(row.program_url || row.ProgramUrl),
-            program_kisa: _str(row.program_kisa || row.Program || row.Description),
-            // Madde 2: yeni opsiyonel alanlar
-            ulasim: _str(row.ulasim || row.Ulasim || row.Transport),
-            gezilecek_yerler: _str(row.gezilecek_yerler || row.Highlights || row.Places),
-            hareket_noktasi: _str(row.hareket_noktasi || row.MeetingPoint),
-            toplanma_saati: _str(row.toplanma_saati || row.MeetingTime),
-            konaklama: _str(row.konaklama || row.Accommodation),
-            hotel_name: _str(row.hotel_name || row.HotelName),
+            program_url: _str(row.program_url),
+            program_kisa: _str(row.program_kisa),
+            ulasim: _str(row.ulasim),
+            gezilecek_yerler: _str(row.gezilecek_yerler),
+            hareket_noktasi: _str(row.hareket_noktasi),
+            toplanma_saati: _str(row.toplanma_saati),
+            konaklama: _str(row.konaklama),
+            hotel_name: _str(row.hotel_name),
             hotel_stars: hotelStars && hotelStars >= 1 && hotelStars <= 5 ? hotelStars : undefined,
-            tur_kategorisi: _str(row.tur_kategorisi || row.Category),
-            tur_sure: _str(row.tur_sure || row.Duration),
-            min_pax: _num(row.min_pax || row.MinPax),
-            visa_required: _bool(row.visa_required || row.VisaRequired),
-            visa_notes: _str(row.visa_notes || row.VisaNotes),
-            // Çok dilli başlık (yurtdışı için)
-            title_en: _str(row.title_en || row.TitleEN),
-            title_de: _str(row.title_de || row.TitleDE),
-            title_fr: _str(row.title_fr || row.TitleFR),
-            title_es: _str(row.title_es || row.TitleES),
-            title_ru: _str(row.title_ru || row.TitleRU),
-            title_ar: _str(row.title_ar || row.TitleAR),
-            // Çok dilli destinasyon
-            destination_en: _str(row.destination_en || row.DestinationEN),
-            destination_de: _str(row.destination_de || row.DestinationDE),
-            destination_fr: _str(row.destination_fr || row.DestinationFR),
-            destination_es: _str(row.destination_es || row.DestinationES),
-            destination_ru: _str(row.destination_ru || row.DestinationRU),
-            destination_ar: _str(row.destination_ar || row.DestinationAR),
-            // Çok dilli program
-            program_kisa_en: _str(row.program_kisa_en || row.ProgramEN),
-            program_kisa_de: _str(row.program_kisa_de || row.ProgramDE),
-            program_kisa_fr: _str(row.program_kisa_fr || row.ProgramFR),
-            program_kisa_es: _str(row.program_kisa_es || row.ProgramES),
-            program_kisa_ru: _str(row.program_kisa_ru || row.ProgramRU),
-            program_kisa_ar: _str(row.program_kisa_ar || row.ProgramAR),
+            tur_kategorisi: _str(row.tur_kategorisi),
+            tur_sure: _str(row.tur_sure),
+            min_pax: _num(row.min_pax),
+            visa_required: _bool(row.visa_required),
+            visa_notes: _str(row.visa_notes),
+            title_en: _str(row.title_en),
+            title_de: _str(row.title_de),
+            title_fr: _str(row.title_fr),
+            title_es: _str(row.title_es),
+            title_ru: _str(row.title_ru),
+            title_ar: _str(row.title_ar),
+            destination_en: _str(row.destination_en),
+            destination_de: _str(row.destination_de),
+            destination_fr: _str(row.destination_fr),
+            destination_es: _str(row.destination_es),
+            destination_ru: _str(row.destination_ru),
+            destination_ar: _str(row.destination_ar),
+            program_kisa_en: _str(row.program_kisa_en),
+            program_kisa_de: _str(row.program_kisa_de),
+            program_kisa_fr: _str(row.program_kisa_fr),
+            program_kisa_es: _str(row.program_kisa_es),
+            program_kisa_ru: _str(row.program_kisa_ru),
+            program_kisa_ar: _str(row.program_kisa_ar),
             errors,
             isValid: errors.length === 0,
           };
@@ -205,6 +210,20 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
           title: t("common.success"),
           description: t("bulkImport.parsed", { valid: validCount, total: parsed.length }),
         });
+        // ETAP 1.5a: Tanınmayan başlıkları ayrı bir uyarı toast'ında göster — acente
+        // yazım hatasını fark etsin. (Sözlükte yoksa sessizce yoksayma yerine görünür uyarı.)
+        if (unknownHeaders.size > 0) {
+          const list = [...unknownHeaders].join(", ");
+          toast({
+            title: t("bulkImport.warnUnknownColumns.title", { defaultValue: "Tanınmayan kolonlar" }),
+            description: t("bulkImport.warnUnknownColumns.body", {
+              defaultValue: "Şu kolonlar tanınmadı ve yoksayıldı: {{list}}",
+              list,
+            }),
+            variant: "default",
+            duration: 8000,
+          });
+        }
       } catch (err: any) {
         console.error(err);
         toast({ title: t("common.error"), description: t("bulkImport.errors.parseError"), variant: "destructive" });
@@ -292,23 +311,49 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
 
   // ETAP 1: Master-only şablon — TARİH YOK.
   // Format birebir excelExporter.ts:exportToursToExcel ile aynı kolon setini paylaşır.
-  // Acente "Excel'e İndir" derse mevcut turlar bu formatta döker; "Şablonu İndir" derse
-  // aşağıdaki 3 örnek satır boş gelir. AYNI dosya = AYNI parser.
-  //
-  // __tour_id ve created_at sistem kolonları — şablonda örnek satırlar için BOŞ. Export'tan
-  // gelen dosyada bu alanlar dolu olur (Etap 2'de UPSERT için kullanılacak).
+  // ETAP 1.5a: Görünür başlıklar i18n'den (bulk.col.*) acentenin panel diline göre
+  // yerelleşir; sistem kolonları (__tour_id, created_at) teknik kalır. Import sözlüğü
+  // bağımsız (excelColumnDictionary.ts), bu i18n'den canlı türetilmez.
   const downloadTemplate = () => {
+    // Görünür başlık çözücüsü — exporter ile aynı sözleşme.
+    const _SYSTEM_KEYS = new Set(["__tour_id", "created_at"]);
+    const _TR: Record<string, string> = {
+      title: "Tur Adı", destination: "Destinasyon", type: "Tip", currency: "Para Birimi",
+      min_pax: "Min. Kişi", visa_required: "Vize Gerekli", program_url: "Program URL",
+      program_kisa: "Kısa Program", hareket_noktasi: "Hareket Noktası",
+      toplanma_saati: "Toplanma Saati", tur_sure: "Tur Süresi", tur_kategorisi: "Tur Kategorisi",
+      gezilecek_yerler: "Gezilecek Yerler", ulasim: "Ulaşım", konaklama: "Konaklama",
+      hotel_name: "Otel Adı", hotel_stars: "Otel Yıldızı", visa_notes: "Vize Notları",
+      title_en: "Tur Adı (EN)", title_de: "Tur Adı (DE)", title_fr: "Tur Adı (FR)",
+      title_es: "Tur Adı (ES)", title_ru: "Tur Adı (RU)", title_ar: "Tur Adı (AR)",
+      destination_en: "Destinasyon (EN)", destination_de: "Destinasyon (DE)",
+      destination_fr: "Destinasyon (FR)", destination_es: "Destinasyon (ES)",
+      destination_ru: "Destinasyon (RU)", destination_ar: "Destinasyon (AR)",
+      program_kisa_en: "Kısa Program (EN)", program_kisa_de: "Kısa Program (DE)",
+      program_kisa_fr: "Kısa Program (FR)", program_kisa_es: "Kısa Program (ES)",
+      program_kisa_ru: "Kısa Program (RU)", program_kisa_ar: "Kısa Program (AR)",
+    };
+    const _h = (tech: string): string => {
+      if (_SYSTEM_KEYS.has(tech)) return tech;
+      return i18next.t(`bulk.col.${tech}`, { defaultValue: _TR[tech] ?? tech });
+    };
+    // Teknik değer setlerini sözlük order'ında satıra çevir.
+    const _row = (vals: Record<string, any>): Record<string, any> => {
+      const out: Record<string, any> = {};
+      for (const tech of COLUMN_ORDER) {
+        out[_h(tech)] = vals[tech] ?? "";
+      }
+      return out;
+    };
+
     const template = [
-      {
-        // === SİSTEM (boş bırakılır — yeni tur için) ===
+      _row({
         __tour_id: "",
         created_at: "",
-        // === ZORUNLU ===
         title: "Kapadokya Balon Turu",
         destination: "Kapadokya",
         type: "DAYTRIP",
         currency: "TRY",
-        // === MASTER DETAY ===
         min_pax: 2,
         visa_required: "hayır",
         program_url: "",
@@ -323,35 +368,27 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         hotel_name: "",
         hotel_stars: "",
         visa_notes: "",
-        // === ÇOK DİLLİ BAŞLIK ===
         title_en: "Cappadocia Balloon Tour",
         title_de: "Kappadokien Ballonfahrt",
         title_fr: "Tour en montgolfière en Cappadoce",
         title_es: "Tour en globo por Capadocia",
         title_ru: "Тур на воздушном шаре в Каппадокии",
         title_ar: "جولة بالمنطاد في كابادوكيا",
-        // === ÇOK DİLLİ DESTİNASYON ===
         destination_en: "Cappadocia",
         destination_de: "Kappadokien",
         destination_fr: "Cappadoce",
         destination_es: "Capadocia",
         destination_ru: "Каппадокия",
         destination_ar: "كابادوكيا",
-        // === ÇOK DİLLİ PROGRAM ===
         program_kisa_en: "04:30 hotel pickup, 1-hour balloon flight, breakfast, transfer back",
-        program_kisa_de: "", program_kisa_fr: "", program_kisa_es: "",
-        program_kisa_ru: "", program_kisa_ar: "",
-      },
-      {
-        __tour_id: "",
-        created_at: "",
+      }),
+      _row({
         title: "İstanbul 2 Gece Klasik Tur",
         destination: "İstanbul",
         type: "N2",
         currency: "USD",
         min_pax: 1,
         visa_required: "hayır",
-        program_url: "",
         program_kisa: "1. gün: Sultanahmet, Aya Sofya. 2. gün: Topkapı, Kapalı Çarşı. 3. gün: Boğaz turu, transfer",
         hareket_noktasi: "Havaalanı transfer dahil",
         toplanma_saati: "10:00",
@@ -362,44 +399,16 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         konaklama: "2 gece çift kişilik oda + kahvaltı",
         hotel_name: "Hotel Sultanahmet Palace",
         hotel_stars: 4,
-        visa_notes: "",
         title_en: "Istanbul 2-Night Classic Tour",
         title_de: "Istanbul 2-Nächte Klassische Tour",
-        title_fr: "", title_es: "", title_ru: "", title_ar: "",
         destination_en: "Istanbul",
-        destination_de: "", destination_fr: "", destination_es: "",
-        destination_ru: "", destination_ar: "",
-        program_kisa_en: "", program_kisa_de: "", program_kisa_fr: "",
-        program_kisa_es: "", program_kisa_ru: "", program_kisa_ar: "",
-      },
-      {
-        // Minimum örnek — sadece zorunlu alanlar
-        __tour_id: "",
-        created_at: "",
+      }),
+      _row({
         title: "Pamukkale Günübirlik",
         destination: "Pamukkale",
         type: "DAYTRIP",
         currency: "TRY",
-        min_pax: "",
-        visa_required: "",
-        program_url: "",
-        program_kisa: "",
-        hareket_noktasi: "",
-        toplanma_saati: "",
-        tur_sure: "",
-        tur_kategorisi: "",
-        gezilecek_yerler: "",
-        ulasim: "",
-        konaklama: "",
-        hotel_name: "",
-        hotel_stars: "",
-        visa_notes: "",
-        title_en: "", title_de: "", title_fr: "", title_es: "", title_ru: "", title_ar: "",
-        destination_en: "", destination_de: "", destination_fr: "",
-        destination_es: "", destination_ru: "", destination_ar: "",
-        program_kisa_en: "", program_kisa_de: "", program_kisa_fr: "",
-        program_kisa_es: "", program_kisa_ru: "", program_kisa_ar: "",
-      },
+      }),
     ];
 
     const ws = XLSX.utils.json_to_sheet(template);

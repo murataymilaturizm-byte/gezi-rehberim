@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import { tr, enUS, de, fr, es, ru, ar } from 'date-fns/locale';
 import i18next from 'i18next';
+import { COLUMN_ORDER } from './excelColumnDictionary';
 
 const getDateLocale = () => {
   const lang = i18next.language || 'tr';
@@ -151,43 +152,68 @@ export const exportToursToExcel = (tours: Tour[]) => {
   // (import parser her iki dilde de "evet/hayır/yes/no/true/false" anlıyor).
   const _yesNo = (v?: boolean | null): string => (v === true ? "evet" : v === false ? "hayır" : "");
 
-  // Master-only veri: 1 satır = 1 tur. tour_dates burada KULLANILMAZ.
-  const data = tours.map((tour) => ({
-    // === SİSTEM (SALT-OKUNUR — değiştirmeyin) ===
-    __tour_id: tour.id,
-    created_at: tour.created_at ? format(new Date(tour.created_at), "yyyy-MM-dd", { locale }) : "",
-    // === ZORUNLU ===
-    title: tour.title ?? "",
-    destination: tour.destination ?? "",
-    type: tour.type ?? "DAYTRIP",
-    currency: tour.currency ?? "TRY",
-    // === MASTER DETAY ===
-    min_pax: tour.min_pax ?? 1,
-    visa_required: _yesNo(tour.visa_required),
-    program_url: tour.program_url ?? "",
-    program_kisa: tour.program_kisa ?? "",
-    hareket_noktasi: tour.hareket_noktasi ?? "",
-    toplanma_saati: tour.toplanma_saati ?? "",
-    tur_sure: tour.tur_sure ?? "",
-    tur_kategorisi: tour.tur_kategorisi ?? "",
-    gezilecek_yerler: tour.gezilecek_yerler ?? "",
-    ulasim: tour.ulasim ?? "",
-    konaklama: tour.konaklama ?? "",
-    hotel_name: tour.hotel_name ?? "",
-    hotel_stars: tour.hotel_stars ?? "",
-    visa_notes: tour.visa_notes ?? "",
-    // === ÇOK DİLLİ BAŞLIK ===
-    title_en: tour.title_en ?? "", title_de: tour.title_de ?? "", title_fr: tour.title_fr ?? "",
-    title_es: tour.title_es ?? "", title_ru: tour.title_ru ?? "", title_ar: tour.title_ar ?? "",
-    // === ÇOK DİLLİ DESTİNASYON ===
-    destination_en: tour.destination_en ?? "", destination_de: tour.destination_de ?? "",
-    destination_fr: tour.destination_fr ?? "", destination_es: tour.destination_es ?? "",
-    destination_ru: tour.destination_ru ?? "", destination_ar: tour.destination_ar ?? "",
-    // === ÇOK DİLLİ PROGRAM ===
-    program_kisa_en: tour.program_kisa_en ?? "", program_kisa_de: tour.program_kisa_de ?? "",
-    program_kisa_fr: tour.program_kisa_fr ?? "", program_kisa_es: tour.program_kisa_es ?? "",
-    program_kisa_ru: tour.program_kisa_ru ?? "", program_kisa_ar: tour.program_kisa_ar ?? "",
-  }));
+  // Görünür başlık çözücüsü:
+  //   - Sistem kolonları (__tour_id, created_at) TEKNİK kalır (i18n YOK).
+  //   - Diğer kolonlar acentenin GÜNCEL panel diline göre yerelleşir.
+  //   - defaultValue TR — i18n eksikse Türkçe fallback.
+  const _SYSTEM_KEYS = new Set(["__tour_id", "created_at"]);
+  const _TR_DEFAULTS: Record<string, string> = {
+    title: "Tur Adı", destination: "Destinasyon", type: "Tip", currency: "Para Birimi",
+    min_pax: "Min. Kişi", visa_required: "Vize Gerekli", program_url: "Program URL",
+    program_kisa: "Kısa Program", hareket_noktasi: "Hareket Noktası",
+    toplanma_saati: "Toplanma Saati", tur_sure: "Tur Süresi", tur_kategorisi: "Tur Kategorisi",
+    gezilecek_yerler: "Gezilecek Yerler", ulasim: "Ulaşım", konaklama: "Konaklama",
+    hotel_name: "Otel Adı", hotel_stars: "Otel Yıldızı", visa_notes: "Vize Notları",
+    title_en: "Tur Adı (EN)", title_de: "Tur Adı (DE)", title_fr: "Tur Adı (FR)",
+    title_es: "Tur Adı (ES)", title_ru: "Tur Adı (RU)", title_ar: "Tur Adı (AR)",
+    destination_en: "Destinasyon (EN)", destination_de: "Destinasyon (DE)",
+    destination_fr: "Destinasyon (FR)", destination_es: "Destinasyon (ES)",
+    destination_ru: "Destinasyon (RU)", destination_ar: "Destinasyon (AR)",
+    program_kisa_en: "Kısa Program (EN)", program_kisa_de: "Kısa Program (DE)",
+    program_kisa_fr: "Kısa Program (FR)", program_kisa_es: "Kısa Program (ES)",
+    program_kisa_ru: "Kısa Program (RU)", program_kisa_ar: "Kısa Program (AR)",
+  };
+  const _h = (tech: string): string => {
+    if (_SYSTEM_KEYS.has(tech)) return tech;  // __tour_id, created_at teknik kalır
+    return i18next.t(`bulk.col.${tech}`, { defaultValue: _TR_DEFAULTS[tech] ?? tech });
+  };
+
+  // Tur master değerini teknik anahtardan al (yerelleşmemiş — DB değeri).
+  const _val = (tour: Tour, tech: string): any => {
+    switch (tech) {
+      case "__tour_id": return tour.id;
+      case "created_at": return tour.created_at ? format(new Date(tour.created_at), "yyyy-MM-dd", { locale }) : "";
+      case "title": return tour.title ?? "";
+      case "destination": return tour.destination ?? "";
+      case "type": return tour.type ?? "DAYTRIP";
+      case "currency": return tour.currency ?? "TRY";
+      case "min_pax": return tour.min_pax ?? 1;
+      case "visa_required": return _yesNo(tour.visa_required);
+      case "program_url": return tour.program_url ?? "";
+      case "program_kisa": return tour.program_kisa ?? "";
+      case "hareket_noktasi": return tour.hareket_noktasi ?? "";
+      case "toplanma_saati": return tour.toplanma_saati ?? "";
+      case "tur_sure": return tour.tur_sure ?? "";
+      case "tur_kategorisi": return tour.tur_kategorisi ?? "";
+      case "gezilecek_yerler": return tour.gezilecek_yerler ?? "";
+      case "ulasim": return tour.ulasim ?? "";
+      case "konaklama": return tour.konaklama ?? "";
+      case "hotel_name": return tour.hotel_name ?? "";
+      case "hotel_stars": return tour.hotel_stars ?? "";
+      case "visa_notes": return tour.visa_notes ?? "";
+      default: return (tour as any)[tech] ?? "";
+    }
+  };
+
+  // Sabit teknik sıra (COLUMN_ORDER) — sadece görünür başlık yerelleşir.
+  // 1 satır = 1 TUR. tour_dates KULLANILMAZ.
+  const data = tours.map((tour) => {
+    const row: Record<string, any> = {};
+    for (const tech of COLUMN_ORDER) {
+      row[_h(tech)] = _val(tour, tech);
+    }
+    return row;
+  });
 
   const worksheet = XLSX.utils.json_to_sheet(data);
   // Sütun genişlikleri — okunabilirlik için ölçekli
