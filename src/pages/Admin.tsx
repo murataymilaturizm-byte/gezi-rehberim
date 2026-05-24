@@ -64,11 +64,11 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { WhatsAppBusinessManagement } from "@/components/WhatsAppBusinessManagement";
 import { QuotaWarningBanner } from "@/components/QuotaWarningBanner";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
-import { BulkTourImport } from "@/components/admin/BulkTourImport";
+import { BulkTourImport, downloadTourImportTemplate } from "@/components/admin/BulkTourImport";
 import { NotificationCenter } from "@/components/admin/NotificationCenter";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { OnboardingTour, tourStorageKey } from "@/components/admin/OnboardingTour";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, FileText } from "lucide-react";
 
 const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test", "language-stats", "whatsapp-logs"] as const;
 
@@ -890,25 +890,42 @@ const Admin = () => {
                     <div className="flex flex-wrap gap-2">
                       {activeTab === "tours" ? (
                         <>
+                          {/* 📥 Mevcut turları Excel olarak indir (her satır = 1 tur+tarih, sistem alanları dolu) */}
                           <Button
                             onClick={() => exportToursToExcel(tours)}
                             variant="outline"
                             size="sm"
                             disabled={tours.length === 0}
+                            title={t("admin.tours.exportHint", { defaultValue: "Mevcut turlarınızı Excel'e indirir" })}
                           >
                             <Download className="w-4 h-4 mr-1" />
                             <span className="hidden sm:inline">{t("admin.tours.export")}</span>
                             <span className="sm:hidden">Excel</span>
                           </Button>
+                          {/* 📄 Boş şablon indir — yeni tur eklemek için. Dialog İÇİNDE değil, görünür yerde. */}
+                          {!isSuperAdmin && userAgencyId && (
+                            <Button
+                              onClick={() => downloadTourImportTemplate()}
+                              variant="outline"
+                              size="sm"
+                              title={t("admin.tours.downloadTemplateHint", { defaultValue: "Yeni tur eklemek için boş şablon (örnek satırlarla)" })}
+                            >
+                              <FileText className="w-4 h-4 mr-1" />
+                              <span className="hidden sm:inline">{t("admin.tours.downloadTemplate", { defaultValue: "Boş Şablon İndir" })}</span>
+                              <span className="sm:hidden">{t("admin.tours.downloadTemplateShort", { defaultValue: "Şablon" })}</span>
+                            </Button>
+                          )}
+                          {/* 📤 Excel'den toplu içe aktar (önizleme + AI çevirisi) */}
                           {!isSuperAdmin && userAgencyId && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => setBulkImportOpen(true)}
+                              title={t("admin.tours.bulkImportHint", { defaultValue: "Doldurduğunuz Excel'i yükleyin" })}
                             >
                               <FileSpreadsheet className="w-4 h-4 mr-1" />
                               <span className="hidden sm:inline">{t("tours.bulkImport")}</span>
-                              <span className="sm:hidden">İçe Aktar</span>
+                              <span className="sm:hidden">{t("admin.tours.bulkImportShort", { defaultValue: "İçe Aktar" })}</span>
                             </Button>
                           )}
                           <Button
