@@ -1944,6 +1944,16 @@
       "tip": "This Excel is for TOUR INFO ONLY. Tour DATES, PRICES and QUOTA are added from the panel via \"Bulk Date Generator\".",
       "readonly": "__tour_id and created_at are system fields — DO NOT edit or delete.",
       "alternative": "For a single tour, \"New Tour\" button may be faster."
+    },
+    "translate": {
+      "checkboxLabel": "🌐 Auto-translate with AI",
+      "checkboxHint": "Translations target the languages enabled in your plan ({{count}} languages).",
+      "noTargetLangs": "No target languages — please enable languages in Language Management first.",
+      "tooManyToursHint": "For {{count}}+ tours, translate from the panel one by one.",
+      "progress": "Translating: {{done}}/{{total}}",
+      "toastSuccess": "{{tours}} tour(s) added, translations filled by AI.",
+      "toastPartial": "{{tours}} tour(s) added; {{missing}} translation(s) missing — complete them from the panel.",
+      "toastFail": "{{tours}} tour(s) added; translation failed. You can translate later from the panel."
     }
   },
   "greetings": {

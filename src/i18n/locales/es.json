@@ -1978,6 +1978,16 @@
       "tip": "Este Excel contiene SOLO información del tour. Las FECHAS, PRECIOS y CUPOS se añaden desde el panel mediante \"Generador masivo de fechas\".",
       "readonly": "__tour_id y created_at son campos del sistema — NO editar ni eliminar.",
       "alternative": "Para un solo tour, el botón \"Nuevo Tour\" puede ser más rápido."
+    },
+    "translate": {
+      "checkboxLabel": "🌐 Traducir automáticamente con IA",
+      "checkboxHint": "Se traduce a los idiomas activos en su plan ({{count}} idiomas).",
+      "noTargetLangs": "Sin idiomas objetivo — active idiomas en Gestión de Idiomas primero.",
+      "tooManyToursHint": "Para {{count}}+ tours, traduzca uno por uno desde el panel.",
+      "progress": "Traduciendo: {{done}}/{{total}}",
+      "toastSuccess": "{{tours}} tour(s) añadido(s), traducciones completadas por IA.",
+      "toastPartial": "{{tours}} tour(s) añadido(s); {{missing}} traducción(es) faltante(s) — complete desde el panel.",
+      "toastFail": "{{tours}} tour(s) añadido(s); traducción fallida. Puede traducir más tarde desde el panel."
     }
   },
   "greetings": {

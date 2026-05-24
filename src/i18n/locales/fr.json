@@ -1944,6 +1944,16 @@
       "tip": "Cet Excel contient UNIQUEMENT les infos du circuit. Les DATES, PRIX et QUOTAS s'ajoutent depuis le panneau via \"Générateur de dates en masse\".",
       "readonly": "__tour_id et created_at sont des champs système — ne PAS modifier ni supprimer.",
       "alternative": "Pour un seul circuit, le bouton \"Nouveau circuit\" peut être plus rapide."
+    },
+    "translate": {
+      "checkboxLabel": "🌐 Traduction automatique par IA",
+      "checkboxHint": "Traduction vers les langues activées dans votre forfait ({{count}} langues).",
+      "noTargetLangs": "Aucune langue cible — activez d'abord des langues dans Gestion des langues.",
+      "tooManyToursHint": "Pour {{count}}+ circuits, traduisez un par un depuis le panneau.",
+      "progress": "Traduction : {{done}}/{{total}}",
+      "toastSuccess": "{{tours}} circuit(s) ajouté(s), traductions remplies par l'IA.",
+      "toastPartial": "{{tours}} circuit(s) ajouté(s) ; {{missing}} traduction(s) manquante(s) — complétez depuis le panneau.",
+      "toastFail": "{{tours}} circuit(s) ajouté(s) ; échec de la traduction. Vous pouvez traduire plus tard depuis le panneau."
     }
   },
   "greetings": {

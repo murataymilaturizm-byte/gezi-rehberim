@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { useTranslation } from "react-i18next";
 import {
@@ -23,10 +23,49 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, Loader2, Info } from "lucide-react";
+import { Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, Loader2, Info, Languages } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { normalizeRow, COLUMN_ORDER } from "@/utils/excelColumnDictionary";
+import { cn } from "@/lib/utils";
 import i18next from "i18next";
+
+// ETAP 1.5b: AI çeviri çağrısında concurrency=3 paralelleştirme.
+// Anthropic Sonnet 4.5 standart tier rate-limit'i için muhafazakar tavan.
+const TRANSLATE_CONCURRENCY = 3;
+// 100 tur tavanı: 100 × ~$0.0155 = $1.55 — kabul edilebilir. Üstündeyse checkbox disable.
+const TRANSLATE_MAX_ROWS = 100;
+const TRANSLATE_RETRY = 1; // AI fail durumunda 1 retry
+const SOURCE_LANG = "tr";
+
+/** Basit promise pool — concurrency-limited paralel çalıştırma. */
+async function runWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, idx: number) => Promise<R>,
+  onProgress?: (done: number, total: number) => void,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let cursor = 0;
+  let done = 0;
+  const workerCount = Math.min(limit, items.length);
+  const workers = Array.from({ length: workerCount }, async () => {
+    while (cursor < items.length) {
+      const idx = cursor++;
+      try {
+        results[idx] = await worker(items[idx], idx);
+      } catch (err) {
+        // Worker hataları yutulur; çağıran sayım yapsın
+        results[idx] = undefined as any;
+      }
+      done++;
+      onProgress?.(done, items.length);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
 
 // ETAP 1: Excel master-only format. Tarih/fiyat/kontenjan (tour_dates) YOK.
 // Export = Şablon = Import AYNI kolon yapısını paylaşır. TourFormDialog'un istediği
@@ -97,6 +136,35 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
   const isMobile = useIsMobile();
   const [parsedTours, setParsedTours] = useState<ParsedTour[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // ETAP 1.5b: AI çeviri akışı
+  const [autoTranslate, setAutoTranslate] = useState(false);
+  const [targetLanguages, setTargetLanguages] = useState<string[]>([]);  // enabled_languages - "tr"
+  const [translateProgress, setTranslateProgress] = useState<{ done: number; total: number } | null>(null);
+
+  // enabled_languages'ı dialog açılırken acente kaydından çek.
+  // Prop drilling yerine içeride fetch — BulkTourImport zaten agencyId'yi alıyor,
+  // self-contained kalıyor; Admin.tsx'i değiştirmeye gerek yok.
+  useEffect(() => {
+    if (!open || !agencyId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("agencies")
+        .select("enabled_languages")
+        .eq("id", agencyId)
+        .single();
+      if (cancelled) return;
+      if (error || !data) {
+        setTargetLanguages([]);
+        return;
+      }
+      const enabled = (Array.isArray(data.enabled_languages) ? data.enabled_languages : []) as string[];
+      // Source dil ("tr") hedeften çıkar. Boşsa target=[] → checkbox disabled.
+      setTargetLanguages(enabled.filter((l) => l && l !== SOURCE_LANG));
+    })();
+    return () => { cancelled = true; };
+  }, [open, agencyId]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -287,12 +355,139 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         program_kisa_ar: p.program_kisa_ar ?? null,
       }));
 
-      const { error } = await supabase.from("tours").insert(rows);
+      // INSERT'ten dönen kayıtların id+title+destination+program_kisa'sını al — çeviri için lazım.
+      const { data: insertedRows, error } = await supabase
+        .from("tours")
+        .insert(rows)
+        .select("id, title, destination, program_kisa");
       if (error) throw error;
 
       supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId } }).catch(() => {});
 
-      toast({ title: t("common.success"), description: t("bulkImport.success", { count: rows.length }) });
+      // ETAP 1.5b: AI ÇEVİRİ AKIŞI (best-effort, opsiyonel)
+      // Kural: tur INSERT başarılı ve commit edildi (yukarıda). Çeviri buradan SONRA gelir;
+      // çeviri fail olursa turlar zaten DB'de — kayıp olmaz.
+      // Koşullar: checkbox açık + target dil var + tur sayısı ≤ tavan + insertedRows dolu.
+      const _shouldTranslate =
+        autoTranslate &&
+        targetLanguages.length > 0 &&
+        valid.length <= TRANSLATE_MAX_ROWS &&
+        Array.isArray(insertedRows) && insertedRows.length > 0;
+
+      let _translatedCount = 0;
+      let _failedCount = 0;
+
+      if (_shouldTranslate) {
+        // Sadece source alanı (TR title/destination/program_kisa) dolu olan turları çevir.
+        const _candidates = (insertedRows as any[]).filter(
+          (r) => (r.title || r.destination || r.program_kisa),
+        );
+
+        if (_candidates.length > 0) {
+          setTranslateProgress({ done: 0, total: _candidates.length });
+
+          await runWithConcurrency(
+            _candidates,
+            TRANSLATE_CONCURRENCY,
+            async (row) => {
+              // batchMode=true → tek call'da tüm targetLanguages için JSON.
+              // 1 retry: AI ya da network fail → bir kez tekrar dene.
+              let lastErr: any = null;
+              for (let attempt = 0; attempt <= TRANSLATE_RETRY; attempt++) {
+                try {
+                  const { data, error: invErr } = await supabase.functions.invoke("translate-tour", {
+                    body: {
+                      title: row.title || "",
+                      destination: row.destination || "",
+                      program_kisa: row.program_kisa || "",
+                      sourceLanguage: SOURCE_LANG,
+                      targetLanguages,
+                      batchMode: true,
+                    },
+                  });
+                  if (invErr) throw invErr;
+                  const translations = (data?.translations || []) as Array<{
+                    language: string;
+                    title?: string;
+                    destination?: string;
+                    program_kisa?: string;
+                  }>;
+                  if (translations.length === 0) {
+                    // AI fail veya boş çıktı — best-effort: bu tur çevirisiz kalır.
+                    _failedCount++;
+                    return;
+                  }
+                  // Çeviri sonucu → ilgili tur'un title_xx / destination_xx / program_kisa_xx UPDATE.
+                  const _updatePayload: Record<string, any> = {};
+                  for (const tr of translations) {
+                    if (!tr.language) continue;
+                    if (tr.title) _updatePayload[`title_${tr.language}`] = tr.title;
+                    if (tr.destination) _updatePayload[`destination_${tr.language}`] = tr.destination;
+                    if (tr.program_kisa) _updatePayload[`program_kisa_${tr.language}`] = tr.program_kisa;
+                  }
+                  if (Object.keys(_updatePayload).length === 0) {
+                    _failedCount++;
+                    return;
+                  }
+                  const { error: updErr } = await supabase
+                    .from("tours")
+                    .update(_updatePayload)
+                    .eq("id", row.id)
+                    .eq("agency_id", agencyId);   // defansif: cross-agency yazma engeli
+                  if (updErr) throw updErr;
+                  _translatedCount++;
+                  return;
+                } catch (err) {
+                  lastErr = err;
+                  // retry'a giderse continue; son denemede aşağı düş
+                }
+              }
+              // Tüm retry'lar tükendi → best-effort fail
+              console.warn("[bulk-import] translate failed for tour", row.id, lastErr);
+              _failedCount++;
+            },
+            (done, total) => setTranslateProgress({ done, total }),
+          );
+
+          // Çeviriler bitti → cache invalidate (yeni title_xx vb. bot tarafına gelsin).
+          supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId } }).catch(() => {});
+        }
+      }
+
+      // ─── Sonuç toast'ları (best-effort davranış) ─────────────────────────────
+      if (_shouldTranslate) {
+        if (_failedCount === 0 && _translatedCount > 0) {
+          toast({
+            title: t("common.success"),
+            description: t("bulkImport.translate.toastSuccess", {
+              defaultValue: "{{tours}} tur eklendi, çevirileri AI ile dolduruldu.",
+              tours: rows.length,
+            }),
+          });
+        } else if (_translatedCount > 0 && _failedCount > 0) {
+          toast({
+            title: t("common.success"),
+            description: t("bulkImport.translate.toastPartial", {
+              defaultValue: "{{tours}} tur eklendi, {{missing}} çeviri eksik kaldı — panelden tek tek tamamlayabilirsiniz.",
+              tours: rows.length,
+              missing: _failedCount,
+            }),
+            duration: 8000,
+          });
+        } else {
+          toast({
+            title: t("common.success"),
+            description: t("bulkImport.translate.toastFail", {
+              defaultValue: "{{tours}} tur eklendi, çeviri başarısız oldu. Sonra panelden tek tek çevirebilirsiniz.",
+              tours: rows.length,
+            }),
+            duration: 8000,
+          });
+        }
+      } else {
+        toast({ title: t("common.success"), description: t("bulkImport.success", { count: rows.length }) });
+      }
+      setTranslateProgress(null);
       onSuccess();
       onClose();
       setParsedTours([]);
@@ -337,10 +532,15 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
       if (_SYSTEM_KEYS.has(tech)) return tech;
       return i18next.t(`bulk.col.${tech}`, { defaultValue: _TR[tech] ?? tech });
     };
+    // ETAP 1.5b: Şablondan 18 çok dilli kolon ÇIKARILDI. Acente AI checkbox'ı ile
+    // otomatik doldurur; manuel istiyorsa TourFormDialog'tan tek tek girer.
+    // Parser ve EXPORT 38 kolonu tanımaya/üretmeye devam eder — sadece ŞABLON sade.
+    const _MULTI_LANG = /^(title|destination|program_kisa)_(en|de|fr|es|ru|ar)$/;
+    const _TEMPLATE_ORDER = COLUMN_ORDER.filter((c) => !_MULTI_LANG.test(c));
     // Teknik değer setlerini sözlük order'ında satıra çevir.
     const _row = (vals: Record<string, any>): Record<string, any> => {
       const out: Record<string, any> = {};
-      for (const tech of COLUMN_ORDER) {
+      for (const tech of _TEMPLATE_ORDER) {
         out[_h(tech)] = vals[tech] ?? "";
       }
       return out;
@@ -412,8 +612,8 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
     ];
 
     const ws = XLSX.utils.json_to_sheet(template);
-    // Sütun genişlikleri — sistem alanları en başta, sonra zorunlular, sonra master detay,
-    // sonra çok dilli alanlar. Sıra excelExporter.ts:exportToursToExcel ile birebir aynı.
+    // ETAP 1.5b: Şablon 20 kolon (18 çok dilli kolon çıkarıldı).
+    // Sıra: sistem (2) + zorunlu (4) + master detay (14).
     ws["!cols"] = [
       { wch: 38 }, { wch: 12 },                            // __tour_id, created_at
       { wch: 30 }, { wch: 18 }, { wch: 10 }, { wch: 10 },  // title, destination, type, currency
@@ -421,9 +621,6 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
       { wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 16 },  // hareket_noktasi, toplanma_saati, tur_sure, tur_kategorisi
       { wch: 40 }, { wch: 22 }, { wch: 30 }, { wch: 22 },  // gezilecek_yerler, ulasim, konaklama, hotel_name
       { wch: 10 }, { wch: 30 },                            // hotel_stars, visa_notes
-      { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, // title_xx
-      { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, // destination_xx
-      { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, // program_kisa_xx
     ];
 
     // Talimatlar sheet'i — yerel dilde açıklama. Kolon başlıkları teknik (snake_case)
@@ -453,9 +650,9 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
       { Kolon: "hotel_name",     Tip: _opt, Açıklama: t("bulk.tpl.hotelName", { defaultValue: "Otel adı (varsa)" }), Örnek: "Hotel Sultanahmet Palace" },
       { Kolon: "hotel_stars",    Tip: _opt, Açıklama: t("bulk.tpl.hotelStars", { defaultValue: "Otel yıldızı (1-5 arası sayı)" }), Örnek: "4" },
       { Kolon: "visa_notes",     Tip: _opt, Açıklama: t("bulk.tpl.visaNotes", { defaultValue: "Vize ile ilgili açıklama" }), Örnek: "Schengen vizesi şart" },
-      { Kolon: "title_{en,de,fr,es,ru,ar}",        Tip: _opt, Açıklama: t("bulk.tpl.titleMulti", { defaultValue: "Yurtdışı müşteri için tur başlığı çevirisi (boş bırakılabilir)" }), Örnek: "Cappadocia Balloon Tour" },
-      { Kolon: "destination_{en,de,fr,es,ru,ar}",  Tip: _opt, Açıklama: t("bulk.tpl.destMulti", { defaultValue: "Yurtdışı müşteri için destinasyon çevirisi" }), Örnek: "Cappadocia" },
-      { Kolon: "program_kisa_{en,de,fr,es,ru,ar}", Tip: _opt, Açıklama: t("bulk.tpl.programMulti", { defaultValue: "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)" }), Örnek: "04:30 pickup, 1-hour balloon flight..." },
+      // ETAP 1.5b: 18 çok dilli kolon satırı KALDIRILDI — şablon sade tutuldu.
+      // AI çevirisi notu:
+      { Kolon: "—", Tip: _info, Açıklama: t("bulk.tpl.aiTranslateNotice", { defaultValue: "Çevirileri AI ile otomatik yapabilirsiniz — yükleme ekranındaki tiki işaretleyin. Acentenizin paketindeki dillere çevrilir." }), Örnek: "" },
       // En altta KRİTİK uyarı: tarih notu
       { Kolon: "—", Tip: _info, Açıklama: t("bulk.tpl.dateNotice", { defaultValue: "Tur TARİHLERİ, FİYAT ve KONTENJAN bu Excel'de YOKTUR. Tarihleri panelden 'Toplu Tarih Oluştur' ile ekleyin." }), Örnek: "" },
     ];
@@ -545,6 +742,83 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
             </div>
             <p className="text-xs text-muted-foreground">{t("bulkImport.fileHint")}</p>
           </Card>
+
+          {/* ETAP 1.5b: AI ile otomatik çeviri tik kutusu — sadece preview varken anlamlı. */}
+          {parsedTours.length > 0 && (() => {
+            const _validCount = parsedTours.filter((p) => p.isValid).length;
+            const _tooMany = _validCount > TRANSLATE_MAX_ROWS;
+            const _noTargets = targetLanguages.length === 0;
+            const _disabled = _tooMany || _noTargets;
+            return (
+              <Card className="p-3 bg-primary/5 border-primary/30">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="auto-translate"
+                    checked={autoTranslate && !_disabled}
+                    disabled={_disabled || isLoading}
+                    onCheckedChange={(v) => setAutoTranslate(v === true)}
+                    className="mt-0.5"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <Label
+                      htmlFor="auto-translate"
+                      className={cn(
+                        "flex items-center gap-1.5 text-sm font-medium cursor-pointer",
+                        _disabled && "opacity-60 cursor-not-allowed",
+                      )}
+                    >
+                      <Languages className="h-4 w-4 text-primary" />
+                      {t("bulkImport.translate.checkboxLabel", { defaultValue: "🌐 Çevirileri AI ile otomatik yap" })}
+                    </Label>
+                    {_noTargets ? (
+                      <p className="text-xs text-amber-700 dark:text-amber-400">
+                        {t("bulkImport.translate.noTargetLangs", {
+                          defaultValue: "Çevrilecek dil yok — önce Dil Yönetimi'nden dil ekleyin.",
+                        })}
+                      </p>
+                    ) : _tooMany ? (
+                      <p className="text-xs text-amber-700 dark:text-amber-400">
+                        {t("bulkImport.translate.tooManyToursHint", {
+                          defaultValue: "{{count}}+ tur için çeviriyi panelden tek tek yapın.",
+                          count: TRANSLATE_MAX_ROWS,
+                        })}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {t("bulkImport.translate.checkboxHint", {
+                          defaultValue: "Paketinizde aktif dillere ({{count}} dil) çeviri yapılır.",
+                          count: targetLanguages.length,
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            );
+          })()}
+
+          {/* ETAP 1.5b: Çeviri ilerleme barı — import sırasında AI çağrıları sürerken. */}
+          {translateProgress && (
+            <Card className="p-3 bg-primary/5 border-primary/30 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                  {t("bulkImport.translate.progress", {
+                    defaultValue: "Çevriliyor: {{done}}/{{total}}",
+                    done: translateProgress.done,
+                    total: translateProgress.total,
+                  })}
+                </span>
+                <span className="text-muted-foreground tabular-nums">
+                  {Math.round((translateProgress.done / Math.max(translateProgress.total, 1)) * 100)}%
+                </span>
+              </div>
+              <Progress
+                value={(translateProgress.done / Math.max(translateProgress.total, 1)) * 100}
+                className="h-1.5"
+              />
+            </Card>
+          )}
 
           {/* Parsed preview */}
           {parsedTours.length > 0 && (

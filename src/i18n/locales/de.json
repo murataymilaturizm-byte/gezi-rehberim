@@ -1944,6 +1944,16 @@
       "tip": "Diese Excel ist NUR für Tourinfos. Tour-TERMINE, PREISE und KONTINGENT werden über das Panel via \"Massentermin-Generator\" hinzugefügt.",
       "readonly": "__tour_id und created_at sind Systemfelder — NICHT bearbeiten oder löschen.",
       "alternative": "Für eine einzelne Tour ist die Schaltfläche \"Neue Tour\" eventuell schneller."
+    },
+    "translate": {
+      "checkboxLabel": "🌐 Übersetzungen automatisch mit KI",
+      "checkboxHint": "Übersetzt in die in Ihrem Tarif aktiven Sprachen ({{count}} Sprachen).",
+      "noTargetLangs": "Keine Zielsprachen — bitte zuerst Sprachen in der Sprachverwaltung aktivieren.",
+      "tooManyToursHint": "Bei {{count}}+ Touren bitte einzeln aus dem Panel übersetzen.",
+      "progress": "Übersetze: {{done}}/{{total}}",
+      "toastSuccess": "{{tours}} Tour(en) hinzugefügt, KI hat Übersetzungen erstellt.",
+      "toastPartial": "{{tours}} Tour(en) hinzugefügt; {{missing}} Übersetzung(en) fehlen — bitte aus dem Panel vervollständigen.",
+      "toastFail": "{{tours}} Tour(en) hinzugefügt; Übersetzung fehlgeschlagen. Sie können sie später aus dem Panel übersetzen."
     }
   },
   "greetings": {

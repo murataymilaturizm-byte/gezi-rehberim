@@ -1937,6 +1937,16 @@
       "readonly": "__tour_id ve created_at sistem alanlarıdır — değiştirmeyin/silmeyin.",
       "alternative": "Tek tur eklemek için \"Yeni Tur\" butonu daha hızlı olabilir."
     },
+    "translate": {
+      "checkboxLabel": "🌐 Çevirileri AI ile otomatik yap",
+      "checkboxHint": "Paketinizde aktif dillere ({{count}} dil) çeviri yapılır.",
+      "noTargetLangs": "Çevrilecek dil yok — önce Dil Yönetimi'nden dil ekleyin.",
+      "tooManyToursHint": "{{count}}+ tur için çeviriyi panelden tek tek yapın.",
+      "progress": "Çevriliyor: {{done}}/{{total}}",
+      "toastSuccess": "{{tours}} tur eklendi, çevirileri AI ile dolduruldu.",
+      "toastPartial": "{{tours}} tur eklendi, {{missing}} çeviri eksik kaldı — panelden tek tek tamamlayabilirsiniz.",
+      "toastFail": "{{tours}} tur eklendi, çeviri başarısız oldu. Sonra panelden tek tek çevirebilirsiniz."
+    },
     "tpl": {
       "sheetInstructions": "Talimatlar",
       "title": "Tur başlığı (Türkçe)",
