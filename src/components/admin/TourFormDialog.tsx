@@ -362,7 +362,24 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? "w-full max-w-none h-[95dvh] rounded-t-xl rounded-b-none mt-auto translate-y-0 bottom-0 top-auto" : "sm:max-w-[540px]"} max-h-[95dvh] overflow-y-auto`}>
+      {/*
+        Madde 5: Mobile responsive fix.
+        - Default DialogContent: `left-[50%] translate-x-[-50%]` + `w-full max-w-lg` + `p-6`.
+        - Mobilde 24px p-6 padding küçük ekranda boşluğu daraltıyordu; ayrıca form içindeki
+          uzun başlık/destinasyon değerleri yer yer overflow yapabiliyordu.
+        - Çözüm: mobilde `max-w-[100vw]` (transform sonrası taşmayı önler), `p-4` (24px → 16px),
+          `overflow-x-hidden` (yatay scrollbar/taşma yok), `inset-x-0` (left:50% override).
+        - Masaüstü görünümü dokunulmamış (`sm:max-w-[540px]` korundu).
+      */}
+      <DialogContent
+        className={
+          isMobile
+            ? "inset-x-0 left-0 right-0 translate-x-0 bottom-0 top-auto mt-auto translate-y-0 " +
+              "w-full max-w-[100vw] h-[95dvh] max-h-[95dvh] " +
+              "rounded-t-xl rounded-b-none p-4 overflow-y-auto overflow-x-hidden"
+            : "sm:max-w-[540px] max-h-[95dvh] overflow-y-auto"
+        }
+      >
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>

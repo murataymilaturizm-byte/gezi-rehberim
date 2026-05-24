@@ -57,6 +57,19 @@ export interface PopularTour {
   registrationCount: number;
 }
 
+/**
+ * Madde 4: Tur Performansı kartında client-side zaman filtresi (Günlük/Haftalık/Aylık/Yıllık)
+ * için ham kayıt verisi. Her satır bir rezervasyon — kart kendi içinde tarihe göre filtreleyip
+ * agregeyi tekrar yapar. Bu yapı yeni backend endpoint gerektirmez; veri zaten popularQuery'de
+ * fetch ediliyor, sadece reduce'dan ÖNCE de expose ediyoruz.
+ */
+export interface PopularTourRaw {
+  tourId: string;
+  title: string;
+  destination: string;
+  createdAt: string;
+}
+
 export interface ChartData { name: string; registrations: number }
 
 /**
@@ -78,6 +91,8 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined, agencyI
   });
   const [recentRegistrations, setRecentRegistrations] = useState<RecentRegistration[]>([]);
   const [popularTours, setPopularTours] = useState<PopularTour[]>([]);
+  // Madde 4: ham kayıt satırları — kart kendi filtresini bunun üstünde uygular.
+  const [popularToursRaw, setPopularToursRaw] = useState<PopularTourRaw[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [revenueSpark, setRevenueSpark] = useState<SparkPoint[]>([]);
   const [regSpark, setRegSpark] = useState<SparkPoint[]>([]);
@@ -356,6 +371,18 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined, agencyI
         Object.values(tourCounts).sort((a: any, b: any) => b.registrationCount - a.registrationCount).slice(0, 5) as PopularTour[]
       );
 
+      // Madde 4: Ham satırları da expose et — Tur Performansı kartı zaman filtresi için kullanır.
+      setPopularToursRaw(
+        (popularData || [])
+          .filter((reg: any) => reg.tours?.id)
+          .map((reg: any) => ({
+            tourId: reg.tours.id,
+            title: reg.tours.title,
+            destination: reg.tours.destination,
+            createdAt: reg.created_at,
+          })),
+      );
+
       // ── Chart data (legacy) ───────────────────────────────────────────────────
       setChartData(rDays7.map((d) => ({ name: d.date, registrations: d.value })));
     } catch (err: any) {
@@ -371,7 +398,7 @@ export function useAgencyDashboardData(dateRange: DateRange | undefined, agencyI
   };
 
   return {
-    stats, comparison, recentRegistrations, popularTours,
+    stats, comparison, recentRegistrations, popularTours, popularToursRaw,
     chartData, revenueSpark, regSpark, weekTrend, monthTrend, todayStats, loading,
     error,            // O2: dashboard banner için
     reload: loadDashboardData,  // O2: "Tekrar dene" butonu için

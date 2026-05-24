@@ -21,11 +21,11 @@ interface StepStatus {
   payment: boolean;
   addTour: boolean;
   addDates: boolean;
-  whatsapp: boolean;
   selectLanguage: boolean;
   currencyLanguage: boolean;
-  approveTemplate: boolean;
-  addFaq: boolean;
+  whatsapp: boolean;
+  // Madde 3: approveTemplate ve addFaq KALDIRILDI — onboarding'in zorunlu adımları değil,
+  // ayrı menüde yapılabilir. WhatsApp listenin EN SONUNA alındı (kurulumun son adımı).
 }
 
 export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklistProps) {
@@ -48,7 +48,9 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
 
     const tourIds = tourIdsRes.data?.map((t) => t.id) ?? [];
 
-    const [agencyRes, toursRes, datesRes, langTemplateRes, faqRes] = await Promise.all([
+    // Madde 3: message_templates ve faq_templates sorguları KALDIRILDI — bu iki adım
+    // onboarding checklist'inden çıkarıldı.
+    const [agencyRes, toursRes, datesRes] = await Promise.all([
       supabase
         .from("agencies")
         .select("phone_public, address, payment_instructions, whatsapp_status, meta_phone_number_id, whatsapp_api_key, enabled_languages, primary_currency, language_currencies")
@@ -64,24 +66,11 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
             .select("id", { count: "exact", head: true })
             .in("tour_id", tourIds)
         : Promise.resolve({ count: 0 }),
-      supabase
-        .from("message_templates")
-        .select("id", { count: "exact", head: true })
-        .eq("agency_id", agencyId)
-        .eq("meta_status", "APPROVED")
-        .eq("is_active", true),
-      supabase
-        .from("faq_templates")
-        .select("id", { count: "exact", head: true })
-        .eq("agency_id", agencyId)
-        .eq("is_active", true),
     ]);
 
     const agency = agencyRes.data;
     const tourCount = toursRes.count ?? 0;
     const dateCount = datesRes.count ?? 0;
-    const templateCount = langTemplateRes.count ?? 0;
-    const faqCount = faqRes.count ?? 0;
 
     const langCurrencies = agency?.language_currencies as Record<string, string> | null;
     const hasCurrencyLang =
@@ -93,11 +82,9 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
       payment: !!(agency?.payment_instructions),
       addTour: tourCount > 0,
       addDates: dateCount > 0,
-      whatsapp: agency?.whatsapp_status === "active" && !!(agency?.meta_phone_number_id || agency?.whatsapp_api_key),
       selectLanguage: Array.isArray(agency?.enabled_languages) && agency.enabled_languages.length > 0,
       currencyLanguage: hasCurrencyLang,
-      approveTemplate: templateCount > 0,
-      addFaq: faqCount > 0,
+      whatsapp: agency?.whatsapp_status === "active" && !!(agency?.meta_phone_number_id || agency?.whatsapp_api_key),
     });
   };
 
@@ -108,18 +95,19 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
 
   if (dismissed || !steps) return null;
 
+  // Madde 3: Sıra: önce kurulum (agency, payment, tur, tarih, dil, dil-para),
+  // EN SON WhatsApp bağlantısı. approveTemplate ve addFaq KALDIRILDI.
   const stepList: { key: keyof StepStatus; tab: string }[] = [
     { key: "agencyInfo", tab: "agency_info" },
     { key: "payment", tab: "payment_settings" },
     { key: "addTour", tab: "tours" },
     { key: "addDates", tab: "tours" },
-    { key: "whatsapp", tab: "settings" },
     { key: "selectLanguage", tab: "languages" },
     { key: "currencyLanguage", tab: "languages" },
-    { key: "approveTemplate", tab: "templates" },
-    { key: "addFaq", tab: "faq" },
+    { key: "whatsapp", tab: "settings" },
   ];
 
+  // İlerleme sayacı otomatik: completedCount / stepList.length (artık 7).
   const completedCount = stepList.filter((s) => steps[s.key]).length;
   const allDone = completedCount === stepList.length;
 

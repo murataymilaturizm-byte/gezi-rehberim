@@ -36,7 +36,7 @@ export const AgencyDashboard = ({
 }: AgencyDashboardProps) => {
   const { t } = useTranslation();
   const {
-    stats, comparison, recentRegistrations, popularTours,
+    stats, comparison, recentRegistrations, popularTours, popularToursRaw,
     revenueSpark, regSpark, weekTrend, monthTrend, todayStats, loading,
     error, reload,   // O2: hata banner'ı + reload butonu
   } = useAgencyDashboardData(undefined, agencyId);
@@ -193,7 +193,11 @@ export const AgencyDashboard = ({
             setDetailOpen(true);
           }}
         />
-        <TourPerformance tours={popularTours} />
+        <TourPerformance
+          tours={popularTours}
+          rawData={popularToursRaw}
+          onNavigateAnalytics={() => onTabChange?.("analytics")}
+        />
       </div>
 
       {/* 5. Usage stats */}

@@ -25,9 +25,12 @@ interface StepContentProps {
 }
 
 function StepContent({ description, bullets = [], tip, isDark }: StepContentProps) {
-  // Use CSS variable-based color values that respect the theme
+  // Use CSS variable-based color values that respect the theme.
+  // Madde 2: Açık zeminde gövde metni `hsl(222 47% 11%)` (full dark), bullets `hsl(220 13% 28%)`
+  // (koyu gri — readable AA contrast ≥ 7:1 on white). Eskiden bullets `hsl(215 16% 47%)` idi
+  // ve beyaz zeminde "soluk gri" görünüyordu.
   const textColor = isDark ? "hsl(214 32% 91%)" : "hsl(222 47% 11%)";
-  const mutedColor = isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)";
+  const mutedColor = isDark ? "hsl(215 20% 75%)" : "hsl(220 13% 28%)";
   const tipBg = isDark ? "hsl(24 70% 12%)" : "hsl(38 92% 97%)";
   const tipBorder = isDark ? "hsl(24 50% 28%)" : "hsl(24 97% 83%)";
   const tipColor = isDark ? "hsl(24 94% 73%)" : "hsl(21 90% 40%)";
@@ -79,7 +82,8 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
 
   const cardBg = isDark ? "hsl(222 47% 15%)" : "hsl(210 40% 96%)";
   const cardText = isDark ? "hsl(210 40% 98%)" : "hsl(222 47% 11%)";
-  const descColor = isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)";
+  // Madde 2: Açık zeminde welcome açıklama metni `hsl(220 13% 28%)` (koyu gri, AA contrast).
+  const descColor = isDark ? "hsl(215 20% 75%)" : "hsl(220 13% 28%)";
 
   return (
     <div style={{ textAlign: "center" }}>
@@ -124,7 +128,8 @@ function CompleteContent({ isDark }: { isDark: boolean }) {
 
   const bg = isDark ? "hsl(222 47% 15%)" : "hsl(210 40% 96%)";
   const itemColor = isDark ? "hsl(214 32% 91%)" : "hsl(220 9% 22%)";
-  const descColor = isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)";
+  // Madde 2: Complete ekranı açıklama metni — beyaz zeminde okunur koyu gri.
+  const descColor = isDark ? "hsl(215 20% 75%)" : "hsl(220 13% 28%)";
   const codeBg = isDark ? "rgba(249,115,22,0.2)" : "rgba(249,115,22,0.12)";
   const codeColor = isDark ? "hsl(21 94% 73%)" : "hsl(21 90% 46%)";
 
@@ -335,6 +340,14 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
   const steps = isMobile ? mobileSteps : desktopSteps;
 
   useEffect(() => {
+    // Madde 1: Mobilde onboarding rehberi HİÇ açılmasın. Küçük ekranda 14 adımlık
+    // joyride deneyimi kötü — kullanıcı "Atla" basmak zorunda kalmasın. localStorage'a
+    // yine işaretle ki masaüstüne geçtiğinde tekrar açılmasın (zaten görmüş sayılıyor).
+    if (shouldRun && isMobile) {
+      if (agencyId) localStorage.setItem(STORAGE_KEY(agencyId), "1");
+      onComplete();
+      return;
+    }
     if (shouldRun) {
       const timer = setTimeout(() => {
         // localStorage'a hemen yaz — sekme kapansa bile bir daha gösterilmez
@@ -343,7 +356,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       }, 900);
       return () => clearTimeout(timer);
     }
-  }, [shouldRun, agencyId]);
+  }, [shouldRun, agencyId, isMobile, onComplete]);
 
   const handleCallback = (data: CallBackProps) => {
     const { status, type } = data;
@@ -358,6 +371,8 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     }
   };
 
+  // Madde 1: mobilde render etme — joyride state'i bile başlatma
+  if (isMobile) return null;
   if (!runTour) return null;
 
   return (
