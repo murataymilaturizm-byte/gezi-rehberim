@@ -32,16 +32,42 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
  * Anthropic'in top-level `system` alanına ayrılır (messages içinden çıkarılır).
  *
  * messages: [...history, {role:"user", content: sanitizedMessage}]
- * systemPrompt: buildSystemPrompt(...) çıktısı
+ *
+ * PROMPT CACHING:
+ *   systemPromptCached → STATİK büyük prefix (rol+tone+format+stage+agency+guards).
+ *   Bu blok ephemeral cache_control alır; 5 dk içinde aynı prefix → input token'larda %90 indirim.
+ *   systemPromptDynamic → conditional add-on'lar (tour switch warning, transition,
+ *   returning user, anti-contradiction, mid-flow, off-topic, multi-tour warning).
+ *   Her çağrıda farklı olabileceği için cache DIŞINDA.
+ *
+ *   Geriye uyumluluk: caller tek string olarak `systemPrompt` da yollayabilir — tek blok cache'lenir.
  */
 export async function callAI(params: {
-  systemPrompt: string;
+  systemPrompt?: string;
+  systemPromptCached?: string;
+  systemPromptDynamic?: string;
   history: Array<{ role: string; content: string }>;
   userMessage: string;
 }): Promise<string> {
-  const { systemPrompt, history, userMessage } = params;
+  const { systemPrompt, systemPromptCached, systemPromptDynamic, history, userMessage } = params;
   const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
   if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not configured");
+
+  // System payload'unu cache breakpoint ile kur.
+  // Eğer cached/dynamic split verilmişse: 1. blok cache hedefi, 2. blok serbest.
+  // Eski tek-string `systemPrompt` yollanmışsa: bütün prompt cache'e gider.
+  const cachedText = systemPromptCached ?? systemPrompt ?? "";
+  const systemBlocks: any[] = [];
+  if (cachedText) {
+    systemBlocks.push({
+      type: "text",
+      text: cachedText,
+      cache_control: { type: "ephemeral" },
+    });
+  }
+  if (systemPromptDynamic && systemPromptDynamic.trim() !== "") {
+    systemBlocks.push({ type: "text", text: systemPromptDynamic });
+  }
 
   const messages = [
     ...history.filter((m) => m.role === "user" || m.role === "assistant"),
@@ -60,11 +86,14 @@ export async function callAI(params: {
             "Content-Type": "application/json",
             "x-api-key": ANTHROPIC_API_KEY,
             "anthropic-version": "2023-06-01",
+            // Prompt caching artık GA, defensive olarak beta header'ı da bırakıyoruz —
+            // eski SDK/proxy katmanlarında zorunlu olabilir, varlığı sorun çıkarmaz.
+            "anthropic-beta": "prompt-caching-2024-07-31",
           },
           body: JSON.stringify({
             model: AI_MODEL,
             max_tokens: AI_MAX_TOKENS,
-            system: systemPrompt,
+            system: systemBlocks,
             messages,
           }),
         },
@@ -104,6 +133,17 @@ export async function callAI(params: {
       }
 
       const data = await response.json();
+      // DEBUG: prompt caching çalıştığını doğrulamak için usage log'u.
+      // İlk çağrıda cache_creation > 0, sonraki 5 dk içindeki aynı prefix → cache_read > 0.
+      // Kalıcı olmamalı — verify ettikten sonra kaldırılabilir.
+      if (data.usage) {
+        console.log("[ai] CACHE_USAGE", {
+          input: data.usage.input_tokens,
+          output: data.usage.output_tokens,
+          cache_creation_input_tokens: data.usage.cache_creation_input_tokens ?? 0,
+          cache_read_input_tokens: data.usage.cache_read_input_tokens ?? 0,
+        });
+      }
       return (data.content || [])
         .filter((b: any) => b?.type === "text")
         .map((b: any) => b.text)

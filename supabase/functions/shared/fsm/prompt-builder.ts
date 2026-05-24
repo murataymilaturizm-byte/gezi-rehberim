@@ -10,6 +10,12 @@ import { getAgencyInfo } from "./prompts/agency.ts";
 /**
  * Main function to build system prompt
  * Combines all prompt components in the correct order
+ *
+ * PROMPT CACHING NOTU: Bu fonksiyon dönen STATİK prefix'tir — agency/lang/stage/tone/tour
+ * sabitken çağrılar arası aynı kalır, Anthropic ephemeral cache'in primary hedefi.
+ * `getMultipleTourWarning` bilinçli olarak DIŞARI alındı — sadece kullanıcının araması
+ * birden fazla turla eşleştiğinde dolar; cached prefix'i her seferinde değiştirmemesi için
+ * çağıran taraf (process-message.ts) dynamic suffix olarak ekler.
  */
 export function buildSystemPrompt(context: AIPromptContext): string {
   const { language, tone } = context;
@@ -21,7 +27,6 @@ export function buildSystemPrompt(context: AIPromptContext): string {
     getFormatPrompt(language),
     getStagePrompt(context),
     getAgencyInfo(context, language),
-    getMultipleTourWarning(context, language),
   ];
 
   // Filter out empty parts and join with double newlines
@@ -190,4 +195,5 @@ export {
   formatTourDetails,
   formatCollectedInfo,
   formatReservationSummary,
+  getMultipleTourWarning,
 } from "./prompts/helpers.ts";

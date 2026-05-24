@@ -199,6 +199,33 @@ NEVER assume the user wants to stay in COMPLETED forever. Trust their words.
 - full_name: Customer's full name (ONLY 2-3 word combinations that are clearly proper names, NOT common words or phrases)
 - phone: Phone number
 
+**CRITICAL RULE — NEGATED DESTINATIONS / TOUR NAMES (do NOT extract negated targets):**
+If the user is REJECTING or EXCLUDING a destination/tour, DO NOT extract it as their target. Extract ONLY destinations the user wants AFFIRMATIVELY.
+
+Negation/exclusion patterns to recognize across languages (semantic, not literal):
+- The user says they do NOT want X, X is NOT acceptable, somewhere/something OTHER THAN X, EXCEPT X, BESIDES X, ANYTHING BUT X.
+- Turkish: "X dışında", "X değil başka", "X hariç", "X olmasın", "X istemiyorum", "X yerine başka"
+- English: "not X", "other than X", "anywhere but X", "except X", "besides X", "no X please", "I don't want X"
+- German: "nicht X", "außer X", "kein X", "etwas anderes als X"
+- Russian: "не X", "кроме X", "что-нибудь кроме X", "не хочу X"
+- French: "pas X", "autre que X", "sauf X", "pas de X", "à part X"
+- Spanish: "no X", "otro que X", "excepto X", "menos X", "que no sea X"
+- Arabic: "ليس X", "غير X", "ما عدا X", "بدون X", "لا أريد X"
+
+When a destination/tour appears ONLY in a negation context, leave the destination and tour_name fields EMPTY (do not return the negated value). The user's actual intent is "show me OTHER options" — intent should be browse_tours or tour_search with NO entities (the system will list available tours).
+
+Examples (negated → DO NOT extract):
+- "antalya dışında nereler var" → intent: browse_tours, destination: (empty). NOT destination=antalya.
+- "antalya değil başka biryer" → intent: browse_tours, destination: (empty).
+- "not Cappadocia, somewhere else" → intent: browse_tours, destination: (empty).
+- "nicht Istanbul" → intent: browse_tours, destination: (empty).
+- "что-нибудь кроме Антальи" → intent: browse_tours, destination: (empty).
+
+Examples (affirmative → DO extract):
+- "antalya turuna katılmak istiyorum" → destination: antalya.
+- "Pamukkale hakkında bilgi" → destination/tour_name: pamukkale.
+- "I want to book Cappadocia" → destination: cappadocia.
+
 **CRITICAL RULE FOR FULL_NAME EXTRACTION:**
 - Only extract full_name when the message clearly contains a personal name
 - Do NOT extract full_name from: questions, confirmations, tour names, city names, common words
@@ -235,9 +262,12 @@ export async function analyzeUserMessage(
       contextPrompt += `Currently selected tour: ${selectedTour.title} (${selectedTour.destination})\n\n`;
     }
 
-    if (availableTours && availableTours.length > 0) {
-      contextPrompt += `Available tours:\n${availableTours.map((t) => `- ${t.title} (${t.destination})`).join("\n")}\n\n`;
-    }
+    // NOT: availableTours BİLİNÇLİ olarak NLU prompt'una EKLENMEZ.
+    // NLU sadece niyet/dil/entity (destination/tour_name string) sınıflıyor — bunlar kullanıcı
+    // mesajından çıkar, listeden değil. Asıl tur EŞLEŞTİRME services/tour-matching.ts'te kodda
+    // fuzzy + token match ile yapılıyor; NLU'nun listeye ihtiyacı yok. Parametre fonksiyon imzasında
+    // kalıyor çünkü `buildFallbackNLU` (API fail durumu) tur ismi tahmini için kullanıyor (aşağıda).
+    // Çağrı başına ~5 turda ~50-150 token tasarruf (Haiku input).
 
     // Anthropic tool format: top-level name/description/input_schema (no nested "function" wrapper)
     const nluTool = {
@@ -311,11 +341,21 @@ export async function analyzeUserMessage(
           "x-api-key": ANTHROPIC_API_KEY,
           "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
+          // Prompt caching artık GA, defensive olarak beta header'ı bırakıyoruz.
+          "anthropic-beta": "prompt-caching-2024-07-31",
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 500,
-          system: NLU_SYSTEM_PROMPT,
+          // PROMPT CACHING: NLU_SYSTEM_PROMPT tamamen statik (kullanıcı/agency'ye bağımlı değil),
+          // ephemeral cache hedefi. Tüm NLU çağrılarında aynı prefix → kalıcı %90 indirim.
+          system: [
+            {
+              type: "text",
+              text: NLU_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
           messages: [
             { role: "user", content: contextPrompt },
           ],
@@ -339,6 +379,16 @@ export async function analyzeUserMessage(
       }
 
       const data = await response.json();
+      // DEBUG: prompt caching doğrulaması — NLU_SYSTEM_PROMPT'un cache'lenip lendiğini gösterir.
+      // İlk çağrı: cache_creation_input_tokens > 0. Sonraki 5 dk içinde aynı prefix: cache_read > 0.
+      if (data.usage) {
+        console.log("[nlu] CACHE_USAGE", {
+          input: data.usage.input_tokens,
+          output: data.usage.output_tokens,
+          cache_creation_input_tokens: data.usage.cache_creation_input_tokens ?? 0,
+          cache_read_input_tokens: data.usage.cache_read_input_tokens ?? 0,
+        });
+      }
       // Anthropic returns content as an array of blocks; find the tool_use block
       toolUseBlock = (data.content || []).find((b: any) => b?.type === "tool_use");
 

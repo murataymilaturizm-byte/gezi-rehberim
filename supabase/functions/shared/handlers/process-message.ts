@@ -18,7 +18,7 @@ import {
   formatDateForLanguage,
 } from "../fsm/localization.ts";
 import { detectLanguage } from "../fsm/language.ts";
-import { buildSystemPrompt, buildTransitionPrompt } from "../fsm/prompt-builder.ts";
+import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning } from "../fsm/prompt-builder.ts";
 import { validateAIResponse, validateInjectionResponse } from "../fsm/response-validator.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
@@ -180,7 +180,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // Mevcut Check B (line ~570) sadece RPC öncesi çalışıyordu — kullanıcı yarım yolda
   // "müsait" gibi davranıp son adımda "müsait değil" şokuyla karşılaşıyordu.
   // Bunu BAŞA çekerek tarih dolduysa/silindiyse erken haber ver + alternatif tarihleri öner.
-  if (context.reservationInfo?.dateId && context.reservationInfo?.tourId) {
+  //
+  // FIX (A1): COMPLETED state'de ATLA. Bu blok YARIM rezervasyon içindir
+  // (COLLECTING_INFO/CONFIRMING/TOUR_SELECTED). COMPLETED finalize edilmiş bir
+  // rezervasyondur; tarihinin geçmiş olması çözülmesi gereken bir sorun değil,
+  // "geçmiş bir gezi"dir. Eskiden blok COMPLETED'de tetikleniyor, dateId'yi temizleyip
+  // tourId'yi (Antalya) koruyor, stage'i COLLECTING_INFO+waiting_for_date yapıyordu →
+  // kullanıcı eski tura kilitleniyor, çıkamıyordu. "Önceki tura kilitlenme" bug'ının
+  // PRIMARY kök sebebi buydu.
+  if (context.stage !== "COMPLETED" && context.reservationInfo?.dateId && context.reservationInfo?.tourId) {
     const _resTour = tours.find((t: any) => t.id === context.reservationInfo!.tourId);
     const _resDate = _resTour?.dates?.find((d: any) => d.id === context.reservationInfo!.dateId);
     const _today = new Date().toISOString().slice(0, 10);
@@ -240,8 +248,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const previousContext = { ...context };
 
   // === 5. HISTORY YÜKLE (NLU + AI için) ===
-  // B3: 20 mesajla sınırla — off-topic konuşmalarda context şişmesini önle
-  const historyAsc = await adapter.loadHistory(20);
+  // B3 + token optimizasyonu: 10 mesajla sınırla. Daha önce 20'ydi; FSM zaten seçili tur/tarih/pax/
+  // isim/telefon gibi YAPISAL state'i `context` üzerinden taşıyor, history sadece üslup ve son
+  // 1-2 turluk bağlam için. Tipik rezervasyon 10-12 mesaj sürüyor; 10 mesaj son birkaç turluk
+  // bağlamı her zaman kapsar. Çağrı başına ~300 token tasarruf (history hem Sonnet hem NLU input'una giriyor).
+  const historyAsc = await adapter.loadHistory(10);
 
   // === 6. NLU CONTEXT + ANALIZ ===
   const historySummary = historyAsc.map((m) => `${m.role}: ${m.content}`).join("\n");
@@ -1103,14 +1114,26 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       : `\n\n⚡ BRIEF REPLY: This message is off-topic. Respond in max 2 sentences, then invite to our tours.`;
   }
 
-  const systemPrompt = buildSystemPrompt(promptContext as any) +
+  // PROMPT CACHING: prompt'u iki bloğa ayır.
+  // - CACHED (statik prefix): rol/üslup/format/stage/agency/guards/translation directive.
+  //   Aynı (agency, language, stage, tone, currentTour, reservationInfo) için sabit → cache hit.
+  // - DYNAMIC (suffix, cache dışı): tour switch warning, transition, returning user, anti-contradiction,
+  //   mid-flow, off-topic, multi-tour warning. Çağrı bazında değişebilir; cache prefix'i kirletmez.
+  const systemPromptCached = buildSystemPrompt(promptContext as any);
+  const _multiTourWarning = getMultipleTourWarning(promptContext as any, newContext.language);
+  const systemPromptDynamic =
     tourSwitchWarning + completedStagePrompt + returningUserPrompt + antiContradictionPrompt +
-    midFlowReturnPrompt + offTopicBrevityPrompt;
+    midFlowReturnPrompt + offTopicBrevityPrompt + _multiTourWarning;
 
   // === 16. AI ÇAĞRISI ===
   let reply: string;
   try {
-    reply = await callAI({ systemPrompt, history: historyAsc, userMessage: message });
+    reply = await callAI({
+      systemPromptCached,
+      systemPromptDynamic,
+      history: historyAsc,
+      userMessage: message,
+    });
     console.log("[process-message] AI reply:", reply.substring(0, 80));
   } catch (_aiErr) {
     console.error("[process-message] AI call failed:", _aiErr);

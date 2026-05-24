@@ -165,7 +165,16 @@ function getNumberEmoji(num: number): string {
  * *tek yıldız* kullanır (WhatsApp uyumlu)
  */
 export function formatTourDetails(tour: any, language: string, tone: string = "standart"): string {
-  const dates = tour.dates || [];
+  // Token optimizasyonu: 10+ tarihli turlarda prompt'a TÜM tarihler giriyordu (her tarih ~25 token).
+  // Sadece bugünden sonraki ilk 5 tarihi al — kullanıcının ihtiyacı için yeterli, AI'a daha fazlasını
+  // göstermek yarar değil token israfı. Past dates zaten upstream'de (whatsapp-webhook/index.ts:440 +
+  // demo-chat/index.ts:191) filtreleniyor; burada defensive olarak tekrar filtreleyip slice'lıyoruz.
+  const _today = new Date().toISOString().slice(0, 10);
+  const _rawDates = tour.dates || [];
+  const dates = _rawDates
+    .filter((d: any) => !d?.departure_date || d.departure_date >= _today)
+    .slice(0, 5);
+  const _truncated = _rawDates.length > dates.length;
   const firstDate = dates[0];
   const price = firstDate?.price_adult;
 
@@ -197,6 +206,14 @@ export function formatTourDetails(tour: any, language: string, tone: string = "s
     } else {
       datesSection =
         tone === "premium" ? `\n\nAvailable Dates:\n${formattedDates}` : `\n📅 Available Dates:\n${formattedDates}`;
+    }
+    // Daha fazla tarih varsa AI'a bildir — "sadece bunlar var" yanılgısını önler. Kullanıcı
+    // başka tarih sorarsa AI acenteye yönlendirir (deterministik tarih listesi akışı zaten
+    // process-message.ts'te tüm tarihleri gösteriyor).
+    if (_truncated) {
+      datesSection += language === "tr"
+        ? `\n(İlk 5 tarih gösterildi. Müşteri daha fazla tarih isterse acente ile iletişime geçirilebilir.)`
+        : `\n(Showing first 5 dates. If customer asks for more, refer them to the agency.)`;
     }
   }
 

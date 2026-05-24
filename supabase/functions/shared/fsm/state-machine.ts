@@ -59,6 +59,13 @@ function hasNewReservationIntent(userMessage: string, detectedIntent: string): b
   const newReservationPatterns =
     /başka tur|farklı tur|diğer tur|other tour|another tour|different tour|yeni tur|new tour|yeni rezervasyon|new reservation|ikinci rez|başka bir rez|bir daha|tekrar rez|başka bir tura|farklı bir tura|diğer bir tur|bir (kayıt|tur|rezervasyon)? daha|daha (bir|tane) (tur|kayıt|rezervasyon)|(başka|farklı|yeni) (kayıt|rezervasyon)|(başka|farklı|diğer)\s+(bir\s+)?(tur|seyahat|destinasyon|kayıt|rezervasyon)|(başka|farklı|diğer)\s+nere|(arkadaşım|eşim|ailem|annem|babam|kardeşim|çocuğum)\s+için|(ekleyelim|ekleyeyim)\b|one more (booking|reservation|tour)|another (reservation|booking|trip)|add (another|one more)|for my (friend|wife|husband|family|mother|father|sibling)|rezervasyon\s+yap|kayıt\s+yap|rezervasyon\s+oluştur|rezervasyon\s+almak|rezervasyon\s+istiyorum|tur\s+rezervasyonu|make\s+a\s+(reservation|booking)|book\s+(a\s+)?(tour|trip|this)|tur\s+(ara|bak|göster|ist)|neue\s+(reservierung|buchung|tour)|(andere|weitere)\s+(reservierung|buchung|tour)|nouvelle\s+(réservation|reservation|voyage)|(autre|différente?)\s+(réservation|tour|voyage)|nueva\s+(reserva|reservación|viaje)|(otra|diferente)\s+(reserva|tour|viaje)|новая\s+(резервация|бронирование|поездка|тур)|друг(ая|ой)\s+(тур|резервация|поездка)/i;
   if (newReservationPatterns.test(userMessage)) return true;
+  // FIX (A5): "exclusion" ifadelerini de yeni rezervasyon niyeti say. Kullanıcı bir destinasyonu
+  // negate ediyorsa (örn. "antalya dışında nereler var", "antalya değil başka biryer") aslında
+  // "başka bir tur istiyorum" demek istiyor — bunu yakalayıp COMPLETED→BROWSING reset'e yönlendir.
+  // Mevcut pattern'leri BOZMADAN ek alternation katmanı:
+  const exclusionPatterns =
+    /dışında\s+(nere|hangi|başka)|başka\s+nere|başka\s+(bir\s+)?(yer|biryer|destinasyon|şehir)|değil\s+başka|hariç\s+(nere|hangi|başka)|other\s+than|anywhere\s+but|somewhere\s+else|except\s+for|außer\s+\w+\s+(was|wo)|sonst\s+wo|кроме\s+\w+\s+(куда|где)|где[\s-]ещё|à\s+part|sauf|ailleurs|aparte\s+de|excepto|otro\s+(lugar|sitio)|ما\s+عدا|غير\s+\w+\s+أين|أين\s+غير/i;
+  if (exclusionPatterns.test(userMessage)) return true;
   if (detectedIntent === "reservation_intent") return true;
   return false;
 }
@@ -712,11 +719,30 @@ const transitions: StateTransition[] = [
 
   // COMPLETED → TOUR_SELECTED (herhangi tur seçildi, bilgi amaçlı değil, rezervasyon intent dışı)
   // id eşleşme kontrolü KALDIRILDI: aynı turu tekrar seçme de artık çalışır.
+  //
+  // FIX (A2): informational guard'a "farklı tur seçildi" exception'ı.
+  // Eskiden: intent "tour_search" gibi informational sayıldığı için → return false →
+  // COMPLETED'den çıkamıyordu. "antalya değil pamukkale" / "pamukkale" gibi mesajlarda
+  // NLU tour_search döner, selectedTour=Pamukkale olur AMA hiçbir transition fire etmez,
+  // state COMPLETED+Antalya'da kilitli kalır.
+  //
+  // Yeni davranış: selectedTour FARKLI bir tur ise (id !== ctx.currentTour?.id) informational
+  // guard bypass edilir. KRİTİK: AYNI turun adı yazılırsa (örn "Antalya turum hakkında bilgi")
+  // selectedTour.id === ctx.currentTour.id olur → bypass DEVREYE GİRMEZ → informational guard
+  // korunur → after-sales mantığı aynen çalışır.
+  //
+  // Sıra: detectCancellation (line 612) + isAfterSalesMessage (line 628) → hasNewReservationIntent
+  // (line 639) — bu transition'lar yukarıda zaten var. Bu fix ONLAR'DAN SONRA çalışır.
   {
     from: "COMPLETED",
     to: "TOUR_SELECTED",
     condition: (ctx, input) => {
-      if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
+      const _isDifferentTour =
+        input.selectedTour !== null && input.selectedTour.id !== ctx.currentTour?.id;
+      // FARKLI tur seçildiyse informational guard'ı atla (tur değişimi = informational değil)
+      if (!_isDifferentTour && isInformationalMessage(input.userMessage, input.detectedIntent)) {
+        return false;
+      }
       return (
         input.selectedTour !== null &&
         !["reservation_intent", "tour_selected", "provide_info", "confirm"].includes(input.detectedIntent)
