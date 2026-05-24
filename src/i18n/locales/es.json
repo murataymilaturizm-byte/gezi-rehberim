@@ -1990,10 +1990,33 @@
       "checkboxHint": "Se traduce a los idiomas activos en su plan ({{count}} idiomas).",
       "noTargetLangs": "Sin idiomas objetivo — active idiomas en Gestión de Idiomas primero.",
       "tooManyToursHint": "Para {{count}}+ tours, traduzca uno por uno desde el panel.",
+      "onlyUpdates": "Sin nuevos tours — la traducción se aplica solo a tours nuevos. Traduzca los tours existentes desde el panel con 'Traducir con IA'.",
+      "skippingUpdates": "Solo para {{create}} nuevo(s) tour(s) (los {{update}} existentes se omiten).",
       "progress": "Traduciendo: {{done}}/{{total}}",
       "toastSuccess": "{{tours}} tour(s) añadido(s), traducciones completadas por IA.",
+      "toastSuccessShort": "Traducción IA completada.",
       "toastPartial": "{{tours}} tour(s) añadido(s); {{missing}} traducción(es) faltante(s) — complete desde el panel.",
-      "toastFail": "{{tours}} tour(s) añadido(s); traducción fallida. Puede traducir más tarde desde el panel."
+      "toastPartialShort": "{{missing}} traducción(es) faltante(s) (completar desde panel).",
+      "toastFail": "{{tours}} tour(s) añadido(s); traducción fallida. Puede traducir más tarde desde el panel.",
+      "toastFailShort": "Traducción fallida (traduzca uno por uno desde el panel)."
+    },
+    "action": {
+      "column": "Acción",
+      "create": "Nuevo",
+      "createBadge": "nuevo",
+      "update": "Actualizar",
+      "updateBadge": "a actualizar",
+      "rejected": "Rechazado",
+      "rejectedBadge": "rechazado"
+    },
+    "reject": {
+      "invalidId": "Formato de ID de tour inválido",
+      "duplicateId": "Mismo __tour_id que la fila {{firstAt}}",
+      "notFoundOrCrossAgency": "Tour no encontrado o no le pertenece",
+      "dbCheckFailed": "Validación del tour fallida — reintente"
+    },
+    "upsert": {
+      "summary": "{{created}} añadido(s) · {{updated}} actualizado(s) · {{rejected}} rechazado(s)"
     }
   },
   "greetings": {
@@ -3776,7 +3799,12 @@
       "titleMulti": "Traducción del título para clientes extranjeros (puede estar vacío)",
       "destMulti": "Traducción del destino para clientes extranjeros",
       "programMulti": "Traducción del programa para clientes extranjeros (mínimo EN recomendado)",
-      "dateNotice": "Las FECHAS, PRECIOS y CUPOS del tour NO están en este Excel. Añade fechas desde el panel mediante 'Creación masiva de fechas'."
+      "dateNotice": "Las FECHAS, PRECIOS y CUPOS del tour NO están en este Excel. Añade fechas desde el panel mediante 'Creación masiva de fechas'.",
+      "roundTrip": "__tour_id RELLENO → ACTUALIZA el tour existente. __tour_id VACÍO → se añade un tour nuevo. Ambos pueden coexistir en el mismo archivo.",
+      "emptyCellRule": "Celda vacía = NO TOCAR. Al actualizar, una celda vacía MANTIENE el valor existente en la BD. Para eliminar, use el panel — Excel no elimina.",
+      "duplicateId": "El mismo __tour_id no puede aparecer en dos filas. Si aparece, la primera gana, la segunda se rechaza.",
+      "updateNoTranslate": "La traducción IA NO se ejecuta automáticamente en filas de actualización. Traduzca con 'Traducir con IA' desde el panel.",
+      "idSafetyReminder": "NUNCA elimine/cambie __tour_id. Si se elimina, la fila se inserta como 'tour nuevo' (crea duplicado)."
     }
   },
   "notificationCenter": {

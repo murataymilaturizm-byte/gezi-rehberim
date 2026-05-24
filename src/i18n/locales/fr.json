@@ -1956,10 +1956,33 @@
       "checkboxHint": "Traduction vers les langues activées dans votre forfait ({{count}} langues).",
       "noTargetLangs": "Aucune langue cible — activez d'abord des langues dans Gestion des langues.",
       "tooManyToursHint": "Pour {{count}}+ circuits, traduisez un par un depuis le panneau.",
+      "onlyUpdates": "Aucun nouveau circuit — la traduction s'applique uniquement aux nouveaux circuits. Traduisez les circuits existants via 'Traduire avec IA' depuis le panneau.",
+      "skippingUpdates": "Uniquement pour {{create}} nouveau(x) circuit(s) (les {{update}} existants sont ignorés).",
       "progress": "Traduction : {{done}}/{{total}}",
       "toastSuccess": "{{tours}} circuit(s) ajouté(s), traductions remplies par l'IA.",
+      "toastSuccessShort": "Traduction IA terminée.",
       "toastPartial": "{{tours}} circuit(s) ajouté(s) ; {{missing}} traduction(s) manquante(s) — complétez depuis le panneau.",
-      "toastFail": "{{tours}} circuit(s) ajouté(s) ; échec de la traduction. Vous pouvez traduire plus tard depuis le panneau."
+      "toastPartialShort": "{{missing}} traduction(s) manquante(s) (compléter depuis le panneau).",
+      "toastFail": "{{tours}} circuit(s) ajouté(s) ; échec de la traduction. Vous pouvez traduire plus tard depuis le panneau.",
+      "toastFailShort": "Échec de la traduction (traduisez un par un depuis le panneau)."
+    },
+    "action": {
+      "column": "Action",
+      "create": "Nouveau",
+      "createBadge": "nouveau",
+      "update": "Mettre à jour",
+      "updateBadge": "à mettre à jour",
+      "rejected": "Rejeté",
+      "rejectedBadge": "rejeté"
+    },
+    "reject": {
+      "invalidId": "Format d'ID de circuit invalide",
+      "duplicateId": "Même __tour_id qu'à la ligne {{firstAt}}",
+      "notFoundOrCrossAgency": "Circuit introuvable ou ne vous appartenant pas",
+      "dbCheckFailed": "Validation du circuit échouée — veuillez réessayer"
+    },
+    "upsert": {
+      "summary": "{{created}} ajouté(s) · {{updated}} mis à jour · {{rejected}} rejeté(s)"
     }
   },
   "greetings": {
@@ -3776,7 +3799,12 @@
       "titleMulti": "Traduction du titre pour clients étrangers (peut être vide)",
       "destMulti": "Traduction de la destination pour clients étrangers",
       "programMulti": "Traduction du programme pour clients étrangers (au moins EN recommandé)",
-      "dateNotice": "Les DATES, PRIX et QUOTAS du circuit ne sont PAS dans cet Excel. Ajoutez les dates depuis le panneau via 'Création de dates en masse'."
+      "dateNotice": "Les DATES, PRIX et QUOTAS du circuit ne sont PAS dans cet Excel. Ajoutez les dates depuis le panneau via 'Création de dates en masse'.",
+      "roundTrip": "__tour_id REMPLI → MET À JOUR le circuit existant. __tour_id VIDE → un nouveau circuit est ajouté. Les deux peuvent coexister dans le même fichier.",
+      "emptyCellRule": "Cellule vide = NE PAS TOUCHER. Lors de la mise à jour, une cellule vide CONSERVE la valeur existante dans la BDD. Pour supprimer, utilisez le panneau — Excel ne supprime pas.",
+      "duplicateId": "Le même __tour_id ne peut pas apparaître dans deux lignes. S'il apparaît, la première gagne, la seconde est rejetée.",
+      "updateNoTranslate": "La traduction IA ne s'exécute PAS automatiquement sur les lignes de mise à jour. Traduisez via 'Traduire avec IA' depuis le panneau.",
+      "idSafetyReminder": "Ne JAMAIS supprimer/modifier __tour_id. Si retiré, la ligne devient un 'nouveau circuit' (crée un doublon)."
     }
   },
   "notificationCenter": {

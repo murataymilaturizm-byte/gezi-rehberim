@@ -1948,10 +1948,33 @@
       "checkboxHint": "Paketinizde aktif dillere ({{count}} dil) çeviri yapılır.",
       "noTargetLangs": "Çevrilecek dil yok — önce Dil Yönetimi'nden dil ekleyin.",
       "tooManyToursHint": "{{count}}+ tur için çeviriyi panelden tek tek yapın.",
+      "onlyUpdates": "Yeni tur yok — çeviri yalnızca yeni turlara uygulanır. Mevcut tur çevirilerini panelden 'AI ile Çevir' ile yapabilirsiniz.",
+      "skippingUpdates": "Sadece {{create}} yeni tur için (mevcut {{update}} tur atlanır).",
       "progress": "Çevriliyor: {{done}}/{{total}}",
       "toastSuccess": "{{tours}} tur eklendi, çevirileri AI ile dolduruldu.",
+      "toastSuccessShort": "AI çevirisi tamamlandı.",
       "toastPartial": "{{tours}} tur eklendi, {{missing}} çeviri eksik kaldı — panelden tek tek tamamlayabilirsiniz.",
-      "toastFail": "{{tours}} tur eklendi, çeviri başarısız oldu. Sonra panelden tek tek çevirebilirsiniz."
+      "toastPartialShort": "{{missing}} çeviri eksik (panelden tamamlayın).",
+      "toastFail": "{{tours}} tur eklendi, çeviri başarısız oldu. Sonra panelden tek tek çevirebilirsiniz.",
+      "toastFailShort": "Çeviri başarısız (panelden tek tek çevirebilirsiniz)."
+    },
+    "action": {
+      "column": "İşlem",
+      "create": "Yeni",
+      "createBadge": "yeni",
+      "update": "Güncelle",
+      "updateBadge": "güncellenecek",
+      "rejected": "Reddedildi",
+      "rejectedBadge": "reddedildi"
+    },
+    "reject": {
+      "invalidId": "Geçersiz tur ID format'ı",
+      "duplicateId": "Satır {{firstAt}} ile aynı __tour_id",
+      "notFoundOrCrossAgency": "Bu tur bulunamadı veya size ait değil",
+      "dbCheckFailed": "Tur doğrulama başarısız — tekrar deneyin"
+    },
+    "upsert": {
+      "summary": "{{created}} yeni eklendi · {{updated}} güncellendi · {{rejected}} reddedildi"
     },
     "tpl": {
       "sheetInstructions": "Talimatlar",
@@ -1974,7 +1997,12 @@
       "visaNotes": "Vize ile ilgili açıklama",
       "titleMulti": "Yurtdışı müşteri için tur başlığı çevirisi (boş bırakılabilir)",
       "destMulti": "Yurtdışı müşteri için destinasyon çevirisi",
-      "programMulti": "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)"
+      "programMulti": "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)",
+      "roundTrip": "__tour_id DOLU → mevcut turu GÜNCELLER. __tour_id BOŞ → yeni tur eklenir. İkisi aynı dosyada karışık olabilir.",
+      "emptyCellRule": "Boş hücre = DOKUNMA. Güncellemede boş bırakılan hücre DB'deki mevcut değeri KORUR. Silmek için panelden silin — Excel silmez.",
+      "duplicateId": "Aynı __tour_id iki satırda olamaz. Olursa ilki kullanılır, ikinci reddedilir.",
+      "updateNoTranslate": "Güncelleme satırlarında AI çeviri OTOMATIK YAPILMAZ. Çevirileri panelden 'AI ile Çevir' ile yapın.",
+      "idSafetyReminder": "__tour_id'yi ASLA silmeyin/değiştirmeyin. Silinirse satır 'yeni tur' olarak eklenir (duplicate yaratır)."
     }
   },
   "greetings": {

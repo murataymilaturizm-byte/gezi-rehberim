@@ -147,6 +147,12 @@ export function downloadTourImportTemplate(): void {
     { Kolon: "hotel_name",     Tip: _opt, Açıklama: _t("bulk.tpl.hotelName", { defaultValue: "Otel adı (varsa)" }), Örnek: "Hotel Sultanahmet Palace" },
     { Kolon: "hotel_stars",    Tip: _opt, Açıklama: _t("bulk.tpl.hotelStars", { defaultValue: "Otel yıldızı (1-5 arası sayı)" }), Örnek: "4" },
     { Kolon: "visa_notes",     Tip: _opt, Açıklama: _t("bulk.tpl.visaNotes", { defaultValue: "Vize ile ilgili açıklama" }), Örnek: "Schengen vizesi şart" },
+    // ETAP 2: Round-trip kuralları — acente bu Excel'i export edip düzenleyip geri yüklerken.
+    { Kolon: "—", Tip: "🔄", Açıklama: _t("bulk.tpl.roundTrip", { defaultValue: "__tour_id DOLU → mevcut turu GÜNCELLER. __tour_id BOŞ → yeni tur eklenir. İkisi aynı dosyada karışık olabilir." }), Örnek: "" },
+    { Kolon: "—", Tip: "🛡️", Açıklama: _t("bulk.tpl.emptyCellRule", { defaultValue: "Boş hücre = DOKUNMA. Güncellemede boş bırakılan hücre DB'deki mevcut değeri KORUR. Silmek için panelden silin — Excel silmez." }), Örnek: "" },
+    { Kolon: "—", Tip: "⚠️", Açıklama: _t("bulk.tpl.duplicateId", { defaultValue: "Aynı __tour_id iki satırda olamaz. Olursa ilki kullanılır, ikinci reddedilir." }), Örnek: "" },
+    { Kolon: "—", Tip: "🌐", Açıklama: _t("bulk.tpl.updateNoTranslate", { defaultValue: "Güncelleme satırlarında AI çeviri OTOMATIK YAPILMAZ. Çevirileri panelden 'AI ile Çevir' ile yapın." }), Örnek: "" },
+    { Kolon: "—", Tip: "🔒", Açıklama: _t("bulk.tpl.idSafetyReminder", { defaultValue: "__tour_id'yi ASLA silmeyin/değiştirmeyin. Silinirse satır 'yeni tur' olarak eklenir (duplicate yaratır)." }), Örnek: "" },
     { Kolon: "—", Tip: _info, Açıklama: _t("bulk.tpl.aiTranslateNotice", { defaultValue: "Çevirileri AI ile otomatik yapabilirsiniz — yükleme ekranındaki tiki işaretleyin. Acentenizin paketindeki dillere çevrilir." }), Örnek: "" },
     { Kolon: "—", Tip: _info, Açıklama: _t("bulk.tpl.dateNotice", { defaultValue: "Tur TARİHLERİ, FİYAT ve KONTENJAN bu Excel'de YOKTUR. Tarihleri panelden 'Toplu Tarih Oluştur' ile ekleyin." }), Örnek: "" },
   ];
@@ -242,6 +248,13 @@ interface ParsedTour {
   // Validation
   errors: string[];
   isValid: boolean;
+  // ETAP 2: round-trip — INSERT vs UPDATE vs REJECT sınıflandırması.
+  // - "create": __tour_id boş + valid → INSERT (mevcut Etap 1 davranışı).
+  // - "update": __tour_id dolu + DB'de bulundu + agency_id eşleşti → UPDATE (sparse).
+  // - "rejected": __tour_id var ama bulunamadı / başka agency / format hatası /
+  //   dosya içi duplicate / zorunlu alan eksik.
+  action?: "create" | "update" | "rejected";
+  rejectReason?: string;
 }
 
 interface BulkTourImportProps {
@@ -265,6 +278,65 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
   const [autoTranslate, setAutoTranslate] = useState(false);
   const [targetLanguages, setTargetLanguages] = useState<string[]>([]);  // enabled_languages - "tr"
   const [translateProgress, setTranslateProgress] = useState<{ done: number; total: number } | null>(null);
+
+  // ETAP 2: DB pre-validation — parsedTours içindeki update kandidaları için
+  // TEK sorguda existence + cross-agency kontrol. Önizleme gösterilmeden önce çalışır
+  // (parsedTours değiştiğinde otomatik tetiklenir).
+  useEffect(() => {
+    if (parsedTours.length === 0) return;
+    // Yalnızca geçici "update" sınıfındaki id'leri DB'de ara.
+    const idsToCheck = parsedTours
+      .filter((p) => p.action === "update" && p.__tour_id)
+      .map((p) => p.__tour_id as string);
+    if (idsToCheck.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      // TEK sorgu — N satır için N sorgu DEĞİL. Hem performans hem rate-limit dostu.
+      const { data, error } = await supabase
+        .from("tours")
+        .select("id")
+        .eq("agency_id", agencyId)
+        .in("id", idsToCheck);
+      if (cancelled) return;
+      if (error) {
+        console.error("[bulk-import] DB pre-validation error:", error);
+        // Hata durumunda update kandidalarını rejected'a çevir (defansif: tur kaybı yerine açık fail).
+        setParsedTours((prev) =>
+          prev.map((p) =>
+            p.action === "update"
+              ? {
+                  ...p,
+                  action: "rejected" as const,
+                  rejectReason: t("bulkImport.reject.dbCheckFailed", {
+                    defaultValue: "Tur doğrulama başarısız — tekrar deneyin",
+                  }),
+                }
+              : p,
+          ),
+        );
+        return;
+      }
+      const foundIds = new Set((data || []).map((r: any) => r.id));
+      setParsedTours((prev) =>
+        prev.map((p) => {
+          if (p.action !== "update" || !p.__tour_id) return p;
+          if (foundIds.has(p.__tour_id)) return p;  // bulundu → update kalır
+          // Bulunamadı (DB'de yok VEYA başka agency) → reject.
+          return {
+            ...p,
+            action: "rejected" as const,
+            rejectReason: t("bulkImport.reject.notFoundOrCrossAgency", {
+              defaultValue: "Bu tur bulunamadı veya size ait değil",
+            }),
+          };
+        }),
+      );
+    })();
+    return () => { cancelled = true; };
+    // parsedTours referansı her parse'da değişir; pre-validation tek seferlik.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parsedTours.length, agencyId]);
 
   // enabled_languages'ı dialog açılırken acente kaydından çek.
   // Prop drilling yerine içeride fetch — BulkTourImport zaten agencyId'yi alıyor,
@@ -328,6 +400,10 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         // toplanır ve parser sonunda kullanıcıya gösterilir.
         const unknownHeaders = new Set<string>();
         const rows = rawRows.map((rawRow) => normalizeRow(rawRow, unknownHeaders));
+
+        // ETAP 2: __tour_id UUID format ve dosya içi duplicate tespiti.
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const _firstIdOccurrence = new Map<string, number>();  // id → ilk geçtiği rowIndex
 
         const parsed: ParsedTour[] = rows.map((row, idx) => {
           const errors: string[] = [];
@@ -396,6 +472,47 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
           };
         });
 
+        // ETAP 2: Sınıflandırma — action ve rejectReason ata.
+        // - Boş __tour_id + valid → create
+        // - Dolu __tour_id format hatası → rejected (invalidId)
+        // - Dosya içi duplicate __tour_id → ilki kazanır, ikincisi rejected
+        // - Dolu __tour_id format OK → action="update" geçici (DB pre-validation
+        //   sonrası DB'de yoksa rejected'a düşer; bulunursa update kalır).
+        for (const p of parsed) {
+          if (!p.isValid) {
+            // Zorunlu alan eksik vs. → rejected (zorunlu alan validation error'ı zaten errors[]'da)
+            p.action = "rejected";
+            p.rejectReason = p.errors[0];
+            continue;
+          }
+          const id = p.__tour_id;
+          if (!id) {
+            p.action = "create";
+            continue;
+          }
+          // __tour_id dolu — format kontrolü
+          if (!UUID_RE.test(id)) {
+            p.action = "rejected";
+            p.rejectReason = t("bulkImport.reject.invalidId", {
+              defaultValue: "Geçersiz tur ID format'ı",
+            });
+            continue;
+          }
+          // Dosya içi duplicate?
+          const firstAt = _firstIdOccurrence.get(id);
+          if (firstAt !== undefined) {
+            p.action = "rejected";
+            p.rejectReason = t("bulkImport.reject.duplicateId", {
+              defaultValue: "Satır {{firstAt}} ile aynı __tour_id",
+              firstAt,
+            });
+            continue;
+          }
+          _firstIdOccurrence.set(id, p.rowIndex);
+          // Geçici "update" — DB pre-validation sonrasında ya kalır ya rejected olur.
+          p.action = "update";
+        }
+
         setParsedTours(parsed);
         const validCount = parsed.filter((p) => p.isValid).length;
         toast({
@@ -427,76 +544,164 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
   };
 
   const handleImport = async () => {
-    const valid = parsedTours.filter((p) => p.isValid);
-    if (valid.length === 0) {
+    // ETAP 2: parsedTours → create / update / rejected ayrımı.
+    const toCreate = parsedTours.filter((p) => p.action === "create");
+    const toUpdate = parsedTours.filter((p) => p.action === "update");
+    const rejected = parsedTours.filter((p) => p.action === "rejected");
+
+    if (toCreate.length === 0 && toUpdate.length === 0) {
       toast({ title: t("common.error"), description: t("bulkImport.errors.noValid"), variant: "destructive" });
       return;
     }
 
     setIsLoading(true);
+    let _createdCount = 0;
+    let _updatedCount = 0;
+    let _failedUpdateCount = 0;
+    let insertedRows: any[] = [];
+
     try {
-      // ETAP 1: Tüm master alanları DB'ye INSERT edilir (pure insert, UPSERT yok).
-      // __tour_id BİLİNÇLİ olarak GÖNDERİLMEZ — bu etapta yeni tur eklenir, DB yeni id üretir.
-      // Etap 2 UPSERT eklendiğinde __tour_id varsa update / yoksa insert ayrımı yapılacak.
-      // Undefined olanlar `null` olarak gönderilir (Supabase Insert tipi opsiyoneli kabul eder).
-      const rows = valid.map((p) => ({
-        agency_id: agencyId,
-        title: p.title,
-        destination: p.destination,
-        type: p.type,
-        currency: p.currency,
-        program_url: p.program_url ?? null,
-        program_kisa: p.program_kisa ?? null,
-        ulasim: p.ulasim ?? null,
-        gezilecek_yerler: p.gezilecek_yerler ?? null,
-        hareket_noktasi: p.hareket_noktasi ?? null,
-        toplanma_saati: p.toplanma_saati ?? null,
-        konaklama: p.konaklama ?? null,
-        hotel_name: p.hotel_name ?? null,
-        hotel_stars: p.hotel_stars ?? null,
-        tur_kategorisi: p.tur_kategorisi ?? null,
-        tur_sure: p.tur_sure ?? null,
-        min_pax: p.min_pax ?? 1,
-        visa_required: p.visa_required ?? false,
-        visa_notes: p.visa_notes ?? null,
-        title_en: p.title_en ?? null,
-        title_de: p.title_de ?? null,
-        title_fr: p.title_fr ?? null,
-        title_es: p.title_es ?? null,
-        title_ru: p.title_ru ?? null,
-        title_ar: p.title_ar ?? null,
-        destination_en: p.destination_en ?? null,
-        destination_de: p.destination_de ?? null,
-        destination_fr: p.destination_fr ?? null,
-        destination_es: p.destination_es ?? null,
-        destination_ru: p.destination_ru ?? null,
-        destination_ar: p.destination_ar ?? null,
-        program_kisa_en: p.program_kisa_en ?? null,
-        program_kisa_de: p.program_kisa_de ?? null,
-        program_kisa_fr: p.program_kisa_fr ?? null,
-        program_kisa_es: p.program_kisa_es ?? null,
-        program_kisa_ru: p.program_kisa_ru ?? null,
-        program_kisa_ar: p.program_kisa_ar ?? null,
-      }));
+      // ─── INSERT bloğu (create) ────────────────────────────────────────────────
+      // Boş hücre → null (yeni satır için default davranış doğru).
+      if (toCreate.length > 0) {
+        const rows = toCreate.map((p) => ({
+          agency_id: agencyId,
+          title: p.title,
+          destination: p.destination,
+          type: p.type,
+          currency: p.currency,
+          program_url: p.program_url ?? null,
+          program_kisa: p.program_kisa ?? null,
+          ulasim: p.ulasim ?? null,
+          gezilecek_yerler: p.gezilecek_yerler ?? null,
+          hareket_noktasi: p.hareket_noktasi ?? null,
+          toplanma_saati: p.toplanma_saati ?? null,
+          konaklama: p.konaklama ?? null,
+          hotel_name: p.hotel_name ?? null,
+          hotel_stars: p.hotel_stars ?? null,
+          tur_kategorisi: p.tur_kategorisi ?? null,
+          tur_sure: p.tur_sure ?? null,
+          min_pax: p.min_pax ?? 1,
+          visa_required: p.visa_required ?? false,
+          visa_notes: p.visa_notes ?? null,
+          title_en: p.title_en ?? null,
+          title_de: p.title_de ?? null,
+          title_fr: p.title_fr ?? null,
+          title_es: p.title_es ?? null,
+          title_ru: p.title_ru ?? null,
+          title_ar: p.title_ar ?? null,
+          destination_en: p.destination_en ?? null,
+          destination_de: p.destination_de ?? null,
+          destination_fr: p.destination_fr ?? null,
+          destination_es: p.destination_es ?? null,
+          destination_ru: p.destination_ru ?? null,
+          destination_ar: p.destination_ar ?? null,
+          program_kisa_en: p.program_kisa_en ?? null,
+          program_kisa_de: p.program_kisa_de ?? null,
+          program_kisa_fr: p.program_kisa_fr ?? null,
+          program_kisa_es: p.program_kisa_es ?? null,
+          program_kisa_ru: p.program_kisa_ru ?? null,
+          program_kisa_ar: p.program_kisa_ar ?? null,
+        }));
+        const { data: inserted, error } = await supabase
+          .from("tours")
+          .insert(rows)
+          .select("id, title, destination, program_kisa");
+        if (error) throw error;
+        insertedRows = inserted || [];
+        _createdCount = insertedRows.length;
+      }
 
-      // INSERT'ten dönen kayıtların id+title+destination+program_kisa'sını al — çeviri için lazım.
-      const { data: insertedRows, error } = await supabase
-        .from("tours")
-        .insert(rows)
-        .select("id, title, destination, program_kisa");
-      if (error) throw error;
+      // ─── UPDATE bloğu (update) — SPARSE PAYLOAD ───────────────────────────────
+      // Boş hücre = DOKUNMA. Sadece undefined OLMAYAN alanlar SET edilir.
+      // Best-effort: her UPDATE bağımsız çalışır, fail olanlar sayılır, başarılı olanlar commit.
+      if (toUpdate.length > 0) {
+        const _buildUpdatePayload = (p: ParsedTour): Record<string, any> => {
+          const payload: Record<string, any> = {};
+          // Zorunlu alanlar (parse'da kontrol edildi, valid satırlarda dolu) — yine de defansif.
+          if (p.title !== undefined) payload.title = p.title;
+          if (p.destination !== undefined) payload.destination = p.destination;
+          if (p.type !== undefined) payload.type = p.type;
+          if (p.currency !== undefined) payload.currency = p.currency;
+          // Master detay — SADECE undefined OLMAYAN alanlar.
+          // visa_required/hotel_stars/min_pax sayısal/boolean: undefined ise dokunma.
+          if (p.program_url !== undefined) payload.program_url = p.program_url;
+          if (p.program_kisa !== undefined) payload.program_kisa = p.program_kisa;
+          if (p.ulasim !== undefined) payload.ulasim = p.ulasim;
+          if (p.gezilecek_yerler !== undefined) payload.gezilecek_yerler = p.gezilecek_yerler;
+          if (p.hareket_noktasi !== undefined) payload.hareket_noktasi = p.hareket_noktasi;
+          if (p.toplanma_saati !== undefined) payload.toplanma_saati = p.toplanma_saati;
+          if (p.konaklama !== undefined) payload.konaklama = p.konaklama;
+          if (p.hotel_name !== undefined) payload.hotel_name = p.hotel_name;
+          if (p.hotel_stars !== undefined) payload.hotel_stars = p.hotel_stars;
+          if (p.tur_kategorisi !== undefined) payload.tur_kategorisi = p.tur_kategorisi;
+          if (p.tur_sure !== undefined) payload.tur_sure = p.tur_sure;
+          if (p.min_pax !== undefined) payload.min_pax = p.min_pax;
+          if (p.visa_required !== undefined) payload.visa_required = p.visa_required;
+          if (p.visa_notes !== undefined) payload.visa_notes = p.visa_notes;
+          // Çok dilli alanlar — Excel'de varsa SET et (acente manuel doldurduysa).
+          // Karar gereği UPDATE'te AI çevirisi YOK; acente panelden yapacak.
+          if (p.title_en !== undefined) payload.title_en = p.title_en;
+          if (p.title_de !== undefined) payload.title_de = p.title_de;
+          if (p.title_fr !== undefined) payload.title_fr = p.title_fr;
+          if (p.title_es !== undefined) payload.title_es = p.title_es;
+          if (p.title_ru !== undefined) payload.title_ru = p.title_ru;
+          if (p.title_ar !== undefined) payload.title_ar = p.title_ar;
+          if (p.destination_en !== undefined) payload.destination_en = p.destination_en;
+          if (p.destination_de !== undefined) payload.destination_de = p.destination_de;
+          if (p.destination_fr !== undefined) payload.destination_fr = p.destination_fr;
+          if (p.destination_es !== undefined) payload.destination_es = p.destination_es;
+          if (p.destination_ru !== undefined) payload.destination_ru = p.destination_ru;
+          if (p.destination_ar !== undefined) payload.destination_ar = p.destination_ar;
+          if (p.program_kisa_en !== undefined) payload.program_kisa_en = p.program_kisa_en;
+          if (p.program_kisa_de !== undefined) payload.program_kisa_de = p.program_kisa_de;
+          if (p.program_kisa_fr !== undefined) payload.program_kisa_fr = p.program_kisa_fr;
+          if (p.program_kisa_es !== undefined) payload.program_kisa_es = p.program_kisa_es;
+          if (p.program_kisa_ru !== undefined) payload.program_kisa_ru = p.program_kisa_ru;
+          if (p.program_kisa_ar !== undefined) payload.program_kisa_ar = p.program_kisa_ar;
+          return payload;
+        };
 
-      supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId } }).catch(() => {});
+        // Her satır için ayrı UPDATE (best-effort). 50 tur için ~50 sequential update
+        // — Supabase için kabul edilebilir. Concurrency=3 paralel:
+        await runWithConcurrency(
+          toUpdate,
+          TRANSLATE_CONCURRENCY,
+          async (p) => {
+            try {
+              const payload = _buildUpdatePayload(p);
+              if (Object.keys(payload).length === 0) {
+                // Hiç dolu alan yok (extreme edge case: tüm hücreler boş) — atla.
+                return;
+              }
+              const { error: updErr } = await supabase
+                .from("tours")
+                .update(payload)
+                .eq("id", p.__tour_id as string)
+                .eq("agency_id", agencyId); // 3. katman defansif cross-agency koruma (RLS + WHERE)
+              if (updErr) throw updErr;
+              _updatedCount++;
+            } catch (err) {
+              console.error("[bulk-import] UPDATE failed for tour", p.__tour_id, err);
+              _failedUpdateCount++;
+            }
+          },
+        );
+      }
 
-      // ETAP 1.5b: AI ÇEVİRİ AKIŞI (best-effort, opsiyonel)
-      // Kural: tur INSERT başarılı ve commit edildi (yukarıda). Çeviri buradan SONRA gelir;
-      // çeviri fail olursa turlar zaten DB'de — kayıp olmaz.
-      // Koşullar: checkbox açık + target dil var + tur sayısı ≤ tavan + insertedRows dolu.
+      // Cache invalidate (hem yeni INSERT hem UPDATE sonrası bot tarafı taze görsün).
+      if (_createdCount > 0 || _updatedCount > 0) {
+        supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId } }).catch(() => {});
+      }
+
+      // ETAP 1.5b: AI ÇEVİRİ AKIŞI — SADECE INSERT (create) row'ları için.
+      // ETAP 2 kararı: UPDATE row'larında çeviri YOK (acente panelden TourFormDialog ile yapar).
       const _shouldTranslate =
         autoTranslate &&
         targetLanguages.length > 0 &&
-        valid.length <= TRANSLATE_MAX_ROWS &&
-        Array.isArray(insertedRows) && insertedRows.length > 0;
+        toCreate.length > 0 &&
+        toCreate.length <= TRANSLATE_MAX_ROWS &&
+        insertedRows.length > 0;
 
       let _translatedCount = 0;
       let _failedCount = 0;
@@ -579,21 +784,26 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
       }
 
       // ─── Sonuç toast'ları (best-effort davranış) ─────────────────────────────
+      // ETAP 2: create + update + rejected sayımı tek toast'ta.
+      const _summary = t("bulkImport.upsert.summary", {
+        defaultValue: "{{created}} yeni eklendi · {{updated}} güncellendi · {{rejected}} reddedildi",
+        created: _createdCount,
+        updated: _updatedCount,
+        rejected: rejected.length + _failedUpdateCount,
+      });
       if (_shouldTranslate) {
         if (_failedCount === 0 && _translatedCount > 0) {
           toast({
             title: t("common.success"),
-            description: t("bulkImport.translate.toastSuccess", {
-              defaultValue: "{{tours}} tur eklendi, çevirileri AI ile dolduruldu.",
-              tours: rows.length,
+            description: _summary + " — " + t("bulkImport.translate.toastSuccessShort", {
+              defaultValue: "AI çevirisi tamamlandı.",
             }),
           });
         } else if (_translatedCount > 0 && _failedCount > 0) {
           toast({
             title: t("common.success"),
-            description: t("bulkImport.translate.toastPartial", {
-              defaultValue: "{{tours}} tur eklendi, {{missing}} çeviri eksik kaldı — panelden tek tek tamamlayabilirsiniz.",
-              tours: rows.length,
+            description: _summary + " — " + t("bulkImport.translate.toastPartialShort", {
+              defaultValue: "{{missing}} çeviri eksik (panelden tamamlayın).",
               missing: _failedCount,
             }),
             duration: 8000,
@@ -601,15 +811,18 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
         } else {
           toast({
             title: t("common.success"),
-            description: t("bulkImport.translate.toastFail", {
-              defaultValue: "{{tours}} tur eklendi, çeviri başarısız oldu. Sonra panelden tek tek çevirebilirsiniz.",
-              tours: rows.length,
+            description: _summary + " — " + t("bulkImport.translate.toastFailShort", {
+              defaultValue: "Çeviri başarısız (panelden tek tek çevirebilirsiniz).",
             }),
             duration: 8000,
           });
         }
       } else {
-        toast({ title: t("common.success"), description: t("bulkImport.success", { count: rows.length }) });
+        toast({
+          title: t("common.success"),
+          description: _summary,
+          duration: _failedUpdateCount > 0 || rejected.length > 0 ? 8000 : 5000,
+        });
       }
       setTranslateProgress(null);
       onSuccess();
@@ -708,11 +921,14 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
           </Card>
 
           {/* ETAP 1.5b: AI ile otomatik çeviri tik kutusu — sadece preview varken anlamlı. */}
+          {/* ETAP 2: AI çeviri SADECE INSERT row'larına uygulanır; UPDATE row'larında SKIP. */}
           {parsedTours.length > 0 && (() => {
-            const _validCount = parsedTours.filter((p) => p.isValid).length;
-            const _tooMany = _validCount > TRANSLATE_MAX_ROWS;
+            const _createCount = parsedTours.filter((p) => p.action === "create").length;
+            const _updateCount = parsedTours.filter((p) => p.action === "update").length;
+            const _tooMany = _createCount > TRANSLATE_MAX_ROWS;
             const _noTargets = targetLanguages.length === 0;
-            const _disabled = _tooMany || _noTargets;
+            const _noCreates = _createCount === 0;
+            const _disabled = _tooMany || _noTargets || _noCreates;
             return (
               <Card className="p-3 bg-primary/5 border-primary/30">
                 <div className="flex items-start gap-3">
@@ -740,6 +956,12 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
                           defaultValue: "Çevrilecek dil yok — önce Dil Yönetimi'nden dil ekleyin.",
                         })}
                       </p>
+                    ) : _noCreates ? (
+                      <p className="text-xs text-amber-700 dark:text-amber-400">
+                        {t("bulkImport.translate.onlyUpdates", {
+                          defaultValue: "Yeni tur yok — çeviri yalnızca yeni turlara uygulanır. Mevcut tur çevirilerini panelden 'AI ile Çevir' ile yapabilirsiniz.",
+                        })}
+                      </p>
                     ) : _tooMany ? (
                       <p className="text-xs text-amber-700 dark:text-amber-400">
                         {t("bulkImport.translate.tooManyToursHint", {
@@ -753,6 +975,16 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
                           defaultValue: "Paketinizde aktif dillere ({{count}} dil) çeviri yapılır.",
                           count: targetLanguages.length,
                         })}
+                        {_updateCount > 0 && (
+                          <>
+                            {" "}
+                            {t("bulkImport.translate.skippingUpdates", {
+                              defaultValue: "Sadece {{create}} yeni tur için (mevcut {{update}} tur atlanır).",
+                              create: _createCount,
+                              update: _updateCount,
+                            })}
+                          </>
+                        )}
                       </p>
                     )}
                   </div>
@@ -785,71 +1017,113 @@ export function BulkTourImport({ agencyId, open, onClose, onSuccess }: BulkTourI
           )}
 
           {/* Parsed preview */}
-          {parsedTours.length > 0 && (
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                <p className="font-semibold text-sm">{t("bulkImport.parsedTours")}</p>
-                <div className="flex gap-2">
-                  <Badge className="bg-green-500 text-white gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
-                    {validCount} {t("bulkImport.valid")}
-                  </Badge>
-                  {invalidCount > 0 && (
-                    <Badge variant="destructive" className="gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {invalidCount} {t("bulkImport.invalid")}
-                    </Badge>
-                  )}
+          {parsedTours.length > 0 && (() => {
+            const _createCount = parsedTours.filter((p) => p.action === "create").length;
+            const _updateCount = parsedTours.filter((p) => p.action === "update").length;
+            const _rejectCount = parsedTours.filter((p) => p.action === "rejected").length;
+            return (
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <p className="font-semibold text-sm">{t("bulkImport.parsedTours")}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {/* ETAP 2: üst özet — yeni / güncelle / reddedildi sayaçları */}
+                    {_createCount > 0 && (
+                      <Badge className="bg-green-500 text-white gap-1">
+                        🆕 {_createCount} {t("bulkImport.action.createBadge", { defaultValue: "yeni" })}
+                      </Badge>
+                    )}
+                    {_updateCount > 0 && (
+                      <Badge className="bg-blue-500 text-white gap-1">
+                        ✏️ {_updateCount} {t("bulkImport.action.updateBadge", { defaultValue: "güncellenecek" })}
+                      </Badge>
+                    )}
+                    {_rejectCount > 0 && (
+                      <Badge variant="destructive" className="gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {_rejectCount} {t("bulkImport.action.rejectedBadge", { defaultValue: "reddedildi" })}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="max-h-72 overflow-y-auto border rounded">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">#</TableHead>
-                      <TableHead>{t("admin.tours.title")}</TableHead>
-                      <TableHead className="hidden sm:table-cell">{t("admin.tours.destination")}</TableHead>
-                      <TableHead className="hidden sm:table-cell">Tip</TableHead>
-                      <TableHead>{t("common.status")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {parsedTours.map((tour) => (
-                      <TableRow key={tour.rowIndex} className={!tour.isValid ? "bg-destructive/5" : ""}>
-                        <TableCell className="text-xs text-muted-foreground">{tour.rowIndex}</TableCell>
-                        <TableCell className="font-medium max-w-[160px] truncate">{tour.title || "—"}</TableCell>
-                        <TableCell className="hidden sm:table-cell text-sm">{tour.destination || "—"}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant="outline" className="text-xs">{tour.type}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {tour.isValid ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <div>
-                              <AlertCircle className="h-4 w-4 text-destructive" />
-                              <p className="text-xs text-destructive mt-0.5">{tour.errors[0]}</p>
-                            </div>
-                          )}
-                        </TableCell>
+                <div className="max-h-72 overflow-y-auto border rounded">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">#</TableHead>
+                        <TableHead>{t("admin.tours.title")}</TableHead>
+                        <TableHead className="hidden sm:table-cell">{t("admin.tours.destination")}</TableHead>
+                        <TableHead className="hidden sm:table-cell">Tip</TableHead>
+                        <TableHead>{t("bulkImport.action.column", { defaultValue: "İşlem" })}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
-          )}
+                    </TableHeader>
+                    <TableBody>
+                      {parsedTours.map((tour) => {
+                        const _rowClass =
+                          tour.action === "rejected" ? "bg-destructive/5"
+                          : tour.action === "update" ? "bg-blue-500/5"
+                          : tour.action === "create" ? "bg-green-500/5"
+                          : "";
+                        return (
+                          <TableRow key={tour.rowIndex} className={_rowClass}>
+                            <TableCell className="text-xs text-muted-foreground">{tour.rowIndex}</TableCell>
+                            <TableCell className="font-medium max-w-[160px] truncate">{tour.title || "—"}</TableCell>
+                            <TableCell className="hidden sm:table-cell text-sm">{tour.destination || "—"}</TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              <Badge variant="outline" className="text-xs">{tour.type}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {tour.action === "create" && (
+                                <Badge className="bg-green-500 text-white gap-1 text-[10px]">
+                                  🆕 {t("bulkImport.action.create", { defaultValue: "Yeni" })}
+                                </Badge>
+                              )}
+                              {tour.action === "update" && (
+                                <Badge className="bg-blue-500 text-white gap-1 text-[10px]">
+                                  ✏️ {t("bulkImport.action.update", { defaultValue: "Güncelle" })}
+                                </Badge>
+                              )}
+                              {tour.action === "rejected" && (
+                                <div>
+                                  <Badge variant="destructive" className="gap-1 text-[10px]">
+                                    <AlertCircle className="h-3 w-3" />
+                                    {t("bulkImport.action.rejected", { defaultValue: "Reddedildi" })}
+                                  </Badge>
+                                  {tour.rejectReason && (
+                                    <p className="text-[10px] text-destructive mt-0.5 leading-snug">
+                                      {tour.rejectReason}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
+            );
+          })()}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
-          <Button onClick={handleImport} disabled={isLoading || validCount === 0}>
-            {isLoading ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("bulkImport.importing")}</>
-            ) : (
-              <><Upload className="h-4 w-4 mr-2" />{t("bulkImport.importButton", { count: validCount })}</>
-            )}
-          </Button>
+          {/* ETAP 2: buton sayacı create + update toplamı (rejected hariç) */}
+          {(() => {
+            const _actionableCount = parsedTours.filter(
+              (p) => p.action === "create" || p.action === "update",
+            ).length;
+            return (
+              <Button onClick={handleImport} disabled={isLoading || _actionableCount === 0}>
+                {isLoading ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("bulkImport.importing")}</>
+                ) : (
+                  <><Upload className="h-4 w-4 mr-2" />{t("bulkImport.importButton", { count: _actionableCount })}</>
+                )}
+              </Button>
+            );
+          })()}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1956,10 +1956,33 @@
       "checkboxHint": "Übersetzt in die in Ihrem Tarif aktiven Sprachen ({{count}} Sprachen).",
       "noTargetLangs": "Keine Zielsprachen — bitte zuerst Sprachen in der Sprachverwaltung aktivieren.",
       "tooManyToursHint": "Bei {{count}}+ Touren bitte einzeln aus dem Panel übersetzen.",
+      "onlyUpdates": "Keine neuen Touren — Übersetzung gilt nur für neue Touren. Bestehende Touren bitte über 'Mit KI übersetzen' im Panel.",
+      "skippingUpdates": "Nur für {{create}} neue Tour(en) (bestehende {{update}} übersprungen).",
       "progress": "Übersetze: {{done}}/{{total}}",
       "toastSuccess": "{{tours}} Tour(en) hinzugefügt, KI hat Übersetzungen erstellt.",
+      "toastSuccessShort": "KI-Übersetzung abgeschlossen.",
       "toastPartial": "{{tours}} Tour(en) hinzugefügt; {{missing}} Übersetzung(en) fehlen — bitte aus dem Panel vervollständigen.",
-      "toastFail": "{{tours}} Tour(en) hinzugefügt; Übersetzung fehlgeschlagen. Sie können sie später aus dem Panel übersetzen."
+      "toastPartialShort": "{{missing}} Übersetzung(en) fehlen (im Panel vervollständigen).",
+      "toastFail": "{{tours}} Tour(en) hinzugefügt; Übersetzung fehlgeschlagen. Sie können sie später aus dem Panel übersetzen.",
+      "toastFailShort": "Übersetzung fehlgeschlagen (im Panel einzeln übersetzen)."
+    },
+    "action": {
+      "column": "Aktion",
+      "create": "Neu",
+      "createBadge": "neu",
+      "update": "Aktualisieren",
+      "updateBadge": "zu aktualisieren",
+      "rejected": "Abgelehnt",
+      "rejectedBadge": "abgelehnt"
+    },
+    "reject": {
+      "invalidId": "Ungültiges Tour-ID-Format",
+      "duplicateId": "Gleiche __tour_id wie Zeile {{firstAt}}",
+      "notFoundOrCrossAgency": "Tour nicht gefunden oder gehört nicht Ihnen",
+      "dbCheckFailed": "Tour-Validierung fehlgeschlagen — bitte erneut versuchen"
+    },
+    "upsert": {
+      "summary": "{{created}} hinzugefügt · {{updated}} aktualisiert · {{rejected}} abgelehnt"
     }
   },
   "greetings": {
@@ -3776,7 +3799,12 @@
       "titleMulti": "Tourtitel-Übersetzung für ausländische Kunden (kann leer bleiben)",
       "destMulti": "Reiseziel-Übersetzung für ausländische Kunden",
       "programMulti": "Programm-Übersetzung für ausländische Kunden (mindestens EN empfohlen)",
-      "dateNotice": "Tour-TERMINE, PREISE und KONTINGENT sind NICHT in dieser Excel-Datei. Termine im Panel über 'Termine im Bulk anlegen' hinzufügen."
+      "dateNotice": "Tour-TERMINE, PREISE und KONTINGENT sind NICHT in dieser Excel-Datei. Termine im Panel über 'Termine im Bulk anlegen' hinzufügen.",
+      "roundTrip": "__tour_id GEFÜLLT → AKTUALISIERT die bestehende Tour. __tour_id LEER → neue Tour wird hinzugefügt. Beides kann in derselben Datei vorkommen.",
+      "emptyCellRule": "Leere Zelle = NICHT BERÜHREN. Beim Aktualisieren BLEIBT der DB-Wert erhalten, wenn die Zelle leer ist. Zum Löschen das Panel verwenden — Excel löscht nicht.",
+      "duplicateId": "Dieselbe __tour_id darf nicht in zwei Zeilen vorkommen. Falls doch, gewinnt die erste, die zweite wird abgelehnt.",
+      "updateNoTranslate": "KI-Übersetzung läuft bei Update-Zeilen NICHT automatisch. Bitte über das Panel mit 'Mit KI übersetzen'.",
+      "idSafetyReminder": "__tour_id NIEMALS löschen/ändern. Wird sie entfernt, wird die Zeile als 'neue Tour' eingefügt (erzeugt Duplikat)."
     }
   },
   "notificationCenter": {

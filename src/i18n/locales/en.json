@@ -1956,10 +1956,33 @@
       "checkboxHint": "Translations target the languages enabled in your plan ({{count}} languages).",
       "noTargetLangs": "No target languages — please enable languages in Language Management first.",
       "tooManyToursHint": "For {{count}}+ tours, translate from the panel one by one.",
+      "onlyUpdates": "No new tours — translation applies only to new tours. Translate existing-tour fields from the panel via 'Translate with AI'.",
+      "skippingUpdates": "Only for {{create}} new tour(s) (existing {{update}} skipped).",
       "progress": "Translating: {{done}}/{{total}}",
       "toastSuccess": "{{tours}} tour(s) added, translations filled by AI.",
+      "toastSuccessShort": "AI translation completed.",
       "toastPartial": "{{tours}} tour(s) added; {{missing}} translation(s) missing — complete them from the panel.",
-      "toastFail": "{{tours}} tour(s) added; translation failed. You can translate later from the panel."
+      "toastPartialShort": "{{missing}} translation(s) missing (complete from panel).",
+      "toastFail": "{{tours}} tour(s) added; translation failed. You can translate later from the panel.",
+      "toastFailShort": "Translation failed (translate one by one from panel)."
+    },
+    "action": {
+      "column": "Action",
+      "create": "New",
+      "createBadge": "new",
+      "update": "Update",
+      "updateBadge": "to update",
+      "rejected": "Rejected",
+      "rejectedBadge": "rejected"
+    },
+    "reject": {
+      "invalidId": "Invalid tour ID format",
+      "duplicateId": "Same __tour_id as row {{firstAt}}",
+      "notFoundOrCrossAgency": "Tour not found or doesn't belong to you",
+      "dbCheckFailed": "Tour validation failed — please retry"
+    },
+    "upsert": {
+      "summary": "{{created}} added · {{updated}} updated · {{rejected}} rejected"
     }
   },
   "greetings": {
@@ -3822,7 +3845,12 @@
       "titleMulti": "Foreign-market tour title translation (can be empty)",
       "destMulti": "Foreign-market destination translation",
       "programMulti": "Foreign-market program summary translation (at least EN recommended)",
-      "dateNotice": "Tour DATES, PRICES and QUOTA are NOT in this Excel. Add dates from the panel via 'Bulk Create Dates'."
+      "dateNotice": "Tour DATES, PRICES and QUOTA are NOT in this Excel. Add dates from the panel via 'Bulk Create Dates'.",
+      "roundTrip": "__tour_id FILLED → UPDATES the existing tour. __tour_id EMPTY → adds a new tour. Both can mix in the same file.",
+      "emptyCellRule": "Empty cell = DO NOT TOUCH. On update, an empty cell KEEPS the existing DB value. To delete, use the panel — Excel does not delete.",
+      "duplicateId": "The same __tour_id cannot appear in two rows. If it does, the first wins and the second is rejected.",
+      "updateNoTranslate": "AI translation does NOT run automatically on update rows. Translate from the panel via 'Translate with AI'.",
+      "idSafetyReminder": "NEVER delete/change __tour_id. If removed, the row becomes a 'new tour' insert (creates a duplicate)."
     }
   },
   "notificationCenter": {
