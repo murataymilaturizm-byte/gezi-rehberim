@@ -1207,7 +1207,7 @@
       "registrationsSheet": "Registros",
       "registrationsFile": "registros",
       "toursSheet": "Tours",
-      "toursFile": "tours",
+      "toursFile": "mis_tours",
       "conversationsSheet": "Resúmenes de Conversaciones",
       "conversationsFile": "resumenes_conversaciones",
       "analyticsFile": "analiticas",
@@ -3740,7 +3740,7 @@
   },
   "bulk": {
     "importSheetName": "Tours",
-    "importFilename": "turzz_plantilla_tours",
+    "importFilename": "turzz_plantilla_tours_vacia",
     "invalidType": "tipo de tour inválido",
     "invalidCurrency": "moneda inválida",
     "col": {
@@ -3804,7 +3804,12 @@
       "emptyCellRule": "Celda vacía = NO TOCAR. Al actualizar, una celda vacía MANTIENE el valor existente en la BD. Para eliminar, use el panel — Excel no elimina.",
       "duplicateId": "El mismo __tour_id no puede aparecer en dos filas. Si aparece, la primera gana, la segunda se rechaza.",
       "updateNoTranslate": "La traducción IA NO se ejecuta automáticamente en filas de actualización. Traduzca con 'Traducir con IA' desde el panel.",
-      "idSafetyReminder": "NUNCA elimine/cambie __tour_id. Si se elimina, la fila se inserta como 'tour nuevo' (crea duplicado)."
+      "idSafetyReminder": "NUNCA elimine/cambie __tour_id. Si se elimina, la fila se inserta como 'tour nuevo' (crea duplicado).",
+      "sheetExample": "Ejemplo",
+      "colorRequired": "Cabecera naranja = campo OBLIGATORIO. No puede estar vacío.",
+      "colorOptional": "Cabecera azul = Opcional. Rellene para respuestas más ricas del bot; no obligatorio.",
+      "colorSystem": "Cabecera gris = Campo del sistema. NO TOCAR — se rellena automáticamente.",
+      "exampleRowNote": "La fila amarilla en la hoja 'Ejemplo' es SOLO un ejemplo — NO se importa. Escriba sus tours reales en la hoja 'Tours'."
     }
   },
   "notificationCenter": {

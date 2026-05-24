@@ -1173,7 +1173,7 @@
       "registrationsSheet": "التسجيلات",
       "registrationsFile": "التسجيلات",
       "toursSheet": "الجولات",
-      "toursFile": "الجولات",
+      "toursFile": "jawalaty",
       "conversationsSheet": "ملخصات المحادثات",
       "conversationsFile": "ملخصات_المحادثات",
       "analyticsFile": "التحليلات",
@@ -3740,7 +3740,7 @@
   },
   "bulk": {
     "importSheetName": "الجولات",
-    "importFilename": "turzz_qaleb_aljawalat",
+    "importFilename": "turzz_qaleb_aljawalat_farigh",
     "invalidType": "نوع جولة غير صالح",
     "invalidCurrency": "عملة غير صالحة",
     "col": {
@@ -3804,7 +3804,12 @@
       "emptyCellRule": "الخانة الفارغة = لا تلمس. عند التحديث، الخانة الفارغة تُحافظ على القيمة الموجودة في قاعدة البيانات. للحذف استخدم اللوحة — Excel لا يحذف.",
       "duplicateId": "نفس __tour_id لا يمكن أن يظهر في صفّين. إذا ظهر، الأول يفوز والثاني يُرفض.",
       "updateNoTranslate": "الترجمة بالذكاء الاصطناعي لا تُنفّذ تلقائيًا على صفوف التحديث. ترجم من اللوحة عبر 'ترجمة بالذكاء الاصطناعي'.",
-      "idSafetyReminder": "لا تحذف/تغيّر __tour_id أبدًا. إذا حُذف، يُدرج الصف كـ 'جولة جديدة' (يُسبّب تكرارًا)."
+      "idSafetyReminder": "لا تحذف/تغيّر __tour_id أبدًا. إذا حُذف، يُدرج الصف كـ 'جولة جديدة' (يُسبّب تكرارًا).",
+      "sheetExample": "مثال",
+      "colorRequired": "العنوان البرتقالي = حقل إلزامي. لا يمكن أن يكون فارغًا.",
+      "colorOptional": "العنوان الأزرق = اختياري. املأه لإجابات بوت أفضل، لكنه غير إلزامي.",
+      "colorSystem": "العنوان الرمادي = حقل نظام. لا تلمس — يُملأ تلقائيًا.",
+      "exampleRowNote": "الصف الأصفر في ورقة 'مثال' هو فقط مثال — لا يتم استيراده. اكتب جولاتك الحقيقية في ورقة 'الجولات'."
     }
   },
   "notificationCenter": {

@@ -1173,7 +1173,7 @@
       "registrationsSheet": "Inscriptions",
       "registrationsFile": "inscriptions",
       "toursSheet": "Circuits",
-      "toursFile": "circuits",
+      "toursFile": "mes_circuits",
       "conversationsSheet": "Résumés de Conversations",
       "conversationsFile": "resumes_conversations",
       "analyticsFile": "analyses",
@@ -3740,7 +3740,7 @@
   },
   "bulk": {
     "importSheetName": "Circuits",
-    "importFilename": "turzz_modele_circuits",
+    "importFilename": "turzz_modele_circuits_vide",
     "invalidType": "type de circuit invalide",
     "invalidCurrency": "devise invalide",
     "col": {
@@ -3804,7 +3804,12 @@
       "emptyCellRule": "Cellule vide = NE PAS TOUCHER. Lors de la mise à jour, une cellule vide CONSERVE la valeur existante dans la BDD. Pour supprimer, utilisez le panneau — Excel ne supprime pas.",
       "duplicateId": "Le même __tour_id ne peut pas apparaître dans deux lignes. S'il apparaît, la première gagne, la seconde est rejetée.",
       "updateNoTranslate": "La traduction IA ne s'exécute PAS automatiquement sur les lignes de mise à jour. Traduisez via 'Traduire avec IA' depuis le panneau.",
-      "idSafetyReminder": "Ne JAMAIS supprimer/modifier __tour_id. Si retiré, la ligne devient un 'nouveau circuit' (crée un doublon)."
+      "idSafetyReminder": "Ne JAMAIS supprimer/modifier __tour_id. Si retiré, la ligne devient un 'nouveau circuit' (crée un doublon).",
+      "sheetExample": "Exemple",
+      "colorRequired": "En-tête orange = champ OBLIGATOIRE. Ne peut pas être vide.",
+      "colorOptional": "En-tête bleu = Optionnel. Remplissez pour des réponses du bot plus riches ; non obligatoire.",
+      "colorSystem": "En-tête gris = Champ système. NE PAS TOUCHER — rempli automatiquement.",
+      "exampleRowNote": "La ligne jaune dans la feuille 'Exemple' est UNIQUEMENT un exemple — elle n'est PAS importée. Écrivez vos vrais circuits dans la feuille 'Circuits'."
     }
   },
   "notificationCenter": {

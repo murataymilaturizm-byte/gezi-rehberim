@@ -1,4 +1,5 @@
-import * as XLSX from 'xlsx';
+// ETAP 3: xlsx-js-style — drop-in API uyumlu, stil yazımını destekler.
+import * as XLSX from 'xlsx-js-style';
 import { format } from 'date-fns';
 import { tr, enUS, de, fr, es, ru, ar } from 'date-fns/locale';
 import i18next from 'i18next';
@@ -229,6 +230,33 @@ export const exportToursToExcel = (tours: Tour[]) => {
     { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, // program_kisa_xx
   ];
 
+  // ETAP 3: Renkli başlık grupları — şablonla AYNI sözleşme (turuncu=zorunlu, mavi=opsiyonel, gri=sistem).
+  // xlsx-js-style ile yazılır. Dictionary'deki COLUMN_ORDER ile kolon indeksi eşleşir.
+  const REQUIRED_EXPORT = new Set(["title", "destination", "type", "currency"]);
+  const SYSTEM_EXPORT = new Set(["__tour_id", "created_at"]);
+  const _styleReq = {
+    fill: { fgColor: { rgb: "FFD8A8" } },
+    font: { color: { rgb: "7C2D12" }, bold: true },
+    alignment: { vertical: "center", horizontal: "left" },
+  };
+  const _styleOpt = {
+    fill: { fgColor: { rgb: "DBEAFE" } },
+    font: { color: { rgb: "1E3A8A" }, bold: true },
+    alignment: { vertical: "center", horizontal: "left" },
+  };
+  const _styleSys = {
+    fill: { fgColor: { rgb: "E5E7EB" } },
+    font: { color: { rgb: "374151" }, bold: true, italic: true },
+    alignment: { vertical: "center", horizontal: "left" },
+  };
+  COLUMN_ORDER.forEach((tech, idx) => {
+    const ref = XLSX.utils.encode_cell({ r: 0, c: idx });
+    if (!worksheet[ref]) return;
+    if (SYSTEM_EXPORT.has(tech)) worksheet[ref].s = _styleSys;
+    else if (REQUIRED_EXPORT.has(tech)) worksheet[ref].s = _styleReq;
+    else worksheet[ref].s = _styleOpt;
+  });
+
   // Talimatlar sheet'i — yerel dilde açıklama (export ile şablon aynı format
   // kullandığı için iki sheet'te de bu açıklama lazım).
   const _instr = (key: string, fallback: string) => i18next.t(key, { defaultValue: fallback });
@@ -256,6 +284,10 @@ export const exportToursToExcel = (tours: Tour[]) => {
     { Kolon: "title_{en,de,fr,es,ru,ar}",      Tip: _instr("bulk.tpl.opt", "Opsiyonel"), Açıklama: _instr("bulk.tpl.titleMulti", "Yurtdışı müşteri için tur başlığı çevirisi (boş bırakılabilir)"), Örnek: "Cappadocia Balloon Tour" },
     { Kolon: "destination_{en,de,fr,es,ru,ar}",Tip: _instr("bulk.tpl.opt", "Opsiyonel"), Açıklama: _instr("bulk.tpl.destMulti", "Yurtdışı müşteri için destinasyon çevirisi"), Örnek: "Cappadocia" },
     { Kolon: "program_kisa_{en,de,fr,es,ru,ar}",Tip: _instr("bulk.tpl.opt", "Opsiyonel"), Açıklama: _instr("bulk.tpl.programMulti", "Yurtdışı müşteri için program özeti çevirisi (en azından en önerilir)"), Örnek: "04:30 pickup, 1-hour balloon flight..." },
+    // ETAP 3: Renk açıklamaları — başlık hücreleri renk gruplarıyla işaretli.
+    { Kolon: "—", Tip: "🟠", Açıklama: _instr("bulk.tpl.colorRequired", "Turuncu başlık = ZORUNLU alan. Boş bırakılamaz."), Örnek: "" },
+    { Kolon: "—", Tip: "🔵", Açıklama: _instr("bulk.tpl.colorOptional", "Mavi başlık = Opsiyonel. Doldurursanız bot daha iyi yanıt verir, ama zorunlu değil."), Örnek: "" },
+    { Kolon: "—", Tip: "⚪", Açıklama: _instr("bulk.tpl.colorSystem", "Gri başlık = Sistem alanı. DOKUNMAYIN — otomatik dolar/değiştirmeyin."), Örnek: "" },
     // Tarih notu en altta — kritik UX bilgisi
     { Kolon: "—", Tip: "ℹ️", Açıklama: _instr("bulk.tpl.dateNotice", "Tur TARİHLERİ, FİYAT ve KONTENJAN bu Excel'de YOKTUR. Tarihleri panelden 'Toplu Tarih Oluştur' ile ekleyin."), Örnek: "" },
   ];

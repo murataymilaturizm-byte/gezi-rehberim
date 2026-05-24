@@ -1451,7 +1451,7 @@
       "registrationsSheet": "Kayıtlar",
       "registrationsFile": "kayitlar",
       "toursSheet": "Turlar",
-      "toursFile": "turlar",
+      "toursFile": "mevcut_turlarim",
       "conversationsSheet": "Konuşma Özetleri",
       "conversationsFile": "konusma_ozetleri",
       "analyticsFile": "analitikler",
@@ -2002,7 +2002,12 @@
       "emptyCellRule": "Boş hücre = DOKUNMA. Güncellemede boş bırakılan hücre DB'deki mevcut değeri KORUR. Silmek için panelden silin — Excel silmez.",
       "duplicateId": "Aynı __tour_id iki satırda olamaz. Olursa ilki kullanılır, ikinci reddedilir.",
       "updateNoTranslate": "Güncelleme satırlarında AI çeviri OTOMATIK YAPILMAZ. Çevirileri panelden 'AI ile Çevir' ile yapın.",
-      "idSafetyReminder": "__tour_id'yi ASLA silmeyin/değiştirmeyin. Silinirse satır 'yeni tur' olarak eklenir (duplicate yaratır)."
+      "idSafetyReminder": "__tour_id'yi ASLA silmeyin/değiştirmeyin. Silinirse satır 'yeni tur' olarak eklenir (duplicate yaratır).",
+      "sheetExample": "Örnek",
+      "colorRequired": "Turuncu başlık = ZORUNLU alan. Boş bırakılamaz.",
+      "colorOptional": "Mavi başlık = Opsiyonel. Doldurursanız bot daha iyi yanıt verir, ama zorunlu değil.",
+      "colorSystem": "Gri başlık = Sistem alanı. DOKUNMAYIN — otomatik dolar/değiştirmeyin.",
+      "exampleRowNote": "'Örnek' sheet'indeki sarı satır SADECE örnektir — sisteme eklenmez. Asıl turlarınızı 'Turlar' sheet'ine yazın."
     }
   },
   "greetings": {
@@ -3814,7 +3819,7 @@
   },
   "bulk": {
     "importSheetName": "Turlar",
-    "importFilename": "turzz_tur_sablonu",
+    "importFilename": "turzz_yeni_tur_sablonu",
     "invalidType": "geçersiz tur tipi",
     "invalidCurrency": "geçersiz para birimi",
     "col": {

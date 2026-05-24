@@ -1170,7 +1170,7 @@
       "registrationsSheet": "Registrations",
       "registrationsFile": "registrations",
       "toursSheet": "Tours",
-      "toursFile": "tours",
+      "toursFile": "my_tours",
       "conversationsSheet": "Conversation Summaries",
       "conversationsFile": "conversation_summaries",
       "analyticsFile": "analytics",
@@ -3786,7 +3786,7 @@
   },
   "bulk": {
     "importSheetName": "Tours",
-    "importFilename": "turzz_tour_template",
+    "importFilename": "turzz_tour_template_blank",
     "invalidType": "invalid tour type",
     "invalidCurrency": "invalid currency",
     "col": {
@@ -3850,7 +3850,12 @@
       "emptyCellRule": "Empty cell = DO NOT TOUCH. On update, an empty cell KEEPS the existing DB value. To delete, use the panel — Excel does not delete.",
       "duplicateId": "The same __tour_id cannot appear in two rows. If it does, the first wins and the second is rejected.",
       "updateNoTranslate": "AI translation does NOT run automatically on update rows. Translate from the panel via 'Translate with AI'.",
-      "idSafetyReminder": "NEVER delete/change __tour_id. If removed, the row becomes a 'new tour' insert (creates a duplicate)."
+      "idSafetyReminder": "NEVER delete/change __tour_id. If removed, the row becomes a 'new tour' insert (creates a duplicate).",
+      "sheetExample": "Example",
+      "colorRequired": "Orange header = REQUIRED field. Cannot be empty.",
+      "colorOptional": "Blue header = Optional. Fill in for richer bot answers; not mandatory.",
+      "colorSystem": "Gray header = System field. DO NOT TOUCH — filled automatically.",
+      "exampleRowNote": "The yellow row in the 'Example' sheet is ONLY an example — it is NOT imported. Write your real tours in the 'Tours' sheet."
     }
   },
   "notificationCenter": {

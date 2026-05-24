@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
-import * as XLSX from "xlsx";
+// ETAP 3: xlsx-js-style — hücre stilini (renkli başlık + örnek satır) destekler.
+// SheetJS Community (xlsx) write'da .s property'sini yok sayardı; xlsx-js-style fork'u
+// drop-in API uyumlu ve fill/font/border stilleri yazar.
+import * as XLSX from "xlsx-js-style";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -40,9 +43,75 @@ const TRANSLATE_RETRY = 1; // AI fail durumunda 1 retry
 const SOURCE_LANG = "tr";
 
 /**
+ * ETAP 3: Üç renkli kolon grubu — şablon ve export başlık hücrelerine uygulanır.
+ *   ZORUNLU (title/destination/type/currency): açık turuncu zemin, koyu kırmızı metin.
+ *   OPSİYONEL (diğer master + 18 çok dilli): açık mavi zemin, koyu mavi metin.
+ *   SİSTEM (__tour_id, created_at): açık gri zemin, koyu gri italic metin.
+ * WCAG AA için contrast oranları ~7:1 (large bold text).
+ */
+const REQUIRED_KEYS = new Set(["title", "destination", "type", "currency"]);
+const SYSTEM_KEYS = new Set(["__tour_id", "created_at"]);
+const STYLE_REQUIRED = {
+  fill: { fgColor: { rgb: "FFD8A8" } },
+  font: { color: { rgb: "7C2D12" }, bold: true },
+  alignment: { vertical: "center", horizontal: "left" },
+};
+const STYLE_OPTIONAL = {
+  fill: { fgColor: { rgb: "DBEAFE" } },
+  font: { color: { rgb: "1E3A8A" }, bold: true },
+  alignment: { vertical: "center", horizontal: "left" },
+};
+const STYLE_SYSTEM = {
+  fill: { fgColor: { rgb: "E5E7EB" } },
+  font: { color: { rgb: "374151" }, bold: true, italic: true },
+  alignment: { vertical: "center", horizontal: "left" },
+};
+// ETAP 3: Örnek satır — sarı zemin (acente "bu örnek" anlasın).
+const STYLE_EXAMPLE_ROW = {
+  fill: { fgColor: { rgb: "FEF3C7" } },
+  font: { color: { rgb: "713F12" } },
+  alignment: { vertical: "center", horizontal: "left" },
+};
+
+/**
+ * Worksheet'in 1. satırına (header) teknik kolon adlarına göre renk uygula.
+ * `orderToUse` teknik isim listesi, kolon indeksiyle eşleşir.
+ */
+function applyHeaderStyles(ws: any, orderToUse: string[]): void {
+  orderToUse.forEach((tech, idx) => {
+    const ref = XLSX.utils.encode_cell({ r: 0, c: idx });
+    if (!ws[ref]) return;
+    if (SYSTEM_KEYS.has(tech)) ws[ref].s = STYLE_SYSTEM;
+    else if (REQUIRED_KEYS.has(tech)) ws[ref].s = STYLE_REQUIRED;
+    else ws[ref].s = STYLE_OPTIONAL;
+  });
+}
+
+/**
+ * Bir satıra (rowIdx = 0-indexed, header sonrası ilk veri satırı = 1) sarı zemin uygula.
+ */
+function applyExampleRowStyle(ws: any, rowIdx: number, colCount: number): void {
+  for (let c = 0; c < colCount; c++) {
+    const ref = XLSX.utils.encode_cell({ r: rowIdx, c });
+    if (!ws[ref]) {
+      // Boş hücreyi sarıya boyamak için stub oluştur (xlsx-js-style style'siz hücreyi atlar).
+      ws[ref] = { t: "s", v: "" };
+    }
+    ws[ref].s = STYLE_EXAMPLE_ROW;
+  }
+}
+
+/**
  * Standalone şablon indirme fonksiyonu — Admin.tsx toolbar'ından doğrudan çağrılabilsin diye
- * dialog dışına çıkarıldı. Mantık DEĞİŞMEDİ: 20 kolon master + Talimatlar sheet'i.
- * i18next.t kullanılır (hook yok — pure function).
+ * dialog dışına çıkarıldı.
+ *
+ * ETAP 3 değişiklikleri:
+ *   1. Sheet 1 "Turlar" → SADECE header (boş satırlar, acente kendi turlarını ekler).
+ *      Header hücreleri ZORUNLU/OPSİYONEL/SİSTEM renkleriyle gruplanmış.
+ *   2. Sheet 2 "Örnek" → header + 1 örnek satır (Kapadokya Balon — tam dolu). Sarı zemin.
+ *      Parser sadece "Turlar" sheet'ini okuduğu için ÖRNEK SATIR İMPORT'A GİRMEZ.
+ *      (3 örnek → 1 örnek + ayrı sheet'e taşındı).
+ *   3. Sheet 3 "Talimatlar" → renk açıklaması + örnek satır notu eklendi.
  */
 export function downloadTourImportTemplate(): void {
   const _SYSTEM_KEYS = new Set(["__tour_id", "created_at"]);
@@ -69,50 +138,29 @@ export function downloadTourImportTemplate(): void {
     return out;
   };
 
-  const template = [
-    _row({
-      title: "Kapadokya Balon Turu",
-      destination: "Kapadokya",
-      type: "DAYTRIP",
-      currency: "TRY",
-      min_pax: 2,
-      visa_required: "hayır",
-      program_kisa: "Sabah 04:30 otelden alış, balon uçuşu (1 saat), kahvaltı, otel transferi",
-      hareket_noktasi: "Otel lobi",
-      toplanma_saati: "04:30",
-      tur_sure: "1 gün",
-      tur_kategorisi: "Macera",
-      gezilecek_yerler: "Göreme Vadisi, Peri Bacaları, Uçhisar Kalesi",
-      ulasim: "Otobüs / VIP araç",
-    }),
-    _row({
-      title: "İstanbul 2 Gece Klasik Tur",
-      destination: "İstanbul",
-      type: "N2",
-      currency: "USD",
-      min_pax: 1,
-      visa_required: "hayır",
-      program_kisa: "1. gün: Sultanahmet, Aya Sofya. 2. gün: Topkapı, Kapalı Çarşı. 3. gün: Boğaz turu, transfer",
-      hareket_noktasi: "Havaalanı transfer dahil",
-      toplanma_saati: "10:00",
-      tur_sure: "2 gece 3 gün",
-      tur_kategorisi: "Kültür",
-      gezilecek_yerler: "Sultanahmet Camii, Aya Sofya, Topkapı Sarayı, Kapalı Çarşı, Boğaz turu",
-      ulasim: "Klimalı otobüs + tekne (boğaz turu)",
-      konaklama: "2 gece çift kişilik oda + kahvaltı",
-      hotel_name: "Hotel Sultanahmet Palace",
-      hotel_stars: 4,
-    }),
-    _row({
-      title: "Pamukkale Günübirlik",
-      destination: "Pamukkale",
-      type: "DAYTRIP",
-      currency: "TRY",
-    }),
-  ];
+  // ETAP 3: Tek örnek satır — Kapadokya Balon (en açıklayıcı, çok dilli alanlar dolu).
+  // 3 örnek → 1 örnek. Bu örnek AYRI bir "Örnek" sheet'inde duracak (aşağıda).
+  const exampleRow = _row({
+    title: "Kapadokya Balon Turu",
+    destination: "Kapadokya",
+    type: "DAYTRIP",
+    currency: "TRY",
+    min_pax: 2,
+    visa_required: "hayır",
+    program_kisa: "Sabah 04:30 otelden alış, balon uçuşu (1 saat), kahvaltı, otel transferi",
+    hareket_noktasi: "Otel lobi",
+    toplanma_saati: "04:30",
+    tur_sure: "1 gün",
+    tur_kategorisi: "Macera",
+    gezilecek_yerler: "Göreme Vadisi, Peri Bacaları, Uçhisar Kalesi",
+    ulasim: "Otobüs / VIP araç",
+  });
 
-  const ws = XLSX.utils.json_to_sheet(template);
-  ws["!cols"] = [
+  // ─── Sheet 1: "Turlar" — BOŞ (sadece header). Acente kendi turlarını alttan ekler. ──
+  // Parser sadece BU SHEET'i okur (workbook.SheetNames[0]). Örnek satır asla import'a girmez.
+  const headerRow = _TEMPLATE_ORDER.map((tech) => _h(tech));
+  const ws = XLSX.utils.aoa_to_sheet([headerRow]);
+  const _colWidths = [
     { wch: 38 }, { wch: 12 },
     { wch: 30 }, { wch: 18 }, { wch: 10 }, { wch: 10 },
     { wch: 8 },  { wch: 10 }, { wch: 30 }, { wch: 60 },
@@ -120,6 +168,16 @@ export function downloadTourImportTemplate(): void {
     { wch: 40 }, { wch: 22 }, { wch: 30 }, { wch: 22 },
     { wch: 10 }, { wch: 30 },
   ];
+  ws["!cols"] = _colWidths;
+  applyHeaderStyles(ws, _TEMPLATE_ORDER);
+
+  // ─── Sheet 2: "Örnek" — header + 1 sarı örnek satır. ────────────────────────────
+  // Parser bu sheet'i OKUMAZ (sadece ilk sheet'i okur) → örnek satır ASLA sisteme eklenmez.
+  // Acente bakar, biçimi anlar, kopyalamak isterse manuel kopyalar.
+  const wsExample = XLSX.utils.json_to_sheet([exampleRow]);
+  wsExample["!cols"] = _colWidths;
+  applyHeaderStyles(wsExample, _TEMPLATE_ORDER);
+  applyExampleRowStyle(wsExample, 1, _TEMPLATE_ORDER.length);  // row 1 = ilk veri satırı
 
   const _t = (key: string, opts?: any) => i18next.t(key, opts);
   const _req = _t("bulk.tpl.req", { defaultValue: "ZORUNLU" });
@@ -147,6 +205,11 @@ export function downloadTourImportTemplate(): void {
     { Kolon: "hotel_name",     Tip: _opt, Açıklama: _t("bulk.tpl.hotelName", { defaultValue: "Otel adı (varsa)" }), Örnek: "Hotel Sultanahmet Palace" },
     { Kolon: "hotel_stars",    Tip: _opt, Açıklama: _t("bulk.tpl.hotelStars", { defaultValue: "Otel yıldızı (1-5 arası sayı)" }), Örnek: "4" },
     { Kolon: "visa_notes",     Tip: _opt, Açıklama: _t("bulk.tpl.visaNotes", { defaultValue: "Vize ile ilgili açıklama" }), Örnek: "Schengen vizesi şart" },
+    // ETAP 3: Renk açıklamaları — başlık renkleri ne anlama gelir.
+    { Kolon: "—", Tip: "🟠", Açıklama: _t("bulk.tpl.colorRequired", { defaultValue: "Turuncu başlık = ZORUNLU alan. Boş bırakılamaz." }), Örnek: "" },
+    { Kolon: "—", Tip: "🔵", Açıklama: _t("bulk.tpl.colorOptional", { defaultValue: "Mavi başlık = Opsiyonel. Doldurursanız bot daha iyi yanıt verir, ama zorunlu değil." }), Örnek: "" },
+    { Kolon: "—", Tip: "⚪", Açıklama: _t("bulk.tpl.colorSystem", { defaultValue: "Gri başlık = Sistem alanı. DOKUNMAYIN — otomatik dolar/değiştirmeyin." }), Örnek: "" },
+    { Kolon: "—", Tip: "🟡", Açıklama: _t("bulk.tpl.exampleRowNote", { defaultValue: "'Örnek' sheet'indeki sarı satır SADECE örnektir — sisteme eklenmez. Asıl turlarınızı 'Turlar' sheet'ine yazın." }), Örnek: "" },
     // ETAP 2: Round-trip kuralları — acente bu Excel'i export edip düzenleyip geri yüklerken.
     { Kolon: "—", Tip: "🔄", Açıklama: _t("bulk.tpl.roundTrip", { defaultValue: "__tour_id DOLU → mevcut turu GÜNCELLER. __tour_id BOŞ → yeni tur eklenir. İkisi aynı dosyada karışık olabilir." }), Örnek: "" },
     { Kolon: "—", Tip: "🛡️", Açıklama: _t("bulk.tpl.emptyCellRule", { defaultValue: "Boş hücre = DOKUNMA. Güncellemede boş bırakılan hücre DB'deki mevcut değeri KORUR. Silmek için panelden silin — Excel silmez." }), Örnek: "" },
@@ -160,7 +223,14 @@ export function downloadTourImportTemplate(): void {
   wsInstructions["!cols"] = [{ wch: 32 }, { wch: 14 }, { wch: 70 }, { wch: 50 }];
 
   const wb = XLSX.utils.book_new();
+  // Sıra ÖNEMLİ: Turlar İLK SHEET — parser sadece SheetNames[0]'ı okur.
+  // Örnek sheet'i ikinci sırada → parser asla görmez, acente bilgi için bakar.
   XLSX.utils.book_append_sheet(wb, ws, _t("bulk.importSheetName"));
+  XLSX.utils.book_append_sheet(
+    wb,
+    wsExample,
+    _t("bulk.tpl.sheetExample", { defaultValue: "Örnek" }),
+  );
   XLSX.utils.book_append_sheet(
     wb,
     wsInstructions,

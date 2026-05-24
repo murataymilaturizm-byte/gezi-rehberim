@@ -1173,7 +1173,7 @@
       "registrationsSheet": "Registrierungen",
       "registrationsFile": "registrierungen",
       "toursSheet": "Touren",
-      "toursFile": "touren",
+      "toursFile": "meine_touren",
       "conversationsSheet": "Gesprächszusammenfassungen",
       "conversationsFile": "gespraechszusammenfassungen",
       "analyticsFile": "analysen",
@@ -3740,7 +3740,7 @@
   },
   "bulk": {
     "importSheetName": "Touren",
-    "importFilename": "turzz_tour_vorlage",
+    "importFilename": "turzz_tour_vorlage_leer",
     "invalidType": "ungültiger Tourtyp",
     "invalidCurrency": "ungültige Währung",
     "col": {
@@ -3804,7 +3804,12 @@
       "emptyCellRule": "Leere Zelle = NICHT BERÜHREN. Beim Aktualisieren BLEIBT der DB-Wert erhalten, wenn die Zelle leer ist. Zum Löschen das Panel verwenden — Excel löscht nicht.",
       "duplicateId": "Dieselbe __tour_id darf nicht in zwei Zeilen vorkommen. Falls doch, gewinnt die erste, die zweite wird abgelehnt.",
       "updateNoTranslate": "KI-Übersetzung läuft bei Update-Zeilen NICHT automatisch. Bitte über das Panel mit 'Mit KI übersetzen'.",
-      "idSafetyReminder": "__tour_id NIEMALS löschen/ändern. Wird sie entfernt, wird die Zeile als 'neue Tour' eingefügt (erzeugt Duplikat)."
+      "idSafetyReminder": "__tour_id NIEMALS löschen/ändern. Wird sie entfernt, wird die Zeile als 'neue Tour' eingefügt (erzeugt Duplikat).",
+      "sheetExample": "Beispiel",
+      "colorRequired": "Oranger Header = PFLICHTFELD. Darf nicht leer sein.",
+      "colorOptional": "Blauer Header = Optional. Ausfüllen für bessere Bot-Antworten, aber nicht zwingend.",
+      "colorSystem": "Grauer Header = Systemfeld. NICHT BERÜHREN — wird automatisch gefüllt.",
+      "exampleRowNote": "Die gelbe Zeile im 'Beispiel'-Sheet ist NUR ein Beispiel — sie wird NICHT importiert. Tragen Sie Ihre echten Touren im 'Touren'-Sheet ein."
     }
   },
   "notificationCenter": {
