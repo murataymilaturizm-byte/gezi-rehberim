@@ -341,21 +341,16 @@ export async function analyzeUserMessage(
           "x-api-key": ANTHROPIC_API_KEY,
           "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
-          // Prompt caching artık GA, defensive olarak beta header'ı bırakıyoruz.
-          "anthropic-beta": "prompt-caching-2024-07-31",
+          // NOT: NLU için prompt caching KALDIRILDI. NLU_SYSTEM_PROMPT Haiku 4.5'in 2048
+          // token minimum cache eşiğinin altında/civarında olduğu için Anthropic cache hiç
+          // kurmuyordu (cache_creation=0 raporlanıyordu). Marjinal tasarruf (~₺110/ay)
+          // karmaşıklığa değmediği için eski tek-string format'a dönüldü. ai.ts'teki Sonnet
+          // caching AYNEN aktif.
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 500,
-          // PROMPT CACHING: NLU_SYSTEM_PROMPT tamamen statik (kullanıcı/agency'ye bağımlı değil),
-          // ephemeral cache hedefi. Tüm NLU çağrılarında aynı prefix → kalıcı %90 indirim.
-          system: [
-            {
-              type: "text",
-              text: NLU_SYSTEM_PROMPT,
-              cache_control: { type: "ephemeral" },
-            },
-          ],
+          system: NLU_SYSTEM_PROMPT,
           messages: [
             { role: "user", content: contextPrompt },
           ],

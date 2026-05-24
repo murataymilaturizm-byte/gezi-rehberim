@@ -8,25 +8,27 @@ import { getStagePrompt } from "./prompts/stages/index.ts";
 import { getAgencyInfo } from "./prompts/agency.ts";
 
 /**
- * Main function to build system prompt
- * Combines all prompt components in the correct order
+ * Main function to build system prompt — GERÇEK STATİK prefix.
  *
- * PROMPT CACHING NOTU: Bu fonksiyon dönen STATİK prefix'tir — agency/lang/stage/tone/tour
- * sabitken çağrılar arası aynı kalır, Anthropic ephemeral cache'in primary hedefi.
- * `getMultipleTourWarning` bilinçli olarak DIŞARI alındı — sadece kullanıcının araması
- * birden fazla turla eşleştiğinde dolar; cached prefix'i her seferinde değiştirmemesi için
- * çağıran taraf (process-message.ts) dynamic suffix olarak ekler.
+ * PROMPT CACHING NOTU: Bu fonksiyon dönen string Anthropic ephemeral cache'in primary
+ * hedefidir. agency+language+tone sabit kaldığı sürece çağrılar arasında BİT BİT aynı kalır.
+ *
+ * BİLİNÇLİ olarak DIŞARI alınanlar (caller dynamic suffix olarak ekler):
+ *   - `getStagePrompt(context)`: stage + tourDetails + collectedInfo + summary + canlı kontenjan
+ *     gibi her çağrıda değişen içerikler. Daha önce buradaydı; cache prefix'ini her mesajda
+ *     kirlettiği için TAŞINDI (cache_creation hep > 0, cache_read hep 0 sorunu).
+ *   - `getMultipleTourWarning`: sadece kullanıcının araması birden fazla turla eşleştiğinde
+ *     dolar; cached prefix'i kirletmemesi için dışarıda.
  */
 export function buildSystemPrompt(context: AIPromptContext): string {
   const { language, tone } = context;
 
   const promptParts = [
-    formatDateHeader(language),
-    getRolePrompt(language),
-    getTonePrompt(language, tone),
-    getFormatPrompt(language),
-    getStagePrompt(context),
-    getAgencyInfo(context, language),
+    formatDateHeader(language),     // gün içi sabit
+    getRolePrompt(language),        // tam sabit (per language)
+    getTonePrompt(language, tone),  // tone seçili kaldığı sürece sabit
+    getFormatPrompt(language),      // tam sabit
+    getAgencyInfo(context, language), // agency düzenlenmedikçe sabit
   ];
 
   // Filter out empty parts and join with double newlines
@@ -197,3 +199,7 @@ export {
   formatReservationSummary,
   getMultipleTourWarning,
 } from "./prompts/helpers.ts";
+
+// getStagePrompt artık dynamic suffix'e taşındı (caller'lar çağırıyor); re-export ile
+// import yolu sadeleşir.
+export { getStagePrompt } from "./prompts/stages/index.ts";

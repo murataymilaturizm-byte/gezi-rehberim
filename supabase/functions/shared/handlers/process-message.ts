@@ -18,7 +18,7 @@ import {
   formatDateForLanguage,
 } from "../fsm/localization.ts";
 import { detectLanguage } from "../fsm/language.ts";
-import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning } from "../fsm/prompt-builder.ts";
+import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
 import { validateAIResponse, validateInjectionResponse } from "../fsm/response-validator.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
@@ -1115,13 +1115,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   // PROMPT CACHING: prompt'u iki bloğa ayır.
-  // - CACHED (statik prefix): rol/üslup/format/stage/agency/guards/translation directive.
-  //   Aynı (agency, language, stage, tone, currentTour, reservationInfo) için sabit → cache hit.
-  // - DYNAMIC (suffix, cache dışı): tour switch warning, transition, returning user, anti-contradiction,
-  //   mid-flow, off-topic, multi-tour warning. Çağrı bazında değişebilir; cache prefix'i kirletmez.
+  // - CACHED (gerçek statik prefix): rol/üslup/format/agency/guards/translation directive.
+  //   Aynı (agency, language, tone) için her çağrı arası BİT BİT aynı → cache hit.
+  // - DYNAMIC (suffix, cache dışı): stage prompt + 6 conditional add-on + multi-tour warning.
+  //   Stage prompt eskiden cached prefix'in İÇİNDEYDİ; tourDetails/collectedInfo/summary/
+  //   canlı kontenjan her çağrıda değiştiği için cache prefix'i kirletip read=0 yapıyordu.
+  //   Şimdi dynamic suffix'in BAŞINA alındı — toplam prompt string'i öncekiyle BİT BİT AYNI,
+  //   sadece cached/dynamic blok sınırı kaydı.
   const systemPromptCached = buildSystemPrompt(promptContext as any);
+  const _stagePrompt = getStagePrompt(promptContext as any);
   const _multiTourWarning = getMultipleTourWarning(promptContext as any, newContext.language);
+  // Sıra ÖNEMLİ: getStagePrompt eskiden buildSystemPrompt'ta `getFormatPrompt` ile
+  // `getAgencyInfo` arasında \n\n ile birleşiyordu. Aynı semantiği korumak için stage prompt'u
+  // suffix'in en başına, `\n\n` separator ile koyuyoruz. Toplam string SIRASI değişmemiş olur:
+  // cached(date+role+tone+format+agency+directives) + "\n\n" + stage + add-on'lar.
   const systemPromptDynamic =
+    "\n\n" + _stagePrompt +
     tourSwitchWarning + completedStagePrompt + returningUserPrompt + antiContradictionPrompt +
     midFlowReturnPrompt + offTopicBrevityPrompt + _multiTourWarning;
 
