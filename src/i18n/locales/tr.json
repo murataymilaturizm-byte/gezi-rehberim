@@ -1334,7 +1334,79 @@
       "whatsappManagement": "WhatsApp Yönetimi",
       "whatsappSettings": "WhatsApp Ayarları",
       "whatsappTest": "WhatsApp Test",
-      "languageStats": "Dil İstatistikleri"
+      "languageStats": "Dil İstatistikleri",
+      "centralNotifications": "Merkezi Bildirimler",
+      "centralSendLog": "Bildirim Dökümü"
+    },
+    "central": {
+      "title": "Merkezi Bildirimler",
+      "description": "Turzz'a ait WhatsApp numarasından, sistem olaylarında ekip üyelerine otomatik bildirim gönderilir. Olay-şablon eşleştirmesi ve alıcı listesi burada yönetilir.",
+      "tabs": {
+        "mappings": "Olay ↔ Şablon",
+        "recipients": "Ekip Alıcıları"
+      },
+      "events": {
+        "new_agency_signup": "Yeni Acente Kaydı",
+        "new_contact_form": "Yeni İletişim Talebi",
+        "new_reservation": "Yeni Rezervasyon"
+      },
+      "mappings": {
+        "hint": "Her olay tipi (yeni rezervasyon / yeni acente / yeni iletişim) için kullanılacak APPROVED Meta şablonunu eşleştirin. Aynı (olay + dil) için tek eşleştirme.",
+        "add": "Eşleştirme Ekle",
+        "addTitle": "Yeni Eşleştirme",
+        "editTitle": "Eşleştirmeyi Düzenle",
+        "selectTemplate": "Şablon seçin",
+        "templateRequired": "Şablon seçin.",
+        "noTemplatesTitle": "Henüz onaylı merkezi şablon yok",
+        "noTemplatesDesc": "Eşleştirme yapabilmek için önce Turzz hesabına ait Meta WhatsApp Business Manager'da şablonlar oluşturulmalı, onaylandıktan sonra message_templates tablosuna (agency_id = TURZZ_CENTRAL_AGENCY_ID ile) eklenmeli.",
+        "noTemplatesForLang": "Bu dil için onaylı şablon yok.",
+        "duplicateError": "Bu olay ve dil için zaten bir eşleştirme var.",
+        "templateMissing": "Eşleşen şablon kaydı bulunamadı.",
+        "testSend": "Test Gönder",
+        "deleteTitle": "Eşleştirmeyi sil?",
+        "deleteDesc": "Bu eşleştirme silinirse ilgili olay için bildirim gönderilmez.",
+        "empty": "Henüz eşleştirme yok.",
+        "col": {
+          "event": "Olay",
+          "language": "Dil",
+          "template": "Şablon",
+          "active": "Aktif",
+          "actions": "İşlem"
+        }
+      },
+      "recipients": {
+        "hint": "Bildirim gidecek Turzz ekibi numaraları. Her kişi hangi olay tiplerini alacağını seçebilir. Telefon E.164 formatında (+90..., +49...).",
+        "add": "Alıcı Ekle",
+        "addTitle": "Yeni Alıcı",
+        "editTitle": "Alıcıyı Düzenle",
+        "deleteTitle": "Alıcıyı sil?",
+        "empty": "Henüz alıcı yok.",
+        "invalidPhone": "Telefon E.164 formatında olmalı (+ ülke kodu, sonra rakam — örn. +905XXXXXXXXX).",
+        "col": {
+          "name": "Ad",
+          "phone": "Telefon",
+          "events": "Olaylar",
+          "active": "Aktif",
+          "actions": "İşlem"
+        }
+      },
+      "sendLog": {
+        "title": "Bildirim Dökümü",
+        "description": "Turzz merkezi WABA üzerinden gönderilen tüm bildirimlerin kaydı. Son 50 kayıt gösterilir.",
+        "filterEvent": "Olay",
+        "filterStatus": "Durum",
+        "statusSuccess": "Başarılı",
+        "statusFail": "Başarısız",
+        "empty": "Kayıt yok.",
+        "col": {
+          "sentAt": "Zaman",
+          "type": "Tip",
+          "lang": "Dil",
+          "recipient": "Alıcı",
+          "status": "Durum",
+          "error": "Hata"
+        }
+      }
     },
     "tours": {
       "title": "Turlar",

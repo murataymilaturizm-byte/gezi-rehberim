@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { TURZZ_CENTRAL_AGENCY_ID } from "@/lib/centralAgency";
 import { Plus, Pencil, Trash2, Building2, Clock, MessageSquare, Settings, Eye } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -123,6 +124,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
       const { data: agenciesData, error } = await supabase
         .from("agencies")
         .select("id, name, city, region, whatsapp_phone_number, threesixty_client_id, whatsapp_status, conversation_style, active, created_at, plan_type, trial_ends_at, subscription_status, subscription_ends_at, message_limit, monthly_message_count, user_id")
+        .neq("id", TURZZ_CENTRAL_AGENCY_ID)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

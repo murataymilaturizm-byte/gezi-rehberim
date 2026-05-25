@@ -69,8 +69,10 @@ import { NotificationCenter } from "@/components/admin/NotificationCenter";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { OnboardingTour, tourStorageKey } from "@/components/admin/OnboardingTour";
 import { FileSpreadsheet, FileText } from "lucide-react";
+import CentralNotifications from "@/components/CentralNotifications";
+import CentralSendLog from "@/components/CentralSendLog";
 
-const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test", "language-stats", "whatsapp-logs"] as const;
+const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test", "language-stats", "whatsapp-logs", "central_notifications", "central_send_log"] as const;
 
 interface Tour {
   id: string;
@@ -880,6 +882,10 @@ const Admin = () => {
               <AgencyManagement isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "contact_forms" && isSuperAdmin ? (
               <ContactFormsManagement isSuperAdmin={isSuperAdmin} />
+            ) : activeTab === "central_notifications" && isSuperAdmin ? (
+              <CentralNotifications />
+            ) : activeTab === "central_send_log" && isSuperAdmin ? (
+              <CentralSendLog />
             ) : activeTab === "tours" || activeTab === "registrations" ? (
               <Card className="shadow-card">
                 <CardHeader className="p-3 sm:p-6">

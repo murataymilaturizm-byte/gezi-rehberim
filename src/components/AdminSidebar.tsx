@@ -18,7 +18,8 @@ import {
   ChevronDown,
   MapPin,
   CreditCard,
-  ScrollText
+  ScrollText,
+  Bell
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
@@ -75,7 +76,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     const communicationIds = ["settings", "whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings", "language_currencies"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback", "language-stats", "whatsapp-logs"];
     const supportIds = ["tickets"];
-    const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets"];
+    const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets", "central_notifications", "central_send_log"];
     const testIds = ["whatsapp_test"];
     
     if (generalIds.includes(activeTab)) return "general";
@@ -147,6 +148,8 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     { id: "whatsapp_management", icon: Phone, label: t("admin.tabs.whatsappManagement") },
     { id: "whatsapp_settings", icon: Phone, label: t("admin.tabs.whatsappSettings") },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
+    { id: "central_notifications", icon: Bell, label: t("admin.tabs.centralNotifications") },
+    { id: "central_send_log", icon: ScrollText, label: t("admin.tabs.centralSendLog") },
   ];
 
   const testItems = [

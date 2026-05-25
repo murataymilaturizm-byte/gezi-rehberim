@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.create-meta-template]
 verify_jwt = false
+
+[functions.dispatch-central-notification]
+verify_jwt = false
