@@ -1,7 +1,11 @@
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon, Globe, Menu } from "lucide-react";
+import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon, Globe, Menu, Phone } from "lucide-react";
+
+// Turzz destek hattı — landing header'ında görünür. Layout.tsx ile birebir aynı değerler.
+const SUPPORT_PHONE_DISPLAY = "0850 242 77 50";
+const SUPPORT_PHONE_HREF = "tel:+908502427750";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,6 +100,23 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Destek telefonu — masaüstü: ikon + numara, mobil: sadece ikon (Layout.tsx ile aynı stil) */}
+              <a
+                href={SUPPORT_PHONE_HREF}
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground hover:text-primary transition-colors"
+                aria-label={t("nav.callSupport", { defaultValue: "Destek Hattı" })}
+              >
+                <Phone className="h-4 w-4 text-primary" />
+                <span className="font-medium tabular-nums">{SUPPORT_PHONE_DISPLAY}</span>
+              </a>
+              <a
+                href={SUPPORT_PHONE_HREF}
+                className="md:hidden inline-flex p-2 rounded-md hover:bg-accent transition-colors"
+                aria-label={t("nav.callSupport", { defaultValue: "Destek Hattı" })}
+                title={SUPPORT_PHONE_DISPLAY}
+              >
+                <Phone className="h-5 w-5 text-primary" />
+              </a>
               <LanguageSelector />
               <ThemeToggle />
               <a href="/whatsapp-chatbot-seyahat-acentesi" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
