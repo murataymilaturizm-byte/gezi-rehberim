@@ -12,7 +12,8 @@
     "login": "Log In",
     "freeTrial": "Free Trial",
     "menu": "Menu",
-    "discoverFeatures": "Discover Features"
+    "discoverFeatures": "Discover Features",
+    "callSupport": "Support Line"
   },
   "currency": {
     "management": "Currency Management",
@@ -3644,6 +3645,10 @@
       "userCount": "{{count}} users",
       "messageCount": "{{count}} messages",
       "empty": "No language data yet"
+    },
+    "supportBlock": {
+      "title": "Need help?",
+      "subtitle": "Call us now for WhatsApp connection or any other issue."
     }
   },
   "superAdmin": {

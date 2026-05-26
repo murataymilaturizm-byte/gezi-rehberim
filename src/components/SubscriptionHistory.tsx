@@ -263,7 +263,8 @@ function PlanCard({
         {plan.id === "enterprise" && !onSwitch && (
           <div className="mt-auto pt-2">
             <Button asChild className="w-full bg-gradient-ocean hover:opacity-90">
-              <a href="mailto:info@turzzai.com?subject=Kurumsal%20Plan%20Talebi">
+              {/* POS-yok dönemi: mailto yerine landing iletişim formuna scroll (FaqSection #contact). */}
+              <a href="/#contact">
                 {t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </a>
@@ -296,28 +297,26 @@ function PlanCard({
           </div>
         )}
         {onSwitch && plan.id === "enterprise" && (
-          // Madde 2: Aktif abonelikten Enterprise'a geçiş self-service değil — mailto.
+          // POS-yok dönemi: Enterprise her halükarda iletişim formuna scroll.
           <Button asChild className="w-full bg-gradient-ocean hover:opacity-90 mt-auto" size="sm">
-            <a
-              href="mailto:info@turzzai.com?subject=Kurumsal%20Plana%20Ge%C3%A7i%C5%9F%20Talebi"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <a href="/#contact" onClick={(e) => e.stopPropagation()}>
               {t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
               <ArrowRight className="h-4 w-4 ml-2" />
             </a>
           </Button>
         )}
         {onSwitch && plan.id !== "enterprise" && (
+          // POS-DISABLED: "Bu plana geç" da iletişim formuna yönlendiriliyor.
+          // POS gelince onSwitch(plan) çağrısı (handlePlanChange) yeniden açılacak.
           <Button
+            asChild
             className="w-full bg-gradient-ocean hover:opacity-90 mt-auto"
             size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSwitch(plan);
-            }}
           >
-            {t("admin.subscription.switchToPlan")}
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <a href="/#contact" onClick={(e) => e.stopPropagation()}>
+              {t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </a>
           </Button>
         )}
       </CardContent>

@@ -1,5 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Mail } from "lucide-react";
+import { ExternalLink, Mail, MessageCircle } from "lucide-react";
+
+// ════════════════════════════════════════════════════════════════════════
+// POS-DISABLED: LemonSqueezy ödeme akışı GEÇİCİ olarak devre dışı.
+// POS onayı gelmediği için tüm ödeme CTA'ları landing iletişim formuna
+// yönlendiriliyor. POS aktif olunca POS_ENABLED = true yap → eski akış
+// kendiliğinden geri gelir. Kod tamamen korunuyor (silinmiyor).
+// ════════════════════════════════════════════════════════════════════════
+const POS_ENABLED = false;
+const CONTACT_HREF = "/#contact"; // landing FAQ section anchor
 
 // Variant ID'leri (Lemon Squeezy Dashboard'dan alınan sabit değerler)
 const VARIANT_IDS: Record<string, { monthly: string; yearly: string }> = {
@@ -29,16 +38,13 @@ export const LemonSqueezyButton = ({
   className,
   variant = "default",
 }: Props) => {
-  // Enterprise → iletişim maili
+  // Enterprise → iletişim formu (POS-yok döneminde mailto yerine landing form)
   if (planId === "enterprise") {
-    const subject = encodeURIComponent("Kurumsal Plan Talebi");
-    const body = encodeURIComponent(
-      `Merhaba,\n\nKurumsal plan hakkında bilgi almak istiyorum.\n\nAcente ID: ${agencyId ?? "-"}`,
-    );
+    // POS gelse de Enterprise her zaman iletişim — self-service değil.
     return (
       <Button variant={variant} className={className} asChild>
-        <a href={`mailto:${ENTERPRISE_EMAIL}?subject=${subject}&body=${body}`}>
-          <Mail className="w-4 h-4 mr-2" />
+        <a href={CONTACT_HREF}>
+          <MessageCircle className="w-4 h-4 mr-2" />
           {label ?? "İletişime Geçin"}
         </a>
       </Button>
@@ -54,7 +60,24 @@ export const LemonSqueezyButton = ({
   if (userEmail) params.set("checkout[email]", userEmail);
   if (agencyId)  params.set("checkout[custom][agency_id]", agencyId);
 
+  // POS-DISABLED: checkoutUrl üretiliyor ama kullanılmıyor.
+  // POS_ENABLED=true yapılınca aşağıdaki ternary eski checkout linki dönecek.
   const checkoutUrl = `https://${STORE_SLUG}.lemonsqueezy.com/buy/${variantId}${params.toString() ? `?${params.toString()}` : ""}`;
+
+  if (!POS_ENABLED) {
+    // POS-yok dönemi: starter/professional için de iletişim formu.
+    // Ayrıca silinmeyen ENTERPRISE_EMAIL/Mail import bağımlılıkları kalır
+    // (POS gelince geri açılacak — referans olmadan import lint kapacak).
+    void Mail; void ENTERPRISE_EMAIL;
+    return (
+      <Button variant={variant} className={className} asChild>
+        <a href={CONTACT_HREF}>
+          <MessageCircle className="w-4 h-4 mr-2" />
+          {label ?? "İletişime Geçin"}
+        </a>
+      </Button>
+    );
+  }
 
   return (
     <Button variant={variant} className={className} asChild>

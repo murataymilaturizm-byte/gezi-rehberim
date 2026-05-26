@@ -172,6 +172,36 @@ export const WhatsAppSettings = () => {
         />
       )}
 
+      {/* Dikkat çekici destek bloğu — Embedded Signup'ın hemen altında.
+          Bağlantı sırasında sorun yaşayan acente direkt arayabilsin. */}
+      <Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/5 via-orange-50/50 to-primary/5 dark:from-primary/10 dark:via-orange-950/20 dark:to-primary/10 shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/15 shrink-0">
+              <Phone className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <p className="font-semibold text-base text-foreground">
+                {t("whatsapp.supportBlock.title", { defaultValue: "Desteğe mi ihtiyacınız var?" })}
+              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {t("whatsapp.supportBlock.subtitle", { defaultValue: "WhatsApp bağlantısı veya başka bir konuda hemen arayın." })}
+              </p>
+            </div>
+            <Button
+              asChild
+              size="lg"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90 text-white shadow-md"
+            >
+              <a href="tel:+908502427750" className="inline-flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <span className="font-semibold tabular-nums">0850 242 77 50</span>
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Connection Info - when active */}
       {isConfigured && whatsappStatus === 'active' && (
         <Card>
@@ -224,27 +254,8 @@ export const WhatsAppSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Support Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Phone className="h-5 w-5" />
-            {t("whatsapp.support.title")}
-          </CardTitle>
-          <CardDescription>
-            {t("whatsapp.support.subtitle")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
-            <Phone className="h-5 w-5 text-primary" />
-            <div>
-              <p className="font-semibold">0541 650 03 03</p>
-              <p className="text-sm text-muted-foreground">{t("whatsapp.support.contactNote")}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Eski Support Section (0541 numarası) Embedded Signup altındaki yeni
+          destek bloğuyla değiştirildi. POS-yok döneminde tek destek hattı: 0850 242 77 50. */}
 
       {/* Conversation Style Section */}
       <Card>

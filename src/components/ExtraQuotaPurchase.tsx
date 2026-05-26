@@ -9,6 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
+// POS-DISABLED: ek kota satın alma geçici olarak iletişim formuna yönlendiriyor.
+// POS onayı gelince POS_ENABLED=true yapılınca eski LemonSqueezy checkout akışı geri açılır.
+const POS_ENABLED = false;
+const CONTACT_HREF = "/#contact";
+
 /**
  * Sorun 2 (Planım) + UsageStats (Dashboard) ortak ek-kota satın alma bileşeni.
  *
@@ -82,6 +87,15 @@ export function ExtraQuotaPurchase({
   }
 
   const handlePurchase = async () => {
+    // POS-DISABLED: ödeme akışı yerine iletişim formuna yönlendir.
+    // POS_ENABLED=true olduğunda aşağıdaki LS checkout bloğu yeniden çalışır.
+    if (!POS_ENABLED) {
+      setOpen(false);
+      // Hash'lı route — landing FaqSection scroll-to-anchor (id="contact").
+      window.location.href = CONTACT_HREF;
+      return;
+    }
+
     setPurchasing(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -177,7 +191,11 @@ export function ExtraQuotaPurchase({
             <p className="text-muted-foreground">{t("admin.usageStats.quotaInfo")}</p>
           </div>
           <Button onClick={handlePurchase} disabled={purchasing} className="w-full">
-            {purchasing ? t("admin.usageStats.redirecting") : t("admin.usageStats.goToPayment")}
+            {purchasing
+              ? t("admin.usageStats.redirecting")
+              : POS_ENABLED
+                ? t("admin.usageStats.goToPayment")
+                : t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
           </Button>
         </div>
       </DialogContent>

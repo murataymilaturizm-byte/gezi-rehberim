@@ -35,7 +35,8 @@
     "login": "Войти",
     "freeTrial": "Бесплатная версия",
     "menu": "Меню",
-    "discoverFeatures": "Изучить возможности"
+    "discoverFeatures": "Изучить возможности",
+    "callSupport": "Линия поддержки"
   },
   "hero": {
     "title": "Автоматизация Продаж Туров через WhatsApp",
@@ -3598,6 +3599,10 @@
       "userCount": "{{count}} пользователей",
       "messageCount": "{{count}} сообщений",
       "empty": "Языковых данных пока нет"
+    },
+    "supportBlock": {
+      "title": "Нужна помощь?",
+      "subtitle": "Позвоните нам по вопросам подключения WhatsApp или любым другим."
     }
   },
   "superAdmin": {

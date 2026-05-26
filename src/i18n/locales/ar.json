@@ -35,7 +35,8 @@
     "login": "تسجيل الدخول",
     "freeTrial": "تجربة مجانية",
     "menu": "القائمة",
-    "discoverFeatures": "استكشاف الميزات"
+    "discoverFeatures": "استكشاف الميزات",
+    "callSupport": "خط الدعم"
   },
   "hero": {
     "title": "أتمتة مبيعات الرحلات عبر واتساب",
@@ -3598,6 +3599,10 @@
       "userCount": "{{count}} مستخدم",
       "messageCount": "{{count}} رسالة",
       "empty": "لا توجد بيانات لغوية بعد"
+    },
+    "supportBlock": {
+      "title": "هل تحتاج إلى مساعدة؟",
+      "subtitle": "اتصل بنا الآن لربط WhatsApp أو أي مسألة أخرى."
     }
   },
   "superAdmin": {

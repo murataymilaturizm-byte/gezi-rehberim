@@ -260,10 +260,11 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
                 <a
                   href={
                     plan.name === t("pricing.enterprise.name")
-                      ? "mailto:info@turzzai.com?subject=Kurumsal%20Plan%20Talebi"
+                      // Kurumsal → landing iletişim formuna scroll (FaqSection, #contact anchor).
+                      // POS gelse de Enterprise self-service değil; bu link kalıcı.
+                      ? "/#contact"
                       : `/auth?mode=signup&plan=${plan.name.toLowerCase().replace('ı', 'i')}&billing=${isYearly ? 'yearly' : 'monthly'}`
                   }
-                  target={plan.name === t("pricing.enterprise.name") ? undefined : undefined}
                 >
                   {plan.name === t("pricing.enterprise.name") ? t("pricing.cta.contact") : t("pricing.cta.start")}
                 </a>

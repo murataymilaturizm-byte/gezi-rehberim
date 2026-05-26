@@ -35,7 +35,8 @@
     "login": "Anmelden",
     "freeTrial": "Kostenlos testen",
     "menu": "Menü",
-    "discoverFeatures": "Funktionen entdecken"
+    "discoverFeatures": "Funktionen entdecken",
+    "callSupport": "Support-Hotline"
   },
   "hero": {
     "title": "WhatsApp Tour-Verkauf Automatisieren",
@@ -3598,6 +3599,10 @@
       "userCount": "{{count}} Benutzer",
       "messageCount": "{{count}} Nachrichten",
       "empty": "Noch keine Sprachdaten"
+    },
+    "supportBlock": {
+      "title": "Brauchen Sie Hilfe?",
+      "subtitle": "Rufen Sie uns sofort an — WhatsApp-Verbindung oder andere Anliegen."
     }
   },
   "superAdmin": {

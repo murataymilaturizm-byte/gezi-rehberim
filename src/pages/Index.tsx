@@ -214,8 +214,8 @@ const Index = () => {
         <PricingSection isYearly={isYearly} setIsYearly={setIsYearly} />
       </section>
 
-      {/* FAQ Section */}
-      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
+      {/* FAQ Section — id="contact" anchor: POS-yok döneminde tüm ödeme/iletişim CTA'ları buraya yönlendirir. */}
+      <section id="contact" ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
         <FaqSection />
       </section>
 

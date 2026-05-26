@@ -35,7 +35,8 @@
     "login": "Se connecter",
     "freeTrial": "Essai gratuit",
     "menu": "Menu",
-    "discoverFeatures": "Découvrir les fonctionnalités"
+    "discoverFeatures": "Découvrir les fonctionnalités",
+    "callSupport": "Ligne d'assistance"
   },
   "hero": {
     "title": "Automatiser les Ventes de Tours WhatsApp",
@@ -3598,6 +3599,10 @@
       "userCount": "{{count}} utilisateurs",
       "messageCount": "{{count}} messages",
       "empty": "Aucune donnée linguistique pour l'instant"
+    },
+    "supportBlock": {
+      "title": "Besoin d'aide ?",
+      "subtitle": "Appelez-nous pour la connexion WhatsApp ou tout autre sujet."
     }
   },
   "superAdmin": {

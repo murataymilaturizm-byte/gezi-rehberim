@@ -10,9 +10,13 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { LanguageSelector } from "@/components/LanguageSelector";
+
+// Turzz destek hattı — Header'da görünür. POS-yok döneminde iletişim öncelikli.
+const SUPPORT_PHONE_DISPLAY = "0850 242 77 50";
+const SUPPORT_PHONE_HREF = "tel:+908502427750";
 
 const cozumler = [
   { href: "/cozum/incoming-acenteler", label: "Incoming Acenteler" },
@@ -99,6 +103,15 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
+            {/* Destek telefonu — masaüstü: tıklanabilir numara */}
+            <a
+              href={SUPPORT_PHONE_HREF}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground hover:text-primary transition-colors"
+              aria-label={t("nav.callSupport", { defaultValue: "Destek Hattı" })}
+            >
+              <Phone className="h-4 w-4 text-primary" />
+              <span className="font-medium tabular-nums">{SUPPORT_PHONE_DISPLAY}</span>
+            </a>
             <LanguageSelector />
             <Button variant="ghost" asChild size="sm">
               <Link to="/auth">{t("nav.login")}</Link>
@@ -108,14 +121,24 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             </Button>
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={t("nav.menu")}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {/* Mobile: telefon ikonu + hamburger */}
+          <div className="md:hidden flex items-center gap-1">
+            <a
+              href={SUPPORT_PHONE_HREF}
+              className="p-2 rounded-md hover:bg-accent transition-colors"
+              aria-label={t("nav.callSupport", { defaultValue: "Destek Hattı" })}
+              title={SUPPORT_PHONE_DISPLAY}
+            >
+              <Phone className="h-5 w-5 text-primary" />
+            </a>
+            <button
+              className="p-2"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={t("nav.menu")}
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
@@ -137,6 +160,12 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/blog" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.blog")}</Link>
               <Link to="/yardim" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.help")}</Link>
               <Link to="/#pricing" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.pricing")}</Link>
+              <a href={SUPPORT_PHONE_HREF} className="block py-2 text-sm hover:text-primary font-medium" onClick={() => setMobileOpen(false)}>
+                <span className="inline-flex items-center gap-1.5">
+                  <Phone className="h-4 w-4 text-primary" />
+                  {SUPPORT_PHONE_DISPLAY}
+                </span>
+              </a>
             </div>
             <div className="pt-3">
               <LanguageSelector />

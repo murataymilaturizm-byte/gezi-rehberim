@@ -35,7 +35,8 @@
     "login": "Iniciar sesión",
     "freeTrial": "Prueba gratis",
     "menu": "Menú",
-    "discoverFeatures": "Descubrir características"
+    "discoverFeatures": "Descubrir características",
+    "callSupport": "Línea de soporte"
   },
   "hero": {
     "title": "Automatizar Ventas de Tours por WhatsApp",
@@ -3598,6 +3599,10 @@
       "userCount": "{{count}} usuarios",
       "messageCount": "{{count}} mensajes",
       "empty": "Aún no hay datos de idioma"
+    },
+    "supportBlock": {
+      "title": "¿Necesita ayuda?",
+      "subtitle": "Llámenos ahora para conexión WhatsApp u otro tema."
     }
   },
   "superAdmin": {

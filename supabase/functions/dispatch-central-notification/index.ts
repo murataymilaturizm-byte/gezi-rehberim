@@ -64,9 +64,33 @@ function isAgencyEvent(et: string): boolean {
   return et.startsWith("agency_");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SABİT positional variable sırası — Meta {{1}}..{{N}} bu listeden çekilir.
+//
+// Her event_type için, payload alanlarının {{N}} sırasını burası belirler.
+// {{N}}  →  list[N-1]  →  stringValues[list[N-1]]  →  Meta'ya parametre.
+//
+// Listede OLMAYAN bir alan, Meta şablonunda {{N}} ile gösterilemez — positional
+// modda boş string gelir. Listeye yeni alan eklemek/sıralamayı değiştirmek
+// Meta şablonu ile koordineli yapılmalı (şablon "Sayın {{2}}" yazıyorsa
+// list[1] o event için "müşteri adı" alanı olmalı).
+//
+// DİKKAT: send-template-message MODE 3'teki POSITIONAL_VAR_ORDER pattern'i ile
+// aynı amaç — ama burada per-event ayrı liste (Faz 1+2'nin tüm event'lerini kapsar).
+// ═══════════════════════════════════════════════════════════════════════════
+const EVENT_VARIABLE_ORDER: Record<string, readonly string[]> = {
+  // Turzz ekibi (Faz 1)
+  new_reservation:        ["agency_name", "full_name", "tour_name", "date", "pax", "total_amount", "currency"],
+  new_agency_signup:      ["name", "plan_type"],
+  new_contact_form:       ["name", "email", "message"],
+  // Acente (Faz 2)
+  agency_new_reservation: ["full_name", "tour_name", "date", "pax", "total_amount", "currency"],
+  agency_new_support:     ["phone", "type", "message"],
+};
+
 // ─── Variable helper'ları (mirror of send-template-message/index.ts:17-41) ─────
-// Eğer ileride değişirse iki yerde güncelleyin — kasıtlı duplikasyon (send-template-message
-// dosyasına dokunmamak için).
+// Mantık send-template-message'a yakın ama positional sıralama EVENT_VARIABLE_ORDER ile
+// SABİT — payload key sırası (jsonb kanonik) artık etkilemiyor.
 function extractOrderedVariables(content: string): string[] {
   const seen = new Set<string>();
   const ordered: string[] = [];
@@ -77,19 +101,40 @@ function extractOrderedVariables(content: string): string[] {
   return ordered;
 }
 
-function buildTemplateComponents(content: string, values: Record<string, string>): any[] {
+function buildTemplateComponents(
+  content: string,
+  values: Record<string, string>,
+  positionalOrder: readonly string[] | null,
+): any[] {
   const vars = extractOrderedVariables(content);
   if (vars.length === 0) return [];
 
-  // Pozisyonel ({{1}}, {{2}}) → değerleri payload'dan sırayla al (anahtar isimleri ile DEĞİL,
-  // pozisyona göre — yani bu durumda super_admin "name, email, message" sırasını şablonda
-  // tutmaya dikkat etmeli). Named tercih edilir.
   const isPositional = vars.every((v) => /^\d+$/.test(v));
-  const valuesArr = Object.values(values);
 
-  const parameters = isPositional
-    ? vars.map((_, i) => ({ type: "text", text: (valuesArr[i] ?? "") + "" }))
-    : vars.map((v) => ({ type: "text", text: (values[v] ?? "") + "" }));
+  if (!isPositional) {
+    // Named mod — {full_name} gibi. Değişmedi, doğrudan name lookup.
+    const parameters = vars.map((v) => ({ type: "text", text: (values[v] ?? "") + "" }));
+    return [{ type: "body", parameters }];
+  }
+
+  // Positional mod ({{1}}, {{2}}, ...) — SABİT sıra
+  if (!positionalOrder) {
+    // Güvenli boş — event için sabit sıra tanımsızsa positional doldurmaz.
+    // (Kabul edilen 5 event tanımlı; bu dal yalnızca beklenmeyen yeni event'lerde
+    // ya da debug template'lerinde devreye girer.)
+    console.warn("[dispatch-central] positional template but no order defined — empty params");
+    const parameters = vars.map(() => ({ type: "text", text: "" }));
+    return [{ type: "body", parameters }];
+  }
+
+  // {{N}} (sayı) → list[N-1] alanı → stringValues[alan].
+  // vars dizisinin SIRASI yerine SAYISAL DEĞER kullanılır — şablonda {{3}} {{1}} {{2}}
+  // sırayla yazılsa bile Meta parametre dizisini doğru index'lerle alır.
+  const parameters = vars.map((numStr) => {
+    const idx = parseInt(numStr, 10) - 1;
+    const field = idx >= 0 && idx < positionalOrder.length ? positionalOrder[idx] : null;
+    return { type: "text", text: field ? (values[field] ?? "") + "" : "" };
+  });
 
   return [{ type: "body", parameters }];
 }
@@ -230,7 +275,27 @@ serve(async (req) => {
     for (const [k, v] of Object.entries(payload)) {
       stringValues[k] = v == null ? "" : String(v);
     }
-    const components = buildTemplateComponents(tmpl.content, stringValues);
+
+    // ─── Enrichment: agency_name (new_reservation gibi event'lerde lazım) ────
+    // Trigger payload'ı agency_id taşıyor ama agency_name yok. EVENT_VARIABLE_ORDER
+    // listesi "agency_name" içeriyorsa bu alanı acentenin tablosundan çekip
+    // stringValues'a inject et. Lookup fail olursa boş string — gönderim devam etsin.
+    const orderForEvent = EVENT_VARIABLE_ORDER[event_type] ?? null;
+    if (orderForEvent && orderForEvent.includes("agency_name") && stringValues.agency_id) {
+      try {
+        const { data: ag } = await sb
+          .from("agencies")
+          .select("name")
+          .eq("id", stringValues.agency_id)
+          .maybeSingle();
+        stringValues.agency_name = ag?.name ? String(ag.name) : "";
+      } catch (_e) {
+        // Sessiz — Meta'ya boş gönderilir, gönderim akışı bozulmaz.
+        stringValues.agency_name = "";
+      }
+    }
+
+    const components = buildTemplateComponents(tmpl.content, stringValues, orderForEvent);
 
     // ═══════════════════════════════════════════════════════════════════════
     // ACENTE AKIŞI (Faz 2) — event_type 'agency_' ile başlıyorsa

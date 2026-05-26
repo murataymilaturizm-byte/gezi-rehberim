@@ -12,7 +12,8 @@
     "login": "Giriş Yap",
     "freeTrial": "Ücretsiz Dene",
     "menu": "Menü",
-    "discoverFeatures": "Özelliklerimizi Keşfet"
+    "discoverFeatures": "Özelliklerimizi Keşfet",
+    "callSupport": "Destek Hattı"
   },
   "currency": {
     "management": "Para Birimi Yönetimi",
@@ -3705,6 +3706,10 @@
       "userCount": "{{count}} kullanıcı",
       "messageCount": "{{count}} mesaj",
       "empty": "Henüz dil verisi bulunmuyor"
+    },
+    "supportBlock": {
+      "title": "Desteğe mi ihtiyacınız var?",
+      "subtitle": "WhatsApp bağlantısı veya başka bir konuda hemen arayın."
     }
   },
   "userProfiles": {
