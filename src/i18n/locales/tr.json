@@ -1348,7 +1348,9 @@
       "events": {
         "new_agency_signup": "Yeni Acente Kaydı",
         "new_contact_form": "Yeni İletişim Talebi",
-        "new_reservation": "Yeni Rezervasyon"
+        "new_reservation": "Yeni Rezervasyon",
+        "agency_new_reservation": "Acente — Yeni Rezervasyon",
+        "agency_new_support": "Acente — Talep/Şikayet"
       },
       "mappings": {
         "hint": "Her olay tipi (yeni rezervasyon / yeni acente / yeni iletişim) için kullanılacak APPROVED Meta şablonunu eşleştirin. Aynı (olay + dil) için tek eşleştirme.",
@@ -2316,12 +2318,16 @@
       "mobileMenu": {
         "title": "☰ Sol Menü",
         "desc": "Sol üstteki menü ikonuna dokunarak tüm panel bölümlerine ulaşabilirsiniz.",
-        "bullets": ["Turlar, rezervasyonlar, WhatsApp, ayarlar ve daha fazlası"]
+        "bullets": [
+          "Turlar, rezervasyonlar, WhatsApp, ayarlar ve daha fazlası"
+        ]
       },
       "mobileNotifications": {
         "title": "🔔 Bildirimler",
         "desc": "Yeni rezervasyon geldiğinde zil ikonunda kırmızı badge görünür.",
-        "bullets": ["Tıklayarak rezervasyonlar ekranına geçiş yapın"]
+        "bullets": [
+          "Tıklayarak rezervasyonlar ekranına geçiş yapın"
+        ]
       }
     },
     "next": "İleri →",
@@ -2654,7 +2660,6 @@
     "next": "İleri",
     "prev": "Geri",
     "saveLoading": "Kaydediliyor...",
-    "refresh": "Yenile",
     "filters": "Filtreler",
     "all": "Tümü",
     "selectDate": "Tarih seçin"
@@ -3642,7 +3647,8 @@
       "conversations": "Konuşmalar",
       "logs": "Loglar",
       "languageStats": "Dil İstat.",
-      "integration": "Entegrasyon"
+      "integration": "Entegrasyon",
+      "notifications": "Bildirim Ayarları"
     },
     "conversations": {
       "search": "Ara...",
@@ -3913,14 +3919,24 @@
       "hotel_name": "Otel Adı",
       "hotel_stars": "Otel Yıldızı",
       "visa_notes": "Vize Notları",
-      "title_en": "Tur Adı (EN)", "title_de": "Tur Adı (DE)", "title_fr": "Tur Adı (FR)",
-      "title_es": "Tur Adı (ES)", "title_ru": "Tur Adı (RU)", "title_ar": "Tur Adı (AR)",
-      "destination_en": "Destinasyon (EN)", "destination_de": "Destinasyon (DE)",
-      "destination_fr": "Destinasyon (FR)", "destination_es": "Destinasyon (ES)",
-      "destination_ru": "Destinasyon (RU)", "destination_ar": "Destinasyon (AR)",
-      "program_kisa_en": "Kısa Program (EN)", "program_kisa_de": "Kısa Program (DE)",
-      "program_kisa_fr": "Kısa Program (FR)", "program_kisa_es": "Kısa Program (ES)",
-      "program_kisa_ru": "Kısa Program (RU)", "program_kisa_ar": "Kısa Program (AR)"
+      "title_en": "Tur Adı (EN)",
+      "title_de": "Tur Adı (DE)",
+      "title_fr": "Tur Adı (FR)",
+      "title_es": "Tur Adı (ES)",
+      "title_ru": "Tur Adı (RU)",
+      "title_ar": "Tur Adı (AR)",
+      "destination_en": "Destinasyon (EN)",
+      "destination_de": "Destinasyon (DE)",
+      "destination_fr": "Destinasyon (FR)",
+      "destination_es": "Destinasyon (ES)",
+      "destination_ru": "Destinasyon (RU)",
+      "destination_ar": "Destinasyon (AR)",
+      "program_kisa_en": "Kısa Program (EN)",
+      "program_kisa_de": "Kısa Program (DE)",
+      "program_kisa_fr": "Kısa Program (FR)",
+      "program_kisa_es": "Kısa Program (ES)",
+      "program_kisa_ru": "Kısa Program (RU)",
+      "program_kisa_ar": "Kısa Program (AR)"
     },
     "tpl": {
       "sheetInstructions": "Talimatlar",
@@ -4004,5 +4020,37 @@
     "readMore": "Devamını oku",
     "allPosts": "Tüm Yazılar",
     "minutes": "dk"
+  },
+  "agency": {
+    "notifications": {
+      "title": "Bildirim Ayarları",
+      "description": "Turzz'un WhatsApp numarasından yeni rezervasyon ve talep/şikayet bildirimleri alın. Bildirim numaranızı ve hangi olayların gönderileceğini buradan yönetin.",
+      "enabledLabel": "Bildirimleri aktif et",
+      "enabledHint": "Kapalıyken hiçbir bildirim gönderilmez.",
+      "phoneLabel": "Bildirim Numarası",
+      "phoneHint": "WhatsApp uygulamanızın bağlı olduğu numarayı yazın (E.164: +90..., +49...).",
+      "invalidPhone": "Telefon E.164 formatında olmalı (+ ülke kodu, sonra rakam).",
+      "eventsLabel": "Bildirim Türleri",
+      "events": {
+        "new_reservation": "Yeni Rezervasyon",
+        "new_support": "Talep & Şikayet"
+      },
+      "eventReservationHint": "Sisteme yeni bir rezervasyon düştüğünde bildirim alın.",
+      "eventSupportHint": "Müşteri WhatsApp üzerinden talep/şikayet ilettiğinde bildirim alın.",
+      "disabledBanner": "Bildirimler kapalı. Açana kadar herhangi bir bildirim gönderilmez.",
+      "saved": "Bildirim ayarları kaydedildi.",
+      "historyTitle": "Bildirim Geçmişi",
+      "historyDescription": "Size gönderilen son bildirimler. En fazla son 50 kayıt gösterilir.",
+      "historyEmpty": "Henüz bildirim gönderilmedi.",
+      "statusSuccess": "Başarılı",
+      "statusFail": "Başarısız",
+      "col": {
+        "sentAt": "Zaman",
+        "event": "Olay",
+        "phone": "Numara",
+        "status": "Durum",
+        "error": "Hata"
+      }
+    }
   }
 }

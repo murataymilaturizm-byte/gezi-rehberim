@@ -2219,12 +2219,16 @@
       "mobileMenu": {
         "title": "☰ Seitenmenü",
         "desc": "Tippen Sie auf das Menüsymbol oben links, um auf alle Panel-Bereiche zuzugreifen.",
-        "bullets": ["Touren, Buchungen, WhatsApp, Einstellungen und mehr"]
+        "bullets": [
+          "Touren, Buchungen, WhatsApp, Einstellungen und mehr"
+        ]
       },
       "mobileNotifications": {
         "title": "🔔 Benachrichtigungen",
         "desc": "Ein roter Badge erscheint auf dem Glockensymbol, wenn eine neue Buchung eingeht.",
-        "bullets": ["Tippen, um zum Buchungsbildschirm zu navigieren"]
+        "bullets": [
+          "Tippen, um zum Buchungsbildschirm zu navigieren"
+        ]
       }
     },
     "next": "Weiter →",
@@ -2458,7 +2462,6 @@
     "next": "Weiter",
     "prev": "Zurück",
     "saveLoading": "Wird gespeichert...",
-    "refresh": "Aktualisieren",
     "filters": "Filter",
     "all": "Alle",
     "selectDate": "Datum auswählen"
@@ -3537,7 +3540,8 @@
       "conversations": "Gespräche",
       "logs": "Protokolle",
       "languageStats": "Sprachstat.",
-      "integration": "Integration"
+      "integration": "Integration",
+      "notifications": "Benachrichtigungen"
     },
     "conversations": {
       "search": "Suchen...",
@@ -3762,14 +3766,24 @@
       "hotel_name": "Hotelname",
       "hotel_stars": "Hotelsterne",
       "visa_notes": "Visum-Hinweise",
-      "title_en": "Tourtitel (EN)", "title_de": "Tourtitel (DE)", "title_fr": "Tourtitel (FR)",
-      "title_es": "Tourtitel (ES)", "title_ru": "Tourtitel (RU)", "title_ar": "Tourtitel (AR)",
-      "destination_en": "Reiseziel (EN)", "destination_de": "Reiseziel (DE)",
-      "destination_fr": "Reiseziel (FR)", "destination_es": "Reiseziel (ES)",
-      "destination_ru": "Reiseziel (RU)", "destination_ar": "Reiseziel (AR)",
-      "program_kisa_en": "Kurzprogramm (EN)", "program_kisa_de": "Kurzprogramm (DE)",
-      "program_kisa_fr": "Kurzprogramm (FR)", "program_kisa_es": "Kurzprogramm (ES)",
-      "program_kisa_ru": "Kurzprogramm (RU)", "program_kisa_ar": "Kurzprogramm (AR)"
+      "title_en": "Tourtitel (EN)",
+      "title_de": "Tourtitel (DE)",
+      "title_fr": "Tourtitel (FR)",
+      "title_es": "Tourtitel (ES)",
+      "title_ru": "Tourtitel (RU)",
+      "title_ar": "Tourtitel (AR)",
+      "destination_en": "Reiseziel (EN)",
+      "destination_de": "Reiseziel (DE)",
+      "destination_fr": "Reiseziel (FR)",
+      "destination_es": "Reiseziel (ES)",
+      "destination_ru": "Reiseziel (RU)",
+      "destination_ar": "Reiseziel (AR)",
+      "program_kisa_en": "Kurzprogramm (EN)",
+      "program_kisa_de": "Kurzprogramm (DE)",
+      "program_kisa_fr": "Kurzprogramm (FR)",
+      "program_kisa_es": "Kurzprogramm (ES)",
+      "program_kisa_ru": "Kurzprogramm (RU)",
+      "program_kisa_ar": "Kurzprogramm (AR)"
     },
     "tpl": {
       "sheetInstructions": "Anleitung",
@@ -3909,5 +3923,37 @@
     "readMore": "Weiterlesen",
     "allPosts": "Alle Beiträge",
     "minutes": "Min"
+  },
+  "agency": {
+    "notifications": {
+      "title": "Benachrichtigungseinstellungen",
+      "description": "Erhalten Sie Benachrichtigungen über neue Buchungen und Anfragen/Beschwerden von der WhatsApp-Nummer von Turzz. Verwalten Sie hier Ihre Benachrichtigungsnummer und welche Ereignisse empfangen werden sollen.",
+      "enabledLabel": "Benachrichtigungen aktivieren",
+      "enabledHint": "Wenn deaktiviert, werden keine Benachrichtigungen gesendet.",
+      "phoneLabel": "Benachrichtigungsnummer",
+      "phoneHint": "Geben Sie die Nummer ein, bei der Ihre WhatsApp-App registriert ist (E.164: +90..., +49...).",
+      "invalidPhone": "Telefon muss im E.164-Format sein (+ Ländercode, dann Ziffern).",
+      "eventsLabel": "Benachrichtigungstypen",
+      "events": {
+        "new_reservation": "Neue Buchung",
+        "new_support": "Anfrage & Beschwerde"
+      },
+      "eventReservationHint": "Erhalten Sie eine Benachrichtigung, wenn eine neue Buchung eingeht.",
+      "eventSupportHint": "Erhalten Sie eine Benachrichtigung, wenn ein Kunde eine Anfrage/Beschwerde über WhatsApp sendet.",
+      "disabledBanner": "Benachrichtigungen sind aus. Bis Sie sie aktivieren, werden keine Benachrichtigungen gesendet.",
+      "saved": "Benachrichtigungseinstellungen gespeichert.",
+      "historyTitle": "Benachrichtigungsverlauf",
+      "historyDescription": "Letzte an Sie gesendete Benachrichtigungen. Bis zu 50 neueste Einträge.",
+      "historyEmpty": "Noch keine Benachrichtigungen gesendet.",
+      "statusSuccess": "Erfolgreich",
+      "statusFail": "Fehlgeschlagen",
+      "col": {
+        "sentAt": "Zeit",
+        "event": "Ereignis",
+        "phone": "Nummer",
+        "status": "Status",
+        "error": "Fehler"
+      }
+    }
   }
 }

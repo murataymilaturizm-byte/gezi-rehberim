@@ -21,12 +21,13 @@ import { cn } from "@/lib/utils";
 import {
   MessageCircle, User, Bot, Building2,
   Search, Settings, ChevronLeft, ChevronRight, Send, PauseCircle,
-  PlayCircle, Loader2,
+  PlayCircle, Loader2, Bell,
 } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 // WhatsAppLogs and LanguageStats moved to Reporting menu (Admin.tsx routing)
 import { WhatsAppSettings } from "./WhatsAppSettings";
+import AgencyNotificationSettings from "./AgencyNotificationSettings";
 import { EmptyState } from "./EmptyState";
 import { ConversationsEmptyIllustration } from "./illustrations/ConversationsEmptyIllustration";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -386,7 +387,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                 )}
               </div>
               
-              <TabsList className={`grid w-full ${isSuperAdmin ? "grid-cols-1" : "grid-cols-2"}`}>
+              <TabsList className={`grid w-full ${isSuperAdmin ? "grid-cols-1" : "grid-cols-3"}`}>
                 <TabsTrigger value="conversations" className="flex items-center gap-1 text-xs sm:text-sm">
                   <MessageCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">{t("whatsapp.tabs.conversations")}</span>
@@ -395,6 +396,12 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   <TabsTrigger value="integration" className="flex items-center gap-1 text-xs sm:text-sm">
                     <Settings className="h-4 w-4" />
                     <span className="hidden sm:inline">{t("whatsapp.tabs.integration")}</span>
+                  </TabsTrigger>
+                )}
+                {!isSuperAdmin && (
+                  <TabsTrigger value="notifications" className="flex items-center gap-1 text-xs sm:text-sm">
+                    <Bell className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("whatsapp.tabs.notifications", { defaultValue: "Bildirim Ayarları" })}</span>
                   </TabsTrigger>
                 )}
               </TabsList>
@@ -645,6 +652,12 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
             {!isSuperAdmin && (
               <TabsContent value="integration" className="mt-0">
                 <WhatsAppSettings />
+              </TabsContent>
+            )}
+
+            {!isSuperAdmin && (
+              <TabsContent value="notifications" className="mt-0">
+                <AgencyNotificationSettings />
               </TabsContent>
             )}
           </CardContent>

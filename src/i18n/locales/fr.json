@@ -2219,12 +2219,16 @@
       "mobileMenu": {
         "title": "☰ Menu latéral",
         "desc": "Appuyez sur l'icône de menu en haut à gauche pour accéder à toutes les sections du panneau.",
-        "bullets": ["Circuits, réservations, WhatsApp, paramètres et plus encore"]
+        "bullets": [
+          "Circuits, réservations, WhatsApp, paramètres et plus encore"
+        ]
       },
       "mobileNotifications": {
         "title": "🔔 Notifications",
         "desc": "Un badge rouge apparaît sur l'icône cloche à chaque nouvelle réservation.",
-        "bullets": ["Appuyez pour accéder à l'écran des réservations"]
+        "bullets": [
+          "Appuyez pour accéder à l'écran des réservations"
+        ]
       }
     },
     "next": "Suivant →",
@@ -2458,7 +2462,6 @@
     "next": "Suivant",
     "prev": "Retour",
     "saveLoading": "Enregistrement...",
-    "refresh": "Actualiser",
     "filters": "Filtres",
     "all": "Tous",
     "selectDate": "Sélectionner une date"
@@ -3537,7 +3540,8 @@
       "conversations": "Conversations",
       "logs": "Journaux",
       "languageStats": "Stats langue",
-      "integration": "Intégration"
+      "integration": "Intégration",
+      "notifications": "Notifications"
     },
     "conversations": {
       "search": "Rechercher...",
@@ -3762,14 +3766,24 @@
       "hotel_name": "Nom de l'hôtel",
       "hotel_stars": "Étoiles de l'hôtel",
       "visa_notes": "Notes sur le visa",
-      "title_en": "Titre (EN)", "title_de": "Titre (DE)", "title_fr": "Titre (FR)",
-      "title_es": "Titre (ES)", "title_ru": "Titre (RU)", "title_ar": "Titre (AR)",
-      "destination_en": "Destination (EN)", "destination_de": "Destination (DE)",
-      "destination_fr": "Destination (FR)", "destination_es": "Destination (ES)",
-      "destination_ru": "Destination (RU)", "destination_ar": "Destination (AR)",
-      "program_kisa_en": "Programme court (EN)", "program_kisa_de": "Programme court (DE)",
-      "program_kisa_fr": "Programme court (FR)", "program_kisa_es": "Programme court (ES)",
-      "program_kisa_ru": "Programme court (RU)", "program_kisa_ar": "Programme court (AR)"
+      "title_en": "Titre (EN)",
+      "title_de": "Titre (DE)",
+      "title_fr": "Titre (FR)",
+      "title_es": "Titre (ES)",
+      "title_ru": "Titre (RU)",
+      "title_ar": "Titre (AR)",
+      "destination_en": "Destination (EN)",
+      "destination_de": "Destination (DE)",
+      "destination_fr": "Destination (FR)",
+      "destination_es": "Destination (ES)",
+      "destination_ru": "Destination (RU)",
+      "destination_ar": "Destination (AR)",
+      "program_kisa_en": "Programme court (EN)",
+      "program_kisa_de": "Programme court (DE)",
+      "program_kisa_fr": "Programme court (FR)",
+      "program_kisa_es": "Programme court (ES)",
+      "program_kisa_ru": "Programme court (RU)",
+      "program_kisa_ar": "Programme court (AR)"
     },
     "tpl": {
       "sheetInstructions": "Instructions",
@@ -3909,5 +3923,37 @@
     "readMore": "Lire la suite",
     "allPosts": "Tous les articles",
     "minutes": "min"
+  },
+  "agency": {
+    "notifications": {
+      "title": "Paramètres de notification",
+      "description": "Recevez des notifications de nouvelles réservations et demandes/plaintes depuis le numéro WhatsApp de Turzz. Gérez ici votre numéro de notification et les événements à recevoir.",
+      "enabledLabel": "Activer les notifications",
+      "enabledHint": "Aucune notification n'est envoyée lorsque désactivé.",
+      "phoneLabel": "Numéro de notification",
+      "phoneHint": "Saisissez le numéro auquel votre application WhatsApp est associée (E.164 : +90..., +49...).",
+      "invalidPhone": "Le téléphone doit être au format E.164 (+ indicatif pays, puis chiffres).",
+      "eventsLabel": "Types de notification",
+      "events": {
+        "new_reservation": "Nouvelle Réservation",
+        "new_support": "Demande & Plainte"
+      },
+      "eventReservationHint": "Soyez averti lorsqu'une nouvelle réservation est créée dans votre système.",
+      "eventSupportHint": "Soyez averti lorsqu'un client envoie une demande/plainte via WhatsApp.",
+      "disabledBanner": "Les notifications sont désactivées. Aucune notification ne sera envoyée jusqu'à ce que vous les activiez.",
+      "saved": "Paramètres de notification enregistrés.",
+      "historyTitle": "Historique des notifications",
+      "historyDescription": "Notifications récentes envoyées. Jusqu'à 50 enregistrements les plus récents.",
+      "historyEmpty": "Aucune notification envoyée.",
+      "statusSuccess": "Réussi",
+      "statusFail": "Échec",
+      "col": {
+        "sentAt": "Heure",
+        "event": "Événement",
+        "phone": "Numéro",
+        "status": "État",
+        "error": "Erreur"
+      }
+    }
   }
 }

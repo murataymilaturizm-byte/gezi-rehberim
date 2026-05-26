@@ -2219,12 +2219,16 @@
       "mobileMenu": {
         "title": "☰ القائمة الجانبية",
         "desc": "اضغط على أيقونة القائمة في أعلى اليسار للوصول إلى جميع أقسام اللوحة.",
-        "bullets": ["الجولات والحجوزات وواتساب والإعدادات والمزيد"]
+        "bullets": [
+          "الجولات والحجوزات وواتساب والإعدادات والمزيد"
+        ]
       },
       "mobileNotifications": {
         "title": "🔔 الإشعارات",
         "desc": "تظهر شارة حمراء على أيقونة الجرس عند وصول حجز جديد.",
-        "bullets": ["اضغط للانتقال إلى شاشة الحجوزات"]
+        "bullets": [
+          "اضغط للانتقال إلى شاشة الحجوزات"
+        ]
       }
     },
     "next": "التالي →",
@@ -2458,7 +2462,6 @@
     "next": "التالي",
     "prev": "رجوع",
     "saveLoading": "جارٍ الحفظ...",
-    "refresh": "تحديث",
     "filters": "الفلاتر",
     "all": "الكل",
     "selectDate": "اختر تاريخاً"
@@ -3537,7 +3540,8 @@
       "conversations": "المحادثات",
       "logs": "السجلات",
       "languageStats": "إحصاء اللغة",
-      "integration": "التكامل"
+      "integration": "التكامل",
+      "notifications": "الإشعارات"
     },
     "conversations": {
       "search": "بحث...",
@@ -3762,14 +3766,24 @@
       "hotel_name": "اسم الفندق",
       "hotel_stars": "نجوم الفندق",
       "visa_notes": "ملاحظات التأشيرة",
-      "title_en": "العنوان (EN)", "title_de": "العنوان (DE)", "title_fr": "العنوان (FR)",
-      "title_es": "العنوان (ES)", "title_ru": "العنوان (RU)", "title_ar": "العنوان (AR)",
-      "destination_en": "الوجهة (EN)", "destination_de": "الوجهة (DE)",
-      "destination_fr": "الوجهة (FR)", "destination_es": "الوجهة (ES)",
-      "destination_ru": "الوجهة (RU)", "destination_ar": "الوجهة (AR)",
-      "program_kisa_en": "البرنامج المختصر (EN)", "program_kisa_de": "البرنامج المختصر (DE)",
-      "program_kisa_fr": "البرنامج المختصر (FR)", "program_kisa_es": "البرنامج المختصر (ES)",
-      "program_kisa_ru": "البرنامج المختصر (RU)", "program_kisa_ar": "البرنامج المختصر (AR)"
+      "title_en": "العنوان (EN)",
+      "title_de": "العنوان (DE)",
+      "title_fr": "العنوان (FR)",
+      "title_es": "العنوان (ES)",
+      "title_ru": "العنوان (RU)",
+      "title_ar": "العنوان (AR)",
+      "destination_en": "الوجهة (EN)",
+      "destination_de": "الوجهة (DE)",
+      "destination_fr": "الوجهة (FR)",
+      "destination_es": "الوجهة (ES)",
+      "destination_ru": "الوجهة (RU)",
+      "destination_ar": "الوجهة (AR)",
+      "program_kisa_en": "البرنامج المختصر (EN)",
+      "program_kisa_de": "البرنامج المختصر (DE)",
+      "program_kisa_fr": "البرنامج المختصر (FR)",
+      "program_kisa_es": "البرنامج المختصر (ES)",
+      "program_kisa_ru": "البرنامج المختصر (RU)",
+      "program_kisa_ar": "البرنامج المختصر (AR)"
     },
     "tpl": {
       "sheetInstructions": "تعليمات",
@@ -3909,5 +3923,37 @@
     "readMore": "اقرأ المزيد",
     "allPosts": "جميع المقالات",
     "minutes": "د"
+  },
+  "agency": {
+    "notifications": {
+      "title": "إعدادات الإشعارات",
+      "description": "احصل على إشعارات الحجوزات الجديدة والطلبات/الشكاوى من رقم WhatsApp الخاص بـ Turzz. أدر هنا رقم الإشعارات والأحداث التي تتلقاها.",
+      "enabledLabel": "تفعيل الإشعارات",
+      "enabledHint": "عند إيقافها، لا تُرسل أي إشعارات.",
+      "phoneLabel": "رقم الإشعارات",
+      "phoneHint": "أدخل الرقم المرتبط بتطبيق WhatsApp الخاص بك (E.164: +90...، +49...).",
+      "invalidPhone": "يجب أن يكون الهاتف بتنسيق E.164 (+ رمز الدولة، ثم الأرقام).",
+      "eventsLabel": "أنواع الإشعارات",
+      "events": {
+        "new_reservation": "حجز جديد",
+        "new_support": "طلب وشكوى"
+      },
+      "eventReservationHint": "احصل على إشعار عند إنشاء حجز جديد في نظامك.",
+      "eventSupportHint": "احصل على إشعار عندما يرسل العميل طلبًا/شكوى عبر WhatsApp.",
+      "disabledBanner": "الإشعارات متوقفة. لن تُرسل أي إشعارات حتى تفعّلها.",
+      "saved": "تم حفظ إعدادات الإشعارات.",
+      "historyTitle": "سجل الإشعارات",
+      "historyDescription": "آخر الإشعارات المرسلة إليك. حتى 50 سجلًا.",
+      "historyEmpty": "لم تُرسل أي إشعارات بعد.",
+      "statusSuccess": "نجح",
+      "statusFail": "فشل",
+      "col": {
+        "sentAt": "الوقت",
+        "event": "الحدث",
+        "phone": "الرقم",
+        "status": "الحالة",
+        "error": "الخطأ"
+      }
+    }
   }
 }

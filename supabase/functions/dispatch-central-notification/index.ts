@@ -1,16 +1,24 @@
 // dispatch-central-notification — Turzz merkezi WhatsApp bildirim dispatcher'ı.
 //
-// AKIŞ:
-//   DB trigger → pg_net.http_post → bu fonksiyon
-//   bu fonksiyon → central_event_templates'ten event → template_key + language çöz
-//                → message_templates'ten içerik + variables çek (meta_status='APPROVED' şart)
-//                → turzz_team_recipients'ten active=TRUE + notification_types @> [event_type] alıcılar
-//                → her alıcıya Meta template gönder (Promise.allSettled, biri fail diğerine etki etmez)
-//                → her gönderim sonucu template_send_log'a yazılır (agency_id = TURZZ_CENTRAL_AGENCY_ID)
+// İKİ AKIŞ (event_type prefix'ine göre):
+//
+//   A) Turzz ekibi akışı (Faz 1) — event_type 'agency_' ile BAŞLAMIYORSA
+//      DB trigger → pg_net → bu fonksiyon
+//      → central_event_templates'ten şablon çöz
+//      → turzz_team_recipients (active + notification_types @> [event]) alıcılar
+//      → her alıcıya Meta template gönder
+//      → template_send_log.agency_id = TURZZ_CENTRAL_AGENCY_ID
+//
+//   B) Acente akışı (Faz 2) — event_type 'agency_' ile BAŞLIYORSA
+//      → central_event_templates'ten şablon çöz (aynı tablo)
+//      → payload.agency_id'den agency_notification_settings çöz
+//      → enabled + event-specific toggle + phone kontrolü; biri eksikse SKIP
+//      → Tek acente telefonuna Meta template gönder
+//      → template_send_log.agency_id = payload.agency_id (GERÇEK acente — RLS acentenin
+//        kendi panelinde geçmişini görmesini sağlar)
 //
 // HATA YUTMA:
 //   Tetikleyen DB transaction'ı ASLA bloke etme. Tüm hatalar logCritical + 200 OK döner.
-//   (Trigger pg_net.http_post async — zaten tx dışı, ama yine de fail-safe.)
 //
 // send-template-message DOSYASINI DEĞİŞTİRMİYORUZ — gerekli helper'lar buraya kopya (mini, mirror).
 
@@ -29,12 +37,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type EventType = "new_agency_signup" | "new_contact_form" | "new_reservation";
+type EventType =
+  // Turzz ekibi (Faz 1)
+  | "new_agency_signup"
+  | "new_contact_form"
+  | "new_reservation"
+  // Acente (Faz 2) — 'agency_' prefix'i akış ayrımının taşıyıcısı, isimlerle oynama
+  | "agency_new_reservation"
+  | "agency_new_support";
+
 const VALID_EVENT_TYPES: ReadonlySet<string> = new Set<EventType>([
   "new_agency_signup",
   "new_contact_form",
   "new_reservation",
+  "agency_new_reservation",
+  "agency_new_support",
 ]);
+
+// Acente akışı için event → toggle kolonu eşlemesi (agency_notification_settings).
+const AGENCY_EVENT_TOGGLE: Record<string, string> = {
+  agency_new_reservation: "notify_new_reservation",
+  agency_new_support:     "notify_support",
+};
+
+function isAgencyEvent(et: string): boolean {
+  return et.startsWith("agency_");
+}
 
 // ─── Variable helper'ları (mirror of send-template-message/index.ts:17-41) ─────
 // Eğer ileride değişirse iki yerde güncelleyin — kasıtlı duplikasyon (send-template-message
@@ -67,9 +95,12 @@ function buildTemplateComponents(content: string, values: Record<string, string>
 }
 
 // ─── template_send_log yazımı (non-blocking, mirror of send-template-message:57-70) ───
+// agency_id parametre: Turzz ekibi gönderiminde TURZZ_CENTRAL_AGENCY_ID; acente
+// gönderiminde gerçek acente UUID'si (RLS ile acente kendi panelinde geçmişi görsün).
 async function logSend(
   sb: any,
   payload: {
+    agency_id: string;
     template_type: string;
     language: string;
     recipient_phone: string;
@@ -80,7 +111,7 @@ async function logSend(
 ): Promise<void> {
   try {
     await sb.from("template_send_log").insert({
-      agency_id: TURZZ_CENTRAL_AGENCY_ID,
+      agency_id: payload.agency_id,
       template_type: payload.template_type,
       language: payload.language,
       recipient_phone: payload.recipient_phone,
@@ -194,7 +225,149 @@ serve(async (req) => {
       );
     }
 
-    // ─── 4) Alıcılar ──────────────────────────────────────────────────────────
+    // ─── Payload → string map (her iki akış için ortak) ──────────────────────
+    const stringValues: Record<string, string> = {};
+    for (const [k, v] of Object.entries(payload)) {
+      stringValues[k] = v == null ? "" : String(v);
+    }
+    const components = buildTemplateComponents(tmpl.content, stringValues);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ACENTE AKIŞI (Faz 2) — event_type 'agency_' ile başlıyorsa
+    // ═══════════════════════════════════════════════════════════════════════
+    if (isAgencyEvent(event_type)) {
+      const targetAgencyId = String(payload.agency_id || "").trim();
+      if (!targetAgencyId) {
+        await logCritical({
+          event: "AGENCY_DISPATCH_NO_AGENCY_ID",
+          error: new Error("payload.agency_id missing for agency_* event"),
+          context: { event_type, payloadKeys: Object.keys(payload) },
+          severity: "error",
+        });
+        return new Response(
+          JSON.stringify({ ok: true, skipped: true, reason: "NO_AGENCY_ID" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // 4a) Acente ayarları
+      const { data: settings, error: settingsErr } = await sb
+        .from("agency_notification_settings")
+        .select("phone, enabled, notify_new_reservation, notify_support")
+        .eq("agency_id", targetAgencyId)
+        .maybeSingle();
+
+      if (settingsErr) {
+        await logCritical({
+          event: "AGENCY_DISPATCH_SETTINGS_QUERY_FAILED",
+          error: new Error(settingsErr.message),
+          context: { event_type, targetAgencyId },
+          severity: "error",
+        });
+        return new Response(
+          JSON.stringify({ ok: true, skipped: true, reason: "SETTINGS_QUERY_FAILED" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      if (!settings) {
+        console.info(`[dispatch-central/agency] no settings row for agency=${targetAgencyId.slice(0, 8)} — skipping`);
+        return new Response(
+          JSON.stringify({ ok: true, skipped: true, reason: "NO_AGENCY_SETTINGS" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      if (!settings.enabled) {
+        console.info(`[dispatch-central/agency] disabled for agency=${targetAgencyId.slice(0, 8)} — skipping`);
+        return new Response(
+          JSON.stringify({ ok: true, skipped: true, reason: "AGENCY_NOTIFICATIONS_DISABLED" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Event-specific toggle
+      const toggleCol = AGENCY_EVENT_TOGGLE[event_type];
+      if (toggleCol && settings[toggleCol] === false) {
+        console.info(`[dispatch-central/agency] ${toggleCol}=false for agency=${targetAgencyId.slice(0, 8)} — skipping`);
+        return new Response(
+          JSON.stringify({ ok: true, skipped: true, reason: "EVENT_TOGGLE_OFF", toggle: toggleCol }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const agencyPhoneRaw = (settings.phone || "").trim();
+      if (!agencyPhoneRaw) {
+        console.info(`[dispatch-central/agency] no phone for agency=${targetAgencyId.slice(0, 8)} — skipping`);
+        return new Response(
+          JSON.stringify({ ok: true, skipped: true, reason: "NO_AGENCY_PHONE" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const agencyPhone = normalizePhone(agencyPhoneRaw);
+
+      // 4b) Gönder + logla (log.agency_id = GERÇEK acente id → acente RLS ile görsün)
+      try {
+        const result = await sendWhatsAppTemplate(
+          creds.phoneNumberId,
+          creds.accessToken,
+          agencyPhone,
+          templateKey,
+          language,
+          components,
+        );
+
+        await logSend(sb, {
+          agency_id:       targetAgencyId,
+          template_type:   event_type,                 // 'agency_new_*' — acente filtresinde kullanır
+          language,
+          recipient_phone: agencyPhone,
+          recipient_name:  null,
+          success:         result.success,
+          error_message:   result.success ? null : (result.error || "unknown"),
+        });
+
+        console.info(
+          `[dispatch-central/agency] event=${event_type} agency=${targetAgencyId.slice(0, 8)} success=${result.success}`,
+        );
+
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            event_type,
+            target: "agency",
+            agency_id: targetAgencyId,
+            sent: result.success ? 1 : 0,
+            failed: result.success ? 0 : 1,
+            messageId: result.messageId,
+            error: result.error,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      } catch (sendErr: any) {
+        const errMsg = sendErr?.message || String(sendErr);
+        await logSend(sb, {
+          agency_id:       targetAgencyId,
+          template_type:   event_type,
+          language,
+          recipient_phone: agencyPhone,
+          recipient_name:  null,
+          success:         false,
+          error_message:   errMsg,
+        });
+        return new Response(
+          JSON.stringify({ ok: true, skipped: true, reason: "SEND_FAILED", error: errMsg }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TURZZ EKİBİ AKIŞI (Faz 1) — değişmedi
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // 4) Alıcılar (turzz_team_recipients)
     const { data: recipients, error: recErr } = await sb
       .from("turzz_team_recipients")
       .select("phone, name")
@@ -222,20 +395,15 @@ serve(async (req) => {
       );
     }
 
-    // ─── 5) Variable mapping — payload'dan ────────────────────────────────────
-    // payload alanlarını string'e dönüştür (Meta text param istiyor).
-    const stringValues: Record<string, string> = {};
-    for (const [k, v] of Object.entries(payload)) {
-      stringValues[k] = v == null ? "" : String(v);
-    }
-    const components = buildTemplateComponents(tmpl.content, stringValues);
-
-    // ─── 6) Best-effort gönderim ──────────────────────────────────────────────
+    // 5) Best-effort gönderim — Turzz ekibi alıcılarına paralel.
+    //    Faz 1 davranışı korunur: log.agency_id = TURZZ_CENTRAL_AGENCY_ID.
+    //    (Variable mapping/components yukarıda ortak alanda hazırlandı.)
     const results = await Promise.allSettled(
       recipients.map(async (r: any) => {
         const phone = normalizePhone(r.phone);
         if (!phone) {
           await logSend(sb, {
+            agency_id: TURZZ_CENTRAL_AGENCY_ID,
             template_type: templateKey,
             language,
             recipient_phone: r.phone || "",
@@ -257,6 +425,7 @@ serve(async (req) => {
           );
 
           await logSend(sb, {
+            agency_id: TURZZ_CENTRAL_AGENCY_ID,
             template_type: templateKey,
             language,
             recipient_phone: phone,
@@ -269,6 +438,7 @@ serve(async (req) => {
         } catch (sendErr: any) {
           const errMsg = sendErr?.message || String(sendErr);
           await logSend(sb, {
+            agency_id: TURZZ_CENTRAL_AGENCY_ID,
             template_type: templateKey,
             language,
             recipient_phone: phone,

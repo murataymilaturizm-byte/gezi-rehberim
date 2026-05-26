@@ -2219,12 +2219,16 @@
       "mobileMenu": {
         "title": "☰ Side Menu",
         "desc": "Tap the menu icon at the top left to access all panel sections.",
-        "bullets": ["Tours, reservations, WhatsApp, settings and more"]
+        "bullets": [
+          "Tours, reservations, WhatsApp, settings and more"
+        ]
       },
       "mobileNotifications": {
         "title": "🔔 Notifications",
         "desc": "A red badge appears on the bell icon when a new reservation arrives.",
-        "bullets": ["Tap to navigate to the reservations screen"]
+        "bullets": [
+          "Tap to navigate to the reservations screen"
+        ]
       }
     },
     "next": "Next →",
@@ -2458,7 +2462,6 @@
     "next": "Next",
     "prev": "Back",
     "saveLoading": "Saving...",
-    "refresh": "Refresh",
     "filters": "Filters",
     "all": "All",
     "selectDate": "Select date"
@@ -3583,7 +3586,8 @@
       "conversations": "Conversations",
       "logs": "Logs",
       "languageStats": "Language Stats",
-      "integration": "Integration"
+      "integration": "Integration",
+      "notifications": "Notification Settings"
     },
     "conversations": {
       "search": "Search...",
@@ -3808,14 +3812,24 @@
       "hotel_name": "Hotel Name",
       "hotel_stars": "Hotel Stars",
       "visa_notes": "Visa Notes",
-      "title_en": "Tour Name (EN)", "title_de": "Tour Name (DE)", "title_fr": "Tour Name (FR)",
-      "title_es": "Tour Name (ES)", "title_ru": "Tour Name (RU)", "title_ar": "Tour Name (AR)",
-      "destination_en": "Destination (EN)", "destination_de": "Destination (DE)",
-      "destination_fr": "Destination (FR)", "destination_es": "Destination (ES)",
-      "destination_ru": "Destination (RU)", "destination_ar": "Destination (AR)",
-      "program_kisa_en": "Short Program (EN)", "program_kisa_de": "Short Program (DE)",
-      "program_kisa_fr": "Short Program (FR)", "program_kisa_es": "Short Program (ES)",
-      "program_kisa_ru": "Short Program (RU)", "program_kisa_ar": "Short Program (AR)"
+      "title_en": "Tour Name (EN)",
+      "title_de": "Tour Name (DE)",
+      "title_fr": "Tour Name (FR)",
+      "title_es": "Tour Name (ES)",
+      "title_ru": "Tour Name (RU)",
+      "title_ar": "Tour Name (AR)",
+      "destination_en": "Destination (EN)",
+      "destination_de": "Destination (DE)",
+      "destination_fr": "Destination (FR)",
+      "destination_es": "Destination (ES)",
+      "destination_ru": "Destination (RU)",
+      "destination_ar": "Destination (AR)",
+      "program_kisa_en": "Short Program (EN)",
+      "program_kisa_de": "Short Program (DE)",
+      "program_kisa_fr": "Short Program (FR)",
+      "program_kisa_es": "Short Program (ES)",
+      "program_kisa_ru": "Short Program (RU)",
+      "program_kisa_ar": "Short Program (AR)"
     },
     "tpl": {
       "sheetInstructions": "Instructions",
@@ -3909,5 +3923,37 @@
     "readMore": "Read more",
     "allPosts": "All Posts",
     "minutes": "min"
+  },
+  "agency": {
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Receive new reservation and support/complaint notifications from Turzz's WhatsApp number. Manage your notification number and which events to receive.",
+      "enabledLabel": "Enable notifications",
+      "enabledHint": "No notifications are sent while turned off.",
+      "phoneLabel": "Notification Phone",
+      "phoneHint": "Enter the number where your WhatsApp app is registered (E.164: +90..., +49...).",
+      "invalidPhone": "Phone must be in E.164 format (+ country code, then digits).",
+      "eventsLabel": "Notification Types",
+      "events": {
+        "new_reservation": "New Reservation",
+        "new_support": "Support & Complaint"
+      },
+      "eventReservationHint": "Get notified when a new reservation is created in your system.",
+      "eventSupportHint": "Get notified when a customer sends a support/complaint via WhatsApp.",
+      "disabledBanner": "Notifications are off. No notifications will be sent until you enable them.",
+      "saved": "Notification settings saved.",
+      "historyTitle": "Notification History",
+      "historyDescription": "Recent notifications sent to you. Up to 50 most recent records.",
+      "historyEmpty": "No notifications sent yet.",
+      "statusSuccess": "Success",
+      "statusFail": "Failed",
+      "col": {
+        "sentAt": "Time",
+        "event": "Event",
+        "phone": "Phone",
+        "status": "Status",
+        "error": "Error"
+      }
+    }
   }
 }

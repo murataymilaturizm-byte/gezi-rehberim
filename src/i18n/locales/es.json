@@ -2253,12 +2253,16 @@
       "mobileMenu": {
         "title": "☰ Menú lateral",
         "desc": "Toque el ícono de menú en la parte superior izquierda para acceder a todas las secciones del panel.",
-        "bullets": ["Tours, reservas, WhatsApp, configuración y más"]
+        "bullets": [
+          "Tours, reservas, WhatsApp, configuración y más"
+        ]
       },
       "mobileNotifications": {
         "title": "🔔 Notificaciones",
         "desc": "Aparece una insignia roja en el ícono de campana cuando llega una nueva reserva.",
-        "bullets": ["Toque para navegar a la pantalla de reservas"]
+        "bullets": [
+          "Toque para navegar a la pantalla de reservas"
+        ]
       }
     },
     "next": "Siguiente →",
@@ -2492,7 +2496,6 @@
     "next": "Siguiente",
     "prev": "Atrás",
     "saveLoading": "Guardando...",
-    "refresh": "Actualizar",
     "filters": "Filtros",
     "all": "Todos",
     "selectDate": "Seleccionar fecha"
@@ -3537,7 +3540,8 @@
       "conversations": "Conversaciones",
       "logs": "Registros",
       "languageStats": "Est. idioma",
-      "integration": "Integración"
+      "integration": "Integración",
+      "notifications": "Notificaciones"
     },
     "conversations": {
       "search": "Buscar...",
@@ -3762,14 +3766,24 @@
       "hotel_name": "Nombre del hotel",
       "hotel_stars": "Estrellas del hotel",
       "visa_notes": "Notas de la visa",
-      "title_en": "Título (EN)", "title_de": "Título (DE)", "title_fr": "Título (FR)",
-      "title_es": "Título (ES)", "title_ru": "Título (RU)", "title_ar": "Título (AR)",
-      "destination_en": "Destino (EN)", "destination_de": "Destino (DE)",
-      "destination_fr": "Destino (FR)", "destination_es": "Destino (ES)",
-      "destination_ru": "Destino (RU)", "destination_ar": "Destino (AR)",
-      "program_kisa_en": "Programa breve (EN)", "program_kisa_de": "Programa breve (DE)",
-      "program_kisa_fr": "Programa breve (FR)", "program_kisa_es": "Programa breve (ES)",
-      "program_kisa_ru": "Programa breve (RU)", "program_kisa_ar": "Programa breve (AR)"
+      "title_en": "Título (EN)",
+      "title_de": "Título (DE)",
+      "title_fr": "Título (FR)",
+      "title_es": "Título (ES)",
+      "title_ru": "Título (RU)",
+      "title_ar": "Título (AR)",
+      "destination_en": "Destino (EN)",
+      "destination_de": "Destino (DE)",
+      "destination_fr": "Destino (FR)",
+      "destination_es": "Destino (ES)",
+      "destination_ru": "Destino (RU)",
+      "destination_ar": "Destino (AR)",
+      "program_kisa_en": "Programa breve (EN)",
+      "program_kisa_de": "Programa breve (DE)",
+      "program_kisa_fr": "Programa breve (FR)",
+      "program_kisa_es": "Programa breve (ES)",
+      "program_kisa_ru": "Programa breve (RU)",
+      "program_kisa_ar": "Programa breve (AR)"
     },
     "tpl": {
       "sheetInstructions": "Instrucciones",
@@ -3909,5 +3923,37 @@
     "readMore": "Leer más",
     "allPosts": "Todos los artículos",
     "minutes": "min"
+  },
+  "agency": {
+    "notifications": {
+      "title": "Configuración de notificaciones",
+      "description": "Reciba notificaciones de nuevas reservas y solicitudes/quejas desde el número de WhatsApp de Turzz. Gestione su número de notificación y qué eventos recibir.",
+      "enabledLabel": "Activar notificaciones",
+      "enabledHint": "Cuando está desactivado, no se envía ninguna notificación.",
+      "phoneLabel": "Número de Notificación",
+      "phoneHint": "Ingrese el número en el que está registrada su aplicación WhatsApp (E.164: +90..., +49...).",
+      "invalidPhone": "El teléfono debe estar en formato E.164 (+ código de país, luego dígitos).",
+      "eventsLabel": "Tipos de notificación",
+      "events": {
+        "new_reservation": "Nueva Reserva",
+        "new_support": "Solicitud y Queja"
+      },
+      "eventReservationHint": "Reciba una notificación cuando se cree una nueva reserva en su sistema.",
+      "eventSupportHint": "Reciba una notificación cuando un cliente envíe una solicitud/queja por WhatsApp.",
+      "disabledBanner": "Las notificaciones están desactivadas. No se enviará ninguna notificación hasta que las active.",
+      "saved": "Configuración de notificaciones guardada.",
+      "historyTitle": "Historial de Notificaciones",
+      "historyDescription": "Notificaciones recientes enviadas a usted. Hasta 50 registros más recientes.",
+      "historyEmpty": "Aún no se han enviado notificaciones.",
+      "statusSuccess": "Exitoso",
+      "statusFail": "Fallido",
+      "col": {
+        "sentAt": "Hora",
+        "event": "Evento",
+        "phone": "Número",
+        "status": "Estado",
+        "error": "Error"
+      }
+    }
   }
 }
