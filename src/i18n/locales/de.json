@@ -1135,7 +1135,8 @@
       "statusUpdatedNoMsg": "Status aktualisiert (Nachricht konnte nicht gesendet werden)",
       "statusUpdateWarning": "Status aktualisiert, aber WhatsApp-Nachricht fehlgeschlagen",
       "statusUpdateError": "Status konnte nicht aktualisiert werden",
-      "addManual": "Manuelle Buchung hinzufügen"
+      "addManual": "Manuelle Buchung hinzufügen",
+      "editPassengers": "Passagiere bearbeiten"
     },
     "status": {
       "new": "Neu",
@@ -1736,7 +1737,46 @@
     "totalAgencies": "Agenturen gesamt",
     "activeAgencies": "Aktive Agenturen",
     "totalMessages": "Nachrichten gesamt",
-    "conversionRate": "Konversionsrate"
+    "conversionRate": "Konversionsrate",
+    "passengers": {
+      "title": "Passagierliste",
+      "description": "Geben Sie die Informationen jedes Passagiers ein. Leer gelassene Felder bleiben als Platzhalter.",
+      "fullName": "Vollständiger Name",
+      "identityNo": "Personalausweis-Nr.",
+      "passportNo": "Reisepass-Nr.",
+      "birthDate": "Geburtsdatum",
+      "isChild": "Kind",
+      "addPassenger": "Passagier hinzufügen",
+      "removePassenger": "Passagier entfernen",
+      "save": "Speichern",
+      "saved": "Passagiere gespeichert",
+      "added": "Passagier hinzugefügt",
+      "removed": "Passagier entfernt",
+      "error": "Speichern fehlgeschlagen",
+      "empty": "Keine Passagiere gefunden",
+      "minOneRequired": "Mindestens 1 Passagier erforderlich",
+      "confirmRemoveTitle": "Passagier entfernen?",
+      "confirmRemoveDesc": "Die Daten dieses Passagiers werden gelöscht. Dies kann nicht rückgängig gemacht werden."
+    },
+    "manifest": {
+      "title": "Passagierliste",
+      "tour": "Tour",
+      "date": "Datum",
+      "destination": "Ziel",
+      "vehicle": "Fahrzeug",
+      "guide": "Reiseleiter",
+      "order": "Nr.",
+      "fullName": "Vollständiger Name",
+      "identityNo": "Personalausweis-Nr.",
+      "passportNo": "Reisepass-Nr.",
+      "birthDate": "Geburtsdatum",
+      "isChild": "Kind",
+      "totalPassengers": "Gesamtpassagiere",
+      "sheetName": "Passagierliste",
+      "generatedAt": "Erstellt",
+      "noPassengers": "Keine Passagiere gefunden",
+      "exportError": "Ausgabe konnte nicht erstellt werden"
+    }
   },
   "auth": {
     "login": "Anmelden",

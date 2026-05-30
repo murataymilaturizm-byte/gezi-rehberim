@@ -1135,7 +1135,8 @@
       "statusUpdatedWithMsg": "Statut mis à jour et message WhatsApp envoyé",
       "statusUpdatedNoMsg": "Statut mis à jour (message non envoyé)",
       "statusUpdateWarning": "Statut mis à jour mais message WhatsApp non envoyé",
-      "statusUpdateError": "Impossible de mettre à jour le statut"
+      "statusUpdateError": "Impossible de mettre à jour le statut",
+      "editPassengers": "Modifier les passagers"
     },
     "status": {
       "new": "Nouveau",
@@ -1736,6 +1737,45 @@
       "paymentAdded": "Paiement ajouté",
       "paymentDeleted": "Enregistrement de paiement supprimé",
       "paymentDeleteError": "Impossible de supprimer le paiement"
+    },
+    "passengers": {
+      "title": "Liste des passagers",
+      "description": "Saisissez les informations de chaque passager. Les champs vides restent comme espaces réservés.",
+      "fullName": "Nom complet",
+      "identityNo": "N° d'identité",
+      "passportNo": "N° de passeport",
+      "birthDate": "Date de naissance",
+      "isChild": "Enfant",
+      "addPassenger": "Ajouter un passager",
+      "removePassenger": "Supprimer le passager",
+      "save": "Enregistrer",
+      "saved": "Passagers enregistrés",
+      "added": "Passager ajouté",
+      "removed": "Passager supprimé",
+      "error": "Échec de l'enregistrement",
+      "empty": "Aucun passager trouvé",
+      "minOneRequired": "Au moins 1 passager requis",
+      "confirmRemoveTitle": "Supprimer le passager ?",
+      "confirmRemoveDesc": "Les informations de ce passager seront supprimées. Cette action est irréversible."
+    },
+    "manifest": {
+      "title": "Liste des passagers",
+      "tour": "Circuit",
+      "date": "Date",
+      "destination": "Destination",
+      "vehicle": "Véhicule",
+      "guide": "Guide",
+      "order": "N°",
+      "fullName": "Nom complet",
+      "identityNo": "N° d'identité",
+      "passportNo": "N° de passeport",
+      "birthDate": "Date de naissance",
+      "isChild": "Enfant",
+      "totalPassengers": "Total des passagers",
+      "sheetName": "Liste des passagers",
+      "generatedAt": "Généré le",
+      "noPassengers": "Aucun passager trouvé",
+      "exportError": "Impossible de générer la sortie"
     }
   },
   "auth": {

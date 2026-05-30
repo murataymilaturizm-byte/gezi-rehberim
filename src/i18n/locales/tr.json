@@ -1487,7 +1487,8 @@
       "statusUpdatedWithMsg": "Kayıt durumu güncellendi ve müşteriye WhatsApp mesajı gönderildi",
       "statusUpdatedNoMsg": "Kayıt durumu güncellendi (mesaj gönderilemedi)",
       "statusUpdateWarning": "Durum güncellendi ama WhatsApp mesajı gönderilemedi",
-      "statusUpdateError": "Durum güncellenemedi"
+      "statusUpdateError": "Durum güncellenemedi",
+      "editPassengers": "Yolcuları Düzenle"
     },
     "status": {
       "new": "Yeni",
@@ -1802,6 +1803,45 @@
       "paymentAdded": "Ödeme eklendi",
       "paymentDeleted": "Ödeme kaydı silindi",
       "paymentDeleteError": "Ödeme silinemedi"
+    },
+    "passengers": {
+      "title": "Yolcu Listesi",
+      "description": "Her yolcunun bilgilerini girin. Boş bırakılırsa placeholder olarak kalır.",
+      "fullName": "Ad Soyad",
+      "identityNo": "Kimlik No",
+      "passportNo": "Pasaport No",
+      "birthDate": "Doğum Tarihi",
+      "isChild": "Çocuk",
+      "addPassenger": "Yolcu Ekle",
+      "removePassenger": "Yolcu Sil",
+      "save": "Kaydet",
+      "saved": "Yolcular kaydedildi",
+      "added": "Yolcu eklendi",
+      "removed": "Yolcu silindi",
+      "error": "Yolcu kaydı başarısız",
+      "empty": "Yolcu bulunamadı",
+      "minOneRequired": "En az 1 yolcu gerekli",
+      "confirmRemoveTitle": "Yolcu silinsin mi?",
+      "confirmRemoveDesc": "Bu yolcunun bilgileri silinecek. Bu işlem geri alınamaz."
+    },
+    "manifest": {
+      "title": "Yolcu Listesi",
+      "tour": "Tur",
+      "date": "Tarih",
+      "destination": "Destinasyon",
+      "vehicle": "Araç",
+      "guide": "Rehber",
+      "order": "Sıra",
+      "fullName": "Ad Soyad",
+      "identityNo": "Kimlik No",
+      "passportNo": "Pasaport No",
+      "birthDate": "Doğum Tarihi",
+      "isChild": "Çocuk",
+      "totalPassengers": "Toplam Yolcu",
+      "sheetName": "Yolcu Listesi",
+      "generatedAt": "Oluşturulma",
+      "noPassengers": "Yolcu bulunamadı",
+      "exportError": "Çıktı oluşturulamadı"
     }
   },
   "auth": {

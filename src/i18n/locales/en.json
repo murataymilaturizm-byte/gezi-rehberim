@@ -1132,7 +1132,8 @@
       "statusUpdatedWithMsg": "Status updated and WhatsApp message sent to customer",
       "statusUpdatedNoMsg": "Status updated (message could not be sent)",
       "statusUpdateWarning": "Status updated but WhatsApp message could not be sent",
-      "statusUpdateError": "Could not update status"
+      "statusUpdateError": "Could not update status",
+      "editPassengers": "Edit Passengers"
     },
     "status": {
       "new": "New",
@@ -1736,6 +1737,45 @@
       "paymentAdded": "Payment added",
       "paymentDeleted": "Payment record deleted",
       "paymentDeleteError": "Payment could not be deleted"
+    },
+    "passengers": {
+      "title": "Passenger List",
+      "description": "Enter each passenger's information. Empty fields remain as placeholders.",
+      "fullName": "Full Name",
+      "identityNo": "ID Number",
+      "passportNo": "Passport No.",
+      "birthDate": "Date of Birth",
+      "isChild": "Child",
+      "addPassenger": "Add Passenger",
+      "removePassenger": "Remove Passenger",
+      "save": "Save",
+      "saved": "Passengers saved",
+      "added": "Passenger added",
+      "removed": "Passenger removed",
+      "error": "Failed to save passenger",
+      "empty": "No passengers found",
+      "minOneRequired": "At least 1 passenger required",
+      "confirmRemoveTitle": "Remove passenger?",
+      "confirmRemoveDesc": "This passenger's information will be deleted. This cannot be undone."
+    },
+    "manifest": {
+      "title": "Passenger Manifest",
+      "tour": "Tour",
+      "date": "Date",
+      "destination": "Destination",
+      "vehicle": "Vehicle",
+      "guide": "Guide",
+      "order": "No.",
+      "fullName": "Full Name",
+      "identityNo": "ID Number",
+      "passportNo": "Passport No.",
+      "birthDate": "Date of Birth",
+      "isChild": "Child",
+      "totalPassengers": "Total Passengers",
+      "sheetName": "Passenger Manifest",
+      "generatedAt": "Generated",
+      "noPassengers": "No passengers found",
+      "exportError": "Could not generate output"
     }
   },
   "auth": {

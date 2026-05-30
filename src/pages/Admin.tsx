@@ -1227,7 +1227,7 @@ const Admin = () => {
         }}
       />
 
-      {/* Faz 1: Sefer detayı (yolcu listesi + doluluk + Faz 2 yer tutucu buttons) */}
+      {/* Faz 1 + Faz 2-A: Sefer detayı (yolcu listesi + doluluk + manifesto Excel/PDF + yolcu editörü) */}
       <DepartureDetailDialog
         open={departureDetailOpen}
         onOpenChange={setDepartureDetailOpen}
@@ -1235,6 +1235,12 @@ const Admin = () => {
         onViewDetail={(registration) => {
           setSelectedRegistration(registration);
           setDetailDialogOpen(true);
+        }}
+        onDataChange={() => {
+          // Faz 2-A: Yolcu editöründe ekle/sil yapıldıysa pax değişti — listeyi yenile.
+          if (session && activeTab === "registrations") {
+            loadData();
+          }
         }}
       />
 

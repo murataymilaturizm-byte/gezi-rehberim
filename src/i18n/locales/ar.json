@@ -1135,7 +1135,8 @@
       "statusUpdatedWithMsg": "تم تحديث الحالة وإرسال رسالة واتساب",
       "statusUpdatedNoMsg": "تم تحديث الحالة (لم يتم إرسال الرسالة)",
       "statusUpdateWarning": "تم تحديث الحالة لكن رسالة واتساب فشلت",
-      "statusUpdateError": "تعذّر تحديث الحالة"
+      "statusUpdateError": "تعذّر تحديث الحالة",
+      "editPassengers": "تعديل المسافرين"
     },
     "status": {
       "new": "جديد",
@@ -1736,6 +1737,45 @@
       "paymentAdded": "تمت إضافة الدفعة",
       "paymentDeleted": "تم حذف سجل الدفع",
       "paymentDeleteError": "تعذّر حذف الدفعة"
+    },
+    "passengers": {
+      "title": "قائمة المسافرين",
+      "description": "أدخل معلومات كل مسافر. الحقول الفارغة تبقى كمحتجزات.",
+      "fullName": "الاسم الكامل",
+      "identityNo": "رقم الهوية",
+      "passportNo": "رقم جواز السفر",
+      "birthDate": "تاريخ الميلاد",
+      "isChild": "طفل",
+      "addPassenger": "إضافة مسافر",
+      "removePassenger": "حذف المسافر",
+      "save": "حفظ",
+      "saved": "تم حفظ المسافرين",
+      "added": "تمت إضافة المسافر",
+      "removed": "تم حذف المسافر",
+      "error": "فشل حفظ المسافر",
+      "empty": "لا توجد مسافرون",
+      "minOneRequired": "مطلوب مسافر واحد على الأقل",
+      "confirmRemoveTitle": "حذف المسافر؟",
+      "confirmRemoveDesc": "سيتم حذف معلومات هذا المسافر. لا يمكن التراجع عن هذا الإجراء."
+    },
+    "manifest": {
+      "title": "قائمة المسافرين",
+      "tour": "الجولة",
+      "date": "التاريخ",
+      "destination": "الوجهة",
+      "vehicle": "المركبة",
+      "guide": "المرشد",
+      "order": "الرقم",
+      "fullName": "الاسم الكامل",
+      "identityNo": "رقم الهوية",
+      "passportNo": "رقم جواز السفر",
+      "birthDate": "تاريخ الميلاد",
+      "isChild": "طفل",
+      "totalPassengers": "إجمالي المسافرين",
+      "sheetName": "قائمة المسافرين",
+      "generatedAt": "تم الإنشاء",
+      "noPassengers": "لا توجد مسافرون",
+      "exportError": "تعذر إنشاء الملف"
     }
   },
   "auth": {

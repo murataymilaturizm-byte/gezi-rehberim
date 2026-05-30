@@ -1169,7 +1169,8 @@
       "statusUpdatedNoMsg": "Estado actualizado (mensaje no enviado)",
       "statusUpdateWarning": "Estado actualizado pero mensaje WhatsApp no enviado",
       "statusUpdateError": "No se pudo actualizar el estado",
-      "addManual": "Agregar reserva manual"
+      "addManual": "Agregar reserva manual",
+      "editPassengers": "Editar pasajeros"
     },
     "status": {
       "new": "Nuevo",
@@ -1770,7 +1771,46 @@
     "totalAgencies": "Total de agencias",
     "activeAgencies": "Agencias activas",
     "totalMessages": "Total de mensajes",
-    "conversionRate": "Tasa de conversión"
+    "conversionRate": "Tasa de conversión",
+    "passengers": {
+      "title": "Lista de pasajeros",
+      "description": "Introduzca la información de cada pasajero. Los campos vacíos quedan como marcadores.",
+      "fullName": "Nombre completo",
+      "identityNo": "N° de identidad",
+      "passportNo": "N° de pasaporte",
+      "birthDate": "Fecha de nacimiento",
+      "isChild": "Niño",
+      "addPassenger": "Añadir pasajero",
+      "removePassenger": "Eliminar pasajero",
+      "save": "Guardar",
+      "saved": "Pasajeros guardados",
+      "added": "Pasajero añadido",
+      "removed": "Pasajero eliminado",
+      "error": "No se pudo guardar el pasajero",
+      "empty": "No se encontraron pasajeros",
+      "minOneRequired": "Se requiere al menos 1 pasajero",
+      "confirmRemoveTitle": "¿Eliminar pasajero?",
+      "confirmRemoveDesc": "La información de este pasajero se eliminará. Esto no se puede deshacer."
+    },
+    "manifest": {
+      "title": "Lista de pasajeros",
+      "tour": "Tour",
+      "date": "Fecha",
+      "destination": "Destino",
+      "vehicle": "Vehículo",
+      "guide": "Guía",
+      "order": "N°",
+      "fullName": "Nombre completo",
+      "identityNo": "N° de identidad",
+      "passportNo": "N° de pasaporte",
+      "birthDate": "Fecha de nacimiento",
+      "isChild": "Niño",
+      "totalPassengers": "Total de pasajeros",
+      "sheetName": "Lista de pasajeros",
+      "generatedAt": "Generado",
+      "noPassengers": "No se encontraron pasajeros",
+      "exportError": "No se pudo generar la salida"
+    }
   },
   "auth": {
     "login": "Iniciar Sesión",

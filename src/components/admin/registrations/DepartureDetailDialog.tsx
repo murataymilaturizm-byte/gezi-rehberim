@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
@@ -11,12 +12,25 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, Bus } from "lucide-react";
+import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, Bus, UsersRound, Loader2 } from "lucide-react";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { formatPrice } from "@/utils/currency";
 import type { DepartureGroup } from "./RegistrationsByDeparture";
 import type { RegistrationRow } from "./types";
+import { PassengerEditorDialog } from "./PassengerEditorDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+// NOT: registration_passengers tablosu Faz 2-A migration sonrası types.ts'e gelene
+// kadar `(supabase as any)` cast'i kullanılıyor. Types regenerate edildikten sonra
+// kaldırılabilir. Detaylı not için PassengerEditorDialog.tsx başına bak.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+import {
+  exportPassengerManifestToExcel,
+  type ManifestPassenger,
+} from "@/utils/passengerManifestExporter";
+import { generatePassengerManifestPDF } from "@/utils/passengerManifestGenerator";
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 
@@ -25,6 +39,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   group: DepartureGroup | null;
   onViewDetail: (registration: RegistrationRow) => void;
+  /** Yolcu ekle/sil sonrası registrations'da pax değişti → parent listeyi yenile */
+  onDataChange?: () => void;
 }
 
 /**
@@ -39,9 +55,116 @@ interface Props {
  *  - Status değiştirme bu dialog'da YOK — kayıt detayını açmak için satır eye butonu mevcut
  *    RegistrationDetailDialog'u açıyor (status update orada, merkezi useRegistrations hook'u).
  */
-export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail }: Props) => {
+export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail, onDataChange }: Props) => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
+
+  // Faz 2-A: Yolcu editörü state'i + manifesto export loading state'leri
+  const [passengerEditorOpen, setPassengerEditorOpen] = useState(false);
+  const [editorTarget, setEditorTarget] = useState<{ id: string; fullName: string; pax: number } | null>(null);
+  const [exportingExcel, setExportingExcel] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  /**
+   * Manifesto için bu seferin tüm yolcularını çek (CANCELLED rezervasyon yolcuları
+   * HARİÇ — manifesto sadece aktif rezervasyonları gösterir).
+   * RLS sayesinde sadece acentenin kendi yolcuları döner.
+   */
+  const fetchManifestPassengers = async (): Promise<ManifestPassenger[]> => {
+    if (!group) return [];
+    const activeRegIds = group.regs
+      .filter((r) => r.status !== "CANCELLED")
+      .map((r) => r.id);
+    if (activeRegIds.length === 0) return [];
+
+    const { data, error } = await db
+      .from("registration_passengers")
+      .select("passenger_order, full_name, identity_no, passport_no, birth_date, is_child, registration_id")
+      .in("registration_id", activeRegIds)
+      .order("passenger_order", { ascending: true });
+
+    if (error) throw error;
+
+    // Manifesto'da yolcular sıralı (rezervasyon order'a göre değil, global sıra)
+    // — basit sıralama: passenger_order ASC zaten yapıldı, ek olarak registration order'ı
+    // korumak için array'i baştan tekrar order'la (1, 2, 3...)
+    return ((data as unknown as Array<{
+      full_name: string;
+      identity_no?: string | null;
+      passport_no?: string | null;
+      birth_date?: string | null;
+      is_child?: boolean;
+    }>) || []).map((p, idx) => ({
+      passenger_order: idx + 1,
+      full_name: p.full_name,
+      identity_no: p.identity_no,
+      passport_no: p.passport_no,
+      birth_date: p.birth_date,
+      is_child: p.is_child,
+    }));
+  };
+
+  const handleExportExcel = async () => {
+    if (!group) return;
+    setExportingExcel(true);
+    try {
+      const passengers = await fetchManifestPassengers();
+      if (passengers.length === 0) {
+        toast({
+          title: t("admin.manifest.noPassengers", { defaultValue: "Yolcu bulunamadı" }),
+          variant: "destructive",
+        });
+        return;
+      }
+      exportPassengerManifestToExcel(passengers, {
+        tourTitle: group.tourTitle,
+        tourDestination: group.tourDestination,
+        departureDate: group.departureDate,
+        returnDate: group.returnDate,
+        // vehiclePlate + guideName — Faz 2-B'de tour_dates'ten dolacak
+      });
+    } catch (err: any) {
+      console.error("Manifest Excel export error:", err);
+      toast({
+        title: t("admin.manifest.exportError", { defaultValue: "Çıktı oluşturulamadı" }),
+        description: err?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!group) return;
+    setExportingPdf(true);
+    try {
+      const passengers = await fetchManifestPassengers();
+      if (passengers.length === 0) {
+        toast({
+          title: t("admin.manifest.noPassengers", { defaultValue: "Yolcu bulunamadı" }),
+          variant: "destructive",
+        });
+        return;
+      }
+      generatePassengerManifestPDF(passengers, {
+        tourTitle: group.tourTitle,
+        tourDestination: group.tourDestination,
+        departureDate: group.departureDate,
+        returnDate: group.returnDate,
+      });
+    } catch (err: any) {
+      console.error("Manifest PDF generate error:", err);
+      toast({
+        title: t("admin.manifest.exportError", { defaultValue: "Çıktı oluşturulamadı" }),
+        description: err?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   if (!group) return null;
 
@@ -72,6 +195,7 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail 
     : "";
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
@@ -138,37 +262,35 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail 
           </div>
         </div>
 
-        {/* Faz 2 hazırlığı — Excel/PDF butonları DISABLED + tooltip */}
-        <TooltipProvider delayDuration={150}>
-          <div className="flex flex-wrap gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button variant="outline" size="sm" disabled>
-                    <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    {t("admin.registrations.exportExcel", { defaultValue: "Excel İndir" })}
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("admin.registrations.comingSoon", { defaultValue: "Yakında" })}
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button variant="outline" size="sm" disabled>
-                    <FileText className="w-4 h-4 mr-2" />
-                    {t("admin.registrations.exportPdf", { defaultValue: "PDF İndir" })}
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("admin.registrations.comingSoon", { defaultValue: "Yakında" })}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
+        {/* Faz 2-A: Yolcu Listesi (Manifesto) — Excel + PDF aktif */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportExcel}
+            disabled={exportingExcel || exportingPdf}
+          >
+            {exportingExcel ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+            )}
+            {t("admin.registrations.exportExcel", { defaultValue: "Excel İndir" })}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportPdf}
+            disabled={exportingPdf || exportingExcel}
+          >
+            {exportingPdf ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4 mr-2" />
+            )}
+            {t("admin.registrations.exportPdf", { defaultValue: "PDF İndir" })}
+          </Button>
+        </div>
 
         {/* Yolcu listesi */}
         <ScrollArea className="flex-1 max-h-[50vh] -mx-1 px-1">
@@ -226,6 +348,24 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail 
                       variant="outline"
                       size="sm"
                       className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setEditorTarget({
+                          id: reg.id,
+                          fullName: reg.full_name,
+                          pax: reg.pax,
+                        });
+                        setPassengerEditorOpen(true);
+                      }}
+                      aria-label={t("admin.registrations.editPassengers", { defaultValue: "Yolcuları Düzenle" })}
+                      title={t("admin.registrations.editPassengers", { defaultValue: "Yolcuları Düzenle" })}
+                      disabled={isCancelled}
+                    >
+                      <UsersRound className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0"
                       onClick={() => onViewDetail(reg)}
                       aria-label={t("admin.registrations.viewDetail")}
                     >
@@ -256,5 +396,22 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail 
         </ScrollArea>
       </DialogContent>
     </Dialog>
+
+    {/* Faz 2-A: Yolcu Editörü — bu sefere ait bir rezervasyonun yolcularını düzenler. */}
+    <PassengerEditorDialog
+      open={passengerEditorOpen}
+      onOpenChange={(o) => {
+        setPassengerEditorOpen(o);
+        if (!o) {
+          setEditorTarget(null);
+          // Yolcu ekle/sil yapılmış olabilir → pax değişmiş olabilir, parent listeyi yenile.
+          onDataChange?.();
+        }
+      }}
+      registrationId={editorTarget?.id ?? null}
+      registrationFullName={editorTarget?.fullName}
+      initialPax={editorTarget?.pax ?? 1}
+    />
+    </>
   );
 };
