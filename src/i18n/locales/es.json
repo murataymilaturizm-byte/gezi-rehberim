@@ -139,7 +139,8 @@
     "inputPlaceholder": "Escribe tu mensaje...",
     "disclaimer": "Este es un chatbot de demostración. No muestra datos reales de tours.",
     "aiOnline": "Potenciado por IA • En línea",
-    "secureBadge": "Seguro"
+    "secureBadge": "Seguro",
+    "preparing": "Preparando respuesta..."
   },
   "advanced": {
     "badge": "Características Avanzadas",

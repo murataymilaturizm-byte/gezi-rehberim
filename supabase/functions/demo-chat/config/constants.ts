@@ -28,4 +28,10 @@ export const CONFIG = {
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  // Safari/iOS preflight stabilitesi için eklendi — bazı WebKit sürümleri Allow-Methods
+  // yokken non-simple POST'ları reddedebiliyor. Max-Age preflight'ı 24 saat cache'ler;
+  // her POST öncesi tekrar OPTIONS round-trip'i önler. Vary CDN/proxy davranışı için.
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
+  "Vary": "Origin",
 };

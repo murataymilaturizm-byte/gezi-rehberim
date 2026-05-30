@@ -139,7 +139,8 @@
     "inputPlaceholder": "Mesajınızı yazın...",
     "disclaimer": "Bu bir demo chatbot'tur. Gerçek tur verileri göstermez.",
     "aiOnline": "AI Destekli • Çevrimiçi",
-    "secureBadge": "Güvenli"
+    "secureBadge": "Güvenli",
+    "preparing": "Yanıt hazırlanıyor..."
   },
   "benefits": {
     "title": "Somut Sonuçlar, Gerçek Değer",

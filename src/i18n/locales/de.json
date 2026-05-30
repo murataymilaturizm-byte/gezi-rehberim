@@ -139,7 +139,8 @@
     "inputPlaceholder": "Geben Sie Ihre Nachricht ein...",
     "disclaimer": "Dies ist ein Demo-Chatbot. Er zeigt keine echten Tourdaten.",
     "aiOnline": "KI-gestützt • Online",
-    "secureBadge": "Sicher"
+    "secureBadge": "Sicher",
+    "preparing": "Antwort wird vorbereitet..."
   },
   "advanced": {
     "badge": "Erweiterte Funktionen",

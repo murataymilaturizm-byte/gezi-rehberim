@@ -91,6 +91,9 @@ export const DemoChat = () => {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  // Retry sırasında "Yanıt hazırlanıyor..." metnini loading bubble içinde göstermek için.
+  // Safari "Load failed" (cold start + zayıf ağ) durumunda sessiz retry — kullanıcı hata yerine bekleme görür.
+  const [isRetrying, setIsRetrying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversationState, setConversationState] = useState<any>(null);
 
@@ -197,24 +200,77 @@ export const DemoChat = () => {
     setMessages(newMessages);
     setIsLoading(true);
 
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          sessionId: sessionId,
-          conversationStyle: conversationStyle,
-          conversationState: conversationState,
-          // FIX: Kullanıcının demo dropdown'ından seçtiği dil — backend tahmin etmek yerine bunu öncelik alır.
-          // Aksi halde ilk mesajda ASCII İngilizce/diğer için detection fail edip TR'ye düşüyordu.
-          language: i18n.language,
-        }),
-      });
+    // ─── Retry + backoff sarmalı ───────────────────────────────────────────
+    // Safari/iOS WebKit "Load failed" → native fetch'in TypeError'ı (cold start,
+    // zayıf ağ, preflight kesintisi). Toplam 3 deneme: 1 ilk + 2 retry.
+    // Backoff: retry-1 öncesi 500ms, retry-2 öncesi 1500ms.
+    // Retry yalnızca fetch'in kendisi exception fırlatırsa (response objesi
+    // hiç dönmediyse) tetiklenir. HTTP yanıtı geldiyse — 200/4xx/5xx — mevcut
+    // davranış aynen korunur (response.ok kontrolü vs.).
+    const isNetworkError = (err: unknown): boolean => {
+      if (!(err instanceof TypeError)) return false;
+      const m = err.message || "";
+      return m.includes("Load failed") || m.includes("Failed to fetch") || m.includes("NetworkError");
+    };
 
+    const backoffsMs = [500, 1500];
+    let response: Response | null = null;
+    let lastNetworkErr: unknown = null;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        setIsRetrying(true);
+        await new Promise((r) => setTimeout(r, backoffsMs[attempt - 1]));
+      }
+      try {
+        response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-chat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            message: userMessage,
+            sessionId: sessionId,
+            conversationStyle: conversationStyle,
+            conversationState: conversationState,
+            // FIX: Kullanıcının demo dropdown'ından seçtiği dil — backend tahmin etmek yerine bunu öncelik alır.
+            // Aksi halde ilk mesajda ASCII İngilizce/diğer için detection fail edip TR'ye düşüyordu.
+            language: i18n.language,
+          }),
+        });
+        // Fetch resolved (HTTP yanıtı geldi) — retry'a düşmüyoruz, response.ok mevcut akışta değerlendirilecek.
+        break;
+      } catch (err) {
+        if (isNetworkError(err) && attempt < 2) {
+          lastNetworkErr = err;
+          continue;
+        }
+        // Network-error olmayan exception VEYA 3. denemenin network error'ı:
+        // response null kalır, aşağıdaki ortak hata yolu mevcut catch davranışını uygular.
+        lastNetworkErr = err;
+        break;
+      }
+    }
+    setIsRetrying(false);
+
+    if (!response) {
+      // Tüm denemeler başarısız (network error ya da non-network exception).
+      // Mevcut hata davranışı: toast + user mesajını slice ile geri al.
+      const err = lastNetworkErr instanceof Error ? lastNetworkErr : new Error("Mesaj gönderilemedi");
+      console.error("Chat error:", err);
+      toast({
+        title: "Hata",
+        description: err.message || "Mesaj gönderilemedi",
+        variant: "destructive",
+        duration: 5000,
+      });
+      setMessages((prev) => prev.slice(0, -1));
+      setIsLoading(false);
+      return;
+    }
+
+    try {
       if (!response.ok) {
         const errorText = await response.text();
         let errorMsg = "Yanıt alınamadı";
@@ -438,6 +494,11 @@ export const DemoChat = () => {
                         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-typing-dot-2" />
                         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-typing-dot-3" />
                       </div>
+                      {isRetrying && (
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          {t("demo.preparing", { defaultValue: "Yanıt hazırlanıyor..." })}
+                        </p>
+                      )}
                     </div>
                   </motion.div>
                 )}

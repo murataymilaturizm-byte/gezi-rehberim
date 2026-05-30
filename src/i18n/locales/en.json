@@ -139,7 +139,8 @@
     "inputPlaceholder": "Type your message...",
     "disclaimer": "This is a demo chatbot. It does not show real tour data.",
     "aiOnline": "AI-powered • Online",
-    "secureBadge": "Secure"
+    "secureBadge": "Secure",
+    "preparing": "Preparing response..."
   },
   "benefits": {
     "title": "Concrete Results, Real Value",

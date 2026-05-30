@@ -139,7 +139,8 @@
     "inputPlaceholder": "Tapez votre message...",
     "disclaimer": "Ceci est un chatbot de démonstration. Il n'affiche pas de vraies données de circuits.",
     "aiOnline": "Propulsé par IA • En ligne",
-    "secureBadge": "Sécurisé"
+    "secureBadge": "Sécurisé",
+    "preparing": "Préparation de la réponse..."
   },
   "advanced": {
     "badge": "Fonctionnalités Avancées",
