@@ -1776,6 +1776,45 @@
       "generatedAt": "Généré le",
       "noPassengers": "Aucun passager trouvé",
       "exportError": "Impossible de générer la sortie"
+    },
+    "seatPlan": {
+      "openButton": "Plan des sièges",
+      "title": "Plan des sièges",
+      "settings": "Paramètres du voyage",
+      "transportType": "Type de transport",
+      "transportTypes": {
+        "BUS": "Bus",
+        "PLANE": "Avion",
+        "BOAT": "Bateau",
+        "PRIVATE": "Véhicule privé",
+        "OTHER": "Autre"
+      },
+      "layout": "Disposition",
+      "seatCount": "Nombre de sièges",
+      "seats": "sièges",
+      "vehiclePlate": "Plaque",
+      "guideName": "Guide",
+      "notBus": "Ce voyage n'est pas en bus. Le plan des sièges n'est utilisé que pour les voyages en bus.",
+      "fillRequired": "La disposition et le nombre de sièges sont requis",
+      "saved": "Paramètres du voyage enregistrés",
+      "saveError": "Échec de l'enregistrement",
+      "save": "Enregistrer",
+      "autoAssign": "Attribution automatique",
+      "autoAssignDone": "Attribution automatique terminée",
+      "allAssigned": "Tous les passagers attribués",
+      "passengerShort": "passager(s)",
+      "unassigned": "Passagers non attribués",
+      "noUnassigned": "Aucun passager non attribué",
+      "assigned": "attribué",
+      "empty": "Vide",
+      "full": "Siège occupé",
+      "assignPassenger": "Attribuer un passager",
+      "removeAssignment": "Supprimer l'attribution",
+      "assignError": "Attribution échouée",
+      "loadError": "Impossible de charger le plan des sièges",
+      "exportPdf": "Télécharger PDF",
+      "pdfError": "Impossible de générer le PDF",
+      "totalAssigned": "Total attribué"
     }
   },
   "auth": {
@@ -2506,7 +2545,8 @@
     "saveLoading": "Enregistrement...",
     "filters": "Filtres",
     "all": "Tous",
-    "selectDate": "Sélectionner une date"
+    "selectDate": "Sélectionner une date",
+    "close": "Fermer"
   },
   "agencyInfo": {
     "title": "Informations sur l'agence",

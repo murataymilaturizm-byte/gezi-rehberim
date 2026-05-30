@@ -1810,6 +1810,45 @@
       "generatedAt": "Создано",
       "noPassengers": "Пассажиры не найдены",
       "exportError": "Не удалось создать файл"
+    },
+    "seatPlan": {
+      "openButton": "План мест",
+      "title": "План мест",
+      "settings": "Настройки рейса",
+      "transportType": "Тип транспорта",
+      "transportTypes": {
+        "BUS": "Автобус",
+        "PLANE": "Самолёт",
+        "BOAT": "Лодка",
+        "PRIVATE": "Личный транспорт",
+        "OTHER": "Другое"
+      },
+      "layout": "Схема",
+      "seatCount": "Количество мест",
+      "seats": "мест",
+      "vehiclePlate": "Номер",
+      "guideName": "Гид",
+      "notBus": "Этот рейс не автобусный. План мест используется только для автобусных рейсов.",
+      "fillRequired": "Схема и количество мест обязательны",
+      "saved": "Настройки рейса сохранены",
+      "saveError": "Не удалось сохранить",
+      "save": "Сохранить",
+      "autoAssign": "Автоназначение",
+      "autoAssignDone": "Автоназначение завершено",
+      "allAssigned": "Все пассажиры назначены",
+      "passengerShort": "пассажир(ов)",
+      "unassigned": "Неназначенные пассажиры",
+      "noUnassigned": "Нет неназначенных пассажиров",
+      "assigned": "назначено",
+      "empty": "Пусто",
+      "full": "Место занято",
+      "assignPassenger": "Назначить пассажира",
+      "removeAssignment": "Снять назначение",
+      "assignError": "Назначение не удалось",
+      "loadError": "Не удалось загрузить план мест",
+      "exportPdf": "Скачать PDF",
+      "pdfError": "Не удалось создать PDF",
+      "totalAssigned": "Всего назначено"
     }
   },
   "auth": {
@@ -2540,7 +2579,8 @@
     "saveLoading": "Сохранение...",
     "filters": "Фильтры",
     "all": "Все",
-    "selectDate": "Выбрать дату"
+    "selectDate": "Выбрать дату",
+    "close": "Закрыть"
   },
   "agencyInfo": {
     "title": "Информация об агентстве",

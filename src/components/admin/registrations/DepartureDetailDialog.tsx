@@ -12,12 +12,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, Bus, UsersRound, Loader2 } from "lucide-react";
+import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, Bus, UsersRound, Loader2, Armchair } from "lucide-react";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { formatPrice } from "@/utils/currency";
 import type { DepartureGroup } from "./RegistrationsByDeparture";
 import type { RegistrationRow } from "./types";
 import { PassengerEditorDialog } from "./PassengerEditorDialog";
+import { SeatPlanDialog } from "./SeatPlanDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -65,6 +66,8 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
   const [editorTarget, setEditorTarget] = useState<{ id: string; fullName: string; pax: number } | null>(null);
   const [exportingExcel, setExportingExcel] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  // Faz 2-B: Koltuk planı dialog state'i
+  const [seatPlanOpen, setSeatPlanOpen] = useState(false);
 
   /**
    * Manifesto için bu seferin tüm yolcularını çek (CANCELLED rezervasyon yolcuları
@@ -73,9 +76,13 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
    */
   const fetchManifestPassengers = async (): Promise<ManifestPassenger[]> => {
     if (!group) return [];
-    const activeRegIds = group.regs
+    // Faz 2-B Çözüm A: aktif rezervasyonları created_at ASC sırasıyla al — eski
+    // rezervasyon önce gösterilir (group.regs DESC sıralı yüklenmiş olabilir).
+    const activeRegsSorted = group.regs
       .filter((r) => r.status !== "CANCELLED")
-      .map((r) => r.id);
+      .slice()
+      .sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+    const activeRegIds = activeRegsSorted.map((r) => r.id);
     if (activeRegIds.length === 0) return [];
 
     const { data, error } = await db
@@ -86,17 +93,29 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
 
     if (error) throw error;
 
-    // Manifesto'da yolcular sıralı (rezervasyon order'a göre değil, global sıra)
-    // — basit sıralama: passenger_order ASC zaten yapıldı, ek olarak registration order'ı
-    // korumak için array'i baştan tekrar order'la (1, 2, 3...)
-    return ((data as unknown as Array<{
+    // Çözüm A: group-based sort → önce registration_id (created_at sırası), sonra
+    // passenger_order ASC. Aynı rezervasyonun yolcuları arka arkaya. Display sıra
+    // numarası 1'den ardışık (DB passenger_order DEĞİŞMEZ, sadece display).
+    const regOrderMap = new Map<string, number>();
+    activeRegsSorted.forEach((r, i) => regOrderMap.set(r.id, i));
+
+    const sorted = ((data as unknown as Array<{
       full_name: string;
       identity_no?: string | null;
       passport_no?: string | null;
       birth_date?: string | null;
       is_child?: boolean;
-    }>) || []).map((p, idx) => ({
-      passenger_order: idx + 1,
+      passenger_order: number;
+      registration_id: string;
+    }>) || []).sort((a, b) => {
+      const aIdx = regOrderMap.get(a.registration_id) ?? 999;
+      const bIdx = regOrderMap.get(b.registration_id) ?? 999;
+      if (aIdx !== bIdx) return aIdx - bIdx;
+      return a.passenger_order - b.passenger_order;
+    });
+
+    return sorted.map((p, idx) => ({
+      passenger_order: idx + 1, // display sırası 1'den
       full_name: p.full_name,
       identity_no: p.identity_no,
       passport_no: p.passport_no,
@@ -290,6 +309,16 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
             )}
             {t("admin.registrations.exportPdf", { defaultValue: "PDF İndir" })}
           </Button>
+          {/* Faz 2-B: Koltuk Planı butonu — her zaman görünür; ayarlar tour_date'te
+              yoksa SeatPlanDialog açılışta settings formunu gösterir. */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSeatPlanOpen(true)}
+          >
+            <Armchair className="w-4 h-4 mr-2" />
+            {t("admin.seatPlan.openButton", { defaultValue: "Koltuk Planı" })}
+          </Button>
         </div>
 
         {/* Yolcu listesi */}
@@ -411,6 +440,17 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
       registrationId={editorTarget?.id ?? null}
       registrationFullName={editorTarget?.fullName}
       initialPax={editorTarget?.pax ?? 1}
+    />
+
+    {/* Faz 2-B: Koltuk Planı — sefer ayarları + otobüs şeması + atama + PDF. */}
+    <SeatPlanDialog
+      open={seatPlanOpen}
+      onOpenChange={(o) => {
+        setSeatPlanOpen(o);
+        if (!o) onDataChange?.();
+      }}
+      group={group}
+      onDataChange={onDataChange}
     />
     </>
   );

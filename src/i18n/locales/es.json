@@ -1810,6 +1810,45 @@
       "generatedAt": "Generado",
       "noPassengers": "No se encontraron pasajeros",
       "exportError": "No se pudo generar la salida"
+    },
+    "seatPlan": {
+      "openButton": "Plan de asientos",
+      "title": "Plan de asientos",
+      "settings": "Configuración del viaje",
+      "transportType": "Tipo de transporte",
+      "transportTypes": {
+        "BUS": "Autobús",
+        "PLANE": "Avión",
+        "BOAT": "Barco",
+        "PRIVATE": "Vehículo privado",
+        "OTHER": "Otro"
+      },
+      "layout": "Distribución",
+      "seatCount": "Cantidad de asientos",
+      "seats": "asientos",
+      "vehiclePlate": "Matrícula",
+      "guideName": "Guía",
+      "notBus": "Este viaje no es en autobús. El plan de asientos solo se usa para viajes en autobús.",
+      "fillRequired": "Distribución y cantidad de asientos son obligatorias",
+      "saved": "Configuración del viaje guardada",
+      "saveError": "No se pudo guardar",
+      "save": "Guardar",
+      "autoAssign": "Asignar automáticamente",
+      "autoAssignDone": "Asignación automática completa",
+      "allAssigned": "Todos los pasajeros asignados",
+      "passengerShort": "pasajero(s)",
+      "unassigned": "Pasajeros no asignados",
+      "noUnassigned": "No hay pasajeros sin asignar",
+      "assigned": "asignado",
+      "empty": "Vacío",
+      "full": "Asiento ocupado",
+      "assignPassenger": "Asignar pasajero",
+      "removeAssignment": "Quitar asignación",
+      "assignError": "Asignación fallida",
+      "loadError": "No se pudo cargar el plan de asientos",
+      "exportPdf": "Descargar PDF",
+      "pdfError": "No se pudo generar el PDF",
+      "totalAssigned": "Total asignado"
     }
   },
   "auth": {
@@ -2540,7 +2579,8 @@
     "saveLoading": "Guardando...",
     "filters": "Filtros",
     "all": "Todos",
-    "selectDate": "Seleccionar fecha"
+    "selectDate": "Seleccionar fecha",
+    "close": "Cerrar"
   },
   "agencyInfo": {
     "title": "Información de la agencia",

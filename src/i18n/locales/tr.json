@@ -1842,6 +1842,45 @@
       "generatedAt": "Oluşturulma",
       "noPassengers": "Yolcu bulunamadı",
       "exportError": "Çıktı oluşturulamadı"
+    },
+    "seatPlan": {
+      "openButton": "Koltuk Planı",
+      "title": "Koltuk Planı",
+      "settings": "Sefer Ayarları",
+      "transportType": "Sefer Tipi",
+      "transportTypes": {
+        "BUS": "Otobüs",
+        "PLANE": "Uçak",
+        "BOAT": "Tekne",
+        "PRIVATE": "Özel Araç",
+        "OTHER": "Diğer"
+      },
+      "layout": "Düzen",
+      "seatCount": "Koltuk Sayısı",
+      "seats": "koltuk",
+      "vehiclePlate": "Plaka",
+      "guideName": "Rehber",
+      "notBus": "Bu sefer otobüs değil. Koltuk planı sadece otobüs seferlerinde kullanılır.",
+      "fillRequired": "Düzen ve koltuk sayısı zorunlu",
+      "saved": "Sefer ayarları kaydedildi",
+      "saveError": "Kaydedilemedi",
+      "save": "Kaydet",
+      "autoAssign": "Otomatik Ata",
+      "autoAssignDone": "Otomatik atama tamamlandı",
+      "allAssigned": "Tüm yolcular atandı",
+      "passengerShort": "yolcu",
+      "unassigned": "Atanmamış Yolcular",
+      "noUnassigned": "Atanmamış yolcu yok",
+      "assigned": "atandı",
+      "empty": "Boş",
+      "full": "Koltuk dolu",
+      "assignPassenger": "Yolcu Ata",
+      "removeAssignment": "Atamayı Kaldır",
+      "assignError": "Atama başarısız",
+      "loadError": "Koltuk planı yüklenemedi",
+      "exportPdf": "PDF İndir",
+      "pdfError": "PDF oluşturulamadı",
+      "totalAssigned": "Toplam Atanan"
     }
   },
   "auth": {
@@ -2704,7 +2743,8 @@
     "saveLoading": "Kaydediliyor...",
     "filters": "Filtreler",
     "all": "Tümü",
-    "selectDate": "Tarih seçin"
+    "selectDate": "Tarih seçin",
+    "close": "Kapat"
   },
   "blog": {
     "minutesRead": "{{count}} dakika okuma",

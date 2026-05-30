@@ -1776,6 +1776,45 @@
       "generatedAt": "Generated",
       "noPassengers": "No passengers found",
       "exportError": "Could not generate output"
+    },
+    "seatPlan": {
+      "openButton": "Seat Plan",
+      "title": "Seat Plan",
+      "settings": "Trip Settings",
+      "transportType": "Transport Type",
+      "transportTypes": {
+        "BUS": "Bus",
+        "PLANE": "Plane",
+        "BOAT": "Boat",
+        "PRIVATE": "Private Vehicle",
+        "OTHER": "Other"
+      },
+      "layout": "Layout",
+      "seatCount": "Seat Count",
+      "seats": "seats",
+      "vehiclePlate": "Plate Number",
+      "guideName": "Guide",
+      "notBus": "This trip is not a bus trip. Seat plan is only used for bus trips.",
+      "fillRequired": "Layout and seat count are required",
+      "saved": "Trip settings saved",
+      "saveError": "Could not save",
+      "save": "Save",
+      "autoAssign": "Auto-Assign",
+      "autoAssignDone": "Auto-assignment complete",
+      "allAssigned": "All passengers assigned",
+      "passengerShort": "passenger(s)",
+      "unassigned": "Unassigned Passengers",
+      "noUnassigned": "No unassigned passengers",
+      "assigned": "assigned",
+      "empty": "Empty",
+      "full": "Seat is full",
+      "assignPassenger": "Assign Passenger",
+      "removeAssignment": "Remove Assignment",
+      "assignError": "Assignment failed",
+      "loadError": "Could not load seat plan",
+      "exportPdf": "Download PDF",
+      "pdfError": "Could not generate PDF",
+      "totalAssigned": "Total Assigned"
     }
   },
   "auth": {
@@ -2506,7 +2545,8 @@
     "saveLoading": "Saving...",
     "filters": "Filters",
     "all": "All",
-    "selectDate": "Select date"
+    "selectDate": "Select date",
+    "close": "Close"
   },
   "cta": {
     "title": "Ready to Get Started?",

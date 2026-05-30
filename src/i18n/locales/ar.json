@@ -1776,6 +1776,45 @@
       "generatedAt": "تم الإنشاء",
       "noPassengers": "لا توجد مسافرون",
       "exportError": "تعذر إنشاء الملف"
+    },
+    "seatPlan": {
+      "openButton": "مخطط المقاعد",
+      "title": "مخطط المقاعد",
+      "settings": "إعدادات الرحلة",
+      "transportType": "نوع النقل",
+      "transportTypes": {
+        "BUS": "حافلة",
+        "PLANE": "طائرة",
+        "BOAT": "قارب",
+        "PRIVATE": "مركبة خاصة",
+        "OTHER": "أخرى"
+      },
+      "layout": "التخطيط",
+      "seatCount": "عدد المقاعد",
+      "seats": "مقاعد",
+      "vehiclePlate": "اللوحة",
+      "guideName": "المرشد",
+      "notBus": "هذه الرحلة ليست بالحافلة. يُستخدم مخطط المقاعد فقط لرحلات الحافلات.",
+      "fillRequired": "التخطيط وعدد المقاعد مطلوبان",
+      "saved": "تم حفظ إعدادات الرحلة",
+      "saveError": "تعذر الحفظ",
+      "save": "حفظ",
+      "autoAssign": "تعيين تلقائي",
+      "autoAssignDone": "اكتمل التعيين التلقائي",
+      "allAssigned": "تم تعيين جميع المسافرين",
+      "passengerShort": "مسافر(ون)",
+      "unassigned": "مسافرون غير معينين",
+      "noUnassigned": "لا يوجد مسافرون غير معينين",
+      "assigned": "معين",
+      "empty": "فارغ",
+      "full": "المقعد ممتلئ",
+      "assignPassenger": "تعيين مسافر",
+      "removeAssignment": "إزالة التعيين",
+      "assignError": "فشل التعيين",
+      "loadError": "تعذر تحميل مخطط المقاعد",
+      "exportPdf": "تنزيل PDF",
+      "pdfError": "تعذر إنشاء PDF",
+      "totalAssigned": "إجمالي المعينين"
     }
   },
   "auth": {
@@ -2506,7 +2545,8 @@
     "saveLoading": "جارٍ الحفظ...",
     "filters": "الفلاتر",
     "all": "الكل",
-    "selectDate": "اختر تاريخاً"
+    "selectDate": "اختر تاريخاً",
+    "close": "إغلاق"
   },
   "agencyInfo": {
     "title": "معلومات الوكالة",

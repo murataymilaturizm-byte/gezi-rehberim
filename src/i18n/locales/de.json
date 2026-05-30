@@ -1776,6 +1776,45 @@
       "generatedAt": "Erstellt",
       "noPassengers": "Keine Passagiere gefunden",
       "exportError": "Ausgabe konnte nicht erstellt werden"
+    },
+    "seatPlan": {
+      "openButton": "Sitzplan",
+      "title": "Sitzplan",
+      "settings": "Fahrteinstellungen",
+      "transportType": "Verkehrsmittel",
+      "transportTypes": {
+        "BUS": "Bus",
+        "PLANE": "Flugzeug",
+        "BOAT": "Boot",
+        "PRIVATE": "Privatfahrzeug",
+        "OTHER": "Andere"
+      },
+      "layout": "Anordnung",
+      "seatCount": "Sitzanzahl",
+      "seats": "Sitze",
+      "vehiclePlate": "Kennzeichen",
+      "guideName": "Reiseleiter",
+      "notBus": "Diese Fahrt ist keine Busfahrt. Sitzplan wird nur für Busfahrten verwendet.",
+      "fillRequired": "Anordnung und Sitzanzahl sind erforderlich",
+      "saved": "Fahrteinstellungen gespeichert",
+      "saveError": "Konnte nicht gespeichert werden",
+      "save": "Speichern",
+      "autoAssign": "Automatisch zuweisen",
+      "autoAssignDone": "Automatische Zuweisung abgeschlossen",
+      "allAssigned": "Alle Passagiere zugewiesen",
+      "passengerShort": "Passagier(e)",
+      "unassigned": "Nicht zugewiesene Passagiere",
+      "noUnassigned": "Keine nicht zugewiesenen Passagiere",
+      "assigned": "zugewiesen",
+      "empty": "Leer",
+      "full": "Sitz belegt",
+      "assignPassenger": "Passagier zuweisen",
+      "removeAssignment": "Zuweisung entfernen",
+      "assignError": "Zuweisung fehlgeschlagen",
+      "loadError": "Sitzplan konnte nicht geladen werden",
+      "exportPdf": "PDF herunterladen",
+      "pdfError": "PDF konnte nicht erstellt werden",
+      "totalAssigned": "Gesamt zugewiesen"
     }
   },
   "auth": {
@@ -2506,7 +2545,8 @@
     "saveLoading": "Wird gespeichert...",
     "filters": "Filter",
     "all": "Alle",
-    "selectDate": "Datum auswählen"
+    "selectDate": "Datum auswählen",
+    "close": "Schließen"
   },
   "cta": {
     "title": "Bereit loszulegen?",
