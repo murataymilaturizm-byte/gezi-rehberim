@@ -24,6 +24,14 @@ import { RegistrationsList } from "@/components/admin/RegistrationsList";
 import { RegistrationFilters } from "@/components/admin/RegistrationFilters";
 import { ManualRegistrationDialog } from "@/components/admin/ManualRegistrationDialog";
 import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
+// Faz 1: Kayıtlar 3 görünüm
+import { RegistrationsByTour } from "@/components/admin/registrations/RegistrationsByTour";
+import { RegistrationsByDeparture } from "@/components/admin/registrations/RegistrationsByDeparture";
+import { DepartureDetailDialog } from "@/components/admin/registrations/DepartureDetailDialog";
+import type { DepartureGroup } from "@/components/admin/registrations/RegistrationsByDeparture";
+import type { RegistrationsView } from "@/components/admin/registrations/types";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { List, Layers, CalendarDays } from "lucide-react";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { CustomerAnalytics } from "@/components/CustomerAnalytics";
@@ -170,6 +178,10 @@ const Admin = () => {
   const [manualRegistrationDialogOpen, setManualRegistrationDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
+  // Faz 1: Kayıtlar 3 görünüm — varsayılan "list" (mevcut davranış korunur)
+  const [registrationsView, setRegistrationsView] = useState<RegistrationsView>("list");
+  const [departureDetailOpen, setDepartureDetailOpen] = useState(false);
+  const [selectedDepartureGroup, setSelectedDepartureGroup] = useState<DepartureGroup | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [filterTour, setFilterTour] = useState<string>("ALL");
   const [filterTourDate, setFilterTourDate] = useState<string>("ALL");
@@ -1043,15 +1055,72 @@ const Admin = () => {
                       onRefresh={loadData}
                     />
                   ) : (
-                    <RegistrationsList
-                      registrations={getFilteredRegistrations()}
-                      loading={loading}
-                      onStatusChange={handleStatusChange}
-                      onViewDetail={(registration) => {
-                        setSelectedRegistration(registration);
-                        setDetailDialogOpen(true);
-                      }}
-                    />
+                    <div className="space-y-4">
+                      {/* Faz 1: Kayıtlar 3 görünüm seçici. Varsayılan "Liste" — mevcut davranış.
+                          Status update tüm görünümlerden TEK MERKEZ: useRegistrations.handleStatusChange
+                          → send-template-message edge function. Filtrelenmiş veri (getFilteredRegistrations)
+                          3 görünüme de aynı kaynaktan geçer. */}
+                      <Tabs
+                        value={registrationsView}
+                        onValueChange={(v) => setRegistrationsView(v as RegistrationsView)}
+                      >
+                        <TabsList className="grid w-full max-w-md grid-cols-3">
+                          <TabsTrigger value="list" className="gap-1.5">
+                            <List className="w-3.5 h-3.5" />
+                            <span className="text-xs sm:text-sm">
+                              {t("admin.registrations.viewList", { defaultValue: "Liste" })}
+                            </span>
+                          </TabsTrigger>
+                          <TabsTrigger value="by-tour" className="gap-1.5">
+                            <Layers className="w-3.5 h-3.5" />
+                            <span className="text-xs sm:text-sm">
+                              {t("admin.registrations.viewByTour", { defaultValue: "Tur Bazlı" })}
+                            </span>
+                          </TabsTrigger>
+                          <TabsTrigger value="by-departure" className="gap-1.5">
+                            <CalendarDays className="w-3.5 h-3.5" />
+                            <span className="text-xs sm:text-sm">
+                              {t("admin.registrations.viewByDeparture", { defaultValue: "Sefer Bazlı" })}
+                            </span>
+                          </TabsTrigger>
+                        </TabsList>
+                      </Tabs>
+
+                      {registrationsView === "list" && (
+                        <RegistrationsList
+                          registrations={getFilteredRegistrations()}
+                          loading={loading}
+                          onStatusChange={handleStatusChange}
+                          onViewDetail={(registration) => {
+                            setSelectedRegistration(registration);
+                            setDetailDialogOpen(true);
+                          }}
+                        />
+                      )}
+
+                      {registrationsView === "by-tour" && (
+                        <RegistrationsByTour
+                          registrations={getFilteredRegistrations()}
+                          loading={loading}
+                          onStatusChange={handleStatusChange}
+                          onViewDetail={(registration) => {
+                            setSelectedRegistration(registration);
+                            setDetailDialogOpen(true);
+                          }}
+                        />
+                      )}
+
+                      {registrationsView === "by-departure" && (
+                        <RegistrationsByDeparture
+                          registrations={getFilteredRegistrations()}
+                          loading={loading}
+                          onSelectDeparture={(g) => {
+                            setSelectedDepartureGroup(g);
+                            setDepartureDetailOpen(true);
+                          }}
+                        />
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -1157,7 +1226,18 @@ const Admin = () => {
           }
         }}
       />
-      
+
+      {/* Faz 1: Sefer detayı (yolcu listesi + doluluk + Faz 2 yer tutucu buttons) */}
+      <DepartureDetailDialog
+        open={departureDetailOpen}
+        onOpenChange={setDepartureDetailOpen}
+        group={selectedDepartureGroup}
+        onViewDetail={(registration) => {
+          setSelectedRegistration(registration);
+          setDetailDialogOpen(true);
+        }}
+      />
+
       {/* Support Chat Widget */}
       <SupportChatWidget />
     </SidebarProvider>

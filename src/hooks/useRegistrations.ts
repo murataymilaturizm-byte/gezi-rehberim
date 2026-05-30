@@ -12,18 +12,25 @@ export interface Registration {
   note?: string;
   created_at: string;
   tour_id: string;
+  tour_date_id?: string;
   source_channel?: string;
   payment_status?: string;
   total_amount?: number;
   paid_amount?: number;
   deposit_amount?: number;
   tours: {
+    id?: string;
     title: string;
     destination: string;
+    currency?: string;
   };
   tour_dates: {
+    id?: string;
     departure_date: string;
+    return_date?: string | null;
     price_adult: number;
+    price_child?: number | null;
+    quota?: number | null;
   };
 }
 
@@ -46,12 +53,15 @@ export const useRegistrations = (activeTab: string, session: any) => {
   const loadRegistrations = async () => {
     setLoading(true);
     try {
+      // Faz 1 (Kayıtlar 3 görünüm): tour_dates'ten quota + id + return_date + price_child
+      // ek olarak gruplama ve doluluk hesabı için çekiliyor. tours.id de gruplama anahtarı.
+      // RPC/migration eklenmedi — sadece SELECT genişletildi (mevcut RLS aynen geçerli).
       const { data, error } = await supabase
         .from("registrations")
         .select(`
           *,
-          tours (title, destination),
-          tour_dates (departure_date, price_adult)
+          tours (id, title, destination, currency),
+          tour_dates (id, departure_date, return_date, price_adult, price_child, quota)
         `)
         .order("created_at", { ascending: false });
       

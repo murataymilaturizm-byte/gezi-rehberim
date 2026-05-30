@@ -37,19 +37,25 @@ interface Registration {
   note?: string;
   created_at: string;
   tour_id: string;
+  tour_date_id?: string;
   source_channel?: string;
   payment_status?: string;
   total_amount?: number;
   paid_amount?: number;
   deposit_amount?: number;
   tours: {
+    id?: string;
     title: string;
     destination: string;
     currency?: string;
   };
   tour_dates: {
+    id?: string;
     departure_date: string;
+    return_date?: string | null;
     price_adult: number;
+    price_child?: number | null;
+    quota?: number | null;
   };
 }
 
