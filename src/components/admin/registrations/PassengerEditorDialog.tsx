@@ -22,8 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Trash2, Loader2, UserPlus, Save } from "lucide-react";
+import { Trash2, Loader2, UserPlus, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -282,8 +281,12 @@ export const PassengerEditorDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
+        {/* FIX: flex chain'de min-h-0 + native scroll div — ScrollArea Radix primitive
+            parent flex chain'inde min-h-0 olmadan max-h tetiklemiyordu (modern flex tuzağı:
+            flex item'ın min-height default'u "auto" → content boyu kadar büyür, max-h yenilmez).
+            Header + footer flex-shrink-0 ile kayboldukça küçülmez; sadece liste alanı kayar. */}
+        <DialogContent className="max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden p-0 gap-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-3 border-b">
             <DialogTitle>
               {t("admin.passengers.title", { defaultValue: "Yolcu Listesi" })}
             </DialogTitle>
@@ -296,15 +299,15 @@ export const PassengerEditorDialog = ({
           </DialogHeader>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex-1 min-h-0 flex items-center justify-center py-12">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : passengers.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
+            <div className="flex-1 min-h-0 py-8 text-center text-sm text-muted-foreground">
               {t("admin.passengers.empty", { defaultValue: "Yolcu bulunamadı" })}
             </div>
           ) : (
-            <ScrollArea className="flex-1 max-h-[60vh] pr-3 -mr-3">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
               <div className="space-y-3">
                 {passengers.map((p) => (
                   <div
@@ -388,10 +391,10 @@ export const PassengerEditorDialog = ({
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           )}
 
-          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2">
+          <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 sm:gap-2 px-6 py-4 border-t bg-background">
             <Button
               variant="outline"
               onClick={handleAddPassenger}
