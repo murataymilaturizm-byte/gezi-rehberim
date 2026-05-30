@@ -114,18 +114,56 @@ export function detectInjection(input: string): boolean {
   ];
   if (trPatterns.some((p) => p.test(msg))) return true;
 
-  // DE / FR / ES / RU / AR — kısa özlü kalıplar
+  // FIX 2: DE / FR / ES / RU / AR — EN/TR seviyesine yaklaştırılmış pattern'ler.
+  // Mevcut 2 pattern/dil korundu, her dil için ek olarak: prompt sızdırma, dev/admin
+  // mode, indirim zorlaması (verb + miktar), bedava/ücretsiz zorlaması, yeni
+  // talimat/rol kalıpları. Yanlış-pozitif riski için: indirim/ücretsiz pattern'leri
+  // "ver/yap" verb'ü gerektiriyor → "indiriminiz var mı?" gibi soru tonu yakalanmaz.
   const multilangPatterns = [
-    /\b(ignoriere|vergiss)\s+(alle?\s+)?(anweisungen?|regeln?|system)\b/i,
+    // ─── DE ─────────────────────────────────────────────────────────────────
+    /\b(ignoriere|vergiss|missachte)\s+(alle?\s+)?(anweisungen?|regeln?|system\w*|kontext)/i,
     /\bdu\s+bist\s+jetzt\b/i,
-    /\b(ignores?|oublies?)\s+(toutes?\s+les?\s+)?(instructions?|règles?)\b/i,
+    /\b(zeig\w*|verrate|gib\s+mir|nenne)\s+(mir\s+)?(dein\w*|das)\s+(system\s*prompt\w*|anweisung\w*|instruktion\w*)/i,
+    /\b(entwickler|admin|root|jailbreak|dan)[\s-]?(modus|mode)\b/i,
+    /\b(gib|biete)\s+mir\s+\d+\s*%\s*(rabatt|nachlass|vergünstigung)\b/i,
+    /\b(mach|gib|biete)\s+(es|das)\s+(kostenlos|umsonst|gratis)\b/i,
+    /\bneue\s+(anweisung|regel|rolle|aufgabe|persona)\b/i,
+
+    // ─── FR ─────────────────────────────────────────────────────────────────
+    /\b(ignores?|oublies?|ignore|oublie)\s+(toutes?\s+les?\s+)?(instructions?|règles?|consignes?|système)/i,
     /\btu\s+es\s+maintenant\b/i,
-    /\b(ignora|olvida)\s+(todas?\s+las?\s+)?(instrucciones?|reglas?)\b/i,
+    /\b(montre|donne|révèle|affiche)[\s-]moi\s+(ton|tes|le)\s+(prompt|instructions?|consignes?|système)/i,
+    /\bmode\s+(développeur|administrateur|admin|jailbreak|dan)\b/i,
+    /\bdonne[\s-]moi\s+\d+\s*%\s*(de\s+)?(réduction|remise|rabais)\b/i,
+    /\b(fais|rends)[\s-]le\s+(gratuit|gratuite|gratuitement)\b/i,
+    /\bnouvelle\s+(instruction|règle|rôle|tâche|persona)\b/i,
+
+    // ─── ES ─────────────────────────────────────────────────────────────────
+    /\b(ignora|olvida|omite)\s+(todas?\s+las?\s+)?(instrucciones?|reglas?|sistema|contexto)/i,
     /\bahora\s+eres?\b/i,
-    /\b(игнорируй|забудь)\s+(все\s+)?(инструкции|правила)\b/i,
+    /\b(muéstrame|enséñame|revela|dime)\s+(tu|el)\s+(prompt|instrucci\w+|consigna|sistema)/i,
+    /\bmodo\s+(desarrollador|administrador|admin|jailbreak|dan)\b/i,
+    /\bdame\s+(un\s+)?\d+\s*%\s*de\s+descuento\b/i,
+    /\b(hazlo|hazme|haz\s+esto)\s+(gratis|gratuito|gratuita)\b/i,
+    /\bnueva\s+(instrucción|regla|rol|tarea|persona)\b/i,
+
+    // ─── RU ─────────────────────────────────────────────────────────────────
+    /\b(игнорируй|забудь|пренебреги)\s+(все\s+)?(инструкции|правила|систем\w+|контекст)/i,
     /\bты\s+теперь\b/i,
-    /\b(تجاهل|انسَ)\s+(جميع\s+)?(التعليمات|القواعد)\b/i,
+    /\b(покажи|раскрой|сообщи|выведи)\s+(мне\s+)?(сво[ёе]?|тво[ёе]?|свой|твой)?\s*(промпт|инструкци\w+|систем\w+\s+промпт)/i,
+    /\bрежим\s+(разработчика|администратора|админ\w*|jailbreak|dan)\b/i,
+    /\bдай\s+мне\s+\d+\s*%\s*скидк\w+\b/i,
+    /\bсделай\s+(это\s+)?(бесплатн\w+|даром)\b/i,
+    /\bнов\w+\s+(инструкц\w+|правил\w+|роль|задач\w+|персон\w+)\b/i,
+
+    // ─── AR ─────────────────────────────────────────────────────────────────
+    /\b(تجاهل|انسَ|انسى|اهمل)\s+(جميع\s+|كل\s+)?(التعليمات|القواعد|النظام|السياق)/i,
     /\bأنت\s+الآن\b/i,
+    /\b(أرني|أظهر|اكشف|قل\s+لي)\s+(لي\s+)?(تعليماتك|البرومبت|النظام\s+الخاص|توجيهاتك)/i,
+    /\bوضع\s+(المطور|المسؤول|المدير|jailbreak|dan)\b/i,
+    /\bأعطني\s+خصم\s+\d+\s*%/i,
+    /\b(اجعله|اجعلها|قدمه)\s+مجاناً?\b/i,
+    /\bتعليمات\s+(جديدة|أخرى)\b/i,
   ];
   if (multilangPatterns.some((p) => p.test(msg))) return true;
 

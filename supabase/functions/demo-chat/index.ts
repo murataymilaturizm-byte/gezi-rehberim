@@ -29,7 +29,6 @@ serve(async (req) => {
       sessionId,
       conversationState: incomingContext,
       conversationStyle,
-      agencyId: bodyAgencyId,
       // FIX: Frontend i18n.language — ilk mesajda detection'ı override eder.
       language: bodyLanguage,
     } = body;
@@ -45,7 +44,13 @@ serve(async (req) => {
       });
     }
 
-    const agencyId: string = bodyAgencyId || CONFIG.DEMO_AGENCY_ID;
+    // SECURITY (FIX 1): Demo endpoint SADECE kendi DEMO_AGENCY_ID'sine kilitli.
+    // Public endpoint olduğu için body'den gelen herhangi bir agencyId değeri
+    // sessizce yoksayılır — cross-agency leak vektörü kapatıldı. Eski davranış:
+    //   const agencyId = body.agencyId || CONFIG.DEMO_AGENCY_ID;
+    // Saldırgan body'ye {agencyId: "<target_uuid>"} koyarak hedef acenteye
+    // konuşma/rezervasyon enjekte edebiliyordu.
+    const agencyId: string = CONFIG.DEMO_AGENCY_ID;
     // currentLang error-response için: önce mevcut context, sonra frontend seed, son çare tr.
     const currentLang: string = (incomingContext as any)?.language || seedLanguage || "tr";
 
@@ -69,11 +74,25 @@ serve(async (req) => {
 
     const message = sanitizeInput(rawMessage || "");
 
-    // === IP RATE LIMIT: 20 istek/dakika ===
+    // === IP RATE LIMIT: 20 istek/dakika + 100 istek/saat ===
+    // FIX 4: SaatLİK IP limiti eklendi. sessionId rotation ile saatlik session
+    // limitini (50/saat) bypass eden saldırı vektörünü kapatır; aynı IP'den
+    // 100/saat eşiği aşılırsa istek reddedilir. Meşru demo kullanımı bu
+    // eşiği geçmez (tipik test ~10-30 mesaj). 20/dk eşiği KORUNDU.
     const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || req.headers.get("x-real-ip")
       || null;
     if (clientIP) {
+      const _rlMsgs: Record<string, string> = {
+        tr: "Çok hızlı istek gönderiyorsunuz. 🙏 Lütfen bir dakika bekleyin.",
+        en: "You're sending requests too quickly. 🙏 Please wait.",
+        de: "Zu viele Anfragen. 🙏 Bitte warten.",
+        ru: "Слишком много запросов. 🙏 Подождите.",
+        ar: "طلبات كثيرة جداً. 🙏 يرجى الانتظار.",
+        fr: "Trop de requêtes. 🙏 Patientez.",
+        es: "Demasiadas solicitudes. 🙏 Por favor espere.",
+      };
+      // 1) Dakikalık IP limiti — mevcut davranış korundu (kısa süreli burst koruma).
       const { data: _ipRl, error: _ipRle } = await supabase.rpc("check_rate_limit", {
         p_identifier: clientIP,
         p_identifier_type: "ip",
@@ -81,15 +100,22 @@ serve(async (req) => {
         p_max_requests: 20,
       });
       if (!_ipRle && _ipRl && !_ipRl.allowed) {
-        const _rlMsgs: Record<string, string> = {
-          tr: "Çok hızlı istek gönderiyorsunuz. 🙏 Lütfen bir dakika bekleyin.",
-          en: "You're sending requests too quickly. 🙏 Please wait.",
-          de: "Zu viele Anfragen. 🙏 Bitte warten.",
-          ru: "Слишком много запросов. 🙏 Подождите.",
-          ar: "طلبات كثيرة جداً. 🙏 يرجى الانتظار.",
-          fr: "Trop de requêtes. 🙏 Patientez.",
-          es: "Demasiadas solicitudes. 🙏 Por favor espere.",
-        };
+        return new Response(JSON.stringify({
+          response: _rlMsgs[currentLang] || _rlMsgs.tr,
+          conversationState: incomingContext,
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      // 2) FIX 4: Saatlik IP limiti — sessionId rotation bypass'ı kapatır.
+      // identifier aynı, identifier_type "ip" — rate_limit_events tablosunda
+      // aynı pencerede aynı kayıtlar sayılır; iki kontrol birbirini etkilemez
+      // (her birinin penceresi farklı: 60s vs 3600s).
+      const { data: _ipHRl, error: _ipHRle } = await supabase.rpc("check_rate_limit", {
+        p_identifier: clientIP,
+        p_identifier_type: "ip",
+        p_window_seconds: 3600,
+        p_max_requests: 100,
+      });
+      if (!_ipHRle && _ipHRl && !_ipHRl.allowed) {
         return new Response(JSON.stringify({
           response: _rlMsgs[currentLang] || _rlMsgs.tr,
           conversationState: incomingContext,
