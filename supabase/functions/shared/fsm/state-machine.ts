@@ -553,13 +553,43 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // CONFIRMING → COLLECTING_INFO (değişiklik) — BUG 5
+  // CONFIRMING → COLLECTING_INFO (değişiklik) — BUG 5 FIX
+  // Önceki sürüm yumuşak pattern'ler ("değil", "farklı") yüzünden masum soru
+  // cümlelerini ("Tarih farklı değil mi?", "Doğru değil mi?") change_info olarak
+  // yorumlayıp rezervasyon bilgilerini siliyordu. Şimdi 3 katmanlı:
+  //   1. Negative guard — "değil mi" / "öyle değil" / "n'est-ce pas" soru/teyit kalıpları → false
+  //   2. Güçlü değişiklik fiilleri ("değiştir", "change", "düzelt", "güncelle") → tek başına yeterli
+  //   3. Zayıf sinyaller ("yanlış", "değil", "farklı", "eksik", "fazla") → MUTLAKA bir hedef
+  //      alanla (tarih/pax/isim/telefon) eşleşmeli
+  // "olsun" / "olarak değiştir" — yeni değer önerme niyeti, güçlü sinyal.
   {
     from: "CONFIRMING",
     to: "COLLECTING_INFO",
-    condition: (ctx, input) =>
-      input.detectedIntent === "change_info" ||
-      /değiştir|olsun|olarak\s+değiştir|change|modify|edit|düzelt|yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|güncelle|update|fix|correct|корректировать|неправильно|ändern|falsch|corriger|corregir|تعديل|خطأ/i.test(input.userMessage.toLowerCase()),
+    condition: (ctx, input) => {
+      // NLU açık değişiklik intent'i — en güvenilir sinyal
+      if (input.detectedIntent === "change_info") return true;
+
+      const msg = input.userMessage.toLowerCase();
+
+      // 1. NEGATIVE GUARD: soru/teyit kalıpları değişiklik talebi DEĞİL
+      // Türkçe "değil mi?" / "öyle değil mi" / "doğru değil mi" + diğer dillerde eşdeğerleri
+      const negativeGuard = /\b(değil\s+mi|öyle\s+değil|doğru\s+değil|n['']?est[\s-]?ce\s+pas|isn['']?t\s+(it|that)|right\?|правильно\?|صحيح\?)/i;
+      if (negativeGuard.test(msg)) return false;
+
+      // 2. GÜÇLÜ DEĞİŞİKLİK FİİLLERİ — tek başına yeterli (açık niyet)
+      const strongChangeIntent =
+        /değiştir|olsun\b|olarak\s+değiştir|change|modify|edit|düzelt|güncelle|update|fix|correct|ändern|stattdessen|corriger|corregir|en\s+lugar|изменить|вместо|تعديل|بدلاً/i;
+      if (strongChangeIntent.test(msg)) return true;
+
+      // 3. ZAYIF SİNYALLER ("yanlış", "değil", "farklı", "eksik", "fazla") — MUTLAKA hedef alanla
+      // tetiklensin. Tek başına "değil" / "farklı" yanlış-pozitif yaratıyordu.
+      const weakKeywords = /\b(yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|falsch|неправильно|خطأ)\b/i;
+      const fieldPattern =
+        /\b(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha|isim|ismi|adım|adı|adın|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre|telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono|ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)\b/i;
+      if (weakKeywords.test(msg) && fieldPattern.test(msg)) return true;
+
+      return false;
+    },
     action: (ctx, input) => {
       const msg = input.userMessage.toLowerCase();
       const info = { ...ctx.reservationInfo };

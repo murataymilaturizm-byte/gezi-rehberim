@@ -262,14 +262,31 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   console.log("[process-message] Intent:", nluResult.intent, "| Stage:", context.stage, "| Lang:", context.language);
 
   // NLU dil tespitini uygula (ASCII guard + enabled_languages kontrolü)
+  // FIX (ASCII-only ilk mesaj): WhatsApp'ta seedLanguage yok; yabancı turist ilk
+  // mesajı saf ASCII (örn. "I want to book a tour") yazınca karakter-tabanlı
+  // detection null dönüyor ve "tr" fallback'a düşülüyordu. NLU dili context.language
+  // ile guard'lı eşitlemede, uzun ASCII mesaj (≥200 char) _hasNonAscii=false +
+  // _isShortMsg=false yüzünden override edilemiyordu — bu da "1 mesaj gecikme"
+  // davranışı yaratıyordu (ilk mesaj TR, ikinci mesajda dil düzeliyor).
+  // Çözüm: ilk mesajda (messageCount===0, yeni context) NLU dilini her zaman kabul et
+  // — bu noktada başka dil sinyali zaten yok, NLU dili otorite. Whitelist korunur.
   if (nluResult.language) {
     const SUPPORTED = ["tr", "en", "de", "ru", "ar", "fr", "es"];
     if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language) {
       const _hasNonAscii = /[^\x00-\x7F]/.test(message);
       const _isShortMsg = message.length < 200;
-      if (_hasNonAscii || _isShortMsg) {
+      // YENİ context = messageCount henüz processTransition'a girmedi = 0.
+      // Loaded context'te en az 1 mesaj olur → guard eski davranışını korur (uzun
+      // ASCII Türkçe metinde araya bir EN kelime gelirse dil değişmesin).
+      const _isFirstMessage = context.messageCount === 0;
+      if (_hasNonAscii || _isShortMsg || _isFirstMessage) {
         if (_isLangEnabled(nluResult.language)) {
           context.language = nluResult.language;
+          // İlk mesajda tone'u da NLU diline göre re-set et — başka dilden geliyorsa
+          // varsayılan tone uyumlu olsun (örn. EN için kurumsal tone TR'den farklı olabilir).
+          if (_isFirstMessage) {
+            context.tone = getDefaultToneForLanguage(nluResult.language) as any;
+          }
         } else {
           // Acente bu dili açmamış — mevcut dili koru
           console.log(`[process-message] S4: Detected lang ${nluResult.language} not in enabled_languages (${_enabledLangs}), keeping ${context.language}`);

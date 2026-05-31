@@ -10,7 +10,15 @@ import type { ConversationStage } from "./types.ts";
 
 // Stage'ler validator çalıştırılacak
 // TOUR_SELECTED eklendi: AI'nın "rezervasyonunuz oluşturuldu" demesini bu aşamada da engelle
-const ACTIVE_STAGES: ConversationStage[] = ["TOUR_SELECTED", "COLLECTING_INFO", "CONFIRMING"];
+// FIX: COMPLETED eklendi — rezervasyon tamamlandıktan sonra müşteri "rezervasyonum onaylandı mı?"
+// gibi soru sorduğunda AI'nın YENİDEN sahte onay üretmesini engellemek için. Meşru atıf
+// vs yeni-onay ayrımı imkansıza yakın olduğundan (Türkçe agglutinative grammar), COMPLETED
+// için redirect mesajı bağlama uygun seçilir (REDIRECT_MESSAGES_COMPLETED).
+// COMPLETED akışı yan etki: O9 after-sales (process-message:953-985) zaten erken-return
+// yapıyor → AI'a hiç gitmiyor → validator çalışmaz. Yeni rezervasyon intent COMPLETED→BROWSING
+// transition'ı stage değiştirir → BROWSING ACTIVE_STAGES'te değil → validator çalışmaz.
+// Yani COMPLETED'i kapsama dahil etmek mevcut yan davranışları bozmaz.
+const ACTIVE_STAGES: ConversationStage[] = ["TOUR_SELECTED", "COLLECTING_INFO", "CONFIRMING", "COMPLETED"];
 
 // ─── TR pattern'leri ──────────────────────────────────────────────────────────
 const TR_PATTERNS: RegExp[] = [
@@ -143,6 +151,7 @@ export function validateInjectionResponse(text: string, language: string): strin
 }
 
 // ─── Redirect cümleleri ───────────────────────────────────────────────────────
+// Aktif aşamalar (TOUR_SELECTED, COLLECTING_INFO, CONFIRMING) için: "onayla" yönlendirmesi
 const REDIRECT_MESSAGES: Record<string, string> = {
   tr: "Lütfen bilgilerinizi kontrol edip onaylar mısınız?",
   en: "Please review your information and confirm to proceed.",
@@ -151,6 +160,19 @@ const REDIRECT_MESSAGES: Record<string, string> = {
   es: "Por favor revise su información y confirme.",
   ru: "Пожалуйста, проверьте ваши данные и подтвердите.",
   ar: "يرجى مراجعة بياناتك والتأكيد.",
+};
+
+// COMPLETED için ayrı: mevcut rezervasyonu netleştir + yeni-onay sızıntısı engelle.
+// "Onayla" demek yerine "zaten tamamlandı" diyerek müşteriyi rahatlatır ve AI'nın
+// uydurma yeni onay metnini güvenli bir bağlam mesajıyla değiştirir.
+const REDIRECT_MESSAGES_COMPLETED: Record<string, string> = {
+  tr: "Rezervasyonunuz zaten tamamlandı ✅ Başka bir konuda yardımcı olabilir miyim?",
+  en: "Your reservation is already complete ✅ Is there anything else I can help with?",
+  de: "Ihre Reservierung ist bereits abgeschlossen ✅ Kann ich Ihnen mit etwas anderem helfen?",
+  fr: "Votre réservation est déjà complète ✅ Puis-je vous aider avec autre chose ?",
+  es: "Su reserva ya está completa ✅ ¿Puedo ayudarle con algo más?",
+  ru: "Ваше бронирование уже подтверждено ✅ Могу ли я помочь с чем-то ещё?",
+  ar: "حجزك مكتمل بالفعل ✅ هل يمكنني مساعدتك في شيء آخر؟",
 };
 
 function getAllPatterns(language: string): RegExp[] {
@@ -196,6 +218,11 @@ export function validateAIResponse(
     originalLength: text.length,
   });
 
-  const redirect = REDIRECT_MESSAGES[language] || REDIRECT_MESSAGES.en;
+  // FIX: stage'e göre redirect mesajı. Aktif aşamalarda "onayla" yönlendirmesi,
+  // COMPLETED'de "zaten tamamlandı, başka bir şey?" — meşru atıf gibi görünen
+  // ama AI tarafından üretilmesi riskli olan yeni-onay sızıntısını yumuşatır.
+  const redirect = stage === "COMPLETED"
+    ? (REDIRECT_MESSAGES_COMPLETED[language] || REDIRECT_MESSAGES_COMPLETED.en)
+    : (REDIRECT_MESSAGES[language] || REDIRECT_MESSAGES.en);
   return { text: redirect, wasModified: true, matchedPattern: matched };
 }
