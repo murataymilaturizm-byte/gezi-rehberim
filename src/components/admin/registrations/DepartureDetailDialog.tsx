@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, Bus, UsersRound, Loader2, Armchair } from "lucide-react";
+import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, UsersRound, Loader2, Armchair, UserCheck } from "lucide-react";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { formatPrice } from "@/utils/currency";
 import type { DepartureGroup } from "./RegistrationsByDeparture";
@@ -68,6 +68,28 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
   const [exportingPdf, setExportingPdf] = useState(false);
   // Faz 2-B: Koltuk planı dialog state'i
   const [seatPlanOpen, setSeatPlanOpen] = useState(false);
+  // Faz 2-C2 PARÇA 1: Ekip paneli için tour_dates'ten personel + count-up animasyon
+  const [extras, setExtras] = useState<{
+    guide_name?: string | null;
+    tour_leader_name?: string | null;
+    captain_name?: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!open || !group) return;
+    let aborted = false;
+    (async () => {
+      const { data } = await db
+        .from("tour_dates")
+        .select("guide_name, tour_leader_name, captain_name")
+        .eq("id", group.dateId)
+        .single();
+      if (!aborted) setExtras(data || null);
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [open, group?.dateId]);
 
   /**
    * Manifesto için bu seferin tüm yolcularını çek (CANCELLED rezervasyon yolcuları
@@ -248,6 +270,29 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
     }
   };
 
+  // Faz 2-C2 PARÇA 1: Sağ panel ödeme özeti — mevcut total_amount/paid_amount'tan
+  // (yeni veri yok, sadece ekrana getir). Aktif (non-CANCELLED) rezervasyonların
+  // toplamı; currency tek tur olduğu için sefer'in currency'sini kullan.
+  const paymentSummary = useMemo(() => {
+    if (!group) return { total: 0, paid: 0, remaining: 0, currency: "TRY" };
+    let total = 0;
+    let paid = 0;
+    for (const r of group.regs) {
+      if (r.status === "CANCELLED") continue;
+      total += Number(r.total_amount ?? 0);
+      paid += Number(r.paid_amount ?? 0);
+    }
+    return {
+      total,
+      paid,
+      remaining: Math.max(0, total - paid),
+      currency: group.currency || "TRY",
+    };
+  }, [group]);
+
+  // Count-up animasyonu için dialog open=true → enabled
+  const animatedSoldPax = useCountUp(group?.soldPax ?? 0, open);
+
   if (!group) return null;
 
   const paymentStatusLabels: Record<string, string> = {
@@ -279,10 +324,10 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
-        {/* Faz 2-C: Dialog header — eyebrow + title + chip-style description */}
-        <DialogHeader className="px-6 py-5 border-b border-border/60">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+      <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden">
+        {/* Faz 2-C2 PARÇA 1: Dialog header */}
+        <DialogHeader className="px-6 py-5 border-b border-border/60 flex-shrink-0">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold">
             {t("admin.registrations.departureDetail", { defaultValue: "Sefer Detayı" })}
           </p>
           <DialogTitle className="text-lg font-semibold tracking-tight truncate">
@@ -300,111 +345,26 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-5">
-        {/* Faz 2-C: Doluluk özeti — stats card pattern (3 sütun, divide-x, büyük sayılar) */}
-        <div className="grid sm:grid-cols-3 gap-0 divide-x divide-border/60 rounded-lg border border-border/60 bg-muted/20 overflow-hidden">
-          <div className="p-4 space-y-1.5">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium inline-flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              {t("admin.registrations.occupancy", { defaultValue: "Doluluk" })}
-            </p>
-            {group.quota != null ? (
-              <>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-mono tabular-nums font-bold leading-none">
-                    {group.soldPax}
-                  </span>
-                  <span className="text-base font-mono tabular-nums text-muted-foreground leading-none">
-                    /{group.quota}
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-300 ${
-                      isFull
-                        ? "bg-destructive/80"
-                        : occupancyPct! >= 80
-                        ? "bg-primary/80"
-                        : "bg-primary/60"
-                    }`}
-                    style={{ width: `${occupancyPct ?? 0}%` }}
-                  />
-                </div>
-                {isFull && (
-                  <span className="inline-flex items-center text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/30 mt-1">
-                    {t("admin.registrations.full", { defaultValue: "Kontenjan dolu" })}
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="text-2xl font-mono tabular-nums font-bold leading-none">
-                {group.totalRegs}
-              </span>
-            )}
-          </div>
-          <div className="p-4 space-y-1.5">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-              {t("admin.registrations.records", { defaultValue: "Kayıt" })}
-            </p>
-            <span className="text-2xl font-mono tabular-nums font-bold leading-none block">
-              {group.totalRegs}
-            </span>
-          </div>
-          <div className="p-4 space-y-1.5">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium inline-flex items-center gap-1">
-              <Bus className="w-3 h-3" />
-              {t("admin.registrations.vehicle", { defaultValue: "Araç" })}
-            </p>
-            <p className="text-sm text-muted-foreground italic">
-              {t("admin.registrations.comingSoon", { defaultValue: "Yakında" })}
-            </p>
-          </div>
-        </div>
-
-        <div className="inline-flex rounded-lg border border-border/60 bg-card divide-x divide-border/60 overflow-hidden flex-wrap">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleExportExcel}
-            disabled={exportingExcel || exportingPdf}
-            className="rounded-none border-0 h-9"
-          >
-            {exportingExcel ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-            )}
-            {t("admin.registrations.exportExcel", { defaultValue: "Excel İndir" })}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleExportPdf}
-            disabled={exportingPdf || exportingExcel}
-            className="rounded-none border-0 h-9"
-          >
-            {exportingPdf ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <FileText className="w-4 h-4 mr-2" />
-            )}
-            {t("admin.registrations.exportPdf", { defaultValue: "PDF İndir" })}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSeatPlanOpen(true)}
-            className="rounded-none border-0 h-9"
-          >
-            <Armchair className="w-4 h-4 mr-2" />
-            {t("admin.seatPlan.openButton", { defaultValue: "Koltuk Planı" })}
-          </Button>
-        </div>
-
-        {/* Faz 2-C: Yolcu listesi borderless flow — divide-y + hover bg */}
-        <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
-          <div className="divide-y divide-border/40">
-            {sortedRegs.map((reg, idx) => {
+        {/* Faz 2-C2 PARÇA 1: İki-kolon operasyon kokpiti.
+            SOL: yolcu listesi (kaydırılabilir). SAĞ: sticky paneller (Durum / Kısa Yol / Ekip / Ödeme).
+            Mobil: flex-col-reverse → sağ panel ÜSTTE, yolcu listesi altta. */}
+        <div className="flex-1 min-h-0 flex flex-col-reverse md:flex-row overflow-hidden">
+          {/* SOL — Yolcu listesi */}
+          <div className="flex-1 min-h-0 overflow-y-auto md:border-r border-border/60">
+            <div className="px-6 py-5">
+              <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-border/40">
+                <h3 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold inline-flex items-center gap-1.5">
+                  <UsersRound className="w-3 h-3" />
+                  {t("admin.registrations.passengersHeader", { defaultValue: "Yolcular" })}
+                </h3>
+                <span className="text-xs font-mono tabular-nums text-muted-foreground">
+                  {sortedRegs.filter((r) => r.status !== "CANCELLED").length}
+                  {sortedRegs.some((r) => r.status === "CANCELLED") &&
+                    ` + ${sortedRegs.filter((r) => r.status === "CANCELLED").length}`}
+                </span>
+              </div>
+              <div className="divide-y divide-border/40">
+                {sortedRegs.map((reg, idx) => {
               const isCancelled = reg.status === "CANCELLED";
               const unitPrice = reg.tour_dates?.price_adult || 0;
               const totalPrice = unitPrice * reg.pax;
@@ -501,8 +461,179 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
                 </div>
               );
             })}
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* SAĞ — Sticky operasyon paneli */}
+          <aside className="md:w-[300px] shrink-0 overflow-y-auto bg-muted/15 md:border-l-0 border-b md:border-b-0 border-border/60">
+            <div className="px-5 py-5 space-y-4">
+              {/* DURUM */}
+              <Panel
+                label={t("admin.registrations.statusPanel", { defaultValue: "Durum" })}
+                icon={<Users className="w-3 h-3" />}
+              >
+                {group.quota != null ? (
+                  <>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-mono tabular-nums font-bold leading-none">
+                        {animatedSoldPax}
+                      </span>
+                      <span className="text-base font-mono tabular-nums text-muted-foreground leading-none">
+                        /{group.quota}
+                      </span>
+                      <span className="ml-auto text-[11px] uppercase tracking-wider text-muted-foreground font-mono tabular-nums">
+                        %{occupancyPct}
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-700 ease-out ${
+                          isFull
+                            ? "bg-destructive/80"
+                            : occupancyPct! >= 80
+                            ? "bg-primary/80"
+                            : "bg-primary/60"
+                        }`}
+                        style={{ width: `${occupancyPct ?? 0}%` }}
+                      />
+                    </div>
+                    {isFull ? (
+                      <span className="inline-flex items-center text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/30">
+                        {t("admin.registrations.full", { defaultValue: "Kontenjan dolu" })}
+                      </span>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">
+                        <span className="font-mono tabular-nums font-semibold text-foreground">
+                          {Math.max(0, group.quota - group.soldPax)}
+                        </span>{" "}
+                        {t("admin.registrations.remainingShort", {
+                          defaultValue: "kalan koltuk",
+                        })}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div>
+                    <span className="text-3xl font-mono tabular-nums font-bold leading-none">
+                      {group.totalRegs}
+                    </span>
+                    <p className="text-[11px] text-muted-foreground/70 italic mt-1">
+                      {t("admin.registrations.noQuotaSet", {
+                        defaultValue: "Kontenjan ayarlı değil",
+                      })}
+                    </p>
+                  </div>
+                )}
+              </Panel>
+
+              {/* KISA YOL — Excel / PDF / Koltuk Planı */}
+              <Panel
+                label={t("admin.registrations.shortcutsPanel", { defaultValue: "Kısa Yol" })}
+              >
+                <div className="grid gap-1.5">
+                  <ShortcutButton
+                    icon={
+                      exportingExcel ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <FileSpreadsheet className="w-4 h-4" />
+                      )
+                    }
+                    label={t("admin.registrations.exportExcel", { defaultValue: "Excel İndir" })}
+                    onClick={handleExportExcel}
+                    disabled={exportingExcel || exportingPdf}
+                  />
+                  <ShortcutButton
+                    icon={
+                      exportingPdf ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <FileText className="w-4 h-4" />
+                      )
+                    }
+                    label={t("admin.registrations.exportPdf", { defaultValue: "PDF İndir" })}
+                    onClick={handleExportPdf}
+                    disabled={exportingPdf || exportingExcel}
+                  />
+                  <ShortcutButton
+                    icon={<Armchair className="w-4 h-4" />}
+                    label={t("admin.seatPlan.openButton", { defaultValue: "Koltuk Planı" })}
+                    onClick={() => setSeatPlanOpen(true)}
+                  />
+                </div>
+              </Panel>
+
+              {/* EKİP — Rehber / Tur Lideri / Kaptan (Faz 2-D alanları) */}
+              {(extras?.guide_name || extras?.tour_leader_name || extras?.captain_name) && (
+                <Panel
+                  label={t("admin.registrations.teamPanel", { defaultValue: "Ekip" })}
+                  icon={<UserCheck className="w-3 h-3" />}
+                >
+                  <div className="space-y-1.5 text-xs">
+                    {extras.guide_name && (
+                      <TeamRow
+                        label={t("admin.seatPlan.guideName", { defaultValue: "Rehber" })}
+                        value={extras.guide_name}
+                      />
+                    )}
+                    {extras.tour_leader_name && (
+                      <TeamRow
+                        label={t("admin.seatPlan.tourLeaderName", { defaultValue: "Tur Lideri" })}
+                        value={extras.tour_leader_name}
+                      />
+                    )}
+                    {extras.captain_name && (
+                      <TeamRow
+                        label={t("admin.seatPlan.captainName", { defaultValue: "Kaptan" })}
+                        value={extras.captain_name}
+                      />
+                    )}
+                  </div>
+                </Panel>
+              )}
+
+              {/* ÖDEME ÖZETİ */}
+              {paymentSummary.total > 0 && (
+                <Panel
+                  label={t("admin.registrations.paymentSummary.title", {
+                    defaultValue: "Ödeme Özeti",
+                  })}
+                >
+                  <div className="space-y-2 text-xs">
+                    <PaymentRow
+                      label={t("admin.registrations.paymentSummary.total", {
+                        defaultValue: "Toplam",
+                      })}
+                      value={formatPrice(paymentSummary.total, paymentSummary.currency, {
+                        showCode: false,
+                      })}
+                    />
+                    <PaymentRow
+                      label={t("admin.registrations.paymentSummary.paid", {
+                        defaultValue: "Ödenmiş",
+                      })}
+                      value={formatPrice(paymentSummary.paid, paymentSummary.currency, {
+                        showCode: false,
+                      })}
+                    />
+                    <div className="h-px bg-border/60 my-1" />
+                    <PaymentRow
+                      label={t("admin.registrations.paymentSummary.remaining", {
+                        defaultValue: "Kalan",
+                      })}
+                      value={formatPrice(
+                        paymentSummary.remaining,
+                        paymentSummary.currency,
+                        { showCode: false }
+                      )}
+                      emphasize
+                    />
+                  </div>
+                </Panel>
+              )}
+            </div>
+          </aside>
         </div>
       </DialogContent>
     </Dialog>
@@ -536,3 +667,111 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
     </>
   );
 };
+
+// ────────────────────────────────────────────────────────────────────────────
+// Sağ panel — yardımcı sub-component'ler
+// ────────────────────────────────────────────────────────────────────────────
+
+const Panel = ({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) => (
+  <div className="rounded-lg border border-border/60 bg-card p-4 space-y-2.5">
+    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold inline-flex items-center gap-1.5">
+      {icon}
+      {label}
+    </p>
+    {children}
+  </div>
+);
+
+const ShortcutButton = ({
+  icon,
+  label,
+  onClick,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    className="group flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-md text-sm font-medium border border-border/50 bg-background hover:bg-accent/50 hover:border-primary/40 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
+  >
+    <span className="text-muted-foreground group-hover:text-primary transition-colors">{icon}</span>
+    <span className="flex-1 truncate">{label}</span>
+  </button>
+);
+
+const TeamRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-baseline justify-between gap-2">
+    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+      {label}
+    </span>
+    <span className="text-foreground font-medium truncate">{value}</span>
+  </div>
+);
+
+const PaymentRow = ({
+  label,
+  value,
+  emphasize = false,
+}: {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+}) => (
+  <div className="flex items-baseline justify-between gap-2">
+    <span
+      className={`text-[10px] uppercase tracking-wider font-medium ${
+        emphasize ? "text-foreground" : "text-muted-foreground/70"
+      }`}
+    >
+      {label}
+    </span>
+    <span
+      className={`font-mono tabular-nums ${
+        emphasize ? "font-bold text-base text-foreground" : "font-semibold"
+      }`}
+    >
+      {value}
+    </span>
+  </div>
+);
+
+// ────────────────────────────────────────────────────────────────────────────
+// useCountUp — 0'dan target değere yumuşak animasyon (sadece enabled=true iken).
+// requestAnimationFrame + easeOutCubic; dialog açıldığında bir kez tetiklenir.
+// ────────────────────────────────────────────────────────────────────────────
+function useCountUp(target: number, enabled: boolean, duration = 600) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!enabled) {
+      setVal(target);
+      return;
+    }
+    setVal(0);
+    const start = performance.now();
+    let raf: number;
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const t = Math.min(1, elapsed / duration);
+      const ease = 1 - Math.pow(1 - t, 3);
+      setVal(Math.round(target * ease));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, enabled]);
+  return val;
+}

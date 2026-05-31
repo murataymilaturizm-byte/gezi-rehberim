@@ -1136,7 +1136,30 @@
       "statusUpdatedNoMsg": "تم تحديث الحالة (لم يتم إرسال الرسالة)",
       "statusUpdateWarning": "تم تحديث الحالة لكن رسالة واتساب فشلت",
       "statusUpdateError": "تعذّر تحديث الحالة",
-      "editPassengers": "تعديل المسافرين"
+      "editPassengers": "تعديل المسافرين",
+      "timeBuckets": {
+        "today": "اليوم",
+        "thisWeek": "هذا الأسبوع",
+        "upcoming": "قادم",
+        "later": "لاحقاً / سابقاً"
+      },
+      "tripsShort": "رحلة",
+      "countAvailable": "متاح",
+      "countFull": "ممتلئ",
+      "badgeToday": "اليوم",
+      "badgeTomorrow": "غداً",
+      "remainingShort": "مقعد متاح",
+      "remainingSeats": "{{count}} مقاعد متاحة",
+      "passengersHeader": "الركاب",
+      "statusPanel": "الحالة",
+      "shortcutsPanel": "اختصارات",
+      "teamPanel": "الفريق",
+      "paymentSummary": {
+        "title": "ملخص الدفع",
+        "total": "الإجمالي",
+        "paid": "المدفوع",
+        "remaining": "المتبقي"
+      }
     },
     "status": {
       "new": "جديد",

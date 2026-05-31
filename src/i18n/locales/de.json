@@ -1136,7 +1136,30 @@
       "statusUpdateWarning": "Status aktualisiert, aber WhatsApp-Nachricht fehlgeschlagen",
       "statusUpdateError": "Status konnte nicht aktualisiert werden",
       "addManual": "Manuelle Buchung hinzufügen",
-      "editPassengers": "Passagiere bearbeiten"
+      "editPassengers": "Passagiere bearbeiten",
+      "timeBuckets": {
+        "today": "Heute",
+        "thisWeek": "Diese Woche",
+        "upcoming": "Bevorstehend",
+        "later": "Später / Vergangen"
+      },
+      "tripsShort": "Fahrten",
+      "countAvailable": "verfügbar",
+      "countFull": "voll",
+      "badgeToday": "Heute",
+      "badgeTomorrow": "Morgen",
+      "remainingShort": "freie Plätze",
+      "remainingSeats": "{{count}} freie Plätze",
+      "passengersHeader": "Passagiere",
+      "statusPanel": "Status",
+      "shortcutsPanel": "Verknüpfungen",
+      "teamPanel": "Team",
+      "paymentSummary": {
+        "title": "Zahlungsübersicht",
+        "total": "Gesamt",
+        "paid": "Bezahlt",
+        "remaining": "Restbetrag"
+      }
     },
     "status": {
       "new": "Neu",

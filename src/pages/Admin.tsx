@@ -1064,23 +1064,32 @@ const Admin = () => {
                         value={registrationsView}
                         onValueChange={(v) => setRegistrationsView(v as RegistrationsView)}
                       >
-                        {/* Faz 2-C: Sıra Sefer Bazlı → Tur Bazlı → Liste. Inline-flex, content-fit. */}
-                        <TabsList className="inline-flex h-auto p-1 gap-1">
-                          <TabsTrigger value="by-departure" className="gap-2 px-3 py-1.5">
+                        {/* Faz 2-C2 PARÇA 1: Underline-style tabs — primary 2px alt çizgi smooth slide */}
+                        <TabsList className="inline-flex bg-transparent p-0 h-auto rounded-none border-b border-border/60 w-full justify-start gap-1">
+                          <TabsTrigger
+                            value="by-departure"
+                            className="relative gap-2 px-4 py-2.5 h-auto rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground hover:text-foreground transition-colors after:absolute after:left-0 after:right-0 after:bottom-[-1px] after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:origin-center after:transition-transform after:duration-200"
+                          >
                             <CalendarDays className="w-4 h-4" />
-                            <span className="text-sm">
+                            <span className="text-sm font-medium">
                               {t("admin.registrations.viewByDeparture", { defaultValue: "Sefer Bazlı" })}
                             </span>
                           </TabsTrigger>
-                          <TabsTrigger value="by-tour" className="gap-2 px-3 py-1.5">
+                          <TabsTrigger
+                            value="by-tour"
+                            className="relative gap-2 px-4 py-2.5 h-auto rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground hover:text-foreground transition-colors after:absolute after:left-0 after:right-0 after:bottom-[-1px] after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:origin-center after:transition-transform after:duration-200"
+                          >
                             <Layers className="w-4 h-4" />
-                            <span className="text-sm">
+                            <span className="text-sm font-medium">
                               {t("admin.registrations.viewByTour", { defaultValue: "Tur Bazlı" })}
                             </span>
                           </TabsTrigger>
-                          <TabsTrigger value="list" className="gap-2 px-3 py-1.5">
+                          <TabsTrigger
+                            value="list"
+                            className="relative gap-2 px-4 py-2.5 h-auto rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground hover:text-foreground transition-colors after:absolute after:left-0 after:right-0 after:bottom-[-1px] after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:origin-center after:transition-transform after:duration-200"
+                          >
                             <List className="w-4 h-4" />
-                            <span className="text-sm">
+                            <span className="text-sm font-medium">
                               {t("admin.registrations.viewList", { defaultValue: "Liste" })}
                             </span>
                           </TabsTrigger>

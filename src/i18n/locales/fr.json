@@ -1136,7 +1136,30 @@
       "statusUpdatedNoMsg": "Statut mis à jour (message non envoyé)",
       "statusUpdateWarning": "Statut mis à jour mais message WhatsApp non envoyé",
       "statusUpdateError": "Impossible de mettre à jour le statut",
-      "editPassengers": "Modifier les passagers"
+      "editPassengers": "Modifier les passagers",
+      "timeBuckets": {
+        "today": "Aujourd'hui",
+        "thisWeek": "Cette semaine",
+        "upcoming": "À venir",
+        "later": "Plus tard / Passé"
+      },
+      "tripsShort": "voyages",
+      "countAvailable": "disponibles",
+      "countFull": "complet",
+      "badgeToday": "Aujourd'hui",
+      "badgeTomorrow": "Demain",
+      "remainingShort": "sièges restants",
+      "remainingSeats": "{{count}} sièges disponibles",
+      "passengersHeader": "Passagers",
+      "statusPanel": "État",
+      "shortcutsPanel": "Raccourcis",
+      "teamPanel": "Équipe",
+      "paymentSummary": {
+        "title": "Récapitulatif de paiement",
+        "total": "Total",
+        "paid": "Payé",
+        "remaining": "Solde"
+      }
     },
     "status": {
       "new": "Nouveau",

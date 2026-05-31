@@ -1170,7 +1170,30 @@
       "statusUpdateWarning": "Estado actualizado pero mensaje WhatsApp no enviado",
       "statusUpdateError": "No se pudo actualizar el estado",
       "addManual": "Agregar reserva manual",
-      "editPassengers": "Editar pasajeros"
+      "editPassengers": "Editar pasajeros",
+      "timeBuckets": {
+        "today": "Hoy",
+        "thisWeek": "Esta semana",
+        "upcoming": "Próximos",
+        "later": "Más tarde / Pasado"
+      },
+      "tripsShort": "viajes",
+      "countAvailable": "disponibles",
+      "countFull": "lleno",
+      "badgeToday": "Hoy",
+      "badgeTomorrow": "Mañana",
+      "remainingShort": "asientos libres",
+      "remainingSeats": "{{count}} asientos disponibles",
+      "passengersHeader": "Pasajeros",
+      "statusPanel": "Estado",
+      "shortcutsPanel": "Accesos",
+      "teamPanel": "Equipo",
+      "paymentSummary": {
+        "title": "Resumen de pago",
+        "total": "Total",
+        "paid": "Pagado",
+        "remaining": "Saldo"
+      }
     },
     "status": {
       "new": "Nuevo",

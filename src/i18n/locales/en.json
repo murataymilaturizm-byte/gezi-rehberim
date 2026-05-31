@@ -1133,7 +1133,30 @@
       "statusUpdatedNoMsg": "Status updated (message could not be sent)",
       "statusUpdateWarning": "Status updated but WhatsApp message could not be sent",
       "statusUpdateError": "Could not update status",
-      "editPassengers": "Edit Passengers"
+      "editPassengers": "Edit Passengers",
+      "timeBuckets": {
+        "today": "Today",
+        "thisWeek": "This Week",
+        "upcoming": "Upcoming",
+        "later": "Later / Past"
+      },
+      "tripsShort": "trips",
+      "countAvailable": "available",
+      "countFull": "full",
+      "badgeToday": "Today",
+      "badgeTomorrow": "Tomorrow",
+      "remainingShort": "seats left",
+      "remainingSeats": "{{count}} seats available",
+      "passengersHeader": "Passengers",
+      "statusPanel": "Status",
+      "shortcutsPanel": "Shortcuts",
+      "teamPanel": "Team",
+      "paymentSummary": {
+        "title": "Payment Summary",
+        "total": "Total",
+        "paid": "Paid",
+        "remaining": "Remaining"
+      }
     },
     "status": {
       "new": "New",

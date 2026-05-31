@@ -1,11 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays, startOfToday } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
 import { RegistrationsListSkeleton } from "@/components/admin/skeletons/RegistrationsListSkeleton";
-import { ClipboardList, Users, ChevronRight } from "lucide-react";
+import { ClipboardList, Users, ChevronRight, ChevronDown } from "lucide-react";
 import type { RegistrationRow } from "./types";
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
@@ -16,10 +16,6 @@ interface Props {
   onSelectDeparture: (group: DepartureGroup) => void;
 }
 
-/**
- * Bir sefere (tour_date_id) ait yolcular + doluluk özeti.
- * RegistrationsByDeparture'dan DepartureDetailDialog'a geçen veri.
- */
 export interface DepartureGroup {
   dateId: string;
   tourId: string;
@@ -29,20 +25,30 @@ export interface DepartureGroup {
   departureDate: string;
   returnDate?: string | null;
   quota: number | null;
-  soldPax: number;        // status !== 'CANCELLED' olan kayıtların pax toplamı
+  soldPax: number;
   totalRegs: number;
   regs: RegistrationRow[];
 }
 
+type Bucket = "today" | "thisWeek" | "upcoming" | "later";
+interface BucketedGroup extends DepartureGroup {
+  days: number | null;
+  bucket: Bucket;
+}
+
 /**
- * Faz 1 (Kayıtlar 3/3): Sefer bazlı görünüm.
+ * Faz 2-C2 PARÇA 1 — Sefer Bazlı operasyon paneli.
  *
- * Client-side gruplama: tour_date_id → kayıtlar. Her sefer için doluluk
- * (sold_pax = SUM(pax) WHERE status != 'CANCELLED', remaining = quota - sold_pax).
- * quota null/eksikse doluluk gösterilmiyor — sadece kayıt sayısı.
+ * BİLGİ MİMARİSİ: Acentenin gerçek iş akışı → zamansal öncelik DOM'da fiziksel öncelik.
+ *   ① "Bugün" özet bandı (sticky-ish) — günün kritik bilgisi
+ *   ② Bu Hafta (0-7 gün) — operasyonel pencere
+ *   ③ Yaklaşan (7-30 gün) — planlama pencere
+ *   ④ İleride/Geçmiş (collapsible) — arşiv
  *
- * Sefere tıklanınca DepartureDetailDialog açılır (parent yönetir).
- * Faz 2'de bu dialog otobüs/oturma planı + manifesto çıktısıyla genişleyecek.
+ * Kart: "Ticket stub" — sol date-block, sağ içerik + mini doluluk dot strip.
+ * Hover: shadow grow + ChevronRight reveal. Stagger fade-up ilk yüklemede.
+ *
+ * RENK PALETİ: sıfır yeni hex. Mevcut primary/muted/destructive opaklıkları.
  */
 export const RegistrationsByDeparture = ({
   registrations,
@@ -51,10 +57,10 @@ export const RegistrationsByDeparture = ({
 }: Props) => {
   const { t, i18n } = useTranslation();
   const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
+  const [laterOpen, setLaterOpen] = useState(false);
 
   const groups = useMemo<DepartureGroup[]>(() => {
     const map = new Map<string, DepartureGroup>();
-
     for (const reg of registrations) {
       const dateId = reg.tour_date_id || reg.tour_dates?.id || `unknown-${reg.tour_id}`;
       if (!map.has(dateId)) {
@@ -74,19 +80,60 @@ export const RegistrationsByDeparture = ({
       }
       const g = map.get(dateId)!;
       g.totalRegs++;
-      // CANCELLED kayıtlar kontenjanı işgal etmez — atomic RPC ve tour-cache aynı kuralı uyguluyor
       if (reg.status !== "CANCELLED") g.soldPax += reg.pax;
       g.regs.push(reg);
     }
-
-    // Yakın tarihli sefer önce
     return Array.from(map.values()).sort((a, b) =>
       (a.departureDate || "").localeCompare(b.departureDate || "")
     );
   }, [registrations]);
 
-  if (loading) return <RegistrationsListSkeleton />;
+  const bucketed = useMemo<{ today: BucketedGroup[]; thisWeek: BucketedGroup[]; upcoming: BucketedGroup[]; later: BucketedGroup[] }>(() => {
+    const today = startOfToday();
+    const buckets = {
+      today: [] as BucketedGroup[],
+      thisWeek: [] as BucketedGroup[],
+      upcoming: [] as BucketedGroup[],
+      later: [] as BucketedGroup[],
+    };
+    for (const g of groups) {
+      const days = g.departureDate
+        ? differenceInCalendarDays(new Date(g.departureDate), today)
+        : null;
+      let bucket: Bucket;
+      if (days == null) bucket = "later";
+      else if (days < 0) bucket = "later";
+      else if (days === 0) bucket = "today";
+      else if (days <= 7) bucket = "thisWeek";
+      else if (days <= 30) bucket = "upcoming";
+      else bucket = "later";
+      buckets[bucket].push({ ...g, days, bucket });
+    }
+    // İleride/Geçmiş: önce gelecek (asc) sonra geçmiş (desc)
+    buckets.later.sort((a, b) => {
+      const aDays = a.days ?? -Infinity;
+      const bDays = b.days ?? -Infinity;
+      // Gelecek (≥0) önce, içinde küçük olan önce; geçmiş (<0) sonra, içinde büyük (yakın) olan önce
+      if (aDays >= 0 && bDays < 0) return -1;
+      if (aDays < 0 && bDays >= 0) return 1;
+      if (aDays >= 0 && bDays >= 0) return aDays - bDays;
+      return bDays - aDays;
+    });
+    return buckets;
+  }, [groups]);
 
+  // Bugün özet bandı sayıları
+  const todaySummary = useMemo(() => {
+    const list = bucketed.today;
+    const pax = list.reduce((s, g) => s + g.soldPax, 0);
+    const remaining = list.reduce(
+      (s, g) => s + (g.quota != null ? Math.max(0, g.quota - g.soldPax) : 0),
+      0
+    );
+    return { count: list.length, pax, remaining };
+  }, [bucketed.today]);
+
+  if (loading) return <RegistrationsListSkeleton />;
   if (groups.length === 0) {
     return (
       <EmptyState
@@ -98,119 +145,464 @@ export const RegistrationsByDeparture = ({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {groups.map((g) => {
-        const occupancyPct =
-          g.quota && g.quota > 0 ? Math.min(100, Math.round((g.soldPax / g.quota) * 100)) : null;
-        const isFull = g.quota != null && g.soldPax >= g.quota;
-        // Faz 2-C: sol kenar accent doluluk durumuna göre (RENK YOK, sadece mevcut palet opaklıkları).
-        const accentBorder =
-          g.quota == null
-            ? "border-l-muted-foreground/20"
-            : isFull
-            ? "border-l-destructive/80"
-            : occupancyPct! >= 80
-            ? "border-l-primary/80"
-            : g.soldPax > 0
-            ? "border-l-primary/40"
-            : "border-l-muted-foreground/20";
-        return (
-          <Card
-            key={g.dateId}
-            role="button"
-            tabIndex={0}
-            onClick={() => onSelectDeparture(g)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onSelectDeparture(g);
-              }
-            }}
-            className={`cursor-pointer border-l-4 ${accentBorder} hover:border-primary/40 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-[transform,box-shadow,border-color] duration-200`}
-          >
-            <CardContent className="p-5 space-y-4">
-              {/* Eyebrow: tarih + sağ üst full badge */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1 space-y-1">
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium tabular-nums">
-                    {g.departureDate
-                      ? format(new Date(g.departureDate), "d MMM yyyy", { locale: dateLocale })
-                      : "—"}
-                    {g.returnDate && (
-                      <span>
-                        {" → "}
-                        {format(new Date(g.returnDate), "d MMM yyyy", { locale: dateLocale })}
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-base font-semibold tracking-tight truncate">
-                    {g.tourTitle}
-                  </p>
-                  {g.tourDestination && (
-                    <p className="text-xs text-muted-foreground truncate">{g.tourDestination}</p>
-                  )}
-                </div>
-                <div className="flex items-start gap-2 shrink-0">
-                  {isFull && (
-                    <span className="inline-flex items-center text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/30">
-                      {t("admin.registrations.full", { defaultValue: "Kontenjan dolu" })}
-                    </span>
-                  )}
-                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                </div>
-              </div>
+    <div className="space-y-6">
+      {/* ① BUGÜN özet bandı */}
+      {bucketed.today.length > 0 && (
+        <TodayBanner
+          summary={todaySummary}
+          items={bucketed.today}
+          onSelect={onSelectDeparture}
+        />
+      )}
 
-              {g.quota != null ? (
-                <div className="space-y-2">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-                      <Users className="w-3 h-3" />
-                      {t("admin.registrations.occupancy", { defaultValue: "Doluluk" })}
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-mono tabular-nums font-bold leading-none">
-                        {g.soldPax}
-                      </span>
-                      <span className="text-base font-mono tabular-nums text-muted-foreground font-normal leading-none">
-                        /{g.quota}
-                      </span>
-                      <span className="text-[11px] font-mono tabular-nums text-muted-foreground ml-1.5">
-                        ({occupancyPct}%)
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${
-                        isFull
-                          ? "bg-destructive/80"
-                          : occupancyPct! >= 80
-                          ? "bg-primary/80"
-                          : "bg-primary/60"
-                      }`}
-                      style={{ width: `${occupancyPct ?? 0}%` }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-                      {t("admin.registrations.records", { defaultValue: "Kayıt" })}
-                    </span>
-                    <span className="text-2xl font-mono tabular-nums font-bold leading-none">
-                      {g.totalRegs}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/60 italic">
-                    {t("admin.registrations.noQuotaSet", { defaultValue: "Kontenjan ayarlı değil" })}
-                  </p>
-                </div>
+      {/* ② BU HAFTA */}
+      {bucketed.thisWeek.length > 0 && (
+        <Section
+          title={t("admin.registrations.timeBuckets.thisWeek", { defaultValue: "Bu Hafta" })}
+          items={bucketed.thisWeek}
+          onSelect={onSelectDeparture}
+          dateLocale={dateLocale}
+          t={t}
+        />
+      )}
+
+      {/* ③ YAKLAŞAN */}
+      {bucketed.upcoming.length > 0 && (
+        <Section
+          title={t("admin.registrations.timeBuckets.upcoming", { defaultValue: "Yaklaşan" })}
+          items={bucketed.upcoming}
+          onSelect={onSelectDeparture}
+          dateLocale={dateLocale}
+          t={t}
+        />
+      )}
+
+      {/* ④ İLERİDE / GEÇMİŞ (collapsible) */}
+      {bucketed.later.length > 0 && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setLaterOpen((x) => !x)}
+            className="group flex items-center gap-2 w-full text-left mb-3 py-1.5 hover:opacity-80 transition-opacity"
+          >
+            <ChevronDown
+              className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+                laterOpen ? "" : "-rotate-90"
+              }`}
+            />
+            <h2 className="text-base font-semibold tracking-tight">
+              {t("admin.registrations.timeBuckets.later", { defaultValue: "İleride / Geçmiş" })}
+            </h2>
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">
+              · {bucketed.later.length}{" "}
+              {t("admin.registrations.tripsShort", { defaultValue: "sefer" })}
+            </span>
+          </button>
+          {laterOpen && (
+            <Section
+              title=""
+              items={bucketed.later}
+              onSelect={onSelectDeparture}
+              dateLocale={dateLocale}
+              t={t}
+              hideHeader
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// ① BUGÜN özet bandı — yatay mini-kart şeridi + sticky özet
+// ════════════════════════════════════════════════════════════════════════════
+interface TodayBannerProps {
+  summary: { count: number; pax: number; remaining: number };
+  items: BucketedGroup[];
+  onSelect: (g: DepartureGroup) => void;
+}
+
+const TodayBanner = ({ summary, items, onSelect }: TodayBannerProps) => {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] via-card to-card p-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300"
+    >
+      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+        <div className="flex items-baseline gap-2">
+          <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] font-semibold text-primary">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            {t("admin.registrations.timeBuckets.today", { defaultValue: "Bugün" })}
+          </span>
+          <span className="text-xs text-muted-foreground font-mono tabular-nums">
+            ·{" "}
+            {format(new Date(), "d MMMM yyyy", {
+              locale:
+                DATE_LOCALE_MAP[useTranslation().i18n.language as keyof typeof DATE_LOCALE_MAP] || tr,
+            })}
+          </span>
+        </div>
+        <div className="flex items-center gap-4 text-xs">
+          <Stat label={t("admin.registrations.tripsShort", { defaultValue: "sefer" })} value={summary.count} />
+          <span className="text-muted-foreground/40">·</span>
+          <Stat label={t("common.people", { defaultValue: "kişi" })} value={summary.pax} />
+          <span className="text-muted-foreground/40">·</span>
+          <Stat
+            label={t("admin.registrations.remainingShort", { defaultValue: "kalan koltuk" })}
+            value={summary.remaining}
+            muted
+          />
+        </div>
+      </div>
+
+      {/* Yatay mini-kart şeridi */}
+      <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
+        {items.map((g, idx) => (
+          <TodayMiniCard
+            key={g.dateId}
+            group={g}
+            onClick={() => onSelect(g)}
+            delayMs={idx * 40}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const Stat = ({ label, value, muted = false }: { label: string; value: number; muted?: boolean }) => (
+  <span className="inline-flex items-baseline gap-1">
+    <span
+      className={`font-mono tabular-nums font-bold text-base ${
+        muted ? "text-muted-foreground" : "text-foreground"
+      }`}
+    >
+      {value}
+    </span>
+    <span className="text-muted-foreground text-xs">{label}</span>
+  </span>
+);
+
+const TodayMiniCard = ({
+  group,
+  onClick,
+  delayMs,
+}: {
+  group: BucketedGroup;
+  onClick: () => void;
+  delayMs: number;
+}) => {
+  const occupancyPct =
+    group.quota && group.quota > 0
+      ? Math.min(100, Math.round((group.soldPax / group.quota) * 100))
+      : null;
+  const isFull = group.quota != null && group.soldPax >= group.quota;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ animationDelay: `${delayMs}ms` }}
+      className="group shrink-0 snap-start w-[220px] text-left rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-[transform,box-shadow,border-color] duration-200 p-3 space-y-2 animate-in fade-in slide-in-from-bottom-1"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-semibold tracking-tight truncate flex-1">
+          {group.tourTitle}
+        </p>
+        {isFull && (
+          <span className="inline-flex items-center text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-destructive/10 text-destructive">
+            FULL
+          </span>
+        )}
+      </div>
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline gap-0.5">
+          <span className="text-xl font-mono tabular-nums font-bold leading-none">
+            {group.soldPax}
+          </span>
+          {group.quota != null && (
+            <span className="text-sm font-mono tabular-nums text-muted-foreground leading-none">
+              /{group.quota}
+            </span>
+          )}
+        </div>
+        {occupancyPct != null && (
+          <span className="text-[10px] font-mono tabular-nums text-muted-foreground">
+            %{occupancyPct}
+          </span>
+        )}
+      </div>
+      {group.quota != null && (
+        <div className="h-1 rounded-full bg-muted overflow-hidden">
+          <div
+            className={`h-full transition-all duration-500 ${
+              isFull ? "bg-destructive/80" : occupancyPct! >= 80 ? "bg-primary/80" : "bg-primary/60"
+            }`}
+            style={{ width: `${occupancyPct ?? 0}%` }}
+          />
+        </div>
+      )}
+    </button>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// SECTION — başlık + ticket-stub kartlar
+// ════════════════════════════════════════════════════════════════════════════
+interface SectionProps {
+  title: string;
+  items: BucketedGroup[];
+  onSelect: (g: DepartureGroup) => void;
+  dateLocale: typeof tr;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  hideHeader?: boolean;
+}
+
+const Section = ({ title, items, onSelect, dateLocale, t, hideHeader }: SectionProps) => {
+  const stats = useMemo(() => {
+    let full = 0;
+    let available = 0;
+    for (const g of items) {
+      if (g.quota != null) {
+        if (g.soldPax >= g.quota) full++;
+        else available++;
+      }
+    }
+    return { full, available };
+  }, [items]);
+
+  return (
+    <section>
+      {!hideHeader && (
+        <div className="flex items-baseline justify-between gap-3 mb-3 pb-2 border-b border-border/40">
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">
+              · {items.length} {t("admin.registrations.tripsShort", { defaultValue: "sefer" })}
+            </span>
+          </div>
+          {(stats.full > 0 || stats.available > 0) && (
+            <div className="flex items-center gap-2 text-[11px]">
+              {stats.full > 0 && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-destructive/10 text-destructive font-medium uppercase tracking-wider">
+                  <span className="font-mono tabular-nums">{stats.full}</span>{" "}
+                  {t("admin.registrations.countFull", { defaultValue: "dolu" })}
+                </span>
               )}
-            </CardContent>
-          </Card>
-        );
-      })}
+              {stats.available > 0 && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium uppercase tracking-wider">
+                  <span className="font-mono tabular-nums">{stats.available}</span>{" "}
+                  {t("admin.registrations.countAvailable", { defaultValue: "müsait" })}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((g, idx) => (
+          <TicketStubCard
+            key={g.dateId}
+            group={g}
+            onClick={() => onSelect(g)}
+            dateLocale={dateLocale}
+            t={t}
+            delayMs={idx * 30}
+          />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// TICKET-STUB SEFER KARTI
+// ════════════════════════════════════════════════════════════════════════════
+interface TicketStubCardProps {
+  group: BucketedGroup;
+  onClick: () => void;
+  dateLocale: typeof tr;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  delayMs: number;
+}
+
+const TicketStubCard = ({ group, onClick, dateLocale, t, delayMs }: TicketStubCardProps) => {
+  const occupancyPct =
+    group.quota && group.quota > 0
+      ? Math.min(100, Math.round((group.soldPax / group.quota) * 100))
+      : null;
+  const isFull = group.quota != null && group.soldPax >= group.quota;
+  const isPast = group.days != null && group.days < 0;
+
+  // Durum rozeti
+  let statusBadge: { label: string; cls: string } | null = null;
+  if (isFull) {
+    statusBadge = {
+      label: t("admin.registrations.full", { defaultValue: "Dolu" }),
+      cls: "bg-destructive/10 text-destructive border-destructive/30",
+    };
+  } else if (group.days === 0) {
+    statusBadge = {
+      label: t("admin.registrations.badgeToday", { defaultValue: "Bugün" }),
+      cls: "bg-primary/15 text-primary border-primary/30",
+    };
+  } else if (group.days === 1) {
+    statusBadge = {
+      label: t("admin.registrations.badgeTomorrow", { defaultValue: "Yarın" }),
+      cls: "bg-primary/10 text-primary border-primary/20",
+    };
+  }
+
+  // Date block — büyük gün + ay
+  const dateParts = group.departureDate
+    ? {
+        day: format(new Date(group.departureDate), "d", { locale: dateLocale }),
+        month: format(new Date(group.departureDate), "MMM", { locale: dateLocale }),
+        weekday: format(new Date(group.departureDate), "EEE", { locale: dateLocale }),
+      }
+    : { day: "—", month: "", weekday: "" };
+
+  return (
+    <Card
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      style={{ animationDelay: `${delayMs}ms` }}
+      className={`group cursor-pointer overflow-hidden hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.995] transition-[transform,box-shadow,border-color] duration-200 animate-in fade-in slide-in-from-bottom-2 ${
+        isPast ? "opacity-60" : ""
+      }`}
+    >
+      <div className="flex">
+        {/* SOL: Date block — "ticket koçanı" */}
+        <div className="shrink-0 w-[72px] bg-muted/30 border-r border-dashed border-border/60 flex flex-col items-center justify-center py-4 px-2 group-hover:translate-x-0.5 transition-transform duration-200">
+          <span className="text-3xl font-bold tabular-nums leading-none tracking-tighter">
+            {dateParts.day}
+          </span>
+          <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground mt-1.5">
+            {dateParts.month}
+          </span>
+          <span className="text-[10px] text-muted-foreground/70 capitalize mt-0.5">
+            {dateParts.weekday}
+          </span>
+          {group.returnDate && (
+            <span className="text-[9px] text-muted-foreground/60 mt-2 font-mono tabular-nums">
+              →{" "}
+              {format(new Date(group.returnDate), "d MMM", { locale: dateLocale })}
+            </span>
+          )}
+        </div>
+
+        {/* SAĞ: İçerik */}
+        <CardContent className="flex-1 min-w-0 p-4 flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-2 min-w-0">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold tracking-tight truncate">
+                {group.tourTitle}
+              </p>
+              {group.tourDestination && (
+                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                  {group.tourDestination}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {statusBadge && (
+                <span
+                  className={`inline-flex items-center text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${statusBadge.cls}`}
+                >
+                  {statusBadge.label}
+                </span>
+              )}
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+            </div>
+          </div>
+
+          {/* Doluluk */}
+          {group.quota != null ? (
+            <div className="space-y-1.5">
+              <div className="flex items-baseline justify-between gap-2">
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-2xl font-mono tabular-nums font-bold leading-none">
+                    {group.soldPax}
+                  </span>
+                  <span className="text-sm font-mono tabular-nums text-muted-foreground leading-none">
+                    /{group.quota}
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono tabular-nums text-muted-foreground uppercase tracking-wider">
+                  %{occupancyPct}
+                </span>
+              </div>
+              <div className="h-1 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    isFull
+                      ? "bg-destructive/80"
+                      : occupancyPct! >= 80
+                      ? "bg-primary/80"
+                      : "bg-primary/60"
+                  }`}
+                  style={{ width: `${occupancyPct ?? 0}%` }}
+                />
+              </div>
+              {/* Mini koltuk yoğunluk strip'i — 20 nokta yatay */}
+              <DotStrip filled={occupancyPct ?? 0} isFull={isFull} />
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-mono tabular-nums font-bold leading-none">
+                  {group.totalRegs}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {t("admin.registrations.records", { defaultValue: "Kayıt" })}
+                </span>
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 italic">
+                {t("admin.registrations.noQuotaSet", { defaultValue: "Kontenjan ayarlı değil" })}
+              </p>
+            </div>
+          )}
+
+          {/* Yardımcı meta — kalan koltuk veya gün-uzaklığı */}
+          {group.quota != null && !isFull && !isPast && (
+            <p className="text-[10px] text-muted-foreground/70 mt-auto">
+              {t("admin.registrations.remainingSeats", {
+                count: Math.max(0, group.quota - group.soldPax),
+                defaultValue: `${Math.max(0, group.quota - group.soldPax)} koltuk boş`,
+              })}
+            </p>
+          )}
+        </CardContent>
+      </div>
+    </Card>
+  );
+};
+
+// Mini nokta strip'i — 20 nokta yatay, doluluk yüzdesine göre filled
+const DotStrip = ({ filled, isFull }: { filled: number; isFull: boolean }) => {
+  const totalDots = 20;
+  const filledDots = Math.round((filled / 100) * totalDots);
+  return (
+    <div className="flex gap-[3px] mt-1" aria-hidden="true">
+      {Array.from({ length: totalDots }).map((_, i) => (
+        <div
+          key={i}
+          className={`flex-1 h-1 rounded-[1px] transition-colors ${
+            i < filledDots
+              ? isFull
+                ? "bg-destructive/70"
+                : "bg-primary/70"
+              : "bg-muted-foreground/15"
+          }`}
+        />
+      ))}
     </div>
   );
 };

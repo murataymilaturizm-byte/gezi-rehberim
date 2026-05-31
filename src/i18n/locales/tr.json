@@ -1488,7 +1488,30 @@
       "statusUpdatedNoMsg": "Kayıt durumu güncellendi (mesaj gönderilemedi)",
       "statusUpdateWarning": "Durum güncellendi ama WhatsApp mesajı gönderilemedi",
       "statusUpdateError": "Durum güncellenemedi",
-      "editPassengers": "Yolcuları Düzenle"
+      "editPassengers": "Yolcuları Düzenle",
+      "timeBuckets": {
+        "today": "Bugün",
+        "thisWeek": "Bu Hafta",
+        "upcoming": "Yaklaşan",
+        "later": "İleride / Geçmiş"
+      },
+      "tripsShort": "sefer",
+      "countAvailable": "müsait",
+      "countFull": "dolu",
+      "badgeToday": "Bugün",
+      "badgeTomorrow": "Yarın",
+      "remainingShort": "kalan koltuk",
+      "remainingSeats": "{{count}} koltuk boş",
+      "passengersHeader": "Yolcular",
+      "statusPanel": "Durum",
+      "shortcutsPanel": "Kısa Yol",
+      "teamPanel": "Ekip",
+      "paymentSummary": {
+        "title": "Ödeme Özeti",
+        "total": "Toplam",
+        "paid": "Ödenmiş",
+        "remaining": "Kalan"
+      }
     },
     "status": {
       "new": "Yeni",
