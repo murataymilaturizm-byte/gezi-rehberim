@@ -1157,7 +1157,14 @@
         "total": "Total",
         "paid": "Paid",
         "remaining": "Remaining"
-      }
+      },
+      "timeline": "Trip Timeline",
+      "avgOccupancy": "avg. full",
+      "searchPlaceholder": "Search name, phone or tour…",
+      "clearSearch": "Clear search",
+      "match": "matches",
+      "noSearchResults": "No matches found",
+      "noSearchResultsDesc": "Try a different keyword or clear the search."
     },
     "status": {
       "new": "New",
@@ -1851,7 +1858,9 @@
       "tourLeaderName": "Tour Leader",
       "captainName": "Captain",
       "doorRowHelp": "Enter after which row the door is located",
-      "middleDoor": "Middle Door"
+      "middleDoor": "Middle Door",
+      "edit": "Edit",
+      "assignHint": "Click an empty seat to assign a passenger"
     }
   },
   "auth": {

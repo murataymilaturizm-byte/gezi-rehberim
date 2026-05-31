@@ -1194,7 +1194,14 @@
         "total": "Total",
         "paid": "Pagado",
         "remaining": "Saldo"
-      }
+      },
+      "timeline": "Línea de tiempo del viaje",
+      "avgOccupancy": "ocup. media",
+      "searchPlaceholder": "Buscar nombre, teléfono o tour…",
+      "clearSearch": "Limpiar búsqueda",
+      "match": "coincidencias",
+      "noSearchResults": "Sin coincidencias",
+      "noSearchResultsDesc": "Pruebe otra palabra o limpie la búsqueda."
     },
     "status": {
       "new": "Nuevo",
@@ -1885,7 +1892,9 @@
       "tourLeaderName": "Líder del tour",
       "captainName": "Conductor",
       "doorRowHelp": "Indique después de qué fila se ubica la puerta",
-      "middleDoor": "Puerta central"
+      "middleDoor": "Puerta central",
+      "edit": "Editar",
+      "assignHint": "Haga clic en un asiento vacío para asignar un pasajero"
     }
   },
   "auth": {

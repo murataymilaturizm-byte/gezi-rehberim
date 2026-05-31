@@ -1160,7 +1160,14 @@
         "total": "الإجمالي",
         "paid": "المدفوع",
         "remaining": "المتبقي"
-      }
+      },
+      "timeline": "الجدول الزمني للرحلات",
+      "avgOccupancy": "متوسط الإشغال",
+      "searchPlaceholder": "ابحث بالاسم أو الهاتف أو الجولة…",
+      "clearSearch": "مسح البحث",
+      "match": "نتيجة",
+      "noSearchResults": "لا توجد نتائج",
+      "noSearchResultsDesc": "جرب كلمة أخرى أو امسح البحث."
     },
     "status": {
       "new": "جديد",
@@ -1851,7 +1858,9 @@
       "tourLeaderName": "قائد الجولة",
       "captainName": "السائق",
       "doorRowHelp": "أدخل بعد أي صف يقع الباب",
-      "middleDoor": "الباب الأوسط"
+      "middleDoor": "الباب الأوسط",
+      "edit": "تعديل",
+      "assignHint": "انقر على مقعد فارغ لتعيين مسافر"
     }
   },
   "auth": {

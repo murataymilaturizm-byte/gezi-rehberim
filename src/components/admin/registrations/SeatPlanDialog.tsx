@@ -678,31 +678,64 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                 </Button>
               </div>
             ) : (
-              <div className="space-y-6">
-                {/* Üst toolbar — Otomatik Ata + PDF + Ayarlar */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
-                  <div className="text-sm">
-                    <span className="font-mono font-semibold">
-                      {assignedCount}/{totalSeats}
-                    </span>{" "}
-                    <span className="text-muted-foreground">
-                      {t("admin.seatPlan.assigned", { defaultValue: "atandı" })}
+              <div className="space-y-4">
+                {/* P2: Settings COLLAPSED bar — tek satır özet + Düzenle */}
+                <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border/60 bg-muted/20 flex-wrap">
+                  <div className="flex items-center gap-2 text-xs flex-wrap min-w-0">
+                    <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                      <Settings className="w-3 h-3 text-muted-foreground" />
+                      {t("admin.seatPlan.transportTypes.BUS", { defaultValue: "Otobüs" })}
                     </span>
-                    {" · "}
-                    <span className="text-muted-foreground">
-                      {seatLayout} · {totalSeats}{" "}
-                      {t("admin.seatPlan.seats", { defaultValue: "koltuk" })}
+                    <span className="text-muted-foreground/60">·</span>
+                    <span className="font-mono tabular-nums">{seatLayout}</span>
+                    <span className="text-muted-foreground/60">·</span>
+                    <span>
+                      <span className="font-mono tabular-nums font-semibold">{totalSeats}</span>{" "}
+                      <span className="text-muted-foreground">
+                        {t("admin.seatPlan.seats", { defaultValue: "koltuk" })}
+                      </span>
+                    </span>
+                    {doorRowNum != null && (
+                      <>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-muted-foreground">
+                          {t("admin.seatPlan.middleDoor", { defaultValue: "Orta Kapı" })}
+                        </span>{" "}
+                        <span className="font-mono tabular-nums font-semibold">{doorRowNum}</span>
+                      </>
+                    )}
+                    {vehiclePlate && (
+                      <>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="font-mono tabular-nums">{vehiclePlate}</span>
+                      </>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSettingsOpen(true)}
+                    className="h-7 px-2 text-xs"
+                  >
+                    <Settings className="w-3.5 h-3.5 mr-1" />
+                    {t("admin.seatPlan.edit", { defaultValue: "Düzenle" })}
+                  </Button>
+                </div>
+
+                {/* Toolbar — Doluluk özet + Otomatik Ata + PDF (kompakt) */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm flex items-baseline gap-1">
+                    <span className="text-2xl font-mono tabular-nums font-bold leading-none">
+                      {assignedCount}
+                    </span>
+                    <span className="text-base font-mono tabular-nums text-muted-foreground leading-none">
+                      /{totalSeats}
+                    </span>
+                    <span className="ml-2 text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                      {t("admin.seatPlan.assigned", { defaultValue: "atandı" })}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSettingsOpen(true)}
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      {t("admin.seatPlan.settings", { defaultValue: "Sefer Ayarları" })}
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -732,8 +765,11 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                   </div>
                 </div>
 
-                {/* Faz 2-C: Otobüs Şeması — "araç çerçevesi" pattern + koridor dashed */}
-                <div className="space-y-3">
+                {/* P2: İki-kolon yapı — sol grid, sağ sticky atanmamış panel */}
+                <div className="flex flex-col md:flex-row gap-4">
+
+                {/* SOL — Otobüs şeması (geniş alan) */}
+                <div className="flex-1 min-w-0 space-y-3">
                   <div className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium text-center mb-1">
                     {seatLayout === "2+2"
                       ? `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })} · 2+2`
@@ -813,42 +849,47 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                   </div>
                 </div>
 
-                {/* Atanmamış Yolcular */}
-                <div className="space-y-2 border-t border-border/60 pt-4">
-                  <h3 className="font-semibold text-sm">
-                    {t("admin.seatPlan.unassigned", {
-                      defaultValue: "Atanmamış Yolcular",
-                    })}{" "}
-                    <span className="font-mono font-normal text-muted-foreground">
-                      ({unassignedPassengers.length})
-                    </span>
-                  </h3>
-                  {unassignedPassengers.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">
-                      {t("admin.seatPlan.allAssigned", {
-                        defaultValue: "Tüm yolcular atandı",
-                      })}
-                    </p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {unassignedPassengers.map((p) => (
-                        <span
-                          key={p.id}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs hover:bg-accent/40 hover:border-primary/30 transition-colors cursor-default"
-                        >
-                          <span className="font-mono tabular-nums text-muted-foreground">
-                            #{p.passenger_order}
-                          </span>
-                          {p.full_name}
-                          {p.is_child && (
-                            <span className="text-[10px] bg-orange-500/20 text-orange-700 dark:text-orange-300 rounded px-1">
-                              {t("admin.passengers.isChild", { defaultValue: "Çocuk" })}
+                {/* SAĞ — Sticky atanmamış yolcular paneli */}
+                <aside className="md:w-[220px] shrink-0 md:sticky md:top-0 md:self-start">
+                  <div className="rounded-lg border border-border/60 bg-card p-3 space-y-2">
+                    <h3 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold flex items-center justify-between">
+                      <span>
+                        {t("admin.seatPlan.unassigned", { defaultValue: "Atanmamış Yolcular" })}
+                      </span>
+                      <span className="font-mono tabular-nums text-foreground font-bold">
+                        {unassignedPassengers.length}
+                      </span>
+                    </h3>
+                    {unassignedPassengers.length === 0 ? (
+                      <p className="text-xs text-muted-foreground py-2">
+                        {t("admin.seatPlan.allAssigned", { defaultValue: "Tüm yolcular atandı" })}
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-1.5 max-h-[300px] md:max-h-[400px] overflow-y-auto -mx-1 px-1">
+                        {unassignedPassengers.map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-2.5 py-1.5 text-xs hover:bg-accent/40 hover:border-primary/30 transition-colors cursor-grab active:cursor-grabbing"
+                            title={t("admin.seatPlan.assignHint", {
+                              defaultValue:
+                                "Atamak için bir koltuk seçin (boş koltuğa tıkla → yolcuyu listeden seç)",
+                            })}
+                          >
+                            <span className="shrink-0 font-mono tabular-nums text-muted-foreground/70 text-[10px]">
+                              #{p.passenger_order}
                             </span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                            <span className="flex-1 truncate">{p.full_name}</span>
+                            {p.is_child && (
+                              <span className="shrink-0 text-[9px] bg-orange-500/15 text-orange-700 dark:text-orange-400 rounded px-1 font-medium">
+                                {t("admin.passengers.isChild", { defaultValue: "Çocuk" })}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </aside>
                 </div>
               </div>
             )}

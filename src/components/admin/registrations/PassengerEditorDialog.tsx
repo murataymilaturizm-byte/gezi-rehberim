@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Loader2, UserPlus, Save } from "lucide-react";
+import { Trash2, Loader2, UserPlus, Save, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -88,6 +88,9 @@ export const PassengerEditorDialog = ({
   const [saving, setSaving] = useState(false);
   const [mutating, setMutating] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<PassengerRow | null>(null);
+  // Tasarım Turu 2 P2: kompakt+expand — aynı anda 1 yolcu açık (tek odak).
+  // İlk yolcu varsayılan açık; ekleme yapınca yeni yolcu otomatik açılır.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || !registrationId) return;
@@ -109,7 +112,10 @@ export const PassengerEditorDialog = ({
         });
         setPassengers([]);
       } else {
-        setPassengers((data as unknown as PassengerRow[]) || []);
+        const list = (data as unknown as PassengerRow[]) || [];
+        setPassengers(list);
+        // İlk yolcuyu otomatik aç (tek odak pattern)
+        setExpandedId(list[0]?.id ?? null);
       }
       setLoading(false);
     })();
@@ -164,7 +170,9 @@ export const PassengerEditorDialog = ({
         .eq("id", registrationId);
       if (paxErr) throw paxErr;
 
-      setPassengers((prev) => [...prev, newPassenger as unknown as PassengerRow]);
+      const newRow = newPassenger as unknown as PassengerRow;
+      setPassengers((prev) => [...prev, newRow]);
+      setExpandedId(newRow.id); // Yeni yolcu otomatik açılır (form girilebilir)
       onPaxChange?.(newPax);
       toast({
         title: t("admin.passengers.added", { defaultValue: "Yolcu eklendi" }),
@@ -311,20 +319,63 @@ export const PassengerEditorDialog = ({
             </div>
           ) : (
             <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
-              <div className="space-y-3">
-                {passengers.map((p) => (
+              {/* Tasarım Turu 2 P2: kompakt+expand pattern — aynı anda 1 yolcu açık.
+                  Kapalı satır: yolcu no + isim + kimlik özet + ▼.
+                  Açık satır: tam form (5 alan). */}
+              <div className="space-y-2">
+                {passengers.map((p) => {
+                  const isExpanded = expandedId === p.id;
+                  const isPlaceholderName =
+                    !!p.full_name && p.full_name.startsWith(PLACEHOLDER_PREFIX);
+                  return (
                   <div
                     key={p.id}
-                    className="border border-border/60 rounded-lg p-4 space-y-3 bg-card"
+                    className="border border-border/60 rounded-lg bg-card overflow-hidden transition-colors"
                   >
-                    <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
-                      <span className="text-[11px] font-mono tabular-nums uppercase tracking-wider text-muted-foreground/70 font-medium">
-                        #{p.passenger_order}
+                    {/* Kompakt satır — her zaman görünür, tıklanınca aç/kapa */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedId(isExpanded ? null : p.id)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-accent/20 transition-colors"
+                      aria-expanded={isExpanded}
+                    >
+                      <span className="shrink-0 inline-grid place-content-center w-7 h-7 rounded-full bg-muted/60 text-foreground text-xs font-mono tabular-nums font-semibold">
+                        {p.passenger_order}
                       </span>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-sm font-medium truncate ${
+                            isPlaceholderName ? "text-muted-foreground italic" : ""
+                          }`}
+                        >
+                          {p.full_name}
+                        </p>
+                        {(p.identity_no || p.passport_no || p.is_child) && (
+                          <p className="text-[11px] text-muted-foreground truncate font-mono tabular-nums">
+                            {p.identity_no || p.passport_no || ""}
+                            {p.is_child && (
+                              <span className="ml-2 inline-flex items-center text-[9px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30">
+                                {t("admin.passengers.isChild", { defaultValue: "Çocuk" })}
+                              </span>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                      <ChevronDown
+                        className={`w-4 h-4 text-muted-foreground/70 shrink-0 transition-transform duration-200 ${
+                          isExpanded ? "" : "-rotate-90"
+                        }`}
+                      />
+                    </button>
+
+                    {/* Genişletilmiş form — sadece isExpanded */}
+                    {isExpanded && (
+                    <div className="border-t border-border/40 px-4 pt-4 pb-4 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="flex items-center justify-end">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleRemoveClick(p)}
                         disabled={mutating || passengers.length <= 1}
                       >
@@ -394,8 +445,11 @@ export const PassengerEditorDialog = ({
                         </Label>
                       </div>
                     </div>
+                    </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

@@ -1,7 +1,9 @@
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/EmptyState";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Search, X } from "lucide-react";
 import { RegistrationsListSkeleton } from "./skeletons/RegistrationsListSkeleton";
 import {
   Table,
@@ -12,19 +14,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { format } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 import { formatPrice } from "@/utils/currency";
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
-import { useToast } from "@/hooks/use-toast";
 import { Eye, MessageCircle } from "lucide-react";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
@@ -69,32 +63,43 @@ interface RegistrationsListProps {
 export const RegistrationsList = ({
   registrations,
   loading,
-  onStatusChange,
   onViewDetail
 }: RegistrationsListProps) => {
   const { t, i18n } = useTranslation();
-  const { toast } = useToast();
   const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
 
-  const statusLabels: Record<string, string> = {
-    NEW: t("admin.status.new"),
-    PENDING: t("admin.status.pending"),
-    CONFIRMED: t("admin.status.confirmed"),
-    CANCELLED: t("admin.status.cancelled")
-  };
-
-  const sourceChannelLabels: Record<string, string> = {
-    WHATSAPP: t("admin.sourceChannel.WHATSAPP"),
-    PHONE: t("admin.sourceChannel.PHONE"),
-    OFFICE: t("admin.sourceChannel.OFFICE"),
-    INSTAGRAM: t("admin.sourceChannel.INSTAGRAM"),
-    OTHER: t("admin.sourceChannel.OTHER")
-  };
+  // Tasarım Turu 2 P2: client-side search (isim/telefon/tur). Mevcut veri üzerinde
+  // çalışır — yeni query/RPC YOK. Parent'tan gelen `registrations` zaten filter
+  // panelinden geçmiş; search bu sonucun üstüne ek filtre.
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return registrations;
+    return registrations.filter((r) => {
+      const tour = (r.tours?.title || "").toLowerCase();
+      const dest = (r.tours?.destination || "").toLowerCase();
+      const name = (r.full_name || "").toLowerCase();
+      const phone = (r.phone || "").toLowerCase();
+      return (
+        name.includes(q) ||
+        phone.includes(q) ||
+        tour.includes(q) ||
+        dest.includes(q)
+      );
+    });
+  }, [registrations, search]);
 
   const paymentStatusLabels: Record<string, string> = {
     UNPAID: t("admin.paymentStatusLabels.UNPAID"),
     DEPOSIT: t("admin.paymentStatusLabels.DEPOSIT"),
     PAID: t("admin.paymentStatusLabels.PAID")
+  };
+
+  // Payment durumu için küçük renkli daire indicator (mevcut palet, opaklık)
+  const paymentDot = (s?: string) => {
+    if (s === "PAID") return "bg-primary";
+    if (s === "DEPOSIT") return "bg-primary/40";
+    return "bg-muted-foreground/30";
   };
 
   if (loading) {
@@ -113,9 +118,51 @@ export const RegistrationsList = ({
 
   return (
     <>
-      {/* Faz 2-C Mobile (md altı): kart layout — telefondan operasyon-dostu, p-4 + üst başlık + sağ badge */}
+      {/* Tasarım Turu 2 P2: Search bar — isim/telefon/tur/destinasyon içinde ara */}
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none" />
+          <Input
+            type="search"
+            placeholder={t("admin.registrations.searchPlaceholder", {
+              defaultValue: "İsim, telefon veya tur ara…",
+            })}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted/60 transition-colors"
+              aria-label={t("admin.registrations.clearSearch", { defaultValue: "Aramayı temizle" })}
+            >
+              <X className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+        {search && (
+          <span className="text-xs text-muted-foreground font-mono tabular-nums">
+            {filtered.length}/{registrations.length}{" "}
+            {t("admin.registrations.match", { defaultValue: "eşleşme" })}
+          </span>
+        )}
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={Search}
+          title={t("admin.registrations.noSearchResults", { defaultValue: "Eşleşme bulunamadı" })}
+          description={t("admin.registrations.noSearchResultsDesc", {
+            defaultValue: "Farklı bir kelime deneyin veya aramayı temizleyin.",
+          })}
+        />
+      ) : (
+      <>
+      {/* Faz 2-C Mobile (md altı): kart layout */}
       <div className="md:hidden space-y-3">
-        {registrations.map((reg) => {
+        {filtered.map((reg) => {
           const unitPrice = reg.tour_dates?.price_adult || 0;
           const totalPrice = unitPrice * reg.pax;
           const waUrl = buildWhatsAppUrl(reg.phone);
@@ -209,13 +256,17 @@ export const RegistrationsList = ({
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-border/50">
-            {registrations.map((reg) => {
+          <TableBody>
+            {filtered.map((reg, rowIdx) => {
               const unitPrice = reg.tour_dates?.price_adult || 0;
               const totalPrice = unitPrice * reg.pax;
               const waUrl = buildWhatsAppUrl(reg.phone);
+              const zebra = rowIdx % 2 === 1 ? "bg-muted/10" : "";
               return (
-                <TableRow key={reg.id} className="h-14 hover:bg-accent/30 transition-colors border-b-0">
+                <TableRow
+                  key={reg.id}
+                  className={`group h-14 hover:bg-accent/30 transition-colors border-b border-border/40 ${zebra}`}
+                >
                   <TableCell className="font-medium">{reg.full_name}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
@@ -234,12 +285,15 @@ export const RegistrationsList = ({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={reg.payment_status === 'PAID' ? 'default' : reg.payment_status === 'DEPOSIT' ? 'secondary' : 'outline'}
-                      className="text-xs font-medium"
-                    >
-                      {paymentStatusLabels[reg.payment_status || 'UNPAID']}
-                    </Badge>
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        className={`w-2 h-2 rounded-full ${paymentDot(reg.payment_status)}`}
+                        aria-hidden="true"
+                      />
+                      <span className="text-xs">
+                        {paymentStatusLabels[reg.payment_status || 'UNPAID']}
+                      </span>
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
                     {totalPrice > 0 ? (
@@ -262,7 +316,8 @@ export const RegistrationsList = ({
                     ) : <span className="text-muted-foreground">-</span>}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center justify-end gap-1.5">
+                    {/* P2: Slide-in actions — hover'da soldan kayarak görünür */}
+                    <div className="flex items-center justify-end gap-1.5 opacity-60 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200">
                       <Button
                         variant="outline"
                         size="sm"
@@ -297,6 +352,8 @@ export const RegistrationsList = ({
           </TableBody>
         </Table>
       </div>
+      </>
+      )}
     </>
   );
 };

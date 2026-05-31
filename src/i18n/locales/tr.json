@@ -1512,7 +1512,14 @@
         "total": "Toplam",
         "paid": "Ödenmiş",
         "remaining": "Kalan"
-      }
+      },
+      "timeline": "Sefer Zaman Çizelgesi",
+      "avgOccupancy": "ort. dolu",
+      "searchPlaceholder": "İsim, telefon veya tur ara…",
+      "clearSearch": "Aramayı temizle",
+      "match": "eşleşme",
+      "noSearchResults": "Eşleşme bulunamadı",
+      "noSearchResultsDesc": "Farklı bir kelime deneyin veya aramayı temizleyin."
     },
     "status": {
       "new": "Yeni",
@@ -1917,7 +1924,9 @@
       "tourLeaderName": "Tur Lideri",
       "captainName": "Kaptan",
       "doorRowHelp": "Kapının hangi sıradan sonra olduğunu girin",
-      "middleDoor": "Orta Kapı"
+      "middleDoor": "Orta Kapı",
+      "edit": "Düzenle",
+      "assignHint": "Atamak için bir koltuk seçin (boş koltuğa tıkla → yolcuyu listeden seç)"
     }
   },
   "auth": {

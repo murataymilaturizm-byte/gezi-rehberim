@@ -1160,7 +1160,14 @@
         "total": "Gesamt",
         "paid": "Bezahlt",
         "remaining": "Restbetrag"
-      }
+      },
+      "timeline": "Reisezeitplan",
+      "avgOccupancy": "Ø voll",
+      "searchPlaceholder": "Name, Telefon oder Tour suchen…",
+      "clearSearch": "Suche löschen",
+      "match": "Treffer",
+      "noSearchResults": "Keine Treffer gefunden",
+      "noSearchResultsDesc": "Versuchen Sie ein anderes Wort oder löschen Sie die Suche."
     },
     "status": {
       "new": "Neu",
@@ -1851,7 +1858,9 @@
       "tourLeaderName": "Reiseleiter",
       "captainName": "Fahrer",
       "doorRowHelp": "Geben Sie an, nach welcher Reihe die Tür sich befindet",
-      "middleDoor": "Mittlere Tür"
+      "middleDoor": "Mittlere Tür",
+      "edit": "Bearbeiten",
+      "assignHint": "Klicken Sie auf einen leeren Sitz, um einen Passagier zuzuweisen"
     }
   },
   "auth": {

@@ -1160,7 +1160,14 @@
         "total": "Total",
         "paid": "Payé",
         "remaining": "Solde"
-      }
+      },
+      "timeline": "Chronologie des voyages",
+      "avgOccupancy": "rempl. moy.",
+      "searchPlaceholder": "Rechercher nom, téléphone ou circuit…",
+      "clearSearch": "Effacer la recherche",
+      "match": "résultats",
+      "noSearchResults": "Aucun résultat",
+      "noSearchResultsDesc": "Essayez un autre mot ou effacez la recherche."
     },
     "status": {
       "new": "Nouveau",
@@ -1851,7 +1858,9 @@
       "tourLeaderName": "Chef de groupe",
       "captainName": "Chauffeur",
       "doorRowHelp": "Indiquez après quelle rangée se trouve la porte",
-      "middleDoor": "Porte centrale"
+      "middleDoor": "Porte centrale",
+      "edit": "Modifier",
+      "assignHint": "Cliquez sur un siège vide pour attribuer un passager"
     }
   },
   "auth": {
