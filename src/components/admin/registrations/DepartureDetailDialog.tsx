@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, FileSpreadsheet, FileText, Users, UsersRound, Loader2, Armchair, UserCheck } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
+import { calculateTotal } from "@/lib/finance";
 import type { DepartureGroup } from "./RegistrationsByDeparture";
 import type { RegistrationRow } from "./types";
 import { PassengerEditorDialog } from "./PassengerEditorDialog";
@@ -174,7 +175,16 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
       .single();
     const activeRegs = group.regs.filter((r) => r.status !== "CANCELLED");
     const meta: ManifestRegistrationMeta[] = activeRegs.map((r) => {
-      const total = Number(r.total_amount ?? 0);
+      // BUG FIX (PDF ilk grup bakiye boş): Eski/manuel rezervasyonlarda
+      // `registrations.total_amount` snapshot kolonu NULL/0 olabilir (migration
+      // backfill öncesi kayıtlar). DB snapshot yoksa LIVE `price_adult × pax`
+      // ile düş — RegistrationDetailDialog (line 159-161) pattern'i ile aynı.
+      // Sonuç: bakiye satırı eski rezervasyonlarda da görüntülenir; DB değişmez,
+      // sadece UI fallback hesabı.
+      const dbTotal = Number(r.total_amount ?? 0);
+      const total = dbTotal > 0
+        ? dbTotal
+        : calculateTotal(r.pax, r.tour_dates?.price_adult);
       const paid = Number(r.paid_amount ?? 0);
       return {
         registration_id: r.id,
