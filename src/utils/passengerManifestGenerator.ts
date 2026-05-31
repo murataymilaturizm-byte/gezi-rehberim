@@ -1,5 +1,15 @@
 // Faz 2-A: Yolcu Listesi (Manifesto) — PDF çıktısı (jsPDF).
-// invoiceGenerator.ts pattern'i takip ediyor. Format nötr/global — kurum/birlik ibaresi yok.
+// Format nötr/global — kurum/birlik ibaresi yok.
+//
+// Modern kurumsal düzen + grup renklendirme:
+//  • Başlık + iki-kolon bilgi bloğu (sol: tur/tarih/destinasyon/araç, sağ: rehber/lider/kaptan)
+//  • Hafif gri tablo başlığı (koyu lacivert YERİNE — baskı-dostu kurumsal ton)
+//  • Aynı registration_id'deki yolcular AYNI pastel arka plan rengini paylaşır.
+//    5 yumuşak ton dönüşümlü atanır — yan yana gruplar farklı renk olur, ayrım net kalır.
+//    Renkler %85+ luminance: siyah metin her zaman okunur, yazıcı dostu.
+//  • Pasaport sütunu KOŞULLU: hiçbir yolcuda yoksa sütun çıkmaz; varsa EN SONDA görünür.
+//    Sütun genişlikleri her iki duruma göre A4 yazılabilir alana (~186mm) yeniden dağıtılır
+//    → çakışma yok, sayısal sütunlar (bakiye/sıra/doğum) doğru hizalı kalır.
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { tr, enUS, de, fr, es, ru, ar } from "date-fns/locale";
@@ -18,7 +28,7 @@ export interface ManifestPassenger {
   passport_no?: string | null;
   birth_date?: string | null;
   is_child?: boolean;
-  // Faz 2-D: bakiye grubu tespiti
+  // Faz 2-D: bakiye grubu + grup renklendirme tespiti
   registration_id?: string;
 }
 
@@ -43,6 +53,18 @@ export interface ManifestContext {
   registrationMeta?: ManifestRegistrationMeta[];
 }
 
+// Grup renklendirme paleti — 5 yumuşak pastel ton, dönüşümlü ata.
+// RGB değerleri ~%88-95 luminance — siyah metnin okunabilirliği korunur,
+// renksiz/siyah-beyaz yazıcıda hafif gri tonu olarak çıkar (operasyonel kabul).
+// Renkler ANLAMSAL DEĞİL — sadece grup ayrımı için.
+const GROUP_PALETTE: Array<[number, number, number]> = [
+  [232, 244, 252], // pastel sky
+  [232, 248, 238], // pastel sage
+  [253, 246, 225], // pastel cream
+  [253, 236, 236], // pastel rose
+  [240, 235, 252], // pastel lavender
+];
+
 // PDF içinde Türkçe karakter sorunlarını önlemek için latin-friendly fallback.
 // jsPDF default helvetica Türkçe ğüş için kötü render eder — basit replace ile
 // okunabilirlik korunur. (Ayrı bir font yüklemeden hızlı çözüm — operasyonel
@@ -58,6 +80,14 @@ const sanitizeLatin = (s: string): string => {
     .replace(/ç/g, "c").replace(/Ç/g, "C");
 };
 
+type ColAlign = "left" | "center" | "right";
+interface ColDef {
+  key: "order" | "name" | "id" | "birth" | "child" | "balance" | "passport";
+  title: string;
+  align: ColAlign;
+  width: number;
+}
+
 export const generatePassengerManifestPDF = (
   passengers: ManifestPassenger[],
   context: ManifestContext
@@ -71,71 +101,120 @@ export const generatePassengerManifestPDF = (
   const margin = 12;
   let y = margin;
 
-  // Başlık
+  // ── Pasaport sütunu var mı? ──
+  // Bir yolcuda bile gerçek pasaport numarası varsa sütunu göster.
+  const hasAnyPassport = passengers.some((p) => !!(p.passport_no || "").trim());
+
+  // ── Sütun tanımı + A4 yazılabilir alana (~186mm) dağılım ──
+  // Pasaport varsa: 10+50+28+22+14+36+26 = 186
+  // Pasaport yoksa: 10+62+34+22+14+44     = 186  (pasaport 26mm'si Ad Soyad'a +12, Kimlik'e +6, Bakiye'ye +8 dağılır)
+  const cols: ColDef[] = hasAnyPassport
+    ? [
+        { key: "order", title: t("admin.manifest.order", "Sıra"), align: "center", width: 10 },
+        { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), align: "left", width: 50 },
+        { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), align: "left", width: 28 },
+        { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), align: "center", width: 22 },
+        { key: "child", title: t("admin.manifest.isChild", "Çocuk"), align: "center", width: 14 },
+        { key: "balance", title: t("admin.manifest.balance", "Bakiye"), align: "right", width: 36 },
+        { key: "passport", title: t("admin.manifest.passportNo", "Pasaport No"), align: "left", width: 26 },
+      ]
+    : [
+        { key: "order", title: t("admin.manifest.order", "Sıra"), align: "center", width: 10 },
+        { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), align: "left", width: 62 },
+        { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), align: "left", width: 34 },
+        { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), align: "center", width: 22 },
+        { key: "child", title: t("admin.manifest.isChild", "Çocuk"), align: "center", width: 14 },
+        { key: "balance", title: t("admin.manifest.balance", "Bakiye"), align: "right", width: 44 },
+      ];
+
+  // ── BAŞLIK ──
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
+  doc.setTextColor(20, 25, 40);
   doc.text(
     sanitizeLatin(t("admin.manifest.title", "Yolcu Listesi")),
     pageWidth / 2,
     y + 4,
     { align: "center" }
   );
-  y += 10;
+  y += 7;
 
-  // Tur + tarih bloğu
+  // Tur adı — alt başlık olarak ortalanmış
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(80, 80, 95);
+  doc.text(sanitizeLatin(context.tourTitle || ""), pageWidth / 2, y + 4, {
+    align: "center",
+    maxWidth: pageWidth - margin * 2,
+  });
+  y += 7;
+
+  // İnce ayraç
+  doc.setDrawColor(200, 205, 215);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 5;
+
+  // ── İKİ-KOLON BİLGİ BLOĞU ──
   const departureText = context.departureDate
     ? format(new Date(context.departureDate), "d MMMM yyyy", { locale })
-    : "—";
+    : "";
   const returnText = context.returnDate
     ? format(new Date(context.returnDate), "d MMMM yyyy", { locale })
     : "";
   const dateLine = returnText ? `${departureText} -> ${returnText}` : departureText;
 
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
+  const colGap = 8;
+  const infoColW = (pageWidth - margin * 2 - colGap) / 2;
+  const leftX = margin;
+  const rightX = margin + infoColW + colGap;
 
-  const drawKV = (label: string, value: string) => {
-    doc.setFont("helvetica", "bold");
-    doc.text(sanitizeLatin(label) + ":", margin, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(sanitizeLatin(value || "—"), margin + 32, y);
-    y += 5;
+  const drawInfoColumn = (
+    items: Array<[string, string | undefined | null]>,
+    colX: number,
+    startY: number,
+    colW: number
+  ): number => {
+    let cy = startY;
+    for (const [label, value] of items) {
+      if (!value || !value.trim()) continue;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(110, 110, 125);
+      doc.text(sanitizeLatin(label.toUpperCase()), colX, cy);
+      cy += 3.4;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(20, 20, 30);
+      const wrapped = doc.splitTextToSize(sanitizeLatin(value), colW);
+      doc.text(wrapped, colX, cy);
+      cy += 4 * wrapped.length + 2.5;
+    }
+    return cy;
   };
-  drawKV(t("admin.manifest.tour", "Tur"), context.tourTitle);
-  drawKV(t("admin.manifest.date", "Tarih"), dateLine);
-  if (context.tourDestination) {
-    drawKV(t("admin.manifest.destination", "Destinasyon"), context.tourDestination);
-  }
-  drawKV(t("admin.manifest.vehicle", "Araç"), context.vehiclePlate || "—");
-  drawKV(t("admin.manifest.guide", "Rehber"), context.guideName || "—");
-  // Faz 2-D: ek personel
-  if (context.tourLeaderName) {
-    drawKV(t("admin.manifest.tourLeader", "Tur Lideri"), context.tourLeaderName);
-  }
-  if (context.captainName) {
-    drawKV(t("admin.manifest.captain", "Kaptan"), context.captainName);
-  }
 
-  y += 4;
-  doc.setDrawColor(0);
+  const leftItems: Array<[string, string | undefined | null]> = [
+    [t("admin.manifest.date", "Tarih"), dateLine],
+    [t("admin.manifest.destination", "Destinasyon"), context.tourDestination],
+    [t("admin.manifest.vehicle", "Araç"), context.vehiclePlate],
+  ];
+  const rightItems: Array<[string, string | undefined | null]> = [
+    [t("admin.manifest.guide", "Rehber"), context.guideName],
+    [t("admin.manifest.tourLeader", "Tur Lideri"), context.tourLeaderName],
+    [t("admin.manifest.captain", "Kaptan"), context.captainName],
+  ];
+
+  const leftEndY = drawInfoColumn(leftItems, leftX, y, infoColW);
+  const rightEndY = drawInfoColumn(rightItems, rightX, y, infoColW);
+  y = Math.max(leftEndY, rightEndY) + 3;
+
+  // İkinci ayraç (bilgi → tablo geçişi)
+  doc.setDrawColor(220, 222, 230);
+  doc.setLineWidth(0.2);
   doc.line(margin, y, pageWidth - margin, y);
   y += 4;
 
-  // Tablo başlığı — Faz 2-D düzeltme: sütun genişlikleri yeniden dağıtıldı.
-  // Toplam = 10+50+28+26+22+14+36 = 186mm (A4 yazılabilir alan).
-  // "Çocuk" (14mm) başlığı sığacak boyuta çıkarıldı; "Bakiye" (36mm) para formatı
-  // için yeterli genişlik aldı. Truncate (maxWidth) tüm hücrelerde aktif.
-  const cols = [
-    { key: "order", title: t("admin.manifest.order", "Sıra"), width: 10, align: "center" as const },
-    { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), width: 50, align: "left" as const },
-    { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), width: 28, align: "left" as const },
-    { key: "passport", title: t("admin.manifest.passportNo", "Pasaport No"), width: 26, align: "left" as const },
-    { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), width: 22, align: "center" as const },
-    { key: "child", title: t("admin.manifest.isChild", "Çocuk"), width: 14, align: "center" as const },
-    { key: "balance", title: t("admin.manifest.balance", "Bakiye"), width: 36, align: "right" as const },
-  ];
-
-  // Faz 2-D: bakiye eşleştirme map'i — grup ilk yolcusunda göster
+  // ── BAKIYE FORMATLAMA ──
   const metaByReg = new Map((context.registrationMeta || []).map((m) => [m.registration_id, m]));
   const formatMoney = (n: number, currency: string) => {
     try {
@@ -146,57 +225,73 @@ export const generatePassengerManifestPDF = (
       return `${n.toFixed(0)} ${currency}`;
     }
   };
-  let prevRegId: string | undefined;
 
-  // Faz 2-D düzeltme: align'a göre 3 farklı tx hesabı.
+  // ── HİZALAMA YARDIMCISI ──
+  // align'a göre 3 farklı tx (Faz 2-D düzeltmesi — right hizalama çakışma fix'i korunur)
   //   left:   tx = x + 2          (sol kenardan padding)
   //   center: tx = x + width/2    (sütun ortası)
-  //   right:  tx = x + width - 2  (sağ kenardan padding) ← önceki kod right'ı left gibi
-  //                                                       hesaplıyordu → balance metni
-  //                                                       sola hizalanıp çocuk sütununa
-  //                                                       taşıyordu.
-  const computeTx = (x: number, w: number, align: "left" | "center" | "right") => {
+  //   right:  tx = x + width - 2  (sağ kenardan padding) ← bakiye/çocuk çakışmasını önler
+  const computeTx = (x: number, w: number, align: ColAlign) => {
     if (align === "center") return x + w / 2;
     if (align === "right") return x + w - 2;
     return x + 2;
   };
 
+  // ── GRUP RENK ATAMASI ──
+  // Sıralı yolcuları gez; her yeni registration_id'ye palet'ten sıradaki rengi ver.
+  // Modulo ile döner — gruplar > 5 olduğunda yan yana iki grup farklı renkte kalır.
+  const sorted = [...passengers].sort((a, b) => a.passenger_order - b.passenger_order);
+  const groupColorIdx = new Map<string, number>();
+  let nextColorIdx = 0;
+  for (const p of sorted) {
+    if (p.registration_id && !groupColorIdx.has(p.registration_id)) {
+      groupColorIdx.set(p.registration_id, nextColorIdx % GROUP_PALETTE.length);
+      nextColorIdx++;
+    }
+  }
+
+  // ── TABLO BAŞLIĞI ──
+  const headerH = 8;
   const drawTableHeader = () => {
-    doc.setFillColor(31, 41, 55);
-    doc.setTextColor(255, 255, 255);
+    // Hafif gri arka plan + ince border (kurumsal/baskı-dostu)
+    doc.setFillColor(243, 244, 248);
+    doc.setDrawColor(180, 185, 195);
+    doc.setLineWidth(0.35);
+    doc.rect(margin, y, pageWidth - margin * 2, headerH, "FD");
+
+    doc.setTextColor(40, 45, 60);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
-    let x = margin;
-    const rowH = 7;
-    doc.rect(margin, y, pageWidth - margin * 2, rowH, "F");
+    let hx = margin;
     for (const c of cols) {
-      const tx = computeTx(x, c.width, c.align);
-      doc.text(sanitizeLatin(c.title), tx, y + 5, {
+      const tx = computeTx(hx, c.width, c.align);
+      doc.text(sanitizeLatin(c.title), tx, y + 5.5, {
         align: c.align,
-        maxWidth: c.width - 2, // başlık sütun dışına taşmasın
+        maxWidth: c.width - 2,
       });
-      x += c.width;
+      hx += c.width;
     }
-    y += rowH;
+    y += headerH;
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
+    doc.setLineWidth(0.2);
   };
 
   drawTableHeader();
 
-  const sorted = [...passengers].sort((a, b) => a.passenger_order - b.passenger_order);
-  const rowH = 6;
+  // ── YOLCU SATIRLARI ──
+  let prevRegId: string | undefined;
+  const rowH = 6.8;
 
   for (const p of sorted) {
     // Sayfa sonu kontrolü
-    if (y + rowH > pageHeight - margin - 12) {
+    if (y + rowH > pageHeight - margin - 14) {
       doc.addPage();
       y = margin;
       drawTableHeader();
     }
 
-    let x = margin;
-    // Faz 2-D: bakiye sadece grubun ilk yolcusunda
+    // Bakiye sadece grubun ilk yolcusunda görünür (mevcut davranış)
     const isGroupFirst = p.registration_id && p.registration_id !== prevRegId;
     if (p.registration_id) prevRegId = p.registration_id;
     const meta = isGroupFirst && p.registration_id ? metaByReg.get(p.registration_id) : undefined;
@@ -207,47 +302,79 @@ export const generatePassengerManifestPDF = (
         ? t("admin.manifest.paid", "Tamamı ödendi")
         : "";
 
-    const row = [
-      String(p.passenger_order),
-      p.full_name || "",
-      p.identity_no || "",
-      p.passport_no || "",
-      p.birth_date ? format(new Date(p.birth_date), "dd.MM.yyyy", { locale }) : "",
-      p.is_child ? "X" : "",
-      balanceText,
-    ];
+    // Satır arka planı — grup rengi (varsa)
+    const colorIdx = p.registration_id ? groupColorIdx.get(p.registration_id) : undefined;
+    if (colorIdx != null) {
+      const [r, g, b] = GROUP_PALETTE[colorIdx];
+      doc.setFillColor(r, g, b);
+      doc.rect(margin, y, pageWidth - margin * 2, rowH, "F");
+    }
 
-    // Satır border
-    doc.setDrawColor(220, 220, 220);
+    // İnce alt çizgi
+    doc.setDrawColor(220, 222, 230);
+    doc.setLineWidth(0.15);
     doc.line(margin, y + rowH, pageWidth - margin, y + rowH);
 
-    for (let i = 0; i < cols.length; i++) {
-      const c = cols[i];
-      const tx = computeTx(x, c.width, c.align);
-      const text = sanitizeLatin(row[i]);
-      doc.text(text, tx, y + 4, {
+    // Hücre değerleri (key bazlı dict — pasaport opsiyonel olduğu için key'le erişim)
+    const rowData: Record<ColDef["key"], string> = {
+      order: String(p.passenger_order),
+      name: p.full_name || "",
+      id: p.identity_no || "",
+      birth: p.birth_date ? format(new Date(p.birth_date), "dd.MM.yyyy", { locale }) : "",
+      child: p.is_child ? "X" : "",
+      balance: balanceText,
+      passport: p.passport_no || "",
+    };
+
+    doc.setTextColor(25, 30, 45);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+
+    let cx = margin;
+    for (const c of cols) {
+      const tx = computeTx(cx, c.width, c.align);
+      // Bakiye sütununu hafif vurgula (kalın), sayısal beton hissi
+      if (c.key === "balance" && rowData.balance) {
+        doc.setFont("helvetica", "bold");
+      }
+      doc.text(sanitizeLatin(rowData[c.key]), tx, y + 4.6, {
         align: c.align,
         maxWidth: c.width - 2,
       });
-      x += c.width;
+      if (c.key === "balance" && rowData.balance) {
+        doc.setFont("helvetica", "normal");
+      }
+      cx += c.width;
     }
     y += rowH;
   }
 
-  // Footer — toplam yolcu
-  y += 6;
+  // ── FOOTER ──
+  y += 5;
+  doc.setDrawColor(180, 185, 195);
+  doc.setLineWidth(0.35);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 5;
+
+  // Toplam yolcu rozeti — sol alt
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
+  doc.setTextColor(20, 25, 40);
   doc.text(
-    sanitizeLatin(`${t("admin.manifest.totalPassengers", "Toplam Yolcu")}: ${sorted.length}`),
+    sanitizeLatin(t("admin.manifest.totalPassengers", "Toplam Yolcu")) + ": ",
     margin,
     y
   );
+  // sayıyı biraz daha belirgin
+  const labelText = sanitizeLatin(t("admin.manifest.totalPassengers", "Toplam Yolcu")) + ": ";
+  const labelW = doc.getTextWidth(labelText);
+  doc.setFontSize(11);
+  doc.text(String(sorted.length), margin + labelW, y);
 
   // Üretim tarihi (sağ alt)
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.setTextColor(120, 120, 120);
+  doc.setTextColor(130, 135, 145);
   const genDate = format(new Date(), "dd.MM.yyyy HH:mm", { locale });
   doc.text(
     sanitizeLatin(`${t("admin.manifest.generatedAt", "Oluşturulma")}: ${genDate}`),
