@@ -1841,7 +1841,11 @@
       "sheetName": "Yolcu Listesi",
       "generatedAt": "Oluşturulma",
       "noPassengers": "Yolcu bulunamadı",
-      "exportError": "Çıktı oluşturulamadı"
+      "exportError": "Çıktı oluşturulamadı",
+      "balance": "Bakiye",
+      "paid": "Tamamı ödendi",
+      "tourLeader": "Tur Lideri",
+      "captain": "Kaptan"
     },
     "seatPlan": {
       "openButton": "Koltuk Planı",
@@ -1880,7 +1884,14 @@
       "loadError": "Koltuk planı yüklenemedi",
       "exportPdf": "PDF İndir",
       "pdfError": "PDF oluşturulamadı",
-      "totalAssigned": "Toplam Atanan"
+      "totalAssigned": "Toplam Atanan",
+      "doorRow": "Kapı sırası",
+      "doorRowHint": "sıradan sonra",
+      "doorRowPlaceholder": "boş = kapı yok",
+      "door": "Giriş",
+      "front": "ÖN",
+      "tourLeaderName": "Tur Lideri",
+      "captainName": "Kaptan"
     }
   },
   "auth": {

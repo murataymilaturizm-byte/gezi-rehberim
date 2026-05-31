@@ -1809,7 +1809,11 @@
       "sheetName": "Список пассажиров",
       "generatedAt": "Создано",
       "noPassengers": "Пассажиры не найдены",
-      "exportError": "Не удалось создать файл"
+      "exportError": "Не удалось создать файл",
+      "balance": "Остаток",
+      "paid": "Полностью оплачено",
+      "tourLeader": "Руководитель тура",
+      "captain": "Водитель"
     },
     "seatPlan": {
       "openButton": "План мест",
@@ -1848,7 +1852,14 @@
       "loadError": "Не удалось загрузить план мест",
       "exportPdf": "Скачать PDF",
       "pdfError": "Не удалось создать PDF",
-      "totalAssigned": "Всего назначено"
+      "totalAssigned": "Всего назначено",
+      "doorRow": "Ряд двери",
+      "doorRowHint": "после ряда",
+      "doorRowPlaceholder": "пусто = без двери",
+      "door": "Вход",
+      "front": "ПЕРЕД",
+      "tourLeaderName": "Руководитель тура",
+      "captainName": "Водитель"
     }
   },
   "auth": {

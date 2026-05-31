@@ -93,6 +93,10 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
   const [seatCount, setSeatCount] = useState<string>("");
   const [vehiclePlate, setVehiclePlate] = useState<string>("");
   const [guideName, setGuideName] = useState<string>("");
+  // Faz 2-D: kapı sırası + 2 ek personel
+  const [doorRow, setDoorRow] = useState<string>("");
+  const [tourLeaderName, setTourLeaderName] = useState<string>("");
+  const [captainName, setCaptainName] = useState<string>("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -108,10 +112,10 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
     (async () => {
       setLoading(true);
       try {
-        // Tour date ayarlarını çek
+        // Tour date ayarlarını çek (Faz 2-D: door_row + tour_leader_name + captain_name dahil)
         const { data: tdRow, error: tdErr } = await db
           .from("tour_dates")
-          .select("transport_type, seat_layout, seat_count, vehicle_plate, guide_name")
+          .select("transport_type, seat_layout, seat_count, vehicle_plate, guide_name, door_row, tour_leader_name, captain_name")
           .eq("id", group.dateId)
           .single();
         if (tdErr) throw tdErr;
@@ -121,6 +125,9 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
         setSeatCount(tdRow?.seat_count != null ? String(tdRow.seat_count) : "");
         setVehiclePlate(tdRow?.vehicle_plate || "");
         setGuideName(tdRow?.guide_name || "");
+        setDoorRow(tdRow?.door_row != null ? String(tdRow.door_row) : "");
+        setTourLeaderName(tdRow?.tour_leader_name || "");
+        setCaptainName(tdRow?.captain_name || "");
 
         // Settings dolu değilse ya da BUS değilse — settings formunu aç
         const needsSettings =
@@ -169,6 +176,10 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
   const rowSize = seatLayout === "2+2" ? 4 : 3;
   const totalSeats = Number(seatCount) || 0;
   const rowCount = Math.ceil(totalSeats / rowSize);
+  // Faz 2-D: kapı satırı görsel ofset — door_row geçerli aralıkta ise grid'e bir extra satır.
+  const doorRowNum = doorRow && Number(doorRow) > 0 ? Number(doorRow) : null;
+  const hasDoor = doorRowNum != null && doorRowNum < rowCount;
+  const visualRowCount = rowCount + (hasDoor ? 1 : 0);
 
   // Koltuk → yolcu map (atanmış olanlar)
   const seatToPassenger = useMemo(() => {
@@ -216,6 +227,8 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
     }
     setSavingSettings(true);
     try {
+      const _doorRowVal =
+        transportType === "BUS" && doorRow && Number(doorRow) > 0 ? Number(doorRow) : null;
       const { error } = await db
         .from("tour_dates")
         .update({
@@ -224,6 +237,10 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
           seat_count: transportType === "BUS" && seatCount ? Number(seatCount) : null,
           vehicle_plate: vehiclePlate || null,
           guide_name: guideName || null,
+          // Faz 2-D
+          door_row: _doorRowVal,
+          tour_leader_name: tourLeaderName || null,
+          captain_name: captainName || null,
         })
         .eq("id", group.dateId);
       if (error) throw error;
@@ -387,6 +404,10 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
         returnDate: group.returnDate,
         vehiclePlate: vehiclePlate || null,
         guideName: guideName || null,
+        // Faz 2-D
+        tourLeaderName: tourLeaderName || null,
+        captainName: captainName || null,
+        doorRow: doorRowNum,
         seatLayout: seatLayout as SeatLayout,
         seatCount: totalSeats,
         assignments: passengers
@@ -431,16 +452,18 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
       ? "grid-cols-[1fr_1fr_24px_1fr_1fr]"
       : "grid-cols-[1fr_1fr_24px_1fr]";
 
-  // Sıra hesaplama — koltuk no'dan sıra+sütun bul
+  // Sıra hesaplama — koltuk no'dan sıra+sütun bul.
+  // Faz 2-D: kapı sırası varsa, door_row'dan SONRAki sıralar görselde +1 kayar
+  // (DB'deki koltuk numarası DEĞİŞMEZ; sadece CSS Grid'deki gridRow değeri kayar).
   const seatPosition = (seatNo: number): { row: number; col: number } => {
-    const row = Math.ceil(seatNo / rowSize);
-    const positionInRow = ((seatNo - 1) % rowSize) + 1; // 1..rowSize
-    // 2+2: pos 1,2 sol; 3,4 sağ. CSS grid col: 1,2 (sol), 3 (koridor), 4,5 (sağ).
-    // 2+1: pos 1,2 sol; 3 sağ. Grid col: 1,2,3(koridor),4.
+    const physicalRow = Math.ceil(seatNo / rowSize);
+    const displayRow =
+      hasDoor && physicalRow > (doorRowNum as number) ? physicalRow + 1 : physicalRow;
+    const positionInRow = ((seatNo - 1) % rowSize) + 1;
     let col = positionInRow;
     if (seatLayout === "2+2" && positionInRow >= 3) col = positionInRow + 1;
     if (seatLayout === "2+1" && positionInRow >= 3) col = positionInRow + 1;
-    return { row, col };
+    return { row: displayRow, col };
   };
 
   return (
@@ -561,19 +584,62 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                         />
                       </div>
 
-                      <div className="space-y-1 sm:col-span-2">
-                        <Label htmlFor="guide_name" className="text-xs">
-                          {t("admin.seatPlan.guideName", { defaultValue: "Rehber" })}
+                      <div className="space-y-1">
+                        <Label htmlFor="door_row" className="text-xs">
+                          {t("admin.seatPlan.doorRow", { defaultValue: "Kapı sırası" })}
+                          <span className="text-muted-foreground/70 font-normal ml-1">
+                            ({t("admin.seatPlan.doorRowHint", { defaultValue: "sıradan sonra" })})
+                          </span>
                         </Label>
                         <Input
-                          id="guide_name"
-                          value={guideName}
-                          onChange={(e) => setGuideName(e.target.value)}
-                          placeholder={t("admin.seatPlan.guideName", { defaultValue: "Rehber" })}
+                          id="door_row"
+                          type="number"
+                          min={1}
+                          max={Math.max(1, rowCount - 1) || 99}
+                          value={doorRow}
+                          onChange={(e) => setDoorRow(e.target.value)}
+                          placeholder={t("admin.seatPlan.doorRowPlaceholder", { defaultValue: "boş = kapı yok" })}
                         />
                       </div>
                     </>
                   )}
+
+                  {/* Faz 2-D: Personel — her zaman görünür (BUS dışı seferlerde de işe yarayabilir) */}
+                  <div className="space-y-1">
+                    <Label htmlFor="guide_name" className="text-xs">
+                      {t("admin.seatPlan.guideName", { defaultValue: "Rehber" })}
+                    </Label>
+                    <Input
+                      id="guide_name"
+                      value={guideName}
+                      onChange={(e) => setGuideName(e.target.value)}
+                      placeholder={t("admin.seatPlan.guideName", { defaultValue: "Rehber" })}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="tour_leader_name" className="text-xs">
+                      {t("admin.seatPlan.tourLeaderName", { defaultValue: "Tur Lideri" })}
+                    </Label>
+                    <Input
+                      id="tour_leader_name"
+                      value={tourLeaderName}
+                      onChange={(e) => setTourLeaderName(e.target.value)}
+                      placeholder={t("admin.seatPlan.tourLeaderName", { defaultValue: "Tur Lideri" })}
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <Label htmlFor="captain_name" className="text-xs">
+                      {t("admin.seatPlan.captainName", { defaultValue: "Kaptan" })}
+                    </Label>
+                    <Input
+                      id="captain_name"
+                      value={captainName}
+                      onChange={(e) => setCaptainName(e.target.value)}
+                      placeholder={t("admin.seatPlan.captainName", { defaultValue: "Kaptan" })}
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   {isBusConfigured && (
@@ -673,8 +739,21 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                   <div className="max-w-md mx-auto py-6 px-4 bg-muted/20 rounded-xl border border-border/40">
                   <div
                     className={`grid ${gridTemplate} gap-2`}
+                    style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(0, 1fr))` }}
                     role="grid"
                   >
+                    {/* Faz 2-D: Kapı/giriş satırı — door_row+1 visualRow'a yerleştirilir,
+                        tüm sütunları kapsar (grid-column: 1 / -1). Koltuk numaralandırma
+                        BOZULMAZ; sadece görsel sırada bu satır araya girer. */}
+                    {hasDoor && (
+                      <div
+                        style={{ gridRow: (doorRowNum as number) + 1, gridColumn: "1 / -1" }}
+                        className="h-8 my-0.5 rounded-md border border-dashed border-muted-foreground/30 bg-muted/40 flex items-center justify-center text-[10px] uppercase tracking-wider text-muted-foreground/80 font-medium"
+                        aria-label={t("admin.seatPlan.door", { defaultValue: "Giriş" })}
+                      >
+                        {t("admin.seatPlan.door", { defaultValue: "Giriş" })}
+                      </div>
+                    )}
                     {Array.from({ length: rowCount }).map((_, rowIdx) =>
                       Array.from({ length: rowSize }).map((__, posIdx) => {
                         const seatNo = rowIdx * rowSize + posIdx + 1;

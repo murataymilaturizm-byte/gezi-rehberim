@@ -19,6 +19,18 @@ export interface ManifestPassenger {
   passport_no?: string | null;
   birth_date?: string | null;
   is_child?: boolean;
+  // Faz 2-D: bakiye grubu tespiti için (aynı registration_id'nin yolcuları aynı bakiyeye bağlı)
+  registration_id?: string;
+}
+
+// Faz 2-D: rezervasyon-bazlı ödeme/bakiye metası. Bir rezervasyonun N yolcusu aynı
+// bakiyeye bağlıdır → bakiye grubun İLK yolcu satırında gösterilir, diğerlerinde boş.
+export interface ManifestRegistrationMeta {
+  registration_id: string;
+  total: number;
+  paid: number;
+  remaining: number;
+  currency: string;
 }
 
 export interface ManifestContext {
@@ -26,9 +38,12 @@ export interface ManifestContext {
   tourDestination?: string;
   departureDate: string;
   returnDate?: string | null;
-  // Faz 2-B yer tutucular — şu an boş geçilir, ileride doldurulur
   vehiclePlate?: string;
   guideName?: string;
+  // Faz 2-D: ek personel + bakiye metası
+  tourLeaderName?: string;
+  captainName?: string;
+  registrationMeta?: ManifestRegistrationMeta[];
 }
 
 const STYLE_TITLE = {
@@ -89,12 +104,18 @@ export const exportPassengerManifestToExcel = (
   if (context.tourDestination) {
     headerRows.push([t("admin.manifest.destination", "Destinasyon"), context.tourDestination]);
   }
-  // Faz 2-B yer tutucu — şimdi boş bırakılıyor, ileride doldurulacak
   headerRows.push([t("admin.manifest.vehicle", "Araç"), context.vehiclePlate || "—"]);
   headerRows.push([t("admin.manifest.guide", "Rehber"), context.guideName || "—"]);
+  // Faz 2-D: ek personel — tur lideri + kaptan
+  if (context.tourLeaderName) {
+    headerRows.push([t("admin.manifest.tourLeader", "Tur Lideri"), context.tourLeaderName]);
+  }
+  if (context.captainName) {
+    headerRows.push([t("admin.manifest.captain", "Kaptan"), context.captainName]);
+  }
   headerRows.push([]);
 
-  // Tablo başlığı
+  // Tablo başlığı — Faz 2-D: Bakiye sütunu eklendi
   const tableHeader = [
     t("admin.manifest.order", "Sıra"),
     t("admin.manifest.fullName", "Ad Soyad"),
@@ -102,24 +123,52 @@ export const exportPassengerManifestToExcel = (
     t("admin.manifest.passportNo", "Pasaport No"),
     t("admin.manifest.birthDate", "Doğum Tarihi"),
     t("admin.manifest.isChild", "Çocuk"),
+    t("admin.manifest.balance", "Bakiye"),
   ];
 
-  // Yolcu satırları — passenger_order ASC
-  const sorted = [...passengers].sort((a, b) => a.passenger_order - b.passenger_order);
-  const dataRows = sorted.map((p) => [
-    p.passenger_order,
-    p.full_name || "",
-    p.identity_no || "",
-    p.passport_no || "",
-    p.birth_date ? format(new Date(p.birth_date), "dd.MM.yyyy", { locale }) : "",
-    p.is_child ? "✓" : "",
-  ]);
+  // Yolcu satırları — passenger_order ASC zaten DepartureDetailDialog'da grup-bazlı
+  // sıralanmış olarak geliyor. Burada sırayı KORU; sadece bakiye için "grup ilk yolcusu"
+  // mantığını uygula: aynı registration_id'nin yolcuları arka arkaya geliyor → her
+  // grubun ilk yolcu satırında bakiye göster, diğerlerinde boş.
+  const sorted = [...passengers];
+  const metaByReg = new Map((context.registrationMeta || []).map((m) => [m.registration_id, m]));
+  const formatMoney = (n: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat(i18next.language || "tr", {
+        style: "currency", currency, maximumFractionDigits: 2,
+      }).format(n);
+    } catch {
+      return `${n.toFixed(2)} ${currency}`;
+    }
+  };
+  let prevRegId: string | undefined;
+  const dataRows = sorted.map((p) => {
+    const isGroupFirst = p.registration_id && p.registration_id !== prevRegId;
+    if (p.registration_id) prevRegId = p.registration_id;
+    const meta = isGroupFirst && p.registration_id ? metaByReg.get(p.registration_id) : undefined;
+    const balanceText =
+      meta && meta.remaining > 0
+        ? formatMoney(meta.remaining, meta.currency)
+        : meta && meta.remaining === 0 && meta.total > 0
+        ? t("admin.manifest.paid", "Tamamı ödendi")
+        : "";
+    return [
+      p.passenger_order,
+      p.full_name || "",
+      p.identity_no || "",
+      p.passport_no || "",
+      p.birth_date ? format(new Date(p.birth_date), "dd.MM.yyyy", { locale }) : "",
+      p.is_child ? "✓" : "",
+      balanceText,
+    ];
+  });
 
   // Toplam yolcu satırı
   const totalRow = [
     "",
     t("admin.manifest.totalPassengers", "Toplam Yolcu"),
     sorted.length,
+    "",
     "",
     "",
     "",
@@ -131,7 +180,7 @@ export const exportPassengerManifestToExcel = (
   // Stil uygulaması
   // Title (A1) — birleştir + büyük font
   ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // A1:F1 başlık birleştirme
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, // A1:G1 başlık birleştirme (7 sütun)
   ];
   const titleCell = XLSX.utils.encode_cell({ r: 0, c: 0 });
   if (ws[titleCell]) ws[titleCell].s = STYLE_TITLE;
@@ -171,14 +220,15 @@ export const exportPassengerManifestToExcel = (
     }
   }
 
-  // Sütun genişlikleri
+  // Sütun genişlikleri — Faz 2-D: Bakiye sütunu eklendi
   ws["!cols"] = [
     { wch: 6 },   // Sıra
-    { wch: 30 },  // Ad Soyad
-    { wch: 16 },  // Kimlik No
-    { wch: 16 },  // Pasaport No
-    { wch: 14 },  // Doğum Tarihi
-    { wch: 8 },   // Çocuk
+    { wch: 28 },  // Ad Soyad
+    { wch: 15 },  // Kimlik No
+    { wch: 15 },  // Pasaport No
+    { wch: 13 },  // Doğum Tarihi
+    { wch: 7 },   // Çocuk
+    { wch: 18 },  // Bakiye
   ];
 
   // Satır yükseklikleri (başlık biraz yüksek)

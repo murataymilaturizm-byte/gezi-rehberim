@@ -29,6 +29,7 @@ const db = supabase as any;
 import {
   exportPassengerManifestToExcel,
   type ManifestPassenger,
+  type ManifestRegistrationMeta,
 } from "@/utils/passengerManifestExporter";
 import { generatePassengerManifestPDF } from "@/utils/passengerManifestGenerator";
 
@@ -120,14 +121,54 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
       passport_no: p.passport_no,
       birth_date: p.birth_date,
       is_child: p.is_child,
+      // Faz 2-D: bakiye grubu tespiti için (grup ilk yolcusunda bakiye gösterilir)
+      registration_id: p.registration_id,
     }));
+  };
+
+  /**
+   * Faz 2-D: Manifest extra context — tour_dates'ten personel (tour_leader, captain)
+   * ve registrationMeta (her aktif rezervasyonun ödeme bakiyesi). Tek fetch.
+   * RLS get_user_agency_id() otomatik filtreler.
+   */
+  const fetchManifestExtras = async (): Promise<{
+    tourLeaderName: string | null;
+    captainName: string | null;
+    registrationMeta: ManifestRegistrationMeta[];
+  }> => {
+    if (!group) return { tourLeaderName: null, captainName: null, registrationMeta: [] };
+    const { data: tdRow } = await db
+      .from("tour_dates")
+      .select("tour_leader_name, captain_name")
+      .eq("id", group.dateId)
+      .single();
+    const activeRegs = group.regs.filter((r) => r.status !== "CANCELLED");
+    const meta: ManifestRegistrationMeta[] = activeRegs.map((r) => {
+      const total = Number(r.total_amount ?? 0);
+      const paid = Number(r.paid_amount ?? 0);
+      return {
+        registration_id: r.id,
+        total,
+        paid,
+        remaining: Math.max(0, total - paid),
+        currency: r.tours?.currency || "TRY",
+      };
+    });
+    return {
+      tourLeaderName: tdRow?.tour_leader_name || null,
+      captainName: tdRow?.captain_name || null,
+      registrationMeta: meta,
+    };
   };
 
   const handleExportExcel = async () => {
     if (!group) return;
     setExportingExcel(true);
     try {
-      const passengers = await fetchManifestPassengers();
+      const [passengers, extras] = await Promise.all([
+        fetchManifestPassengers(),
+        fetchManifestExtras(),
+      ]);
       if (passengers.length === 0) {
         toast({
           title: t("admin.manifest.noPassengers", { defaultValue: "Yolcu bulunamadı" }),
@@ -135,12 +176,22 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
         });
         return;
       }
+      // vehiclePlate + guideName tour_dates'ten (DepartureGroup henüz bu alanları taşımıyor; ek query basit)
+      const { data: tdMeta } = await db
+        .from("tour_dates")
+        .select("vehicle_plate, guide_name")
+        .eq("id", group.dateId)
+        .single();
       exportPassengerManifestToExcel(passengers, {
         tourTitle: group.tourTitle,
         tourDestination: group.tourDestination,
         departureDate: group.departureDate,
         returnDate: group.returnDate,
-        // vehiclePlate + guideName — Faz 2-B'de tour_dates'ten dolacak
+        vehiclePlate: tdMeta?.vehicle_plate || undefined,
+        guideName: tdMeta?.guide_name || undefined,
+        tourLeaderName: extras.tourLeaderName || undefined,
+        captainName: extras.captainName || undefined,
+        registrationMeta: extras.registrationMeta,
       });
     } catch (err: any) {
       console.error("Manifest Excel export error:", err);
@@ -158,7 +209,10 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
     if (!group) return;
     setExportingPdf(true);
     try {
-      const passengers = await fetchManifestPassengers();
+      const [passengers, extras] = await Promise.all([
+        fetchManifestPassengers(),
+        fetchManifestExtras(),
+      ]);
       if (passengers.length === 0) {
         toast({
           title: t("admin.manifest.noPassengers", { defaultValue: "Yolcu bulunamadı" }),
@@ -166,11 +220,21 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
         });
         return;
       }
+      const { data: tdMeta } = await db
+        .from("tour_dates")
+        .select("vehicle_plate, guide_name")
+        .eq("id", group.dateId)
+        .single();
       generatePassengerManifestPDF(passengers, {
         tourTitle: group.tourTitle,
         tourDestination: group.tourDestination,
         departureDate: group.departureDate,
         returnDate: group.returnDate,
+        vehiclePlate: tdMeta?.vehicle_plate || undefined,
+        guideName: tdMeta?.guide_name || undefined,
+        tourLeaderName: extras.tourLeaderName || undefined,
+        captainName: extras.captainName || undefined,
+        registrationMeta: extras.registrationMeta,
       });
     } catch (err: any) {
       console.error("Manifest PDF generate error:", err);

@@ -1775,7 +1775,11 @@
       "sheetName": "Liste des passagers",
       "generatedAt": "Généré le",
       "noPassengers": "Aucun passager trouvé",
-      "exportError": "Impossible de générer la sortie"
+      "exportError": "Impossible de générer la sortie",
+      "balance": "Solde",
+      "paid": "Entièrement payé",
+      "tourLeader": "Chef de groupe",
+      "captain": "Chauffeur"
     },
     "seatPlan": {
       "openButton": "Plan des sièges",
@@ -1814,7 +1818,14 @@
       "loadError": "Impossible de charger le plan des sièges",
       "exportPdf": "Télécharger PDF",
       "pdfError": "Impossible de générer le PDF",
-      "totalAssigned": "Total attribué"
+      "totalAssigned": "Total attribué",
+      "doorRow": "Rangée de la porte",
+      "doorRowHint": "après la rangée",
+      "doorRowPlaceholder": "vide = pas de porte",
+      "door": "Entrée",
+      "front": "AVANT",
+      "tourLeaderName": "Chef de groupe",
+      "captainName": "Chauffeur"
     }
   },
   "auth": {

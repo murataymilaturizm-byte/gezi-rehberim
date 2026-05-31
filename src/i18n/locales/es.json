@@ -1809,7 +1809,11 @@
       "sheetName": "Lista de pasajeros",
       "generatedAt": "Generado",
       "noPassengers": "No se encontraron pasajeros",
-      "exportError": "No se pudo generar la salida"
+      "exportError": "No se pudo generar la salida",
+      "balance": "Saldo",
+      "paid": "Totalmente pagado",
+      "tourLeader": "Líder del tour",
+      "captain": "Conductor"
     },
     "seatPlan": {
       "openButton": "Plan de asientos",
@@ -1848,7 +1852,14 @@
       "loadError": "No se pudo cargar el plan de asientos",
       "exportPdf": "Descargar PDF",
       "pdfError": "No se pudo generar el PDF",
-      "totalAssigned": "Total asignado"
+      "totalAssigned": "Total asignado",
+      "doorRow": "Fila de la puerta",
+      "doorRowHint": "después de la fila",
+      "doorRowPlaceholder": "vacío = sin puerta",
+      "door": "Entrada",
+      "front": "FRENTE",
+      "tourLeaderName": "Líder del tour",
+      "captainName": "Conductor"
     }
   },
   "auth": {

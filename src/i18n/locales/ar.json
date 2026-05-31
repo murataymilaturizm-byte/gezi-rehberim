@@ -1775,7 +1775,11 @@
       "sheetName": "قائمة المسافرين",
       "generatedAt": "تم الإنشاء",
       "noPassengers": "لا توجد مسافرون",
-      "exportError": "تعذر إنشاء الملف"
+      "exportError": "تعذر إنشاء الملف",
+      "balance": "الرصيد",
+      "paid": "مدفوع بالكامل",
+      "tourLeader": "قائد الجولة",
+      "captain": "السائق"
     },
     "seatPlan": {
       "openButton": "مخطط المقاعد",
@@ -1814,7 +1818,14 @@
       "loadError": "تعذر تحميل مخطط المقاعد",
       "exportPdf": "تنزيل PDF",
       "pdfError": "تعذر إنشاء PDF",
-      "totalAssigned": "إجمالي المعينين"
+      "totalAssigned": "إجمالي المعينين",
+      "doorRow": "صف الباب",
+      "doorRowHint": "بعد الصف",
+      "doorRowPlaceholder": "فارغ = بدون باب",
+      "door": "المدخل",
+      "front": "أمام",
+      "tourLeaderName": "قائد الجولة",
+      "captainName": "السائق"
     }
   },
   "auth": {

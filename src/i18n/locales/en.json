@@ -1775,7 +1775,11 @@
       "sheetName": "Passenger Manifest",
       "generatedAt": "Generated",
       "noPassengers": "No passengers found",
-      "exportError": "Could not generate output"
+      "exportError": "Could not generate output",
+      "balance": "Balance",
+      "paid": "Fully paid",
+      "tourLeader": "Tour Leader",
+      "captain": "Captain"
     },
     "seatPlan": {
       "openButton": "Seat Plan",
@@ -1814,7 +1818,14 @@
       "loadError": "Could not load seat plan",
       "exportPdf": "Download PDF",
       "pdfError": "Could not generate PDF",
-      "totalAssigned": "Total Assigned"
+      "totalAssigned": "Total Assigned",
+      "doorRow": "Door row",
+      "doorRowHint": "after row",
+      "doorRowPlaceholder": "empty = no door",
+      "door": "Door",
+      "front": "FRONT",
+      "tourLeaderName": "Tour Leader",
+      "captainName": "Captain"
     }
   },
   "auth": {

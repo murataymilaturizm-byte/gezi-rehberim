@@ -18,6 +18,16 @@ export interface ManifestPassenger {
   passport_no?: string | null;
   birth_date?: string | null;
   is_child?: boolean;
+  // Faz 2-D: bakiye grubu tespiti
+  registration_id?: string;
+}
+
+export interface ManifestRegistrationMeta {
+  registration_id: string;
+  total: number;
+  paid: number;
+  remaining: number;
+  currency: string;
 }
 
 export interface ManifestContext {
@@ -27,6 +37,10 @@ export interface ManifestContext {
   returnDate?: string | null;
   vehiclePlate?: string;
   guideName?: string;
+  // Faz 2-D
+  tourLeaderName?: string;
+  captainName?: string;
+  registrationMeta?: ManifestRegistrationMeta[];
 }
 
 // PDF içinde Türkçe karakter sorunlarını önlemek için latin-friendly fallback.
@@ -92,24 +106,45 @@ export const generatePassengerManifestPDF = (
   if (context.tourDestination) {
     drawKV(t("admin.manifest.destination", "Destinasyon"), context.tourDestination);
   }
-  // Faz 2-B yer tutucu — şu an boş
   drawKV(t("admin.manifest.vehicle", "Araç"), context.vehiclePlate || "—");
   drawKV(t("admin.manifest.guide", "Rehber"), context.guideName || "—");
+  // Faz 2-D: ek personel
+  if (context.tourLeaderName) {
+    drawKV(t("admin.manifest.tourLeader", "Tur Lideri"), context.tourLeaderName);
+  }
+  if (context.captainName) {
+    drawKV(t("admin.manifest.captain", "Kaptan"), context.captainName);
+  }
 
   y += 4;
   doc.setDrawColor(0);
   doc.line(margin, y, pageWidth - margin, y);
   y += 4;
 
-  // Tablo başlığı
+  // Tablo başlığı — Faz 2-D: Bakiye sütunu eklendi (toplam genişlik 186mm sınırı:
+  // 12+50+32+28+24+12+28 = 186 — tam sığar)
   const cols = [
     { key: "order", title: t("admin.manifest.order", "Sıra"), width: 12, align: "center" as const },
-    { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), width: 55, align: "left" as const },
-    { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), width: 35, align: "left" as const },
-    { key: "passport", title: t("admin.manifest.passportNo", "Pasaport No"), width: 32, align: "left" as const },
-    { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), width: 28, align: "center" as const },
-    { key: "child", title: t("admin.manifest.isChild", "Çocuk"), width: 14, align: "center" as const },
+    { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), width: 50, align: "left" as const },
+    { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), width: 32, align: "left" as const },
+    { key: "passport", title: t("admin.manifest.passportNo", "Pasaport No"), width: 28, align: "left" as const },
+    { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), width: 24, align: "center" as const },
+    { key: "child", title: t("admin.manifest.isChild", "Çocuk"), width: 12, align: "center" as const },
+    { key: "balance", title: t("admin.manifest.balance", "Bakiye"), width: 28, align: "right" as const },
   ];
+
+  // Faz 2-D: bakiye eşleştirme map'i — grup ilk yolcusunda göster
+  const metaByReg = new Map((context.registrationMeta || []).map((m) => [m.registration_id, m]));
+  const formatMoney = (n: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat(i18next.language || "tr", {
+        style: "currency", currency, maximumFractionDigits: 0,
+      }).format(n);
+    } catch {
+      return `${n.toFixed(0)} ${currency}`;
+    }
+  };
+  let prevRegId: string | undefined;
 
   const drawTableHeader = () => {
     doc.setFillColor(31, 41, 55);
@@ -143,6 +178,17 @@ export const generatePassengerManifestPDF = (
     }
 
     let x = margin;
+    // Faz 2-D: bakiye sadece grubun ilk yolcusunda
+    const isGroupFirst = p.registration_id && p.registration_id !== prevRegId;
+    if (p.registration_id) prevRegId = p.registration_id;
+    const meta = isGroupFirst && p.registration_id ? metaByReg.get(p.registration_id) : undefined;
+    const balanceText =
+      meta && meta.remaining > 0
+        ? formatMoney(meta.remaining, meta.currency)
+        : meta && meta.remaining === 0 && meta.total > 0
+        ? t("admin.manifest.paid", "Tamamı ödendi")
+        : "";
+
     const row = [
       String(p.passenger_order),
       p.full_name || "",
@@ -150,6 +196,7 @@ export const generatePassengerManifestPDF = (
       p.passport_no || "",
       p.birth_date ? format(new Date(p.birth_date), "dd.MM.yyyy", { locale }) : "",
       p.is_child ? "X" : "",
+      balanceText,
     ];
 
     // Satır border

@@ -1775,7 +1775,11 @@
       "sheetName": "Passagierliste",
       "generatedAt": "Erstellt",
       "noPassengers": "Keine Passagiere gefunden",
-      "exportError": "Ausgabe konnte nicht erstellt werden"
+      "exportError": "Ausgabe konnte nicht erstellt werden",
+      "balance": "Restbetrag",
+      "paid": "Vollständig bezahlt",
+      "tourLeader": "Reiseleiter",
+      "captain": "Fahrer"
     },
     "seatPlan": {
       "openButton": "Sitzplan",
@@ -1814,7 +1818,14 @@
       "loadError": "Sitzplan konnte nicht geladen werden",
       "exportPdf": "PDF herunterladen",
       "pdfError": "PDF konnte nicht erstellt werden",
-      "totalAssigned": "Gesamt zugewiesen"
+      "totalAssigned": "Gesamt zugewiesen",
+      "doorRow": "Türreihe",
+      "doorRowHint": "nach Reihe",
+      "doorRowPlaceholder": "leer = keine Tür",
+      "door": "Eingang",
+      "front": "VORN",
+      "tourLeaderName": "Reiseleiter",
+      "captainName": "Fahrer"
     }
   },
   "auth": {
