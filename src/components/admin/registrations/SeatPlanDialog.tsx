@@ -176,11 +176,49 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
 
   const rowSize = seatLayout === "2+2" ? 4 : 3;
   const totalSeats = Number(seatCount) || 0;
-  const rowCount = Math.ceil(totalSeats / rowSize);
-  // Faz 2-D: kapı satırı görsel ofset — door_row geçerli aralıkta ise grid'e bir extra satır.
-  const doorRowNum = doorRow && Number(doorRow) > 0 ? Number(doorRow) : null;
-  const hasDoor = doorRowNum != null && doorRowNum < rowCount;
-  const visualRowCount = rowCount + (hasDoor ? 1 : 0);
+  // Sol taraf her zaman 2 koltuk (otobüs standardı); sağ taraf 2+2'de 2, 2+1'de 1 — kapı bu pozisyon(lar)ı kaplar.
+  const leftSize = 2;
+  const rightSize = seatLayout === "2+2" ? 2 : 1;
+  // Kapı yoksa kullanılan "natural" satır sayısı (input max'ı için).
+  const rowCount = totalSeats > 0 ? Math.ceil(totalSeats / rowSize) : 0;
+  const doorRowNumRaw = doorRow && Number(doorRow) > 0 ? Number(doorRow) : null;
+
+  // Faz 2-D2 (Kapı modeli düzeltmesi): Kapı bir EK satır DEĞİL; koltuk sırasının SAĞ tarafına gömülü.
+  // Numaralandırma sürekli — kapı koltuk YOK ETMEZ, settings'te girilen koltuk sayısı korunur.
+  // Örnek (44 koltuk, 2+2, doorRow=5):
+  //   r1-4 dolu (1-16), r5 SOL=17,18 SAĞ=KAPI, r6 = 19-22, ... r12 = 43-44 (son yarım). 12 görsel satır.
+  // Kapı sırasında sol 2 koltuk numaralanır; sağ 2 (2+2) veya 1 (2+1) pozisyon kapı kaplar.
+  const { hasDoor, doorRowNum, seatPositionMap } = useMemo(() => {
+    if (totalSeats === 0) {
+      return {
+        hasDoor: false,
+        doorRowNum: null as number | null,
+        seatPositionMap: new Map<number, { row: number; col: number }>(),
+      };
+    }
+    const positions = new Map<number, { row: number; col: number }>();
+    let seatCounter = 1;
+    let row = 1;
+    let doorReached = false;
+    while (seatCounter <= totalSeats) {
+      const isDoorRow = doorRowNumRaw != null && row === doorRowNumRaw;
+      if (isDoorRow) doorReached = true;
+      const seatsInThisRow = isDoorRow ? leftSize : rowSize;
+      for (let i = 0; i < seatsInThisRow && seatCounter <= totalSeats; i++) {
+        const positionInRow = i + 1;
+        // Grid koridoru (col 3) atlanır → sağ koltuklar col 4, 5'e gider.
+        const col = positionInRow >= 3 ? positionInRow + 1 : positionInRow;
+        positions.set(seatCounter, { row, col });
+        seatCounter++;
+      }
+      row++;
+    }
+    return {
+      hasDoor: doorReached,
+      doorRowNum: doorReached ? doorRowNumRaw : null,
+      seatPositionMap: positions,
+    };
+  }, [totalSeats, doorRowNumRaw, rowSize, leftSize]);
 
   // Koltuk → yolcu map (atanmış olanlar)
   const seatToPassenger = useMemo(() => {
@@ -447,25 +485,13 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  // CSS Grid template — 2+2: 5 col (2 sol + koridor + 2 sağ), 2+1: 4 col
+  // CSS Grid template — 2+2: 5 col (2 sol + koridor + 2 sağ), 2+1: 4 col.
+  // Koltuk pozisyonları yukarıdaki seatPositionMap'ten geliyor (kapı sırasında sağ
+  // tarafı boş bırakır, kapı div'i o boşluğu doldurur).
   const gridTemplate =
     seatLayout === "2+2"
       ? "grid-cols-[1fr_1fr_24px_1fr_1fr]"
       : "grid-cols-[1fr_1fr_24px_1fr]";
-
-  // Sıra hesaplama — koltuk no'dan sıra+sütun bul.
-  // Faz 2-D: kapı sırası varsa, door_row'dan SONRAki sıralar görselde +1 kayar
-  // (DB'deki koltuk numarası DEĞİŞMEZ; sadece CSS Grid'deki gridRow değeri kayar).
-  const seatPosition = (seatNo: number): { row: number; col: number } => {
-    const physicalRow = Math.ceil(seatNo / rowSize);
-    const displayRow =
-      hasDoor && physicalRow > (doorRowNum as number) ? physicalRow + 1 : physicalRow;
-    const positionInRow = ((seatNo - 1) % rowSize) + 1;
-    let col = positionInRow;
-    if (seatLayout === "2+2" && positionInRow >= 3) col = positionInRow + 1;
-    if (seatLayout === "2+1" && positionInRow >= 3) col = positionInRow + 1;
-    return { row: displayRow, col };
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -600,7 +626,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                         />
                         <p className="text-[11px] text-muted-foreground/80">
                           {t("admin.seatPlan.doorRowHelp", {
-                            defaultValue: "Kapının hangi sıradan sonra olduğunu girin",
+                            defaultValue: "Kapının olduğu sıra numarasını girin (kapı sıranın sağ tarafına açılır; sol koltuklar dolu kalır)",
                           })}
                         </p>
                       </div>
@@ -776,75 +802,65 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                       : `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })} · 2+1`}
                   </div>
                   <div className="max-w-md mx-auto py-6 px-4 bg-muted/20 rounded-xl border border-border/40">
-                  {/* FIX (Faz 2-D bug): gridTemplateRows inline style KALDIRILDI.
-                      Önceden `repeat(visualRowCount, minmax(0, 1fr))` vardı; parent height
-                      yok → 1fr=0 → kapı satırı (h-10) 0px alana basıyor, altındaki koltuk
-                      satırının üzerine biniyor → görsel olarak görünmüyordu.
-                      CSS Grid implicit row sizing (auto) ile her satır içerik yüksekliği
-                      kadar olur: kapı satırı 40px, koltuk satırları 56px. Araya giriyor. */}
+                  {/* Implicit CSS Grid row sizing: parent height yok → satırlar içerik
+                      yüksekliği kadar olur. Her koltuk h-14 (56px); kapı da aynı yükseklikte
+                      (sıraya gömülü). */}
                   <div
                     className={`grid ${gridTemplate} gap-2`}
                     role="grid"
                   >
-                    {/* Kapı/giriş satırı — door_row+1 visualRow'a yerleştirilir, tüm sütunları
-                        kapsar. Koltuk numaralandırma BOZULMAZ; sadece görsel sırada araya girer. */}
+                    {/* Kapı — koltuk sırasının SAĞ tarafına gömülü, sol koltukları yok etmez.
+                        2+2: cols 4-5 (2 pozisyon), 2+1: col 4 (1 pozisyon). Yükseklik h-14
+                        (koltuklarla aynı). Koltuk numaralandırma sürekli; kapı sırasında
+                        sol 2 koltuk numaralanır, sağ taraf bu div ile kaplanır. */}
                     {hasDoor && (
                       <div
-                        style={{ gridRow: (doorRowNum as number) + 1, gridColumn: "1 / -1" }}
-                        className="h-10 my-1 rounded-md border-2 border-dashed border-muted-foreground/40 bg-muted/50 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground font-medium"
+                        style={{
+                          gridRow: doorRowNum as number,
+                          gridColumn: `4 / ${4 + rightSize}`,
+                        }}
+                        className="h-14 rounded-md border-2 border-dashed border-muted-foreground/40 bg-muted/50 flex flex-col items-center justify-center gap-0.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
                         aria-label={t("admin.seatPlan.middleDoor", { defaultValue: "Orta Kapı" })}
                       >
                         <DoorOpen className="w-3.5 h-3.5" />
                         {t("admin.seatPlan.middleDoor", { defaultValue: "Orta Kapı" })}
                       </div>
                     )}
-                    {Array.from({ length: rowCount }).map((_, rowIdx) =>
-                      Array.from({ length: rowSize }).map((__, posIdx) => {
-                        const seatNo = rowIdx * rowSize + posIdx + 1;
-                        if (seatNo > totalSeats) {
-                          return (
-                            <div
-                              key={`empty-${rowIdx}-${posIdx}`}
-                              style={{
-                                gridRow: rowIdx + 1,
-                                gridColumn: seatPosition(rowIdx * rowSize + posIdx + 1).col,
-                              }}
-                            />
-                          );
-                        }
-                        const pos = seatPosition(seatNo);
-                        const assigned = seatToPassenger.get(String(seatNo));
-                        return (
-                          <SeatCell
-                            key={`s-${seatNo}`}
-                            row={pos.row}
-                            col={pos.col}
-                            seatNo={seatNo}
-                            passenger={assigned}
-                            initials={assigned ? initials(assigned.full_name) : null}
-                            isChild={!!assigned?.is_child}
-                            unassignedPassengers={unassignedPassengers}
-                            onAssign={(pid) => handleAssignSeat(pid, String(seatNo))}
-                            onClear={() =>
-                              assigned ? handleAssignSeat(assigned.id, null) : undefined
-                            }
-                            tLabels={{
-                              assign: t("admin.seatPlan.assignPassenger", {
-                                defaultValue: "Yolcu Ata",
-                              }),
-                              clear: t("admin.seatPlan.removeAssignment", {
-                                defaultValue: "Atamayı Kaldır",
-                              }),
-                              empty: t("admin.seatPlan.empty", { defaultValue: "Boş" }),
-                              noUnassigned: t("admin.seatPlan.noUnassigned", {
-                                defaultValue: "Atanmamış yolcu yok",
-                              }),
-                              child: t("admin.passengers.isChild", { defaultValue: "Çocuk" }),
-                            }}
-                          />
-                        );
-                      })
-                    )}
+                    {Array.from({ length: totalSeats }).map((_, idx) => {
+                      const seatNo = idx + 1;
+                      const pos = seatPositionMap.get(seatNo);
+                      if (!pos) return null;
+                      const assigned = seatToPassenger.get(String(seatNo));
+                      return (
+                        <SeatCell
+                          key={`s-${seatNo}`}
+                          row={pos.row}
+                          col={pos.col}
+                          seatNo={seatNo}
+                          passenger={assigned}
+                          initials={assigned ? initials(assigned.full_name) : null}
+                          isChild={!!assigned?.is_child}
+                          unassignedPassengers={unassignedPassengers}
+                          onAssign={(pid) => handleAssignSeat(pid, String(seatNo))}
+                          onClear={() =>
+                            assigned ? handleAssignSeat(assigned.id, null) : undefined
+                          }
+                          tLabels={{
+                            assign: t("admin.seatPlan.assignPassenger", {
+                              defaultValue: "Yolcu Ata",
+                            }),
+                            clear: t("admin.seatPlan.removeAssignment", {
+                              defaultValue: "Atamayı Kaldır",
+                            }),
+                            empty: t("admin.seatPlan.empty", { defaultValue: "Boş" }),
+                            noUnassigned: t("admin.seatPlan.noUnassigned", {
+                              defaultValue: "Atanmamış yolcu yok",
+                            }),
+                            child: t("admin.passengers.isChild", { defaultValue: "Çocuk" }),
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                   </div>
                 </div>

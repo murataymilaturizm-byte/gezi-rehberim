@@ -139,9 +139,32 @@ export const generateSeatPlanPDF = (ctx: SeatPlanContext) => {
   for (const a of ctx.assignments) seatMap.set(a.seat_no, a);
 
   const rowSize = ctx.seatLayout === "2+2" ? 4 : 3;
-  const rowCount = Math.ceil(ctx.seatCount / rowSize);
-  const hasDoor = ctx.doorRow != null && ctx.doorRow > 0 && ctx.doorRow < rowCount;
-  const visualRowCount = rowCount + (hasDoor ? 1 : 0);
+  const leftCols = 2;
+  const rightCols = rowSize - leftCols; // 2+2 → 2, 2+1 → 1
+  const doorRowNumRaw =
+    ctx.doorRow != null && ctx.doorRow > 0 ? ctx.doorRow : null;
+
+  // Faz 2-D2: Kapı modeli — kapı bir EK satır DEĞİL, koltuk sırasının SAĞ tarafına gömülü.
+  // Numaralandırma sürekli, ctx.seatCount kadar koltuk render edilir. Kapı sırasında
+  // SOL `leftCols` koltuk numaralanır; SAĞ `rightCols` pozisyon "ORTA KAPI" ile kaplanır.
+  // Tek-pas algoritma: ekran (SeatPlanDialog) ve PDF aynı mantığı paylaşır.
+  const seatPosMap = new Map<number, { vr: number; pIdx: number }>();
+  let _seatCounter = 1;
+  let _vr = 1;
+  let _doorReached = false;
+  while (_seatCounter <= ctx.seatCount) {
+    const isDoorRow = doorRowNumRaw != null && _vr === doorRowNumRaw;
+    if (isDoorRow) _doorReached = true;
+    const seatsInThisRow = isDoorRow ? leftCols : rowSize;
+    for (let i = 0; i < seatsInThisRow && _seatCounter <= ctx.seatCount; i++) {
+      seatPosMap.set(_seatCounter, { vr: _vr, pIdx: i });
+      _seatCounter++;
+    }
+    _vr++;
+  }
+  const visualRowCount = _vr - 1;
+  const hasDoor = _doorReached;
+  const doorRowNum = hasDoor ? (doorRowNumRaw as number) : null;
 
   // Sol kolon arka plan ("araç çerçevesi")
   doc.setFillColor(250, 250, 251);
@@ -157,17 +180,33 @@ export const generateSeatPlanPDF = (ctx: SeatPlanContext) => {
 
   // Sıra yüksekliği: visualRowCount + gap'lere bölünür
   const seatGap = 1.2;
-  const rowH = Math.min(10, Math.max(7, (gridAvailH - (visualRowCount - 1) * seatGap) / visualRowCount));
+  const rowH = Math.min(
+    10,
+    Math.max(
+      7,
+      (gridAvailH - Math.max(0, visualRowCount - 1) * seatGap) /
+        Math.max(1, visualRowCount)
+    )
+  );
 
   // Sütun yapısı: 2+2 → sol(2)|koridor|sağ(2). 2+1 → sol(2)|koridor|sağ(1)
-  const leftCols = 2;
-  const rightCols = rowSize - leftCols;
   const aisleW = 6;
   const seatColGap = 0.8;
-  const seatW = (gridW - aisleW - (leftCols - 1 + rightCols - 1) * seatColGap) / rowSize;
+  const seatW =
+    (gridW - aisleW - (leftCols - 1 + Math.max(0, rightCols - 1)) * seatColGap) /
+    rowSize;
 
-  // Görsel sıra → fiziksel sıra (kapı varsa virtualRow door_row+1'i atlamalı)
-  const isDoorVisualRow = (visualRow: number) => hasDoor && visualRow === (ctx.doorRow as number) + 1;
+  // pIdx → x dönüştürme (0-indexed, koridor sol+sağ arası)
+  const pIdxToX = (pIdx: number): number => {
+    if (pIdx < leftCols) return gridX + pIdx * (seatW + seatColGap);
+    return (
+      gridX +
+      leftCols * seatW +
+      (leftCols - 1) * seatColGap +
+      aisleW +
+      (pIdx - leftCols) * (seatW + seatColGap)
+    );
+  };
 
   // Üst yön etiketi (küçük "ÖN" - sade)
   doc.setFontSize(6);
@@ -176,90 +215,78 @@ export const generateSeatPlanPDF = (ctx: SeatPlanContext) => {
   doc.text(sanitizeLatin(t("admin.seatPlan.front", "ÖN")), gridX + gridW / 2, contentY + 4, { align: "center" });
   doc.setTextColor(0, 0, 0);
 
-  // Sıra döngüsü — visualRow 1..visualRowCount
-  for (let vr = 1; vr <= visualRowCount; vr++) {
-    const yTop = gridY + (vr - 1) * (rowH + seatGap);
+  // Koltuk döngüsü — seatNo 1..seatCount sırayla, seatPosMap'ten pozisyon al.
+  for (let seatNo = 1; seatNo <= ctx.seatCount; seatNo++) {
+    const pos = seatPosMap.get(seatNo);
+    if (!pos) continue;
+    const yTop = gridY + (pos.vr - 1) * (rowH + seatGap);
+    const x = pIdxToX(pos.pIdx);
 
-    if (isDoorVisualRow(vr)) {
-      // Kapı satırı — tüm genişlikte dashed işaret
-      doc.setDrawColor(180, 180, 185);
-      doc.setLineDashPattern([1.5, 1.5], 0);
-      doc.setFillColor(243, 244, 246);
-      doc.rect(gridX, yTop, gridW, rowH * 0.6, "FD");
-      doc.setLineDashPattern([], 0);
-      doc.setFontSize(7);
+    const assigned = seatMap.get(String(seatNo));
+
+    // Koltuk dikdörtgeni
+    if (assigned) {
+      if (assigned.is_child) {
+        doc.setFillColor(255, 237, 213);
+      } else {
+        doc.setFillColor(219, 234, 254);
+      }
+      doc.setDrawColor(140, 140, 160);
+    } else {
+      doc.setFillColor(252, 252, 253);
+      doc.setDrawColor(200, 200, 205);
+    }
+    doc.roundedRect(x, yTop, seatW, rowH, 0.8, 0.8, "FD");
+
+    // Koltuk numarası (sol üst, küçük)
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5.5);
+    doc.setTextColor(110, 110, 115);
+    doc.text(String(seatNo), x + 0.7, yTop + 2.2);
+
+    // Yolcu adı (orta, bold)
+    if (assigned) {
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(100, 100, 105);
-      doc.text(
-        sanitizeLatin(t("admin.seatPlan.door", "GİRİŞ").toUpperCase()),
-        gridX + gridW / 2,
-        yTop + rowH * 0.4,
-        { align: "center" }
-      );
+      doc.setFontSize(6.5);
       doc.setTextColor(0, 0, 0);
-      continue;
-    }
-
-    // Fiziksel sıra (1..rowCount) — kapı'dan sonraki vr'lerde -1 ofset
-    const physicalRow = hasDoor && vr > (ctx.doorRow as number) + 1 ? vr - 1 : vr;
-
-    // Bu sıradaki koltuklar
-    for (let p = 0; p < rowSize; p++) {
-      const seatNo = (physicalRow - 1) * rowSize + p + 1;
-      if (seatNo > ctx.seatCount) break;
-
-      // X hesaplama: sol koltuklar → koridor → sağ koltuklar
-      let x = gridX;
-      if (p < leftCols) {
-        x += p * (seatW + seatColGap);
-      } else {
-        x +=
-          leftCols * seatW +
-          (leftCols - 1) * seatColGap +
-          aisleW +
-          (p - leftCols) * (seatW + seatColGap);
-      }
-
-      const assigned = seatMap.get(String(seatNo));
-
-      // Koltuk dikdörtgeni
-      if (assigned) {
-        if (assigned.is_child) {
-          doc.setFillColor(255, 237, 213);
-        } else {
-          doc.setFillColor(219, 234, 254);
-        }
-        doc.setDrawColor(140, 140, 160);
-      } else {
-        doc.setFillColor(252, 252, 253);
-        doc.setDrawColor(200, 200, 205);
-      }
-      doc.roundedRect(x, yTop, seatW, rowH, 0.8, 0.8, "FD");
-
-      // Koltuk numarası (sol üst, küçük)
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(5.5);
-      doc.setTextColor(110, 110, 115);
-      doc.text(String(seatNo), x + 0.7, yTop + 2.2);
-
-      // Yolcu adı (orta, bold)
-      if (assigned) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(6.5);
-        doc.setTextColor(0, 0, 0);
-        const maxChars = Math.max(8, Math.floor(seatW * 0.9));
-        const nameShort = sanitizeLatin(assigned.full_name).slice(0, maxChars);
-        doc.text(nameShort, x + seatW / 2, yTop + rowH - 1.8, {
-          align: "center",
-          maxWidth: seatW - 1,
-        });
-        if (assigned.is_child) {
-          doc.setFontSize(5);
-          doc.setTextColor(180, 90, 0);
-          doc.text("C", x + seatW - 1.5, yTop + 2.2, { align: "right" });
-        }
+      const maxChars = Math.max(8, Math.floor(seatW * 0.9));
+      const nameShort = sanitizeLatin(assigned.full_name).slice(0, maxChars);
+      doc.text(nameShort, x + seatW / 2, yTop + rowH - 1.8, {
+        align: "center",
+        maxWidth: seatW - 1,
+      });
+      if (assigned.is_child) {
+        doc.setFontSize(5);
+        doc.setTextColor(180, 90, 0);
+        doc.text("C", x + seatW - 1.5, yTop + 2.2, { align: "right" });
       }
     }
+  }
+
+  // Kapı — SADECE kapı sırasının SAĞ tarafı. Sol koltuklar yukarıdaki döngüde
+  // normal koltuk olarak çizildi; bu blok onların sağındaki boşluğu doldurur.
+  if (hasDoor && doorRowNum != null) {
+    const doorYTop = gridY + (doorRowNum - 1) * (rowH + seatGap);
+    const doorX = pIdxToX(leftCols); // sağ tarafın başlangıcı
+    const doorW =
+      rightCols * seatW + Math.max(0, rightCols - 1) * seatColGap;
+    doc.setDrawColor(180, 180, 185);
+    doc.setLineDashPattern([1.5, 1.5], 0);
+    doc.setFillColor(243, 244, 246);
+    doc.roundedRect(doorX, doorYTop, doorW, rowH, 0.8, 0.8, "FD");
+    doc.setLineDashPattern([], 0);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 105);
+    doc.text(
+      sanitizeLatin(
+        t("admin.seatPlan.middleDoor", "ORTA KAPI").toUpperCase()
+      ),
+      doorX + doorW / 2,
+      doorYTop + rowH / 2 + 1,
+      { align: "center" }
+    );
+    doc.setTextColor(0, 0, 0);
   }
 
   // ─── Footer ──────────────────────────────────────────────────────────────
