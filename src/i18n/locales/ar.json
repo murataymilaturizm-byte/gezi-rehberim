@@ -3669,7 +3669,8 @@
       "logs": "السجلات",
       "languageStats": "إحصاء اللغة",
       "integration": "التكامل",
-      "notifications": "الإشعارات"
+      "notifications": "الإشعارات",
+      "settings": "الإعدادات"
     },
     "conversations": {
       "search": "بحث...",

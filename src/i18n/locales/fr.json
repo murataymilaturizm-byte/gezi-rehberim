@@ -3669,7 +3669,8 @@
       "logs": "Journaux",
       "languageStats": "Stats langue",
       "integration": "Intégration",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "settings": "Paramètres"
     },
     "conversations": {
       "search": "Rechercher...",

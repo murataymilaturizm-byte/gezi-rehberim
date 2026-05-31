@@ -3669,7 +3669,8 @@
       "logs": "Protokolle",
       "languageStats": "Sprachstat.",
       "integration": "Integration",
-      "notifications": "Benachrichtigungen"
+      "notifications": "Benachrichtigungen",
+      "settings": "Einstellungen"
     },
     "conversations": {
       "search": "Suchen...",

@@ -3715,7 +3715,8 @@
       "logs": "Logs",
       "languageStats": "Language Stats",
       "integration": "Integration",
-      "notifications": "Notification Settings"
+      "notifications": "Notification Settings",
+      "settings": "Settings"
     },
     "conversations": {
       "search": "Search...",

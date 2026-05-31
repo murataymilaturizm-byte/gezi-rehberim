@@ -3669,7 +3669,8 @@
       "logs": "Registros",
       "languageStats": "Est. idioma",
       "integration": "Integración",
-      "notifications": "Notificaciones"
+      "notifications": "Notificaciones",
+      "settings": "Ajustes"
     },
     "conversations": {
       "search": "Buscar...",

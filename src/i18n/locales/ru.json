@@ -3669,7 +3669,8 @@
       "logs": "Журналы",
       "languageStats": "Стат. языков",
       "integration": "Интеграция",
-      "notifications": "Уведомления"
+      "notifications": "Уведомления",
+      "settings": "Настройки"
     },
     "conversations": {
       "search": "Поиск...",

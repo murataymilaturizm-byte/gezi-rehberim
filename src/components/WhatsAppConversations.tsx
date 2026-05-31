@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 // WhatsAppLogs and LanguageStats moved to Reporting menu (Admin.tsx routing)
 import { WhatsAppSettings } from "./WhatsAppSettings";
-import AgencyNotificationSettings from "./AgencyNotificationSettings";
+import AgencySettings from "./AgencySettings";
 import { EmptyState } from "./EmptyState";
 import { ConversationsEmptyIllustration } from "./illustrations/ConversationsEmptyIllustration";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -399,9 +399,9 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   </TabsTrigger>
                 )}
                 {!isSuperAdmin && (
-                  <TabsTrigger value="notifications" className="flex items-center gap-1 text-xs sm:text-sm">
+                  <TabsTrigger value="settings" className="flex items-center gap-1 text-xs sm:text-sm">
                     <Bell className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t("whatsapp.tabs.notifications", { defaultValue: "Bildirim Ayarları" })}</span>
+                    <span className="hidden sm:inline">{t("whatsapp.tabs.settings", { defaultValue: "Ayarlar" })}</span>
                   </TabsTrigger>
                 )}
               </TabsList>
@@ -656,8 +656,8 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
             )}
 
             {!isSuperAdmin && (
-              <TabsContent value="notifications" className="mt-0">
-                <AgencyNotificationSettings />
+              <TabsContent value="settings" className="mt-0">
+                <AgencySettings />
               </TabsContent>
             )}
           </CardContent>

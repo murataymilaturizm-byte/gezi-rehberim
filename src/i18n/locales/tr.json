@@ -3776,7 +3776,8 @@
       "logs": "Loglar",
       "languageStats": "Dil İstat.",
       "integration": "Entegrasyon",
-      "notifications": "Bildirim Ayarları"
+      "notifications": "Bildirim Ayarları",
+      "settings": "Ayarlar"
     },
     "conversations": {
       "search": "Ara...",
