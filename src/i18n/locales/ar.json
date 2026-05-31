@@ -1141,7 +1141,8 @@
         "today": "اليوم",
         "thisWeek": "هذا الأسبوع",
         "upcoming": "قادم",
-        "later": "لاحقاً / سابقاً"
+        "later": "لاحقاً",
+        "past": "سابقاً"
       },
       "tripsShort": "رحلة",
       "countAvailable": "متاح",

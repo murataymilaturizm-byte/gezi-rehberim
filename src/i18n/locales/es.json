@@ -1175,7 +1175,8 @@
         "today": "Hoy",
         "thisWeek": "Esta semana",
         "upcoming": "Próximos",
-        "later": "Más tarde / Pasado"
+        "later": "Más tarde",
+        "past": "Pasado"
       },
       "tripsShort": "viajes",
       "countAvailable": "disponibles",

@@ -30,7 +30,7 @@ export interface DepartureGroup {
   regs: RegistrationRow[];
 }
 
-type Bucket = "today" | "thisWeek" | "upcoming" | "later";
+type Bucket = "today" | "thisWeek" | "upcoming" | "later" | "past";
 interface BucketedGroup extends DepartureGroup {
   days: number | null;
   bucket: Bucket;
@@ -58,6 +58,7 @@ export const RegistrationsByDeparture = ({
   const { t, i18n } = useTranslation();
   const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   const [laterOpen, setLaterOpen] = useState(false);
+  const [pastOpen, setPastOpen] = useState(false);
 
   const groups = useMemo<DepartureGroup[]>(() => {
     const map = new Map<string, DepartureGroup>();
@@ -88,37 +89,38 @@ export const RegistrationsByDeparture = ({
     );
   }, [registrations]);
 
-  const bucketed = useMemo<{ today: BucketedGroup[]; thisWeek: BucketedGroup[]; upcoming: BucketedGroup[]; later: BucketedGroup[] }>(() => {
+  const bucketed = useMemo<{
+    today: BucketedGroup[];
+    thisWeek: BucketedGroup[];
+    upcoming: BucketedGroup[];
+    later: BucketedGroup[];
+    past: BucketedGroup[];
+  }>(() => {
     const today = startOfToday();
     const buckets = {
       today: [] as BucketedGroup[],
       thisWeek: [] as BucketedGroup[],
       upcoming: [] as BucketedGroup[],
       later: [] as BucketedGroup[],
+      past: [] as BucketedGroup[],
     };
     for (const g of groups) {
       const days = g.departureDate
         ? differenceInCalendarDays(new Date(g.departureDate), today)
         : null;
       let bucket: Bucket;
-      if (days == null) bucket = "later";
-      else if (days < 0) bucket = "later";
+      if (days == null) bucket = "past"; // tarihsiz kayıtlar geçmişe düşsün
+      else if (days < 0) bucket = "past";
       else if (days === 0) bucket = "today";
       else if (days <= 7) bucket = "thisWeek";
       else if (days <= 30) bucket = "upcoming";
       else bucket = "later";
       buckets[bucket].push({ ...g, days, bucket });
     }
-    // İleride/Geçmiş: önce gelecek (asc) sonra geçmiş (desc)
-    buckets.later.sort((a, b) => {
-      const aDays = a.days ?? -Infinity;
-      const bDays = b.days ?? -Infinity;
-      // Gelecek (≥0) önce, içinde küçük olan önce; geçmiş (<0) sonra, içinde büyük (yakın) olan önce
-      if (aDays >= 0 && bDays < 0) return -1;
-      if (aDays < 0 && bDays >= 0) return 1;
-      if (aDays >= 0 && bDays >= 0) return aDays - bDays;
-      return bDays - aDays;
-    });
+    // İleride: tarih ASC (en yakın gelecek önce)
+    buckets.later.sort((a, b) => (a.days ?? 0) - (b.days ?? 0));
+    // Geçmiş: tarih DESC (en yakın geçmiş önce — yani days=-1 önce, days=-365 sonra)
+    buckets.past.sort((a, b) => (b.days ?? -Infinity) - (a.days ?? -Infinity));
     return buckets;
   }, [groups]);
 
@@ -177,42 +179,89 @@ export const RegistrationsByDeparture = ({
         />
       )}
 
-      {/* ④ İLERİDE / GEÇMİŞ (collapsible) */}
+      {/* ④ İLERİDE (30+ gün gelecek) — ayrı collapsible */}
       {bucketed.later.length > 0 && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setLaterOpen((x) => !x)}
-            className="group flex items-center gap-2 w-full text-left mb-3 py-1.5 hover:opacity-80 transition-opacity"
-          >
-            <ChevronDown
-              className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
-                laterOpen ? "" : "-rotate-90"
-              }`}
-            />
-            <h2 className="text-base font-semibold tracking-tight">
-              {t("admin.registrations.timeBuckets.later", { defaultValue: "İleride / Geçmiş" })}
-            </h2>
-            <span className="text-xs text-muted-foreground font-mono tabular-nums">
-              · {bucketed.later.length}{" "}
-              {t("admin.registrations.tripsShort", { defaultValue: "sefer" })}
-            </span>
-          </button>
-          {laterOpen && (
-            <Section
-              title=""
-              items={bucketed.later}
-              onSelect={onSelectDeparture}
-              dateLocale={dateLocale}
-              t={t}
-              hideHeader
-            />
-          )}
-        </div>
+        <CollapsibleSection
+          title={t("admin.registrations.timeBuckets.later", { defaultValue: "İleride" })}
+          count={bucketed.later.length}
+          open={laterOpen}
+          onToggle={() => setLaterOpen((x) => !x)}
+          items={bucketed.later}
+          onSelect={onSelectDeparture}
+          dateLocale={dateLocale}
+          t={t}
+        />
+      )}
+
+      {/* ⑤ GEÇMİŞ (geçmiş tarihli) — ayrı collapsible, kartlar opacity-60 */}
+      {bucketed.past.length > 0 && (
+        <CollapsibleSection
+          title={t("admin.registrations.timeBuckets.past", { defaultValue: "Geçmiş" })}
+          count={bucketed.past.length}
+          open={pastOpen}
+          onToggle={() => setPastOpen((x) => !x)}
+          items={bucketed.past}
+          onSelect={onSelectDeparture}
+          dateLocale={dateLocale}
+          t={t}
+        />
       )}
     </div>
   );
 };
+
+// Collapsible bölüm wrapper'ı — İleride ve Geçmiş için ortak kullanım.
+// Sefer kartları (TicketStubCard) zaten kendisini past → opacity-60 ile soluklaştırıyor;
+// burada ekstra bir şey gerekmiyor.
+interface CollapsibleSectionProps {
+  title: string;
+  count: number;
+  open: boolean;
+  onToggle: () => void;
+  items: BucketedGroup[];
+  onSelect: (g: DepartureGroup) => void;
+  dateLocale: typeof tr;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+}
+
+const CollapsibleSection = ({
+  title,
+  count,
+  open,
+  onToggle,
+  items,
+  onSelect,
+  dateLocale,
+  t,
+}: CollapsibleSectionProps) => (
+  <div>
+    <button
+      type="button"
+      onClick={onToggle}
+      className="group flex items-center gap-2 w-full text-left mb-3 py-1.5 hover:opacity-80 transition-opacity"
+    >
+      <ChevronDown
+        className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+          open ? "" : "-rotate-90"
+        }`}
+      />
+      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+      <span className="text-xs text-muted-foreground font-mono tabular-nums">
+        · {count} {t("admin.registrations.tripsShort", { defaultValue: "sefer" })}
+      </span>
+    </button>
+    {open && (
+      <Section
+        title=""
+        items={items}
+        onSelect={onSelect}
+        dateLocale={dateLocale}
+        t={t}
+        hideHeader
+      />
+    )}
+  </div>
+);
 
 // ════════════════════════════════════════════════════════════════════════════
 // ① BUGÜN özet bandı — yatay mini-kart şeridi + sticky özet

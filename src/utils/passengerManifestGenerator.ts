@@ -121,16 +121,18 @@ export const generatePassengerManifestPDF = (
   doc.line(margin, y, pageWidth - margin, y);
   y += 4;
 
-  // Tablo başlığı — Faz 2-D: Bakiye sütunu eklendi (toplam genişlik 186mm sınırı:
-  // 12+50+32+28+24+12+28 = 186 — tam sığar)
+  // Tablo başlığı — Faz 2-D düzeltme: sütun genişlikleri yeniden dağıtıldı.
+  // Toplam = 10+50+28+26+22+14+36 = 186mm (A4 yazılabilir alan).
+  // "Çocuk" (14mm) başlığı sığacak boyuta çıkarıldı; "Bakiye" (36mm) para formatı
+  // için yeterli genişlik aldı. Truncate (maxWidth) tüm hücrelerde aktif.
   const cols = [
-    { key: "order", title: t("admin.manifest.order", "Sıra"), width: 12, align: "center" as const },
+    { key: "order", title: t("admin.manifest.order", "Sıra"), width: 10, align: "center" as const },
     { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), width: 50, align: "left" as const },
-    { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), width: 32, align: "left" as const },
-    { key: "passport", title: t("admin.manifest.passportNo", "Pasaport No"), width: 28, align: "left" as const },
-    { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), width: 24, align: "center" as const },
-    { key: "child", title: t("admin.manifest.isChild", "Çocuk"), width: 12, align: "center" as const },
-    { key: "balance", title: t("admin.manifest.balance", "Bakiye"), width: 28, align: "right" as const },
+    { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), width: 28, align: "left" as const },
+    { key: "passport", title: t("admin.manifest.passportNo", "Pasaport No"), width: 26, align: "left" as const },
+    { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), width: 22, align: "center" as const },
+    { key: "child", title: t("admin.manifest.isChild", "Çocuk"), width: 14, align: "center" as const },
+    { key: "balance", title: t("admin.manifest.balance", "Bakiye"), width: 36, align: "right" as const },
   ];
 
   // Faz 2-D: bakiye eşleştirme map'i — grup ilk yolcusunda göster
@@ -146,6 +148,19 @@ export const generatePassengerManifestPDF = (
   };
   let prevRegId: string | undefined;
 
+  // Faz 2-D düzeltme: align'a göre 3 farklı tx hesabı.
+  //   left:   tx = x + 2          (sol kenardan padding)
+  //   center: tx = x + width/2    (sütun ortası)
+  //   right:  tx = x + width - 2  (sağ kenardan padding) ← önceki kod right'ı left gibi
+  //                                                       hesaplıyordu → balance metni
+  //                                                       sola hizalanıp çocuk sütununa
+  //                                                       taşıyordu.
+  const computeTx = (x: number, w: number, align: "left" | "center" | "right") => {
+    if (align === "center") return x + w / 2;
+    if (align === "right") return x + w - 2;
+    return x + 2;
+  };
+
   const drawTableHeader = () => {
     doc.setFillColor(31, 41, 55);
     doc.setTextColor(255, 255, 255);
@@ -155,8 +170,11 @@ export const generatePassengerManifestPDF = (
     const rowH = 7;
     doc.rect(margin, y, pageWidth - margin * 2, rowH, "F");
     for (const c of cols) {
-      const tx = c.align === "center" ? x + c.width / 2 : x + 2;
-      doc.text(sanitizeLatin(c.title), tx, y + 5, { align: c.align });
+      const tx = computeTx(x, c.width, c.align);
+      doc.text(sanitizeLatin(c.title), tx, y + 5, {
+        align: c.align,
+        maxWidth: c.width - 2, // başlık sütun dışına taşmasın
+      });
       x += c.width;
     }
     y += rowH;
@@ -205,11 +223,11 @@ export const generatePassengerManifestPDF = (
 
     for (let i = 0; i < cols.length; i++) {
       const c = cols[i];
-      const tx = c.align === "center" ? x + c.width / 2 : x + 2;
+      const tx = computeTx(x, c.width, c.align);
       const text = sanitizeLatin(row[i]);
       doc.text(text, tx, y + 4, {
         align: c.align,
-        maxWidth: c.width - 3,
+        maxWidth: c.width - 2,
       });
       x += c.width;
     }

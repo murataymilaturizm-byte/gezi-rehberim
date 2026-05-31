@@ -1141,7 +1141,8 @@
         "today": "Aujourd'hui",
         "thisWeek": "Cette semaine",
         "upcoming": "À venir",
-        "later": "Plus tard / Passé"
+        "later": "Plus tard",
+        "past": "Passé"
       },
       "tripsShort": "voyages",
       "countAvailable": "disponibles",

@@ -1138,7 +1138,8 @@
         "today": "Today",
         "thisWeek": "This Week",
         "upcoming": "Upcoming",
-        "later": "Later / Past"
+        "later": "Later",
+        "past": "Past"
       },
       "tripsShort": "trips",
       "countAvailable": "available",

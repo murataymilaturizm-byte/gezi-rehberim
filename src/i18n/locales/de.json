@@ -1141,7 +1141,8 @@
         "today": "Heute",
         "thisWeek": "Diese Woche",
         "upcoming": "Bevorstehend",
-        "later": "Später / Vergangen"
+        "later": "Später",
+        "past": "Vergangen"
       },
       "tripsShort": "Fahrten",
       "countAvailable": "verfügbar",
