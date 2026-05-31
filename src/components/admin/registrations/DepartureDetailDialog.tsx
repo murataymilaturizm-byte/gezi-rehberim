@@ -332,7 +332,7 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden bg-card">
         {/* Faz 2-C2 PARÇA 1: Dialog header */}
         <DialogHeader className="px-6 py-5 border-b border-border/60 flex-shrink-0">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
@@ -357,8 +357,11 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
             SOL: yolcu listesi (kaydırılabilir). SAĞ: sticky paneller (Durum / Kısa Yol / Ekip / Ödeme).
             Mobil: flex-col-reverse → sağ panel ÜSTTE, yolcu listesi altta. */}
         <div className="flex-1 min-h-0 flex flex-col-reverse md:flex-row overflow-hidden">
-          {/* SOL — Yolcu listesi */}
-          <div className="flex-1 min-h-0 overflow-y-auto md:border-r border-border/60">
+          {/* SOL — Yolcu listesi
+              bg-card EXPLICIT: dialog'un kendi bg-card'ını miras alır ama explicit class
+              DOM zincirinden bağımsız garanti verir (DialogContent'in shadcn default
+              `bg-background`'i sayfa bg'siyle aynı → ayrım yok → "şeffaf" hissi olurdu). */}
+          <div className="flex-1 min-h-0 overflow-y-auto md:border-r border-border/60 bg-card">
             <div className="px-6 py-5">
               <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-border/40">
                 <h3 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold inline-flex items-center gap-1.5">
