@@ -295,7 +295,7 @@ export const PassengerEditorDialog = ({
             Header + footer flex-shrink-0 ile kayboldukça küçülmez; sadece liste alanı kayar. */}
         <DialogContent className="max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden p-0 gap-0">
           <DialogHeader className="flex-shrink-0 px-6 py-5 border-b border-border/60">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
               {t("admin.passengers.eyebrow", { defaultValue: "Yolcu Listesi" })}
             </p>
             <DialogTitle className="text-lg font-semibold tracking-tight">
@@ -385,7 +385,7 @@ export const PassengerEditorDialog = ({
                     </div>
                     <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5 sm:col-span-2">
-                        <Label htmlFor={`name-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                        <Label htmlFor={`name-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                           {t("admin.passengers.fullName", { defaultValue: "Ad Soyad" })}
                         </Label>
                         <Input
@@ -396,7 +396,7 @@ export const PassengerEditorDialog = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor={`id-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                        <Label htmlFor={`id-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                           {t("admin.passengers.identityNo", { defaultValue: "Kimlik No" })}
                         </Label>
                         <Input
@@ -409,7 +409,7 @@ export const PassengerEditorDialog = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor={`passport-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                        <Label htmlFor={`passport-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                           {t("admin.passengers.passportNo", { defaultValue: "Pasaport No" })}
                         </Label>
                         <Input
@@ -421,7 +421,7 @@ export const PassengerEditorDialog = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor={`birth-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                        <Label htmlFor={`birth-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                           {t("admin.passengers.birthDate", { defaultValue: "Doğum Tarihi" })}
                         </Label>
                         <Input

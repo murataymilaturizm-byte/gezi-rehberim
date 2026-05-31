@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, UsersRound, Loader2, Armchair, UserCheck } from "lucide-react";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import { Eye, FileSpreadsheet, FileText, Users, UsersRound, Loader2, Armchair, UserCheck } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
 import type { DepartureGroup } from "./RegistrationsByDeparture";
 import type { RegistrationRow } from "./types";
@@ -336,18 +335,18 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
       <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* Faz 2-C2 PARÇA 1: Dialog header */}
         <DialogHeader className="px-6 py-5 border-b border-border/60 flex-shrink-0">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
             {t("admin.registrations.departureDetail", { defaultValue: "Sefer Detayı" })}
           </p>
           <DialogTitle className="text-lg font-semibold tracking-tight truncate">
             {group.tourTitle}
           </DialogTitle>
           <DialogDescription className="flex flex-wrap gap-1.5 mt-1">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 tabular-nums">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground tabular-nums">
               {dateText}{returnText}
             </span>
             {group.tourDestination && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground">
                 {group.tourDestination}
               </span>
             )}
@@ -362,7 +361,7 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
           <div className="flex-1 min-h-0 overflow-y-auto md:border-r border-border/60">
             <div className="px-6 py-5">
               <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-border/40">
-                <h3 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold inline-flex items-center gap-1.5">
+                <h3 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold inline-flex items-center gap-1.5">
                   <UsersRound className="w-3 h-3" />
                   {t("admin.registrations.passengersHeader", { defaultValue: "Yolcular" })}
                 </h3>
@@ -377,7 +376,6 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
               const isCancelled = reg.status === "CANCELLED";
               const unitPrice = reg.tour_dates?.price_adult || 0;
               const totalPrice = unitPrice * reg.pax;
-              const waUrl = buildWhatsAppUrl(reg.phone);
               return (
                 <div
                   key={reg.id}
@@ -385,7 +383,7 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
                     isCancelled ? "opacity-60 grayscale-[40%]" : ""
                   }`}
                 >
-                  <span className="text-[11px] font-mono text-muted-foreground/60 w-7 shrink-0 text-right tabular-nums">
+                  <span className="text-[11px] font-mono text-muted-foreground w-7 shrink-0 text-right tabular-nums">
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -449,23 +447,6 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </Button>
-                    {waUrl && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0 border-green-500/40 text-green-700 dark:text-green-400 hover:bg-green-500/5"
-                        asChild
-                      >
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={t("common.openWhatsApp")}
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                        </a>
-                      </Button>
-                    )}
                   </div>
                 </div>
               );
@@ -527,7 +508,7 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
                     <span className="text-3xl font-mono tabular-nums font-bold leading-none">
                       {group.totalRegs}
                     </span>
-                    <p className="text-[11px] text-muted-foreground/70 italic mt-1">
+                    <p className="text-[11px] text-muted-foreground italic mt-1">
                       {t("admin.registrations.noQuotaSet", {
                         defaultValue: "Kontenjan ayarlı değil",
                       })}
@@ -697,7 +678,7 @@ const Panel = ({
   children: React.ReactNode;
 }) => (
   <div className="rounded-lg border border-border/60 bg-card p-4 space-y-2.5">
-    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold inline-flex items-center gap-1.5">
+    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold inline-flex items-center gap-1.5">
       {icon}
       {label}
     </p>
@@ -729,7 +710,7 @@ const ShortcutButton = ({
 
 const TeamRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex items-baseline justify-between gap-2">
-    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
       {label}
     </span>
     <span className="text-foreground font-medium truncate">{value}</span>
@@ -748,7 +729,7 @@ const PaymentRow = ({
   <div className="flex items-baseline justify-between gap-2">
     <span
       className={`text-[10px] uppercase tracking-wider font-medium ${
-        emphasize ? "text-foreground" : "text-muted-foreground/70"
+        emphasize ? "text-foreground" : "text-muted-foreground"
       }`}
     >
       {label}

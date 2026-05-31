@@ -536,11 +536,11 @@ const TicketStubCard = ({ group, onClick, dateLocale, t, delayMs }: TicketStubCa
           <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground mt-1.5">
             {dateParts.month}
           </span>
-          <span className="text-[10px] text-muted-foreground/70 capitalize mt-0.5">
+          <span className="text-[10px] text-muted-foreground capitalize mt-0.5">
             {dateParts.weekday}
           </span>
           {group.returnDate && (
-            <span className="text-[9px] text-muted-foreground/60 mt-2 font-mono tabular-nums">
+            <span className="text-[9px] text-muted-foreground mt-2 font-mono tabular-nums">
               →{" "}
               {format(new Date(group.returnDate), "d MMM", { locale: dateLocale })}
             </span>
@@ -613,7 +613,7 @@ const TicketStubCard = ({ group, onClick, dateLocale, t, delayMs }: TicketStubCa
                   {t("admin.registrations.records", { defaultValue: "Kayıt" })}
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground/60 italic">
+              <p className="text-[10px] text-muted-foreground italic">
                 {t("admin.registrations.noQuotaSet", { defaultValue: "Kontenjan ayarlı değil" })}
               </p>
             </div>
@@ -621,7 +621,7 @@ const TicketStubCard = ({ group, onClick, dateLocale, t, delayMs }: TicketStubCa
 
           {/* Yardımcı meta — kalan koltuk veya gün-uzaklığı */}
           {group.quota != null && !isFull && !isPast && (
-            <p className="text-[10px] text-muted-foreground/70 mt-auto">
+            <p className="text-[10px] text-muted-foreground mt-auto">
               {t("admin.registrations.remainingSeats", {
                 count: Math.max(0, group.quota - group.soldPax),
                 defaultValue: `${Math.max(0, group.quota - group.soldPax)} koltuk boş`,

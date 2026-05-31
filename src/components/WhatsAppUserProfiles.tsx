@@ -203,7 +203,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
     if (daysSince === 1) return { label: t("admin.whatsapp.userProfiles.yesterdayActive"), color: "bg-blue-500" };
     if (daysSince <= 7) return { label: `${daysSince} ${t("admin.whatsapp.userProfiles.daysAgo")}`, color: "bg-yellow-500" };
     if (daysSince <= 30) return { label: `${daysSince} ${t("admin.whatsapp.userProfiles.daysAgo")}`, color: "bg-orange-500" };
-    return { label: `${daysSince} ${t("admin.whatsapp.userProfiles.daysAgo")}`, color: "bg-gray-500" };
+    return { label: `${daysSince} ${t("admin.whatsapp.userProfiles.daysAgo")}`, color: "bg-muted-foreground/60" };
   };
 
   if (loading) {
@@ -455,7 +455,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                                     className={`w-5 h-5 ${
                                       i < selectedProfile.feedback_score!
                                         ? "fill-yellow-400 text-yellow-400"
-                                        : "text-gray-300"
+                                        : "text-muted-foreground/30"
                                     }`}
                                   />
                                 ))}

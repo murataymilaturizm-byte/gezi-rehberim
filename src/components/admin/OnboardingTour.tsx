@@ -10,9 +10,11 @@ interface OnboardingTourProps {
   onComplete: () => void;
 }
 
-function getCurrentTheme() {
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
-}
+// Faz Tema-uyum: Önceki versiyon dark/light için ayrı hardcoded HSL renkleri
+// tutuyordu (`hsl(222 47% 11%)` vb.) → site temasının renk skalasıyla uyuşmuyordu
+// (site krem-turuncu, tour mavi-gri) ve özellikle dark mode'da kart/metin tonları
+// kırılıyordu. Çözüm: tüm renkleri `hsl(var(--token))` referanslarıyla bağla →
+// browser CSS değişkenini runtime'da çözer, tema toggle'ı otomatik tutar.
 
 const STORAGE_KEY = (id: string) => `turzz_tour_done_${id}`;
 
@@ -21,41 +23,30 @@ interface StepContentProps {
   description: string;
   bullets?: string[];
   tip?: string;
-  isDark: boolean;
 }
 
-function StepContent({ description, bullets = [], tip, isDark }: StepContentProps) {
-  // Use CSS variable-based color values that respect the theme.
-  // Madde 2: Açık zeminde gövde metni `hsl(222 47% 11%)` (full dark), bullets `hsl(220 13% 28%)`
-  // (koyu gri — readable AA contrast ≥ 7:1 on white). Eskiden bullets `hsl(215 16% 47%)` idi
-  // ve beyaz zeminde "soluk gri" görünüyordu.
-  const textColor = isDark ? "hsl(214 32% 91%)" : "hsl(222 47% 11%)";
-  const mutedColor = isDark ? "hsl(215 20% 75%)" : "hsl(220 13% 28%)";
-  const tipBg = isDark ? "hsl(24 70% 12%)" : "hsl(38 92% 97%)";
-  const tipBorder = isDark ? "hsl(24 50% 28%)" : "hsl(24 97% 83%)";
-  const tipColor = isDark ? "hsl(24 94% 73%)" : "hsl(21 90% 40%)";
-
+function StepContent({ description, bullets = [], tip }: StepContentProps) {
   return (
     <div style={{ fontSize: 14, lineHeight: 1.65 }}>
-      <p style={{ margin: "0 0 10px", color: textColor }}>
+      <p style={{ margin: "0 0 10px", color: "hsl(var(--popover-foreground))" }}>
         {description}
       </p>
       {bullets.length > 0 && (
         <ul style={{ margin: "0 0 10px", paddingLeft: 18 }}>
           {bullets.map((b, i) => (
-            <li key={i} style={{ marginBottom: 5, color: mutedColor }}>{b}</li>
+            <li key={i} style={{ marginBottom: 5, color: "hsl(var(--muted-foreground))" }}>{b}</li>
           ))}
         </ul>
       )}
       {tip && (
         <div
           style={{
-            background: tipBg,
-            border: `1px solid ${tipBorder}`,
+            background: "hsl(var(--accent))",
+            border: "1px solid hsl(var(--border))",
             borderRadius: 8,
             padding: "8px 12px",
             fontSize: 12.5,
-            color: tipColor,
+            color: "hsl(var(--accent-foreground))",
             display: "flex",
             alignItems: "flex-start",
             gap: 6,
@@ -70,7 +61,7 @@ function StepContent({ description, bullets = [], tip, isDark }: StepContentProp
 }
 
 // ─── Welcome / Complete screens ──────────────────────────────────────────────
-function WelcomeContent({ isDark }: { isDark: boolean }) {
+function WelcomeContent() {
   const { t } = useTranslation();
 
   const cards = [
@@ -80,14 +71,16 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
     { icon: "⚡", text: t("onboardingTour.welcome.cards.tools") },
   ];
 
-  const cardBg = isDark ? "hsl(222 47% 15%)" : "hsl(210 40% 96%)";
-  const cardText = isDark ? "hsl(210 40% 98%)" : "hsl(222 47% 11%)";
-  // Madde 2: Açık zeminde welcome açıklama metni `hsl(220 13% 28%)` (koyu gri, AA contrast).
-  const descColor = isDark ? "hsl(215 20% 75%)" : "hsl(220 13% 28%)";
-
   return (
     <div style={{ textAlign: "center" }}>
-      <p style={{ fontSize: 14, color: descColor, marginBottom: 16, lineHeight: 1.6 }}>
+      <p
+        style={{
+          fontSize: 14,
+          color: "hsl(var(--muted-foreground))",
+          marginBottom: 16,
+          lineHeight: 1.6,
+        }}
+      >
         {t("onboardingTour.welcome.description")}
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 4 }}>
@@ -95,7 +88,7 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
           <div
             key={c.text}
             style={{
-              background: cardBg,
+              background: "hsl(var(--muted))",
               borderRadius: 8,
               padding: "10px 12px",
               display: "flex",
@@ -103,7 +96,7 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
               gap: 8,
               fontSize: 13,
               fontWeight: 500,
-              color: cardText,
+              color: "hsl(var(--foreground))",
               wordBreak: "break-word",
               overflowWrap: "break-word",
             }}
@@ -117,7 +110,7 @@ function WelcomeContent({ isDark }: { isDark: boolean }) {
   );
 }
 
-function CompleteContent({ isDark }: { isDark: boolean }) {
+function CompleteContent() {
   const { t } = useTranslation();
 
   const items = [
@@ -126,16 +119,16 @@ function CompleteContent({ isDark }: { isDark: boolean }) {
     { icon: "🔄", label: t("onboardingTour.complete.shortcuts.restart") },
   ];
 
-  const bg = isDark ? "hsl(222 47% 15%)" : "hsl(210 40% 96%)";
-  const itemColor = isDark ? "hsl(214 32% 91%)" : "hsl(220 9% 22%)";
-  // Madde 2: Complete ekranı açıklama metni — beyaz zeminde okunur koyu gri.
-  const descColor = isDark ? "hsl(215 20% 75%)" : "hsl(220 13% 28%)";
-  const codeBg = isDark ? "rgba(249,115,22,0.2)" : "rgba(249,115,22,0.12)";
-  const codeColor = isDark ? "hsl(21 94% 73%)" : "hsl(21 90% 46%)";
-
   return (
     <div>
-      <p style={{ fontSize: 14, color: descColor, marginBottom: 14, lineHeight: 1.6 }}>
+      <p
+        style={{
+          fontSize: 14,
+          color: "hsl(var(--muted-foreground))",
+          marginBottom: 14,
+          lineHeight: 1.6,
+        }}
+      >
         {t("onboardingTour.complete.description")}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -143,17 +136,26 @@ function CompleteContent({ isDark }: { isDark: boolean }) {
           <div
             key={it.label}
             style={{
-              display: "flex", alignItems: "center", gap: 10,
-              background: bg, borderRadius: 8, padding: "8px 12px",
-              fontSize: 13, color: itemColor,
-              wordBreak: "break-word", overflowWrap: "break-word",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              background: "hsl(var(--muted))",
+              borderRadius: 8,
+              padding: "8px 12px",
+              fontSize: 13,
+              color: "hsl(var(--foreground))",
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
             }}
           >
             <code
               style={{
-                background: codeBg,
-                color: codeColor,
-                borderRadius: 5, padding: "2px 7px", fontSize: 12, fontFamily: "monospace",
+                background: "hsl(var(--primary) / 0.15)",
+                color: "hsl(var(--primary))",
+                borderRadius: 5,
+                padding: "2px 7px",
+                fontSize: 12,
+                fontFamily: "monospace",
                 flexShrink: 0,
               }}
             >
@@ -172,11 +174,6 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [runTour, setRunTour] = useState(false);
-  const isDark = getCurrentTheme() === "dark";
-
-  // Theme-aware background and foreground using CSS variable equivalents
-  const bg = isDark ? "hsl(222 47% 7%)" : "hsl(0 0% 100%)";
-  const fg = isDark ? "hsl(210 40% 96%)" : "hsl(222 47% 11%)";
 
   // Helper to build a step with rich content
   const step = (
@@ -190,7 +187,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
     target,
     placement,
     title,
-    content: <StepContent description={description} bullets={bullets} tip={tip} isDark={isDark} />,
+    content: <StepContent description={description} bullets={bullets} tip={tip} />,
     disableBeacon: true,
   });
 
@@ -200,7 +197,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       target: "body",
       placement: "center",
       title: t("onboardingTour.welcome.title"),
-      content: <WelcomeContent isDark={isDark} />,
+      content: <WelcomeContent />,
       disableBeacon: true,
     },
     // 2. Dashboard
@@ -303,7 +300,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       target: "body",
       placement: "center",
       title: t("onboardingTour.complete.title"),
-      content: <CompleteContent isDark={isDark} />,
+      content: <CompleteContent />,
       disableBeacon: true,
     },
   ];
@@ -313,7 +310,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       target: "body",
       placement: "center",
       title: t("onboardingTour.welcome.title"),
-      content: <WelcomeContent isDark={isDark} />,
+      content: <WelcomeContent />,
       disableBeacon: true,
     },
     step(
@@ -332,7 +329,7 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       target: "body",
       placement: "center",
       title: t("onboardingTour.complete.title"),
-      content: <CompleteContent isDark={isDark} />,
+      content: <CompleteContent />,
       disableBeacon: true,
     },
   ];
@@ -395,27 +392,25 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       }}
       styles={{
         options: {
-          backgroundColor: bg,
-          textColor: fg,
-          primaryColor: "hsl(16 95% 55%)",
-          arrowColor: bg,
+          backgroundColor: "hsl(var(--popover))",
+          textColor: "hsl(var(--popover-foreground))",
+          primaryColor: "hsl(var(--primary))",
+          arrowColor: "hsl(var(--popover))",
           overlayColor: "rgba(0,0,0,0.6)",
-          spotlightShadow: "0 0 0 3px hsl(16 95% 55% / 0.4), 0 0 30px rgba(0,0,0,0.3)",
+          spotlightShadow: "0 0 0 3px hsl(var(--primary) / 0.4), 0 0 30px rgba(0,0,0,0.3)",
           zIndex: 10000,
           width: isMobile ? 320 : 460,
         },
         tooltip: {
           borderRadius: 14,
           padding: "20px 22px",
-          boxShadow: isDark
-            ? "0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)"
-            : "0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.06)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px hsl(var(--border))",
         },
         tooltipTitle: {
           fontSize: 17,
           fontWeight: 700,
           marginBottom: 10,
-          color: fg,
+          color: "hsl(var(--popover-foreground))",
           lineHeight: 1.4,
         },
         tooltipContent: {
@@ -425,20 +420,21 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
         tooltipFooter: {
           marginTop: 16,
           paddingTop: 14,
-          borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)"}`,
+          borderTop: "1px solid hsl(var(--border))",
         },
         buttonNext: {
-          backgroundColor: "hsl(16 95% 55%)",
+          backgroundColor: "hsl(var(--primary))",
+          color: "hsl(var(--primary-foreground))",
           borderRadius: 8,
           padding: "9px 20px",
           fontSize: 14,
           fontWeight: 600,
           border: "none",
-          boxShadow: "0 2px 8px rgba(249,115,22,0.35)",
+          boxShadow: "0 2px 8px hsl(var(--primary) / 0.35)",
           cursor: "pointer",
         },
         buttonBack: {
-          color: isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)",
+          color: "hsl(var(--muted-foreground))",
           fontSize: 13,
           marginRight: 10,
           background: "transparent",
@@ -446,14 +442,14 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
           cursor: "pointer",
         },
         buttonSkip: {
-          color: isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)",
+          color: "hsl(var(--muted-foreground))",
           fontSize: 13,
           background: "transparent",
           border: "none",
           cursor: "pointer",
         },
         buttonClose: {
-          color: isDark ? "hsl(215 20% 65%)" : "hsl(215 16% 47%)",
+          color: "hsl(var(--muted-foreground))",
           width: 28,
           height: 28,
         },

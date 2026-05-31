@@ -184,7 +184,7 @@ export const RegistrationsList = ({
               </div>
               <div className="text-xs space-y-1">
                 <p className="text-foreground">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mr-1">{t("admin.registrations.tour")}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">{t("admin.registrations.tour")}</span>
                   {reg.tours?.title}
                 </p>
                 <p className="text-muted-foreground tabular-nums">

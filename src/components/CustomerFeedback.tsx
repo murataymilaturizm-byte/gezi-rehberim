@@ -329,7 +329,7 @@ export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps
           <Star
             key={i}
             size={16}
-            className={i < score ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+            className={i < score ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"}
           />
         ))}
       </div>

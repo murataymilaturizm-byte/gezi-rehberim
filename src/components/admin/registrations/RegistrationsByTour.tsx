@@ -146,7 +146,7 @@ export const RegistrationsByTour = ({
                 </span>
                 <div className="text-left min-w-0 space-y-0.5">
                   {tour.tourDestination && (
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold truncate">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold truncate">
                       {tour.tourDestination}
                     </p>
                   )}
@@ -260,7 +260,7 @@ const TourTimeline = ({ dates, dateLocale, t }: TourTimelineProps) => {
   if (dates.length === 0) return null;
   return (
     <div className="rounded-lg border border-border/40 bg-muted/15 p-3">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold mb-3">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-3">
         {t("admin.registrations.timeline", { defaultValue: "Sefer Zaman Çizelgesi" })}
       </p>
       {/* Yatay scrollable timeline */}
@@ -312,7 +312,7 @@ const TourTimeline = ({ dates, dateLocale, t }: TourTimelineProps) => {
                     : "—"}
                 </p>
                 <div className="mt-1 flex items-baseline justify-between">
-                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                     {t("admin.registrations.occupancy", { defaultValue: "Doluluk" })}
                   </span>
                   <div className="flex items-baseline gap-0.5">
@@ -395,7 +395,7 @@ const CompactTicketStub = ({
         </div>
         <div className="flex-1 min-w-0 p-3 flex flex-col gap-1.5">
           {returnDate && (
-            <p className="text-[10px] text-muted-foreground/70 font-mono tabular-nums">
+            <p className="text-[10px] text-muted-foreground font-mono tabular-nums">
               →{" "}
               {format(new Date(returnDate), "d MMM", { locale: dateLocale })}
             </p>
@@ -429,7 +429,7 @@ const CompactTicketStub = ({
               <span className="text-lg font-mono tabular-nums font-bold leading-none">
                 {regCount}
               </span>
-              <span className="text-[10px] text-muted-foreground/70">
+              <span className="text-[10px] text-muted-foreground">
                 kayıt
               </span>
             </div>

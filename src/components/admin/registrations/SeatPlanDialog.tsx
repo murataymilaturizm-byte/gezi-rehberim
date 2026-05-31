@@ -497,21 +497,21 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] sm:max-h-[88vh] flex flex-col overflow-hidden p-0 gap-0">
         <DialogHeader className="flex-shrink-0 px-6 py-5 border-b border-border/60">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             {t("admin.seatPlan.eyebrow", { defaultValue: "Sefer Düzeni" })}
           </p>
           <DialogTitle className="text-lg font-semibold tracking-tight">
             {t("admin.seatPlan.title", { defaultValue: "Koltuk Planı" })}
           </DialogTitle>
           <DialogDescription className="flex flex-wrap gap-1.5 mt-1">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 truncate max-w-[200px]">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground truncate max-w-[200px]">
               {group.tourTitle}
             </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 tabular-nums">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground tabular-nums">
               {dateText}{returnText}
             </span>
             {vehiclePlate && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 font-mono tabular-nums">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground font-mono tabular-nums">
                 {vehiclePlate}
               </span>
             )}
@@ -624,7 +624,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                           onChange={(e) => setDoorRow(e.target.value)}
                           placeholder={t("admin.seatPlan.doorRowPlaceholder", { defaultValue: "boş = kapı yok" })}
                         />
-                        <p className="text-[11px] text-muted-foreground/80">
+                        <p className="text-[11px] text-muted-foreground">
                           {t("admin.seatPlan.doorRowHelp", {
                             defaultValue: "Kapının olduğu sıra numarasını girin (kapı sıranın sağ tarafına açılır; sol koltuklar dolu kalır)",
                           })}
@@ -757,7 +757,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                     <span className="text-base font-mono tabular-nums text-muted-foreground leading-none">
                       /{totalSeats}
                     </span>
-                    <span className="ml-2 text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                    <span className="ml-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                       {t("admin.seatPlan.assigned", { defaultValue: "atandı" })}
                     </span>
                   </div>
@@ -796,7 +796,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
 
                 {/* SOL — Otobüs şeması (geniş alan) */}
                 <div className="flex-1 min-w-0 space-y-3">
-                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium text-center mb-1">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium text-center mb-1">
                     {seatLayout === "2+2"
                       ? `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })} · 2+2`
                       : `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })} · 2+1`}
@@ -868,7 +868,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                 {/* SAĞ — Sticky atanmamış yolcular paneli */}
                 <aside className="md:w-[220px] shrink-0 md:sticky md:top-0 md:self-start">
                   <div className="rounded-lg border border-border/60 bg-card p-3 space-y-2">
-                    <h3 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold flex items-center justify-between">
+                    <h3 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold flex items-center justify-between">
                       <span>
                         {t("admin.seatPlan.unassigned", { defaultValue: "Atanmamış Yolcular" })}
                       </span>
@@ -891,7 +891,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                                 "Atamak için bir koltuk seçin (boş koltuğa tıkla → yolcuyu listeden seç)",
                             })}
                           >
-                            <span className="shrink-0 font-mono tabular-nums text-muted-foreground/70 text-[10px]">
+                            <span className="shrink-0 font-mono tabular-nums text-muted-foreground text-[10px]">
                               #{p.passenger_order}
                             </span>
                             <span className="flex-1 truncate">{p.full_name}</span>
