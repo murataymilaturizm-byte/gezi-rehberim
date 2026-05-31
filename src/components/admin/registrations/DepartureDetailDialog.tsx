@@ -35,6 +35,30 @@ import { generatePassengerManifestPDF } from "@/utils/passengerManifestGenerator
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 
+/**
+ * BU SEFER DETAYINDA TEK PARA HESABI KAYNAĞI.
+ *
+ * Sefer detayı içinde rezervasyon başına tutarı 3 yer hesaplıyordu — birbiriyle
+ * tutarsız:
+ *   • Yolcu satırı render → LIVE `price_adult × pax` (snapshot ihmal)
+ *   • paymentSummary       → snapshot-öncelikli + live fallback
+ *   • fetchManifestExtras  → snapshot-öncelikli + live fallback
+ *
+ * Eğer DB snapshot YANLIŞ ise (örn 800 yazılmış ama olması gereken 4.800) satır
+ * 4.800 göstererek özet 800 sayardı → kullanıcı "satır ≠ özet" görür.
+ *
+ * Çözüm: TÜM yerler bu helper'dan beslensin. Snapshot-öncelikli + LIVE fallback —
+ * DB snapshot dolu (>0) ise audit-doğru değer, yoksa LIVE `calculateTotal(pax, price_adult)`.
+ * Snapshot'a DB'de DOKUNULMAZ (RegistrationDetailDialog gibi diğer ekranlarda audit
+ * için kullanılır); sadece bu sefer detayı içinde UI hesabı tek elden.
+ */
+const computeRegTotal = (r: RegistrationRow): number => {
+  const dbTotal = Number(r.total_amount ?? 0);
+  return dbTotal > 0
+    ? dbTotal
+    : calculateTotal(r.pax, r.tour_dates?.price_adult);
+};
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -175,16 +199,8 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
       .single();
     const activeRegs = group.regs.filter((r) => r.status !== "CANCELLED");
     const meta: ManifestRegistrationMeta[] = activeRegs.map((r) => {
-      // BUG FIX (PDF ilk grup bakiye boş): Eski/manuel rezervasyonlarda
-      // `registrations.total_amount` snapshot kolonu NULL/0 olabilir (migration
-      // backfill öncesi kayıtlar). DB snapshot yoksa LIVE `price_adult × pax`
-      // ile düş — RegistrationDetailDialog (line 159-161) pattern'i ile aynı.
-      // Sonuç: bakiye satırı eski rezervasyonlarda da görüntülenir; DB değişmez,
-      // sadece UI fallback hesabı.
-      const dbTotal = Number(r.total_amount ?? 0);
-      const total = dbTotal > 0
-        ? dbTotal
-        : calculateTotal(r.pax, r.tour_dates?.price_adult);
+      // Tek hesap kaynağı — satır render + paymentSummary ile birebir aynı.
+      const total = computeRegTotal(r);
       const paid = Number(r.paid_amount ?? 0);
       return {
         registration_id: r.id,
@@ -288,16 +304,16 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
     }
   };
 
-  // Faz 2-C2 PARÇA 1: Sağ panel ödeme özeti — mevcut total_amount/paid_amount'tan
-  // (yeni veri yok, sadece ekrana getir). Aktif (non-CANCELLED) rezervasyonların
-  // toplamı; currency tek tur olduğu için sefer'in currency'sini kullan.
+  // Sağ panel ödeme özeti — aktif (non-CANCELLED) rezervasyonların toplamı.
+  // Tek hesap kaynağı (computeRegTotal) — satır render + fetchManifestExtras ile
+  // birebir aynı: snapshot-öncelikli + LIVE fallback. Satır = özet = PDF garanti.
   const paymentSummary = useMemo(() => {
     if (!group) return { total: 0, paid: 0, remaining: 0, currency: "TRY" };
     let total = 0;
     let paid = 0;
     for (const r of group.regs) {
       if (r.status === "CANCELLED") continue;
-      total += Number(r.total_amount ?? 0);
+      total += computeRegTotal(r);
       paid += Number(r.paid_amount ?? 0);
     }
     return {
@@ -387,8 +403,10 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
               <div className="divide-y divide-border/40">
                 {sortedRegs.map((reg, idx) => {
               const isCancelled = reg.status === "CANCELLED";
-              const unitPrice = reg.tour_dates?.price_adult || 0;
-              const totalPrice = unitPrice * reg.pax;
+              // Tek hesap kaynağı (computeRegTotal): snapshot-öncelikli + LIVE fallback.
+              // Aynı helper paymentSummary ve fetchManifestExtras tarafından da kullanılır
+              // → satır = özet = PDF birebir tutarlı.
+              const totalPrice = computeRegTotal(reg);
               return (
                 <div
                   key={reg.id}
