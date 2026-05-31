@@ -74,22 +74,31 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
     tour_leader_name?: string | null;
     captain_name?: string | null;
   } | null>(null);
+  // SeatPlanDialog'da ekip alanları (guide/tourLeader/captain) güncellenince refetch
+  // tetiklemek için artan sayaç — onClose'da increment.
+  const [extrasReloadKey, setExtrasReloadKey] = useState(0);
 
   useEffect(() => {
     if (!open || !group) return;
     let aborted = false;
     (async () => {
-      const { data } = await db
+      const { data, error } = await db
         .from("tour_dates")
         .select("guide_name, tour_leader_name, captain_name")
         .eq("id", group.dateId)
         .single();
-      if (!aborted) setExtras(data || null);
+      if (aborted) return;
+      if (error) {
+        console.warn("DepartureDetail extras fetch failed:", error.message);
+        setExtras(null);
+      } else {
+        setExtras(data || null);
+      }
     })();
     return () => {
       aborted = true;
     };
-  }, [open, group?.dateId]);
+  }, [open, group?.dateId, extrasReloadKey]);
 
   /**
    * Manifesto için bu seferin tüm yolcularını çek (CANCELLED rezervasyon yolcuları
@@ -654,12 +663,18 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
       initialPax={editorTarget?.pax ?? 1}
     />
 
-    {/* Faz 2-B: Koltuk Planı — sefer ayarları + otobüs şeması + atama + PDF. */}
+    {/* Faz 2-B: Koltuk Planı — sefer ayarları + otobüs şeması + atama + PDF.
+        Kapanırken extras (Ekip paneli kaynağı) refetch tetiklenir — kullanıcı SeatPlan
+        içinde tour_leader_name/captain_name doldurduktan sonra DepartureDetail hâlâ
+        açıkken eski (boş) değerlerin asılı kalmaması için. */}
     <SeatPlanDialog
       open={seatPlanOpen}
       onOpenChange={(o) => {
         setSeatPlanOpen(o);
-        if (!o) onDataChange?.();
+        if (!o) {
+          onDataChange?.();
+          setExtrasReloadKey((k) => k + 1);
+        }
       }}
       group={group}
       onDataChange={onDataChange}

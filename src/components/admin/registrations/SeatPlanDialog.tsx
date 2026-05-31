@@ -950,17 +950,21 @@ const SeatCell = ({
                 ? isChild
                   ? "bg-orange-500/15 border-orange-500/40 hover:bg-orange-500/25 hover:-translate-y-0.5"
                   : "bg-primary/15 border-primary/40 hover:bg-primary/25 hover:-translate-y-0.5"
-                : "bg-card border-muted-foreground/20 hover:border-primary/40 hover:bg-accent/30"
+                : "bg-background border-dashed border-muted-foreground/40 text-muted-foreground hover:border-primary/60 hover:bg-primary/5 hover:text-primary hover:-translate-y-0.5"
             }
           `}
-          aria-label={`${tLabels.assign} ${seatNo}`}
+          aria-label={passenger ? `${seatNo}: ${passenger.full_name}` : `${tLabels.assign} ${seatNo}`}
           title={passenger ? `${seatNo}: ${passenger.full_name}` : `${seatNo}: ${tLabels.empty}`}
         >
           {/* Atanmış indicator: sağ üst dot */}
           {passenger && (
             <span className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${isChild ? "bg-orange-500/80" : "bg-primary/80"}`} />
           )}
-          <span className="absolute top-0.5 left-1 text-[10px] font-mono tabular-nums opacity-60">
+          <span
+            className={`absolute top-0.5 left-1 text-[10px] font-mono tabular-nums ${
+              passenger ? "opacity-60" : "font-semibold opacity-90"
+            }`}
+          >
             {seatNo}
           </span>
           {passenger ? (
@@ -968,7 +972,7 @@ const SeatCell = ({
               {initials}
             </span>
           ) : (
-            <span className="block mt-1 text-[10px] text-muted-foreground/60">·</span>
+            <span className="block mt-1 text-base leading-none select-none">+</span>
           )}
         </button>
       </PopoverTrigger>
