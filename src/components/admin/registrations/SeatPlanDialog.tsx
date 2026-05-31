@@ -30,6 +30,7 @@ import {
   Sparkles,
   FileText,
   X,
+  DoorOpen,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -586,10 +587,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
 
                       <div className="space-y-1">
                         <Label htmlFor="door_row" className="text-xs">
-                          {t("admin.seatPlan.doorRow", { defaultValue: "Kapı sırası" })}
-                          <span className="text-muted-foreground/70 font-normal ml-1">
-                            ({t("admin.seatPlan.doorRowHint", { defaultValue: "sıradan sonra" })})
-                          </span>
+                          {t("admin.seatPlan.doorRow", { defaultValue: "Orta Kapı Boşluğu" })}
                         </Label>
                         <Input
                           id="door_row"
@@ -600,6 +598,11 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                           onChange={(e) => setDoorRow(e.target.value)}
                           placeholder={t("admin.seatPlan.doorRowPlaceholder", { defaultValue: "boş = kapı yok" })}
                         />
+                        <p className="text-[11px] text-muted-foreground/80">
+                          {t("admin.seatPlan.doorRowHelp", {
+                            defaultValue: "Kapının hangi sıradan sonra olduğunu girin",
+                          })}
+                        </p>
                       </div>
                     </>
                   )}
@@ -737,21 +740,26 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                       : `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })} · 2+1`}
                   </div>
                   <div className="max-w-md mx-auto py-6 px-4 bg-muted/20 rounded-xl border border-border/40">
+                  {/* FIX (Faz 2-D bug): gridTemplateRows inline style KALDIRILDI.
+                      Önceden `repeat(visualRowCount, minmax(0, 1fr))` vardı; parent height
+                      yok → 1fr=0 → kapı satırı (h-10) 0px alana basıyor, altındaki koltuk
+                      satırının üzerine biniyor → görsel olarak görünmüyordu.
+                      CSS Grid implicit row sizing (auto) ile her satır içerik yüksekliği
+                      kadar olur: kapı satırı 40px, koltuk satırları 56px. Araya giriyor. */}
                   <div
                     className={`grid ${gridTemplate} gap-2`}
-                    style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(0, 1fr))` }}
                     role="grid"
                   >
-                    {/* Faz 2-D: Kapı/giriş satırı — door_row+1 visualRow'a yerleştirilir,
-                        tüm sütunları kapsar (grid-column: 1 / -1). Koltuk numaralandırma
-                        BOZULMAZ; sadece görsel sırada bu satır araya girer. */}
+                    {/* Kapı/giriş satırı — door_row+1 visualRow'a yerleştirilir, tüm sütunları
+                        kapsar. Koltuk numaralandırma BOZULMAZ; sadece görsel sırada araya girer. */}
                     {hasDoor && (
                       <div
                         style={{ gridRow: (doorRowNum as number) + 1, gridColumn: "1 / -1" }}
-                        className="h-8 my-0.5 rounded-md border border-dashed border-muted-foreground/30 bg-muted/40 flex items-center justify-center text-[10px] uppercase tracking-wider text-muted-foreground/80 font-medium"
-                        aria-label={t("admin.seatPlan.door", { defaultValue: "Giriş" })}
+                        className="h-10 my-1 rounded-md border-2 border-dashed border-muted-foreground/40 bg-muted/50 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground font-medium"
+                        aria-label={t("admin.seatPlan.middleDoor", { defaultValue: "Orta Kapı" })}
                       >
-                        {t("admin.seatPlan.door", { defaultValue: "Giriş" })}
+                        <DoorOpen className="w-3.5 h-3.5" />
+                        {t("admin.seatPlan.middleDoor", { defaultValue: "Orta Kapı" })}
                       </div>
                     )}
                     {Array.from({ length: rowCount }).map((_, rowIdx) =>

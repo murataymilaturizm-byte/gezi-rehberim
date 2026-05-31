@@ -1885,13 +1885,15 @@
       "exportPdf": "PDF İndir",
       "pdfError": "PDF oluşturulamadı",
       "totalAssigned": "Toplam Atanan",
-      "doorRow": "Kapı sırası",
+      "doorRow": "Orta Kapı Boşluğu",
       "doorRowHint": "sıradan sonra",
       "doorRowPlaceholder": "boş = kapı yok",
       "door": "Giriş",
       "front": "ÖN",
       "tourLeaderName": "Tur Lideri",
-      "captainName": "Kaptan"
+      "captainName": "Kaptan",
+      "doorRowHelp": "Kapının hangi sıradan sonra olduğunu girin",
+      "middleDoor": "Orta Kapı"
     }
   },
   "auth": {

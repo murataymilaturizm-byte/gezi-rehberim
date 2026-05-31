@@ -1853,13 +1853,15 @@
       "exportPdf": "Descargar PDF",
       "pdfError": "No se pudo generar el PDF",
       "totalAssigned": "Total asignado",
-      "doorRow": "Fila de la puerta",
+      "doorRow": "Espacio de puerta central",
       "doorRowHint": "después de la fila",
       "doorRowPlaceholder": "vacío = sin puerta",
       "door": "Entrada",
       "front": "FRENTE",
       "tourLeaderName": "Líder del tour",
-      "captainName": "Conductor"
+      "captainName": "Conductor",
+      "doorRowHelp": "Indique después de qué fila se ubica la puerta",
+      "middleDoor": "Puerta central"
     }
   },
   "auth": {

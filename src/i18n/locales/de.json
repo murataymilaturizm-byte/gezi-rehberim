@@ -1819,13 +1819,15 @@
       "exportPdf": "PDF herunterladen",
       "pdfError": "PDF konnte nicht erstellt werden",
       "totalAssigned": "Gesamt zugewiesen",
-      "doorRow": "Türreihe",
+      "doorRow": "Mittlere Türöffnung",
       "doorRowHint": "nach Reihe",
       "doorRowPlaceholder": "leer = keine Tür",
       "door": "Eingang",
       "front": "VORN",
       "tourLeaderName": "Reiseleiter",
-      "captainName": "Fahrer"
+      "captainName": "Fahrer",
+      "doorRowHelp": "Geben Sie an, nach welcher Reihe die Tür sich befindet",
+      "middleDoor": "Mittlere Tür"
     }
   },
   "auth": {

@@ -1853,13 +1853,15 @@
       "exportPdf": "Скачать PDF",
       "pdfError": "Не удалось создать PDF",
       "totalAssigned": "Всего назначено",
-      "doorRow": "Ряд двери",
+      "doorRow": "Проём центральной двери",
       "doorRowHint": "после ряда",
       "doorRowPlaceholder": "пусто = без двери",
       "door": "Вход",
       "front": "ПЕРЕД",
       "tourLeaderName": "Руководитель тура",
-      "captainName": "Водитель"
+      "captainName": "Водитель",
+      "doorRowHelp": "Укажите, после какого ряда находится дверь",
+      "middleDoor": "Центральная дверь"
     }
   },
   "auth": {

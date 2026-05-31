@@ -1819,13 +1819,15 @@
       "exportPdf": "Download PDF",
       "pdfError": "Could not generate PDF",
       "totalAssigned": "Total Assigned",
-      "doorRow": "Door row",
+      "doorRow": "Middle Door Gap",
       "doorRowHint": "after row",
       "doorRowPlaceholder": "empty = no door",
       "door": "Door",
       "front": "FRONT",
       "tourLeaderName": "Tour Leader",
-      "captainName": "Captain"
+      "captainName": "Captain",
+      "doorRowHelp": "Enter after which row the door is located",
+      "middleDoor": "Middle Door"
     }
   },
   "auth": {

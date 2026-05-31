@@ -1819,13 +1819,15 @@
       "exportPdf": "Télécharger PDF",
       "pdfError": "Impossible de générer le PDF",
       "totalAssigned": "Total attribué",
-      "doorRow": "Rangée de la porte",
+      "doorRow": "Espace de porte centrale",
       "doorRowHint": "après la rangée",
       "doorRowPlaceholder": "vide = pas de porte",
       "door": "Entrée",
       "front": "AVANT",
       "tourLeaderName": "Chef de groupe",
-      "captainName": "Chauffeur"
+      "captainName": "Chauffeur",
+      "doorRowHelp": "Indiquez après quelle rangée se trouve la porte",
+      "middleDoor": "Porte centrale"
     }
   },
   "auth": {

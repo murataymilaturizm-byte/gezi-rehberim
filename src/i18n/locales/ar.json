@@ -1819,13 +1819,15 @@
       "exportPdf": "تنزيل PDF",
       "pdfError": "تعذر إنشاء PDF",
       "totalAssigned": "إجمالي المعينين",
-      "doorRow": "صف الباب",
+      "doorRow": "فجوة الباب الأوسط",
       "doorRowHint": "بعد الصف",
       "doorRowPlaceholder": "فارغ = بدون باب",
       "door": "المدخل",
       "front": "أمام",
       "tourLeaderName": "قائد الجولة",
-      "captainName": "السائق"
+      "captainName": "السائق",
+      "doorRowHelp": "أدخل بعد أي صف يقع الباب",
+      "middleDoor": "الباب الأوسط"
     }
   },
   "auth": {
