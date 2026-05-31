@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
 import { RegistrationsListSkeleton } from "@/components/admin/skeletons/RegistrationsListSkeleton";
@@ -99,11 +98,22 @@ export const RegistrationsByDeparture = ({
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {groups.map((g) => {
         const occupancyPct =
           g.quota && g.quota > 0 ? Math.min(100, Math.round((g.soldPax / g.quota) * 100)) : null;
         const isFull = g.quota != null && g.soldPax >= g.quota;
+        // Faz 2-C: sol kenar accent doluluk durumuna göre (RENK YOK, sadece mevcut palet opaklıkları).
+        const accentBorder =
+          g.quota == null
+            ? "border-l-muted-foreground/20"
+            : isFull
+            ? "border-l-destructive/80"
+            : occupancyPct! >= 80
+            ? "border-l-primary/80"
+            : g.soldPax > 0
+            ? "border-l-primary/40"
+            : "border-l-muted-foreground/20";
         return (
           <Card
             key={g.dateId}
@@ -116,70 +126,87 @@ export const RegistrationsByDeparture = ({
                 onSelectDeparture(g);
               }
             }}
-            className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+            className={`cursor-pointer border-l-4 ${accentBorder} hover:border-primary/40 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-[transform,box-shadow,border-color] duration-200`}
           >
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold truncate">{g.tourTitle}</p>
+            <CardContent className="p-5 space-y-4">
+              {/* Eyebrow: tarih + sağ üst full badge */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium tabular-nums">
+                    {g.departureDate
+                      ? format(new Date(g.departureDate), "d MMM yyyy", { locale: dateLocale })
+                      : "—"}
+                    {g.returnDate && (
+                      <span>
+                        {" → "}
+                        {format(new Date(g.returnDate), "d MMM yyyy", { locale: dateLocale })}
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-base font-semibold tracking-tight truncate">
+                    {g.tourTitle}
+                  </p>
                   {g.tourDestination && (
                     <p className="text-xs text-muted-foreground truncate">{g.tourDestination}</p>
                   )}
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
-              </div>
-
-              <div className="text-sm">
-                <p className="font-medium">
-                  {g.departureDate
-                    ? format(new Date(g.departureDate), "d MMM yyyy", { locale: dateLocale })
-                    : "—"}
-                  {g.returnDate && (
-                    <span className="text-muted-foreground">
-                      {" → "}
-                      {format(new Date(g.returnDate), "d MMM yyyy", { locale: dateLocale })}
+                <div className="flex items-start gap-2 shrink-0">
+                  {isFull && (
+                    <span className="inline-flex items-center text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/30">
+                      {t("admin.registrations.full", { defaultValue: "Kontenjan dolu" })}
                     </span>
                   )}
-                </p>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                </div>
               </div>
 
               {g.quota != null ? (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
                       <Users className="w-3 h-3" />
                       {t("admin.registrations.occupancy", { defaultValue: "Doluluk" })}
                     </span>
-                    <span className="font-mono font-semibold">
-                      {g.soldPax}/{g.quota}
-                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-mono tabular-nums font-bold leading-none">
+                        {g.soldPax}
+                      </span>
+                      <span className="text-base font-mono tabular-nums text-muted-foreground font-normal leading-none">
+                        /{g.quota}
+                      </span>
+                      <span className="text-[11px] font-mono tabular-nums text-muted-foreground ml-1.5">
+                        ({occupancyPct}%)
+                      </span>
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
-                      className={`h-full transition-all ${
+                      className={`h-full transition-all duration-300 ${
                         isFull
-                          ? "bg-destructive"
+                          ? "bg-destructive/80"
                           : occupancyPct! >= 80
-                          ? "bg-orange-500"
-                          : "bg-primary"
+                          ? "bg-primary/80"
+                          : "bg-primary/60"
                       }`}
                       style={{ width: `${occupancyPct ?? 0}%` }}
                     />
                   </div>
-                  {isFull && (
-                    <Badge variant="destructive" className="text-[10px]">
-                      {t("admin.registrations.full", { defaultValue: "Kontenjan dolu" })}
-                    </Badge>
-                  )}
                 </div>
               ) : (
-                <Badge variant="outline" className="font-mono text-xs">
-                  {g.totalRegs} {t("admin.registrations.records", { defaultValue: "kayıt" })}
-                </Badge>
+                <div className="space-y-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                      {t("admin.registrations.records", { defaultValue: "Kayıt" })}
+                    </span>
+                    <span className="text-2xl font-mono tabular-nums font-bold leading-none">
+                      {g.totalRegs}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/60 italic">
+                    {t("admin.registrations.noQuotaSet", { defaultValue: "Kontenjan ayarlı değil" })}
+                  </p>
+                </div>
               )}
-
-              {/* Faz 2 yer tutucu: araç bilgisi (transport_type) — şu an veri yok, gösterilmez.
-                  Kart layout'u Faz 2'de araç chip'i + plan ikonu eklenince genişleyebilir. */}
             </CardContent>
           </Card>
         );

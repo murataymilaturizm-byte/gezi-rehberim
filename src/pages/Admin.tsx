@@ -178,8 +178,8 @@ const Admin = () => {
   const [manualRegistrationDialogOpen, setManualRegistrationDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
-  // Faz 1: Kayıtlar 3 görünüm — varsayılan "list" (mevcut davranış korunur)
-  const [registrationsView, setRegistrationsView] = useState<RegistrationsView>("list");
+  // Faz 2-C: Kayıtlar 3 görünüm — varsayılan "by-departure" (operasyonel en sık kullanım)
+  const [registrationsView, setRegistrationsView] = useState<RegistrationsView>("by-departure");
   const [departureDetailOpen, setDepartureDetailOpen] = useState(false);
   const [selectedDepartureGroup, setSelectedDepartureGroup] = useState<DepartureGroup | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
@@ -1064,23 +1064,24 @@ const Admin = () => {
                         value={registrationsView}
                         onValueChange={(v) => setRegistrationsView(v as RegistrationsView)}
                       >
-                        <TabsList className="grid w-full max-w-md grid-cols-3">
-                          <TabsTrigger value="list" className="gap-1.5">
-                            <List className="w-3.5 h-3.5" />
-                            <span className="text-xs sm:text-sm">
-                              {t("admin.registrations.viewList", { defaultValue: "Liste" })}
+                        {/* Faz 2-C: Sıra Sefer Bazlı → Tur Bazlı → Liste. Inline-flex, content-fit. */}
+                        <TabsList className="inline-flex h-auto p-1 gap-1">
+                          <TabsTrigger value="by-departure" className="gap-2 px-3 py-1.5">
+                            <CalendarDays className="w-4 h-4" />
+                            <span className="text-sm">
+                              {t("admin.registrations.viewByDeparture", { defaultValue: "Sefer Bazlı" })}
                             </span>
                           </TabsTrigger>
-                          <TabsTrigger value="by-tour" className="gap-1.5">
-                            <Layers className="w-3.5 h-3.5" />
-                            <span className="text-xs sm:text-sm">
+                          <TabsTrigger value="by-tour" className="gap-2 px-3 py-1.5">
+                            <Layers className="w-4 h-4" />
+                            <span className="text-sm">
                               {t("admin.registrations.viewByTour", { defaultValue: "Tur Bazlı" })}
                             </span>
                           </TabsTrigger>
-                          <TabsTrigger value="by-departure" className="gap-1.5">
-                            <CalendarDays className="w-3.5 h-3.5" />
-                            <span className="text-xs sm:text-sm">
-                              {t("admin.registrations.viewByDeparture", { defaultValue: "Sefer Bazlı" })}
+                          <TabsTrigger value="list" className="gap-2 px-3 py-1.5">
+                            <List className="w-4 h-4" />
+                            <span className="text-sm">
+                              {t("admin.registrations.viewList", { defaultValue: "Liste" })}
                             </span>
                           </TabsTrigger>
                         </TabsList>

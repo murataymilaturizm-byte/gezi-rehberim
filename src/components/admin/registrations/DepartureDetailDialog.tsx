@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, MessageCircle, FileSpreadsheet, FileText, Users, Bus, UsersRound, Loader2, Armchair } from "lucide-react";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { formatPrice } from "@/utils/currency";
@@ -216,78 +215,95 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <span className="truncate">{group.tourTitle}</span>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
+        {/* Faz 2-C: Dialog header — eyebrow + title + chip-style description */}
+        <DialogHeader className="px-6 py-5 border-b border-border/60">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+            {t("admin.registrations.departureDetail", { defaultValue: "Sefer Detayı" })}
+          </p>
+          <DialogTitle className="text-lg font-semibold tracking-tight truncate">
+            {group.tourTitle}
           </DialogTitle>
-          <DialogDescription>
-            {dateText}
-            {returnText}
-            {group.tourDestination && <span> · {group.tourDestination}</span>}
+          <DialogDescription className="flex flex-wrap gap-1.5 mt-1">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 tabular-nums">
+              {dateText}{returnText}
+            </span>
+            {group.tourDestination && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80">
+                {group.tourDestination}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Doluluk özeti + Faz 2 yer tutucular */}
-        <div className="grid gap-3 sm:grid-cols-3 border-y py-3">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-5">
+        {/* Faz 2-C: Doluluk özeti — stats card pattern (3 sütun, divide-x, büyük sayılar) */}
+        <div className="grid sm:grid-cols-3 gap-0 divide-x divide-border/60 rounded-lg border border-border/60 bg-muted/20 overflow-hidden">
+          <div className="p-4 space-y-1.5">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium inline-flex items-center gap-1">
               <Users className="w-3 h-3" />
               {t("admin.registrations.occupancy", { defaultValue: "Doluluk" })}
             </p>
             {group.quota != null ? (
               <>
-                <p className="font-mono font-semibold text-lg">
-                  {group.soldPax}
-                  <span className="text-muted-foreground">/{group.quota}</span>
-                </p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-mono tabular-nums font-bold leading-none">
+                    {group.soldPax}
+                  </span>
+                  <span className="text-base font-mono tabular-nums text-muted-foreground leading-none">
+                    /{group.quota}
+                  </span>
+                </div>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div
-                    className={`h-full transition-all ${
+                    className={`h-full transition-all duration-300 ${
                       isFull
-                        ? "bg-destructive"
+                        ? "bg-destructive/80"
                         : occupancyPct! >= 80
-                        ? "bg-orange-500"
-                        : "bg-primary"
+                        ? "bg-primary/80"
+                        : "bg-primary/60"
                     }`}
                     style={{ width: `${occupancyPct ?? 0}%` }}
                   />
                 </div>
                 {isFull && (
-                  <Badge variant="destructive" className="text-[10px] mt-1">
+                  <span className="inline-flex items-center text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/30 mt-1">
                     {t("admin.registrations.full", { defaultValue: "Kontenjan dolu" })}
-                  </Badge>
+                  </span>
                 )}
               </>
             ) : (
-              <p className="font-mono font-semibold">{group.totalRegs}</p>
+              <span className="text-2xl font-mono tabular-nums font-bold leading-none">
+                {group.totalRegs}
+              </span>
             )}
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">
+          <div className="p-4 space-y-1.5">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
               {t("admin.registrations.records", { defaultValue: "Kayıt" })}
             </p>
-            <p className="font-mono font-semibold text-lg">{group.totalRegs}</p>
+            <span className="text-2xl font-mono tabular-nums font-bold leading-none block">
+              {group.totalRegs}
+            </span>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
+          <div className="p-4 space-y-1.5">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium inline-flex items-center gap-1">
               <Bus className="w-3 h-3" />
               {t("admin.registrations.vehicle", { defaultValue: "Araç" })}
             </p>
-            {/* Faz 2 yer tutucu — şu an transport_type verisi YOK */}
             <p className="text-sm text-muted-foreground italic">
               {t("admin.registrations.comingSoon", { defaultValue: "Yakında" })}
             </p>
           </div>
         </div>
 
-        {/* Faz 2-A: Yolcu Listesi (Manifesto) — Excel + PDF aktif */}
-        <div className="flex flex-wrap gap-2">
+        <div className="inline-flex rounded-lg border border-border/60 bg-card divide-x divide-border/60 overflow-hidden flex-wrap">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={handleExportExcel}
             disabled={exportingExcel || exportingPdf}
+            className="rounded-none border-0 h-9"
           >
             {exportingExcel ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -297,10 +313,11 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
             {t("admin.registrations.exportExcel", { defaultValue: "Excel İndir" })}
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={handleExportPdf}
             disabled={exportingPdf || exportingExcel}
+            className="rounded-none border-0 h-9"
           >
             {exportingPdf ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -309,21 +326,20 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
             )}
             {t("admin.registrations.exportPdf", { defaultValue: "PDF İndir" })}
           </Button>
-          {/* Faz 2-B: Koltuk Planı butonu — her zaman görünür; ayarlar tour_date'te
-              yoksa SeatPlanDialog açılışta settings formunu gösterir. */}
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setSeatPlanOpen(true)}
+            className="rounded-none border-0 h-9"
           >
             <Armchair className="w-4 h-4 mr-2" />
             {t("admin.seatPlan.openButton", { defaultValue: "Koltuk Planı" })}
           </Button>
         </div>
 
-        {/* Yolcu listesi */}
-        <ScrollArea className="flex-1 max-h-[50vh] -mx-1 px-1">
-          <div className="space-y-1.5">
+        {/* Faz 2-C: Yolcu listesi borderless flow — divide-y + hover bg */}
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
+          <div className="divide-y divide-border/40">
             {sortedRegs.map((reg, idx) => {
               const isCancelled = reg.status === "CANCELLED";
               const unitPrice = reg.tour_dates?.price_adult || 0;
@@ -332,12 +348,12 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
               return (
                 <div
                   key={reg.id}
-                  className={`flex items-center gap-2 rounded-md border bg-card p-2.5 ${
-                    isCancelled ? "opacity-50" : ""
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-accent/20 transition-colors ${
+                    isCancelled ? "opacity-60 grayscale-[40%]" : ""
                   }`}
                 >
-                  <span className="text-xs font-mono text-muted-foreground w-6 shrink-0 text-right">
-                    {idx + 1}.
+                  <span className="text-[11px] font-mono text-muted-foreground/60 w-7 shrink-0 text-right tabular-nums">
+                    {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">
@@ -348,12 +364,12 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
                         </Badge>
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {reg.phone} · {reg.pax} {t("common.people", { defaultValue: "kişi" })}
+                    <p className="text-xs text-muted-foreground truncate tabular-nums">
+                      {reg.phone} · <span className="font-mono">{reg.pax}</span> {t("common.people", { defaultValue: "kişi" })}
                       {reg.note && <span> · {reg.note}</span>}
                     </p>
                   </div>
-                  <div className="hidden sm:flex flex-col items-end shrink-0 text-xs">
+                  <div className="hidden sm:flex flex-col items-end shrink-0 text-xs gap-0.5">
                     <Badge
                       variant={
                         reg.payment_status === "PAID"
@@ -362,12 +378,12 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
                           ? "secondary"
                           : "outline"
                       }
-                      className="text-[10px]"
+                      className="text-[10px] font-medium"
                     >
                       {paymentStatusLabels[reg.payment_status || "UNPAID"]}
                     </Badge>
                     {totalPrice > 0 && (
-                      <span className="font-semibold mt-0.5">
+                      <span className="font-mono tabular-nums font-semibold">
                         {formatPrice(totalPrice, group.currency, { showCode: false })}
                       </span>
                     )}
@@ -422,7 +438,8 @@ export const DepartureDetailDialog = ({ open, onOpenChange, group, onViewDetail,
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
+        </div>
       </DialogContent>
     </Dialog>
 

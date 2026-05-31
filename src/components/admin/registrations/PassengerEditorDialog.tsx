@@ -286,8 +286,11 @@ export const PassengerEditorDialog = ({
             flex item'ın min-height default'u "auto" → content boyu kadar büyür, max-h yenilmez).
             Header + footer flex-shrink-0 ile kayboldukça küçülmez; sadece liste alanı kayar. */}
         <DialogContent className="max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden p-0 gap-0">
-          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-3 border-b">
-            <DialogTitle>
+          <DialogHeader className="flex-shrink-0 px-6 py-5 border-b border-border/60">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+              {t("admin.passengers.eyebrow", { defaultValue: "Yolcu Listesi" })}
+            </p>
+            <DialogTitle className="text-lg font-semibold tracking-tight">
               {t("admin.passengers.title", { defaultValue: "Yolcu Listesi" })}
             </DialogTitle>
             <DialogDescription>
@@ -312,10 +315,10 @@ export const PassengerEditorDialog = ({
                 {passengers.map((p) => (
                   <div
                     key={p.id}
-                    className="border rounded-lg p-3 space-y-2 bg-card"
+                    className="border border-border/60 rounded-lg p-4 space-y-3 bg-card"
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-mono text-muted-foreground">
+                    <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
+                      <span className="text-[11px] font-mono tabular-nums uppercase tracking-wider text-muted-foreground/70 font-medium">
                         #{p.passenger_order}
                       </span>
                       <Button
@@ -329,9 +332,9 @@ export const PassengerEditorDialog = ({
                         {t("admin.passengers.removePassenger", { defaultValue: "Yolcu Sil" })}
                       </Button>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <div className="space-y-1 sm:col-span-2">
-                        <Label htmlFor={`name-${p.id}`} className="text-xs">
+                    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label htmlFor={`name-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
                           {t("admin.passengers.fullName", { defaultValue: "Ad Soyad" })}
                         </Label>
                         <Input
@@ -341,8 +344,8 @@ export const PassengerEditorDialog = ({
                           placeholder={`${PLACEHOLDER_PREFIX}${p.passenger_order}`}
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label htmlFor={`id-${p.id}`} className="text-xs">
+                      <div className="space-y-1.5">
+                        <Label htmlFor={`id-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
                           {t("admin.passengers.identityNo", { defaultValue: "Kimlik No" })}
                         </Label>
                         <Input
@@ -351,10 +354,11 @@ export const PassengerEditorDialog = ({
                           onChange={(e) => updateField(p.id, "identity_no", e.target.value)}
                           placeholder="11111111111"
                           inputMode="numeric"
+                          className="font-mono tabular-nums"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label htmlFor={`passport-${p.id}`} className="text-xs">
+                      <div className="space-y-1.5">
+                        <Label htmlFor={`passport-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
                           {t("admin.passengers.passportNo", { defaultValue: "Pasaport No" })}
                         </Label>
                         <Input
@@ -362,10 +366,11 @@ export const PassengerEditorDialog = ({
                           value={p.passport_no ?? ""}
                           onChange={(e) => updateField(p.id, "passport_no", e.target.value)}
                           placeholder="U12345678"
+                          className="font-mono tabular-nums"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label htmlFor={`birth-${p.id}`} className="text-xs">
+                      <div className="space-y-1.5">
+                        <Label htmlFor={`birth-${p.id}`} className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
                           {t("admin.passengers.birthDate", { defaultValue: "Doğum Tarihi" })}
                         </Label>
                         <Input
@@ -373,6 +378,7 @@ export const PassengerEditorDialog = ({
                           type="date"
                           value={p.birth_date ?? ""}
                           onChange={(e) => updateField(p.id, "birth_date", e.target.value)}
+                          className="font-mono tabular-nums"
                         />
                       </div>
                       <div className="flex items-end gap-2 pb-1">

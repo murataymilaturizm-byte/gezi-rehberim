@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
 import { RegistrationsListSkeleton } from "@/components/admin/skeletons/RegistrationsListSkeleton";
 import { ClipboardList, Eye, MessageCircle, Users } from "lucide-react";
@@ -121,90 +120,109 @@ export const RegistrationsByTour = ({
   }
 
   return (
-    <Accordion type="multiple" className="space-y-2">
+    <Accordion type="multiple" className="space-y-3">
       {grouped.map((tour) => (
         <AccordionItem
           key={tour.tourId}
           value={tour.tourId}
-          className="border rounded-lg bg-card overflow-hidden"
+          className="border border-border/60 rounded-lg bg-card overflow-hidden"
         >
-          <AccordionTrigger className="px-4 py-3 hover:bg-accent/50 hover:no-underline">
+          <AccordionTrigger className="px-5 py-4 hover:bg-accent/30 hover:no-underline">
             <div className="flex flex-1 items-center justify-between gap-3 pr-2">
-              <div className="text-left min-w-0">
-                <p className="font-semibold truncate">{tour.tourTitle}</p>
-                {tour.tourDestination && (
-                  <p className="text-xs text-muted-foreground truncate">{tour.tourDestination}</p>
-                )}
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Dairesel mini sayaç — sefer sayısı (mevcut primary opaklığı, yeni renk yok) */}
+                <span className="shrink-0 inline-grid place-content-center w-9 h-9 rounded-full bg-primary/10 text-primary text-xs font-mono tabular-nums font-semibold">
+                  {tour.dateGroupsArr.length}
+                </span>
+                <div className="text-left min-w-0 space-y-0.5">
+                  {tour.tourDestination && (
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium truncate">
+                      {tour.tourDestination}
+                    </p>
+                  )}
+                  <p className="text-base font-semibold tracking-tight truncate">{tour.tourTitle}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Badge variant="outline" className="font-mono text-xs">
-                  {tour.totalRegs} {t("admin.registrations.records", { defaultValue: "kayıt" })}
-                </Badge>
-                <Badge variant="secondary" className="font-mono text-xs gap-1">
+              <div className="flex items-center gap-3 shrink-0 text-xs">
+                <span className="text-muted-foreground">
+                  <span className="font-mono tabular-nums font-semibold text-foreground">
+                    {tour.totalRegs}
+                  </span>{" "}
+                  {t("admin.registrations.records", { defaultValue: "kayıt" })}
+                </span>
+                <span className="text-muted-foreground/60">·</span>
+                <span className="text-muted-foreground inline-flex items-center gap-1">
                   <Users className="w-3 h-3" />
-                  {tour.totalPax}
-                </Badge>
+                  <span className="font-mono tabular-nums font-semibold text-foreground">
+                    {tour.totalPax}
+                  </span>{" "}
+                  {t("common.people", { defaultValue: "kişi" })}
+                </span>
               </div>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-2 pb-2">
+          <AccordionContent className="px-3 pb-3">
             <div className="space-y-3">
               {tour.dateGroupsArr.map((dg) => (
-                <Card key={dg.dateId} className="border-l-4 border-l-primary/40">
-                  <CardContent className="p-3 space-y-2">
-                    <div className="flex items-baseline justify-between gap-2 border-b pb-2">
-                      <p className="text-sm font-medium">
-                        {dg.departureDate
-                          ? format(new Date(dg.departureDate), "d MMM yyyy", { locale: dateLocale })
-                          : "—"}
-                        {dg.returnDate && (
-                          <span className="text-muted-foreground">
-                            {" → "}
-                            {format(new Date(dg.returnDate), "d MMM yyyy", { locale: dateLocale })}
-                          </span>
-                        )}
-                      </p>
-                      <Badge variant="outline" className="text-xs">
-                        {dg.regs.length} {t("admin.registrations.records", { defaultValue: "kayıt" })}
-                      </Badge>
-                    </div>
-                    <div className="space-y-1.5">
-                      {dg.regs.map((reg) => {
-                        const unitPrice = reg.tour_dates?.price_adult || 0;
-                        const totalPrice = unitPrice * reg.pax;
-                        const waUrl = buildWhatsAppUrl(reg.phone);
-                        return (
-                          <div
-                            key={reg.id}
-                            className={`flex items-center gap-2 rounded-md border bg-background p-2 ${
-                              reg.status === "CANCELLED" ? "opacity-50" : ""
-                            }`}
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{reg.full_name}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {reg.phone} · {reg.pax} {t("common.people", { defaultValue: "kişi" })}
-                              </p>
-                            </div>
-                            <div className="hidden sm:flex flex-col items-end shrink-0 text-xs">
-                              <Badge
-                                variant={
-                                  reg.payment_status === "PAID"
-                                    ? "default"
-                                    : reg.payment_status === "DEPOSIT"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                className="text-[10px]"
-                              >
-                                {paymentStatusLabels[reg.payment_status || "UNPAID"]}
-                              </Badge>
-                              {totalPrice > 0 && (
-                                <span className="font-semibold mt-0.5">
-                                  {formatPrice(totalPrice, tour.currency, { showCode: false })}
-                                </span>
-                              )}
-                            </div>
+                <div key={dg.dateId} className="rounded-md border border-border/60 border-l-4 border-l-primary/40 bg-background overflow-hidden">
+                  <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-baseline justify-between gap-2">
+                    <p className="text-sm font-medium tabular-nums">
+                      {dg.departureDate
+                        ? format(new Date(dg.departureDate), "d MMM yyyy", { locale: dateLocale })
+                        : "—"}
+                      {dg.returnDate && (
+                        <span className="text-muted-foreground font-normal">
+                          {" → "}
+                          {format(new Date(dg.returnDate), "d MMM yyyy", { locale: dateLocale })}
+                        </span>
+                      )}
+                    </p>
+                    <span className="text-xs text-muted-foreground">
+                      <span className="font-mono tabular-nums font-semibold text-foreground">
+                        {dg.regs.length}
+                      </span>{" "}
+                      {t("admin.registrations.records", { defaultValue: "kayıt" })}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-border/40">
+                    {dg.regs.map((reg) => {
+                      const unitPrice = reg.tour_dates?.price_adult || 0;
+                      const totalPrice = unitPrice * reg.pax;
+                      const waUrl = buildWhatsAppUrl(reg.phone);
+                      return (
+                        <div
+                          key={reg.id}
+                          className={`flex items-center gap-3 py-2.5 px-3 hover:bg-accent/20 transition-colors ${
+                            reg.status === "CANCELLED" ? "opacity-60 grayscale-[40%]" : ""
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{reg.full_name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {reg.phone} ·{" "}
+                              <span className="font-mono tabular-nums">{reg.pax}</span>{" "}
+                              {t("common.people", { defaultValue: "kişi" })}
+                            </p>
+                          </div>
+                          <div className="hidden sm:flex flex-col items-end shrink-0 text-xs gap-0.5">
+                            <Badge
+                              variant={
+                                reg.payment_status === "PAID"
+                                  ? "default"
+                                  : reg.payment_status === "DEPOSIT"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              className="text-[10px] font-medium"
+                            >
+                              {paymentStatusLabels[reg.payment_status || "UNPAID"]}
+                            </Badge>
+                            {totalPrice > 0 && (
+                              <span className="font-mono tabular-nums font-semibold">
+                                {formatPrice(totalPrice, tour.currency, { showCode: false })}
+                              </span>
+                            )}
+                          </div>
                             <div className="flex gap-1 shrink-0">
                               <Button
                                 variant="outline"
@@ -236,9 +254,8 @@ export const RegistrationsByTour = ({
                           </div>
                         );
                       })}
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </AccordionContent>

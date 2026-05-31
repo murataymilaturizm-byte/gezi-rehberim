@@ -446,14 +446,25 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] sm:max-h-[88vh] flex flex-col overflow-hidden p-0 gap-0">
-        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-3 border-b">
-          <DialogTitle>
+        <DialogHeader className="flex-shrink-0 px-6 py-5 border-b border-border/60">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+            {t("admin.seatPlan.eyebrow", { defaultValue: "Sefer Düzeni" })}
+          </p>
+          <DialogTitle className="text-lg font-semibold tracking-tight">
             {t("admin.seatPlan.title", { defaultValue: "Koltuk Planı" })}
           </DialogTitle>
-          <DialogDescription>
-            <span className="truncate">{group.tourTitle}</span> · {dateText}
-            {returnText}
-            {vehiclePlate && <span> · {vehiclePlate}</span>}
+          <DialogDescription className="flex flex-wrap gap-1.5 mt-1">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 truncate max-w-[200px]">
+              {group.tourTitle}
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 tabular-nums">
+              {dateText}{returnText}
+            </span>
+            {vehiclePlate && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/40 text-xs font-medium text-foreground/80 font-mono tabular-nums">
+                {vehiclePlate}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -652,16 +663,16 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                   </div>
                 </div>
 
-                {/* Otobüs Şeması */}
-                <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground text-center mb-2">
-                    {/* "Ön" / "Arka" gibi referans yok — sade tut */}
+                {/* Faz 2-C: Otobüs Şeması — "araç çerçevesi" pattern + koridor dashed */}
+                <div className="space-y-3">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium text-center mb-1">
                     {seatLayout === "2+2"
-                      ? `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })}: 2+2`
-                      : `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })}: 2+1`}
+                      ? `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })} · 2+2`
+                      : `${t("admin.seatPlan.layout", { defaultValue: "Düzen" })} · 2+1`}
                   </div>
+                  <div className="max-w-md mx-auto py-6 px-4 bg-muted/20 rounded-xl border border-border/40">
                   <div
-                    className={`grid ${gridTemplate} gap-2 max-w-md mx-auto`}
+                    className={`grid ${gridTemplate} gap-2`}
                     role="grid"
                   >
                     {Array.from({ length: rowCount }).map((_, rowIdx) =>
@@ -712,10 +723,11 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                       })
                     )}
                   </div>
+                  </div>
                 </div>
 
                 {/* Atanmamış Yolcular */}
-                <div className="space-y-2 border-t pt-4">
+                <div className="space-y-2 border-t border-border/60 pt-4">
                   <h3 className="font-semibold text-sm">
                     {t("admin.seatPlan.unassigned", {
                       defaultValue: "Atanmamış Yolcular",
@@ -735,9 +747,9 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
                       {unassignedPassengers.map((p) => (
                         <span
                           key={p.id}
-                          className="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1 text-xs"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs hover:bg-accent/40 hover:border-primary/30 transition-colors cursor-default"
                         >
-                          <span className="font-mono text-muted-foreground">
+                          <span className="font-mono tabular-nums text-muted-foreground">
                             #{p.passenger_order}
                           </span>
                           {p.full_name}
@@ -804,19 +816,23 @@ const SeatCell = ({
           type="button"
           style={{ gridRow: row, gridColumn: col }}
           className={`
-            relative h-14 rounded border-2 text-xs font-medium transition-colors
+            relative h-14 rounded-md border-2 text-xs font-medium transition-all duration-150
             ${
               passenger
                 ? isChild
-                  ? "bg-orange-500/15 border-orange-500/40 hover:bg-orange-500/25"
-                  : "bg-primary/15 border-primary/40 hover:bg-primary/25"
-                : "bg-card border-muted-foreground/20 hover:border-primary/50 hover:bg-accent/30"
+                  ? "bg-orange-500/15 border-orange-500/40 hover:bg-orange-500/25 hover:-translate-y-0.5"
+                  : "bg-primary/15 border-primary/40 hover:bg-primary/25 hover:-translate-y-0.5"
+                : "bg-card border-muted-foreground/20 hover:border-primary/40 hover:bg-accent/30"
             }
           `}
           aria-label={`${tLabels.assign} ${seatNo}`}
           title={passenger ? `${seatNo}: ${passenger.full_name}` : `${seatNo}: ${tLabels.empty}`}
         >
-          <span className="absolute top-0.5 left-1 text-[10px] font-mono opacity-60">
+          {/* Atanmış indicator: sağ üst dot */}
+          {passenger && (
+            <span className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ${isChild ? "bg-orange-500/80" : "bg-primary/80"}`} />
+          )}
+          <span className="absolute top-0.5 left-1 text-[10px] font-mono tabular-nums opacity-60">
             {seatNo}
           </span>
           {passenger ? (
