@@ -401,7 +401,7 @@ export default function FAQManagement() {
               {t("admin.faq.addNew")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
             <DialogHeader>
               <DialogTitle>
                 {editingFaq ? t("admin.faq.edit") : t("admin.faq.addNew")}

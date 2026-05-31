@@ -401,7 +401,7 @@ export const ToursList = ({
 
       {/* Duplicate dialog */}
       <Dialog open={!!duplicateTour} onOpenChange={(o) => !o && setDuplicateTour(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-card">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Copy className="h-5 w-5" />

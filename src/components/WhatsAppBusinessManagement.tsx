@@ -234,7 +234,7 @@ function ManageAccountDialog({ account, open, onOpenChange, onSaved }: ManageAcc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
         <DialogHeader>
           <DialogTitle>{t("superAdmin.business.dialogTitle")}</DialogTitle>
           <DialogDescription>{account.name} — Hesap bilgilerini düzenleyin</DialogDescription>

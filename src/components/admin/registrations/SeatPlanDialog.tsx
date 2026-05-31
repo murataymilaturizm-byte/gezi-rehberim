@@ -495,7 +495,7 @@ export const SeatPlanDialog = ({ open, onOpenChange, group, onDataChange }: Prop
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] sm:max-h-[88vh] flex flex-col overflow-hidden p-0 gap-0">
+      <DialogContent className="max-w-5xl max-h-[90vh] sm:max-h-[88vh] flex flex-col overflow-hidden p-0 gap-0 bg-card">
         <DialogHeader className="flex-shrink-0 px-6 py-5 border-b border-border/60">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             {t("admin.seatPlan.eyebrow", { defaultValue: "Sefer Düzeni" })}

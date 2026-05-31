@@ -430,7 +430,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
                 {t("admin.agency.addNew")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-card">
               <DialogHeader>
                 <DialogTitle>
                   {editingAgency ? t("admin.agency.editAgency") : t("admin.agency.addNew")}
@@ -682,7 +682,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
       {/* Agency Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
@@ -879,7 +879,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
       {/* Plan & Quota Management Dialog */}
       <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-card">
           <DialogHeader>
             <DialogTitle>Plan ve Kota Yönetimi</DialogTitle>
             <DialogDescription>
@@ -986,7 +986,7 @@ export const AgencyManagement = ({ isSuperAdmin = false }: AgencyManagementProps
 
       {/* Conversation Style Dialog */}
       <Dialog open={styleDialogOpen} onOpenChange={setStyleDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-card">
           <DialogHeader>
             <DialogTitle>Konuşma Üslubu</DialogTitle>
             <DialogDescription>

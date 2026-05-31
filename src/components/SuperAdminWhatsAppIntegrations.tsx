@@ -368,7 +368,7 @@ export const SuperAdminWhatsAppIntegrations = ({ isSuperAdmin = false }: SuperAd
 
       {/* Edit Modal */}
       <Dialog open={!!editModal} onOpenChange={(open) => !open && setEditModal(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card">
           <DialogHeader>
             <DialogTitle>{t("superAdmin.integrations.editTitle")} — {editModal?.agency_name}</DialogTitle>
             <DialogDescription>

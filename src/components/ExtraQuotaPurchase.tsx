@@ -146,7 +146,7 @@ export function ExtraQuotaPurchase({
           {t("admin.usageStats.buyExtraQuota")}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="bg-card">
         <DialogHeader>
           <DialogTitle>{t("admin.usageStats.extraQuotaTitle")}</DialogTitle>
           <DialogDescription>{t("admin.usageStats.extraQuotaDescription")}</DialogDescription>

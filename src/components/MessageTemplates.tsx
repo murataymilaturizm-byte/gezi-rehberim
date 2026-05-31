@@ -544,7 +544,7 @@ export default function MessageTemplates() {
       </Tabs>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-card">
           <DialogHeader>
             <DialogTitle>{t('admin.templates.dialog.title')}</DialogTitle>
             <DialogDescription>

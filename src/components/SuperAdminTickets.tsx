@@ -305,7 +305,7 @@ export const SuperAdminTickets = ({ isSuperAdmin = false }: SuperAdminTicketsPro
                           {t("tickets.viewDetails")}
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-card">
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2">
                             <Building className="w-5 h-5" />

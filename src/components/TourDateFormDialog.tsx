@@ -169,7 +169,7 @@ export const TourDateFormDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-card">
         <DialogHeader>
           <DialogTitle>{tourDate ? t("admin.dateForm.editDate") : t("admin.dateForm.addDate")}</DialogTitle>
           <DialogDescription>

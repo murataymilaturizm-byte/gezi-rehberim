@@ -197,7 +197,7 @@ export function SendTemplateDialog({ template, agencyId, open, onClose }: SendTe
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className={`${isMobile ? "w-full max-w-none h-[95dvh]" : "max-w-2xl max-h-[90vh]"} overflow-y-auto`}>
+      <DialogContent className={`${isMobile ? "w-full max-w-none h-[95dvh]" : "max-w-2xl max-h-[90vh]"} overflow-y-auto bg-card`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Send className="h-5 w-5" />

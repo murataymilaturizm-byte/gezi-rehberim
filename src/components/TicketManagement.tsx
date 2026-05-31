@@ -272,7 +272,7 @@ export const TicketManagement = () => {
               {t("tickets.createNew")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl bg-card">
             <DialogHeader>
               <DialogTitle>{t("tickets.createNew")}</DialogTitle>
             </DialogHeader>
@@ -352,7 +352,7 @@ export const TicketManagement = () => {
                         {t("tickets.viewDetails")}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                    <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-card">
                       <DialogHeader>
                         <DialogTitle>{ticket.title}</DialogTitle>
                       </DialogHeader>
