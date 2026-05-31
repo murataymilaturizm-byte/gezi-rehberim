@@ -1810,7 +1810,8 @@
       "balance": "Restbetrag",
       "paid": "Vollständig bezahlt",
       "tourLeader": "Reiseleiter",
-      "captain": "Fahrer"
+      "captain": "Fahrer",
+      "birthDateShort": "Geburt"
     },
     "seatPlan": {
       "openButton": "Sitzplan",

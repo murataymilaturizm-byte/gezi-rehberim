@@ -1810,7 +1810,8 @@
       "balance": "الرصيد",
       "paid": "مدفوع بالكامل",
       "tourLeader": "قائد الجولة",
-      "captain": "السائق"
+      "captain": "السائق",
+      "birthDateShort": "ميلاد"
     },
     "seatPlan": {
       "openButton": "مخطط المقاعد",

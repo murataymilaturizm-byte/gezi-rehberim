@@ -1876,7 +1876,8 @@
       "balance": "Bakiye",
       "paid": "Tamamı ödendi",
       "tourLeader": "Tur Lideri",
-      "captain": "Kaptan"
+      "captain": "Kaptan",
+      "birthDateShort": "Doğum"
     },
     "seatPlan": {
       "openButton": "Koltuk Planı",

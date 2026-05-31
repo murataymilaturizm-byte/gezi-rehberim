@@ -106,25 +106,33 @@ export const generatePassengerManifestPDF = (
   const hasAnyPassport = passengers.some((p) => !!(p.passport_no || "").trim());
 
   // ── Sütun tanımı + A4 yazılabilir alana (~186mm) dağılım ──
-  // Pasaport varsa: 10+50+28+22+14+36+26 = 186
-  // Pasaport yoksa: 10+62+34+22+14+44     = 186  (pasaport 26mm'si Ad Soyad'a +12, Kimlik'e +6, Bakiye'ye +8 dağılır)
+  // Pasaport varsa: 10+48+26+26+12+38+26 = 186
+  // Pasaport yoksa: 10+60+32+26+12+46    = 186
+  //
+  // DÜZEN DÜZELTMELERİ:
+  //   • "Doğum Tarihi" → "Doğum" (birthDateShort) — önceki "Doğum Tarihi" 22mm'de iki
+  //     satıra bölünüyordu (helvetica bold 9pt ~26-28mm gerekirdi). Kısa başlık + 26mm
+  //     sütun → tek satır, hiçbir başlık bölünmüyor.
+  //   • Bakiye 36/44mm → 38/46mm — currency suffix ("TL", "TRY", "USD" vb.) için
+  //     yeterli alan; right-align değer artık sütun dışına taşmıyor.
+  //   • Çocuk 14mm → 12mm — sadece tek "X" karakteri; ufak kazanım Bakiye'ye gitti.
   const cols: ColDef[] = hasAnyPassport
     ? [
         { key: "order", title: t("admin.manifest.order", "Sıra"), align: "center", width: 10 },
-        { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), align: "left", width: 50 },
-        { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), align: "left", width: 28 },
-        { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), align: "center", width: 22 },
-        { key: "child", title: t("admin.manifest.isChild", "Çocuk"), align: "center", width: 14 },
-        { key: "balance", title: t("admin.manifest.balance", "Bakiye"), align: "right", width: 36 },
+        { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), align: "left", width: 48 },
+        { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), align: "left", width: 26 },
+        { key: "birth", title: t("admin.manifest.birthDateShort", "Doğum"), align: "center", width: 26 },
+        { key: "child", title: t("admin.manifest.isChild", "Çocuk"), align: "center", width: 12 },
+        { key: "balance", title: t("admin.manifest.balance", "Bakiye"), align: "right", width: 38 },
         { key: "passport", title: t("admin.manifest.passportNo", "Pasaport No"), align: "left", width: 26 },
       ]
     : [
         { key: "order", title: t("admin.manifest.order", "Sıra"), align: "center", width: 10 },
-        { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), align: "left", width: 62 },
-        { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), align: "left", width: 34 },
-        { key: "birth", title: t("admin.manifest.birthDate", "Doğum Tarihi"), align: "center", width: 22 },
-        { key: "child", title: t("admin.manifest.isChild", "Çocuk"), align: "center", width: 14 },
-        { key: "balance", title: t("admin.manifest.balance", "Bakiye"), align: "right", width: 44 },
+        { key: "name", title: t("admin.manifest.fullName", "Ad Soyad"), align: "left", width: 60 },
+        { key: "id", title: t("admin.manifest.identityNo", "Kimlik No"), align: "left", width: 32 },
+        { key: "birth", title: t("admin.manifest.birthDateShort", "Doğum"), align: "center", width: 26 },
+        { key: "child", title: t("admin.manifest.isChild", "Çocuk"), align: "center", width: 12 },
+        { key: "balance", title: t("admin.manifest.balance", "Bakiye"), align: "right", width: 46 },
       ];
 
   // ── BAŞLIK ──
@@ -215,14 +223,25 @@ export const generatePassengerManifestPDF = (
   y += 4;
 
   // ── BAKIYE FORMATLAMA ──
+  // jsPDF default helvetica fontu Latin-1 sınırlı — ₺ (U+20BA), € (U+20AC) gibi
+  // semboller "°" benzeri garbled glyph olarak render olur. Çözüm: Intl currency
+  // formatından (style:"currency", sembol içerir) `decimal` formata geç + ISO
+  // 3-letter currency code'unu suffix olarak ekle. TRY için "TL" (TR kullanıcısı
+  // için daha doğal), diğer currency'lerde kendi 3-letter kodu.
+  const CURRENCY_SUFFIX: Record<string, string> = {
+    TRY: "TL",
+  };
   const metaByReg = new Map((context.registrationMeta || []).map((m) => [m.registration_id, m]));
   const formatMoney = (n: number, currency: string) => {
     try {
-      return new Intl.NumberFormat(i18next.language || "tr", {
-        style: "currency", currency, maximumFractionDigits: 0,
+      const num = new Intl.NumberFormat(i18next.language || "tr", {
+        maximumFractionDigits: 0,
       }).format(n);
+      const code = CURRENCY_SUFFIX[currency] || currency;
+      return `${num} ${code}`;
     } catch {
-      return `${n.toFixed(0)} ${currency}`;
+      const code = CURRENCY_SUFFIX[currency] || currency;
+      return `${n.toFixed(0)} ${code}`;
     }
   };
 

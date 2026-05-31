@@ -1844,7 +1844,8 @@
       "balance": "Остаток",
       "paid": "Полностью оплачено",
       "tourLeader": "Руководитель тура",
-      "captain": "Водитель"
+      "captain": "Водитель",
+      "birthDateShort": "Рожд."
     },
     "seatPlan": {
       "openButton": "План мест",

@@ -1810,7 +1810,8 @@
       "balance": "Balance",
       "paid": "Fully paid",
       "tourLeader": "Tour Leader",
-      "captain": "Captain"
+      "captain": "Captain",
+      "birthDateShort": "Birth"
     },
     "seatPlan": {
       "openButton": "Seat Plan",

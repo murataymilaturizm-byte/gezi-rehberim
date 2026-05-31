@@ -1810,7 +1810,8 @@
       "balance": "Solde",
       "paid": "Entièrement payé",
       "tourLeader": "Chef de groupe",
-      "captain": "Chauffeur"
+      "captain": "Chauffeur",
+      "birthDateShort": "Naiss."
     },
     "seatPlan": {
       "openButton": "Plan des sièges",

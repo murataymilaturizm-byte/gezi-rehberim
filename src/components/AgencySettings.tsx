@@ -145,13 +145,13 @@ export default function AgencySettings() {
   };
 
   // ─── Render ────────────────────────────────────────────────────────────────
-  // Accordion type="multiple" + defaultValue=tüm 3 değer → hepsi başta açık.
-  // Kullanıcı istediği bölümü kapatabilir; durum component-lifetime içinde tutulur
-  // (sayfa yenilenince tekrar tümü açık — kasıtlı, "Ayarlar"a her giriş net görünür).
+  // Accordion type="multiple" + defaultValue=boş dizi → hepsi başta KAPALI.
+  // Kullanıcı ilgilendiği bölümü kendisi açar; birden fazla bölüm aynı anda
+  // açık kalabilir (multiple). Sayfa yenilenince yine hepsi kapalı.
   return (
     <Accordion
       type="multiple"
-      defaultValue={["notifications", "style", "email"]}
+      defaultValue={[]}
       className="space-y-3"
     >
       {/* ── 1) Bildirim Ayarları ───────────────────────────────────────── */}
