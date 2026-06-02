@@ -298,7 +298,11 @@
         "tours": "🗂️ Hasta 10 tours",
         "languages": "🌍 Elección de 1 Idioma (Cualquiera de TR, EN, DE, FR, ES, RU, AR)",
         "style": "🎨 Solo estilo profesional",
-        "basicFeatures": "📊 Funciones básicas"
+        "basicFeatures": "📊 Funciones básicas",
+        "seatPlan": "Plano de asientos del autobús",
+        "passengerList": "Lista de pasajeros y manifiesto (PDF/Excel)",
+        "registrationMgmt": "Gestión de reservas y salidas",
+        "balanceTracking": "Seguimiento de saldos"
       }
     },
     "professional": {
@@ -316,7 +320,11 @@
         "reminders": "⏰ Recordatorios automáticos de tours",
         "templates": "📝 Plantillas de mensajes personalizadas",
         "followUps": "📲 Mensajes de seguimiento",
-        "analytics": "📊 Análisis detallados y seguimiento de ingresos"
+        "analytics": "📊 Análisis detallados y seguimiento de ingresos",
+        "seatPlan": "Plano de asientos del autobús",
+        "passengerList": "Lista de pasajeros y manifiesto (PDF/Excel)",
+        "registrationMgmt": "Gestión de reservas y salidas",
+        "balanceTracking": "Seguimiento de saldos"
       }
     },
     "enterprise": {

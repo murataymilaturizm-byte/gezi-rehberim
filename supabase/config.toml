@@ -31,7 +31,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.get-exchange-rates]
-verify_jwt = true
+# Kur verisi PUBLIC bilgi — JWT zorunluluğu kaldırıldı. Önceki davranışta
+# verify_jwt=true idi; çağıran token (anon-key/user-session/edge-side helper)
+# boş/expired gönderildiğinde gateway 401 üretiyordu → frontend ve bot tarafında
+# kur dönüşümü sessizce başarısız. Public yapmak: hassas veri yok, rate-limit
+# zaten Supabase Functions gateway tarafında IP başına geçerli; verify_jwt
+# katmanı sadece arıza kaynağıydı.
+verify_jwt = false
 
 [functions.send-feedback-survey]
 verify_jwt = false

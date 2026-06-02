@@ -332,7 +332,11 @@
         "tours": "🗂️ 10 tura kadar",
         "languages": "🌍 1 Dil Seçimi (TR, EN, DE, FR, ES, RU, AR'dan herhangi biri)",
         "style": "🎨 Sadece Profesyonel üslup",
-        "basicFeatures": "📊 Temel özellikler"
+        "basicFeatures": "📊 Temel özellikler",
+        "seatPlan": "Otobüs koltuk planı",
+        "passengerList": "Yolcu listesi & manifesto (PDF/Excel)",
+        "registrationMgmt": "Kayıt ve sefer yönetimi",
+        "balanceTracking": "Bakiye takibi"
       }
     },
     "professional": {
@@ -350,7 +354,11 @@
         "reminders": "⏰ Otomatik tur hatırlatıcıları",
         "templates": "📝 Özel mesaj şablonları",
         "followUps": "📲 Follow-up mesajları",
-        "analytics": "📊 Detaylı analytics ve gelir takibi"
+        "analytics": "📊 Detaylı analytics ve gelir takibi",
+        "seatPlan": "Otobüs koltuk planı",
+        "passengerList": "Yolcu listesi & manifesto (PDF/Excel)",
+        "registrationMgmt": "Kayıt ve sefer yönetimi",
+        "balanceTracking": "Bakiye takibi"
       }
     },
     "enterprise": {

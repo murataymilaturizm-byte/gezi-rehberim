@@ -298,7 +298,11 @@
         "tours": "🗂️ Up to 10 tours",
         "languages": "🌍 1 Language Choice (Any of TR, EN, DE, FR, ES, RU, AR)",
         "style": "🎨 Professional style only",
-        "basicFeatures": "📊 Basic features"
+        "basicFeatures": "📊 Basic features",
+        "seatPlan": "Bus seat plan",
+        "passengerList": "Passenger list & manifest (PDF/Excel)",
+        "registrationMgmt": "Registration & departure management",
+        "balanceTracking": "Balance tracking"
       }
     },
     "professional": {
@@ -316,7 +320,11 @@
         "reminders": "⏰ Automatic tour reminders",
         "templates": "📝 Custom message templates",
         "followUps": "📲 Follow-up messages",
-        "analytics": "📊 Detailed analytics & revenue tracking"
+        "analytics": "📊 Detailed analytics & revenue tracking",
+        "seatPlan": "Bus seat plan",
+        "passengerList": "Passenger list & manifest (PDF/Excel)",
+        "registrationMgmt": "Registration & departure management",
+        "balanceTracking": "Balance tracking"
       }
     },
     "enterprise": {

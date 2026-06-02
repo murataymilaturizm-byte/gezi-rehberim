@@ -80,7 +80,12 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
         t("pricing.starter.features.tours"),
         t("pricing.starter.features.languages"),
         t("pricing.starter.features.style"),
-        t("pricing.starter.features.basicFeatures")
+        t("pricing.starter.features.basicFeatures"),
+        // Operasyon araçları (tüm paketlerde mevcut — gating YOK)
+        t("pricing.starter.features.seatPlan"),
+        t("pricing.starter.features.passengerList"),
+        t("pricing.starter.features.registrationMgmt"),
+        t("pricing.starter.features.balanceTracking")
       ],
       highlighted: false
     },
@@ -100,7 +105,12 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
         t("pricing.professional.features.reminders"),
         t("pricing.professional.features.templates"),
         t("pricing.professional.features.followUps"),
-        t("pricing.professional.features.analytics")
+        t("pricing.professional.features.analytics"),
+        // Operasyon araçları (tüm paketlerde mevcut)
+        t("pricing.professional.features.seatPlan"),
+        t("pricing.professional.features.passengerList"),
+        t("pricing.professional.features.registrationMgmt"),
+        t("pricing.professional.features.balanceTracking")
       ],
       highlighted: true
     },

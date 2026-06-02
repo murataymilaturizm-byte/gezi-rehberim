@@ -294,7 +294,11 @@
         "tours": "🗂️ حتى 10 جولات",
         "languages": "🌍 اختيار لغة واحدة (أي من TR، EN، DE، FR، ES، RU، AR)",
         "style": "🎨 أسلوب احترافي فقط",
-        "basicFeatures": "📊 الميزات الأساسية"
+        "basicFeatures": "📊 الميزات الأساسية",
+        "seatPlan": "مخطط مقاعد الحافلة",
+        "passengerList": "قائمة الركاب والبيان (PDF/Excel)",
+        "registrationMgmt": "إدارة الحجوزات والرحلات",
+        "balanceTracking": "تتبع الأرصدة"
       }
     },
     "professional": {
@@ -312,7 +316,11 @@
         "reminders": "⏰ تذكيرات تلقائية للجولات",
         "templates": "📝 قوالب رسائل مخصصة",
         "followUps": "📲 رسائل المتابعة",
-        "analytics": "📊 تحليلات مفصلة وتتبع الإيرادات"
+        "analytics": "📊 تحليلات مفصلة وتتبع الإيرادات",
+        "seatPlan": "مخطط مقاعد الحافلة",
+        "passengerList": "قائمة الركاب والبيان (PDF/Excel)",
+        "registrationMgmt": "إدارة الحجوزات والرحلات",
+        "balanceTracking": "تتبع الأرصدة"
       }
     },
     "enterprise": {
