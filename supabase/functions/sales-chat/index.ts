@@ -80,8 +80,8 @@ serve(async (req) => {
 FİYATLANDIRMA (Tüm paketlerde 14 günlük ücretsiz deneme dahil - Kredi kartı gerektirmez):
 
 💼 BAŞLANGIÇ PAKETİ
-Aylık: 2.999 TL/ay
-Yıllık: 32.389 TL/yıl (%10 indirimli - 2.699 TL/ay)
+Aylık: 3.999 TL/ay
+Yıllık: 43.189 TL/yıl (%10 indirimli - 3.599 TL/ay)
    • 1.000 WhatsApp mesajı/ay dahil
    • En fazla 10 tur
    • 1 Dil Seçimi (TR, EN, DE, FR, ES, RU, AR'dan herhangi biri)
@@ -91,8 +91,8 @@ Yıllık: 32.389 TL/yıl (%10 indirimli - 2.699 TL/ay)
    • Küçük acenteler için ideal
 
 🚀 PROFESYONEL PAKET (EN POPÜLER)
-Aylık: 4.999 TL/ay
-Yıllık: 53.989 TL/yıl (%10 indirimli - 4.499 TL/ay)
+Aylık: 5.999 TL/ay
+Yıllık: 64.789 TL/yıl (%10 indirimli - 5.399 TL/ay)
    • 5.000 WhatsApp mesajı/ay dahil
    • 50 tura kadar
    • 4 Dile Kadar Destek

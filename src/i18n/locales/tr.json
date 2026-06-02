@@ -159,7 +159,7 @@
     },
     "roi": {
       "title": "Sadece 2 Tur = Kendini Ödüyor",
-      "description": "Başlangıç planı sadece 2.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
+      "description": "Başlangıç planı sadece 3.999₺/ay. Ayda sadece 2 ekstra tur satışı yapın, sistem kendini ödesin."
     }
   },
   "advanced": {
@@ -324,7 +324,7 @@
     },
     "starter": {
       "name": "Başlangıç",
-      "price": "2.999",
+      "price": "3.999",
       "period": "/ay",
       "description": "Küçük acenteler ve yeni başlayanlar için",
       "features": {
@@ -341,7 +341,7 @@
     },
     "professional": {
       "name": "Profesyonel",
-      "price": "4.999",
+      "price": "5.999",
       "period": "/ay",
       "badge": "En Popüler",
       "description": "Büyüyen işletmeler ve aktif acenteler için",
@@ -370,7 +370,6 @@
         "allProFeatures": "Profesyonel paketin tüm özellikleri ve,",
         "messages": "💬 50.000 mesaj/ay (yüksek hacim)",
         "allLanguages": "🌍 Tüm 7 Dil (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça)",
-        "customStyles": "🎨 + 1 Özel Konuşma Üslubu",
         "feedback": "⭐ Otomatik müşteri memnuniyeti anketi",
         "prioritySupport": "🚀 Öncelikli destek",
         "multiAgency": "✅ Multi-agency yönetimi (gelecekte)",
@@ -991,7 +990,7 @@
       "last12Months": "Son 12 Ay",
       "last24Months": "Son 24 Ay",
       "planTypes": "Plan Tipleri",
-      "starterPlanPrice": "Başlangıç (2.999₺/ay)",
+      "starterPlanPrice": "Başlangıç (3.999₺/ay)",
       "professionalPlanPrice": "Profesyonel (7.999₺/ay)",
       "enterprisePlanPrice": "Kurumsal (14.999₺/ay)",
       "compareWithPrevious": "Önceki dönem ile karşılaştır",
@@ -1653,7 +1652,7 @@
         "languageSupport": "{{count}} dil desteği",
         "allLanguages": "Tüm diller (7 dil)",
         "limitedStyles": "{{count}} konuşma üslubu",
-        "allStyles": "Tüm konuşma üslupları + Özel üslup",
+        "allStyles": "Tüm konuşma üslupları",
         "userProfiles": "Kullanıcı profilleri",
         "autoReminders": "Otomatik hatırlatmalar",
         "advancedAnalytics": "Gelişmiş analizler",
@@ -2942,7 +2941,7 @@
           {
             "topic": "Aylık maliyet",
             "manual": "8.000-15.000 ₺ (çalışan ücreti)",
-            "chatbot": "2.999 ₺'dan başlayan"
+            "chatbot": "3.999 ₺'dan başlayan"
           }
         ],
         "detailLink": "Detaylı karşılaştırmayı incele →"
@@ -3422,7 +3421,7 @@
           "title1": "Büyük Şirketlerin Teknolojisi,",
           "title2": "Küçük Acentenin Bütçesi",
           "subtitle": "1-3 kişilik butik acenteniz büyük şirketler gibi 7/24 profesyonel hizmet verebilir. Turzz AI, küçük işletmeler için özel tasarlanmış başlangıç paketi ile başlangıç.",
-          "cta": "2.999₺'dan Başla",
+          "cta": "3.999₺'dan Başla",
           "ctaNote": "14 gün ücretsiz deneme dahil"
         },
         "whySection": {
@@ -3430,7 +3429,7 @@
           "items": [
             {
               "title": "Çalışan Maaşı Değil, Yazılım Aboneliği",
-              "description": "Bir çalışanın aylık maliyeti 15.000-20.000₺. Turzz AI Başlangıç paketi 2.999₺/ay."
+              "description": "Bir çalışanın aylık maliyeti 15.000-20.000₺. Turzz AI Başlangıç paketi 3.999₺/ay."
             },
             {
               "title": "Kurulum 5-10 Dakika",
@@ -3450,7 +3449,7 @@
           "heading": "Başlangıç Paketi Ne İçeriyor?",
           "planName": "Başlangıç Paketi",
           "planTagline": "Küçük acenteler için ideal başlangıç",
-          "price": "2.999₺",
+          "price": "3.999₺",
           "pricePeriod": "/ay",
           "features": [
             "1.000 WhatsApp mesajı/ay",
@@ -3534,7 +3533,7 @@
             {
               "topic": "Aylık maliyet (1 kişi)",
               "manual": "15.000-20.000₺ maaş",
-              "ai": "2.999₺'dan başlayan"
+              "ai": "3.999₺'dan başlayan"
             },
             {
               "topic": "Kurulum süresi",
@@ -3578,7 +3577,7 @@
             "heading": "✅ Turzz AI (Yıllık)",
             "items": [
               {
-                "label": "Profesyonel Plan (aylık 4.999₺)",
+                "label": "Profesyonel Plan (aylık 5.999₺)",
                 "value": "59.988₺"
               },
               {
@@ -3699,7 +3698,7 @@
       "title": "Butik Acenteler",
       "desc": "Kişisel dokunuş + modern teknoloji. Küçük bütçeyle büyük şirket görünümü.",
       "bullets": [
-        "2.999₺/ay'dan başlayan paket",
+        "3.999₺/ay'dan başlayan paket",
         "Kurulum 5-10 dakika",
         "1 çalışan maliyetinin %20'si"
       ]

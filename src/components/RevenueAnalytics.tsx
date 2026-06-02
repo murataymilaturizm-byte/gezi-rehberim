@@ -94,8 +94,8 @@ export const RevenueAnalytics = () => {
 
       // Plan fiyatları
       const planPrices: Record<string, number> = {
-        starter: 2999,
-        professional: 4999,
+        starter: 3999,
+        professional: 5999,
         enterprise: 7999,
       };
 

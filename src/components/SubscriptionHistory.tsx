@@ -434,7 +434,7 @@ export const SubscriptionHistory = () => {
     {
       id: "starter",
       name: t("admin.agency.plans.starter"),
-      price: 2999,
+      price: 3999,
       features: (
         t("admin.subscription.plans.starter.features", {
           returnObjects: true,
@@ -445,7 +445,7 @@ export const SubscriptionHistory = () => {
     {
       id: "professional",
       name: t("admin.agency.plans.professional"),
-      price: 4999,
+      price: 5999,
       features: (
         t("admin.subscription.plans.professional.features", {
           returnObjects: true,

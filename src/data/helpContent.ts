@@ -206,11 +206,11 @@ const helpContent: HelpContent = {
           question: "Abonelik Paketleri ve Fiyatlandırma",
           answer: `**Mevcut Paketler:**
 
-💼 **BAŞLANGIÇ - 2.999 TL/ay**
+💼 **BAŞLANGIÇ - 3.999 TL/ay**
 ✓ 1.000 WhatsApp mesajı/ay | En fazla 10 tur | 1 dil
 ✓ Temel analitik | E-posta desteği | Standart konuşma üslubu
 
-🚀 **PROFESYONEL - 4.999 TL/ay** (EN POPÜLER)
+🚀 **PROFESYONEL - 5.999 TL/ay** (EN POPÜLER)
 ✓ 5.000 mesaj/ay | 50 tura kadar | 4 dile kadar
 ✓ 4 konuşma üslubu | Kullanıcı profilleri | Otomatik hatırlatıcılar
 ✓ Takip mesajları | Gelişmiş analitik | Mesaj şablonları
@@ -220,8 +220,8 @@ const helpContent: HelpContent = {
 ✓ 4 konuşma üslubu | Müşteri memnuniyet anketleri | 7/24 destek
 
 **Yıllık Ödeme (%10 indirim):**
-- Başlangıç: 32.389 TL/yıl (2.699 TL/ay)
-- Profesyonel: 53.989 TL/yıl (4.499 TL/ay)
+- Başlangıç: 43.189 TL/yıl (3.599 TL/ay)
+- Profesyonel: 64.789 TL/yıl (5.399 TL/ay)
 - Kurumsal: 86.389 TL/yıl (7.199 TL/ay)
 
 **Ücretsiz Deneme:** 14 gün, kredi kartı gerekmez, tüm özellikler aktif`
@@ -731,10 +731,10 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Abonnementpakete und Preise",
-          answer: `💼 **STARTER - 2.999 TL/Monat**
+          answer: `💼 **STARTER - 3.999 TL/Monat**
 ✓ 1.000 Nachrichten/Monat | Max. 10 Touren | 1 Sprache
 
-🚀 **PROFESSIONAL - 4.999 TL/Monat** (BELIEBTESTE)
+🚀 **PROFESSIONAL - 5.999 TL/Monat** (BELIEBTESTE)
 ✓ 5.000 Nachrichten/Monat | Bis zu 50 Touren | Bis zu 4 Sprachen
 ✓ Kundenprofile | Erinnerungen | Erweiterte Analysen
 
@@ -1434,10 +1434,10 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Planes de suscripción y precios",
-          answer: `💼 **STARTER - 2.999 TL/mes**
+          answer: `💼 **STARTER - 3.999 TL/mes**
 ✓ 1.000 mensajes/mes | Máx. 10 tours | 1 idioma
 
-🚀 **PROFESIONAL - 4.999 TL/mes** (MÁS POPULAR)
+🚀 **PROFESIONAL - 5.999 TL/mes** (MÁS POPULAR)
 ✓ 5.000 mensajes/mes | Hasta 50 tours | Hasta 4 idiomas
 
 ⭐ **EMPRESARIAL - Contáctenos**

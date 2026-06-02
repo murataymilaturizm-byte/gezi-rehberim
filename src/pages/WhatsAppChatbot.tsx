@@ -13,7 +13,7 @@ const schema = {
   "name": "Turzz AI WhatsApp Chatbot",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
-  "offers": { "@type": "Offer", "price": "2999", "priceCurrency": "TRY", "priceValidUntil": "2027-01-01" },
+  "offers": { "@type": "Offer", "price": "3999", "priceCurrency": "TRY", "priceValidUntil": "2027-01-01" },
   "provider": { "@type": "Organization", "name": "Turzz AI", "url": "https://turzzai.com" }
 };
 

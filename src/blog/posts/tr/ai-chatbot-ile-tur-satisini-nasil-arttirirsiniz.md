@@ -176,7 +176,7 @@ Yani aylık 8.000 TL yatırım, aylık 469.000 TL ek ciro getirebiliyor. ROI %58
 
 Türk seyahat sektörü için tasarlanan Turzz AI, bu yazıda anlatılan tüm avantajları tek bir platformda sunuyor. WhatsApp Business API üzerinde çalışıyor, 7 dilde (Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca) doğal konuşma yapıyor, tur kataloğunuzu öğreniyor, rezervasyon alıyor, ödeme süreçlerini yönlendiriyor.
 
-Kurulum 24 saat sürüyor. Aylık abonelik modeliyle çalışıyor — başlangıç paketi 2.999 TL/ay. IT ekibi gerektirmiyor. 14 gün ücretsiz deneme süresinde sistemin acentenize ne kadar uygun olduğunu birebir görebilirsiniz.
+Kurulum 24 saat sürüyor. Aylık abonelik modeliyle çalışıyor — başlangıç paketi 3.999 TL/ay. IT ekibi gerektirmiyor. 14 gün ücretsiz deneme süresinde sistemin acentenize ne kadar uygun olduğunu birebir görebilirsiniz.
 
 Acentenizin satış potansiyelini bir üst seviyeye taşımak için **[Ücretsiz Demo](/demo)** talep edin. Ekibimiz size acentenize özel kurulumu birebir gösterecek ve ilk 30 günlük getiri projeksiyonunu birlikte çıkaracak.
 

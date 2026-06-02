@@ -6,8 +6,8 @@
 // useCurrencyConverter ile dönüştürülür (sadece UI gösterimi için).
 
 export const PLAN_PRICES_TRY = {
-  starter: 2999,
-  professional: 4999,
+  starter: 3999,
+  professional: 5999,
   enterprise: 7999,
 } as const;
 

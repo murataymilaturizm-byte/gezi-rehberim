@@ -290,7 +290,7 @@
     },
     "starter": {
       "name": "Starter",
-      "price": "2.999",
+      "price": "3.999",
       "period": "/Monat",
       "description": "Für kleine Agenturen und Anfänger",
       "features": {
@@ -307,7 +307,7 @@
     },
     "professional": {
       "name": "Professional",
-      "price": "4.999",
+      "price": "5.999",
       "period": "/Monat",
       "badge": "Am beliebtesten",
       "description": "Für wachsende Unternehmen und aktive Agenturen",
@@ -336,7 +336,6 @@
         "allProFeatures": "Alle Professional-Funktionen und,",
         "messages": "💬 50.000 Nachrichten/Monat (hohes Volumen)",
         "allLanguages": "🌍 Alle 7 Sprachen (Türkisch, Englisch, Deutsch, Französisch, Spanisch, Russisch, Arabisch)",
-        "customStyles": "🎨 + 1 Benutzerdefinierter Gesprächsstil",
         "feedback": "⭐ Automatische Kundenzufriedenheitsumfrage",
         "prioritySupport": "🚀 Priority-Support",
         "multiAgency": "✅ Multi-Agentur-Verwaltung (demnächst)",
@@ -1573,7 +1572,7 @@
         "languageSupport": "{{count}} Sprachunterstützung",
         "allLanguages": "Alle Sprachen (7 Sprachen)",
         "limitedStyles": "{{count}} Gesprächsstile",
-        "allStyles": "Alle Gesprächsstile + Benutzerdefinierter Stil",
+        "allStyles": "Alle Gesprächsstile",
         "userProfiles": "Benutzerprofile",
         "autoReminders": "Automatische Erinnerungen",
         "advancedAnalytics": "Erweiterte Analysen",
@@ -3315,7 +3314,7 @@
           "title1": "Enterprise-Technologie,",
           "title2": "Budget einer kleinen Agentur",
           "subtitle": "Ihr 1-3-köpfiges Boutique-Büro kann wie ein Großunternehmen 24/7 professionellen Service bieten. Turzz AI's Starter-Paket ist speziell für Kleinunternehmen konzipiert.",
-          "cta": "Ab ₺2.999 starten",
+          "cta": "Ab ₺3.999 starten",
           "ctaNote": "Inklusive 14-tägiger Gratisprobe"
         },
         "whySection": {
@@ -3343,7 +3342,7 @@
           "heading": "Was enthält das Starter-Paket?",
           "planName": "Starter-Paket",
           "planTagline": "Idealer Einstieg für kleine Agenturen",
-          "price": "₺2.999",
+          "price": "₺3.999",
           "pricePeriod": "/Monat",
           "features": [
             "1.000 WhatsApp-Nachrichten/Monat",
@@ -3471,7 +3470,7 @@
             "heading": "✅ Turzz AI (Jährlich)",
             "items": [
               {
-                "label": "Professional-Plan (₺4.999/Monat)",
+                "label": "Professional-Plan (₺5.999/Monat)",
                 "value": "₺59.988"
               },
               {
@@ -3592,7 +3591,7 @@
       "title": "Boutique-Agenturen",
       "desc": "Persönliche Note + moderne Technologie. Großunternehmen-Präsenz mit kleinem Budget.",
       "bullets": [
-        "Pakete ab ₺2.999/Monat",
+        "Pakete ab ₺3.999/Monat",
         "Einrichtung in 5–10 Minuten",
         "20% der Kosten eines Mitarbeiters"
       ]

@@ -290,7 +290,7 @@
     },
     "starter": {
       "name": "Débutant",
-      "price": "2.999",
+      "price": "3.999",
       "period": "/mois",
       "description": "Pour les petites agences et les débutants",
       "features": {
@@ -307,7 +307,7 @@
     },
     "professional": {
       "name": "Professionnel",
-      "price": "4.999",
+      "price": "5.999",
       "period": "/mois",
       "badge": "Le plus populaire",
       "description": "Pour les entreprises en croissance et les agences actives",
@@ -336,7 +336,6 @@
         "allProFeatures": "Toutes les fonctionnalités du plan Professionnel et,",
         "messages": "💬 50 000 messages/mois (haut volume)",
         "allLanguages": "🌍 Toutes les 7 Langues (Turc, Anglais, Allemand, Français, Espagnol, Russe, Arabe)",
-        "customStyles": "🎨 + 1 Style de Conversation Personnalisé",
         "feedback": "⭐ Enquête automatique de satisfaction client",
         "prioritySupport": "🚀 Support prioritaire",
         "multiAgency": "✅ Gestion multi-agence (bientôt disponible)",
@@ -1657,7 +1656,7 @@
         "languageSupport": "Support de {{count}} langues",
         "allLanguages": "Toutes les langues (7 langues)",
         "limitedStyles": "{{count}} styles de conversation",
-        "allStyles": "Tous les styles de conversation + Style personnalisé",
+        "allStyles": "Tous les styles de conversation",
         "userProfiles": "Profils utilisateur",
         "autoReminders": "Rappels automatiques",
         "advancedAnalytics": "Analyses avancées",
@@ -3343,7 +3342,7 @@
           "heading": "Que contient le plan Starter ?",
           "planName": "Plan Starter",
           "planTagline": "Point de départ idéal pour les petites agences",
-          "price": "₺2 999",
+          "price": "₺3 999",
           "pricePeriod": "/mois",
           "features": [
             "1 000 messages WhatsApp/mois",

@@ -72,7 +72,7 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
     {
       name: t("pricing.starter.name"),
       price: t("pricing.starter.price"),
-      monthlyPrice: 2999,
+      monthlyPrice: 3999,
       period: t("pricing.starter.period"),
       description: t("pricing.starter.description"),
       features: [
@@ -92,7 +92,7 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
     {
       name: t("pricing.professional.name"),
       price: t("pricing.professional.price"),
-      monthlyPrice: 4999,
+      monthlyPrice: 5999,
       period: t("pricing.professional.period"),
       description: t("pricing.professional.description"),
       badge: t("pricing.professional.badge"),
@@ -124,7 +124,6 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
         t("pricing.enterprise.features.allProFeatures"),
         t("pricing.enterprise.features.messages"),
         t("pricing.enterprise.features.allLanguages"),
-        t("pricing.enterprise.features.customStyles"),
         t("pricing.enterprise.features.feedback"),
         t("pricing.enterprise.features.prioritySupport"),
         t("pricing.enterprise.features.multiAgency"),

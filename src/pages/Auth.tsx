@@ -439,14 +439,14 @@ const Auth = () => {
                           <span className="font-semibold text-foreground">{t("admin.agency.plans.starter")}</span>
                           <div className="text-right">
                             <span className="text-sm text-muted-foreground line-through">
-                              {isYearly ? "35.988₺" + t("auth.perYear") : "2.999₺" + t("auth.perMonth")}
+                              {isYearly ? "47.988₺" + t("auth.perYear") : "3.999₺" + t("auth.perMonth")}
                             </span>
                             <div className="text-lg font-bold text-primary">{t("auth.trialInfo")}</div>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">{t("admin.subscription.planOptions.starter.features.0")} • {t("admin.subscription.planOptions.starter.features.1")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {isYearly ? "32.389₺" + t("auth.perYear") + " - " + t("auth.discount10") : "2.999₺" + t("auth.perMonth")}
+                          {isYearly ? "43.189₺" + t("auth.perYear") + " - " + t("auth.discount10") : "3.999₺" + t("auth.perMonth")}
                         </p>
                       </div>
                     </label>
@@ -472,14 +472,14 @@ const Auth = () => {
                           <span className="font-semibold text-foreground">{t("admin.agency.plans.professional")}</span>
                           <div className="text-right">
                             <span className="text-sm text-muted-foreground line-through">
-                              {isYearly ? "59.988₺" + t("auth.perYear") : "4.999₺" + t("auth.perMonth")}
+                              {isYearly ? "71.988₺" + t("auth.perYear") : "5.999₺" + t("auth.perMonth")}
                             </span>
                             <div className="text-lg font-bold text-primary">{t("auth.trialInfo")}</div>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground">{t("admin.subscription.planOptions.professional.features.0")} • {t("admin.subscription.planOptions.professional.features.1")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {isYearly ? "53.989₺" + t("auth.perYear") + " - " + t("auth.discount10") : "4.999₺" + t("auth.perMonth")}
+                          {isYearly ? "64.789₺" + t("auth.perYear") + " - " + t("auth.discount10") : "5.999₺" + t("auth.perMonth")}
                         </p>
                       </div>
                     </label>
