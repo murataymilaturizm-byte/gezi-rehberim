@@ -260,7 +260,7 @@
       },
       "tourLimit": {
         "question": "Tur sayısı sınırlı mı?",
-        "answer": "Başlangıç planında 10 tur, Profesyonel'de 50 tur, Kurumsal'da sınırsız. İstediğiniz zaman plan yükseltebilirsiniz. Aktif olmayan turlar bu limite dahil değildir."
+        "answer": "Başlangıç planında 10 tur, Profesyonel'de 30 tur, Kurumsal'da sınırsız. İstediğiniz zaman plan yükseltebilirsiniz. Aktif olmayan turlar bu limite dahil değildir."
       },
       "cancellation": {
         "question": "İstediğim zaman iptal edebilir miyim?",
@@ -330,13 +330,15 @@
       "features": {
         "messages": "💬 1.000 mesaj/ay",
         "tours": "🗂️ 10 tura kadar",
-        "languages": "🌍 1 Dil Seçimi (TR, EN, DE, FR, ES, RU, AR'dan herhangi biri)",
-        "style": "🎨 Sadece Profesyonel üslup",
-        "basicFeatures": "📊 Temel özellikler",
+        "languages": "💬 Tek dilde WhatsApp chatbot (7 dilden seçim)",
+        "style": "🎨 Kurumsal konuşma üslubu",
         "seatPlan": "Otobüs koltuk planı",
         "passengerList": "Yolcu listesi & manifesto (PDF/Excel)",
         "registrationMgmt": "Kayıt ve sefer yönetimi",
-        "balanceTracking": "Bakiye takibi"
+        "balanceTracking": "Bakiye takibi",
+        "manualReservation": "📝 Manuel rezervasyon ekleme",
+        "bulkImport": "📂 Excel'den toplu tur yükleme",
+        "supportChat": "🤖 7/24 AI destek asistanı"
       }
     },
     "professional": {
@@ -347,18 +349,15 @@
       "description": "Büyüyen işletmeler ve aktif acenteler için",
       "features": {
         "messages": "💬 5.000 mesaj/ay",
-        "tours": "🗂️ 50 tura kadar",
+        "tours": "🗂️ 30 tura kadar",
         "languages": "🌍 4 Dile Kadar Destek",
         "allStyles": "🎨 4 farklı konuşma üslubu",
-        "userProfiles": "👤 Kullanıcı profilleri ve takip",
-        "reminders": "⏰ Otomatik tur hatırlatıcıları",
         "templates": "📝 Özel mesaj şablonları",
         "followUps": "📲 Follow-up mesajları",
-        "analytics": "📊 Detaylı analytics ve gelir takibi",
-        "seatPlan": "Otobüs koltuk planı",
-        "passengerList": "Yolcu listesi & manifesto (PDF/Excel)",
-        "registrationMgmt": "Kayıt ve sefer yönetimi",
-        "balanceTracking": "Bakiye takibi"
+        "includesStarter": "✨ Başlangıç paketindeki her şey, artı:",
+        "smartCrm": "👥 Akıllı CRM — Otomatik etiketleme (VIP/sürekli/potansiyel), tercih & harcama takibi, konuşma arşivi",
+        "automatedNotifications": "🔔 Otomatik tur hatırlatma + memnuniyet anketi (kendi şablonunuz, kendi zamanlamanız)",
+        "advancedAnalytics": "📊 Detaylı analitik — gelir, destinasyon ve dil bazlı performans"
       }
     },
     "enterprise": {
@@ -367,14 +366,11 @@
       "period": "/ay",
       "description": "Büyük acenteler ve zincir işletmeler için",
       "features": {
-        "allProFeatures": "Profesyonel paketin tüm özellikleri ve,",
-        "messages": "💬 50.000 mesaj/ay (yüksek hacim)",
+        "messages": "💬 Aylık 50.000 mesaj (yüksek hacim)",
         "allLanguages": "🌍 Tüm 7 Dil (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça)",
-        "feedback": "⭐ Otomatik müşteri memnuniyeti anketi",
         "prioritySupport": "🚀 Öncelikli destek",
-        "multiAgency": "✅ Multi-agency yönetimi (gelecekte)",
-        "apiAccess": "✅ API erişimi (gelecekte)",
-        "paymentCollection": "✅ Ödeme Alabilme (gelecekte)"
+        "includesProfessional": "✨ Profesyonel paketindeki her şey, artı:",
+        "customDev": "🛠️ Firmaya özel geliştirme"
       }
     },
     "mostPopular": "En Popüler"
@@ -1227,7 +1223,7 @@
           "name": "Profesyonel",
           "features": [
             "5.000 mesaj/ay",
-            "50 tur",
+            "30 tur",
             "4 dil",
             "Öncelikli destek"
           ]
@@ -1259,7 +1255,7 @@
         "professional": {
           "features": [
             "💬 5.000 mesaj/ay",
-            "🏨 50 tura kadar",
+            "🏨 30 tura kadar",
             "🌍 4 dil desteği",
             "🎭 4 konuşma üslubu",
             "👥 Kullanıcı profilleri",

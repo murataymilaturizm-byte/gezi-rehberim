@@ -260,7 +260,7 @@
       },
       "tourLimit": {
         "question": "Gibt es ein Tour-Limit?",
-        "answer": "Starter: 10 Touren; Professional: 50 Touren; Enterprise: unbegrenzt. Sie können jederzeit upgraden. Inaktive Touren zählen nicht zum Limit."
+        "answer": "Starter: 10 Touren; Professional: 30 Touren; Enterprise: unbegrenzt. Sie können jederzeit upgraden. Inaktive Touren zählen nicht zum Limit."
       },
       "cancellation": {
         "question": "Kann ich jederzeit kündigen?",
@@ -296,13 +296,15 @@
       "features": {
         "messages": "💬 1.000 Nachrichten/Monat",
         "tours": "🗂️ Bis zu 10 Touren",
-        "languages": "🌍 1 Sprachwahl (Jede von TR, EN, DE, FR, ES, RU, AR)",
-        "style": "🎨 Nur Professioneller Stil",
-        "basicFeatures": "📊 Grundfunktionen",
+        "languages": "💬 Einsprachiger WhatsApp-Chatbot (1 von 7 Sprachen)",
+        "style": "🎨 Korporativer Gesprächsstil",
         "seatPlan": "Bus-Sitzplan",
         "passengerList": "Passagierliste & Manifest (PDF/Excel)",
         "registrationMgmt": "Buchungs- & Abfahrtsverwaltung",
-        "balanceTracking": "Saldoverfolgung"
+        "balanceTracking": "Saldoverfolgung",
+        "manualReservation": "📝 Manuelle Reservierungseingabe",
+        "bulkImport": "📂 Massentour-Import aus Excel",
+        "supportChat": "🤖 24/7 KI-Support-Assistent"
       }
     },
     "professional": {
@@ -313,18 +315,15 @@
       "description": "Für wachsende Unternehmen und aktive Agenturen",
       "features": {
         "messages": "💬 5.000 Nachrichten/Monat",
-        "tours": "🗂️ Bis zu 50 Touren",
+        "tours": "🗂️ Bis zu 30 Touren",
         "languages": "🌍 Bis zu 4 Sprachen",
         "allStyles": "🎨 4 verschiedene Gesprächsstile",
-        "userProfiles": "👤 Benutzerprofile und Tracking",
-        "reminders": "⏰ Automatische Tour-Erinnerungen",
         "templates": "📝 Benutzerdefinierte Nachrichtenvorlagen",
         "followUps": "📲 Follow-up-Nachrichten",
-        "analytics": "📊 Detaillierte Analysen & Umsatzverfolgung",
-        "seatPlan": "Bus-Sitzplan",
-        "passengerList": "Passagierliste & Manifest (PDF/Excel)",
-        "registrationMgmt": "Buchungs- & Abfahrtsverwaltung",
-        "balanceTracking": "Saldoverfolgung"
+        "includesStarter": "✨ Alles aus Starter, plus:",
+        "smartCrm": "👥 Smart CRM — Auto-Tagging (VIP/regulär/potenziell), Präferenz- & Ausgabentracking, Gesprächsarchiv",
+        "automatedNotifications": "🔔 Automatische Tour-Erinnerung + Zufriedenheitsumfrage (Ihre Vorlage, Ihre Zeitplanung)",
+        "advancedAnalytics": "📊 Erweiterte Analysen — Umsatz, Ziel- und Sprachleistung"
       }
     },
     "enterprise": {
@@ -333,14 +332,11 @@
       "period": "/Monat",
       "description": "Für große Agenturen und Kettenunternehmen",
       "features": {
-        "allProFeatures": "Alle Professional-Funktionen und,",
         "messages": "💬 50.000 Nachrichten/Monat (hohes Volumen)",
         "allLanguages": "🌍 Alle 7 Sprachen (Türkisch, Englisch, Deutsch, Französisch, Spanisch, Russisch, Arabisch)",
-        "feedback": "⭐ Automatische Kundenzufriedenheitsumfrage",
         "prioritySupport": "🚀 Priority-Support",
-        "multiAgency": "✅ Multi-Agentur-Verwaltung (demnächst)",
-        "apiAccess": "✅ API-Zugriff (demnächst)",
-        "paymentCollection": "✅ Zahlungsabwicklung (demnächst)"
+        "includesProfessional": "✨ Alles aus Professional, plus:",
+        "customDev": "🛠️ Maßgeschneiderte Entwicklung für Ihr Unternehmen"
       }
     },
     "mostPopular": "Beliebtester"
@@ -1320,7 +1316,7 @@
           "name": "Professionell",
           "features": [
             "5.000 Nachrichten/Monat",
-            "50 Touren",
+            "30 Touren",
             "4 Sprachen",
             "Vorrangiger Support"
           ]
@@ -1365,7 +1361,7 @@
         "professional": {
           "features": [
             "💬 5.000 Nachr./Mo.",
-            "🏨 Bis zu 50 Touren",
+            "🏨 Bis zu 30 Touren",
             "🌍 4 Sprachen",
             "🎭 4 Gesprächsstile",
             "👥 Nutzerprofile",

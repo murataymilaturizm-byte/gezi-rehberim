@@ -296,13 +296,15 @@
       "features": {
         "messages": "💬 1,000 mensajes/mes",
         "tours": "🗂️ Hasta 10 tours",
-        "languages": "🌍 Elección de 1 Idioma (Cualquiera de TR, EN, DE, FR, ES, RU, AR)",
-        "style": "🎨 Solo estilo profesional",
-        "basicFeatures": "📊 Funciones básicas",
+        "languages": "💬 Chatbot WhatsApp en un solo idioma (1 de 7)",
+        "style": "🎨 Estilo de conversación corporativo",
         "seatPlan": "Plano de asientos del autobús",
         "passengerList": "Lista de pasajeros y manifiesto (PDF/Excel)",
         "registrationMgmt": "Gestión de reservas y salidas",
-        "balanceTracking": "Seguimiento de saldos"
+        "balanceTracking": "Seguimiento de saldos",
+        "manualReservation": "📝 Reserva manual",
+        "bulkImport": "📂 Importación masiva de tours desde Excel",
+        "supportChat": "🤖 Asistente de soporte IA 24/7"
       }
     },
     "professional": {
@@ -313,18 +315,15 @@
       "description": "Para empresas en crecimiento y agencias activas",
       "features": {
         "messages": "💬 5,000 mensajes/mes",
-        "tours": "🗂️ Hasta 50 tours",
+        "tours": "🗂️ Hasta 30 tours",
         "languages": "🌍 Hasta 4 Idiomas",
         "allStyles": "🎨 4 estilos de conversación diferentes",
-        "userProfiles": "👤 Perfiles de usuario y seguimiento",
-        "reminders": "⏰ Recordatorios automáticos de tours",
         "templates": "📝 Plantillas de mensajes personalizadas",
         "followUps": "📲 Mensajes de seguimiento",
-        "analytics": "📊 Análisis detallados y seguimiento de ingresos",
-        "seatPlan": "Plano de asientos del autobús",
-        "passengerList": "Lista de pasajeros y manifiesto (PDF/Excel)",
-        "registrationMgmt": "Gestión de reservas y salidas",
-        "balanceTracking": "Seguimiento de saldos"
+        "includesStarter": "✨ Todo en Starter, más:",
+        "smartCrm": "👥 CRM inteligente — Etiquetado automático (VIP/habitual/potencial), seguimiento de preferencias y gastos, archivo de conversaciones",
+        "automatedNotifications": "🔔 Recordatorio automático de tour + encuesta de satisfacción (tu plantilla, tu programación)",
+        "advancedAnalytics": "📊 Análisis avanzado — ingresos, destino y rendimiento por idioma"
       }
     },
     "enterprise": {
@@ -333,14 +332,11 @@
       "period": "/mes",
       "description": "Para grandes agencias y empresas en cadena",
       "features": {
-        "allProFeatures": "Todas las características del plan Profesional y,",
         "messages": "💬 50.000 mensajes/mes (alto volumen)",
         "allLanguages": "🌍 Los 7 Idiomas (Turco, Inglés, Alemán, Francés, Español, Ruso, Árabe)",
-        "feedback": "⭐ Encuesta automática de satisfacción del cliente",
         "prioritySupport": "🚀 Soporte prioritario",
-        "multiAgency": "✅ Gestión multi-agencia (próximamente)",
-        "apiAccess": "✅ Acceso API (próximamente)",
-        "paymentCollection": "✅ Cobro de Pagos (próximamente)"
+        "includesProfessional": "✨ Todo en Professional, más:",
+        "customDev": "🛠️ Desarrollo personalizado para tu empresa"
       }
     },
     "mostPopular": "Más popular"
@@ -1354,7 +1350,7 @@
           "name": "Profesional",
           "features": [
             "5.000 mensajes/mes",
-            "50 tours",
+            "30 tours",
             "4 idiomas",
             "Soporte prioritario"
           ]
@@ -1399,7 +1395,7 @@
         "professional": {
           "features": [
             "💬 5.000 msg/mes",
-            "🏨 Hasta 50 tours",
+            "🏨 Hasta 30 tours",
             "🌍 4 idiomas",
             "🎭 4 estilos",
             "👥 Perfiles de usuarios",

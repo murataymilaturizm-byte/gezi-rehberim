@@ -296,13 +296,15 @@
       "features": {
         "messages": "💬 1,000 messages/mois",
         "tours": "🗂️ Jusqu'à 10 tours",
-        "languages": "🌍 Choix de 1 Langue (Parmi TR, EN, DE, FR, ES, RU, AR)",
-        "style": "🎨 Style professionnel uniquement",
-        "basicFeatures": "📊 Fonctionnalités de base",
+        "languages": "💬 Chatbot WhatsApp monolingue (1 langue parmi 7)",
+        "style": "🎨 Style de conversation corporatif",
         "seatPlan": "Plan de sièges du bus",
         "passengerList": "Liste des passagers & manifeste (PDF/Excel)",
         "registrationMgmt": "Gestion des inscriptions & départs",
-        "balanceTracking": "Suivi des soldes"
+        "balanceTracking": "Suivi des soldes",
+        "manualReservation": "📝 Saisie manuelle de réservation",
+        "bulkImport": "📂 Import groupé de circuits depuis Excel",
+        "supportChat": "🤖 Assistant support IA 24/7"
       }
     },
     "professional": {
@@ -313,18 +315,15 @@
       "description": "Pour les entreprises en croissance et les agences actives",
       "features": {
         "messages": "💬 5,000 messages/mois",
-        "tours": "🗂️ Jusqu'à 50 circuits",
+        "tours": "🗂️ Jusqu'à 30 circuits",
         "languages": "🌍 Jusqu'à 4 Langues",
         "allStyles": "🎨 4 styles de conversation différents",
-        "userProfiles": "👤 Profils utilisateur et suivi",
-        "reminders": "⏰ Rappels automatiques de tours",
         "templates": "📝 Modèles de messages personnalisés",
         "followUps": "📲 Messages de suivi",
-        "analytics": "📊 Analyses détaillées et suivi des revenus",
-        "seatPlan": "Plan de sièges du bus",
-        "passengerList": "Liste des passagers & manifeste (PDF/Excel)",
-        "registrationMgmt": "Gestion des inscriptions & départs",
-        "balanceTracking": "Suivi des soldes"
+        "includesStarter": "✨ Tout dans Starter, plus :",
+        "smartCrm": "👥 CRM intelligent — Étiquetage automatique (VIP/régulier/potentiel), suivi des préférences et dépenses, archive des conversations",
+        "automatedNotifications": "🔔 Rappel de circuit automatique + enquête de satisfaction (votre modèle, votre calendrier)",
+        "advancedAnalytics": "📊 Analyses avancées — revenus, destination et performance linguistique"
       }
     },
     "enterprise": {
@@ -333,14 +332,11 @@
       "period": "/mois",
       "description": "Pour les grandes agences et les chaînes d'entreprises",
       "features": {
-        "allProFeatures": "Toutes les fonctionnalités du plan Professionnel et,",
-        "messages": "💬 50 000 messages/mois (haut volume)",
+        "messages": "💬 50 000 messages/mois (volume élevé)",
         "allLanguages": "🌍 Toutes les 7 Langues (Turc, Anglais, Allemand, Français, Espagnol, Russe, Arabe)",
-        "feedback": "⭐ Enquête automatique de satisfaction client",
         "prioritySupport": "🚀 Support prioritaire",
-        "multiAgency": "✅ Gestion multi-agence (bientôt disponible)",
-        "apiAccess": "✅ Accès API (bientôt disponible)",
-        "paymentCollection": "✅ Collecte de paiements (bientôt disponible)"
+        "includesProfessional": "✨ Tout dans Professional, plus :",
+        "customDev": "🛠️ Développement sur mesure pour votre entreprise"
       }
     },
     "mostPopular": "Le plus populaire"
@@ -1320,7 +1316,7 @@
           "name": "Professionnel",
           "features": [
             "5 000 messages/mois",
-            "50 circuits",
+            "30 circuits",
             "4 langues",
             "Support prioritaire"
           ]
@@ -1365,7 +1361,7 @@
         "professional": {
           "features": [
             "💬 5 000 msg/mois",
-            "🏨 Jusqu'à 50 circuits",
+            "🏨 Jusqu'à 30 circuits",
             "🌍 4 langues",
             "🎭 4 styles",
             "👥 Profils clients",

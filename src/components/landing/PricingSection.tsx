@@ -80,12 +80,15 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
         t("pricing.starter.features.tours"),
         t("pricing.starter.features.languages"),
         t("pricing.starter.features.style"),
-        t("pricing.starter.features.basicFeatures"),
-        // Operasyon araçları (tüm paketlerde mevcut — gating YOK)
+        // Operasyon araçları
         t("pricing.starter.features.seatPlan"),
         t("pricing.starter.features.passengerList"),
         t("pricing.starter.features.registrationMgmt"),
-        t("pricing.starter.features.balanceTracking")
+        t("pricing.starter.features.balanceTracking"),
+        // Çekirdek araçlar (yeni — tüm paketler)
+        t("pricing.starter.features.manualReservation"),
+        t("pricing.starter.features.bulkImport"),
+        t("pricing.starter.features.supportChat"),
       ],
       highlighted: false
     },
@@ -97,20 +100,18 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
       description: t("pricing.professional.description"),
       badge: t("pricing.professional.badge"),
       features: [
+        // "Başlangıç'taki her şey, artı:" üst başlık
+        t("pricing.professional.features.includesStarter"),
         t("pricing.professional.features.messages"),
         t("pricing.professional.features.tours"),
         t("pricing.professional.features.languages"),
         t("pricing.professional.features.allStyles"),
-        t("pricing.professional.features.userProfiles"),
-        t("pricing.professional.features.reminders"),
+        // Güçlendirilmiş özellikler (eski userProfiles/reminders/analytics yerine)
+        t("pricing.professional.features.smartCrm"),
+        t("pricing.professional.features.automatedNotifications"),
+        t("pricing.professional.features.advancedAnalytics"),
         t("pricing.professional.features.templates"),
         t("pricing.professional.features.followUps"),
-        t("pricing.professional.features.analytics"),
-        // Operasyon araçları (tüm paketlerde mevcut)
-        t("pricing.professional.features.seatPlan"),
-        t("pricing.professional.features.passengerList"),
-        t("pricing.professional.features.registrationMgmt"),
-        t("pricing.professional.features.balanceTracking")
       ],
       highlighted: true
     },
@@ -121,14 +122,15 @@ export const PricingSection = ({ isYearly, setIsYearly }: PricingSectionProps) =
       period: t("pricing.enterprise.period"),
       description: t("pricing.enterprise.description"),
       features: [
-        t("pricing.enterprise.features.allProFeatures"),
+        // "Profesyonel'deki her şey, artı:" üst başlık
+        t("pricing.enterprise.features.includesProfessional"),
         t("pricing.enterprise.features.messages"),
         t("pricing.enterprise.features.allLanguages"),
-        t("pricing.enterprise.features.feedback"),
         t("pricing.enterprise.features.prioritySupport"),
-        t("pricing.enterprise.features.multiAgency"),
-        t("pricing.enterprise.features.apiAccess"),
-        t("pricing.enterprise.features.paymentCollection")
+        t("pricing.enterprise.features.customDev"),
+        // Kaldırıldı (gerçekte yok / vaad değil): apiAccess, multiAgency,
+        // paymentCollection, feedback (Pro automatedNotifications içinde), customStyles
+        // (önceki turn'de zaten kaldırılmıştı).
       ],
       highlighted: false
     }

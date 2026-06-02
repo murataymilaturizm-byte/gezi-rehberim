@@ -79,45 +79,41 @@ serve(async (req) => {
 
 FİYATLANDIRMA (Tüm paketlerde 14 günlük ücretsiz deneme dahil - Kredi kartı gerektirmez):
 
-💼 BAŞLANGIÇ PAKETİ
+💼 BAŞLANGIÇ PAKETİ — "Yeni başlayan acenteler için"
 Aylık: 3.999 TL/ay
 Yıllık: 43.189 TL/yıl (%10 indirimli - 3.599 TL/ay)
-   • 1.000 WhatsApp mesajı/ay dahil
-   • En fazla 10 tur
-   • 1 Dil Seçimi (TR, EN, DE, FR, ES, RU, AR'dan herhangi biri)
-   • Temel analitik raporları
-   • E-posta desteği
-   • Sadece Kurumsal konuşma üslubu
-   • Küçük acenteler için ideal
+   • Aylık 1.000 WhatsApp mesajı
+   • 10 tura kadar
+   • Tek dilde WhatsApp chatbot (TR/EN/DE/FR/ES/RU/AR'dan seçim)
+   • Kurumsal konuşma üslubu
+   • Operasyon araçları: koltuk planı, yolcu listesi & manifesto (PDF/Excel)
+   • Kayıt, sefer ve bakiye yönetimi
+   • Manuel rezervasyon ekleme
+   • Excel'den toplu tur yükleme
+   • 7/24 AI destek asistanı
 
-🚀 PROFESYONEL PAKET (EN POPÜLER)
+🚀 PROFESYONEL PAKET (EN POPÜLER) — "Büyüyen, aktif acenteler için"
 Aylık: 5.999 TL/ay
 Yıllık: 64.789 TL/yıl (%10 indirimli - 5.399 TL/ay)
-   • 5.000 WhatsApp mesajı/ay dahil
-   • 50 tura kadar
-   • 4 Dile Kadar Destek
-   • Detaylı analitik ve gelir takibi
-   • Öncelikli destek (WhatsApp + Email)
+   ✨ Başlangıç paketindeki her şey, artı:
+   • Aylık 5.000 WhatsApp mesajı
+   • 30 tura kadar
+   • 4 dilde WhatsApp chatbot
    • 4 farklı konuşma üslubu
-   • Müşteri profilleri ve takip
-   • Otomatik hatırlatıcılar
-   • Müşteri geri bildirim sistemi
-   • Destinasyon analitiği
+   • Akıllı CRM — Otomatik etiketleme (VIP/sürekli/potansiyel), tercih & harcama takibi, konuşma arşivi
+   • Otomatik tur hatırlatma + memnuniyet anketi (kendi şablonunuz, kendi zamanlamanız)
+   • Detaylı analitik — gelir, destinasyon ve dil bazlı performans
    • Özel mesaj şablonları
-   • Follow-up mesajları
-   • Büyüyen işletmeler için ideal
+   • Otomatik takip mesajları
 
-⭐ KURUMSAL PAKET
+⭐ KURUMSAL PAKET — "Büyük acenteler ve zincir işletmeler için"
 Aylık: 7.999 TL/ay
 Yıllık: 86.389 TL/yıl (%10 indirimli - 7.199 TL/ay)
-   • Profesyonel paketin tüm özellikleri +
-   • Sınırsız WhatsApp mesajı
-   • Sınırsız tur sayısı
-   • Tüm 7 Dil Desteği
-   • 4 konuşma üslubu
-   • Otomatik müşteri memnuniyeti anketi
-   • Öncelikli destek 7/24
-   • Büyük organizasyonlar için özel çözümler
+   ✨ Profesyonel paketindeki her şey, artı:
+   • Aylık 50.000 WhatsApp mesajı (yüksek hacim)
+   • 7 dilde tam destek
+   • Öncelikli destek
+   • Firmaya özel geliştirme
 
 HEDEF KİTLE:
 - Küçük ve orta ölçekli turizm acenteleri

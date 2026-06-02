@@ -206,18 +206,20 @@ const helpContent: HelpContent = {
           question: "Abonelik Paketleri ve Fiyatlandırma",
           answer: `**Mevcut Paketler:**
 
-💼 **BAŞLANGIÇ - 3.999 TL/ay**
-✓ 1.000 WhatsApp mesajı/ay | En fazla 10 tur | 1 dil
-✓ Temel analitik | E-posta desteği | Standart konuşma üslubu
+💼 **BAŞLANGIÇ - 3.999 TL/ay** — Yeni başlayan acenteler için
+✓ 1.000 mesaj/ay | 10 tur | Tek dilde chatbot | Kurumsal üslup
+✓ Operasyon araçları: kayıt/sefer/bakiye yönetimi
+✓ Manuel rezervasyon | Excel'den toplu tur yükleme | 7/24 AI destek
 
-🚀 **PROFESYONEL - 5.999 TL/ay** (EN POPÜLER)
-✓ 5.000 mesaj/ay | 50 tura kadar | 4 dile kadar
-✓ 4 konuşma üslubu | Kullanıcı profilleri | Otomatik hatırlatıcılar
-✓ Takip mesajları | Gelişmiş analitik | Mesaj şablonları
+🚀 **PROFESYONEL - 5.999 TL/ay** (EN POPÜLER) — Başlangıç'taki her şey, artı:
+✓ 5.000 mesaj/ay | 30 tura kadar | 4 dilde chatbot | 4 konuşma üslubu
+✓ Akıllı CRM (otomatik etiketleme, tercih & harcama takibi)
+✓ Otomatik tur hatırlatma + memnuniyet anketi
+✓ Detaylı analitik | Özel şablonlar | Follow-up mesajları
 
-⭐ **KURUMSAL - İletişime Geçin**
-✓ 50.000 mesaj/ay | Sınırsız tur | 7 dil
-✓ 4 konuşma üslubu | Müşteri memnuniyet anketleri | 7/24 destek
+⭐ **KURUMSAL - İletişime Geçin** — Profesyonel'deki her şey, artı:
+✓ 50.000 mesaj/ay (yüksek hacim) | 7 dilde tam destek
+✓ Öncelikli destek | Firmaya özel geliştirme
 
 **Yıllık Ödeme (%10 indirim):**
 - Başlangıç: 43.189 TL/yıl (3.599 TL/ay)
@@ -486,18 +488,20 @@ const helpContent: HelpContent = {
           question: "Subscription Plans and Pricing",
           answer: `**Available Plans:**
 
-💼 **STARTER - 2,999 TL/month**
-✓ 1,000 WhatsApp messages/month | Up to 10 tours | 1 language
-✓ Basic analytics | Email support | Standard conversation style
+💼 **STARTER - 3,999 TL/month** — For new agencies
+✓ 1,000 msgs/month | 10 tours | Single-language chatbot | Corporate style
+✓ Operations toolkit: registrations / departures / balance tracking
+✓ Manual reservation | Bulk import from Excel | 24/7 AI support
 
-🚀 **PROFESSIONAL - 4,999 TL/month** (MOST POPULAR)
-✓ 5,000 msgs/month | Up to 50 tours | Up to 4 languages
-✓ 4 conversation styles | User profiles | Auto reminders
-✓ Follow-up messages | Advanced analytics | Message templates
+🚀 **PROFESSIONAL - 5,999 TL/month** (MOST POPULAR) — Everything in Starter, plus:
+✓ 5,000 msgs/month | Up to 30 tours | 4-language chatbot | 4 conversation styles
+✓ Smart CRM (auto-tagging, preference & spending tracking)
+✓ Automated tour reminder + feedback survey
+✓ Advanced analytics | Custom templates | Follow-up messages
 
-⭐ **ENTERPRISE - Contact Us**
-✓ 50,000 messages/month | Unlimited tours | All 7 languages
-✓ 4 conversation styles | Customer satisfaction surveys | 24/7 support
+⭐ **ENTERPRISE - Contact Us** — Everything in Professional, plus:
+✓ 50,000 messages/month (high volume) | Full support in all 7 languages
+✓ Priority support | Custom development for your company
 
 **Annual Payment (10% discount):**
 - Starter: 32,389 TL/year (2,699 TL/month)
@@ -642,7 +646,7 @@ const helpContent: HelpContent = {
 2. Füllen Sie die Pflichtfelder aus: Titel, Ziel, Preis, Währung, Dauer
 3. Klicken Sie auf "Speichern"
 
-**Hinweis:** Starter-Paket: max. 10 Touren. Professional: bis zu 50 Touren. Enterprise: unbegrenzt.`
+**Hinweis:** Starter-Paket: max. 10 Touren. Professional: bis zu 30 Touren. Enterprise: unbegrenzt.`
         },
         {
           question: "Wie verwalte ich Tourdaten?",
@@ -731,16 +735,20 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Abonnementpakete und Preise",
-          answer: `💼 **STARTER - 3.999 TL/Monat**
-✓ 1.000 Nachrichten/Monat | Max. 10 Touren | 1 Sprache
+          answer: `💼 **STARTER - 3.999 TL/Monat** — Für neue Agenturen
+✓ 1.000 Nachrichten/Monat | 10 Touren | Einsprachiger Chatbot | Korporativer Stil
+✓ Operations-Tools: Anmeldungen / Abfahrten / Saldoverfolgung
+✓ Manuelle Reservierung | Massenimport aus Excel | 24/7 KI-Support
 
-🚀 **PROFESSIONAL - 5.999 TL/Monat** (BELIEBTESTE)
-✓ 5.000 Nachrichten/Monat | Bis zu 50 Touren | Bis zu 4 Sprachen
-✓ Kundenprofile | Erinnerungen | Erweiterte Analysen
+🚀 **PROFESSIONAL - 5.999 TL/Monat** (BELIEBTESTE) — Alles aus Starter, plus:
+✓ 5.000 Nachrichten/Monat | Bis zu 30 Touren | 4-sprachiger Chatbot | 4 Gesprächsstile
+✓ Smart CRM (Auto-Tagging, Präferenz- & Ausgabentracking)
+✓ Automatische Tour-Erinnerung + Zufriedenheitsumfrage
+✓ Erweiterte Analysen | Benutzerdefinierte Vorlagen | Follow-up-Nachrichten
 
-⭐ **ENTERPRISE - Kontaktieren Sie uns**
-✓ 50.000 Nachrichten/Monat | Unbegrenzte Touren | Alle 7 Sprachen
-✓ 24/7 Support | Kundenzufriedenheitsumfragen
+⭐ **ENTERPRISE - Kontaktieren Sie uns** — Alles aus Professional, plus:
+✓ 50.000 Nachrichten/Monat (hohes Volumen) | Volle Unterstützung in allen 7 Sprachen
+✓ Priorisierter Support | Maßgeschneiderte Entwicklung für Ihr Unternehmen
 
 **Jährliche Zahlung: 10% Rabatt**
 **Kostenlose Testphase:** 14 Tage, keine Kreditkarte erforderlich`
@@ -841,7 +849,7 @@ const helpContent: HelpContent = {
           question: "Как управлять турами и бронированиями?",
           answer: `**Добавление тура:**
 - Вкладка "Туры" > "Добавить тур" > заполните данные и сохраните
-- Стартовый план: до 10 туров. Professional: до 50 туров. Enterprise: без ограничений
+- Стартовый план: до 10 туров. Professional: до 30 туров. Enterprise: без ограничений
 
 **Статусы бронирования:**
 - НОВОЕ → ОЖИДАНИЕ → ПОДТВЕРЖДЕНО → ОТМЕНЕНО
@@ -924,15 +932,20 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Тарифные планы и цены",
-          answer: `💼 **СТАРТОВЫЙ - 2 999 TL/мес**
-✓ 1 000 сообщений/мес | До 10 туров | 1 язык
+          answer: `💼 **СТАРТОВЫЙ - 3 999 TL/мес** — Для новых агентств
+✓ 1 000 сообщений/мес | 10 туров | Одноязычный чатбот | Корпоративный стиль
+✓ Операционные инструменты: регистрации / рейсы / баланс
+✓ Ручное бронирование | Массовый импорт из Excel | ИИ-поддержка 24/7
 
-🚀 **ПРОФЕССИОНАЛЬНЫЙ - 4 999 TL/мес** (САМЫЙ ПОПУЛЯРНЫЙ)
-✓ 5 000 сообщений/мес | До 50 туров | До 4 языков
-✓ Профили клиентов | Напоминания | Расширенная аналитика
+🚀 **ПРОФЕССИОНАЛЬНЫЙ - 5 999 TL/мес** (САМЫЙ ПОПУЛЯРНЫЙ) — Всё из Starter, плюс:
+✓ 5 000 сообщений/мес | До 30 туров | Чатбот на 4 языках | 4 стиля общения
+✓ Умная CRM (авто-теги, отслеживание предпочтений и расходов)
+✓ Автоматическое напоминание о туре + опрос удовлетворённости
+✓ Расширенная аналитика | Свои шаблоны | Follow-up сообщения
 
-⭐ **КОРПОРАТИВНЫЙ - Связаться с нами**
-✓ 50 000 сообщений/мес | Безлимитные туры | Все 7 языков | Поддержка 24/7
+⭐ **КОРПОРАТИВНЫЙ - Связаться с нами** — Всё из Professional, плюс:
+✓ 50 000 сообщений/мес (высокий объём) | Полная поддержка на 7 языках
+✓ Приоритетная поддержка | Индивидуальная разработка
 
 **Годовая оплата: скидка 10%**
 **Пробный период:** 14 дней бесплатно, без кредитной карты`
@@ -1031,7 +1044,7 @@ const helpContent: HelpContent = {
         {
           question: "كيف تدير الجولات والحجوزات؟",
           answer: `**إضافة جولة:** علامة التبويب "الجولات" > "إضافة جولة" > املأ البيانات واحفظ
-- الباقة الأساسية: حتى 10 جولات. Professional: حتى 50 جولة. Enterprise: غير محدود
+- الباقة الأساسية: حتى 10 جولات. Professional: حتى 30 جولة. Enterprise: غير محدود
 
 **حالات الحجز:** جديد → معلق → مؤكد → ملغى
 **تصدير إلى Excel:** تحميل جميع الحجوزات مع التفاصيل`
@@ -1100,7 +1113,7 @@ const helpContent: HelpContent = {
 ✓ 1,000 رسالة/شهر | حتى 10 جولات | لغة واحدة
 
 🚀 **الاحترافية - 4,999 ليرة/شهر** (الأكثر شعبية)
-✓ 5,000 رسالة/شهر | حتى 50 جولة | حتى 4 لغات
+✓ 5,000 رسالة/شهر | حتى 30 جولة | حتى 4 لغات
 
 ⭐ **المؤسسية - تواصل معنا**
 ✓ 50,000 رسالة/شهر | جولات غير محدودة | جميع اللغات السبع | دعم 24/7
@@ -1200,7 +1213,7 @@ const helpContent: HelpContent = {
         {
           question: "Comment gérer les circuits et les réservations ?",
           answer: `**Ajouter un circuit :** Onglet "Circuits" > "Ajouter" > remplir et sauvegarder
-- Forfait Starter : max 10 circuits. Professional : jusqu'à 50 circuits. Enterprise : illimité
+- Forfait Starter : max 10 circuits. Professional : jusqu'à 30 circuits. Enterprise : illimité
 
 **Statuts de réservation :** Nouveau → En attente → Confirmé → Annulé
 **Export Excel :** Téléchargez toutes les réservations avec les détails`
@@ -1269,7 +1282,7 @@ const helpContent: HelpContent = {
 ✓ 1 000 messages/mois | Max 10 circuits | 1 langue
 
 🚀 **PROFESSIONNEL - 4 999 TL/mois** (LE PLUS POPULAIRE)
-✓ 5 000 messages/mois | Jusqu'à 50 circuits | Jusqu'à 4 langues
+✓ 5 000 messages/mois | Jusqu'à 30 circuits | Jusqu'à 4 langues
 
 ⭐ **ENTREPRISE - Contactez-nous**
 ✓ 50 000 messages/mois | Circuits illimités | 7 langues | Support 24/7
@@ -1369,7 +1382,7 @@ const helpContent: HelpContent = {
         {
           question: "¿Cómo gestionar tours y reservas?",
           answer: `**Agregar tour:** Pestaña "Tours" > "Agregar" > completar y guardar
-- Plan Starter: máx. 10 tours. Professional: hasta 50 tours. Enterprise: ilimitados
+- Plan Starter: máx. 10 tours. Professional: hasta 30 tours. Enterprise: ilimitados
 
 **Estados de reserva:** Nuevo → Pendiente → Confirmado → Cancelado
 **Exportar a Excel:** Descargue todas las reservas con detalles`
@@ -1434,14 +1447,20 @@ const helpContent: HelpContent = {
       items: [
         {
           question: "Planes de suscripción y precios",
-          answer: `💼 **STARTER - 3.999 TL/mes**
-✓ 1.000 mensajes/mes | Máx. 10 tours | 1 idioma
+          answer: `💼 **STARTER - 3.999 TL/mes** — Para nuevas agencias
+✓ 1.000 mensajes/mes | 10 tours | Chatbot en un solo idioma | Estilo corporativo
+✓ Herramientas de operaciones: registros / salidas / saldo
+✓ Reserva manual | Importación masiva desde Excel | Soporte IA 24/7
 
-🚀 **PROFESIONAL - 5.999 TL/mes** (MÁS POPULAR)
-✓ 5.000 mensajes/mes | Hasta 50 tours | Hasta 4 idiomas
+🚀 **PROFESIONAL - 5.999 TL/mes** (MÁS POPULAR) — Todo en Starter, más:
+✓ 5.000 mensajes/mes | Hasta 30 tours | Chatbot en 4 idiomas | 4 estilos
+✓ CRM inteligente (etiquetado automático, seguimiento de preferencias y gastos)
+✓ Recordatorio automático de tour + encuesta de satisfacción
+✓ Análisis avanzado | Plantillas personalizadas | Mensajes de seguimiento
 
-⭐ **EMPRESARIAL - Contáctenos**
-✓ 50.000 mensajes/mes | Tours ilimitados | 7 idiomas | Soporte 24/7
+⭐ **EMPRESARIAL - Contáctenos** — Todo en Profesional, más:
+✓ 50.000 mensajes/mes (alto volumen) | Soporte completo en los 7 idiomas
+✓ Soporte prioritario | Desarrollo personalizado para tu empresa
 
 **Pago anual: 10% de descuento**
 **Prueba gratuita:** 14 días, sin tarjeta de crédito`

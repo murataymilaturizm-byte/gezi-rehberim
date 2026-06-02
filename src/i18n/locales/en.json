@@ -260,7 +260,7 @@
       },
       "tourLimit": {
         "question": "Is there a tour limit?",
-        "answer": "Starter plan: 10 tours; Professional: 50 tours; Enterprise: unlimited. You can upgrade anytime. Inactive tours don't count toward the limit."
+        "answer": "Starter plan: 10 tours; Professional: 30 tours; Enterprise: unlimited. You can upgrade anytime. Inactive tours don't count toward the limit."
       },
       "cancellation": {
         "question": "Can I cancel anytime?",
@@ -296,13 +296,15 @@
       "features": {
         "messages": "💬 1,000 messages/month",
         "tours": "🗂️ Up to 10 tours",
-        "languages": "🌍 1 Language Choice (Any of TR, EN, DE, FR, ES, RU, AR)",
-        "style": "🎨 Professional style only",
-        "basicFeatures": "📊 Basic features",
+        "languages": "💬 Single-language WhatsApp chatbot (choose 1 of 7)",
+        "style": "🎨 Corporate conversation style",
         "seatPlan": "Bus seat plan",
         "passengerList": "Passenger list & manifest (PDF/Excel)",
         "registrationMgmt": "Registration & departure management",
-        "balanceTracking": "Balance tracking"
+        "balanceTracking": "Balance tracking",
+        "manualReservation": "📝 Manual reservation entry",
+        "bulkImport": "📂 Bulk tour import from Excel",
+        "supportChat": "🤖 24/7 AI support assistant"
       }
     },
     "professional": {
@@ -313,18 +315,15 @@
       "description": "For growing businesses and active agencies",
       "features": {
         "messages": "💬 5,000 messages/month",
-        "tours": "🗂️ Up to 50 tours",
+        "tours": "🗂️ Up to 30 tours",
         "languages": "🌍 Up to 4 Languages",
         "allStyles": "🎨 4 different conversation styles",
-        "userProfiles": "👤 User profiles and tracking",
-        "reminders": "⏰ Automatic tour reminders",
         "templates": "📝 Custom message templates",
         "followUps": "📲 Follow-up messages",
-        "analytics": "📊 Detailed analytics & revenue tracking",
-        "seatPlan": "Bus seat plan",
-        "passengerList": "Passenger list & manifest (PDF/Excel)",
-        "registrationMgmt": "Registration & departure management",
-        "balanceTracking": "Balance tracking"
+        "includesStarter": "✨ Everything in Starter, plus:",
+        "smartCrm": "👥 Smart CRM — Auto-tagging (VIP/regular/potential), preference & spending tracking, conversation archive",
+        "automatedNotifications": "🔔 Automated tour reminder + feedback survey (your template, your timing)",
+        "advancedAnalytics": "📊 Advanced analytics — revenue, destination and language performance"
       }
     },
     "enterprise": {
@@ -333,14 +332,11 @@
       "period": "/month",
       "description": "For large agencies and chain businesses",
       "features": {
-        "allProFeatures": "All Professional plan features and,",
         "messages": "💬 50,000 messages/month (high volume)",
         "allLanguages": "🌍 All 7 Languages (Turkish, English, German, French, Spanish, Russian, Arabic)",
-        "feedback": "⭐ Automatic customer satisfaction survey",
         "prioritySupport": "🚀 Priority support",
-        "multiAgency": "✅ Multi-agency management (coming soon)",
-        "apiAccess": "✅ API access (coming soon)",
-        "paymentCollection": "✅ Payment Collection (coming soon)"
+        "includesProfessional": "✨ Everything in Professional, plus:",
+        "customDev": "🛠️ Custom development for your company"
       }
     },
     "mostPopular": "Most Popular"
@@ -1317,7 +1313,7 @@
           "name": "Professional",
           "features": [
             "5,000 messages/month",
-            "50 tours",
+            "30 tours",
             "4 languages",
             "Priority support"
           ]
@@ -1362,7 +1358,7 @@
         "professional": {
           "features": [
             "💬 5,000 msgs/mo",
-            "🏨 Up to 50 tours",
+            "🏨 Up to 30 tours",
             "🌍 4 languages",
             "🎭 4 conversation styles",
             "👥 User profiles",

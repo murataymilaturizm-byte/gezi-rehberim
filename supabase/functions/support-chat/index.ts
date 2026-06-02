@@ -41,7 +41,7 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 - Çok kısa ve öz yanıtlar: Maksimum 2-3 cümle
 
 📋 TUR YÖNETİMİ:
-- Başlangıç paketinde en fazla 10 tur, Profesyonel pakette 50 tura kadar, Kurumsal pakette sınırsız
+- Başlangıç paketinde en fazla 10 tur, Profesyonel pakette 30 tura kadar, Kurumsal pakette sınırsız
 - Çoklu tarih ve fiyat yönetimi
 - Kota takibi ve otomatik güncellemeler
 - Excel'den toplu tur yükleme
@@ -104,36 +104,35 @@ SISTEM ÖZELLİKLERİ (GÜNCEL DURUM):
 
 🎯 PLAN ÖZELLİKLERİ:
 
-BAŞLANGIÇ PAKETİ:
-- 1.000 mesaj/ay
-- En fazla 10 tur
-- 1 dil
-- 1 konuşma stili (Kurumsal)
-- Temel analitik
-- Müşteri profilleri: HAYIR
-- Hatırlatıcılar: HAYIR
-- Takip mesajları: HAYIR
-- Memnuniyet anketleri: HAYIR
+BAŞLANGIÇ PAKETİ (Starter) — "Yeni başlayan acenteler için":
+- Aylık 1.000 mesaj
+- 10 tura kadar
+- Tek dilde WhatsApp chatbot (7 dilden seçim)
+- Kurumsal konuşma üslubu
+- Operasyon araçları: koltuk planı, yolcu listesi & manifesto (PDF/Excel)
+- Kayıt, sefer ve bakiye yönetimi
+- Manuel rezervasyon ekleme
+- Excel'den toplu tur yükleme
+- 7/24 AI destek asistanı
 
-PROFESYONEL PAKET (EN POPÜLER):
-- 5.000 mesaj/ay
-- 50 tura kadar
-- 4 dile kadar destek
-- 4 konuşma stili
-- Gelişmiş analitik
-- Müşteri profilleri: EVET
-- Hatırlatıcılar: EVET
-- Takip mesajları: EVET
-- Memnuniyet anketleri: EVET
-- Destinasyon analitiği: EVET
-- Özel mesaj şablonları: EVET
+PROFESYONEL PAKET (Professional) — EN POPÜLER — "Büyüyen, aktif acenteler için":
+✨ Başlangıç paketindeki her şey, artı:
+- Aylık 5.000 mesaj
+- 30 tura kadar
+- 4 dilde WhatsApp chatbot
+- 4 farklı konuşma üslubu
+- Akıllı CRM — Otomatik etiketleme (VIP/sürekli/potansiyel), tercih & harcama takibi, konuşma arşivi
+- Otomatik tur hatırlatma + memnuniyet anketi (kendi şablonunuz, kendi zamanlamanız)
+- Detaylı analitik — gelir, destinasyon ve dil bazlı performans
+- Özel mesaj şablonları
+- Otomatik takip mesajları
 
-KURUMSAL PAKET:
-- Sınırsız mesaj
-- Sınırsız tur
-- Tüm 7 dil
-- 4 konuşma stili
-- Tüm özellikler dahil
+KURUMSAL PAKET (Enterprise) — "Büyük acenteler ve zincir işletmeler için":
+✨ Profesyonel paketindeki her şey, artı:
+- Aylık 50.000 mesaj (yüksek hacim)
+- 7 dilde tam destek
+- Öncelikli destek
+- Firmaya özel geliştirme
 
 YOUR TASKS:
 - Answer questions about system usage in detail
@@ -421,7 +420,7 @@ PREMIUM (Lüks): Sophisticated, elegant, high-end
 12. PLAN LIMITS AND UPGRADES
 📦 Understanding Limits:
    - Message limit: Counts bot responses only
-   - Tour limit: Active tours count (Starter: 10, Professional: 50, Enterprise: unlimited)
+   - Tour limit: Active tours count (Starter: 10, Professional: 30, Enterprise: unlimited)
    - Language limit: Enabled languages (Starter: 1, Professional: 4, Enterprise: 7)
    - Conversation styles: Available in plan
 
@@ -434,7 +433,7 @@ PREMIUM (Lüks): Sophisticated, elegant, high-end
 
 💼 Plan Comparison:
    Starter: Good for small agencies testing system (1,000 msg, 10 tours, 1 language)
-   Professional: Best for growing agencies (5,000 msg, 50 tours, 4 languages) - MOST POPULAR
+   Professional: Best for growing agencies (5,000 msg, 30 tours, 4 languages) - MOST POPULAR
    Enterprise: Large agencies with custom needs (unlimited msg, unlimited tours, 7 languages)
 
 CONVERSATION STYLE:
