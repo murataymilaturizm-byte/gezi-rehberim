@@ -4097,5 +4097,48 @@
         "error": "Error"
       }
     }
+  },
+  "operations": {
+    "eyebrow": "Gestión de operaciones",
+    "title": "No solo un chatbot — Gestione toda su agencia",
+    "subtitle": "Después de la reserva: asientos, manifiesto, registros, saldo — todo en un solo panel, sin pérdidas y rápido.",
+    "cards": {
+      "seatPlan": {
+        "title": "Plano de asientos del autobús",
+        "desc": "Disposiciones 2+2 y 2+1, asignación con arrastrar-soltar, espacio puerta central, exportación PDF."
+      },
+      "manifest": {
+        "title": "Lista de pasajeros y manifiesto",
+        "desc": "Exportación PDF y Excel, colores por grupo, columna de pasaporte condicional, línea de saldo."
+      },
+      "registration": {
+        "title": "Gestión de reservas y salidas",
+        "desc": "3 vistas (lista/tour/salida), cronología, edición rápida, filtrado."
+      },
+      "balance": {
+        "title": "Seguimiento de saldos",
+        "desc": "Cálculo automático, snapshot + respaldo en vivo, resumen de pago, auditoría preservada."
+      }
+    },
+    "mockup": {
+      "url": "turzzai.com/admin · plano de asientos",
+      "tag": "Viaje",
+      "tour": "Tour Pamukkale",
+      "date": "12 jun 2026",
+      "occupancy": "Ocupación",
+      "frontLabel": "Frente",
+      "actions": {
+        "pdf": "PDF",
+        "excel": "Excel",
+        "seatPlan": "Asientos"
+      }
+    },
+    "cta": {
+      "primary": "Probar 14 días gratis",
+      "secondary": "Ver demo"
+    }
+  },
+  "stickyMobileCTA": {
+    "label": "Comenzar prueba gratuita de 14 días"
   }
 }

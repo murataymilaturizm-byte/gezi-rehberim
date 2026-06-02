@@ -4097,5 +4097,48 @@
         "error": "Erreur"
       }
     }
+  },
+  "operations": {
+    "eyebrow": "Gestion des opérations",
+    "title": "Pas qu'un chatbot — Gérez toute votre agence",
+    "subtitle": "Après la réservation : sièges, manifeste, dossiers, solde — tout dans un seul panneau, sans perte et rapidement.",
+    "cards": {
+      "seatPlan": {
+        "title": "Plan de sièges du bus",
+        "desc": "Configurations 2+2 et 2+1, glisser-déposer, porte centrale, export PDF."
+      },
+      "manifest": {
+        "title": "Liste des passagers & manifeste",
+        "desc": "Export PDF et Excel, couleurs de groupe, colonne passeport conditionnelle, ligne solde."
+      },
+      "registration": {
+        "title": "Gestion des inscriptions & départs",
+        "desc": "3 vues (liste/tour/départ), chronologie, édition rapide, filtres."
+      },
+      "balance": {
+        "title": "Suivi des soldes",
+        "desc": "Calcul automatique, snapshot + repli live, résumé de paiement, audit préservé."
+      }
+    },
+    "mockup": {
+      "url": "turzzai.com/admin · plan de sièges",
+      "tag": "Voyage",
+      "tour": "Circuit Pamukkale",
+      "date": "12 juin 2026",
+      "occupancy": "Occupation",
+      "frontLabel": "Avant",
+      "actions": {
+        "pdf": "PDF",
+        "excel": "Excel",
+        "seatPlan": "Sièges"
+      }
+    },
+    "cta": {
+      "primary": "Essayer 14 jours gratuits",
+      "secondary": "Voir la démo"
+    }
+  },
+  "stickyMobileCTA": {
+    "label": "Démarrer l'essai gratuit de 14 jours"
   }
 }

@@ -23,12 +23,14 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { IndexBlogSection } from "@/components/IndexBlogSection";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import { OperationsSection } from "@/components/landing/OperationsSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { FooterSection } from "@/components/landing/FooterSection";
 import { StatsRibbon } from "@/components/landing/StatsRibbon";
+import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 
 const Index = () => {
   const { t } = useTranslation();
@@ -185,8 +187,14 @@ const Index = () => {
         <FeaturesSection />
       </section>
 
+      {/* Operations Section — YENİ: chatbot dışı arka-ofis araçları (koltuk, manifesto, kayıt, bakiye).
+          Konum: Features (front-office: bot/AI) altında, HowItWorks öncesinde. Anlatı: bot + operasyon = komple sistem. */}
+      <section ref={(el) => (sectionsRef.current[8] = el)} id="operasyon" className="py-16 sm:py-20 bg-card/40 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
+        <OperationsSection onDemoClick={scrollToDemo} />
+      </section>
+
       {/* How It Works Section - Timeline style */}
-      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-16 bg-card/50 opacity-0 translate-y-8 transition-all duration-700">
+      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-16 opacity-0 translate-y-8 transition-all duration-700">
         <HowItWorksSection onDemoClick={scrollToDemo} />
       </section>
 
@@ -230,32 +238,25 @@ const Index = () => {
         <TestimonialsSection />
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" ref={(el) => (sectionsRef.current[5] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
-        <PricingSection isYearly={isYearly} setIsYearly={setIsYearly} />
-      </section>
-
-      {/* FAQ Section — id="contact" anchor: POS-yok döneminde tüm ödeme/iletişim CTA'ları buraya yönlendirir. */}
-      <section id="contact" ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
-        <FaqSection />
-      </section>
-
       {/* ── Detaylı Rehberler Section ───────────────────────────────── */}
-      <section id="ozellikler" className="py-20 bg-card/30">
+      {/* TAŞINDI: önceden Pricing+FAQ SONRASInda idi — satın alma akışını bozuyordu.
+          Şimdi Testimonials → Detaylı Rehberler → Pricing sırası → "detayları gör → fiyatı incele".
+          Compact: py-14, kartlar lg:grid-cols-4 tek sırada. */}
+      <section id="ozellikler" className="py-14">
         <div className="container mx-auto px-4 max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.45, ease: "easeOut" }}
-            className="text-center mb-12"
+            className="text-center mb-10"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t("indexFeatures.title")}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 tracking-tight">{t("indexFeatures.title")}</h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               {t("indexFeatures.subtitle")}
             </p>
           </motion.div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {[
               { icon: MessageSquare, title: t("indexFeatures.whatsapp.title"), desc: t("indexFeatures.whatsapp.desc"), href: "/whatsapp-chatbot-seyahat-acentesi", color: "text-green-500", bg: "bg-green-500/10" },
               { icon: Brain, title: t("indexFeatures.ai.title"), desc: t("indexFeatures.ai.desc"), href: "/ai-tur-rezervasyonu", color: "text-purple-500", bg: "bg-purple-500/10" },
@@ -274,11 +275,11 @@ const Index = () => {
                   className="relative border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group cursor-pointer h-full"
                   onClick={() => window.location.href = item.href}
                 >
-                  <CardContent className="p-6 flex flex-col h-full">
-                    <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-md`}>
-                      <item.icon className={`w-6 h-6 ${item.color}`} />
+                  <CardContent className="p-5 sm:p-6 flex flex-col h-full">
+                    <div className={`w-11 h-11 rounded-xl ${item.bg} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-md`}>
+                      <item.icon className={`w-5 h-5 ${item.color}`} />
                     </div>
-                    <h3 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                    <h3 className="font-bold text-foreground text-base mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
                     <p className="text-sm text-muted-foreground flex-1">{item.desc}</p>
                     <a href={item.href} className={`text-sm ${item.color} mt-4 inline-flex items-center gap-1 hover:underline font-medium`}>
                       {t("cta.learnMore")} <ArrowRight className="w-3 h-3 rtl:rotate-180 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
@@ -289,6 +290,16 @@ const Index = () => {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" ref={(el) => (sectionsRef.current[5] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
+        <PricingSection isYearly={isYearly} setIsYearly={setIsYearly} />
+      </section>
+
+      {/* FAQ Section — id="contact" anchor: POS-yok döneminde tüm ödeme/iletişim CTA'ları buraya yönlendirir. */}
+      <section id="contact" ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
+        <FaqSection />
       </section>
 
       {/* ── Çözümler Section (segmentler) ───────────────────────────── */}
@@ -406,17 +417,25 @@ const Index = () => {
       {/* Footer */}
       <FooterSection />
 
-      {/* Scroll to Top Button */}
+      {/* Mobil sticky CTA için footer altına spacer — bar 64px civarı + 8 güvenlik = h-20.
+          Masaüstünde bar render edilmez, spacer da gizli (md:hidden). */}
+      <div className="h-20 md:hidden" aria-hidden="true" />
+
+      {/* Scroll to Top Button — mobilde sticky CTA ile çakışmaması için bottom-24,
+          masaüstünde bottom-6 (CTA yok). */}
       {showScrollTop && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-[4.5rem] right-4 md:bottom-20 md:right-6 z-40 w-12 h-12 rounded-full bg-gradient-ocean hover:opacity-90 shadow-elegant hover:shadow-glow animate-fade-in transition-all duration-300 hover:scale-110 group"
+          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-40 w-12 h-12 rounded-full bg-gradient-ocean hover:opacity-90 shadow-elegant hover:shadow-glow animate-fade-in transition-all duration-300 hover:scale-110 group"
           size="icon"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-5 h-5 transition-transform duration-300 group-hover:-translate-y-1" />
         </Button>
       )}
+
+      {/* Sticky mobile CTA — sadece md altı (md:hidden) */}
+      <StickyMobileCTA />
 
       {/* Sales Chat Widget */}
       <SalesChatWidget />

@@ -4097,5 +4097,48 @@
         "error": "Error"
       }
     }
+  },
+  "operations": {
+    "eyebrow": "Operations Management",
+    "title": "Not Just a Chatbot — Run Your Entire Agency",
+    "subtitle": "After the reservation arrives: seats, manifest, records, balance — all in one panel, lossless and fast.",
+    "cards": {
+      "seatPlan": {
+        "title": "Bus Seat Plan",
+        "desc": "2+2 and 2+1 layouts, drag-drop assignment, mid-door gap, PDF export."
+      },
+      "manifest": {
+        "title": "Passenger List & Manifest",
+        "desc": "PDF and Excel export, group colors, conditional passport column, balance line."
+      },
+      "registration": {
+        "title": "Registration & Departure Management",
+        "desc": "3 views (list/tour/departure), timeline, quick edit, filtering."
+      },
+      "balance": {
+        "title": "Balance Tracking",
+        "desc": "Auto calculation, snapshot + live fallback, payment summary, audit preserved."
+      }
+    },
+    "mockup": {
+      "url": "turzzai.com/admin · seat plan",
+      "tag": "Trip",
+      "tour": "Pamukkale Tour",
+      "date": "Jun 12, 2026",
+      "occupancy": "Occupancy",
+      "frontLabel": "Front",
+      "actions": {
+        "pdf": "PDF",
+        "excel": "Excel",
+        "seatPlan": "Seats"
+      }
+    },
+    "cta": {
+      "primary": "Try 14 Days Free",
+      "secondary": "Watch Demo"
+    }
+  },
+  "stickyMobileCTA": {
+    "label": "Start 14-Day Free Trial"
   }
 }

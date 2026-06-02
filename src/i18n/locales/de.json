@@ -4097,5 +4097,48 @@
         "error": "Fehler"
       }
     }
+  },
+  "operations": {
+    "eyebrow": "Betriebsverwaltung",
+    "title": "Nicht nur ein Chatbot — Verwalten Sie Ihre gesamte Agentur",
+    "subtitle": "Nach der Buchung: Sitze, Manifest, Datensätze, Saldo — alles in einem Panel, verlustfrei und schnell.",
+    "cards": {
+      "seatPlan": {
+        "title": "Bus-Sitzplan",
+        "desc": "2+2 und 2+1 Layouts, Drag-and-Drop, Mitteltür-Lücke, PDF-Export."
+      },
+      "manifest": {
+        "title": "Passagierliste & Manifest",
+        "desc": "PDF- und Excel-Export, Gruppenfarben, bedingte Passport-Spalte, Saldozeile."
+      },
+      "registration": {
+        "title": "Buchungs- & Abfahrtsverwaltung",
+        "desc": "3 Ansichten (Liste/Tour/Abfahrt), Zeitleiste, schnelle Bearbeitung, Filter."
+      },
+      "balance": {
+        "title": "Saldoverfolgung",
+        "desc": "Automatische Berechnung, Snapshot + Live-Fallback, Zahlungsübersicht, Audit erhalten."
+      }
+    },
+    "mockup": {
+      "url": "turzzai.com/admin · Sitzplan",
+      "tag": "Reise",
+      "tour": "Pamukkale-Tour",
+      "date": "12. Juni 2026",
+      "occupancy": "Belegung",
+      "frontLabel": "Vorn",
+      "actions": {
+        "pdf": "PDF",
+        "excel": "Excel",
+        "seatPlan": "Sitze"
+      }
+    },
+    "cta": {
+      "primary": "14 Tage kostenlos testen",
+      "secondary": "Demo ansehen"
+    }
+  },
+  "stickyMobileCTA": {
+    "label": "14 Tage kostenlos starten"
   }
 }

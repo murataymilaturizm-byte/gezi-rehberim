@@ -4194,5 +4194,48 @@
         "error": "Hata"
       }
     }
+  },
+  "operations": {
+    "eyebrow": "Operasyon Yönetimi",
+    "title": "Sadece Chatbot Değil — Acentenizi Komple Yönetin",
+    "subtitle": "Rezervasyon geldikten sonra: koltuk, manifesto, kayıt, bakiye — hepsi tek panelde, kayıpsız ve hızlı.",
+    "cards": {
+      "seatPlan": {
+        "title": "Otobüs Koltuk Planı",
+        "desc": "2+2 ve 2+1 düzen, sürükle-bırak atama, orta kapı boşluğu, PDF çıktı."
+      },
+      "manifest": {
+        "title": "Yolcu Listesi & Manifesto",
+        "desc": "PDF ve Excel çıktı, grup renklendirme, koşullu pasaport, bakiye satırı."
+      },
+      "registration": {
+        "title": "Kayıt & Sefer Yönetimi",
+        "desc": "3 görünüm (liste/tur/sefer), zaman çizelgesi, hızlı düzenleme, filtreleme."
+      },
+      "balance": {
+        "title": "Bakiye Takibi",
+        "desc": "Otomatik hesap, snapshot + canlı fallback, ödeme özeti, audit korunur."
+      }
+    },
+    "mockup": {
+      "url": "turzzai.com/admin · koltuk planı",
+      "tag": "Sefer",
+      "tour": "Pamukkale Turu",
+      "date": "12 Haz 2026",
+      "occupancy": "Doluluk",
+      "frontLabel": "Ön",
+      "actions": {
+        "pdf": "PDF",
+        "excel": "Excel",
+        "seatPlan": "Koltuk"
+      }
+    },
+    "cta": {
+      "primary": "14 Gün Ücretsiz Dene",
+      "secondary": "Demoyu İzle"
+    }
+  },
+  "stickyMobileCTA": {
+    "label": "14 Gün Ücretsiz Başla"
   }
 }
