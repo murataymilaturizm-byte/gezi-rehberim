@@ -1,245 +1,275 @@
+// send-tour-reminders — Acente-yönetilebilir tur hatırlatma cron'u.
+//
+// REFACTOR (eski → yeni):
+//   ESKİ: Hardcoded 3 gün önce + 7-dil kod-içi mesaj + FREE-FORM gönderim (24h kuralı
+//         yüzünden çoğunlukla başarısız: müşteri 24h penceresi dışındaysa Meta reddeder).
+//   YENİ: agency_event_templates'ten okur — acente seçtiği offset_hours (-72/-24/...) +
+//         template_key + language ile MÜŞTERİ DİLİNE göre TEMPLATE-BASED gönderim
+//         (24h muaf). send-template-message MODE 3 (registrationId-bazlı otomatik
+//         değişken doldurma) reuse edilir.
+//
+// AKIŞ:
+//   1. agency_event_templates'te event_type='tour_reminder' enabled=true satırlar
+//   2. Her satır için:
+//      - Plan gate (plan_features.has_reminders)
+//      - Pencere: today + |offset_hours| ile +24h arası (gün granül)
+//      - Acentenin o penceredeki active rezervasyonları (reminder_sent=false)
+//      - Her rezervasyon için müşteri language_preference belirle
+//      - Eğer müşteri dili satırın language'ı ile eşleşiyorsa → send-template-message MODE 3
+//      - Başarılı: reminder_sent=true (tekrar gönderim engeli)
+//
+// CRON: Günlük çalışacak (Supabase Dashboard scheduler veya pg_cron). 24-saat pencere
+// günlük taramayla tüm uygun rezervasyonları yakalar.
+//
+// Acente eşleştirme yapmadıysa veya enabled=false → graceful skip (hata değil).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendWhatsAppMessage, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface MatchingRow {
+  id: string;
+  agency_id: string;
+  template_key: string;
+  language: string;
+  offset_hours: number;
+}
+
+interface RegistrationRow {
+  id: string;
+  full_name: string;
+  phone: string;
+  status: string;
+  tour_dates: { departure_date: string } | { departure_date: string }[];
+}
+
+// send-template-message MODE 3 (registrationId-bazlı) HTTP invoke.
+// Edge function-to-function call — Bearer SERVICE_ROLE_KEY ile.
+// send-template-message zaten otomatik değişken doldurma (full_name, tour_name,
+// date, pax, total_amount, currency, meeting_time, meeting_point) + sendWhatsAppTemplate
+// (Meta template, 24h MUAF) + template_send_log audit yapar.
+async function invokeSendTemplate(opts: {
+  registrationId: string;
+  templateKey: string;
+  language: string;
+}): Promise<{ success: boolean; error?: string }> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-template-message`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify(opts),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: `send-template-message HTTP ${res.status}: ${text.slice(0, 200)}` };
+    }
+    const data = await res.json();
+    if (data && data.success === false) {
+      return { success: false, error: data.error || data.debug?.metaError || "unknown" };
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('🕐 Tour reminder job started at:', new Date().toISOString());
+    console.log("🕐 tour_reminder job started at:", new Date().toISOString());
 
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    const threeDaysFromNow = new Date();
-    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-    threeDaysFromNow.setHours(0, 0, 0, 0);
+    // ── 1) Aktif tour_reminder eşleştirmeleri ────────────────────────────────
+    const { data: matchings, error: mErr } = await (supabase as unknown as {
+      from: (t: string) => {
+        select: (cols: string) => {
+          eq: (c: string, v: unknown) => {
+            eq: (c2: string, v2: unknown) => Promise<{ data: MatchingRow[] | null; error: unknown }>;
+          };
+        };
+      };
+    })
+      .from("agency_event_templates")
+      .select("id, agency_id, template_key, language, offset_hours")
+      .eq("event_type", "tour_reminder")
+      .eq("enabled", true);
 
-    const nextDay = new Date(threeDaysFromNow);
-    nextDay.setDate(nextDay.getDate() + 1);
-
-    console.log('📅 Looking for tours between:', threeDaysFromNow.toISOString(), 'and', nextDay.toISOString());
-
-    const { data: upcomingRegistrations, error: fetchError } = await supabase
-      .from('registrations')
-      .select(`
-        id,
-        full_name,
-        phone,
-        pax,
-        note,
-        agency_id,
-        tour_dates!inner (
-          id,
-          departure_date,
-          tours!inner (
-            title,
-            destination,
-            hareket_noktasi,
-            toplanma_saati
-          )
-        ),
-        agencies!inner (
-          id,
-          whatsapp_phone_number,
-          name,
-          meta_phone_number_id,
-          meta_access_token
-        )
-      `)
-      .eq('reminder_sent', false)
-      .gte('tour_dates.departure_date', threeDaysFromNow.toISOString().split('T')[0])
-      .lt('tour_dates.departure_date', nextDay.toISOString().split('T')[0]);
-
-    if (fetchError) {
-      console.error('❌ Error fetching registrations:', fetchError);
-      throw fetchError;
+    if (mErr) {
+      console.error("❌ matchings fetch error:", mErr);
+      throw mErr;
     }
 
-    console.log(`📋 Found ${upcomingRegistrations?.length || 0} registrations to remind`);
-
-    if (!upcomingRegistrations || upcomingRegistrations.length === 0) {
+    const rows = (matchings ?? []) as MatchingRow[];
+    if (rows.length === 0) {
+      console.log("📭 No active tour_reminder matchings — nothing to do.");
       return new Response(
-        JSON.stringify({ success: true, message: 'No reminders to send', count: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: true, message: "No matchings configured", count: 0 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+    console.log(`📋 ${rows.length} active tour_reminder matchings`);
 
-    let sentCount = 0;
-    let errorCount = 0;
+    // ── Plan gate cache (her acente için 1 kez sor) ──────────────────────────
+    const planCache = new Map<string, boolean>();
+    async function hasRemindersEnabled(agencyId: string): Promise<boolean> {
+      if (planCache.has(agencyId)) return planCache.get(agencyId)!;
+      const { data: agency } = await supabase
+        .from("agencies")
+        .select("plan_type")
+        .eq("id", agencyId)
+        .single();
+      if (!agency) {
+        planCache.set(agencyId, false);
+        return false;
+      }
+      const { data: pf } = await supabase
+        .from("plan_features")
+        .select("has_reminders")
+        .eq("plan_type", agency.plan_type)
+        .single();
+      const flag = !!pf?.has_reminders;
+      planCache.set(agencyId, flag);
+      return flag;
+    }
 
-    for (const registration of upcomingRegistrations) {
-      try {
-        const tourDate = registration.tour_dates as any;
-        const tour = tourDate.tours;
-        const agency = registration.agencies as any;
+    let totalSent = 0;
+    let totalSkipped = 0;
+    let totalErrors = 0;
 
-        // Check if reminders are enabled for this agency's plan
-        const { data: agencyDetails } = await supabase
-          .from('agencies')
-          .select('plan_type')
-          .eq('id', registration.agency_id)
-          .single();
+    // ── 2) Her eşleştirme için pencere taraması ──────────────────────────────
+    for (const m of rows) {
+      const hoursOffset = Math.abs(m.offset_hours); // -72 → 72 (önce N saat)
+      const nowMs = Date.now();
+      const startMs = nowMs + hoursOffset * 3600 * 1000;
+      const endMs = startMs + 24 * 3600 * 1000; // 24 saat pencere (günlük cron tarama)
 
-        if (agencyDetails) {
-          const { data: planFeatures } = await supabase
-            .from('plan_features')
-            .select('has_reminders')
-            .eq('plan_type', agencyDetails.plan_type)
-            .single();
+      const startDate = new Date(startMs).toISOString().split("T")[0];
+      const endDate = new Date(endMs).toISOString().split("T")[0];
 
-          if (!planFeatures?.has_reminders) {
-            console.log(`⏭️ Skipping ${registration.full_name} - reminders not enabled for ${agencyDetails.plan_type} plan`);
+      console.log(
+        `🎯 matching agency=${m.agency_id.slice(0, 8)} lang=${m.language} ` +
+          `offset=${m.offset_hours}h window=${startDate}→${endDate}`,
+      );
+
+      // Plan gate
+      const planOk = await hasRemindersEnabled(m.agency_id);
+      if (!planOk) {
+        console.log(`⏭️ plan skip: ${m.agency_id.slice(0, 8)} — has_reminders=false`);
+        continue;
+      }
+
+      // Pencere rezervasyonları (henüz gönderilmemiş, iptal değil)
+      const { data: regs, error: regErr } = await supabase
+        .from("registrations")
+        .select(`id, full_name, phone, status, tour_dates!inner(departure_date)`)
+        .eq("agency_id", m.agency_id)
+        .eq("reminder_sent", false)
+        .neq("status", "CANCELLED")
+        .gte("tour_dates.departure_date", startDate)
+        .lt("tour_dates.departure_date", endDate);
+
+      if (regErr) {
+        console.error(`❌ regs fetch error ${m.agency_id}:`, regErr);
+        totalErrors++;
+        continue;
+      }
+
+      const regsList = (regs ?? []) as unknown as RegistrationRow[];
+      if (regsList.length === 0) {
+        console.log(`📭 no regs in window for ${m.agency_id.slice(0, 8)}/${m.language}`);
+        continue;
+      }
+      console.log(`👥 ${regsList.length} regs in window`);
+
+      // ── 3) Her rezervasyon: dil eşleşmesi + template gönderim ──────────────
+      for (const reg of regsList) {
+        try {
+          // Müşteri dil tercihi
+          const normalizedPhone = reg.phone.replace(/^\+/, "").replace(/\s/g, "");
+          const { data: profile } = await supabase
+            .from("whatsapp_user_profiles")
+            .select("language_preference")
+            .eq("phone", normalizedPhone)
+            .eq("agency_id", m.agency_id)
+            .maybeSingle();
+          const customerLang = (profile?.language_preference as string | undefined) || "tr";
+
+          // Bu satırın dili müşteri diliyle eşleşmiyorsa — başka bir m içinde işlenir
+          // (acente o dil için başka eşleştirme yaptıysa). Burada bu rezervasyon atlanır.
+          if (customerLang !== m.language) {
+            totalSkipped++;
             continue;
           }
+
+          // send-template-message MODE 3 invoke
+          const result = await invokeSendTemplate({
+            registrationId: reg.id,
+            templateKey: m.template_key,
+            language: m.language,
+          });
+
+          if (result.success) {
+            await supabase
+              .from("registrations")
+              .update({
+                reminder_sent: true,
+                reminder_sent_at: new Date().toISOString(),
+              })
+              .eq("id", reg.id);
+            totalSent++;
+            console.log(`✅ sent reg=${reg.id.slice(0, 8)} lang=${customerLang}`);
+          } else {
+            totalErrors++;
+            console.error(`❌ send failed reg=${reg.id.slice(0, 8)}: ${result.error}`);
+          }
+
+          // Rate limiting — Meta hızını aşmamak için
+          await new Promise((r) => setTimeout(r, 500));
+        } catch (e) {
+          totalErrors++;
+          console.error(`❌ reg error ${reg.id}:`, e instanceof Error ? e.message : e);
         }
-
-        // Get customer language preference
-        let customerLang = 'tr';
-        const normalizedPhone = registration.phone.replace('+', '').replace(/\s/g, '');
-        const { data: userProfile } = await supabase
-          .from('whatsapp_user_profiles')
-          .select('language_preference')
-          .eq('phone', normalizedPhone)
-          .eq('agency_id', registration.agency_id)
-          .single();
-
-        if (userProfile?.language_preference) {
-          customerLang = userProfile.language_preference;
-        }
-
-        const message = formatReminderMessage(registration, tourDate, tour, customerLang);
-
-        // Get Meta credentials
-        const credentials = getMetaCredentials(agency);
-        
-        if (!credentials.accessToken || !credentials.phoneNumberId) {
-          console.error(`❌ No Meta WhatsApp credentials for agency: ${agency.name}`);
-          errorCount++;
-          continue;
-        }
-
-        const result = await sendWhatsAppMessage(
-          credentials.phoneNumberId,
-          credentials.accessToken,
-          registration.phone,
-          message
-        );
-
-        if (result.success) {
-          await supabase
-            .from('registrations')
-            .update({ reminder_sent: true, reminder_sent_at: new Date().toISOString() })
-            .eq('id', registration.id);
-
-          sentCount++;
-          console.log(`✅ Reminder sent to ${registration.phone} for tour: ${tour.title}`);
-        } else {
-          errorCount++;
-          console.error(`❌ Failed to send reminder to ${registration.phone}: ${result.error}`);
-        }
-
-        // Rate limiting
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-      } catch (error) {
-        errorCount++;
-        console.error(`❌ Error processing registration ${registration.id}:`, error);
       }
     }
 
-    console.log(`✅ Reminder job completed. Sent: ${sentCount}, Errors: ${errorCount}`);
-
-    return new Response(
-      JSON.stringify({ success: true, message: 'Reminders sent successfully', sent: sentCount, errors: errorCount, total: upcomingRegistrations.length }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    console.log(
+      `✅ Done. sent=${totalSent} skipped=${totalSkipped} errors=${totalErrors}`,
     );
-
-  } catch (error) {
-    console.error('❌ Reminder job error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({
+        success: true,
+        sent: totalSent,
+        skipped: totalSkipped,
+        errors: totalErrors,
+        matchings: rows.length,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  } catch (error) {
+    console.error("❌ tour_reminder job error:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
-
-function formatReminderMessage(registration: any, tourDate: any, tour: any, language: string): string {
-  const localeMap: Record<string, string> = {
-    tr: 'tr-TR', en: 'en-US', de: 'de-DE', ru: 'ru-RU', ar: 'ar-SA', fr: 'fr-FR', es: 'es-ES'
-  };
-
-  const departureDate = new Date(tourDate.departure_date).toLocaleDateString(
-    localeMap[language] || 'tr-TR',
-    { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' }
-  );
-
-  const reservationNo = registration.id.substring(0, 8);
-  const name = registration.full_name;
-  const pax = registration.pax;
-  const departure = tour.hareket_noktasi;
-  const meetingTime = tour.toplanma_saati;
-
-  const templates: Record<string, () => string> = {
-    tr: () => {
-      let msg = `🔔 *TUR HATIRLATMASI*\n\nMerhaba ${name}! 👋\n\n📅 *${departureDate}* tarihinde başlayacak turunuza *3 gün* kaldı!\n\n🎯 *Tur:* ${tour.title}\n📍 *Destinasyon:* ${tour.destination}\n👥 *Kişi Sayısı:* ${pax}\n`;
-      if (departure) msg += `\n🚌 *Hareket Noktası:* ${departure}`;
-      if (meetingTime) msg += `\n🕐 *Toplanma Saati:* ${meetingTime}`;
-      msg += `\n\n📋 *Rezervasyon No:* ${reservationNo}\n\n💼 *Hazırlıklar:*\n✅ Kimliğinizi yanınıza almayı unutmayın\n✅ Hava durumuna göre giyinin\n✅ Gerekli ilaçlarınızı yanınıza alın\n\n📞 Sorularınız için bizimle iletişime geçebilirsiniz.\n\n🙏 İyi yolculuklar dileriz!`;
-      return msg;
-    },
-    en: () => {
-      let msg = `🔔 *TOUR REMINDER*\n\nHello ${name}! 👋\n\n📅 Your tour starts on *${departureDate}* — only *3 days* left!\n\n🎯 *Tour:* ${tour.title_en || tour.title}\n📍 *Destination:* ${tour.destination_en || tour.destination}\n👥 *Guests:* ${pax}\n`;
-      if (departure) msg += `\n🚌 *Departure Point:* ${departure}`;
-      if (meetingTime) msg += `\n🕐 *Meeting Time:* ${meetingTime}`;
-      msg += `\n\n📋 *Booking No:* ${reservationNo}\n\n💼 *Preparations:*\n✅ Don't forget your ID\n✅ Dress according to the weather\n✅ Bring any necessary medications\n\n📞 Contact us for any questions.\n\n🙏 Have a great trip!`;
-      return msg;
-    },
-    de: () => {
-      let msg = `🔔 *TOUR-ERINNERUNG*\n\nHallo ${name}! 👋\n\n📅 Ihre Tour beginnt am *${departureDate}* — nur noch *3 Tage*!\n\n🎯 *Tour:* ${tour.title_de || tour.title}\n📍 *Reiseziel:* ${tour.destination_de || tour.destination}\n👥 *Personen:* ${pax}\n`;
-      if (departure) msg += `\n🚌 *Abfahrtsort:* ${departure}`;
-      if (meetingTime) msg += `\n🕐 *Treffzeit:* ${meetingTime}`;
-      msg += `\n\n📋 *Buchungs-Nr:* ${reservationNo}\n\n💼 *Vorbereitungen:*\n✅ Vergessen Sie Ihren Ausweis nicht\n✅ Kleiden Sie sich dem Wetter entsprechend\n✅ Nehmen Sie notwendige Medikamente mit\n\n📞 Kontaktieren Sie uns bei Fragen.\n\n🙏 Gute Reise!`;
-      return msg;
-    },
-    ru: () => {
-      let msg = `🔔 *НАПОМИНАНИЕ О ТУРЕ*\n\nЗдравствуйте, ${name}! 👋\n\n📅 Ваш тур начинается *${departureDate}* — осталось *3 дня*!\n\n🎯 *Тур:* ${tour.title_ru || tour.title}\n📍 *Направление:* ${tour.destination_ru || tour.destination}\n👥 *Гостей:* ${pax}\n`;
-      if (departure) msg += `\n🚌 *Место отправления:* ${departure}`;
-      if (meetingTime) msg += `\n🕐 *Время сбора:* ${meetingTime}`;
-      msg += `\n\n📋 *Номер бронирования:* ${reservationNo}\n\n💼 *Подготовка:*\n✅ Не забудьте документы\n✅ Одевайтесь по погоде\n✅ Возьмите необходимые лекарства\n\n📞 Свяжитесь с нами при вопросах.\n\n🙏 Приятного путешествия!`;
-      return msg;
-    },
-    ar: () => {
-      let msg = `🔔 *تذكير بالجولة*\n\nمرحباً ${name}! 👋\n\n📅 جولتك تبدأ في *${departureDate}* — بقي *3 أيام* فقط!\n\n🎯 *الجولة:* ${tour.title_ar || tour.title}\n📍 *الوجهة:* ${tour.destination_ar || tour.destination}\n👥 *عدد الأشخاص:* ${pax}\n`;
-      if (departure) msg += `\n🚌 *نقطة الانطلاق:* ${departure}`;
-      if (meetingTime) msg += `\n🕐 *وقت التجمع:* ${meetingTime}`;
-      msg += `\n\n📋 *رقم الحجز:* ${reservationNo}\n\n💼 *التحضيرات:*\n✅ لا تنسَ هويتك\n✅ ارتدِ ملابس مناسبة للطقس\n✅ أحضر أدويتك الضرورية\n\n📞 تواصل معنا لأي استفسار.\n\n🙏 رحلة سعيدة!`;
-      return msg;
-    },
-    fr: () => {
-      let msg = `🔔 *RAPPEL DE TOUR*\n\nBonjour ${name}! 👋\n\n📅 Votre tour commence le *${departureDate}* — plus que *3 jours*!\n\n🎯 *Tour:* ${tour.title_fr || tour.title}\n📍 *Destination:* ${tour.destination_fr || tour.destination}\n👥 *Personnes:* ${pax}\n`;
-      if (departure) msg += `\n🚌 *Point de départ:* ${departure}`;
-      if (meetingTime) msg += `\n🕐 *Heure de rendez-vous:* ${meetingTime}`;
-      msg += `\n\n📋 *N° de réservation:* ${reservationNo}\n\n💼 *Préparatifs:*\n✅ N'oubliez pas votre pièce d'identité\n✅ Habillez-vous selon la météo\n✅ Apportez vos médicaments nécessaires\n\n📞 Contactez-nous pour toute question.\n\n🙏 Bon voyage!`;
-      return msg;
-    },
-    es: () => {
-      let msg = `🔔 *RECORDATORIO DE TOUR*\n\nHola ${name}! 👋\n\n📅 Tu tour comienza el *${departureDate}* — ¡solo quedan *3 días*!\n\n🎯 *Tour:* ${tour.title_es || tour.title}\n📍 *Destino:* ${tour.destination_es || tour.destination}\n👥 *Personas:* ${pax}\n`;
-      if (departure) msg += `\n🚌 *Punto de salida:* ${departure}`;
-      if (meetingTime) msg += `\n🕐 *Hora de encuentro:* ${meetingTime}`;
-      msg += `\n\n📋 *N° de reserva:* ${reservationNo}\n\n💼 *Preparativos:*\n✅ No olvides tu identificación\n✅ Vístete según el clima\n✅ Lleva tus medicamentos necesarios\n\n📞 Contáctanos para cualquier pregunta.\n\n🙏 ¡Buen viaje!`;
-      return msg;
-    },
-  };
-
-  const formatter = templates[language] || templates.tr;
-  return formatter();
-}

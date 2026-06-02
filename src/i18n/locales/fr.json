@@ -789,7 +789,11 @@
         "noTemplates": "Pas encore de modèles de messages",
         "cancel": "Annuler",
         "namePlaceholder": "ex: Message de Bienvenue",
-        "contentPlaceholder": "Bonjour! Comment puis-je vous aider?"
+        "contentPlaceholder": "Bonjour! Comment puis-je vous aider?",
+        "tabs": {
+          "templates": "Modèles",
+          "automated": "Notifications Automatiques"
+        }
       },
       "settings": {
         "title": "Paramètres WhatsApp",
@@ -1869,6 +1873,37 @@
       "middleDoor": "Porte centrale",
       "edit": "Modifier",
       "assignHint": "Cliquez sur un siège vide pour attribuer un passager"
+    },
+    "automatedNotifications": {
+      "title": "Notifications Automatiques",
+      "description": "Envoyez automatiquement des rappels de tour et des enquêtes de satisfaction à vos clients.",
+      "tourReminder": {
+        "title": "Rappel de Tour",
+        "description": "Envoyez des rappels automatiques à vos clients avant le début du tour."
+      },
+      "feedbackSurvey": {
+        "title": "Enquête de Satisfaction",
+        "description": "Recueillez les commentaires de vos clients après la fin du tour."
+      },
+      "timing": "Moment",
+      "beforeTour": {
+        "h24": "1 jour avant",
+        "h48": "2 jours avant",
+        "h72": "3 jours avant (recommandé)"
+      },
+      "afterTour": {
+        "h24": "1 jour après (le lendemain)",
+        "h48": "2 jours après"
+      },
+      "templateSelection": "Association de Modèles",
+      "templateSelectionHelp": "Sélectionnez le modèle à utiliser pour chaque langue. Le modèle approprié sera envoyé selon la préférence linguistique du client.",
+      "selectTemplate": "Sélectionner un modèle...",
+      "noApprovedTemplates": "Pour envoyer des notifications automatiques, créez et faites approuver d'abord un modèle dans votre compte Meta Business, puis synchronisez-le depuis l'onglet Modèles.",
+      "goToTemplates": "Aller à l'onglet Modèles",
+      "enabledButNoMatch": "La notification est activée mais aucun modèle n'est associé à une langue — sélectionnez un modèle pour au moins une langue avant d'enregistrer.",
+      "upgradeRequired": "Plan Professionnel requis",
+      "enable": "Activer",
+      "saved": "Paramètres enregistrés"
     }
   },
   "auth": {

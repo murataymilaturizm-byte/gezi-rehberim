@@ -786,7 +786,11 @@
         "noTemplates": "No message templates yet",
         "cancel": "Cancel",
         "namePlaceholder": "e.g: Welcome Message",
-        "contentPlaceholder": "Hello! How can I help you?"
+        "contentPlaceholder": "Hello! How can I help you?",
+        "tabs": {
+          "templates": "Templates",
+          "automated": "Automated Notifications"
+        }
       },
       "settings": {
         "title": "WhatsApp Settings",
@@ -1869,6 +1873,37 @@
       "middleDoor": "Middle Door",
       "edit": "Edit",
       "assignHint": "Click an empty seat to assign a passenger"
+    },
+    "automatedNotifications": {
+      "title": "Automated Notifications",
+      "description": "Automatically send tour reminders and feedback surveys to your customers.",
+      "tourReminder": {
+        "title": "Tour Reminder",
+        "description": "Send automatic reminders to your customers before the tour starts."
+      },
+      "feedbackSurvey": {
+        "title": "Feedback Survey",
+        "description": "Collect feedback from your customers after the tour ends."
+      },
+      "timing": "Timing",
+      "beforeTour": {
+        "h24": "1 day before",
+        "h48": "2 days before",
+        "h72": "3 days before (recommended)"
+      },
+      "afterTour": {
+        "h24": "1 day after (next day)",
+        "h48": "2 days after"
+      },
+      "templateSelection": "Template Mapping",
+      "templateSelectionHelp": "Select the template to use for each language. The appropriate template will be sent based on the customer's language preference.",
+      "selectTemplate": "Select template...",
+      "noApprovedTemplates": "To send automated notifications, first create and get approval for a template in your Meta Business account, then sync it from the Templates tab.",
+      "goToTemplates": "Go to Templates Tab",
+      "enabledButNoMatch": "Notification is enabled but no template is mapped for any language — select a template for at least one language before saving.",
+      "upgradeRequired": "Professional plan required",
+      "enable": "Enable",
+      "saved": "Settings saved"
     }
   },
   "auth": {

@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SendTemplateDialog } from "./SendTemplateDialog";
+import AutomatedNotificationsTab from "./AutomatedNotificationsTab";
 
 interface MessageTemplate {
   id: string;
@@ -116,6 +117,8 @@ export default function MessageTemplates() {
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  // Üst-seviye tab: "templates" (mevcut şablon yönetimi) | "automated" (otomatik bildirim eşleştirme)
+  const [outerTab, setOuterTab] = useState<"templates" | "automated">("templates");
   const { toast } = useToast();
 
   const templateKeys = getAllTemplateKeys(templates);
@@ -392,6 +395,20 @@ export default function MessageTemplates() {
 
   return (
     <div className="space-y-6">
+      {/* Üst-seviye Tabs: Şablonlar (mevcut) | Otomatik Bildirimler (yeni).
+          İki tab dışındaki Dialog/SendTemplateDialog/AlertDialog'ler aşağıda, her iki
+          tab'da paylaşılan portal'lar. */}
+      <Tabs value={outerTab} onValueChange={(v) => setOuterTab(v as "templates" | "automated")}>
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="templates">
+            {t("admin.whatsapp.templates.tabs.templates", { defaultValue: "Şablonlar" })}
+          </TabsTrigger>
+          <TabsTrigger value="automated">
+            {t("admin.whatsapp.templates.tabs.automated", { defaultValue: "Otomatik Bildirimler" })}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="templates" className="space-y-6 mt-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold">{t("admin.whatsapp.templates.title")}</h2>
@@ -541,6 +558,12 @@ export default function MessageTemplates() {
             </div>
           </TabsContent>
         ))}
+      </Tabs>
+        </TabsContent>
+
+        <TabsContent value="automated" className="mt-6">
+          <AutomatedNotificationsTab onGoToTemplates={() => setOuterTab("templates")} />
+        </TabsContent>
       </Tabs>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

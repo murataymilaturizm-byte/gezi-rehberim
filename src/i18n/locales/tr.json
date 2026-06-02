@@ -778,7 +778,11 @@
         "noTemplates": "Henüz mesaj şablonu yok",
         "cancel": "İptal",
         "namePlaceholder": "Örn: Hoş Geldiniz Mesajı",
-        "contentPlaceholder": "Merhaba! Size nasıl yardımcı olabilirim?"
+        "contentPlaceholder": "Merhaba! Size nasıl yardımcı olabilirim?",
+        "tabs": {
+          "templates": "Şablonlar",
+          "automated": "Otomatik Bildirimler"
+        }
       },
       "settings": {
         "title": "WhatsApp Ayarları",
@@ -1935,6 +1939,37 @@
       "middleDoor": "Orta Kapı",
       "edit": "Düzenle",
       "assignHint": "Atamak için bir koltuk seçin (boş koltuğa tıkla → yolcuyu listeden seç)"
+    },
+    "automatedNotifications": {
+      "title": "Otomatik Bildirimler",
+      "description": "Müşterilerinize otomatik olarak tur hatırlatması ve memnuniyet anketi gönderin.",
+      "tourReminder": {
+        "title": "Tur Hatırlatma",
+        "description": "Tur başlangıcından önce müşterilerinize otomatik hatırlatma gönderin."
+      },
+      "feedbackSurvey": {
+        "title": "Memnuniyet Anketi",
+        "description": "Tur bitiminden sonra müşterilerinizden geri bildirim toplayın."
+      },
+      "timing": "Zaman",
+      "beforeTour": {
+        "h24": "1 gün önce",
+        "h48": "2 gün önce",
+        "h72": "3 gün önce (önerilen)"
+      },
+      "afterTour": {
+        "h24": "1 gün sonra (ertesi gün)",
+        "h48": "2 gün sonra"
+      },
+      "templateSelection": "Şablon Eşleştirmesi",
+      "templateSelectionHelp": "Her dil için kullanılacak şablonu seçin. Müşterinin dil tercihine göre uygun şablon gönderilir.",
+      "selectTemplate": "Şablon seçin...",
+      "noApprovedTemplates": "Otomatik bildirim göndermek için önce Meta Business hesabınızda bir şablon oluşturup onaylatın, sonra Şablonlar sekmesinden senkronize edin.",
+      "goToTemplates": "Şablonlar Sekmesine Git",
+      "enabledButNoMatch": "Bildirim açık ancak hiçbir dile şablon eşleştirilmemiş — kaydetmeden önce en az bir dil için şablon seçin.",
+      "upgradeRequired": "Profesyonel paket gerekli",
+      "enable": "Aktif",
+      "saved": "Ayarlar kaydedildi"
     }
   },
   "auth": {

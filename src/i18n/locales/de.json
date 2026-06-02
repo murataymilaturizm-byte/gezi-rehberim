@@ -789,7 +789,11 @@
         "noTemplates": "Noch keine Nachrichtenvorlagen",
         "cancel": "Abbrechen",
         "namePlaceholder": "z.B: Willkommensnachricht",
-        "contentPlaceholder": "Hallo! Wie kann ich Ihnen helfen?"
+        "contentPlaceholder": "Hallo! Wie kann ich Ihnen helfen?",
+        "tabs": {
+          "templates": "Vorlagen",
+          "automated": "Automatische Benachrichtigungen"
+        }
       },
       "settings": {
         "title": "WhatsApp-Einstellungen",
@@ -1869,6 +1873,37 @@
       "middleDoor": "Mittlere Tür",
       "edit": "Bearbeiten",
       "assignHint": "Klicken Sie auf einen leeren Sitz, um einen Passagier zuzuweisen"
+    },
+    "automatedNotifications": {
+      "title": "Automatische Benachrichtigungen",
+      "description": "Senden Sie automatisch Tour-Erinnerungen und Zufriedenheitsumfragen an Ihre Kunden.",
+      "tourReminder": {
+        "title": "Tour-Erinnerung",
+        "description": "Senden Sie Ihren Kunden vor Tour-Beginn automatische Erinnerungen."
+      },
+      "feedbackSurvey": {
+        "title": "Zufriedenheitsumfrage",
+        "description": "Sammeln Sie nach Tour-Ende Feedback von Ihren Kunden."
+      },
+      "timing": "Zeitpunkt",
+      "beforeTour": {
+        "h24": "1 Tag vorher",
+        "h48": "2 Tage vorher",
+        "h72": "3 Tage vorher (empfohlen)"
+      },
+      "afterTour": {
+        "h24": "1 Tag danach (am nächsten Tag)",
+        "h48": "2 Tage danach"
+      },
+      "templateSelection": "Vorlagen-Zuordnung",
+      "templateSelectionHelp": "Wählen Sie die Vorlage für jede Sprache. Die passende Vorlage wird je nach Sprachpräferenz des Kunden gesendet.",
+      "selectTemplate": "Vorlage auswählen...",
+      "noApprovedTemplates": "Um automatische Benachrichtigungen zu senden, erstellen und genehmigen Sie zuerst eine Vorlage in Ihrem Meta Business-Konto und synchronisieren Sie sie über den Tab \"Vorlagen\".",
+      "goToTemplates": "Zum Vorlagen-Tab",
+      "enabledButNoMatch": "Benachrichtigung ist aktiviert, aber keine Vorlage ist einer Sprache zugeordnet — wählen Sie vor dem Speichern eine Vorlage für mindestens eine Sprache.",
+      "upgradeRequired": "Professional-Plan erforderlich",
+      "enable": "Aktivieren",
+      "saved": "Einstellungen gespeichert"
     }
   },
   "auth": {

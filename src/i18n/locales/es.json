@@ -823,7 +823,11 @@
         "noTemplates": "No hay plantillas de mensajes todavía",
         "cancel": "Cancelar",
         "namePlaceholder": "ej: Mensaje de Bienvenida",
-        "contentPlaceholder": "¡Hola! ¿Cómo puedo ayudarte?"
+        "contentPlaceholder": "¡Hola! ¿Cómo puedo ayudarte?",
+        "tabs": {
+          "templates": "Plantillas",
+          "automated": "Notificaciones Automáticas"
+        }
       },
       "settings": {
         "title": "Configuración de WhatsApp",
@@ -1903,6 +1907,37 @@
       "middleDoor": "Puerta central",
       "edit": "Editar",
       "assignHint": "Haga clic en un asiento vacío para asignar un pasajero"
+    },
+    "automatedNotifications": {
+      "title": "Notificaciones Automáticas",
+      "description": "Envíe automáticamente recordatorios de tour y encuestas de satisfacción a sus clientes.",
+      "tourReminder": {
+        "title": "Recordatorio de Tour",
+        "description": "Envíe recordatorios automáticos a sus clientes antes del inicio del tour."
+      },
+      "feedbackSurvey": {
+        "title": "Encuesta de Satisfacción",
+        "description": "Recopile comentarios de sus clientes después del final del tour."
+      },
+      "timing": "Momento",
+      "beforeTour": {
+        "h24": "1 día antes",
+        "h48": "2 días antes",
+        "h72": "3 días antes (recomendado)"
+      },
+      "afterTour": {
+        "h24": "1 día después (al día siguiente)",
+        "h48": "2 días después"
+      },
+      "templateSelection": "Asociación de Plantillas",
+      "templateSelectionHelp": "Seleccione la plantilla a usar para cada idioma. La plantilla apropiada se enviará según la preferencia de idioma del cliente.",
+      "selectTemplate": "Seleccionar plantilla...",
+      "noApprovedTemplates": "Para enviar notificaciones automáticas, primero cree y obtenga aprobación de una plantilla en su cuenta de Meta Business, luego sincronícela desde la pestaña Plantillas.",
+      "goToTemplates": "Ir a la pestaña Plantillas",
+      "enabledButNoMatch": "La notificación está activada pero no hay plantilla asociada a ningún idioma — seleccione una plantilla para al menos un idioma antes de guardar.",
+      "upgradeRequired": "Plan Profesional requerido",
+      "enable": "Activar",
+      "saved": "Configuración guardada"
     }
   },
   "auth": {

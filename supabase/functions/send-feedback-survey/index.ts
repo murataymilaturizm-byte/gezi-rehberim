@@ -1,270 +1,299 @@
+// send-feedback-survey — Acente-yönetilebilir tur sonrası memnuniyet anketi cron'u.
+//
+// REFACTOR (eski → yeni):
+//   ESKİ: Hardcoded dün biten tur + 7-dil kod-içi mesaj + FREE-FORM gönderim
+//         (24h kuralı sorunu — müşteri tur bitimi sonrası mesaj atmamışsa Meta reddeder).
+//   YENİ: agency_event_templates'ten okur — acente seçtiği offset_hours (+24/+48/...) +
+//         template_key + language ile MÜŞTERİ DİLİNE göre TEMPLATE-BASED gönderim.
+//         send-template-message MODE 3 reuse (Meta template, 24h MUAF).
+//
+// AKIŞ:
+//   1. agency_event_templates'te event_type='feedback_survey' enabled=true satırlar
+//   2. Her satır için:
+//      - Plan gate (plan_features.has_feedback)
+//      - Pencere: today - offset_hours (örn +24 → dün biten turlar)
+//      - O acentenin pencerede biten tur_dates'lerinin CONFIRMED rezervasyonları
+//      - Müşteri dili satırın language'ı ile eşleşiyorsa
+//      - last_feedback_sent_at < 7 gün önce ise (cooldown)
+//      - send-template-message MODE 3 → last_feedback_sent_at = now()
+//
+// Acente eşleştirme yapmadıysa veya enabled=false → graceful skip.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendWhatsAppMessage, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface MatchingRow {
+  id: string;
+  agency_id: string;
+  template_key: string;
+  language: string;
+  offset_hours: number;
+}
+
+interface TourDateRow {
+  id: string;
+  departure_date: string;
+  tours: { title: string; agency_id: string } | { title: string; agency_id: string }[];
+}
+
+interface RegistrationRow {
+  id: string;
+  full_name: string;
+  phone: string;
+}
+
+interface UserProfileRow {
+  id: string;
+  phone: string;
+  language_preference: string | null;
+  last_feedback_sent_at: string | null;
+}
+
+// send-template-message MODE 3 (registrationId-bazlı) HTTP invoke — tour reminder ile aynı.
+async function invokeSendTemplate(opts: {
+  registrationId: string;
+  templateKey: string;
+  language: string;
+}): Promise<{ success: boolean; error?: string }> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-template-message`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify(opts),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: `send-template-message HTTP ${res.status}: ${text.slice(0, 200)}` };
+    }
+    const data = await res.json();
+    if (data && data.success === false) {
+      return { success: false, error: data.error || data.debug?.metaError || "unknown" };
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log("🕐 feedback_survey job started at:", new Date().toISOString());
+
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    console.log('Starting feedback survey task...');
+    // ── 1) Aktif feedback_survey eşleştirmeleri ──────────────────────────────
+    const { data: matchings, error: mErr } = await supabase
+      .from("agency_event_templates")
+      .select("id, agency_id, template_key, language, offset_hours")
+      .eq("event_type", "feedback_survey")
+      .eq("enabled", true);
 
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0, 0, 0, 0);
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const { data: completedTourDates, error: tourError } = await supabase
-      .from('tour_dates')
-      .select(`
-        id,
-        tour_id,
-        departure_date,
-        tours!inner (
-          title,
-          agency_id
-        )
-      `)
-      .gte('departure_date', yesterday.toISOString())
-      .lt('departure_date', today.toISOString());
-
-    if (tourError) {
-      console.error('Error fetching completed tours:', tourError);
-      throw tourError;
+    if (mErr) {
+      console.error("❌ matchings fetch error:", mErr);
+      throw mErr;
     }
 
-    console.log(`Found ${completedTourDates?.length || 0} completed tours`);
+    const rows = (matchings ?? []) as unknown as MatchingRow[];
+    if (rows.length === 0) {
+      console.log("📭 No active feedback_survey matchings.");
+      return new Response(
+        JSON.stringify({ success: true, message: "No matchings configured", count: 0 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    console.log(`📋 ${rows.length} active feedback_survey matchings`);
 
-    let sentCount = 0;
+    // ── Plan gate cache (has_feedback) ───────────────────────────────────────
+    const planCache = new Map<string, boolean>();
+    async function hasFeedbackEnabled(agencyId: string): Promise<boolean> {
+      if (planCache.has(agencyId)) return planCache.get(agencyId)!;
+      const { data: agency } = await supabase
+        .from("agencies")
+        .select("plan_type")
+        .eq("id", agencyId)
+        .single();
+      if (!agency) {
+        planCache.set(agencyId, false);
+        return false;
+      }
+      const { data: pf } = await supabase
+        .from("plan_features")
+        .select("has_feedback")
+        .eq("plan_type", agency.plan_type)
+        .single();
+      const flag = !!pf?.has_feedback;
+      planCache.set(agencyId, flag);
+      return flag;
+    }
 
-    for (const tourDate of completedTourDates || []) {
-      const { data: registrations, error: regError } = await supabase
-        .from('registrations')
-        .select('phone, full_name')
-        .eq('tour_date_id', tourDate.id)
-        .eq('status', 'CONFIRMED');
+    let totalSent = 0;
+    let totalSkipped = 0;
+    let totalErrors = 0;
 
-      if (regError) {
-        console.error('Error fetching registrations:', regError);
+    // ── 2) Her eşleştirme için pencere ───────────────────────────────────────
+    for (const m of rows) {
+      // POZİTİF offset: tur bitiminden N saat sonra anket
+      // Pencere: tur bitti = today - N saat (gün granül, 24-saat window)
+      const hoursAfter = Math.max(0, m.offset_hours);
+      const nowMs = Date.now();
+      const startMs = nowMs - hoursAfter * 3600 * 1000;
+      const endMs = startMs + 24 * 3600 * 1000;
+
+      const startDate = new Date(startMs).toISOString().split("T")[0];
+      const endDate = new Date(endMs).toISOString().split("T")[0];
+
+      console.log(
+        `🎯 matching agency=${m.agency_id.slice(0, 8)} lang=${m.language} ` +
+          `offset=+${m.offset_hours}h window=${startDate}→${endDate}`,
+      );
+
+      const planOk = await hasFeedbackEnabled(m.agency_id);
+      if (!planOk) {
+        console.log(`⏭️ plan skip: ${m.agency_id.slice(0, 8)} — has_feedback=false`);
         continue;
       }
 
-      const tour = Array.isArray(tourDate.tours) ? tourDate.tours[0] : tourDate.tours;
-      console.log(`Tour ${tour.title}: ${registrations?.length || 0} participants`);
+      // Pencerede biten tour_dates (tours.agency_id filter ile bu acenteye ait)
+      const { data: tds, error: tdErr } = await supabase
+        .from("tour_dates")
+        .select(`id, departure_date, tours!inner(title, agency_id)`)
+        .gte("departure_date", startDate)
+        .lt("departure_date", endDate)
+        .eq("tours.agency_id", m.agency_id);
 
-      // Get agency with credentials
-      const { data: agency } = await supabase
-        .from('agencies')
-        .select('id, plan_type, meta_phone_number_id, meta_access_token')
-        .eq('id', tour.agency_id)
-        .single();
-
-      if (agency) {
-        const { data: planFeatures } = await supabase
-          .from('plan_features')
-          .select('has_feedback')
-          .eq('plan_type', agency.plan_type)
-          .single();
-
-        if (!planFeatures?.has_feedback) {
-          console.log(`Skipping tour ${tour.title} - feedback not enabled for ${agency.plan_type} plan`);
-          continue;
-        }
+      if (tdErr) {
+        console.error(`❌ tour_dates fetch error ${m.agency_id}:`, tdErr);
+        totalErrors++;
+        continue;
       }
 
-      for (const registration of registrations || []) {
-        const { data: userProfile } = await supabase
-          .from('whatsapp_user_profiles')
-          .select('id, phone, language_preference, last_feedback_sent_at')
-          .eq('phone', registration.phone.replace('+', ''))
-          .eq('agency_id', tour.agency_id)
-          .single();
+      const tdList = (tds ?? []) as unknown as TourDateRow[];
+      if (tdList.length === 0) {
+        console.log(`📭 no completed tours in window for ${m.agency_id.slice(0, 8)}/${m.language}`);
+        continue;
+      }
+      console.log(`📅 ${tdList.length} tour dates in window`);
 
-        if (!userProfile) continue;
+      for (const td of tdList) {
+        // CONFIRMED rezervasyonlar
+        const { data: regs, error: regErr } = await supabase
+          .from("registrations")
+          .select("id, full_name, phone")
+          .eq("tour_date_id", td.id)
+          .eq("status", "CONFIRMED");
 
-        if (userProfile.last_feedback_sent_at) {
-          const lastSent = new Date(userProfile.last_feedback_sent_at);
-          const daysSince = (Date.now() - lastSent.getTime()) / (1000 * 60 * 60 * 24);
-          if (daysSince < 7) {
-            console.log(`Skipping ${registration.phone} - survey sent ${daysSince.toFixed(1)} days ago`);
-            continue;
-          }
-        }
-
-        const surveyMessage = formatSurveyMessage(
-          registration.full_name,
-          tour.title,
-          userProfile.language_preference || 'tr'
-        );
-
-        const credentials = getMetaCredentials(agency);
-        
-        if (!credentials.accessToken || !credentials.phoneNumberId) {
-          console.error(`❌ No Meta credentials for agency`);
+        if (regErr) {
+          console.error(`❌ regs fetch error td=${td.id}:`, regErr);
+          totalErrors++;
           continue;
         }
 
-        const result = await sendWhatsAppMessage(
-          credentials.phoneNumberId,
-          credentials.accessToken,
-          registration.phone,
-          surveyMessage
-        );
+        for (const reg of (regs ?? []) as unknown as RegistrationRow[]) {
+          try {
+            const normalizedPhone = reg.phone.replace(/^\+/, "").replace(/\s/g, "");
+            const { data: profile } = await supabase
+              .from("whatsapp_user_profiles")
+              .select("id, phone, language_preference, last_feedback_sent_at")
+              .eq("phone", normalizedPhone)
+              .eq("agency_id", m.agency_id)
+              .maybeSingle();
 
-        if (result.success) {
-          await supabase
-            .from('whatsapp_user_profiles')
-            .update({ last_feedback_sent_at: new Date().toISOString() })
-            .eq('id', userProfile.id);
+            if (!profile) {
+              // Müşterinin profile'ı yok → dil bilinmediği için graceful skip
+              totalSkipped++;
+              continue;
+            }
+            const p = profile as unknown as UserProfileRow;
+            const customerLang = p.language_preference || "tr";
 
-          sentCount++;
-          console.log(`✓ Survey sent to ${registration.phone}`);
+            // Dil eşleşmesi
+            if (customerLang !== m.language) {
+              totalSkipped++;
+              continue;
+            }
+
+            // Cooldown — son 7 günde anket gönderildiyse atla
+            if (p.last_feedback_sent_at) {
+              const diffDays =
+                (Date.now() - new Date(p.last_feedback_sent_at).getTime()) /
+                (1000 * 60 * 60 * 24);
+              if (diffDays < 7) {
+                console.log(
+                  `⏭️ cooldown: ${reg.phone} ${diffDays.toFixed(1)}d since last survey`,
+                );
+                totalSkipped++;
+                continue;
+              }
+            }
+
+            // send-template-message MODE 3 invoke
+            const result = await invokeSendTemplate({
+              registrationId: reg.id,
+              templateKey: m.template_key,
+              language: m.language,
+            });
+
+            if (result.success) {
+              await supabase
+                .from("whatsapp_user_profiles")
+                .update({ last_feedback_sent_at: new Date().toISOString() })
+                .eq("id", p.id);
+              totalSent++;
+              console.log(`✅ survey sent reg=${reg.id.slice(0, 8)} lang=${customerLang}`);
+            } else {
+              totalErrors++;
+              console.error(`❌ send failed reg=${reg.id.slice(0, 8)}: ${result.error}`);
+            }
+
+            await new Promise((r) => setTimeout(r, 500));
+          } catch (e) {
+            totalErrors++;
+            console.error(`❌ reg error ${reg.id}:`, e instanceof Error ? e.message : e);
+          }
         }
-
-        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
-    console.log(`✓ Feedback survey task completed. Sent ${sentCount} surveys.`);
-
-    return new Response(
-      JSON.stringify({ success: true, toursProcessed: completedTourDates?.length || 0, surveysSent: sentCount }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    console.log(
+      `✅ Done. sent=${totalSent} skipped=${totalSkipped} errors=${totalErrors}`,
     );
-
-  } catch (error) {
-    console.error('Error in send-feedback-survey function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({
+        success: true,
+        sent: totalSent,
+        skipped: totalSkipped,
+        errors: totalErrors,
+        matchings: rows.length,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  } catch (error) {
+    console.error("❌ feedback_survey job error:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
-
-function formatSurveyMessage(
-  customerName: string,
-  tourTitle: string,
-  language: string
-): string {
-  const messages: Record<string, string> = {
-    tr: `Merhaba ${customerName}! 👋
-
-${tourTitle} turumuza katıldığınız için teşekkür ederiz! ✨
-
-Deneyiminizi bizimle paylaşır mısınız?
-
-*1-5 arası puan verin:*
-1️⃣ Çok Kötü
-2️⃣ Kötü  
-3️⃣ Orta
-4️⃣ İyi
-5️⃣ Mükemmel
-
-Sadece numarayı yazmanız yeterli. İsterseniz detaylı görüşlerinizi de ekleyebilirsiniz! 😊`,
-
-    en: `Hello ${customerName}! 👋
-
-Thank you for joining our ${tourTitle} tour! ✨
-
-Would you share your experience with us?
-
-*Rate from 1-5:*
-1️⃣ Very Bad
-2️⃣ Bad
-3️⃣ Average
-4️⃣ Good
-5️⃣ Excellent
-
-Just write the number. You can also add detailed feedback if you wish! 😊`,
-
-    de: `Hallo ${customerName}! 👋
-
-Vielen Dank für Ihre Teilnahme an unserer ${tourTitle} Tour! ✨
-
-Würden Sie Ihre Erfahrung mit uns teilen?
-
-*Bewerten Sie von 1-5:*
-1️⃣ Sehr schlecht
-2️⃣ Schlecht
-3️⃣ Durchschnittlich
-4️⃣ Gut
-5️⃣ Ausgezeichnet
-
-Schreiben Sie einfach die Nummer. Sie können auch detailliertes Feedback hinzufügen! 😊`,
-
-    ru: `Здравствуйте, ${customerName}! 👋
-
-Спасибо за участие в нашем туре ${tourTitle}! ✨
-
-Не могли бы вы поделиться своим опытом?
-
-*Оцените от 1 до 5:*
-1️⃣ Очень плохо
-2️⃣ Плохо
-3️⃣ Средне
-4️⃣ Хорошо
-5️⃣ Отлично
-
-Просто напишите номер. При желании можете добавить подробный отзыв! 😊`,
-
-    ar: `مرحبا ${customerName}! 👋
-
-شكراً لانضمامك إلى جولتنا ${tourTitle}! ✨
-
-هل يمكنك مشاركة تجربتك معنا؟
-
-*قيّم من 1-5:*
-1️⃣ سيء جداً
-2️⃣ سيء
-3️⃣ متوسط
-4️⃣ جيد
-5️⃣ ممتاز
-
-فقط اكتب الرقم. يمكنك أيضاً إضافة تعليقات مفصلة! 😊`,
-
-    fr: `Bonjour ${customerName}! 👋
-
-Merci d'avoir participé à notre tour ${tourTitle}! ✨
-
-Pourriez-vous partager votre expérience avec nous?
-
-*Notez de 1 à 5:*
-1️⃣ Très mauvais
-2️⃣ Mauvais
-3️⃣ Moyen
-4️⃣ Bon
-5️⃣ Excellent
-
-Il suffit d'écrire le numéro. Vous pouvez également ajouter des commentaires détaillés! 😊`,
-
-    es: `¡Hola ${customerName}! 👋
-
-¡Gracias por unirte a nuestro tour ${tourTitle}! ✨
-
-¿Podrías compartir tu experiencia con nosotros?
-
-*Califica del 1 al 5:*
-1️⃣ Muy malo
-2️⃣ Malo
-3️⃣ Regular
-4️⃣ Bueno
-5️⃣ Excelente
-
-Solo escribe el número. ¡También puedes agregar comentarios detallados! 😊`
-  };
-
-  return messages[language] || messages.tr;
-}
