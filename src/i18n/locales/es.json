@@ -928,7 +928,41 @@
         "noConversations": "Aún no hay conversaciones",
         "conversationError": "Error al cargar las conversaciones",
         "customer": "Cliente",
-        "assistant": "Asistente"
+        "assistant": "Asistente",
+        "searchPlaceholder": "Buscar por nombre o teléfono…",
+        "noMatch": "Sin resultados",
+        "metrics": {
+          "total": "Clientes totales",
+          "vip": "VIP",
+          "active": "Activos (7d)",
+          "avgSpending": "Gasto medio",
+          "avgSpendingSub": "por cliente que paga"
+        },
+        "filter": {
+          "all": "Todos",
+          "vip": "VIP",
+          "customer": "Cliente",
+          "prospect": "Potencial",
+          "active": "Activo",
+          "inactive": "Inactivo"
+        },
+        "sort": {
+          "lastActivity": "Última interacción",
+          "spending": "Por gasto",
+          "bookings": "Por reservas",
+          "name": "Por nombre"
+        },
+        "autoTags": {
+          "vip": "VIP",
+          "customer": "Cliente",
+          "prospect": "Potencial",
+          "active": "Activo",
+          "inactive": "Inactivo",
+          "heading": "Etiquetas automáticas",
+          "description": "El sistema las calcula a partir de reservas, gasto y actividad.",
+          "empty": "Aún no hay suficiente actividad.",
+          "autoTagTooltip": "Etiqueta automática (asignada por el sistema)"
+        }
       },
       "status": {
         "pending": "Pendiente",

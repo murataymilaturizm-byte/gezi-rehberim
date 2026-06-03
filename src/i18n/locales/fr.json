@@ -894,7 +894,41 @@
         "noConversations": "Aucune conversation pour l'instant",
         "conversationError": "Erreur lors du chargement des conversations",
         "customer": "Client",
-        "assistant": "Assistant"
+        "assistant": "Assistant",
+        "searchPlaceholder": "Rechercher par nom ou téléphone…",
+        "noMatch": "Aucun résultat",
+        "metrics": {
+          "total": "Clients au total",
+          "vip": "VIP",
+          "active": "Actifs (7j)",
+          "avgSpending": "Dépense moyenne",
+          "avgSpendingSub": "par client payant"
+        },
+        "filter": {
+          "all": "Tous",
+          "vip": "VIP",
+          "customer": "Client",
+          "prospect": "Prospect",
+          "active": "Actif",
+          "inactive": "Inactif"
+        },
+        "sort": {
+          "lastActivity": "Dernière interaction",
+          "spending": "Par dépenses",
+          "bookings": "Par réservations",
+          "name": "Par nom"
+        },
+        "autoTags": {
+          "vip": "VIP",
+          "customer": "Client",
+          "prospect": "Prospect",
+          "active": "Actif",
+          "inactive": "Inactif",
+          "heading": "Étiquettes automatiques",
+          "description": "Calculées par le système à partir des réservations, dépenses et activité.",
+          "empty": "Pas encore assez d'activité.",
+          "autoTagTooltip": "Étiquette automatique (attribuée par le système)"
+        }
       },
       "status": {
         "pending": "En attente",

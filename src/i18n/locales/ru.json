@@ -928,7 +928,41 @@
         "noConversations": "Разговоров пока нет",
         "conversationError": "Ошибка загрузки разговоров",
         "customer": "Клиент",
-        "assistant": "Ассистент"
+        "assistant": "Ассистент",
+        "searchPlaceholder": "Поиск по имени или телефону…",
+        "noMatch": "Нет результатов",
+        "metrics": {
+          "total": "Всего клиентов",
+          "vip": "VIP",
+          "active": "Активные (7 дн.)",
+          "avgSpending": "Ср. расход",
+          "avgSpendingSub": "на платящего клиента"
+        },
+        "filter": {
+          "all": "Все",
+          "vip": "VIP",
+          "customer": "Клиент",
+          "prospect": "Потенциальный",
+          "active": "Активный",
+          "inactive": "Неактивный"
+        },
+        "sort": {
+          "lastActivity": "Последнее взаимодействие",
+          "spending": "По расходам",
+          "bookings": "По бронированиям",
+          "name": "По имени"
+        },
+        "autoTags": {
+          "vip": "VIP",
+          "customer": "Клиент",
+          "prospect": "Потенциальный",
+          "active": "Активный",
+          "inactive": "Неактивный",
+          "heading": "Автоматические теги",
+          "description": "Система рассчитывает по бронированиям, расходам и активности.",
+          "empty": "Пока недостаточно активности.",
+          "autoTagTooltip": "Автоматический тег (назначен системой)"
+        }
       },
       "status": {
         "pending": "В ожидании",

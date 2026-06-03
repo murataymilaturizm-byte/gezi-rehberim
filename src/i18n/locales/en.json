@@ -891,7 +891,41 @@
         "noConversations": "No conversations yet",
         "conversationError": "Error loading conversations",
         "customer": "Customer",
-        "assistant": "Assistant"
+        "assistant": "Assistant",
+        "searchPlaceholder": "Search by name or phone…",
+        "noMatch": "No results",
+        "metrics": {
+          "total": "Total Customers",
+          "vip": "VIP",
+          "active": "Active (7d)",
+          "avgSpending": "Avg. Spending",
+          "avgSpendingSub": "per paying customer"
+        },
+        "filter": {
+          "all": "All",
+          "vip": "VIP",
+          "customer": "Customer",
+          "prospect": "Prospect",
+          "active": "Active",
+          "inactive": "Inactive"
+        },
+        "sort": {
+          "lastActivity": "Last interaction",
+          "spending": "By spending",
+          "bookings": "By bookings",
+          "name": "By name"
+        },
+        "autoTags": {
+          "vip": "VIP",
+          "customer": "Customer",
+          "prospect": "Prospect",
+          "active": "Active",
+          "inactive": "Inactive",
+          "heading": "Automatic Tags",
+          "description": "Computed by the system from bookings, spending and activity.",
+          "empty": "Not enough activity yet.",
+          "autoTagTooltip": "Automatic tag (assigned by the system)"
+        }
       },
       "status": {
         "pending": "Pending",

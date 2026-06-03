@@ -883,7 +883,41 @@
         "lastSearchQuery": "Son Arama",
         "notSpecified": "Belirtilmemiş",
         "messagesPerDay": "Mesaj/Gün",
-        "activeDays": "Aktif Gün"
+        "activeDays": "Aktif Gün",
+        "searchPlaceholder": "İsim veya telefonla ara…",
+        "noMatch": "Sonuç yok",
+        "metrics": {
+          "total": "Toplam Müşteri",
+          "vip": "VIP",
+          "active": "Aktif (7 gün)",
+          "avgSpending": "Ortalama Harcama",
+          "avgSpendingSub": "rezervasyon yapan müşteri başına"
+        },
+        "filter": {
+          "all": "Tümü",
+          "vip": "VIP",
+          "customer": "Müşteri",
+          "prospect": "Potansiyel",
+          "active": "Aktif",
+          "inactive": "İnaktif"
+        },
+        "sort": {
+          "lastActivity": "Son etkileşim",
+          "spending": "Harcamaya göre",
+          "bookings": "Rezervasyon sayısına göre",
+          "name": "İsme göre"
+        },
+        "autoTags": {
+          "vip": "VIP",
+          "customer": "Müşteri",
+          "prospect": "Potansiyel",
+          "active": "Aktif",
+          "inactive": "İnaktif",
+          "heading": "Otomatik Etiketler",
+          "description": "Sistem rezervasyon, harcama ve aktivite verisinden hesaplar.",
+          "empty": "Henüz yeterli aktivite yok.",
+          "autoTagTooltip": "Otomatik etiket (sistem tarafından atandı)"
+        }
       },
       "status": {
         "pending": "Beklemede",

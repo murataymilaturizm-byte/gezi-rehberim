@@ -894,7 +894,41 @@
         "noConversations": "لا توجد محادثات بعد",
         "conversationError": "حدث خطأ أثناء تحميل المحادثات",
         "customer": "العميل",
-        "assistant": "المساعد"
+        "assistant": "المساعد",
+        "searchPlaceholder": "ابحث بالاسم أو الهاتف…",
+        "noMatch": "لا توجد نتائج",
+        "metrics": {
+          "total": "إجمالي العملاء",
+          "vip": "VIP",
+          "active": "نشط (7 أيام)",
+          "avgSpending": "متوسط الإنفاق",
+          "avgSpendingSub": "لكل عميل دافع"
+        },
+        "filter": {
+          "all": "الكل",
+          "vip": "VIP",
+          "customer": "عميل",
+          "prospect": "محتمل",
+          "active": "نشط",
+          "inactive": "غير نشط"
+        },
+        "sort": {
+          "lastActivity": "آخر تفاعل",
+          "spending": "حسب الإنفاق",
+          "bookings": "حسب الحجوزات",
+          "name": "حسب الاسم"
+        },
+        "autoTags": {
+          "vip": "VIP",
+          "customer": "عميل",
+          "prospect": "محتمل",
+          "active": "نشط",
+          "inactive": "غير نشط",
+          "heading": "الوسوم التلقائية",
+          "description": "يحسبها النظام من الحجوزات والإنفاق والنشاط.",
+          "empty": "لا يوجد نشاط كافٍ بعد.",
+          "autoTagTooltip": "وسم تلقائي (يعينه النظام)"
+        }
       },
       "status": {
         "pending": "قيد الانتظار",

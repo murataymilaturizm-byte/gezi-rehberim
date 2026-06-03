@@ -894,7 +894,41 @@
         "noConversations": "Noch keine Gespräche",
         "conversationError": "Fehler beim Laden der Gespräche",
         "customer": "Kunde",
-        "assistant": "Assistent"
+        "assistant": "Assistent",
+        "searchPlaceholder": "Nach Name oder Telefon suchen…",
+        "noMatch": "Keine Ergebnisse",
+        "metrics": {
+          "total": "Kunden gesamt",
+          "vip": "VIP",
+          "active": "Aktiv (7 Tg.)",
+          "avgSpending": "Ø Ausgaben",
+          "avgSpendingSub": "pro zahlendem Kunden"
+        },
+        "filter": {
+          "all": "Alle",
+          "vip": "VIP",
+          "customer": "Kunde",
+          "prospect": "Interessent",
+          "active": "Aktiv",
+          "inactive": "Inaktiv"
+        },
+        "sort": {
+          "lastActivity": "Letzte Interaktion",
+          "spending": "Nach Ausgaben",
+          "bookings": "Nach Buchungen",
+          "name": "Nach Name"
+        },
+        "autoTags": {
+          "vip": "VIP",
+          "customer": "Kunde",
+          "prospect": "Interessent",
+          "active": "Aktiv",
+          "inactive": "Inaktiv",
+          "heading": "Automatische Tags",
+          "description": "Vom System aus Buchungen, Ausgaben und Aktivität berechnet.",
+          "empty": "Noch nicht genügend Aktivität.",
+          "autoTagTooltip": "Automatischer Tag (vom System zugewiesen)"
+        }
       },
       "status": {
         "pending": "Ausstehend",
