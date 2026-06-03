@@ -1,11 +1,11 @@
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plane, MessageSquare, BarChart3, Users, Shield, Zap, CheckCircle2, ArrowRight, Check, Star, Quote, TrendingUp, ArrowUp, Bot, Sparkles, Brain, Clock, Bell, TrendingUpIcon, Globe, Menu, Phone } from "lucide-react";
+import { MessageSquare, ArrowRight, ArrowUp, Menu, Phone } from "lucide-react";
 
 // Turzz destek hattı — landing header'ında görünür. Layout.tsx ile birebir aynı değerler.
 const SUPPORT_PHONE_DISPLAY = "0850 242 77 50";
 const SUPPORT_PHONE_HREF = "tel:+908502427750";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { DemoChat } from "@/components/DemoChat";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { SalesChatWidget } from "@/components/SalesChatWidget";
@@ -24,9 +23,9 @@ import { IndexBlogSection } from "@/components/IndexBlogSection";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { OperationsSection } from "@/components/landing/OperationsSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { ContactCollapsible } from "@/components/landing/ContactCollapsible";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { FooterSection } from "@/components/landing/FooterSection";
 import { StatsRibbon } from "@/components/landing/StatsRibbon";
@@ -53,7 +52,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const observers = sectionsRef.current.map((section, index) => {
+    const observers = sectionsRef.current.map((section) => {
       if (!section) return null;
 
       const observer = new IntersectionObserver(
@@ -187,15 +186,10 @@ const Index = () => {
         <FeaturesSection />
       </section>
 
-      {/* Operations Section — YENİ: chatbot dışı arka-ofis araçları (koltuk, manifesto, kayıt, bakiye).
-          Konum: Features (front-office: bot/AI) altında, HowItWorks öncesinde. Anlatı: bot + operasyon = komple sistem. */}
-      <section ref={(el) => (sectionsRef.current[8] = el)} id="operasyon" className="py-16 sm:py-20 bg-card/40 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
+      {/* Operations Section — chatbot dışı arka-ofis araçları (koltuk, manifesto, kayıt, bakiye).
+          Anlatı: bot + operasyon = komple sistem. */}
+      <section ref={(el) => (sectionsRef.current[2] = el)} id="operasyon" className="py-16 sm:py-20 bg-card/40 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
         <OperationsSection onDemoClick={scrollToDemo} />
-      </section>
-
-      {/* How It Works Section - Timeline style */}
-      <section ref={(el) => (sectionsRef.current[2] = el)} className="py-16 opacity-0 translate-y-8 transition-all duration-700">
-        <HowItWorksSection onDemoClick={scrollToDemo} />
       </section>
 
       {/* Live Demo Section */}
@@ -238,181 +232,24 @@ const Index = () => {
         <TestimonialsSection />
       </section>
 
-      {/* ── Detaylı Rehberler Section ───────────────────────────────── */}
-      {/* TAŞINDI: önceden Pricing+FAQ SONRASInda idi — satın alma akışını bozuyordu.
-          Şimdi Testimonials → Detaylı Rehberler → Pricing sırası → "detayları gör → fiyatı incele".
-          Compact: py-14, kartlar lg:grid-cols-4 tek sırada. */}
-      <section id="ozellikler" className="py-14">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-            className="text-center mb-10"
-          >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 tracking-tight">{t("indexFeatures.title")}</h2>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t("indexFeatures.subtitle")}
-            </p>
-          </motion.div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {[
-              { icon: MessageSquare, title: t("indexFeatures.whatsapp.title"), desc: t("indexFeatures.whatsapp.desc"), href: "/whatsapp-chatbot-seyahat-acentesi", color: "text-green-500", bg: "bg-green-500/10" },
-              { icon: Brain, title: t("indexFeatures.ai.title"), desc: t("indexFeatures.ai.desc"), href: "/ai-tur-rezervasyonu", color: "text-purple-500", bg: "bg-purple-500/10" },
-              { icon: Globe, title: t("indexFeatures.multilingual.title"), desc: t("indexFeatures.multilingual.desc"), href: "/cok-dilli-musteri-hizmetleri", color: "text-blue-500", bg: "bg-blue-500/10" },
-              { icon: Zap, title: t("indexFeatures.automation.title"), desc: t("indexFeatures.automation.desc"), href: "/tur-otomasyonu", color: "text-orange-500", bg: "bg-orange-500/10" },
-            ].map((item, idx) => (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.4, delay: idx * 0.07, ease: "easeOut" }}
-                whileHover={{ y: -4 }}
-              >
-                <Card
-                  className="relative border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group cursor-pointer h-full"
-                  onClick={() => window.location.href = item.href}
-                >
-                  <CardContent className="p-5 sm:p-6 flex flex-col h-full">
-                    <div className={`w-11 h-11 rounded-xl ${item.bg} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-md`}>
-                      <item.icon className={`w-5 h-5 ${item.color}`} />
-                    </div>
-                    <h3 className="font-bold text-foreground text-base mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground flex-1">{item.desc}</p>
-                    <a href={item.href} className={`text-sm ${item.color} mt-4 inline-flex items-center gap-1 hover:underline font-medium`}>
-                      {t("cta.learnMore")} <ArrowRight className="w-3 h-3 rtl:rotate-180 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
-                    </a>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Section */}
       <section id="pricing" ref={(el) => (sectionsRef.current[5] = el)} className="py-20 bg-card/30 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
         <PricingSection isYearly={isYearly} setIsYearly={setIsYearly} />
       </section>
 
-      {/* FAQ Section — id="contact" anchor: POS-yok döneminde tüm ödeme/iletişim CTA'ları buraya yönlendirir. */}
-      <section id="contact" ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
+      {/* Contact Collapsible — Pricing altı "Bize Ulaşın" açılır form.
+          Önceden FaqSection altındaydı; sadeleştirme turunda buraya taşındı. */}
+      <section id="contact" className="scroll-mt-20">
+        <ContactCollapsible />
+      </section>
+
+      {/* FAQ Section — sadece accordion (form ContactCollapsible'a taşındı) */}
+      <section ref={(el) => (sectionsRef.current[6] = el)} className="py-20 opacity-0 translate-y-8 transition-all duration-700">
         <FaqSection />
       </section>
 
-      {/* ── Çözümler Section (segmentler) ───────────────────────────── */}
-      <section id="cozumler" className="py-20">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t("indexSolutions.title")}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t("indexSolutions.subtitle")}
-            </p>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: TrendingUp, title: t("indexSolutions.incoming.title"), desc: t("indexSolutions.incoming.desc"), bullets: t("indexSolutions.incoming.bullets", { returnObjects: true }) as string[], href: "/cozum/incoming-acenteler", color: "text-teal-500", bg: "from-teal-500/10 to-teal-500/5", ring: "hover:ring-teal-500/30" },
-              { icon: Clock, title: t("indexSolutions.dayTour.title"), desc: t("indexSolutions.dayTour.desc"), bullets: t("indexSolutions.dayTour.bullets", { returnObjects: true }) as string[], href: "/cozum/gunubirlik-tur", color: "text-yellow-500", bg: "from-yellow-500/10 to-yellow-500/5", ring: "hover:ring-yellow-500/30" },
-              { icon: Star, title: t("indexSolutions.boutique.title"), desc: t("indexSolutions.boutique.desc"), bullets: t("indexSolutions.boutique.bullets", { returnObjects: true }) as string[], href: "/cozum/butik-acenteler", color: "text-pink-500", bg: "from-pink-500/10 to-pink-500/5", ring: "hover:ring-pink-500/30" },
-            ].map((item, idx) => (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.45, delay: idx * 0.1, ease: "easeOut" }}
-                whileHover={{ y: -4 }}
-              >
-                <Card className={`border-border/50 bg-gradient-to-b ${item.bg} hover:shadow-lg transition-all duration-300 h-full ring-1 ring-transparent ${item.ring}`}>
-                  <CardContent className="p-7 flex flex-col h-full">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2.5 rounded-xl bg-card/60 backdrop-blur-sm shadow-sm">
-                        <item.icon className={`w-7 h-7 ${item.color}`} />
-                      </div>
-                      <h3 className="font-bold text-foreground text-lg">{item.title}</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-4">{item.desc}</p>
-                    <ul className="space-y-2 flex-1">
-                      {Array.isArray(item.bullets) && item.bullets.map((b) => (
-                        <li key={b} className="flex items-start gap-2 text-sm text-foreground/80">
-                          <CheckCircle2 className={`w-4 h-4 ${item.color} flex-shrink-0 mt-0.5`} />
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                    <a href={item.href} className={`text-sm ${item.color} mt-5 inline-flex items-center gap-1 hover:underline font-medium group`}>
-                      {t("cta.more")} <ArrowRight className="w-3 h-3 rtl:rotate-180 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
-                    </a>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Blog Section ──────────────────────────────────────────── */}
+      {/* Blog Section — compact list (sadeleştirme: kart→liste) */}
       <IndexBlogSection />
-
-      {/* CTA Section — final dönüşüm bölümü, gradient-hero + animasyonlu blob'lar */}
-      <section ref={(el) => (sectionsRef.current[7] = el)} className="py-20 relative overflow-hidden opacity-0 translate-y-8 transition-all duration-700">
-        {/* Gradient hero arka plan + yumuşak blob hareketi (decorative) */}
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-hero opacity-[0.08] animate-gradient-shift" style={{ backgroundSize: "200% 200%" }} />
-        <div aria-hidden="true" className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-primary/20 blur-3xl animate-blob-float-slow pointer-events-none" />
-        <div aria-hidden="true" className="absolute -bottom-32 -right-24 w-96 h-96 rounded-full bg-secondary/20 blur-3xl animate-blob-float-fast pointer-events-none" />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            className="relative max-w-4xl mx-auto"
-          >
-            {/* Outer glow ring */}
-            <div className="absolute -inset-0.5 bg-gradient-ocean rounded-2xl blur-md opacity-30 pointer-events-none" aria-hidden="true" />
-            <Card className="relative border-border/50 shadow-card bg-gradient-to-br from-card via-card to-accent/10 backdrop-blur-sm overflow-hidden">
-              {/* Top accent stripe */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-ocean" aria-hidden="true" />
-              <CardContent className="p-8 sm:p-12 text-center space-y-6 relative">
-                <motion.div
-                  initial={{ scale: 0.95 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-ocean shadow-md mb-2 animate-glow-pulse"
-                >
-                  <Sparkles className="w-8 h-8 text-primary-foreground" />
-                </motion.div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                  {t("cta.title")}
-                </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  {t("cta.subtitle")}
-                </p>
-                <Button
-                  size="lg"
-                  className="group bg-gradient-ocean hover:opacity-90 text-lg px-8 hover:scale-105 hover:shadow-[0_0_32px_-4px_hsl(var(--primary)/0.6)] transition-all duration-300"
-                  asChild
-                >
-                  <a href="/auth?mode=signup">
-                    {t("cta.button")}
-                    <ArrowRight className="w-5 h-5 ms-2 rtl:rotate-180 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Footer */}
       <FooterSection />

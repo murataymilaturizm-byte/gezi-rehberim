@@ -94,8 +94,8 @@ export const OperationsSection = ({ onDemoClick }: OperationsSectionProps) => {
         </p>
       </motion.div>
 
-      {/* ── Yatay split: sol kart grid, sağ mockup ──────────────────────── */}
-      <div className="grid lg:grid-cols-[1fr,1.05fr] gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
+      {/* ── Yatay split: sol kart grid (geniş, öncelikli), sağ küçük mockup ─ */}
+      <div className="grid lg:grid-cols-[1.6fr,1fr] gap-6 lg:gap-10 items-center max-w-6xl mx-auto">
         {/* SOL — 4 kart 2×2 */}
         <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
           {cards.map((card, idx) => {
@@ -132,55 +132,51 @@ export const OperationsSection = ({ onDemoClick }: OperationsSectionProps) => {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="relative max-w-md mx-auto lg:max-w-full w-full"
+          className="relative max-w-[280px] sm:max-w-xs mx-auto lg:max-w-full w-full"
         >
           {/* Decorative glow (subtle, palette-respecting) */}
           <div
-            className="absolute -inset-4 bg-gradient-to-br from-primary/15 to-secondary/10 rounded-3xl blur-2xl opacity-60 pointer-events-none"
+            className="absolute -inset-3 bg-gradient-to-br from-primary/15 to-secondary/10 rounded-3xl blur-2xl opacity-50 pointer-events-none"
             aria-hidden="true"
           />
 
           {/* Panel frame */}
-          <div className="relative rounded-2xl border border-border/60 bg-card shadow-xl overflow-hidden">
+          <div className="relative rounded-xl border border-border/60 bg-card shadow-lg overflow-hidden">
             {/* Mock browser/app top bar */}
-            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border/60 bg-muted/30">
-              <div className="w-2.5 h-2.5 rounded-full bg-destructive/30" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
+            <div className="flex items-center gap-1 px-2.5 py-1.5 border-b border-border/60 bg-muted/30">
+              <div className="w-1.5 h-1.5 rounded-full bg-destructive/30" />
+              <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/40" />
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500/40" />
               <div className="flex-1 text-center">
-                <span className="inline-block text-[10px] font-mono tracking-wide text-muted-foreground">
+                <span className="inline-block text-[9px] font-mono tracking-wide text-muted-foreground truncate">
                   {t("operations.mockup.url", { defaultValue: "turzzai.com/admin · koltuk planı" })}
                 </span>
               </div>
             </div>
 
             {/* Panel content */}
-            <div className="p-5 sm:p-6 space-y-4">
+            <div className="p-3 space-y-2.5">
               {/* Header chip row */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/15 border border-primary/30 text-[10px] font-semibold text-primary uppercase tracking-wider">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-primary/15 border border-primary/30 text-[9px] font-semibold text-primary uppercase tracking-wider">
                   {t("operations.mockup.tag", { defaultValue: "Sefer" })}
                 </span>
-                <span className="text-sm font-semibold text-foreground">
+                <span className="text-xs font-semibold text-foreground truncate">
                   {t("operations.mockup.tour", { defaultValue: "Pamukkale Turu" })}
-                </span>
-                <span className="text-xs text-muted-foreground">·</span>
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {t("operations.mockup.date", { defaultValue: "12 Haz 2026" })}
                 </span>
               </div>
 
               {/* Capacity bar */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
                     {t("operations.mockup.occupancy", { defaultValue: "Doluluk" })}
                   </span>
-                  <span className="text-xs font-mono tabular-nums text-foreground font-semibold">
+                  <span className="text-[10px] font-mono tabular-nums text-foreground font-semibold">
                     14 / 18
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-1 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full bg-gradient-ocean"
                     style={{ width: "78%" }}
@@ -189,13 +185,13 @@ export const OperationsSection = ({ onDemoClick }: OperationsSectionProps) => {
               </div>
 
               {/* Seat grid — 2+2 düzen, orta kapı boşluğu */}
-              <div className="bg-muted/30 rounded-xl p-4">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground text-center mb-2 font-semibold">
+              <div className="bg-muted/30 rounded-lg p-2.5">
+                <div className="text-[8px] uppercase tracking-wider text-muted-foreground text-center mb-1.5 font-semibold">
                   {t("operations.mockup.frontLabel", { defaultValue: "Ön" })}
                 </div>
                 <div
-                  className="grid gap-1.5 mx-auto max-w-[220px]"
-                  style={{ gridTemplateColumns: "1fr 1fr 16px 1fr 1fr" }}
+                  className="grid gap-1 mx-auto max-w-[160px]"
+                  style={{ gridTemplateColumns: "1fr 1fr 12px 1fr 1fr" }}
                 >
                   {/* Sıra 1 — dolu */}
                   <SeatMock filled num="1" />
@@ -230,7 +226,7 @@ export const OperationsSection = ({ onDemoClick }: OperationsSectionProps) => {
               </div>
 
               {/* Action chip row */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 <ActionChip>{t("operations.mockup.actions.pdf", { defaultValue: "PDF" })}</ActionChip>
                 <ActionChip>{t("operations.mockup.actions.excel", { defaultValue: "Excel" })}</ActionChip>
                 <ActionChip>{t("operations.mockup.actions.seatPlan", { defaultValue: "Koltuk" })}</ActionChip>
@@ -278,19 +274,19 @@ export const OperationsSection = ({ onDemoClick }: OperationsSectionProps) => {
 
 const SeatMock = ({ filled, num }: { filled?: boolean; num: string }) => (
   <div
-    className={`relative h-7 rounded-md flex items-center justify-center text-[8px] font-mono tabular-nums transition-colors ${
+    className={`relative h-5 rounded-[3px] flex items-center justify-center text-[7px] font-mono tabular-nums transition-colors ${
       filled
-        ? "bg-primary/20 border-2 border-primary/40 text-primary"
-        : "bg-background border-2 border-dashed border-muted-foreground/35 text-muted-foreground"
+        ? "bg-primary/20 border border-primary/40 text-primary"
+        : "bg-background border border-dashed border-muted-foreground/35 text-muted-foreground"
     }`}
   >
     {filled && (
       <span
-        className="absolute top-0.5 right-0.5 w-1 h-1 rounded-full bg-primary"
+        className="absolute top-0.5 right-0.5 w-0.5 h-0.5 rounded-full bg-primary"
         aria-hidden="true"
       />
     )}
-    <span className="absolute top-0 left-0.5 opacity-60 text-[7px] leading-none">
+    <span className="absolute top-0 left-0.5 opacity-60 text-[6px] leading-none">
       {num}
     </span>
   </div>
@@ -299,15 +295,15 @@ const SeatMock = ({ filled, num }: { filled?: boolean; num: string }) => (
 const DoorMock = () => (
   <div
     style={{ gridColumn: "4 / 6" }}
-    className="h-7 rounded-md border-2 border-dashed border-muted-foreground/40 bg-muted/50 flex items-center justify-center gap-1 text-[8px] uppercase tracking-wider text-muted-foreground font-semibold"
+    className="h-5 rounded-[3px] border border-dashed border-muted-foreground/40 bg-muted/50 flex items-center justify-center gap-0.5 text-[7px] uppercase tracking-wider text-muted-foreground font-semibold"
   >
-    <DoorOpen className="w-2.5 h-2.5" />
+    <DoorOpen className="w-2 h-2" />
     <span>{`Kapı`}</span>
   </div>
 );
 
 const ActionChip = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/50 border border-border/60 text-[10px] font-mono text-muted-foreground">
+  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-muted/50 border border-border/60 text-[9px] font-mono text-muted-foreground">
     {children}
   </span>
 );

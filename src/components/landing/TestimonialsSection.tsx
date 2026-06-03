@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Quote, CheckCircle2 } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const TestimonialsSection = () => {
@@ -105,19 +105,6 @@ export const TestimonialsSection = () => {
           </motion.div>
         ))}
       </div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4, delay: 0.3 }}
-        className="text-center mt-10"
-      >
-        <div className="inline-flex items-center gap-2 text-muted-foreground">
-          <CheckCircle2 className="w-5 h-5 text-primary" />
-          <span>{t("advanced.stats")}</span>
-        </div>
-      </motion.div>
     </div>
   );
 };
