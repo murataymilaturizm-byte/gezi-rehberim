@@ -535,7 +535,8 @@
       "reporting": "Raporlama",
       "support": "Destek",
       "superAdmin": "Süper Yönetici",
-      "test": "Test"
+      "test": "Test",
+      "customers": "Müşteri Yönetimi"
     },
     "filters": {
       "title": "Filtreler",
@@ -1447,7 +1448,8 @@
       "whatsappTest": "WhatsApp Test",
       "languageStats": "Dil İstatistikleri",
       "centralNotifications": "Merkezi Bildirimler",
-      "centralSendLog": "Bildirim Dökümü"
+      "centralSendLog": "Bildirim Dökümü",
+      "customers": "Müşteriler"
     },
     "central": {
       "title": "Merkezi Bildirimler",

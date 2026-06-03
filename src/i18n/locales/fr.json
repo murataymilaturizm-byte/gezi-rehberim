@@ -543,7 +543,8 @@
       "reporting": "Rapports",
       "support": "Support",
       "superAdmin": "Super Admin",
-      "test": "Test"
+      "test": "Test",
+      "customers": "Gestion des clients"
     },
     "errorBoundary": {
       "message": "Une erreur s'est produite lors du chargement de cette section. Veuillez actualiser la page."
@@ -1054,7 +1055,8 @@
       "whatsappManagement": "Gestion WhatsApp",
       "whatsappSettings": "Paramètres WhatsApp",
       "whatsappTest": "Test WhatsApp",
-      "languageStats": "Statistiques linguistiques"
+      "languageStats": "Statistiques linguistiques",
+      "customers": "Clients"
     },
     "dashboard": {
       "whatsappSettings": "Paramètres WhatsApp",

@@ -577,7 +577,8 @@
       "reporting": "Отчетность",
       "support": "Поддержка",
       "superAdmin": "Супер админ",
-      "test": "Тест"
+      "test": "Тест",
+      "customers": "Управление клиентами"
     },
     "errorBoundary": {
       "message": "При загрузке этого раздела произошла ошибка. Пожалуйста, обновите страницу."
@@ -1088,7 +1089,8 @@
       "whatsappManagement": "Управление WhatsApp",
       "whatsappSettings": "Настройки WhatsApp",
       "whatsappTest": "Тест WhatsApp",
-      "languageStats": "Языковая статистика"
+      "languageStats": "Языковая статистика",
+      "customers": "Клиенты"
     },
     "dashboard": {
       "whatsappSettings": "Настройки WhatsApp",

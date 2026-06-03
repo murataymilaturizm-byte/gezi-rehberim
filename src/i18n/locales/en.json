@@ -543,7 +543,8 @@
       "reporting": "Reporting",
       "support": "Support",
       "superAdmin": "Super Admin",
-      "test": "Test"
+      "test": "Test",
+      "customers": "Customer Management"
     },
     "filters": {
       "title": "Filters",
@@ -1051,7 +1052,8 @@
       "whatsappManagement": "WhatsApp Management",
       "whatsappSettings": "WhatsApp Settings",
       "whatsappTest": "WhatsApp Test",
-      "languageStats": "Language Statistics"
+      "languageStats": "Language Statistics",
+      "customers": "Customers"
     },
     "dashboard": {
       "whatsappSettings": "WhatsApp Settings",

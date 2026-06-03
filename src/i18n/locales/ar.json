@@ -543,7 +543,8 @@
       "reporting": "التقارير",
       "support": "الدعم",
       "superAdmin": "المشرف الرئيسي",
-      "test": "اختبار"
+      "test": "اختبار",
+      "customers": "إدارة العملاء"
     },
     "errorBoundary": {
       "message": "حدث خطأ أثناء تحميل هذا القسم. يرجى تحديث الصفحة."
@@ -1054,7 +1055,8 @@
       "whatsappManagement": "إدارة واتساب",
       "whatsappSettings": "إعدادات واتساب",
       "whatsappTest": "اختبار واتساب",
-      "languageStats": "إحصائيات اللغة"
+      "languageStats": "إحصائيات اللغة",
+      "customers": "العملاء"
     },
     "dashboard": {
       "whatsappSettings": "إعدادات واتساب",

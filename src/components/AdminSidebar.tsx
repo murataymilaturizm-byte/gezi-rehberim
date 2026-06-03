@@ -13,13 +13,12 @@ import {
   Mail,
   Phone,
   HelpCircle,
-  User,
   MessageCircle,
   ChevronDown,
   MapPin,
   CreditCard,
   ScrollText,
-  Bell
+  Bell,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "react-i18next";
@@ -73,14 +72,17 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   const getDefaultOpenGroup = () => {
     const generalIds = ["dashboard", "languages", "history"];
     const tourIds = ["tours", "registrations"];
-    const communicationIds = ["settings", "whatsapp", "whatsapp_profiles", "templates", "faq", "agency_info", "complaints", "payment_settings", "language_currencies"];
+    // CRM: whatsapp_profiles "Müşteri Yönetimi" grubuna taşındı (eski activeTab key korunur).
+    const customerIds = ["whatsapp_profiles"];
+    const communicationIds = ["settings", "whatsapp", "templates", "faq", "agency_info", "complaints", "payment_settings", "language_currencies"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback", "language-stats", "whatsapp-logs"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets", "central_notifications", "central_send_log"];
     const testIds = ["whatsapp_test"];
-    
+
     if (generalIds.includes(activeTab)) return "general";
     if (tourIds.includes(activeTab)) return "tours";
+    if (customerIds.includes(activeTab)) return "customers";
     if (communicationIds.includes(activeTab)) return "communication";
     if (reportingIds.includes(activeTab)) return "reporting";
     if (supportIds.includes(activeTab)) return "support";
@@ -88,11 +90,12 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     if (testIds.includes(activeTab)) return "test";
     return "general";
   };
-  
+
   const defaultOpen = getDefaultOpenGroup();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     general: defaultOpen === "general",
     tours: defaultOpen === "tours",
+    customers: defaultOpen === "customers",
     communication: defaultOpen === "communication",
     reporting: defaultOpen === "reporting",
     support: defaultOpen === "support",
@@ -119,12 +122,17 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     { id: "registrations", icon: Calendar, label: t("admin.tabs.registrations"), dataTour: "sidebar-registrations" },
   ];
 
+  // CRM: "Müşteri Yönetimi" grubu — Tur Yönetimi'nin hemen altında, kanal ayarlarından
+  // ayrı bir satış aracı kategorisi. activeTab key korunur (whatsapp_profiles).
+  const customersItems = [
+    ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: Users, label: t("admin.tabs.customers"), dataTour: "sidebar-customers" }] : []),
+  ];
+
   const communicationItems = [
     { id: "whatsapp", icon: MessageSquare, label: "WhatsApp", dataTour: "sidebar-whatsapp" },
     { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo"), dataTour: "sidebar-agency-info" },
     { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings"), dataTour: "sidebar-payment" },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
-    ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: User, label: t("admin.tabs.userProfiles") }] : []),
     ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates"), dataTour: "sidebar-templates" }] : []),
     { id: "faq", icon: HelpCircle, label: t("admin.tabs.faq"), dataTour: "sidebar-faq" },
   ];
@@ -238,6 +246,25 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
             </CollapsibleContent>
           </SidebarGroup>
         </Collapsible>
+
+        {/* Müşteri Yönetimi (CRM) — Tur Yönetimi'nin altında, plan gating: has_user_profiles */}
+        {customersItems.length > 0 && (
+          <Collapsible open={openGroups.customers} onOpenChange={() => toggleGroup("customers")}>
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                  {!isCollapsed && t("admin.groups.customers")}
+                  {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.customers ? "rotate-180" : ""}`} />}
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  {renderMenuItems(customersItems)}
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        )}
 
         {/* İletişim Yönetimi */}
         <Collapsible open={openGroups.communication} onOpenChange={() => toggleGroup("communication")}>

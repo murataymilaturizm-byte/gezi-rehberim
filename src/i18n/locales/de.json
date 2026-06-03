@@ -543,7 +543,8 @@
       "reporting": "Berichterstattung",
       "support": "Unterstützung",
       "superAdmin": "Super-Admin",
-      "test": "Test"
+      "test": "Test",
+      "customers": "Kundenverwaltung"
     },
     "errorBoundary": {
       "message": "Beim Laden dieses Abschnitts ist ein Fehler aufgetreten. Bitte aktualisieren Sie die Seite."
@@ -1054,7 +1055,8 @@
       "whatsappManagement": "WhatsApp-Verwaltung",
       "whatsappSettings": "WhatsApp-Einstellungen",
       "whatsappTest": "WhatsApp Test",
-      "languageStats": "Sprachstatistiken"
+      "languageStats": "Sprachstatistiken",
+      "customers": "Kunden"
     },
     "dashboard": {
       "whatsappSettings": "WhatsApp-Einstellungen",
