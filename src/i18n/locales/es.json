@@ -882,7 +882,19 @@
         "phoneNumber": "Teléfono",
         "firstContact": "Primer Contacto",
         "lastContact": "Último Contacto",
-        "activity": "Actividad",
+        "activity": {
+          "title": "Línea de actividad",
+          "description": "Mensajes, reservas y eventos de encuesta — un único flujo cronológico.",
+          "empty": "Aún no hay actividad.",
+          "pax": "pers.",
+          "feedbackSentDesc": "Se envió la encuesta de satisfacción.",
+          "events": {
+            "message": "Mensaje",
+            "registration": "Reserva",
+            "feedback_sent": "Encuesta enviada",
+            "feedback_received": "Comentario recibido"
+          }
+        },
         "activityStatus": "Estado de Actividad",
         "todayActive": "Activo Hoy",
         "yesterdayActive": "Activo Ayer",
@@ -901,7 +913,8 @@
           "profile": "Información del perfil",
           "preferences": "Preferencias",
           "tags": "Etiquetas",
-          "conversations": "Historial de conversaciones"
+          "conversations": "Historial de conversaciones",
+          "activity": "Actividad"
         },
         "salesStats": "Estadísticas de ventas",
         "totalBookings": "Total de reservas",
@@ -962,7 +975,62 @@
           "description": "El sistema las calcula a partir de reservas, gasto y actividad.",
           "empty": "Aún no hay suficiente actividad.",
           "autoTagTooltip": "Etiqueta automática (asignada por el sistema)"
-        }
+        },
+        "subTabs": {
+          "summary": "Resumen IA",
+          "messages": "Todos los mensajes"
+        },
+        "summary": {
+          "loading": "Cargando resúmenes…",
+          "empty": "Aún no hay resúmenes IA.",
+          "emptyHint": "Los resúmenes IA se generan automáticamente tras las conversaciones.",
+          "dominantSentiment": "Sentimiento general",
+          "totalDays": "Días resumidos",
+          "messages": "mensajes",
+          "topics": "Temas",
+          "mentionedTours": "Tours mencionados",
+          "dailyBreakdown": "Resumen diario",
+          "sentiment": {
+            "positive": "Positivo",
+            "neutral": "Neutral",
+            "negative": "Negativo"
+          }
+        },
+        "actions": {
+          "menuLabel": "Acciones rápidas",
+          "pauseBot": "Pausar bot",
+          "resumeBot": "Reanudar bot",
+          "botPausedToast": "Bot pausado",
+          "botResumedToast": "Bot reanudado",
+          "botPausedDesc": "El bot no responderá a este cliente durante 24 horas.",
+          "openWhatsApp": "Abrir en WhatsApp",
+          "callPhone": "Llamar al teléfono",
+          "copyContact": "Copiar contacto",
+          "openTemplates": "Ir a plantillas",
+          "copied": "Copiado",
+          "copyFailed": "No se pudo copiar.",
+          "invalidPhone": "Número de teléfono no válido."
+        },
+        "notes": {
+          "title": "Nota del cliente",
+          "hint": "Solo visible para tu agencia — el cliente no la ve.",
+          "placeholder": "Nota privada sobre este cliente… (p. ej. preferencias, acuerdos pasados, puntos a vigilar)",
+          "save": "Guardar",
+          "saved": "Guardado",
+          "savedToast": "Nota guardada"
+        },
+        "contactTracking": "Contacto y seguimiento",
+        "emailLabel": "Correo",
+        "marketingOptIn": "Marketing permitido",
+        "marketingOptOut": "Sin consentimiento de marketing",
+        "emailNotCollected": "Aún no recogido",
+        "lastFeedbackSent": "Última encuesta",
+        "neverSent": "Nunca enviada",
+        "botStatus": "Estado del bot",
+        "botActive": "Activo",
+        "botPaused": "Pausado",
+        "botPausedUntil": "Bot pausado",
+        "until": "Hasta:"
       },
       "status": {
         "pending": "Pendiente",

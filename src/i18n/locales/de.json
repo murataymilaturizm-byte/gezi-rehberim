@@ -848,7 +848,19 @@
         "phoneNumber": "Telefon",
         "firstContact": "Erster Kontakt",
         "lastContact": "Letzter Kontakt",
-        "activity": "Aktivität",
+        "activity": {
+          "title": "Aktivitätsverlauf",
+          "description": "Nachrichten, Buchungen und Umfragen — ein einziger chronologischer Feed.",
+          "empty": "Noch keine Aktivität.",
+          "pax": "Pers.",
+          "feedbackSentDesc": "Zufriedenheitsumfrage wurde gesendet.",
+          "events": {
+            "message": "Nachricht",
+            "registration": "Buchung",
+            "feedback_sent": "Umfrage gesendet",
+            "feedback_received": "Feedback erhalten"
+          }
+        },
         "activityStatus": "Aktivitätsstatus",
         "todayActive": "Heute Aktiv",
         "yesterdayActive": "Gestern Aktiv",
@@ -867,7 +879,8 @@
           "profile": "Profilinformationen",
           "preferences": "Präferenzen",
           "tags": "Tags",
-          "conversations": "Gesprächsverlauf"
+          "conversations": "Gesprächsverlauf",
+          "activity": "Aktivität"
         },
         "salesStats": "Verkaufsstatistiken",
         "totalBookings": "Gesamtbuchungen",
@@ -928,7 +941,62 @@
           "description": "Vom System aus Buchungen, Ausgaben und Aktivität berechnet.",
           "empty": "Noch nicht genügend Aktivität.",
           "autoTagTooltip": "Automatischer Tag (vom System zugewiesen)"
-        }
+        },
+        "subTabs": {
+          "summary": "KI-Zusammenfassung",
+          "messages": "Alle Nachrichten"
+        },
+        "summary": {
+          "loading": "Zusammenfassungen werden geladen…",
+          "empty": "Noch keine KI-Zusammenfassungen.",
+          "emptyHint": "KI-Zusammenfassungen werden nach Gesprächen automatisch erstellt.",
+          "dominantSentiment": "Gesamtstimmung",
+          "totalDays": "Zusammenfassungstage",
+          "messages": "Nachrichten",
+          "topics": "Themen",
+          "mentionedTours": "Erwähnte Touren",
+          "dailyBreakdown": "Tägliche Zusammenfassung",
+          "sentiment": {
+            "positive": "Positiv",
+            "neutral": "Neutral",
+            "negative": "Negativ"
+          }
+        },
+        "actions": {
+          "menuLabel": "Schnellaktionen",
+          "pauseBot": "Bot pausieren",
+          "resumeBot": "Bot fortsetzen",
+          "botPausedToast": "Bot pausiert",
+          "botResumedToast": "Bot fortgesetzt",
+          "botPausedDesc": "Der Bot wird diesem Kunden 24 Stunden lang nicht antworten.",
+          "openWhatsApp": "In WhatsApp öffnen",
+          "callPhone": "Telefon anrufen",
+          "copyContact": "Kontakt kopieren",
+          "openTemplates": "Zu Vorlagen gehen",
+          "copied": "Kopiert",
+          "copyFailed": "Kopieren fehlgeschlagen.",
+          "invalidPhone": "Ungültige Telefonnummer."
+        },
+        "notes": {
+          "title": "Kundennotiz",
+          "hint": "Nur für Ihre Agentur sichtbar — der Kunde sieht das nicht.",
+          "placeholder": "Private Notiz zu diesem Kunden… (z. B. Vorlieben, vergangene Vereinbarungen, zu beachtende Punkte)",
+          "save": "Speichern",
+          "saved": "Gespeichert",
+          "savedToast": "Notiz gespeichert"
+        },
+        "contactTracking": "Kontakt & Tracking",
+        "emailLabel": "E-Mail",
+        "marketingOptIn": "Marketing erlaubt",
+        "marketingOptOut": "Kein Marketing-Einverständnis",
+        "emailNotCollected": "Noch nicht erfasst",
+        "lastFeedbackSent": "Letzte Umfrage",
+        "neverSent": "Noch nie gesendet",
+        "botStatus": "Bot-Status",
+        "botActive": "Aktiv",
+        "botPaused": "Pausiert",
+        "botPausedUntil": "Bot pausiert",
+        "until": "Bis:"
       },
       "status": {
         "pending": "Ausstehend",

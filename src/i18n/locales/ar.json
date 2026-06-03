@@ -848,7 +848,19 @@
         "phoneNumber": "الهاتف",
         "firstContact": "أول اتصال",
         "lastContact": "آخر اتصال",
-        "activity": "النشاط",
+        "activity": {
+          "title": "الجدول الزمني للنشاط",
+          "description": "الرسائل والحجوزات وأحداث الاستطلاع — تدفق زمني واحد.",
+          "empty": "لا يوجد نشاط بعد.",
+          "pax": "شخص",
+          "feedbackSentDesc": "تم إرسال استطلاع الرضا.",
+          "events": {
+            "message": "رسالة",
+            "registration": "حجز",
+            "feedback_sent": "تم إرسال الاستطلاع",
+            "feedback_received": "تم استلام التعليق"
+          }
+        },
         "activityStatus": "حالة النشاط",
         "todayActive": "نشط اليوم",
         "yesterdayActive": "نشط أمس",
@@ -867,7 +879,8 @@
           "profile": "معلومات الملف الشخصي",
           "preferences": "التفضيلات",
           "tags": "الوسوم",
-          "conversations": "سجل المحادثات"
+          "conversations": "سجل المحادثات",
+          "activity": "النشاط"
         },
         "salesStats": "إحصائيات المبيعات",
         "totalBookings": "إجمالي الحجوزات",
@@ -928,7 +941,62 @@
           "description": "يحسبها النظام من الحجوزات والإنفاق والنشاط.",
           "empty": "لا يوجد نشاط كافٍ بعد.",
           "autoTagTooltip": "وسم تلقائي (يعينه النظام)"
-        }
+        },
+        "subTabs": {
+          "summary": "ملخص الذكاء الاصطناعي",
+          "messages": "كل الرسائل"
+        },
+        "summary": {
+          "loading": "يتم تحميل الملخصات…",
+          "empty": "لا توجد ملخصات بعد.",
+          "emptyHint": "تُنشأ ملخصات الذكاء الاصطناعي تلقائيًا بعد المحادثات.",
+          "dominantSentiment": "الشعور العام",
+          "totalDays": "أيام الملخص",
+          "messages": "رسالة",
+          "topics": "المواضيع",
+          "mentionedTours": "الجولات المذكورة",
+          "dailyBreakdown": "الملخص اليومي",
+          "sentiment": {
+            "positive": "إيجابي",
+            "neutral": "محايد",
+            "negative": "سلبي"
+          }
+        },
+        "actions": {
+          "menuLabel": "إجراءات سريعة",
+          "pauseBot": "إيقاف البوت مؤقتًا",
+          "resumeBot": "استئناف البوت",
+          "botPausedToast": "تم إيقاف البوت مؤقتًا",
+          "botResumedToast": "تم استئناف البوت",
+          "botPausedDesc": "لن يرد البوت على هذا العميل خلال 24 ساعة.",
+          "openWhatsApp": "فتح في WhatsApp",
+          "callPhone": "اتصال هاتفي",
+          "copyContact": "نسخ جهة الاتصال",
+          "openTemplates": "الذهاب إلى القوالب",
+          "copied": "تم النسخ",
+          "copyFailed": "فشل النسخ.",
+          "invalidPhone": "رقم هاتف غير صالح."
+        },
+        "notes": {
+          "title": "ملاحظة العميل",
+          "hint": "مرئية فقط لوكالتك — العميل لا يراها.",
+          "placeholder": "ملاحظة خاصة عن هذا العميل… (مثل التفضيلات والاتفاقيات السابقة والنقاط التي يجب مراقبتها)",
+          "save": "حفظ",
+          "saved": "تم الحفظ",
+          "savedToast": "تم حفظ الملاحظة"
+        },
+        "contactTracking": "التواصل والمتابعة",
+        "emailLabel": "البريد الإلكتروني",
+        "marketingOptIn": "تسويق مسموح",
+        "marketingOptOut": "لا يوجد إذن تسويق",
+        "emailNotCollected": "لم يتم جمعه بعد",
+        "lastFeedbackSent": "آخر استطلاع",
+        "neverSent": "لم يُرسل أبدًا",
+        "botStatus": "حالة البوت",
+        "botActive": "نشط",
+        "botPaused": "متوقف",
+        "botPausedUntil": "البوت متوقف",
+        "until": "حتى:"
       },
       "status": {
         "pending": "قيد الانتظار",

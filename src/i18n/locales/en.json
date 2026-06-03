@@ -845,7 +845,19 @@
         "phoneNumber": "Phone",
         "firstContact": "First Contact",
         "lastContact": "Last Contact",
-        "activity": "Activity",
+        "activity": {
+          "title": "Activity Timeline",
+          "description": "Messages, bookings and survey events — single chronological feed.",
+          "empty": "No activity yet.",
+          "pax": "pax",
+          "feedbackSentDesc": "Satisfaction survey was sent.",
+          "events": {
+            "message": "Message",
+            "registration": "Booking",
+            "feedback_sent": "Survey Sent",
+            "feedback_received": "Feedback Received"
+          }
+        },
         "activityStatus": "Activity Status",
         "todayActive": "Active Today",
         "yesterdayActive": "Active Yesterday",
@@ -864,7 +876,8 @@
           "profile": "Profile Info",
           "preferences": "Preferences",
           "tags": "Tags",
-          "conversations": "Conversation History"
+          "conversations": "Conversation History",
+          "activity": "Activity"
         },
         "salesStats": "Sales Statistics",
         "totalBookings": "Total Bookings",
@@ -925,7 +938,62 @@
           "description": "Computed by the system from bookings, spending and activity.",
           "empty": "Not enough activity yet.",
           "autoTagTooltip": "Automatic tag (assigned by the system)"
-        }
+        },
+        "subTabs": {
+          "summary": "AI Summary",
+          "messages": "All Messages"
+        },
+        "summary": {
+          "loading": "Loading summaries…",
+          "empty": "No AI summaries yet.",
+          "emptyHint": "AI summaries are generated automatically after conversations.",
+          "dominantSentiment": "Overall Sentiment",
+          "totalDays": "Summary days",
+          "messages": "messages",
+          "topics": "Topics",
+          "mentionedTours": "Mentioned Tours",
+          "dailyBreakdown": "Daily Breakdown",
+          "sentiment": {
+            "positive": "Positive",
+            "neutral": "Neutral",
+            "negative": "Negative"
+          }
+        },
+        "actions": {
+          "menuLabel": "Quick actions",
+          "pauseBot": "Pause bot",
+          "resumeBot": "Resume bot",
+          "botPausedToast": "Bot paused",
+          "botResumedToast": "Bot resumed",
+          "botPausedDesc": "The bot will not reply to this customer for 24 hours.",
+          "openWhatsApp": "Open in WhatsApp",
+          "callPhone": "Call phone",
+          "copyContact": "Copy contact",
+          "openTemplates": "Go to templates",
+          "copied": "Copied",
+          "copyFailed": "Copy failed.",
+          "invalidPhone": "Invalid phone number."
+        },
+        "notes": {
+          "title": "Customer Note",
+          "hint": "Visible only to your agency — the customer cannot see this.",
+          "placeholder": "Private note about this customer… (e.g. preferences, past deals, things to watch)",
+          "save": "Save",
+          "saved": "Saved",
+          "savedToast": "Note saved"
+        },
+        "contactTracking": "Contact & Tracking",
+        "emailLabel": "Email",
+        "marketingOptIn": "Marketing opt-in",
+        "marketingOptOut": "No marketing consent",
+        "emailNotCollected": "Not collected yet",
+        "lastFeedbackSent": "Last survey",
+        "neverSent": "Never sent",
+        "botStatus": "Bot status",
+        "botActive": "Active",
+        "botPaused": "Paused",
+        "botPausedUntil": "Bot paused",
+        "until": "Until:"
       },
       "status": {
         "pending": "Pending",

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, MessageSquare, TrendingUp, MapPin, Building2, Tag, Plus, ShoppingBag, DollarSign, Star, User, Bot, History, UserSearch } from "lucide-react";
+import { Users, MessageSquare, TrendingUp, MapPin, Building2, Tag, Plus, ShoppingBag, DollarSign, Star, User, Bot, History, UserSearch, Mail, MailX, Send, PauseCircle, FileText as FileTextIcon, Activity as ActivityIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -23,6 +23,10 @@ import { CrmFilters, type SegmentFilter, type SortKey } from "./crm/CrmFilters";
 import { CustomerListItem } from "./crm/CustomerListItem";
 import { AutoTagBadge, ManualTagBadge } from "./crm/TagBadge";
 import { computeAutoTags } from "./crm/customerTags";
+import { ConversationSummaryPanel, type ConversationSummary } from "./crm/ConversationSummaryPanel";
+import { ActivityTimeline, type TimelineRegistration } from "./crm/ActivityTimeline";
+import { QuickActionsMenu } from "./crm/QuickActionsMenu";
+import { NotesEditor } from "./crm/NotesEditor";
 
 interface UserProfile {
   id: string;
@@ -41,6 +45,12 @@ interface UserProfile {
   feedback_score: number | null;
   feedback_comment: string | null;
   language_preference: string | null;
+  notes: string | null;
+  bot_paused: boolean | null;
+  bot_paused_until: string | null;
+  last_feedback_sent_at: string | null;
+  email: string | null;
+  email_opted_in: boolean | null;
 }
 
 interface ConversationMessage {
@@ -60,7 +70,7 @@ interface WhatsAppUserProfilesProps {
 }
 
 export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfilesProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +82,11 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   const [conversations, setConversations] = useState<ConversationMessage[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [agencyCurrency, setAgencyCurrency] = useState<string>("TRY");
+
+  // CRM TUR 2 yeni state'ler
+  const [summaries, setSummaries] = useState<ConversationSummary[]>([]);
+  const [loadingSummaries, setLoadingSummaries] = useState(false);
+  const [registrationsForUser, setRegistrationsForUser] = useState<TimelineRegistration[]>([]);
 
   // CRM filtre/sıralama state
   const [search, setSearch] = useState("");
@@ -110,6 +125,8 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   useEffect(() => {
     if (selectedProfile) {
       loadConversations(selectedProfile.phone);
+      loadSummaries(selectedProfile.phone);
+      loadRegistrationsForUser(selectedProfile.phone);
     }
   }, [selectedProfile]);
 
@@ -138,7 +155,10 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       const effectiveAgencyId = agencyIdOverride || (isSuperAdmin ? selectedAgencyId : currentAgencyId);
       let query = supabase
         .from("whatsapp_user_profiles")
-        .select("id, phone, full_name, total_messages, last_interaction_at, first_interaction_at, preferred_destinations, budget_range, preferred_tour_type, last_search_query, tags, total_bookings, total_spent, feedback_score, feedback_comment, language_preference")
+        // TUR 2: notes + bot_paused + bot_paused_until + last_feedback_sent_at + email + email_opted_in eklendi.
+        // notes kolonu ALTER TABLE ile sonradan eklendiği için types.ts'i yeniden üretmeden çalışır;
+        // select metni Supabase'in JSON projection'ında string olarak parse edilir.
+        .select("id, phone, full_name, total_messages, last_interaction_at, first_interaction_at, preferred_destinations, budget_range, preferred_tour_type, last_search_query, tags, total_bookings, total_spent, feedback_score, feedback_comment, language_preference, notes, bot_paused, bot_paused_until, last_feedback_sent_at, email, email_opted_in")
         .order("last_interaction_at", { ascending: false });
 
       if (effectiveAgencyId) {
@@ -148,16 +168,83 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       const { data, error } = await query;
 
       if (error) throw error;
-      setProfiles(data || []);
+      // notes kolonu types.ts'te yoksa Supabase row tipiyle UserProfile arasında
+      // küçük fark olabilir — geniş cast tipsel çakışmayı önler, runtime'da
+      // gerçek alanlar SELECT'ten gelir.
+      const rows = (data || []) as unknown as UserProfile[];
+      setProfiles(rows);
 
-      if (data && data.length > 0) {
-        setSelectedProfile(data[0]);
+      if (rows.length > 0) {
+        setSelectedProfile(rows[0]);
       }
     } catch (error) {
       console.error("Error loading profiles:", error);
       toast({ title: t("common.error"), description: t("common.loadError"), variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSummaries = async (phone: string) => {
+    try {
+      setLoadingSummaries(true);
+      const effectiveAgencyId = isSuperAdmin ? selectedAgencyId : currentAgencyId;
+      let q = supabase
+        .from("whatsapp_conversation_summaries")
+        .select("id, summary, topics, mentioned_tours, sentiment, conversation_date, message_count, created_at")
+        .eq("phone", phone)
+        .order("conversation_date", { ascending: false })
+        .limit(30);
+      if (effectiveAgencyId) q = q.eq("agency_id", effectiveAgencyId);
+      const { data, error } = await q;
+      if (error) throw error;
+      setSummaries((data || []) as ConversationSummary[]);
+    } catch (error) {
+      console.error("Error loading summaries:", error);
+      setSummaries([]);
+    } finally {
+      setLoadingSummaries(false);
+    }
+  };
+
+  const loadRegistrationsForUser = async (phone: string) => {
+    try {
+      // Phone normalize: registrations.phone formatı genelde "+90..." olabilir
+      // veya rakam. Birden fazla varyantla eq yerine ilike ile son hanelere
+      // göre eşle (kullanıcı +90 532 ile DB ise 90532 kayıt olsa da yakalar).
+      const digits = phone.replace(/[^\d]/g, "");
+      const tail = digits.slice(-10); // son 10 hane (yerel format için yeterli)
+      const effectiveAgencyId = isSuperAdmin ? selectedAgencyId : currentAgencyId;
+
+      // tours join — tur adı için
+      let q = supabase
+        .from("registrations")
+        .select("id, full_name, pax, status, created_at, tour_id, tours(name)")
+        .ilike("phone", `%${tail}%`)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (effectiveAgencyId) q = q.eq("agency_id", effectiveAgencyId);
+      const { data, error } = await q;
+      if (error) throw error;
+      const mapped: TimelineRegistration[] = (data || []).map((r) => {
+        const row = r as { id: string; full_name: string; pax: number; status: string; created_at: string; tours?: { name?: string } | { name?: string }[] | null };
+        const toursField = row.tours;
+        let tourName: string | null = null;
+        if (Array.isArray(toursField)) tourName = toursField[0]?.name ?? null;
+        else if (toursField && typeof toursField === "object") tourName = toursField.name ?? null;
+        return {
+          id: row.id,
+          full_name: row.full_name,
+          pax: row.pax,
+          status: row.status,
+          tour_name: tourName,
+          created_at: row.created_at,
+        };
+      });
+      setRegistrationsForUser(mapped);
+    } catch (error) {
+      console.error("Error loading user registrations:", error);
+      setRegistrationsForUser([]);
     }
   };
 
@@ -414,7 +501,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
               )}
             </div>
 
-            {/* ── SAĞ: Detay paneli — TUR 2'de zenginleşecek; bu turda etiket render'ı renkli ── */}
+            {/* ── SAĞ: Detay paneli — TUR 2 zenginleşti ── */}
             {selectedProfile && (
               <div>
                 <div className="mb-4">
@@ -442,24 +529,55 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                               {selectedProfile.language_preference}
                             </Badge>
                           )}
+                          {/* Bot durumu rozeti — TUR 2 */}
+                          {selectedProfile.bot_paused && (
+                            <Badge
+                              variant="outline"
+                              className="bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/40 gap-1"
+                              title={
+                                selectedProfile.bot_paused_until
+                                  ? `${t("admin.whatsapp.userProfiles.botPausedUntil", { defaultValue: "Bot duraklatıldı" })}: ${formatDate(selectedProfile.bot_paused_until)}`
+                                  : t("admin.whatsapp.userProfiles.botPaused", { defaultValue: "Bot duraklatıldı" })
+                              }
+                            >
+                              <PauseCircle className="w-3 h-3" />
+                              {t("admin.whatsapp.userProfiles.botPaused", { defaultValue: "Bot duraklatıldı" })}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <div className="text-end shrink-0">
-                      <div
-                        className={`w-3 h-3 rounded-full inline-block ${getActivityStatus(selectedProfile.last_interaction_at).color}`}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-end">
+                        <div
+                          className={`w-3 h-3 rounded-full inline-block ${getActivityStatus(selectedProfile.last_interaction_at).color}`}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {getActivityStatus(selectedProfile.last_interaction_at).label}
+                        </p>
+                      </div>
+                      {/* Hızlı aksiyon menüsü — TUR 2 */}
+                      <QuickActionsMenu
+                        profileId={selectedProfile.id}
+                        phone={selectedProfile.phone}
+                        agencyId={isSuperAdmin ? selectedAgencyId : currentAgencyId}
+                        isBotPaused={!!selectedProfile.bot_paused}
+                        fullName={selectedProfile.full_name}
+                        onBotPauseChange={({ paused, until }) => {
+                          const updated = { ...selectedProfile, bot_paused: paused, bot_paused_until: until };
+                          setSelectedProfile(updated);
+                          setProfiles(profiles.map((p) => (p.id === updated.id ? updated : p)));
+                        }}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {getActivityStatus(selectedProfile.last_interaction_at).label}
-                      </p>
                     </div>
                   </div>
                 </div>
 
                 <Tabs defaultValue="profile" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
+                  <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="profile">{t("admin.whatsapp.userProfiles.tabs.profile")}</TabsTrigger>
                     <TabsTrigger value="preferences">{t("admin.whatsapp.userProfiles.tabs.preferences")}</TabsTrigger>
+                    <TabsTrigger value="activity">{t("admin.whatsapp.userProfiles.tabs.activity", { defaultValue: "Aktivite" })}</TabsTrigger>
                     <TabsTrigger value="tags">{t("admin.whatsapp.userProfiles.tabs.tags")}</TabsTrigger>
                     <TabsTrigger value="conversations">{t("admin.whatsapp.userProfiles.tabs.conversations")}</TabsTrigger>
                   </TabsList>
@@ -587,6 +705,109 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                           </CardContent>
                         </Card>
                       )}
+
+                      {/* TUR 2: İletişim & Takip kartı — e-posta + son anket + bot durumu */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            {t("admin.whatsapp.userProfiles.contactTracking", { defaultValue: "İletişim & Takip" })}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {/* E-posta */}
+                          <div className="flex items-start justify-between gap-3 text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              {selectedProfile.email ? (
+                                <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                              ) : (
+                                <MailX className="w-4 h-4 opacity-50" />
+                              )}
+                              <span>{t("admin.whatsapp.userProfiles.emailLabel", { defaultValue: "E-posta" })}</span>
+                            </div>
+                            <div className="text-end">
+                              {selectedProfile.email ? (
+                                <>
+                                  <p className="font-medium text-foreground break-all">{selectedProfile.email}</p>
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      selectedProfile.email_opted_in
+                                        ? "mt-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/40"
+                                        : "mt-1 bg-muted/60"
+                                    }
+                                  >
+                                    {selectedProfile.email_opted_in
+                                      ? t("admin.whatsapp.userProfiles.marketingOptIn", { defaultValue: "Pazarlama izinli" })
+                                      : t("admin.whatsapp.userProfiles.marketingOptOut", { defaultValue: "Pazarlama izni yok" })}
+                                  </Badge>
+                                </>
+                              ) : (
+                                <p className="text-muted-foreground italic text-xs">
+                                  {t("admin.whatsapp.userProfiles.emailNotCollected", { defaultValue: "Henüz toplanmamış" })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="border-t border-border/60" />
+
+                          {/* Son anket gönderimi */}
+                          <div className="flex items-start justify-between gap-3 text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Send className="w-4 h-4" />
+                              <span>{t("admin.whatsapp.userProfiles.lastFeedbackSent", { defaultValue: "Son anket" })}</span>
+                            </div>
+                            <p className="text-end font-medium text-foreground">
+                              {selectedProfile.last_feedback_sent_at
+                                ? formatDate(selectedProfile.last_feedback_sent_at)
+                                : <span className="text-muted-foreground italic">{t("admin.whatsapp.userProfiles.neverSent", { defaultValue: "Henüz gönderilmedi" })}</span>}
+                            </p>
+                          </div>
+
+                          <div className="border-t border-border/60" />
+
+                          {/* Bot durumu */}
+                          <div className="flex items-start justify-between gap-3 text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Bot className="w-4 h-4" />
+                              <span>{t("admin.whatsapp.userProfiles.botStatus", { defaultValue: "Bot durumu" })}</span>
+                            </div>
+                            <div className="text-end">
+                              {selectedProfile.bot_paused ? (
+                                <>
+                                  <Badge variant="outline" className="bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/40 gap-1">
+                                    <PauseCircle className="w-3 h-3" />
+                                    {t("admin.whatsapp.userProfiles.botPaused", { defaultValue: "Duraklatıldı" })}
+                                  </Badge>
+                                  {selectedProfile.bot_paused_until && (
+                                    <p className="text-[10px] text-muted-foreground mt-1">
+                                      {t("admin.whatsapp.userProfiles.until", { defaultValue: "Kadar:" })}{" "}
+                                      {formatDate(selectedProfile.bot_paused_until)}
+                                    </p>
+                                  )}
+                                </>
+                              ) : (
+                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/40">
+                                  {t("admin.whatsapp.userProfiles.botActive", { defaultValue: "Aktif" })}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* TUR 2: Notes — acentenin özel notu (yeni notes kolonu) */}
+                      <NotesEditor
+                        profileId={selectedProfile.id}
+                        agencyId={isSuperAdmin ? selectedAgencyId : currentAgencyId}
+                        initialNotes={selectedProfile.notes}
+                        onSaved={(notes) => {
+                          const updated = { ...selectedProfile, notes };
+                          setSelectedProfile(updated);
+                          setProfiles(profiles.map((p) => (p.id === updated.id ? updated : p)));
+                        }}
+                      />
                     </TabsContent>
 
                     {/* Tab 2: Tercihler — DEĞİŞMEDİ */}
@@ -651,7 +872,19 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       </Card>
                     </TabsContent>
 
-                    {/* Tab 3: Etiketler — otomatik + manuel ayrımlı RENKLİ */}
+                    {/* TUR 2 — Tab: Aktivite (kronolojik timeline) */}
+                    <TabsContent value="activity" className="space-y-4 mt-0">
+                      <ActivityTimeline
+                        messages={conversations}
+                        registrations={registrationsForUser}
+                        lastFeedbackSentAt={selectedProfile.last_feedback_sent_at}
+                        feedbackScore={selectedProfile.feedback_score}
+                        feedbackComment={selectedProfile.feedback_comment}
+                        language={i18n.language}
+                      />
+                    </TabsContent>
+
+                    {/* Tab: Etiketler — otomatik + manuel ayrımlı RENKLİ */}
                     <TabsContent value="tags" className="space-y-4 mt-0">
                       {/* Otomatik etiketler — sistem türevli, silinemez */}
                       <Card>
@@ -790,73 +1023,96 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                       </Card>
                     </TabsContent>
 
-                    {/* Tab 4: Konuşma Geçmişi — DEĞİŞMEDİ */}
+                    {/* Tab: Konuşmalar — TUR 2'de nested Tabs (Özet + Tüm Mesajlar) */}
                     <TabsContent value="conversations" className="space-y-4 mt-0">
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <History className="w-4 h-4" />
-                            {t("admin.whatsapp.userProfiles.conversationHistory")}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {loadingConversations ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20 animate-pulse" />
-                              <p className="text-sm">{t("admin.whatsapp.userProfiles.loadingConversations")}</p>
-                            </div>
-                          ) : conversations.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                              <p className="text-sm">{t("admin.whatsapp.userProfiles.noConversations")}</p>
-                            </div>
-                          ) : (
-                            <ScrollArea className="h-[500px] pr-4">
-                              <div className="space-y-4">
-                                {conversations.map((msg) => (
-                                  <div
-                                    key={msg.id}
-                                    className={`flex gap-3 ${msg.role === "user" ? "flex-row" : "flex-row-reverse"}`}
-                                  >
-                                    <div
-                                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                        msg.role === "user"
-                                          ? "bg-primary/10 text-primary"
-                                          : "bg-secondary text-secondary-foreground"
-                                      }`}
-                                    >
-                                      {msg.role === "user" ? (
-                                        <User className="w-4 h-4" />
-                                      ) : (
-                                        <Bot className="w-4 h-4" />
-                                      )}
-                                    </div>
-                                    <div className="flex-1 max-w-[80%]">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-xs font-medium">
-                                          {msg.role === "user" ? t("admin.whatsapp.userProfiles.customer") : t("admin.whatsapp.userProfiles.assistant")}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {format(new Date(msg.created_at), "dd MMM yyyy, HH:mm", { locale: tr })}
-                                        </p>
-                                      </div>
+                      <Tabs defaultValue="summary" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="summary">
+                            <FileTextIcon className="w-3.5 h-3.5 me-1.5" />
+                            {t("admin.whatsapp.userProfiles.subTabs.summary", { defaultValue: "AI Özeti" })}
+                          </TabsTrigger>
+                          <TabsTrigger value="messages">
+                            <MessageSquare className="w-3.5 h-3.5 me-1.5" />
+                            {t("admin.whatsapp.userProfiles.subTabs.messages", { defaultValue: "Tüm Mesajlar" })}
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="summary" className="mt-3">
+                          <ConversationSummaryPanel
+                            summaries={summaries}
+                            loading={loadingSummaries}
+                            language={i18n.language}
+                          />
+                        </TabsContent>
+
+                        <TabsContent value="messages" className="mt-3">
+                          <Card>
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <History className="w-4 h-4" />
+                                {t("admin.whatsapp.userProfiles.conversationHistory")}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              {loadingConversations ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20 animate-pulse" />
+                                  <p className="text-sm">{t("admin.whatsapp.userProfiles.loadingConversations")}</p>
+                                </div>
+                              ) : conversations.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                                  <p className="text-sm">{t("admin.whatsapp.userProfiles.noConversations")}</p>
+                                </div>
+                              ) : (
+                                <ScrollArea className="h-[500px] pr-4">
+                                  <div className="space-y-4">
+                                    {conversations.map((msg) => (
                                       <div
-                                        className={`p-3 rounded-lg text-sm ${
-                                          msg.role === "user"
-                                            ? "bg-primary/10 text-foreground"
-                                            : "bg-muted text-foreground"
-                                        }`}
+                                        key={msg.id}
+                                        className={`flex gap-3 ${msg.role === "user" ? "flex-row" : "flex-row-reverse"}`}
                                       >
-                                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                                        <div
+                                          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                            msg.role === "user"
+                                              ? "bg-primary/10 text-primary"
+                                              : "bg-secondary text-secondary-foreground"
+                                          }`}
+                                        >
+                                          {msg.role === "user" ? (
+                                            <User className="w-4 h-4" />
+                                          ) : (
+                                            <Bot className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                        <div className="flex-1 max-w-[80%]">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <p className="text-xs font-medium">
+                                              {msg.role === "user" ? t("admin.whatsapp.userProfiles.customer") : t("admin.whatsapp.userProfiles.assistant")}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                              {format(new Date(msg.created_at), "dd MMM yyyy, HH:mm", { locale: tr })}
+                                            </p>
+                                          </div>
+                                          <div
+                                            className={`p-3 rounded-lg text-sm ${
+                                              msg.role === "user"
+                                                ? "bg-primary/10 text-foreground"
+                                                : "bg-muted text-foreground"
+                                            }`}
+                                          >
+                                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
-                            </ScrollArea>
-                          )}
-                        </CardContent>
-                      </Card>
+                                </ScrollArea>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </TabsContent>
+                      </Tabs>
                     </TabsContent>
                   </ScrollArea>
                 </Tabs>

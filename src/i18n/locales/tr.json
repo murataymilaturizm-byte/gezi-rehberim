@@ -837,7 +837,8 @@
           "profile": "Profil Bilgileri",
           "preferences": "Tercihler",
           "tags": "Etiketler",
-          "conversations": "Konuşma Geçmişi"
+          "conversations": "Konuşma Geçmişi",
+          "activity": "Aktivite"
         },
         "salesStats": "Satış İstatistikleri",
         "totalBookings": "Toplam Rezervasyon",
@@ -875,7 +876,19 @@
         "phoneNumber": "Telefon",
         "firstContact": "İlk İletişim",
         "lastContact": "Son İletişim",
-        "activity": "Aktivite",
+        "activity": {
+          "title": "Aktivite Zaman Çizelgesi",
+          "description": "Mesajlar, rezervasyonlar ve anket olayları — tek kronolojik akış.",
+          "empty": "Henüz aktivite yok.",
+          "pax": "kişi",
+          "feedbackSentDesc": "Memnuniyet anketi gönderildi.",
+          "events": {
+            "message": "Mesaj",
+            "registration": "Rezervasyon",
+            "feedback_sent": "Anket Gönderildi",
+            "feedback_received": "Geri Bildirim Alındı"
+          }
+        },
         "activityStatus": "Aktivite Durumu",
         "preferences": "Tercihler",
         "preferredDestinations": "Tercih Edilen Destinasyonlar",
@@ -917,7 +930,62 @@
           "description": "Sistem rezervasyon, harcama ve aktivite verisinden hesaplar.",
           "empty": "Henüz yeterli aktivite yok.",
           "autoTagTooltip": "Otomatik etiket (sistem tarafından atandı)"
-        }
+        },
+        "subTabs": {
+          "summary": "AI Özeti",
+          "messages": "Tüm Mesajlar"
+        },
+        "summary": {
+          "loading": "Özetler yükleniyor…",
+          "empty": "Henüz AI özeti yok.",
+          "emptyHint": "AI özetleri konuşma bittikten sonra otomatik üretilir.",
+          "dominantSentiment": "Genel Duygu",
+          "totalDays": "Özet günü",
+          "messages": "mesaj",
+          "topics": "Konular",
+          "mentionedTours": "Bahsedilen Turlar",
+          "dailyBreakdown": "Günlük Özetler",
+          "sentiment": {
+            "positive": "Olumlu",
+            "neutral": "Nötr",
+            "negative": "Olumsuz"
+          }
+        },
+        "actions": {
+          "menuLabel": "Hızlı aksiyonlar",
+          "pauseBot": "Botu duraklat",
+          "resumeBot": "Botu başlat",
+          "botPausedToast": "Bot duraklatıldı",
+          "botResumedToast": "Bot başlatıldı",
+          "botPausedDesc": "Bot 24 saat boyunca bu müşteriye yanıt vermeyecek.",
+          "openWhatsApp": "WhatsApp'ta aç",
+          "callPhone": "Telefonu ara",
+          "copyContact": "İletişimi kopyala",
+          "openTemplates": "Şablonlar sayfasına git",
+          "copied": "Kopyalandı",
+          "copyFailed": "Kopyalanamadı.",
+          "invalidPhone": "Geçersiz telefon numarası."
+        },
+        "notes": {
+          "title": "Müşteri Notu",
+          "hint": "Yalnızca acentenize görünür — müşteri görmez.",
+          "placeholder": "Bu müşteri hakkında özel not… (örn. tercih, geçmiş anlaşma, dikkat edilecek konu)",
+          "save": "Kaydet",
+          "saved": "Kaydedildi",
+          "savedToast": "Not kaydedildi"
+        },
+        "contactTracking": "İletişim & Takip",
+        "emailLabel": "E-posta",
+        "marketingOptIn": "Pazarlama izinli",
+        "marketingOptOut": "Pazarlama izni yok",
+        "emailNotCollected": "Henüz toplanmamış",
+        "lastFeedbackSent": "Son anket",
+        "neverSent": "Henüz gönderilmedi",
+        "botStatus": "Bot durumu",
+        "botActive": "Aktif",
+        "botPaused": "Duraklatıldı",
+        "botPausedUntil": "Bot duraklatıldı",
+        "until": "Kadar:"
       },
       "status": {
         "pending": "Beklemede",

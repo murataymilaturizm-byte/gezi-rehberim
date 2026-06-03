@@ -848,7 +848,19 @@
         "phoneNumber": "Téléphone",
         "firstContact": "Premier Contact",
         "lastContact": "Dernier Contact",
-        "activity": "Activité",
+        "activity": {
+          "title": "Chronologie d'activité",
+          "description": "Messages, réservations et événements de sondage — un seul flux chronologique.",
+          "empty": "Aucune activité pour le moment.",
+          "pax": "pers.",
+          "feedbackSentDesc": "Enquête de satisfaction envoyée.",
+          "events": {
+            "message": "Message",
+            "registration": "Réservation",
+            "feedback_sent": "Enquête envoyée",
+            "feedback_received": "Retour reçu"
+          }
+        },
         "activityStatus": "Statut d'Activité",
         "todayActive": "Actif Aujourd'hui",
         "yesterdayActive": "Actif Hier",
@@ -867,7 +879,8 @@
           "profile": "Informations du profil",
           "preferences": "Préférences",
           "tags": "Étiquettes",
-          "conversations": "Historique des conversations"
+          "conversations": "Historique des conversations",
+          "activity": "Activité"
         },
         "salesStats": "Statistiques de vente",
         "totalBookings": "Réservations totales",
@@ -928,7 +941,62 @@
           "description": "Calculées par le système à partir des réservations, dépenses et activité.",
           "empty": "Pas encore assez d'activité.",
           "autoTagTooltip": "Étiquette automatique (attribuée par le système)"
-        }
+        },
+        "subTabs": {
+          "summary": "Résumé IA",
+          "messages": "Tous les messages"
+        },
+        "summary": {
+          "loading": "Chargement des résumés…",
+          "empty": "Aucun résumé IA pour le moment.",
+          "emptyHint": "Les résumés IA sont générés automatiquement après les conversations.",
+          "dominantSentiment": "Sentiment global",
+          "totalDays": "Jours de résumé",
+          "messages": "messages",
+          "topics": "Sujets",
+          "mentionedTours": "Circuits mentionnés",
+          "dailyBreakdown": "Détail quotidien",
+          "sentiment": {
+            "positive": "Positif",
+            "neutral": "Neutre",
+            "negative": "Négatif"
+          }
+        },
+        "actions": {
+          "menuLabel": "Actions rapides",
+          "pauseBot": "Mettre le bot en pause",
+          "resumeBot": "Réactiver le bot",
+          "botPausedToast": "Bot en pause",
+          "botResumedToast": "Bot réactivé",
+          "botPausedDesc": "Le bot ne répondra pas à ce client pendant 24 heures.",
+          "openWhatsApp": "Ouvrir dans WhatsApp",
+          "callPhone": "Appeler le téléphone",
+          "copyContact": "Copier le contact",
+          "openTemplates": "Aller aux modèles",
+          "copied": "Copié",
+          "copyFailed": "Copie échouée.",
+          "invalidPhone": "Numéro de téléphone invalide."
+        },
+        "notes": {
+          "title": "Note client",
+          "hint": "Visible uniquement par votre agence — le client ne la voit pas.",
+          "placeholder": "Note privée sur ce client… (ex. préférences, accords passés, points d'attention)",
+          "save": "Enregistrer",
+          "saved": "Enregistré",
+          "savedToast": "Note enregistrée"
+        },
+        "contactTracking": "Contact & Suivi",
+        "emailLabel": "E-mail",
+        "marketingOptIn": "Marketing autorisé",
+        "marketingOptOut": "Pas de consentement marketing",
+        "emailNotCollected": "Pas encore collecté",
+        "lastFeedbackSent": "Dernière enquête",
+        "neverSent": "Jamais envoyée",
+        "botStatus": "État du bot",
+        "botActive": "Actif",
+        "botPaused": "En pause",
+        "botPausedUntil": "Bot en pause",
+        "until": "Jusqu'à :"
       },
       "status": {
         "pending": "En attente",
