@@ -913,7 +913,8 @@
           "customer": "Müşteri",
           "prospect": "Potansiyel",
           "active": "Aktif",
-          "inactive": "İnaktif"
+          "inactive": "İnaktif",
+          "lead": "Lead"
         },
         "sort": {
           "lastActivity": "Son etkileşim",
@@ -930,7 +931,8 @@
           "heading": "Otomatik Etiketler",
           "description": "Sistem rezervasyon, harcama ve aktivite verisinden hesaplar.",
           "empty": "Henüz yeterli aktivite yok.",
-          "autoTagTooltip": "Otomatik etiket (sistem tarafından atandı)"
+          "autoTagTooltip": "Otomatik etiket (sistem tarafından atandı)",
+          "lead": "Lead"
         },
         "subTabs": {
           "summary": "AI Özeti",
@@ -986,7 +988,39 @@
         "botActive": "Aktif",
         "botPaused": "Duraklatıldı",
         "botPausedUntil": "Bot duraklatıldı",
-        "until": "Kadar:"
+        "until": "Kadar:",
+        "manualBadge": "Manuel",
+        "manualBadgeTooltip": "Manuel eklenen müşteri (acente CRM'den ekledi)",
+        "edit": {
+          "title": "Müşteri Bilgilerini Düzenle",
+          "description": "Ad ve e-posta bilgilerini güncelleyin. Bot bu değerleri sonradan ezmez.",
+          "fullNameLabel": "Tam Ad",
+          "fullNamePlaceholder": "Örn: Ahmet Yılmaz",
+          "emailLabel": "E-posta",
+          "emailHint": "Boş bırakırsanız kaldırılır.",
+          "addName": "İsim ekle",
+          "savedToast": "Müşteri bilgileri güncellendi",
+          "invalidEmail": "Geçersiz e-posta adresi"
+        },
+        "newCustomer": {
+          "button": "Yeni Müşteri",
+          "title": "Yeni Müşteri Ekle",
+          "description": "Acentenizin tanıdığı müşteriyi CRM'e ekleyin.",
+          "phoneLabel": "Telefon",
+          "fullNameLabel": "Ad Soyad",
+          "fullNamePlaceholder": "Opsiyonel",
+          "emailLabel": "E-posta",
+          "notesLabel": "Not",
+          "notesPlaceholder": "Bu müşteri hakkında özel not (opsiyonel)",
+          "previewLabel": "Kaydedilecek format",
+          "invalidPhone": "Geçersiz telefon numarası",
+          "invalidPhoneHint": "Lütfen ülke kodu ile birlikte girin (örn. +90 532 ...)",
+          "duplicate": "Bu numara eklenemedi",
+          "duplicateDesc": "Aynı telefon zaten kayıtlı.",
+          "botOptInNote": "Bot bu müşteriye otomatik mesaj göndermez. İlk mesajı WhatsApp'tan kendiniz başlatın; müşteri cevap verince bot devralır.",
+          "create": "Müşteriyi Ekle",
+          "createdToast": "Müşteri eklendi"
+        }
       },
       "status": {
         "pending": "Beklemede",

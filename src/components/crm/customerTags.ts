@@ -6,7 +6,7 @@
 // İki boyut paralel — bir müşteri aynı anda "VIP" + "İnaktif" olabilir
 // (uzun süredir sessiz VIP, kazanılması kritik). Mutex DEĞİL.
 
-export type AutoTagKey = "vip" | "customer" | "prospect" | "active" | "inactive";
+export type AutoTagKey = "vip" | "customer" | "prospect" | "active" | "inactive" | "lead";
 
 export interface ProfileForTagging {
   total_bookings: number;
@@ -14,6 +14,7 @@ export interface ProfileForTagging {
   total_messages: number;
   last_search_query: string | null;
   last_interaction_at: string;
+  source?: string | null;
 }
 
 // Eşik değerleri: rezervasyon-bazlı segment, currency-agnostic.
@@ -32,17 +33,25 @@ export function computeAutoTags(p: ProfileForTagging): AutoTagKey[] {
     tags.push("vip");
   } else if (p.total_bookings >= 1) {
     tags.push("customer");
+  } else if (p.source === "manual") {
+    // CRM'e acente tarafından eklenmiş, henüz rezervasyonu yok → Lead
+    // (Prospect ile farkı: prospect WhatsApp'tan gelmiş, lead manuel girilmiş)
+    tags.push("lead");
   } else if (p.total_messages >= PROSPECT_MESSAGE_THRESHOLD || !!p.last_search_query) {
     tags.push("prospect");
   }
 
   // Boyut 2: Aktivite (mutually exclusive, segment'ten bağımsız)
-  const daysSinceLast =
-    (Date.now() - new Date(p.last_interaction_at).getTime()) / 86_400_000;
-  if (daysSinceLast <= ACTIVE_DAYS) {
-    tags.push("active");
-  } else if (daysSinceLast > INACTIVE_DAYS) {
-    tags.push("inactive");
+  // Manuel müşteri henüz mesajlaşmadıysa aktivite etiketi atama —
+  // first_interaction_at = created_at ama "aktif" anlamlı değil.
+  if (p.source !== "manual" || p.total_messages > 0) {
+    const daysSinceLast =
+      (Date.now() - new Date(p.last_interaction_at).getTime()) / 86_400_000;
+    if (daysSinceLast <= ACTIVE_DAYS) {
+      tags.push("active");
+    } else if (daysSinceLast > INACTIVE_DAYS) {
+      tags.push("inactive");
+    }
   }
 
   return tags;
@@ -85,6 +94,12 @@ export const AUTO_TAG_STYLES: Record<
     border: "border-border",
     icon: "💤",
   },
+  lead: {
+    bg: "bg-purple-500/15 dark:bg-purple-500/20",
+    text: "text-purple-700 dark:text-purple-300",
+    border: "border-purple-500/40",
+    icon: "🌱",
+  },
 };
 
 // Manuel etiket — nötr ama hafif turuncu accent (site kimliği)
@@ -101,4 +116,5 @@ export const AUTO_TAG_I18N_KEYS: Record<AutoTagKey, string> = {
   prospect: "admin.whatsapp.userProfiles.autoTags.prospect",
   active: "admin.whatsapp.userProfiles.autoTags.active",
   inactive: "admin.whatsapp.userProfiles.autoTags.inactive",
+  lead: "admin.whatsapp.userProfiles.autoTags.lead",
 };

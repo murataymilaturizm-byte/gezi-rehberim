@@ -5,7 +5,7 @@
 // her birine tıklamak zorunda kalmasın.
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ShoppingBag, MessageSquare } from "lucide-react";
+import { ShoppingBag, MessageSquare, UserPlus } from "lucide-react";
 import { computeAutoTags } from "./customerTags";
 import { AutoTagBadge } from "./TagBadge";
 
@@ -19,6 +19,7 @@ interface CustomerListItemProps {
   lastInteractionAt: string;
   lastSearchQuery: string | null;
   manualTagCount: number;
+  source: string | null;
   isSelected: boolean;
   currencySym: string;
   onClick: () => void;
@@ -51,6 +52,7 @@ export const CustomerListItem = ({
   lastInteractionAt,
   lastSearchQuery,
   manualTagCount,
+  source,
   isSelected,
   currencySym,
   onClick,
@@ -76,9 +78,12 @@ export const CustomerListItem = ({
         total_messages: totalMessages,
         last_search_query: lastSearchQuery,
         last_interaction_at: lastInteractionAt,
+        source,
       }),
-    [totalBookings, totalSpent, totalMessages, lastSearchQuery, lastInteractionAt]
+    [totalBookings, totalSpent, totalMessages, lastSearchQuery, lastInteractionAt, source]
   );
+
+  const isManual = source === "manual";
 
   const displayName = name?.trim() || t("admin.whatsapp.userProfiles.unnamed");
   const initial = getInitial(name, phone);
@@ -116,8 +121,17 @@ export const CustomerListItem = ({
         {/* İçerik */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-0.5">
-            <p className="font-semibold text-sm text-foreground truncate leading-tight">
+            <p className="font-semibold text-sm text-foreground truncate leading-tight flex items-center gap-1.5">
               {displayName}
+              {isManual && (
+                <span
+                  className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-medium bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30"
+                  title={t("admin.whatsapp.userProfiles.manualBadgeTooltip", { defaultValue: "Manuel eklenen müşteri" })}
+                >
+                  <UserPlus className="w-2.5 h-2.5" />
+                  {t("admin.whatsapp.userProfiles.manualBadge", { defaultValue: "Manuel" })}
+                </span>
+              )}
             </p>
           </div>
           <p className="text-[11px] text-muted-foreground font-mono mb-2 truncate">

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, MessageSquare, TrendingUp, MapPin, Building2, Tag, Plus, ShoppingBag, DollarSign, Star, User, Bot, History, UserSearch, Mail, MailX, Send, PauseCircle, FileText as FileTextIcon, Activity as ActivityIcon } from "lucide-react";
+import { Users, MessageSquare, TrendingUp, MapPin, Building2, Tag, Plus, ShoppingBag, DollarSign, Star, User, Bot, History, UserSearch, Mail, MailX, Send, PauseCircle, FileText as FileTextIcon, Activity as ActivityIcon, Pencil, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -27,6 +27,8 @@ import { ConversationSummaryPanel, type ConversationSummary } from "./crm/Conver
 import { ActivityTimeline, type TimelineRegistration } from "./crm/ActivityTimeline";
 import { QuickActionsMenu } from "./crm/QuickActionsMenu";
 import { NotesEditor } from "./crm/NotesEditor";
+import { CustomerEditDialog } from "./crm/CustomerEditDialog";
+import { NewCustomerDialog } from "./crm/NewCustomerDialog";
 
 interface UserProfile {
   id: string;
@@ -51,6 +53,7 @@ interface UserProfile {
   last_feedback_sent_at: string | null;
   email: string | null;
   email_opted_in: boolean | null;
+  source: string | null;
 }
 
 interface ConversationMessage {
@@ -87,6 +90,10 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   const [summaries, setSummaries] = useState<ConversationSummary[]>([]);
   const [loadingSummaries, setLoadingSummaries] = useState(false);
   const [registrationsForUser, setRegistrationsForUser] = useState<TimelineRegistration[]>([]);
+
+  // CRM TUR 3 — düzenle + yeni müşteri dialog state'leri
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
 
   // CRM filtre/sıralama state
   const [search, setSearch] = useState("");
@@ -158,7 +165,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
         // TUR 2: notes + bot_paused + bot_paused_until + last_feedback_sent_at + email + email_opted_in eklendi.
         // notes kolonu ALTER TABLE ile sonradan eklendiği için types.ts'i yeniden üretmeden çalışır;
         // select metni Supabase'in JSON projection'ında string olarak parse edilir.
-        .select("id, phone, full_name, total_messages, last_interaction_at, first_interaction_at, preferred_destinations, budget_range, preferred_tour_type, last_search_query, tags, total_bookings, total_spent, feedback_score, feedback_comment, language_preference, notes, bot_paused, bot_paused_until, last_feedback_sent_at, email, email_opted_in")
+        .select("id, phone, full_name, total_messages, last_interaction_at, first_interaction_at, preferred_destinations, budget_range, preferred_tour_type, last_search_query, tags, total_bookings, total_spent, feedback_score, feedback_comment, language_preference, notes, bot_paused, bot_paused_until, last_feedback_sent_at, email, email_opted_in, source")
         .order("last_interaction_at", { ascending: false });
 
       if (effectiveAgencyId) {
@@ -306,7 +313,14 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
     () =>
       profiles.map((p) => ({
         profile: p,
-        autoTags: computeAutoTags(p),
+        autoTags: computeAutoTags({
+          total_bookings: p.total_bookings,
+          total_spent: Number(p.total_spent || 0),
+          total_messages: p.total_messages,
+          last_search_query: p.last_search_query,
+          last_interaction_at: p.last_interaction_at,
+          source: p.source,
+        }),
       })),
     [profiles]
   );
@@ -318,6 +332,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       vip: 0,
       customer: 0,
       prospect: 0,
+      lead: 0,
       active: 0,
       inactive: 0,
     };
@@ -376,7 +391,17 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   }, [profilesWithAutoTags, segment, search, sort]);
 
   const selectedAutoTags = useMemo(
-    () => (selectedProfile ? computeAutoTags(selectedProfile) : []),
+    () =>
+      selectedProfile
+        ? computeAutoTags({
+            total_bookings: selectedProfile.total_bookings,
+            total_spent: Number(selectedProfile.total_spent || 0),
+            total_messages: selectedProfile.total_messages,
+            last_search_query: selectedProfile.last_search_query,
+            last_interaction_at: selectedProfile.last_interaction_at,
+            source: selectedProfile.source,
+          })
+        : [],
     [selectedProfile]
   );
 
@@ -414,7 +439,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
 
   return (
     <div className="space-y-4">
-      {/* Üst başlık: başlık + super-admin acente seçici */}
+      {/* Üst başlık: başlık + (yeni müşteri butonu) + super-admin acente seçici */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-primary" />
@@ -426,23 +451,37 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
           </Badge>
         </div>
 
-        {isSuperAdmin && agencies.length > 0 && (
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
-              <SelectTrigger className="w-[220px] sm:w-[250px]">
-                <SelectValue placeholder={t("admin.whatsapp.userProfiles.selectAgency")} />
-              </SelectTrigger>
-              <SelectContent>
-                {agencies.map((agency) => (
-                  <SelectItem key={agency.id} value={agency.id}>
-                    {agency.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Sıfırdan müşteri ekleme — agency_id varsa göster */}
+          {(currentAgencyId || (isSuperAdmin && selectedAgencyId)) && (
+            <Button
+              size="sm"
+              className="bg-gradient-ocean hover:opacity-90"
+              onClick={() => setNewCustomerDialogOpen(true)}
+            >
+              <UserPlus className="w-4 h-4 me-1.5" />
+              {t("admin.whatsapp.userProfiles.newCustomer.button", { defaultValue: "Yeni Müşteri" })}
+            </Button>
+          )}
+
+          {isSuperAdmin && agencies.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <Select value={selectedAgencyId} onValueChange={setSelectedAgencyId}>
+                <SelectTrigger className="w-[220px] sm:w-[250px]">
+                  <SelectValue placeholder={t("admin.whatsapp.userProfiles.selectAgency")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {agencies.map((agency) => (
+                    <SelectItem key={agency.id} value={agency.id}>
+                      {agency.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ÜST METRIK ŞERİDİ */}
@@ -491,6 +530,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                         lastInteractionAt={profile.last_interaction_at}
                         lastSearchQuery={profile.last_search_query}
                         manualTagCount={profile.tags?.length || 0}
+                        source={profile.source}
                         isSelected={selectedProfile?.id === profile.id}
                         currencySym={currencySym}
                         onClick={() => setSelectedProfile(profile)}
@@ -514,9 +554,30 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                           .toLocaleUpperCase("tr-TR")}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h2 className="text-xl sm:text-2xl font-bold leading-tight truncate">
-                          {selectedProfile.full_name || t("admin.whatsapp.userProfiles.unnamed")}
-                        </h2>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className="text-xl sm:text-2xl font-bold leading-tight truncate">
+                            {selectedProfile.full_name || (
+                              <span className="text-muted-foreground italic">
+                                {t("admin.whatsapp.userProfiles.unnamed")}
+                              </span>
+                            )}
+                          </h2>
+                          {/* TUR 3: İsim/e-posta düzenleme — isimsizse "İsim ekle" çağrısı belirgin */}
+                          <Button
+                            variant={selectedProfile.full_name ? "ghost" : "outline"}
+                            size="sm"
+                            className={selectedProfile.full_name
+                              ? "h-7 px-2"
+                              : "h-7 px-2 border-primary/40 text-primary"}
+                            onClick={() => setEditDialogOpen(true)}
+                            title={t("admin.whatsapp.userProfiles.edit.title")}
+                          >
+                            <Pencil className="w-3 h-3 me-1" />
+                            {selectedProfile.full_name
+                              ? t("common.edit")
+                              : t("admin.whatsapp.userProfiles.edit.addName", { defaultValue: "İsim ekle" })}
+                          </Button>
+                        </div>
                         <p className="text-sm text-muted-foreground font-mono mt-0.5">
                           {selectedProfile.phone}
                         </p>
@@ -524,6 +585,16 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                           {selectedAutoTags.map((tag) => (
                             <AutoTagBadge key={tag} tag={tag} size="sm" />
                           ))}
+                          {selectedProfile.source === "manual" && (
+                            <Badge
+                              variant="outline"
+                              className="bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/40 gap-1"
+                              title={t("admin.whatsapp.userProfiles.manualBadgeTooltip", { defaultValue: "Manuel eklenen müşteri" })}
+                            >
+                              <UserPlus className="w-3 h-3" />
+                              {t("admin.whatsapp.userProfiles.manualBadge", { defaultValue: "Manuel" })}
+                            </Badge>
+                          )}
                           {selectedProfile.language_preference && (
                             <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
                               {selectedProfile.language_preference}
@@ -1121,6 +1192,60 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
           </div>
         </CardContent>
       </Card>
+
+      {/* CRM TUR 3 — Dialog'lar */}
+      {selectedProfile && (
+        <CustomerEditDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          profileId={selectedProfile.id}
+          agencyId={isSuperAdmin ? selectedAgencyId : currentAgencyId}
+          initialFullName={selectedProfile.full_name}
+          initialEmail={selectedProfile.email}
+          onSaved={({ full_name, email }) => {
+            const updated = { ...selectedProfile, full_name, email };
+            setSelectedProfile(updated);
+            setProfiles(profiles.map((p) => (p.id === updated.id ? updated : p)));
+          }}
+        />
+      )}
+
+      <NewCustomerDialog
+        open={newCustomerDialogOpen}
+        onOpenChange={setNewCustomerDialogOpen}
+        agencyId={isSuperAdmin ? selectedAgencyId : currentAgencyId}
+        onCreated={(created) => {
+          // Yeni eklenen profili UserProfile şekline tamamla — bazı alanlar default
+          const fresh: UserProfile = {
+            id: created.id,
+            phone: created.phone,
+            full_name: created.full_name,
+            email: created.email,
+            email_opted_in: false,
+            notes: created.notes,
+            source: created.source,
+            total_messages: 0,
+            last_interaction_at: new Date().toISOString(),
+            first_interaction_at: new Date().toISOString(),
+            preferred_destinations: null,
+            budget_range: null,
+            preferred_tour_type: null,
+            last_search_query: null,
+            tags: null,
+            total_bookings: 0,
+            total_spent: 0,
+            feedback_score: null,
+            feedback_comment: null,
+            language_preference: null,
+            bot_paused: null,
+            bot_paused_until: null,
+            last_feedback_sent_at: null,
+          };
+          // Yeniyi listenin başına ekle, seç
+          setProfiles([fresh, ...profiles]);
+          setSelectedProfile(fresh);
+        }}
+      />
     </div>
   );
 };

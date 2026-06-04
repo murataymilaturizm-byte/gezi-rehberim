@@ -921,7 +921,8 @@
           "customer": "Customer",
           "prospect": "Prospect",
           "active": "Active",
-          "inactive": "Inactive"
+          "inactive": "Inactive",
+          "lead": "Lead"
         },
         "sort": {
           "lastActivity": "Last interaction",
@@ -938,7 +939,8 @@
           "heading": "Automatic Tags",
           "description": "Computed by the system from bookings, spending and activity.",
           "empty": "Not enough activity yet.",
-          "autoTagTooltip": "Automatic tag (assigned by the system)"
+          "autoTagTooltip": "Automatic tag (assigned by the system)",
+          "lead": "Lead"
         },
         "subTabs": {
           "summary": "AI Summary",
@@ -994,7 +996,39 @@
         "botActive": "Active",
         "botPaused": "Paused",
         "botPausedUntil": "Bot paused",
-        "until": "Until:"
+        "until": "Until:",
+        "manualBadge": "Manual",
+        "manualBadgeTooltip": "Manually added customer (added by agency in CRM)",
+        "edit": {
+          "title": "Edit Customer Info",
+          "description": "Update name and email. The bot will not overwrite these later.",
+          "fullNameLabel": "Full Name",
+          "fullNamePlaceholder": "e.g. John Smith",
+          "emailLabel": "Email",
+          "emailHint": "Leave blank to clear.",
+          "addName": "Add name",
+          "savedToast": "Customer info updated",
+          "invalidEmail": "Invalid email address"
+        },
+        "newCustomer": {
+          "button": "New Customer",
+          "title": "Add New Customer",
+          "description": "Add a customer your agency already knows into CRM.",
+          "phoneLabel": "Phone",
+          "fullNameLabel": "Full Name",
+          "fullNamePlaceholder": "Optional",
+          "emailLabel": "Email",
+          "notesLabel": "Note",
+          "notesPlaceholder": "Private note about this customer (optional)",
+          "previewLabel": "Will be saved as",
+          "invalidPhone": "Invalid phone number",
+          "invalidPhoneHint": "Please enter with country code (e.g. +90 532 ...)",
+          "duplicate": "Could not add this number",
+          "duplicateDesc": "This phone is already registered.",
+          "botOptInNote": "The bot will not message this customer automatically. Start the first message yourself on WhatsApp; once the customer replies, the bot takes over.",
+          "create": "Add Customer",
+          "createdToast": "Customer added"
+        }
       },
       "status": {
         "pending": "Pending",

@@ -98,6 +98,7 @@ export async function updateUserPreferences(
   agencyId: string,
   updates: {
     full_name?: string;
+    email?: string;
     last_search_query?: string;
     preferred_destinations?: string[];
     budget_range?: string;
@@ -105,9 +106,24 @@ export async function updateUserPreferences(
   }
 ) {
   try {
+    // CRM bot-ezme koruması: acente manuel girdiyse (full_name/email mevcut)
+    // bot yeni rezervasyon esnasında ÜZERİNE YAZMASIN. "Sadece boşsa yaz"
+    // mantığı — bot ilk ismi/e-postayı atar, sonradan acente düzenler.
+    const writeable = { ...updates };
+    if (writeable.full_name || writeable.email) {
+      const existing = await getUserProfile(supabase, phone, agencyId);
+      if (existing?.full_name && writeable.full_name) {
+        delete writeable.full_name;
+      }
+      if ((existing as any)?.email && writeable.email) {
+        delete writeable.email;
+      }
+    }
+    if (Object.keys(writeable).length === 0) return;
+
     await supabase
       .from('whatsapp_user_profiles')
-      .update(updates)
+      .update(writeable)
       .eq('phone', phone)
       .eq('agency_id', agencyId);
   } catch (error) {

@@ -924,7 +924,8 @@
           "customer": "عميل",
           "prospect": "محتمل",
           "active": "نشط",
-          "inactive": "غير نشط"
+          "inactive": "غير نشط",
+          "lead": "محتمل جديد"
         },
         "sort": {
           "lastActivity": "آخر تفاعل",
@@ -941,7 +942,8 @@
           "heading": "الوسوم التلقائية",
           "description": "يحسبها النظام من الحجوزات والإنفاق والنشاط.",
           "empty": "لا يوجد نشاط كافٍ بعد.",
-          "autoTagTooltip": "وسم تلقائي (يعينه النظام)"
+          "autoTagTooltip": "وسم تلقائي (يعينه النظام)",
+          "lead": "محتمل جديد"
         },
         "subTabs": {
           "summary": "ملخص الذكاء الاصطناعي",
@@ -997,7 +999,39 @@
         "botActive": "نشط",
         "botPaused": "متوقف",
         "botPausedUntil": "البوت متوقف",
-        "until": "حتى:"
+        "until": "حتى:",
+        "manualBadge": "يدوي",
+        "manualBadgeTooltip": "عميل أُضيف يدويًا (أضافته الوكالة عبر CRM)",
+        "edit": {
+          "title": "تعديل بيانات العميل",
+          "description": "حدّث الاسم والبريد الإلكتروني. لن يستبدلها البوت لاحقًا.",
+          "fullNameLabel": "الاسم الكامل",
+          "fullNamePlaceholder": "مثال: أحمد محمد",
+          "emailLabel": "البريد الإلكتروني",
+          "emailHint": "اتركه فارغًا للحذف.",
+          "addName": "إضافة اسم",
+          "savedToast": "تم تحديث بيانات العميل",
+          "invalidEmail": "بريد إلكتروني غير صالح"
+        },
+        "newCustomer": {
+          "button": "عميل جديد",
+          "title": "إضافة عميل جديد",
+          "description": "أضف عميلًا تعرفه وكالتك بالفعل إلى CRM.",
+          "phoneLabel": "الهاتف",
+          "fullNameLabel": "الاسم الكامل",
+          "fullNamePlaceholder": "اختياري",
+          "emailLabel": "البريد الإلكتروني",
+          "notesLabel": "ملاحظة",
+          "notesPlaceholder": "ملاحظة خاصة عن هذا العميل (اختياري)",
+          "previewLabel": "سيتم الحفظ كـ",
+          "invalidPhone": "رقم هاتف غير صالح",
+          "invalidPhoneHint": "يرجى الإدخال مع رمز الدولة (مثال +966 ...)",
+          "duplicate": "لا يمكن إضافة هذا الرقم",
+          "duplicateDesc": "هذا الرقم مسجل بالفعل.",
+          "botOptInNote": "لن يرسل البوت رسائل تلقائية لهذا العميل. ابدأ أنت أول رسالة عبر WhatsApp؛ عندما يرد العميل، يتولى البوت المهمة.",
+          "create": "أضف العميل",
+          "createdToast": "تمت إضافة العميل"
+        }
       },
       "status": {
         "pending": "قيد الانتظار",

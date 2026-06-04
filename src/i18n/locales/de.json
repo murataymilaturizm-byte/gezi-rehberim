@@ -924,7 +924,8 @@
           "customer": "Kunde",
           "prospect": "Interessent",
           "active": "Aktiv",
-          "inactive": "Inaktiv"
+          "inactive": "Inaktiv",
+          "lead": "Lead"
         },
         "sort": {
           "lastActivity": "Letzte Interaktion",
@@ -941,7 +942,8 @@
           "heading": "Automatische Tags",
           "description": "Vom System aus Buchungen, Ausgaben und Aktivität berechnet.",
           "empty": "Noch nicht genügend Aktivität.",
-          "autoTagTooltip": "Automatischer Tag (vom System zugewiesen)"
+          "autoTagTooltip": "Automatischer Tag (vom System zugewiesen)",
+          "lead": "Lead"
         },
         "subTabs": {
           "summary": "KI-Zusammenfassung",
@@ -997,7 +999,39 @@
         "botActive": "Aktiv",
         "botPaused": "Pausiert",
         "botPausedUntil": "Bot pausiert",
-        "until": "Bis:"
+        "until": "Bis:",
+        "manualBadge": "Manuell",
+        "manualBadgeTooltip": "Manuell hinzugefügter Kunde (von Agentur im CRM hinzugefügt)",
+        "edit": {
+          "title": "Kundendaten bearbeiten",
+          "description": "Name und E-Mail aktualisieren. Der Bot überschreibt diese später nicht.",
+          "fullNameLabel": "Vollständiger Name",
+          "fullNamePlaceholder": "z. B. Max Mustermann",
+          "emailLabel": "E-Mail",
+          "emailHint": "Leer lassen zum Entfernen.",
+          "addName": "Name hinzufügen",
+          "savedToast": "Kundendaten aktualisiert",
+          "invalidEmail": "Ungültige E-Mail-Adresse"
+        },
+        "newCustomer": {
+          "button": "Neuer Kunde",
+          "title": "Neuen Kunden hinzufügen",
+          "description": "Einen bereits bekannten Kunden in das CRM aufnehmen.",
+          "phoneLabel": "Telefon",
+          "fullNameLabel": "Vollständiger Name",
+          "fullNamePlaceholder": "Optional",
+          "emailLabel": "E-Mail",
+          "notesLabel": "Notiz",
+          "notesPlaceholder": "Private Notiz zu diesem Kunden (optional)",
+          "previewLabel": "Wird gespeichert als",
+          "invalidPhone": "Ungültige Telefonnummer",
+          "invalidPhoneHint": "Bitte mit Ländervorwahl eingeben (z. B. +49 ...)",
+          "duplicate": "Diese Nummer konnte nicht hinzugefügt werden",
+          "duplicateDesc": "Diese Telefonnummer ist bereits registriert.",
+          "botOptInNote": "Der Bot schreibt diesem Kunden nicht automatisch. Beginnen Sie die erste Nachricht selbst auf WhatsApp; sobald der Kunde antwortet, übernimmt der Bot.",
+          "create": "Kunde hinzufügen",
+          "createdToast": "Kunde hinzugefügt"
+        }
       },
       "status": {
         "pending": "Ausstehend",

@@ -15,7 +15,7 @@ import type { AutoTagKey } from "./customerTags";
 export type SegmentFilter = "all" | AutoTagKey;
 export type SortKey = "lastActivity" | "spending" | "bookings" | "name";
 
-const SEGMENT_OPTIONS: SegmentFilter[] = ["all", "vip", "customer", "prospect", "active", "inactive"];
+const SEGMENT_OPTIONS: SegmentFilter[] = ["all", "vip", "customer", "lead", "prospect", "active", "inactive"];
 const SORT_OPTIONS: SortKey[] = ["lastActivity", "spending", "bookings", "name"];
 
 interface CrmFiltersProps {

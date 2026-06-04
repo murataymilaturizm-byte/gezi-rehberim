@@ -924,7 +924,8 @@
           "customer": "Client",
           "prospect": "Prospect",
           "active": "Actif",
-          "inactive": "Inactif"
+          "inactive": "Inactif",
+          "lead": "Lead"
         },
         "sort": {
           "lastActivity": "Dernière interaction",
@@ -941,7 +942,8 @@
           "heading": "Étiquettes automatiques",
           "description": "Calculées par le système à partir des réservations, dépenses et activité.",
           "empty": "Pas encore assez d'activité.",
-          "autoTagTooltip": "Étiquette automatique (attribuée par le système)"
+          "autoTagTooltip": "Étiquette automatique (attribuée par le système)",
+          "lead": "Lead"
         },
         "subTabs": {
           "summary": "Résumé IA",
@@ -997,7 +999,39 @@
         "botActive": "Actif",
         "botPaused": "En pause",
         "botPausedUntil": "Bot en pause",
-        "until": "Jusqu'à :"
+        "until": "Jusqu'à :",
+        "manualBadge": "Manuel",
+        "manualBadgeTooltip": "Client ajouté manuellement (ajouté par l'agence dans le CRM)",
+        "edit": {
+          "title": "Modifier les infos du client",
+          "description": "Mettre à jour le nom et l'e-mail. Le bot ne les écrasera plus.",
+          "fullNameLabel": "Nom complet",
+          "fullNamePlaceholder": "ex. Jean Dupont",
+          "emailLabel": "E-mail",
+          "emailHint": "Laisser vide pour effacer.",
+          "addName": "Ajouter un nom",
+          "savedToast": "Informations du client mises à jour",
+          "invalidEmail": "Adresse e-mail invalide"
+        },
+        "newCustomer": {
+          "button": "Nouveau client",
+          "title": "Ajouter un nouveau client",
+          "description": "Ajoutez un client que votre agence connaît déjà au CRM.",
+          "phoneLabel": "Téléphone",
+          "fullNameLabel": "Nom complet",
+          "fullNamePlaceholder": "Optionnel",
+          "emailLabel": "E-mail",
+          "notesLabel": "Note",
+          "notesPlaceholder": "Note privée sur ce client (optionnel)",
+          "previewLabel": "Sera enregistré comme",
+          "invalidPhone": "Numéro de téléphone invalide",
+          "invalidPhoneHint": "Veuillez entrer avec l'indicatif (ex. +33 ...)",
+          "duplicate": "Impossible d'ajouter ce numéro",
+          "duplicateDesc": "Ce téléphone est déjà enregistré.",
+          "botOptInNote": "Le bot n'enverra pas de message automatique à ce client. Commencez le premier message vous-même sur WhatsApp ; dès que le client répond, le bot prend le relais.",
+          "create": "Ajouter le client",
+          "createdToast": "Client ajouté"
+        }
       },
       "status": {
         "pending": "En attente",
