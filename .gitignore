@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Diagnostic scripts (yerel teşhis, commit dışı)
+scripts/diag_*.ts

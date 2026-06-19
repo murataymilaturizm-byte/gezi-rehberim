@@ -740,6 +740,41 @@ runScenario("S20: CONFIRMING tam dolu — telefon yenilenmesi state'i bozmaz", "
     } },
 ]);
 
+// === 21. Deterministik bypass: pax → name geçişi state regresyonu
+// (Commit 3 — Murat bug kök düzeltmesi). Mirror'da state geçişi test edilir;
+// bypass'ın metnini üreten process-message.ts bloğu prompt-content kontrolünde. ===
+runScenario("S21: pax dolunca → waiting_for_name (deterministik bypass turn'ünün hazırlığı)", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR, extracted: { tourId: TOUR.id, tourTitle: TOUR.title },
+    expect: { stage: "COLLECTING_INFO" } },
+  { msg: "12 aralık", intent: "provide_info", extracted: { dateId: "D1", selectedDate: "2026-12-12" },
+    expect: { collectionStep: "waiting_for_pax" } },
+  { msg: "2 kişi", intent: "provide_info", extracted: { paxAdult: 2 },
+    expect: { collectionStep: "waiting_for_name", "reservationInfo.paxAdult": 2 } },
+]);
+
+// === 22. Deterministik bypass: name → phone geçişi ===
+runScenario("S22: isim dolunca → waiting_for_phone", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR, extracted: { tourId: TOUR.id, tourTitle: TOUR.title },
+    expect: { stage: "COLLECTING_INFO" } },
+  { msg: "12 aralık", intent: "provide_info", extracted: { dateId: "D1", selectedDate: "2026-12-12" },
+    expect: { collectionStep: "waiting_for_pax" } },
+  { msg: "2 kişi", intent: "provide_info", extracted: { paxAdult: 2 }, expect: { collectionStep: "waiting_for_name" } },
+  { msg: "Ali Veli", intent: "provide_info", extracted: { fullName: "Ali Veli" },
+    expect: { collectionStep: "waiting_for_phone", "reservationInfo.fullName": "Ali Veli" } },
+]);
+
+// === 23. Deterministik bypass: phone dolunca → CONFIRMING ===
+runScenario("S23: telefon dolunca → CONFIRMING (bypass özet+onay üretecek)", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR, extracted: { tourId: TOUR.id, tourTitle: TOUR.title },
+    expect: { stage: "COLLECTING_INFO" } },
+  { msg: "12 aralık", intent: "provide_info", extracted: { dateId: "D1", selectedDate: "2026-12-12" },
+    expect: { collectionStep: "waiting_for_pax" } },
+  { msg: "2 kişi", intent: "provide_info", extracted: { paxAdult: 2 }, expect: { collectionStep: "waiting_for_name" } },
+  { msg: "Ali Veli", intent: "provide_info", extracted: { fullName: "Ali Veli" }, expect: { collectionStep: "waiting_for_phone" } },
+  { msg: "05551234567", intent: "provide_info", extracted: { phone: "905551234567" },
+    expect: { stage: "CONFIRMING", "reservationInfo.phone": "905551234567" } },
+]);
+
 // === 13. DE dili happy path ===
 runScenario("S13: DE happy path", "de", [
   { msg: "hallo", intent: "greeting", expect: { stage: "BROWSING" } },
@@ -827,6 +862,49 @@ function assertPromptMissing(name, needle) {
     console.log(`✗ [PROMPT-NEG] ${name} — hâlâ var: "${needle.slice(0, 80)}..."`);
   }
 }
+// === PROCESS-MESSAGE DETERMİNİSTİK BYPASS BLOKLARI (Commit 3 — Murat bug kök düzeltmesi) ===
+// LLM compliance hatasına karşı: pax→name, name→phone, phone→CONFIRMING geçişlerinde
+// LLM çağrılmaz, deterministik metin gönderilir. Bu testler 3 bloğun + 7 dil
+// coverage'ının korunduğunu garanti eder.
+const procMsgPath = join(__dirname, "..", "supabase", "functions", "shared", "handlers", "process-message.ts");
+const procMsgContent = readFileSync(procMsgPath, "utf-8");
+
+function assertProcMsgContains(name, needle) {
+  if (procMsgContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [BYPASS] ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `BYPASS:${name}`, step: 0, msg: needle.slice(0, 60), key: "process-message.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [BYPASS] ${name} — kayıp: "${needle.slice(0, 80)}..."`);
+  }
+}
+
+// Blok başlıkları
+assertProcMsgContains("Blok 11b başlığı (pax→name)",     "11b. PAX → NAME GEÇİŞİ (deterministik)");
+assertProcMsgContains("Blok 11c başlığı (name→phone)",   "11c. NAME → PHONE GEÇİŞİ (deterministik)");
+assertProcMsgContains("Blok 13 başlığı (phone→CONFIRMING)", "13. PHONE → CONFIRMING GEÇİŞİ (deterministik)");
+
+// İlk-kez koşulu (context.collectionStep !== "...") — sonsuz tekrarı önler
+assertProcMsgContains("pax→name ilk-kez koşulu",   'context.collectionStep !== "waiting_for_name"');
+assertProcMsgContains("name→phone ilk-kez koşulu", 'context.collectionStep !== "waiting_for_phone"');
+assertProcMsgContains("phone→CONFIRMING ilk-kez koşulu", 'context.stage !== "CONFIRMING"');
+
+// 7 dil coverage — pax→name (TR + AR + RU örnek)
+assertProcMsgContains("pax→name TR mesajı", "Ad ve soyadınızı alabilir miyim?");
+assertProcMsgContains("pax→name AR mesajı", "هل يمكنني الحصول على الاسم الكامل؟");
+assertProcMsgContains("pax→name RU mesajı", "Назовите, пожалуйста, ваше имя и фамилию.");
+
+// 7 dil coverage — name→phone
+assertProcMsgContains("name→phone TR mesajı", "Telefon numaranızı alabilir miyim?");
+assertProcMsgContains("name→phone EN mesajı", "May I have your phone number?");
+
+// 7 dil coverage — phone→CONFIRMING özet+onay
+assertProcMsgContains("CONFIRMING TR onay sorusu", "Bilgiler doğru mu, onaylıyor musunuz?");
+assertProcMsgContains("CONFIRMING EN onay sorusu", "Are these details correct?");
+assertProcMsgContains("CONFIRMING AR onay sorusu", "هل المعلومات صحيحة؟");
+
+// === ESKİ POZİTİF/NEGATİF ASSERTION'LAR ===
 // CONFIRMING'in manuel "ZATEN ALINDI" cümlesi artık ortak guard'dan geliyor:
 assertPromptMissing("TR CONFIRMING: manuel 'Tarih, kişi sayısı, isim ve telefon ZATEN ALINDI' cümlesi silindi",
   "Tarih, kişi sayısı, isim ve telefon ZATEN ALINDI");

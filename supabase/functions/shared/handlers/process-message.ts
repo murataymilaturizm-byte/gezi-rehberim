@@ -580,6 +580,71 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
+  // === 11b. PAX → NAME GEÇİŞİ (deterministik) — 2026-06-19 Murat bug kökü ===
+  // pax dolduğunda waiting_for_name'e geçilen İLK turn'de LLM çağrılmaz; bot sabit
+  // metni atar. LLM compliance hatası riski sıfır. Mevcut :519 tarih + :583 email
+  // bloklarıyla aynı pattern.
+  if (
+    newContext.stage === "COLLECTING_INFO" &&
+    newContext.collectionStep === "waiting_for_name" &&
+    context.collectionStep !== "waiting_for_name"
+  ) {
+    const _lang = newContext.language || "tr";
+    const _msgs: Record<string, string> = {
+      tr: "Teşekkürler! 😊 Ad ve soyadınızı alabilir miyim?",
+      en: "Thank you! 😊 May I have your full name?",
+      de: "Vielen Dank! 😊 Darf ich Ihren vollständigen Namen erfahren?",
+      ru: "Спасибо! 😊 Назовите, пожалуйста, ваше имя и фамилию.",
+      ar: "شكراً لك! 😊 هل يمكنني الحصول على الاسم الكامل؟",
+      fr: "Merci ! 😊 Puis-je avoir votre nom complet ?",
+      es: "¡Gracias! 😊 ¿Puede darme su nombre completo?",
+    };
+    const askReply = _msgs[_lang] || _msgs.tr;
+    await _save(askReply, newContext);
+    await adapter.sendResponse(askReply);
+    return { success: true, response: askReply, newContext };
+  }
+
+  // === 11c. NAME → PHONE GEÇİŞİ (deterministik) ===
+  // İsim dolduğunda waiting_for_phone'a geçilen İLK turn'de LLM çağrılmaz.
+  // Hitap için isim ilk kelimesi kullanılır (cinsiyet tahmini YOK, sade).
+  if (
+    newContext.stage === "COLLECTING_INFO" &&
+    newContext.collectionStep === "waiting_for_phone" &&
+    context.collectionStep !== "waiting_for_phone"
+  ) {
+    const _lang = newContext.language || "tr";
+    const _fullName = (newContext.reservationInfo as any)?.fullName || "";
+    const _firstName = String(_fullName).trim().split(/\s+/)[0] || "";
+    const _msgs: Record<string, string> = {
+      tr: _firstName
+        ? `Teşekkürler ${_firstName}! 📱 Telefon numaranızı alabilir miyim?`
+        : "Teşekkürler! 📱 Telefon numaranızı alabilir miyim?",
+      en: _firstName
+        ? `Thank you ${_firstName}! 📱 May I have your phone number?`
+        : "Thank you! 📱 May I have your phone number?",
+      de: _firstName
+        ? `Vielen Dank, ${_firstName}! 📱 Darf ich Ihre Telefonnummer erfahren?`
+        : "Vielen Dank! 📱 Darf ich Ihre Telefonnummer erfahren?",
+      ru: _firstName
+        ? `Спасибо, ${_firstName}! 📱 Скажите, пожалуйста, ваш номер телефона.`
+        : "Спасибо! 📱 Скажите, пожалуйста, ваш номер телефона.",
+      ar: _firstName
+        ? `شكراً ${_firstName}! 📱 هل يمكنني الحصول على رقم هاتفك؟`
+        : "شكراً لك! 📱 هل يمكنني الحصول على رقم هاتفك؟",
+      fr: _firstName
+        ? `Merci ${_firstName} ! 📱 Puis-je avoir votre numéro de téléphone ?`
+        : "Merci ! 📱 Puis-je avoir votre numéro de téléphone ?",
+      es: _firstName
+        ? `¡Gracias, ${_firstName}! 📱 ¿Me puede dar su número de teléfono?`
+        : "¡Gracias! 📱 ¿Me puede dar su número de teléfono?",
+    };
+    const askReply = _msgs[_lang] || _msgs.tr;
+    await _save(askReply, newContext);
+    await adapter.sendResponse(askReply);
+    return { success: true, response: askReply, newContext };
+  }
+
   // === 12. EMAİL ADIMI (deterministik) ===
   if (newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_email") {
     const _lang = newContext.language || "tr";
@@ -613,6 +678,46 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       await adapter.sendResponse(invalidReply);
       return { success: true, response: invalidReply, newContext };
     }
+  }
+
+  // === 13. PHONE → CONFIRMING GEÇİŞİ (deterministik) — 2026-06-19 Murat bug kökü ===
+  // Tüm alanlar dolduğunda CONFIRMING'e geçilen İLK turn'de özet+onay deterministik
+  // gönderilir, LLM çağrılmaz. Bu turn'de bot pax/isim/telefon TEKRAR SORAMAZ
+  // (canlı bug kanıtı: LLM dolu state'te bile "Kaç kişi?" diyordu).
+  if (newContext.stage === "CONFIRMING" && context.stage !== "CONFIRMING") {
+    const _lang = newContext.language || "tr";
+    const info = (newContext.reservationInfo as any) || {};
+    const _tourTitle = newContext.currentTour
+      ? getLocalizedTourTitle(newContext.currentTour.title || "", _lang)
+      : "";
+    const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
+    const _pax = info.paxAdult ?? "";
+    const _name = info.fullName || "";
+    const _phone = info.phone || "";
+
+    const _labels: Record<string, { tour: string; date: string; pax: string; name: string; phone: string; confirm: string }> = {
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
+    };
+    const L = _labels[_lang] || _labels.tr;
+
+    const _summaryLines = [
+      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
+      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+      _pax !== "" ? `👥 ${L.pax}: ${_pax}`         : "",
+      _name      ? `👤 ${L.name}: ${_name}`        : "",
+      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
+    ].filter(Boolean).join("\n");
+
+    const summaryReply = `${_summaryLines}\n\n${L.confirm}`;
+    await _save(summaryReply, newContext);
+    await adapter.sendResponse(summaryReply);
+    return { success: true, response: summaryReply, newContext };
   }
 
   // === 14. REZERVASYON KAYDET (COMPLETED) ===
