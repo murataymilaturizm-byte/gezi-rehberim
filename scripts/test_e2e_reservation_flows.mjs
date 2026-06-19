@@ -653,6 +653,33 @@ runScenario("S19: 'tuğçe görüşük' — isim mesajı pax'i SİLMEZ, telefon 
     } },
 ]);
 
+// === 20. CONFIRMING tüm alanlar dolu — bilgi tekrar mesajı state'i bozmaz
+// (Murat Bey canlı bug 2026-06-19): telefon adımından CONFIRMING'e geçiş sonrası
+// kullanıcı tekrar telefon yazsa bile bot pax/isim/phone İSTEMEMELİ. State doğru,
+// LLM-state senkron tek noktaya taşındı (buildFilledFieldsGuard). ===
+runScenario("S20: CONFIRMING tam dolu — telefon yenilenmesi state'i bozmaz", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR, extracted: { tourId: TOUR.id, tourTitle: TOUR.title },
+    expect: { stage: "COLLECTING_INFO" } },
+  { msg: "12 aralık", intent: "provide_info", extracted: { dateId: "D1", selectedDate: "2026-12-12" },
+    expect: { collectionStep: "waiting_for_pax" } },
+  { msg: "2 kişi", intent: "provide_info", extracted: { paxAdult: 2 },
+    expect: { collectionStep: "waiting_for_name" } },
+  { msg: "Murat Aymilatur", intent: "provide_info", extracted: { fullName: "Murat Aymilatur" },
+    expect: { collectionStep: "waiting_for_phone" } },
+  { msg: "05551234545", intent: "provide_info", extracted: { phone: "905551234545" },
+    expect: { stage: "CONFIRMING", "reservationInfo.phone": "905551234545" } },
+  // KRİTİK: CONFIRMING'de kullanıcı telefon tekrar yazsa bile state hepsi dolu kalır,
+  // CONFIRMING stage'inde pax/isim KORUNUR — Murat Bey bug regresyonu.
+  { msg: "05551234545", intent: "provide_info", extracted: { phone: "905551234545" },
+    expect: {
+      stage: "CONFIRMING",
+      "reservationInfo.phone": "905551234545",
+      "reservationInfo.fullName": "Murat Aymilatur",
+      "reservationInfo.paxAdult": 2,
+      "reservationInfo.dateId": "D1",
+    } },
+]);
+
 // === 13. DE dili happy path ===
 runScenario("S13: DE happy path", "de", [
   { msg: "hallo", intent: "greeting", expect: { stage: "BROWSING" } },
@@ -708,6 +735,48 @@ assertPromptContains("EN waiting_for_phone: 'How many people' FORBIDDEN",
 assertPromptContains("forbiddenList: değer bazlı 'ZATEN ALINDI' kalıbı", "TEKRAR SORMA (ZATEN ALINDI):");
 assertPromptContains("forbiddenList: değerli forbidden push (date)",   "forbidden.push(`${L.date}: ${val}`)");
 assertPromptContains("forbiddenList: değerli forbidden push (pax)",    "forbidden.push(`${L.pax}: ${info.paxAdult}`)");
+
+// === KÖK DÜZELTME (2026-06-19 Tuğçe CONFIRMING refactor) ===
+// Korumayı tek noktaya taşıdık: buildFilledFieldsGuard. Stage-bağımsız ortak suffix.
+assertPromptContains("buildFilledFieldsGuard tanımlı", "function buildFilledFieldsGuard(context: PromptContext)");
+assertPromptContains("getStagePrompt'ta filledFieldsGuard hesaplanıyor", "const filledFieldsGuard = buildFilledFieldsGuard(context);");
+// Suffix her stage'e BAĞIMSIZ uygulanır — minimum 7 return noktasında çağrılmalı.
+// (GREETING + BROWSING + TR: TOUR_SELECTED/DATE_SELECTION/COLLECTING_INFO/CONFIRMING/COMPLETED/default
+//  + EN aynı 6 = toplam ~14)
+function countOccurrences(haystack, needle) {
+  return haystack.split(needle).length - 1;
+}
+const guardCount = countOccurrences(stagesContent, "+ filledFieldsGuard + hallucinationGuard");
+if (guardCount >= 12) {
+  scenarioPasses++;
+  console.log(`✓ [PROMPT] filledFieldsGuard ${guardCount}x return suffix'i (her stage'e uygulanmış)`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PROMPT:guard count", step: 0, msg: `expected ≥12, got ${guardCount}`, key: "stages/index.ts", expected: "≥12", actual: guardCount });
+  console.log(`✗ [PROMPT] filledFieldsGuard sadece ${guardCount}x — beklenen ≥12`);
+}
+
+// === SİLİNEN TEKRARLAR — geri gelmesin diye negatif assertion ===
+function assertPromptMissing(name, needle) {
+  if (!stagesContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [PROMPT-NEG] ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `PROMPT-NEG:${name}`, step: 0, msg: needle.slice(0, 60), key: "stages/index.ts", expected: "missing", actual: "STILL PRESENT" });
+    console.log(`✗ [PROMPT-NEG] ${name} — hâlâ var: "${needle.slice(0, 80)}..."`);
+  }
+}
+// CONFIRMING'in manuel "ZATEN ALINDI" cümlesi artık ortak guard'dan geliyor:
+assertPromptMissing("TR CONFIRMING: manuel 'Tarih, kişi sayısı, isim ve telefon ZATEN ALINDI' cümlesi silindi",
+  "Tarih, kişi sayısı, isim ve telefon ZATEN ALINDI");
+assertPromptMissing("EN CONFIRMING: manuel 'Date, number of people, name and phone are ALREADY COLLECTED' cümlesi silindi",
+  "Date, number of people, name and phone are ALREADY COLLECTED");
+// COLLECTING_INFO'nun "✅ ZATEN TOPLANAN BİLGİLER" bloğu artık ortak guard'dan geliyor:
+assertPromptMissing("TR COLLECTING_INFO: 'ZATEN TOPLANAN BİLGİLER' bloğu silindi",
+  "ZATEN TOPLANAN BİLGİLER (bunları TEKRAR SORMA");
+assertPromptMissing("EN COLLECTING_INFO: 'ALREADY COLLECTED (DO NOT ASK AGAIN' bloğu silindi",
+  "ALREADY COLLECTED (DO NOT ASK AGAIN");
 
 // ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);

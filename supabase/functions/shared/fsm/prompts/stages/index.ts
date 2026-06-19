@@ -1,6 +1,6 @@
 // All stage prompts - ALL IN ONE FILE (no separate files needed)
 import type { PromptContext } from "../types.ts";
-import { formatTourDetails, formatCollectedInfo, formatReservationSummary, formatToursList } from "../helpers.ts";
+import { formatTourDetails, formatReservationSummary, formatToursList } from "../helpers.ts";
 
 // ============================================
 // GREETING STAGE
@@ -153,15 +153,32 @@ function buildForbiddenAskList(
     : `\n\n❌ DO NOT ASK AGAIN (ALREADY COLLECTED):\n${list}\nNever re-ask, not even for verification. Only ask the question for this step.`;
 }
 
+// ============================================
+// ORTAK SUFFIX — "DOLU ALAN" KORUYUCU (2026-06-19 — Tuğçe CONFIRMING varyantı)
+// ============================================
+// Stage'den BAĞIMSIZ. getStagePrompt'un return'ünden hemen önce eklenir.
+// Tüm stage'lerde (COLLECTING_INFO, CONFIRMING, COMPLETED, TOUR_SELECTED dahil)
+// reservationInfo'da dolu olan alanları DEĞER bazlı listeler. Önceki bug deseni:
+// koruma `getCollectionStepPrompt` içinde gömülüydü → sadece COLLECTING_INFO'da
+// devreye giriyordu → CONFIRMING'de Murat Bey bug'ı. Tek noktadan üretim, yeni
+// stage/adım eklenince elle hatırlamaya gerek YOK.
+function buildFilledFieldsGuard(context: PromptContext): string {
+  const { reservationInfo, collectionStep, language } = context;
+  if (!reservationInfo) return "";
+  const collected = getCollectedFields(reservationInfo);
+  // collectionStep verili değilse (CONFIRMING / COMPLETED / TOUR_SELECTED): hiçbir
+  // alan istisna edilmez → TÜM dolu alanlar listelenir. Bu istenen davranış.
+  return buildForbiddenAskList(collectionStep || "__none__", collected, language, reservationInfo);
+}
+
 function getCollectionStepPrompt(
   collectionStep: string,
   language: string,
-  reservationInfo?: any,
 ): string {
-  const collected = reservationInfo ? getCollectedFields(reservationInfo) : { hasDate: false, hasPax: false, hasName: false, hasPhone: false };
-  const forbiddenList = reservationInfo ? buildForbiddenAskList(collectionStep, collected, language, reservationInfo) : "";
-
   // Step başına KESİN komut — LLM adım seçemez, sadece o adımın metnini yazar.
+  // NOT (2026-06-19 Tuğçe refactor): "TEKRAR SORMA" listesi ARTIK burada üretilmiyor;
+  // getStagePrompt sonunda buildFilledFieldsGuard ortak suffix olarak ekliyor.
+  // Yeni adım eklenince hatırlamaya gerek yok — otomatik miras alır.
   const prompts: Record<string, Record<string, string>> = {
     tr: {
       waiting_for_date: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: TARİH SEÇİMİ
@@ -169,8 +186,7 @@ function getCollectionStepPrompt(
 GÖREVİN: SADECE tarih seç. Başka HİÇBİR şey sorma.
 - ÖNCE mevcut turun TÜM müsait tarihlerini NUMARALI listele.
 - Her tarih için fiyatı yaz.
-- "Hangi tarihi tercih edersiniz?" diye sor.${forbiddenList}
-
+- "Hangi tarihi tercih edersiniz?" diye sor.
 ❌ YASAK CEVAPLAR (canlı bug kanıtları):
 - "Kaç kişi katılacaksınız?" (← pax adımı DEĞİL)
 - "Adınızı alabilir miyim?" (← isim adımı DEĞİL)
@@ -179,8 +195,7 @@ GÖREVİN: SADECE tarih seç. Başka HİÇBİR şey sorma.
       waiting_for_pax: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: KİŞİ SAYISI
 
 GÖREVİN: SADECE kişi sayısı sor. Başka HİÇBİR şey sorma.
-- Kısa bir onay/teşekkür + "Kaç kişi katılacaksınız?" sorusu.${forbiddenList}
-
+- Kısa bir onay/teşekkür + "Kaç kişi katılacaksınız?" sorusu.
 ❌ YASAK CEVAPLAR (canlı bug kanıtları):
 - "Hangi tarihi tercih edersiniz?" (← tarih ZATEN seçildi)
 - "Adınızı alabilir miyim?" (← isim adımı DEĞİL)
@@ -190,8 +205,7 @@ GÖREVİN: SADECE kişi sayısı sor. Başka HİÇBİR şey sorma.
       waiting_for_name: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: İSİM
 
 GÖREVİN: SADECE ad-soyad iste. Başka HİÇBİR şey sorma.
-- Kısa bir onay/teşekkür + "Ad ve soyadınızı alabilir miyim?" sorusu.${forbiddenList}
-
+- Kısa bir onay/teşekkür + "Ad ve soyadınızı alabilir miyim?" sorusu.
 ❌ YASAK CEVAPLAR (canlı bug kanıtları):
 - "Kaç kişi katılacaksınız?" (← pax ZATEN alındı)
 - "Hangi tarih?" (← tarih ZATEN seçildi)
@@ -201,8 +215,7 @@ GÖREVİN: SADECE ad-soyad iste. Başka HİÇBİR şey sorma.
       waiting_for_phone: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: TELEFON
 
 GÖREVİN: SADECE telefon numarası iste. Başka HİÇBİR şey sorma.
-- Kısa bir onay/teşekkür (isim varsa "Teşekkürler [İsim] Hanım/Bey") + "Telefon numaranızı alabilir miyim?" sorusu.${forbiddenList}
-
+- Kısa bir onay/teşekkür (isim varsa "Teşekkürler [İsim] Hanım/Bey") + "Telefon numaranızı alabilir miyim?" sorusu.
 ❌ YASAK CEVAPLAR (Tuğçe canlı bug 2026-06-19 kanıtı):
 - "Kaç kişi katılacaksınız?" (← pax ZATEN alındı, bu mesajda silinmedi)
 - "İsminizi aldım. Kaç kişi?" (← pax ZATEN alındı; isim onayından sonra pax SORMA)
@@ -216,8 +229,7 @@ defalarca yazıldı. State doğru; sen sadece bu adımın metnini yaz.`,
       waiting_for_email: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: E-POSTA
 
 GÖREVİN: SADECE e-posta adresi iste. Başka HİÇBİR şey sorma.
-- Kısa bir onay + "E-posta adresinizi alabilir miyim? (İsterseniz 'geç' diyebilirsiniz)" sorusu.${forbiddenList}
-
+- Kısa bir onay + "E-posta adresinizi alabilir miyim? (İsterseniz 'geç' diyebilirsiniz)" sorusu.
 ❌ YASAK CEVAPLAR:
 - "Kaç kişi?" / "Adınız?" / "Telefon?" / "Hangi tarih?" (hepsi ZATEN alındı)
 ✅ TEK DOĞRU: "E-posta adresinizi alabilir miyim? ('geç' diyebilirsiniz)"`,
@@ -231,8 +243,7 @@ GÖREVİN: SADECE e-posta adresi iste. Başka HİÇBİR şey sorma.
 YOUR TASK: ONLY ask for date selection. Nothing else.
 - FIRST list ALL available dates numbered.
 - Include price for each.
-- End with "Which date do you prefer?"${forbiddenList}
-
+- End with "Which date do you prefer?"
 ❌ FORBIDDEN RESPONSES (live bug evidence):
 - "How many people?" (← not the pax step)
 - "May I have your name?" (← not the name step)
@@ -241,8 +252,7 @@ YOUR TASK: ONLY ask for date selection. Nothing else.
       waiting_for_pax: `📝 SYSTEM-DECIDED STEP: PAX COUNT
 
 YOUR TASK: ONLY ask number of people. Nothing else.
-- Brief acknowledgement + "How many people will join?"${forbiddenList}
-
+- Brief acknowledgement + "How many people will join?"
 ❌ FORBIDDEN RESPONSES (live bug evidence):
 - "Which date?" (← date ALREADY selected)
 - "May I have your name?" (← not the name step)
@@ -252,8 +262,7 @@ YOUR TASK: ONLY ask number of people. Nothing else.
       waiting_for_name: `📝 SYSTEM-DECIDED STEP: NAME
 
 YOUR TASK: ONLY ask full name. Nothing else.
-- Brief acknowledgement + "May I have your full name?"${forbiddenList}
-
+- Brief acknowledgement + "May I have your full name?"
 ❌ FORBIDDEN RESPONSES (live bug evidence):
 - "How many people?" (← pax ALREADY collected)
 - "Which date?" (← date ALREADY selected)
@@ -263,8 +272,7 @@ YOUR TASK: ONLY ask full name. Nothing else.
       waiting_for_phone: `📝 SYSTEM-DECIDED STEP: PHONE
 
 YOUR TASK: ONLY ask phone number. Nothing else.
-- Brief acknowledgement (if name known: "Thank you [Name]") + "May I have your phone number?"${forbiddenList}
-
+- Brief acknowledgement (if name known: "Thank you [Name]") + "May I have your phone number?"
 ❌ FORBIDDEN RESPONSES (Tuğçe live bug 2026-06-19 evidence):
 - "How many people?" (← pax ALREADY collected, NOT dropped in this turn)
 - "Got your name. How many people?" (← never ask pax after name confirmation)
@@ -278,8 +286,7 @@ those fields. State is correct; you just write this step's question.`,
       waiting_for_email: `📝 SYSTEM-DECIDED STEP: EMAIL
 
 YOUR TASK: ONLY ask for email. Nothing else.
-- Brief acknowledgement + "May I have your email address? (You can say 'skip' to opt out)"${forbiddenList}
-
+- Brief acknowledgement + "May I have your email address? (You can say 'skip' to opt out)"
 ❌ FORBIDDEN RESPONSES:
 - "How many people?" / "Your name?" / "Your phone?" / "Which date?" (all ALREADY collected)
 ✅ ONLY CORRECT: "May I have your email address? ('skip' to opt out)"`,
@@ -349,11 +356,16 @@ export function getStagePrompt(context: PromptContext): string {
 - If empty: say "Please contact our agency for the detailed program".
 - NEVER invent a program.`;
 
-  if (stage === "GREETING") return getGreetingPrompt(context) + hallucinationGuard;
-  if (stage === "BROWSING") return getBrowsingPrompt(context) + hallucinationGuard;
+  // 2026-06-19: Stage'den BAĞIMSIZ ortak suffix. Stage prompt'unun en sonuna
+  // hallucinationGuard'dan ÖNCE eklenir — reservationInfo'da dolu olan alanlar
+  // değer bazlı "TEKRAR SORMA" anchor'ı olarak LLM'e verilir. CONFIRMING /
+  // COMPLETED dahil tüm stage'ler otomatik miras alır.
+  const filledFieldsGuard = buildFilledFieldsGuard(context);
+
+  if (stage === "GREETING") return getGreetingPrompt(context) + filledFieldsGuard + hallucinationGuard;
+  if (stage === "BROWSING") return getBrowsingPrompt(context) + filledFieldsGuard + hallucinationGuard;
 
   const tourDetails = currentTour ? formatTourDetails(currentTour, language, tone) : "";
-  const collectedInfo = formatCollectedInfo(reservationInfo, language);
   const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
 
   if (language === "tr") {
@@ -373,7 +385,7 @@ ${tourDetails}
 - TÜM müsait tarihleri numaralı liste halinde göster.
 - Her tarih için fiyat bilgisi de ver.
 - "Hangi tarihi tercih edersiniz?" diye sor.
-- Tarih seçilmeden kişi/isim/telefon SORMA.` + hallucinationGuard
+- Tarih seçilmeden kişi/isim/telefon SORMA.` + filledFieldsGuard + hallucinationGuard
         );
 
       case "DATE_SELECTION":
@@ -381,11 +393,11 @@ ${tourDetails}
           `📍 DURUM: Tarih seçimi
 - NET bir tarih belirle.
 - Tarihleri listele ve seçim iste.
-- YENİ TARİH UYDURMA.` + hallucinationGuard
+- YENİ TARİH UYDURMA.` + filledFieldsGuard + hallucinationGuard
         );
 
       case "COLLECTING_INFO":
-        const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr", reservationInfo);
+        const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr");
         const dateReinforcement =
           collectionStep === "waiting_for_date" && currentTour
             ? `\n\nSEÇİLİ TURUN TARİHLERİ:\n${tourDetails}\n\n🚨 ZORUNLU: Tarihleri numaralı listele ve seçim iste.`
@@ -395,11 +407,8 @@ ${tourDetails}
 ${stepPrompt}
 ${dateReinforcement}
 
-✅ ZATEN TOPLANAN BİLGİLER (bunları TEKRAR SORMA, sadece referans için):
-${collectedInfo}
-
 ⚠️ Kullanıcı bilgi sorusu sorarsa ÖNCE cevapla, sonra YUKARIDA belirtilen adıma DÖN.
-⚠️ Adımı sen seçemezsin — sistem belirledi. Sadece o adımın sorusunu sor.` + hallucinationGuard
+⚠️ Adımı sen seçemezsin — sistem belirledi. Sadece o adımın sorusunu sor.` + filledFieldsGuard + hallucinationGuard
         );
 
       case "CONFIRMING":
@@ -407,8 +416,6 @@ ${collectedInfo}
           `📍 SİSTEMİN BELİRLEDİĞİ ADIM: ONAY
 
 GÖREVİN: SADECE özeti göster ve onay sor. Başka HİÇBİR şey sorma.
-Tarih, kişi sayısı, isim ve telefon ZATEN ALINDI — bunları TEKRAR SORMA,
-doğrulama amaçlı bile sorma.
 
 ${summary}
 
@@ -422,7 +429,7 @@ ${summary}
 
 ✅ İYİ CEVAP: "Özet: [tur] / [tarih] / [kişi] / [isim] / [telefon]. Onaylıyor musunuz?"
 
-⚠️ Kullanıcı soru sorarsa cevapla ama onayı tekrar iste. Asla yeni bilgi isteme.` + hallucinationGuard
+⚠️ Kullanıcı soru sorarsa cevapla ama onayı tekrar iste. Asla yeni bilgi isteme.` + filledFieldsGuard + hallucinationGuard
         );
 
       case "COMPLETED":
@@ -446,11 +453,11 @@ ${summary ? `📋 MEVCUT REZERVASYON:\n${summary}\n` : ""}
 - Rezervasyon istiyorsa → "Elbette, [tur adı] için başlatıyorum" de
 - Niyet belirsizse → "Bilgi mi, rezervasyon mu?" diye sor
 
-🚫 İPTAL / DEĞİŞİKLİK: ASLA kendin iptal etme veya değiştirme. Her zaman acenteye yönlendir.` + hallucinationGuard
+🚫 İPTAL / DEĞİŞİKLİK: ASLA kendin iptal etme veya değiştirme. Her zaman acenteye yönlendir.` + filledFieldsGuard + hallucinationGuard
         );
 
       default:
-        return "" + hallucinationGuard;
+        return "" + filledFieldsGuard + hallucinationGuard;
     }
   }
 
@@ -471,29 +478,26 @@ ${tourDetails}
 - List ALL available dates numbered.
 - Show price for each.
 - Ask "Which date do you prefer?"
-- Don't ask pax/name/phone before date.` + hallucinationGuard
+- Don't ask pax/name/phone before date.` + filledFieldsGuard + hallucinationGuard
       );
 
     case "DATE_SELECTION":
       return (
         `📍 STATUS: Date selection
 - List dates and ask to choose.
-- Don't invent dates.` + hallucinationGuard
+- Don't invent dates.` + filledFieldsGuard + hallucinationGuard
       );
 
     case "COLLECTING_INFO":
-      const stepPromptEn = getCollectionStepPrompt(collectionStep || "default", "en", reservationInfo);
+      const stepPromptEn = getCollectionStepPrompt(collectionStep || "default", "en");
       return (
         `📍 STATUS: Collecting information
 ${stepPromptEn}
 
 ${collectionStep === "waiting_for_date" && currentTour ? `TOUR DATES:\n${tourDetails}\n\n🚨 List these dates numbered and ask user to choose.` : ""}
 
-✅ ALREADY COLLECTED (DO NOT ASK AGAIN, reference only):
-${collectedInfo}
-
 ⚠️ If user asks a question, answer first then RETURN to the step above.
-⚠️ You CANNOT choose the step — the system decides. Only ask the question for that step.` + hallucinationGuard
+⚠️ You CANNOT choose the step — the system decides. Only ask the question for that step.` + filledFieldsGuard + hallucinationGuard
       );
 
     case "CONFIRMING":
@@ -501,8 +505,6 @@ ${collectedInfo}
         `📍 SYSTEM-DECIDED STEP: CONFIRMATION
 
 YOUR TASK: ONLY show the summary and ask for confirmation. Nothing else.
-Date, number of people, name and phone are ALREADY COLLECTED — DO NOT ask
-again, not even for verification.
 
 ${summary}
 
@@ -516,7 +518,7 @@ Ask "Are these details correct, do you confirm?" That's all.
 
 ✅ GOOD: "Summary: [tour] / [date] / [pax] / [name] / [phone]. Do you confirm?"
 
-⚠️ If user asks a question, answer it but ask for confirmation again. NEVER ask for new info.` + hallucinationGuard
+⚠️ If user asks a question, answer it but ask for confirmation again. NEVER ask for new info.` + filledFieldsGuard + hallucinationGuard
       );
 
     case "COMPLETED":
@@ -540,10 +542,10 @@ ${summary ? `📋 CURRENT RESERVATION:\n${summary}\n` : ""}
 - Booking → say "Of course, starting reservation for [tour name]"
 - Unclear → ask "Info or reservation?"
 
-🚫 CANCELLATION / CHANGES: NEVER perform cancellations or changes yourself. Always refer to agency.` + hallucinationGuard
+🚫 CANCELLATION / CHANGES: NEVER perform cancellations or changes yourself. Always refer to agency.` + filledFieldsGuard + hallucinationGuard
       );
 
     default:
-      return "" + hallucinationGuard;
+      return "" + filledFieldsGuard + hallucinationGuard;
   }
 }
