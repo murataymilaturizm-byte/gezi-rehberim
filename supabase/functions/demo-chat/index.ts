@@ -74,7 +74,9 @@ serve(async (req) => {
 
     const message = sanitizeInput(rawMessage || "");
 
-    // === IP RATE LIMIT: 20 istek/dakika + 100 istek/saat ===
+    // === IP RATE LIMIT: 30 istek/dakika + 500 istek/saat ===
+    // 2026-06-19: Saatlik 100 → 500. Bir IP'den çoklu müşteri (paylaşımlı WiFi/NAT)
+    // ve aktif test 100'ü saatte aşıyordu. 500 cömert ama spam'i hâlâ engeller.
     // FIX 4: SaatLİK IP limiti eklendi. sessionId rotation ile saatlik session
     // limitini (50/saat) bypass eden saldırı vektörünü kapatır; aynı IP'den
     // 100/saat eşiği aşılırsa istek reddedilir. Meşru demo kullanımı bu
@@ -92,12 +94,12 @@ serve(async (req) => {
         fr: "Trop de requêtes. 🙏 Patientez.",
         es: "Demasiadas solicitudes. 🙏 Por favor espere.",
       };
-      // 1) Dakikalık IP limiti — mevcut davranış korundu (kısa süreli burst koruma).
+      // 1) Dakikalık IP limiti — kısa süreli burst koruma (20 → 30: insan hızı için pay).
       const { data: _ipRl, error: _ipRle } = await supabase.rpc("check_rate_limit", {
         p_identifier: clientIP,
         p_identifier_type: "ip",
         p_window_seconds: 60,
-        p_max_requests: 20,
+        p_max_requests: 30,
       });
       if (!_ipRle && _ipRl && !_ipRl.allowed) {
         return new Response(JSON.stringify({
@@ -113,7 +115,7 @@ serve(async (req) => {
         p_identifier: clientIP,
         p_identifier_type: "ip",
         p_window_seconds: 3600,
-        p_max_requests: 100,
+        p_max_requests: 500,
       });
       if (!_ipHRle && _ipHRl && !_ipHRl.allowed) {
         return new Response(JSON.stringify({
@@ -123,13 +125,15 @@ serve(async (req) => {
       }
     }
 
-    // === SESSION RATE LIMIT: 50 mesaj/saat ===
+    // === SESSION RATE LIMIT: 200 mesaj/saat ===
+    // 2026-06-19: 50 → 200. Uzun bir rezervasyon ~30-40 mesaj; yavaş yazan/düzeltme
+    // yapan müşteri 50'yi aşıyordu. 200 hâlâ tek session abuse'u engeller.
     {
       const { data: _sessRl, error: _sessRle } = await supabase.rpc("check_rate_limit", {
         p_identifier: sessionId,
         p_identifier_type: "session",
         p_window_seconds: 3600,
-        p_max_requests: 50,
+        p_max_requests: 200,
         p_agency_id: agencyId,
       });
       if (!_sessRle && _sessRl && !_sessRl.allowed) {
