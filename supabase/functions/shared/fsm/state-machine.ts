@@ -464,17 +464,24 @@ const transitions: StateTransition[] = [
     from: "TOUR_SELECTED",
     to: "COLLECTING_INFO",
     condition: (ctx, input) => {
+      // 2026-06-19: Açık rezervasyon/olumlu pattern her zaman geç — NLU "general"
+      // döndürse bile (isInformational true) bu pattern'ler net niyet ifadesidir.
+      // Aksi halde TOUR_SELECTED'da kalır → process-message'daki deterministik tarih
+      // listesi (waiting_for_date bloğu) tetiklenmez → LLM "Hangi tarihte?" der ama
+      // tarih listesini göstermez (canlı bug 2026-06-19).
+      const reservationPattern = /\b(rezervasyon|reservation|booking|book|reservar|réserver|buchen|бронирование|حجز)\b/i;
+      const positivePattern = /^\s*(evet|tamam|olur|peki|tabii|yes|ok(?:ay)?|sure|ja|oui|s[íi]|да|نعم)\b/i;
+      if (reservationPattern.test(input.userMessage)) return true;
+      if (positivePattern.test(input.userMessage)) return true;
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
       const reservationIntents = ["reservation_intent", "provide_info", "confirm", "tour_selected"];
-      if (!reservationIntents.includes(input.detectedIntent)) {
-        const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
-        const hasPaxPattern = /\d+\s*(kişi|person|people|yetişkin|adult|çocuk|child)/i.test(input.userMessage);
-        const hasPhonePattern = /\b05\d{9}\b|\b\+\d{7,}/i.test(input.userMessage);
-        // Tarih bilgisi gelince geçiş yap — "5 Mart 2027" gibi geçersiz tarihler de yakalanır (BUG 1)
-        const hasDateInfo = !!(input.extractedInfo as any).selectedDate || !!(input.extractedInfo as any).dateId;
-        return hasExtractedInfo && (hasPaxPattern || hasPhonePattern || hasDateInfo);
-      }
-      return true;
+      if (reservationIntents.includes(input.detectedIntent)) return true;
+      const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
+      const hasPaxPattern = /\d+\s*(kişi|person|people|yetişkin|adult|çocuk|child)/i.test(input.userMessage);
+      const hasPhonePattern = /\b05\d{9}\b|\b\+\d{7,}/i.test(input.userMessage);
+      // Tarih bilgisi gelince geçiş yap — "5 Mart 2027" gibi geçersiz tarihler de yakalanır (BUG 1)
+      const hasDateInfo = !!(input.extractedInfo as any).selectedDate || !!(input.extractedInfo as any).dateId;
+      return hasExtractedInfo && (hasPaxPattern || hasPhonePattern || hasDateInfo);
     },
     action: (ctx, input) => {
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);

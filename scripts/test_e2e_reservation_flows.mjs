@@ -197,14 +197,19 @@ function processTransition(context, input) {
 
   // TOUR_SELECTED → COLLECTING_INFO
   if (ctx.stage === "TOUR_SELECTED") {
+    // 2026-06-19: Açık rezervasyon/olumlu pattern her zaman geç — NLU "general" döndürse
+    // bile (isInformational true) bu pattern'ler net niyet ifadesidir. Mirror — state-machine.ts ile senkron.
+    const reservationPattern = /\b(rezervasyon|reservation|booking|book|reservar|réserver|buchen|бронирование|حجز)\b/i;
+    const positivePattern = /^\s*(evet|tamam|olur|peki|tabii|yes|ok(?:ay)?|sure|ja|oui|s[íi]|да|نعم)\b/i;
+    const matchesPattern = reservationPattern.test(msg) || positivePattern.test(msg);
     const isInfo = isInformationalMessage(msg, intent);
-    if (!isInfo) {
+    if (matchesPattern || !isInfo) {
       const reservationIntents = ["reservation_intent","provide_info","confirm","tour_selected"];
       const hasExtracted = Object.keys(input.extractedInfo).length > 0;
       const hasPaxPattern = /\d+\s*(kişi|person|people|yetişkin|adult|çocuk|child)/i.test(msg);
       const hasPhonePattern = /\b05\d{9}\b|\b\+\d{7,}/i.test(msg);
       const hasDateInfo = !!input.extractedInfo.selectedDate || !!input.extractedInfo.dateId;
-      const shouldGo = reservationIntents.includes(intent) || (hasExtracted && (hasPaxPattern || hasPhonePattern || hasDateInfo));
+      const shouldGo = matchesPattern || reservationIntents.includes(intent) || (hasExtracted && (hasPaxPattern || hasPhonePattern || hasDateInfo));
       if (shouldGo) {
         const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
         return {
@@ -585,6 +590,42 @@ runScenario("S15: Kısa onay mesajları (evet/tamam) COMPLETED'a geçirir", "tr"
   { msg: "05551112233", intent: "provide_info", extracted: { phone: "905551112233" }, expect: { stage: "CONFIRMING" } },
   { msg: "tamam", intent: "confirm_reservation",
     expect: { stage: "COMPLETED", reservationConfirmed: true } },
+]);
+
+// === 16. Tarih listesi tetikleyici fallback: NLU intent kaçırsa bile
+// rezervasyon/olumlu pattern TOUR_SELECTED → COLLECTING_INFO+waiting_for_date geçişini garanti eder.
+// Bu olmadan deterministik tarih listesi (process-message line 519) tetiklenmez,
+// LLM "Hangi tarihte?" der ama listeyi göstermez. ===
+runScenario("S16: 'rezervasyon' sözcüğü NLU general olsa bile transition tetikler", "tr", [
+  // 1) Tur sorulur — BROWSING → TOUR_SELECTED (selectedTour var, reservation_intent değil)
+  { msg: "Kapadokya turu nedir?", intent: "tour_search", selectedTour: TOUR_KAP,
+    extracted: {},
+    expect: { stage: "TOUR_SELECTED", "currentTour.id": TOUR_KAP.id } },
+  // 2) Bot "Bilgi mi rezervasyon mu?" sorar. Kullanıcı "rezervasyon" der ama
+  //    NLU bunu yanlışlıkla "general" olarak yorumlar (extractedInfo da boş).
+  //    Pattern fallback olmadan transition GERÇEKLEŞMEZDİ, TOUR_SELECTED'da takılırdı.
+  { msg: "rezervasyon yapmak istiyorum", intent: "general", extracted: {},
+    expect: { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } },
+]);
+
+// === 17. Aynı bug, sade "evet" cevabı ile (NLU general dönerse) ===
+runScenario("S17: 'evet' olumlu cevabı pattern fallback ile transition tetikler", "tr", [
+  { msg: "Kapadokya turu nedir?", intent: "tour_search", selectedTour: TOUR_KAP,
+    extracted: {},
+    expect: { stage: "TOUR_SELECTED", "currentTour.id": TOUR_KAP.id } },
+  // NLU "evet"i confirm yerine general olarak yorumlasa bile pattern yakalar.
+  { msg: "evet", intent: "general", extracted: {},
+    expect: { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } },
+]);
+
+// === 18. Regresyon: bilgi sorusu (informational) transition tetiklemez ===
+runScenario("S18: bilgi sorusu TOUR_SELECTED'da bırakır (pattern false-positive yok)", "tr", [
+  { msg: "Kapadokya turu nedir?", intent: "tour_search", selectedTour: TOUR_KAP,
+    extracted: {},
+    expect: { stage: "TOUR_SELECTED" } },
+  // Bilgi sorusu — isInformationalMessage true → transition GERÇEKLEŞMEZ.
+  { msg: "Tur kaç gün sürüyor?", intent: "tour_info", extracted: {},
+    expect: { stage: "TOUR_SELECTED" } },
 ]);
 
 // === 13. DE dili happy path ===
