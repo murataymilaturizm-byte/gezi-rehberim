@@ -13,9 +13,69 @@
 // koştur — başarısızsa deploy etme.
 // ═══════════════════════════════════════════════════════════════════════
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { spawnSync } from "node:child_process";
+import { homedir, platform } from "node:os";
+
+// ═══════════════════════════════════════════════════════════════════════
+// FAZ 0 — STATİK TİP/REFERANS KONTROLÜ (deno check)
+//
+// 2026-06-19 production hatasının (ReferenceError: forbiddenList is not
+// defined) tekrarını engelleyen kalıcı koruma. Mock testleri tanımsız
+// değişken/kopuk import yakalamıyor; deno check edge runtime'ın gerçek
+// derleyicisidir. Test runner'dan ÖNCE çalışır, fail olursa Katman 1
+// hiç başlamadan exit eder — hata commit'e değil, terminal çıktısına gider.
+// ═══════════════════════════════════════════════════════════════════════
+function runDenoCheck() {
+  const projectRoot = dirname(fileURLToPath(import.meta.url)) + "/..";
+  const targets = [
+    "supabase/functions/shared/fsm/prompts/stages/index.ts",
+    "supabase/functions/shared/handlers/process-message.ts",
+    "supabase/functions/shared/fsm/state-machine.ts",
+    "supabase/functions/shared/fsm/nlu.ts",
+    "supabase/functions/shared/services/info-extractor.ts",
+  ];
+
+  const candidates = [
+    "deno",
+    join(homedir(), ".deno", "bin", platform() === "win32" ? "deno.exe" : "deno"),
+  ];
+  let denoBin = null;
+  for (const c of candidates) {
+    const probe = spawnSync(c, ["--version"], { stdio: "ignore" });
+    if (probe.status === 0) { denoBin = c; break; }
+  }
+
+  if (!denoBin) {
+    console.log("⚠️  Deno bulunamadı — statik tip kontrolü ATLANDI.");
+    console.log("   Kurmak için (user-level, admin gerekmez):");
+    console.log("     PowerShell: irm https://deno.land/install.ps1 | iex");
+    console.log("     Shell:      curl -fsSL https://deno.land/install.sh | sh");
+    console.log("   Mock testler yine de koşacak, ama referans/tip hataları yakalanmayacak.\n");
+    return;
+  }
+
+  console.log(`🔍 deno check (${targets.length} dosya) — referans/tip hataları yakalanıyor...`);
+  const t0 = Number(process.hrtime.bigint() / 1000000n);
+  const result = spawnSync(denoBin, ["check", ...targets], {
+    cwd: projectRoot,
+    encoding: "utf-8",
+  });
+  const dt = Number(process.hrtime.bigint() / 1000000n) - t0;
+
+  if (result.status !== 0) {
+    console.error("\n✗ STATIK TIP/REFERANS HATASI — Katman 1 testi BAŞLAMADI:\n");
+    if (result.stdout) console.error(result.stdout);
+    if (result.stderr) console.error(result.stderr);
+    console.error("\nÇöz, sonra tekrar koştur.");
+    process.exit(2);
+  }
+  console.log(`✓ deno check OK (${dt}ms)\n`);
+}
+
+runDenoCheck();
 
 // ─── State machine mirror (state-machine.ts ile birebir) ─────────────
 function isInformationalMessage(userMessage, detectedIntent) {
