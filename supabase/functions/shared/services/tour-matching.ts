@@ -239,6 +239,16 @@ export function findMatchingTours(
   expectedInput: string,
   intent: string,
 ): TourMatchResult {
+  // B-5 fix (2026-06-09): Context-aware koruma — kullanıcıdan isim, telefon veya
+  // e-posta beklerken, mesajdaki string'i TUR ADIYLA EŞLEŞTİRME. Aksi halde
+  // "özge yılmazer" gibi isim mesajları yanlışlıkla tur seçimi sanılır ve tur
+  // değişimi transition'ı tetiklenir (Özge bug'ının NLU tarafındaki kaynağı).
+  // Tarih beklerken hâlâ tur eşleştirme açık — bazı kullanıcılar tarihle birlikte
+  // alternatif tur düşünebilir, bu makul. Sadece isim/telefon adımlarında kapatılır.
+  if (expectedInput === "name" || expectedInput === "phone") {
+    return { selectedTour: null, multipleMatches: [] };
+  }
+
   const tourIntents = [
     "browse_tours",
     "tour_search",

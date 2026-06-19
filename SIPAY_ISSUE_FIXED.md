@@ -36,7 +36,7 @@ CVV: 000
 ### Canlı Kullanım İçin
 Sipay dashboard'dan:
 1. API anahtarlarını kontrol et (production mode aktif mi?)
-2. Callback URL'ini kaydet: `https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/sipay-callback`
+2. Callback URL'ini kaydet: `https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/sipay-callback`
 3. Test modunu kapat
 4. Taksit ayarlarını yapılandır
 

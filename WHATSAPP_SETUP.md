@@ -12,7 +12,7 @@ Bu proje WhatsApp üzerinden tur arama ve rezervasyon desteği sunar.
 
 2. **Webhook URL'ini Ayarlayın**
    ```
-   https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/whatsapp-webhook
+   https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/whatsapp-webhook
    ```
    
 3. **Twilio Console'da**
@@ -32,7 +32,7 @@ Bu proje WhatsApp üzerinden tur arama ve rezervasyon desteği sunar.
    ```
 
 2. **HTTP Request Node Ayarları**
-   - URL: `https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/whatsapp-webhook`
+   - URL: `https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/whatsapp-webhook`
    - Method: POST
    - Body:
      ```json
@@ -51,7 +51,7 @@ Bu proje WhatsApp üzerinden tur arama ve rezervasyon desteği sunar.
    - https://business.facebook.com adresinden WhatsApp Business API'ye başvurun
    - Webhook URL'ini ekleyin:
      ```
-     https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/whatsapp-webhook
+     https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/whatsapp-webhook
      ```
 
 2. **Verify Token** (opsiyonel güvenlik için edge function'a eklenebilir)
@@ -131,7 +131,7 @@ if (req.method === 'GET') {
 
 ```bash
 # Local test
-curl -X POST https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/whatsapp-webhook \
+curl -X POST https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/whatsapp-webhook \
   -H "Content-Type: application/json" \
   -d '{"Body": "Günübirlik Kapadokya 20 Temmuz"}'
 ```

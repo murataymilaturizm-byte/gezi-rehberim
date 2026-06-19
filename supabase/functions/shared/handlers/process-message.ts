@@ -9,6 +9,7 @@ import {
   getNextExpectedInput,
   getCancellationMessage,
   detectConfirmation,
+  detectNegativeResponse,
 } from "../fsm/state-machine.ts";
 import { sanitizeInput, isInputTooLong, detectInjection } from "../fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../fsm/nlu.ts";
@@ -316,12 +317,36 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _prePromotionIntent = nluResult.intent;
 
   // Stage koruma: COLLECTING_INFO / CONFIRMING'de tour_search → provide_info
+  // B-2 fix (2026-06-09): reservation_intent de aynı şekilde provide_info'ya ezilir.
+  // Rezervasyon zaten devam ediyorken NLU "kullanıcı yeni rezervasyon başlatmak istiyor"
+  // sanıp tur değişimi transition'ını tetikliyordu (Özge bug'ının kaynağı). İsim/telefon
+  // verirken gelen mesaj asla yeni rezervasyon değildir; mevcut akışın devamıdır.
   if (
     (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
-    nluResult.intent === "tour_search"
+    (nluResult.intent === "tour_search" || nluResult.intent === "reservation_intent")
   ) {
     nluResult.intent = "provide_info";
     fsmIntent = mapNLUIntentToFSMIntent("provide_info");
+  }
+
+  // B-6 fix (2026-06-09): CONFIRMING'de "hayır" net redi → state KORUNUR, netleştirme sorusu sor.
+  // Eski davranış: detectConfirmation false, detectCancellation false ("hayır" pattern'de yok),
+  // değişiklik transition'ı da tetiklenmez → state takılı, LLM serbest cevap üretir (belirsiz).
+  // Yeni: deterministik netleştirme mesajı ile bot kullanıcıya neyi değiştirmek istediğini sorar.
+  if (context.stage === "CONFIRMING" && detectNegativeResponse(message, context.language)) {
+    const _negMsgs: Record<string, string> = {
+      tr: "Anladım. Hangi bilgiyi değiştirmek istersiniz — tarih, kişi sayısı, isim veya telefon? Yoksa rezervasyonu tamamen iptal mi etmek istiyorsunuz?",
+      en: "I understand. Which detail would you like to change — date, number of people, name, or phone? Or would you like to cancel the reservation entirely?",
+      de: "Verstanden. Welche Angabe möchten Sie ändern — Datum, Personenzahl, Name oder Telefon? Oder möchten Sie die Reservierung ganz stornieren?",
+      ru: "Понял. Какие данные вы хотите изменить — дату, количество человек, имя или телефон? Или вы хотите полностью отменить бронирование?",
+      ar: "فهمت. ما المعلومة التي تريد تغييرها — التاريخ، عدد الأشخاص، الاسم أو الهاتف؟ أم تريد إلغاء الحجز بالكامل؟",
+      fr: "Compris. Quelle information souhaitez-vous modifier — date, nombre de personnes, nom ou téléphone ? Ou souhaitez-vous annuler complètement la réservation ?",
+      es: "Entendido. ¿Qué información desea cambiar — fecha, número de personas, nombre o teléfono? ¿O prefiere cancelar la reserva por completo?",
+    };
+    const _negReply = _negMsgs[context.language] || _negMsgs.tr;
+    await _save(_negReply, context);  // state KORUNUR (newContext yerine context)
+    await adapter.sendResponse(_negReply);
+    return { success: true, response: _negReply, newContext: context };
   }
 
   // === 8. BİLGİ ÇIKARMA ===
@@ -640,11 +665,27 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       return { success: false, error: "invalid_phone", response: _phReply, newContext };
     }
 
+    // BUG 1 FIX (Hayriye case, 2026-06-XX): missingStep hesaplanırken state'in
+    // context.reservationInfo'sundan FALLBACK al. Eğer newContext.reservationInfo'da
+    // bir alan eksik gözüküyor AMA önceki context.reservationInfo'da DOLU ise,
+    // yeniden topla yerine eski değeri kullan. CONFIRMING→COMPLETED action'ı
+    // reservationInfo'ya dokunmaz; ama bug 2 bypass'ları varsa fullName'in başka
+    // bir transition'da kaybolma riski savunmacı olarak kapatılır.
+    const oldInfo = (context.reservationInfo || {}) as any;
+    const effFullName = fullName || oldInfo.fullName;
+    const effPaxAdult = paxAdult || oldInfo.paxAdult;
+    const effDateId   = dateId   || oldInfo.dateId;
+    const effPhone    = reservationPhone || oldInfo.phone;
+    if (effFullName && !fullName) {
+      console.warn("[process-message] BUG1 SAFETY: fullName missing from newContext but present in old context — restoring");
+      if (newContext.reservationInfo) newContext.reservationInfo.fullName = effFullName;
+    }
+
     const missingStep = !tourId ? "waiting_for_date"  // tourId yoksa tur seçimi eksik
-      : !dateId ? "waiting_for_date"
-      : !paxAdult ? "waiting_for_pax"
-      : !fullName ? "waiting_for_name"
-      : !reservationPhone ? "waiting_for_phone"
+      : !effDateId ? "waiting_for_date"
+      : !effPaxAdult ? "waiting_for_pax"
+      : !effFullName ? "waiting_for_name"
+      : !effPhone ? "waiting_for_phone"
       : null;
     console.log("[process-message] reservation missingStep:", missingStep, "| tourId:", tourId, "| dateId:", dateId);
 

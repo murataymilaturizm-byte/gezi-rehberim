@@ -77,10 +77,24 @@ const TEXT_MONTH_DAY_REGEX = new RegExp(
  * - DD.MM.YYYY / DD/MM/YYYY / DD-MM-YYYY
  * - "20 aralık", "20 december", "20 марта" vb. (7 dil metin ay)
  * - Tanınmayan format → olduğu gibi döner
+ *
+ * BUG 3 FIX (2026-06-XX): "14 aralık olur" / "14 aralık olsun" gibi onay/dolgu
+ * eklerini taşıyan stringlerde regex partial-match doğru çalışıyor AMA bazı
+ * çağıran tarafların ham string'i DB lookup'a göndermesi bug'a yol açıyordu.
+ * İki ek koruma:
+ *   (1) PREPROCESS: yaygın onay/dolgu sözcüklerini kaldır ("olur/olsun/tamam/
+ *       uygun/işte/lütfen/şu/bu/tarih/gün") → çekirdek tarih ifadesi kalır.
+ *   (2) TÜRKÇE LOWERCASE: toLowerCase() yerine toLocaleLowerCase("tr-TR") —
+ *       Türkçe ı/İ/I/i case-folding'i doğru handle edilir ("14 ARALIK" →
+ *       "14 aralık", dotless ı korunur).
  */
+const _DATE_FILLER_REGEX = /\b(olur|olsun|tamam|uygun|işte|şu|bu|tarih|gün|lütfen|please|fine|good|ok|okay)\b/gi;
 export function normalizeDateString(dateStr: string): string {
   if (!dateStr) return dateStr;
-  const cleaned = dateStr.toLowerCase().trim();
+  // Önişlemci: dolgu sözcüklerini temizle, çoklu boşluğu tek boşluğa indir
+  const stripped = dateStr.replace(_DATE_FILLER_REGEX, "").replace(/\s+/g, " ").trim();
+  // Türkçe-aware lowercase (ı/İ/I/i için)
+  const cleaned = stripped.toLocaleLowerCase("tr-TR").trim();
 
   // 1. Zaten ISO formatı
   if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) return cleaned;

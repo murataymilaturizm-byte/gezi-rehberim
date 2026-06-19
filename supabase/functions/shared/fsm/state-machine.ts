@@ -71,13 +71,20 @@ function hasNewReservationIntent(userMessage: string, detectedIntent: string): b
 }
 
 /**
- * KRİTİK: Sıralı bilgi birleştirme
+ * Rezervasyon bilgisi birleştirme
  *
  * Kurallar:
- * 1. Mevcut bilgiler ASLA silinmez — sadece eksik olanlar eklenir
- * 2. Sıra: tarih → kişi → isim → telefon
- * 3. Önceki adım dolmadan sonraki kabul edilmez
- * 4. Bilgi sorusu gelince (extracted boş) mevcut bilgiler korunur
+ * 1. Mevcut bilgiler ASLA silinmez — sadece eksik olanlar eklenir.
+ * 2. Tarih ve kişi sayısı sıralı toplanır (tarih → kişi); bu sıra mantıksal
+ *    önyargıyı (tarihsiz kişi sayısı anlamsız) korur.
+ * 3. İsim ve telefon KOŞULSUZ merge edilir — extracted'da varsa ve state'te
+ *    yoksa direkt yazılır. Sıralama koruması merge katmanında DEĞİL, çağrı
+ *    öncesi extractor'ın `expectedInput` filtresinde sağlanır (extractor
+ *    sadece beklenen step'te ilgili alanı çıkarır).
+ *    NOT: Eski "hasPax/hasName ön koşulu" 2026-06-08'de kaldırıldı — pax
+ *    state'e geç merge edildiği senaryolarda isim/telefon sessizce kayboluyordu.
+ * 4. Bilgi sorusu gelince (isInformational=true) extracted yok sayılır; mevcut
+ *    bilgiler aynen korunur.
  */
 function mergeReservationInfo(
   existing: ReservationInfo,
@@ -106,20 +113,23 @@ function mergeReservationInfo(
     merged.paxChild = extracted.paxChild;
   }
 
-  // 3. İsim: kişi sayısı varsa ve henüz yoksa ekle
-  const hasPax = !!merged.paxAdult;
-  if (hasPax && !merged.fullName) {
-    if (extracted.fullName && extracted.fullName !== "") {
-      merged.fullName = extracted.fullName;
-    }
+  // 3. İsim: henüz yoksa ekle.
+  //    KRİTİK BUG FIX (2026-06-08): Eskiden "hasPax && !merged.fullName" koşulu vardı —
+  //    state'e paxAdult henüz merge edilmemişse (kullanıcı pax sormadan isim verdi veya
+  //    pax bot tarafından geç işleniyor) isim merge EDİLMEZ, sessizce kaybolurdu.
+  //    Bot LLM extractedInfo'dan ismi prompt'ta görüp "Teşekkürler X Bey" der ama state'e
+  //    yazılmadığı için bir sonraki mesajda load boş → bot ismi tekrar sorar.
+  //    Çözüm: hasPax kısıtını KALDIR. Extractor zaten expectedInput="name" iken
+  //    koruyor; gereksiz "sıralı kontrol" katmanı bug'a yol açıyor.
+  if (!merged.fullName && extracted.fullName && extracted.fullName !== "") {
+    merged.fullName = extracted.fullName;
   }
 
-  // 4. Telefon: isim varsa ve henüz yoksa ekle
-  const hasName = !!merged.fullName;
-  if (hasName && !merged.phone) {
-    if (extracted.phone && extracted.phone !== "") {
-      merged.phone = extracted.phone;
-    }
+  // 4. Telefon: henüz yoksa ekle.
+  //    Aynı sebeple "hasName" kısıtı kaldırıldı — extractor expectedInput="phone"
+  //    iken telefon arar, merge layer ek kısıt yaratmasın.
+  if (!merged.phone && extracted.phone && extracted.phone !== "") {
+    merged.phone = extracted.phone;
   }
 
   return merged;
@@ -201,6 +211,13 @@ export function detectConfirmation(message: string, language: string): boolean {
 /**
  * Kullanıcı iptal mi ediyor? "vazgeçtim", "iptal", "istemiyorum" gibi ifadeler.
  * CONFIRMING → COLLECTING_INFO → TOUR_SELECTED gibi aktif state'lerde BROWSING'e dönüş için kullanılır.
+ *
+ * GUARD (B-4 fix, 2026-06-09): Mesaj cancel pattern içerse bile, devam bağlacı
+ * ("ama/fakat/yine de/but/however/...") varsa kullanıcı tereddütünü dile getiriyor,
+ * gerçekten iptal etmek istemiyor — iptal sayma. Örnek:
+ *   "biraz düşüneyim ama Pamukkale güzel görünüyor" → iptal DEĞİL.
+ * Bu, "düşüneyim/pas" gibi zayıf tereddüt ifadelerinin yanlışlıkla tüm rezervasyon
+ * bilgisini silmesini engeller.
  */
 export function detectCancellation(text: string, language: string): boolean {
   const patterns: Record<string, RegExp> = {
@@ -212,6 +229,37 @@ export function detectCancellation(text: string, language: string): boolean {
     ar: /\b(إلغاء|لا أريد|انس الأمر|لاحقا|ليس الآن|اتركها|البدء من جديد|إعادة|ابدأ من جديد)\b/i,
     fr: /\b(annuler|j'abandonne|peu importe|laisse tomber|laissez tomber|plus tard|pas maintenant|oublie|recommencer|depuis le début|repartir)\b/i,
     es: /\b(cancelar|olvídalo|olvidalo|no quiero|déjalo|dejalo|más tarde|otro día|olvida|reiniciar|empezar de nuevo|desde el principio)\b/i,
+  };
+  const langKey = language as keyof typeof patterns;
+  const hasCancel = (patterns[langKey]?.test(text) ?? false) || patterns.en.test(text);
+  if (!hasCancel) return false;
+
+  // GUARD: devam bağlacı (ama/fakat/yine de) varsa tereddüt → iptal değil
+  const continuationGuard =
+    /\b(ama|fakat|ancak|yine de|gene de|but|however|though|although|aber|jedoch|trotzdem|cependant|néanmoins|toutefois|pero|sin embargo|no obstante|однако|но|тем не менее|لكن|مع ذلك|ولكن)\b/i;
+  if (continuationGuard.test(text)) return false;
+
+  return true;
+}
+
+/**
+ * Kullanıcı net "hayır/no" dedi mi? CONFIRMING aşamasında onay/iptal/değişiklik
+ * intentlerinin hiçbiri tetiklenmeyince state takılı kalıyordu. Bu helper, "hayır"ı
+ * NET RED olarak yakalar — state SİLİNMEZ, ama bot'a netleştirme cue'su verir
+ * ("neyi değiştirmek istersiniz, yoksa iptal mi?" şeklinde sormak için).
+ *
+ * Sadece kısa, başta gelen "hayır/no" gibi tek-kelimelik redleri yakalar — "hayırlı
+ * olsun" gibi cümlede geçen kullanımları YANLIŞLIKLA yakalamaz (^...\b).
+ */
+export function detectNegativeResponse(text: string, language: string): boolean {
+  const patterns: Record<string, RegExp> = {
+    tr: /^\s*(hayır|yok|olmaz|hayir|hayır\.|hayır!)\s*$/i,
+    en: /^\s*(no|nope|nah|no\.|no!)\s*$/i,
+    de: /^\s*(nein|nö)\s*$/i,
+    fr: /^\s*(non)\s*$/i,
+    es: /^\s*(no)\s*$/i,
+    ru: /^\s*(нет)\s*$/i,
+    ar: /^\s*(لا)\s*$/i,
   };
   const langKey = language as keyof typeof patterns;
   return (patterns[langKey]?.test(text) ?? false) || patterns.en.test(text);
@@ -440,6 +488,13 @@ const transitions: StateTransition[] = [
   },
 
   // TOUR_SELECTED → TOUR_SELECTED (tur değişimi)
+  // BUG FIX (2026-06-09): reservationInfo eskiden { tourId, tourTitle } ile TAMAMEN
+  // sıfırlanıyordu — pax/isim/phone hepsi siliniyordu. Eğer NLU yanlışlıkla
+  // "reservation_intent" döndürür ve tour-matcher false-positive ile farklı bir
+  // selectedTour set ederse, kullanıcı mid-rezervasyon ismi/telefonu vermiş
+  // olsa bile silinip baştan soruluyordu. Şimdi spread ile kişi-bağımlı alanlar
+  // (pax/isim/phone/email) KORUNUR, sadece tur değişimi sebebiyle artık geçersiz
+  // olan tarih/dateId temizlenir.
   {
     from: "TOUR_SELECTED",
     to: "TOUR_SELECTED",
@@ -452,8 +507,11 @@ const transitions: StateTransition[] = [
       currentTour: input.selectedTour,
       viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
       reservationInfo: {
+        ...ctx.reservationInfo,                          // pax/isim/phone/email KORU
         tourId: input.selectedTour!.id,
         tourTitle: input.selectedTour!.title,
+        dateId: undefined,                               // yeni tur → eski tarih geçersiz
+        selectedDate: undefined,
       },
       collectionStep: "waiting_for_date" as InfoCollectionStep,
     }),
@@ -462,6 +520,8 @@ const transitions: StateTransition[] = [
   // COLLECTING_INFO → TOUR_SELECTED (tur değişimi — B2: genişletilmiş pattern)
   // "aslında başka tur" / "Kapadokya'ya geç" / "farklı tur" gibi geçişleri de yakalar.
   // NOT: selectedTour null ise geçiş olmaz; o durumda B2 deterministik listesi devreye girer (process-message).
+  // BUG FIX (2026-06-09): Aynı pax/isim/phone koruması burada da — bu transition
+  // false-positive olarak en sık tetiklendiği yerdi (özge yılmazer case).
   {
     from: "COLLECTING_INFO",
     to: "TOUR_SELECTED",
@@ -475,8 +535,11 @@ const transitions: StateTransition[] = [
       currentTour: input.selectedTour,
       viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
       reservationInfo: {
+        ...ctx.reservationInfo,                          // pax/isim/phone/email KORU
         tourId: input.selectedTour!.id,
         tourTitle: input.selectedTour!.title,
+        dateId: undefined,                               // yeni tur → eski tarih geçersiz
+        selectedDate: undefined,
       },
       collectionStep: "waiting_for_date" as InfoCollectionStep,
     }),
@@ -511,15 +574,23 @@ const transitions: StateTransition[] = [
 
   // COLLECTING_INFO → CONFIRMING
   // KRİTİK: Bilgi sorusu gelince CONFIRMING'e GEÇMEİ
-  // Kullanıcı açıkça onay vermedikçe bu geçiş tetiklenMEZ
+  // Kullanıcı açıkça bilgi sunmadıkça bu geçiş tetiklenMEZ
+  //
+  // BUG 2 FIX (Hayriye case, 2026-06-XX): "general" intent valid listeden ÇIKARILDI.
+  // Önceki davranış: NLU isim/telefon mesajına "general" intent dönüyordu ve allInfoCollected=true
+  // ise CONFIRMING'e atlanıyordu — kullanıcı açıkça "evet/onaylıyorum" demeden. Sonra bir sonraki
+  // turda detectConfirmation veya confirm_reservation intent ile COMPLETED'a sıçranıyor, onay
+  // adımı tamamen atlanmış oluyordu (LAUNCH-BLOCKER bug).
+  // Yeni davranış: yalnızca provide_info (somut veri sundu) veya açık confirm intent CONFIRMING'e
+  // geçirir. "general" intent → COLLECTING_INFO'da kalır, bot kullanıcıdan açık veri ister.
   {
     from: "COLLECTING_INFO",
     to: "CONFIRMING",
     condition: (ctx, input) => {
       // Bilgi sorusu gelirse kesinlikle CONFIRMING'e geçme
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
-      // provide_info veya confirm intenti olmalı
-      const validIntents = ["provide_info", "confirm", "confirm_reservation", "general"];
+      // Yalnızca AÇIK NIYET ile CONFIRMING'e geç — "general" kabul edilmez.
+      const validIntents = ["provide_info", "confirm", "confirm_reservation"];
       if (!validIntents.includes(input.detectedIntent)) return false;
       const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
       return isAllInfoCollected(merged, ctx.collectEmail);
@@ -600,32 +671,45 @@ const transitions: StateTransition[] = [
       const paxPattern    = /\b(ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)\b/i;
       const datePattern   = /\b(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha)\b/i;
 
+      // B-3 fix (2026-06-09): Veri silme YALNIZCA kullanıcı yeni değeri verdiyse
+      // veya açıkça reset istediyse yapılır. Yeni değer YOKSA mevcut alan KORUNUR;
+      // sadece collectionStep ilgili alana çevrilir → bot kullanıcıdan yeni değeri ister.
+      //
+      // Eski davranış: "telefonum yanlış olabilir bir dk" mesajında phonePattern
+      // eşleşir, extractedInfo.phone boş → eski telefon SİLİNİR. Kullanıcı yeni
+      // değer vermeden alan kaybolur. Yeni davranış: alan korunur, collectionStep
+      // waiting_for_phone'a çekilir.
       if (namePattern.test(msg)) {
-        // Yeni isim mesajda varsa (NLU çıkardıysa) direkt güncelle, waiting_for_name'e gerek yok
         if ((input.extractedInfo as any).fullName) {
           info.fullName = (input.extractedInfo as any).fullName;
-        } else {
-          delete info.fullName;
         }
+        // else: info.fullName KORUNUR (yeni değer yok → silme yok)
       } else if (phonePattern.test(msg)) {
         if ((input.extractedInfo as any).phone) {
           info.phone = (input.extractedInfo as any).phone;
-        } else {
-          delete info.phone;
         }
+        // else: info.phone KORUNUR
       } else if (paxPattern.test(msg)) {
         if ((input.extractedInfo as any).paxAdult) {
           info.paxAdult = (input.extractedInfo as any).paxAdult;
-        } else {
-          delete info.paxAdult;
-          delete info.paxChild;
+          if ((input.extractedInfo as any).paxChild !== undefined) {
+            info.paxChild = (input.extractedInfo as any).paxChild;
+          }
         }
+        // else: pax KORUNUR
       } else if (datePattern.test(msg)) {
-        delete info.dateId;
-        delete info.selectedDate;
+        // Tarih değişiklik talebi: yeni tarih extractor'dan gelmiş olabilir; gelmediyse
+        // eski tarihi silmek ZORUNLU, çünkü "tarihimi değiştir" + tarih korumak çelişir
+        // ve bot doğru adıma geri dönemez. Burada delete kasıtlı.
+        if ((input.extractedInfo as any).selectedDate || (input.extractedInfo as any).dateId) {
+          if ((input.extractedInfo as any).dateId) info.dateId = (input.extractedInfo as any).dateId;
+          if ((input.extractedInfo as any).selectedDate) info.selectedDate = (input.extractedInfo as any).selectedDate;
+        } else {
+          delete info.dateId;
+          delete info.selectedDate;
+        }
       } else {
-        // Belirsiz "değiştir" / "olsun" isteği — en yaygın: tarih değiştirme.
-        // Phone ve isim korunur; müşteri yeni tarih seçer.
+        // Belirsiz "değiştir" / "olsun" — en yaygın: tarih değişimi. Sadece tarih reset.
         delete info.dateId;
         delete info.selectedDate;
       }

@@ -109,7 +109,7 @@ export const SuperAdminWhatsAppSettings = ({ isSuperAdmin = false }: SuperAdminW
                   <span className="text-sm">Meta Cloud API Bağlantısı</span>
                 </div>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p>• Webhook URL: <code className="text-xs bg-background px-1 rounded">https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/whatsapp-webhook</code></p>
+                  <p>• Webhook URL: <code className="text-xs bg-background px-1 rounded">https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/whatsapp-webhook</code></p>
                   <p>• API Versiyonu: v18.0</p>
                   <p>• Şu anda tüm acenteler global token kullanıyor</p>
                   <p>• İleride her acente kendi token'ına sahip olacak (Embedded Signup)</p>

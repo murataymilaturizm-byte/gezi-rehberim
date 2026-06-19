@@ -94,55 +94,131 @@ ${toursList}`;
 // ============================================
 // COLLECTION STEP HELPER
 // ============================================
-function getCollectionStepPrompt(collectionStep: string, language: string): string {
+// Hangi alanlar zaten dolu? Buradan "TEKRAR SORMA" yasağını üretmek için kullanılır.
+// State machine'in collectionStep kararı KESİN — LLM'in adım seçme özgürlüğü yok;
+// LLM sadece o adımın metnini yazar.
+function getCollectedFields(info: any): {
+  hasDate: boolean;
+  hasPax: boolean;
+  hasName: boolean;
+  hasPhone: boolean;
+} {
+  return {
+    hasDate: !!(info?.selectedDate || info?.dateId),
+    hasPax: !!info?.paxAdult,
+    hasName: !!info?.fullName,
+    hasPhone: !!info?.phone,
+  };
+}
+
+// TR ve EN için "SORMA YASAĞI" listesi üret — collectionStep'in talep ettiği alan
+// dışındaki DOLU alanları "TEKRAR SORMA" diyerek explicit yasakla.
+function buildForbiddenAskList(
+  collectionStep: string,
+  collected: ReturnType<typeof getCollectedFields>,
+  language: string,
+): string {
+  const labels: Record<string, Record<string, string>> = {
+    tr: { date: "tarih", pax: "kişi sayısı", name: "isim", phone: "telefon" },
+    en: { date: "date", pax: "number of people", name: "name", phone: "phone" },
+  };
+  const lang = labels[language] ? language : "en";
+  const L = labels[lang];
+
+  const forbidden: string[] = [];
+  if (collected.hasDate && collectionStep !== "waiting_for_date") forbidden.push(L.date);
+  if (collected.hasPax && collectionStep !== "waiting_for_pax") forbidden.push(L.pax);
+  if (collected.hasName && collectionStep !== "waiting_for_name") forbidden.push(L.name);
+  if (collected.hasPhone && collectionStep !== "waiting_for_phone") forbidden.push(L.phone);
+
+  if (forbidden.length === 0) return "";
+
+  return lang === "tr"
+    ? `\n❌ TEKRAR SORMA (zaten alındı): ${forbidden.join(", ")}. Bu alanları doğrulama amaçlı bile sorma.`
+    : `\n❌ DO NOT ASK AGAIN (already collected): ${forbidden.join(", ")}. Never re-ask, not even for verification.`;
+}
+
+function getCollectionStepPrompt(
+  collectionStep: string,
+  language: string,
+  reservationInfo?: any,
+): string {
+  const collected = reservationInfo ? getCollectedFields(reservationInfo) : { hasDate: false, hasPax: false, hasName: false, hasPhone: false };
+  const forbiddenList = reservationInfo ? buildForbiddenAskList(collectionStep, collected, language) : "";
+
+  // Step başına KESİN komut — LLM adım seçemez, sadece o adımın metnini yazar.
   const prompts: Record<string, Record<string, string>> = {
     tr: {
-      waiting_for_date: `📝 ADIM: Tarih seçimi
-- ÖNCE mevcut turun TÜM müsait tarihlerini NUMARALI olarak listele.
-- Her tarih için fiyatı da yaz.
-- Son satırda "Hangi tarihi tercih edersiniz?" diye sor.
-⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
+      waiting_for_date: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: TARİH SEÇİMİ
 
-      waiting_for_pax: `📝 ADIM: Kişi sayısı
-- Kullanıcıdan kaç kişi katılacağını sor.
-⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
+GÖREVİN: SADECE tarih seç. Başka HİÇBİR şey sorma.
+- ÖNCE mevcut turun TÜM müsait tarihlerini NUMARALI listele.
+- Her tarih için fiyatı yaz.
+- "Hangi tarihi tercih edersiniz?" diye sor.${forbiddenList}`,
 
-      waiting_for_name: `📝 ADIM: İsim
-- Sadece ad-soyad iste.
-⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
+      waiting_for_pax: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: KİŞİ SAYISI
 
-      waiting_for_phone: `📝 ADIM: Telefon
-- Sadece telefon numarası iste.
-⚠️ Eğer kullanıcı başka bilgi verdiyse önce KABUL ET.`,
+GÖREVİN: SADECE kişi sayısı sor. Başka HİÇBİR şey sorma.
+- Kısa bir onay/teşekkür + "Kaç kişi katılacaksınız?" sorusu.${forbiddenList}`,
+
+      waiting_for_name: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: İSİM
+
+GÖREVİN: SADECE ad-soyad iste. Başka HİÇBİR şey sorma.
+- Kısa bir onay/teşekkür + "Ad ve soyadınızı alabilir miyim?" sorusu.${forbiddenList}`,
+
+      waiting_for_phone: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: TELEFON
+
+GÖREVİN: SADECE telefon numarası iste. Başka HİÇBİR şey sorma.
+- Kısa bir onay/teşekkür (isim varsa "Teşekkürler [İsim]") + "Telefon numaranızı alabilir miyim?" sorusu.${forbiddenList}
+
+🚨 ÖRNEK İYİ CEVAP: "Teşekkürler Yelda Hanım. Şimdi telefon numaranızı alabilir miyim?"
+🚨 ÖRNEK KÖTÜ CEVAP: "İsminizi aldım. Kaç kişi katılacaksınız?" (← pax zaten alındı! Bu YASAK.)`,
+
+      waiting_for_email: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: E-POSTA
+
+GÖREVİN: SADECE e-posta adresi iste. Başka HİÇBİR şey sorma.
+- Kısa bir onay + "E-posta adresinizi alabilir miyim? (İsterseniz 'geç' diyebilirsiniz)" sorusu.${forbiddenList}`,
 
       default: `📝 ADIM: Bilgi toplama
-- Eksik bilgiyi tamamla.`,
+- Eksik bilgiyi tamamla. ${forbiddenList}`,
     },
     en: {
-      waiting_for_date: `📝 STEP: Date selection
-- FIRST list ALL available dates of the selected tour in numbered format.
-- Include price for each date.
-- End with "Which date do you prefer?"
-⚠️ If user provided other info, ACKNOWLEDGE it first.`,
+      waiting_for_date: `📝 SYSTEM-DECIDED STEP: DATE SELECTION
 
-      waiting_for_pax: `📝 STEP: Pax count
-- Ask how many people.
-⚠️ If user provided other info, ACKNOWLEDGE it first.`,
+YOUR TASK: ONLY ask for date selection. Nothing else.
+- FIRST list ALL available dates numbered.
+- Include price for each.
+- End with "Which date do you prefer?"${forbiddenList}`,
 
-      waiting_for_name: `📝 STEP: Name
-- Ask for full name only.
-⚠️ If user provided other info, ACKNOWLEDGE it first.`,
+      waiting_for_pax: `📝 SYSTEM-DECIDED STEP: PAX COUNT
 
-      waiting_for_phone: `📝 STEP: Phone
-- Ask for phone number only.
-⚠️ If user provided other info, ACKNOWLEDGE it first.`,
+YOUR TASK: ONLY ask number of people. Nothing else.
+- Brief acknowledgement + "How many people will join?"${forbiddenList}`,
+
+      waiting_for_name: `📝 SYSTEM-DECIDED STEP: NAME
+
+YOUR TASK: ONLY ask full name. Nothing else.
+- Brief acknowledgement + "May I have your full name?"${forbiddenList}`,
+
+      waiting_for_phone: `📝 SYSTEM-DECIDED STEP: PHONE
+
+YOUR TASK: ONLY ask phone number. Nothing else.
+- Brief acknowledgement (if name known: "Thank you [Name]") + "May I have your phone number?"${forbiddenList}
+
+🚨 GOOD EXAMPLE: "Thank you Yelda. May I have your phone number?"
+🚨 BAD EXAMPLE: "Got your name. How many people?" (← pax already collected! FORBIDDEN.)`,
+
+      waiting_for_email: `📝 SYSTEM-DECIDED STEP: EMAIL
+
+YOUR TASK: ONLY ask for email. Nothing else.
+- Brief acknowledgement + "May I have your email address? (You can say 'skip' to opt out)"${forbiddenList}`,
 
       default: `📝 STEP: Collect info
-- Complete the missing field.`,
+- Complete the missing field.${forbiddenList}`,
     },
   };
 
-  const langPrompts = prompts[language] || prompts.tr;
+  const langPrompts = prompts[language] || prompts.en;
   return langPrompts[collectionStep] || langPrompts.default;
 }
 
@@ -238,7 +314,7 @@ ${tourDetails}
         );
 
       case "COLLECTING_INFO":
-        const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr");
+        const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr", reservationInfo);
         const dateReinforcement =
           collectionStep === "waiting_for_date" && currentTour
             ? `\n\nSEÇİLİ TURUN TARİHLERİ:\n${tourDetails}\n\n🚨 ZORUNLU: Tarihleri numaralı listele ve seçim iste.`
@@ -248,11 +324,11 @@ ${tourDetails}
 ${stepPrompt}
 ${dateReinforcement}
 
-Toplanan bilgiler:
+✅ ZATEN TOPLANAN BİLGİLER (bunları TEKRAR SORMA, sadece referans için):
 ${collectedInfo}
 
-⚠️ Kullanıcı bilgi sorusu sorarsa ÖNCE cevapla, sonra kaldığın adımdan devam et.
-⚠️ Bilgi sorusu gelince toplanan bilgileri UNUTMA, sadece soruyu yanıtla.` + hallucinationGuard
+⚠️ Kullanıcı bilgi sorusu sorarsa ÖNCE cevapla, sonra YUKARIDA belirtilen adıma DÖN.
+⚠️ Adımı sen seçemezsin — sistem belirledi. Sadece o adımın sorusunu sor.` + hallucinationGuard
         );
 
       case "CONFIRMING":
@@ -323,18 +399,18 @@ ${tourDetails}
       );
 
     case "COLLECTING_INFO":
-      const stepPromptEn = getCollectionStepPrompt(collectionStep || "default", "en");
+      const stepPromptEn = getCollectionStepPrompt(collectionStep || "default", "en", reservationInfo);
       return (
         `📍 STATUS: Collecting information
 ${stepPromptEn}
 
 ${collectionStep === "waiting_for_date" && currentTour ? `TOUR DATES:\n${tourDetails}\n\n🚨 List these dates numbered and ask user to choose.` : ""}
 
-Collected info:
+✅ ALREADY COLLECTED (DO NOT ASK AGAIN, reference only):
 ${collectedInfo}
 
-⚠️ If user asks a question, answer it first then continue from where you left off.
-⚠️ Never forget collected info when answering questions.` + hallucinationGuard
+⚠️ If user asks a question, answer first then RETURN to the step above.
+⚠️ You CANNOT choose the step — the system decides. Only ask the question for that step.` + hallucinationGuard
       );
 
     case "CONFIRMING":

@@ -181,7 +181,7 @@ Cron beklemeden test etmek için:
 
 ```bash
 curl -X POST \
-  https://ncuswacwpqcxhmlhvfgq.supabase.co/functions/v1/send-tour-reminders \
+  https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/send-tour-reminders \
   -H "Authorization: Bearer YOUR_ANON_KEY" \
   -H "Content-Type: application/json" \
   -d '{}'
