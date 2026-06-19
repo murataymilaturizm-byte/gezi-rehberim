@@ -48,8 +48,30 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 }
 
 const ENDPOINT = `${SUPABASE_URL}/functions/v1/demo-chat`;
-const DELAY_BETWEEN_TURNS_MS = 800;   // rate limit + sequential coherence
-const DELAY_BETWEEN_SCENARIOS_MS = 1500;
+// demo-chat rate limits (canlıdaki gerçek değerler):
+//   - 20/dakika IP (60s/20 = 3s minimum)
+//   - 100/saat IP
+//   - 50/saat session
+// Güvenli pay: turn arası 5s (12/dakika, eşiğin yarısı). Senaryo arası 8s.
+const DELAY_BETWEEN_TURNS_MS = 5000;
+const DELAY_BETWEEN_SCENARIOS_MS = 8000;
+// Rate limit mesajı geldiğinde auto retry: 65s bekle (1dk + 5s pay) → tekrar dene
+const RATE_LIMIT_BACKOFF_MS = 65000;
+const MAX_RETRIES_ON_RATE_LIMIT = 2;
+
+// Rate limit dilekçeli mesaj detection (7 dilde demo-chat:86-94'teki literaller)
+const RATE_LIMIT_PATTERNS = [
+  /çok hızlı istek gönderiyorsunuz/i,
+  /requests too quickly/i,
+  /zu viele anfragen/i,
+  /слишком много запросов/i,
+  /طلبات كثيرة جداً/i,
+  /trop de requêtes/i,
+  /demasiadas solicitudes/i,
+];
+function isRateLimited(reply) {
+  return RATE_LIMIT_PATTERNS.some((re) => re.test(reply));
+}
 
 // ─── Bot çağrı helper ─────────────────────────────────────────────────
 async function callBot({ message, conversationState, language, sessionId, conversationStyle = "standart" }) {
@@ -99,11 +121,30 @@ async function runScenario(name, language, steps) {
   for (const step of steps) {
     stepIdx++;
     let result;
-    try {
-      result = await callBot({ message: step.msg, conversationState: state, language, sessionId });
-    } catch (err) {
-      console.log(`  ✗ Step ${stepIdx} "${fmtReply(step.msg, 40)}" — BOT FAIL: ${err.message}`);
-      failures.push({ scenario: name, step: stepIdx, err: err.message });
+    let retries = 0;
+    while (true) {
+      try {
+        result = await callBot({ message: step.msg, conversationState: state, language, sessionId });
+      } catch (err) {
+        console.log(`  ✗ Step ${stepIdx} "${fmtReply(step.msg, 40)}" — BOT FAIL: ${err.message}`);
+        failures.push({ scenario: name, step: stepIdx, err: err.message });
+        scenarioOk = false;
+        break;
+      }
+      // Rate limit yakalanırsa otomatik retry — geçici limit testi yanlış kırmıza düşürmesin
+      if (isRateLimited(result.reply) && retries < MAX_RETRIES_ON_RATE_LIMIT) {
+        retries++;
+        const waitSec = Math.round(RATE_LIMIT_BACKOFF_MS / 1000);
+        console.log(`  ⏳ Step ${stepIdx} rate-limited — ${waitSec}s bekleniyor (retry ${retries}/${MAX_RETRIES_ON_RATE_LIMIT})`);
+        await sleep(RATE_LIMIT_BACKOFF_MS);
+        continue;
+      }
+      break;  // başarılı veya retry tükendi
+    }
+    if (!scenarioOk) break;
+    if (isRateLimited(result.reply)) {
+      console.log(`  ✗ Step ${stepIdx} — rate limit retries tükendi, gerçek test başarısız değil ama atlanıyor`);
+      failures.push({ scenario: name, step: stepIdx, err: "rate_limit_exhausted", reply: result.reply });
       scenarioOk = false;
       break;
     }
@@ -199,6 +240,8 @@ function statePreservation(prevState, fields) {
 
 console.log(`\nEndpoint: ${ENDPOINT}`);
 console.log(`6 senaryo × ~6 turn ≈ 36 LLM çağrısı (tahmini ~50-70c token).`);
+console.log(`Turn arası ${DELAY_BETWEEN_TURNS_MS/1000}s + senaryo arası ${DELAY_BETWEEN_SCENARIOS_MS/1000}s bekleme (rate limit güvenlik).`);
+console.log(`Toplam süre: ~5-6 dakika. Rate limit auto retry ile (max ${MAX_RETRIES_ON_RATE_LIMIT}x).`);
 console.log(`Devam etmek için 3s bekle, iptal için Ctrl+C...\n`);
 await sleep(3000);
 
