@@ -778,6 +778,17 @@ assertPromptMissing("TR COLLECTING_INFO: 'ZATEN TOPLANAN BİLGİLER' bloğu sili
 assertPromptMissing("EN COLLECTING_INFO: 'ALREADY COLLECTED (DO NOT ASK AGAIN' bloğu silindi",
   "ALREADY COLLECTED (DO NOT ASK AGAIN");
 
+// === REGRESYON KAPANI (2026-06-19 production ReferenceError) ===
+// getCollectionStepPrompt'tan forbiddenList lokal değişkeni kaldırıldı; ama template
+// literal'larda kalan `${forbiddenList}` referansı runtime'da ReferenceError üretir
+// (default branch'lerinde kalmıştı, mock state testleri yakalayamamıştı çünkü
+// getCollectionStepPrompt mock'lu testte çağrılmıyor). Bu kapan substring kontrolüyle
+// gelecekteki bir replace_all kaçışını yakalar.
+assertPromptMissing("forbiddenList template literal referansı (production ReferenceError kapanı)",
+  "${forbiddenList}");
+assertPromptMissing("forbiddenList lokal değişken referansı (getCollectionStepPrompt scope)",
+  "forbiddenList");
+
 // ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`SONUÇ: ${scenarioPasses}/${scenarioPasses + scenarioFails} senaryo+prompt kontrolü geçti`);

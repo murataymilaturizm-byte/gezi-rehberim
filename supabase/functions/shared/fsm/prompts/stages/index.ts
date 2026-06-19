@@ -235,7 +235,7 @@ GÖREVİN: SADECE e-posta adresi iste. Başka HİÇBİR şey sorma.
 ✅ TEK DOĞRU: "E-posta adresinizi alabilir miyim? ('geç' diyebilirsiniz)"`,
 
       default: `📝 ADIM: Bilgi toplama
-- Eksik bilgiyi tamamla. ${forbiddenList}`,
+- Eksik bilgiyi tamamla.`,
     },
     en: {
       waiting_for_date: `📝 SYSTEM-DECIDED STEP: DATE SELECTION
@@ -292,7 +292,7 @@ YOUR TASK: ONLY ask for email. Nothing else.
 ✅ ONLY CORRECT: "May I have your email address? ('skip' to opt out)"`,
 
       default: `📝 STEP: Collect info
-- Complete the missing field.${forbiddenList}`,
+- Complete the missing field.`,
     },
   };
 
