@@ -263,15 +263,23 @@ function processTransition(context, input) {
     }
   }
 
-  // CONFIRMING → COMPLETED
+  // CONFIRMING → COMPLETED (Tulay fix 2026-06-19: NLU confirm_reservation
+  // tek başına yetmez; mesaj kısa + rakamsız + net positive kelime şart)
   if (ctx.stage === "CONFIRMING") {
-    if (detectConfirmation(msg, lang) || intent === "confirm_reservation") {
-      if (!isInformationalMessage(msg, intent) || detectConfirmation(msg, lang)) {
-        return {
-          ...ctx, stage: "COMPLETED", reservationConfirmed: true, collectionStep: undefined,
-          lastUpdated: new Date(0).toISOString(), messageCount: ctx.messageCount + 1,
-        };
+    let shouldComplete = false;
+    if (detectConfirmation(msg, lang)) shouldComplete = true;
+    else if (!isInformationalMessage(msg, intent) && intent === "confirm_reservation") {
+      const trimmed = msg.trim();
+      if (trimmed.length <= 20 && !/\d/.test(trimmed)) {
+        const clearPositive = /\b(evet|tamam|onayl[ıi]yorum|onaylıyorum|onayla|onayladım|tasdik|kabul|do[ğg]ru|olur|peki|tabii|yes|confirm|approve|okay|ok|sure|right|correct|agreed|ja|oui|si|s[íi]|да|подтверждаю|نعم|أكد|d'accord)\b/i;
+        if (clearPositive.test(trimmed)) shouldComplete = true;
       }
+    }
+    if (shouldComplete) {
+      return {
+        ...ctx, stage: "COMPLETED", reservationConfirmed: true, collectionStep: undefined,
+        lastUpdated: new Date(0).toISOString(), messageCount: ctx.messageCount + 1,
+      };
     }
   }
 
@@ -549,6 +557,34 @@ runScenario("S12: EN happy path", "en", [
   { msg: "John Smith", intent: "provide_info", extracted: { fullName: "John Smith" }, expect: { collectionStep: "waiting_for_phone" } },
   { msg: "+15551234567", intent: "provide_info", extracted: { phone: "15551234567" }, expect: { stage: "CONFIRMING" } },
   { msg: "yes", intent: "confirm_reservation", expect: { stage: "COMPLETED", reservationConfirmed: true } },
+]);
+
+// === 14. Tulay bug: NLU yanlışlıkla confirm_reservation döndürse bile
+// mesaj clear positive değilse (isim/uzun) COMPLETED'a GEÇMEZ ===
+runScenario("S14: 'tulay tabi' CONFIRMING'de COMPLETED'a ATLAMAZ", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR, extracted: { tourId: TOUR.id, tourTitle: TOUR.title }, expect: { stage: "COLLECTING_INFO" } },
+  { msg: "10 aralık", intent: "provide_info", extracted: { dateId: "D1" }, expect: { collectionStep: "waiting_for_pax" } },
+  { msg: "1 kişi", intent: "provide_info", extracted: { paxAdult: 1 }, expect: { collectionStep: "waiting_for_name" } },
+  { msg: "Tulay Tubi", intent: "provide_info", extracted: { fullName: "Tulay Tubi" }, expect: { collectionStep: "waiting_for_phone" } },
+  { msg: "05415897896", intent: "provide_info", extracted: { phone: "905415897896" }, expect: { stage: "CONFIRMING" } },
+  // KRİTİK: NLU "tulay tabi"yi yanlış confirm_reservation olarak yorumlasa bile
+  // mesaj "Tulay" içeriyor (5+ harf, clearPositive değil) → COMPLETED'a ATLAMAZ
+  { msg: "tulay tabi", intent: "confirm_reservation",
+    expect: { stage: "CONFIRMING", reservationConfirmed: false } },
+  // Doğru "evet" → COMPLETED
+  { msg: "evet", intent: "confirm_reservation",
+    expect: { stage: "COMPLETED", reservationConfirmed: true } },
+]);
+
+// === 15. Regresyon: kısa "evet"/"tamam"/"onaylıyorum" mesajları hâlâ COMPLETED'a geçirir ===
+runScenario("S15: Kısa onay mesajları (evet/tamam) COMPLETED'a geçirir", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR, extracted: { tourId: TOUR.id, tourTitle: TOUR.title }, expect: { stage: "COLLECTING_INFO" } },
+  { msg: "10 aralık", intent: "provide_info", extracted: { dateId: "D1" }, expect: { collectionStep: "waiting_for_pax" } },
+  { msg: "1 kişi", intent: "provide_info", extracted: { paxAdult: 1 }, expect: { collectionStep: "waiting_for_name" } },
+  { msg: "Test Kullanıcı", intent: "provide_info", extracted: { fullName: "Test Kullanıcı" }, expect: { collectionStep: "waiting_for_phone" } },
+  { msg: "05551112233", intent: "provide_info", extracted: { phone: "905551112233" }, expect: { stage: "CONFIRMING" } },
+  { msg: "tamam", intent: "confirm_reservation",
+    expect: { stage: "COMPLETED", reservationConfirmed: true } },
 ]);
 
 // === 13. DE dili happy path ===

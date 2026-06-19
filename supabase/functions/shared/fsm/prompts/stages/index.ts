@@ -333,13 +333,25 @@ ${collectedInfo}
 
       case "CONFIRMING":
         return (
-          `📍 DURUM: Onay bekleniyor
+          `📍 SİSTEMİN BELİRLEDİĞİ ADIM: ONAY
+
+GÖREVİN: SADECE özeti göster ve onay sor. Başka HİÇBİR şey sorma.
+Tarih, kişi sayısı, isim ve telefon ZATEN ALINDI — bunları TEKRAR SORMA,
+doğrulama amaçlı bile sorma.
 
 ${summary}
 
-Bu bilgiler doğru mudur, onaylıyor musunuz?
+"Bu bilgiler doğru mudur, onaylıyor musunuz?" diye sor. Sadece bu.
 
-⚠️ Kullanıcı soru sorarsa cevapla ama onayı tekrar iste.` + hallucinationGuard
+❌ YASAK ÖRNEK CEVAPLAR (gerçek bug kanıtları):
+- "Şimdi ad-soyad alabilir miyim?" (← isim zaten alındı, YASAK)
+- "Telefon numaranızı tekrar alabilir miyim?" (← telefon zaten alındı, YASAK)
+- "Kaç kişi katılacaksınız?" (← pax zaten alındı, YASAK)
+- "Hangi tarih için?" (← tarih zaten alındı, YASAK)
+
+✅ İYİ CEVAP: "Özet: [tur] / [tarih] / [kişi] / [isim] / [telefon]. Onaylıyor musunuz?"
+
+⚠️ Kullanıcı soru sorarsa cevapla ama onayı tekrar iste. Asla yeni bilgi isteme.` + hallucinationGuard
         );
 
       case "COMPLETED":
@@ -415,13 +427,25 @@ ${collectedInfo}
 
     case "CONFIRMING":
       return (
-        `📍 STATUS: Awaiting confirmation
+        `📍 SYSTEM-DECIDED STEP: CONFIRMATION
+
+YOUR TASK: ONLY show the summary and ask for confirmation. Nothing else.
+Date, number of people, name and phone are ALREADY COLLECTED — DO NOT ask
+again, not even for verification.
 
 ${summary}
 
-Are these details correct, do you confirm?
+Ask "Are these details correct, do you confirm?" That's all.
 
-⚠️ If user asks a question, answer it but ask for confirmation again.` + hallucinationGuard
+❌ FORBIDDEN EXAMPLES (real bug evidence):
+- "May I have your name?" (← name already collected, FORBIDDEN)
+- "Could you give me your phone again?" (← phone already collected, FORBIDDEN)
+- "How many people?" (← pax already collected, FORBIDDEN)
+- "Which date?" (← date already collected, FORBIDDEN)
+
+✅ GOOD: "Summary: [tour] / [date] / [pax] / [name] / [phone]. Do you confirm?"
+
+⚠️ If user asks a question, answer it but ask for confirmation again. NEVER ask for new info.` + hallucinationGuard
       );
 
     case "COMPLETED":

@@ -614,8 +614,19 @@ const transitions: StateTransition[] = [
       if (detectConfirmation(input.userMessage, ctx.language)) return true;
       // 2. Bilgi sorusu gelirse kesinlikle CONFIRMING'de kal.
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
-      // 3. NLU açıkça confirm_reservation döndürdüyse geç.
-      return input.detectedIntent === "confirm_reservation";
+      // 3. NLU "confirm_reservation" — Tulay case bug (2026-06-19): NLU "tulay tabi"
+      //    gibi mesajları "ANY positive word" kuralıyla yanlışlıkla confirm_reservation
+      //    yapıyordu. Tek başına intent'e GÜVENMİYORUZ; ek kısıt: mesaj kısa olmalı,
+      //    rakam içermemeli VE en az bir net positive kelime barındırmalı.
+      if (input.detectedIntent !== "confirm_reservation") return false;
+      const msg = input.userMessage.trim();
+      if (msg.length > 20) return false;                // uzun mesaj → şüpheli
+      if (/\d/.test(msg)) return false;                  // rakam → telefon/sayı, onay değil
+      // Net positive pattern — detectConfirmation kapsamından daha geniş ama yine sıkı.
+      // Burada "tabi" gibi 4-harfli kısaltma DAHİL EDİLMEZ (NLU yanılma kaynağıydı).
+      const clearPositive =
+        /\b(evet|tamam|onayl[ıi]yorum|onaylıyorum|onayla|onayladım|tasdik|kabul|do[ğg]ru|olur|peki|tabii|yes|confirm|approve|okay|ok|sure|right|correct|agreed|ja|oui|si|s[íi]|да|подтверждаю|نعم|أكد|d'accord)\b/i;
+      return clearPositive.test(msg);
     },
     action: (ctx) => ({
       ...ctx,
