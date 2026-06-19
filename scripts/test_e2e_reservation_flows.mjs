@@ -13,6 +13,10 @@
 // koştur — başarısızsa deploy etme.
 // ═══════════════════════════════════════════════════════════════════════
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
 // ─── State machine mirror (state-machine.ts ile birebir) ─────────────
 function isInformationalMessage(userMessage, detectedIntent) {
   const informationalIntents = [
@@ -628,6 +632,27 @@ runScenario("S18: bilgi sorusu TOUR_SELECTED'da bırakır (pattern false-positiv
     expect: { stage: "TOUR_SELECTED" } },
 ]);
 
+// === 19. Tuğçe canlı bug (2026-06-19): isim adımında pax/tarih KAYBOLMAZ;
+// state doğru waiting_for_phone'a geçer (LLM-state senkron bug'ı stages/index.ts'te
+// kötü-örnek dikta ile çözüldü; bu senaryo state regresyonunu kapsar). ===
+runScenario("S19: 'tuğçe görüşük' — isim mesajı pax'i SİLMEZ, telefon adımına geçer", "tr", [
+  { msg: "Antalya turu", intent: "reservation_intent", selectedTour: TOUR_KAP,
+    extracted: { tourId: TOUR_KAP.id, tourTitle: TOUR_KAP.title }, expect: { stage: "COLLECTING_INFO" } },
+  { msg: "12 aralık", intent: "provide_info", extracted: { dateId: "D_12ARA", selectedDate: "2026-12-12" },
+    expect: { collectionStep: "waiting_for_pax" } },
+  { msg: "1 kişi", intent: "provide_info", extracted: { paxAdult: 1 },
+    expect: { collectionStep: "waiting_for_name", "reservationInfo.paxAdult": 1 } },
+  // KRİTİK: İsim mesajı işlenirken pax/tarih KORUNMALI, sıradaki adım TELEFON.
+  // (Canlıda LLM "Kaç kişi?" dedi — state doğruydu, sadece LLM compliance hatası.)
+  { msg: "tuğçe görüşük", intent: "provide_info", extracted: { fullName: "Tuğçe Görüşük" },
+    expect: {
+      collectionStep: "waiting_for_phone",
+      "reservationInfo.paxAdult": 1,
+      "reservationInfo.fullName": "Tuğçe Görüşük",
+      "reservationInfo.dateId": "D_12ARA",
+    } },
+]);
+
 // === 13. DE dili happy path ===
 runScenario("S13: DE happy path", "de", [
   { msg: "hallo", intent: "greeting", expect: { stage: "BROWSING" } },
@@ -640,8 +665,53 @@ runScenario("S13: DE happy path", "de", [
 ]);
 
 // ═══════════════════════════════════════════════════════════════════════
+// PROMPT İÇERİK KONTROLÜ (Yelda/Tuğçe fix: LLM-state senkron diktası)
+// Mock'lu state testleri yetmez — state doğruyken LLM'in yanlış metni
+// canlıda Tuğçe bug'ına yol açıyordu. Bu testler stages/index.ts'in
+// "SİSTEMİN BELİRLEDİĞİ ADIM" + "YASAK" + "TEK DOĞRU" kalıbını
+// koruduğunu garanti eder.
+// ═══════════════════════════════════════════════════════════════════════
+console.log(`\n--- Prompt içerik kontrolü (LLM-state senkron diktası) ---`);
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const stagesPath = join(__dirname, "..", "supabase", "functions", "shared", "fsm", "prompts", "stages", "index.ts");
+const stagesContent = readFileSync(stagesPath, "utf-8");
+
+function assertPromptContains(name, needle) {
+  if (stagesContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [PROMPT] ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `PROMPT:${name}`, step: 0, msg: needle.slice(0, 60), key: "stages/index.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [PROMPT] ${name} — kayıp: "${needle.slice(0, 80)}..."`);
+  }
+}
+
+// TR — her adımda SİSTEMİN BELİRLEDİĞİ ADIM diktası
+assertPromptContains("TR waiting_for_date: dikta var", "waiting_for_date: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: TARİH SEÇİMİ");
+assertPromptContains("TR waiting_for_pax: dikta var",  "waiting_for_pax: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: KİŞİ SAYISI");
+assertPromptContains("TR waiting_for_name: dikta var", "waiting_for_name: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: İSİM");
+assertPromptContains("TR waiting_for_phone: dikta var","waiting_for_phone: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: TELEFON");
+
+// TR — pax/name/phone adımlarında YASAK örnekleri var
+assertPromptContains("TR waiting_for_pax: 'Hangi tarih' YASAK", '"Hangi tarihi tercih edersiniz?" (← tarih ZATEN seçildi)');
+assertPromptContains("TR waiting_for_name: 'Kaç kişi' YASAK",  '"Kaç kişi katılacaksınız?" (← pax ZATEN alındı)');
+assertPromptContains("TR waiting_for_phone: Tuğçe kanıtı 'Kaç kişi' YASAK",
+  '"Kaç kişi katılacaksınız?" (← pax ZATEN alındı, bu mesajda silinmedi)');
+
+// EN — Tuğçe spesifik dikta
+assertPromptContains("EN waiting_for_phone: 'How many people' FORBIDDEN",
+  '"How many people?" (← pax ALREADY collected, NOT dropped in this turn)');
+
+// Forbidden list — değer bazlı yapı (sadece etiket değil "tarih: 2026-12-12" formatı)
+assertPromptContains("forbiddenList: değer bazlı 'ZATEN ALINDI' kalıbı", "TEKRAR SORMA (ZATEN ALINDI):");
+assertPromptContains("forbiddenList: değerli forbidden push (date)",   "forbidden.push(`${L.date}: ${val}`)");
+assertPromptContains("forbiddenList: değerli forbidden push (pax)",    "forbidden.push(`${L.pax}: ${info.paxAdult}`)");
+
+// ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
-console.log(`SONUÇ: ${scenarioPasses}/${scenarioPasses + scenarioFails} senaryo geçti`);
+console.log(`SONUÇ: ${scenarioPasses}/${scenarioPasses + scenarioFails} senaryo+prompt kontrolü geçti`);
 if (scenarioFails > 0) {
   console.log(`\nBaşarısız adımlar:`);
   for (const f of failures) {

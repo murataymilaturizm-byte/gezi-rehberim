@@ -112,11 +112,15 @@ function getCollectedFields(info: any): {
 }
 
 // TR ve EN için "SORMA YASAĞI" listesi üret — collectionStep'in talep ettiği alan
-// dışındaki DOLU alanları "TEKRAR SORMA" diyerek explicit yasakla.
+// dışındaki DOLU alanları DEĞERLERİYLE birlikte "TEKRAR SORMA" diyerek yasakla.
+// 2026-06-19 (Tuğçe canlı bug): etiket bazlı listeyi LLM kaçırıyordu. Değerleri
+// göstermek anchor etkisi yapar — LLM "tarih: 2026-12-12, pax: 1" görünce
+// "kaç kişi?" sormaya cesaret edemez.
 function buildForbiddenAskList(
   collectionStep: string,
   collected: ReturnType<typeof getCollectedFields>,
   language: string,
+  reservationInfo?: any,
 ): string {
   const labels: Record<string, Record<string, string>> = {
     tr: { date: "tarih", pax: "kişi sayısı", name: "isim", phone: "telefon" },
@@ -125,17 +129,28 @@ function buildForbiddenAskList(
   const lang = labels[language] ? language : "en";
   const L = labels[lang];
 
+  const info = reservationInfo || {};
   const forbidden: string[] = [];
-  if (collected.hasDate && collectionStep !== "waiting_for_date") forbidden.push(L.date);
-  if (collected.hasPax && collectionStep !== "waiting_for_pax") forbidden.push(L.pax);
-  if (collected.hasName && collectionStep !== "waiting_for_name") forbidden.push(L.name);
-  if (collected.hasPhone && collectionStep !== "waiting_for_phone") forbidden.push(L.phone);
+  if (collected.hasDate && collectionStep !== "waiting_for_date") {
+    const val = info.selectedDate || info.dateId || "✓";
+    forbidden.push(`${L.date}: ${val}`);
+  }
+  if (collected.hasPax && collectionStep !== "waiting_for_pax") {
+    forbidden.push(`${L.pax}: ${info.paxAdult}`);
+  }
+  if (collected.hasName && collectionStep !== "waiting_for_name") {
+    forbidden.push(`${L.name}: ${info.fullName}`);
+  }
+  if (collected.hasPhone && collectionStep !== "waiting_for_phone") {
+    forbidden.push(`${L.phone}: ${info.phone}`);
+  }
 
   if (forbidden.length === 0) return "";
 
+  const list = forbidden.map((f) => `  - ${f}`).join("\n");
   return lang === "tr"
-    ? `\n❌ TEKRAR SORMA (zaten alındı): ${forbidden.join(", ")}. Bu alanları doğrulama amaçlı bile sorma.`
-    : `\n❌ DO NOT ASK AGAIN (already collected): ${forbidden.join(", ")}. Never re-ask, not even for verification.`;
+    ? `\n\n❌ TEKRAR SORMA (ZATEN ALINDI):\n${list}\nBu alanları doğrulama amaçlı bile SORMA. Sadece bu adımın sorusunu sor.`
+    : `\n\n❌ DO NOT ASK AGAIN (ALREADY COLLECTED):\n${list}\nNever re-ask, not even for verification. Only ask the question for this step.`;
 }
 
 function getCollectionStepPrompt(
@@ -144,7 +159,7 @@ function getCollectionStepPrompt(
   reservationInfo?: any,
 ): string {
   const collected = reservationInfo ? getCollectedFields(reservationInfo) : { hasDate: false, hasPax: false, hasName: false, hasPhone: false };
-  const forbiddenList = reservationInfo ? buildForbiddenAskList(collectionStep, collected, language) : "";
+  const forbiddenList = reservationInfo ? buildForbiddenAskList(collectionStep, collected, language, reservationInfo) : "";
 
   // Step başına KESİN komut — LLM adım seçemez, sadece o adımın metnini yazar.
   const prompts: Record<string, Record<string, string>> = {
@@ -154,30 +169,58 @@ function getCollectionStepPrompt(
 GÖREVİN: SADECE tarih seç. Başka HİÇBİR şey sorma.
 - ÖNCE mevcut turun TÜM müsait tarihlerini NUMARALI listele.
 - Her tarih için fiyatı yaz.
-- "Hangi tarihi tercih edersiniz?" diye sor.${forbiddenList}`,
+- "Hangi tarihi tercih edersiniz?" diye sor.${forbiddenList}
+
+❌ YASAK CEVAPLAR (canlı bug kanıtları):
+- "Kaç kişi katılacaksınız?" (← pax adımı DEĞİL)
+- "Adınızı alabilir miyim?" (← isim adımı DEĞİL)
+✅ TEK DOĞRU: tarih listesi + "Hangi tarihi tercih edersiniz?"`,
 
       waiting_for_pax: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: KİŞİ SAYISI
 
 GÖREVİN: SADECE kişi sayısı sor. Başka HİÇBİR şey sorma.
-- Kısa bir onay/teşekkür + "Kaç kişi katılacaksınız?" sorusu.${forbiddenList}`,
+- Kısa bir onay/teşekkür + "Kaç kişi katılacaksınız?" sorusu.${forbiddenList}
+
+❌ YASAK CEVAPLAR (canlı bug kanıtları):
+- "Hangi tarihi tercih edersiniz?" (← tarih ZATEN seçildi)
+- "Adınızı alabilir miyim?" (← isim adımı DEĞİL)
+- "Telefon numaranız?" (← telefon adımı DEĞİL)
+✅ TEK DOĞRU: "Harika! Kaç kişi katılacaksınız?"`,
 
       waiting_for_name: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: İSİM
 
 GÖREVİN: SADECE ad-soyad iste. Başka HİÇBİR şey sorma.
-- Kısa bir onay/teşekkür + "Ad ve soyadınızı alabilir miyim?" sorusu.${forbiddenList}`,
+- Kısa bir onay/teşekkür + "Ad ve soyadınızı alabilir miyim?" sorusu.${forbiddenList}
+
+❌ YASAK CEVAPLAR (canlı bug kanıtları):
+- "Kaç kişi katılacaksınız?" (← pax ZATEN alındı)
+- "Hangi tarih?" (← tarih ZATEN seçildi)
+- "Telefon numaranız?" (← telefon adımı DEĞİL)
+✅ TEK DOĞRU: "Teşekkürler! Ad ve soyadınızı alabilir miyim?"`,
 
       waiting_for_phone: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: TELEFON
 
 GÖREVİN: SADECE telefon numarası iste. Başka HİÇBİR şey sorma.
-- Kısa bir onay/teşekkür (isim varsa "Teşekkürler [İsim]") + "Telefon numaranızı alabilir miyim?" sorusu.${forbiddenList}
+- Kısa bir onay/teşekkür (isim varsa "Teşekkürler [İsim] Hanım/Bey") + "Telefon numaranızı alabilir miyim?" sorusu.${forbiddenList}
 
-🚨 ÖRNEK İYİ CEVAP: "Teşekkürler Yelda Hanım. Şimdi telefon numaranızı alabilir miyim?"
-🚨 ÖRNEK KÖTÜ CEVAP: "İsminizi aldım. Kaç kişi katılacaksınız?" (← pax zaten alındı! Bu YASAK.)`,
+❌ YASAK CEVAPLAR (Tuğçe canlı bug 2026-06-19 kanıtı):
+- "Kaç kişi katılacaksınız?" (← pax ZATEN alındı, bu mesajda silinmedi)
+- "İsminizi aldım. Kaç kişi?" (← pax ZATEN alındı; isim onayından sonra pax SORMA)
+- "Hangi tarih?" (← tarih ZATEN seçildi)
+- "Adınızı alabilir miyim?" (← isim ZATEN alındı)
+✅ TEK DOĞRU CEVAP: "Teşekkürler Tuğçe Hanım. Telefon numaranızı alabilir miyim?"
+
+⚠️ ÖZEL UYARI: Yukarıda "ZATEN ALINDI" listesindeki alanları sorma diye
+defalarca yazıldı. State doğru; sen sadece bu adımın metnini yaz.`,
 
       waiting_for_email: `📝 SİSTEMİN BELİRLEDİĞİ ADIM: E-POSTA
 
 GÖREVİN: SADECE e-posta adresi iste. Başka HİÇBİR şey sorma.
-- Kısa bir onay + "E-posta adresinizi alabilir miyim? (İsterseniz 'geç' diyebilirsiniz)" sorusu.${forbiddenList}`,
+- Kısa bir onay + "E-posta adresinizi alabilir miyim? (İsterseniz 'geç' diyebilirsiniz)" sorusu.${forbiddenList}
+
+❌ YASAK CEVAPLAR:
+- "Kaç kişi?" / "Adınız?" / "Telefon?" / "Hangi tarih?" (hepsi ZATEN alındı)
+✅ TEK DOĞRU: "E-posta adresinizi alabilir miyim? ('geç' diyebilirsiniz)"`,
 
       default: `📝 ADIM: Bilgi toplama
 - Eksik bilgiyi tamamla. ${forbiddenList}`,
@@ -188,30 +231,58 @@ GÖREVİN: SADECE e-posta adresi iste. Başka HİÇBİR şey sorma.
 YOUR TASK: ONLY ask for date selection. Nothing else.
 - FIRST list ALL available dates numbered.
 - Include price for each.
-- End with "Which date do you prefer?"${forbiddenList}`,
+- End with "Which date do you prefer?"${forbiddenList}
+
+❌ FORBIDDEN RESPONSES (live bug evidence):
+- "How many people?" (← not the pax step)
+- "May I have your name?" (← not the name step)
+✅ ONLY CORRECT: date list + "Which date do you prefer?"`,
 
       waiting_for_pax: `📝 SYSTEM-DECIDED STEP: PAX COUNT
 
 YOUR TASK: ONLY ask number of people. Nothing else.
-- Brief acknowledgement + "How many people will join?"${forbiddenList}`,
+- Brief acknowledgement + "How many people will join?"${forbiddenList}
+
+❌ FORBIDDEN RESPONSES (live bug evidence):
+- "Which date?" (← date ALREADY selected)
+- "May I have your name?" (← not the name step)
+- "Your phone?" (← not the phone step)
+✅ ONLY CORRECT: "Great! How many people will join?"`,
 
       waiting_for_name: `📝 SYSTEM-DECIDED STEP: NAME
 
 YOUR TASK: ONLY ask full name. Nothing else.
-- Brief acknowledgement + "May I have your full name?"${forbiddenList}`,
+- Brief acknowledgement + "May I have your full name?"${forbiddenList}
+
+❌ FORBIDDEN RESPONSES (live bug evidence):
+- "How many people?" (← pax ALREADY collected)
+- "Which date?" (← date ALREADY selected)
+- "Your phone?" (← not the phone step)
+✅ ONLY CORRECT: "Thank you! May I have your full name?"`,
 
       waiting_for_phone: `📝 SYSTEM-DECIDED STEP: PHONE
 
 YOUR TASK: ONLY ask phone number. Nothing else.
 - Brief acknowledgement (if name known: "Thank you [Name]") + "May I have your phone number?"${forbiddenList}
 
-🚨 GOOD EXAMPLE: "Thank you Yelda. May I have your phone number?"
-🚨 BAD EXAMPLE: "Got your name. How many people?" (← pax already collected! FORBIDDEN.)`,
+❌ FORBIDDEN RESPONSES (Tuğçe live bug 2026-06-19 evidence):
+- "How many people?" (← pax ALREADY collected, NOT dropped in this turn)
+- "Got your name. How many people?" (← never ask pax after name confirmation)
+- "Which date?" (← date ALREADY selected)
+- "May I have your name?" (← name ALREADY collected)
+✅ ONLY CORRECT RESPONSE: "Thank you Tuğçe. May I have your phone number?"
+
+⚠️ SPECIAL WARNING: The "ALREADY COLLECTED" list above says don't ask
+those fields. State is correct; you just write this step's question.`,
 
       waiting_for_email: `📝 SYSTEM-DECIDED STEP: EMAIL
 
 YOUR TASK: ONLY ask for email. Nothing else.
-- Brief acknowledgement + "May I have your email address? (You can say 'skip' to opt out)"${forbiddenList}`,
+- Brief acknowledgement + "May I have your email address? (You can say 'skip' to opt out)"${forbiddenList}
+
+❌ FORBIDDEN RESPONSES:
+- "How many people?" / "Your name?" / "Your phone?" / "Which date?" (all ALREADY collected)
+✅ ONLY CORRECT: "May I have your email address? ('skip' to opt out)"`,
 
       default: `📝 STEP: Collect info
 - Complete the missing field.${forbiddenList}`,
