@@ -27,6 +27,7 @@ import { findMatchingTours } from "../services/tour-matching.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
+import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
 import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
@@ -516,13 +517,33 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: cancelReply, newContext };
   }
 
-  // === 11. TARİH LİSTESİ (deterministik) ===
-  if (
-    newContext.stage === "COLLECTING_INFO" &&
-    newContext.collectionStep === "waiting_for_date" &&
-    newContext.currentTour
-  ) {
-    const tourForDates = findTourById(newContext.currentTour.id, tours);
+  // === 11. TARİH LİSTESİ (deterministik) — D5: tarih sorusu HER stage'de yakalar ===
+  // 2026-06-19 (Bug A3 kök çözümü): LLM artık tarih KONUŞMUYOR. Tarih listesi
+  // YALNIZ deterministik gönderilir. Tetik koşulları:
+  //   (a) COLLECTING_INFO+waiting_for_date → mevcut otomatik akış
+  //   (b) TOUR_SELECTED veya COLLECTING_INFO HERHANGİ adımda kullanıcı tarih
+  //       sorusu sorarsa (intent + tarih kelime) → A3 ve TOUR_SELECTED A3-kuzeni
+  //       senaryoları DETERMINISTIK kapanır. "⛔ TARİH YASAK" diktası asla
+  //       primary koruma değil, sadece defansif suffix.
+  // ELSE dalı: tour.dates boş → deterministik "tarih yok, acenteye yönlendir" (D3).
+  // DATE_QUERY_RE + DATE_INTENTS tek-kaynak: ../constants/date-detection.ts (test
+  // davranışsal olarak orayı çağırır — substring değil, runtime regex doğrulaması).
+  const _askingViaQuery = DATE_QUERY_RE.test(message) && DATE_INTENTS.includes(fsmIntent);
+  const _isUserAskingDates =
+    !!newContext.currentTour &&
+    (
+      // (a) Veri-toplama akışında tarih adımı: otomatik
+      (newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_date") ||
+      // (b) Kullanıcı tarih sorusu sordu (TOUR_SELECTED veya COLLECTING_INFO herhangi adım)
+      ((newContext.stage === "TOUR_SELECTED" || newContext.stage === "COLLECTING_INFO") && _askingViaQuery)
+    );
+
+  if (_isUserAskingDates) {
+    const tourForDates = findTourById(newContext.currentTour!.id, tours);
+    const _displayTitleNoDates = getLocalizedTourTitle(
+      tourForDates?.title || newContext.currentTour!.title || "",
+      newContext.language,
+    );
     if (tourForDates?.dates?.length) {
       const _exRates = await getExchangeRatesOnce().catch(() => ({}));
       const _tourCurrency = tourForDates.currency || "TRY";
@@ -577,6 +598,23 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       await _save(dateReply, newContext);
       await adapter.sendResponse(dateReply);
       return { success: true, response: dateReply, newContext };
+    } else {
+      // D3 (2026-06-19): ELSE dalı — tour.dates boş → deterministik yönlendirme.
+      // Önceden bu dal yoktu; tourForDates.dates boşsa blok sessizce atlıyordu,
+      // akış LLM'e geçiyordu, LLM tarih uyduruyordu. Artık deterministik mesaj.
+      const _noDatesMsgs: Record<string, string> = {
+        tr: `*${_displayTitleNoDates}* için şu anda aktif müsait tarih bulunmuyor. 😔\n\nEn güncel bilgi için acentemizle iletişime geçebilirsiniz.`,
+        en: `No active dates available for *${_displayTitleNoDates}* at the moment. 😔\n\nPlease contact our agency for the latest information.`,
+        de: `Derzeit keine verfügbaren Termine für *${_displayTitleNoDates}*. 😔\n\nBitte wenden Sie sich an unsere Agentur.`,
+        ru: `В данный момент нет доступных дат для *${_displayTitleNoDates}*. 😔\n\nСвяжитесь с нашим агентством для актуальной информации.`,
+        ar: `لا توجد تواريخ متاحة لـ *${_displayTitleNoDates}* حالياً. 😔\n\nيرجى التواصل مع وكالتنا.`,
+        fr: `Pas de dates disponibles pour *${_displayTitleNoDates}* actuellement. 😔\n\nVeuillez contacter notre agence.`,
+        es: `No hay fechas disponibles para *${_displayTitleNoDates}* en este momento. 😔\n\nPor favor contacte a nuestra agencia.`,
+      };
+      const noDateReply = _noDatesMsgs[newContext.language] || _noDatesMsgs.tr;
+      await _save(noDateReply, newContext);
+      await adapter.sendResponse(noDateReply);
+      return { success: true, response: noDateReply, newContext };
     }
   }
 

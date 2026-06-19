@@ -36,6 +36,8 @@ function runDenoCheck() {
     "supabase/functions/shared/fsm/state-machine.ts",
     "supabase/functions/shared/fsm/nlu.ts",
     "supabase/functions/shared/services/info-extractor.ts",
+    "supabase/functions/shared/constants/date-detection.ts",
+    "supabase/functions/shared/fsm/prompts/helpers.ts",
   ];
 
   const candidates = [
@@ -76,6 +78,51 @@ function runDenoCheck() {
 }
 
 runDenoCheck();
+
+// ═══════════════════════════════════════════════════════════════════════
+// FAZ 0.5 — DAVRANIŞSAL TESTLER (deno run scripts/test_behavioral.ts)
+//
+// 2026-06-19: forbiddenList canlıda runtime'da patladı; substring testleri
+// "fonksiyon çağrılıyor" iddiası yapmıyordu. Bu faz info-extractor + regex'leri
+// GERÇEK input'la çalıştırır — pax sızıntı tuzağı, DATE_QUERY_RE 7 dil match/
+// no-match. deno check'in tip-doğrulamasını runtime-davranış doğrulaması ile
+// tamamlar. Substring testleri (Faz 2'deki PROMPT/BYPASS) "kod var mı" der;
+// FAZ 0.5 "kod çalışıyor mu" der.
+// ═══════════════════════════════════════════════════════════════════════
+function runBehavioralTests() {
+  const projectRoot = dirname(fileURLToPath(import.meta.url)) + "/..";
+  const candidates = [
+    "deno",
+    join(homedir(), ".deno", "bin", platform() === "win32" ? "deno.exe" : "deno"),
+  ];
+  let denoBin = null;
+  for (const c of candidates) {
+    const probe = spawnSync(c, ["--version"], { stdio: "ignore" });
+    if (probe.status === 0) { denoBin = c; break; }
+  }
+  if (!denoBin) {
+    console.log("⚠️  Deno yok — davranışsal testler ATLANDI.\n");
+    return;
+  }
+
+  console.log("🧪 deno run scripts/test_behavioral.ts — davranışsal testler...");
+  const result = spawnSync(denoBin, ["run", "--allow-read", "--allow-env", "scripts/test_behavioral.ts"], {
+    cwd: projectRoot,
+    encoding: "utf-8",
+  });
+
+  if (result.status !== 0) {
+    console.error("\n✗ DAVRANIŞSAL TEST BAŞARISIZ — Katman 1 mock testleri başlamadı:\n");
+    if (result.stdout) console.error(result.stdout);
+    if (result.stderr) console.error(result.stderr);
+    process.exit(3);
+  }
+  // Davranışsal testlerin kendi çıktısı varsa son birkaç satırı göster
+  const lines = (result.stdout || "").trim().split("\n");
+  console.log(lines.slice(-3).join("\n") + "\n");
+}
+
+runBehavioralTests();
 
 // ─── State machine mirror (state-machine.ts ile birebir) ─────────────
 function isInformationalMessage(userMessage, detectedIntent) {
@@ -787,13 +834,19 @@ runScenario("S13: DE happy path", "de", [
 ]);
 
 // ═══════════════════════════════════════════════════════════════════════
-// PROMPT İÇERİK KONTROLÜ (Yelda/Tuğçe fix: LLM-state senkron diktası)
-// Mock'lu state testleri yetmez — state doğruyken LLM'in yanlış metni
-// canlıda Tuğçe bug'ına yol açıyordu. Bu testler stages/index.ts'in
-// "SİSTEMİN BELİRLEDİĞİ ADIM" + "YASAK" + "TEK DOĞRU" kalıbını
-// koruduğunu garanti eder.
+// PROMPT/BYPASS PRESENCE KONTROLÜ — "kod VAR mı" diye doğrular
+//
+// ⚠️ KAPSAM SINIRI: Bu testler statik substring kontrolüdür. "Kod dosyada
+//    yazılı mı?" sorusunu yanıtlar — "runtime'da çalışıyor mu?" sorusunu
+//    YANITLAMAZ. Runtime davranış: Faz 0 (deno check, tip/referans) +
+//    Faz 0.5 (deno run test_behavioral.ts, gerçek fonksiyon çağrısı) ile
+//    doğrulanır. Canlı LLM compliance kanıtı: production manuel test.
+//
+// Tuğçe canlı bug'ında forbiddenList runtime'da patladı, bu PRESENCE testi
+// "var" demişti — substring tek başına yetmez. Faz 0 + Faz 0.5 katmanları
+// presence + davranış kombinasyonunu sağlıyor.
 // ═══════════════════════════════════════════════════════════════════════
-console.log(`\n--- Prompt içerik kontrolü (LLM-state senkron diktası) ---`);
+console.log(`\n--- Prompt/Bypass presence kontrolü (substring — "kod var mı") ---`);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const stagesPath = join(__dirname, "..", "supabase", "functions", "shared", "fsm", "prompts", "stages", "index.ts");
@@ -926,6 +979,70 @@ assertPromptMissing("forbiddenList template literal referansı (production Refer
   "${forbiddenList}");
 assertPromptMissing("forbiddenList lokal değişken referansı (getCollectionStepPrompt scope)",
   "forbiddenList");
+
+// === COMMIT 4 — Bug A3 kök çözümü (LLM tarih yetkisi SIFIR) ===
+// Pre-delete kanıtları: silinen şeyler GERÇEKTEN silindi mi?
+assertPromptMissing("TR TOUR_SELECTED: '🚨 KRİTİK KURAL - TARİH SEÇİMİ' bloğu silindi (D1)",
+  "🚨 KRİTİK KURAL - TARİH SEÇİMİ");
+assertPromptMissing("EN TOUR_SELECTED: '🚨 CRITICAL - DATE SELECTION' bloğu silindi (D1)",
+  "🚨 CRITICAL - DATE SELECTION");
+assertPromptMissing("TR TOUR_SELECTED: 'tarihleri listele' satırı silindi",
+  "Açıkça rezervasyon istiyorsa → tarihleri listele.");
+assertPromptMissing("EN TOUR_SELECTED: 'list dates' satırı silindi",
+  "If clearly wants reservation → list dates.");
+assertPromptMissing("dateReinforcement TR (B1)", "SEÇİLİ TURUN TARİHLERİ:");
+assertPromptMissing("dateReinforcement EN (B1)", "TOUR DATES:\\n");
+assertPromptMissing("DATE_SELECTION case TR (E1) silindi", 'case "DATE_SELECTION":');
+// Yeni dikta defansif olarak eklendi
+assertPromptContains("TR TOUR_SELECTED: '⛔ TARİH KONUSUNA GİRME' defansif dikta",
+  "⛔ TARİH KONUSUNA GİRME — KESİN YASAK");
+assertPromptContains("EN TOUR_SELECTED: '⛔ DO NOT DISCUSS DATES' defansif dikta",
+  "⛔ DO NOT DISCUSS DATES — STRICT BAN");
+assertPromptContains("TR COLLECTING_INFO: '⛔ TARİH KONUSUNA GİRME' defansif dikta",
+  "Müsait tarihleri kontrol ediyorum 📅");
+
+// === COMMIT 4 — process-message :11 BYPASS genişletmesi ===
+assertProcMsgContains("DATE_QUERY_RE import (tek-kaynak: constants/date-detection)",
+  'import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts"');
+assertProcMsgContains(":11 koşulu TOUR_SELECTED'ı kapsıyor",
+  'newContext.stage === "TOUR_SELECTED"');
+assertProcMsgContains(":11 askingViaQuery DATE_QUERY_RE ile",
+  "DATE_QUERY_RE.test(message)");
+assertProcMsgContains(":11 ELSE dalı (D3) - dates boş → deterministik 'tarih yok'",
+  "şu anda aktif müsait tarih bulunmuyor");
+
+// === COMMIT 4 — helpers.ts datesSection silindi (C1+C2) ===
+const helpersPath = join(__dirname, "..", "supabase", "functions", "shared", "fsm", "prompts", "helpers.ts");
+const helpersContent = readFileSync(helpersPath, "utf-8");
+// "let datesSection" KOD KULLANIMI silinmiş olmalı (yorumda "datesSection" geçebilir, normal)
+if (!helpersContent.includes("let datesSection")) {
+  scenarioPasses++;
+  console.log(`✓ [PROMPT-NEG] helpers.ts: 'let datesSection' kod kullanımı silindi (LLM tarih konuşmaz)`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PROMPT-NEG: datesSection code", step: 0, msg: "let datesSection still in helpers.ts", key: "helpers.ts", expected: "missing", actual: "PRESENT" });
+  console.log(`✗ [PROMPT-NEG] helpers.ts 'let datesSection' KOD HÂLÂ VAR`);
+}
+if (!helpersContent.includes("Müsait Tarihler:")) {
+  scenarioPasses++;
+  console.log(`✓ [PROMPT-NEG] helpers.ts: 'Müsait Tarihler:' tarih başlığı silindi`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PROMPT-NEG: tarih başlığı", step: 0, msg: "Müsait Tarihler still in helpers.ts", key: "helpers.ts", expected: "missing", actual: "PRESENT" });
+  console.log(`✗ [PROMPT-NEG] helpers.ts 'Müsait Tarihler:' başlığı HÂLÂ VAR`);
+}
+
+// === COMMIT 4 — info-extractor pax sızıntı strict regex (Yan #1) ===
+const infoExtractorPath = join(__dirname, "..", "supabase", "functions", "shared", "services", "info-extractor.ts");
+const infoExtractorContent = readFileSync(infoExtractorPath, "utf-8");
+if (infoExtractorContent.includes('/^\\d+$/.test(trimmed)')) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] info-extractor: Blok 6 strict regex /^\\d+$/ var (Yan #1 fix)`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE: pax strict regex", step: 0, msg: "Blok 6 strict regex eksik", key: "info-extractor.ts", expected: "/^\\d+$/", actual: "NOT FOUND" });
+  console.log(`✗ [PRESENCE] info-extractor pax strict regex YOK`);
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);

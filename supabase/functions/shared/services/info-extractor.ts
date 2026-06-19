@@ -321,10 +321,17 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     }
   }
 
-  // === Blok 6: Context-aware — kişi sayısı (düz rakam) ===
+  // === Blok 6: Context-aware — kişi sayısı (sadece düz rakam) ===
+  // 2026-06-19 (Yan #1 fix): parseInt("5 temmuz")=5 tuzağı kapatıldı. Daha önce
+  // mesaj başında rakam varsa pax yazılıyordu — "5 temmuz" tarihi pax=5 oldu.
+  // Artık SADECE mesajın TAMAMI rakamsa kabul edilir. "3" → pax=3; "5 temmuz"
+  // veya "11 aralık 2 kişi" → reddedilir (ikincisini Blok 5 zaten "kişi" ile yakalar).
   if (!extractedInfo.paxAdult && expectedInput === "pax") {
-    const n = parseInt(message.trim());
-    if (!isNaN(n) && n >= 1 && n <= 50) extractedInfo.paxAdult = n;
+    const trimmed = message.trim();
+    if (/^\d+$/.test(trimmed)) {
+      const n = parseInt(trimmed);
+      if (n >= 1 && n <= 50) extractedInfo.paxAdult = n;
+    }
   }
 
   // === Blok 7: Tarih "date_N" prefix → indekse çevir ===

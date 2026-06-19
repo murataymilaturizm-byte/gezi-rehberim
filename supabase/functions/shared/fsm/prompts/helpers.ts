@@ -164,58 +164,14 @@ function getNumberEmoji(num: number): string {
  * Format tour details with tone-aware styling
  * *tek yıldız* kullanır (WhatsApp uyumlu)
  */
-export function formatTourDetails(tour: any, language: string, tone: string = "standart"): string {
-  // Token optimizasyonu: 10+ tarihli turlarda prompt'a TÜM tarihler giriyordu (her tarih ~25 token).
-  // Sadece bugünden sonraki ilk 5 tarihi al — kullanıcının ihtiyacı için yeterli, AI'a daha fazlasını
-  // göstermek yarar değil token israfı. Past dates zaten upstream'de (whatsapp-webhook/index.ts:440 +
-  // demo-chat/index.ts:191) filtreleniyor; burada defensive olarak tekrar filtreleyip slice'lıyoruz.
+export function formatTourDetails(tour: any, language: string, _tone: string = "standart"): string {
+  // 2026-06-19 (Bug A3 kök çözümü): datesSection bloğu KALDIRILDI. LLM artık tarih
+  // konuşmuyor; tarih listesi process-message.ts :11 (TARİH LİSTESİ deterministik)
+  // tarafından üretiliyor (D5 — collectionStep'ten bağımsız). Bu fonksiyon yalnızca
+  // ad/destinasyon/fiyat/program döndürür.
   const _today = new Date().toISOString().slice(0, 10);
-  const _rawDates = tour.dates || [];
-  const dates = _rawDates
-    .filter((d: any) => !d?.departure_date || d.departure_date >= _today)
-    .slice(0, 5);
-  const _truncated = _rawDates.length > dates.length;
-  const firstDate = dates[0];
+  const firstDate = (tour.dates || []).filter((d: any) => !d?.departure_date || d.departure_date >= _today)[0];
   const price = firstDate?.price_adult;
-
-  let datesSection = "";
-  if (dates.length > 0) {
-    const isTR = language === "tr";
-    const formattedDates = dates
-      .map((d: any, idx: number) => {
-        const formattedDate = formatDateForLanguage(d.departure_date, language);
-        const datePrice = d.price_adult ? ` - ${d.price_adult}₺` : "";
-        const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
-        const quotaText = remaining !== undefined
-          ? (isTR ? ` (${remaining} kişilik yer)` : ` (${remaining} spots)`)
-          : "";
-
-        if (tone === "kurumsal") {
-          return `  ${idx + 1}) ${formattedDate}${datePrice}${quotaText}`;
-        } else if (tone === "dinamik") {
-          return `  ${getNumberEmoji(idx + 1)} ${formattedDate}${datePrice}${quotaText}`;
-        } else {
-          return `  ${idx + 1}) ${formattedDate}${datePrice}${quotaText}`;
-        }
-      })
-      .join("\n");
-
-    if (language === "tr") {
-      datesSection =
-        tone === "premium" ? `\n\nMüsait Tarihler:\n${formattedDates}` : `\n📅 Müsait Tarihler:\n${formattedDates}`;
-    } else {
-      datesSection =
-        tone === "premium" ? `\n\nAvailable Dates:\n${formattedDates}` : `\n📅 Available Dates:\n${formattedDates}`;
-    }
-    // Daha fazla tarih varsa AI'a bildir — "sadece bunlar var" yanılgısını önler. Kullanıcı
-    // başka tarih sorarsa AI acenteye yönlendirir (deterministik tarih listesi akışı zaten
-    // process-message.ts'te tüm tarihleri gösteriyor).
-    if (_truncated) {
-      datesSection += language === "tr"
-        ? `\n(İlk 5 tarih gösterildi. Müşteri daha fazla tarih isterse acente ile iletişime geçirilebilir.)`
-        : `\n(Showing first 5 dates. If customer asks for more, refer them to the agency.)`;
-    }
-  }
 
   if (language === "tr") {
     const parts = [
@@ -225,7 +181,7 @@ export function formatTourDetails(tour: any, language: string, tone: string = "s
       tour.program_kisa ? `📝 Özet: ${tour.program_kisa}` : "",
       tour.gezilecek_yerler ? `🗺️ Gezilecek Yerler: ${tour.gezilecek_yerler}` : "",
     ];
-    return parts.filter(Boolean).join("\n") + datesSection;
+    return parts.filter(Boolean).join("\n");
   }
 
   const parts = [
@@ -235,7 +191,7 @@ export function formatTourDetails(tour: any, language: string, tone: string = "s
     tour.program_kisa ? `📝 Summary: ${tour.program_kisa}` : "",
     tour.gezilecek_yerler ? `🗺️ Places to Visit: ${tour.gezilecek_yerler}` : "",
   ];
-  return parts.filter(Boolean).join("\n") + datesSection;
+  return parts.filter(Boolean).join("\n");
 }
 
 /**

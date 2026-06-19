@@ -378,37 +378,23 @@ ${tourDetails}
 
 🚨 KRİTİK KURAL - KULLANICI NİYETİ BELİRSİZSE:
 - Sadece tur adını yazdıysa → "Bilgi almak mı, rezervasyon mu?" diye sor.
-- Açıkça rezervasyon istiyorsa → tarihleri listele.
 - Sadece bilgi istiyorsa → tur detaylarını ver, rezervasyon başlatma.
 
-🚨 KRİTİK KURAL - TARİH SEÇİMİ:
-- TÜM müsait tarihleri numaralı liste halinde göster.
-- Her tarih için fiyat bilgisi de ver.
-- "Hangi tarihi tercih edersiniz?" diye sor.
-- Tarih seçilmeden kişi/isim/telefon SORMA.` + filledFieldsGuard + hallucinationGuard
-        );
-
-      case "DATE_SELECTION":
-        return (
-          `📍 DURUM: Tarih seçimi
-- NET bir tarih belirle.
-- Tarihleri listele ve seçim iste.
-- YENİ TARİH UYDURMA.` + filledFieldsGuard + hallucinationGuard
+⛔ TARİH KONUSUNA GİRME — KESİN YASAK:
+- Tarih LİSTELEME, ÖNERME, UYDURMA. "1 Temmuz", "20 Aralık", "yaz aylarında", "her cuma" gibi tarih bilgisi VERME.
+- Kullanıcı "ne zaman", "hangi tarih", "müsait gün" diye sorarsa sadece "Bir saniye, müsait tarihleri kontrol ediyorum 📅" de ve KESİL.
+- Müsait tarih listesi sistem tarafından otomatik gönderilir — sen değil.` + filledFieldsGuard + hallucinationGuard
         );
 
       case "COLLECTING_INFO":
         const stepPrompt = getCollectionStepPrompt(collectionStep || "default", "tr");
-        const dateReinforcement =
-          collectionStep === "waiting_for_date" && currentTour
-            ? `\n\nSEÇİLİ TURUN TARİHLERİ:\n${tourDetails}\n\n🚨 ZORUNLU: Tarihleri numaralı listele ve seçim iste.`
-            : "";
         return (
           `📍 DURUM: Bilgi toplama
 ${stepPrompt}
-${dateReinforcement}
 
 ⚠️ Kullanıcı bilgi sorusu sorarsa ÖNCE cevapla, sonra YUKARIDA belirtilen adıma DÖN.
-⚠️ Adımı sen seçemezsin — sistem belirledi. Sadece o adımın sorusunu sor.` + filledFieldsGuard + hallucinationGuard
+⚠️ Adımı sen seçemezsin — sistem belirledi. Sadece o adımın sorusunu sor.
+⛔ TARİH KONUSUNA GİRME: Tarih listesi/önerisi sistem tarafından otomatik gelir. Kullanıcı tarih sorarsa "Müsait tarihleri kontrol ediyorum 📅" de ve KESİL — listeyi sistem yazar.` + filledFieldsGuard + hallucinationGuard
         );
 
       case "CONFIRMING":
@@ -471,21 +457,12 @@ ${tourDetails}
 
 🚨 CRITICAL - INTENT UNCLEAR:
 - If user just wrote the tour name → ask "Info or reservation?"
-- If clearly wants reservation → list dates.
 - If just wants info → provide details, don't start reservation.
 
-🚨 CRITICAL - DATE SELECTION:
-- List ALL available dates numbered.
-- Show price for each.
-- Ask "Which date do you prefer?"
-- Don't ask pax/name/phone before date.` + filledFieldsGuard + hallucinationGuard
-      );
-
-    case "DATE_SELECTION":
-      return (
-        `📍 STATUS: Date selection
-- List dates and ask to choose.
-- Don't invent dates.` + filledFieldsGuard + hallucinationGuard
+⛔ DO NOT DISCUSS DATES — STRICT BAN:
+- Never LIST, SUGGEST, or INVENT dates. No "July 1", "December 20", "summer months", "every Friday" — none.
+- If user asks "when", "available dates", "what dates" — only say "One moment, checking available dates 📅" and STOP.
+- Available date list is sent automatically by the system — not you.` + filledFieldsGuard + hallucinationGuard
       );
 
     case "COLLECTING_INFO":
@@ -494,10 +471,9 @@ ${tourDetails}
         `📍 STATUS: Collecting information
 ${stepPromptEn}
 
-${collectionStep === "waiting_for_date" && currentTour ? `TOUR DATES:\n${tourDetails}\n\n🚨 List these dates numbered and ask user to choose.` : ""}
-
 ⚠️ If user asks a question, answer first then RETURN to the step above.
-⚠️ You CANNOT choose the step — the system decides. Only ask the question for that step.` + filledFieldsGuard + hallucinationGuard
+⚠️ You CANNOT choose the step — the system decides. Only ask the question for that step.
+⛔ DO NOT DISCUSS DATES: Available dates are sent automatically by the system. If user asks for dates, say "Checking available dates 📅" and STOP — the system writes the list.` + filledFieldsGuard + hallucinationGuard
       );
 
     case "CONFIRMING":
