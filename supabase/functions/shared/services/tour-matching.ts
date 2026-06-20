@@ -297,9 +297,33 @@ export function findMatchingTours(
   expectedInput: string,
   intent: string,
 ): TourMatchResult {
-  // B-5 fix (2026-06-09): isim/telefon adımında tur eşleştirme kapalı.
+  const tourNames = normalizeNluField(nluEntities?.tour_name);
+  const destinations = normalizeNluField(nluEntities?.destination);
+
+  // B-5 fix (2026-06-09): isim/telefon adımında tur eşleştirme kapalı (Özge bug).
+  // 2026-06-20 (Bug 1 v2 — gevşetme): İKİ KATMANLI gate. B-5 fix sadece kullanıcı
+  // AÇIKÇA tur sorduğunda gevşer.
+  //
+  // Canlı bug (execution 0a643c9d): kullanıcı waiting_for_name adımındayken
+  // "Efes Antik Turu nedir?" yazınca tour-matching tamamen kapalıydı → erken
+  // müdahale tetiklenmiyordu → currentTour Kapadokya'da kaldı.
+  //
+  // Yeni mantık: hasNluTourSignal = (NLU tour_name VEYA destination çıkardı)
+  //              AND (intent açıkça tur sorgulama — provide_info DEĞİL).
+  // İki katman birden olmalı. Özge bug korunur: NLU "Özge Yılmazer"i tour_name
+  // diye yorumlasa bile intent=provide_info kaldığı için 2. katman KAPATIR.
   if (expectedInput === "name" || expectedInput === "phone") {
-    return { selectedTour: null, multipleMatches: [], unknownTourQuery: null };
+    const explicitTourIntent =
+      intent === "tour_search" ||
+      intent === "browse_tours" ||
+      intent === "faq_general" ||
+      intent === "reservation_intent";
+    const hasNluTourSignal =
+      (tourNames.length > 0 || destinations.length > 0) && explicitTourIntent;
+    if (!hasNluTourSignal) {
+      return { selectedTour: null, multipleMatches: [], unknownTourQuery: null };
+    }
+    // hasNluTourSignal=true → düş, normal tour-matching mantığı devam eder
   }
 
   const tourIntents = [
@@ -310,9 +334,6 @@ export function findMatchingTours(
     "transport_details",
     "reservation_intent",
   ];
-
-  const tourNames = normalizeNluField(nluEntities?.tour_name);
-  const destinations = normalizeNluField(nluEntities?.destination);
 
   const shouldMatch = tourIntents.includes(intent) || tourNames.length > 0 || destinations.length > 0;
   if (!shouldMatch) {

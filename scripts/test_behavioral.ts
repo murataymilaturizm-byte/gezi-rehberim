@@ -535,6 +535,99 @@ const efes = { id: "T_EFES", title: "Efes Antik Kent Turu" };
     ctxAfter.reservationInfo.fullName === "Murat Aymilatur");
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// 6) B-5 FIX GEVŞETMESİ (2026-06-20 Bug 1 v2 waiting_for_name varyantı)
+//
+// Canlı bug execution 0a643c9d: waiting_for_name adımında "Efes Antik Turu
+// nedir?" sorulunca tour-matching tamamen kapalıydı (B-5 fix Özge için).
+// → erken müdahale tetiklenmedi → currentTour Kapadokya'da kaldı.
+//
+// Yeni mantık: İki katmanlı gate — NLU tur sinyali + tur intent.
+// Özge bug korunur: NLU çift hata yapmadığı sürece B-5 fix kapalı kalır.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── B-5 FIX GEVŞETMESİ (Bug 1 v2 waiting_for_name varyantı) ──");
+
+// ─── Özge bug korunur ───────────────────────────────────────────────────
+{
+  const r = findMatchingTours("Özge Yılmazer",
+    { tour_name: "", destination: "" }, tours, "name", "provide_info");
+  assert(`Özge bug korunur: isim adımı + provide_info + NLU sinyal yok → null`,
+    r.selectedTour === null && r.unknownTourQuery === null);
+}
+
+// Edge: NLU hata ile tour_name="Yılmazer" üretirse — intent=provide_info kaldığı için kapalı
+{
+  const r = findMatchingTours("Özge Yılmazer",
+    { tour_name: "Yılmazer", destination: "" }, tours, "name", "provide_info");
+  assert(`Özge edge: NLU tour_name hatası AMA intent=provide_info → 2. katman KAPATIR`,
+    r.selectedTour === null);
+}
+
+// Edge: telefon adımında provide_info ile gelse de kapalı
+{
+  const r = findMatchingTours("0555 123 45 67",
+    { tour_name: "", destination: "" }, tours, "phone", "provide_info");
+  assert(`Telefon adımı + provide_info + NLU sinyal yok → null (B-5 korunur)`,
+    r.selectedTour === null);
+}
+
+// ─── BUG 1 v2 isim adımı varyantı: net tur sorusu → tour-matching AÇILIR ──
+{
+  const r = findMatchingTours("Efes Antik Turu nedir?",
+    { tour_name: "Efes Antik Turu", destination: "Efes" },
+    tours, "name", "faq_general");
+  assert(`BUG 1 v2: waiting_for_name + 'Efes turu nedir' + faq_general → Efes (B-5 gevşedi)`,
+    r.selectedTour?.id === "T_EFES",
+    `got=${JSON.stringify({ id: r.selectedTour?.id })}`);
+}
+
+{
+  const r = findMatchingTours("Pamukkale turu hakkında bilgi alabilir miyim?",
+    { tour_name: "Pamukkale Turu", destination: "Pamukkale" },
+    tours, "phone", "faq_general");
+  assert(`BUG 1 v2: waiting_for_phone + 'Pamukkale turu' + faq_general → Pamukkale`,
+    r.selectedTour?.id === "T_PAMUKKALE");
+}
+
+// tour_search intent ile de açılır
+{
+  const r = findMatchingTours("Antalya'ya nasıl gidilir?",
+    { tour_name: "Antalya Rafting", destination: "Antalya" },
+    tours, "name", "tour_search");
+  assert(`BUG 1 v2: isim adımı + tour_search + NLU sinyali → Antalya (açıldı)`,
+    r.selectedTour?.id === "T_ANTALYA");
+}
+
+// reservation_intent ile de açılır (mid-flow yeni rezervasyon niyeti) — tek tur senaryosu
+{
+  const r = findMatchingTours("Pamukkale yapalım",
+    { tour_name: "Pamukkale Turu", destination: "Pamukkale" },
+    tours, "phone", "reservation_intent");
+  assert(`BUG 1 v2: telefon + reservation_intent + NLU sinyali → Pamukkale (B-5 gevşedi)`,
+    r.selectedTour?.id === "T_PAMUKKALE",
+    `got=${JSON.stringify({ id: r.selectedTour?.id, mult: r.multipleMatches.length })}`);
+}
+
+// ─── Karışık mesaj: isim + tur sorusu birlikte ──────────────────────────
+// "Ben Murat Aymilatur, Efes turu ne zaman?" — NLU iki sinyal birden döndürür
+{
+  const r = findMatchingTours("Ben Murat Aymilatur, Efes turu ne zaman?",
+    { tour_name: "Efes", destination: "Efes" },
+    tours, "name", "faq_general");
+  assert(`Karışık: NLU tur sinyali + faq_general → tour-matching AÇILIR, Efes (isim yan etki yok)`,
+    r.selectedTour?.id === "T_EFES");
+  // İsim state-machine'de extractedInfo.fullName üzerinden Yelda merge fix ile kaydedilir
+  // (bu test scope'unun dışı — findMatchingTours sadece tur döndürür)
+}
+
+// ─── Sürpriz kapanı: tur intent var ama NLU sinyali yok ─────────────────
+{
+  const r = findMatchingTours("başka turunuz var mı?",
+    { tour_name: "", destination: "" }, tours, "phone", "tour_search");
+  assert(`'başka turunuz var mı?' + tour_search + NLU sinyal yok → null (sürpriz değişim yok)`,
+    r.selectedTour === null);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
