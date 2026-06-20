@@ -1127,6 +1127,73 @@ assertStopwordsContains("'rezervasyon' eklendi", '"rezervasyon"');
 assertStopwordsContains("'booking' eklendi (EN)", '"booking"');
 assertStopwordsContains("'buchung' eklendi (DE)", '"buchung"');
 assertStopwordsContains("'evet' eklendi (TR onay)", '"evet"');
+// 2026-06-20: TR accusative "turunu" stopword listesinde olmalı (A gate'in
+// "Antalya Turunu Alalım" sızıntısını yakalaması için)
+assertStopwordsContains("'turunu' eklendi (TR accusative, A gate için)", '"turunu"');
+
+// ─── A GATE PRESENCE (2026-06-20 Sorun 2) ──────────────────────────────
+// nlu-validation.ts dosyası YAR mı (Sorun 2 fix'in varlığı)
+const nluValidationPath = join(__dirname, "..", "supabase", "functions", "shared", "services", "nlu-validation.ts");
+let nluValidationContent = "";
+try {
+  nluValidationContent = readFileSync(nluValidationPath, "utf-8");
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] services/nlu-validation.ts dosyası var (A gate)`);
+} catch {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE: nlu-validation", step: 0, msg: "nlu-validation.ts dosyası YOK", key: "services/nlu-validation.ts", expected: "exists", actual: "MISSING" });
+  console.log(`✗ [PRESENCE] nlu-validation.ts dosyası YOK`);
+}
+function assertNluValidationContains(name, needle) {
+  if (nluValidationContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [PRESENCE] nlu-validation: ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `PRESENCE:nlu-validation:${name}`, step: 0, msg: needle, key: "services/nlu-validation.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [PRESENCE] nlu-validation: ${name} kayıp`);
+  }
+}
+// Fonksiyon export edildi mi
+assertNluValidationContains("isNluFullNameTourLeak export", "export function isNluFullNameTourLeak");
+// TOUR_KEYWORD_STOPWORDS import edildi mi (asıl koruma kaynağı)
+assertNluValidationContains("TOUR_KEYWORD_STOPWORDS import", "TOUR_KEYWORD_STOPWORDS");
+
+// process-message.ts'de A gate ÇAĞRI YERİ (canlıda tetiklenmesi için kritik)
+assertProcMsgContains("A gate import (nlu-validation)",
+  'import { isNluFullNameTourLeak } from "../services/nlu-validation.ts"');
+assertProcMsgContains("A gate çağrısı (isNluFullNameTourLeak)",
+  "isNluFullNameTourLeak(");
+assertProcMsgContains("A gate BLOCKED log (canlı doğrulama için)",
+  "BLOCKED NLU fullName tour-leak");
+assertProcMsgContains("A gate state temizleme (delete fullName)",
+  "delete nluResult.updates.fullName");
+assertProcMsgContains("A gate entities.full_name temizleme",
+  "full_name");
+
+// tour-matching.ts'de change_info eklenmiş mi (Sorun 1)
+const tourMatchingPath = join(__dirname, "..", "supabase", "functions", "shared", "services", "tour-matching.ts");
+const tourMatchingContent = readFileSync(tourMatchingPath, "utf-8");
+if (tourMatchingContent.includes('intent === "change_info"')) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] tour-matching: change_info explicitTourIntent listesine eklendi (Sorun 1)`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE:tour-matching:change_info", step: 0, msg: 'intent === "change_info"', key: "services/tour-matching.ts", expected: 'intent === "change_info"', actual: "NOT FOUND" });
+  console.log(`✗ [PRESENCE] tour-matching: change_info eksik (Sorun 1 fix yok)`);
+}
+
+// NLU prompt'unda tour-change phrases bloğu var mı (B destek)
+const nluPath = join(__dirname, "..", "supabase", "functions", "shared", "fsm", "nlu.ts");
+const nluContent = readFileSync(nluPath, "utf-8");
+if (nluContent.includes("NEVER extract full_name from tour-change phrases")) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] nlu.ts: tour-change phrases CRITICAL RULE bloğu var (B destek)`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE:nlu:tour-change-phrases", step: 0, msg: "tour-change phrases bloğu", key: "fsm/nlu.ts", expected: "NEVER extract full_name from tour-change phrases", actual: "NOT FOUND" });
+  console.log(`✗ [PRESENCE] nlu.ts: tour-change phrases bloğu eksik`);
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
