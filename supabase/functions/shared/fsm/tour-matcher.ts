@@ -1,69 +1,13 @@
-// Shared tour matching logic for both demo-chat and whatsapp-webhook
-import type { TourReference } from "./types.ts";
-
-export function matchTour(userMessage: string, availableTours: any[], expectedInput: string): TourReference | null {
-  const lowerMessage = userMessage.toLowerCase().trim();
-
-  // 1. Try to match by tour number (only if not expecting pax)
-  if (!["pax_count", "phone_number", "full_name"].includes(expectedInput)) {
-    const tourNumber = parseInt(lowerMessage);
-    if (!isNaN(tourNumber) && tourNumber >= 1 && tourNumber <= availableTours.length) {
-      const tour = availableTours[tourNumber - 1];
-      return createTourReference(tour);
-    }
-  }
-
-  // 2. Try exact title match
-  let matchedTour = availableTours.find((tour) => tour.title.toLowerCase() === lowerMessage);
-  if (matchedTour) return createTourReference(matchedTour);
-
-  // 3. Try destination match
-  matchedTour = availableTours.find((tour) => tour.destination.toLowerCase() === lowerMessage);
-  if (matchedTour) return createTourReference(matchedTour);
-
-  // 4. Try keyword matching
-  matchedTour = availableTours.find((tour) => {
-    const tourWords = [...tour.title.toLowerCase().split(/\s+/), ...tour.destination.toLowerCase().split(/\s+/)];
-    return tourWords.some((word) => word.length > 3 && lowerMessage.includes(word));
-  });
-  if (matchedTour) return createTourReference(matchedTour);
-
-  return null;
-}
-
-/**
- * KRİTİK: dateId ve selectedDate KALDIRILDI.
- * Tek tarih olsa bile otomatik seçme — kullanıcıya tarih listesi göster.
- * Tarih seçimi deterministik blokta (chat-handler / whatsapp-webhook) yapılır.
- */
-function createTourReference(tour: any): TourReference {
-  return {
-    id: tour.id,
-    title: tour.title,
-    destination: tour.destination,
-    dates: tour.dates,
-    program_kisa: tour.program_kisa,
-    gezilecek_yerler: tour.gezilecek_yerler,
-  };
-}
+// 2026-06-20 (Bug 1 + 2 refactor): tour-matcher.ts artık yalnızca `findTourById`
+// içerir. Eski `matchTour` (keyword-based, BUG 2 "turu" yanlış pozitifinin kaynağı),
+// `createTourReference` (sadece matchTour'da kullanılırdı) ve `formatTourList`
+// (hiçbir yerden çağrılmıyordu) SİLİNDİ.
+//
+// Tur eşleştirme tek noktada: services/tour-matching.ts:findMatchingTours.
+// KANITSAL strateji (mesaj kelimeleri stopword filtreli) + NLU validation gate.
+//
+// findTourById tek sorumluluk: ID ile tur listesinde ara, döndür.
 
 export function findTourById(tourId: string, availableTours: any[]): any | null {
   return availableTours.find((t) => t.id === tourId) || null;
-}
-
-export function formatTourList(tours: any[], language: string = "tr"): string {
-  return tours
-    .map((tour, idx) => {
-      const date = tour.dates?.[0];
-      const price = date?.price_adult ? `${date.price_adult}₺` : "";
-      const remaining = date?.remaining_quota !== undefined ? date.remaining_quota : date?.quota;
-      const quotaInfo =
-        remaining !== undefined
-          ? language === "tr"
-            ? ` - ${remaining} kişilik yer`
-            : ` - ${remaining} spots left`
-          : "";
-      return `${idx + 1}. ${tour.title} - ${tour.destination} (${price}${quotaInfo})`;
-    })
-    .join("\n");
 }

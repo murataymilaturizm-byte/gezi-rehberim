@@ -192,6 +192,157 @@ assert(`DATE_INTENTS contains faq_general`, DATE_INTENTS.includes("faq_general")
 assert(`DATE_INTENTS contains tour_search`, DATE_INTENTS.includes("tour_search"));
 assert(`DATE_INTENTS NOT contains provide_info (kullanıcı veri verirken yanlış yakalama)`, !DATE_INTENTS.includes("provide_info"));
 
+// ═══════════════════════════════════════════════════════════════════════
+// 3) TOUR-MATCHING (BUG 1 + BUG 2 kök çözümü, 2026-06-20)
+//
+// findMatchingTours yeniden sıralandı: mesaj kelimeleri KANITSAL kaynak,
+// NLU çıktıları VALIDATED kullanılır (uydurma engellendi). UNKNOWN_TOUR
+// sinyali DB'de gerçekten yok turlar için B dalını tetikler.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── TOUR-MATCHING (Bug 1/2 kök çözümü) ──");
+
+import { findMatchingTours } from "../supabase/functions/shared/services/tour-matching.ts";
+import { isMeaningfulTourKeyword, TOUR_KEYWORD_STOPWORDS } from "../supabase/functions/shared/constants/tour-matching.ts";
+import { formatTourDetails } from "../supabase/functions/shared/fsm/prompts/helpers.ts";
+
+const tours = [
+  { id: "T_ANTALYA",   title: "Antalya Rafting",        destination: "Antalya",          dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 850 }] },
+  { id: "T_EFES",       title: "Efes Antik Kent Turu",  destination: "İzmir/Selçuk",     dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 700 }] },
+  { id: "T_EGE",        title: "Ege Turu",              destination: "İzmir-Çeşme-Alaçatı", dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 1200 }] },
+  { id: "T_KAPADOKYA",  title: "Kapadokya Balon Turu",  destination: "Kapadokya",        dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 2500 }] },
+  { id: "T_KAPKULTUR",  title: "Kapadokya Kültür Turu", destination: "Kapadokya",        dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 1800 }] },
+  { id: "T_PAMUKKALE",  title: "Pamukkale Turu",        destination: "Pamukkale",        dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 1500 }] },
+];
+
+// Test 1 — BUG 1 ana kanıt: NLU "Kapadokya" uydurdu, mesaj "efes" kazanır
+{
+  const r = findMatchingTours("efes turu ne zaman",
+    { tour_name: "", destination: "Kapadokya" }, tours, "date_selection", "tour_search");
+  assert(`BUG 1: 'efes turu ne zaman' + NLU dest='Kapadokya' (UYDURMA) → Efes (mesaj kazandı)`,
+    r.selectedTour?.id === "T_EFES",
+    `got=${JSON.stringify({ id: r.selectedTour?.id, mult: r.multipleMatches.length, unk: r.unknownTourQuery })}`);
+}
+
+// Test 2 — BUG 2 ana kanıt: "ege turu" tutarsızlığı çözüldü (stopword filtre)
+{
+  const r = findMatchingTours("ege turu",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "tour_search");
+  assert(`BUG 2: 'ege turu' → Ege (stopword 'turu' filtre)`,
+    r.selectedTour?.id === "T_EGE",
+    `got=${JSON.stringify({ id: r.selectedTour?.id })}`);
+}
+
+// Test 3 — BUG 2 varyant: uzun mesaj
+{
+  const r = findMatchingTours("ege turu nedir, ne zaman",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "tour_search");
+  assert(`BUG 2: 'ege turu nedir, ne zaman' → Ege (uzun mesaj, stopword filtre)`,
+    r.selectedTour?.id === "T_EGE",
+    `got=${JSON.stringify({ id: r.selectedTour?.id })}`);
+}
+
+// Test 4 — BUG 2 tek kelime: "ege" 3 harf
+{
+  const r = findMatchingTours("ege",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "tour_search");
+  assert(`'ege' tek kelime → Ege (3 harf kabul)`,
+    r.selectedTour?.id === "T_EGE",
+    `got=${JSON.stringify({ id: r.selectedTour?.id })}`);
+}
+
+// Test 5 — Yabancı dil: translation map validation
+{
+  const r = findMatchingTours("ephesus tour when",
+    { tour_name: "Efes", destination: "" }, tours, "date_selection", "tour_search");
+  assert(`'ephesus tour when' + NLU tour_name='Efes' → Efes (translation validated)`,
+    r.selectedTour?.id === "T_EFES",
+    `got=${JSON.stringify({ id: r.selectedTour?.id })}`);
+}
+
+// Test 6 — Regresyon: bilinen şehir Antalya
+{
+  const r = findMatchingTours("antalya ne zaman",
+    { tour_name: "", destination: "Antalya" }, tours, "date_selection", "tour_search");
+  assert(`REGRESYON: 'antalya ne zaman' + NLU dest='Antalya' → Antalya`,
+    r.selectedTour?.id === "T_ANTALYA",
+    `got=${JSON.stringify({ id: r.selectedTour?.id })}`);
+}
+
+// Test 7 — Çoklu Kapadokya: multipleMatches
+{
+  const r = findMatchingTours("kapadokya turu",
+    { tour_name: "", destination: "Kapadokya" }, tours, "tour_selection", "tour_search");
+  assert(`'kapadokya turu' → multipleMatches=2 (Balon + Kültür)`,
+    r.multipleMatches.length === 2 && r.selectedTour === null,
+    `got=${JSON.stringify({ id: r.selectedTour?.id, mult: r.multipleMatches.length })}`);
+}
+
+// Test 8 — UNKNOWN_TOUR sinyali: gerçekten yok
+{
+  const r = findMatchingTours("xyzbatak turu ne zaman",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "tour_search");
+  assert(`'xyzbatak turu' (DB'de yok) + tur_intent → UNKNOWN_TOUR='xyzbatak'`,
+    r.selectedTour === null && r.multipleMatches.length === 0 && r.unknownTourQuery === "xyzbatak",
+    `got=${JSON.stringify({ id: r.selectedTour?.id, unk: r.unknownTourQuery })}`);
+}
+
+// Test 9 — B-5 fix korunur: isim adımında match yok
+{
+  const r = findMatchingTours("Murat Aymilatur",
+    { tour_name: "", destination: "" }, tours, "name", "provide_info");
+  assert(`expectedInput='name' → null (B-5 fix korunur)`,
+    r.selectedTour === null && r.unknownTourQuery === null);
+}
+
+// Test 10 — Stopword sadece: crash güvenli
+{
+  const r = findMatchingTours("turu",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "tour_search");
+  assert(`'turu' tek başına (stopword) → null + UNKNOWN_TOUR=null (crash güvenli, false-positive yok)`,
+    r.selectedTour === null && r.multipleMatches.length === 0 && r.unknownTourQuery === null,
+    `got=${JSON.stringify({ unk: r.unknownTourQuery })}`);
+}
+
+// Test 10b — Sadece kısa kelime (3 harf altı)
+{
+  const r = findMatchingTours("?? ne",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "tour_search");
+  assert(`'?? ne' (anlamlı kelime yok) → null + UNKNOWN_TOUR=null`,
+    r.selectedTour === null && r.unknownTourQuery === null);
+}
+
+// Test 11 — NLU validation: bilinen şehir doğrulanır (mesajda var)
+{
+  const r = findMatchingTours("antalya nasıl bir tur",
+    { tour_name: "", destination: "Antalya" }, tours, "tour_selection", "tour_search");
+  assert(`'antalya nasıl bir tur' + NLU dest='Antalya' → Antalya (mesaj kanıtsal zaten bulur)`,
+    r.selectedTour?.id === "T_ANTALYA");
+}
+
+// Test 12 — BUG 4: formatTourDetails saat+kalkış+süre içermeli
+{
+  const tour = {
+    title: "Pamukkale Turu", destination: "Pamukkale",
+    toplanma_saati: "07:30:00", hareket_noktasi: "Denizli",
+    tur_sure: "2 gün 1 gece",
+    dates: [{ price_adult: 1500, departure_date: "2026-12-15" }],
+  };
+  const r = formatTourDetails(tour, "tr", "standart");
+  assert(`BUG 4: formatTourDetails saat '07:30' içermeli (uydurma kapısı kapatıldı)`,
+    r.includes("07:30") && !r.includes("07:30:00"),
+    `got=${r.slice(0, 200)}`);
+  assert(`BUG 4: formatTourDetails 'Denizli' kalkış noktası içermeli`, r.includes("Denizli"));
+  assert(`BUG 4: formatTourDetails '2 gün 1 gece' süresi içermeli`, r.includes("2 gün 1 gece"));
+}
+
+// Sanity: stopword listesi
+assert(`Stopword 'turu' listede`, TOUR_KEYWORD_STOPWORDS.has("turu"));
+assert(`Stopword 'tour' listede`, TOUR_KEYWORD_STOPWORDS.has("tour"));
+assert(`Stopword 'ausflug' listede (DE)`, TOUR_KEYWORD_STOPWORDS.has("ausflug"));
+assert(`isMeaningfulTourKeyword('ege') = true (3 harf, stopword değil)`, isMeaningfulTourKeyword("ege"));
+assert(`isMeaningfulTourKeyword('turu') = false (stopword)`, !isMeaningfulTourKeyword("turu"));
+assert(`isMeaningfulTourKeyword('ne') = false (2 harf)`, !isMeaningfulTourKeyword("ne"));
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

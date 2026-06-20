@@ -305,7 +305,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   // === 7. TUR EŞLEŞTİRME ===
-  const { selectedTour, multipleMatches: multipleTourMatches } = findMatchingTours(
+  const { selectedTour, multipleMatches: multipleTourMatches, unknownTourQuery } = findMatchingTours(
     message,
     nluResult.entities,
     tours,
@@ -313,6 +313,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     nluResult.intent,
   );
   if (selectedTour) console.log("[process-message] Tour matched:", selectedTour.title);
+  if (unknownTourQuery) console.log("[process-message] UNKNOWN_TOUR signal:", unknownTourQuery);
 
   // B2: Orijinal intent'i stage korumadan ÖNCE kaydet
   const _prePromotionIntent = nluResult.intent;
@@ -515,6 +516,46 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(cancelReply, newContext);
     await adapter.sendResponse(cancelReply);
     return { success: true, response: cancelReply, newContext };
+  }
+
+  // === 10b. UNKNOWN_TOUR (deterministik B dalı) — 2026-06-20 Bug 2 kök çözümü ===
+  // Kullanıcı bir tur arıyor (intent tour_search/reservation_intent + anlamlı kelime)
+  // AMA findMatchingTours hiçbir tur'la eşleyemedi → DB'de yok. LLM'e bırakmak yerine
+  // deterministik "X turu sistemimizde yok, müsait turlarımız: ..." mesajı.
+  //
+  // ÖNEMLİ: GREETING/BROWSING gibi tur seçilmemiş stage'lerde tetiklensin, ama
+  // COLLECTING_INFO/CONFIRMING içinde tetiklenmesin — çünkü orada aktif rezervasyon
+  // var, kullanıcı geçici bilgi sorusu sorabilir; B2 zaten o durumu kapsıyor.
+  if (
+    unknownTourQuery &&
+    !selectedTour &&
+    multipleTourMatches.length === 0 &&
+    (context.stage === "GREETING" || context.stage === "BROWSING" || context.stage === "TOUR_SELECTED" || context.stage === "COMPLETED") &&
+    tours.length > 0
+  ) {
+    const _exRatesU = await getExchangeRatesOnce().catch(() => ({}));
+    const _showDualU = agency.show_multi_currency !== false;
+    const _tourListLinesU = tours.slice(0, 8).map((t: any, i: number) => {
+      const _firstDate = t.dates?.[0];
+      const _priceText = _firstDate?.price_adult
+        ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", context.language, _exRatesU, _showDualU, languageCurrencies)}`
+        : "";
+      return `${i + 1}) ${getLocalizedTourTitle(t.title, context.language)}${_priceText}`;
+    }).join("\n");
+
+    const _unknownMsgs: Record<string, string> = {
+      tr: `"${unknownTourQuery}" turu sistemimizde bulunmuyor. 😔\n\nMüsait turlarımız:\n${_tourListLinesU}\n\nHangisi ilginizi çeker?`,
+      en: `"${unknownTourQuery}" tour is not in our system. 😔\n\nAvailable tours:\n${_tourListLinesU}\n\nWhich interests you?`,
+      de: `"${unknownTourQuery}" Tour ist nicht in unserem System. 😔\n\nVerfügbare Touren:\n${_tourListLinesU}\n\nWelche interessiert Sie?`,
+      ru: `Тура "${unknownTourQuery}" нет в нашей системе. 😔\n\nДоступные туры:\n${_tourListLinesU}\n\nКакой вас интересует?`,
+      ar: `جولة "${unknownTourQuery}" غير موجودة في نظامنا. 😔\n\nالجولات المتاحة:\n${_tourListLinesU}\n\nما الذي يثير اهتمامك؟`,
+      fr: `Le circuit "${unknownTourQuery}" n'est pas dans notre système. 😔\n\nCircuits disponibles :\n${_tourListLinesU}\n\nLequel vous intéresse ?`,
+      es: `El tour "${unknownTourQuery}" no está en nuestro sistema. 😔\n\nTours disponibles:\n${_tourListLinesU}\n\n¿Cuál le interesa?`,
+    };
+    const _unknownReply = _unknownMsgs[context.language] || _unknownMsgs.tr;
+    await _save(_unknownReply, context);
+    await adapter.sendResponse(_unknownReply);
+    return { success: true, response: _unknownReply, newContext: context };
   }
 
   // === 11. TARİH LİSTESİ (deterministik) — D5: tarih sorusu HER stage'de yakalar ===

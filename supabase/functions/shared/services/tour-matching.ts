@@ -2,7 +2,7 @@
 // 1. Exact (normalize edilmiş)  2. Translation map  3. Fuzzy (Levenshtein-2)
 
 export { findTourById } from "../fsm/tour-matcher.ts";
-import { matchTour } from "../fsm/tour-matcher.ts";
+import { isMeaningfulTourKeyword } from "../constants/tour-matching.ts";
 
 function normalizeNluField(value: any): string[] {
   if (!value) return [];
@@ -211,6 +211,13 @@ function matchByQuery(query: string, tours: any[], checkDest = false): any[] {
 export interface TourMatchResult {
   selectedTour: any | null;
   multipleMatches: any[];
+  /**
+   * 2026-06-20 (Bug 2 fix): Kullanıcı tur arıyor (intent tour_search/reservation_intent)
+   * AMA hiçbir stratejide eşleşme yok → DB'de gerçekten yok. process-message bu sinyali
+   * görür ve deterministik "X turu sistemimizde bulunmuyor" mesajı atar.
+   * Null ise: ya eşleşme var ya da kullanıcı tur aramıyor (sinyal yok).
+   */
+  unknownTourQuery: string | null;
 }
 
 function createTourRef(tour: any): any {
@@ -223,14 +230,65 @@ function createTourRef(tour: any): any {
     dates: tour.dates,
     program_kisa: tour.program_kisa,
     gezilecek_yerler: tour.gezilecek_yerler,
+    // 2026-06-20 Bug 4: saat/kalkış/süre state'e taşınmalı, yoksa formatTourDetails
+    // bu alanları göremez ve LLM uydurur (Pamukkale 07:00 vs 08:00 canlı bug).
+    toplanma_saati: tour.toplanma_saati,
+    hareket_noktasi: tour.hareket_noktasi,
+    tur_sure: tour.tur_sure,
   };
 }
 
 /**
- * 3-strateji tur eşleştirme (her biri exact + translation + fuzzy):
- * Strateji 1: NLU tour_name
- * Strateji 2: NLU destination
- * Strateji 3: Direkt mesaj metni (fallback)
+ * NLU output validation gate (2026-06-20 Bug 1 fix).
+ *
+ * NLU bağlamdan MESAJDA OLMAYAN tur adı UYDURUYORDU (örn. mesaj "efes turu ne zaman"
+ * ama NLU destination="Kapadokya" döndürür — "Kapadokya" mesajda yok, history bias).
+ * Bu helper NLU çıktısının kullanıcı mesajında gerçekten karşılığı olup olmadığını
+ * doğrular. Yoksa NLU output YOKSAYILIR — uydurmaya tour-matching güvenmez.
+ *
+ * Doğrulama 2 katmanlı:
+ *   1. Direkt: NLU kelimesi mesajda (normalize) geçiyor mu?
+ *   2. Translation: NLU kelimesi TR ana adlardan biriyse, varyantları
+ *      (cappadocia, ephesus, vs.) mesajda geçiyor mu? Yabancı dil senaryosu.
+ */
+function isNluOutputInMessage(nluWord: string, message: string): boolean {
+  if (!nluWord || !nluWord.trim()) return false;
+  const normMsg = normalizeForMatch(message);
+  const normNlu = normalizeForMatch(nluWord);
+  if (normMsg.includes(normNlu)) return true;
+  // Translation map: yabancı dil kullanıcısı için
+  if (TOUR_NAME_TRANSLATIONS[normNlu]) {
+    return TOUR_NAME_TRANSLATIONS[normNlu].some((variant) =>
+      normMsg.includes(normalizeForMatch(variant)),
+    );
+  }
+  // Bidirectional: NLU "Cappadocia" demiş olabilir, mesajda "kapadokya"
+  for (const [trName, aliases] of Object.entries(TOUR_NAME_TRANSLATIONS)) {
+    if (aliases.some((a) => normalizeForMatch(a) === normNlu)) {
+      if (normMsg.includes(trName)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Yeni strateji sıralaması (2026-06-20 Bug 1/2 kök çözümü):
+ *
+ *   Strateji 1 (KANITSAL — mesaj kelimeleri):
+ *     Kullanıcı mesajının kendi kelimelerinden (stopword filtreli) match dene.
+ *     Bu KANITSAL kaynaktır: kelime zaten kullanıcının yazdığı şey.
+ *
+ *   Strateji 2 (NLU tour_name, validated):
+ *     NLU'nun çıkardığı tur adı mesajda DOĞRULANIRSA kullan.
+ *     NLU bağlamdan uydurmuşsa (mesajda yok) YOKSAY.
+ *
+ *   Strateji 3 (NLU destination, validated):
+ *     Aynı validation gate.
+ *
+ * UNKNOWN_TOUR sinyali:
+ *   Strateji 1'de anlamlı kelime kaldı (stopword sonrası) AMA hiçbir tur'la
+ *   eşleşmedi VE intent tour_search/reservation_intent → kullanıcı bir tur
+ *   arıyor ama DB'de yok → process-message'da deterministik "X turu yok" mesajı.
  */
 export function findMatchingTours(
   message: string,
@@ -239,14 +297,9 @@ export function findMatchingTours(
   expectedInput: string,
   intent: string,
 ): TourMatchResult {
-  // B-5 fix (2026-06-09): Context-aware koruma — kullanıcıdan isim, telefon veya
-  // e-posta beklerken, mesajdaki string'i TUR ADIYLA EŞLEŞTİRME. Aksi halde
-  // "özge yılmazer" gibi isim mesajları yanlışlıkla tur seçimi sanılır ve tur
-  // değişimi transition'ı tetiklenir (Özge bug'ının NLU tarafındaki kaynağı).
-  // Tarih beklerken hâlâ tur eşleştirme açık — bazı kullanıcılar tarihle birlikte
-  // alternatif tur düşünebilir, bu makul. Sadece isim/telefon adımlarında kapatılır.
+  // B-5 fix (2026-06-09): isim/telefon adımında tur eşleştirme kapalı.
   if (expectedInput === "name" || expectedInput === "phone") {
-    return { selectedTour: null, multipleMatches: [] };
+    return { selectedTour: null, multipleMatches: [], unknownTourQuery: null };
   }
 
   const tourIntents = [
@@ -262,66 +315,77 @@ export function findMatchingTours(
   const destinations = normalizeNluField(nluEntities?.destination);
 
   const shouldMatch = tourIntents.includes(intent) || tourNames.length > 0 || destinations.length > 0;
-  if (!shouldMatch) return { selectedTour: null, multipleMatches: [] };
+  if (!shouldMatch) {
+    return { selectedTour: null, multipleMatches: [], unknownTourQuery: null };
+  }
 
   let selectedTour: any = null;
   let multipleMatches: any[] = [];
 
-  // Strateji 1: NLU tour_name — 3 katmanlı
-  for (const name of tourNames) {
-    if (selectedTour || multipleMatches.length > 0) break;
-    const matches = matchByQuery(name, availableTours, false);
-    if (matches.length === 1) {
-      selectedTour = createTourRef(matches[0]);
-    } else if (matches.length > 1) {
-      multipleMatches = matches;
+  // ─── Strateji 1: KANITSAL — Mesaj kelimeleri (öncelikli) ─────────────────
+  // Mesaj kelimelerine STOPWORD filtre uygula ("turu", "tour" gibi kelimeler
+  // tüm turlarda var → yanlış pozitif kaynağı; ELE). Geriye kalan anlamlı
+  // kelimelere matchByQuery (exact + translation + fuzzy).
+  const msgWords = message
+    .split(/\s+/)
+    .map((w) => w.replace(/[?!.,;:()*"']/g, "")) // noktalama temizle
+    .filter(isMeaningfulTourKeyword); // 3+ harf + stopword değil
+
+  const seenTourIds = new Set<string>();
+  for (const word of msgWords) {
+    const matches = matchByQuery(word, availableTours, true);
+    for (const m of matches) {
+      if (!seenTourIds.has(m.id)) {
+        seenTourIds.add(m.id);
+        multipleMatches.push(m);
+      }
     }
   }
-
-  // Strateji 2: NLU destination — 3 katmanlı
-  for (const dest of destinations) {
-    if (selectedTour || multipleMatches.length > 0) break;
-    const matches = matchByQuery(dest, availableTours, true);
-    if (matches.length === 1) {
-      selectedTour = createTourRef(matches[0]);
-    } else if (matches.length > 1) {
-      multipleMatches = matches;
-    }
+  if (multipleMatches.length === 1) {
+    selectedTour = createTourRef(multipleMatches[0]);
+    multipleMatches = [];
   }
 
-  // Strateji 3: Direkt mesaj metni
+  // ─── Strateji 2: NLU tour_name (validated) ────────────────────────────────
   if (!selectedTour && multipleMatches.length === 0) {
-    // 3a. tour-matcher.ts'in mevcut implementasyonu (keyword tabanlı)
-    const matchedRef = matchTour(message, availableTours, expectedInput);
-    if (matchedRef) {
-      const normMsg = normalizeForMatch(message);
-      // BUG #2 FIX: tüm dil varyantlarına bak
-      const allMatches = availableTours.filter((t) => {
-        const allTexts = getTourSearchableTexts(t);
-        return allTexts.some((text) => normalizeForMatch(text).includes(normMsg));
-      });
-      if (allMatches.length > 1) {
-        multipleMatches = allMatches;
-      } else {
-        const full = availableTours.find((t) => t.id === matchedRef.id);
-        if (full) selectedTour = createTourRef(full);
-      }
-    }
-
-    // 3b. Mesajdaki her kelime için translation + fuzzy (matchTour başarısız olduysa)
-    if (!selectedTour && multipleMatches.length === 0) {
-      const msgWords = message.split(/\s+/).filter((w) => w.length >= 4);
-      for (const word of msgWords) {
-        if (selectedTour || multipleMatches.length > 0) break;
-        const matches = matchByQuery(word, availableTours, true);
-        if (matches.length === 1) {
-          selectedTour = createTourRef(matches[0]);
-        } else if (matches.length > 1) {
-          multipleMatches = matches;
-        }
+    for (const name of tourNames) {
+      if (selectedTour || multipleMatches.length > 0) break;
+      // NLU validation gate: NLU çıktısı mesajda gerçekten var mı?
+      if (!isNluOutputInMessage(name, message)) continue; // uydurma → atla
+      const matches = matchByQuery(name, availableTours, false);
+      if (matches.length === 1) {
+        selectedTour = createTourRef(matches[0]);
+      } else if (matches.length > 1) {
+        multipleMatches = matches;
       }
     }
   }
 
-  return { selectedTour, multipleMatches };
+  // ─── Strateji 3: NLU destination (validated) ──────────────────────────────
+  if (!selectedTour && multipleMatches.length === 0) {
+    for (const dest of destinations) {
+      if (selectedTour || multipleMatches.length > 0) break;
+      if (!isNluOutputInMessage(dest, message)) continue; // uydurma → atla
+      const matches = matchByQuery(dest, availableTours, true);
+      if (matches.length === 1) {
+        selectedTour = createTourRef(matches[0]);
+      } else if (matches.length > 1) {
+        multipleMatches = matches;
+      }
+    }
+  }
+
+  // ─── UNKNOWN_TOUR sinyali (2026-06-20 B dalı) ──────────────────────────────
+  // Strateji 1'de anlamlı kelime KALDI (stopword sonrası) AMA hiçbir match yok VE
+  // intent gerçek tur arama → kullanıcı bir tur arıyor ama DB'de yok.
+  // process-message bu sinyali görür → deterministik "X turu sistemimizde yok".
+  let unknownTourQuery: string | null = null;
+  const isBookingIntent = intent === "tour_search" || intent === "reservation_intent";
+  const noMatchAtAll = !selectedTour && multipleMatches.length === 0;
+  if (isBookingIntent && noMatchAtAll && msgWords.length > 0) {
+    // En uzun anlamlı kelimeyi sinyal olarak gönder (deterministik mesajda kullanılır)
+    unknownTourQuery = msgWords.reduce((a, b) => (b.length > a.length ? b : a));
+  }
+
+  return { selectedTour, multipleMatches, unknownTourQuery };
 }

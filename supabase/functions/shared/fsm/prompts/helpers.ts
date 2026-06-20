@@ -161,23 +161,43 @@ function getNumberEmoji(num: number): string {
 }
 
 /**
+ * "HH:MM:SS" veya "HH:MM" formatındaki saati "HH:MM" olarak normalize et.
+ * DB'de time without time zone tipi "07:30:00" şeklinde gelir; LLM'e kısa hal.
+ * 2026-06-20 BUG 4 fix: bu helper olmadan LLM saat uyduruyordu (07:00/08:00 vs).
+ */
+function formatTime(t: any): string {
+  if (!t) return "";
+  const s = String(t);
+  const m = s.match(/^(\d{1,2}):(\d{2})/);
+  return m ? `${m[1].padStart(2, "0")}:${m[2]}` : s;
+}
+
+/**
  * Format tour details with tone-aware styling
  * *tek yıldız* kullanır (WhatsApp uyumlu)
  */
 export function formatTourDetails(tour: any, language: string, _tone: string = "standart"): string {
   // 2026-06-19 (Bug A3 kök çözümü): datesSection bloğu KALDIRILDI. LLM artık tarih
   // konuşmuyor; tarih listesi process-message.ts :11 (TARİH LİSTESİ deterministik)
-  // tarafından üretiliyor (D5 — collectionStep'ten bağımsız). Bu fonksiyon yalnızca
-  // ad/destinasyon/fiyat/program döndürür.
+  // tarafından üretiliyor (D5 — collectionStep'ten bağımsız).
+  //
+  // 2026-06-20 (Bug 4 kök çözümü): toplanma_saati + hareket_noktasi + tur_sure
+  // alanları EKLENDİ. DB'de bu alanlar dolu (Pamukkale 07:30, Kapadokya Balon
+  // 05:00, vb.) ama prompt'a girmediği için LLM saat uyduruyor + tutarsız
+  // davranıyordu. Artık deterministik veri prompt'ta → halüsinasyon kapısı kapalı.
   const _today = new Date().toISOString().slice(0, 10);
   const firstDate = (tour.dates || []).filter((d: any) => !d?.departure_date || d.departure_date >= _today)[0];
   const price = firstDate?.price_adult;
+  const meetTime = formatTime(tour.toplanma_saati);
 
   if (language === "tr") {
     const parts = [
       `*${tour.title}*`,
       `📍 Destinasyon: ${tour.destination}`,
       price ? `💰 Fiyat: kişi başı ${price}₺` : "",
+      tour.tur_sure ? `⏱ Süre: ${tour.tur_sure}` : "",
+      meetTime ? `🕐 Toplanma saati: ${meetTime}` : "",
+      tour.hareket_noktasi ? `🚌 Kalkış noktası: ${tour.hareket_noktasi}` : "",
       tour.program_kisa ? `📝 Özet: ${tour.program_kisa}` : "",
       tour.gezilecek_yerler ? `🗺️ Gezilecek Yerler: ${tour.gezilecek_yerler}` : "",
     ];
@@ -188,6 +208,9 @@ export function formatTourDetails(tour: any, language: string, _tone: string = "
     `*${tour.title}*`,
     `📍 Destination: ${tour.destination}`,
     price ? `💰 Price: ${price}₺ per person` : "",
+    tour.tur_sure ? `⏱ Duration: ${tour.tur_sure}` : "",
+    meetTime ? `🕐 Meeting time: ${meetTime}` : "",
+    tour.hareket_noktasi ? `🚌 Pickup point: ${tour.hareket_noktasi}` : "",
     tour.program_kisa ? `📝 Summary: ${tour.program_kisa}` : "",
     tour.gezilecek_yerler ? `🗺️ Places to Visit: ${tour.gezilecek_yerler}` : "",
   ];
