@@ -416,5 +416,45 @@ export function findMatchingTours(
     unknownTourQuery = msgWords.reduce((a, b) => (b.length > a.length ? b : a));
   }
 
+  // ─── 2026-06-20: EGE BUG TEŞHİS LOG'U ──────────────────────────────────────
+  // Canlı bug (execution a2a42648): kullanıcı BROWSING'de "ege" yazdı, log
+  // "UNKNOWN_TOUR signal: ege" görüldü. Behavioral test'te tours array'inde
+  // "Ege Turu" varken matchByQuery("ege", tours, true) → [Ege Turu] döner ✓.
+  // Production'da bulunamıyor. Olası kökler: (1) tours cache'de Ege Turu yok,
+  // (2) title field'ı boş veya farklı formatta, (3) tour objesi alan adları
+  // (title_xx vs destination_xx) farklı.
+  //
+  // Bu log SADECE UNKNOWN_TOUR sinyali tetiklendiğinde çalışır → noise düşük.
+  // tours preview'i ilk 10 turu listeler → Ege Turu var mı + title yapısı görünür.
+  // Yan teşhis için matchByQuery'yi tekrar çağırıp her kelime için kaç hit
+  // bulduğunu yan log'lar.
+  if (unknownTourQuery) {
+    const _toursPreview = (availableTours || []).slice(0, 12).map((t) => ({
+      id: t?.id?.slice?.(0, 8),
+      title: t?.title,
+      title_tr: t?.title_tr,
+      destination: t?.destination,
+      destination_tr: t?.destination_tr,
+    }));
+    const _wordHits: Record<string, number> = {};
+    for (const w of msgWords) {
+      try {
+        _wordHits[w] = matchByQuery(w, availableTours || [], true).length;
+      } catch {
+        _wordHits[w] = -1;
+      }
+    }
+    console.log("[tour-matching] DEBUG UNKNOWN_TOUR teşhisi:", JSON.stringify({
+      query: unknownTourQuery,
+      msgWords,
+      wordHits: _wordHits,
+      intent,
+      toursCount: availableTours?.length ?? 0,
+      nluTourNames: tourNames,
+      nluDestinations: destinations,
+      toursPreview: _toursPreview,
+    }, null, 2));
+  }
+
   return { selectedTour, multipleMatches, unknownTourQuery };
 }
