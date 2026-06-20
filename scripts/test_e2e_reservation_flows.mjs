@@ -42,6 +42,7 @@ function runDenoCheck() {
     "supabase/functions/shared/constants/tour-matching.ts",
     "supabase/functions/shared/services/tour-matching.ts",
     "supabase/functions/shared/services/nlu-validation.ts",
+    "supabase/functions/shared/services/bypass-gates.ts",
   ];
 
   const candidates = [
@@ -1194,6 +1195,51 @@ if (nluContent.includes("NEVER extract full_name from tour-change phrases")) {
   failures.push({ scenario: "PRESENCE:nlu:tour-change-phrases", step: 0, msg: "tour-change phrases bloğu", key: "fsm/nlu.ts", expected: "NEVER extract full_name from tour-change phrases", actual: "NOT FOUND" });
   console.log(`✗ [PRESENCE] nlu.ts: tour-change phrases bloğu eksik`);
 }
+
+// ─── YAN #5 PERSIST BYPASS PRESENCE (2026-06-20) ──────────────────────
+// services/bypass-gates.ts var mı
+const bypassGatesPath = join(__dirname, "..", "supabase", "functions", "shared", "services", "bypass-gates.ts");
+let bypassGatesContent = "";
+try {
+  bypassGatesContent = readFileSync(bypassGatesPath, "utf-8");
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] services/bypass-gates.ts dosyası var (Yan #5)`);
+} catch {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE: bypass-gates", step: 0, msg: "bypass-gates.ts YOK", key: "services/bypass-gates.ts", expected: "exists", actual: "MISSING" });
+  console.log(`✗ [PRESENCE] bypass-gates.ts dosyası YOK`);
+}
+function assertBypassGatesContains(name, needle) {
+  if (bypassGatesContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [PRESENCE] bypass-gates: ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `PRESENCE:bypass-gates:${name}`, step: 0, msg: needle, key: "services/bypass-gates.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [PRESENCE] bypass-gates: ${name} kayıp`);
+  }
+}
+assertBypassGatesContains("shouldTriggerNameAskPersist export", "export function shouldTriggerNameAskPersist");
+assertBypassGatesContains("BİLİNEN SINIR yorumu (NLU yanlış sınıflandırma)", "BİLİNEN SINIR");
+assertBypassGatesContains("DAR KOŞUL 4 kapı belgeli", "DAR KOŞUL");
+
+// process-message.ts'de :11b-PERSIST çağrı yeri
+assertProcMsgContains(":11b-PERSIST import (bypass-gates)",
+  'import { shouldTriggerNameAskPersist } from "../services/bypass-gates.ts"');
+assertProcMsgContains(":11b-PERSIST çağrı (shouldTriggerNameAskPersist)",
+  "shouldTriggerNameAskPersist(context, newContext, nluResult)");
+assertProcMsgContains(":11b-PERSIST başlığı",
+  "11b-PERSIST. WAITING_FOR_NAME NO-OP");
+assertProcMsgContains(":11b-PERSIST log (canlı doğrulama için)",
+  ":11b-PERSIST tetiklendi");
+// 7 dil mesaj
+assertProcMsgContains(":11b-PERSIST TR mesajı",   "Önce *ad ve soyadınızı* alalım");
+assertProcMsgContains(":11b-PERSIST EN mesajı",   "Let's get your *full name* first");
+assertProcMsgContains(":11b-PERSIST DE mesajı",   "*vollständigen Namen* aufnehmen");
+assertProcMsgContains(":11b-PERSIST RU mesajı",   "*имя и фамилию*");
+assertProcMsgContains(":11b-PERSIST AR mesajı",   "*اسمك الكامل*");
+assertProcMsgContains(":11b-PERSIST FR mesajı",   "*nom complet*");
+assertProcMsgContains(":11b-PERSIST ES mesajı",   "*nombre completo*");
 
 // ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);

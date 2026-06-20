@@ -767,6 +767,118 @@ assert(`A gate DAR: null → NOT leak`,
     ok === true);
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// 8) YAN #5 — WAITING_FOR_NAME PERSISTENT BYPASS GATE
+//
+// Canlı bug (execution 109fef4c): waiting_for_name'de "1 kişi" → LLM saçma
+// "Kaç kişi?" cevabı. Mevcut :11b sadece TRANSITION'da çalışır, no-op'ta yok.
+//
+// Yeni :11b-PERSIST helper: shouldTriggerNameAskPersist (4 kapılı dar gate).
+// Off-topic + meşru isim + tur değişimi + transition KORUNUR.
+// BİLİNEN SINIR: NLU yanlış sınıflandırma → bypass tetiklenir (belgelenen trade).
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── YAN #5: WAITING_FOR_NAME PERSIST BYPASS GATE ──");
+
+import { shouldTriggerNameAskPersist } from "../supabase/functions/shared/services/bypass-gates.ts";
+
+const ctx_name = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_name" };
+const ctx_pax  = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" };
+const ctx_date = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" };
+
+// ─── MURAT BUG: NO-OP'ta yanlış sinyal → BYPASS TETİKLE ────────────────
+{
+  const nlu = { intent: "provide_info", updates: { paxAdult: 1 } };
+  assert(`Murat bug: waiting_for_name no-op + "1 kişi" (paxAdult) + fullName yok → TETİKLE`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === true);
+}
+
+{
+  const nlu = { intent: "provide_info", updates: { dates: ["14 aralık"] } as any };
+  assert(`waiting_for_name no-op + tarih + fullName yok → TETİKLE`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === true);
+}
+
+{
+  const nlu = { intent: "provide_info", updates: { phone: "0555..." } };
+  assert(`waiting_for_name no-op + telefon + fullName yok → TETİKLE (sıra zorlaması)`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === true);
+}
+
+// ─── MEŞRU İSİM: NO-OP ama fullName VAR → NO TETİKLE ──────────────────
+{
+  const nlu = { intent: "provide_info", updates: { fullName: "Murat Oğrak" } };
+  assert(`Meşru isim: fullName VAR → TETİKLEME (extractInfo state'e yazar)`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === false);
+}
+
+// ─── OFF-TOPIC: meşru sorular → NO TETİKLE (LLM cevaplasın) ────────────
+{
+  const nlu = { intent: "faq_general", updates: {} };
+  assert(`Off-topic faq_general → TETİKLEME (LLM cevap + midFlowReturnPrompt akışa dön)`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === false);
+}
+
+{
+  const nlu = { intent: "payment_methods", updates: {} };
+  assert(`Off-topic payment_methods → TETİKLEME`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === false);
+}
+
+{
+  const nlu = { intent: "hotel_details", updates: {} };
+  assert(`Off-topic hotel_details → TETİKLEME`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === false);
+}
+
+{
+  const nlu = { intent: "greeting", updates: {} };
+  assert(`Off-topic greeting → TETİKLEME`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === false);
+}
+
+// ─── TUR DEĞIŞIMI: intent provide_info değil → NO TETİKLE ──────────────
+{
+  const nlu = { intent: "tour_search", updates: {} };
+  assert(`Tur değişimi tour_search → TETİKLEME (erken müdahale alanı)`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === false);
+}
+
+{
+  const nlu = { intent: "change_info", updates: {} };
+  assert(`Tur değişimi change_info → TETİKLEME (erken müdahale alanı)`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu) === false);
+}
+
+// ─── TRANSITION (pax→name): no-op koşulu kırılır → eski :11b çalışsın ──
+{
+  const nlu = { intent: "provide_info", updates: { paxAdult: 2 } };
+  assert(`Transition pax→name: context.step=pax → BU bypass TETİKLEME (eski :11b devralır)`,
+    shouldTriggerNameAskPersist(ctx_pax, ctx_name, nlu) === false);
+}
+
+// ─── ERKEN MÜDAHALE: tur değişimi sonrası state waiting_for_date → NO TETİKLE
+{
+  const nlu = { intent: "provide_info", updates: {} };
+  assert(`Erken müdahale tetiklendi → newContext.step=waiting_for_date → TETİKLEME`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_date, nlu) === false);
+}
+
+// ─── BİLİNEN SINIR (KULLANICI RİCASI): NLU yanlış sınıflandırma ────────
+// Senaryo: kullanıcı "iki günlük müydü?" diye off-topic soru sordu.
+// NLU yanlışlıkla intent=provide_info, paxAdult=2 dedi (sayı görüp pax sandı).
+// BU BYPASS TETİKLENİR ve meşru soru "Önce ismi alalım" ile KESİLİR.
+// midFlowReturnPrompt bu yolda çalışmaz (bypass erken çıkış yapıyor, LLM hiç
+// çağrılmıyor). KABUL EDİLEN SINIR — eski "Kaç kişi?" saçma cevabı daha
+// büyük UX kaybı. Bu testin amacı: davranışı belgelemek, gerileme tespiti.
+{
+  const nlu_misclassified = { intent: "provide_info", updates: { paxAdult: 2 } };
+  assert(`BİLİNEN SINIR: NLU off-topic ('iki günlük müydü?')'yi yanlış sınıflandırırsa BYPASS TETİKLENİR — kabul edilen trade`,
+    shouldTriggerNameAskPersist(ctx_name, ctx_name, nlu_misclassified) === true);
+}
+
+// ─── ŞİMDİLİK YOK: waiting_for_phone simetri ───────────────────────────
+console.log("ℹ️  waiting_for_phone simetrisi BU COMMIT'TE YOK — canlı kanıt bekleniyor (kökü görmeden ekleme ilkesi)");
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

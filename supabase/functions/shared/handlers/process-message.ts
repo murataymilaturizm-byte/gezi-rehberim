@@ -25,6 +25,7 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak } from "../services/nlu-validation.ts";
+import { shouldTriggerNameAskPersist } from "../services/bypass-gates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
@@ -731,6 +732,36 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       es: "¡Gracias! 😊 ¿Puede darme su nombre completo?",
     };
     const askReply = _msgs[_lang] || _msgs.tr;
+    await _save(askReply, newContext);
+    await adapter.sendResponse(askReply);
+    return { success: true, response: askReply, newContext };
+  }
+
+  // === 11b-PERSIST. WAITING_FOR_NAME NO-OP — yanlış sinyal koruması ===
+  // 2026-06-20 Yan #5 fix. Canlı bug (execution 109fef4c): waiting_for_name'de
+  // kullanıcı "1 kişi" yazdı, state pax dolu, intent=provide_info, fullName=null.
+  // Mevcut :11b transition gate'i tetiklenmedi (no-op). LLM context'e bakıp
+  // "Teşekkürler! Kaç kişi katılacaksınız?" diye saçma cevap üretti.
+  //
+  // BİLİNEN SINIR: NLU bir off-topic soruyu (örn. "iki günlük müydü?") yanlışlıkla
+  // provide_info+paxAdult olarak sınıflandırırsa bu bypass TETİKLENİR ve meşru
+  // soruyu "Önce ismi alalım" ile keser. midFlowReturnPrompt bu yolda ÇALIŞMAZ
+  // (bypass erken çıkış yapıyor, LLM hiç çağrılmıyor, prompt katmanı devreye
+  // girmiyor). Bu kabul edilen bir sınır — eski "Kaç kişi?" saçma cevabı daha
+  // büyük UX kaybı. Trade-off davranışsal testte "bilinen sınır" olarak belgeli.
+  if (shouldTriggerNameAskPersist(context, newContext, nluResult)) {
+    const _lang = newContext.language || "tr";
+    const _msgs: Record<string, string> = {
+      tr: "Önce *ad ve soyadınızı* alalım lütfen. 😊",
+      en: "Let's get your *full name* first, please. 😊",
+      de: "Lass uns zuerst Ihren *vollständigen Namen* aufnehmen, bitte. 😊",
+      ru: "Сначала укажите, пожалуйста, ваше *имя и фамилию*. 😊",
+      ar: "لنأخذ أولاً *اسمك الكامل* من فضلك. 😊",
+      fr: "Commençons d'abord par votre *nom complet*, s'il vous plaît. 😊",
+      es: "Primero indíquenos su *nombre completo*, por favor. 😊",
+    };
+    const askReply = _msgs[_lang] || _msgs.tr;
+    console.log(`[process-message] :11b-PERSIST tetiklendi (no-op, intent=${nluResult.intent}, fullName yok)`);
     await _save(askReply, newContext);
     await adapter.sendResponse(askReply);
     return { success: true, response: askReply, newContext };
