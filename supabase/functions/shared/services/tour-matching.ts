@@ -408,12 +408,44 @@ export function findMatchingTours(
   // Strateji 1'de anlamlı kelime KALDI (stopword sonrası) AMA hiçbir match yok VE
   // intent gerçek tur arama → kullanıcı bir tur arıyor ama DB'de yok.
   // process-message bu sinyali görür → deterministik "X turu sistemimizde yok".
+  //
+  // 2026-06-20 CANLI BUG (Murat tespit): msgWords=["Ege","yapmak","istiyorum"]
+  // → en uzun "istiyorum" (9) seçildi → bot "istiyorum turu sistemimizde
+  // bulunmuyor" dedi. Absürt çıktı. NLU "Ege turu" / "Ege" çıkardı ama yok
+  // sayıldı.
+  //
+  // ÇÖZÜM — Öncelik sıralı seçim:
+  //   1. NLU tour_name (mesajda doğrulanırsa)  → en doğru sinyal
+  //   2. NLU destination (mesajda doğrulanırsa)
+  //   3. msgWords fallback — ama EN UZUN değil, ilk anlamlı tek-kelime tercih et
+  //      (uzun kelime genelde fiil: "istiyorum"/"alalım"/"yapmak")
   let unknownTourQuery: string | null = null;
   const isBookingIntent = intent === "tour_search" || intent === "reservation_intent";
   const noMatchAtAll = !selectedTour && multipleMatches.length === 0;
-  if (isBookingIntent && noMatchAtAll && msgWords.length > 0) {
-    // En uzun anlamlı kelimeyi sinyal olarak gönder (deterministik mesajda kullanılır)
-    unknownTourQuery = msgWords.reduce((a, b) => (b.length > a.length ? b : a));
+  if (isBookingIntent && noMatchAtAll) {
+    // Öncelik 1: NLU tour_name (mesajda gerçekten var mı doğrula)
+    for (const name of tourNames) {
+      if (isNluOutputInMessage(name, message)) {
+        unknownTourQuery = name;
+        break;
+      }
+    }
+    // Öncelik 2: NLU destination
+    if (!unknownTourQuery) {
+      for (const dest of destinations) {
+        if (isNluOutputInMessage(dest, message)) {
+          unknownTourQuery = dest;
+          break;
+        }
+      }
+    }
+    // Öncelik 3 (fallback): msgWords — ilk anlamlı kelime (uzun değil, çünkü
+    // uzun genelde fiildir). msgWords zaten stopword filtreden geçti, ama
+    // "istiyorum"/"alalım"/"yapmak" gibi fiiller stopword listesinde yok.
+    // Tipik olarak tur adı baş tarafta gelir: "Ege turu yapmak istiyorum".
+    if (!unknownTourQuery && msgWords.length > 0) {
+      unknownTourQuery = msgWords[0];
+    }
   }
 
   // ─── 2026-06-20: EGE BUG TEŞHİS LOG'U ──────────────────────────────────────

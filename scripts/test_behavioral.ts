@@ -628,6 +628,51 @@ console.log("\n── B-5 FIX GEVŞETMESİ (Bug 1 v2 waiting_for_name varyantı)
     r.selectedTour === null);
 }
 
+// ─── CANLI BUG (Murat tespit): UNKNOWN_TOUR query seçimi ────────────────
+// Mesaj: "Ege turu yapmak istiyorum" — Ege Turu DB'de yok (production).
+// ESKI BUG: msgWords=["Ege","yapmak","istiyorum"] → en uzun "istiyorum"
+//          seçildi → bot "istiyorum turu sistemimizde bulunmuyor" dedi.
+// YENI MANTIK: NLU tour_name/destination öncelikli + mesajda doğrulanmış.
+{
+  // Test için Ege turu olmayan tours array kullan
+  const toursWithoutEge = tours.filter(t => t.id !== "T_EGE");
+  const r = findMatchingTours("Ege turu yapmak istiyorum",
+    { tour_name: "Ege turu", destination: "Ege" },
+    toursWithoutEge, "tour_selection", "reservation_intent");
+  assert(`Canlı bug: 'Ege turu yapmak istiyorum' → unknownTourQuery="Ege turu" (NLU öncelik, fiil değil)`,
+    r.unknownTourQuery === "Ege turu",
+    `got=${JSON.stringify({ q: r.unknownTourQuery })}`);
+}
+
+{
+  // NLU destination öncelik (tour_name yoksa)
+  const toursWithoutMardin = tours;  // Mardin zaten yok
+  const r = findMatchingTours("Mardin'e gitmek istiyorum",
+    { tour_name: "", destination: "Mardin" },
+    toursWithoutMardin, "tour_selection", "reservation_intent");
+  assert(`NLU destination öncelik: 'Mardin'e gitmek istiyorum' → 'Mardin' ('istiyorum' değil)`,
+    r.unknownTourQuery === "Mardin");
+}
+
+{
+  // Fallback: NLU hiç sinyal vermedi, msgWords var → ilk kelime
+  const r = findMatchingTours("Trabzon lütfen",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "tour_search");
+  assert(`Fallback (NLU sinyal yok): 'Trabzon lütfen' → 'Trabzon' (ilk kelime, en uzun değil)`,
+    r.unknownTourQuery === "Trabzon");
+}
+
+{
+  // NLU sinyali var AMA mesajda doğrulanmıyor (uydurma) → msgWords fallback'e düş
+  const r = findMatchingTours("Bodrum gezisi",
+    { tour_name: "Kapadokya Balon Turu", destination: "Kapadokya" }, // NLU bağlamdan uydurmuş
+    tours.filter(t => t.id !== "T_KAPADOKYA" && t.id !== "T_KAPKULTUR"),
+    "tour_selection", "tour_search");
+  // NLU uydurma → öncelik 1/2 geçilir, öncelik 3'e düş → msgWords[0]="Bodrum"
+  assert(`NLU uydurma (mesajda yok) → fallback msgWords ilk kelime 'Bodrum'`,
+    r.unknownTourQuery === "Bodrum");
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // 7) SORUN 1 + 2 (2026-06-20): change_info erken müdahalesi + A gate
 //    fullName tour-leak savunması.
