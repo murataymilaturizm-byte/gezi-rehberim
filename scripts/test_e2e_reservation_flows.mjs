@@ -38,6 +38,9 @@ function runDenoCheck() {
     "supabase/functions/shared/services/info-extractor.ts",
     "supabase/functions/shared/constants/date-detection.ts",
     "supabase/functions/shared/fsm/prompts/helpers.ts",
+    "supabase/functions/shared/services/tour-change.ts",
+    "supabase/functions/shared/constants/tour-matching.ts",
+    "supabase/functions/shared/services/tour-matching.ts",
   ];
 
   const candidates = [
@@ -1043,6 +1046,86 @@ if (infoExtractorContent.includes('/^\\d+$/.test(trimmed)')) {
   failures.push({ scenario: "PRESENCE: pax strict regex", step: 0, msg: "Blok 6 strict regex eksik", key: "info-extractor.ts", expected: "/^\\d+$/", actual: "NOT FOUND" });
   console.log(`✗ [PRESENCE] info-extractor pax strict regex YOK`);
 }
+
+// === COMMIT A — BUG 1 v2 (state geçişi) + stopword genişletmesi ===
+// Helper varlık kontrolü
+const tourChangePath = join(__dirname, "..", "supabase", "functions", "shared", "services", "tour-change.ts");
+if (existsSync(tourChangePath)) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] services/tour-change.ts helper dosyası var`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE: tour-change helper", step: 0, msg: "tour-change.ts dosyası YOK", key: "services/tour-change.ts", expected: "exists", actual: "MISSING" });
+  console.log(`✗ [PRESENCE] tour-change.ts dosyası YOK`);
+}
+
+const tourChangeContent = existsSync(tourChangePath) ? readFileSync(tourChangePath, "utf-8") : "";
+function assertTourChangeContains(name, needle) {
+  if (tourChangeContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [BYPASS] tour-change: ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `BYPASS:tour-change:${name}`, step: 0, msg: needle, key: "tour-change.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [BYPASS] tour-change: ${name} kayıp`);
+  }
+}
+assertTourChangeContains("produceTourChangeContext export", "export function produceTourChangeContext");
+assertTourChangeContains("shouldApplyEarlyTourChange export", "export function shouldApplyEarlyTourChange");
+
+// state-machine.ts helper import + her iki action kullanıyor
+const stateMachinePath = join(__dirname, "..", "supabase", "functions", "shared", "fsm", "state-machine.ts");
+const stateMachineContent = readFileSync(stateMachinePath, "utf-8");
+function assertStateMachineContains(name, needle) {
+  if (stateMachineContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [BYPASS] state-machine: ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `BYPASS:state-machine:${name}`, step: 0, msg: needle.slice(0, 60), key: "state-machine.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [BYPASS] state-machine: ${name} kayıp`);
+  }
+}
+assertStateMachineContains("produceTourChangeContext import (tek-kaynak)",
+  'import { produceTourChangeContext } from "../services/tour-change.ts"');
+// Her iki tour-change action helper kullanıyor (string count)
+const helperCallCount = (stateMachineContent.match(/produceTourChangeContext\(ctx, input\.selectedTour!\)/g) || []).length;
+if (helperCallCount >= 2) {
+  scenarioPasses++;
+  console.log(`✓ [BYPASS] state-machine: 2 action helper kullanıyor (count=${helperCallCount})`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "BYPASS: state-machine helper count", step: 0, msg: `expected ≥2, got ${helperCallCount}`, key: "state-machine.ts", expected: "≥2", actual: helperCallCount });
+  console.log(`✗ [BYPASS] state-machine: sadece ${helperCallCount} helper çağrısı`);
+}
+
+// process-message.ts erken müdahale bloğu
+assertProcMsgContains("process-message: tour-change helper import",
+  'import { produceTourChangeContext, shouldApplyEarlyTourChange } from "../services/tour-change.ts"');
+assertProcMsgContains("process-message: erken müdahale shouldApply gate'i",
+  "shouldApplyEarlyTourChange(context, selectedTour)");
+assertProcMsgContains("process-message: DETERMINISTIC tour-change logu",
+  "DETERMINISTIC tour-change:");
+assertProcMsgContains("process-message: CONFIRMING'den geri dönüş reservationConfirmed:false",
+  "reservationConfirmed: false");
+
+// Stopword genişletme — rezervasyon ailesi
+const stopwordsPath = join(__dirname, "..", "supabase", "functions", "shared", "constants", "tour-matching.ts");
+const stopwordsContent = readFileSync(stopwordsPath, "utf-8");
+function assertStopwordsContains(name, needle) {
+  if (stopwordsContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [BYPASS] stopwords: ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `BYPASS:stopwords:${name}`, step: 0, msg: needle, key: "constants/tour-matching.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [BYPASS] stopwords: ${name} kayıp`);
+  }
+}
+assertStopwordsContains("'rezervasyon' eklendi", '"rezervasyon"');
+assertStopwordsContains("'booking' eklendi (EN)", '"booking"');
+assertStopwordsContains("'buchung' eklendi (DE)", '"buchung"');
+assertStopwordsContains("'evet' eklendi (TR onay)", '"evet"');
 
 // ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);

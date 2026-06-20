@@ -8,6 +8,7 @@ import type {
   InfoCollectionStep,
   ReservationInfo,
 } from "./types.ts";
+import { produceTourChangeContext } from "../services/tour-change.ts";
 
 export function createInitialContext(
   language: string = "tr",
@@ -509,19 +510,8 @@ const transitions: StateTransition[] = [
       input.selectedTour !== null &&
       input.selectedTour.id !== ctx.currentTour?.id &&
       Object.keys(ctx.reservationInfo).length <= 2,
-    action: (ctx, input) => ({
-      ...ctx,
-      currentTour: input.selectedTour,
-      viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
-      reservationInfo: {
-        ...ctx.reservationInfo,                          // pax/isim/phone/email KORU
-        tourId: input.selectedTour!.id,
-        tourTitle: input.selectedTour!.title,
-        dateId: undefined,                               // yeni tur → eski tarih geçersiz
-        selectedDate: undefined,
-      },
-      collectionStep: "waiting_for_date" as InfoCollectionStep,
-    }),
+    // 2026-06-20: helper'a refactor (tek-kaynak tour-change). Davranış birebir aynı.
+    action: (ctx, input) => produceTourChangeContext(ctx, input.selectedTour!),
   },
 
   // COLLECTING_INFO → TOUR_SELECTED (tur değişimi — B2: genişletilmiş pattern)
@@ -537,19 +527,8 @@ const transitions: StateTransition[] = [
       input.selectedTour.id !== ctx.currentTour?.id &&
       (/yeni tur|başka tur|tur değiştir|switch tour|change tour|different tour|farklı tur|diğer tur|tur\s*değişt|aslında\s+.{0,20}?tur|bunun\s+yerine\s+.{0,20}?tur|andere tour|другой тур|tour différent|tour diferente|جولة أخرى/i.test(input.userMessage) ||
        input.detectedIntent === "reservation_intent"),
-    action: (ctx, input) => ({
-      ...ctx,
-      currentTour: input.selectedTour,
-      viewedTours: [...ctx.viewedTours, input.selectedTour!.id],
-      reservationInfo: {
-        ...ctx.reservationInfo,                          // pax/isim/phone/email KORU
-        tourId: input.selectedTour!.id,
-        tourTitle: input.selectedTour!.title,
-        dateId: undefined,                               // yeni tur → eski tarih geçersiz
-        selectedDate: undefined,
-      },
-      collectionStep: "waiting_for_date" as InfoCollectionStep,
-    }),
+    // 2026-06-20: helper'a refactor (tek-kaynak tour-change). Davranış birebir aynı.
+    action: (ctx, input) => produceTourChangeContext(ctx, input.selectedTour!),
   },
 
   // COLLECTING_INFO → COLLECTING_INFO

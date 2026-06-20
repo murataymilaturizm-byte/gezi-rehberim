@@ -28,6 +28,7 @@ import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extracto
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
+import { produceTourChangeContext, shouldApplyEarlyTourChange } from "../services/tour-change.ts";
 import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
@@ -314,6 +315,31 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   );
   if (selectedTour) console.log("[process-message] Tour matched:", selectedTour.title);
   if (unknownTourQuery) console.log("[process-message] UNKNOWN_TOUR signal:", unknownTourQuery);
+
+  // === 7b. ERKEN TUR DEĞİŞİMİ (2026-06-20 Bug 1 v2) ========================
+  // Tour-matching kanıtsal selectedTour mevcut currentTour'dan farklıysa VE stage
+  // COLLECTING_INFO/CONFIRMING ise: stage koruma intent'i ezmeden (line ~326)
+  // önce deterministik tur değişimini uygula. Aksi halde pattern-bazlı transition
+  // tetiklenmez ve LLM yeni tur adıyla eski turun tarihini sunar (canlı bug
+  // execution 801fed7d kanıtı: "Efes Antik Kent Turu için 15.12.2026 - 900₺"
+  // ama state currentTour=Kapadokya, dateId=b...001 Kapadokya'nın).
+  //
+  // Çakışma güvenliği: erken müdahale context.currentTour'u günceller; sonraki
+  // state-machine transition condition'ı (selectedTour.id !== ctx.currentTour.id)
+  // artık equal görür → kendiliğinden atlar. Çifte değişim yok.
+  if (shouldApplyEarlyTourChange(context, selectedTour)) {
+    const _prevStage = context.stage;
+    const _prevTourTitle = context.currentTour?.title;
+    context = {
+      ...produceTourChangeContext(context, selectedTour),
+      stage: "COLLECTING_INFO" as any,
+      reservationConfirmed: false,                       // CONFIRMING'den geri dönüş temizliği
+    };
+    console.log(
+      `[process-message] DETERMINISTIC tour-change: ${_prevStage} → COLLECTING_INFO ` +
+      `("${_prevTourTitle}" → "${selectedTour.title}")`,
+    );
+  }
 
   // B2: Orijinal intent'i stage korumadan ÖNCE kaydet
   const _prePromotionIntent = nluResult.intent;

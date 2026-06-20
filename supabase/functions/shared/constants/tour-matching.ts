@@ -12,25 +12,51 @@
 // kelimeler match sinyali değil, ortak gürültü.
 
 /**
- * 7 dilde "tur" anlamındaki ortak kelimeler — keyword match'ten ELE.
- * Lowercase + normalize edilmiş halleri.
+ * 7 dilde "tur" anlamındaki ortak kelimeler + niyet/onay sözcükleri — keyword
+ * match'ten ELE. Lowercase + normalize edilmiş halleri.
+ *
+ * 2026-06-20 genişletme (Bug — UNKNOWN_TOUR false-positive):
+ *   Canlı log execution 31026a6b: "UNKNOWN_TOUR signal: rezervasyon".
+ *   Kullanıcı "rezervasyon" yazıp niyet bildirdiğinde tour-match anlamlı
+ *   kelime sayıp UNKNOWN_TOUR tetikliyordu. Niyet/onay kelimeleri stopword.
  */
 export const TOUR_KEYWORD_STOPWORDS = new Set<string>([
+  // ─── "tur" kelimeleri (mevcut) ──────────────────────────────────────────
   // TR
   "tur", "turu", "turun", "tura", "turlar", "turları", "turuna", "turdan",
   "gez", "gezi", "gezisi", "gezimiz",
   // EN
   "tour", "tours", "trip", "trips", "excursion", "excursions",
   // DE
-  "ausflug", "ausflüge", "ausfluge", "reise", "reisen", "tour", "touren",
-  // RU (normalize tur — кириллица küçük harfle)
+  "ausflug", "ausflüge", "ausfluge", "reise", "reisen", "touren",
+  // RU
   "тур", "туры", "экскурсия", "экскурсии", "поездка", "поездки",
   // AR
   "جولة", "جولات", "رحلة", "رحلات",
   // FR
-  "tour", "tours", "circuit", "circuits", "voyage", "voyages", "excursion",
+  "circuit", "circuits", "voyage", "voyages",
   // ES
-  "tour", "tours", "excursion", "excursión", "excursiones", "viaje", "viajes",
+  "excursión", "excursiones", "viaje", "viajes",
+
+  // ─── 2026-06-20: rezervasyon niyeti (UNKNOWN_TOUR false-positive fix) ──
+  "rezervasyon", "rezervasyonu", "rezervasyonum", "rezervasyonlar",
+  "reservation", "reservations",
+  "booking", "bookings",
+  "buchung", "buchungen",
+  "réservation", "réservations",
+  "reserva", "reservas",
+  "бронирование", "бронирования", "брони",
+  "حجز", "حجوزات",
+
+  // ─── 2026-06-20: tek başına onay/yanıt kelimeleri ───────────────────────
+  // Bunlar "rezervasyon" sorusuna cevap olarak yalnız gelir — tur değil.
+  "evet", "tamam", "olur", "peki", "tabii", "tabi",
+  "yes", "okay", "sure",
+  "ja", "nein",
+  "oui", "non",
+  "sí", "si",
+  "да", "нет",
+  "نعم", "لا",
 ]);
 
 /**

@@ -343,6 +343,198 @@ assert(`isMeaningfulTourKeyword('ege') = true (3 harf, stopword değil)`, isMean
 assert(`isMeaningfulTourKeyword('turu') = false (stopword)`, !isMeaningfulTourKeyword("turu"));
 assert(`isMeaningfulTourKeyword('ne') = false (2 harf)`, !isMeaningfulTourKeyword("ne"));
 
+// ═══════════════════════════════════════════════════════════════════════
+// 4) STOPWORD GENİŞLETME (2026-06-20 rezervasyon ailesi)
+// Canlı log execution 31026a6b'deki UNKNOWN_TOUR: rezervasyon false-positive fix.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── STOPWORD GENİŞLETME (rezervasyon + onay ailesi) ──");
+
+assert(`Stopword 'rezervasyon' eklendi`, TOUR_KEYWORD_STOPWORDS.has("rezervasyon"));
+assert(`Stopword 'reservation' eklendi (EN)`, TOUR_KEYWORD_STOPWORDS.has("reservation"));
+assert(`Stopword 'booking' eklendi (EN)`, TOUR_KEYWORD_STOPWORDS.has("booking"));
+assert(`Stopword 'buchung' eklendi (DE)`, TOUR_KEYWORD_STOPWORDS.has("buchung"));
+assert(`Stopword 'réservation' eklendi (FR)`, TOUR_KEYWORD_STOPWORDS.has("réservation"));
+assert(`Stopword 'reserva' eklendi (ES)`, TOUR_KEYWORD_STOPWORDS.has("reserva"));
+assert(`Stopword 'бронирование' eklendi (RU)`, TOUR_KEYWORD_STOPWORDS.has("бронирование"));
+assert(`Stopword 'حجز' eklendi (AR)`, TOUR_KEYWORD_STOPWORDS.has("حجز"));
+
+// Onay kelimeleri
+assert(`Stopword 'evet' eklendi`, TOUR_KEYWORD_STOPWORDS.has("evet"));
+assert(`Stopword 'tamam' eklendi`, TOUR_KEYWORD_STOPWORDS.has("tamam"));
+assert(`Stopword 'yes' eklendi (EN)`, TOUR_KEYWORD_STOPWORDS.has("yes"));
+assert(`Stopword 'ja' eklendi (DE)`, TOUR_KEYWORD_STOPWORDS.has("ja"));
+assert(`Stopword 'да' eklendi (RU)`, TOUR_KEYWORD_STOPWORDS.has("да"));
+
+// isMeaningfulTourKeyword integration
+assert(`isMeaningfulTourKeyword('rezervasyon') = false`, !isMeaningfulTourKeyword("rezervasyon"));
+assert(`isMeaningfulTourKeyword('evet') = false`, !isMeaningfulTourKeyword("evet"));
+
+// findMatchingTours integration — "rezervasyon" tek başına UNKNOWN_TOUR atmaz
+{
+  const r = findMatchingTours("rezervasyon",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "reservation_intent");
+  assert(
+    `'rezervasyon' tek başına → UNKNOWN_TOUR=null (canlı bug 31026a6b kapanışı)`,
+    r.unknownTourQuery === null && r.selectedTour === null && r.multipleMatches.length === 0,
+    `got=${JSON.stringify({ unk: r.unknownTourQuery, sel: r.selectedTour?.id, mult: r.multipleMatches.length })}`,
+  );
+}
+{
+  const r = findMatchingTours("evet",
+    { tour_name: "", destination: "" }, tours, "tour_selection", "reservation_intent");
+  assert(`'evet' tek başına → UNKNOWN_TOUR=null`,
+    r.unknownTourQuery === null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 5) TOUR-CHANGE HELPER (2026-06-20 Bug 1 v2 — state geçişi tam çözümü)
+//
+// Tour-matching kanıtsal selectedTour'u state'e DETERMINISTIK uygular.
+// Özge fix korunur: pax/isim/phone KORUNUR, sadece dateId/selectedDate temizlenir.
+// stage burada DEĞİŞMEZ (caller ayarlar).
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── TOUR-CHANGE HELPER (Bug 1 v2 — state geçişi) ──");
+
+import { produceTourChangeContext, shouldApplyEarlyTourChange }
+  from "../supabase/functions/shared/services/tour-change.ts";
+
+function mkCtxWithFullData(stage: any): any {
+  return {
+    stage,
+    collectionStep: stage === "CONFIRMING" ? "ready_for_confirmation" : "waiting_for_pax",
+    currentTour: { id: "T_KAPADOKYA", title: "Kapadokya Balon Turu" },
+    reservationInfo: {
+      tourId: "T_KAPADOKYA",
+      tourTitle: "Kapadokya Balon Turu",
+      dateId: "D_KAP1",
+      selectedDate: "2026-12-15",
+      paxAdult: 2,
+      fullName: "Murat Aymilatur",
+      phone: "905551234545",
+      email: "murat@example.com",
+    },
+    reservationConfirmed: stage === "CONFIRMING",
+    paymentInfoSent: false,
+    viewedTours: ["T_KAPADOKYA"],
+    language: "tr",
+    tone: "standart",
+    messageCount: 5,
+    lastUserMessage: "",
+    sessionStarted: "2026-06-20T00:00:00.000Z",
+    lastUpdated: "2026-06-20T00:00:00.000Z",
+    isNewReservation: false,
+  };
+}
+
+const efes = { id: "T_EFES", title: "Efes Antik Kent Turu" };
+
+// ─── shouldApplyEarlyTourChange gate ───────────────────────────────────
+{
+  const ctx = mkCtxWithFullData("COLLECTING_INFO");
+  assert(`gate: COLLECTING_INFO + farklı tur → APPLY`,
+    shouldApplyEarlyTourChange(ctx, efes) === true);
+}
+{
+  const ctx = mkCtxWithFullData("CONFIRMING");
+  assert(`gate: CONFIRMING + farklı tur → APPLY (BUG 1 v2 CONFIRMING'i de kapsar)`,
+    shouldApplyEarlyTourChange(ctx, efes) === true);
+}
+{
+  const ctx = mkCtxWithFullData("COLLECTING_INFO");
+  assert(`gate: aynı tur (id eşit) → NO-OP`,
+    shouldApplyEarlyTourChange(ctx, { id: "T_KAPADOKYA", title: "Kapadokya" }) === false);
+}
+{
+  const ctx = mkCtxWithFullData("COLLECTING_INFO");
+  assert(`gate: selectedTour=null → NO-OP`,
+    shouldApplyEarlyTourChange(ctx, null) === false);
+}
+{
+  const ctx = mkCtxWithFullData("BROWSING");
+  assert(`gate: BROWSING → NO-OP (mevcut transitions zaten çalışır)`,
+    shouldApplyEarlyTourChange(ctx, efes) === false);
+}
+{
+  const ctx = mkCtxWithFullData("TOUR_SELECTED");
+  assert(`gate: TOUR_SELECTED → NO-OP`,
+    shouldApplyEarlyTourChange(ctx, efes) === false);
+}
+{
+  const ctx = mkCtxWithFullData("COMPLETED");
+  assert(`gate: COMPLETED → NO-OP (after-sales bozulmasın)`,
+    shouldApplyEarlyTourChange(ctx, efes) === false);
+}
+
+// ─── produceTourChangeContext transformasyonu (COLLECTING_INFO baseline) ─
+{
+  const ctx = mkCtxWithFullData("COLLECTING_INFO");
+  const newCtx = produceTourChangeContext(ctx, efes);
+
+  // Tur değişti
+  assert(`currentTour Efes'e güncellendi`, newCtx.currentTour.id === "T_EFES");
+  assert(`currentTour title Efes`, newCtx.currentTour.title === "Efes Antik Kent Turu");
+  // reservationInfo'daki tur referansları güncellendi
+  assert(`reservationInfo.tourId Efes`, newCtx.reservationInfo.tourId === "T_EFES");
+  assert(`reservationInfo.tourTitle Efes`, newCtx.reservationInfo.tourTitle === "Efes Antik Kent Turu");
+
+  // KRİTİK: eski tarih TEMİZLENDİ (yeni tur için geçersiz)
+  assert(`dateId undefined (eski tur tarihi)`, newCtx.reservationInfo.dateId === undefined);
+  assert(`selectedDate undefined`, newCtx.reservationInfo.selectedDate === undefined);
+
+  // KRİTİK: kişi-bağımlı alanlar KORUNDU (Özge fix mantığı)
+  assert(`paxAdult KORUNDU (Özge fix)`, newCtx.reservationInfo.paxAdult === 2);
+  assert(`fullName KORUNDU`, newCtx.reservationInfo.fullName === "Murat Aymilatur");
+  assert(`phone KORUNDU`, newCtx.reservationInfo.phone === "905551234545");
+  assert(`email KORUNDU`, newCtx.reservationInfo.email === "murat@example.com");
+
+  // collectionStep deterministik bypass tetikleyici
+  assert(`collectionStep waiting_for_date`, newCtx.collectionStep === "waiting_for_date");
+
+  // viewedTours genişledi (history)
+  assert(`viewedTours Efes içeriyor`, newCtx.viewedTours.includes("T_EFES"));
+  assert(`viewedTours Kapadokya hâlâ var (history)`, newCtx.viewedTours.includes("T_KAPADOKYA"));
+
+  // stage değişmedi (helper'ın sorumluluğu DEĞİL — caller ayarlar)
+  assert(`stage caller'a bırakılır (helper değiştirmez)`, newCtx.stage === "COLLECTING_INFO");
+}
+
+// ─── CONFIRMING'den tur değişimi — temizlik teyidi ──────────────────────
+// Canlı log execution 801fed7d benzeri senaryo: CONFIRMING'de tur değişince
+// stage/collectionStep/reservationConfirmed tutarlı olmalı.
+{
+  const ctx = mkCtxWithFullData("CONFIRMING");
+  ctx.reservationConfirmed = false; // henüz onaylanmamış
+  const newCtx = produceTourChangeContext(ctx, efes);
+
+  assert(`CONFIRMING tur değişimi: collectionStep 'ready_for_confirmation' DEĞİL artık`,
+    newCtx.collectionStep === "waiting_for_date");
+  // produceTourChangeContext stage'i değiştirmez — bu caller sorumluluğu
+  // process-message erken müdahale: stage→COLLECTING_INFO + reservationConfirmed→false ekler
+}
+
+// ─── findMatchingTours + helper akış kanıtı ─────────────────────────────
+// BUG 1 v2 senaryo simulasyonu: kullanıcı "efes turu ne zaman" yazınca
+// tour-matching Efes bulur → erken müdahale shouldApply true → context güncellenir.
+{
+  const ctxBefore = mkCtxWithFullData("COLLECTING_INFO");
+  const matchResult = findMatchingTours("efes turu ne zaman",
+    { tour_name: "", destination: "Kapadokya" }, tours, "date_selection", "tour_search");
+
+  assert(`BUG 1 v2 akış: tour-matching Efes buldu`,
+    matchResult.selectedTour?.id === "T_EFES");
+  assert(`BUG 1 v2 akış: shouldApplyEarlyTourChange true`,
+    shouldApplyEarlyTourChange(ctxBefore, matchResult.selectedTour) === true);
+
+  const ctxAfter = produceTourChangeContext(ctxBefore, matchResult.selectedTour);
+  assert(`BUG 1 v2 akış: currentTour Efes'e geçti`,
+    ctxAfter.currentTour.id === "T_EFES");
+  assert(`BUG 1 v2 akış: eski Kapadokya dateId temizlendi`,
+    ctxAfter.reservationInfo.dateId === undefined);
+  assert(`BUG 1 v2 akış: pax/isim/phone KORUNDU`,
+    ctxAfter.reservationInfo.paxAdult === 2 &&
+    ctxAfter.reservationInfo.fullName === "Murat Aymilatur");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
