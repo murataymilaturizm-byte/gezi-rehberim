@@ -233,6 +233,25 @@ Examples (affirmative → DO extract):
 - Examples of VALID names: "Ahmet Yılmaz", "Ali Kaya Demir", "John Smith"
 - Examples of INVALID (do not extract): "This Is", "Kapadokya Turu", "Evet Tamam", "19 Nisan"
 
+**NEVER extract full_name from tour-change phrases (CRITICAL — 2026-06-20):**
+- ANY message that names a TOUR or DESTINATION combined with a CHANGE/SWITCH/DO verb
+  is a tour-change intent, NOT a personal name. Recognize this across languages:
+  * TR: "X turuna geçelim", "X turunu alalım", "X yapalım", "X'e geçeyim",
+        "X turuna geçeyim", "X turunu değiştir"
+  * EN: "switch to X tour", "let's go with X tour", "change to X", "I want X tour instead"
+  * DE: "Wechsel zur X Tour", "X Ausflug machen", "zur X wechseln"
+  * RU: "перейдём на тур X", "хочу тур X вместо"
+  * AR: "نريد جولة X بدلاً", "نتحول إلى جولة X"
+  * FR: "passons au circuit X", "on prend le circuit X"
+  * ES: "cambiemos a la excursión X", "queremos la excursión X"
+- INVALID full_name examples (NEVER extract, in any language):
+  * "Efes Turuna Geçelim", "Kapadokya Turuna Geçelim", "Antalya Turunu Alalım"
+  * "Bodrum yapalım", "İstanbul turunu değiştir"
+  * "switch to Cappadocia tour", "let's go with Pamukkale tour"
+- These messages have intent change_info OR tour_search OR reservation_intent.
+  In ALL such messages, full_name MUST be null/empty. The tour name lives in
+  tour_name/destination fields, NOT in full_name.
+
 Return your analysis as structured data.`;
 
 export async function analyzeUserMessage(

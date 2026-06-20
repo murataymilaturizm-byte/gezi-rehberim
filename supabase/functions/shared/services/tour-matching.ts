@@ -313,11 +313,19 @@ export function findMatchingTours(
   // İki katman birden olmalı. Özge bug korunur: NLU "Özge Yılmazer"i tour_name
   // diye yorumlasa bile intent=provide_info kaldığı için 2. katman KAPATIR.
   if (expectedInput === "name" || expectedInput === "phone") {
+    // 2026-06-20 (Sorun 1 — change_info eklendi):
+    // Canlı bug (execution eef20d45): waiting_for_name'de "Efes turu rezervasyonu
+    // istiyorum" → NLU intent=change_info, tour_name="Efes Turu". Mevcut listede
+    // change_info yoktu → hasNluTourSignal=false → tour-matching kapalı →
+    // erken müdahale tetiklenmedi → LLM "hangisini istersiniz" sordurdu.
+    // change_info eklendi. 2. katman gate (hasNluTourSignal AND tour sinyal)
+    // "tarihimi değiştirmek istiyorum" gibi non-tur change_info'ları korur.
     const explicitTourIntent =
       intent === "tour_search" ||
       intent === "browse_tours" ||
       intent === "faq_general" ||
-      intent === "reservation_intent";
+      intent === "reservation_intent" ||
+      intent === "change_info";
     const hasNluTourSignal =
       (tourNames.length > 0 || destinations.length > 0) && explicitTourIntent;
     if (!hasNluTourSignal) {

@@ -628,6 +628,100 @@ console.log("\n── B-5 FIX GEVŞETMESİ (Bug 1 v2 waiting_for_name varyantı)
     r.selectedTour === null);
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// 7) SORUN 1 + 2 (2026-06-20): change_info erken müdahalesi + A gate
+//    fullName tour-leak savunması.
+//
+// Canlı buglar:
+//   - execution eef20d45: waiting_for_name + "Efes turu rezervasyonu istiyorum"
+//     + intent=change_info → tour-matching kapalıydı (change_info listede yoktu)
+//     → erken müdahale tetiklenmedi → LLM "hangisini istersiniz" sordurdu.
+//   - execution e9fc320d: "efes turuna geçelim" → NLU CRITICAL RULE ihlali,
+//     fullName="Efes Turuna Geçelim" → state'e isim olarak yazıldı.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN 1 + 2: change_info açma + A gate fullName tour-leak ──");
+
+import { isNluFullNameTourLeak } from "../supabase/functions/shared/services/nlu-validation.ts";
+
+// ─── SORUN 1: change_info ile tour-matching açılır ──────────────────────
+{
+  const r = findMatchingTours("Efes turu rezervasyonu istiyorum",
+    { tour_name: "Efes Turu", destination: "Efes" },
+    tours, "name", "change_info");
+  assert(`Sorun 1: waiting_for_name + change_info + NLU sinyali → Efes (B-5 gevşedi)`,
+    r.selectedTour?.id === "T_EFES");
+}
+
+{
+  // 2. katman gate korunması: change_info ama NLU sinyal yok → null
+  const r = findMatchingTours("tarihimi değiştirmek istiyorum",
+    { tour_name: "", destination: "" },
+    tours, "name", "change_info");
+  assert(`Sorun 1 güvenli: change_info + NLU sinyal yok → null (2. katman gate)`,
+    r.selectedTour === null);
+}
+
+// ─── SORUN 2 A GATE — LEAK doğrulama (7 dil) ───────────────────────────
+assert(`A gate TR: "Efes Turuna Geçelim" → LEAK (turuna stopword)`,
+  isNluFullNameTourLeak("Efes Turuna Geçelim") === true);
+
+assert(`A gate TR: "Antalya Turunu Alalım" → LEAK (turunu)`,
+  isNluFullNameTourLeak("Antalya Turunu Alalım") === true);
+
+assert(`A gate EN: "Switch to Cappadocia Tour" → LEAK (tour)`,
+  isNluFullNameTourLeak("Switch to Cappadocia Tour") === true);
+
+assert(`A gate DE: "Kappadokien Ausflug" → LEAK (ausflug)`,
+  isNluFullNameTourLeak("Kappadokien Ausflug") === true);
+
+assert(`A gate FR: "Circuit d'Éphèse" → LEAK (circuit)`,
+  isNluFullNameTourLeak("Circuit d'Éphèse") === true);
+
+assert(`A gate ES: "Excursión Capadocia" → LEAK (excursión)`,
+  isNluFullNameTourLeak("Excursión Capadocia") === true);
+
+assert(`A gate RU: "Тур Каппадокия" → LEAK (тур)`,
+  isNluFullNameTourLeak("Тур Каппадокия") === true);
+
+assert(`A gate AR: "جولة أفسس" → LEAK (جولة)`,
+  isNluFullNameTourLeak("جولة أفسس") === true);
+
+// ─── SORUN 2 A GATE — DARLIK: gerçek isimler ETKİLENMEZ ────────────────
+assert(`A gate DAR: "Murat Yılmaz" → NOT leak`,
+  isNluFullNameTourLeak("Murat Yılmaz") === false);
+
+assert(`A gate DAR: "Anıl Geçer" → NOT leak (Geçer soyadı, verb değil)`,
+  isNluFullNameTourLeak("Anıl Geçer") === false);
+
+assert(`A gate DAR: "Özge Yılmazer" → NOT leak`,
+  isNluFullNameTourLeak("Özge Yılmazer") === false);
+
+assert(`A gate DAR: "John Smith" → NOT leak (EN)`,
+  isNluFullNameTourLeak("John Smith") === false);
+
+assert(`A gate DAR: "" → NOT leak (boş)`,
+  isNluFullNameTourLeak("") === false);
+
+assert(`A gate DAR: null → NOT leak`,
+  isNluFullNameTourLeak(null as any) === false);
+
+// ─── KARIŞIK MESAJ TESTİ (kullanıcı ricası) ───────────────────────────
+// Mesaj: "ben Murat Yılmaz, Antalya turuna geçelim"
+// NLU'nun iki olası parse senaryosu test ediliyor:
+{
+  // (a) NLU DOĞRU parse: fullName="Murat Yılmaz" → meşru isim, geçer
+  const ok = isNluFullNameTourLeak("Murat Yılmaz");
+  assert(`Karışık (a) NLU doğru: fullName="Murat Yılmaz" → NOT leak (gerçek isim korunur)`,
+    ok === false);
+}
+
+{
+  // (b) NLU YANLIŞ parse: fullName="Antalya Turuna Geçelim" → tur-leak, REDDET
+  const ok = isNluFullNameTourLeak("Antalya Turuna Geçelim");
+  assert(`Karışık (b) NLU yanlış: fullName="Antalya Turuna Geçelim" → LEAK (turuna)`,
+    ok === true);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

@@ -24,6 +24,7 @@ import { validateAIResponse, validateInjectionResponse } from "../fsm/response-v
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
+import { isNluFullNameTourLeak } from "../services/nlu-validation.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
@@ -263,6 +264,31 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   const nluResult = await analyzeUserMessage(message, nluContextStr, context.stage, context.currentTour, tours);
   console.log("[process-message] Intent:", nluResult.intent, "| Stage:", context.stage, "| Lang:", context.language);
+
+  // === 6b. A GATE — NLU fullName tour-leak savunma (2026-06-20 Sorun 2) ====
+  // Canlı bug (execution e9fc320d): kullanıcı waiting_for_name adımında
+  // "efes turuna geçelim" yazdı → NLU CRITICAL RULE'u ihlal etti, fullName=
+  // "Efes Turuna Geçelim" çıkardı → state'e isim olarak yazıldı → bot
+  // "Teşekkürler Efes!" diye seslendi, isim adımını atladı.
+  //
+  // Bu gate LLM'den BAĞIMSIZ. NLU sistem prompt'u (CRITICAL RULE) birinci
+  // savunma; bu gate ikinci ve deterministik savunma. DAR mantık: sadece
+  // fullName kelimelerinde TOUR_KEYWORD_STOPWORDS (turu/turuna/tour/ausflug
+  // /...) varsa REDDET. Verb listesine bakmaz, gerçek soyadları (Geçer/Alıcı)
+  // etkilemez. Karışık mesaj korunur: "ben Murat Yılmaz, Antalya turuna
+  // geçelim" → NLU doğru parse ederse fullName="Murat Yılmaz" → leak=false.
+  if (nluResult.updates?.fullName) {
+    const _leak = nluResult.updates.fullName;
+    if (isNluFullNameTourLeak(_leak)) {
+      console.log(
+        `[process-message] BLOCKED NLU fullName tour-leak: "${_leak}"`,
+      );
+      delete nluResult.updates.fullName;
+      if (nluResult.entities) {
+        (nluResult.entities as any).full_name = "";
+      }
+    }
+  }
 
   // NLU dil tespitini uygula (ASCII guard + enabled_languages kontrolü)
   // FIX (ASCII-only ilk mesaj): WhatsApp'ta seedLanguage yok; yabancı turist ilk

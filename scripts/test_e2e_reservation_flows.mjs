@@ -41,6 +41,7 @@ function runDenoCheck() {
     "supabase/functions/shared/services/tour-change.ts",
     "supabase/functions/shared/constants/tour-matching.ts",
     "supabase/functions/shared/services/tour-matching.ts",
+    "supabase/functions/shared/services/nlu-validation.ts",
   ];
 
   const candidates = [

@@ -23,7 +23,7 @@
 export const TOUR_KEYWORD_STOPWORDS = new Set<string>([
   // ─── "tur" kelimeleri (mevcut) ──────────────────────────────────────────
   // TR
-  "tur", "turu", "turun", "tura", "turlar", "turları", "turuna", "turdan",
+  "tur", "turu", "turun", "tura", "turlar", "turları", "turuna", "turunu", "turdan",
   "gez", "gezi", "gezisi", "gezimiz",
   // EN
   "tour", "tours", "trip", "trips", "excursion", "excursions",
