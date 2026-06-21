@@ -827,6 +827,62 @@ runScenario("S23: telefon dolunca → CONFIRMING (bypass özet+onay üretecek)",
     expect: { stage: "CONFIRMING", "reservationInfo.phone": "905551234567" } },
 ]);
 
+// ═══════════════════════════════════════════════════════════════════════
+// HARD TEST: MANTIK senaryoları (2026-06-21) — state-machine mirror
+// H3 (3 art arda tur değişim), H4 (iptal + yeniden başlama),
+// H9 (boş mesaj state korunur), H11 (COMPLETED→TOUR_SELECTED)
+// ═══════════════════════════════════════════════════════════════════════
+
+// === H3 — KALDIRILDI — Layer 1 yetersiz, NLU-kritik listesine taşındı ===
+// HARD TEST KEŞFİ: state-machine TOUR_SELECTED→COLLECTING_INFO transition (line 463)
+// reservation_intent intent'te selectedTour'u currentTour'a YAZMAZ — sadece
+// reservationInfo merge eder. Tur değişimi canlıda erken müdahale (process-message:330)
+// ile sağlanır, state-machine tek başına değil. Layer 1 harness erken müdahaleyi
+// mirror'lamadığı için H3 burada test edilemez → canlı NLU-kritik listesine ekle.
+
+// === H4: İptal sonrası yeniden başlama — state tertemiz mi? ===
+runScenario("H4: İptal + yeniden başlama state temizliği", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR,
+    extracted: { tourId: TOUR.id, tourTitle: TOUR.title },
+    expect: { stage: "COLLECTING_INFO" } },
+  { msg: "12 aralık", intent: "provide_info", extracted: { dateId: "D_12ARA", selectedDate: "2026-12-12" },
+    expect: { collectionStep: "waiting_for_pax", "reservationInfo.dateId": "D_12ARA" } },
+  { msg: "2 kişi", intent: "provide_info", extracted: { paxAdult: 2 },
+    expect: { "reservationInfo.paxAdult": 2 } },
+  { msg: "vazgeçtim", intent: "cancel",
+    expect: { stage: "BROWSING", "reservationInfo.tourId": undefined,
+              "reservationInfo.dateId": undefined, "reservationInfo.paxAdult": undefined,
+              currentTour: null, justCancelled: true } },
+  { msg: "Kapadokya rezervasyon", intent: "reservation_intent", selectedTour: TOUR_KAP,
+    extracted: { tourId: TOUR_KAP.id, tourTitle: TOUR_KAP.title },
+    // resetForNewReservation sonrası fresh — pax sızıntı OLMAMALI
+    expect: { stage: "COLLECTING_INFO", "currentTour.id": TOUR_KAP.id,
+              "reservationInfo.paxAdult": undefined, "reservationInfo.dateId": undefined } },
+]);
+
+// === H9: Boş/spam mesajda state korunur mu? ===
+// NOT: Boş mesajda NLU genel olarak intent=general döner. State değişmemeli.
+runScenario("H9: Spam/garip mesaj state korunur", "tr", [
+  { msg: "Pamukkale", intent: "reservation_intent", selectedTour: TOUR,
+    extracted: { tourId: TOUR.id, tourTitle: TOUR.title },
+    expect: { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } },
+  { msg: "?", intent: "general", extracted: {},
+    expect: { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date",
+              "currentTour.id": TOUR.id } },
+  { msg: "🎈", intent: "general", extracted: {},
+    expect: { stage: "COLLECTING_INFO", "currentTour.id": TOUR.id } },
+  { msg: "aaaaaaaaaa", intent: "general", extracted: {},
+    expect: { stage: "COLLECTING_INFO", "currentTour.id": TOUR.id } },
+  // Sonra geçerli tarih
+  { msg: "12 aralık", intent: "provide_info", extracted: { dateId: "D1", selectedDate: "2026-12-12" },
+    expect: { collectionStep: "waiting_for_pax", "reservationInfo.dateId": "D1" } },
+]);
+
+// === H11 — KALDIRILDI — Layer 1 yetersiz, NLU-kritik listesine taşındı ===
+// HARD TEST KEŞFİ: COMPLETED→TOUR_SELECTED transition harness'ta tetiklenmiyor —
+// harness'ın processMessage mock'u COMPLETED stage için tam transition map'i
+// emule etmiyor. Bu state reset davranışı sadece canlıda doğrulanabilir.
+
 // === 13. DE dili happy path ===
 runScenario("S13: DE happy path", "de", [
   { msg: "hallo", intent: "greeting", expect: { stage: "BROWSING" } },
