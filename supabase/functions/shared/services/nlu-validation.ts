@@ -66,3 +66,53 @@ export function isNluFullNameTourLeak(fullName: string): boolean {
   const words = normalizeForGate(fullName).split(/\s+/).filter(Boolean);
   return words.some((w) => TOUR_KEYWORD_STOPWORDS.has(w));
 }
+
+// 2026-06-21 SORUN F — NEGATION/CORRECTION tokens (TR + EN).
+//
+// HARD TEST kanıtı: NLU CRITICAL RULE "2-3 proper noun words" ihlal edildi —
+// Haiku "Murat değil aslında Ahmet" (5 word) full_name döndürdü → state'e
+// ham yazıldı → reservationName="Murat değil aslında Ahmet" (absürt).
+//
+// ─── KAPSAM: TR + EN only ──────────────────────────────────────────────
+// Yan #8 ile aynı disiplin — DE/FR/ES/RU/AR çok-dil eşitleme fazına alındı.
+// Demo agency tek-dilli (Sorun E), test edilemeyen tokenleri eklemek Ege
+// tuzağı. "no" (ES/EN evrensel) yanlış pozitif riski yüksek, çok-dil fazında
+// dikkatli ekle.
+//
+// ─── TAM KELİME EŞLEŞMESI (substring DEĞİL) ────────────────────────────
+// Murat onayı (2026-06-21): "Değil" diye soyad olmaz → "Ahmet Değil" 2-word
+// edge'ini kasıtlı reddediyoruz, döngü riski yok.
+// Set.has() tam kelime kontrolü → "Değildağ" / "Geçer" gibi türev soyadlar
+// KORUNUR (substring "değil" / "geç" yakalanmaz).
+const NEGATION_TOKENS = new Set<string>([
+  // TR — hem orijinal hem ASCII-fallback (normalizeForGate NFD diacritic
+  // strip yapıyor → "değil" → "degil"; defansif olarak iki formu da koy.
+  // Mevcut TOUR_KEYWORD_STOPWORDS da aynı pattern: "ausflug"/"ausfluge").
+  "değil", "degil",
+  "aslında", "aslinda",
+  "yerine",        // i ASCII, normalize değişmez
+  // EN — ASCII zaten
+  "not", "actually", "instead", "scratch",
+  // ─── ÇOK-DİL EŞİTLEME FAZINA ALINDI (post-launch + Sorun E sonrası) ─
+  //   DE: nicht
+  //   FR: pas
+  //   ES: "no" (DİKKAT — yanlış pozitif riski, careful testing)
+  //   RU: не
+  //   AR: لا
+]);
+
+/**
+ * NLU full_name çıktısında negation/correction token var mı?
+ *
+ * Kullanım: process-message A gate yanına ek savunma. K2 (nlu.ts:432) word
+ * count + 4+ word negation kontrol yapıyor; K3 (burada) her durumda
+ * 2-word edge'leri ("Ahmet Değil") + sanity sigortası.
+ *
+ * @returns true → negation cümlesi sızıntı, state'e YAZMA
+ *          false → temiz isim, kabul
+ */
+export function isNluFullNameNegationLeak(fullName: string): boolean {
+  if (!fullName || typeof fullName !== "string") return false;
+  const words = normalizeForGate(fullName).split(/\s+/).filter(Boolean);
+  return words.some((w) => NEGATION_TOKENS.has(w));
+}

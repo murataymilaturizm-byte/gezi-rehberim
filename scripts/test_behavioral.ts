@@ -1346,6 +1346,104 @@ assert(`H13.6: '' (boş) → null`,
 assert(`H13.7: '123' (çok kısa) → null`,
   normalizePhone("123") === null);
 
+// ═══════════════════════════════════════════════════════════════════════
+// 14) SORUN F — NLU fullName negation/correction sızıntısı (2026-06-21)
+//
+// Hard test H12 bulgusu: "Murat değil aslında Ahmet" → state'e HAM yazıldı.
+// 3 katman savunma:
+//   K1: NLU prompt güçlendirme (LLM compliance, kırılgan)
+//   K2: nlu.ts:432 word count + 4+ word negation reddi (uzun-isim korumalı)
+//   K3: process-message A gate yanı, her durumda negation sigortası
+//
+// Murat onayı (2026-06-21): "Değil" diye soyad yok → 2-word edge'i kasıtlı reddet
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN F: NLU fullName negation gate (K3) ──");
+
+import { isNluFullNameNegationLeak } from "../supabase/functions/shared/services/nlu-validation.ts";
+
+// ─── K3 NEGATION GATE TESTLERİ (12 assert) ─────────────────────────────
+
+// F.1 — Canlı bug reprodüksiyon (4+ word negation)
+assert(`F.1: 'Murat değil aslında Ahmet' → negation LEAK (4 word + değil+aslında)`,
+  isNluFullNameNegationLeak("Murat değil aslında Ahmet") === true);
+
+// F.2-3 — Gerçek isim korumaları (DAR mantık kanıtı)
+assert(`F.2: 'Anıl Geçer' → NOT leak (geçer set DIŞI, gerçek soyad)`,
+  isNluFullNameNegationLeak("Anıl Geçer") === false);
+assert(`F.3: 'Ayşe Değildağ' → NOT leak (değildağ tam kelime ≠ değil)`,
+  isNluFullNameNegationLeak("Ayşe Değildağ") === false);
+
+// F.4 — 3 word + negation
+assert(`F.4: 'Murat değil Ahmet' → LEAK (değil tam kelime)`,
+  isNluFullNameNegationLeak("Murat değil Ahmet") === true);
+
+// F.5 — Negation SONDA (kullanıcı edge)
+assert(`F.5: 'Murat Yılmaz değil' → LEAK (değil sonda da yakalanır)`,
+  isNluFullNameNegationLeak("Murat Yılmaz değil") === true);
+
+// F.6 — 2 word + negation (Murat onayı: "Değil" soyad yok, kasıtlı reddet)
+assert(`F.6: 'Ahmet Değil' → LEAK (2-word edge, Murat onayı kasıtlı reddet)`,
+  isNluFullNameNegationLeak("Ahmet Değil") === true);
+
+// F.7-9 — EN negation
+assert(`F.7: 'not Murat but Ahmet' → LEAK (EN not)`,
+  isNluFullNameNegationLeak("not Murat but Ahmet") === true);
+assert(`F.8: 'actually Ahmet' → LEAK (EN actually)`,
+  isNluFullNameNegationLeak("actually Ahmet") === true);
+assert(`F.9: 'Murat instead Ahmet' → LEAK (EN instead)`,
+  isNluFullNameNegationLeak("Murat instead Ahmet") === true);
+
+// F.10 — Edge: boş
+assert(`F.10: '' → NOT leak (boş)`,
+  isNluFullNameNegationLeak("") === false);
+
+// ─── K2 WORD COUNT TESTLERİ (uzun-isim koruması) ─────────────────────
+
+// F.11 — Uzun gerçek isim KORUNMALI
+{
+  const _fn = "Mehmet Ali Can Demirci";
+  const _words = _fn.split(/\s+/);
+  const _shouldAccept = _words.length >= 2 && (_words.length <= 3 || !isNluFullNameNegationLeak(_fn));
+  assert(`F.11: K2 'Mehmet Ali Can Demirci' (4 temiz) → KABUL (uzun isim korunur)`,
+    _shouldAccept === true);
+}
+
+// F.12 — Uzun negation cümlesi REDDET
+{
+  const _fn = "Murat değil aslında Ahmet";
+  const _words = _fn.split(/\s+/);
+  const _shouldAccept = _words.length >= 2 && (_words.length <= 3 || !isNluFullNameNegationLeak(_fn));
+  assert(`F.12: K2 'Murat değil aslında Ahmet' (4 + negation) → REDDET`,
+    _shouldAccept === false);
+}
+
+// ─── POZİTİF REGRESYON — Sıradan temiz isimler bozulmamalı (5 assert) ──
+
+assert(`F.13 POZ: 'Ahmet Yılmaz' → NOT leak (klasik TR isim)`,
+  isNluFullNameNegationLeak("Ahmet Yılmaz") === false);
+
+assert(`F.14 POZ: 'John Smith' → NOT leak (EN temiz)`,
+  isNluFullNameNegationLeak("John Smith") === false);
+
+assert(`F.15 POZ: 'Mehmet Ali Demir' → NOT leak (3 word temiz)`,
+  isNluFullNameNegationLeak("Mehmet Ali Demir") === false);
+
+{
+  const _fn = "Ahmet Yılmaz";
+  const _words = _fn.split(/\s+/);
+  const _shouldAccept = _words.length >= 2 && (_words.length <= 3 || !isNluFullNameNegationLeak(_fn));
+  assert(`F.16 POZ: K2 'Ahmet Yılmaz' (2 temiz) → KABUL`,
+    _shouldAccept === true);
+}
+
+{
+  const _fn = "Mehmet Ali Demir";
+  const _words = _fn.split(/\s+/);
+  const _shouldAccept = _words.length >= 2 && (_words.length <= 3 || !isNluFullNameNegationLeak(_fn));
+  assert(`F.17 POZ: K2 'Mehmet Ali Demir' (3 temiz) → KABUL`,
+    _shouldAccept === true);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

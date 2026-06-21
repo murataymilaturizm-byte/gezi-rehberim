@@ -24,7 +24,7 @@ import { validateAIResponse, validateInjectionResponse } from "../fsm/response-v
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
-import { isNluFullNameTourLeak } from "../services/nlu-validation.ts";
+import { isNluFullNameTourLeak, isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
 import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck } from "../services/bypass-gates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
@@ -283,6 +283,18 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (isNluFullNameTourLeak(_leak)) {
       console.log(
         `[process-message] BLOCKED NLU fullName tour-leak: "${_leak}"`,
+      );
+      delete nluResult.updates.fullName;
+      if (nluResult.entities) {
+        (nluResult.entities as any).full_name = "";
+      }
+    } else if (isNluFullNameNegationLeak(_leak)) {
+      // 2026-06-21 Sorun F (K3 katman): her durumda negation sigortası.
+      // K2 (nlu.ts:432) 4+ word + negation reddi yaptı; K3 burada 2-word
+      // edge'leri ("Ahmet Değil") + sanity. Murat onayı (2026-06-21):
+      // "Değil" diye soyad yok → 2-word edge kasıtlı reddedilir.
+      console.log(
+        `[process-message] BLOCKED NLU fullName negation-leak: "${_leak}"`,
       );
       delete nluResult.updates.fullName;
       if (nluResult.entities) {

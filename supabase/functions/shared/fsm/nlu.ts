@@ -1,5 +1,6 @@
 // Natural Language Understanding with AI tool calling
 import type { ReservationInfo } from "./types.ts";
+import { isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
 
 export interface NLUResult {
   intent: string;
@@ -233,6 +234,17 @@ Examples (affirmative → DO extract):
 - Examples of VALID names: "Ahmet Yılmaz", "Ali Kaya Demir", "John Smith"
 - Examples of INVALID (do not extract): "This Is", "Kapadokya Turu", "Evet Tamam", "19 Nisan"
 
+**NEVER extract full_name from NEGATION/CORRECTION patterns (CRITICAL — 2026-06-21 Sorun F):**
+- If the message contains negation/correction patterns, the user is CORRECTING themselves,
+  NOT giving a full name. Extract ONLY the final clean name (or null if ambiguous).
+- TR patterns: "X değil Y" / "X değil aslında Y" / "X yerine Y" / "X olmasın Y"
+- EN patterns: "not X but Y" / "actually Y not X" / "X scratch that Y" / "instead Y"
+- INVALID full_name examples (NEVER extract whole correction phrase):
+  * "Murat değil aslında Ahmet" — extract null or just "Ahmet"
+  * "not Murat but Ahmet Yılmaz" — extract null or just "Ahmet Yılmaz"
+  * "actually my name is Ahmet" — extract just "Ahmet" or null
+- Rule: if unsure, RETURN NULL. Better to ask again than capture noise.
+
 **NEVER extract full_name from tour-change phrases (CRITICAL — 2026-06-20):**
 - ANY message that names a TOUR or DESTINATION combined with a CHANGE/SWITCH/DO verb
   is a tour-change intent, NOT a personal name. Recognize this across languages:
@@ -429,9 +441,21 @@ export async function analyzeUserMessage(
     }
     if (entities.people_count?.children) updates.paxChild = entities.people_count.children;
     // FullName: en az 2 kelime olmalı — BUG 3
+    // 2026-06-21 Sorun F (K2 katman): uzun-isim koruması + 4+ word negation reddi.
+    //   - 2-3 word  → normal isim kabul (TR ve global çoğunluk)
+    //   - 4+ word   → UZUN GERÇEK İSİM OLABİLİR ("Mehmet Ali Can Demirci",
+    //                 "José María Aznar López") AMA negation token içeriyorsa
+    //                 düzeltme cümlesi ("Murat değil aslında Ahmet") → REDDET.
+    // K3 (process-message A gate yanı) her durumda ek sigorta (2-word edge'leri).
     if (entities.full_name) {
-      const _fnWords = String(entities.full_name).trim().split(/\s+/);
-      if (_fnWords.length >= 2) updates.fullName = entities.full_name;
+      const _fn = String(entities.full_name).trim();
+      const _fnWords = _fn.split(/\s+/);
+      if (_fnWords.length >= 2) {
+        if (_fnWords.length <= 3 || !isNluFullNameNegationLeak(_fn)) {
+          updates.fullName = entities.full_name;
+        }
+        // else: 4+ word + negation token → silent drop (K3 zaten log basıyor)
+      }
     }
     if (entities.phone) updates.phone = entities.phone;
 

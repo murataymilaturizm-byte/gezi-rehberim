@@ -1217,8 +1217,10 @@ assertNluValidationContains("isNluFullNameTourLeak export", "export function isN
 assertNluValidationContains("TOUR_KEYWORD_STOPWORDS import", "TOUR_KEYWORD_STOPWORDS");
 
 // process-message.ts'de A gate ÇAĞRI YERİ (canlıda tetiklenmesi için kritik)
-assertProcMsgContains("A gate import (nlu-validation)",
-  'import { isNluFullNameTourLeak } from "../services/nlu-validation.ts"');
+assertProcMsgContains("A gate import (nlu-validation path)",
+  'from "../services/nlu-validation.ts"');
+assertProcMsgContains("A gate import isNluFullNameTourLeak sembolü",
+  "isNluFullNameTourLeak");
 assertProcMsgContains("A gate çağrısı (isNluFullNameTourLeak)",
   "isNluFullNameTourLeak(");
 assertProcMsgContains("A gate BLOCKED log (canlı doğrulama için)",
@@ -1319,6 +1321,40 @@ assertProcMsgContains("Sorun B TR ack mesajı",    "*${_newPax} kişi* olarak g�
 assertProcMsgContains("Sorun B EN ack mesajı",    "Updated to *${_newPax}");
 assertProcMsgContains("Sorun B 'Şimdi' varyantı (paxAcked sonrası)",
   "Şimdi *ad ve soyadınızı* alabilir miyim?");
+
+// 2026-06-21 Sorun F — negation gate PRESENCE (nlu-validation.ts)
+assertNluValidationContains("Sorun F isNluFullNameNegationLeak export",
+  "export function isNluFullNameNegationLeak");
+assertNluValidationContains("Sorun F NEGATION_TOKENS TR (değil)",
+  '"değil"');
+assertNluValidationContains("Sorun F NEGATION_TOKENS EN (not)",
+  '"not"');
+assertNluValidationContains("Sorun F çok-dil belgesi (post-launch)",
+  "ÇOK-DİL EŞİTLEME FAZINA ALINDI");
+// process-message K3 çağrısı
+assertProcMsgContains("Sorun F K3 negation gate çağrısı",
+  "isNluFullNameNegationLeak(_leak)");
+assertProcMsgContains("Sorun F K3 BLOCKED log",
+  "BLOCKED NLU fullName negation-leak");
+// nlu.ts K2 word count + 4+ negation kontrol
+const nluTsPath = join(__dirname, "..", "supabase", "functions", "shared", "fsm", "nlu.ts");
+const nluTsContent = readFileSync(nluTsPath, "utf-8");
+if (nluTsContent.includes("_fnWords.length <= 3 || !isNluFullNameNegationLeak")) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] nlu.ts K2: uzun-isim koruması (length<=3 || !negationLeak)`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE:nlu:K2-uzun-isim", step: 0, msg: "K2 mantığı eksik", key: "fsm/nlu.ts", expected: "length <= 3 || !isNluFullNameNegationLeak", actual: "NOT FOUND" });
+  console.log(`✗ [PRESENCE] nlu.ts K2 uzun-isim mantığı eksik`);
+}
+if (nluTsContent.includes("NEVER extract full_name from NEGATION/CORRECTION")) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] nlu.ts K1 prompt: NEGATION/CORRECTION CRITICAL RULE`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE:nlu:K1-prompt", step: 0, msg: "K1 prompt eksik", key: "fsm/nlu.ts", expected: "NEVER extract full_name from NEGATION", actual: "NOT FOUND" });
+  console.log(`✗ [PRESENCE] nlu.ts K1 negation prompt eksik`);
+}
 
 // process-message.ts'de :11b-PERSIST çağrı yeri
 assertProcMsgContains(":11b-PERSIST import (bypass-gates path)",
