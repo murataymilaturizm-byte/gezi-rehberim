@@ -1227,6 +1227,35 @@ assertBypassGatesContains("shouldFireUnknownTour export (Sorun A)", "export func
 assertBypassGatesContains("Sorun A currentTour gate yorumu", "if (context.currentTour) return false");
 assertProcMsgContains("Sorun A: shouldFireUnknownTour çağrısı", "shouldFireUnknownTour(context as any, selectedTour, multipleTourMatches.length");
 
+// 2026-06-21 Sorun C — :11a-AUTO-DATE-ACK
+assertBypassGatesContains("shouldTriggerAutoDateAck export (Sorun C)", "export function shouldTriggerAutoDateAck");
+assertBypassGatesContains("Sorun C 4 dar kapı belgeli", "4 dar kapı");
+assertBypassGatesContains("Sorun C erken müdahale interaksiyon yorumu", "ERKEN MÜDAHALE İNTERAKSIYONU");
+// info-extractor.ts Blok 10 flag set ediyor mu
+const _infoExtractorPathC = join(__dirname, "..", "supabase", "functions", "shared", "services", "info-extractor.ts");
+const _infoExtractorContentC = readFileSync(_infoExtractorPathC, "utf-8");
+if (_infoExtractorContentC.includes("extractedInfo.dateAutoAssigned = true")) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] info-extractor Blok 10: dateAutoAssigned flag set ediyor`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE:info-extractor:dateAutoAssigned", step: 0, msg: "Blok 10 flag set yok", key: "info-extractor.ts", expected: "extractedInfo.dateAutoAssigned = true", actual: "NOT FOUND" });
+  console.log(`✗ [PRESENCE] info-extractor Blok 10 flag YOK`);
+}
+// process-message.ts :11a-AUTO-DATE-ACK
+assertProcMsgContains(":11a-AUTO-DATE-ACK başlığı", "11a-AUTO-DATE-ACK. TEK-TARİH OTOMATİK ATAMA ONAYI");
+assertProcMsgContains(":11a-AUTO-DATE-ACK çağrı", "shouldTriggerAutoDateAck(context, newContext");
+assertProcMsgContains(":11a-AUTO-DATE-ACK log", ":11a-AUTO-DATE-ACK tetiklendi");
+assertProcMsgContains(":11a-AUTO-DATE-ACK graceful price catch", "AUTO-DATE-ACK price format failed");
+// 7 dil mesaj
+assertProcMsgContains(":11a-AUTO-DATE-ACK TR mesajı", "tarihinde *${_displayTitle}* için rezervasyon başlatıyorum");
+assertProcMsgContains(":11a-AUTO-DATE-ACK EN mesajı", "Starting reservation for *${_displayTitle}* on");
+assertProcMsgContains(":11a-AUTO-DATE-ACK DE mesajı", "Buche *${_displayTitle}* am");
+assertProcMsgContains(":11a-AUTO-DATE-ACK RU mesajı", "Начинаю бронирование");
+assertProcMsgContains(":11a-AUTO-DATE-ACK AR mesajı", "أبدأ حجز");
+assertProcMsgContains(":11a-AUTO-DATE-ACK FR mesajı", "Je commence votre réservation");
+assertProcMsgContains(":11a-AUTO-DATE-ACK ES mesajı", "Iniciando reserva para");
+
 // process-message.ts'de :11b-PERSIST çağrı yeri
 assertProcMsgContains(":11b-PERSIST import (bypass-gates path)",
   'from "../services/bypass-gates.ts"');

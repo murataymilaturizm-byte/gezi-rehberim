@@ -119,3 +119,46 @@ export function shouldFireUnknownTour(
     context.stage === "COMPLETED"
   );
 }
+
+// ─── 2026-06-21 SORUN C FIX: :11a-AUTO-DATE-ACK gate ───────────────────
+//
+// CANLI BUG (exec 8d0d72ae): Kapadokya Balon Turu tek tarihli. Kullanıcı
+// "rezervasyon yapmak istiyorum" dedi. NLU dates=[] (kullanıcı tarih vermedi),
+// AMA info-extractor Blok 10 otomatik 15 Aralık atadı (tek-tarih kuralı).
+// state-machine waiting_for_pax'a geçti (dateId dolu). LLM "Hangi tarihi
+// tercih edersiniz?" diye soruyordu — state ile UYUMSUZ.
+//
+// FIX: Blok 10 set ettiği dateAutoAssigned flag'i ile bu bypass tetiklenir.
+// Kullanıcıya seçilen tarihi GÖSTERİP pax sorar — şeffaflık + LLM bağımsız.
+//
+// 4 dar kapı:
+//   1. dateAutoAssigned === true (FLAG — dateId varlığına bakmaz, çünkü
+//      kullanıcı kendi tarih verdiyse Blok 10 atlanır, flag yok, çift mesaj
+//      riski sıfır)
+//   2. newContext.stage === COLLECTING_INFO
+//   3. newContext.collectionStep === waiting_for_pax (Blok 10 sonrası hedef)
+//   4. context.collectionStep !== waiting_for_pax (TRANSITION — no-op'ta
+//      tekrar tetiklenmez)
+//
+// ERKEN MÜDAHALE İNTERAKSIYONU:
+// Kullanıcı CONFIRMING/COLLECTING_INFO'dan tek-tarihli tura geçince:
+//   - Erken müdahale: currentTour=YeniTur, collectionStep=waiting_for_date
+//   - extractAllInfo Blok 10: yeni currentTour tek tarihli + fsmIntent uygun
+//     → dateAutoAssigned=true, dateId set
+//   - state-machine: dateId dolu → determineCollectionStep → waiting_for_pax
+//   - context.step=waiting_for_date → newContext.step=waiting_for_pax → TRANSITION
+//   - :11a TETİKLE → "Yeni tarihte rezervasyon, kaç kişi?" mesajı (DOĞRU)
+// change_info ile geçişte Blok 10 fsmIntent gate'i kapatır → flag yok → bypass
+// tetiklenmez → :11 tarih listesi bypass devralır (DOĞRU).
+export function shouldTriggerAutoDateAck(
+  context: BypassContext,
+  newContext: BypassContext,
+  dateAutoAssigned: boolean,
+): boolean {
+  return (
+    dateAutoAssigned === true &&
+    newContext.stage === "COLLECTING_INFO" &&
+    newContext.collectionStep === "waiting_for_pax" &&
+    context.collectionStep !== "waiting_for_pax"
+  );
+}

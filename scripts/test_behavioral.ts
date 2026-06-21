@@ -968,6 +968,187 @@ const ctxCompleted        = { stage: "COMPLETED", currentTour: { id: "T_KAPADOKY
     r === false);
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// 10) SORUN C — :11a-AUTO-DATE-ACK + Blok 10 dateAutoAssigned (2026-06-21)
+//
+// Canlı bug (exec 8d0d72ae): Kapadokya tek-tarihli, kullanıcı "rezervasyon
+// yapmak istiyorum", Blok 10 otomatik 15 Aralık atadı, LLM "Hangi tarihi?"
+// diye sordu (state-LLM uyumsuz). Çözüm: flag-tabanlı deterministik bypass.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN C: :11a-AUTO-DATE-ACK gate ──");
+
+import { shouldTriggerAutoDateAck } from "../supabase/functions/shared/services/bypass-gates.ts";
+
+// ─── 1) CANLI BUG: dateAutoAssigned=true + transition → TETİKLE ────────
+{
+  const ctx = { stage: "TOUR_SELECTED", collectionStep: undefined as any };
+  const newCtx = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" };
+  assert(`Canlı bug: dateAutoAssigned=true + TOUR_SELECTED → waiting_for_pax → TETİKLE`,
+    shouldTriggerAutoDateAck(ctx, newCtx, true) === true);
+}
+
+// ─── 2) KULLANICI KENDİ TARİH VERDİ: flag yok → ÇİFT MESAJ RİSKİ SIFIR
+{
+  const ctx = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" };
+  const newCtx = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" };
+  assert(`Kullanıcı tarih verdi (waiting_for_date→pax) + flag=false → TETİKLEME (çift mesaj yok)`,
+    shouldTriggerAutoDateAck(ctx, newCtx, false) === false);
+}
+
+// ─── 3) NO-OP waiting_for_pax: TRANSITION gate koruyucu → NO ───────────
+{
+  const ctx = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" };
+  const newCtx = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" };
+  assert(`No-op pax + flag=true → TETİKLEME (transition gate ile tekrar tetiklenmez)`,
+    shouldTriggerAutoDateAck(ctx, newCtx, true) === false);
+}
+
+// ─── 4) YANLIŞ STEP: waiting_for_name → NO ─────────────────────────────
+{
+  const ctx = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" };
+  const newCtx = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_name" };
+  assert(`Yanlış step (waiting_for_name) + flag=true → TETİKLEME`,
+    shouldTriggerAutoDateAck(ctx, newCtx, true) === false);
+}
+
+// ─── 5) YANLIŞ STAGE: GREETING → NO ─────────────────────────────────────
+{
+  const ctx = { stage: "GREETING", collectionStep: undefined as any };
+  const newCtx = { stage: "GREETING", collectionStep: "waiting_for_pax" };  // mantıken oluşmaz ama gate guard
+  assert(`Yanlış stage (GREETING) + flag=true → TETİKLEME`,
+    shouldTriggerAutoDateAck(ctx, newCtx, true) === false);
+}
+
+// ─── 6) ERKEN MÜDAHALE İNTERAKSIYONU (kullanıcı ricası) ────────────────
+// Senaryo: kullanıcı CONFIRMING/COLLECTING_INFO'da iken tek-tarihli farklı
+// bir tura geçmek istedi (intent=reservation_intent → Blok 10 fsmIntent
+// gate'inde VAR). Erken müdahale çalışır:
+//   1. produceTourChangeContext: currentTour=YeniTur, dateId=undefined,
+//      collectionStep=waiting_for_date
+//   2. extractAllInfo Blok 10: yeni currentTour tek tarihli + fsmIntent uygun
+//      → dateAutoAssigned=true, dateId=YeniTurTarih
+//   3. state-machine determineCollectionStep: dateId dolu → waiting_for_pax
+//   4. context.step=waiting_for_date → newContext.step=waiting_for_pax → TRANSITION
+//   5. :11a-AUTO-DATE-ACK → TETİKLE → "Yeni tarihte rezervasyon, kaç kişi?"
+// İki deterministik blok (erken müdahale + Blok 10) ÇAKIŞMIYOR, sıra DOĞRU.
+{
+  const ctxAfterEarlyIntervention = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_date"  // erken müdahale set etti
+  };
+  const newCtxAfterStateMachine = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_pax"  // state-machine dateId dolu görüp pax'a geçti
+  };
+  assert(`Erken müdahale + tek-tarihli tura geçiş → :11a-AUTO-DATE-ACK TETİKLE`,
+    shouldTriggerAutoDateAck(ctxAfterEarlyIntervention, newCtxAfterStateMachine, true) === true);
+}
+
+// ─── 7) ERKEN MÜDAHALE + change_info (Blok 10 atlanır) ────────────────
+// change_info Blok 10 fsmIntent listesinde YOK → flag set edilmez → bypass NO.
+// Bu durumda :11 tarih listesi bypass devralır (waiting_for_date'te kalır).
+{
+  const ctxAfterEarlyIntervention = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_date"
+  };
+  const newCtxStillWaitingDate = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_date"  // dateId yok, hala bekliyor
+  };
+  assert(`Erken müdahale + change_info (Blok 10 atlanır) → :11a NO + :11 tarih listesi devralır`,
+    shouldTriggerAutoDateAck(ctxAfterEarlyIntervention, newCtxStillWaitingDate, false) === false);
+}
+
+// ─── 8) ERKEN MÜDAHALE + çok tarihli tura geçiş (Blok 10 length kontrolü)
+// Çok tarihli tur → Blok 10 length===1 kontrolü kapatır → flag set edilmez.
+{
+  const ctxAfterEarlyIntervention = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_date"
+  };
+  const newCtxStillWaitingDate = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_date"
+  };
+  assert(`Erken müdahale + çok tarihli tura geçiş (flag=false) → :11a NO`,
+    shouldTriggerAutoDateAck(ctxAfterEarlyIntervention, newCtxStillWaitingDate, false) === false);
+}
+
+// ─── BLOK 10 dateAutoAssigned FLAG TESTLERİ ───────────────────────────
+// extractAllInfo Blok 10'un flag set davranışını GERÇEK fonksiyon çağrısıyla
+// doğrula — mock testte CALLER olarak.
+import { extractAllInfo as extractAllInfo2 } from "../supabase/functions/shared/services/info-extractor.ts";
+
+const _kapaSingleDateTour = {
+  id: "T_KAPADOKYA_SINGLE",
+  title: "Kapadokya Balon Turu",
+  destination: "Kapadokya",
+  dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 1500 }],
+};
+const _kapaMultiDateTour = {
+  id: "T_KAPADOKYA_MULTI",
+  title: "Kapadokya Çoklu Turu",
+  destination: "Kapadokya",
+  dates: [
+    { id: "D1", departure_date: "2026-12-15", price_adult: 1500 },
+    { id: "D2", departure_date: "2026-12-20", price_adult: 1500 },
+  ],
+};
+
+{
+  // 9) Tek tarihli tur + reservation_intent → dateAutoAssigned=true
+  const ei = extractAllInfo2({
+    message: "rezervasyon yapmak istiyorum",
+    nluResult: { intent: "reservation_intent", entities: { dates: [] }, updates: {} },
+    fsmIntent: "reservation_intent",
+    context: { currentTour: _kapaSingleDateTour, collectionStep: undefined, language: "tr" } as any,
+    tours: [_kapaSingleDateTour],
+  });
+  assert(`Blok 10: tek tarih + reservation_intent → dateAutoAssigned=true`,
+    ei.dateAutoAssigned === true && ei.dateId === "D1");
+}
+
+{
+  // 10) Çok tarihli tur + reservation_intent → flag undefined
+  const ei = extractAllInfo2({
+    message: "rezervasyon yapmak istiyorum",
+    nluResult: { intent: "reservation_intent", entities: { dates: [] }, updates: {} },
+    fsmIntent: "reservation_intent",
+    context: { currentTour: _kapaMultiDateTour, collectionStep: undefined, language: "tr" } as any,
+    tours: [_kapaMultiDateTour],
+  });
+  assert(`Blok 10: çok tarihli tur → dateAutoAssigned undefined (length!==1)`,
+    ei.dateAutoAssigned === undefined && ei.dateId === undefined);
+}
+
+{
+  // 11) Tek tarih + intent=tour_search → flag undefined (fsmIntent gate kapatır)
+  const ei = extractAllInfo2({
+    message: "Kapadokya nedir?",
+    nluResult: { intent: "tour_search", entities: { dates: [] }, updates: {} },
+    fsmIntent: "tour_search",
+    context: { currentTour: _kapaSingleDateTour, collectionStep: undefined, language: "tr" } as any,
+    tours: [_kapaSingleDateTour],
+  });
+  assert(`Blok 10: tek tarih + tour_search → dateAutoAssigned undefined (fsmIntent gate)`,
+    ei.dateAutoAssigned === undefined);
+}
+
+{
+  // 12) Tek tarih + change_info → flag undefined (fsmIntent gate kapatır)
+  // KRİTİK: change_info ile tur değişiminde Blok 10 atlanır → :11 tarih bypass devralır
+  const ei = extractAllInfo2({
+    message: "başka tura geçeyim",
+    nluResult: { intent: "change_info", entities: { dates: [] }, updates: {} },
+    fsmIntent: "change_info",
+    context: { currentTour: _kapaSingleDateTour, collectionStep: undefined, language: "tr" } as any,
+    tours: [_kapaSingleDateTour],
+  });
+  assert(`Blok 10: tek tarih + change_info → dateAutoAssigned undefined (change_info Blok 10 dışı)`,
+    ei.dateAutoAssigned === undefined);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

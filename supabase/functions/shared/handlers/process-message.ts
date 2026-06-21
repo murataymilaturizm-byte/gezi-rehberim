@@ -25,7 +25,7 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak } from "../services/nlu-validation.ts";
-import { shouldTriggerNameAskPersist, shouldFireUnknownTour } from "../services/bypass-gates.ts";
+import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck } from "../services/bypass-gates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
@@ -706,6 +706,83 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       await adapter.sendResponse(noDateReply);
       return { success: true, response: noDateReply, newContext };
     }
+  }
+
+  // === 11a-AUTO-DATE-ACK. TEK-TARİH OTOMATİK ATAMA ONAYI ===
+  // 2026-06-21 Sorun C fix (exec 8d0d72ae). info-extractor Blok 10 tek-tarih
+  // turunda dateAutoAssigned=true set ettiyse, kullanıcıya seçilen tarihi
+  // GÖSTERİP onaylatarak pax sorar. Şeffaflık + LLM bağımsız.
+  //
+  // Flag-tabanlı dar gate (dateId varlığına BAKMAZ):
+  //   - Kullanıcı kendi tarih verdiyse (Blok 2/3/8/9) flag YOK → bypass NO → çift
+  //     mesaj riski sıfır (kullanıcı zaten "14 aralık" deyince mevcut akış doğru).
+  //   - SADECE Blok 10 otomatik atama yaptığında flag VAR → bypass çalışır.
+  //
+  // FİYAT GRACEFUL FALLBACK: exchange rate / formatPriceSync başarısız olursa
+  // (currency null, throw, vs.) bypass mesajı YİNE GİDER, sadece fiyat kısmı
+  // atlanır. Tarih onayı asıl iş, fiyat bonus — akışı bloklamaz.
+  if (shouldTriggerAutoDateAck(context, newContext, (extractedInfo as any)?.dateAutoAssigned === true)) {
+    const _lang = newContext.language || "tr";
+    const _selectedDate = (newContext.reservationInfo as any)?.selectedDate || "";
+    const _displayDate = _selectedDate
+      ? formatDateForLanguage(_selectedDate, _lang)
+      : "";
+    const _tourA = newContext.currentTour
+      ? findTourById(newContext.currentTour.id, tours)
+      : null;
+    const _displayTitle = _tourA
+      ? getLocalizedTourTitle(_tourA.title, _lang)
+      : (newContext.currentTour?.title || "");
+
+    // Fiyat hesaplama — try/catch içinde, başarısızsa _priceText="" kalır
+    let _priceText = "";
+    try {
+      const _firstDateA = _tourA?.dates?.[0];
+      if (_firstDateA?.price_adult) {
+        const _exRatesAck = await getExchangeRatesOnce().catch(() => ({}));
+        const _showDualAck = agency.show_multi_currency !== false;
+        _priceText = formatPriceSync(
+          _firstDateA.price_adult,
+          _tourA?.currency || "TRY",
+          _lang,
+          _exRatesAck,
+          _showDualAck,
+          languageCurrencies,
+        );
+      }
+    } catch (_priceErr) {
+      console.warn("[process-message] :11a-AUTO-DATE-ACK price format failed, fiyatsız devam:", _priceErr);
+      _priceText = "";
+    }
+
+    const _msgs: Record<string, string> = {
+      tr: _priceText
+        ? `*${_displayDate}* tarihinde *${_displayTitle}* için rezervasyon başlatıyorum. (Kişi başı ${_priceText}) ✨\n\nKaç kişi katılacaksınız? 😊`
+        : `*${_displayDate}* tarihinde *${_displayTitle}* için rezervasyon başlatıyorum. ✨\n\nKaç kişi katılacaksınız? 😊`,
+      en: _priceText
+        ? `Starting reservation for *${_displayTitle}* on *${_displayDate}*. (Per person ${_priceText}) ✨\n\nHow many people? 😊`
+        : `Starting reservation for *${_displayTitle}* on *${_displayDate}*. ✨\n\nHow many people? 😊`,
+      de: _priceText
+        ? `Buche *${_displayTitle}* am *${_displayDate}*. (Pro Person ${_priceText}) ✨\n\nWie viele Personen? 😊`
+        : `Buche *${_displayTitle}* am *${_displayDate}*. ✨\n\nWie viele Personen? 😊`,
+      ru: _priceText
+        ? `Начинаю бронирование *${_displayTitle}* на *${_displayDate}*. (С человека ${_priceText}) ✨\n\nСколько человек? 😊`
+        : `Начинаю бронирование *${_displayTitle}* на *${_displayDate}*. ✨\n\nСколько человек? 😊`,
+      ar: _priceText
+        ? `أبدأ حجز *${_displayTitle}* في *${_displayDate}*. (للشخص ${_priceText}) ✨\n\nكم شخصاً؟ 😊`
+        : `أبدأ حجز *${_displayTitle}* في *${_displayDate}*. ✨\n\nكم شخصاً؟ 😊`,
+      fr: _priceText
+        ? `Je commence votre réservation pour *${_displayTitle}* le *${_displayDate}*. (Par personne ${_priceText}) ✨\n\nCombien de personnes ? 😊`
+        : `Je commence votre réservation pour *${_displayTitle}* le *${_displayDate}*. ✨\n\nCombien de personnes ? 😊`,
+      es: _priceText
+        ? `Iniciando reserva para *${_displayTitle}* el *${_displayDate}*. (Por persona ${_priceText}) ✨\n\n¿Cuántas personas? 😊`
+        : `Iniciando reserva para *${_displayTitle}* el *${_displayDate}*. ✨\n\n¿Cuántas personas? 😊`,
+    };
+    const askReply = _msgs[_lang] || _msgs.tr;
+    console.log(`[process-message] :11a-AUTO-DATE-ACK tetiklendi (date=${_selectedDate}, transition→waiting_for_pax)`);
+    await _save(askReply, newContext);
+    await adapter.sendResponse(askReply);
+    return { success: true, response: askReply, newContext };
   }
 
   // === 11b. PAX → NAME GEÇİŞİ (deterministik) — 2026-06-19 Murat bug kökü ===

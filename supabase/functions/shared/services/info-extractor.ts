@@ -371,6 +371,10 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   }
 
   // === Blok 10: Tek tarih otomatik seçim ===
+  // 2026-06-21 Sorun C fix: dateAutoAssigned flag eklendi. process-message
+  // :11a-AUTO-DATE-ACK bu flag'i görür → kullanıcıya seçilen tarihi onaylatır.
+  // Flag SADECE Blok 10 set eder; kullanıcı kendi tarih verdiyse (Blok 2/3/8/9)
+  // bayrak yok → bypass tetiklenmez → çift mesaj riski sıfır.
   if (
     !extractedInfo.dateId &&
     !extractedInfo.selectedDate &&
@@ -380,6 +384,7 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     const single = context.currentTour.dates[0];
     extractedInfo.selectedDate = single.departure_date;
     extractedInfo.dateId = single.id;
+    extractedInfo.dateAutoAssigned = true;     // YENİ — :11a-AUTO-DATE-ACK sinyali
   }
 
   return extractedInfo;
