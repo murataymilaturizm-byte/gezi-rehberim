@@ -75,3 +75,47 @@ export function shouldTriggerNameAskPersist(
     !nluResult.updates?.fullName
   );
 }
+
+// ─── 2026-06-21 SORUN A FIX: UNKNOWN_TOUR state-aware gate ─────────────
+//
+// CANLI BUG (exec bfccc327): Kullanıcı TOUR_SELECTED'de (currentTour=Kapadokya)
+// "Kapadokya rezervasyonu yapmak istiyorum" yazdı. NLU bağlamdan tour_name=
+// "Kapadokya Balon Turu" döndürdü (DOĞRU bağlam-aware NLU). AMA "Kapadokya"
+// kelimesi mesajda yok → isNluOutputInMessage uydurma sayıp atladı. msgWords
+// fallback "yapmak" → bot "yapmak turu sistemimizde bulunmuyor" dedi.
+//
+// KÖK: process-message.ts:582-588 :10b koşulu currentTour'u kontrol etmiyor.
+// TOUR_SELECTED stage listede ama state'te zaten tur seçili — kullanıcı yeni
+// tur aramıyor, mevcut rezervasyona devam ediyor.
+//
+// FIX: !context.currentTour gate ekle. State'te tur seçiliyse UNKNOWN_TOUR
+// ATILMAZ — kullanıcı muhtemelen mevcut rezervasyon akışında.
+//
+// KABUL EDİLEN SINIR: Kullanıcı GERÇEKTEN yeni tur arıyorsa ama NLU bunu
+// yakalayamadıysa (örn. "Bodrum turu nedir?" dediği halde mesajda "Bodrum"
+// yazım hatalı), bypass tetiklenmez → LLM cevaplar. Yanlış-negatif yanlış-
+// pozitiften (eski "yapmak turu yok" absürtlüğü) az zararlı.
+export type UnknownTourGateContext = BypassContext & {
+  currentTour?: any;
+};
+
+export function shouldFireUnknownTour(
+  context: UnknownTourGateContext,
+  selectedTour: any,
+  multipleMatchesCount: number,
+  unknownTourQuery: string | null,
+  toursCount: number,
+): boolean {
+  if (!unknownTourQuery) return false;
+  if (selectedTour) return false;
+  if (multipleMatchesCount > 0) return false;
+  if (toursCount === 0) return false;
+  // YENİ — Sorun A fix: state'te tur seçiliyse UNKNOWN_TOUR atma.
+  if (context.currentTour) return false;
+  return (
+    context.stage === "GREETING" ||
+    context.stage === "BROWSING" ||
+    context.stage === "TOUR_SELECTED" ||
+    context.stage === "COMPLETED"
+  );
+}

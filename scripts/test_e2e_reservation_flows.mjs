@@ -1222,10 +1222,16 @@ function assertBypassGatesContains(name, needle) {
 assertBypassGatesContains("shouldTriggerNameAskPersist export", "export function shouldTriggerNameAskPersist");
 assertBypassGatesContains("BİLİNEN SINIR yorumu (NLU yanlış sınıflandırma)", "BİLİNEN SINIR");
 assertBypassGatesContains("DAR KOŞUL 4 kapı belgeli", "DAR KOŞUL");
+// 2026-06-21 Sorun A
+assertBypassGatesContains("shouldFireUnknownTour export (Sorun A)", "export function shouldFireUnknownTour");
+assertBypassGatesContains("Sorun A currentTour gate yorumu", "if (context.currentTour) return false");
+assertProcMsgContains("Sorun A: shouldFireUnknownTour çağrısı", "shouldFireUnknownTour(context as any, selectedTour, multipleTourMatches.length");
 
 // process-message.ts'de :11b-PERSIST çağrı yeri
-assertProcMsgContains(":11b-PERSIST import (bypass-gates)",
-  'import { shouldTriggerNameAskPersist } from "../services/bypass-gates.ts"');
+assertProcMsgContains(":11b-PERSIST import (bypass-gates path)",
+  'from "../services/bypass-gates.ts"');
+assertProcMsgContains(":11b-PERSIST import sembolü",
+  "shouldTriggerNameAskPersist");
 assertProcMsgContains(":11b-PERSIST çağrı (shouldTriggerNameAskPersist)",
   "shouldTriggerNameAskPersist(context, newContext, nluResult)");
 assertProcMsgContains(":11b-PERSIST başlığı",

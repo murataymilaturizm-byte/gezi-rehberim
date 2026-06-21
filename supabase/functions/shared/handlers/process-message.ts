@@ -25,7 +25,7 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak } from "../services/nlu-validation.ts";
-import { shouldTriggerNameAskPersist } from "../services/bypass-gates.ts";
+import { shouldTriggerNameAskPersist, shouldFireUnknownTour } from "../services/bypass-gates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
@@ -576,16 +576,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // AMA findMatchingTours hiçbir tur'la eşleyemedi → DB'de yok. LLM'e bırakmak yerine
   // deterministik "X turu sistemimizde yok, müsait turlarımız: ..." mesajı.
   //
-  // ÖNEMLİ: GREETING/BROWSING gibi tur seçilmemiş stage'lerde tetiklensin, ama
-  // COLLECTING_INFO/CONFIRMING içinde tetiklenmesin — çünkü orada aktif rezervasyon
-  // var, kullanıcı geçici bilgi sorusu sorabilir; B2 zaten o durumu kapsıyor.
-  if (
-    unknownTourQuery &&
-    !selectedTour &&
-    multipleTourMatches.length === 0 &&
-    (context.stage === "GREETING" || context.stage === "BROWSING" || context.stage === "TOUR_SELECTED" || context.stage === "COMPLETED") &&
-    tours.length > 0
-  ) {
+  // 2026-06-21 SORUN A FIX: shouldFireUnknownTour helper'ı kullanılıyor. State'te
+  // tur seçiliyse (context.currentTour dolu) UNKNOWN_TOUR ATILMAZ — kullanıcı
+  // mevcut rezervasyon akışında "rezervasyon yapmak istiyorum" gibi mesaj yazarsa
+  // "yapmak turu yok" absürdü çıkmaz. KABUL EDİLEN SINIR: kullanıcı GERÇEKTEN yeni
+  // tur arıyorsa ama NLU yakalayamadıysa, LLM cevaplar (yanlış-negatif kabul).
+  if (shouldFireUnknownTour(context as any, selectedTour, multipleTourMatches.length, unknownTourQuery, tours.length)) {
     const _exRatesU = await getExchangeRatesOnce().catch(() => ({}));
     const _showDualU = agency.show_multi_currency !== false;
     const _tourListLinesU = tours.slice(0, 8).map((t: any, i: number) => {

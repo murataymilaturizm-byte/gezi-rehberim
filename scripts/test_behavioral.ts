@@ -879,6 +879,95 @@ const ctx_date = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" 
 // ─── ŞİMDİLİK YOK: waiting_for_phone simetri ───────────────────────────
 console.log("ℹ️  waiting_for_phone simetrisi BU COMMIT'TE YOK — canlı kanıt bekleniyor (kökü görmeden ekleme ilkesi)");
 
+// ═══════════════════════════════════════════════════════════════════════
+// 9) SORUN A — UNKNOWN_TOUR state-aware gate (2026-06-21)
+//
+// Canlı bug (exec bfccc327): TOUR_SELECTED'de currentTour=Kapadokya iken
+// "rezervasyon yapmak istiyorum" → bot "yapmak turu yok" dedi (absürt).
+// Kök: :10b koşulu currentTour'u kontrol etmiyor.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN A: UNKNOWN_TOUR state-aware gate ──");
+
+import { shouldFireUnknownTour } from "../supabase/functions/shared/services/bypass-gates.ts";
+
+const ctxKapadokyaTourSel = { stage: "TOUR_SELECTED", currentTour: { id: "T_KAPADOKYA", title: "Kapadokya Balon Turu" } };
+const ctxNoTourBrowsing   = { stage: "BROWSING", currentTour: undefined };
+const ctxNoTourGreeting   = { stage: "GREETING", currentTour: undefined };
+const ctxCollectingInfo   = { stage: "COLLECTING_INFO", currentTour: { id: "T_KAPADOKYA", title: "Kapadokya Balon Turu" } };
+const ctxCompleted        = { stage: "COMPLETED", currentTour: { id: "T_KAPADOKYA", title: "Kapadokya Balon Turu" } };
+
+// ─── MURAT CANLI BUG: TOUR_SELECTED + currentTour dolu → TETİKLEME ─────
+{
+  // exec bfccc327 reprodüksiyonu
+  const r = shouldFireUnknownTour(ctxKapadokyaTourSel, null, 0, "yapmak", 4);
+  assert(`Sorun A: TOUR_SELECTED + currentTour=Kapadokya + query="yapmak" → TETİKLEME (state-aware)`,
+    r === false);
+}
+
+{
+  // currentTour var ama NLU başka tur sinyali (Bodrum mesajda doğrulanmış) — KABUL EDİLEN SINIR
+  // Bypass yine TETİKLENMEZ (yanlış-negatif kabul, LLM cevaplar)
+  const r = shouldFireUnknownTour(ctxKapadokyaTourSel, null, 0, "Bodrum", 4);
+  assert(`Sorun A KABUL SINIRI: currentTour dolu + farklı tur sorusu → TETİKLEME (LLM cevaplar)`,
+    r === false);
+}
+
+// ─── MEVCUT DAVRANIŞ KORUNDU: currentTour yok → TETİKLE ────────────────
+{
+  const r = shouldFireUnknownTour(ctxNoTourBrowsing, null, 0, "Bodrum", 4);
+  assert(`BROWSING + currentTour yok + query="Bodrum" → TETİKLE (mevcut davranış korunur)`,
+    r === true);
+}
+
+{
+  const r = shouldFireUnknownTour(ctxNoTourGreeting, null, 0, "ege", 4);
+  assert(`GREETING + currentTour yok + query="ege" → TETİKLE`,
+    r === true);
+}
+
+// ─── DİĞER KORUNAN KURALLAR ───────────────────────────────────────────
+{
+  // query yok → her durumda TETİKLEME
+  const r = shouldFireUnknownTour(ctxNoTourBrowsing, null, 0, null, 4);
+  assert(`unknownTourQuery null → TETİKLEME`,
+    r === false);
+}
+
+{
+  // selectedTour var → TETİKLEME
+  const r = shouldFireUnknownTour(ctxNoTourBrowsing, { id: "T_ANTALYA" }, 0, "Antalya", 4);
+  assert(`selectedTour var → TETİKLEME`,
+    r === false);
+}
+
+{
+  // multipleMatches var → TETİKLEME
+  const r = shouldFireUnknownTour(ctxNoTourBrowsing, null, 2, "Kapadokya", 4);
+  assert(`multipleMatches>0 → TETİKLEME`,
+    r === false);
+}
+
+{
+  // toursCount=0 → TETİKLEME
+  const r = shouldFireUnknownTour(ctxNoTourBrowsing, null, 0, "X", 0);
+  assert(`toursCount=0 → TETİKLEME`,
+    r === false);
+}
+
+{
+  // COLLECTING_INFO stage listede DEĞİL → TETİKLEME
+  const r = shouldFireUnknownTour(ctxCollectingInfo, null, 0, "X", 4);
+  assert(`COLLECTING_INFO stage → TETİKLEME (mid-flow, aktif rezervasyon)`,
+    r === false);
+}
+
+{
+  // COMPLETED + currentTour dolu → TETİKLEME (Sorun A gate sebebiyle)
+  const r = shouldFireUnknownTour(ctxCompleted, null, 0, "X", 4);
+  assert(`COMPLETED + currentTour dolu → TETİKLEME (state-aware)`,
+    r === false);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
