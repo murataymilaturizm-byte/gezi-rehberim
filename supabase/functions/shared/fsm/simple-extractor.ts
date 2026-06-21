@@ -65,7 +65,10 @@ function extractRelativeDate(text: string, language: string): Date | null {
   };
   for (const days of Object.values(dayNames)) {
     for (let i = 0; i < days.length; i++) {
-      if (new RegExp(`\\b${days[i]}\\b`, "i").test(lower)) {
+      // 2026-06-21 Yan #8 fix: \b ASCII-only → \p{L}\p{N} lookaround.
+      // TR "salı" (ı bitişli), RU/AR gün isimleri non-ASCII karakter bitişli
+      // — eski \b match etmiyordu. Şimdi yakalanır.
+      if (new RegExp(`(?<![\\p{L}\\p{N}])${days[i]}(?![\\p{L}\\p{N}])`, "iu").test(lower)) {
         const currentDay = now.getDay();
         let daysUntil = i - currentDay;
         if (daysUntil <= 0) daysUntil += 7;
@@ -580,7 +583,9 @@ export function extractEmail(text: string): string | null {
 
 // 7 dilde "geçmek istiyorum" kalıpları
 const _SKIP_EMAIL: Record<string, RegExp> = {
-  tr: /\b(ge[çc]|atla|istemiyorum|yok|bo[şs]\s*ver|atlayım|geçelim|emailim\s*yok|mailim\s*yok|e-?posta\s*yok)\b/i,
+  // 2026-06-21 Yan #8 fix: \b → \p{L}\p{N} lookaround. "ge[çc]" — geç (ç bitişli)
+  // eski \b ile kaçıyordu. Şimdi "geç" tek başına email skip için yakalanır.
+  tr: /(?<![\p{L}\p{N}])(ge[çc]|atla|istemiyorum|yok|bo[şs]\s*ver|atlayım|geçelim|emailim\s*yok|mailim\s*yok|e-?posta\s*yok)(?![\p{L}\p{N}])/iu,
   en: /\b(skip|pass|no\s*email|don'?t\s*have|no\s*thanks|later|never\s*mind|without)\b/i,
   de: /\b(überspringen|nein|kein|später|habe\s*keine|egal|ohne)\b/i,
   ru: /\b(пропустить|нет|без|пропусти|не\s*надо|пропускаю)\b/i,

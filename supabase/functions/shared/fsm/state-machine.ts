@@ -169,8 +169,11 @@ export function detectConfirmation(message: string, language: string): boolean {
   const msg = message.toLowerCase().trim();
 
   // Negative patterns — bunlar varsa onay değil
+  // 2026-06-21 Yan #8 fix: \b ASCII-only → \p{L}\p{N} lookaround.
+  // JS \b non-ASCII bitişli kelimelerde (ş/ı) boundary tanımıyor →
+  // "evet yanlış" / "evet hatalı" eskiden TRUE (yanlış onay) → şimdi FALSE.
   const negativePatterns: Record<string, RegExp> = {
-    tr: /\b(ama|fakat|ancak|lakin|değil|yok|hayır|istemiyorum|vazgeçtim|olmaz|bekle|dur|aslında|sanki|acaba|mı\?|mi\?|değil mi|yanlış|hata|hatalı)\b/i,
+    tr: /(?<![\p{L}\p{N}])(ama|fakat|ancak|lakin|değil|yok|hayır|istemiyorum|vazgeçtim|olmaz|bekle|dur|aslında|sanki|acaba|mı\?|mi\?|değil mi|yanlış|hata|hatalı)(?![\p{L}\p{N}])/iu,
     en: /\b(but|however|except|not|no|don't|wait|hold|change|actually|wrong|mistake|rather|instead|unless)\b/i,
     de: /\b(aber|jedoch|nicht|nein|warte|ändern|eigentlich|falsch|stattdessen)\b/i,
     fr: /\b(mais|cependant|non|pas|attends|changer|plutôt|en fait|faux)\b/i,
@@ -651,9 +654,13 @@ const transitions: StateTransition[] = [
 
       // 3. ZAYIF SİNYALLER ("yanlış", "değil", "farklı", "eksik", "fazla") — MUTLAKA hedef alanla
       // tetiklensin. Tek başına "değil" / "farklı" yanlış-pozitif yaratıyordu.
-      const weakKeywords = /\b(yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|falsch|неправильно|خطأ)\b/i;
+      // 2026-06-21 Yan #8 fix: \b → \p{L}\p{N} lookaround. weakKeywords'te
+      // yanlış/hatalı/farklı TR'de ş/ı bitişli — eskiden "tarih yanlış" /
+      // "isim hatalı" change_info zayıf sinyal kaçıyordu.
+      const weakKeywords = /(?<![\p{L}\p{N}])(yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|falsch|неправильно|خطأ)(?![\p{L}\p{N}])/iu;
+      // fieldPattern: adı (ı bitişli) eskiden kaçıyordu.
       const fieldPattern =
-        /\b(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha|isim|ismi|adım|adı|adın|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre|telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono|ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)\b/i;
+        /(?<![\p{L}\p{N}])(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha|isim|ismi|adım|adı|adın|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre|telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono|ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)(?![\p{L}\p{N}])/iu;
       if (weakKeywords.test(msg) && fieldPattern.test(msg)) return true;
 
       return false;

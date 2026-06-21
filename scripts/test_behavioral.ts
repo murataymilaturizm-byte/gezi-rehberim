@@ -1251,12 +1251,11 @@ assert(`H6.2: 'tamam' → confirm TRUE`,
   detectConfirmation("tamam", "tr") === true);
 assert(`H6.3: 'evet ama tarihi değiştirelim' → confirm FALSE (negative guard 'ama')`,
   detectConfirmation("evet ama tarihi değiştirelim", "tr") === false);
-// H6.4 — YAN #8 BUG kanıtı: 'yanlış' ş-ile-biten, JS \byanlış\b false döner.
-// detectConfirmation TR negative pattern içinde yanlış var AMA \b boundary çalışmıyor.
-// Kullanıcı "evet yanlış" derse confirm TRUE → CONFIRMING → COMPLETED yanlış geçiş riski.
-// Bu testi "BUG kanıtlama" olarak işaretle — gerçek davranış DOĞRU OLMALIYDI FALSE.
-assert(`H6.4 YAN #8 BUG: 'evet yanlış' → detectConfirmation TRUE döner (BEKLENEN FALSE), JS \\b non-ASCII bug`,
-  detectConfirmation("evet yanlış", "tr") === true);   // bug davranışı belgele
+// H6.4 — YAN #8 FIX KANITI (2026-06-21): \p{L}\p{N} lookaround ile FALSE döner.
+// Önceki bug: JS \byanlış\b ASCII-only boundary, ş non-ASCII → match etmez → TRUE.
+// Fix: (?<![\p{L}\p{N}])yanlış(?![\p{L}\p{N}])/u → boundary doğru → FALSE.
+assert(`H6.4 YAN #8 FIX: 'evet yanlış' → detectConfirmation FALSE (negative guard çalışır, \\p{L} lookaround)`,
+  detectConfirmation("evet yanlış", "tr") === false);
 assert(`H6.5: 'yes' → confirm TRUE (EN)`,
   detectConfirmation("yes", "en") === true);
 assert(`H6.6: 'yes but change tarihi' → confirm FALSE (negative 'but', ASCII)`,
@@ -1267,6 +1266,67 @@ assert(`H6.8: 'tabi olabilir' → confirm FALSE (pattern 'tabii' iki-i, mesaj 't
   detectConfirmation("tabi olabilir", "tr") === false);
 // NOT: state-machine.ts:614 clearPositive PATTERN'i daha sıkı, bu test detectConfirmation'ın
 // kendi davranışını kanıtlar. Tulay bug için clearPositive ayrı bir gate.
+
+// ═══════════════════════════════════════════════════════════════════════
+// 13) YAN #8 FIX KAPSAMLI — \p{L}\p{N} lookaround 6 nokta (2026-06-21)
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── YAN #8 FIX: 6 nokta Türkçe karakter boundary ──");
+
+// ─── Nokta 1 — detectConfirmation negativePatterns.tr (state-machine.ts:173) ──
+assert(`Nokta 1.a: 'evet hatalı' → detectConfirmation FALSE (ı bitişli yakalanır)`,
+  detectConfirmation("evet hatalı", "tr") === false);
+assert(`Nokta 1.b: 'evet yanlış mı' → FALSE (yanlış yakalanır)`,
+  detectConfirmation("evet yanlış mı", "tr") === false);
+assert(`Nokta 1.c regresyon: 'evet ama' → FALSE (ama ASCII zaten OK)`,
+  detectConfirmation("evet ama", "tr") === false);
+assert(`Nokta 1.d regresyon: 'evet' yalın → TRUE (positive)`,
+  detectConfirmation("evet", "tr") === true);
+
+// ─── Nokta 2 — weakKeywords (state-machine.ts:654) ──────────────────────
+// weakKeywords function-scope, dışarıdan import edilemez. Pattern davranışını
+// direkt regex testi ile doğrula:
+const _weakKeywords_test = /(?<![\p{L}\p{N}])(yanlış|wrong|incorrect|hatalı|değil|farklı|eksik|fazla|falsch|неправильно|خطأ)(?![\p{L}\p{N}])/iu;
+assert(`Nokta 2.a: 'tarih yanlış' → weakKeywords match (ş bitişli yakalanır)`,
+  _weakKeywords_test.test("tarih yanlış") === true);
+assert(`Nokta 2.b: 'isim hatalı' → weakKeywords match (ı bitişli)`,
+  _weakKeywords_test.test("isim hatalı") === true);
+assert(`Nokta 2.c: 'tarih farklı olsun' → match`,
+  _weakKeywords_test.test("tarih farklı olsun") === true);
+assert(`Nokta 2.d regresyon: 'düzgün cümle' → match YOK (yanlış/hatalı yok)`,
+  _weakKeywords_test.test("düzgün cümle") === false);
+
+// ─── Nokta 3 — fieldPattern adı (state-machine.ts:656) ──────────────────
+const _fieldPattern_test = /(?<![\p{L}\p{N}])(tarih|date|isim|ismi|adım|adı|adın|soyad|name)(?![\p{L}\p{N}])/iu;
+assert(`Nokta 3.a: 'adı değiştir' → fieldPattern match (adı ı bitişli)`,
+  _fieldPattern_test.test("adı değiştir") === true);
+assert(`Nokta 3.b regresyon: 'adın değiştir' → match (n ASCII zaten OK)`,
+  _fieldPattern_test.test("adın değiştir") === true);
+
+// ─── Nokta 4 — TR email skip 'geç' (simple-extractor.ts:583) ───────────
+const _skipTR_test = /(?<![\p{L}\p{N}])(ge[çc]|atla|istemiyorum|yok)(?![\p{L}\p{N}])/iu;
+assert(`Nokta 4.a: 'geç' tek başına → email skip TRUE (ç bitişli yakalanır)`,
+  _skipTR_test.test("geç") === true);
+assert(`Nokta 4.b: 'şimdilik geç' → match`,
+  _skipTR_test.test("şimdilik geç") === true);
+assert(`Nokta 4.c regresyon: 'atla' (ASCII) → match`,
+  _skipTR_test.test("atla") === true);
+
+// ─── Nokta 5 — K4 ücretsiz (response-validator.ts:108) ─────────────────
+const _ucretsizK4_test = /(?<![\p{L}\p{N}])ücretsiz\s+(yapabilirim|sunabilirim|yapıyorum|veriyorum|yaptım)(?![\p{L}\p{N}])/iu;
+assert(`Nokta 5.a: 'ücretsiz yapabilirim' → K4 match (ü başlangıç yakalanır)`,
+  _ucretsizK4_test.test("size ücretsiz yapabilirim") === true);
+assert(`Nokta 5.b: 'ücretsiz veriyorum' → match`,
+  _ucretsizK4_test.test("bunu ücretsiz veriyorum") === true);
+assert(`Nokta 5.c regresyon: 'ücretsiz teklif' → match YOK (yapabilirim/sunabilirim/... listesi)`,
+  _ucretsizK4_test.test("ücretsiz teklif vereceğim") === false);
+
+// ─── Nokta 6 — Gün isimleri dynamic regex (simple-extractor.ts:68) ──────
+const _gunSali_test = new RegExp(`(?<![\\p{L}\\p{N}])${"salı"}(?![\\p{L}\\p{N}])`, "iu");
+assert(`Nokta 6.a: 'salı buluşalım' → match (ı bitişli yakalanır)`,
+  _gunSali_test.test("salı buluşalım") === true);
+const _gunPazartesi_test = new RegExp(`(?<![\\p{L}\\p{N}])${"pazartesi"}(?![\\p{L}\\p{N}])`, "iu");
+assert(`Nokta 6.b regresyon: 'pazartesi gel' → match (i ASCII zaten OK)`,
+  _gunPazartesi_test.test("pazartesi gel") === true);
 
 console.log("\n── HARD TEST: H13 normalizePhone uluslararası ──");
 

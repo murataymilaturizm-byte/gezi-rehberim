@@ -105,7 +105,10 @@ const PRICE_MANIP_PATTERNS: RegExp[] = [
   /\b%\s*\d+\s*indirim\b/i,
   /\bindirimli\s+(fiyat|ücret)\b/i,
   /\b(size\s+özel|sadece\s+siz|özel\s+teklif)\s+.{0,20}%(indirim|daha\s+ucuz)/i,
-  /\bücretsiz\s+(yapabilirim|sunabilirim|yapıyorum|veriyorum|yaptım)\b/i,
+  // 2026-06-21 Yan #8 GÜVENLİK fix: "ücretsiz" başlangıçtaki ü non-ASCII, eski
+  // \b boundary çalışmıyordu → LLM "ücretsiz yapabilirim" çıktısı K4 guard'a
+  // takılmıyordu. \p{L}\p{N} lookaround ile yakalanır.
+  /(?<![\p{L}\p{N}])ücretsiz\s+(yapabilirim|sunabilirim|yapıyorum|veriyorum|yaptım)(?![\p{L}\p{N}])/iu,
   /\bbedavaya?\s+(alabilirim|sunabilirim|yapabilirim|veriyorum)\b/i,
   // EN — discount/free
   /\bgive\s+(you\s+)?(a\s+)?\d+\s*%\s*(off|discount)\b/i,
