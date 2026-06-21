@@ -1444,6 +1444,62 @@ assert(`F.15 POZ: 'Mehmet Ali Demir' → NOT leak (3 word temiz)`,
     _shouldAccept === true);
 }
 
+// ─── F.18+ — BLOK 5 FALLBACK PATH (canlı bug exec 9f040077) ────────────
+// info-extractor Blok 5 mesajı doğrudan parse ediyor → K2/K3 atlatıyordu.
+// Test: GERÇEK fonksiyon (extractAllInfo) ile fallback path doğrula.
+{
+  // Senaryo: K2 reddetti (updates.fullName YOK), Blok 5 mesajı parse eder
+  // Beklenen: candidate "Murat Değil Aslında Ahmet" gate'lerden geçemez
+  const ei = extractAllInfo({
+    message: "Murat değil aslında Ahmet",
+    nluResult: { intent: "provide_info", entities: {}, updates: {} },  // K2 reddetti, boş
+    fsmIntent: "provide_info",
+    context: { collectionStep: "waiting_for_name", language: "tr" } as any,
+    tours: [],
+  });
+  assert(`F.18 KRİTİK: Blok 5 fallback 'Murat değil aslında Ahmet' → fullName YAZILMAZ (gate sigortası)`,
+    ei.fullName === undefined);
+}
+
+{
+  // Pozitif regresyon: Blok 5 temiz isim HÂLA KABUL
+  const ei = extractAllInfo({
+    message: "Ahmet Yılmaz",
+    nluResult: { intent: "provide_info", entities: {}, updates: {} },
+    fsmIntent: "provide_info",
+    context: { collectionStep: "waiting_for_name", language: "tr" } as any,
+    tours: [],
+  });
+  assert(`F.19 POZ: Blok 5 'Ahmet Yılmaz' → fullName="Ahmet Yılmaz" (temiz kabul)`,
+    ei.fullName === "Ahmet Yılmaz");
+}
+
+{
+  // Edge: 3-word negation Blok 5 path
+  const ei = extractAllInfo({
+    message: "Murat değil Ahmet",
+    nluResult: { intent: "provide_info", entities: {}, updates: {} },
+    fsmIntent: "provide_info",
+    context: { collectionStep: "waiting_for_name", language: "tr" } as any,
+    tours: [],
+  });
+  assert(`F.20 KRİTİK: Blok 5 'Murat değil Ahmet' (3+neg) → YAZILMAZ`,
+    ei.fullName === undefined);
+}
+
+{
+  // Uzun temiz isim Blok 5 üst sınır (4 word)
+  const ei = extractAllInfo({
+    message: "Mehmet Ali Can Demirci",
+    nluResult: { intent: "provide_info", entities: {}, updates: {} },
+    fsmIntent: "provide_info",
+    context: { collectionStep: "waiting_for_name", language: "tr" } as any,
+    tours: [],
+  });
+  assert(`F.21 POZ: Blok 5 'Mehmet Ali Can Demirci' (4 temiz) → KABUL (uzun isim koruma)`,
+    ei.fullName === "Mehmet Ali Can Demirci");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

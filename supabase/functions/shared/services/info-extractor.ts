@@ -5,6 +5,7 @@ import type { ConversationContext } from "../fsm/types.ts";
 import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
+import { isNluFullNameNegationLeak, isNluFullNameTourLeak } from "./nlu-validation.ts";
 
 // getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
 // normalizeDateString'den sonra yer almaktadır.
@@ -289,7 +290,17 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
 
   // === Blok 3: simple-extractor (isim, telefon, paxAdult, tarih) ===
   const simple = extractNameAndPhone(message, context.collectionStep);
-  if (simple.fullName && !extractedInfo.fullName) extractedInfo.fullName = simple.fullName;
+  // 2026-06-21 SORUN F GERÇEK KÖK: simple-extractor.ts:450 mesajdan Title-Case
+  // fullName extract ediyor (Blok 5 mantığının kopyası). simple.fullName ile
+  // gelen değeri AYNI gate sigortasından geçir (K3 tek-kaynak). Canlı exec
+  // 9f040077 kanıtı: simple-extractor "Murat Değil Aslında Ahmet" Title-Case
+  // dönüyordu → state'e ham yazılıyordu.
+  if (simple.fullName && !extractedInfo.fullName) {
+    if (!isNluFullNameNegationLeak(simple.fullName) && !isNluFullNameTourLeak(simple.fullName)) {
+      extractedInfo.fullName = simple.fullName;
+    }
+    // else: silent drop, sonraki turn'de bot yeniden sorar
+  }
   if (simple.phone && !extractedInfo.phone) extractedInfo.phone = simple.phone;
   if (simple.paxAdult && !extractedInfo.paxAdult) extractedInfo.paxAdult = simple.paxAdult;
   if (simple.selectedDate && !extractedInfo.selectedDate) extractedInfo.selectedDate = simple.selectedDate;
@@ -314,9 +325,27 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       !/\d/.test(message) &&
       words.every((w) => w.length >= 2)
     ) {
-      const blacklist = ["evet", "hayır", "tamam", "olur", "haydi", "hadi", "rezervasyon", "onaylıyorum", "iptal", "cancel"];
+      // 2026-06-21 SORUN F GERÇEK KÖK: Blok 5 fallback path NLU K2+K3 gate'lerini
+      // atlatıyordu. Canlı log (exec 9f040077): K2 4-word+negation reddetti
+      // (updates.fullName silent drop), Blok 1/Blok 5 fallback mesajı direkt
+      // parse edip Title-Case yazdı: "Murat Değil Aslında Ahmet".
+      //
+      // FIX: blacklist'e negation/correction tokens ekle (TR+EN, NLU_VALIDATION
+      // ile aynı kapsam) + candidate'ı isNluFullNameNegationLeak+TourLeak gate
+      // sigortasından geçir (K3 ile tek-kaynak savunma).
+      const blacklist = [
+        "evet", "hayır", "tamam", "olur", "haydi", "hadi", "rezervasyon",
+        "onaylıyorum", "iptal", "cancel",
+        // 2026-06-21 Sorun F: negation/correction (TR + EN)
+        "değil", "aslında", "yerine",
+        "not", "actually", "instead", "scratch",
+      ];
       if (!blacklist.some((w) => message.toLowerCase().includes(w))) {
-        extractedInfo.fullName = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+        const _candidate = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+        // ASIL SİGORTA: candidate gate kontrolü (K3 ile aynı helper'lar, tek-kaynak)
+        if (!isNluFullNameNegationLeak(_candidate) && !isNluFullNameTourLeak(_candidate)) {
+          extractedInfo.fullName = _candidate;
+        }
       }
     }
   }
