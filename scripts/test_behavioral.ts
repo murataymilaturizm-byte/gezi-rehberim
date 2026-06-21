@@ -1149,6 +1149,60 @@ const _kapaMultiDateTour = {
     ei.dateAutoAssigned === undefined);
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// 11) SORUN B — :11b-PERSIST pax bildirim mantığı (2026-06-21)
+//
+// Canlı bug (exec 184bb422): waiting_for_name'de "1 kişi" → state pax 2→1
+// güncellendi AMA bot sadece "Önce ad-soyad" dedi. Kullanıcı değişimi
+// GÖRMÜYOR (sessiz update).
+//
+// Fix: paxAcked = (nluResult.updates.paxAdult var) AND (context.pax !==
+// new pax). Pure function olarak test edilebilir.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN B: :11b-PERSIST pax bildirim mantığı ──");
+
+// Pax bildirim kararı — process-message:825 bloğundaki mantığın aynısı
+function shouldAckPaxChange(
+  contextPax: number | undefined,
+  nluUpdatesPax: number | undefined,
+): boolean {
+  return !!nluUpdatesPax && nluUpdatesPax !== contextPax;
+}
+
+// ─── 1) CANLI BUG: pax 2→1 → TETİKLE bildirim ────────────────────────
+assert(`Canlı bug: state pax=2, NLU paxAdult=1 → paxAck TRUE`,
+  shouldAckPaxChange(2, 1) === true);
+
+// ─── 2) AYNI PAX: değişim yok → SADE mesaj (bildirim YOK) ─────────────
+assert(`State pax=1, NLU paxAdult=1 (aynı) → paxAck FALSE (sade mesaj)`,
+  shouldAckPaxChange(1, 1) === false);
+
+// ─── 3) İLK PAX (undefined → 3): "3 kişi aldım" ──────────────────────
+// undefined !== 3 → true. Bu durumda :11b TRANSITION bypass yakalar ZATEN,
+// :11b-PERSIST'e düşmez ama gate'in mantığı doğrulanır
+assert(`State pax=undefined, NLU paxAdult=3 → paxAck TRUE (ilk pax)`,
+  shouldAckPaxChange(undefined, 3) === true);
+
+// ─── 4) PAX YOK NLU'da (kullanıcı başka veri verdi): bildirim YOK ────
+// Örn. kullanıcı telefon yazdı, NLU phone çıkardı ama paxAdult yok
+assert(`NLU paxAdult undefined → paxAck FALSE (sade mesaj — yanlış bildirim olmaz)`,
+  shouldAckPaxChange(2, undefined) === false);
+
+// ─── 5) OFF-TOPIC YANILMA (bilinen sınır) ─────────────────────────────
+// NLU "iki günlük müydü?" yu yanlış paxAdult=2 yorumlarsa:
+// State pax=undefined → 2 yazılır, bildirim çıkar. Düzeltme imkanı var
+// (sonraki turn kullanıcı "hayır 1" derse 2→1 güncellenir).
+// Bu test mantığı belgeler: yanlış paxAdult de bildirim tetikler (kabul).
+assert(`BİLİNEN SINIR: NLU yanlış parse paxAdult=2 (state=undefined) → paxAck TRUE (düzeltilebilir)`,
+  shouldAckPaxChange(undefined, 2) === true);
+
+// ─── DÜZELTME AKIŞI ────────────────────────────────────────────────────
+// T1: state pax=undefined, NLU yanlış paxAdult=2 → "2 kişi aldım..." (yanlış)
+// T2: state pax=2 (yanlış), NLU paxAdult=1 (kullanıcı düzeltti) → "1 kişi
+//     aldım..." (DÜZELTME görünür)
+assert(`Düzeltme: state pax=2 (yanlış değer), kullanıcı paxAdult=1 → paxAck TRUE (düzeltme)`,
+  shouldAckPaxChange(2, 1) === true);
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

@@ -824,7 +824,46 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // büyük UX kaybı. Trade-off davranışsal testte "bilinen sınır" olarak belgeli.
   if (shouldTriggerNameAskPersist(context, newContext, nluResult)) {
     const _lang = newContext.language || "tr";
-    const _msgs: Record<string, string> = {
+
+    // 2026-06-21 Sorun B fix: pax değişimi bildirim. Canlı bug (exec 184bb422):
+    // bypass tetiklendiğinde mergeReservationInfo paxAdult'ı üzerine yazıyor
+    // (state-machine.ts:110-112, waiting_for_name'de tarih dolu → hasDate=true
+    // → yeni pax KOŞULSUZ yazılır), AMA mesaj sadece "ad-soyad alalım" diyor.
+    // Kullanıcı 2→1 değişimini GÖRMÜYOR (sessiz update).
+    //
+    // Bildirim SADECE bu turn'de YENİ paxAdult değeri geldi VE öncekinden
+    // farklıysa eklenir. Aksi halde sade "Önce ad-soyad" mesajı.
+    //
+    // BİLİNEN SINIR genişlemesi: :11b-PERSIST'in NLU yanlış sınıflandırma
+    // sınırı pax-bildirimine yansır — NLU "iki günlük müydü?"yu paxAdult=2
+    // diye yanlış parse ederse bildirim "2 kişi aldım" yanlış gider. DÜZELTME
+    // İMKÂNI VAR: kullanıcı sonraki turn'de "hayır 1 kişi" derse merge yine
+    // üzerine yazar → bildirim "1 kişi aldım" düzeltilir. Sistem kilitlenmez,
+    // sessiz-yanlış → gürültülü-yanlış (görünür) trade-off kabul edildi.
+    const _newPax = (nluResult.updates as any)?.paxAdult;
+    const _oldPax = (context.reservationInfo as any)?.paxAdult;
+    const _paxAcked = !!_newPax && _newPax !== _oldPax;
+
+    const _ackPrefix: Record<string, string> = _paxAcked ? {
+      tr: `*${_newPax} kişi* olarak güncelledim. `,
+      en: `Updated to *${_newPax} ${_newPax === 1 ? "person" : "people"}*. `,
+      de: `Aktualisiert auf *${_newPax} ${_newPax === 1 ? "Person" : "Personen"}*. `,
+      ru: `Обновлено до *${_newPax}*. `,
+      ar: `تم التحديث إلى *${_newPax}*. `,
+      fr: `Mis à jour à *${_newPax} ${_newPax === 1 ? "personne" : "personnes"}*. `,
+      es: `Actualizado a *${_newPax} ${_newPax === 1 ? "persona" : "personas"}*. `,
+    } : { tr: "", en: "", de: "", ru: "", ar: "", fr: "", es: "" };
+
+    // Pax bildirimi varsa "Şimdi", yoksa "Önce" — akış mantığı farkı
+    const _baseMsgs: Record<string, string> = _paxAcked ? {
+      tr: "Şimdi *ad ve soyadınızı* alabilir miyim? 😊",
+      en: "Now may I have your *full name*? 😊",
+      de: "Darf ich nun Ihren *vollständigen Namen* erfahren? 😊",
+      ru: "Теперь укажите, пожалуйста, ваше *имя и фамилию*. 😊",
+      ar: "هل يمكنني الحصول على *اسمك الكامل* الآن؟ 😊",
+      fr: "Pouvez-vous maintenant me donner votre *nom complet* ? 😊",
+      es: "¿Puede ahora indicarme su *nombre completo*? 😊",
+    } : {
       tr: "Önce *ad ve soyadınızı* alalım lütfen. 😊",
       en: "Let's get your *full name* first, please. 😊",
       de: "Lass uns zuerst Ihren *vollständigen Namen* aufnehmen, bitte. 😊",
@@ -833,8 +872,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       fr: "Commençons d'abord par votre *nom complet*, s'il vous plaît. 😊",
       es: "Primero indíquenos su *nombre completo*, por favor. 😊",
     };
-    const askReply = _msgs[_lang] || _msgs.tr;
-    console.log(`[process-message] :11b-PERSIST tetiklendi (no-op, intent=${nluResult.intent}, fullName yok)`);
+
+    const askReply = (_ackPrefix[_lang] || _ackPrefix.tr) + (_baseMsgs[_lang] || _baseMsgs.tr);
+    console.log(`[process-message] :11b-PERSIST tetiklendi (no-op, intent=${nluResult.intent}, fullName yok, paxAck=${_paxAcked})`);
     await _save(askReply, newContext);
     await adapter.sendResponse(askReply);
     return { success: true, response: askReply, newContext };

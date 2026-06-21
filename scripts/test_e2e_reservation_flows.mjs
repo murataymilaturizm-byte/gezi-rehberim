@@ -1256,6 +1256,14 @@ assertProcMsgContains(":11a-AUTO-DATE-ACK AR mesajı", "أبدأ حجز");
 assertProcMsgContains(":11a-AUTO-DATE-ACK FR mesajı", "Je commence votre réservation");
 assertProcMsgContains(":11a-AUTO-DATE-ACK ES mesajı", "Iniciando reserva para");
 
+// 2026-06-21 Sorun B — paxAck önek mantığı :11b-PERSIST içinde
+assertProcMsgContains("Sorun B paxAcked mantığı", "_paxAcked = !!_newPax && _newPax !== _oldPax");
+assertProcMsgContains("Sorun B paxAck log",       "paxAck=${_paxAcked}");
+assertProcMsgContains("Sorun B TR ack mesajı",    "*${_newPax} kişi* olarak güncelledim");
+assertProcMsgContains("Sorun B EN ack mesajı",    "Updated to *${_newPax}");
+assertProcMsgContains("Sorun B 'Şimdi' varyantı (paxAcked sonrası)",
+  "Şimdi *ad ve soyadınızı* alabilir miyim?");
+
 // process-message.ts'de :11b-PERSIST çağrı yeri
 assertProcMsgContains(":11b-PERSIST import (bypass-gates path)",
   'from "../services/bypass-gates.ts"');
