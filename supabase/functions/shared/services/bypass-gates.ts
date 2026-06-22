@@ -162,3 +162,64 @@ export function shouldTriggerAutoDateAck(
     context.collectionStep !== "waiting_for_pax"
   );
 }
+
+// ─── 2026-06-22 SORUN G — :13-PERSIST CONFIRMING NO-OP gate ───────────
+//
+// CANLI BUG (exec 06ae0554, M1 ailesi):
+//   State: CONFIRMING/ready_for_confirmation, tüm bilgi dolu
+//   Kullanıcı: "tabi olabilir"
+//   NLU intent: "general" (CANLI KANIT — Tulay fix clearPositive geçemedi,
+//     Yan #8 negative guard "yanlış"/"hatalı" yakalıyor ama "tabi olabilir"
+//     belirsiz, NLU general düşürdü)
+//   detectConfirmation FALSE → state CONFIRMING'de kaldı
+//   change_info FALSE → CONFIRMING→COLLECTING_INFO transition tetiklenmedi
+//   → no-op. LLM çağrıldı → "Telefon numaranızı yazabilir misiniz?" (telefon
+//     ZATEN dolu) — M1 LLM compliance kırılganlığı.
+//
+// FIX: deterministik özet+onay tekrar bypass. Mesaj :13 transition bypass'ı
+//   ile aynı format (tutarlı görünüm). LLM compliance'ından BAĞIMSIZ.
+//
+// 5 KAPI (intent allow-list ile daraltılmış):
+//   1-3. Stage/step/no-op (CONFIRMING → CONFIRMING + ready_for_confirmation)
+//   4.   reservationConfirmed=false (henüz onaylanmadı)
+//   5.   intent BYPASS_ELIGIBLE_INTENTS allow-list'te → belirsiz/içeriksiz cevap
+//
+// INTENT AYRIMI (kullanıcı endişesi — "gerçek akışı bozma"):
+//   Meşru sorular (hotel_details/faq_general/cancellation_policy/payment_methods/
+//   transport_details/visa_support/working_hours/agency_info/tour_search/
+//   custom_package/...) LLM'e gider, midFlowReturnPrompt akışa döndürür.
+//   Gerçek düzeltme niyetleri (provide_info — örn. "0555..." yeniden telefon)
+//   LLM'e gider, "telefonu değiştirmek mi istiyorsunuz?" gibi onay üretebilir.
+//
+// ALLOW-LIST (3'lü, explicit — bilinmeyen intent → güvenli default LLM):
+//   - confirm_reservation: Tulay edge — clearPositive geçemeyen pozitif
+//   - general: belirsiz/içeriksiz (exec 06ae0554 "tabi olabilir" → general)
+//   - greeting: CONFIRMING'de "merhaba" gibi yer-tutucu
+// PROVIDE_INFO ÇIKARILDI: "0555 123 45 67" gibi gerçek düzeltme yutulma
+//   riski; LLM yorumlasın (mergeReservationInfo phone dolu üzerine yazmaz,
+//   bypass'sız LLM CONFIRMING prompt'unu görüp doğru cevap üretir).
+//
+// BİLİNEN SINIR: NLU bir meşru soruyu yanlışlıkla general derse, bypass
+//   yutar — düşük frekans (NLU CONFIRMING dikta + Haiku spesifik intent
+//   eğilimli). Kullanıcı tekrar sorarsa NLU netleşir.
+//
+// MEVCUT :13 (transition bypass) DEĞİŞMEDİ — bu PERSIST yeni bypass,
+//   no-op senaryolarını yakalar.
+const BYPASS_ELIGIBLE_INTENTS = new Set<string>([
+  "confirm_reservation",
+  "general",
+  "greeting",
+]);
+
+export function shouldTriggerSummaryReask(
+  context: BypassContext,
+  newContext: BypassContext & { reservationConfirmed?: boolean },
+  intent: string,
+): boolean {
+  if (newContext.stage !== "CONFIRMING") return false;
+  if (context.stage !== "CONFIRMING") return false;
+  if (newContext.collectionStep !== "ready_for_confirmation") return false;
+  if (newContext.reservationConfirmed === true) return false;
+  if (!BYPASS_ELIGIBLE_INTENTS.has(intent)) return false;
+  return true;
+}

@@ -1336,6 +1336,29 @@ assertProcMsgContains("Sorun F K3 negation gate çağrısı",
   "isNluFullNameNegationLeak(_leak)");
 assertProcMsgContains("Sorun F K3 BLOCKED log",
   "BLOCKED NLU fullName negation-leak");
+// 2026-06-22 Sorun G — :13-PERSIST CONFIRMING no-op PRESENCE
+assertBypassGatesContains("Sorun G shouldTriggerSummaryReask export",
+  "export function shouldTriggerSummaryReask");
+assertBypassGatesContains("Sorun G BYPASS_ELIGIBLE_INTENTS 3'lü (confirm_reservation)",
+  '"confirm_reservation"');
+assertBypassGatesContains("Sorun G allow-list general (exec 06ae0554 kanıt)",
+  '"general"');
+assertBypassGatesContains("Sorun G allow-list greeting",
+  '"greeting"');
+assertBypassGatesContains("Sorun G provide_info ÇIKARILDI yorum belgesi",
+  "PROVIDE_INFO ÇIKARILDI");
+// process-message :13-PERSIST
+assertProcMsgContains(":13-PERSIST başlığı",
+  "13-PERSIST. CONFIRMING NO-OP");
+assertProcMsgContains(":13-PERSIST çağrısı",
+  "shouldTriggerSummaryReask(context, newContext, nluResult.intent)");
+assertProcMsgContains(":13-PERSIST log",
+  ":13-PERSIST tetiklendi");
+assertProcMsgContains(":13-PERSIST TR sade reask metni",
+  "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı?");
+assertProcMsgContains(":13-PERSIST EN reask",
+  "Do you confirm, or is there something you'd like to change?");
+
 // nlu.ts K2 word count + 4+ negation kontrol
 const nluTsPath = join(__dirname, "..", "supabase", "functions", "shared", "fsm", "nlu.ts");
 const nluTsContent = readFileSync(nluTsPath, "utf-8");

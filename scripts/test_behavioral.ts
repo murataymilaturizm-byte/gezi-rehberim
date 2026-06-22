@@ -1500,6 +1500,93 @@ assert(`F.15 POZ: 'Mehmet Ali Demir' → NOT leak (3 word temiz)`,
     ei.fullName === "Mehmet Ali Can Demirci");
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// 15) SORUN G — :13-PERSIST CONFIRMING no-op özet+onay tekrar (2026-06-22)
+//
+// Canlı bug exec 06ae0554: "tabi olabilir" → NLU general (CANLI KANIT),
+// CONFIRMING no-op, LLM "Telefon yazabilir misiniz?" (M1 LLM compliance).
+// Fix: shouldTriggerSummaryReask + intent allow-list (3'lü).
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN G: :13-PERSIST CONFIRMING no-op (intent allow-list) ──");
+
+import { shouldTriggerSummaryReask } from "../supabase/functions/shared/services/bypass-gates.ts";
+
+const ctx_conf = { stage: "CONFIRMING", collectionStep: "ready_for_confirmation" };
+
+// ─── ALLOW-LIST İNTENT'LERİ — bypass TETİKLE ────────────────────────────
+{
+  // G.1 — Tulay edge (clearPositive geçemeyen pozitif)
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "confirm_reservation");
+  assert(`G.1: CONFIRMING no-op + confirm_reservation → TETİKLE (Tulay edge)`,
+    r === true);
+}
+
+{
+  // G.2 — provide_info ÇIKARILDI: gerçek düzeltme niyeti yutulma riski
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "provide_info");
+  assert(`G.2 KRİTİK: provide_info → TETİKLEME (gerçek düzeltme '0555...' yutulmaz, LLM yorumlasın)`,
+    r === false);
+}
+
+{
+  // G.3 — Canlı kanıt (exec 06ae0554)
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "general");
+  assert(`G.3: 'tabi olabilir'→general (exec 06ae0554 KANIT) → TETİKLE`,
+    r === true);
+}
+
+{
+  // G.4 — Greeting yer-tutucu
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "greeting");
+  assert(`G.4: CONFIRMING'de 'merhaba' → TETİKLE (yer-tutucu)`,
+    r === true);
+}
+
+// ─── MEŞRU SORU İNTENT'LERİ — bypass ATLA (LLM cevaplasın) ─────────────
+{
+  // G.5 — Tur içerik sorusu
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "hotel_details");
+  assert(`G.5: 'öğle yemeği dahil mi?'→hotel_details → ATLA (LLM cevaplasın)`,
+    r === false);
+}
+
+{
+  // G.6 — Genel SSS
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "faq_general");
+  assert(`G.6: faq_general → ATLA (genel soru LLM)`,
+    r === false);
+}
+
+{
+  // G.7 — İptal politikası
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "cancellation_policy");
+  assert(`G.7: 'iptal şartları?'→cancellation_policy → ATLA`,
+    r === false);
+}
+
+{
+  // G.8 — Ödeme
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: false }, "payment_methods");
+  assert(`G.8: 'ödeme nasıl?'→payment_methods → ATLA`,
+    r === false);
+}
+
+// ─── KENAR DURUMLAR ─────────────────────────────────────────────────────
+{
+  // G.9 — Onaylanmış (4. kapı reservationConfirmed)
+  const r = shouldTriggerSummaryReask(ctx_conf, { ...ctx_conf, reservationConfirmed: true }, "confirm_reservation");
+  assert(`G.9: reservationConfirmed=true → ATLA (4. kapı)`,
+    r === false);
+}
+
+{
+  // G.10 — Transition (no-op DEĞİL)
+  const ctx_collect = { stage: "COLLECTING_INFO", collectionStep: "waiting_for_phone" };
+  const r = shouldTriggerSummaryReask(ctx_collect, { stage: "CONFIRMING", collectionStep: "ready_for_confirmation", reservationConfirmed: false }, "confirm_reservation");
+  assert(`G.10: COLLECTING_INFO→CONFIRMING transition (no-op değil) → ATLA`,
+    r === false);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

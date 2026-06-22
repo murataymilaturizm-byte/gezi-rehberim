@@ -25,7 +25,7 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak, isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
-import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck } from "../services/bypass-gates.ts";
+import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
@@ -1005,6 +1005,57 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(summaryReply, newContext);
     await adapter.sendResponse(summaryReply);
     return { success: true, response: summaryReply, newContext };
+  }
+
+  // === 13-PERSIST. CONFIRMING NO-OP — belirsiz cevap özet+onay tekrar ===
+  // 2026-06-22 Sorun G fix (canlı bug exec 06ae0554, M1 ailesi):
+  //   CONFIRMING'de "tabi olabilir" → NLU general (canlı kanıt), detectConfirmation
+  //   FALSE, change_info FALSE → no-op. LLM çağrılır → "Telefon numaranızı?"
+  //   (telefon dolu olmasına rağmen) M1 LLM compliance kırılganlığı.
+  //
+  // FIX: deterministik özet+onay tekrar. shouldTriggerSummaryReask intent
+  //   allow-list ile DARALTILMIŞ — meşru sorular (hotel_details/faq_general/
+  //   payment_methods/cancellation_policy/...) ve gerçek düzeltme (provide_info,
+  //   "0555 123 45 67" gibi) LLM'e gider. SADECE belirsiz/içeriksiz intent'ler
+  //   (confirm_reservation/general/greeting) bypass tetikler.
+  if (shouldTriggerSummaryReask(context, newContext, nluResult.intent)) {
+    const _lang = newContext.language || "tr";
+    const info = (newContext.reservationInfo as any) || {};
+    const _tourTitle = newContext.currentTour
+      ? getLocalizedTourTitle(newContext.currentTour.title || "", _lang)
+      : "";
+    const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
+    const _pax = info.paxAdult ?? "";
+    const _name = info.fullName || "";
+    const _phone = info.phone || "";
+
+    // Mevcut :13 ile aynı label yapısı (tutarlı görünüm). FARK: confirm metni
+    // daha sade — "Bilgileri tekrar görmenizi istedim" yok (kullanıcı o cümleyi
+    // kurmadı, tuhaf). Özet zaten üstte, sade soru yeter.
+    const _labels: Record<string, { tour: string; date: string; pax: string; name: string; phone: string; reask: string }> = {
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", name: "Ad-Soyad", phone: "Telefon",   reask: "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı? ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      name: "Name",     phone: "Phone",     reask: "Do you confirm, or is there something you'd like to change? ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    name: "Name",     phone: "Telefon",   reask: "Bestätigen Sie, oder möchten Sie etwas ändern? ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     name: "Имя",      phone: "Телефон",   reask: "Подтверждаете или хотите что-то изменить? ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", name: "الاسم",    phone: "الهاتف",    reask: "هل تؤكد أم تريد تغيير شيء ما؟ ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   name: "Nom",      phone: "Téléphone", reask: "Confirmez-vous, ou souhaitez-vous changer quelque chose ? ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    name: "Nombre",   phone: "Teléfono",  reask: "¿Confirma o desea cambiar algo? ✅" },
+    };
+    const L = _labels[_lang] || _labels.tr;
+
+    const _summaryLines = [
+      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
+      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+      _pax !== "" ? `👥 ${L.pax}: ${_pax}`         : "",
+      _name      ? `👤 ${L.name}: ${_name}`        : "",
+      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
+    ].filter(Boolean).join("\n");
+
+    const reaskReply = `${_summaryLines}\n\n${L.reask}`;
+    console.log(`[process-message] :13-PERSIST tetiklendi (CONFIRMING no-op, intent=${nluResult.intent}, özet tekrar)`);
+    await _save(reaskReply, newContext);
+    await adapter.sendResponse(reaskReply);
+    return { success: true, response: reaskReply, newContext };
   }
 
   // === 14. REZERVASYON KAYDET (COMPLETED) ===
