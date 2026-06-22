@@ -26,6 +26,7 @@ import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak, isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
 import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
+import { hasQuotaForPax, getQuotaRemaining, hasAnyAvailableDate } from "../services/quota-check.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
@@ -455,6 +456,129 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _maxReply, newContext: context };
   }
 
+  // === 8b. SORUN H — KONTENJAN ÖNDEN KONTROL (β + pax) ===
+  // 2026-06-22: 3 katmanlı önden kontrol (α etiket :11'de, β tarih atama,
+  // pax atama). γ RPC AYNEN korunur (race safety 4. kat).
+  //
+  // Helpers: hasQuotaForPax / getQuotaRemaining (services/quota-check.ts) — TEK
+  // doğruluk kaynağı (alt-date filter de aynı helper'ı kullanır artık).
+  //
+  // remaining_quota tour-cache._refreshQuota tarafından her sorguda taze hazır,
+  // ek DB çağrısı YOK.
+
+  // Inline helper: müsait tarih listesi metni (TR + EN şimdi, diğer 5 dil
+  // çok-dil eşitleme fazına). β + pax bypass'larda ortak — DRY.
+  async function _buildAvailableDatesText(
+    tour: any,
+    neededPax: number,
+    lang: string,
+  ): Promise<string> {
+    if (!tour?.dates?.length) return "";
+    const _eR = await getExchangeRatesOnce().catch(() => ({}));
+    const _sD = agency.show_multi_currency !== false;
+    const lines = tour.dates
+      .filter((d: any) => hasQuotaForPax(d, neededPax))
+      .map((d: any, i: number) => {
+        const dt = formatDateForLanguage(d.departure_date, lang);
+        const pr = d.price_adult
+          ? ` - ${formatPriceSync(d.price_adult, tour.currency || "TRY", lang, _eR, _sD, languageCurrencies)}`
+          : "";
+        const remaining = getQuotaRemaining(d);
+        const qLabels: Record<string, string> = {
+          tr: ` (${remaining} kişilik yer)`, en: ` (${remaining} spots)`,
+          de: ` (${remaining} Plätze)`,      ru: ` (${remaining} мест)`,
+          ar: ` (${remaining} مقاعد)`,        fr: ` (${remaining} places)`,
+          es: ` (${remaining} plazas)`,
+        };
+        return `${i + 1}) ${dt}${pr}${qLabels[lang] || qLabels.en}`;
+      })
+      .join("\n");
+    return lines;
+  }
+
+  // β KATMANI — tarih dolu reddi (extractedInfo.dateRejectedFull flag set)
+  if ((extractedInfo as any)?.dateRejectedFull) {
+    const _lang = context.language || "tr";
+    const _rej = (extractedInfo as any).dateRejectedFull;
+    const _rejDateLabel = formatDateForLanguage(_rej.departureDate, _lang);
+    const _curTour = context.currentTour ? findTourById(context.currentTour.id, tours) : null;
+    const _altText = _curTour
+      ? await _buildAvailableDatesText(_curTour, 1, _lang)
+      : "";
+    const _hasAlt = _altText.trim().length > 0;
+
+    const _msgs: Record<string, string> = _hasAlt
+      ? {
+          tr: `Maalesef *${_rejDateLabel}* dolu. 😔\n\nMüsait tarihler:\n${_altText}\n\nHangi tarihi tercih edersiniz?`,
+          en: `Sorry, *${_rejDateLabel}* is fully booked. 😔\n\nAvailable dates:\n${_altText}\n\nWhich date do you prefer?`,
+          de: `Leider ist *${_rejDateLabel}* ausgebucht. 😔\n\nVerfügbare Termine:\n${_altText}\n\nWelches Datum bevorzugen Sie?`,
+          ru: `К сожалению, *${_rejDateLabel}* уже занят. 😔\n\nДоступные даты:\n${_altText}\n\nКакую дату вы предпочитаете?`,
+          ar: `للأسف، *${_rejDateLabel}* محجوز بالكامل. 😔\n\nالتواريخ المتاحة:\n${_altText}\n\nما التاريخ الذي تفضله؟`,
+          fr: `Désolé, *${_rejDateLabel}* est complet. 😔\n\nDates disponibles:\n${_altText}\n\nQuelle date préférez-vous ?`,
+          es: `Lo siento, *${_rejDateLabel}* está completo. 😔\n\nFechas disponibles:\n${_altText}\n\n¿Qué fecha prefieres?`,
+        }
+      : {
+          tr: `Maalesef *${_rejDateLabel}* dolu ve şu anda başka müsait tarih bulunmuyor. 😔\n\nLütfen daha sonra tekrar deneyin veya acentemizle iletişime geçin.`,
+          en: `Sorry, *${_rejDateLabel}* is fully booked and no other dates are available right now. 😔\n\nPlease try later or contact our agency.`,
+          de: `Leider ist *${_rejDateLabel}* ausgebucht und derzeit keine anderen Termine verfügbar. 😔\n\nBitte versuchen Sie es später oder kontaktieren Sie uns.`,
+          ru: `К сожалению, *${_rejDateLabel}* занят и других дат сейчас нет. 😔\n\nПопробуйте позже или свяжитесь с нами.`,
+          ar: `للأسف، *${_rejDateLabel}* محجوز ولا توجد تواريخ أخرى متاحة. 😔\n\nيرجى المحاولة لاحقاً أو التواصل معنا.`,
+          fr: `*${_rejDateLabel}* est complet et aucune autre date n'est disponible. 😔\n\nVeuillez réessayer plus tard ou nous contacter.`,
+          es: `*${_rejDateLabel}* está completo y no hay otras fechas disponibles. 😔\n\nIntente más tarde o contáctenos.`,
+        };
+    const _betaReply = _msgs[_lang] || _msgs.tr;
+    console.log(`[process-message] H-β tetiklendi (tarih dolu: ${_rej.departureDate}, remaining=${_rej.remaining}, altDates=${_hasAlt})`);
+    await _save(_betaReply, context);
+    await adapter.sendResponse(_betaReply);
+    return { success: true, response: _betaReply, newContext: context };
+  }
+
+  // pax KATMANI — pax atama yeterli kontenjan yok
+  // Senaryo: tarihte 2 yer, kullanıcı "5 kişi" dedi. Tarih state'te dolu, pax
+  // bu turn'de extract edildi → state-machine'den ÖNCE kontrol et.
+  const _paxPending = (extractedInfo as any)?.paxAdult;
+  const _activeTourFull = context.currentTour ? findTourById(context.currentTour.id, tours) : null;
+  const _activeDateId = (extractedInfo as any)?.dateId ?? context.reservationInfo?.dateId;
+  const _activeDate = _activeTourFull?.dates?.find((d: any) => d.id === _activeDateId);
+  if (_paxPending && _activeDate && !hasQuotaForPax(_activeDate, _paxPending)) {
+    const _lang = context.language || "tr";
+    const _remaining = getQuotaRemaining(_activeDate);
+    const _dateLabel = formatDateForLanguage(_activeDate.departure_date, _lang);
+    // pax niyetini koru, dateId silinecek (state'e geri çekilecek waiting_for_date'e)
+    // Burada SADECE mesaj atıyoruz — state-machine extractedInfo.dateId'yi state'e yazmadı,
+    // dateRejectedFull flag de yok, state.reservationInfo aynen kalır. Bu turn sonrası
+    // state.dateId hâlâ eski dolu olan; kullanıcı bir sonraki turn yeni tarih derse OK.
+    // Bu fix β'nın doğal devamı, kullanıcı pax niyetini sonraki tarih seçiminde kullanır.
+    const _altText = _activeTourFull
+      ? await _buildAvailableDatesText(_activeTourFull, _paxPending, _lang)
+      : "";
+    const _hasAlt = _altText.trim().length > 0;
+    const _msgs: Record<string, string> = _hasAlt
+      ? {
+          tr: `*${_paxPending} kişi* için *${_dateLabel}* tarihinde sadece *${_remaining} yer* var. 😔\n\nMüsait tarihler:\n${_altText}\n\nBaşka tarih seçer misiniz?`,
+          en: `Only *${_remaining} seats* available for *${_paxPending} people* on *${_dateLabel}*. 😔\n\nAvailable dates:\n${_altText}\n\nCould you choose another date?`,
+          de: `Nur *${_remaining} Plätze* für *${_paxPending} Personen* am *${_dateLabel}*. 😔\n\nVerfügbare Termine:\n${_altText}\n\nKönnten Sie ein anderes Datum wählen?`,
+          ru: `Для *${_paxPending} человек* на *${_dateLabel}* осталось всего *${_remaining} мест*. 😔\n\nДоступные даты:\n${_altText}\n\nВыберете другую дату?`,
+          ar: `لـ *${_paxPending} أشخاص* في *${_dateLabel}* يوجد فقط *${_remaining} مقاعد*. 😔\n\nالتواريخ المتاحة:\n${_altText}\n\nهل يمكنك اختيار تاريخ آخر؟`,
+          fr: `Seulement *${_remaining} places* pour *${_paxPending} personnes* le *${_dateLabel}*. 😔\n\nDates disponibles:\n${_altText}\n\nPouvez-vous choisir une autre date ?`,
+          es: `Solo *${_remaining} lugares* para *${_paxPending} personas* el *${_dateLabel}*. 😔\n\nFechas disponibles:\n${_altText}\n\n¿Puede elegir otra fecha?`,
+        }
+      : {
+          tr: `*${_paxPending} kişi* için *${_dateLabel}* tarihinde sadece *${_remaining} yer* var ve uygun başka tarih yok. 😔\n\nDaha az kişi olarak deneyebilir veya acentemize danışabilirsiniz.`,
+          en: `Only *${_remaining} seats* for *${_paxPending} people* on *${_dateLabel}* and no alternative dates available. 😔\n\nTry fewer people or contact our agency.`,
+          de: `Nur *${_remaining} Plätze* für *${_paxPending} Personen* am *${_dateLabel}* — keine anderen Termine. 😔\n\nVersuchen Sie weniger Personen oder kontaktieren Sie uns.`,
+          ru: `Только *${_remaining} мест* для *${_paxPending} человек* на *${_dateLabel}*, других дат нет. 😔\n\nПопробуйте меньше человек или свяжитесь с нами.`,
+          ar: `فقط *${_remaining} مقاعد* لـ *${_paxPending} أشخاص* في *${_dateLabel}* ولا توجد تواريخ أخرى. 😔\n\nحاول بعدد أقل أو تواصل معنا.`,
+          fr: `Seulement *${_remaining} places* pour *${_paxPending} personnes* le *${_dateLabel}* — pas d'autres dates. 😔\n\nEssayez avec moins de personnes ou contactez-nous.`,
+          es: `Solo *${_remaining} lugares* para *${_paxPending} personas* el *${_dateLabel}* — no hay otras fechas. 😔\n\nIntente con menos personas o contáctenos.`,
+        };
+    const _paxRejReply = _msgs[_lang] || _msgs.tr;
+    console.log(`[process-message] H-pax tetiklendi (date=${_activeDate.departure_date}, remaining=${_remaining}, neededPax=${_paxPending})`);
+    await _save(_paxRejReply, context);
+    await adapter.sendResponse(_paxRejReply);
+    return { success: true, response: _paxRejReply, newContext: context };
+  }
+
   // === 9. FSM GEÇİŞİ ===
   const fsmInput: ProcessingInput = {
     userMessage: message,
@@ -656,9 +780,19 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           const priceText = d.price_adult
             ? ` - ${formatPriceSync(d.price_adult, _tourCurrency, newContext.language, _exRates, _showDual, languageCurrencies)}`
             : "";
-          const remaining = d.remaining_quota !== undefined ? d.remaining_quota : d.quota;
-          const quotaText = remaining !== undefined
-            ? ({
+          // 2026-06-22 Sorun H α katmanı: dolu tarih ETİKETLE (gizleme değil).
+          // Şeffaflık — kullanıcı tarihin var ama dolu olduğunu görür.
+          // getQuotaRemaining tek-kaynak (quota-check.ts).
+          const remaining = getQuotaRemaining(d);
+          const isFull = remaining <= 0;
+          const fullLabels: Record<string, string> = {
+            tr: " (DOLU)",   en: " (FULL)",   de: " (VOLL)",
+            ru: " (ПОЛНО)",  ar: " (ممتلئ)",  fr: " (COMPLET)",
+            es: " (COMPLETO)",
+          };
+          const quotaText = isFull
+            ? (fullLabels[newContext.language] || fullLabels.en)
+            : ({
                 tr: ` (${remaining} kişilik yer)`,
                 en: ` (${remaining} spots)`,
                 de: ` (${remaining} Plätze)`,
@@ -666,8 +800,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
                 ar: ` (${remaining} مقاعد)`,
                 fr: ` (${remaining} places)`,
                 es: ` (${remaining} plazas)`,
-              }[newContext.language] ?? ` (${remaining} spots)`)
-            : "";
+              }[newContext.language] ?? ` (${remaining} spots)`);
           return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
         })
         .join("\n");
@@ -1228,8 +1361,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         if (_quotaTour?.dates && _quotaTour.dates.length > 1) {
           const _qRates = await getExchangeRatesOnce().catch(() => ({}));
           const _qDual = agency.show_multi_currency !== false;
+          // 2026-06-22 Sorun H DRY: inline filter → hasQuotaForPax helper (Murat A ilkesi)
           _altDates = "\n\n" + _quotaTour.dates
-            .filter((d: any) => d.id !== dateId && (d.remaining_quota ?? d.quota ?? 1) > 0)
+            .filter((d: any) => d.id !== dateId && hasQuotaForPax(d, 1))
             .map((d: any, i: number) => {
               const dt = formatDateForLanguage(d.departure_date, lang);
               const pr = d.price_adult

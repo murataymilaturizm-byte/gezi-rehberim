@@ -6,6 +6,7 @@ import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, norm
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
 import { isNluFullNameNegationLeak, isNluFullNameTourLeak } from "./nlu-validation.ts";
+import { hasQuotaForPax, getQuotaRemaining } from "./quota-check.ts";
 
 // getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
 // normalizeDateString'den sonra yer almaktadır.
@@ -376,25 +377,44 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   }
 
   // === Blok 8: Numeric tarih girişi ("1", "2", "3") ===
+  // 2026-06-22 Sorun H β fix: kontenjan check, dolu ise dateRejectedFull flag set
   if (!extractedInfo.dateId && context.currentTour && (expectedInput === "date" || expectedInput === "date_selection")) {
     const n = parseInt(message.trim());
     if (!isNaN(n) && n >= 1) {
       const tour = findTourById(context.currentTour.id, tours);
       if (tour?.dates && n <= tour.dates.length) {
-        extractedInfo.selectedDate = tour.dates[n - 1].departure_date;
-        extractedInfo.dateId = tour.dates[n - 1].id;
+        const candidate = tour.dates[n - 1];
+        if (hasQuotaForPax(candidate, 1)) {
+          extractedInfo.selectedDate = candidate.departure_date;
+          extractedInfo.dateId = candidate.id;
+        } else {
+          extractedInfo.dateRejectedFull = {
+            departureDate: candidate.departure_date,
+            remaining: getQuotaRemaining(candidate),
+          };
+        }
       }
     }
   }
 
   // === Blok 9: String tarih eşleştirme (DD.MM.YYYY, YYYY-MM-DD, gün+ay) ===
+  // 2026-06-22 Sorun H β fix: aynı kontenjan check.
   if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
     const tour = findTourById(context.currentTour.id, tours);
     if (tour?.dates?.length > 0) {
       const matched = matchDateWithTourDates(extractedInfo.selectedDate, tour.dates);
       if (matched) {
-        extractedInfo.selectedDate = matched.departure_date;
-        extractedInfo.dateId = matched.id;
+        if (hasQuotaForPax(matched, 1)) {
+          extractedInfo.selectedDate = matched.departure_date;
+          extractedInfo.dateId = matched.id;
+        } else {
+          extractedInfo.dateRejectedFull = {
+            departureDate: matched.departure_date,
+            remaining: getQuotaRemaining(matched),
+          };
+          // selectedDate'i de SIL — kullanıcının yazımı state'e işlenmesin
+          delete extractedInfo.selectedDate;
+        }
       }
     }
   }
@@ -404,6 +424,8 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // :11a-AUTO-DATE-ACK bu flag'i görür → kullanıcıya seçilen tarihi onaylatır.
   // Flag SADECE Blok 10 set eder; kullanıcı kendi tarih verdiyse (Blok 2/3/8/9)
   // bayrak yok → bypass tetiklenmez → çift mesaj riski sıfır.
+  //
+  // 2026-06-22 Sorun H β fix: tek tarihli tur DOLU ise otomatik atama yapma.
   if (
     !extractedInfo.dateId &&
     !extractedInfo.selectedDate &&
@@ -411,9 +433,16 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     (fsmIntent === "provide_info" || fsmIntent === "confirm" || fsmIntent === "reservation_intent")
   ) {
     const single = context.currentTour.dates[0];
-    extractedInfo.selectedDate = single.departure_date;
-    extractedInfo.dateId = single.id;
-    extractedInfo.dateAutoAssigned = true;     // YENİ — :11a-AUTO-DATE-ACK sinyali
+    if (hasQuotaForPax(single, 1)) {
+      extractedInfo.selectedDate = single.departure_date;
+      extractedInfo.dateId = single.id;
+      extractedInfo.dateAutoAssigned = true;     // :11a-AUTO-DATE-ACK sinyali
+    } else {
+      extractedInfo.dateRejectedFull = {
+        departureDate: single.departure_date,
+        remaining: getQuotaRemaining(single),
+      };
+    }
   }
 
   return extractedInfo;

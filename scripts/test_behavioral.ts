@@ -1080,19 +1080,20 @@ import { shouldTriggerAutoDateAck } from "../supabase/functions/shared/services/
 // doğrula — mock testte CALLER olarak.
 import { extractAllInfo as extractAllInfo2 } from "../supabase/functions/shared/services/info-extractor.ts";
 
+// 2026-06-22 Sorun H mock güncelleme: quota field eklendi (helper default 0 — DOLU sayar)
 const _kapaSingleDateTour = {
   id: "T_KAPADOKYA_SINGLE",
   title: "Kapadokya Balon Turu",
   destination: "Kapadokya",
-  dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 1500 }],
+  dates: [{ id: "D1", departure_date: "2026-12-15", price_adult: 1500, quota: 999, remaining_quota: 999 }],
 };
 const _kapaMultiDateTour = {
   id: "T_KAPADOKYA_MULTI",
   title: "Kapadokya Çoklu Turu",
   destination: "Kapadokya",
   dates: [
-    { id: "D1", departure_date: "2026-12-15", price_adult: 1500 },
-    { id: "D2", departure_date: "2026-12-20", price_adult: 1500 },
+    { id: "D1", departure_date: "2026-12-15", price_adult: 1500, quota: 999, remaining_quota: 999 },
+    { id: "D2", departure_date: "2026-12-20", price_adult: 1500, quota: 999, remaining_quota: 999 },
   ],
 };
 
@@ -1585,6 +1586,124 @@ const ctx_conf = { stage: "CONFIRMING", collectionStep: "ready_for_confirmation"
   const r = shouldTriggerSummaryReask(ctx_collect, { stage: "CONFIRMING", collectionStep: "ready_for_confirmation", reservationConfirmed: false }, "confirm_reservation");
   assert(`G.10: COLLECTING_INFO→CONFIRMING transition (no-op değil) → ATLA`,
     r === false);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 16) SORUN H — kontenjan önden kontrol (quota-check.ts helpers)
+//
+// Canlı bug exec 15bf2668: QUOTA_EXCEEDED sadece RPC anında, kullanıcı 6
+// mesaj harcıyor. 3 önden katman + γ RPC.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN H: quota-check.ts helper testleri ──");
+
+import { getQuotaRemaining, hasQuotaForPax, hasAnyAvailableDate } from "../supabase/functions/shared/services/quota-check.ts";
+
+// ─── getQuotaRemaining ─────────────────────────────────────────────────
+assert(`H.1: remaining_quota=5 → 5 (tour-cache taze değer)`,
+  getQuotaRemaining({ remaining_quota: 5, quota: 100 }) === 5);
+assert(`H.2: remaining_quota yok, quota=10 → 10 (fallback)`,
+  getQuotaRemaining({ quota: 10 }) === 10);
+assert(`H.3: ikisi de yok → 0 (RPC-koruması default)`,
+  getQuotaRemaining({}) === 0);
+assert(`H.4: null/undefined date → 0`,
+  getQuotaRemaining(null) === 0);
+assert(`H.5: remaining_quota=0 → 0 (DOLU)`,
+  getQuotaRemaining({ remaining_quota: 0, quota: 100 }) === 0);
+
+// ─── hasQuotaForPax ────────────────────────────────────────────────────
+assert(`H.6: remaining=5, neededPax=1 → TRUE (β default)`,
+  hasQuotaForPax({ remaining_quota: 5 }, 1) === true);
+assert(`H.7: remaining=2, neededPax=5 → FALSE (pax yetersiz)`,
+  hasQuotaForPax({ remaining_quota: 2 }, 5) === false);
+assert(`H.8: remaining=5, neededPax=5 → TRUE (tam sınır)`,
+  hasQuotaForPax({ remaining_quota: 5 }, 5) === true);
+assert(`H.9: remaining=0, neededPax=1 → FALSE (DOLU β reddi)`,
+  hasQuotaForPax({ remaining_quota: 0 }, 1) === false);
+assert(`H.10: undefined date + neededPax=1 → FALSE (default 0)`,
+  hasQuotaForPax(undefined, 1) === false);
+
+// ─── hasAnyAvailableDate ───────────────────────────────────────────────
+{
+  const tour = { dates: [{ remaining_quota: 0 }, { remaining_quota: 5 }] };
+  assert(`H.11: 1 dolu + 1 müsait tarih, pax=1 → TRUE`,
+    hasAnyAvailableDate(tour, 1) === true);
+}
+{
+  const tour = { dates: [{ remaining_quota: 0 }, { remaining_quota: 0 }] };
+  assert(`H.12: tüm tarihler dolu → FALSE`,
+    hasAnyAvailableDate(tour, 1) === false);
+}
+{
+  const tour = { dates: [{ remaining_quota: 2 }, { remaining_quota: 3 }] };
+  assert(`H.13: 2 ve 3 müsait, neededPax=5 → FALSE (hiçbiri 5 değil)`,
+    hasAnyAvailableDate(tour, 5) === false);
+}
+{
+  const tour = { dates: [{ remaining_quota: 10 }] };
+  assert(`H.14: 10 müsait, neededPax=5 → TRUE`,
+    hasAnyAvailableDate(tour, 5) === true);
+}
+assert(`H.15: tour=null → FALSE`,
+  hasAnyAvailableDate(null, 1) === false);
+
+// ─── EXTRACT_ALL_INFO + dateRejectedFull (Blok 8/9/10 quota gate) ──────
+// Blok 9: string tarih eşleşmesi dolu olunca flag set + dateId yazılmaz
+{
+  const tour = {
+    id: "T_KAPADOKYA_FULL",
+    title: "Kapa Test",
+    dates: [
+      { id: "D_FULL", departure_date: "2026-12-15", remaining_quota: 0, quota: 0 },
+      { id: "D_OK",   departure_date: "2026-12-21", remaining_quota: 5, quota: 5 },
+    ],
+  };
+  const ei = extractAllInfo({
+    message: "15 Aralık",
+    nluResult: { intent: "provide_info", entities: { dates: ["15 aralık"] }, updates: {} } as any,
+    fsmIntent: "provide_info",
+    context: { currentTour: tour, collectionStep: "waiting_for_date", language: "tr" } as any,
+    tours: [tour],
+  });
+  assert(`H.16 KRİTİK: Blok 9 string '15 Aralık' DOLU tarih → dateId yazılmaz`,
+    ei.dateId === undefined);
+  assert(`H.17 KRİTİK: dateRejectedFull flag set`,
+    !!(ei as any).dateRejectedFull);
+}
+
+// Blok 10: tek-tarih DOLU → otomatik atama yapma
+{
+  const tour = {
+    id: "T_SINGLE_FULL",
+    title: "Tek Tarih Dolu",
+    dates: [{ id: "D1", departure_date: "2026-12-15", remaining_quota: 0, quota: 0 }],
+  };
+  const ei = extractAllInfo({
+    message: "rezervasyon yapmak istiyorum",
+    nluResult: { intent: "reservation_intent", entities: {}, updates: {} } as any,
+    fsmIntent: "reservation_intent",
+    context: { currentTour: tour, collectionStep: undefined, language: "tr" } as any,
+    tours: [tour],
+  });
+  assert(`H.18: Blok 10 tek-tarih DOLU → dateAutoAssigned YOK, dateRejectedFull VAR`,
+    ei.dateAutoAssigned === undefined && !!(ei as any).dateRejectedFull);
+}
+
+// Pozitif regresyon: Blok 9 string tarih MÜSAIT → normal davranış
+{
+  const tour = {
+    id: "T_OK",
+    title: "Müsait",
+    dates: [{ id: "D_OK", departure_date: "2026-12-15", remaining_quota: 10, quota: 10 }],
+  };
+  const ei = extractAllInfo({
+    message: "15 Aralık",
+    nluResult: { intent: "provide_info", entities: { dates: ["15 aralık"] }, updates: {} } as any,
+    fsmIntent: "provide_info",
+    context: { currentTour: tour, collectionStep: "waiting_for_date", language: "tr" } as any,
+    tours: [tour],
+  });
+  assert(`H.19 POZ: Blok 9 müsait tarih → dateId atanır, flag yok`,
+    ei.dateId === "D_OK" && (ei as any).dateRejectedFull === undefined);
 }
 
 // ─── SONUÇ ──────────────────────────────────────────────────────────────

@@ -43,6 +43,7 @@ function runDenoCheck() {
     "supabase/functions/shared/services/tour-matching.ts",
     "supabase/functions/shared/services/nlu-validation.ts",
     "supabase/functions/shared/services/bypass-gates.ts",
+    "supabase/functions/shared/services/quota-check.ts",
   ];
 
   const candidates = [
@@ -1371,6 +1372,54 @@ if (nluTsContent.includes("_fnWords.length <= 3 || !isNluFullNameNegationLeak"))
   failures.push({ scenario: "PRESENCE:nlu:K2-uzun-isim", step: 0, msg: "K2 mantığı eksik", key: "fsm/nlu.ts", expected: "length <= 3 || !isNluFullNameNegationLeak", actual: "NOT FOUND" });
   console.log(`✗ [PRESENCE] nlu.ts K2 uzun-isim mantığı eksik`);
 }
+// 2026-06-22 Sorun H — quota-check PRESENCE
+const quotaCheckPath = join(__dirname, "..", "supabase", "functions", "shared", "services", "quota-check.ts");
+let quotaCheckContent = "";
+try {
+  quotaCheckContent = readFileSync(quotaCheckPath, "utf-8");
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] services/quota-check.ts dosyası var (Sorun H)`);
+} catch {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE: quota-check", step: 0, msg: "YOK", key: "services/quota-check.ts", expected: "exists", actual: "MISSING" });
+  console.log(`✗ [PRESENCE] quota-check.ts YOK`);
+}
+function assertQuotaCheckContains(name, needle) {
+  if (quotaCheckContent.includes(needle)) {
+    scenarioPasses++;
+    console.log(`✓ [PRESENCE] quota-check: ${name}`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: `PRESENCE:quota-check:${name}`, step: 0, msg: needle, key: "services/quota-check.ts", expected: needle, actual: "NOT FOUND" });
+    console.log(`✗ [PRESENCE] quota-check: ${name} kayıp`);
+  }
+}
+assertQuotaCheckContains("getQuotaRemaining export", "export function getQuotaRemaining");
+assertQuotaCheckContains("hasQuotaForPax export",     "export function hasQuotaForPax");
+assertQuotaCheckContains("hasAnyAvailableDate export","export function hasAnyAvailableDate");
+assertQuotaCheckContains("RPC-koruması gerekçe belgesi","RPC-koruması mantığı");
+
+// process-message H katmanları
+assertProcMsgContains("H-α DOLU etiket TR", '" (DOLU)"');
+assertProcMsgContains("H-α DOLU etiket EN", '" (FULL)"');
+assertProcMsgContains("H-β bypass log", "H-β tetiklendi");
+assertProcMsgContains("H-pax bypass log", "H-pax tetiklendi");
+assertProcMsgContains("H-β TR mesaj", "Maalesef *${_rejDateLabel}* dolu");
+assertProcMsgContains("H-pax TR mesaj", "*${_paxPending} kişi* için *${_dateLabel}*");
+assertProcMsgContains("H DRY: alt-date hasQuotaForPax", "hasQuotaForPax(d, 1)");
+assertProcMsgContains("H _buildAvailableDatesText helper", "_buildAvailableDatesText");
+
+// info-extractor: Blok 8/9/10 dateRejectedFull flag
+const _infoExtH = readFileSync(_infoExtractorPathC, "utf-8");
+if (_infoExtH.includes("dateRejectedFull")) {
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] info-extractor Blok 8/9/10: dateRejectedFull flag set`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE:info-extractor:dateRejectedFull", step: 0, msg: "flag eksik", key: "info-extractor.ts", expected: "dateRejectedFull", actual: "NOT FOUND" });
+  console.log(`✗ [PRESENCE] info-extractor dateRejectedFull YOK`);
+}
+
 if (nluTsContent.includes("NEVER extract full_name from NEGATION/CORRECTION")) {
   scenarioPasses++;
   console.log(`✓ [PRESENCE] nlu.ts K1 prompt: NEGATION/CORRECTION CRITICAL RULE`);
