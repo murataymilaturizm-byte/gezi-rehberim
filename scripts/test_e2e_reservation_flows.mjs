@@ -1319,8 +1319,9 @@ assertProcMsgContains("Sorun B paxAcked mantığı", "_paxAcked = !!_newPax && _
 assertProcMsgContains("Sorun B paxAck log",       "paxAck=${_paxAcked}");
 assertProcMsgContains("Sorun B TR ack mesajı",    "*${_newPax} kişi* olarak güncelledim");
 assertProcMsgContains("Sorun B EN ack mesajı",    "Updated to *${_newPax}");
-assertProcMsgContains("Sorun B 'Şimdi' varyantı (paxAcked sonrası)",
-  "Şimdi *ad ve soyadınızı* alabilir miyim?");
+// 2026-06-22 F-msg revize ile Şimdi varyantı güncellendi (örnek isim eklendi)
+assertProcMsgContains("Sorun B 'Şimdi' varyantı (paxAcked sonrası, F-msg revize)",
+  "Şimdi *tam ad ve soyadınızı* yazar mısınız?");
 
 // 2026-06-21 Sorun F — negation gate PRESENCE (nlu-validation.ts)
 assertNluValidationContains("Sorun F isNluFullNameNegationLeak export",
@@ -1391,13 +1392,24 @@ assertProcMsgContains(":11b-PERSIST başlığı",
 assertProcMsgContains(":11b-PERSIST log (canlı doğrulama için)",
   ":11b-PERSIST tetiklendi");
 // 7 dil mesaj
-assertProcMsgContains(":11b-PERSIST TR mesajı",   "Önce *ad ve soyadınızı* alalım");
-assertProcMsgContains(":11b-PERSIST EN mesajı",   "Let's get your *full name* first");
-assertProcMsgContains(":11b-PERSIST DE mesajı",   "*vollständigen Namen* aufnehmen");
-assertProcMsgContains(":11b-PERSIST RU mesajı",   "*имя и фамилию*");
-assertProcMsgContains(":11b-PERSIST AR mesajı",   "*اسمك الكامل*");
-assertProcMsgContains(":11b-PERSIST FR mesajı",   "*nom complet*");
-assertProcMsgContains(":11b-PERSIST ES mesajı",   "*nombre completo*");
+// 2026-06-22 F-msg revize: açıklayıcı tone + örnek isim
+assertProcMsgContains(":11b-PERSIST TR mesajı (revize)",
+  "Lütfen *tam ad ve soyadınızı* yazar mısınız? (örn. Ahmet Yılmaz)");
+assertProcMsgContains(":11b-PERSIST EN mesajı (revize)",
+  "Could you write your *full name and surname*? (e.g. Ahmet Yılmaz)");
+assertProcMsgContains(":11b-PERSIST DE örnek (revize)",
+  "(z.B. Max Mustermann)");
+assertProcMsgContains(":11b-PERSIST FR örnek (revize)",
+  "(ex: Jean Dupont)");
+assertProcMsgContains(":11b-PERSIST ES örnek (revize)",
+  "(ej: Juan García)");
+assertProcMsgContains(":11b-PERSIST RU örnek (revize)",
+  "(например, Иван Иванов)");
+assertProcMsgContains(":11b-PERSIST AR örnek (revize)",
+  "(مثال: أحمد يلماز)");
+// paxAck VAR varyantı (Şimdi)
+assertProcMsgContains(":11b-PERSIST paxAck VAR TR (Şimdi + örnek)",
+  "Şimdi *tam ad ve soyadınızı*");
 
 // ═══════════════════════════════════════════════════════════════════════
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);

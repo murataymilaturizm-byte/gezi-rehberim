@@ -866,23 +866,29 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       es: `Actualizado a *${_newPax} ${_newPax === 1 ? "persona" : "personas"}*. `,
     } : { tr: "", en: "", de: "", ru: "", ar: "", fr: "", es: "" };
 
-    // Pax bildirimi varsa "Şimdi", yoksa "Önce" — akış mantığı farkı
+    // 2026-06-22 F-msg revize: Sorun F'in canlı doğrulamasında ortaya çıkan
+    // kuyruk — kullanıcı "Murat değil aslında Ahmet" yazıp reddedilince bot
+    // jenerik "Önce ad-soyad alalım" diyordu, kullanıcı ne yanlış yaptığını
+    // anlamıyordu. Mesajları açıklayıcı tona çevir + ÖRNEK İSİM ekle.
+    //
+    // paxAck VAR ("Şimdi") + paxAck YOK ("Lütfen") iki varyant — örnek isim
+    // her ikisinde de var (Ahmet Yılmaz / Max Mustermann / Jean Dupont / ...).
     const _baseMsgs: Record<string, string> = _paxAcked ? {
-      tr: "Şimdi *ad ve soyadınızı* alabilir miyim? 😊",
-      en: "Now may I have your *full name*? 😊",
-      de: "Darf ich nun Ihren *vollständigen Namen* erfahren? 😊",
-      ru: "Теперь укажите, пожалуйста, ваше *имя и фамилию*. 😊",
-      ar: "هل يمكنني الحصول على *اسمك الكامل* الآن؟ 😊",
-      fr: "Pouvez-vous maintenant me donner votre *nom complet* ? 😊",
-      es: "¿Puede ahora indicarme su *nombre completo*? 😊",
+      tr: "Şimdi *tam ad ve soyadınızı* yazar mısınız? (örn. Ahmet Yılmaz) 😊",
+      en: "Now could you write your *full name and surname*? (e.g. Ahmet Yılmaz) 😊",
+      de: "Könnten Sie nun Ihren *Vor- und Nachnamen* schreiben? (z.B. Max Mustermann) 😊",
+      ru: "Теперь напишите, пожалуйста, *имя и фамилию*. (например, Иван Иванов) 😊",
+      ar: "هل يمكنك كتابة *الاسم الكامل واللقب* الآن؟ (مثال: أحمد يلماز) 😊",
+      fr: "Pouvez-vous maintenant écrire votre *nom et prénom* ? (ex: Jean Dupont) 😊",
+      es: "¿Puede ahora escribir su *nombre completo y apellido*? (ej: Juan García) 😊",
     } : {
-      tr: "Önce *ad ve soyadınızı* alalım lütfen. 😊",
-      en: "Let's get your *full name* first, please. 😊",
-      de: "Lass uns zuerst Ihren *vollständigen Namen* aufnehmen, bitte. 😊",
-      ru: "Сначала укажите, пожалуйста, ваше *имя и фамилию*. 😊",
-      ar: "لنأخذ أولاً *اسمك الكامل* من فضلك. 😊",
-      fr: "Commençons d'abord par votre *nom complet*, s'il vous plaît. 😊",
-      es: "Primero indíquenos su *nombre completo*, por favor. 😊",
+      tr: "Lütfen *tam ad ve soyadınızı* yazar mısınız? (örn. Ahmet Yılmaz) 😊",
+      en: "Could you write your *full name and surname*? (e.g. Ahmet Yılmaz) 😊",
+      de: "Könnten Sie bitte Ihren *Vor- und Nachnamen* schreiben? (z.B. Max Mustermann) 😊",
+      ru: "Напишите, пожалуйста, *имя и фамилию*. (например, Иван Иванов) 😊",
+      ar: "يرجى كتابة *الاسم الكامل واللقب*. (مثال: أحمد يلماز) 😊",
+      fr: "Pourriez-vous écrire votre *nom et prénom* ? (ex: Jean Dupont) 😊",
+      es: "¿Podría escribir su *nombre completo y apellido*? (ej: Juan García) 😊",
     };
 
     const askReply = (_ackPrefix[_lang] || _ackPrefix.tr) + (_baseMsgs[_lang] || _baseMsgs.tr);
