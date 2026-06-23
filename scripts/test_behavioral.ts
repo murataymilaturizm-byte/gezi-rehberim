@@ -1918,6 +1918,125 @@ import { processTransition as _ptB } from "../supabase/functions/shared/fsm/stat
     newCtx.reservationInfo?.dateId === "D1");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG C: detectCancellation intent-farkındalıklı guard
+// "iptal şartları nedir?" bilgi sorusu state'i UÇURMAMALI; "vazgeçtim" iptal akışı KORUNMALI.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG C: detectCancellationGuarded intent-guard testleri ──");
+
+// ─── C.1 KRİTİK: CONFIRMING + "iptal şartları nedir?" + general_question → state KORUNUR
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Mehmet Değmezgil", phone: "05551234567" },
+    language: "tr",
+    messageCount: 6,
+    currentTour: { id: "T1", title: "Pamukkale" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "iptal şartları nedir?",
+    detectedIntent: "general_question",  // mapNLUIntentToFSMIntent(cancellation_policy)
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`C.1 KRİTİK: CONFIRMING + 'iptal şartları nedir?' + general_question → stage=CONFIRMING (BROWSING DEĞİL)`,
+    newCtx.stage === "CONFIRMING");
+  assert(`C.2 KRİTİK: reservationInfo KORUNDU (fullName='Mehmet Değmezgil' silinmedi)`,
+    newCtx.reservationInfo?.fullName === "Mehmet Değmezgil");
+  assert(`C.3 KRİTİK: justCancelled flag SET EDİLMEDİ`,
+    !newCtx.justCancelled);
+}
+
+// ─── C.4 REGRESYON: CONFIRMING + "vazgeçtim" + general → iptal akışı çalışır
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 6,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "vazgeçtim",
+    detectedIntent: "general",  // kısa belirsiz → genelde general
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`C.4 REGRESYON: 'vazgeçtim' + general → CONFIRMING→BROWSING tetiklendi (iptal akışı korunur)`,
+    newCtx.stage === "BROWSING" && newCtx.justCancelled === true);
+}
+
+// ─── C.5 REGRESYON: COLLECTING_INFO + "iptal şartları nasıl?" + general_question → KORUNUR
+{
+  const ctx: any = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_phone",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet" },
+    language: "tr",
+    messageCount: 4,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "iptal şartları nasıl?",
+    detectedIntent: "general_question",
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`C.5 REGRESYON: COLLECTING_INFO'da 'iptal şartları' bilgi-sorusu → state KORUNUR (DRY toplu fix)`,
+    newCtx.stage === "COLLECTING_INFO" && newCtx.reservationInfo?.fullName === "Ahmet");
+}
+
+// ─── C.6 REGRESYON: TOUR_SELECTED + "vazgeçtim" + general → BROWSING (iptal akışı)
+{
+  const ctx: any = {
+    stage: "TOUR_SELECTED",
+    reservationInfo: { tourId: "T1", tourTitle: "P" },
+    language: "tr",
+    messageCount: 2,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "vazgeçtim",
+    detectedIntent: "general",
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`C.6 REGRESYON: TOUR_SELECTED + 'vazgeçtim' → BROWSING (iptal akışı korunur)`,
+    newCtx.stage === "BROWSING" && newCtx.justCancelled === true);
+}
+
+// ─── C.7: COMPLETED + "iptal şartları" + general_question → state KORUNUR (after-sales bilgi sorusu)
+{
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+                       fullName: "Mehmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 10,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "iptal koşulları nedir?",
+    detectedIntent: "general_question",
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`C.7: COMPLETED + 'iptal koşulları' bilgi-sorusu → state KORUNUR, BROWSING'e düşmez`,
+    newCtx.stage === "COMPLETED" && newCtx.reservationInfo?.fullName === "Mehmet");
+}
+
 // ─── B.7 F NEGATION REGRESYON: change_info DEĞİL provide_info ile ────────
 // F savunması simple-extractor Blok 3'te. mergeReservationInfo seviyesinde isim
 // boş gelirse merge yutulur — bu testte change_info override etkilenmediğini

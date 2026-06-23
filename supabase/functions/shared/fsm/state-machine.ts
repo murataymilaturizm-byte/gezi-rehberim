@@ -261,6 +261,32 @@ export function detectCancellation(text: string, language: string): boolean {
 }
 
 /**
+ * 2026-06-23 BUG C FIX (exec 28ac50f3 canlı kanıt):
+ * detectCancellation regex'i "iptal" kelimesini niyet/bilgi-sorusu ayırt etmeden
+ * yakalıyordu. "iptal şartları nedir?" mesajı → mapNLUIntentToFSMIntent →
+ * general_question (cancellation_policy bilgi-sorusu kovasında) → AMA transition
+ * koşulu sadece regex'e bakıyordu → CONFIRMING→BROWSING tetiklendi → reservationInfo={}
+ * → hazır rezervasyon UÇUYORDU.
+ *
+ * Intent-farkındalıklı sarmalayıcı: mapNLUIntentToFSMIntent ile general_question
+ * kovasına düşen 7 NLU intent'i (cancellation_policy, faq_general, payment_methods,
+ * agency_info, working_hours, visa_support, hotel_details, transport_details)
+ * iptal NİYETİ DEĞİL, BİLGİ sorusudur — regex'i bypass et.
+ *
+ * Gerçek iptal niyeti güvende:
+ *   - "vazgeçtim" → NLU genelde "general" → FSM "general" (general_question DEĞİL) → regex çalışır
+ *   - "rezervasyonu iptal et" → NLU "after_sales" → FSM "support_request" → regex çalışır
+ *   - "iptal istemiyorum" / "cancel" → kısa belirsizler → "general" kovası → regex çalışır
+ *
+ * 4 transition tek-kaynak (DRY): TOUR_SELECTED/COLLECTING_INFO/CONFIRMING/COMPLETED
+ * → BROWSING. Aynı kökü 4 yerde fix etmek yerine helper'a sarıldı.
+ */
+function detectCancellationGuarded(input: { userMessage: string; language: string; detectedIntent: string }): boolean {
+  if (input.detectedIntent === "general_question") return false;
+  return detectCancellation(input.userMessage, input.language);
+}
+
+/**
  * Kullanıcı net "hayır/no" dedi mi? CONFIRMING aşamasında onay/iptal/değişiklik
  * intentlerinin hiçbiri tetiklenmeyince state takılı kalıyordu. Bu helper, "hayır"ı
  * NET RED olarak yakalar — state SİLİNMEZ, ama bot'a netleştirme cue'su verir
@@ -364,7 +390,7 @@ const transitions: StateTransition[] = [
   {
     from: "TOUR_SELECTED",
     to: "BROWSING",
-    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    condition: (_ctx, input) => detectCancellationGuarded(input),
     action: (ctx) => ({
       ...ctx,
       currentTour: null,
@@ -376,7 +402,7 @@ const transitions: StateTransition[] = [
   {
     from: "COLLECTING_INFO",
     to: "BROWSING",
-    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    condition: (_ctx, input) => detectCancellationGuarded(input),
     action: (ctx) => ({
       ...ctx,
       currentTour: null,
@@ -389,7 +415,7 @@ const transitions: StateTransition[] = [
   {
     from: "CONFIRMING",
     to: "BROWSING",
-    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    condition: (_ctx, input) => detectCancellationGuarded(input),
     action: (ctx) => ({
       ...ctx,
       currentTour: null,
@@ -763,7 +789,7 @@ const transitions: StateTransition[] = [
   {
     from: "COMPLETED",
     to: "BROWSING",
-    condition: (_ctx, input) => detectCancellation(input.userMessage, input.language),
+    condition: (_ctx, input) => detectCancellationGuarded(input),
     action: (ctx) => ({
       ...ctx,
       ...resetForNewReservation(ctx),
