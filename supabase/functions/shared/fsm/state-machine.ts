@@ -91,11 +91,19 @@ function mergeReservationInfo(
   existing: ReservationInfo,
   extracted: Partial<ReservationInfo>,
   isInformational: boolean = false,
+  intent?: string,
 ): ReservationInfo {
   // Bilgi sorusu gelirse mevcut bilgileri değiştirme
   if (isInformational) return { ...existing };
 
   const merged = { ...existing };
+
+  // 2026-06-23 BUG B FIX: change_info ile açık düzeltme niyetinde isim/telefon
+  // override edilebilir. provide_info'da eski güvenli "henüz yoksa ekle" davranışı
+  // korunur → F negation savunması (waiting_for_name'de "Murat değil aslında Ahmet"
+  // → simple-extractor Blok 3 gate temizleyince merged.fullName boş olur, yeni
+  // "Ahmet" yazılır — provide_info yolu) etkilenmez.
+  const isExplicitCorrection = intent === "change_info";
 
   // Tour info: her zaman kabul et
   if (extracted.tourId && extracted.tourId !== "") merged.tourId = extracted.tourId;
@@ -114,22 +122,28 @@ function mergeReservationInfo(
     merged.paxChild = extracted.paxChild;
   }
 
-  // 3. İsim: henüz yoksa ekle.
+  // 3. İsim: henüz yoksa ekle VEYA change_info düzeltme ise override.
   //    KRİTİK BUG FIX (2026-06-08): Eskiden "hasPax && !merged.fullName" koşulu vardı —
   //    state'e paxAdult henüz merge edilmemişse (kullanıcı pax sormadan isim verdi veya
   //    pax bot tarafından geç işleniyor) isim merge EDİLMEZ, sessizce kaybolurdu.
-  //    Bot LLM extractedInfo'dan ismi prompt'ta görüp "Teşekkürler X Bey" der ama state'e
-  //    yazılmadığı için bir sonraki mesajda load boş → bot ismi tekrar sorar.
-  //    Çözüm: hasPax kısıtını KALDIR. Extractor zaten expectedInput="name" iken
-  //    koruyor; gereksiz "sıralı kontrol" katmanı bug'a yol açıyor.
-  if (!merged.fullName && extracted.fullName && extracted.fullName !== "") {
+  //    Çözüm: hasPax kısıtını KALDIR.
+  //
+  //    2026-06-23 BUG B FIX: change_info düzeltme niyetinde mevcut fullName override.
+  //    Canlı bug (exec 3fdf95c2): CONFIRMING'de "ismi değiştirelim haki oğrak" →
+  //    extracted.fullName="Haki Oğrak" geldi, AMA merged.fullName="Ahmet Yılmaz" dolu
+  //    → !merged.fullName=FALSE → yeni değer yutuldu. provide_info yolu (ilk doldurma)
+  //    güvenli davranışta kalır; sadece change_info açık düzeltmeyi geçirir.
+  if (extracted.fullName && extracted.fullName !== "" &&
+      (!merged.fullName || isExplicitCorrection)) {
     merged.fullName = extracted.fullName;
   }
 
-  // 4. Telefon: henüz yoksa ekle.
+  // 4. Telefon: henüz yoksa ekle VEYA change_info düzeltme ise override.
   //    Aynı sebeple "hasName" kısıtı kaldırıldı — extractor expectedInput="phone"
   //    iken telefon arar, merge layer ek kısıt yaratmasın.
-  if (!merged.phone && extracted.phone && extracted.phone !== "") {
+  //    2026-06-23 BUG B FIX: change_info ile telefon override aynı pattern.
+  if (extracted.phone && extracted.phone !== "" &&
+      (!merged.phone || isExplicitCorrection)) {
     merged.phone = extracted.phone;
   }
 
@@ -431,7 +445,7 @@ const transitions: StateTransition[] = [
     },
     action: (ctx, input) => {
       const tour = input.selectedTour || ctx.currentTour;
-      const merged = mergeReservationInfo({ tourId: tour!.id, tourTitle: tour!.title }, input.extractedInfo, false);
+      const merged = mergeReservationInfo({ tourId: tour!.id, tourTitle: tour!.title }, input.extractedInfo, false, input.detectedIntent);
       return {
         ...ctx,
         currentTour: tour,
@@ -488,7 +502,7 @@ const transitions: StateTransition[] = [
       return hasExtractedInfo && (hasPaxPattern || hasPhonePattern || hasDateInfo);
     },
     action: (ctx, input) => {
-      const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
+      const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false, input.detectedIntent);
       return {
         ...ctx,
         reservationInfo: merged,
@@ -545,14 +559,14 @@ const transitions: StateTransition[] = [
       // Bilgi sorusu gelirse ekstraksiyonu dışarıda bırak; sadece mevcut bilgilerle kontrol et
       const merged = isInfo
         ? { ...ctx.reservationInfo }
-        : mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
+        : mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false, input.detectedIntent);  // K7 check, change_info için override aktif
       // K7: Tüm bilgi tamamsa bu transition'ı atla → COLLECTING_INFO→CONFIRMING devralır
       return !isAllInfoCollected(merged, ctx.collectEmail);
     },
     action: (ctx, input) => {
       const isInfo = isInformationalMessage(input.userMessage, input.detectedIntent);
       // Bilgi sorusu gelirse mevcut bilgileri değiştirme
-      const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, isInfo);
+      const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, isInfo, input.detectedIntent);
       return {
         ...ctx,
         reservationInfo: merged,
@@ -581,12 +595,12 @@ const transitions: StateTransition[] = [
       // Yalnızca AÇIK NIYET ile CONFIRMING'e geç — "general" kabul edilmez.
       const validIntents = ["provide_info", "confirm", "confirm_reservation"];
       if (!validIntents.includes(input.detectedIntent)) return false;
-      const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false);
+      const merged = mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false, input.detectedIntent);
       return isAllInfoCollected(merged, ctx.collectEmail);
     },
     action: (ctx, input) => ({
       ...ctx,
-      reservationInfo: mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false),
+      reservationInfo: mergeReservationInfo(ctx.reservationInfo, input.extractedInfo, false, input.detectedIntent),
       collectionStep: "ready_for_confirmation" as InfoCollectionStep,
     }),
   },
@@ -668,54 +682,69 @@ const transitions: StateTransition[] = [
     action: (ctx, input) => {
       const msg = input.userMessage.toLowerCase();
       const info = { ...ctx.reservationInfo };
+      const _ext = input.extractedInfo as any;
 
-      // Çok dilli alan pattern'leri — "ismi" "adı" gibi Türkçe çekimler eklendi
+      // 2026-06-23 BUG B FIX — NLU-first override:
+      // Canlı bug (exec 3fdf95c2): "ismi değiştirelim haki oğrak" → NLU
+      // extracted.fullName="Haki Oğrak" geldi AMA pattern eşleşmesine bağlı
+      // dallanma "Ahmet Yılmaz" üzerine yazmadı. Yeni davranış: NLU bir alan
+      // çıkardıysa pattern'e BAKMA, DİREKT uygula (NLU güçlü sinyal).
+      // Pattern fallback SADECE NLU hiçbir şey çıkarmadığında (kullanıcı sadece
+      // "tarihi değiştirmek istiyorum" gibi yeni değer vermeden yazdığında) devreye girer.
+      let _appliedAny = false;
+      if (_ext.fullName) {
+        info.fullName = _ext.fullName;
+        _appliedAny = true;
+      }
+      if (_ext.phone) {
+        info.phone = _ext.phone;
+        _appliedAny = true;
+      }
+      if (_ext.paxAdult) {
+        info.paxAdult = _ext.paxAdult;
+        if (_ext.paxChild !== undefined) info.paxChild = _ext.paxChild;
+        _appliedAny = true;
+      }
+      if (_ext.dateId || _ext.selectedDate) {
+        if (_ext.dateId) info.dateId = _ext.dateId;
+        if (_ext.selectedDate) info.selectedDate = _ext.selectedDate;
+        _appliedAny = true;
+      }
+
+      if (_appliedAny) {
+        console.log(`[state-machine] change_info NLU-first override applied (fullName=${!!_ext.fullName}, phone=${!!_ext.phone}, pax=${!!_ext.paxAdult}, date=${!!(_ext.dateId || _ext.selectedDate)})`);
+      }
+
+      // Çok dilli alan pattern'leri — NLU sessiz kaldığında fallback
       const namePattern   = /isim|ismi|adım|adı|adın|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre/i;
       const phonePattern  = /\b(telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono)\b/i;
       const paxPattern    = /\b(ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)\b/i;
       const datePattern   = /\b(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha)\b/i;
 
       // B-3 fix (2026-06-09): Veri silme YALNIZCA kullanıcı yeni değeri verdiyse
-      // veya açıkça reset istediyse yapılır. Yeni değer YOKSA mevcut alan KORUNUR;
-      // sadece collectionStep ilgili alana çevrilir → bot kullanıcıdan yeni değeri ister.
+      // veya açıkça reset istediyse yapılır. Yeni değer YOKSA mevcut alan KORUNUR.
       //
-      // Eski davranış: "telefonum yanlış olabilir bir dk" mesajında phonePattern
-      // eşleşir, extractedInfo.phone boş → eski telefon SİLİNİR. Kullanıcı yeni
-      // değer vermeden alan kaybolur. Yeni davranış: alan korunur, collectionStep
-      // waiting_for_phone'a çekilir.
-      if (namePattern.test(msg)) {
-        if ((input.extractedInfo as any).fullName) {
-          info.fullName = (input.extractedInfo as any).fullName;
-        }
-        // else: info.fullName KORUNUR (yeni değer yok → silme yok)
-      } else if (phonePattern.test(msg)) {
-        if ((input.extractedInfo as any).phone) {
-          info.phone = (input.extractedInfo as any).phone;
-        }
-        // else: info.phone KORUNUR
-      } else if (paxPattern.test(msg)) {
-        if ((input.extractedInfo as any).paxAdult) {
-          info.paxAdult = (input.extractedInfo as any).paxAdult;
-          if ((input.extractedInfo as any).paxChild !== undefined) {
-            info.paxChild = (input.extractedInfo as any).paxChild;
-          }
-        }
-        // else: pax KORUNUR
-      } else if (datePattern.test(msg)) {
-        // Tarih değişiklik talebi: yeni tarih extractor'dan gelmiş olabilir; gelmediyse
-        // eski tarihi silmek ZORUNLU, çünkü "tarihimi değiştir" + tarih korumak çelişir
-        // ve bot doğru adıma geri dönemez. Burada delete kasıtlı.
-        if ((input.extractedInfo as any).selectedDate || (input.extractedInfo as any).dateId) {
-          if ((input.extractedInfo as any).dateId) info.dateId = (input.extractedInfo as any).dateId;
-          if ((input.extractedInfo as any).selectedDate) info.selectedDate = (input.extractedInfo as any).selectedDate;
+      // 2026-06-23 BUG B FIX: Pattern fallback SADECE NLU hiçbir alan çıkarmadığında
+      // çalışır. Bu sayede "ismi değiştirelim haki oğrak" mesajında pattern dalı YERİNE
+      // NLU dalı kullanılır (yukarıdaki _appliedAny). Pattern fallback artık SADECE
+      // kullanıcının yeni değer VERMEDİĞİ "telefonum yanlış olabilir" gibi belirsiz
+      // niyetlerde devreye girer.
+      if (!_appliedAny) {
+        if (namePattern.test(msg)) {
+          // _ext.fullName yok zaten (yukarıda kontrol edildi) → fullName KORUNUR
+        } else if (phonePattern.test(msg)) {
+          // aynı: phone KORUNUR
+        } else if (paxPattern.test(msg)) {
+          // aynı: pax KORUNUR
+        } else if (datePattern.test(msg)) {
+          // Tarih değişiklik talebi + NLU yeni tarih ÇIKARMADI → eski tarih sil.
+          delete info.dateId;
+          delete info.selectedDate;
         } else {
+          // Belirsiz "değiştir" / "olsun" — en yaygın: tarih değişimi. Sadece tarih reset.
           delete info.dateId;
           delete info.selectedDate;
         }
-      } else {
-        // Belirsiz "değiştir" / "olsun" — en yaygın: tarih değişimi. Sadece tarih reset.
-        delete info.dateId;
-        delete info.selectedDate;
       }
 
       return {
@@ -916,7 +945,7 @@ export function processTransition(context: ConversationContext, input: Processin
     // COLLECTING_INFO'daysa ve bilgi sorusu değilse extracted info'yu güncelle
     if (context.stage === "COLLECTING_INFO" && Object.keys(input.extractedInfo).length > 0) {
       const isInfo = isInformationalMessage(input.userMessage, input.detectedIntent);
-      const merged = mergeReservationInfo(context.reservationInfo, input.extractedInfo, isInfo);
+      const merged = mergeReservationInfo(context.reservationInfo, input.extractedInfo, isInfo, input.detectedIntent);
       return {
         ...context,
         reservationInfo: merged,

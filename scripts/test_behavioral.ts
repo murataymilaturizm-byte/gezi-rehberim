@@ -1770,6 +1770,179 @@ assert(`D.8: newTourTitle whitespace → boş`,
     p.includes("*Efes*") && p.endsWith(" "));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG B: mergeReservationInfo change_info override + change_info action NLU-first
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG B: mergeReservationInfo change_info override + F regresyon ──");
+
+// mergeReservationInfo dışa aktarılmadığı için davranışsal testte processTransition
+// üzerinden test edilir. Burada SADECE saf mantık testleri yapıyoruz —
+// mergeReservationInfo'yu test etmek için processTransition state-machine.ts'ten
+// import edilmeli. Bu zaten yapılmış mı kontrol et:
+import { processTransition as _ptB } from "../supabase/functions/shared/fsm/state-machine.ts";
+
+// ─── B.1: CONFIRMING change_info ile fullName override ────────────────────
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet Yılmaz", phone: "05551234567" },
+    language: "tr",
+    messageCount: 5,
+    currentTour: { id: "T1", title: "Pamukkale" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "ismi değiştirelim haki oğrak",
+    detectedIntent: "change_info",
+    extractedInfo: { fullName: "Haki Oğrak" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.1 KRİTİK: CONFIRMING+change_info+fullName='Haki Oğrak' → override "Ahmet" → "Haki Oğrak"`,
+    newCtx.reservationInfo?.fullName === "Haki Oğrak");
+}
+
+// ─── B.2: CONFIRMING change_info "haki oğrak" tek başına (namePattern yok) ─
+// Canlı bug a62af74d kanıtı: NLU-first override pattern bağımsız çalışmalı.
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet Yılmaz", phone: "05551234567" },
+    language: "tr",
+    messageCount: 5,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "haki oğrak",
+    detectedIntent: "change_info",
+    extractedInfo: { fullName: "Haki Oğrak" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.2 KRİTİK: 'haki oğrak' tek başına (namePattern yok) + change_info → fullName override`,
+    newCtx.reservationInfo?.fullName === "Haki Oğrak");
+}
+
+// ─── B.3: change_info ile phone override ─────────────────────────────────
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 5,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "telefonu değiştir 05559998877",
+    detectedIntent: "change_info",
+    extractedInfo: { phone: "05559998877" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.3: change_info + extracted.phone → override eski telefon`,
+    newCtx.reservationInfo?.phone === "05559998877");
+}
+
+// ─── B.4 REGRESYON: provide_info yolu — ilk doldurma korunur ─────────────
+{
+  const ctx: any = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_name",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20", paxAdult: 2 },
+    language: "tr",
+    messageCount: 3,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "Mehmet Demir",
+    detectedIntent: "provide_info",
+    extractedInfo: { fullName: "Mehmet Demir" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.4 REGRESYON: provide_info ilk doldurma → fullName="Mehmet Demir"`,
+    newCtx.reservationInfo?.fullName === "Mehmet Demir");
+}
+
+// ─── B.5 REGRESYON: provide_info + mevcut isim DOLU → YUTULMALI (eski guard) ─
+// change_info override sadece change_info'da aktif; provide_info'da F savunması ve
+// "henüz yoksa ekle" güvenli davranışı KORUNUR.
+{
+  const ctx: any = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_phone",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet Yılmaz" },
+    language: "tr",
+    messageCount: 5,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "0555 111 22 33",
+    detectedIntent: "provide_info",
+    extractedInfo: { fullName: "Murat Bey", phone: "05551112233" },  // NLU yanlış isim çıkardı (örn.)
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.5 REGRESYON: provide_info + mevcut isim DOLU → eski isim KORUNUR (yutma davranışı F savunması ile uyumlu)`,
+    newCtx.reservationInfo?.fullName === "Ahmet Yılmaz");
+}
+
+// ─── B.6: change_info action NLU-first, namePattern bağımsız ─────────────
+// "haki oğrak" mesajı tarih pattern'i içermiyor → eski davranışta else dalı tarihi
+// silerdi. Yeni davranışta NLU fullName var → _appliedAny=true → tarih SİLİNMEZ.
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 5,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "haki oğrak",
+    detectedIntent: "change_info",
+    extractedInfo: { fullName: "Haki Oğrak" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.6: change_info NLU-first → fullName override + dateId KORUNUR (yanlışlıkla tarih silmiyor)`,
+    newCtx.reservationInfo?.fullName === "Haki Oğrak" &&
+    newCtx.reservationInfo?.dateId === "D1");
+}
+
+// ─── B.7 F NEGATION REGRESYON: change_info DEĞİL provide_info ile ────────
+// F savunması simple-extractor Blok 3'te. mergeReservationInfo seviyesinde isim
+// boş gelirse merge yutulur — bu testte change_info override etkilenmediğini
+// doğruluyoruz (intent=provide_info, eski güvenli yol).
+{
+  const ctx: any = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_name",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20", paxAdult: 2 },
+    language: "tr",
+    messageCount: 3,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "Murat değil aslında Ahmet",
+    detectedIntent: "provide_info",
+    // F savunması zaten Blok 3'te leak'i temizledi → extracted.fullName="Ahmet"
+    extractedInfo: { fullName: "Ahmet" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.7 F REGRESYON: provide_info ile 'Murat değil aslında Ahmet' → fullName="Ahmet" (Murat sızmaz)`,
+    newCtx.reservationInfo?.fullName === "Ahmet");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
