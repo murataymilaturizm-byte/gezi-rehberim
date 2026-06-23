@@ -20,7 +20,7 @@ import {
 } from "../fsm/localization.ts";
 import { detectLanguage } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
-import { validateAIResponse, validateInjectionResponse } from "../fsm/response-validator.ts";
+import { validateAIResponse, validateInjectionResponse, validateFieldReask } from "../fsm/response-validator.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours } from "../services/tour-matching.ts";
@@ -1882,6 +1882,33 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (validation.wasModified) {
     console.warn("[process-message] Response validator modified AI output");
     reply = validation.text;
+  }
+
+  // === 17a. BUG D — Field-reask post-validation (M1 compliance ikinci geçit) ===
+  // Canlı kanıt (exec 4afff98b, 5f003988, ceee9f4d): CONFIRMING/COMPLETED'de
+  // telefon/isim/tarih/pax DOLU iken Haiku "telefon numaranızı alabilir miyim?"
+  // diye dolu alanı tekrar soruyor. Prompt 3 katman yasak içeriyor (CONFIRMING
+  // YASAK listesi + filledFieldsGuard + midFlowReturnPrompt) ama Haiku ihlal
+  // ediyor. Deterministik post-LLM düzeltme: CONFIRMING'de TAM ÖZET+onay
+  // sorusuyla replace, COMPLETED'de kapanış mesajıyla.
+  //
+  // ÇİFT-MODIFY GÜVENLİĞİ: validation.wasModified=true ise (sahte-onay yakalanmış)
+  // reply zaten REDIRECT_MESSAGES'a değişti — içinde "telefon iste" kalıbı yok,
+  // ikinci pattern eşleşmez. Yine de !wasModified guard ile açık şekilde atla.
+  if (!validation.wasModified) {
+    const reaskCheck = validateFieldReask(
+      reply,
+      newContext.language,
+      newContext.stage,
+      newContext.collectionStep,
+      newContext.reservationInfo,
+      currentTourFull || newContext.currentTour,
+      newContext.tone,
+    );
+    if (reaskCheck.wasModified) {
+      console.warn(`[process-message] Field-reask blocked: ${reaskCheck.matchedPattern}`);
+      reply = reaskCheck.text;
+    }
   }
 
   // === 17b. K4: Injection post-validation — şüpheli cevaplarda fiyat manipülasyonu bloğu ===

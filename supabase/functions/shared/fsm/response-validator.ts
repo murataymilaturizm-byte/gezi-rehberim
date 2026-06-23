@@ -7,6 +7,7 @@
 // AI "yapıldı" diyemez zaten. Asıl tehlike bilgi toplama ve onay aşamasıdır.
 
 import type { ConversationStage } from "./types.ts";
+import { formatReservationSummary } from "./prompts/helpers.ts";
 
 // Stage'ler validator çalıştırılacak
 // TOUR_SELECTED eklendi: AI'nın "rezervasyonunuz oluşturuldu" demesini bu aşamada da engelle
@@ -194,6 +195,133 @@ export interface ValidationResult {
   text: string;
   wasModified: boolean;
   matchedPattern: string | null;
+}
+
+// ─── 2026-06-23 BUG D — field-reask post-validation (M1 ailesi) ────────────
+//
+// CANLI BUG (3 exec kanıtı: 4afff98b, 5f003988, ceee9f4d):
+//   CONFIRMING/COMPLETED'de telefon/isim/tarih/pax ZATEN DOLU iken Haiku
+//   "telefon numaranızı alabilir miyim?" diye dolu alanı tekrar soruyor.
+//   Prompt 3 katman yasak içeriyor (CONFIRMING stage prompt YASAK listesi +
+//   filledFieldsGuard "phone: 05551234567 — TEKRAR SORMA" anchor +
+//   midFlowReturnPrompt "onaya dön" ipucu) ama Haiku ihlal ediyor.
+//   Klasik M1 LLM compliance kırılganlığı — prompt doygunluğa ulaştı.
+//
+// FIX: deterministik post-LLM düzeltme. LLM cevabında 4 alan-bazlı "tekrar
+// iste" pattern'i yakalanırsa + alan DOLU + stage ∈ {CONFIRMING, COMPLETED}
+// → CONFIRMING'de TAM ÖZET + onay sorusuyla değiştir, COMPLETED'de kapanış
+// mesajıyla değiştir.
+//
+// YANLIŞ-POZİTİF ÖNLEME:
+//   - Stage filtresi: SADECE CONFIRMING + COMPLETED. COLLECTING_INFO/
+//     waiting_for_X meşru istemleri ASLA yakalanmaz (telefon EKSİKKEN LLM
+//     doğru istiyor).
+//   - Alan-bazlı guard: field DOLU ise pattern yakalanır, EKSİK ise pas
+//     geçer. Çift emniyet.
+//
+// ÇOK-DİL: TR + EN tam pattern; diğer 5 dil (DE/FR/ES/RU/AR) ŞİMDİLİK
+// EN fallback (çok-dil eşitleme açık liste — post-launch genişletme).
+
+const FIELD_REASK_PATTERNS: Record<string, { tr: RegExp; en: RegExp }> = {
+  phone: {
+    // TR: "telefon/numara/cep" + (kısa boşluk) + (alabilir miyim/verir misiniz/...)
+    // \p{L}\p{N} lookaround Yan #8 pattern'i (ı/ş bitişli kelimeler için ASCII \b yetersiz)
+    tr: /(?<![\p{L}\p{N}])(telefon|telefonunuz|telefonunuzu|telefonu|numara|numaranızı|numaranız|cep|gsm)\s+\S{0,40}?(alabilir miyim|verir misiniz|paylaşır mısınız|söyler misiniz|alayım|öğrenebilir miyim|gönderir misiniz|yazar mısınız|verin|verebilir misiniz)/iu,
+    en: /\b(phone|telephone|mobile|number)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|send)/i,
+  },
+  name: {
+    tr: /(?<![\p{L}\p{N}])(isim|isminizi|isminiz|ad|adınızı|adınız|soyad|soyadınızı|soyadınız|adsoyad|ad\s*soyad)\s+\S{0,40}?(alabilir miyim|verir misiniz|söyler misiniz|paylaşır mısınız|öğrenebilir miyim|yazar mısınız|alayım)(?![\p{L}\p{N}])/iu,
+    en: /\b(name|full\s+name|surname|first\s+name|last\s+name)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|know)/i,
+  },
+  date: {
+    tr: /(?<![\p{L}\p{N}])(hangi\s+tarih|hangi\s+güne?|tarihte|tarihinizi|tarih.{0,20}?(?:tercih|seçer|uygun|belirleyin|belirtir))(?![\p{L}\p{N}])/iu,
+    en: /\b(which|what)\s+date\b|\b(prefer|select|choose)\s+(?:a\s+)?date\b|\bdate\s+(?:please|works)/i,
+  },
+  pax: {
+    tr: /(?<![\p{L}\p{N}])(kaç\s+kişi|kişi\s+sayısı|kaç\s+kişilik|kaç\s+yetişkin|kaç\s+çocuk|katılacak|kişi\s+olacak)(?![\p{L}\p{N}])/iu,
+    en: /\b(how\s+many|number\s+of)\s+(?:people|persons?|adults?|guests?|attendees|kids?|children)/i,
+  },
+};
+
+const FIELD_REASK_CONFIRM_SUFFIX: Record<string, string> = {
+  tr: "\n\nBu bilgiler doğru mu, onaylıyor musunuz? ✅",
+  en: "\n\nAre these details correct, do you confirm? ✅",
+};
+
+/**
+ * BUG D fix: dolu-alan re-ask post-validation.
+ *
+ * @param text             LLM cevabı
+ * @param language         Kullanıcı dili
+ * @param stage            CONFIRMING/COMPLETED dışı stage'ler atlanır
+ * @param _collectionStep  Sadece log için (guard zaten stage + filledFields)
+ * @param reservationInfo  Dolu alan kontrolü için (phone/fullName/dateId/paxAdult)
+ * @param currentTour      CONFIRMING özet regenerate için (yoksa REDIRECT_MESSAGES fallback)
+ * @param tone             formatReservationSummary parametresi
+ */
+export function validateFieldReask(
+  text: string,
+  language: string,
+  stage: ConversationStage,
+  _collectionStep: string | undefined,
+  reservationInfo: any,
+  currentTour: any,
+  tone: string = "standart",
+): ValidationResult {
+  // Stage filtresi — meşru istemleri koru (COLLECTING_INFO/waiting_for_X).
+  if (stage !== "CONFIRMING" && stage !== "COMPLETED") {
+    return { text, wasModified: false, matchedPattern: null };
+  }
+  if (!reservationInfo) {
+    return { text, wasModified: false, matchedPattern: null };
+  }
+
+  // Dil-bazlı pattern seçimi. TR + EN tam; diğer 5 dil EN fallback (çok-dil eşitleme açık liste).
+  const lang = language === "tr" ? "tr" : "en";
+
+  const checks: Array<{ field: string; pattern: RegExp; isFilled: boolean }> = [
+    { field: "phone", pattern: FIELD_REASK_PATTERNS.phone[lang], isFilled: !!reservationInfo.phone },
+    { field: "name",  pattern: FIELD_REASK_PATTERNS.name[lang],  isFilled: !!reservationInfo.fullName },
+    { field: "date",  pattern: FIELD_REASK_PATTERNS.date[lang],  isFilled: !!(reservationInfo.dateId || reservationInfo.selectedDate) },
+    { field: "pax",   pattern: FIELD_REASK_PATTERNS.pax[lang],   isFilled: !!reservationInfo.paxAdult },
+  ];
+
+  for (const check of checks) {
+    if (!check.isFilled) continue;
+    if (!check.pattern.test(text)) continue;
+
+    console.warn("[response-validator] field-reask blocked", {
+      field: check.field,
+      stage,
+      language,
+      collectionStep: _collectionStep,
+      textSnippet: text.slice(0, 120),
+    });
+
+    let replacement: string;
+    if (stage === "CONFIRMING") {
+      // TAM ÖZET regenerate + onay sorusu — LLM'in dolu-alan istemini tamamen replace et.
+      // currentTour yoksa REDIRECT_MESSAGES fallback (sade "kontrol edip onaylar mısınız?").
+      if (currentTour) {
+        const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
+        const suffix = FIELD_REASK_CONFIRM_SUFFIX[lang] || FIELD_REASK_CONFIRM_SUFFIX.en;
+        replacement = summary + suffix;
+      } else {
+        replacement = REDIRECT_MESSAGES[language] || REDIRECT_MESSAGES.en;
+      }
+    } else {
+      // COMPLETED: kapanış mesajı (mevcut REDIRECT_MESSAGES_COMPLETED).
+      replacement = REDIRECT_MESSAGES_COMPLETED[language] || REDIRECT_MESSAGES_COMPLETED.en;
+    }
+
+    return {
+      text: replacement,
+      wasModified: true,
+      matchedPattern: `field-reask:${check.field}`,
+    };
+  }
+
+  return { text, wasModified: false, matchedPattern: null };
 }
 
 export function validateAIResponse(

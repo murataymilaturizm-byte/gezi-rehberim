@@ -2014,6 +2014,119 @@ console.log("\n── BUG C: detectCancellationGuarded intent-guard testleri ─
     newCtx.stage === "BROWSING" && newCtx.justCancelled === true);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG D: validateFieldReask — CONFIRMING/COMPLETED dolu-alan tekrar iste yutkunması
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG D: validateFieldReask testleri (M1 post-LLM düzeltme) ──");
+
+import { validateFieldReask } from "../supabase/functions/shared/fsm/response-validator.ts";
+
+// ─── D.B.1 KRİTİK: CONFIRMING + hasPhone=true + LLM"telefon iste" → ÖZET+ONAY ─
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale Turu",
+    dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Mehmet Değmezgil", phone: "05551234567",
+  };
+  const currentTour = { id: "T1", title: "Pamukkale Turu", dates: [] };
+  const llmReply = "İptal şartları: rezervasyon başlangıcından 7 gün öncesine kadar ücretsizdir. Şimdi telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, currentTour, "standart");
+  assert(`D.B.1 KRİTİK: CONFIRMING + hasPhone + LLM telefon iste → wasModified=true`,
+    result.wasModified === true);
+  assert(`D.B.2: matchedPattern='field-reask:phone'`,
+    result.matchedPattern === "field-reask:phone");
+  assert(`D.B.3 KRİTİK: replacement TAM ÖZET içeriyor (Pamukkale + Mehmet + telefon)`,
+    result.text.includes("Pamukkale Turu") && result.text.includes("Mehmet Değmezgil") && result.text.includes("05551234567"));
+  assert(`D.B.4: replacement onay sorusu içeriyor`,
+    result.text.includes("onaylıyor musunuz"));
+}
+
+// ─── D.B.5 KRİTİK: CONFIRMING + hasName=true + LLM"isim iste" → düzeltildi ─
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Ahmet Yılmaz", phone: "05551234567",
+  };
+  const currentTour = { id: "T1", title: "Pamukkale", dates: [] };
+  const llmReply = "Adınızı söyler misiniz lütfen?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, currentTour, "standart");
+  assert(`D.B.5 KRİTİK: hasName=true + LLM ad-soyad iste → wasModified=true, matchedPattern=name`,
+    result.wasModified === true && result.matchedPattern === "field-reask:name");
+}
+
+// ─── D.B.6: COMPLETED + hasPhone=true + LLM"telefon iste" → kapanış mesajı ─
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "Mehmet", phone: "05551234567",
+  };
+  const llmReply = "Önce Pamukkale turuna dönelim - telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "COMPLETED", undefined, reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.6: COMPLETED + hasPhone + telefon iste → REDIRECT_MESSAGES_COMPLETED ile değiştirildi`,
+    result.wasModified === true && result.text.includes("tamamlandı") && result.text.includes("Başka"));
+}
+
+// ─── D.B.7 KRİTİK REGRESYON: COLLECTING_INFO + waiting_for_phone + phone BOŞ + LLM"telefon iste" → DOKUNULMADI ─
+// Meşru istem — telefon GERÇEKTEN eksik. Validator bu durumu YAKALAMAMALI.
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "Ahmet",
+    // phone YOK — meşru olarak istenecek
+  };
+  const llmReply = "Teşekkürler Ahmet Bey. Telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "COLLECTING_INFO", "waiting_for_phone", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.7 KRİTİK REGRESYON: COLLECTING_INFO + telefon BOŞ + telefon iste → DOKUNULMADI (meşru istem korundu)`,
+    result.wasModified === false && result.text === llmReply);
+}
+
+// ─── D.B.8 REGRESYON: CONFIRMING + LLM düzgün özet+onay → DOKUNULMADI ─
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Mehmet", phone: "05551234567",
+  };
+  const llmReply = "Rezervasyon özetiniz: Pamukkale Turu, 20 Aralık, 2 kişi, Mehmet, 05551234567. Bilgiler doğru mu?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.8 REGRESYON: CONFIRMING + meşru özet+onay → DOKUNULMADI`,
+    result.wasModified === false);
+}
+
+// ─── D.B.9 REGRESYON: CONFIRMING + hasPhone=true + LLM "iptal şartları cevap, onay sorusu" → DOKUNULMADI ─
+// LLM ideal davranış: bilgi cevapla + onay sor. Pattern bu duruma takılmamalı.
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Mehmet", phone: "05551234567",
+  };
+  const llmReply = "İptal şartları: 7 gün öncesine kadar ücretsiz. Bilgilerinizi onaylıyor musunuz?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.9 REGRESYON: CONFIRMING + meşru bilgi cevabı + onay → DOKUNULMADI`,
+    result.wasModified === false);
+}
+
+// ─── D.B.10 REGRESYON: TOUR_SELECTED stage'inde validator ATLA ────────────
+// Stage filtresi sadece CONFIRMING + COMPLETED. TOUR_SELECTED'de validator pas geçer.
+{
+  const reservationInfo = { tourId: "T1", tourTitle: "P" };
+  const llmReply = "Telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "TOUR_SELECTED", undefined, reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.10 REGRESYON: TOUR_SELECTED stage → validator atla (false-positive YOK)`,
+    result.wasModified === false);
+}
+
+// ─── D.B.11: EN dili — phone pattern ───────────────────────────────────────
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "John", phone: "05551234567",
+  };
+  const llmReply = "Cancellation terms: 7 days notice. May I have your phone number please?";
+  const result = validateFieldReask(llmReply, "en", "CONFIRMING", "ready_for_confirmation", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.11: EN phone pattern → wasModified=true`,
+    result.wasModified === true && result.matchedPattern === "field-reask:phone");
+}
+
 // ─── C.7: COMPLETED + "iptal şartları" + general_question → state KORUNUR (after-sales bilgi sorusu)
 {
   const ctx: any = {
