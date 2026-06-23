@@ -65,3 +65,37 @@ export function shouldApplyEarlyTourChange(
   if (selectedTour.id === context.currentTour?.id) return false;
   return context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING";
 }
+
+// ─── 2026-06-23 SORUN D — tur değişim ack prefix ─────────────────────────
+//
+// CANLI BUG: Kullanıcı mid-flow "aslında Pamukkale" yazınca state güncellenir
+// (currentTour=Pamukkale, dateId silinir, waiting_for_date) ama bot SESSİZ —
+// sadece yeni turun tarih listesini sunar. Kullanıcı tur değişiminin uygulandığını
+// ancak başlığı fark ederse anlıyor — şeffaflık eksik.
+//
+// FIX: bypass mesajlarının önüne kısa ack prefix ekle. 3 yer: :11 tarih listesi,
+// :11a-AUTO-DATE-ACK, H-β dolu tarih reddi (pax bypass dahil — tutarlılık).
+//
+// ŞABLON KARARI (Murat 2026-06-23):
+//   "Şimdi *${title}* için devam ediyoruz."
+//
+// Gerekçe:
+//   - Türkçe ek-uyumu yok (Pamukkale'YE / Balon Turu'NA / Efes'E sorun olmaz)
+//   - Tekrar yok ("Pamukkale Turu turuna geçtim" gibi çift "tur" çakışması yok)
+//   - Müşteri-odaklı sıcak ton ("geçtim" tek-yönlü, "devam ediyoruz" karşılıklı)
+//
+// FALLBACK: çok-dil eşitleme fazında 5 dil eklenecek. Şimdi TR+EN, diğerleri EN.
+export function buildTourChangePrefix(
+  oldTourId: string | undefined,
+  newTourId: string | undefined,
+  newTourTitle: string,
+  lang: string,
+): string {
+  if (!oldTourId || !newTourId || oldTourId === newTourId) return "";
+  if (!newTourTitle || !newTourTitle.trim()) return "";
+  const prefixes: Record<string, string> = {
+    tr: `Şimdi *${newTourTitle}* için devam ediyoruz. `,
+    en: `Now continuing with *${newTourTitle}*. `,
+  };
+  return prefixes[lang] || prefixes.en;
+}

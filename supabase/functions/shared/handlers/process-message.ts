@@ -31,7 +31,7 @@ import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extracto
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
-import { produceTourChangeContext, shouldApplyEarlyTourChange } from "../services/tour-change.ts";
+import { produceTourChangeContext, shouldApplyEarlyTourChange, buildTourChangePrefix } from "../services/tour-change.ts";
 import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
@@ -345,6 +345,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     supabase.from("complaints").insert({ agency_id: agency.id, phone: adapter.identifier, message, type: "complaint", status: "new" }).then(() => {});
   }
 
+  // 2026-06-23 Sorun D: orijinal tur ID'sini sakla — sonraki bypass'ların hangi
+  // turdan değiştiğini bilmesi için. Erken-müdahale context.currentTour'u mutate
+  // ediyor (line ~373), state-machine transition newContext.currentTour'u
+  // değiştiriyor. Her iki yolda da bu orijinal ID karşılaştırma kaynağı.
+  const _originalTourId = context.currentTour?.id;
+
   // === 7. TUR EŞLEŞTİRME ===
   const { selectedTour, multipleMatches: multipleTourMatches, unknownTourQuery } = findMatchingTours(
     message,
@@ -526,8 +532,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           fr: `*${_rejDateLabel}* est complet et aucune autre date n'est disponible. 😔\n\nVeuillez réessayer plus tard ou nous contacter.`,
           es: `*${_rejDateLabel}* está completo y no hay otras fechas disponibles. 😔\n\nIntente más tarde o contáctenos.`,
         };
-    const _betaReply = _msgs[_lang] || _msgs.tr;
-    console.log(`[process-message] H-β tetiklendi (tarih dolu: ${_rej.departureDate}, remaining=${_rej.remaining}, altDates=${_hasAlt})`);
+    // 2026-06-23 Sorun D: tur değişim prefix (erken-müdahale context'i mutate
+    // etti → context.currentTour.id şu an YENİ tur; _originalTourId orijinal).
+    const _tcPrefixBeta = buildTourChangePrefix(
+      _originalTourId,
+      context.currentTour?.id,
+      context.currentTour ? getLocalizedTourTitle(context.currentTour.title || "", _lang) : "",
+      _lang,
+    );
+    const _betaReply = _tcPrefixBeta + (_msgs[_lang] || _msgs.tr);
+    console.log(`[process-message] H-β tetiklendi (tarih dolu: ${_rej.departureDate}, remaining=${_rej.remaining}, altDates=${_hasAlt}, tourChanged=${!!_tcPrefixBeta})`);
     await _save(_betaReply, context);
     await adapter.sendResponse(_betaReply);
     return { success: true, response: _betaReply, newContext: context };
@@ -572,8 +586,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           fr: `Seulement *${_remaining} places* pour *${_paxPending} personnes* le *${_dateLabel}* — pas d'autres dates. 😔\n\nEssayez avec moins de personnes ou contactez-nous.`,
           es: `Solo *${_remaining} lugares* para *${_paxPending} personas* el *${_dateLabel}* — no hay otras fechas. 😔\n\nIntente con menos personas o contáctenos.`,
         };
-    const _paxRejReply = _msgs[_lang] || _msgs.tr;
-    console.log(`[process-message] H-pax tetiklendi (date=${_activeDate.departure_date}, remaining=${_remaining}, neededPax=${_paxPending})`);
+    // 2026-06-23 Sorun D: tur değişim prefix (β ile aynı kalıp).
+    const _tcPrefixPax = buildTourChangePrefix(
+      _originalTourId,
+      context.currentTour?.id,
+      context.currentTour ? getLocalizedTourTitle(context.currentTour.title || "", _lang) : "",
+      _lang,
+    );
+    const _paxRejReply = _tcPrefixPax + (_msgs[_lang] || _msgs.tr);
+    console.log(`[process-message] H-pax tetiklendi (date=${_activeDate.departure_date}, remaining=${_remaining}, neededPax=${_paxPending}, tourChanged=${!!_tcPrefixPax})`);
     await _save(_paxRejReply, context);
     await adapter.sendResponse(_paxRejReply);
     return { success: true, response: _paxRejReply, newContext: context };
@@ -830,6 +851,19 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         dateReply = (_preambles[newContext.language] || _preambles.tr) + dateReply;
       }
 
+      // 2026-06-23 Sorun D: tur değişim prefix (FSM transition sonrası
+      // newContext.currentTour kullan — state-machine yolu A/B veya erken-müdahale
+      // sonrası newContext.currentTour orijinal _originalTourId'den farklıysa
+      // prefix oluşur. _invalidDateForPreamble'dan ÖNCE eklenir — okuma sırası:
+      // "Şimdi *Pamukkale* için devam ediyoruz. Müsait tarihler: ..."
+      const _tcPrefixDates = buildTourChangePrefix(
+        _originalTourId,
+        newContext.currentTour?.id,
+        getLocalizedTourTitle(tourForDates.title || "", newContext.language),
+        newContext.language,
+      );
+      dateReply = _tcPrefixDates + dateReply;
+
       await _save(dateReply, newContext);
       await adapter.sendResponse(dateReply);
       return { success: true, response: dateReply, newContext };
@@ -923,8 +957,18 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         ? `Iniciando reserva para *${_displayTitle}* el *${_displayDate}*. (Por persona ${_priceText}) ✨\n\n¿Cuántas personas? 😊`
         : `Iniciando reserva para *${_displayTitle}* el *${_displayDate}*. ✨\n\n¿Cuántas personas? 😊`,
     };
-    const askReply = _msgs[_lang] || _msgs.tr;
-    console.log(`[process-message] :11a-AUTO-DATE-ACK tetiklendi (date=${_selectedDate}, transition→waiting_for_pax)`);
+    // 2026-06-23 Sorun D: tur değişim prefix (yeni tek-tarihli tura erken-müdahale
+    // sonrası auto-date senaryosu — kullanıcı önce tur değiştirdi, yeni tur tek
+    // tarihli, Blok 10 dateAutoAssigned set etti, transition waiting_for_pax'a
+    // düştü. Bypass mesajının önüne tur değişim ack'i.).
+    const _tcPrefixAck = buildTourChangePrefix(
+      _originalTourId,
+      newContext.currentTour?.id,
+      _displayTitle,
+      _lang,
+    );
+    const askReply = _tcPrefixAck + (_msgs[_lang] || _msgs.tr);
+    console.log(`[process-message] :11a-AUTO-DATE-ACK tetiklendi (date=${_selectedDate}, transition→waiting_for_pax, tourChanged=${!!_tcPrefixAck})`);
     await _save(askReply, newContext);
     await adapter.sendResponse(askReply);
     return { success: true, response: askReply, newContext };

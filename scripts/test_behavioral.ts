@@ -1706,6 +1706,70 @@ assert(`H.15: tour=null → FALSE`,
     ei.dateId === "D_OK" && (ei as any).dateRejectedFull === undefined);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SORUN D: buildTourChangePrefix — tur değişim ack prefix
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── SORUN D: buildTourChangePrefix testleri ──");
+
+import { buildTourChangePrefix } from "../supabase/functions/shared/services/tour-change.ts";
+
+// ─── D.1: aynı tur ID → BOŞ prefix ───────────────────────────────────────
+assert(`D.1: aynı tur ID → boş string`,
+  buildTourChangePrefix("T1", "T1", "Pamukkale", "tr") === "");
+
+// ─── D.2: farklı tur ID + TR → "Şimdi *X* için devam ediyoruz. " ─────────
+{
+  const p = buildTourChangePrefix("T1", "T2", "Pamukkale Turu", "tr");
+  assert(`D.2: TR prefix doğru kalıp`,
+    p === "Şimdi *Pamukkale Turu* için devam ediyoruz. ");
+}
+
+// ─── D.3: farklı tur + EN → "Now continuing with *X*. " ──────────────────
+{
+  const p = buildTourChangePrefix("T1", "T2", "Pamukkale Tour", "en");
+  assert(`D.3: EN prefix doğru kalıp`,
+    p === "Now continuing with *Pamukkale Tour*. ");
+}
+
+// ─── D.4: 5 fallback dilleri → EN şablonu ────────────────────────────────
+{
+  const expected = "Now continuing with *X*. ";
+  const allFallback = ["de", "ru", "ar", "fr", "es"].every((lang) =>
+    buildTourChangePrefix("T1", "T2", "X", lang) === expected
+  );
+  assert(`D.4: DE/RU/AR/FR/ES tümü EN fallback`, allFallback);
+}
+
+// ─── D.5: oldTourId undefined → BOŞ (ilk tur seçimi senaryosu) ───────────
+assert(`D.5: oldTourId undefined → boş (ilk seçim)`,
+  buildTourChangePrefix(undefined, "T2", "Pamukkale", "tr") === "");
+
+// ─── D.6: newTourId undefined → BOŞ ──────────────────────────────────────
+assert(`D.6: newTourId undefined → boş`,
+  buildTourChangePrefix("T1", undefined, "Pamukkale", "tr") === "");
+
+// ─── D.7: newTourTitle boş → BOŞ (defansif) ─────────────────────────────
+assert(`D.7: newTourTitle boş → boş`,
+  buildTourChangePrefix("T1", "T2", "", "tr") === "");
+
+// ─── D.8: newTourTitle sadece whitespace → BOŞ ──────────────────────────
+assert(`D.8: newTourTitle whitespace → boş`,
+  buildTourChangePrefix("T1", "T2", "   ", "tr") === "");
+
+// ─── D.9: bilinmeyen dil → EN fallback ───────────────────────────────────
+{
+  const p = buildTourChangePrefix("T1", "T2", "X", "zz");
+  assert(`D.9: bilinmeyen dil zz → EN fallback`,
+    p === "Now continuing with *X*. ");
+}
+
+// ─── D.10: prefix yıldız işaretli + boşlukla biter (mesaj akışı için) ────
+{
+  const p = buildTourChangePrefix("T1", "T2", "Efes", "tr");
+  assert(`D.10: prefix '*' içerir VE trailing boşlukla biter`,
+    p.includes("*Efes*") && p.endsWith(" "));
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

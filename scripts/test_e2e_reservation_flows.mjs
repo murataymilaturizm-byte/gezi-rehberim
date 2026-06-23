@@ -1159,8 +1159,15 @@ if (helperCallCount >= 2) {
 }
 
 // process-message.ts erken müdahale bloğu
-assertProcMsgContains("process-message: tour-change helper import",
-  'import { produceTourChangeContext, shouldApplyEarlyTourChange } from "../services/tour-change.ts"');
+// 2026-06-23 Sorun D: import satırı buildTourChangePrefix ile genişledi.
+// Exact-match yerine path + iki sembolü ayrı kontrol et (PRESENCE import string
+// kayması yan #8 aile).
+assertProcMsgContains("process-message: tour-change helper path",
+  'from "../services/tour-change.ts"');
+assertProcMsgContains("process-message: produceTourChangeContext sembolü",
+  "produceTourChangeContext");
+assertProcMsgContains("process-message: shouldApplyEarlyTourChange sembolü",
+  "shouldApplyEarlyTourChange");
 assertProcMsgContains("process-message: erken müdahale shouldApply gate'i",
   "shouldApplyEarlyTourChange(context, selectedTour)");
 assertProcMsgContains("process-message: DETERMINISTIC tour-change logu",
@@ -1419,6 +1426,25 @@ if (_infoExtH.includes("dateRejectedFull")) {
   failures.push({ scenario: "PRESENCE:info-extractor:dateRejectedFull", step: 0, msg: "flag eksik", key: "info-extractor.ts", expected: "dateRejectedFull", actual: "NOT FOUND" });
   console.log(`✗ [PRESENCE] info-extractor dateRejectedFull YOK`);
 }
+
+// ─── 2026-06-23 SORUN D — buildTourChangePrefix + 4 bypass prefix ─────────
+// NOT: assertTourChangeContains + tourChangeContent yukarıda (line ~1122) tanımlı,
+// tekrar tanımlamıyoruz — aynı helper'ı kullan.
+assertTourChangeContains("D buildTourChangePrefix export", "export function buildTourChangePrefix");
+assertTourChangeContains("D TR şablonu",                   "Şimdi *${newTourTitle}* için devam ediyoruz.");
+assertTourChangeContains("D EN şablonu",                   "Now continuing with *${newTourTitle}*.");
+assertTourChangeContains("D oldTourId guard",              "oldTourId === newTourId");
+assertTourChangeContains("D EN fallback default",          "prefixes.en");
+
+// process-message.ts'de _originalTourId saklama + 4 bypass prefix kullanımı
+assertProcMsgContains("D _originalTourId saklama",      "const _originalTourId = context.currentTour?.id");
+assertProcMsgContains("D buildTourChangePrefix import", "buildTourChangePrefix");
+assertProcMsgContains("D β bypass'ta prefix",           "_tcPrefixBeta");
+assertProcMsgContains("D pax bypass'ta prefix",         "_tcPrefixPax");
+assertProcMsgContains("D :11 bypass'ta prefix",         "_tcPrefixDates");
+assertProcMsgContains("D :11a bypass'ta prefix",        "_tcPrefixAck");
+assertProcMsgContains("D β log tourChanged",            "tourChanged=${!!_tcPrefixBeta}");
+assertProcMsgContains("D :11a log tourChanged",         "tourChanged=${!!_tcPrefixAck}");
 
 if (nluTsContent.includes("NEVER extract full_name from NEGATION/CORRECTION")) {
   scenarioPasses++;
