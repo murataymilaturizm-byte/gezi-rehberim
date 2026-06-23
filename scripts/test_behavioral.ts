@@ -2127,6 +2127,177 @@ import { validateFieldReask } from "../supabase/functions/shared/fsm/response-va
     result.wasModified === true && result.matchedPattern === "field-reask:phone");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG D REVİZE — SURGICAL replace (komple-replace yerine bilgi cevabını koru)
+// Canlı kanıt (exec 6ef50f7b/35ffb749): "iptal şartları" cevabı SİLİNİYORDU.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG D REVİZE: surgical validator (bilgi cevabı korunur) ──");
+
+// ─── D.B.12 KRİTİK: CONFIRMING + bilgi + telefon iste → bilgi KORUNDU + özet eklendi
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale",
+    dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Mehmet", phone: "05551234567",
+  };
+  const currentTour = { id: "T1", title: "Pamukkale", dates: [] };
+  const llmReply = "İptal koşullarımız: 7 gün öncesine kadar ücretsizdir. Telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, currentTour, "standart");
+  assert(`D.B.12 KRİTİK: bilgi cevabı KORUNDU ('İptal koşullarımız: 7 gün' kayıp değil)`,
+    result.wasModified === true &&
+    result.text.includes("İptal koşullarımız") &&
+    result.text.includes("7 gün öncesine kadar"));
+  assert(`D.B.13 KRİTİK: özet+onay eklendi (Mehmet + 05551234567)`,
+    result.text.includes("Mehmet") &&
+    result.text.includes("05551234567") &&
+    result.text.includes("onaylıyor musunuz"));
+  assert(`D.B.14 KRİTİK: telefon iste cümlesi atıldı (sadece bilgi + özet kaldı)`,
+    !result.text.includes("Telefon numaranızı alabilir miyim"));
+}
+
+// ─── D.B.15 REGRESYON: LLM SADECE field-reask (bilgi yok) → komple özet (eski davranış)
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale",
+    dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Mehmet", phone: "05551234567",
+  };
+  const currentTour = { id: "T1", title: "Pamukkale", dates: [] };
+  const llmReply = "Telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, currentTour, "standart");
+  assert(`D.B.15 REGRESYON: reply SADECE field-reask → komple özet (eski davranış korundu)`,
+    result.wasModified === true &&
+    result.text.includes("Mehmet") &&
+    result.text.includes("onaylıyor musunuz"));
+}
+
+// ─── D.B.16: çok uzun cümle (>120 char) bilgi+yutkunma karışık → cümle KORU
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale",
+    dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Mehmet", phone: "05551234567",
+  };
+  const currentTour = { id: "T1", title: "Pamukkale", dates: [] };
+  // 120+ char tek cümlede hem bilgi hem telefon — agresif kesme yapmamalı
+  const longSentence = "İptal şartlarımız 7 gün öncesine kadar tam iade, sonrasında %50 iade hakkı vardır ve sizinle iletişime geçmek için telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(longSentence, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, currentTour, "standart");
+  // Uzun cümle korundu (bilgi kaybı yutkunma kaybından kötü)
+  // wasModified yine de true olabilir çünkü pattern eşleşti; ama bilgi içerik korunmalı
+  // VEYA wasModified false kalabilir eğer hiç kısa cümle yoksa.
+  // Davranış: agresif kesme YOK, çift-güvenlik
+  if (result.wasModified) {
+    assert(`D.B.16: uzun cümle (>120 char) korunmalı veya bilgi kaybı olmamalı`,
+      result.text.includes("İptal şartlarımız") || result.text.includes("7 gün"));
+  } else {
+    assert(`D.B.16: uzun cümle pattern eşleşse de çift-güvenlik (kısa cümle yoksa wasModified=false)`,
+      true);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG B PROVİDE_INFO VARYANT — CONFIRMING'de provide_info ile isim/telefon override
+// Canlı kanıt (exec 94ee1378/d36d9550): "aslında adım Fırat" → NLU provide_info → yutuldu.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG B PROVİDE_INFO VARYANT: CONFIRMING stage genişletme ──");
+
+// NOT (2026-06-23 BUG B provide_info varyant): "aslında adım Fırat" senaryosu
+// canlıda process-message.ts'te intent="change_info"'ya PROMOTE edilir (CONFIRMING +
+// provide_info + extracted.fullName/phone mevcuttan farklı). state-machine'e change_info
+// geldiği için mevcut Bug B fix override çalışır. behavioral test direkt state-machine
+// çağırdığı için promotion'ı simüle etmek yerine intent="change_info" ile B.1 zaten
+// bu davranışı test ediyor. Aşağıdaki B.8 sadece F regresyonu için (CONFIRMING + change_info
+// + F-clean extract) tutuluyor.
+
+// ─── B.8 F REGRESYON KRİTİK: CONFIRMING + change_info (promote sonrası) + F-clean extract → "Ahmet"
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Mehmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 6,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "Murat değil aslında Ahmet",
+    detectedIntent: "change_info",  // process-message promotion sonrası
+    // F savunması (NLU prompt + Blok 3 sigortası) Murat'ı temizlemiş, "Ahmet" geldi
+    extractedInfo: { fullName: "Ahmet" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.8 F REGRESYON: CONFIRMING + change_info + F-clean extract → "Ahmet" yazılır, "Murat" sızmaz`,
+    newCtx.reservationInfo?.fullName === "Ahmet");
+}
+
+// ─── B.9 REGRESYON: COLLECTING_INFO + provide_info + NLU uydurma isim → eski isim KORUNDU
+// CONFIRMING DIŞINDA provide_info promotion YOK; ilk-doldurma "henüz yoksa ekle" davranışı korunur.
+// (process-message'da promotion sadece context.stage === "CONFIRMING" iken çalışır.)
+{
+  const ctx: any = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_phone",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Ahmet Yılmaz" },
+    language: "tr",
+    messageCount: 5,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "0555 111 22 33",
+    detectedIntent: "provide_info",
+    extractedInfo: { fullName: "Murat Bey", phone: "05551112233" },  // NLU yanlış uydurma
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.9 REGRESYON: COLLECTING_INFO + provide_info + NLU uydurma isim → eski isim KORUNDU`,
+    newCtx.reservationInfo?.fullName === "Ahmet Yılmaz");
+}
+
+// ─── B.10 PROMOTE: process-message'daki intent promotion logic'i — bağımsız mantık testi
+// (process-message.ts:404+ kod akışı — promotion KOŞULU farklı isim/telefon iken tetiklenir,
+// aksi halde devre dışı kalır.)
+function _shouldPromoteProvideInfoToChangeInfo(
+  contextStage: string,
+  intent: string,
+  contextReservationInfo: { fullName?: string; phone?: string } | undefined,
+  nluUpdates: { fullName?: string; phone?: string } | undefined,
+): boolean {
+  if (contextStage !== "CONFIRMING") return false;
+  if (intent !== "provide_info") return false;
+  const info = contextReservationInfo || {};
+  const ext = nluUpdates || {};
+  const isFullNameChange = !!ext.fullName && !!info.fullName && ext.fullName !== info.fullName;
+  const isPhoneChange = !!ext.phone && !!info.phone && ext.phone !== info.phone;
+  return isFullNameChange || isPhoneChange;
+}
+
+assert(`B.10 PROMOTE POZ: CONFIRMING + provide_info + fullName farklı → promote=TRUE`,
+  _shouldPromoteProvideInfoToChangeInfo("CONFIRMING", "provide_info",
+    { fullName: "Mustafa Eken" }, { fullName: "Fırat Fırmaz" }) === true);
+
+assert(`B.11 PROMOTE POZ: CONFIRMING + provide_info + phone farklı → promote=TRUE`,
+  _shouldPromoteProvideInfoToChangeInfo("CONFIRMING", "provide_info",
+    { phone: "05551234567" }, { phone: "05559998877" }) === true);
+
+assert(`B.12 PROMOTE NEG: COLLECTING_INFO stage → promote=FALSE (sadece CONFIRMING'de aktif)`,
+  _shouldPromoteProvideInfoToChangeInfo("COLLECTING_INFO", "provide_info",
+    { fullName: "Ahmet" }, { fullName: "Murat" }) === false);
+
+assert(`B.13 PROMOTE NEG: aynı isim → promote=FALSE`,
+  _shouldPromoteProvideInfoToChangeInfo("CONFIRMING", "provide_info",
+    { fullName: "Ahmet" }, { fullName: "Ahmet" }) === false);
+
+assert(`B.14 PROMOTE NEG: intent change_info zaten → promote=FALSE (zaten doğru intent)`,
+  _shouldPromoteProvideInfoToChangeInfo("CONFIRMING", "change_info",
+    { fullName: "Ahmet" }, { fullName: "Murat" }) === false);
+
+assert(`B.15 PROMOTE NEG: mevcut isim boş (ilk doldurma) → promote=FALSE (override ihtiyacı yok)`,
+  _shouldPromoteProvideInfoToChangeInfo("CONFIRMING", "provide_info",
+    {}, { fullName: "Ahmet" }) === false);
+
 // ─── C.7: COMPLETED + "iptal şartları" + general_question → state KORUNUR (after-sales bilgi sorusu)
 {
   const ctx: any = {

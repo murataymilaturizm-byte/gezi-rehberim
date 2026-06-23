@@ -403,6 +403,41 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     fsmIntent = mapNLUIntentToFSMIntent("provide_info");
   }
 
+  // 2026-06-23 BUG B PROVIDE_INFO VARYANT (exec 94ee1378/d36d9550):
+  // CONFIRMING'de "aslında adım Fırat Fırmaz" → NLU intent=provide_info (change_info DEĞİL)
+  // + extracted.fullName="Fırat Fırmaz" + mevcut "Mustafa Eken". Mevcut Bug B fix
+  // (isExplicitCorrection = intent==="change_info") devreye girmedi → !merged.fullName=false
+  // → override atlandı → isim yutuldu.
+  //
+  // ÇÖZÜM: ORIGINAL stage CONFIRMING iken + intent provide_info + extracted.fullName/phone
+  // mevcuttan FARKLI ise → intent'i "change_info"'ya PROMOTE et. Böylece state-machine'e
+  // change_info ulaşır, mevcut Bug B fix override çalışır.
+  //
+  // GÜVENLİK:
+  //   - SADECE context.stage === "CONFIRMING" (original stage). COLLECTING_INFO'da etkilenmez.
+  //   - SADECE extracted.fullName/phone mevcuttan farklıysa (aynı değer override yapmaz).
+  //   - NLU prompt full_name ekstraksiyonu dar (2-3 kelime proper noun) → "evet"ten isim
+  //     üretmez, uydurma riski düşük.
+  //   - F-savunması katmanları (NLU prompt + Blok 3 sigortası) extracted'a girene kadar
+  //     temizler — bu seviyede leak yok.
+  const _confInfo = context.reservationInfo;
+  const _confExt = nluResult.updates as any;
+  const _isConfirmingFullNameChange =
+    !!_confExt?.fullName && !!_confInfo?.fullName &&
+    _confExt.fullName !== _confInfo.fullName;
+  const _isConfirmingPhoneChange =
+    !!_confExt?.phone && !!_confInfo?.phone &&
+    _confExt.phone !== _confInfo.phone;
+  if (
+    context.stage === "CONFIRMING" &&
+    nluResult.intent === "provide_info" &&
+    (_isConfirmingFullNameChange || _isConfirmingPhoneChange)
+  ) {
+    console.log(`[process-message] BUG B PROMOTE: CONFIRMING + provide_info + ${_isConfirmingFullNameChange ? "fullName" : "phone"} farklı → intent → change_info`);
+    nluResult.intent = "change_info";
+    fsmIntent = mapNLUIntentToFSMIntent("change_info");
+  }
+
   // B-6 fix (2026-06-09): CONFIRMING'de "hayır" net redi → state KORUNUR, netleştirme sorusu sor.
   // Eski davranış: detectConfirmation false, detectCancellation false ("hayır" pattern'de yok),
   // değişiklik transition'ı da tetiklenmez → state takılı, LLM serbest cevap üretir (belirsiz).

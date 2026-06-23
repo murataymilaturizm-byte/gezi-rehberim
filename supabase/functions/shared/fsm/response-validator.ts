@@ -290,32 +290,59 @@ export function validateFieldReask(
     if (!check.isFilled) continue;
     if (!check.pattern.test(text)) continue;
 
+    // 2026-06-23 BUG D revize (exec 6ef50f7b/35ffb749 — aşırı düzeltme kanıtı):
+    // SURGICAL replace — komple-replace değil. LLM cevabını cümlelere böl,
+    // pattern eşleşen cümle(ler)i at, kalanı (bilgi cevabı) KORU.
+    // Sadece field-reask cümlesinin yerine özet+onay koy.
+    //
+    // Risk azaltma: cümle çok uzun (>120 char) ise muhtemelen bilgi+yutkunma
+    // aynı cümlede → agresif kesme yapma, o cümleyi KORU (LLM kendisi mesajı
+    // toparlasın — tam mükemmel değil ama bilgi kaybı yutkunma kaybından kötü).
+    const sentences = text.split(/(?<=[.!?])\s+|\n+/);
+    const matchedSentenceIdxs: number[] = [];
+    const keptSentences: string[] = [];
+    sentences.forEach((s, idx) => {
+      if (check.pattern.test(s) && s.length <= 120) {
+        // Kısa cümle pattern içeriyor → at (yutkunma cümlesi).
+        matchedSentenceIdxs.push(idx);
+      } else {
+        keptSentences.push(s);
+      }
+    });
+    const preservedContent = keptSentences.join(" ").trim();
+
     console.warn("[response-validator] field-reask blocked", {
       field: check.field,
       stage,
       language,
       collectionStep: _collectionStep,
+      removedSentenceCount: matchedSentenceIdxs.length,
+      preservedLen: preservedContent.length,
       textSnippet: text.slice(0, 120),
     });
 
-    let replacement: string;
+    // CONFIRMING özet+onay; COMPLETED kapanış.
+    let replacementSuffix: string;
     if (stage === "CONFIRMING") {
-      // TAM ÖZET regenerate + onay sorusu — LLM'in dolu-alan istemini tamamen replace et.
-      // currentTour yoksa REDIRECT_MESSAGES fallback (sade "kontrol edip onaylar mısınız?").
       if (currentTour) {
         const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
         const suffix = FIELD_REASK_CONFIRM_SUFFIX[lang] || FIELD_REASK_CONFIRM_SUFFIX.en;
-        replacement = summary + suffix;
+        replacementSuffix = summary + suffix;
       } else {
-        replacement = REDIRECT_MESSAGES[language] || REDIRECT_MESSAGES.en;
+        replacementSuffix = REDIRECT_MESSAGES[language] || REDIRECT_MESSAGES.en;
       }
     } else {
-      // COMPLETED: kapanış mesajı (mevcut REDIRECT_MESSAGES_COMPLETED).
-      replacement = REDIRECT_MESSAGES_COMPLETED[language] || REDIRECT_MESSAGES_COMPLETED.en;
+      replacementSuffix = REDIRECT_MESSAGES_COMPLETED[language] || REDIRECT_MESSAGES_COMPLETED.en;
     }
 
+    // Eğer kalan içerik anlamlı (bilgi cevabı) varsa: [bilgi] \n\n [özet+onay].
+    // Yoksa (reply sadece yutkunmadan ibaretti) komple özet+onay (eski davranış).
+    const finalText = preservedContent.length > 0
+      ? `${preservedContent}\n\n${replacementSuffix}`
+      : replacementSuffix;
+
     return {
-      text: replacement,
+      text: finalText,
       wasModified: true,
       matchedPattern: `field-reask:${check.field}`,
     };

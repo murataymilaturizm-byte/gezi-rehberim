@@ -103,6 +103,16 @@ function mergeReservationInfo(
   // korunur → F negation savunması (waiting_for_name'de "Murat değil aslında Ahmet"
   // → simple-extractor Blok 3 gate temizleyince merged.fullName boş olur, yeni
   // "Ahmet" yazılır — provide_info yolu) etkilenmez.
+  //
+  // NOT (2026-06-23 BUG B REVİZE — denenip GERİ ALINDI): stage-bazlı guard
+  // eklemek "CONFIRMING'de provide_info ile farklı isim override" için denenmişti
+  // AMA processTransition action içinde ctx.stage zaten transition.to ile değişmiş
+  // oluyor (state-machine.ts:1028-1037). Yani COLLECTING_INFO→CONFIRMING transition'ında
+  // action'a ctx.stage="CONFIRMING" geliyor — kullanıcı SADECE akışı tamamlasa bile.
+  // Bu B.5 regresyonunu kırdı (provide_info ile NLU uydurma isim override etti).
+  // Çözüm: stage guard'ı KALDIR (orijinal Bug B davranışına dön) + process-message.ts'te
+  // CONFIRMING'de provide_info + farklı isim/telefon → intent'i "change_info"'ya
+  // PROMOTE et. Bu sayede mevcut isExplicitCorrection guard'ı devreye girer.
   const isExplicitCorrection = intent === "change_info";
 
   // Tour info: her zaman kabul et
