@@ -769,13 +769,21 @@ const transitions: StateTransition[] = [
     }),
   },
 
-  // COMPLETED → BROWSING (selamlama / tur araması / genel intent — tur seçilmemişse)
-  // "Merhaba", "Turları görmek istiyorum", "Turlarınızı öğrenebilir miyim" gibi mesajlar
+  // COMPLETED → BROWSING (tur araması — tur seçilmemişse)
+  // "Turları görmek istiyorum", "Turlarınızı öğrenebilir miyim" gibi açık keşif niyetleri.
+  //
+  // 2026-06-23 BUG A FIX: "greeting" ve "general" allow-list'ten ÇIKARILDI.
+  // Canlı bug (exec 4858c2f0): COMPLETED'de "teşekkür ederim" → NLU intent=general →
+  // bu transition tetiklenip resetForNewReservation ile reservationInfo={} → state UÇTU.
+  // Sonra BROWSING prompt'unda LLM "telefon ver" diyordu (state silindiği için eksik
+  // gördü). Artık general/greeting bu transition'ı tetiklemiyor — process-message.ts'te
+  // COMPLETED after-sales ack bypass'ı deterministik kapanış mesajı atıyor, state KORUNUYOR.
+  // browse_tours / tour_search → yeni tur arama niyeti, BROWSING'e geçiş DOĞRU.
   {
     from: "COMPLETED",
     to: "BROWSING",
     condition: (_ctx, input) =>
-      ["greeting", "browse_tours", "tour_search", "general"].includes(input.detectedIntent) &&
+      ["browse_tours", "tour_search"].includes(input.detectedIntent) &&
       input.selectedTour === null,
     action: (ctx) => ({
       ...ctx,

@@ -1670,6 +1670,46 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
+  // === 14a-2. BUG A FIX — COMPLETED after-sales ack (general/greeting) ===
+  // 2026-06-23 (exec 4858c2f0 kanıtı): COMPLETED'de "teşekkürler" → NLU intent=general
+  // → state-machine transition #4 (eskiden general/greeting allow-list'te) tetikleniyor,
+  // resetForNewReservation reservationInfo={} → state UÇUYOR → LLM BROWSING prompt'unda
+  // "telefon ver" diye saçma soru üretiyordu.
+  //
+  // İki katmanlı fix:
+  //   1. state-machine.ts: transition #4 allow-list daraltıldı (greeting/general çıktı)
+  //      → state-machine artık no-op kalır (COMPLETED → COMPLETED).
+  //   2. Burada (process-message): no-op senaryosunda deterministik kapanış mesajı,
+  //      LLM atlanır, state OLDUĞU GİBİ KORUNUR (reservationInfo değişmez).
+  //
+  // ALLOW-LIST: sadece general + greeting. Meşru after-sales niyetleri yutmaz:
+  //   - tour_search/browse_tours → state-machine BROWSING'e geçirir (yeni tur akışı)
+  //   - reservation_intent + tur → state-machine TOUR_SELECTED'a geçirir
+  //   - change_info/cancellation → mevcut 14a after-sales bypass yakalar (yukarıda)
+  //   - faq_general/payment_methods/... → LLM after-sales kuralları cevaplar
+  //   - provide_info → riskli, LLM yorumlasın (yeni rezervasyon başlatıyor olabilir)
+  //
+  // STATE: SİLİNMEZ. reservationConfirmed=true + reservationInfo dolu kalır → kullanıcı
+  // sonraki turn "iptal" derse 14a bypass çalışır, "başka tur" derse state-machine
+  // yeni rezervasyon yoluna geçirir.
+  if (
+    context.stage === "COMPLETED" &&
+    newContext.stage === "COMPLETED" &&
+    newContext.reservationConfirmed === true &&
+    (nluResult.intent === "general" || nluResult.intent === "greeting")
+  ) {
+    // TR + EN, diğer 5 dil çok-dil eşitleme fazına bırakıldı (TR fallback).
+    const _ackBugAMsgs: Record<string, string> = {
+      tr: "Rezervasyonunuz tamamlandı ✅ Başka bir konuda yardımcı olabilir miyim?",
+      en: "Your reservation is complete ✅ Is there anything else I can help with?",
+    };
+    const _ackBugAReply = _ackBugAMsgs[newContext.language] || _ackBugAMsgs.tr;
+    console.log(`[process-message] COMPLETED after-sales ack → deterministik kapanış (intent=${nluResult.intent})`);
+    await _save(_ackBugAReply, newContext);
+    await adapter.sendResponse(_ackBugAReply);
+    return { success: true, response: _ackBugAReply, newContext };
+  }
+
   // === 14b. FIX 3 — SAHTE ONAY GUARD ===
   // CONFIRMING stage'de "evet" verdi AMA justCompleted=false kaldı → FSM geçişi olmadı.
   // AI'a bırakma: "onaylandı" uydurmadan önce state'i sıfırla, clean reset yap.
