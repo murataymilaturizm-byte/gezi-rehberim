@@ -230,28 +230,19 @@ export interface ValidationResult {
 // ÇOK-DİL: TR + EN tam pattern; diğer 5 dil (DE/FR/ES/RU/AR) ŞİMDİLİK
 // EN fallback (çok-dil eşitleme açık liste — post-launch genişletme).
 
-// 2026-06-24 BUG D REVİZE-3 (exec 1cb3e5fc, 02ba6dcf kanıt):
-// Mevcut pattern "yazar mısınız" arıyordu ama LLM canlıda "yazabilir misiniz"
-// üretti — eşleşmedi. Türkçe yardımcı fiil varyantları (yaz/al/ver/söy/payl/öğr/
-// gönd/iste + abilir/ar + mı/mi/sın/sınız) çok geniş. Spesifik liste yerine
-// kök-bazlı geniş pattern + ortak Türkçe soru eki (mısın/misin/musun/müsün)
-// kombinasyonu. Yanlış-pozitif riski: "telefon numaramı yazdım" gibi olumlu
-// cümleler → mısın/misin YOK → yakalanmaz.
 const FIELD_REASK_PATTERNS: Record<string, { tr: RegExp; en: RegExp }> = {
   phone: {
-    // TR: (telefon|numara|cep|gsm) + ≤50 char + (yaz/al/ver/payl/söy/öğr/gönd/iste/paylaş kökü) + soru eki
-    tr: /(?<![\p{L}\p{N}])(telefon|telefonunuz|telefonunuzu|telefonu|numara|numaranızı|numaranız|cep|gsm)[\s\S]{0,50}?\b(yaz|al|ver|payl|söy|öğr|gönd|iste|alı?n)[\p{L}\p{N}_]*\s+m(?:[ıiuü]s[ıi]n(?:[ıi]z)?|[ıi]y[ıi]m|[ıi]y[ıi]z)/iu,
-    en: /\b(phone|telephone|mobile|number)\b\s+\S{0,50}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|would\s+you|share|provide|give|tell|send|enter|write|type)/i,
+    // TR: "telefon/numara/cep" + (kısa boşluk) + (alabilir miyim/verir misiniz/...)
+    // \p{L}\p{N} lookaround Yan #8 pattern'i (ı/ş bitişli kelimeler için ASCII \b yetersiz)
+    tr: /(?<![\p{L}\p{N}])(telefon|telefonunuz|telefonunuzu|telefonu|numara|numaranızı|numaranız|cep|gsm)\s+\S{0,40}?(alabilir miyim|verir misiniz|paylaşır mısınız|söyler misiniz|alayım|öğrenebilir miyim|gönderir misiniz|yazar mısınız|verin|verebilir misiniz)/iu,
+    en: /\b(phone|telephone|mobile|number)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|send)/i,
   },
   name: {
-    // TR: (isim/ad/soyad çekimli formlar) + ≤50 char + (yaz/al/ver/payl/söy/öğr) + soru eki
-    // 2026-06-24: "ad" tek başına ÇIKARILDI (yanlış-pozitif: "Email adresinizi" → "ad"
-    // matches edip name yakalıyordu). Sadece tam kelime çekimleri.
-    tr: /(?<![\p{L}\p{N}])(isim[\p{L}\p{N}_]*|adınız[ıaeu]?|adın[ıa]?\b|adı\b|soyad[\p{L}\p{N}_]*|adsoyad|ad\s+soyad|ad-soyad)[\s\S]{0,50}?\b(yaz|al|ver|payl|söy|öğr|alı?n)[\p{L}\p{N}_]*\s+m(?:[ıiuü]s[ıi]n(?:[ıi]z)?|[ıi]y[ıi]m|[ıi]y[ıi]z)/iu,
-    en: /\b(name|full\s+name|surname|first\s+name|last\s+name)\b\s+\S{0,50}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|would\s+you|share|provide|give|tell|know)/i,
+    tr: /(?<![\p{L}\p{N}])(isim|isminizi|isminiz|ad|adınızı|adınız|soyad|soyadınızı|soyadınız|adsoyad|ad\s*soyad)\s+\S{0,40}?(alabilir miyim|verir misiniz|söyler misiniz|paylaşır mısınız|öğrenebilir miyim|yazar mısınız|alayım)(?![\p{L}\p{N}])/iu,
+    en: /\b(name|full\s+name|surname|first\s+name|last\s+name)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|know)/i,
   },
   date: {
-    tr: /(?<![\p{L}\p{N}])(hangi\s+tarih|hangi\s+güne?|tarihte|tarihinizi|tarih)[\s\S]{0,30}?\b(tercih|seç|uygun|belirle|belirti|isteme|isteme)[\p{L}\p{N}_]*\s+m(?:[ıiuü]s[ıi]n(?:[ıi]z)?|[ıi]y[ıi]m|[ıi]y[ıi]z)/iu,
+    tr: /(?<![\p{L}\p{N}])(hangi\s+tarih|hangi\s+güne?|tarihte|tarihinizi|tarih.{0,20}?(?:tercih|seçer|uygun|belirleyin|belirtir))(?![\p{L}\p{N}])/iu,
     en: /\b(which|what)\s+date\b|\b(prefer|select|choose)\s+(?:a\s+)?date\b|\bdate\s+(?:please|works)/i,
   },
   pax: {
