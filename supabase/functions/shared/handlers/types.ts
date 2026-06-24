@@ -47,8 +47,11 @@ export interface ChannelAdapter {
   /**
    * Conversation history yükle — ASC sıralı (eski → yeni), system rolü hariç.
    * @param limit Kaç mesaj istendiği
+   * @param since ISO timestamp — verilirse SADECE bu zamandan SONRAKİ mesajlar döner
+   *              (FIX A1 history cutoff — CONFIRMING→COMPLETED onay anı sonrası).
+   *              undefined → tüm history (geriye dönük uyumluluk korunur).
    */
-  loadHistory(limit?: number): Promise<Array<{ role: string; content: string }>>;
+  loadHistory(limit?: number, since?: string): Promise<Array<{ role: string; content: string }>>;
 
   /**
    * Bot cevabını ve güncel context'i kaydet.

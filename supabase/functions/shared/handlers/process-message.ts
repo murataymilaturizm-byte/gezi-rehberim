@@ -258,7 +258,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // isim/telefon gibi YAPISAL state'i `context` üzerinden taşıyor, history sadece üslup ve son
   // 1-2 turluk bağlam için. Tipik rezervasyon 10-12 mesaj sürüyor; 10 mesaj son birkaç turluk
   // bağlamı her zaman kapsar. Çağrı başına ~300 token tasarruf (history hem Sonnet hem NLU input'una giriyor).
-  const historyAsc = await adapter.loadHistory(10);
+  // 2026-06-24 FIX A1: history cutoff (S1/S2/S3 conversation history kirlenmesi).
+  // context.historyCutoffAt CONFIRMING→COMPLETED action'da set edilir → bu zamandan
+  // SONRAKİ mesajlar döner. Eski rezervasyon history'si NLU/LLM'e GİTMEZ.
+  // Geriye dönük güvenlik: historyCutoffAt undefined ise adapter filter atlar.
+  const historyAsc = await adapter.loadHistory(10, context.historyCutoffAt);
 
   // === 6. NLU CONTEXT + ANALIZ ===
   const historySummary = historyAsc.map((m) => `${m.role}: ${m.content}`).join("\n");

@@ -147,9 +147,10 @@ export class WhatsAppAdapter implements ChannelAdapter {
     }
   }
 
-  async loadHistory(limit = 50): Promise<Array<{ role: string; content: string }>> {
+  async loadHistory(limit = 50, since?: string): Promise<Array<{ role: string; content: string }>> {
     // getConversationHistory DESC döndürür; reverse ile ASC yapılır (process-message bunu bekler)
-    const raw = await getConversationHistory(this.supabase, this.phone, this.agency.id, this.preloadedHistory, limit);
+    // 2026-06-24 FIX A1: since varsa cutoff sonrası mesajlar filtrelenir.
+    const raw = await getConversationHistory(this.supabase, this.phone, this.agency.id, this.preloadedHistory, limit, since);
     return [...raw].reverse(); // DESC → ASC
   }
 

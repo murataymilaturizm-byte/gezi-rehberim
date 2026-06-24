@@ -681,6 +681,10 @@ const transitions: StateTransition[] = [
       ...ctx,
       reservationConfirmed: true,
       collectionStep: undefined,
+      // 2026-06-24 FIX A1: rezervasyon onay anı timestamp'i.
+      // adapter.loadHistory(limit, since) bu zamandan sonraki mesajları döner →
+      // NLU/LLM history'de eski rezervasyonu görmez (S1/S2/S3 ortak kök çözümü).
+      historyCutoffAt: new Date().toISOString(),
     }),
   },
 

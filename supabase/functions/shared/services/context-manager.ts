@@ -61,17 +61,21 @@ export async function getConversationHistory(
   agencyId: string,
   preloaded: Array<{ role: string; content: string }> | null,
   limit = 20,
+  since?: string,
 ): Promise<Array<{ role: string; content: string }>> {
+  // 2026-06-24 FIX A1: preloaded varsa cutoff yoksayılır (preloaded mesajlarda
+  // timestamp yok → filter uygulanamaz). Bilinen kabul edilebilir sınır.
   if (preloaded !== null) return preloaded;
 
-  const { data } = await supabase
+  let q = supabase
     .from("whatsapp_conversations")
     .select("role, content")
     .eq("phone", phone)
     .eq("agency_id", agencyId)
-    .neq("role", "system")
-    .order("created_at", { ascending: false })
-    .limit(limit);
+    .neq("role", "system");
+  // 2026-06-24 FIX A1: cutoff varsa SADECE sonrasını getir (history kirlenmesi).
+  if (since) q = q.gt("created_at", since);
+  const { data } = await q.order("created_at", { ascending: false }).limit(limit);
 
   return data ?? [];
 }

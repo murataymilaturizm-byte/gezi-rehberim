@@ -79,6 +79,15 @@ export interface ConversationContext {
   lastUserMessage: string;
   sessionStarted: string;
   lastUpdated: string;
+
+  // 2026-06-24 FIX A1 — History cutoff (S1/S2/S3 conversation history kirlenmesi).
+  // CONFIRMING→COMPLETED transition action'da onay anının timestamp'i set edilir.
+  // adapter.loadHistory(limit, since) bu zamandan SONRAKİ mesajları döner →
+  // NLU/LLM eski rezervasyonun history'sini görmez. Yeni rezervasyon kendi
+  // adımlarını eksiksiz görür (kendi mesajları cutoff sonrası).
+  // resetForNewReservation bu alanı DÖNDÜRMEZ → spread sırasında korunur.
+  // Yeni rezervasyon onaylanırsa yeni cutoff timestamp'iyle güncellenir.
+  historyCutoffAt?: string;
 }
 
 export interface StateTransition {

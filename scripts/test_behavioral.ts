@@ -2388,6 +2388,116 @@ console.log("\n── COMPLETED post-satış: change_info merge + isAfterSalesMe
     newCtx.reservationInfo?.fullName === "Mustafa Eker");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-24 FIX A1 — History cutoff (S1/S2/S3 conversation history kirlenmesi)
+// CONFIRMING→COMPLETED transition action'ında historyCutoffAt ISO timestamp set edilir.
+// resetForNewReservation cutoff'u koruyor (alanı döndürmez → spread'den korunur).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX A1: history cutoff (S1/S2/S3 ortak kök) ──");
+
+// ─── HC.1 KRİTİK: CONFIRMING + "evet" → COMPLETED + historyCutoffAt SET
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Mehmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 7,
+    currentTour: { id: "T1", title: "Pamukkale" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "evet",
+    detectedIntent: "confirm_reservation",
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`HC.1 KRİTİK: CONFIRMING→COMPLETED action → historyCutoffAt ISO timestamp SET`,
+    newCtx.stage === "COMPLETED" &&
+    typeof newCtx.historyCutoffAt === "string" &&
+    /^\d{4}-\d{2}-\d{2}T/.test(newCtx.historyCutoffAt));
+  assert(`HC.2: reservationConfirmed=true, collectionStep=undefined (mevcut davranış korundu)`,
+    newCtx.reservationConfirmed === true && newCtx.collectionStep === undefined);
+}
+
+// ─── HC.3 KRİTİK: COMPLETED→TOUR_SELECTED reset → historyCutoffAt KORUNDU
+// (resetForNewReservation cutoff'u döndürmez, spread sırasıyla korunur)
+{
+  const oldCutoff = "2026-06-24T10:00:00.000Z";
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", paxAdult: 2,
+                       fullName: "Mehmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 10,
+    currentTour: { id: "T1", title: "Pamukkale" },
+    historyCutoffAt: oldCutoff,
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "Kapadokya turu",
+    detectedIntent: "reservation_intent",
+    extractedInfo: {},
+    selectedTour: { id: "T2", title: "Kapadokya Balon Turu" },
+    language: "tr",
+  } as any);
+  assert(`HC.3 KRİTİK: COMPLETED→? reset (hasNewReservationIntent) → historyCutoffAt KORUNDU (eski değer)`,
+    newCtx.historyCutoffAt === oldCutoff);
+  assert(`HC.4: reset diğer alanlar (state temizlendi, BROWSING'e dönüş)`,
+    newCtx.stage === "BROWSING" && newCtx.currentTour === null);
+}
+
+// ─── HC.5: Yeni CONFIRMING→COMPLETED → cutoff GÜNCELLENDİ (yeni timestamp)
+{
+  const oldCutoff = "2026-06-24T10:00:00.000Z";
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T2", tourTitle: "Kapadokya", dateId: "D2", selectedDate: "2026-12-25",
+                       paxAdult: 1, fullName: "Mehmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 15,
+    currentTour: { id: "T2", title: "Kapadokya" },
+    historyCutoffAt: oldCutoff,  // önceki rezervasyondan
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "evet",
+    detectedIntent: "confirm_reservation",
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`HC.5: Yeni CONFIRMING→COMPLETED → cutoff güncellendi (eski değil)`,
+    newCtx.historyCutoffAt !== oldCutoff && typeof newCtx.historyCutoffAt === "string");
+}
+
+// ─── HC.6 REGRESYON: COMPLETED→COMPLETED (after-sales no-op) → cutoff KORUNDU
+{
+  const oldCutoff = "2026-06-24T10:00:00.000Z";
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+                       fullName: "Mehmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 11,
+    currentTour: { id: "T1", title: "P" },
+    historyCutoffAt: oldCutoff,
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "iptal şartları nedir?",
+    detectedIntent: "general_question",
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`HC.6 REGRESYON: COMPLETED no-op (after-sales) → cutoff KORUNDU`,
+    newCtx.historyCutoffAt === oldCutoff && newCtx.stage === "COMPLETED");
+}
+
 // ─── PS.4b REGRESYON KRİTİK: CONFIRMING + change_info → Bug B fix korundu (isim DEĞİŞİR)
 // Rezervasyon ONAY ÖNCESİ değişiklik akışı serbest kalır.
 {

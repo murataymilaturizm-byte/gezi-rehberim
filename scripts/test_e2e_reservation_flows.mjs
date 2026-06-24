@@ -1416,6 +1416,53 @@ assertProcMsgContains("H-pax TR mesaj", "*${_paxPending} kişi* için *${_dateLa
 assertProcMsgContains("H DRY: alt-date hasQuotaForPax", "hasQuotaForPax(d, 1)");
 assertProcMsgContains("H _buildAvailableDatesText helper", "_buildAvailableDatesText");
 
+// 2026-06-24 FIX A1 — History cutoff (S1/S2/S3 conversation history kirlenmesi)
+assertProcMsgContains("A1 historyCutoffAt loadHistory çağrısı", "adapter.loadHistory(10, context.historyCutoffAt)");
+{
+  const _typesContent = readFileSync(join(__dirname, "..", "supabase", "functions", "shared", "fsm", "types.ts"), "utf-8");
+  if (_typesContent.includes("historyCutoffAt?: string")) {
+    scenarioPasses++;
+    console.log(`✓ [PRESENCE] A1 types.ts ConversationContext.historyCutoffAt alanı`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: "A1:types", step: 0, msg: "historyCutoffAt alanı eksik", key: "fsm/types.ts", expected: "historyCutoffAt?: string", actual: "NOT FOUND" });
+    console.log(`✗ [PRESENCE] A1 types.ts historyCutoffAt YOK`);
+  }
+}
+{
+  const _smContent = readFileSync(stateMachinePath, "utf-8");
+  if (_smContent.includes("historyCutoffAt: new Date().toISOString()")) {
+    scenarioPasses++;
+    console.log(`✓ [PRESENCE] A1 state-machine CONFIRMING→COMPLETED action cutoff set`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: "A1:state-machine", step: 0, msg: "cutoff set eksik", key: "fsm/state-machine.ts", expected: "historyCutoffAt: new Date().toISOString()", actual: "NOT FOUND" });
+    console.log(`✗ [PRESENCE] A1 state-machine cutoff set YOK`);
+  }
+}
+{
+  const _demoAdapter = readFileSync(join(__dirname, "..", "supabase", "functions", "demo-chat", "adapter.ts"), "utf-8");
+  if (_demoAdapter.includes("loadHistory(limit = 50, since?: string)")) {
+    scenarioPasses++;
+    console.log(`✓ [PRESENCE] A1 demo-chat adapter loadHistory(limit, since) imzası`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: "A1:demo-adapter", step: 0, msg: "since param eksik", key: "demo-chat/adapter.ts", expected: "loadHistory(limit = 50, since?: string)", actual: "NOT FOUND" });
+    console.log(`✗ [PRESENCE] A1 demo-chat adapter since param YOK`);
+  }
+}
+{
+  const _whatsappAdapter = readFileSync(join(__dirname, "..", "supabase", "functions", "whatsapp-webhook", "adapter.ts"), "utf-8");
+  if (_whatsappAdapter.includes("loadHistory(limit = 50, since?: string)")) {
+    scenarioPasses++;
+    console.log(`✓ [PRESENCE] A1 whatsapp-webhook adapter loadHistory(limit, since) imzası`);
+  } else {
+    scenarioFails++;
+    failures.push({ scenario: "A1:whatsapp-adapter", step: 0, msg: "since param eksik", key: "whatsapp-webhook/adapter.ts", expected: "loadHistory(limit = 50, since?: string)", actual: "NOT FOUND" });
+    console.log(`✗ [PRESENCE] A1 whatsapp-webhook adapter since param YOK`);
+  }
+}
+
 // 2026-06-24 KARAR REVİZE: COMPLETED'de DB yalan vaadi yok — değişiklik talebi → acente yönlendir
 assertProcMsgContains("14a-3 COMPLETED değişiklik bypass başlığı", "14a-3. COMPLETED'de DEĞİŞİKLİK TALEBİ");
 assertProcMsgContains("14a-3 intent ayrımı change_info", `nluResult.intent === "change_info"`);

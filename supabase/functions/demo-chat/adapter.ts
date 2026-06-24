@@ -84,15 +84,16 @@ export class DemoChatAdapter implements ChannelAdapter {
    * Konuşma geçmişi DB'den yüklenir (WhatsApp ile aynı tablo).
    * ASC sıralı döner (eski → yeni) — process-message bunu bekler.
    */
-  async loadHistory(limit = 50): Promise<Array<{ role: string; content: string }>> {
-    const { data } = await this._supabase
+  async loadHistory(limit = 50, since?: string): Promise<Array<{ role: string; content: string }>> {
+    let q = this._supabase
       .from("whatsapp_conversations")
       .select("role, content")
       .eq("phone", this.identifier)
       .eq("agency_id", this._agencyId)
-      .neq("role", "system")
-      .order("created_at", { ascending: true })
-      .limit(limit);
+      .neq("role", "system");
+    // 2026-06-24 FIX A1: cutoff varsa SADECE sonrasını getir (history kirlenmesi).
+    if (since) q = q.gt("created_at", since);
+    const { data } = await q.order("created_at", { ascending: true }).limit(limit);
     return (data || []).filter((m: any) => m.role === "user" || m.role === "assistant");
   }
 
