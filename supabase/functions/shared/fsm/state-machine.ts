@@ -1013,6 +1013,7 @@ export function processTransition(context: ConversationContext, input: Processin
   }
 
   // STATE_OUTPUT — geçiş sonrası yeni durum (tarih "kayboldu mu?" kontrolü)
+  // 2026-06-24: phone alanı eklendi (COMPLETED change_info güncelleme teşhisi için).
   console.info("STATE_OUTPUT", {
     fromStage: context.stage,
     toStage: newContext.stage,
@@ -1021,6 +1022,7 @@ export function processTransition(context: ConversationContext, input: Processin
     reservationDate: newContext.reservationInfo?.selectedDate,
     reservationPax: newContext.reservationInfo?.paxAdult,
     reservationName: newContext.reservationInfo?.fullName,
+    reservationPhone: newContext.reservationInfo?.phone,
   });
 
   return newContext;
