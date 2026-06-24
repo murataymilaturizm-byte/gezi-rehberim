@@ -199,25 +199,33 @@ export interface ValidationResult {
 
 // ─── 2026-06-23 BUG D — field-reask post-validation (M1 ailesi) ────────────
 //
-// CANLI BUG (3 exec kanıtı: 4afff98b, 5f003988, ceee9f4d):
-//   CONFIRMING/COMPLETED'de telefon/isim/tarih/pax ZATEN DOLU iken Haiku
-//   "telefon numaranızı alabilir miyim?" diye dolu alanı tekrar soruyor.
-//   Prompt 3 katman yasak içeriyor (CONFIRMING stage prompt YASAK listesi +
-//   filledFieldsGuard "phone: 05551234567 — TEKRAR SORMA" anchor +
-//   midFlowReturnPrompt "onaya dön" ipucu) ama Haiku ihlal ediyor.
-//   Klasik M1 LLM compliance kırılganlığı — prompt doygunluğa ulaştı.
+// CANLI BUG (4 exec kanıtı: 4afff98b, 5f003988, ceee9f4d, bade7c70):
+//   Tüm alanlar ZATEN DOLU iken Haiku "telefon numaranızı alabilir miyim?"
+//   diye dolu alanı tekrar soruyor. Prompt 3 katman yasak içeriyor (CONFIRMING
+//   stage prompt YASAK listesi + filledFieldsGuard "phone: 05551234567 —
+//   TEKRAR SORMA" anchor + midFlowReturnPrompt "onaya dön" ipucu) ama Haiku
+//   ihlal ediyor. Klasik M1 LLM compliance kırılganlığı — prompt doygunluğa ulaştı.
 //
 // FIX: deterministik post-LLM düzeltme. LLM cevabında 4 alan-bazlı "tekrar
-// iste" pattern'i yakalanırsa + alan DOLU + stage ∈ {CONFIRMING, COMPLETED}
-// → CONFIRMING'de TAM ÖZET + onay sorusuyla değiştir, COMPLETED'de kapanış
-// mesajıyla değiştir.
+// iste" pattern'i yakalanırsa + alan DOLU + meşru bekleme adımında DEĞİL
+// → CONFIRMING/COLLECTING_INFO'da TAM ÖZET + onay sorusuyla değiştir,
+// COMPLETED'de kapanış mesajıyla değiştir.
 //
-// YANLIŞ-POZİTİF ÖNLEME:
-//   - Stage filtresi: SADECE CONFIRMING + COMPLETED. COLLECTING_INFO/
-//     waiting_for_X meşru istemleri ASLA yakalanmaz (telefon EKSİKKEN LLM
-//     doğru istiyor).
-//   - Alan-bazlı guard: field DOLU ise pattern yakalanır, EKSİK ise pas
-//     geçer. Çift emniyet.
+// YANLIŞ-POZİTİF ÖNLEME (REVİZE-2 exec bade7c70 sonrası — stage→collectionStep):
+//   - Alan-bazlı guard: field DOLU iken yakala, EKSİK iken pas geç.
+//   - collectionStep guard: o alanın meşru bekleme adımındaysa pas geç
+//     (örn. waiting_for_phone'da telefon iste meşru — alan boş olur zaten,
+//     çift emniyet).
+//   - Stage filtresi KALDIRILDI (eski sürümde SADECE CONFIRMING+COMPLETED idi):
+//     "aslında adım Osman" gibi change_info sonrası transition stage'i
+//     COLLECTING_INFO'ya düşürse bile validator devreye girer. Stage'in
+//     anlamı yutkunma için belirleyici değil; ALAN + ADIM yeterli.
+//
+// CHANGE_INFO SONRASI EDGE: kullanıcı CONFIRMING'de "aslında ismi değiştir"
+// derse state-machine COLLECTING_INFO/ready_for_confirmation'a düşer (tüm
+// alanlar dolu, mevcut Bug B fix override yaptı). LLM yine "telefon iste"
+// derse → stage COLLECTING_INFO + collectionStep ready_for_confirmation
+// + phone dolu → YAKALA. Eski stage filtresinde bu kenar kaçıyordu.
 //
 // ÇOK-DİL: TR + EN tam pattern; diğer 5 dil (DE/FR/ES/RU/AR) ŞİMDİLİK
 // EN fallback (çok-dil eşitleme açık liste — post-launch genişletme).
@@ -263,15 +271,28 @@ export function validateFieldReask(
   text: string,
   language: string,
   stage: ConversationStage,
-  _collectionStep: string | undefined,
+  collectionStep: string | undefined,
   reservationInfo: any,
   currentTour: any,
   tone: string = "standart",
 ): ValidationResult {
-  // Stage filtresi — meşru istemleri koru (COLLECTING_INFO/waiting_for_X).
-  if (stage !== "CONFIRMING" && stage !== "COMPLETED") {
-    return { text, wasModified: false, matchedPattern: null };
-  }
+  // 2026-06-23 BUG D REVİZE-2 (exec bade7c70 kanıt): stage filtresi YANLIŞ
+  // sınırdı. "aslında adım Osman" sonrası change_info → COLLECTING_INFO
+  // transition tetiklendi (stage CONFIRMING'den COLLECTING_INFO'ya düştü) AMA
+  // tüm alanlar dolu kaldı (collectionStep=ready_for_confirmation). LLM yine
+  // de "telefon iste" yutkunmasını yaptı, stage guard COLLECTING_INFO'da
+  // devreye girmediği için validator yakalamadı.
+  //
+  // YENİ GUARD: stage-bağımsız, ALAN-bazlı.
+  //   yakala = field_DOLU AND collectionStep !== waiting_for_X AND pattern
+  //
+  // Meşru durum (alan BOŞ + waiting_for_X + LLM o alanı istiyor) field_DOLU=false
+  // koşulu ile zaten atlanır. Yeni edge case (alan DOLU ama collectionStep
+  // yine de o alanı bekliyor — state-machine çelişkisi) isWaitingStep guard'ı
+  // ile saygıyla atlanır.
+  //
+  // GREETING/TOUR_SELECTED gibi erken stage'lerde alanlar boş, collectionStep
+  // undefined → field_DOLU=false → yakalanmaz. Stage filtresine gerek yok.
   if (!reservationInfo) {
     return { text, wasModified: false, matchedPattern: null };
   }
@@ -279,15 +300,24 @@ export function validateFieldReask(
   // Dil-bazlı pattern seçimi. TR + EN tam; diğer 5 dil EN fallback (çok-dil eşitleme açık liste).
   const lang = language === "tr" ? "tr" : "en";
 
-  const checks: Array<{ field: string; pattern: RegExp; isFilled: boolean }> = [
-    { field: "phone", pattern: FIELD_REASK_PATTERNS.phone[lang], isFilled: !!reservationInfo.phone },
-    { field: "name",  pattern: FIELD_REASK_PATTERNS.name[lang],  isFilled: !!reservationInfo.fullName },
-    { field: "date",  pattern: FIELD_REASK_PATTERNS.date[lang],  isFilled: !!(reservationInfo.dateId || reservationInfo.selectedDate) },
-    { field: "pax",   pattern: FIELD_REASK_PATTERNS.pax[lang],   isFilled: !!reservationInfo.paxAdult },
+  const checks: Array<{ field: string; pattern: RegExp; isFilled: boolean; isWaitingStep: boolean }> = [
+    { field: "phone", pattern: FIELD_REASK_PATTERNS.phone[lang],
+      isFilled: !!reservationInfo.phone,
+      isWaitingStep: collectionStep === "waiting_for_phone" },
+    { field: "name",  pattern: FIELD_REASK_PATTERNS.name[lang],
+      isFilled: !!reservationInfo.fullName,
+      isWaitingStep: collectionStep === "waiting_for_name" },
+    { field: "date",  pattern: FIELD_REASK_PATTERNS.date[lang],
+      isFilled: !!(reservationInfo.dateId || reservationInfo.selectedDate),
+      isWaitingStep: collectionStep === "waiting_for_date" },
+    { field: "pax",   pattern: FIELD_REASK_PATTERNS.pax[lang],
+      isFilled: !!reservationInfo.paxAdult,
+      isWaitingStep: collectionStep === "waiting_for_pax" },
   ];
 
   for (const check of checks) {
     if (!check.isFilled) continue;
+    if (check.isWaitingStep) continue;  // çelişkili durum — collectionStep meşru istem diyor, saygı duy
     if (!check.pattern.test(text)) continue;
 
     // 2026-06-23 BUG D revize (exec 6ef50f7b/35ffb749 — aşırı düzeltme kanıtı):
@@ -315,15 +345,20 @@ export function validateFieldReask(
       field: check.field,
       stage,
       language,
-      collectionStep: _collectionStep,
+      collectionStep,
       removedSentenceCount: matchedSentenceIdxs.length,
       preservedLen: preservedContent.length,
       textSnippet: text.slice(0, 120),
     });
 
-    // CONFIRMING özet+onay; COMPLETED kapanış.
+    // Replacement seçimi (2026-06-23 REVİZE-2):
+    //   COMPLETED → kapanış mesajı (rezervasyon tamamlandı).
+    //   diğer (CONFIRMING + COLLECTING_INFO change_info sonrası) → TAM ÖZET + onay
+    //   currentTour yoksa REDIRECT_MESSAGES fallback (sade "kontrol edip onaylar mısınız")
     let replacementSuffix: string;
-    if (stage === "CONFIRMING") {
+    if (stage === "COMPLETED") {
+      replacementSuffix = REDIRECT_MESSAGES_COMPLETED[language] || REDIRECT_MESSAGES_COMPLETED.en;
+    } else {
       if (currentTour) {
         const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
         const suffix = FIELD_REASK_CONFIRM_SUFFIX[lang] || FIELD_REASK_CONFIRM_SUFFIX.en;
@@ -331,8 +366,6 @@ export function validateFieldReask(
       } else {
         replacementSuffix = REDIRECT_MESSAGES[language] || REDIRECT_MESSAGES.en;
       }
-    } else {
-      replacementSuffix = REDIRECT_MESSAGES_COMPLETED[language] || REDIRECT_MESSAGES_COMPLETED.en;
     }
 
     // Eğer kalan içerik anlamlı (bilgi cevabı) varsa: [bilgi] \n\n [özet+onay].

@@ -2171,6 +2171,79 @@ console.log("\n── BUG D REVİZE: surgical validator (bilgi cevabı korunur) 
     result.text.includes("onaylıyor musunuz"));
 }
 
+// ─── D.B.17 KRİTİK (REVİZE-2, exec bade7c70):
+// COLLECTING_INFO + ready_for_confirmation + phone DOLU + LLM "telefon iste" → YAKALA
+// (change_info sonrası transition COLLECTING_INFO'ya düşer ama tüm alanlar dolu kalır)
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale",
+    dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Osman Müftü", phone: "05551234567",
+  };
+  const currentTour = { id: "T1", title: "Pamukkale", dates: [] };
+  // Bug B promote sonrası state: COLLECTING_INFO/ready_for_confirmation
+  // (kullanıcı CONFIRMING'de "aslında adım Osman" dedi, change_info transition
+  // stage'i COLLECTING_INFO'ya düşürdü, ama Bug B fix override fullName'i güncelledi)
+  const llmReply = "İsim güncellendi. Telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation", reservationInfo, currentTour, "standart");
+  assert(`D.B.17 KRİTİK: COLLECTING_INFO/ready_for_confirmation + phone DOLU + LLM telefon iste → yakalandı (stage filtresi kaldırıldı)`,
+    result.wasModified === true && result.matchedPattern === "field-reask:phone");
+  assert(`D.B.18: replacement TAM ÖZET içeriyor (Osman + 05551234567)`,
+    result.text.includes("Osman Müftü") && result.text.includes("05551234567") && result.text.includes("onaylıyor musunuz"));
+}
+
+// ─── D.B.19 KRİTİK REGRESYON (exec bade7c70 öncesi davranış DA KORUNUR):
+// CONFIRMING + ready_for_confirmation + phone DOLU + LLM "telefon iste" → hâlâ yakalanıyor
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Mehmet", phone: "05551234567",
+  };
+  const llmReply = "Şimdi telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.19 REGRESYON: CONFIRMING + phone DOLU + telefon iste → hâlâ yakalanır`,
+    result.wasModified === true);
+}
+
+// ─── D.B.20 KRİTİK REGRESYON: COLLECTING_INFO + waiting_for_phone + phone BOŞ → DOKUNULMAZ
+// Meşru istem (telefon GERÇEKTEN eksik). collectionStep guard sayesinde yakalanmaz.
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "Ahmet",
+    // phone YOK
+  };
+  const llmReply = "Teşekkürler Ahmet Bey. Telefon numaranızı alabilir miyim?";
+  const result = validateFieldReask(llmReply, "tr", "COLLECTING_INFO", "waiting_for_phone", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.20 KRİTİK REGRESYON: waiting_for_phone + phone BOŞ → meşru istem KORUNDU`,
+    result.wasModified === false);
+}
+
+// ─── D.B.21: COLLECTING_INFO/waiting_for_name + name DOLU (çelişki) → DOKUNULMAZ (collectionStep saygı)
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "Ahmet Yılmaz",  // dolu AMA collectionStep yine waiting_for_name (state-machine çelişkisi)
+  };
+  const llmReply = "Adınızı söyler misiniz lütfen?";
+  const result = validateFieldReask(llmReply, "tr", "COLLECTING_INFO", "waiting_for_name", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.21: alan dolu + collectionStep yine waiting_for_X (çelişki) → validator saygı duyup atlar`,
+    result.wasModified === false);
+}
+
+// ─── D.B.22 KRİTİK: COLLECTING_INFO + waiting_for_email + phone DOLU + LLM "telefon iste" → YAKALA
+// (email adımına geçilmiş, telefon zaten alınmış — LLM yutkunma)
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Ahmet", phone: "05551234567",
+  };
+  const llmReply = "Email adresinizi alabilir miyim? Şimdi telefon numaranızı paylaşır mısınız?";
+  const result = validateFieldReask(llmReply, "tr", "COLLECTING_INFO", "waiting_for_email", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.22: waiting_for_email + phone DOLU + telefon iste → yakalandı (waiting_for_phone DEĞİL)`,
+    result.wasModified === true && result.matchedPattern === "field-reask:phone");
+}
+
 // ─── D.B.16: çok uzun cümle (>120 char) bilgi+yutkunma karışık → cümle KORU
 {
   const reservationInfo = {
