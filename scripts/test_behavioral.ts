@@ -2354,15 +2354,18 @@ console.log("\n── COMPLETED post-satış: change_info merge + isAfterSalesMe
     selectedTour: null,
     language: "tr",
   } as any);
-  assert(`PS.1 KRİTİK: COMPLETED + change_info + phone update → state'e YENİ phone yazıldı`,
-    newCtx.reservationInfo?.phone === "05455568545");
+  // 2026-06-24 KARAR REVİZE (Murat — Fix 1 COMPLETED merge geri alındı):
+  // COMPLETED'de DB'ye yazılı rezervasyona dokunulmaz → state-machine seviyesinde
+  // change_info bile merge yapmaz, sadece { ...ctx } no-op.
+  assert(`PS.1 KARAR REVİZE: COMPLETED + change_info + phone → state'te phone DEĞİŞMEDİ (DB yalan vaadi yok)`,
+    newCtx.reservationInfo?.phone === "05551234567");
   assert(`PS.2: diğer alanlar KORUNDU (Funda Funmez, Pamukkale)`,
     newCtx.reservationInfo?.fullName === "Funda Funmez" && newCtx.reservationInfo?.tourId === "T1");
   assert(`PS.3: stage hâlâ COMPLETED`,
     newCtx.stage === "COMPLETED");
 }
 
-// ─── PS.4: COMPLETED + change_info + fullName update → state'e YENİ isim
+// ─── PS.4 KARAR REVİZE: COMPLETED + change_info + fullName → state'te isim DEĞİŞMEDİ
 {
   const ctx: any = {
     stage: "COMPLETED",
@@ -2381,7 +2384,30 @@ console.log("\n── COMPLETED post-satış: change_info merge + isAfterSalesMe
     selectedTour: null,
     language: "tr",
   } as any);
-  assert(`PS.4: COMPLETED + change_info + fullName update → state'e YENİ isim`,
+  assert(`PS.4 KARAR REVİZE: COMPLETED + change_info → state'te isim DEĞİŞMEDİ (DB yalan vaadi yok)`,
+    newCtx.reservationInfo?.fullName === "Mustafa Eker");
+}
+
+// ─── PS.4b REGRESYON KRİTİK: CONFIRMING + change_info → Bug B fix korundu (isim DEĞİŞİR)
+// Rezervasyon ONAY ÖNCESİ değişiklik akışı serbest kalır.
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Mustafa Eker", phone: "05551234567" },
+    language: "tr",
+    messageCount: 6,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "ismi Osman Müftü olarak değiştir",
+    detectedIntent: "change_info",
+    extractedInfo: { fullName: "Osman Müftü" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`PS.4b REGRESYON KRİTİK: CONFIRMING + change_info → Bug B fix korundu (isim DEĞİŞTİ)`,
     newCtx.reservationInfo?.fullName === "Osman Müftü");
 }
 

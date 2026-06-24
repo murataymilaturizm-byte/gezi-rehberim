@@ -1416,6 +1416,26 @@ assertProcMsgContains("H-pax TR mesaj", "*${_paxPending} kişi* için *${_dateLa
 assertProcMsgContains("H DRY: alt-date hasQuotaForPax", "hasQuotaForPax(d, 1)");
 assertProcMsgContains("H _buildAvailableDatesText helper", "_buildAvailableDatesText");
 
+// 2026-06-24 KARAR REVİZE: COMPLETED'de DB yalan vaadi yok — değişiklik talebi → acente yönlendir
+assertProcMsgContains("14a-3 COMPLETED değişiklik bypass başlığı", "14a-3. COMPLETED'de DEĞİŞİKLİK TALEBİ");
+assertProcMsgContains("14a-3 intent ayrımı change_info", `nluResult.intent === "change_info"`);
+assertProcMsgContains("14a-3 intent ayrımı provide_info + farklı değer", `nluResult.intent === "provide_info" && _anyFieldChange`);
+assertProcMsgContains("14a-3 acente yönlendirme TR mesaj", "İsim, telefon veya diğer bilgilerde değişiklik için lütfen acentemizle iletişime geçin");
+assertProcMsgContains("14a-3 log", "14a-3 COMPLETED değişiklik → acente yönlendirme");
+assertProcMsgContains("14a-3 reservationConfirmed=true guard", "newContext.reservationConfirmed === true");
+
+// state-machine COMPLETED→COMPLETED change_info merge KALDIRILDI (sadece no-op)
+const _stateMachineCompleted = readFileSync(stateMachinePath, "utf-8");
+if (!_stateMachineCompleted.includes('input.detectedIntent === "change_info"\n        ? {')) {
+  // String pattern eşleşmiyorsa, eski "change_info" branch kaldırılmış demek
+  scenarioPasses++;
+  console.log(`✓ [PRESENCE] state-machine COMPLETED→COMPLETED change_info merge KALDIRILDI (no-op { ...ctx })`);
+} else {
+  scenarioFails++;
+  failures.push({ scenario: "PRESENCE:state-machine:COMPLETED-no-merge", step: 0, msg: "eski change_info merge bloğu hâlâ var", key: "state-machine.ts", expected: "no-op", actual: "merge bloğu mevcut" });
+  console.log(`✗ [PRESENCE] state-machine COMPLETED merge hâlâ var (geri alınmamış)`);
+}
+
 // info-extractor: Blok 8/9/10 dateRejectedFull flag
 const _infoExtH = readFileSync(_infoExtractorPathC, "utf-8");
 if (_infoExtH.includes("dateRejectedFull")) {

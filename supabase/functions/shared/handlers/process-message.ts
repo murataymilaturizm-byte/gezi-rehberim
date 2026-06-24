@@ -1713,6 +1713,76 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
+  // === 14a-3. COMPLETED'de DEĞİŞİKLİK TALEBİ → ACENTE YÖNLENDİRME ===
+  // 2026-06-24 KARAR (Murat — exec ea455bf9 sonrası yön değişikliği):
+  //   Rezervasyon ONAYLANDIKTAN SONRA isim/telefon/tarih/pax değişikliği DB'ye
+  //   yazılmış kaydı etkilemez (bot DB güncellemiyor). State'te değiştirmek
+  //   yalan vaat üretir. Bunun yerine acenteye yönlendir.
+  //
+  // YAKALAMA KOŞULLARI (intent-bazlı, regex'ten bağımsız):
+  //   - intent === "change_info" → açık değişiklik niyeti
+  //   - intent === "provide_info" + (extracted.fullName/phone/dateId/paxAdult mevcuttan FARKLI)
+  //     → "aslında adım Osman" gibi örtük değişiklik
+  //
+  // INTENT AYRIMI (KRİTİK — yeni rezervasyon yutmasın):
+  //   - tour_search / reservation_intent → YENİ REZERVASYON niyeti, ATLA
+  //     (state-machine COMPLETED→TOUR_SELECTED/BROWSING zaten yeni akışı başlatır)
+  //   - general / greeting → Bug A bypass (14a-2) yakalar, ATLA
+  //   - general_question (cancellation_policy/payment_methods/faq bilgi sorgu) → ATLA
+  //     (LLM after-sales prompt'uyla cevaplar — Fix 2 korunur)
+  //   - support_request (after_sales eylem — ödedim/dekont) → 14a yakalamış olabilir
+  //     veya LLM cevap; bu bypass ATLA (değişiklik talebi değil)
+  if (
+    context.stage === "COMPLETED" &&
+    newContext.stage === "COMPLETED" &&
+    newContext.reservationConfirmed === true
+  ) {
+    const _curInfo = newContext.reservationInfo || {};
+    const _ext = (extractedInfo as any) || {};
+    const _isFullNameChange =
+      !!_ext.fullName && !!_curInfo.fullName && _ext.fullName !== _curInfo.fullName;
+    const _isPhoneChange =
+      !!_ext.phone && !!_curInfo.phone && _ext.phone !== _curInfo.phone;
+    const _isPaxChange =
+      !!_ext.paxAdult && !!_curInfo.paxAdult && _ext.paxAdult !== _curInfo.paxAdult;
+    const _isDateChange =
+      !!_ext.dateId && !!_curInfo.dateId && _ext.dateId !== _curInfo.dateId;
+    const _anyFieldChange = _isFullNameChange || _isPhoneChange || _isPaxChange || _isDateChange;
+
+    const _isChangeRequest =
+      nluResult.intent === "change_info" ||
+      (nluResult.intent === "provide_info" && _anyFieldChange);
+
+    if (_isChangeRequest) {
+      const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _redirectMsgs: Record<string, string> = {
+        tr: `Rezervasyonunuz onaylandı ✅ İsim, telefon veya diğer bilgilerde değişiklik için lütfen acentemizle iletişime geçin.${_agPhone}`,
+        en: `Your reservation is confirmed ✅ For changes to name, phone or other details, please contact our agency directly.${_agPhone}`,
+      };
+      const _redirectReply = _redirectMsgs[newContext.language] || _redirectMsgs.tr;
+      const _changedFields = [
+        _isFullNameChange ? "fullName" : null,
+        _isPhoneChange ? "phone" : null,
+        _isPaxChange ? "pax" : null,
+        _isDateChange ? "date" : null,
+      ].filter(Boolean).join(",") || "intent-only";
+      console.log(`[process-message] 14a-3 COMPLETED değişiklik → acente yönlendirme (intent=${nluResult.intent}, fields=${_changedFields})`);
+
+      // Complaint kaydı — acente panelde görsün
+      supabase.from("complaints").insert({
+        agency_id: agency.id,
+        phone: adapter.identifier,
+        message,
+        type: "after_sales_action",
+        status: "new",
+      }).then(() => {}, () => {});
+
+      await _save(_redirectReply, newContext);
+      await adapter.sendResponse(_redirectReply);
+      return { success: true, response: _redirectReply, newContext };
+    }
+  }
+
   // === 14a-2. BUG A FIX — COMPLETED after-sales ack (general/greeting) ===
   // 2026-06-23 (exec 4858c2f0 kanıtı): COMPLETED'de "teşekkürler" → NLU intent=general
   // → state-machine transition #4 (eskiden general/greeting allow-list'te) tetikleniyor,

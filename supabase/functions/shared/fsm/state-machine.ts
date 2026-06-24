@@ -823,32 +823,22 @@ const transitions: StateTransition[] = [
   // detectCancellation ve hasNewReservationIntent'ten SONRA kontrol edilir.
   // Bu transition, COMPLETED → BROWSING (greeting/general) geçişinden ÖNCE çalışır.
   //
-  // 2026-06-24 FIX 1 (SORUN 1 — telefon kısır döngü, exec 0f5ae545→...→02ba6dcf):
-  // change_info intent'inde mergeReservationInfo çağrılmıyordu → updates.phone state'e
-  // YAZILMIYORDU → LLM context'te eski phone görüp "Numaranızı yazın" sonsuz döngüsü.
-  // Çözüm: change_info için mergeReservationInfo (Bug B fix override aktif) çağır.
-  // Diğer after-sales intent'leri (payment_methods/cancellation_policy bilgi sorgulama —
-  // FSM'de general_question'a remap olur) merge gerektirmez, sadece state korunur.
-  // F-savunma katmanları (K2/K3) extracted'a girene kadar çalışır; bu seviyede ekstra
-  // koruma gerekmez.
+  // 2026-06-24 KARAR (Murat yön değişikliği):
+  //   Rezervasyon ONAYLANDIKTAN SONRA (COMPLETED) isim/telefon değişikliği state'e
+  //   YAZILMAZ — DB'ye yazılmış rezervasyona dokunmak yalan vaat üretir (bot DB
+  //   güncellemiyor). Bunun yerine process-message.ts'te yeni 14a-3 bypass:
+  //   COMPLETED + change_info VEYA (provide_info + farklı değer) → acente
+  //   yönlendirme deterministik mesajı.
+  //   Bu transition sadece state'i KORUR (no-op spread), HİÇBİR merge yapmaz.
+  //   Daha önceki Fix 1 change_info merge bloğu KALDIRILDI.
+  //
+  // CONFIRMING'deki Bug B fix change_info merge (mergeReservationInfo isExplicitCorrection
+  // guard'ı) KORUNUR — rezervasyon onayı ÖNCESİ değişiklik akışı serbest kalır.
   {
     from: "COMPLETED",
     to: "COMPLETED",
     condition: (_ctx, input) => isAfterSalesMessage(input.userMessage, input.detectedIntent),
-    action: (ctx, input) => {
-      if (input.detectedIntent === "change_info") {
-        return {
-          ...ctx,
-          reservationInfo: mergeReservationInfo(
-            ctx.reservationInfo,
-            input.extractedInfo,
-            false,
-            "change_info",  // isExplicitCorrection aktif → mevcut phone/fullName override edilebilir
-          ),
-        };
-      }
-      return { ...ctx };  // Diğer after-sales bilgi sorgulama — state aynen korunur
-    },
+    action: (ctx) => ({ ...ctx }), // Tüm context (reservationInfo, currentTour) aynen korunur
   },
 
   // COMPLETED → BROWSING (YENİ REZERVASYON KASTI — currentTour'u önemseme)
