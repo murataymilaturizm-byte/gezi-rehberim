@@ -2231,6 +2231,71 @@ console.log("\n── BUG D REVİZE: surgical validator (bilgi cevabı korunur) 
     result.wasModified === false);
 }
 
+// ─── D.B.23 KRİTİK CANLI (exec 1cb3e5fc): "Numaranızı yazabilir misiniz?" ────
+// Eski pattern "yazar mısınız" arıyordu, "yazabilir misiniz" eşleşmedi.
+// Yeni kök-bazlı pattern (yaz+abilir+misiniz) yakalamalı.
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale",
+    dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Funda", phone: "05551234567",
+  };
+  const llmReply = "Numaranızı yazabilir misiniz? 😊";
+  const result = validateFieldReask(llmReply, "tr", "COMPLETED", undefined, reservationInfo, { id: "T1", title: "Pamukkale", dates: [] });
+  assert(`D.B.23 KRİTİK (exec 1cb3e5fc): "Numaranızı yazabilir misiniz?" → YAKALA`,
+    result.wasModified === true && result.matchedPattern === "field-reask:phone");
+}
+
+// ─── D.B.24 KRİTİK CANLI (exec 02ba6dcf): "telefon numaranızı yazabilir misiniz lütfen?" ────
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "Pamukkale",
+    dateId: "D1", selectedDate: "2026-12-20",
+    paxAdult: 2, fullName: "Funda", phone: "05551234567",
+  };
+  const llmReply = "Anlayamadım, telefon numaranızı yazabilir misiniz lütfen? 📱";
+  const result = validateFieldReask(llmReply, "tr", "COMPLETED", undefined, reservationInfo, { id: "T1", title: "Pamukkale", dates: [] });
+  assert(`D.B.24 KRİTİK (exec 02ba6dcf): "telefon numaranızı yazabilir misiniz" → YAKALA`,
+    result.wasModified === true && result.matchedPattern === "field-reask:phone");
+}
+
+// ─── D.B.25: "telefonunuzu verebilir misiniz" — varyant
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "Ahmet", phone: "05551234567",
+  };
+  const llmReply = "Onay için telefonunuzu verebilir misiniz?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.25: "telefonunuzu verebilir misiniz" → YAKALA`,
+    result.wasModified === true && result.matchedPattern === "field-reask:phone");
+}
+
+// ─── D.B.26: "ismi söyleyebilir misiniz" — name varyantı
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "Ahmet Yılmaz", phone: "05551234567",
+  };
+  const llmReply = "Adınızı söyleyebilir misiniz?";
+  const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.26: "Adınızı söyleyebilir misiniz" → YAKALA (name)`,
+    result.wasModified === true && result.matchedPattern === "field-reask:name");
+}
+
+// ─── D.B.27 REGRESYON: "telefon numaramı yazdım" (olumlu cümle) → DOKUNULMAZ
+// Yeni pattern soru eki (mısın/misin) gerektirir; olumlu cümle yakalanmamalı.
+{
+  const reservationInfo = {
+    tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+    fullName: "Ahmet", phone: "05551234567",
+  };
+  const llmReply = "Telefon numaranızı sisteme yazdım. Rezervasyonunuz hazır.";
+  const result = validateFieldReask(llmReply, "tr", "COMPLETED", undefined, reservationInfo, { id: "T1", title: "P", dates: [] });
+  assert(`D.B.27 REGRESYON: olumlu cümle ("yazdım") → DOKUNULMAZ`,
+    result.wasModified === false);
+}
+
 // ─── D.B.22 KRİTİK: COLLECTING_INFO + waiting_for_email + phone DOLU + LLM "telefon iste" → YAKALA
 // (email adımına geçilmiş, telefon zaten alınmış — LLM yutkunma)
 {
