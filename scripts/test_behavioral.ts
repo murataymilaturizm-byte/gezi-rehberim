@@ -2684,6 +2684,103 @@ assert(`B.15 PROMOTE NEG: mevcut isim boş (ilk doldurma) → promote=FALSE (ove
     newCtx.reservationInfo?.fullName === "Ahmet");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-24 C3 FIX — simple-extractor ay-ismi blacklist (pax sızması)
+// Canlı kanıt (exec d9210ba4): "yirmi aralık" → totalPax: 20 sızıyordu.
+// Kök: extractPaxFromWords ≤3 kelime fallback pax-context'siz kabul ediyordu.
+// Fix: ay ismi varsa pax çıkarımı pas (tarih çıkarımı etkilenmez).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── C3: simple-extractor ay-blacklist (pax sızması fix) ──");
+
+import { extractNameAndPhone as _enpC3 } from "../supabase/functions/shared/fsm/simple-extractor.ts";
+
+assert(`C3.1 KRİTİK (exec d9210ba4): "yirmi aralık" → paxAdult SIZMAZ`,
+  _enpC3("yirmi aralık", "waiting_for_pax").paxAdult === undefined);
+
+assert(`C3.2 KRİTİK: "yirmi aralık" waiting_for_date'te de paxAdult SIZMAZ`,
+  _enpC3("yirmi aralık", "waiting_for_date").paxAdult === undefined);
+
+assert(`C3.3 REGRESYON: "yirmi" tek başına → paxAdult=20 (ay yok, meşru pax)`,
+  _enpC3("yirmi", "waiting_for_pax").paxAdult === 20);
+
+assert(`C3.4 REGRESYON: "yirmi kişi" → paxAdult=20 (peopleContext var)`,
+  _enpC3("yirmi kişi", "waiting_for_pax").paxAdult === 20);
+
+assert(`C3.5 REGRESYON: "20 aralık" rakam → paxAdult sızmaz, selectedDate çıkar`,
+  _enpC3("20 aralık", "waiting_for_date").paxAdult === undefined);
+
+assert(`C3.6 REGRESYON: "2 kişi" → paxAdult=2 (peopleContext, ay yok)`,
+  _enpC3("2 kişi", "waiting_for_pax").paxAdult === 2);
+
+// Diğer aylar — TR
+const _months = ["ocak", "şubat", "mart", "nisan", "mayıs", "haziran",
+                 "temmuz", "ağustos", "eylül", "ekim", "kasım", "aralık"];
+const _allMonthsPass = _months.every((m) => {
+  const r = _enpC3(`beş ${m}`, "waiting_for_pax");
+  return r.paxAdult === undefined;
+});
+assert(`C3.7 KRİTİK: 12 ay tümünde sözcükle yazılan sayı → paxAdult sızmaz`,
+  _allMonthsPass);
+
+// EN/diğer dillerde ay-guard YOK (TR-specific) — regresyon yok
+assert(`C3.8 REGRESYON: "twenty december" (EN) → paxAdult=20 (TR ay-guard etkisiz)`,
+  _enpC3("twenty december", "waiting_for_pax").paxAdult === 20);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-24 F4 ÖLÇÜM (KOD DEĞİŞİKLİĞİ YOK — DAVRANIŞ KAYDI)
+// "ismi Osman yap onaylıyorum" — change_info + confirmation aynı mesajda.
+// Şu anki davranışı belgele, ileride karar verilecek.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── F4 ÖLÇÜM: change_info + onay aynı mesajda (davranış kaydı) ──");
+
+import { processTransition as _ptF4 } from "../supabase/functions/shared/fsm/state-machine.ts";
+
+{
+  const ctx: any = {
+    stage: "CONFIRMING",
+    collectionStep: "ready_for_confirmation",
+    reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Mehmet Eker", phone: "05551234567" },
+    language: "tr",
+    messageCount: 7,
+    currentTour: { id: "T1", title: "Pamukkale" },
+  };
+  // Senaryo A: detectedIntent="change_info" (NLU mesajdaki "yap"/"olsun" pattern'i tetikledi)
+  const f4a = _ptF4(ctx, {
+    userMessage: "ismi Osman yap onaylıyorum",
+    detectedIntent: "change_info",
+    extractedInfo: { fullName: "Osman" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  console.log(`[F4 ÖLÇÜM-A] change_info intent → stage=${f4a.stage}, reservationName=${f4a.reservationInfo?.fullName}, confirmed=${f4a.reservationConfirmed}`);
+
+  // Senaryo B: detectedIntent="confirm_reservation"
+  const f4b = _ptF4(ctx, {
+    userMessage: "ismi Osman yap onaylıyorum",
+    detectedIntent: "confirm_reservation",
+    extractedInfo: { fullName: "Osman" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  console.log(`[F4 ÖLÇÜM-B] confirm_reservation intent → stage=${f4b.stage}, reservationName=${f4b.reservationInfo?.fullName}, confirmed=${f4b.reservationConfirmed}`);
+
+  // Senaryo C: detectedIntent="provide_info" (BUG B PROMOTE devreye girer mi?)
+  const f4c = _ptF4(ctx, {
+    userMessage: "ismi Osman yap onaylıyorum",
+    detectedIntent: "provide_info",
+    extractedInfo: { fullName: "Osman" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  console.log(`[F4 ÖLÇÜM-C] provide_info intent → stage=${f4c.stage}, reservationName=${f4c.reservationInfo?.fullName}, confirmed=${f4c.reservationConfirmed}`);
+
+  // F4.1: change_info → CONFIRMING→COLLECTING_INFO transition (isim güncelle, onay BEKLE — ikinci turn)
+  assert(`F4.1 ÖLÇÜM: change_info + "onaylıyorum" → state-machine ne yapar?`,
+    typeof f4a.stage === "string");
+  // Onay tek mesajda olabilir VEYA değişiklik öncelik alabilir — ölçüm sonucu commit notunda.
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

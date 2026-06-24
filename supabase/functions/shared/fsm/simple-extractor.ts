@@ -119,8 +119,22 @@ const NUMBER_WORDS: Record<string, Record<string, number>> = {
   },
 };
 
+// 2026-06-24 C3 fix (Opsiyon 2 — exec d9210ba4): "yirmi aralık" mesajında
+// "yirmi" tek-kelime sayı pax-context (kişi/insan/...) olmadan kabul ediliyordu
+// (≤3 kelime fallback). "yirmi aralık" 2 kelime → pax=20 sızıyordu — tarih
+// mesajı pax adımına yutulmuş gibi state'e yazılıyordu (totalPax: 20 canlı bug).
+// Hedefli fix: ay ismi içeren mesajlarda sözcükle yazılan pax ÇIKARMA.
+// Tarih çıkarımı etkilenmez (TARİH için ayrı pattern'ler kullanılır).
+const TR_MONTHS_GUARD =
+  /\b(ocak|şubat|mart|nisan|may[ıi]s|haziran|temmuz|ağustos|eyl[üu]l|ekim|kas[ıi]m|aral[ıi]k)\b/i;
+
 function extractPaxFromWords(text: string, language: string): number | null {
   const lower = text.toLowerCase();
+  // C3 GUARD: mesajda ay ismi varsa pax çıkarımı pas — büyük olasılıkla tarih.
+  // "yirmi kişi" gibi PAX context VARSA bu guard zaten aşağıda çalışmaz (ay yok).
+  // "yirmi aralık" → ay var → null dön.
+  if (TR_MONTHS_GUARD.test(lower)) return null;
+
   const words = NUMBER_WORDS[language] || NUMBER_WORDS.en;
   const peopleContext =
     /\b(ki[şs]i|insan|person|people|kinder|kind|adult|yetişkin|kişiyiz|kişiyim|اشخاص|personas|personnes|человек|гостей)\b/i;
