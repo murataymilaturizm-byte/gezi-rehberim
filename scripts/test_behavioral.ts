@@ -2461,13 +2461,14 @@ console.log("\n── COMPLETED post-satış: change_info merge + isAfterSalesMe
 // ─── B.10 PROMOTE: process-message'daki intent promotion logic'i — bağımsız mantık testi
 // (process-message.ts:404+ kod akışı — promotion KOŞULU farklı isim/telefon iken tetiklenir,
 // aksi halde devre dışı kalır.)
+// 2026-06-24 FIX 3 (Seçenek B — exec ea455bf9): COMPLETED de promote kapsamında.
 function _shouldPromoteProvideInfoToChangeInfo(
   contextStage: string,
   intent: string,
   contextReservationInfo: { fullName?: string; phone?: string } | undefined,
   nluUpdates: { fullName?: string; phone?: string } | undefined,
 ): boolean {
-  if (contextStage !== "CONFIRMING") return false;
+  if (contextStage !== "CONFIRMING" && contextStage !== "COMPLETED") return false;
   if (intent !== "provide_info") return false;
   const info = contextReservationInfo || {};
   const ext = nluUpdates || {};
@@ -2484,7 +2485,7 @@ assert(`B.11 PROMOTE POZ: CONFIRMING + provide_info + phone farklı → promote=
   _shouldPromoteProvideInfoToChangeInfo("CONFIRMING", "provide_info",
     { phone: "05551234567" }, { phone: "05559998877" }) === true);
 
-assert(`B.12 PROMOTE NEG: COLLECTING_INFO stage → promote=FALSE (sadece CONFIRMING'de aktif)`,
+assert(`B.12 PROMOTE NEG: COLLECTING_INFO stage → promote=FALSE (sadece CONFIRMING/COMPLETED'de aktif)`,
   _shouldPromoteProvideInfoToChangeInfo("COLLECTING_INFO", "provide_info",
     { fullName: "Ahmet" }, { fullName: "Murat" }) === false);
 
@@ -2499,6 +2500,55 @@ assert(`B.14 PROMOTE NEG: intent change_info zaten → promote=FALSE (zaten doğ
 assert(`B.15 PROMOTE NEG: mevcut isim boş (ilk doldurma) → promote=FALSE (override ihtiyacı yok)`,
   _shouldPromoteProvideInfoToChangeInfo("CONFIRMING", "provide_info",
     {}, { fullName: "Ahmet" }) === false);
+
+// ─── FIX 3 (Seçenek B) yeni kapsam: COMPLETED de promote eder ────────────
+assert(`B.16 PROMOTE POZ KRİTİK (exec ea455bf9): COMPLETED + provide_info + fullName farklı → promote=TRUE`,
+  _shouldPromoteProvideInfoToChangeInfo("COMPLETED", "provide_info",
+    { fullName: "Mehmet Eker" }, { fullName: "Osman Mütte" }) === true);
+
+assert(`B.17 PROMOTE POZ: COMPLETED + provide_info + phone farklı → promote=TRUE`,
+  _shouldPromoteProvideInfoToChangeInfo("COMPLETED", "provide_info",
+    { phone: "05551234567" }, { phone: "05459998877" }) === true);
+
+assert(`B.18 PROMOTE NEG: COMPLETED + provide_info + AYNI isim → promote=FALSE (gereksiz mutasyon yok)`,
+  _shouldPromoteProvideInfoToChangeInfo("COMPLETED", "provide_info",
+    { fullName: "Ahmet" }, { fullName: "Ahmet" }) === false);
+
+assert(`B.19 PROMOTE NEG REGRESYON: COMPLETED + change_info zaten → promote=FALSE (zaten doğru)`,
+  _shouldPromoteProvideInfoToChangeInfo("COMPLETED", "change_info",
+    { fullName: "Mehmet" }, { fullName: "Osman" }) === false);
+
+assert(`B.20 PROMOTE NEG: GREETING/BROWSING/TOUR_SELECTED → promote=FALSE (sadece CONFIRMING+COMPLETED)`,
+  _shouldPromoteProvideInfoToChangeInfo("BROWSING", "provide_info",
+    { fullName: "Ahmet" }, { fullName: "Murat" }) === false &&
+  _shouldPromoteProvideInfoToChangeInfo("TOUR_SELECTED", "provide_info",
+    { fullName: "Ahmet" }, { fullName: "Murat" }) === false);
+
+// ─── B.21 KRİTİK ENTEGRASYON (exec ea455bf9 senaryosu):
+// COMPLETED + change_info (promote sonrası varsayım) + extracted.fullName → state yazıldı
+// Bu, processTransition seviyesinde Fix 1'in (COMPLETED→COMPLETED action change_info merge)
+// çalıştığını kanıtlar. process-message promote'u state-machine'e bu intent'i ulaştırır.
+{
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 1, fullName: "Mehmet Eker", phone: "05551234567" },
+    language: "tr",
+    messageCount: 12,
+    currentTour: { id: "T1", title: "Pamukkale" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "aslında adım Osman Mütte",
+    detectedIntent: "change_info",  // process-message promote sonrası
+    extractedInfo: { fullName: "Osman Mütte" },  // K3 yutmamış (NLU 2-word temiz çıkardı)
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`B.21 ENTEGRASYON: COMPLETED + change_info (promote sonrası) + fullName → state YAZILDI`,
+    newCtx.reservationInfo?.fullName === "Osman Mütte" && newCtx.stage === "COMPLETED");
+}
 
 // ─── C.7: COMPLETED + "iptal şartları" + general_question → state KORUNUR (after-sales bilgi sorusu)
 {
