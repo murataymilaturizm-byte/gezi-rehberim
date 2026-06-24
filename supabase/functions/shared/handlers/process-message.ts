@@ -1670,9 +1670,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // BOT DB'DE STATUS DEĞİŞTİRMEZ (güvenlik). Talebi acenteye yönlendirir +
   // complaints tablosuna kayıt bırakır (panel'de görünür). Kontenjan/K4 trigger'ı
   // acente CANCELLED yaptığında zaten doğru çalışıyor.
+  //
+  // 2026-06-24 FIX 2b (SORUN 3 — exec ffb73402):
+  //   "iptal şartları nedir?" → NLU cancellation_policy → FSM general_question.
+  //   _bookingActionRe "iptal" kelimesini yakalıyordu → bilgi sorusunu "talep" sayıp
+  //   "Talebinizi aldık ✅..." yanlış mesajı atıyordu. Bug C (detectCancellationGuarded)
+  //   ile aynı niyet/bilgi ayrımı sorunu — tutarlı guard: FSM intent general_question
+  //   ise bu bypass'ı atla, LLM after-sales prompt'uyla cevaplasın.
   if (
     context.stage === "COMPLETED" &&
-    newContext.stage === "COMPLETED"
+    newContext.stage === "COMPLETED" &&
+    fsmIntent !== "general_question"   // bilgi sorgulama (cancellation_policy/faq/...) — LLM cevaplasın
   ) {
     const _msgLower = message.toLowerCase();
     const _bookingActionRe = /\b(iptal|cancel|annul|annuler|cancelar|stornier|отмен|إلغاء|إلغ)|değiştir|change|modif|cambiar|ändern|изменить|تعديل|تغيير\b/i;

@@ -344,10 +344,20 @@ export function getCancellationMessage(language: string): string {
  *          buluşma/transfer soruları, "ne zaman arayacaksınız" vb.
  */
 function isAfterSalesMessage(userMessage: string, detectedIntent: string): boolean {
-  // NLU'dan after-sales intent geldiyse direkt yakala
+  // NLU'dan after-sales intent geldiyse direkt yakala.
+  // 2026-06-24 FIX 2a (SORUN 3 dead code — exec ffb73402):
+  //   Eski liste NLU intent isimleriydi (cancellation_policy/payment_methods/...)
+  //   ama state-machine'e FSM intent gelir (mapNLUIntentToFSMIntent sonrası).
+  //   NLU "cancellation_policy" → FSM "general_question" — eski listede YOK → silent dead code.
+  //   Düzeltme: liste FSM intent isimlerine çevrildi.
+  //     - support_request: NLU'da after_sales/complaint_feedback/custom_package/human_handover
+  //     - change_info: aynı (NLU=FSM)
+  //     - general_question: NLU'da agency_info/working_hours/payment_methods/cancellation_policy/
+  //       visa_support/hotel_details/transport_details/faq_general (7 bilgi-sorgu intent kovası)
+  //   COMPLETED'de bilgi sorgulama → COMPLETED→COMPLETED no-op → LLM after-sales prompt'uyla
+  //   cevaplar (state korunur, K4 validateFieldReask hâlâ field-reask yutkunmasını engeller).
   const afterSalesIntents = [
-    "after_sales", "cancellation_policy", "payment_methods",
-    "agency_info", "working_hours", "change_info",
+    "support_request", "change_info", "general_question",
   ];
   if (afterSalesIntents.includes(detectedIntent)) return true;
 
@@ -812,11 +822,33 @@ const transitions: StateTransition[] = [
   // K6: "Rezervasyonumu değiştirmek istiyorum", "ödedim", "ne zaman arayacaksınız" vs.
   // detectCancellation ve hasNewReservationIntent'ten SONRA kontrol edilir.
   // Bu transition, COMPLETED → BROWSING (greeting/general) geçişinden ÖNCE çalışır.
+  //
+  // 2026-06-24 FIX 1 (SORUN 1 — telefon kısır döngü, exec 0f5ae545→...→02ba6dcf):
+  // change_info intent'inde mergeReservationInfo çağrılmıyordu → updates.phone state'e
+  // YAZILMIYORDU → LLM context'te eski phone görüp "Numaranızı yazın" sonsuz döngüsü.
+  // Çözüm: change_info için mergeReservationInfo (Bug B fix override aktif) çağır.
+  // Diğer after-sales intent'leri (payment_methods/cancellation_policy bilgi sorgulama —
+  // FSM'de general_question'a remap olur) merge gerektirmez, sadece state korunur.
+  // F-savunma katmanları (K2/K3) extracted'a girene kadar çalışır; bu seviyede ekstra
+  // koruma gerekmez.
   {
     from: "COMPLETED",
     to: "COMPLETED",
     condition: (_ctx, input) => isAfterSalesMessage(input.userMessage, input.detectedIntent),
-    action: (ctx) => ({ ...ctx }), // Tüm context (reservationInfo, currentTour) aynen korunur
+    action: (ctx, input) => {
+      if (input.detectedIntent === "change_info") {
+        return {
+          ...ctx,
+          reservationInfo: mergeReservationInfo(
+            ctx.reservationInfo,
+            input.extractedInfo,
+            false,
+            "change_info",  // isExplicitCorrection aktif → mevcut phone/fullName override edilebilir
+          ),
+        };
+      }
+      return { ...ctx };  // Diğer after-sales bilgi sorgulama — state aynen korunur
+    },
   },
 
   // COMPLETED → BROWSING (YENİ REZERVASYON KASTI — currentTour'u önemseme)

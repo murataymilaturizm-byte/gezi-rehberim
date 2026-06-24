@@ -2329,6 +2329,135 @@ console.log("\n── BUG B PROVİDE_INFO VARYANT: CONFIRMING stage genişletme 
     newCtx.reservationInfo?.fullName === "Ahmet Yılmaz");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-24 FIX 1+2 — COMPLETED post-satış handler (change_info merge + bilgi/eylem ayrımı)
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── COMPLETED post-satış: change_info merge + isAfterSalesMessage FSM-intent ──");
+
+// ─── PS.1 KRİTİK (SORUN 1 — exec 0f5ae545→...→02ba6dcf):
+// COMPLETED + change_info + updates.phone → reservationInfo.phone YENİ değere yazıldı
+{
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "Funda Funmez", phone: "05551234567" },
+    language: "tr",
+    messageCount: 10,
+    currentTour: { id: "T1", title: "Pamukkale" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "telefon güncelle 05455568545",
+    detectedIntent: "change_info",
+    extractedInfo: { phone: "05455568545" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`PS.1 KRİTİK: COMPLETED + change_info + phone update → state'e YENİ phone yazıldı`,
+    newCtx.reservationInfo?.phone === "05455568545");
+  assert(`PS.2: diğer alanlar KORUNDU (Funda Funmez, Pamukkale)`,
+    newCtx.reservationInfo?.fullName === "Funda Funmez" && newCtx.reservationInfo?.tourId === "T1");
+  assert(`PS.3: stage hâlâ COMPLETED`,
+    newCtx.stage === "COMPLETED");
+}
+
+// ─── PS.4: COMPLETED + change_info + fullName update → state'e YENİ isim
+{
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+                       fullName: "Mustafa Eker", phone: "05551234567" },
+    language: "tr",
+    messageCount: 10,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "ismi Osman Müftü olarak değiştir",
+    detectedIntent: "change_info",
+    extractedInfo: { fullName: "Osman Müftü" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`PS.4: COMPLETED + change_info + fullName update → state'e YENİ isim`,
+    newCtx.reservationInfo?.fullName === "Osman Müftü");
+}
+
+// ─── PS.5 REGRESYON: COMPLETED + general_question (cancellation_policy/payment_methods bilgi)
+// → state KORUNDU, merge YAPILMADI (FSM general_question, change_info DEĞİL)
+{
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+                       fullName: "Ahmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 10,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "iptal şartları nedir?",
+    detectedIntent: "general_question",  // FSM intent (cancellation_policy → general_question)
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`PS.5 REGRESYON: COMPLETED + general_question → COMPLETED→COMPLETED + state KORUNDU`,
+    newCtx.stage === "COMPLETED" &&
+    newCtx.reservationInfo?.fullName === "Ahmet" &&
+    newCtx.reservationInfo?.phone === "05551234567");
+}
+
+// ─── PS.6 REGRESYON: COMPLETED + support_request → state KORUNDU (after-sales no-op)
+{
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+                       fullName: "Ahmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 10,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "ödedim",
+    detectedIntent: "support_request",  // NLU after_sales/complaint_feedback → FSM support_request
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`PS.6 REGRESYON: COMPLETED + support_request (ödedim) → state KORUNDU`,
+    newCtx.stage === "COMPLETED" && newCtx.reservationInfo?.phone === "05551234567");
+}
+
+// ─── PS.7 REGRESYON Bug A: COMPLETED + general (teşekkürler) → state KORUNDU
+// (Bug A fix korunmalı — 14a-2 bypass deterministik kapanış atar, transition fallback'a düşer.)
+{
+  const ctx: any = {
+    stage: "COMPLETED",
+    collectionStep: undefined,
+    reservationConfirmed: true,
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", paxAdult: 2,
+                       fullName: "Ahmet", phone: "05551234567" },
+    language: "tr",
+    messageCount: 10,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "teşekkür ederim",
+    detectedIntent: "general",  // FSM general
+    extractedInfo: {},
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`PS.7 REGRESYON Bug A: COMPLETED + general → state KORUNDU (transition fallback)`,
+    newCtx.reservationInfo?.fullName === "Ahmet" && newCtx.reservationInfo?.phone === "05551234567");
+}
+
 // ─── B.10 PROMOTE: process-message'daki intent promotion logic'i — bağımsız mantık testi
 // (process-message.ts:404+ kod akışı — promotion KOŞULU farklı isim/telefon iken tetiklenir,
 // aksi halde devre dışı kalır.)
