@@ -8,7 +8,7 @@ import type {
   InfoCollectionStep,
   ReservationInfo,
 } from "./types.ts";
-import { produceTourChangeContext } from "../services/tour-change.ts";
+import { produceTourChangeContext, hasReservationSignal } from "../services/tour-change.ts";
 
 export function createInitialContext(
   language: string = "tr",
@@ -553,9 +553,13 @@ const transitions: StateTransition[] = [
       // Aksi halde TOUR_SELECTED'da kalır → process-message'daki deterministik tarih
       // listesi (waiting_for_date bloğu) tetiklenmez → LLM "Hangi tarihte?" der ama
       // tarih listesini göstermez (canlı bug 2026-06-19).
-      const reservationPattern = /\b(rezervasyon|reservation|booking|book|reservar|réserver|buchen|бронирование|حجز)\b/i;
+      //
+      // 2026-06-25 BUG-X7 FIX: inline reservationPattern (\b sıkı sınır, sadece
+      // "rezervasyon" uzun form) hasReservationSignal helper'ı ile değiştirildi.
+      // Helper "rezerve" kökünü + çekim eki + 7 dil + ek kelimeler (kayıt/yer ayır/
+      // katıl) kapsar — DRY (tour-change.ts ile aynı helper).
       const positivePattern = /^\s*(evet|tamam|olur|peki|tabii|yes|ok(?:ay)?|sure|ja|oui|s[íi]|да|نعم)\b/i;
-      if (reservationPattern.test(input.userMessage)) return true;
+      if (hasReservationSignal(input.userMessage)) return true;
       if (positivePattern.test(input.userMessage)) return true;
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
       const reservationIntents = ["reservation_intent", "provide_info", "confirm", "tour_selected"];

@@ -1146,7 +1146,7 @@ function assertStateMachineContains(name, needle) {
   }
 }
 assertStateMachineContains("produceTourChangeContext import (tek-kaynak)",
-  'import { produceTourChangeContext } from "../services/tour-change.ts"');
+  'import { produceTourChangeContext, hasReservationSignal } from "../services/tour-change.ts"');
 // Her iki tour-change action helper kullanıyor (string count)
 const helperCallCount = (stateMachineContent.match(/produceTourChangeContext\(ctx, input\.selectedTour!\)/g) || []).length;
 if (helperCallCount >= 2) {
@@ -1169,7 +1169,7 @@ assertProcMsgContains("process-message: produceTourChangeContext sembolü",
 assertProcMsgContains("process-message: shouldApplyEarlyTourChange sembolü",
   "shouldApplyEarlyTourChange");
 assertProcMsgContains("process-message: erken müdahale shouldApply gate'i",
-  "shouldApplyEarlyTourChange(context, selectedTour, fsmIntent)");
+  "shouldApplyEarlyTourChange(context, selectedTour, fsmIntent, message)");
 assertProcMsgContains("process-message: DETERMINISTIC tour-change logu",
   "DETERMINISTIC tour-change:");
 assertProcMsgContains("process-message: CONFIRMING'den geri dönüş reservationConfirmed:false",
