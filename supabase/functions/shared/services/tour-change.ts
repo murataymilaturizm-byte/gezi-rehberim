@@ -58,11 +58,18 @@ export function produceTourChangeContext(
  * dayanıyordu — TOUR_SELECTED → COLLECTING_INFO transition action `...ctx` ile
  * eski currentTour'u kopyalıyor, input.selectedTour'u görmezden geliyordu →
  * keşifte tur kilitledikten sonra başka tur "rezerve et" deyince eski tur
- * tarihlerini gösteriyordu. Canlı kanıt (exec 057b2301):
- *   "Antalya ne kadar" → "Kapadokya daha iyi mi" → "Pamukkale rezerve et"
- *   → Kapadokya tarihleri gösteriliyor (Pamukkale değil).
- * Fix: TOUR_SELECTED'da da erken-müdahale → produceTourChangeContext doğru tur
- * uygular (pax/isim/telefon Özge fix ile KORUNUR, tarih sıfırlanır).
+ * tarihlerini gösteriyordu.
+ *
+ * 2026-06-25 ALT-KÖK A FIX: TOUR_SELECTED için intent guard eklendi. X6 fix
+ * tour_search ("Kapadokya daha iyi mi" karşılaştırma sorusu) intent'inde de
+ * erken-müdahaleyi tetikliyordu → stage zorla COLLECTING_INFO + waiting_for_date
+ * → :11 tarih listesi → kullanıcı bilgi sorduğu halde rezervasyon başlıyordu.
+ * Fix: TOUR_SELECTED'da SADECE açık rezervasyon/değişiklik niyetinde tetikle
+ * (reservation_intent/tour_selected/change_info). tour_search/faq_general/general
+ * → state-machine transition'larına bırak (tarih sormaz, collectionStep undefined).
+ *
+ * COLLECTING_INFO/CONFIRMING — KÖK 5 davranışı intent-bağımsız KORUNUR:
+ * mid-flow tur değişimi (kullanıcı zaten rezervasyon yapıyor) tarih yenilenir.
  *
  * BROWSING / COMPLETED / GREETING hâlâ HARİÇ: BROWSING transition action zaten
  * input.selectedTour kullanıyor (line 512-522), COMPLETED after-sales mantığı,
@@ -71,12 +78,20 @@ export function produceTourChangeContext(
 export function shouldApplyEarlyTourChange(
   context: ConversationContext,
   selectedTour: any,
+  intent: string,
 ): boolean {
   if (!selectedTour) return false;
   if (selectedTour.id === context.currentTour?.id) return false;
-  return context.stage === "TOUR_SELECTED"      // 2026-06-25 BUG-X6 fix
-      || context.stage === "COLLECTING_INFO"
-      || context.stage === "CONFIRMING";
+
+  // 2026-06-25 ALT-KÖK A: TOUR_SELECTED için intent guard
+  if (context.stage === "TOUR_SELECTED") {
+    return intent === "reservation_intent"
+        || intent === "tour_selected"
+        || intent === "change_info";
+  }
+
+  // COLLECTING_INFO / CONFIRMING: KÖK 5 davranışı korunur (intent-bağımsız)
+  return context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING";
 }
 
 // ─── 2026-06-23 SORUN D — tur değişim ack prefix ─────────────────────────

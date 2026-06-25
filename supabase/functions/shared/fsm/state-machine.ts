@@ -594,7 +594,17 @@ const transitions: StateTransition[] = [
       input.selectedTour.id !== ctx.currentTour?.id &&
       Object.keys(ctx.reservationInfo).length <= 2,
     // 2026-06-20: helper'a refactor (tek-kaynak tour-change). Davranış birebir aynı.
-    action: (ctx, input) => produceTourChangeContext(ctx, input.selectedTour!),
+    // 2026-06-25 ALT-KÖK A FIX: collectionStep undefined ile override.
+    // produceTourChangeContext collectionStep'i "waiting_for_date" yapar — bu
+    // COLLECTING_INFO/CONFIRMING bağlamında doğru (KÖK 5), ama TOUR_SELECTED'da
+    // YANLIŞ. Kullanıcı henüz rezervasyon başlatmadı; "Kapadokya daha iyi mi"
+    // gibi karşılaştırma sorusunda tur bağlamı güncellenir AMA tarih sorulmaz.
+    // :11 (a) collectionStep===waiting_for_date kontrolü → FALSE → tarih listesi
+    // gelmez → LLM bilgi/karşılaştırma cevabı verir.
+    action: (ctx, input) => ({
+      ...produceTourChangeContext(ctx, input.selectedTour!),
+      collectionStep: undefined,
+    }),
   },
 
   // COLLECTING_INFO → TOUR_SELECTED (tur değişimi — B2: genişletilmiş pattern)

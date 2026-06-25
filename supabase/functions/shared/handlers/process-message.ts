@@ -382,7 +382,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // Çakışma güvenliği: erken müdahale context.currentTour'u günceller; sonraki
   // state-machine transition condition'ı (selectedTour.id !== ctx.currentTour.id)
   // artık equal görür → kendiliğinden atlar. Çifte değişim yok.
-  if (shouldApplyEarlyTourChange(context, selectedTour)) {
+  if (shouldApplyEarlyTourChange(context, selectedTour, fsmIntent)) {
     const _prevStage = context.stage;
     const _prevTourTitle = context.currentTour?.title;
     context = {

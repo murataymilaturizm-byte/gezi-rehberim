@@ -1169,7 +1169,7 @@ assertProcMsgContains("process-message: produceTourChangeContext sembolü",
 assertProcMsgContains("process-message: shouldApplyEarlyTourChange sembolü",
   "shouldApplyEarlyTourChange");
 assertProcMsgContains("process-message: erken müdahale shouldApply gate'i",
-  "shouldApplyEarlyTourChange(context, selectedTour)");
+  "shouldApplyEarlyTourChange(context, selectedTour, fsmIntent)");
 assertProcMsgContains("process-message: DETERMINISTIC tour-change logu",
   "DETERMINISTIC tour-change:");
 assertProcMsgContains("process-message: CONFIRMING'den geri dönüş reservationConfirmed:false",
