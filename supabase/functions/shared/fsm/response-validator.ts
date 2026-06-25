@@ -369,34 +369,35 @@ export function validateFieldReask(
     }
     if (!check.pattern.test(text)) continue;
 
-    // 2026-06-23 BUG D revize (exec 6ef50f7b/35ffb749 — aşırı düzeltme kanıtı):
-    // SURGICAL replace — komple-replace değil. LLM cevabını cümlelere böl,
-    // pattern eşleşen cümle(ler)i at, kalanı (bilgi cevabı) KORU.
-    // Sadece field-reask cümlesinin yerine özet+onay koy.
+    // 2026-06-25 YENİ-2 FIX (canlı kanıt — telefon değişimi sonrası ÇİFT tarih):
+    // Eski "SURGICAL replace" yaklaşımı (preservedContent + replacementSuffix
+    // yan yana) Haiku'nun ESKİ-tarihli özet artığını "bilgi cevabı" sanıp
+    // koruyordu → deterministik yeni özet ile yan yana çift özet (eski + yeni)
+    // + çift "onaylıyor musunuz?" → kafa karıştırıcı görsel.
     //
-    // Risk azaltma: cümle çok uzun (>120 char) ise muhtemelen bilgi+yutkunma
-    // aynı cümlede → agresif kesme yapma, o cümleyi KORU (LLM kendisi mesajı
-    // toparlasın — tam mükemmel değil ama bilgi kaybı yutkunma kaybından kötü).
-    const sentences = text.split(/(?<=[.!?])\s+|\n+/);
-    const matchedSentenceIdxs: number[] = [];
-    const keptSentences: string[] = [];
-    sentences.forEach((s, idx) => {
-      if (check.pattern.test(s) && s.length <= 120) {
-        // Kısa cümle pattern içeriyor → at (yutkunma cümlesi).
-        matchedSentenceIdxs.push(idx);
-      } else {
-        keptSentences.push(s);
-      }
-    });
-    const preservedContent = keptSentences.join(" ").trim();
+    // YENİ DAVRANIŞ: field-reask tetiklendiğinde preservedContent'i AT, sadece
+    // deterministik replacementSuffix (formatReservationSummary, state'ten doğru)
+    // göster → tek temiz özet, tek onay sorusu.
+    //
+    // RİSK: LLM gerçek bilgi cevabı + yutkunma karışık üretmişse bilgi cevabı
+    // kaybedilir. AMA field-reask doğası gereği "LLM dolu alanı sebepsiz sordu"
+    // anı — LLM çoğunlukla kendi özet artığı + yutkunma üretir, gerçek bilgi
+    // cevabı vermez. Pratik kayıp düşük; ESKİ tarih artığı kalmasındansa
+    // muhtemel bilgi cevabı kaybı daha iyi.
+    //
+    // Çift güvenlik: kısa eşleşen cümle var mı? Eğer pattern SADECE uzun cümlede
+    // (>120 char, muhtemelen bilgi+yutkunma karışık) eşleşmişse → BLOK YAPMA,
+    // LLM cevabını olduğu gibi geç. Bu D.B.16 çift güvenliği (bilgi kaybı yutkunma
+    // kaybından kötü).
+    const _matchedCount = text.split(/(?<=[.!?])\s+|\n+/).filter((s) => check.pattern.test(s) && s.length <= 120).length;
+    if (_matchedCount === 0) continue;  // pattern sadece uzun cümlede → çift güvenlik
 
     console.warn("[response-validator] field-reask blocked", {
       field: check.field,
       stage,
       language,
       collectionStep,
-      removedSentenceCount: matchedSentenceIdxs.length,
-      preservedLen: preservedContent.length,
+      removedSentenceCount: _matchedCount,
       textSnippet: text.slice(0, 120),
     });
 
@@ -417,11 +418,10 @@ export function validateFieldReask(
       }
     }
 
-    // Eğer kalan içerik anlamlı (bilgi cevabı) varsa: [bilgi] \n\n [özet+onay].
-    // Yoksa (reply sadece yutkunmadan ibaretti) komple özet+onay (eski davranış).
-    const finalText = preservedContent.length > 0
-      ? `${preservedContent}\n\n${replacementSuffix}`
-      : replacementSuffix;
+    // YENİ-2 fix: preservedContent ATILDI. replacementSuffix tek başına yeterli —
+    // tam state özet+onay'ı içeriyor. LLM özet artığı eski state yansıtabilir
+    // (ÇİFT tarih sorunu kökü), atmak temiz özet sağlar.
+    const finalText = replacementSuffix;
 
     return {
       text: finalText,

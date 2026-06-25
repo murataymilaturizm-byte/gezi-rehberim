@@ -2133,7 +2133,11 @@ import { validateFieldReask } from "../supabase/functions/shared/fsm/response-va
 // ═══════════════════════════════════════════════════════════════════════════
 console.log("\n── BUG D REVİZE: surgical validator (bilgi cevabı korunur) ──");
 
-// ─── D.B.12 KRİTİK: CONFIRMING + bilgi + telefon iste → bilgi KORUNDU + özet eklendi
+// ─── D.B.12 (YENİ-2 fix ile GÜNCELLENDİ): CONFIRMING + bilgi + telefon iste
+//   ESKİ DAVRANIŞ (preservedContent korunuyordu): bilgi cevabı "İptal koşullarımız" KORUNUYORDU.
+//   YENİ DAVRANIŞ (YENİ-2 fix 2026-06-25): preservedContent atılır, sadece deterministik özet.
+//   Bilinçli karar: LLM özet artığı eski state yansıtabilir (çift tarih bug'ı) → atmak tek
+//   temiz özet. Bilgi cevabı kaybı kabul (field-reask doğası: LLM "ezildi", bilgi cevabı nadir).
 {
   const reservationInfo = {
     tourId: "T1", tourTitle: "Pamukkale",
@@ -2143,10 +2147,10 @@ console.log("\n── BUG D REVİZE: surgical validator (bilgi cevabı korunur) 
   const currentTour = { id: "T1", title: "Pamukkale", dates: [] };
   const llmReply = "İptal koşullarımız: 7 gün öncesine kadar ücretsizdir. Telefon numaranızı alabilir miyim?";
   const result = validateFieldReask(llmReply, "tr", "CONFIRMING", "ready_for_confirmation", reservationInfo, currentTour, "standart");
-  assert(`D.B.12 KRİTİK: bilgi cevabı KORUNDU ('İptal koşullarımız: 7 gün' kayıp değil)`,
+  assert(`D.B.12 YENİ-2 GÜNCEL: bilgi cevabı ATILDI (preservedContent kaldırıldı, sadece özet)`,
     result.wasModified === true &&
-    result.text.includes("İptal koşullarımız") &&
-    result.text.includes("7 gün öncesine kadar"));
+    !result.text.includes("İptal koşullarımız") &&
+    !result.text.includes("7 gün öncesine kadar"));
   assert(`D.B.13 KRİTİK: özet+onay eklendi (Mehmet + 05551234567)`,
     result.text.includes("Mehmet") &&
     result.text.includes("05551234567") &&
@@ -2244,7 +2248,10 @@ console.log("\n── BUG D REVİZE: surgical validator (bilgi cevabı korunur) 
     result.wasModified === true && result.matchedPattern === "field-reask:phone");
 }
 
-// ─── D.B.16: çok uzun cümle (>120 char) bilgi+yutkunma karışık → cümle KORU
+// ─── D.B.16 (YENİ-2 fix ile GÜNCELLENDİ): uzun cümle (>120 char) için davranış
+//   ESKİ: cümle KORUNUYORDU (bilgi kaybı yutkunma kaybından kötü)
+//   YENİ: preservedContent her durumda ATILIYOR (YENİ-2 fix kararı).
+//   >120 char filtresi sadece "hangi cümle eşleşti" sayımı için, davranış değişmez.
 {
   const reservationInfo = {
     tourId: "T1", tourTitle: "Pamukkale",
@@ -3933,6 +3940,113 @@ const _b2Info = {
   );
   assert(`B2.31 EN BUG D: intent=general + "share your name" → BLOK`,
     r.wasModified === true && r.matchedPattern === "field-reask:name");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 YENİ-2 FIX — field-reask tetiklendiğinde tek özet (çift tarih çözümü)
+// Canlı bug (exec 04864464): telefon değişimi sonrası özet İKİ tarih gösterdi
+// (üst LLM eski-tarihli özet artığı 20.12, alt deterministik yeni özet 10.12).
+// Fix: field-reask tetiklendiğinde preservedContent ATIL, sadece replacementSuffix
+// (tam state özet+onay) göster → tek temiz özet.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── YENİ-2 FIX: field-reask blocked → tek özet (preservedContent atıldı) ──");
+
+// Mock currentTour (FIX 3 / B2 ile aynı format)
+const _n2Tour = {
+  id: "T1",
+  title: "Pamukkale Turu",
+  dates: [{ id: "D1", departure_date: "2026-12-10", price_adult: 900 }],
+  currency: "TRY",
+};
+const _n2Info = {
+  tourId: "T1",
+  tourTitle: "Pamukkale Turu",
+  dateId: "D1",
+  selectedDate: "2026-12-10",
+  paxAdult: 1,
+  fullName: "Fırat Taştan",
+  phone: "+905551234567",
+};
+
+// N2.1 KRİTİK CANLI: LLM eski-tarihli özet artığı + pax yutkunması
+//   → SADECE deterministik yeni özet (10.12), eski (20.12) görünmemeli
+{
+  const llmReply = "Bilgilerinizi kontrol edelim: Tarih: 20.12.2026, doğru mu? ✨ Kaç kişi katılacaksınız?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _n2Info, _n2Tour, "standart",
+    "confirm_reservation", "tamam",
+  );
+  // Yeni davranış: text sadece replacementSuffix = formatReservationSummary + onay
+  assert(`N2.1 KRİTİK CANLI: LLM eski 20.12 artığı + pax yutkunması → sadece yeni 10.12 (tek özet)`,
+    r.wasModified === true
+    && !r.text.includes("20.12")
+    && !r.text.includes("doğru mu?")  // eski LLM onay sorusu yok
+    && r.text.includes("10.12") || r.text.includes("Aralık") || r.text.includes("December"));
+}
+
+// N2.2: phone yutkunması + LLM özet artığı → sadece yeni özet
+{
+  const llmReply = "📋 REZERVASYON: Telefon: +90 555 OLD. Lütfen telefon numaranızı söyler misiniz?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _n2Info, _n2Tour, "standart",
+    "general", "merhaba",
+  );
+  assert(`N2.2: LLM eski telefon artığı + phone yutkunması → sadece yeni özet`,
+    r.wasModified === true
+    && !r.text.includes("+90 555 OLD")
+    && r.text.includes("+905551234567"));
+}
+
+// N2.3 REGRESYON: Sadece yutkunma (preservedContent ZATEN boş) → davranış değişmez
+{
+  const llmReply = "Telefon numaranızı söyler misiniz?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _n2Info, _n2Tour, "standart",
+    "general", "merhaba",
+  );
+  // Eski davranış: preservedContent boş → replacementSuffix. Yeni: aynı.
+  assert(`N2.3 REGRESYON: sadece yutkunma → replacementSuffix (değişmez)`,
+    r.wasModified === true && r.text.includes("+905551234567"));
+}
+
+// N2.4 REGRESYON: field-reask YOK (normal LLM cevabı) → değişmez
+{
+  const llmReply = "Tabii, başka bir konuda yardımcı olabilir miyim?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _n2Info, _n2Tour, "standart",
+    "general", "teşekkürler",
+  );
+  assert(`N2.4 REGRESYON: field-reask yok → LLM cevabı olduğu gibi`,
+    r.wasModified === false && r.text === llmReply);
+}
+
+// N2.5 REGRESYON Bulgu 2: change_info + "ismi değiştir" + "yeni isim?" yutkunması
+//   → bu DALA HİÇ girmez (Bulgu 2 skip), değişmez
+{
+  const llmReply = "Tabii, yeni isminizi söyler misiniz? ✏️";
+  const r = validateFieldReask(
+    llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation",
+    _n2Info, _n2Tour, "standart",
+    "change_info", "ismi değiştirmek istiyorum",
+  );
+  assert(`N2.5 REGRESYON Bulgu 2: change_info skip → LLM "yeni isim?" geçer`,
+    r.wasModified === false && r.text === llmReply);
+}
+
+// N2.6 REGRESYON: COMPLETED stage → kapanış mesajı (mevcut davranış, preservedContent zaten atılırdı)
+{
+  const llmReply = "Rezervasyonunuz tamamlandı. Telefon numaranızı söyler misiniz?";
+  const r = validateFieldReask(
+    llmReply, "tr", "COMPLETED", undefined,
+    _n2Info, _n2Tour, "standart",
+    "general", "merhaba",
+  );
+  assert(`N2.6 REGRESYON: COMPLETED + field-reask → kapanış mesajı`,
+    r.wasModified === true && !r.text.includes("Telefon numaranızı söyler misiniz"));
 }
 
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
