@@ -23,7 +23,7 @@ import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getSt
 import { validateAIResponse, validateInjectionResponse, validateFieldReask } from "../fsm/response-validator.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
-import { findMatchingTours } from "../services/tour-matching.ts";
+import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak, isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
 import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
 import { hasQuotaForPax, getQuotaRemaining, hasAnyAvailableDate } from "../services/quota-check.ts";
@@ -399,12 +399,29 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // Rezervasyon zaten devam ediyorken NLU "kullanıcı yeni rezervasyon başlatmak istiyor"
   // sanıp tur değişimi transition'ını tetikliyordu (Özge bug'ının kaynağı). İsim/telefon
   // verirken gelen mesaj asla yeni rezervasyon değildir; mevcut akışın devamıdır.
+  //
+  // 2026-06-25 KÖK 5 FIX (canlı G2 — tarih sonrası tur değiştirme):
+  // İSTİSNA: GERÇEK tur değişimi sinyalinde stage koruma atla. 3 koşul birden:
+  //   (1) Mesajda AÇIK tur değişim ifadesi (TOUR_CHANGE_PHRASE_RE)
+  //   (2) NLU tour_name veya destination çıkardı
+  //   (3) Çıkarılan tur adı/destinasyon mesajda gerçekten geçiyor (isNluOutputInMessage
+  //       benzeri — NLU history'den uydurmasın). Mevcut findMatchingTours sonucu
+  //       (selectedTour DOLU + currentTour'dan FARKLI) bu kontrolü ZATEN içeriyor.
+  // Bu istisna fsmIntent'i korur → state-machine'e doğru intent ulaşır.
+  // Özge bug korunur: "Özge Yılmazer" mesajında açık ifade YOK → istisna tetiklenmez.
+  const _hasExplicitTourChange =
+    TOUR_CHANGE_PHRASE_RE.test(message) &&
+    selectedTour !== null &&
+    selectedTour.id !== context.currentTour?.id;
   if (
     (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
-    (nluResult.intent === "tour_search" || nluResult.intent === "reservation_intent")
+    (nluResult.intent === "tour_search" || nluResult.intent === "reservation_intent") &&
+    !_hasExplicitTourChange
   ) {
     nluResult.intent = "provide_info";
     fsmIntent = mapNLUIntentToFSMIntent("provide_info");
+  } else if (_hasExplicitTourChange) {
+    console.log(`[process-message] KÖK 5: gerçek tur değişimi (${selectedTour?.title}) — stage koruma ATLANDI`);
   }
 
   // 2026-06-23 BUG B PROVIDE_INFO VARYANT (exec 94ee1378/d36d9550):

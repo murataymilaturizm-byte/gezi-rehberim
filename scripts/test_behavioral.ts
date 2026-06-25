@@ -2940,6 +2940,59 @@ assert(`K2İ.5 EN: paxAdult=3 + paxChild=2 → "3 adult, 2 child"`,
 assert(`K2İ.6 DE: paxAdult=3 + paxChild=2 → "3 Erwachsener, 2 Kind"`,
   _formatPaxText(3, 2, "Erwachsener", "Kind") === "3 Erwachsener, 2 Kind");
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 FIX KÖK 5 — Tur değiştirme tarih sonrası (3-koşul istisna)
+// Canlı kanıt (G2): "kapadokya turuna geçmek istiyorum" tarih sonrası 3 deneme,
+// tur değişmedi. NLU bağlam etkisinde provide_info döndü → B-5 gate kapandı →
+// selectedTour=null → erken-müdahale çalışmadı.
+// Fix: TOUR_CHANGE_PHRASE_RE pattern + B-5 gate 3. katman + stage koruma istisnası.
+// Özge bug regresyon ZORUNLU (yanlış-pozitif yutmasın).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX KÖK 5: tur değiştirme tarih sonrası (Özge regresyon kritik) ──");
+
+import { TOUR_CHANGE_PHRASE_RE as _TCP_RE } from "../supabase/functions/shared/services/tour-matching.ts";
+
+// Pattern unit testleri — GEÇMELİ (gerçek tur değişimi)
+assert(`K5.1 GEÇMELİ: "kapadokya turuna geçmek istiyorum" → pattern eşleşir`,
+  _TCP_RE.test("kapadokya turuna geçmek istiyorum") === true);
+
+assert(`K5.2 GEÇMELİ: "aslında kapadokya turu olsun" → pattern eşleşir (aslında+tur)`,
+  _TCP_RE.test("aslında kapadokya turu olsun") === true);
+
+assert(`K5.3 GEÇMELİ: "tura geçeyim" → eşleşir`,
+  _TCP_RE.test("kapadokya tura geçeyim") === true);
+
+assert(`K5.4 GEÇMELİ: "turunu değiştirmek istiyorum" → eşleşir`,
+  _TCP_RE.test("turunu değiştirmek istiyorum") === true);
+
+// Pattern unit testleri — DEĞİŞMEMELİ (Özge regresyon kritik)
+assert(`K5.5 ÖZGE KRİTİK: "Özge Yılmazer" → pattern EŞLEŞMEZ`,
+  _TCP_RE.test("Özge Yılmazer") === false);
+
+assert(`K5.6 ÖZGE KRİTİK: "Murat Gülhan" → pattern EŞLEŞMEZ`,
+  _TCP_RE.test("Murat Gülhan") === false);
+
+assert(`K5.7 REGRESYON: "20 aralık" düz tarih → pattern EŞLEŞMEZ`,
+  _TCP_RE.test("20 aralık") === false);
+
+assert(`K5.8 REGRESYON: "20 aralık pamukkale" → pattern EŞLEŞMEZ (tur+tarih kombinasyon, açık değişim ifadesi yok)`,
+  _TCP_RE.test("20 aralık pamukkale") === false);
+
+assert(`K5.9 REGRESYON: "kapadokya" tek kelime → pattern EŞLEŞMEZ (açık ifade yok, B2 liste devralır)`,
+  _TCP_RE.test("kapadokya") === false);
+
+assert(`K5.10 REGRESYON: "2 kişi olsun" → pattern EŞLEŞMEZ (olsun tek başına tur-bağlamsız)`,
+  _TCP_RE.test("2 kişi olsun") === false);
+
+assert(`K5.11 REGRESYON: "05551234567" telefon → pattern EŞLEŞMEZ`,
+  _TCP_RE.test("05551234567") === false);
+
+assert(`K5.12 REGRESYON: "evet" onay → pattern EŞLEŞMEZ`,
+  _TCP_RE.test("evet") === false);
+
+assert(`K5.13 REGRESYON: "haftaya 5 kişi" → pattern EŞLEŞMEZ (tarih+pax karışım)`,
+  _TCP_RE.test("haftaya 5 kişi") === false);
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

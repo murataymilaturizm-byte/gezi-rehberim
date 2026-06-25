@@ -4,6 +4,30 @@
 export { findTourById } from "../fsm/tour-matcher.ts";
 import { isMeaningfulTourKeyword } from "../constants/tour-matching.ts";
 
+/**
+ * 2026-06-25 KÖK 5 — AÇIK TUR DEĞİŞİM İFADESİ PATTERN'i
+ *
+ * Canlı bug (G2): tarih SEÇİLDİKTEN sonra "kapadokya turuna geçmek istiyorum" → 3
+ * deneme, tur değişmedi. NLU bağlam etkisinde provide_info döndürüyor → B-5 gate
+ * explicitTourIntent=false → tour-matching kapatıyor → selectedTour=null → erken-
+ * müdahale çalışmıyor.
+ *
+ * Pattern KASITLI olarak tur-bağlamlı tutuldu:
+ *   - "olsun/yapalım/geçelim" tek başına genel ifadeler → pattern'e DAHİL DEĞİL
+ *     (tour_name koşulu zaten "X olsun"u gerçek tur değişimine yönlendirir)
+ *   - Sadece tur kelimesi + eylem fiili kombinasyonu (turuna/tura/turunu/değiştir)
+ *   - "aslında ...{0,30} tur" — niyet belirteci + tur bağlamı
+ *
+ * Özge regresyon: "Özge Yılmazer" mesajında açık ifade YOK → pattern eşleşmez →
+ * B-5 gate kapalı kalır → tur sıfırlanmaz.
+ *
+ * İki yerden kullanılır:
+ *   - tour-matching.ts B-5 gate gevşemesi (waiting_for_name/phone'da)
+ *   - process-message.ts stage koruma (B-2) istisnası
+ */
+export const TOUR_CHANGE_PHRASE_RE =
+  /(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur)/i;
+
 function normalizeNluField(value: any): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value.filter((v) => typeof v === "string" && v.trim().length > 0);
@@ -308,26 +332,23 @@ export function findMatchingTours(
   // "Efes Antik Turu nedir?" yazınca tour-matching tamamen kapalıydı → erken
   // müdahale tetiklenmiyordu → currentTour Kapadokya'da kaldı.
   //
-  // Yeni mantık: hasNluTourSignal = (NLU tour_name VEYA destination çıkardı)
-  //              AND (intent açıkça tur sorgulama — provide_info DEĞİL).
-  // İki katman birden olmalı. Özge bug korunur: NLU "Özge Yılmazer"i tour_name
-  // diye yorumlasa bile intent=provide_info kaldığı için 2. katman KAPATIR.
+  // 2026-06-25 KÖK 5 fix (canlı G2 — tarih sonrası tur değiştirme 3 deneme çalışmadı):
+  // NLU bağlam etkisinde provide_info döndürdüğünde (CRITICAL CONTEXT RULES kırılganlığı)
+  // explicitTourIntent=false → B-5 gate kapanıyordu. ÜÇÜNCÜ katman: mesajda AÇIK tur
+  // değişim ifadesi (TOUR_CHANGE_PHRASE_RE) varsa intent ne olursa olsun gate gevşer.
+  // Özge bug korunur: "Özge Yılmazer" mesajında açık ifade YOK → gevşeme tetiklenmez.
   if (expectedInput === "name" || expectedInput === "phone") {
-    // 2026-06-20 (Sorun 1 — change_info eklendi):
-    // Canlı bug (execution eef20d45): waiting_for_name'de "Efes turu rezervasyonu
-    // istiyorum" → NLU intent=change_info, tour_name="Efes Turu". Mevcut listede
-    // change_info yoktu → hasNluTourSignal=false → tour-matching kapalı →
-    // erken müdahale tetiklenmedi → LLM "hangisini istersiniz" sordurdu.
-    // change_info eklendi. 2. katman gate (hasNluTourSignal AND tour sinyal)
-    // "tarihimi değiştirmek istiyorum" gibi non-tur change_info'ları korur.
     const explicitTourIntent =
       intent === "tour_search" ||
       intent === "browse_tours" ||
       intent === "faq_general" ||
       intent === "reservation_intent" ||
       intent === "change_info";
+    // 3. katman: açık tur değişim ifadesi mesajda var mı?
+    const hasExplicitTourChangePhrase = TOUR_CHANGE_PHRASE_RE.test(message);
     const hasNluTourSignal =
-      (tourNames.length > 0 || destinations.length > 0) && explicitTourIntent;
+      (tourNames.length > 0 || destinations.length > 0) &&
+      (explicitTourIntent || hasExplicitTourChangePhrase);
     if (!hasNluTourSignal) {
       return { selectedTour: null, multipleMatches: [], unknownTourQuery: null };
     }
