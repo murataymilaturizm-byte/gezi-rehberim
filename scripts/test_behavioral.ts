@@ -3475,6 +3475,279 @@ assert(`F4.38 AR: "نعم، تعديل الاسم" → FALSE`,
 // cyrillic/arabic boundary tanımıyor (ASCII-only \b). Bu ESKİ bir bug, F4 fix
 // scope'unun dışı. Ayrı commit'te lookbehind+lookahead'a çevrilebilir.
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 FIX F4 KATMAN 2 — Çelişki tespiti + iki dallı son-onay
+// Katman 1 (619417f) kelime listesi bağımlı. NLU sınıflandırması doğru olsa
+// bile özet+onay garantisi M1'e bağlı. NLU yanlış sınıflandırırsa (örn.
+// confirm_reservation) değişiklik tamamen yutulur. Katman 2 kelime-bağımsız:
+// extractedInfo'da çelişki + onay sinyali → state-machine atla, deterministik
+// değişiklik+özet+onay.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX F4 KATMAN 2: çelişki tespiti + iki dallı son-onay ──");
+
+// Helper: Pre-FSM Katman 2 mantığını izole eden mock. process-message.ts:531+
+// inline kodu yansıtır.
+function _evaluateLayer2(
+  stage: string,
+  message: string,
+  intent: string,
+  extractedInfo: Record<string, unknown>,
+  currentInfo: Record<string, unknown>,
+  language: string,
+): "branch1" | "branch2" | "none" {
+  if (stage !== "CONFIRMING") return "none";
+  const _confirmIntents = new Set(["confirm_reservation", "confirm"]);
+  const _hasConfirm = _confirmIntents.has(intent) || detectConfirmation(message, language);
+  if (!_hasConfirm) return "none";
+
+  const e = extractedInfo as Record<string, unknown>;
+  const c = currentInfo as Record<string, unknown>;
+  const dFN = !!e.fullName && !!c.fullName && c.fullName !== e.fullName;
+  const dPh = !!e.phone && !!c.phone && c.phone !== e.phone;
+  const dPx = typeof e.paxAdult === "number" && typeof c.paxAdult === "number" && c.paxAdult !== e.paxAdult;
+  const dDid = !!e.dateId && !!c.dateId && c.dateId !== e.dateId;
+  const dSd = !!e.selectedDate && !!c.selectedDate && c.selectedDate !== e.selectedDate;
+  const hasNewValue = dFN || dPh || dPx || dDid || dSd;
+
+  if (hasNewValue) return "branch1";
+
+  const fieldPattern = /(?<![\p{L}\p{N}])(isim|ismi|adı|adın|adım|soyad|surname|name|nom|nombre|имя|اسم|telefon|numara|phone|tel|gsm|téléphone|teléfono|телефон|هاتف|tarih|date|gün|day|datum|jour|día|дата|تاريخ|ki[şs]i|pax|person|people|kinder|personen|personnes|personas|человек)(?![\p{L}\p{N}])/iu;
+  const verbPattern = /(?<![\p{L}\p{N}])(yap|olsun|ayarla|kur|set|make|adjust|aceptar)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])(değiştir|düzelt|güncelle|değişiklik|change|modify|edit|update|correct|fix|ändern|korrigieren|modifier|corriger|cambiar|modificar|изменить|исправить|تعديل|تغيير|اجعل)/iu;
+  if (fieldPattern.test(message) || verbPattern.test(message)) return "branch2";
+
+  return "none";
+}
+
+// ── DAL 1 — somut yeni değer var → değişiklik+özet+onay ──
+{
+  // K2.1 KRİTİK CANLI: NLU confirm_reservation iken çelişki yakalansın
+  // (Katman 1 sonrası en kötü senaryo: değişiklik yutuluyordu)
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "ismi Ahmet Yılmaz yap onaylıyorum",
+    "confirm_reservation",
+    { fullName: "Ahmet Yılmaz", phone: "0555", paxAdult: 2, dateId: "D1", selectedDate: "2026-12-15" },
+    { fullName: "Mustafa Eken", phone: "0555", paxAdult: 2, dateId: "D1", selectedDate: "2026-12-15" },
+    "tr",
+  );
+  assert(`K2.1 KRİTİK CANLI: NLU confirm_reservation + farklı isim → DAL 1`, r === "branch1");
+}
+
+{
+  // K2.2 KRİTİK: Katman 1'de OLMAYAN kelime ("ayarla")
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "ismi Ahmet olarak ayarla onayla",
+    "confirm_reservation",
+    { fullName: "Ahmet", phone: "0555", paxAdult: 2, dateId: "D1", selectedDate: "2026-12-15" },
+    { fullName: "Mehmet", phone: "0555", paxAdult: 2, dateId: "D1", selectedDate: "2026-12-15" },
+    "tr",
+  );
+  assert(`K2.2 KRİTİK: Katman 1'de olmayan kelime "ayarla" + farklı isim → DAL 1`, r === "branch1");
+}
+
+{
+  // K2.3: Telefon değişimi
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "telefonu 05551112233 yap onayla",
+    "confirm_reservation",
+    { fullName: "Mehmet", phone: "+905551112233", paxAdult: 2, dateId: "D1", selectedDate: "2026-12-15" },
+    { fullName: "Mehmet", phone: "+905559998877", paxAdult: 2, dateId: "D1", selectedDate: "2026-12-15" },
+    "tr",
+  );
+  assert(`K2.3: telefon farklı + onaylıyorum → DAL 1`, r === "branch1");
+}
+
+{
+  // K2.4: Pax değişimi
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "3 kişi olsun onayla",
+    "confirm_reservation",
+    { fullName: "Mehmet", phone: "0555", paxAdult: 3, dateId: "D1", selectedDate: "2026-12-15" },
+    { fullName: "Mehmet", phone: "0555", paxAdult: 2, dateId: "D1", selectedDate: "2026-12-15" },
+    "tr",
+  );
+  assert(`K2.4: pax farklı + onay → DAL 1`, r === "branch1");
+}
+
+{
+  // K2.5: detectConfirmation TRUE (saf evet) + farklı değer → DAL 1
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "evet",
+    "general",
+    { fullName: "Ahmet", phone: "0555", paxAdult: 2 },
+    { fullName: "Mehmet", phone: "0555", paxAdult: 2 },
+    "tr",
+  );
+  assert(`K2.5: detectConfirmation TRUE + extractedInfo'da farklı değer → DAL 1`, r === "branch1");
+}
+
+// ── DAL 2 — sinyal var ama somut değer yok ──
+{
+  // K2.10 KRİTİK: onay + alan adı (isim) sinyali + updates boş → DAL 2
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "ismi değiştirmek istiyorum onayla",
+    "confirm_reservation",
+    {},  // extracted boş
+    { fullName: "Mehmet", phone: "0555" },
+    "tr",
+  );
+  assert(`K2.10 KRİTİK: onay + alan adı (isim) + değer yok → DAL 2 (netleştirme)`, r === "branch2");
+}
+
+{
+  // K2.11: onay + "yap" fiili sinyali + değer yok → DAL 2
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "şunu yap onayla",
+    "confirm_reservation",
+    {},
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.11: onay + "yap" sinyali + değer yok → DAL 2`, r === "branch2");
+}
+
+// ── REGRESYON: atla (DAL 1/2 tetiklenmemeli) ──
+{
+  // K2.20 KRİTİK F1 KORUMA: saf "evet" → atla
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "evet",
+    "confirm_reservation",
+    {},
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.20 KRİTİK F1 KORUMA: saf "evet" + updates boş + alan sinyali yok → ATLAR`, r === "none");
+}
+
+{
+  // K2.21 F1 KORUMA: "onaylıyorum" → atla
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "onaylıyorum",
+    "confirm_reservation",
+    {},
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.21 F1: "onaylıyorum" → ATLAR`, r === "none");
+}
+
+{
+  // K2.22 F1 KORUMA: "tamam onaylıyorum"
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "tamam onaylıyorum",
+    "confirm_reservation",
+    {},
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.22 F1: "tamam onaylıyorum" → ATLAR`, r === "none");
+}
+
+{
+  // K2.23 KRİTİK ÇEKİM EKİ: "evet yapalım" (yap+alım çekim eki) → atla
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "evet yapalım",
+    "confirm_reservation",
+    {},
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.23 ÇEKİM EKİ: "evet yapalım" → ATLAR (yap+alım, sade emir değil)`, r === "none");
+}
+
+{
+  // K2.24: "tamam olur" (olur farklı kelime, "olsun" değil)
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "tamam olur",
+    "confirm_reservation",
+    {},
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.24: "tamam olur" → ATLAR ("olur" pattern'de yok)`, r === "none");
+}
+
+{
+  // K2.25 KRİTİK: saf "ismi Ahmet yap" (onaysız) — onay sinyali YOK → atla
+  // NLU intent change_info olsa bile, _hasConfirmSignal FALSE → atla → mevcut change_info akışı
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "ismi Ahmet yap",
+    "change_info",
+    { fullName: "Ahmet" },
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.25 KRİTİK: saf "ismi Ahmet yap" (onaysız) → ATLAR (mevcut change_info akışı çalışsın)`, r === "none");
+}
+
+{
+  // K2.26 REGRESYON: stage CONFIRMING DEĞİL → atla
+  const r = _evaluateLayer2(
+    "COLLECTING_INFO",
+    "ismi Ahmet yap onaylıyorum",
+    "confirm_reservation",
+    { fullName: "Ahmet" },
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.26 REGRESYON: stage CONFIRMING değil → ATLAR`, r === "none");
+}
+
+{
+  // K2.27: AYNI değer (farklılık yok) + onay → atla → COMPLETED'e gitsin
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "evet onaylıyorum",
+    "confirm_reservation",
+    { fullName: "Mehmet" },  // aynı
+    { fullName: "Mehmet" },
+    "tr",
+  );
+  assert(`K2.27: extractedInfo'da AYNI değer → ATLAR (farklı değil, onay)`, r === "none");
+}
+
+// NOT: "ilk doldurma" senaryosu (currentInfo'da alan yok) CONFIRMING'de
+// pratikte oluşmaz — CONFIRMING'e ulaşmak için isAllInfoCollected gerekir.
+// Bu senaryoda DAL 1 atlar (diff FALSE), DAL 2 alan adı sinyali ile tetiklenir
+// (mesajda "ismi" var) — netleştirme makul. Test gerçekçi değil, kaldırıldı.
+
+// ── EN ──
+{
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "make it Ahmet, confirm",
+    "confirm_reservation",
+    { fullName: "Ahmet" },
+    { fullName: "Mehmet" },
+    "en",
+  );
+  assert(`K2.30 EN: "make it Ahmet, confirm" + farklı isim → DAL 1`, r === "branch1");
+}
+
+{
+  const r = _evaluateLayer2(
+    "CONFIRMING",
+    "yes",
+    "confirm_reservation",
+    {},
+    { fullName: "Mehmet" },
+    "en",
+  );
+  assert(`K2.31 EN F1 KORUMA: "yes" → ATLAR`, r === "none");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

@@ -529,6 +529,147 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // === 8. BİLGİ ÇIKARMA ===
   const extractedInfo = extractAllInfo({ message, nluResult, fsmIntent, context, tours, tourJustChanged: _tourJustChangedThisTurn });
 
+  // === 8a. F4 KATMAN 2 — ÇELİŞKİ TESPİTİ + İKİ DALLI SON-ONAY ===
+  // 2026-06-25 (Katman 1 = 619417f detectConfirmation negative pattern kelime listesi
+  // KALIYOR). Katman 2 kelime-bağımsız alt-ağ — Katman 1 kaçırırsa (liste-dışı fiil) +
+  // NLU yanlış sınıflandırırsa devreye girer.
+  //
+  // TEŞHİS — F4 Katman 1 sonrası "ismi Ahmet yap onaylıyorum" 3 yola gider:
+  //   (a) NLU change_info → state-machine değiştirir + stage COLLECTING_INFO,
+  //       özet+onay garantisi M1'e bağlı (kırılgan)
+  //   (b) NLU confirm_reservation → CONFIRMING→COMPLETED reddeder (msg uzun) +
+  //       change_info weak signal yok → no-op → :13-PERSIST eski özet
+  //       (DEĞİŞİKLİK YUTULUR — en kötü)
+  //   (c) NLU provide_info + farklı isim → BUG B PROMOTE → (a) yolu
+  //
+  // Katman 2 her 3 yolu da deterministik kapatır: extractedInfo'da mevcut alanı
+  // FARKLI değerle değiştiren değer + CONFIRMING + onay sinyali → state-machine
+  // ATLA, değişikliği uygula + state CONFIRMING + özet+onay deterministik.
+  //
+  // İki dal:
+  //   DAL 1 (NLU NET): _hasNewValue → değişiklik UYGULA + özet+onay → RETURN
+  //   DAL 2 (BELİRSİZ): sinyal var ama değer yok → netleştirme → RETURN
+  //
+  // REGRESYON GUARD'LARI (KRİTİK):
+  //   - Saf "evet"/"onaylıyorum" → extractedInfo boş, mesajda alan/fiil yok → atla
+  //   - "evet yapalım" → "yap" çekim eki (lookahead engelle) → DAL 2 tetiklenmez
+  //   - Saf "ismi Ahmet yap" (onaysız) → _hasConfirmSignal FALSE → atla
+  //   - context.stage CONFIRMING DEĞİL → atla
+  //   - BUG B PROMOTE yukarıda fsmIntent change_info'ya çevirebilir; Katman 2
+  //     yine ÇALIŞIR (yolun garantisizliğini tamamlar) — state-machine'i bypass
+  //     edip değişiklik+özet+onay deterministik verir. Çift işlem YOK çünkü
+  //     RETURN ile state-machine atlanır.
+  const _l2ConfirmIntents = new Set(["confirm_reservation", "confirm"]);
+  const _l2HasConfirmSignal =
+    _l2ConfirmIntents.has(nluResult.intent as string) ||
+    detectConfirmation(message, context.language);
+  const _l2Ext = extractedInfo as any;
+  const _l2Cur = (context.reservationInfo || {}) as any;
+  const _l2DiffFN = !!_l2Ext.fullName && !!_l2Cur.fullName && _l2Cur.fullName !== _l2Ext.fullName;
+  const _l2DiffPh = !!_l2Ext.phone && !!_l2Cur.phone && _l2Cur.phone !== _l2Ext.phone;
+  const _l2DiffPx = typeof _l2Ext.paxAdult === "number" && typeof _l2Cur.paxAdult === "number" && _l2Cur.paxAdult !== _l2Ext.paxAdult;
+  const _l2DiffDid = !!_l2Ext.dateId && !!_l2Cur.dateId && _l2Cur.dateId !== _l2Ext.dateId;
+  const _l2DiffSd = !!_l2Ext.selectedDate && !!_l2Cur.selectedDate && _l2Cur.selectedDate !== _l2Ext.selectedDate;
+  const _l2HasNewValue = _l2DiffFN || _l2DiffPh || _l2DiffPx || _l2DiffDid || _l2DiffSd;
+
+  // DAL 2 için "değişiklik sinyali": mesajda alan adı (sıkı kelime sınırı) veya
+  // değiştirme fiili (sade emir kalıbı, çekim eki olmadan).
+  const _l2FieldPattern = /(?<![\p{L}\p{N}])(isim|ismi|adı|adın|adım|soyad|surname|name|nom|nombre|имя|اسم|telefon|numara|phone|tel|gsm|téléphone|teléfono|телефон|هاتف|tarih|date|gün|day|datum|jour|día|дата|تاريخ|ki[şs]i|pax|person|people|kinder|personen|personnes|personas|человек)(?![\p{L}\p{N}])/iu;
+  // "yap/olsun/ayarla" sıkı kelime — çekim eki ("yapalım") match etmez
+  // "değiştir/düzelt/güncelle" çekim eki serbest (F4 ile aynı strateji)
+  const _l2VerbPattern = /(?<![\p{L}\p{N}])(yap|olsun|ayarla|kur|set|make|adjust|aceptar)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])(değiştir|düzelt|güncelle|değişiklik|change|modify|edit|update|correct|fix|ändern|korrigieren|modifier|corriger|cambiar|modificar|изменить|исправить|تعديل|تغيير|اجعل)/iu;
+  const _l2HasChangeSignal = _l2FieldPattern.test(message) || _l2VerbPattern.test(message);
+
+  // ── DAL 1 — somut yeni değer var → değişiklik UYGULA + özet+onay ──
+  if (
+    context.stage === "CONFIRMING" &&
+    _l2HasConfirmSignal &&
+    _l2HasNewValue
+  ) {
+    const _l2Updated = { ..._l2Cur };
+    if (_l2DiffFN) _l2Updated.fullName = _l2Ext.fullName;
+    if (_l2DiffPh) _l2Updated.phone = _l2Ext.phone;
+    if (_l2DiffPx) {
+      _l2Updated.paxAdult = _l2Ext.paxAdult;
+      if (typeof _l2Ext.paxChild === "number") _l2Updated.paxChild = _l2Ext.paxChild;
+    }
+    if (_l2DiffDid) _l2Updated.dateId = _l2Ext.dateId;
+    if (_l2DiffSd) _l2Updated.selectedDate = _l2Ext.selectedDate;
+
+    const _l2Context: ConversationContext = {
+      ...context,
+      reservationInfo: _l2Updated,
+      collectionStep: "ready_for_confirmation" as any,
+      lastUserMessage: message,
+      messageCount: context.messageCount + 1,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    // Özet+onay (FIX 3 / :13-PERSIST ile aynı format — DRY ileride helper'a)
+    const _lang = _l2Context.language || "tr";
+    const _tourTitle = _l2Context.currentTour
+      ? getLocalizedTourTitle(_l2Context.currentTour.title || "", _lang)
+      : "";
+    const _dateText = _l2Updated.selectedDate ? formatDateForLanguage(_l2Updated.selectedDate, _lang) : "";
+    const _paxAdult = _l2Updated.paxAdult ?? "";
+    const _paxChild = _l2Updated.paxChild;
+    const _name = _l2Updated.fullName || "";
+    const _phone = _l2Updated.phone || "";
+
+    const _l2Labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Bilgileri güncelledim. Onaylıyor musunuz? ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "I've updated the details. Do you confirm? ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Ich habe die Angaben aktualisiert. Bestätigen Sie? ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Я обновил данные. Подтверждаете? ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "تم تحديث البيانات. هل تؤكد؟ ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "J'ai mis à jour les informations. Confirmez-vous ? ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "He actualizado los datos. ¿Confirma? ✅" },
+    };
+    const L = _l2Labels[_lang] || _l2Labels.tr;
+    const _paxText = _paxAdult !== ""
+      ? (typeof _paxChild === "number" && _paxChild > 0
+          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
+          : `${_paxAdult}`)
+      : "";
+    const _summaryLines = [
+      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
+      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
+      _name      ? `👤 ${L.name}: ${_name}`        : "",
+      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
+    ].filter(Boolean).join("\n");
+    const _l2Reply = `${_summaryLines}\n\n${L.reask}`;
+
+    const _diffs = [_l2DiffFN && "name", _l2DiffPh && "phone", _l2DiffPx && "pax", _l2DiffDid && "date", _l2DiffSd && "selectedDate"].filter(Boolean).join(",");
+    console.log(`[process-message] F4 Katman 2 DAL 1: çelişki yakalandı (diffs=${_diffs}) — değişiklik uygula + özet+onay`);
+    await _save(_l2Reply, _l2Context);
+    await adapter.sendResponse(_l2Reply);
+    return { success: true, response: _l2Reply, newContext: _l2Context };
+  }
+
+  // ── DAL 2 — sinyal var ama somut değer yok → netleştirme ──
+  if (
+    context.stage === "CONFIRMING" &&
+    _l2HasConfirmSignal &&
+    !_l2HasNewValue &&
+    _l2HasChangeSignal
+  ) {
+    const _l2DisambigMsgs: Record<string, string> = {
+      tr: "Değiştirmek istediğiniz bir bilgi mi var, yoksa rezervasyonu onaylıyor musunuz? Lütfen değişikliği belirtin veya 'onaylıyorum' yazın.",
+      en: "Do you want to change something, or do you confirm the reservation? Please specify the change or write 'confirm'.",
+      de: "Möchten Sie etwas ändern oder bestätigen Sie die Reservierung? Bitte geben Sie die Änderung an oder schreiben Sie 'bestätigen'.",
+      fr: "Voulez-vous changer quelque chose ou confirmez-vous la réservation ? Veuillez préciser le changement ou écrire 'confirmer'.",
+      es: "¿Quiere cambiar algo o confirma la reserva? Por favor, especifique el cambio o escriba 'confirmo'.",
+      ru: "Хотите что-то изменить или подтверждаете бронирование? Уточните изменение или напишите 'подтверждаю'.",
+      ar: "هل تريد تغيير شيء أم تؤكد الحجز؟ يرجى تحديد التغيير أو كتابة 'تأكيد'.",
+    };
+    const _l2DisambigReply = _l2DisambigMsgs[context.language] || _l2DisambigMsgs.tr;
+    console.log(`[process-message] F4 Katman 2 DAL 2: belirsiz (onay+sinyal ama değer yok) — netleştirme`);
+    await _save(_l2DisambigReply, context);
+    await adapter.sendResponse(_l2DisambigReply);
+    return { success: true, response: _l2DisambigReply, newContext: context };
+  }
+
   // Negatif pax kontrolü
   if (context.collectionStep === "waiting_for_pax" && isNegativePaxMessage(message)) {
     const _negMsgs: Record<string, string> = {
