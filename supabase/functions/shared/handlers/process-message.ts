@@ -366,6 +366,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (selectedTour) console.log("[process-message] Tour matched:", selectedTour.title);
   if (unknownTourQuery) console.log("[process-message] UNKNOWN_TOUR signal:", unknownTourQuery);
 
+  // 2026-06-25 KÖK 5 devamı: erken-müdahale uygulandı mı bayrağı (extractAllInfo'ya
+  // geçirilir → Blok 10 tek-tarih otomatik atama ATLAYACAK → yeni turun tarihi
+  // kullanıcıya sorulur, sessiz atama olmaz).
+  let _tourJustChangedThisTurn = false;
+
   // === 7b. ERKEN TUR DEĞİŞİMİ (2026-06-20 Bug 1 v2) ========================
   // Tour-matching kanıtsal selectedTour mevcut currentTour'dan farklıysa VE stage
   // COLLECTING_INFO/CONFIRMING ise: stage koruma intent'i ezmeden (line ~326)
@@ -385,6 +390,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       stage: "COLLECTING_INFO" as any,
       reservationConfirmed: false,                       // CONFIRMING'den geri dönüş temizliği
     };
+    _tourJustChangedThisTurn = true;  // KÖK 5 devamı: Blok 10 (tek-tarih oto atama) ATLAYACAK
     console.log(
       `[process-message] DETERMINISTIC tour-change: ${_prevStage} → COLLECTING_INFO ` +
       `("${_prevTourTitle}" → "${selectedTour.title}")`,
@@ -491,7 +497,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   // === 8. BİLGİ ÇIKARMA ===
-  const extractedInfo = extractAllInfo({ message, nluResult, fsmIntent, context, tours });
+  const extractedInfo = extractAllInfo({ message, nluResult, fsmIntent, context, tours, tourJustChanged: _tourJustChangedThisTurn });
 
   // Negatif pax kontrolü
   if (context.collectionStep === "waiting_for_pax" && isNegativePaxMessage(message)) {

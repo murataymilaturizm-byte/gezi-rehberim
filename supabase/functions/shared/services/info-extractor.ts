@@ -252,6 +252,16 @@ export interface ExtractAllInfoParams {
   fsmIntent: string;   // mapNLUIntentToFSMIntent sonrası, override uygulanmış
   context: ConversationContext;
   tours: any[];        // getCachedTours çıktısı
+  /**
+   * 2026-06-25 KÖK 5 devamı (exec a90c71af): tur değişimi (erken-müdahale)
+   * SONRASI çağrıldığında Blok 10 (tek-tarih otomatik atama) ATLAYACAK.
+   * Yeni turun tek tarihi olsa bile kullanıcı seçmeli — sessiz atama yapılmaz.
+   * Canlı bug: Pamukkale (20.12) → Kapadokya geçişinde Kapadokya tek-tarihli
+   * (18.12) → Blok 10 sessizce atadı → özet "Tarih: 18.12" göründü, kullanıcı
+   * onaylamadı. produceTourChangeContext dateId/selectedDate'i silmişti ama
+   * Blok 10 yeniden atadı.
+   */
+  tourJustChanged?: boolean;
 }
 
 /**
@@ -430,7 +440,13 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // bayrak yok → bypass tetiklenmez → çift mesaj riski sıfır.
   //
   // 2026-06-22 Sorun H β fix: tek tarihli tur DOLU ise otomatik atama yapma.
+  //
+  // 2026-06-25 KÖK 5 devamı: tur değişimi (erken-müdahale) sonrası ATLAYACAK.
+  // produceTourChangeContext eski dateId/selectedDate'i sildi + waiting_for_date
+  // ayarladı; Blok 10 yeni turun tek tarihini sessizce atamasın → kullanıcı
+  // yeni turun tarihini onaylasın (deterministik :11 tarih listesi tetiklenir).
   if (
+    !params.tourJustChanged &&
     !extractedInfo.dateId &&
     !extractedInfo.selectedDate &&
     context.currentTour?.dates?.length === 1 &&

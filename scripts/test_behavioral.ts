@@ -2993,6 +2993,76 @@ assert(`K5.12 REGRESYON: "evet" onay → pattern EŞLEŞMEZ`,
 assert(`K5.13 REGRESYON: "haftaya 5 kişi" → pattern EŞLEŞMEZ (tarih+pax karışım)`,
   _TCP_RE.test("haftaya 5 kişi") === false);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 KÖK 5 DEVAMI — tur değişimi sonrası Blok 10 atla
+// Canlı (exec a90c71af): Pamukkale→Kapadokya geçişinde Kapadokya tek-tarihli
+// (18.12) → Blok 10 sessizce atadı → kullanıcı onaylamadı.
+// Fix: extractAllInfo params.tourJustChanged=true → Blok 10 atlat.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── KÖK 5 devamı: tur değişimi sonrası Blok 10 atla ──");
+
+// K5D.1 KRİTİK: tek-tarihli tur + tourJustChanged=true → Blok 10 ATLAR (auto-assign yok)
+{
+  const tour = {
+    id: "T_CAPP_TEK",
+    title: "Kapadokya Kültür Turu",
+    dates: [{ id: "D_18_12", departure_date: "2026-12-18", remaining_quota: 5, quota: 10 }],
+  };
+  const ei = extractAllInfo({
+    message: "kapadokya turuna geçmek istiyorum",
+    nluResult: { intent: "reservation_intent", entities: {}, updates: {} } as any,
+    fsmIntent: "reservation_intent",
+    context: { currentTour: tour, collectionStep: "waiting_for_date", language: "tr" } as any,
+    tours: [tour],
+    tourJustChanged: true,  // ← KÖK 5 devamı flag
+  });
+  assert(`K5D.1 KRİTİK: tur değişimi + tek-tarihli yeni tur → Blok 10 ATLAR (dateId atanmaz)`,
+    ei.dateId === undefined && ei.selectedDate === undefined);
+  assert(`K5D.2 KRİTİK: dateAutoAssigned flag SET EDİLMEZ (kullanıcı seçecek)`,
+    ei.dateAutoAssigned === undefined);
+}
+
+// K5D.3 REGRESYON: tek-tarihli tur + tourJustChanged=false → Blok 10 ÇALIŞIR (mevcut Sorun C davranışı)
+{
+  const tour = {
+    id: "T_SINGLE",
+    title: "Tek Tarih Turu",
+    dates: [{ id: "D1", departure_date: "2026-12-15", remaining_quota: 10, quota: 10 }],
+  };
+  const ei = extractAllInfo({
+    message: "rezervasyon yapmak istiyorum",
+    nluResult: { intent: "reservation_intent", entities: {}, updates: {} } as any,
+    fsmIntent: "reservation_intent",
+    context: { currentTour: tour, collectionStep: undefined, language: "tr" } as any,
+    tours: [tour],
+    // tourJustChanged YOK (false/undefined) — normal akış
+  });
+  assert(`K5D.3 REGRESYON: tur değişimi YOK + tek-tarihli → Blok 10 ÇALIŞIR (Sorun C korundu)`,
+    ei.dateId === "D1" && ei.selectedDate === "2026-12-15" && ei.dateAutoAssigned === true);
+}
+
+// K5D.4 REGRESYON: çok-tarihli tur + tourJustChanged=true → Blok 10 zaten çalışmaz (length !== 1)
+{
+  const tour = {
+    id: "T_MULTI",
+    title: "Çok Tarihli",
+    dates: [
+      { id: "D1", departure_date: "2026-12-10", remaining_quota: 5, quota: 10 },
+      { id: "D2", departure_date: "2026-12-20", remaining_quota: 5, quota: 10 },
+    ],
+  };
+  const ei = extractAllInfo({
+    message: "kapadokya turuna geçmek istiyorum",
+    nluResult: { intent: "reservation_intent", entities: {}, updates: {} } as any,
+    fsmIntent: "reservation_intent",
+    context: { currentTour: tour, collectionStep: "waiting_for_date", language: "tr" } as any,
+    tours: [tour],
+    tourJustChanged: true,
+  });
+  assert(`K5D.4 REGRESYON: tur değişimi + çok-tarihli → Blok 10 zaten atlanır`,
+    ei.dateId === undefined && ei.selectedDate === undefined);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
