@@ -2906,6 +2906,40 @@ import { extractNameAndPhone as _enpK2 } from "../supabase/functions/shared/fsm/
 // K2.7 NLU prompt PRESENCE — children örnek var (kod-okuma test'i değil — sadece kelime varlığı)
 // Bu PRESENCE testi e2e tarafında, davranışsal değil — burada atlanır.
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 KÖK 2 İNCE AYAR — :13 ve :13-PERSIST özet pax formatı
+// Canlı (exec 058bb668): ilk özet "Kişi sayısı: 3" (paxChild=2 yutuldu).
+// :13 bypass'ı paxChild'a bakmıyordu. Şimdi "X yetişkin, Y çocuk" formatı.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── KÖK 2 ince ayar: :13/:13-PERSIST paxChild gösterimi ──");
+
+// :13 bypass mantığını izole eden helper (process-message.ts:1228 civarı inline kod)
+function _formatPaxText(paxAdult: number | "", paxChild: number | undefined, adultLabel: string, childLabel: string): string {
+  if (paxAdult === "") return "";
+  if (typeof paxChild === "number" && paxChild > 0) {
+    return `${paxAdult} ${adultLabel}, ${paxChild} ${childLabel}`;
+  }
+  return `${paxAdult}`;
+}
+
+assert(`K2İ.1 KRİTİK: paxAdult=3 + paxChild=2 → "3 yetişkin, 2 çocuk"`,
+  _formatPaxText(3, 2, "yetişkin", "çocuk") === "3 yetişkin, 2 çocuk");
+
+assert(`K2İ.2 REGRESYON: paxAdult=2 + paxChild yok → "2" (sade davranış korundu)`,
+  _formatPaxText(2, undefined, "yetişkin", "çocuk") === "2");
+
+assert(`K2İ.3 REGRESYON: paxAdult=2 + paxChild=0 → "2" (0 çocuk yazma)`,
+  _formatPaxText(2, 0, "yetişkin", "çocuk") === "2");
+
+assert(`K2İ.4: paxAdult boş → boş string (özet satırı atlanır)`,
+  _formatPaxText("", 2, "yetişkin", "çocuk") === "");
+
+assert(`K2İ.5 EN: paxAdult=3 + paxChild=2 → "3 adult, 2 child"`,
+  _formatPaxText(3, 2, "adult", "child") === "3 adult, 2 child");
+
+assert(`K2İ.6 DE: paxAdult=3 + paxChild=2 → "3 Erwachsener, 2 Kind"`,
+  _formatPaxText(3, 2, "Erwachsener", "Kind") === "3 Erwachsener, 2 Kind");
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

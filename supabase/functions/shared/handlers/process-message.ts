@@ -1211,25 +1211,37 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       ? getLocalizedTourTitle(newContext.currentTour.title || "", _lang)
       : "";
     const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
-    const _pax = info.paxAdult ?? "";
+    // 2026-06-25 KÖK 2 ince ayar: paxChild gösterimi (canlı kanıt 058bb668 — ilk
+    // özet "Kişi sayısı: 3" diyordu, ikinci özet (LLM) "3 yetişkin, 2 çocuk" doğru.
+    // İlk bypass mevcut sadece paxAdult'a bakıyordu. Tutarlı için pax satırı
+    // "X yetişkin, Y çocuk" formatına çevrildi (paxChild yoksa "X yetişkin").
+    const _paxAdult = info.paxAdult ?? "";
+    const _paxChild = info.paxChild;
     const _name = info.fullName || "";
     const _phone = info.phone || "";
 
-    const _labels: Record<string, { tour: string; date: string; pax: string; name: string; phone: string; confirm: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
+    const _labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; confirm: string }> = {
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",  child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",     child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",  name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",  child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",      child: "طفل",     name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",    child: "enfant",  name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",    child: "niño",    name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
     };
     const L = _labels[_lang] || _labels.tr;
+
+    // paxChild varsa "X yetişkin, Y çocuk"; yoksa sadece "X" (mevcut sade davranış)
+    const _paxText = _paxAdult !== ""
+      ? (typeof _paxChild === "number" && _paxChild > 0
+          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
+          : `${_paxAdult}`)
+      : "";
 
     const _summaryLines = [
       _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
       _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-      _pax !== "" ? `👥 ${L.pax}: ${_pax}`         : "",
+      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
       _name      ? `👤 ${L.name}: ${_name}`        : "",
       _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
     ].filter(Boolean).join("\n");
@@ -1258,28 +1270,36 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       ? getLocalizedTourTitle(newContext.currentTour.title || "", _lang)
       : "";
     const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
-    const _pax = info.paxAdult ?? "";
+    // 2026-06-25 KÖK 2 ince ayar: paxChild gösterimi (:13 ile tutarlı)
+    const _paxAdult = info.paxAdult ?? "";
+    const _paxChild = info.paxChild;
     const _name = info.fullName || "";
     const _phone = info.phone || "";
 
     // Mevcut :13 ile aynı label yapısı (tutarlı görünüm). FARK: confirm metni
     // daha sade — "Bilgileri tekrar görmenizi istedim" yok (kullanıcı o cümleyi
     // kurmadı, tuhaf). Özet zaten üstte, sade soru yeter.
-    const _labels: Record<string, { tour: string; date: string; pax: string; name: string; phone: string; reask: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", name: "Ad-Soyad", phone: "Telefon",   reask: "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı? ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      name: "Name",     phone: "Phone",     reask: "Do you confirm, or is there something you'd like to change? ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    name: "Name",     phone: "Telefon",   reask: "Bestätigen Sie, oder möchten Sie etwas ändern? ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     name: "Имя",      phone: "Телефон",   reask: "Подтверждаете или хотите что-то изменить? ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", name: "الاسم",    phone: "الهاتف",    reask: "هل تؤكد أم تريد تغيير شيء ما؟ ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   name: "Nom",      phone: "Téléphone", reask: "Confirmez-vous, ou souhaitez-vous changer quelque chose ? ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    name: "Nombre",   phone: "Teléfono",  reask: "¿Confirma o desea cambiar algo? ✅" },
+    const _labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı? ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "Do you confirm, or is there something you'd like to change? ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Bestätigen Sie, oder möchten Sie etwas ändern? ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Подтверждаете или хотите что-то изменить? ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "هل تؤكد أم تريد تغيير شيء ما؟ ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "Confirmez-vous, ou souhaitez-vous changer quelque chose ? ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "¿Confirma o desea cambiar algo? ✅" },
     };
     const L = _labels[_lang] || _labels.tr;
+
+    const _paxText = _paxAdult !== ""
+      ? (typeof _paxChild === "number" && _paxChild > 0
+          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
+          : `${_paxAdult}`)
+      : "";
 
     const _summaryLines = [
       _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
       _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-      _pax !== "" ? `👥 ${L.pax}: ${_pax}`         : "",
+      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
       _name      ? `👤 ${L.name}: ${_name}`        : "",
       _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
     ].filter(Boolean).join("\n");
