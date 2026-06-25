@@ -3211,6 +3211,153 @@ assert(`K6.9: waiting_for_date + change_info → :11 ÇALIŞIR (change_info bilg
 assert(`K6.10: waiting_for_date + confirm_reservation → :11 ÇALIŞIR`,
   _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "confirm_reservation", true, false) === true);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 FIX KÖK 6 İNCE AYAR — Akış-içi bilgi sorusu → DOĞRU adıma yönlendir
+// Canlı (exec 6da00133, 50f02727): waiting_for_pax'ta (tarih SEÇİLİ) "ödeme nasıl"
+// → LLM cevaplıyor ✓ AMA "Hangi tarihi seçmek istersiniz?" diye yönlendiriyor.
+// midFlowReturnPrompt LLM hint'ine Haiku uymuyor (M1 kırılgan).
+// Fix: deterministik post-LLM suffix — LLM cevabında doğru adım keyword'ü
+// yoksa bizim deterministik soruyu ekle. waiting_for_date dokunmaz.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX KÖK 6 İNCE AYAR: akış-döndürme post-LLM suffix ──");
+
+// Helper: process-message.ts:2127+ inline mantığını izole eder.
+// LLM cevabı + collectionStep + language verilince, suffix eklenmiş cevabı döndürür.
+function _applyFlowReturnSuffix(
+  reply: string,
+  fsmIntent: string,
+  stage: string,
+  collectionStep: string | undefined,
+  language: string,
+): string {
+  const _isInfoQuestion = fsmIntent === "general_question" || fsmIntent === "support_request";
+  if (
+    !_isInfoQuestion ||
+    stage !== "COLLECTING_INFO" ||
+    !collectionStep ||
+    collectionStep === "waiting_for_date" ||
+    collectionStep === "ready_for_confirmation"
+  ) {
+    return reply;
+  }
+  const _flowQs: Record<string, Record<string, string>> = {
+    waiting_for_pax: { tr: "Kaç kişi katılacaksınız?", en: "How many people will join?" },
+    waiting_for_name: { tr: "Ad-soyadınızı alabilir miyim?", en: "Could you share your full name?" },
+    waiting_for_phone: { tr: "Telefon numaranızı alabilir miyim?", en: "May I have your phone number?" },
+    waiting_for_email: { tr: "Email adresinizi alabilir miyim?", en: "May I have your email address?" },
+  };
+  const _flowKws: Record<string, RegExp> = {
+    waiting_for_pax: /(kaç\s*kişi|kac\s*kisi|kişi\s*say|kisi\s*say|how\s*many|wie\s*viele|combien|cuántas|cuantas|сколько|كم)/i,
+    waiting_for_name: /(ad[\s-]?soyad|isminiz|adınız|adiniz|full\s*name|your\s*name|ihr\s*name|nom\s*complet|nombre\s*completo|ваше\s*имя|اسم)/i,
+    waiting_for_phone: /(telefon|phone|numaranız|numaraniz|téléphone|teléfono|телефон|هاتف)/i,
+    waiting_for_email: /(\bemail\b|e-?mail|e-?posta|почт|بريد)/i,
+  };
+  const _qsTable = _flowQs[collectionStep];
+  const _kw = _flowKws[collectionStep];
+  if (_qsTable && _kw && !_kw.test(reply)) {
+    const _suffix = _qsTable[language] || _qsTable.en;
+    return reply.trimEnd() + "\n\n" + _suffix;
+  }
+  return reply;
+}
+
+// K6İ.1 KRİTİK: waiting_for_pax + "ödeme nasıl" → LLM tarih sorar → suffix
+//   "Kaç kişi" ekler (canlı bug'ın aynısı)
+{
+  const llmReply = "Banka havalesi veya kredi kartıyla ödeyebilirsiniz. Hangi tarihi seçmek istersiniz?";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_pax", "tr");
+  assert(`K6İ.1 KRİTİK CANLI: waiting_for_pax + LLM tarih sorar → "Kaç kişi" suffix EKLENİR`,
+    fixed.includes("Kaç kişi katılacaksınız?") && fixed.startsWith(llmReply));
+}
+
+// K6İ.2: waiting_for_name + "tur saati" → "Ad-soyad" suffix
+{
+  const llmReply = "Tur 09:00'da başlar ve 18:00'de biter.";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_name", "tr");
+  assert(`K6İ.2: waiting_for_name + bilgi sorusu → "Ad-soyad" suffix EKLENİR`,
+    fixed.includes("Ad-soyadınızı alabilir miyim?"));
+}
+
+// K6İ.3: waiting_for_phone + "ödeme" → "Telefon" suffix
+{
+  const llmReply = "Ödeme banka havalesi ile yapılır.";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_phone", "tr");
+  assert(`K6İ.3: waiting_for_phone + bilgi sorusu → "Telefon" suffix EKLENİR`,
+    fixed.includes("Telefon numaranızı alabilir miyim?"));
+}
+
+// K6İ.4: waiting_for_email + "iptal" → "Email" suffix
+{
+  const llmReply = "İptal şartlarımız 48 saat öncesine kadar geçerlidir.";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_email", "tr");
+  assert(`K6İ.4: waiting_for_email + bilgi sorusu → "Email" suffix EKLENİR`,
+    fixed.includes("Email adresinizi alabilir miyim?"));
+}
+
+// K6İ.5 KRİTİK İSTİSNA: waiting_for_date → DOKUNMA (mevcut tarih-liste davranışı)
+{
+  const llmReply = "İptal şartı 48 saat. Hangi tarihi seçmek istersiniz?";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_date", "tr");
+  assert(`K6İ.5 KRİTİK İSTİSNA: waiting_for_date + bilgi sorusu → SUFFIX EKLEME (regresyon)`,
+    fixed === llmReply);
+}
+
+// K6İ.6 İSTİSNA: ready_for_confirmation → DOKUNMA (K4 validateFieldReask kapsıyor)
+{
+  const llmReply = "Ödeme bilgisi cevabı.";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "ready_for_confirmation", "tr");
+  assert(`K6İ.6 İSTİSNA: ready_for_confirmation + bilgi → SUFFIX EKLEME (K4 kapsar)`,
+    fixed === llmReply);
+}
+
+// K6İ.7 REGRESYON: bilgi sorusu DEĞİL → suffix yok (sadece info question için)
+{
+  const llmReply = "5 kişi alındı.";
+  const fixed = _applyFlowReturnSuffix(llmReply, "provide_info", "COLLECTING_INFO", "waiting_for_pax", "tr");
+  assert(`K6İ.7 REGRESYON: provide_info (bilgi sorusu değil) → SUFFIX EKLEME`,
+    fixed === llmReply);
+}
+
+// K6İ.8 GÜVENLİK: LLM zaten DOĞRU sormuşsa suffix EKLEME (çift soru olmasın)
+{
+  const llmReply = "Ödeme havale ile. Kaç kişi katılacaksınız?";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_pax", "tr");
+  assert(`K6İ.8 GÜVENLİK: LLM zaten "kaç kişi" sormuşsa → suffix EKLEME (çift soru yok)`,
+    fixed === llmReply);
+}
+
+// K6İ.9: support_request intent + waiting_for_pax → suffix EKLENİR (general_question gibi)
+{
+  const llmReply = "Acente size en kısa sürede dönecektir.";
+  const fixed = _applyFlowReturnSuffix(llmReply, "support_request", "COLLECTING_INFO", "waiting_for_pax", "tr");
+  assert(`K6İ.9: support_request + waiting_for_pax → "Kaç kişi" suffix EKLENİR`,
+    fixed.includes("Kaç kişi katılacaksınız?"));
+}
+
+// K6İ.10: İngilizce dil → İngilizce suffix
+{
+  const llmReply = "Payment is by bank transfer. Which date would you like?";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_pax", "en");
+  assert(`K6İ.10: en + waiting_for_pax → "How many" English suffix`,
+    fixed.includes("How many people will join?"));
+}
+
+// K6İ.11 REGRESYON: stage TOUR_SELECTED → suffix yok (sadece COLLECTING_INFO)
+{
+  const llmReply = "Bilgi cevabı.";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "TOUR_SELECTED", "waiting_for_pax", "tr");
+  assert(`K6İ.11 REGRESYON: TOUR_SELECTED → SUFFIX EKLEME (sadece COLLECTING_INFO)`,
+    fixed === llmReply);
+}
+
+// K6İ.12: trim — LLM cevabı sonu boşluk/newline → suffix temiz eklenir
+{
+  const llmReply = "Ödeme bilgisi.   \n\n  ";
+  const fixed = _applyFlowReturnSuffix(llmReply, "general_question", "COLLECTING_INFO", "waiting_for_phone", "tr");
+  assert(`K6İ.12: LLM cevabı trailing whitespace → temiz suffix eklenir`,
+    fixed === "Ödeme bilgisi.\n\nTelefon numaranızı alabilir miyim?");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

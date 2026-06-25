@@ -2123,6 +2123,88 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
+  // === 17a-2. KÖK 6 İNCE AYAR — Akış-içi bilgi sorusu → DOĞRU adıma yönlendir ===
+  // Canlı (exec 6da00133, 50f02727): KÖK 6 ana fix bilgi sorusunu :11'den
+  // atlatıyor → LLM cevap üretiyor ✓ AMA waiting_for_pax'ta (tarih SEÇİLİ iken)
+  // LLM yine "Hangi tarihi seçmek istersiniz?" diye yönlendirdi. midFlowReturnPrompt
+  // (LLM prompt'una hint) M1 compliance kırılgan — Haiku uymuyor.
+  //
+  // Deterministik post-LLM suffix: bilgi sorusu intent'i (general_question /
+  // support_request) + COLLECTING_INFO + collectionStep ∈ {pax,name,phone,email}
+  // → LLM cevabında doğru adım keyword'ü YOKSA bizim deterministik soruyu ekle.
+  // Varsa (LLM zaten doğru sormuş) dokunma.
+  //
+  // İSTİSNALAR:
+  //   - waiting_for_date: :11 zaten KÖK 6 ile atlandı; LLM kendi tarih cevabı
+  //     verir + tarih listesi sunar (M1 prompt hint'ine bu noktada uyuyor).
+  //     Burada dokunma → "tarih yok + bilgi sorusu → cevap + tarih listesi"
+  //     mevcut davranışı regresyon olmasın.
+  //   - CONFIRMING / ready_for_confirmation: K4 validateFieldReask zaten
+  //     özet+onay suffix'i sağlıyor (BUG D fix).
+  const _isInfoQuestionForFlowReturn =
+    fsmIntent === "general_question" || fsmIntent === "support_request";
+  if (
+    _isInfoQuestionForFlowReturn &&
+    newContext.stage === "COLLECTING_INFO" &&
+    newContext.collectionStep &&
+    newContext.collectionStep !== "waiting_for_date" &&
+    newContext.collectionStep !== "ready_for_confirmation"
+  ) {
+    const _flowQs: Record<string, Record<string, string>> = {
+      waiting_for_pax: {
+        tr: "Kaç kişi katılacaksınız?",
+        en: "How many people will join?",
+        de: "Wie viele Personen nehmen teil?",
+        fr: "Combien de personnes participeront?",
+        es: "¿Cuántas personas participarán?",
+        ru: "Сколько человек будет?",
+        ar: "كم عدد الأشخاص الذين سيشاركون؟",
+      },
+      waiting_for_name: {
+        tr: "Ad-soyadınızı alabilir miyim?",
+        en: "Could you share your full name?",
+        de: "Können Sie mir Ihren vollständigen Namen mitteilen?",
+        fr: "Pourriez-vous me donner votre nom complet?",
+        es: "¿Podría darme su nombre completo?",
+        ru: "Назовите, пожалуйста, ваше полное имя.",
+        ar: "هل يمكنني الحصول على اسمك الكامل؟",
+      },
+      waiting_for_phone: {
+        tr: "Telefon numaranızı alabilir miyim?",
+        en: "May I have your phone number?",
+        de: "Könnten Sie mir Ihre Telefonnummer geben?",
+        fr: "Puis-je avoir votre numéro de téléphone?",
+        es: "¿Me podría dar su número de teléfono?",
+        ru: "Назовите, пожалуйста, ваш номер телефона.",
+        ar: "هل يمكنني الحصول على رقم هاتفك؟",
+      },
+      waiting_for_email: {
+        tr: "Email adresinizi alabilir miyim?",
+        en: "May I have your email address?",
+        de: "Könnten Sie mir Ihre E-Mail-Adresse geben?",
+        fr: "Puis-je avoir votre adresse e-mail?",
+        es: "¿Me podría dar su correo electrónico?",
+        ru: "Назовите, пожалуйста, ваш email.",
+        ar: "هل يمكنني الحصول على بريدك الإلكتروني؟",
+      },
+    };
+    // LLM cevabında bu adımın anahtar kelimesi var mı? Varsa zaten doğru sordu.
+    const _flowKws: Record<string, RegExp> = {
+      waiting_for_pax: /(kaç\s*kişi|kac\s*kisi|kişi\s*say|kisi\s*say|how\s*many|wie\s*viele|combien|cuántas|cuantas|сколько|كم)/i,
+      waiting_for_name: /(ad[\s-]?soyad|isminiz|adınız|adiniz|full\s*name|your\s*name|ihr\s*name|nom\s*complet|nombre\s*completo|ваше\s*имя|اسم)/i,
+      waiting_for_phone: /(telefon|phone|numaranız|numaraniz|téléphone|teléfono|телефон|هاتف)/i,
+      waiting_for_email: /(\bemail\b|e-?mail|e-?posta|почт|بريد)/i,
+    };
+    const _step = newContext.collectionStep;
+    const _qsTable = _flowQs[_step];
+    const _kw = _flowKws[_step];
+    if (_qsTable && _kw && !_kw.test(reply)) {
+      const _suffix = _qsTable[newContext.language] || _qsTable.en;
+      reply = reply.trimEnd() + "\n\n" + _suffix;
+      console.log(`[process-message] KÖK6 ince ayar: ${_step} → akış-döndürme suffix eklendi (lang=${newContext.language})`);
+    }
+  }
+
   // === 17b. K4: Injection post-validation — şüpheli cevaplarda fiyat manipülasyonu bloğu ===
   if (_isSuspectedInjection) {
     const _injBlock = validateInjectionResponse(reply, newContext.language);
