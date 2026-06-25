@@ -50,12 +50,23 @@ export function produceTourChangeContext(
 /**
  * process-message erken-müdahale gate'i:
  *   - tour-matching farklı bir tur buldu (selectedTour mevcut currentTour'dan farklı)
- *   - AND stage COLLECTING_INFO veya CONFIRMING (stage koruma intent'i ezdiği yerler)
+ *   - AND stage TOUR_SELECTED / COLLECTING_INFO / CONFIRMING (kullanıcı bağlamı
+ *     bir tura kilitlendi AMA başka tur seçebilir — state-machine transition'larının
+ *     yeterli olmadığı yerler).
  *
- * BROWSING / TOUR_SELECTED / COMPLETED / GREETING'de mevcut state-machine transition'ları
- * zaten doğru çalışıyor → erken müdahaleye gerek yok.
+ * 2026-06-25 BUG-X6 FIX: TOUR_SELECTED eklendi. Eski yorum yanlış varsayıma
+ * dayanıyordu — TOUR_SELECTED → COLLECTING_INFO transition action `...ctx` ile
+ * eski currentTour'u kopyalıyor, input.selectedTour'u görmezden geliyordu →
+ * keşifte tur kilitledikten sonra başka tur "rezerve et" deyince eski tur
+ * tarihlerini gösteriyordu. Canlı kanıt (exec 057b2301):
+ *   "Antalya ne kadar" → "Kapadokya daha iyi mi" → "Pamukkale rezerve et"
+ *   → Kapadokya tarihleri gösteriliyor (Pamukkale değil).
+ * Fix: TOUR_SELECTED'da da erken-müdahale → produceTourChangeContext doğru tur
+ * uygular (pax/isim/telefon Özge fix ile KORUNUR, tarih sıfırlanır).
  *
- * COMPLETED özellikle hariç: after-sales mantığı bozulmasın.
+ * BROWSING / COMPLETED / GREETING hâlâ HARİÇ: BROWSING transition action zaten
+ * input.selectedTour kullanıyor (line 512-522), COMPLETED after-sales mantığı,
+ * GREETING ilk seçim.
  */
 export function shouldApplyEarlyTourChange(
   context: ConversationContext,
@@ -63,7 +74,9 @@ export function shouldApplyEarlyTourChange(
 ): boolean {
   if (!selectedTour) return false;
   if (selectedTour.id === context.currentTour?.id) return false;
-  return context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING";
+  return context.stage === "TOUR_SELECTED"      // 2026-06-25 BUG-X6 fix
+      || context.stage === "COLLECTING_INFO"
+      || context.stage === "CONFIRMING";
 }
 
 // ─── 2026-06-23 SORUN D — tur değişim ack prefix ─────────────────────────

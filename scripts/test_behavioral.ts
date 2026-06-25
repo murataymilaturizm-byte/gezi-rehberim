@@ -455,9 +455,12 @@ const efes = { id: "T_EFES", title: "Efes Antik Kent Turu" };
     shouldApplyEarlyTourChange(ctx, efes) === false);
 }
 {
+  // 2026-06-25 BUG-X6 FIX: TOUR_SELECTED eski "NO-OP" davranıştan APPLY'a çevrildi.
+  // Eski varsayım yanlıştı (state-machine TOUR_SELECTED → COLLECTING_INFO action
+  // tur değişimini desteklemiyor). Şimdi erken-müdahale TOUR_SELECTED'ı da kapsar.
   const ctx = mkCtxWithFullData("TOUR_SELECTED");
-  assert(`gate: TOUR_SELECTED → NO-OP`,
-    shouldApplyEarlyTourChange(ctx, efes) === false);
+  assert(`gate: TOUR_SELECTED → APPLY (BUG-X6 fix, 2026-06-25)`,
+    shouldApplyEarlyTourChange(ctx, efes) === true);
 }
 {
   const ctx = mkCtxWithFullData("COMPLETED");
@@ -4439,6 +4442,110 @@ assert(`X5.8: dateAutoAssigned=undefined eşit gibi davranır (process-message u
     false,  // process-message'da `=== true` kontrolü undefined için false döner
     true,
   ) === true);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 BUG-X6 FIX — shouldApplyEarlyTourChange TOUR_SELECTED'ı kapsar
+// Canlı (exec 057b2301): "Antalya" → "Kapadokya daha iyi mi" → "Pamukkale rezerve et"
+// → currentTour Kapadokya kaldı (eski), Pamukkale tarihleri gösterilmedi.
+// Kök: TOUR_SELECTED → COLLECTING_INFO action `...ctx` ile eski tur korunuyordu,
+// shouldApplyEarlyTourChange TOUR_SELECTED'ı hariç tutmuştu.
+// Fix: TOUR_SELECTED da kapsa → erken-müdahale produceTourChangeContext uygular.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG-X6 FIX: shouldApplyEarlyTourChange TOUR_SELECTED kapsamı ──");
+
+// NOT: shouldApplyEarlyTourChange + produceTourChangeContext zaten dosyanın
+// üst kısmında (line 398) import edildi — burada tekrar import etmeye gerek yok.
+
+// X6.1 KRİTİK CANLI: TOUR_SELECTED'da yeni tur seçimi → ERKEN-MÜDAHALE TETİKLE
+assert(`X6.1 KRİTİK CANLI: TOUR_SELECTED + farklı tur → TETİKLE`,
+  shouldApplyEarlyTourChange(
+    { stage: "TOUR_SELECTED", currentTour: { id: "kapadokya-id", title: "Kapadokya" } } as any,
+    { id: "pamukkale-id", title: "Pamukkale" } as any,
+  ) === true);
+
+// X6.2 REGRESYON: COLLECTING_INFO + farklı tur (KÖK 5) → TETİKLE (mevcut)
+assert(`X6.2 REGRESYON KÖK 5: COLLECTING_INFO + farklı tur → TETİKLE`,
+  shouldApplyEarlyTourChange(
+    { stage: "COLLECTING_INFO", currentTour: { id: "kapadokya-id", title: "Kapadokya" } } as any,
+    { id: "pamukkale-id", title: "Pamukkale" } as any,
+  ) === true);
+
+// X6.3 REGRESYON: CONFIRMING + farklı tur → TETİKLE (mevcut)
+assert(`X6.3 REGRESYON: CONFIRMING + farklı tur → TETİKLE`,
+  shouldApplyEarlyTourChange(
+    { stage: "CONFIRMING", currentTour: { id: "kapadokya-id" } } as any,
+    { id: "pamukkale-id", title: "Pamukkale" } as any,
+  ) === true);
+
+// X6.4 KRİTİK REGRESYON: aynı tur → TETİKLEMEZ (no-op)
+assert(`X6.4 KRİTİK: aynı tur (selectedTour.id === currentTour.id) → TETİKLEMEZ`,
+  shouldApplyEarlyTourChange(
+    { stage: "TOUR_SELECTED", currentTour: { id: "pamukkale-id" } } as any,
+    { id: "pamukkale-id", title: "Pamukkale" } as any,
+  ) === false);
+
+// X6.5 REGRESYON: selectedTour null → TETİKLEMEZ
+assert(`X6.5: selectedTour null → TETİKLEMEZ`,
+  shouldApplyEarlyTourChange(
+    { stage: "TOUR_SELECTED", currentTour: { id: "kapadokya-id" } } as any,
+    null,
+  ) === false);
+
+// X6.6 REGRESYON: BROWSING'de erken-müdahale ÇALIŞMAZ (state-machine yeterli)
+assert(`X6.6 REGRESYON: BROWSING → TETİKLEMEZ (state-machine action input.selectedTour kullanır)`,
+  shouldApplyEarlyTourChange(
+    { stage: "BROWSING", currentTour: null } as any,
+    { id: "pamukkale-id", title: "Pamukkale" } as any,
+  ) === false);
+
+// X6.7 REGRESYON: COMPLETED'de erken-müdahale ÇALIŞMAZ (after-sales)
+assert(`X6.7 REGRESYON: COMPLETED → TETİKLEMEZ (after-sales)`,
+  shouldApplyEarlyTourChange(
+    { stage: "COMPLETED", currentTour: { id: "old-id" } } as any,
+    { id: "new-id", title: "Yeni" } as any,
+  ) === false);
+
+// X6.8 REGRESYON: GREETING'de erken-müdahale ÇALIŞMAZ (ilk seçim, state-machine BROWSING/TOUR_SELECTED)
+assert(`X6.8 REGRESYON: GREETING → TETİKLEMEZ (ilk tur seçimi)`,
+  shouldApplyEarlyTourChange(
+    { stage: "GREETING", currentTour: null } as any,
+    { id: "id1", title: "Tour" } as any,
+  ) === false);
+
+// X6.9 KRİTİK: produceTourChangeContext sonuç — yeni tur uygulanır + tarih sıfırlanır + pax KORUNUR (Özge fix)
+{
+  const before = {
+    stage: "TOUR_SELECTED",
+    currentTour: { id: "kapadokya-id", title: "Kapadokya Balon Turu" },
+    viewedTours: ["kapadokya-id"],
+    reservationInfo: {
+      tourId: "kapadokya-id",
+      tourTitle: "Kapadokya Balon Turu",
+      dateId: "k-15-aralik",
+      selectedDate: "2026-12-15",
+      paxAdult: 2,
+      fullName: "Fırat Taştan",
+      phone: "+905551234567",
+    },
+    collectionStep: "ready_for_confirmation",
+  };
+  const newTour = { id: "pamukkale-id", title: "Pamukkale Turu" };
+  const result = produceTourChangeContext(before as any, newTour) as any;
+  assert(`X6.9 KRİTİK: produceTourChangeContext → yeni currentTour uygulanır`,
+    result.currentTour.id === "pamukkale-id");
+  assert(`X6.9b: tarih SIFIRLANIR (yeni turun tarihleri farklı, KÖK 5)`,
+    result.reservationInfo.dateId === undefined && result.reservationInfo.selectedDate === undefined);
+  assert(`X6.9c KRİTİK: pax/isim/telefon KORUNUR (Özge fix)`,
+    result.reservationInfo.paxAdult === 2
+    && result.reservationInfo.fullName === "Fırat Taştan"
+    && result.reservationInfo.phone === "+905551234567");
+  assert(`X6.9d: reservationInfo.tourId güncellenir`,
+    result.reservationInfo.tourId === "pamukkale-id" && result.reservationInfo.tourTitle === "Pamukkale Turu");
+  assert(`X6.9e: collectionStep waiting_for_date'e çekilir`,
+    result.collectionStep === "waiting_for_date");
+  assert(`X6.9f: viewedTours yeni tur eklenir`,
+    result.viewedTours.includes("pamukkale-id"));
+}
 
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
