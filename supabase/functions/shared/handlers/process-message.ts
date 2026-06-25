@@ -1922,33 +1922,80 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _ackBugAReply, newContext };
   }
 
-  // === 14b. FIX 3 — SAHTE ONAY GUARD ===
-  // CONFIRMING stage'de "evet" verdi AMA justCompleted=false kaldı → FSM geçişi olmadı.
-  // AI'a bırakma: "onaylandı" uydurmadan önce state'i sıfırla, clean reset yap.
+  // === 14b. FIX 3 — SAHTE ONAY GUARD (DEFANSİF, state-koruyan) ===
+  // 2026-06-25 inceleme + yeniden yazım (Murat kararı: state-koruyan versiyon):
+  //
+  // ESKI DAVRANIŞ (64c51841, 2026-05-21): tetiklendiğinde BROWSING reset yapardı —
+  // tour + reservationInfo (date/pax/name/phone) + reservationConfirmed HEPSI silinirdi.
+  // Yanlış tetiklenirse KATASTROFİK veri kaybı. Tetikleme koşulu (detectConfirmation
+  // TRUE + !justCompleted) state-machine ve buradaki çağrı tutarsızlığı gerektiriyor —
+  // teoride imkânsız (aynı sync fonksiyon). Canlı log'da `FIX3` hiç görülmedi.
+  //
+  // YENİ DAVRANIŞ: state KORU + özet+onay tekrar (Bug C pattern :13-PERSIST gibi).
+  // Edge case'de bile veri kaybı yok. Kullanıcıya alarmist hata mesajı yerine
+  // normal "onaylıyor musunuz?" sorusu gider.
+  //
+  // Sonraki savunma katmanları zaten LLM uydurma riskini kapsıyor:
+  //   - B-6 detectNegativeResponse (CONFIRMING + "hayır" → netleştirme)
+  //   - :13-PERSIST (CONFIRMING + ambiguous intent → özet+onay tekrar)
+  //   - K4 validateFieldReask (CONFIRMING/COMPLETED'de dolu-alan yutkunması)
+  //   - Fix A1 historyCutoffAt (history kirlenmesi)
+  // Bu guard ARTIK son katman değil, INSURANCE — gerçekten tetiklenmezse pasif kalır.
   if (
     context.stage === "CONFIRMING" &&
     !justCompleted &&
     detectConfirmation(message, context.language)
   ) {
-    console.warn("[process-message] FIX3: Confirmation detected but FSM didn't transition — state inconsistency, resetting");
-    newContext.stage = "BROWSING";
-    newContext.currentTour = null;
-    newContext.reservationInfo = {};
-    newContext.reservationConfirmed = false;
-    newContext.collectionStep = undefined;
-    const _incMsgs: Record<string, string> = {
-      tr: "İşleminizde bir uyumsuzluk oluştu, baştan başlayalım — hangi turlar ilginizi çeker?",
-      en: "There was an issue processing your session. Let's start fresh — which tours interest you?",
-      de: "Bei der Verarbeitung Ihrer Sitzung ist ein Fehler aufgetreten. Fangen wir von vorne an — welche Touren interessieren Sie?",
-      ru: "Произошла ошибка при обработке вашей сессии. Начнём заново — какие туры вас интересуют?",
-      ar: "حدثت مشكلة في معالجة جلستك. لنبدأ من جديد — ما الجولات التي تهمك؟",
-      fr: "Un problème est survenu dans votre session. Recommençons — quels circuits vous intéressent ?",
-      es: "Hubo un problema al procesar su sesión. Empecemos de nuevo — ¿qué tours le interesan?",
+    console.warn(
+      `[process-message] FIX3: detectConfirmation TRUE but FSM didn't complete ` +
+      `(newStage=${newContext.stage}). State KORUNUYOR, özet+onay tekrar.`,
+    );
+    // STATE KORU — yeni değişkenle context'e geri çek (transition farklı yere
+    // götürdüyse de eski CONFIRMING bilgileri korunur; reservationInfo silinmez).
+    const _preservedContext: ConversationContext = {
+      ...context,
+      lastUserMessage: message,
+      messageCount: context.messageCount + 1,
+      lastUpdated: new Date().toISOString(),
     };
-    const _incReply = _incMsgs[newContext.language] || _incMsgs.tr;
-    await _save(_incReply, newContext);
-    await adapter.sendResponse(_incReply);
-    return { success: false, error: "state_inconsistency", response: _incReply, newContext };
+    // Özet+onay tekrar — :13-PERSIST ile aynı format (tutarlı görünüm).
+    const _lang = _preservedContext.language || "tr";
+    const info = (_preservedContext.reservationInfo as any) || {};
+    const _tourTitle = _preservedContext.currentTour
+      ? getLocalizedTourTitle(_preservedContext.currentTour.title || "", _lang)
+      : "";
+    const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
+    const _paxAdult = info.paxAdult ?? "";
+    const _paxChild = info.paxChild;
+    const _name = info.fullName || "";
+    const _phone = info.phone || "";
+
+    const _fix3Labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı? ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "Do you confirm, or is there something you'd like to change? ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Bestätigen Sie, oder möchten Sie etwas ändern? ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Подтверждаете или хотите что-то изменить? ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "هل تؤكد أم تريد تغيير شيء ما؟ ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "Confirmez-vous, ou souhaitez-vous changer quelque chose ? ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "¿Confirma o desea cambiar algo? ✅" },
+    };
+    const L = _fix3Labels[_lang] || _fix3Labels.tr;
+    const _paxText = _paxAdult !== ""
+      ? (typeof _paxChild === "number" && _paxChild > 0
+          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
+          : `${_paxAdult}`)
+      : "";
+    const _summaryLines = [
+      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
+      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
+      _name      ? `👤 ${L.name}: ${_name}`        : "",
+      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
+    ].filter(Boolean).join("\n");
+    const fix3Reply = `${_summaryLines}\n\n${L.reask}`;
+    await _save(fix3Reply, _preservedContext);
+    await adapter.sendResponse(fix3Reply);
+    return { success: true, response: fix3Reply, newContext: _preservedContext };
   }
 
   // === 15. SYSTEM PROMPT ===
