@@ -2781,6 +2781,131 @@ import { processTransition as _ptF4 } from "../supabase/functions/shared/fsm/sta
   // Onay tek mesajda olabilir VEYA değişiklik öncelik alabilir — ölçüm sonucu commit notunda.
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 FIX KÖK 1 — BUG B PROMOTE COLLECTING_INFO genişletme
+// Canlı kanıt: waiting_for_phone'da isim DOLU + "aslında adım Osman" → ESKİ isim sızıyordu.
+// PROMOTE guard COLLECTING_INFO'ya da genişletildi; ilk doldurma akışı korunur.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX KÖK 1: PROMOTE COLLECTING_INFO genişletme (Ege tuzağı) ──");
+
+// shouldPromote test helper (önceki B.10+ ile aynı yapı, yeni stage kapsamlı)
+function _shouldPromoteV2(
+  contextStage: string,
+  intent: string,
+  contextReservationInfo: { fullName?: string; phone?: string } | undefined,
+  nluUpdates: { fullName?: string; phone?: string } | undefined,
+): boolean {
+  if (contextStage !== "COLLECTING_INFO" && contextStage !== "CONFIRMING") return false;
+  if (intent !== "provide_info") return false;
+  const info = contextReservationInfo || {};
+  const ext = nluUpdates || {};
+  const isFullNameChange = !!ext.fullName && !!info.fullName && ext.fullName !== info.fullName;
+  const isPhoneChange = !!ext.phone && !!info.phone && ext.phone !== info.phone;
+  return isFullNameChange || isPhoneChange;
+}
+
+assert(`K1.1 KRİTİK (Ege tuzağı): COLLECTING_INFO + provide_info + fullName farklı + mevcut DOLU → promote=TRUE`,
+  _shouldPromoteV2("COLLECTING_INFO", "provide_info",
+    { fullName: "İsmail Koca" }, { fullName: "Osman fırfır" }) === true);
+
+assert(`K1.2 REGRESYON KRİTİK: COLLECTING_INFO + provide_info + mevcut BOŞ (waiting_for_name) → promote=FALSE (ilk doldurma)`,
+  _shouldPromoteV2("COLLECTING_INFO", "provide_info",
+    {}, { fullName: "Murat Murathan" }) === false);
+
+assert(`K1.3 REGRESYON: CONFIRMING + provide_info + fullName farklı → promote=TRUE (eski davranış korundu)`,
+  _shouldPromoteV2("CONFIRMING", "provide_info",
+    { fullName: "Mustafa" }, { fullName: "Fırat" }) === true);
+
+assert(`K1.4 REGRESYON: BROWSING/GREETING/TOUR_SELECTED → promote=FALSE`,
+  _shouldPromoteV2("BROWSING", "provide_info", { fullName: "Ahmet" }, { fullName: "Murat" }) === false &&
+  _shouldPromoteV2("GREETING", "provide_info", { fullName: "Ahmet" }, { fullName: "Murat" }) === false &&
+  _shouldPromoteV2("TOUR_SELECTED", "provide_info", { fullName: "Ahmet" }, { fullName: "Murat" }) === false);
+
+assert(`K1.5: COLLECTING_INFO + provide_info + AYNI isim → promote=FALSE (no-op)`,
+  _shouldPromoteV2("COLLECTING_INFO", "provide_info",
+    { fullName: "Ahmet" }, { fullName: "Ahmet" }) === false);
+
+// ─── K1.6 ENTEGRASYON: COLLECTING_INFO + change_info (promote sonrası) → state'e YAZILIR
+{
+  const ctx: any = {
+    stage: "COLLECTING_INFO",
+    collectionStep: "waiting_for_phone",
+    reservationInfo: { tourId: "T1", tourTitle: "P", dateId: "D1", selectedDate: "2026-12-20",
+                       paxAdult: 2, fullName: "İsmail Koca" },
+    language: "tr",
+    messageCount: 5,
+    currentTour: { id: "T1", title: "P" },
+  };
+  const newCtx: any = _ptB(ctx, {
+    userMessage: "aslında adım Osman fırfır",
+    detectedIntent: "change_info",  // process-message promote sonrası
+    extractedInfo: { fullName: "Osman fırfır" },
+    selectedTour: null,
+    language: "tr",
+  } as any);
+  assert(`K1.6 ENTEGRASYON KRİTİK: COLLECTING_INFO + change_info → state'e Osman YAZILDI (İsmail değil)`,
+    newCtx.reservationInfo?.fullName === "Osman fırfır");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 FIX KÖK 2 — paxChild ekstraksiyon (canlı: "3 yetişkin 2 çocuk" → state pax=3, children yutuldu)
+// İki katmanlı: NLU prompt children örnek + simple-extractor "X çocuk" pattern.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX KÖK 2: paxChild ekstraksiyon (çocuk + yetişkin) ──");
+
+import { extractNameAndPhone as _enpK2 } from "../supabase/functions/shared/fsm/simple-extractor.ts";
+
+// K2.1 KRİTİK: "3 yetişkin 2 çocuk" → simple-extractor hem paxAdult hem paxChild
+{
+  const r = _enpK2("3 yetişkin 2 çocuk", "waiting_for_pax");
+  assert(`K2.1 KRİTİK: "3 yetişkin 2 çocuk" → paxAdult=3 + paxChild=2`,
+    r.paxAdult === 3 && r.paxChild === 2);
+}
+
+// K2.2: "2 çocuk" tek başına → paxChild=2 (yetişkin yok)
+{
+  const r = _enpK2("2 çocuk", "waiting_for_pax");
+  assert(`K2.2: "2 çocuk" tek → paxChild=2 (paxAdult yok)`,
+    r.paxChild === 2 && r.paxAdult === undefined);
+}
+
+// K2.3 EN: "3 adults 2 children" → paxAdult=3, paxChild=2
+{
+  const r = _enpK2("3 adults 2 children", "waiting_for_pax");
+  assert(`K2.3 EN: "3 adults 2 children" → paxAdult=3 + paxChild=2`,
+    r.paxAdult === 3 && r.paxChild === 2);
+}
+
+// K2.4 REGRESYON: "2 kişi" → SADECE paxAdult=2 (paxChild yok, eski davranış)
+{
+  const r = _enpK2("2 kişi", "waiting_for_pax");
+  assert(`K2.4 REGRESYON: "2 kişi" → paxAdult=2, paxChild undefined`,
+    r.paxAdult === 2 && r.paxChild === undefined);
+}
+
+// K2.5 REGRESYON: ay-blacklist + çocuk birlikte — "yirmi aralık 2 çocuk" → paxAdult yok (ay-guard), paxChild=2
+{
+  const r = _enpK2("yirmi aralık 2 çocuk", "waiting_for_date");
+  assert(`K2.5: "yirmi aralık 2 çocuk" → paxAdult yok (C3 ay-guard) + paxChild=2 (rakam pattern)`,
+    r.paxAdult === undefined && r.paxChild === 2);
+}
+
+// K2.6 ENTEGRASYON: info-extractor Blok 3 → simple.paxChild → extractedInfo.paxChild
+{
+  const ei = extractAllInfo({
+    message: "3 yetişkin 2 çocuk",
+    nluResult: { intent: "provide_info", entities: {}, updates: {} } as any,
+    fsmIntent: "provide_info",
+    context: { collectionStep: "waiting_for_pax", language: "tr" } as any,
+    tours: [],
+  });
+  assert(`K2.6 ENTEGRASYON: extractAllInfo → paxAdult=3 + paxChild=2`,
+    ei.paxAdult === 3 && (ei as any).paxChild === 2);
+}
+
+// K2.7 NLU prompt PRESENCE — children örnek var (kod-okuma test'i değil — sadece kelime varlığı)
+// Bu PRESENCE testi e2e tarafında, davranışsal değil — burada atlanır.
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

@@ -418,12 +418,23 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // change_info ulaşır, mevcut Bug B fix override çalışır.
   //
   // GÜVENLİK:
-  //   - SADECE context.stage === "CONFIRMING" (original stage). COLLECTING_INFO'da etkilenmez.
-  //   - SADECE extracted.fullName/phone mevcuttan farklıysa (aynı değer override yapmaz).
-  //   - NLU prompt full_name ekstraksiyonu dar (2-3 kelime proper noun) → "evet"ten isim
-  //     üretmez, uydurma riski düşük.
+  //   - context.stage === "COLLECTING_INFO" veya "CONFIRMING" (rezervasyon-öncesi).
+  //     COMPLETED ayrı yol: 14a-3 acente yönlendirme bypass'ı (DB yalan vaadi yok).
+  //   - GREETING/BROWSING/TOUR_SELECTED'da etkilenmez (mevcut isim/telefon YOK → ilk doldurma).
+  //   - SADECE _confInfo.fullName/phone DOLU iken (`!!_confInfo?.fullName`) — ilk doldurma değil
+  //     düzeltme niyeti şart. waiting_for_name'de mevcut isim boş → promote TETİKLENMEZ.
+  //   - SADECE extracted.fullName/phone mevcuttan FARKLIYSA (aynı değer override yapmaz).
+  //   - NLU prompt full_name ekstraksiyonu dar (2-3 kelime proper noun) → uydurma riski düşük.
   //   - F-savunması katmanları (NLU prompt + Blok 3 sigortası) extracted'a girene kadar
   //     temizler — bu seviyede leak yok.
+  //
+  // 2026-06-25 FIX KÖK 1 (canlı kanıt — Ege tuzağı):
+  //   COLLECTING_INFO/waiting_for_phone'da isim="İsmail Koca" + "aslında adım Osman fırfır"
+  //   → eski guard sadece CONFIRMING'di → COLLECTING_INFO'da promote olmadı →
+  //   !merged.fullName=false → override yutuldu. Ekran "Teşekkürler Osman!" ama state "İsmail"
+  //   (LLM history'ye bakıp sahte kabul mesajı).
+  //   Çözüm: PROMOTE guard'ı COLLECTING_INFO'yu da kapsasın. `!!_confInfo.fullName` koşulu
+  //   ilk doldurma akışını korur (waiting_for_name'de mevcut isim boş → promote yok).
   const _confInfo = context.reservationInfo;
   const _confExt = nluResult.updates as any;
   const _isConfirmingFullNameChange =
@@ -433,11 +444,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     !!_confExt?.phone && !!_confInfo?.phone &&
     _confExt.phone !== _confInfo.phone;
   if (
-    context.stage === "CONFIRMING" &&
+    (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING") &&
     nluResult.intent === "provide_info" &&
     (_isConfirmingFullNameChange || _isConfirmingPhoneChange)
   ) {
-    console.log(`[process-message] BUG B PROMOTE: CONFIRMING + provide_info + ${_isConfirmingFullNameChange ? "fullName" : "phone"} farklı → intent → change_info`);
+    console.log(`[process-message] BUG B PROMOTE: ${context.stage} + provide_info + ${_isConfirmingFullNameChange ? "fullName" : "phone"} farklı → intent → change_info`);
     nluResult.intent = "change_info";
     fsmIntent = mapNLUIntentToFSMIntent("change_info");
   }

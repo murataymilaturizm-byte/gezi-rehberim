@@ -304,6 +304,10 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   }
   if (simple.phone && !extractedInfo.phone) extractedInfo.phone = simple.phone;
   if (simple.paxAdult && !extractedInfo.paxAdult) extractedInfo.paxAdult = simple.paxAdult;
+  // 2026-06-25 FIX KÖK 2: paxChild fallback (NLU çıkarmadıysa simple-extractor "X çocuk" pattern)
+  if (typeof simple.paxChild === "number" && extractedInfo.paxChild === undefined) {
+    extractedInfo.paxChild = simple.paxChild;
+  }
   if (simple.selectedDate && !extractedInfo.selectedDate) extractedInfo.selectedDate = simple.selectedDate;
 
   // === Blok 4: Email adımı (waiting_for_email) ===

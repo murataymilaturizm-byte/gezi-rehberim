@@ -196,7 +196,15 @@ NEVER assume the user wants to stay in COMPLETED forever. Trust their words.
 - destination: City or country name (ONLY when user is asking about tours, NOT for visa/payment/agency questions)
 - tour_name: Specific tour name mentioned (ONLY when user is asking about tours AND intent is NOT faq_general/general after COMPLETED)
 - dates: Any dates mentioned
-- people_count: Number of adults and children
+- people_count: Number of adults and children. Return as { adults: N, children: M }.
+  Examples:
+    "3 yetişkin 2 çocuk" → people_count: { adults: 3, children: 2 }
+    "3 adults 2 children" → people_count: { adults: 3, children: 2 }
+    "2 kişi" / "2 people" → people_count: { adults: 2 }
+    "2 yetişkin" → people_count: { adults: 2 }
+    "1 çocuk" / "1 child" → people_count: { children: 1 }
+  CRITICAL: when message mentions BOTH adults and children, return BOTH fields.
+  Never drop children when adults is present.
 - full_name: Customer's full name (ONLY 2-3 word combinations that are clearly proper names, NOT common words or phrases)
 - phone: Phone number
 

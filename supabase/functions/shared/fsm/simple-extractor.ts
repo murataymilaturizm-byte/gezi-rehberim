@@ -186,6 +186,7 @@ export function extractNameAndPhone(
   fullName?: string;
   phone?: string;
   paxAdult?: number;
+  paxChild?: number;
   selectedDate?: string;
   dateId?: string;
   needsMonthClarification?: boolean;
@@ -194,6 +195,7 @@ export function extractNameAndPhone(
     fullName?: string;
     phone?: string;
     paxAdult?: number;
+    paxChild?: number;
     selectedDate?: string;
     dateId?: string;
     needsMonthClarification?: boolean;
@@ -225,6 +227,23 @@ export function extractNameAndPhone(
 
   // === PAX ===
   // Negative lookbehind (?<![-\d]) : "-3 kişi" gibi negatif sayıları engelle
+  // 2026-06-25 FIX KÖK 2: paxChild pattern eklendi (canlı bug "3 yetişkin 2 çocuk" → state'e
+  // SADECE adults=3 yazılıyordu, paxChild yutuluyordu → fiyat eksik). Önce çocuk pattern,
+  // SONRA yetişkin pattern (mesajda her ikisi de varsa ikisi de çıkar).
+  const paxChildPatterns = [
+    /(?<![-\d])(\d+)\s*(?:çocuk|cocuk|child|children|kinder|kind|niño|niños|enfant|enfants|ребен|دфال|طفل)/i,
+  ];
+  for (const pattern of paxChildPatterns) {
+    const match = message.match(pattern);
+    if (match) {
+      const childN = parseInt(match[1]);
+      if (childN >= 0 && childN <= 50) {
+        result.paxChild = childN;
+        break;
+      }
+    }
+  }
+
   const paxPatterns = [
     /(?<![-\d])(\d+)\s*(?:kişi|kisi|person|people|yetişkin|adult)/i,
     /(?<![-\d])(\d+)\s*kişilik/i,
