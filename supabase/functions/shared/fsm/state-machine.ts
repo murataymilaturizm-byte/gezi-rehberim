@@ -778,10 +778,18 @@ const transitions: StateTransition[] = [
       }
 
       // Çok dilli alan pattern'leri — NLU sessiz kaldığında fallback
+      // 2026-06-25 BUG-X3 FIX: phonePattern/paxPattern/datePattern \b ASCII boundary
+      // Türkçe çekim ekini ("telefonu", "tarihi", "kişiyi") reddediyordu → fallback
+      // else dalı tarihi siliyor + waiting_for_date'e düşürüyordu. Canlı kanıt
+      // (exec 6ae3a5b4-f592-440a): "telefonu düzeltmek istiyorum" → tarih SİLİNDİ →
+      // tarih listesi gösterildi (kullanıcı telefon düzeltmek istedi!).
+      // Yan #8 disiplini: lookbehind ASCII-boundary değil \p{L}\p{N} lookaround,
+      // lookahead YOK (çekim eki serbest — "telefonu"/"tarihi"/"kişiyi" yakalanır).
+      // namePattern zaten partial match (boundary yok) — dokunulmadı.
       const namePattern   = /isim|ismi|adım|adı|adın|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre/i;
-      const phonePattern  = /\b(telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono)\b/i;
-      const paxPattern    = /\b(ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)\b/i;
-      const datePattern   = /\b(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha)\b/i;
+      const phonePattern  = /(?<![\p{L}\p{N}])(telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono)/iu;
+      const paxPattern    = /(?<![\p{L}\p{N}])(ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)/iu;
+      const datePattern   = /(?<![\p{L}\p{N}])(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha)/iu;
 
       // B-3 fix (2026-06-09): Veri silme YALNIZCA kullanıcı yeni değeri verdiyse
       // veya açıkça reset istediyse yapılır. Yeni değer YOKSA mevcut alan KORUNUR.

@@ -4049,6 +4049,146 @@ const _n2Info = {
     r.wasModified === true && !r.text.includes("Telefon numaranızı söyler misiniz"));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 BUG-X3 FIX — state-machine pattern boundary (çekim eki Yan #8 ailesi)
+// Canlı (exec 6ae3a5b4-f592-440a): CONFIRMING'de "telefonu düzeltmek istiyorum"
+// → change_info transition action fallback phonePattern \btelefon\b çekim ekini
+// reddetti → datePattern de yok → else dalı tarihi sildi → waiting_for_date.
+// Fix: phonePattern/paxPattern/datePattern lookbehind+çekim eki serbest (Yan #8).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG-X3 FIX: state-machine pattern boundary (çekim eki) ──");
+
+// Helper: pattern fallback'in alan dispatch'ini izole eden mock (state-machine.ts:781-810)
+function _evaluateFieldFallback(msg: string): "name" | "phone" | "pax" | "date" | "else" {
+  const namePattern   = /isim|ismi|adım|adı|adın|soyad|surname|name|namen?|имя|اسم|إسم|nom|nombre/i;
+  const phonePattern  = /(?<![\p{L}\p{N}])(telefon|numara|phone|tel|gsm|cep|handy|телефон|номер|هاتف|رقم|téléphone|teléfono)/iu;
+  const paxPattern    = /(?<![\p{L}\p{N}])(ki[şs]i|yeti[şs]kin|[çc]ocuk|pax|person|people|adult|child|kinder|personen|человек|людей|дети|أشخاص|أطفال|personnes|enfants|personas|niños)/iu;
+  const datePattern   = /(?<![\p{L}\p{N}])(tarih|date|gün|day|datum|tag|дата|день|تاريخ|يوم|jour|día|fecha)/iu;
+  const lower = msg.toLowerCase();
+  if (namePattern.test(lower)) return "name";
+  if (phonePattern.test(lower)) return "phone";
+  if (paxPattern.test(lower)) return "pax";
+  if (datePattern.test(lower)) return "date";
+  return "else";  // tarih SİLİNİR
+}
+
+// X3.1 KRİTİK CANLI: "telefonu düzeltmek istiyorum" → phone dispatch (tarih silinmez)
+assert(`X3.1 KRİTİK CANLI: "telefonu düzeltmek istiyorum" → phone (çekim eki yakalandı)`,
+  _evaluateFieldFallback("telefonu düzeltmek istiyorum") === "phone");
+
+// X3.2 KRİTİK: "tarihi değiştir" → date dispatch
+assert(`X3.2 KRİTİK: "tarihi değiştir" → date (çekim eki yakalandı)`,
+  _evaluateFieldFallback("tarihi değiştir") === "date");
+
+// X3.3: "kişiyi güncelle" → pax dispatch
+assert(`X3.3: "kişiyi güncelle" → pax (çekim eki yakalandı)`,
+  _evaluateFieldFallback("kişiyi güncelle") === "pax");
+
+// X3.4: "yetişkini değiştir" → pax dispatch
+assert(`X3.4: "yetişkini değiştir" → pax`,
+  _evaluateFieldFallback("yetişkini değiştir") === "pax");
+
+// X3.5 REGRESYON: "telefon değiştir" (çekim eksiz) → phone (eskiden de yakalıyordu)
+assert(`X3.5 REGRESYON: "telefon değiştir" (çekim eksiz) → phone`,
+  _evaluateFieldFallback("telefon değiştir") === "phone");
+
+// X3.6 REGRESYON: "tarih farklı olsun" (çekim eksiz) → date
+assert(`X3.6 REGRESYON: "tarih farklı olsun" → date`,
+  _evaluateFieldFallback("tarih farklı olsun") === "date");
+
+// X3.7: "numaramı güncelle" → phone (numara çekim ek)
+assert(`X3.7: "numaramı güncelle" → phone`,
+  _evaluateFieldFallback("numaramı güncelle") === "phone");
+
+// X3.8: belirsiz "değiştir" (alan yok) → else (mevcut davranış: tarih sil)
+assert(`X3.8: belirsiz "değiştir" (alan adı yok) → else (tarih reset)`,
+  _evaluateFieldFallback("değiştir") === "else");
+
+// X3.9 EN: "edit my phone" → phone
+assert(`X3.9 EN: "edit my phone" → phone`,
+  _evaluateFieldFallback("edit my phone") === "phone");
+
+// X3.10 EN: "change the date" → date
+assert(`X3.10 EN: "change the date" → date`,
+  _evaluateFieldFallback("change the date") === "date");
+
+// X3.11 YANLIŞ POZİTİF GUARD: "telefoncu rehberi" → phone (kabul edilebilir, davranış: phone KORU)
+assert(`X3.11: "telefoncu" türev kelime → phone (yararlı, koruyucu)`,
+  _evaluateFieldFallback("telefoncu rehberi") === "phone");
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 BUG-X1 FIX — :11 (c) dal: TOUR_SELECTED + reservation_intent
+// Canlı (exec 8f65305e): "pamukkale turuna kayıt olmak istiyorum" → TOUR_SELECTED
+// → (a) sağlanmaz (COLLECTING_INFO değil) + (b) DATE_QUERY_RE eşleşmez →
+// :11 atlandı → LLM tarih listesini atladı. Fix: (c) dal TOUR_SELECTED'da
+// rezervasyon başlatma niyetinde deterministik tarih listesi.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG-X1 FIX: :11 (c) dal — TOUR_SELECTED + reservation_intent ──");
+
+// Helper: :11 koşulunu izole eden mock (process-message.ts:1030-1048)
+function _shouldShowDateList(
+  stage: string,
+  collectionStep: string | undefined,
+  fsmIntent: string,
+  hasCurrentTour: boolean,
+  askingViaQuery: boolean,
+): boolean {
+  if (!hasCurrentTour) return false;
+  const _isInfoQuestion = fsmIntent === "general_question" || fsmIntent === "support_request";
+  if (_isInfoQuestion) return false;
+  // (c) BUG-X1 fix
+  const _isNewReservationIntent =
+    stage === "TOUR_SELECTED" &&
+    (fsmIntent === "reservation_intent" || fsmIntent === "tour_selected");
+  return (
+    (stage === "COLLECTING_INFO" && collectionStep === "waiting_for_date") ||
+    ((stage === "TOUR_SELECTED" || stage === "COLLECTING_INFO") && askingViaQuery) ||
+    _isNewReservationIntent
+  );
+}
+
+// X1.1 KRİTİK CANLI: TOUR_SELECTED + reservation_intent + currentTour DOLU → tarih listesi GELİR
+assert(`X1.1 KRİTİK CANLI: TOUR_SELECTED + reservation_intent → :11 ÇALIŞIR`,
+  _shouldShowDateList("TOUR_SELECTED", undefined, "reservation_intent", true, false) === true);
+
+// X1.2: TOUR_SELECTED + tour_selected intent → :11 ÇALIŞIR
+assert(`X1.2: TOUR_SELECTED + tour_selected → :11 ÇALIŞIR`,
+  _shouldShowDateList("TOUR_SELECTED", undefined, "tour_selected", true, false) === true);
+
+// X1.3 KRİTİK REGRESYON (KÖK 6): TOUR_SELECTED + general_question → :11 ATLAR
+assert(`X1.3 KRİTİK REGRESYON KÖK 6: TOUR_SELECTED + general_question → :11 ATLAR (bilgi sorusu)`,
+  _shouldShowDateList("TOUR_SELECTED", undefined, "general_question", true, false) === false);
+
+// X1.4 REGRESYON: TOUR_SELECTED + tour_search (başka tur arıyor) → :11 ATLAR
+//   (b) dalı kontrol et: askingViaQuery=false → atlar
+assert(`X1.4 REGRESYON: TOUR_SELECTED + tour_search + askingViaQuery yok → :11 ATLAR`,
+  _shouldShowDateList("TOUR_SELECTED", undefined, "tour_search", true, false) === false);
+
+// X1.5 REGRESYON: TOUR_SELECTED + support_request → :11 ATLAR
+assert(`X1.5 REGRESYON: TOUR_SELECTED + support_request → :11 ATLAR (bilgi)`,
+  _shouldShowDateList("TOUR_SELECTED", undefined, "support_request", true, false) === false);
+
+// X1.6 REGRESYON (a) dal: COLLECTING_INFO + waiting_for_date → :11 ÇALIŞIR (mevcut)
+assert(`X1.6 REGRESYON (a): COLLECTING_INFO + waiting_for_date → :11 ÇALIŞIR`,
+  _shouldShowDateList("COLLECTING_INFO", "waiting_for_date", "provide_info", true, false) === true);
+
+// X1.7 REGRESYON (b) dal: TOUR_SELECTED + tarih sorusu (askingViaQuery) + tour_search → :11 ÇALIŞIR (mevcut A3)
+assert(`X1.7 REGRESYON (b): TOUR_SELECTED + askingViaQuery → :11 ÇALIŞIR`,
+  _shouldShowDateList("TOUR_SELECTED", undefined, "tour_search", true, true) === true);
+
+// X1.8 REGRESYON: BROWSING + reservation_intent → :11 ATLAR (stage TOUR_SELECTED değil)
+assert(`X1.8 REGRESYON: BROWSING + reservation_intent → :11 ATLAR (stage uyumsuz)`,
+  _shouldShowDateList("BROWSING", undefined, "reservation_intent", true, false) === false);
+
+// X1.9 REGRESYON: TOUR_SELECTED + reservation_intent ama currentTour YOK → :11 ATLAR
+assert(`X1.9 REGRESYON: TOUR_SELECTED + reservation_intent + currentTour YOK → :11 ATLAR`,
+  _shouldShowDateList("TOUR_SELECTED", undefined, "reservation_intent", false, false) === false);
+
+// X1.10 REGRESYON: COLLECTING_INFO + reservation_intent → :11 (c) dalı sadece TOUR_SELECTED'da
+//   (a) dalı zaten waiting_for_date'te tetikler, başka collectionStep'te (c) yok
+assert(`X1.10 REGRESYON: COLLECTING_INFO + reservation_intent + waiting_for_pax → :11 ATLAR ((c) sadece TOUR_SELECTED)`,
+  _shouldShowDateList("COLLECTING_INFO", "waiting_for_pax", "reservation_intent", true, false) === false);
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

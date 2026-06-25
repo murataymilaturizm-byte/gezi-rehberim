@@ -1030,6 +1030,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _isInfoQuestionFsmIntent =
     fsmIntent === "general_question" || fsmIntent === "support_request";
   const _askingViaQuery = DATE_QUERY_RE.test(message) && DATE_INTENTS.includes(fsmIntent);
+  // 2026-06-25 BUG-X1 FIX (c) dal: TOUR_SELECTED'da rezervasyon başlatma niyeti
+  // → tarih listesi deterministik göster. Canlı kanıt (exec 8f65305e): "pamukkale
+  // turuna kayıt olmak istiyorum" → TOUR_SELECTED'a geçti AMA (a) sağlanmadı
+  // (COLLECTING_INFO değil) + (b) sağlanmadı (DATE_QUERY_RE eşleşmez) → :11 atlandı
+  // → LLM "müsait tarihleri kontrol ediyorum" der ama liste atlar (M1 kırılganlık).
+  // (c) dalı: TOUR_SELECTED + reservation_intent/tour_selected → deterministik liste.
+  // SADECE bu 2 intent — tour_search/general_question (KÖK 6) etkilenmez.
+  const _isNewReservationIntent =
+    newContext.stage === "TOUR_SELECTED" &&
+    (fsmIntent === "reservation_intent" || fsmIntent === "tour_selected");
   const _isUserAskingDates =
     !!newContext.currentTour &&
     !_isInfoQuestionFsmIntent &&   // KÖK 6: bilgi sorusu intent'leri :11'i atlatır
@@ -1037,7 +1047,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       // (a) Veri-toplama akışında tarih adımı: otomatik
       (newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_date") ||
       // (b) Kullanıcı tarih sorusu sordu (TOUR_SELECTED veya COLLECTING_INFO herhangi adım)
-      ((newContext.stage === "TOUR_SELECTED" || newContext.stage === "COLLECTING_INFO") && _askingViaQuery)
+      ((newContext.stage === "TOUR_SELECTED" || newContext.stage === "COLLECTING_INFO") && _askingViaQuery) ||
+      // (c) BUG-X1 fix: TOUR_SELECTED'da rezervasyon başlatma niyeti
+      _isNewReservationIntent
     );
 
   if (_isUserAskingDates) {
