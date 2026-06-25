@@ -3748,6 +3748,193 @@ function _evaluateLayer2(
   assert(`K2.31 EN F1 KORUMA: "yes" → ATLAR`, r === "none");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 BULGU 2 FIX — validateFieldReask niyet-farkında (Seçenek B)
+// Canlı (exec 41e48784): CONFIRMING'de "ismi değiştirmek istiyorum" →
+// change_info → bot "yeni isminizi söyler misiniz?" üretti AMA guard "name
+// dolu + pattern eşleşti" diye SİLDİ. Niyet ihmal edilmişti.
+// Fix: intent === "change_info" + userMessage'da o ALANIN adı geçiyorsa
+// o field için BLOK skip. Başka field için yutkunma korunur (BUG D).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BULGU 2 FIX: validateFieldReask niyet-farkında ──");
+
+// Mock currentTour (CONFIRMING özet regenerate edebilmek için)
+const _b2Tour = {
+  id: "T1",
+  title: "Pamukkale Turu",
+  dates: [{ id: "D1", departure_date: "2026-12-20", price_adult: 900 }],
+  currency: "TRY",
+};
+const _b2Info = {
+  tourId: "T1",
+  tourTitle: "Pamukkale Turu",
+  dateId: "D1",
+  selectedDate: "2026-12-20",
+  paxAdult: 1,
+  fullName: "Fırat Taştan",
+  phone: "+905551234567",
+};
+
+// ── FIX (skip etmeli) ──
+
+// B2.1 KRİTİK CANLI: change_info + "ismi değiştirmek istiyorum" + "yeni isim?"
+//   → SKIP (soru geçer, silinmez)
+{
+  const llmReply = "Tabii, yeni isminizi söyler misiniz? ✏️";
+  const r = validateFieldReask(
+    llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "change_info", "ismi değiştirmek istiyorum",
+  );
+  assert(`B2.1 KRİTİK CANLI: change_info + "ismi değiştir" + "yeni isim?" → SKIP`,
+    r.wasModified === false && r.text === llmReply);
+}
+
+// B2.2: change_info + "telefonu değiştireceğim" + "yeni telefon?" → SKIP
+{
+  const llmReply = "Yeni telefon numaranızı paylaşır mısınız?";
+  const r = validateFieldReask(
+    llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "change_info", "telefonu değiştireceğim",
+  );
+  assert(`B2.2: change_info + "telefon değiştir" + "yeni telefon?" → SKIP`,
+    r.wasModified === false);
+}
+
+// B2.3: change_info + "adımı değiştir" + "yeni isim?" → SKIP (adı eki)
+{
+  const llmReply = "Yeni isminizi alabilir miyim?";
+  const r = validateFieldReask(
+    llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "change_info", "adımı değiştirmek istiyorum",
+  );
+  assert(`B2.3: change_info + "adımı değiştir" + "yeni isim?" → SKIP`,
+    r.wasModified === false);
+}
+
+// ── BUG D KORUMA (hâlâ bloklamalı) ──
+
+// B2.10 KRİTİK BUG D KORUMA: change_info + "ismi değiştir" AMA LLM alakasız
+//   "telefon iste" yutkunması → phone field için BLOK DEVAM ★
+{
+  const llmReply = "Telefon numaranızı söyler misiniz?";
+  const r = validateFieldReask(
+    llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "change_info", "ismi değiştirmek istiyorum",
+  );
+  assert(`B2.10 KRİTİK BUG D: change_info "ismi" + LLM "telefon iste" → BLOK (userMessage'da telefon yok)`,
+    r.wasModified === true && r.matchedPattern === "field-reask:phone");
+}
+
+// B2.11 BUG D KORUMA: intent=general + dolu alan + "telefon iste" yutkunması
+//   → BLOK (intent change_info değil, mevcut BUG D senaryosu aynen)
+{
+  const llmReply = "Telefon numaranızı söyler misiniz?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "general", "merhaba",
+  );
+  assert(`B2.11 BUG D: intent=general + dolu telefon + "telefon iste" → BLOK`,
+    r.wasModified === true && r.matchedPattern === "field-reask:phone");
+}
+
+// B2.12 BUG D: intent=confirm_reservation + dolu isim + "isim iste" yutkunması
+//   → BLOK (intent change_info değil)
+// NOT: TR pattern büyük "İ" (U+0130) yakalamıyor (/iu Unicode case fold "İ"→"i̇").
+// Ayrı zayıflık, F4 dışı — test mesajı LLM'in küçük-harf biçimini yansıtır.
+{
+  const llmReply = "Lütfen isminizi alabilir miyim?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "confirm_reservation", "tamam",
+  );
+  assert(`B2.12 BUG D: intent=confirm_reservation + dolu isim + "isminizi alabilir miyim?" → BLOK`,
+    r.wasModified === true && r.matchedPattern === "field-reask:name");
+}
+
+// B2.13 BUG D: intent=greeting + dolu telefon + "telefon iste" yutkunması → BLOK
+{
+  const llmReply = "Telefon numaranızı paylaşır mısınız?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "greeting", "merhaba",
+  );
+  assert(`B2.13 BUG D: intent=greeting + "telefon iste" → BLOK`,
+    r.wasModified === true && r.matchedPattern === "field-reask:phone");
+}
+
+// ── REGRESYON ──
+
+// B2.20: waiting_for_name (gerçekten isim bekliyor, alan boş) + "isim?"
+//   → zaten geçer (isFilled=false)
+{
+  const llmReply = "İsminizi paylaşır mısınız?";
+  const r = validateFieldReask(
+    llmReply, "tr", "COLLECTING_INFO", "waiting_for_name",
+    { ..._b2Info, fullName: undefined } as any, _b2Tour, "standart",
+    "provide_info", "merhaba",
+  );
+  assert(`B2.20 REGRESYON: waiting_for_name + alan boş + "isim?" → GEÇER (isFilled=false)`,
+    r.wasModified === false);
+}
+
+// B2.21: change_info + userMessage'da alan adı YOK (sadece "değiştir") +
+//   "telefon iste" yutkunması → BLOK (belirsiz niyet, güvenli taraf)
+{
+  const llmReply = "Telefon numaranızı söyler misiniz?";
+  const r = validateFieldReask(
+    llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "change_info", "değiştirmek istiyorum",
+  );
+  assert(`B2.21: change_info + alan adı yok ("değiştirmek istiyorum") + "telefon iste" → BLOK (belirsiz)`,
+    r.wasModified === true);
+}
+
+// B2.22: Backwards compat — intent + userMessage GEÇİLMEDİĞİ durumda eski davranış
+{
+  const llmReply = "Telefon numaranızı söyler misiniz?";
+  const r = validateFieldReask(
+    llmReply, "tr", "CONFIRMING", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    // intent ve userMessage geçilmedi → undefined
+  );
+  assert(`B2.22 BACKWARDS COMPAT: intent/userMessage undefined → mevcut davranış (BLOK)`,
+    r.wasModified === true);
+}
+
+// ── EN ──
+
+// B2.30 EN: change_info + "change name" + "may I have your name?" → SKIP
+{
+  const llmReply = "Could you share your new name?";
+  const r = validateFieldReask(
+    llmReply, "en", "COLLECTING_INFO", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "change_info", "I want to change my name",
+  );
+  assert(`B2.30 EN: change_info + "change name" + "share your name" → SKIP`,
+    r.wasModified === false);
+}
+
+// B2.31 EN BUG D: intent=general + "name" yutkunması → BLOK
+{
+  const llmReply = "Could you share your name please?";
+  const r = validateFieldReask(
+    llmReply, "en", "CONFIRMING", "ready_for_confirmation",
+    _b2Info, _b2Tour, "standart",
+    "general", "hello",
+  );
+  assert(`B2.31 EN BUG D: intent=general + "share your name" → BLOK`,
+    r.wasModified === true && r.matchedPattern === "field-reask:name");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

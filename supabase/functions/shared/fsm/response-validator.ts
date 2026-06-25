@@ -256,6 +256,23 @@ const FIELD_REASK_CONFIRM_SUFFIX: Record<string, string> = {
   en: "\n\nAre these details correct, do you confirm? ✅",
 };
 
+// 2026-06-25 BULGU 2 fix: change_info bağlamında userMessage'da hangi ALANIN
+// değiştirilmek istendiğini saptamak için pattern'ler (7 dil). Bot "yeni X?"
+// sorusunu meşru olarak üretirse o ÖZEL field için blok skip.
+//
+// SKIP koşulu (per-field): intent === "change_info"
+//                          AND userMessage MENTION_PATTERNS[field] match
+// Başka field için yutkunma (örn. change_info "ismi" + LLM "telefon iste") →
+// SKIP YOK, BUG D guard'ı normal çalışır.
+const FIELD_MENTION_PATTERNS: Record<string, RegExp> = {
+  // İsim/ad — TR çekim ekleri serbest (ismi, isminizi, adımı, adınızı, soyadı)
+  // EN+DE+FR+ES+RU+AR yaygın kelimeler
+  name: /(?<![\p{L}\p{N}])(isim|ismi|isimle|isminiz|isminizi|ad|adı|adın|adım|adın|adınız|adınızı|soyad|soyadı|soyadın|soyadım|adsoyad|ad\s*soyad|name|namen|surname|nom|nombre|имя|اسم)/iu,
+  phone: /(?<![\p{L}\p{N}])(telefon|telefonu|telefonum|telefonumu|telefonunu|numara|numaramı|numaranız|numaranızı|cep|gsm|phone|telephone|number|mobile|téléphone|teléfono|телефон|номер|هاتف|رقم)/iu,
+  date: /(?<![\p{L}\p{N}])(tarih|tarihi|tarihimi|tarihinizi|gün|günü|date|day|datum|tag|jour|día|fecha|дата|день|تاريخ|يوم)/iu,
+  pax: /(?<![\p{L}\p{N}])(ki[şs]i|ki[şs]i\s*say|ki[şs]i\s*adet|yeti[şs]kin|[çc]ocuk|pax|kaç\s*ki[şs]i|kaç\s*yeti[şs]kin|kaç\s*[çc]ocuk|people|person|adult|child|guests|attendees|kids|children|wie\s*viele|personen|kinder|combien|personnes|enfants|cuántas|personas|niños|сколько|человек|أشخاص|أطفال)/iu,
+};
+
 /**
  * BUG D fix: dolu-alan re-ask post-validation.
  *
@@ -266,6 +283,8 @@ const FIELD_REASK_CONFIRM_SUFFIX: Record<string, string> = {
  * @param reservationInfo  Dolu alan kontrolü için (phone/fullName/dateId/paxAdult)
  * @param currentTour      CONFIRMING özet regenerate için (yoksa REDIRECT_MESSAGES fallback)
  * @param tone             formatReservationSummary parametresi
+ * @param intent           FSM intent — change_info iken niyet-aware skip (Bulgu 2 fix)
+ * @param userMessage      Kullanıcının mesajı — hangi alanı değiştirmek istediğini saptamak için
  */
 export function validateFieldReask(
   text: string,
@@ -275,6 +294,8 @@ export function validateFieldReask(
   reservationInfo: any,
   currentTour: any,
   tone: string = "standart",
+  intent?: string,
+  userMessage?: string,
 ): ValidationResult {
   // 2026-06-23 BUG D REVİZE-2 (exec bade7c70 kanıt): stage filtresi YANLIŞ
   // sınırdı. "aslında adım Osman" sonrası change_info → COLLECTING_INFO
@@ -315,9 +336,37 @@ export function validateFieldReask(
       isWaitingStep: collectionStep === "waiting_for_pax" },
   ];
 
+  // 2026-06-25 BULGU 2 fix — niyet-farkında skip (Seçenek B).
+  // Canlı (exec 41e48784): kullanıcı CONFIRMING'de "ismi değiştirmek istiyorum"
+  // → intent=change_info → bot "yeni isminizi söyler misiniz?" üretti (DOĞRU!)
+  // → AMA guard "name dolu + pattern eşleşti" diye SİLDİ. Kullanıcı niyeti
+  // ihmal edilmişti.
+  //
+  // SKIP koşulu (per-field):
+  //   intent === "change_info"
+  //   AND userMessage'da o ALANIN adı geçiyor (FIELD_MENTION_PATTERNS[field])
+  //
+  // Başka field için yutkunma korunur: change_info "ismi" + LLM alakasız
+  // "telefon iste" yutkunması → phone field için SKIP YOK (userMessage'da
+  // "telefon" yok) → BUG D guard çalışır.
+  const _isChangeInfo = intent === "change_info";
+  const _msg = userMessage || "";
+
   for (const check of checks) {
     if (!check.isFilled) continue;
     if (check.isWaitingStep) continue;  // çelişkili durum — collectionStep meşru istem diyor, saygı duy
+    // BULGU 2 fix: change_info + userMessage o alanı söylüyor → BLOK skip
+    if (_isChangeInfo) {
+      const _mention = FIELD_MENTION_PATTERNS[check.field];
+      if (_mention && _mention.test(_msg)) {
+        console.info("[response-validator] field-reask skipped (intent=change_info + userMessage mentions field)", {
+          field: check.field,
+          intent,
+          msgSnippet: _msg.slice(0, 80),
+        });
+        continue;
+      }
+    }
     if (!check.pattern.test(text)) continue;
 
     // 2026-06-23 BUG D revize (exec 6ef50f7b/35ffb749 — aşırı düzeltme kanıtı):

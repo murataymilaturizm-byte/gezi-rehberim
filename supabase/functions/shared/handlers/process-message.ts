@@ -2304,6 +2304,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       newContext.reservationInfo,
       currentTourFull || newContext.currentTour,
       newContext.tone,
+      fsmIntent,  // BULGU 2 fix: change_info niyet-farkında skip
+      message,
     );
     if (reaskCheck.wasModified) {
       console.warn(`[process-message] Field-reask blocked: ${reaskCheck.matchedPattern}`);
