@@ -25,7 +25,7 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak, isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
-import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
+import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerManualDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
 import { hasQuotaForPax, getQuotaRemaining, hasAnyAvailableDate } from "../services/quota-check.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
@@ -1239,6 +1239,102 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(askReply, newContext);
     await adapter.sendResponse(askReply);
     return { success: true, response: askReply, newContext };
+  }
+
+  // === 11a-MANUAL-DATE-ACK. MANUEL TARİH SEÇİMİ → PAX (deterministik) ===
+  // 2026-06-25 BUG-X5 FIX (canlı exec a62db908):
+  // Pamukkale (çoklu-tarihli) tur seçildi → "10 aralık" → bot "*Antalya Rafting*
+  // turumuz için 10 Aralık not ettim" (YANLIŞ TUR ADI, state Pamukkale doğru).
+  // LLM (Haiku) history sızıntısı — keşif aşamasında konuşulan Antalya'yı pax-ack
+  // mesajına yansıttı. M1 LLM compliance kırılganlığı.
+  //
+  // :11a-AUTO-DATE-ACK (yukarıda) SADECE dateAutoAssigned=true ile tetiklendiği
+  // için çoklu-tarihli turda manuel tarih seçimi LLM'e bırakılıyordu → risk.
+  //
+  // FIX: Manuel tarih→pax geçişi için deterministik bypass. State'ten
+  // currentTour.title + selectedDate okur. Tur adı GÜVENİLİR state kaynağı
+  // (Murat C ilkesi — deterministik, M1'e güvenme).
+  //
+  // ÇAKIŞMA GUARD'I: :11a-AUTO-DATE-ACK YUKARIDA kontrol edilip return ediyor —
+  // dateAutoAssigned=true durumu yakalanmış olur. Burası SADECE manuel seçimde
+  // (dateAutoAssigned=false) tetiklenir.
+  if (shouldTriggerManualDateAck(
+    context,
+    newContext,
+    (extractedInfo as any)?.dateAutoAssigned === true,
+    !!(newContext.reservationInfo as any)?.selectedDate,
+  )) {
+    const _lang = newContext.language || "tr";
+    const _selectedDateM = (newContext.reservationInfo as any)?.selectedDate || "";
+    const _displayDateM = _selectedDateM
+      ? formatDateForLanguage(_selectedDateM, _lang)
+      : "";
+    const _tourM = newContext.currentTour
+      ? findTourById(newContext.currentTour.id, tours)
+      : null;
+    const _displayTitleM = _tourM
+      ? getLocalizedTourTitle(_tourM.title, _lang)
+      : (newContext.currentTour?.title || "");
+
+    // Fiyat hesaplama — try/catch içinde, başarısızsa _priceTextM="" kalır (:11a ile aynı pattern)
+    let _priceTextM = "";
+    try {
+      const _selDateObj = _tourM?.dates?.find((d: any) => d.id === (newContext.reservationInfo as any)?.dateId)
+        || _tourM?.dates?.[0];
+      if (_selDateObj?.price_adult) {
+        const _exRatesAckM = await getExchangeRatesOnce().catch(() => ({}));
+        const _showDualAckM = agency.show_multi_currency !== false;
+        _priceTextM = formatPriceSync(
+          _selDateObj.price_adult,
+          _tourM?.currency || "TRY",
+          _lang,
+          _exRatesAckM,
+          _showDualAckM,
+          languageCurrencies,
+        );
+      }
+    } catch (_priceErrM) {
+      console.warn("[process-message] :11a-MANUAL-DATE-ACK price format failed, fiyatsız devam:", _priceErrM);
+      _priceTextM = "";
+    }
+
+    // 7 dil — :11a-AUTO-DATE-ACK ile aynı stil + template
+    const _msgsM: Record<string, string> = {
+      tr: _priceTextM
+        ? `*${_displayDateM}* tarihinde *${_displayTitleM}* için rezervasyon başlatıyorum. (Kişi başı ${_priceTextM}) ✨\n\nKaç kişi katılacaksınız? 👥`
+        : `*${_displayDateM}* tarihinde *${_displayTitleM}* için rezervasyon başlatıyorum. ✨\n\nKaç kişi katılacaksınız? 👥`,
+      en: _priceTextM
+        ? `Starting reservation for *${_displayTitleM}* on *${_displayDateM}*. (Per person ${_priceTextM}) ✨\n\nHow many people? 👥`
+        : `Starting reservation for *${_displayTitleM}* on *${_displayDateM}*. ✨\n\nHow many people? 👥`,
+      de: _priceTextM
+        ? `Buche *${_displayTitleM}* am *${_displayDateM}*. (Pro Person ${_priceTextM}) ✨\n\nWie viele Personen? 👥`
+        : `Buche *${_displayTitleM}* am *${_displayDateM}*. ✨\n\nWie viele Personen? 👥`,
+      ru: _priceTextM
+        ? `Начинаю бронирование *${_displayTitleM}* на *${_displayDateM}*. (С человека ${_priceTextM}) ✨\n\nСколько человек? 👥`
+        : `Начинаю бронирование *${_displayTitleM}* на *${_displayDateM}*. ✨\n\nСколько человек? 👥`,
+      ar: _priceTextM
+        ? `أبدأ حجز *${_displayTitleM}* في *${_displayDateM}*. (للشخص ${_priceTextM}) ✨\n\nكم شخصاً؟ 👥`
+        : `أبدأ حجز *${_displayTitleM}* في *${_displayDateM}*. ✨\n\nكم شخصاً؟ 👥`,
+      fr: _priceTextM
+        ? `Je commence votre réservation pour *${_displayTitleM}* le *${_displayDateM}*. (Par personne ${_priceTextM}) ✨\n\nCombien de personnes ? 👥`
+        : `Je commence votre réservation pour *${_displayTitleM}* le *${_displayDateM}*. ✨\n\nCombien de personnes ? 👥`,
+      es: _priceTextM
+        ? `Iniciando reserva para *${_displayTitleM}* el *${_displayDateM}*. (Por persona ${_priceTextM}) ✨\n\n¿Cuántas personas? 👥`
+        : `Iniciando reserva para *${_displayTitleM}* el *${_displayDateM}*. ✨\n\n¿Cuántas personas? 👥`,
+    };
+
+    // Tur değişim prefix (tarih seçiminden önce tur değiştirildiyse — KÖK 5 ile uyumlu)
+    const _tcPrefixAckM = buildTourChangePrefix(
+      _originalTourId,
+      newContext.currentTour?.id,
+      _displayTitleM,
+      _lang,
+    );
+    const askReplyM = _tcPrefixAckM + (_msgsM[_lang] || _msgsM.tr);
+    console.log(`[process-message] :11a-MANUAL-DATE-ACK tetiklendi (date=${_selectedDateM}, tour=${_displayTitleM}, tourChanged=${!!_tcPrefixAckM})`);
+    await _save(askReplyM, newContext);
+    await adapter.sendResponse(askReplyM);
+    return { success: true, response: askReplyM, newContext };
   }
 
   // === 11b. PAX → NAME GEÇİŞİ (deterministik) — 2026-06-19 Murat bug kökü ===

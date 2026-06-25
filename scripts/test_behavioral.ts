@@ -4353,6 +4353,93 @@ function _mergeMockBugX4(
     m.dateId === "ID-20" && m.selectedDate === "2026-12-20");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 BUG-X5 FIX — Manuel tarih→pax geçişi deterministik bypass
+// Canlı (exec a62db908): Pamukkale (çoklu-tarihli) + "10 aralık" → bot
+// "*Antalya Rafting* için 10 Aralık not ettim" (YANLIŞ tur, state Pamukkale doğru).
+// LLM history sızıntısı. Fix: shouldTriggerManualDateAck gate, dateAutoAssigned=false +
+// waiting_for_pax transition + selectedDate dolu → deterministik mesaj state'ten.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG-X5 FIX: :11a-MANUAL-DATE-ACK gate ──");
+
+import { shouldTriggerManualDateAck } from "../supabase/functions/shared/services/bypass-gates.ts";
+
+// X5.1 KRİTİK CANLI: manuel tarih → pax transition + selectedDate dolu → TETİKLE
+assert(`X5.1 KRİTİK CANLI: manuel tarih + waiting_for_pax transition + dolu tarih → TETİKLE`,
+  shouldTriggerManualDateAck(
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } as any,
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" } as any,
+    false,  // dateAutoAssigned FALSE (manuel)
+    true,   // selectedDate dolu
+  ) === true);
+
+// X5.2 ÇAKIŞMA GUARD'I: dateAutoAssigned=true → TETİKLEME (auto-ack zaten yapacak)
+assert(`X5.2 ÇAKIŞMA GUARD'I: dateAutoAssigned=TRUE → TETİKLEMEZ (:11a-AUTO-DATE-ACK kapsar)`,
+  shouldTriggerManualDateAck(
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } as any,
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" } as any,
+    true,   // dateAutoAssigned TRUE → auto-ack
+    true,
+  ) === false);
+
+// X5.3 REGRESYON: selectedDate yok → TETİKLEME
+assert(`X5.3: selectedDate YOK → TETİKLEMEZ`,
+  shouldTriggerManualDateAck(
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } as any,
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" } as any,
+    false,
+    false,  // hasSelectedDate FALSE
+  ) === false);
+
+// X5.4 REGRESYON: no-op (önceki adım da waiting_for_pax) → TETİKLEMEZ
+assert(`X5.4: no-op (önceki de waiting_for_pax) → TETİKLEMEZ`,
+  shouldTriggerManualDateAck(
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" } as any,  // ÖNCEKİ pax
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" } as any,
+    false,
+    true,
+  ) === false);
+
+// X5.5 REGRESYON: stage CONFIRMING (transition farklı) → TETİKLEMEZ
+assert(`X5.5: stage CONFIRMING → TETİKLEMEZ (COLLECTING_INFO değil)`,
+  shouldTriggerManualDateAck(
+    { stage: "CONFIRMING", collectionStep: "ready_for_confirmation" } as any,
+    { stage: "CONFIRMING", collectionStep: "ready_for_confirmation" } as any,
+    false,
+    true,
+  ) === false);
+
+// X5.6 REGRESYON: collectionStep waiting_for_name (pax sonrası) → TETİKLEMEZ
+assert(`X5.6: waiting_for_name → TETİKLEMEZ (:11b kapsar)`,
+  shouldTriggerManualDateAck(
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" } as any,
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_name" } as any,
+    false,
+    true,
+  ) === false);
+
+// X5.7: GREETING'den COLLECTING_INFO'ya geçiş (tarih + pax başlangıçta yok) →
+//   bu transition zaten waiting_for_date'e gider, pax'a değil, atlanır
+assert(`X5.7: GREETING → COLLECTING_INFO + waiting_for_date geçişi → TETİKLEMEZ`,
+  shouldTriggerManualDateAck(
+    { stage: "GREETING", collectionStep: undefined } as any,
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } as any,
+    false,
+    true,
+  ) === false);
+
+// X5.8 KRİTİK: dateAutoAssigned=undefined (NLU çıkarmadı) → dateAutoAssigned === false eşittir mi?
+//   _isDateAutoAssigned = (extractedInfo as any)?.dateAutoAssigned === true → undefined !== true → false
+//   bypass'a TRUE olarak geliyor demek (process-message.ts ile uyumlu)
+//   Yani: dateAutoAssigned=false bypass'ta tetikler
+assert(`X5.8: dateAutoAssigned=undefined eşit gibi davranır (process-message uyum) → TETİKLE`,
+  shouldTriggerManualDateAck(
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_date" } as any,
+    { stage: "COLLECTING_INFO", collectionStep: "waiting_for_pax" } as any,
+    false,  // process-message'da `=== true` kontrolü undefined için false döner
+    true,
+  ) === true);
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

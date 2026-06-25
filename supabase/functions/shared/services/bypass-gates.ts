@@ -163,6 +163,47 @@ export function shouldTriggerAutoDateAck(
   );
 }
 
+// ─── 2026-06-25 BUG-X5 FIX: :11a-DATE→PAX manuel tarih seçimi bypass ─────
+//
+// CANLI BUG (exec a62db908): Pamukkale (çoklu-tarihli) tur seçildi → "10 aralık"
+// tarih seçimi → bot "*Antalya Rafting* turumuz için 10 Aralık not ettim"
+// (YANLIŞ TUR ADI, state Pamukkale doğru). LLM (Haiku) history sızıntısı —
+// keşif aşamasında konuşulan Antalya'yı pax-ack mesajına yansıttı.
+//
+// :11a-AUTO-DATE-ACK (yukarıda) SADECE dateAutoAssigned=true ile tetikleniyor
+// (tek-tarihli tur Blok 10 otomatik atama). Çoklu-tarihli turda kullanıcı
+// MANUEL tarih seçince dateAutoAssigned set olmaz → bypass tetiklenmez → LLM
+// çağrılır → history sızıntısı riski.
+//
+// FIX: Manuel tarih→pax geçişi için yeni deterministik bypass. State'ten
+// currentTour.title + selectedDate okur, LLM ATLA. Tur adı güvenilir state
+// kaynağından gelir (Murat C ilkesi — deterministik, M1'e güvenme).
+//
+// :11a-AUTO-DATE-ACK ile ÇAKIŞMAZ: bu gate dateAutoAssigned=FALSE iken çalışır,
+// o dateAutoAssigned=TRUE iken. process-message.ts'te :11a-AUTO-DATE-ACK ÖNCE
+// kontrol edilir (mevcut sıralama).
+//
+// 4 dar kapı (auto-ack ile aynı transition gate'i + selectedDate + dateAutoAssigned=FALSE):
+//   1. dateAutoAssigned === false (manuel tarih seçimi — Blok 10 atlanmış)
+//   2. newContext.stage === COLLECTING_INFO
+//   3. newContext.collectionStep === waiting_for_pax
+//   4. context.collectionStep !== waiting_for_pax (TRANSITION — no-op'ta tekrar yok)
+//   5. selectedDate dolu (kullanıcı gerçekten tarih seçti, state tutarlı)
+export function shouldTriggerManualDateAck(
+  context: BypassContext,
+  newContext: BypassContext,
+  dateAutoAssigned: boolean,
+  hasSelectedDate: boolean,
+): boolean {
+  return (
+    dateAutoAssigned === false &&
+    newContext.stage === "COLLECTING_INFO" &&
+    newContext.collectionStep === "waiting_for_pax" &&
+    context.collectionStep !== "waiting_for_pax" &&
+    hasSelectedDate === true
+  );
+}
+
 // ─── 2026-06-22 SORUN G — :13-PERSIST CONFIRMING NO-OP gate ───────────
 //
 // CANLI BUG (exec 06ae0554, M1 ailesi):
