@@ -396,6 +396,38 @@ export function findMatchingTours(
     multipleMatches = [];
   }
 
+  // ─── Strateji 1.5: NLU tour_name ile multipleMatches DARALTMA ─────────────
+  // 2026-06-25 KÖK 5 daraltma (canlı kanıt — "kapadokya kültür turu" intermittent):
+  // Strateji 1 msgWords ile "kapadokya" → 2 tur (Balon+Kültür) match → multipleMatches
+  // length=2 → selectedTour=null. AMA NLU tour_name spesifik ("Kapadokya Kültür Turu")
+  // bilgi veriyor. Mevcut Strateji 2 SADECE multipleMatches.length===0 iken çalışıyordu.
+  //
+  // Çözüm: multipleMatches > 1 + NLU tour_name varsa → her bir multipleMatch'in normalize
+  // başlığı NLU tour_name'le karşılıklı includes kontrolü yap. Tek match kalırsa selectedTour
+  // = o tur. Birden çok kalırsa multipleMatches'ı dar liste ile güncelle (B2 destinasyon
+  // sorusu o daraltılmış listeyle gösterilir).
+  if (!selectedTour && multipleMatches.length > 1 && tourNames.length > 0) {
+    for (const name of tourNames) {
+      if (!isNluOutputInMessage(name, message)) continue;  // uydurma → atla
+      const normNlu = normalizeForMatch(name);
+      const narrowed = multipleMatches.filter((t) => {
+        const normTitle = normalizeForMatch(t.title);
+        // İki yönlü includes — "kapadokya turu" (nlu) "kapadokya kultur turu" (title) içinde,
+        // "kapadokya kultur turu" (nlu) sadece kendi title'ı içinde.
+        return normTitle.includes(normNlu) || normNlu.includes(normTitle);
+      });
+      if (narrowed.length === 1) {
+        selectedTour = createTourRef(narrowed[0]);
+        multipleMatches = [];
+        break;
+      } else if (narrowed.length > 0 && narrowed.length < multipleMatches.length) {
+        // Tam daraltma yapamadık AMA bir alt küme buldu — multipleMatches'ı sınırla
+        // (B2 destinasyon sorusu daha az tur gösterir).
+        multipleMatches = narrowed;
+      }
+    }
+  }
+
   // ─── Strateji 2: NLU tour_name (validated) ────────────────────────────────
   if (!selectedTour && multipleMatches.length === 0) {
     for (const name of tourNames) {
@@ -508,6 +540,17 @@ export function findMatchingTours(
       toursPreview: _toursPreview,
     }, null, 2));
   }
+
+  // 2026-06-25 KÖK 5 GEÇİCİ DEBUG: canlı doğrulama sonrası KALDIRILACAK.
+  // Pattern eşleşmesi + selectedTour durumunun korelasyonu için.
+  console.log("[tour-matching] KÖK5 DEBUG:", JSON.stringify({
+    message: message.slice(0, 40),
+    msgWordsCount: msgWords.length,
+    multipleCount: multipleMatches.length,
+    nluTourName: tourNames[0],
+    selectedTourId: selectedTour?.id?.slice(0, 8),
+    multipleIds: multipleMatches.map((m) => m.id?.slice(0, 8)),
+  }));
 
   return { selectedTour, multipleMatches, unknownTourQuery };
 }

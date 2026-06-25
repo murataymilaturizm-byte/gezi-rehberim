@@ -395,6 +395,38 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       `[process-message] DETERMINISTIC tour-change: ${_prevStage} → COLLECTING_INFO ` +
       `("${_prevTourTitle}" → "${selectedTour.title}")`,
     );
+    // 2026-06-25 KÖK 5 GEÇİCİ DEBUG: erken-müdahale durumu için izleme (canlı doğrulama sonrası kaldır)
+    console.log(`[process-message] KÖK5 DEBUG erken-müdahale: patternMatch=${TOUR_CHANGE_PHRASE_RE.test(message)}, selectedTourId=${selectedTour?.id?.slice(0, 8)}, exceptionFired=true`);
+  }
+
+  // === 7c. BELİRSİZ TUR DEĞİŞİMİ — destinasyon-specific "hangisi?" sorusu ===
+  // 2026-06-25 KÖK 5 FIX 2 (canlı kanıt — "kapadokya turuna geçmek istiyorum"):
+  // Tur değişim ifadesi var AMA selectedTour=null (Strateji 1+1.5 daraltma yetmedi,
+  // multipleMatches hâlâ > 1). Bu durumda kullanıcıya SADECE eşleşen destinasyon
+  // turlarını listele + "hangisi?" sor. Sonraki turn'de spesifik tur seçilince
+  // FIX 1 daraltma çalışır.
+  //
+  // KRİTİK AYRIM: SADECE rezervasyon-esnası tur değişim bağlamında. Yeni rezervasyon
+  // (GREETING/TOUR_SELECTED) çoklu-eşleşme davranışı (A3 mevcut B2 list) BOZULMAZ.
+  const _hasExplicitTourChangeNoMatch =
+    TOUR_CHANGE_PHRASE_RE.test(message) &&
+    !selectedTour &&
+    multipleTourMatches.length > 1 &&
+    (context.stage === "COLLECTING_INFO" || context.stage === "CONFIRMING");
+  if (_hasExplicitTourChangeNoMatch) {
+    const _lang = context.language || "tr";
+    const _tourListLines = multipleTourMatches.slice(0, 8).map((t: any, i: number) => {
+      return `${i + 1}) ${getLocalizedTourTitle(t.title, _lang)}`;
+    }).join("\n");
+    const _ambiguousMsgs: Record<string, string> = {
+      tr: `Birden fazla tur seçeneğimiz var:\n${_tourListLines}\n\nHangisini tercih edersiniz?`,
+      en: `We have multiple tour options:\n${_tourListLines}\n\nWhich one would you prefer?`,
+    };
+    const _ambReply = _ambiguousMsgs[_lang] || _ambiguousMsgs.tr;
+    console.log(`[process-message] KÖK 5 FIX2: belirsiz tur değişim (${multipleTourMatches.length} match) → destinasyon-specific liste`);
+    await _save(_ambReply, context);
+    await adapter.sendResponse(_ambReply);
+    return { success: true, response: _ambReply, newContext: context };
   }
 
   // B2: Orijinal intent'i stage korumadan ÖNCE kaydet

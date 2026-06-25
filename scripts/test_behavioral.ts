@@ -3063,6 +3063,99 @@ console.log("\n── KÖK 5 devamı: tur değişimi sonrası Blok 10 atla ─�
     ei.dateId === undefined && ei.selectedDate === undefined);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 KÖK 5 DARALTMA (FIX 1) — Strateji 1.5: NLU tour_name ile narrow
+// Canlı: "kapadokya kültür turu" → multipleMatches=[Balon,Kültür] → null →
+// tur değişmedi. Fix: NLU tour_name ile daralt → tek match → selectedTour set.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── KÖK 5 FIX 1: NLU tour_name ile multipleMatches daralt ──");
+
+import { findMatchingTours as _fmt } from "../supabase/functions/shared/services/tour-matching.ts";
+
+// Test fixture: Kapadokya'da 2 tur (Balon + Kültür), Antalya'da 1 tur (Rafting)
+const _kapaBalon = { id: "T_KB", title: "Kapadokya Balon Turu", destination: "Kapadokya", dates: [] };
+const _kapaKultur = { id: "T_KK", title: "Kapadokya Kültür Turu", destination: "Kapadokya", dates: [] };
+const _antRafting = { id: "T_AR", title: "Antalya Rafting Turu", destination: "Antalya", dates: [] };
+const _toursK5 = [_kapaBalon, _kapaKultur, _antRafting];
+
+// FIX1.1 KRİTİK: "kapadokya kültür turu" + NLU spesifik → Kültür'e daralır
+{
+  const r = _fmt(
+    "kapadokya kültür turu",
+    { tour_name: "Kapadokya Kültür Turu" } as any,
+    _toursK5,
+    "pax",
+    "tour_search",
+  );
+  assert(`FIX1.1 KRİTİK: "kapadokya kültür turu" + NLU tour_name → Kültür'e daralır`,
+    r.selectedTour?.id === "T_KK");
+}
+
+// FIX1.2 REGRESYON: "antalya rafting turu" — tek match
+{
+  const r = _fmt(
+    "antalya rafting turu",
+    { tour_name: "Antalya Rafting Turu" } as any,
+    _toursK5,
+    "pax",
+    "tour_search",
+  );
+  assert(`FIX1.2 REGRESYON: "antalya rafting" → tek match (zaten çalışıyor)`,
+    r.selectedTour?.id === "T_AR");
+}
+
+// FIX1.3: "kapadokya balon" + NLU → Balon
+{
+  const r = _fmt(
+    "kapadokya balon turu",
+    { tour_name: "Kapadokya Balon Turu" } as any,
+    _toursK5,
+    "pax",
+    "tour_search",
+  );
+  assert(`FIX1.3: "kapadokya balon" + NLU → Balon`,
+    r.selectedTour?.id === "T_KB");
+}
+
+// FIX1.4: "kapadokya turuna geç" (spesifik DEĞİL NLU) → daraltma yetmez, multipleMatches kalır
+{
+  const r = _fmt(
+    "kapadokya turuna geçmek istiyorum",
+    { tour_name: "kapadokya turu" } as any,
+    _toursK5,
+    "pax",
+    "tour_search",
+  );
+  assert(`FIX1.4: belirsiz "kapadokya turu" → multipleMatches kalır (FIX 2 devralır)`,
+    r.selectedTour === null && r.multipleMatches.length >= 2);
+}
+
+// FIX1.5 REGRESYON: NLU tour_name uydurma → daraltma DEVREYE GİRMEZ
+{
+  const r = _fmt(
+    "kapadokya turuna geçmek istiyorum",
+    { tour_name: "Antalya Rafting Turu" } as any,
+    _toursK5,
+    "pax",
+    "tour_search",
+  );
+  assert(`FIX1.5 REGRESYON: NLU uydurma → isNluOutputInMessage FALSE → daraltma yapmaz`,
+    r.selectedTour === null);
+}
+
+// FIX1.6 ÖZGE REGRESYON: waiting_for_name + isim + intent provide_info → tour-matching kapalı
+{
+  const r = _fmt(
+    "Özge Yılmazer",
+    { tour_name: "Özge" } as any,
+    _toursK5,
+    "name",
+    "provide_info",
+  );
+  assert(`FIX1.6 ÖZGE REGRESYON: waiting_for_name + provide_info → tour-matching kapalı (selectedTour=null)`,
+    r.selectedTour === null);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
