@@ -3156,6 +3156,61 @@ const _toursK5 = [_kapaBalon, _kapaKultur, _antRafting];
     r.selectedTour === null);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 FIX KÖK 6 — :11 tarih listesi intent guard (bilgi sorusu yutma)
+// Canlı (G1): waiting_for_date'te "iptal şartları nedir" → bot tarih listesini
+// tekrar gösterdi, soruyu cevaplamadı. :11 (a) dalı mesaj içeriğine bakmıyordu.
+// Fix: bilgi sorusu intent'lerinde (general_question/support_request) :11 ATLA.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX KÖK 6: :11 tarih listesi intent guard ──");
+
+// :11 guard mantığını izole eden helper (process-message.ts:883-891 inline kod)
+function _shouldTriggerDateList(
+  stage: string,
+  collectionStep: string | undefined,
+  fsmIntent: string,
+  hasCurrentTour: boolean,
+  askingViaQuery: boolean,
+): boolean {
+  if (!hasCurrentTour) return false;
+  // KÖK 6: bilgi sorusu intent'leri :11'i atlatır
+  if (fsmIntent === "general_question" || fsmIntent === "support_request") return false;
+  return (
+    (stage === "COLLECTING_INFO" && collectionStep === "waiting_for_date") ||
+    ((stage === "TOUR_SELECTED" || stage === "COLLECTING_INFO") && askingViaQuery)
+  );
+}
+
+assert(`K6.1 KRİTİK: waiting_for_date + general_question (iptal şartları) → :11 ATLAR`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "general_question", true, false) === false);
+
+assert(`K6.2 KRİTİK: waiting_for_date + provide_info (tarih verme) → :11 ÇALIŞIR (regresyon)`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "provide_info", true, false) === true);
+
+assert(`K6.3 KRİTİK: waiting_for_date + tarih verme "20 aralık" + general → :11 ÇALIŞIR (otomatik)`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "general", true, false) === true);
+
+assert(`K6.4: waiting_for_date + support_request (after-sales/complaint) → :11 ATLAR (bilgi)`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "support_request", true, false) === false);
+
+assert(`K6.5 REGRESYON: TOUR_SELECTED + tarih sorusu (askingViaQuery) + general_question → :11 ATLAR (bilgi)`,
+  _shouldTriggerDateList("TOUR_SELECTED", undefined, "general_question", true, true) === false);
+
+assert(`K6.6 REGRESYON: TOUR_SELECTED + askingViaQuery + tour_search → :11 ÇALIŞIR (mevcut A3)`,
+  _shouldTriggerDateList("TOUR_SELECTED", undefined, "tour_search", true, true) === true);
+
+assert(`K6.7: waiting_for_pax + general_question → :11 zaten atlar (waiting_for_date değil)`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_pax", "general_question", true, false) === false);
+
+assert(`K6.8 REGRESYON: currentTour yok → :11 her durumda atlar`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "provide_info", false, false) === false);
+
+assert(`K6.9: waiting_for_date + change_info → :11 ÇALIŞIR (change_info bilgi sorusu değil)`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "change_info", true, false) === true);
+
+assert(`K6.10: waiting_for_date + confirm_reservation → :11 ÇALIŞIR`,
+  _shouldTriggerDateList("COLLECTING_INFO", "waiting_for_date", "confirm_reservation", true, false) === true);
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

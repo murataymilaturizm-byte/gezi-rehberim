@@ -395,8 +395,6 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       `[process-message] DETERMINISTIC tour-change: ${_prevStage} → COLLECTING_INFO ` +
       `("${_prevTourTitle}" → "${selectedTour.title}")`,
     );
-    // 2026-06-25 KÖK 5 GEÇİCİ DEBUG: erken-müdahale durumu için izleme (canlı doğrulama sonrası kaldır)
-    console.log(`[process-message] KÖK5 DEBUG erken-müdahale: patternMatch=${TOUR_CHANGE_PHRASE_RE.test(message)}, selectedTourId=${selectedTour?.id?.slice(0, 8)}, exceptionFired=true`);
   }
 
   // === 7c. BELİRSİZ TUR DEĞİŞİMİ — destinasyon-specific "hangisi?" sorusu ===
@@ -880,9 +878,20 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // ELSE dalı: tour.dates boş → deterministik "tarih yok, acenteye yönlendir" (D3).
   // DATE_QUERY_RE + DATE_INTENTS tek-kaynak: ../constants/date-detection.ts (test
   // davranışsal olarak orayı çağırır — substring değil, runtime regex doğrulaması).
+  //
+  // 2026-06-25 KÖK 6 FIX (canlı G1 — waiting_for_date'te "iptal şartları"):
+  // (a) dalı (waiting_for_date otomatik) mesaj İÇERİĞİNE bakmıyordu → bilgi sorusu
+  // intent'leri (general_question, support_request) de :11'e takılıyor, tarih
+  // listesi tekrar gösteriliyordu → kullanıcı sorusu yutuluyordu.
+  // Çözüm: (a) dalına intent guard. Bilgi sorusu intent'lerinde :11 ATLA → LLM
+  // cevaplasın + midFlowReturnPrompt akışa döndürür ("...tarih seçimine devam...").
+  // Bug C (detectCancellationGuarded) ile aynı niyet/akış ayrımı pattern'i.
+  const _isInfoQuestionFsmIntent =
+    fsmIntent === "general_question" || fsmIntent === "support_request";
   const _askingViaQuery = DATE_QUERY_RE.test(message) && DATE_INTENTS.includes(fsmIntent);
   const _isUserAskingDates =
     !!newContext.currentTour &&
+    !_isInfoQuestionFsmIntent &&   // KÖK 6: bilgi sorusu intent'leri :11'i atlatır
     (
       // (a) Veri-toplama akışında tarih adımı: otomatik
       (newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_date") ||

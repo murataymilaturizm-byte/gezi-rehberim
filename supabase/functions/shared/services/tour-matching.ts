@@ -541,16 +541,5 @@ export function findMatchingTours(
     }, null, 2));
   }
 
-  // 2026-06-25 KÖK 5 GEÇİCİ DEBUG: canlı doğrulama sonrası KALDIRILACAK.
-  // Pattern eşleşmesi + selectedTour durumunun korelasyonu için.
-  console.log("[tour-matching] KÖK5 DEBUG:", JSON.stringify({
-    message: message.slice(0, 40),
-    msgWordsCount: msgWords.length,
-    multipleCount: multipleMatches.length,
-    nluTourName: tourNames[0],
-    selectedTourId: selectedTour?.id?.slice(0, 8),
-    multipleIds: multipleMatches.map((m) => m.id?.slice(0, 8)),
-  }));
-
   return { selectedTour, multipleMatches, unknownTourQuery };
 }
