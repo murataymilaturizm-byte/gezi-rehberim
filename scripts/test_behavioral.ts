@@ -4189,6 +4189,170 @@ assert(`X1.9 REGRESYON: TOUR_SELECTED + reservation_intent + currentTour YOK →
 assert(`X1.10 REGRESYON: COLLECTING_INFO + reservation_intent + waiting_for_pax → :11 ATLAR ((c) sadece TOUR_SELECTED)`,
   _shouldShowDateList("COLLECTING_INFO", "waiting_for_pax", "reservation_intent", true, false) === false);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 BUG-X4 FIX — mergeReservationInfo tarih override (pax simetrisi)
+// Canlı (exec b71dbb98-179e-43fd): CONFIRMING (tarih 20.12) → "tarihi değiştir"
+// → liste → "10 aralık" → ÖZET HÂLÂ 20.12 (yeni tarih merge edilmedi).
+// Kök: state-machine.ts:122-124 mergeReservationInfo `if (extracted.dateId &&
+// !merged.dateId)` — mevcut tarih dolu iken yeni tarih EKLENMİYORDU.
+// Bug B fix isim/telefon için isExplicitCorrection guard eklemiş, tarih ATLAMIŞ.
+// Fix: pax simetrisi — extracted.dateId varsa her zaman override.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG-X4 FIX: mergeReservationInfo tarih override (pax simetrisi) ──");
+
+// Helper: mergeReservationInfo tarih+pax merge mantığını izole eder
+// (state-machine.ts:90-161 tarih ve pax dalları). isim/telefon davranışı
+// aynen korunur (isExplicitCorrection guard).
+function _mergeMockBugX4(
+  existing: Record<string, unknown>,
+  extracted: Record<string, unknown>,
+  isInformational: boolean,
+  intent?: string,
+): Record<string, unknown> {
+  if (isInformational) return { ...existing };
+  const merged = { ...existing };
+  const isExplicitCorrection = intent === "change_info";
+
+  // Tarih: K1 (BUG-X4 fix — pax ile simetrik, her zaman override)
+  if (extracted.dateId) merged.dateId = extracted.dateId;
+  if (extracted.selectedDate) merged.selectedDate = extracted.selectedDate;
+
+  // Pax: mevcut K1 davranışı (hasDate + extracted.paxAdult → override)
+  const hasDate = !!(merged.dateId || merged.selectedDate);
+  if (hasDate && extracted.paxAdult) merged.paxAdult = extracted.paxAdult;
+
+  // İsim: isExplicitCorrection guard (mevcut Bug B davranışı)
+  if (extracted.fullName && (!merged.fullName || isExplicitCorrection)) {
+    merged.fullName = extracted.fullName;
+  }
+  // Telefon: aynı
+  if (extracted.phone && (!merged.phone || isExplicitCorrection)) {
+    merged.phone = extracted.phone;
+  }
+  return merged;
+}
+
+// X4.1 KRİTİK CANLI: CONFIRMING'de eski tarih dolu + provide_info + yeni tarih
+//   → YENİ TARİH UYGULANIR (önceden eski korunuyordu)
+{
+  const m = _mergeMockBugX4(
+    { dateId: "ID-20", selectedDate: "2026-12-20", paxAdult: 2, fullName: "Fırat", phone: "0555" },
+    { dateId: "ID-10", selectedDate: "2026-12-10" },
+    false,
+    "provide_info",
+  );
+  assert(`X4.1 KRİTİK CANLI: provide_info + yeni tarih → ÜZERİNE YAZILIR (10 aralık)`,
+    m.dateId === "ID-10" && m.selectedDate === "2026-12-10");
+}
+
+// X4.2: change_info ile tarih override (zaten çalışıyordu, korunsun)
+{
+  const m = _mergeMockBugX4(
+    { dateId: "ID-20", selectedDate: "2026-12-20", paxAdult: 2, fullName: "Fırat" },
+    { dateId: "ID-10", selectedDate: "2026-12-10" },
+    false,
+    "change_info",
+  );
+  assert(`X4.2: change_info + yeni tarih → ÜZERİNE YAZILIR`,
+    m.dateId === "ID-10" && m.selectedDate === "2026-12-10");
+}
+
+// X4.3 İLK DOLDURMA: boş tarih → yeni tarih ekle (mevcut davranış)
+{
+  const m = _mergeMockBugX4(
+    { paxAdult: 2 },
+    { dateId: "ID-10", selectedDate: "2026-12-10" },
+    false,
+    "provide_info",
+  );
+  assert(`X4.3 İLK DOLDURMA: boş dateId + yeni → eklenir`,
+    m.dateId === "ID-10");
+}
+
+// X4.4 KRİTİK GUARD: isInformational TRUE → early return, tarih DEĞİŞMEZ
+{
+  const m = _mergeMockBugX4(
+    { dateId: "ID-20", selectedDate: "2026-12-20" },
+    { dateId: "ID-10", selectedDate: "2026-12-10" },  // extracted dolu ama informational
+    true,  // isInformational
+    "general_question",
+  );
+  assert(`X4.4 KRİTİK GUARD: isInformational TRUE → tarih DEĞİŞMEZ (early return)`,
+    m.dateId === "ID-20" && m.selectedDate === "2026-12-20");
+}
+
+// X4.5 NLU HISTORY SIZINTISI: aynı tarihi eski üzerine eski yazma → no-op
+{
+  const m = _mergeMockBugX4(
+    { dateId: "ID-20", selectedDate: "2026-12-20", paxAdult: 2 },
+    { dateId: "ID-20", selectedDate: "2026-12-20" },  // NLU history'den aynı
+    false,
+    "change_info",
+  );
+  assert(`X4.5: NLU history sızıntısı (aynı tarih) → no-op, davranış değişmez`,
+    m.dateId === "ID-20");
+}
+
+// X4.6 REGRESYON: isim/telefon davranışı korundu (provide_info → override YOK)
+{
+  const m = _mergeMockBugX4(
+    { fullName: "Fırat", phone: "0555" },
+    { fullName: "Ahmet" },
+    false,
+    "provide_info",
+  );
+  assert(`X4.6 REGRESYON: provide_info + farklı isim → isim DEĞİŞMEZ (Bug B davranışı)`,
+    m.fullName === "Fırat");
+}
+
+// X4.7 REGRESYON: isim change_info ile override (Bug B fix korunur)
+{
+  const m = _mergeMockBugX4(
+    { fullName: "Fırat" },
+    { fullName: "Ahmet" },
+    false,
+    "change_info",
+  );
+  assert(`X4.7 REGRESYON: change_info + yeni isim → ÜZERİNE YAZILIR`,
+    m.fullName === "Ahmet");
+}
+
+// X4.8 REGRESYON: pax override (mevcut K1) korunur — provide_info + yeni pax
+{
+  const m = _mergeMockBugX4(
+    { dateId: "ID-1", paxAdult: 2 },
+    { paxAdult: 4 },
+    false,
+    "provide_info",
+  );
+  assert(`X4.8 REGRESYON: provide_info + yeni pax → ÜZERİNE YAZILIR (K1)`,
+    m.paxAdult === 4);
+}
+
+// X4.9: tek selectedDate (dateId yok) + dolu → override
+{
+  const m = _mergeMockBugX4(
+    { selectedDate: "2026-12-20" },
+    { selectedDate: "2026-12-10" },
+    false,
+    "provide_info",
+  );
+  assert(`X4.9: selectedDate dolu + yeni selectedDate → ÜZERİNE YAZILIR`,
+    m.selectedDate === "2026-12-10");
+}
+
+// X4.10: extracted boş (kullanıcı tarih vermedi) → mevcut korunur
+{
+  const m = _mergeMockBugX4(
+    { dateId: "ID-20", selectedDate: "2026-12-20" },
+    {},  // extracted boş
+    false,
+    "change_info",
+  );
+  assert(`X4.10: extracted boş → mevcut tarih korunur`,
+    m.dateId === "ID-20" && m.selectedDate === "2026-12-20");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);

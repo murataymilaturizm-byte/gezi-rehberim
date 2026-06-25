@@ -119,9 +119,17 @@ function mergeReservationInfo(
   if (extracted.tourId && extracted.tourId !== "") merged.tourId = extracted.tourId;
   if (extracted.tourTitle && extracted.tourTitle !== "") merged.tourTitle = extracted.tourTitle;
 
-  // 1. Tarih: henüz yoksa ekle
-  if (extracted.dateId && !merged.dateId) merged.dateId = extracted.dateId;
-  if (extracted.selectedDate && !merged.selectedDate) merged.selectedDate = extracted.selectedDate;
+  // 1. Tarih: K1 (son verilen değer kazanır — pax ile simetrik).
+  // 2026-06-25 BUG-X4 FIX (canlı exec b71dbb98): Eski "!merged.dateId" koşulu
+  // mevcut tarih dolu iken yeni tarihi yutuyordu — kullanıcı CONFIRMING'de
+  // "tarihi değiştir" → "10 aralık" derken yeni tarih merge edilmiyordu,
+  // özet eski 20 aralık göstermeye devam ediyordu. Bug B fix (isim/telefon
+  // isExplicitCorrection guard) 2026-06-23'te eklenmiş ama tarih ATLAMIŞ.
+  // Pax ile simetrik: extracted varsa her zaman override (bilgi sorusu
+  // durumunda yukarıdaki `if (isInformational) return ...` early-return zaten
+  // koruyor, NLU history sızıntısı eski=eski no-op).
+  if (extracted.dateId) merged.dateId = extracted.dateId;
+  if (extracted.selectedDate) merged.selectedDate = extracted.selectedDate;
 
   // 2. Kişi sayısı: tarih varsa ekle veya GÜNCELLE (K1: son verilen değer geçerli)
   const hasDate = !!(merged.dateId || merged.selectedDate);
