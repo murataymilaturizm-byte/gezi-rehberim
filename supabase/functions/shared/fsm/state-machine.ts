@@ -196,14 +196,26 @@ export function detectConfirmation(message: string, language: string): boolean {
   // 2026-06-21 Yan #8 fix: \b ASCII-only → \p{L}\p{N} lookaround.
   // JS \b non-ASCII bitişli kelimelerde (ş/ı) boundary tanımıyor →
   // "evet yanlış" / "evet hatalı" eskiden TRUE (yanlış onay) → şimdi FALSE.
+  //
+  // 2026-06-25 FIX F4 (canlı bug: "ismi Ahmet yap onaylıyorum"):
+  // Eski negative pattern'de değiştirme fiilleri (yap/olsun/değiştir/düzelt/güncelle/
+  // değişiklik vb.) YOKTU → "onaylıyorum" pozitif + negative FALSE → detectConfirmation
+  // TRUE → state-machine CONFIRMING→COMPLETED transition kazanırdı (ilk sıralı match) →
+  // değişiklik niyeti YUTULURDU. CONFIRMING→COLLECTING_INFO (change_info) transition
+  // hiç denenmezdi. Fix: değişiklik fiilleri negative pattern'e eklendi, 7 dil eş.
+  //
+  // GUARD: saf onay (evet/onaylıyorum/tamam onaylıyorum/yes/ok) hâlâ TRUE kalır (F1
+  // bozulmaz). "yap"/"olsun" için lookbehind+lookahead ile sıkı kelime sınırı —
+  // "yapıyorum" çekim eki sade onay sayılır. "değiştir/düzelt/güncelle/değişiklik"
+  // çekim ekleri açık (değiştirelim/değişikliği) — değişiklik niyeti her halükarda.
   const negativePatterns: Record<string, RegExp> = {
-    tr: /(?<![\p{L}\p{N}])(ama|fakat|ancak|lakin|değil|yok|hayır|istemiyorum|vazgeçtim|olmaz|bekle|dur|aslında|sanki|acaba|mı\?|mi\?|değil mi|yanlış|hata|hatalı)(?![\p{L}\p{N}])/iu,
-    en: /\b(but|however|except|not|no|don't|wait|hold|change|actually|wrong|mistake|rather|instead|unless)\b/i,
-    de: /\b(aber|jedoch|nicht|nein|warte|ändern|eigentlich|falsch|stattdessen)\b/i,
-    fr: /\b(mais|cependant|non|pas|attends|changer|plutôt|en fait|faux)\b/i,
-    es: /\b(pero|sin embargo|no|espera|cambiar|en realidad|incorrecto|equivocado)\b/i,
-    ru: /\b(но|однако|нет|не|подожди|изменить|вообще-то|неправильно|ошибка)\b/i,
-    ar: /\b(لكن|لا|ليس|انتظر|تغيير|في الواقع|خطأ)\b/i,
+    tr: /(?<![\p{L}\p{N}])(ama|fakat|ancak|lakin|değil|yok|hayır|istemiyorum|vazgeçtim|olmaz|bekle|dur|aslında|sanki|acaba|mı\?|mi\?|değil mi|yanlış|hata|hatalı|yap|olsun)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])(değiştir|düzelt|güncelle|değişiklik)/iu,
+    en: /\b(but|however|except|not|no|don't|wait|hold|change|actually|wrong|mistake|rather|instead|unless|modify|edit|update|correct|fix|make\s+it)\b/i,
+    de: /\b(aber|jedoch|nicht|nein|warte|ändern|eigentlich|falsch|stattdessen|korrigieren|aktualisieren|bearbeiten|mach\s+es)\b/i,
+    fr: /\b(mais|cependant|non|pas|attends|changer|plutôt|en fait|faux|modifier|corriger|éditer|mettre\s+à\s+jour|fais\s+en|faites\s+en)\b/i,
+    es: /\b(pero|sin embargo|no|espera|cambiar|en realidad|incorrecto|equivocado|modificar|corregir|actualizar|editar|hazlo|hazla)\b/i,
+    ru: /\b(но|однако|нет|не|подожди|изменить|вообще-то|неправильно|ошибка|исправить|обновить|редактировать|сделай)\b/i,
+    ar: /\b(لكن|لا|ليس|انتظر|تغيير|في الواقع|خطأ|تعديل|تحديث|اجعل)\b/i,
   };
 
   // Positive patterns

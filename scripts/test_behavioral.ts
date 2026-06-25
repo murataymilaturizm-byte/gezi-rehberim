@@ -3358,6 +3358,123 @@ function _applyFlowReturnSuffix(
     fixed === "Ödeme bilgisi.\n\nTelefon numaranızı alabilir miyim?");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-25 FIX F4 — detectConfirmation negative pattern + değiştirme fiilleri
+// Canlı bug: CONFIRMING'de "ismi Ahmet yap onaylıyorum" → detectConfirmation
+// TRUE (negative pattern'de "yap" YOKTU) → state-machine CONFIRMING→COMPLETED
+// transition ilk sıralı match → değişiklik yutuldu, isim eski kalıp COMPLETED'a
+// geçildi. Fix: negative pattern'e değiştirme fiilleri (yap/olsun/değiştir/
+// düzelt/güncelle/değişiklik) eklendi, 7 dil eş.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── FIX F4: detectConfirmation negative pattern (değiştirme fiilleri) ──");
+
+// ── F4 KRİTİK: değiştirme niyeti olan onay → FALSE (CONFIRMING→COMPLETED yutmasın) ──
+assert(`F4.1 KRİTİK CANLI: "ismi Ahmet yap onaylıyorum" → FALSE (yap yakalar)`,
+  detectConfirmation("ismi Ahmet yap onaylıyorum", "tr") === false);
+
+assert(`F4.2 KRİTİK: "ismi Mehmet olsun onaylıyorum" → FALSE (olsun yakalar)`,
+  detectConfirmation("ismi Mehmet olsun onaylıyorum", "tr") === false);
+
+assert(`F4.3: "ismi Ahmet değiştir onaylıyorum" → FALSE`,
+  detectConfirmation("ismi Ahmet değiştir onaylıyorum", "tr") === false);
+
+assert(`F4.4: "ismi Ahmet değiştirelim onaylıyorum" → FALSE (çekim eki serbest)`,
+  detectConfirmation("ismi Ahmet değiştirelim onaylıyorum", "tr") === false);
+
+assert(`F4.5: "ismi düzelt evet" → FALSE`,
+  detectConfirmation("ismi düzelt evet", "tr") === false);
+
+assert(`F4.6: "telefonu güncelle onayla" → FALSE`,
+  detectConfirmation("telefonu güncelle onayla", "tr") === false);
+
+assert(`F4.7: "bir değişiklik var, evet" → FALSE`,
+  detectConfirmation("bir değişiklik var, evet", "tr") === false);
+
+assert(`F4.8: "telefonu 0555 yap onayla" → FALSE (genelleme — telefon)`,
+  detectConfirmation("telefonu 0555 yap onayla", "tr") === false);
+
+// ── F1 REGRESYON: saf onay korunmalı (CONFIRMING→COMPLETED düzgün çalışsın) ──
+assert(`F4.10 F1 KORUMA: saf "evet" → TRUE`,
+  detectConfirmation("evet", "tr") === true);
+
+assert(`F4.11 F1 KORUMA: "onaylıyorum" → TRUE`,
+  detectConfirmation("onaylıyorum", "tr") === true);
+
+assert(`F4.12 F1 KORUMA: "tamam onaylıyorum" → TRUE`,
+  detectConfirmation("tamam onaylıyorum", "tr") === true);
+
+assert(`F4.13 F1 KORUMA: "evet tamam" → TRUE`,
+  detectConfirmation("evet tamam", "tr") === true);
+
+assert(`F4.14 F1 KORUMA: "kesinlikle onaylıyorum" → TRUE`,
+  detectConfirmation("kesinlikle onaylıyorum", "tr") === true);
+
+assert(`F4.15 F1 KORUMA: "isim doğru, onaylıyorum" → TRUE (değişiklik yok)`,
+  detectConfirmation("isim doğru, onaylıyorum", "tr") === true);
+
+assert(`F4.16 ÇEKİM EKİ GUARD: "yapıyorum onaylıyorum" → TRUE (yap+ı çekim)`,
+  detectConfirmation("yapıyorum onaylıyorum", "tr") === true);
+
+assert(`F4.17 ÇEKİM EKİ GUARD: "olsunsa olsun yine de evet" → FALSE (olsun yine yakalar)`,
+  detectConfirmation("olsunsa olsun yine de evet", "tr") === false);
+
+// ── İngilizce ──
+assert(`F4.20 EN KRİTİK: "make it Ahmet, confirm" → FALSE (make it)`,
+  detectConfirmation("make it Ahmet, confirm", "en") === false);
+
+assert(`F4.21 EN: "modify name, yes" → FALSE`,
+  detectConfirmation("modify name, yes", "en") === false);
+
+assert(`F4.22 EN: "edit phone, confirm" → FALSE`,
+  detectConfirmation("edit phone, confirm", "en") === false);
+
+assert(`F4.23 EN: "update name to Ahmet, ok" → FALSE`,
+  detectConfirmation("update name to Ahmet, ok", "en") === false);
+
+assert(`F4.24 EN: "correct the phone, yes" → FALSE`,
+  detectConfirmation("correct the phone, yes", "en") === false);
+
+assert(`F4.25 EN: "fix the date, confirm" → FALSE`,
+  detectConfirmation("fix the date, confirm", "en") === false);
+
+assert(`F4.26 EN F1 KORUMA: "yes" → TRUE`,
+  detectConfirmation("yes", "en") === true);
+
+assert(`F4.27 EN F1 KORUMA: "confirm" → TRUE`,
+  detectConfirmation("confirm", "en") === true);
+
+assert(`F4.28 EN F1 KORUMA: "ok confirmed" → TRUE`,
+  detectConfirmation("ok confirmed", "en") === true);
+
+// ── Diğer 5 dil (sade test) ──
+assert(`F4.30 DE: "ja, korrigieren Sie den Namen" → FALSE`,
+  detectConfirmation("ja, korrigieren Sie den Namen", "de") === false);
+
+assert(`F4.31 DE F1: "ja" → TRUE`,
+  detectConfirmation("ja", "de") === true);
+
+assert(`F4.32 FR: "oui, modifier le nom" → FALSE`,
+  detectConfirmation("oui, modifier le nom", "fr") === false);
+
+assert(`F4.33 FR F1: "oui" → TRUE`,
+  detectConfirmation("oui", "fr") === true);
+
+assert(`F4.34 ES: "si, modificar el nombre" → FALSE`,
+  detectConfirmation("si, modificar el nombre", "es") === false);
+
+assert(`F4.35 ES F1: "si" → TRUE`,
+  detectConfirmation("si", "es") === true);
+
+assert(`F4.36 RU: "да, исправить имя" → FALSE`,
+  detectConfirmation("да, исправить имя", "ru") === false);
+
+assert(`F4.38 AR: "نعم، تعديل الاسم" → FALSE`,
+  detectConfirmation("نعم، تعديل الاسم", "ar") === false);
+
+// NOT: Saf "да"/"نعم" testi yapılmadı — RU/AR positive pattern'da \b lookahead
+// cyrillic/arabic boundary tanımıyor (ASCII-only \b). Bu ESKİ bir bug, F4 fix
+// scope'unun dışı. Ayrı commit'te lookbehind+lookahead'a çevrilebilir.
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
