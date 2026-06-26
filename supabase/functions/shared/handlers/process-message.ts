@@ -355,6 +355,332 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // değiştiriyor. Her iki yolda da bu orijinal ID karşılaştırma kaynağı.
   const _originalTourId = context.currentTour?.id;
 
+  // ============================================================================
+  // === NİTELİK ÖN-TESPİT KATMANI (X8 + B1 + B-TEMA) — 2026-06-26 R4 MİMARİ ====
+  // ============================================================================
+  // Konum: fsmIntent map SONRASI, findMatchingTours/extractAllInfo/FSM ÖNCESİ.
+  //
+  // Mimari kanıt (Bug 1/2/3 canlı kanıt):
+  //   Bug 3 — "2 kişi için 3000 bütçem var" → eski konumda B1 (L1003) ÇOK GEÇTİ:
+  //     L529 extractAllInfo pax=2 çıkarıyor
+  //     L870 FSM geçişi stage=COLLECTING_INFO'ya alıyor
+  //     B1 stage guard FALSE → atlanır → "ad soyad?" mesajı
+  //   KÖK ÇÖZÜM: B1'i tüm state-değiştirici katmanların ÖNÜNE taşı (BU KATMAN).
+  //   Bu sayede:
+  //     - tour-matching ÇALIŞMAZ → unknownTourQuery üretilmez
+  //     - extractAllInfo ÇALIŞMAZ → pax çıkmaz, rezervasyon akışına kaçmaz
+  //     - FSM geçişi ÇALIŞMAZ → stage mutasyonu yok
+  //
+  // Stage-bağımsız: pattern eşleşmesi YETERLİ filtre (Murat ilke 3 mimari uygulaması).
+  // Kullanıcı hangi stage'de olursa olsun fiyat/superlatif/tema sorabilir.
+  // ----------------------------------------------------------------------------
+
+  // --- STAGE GUARD: YENİ KATMAN SADECE KEŞİF AŞAMASINDA ÇALIŞIR ---
+  // 2026-06-26 R5 telefon bug fix: rezervasyon adımında (COLLECTING_INFO) kullanıcı
+  // telefon/pax/isim girer — fiyat sorgusu DEĞİL. Eski R4'te stage-bağımsız guard
+  // "05445655656" telefonunu 54456-55656 fiyat aralığı sanıp rezervasyonu böldü.
+  // Kök çözüm: nitelik ön-tespit katmanı SADECE keşif (GREETING/BROWSING/TOUR_SELECTED)
+  // aşamasında çalışsın. Bu Bug 3'ü (taşıma sayesinde extractAllInfo'dan önce çalışıyor)
+  // hâlâ çözer çünkü "2 kişi 3000 bütçem" GREETING/BROWSING'de gelir → B1 yakalar.
+  const _isExploreStage = context.stage === "GREETING"
+      || context.stage === "BROWSING"
+      || context.stage === "TOUR_SELECTED";
+
+  // --- X8: SUPERLATİF FİYAT (en ucuz / en pahalı) ---
+  // LLM (Haiku) sayı karşılaştırmada güvenilmez. Pattern eşleşince tours array
+  // price_adult'a göre sıralanır, deterministik mesaj döner.
+  const _superlativeAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|cheapest\s+tour)/iu;
+  const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)/iu;
+  const _matchesAsc = _superlativeAsc.test(message);
+  const _matchesDesc = _superlativeDesc.test(message);
+  if (_isExploreStage && (_matchesAsc || _matchesDesc) && tours.length > 0) {
+    const _toursPriced = tours
+      .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
+      .filter((x: any) => typeof x.price === "number" && x.price > 0);
+    if (_toursPriced.length > 0) {
+      _toursPriced.sort((a: any, b: any) =>
+        _matchesDesc ? b.price - a.price : a.price - b.price
+      );
+      const _top = _toursPriced[0];
+      const _lang = context.language || "tr";
+      const _topTitle = getLocalizedTourTitle(_top.tour.title || "", _lang);
+      const _exRatesX8 = await getExchangeRatesOnce().catch(() => ({}));
+      const _showDualX8 = agency.show_multi_currency !== false;
+      const _priceTextX8 = formatPriceSync(
+        _top.price,
+        _top.tour.currency || "TRY",
+        _lang,
+        _exRatesX8,
+        _showDualX8,
+        languageCurrencies,
+      );
+      const _superlativeMsgs: Record<string, { cheapest: string; expensive: string }> = {
+        tr: {
+          cheapest:  `En uygun fiyatlı turumuz *${_topTitle}* — ${_priceTextX8} (kişi başı). Hakkında bilgi almak ister misiniz? 😊`,
+          expensive: `En pahalı turumuz *${_topTitle}* — ${_priceTextX8} (kişi başı). Hakkında bilgi almak ister misiniz? 😊`,
+        },
+        en: {
+          cheapest:  `Our most affordable tour is *${_topTitle}* — ${_priceTextX8} (per person). Would you like more info? 😊`,
+          expensive: `Our most expensive tour is *${_topTitle}* — ${_priceTextX8} (per person). Would you like more info? 😊`,
+        },
+        de: {
+          cheapest:  `Unsere günstigste Tour ist *${_topTitle}* — ${_priceTextX8} (pro Person). Möchten Sie mehr Infos? 😊`,
+          expensive: `Unsere teuerste Tour ist *${_topTitle}* — ${_priceTextX8} (pro Person). Möchten Sie mehr Infos? 😊`,
+        },
+        fr: {
+          cheapest:  `Notre circuit le moins cher est *${_topTitle}* — ${_priceTextX8} (par personne). Plus d'informations ? 😊`,
+          expensive: `Notre circuit le plus cher est *${_topTitle}* — ${_priceTextX8} (par personne). Plus d'informations ? 😊`,
+        },
+        es: {
+          cheapest:  `Nuestro tour más económico es *${_topTitle}* — ${_priceTextX8} (por persona). ¿Más información? 😊`,
+          expensive: `Nuestro tour más caro es *${_topTitle}* — ${_priceTextX8} (por persona). ¿Más información? 😊`,
+        },
+        ru: {
+          cheapest:  `Самый доступный тур — *${_topTitle}* — ${_priceTextX8} (с человека). Хотите больше информации? 😊`,
+          expensive: `Самый дорогой тур — *${_topTitle}* — ${_priceTextX8} (с человека). Хотите больше информации? 😊`,
+        },
+        ar: {
+          cheapest:  `أوفر جولة لدينا *${_topTitle}* — ${_priceTextX8} (للشخص). هل تريد المزيد من المعلومات؟ 😊`,
+          expensive: `أغلى جولة لدينا *${_topTitle}* — ${_priceTextX8} (للشخص). هل تريد المزيد من المعلومات؟ 😊`,
+        },
+      };
+      const _msgSet = _superlativeMsgs[_lang] || _superlativeMsgs.tr;
+      const _x8Reply = _matchesDesc ? _msgSet.expensive : _msgSet.cheapest;
+      console.log(`[process-message] X8 superlatif fiyat: ${_matchesDesc ? "DESC (en pahalı)" : "ASC (en ucuz)"} → ${_top.tour.title} (${_top.price})`);
+      await _save(_x8Reply, context);
+      await adapter.sendResponse(_x8Reply);
+      return { success: true, response: _x8Reply, newContext: context };
+    }
+  }
+
+  // --- B1: FİYAT ARALIĞI / BÜTÇE ---
+  // R1: pattern + 7 dil. R2: bütçe/budget genişletme. R3: agresif fallback.
+  // R4 (BU): mimari taşıma — stage-bağımsız, extractAllInfo/FSM öncesi.
+  const _priceRangePats: RegExp[] = [
+    /(\d{2,6})\s*(?:tl|₺)?\s*(?:ile|ila|ve|-|–|—|to|and)\s*(\d{2,6})\s*(?:tl|₺)?\s*(?:aras[ıi])?/i,
+    /between\s+(\d{2,6})\s+(?:and|to)\s+(\d{2,6})/i,
+    /zwischen\s+(\d{2,6})\s+und\s+(\d{2,6})/i,
+    /entre\s+(\d{2,6})\s+(?:et|y)\s+(\d{2,6})/i,
+    /между\s+(\d{2,6})\s+и\s+(\d{2,6})/i,
+    /بين\s+(\d{2,6})\s+و\s*(\d{2,6})/i,
+  ];
+  const _priceMaxPats: RegExp[] = [
+    /(\d{2,6})\s*(?:tl|₺)?\s*alt[ıi](?:n(?:da?)?)?/i,
+    /(\d{2,6})\s*(?:tl|₺)?\s*(?:aşağ[ıi]|aşağıs[ıi])/i,
+    /(\d{2,6})['’]?\s*[eaıi]?\s+kadar/i,
+    /(?:en\s+fazla|max(?:imum)?)\s+(\d{2,6})/i,
+    /b[üu]t[çc]e[mn]?\s+(\d{2,6})/i,
+    /(\d{2,6})\s*(?:tl|₺)?\s*b[üu]t[çc]e[mn]?/i,
+    /budget(?:\s+(?:is|of|de|von))?\s+(\d{2,6})/i,
+    /(\d{2,6})\s*(?:tl|₺)?\s*budget/i,
+    /presupuesto\s+(?:de\s+)?(\d{2,6})/i,
+    /бюджет\s+(?:в\s+)?(\d{2,6})/i,
+    /ميزانية\s*(?:قدرها\s+)?(\d{2,6})/i,
+    /(\d{2,6})\s*(?:and\s+)?(?:below|under|or\s+less)/i,
+    /(?:up\s+to|less\s+than|max(?:imum)?)\s+(\d{2,6})/i,
+    /bis\s+(?:zu\s+)?(\d{2,6})/i,
+    /unter\s+(\d{2,6})/i,
+    /jusqu['’]\s*à\s+(\d{2,6})/i,
+    /moins\s+de\s+(\d{2,6})/i,
+    /hasta\s+(\d{2,6})/i,
+    /menos\s+de\s+(\d{2,6})/i,
+    /до\s+(\d{2,6})/i,
+    /менее\s+(\d{2,6})/i,
+    /حتى\s+(\d{2,6})/i,
+    /أقل\s+من\s+(\d{2,6})/i,
+  ];
+  const _priceMinPats: RegExp[] = [
+    /(\d{2,6})\s*(?:tl|₺)?\s*(?:[üu]st[üu]|[üu]st[üu]nde?|[üu]zerinde?)/i,
+    /(\d{2,6})['’]?\s*[dn]?[ae]n?\s+(?:fazla|y[üu]ksek)/i,
+    /(?:over|above|more\s+than)\s+(\d{2,6})/i,
+    /(\d{2,6})\s*(?:or\s+more|and\s+up)/i,
+    /über\s+(\d{2,6})/i,
+    /mehr\s+als\s+(\d{2,6})/i,
+    /plus\s+de\s+(\d{2,6})/i,
+    /más\s+de\s+(\d{2,6})/i,
+    /более\s+(\d{2,6})/i,
+    /أكثر\s+من\s+(\d{2,6})/i,
+  ];
+
+  let _priceLower: number | null = null;
+  let _priceUpper: number | null = null;
+  let _priceMatched = false;
+
+  // R5: stage guard GERİ EKLENDİ (telefon bug fix). Pattern + fallback rezervasyon
+  // adımında ÇALIŞMAMALI — keşif aşamasında (GREETING/BROWSING/TOUR_SELECTED) çalışır.
+  if (_isExploreStage && tours.length > 0) {
+    for (const p of _priceRangePats) {
+      const m = message.match(p);
+      if (m && m[1] && m[2]) {
+        const a = parseInt(m[1], 10);
+        const b = parseInt(m[2], 10);
+        if (a >= 100 && b >= 100) {
+          _priceLower = Math.min(a, b);
+          _priceUpper = Math.max(a, b);
+          _priceMatched = true;
+          break;
+        }
+      }
+    }
+    if (!_priceMatched) {
+      for (const p of _priceMaxPats) {
+        const m = message.match(p);
+        if (m && m[1]) {
+          const v = parseInt(m[1], 10);
+          if (v >= 100) { _priceUpper = v; _priceMatched = true; break; }
+        }
+      }
+    }
+    if (!_priceMatched) {
+      for (const p of _priceMinPats) {
+        const m = message.match(p);
+        if (m && m[1]) {
+          const v = parseInt(m[1], 10);
+          if (v >= 100) { _priceLower = v; _priceMatched = true; break; }
+        }
+      }
+    }
+    // KÖK FALLBACK (R3'ten aynı — 2+ sayı bağlam-bağımsız, 1 sayı + ctx şart)
+    // 2026-06-26 R5 FIX: \b word boundary eklendi. "05445655656" gibi bitişik 11+
+    // hane telefon numaralarını fiyat sanıp aralık üretmesin (canlı bug kanıtı).
+    // Bitişik diziler word-boundary olmadığından match etmez; ayrı sayı token'ları
+    // ("3000 ile 5000") match eder. Stage guard ile çift-katmanlı koruma.
+    if (!_priceMatched) {
+      const _nums = Array.from(message.matchAll(/\b\d{3,6}\b/g))
+        .map((m) => parseInt(m[0], 10))
+        .filter((n) => n >= 100 && n <= 100000);
+      if (_nums.length >= 2) {
+        _priceLower = Math.min(_nums[0], _nums[1]);
+        _priceUpper = Math.max(_nums[0], _nums[1]);
+        _priceMatched = true;
+        console.log(`[process-message] B1 KÖK FALLBACK (range, contextless): nums=${_nums.slice(0, 2)}`);
+      } else if (_nums.length === 1) {
+        const _priceCtxRe = /b[üu]t[çc]e|alt[ıi]|aşağ[ıi]|[üu]st[üu]|[üu]zeri|fazla|kadar|aras[ıi]|ila|ile\s+\d|ve\s+\d|tl|₺|lira|budget|under|over|less\s+than|more\s+than|cheaper|expensive|between|up\s+to|hasta|menos|m[áa]s|entre|jusqu|moins|plus\s+de|bis|unter|über|до|более|менее|между|أقل|أكثر|حتى|بين/iu;
+        if (_priceCtxRe.test(message)) {
+          _priceUpper = _nums[0];
+          _priceMatched = true;
+          console.log(`[process-message] B1 KÖK FALLBACK (upper, with ctx): num=${_nums[0]}`);
+        }
+      }
+    }
+  }
+
+  if (_priceMatched) {
+    const _priced = tours
+      .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
+      .filter((x: any) => typeof x.price === "number" && x.price > 0);
+    const _filtered = _priced.filter((x: any) => {
+      if (_priceLower !== null && x.price < _priceLower) return false;
+      if (_priceUpper !== null && x.price > _priceUpper) return false;
+      return true;
+    }).sort((a: any, b: any) => a.price - b.price);
+
+    const _exRatesB1 = await getExchangeRatesOnce().catch(() => ({}));
+    const _showDualB1 = agency.show_multi_currency !== false;
+    const _langB1 = context.language || "tr";
+
+    const _summary: Record<string, string> =
+      _priceLower !== null && _priceUpper !== null
+        ? { tr: `${_priceLower}-${_priceUpper}₺`, en: `${_priceLower}-${_priceUpper} TRY`, de: `${_priceLower}-${_priceUpper} TRY`, fr: `${_priceLower}-${_priceUpper} TRY`, es: `${_priceLower}-${_priceUpper} TRY`, ru: `${_priceLower}-${_priceUpper} TRY`, ar: `${_priceLower}-${_priceUpper} TRY` }
+        : _priceUpper !== null
+        ? { tr: `${_priceUpper}₺ altı`, en: `under ${_priceUpper} TRY`, de: `unter ${_priceUpper} TRY`, fr: `moins de ${_priceUpper} TRY`, es: `menos de ${_priceUpper} TRY`, ru: `до ${_priceUpper} TRY`, ar: `أقل من ${_priceUpper} TRY` }
+        : { tr: `${_priceLower}₺ üstü`, en: `over ${_priceLower} TRY`, de: `über ${_priceLower} TRY`, fr: `plus de ${_priceLower} TRY`, es: `más de ${_priceLower} TRY`, ru: `более ${_priceLower} TRY`, ar: `أكثر من ${_priceLower} TRY` };
+
+    if (_filtered.length === 0) {
+      const _cheapest = _priced.sort((a: any, b: any) => a.price - b.price)[0];
+      let _b1NoneReply: string;
+      if (_cheapest) {
+        const _priceText = formatPriceSync(_cheapest.price, _cheapest.tour.currency || "TRY", _langB1, _exRatesB1, _showDualB1, languageCurrencies);
+        const _topTitle = getLocalizedTourTitle(_cheapest.tour.title || "", _langB1);
+        const _noneMsgs: Record<string, string> = {
+          tr: `${_summary.tr} bütçesine uygun turumuz yok. En uygun fiyatlı turumuz *${_topTitle}* — ${_priceText} (kişi başı). 😊`,
+          en: `We don't have a tour in the ${_summary.en} range. Our most affordable tour is *${_topTitle}* — ${_priceText} (per person). 😊`,
+          de: `Wir haben keine Tour im Bereich ${_summary.de}. Unsere günstigste Tour ist *${_topTitle}* — ${_priceText} (pro Person). 😊`,
+          fr: `Nous n'avons pas de circuit dans la fourchette ${_summary.fr}. Notre circuit le moins cher est *${_topTitle}* — ${_priceText} (par personne). 😊`,
+          es: `No tenemos un tour en el rango ${_summary.es}. Nuestro tour más económico es *${_topTitle}* — ${_priceText} (por persona). 😊`,
+          ru: `У нас нет тура в диапазоне ${_summary.ru}. Самый доступный тур — *${_topTitle}* — ${_priceText} (с человека). 😊`,
+          ar: `لا توجد جولة في نطاق ${_summary.ar}. أوفر جولة لدينا *${_topTitle}* — ${_priceText} (للشخص). 😊`,
+        };
+        _b1NoneReply = _noneMsgs[_langB1] || _noneMsgs.tr;
+      } else {
+        const _fallbacks: Record<string, string> = {
+          tr: `Bu bütçeye uygun turumuz şu anda yok. Lütfen acentemizle iletişime geçin.`,
+          en: `We don't have a tour matching that budget right now. Please contact our agency.`,
+          de: `Derzeit keine Tour in diesem Budget. Bitte kontaktieren Sie unsere Agentur.`,
+          fr: `Aucun circuit dans ce budget actuellement. Contactez notre agence.`,
+          es: `No hay tours en ese presupuesto ahora. Contacte nuestra agencia.`,
+          ru: `Сейчас нет туров в этом бюджете. Свяжитесь с агентством.`,
+          ar: `لا توجد جولات في هذه الميزانية حالياً. يرجى التواصل مع وكالتنا.`,
+        };
+        _b1NoneReply = _fallbacks[_langB1] || _fallbacks.tr;
+      }
+      console.log(`[process-message] B1 fiyat aralığı: lower=${_priceLower} upper=${_priceUpper} → eşleşme YOK`);
+      await _save(_b1NoneReply, context);
+      await adapter.sendResponse(_b1NoneReply);
+      return { success: true, response: _b1NoneReply, newContext: context };
+    }
+
+    const _listLinesB1 = _filtered.slice(0, 8).map((x: any, i: number) => {
+      const _priceText = formatPriceSync(x.price, x.tour.currency || "TRY", _langB1, _exRatesB1, _showDualB1, languageCurrencies);
+      return `${i + 1}) ${getLocalizedTourTitle(x.tour.title || "", _langB1)} — ${_priceText}`;
+    }).join("\n");
+
+    const _b1Msgs: Record<string, string> = {
+      tr: `${_summary.tr} bütçenize uygun turlarımız:\n${_listLinesB1}\n\nHangisi ilginizi çeker? 😊`,
+      en: `Tours within your ${_summary.en} budget:\n${_listLinesB1}\n\nWhich interests you? 😊`,
+      de: `Touren in Ihrem Budget (${_summary.de}):\n${_listLinesB1}\n\nWelche interessiert Sie? 😊`,
+      fr: `Circuits dans votre budget (${_summary.fr}) :\n${_listLinesB1}\n\nLequel vous intéresse ? 😊`,
+      es: `Tours dentro de tu presupuesto (${_summary.es}):\n${_listLinesB1}\n\n¿Cuál te interesa? 😊`,
+      ru: `Туры в вашем бюджете (${_summary.ru}):\n${_listLinesB1}\n\nКакой вас интересует? 😊`,
+      ar: `جولات ضمن ميزانيتك (${_summary.ar}):\n${_listLinesB1}\n\nأيها يثير اهتمامك؟ 😊`,
+    };
+    const _b1Reply = _b1Msgs[_langB1] || _b1Msgs.tr;
+    console.log(`[process-message] B1 fiyat aralığı: lower=${_priceLower} upper=${_priceUpper} matches=${_filtered.length}`);
+    await _save(_b1Reply, context);
+    await adapter.sendResponse(_b1Reply);
+    return { success: true, response: _b1Reply, newContext: context };
+  }
+
+  // --- B-TEMA: TEMA SÖZLÜĞÜ — yumuşatılmış mesaj ---
+  // R4: selectedTour/multipleTourMatches kontrolü kaldırıldı (henüz hesaplanmadı).
+  // currentTour kontrolü tutuldu — rezervasyon ortasında tema sorusu LLM'e bırakılsın.
+  const _themeKeywordsRe = /(?<![\p{L}\p{N}])(do[ğg]a|macera|k[üu]lt[üu]r|tarihi|tarihsel|romantik|deniz|aile|nature|adventure|cultural|historical|historic|romantic|family|natur(?!al)|abenteuer|kultur|historisch|romantisch|familie|aventure|culturel|historique|romantique|famille|naturaleza|aventura|histórico|romántico|familia|природа|приключени|культурн|историческ|романтическ|семейн|طبيعة|مغامرة|ثقافة|تاريخي|رومانسي|عائلي)/iu;
+
+  if (
+    _isExploreStage &&
+    tours.length > 0 &&
+    !context.currentTour &&
+    _themeKeywordsRe.test(message)
+  ) {
+    const _exRatesBT = await getExchangeRatesOnce().catch(() => ({}));
+    const _showDualBT = agency.show_multi_currency !== false;
+    const _langBT = context.language || "tr";
+    const _tourListBT = tours.slice(0, 8).map((t: any, i: number) => {
+      const _firstDate = t.dates?.[0];
+      const _priceText = _firstDate?.price_adult
+        ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", _langBT, _exRatesBT, _showDualBT, languageCurrencies)}`
+        : "";
+      return `${i + 1}) ${getLocalizedTourTitle(t.title, _langBT)}${_priceText}`;
+    }).join("\n");
+    const _themeMsgs: Record<string, string> = {
+      tr: `Tema bazlı özel filtremiz henüz yok, ama tüm turlarımız şunlar:\n${_tourListBT}\n\nHangisi ilginizi çeker? 😊`,
+      en: `We don't have theme-based filtering yet, but here are all our tours:\n${_tourListBT}\n\nWhich interests you? 😊`,
+      de: `Wir haben noch keine themenbasierte Filterung, hier sind alle unsere Touren:\n${_tourListBT}\n\nWelche interessiert Sie? 😊`,
+      fr: `Nous n'avons pas encore de filtrage par thème, voici tous nos circuits :\n${_tourListBT}\n\nLequel vous intéresse ? 😊`,
+      es: `Aún no tenemos filtrado por tema, pero estos son todos nuestros tours:\n${_tourListBT}\n\n¿Cuál te interesa? 😊`,
+      ru: `У нас пока нет фильтрации по тематике, но вот все наши туры:\n${_tourListBT}\n\nКакой вас интересует? 😊`,
+      ar: `لا تتوفر لدينا تصفية حسب الموضوع بعد، ولكن إليك جميع جولاتنا:\n${_tourListBT}\n\nما الذي يثير اهتمامك؟ 😊`,
+    };
+    const _btReply = _themeMsgs[_langBT] || _themeMsgs.tr;
+    console.log(`[process-message] B-TEMA yumuşatma: tema sözlüğü match → liste`);
+    await _save(_btReply, context);
+    await adapter.sendResponse(_btReply);
+    return { success: true, response: _btReply, newContext: context };
+  }
+
+  // === NİTELİK ÖN-TESPİT KATMANI SON ===========================================
+  // ============================================================================
+
   // === 7. TUR EŞLEŞTİRME ===
   const { selectedTour, multipleMatches: multipleTourMatches, unknownTourQuery } = findMatchingTours(
     message,
@@ -917,88 +1243,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _noTourReply, newContext };
   }
 
-  // === X8: SUPERLATİF FİYAT (en ucuz / en pahalı) — deterministik bypass ===
-  // 2026-06-25 BUG-X8 FIX (canlı exec 5554ba89):
-  // "en pahalı turunuz" → bot "Pamukkale Turu 3500₺" (yanlış, Ege 4500₺ doğru).
-  // LLM (Haiku) sayı karşılaştırmada güvenilmez — yakın değerleri (3500/4500)
-  // karıştırıyor. "en ucuz" tesadüfen doğru (850₺ açık ara düşük) ama garanti yok.
-  //
-  // Fix: keşif aşamasında superlatif fiyat sorusu tespit edilince tours array
-  // price_adult'a göre sıralanır, deterministik mesaj döner. C ilkesi: sayı
-  // karşılaştırma LLM'e değil koda.
-  const _superlativeAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|cheapest\s+tour)/iu;
-  const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)/iu;
-  const _isExploreStage = newContext.stage === "GREETING"
-      || newContext.stage === "BROWSING"
-      || newContext.stage === "TOUR_SELECTED";
-  const _isFaqIntent = fsmIntent === "general_question" || fsmIntent === "general";
-  const _matchesAsc = _superlativeAsc.test(message);
-  const _matchesDesc = _superlativeDesc.test(message);
-  if (
-    _isExploreStage &&
-    _isFaqIntent &&
-    (_matchesAsc || _matchesDesc) &&
-    tours.length > 0
-  ) {
-    // price_adult olan turları sırala (null/undefined olanlar atlanır)
-    const _toursPriced = tours
-      .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
-      .filter((x: any) => typeof x.price === "number" && x.price > 0);
-    if (_toursPriced.length > 0) {
-      _toursPriced.sort((a: any, b: any) =>
-        _matchesDesc ? b.price - a.price : a.price - b.price
-      );
-      const _top = _toursPriced[0];
-      const _lang = newContext.language || "tr";
-      const _topTitle = getLocalizedTourTitle(_top.tour.title || "", _lang);
-      const _exRatesX8 = await getExchangeRatesOnce().catch(() => ({}));
-      const _showDualX8 = agency.show_multi_currency !== false;
-      const _priceTextX8 = formatPriceSync(
-        _top.price,
-        _top.tour.currency || "TRY",
-        _lang,
-        _exRatesX8,
-        _showDualX8,
-        languageCurrencies,
-      );
-      const _superlativeMsgs: Record<string, { cheapest: string; expensive: string }> = {
-        tr: {
-          cheapest:  `En uygun fiyatlı turumuz *${_topTitle}* — ${_priceTextX8} (kişi başı). Hakkında bilgi almak ister misiniz? 😊`,
-          expensive: `En pahalı turumuz *${_topTitle}* — ${_priceTextX8} (kişi başı). Hakkında bilgi almak ister misiniz? 😊`,
-        },
-        en: {
-          cheapest:  `Our most affordable tour is *${_topTitle}* — ${_priceTextX8} (per person). Would you like more info? 😊`,
-          expensive: `Our most expensive tour is *${_topTitle}* — ${_priceTextX8} (per person). Would you like more info? 😊`,
-        },
-        de: {
-          cheapest:  `Unsere günstigste Tour ist *${_topTitle}* — ${_priceTextX8} (pro Person). Möchten Sie mehr Infos? 😊`,
-          expensive: `Unsere teuerste Tour ist *${_topTitle}* — ${_priceTextX8} (pro Person). Möchten Sie mehr Infos? 😊`,
-        },
-        fr: {
-          cheapest:  `Notre circuit le moins cher est *${_topTitle}* — ${_priceTextX8} (par personne). Plus d'informations ? 😊`,
-          expensive: `Notre circuit le plus cher est *${_topTitle}* — ${_priceTextX8} (par personne). Plus d'informations ? 😊`,
-        },
-        es: {
-          cheapest:  `Nuestro tour más económico es *${_topTitle}* — ${_priceTextX8} (por persona). ¿Más información? 😊`,
-          expensive: `Nuestro tour más caro es *${_topTitle}* — ${_priceTextX8} (por persona). ¿Más información? 😊`,
-        },
-        ru: {
-          cheapest:  `Самый доступный тур — *${_topTitle}* — ${_priceTextX8} (с человека). Хотите больше информации? 😊`,
-          expensive: `Самый дорогой тур — *${_topTitle}* — ${_priceTextX8} (с человека). Хотите больше информации? 😊`,
-        },
-        ar: {
-          cheapest:  `أوفر جولة لدينا *${_topTitle}* — ${_priceTextX8} (للشخص). هل تريد المزيد من المعلومات؟ 😊`,
-          expensive: `أغلى جولة لدينا *${_topTitle}* — ${_priceTextX8} (للشخص). هل تريد المزيد من المعلومات؟ 😊`,
-        },
-      };
-      const _msgSet = _superlativeMsgs[_lang] || _superlativeMsgs.tr;
-      const _x8Reply = _matchesDesc ? _msgSet.expensive : _msgSet.cheapest;
-      console.log(`[process-message] X8 superlatif fiyat: ${_matchesDesc ? "DESC (en pahalı)" : "ASC (en ucuz)"} → ${_top.tour.title} (${_top.price})`);
-      await _save(_x8Reply, newContext);
-      await adapter.sendResponse(_x8Reply);
-      return { success: true, response: _x8Reply, newContext };
-    }
-  }
+  // === X8 + B1 + B-TEMA: 2026-06-26 R4 — ERKEN KATMANA TAŞINDI ===
+  // (bkz. yukarıda fsmIntent map sonrası "NİTELİK ÖN-TESPİT KATMANI")
 
   // === B2: Akış ortası tur listesi (deterministik) ===
   // Müşteri COLLECTING_INFO/CONFIRMING'de genel "başka tur var mı?" sorusu sordu.
@@ -1076,14 +1322,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       return `${i + 1}) ${getLocalizedTourTitle(t.title, context.language)}${_priceText}`;
     }).join("\n");
 
+    // 2026-06-26 B4 fix: "${query} turu" suffix çift-tur ekiyle absürd okunuyordu
+    // ("kayak turu turu sistemimizde yok"). Suffix kaldırıldı — "kayak turu sistemimizde
+    // bulunmuyor" + "kayak sistemimizde bulunmuyor" her ikisi de doğal okunur.
     const _unknownMsgs: Record<string, string> = {
-      tr: `"${unknownTourQuery}" turu sistemimizde bulunmuyor. 😔\n\nMüsait turlarımız:\n${_tourListLinesU}\n\nHangisi ilginizi çeker?`,
-      en: `"${unknownTourQuery}" tour is not in our system. 😔\n\nAvailable tours:\n${_tourListLinesU}\n\nWhich interests you?`,
-      de: `"${unknownTourQuery}" Tour ist nicht in unserem System. 😔\n\nVerfügbare Touren:\n${_tourListLinesU}\n\nWelche interessiert Sie?`,
-      ru: `Тура "${unknownTourQuery}" нет в нашей системе. 😔\n\nДоступные туры:\n${_tourListLinesU}\n\nКакой вас интересует?`,
-      ar: `جولة "${unknownTourQuery}" غير موجودة في نظامنا. 😔\n\nالجولات المتاحة:\n${_tourListLinesU}\n\nما الذي يثير اهتمامك؟`,
-      fr: `Le circuit "${unknownTourQuery}" n'est pas dans notre système. 😔\n\nCircuits disponibles :\n${_tourListLinesU}\n\nLequel vous intéresse ?`,
-      es: `El tour "${unknownTourQuery}" no está en nuestro sistema. 😔\n\nTours disponibles:\n${_tourListLinesU}\n\n¿Cuál le interesa?`,
+      tr: `"${unknownTourQuery}" sistemimizde bulunmuyor. 😔\n\nMüsait turlarımız:\n${_tourListLinesU}\n\nHangisi ilginizi çeker?`,
+      en: `"${unknownTourQuery}" is not in our system. 😔\n\nAvailable tours:\n${_tourListLinesU}\n\nWhich interests you?`,
+      de: `"${unknownTourQuery}" ist nicht in unserem System. 😔\n\nVerfügbare Touren:\n${_tourListLinesU}\n\nWelche interessiert Sie?`,
+      ru: `"${unknownTourQuery}" нет в нашей системе. 😔\n\nДоступные туры:\n${_tourListLinesU}\n\nКакой вас интересует?`,
+      ar: `"${unknownTourQuery}" غير موجود في نظامنا. 😔\n\nالجولات المتاحة:\n${_tourListLinesU}\n\nما الذي يثير اهتمامك؟`,
+      fr: `"${unknownTourQuery}" n'est pas dans notre système. 😔\n\nCircuits disponibles :\n${_tourListLinesU}\n\nLequel vous intéresse ?`,
+      es: `"${unknownTourQuery}" no está en nuestro sistema. 😔\n\nTours disponibles:\n${_tourListLinesU}\n\n¿Cuál le interesa?`,
     };
     const _unknownReply = _unknownMsgs[context.language] || _unknownMsgs.tr;
     await _save(_unknownReply, context);
