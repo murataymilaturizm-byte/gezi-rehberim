@@ -917,6 +917,89 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _noTourReply, newContext };
   }
 
+  // === X8: SUPERLATİF FİYAT (en ucuz / en pahalı) — deterministik bypass ===
+  // 2026-06-25 BUG-X8 FIX (canlı exec 5554ba89):
+  // "en pahalı turunuz" → bot "Pamukkale Turu 3500₺" (yanlış, Ege 4500₺ doğru).
+  // LLM (Haiku) sayı karşılaştırmada güvenilmez — yakın değerleri (3500/4500)
+  // karıştırıyor. "en ucuz" tesadüfen doğru (850₺ açık ara düşük) ama garanti yok.
+  //
+  // Fix: keşif aşamasında superlatif fiyat sorusu tespit edilince tours array
+  // price_adult'a göre sıralanır, deterministik mesaj döner. C ilkesi: sayı
+  // karşılaştırma LLM'e değil koda.
+  const _superlativeAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|cheapest\s+tour)/iu;
+  const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)/iu;
+  const _isExploreStage = newContext.stage === "GREETING"
+      || newContext.stage === "BROWSING"
+      || newContext.stage === "TOUR_SELECTED";
+  const _isFaqIntent = fsmIntent === "general_question" || fsmIntent === "general";
+  const _matchesAsc = _superlativeAsc.test(message);
+  const _matchesDesc = _superlativeDesc.test(message);
+  if (
+    _isExploreStage &&
+    _isFaqIntent &&
+    (_matchesAsc || _matchesDesc) &&
+    tours.length > 0
+  ) {
+    // price_adult olan turları sırala (null/undefined olanlar atlanır)
+    const _toursPriced = tours
+      .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
+      .filter((x: any) => typeof x.price === "number" && x.price > 0);
+    if (_toursPriced.length > 0) {
+      _toursPriced.sort((a: any, b: any) =>
+        _matchesDesc ? b.price - a.price : a.price - b.price
+      );
+      const _top = _toursPriced[0];
+      const _lang = newContext.language || "tr";
+      const _topTitle = getLocalizedTourTitle(_top.tour.title || "", _lang);
+      const _exRatesX8 = await getExchangeRatesOnce().catch(() => ({}));
+      const _showDualX8 = agency.show_multi_currency !== false;
+      const _priceTextX8 = formatPriceSync(
+        _top.price,
+        _top.tour.currency || "TRY",
+        _lang,
+        _exRatesX8,
+        _showDualX8,
+        languageCurrencies,
+      );
+      const _superlativeMsgs: Record<string, { cheapest: string; expensive: string }> = {
+        tr: {
+          cheapest:  `En uygun fiyatlı turumuz *${_topTitle}* — ${_priceTextX8} (kişi başı). Hakkında bilgi almak ister misiniz? 😊`,
+          expensive: `En pahalı turumuz *${_topTitle}* — ${_priceTextX8} (kişi başı). Hakkında bilgi almak ister misiniz? 😊`,
+        },
+        en: {
+          cheapest:  `Our most affordable tour is *${_topTitle}* — ${_priceTextX8} (per person). Would you like more info? 😊`,
+          expensive: `Our most expensive tour is *${_topTitle}* — ${_priceTextX8} (per person). Would you like more info? 😊`,
+        },
+        de: {
+          cheapest:  `Unsere günstigste Tour ist *${_topTitle}* — ${_priceTextX8} (pro Person). Möchten Sie mehr Infos? 😊`,
+          expensive: `Unsere teuerste Tour ist *${_topTitle}* — ${_priceTextX8} (pro Person). Möchten Sie mehr Infos? 😊`,
+        },
+        fr: {
+          cheapest:  `Notre circuit le moins cher est *${_topTitle}* — ${_priceTextX8} (par personne). Plus d'informations ? 😊`,
+          expensive: `Notre circuit le plus cher est *${_topTitle}* — ${_priceTextX8} (par personne). Plus d'informations ? 😊`,
+        },
+        es: {
+          cheapest:  `Nuestro tour más económico es *${_topTitle}* — ${_priceTextX8} (por persona). ¿Más información? 😊`,
+          expensive: `Nuestro tour más caro es *${_topTitle}* — ${_priceTextX8} (por persona). ¿Más información? 😊`,
+        },
+        ru: {
+          cheapest:  `Самый доступный тур — *${_topTitle}* — ${_priceTextX8} (с человека). Хотите больше информации? 😊`,
+          expensive: `Самый дорогой тур — *${_topTitle}* — ${_priceTextX8} (с человека). Хотите больше информации? 😊`,
+        },
+        ar: {
+          cheapest:  `أوفر جولة لدينا *${_topTitle}* — ${_priceTextX8} (للشخص). هل تريد المزيد من المعلومات؟ 😊`,
+          expensive: `أغلى جولة لدينا *${_topTitle}* — ${_priceTextX8} (للشخص). هل تريد المزيد من المعلومات؟ 😊`,
+        },
+      };
+      const _msgSet = _superlativeMsgs[_lang] || _superlativeMsgs.tr;
+      const _x8Reply = _matchesDesc ? _msgSet.expensive : _msgSet.cheapest;
+      console.log(`[process-message] X8 superlatif fiyat: ${_matchesDesc ? "DESC (en pahalı)" : "ASC (en ucuz)"} → ${_top.tour.title} (${_top.price})`);
+      await _save(_x8Reply, newContext);
+      await adapter.sendResponse(_x8Reply);
+      return { success: true, response: _x8Reply, newContext };
+    }
+  }
+
   // === B2: Akış ortası tur listesi (deterministik) ===
   // Müşteri COLLECTING_INFO/CONFIRMING'de genel "başka tur var mı?" sorusu sordu.
   // Belirli bir tur eşleşmedi; mevcut akış state'i korunarak tur listesi gösteriliyor.

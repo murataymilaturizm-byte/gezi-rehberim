@@ -4861,6 +4861,202 @@ assert(`X7.U15: "merhaba" → FALSE`,
     r === false);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-26 BUG-X8 FIX — Deterministik superlatif fiyat sıralama
+// Canlı (exec 5554ba89): "en pahalı turunuz" → bot Pamukkale 3500₺ (yanlış,
+// Ege 4500₺ doğru). LLM (Haiku) sayı karşılaştırmada güvenilmez.
+// Fix: keşif aşamasında superlatif fiyat sorusu → tours sort + deterministik mesaj.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG-X8 FIX: deterministik superlatif fiyat sıralama ──");
+
+// Helper: process-message.ts:920+ inline mantığını izole eden mock.
+// Pattern + ASC/DESC tespit + sort + en üstteki tur.
+const _supAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|cheapest\s+tour)/iu;
+const _supDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)/iu;
+
+function _evaluateSuperlativePrice(
+  stage: string,
+  intent: string,
+  message: string,
+  tours: Array<{ id: string; title: string; price?: number }>,
+): { tourTitle: string; price: number; direction: "asc" | "desc" } | null {
+  const _isExplore = stage === "GREETING" || stage === "BROWSING" || stage === "TOUR_SELECTED";
+  const _isFaq = intent === "general_question" || intent === "general";
+  const _asc = _supAsc.test(message);
+  const _desc = _supDesc.test(message);
+  if (!_isExplore || !_isFaq || (!_asc && !_desc) || tours.length === 0) return null;
+  const _priced = tours.filter((t) => typeof t.price === "number" && t.price > 0);
+  if (_priced.length === 0) return null;
+  _priced.sort((a, b) => _desc ? (b.price! - a.price!) : (a.price! - b.price!));
+  const _top = _priced[0];
+  return { tourTitle: _top.title, price: _top.price!, direction: _desc ? "desc" : "asc" };
+}
+
+// Demo veri (Murat'ın canlı senaryosu)
+const _toursMock = [
+  { id: "1", title: "Antalya Rafting Turu", price: 850 },
+  { id: "2", title: "Efes Antik Kent", price: 900 },
+  { id: "3", title: "Kapadokya Balon", price: 1500 },
+  { id: "4", title: "Kapadokya Kültür", price: 2500 },
+  { id: "5", title: "Pamukkale Turu", price: 3500 },
+  { id: "6", title: "Ege Turu", price: 4500 },
+];
+
+// ── Pattern testleri (X8.P serisi) ──
+assert(`X8.P1: "en pahalı turunuz" → DESC match`,
+  _supDesc.test("en pahalı turunuz") === true);
+
+assert(`X8.P2: "en ucuz turunuz" → ASC match`,
+  _supAsc.test("en ucuz turunuz") === true);
+
+assert(`X8.P3: "en uygun tur" → ASC (eş anlamlı)`,
+  _supAsc.test("en uygun tur") === true);
+
+assert(`X8.P4: "en hesaplı tur" → ASC (eş anlamlı)`,
+  _supAsc.test("en hesaplı tur") === true);
+
+assert(`X8.P5: "en düşük fiyat" → ASC`,
+  _supAsc.test("en düşük fiyat") === true);
+
+assert(`X8.P6: "en yüksek fiyat" → DESC`,
+  _supDesc.test("en yüksek fiyat") === true);
+
+assert(`X8.P7 EN: "cheapest tour" → ASC`,
+  _supAsc.test("which is the cheapest tour") === true);
+
+assert(`X8.P8 EN: "most expensive" → DESC`,
+  _supDesc.test("most expensive tour please") === true);
+
+assert(`X8.P9 REGRESYON: "fiyatlar ne kadar" (superlatif değil) → no match`,
+  _supAsc.test("fiyatlar ne kadar") === false && _supDesc.test("fiyatlar ne kadar") === false);
+
+assert(`X8.P10 REGRESYON: "Antalya ne kadar" (tek tur fiyat) → no match`,
+  _supAsc.test("Antalya ne kadar") === false && _supDesc.test("Antalya ne kadar") === false);
+
+// ── Bypass entegrasyon testleri (X8.B serisi) ──
+
+// X8.B1 KRİTİK CANLI: BROWSING + faq + "en pahalı" → Ege 4500₺ (önceden Pamukkale yanlıştı)
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "en pahalı turunuz hangisi", _toursMock);
+  assert(`X8.B1 KRİTİK CANLI: "en pahalı" → Ege Turu 4500₺ (Pamukkale değil!)`,
+    r !== null && r.tourTitle === "Ege Turu" && r.price === 4500 && r.direction === "desc");
+}
+
+// X8.B2 KRİTİK: BROWSING + faq + "en ucuz" → Antalya 850₺
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "en ucuz turunuz", _toursMock);
+  assert(`X8.B2: "en ucuz" → Antalya 850₺ (ASC ilk)`,
+    r !== null && r.tourTitle === "Antalya Rafting Turu" && r.price === 850 && r.direction === "asc");
+}
+
+// X8.B3: "en uygun" eş anlamlı → ASC
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general", "en uygun tur hangisi", _toursMock);
+  assert(`X8.B3: "en uygun" eş anlamlı → Antalya 850₺ (ASC)`,
+    r !== null && r.tourTitle === "Antalya Rafting Turu");
+}
+
+// X8.B4: TOUR_SELECTED + faq + "en pahalı" → tetiklenir (keşif kapsamı)
+{
+  const r = _evaluateSuperlativePrice("TOUR_SELECTED", "general_question", "en pahalı", _toursMock);
+  assert(`X8.B4: TOUR_SELECTED kapsamı → tetiklenir`,
+    r !== null && r.tourTitle === "Ege Turu");
+}
+
+// X8.B5: GREETING + faq + "en ucuz" → tetiklenir
+{
+  const r = _evaluateSuperlativePrice("GREETING", "general", "en ucuz tur var mı", _toursMock);
+  assert(`X8.B5: GREETING kapsamı → tetiklenir`,
+    r !== null && r.tourTitle === "Antalya Rafting Turu");
+}
+
+// X8.B6 REGRESYON: COLLECTING_INFO → ATLAR (rezervasyon aşamasında)
+{
+  const r = _evaluateSuperlativePrice("COLLECTING_INFO", "general_question", "en pahalı turunuz", _toursMock);
+  assert(`X8.B6 REGRESYON: COLLECTING_INFO → ATLAR (keşif değil)`,
+    r === null);
+}
+
+// X8.B7 REGRESYON: CONFIRMING → ATLAR
+{
+  const r = _evaluateSuperlativePrice("CONFIRMING", "general_question", "en ucuz", _toursMock);
+  assert(`X8.B7 REGRESYON: CONFIRMING → ATLAR`,
+    r === null);
+}
+
+// X8.B8 REGRESYON: COMPLETED → ATLAR
+{
+  const r = _evaluateSuperlativePrice("COMPLETED", "general_question", "en pahalı", _toursMock);
+  assert(`X8.B8 REGRESYON: COMPLETED → ATLAR`,
+    r === null);
+}
+
+// X8.B9 REGRESYON: intent rezervasyon → ATLAR (faq değil)
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "reservation_intent", "en pahalı turunuz", _toursMock);
+  assert(`X8.B9 REGRESYON: reservation_intent → ATLAR (faq değil)`,
+    r === null);
+}
+
+// X8.B10 REGRESYON: superlatif değil → ATLAR
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "fiyatlar ne kadar", _toursMock);
+  assert(`X8.B10 REGRESYON: "fiyatlar ne kadar" (superlatif değil) → ATLAR`,
+    r === null);
+}
+
+// X8.B11 EDGE: tours boş → null
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "en pahalı", []);
+  assert(`X8.B11 EDGE: tours boş → null`,
+    r === null);
+}
+
+// X8.B12 EDGE: tüm tours price=null → null (sıralama yapamayız)
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "en pahalı", [
+    { id: "x", title: "X", price: undefined as any },
+    { id: "y", title: "Y" },
+  ]);
+  assert(`X8.B12 EDGE: tüm price null → null`,
+    r === null);
+}
+
+// X8.B13 EDGE: kısmen price null → atlanır, dolu olanlar sıralanır
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "en pahalı", [
+    { id: "x", title: "X", price: undefined as any },
+    { id: "y", title: "Y", price: 1000 },
+    { id: "z", title: "Z", price: 2000 },
+  ]);
+  assert(`X8.B13 EDGE: price null tur atlanır, dolu olanlar sıralanır`,
+    r !== null && r.tourTitle === "Z" && r.price === 2000);
+}
+
+// X8.B14 EDGE: eşit fiyat → ilk eşleşen (stable sort)
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "en pahalı", [
+    { id: "x", title: "X", price: 2000 },
+    { id: "y", title: "Y", price: 2000 },
+  ]);
+  assert(`X8.B14 EDGE: eşit fiyat → ilk eşleşen (stable sort)`,
+    r !== null && r.price === 2000);
+}
+
+// X8.B15 EN: "cheapest" yakalanır
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "which is the cheapest", _toursMock);
+  assert(`X8.B15 EN: "cheapest" → Antalya 850 (ASC)`,
+    r !== null && r.tourTitle === "Antalya Rafting Turu" && r.direction === "asc");
+}
+
+// X8.B16 EN: "most expensive" yakalanır
+{
+  const r = _evaluateSuperlativePrice("BROWSING", "general_question", "most expensive please", _toursMock);
+  assert(`X8.B16 EN: "most expensive" → Ege 4500 (DESC)`,
+    r !== null && r.tourTitle === "Ege Turu" && r.direction === "desc");
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
