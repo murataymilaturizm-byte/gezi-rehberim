@@ -36,6 +36,7 @@ import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
 import { formatPriceSync } from "../utils/currency-display.ts";
+import { isValidPax, isValidPhone, MAX_PAX_PER_RESERVATION } from "../utils/validation.ts";
 import { maskPhone } from "../utils/log-mask.ts";
 // K4: TEK yuvarlama kuralı — tüm kapora/toplam hesapları buradan.
 import { calculateTotal, calculateDeposit } from "../utils/finance.ts";
@@ -1013,6 +1014,35 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: negReply, newContext: context };
   }
 
+  // === PAX AŞIM (>9) — 2026-06-26 R6: deterministik acente yönlendirme ===
+  // NLU/extractor pax >9 değerini sessizce reddediyor (isValidPax FALSE → set yok).
+  // AMA kullanıcıya neden reddedildiği gösterilmeli: ham NLU pax değerine bak,
+  // >9 ise grup rezervasyonu için acente yönlendirme mesajı 7 dil deterministik.
+  // NOT: Aşım mesajı sadece NLU pax yakaladığında tetiklenir. simple-extractor
+  // path'inden gelen büyük sayı bu mesajı görmeyebilir AMA isValidPax merge (state-
+  // machine.ts:137) yine de rezervasyonu durdurur (CONFIRMING'e geçmez) — yanlış
+  // rezervasyon oluşmaz, en kötü sessizce reddedilir.
+  if (context.collectionStep === "waiting_for_pax") {
+    const _rawPax = (nluResult.entities as { people_count?: { adults?: number } })?.people_count?.adults;
+    if (typeof _rawPax === "number" && _rawPax > MAX_PAX_PER_RESERVATION) {
+      const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _excessMsgs: Record<string, string> = {
+        tr: `${MAX_PAX_PER_RESERVATION} kişiden fazla grup rezervasyonu için lütfen acentemizle iletişime geçin.${_agPhone}`,
+        en: `For group reservations of more than ${MAX_PAX_PER_RESERVATION} people, please contact our agency.${_agPhone}`,
+        de: `Für Gruppenreservierungen mit mehr als ${MAX_PAX_PER_RESERVATION} Personen kontaktieren Sie bitte unsere Agentur.${_agPhone}`,
+        fr: `Pour les réservations de groupe de plus de ${MAX_PAX_PER_RESERVATION} personnes, veuillez contacter notre agence.${_agPhone}`,
+        es: `Para reservas grupales de más de ${MAX_PAX_PER_RESERVATION} personas, contacte con nuestra agencia.${_agPhone}`,
+        ru: `Для групповых бронирований более ${MAX_PAX_PER_RESERVATION} человек, пожалуйста, свяжитесь с нашим агентством.${_agPhone}`,
+        ar: `للحجوزات الجماعية لأكثر من ${MAX_PAX_PER_RESERVATION} أشخاص، يرجى التواصل مع وكالتنا.${_agPhone}`,
+      };
+      const _excessReply = _excessMsgs[context.language] || _excessMsgs.tr;
+      console.log(`[process-message] PAX AŞIM: ${_rawPax} > ${MAX_PAX_PER_RESERVATION} → acente yönlendirme`);
+      await _save(_excessReply, context);
+      await adapter.sendResponse(_excessReply);
+      return { success: true, response: _excessReply, newContext: context };
+    }
+  }
+
   // === MAX PAX KONTROLÜ (BUG 2) — 50+ kişi grubu için ofisle iletişim ===
   const _extractedPax = extractedInfo.paxAdult ?? extractedInfo.pax;
   if (_extractedPax && _extractedPax > 50) {
@@ -1199,14 +1229,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log("[process-message] Invalid date cleaned up:", _invalidDateForPreamble);
   }
 
-  // === 9b. GEÇERSİZ TELEFON KONTROLÜ (BUG 4) ===
-  // waiting_for_phone'dayken kullanıcı kısa/geçersiz numara girdiyse erken dön
+  // === 9b. GEÇERSİZ TELEFON KONTROLÜ (BUG 4 + 2026-06-26 R6) ===
+  // waiting_for_phone'dayken kullanıcı geçersiz girdi yazdıysa erken dön.
+  // R6: eski "sadece rakam + <10 hane" koşulu "abc def" / "telefonum yok" / boş
+  // mesajları YAKALAMAYIP CONFIRMING özetine kaçırıyordu (canlı bug). Yeni:
+  // isValidPhone tek-helper → format-bağımsız tüm geçersiz girdiler yakalanır.
   if (
     newContext.collectionStep === "waiting_for_phone" &&
     context.collectionStep === "waiting_for_phone" &&
     !extractedInfo.phone &&
-    /^\d+$/.test(message.trim()) &&
-    message.trim().length < 10
+    !isValidPhone(message.trim())
   ) {
     const _phInvalidMsgs: Record<string, string> = {
       tr: `"${message.trim()}" geçerli bir telefon numarası değil. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,
@@ -2022,11 +2054,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       if (newContext.reservationInfo) newContext.reservationInfo.fullName = effFullName;
     }
 
+    // R6: paxAdult/phone için tek-helper FORMAT validasyonu — kayıt-anı son sigorta.
+    // Eğer invalid değer state'e sızdıysa (üçüncü path/edge bypass), buradan
+    // re-collect'e yönlendir. RPC'ye geçersiz değer geçmez.
     const missingStep = !tourId ? "waiting_for_date"  // tourId yoksa tur seçimi eksik
       : !effDateId ? "waiting_for_date"
-      : !effPaxAdult ? "waiting_for_pax"
+      : !isValidPax(effPaxAdult) ? "waiting_for_pax"
       : !effFullName ? "waiting_for_name"
-      : !effPhone ? "waiting_for_phone"
+      : !isValidPhone(effPhone) ? "waiting_for_phone"
       : null;
     console.log("[process-message] reservation missingStep:", missingStep, "| tourId:", tourId, "| dateId:", dateId);
 

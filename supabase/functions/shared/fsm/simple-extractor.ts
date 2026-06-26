@@ -1,5 +1,6 @@
 // Simple fallback extractor for name, phone, pax, and date
 import type { ReservationInfo } from "./types.ts";
+import { isValidPax } from "../utils/validation.ts";
 
 // ─── Göreceli tarih çıkarımı ─────────────────────────────────────────────────
 function extractRelativeDate(text: string, language: string): Date | null {
@@ -262,7 +263,8 @@ export function extractNameAndPhone(
     const match = message.match(pattern);
     if (match) {
       const pax = parseInt(match[1]);
-      if (pax >= 1 && pax <= 50) {
+      // R6: tek-helper validasyon (1-9). Üst sınır aşımı → handler aşım mesajı.
+      if (isValidPax(pax)) {
         result.paxAdult = pax;
         break;
       }

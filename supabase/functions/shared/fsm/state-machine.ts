@@ -9,6 +9,7 @@ import type {
   ReservationInfo,
 } from "./types.ts";
 import { produceTourChangeContext, hasReservationSignal } from "../services/tour-change.ts";
+import { isValidPax, isValidPhone } from "../utils/validation.ts";
 
 export function createInitialContext(
   language: string = "tr",
@@ -132,8 +133,10 @@ function mergeReservationInfo(
   if (extracted.selectedDate) merged.selectedDate = extracted.selectedDate;
 
   // 2. Kişi sayısı: tarih varsa ekle veya GÜNCELLE (K1: son verilen değer geçerli)
+  // 2026-06-26 R6: tek-helper validasyon (1-9). Üçüncü path sigortası — hangi
+  // extractor 99 üretirse üretsin merge'e geçmez. Bypass'ı kalıcı kapatır.
   const hasDate = !!(merged.dateId || merged.selectedDate);
-  if (hasDate && extracted.paxAdult) {
+  if (hasDate && isValidPax(extracted.paxAdult)) {
     merged.paxAdult = extracted.paxAdult;
   }
   if (extracted.paxChild !== undefined && extracted.paxChild !== null && merged.paxAdult) {
@@ -160,7 +163,9 @@ function mergeReservationInfo(
   //    Aynı sebeple "hasName" kısıtı kaldırıldı — extractor expectedInput="phone"
   //    iken telefon arar, merge layer ek kısıt yaratmasın.
   //    2026-06-23 BUG B FIX: change_info ile telefon override aynı pattern.
-  if (extracted.phone && extracted.phone !== "" &&
+  //    2026-06-26 R6: tek-helper format validasyonu. "abc def" / "telefonum yok"
+  //    gibi truthy ama geçersiz string'ler merge'e geçmez.
+  if (isValidPhone(extracted.phone) &&
       (!merged.phone || isExplicitCorrection)) {
     merged.phone = extracted.phone;
   }
@@ -183,7 +188,14 @@ function determineCollectionStep(info: ReservationInfo, collectEmail?: boolean):
 function isAllInfoCollected(info: ReservationInfo, collectEmail?: boolean): boolean {
   // dateId ZORUNLU: DB'de gerçekten mevcut bir tarih olduğunu garantiler.
   // selectedDate tek başına yeterli değil — DB'de eşleşmeyen tarih rezervasyon kaydında başarısız olur.
-  const basicDone = !!(info.tourId && info.dateId && info.paxAdult && info.fullName && info.phone);
+  // 2026-06-26 R6: paxAdult/phone için tek-helper FORMAT validasyonu (truthy değil).
+  // info.phone="abc def" truthy ama isValidPhone=FALSE → CONFIRMING'e geçmez.
+  // info.paxAdult=99 bypass olduysa → isValidPax=FALSE → CONFIRMING'e geçmez.
+  const basicDone = !!(
+    info.tourId && info.dateId && info.fullName &&
+    isValidPax(info.paxAdult) &&
+    isValidPhone(info.phone)
+  );
   if (!basicDone) return false;
   if (collectEmail) return !!(info.email || info.emailSkipped);
   return true;

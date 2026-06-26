@@ -1,6 +1,7 @@
 // Natural Language Understanding with AI tool calling
 import type { ReservationInfo } from "./types.ts";
 import { isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
+import { isValidPax } from "../utils/validation.ts";
 
 export interface NLUResult {
   intent: string;
@@ -445,7 +446,8 @@ export async function analyzeUserMessage(
     // Pax: NLU'dan gelen değer 50'yi geçemez — BUG 2
     if (entities.people_count?.adults) {
       const _pax = Number(entities.people_count.adults);
-      if (_pax >= 1 && _pax <= 50) updates.paxAdult = _pax;
+      // R6: tek-helper validasyon (1-9). Üst sınır aşımı → handler aşım mesajı gösterir.
+      if (isValidPax(_pax)) updates.paxAdult = _pax;
     }
     if (entities.people_count?.children) updates.paxChild = entities.people_count.children;
     // FullName: en az 2 kelime olmalı — BUG 3
