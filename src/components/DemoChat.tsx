@@ -101,6 +101,16 @@ export const DemoChat = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const previousLanguageRef = useRef(i18n.language);
 
+  // 2026-06-26: Input focus korunması.
+  // Sorun: <Input disabled={isLoading} ... /> — cevap beklerken disabled
+  // toggle focus'u DÜŞÜRÜYORDU. isLoading false olunca enable AMA tarayıcı
+  // focus'u geri vermiyor → kullanıcı her cevap sonrası input'a tıklamak
+  // zorunda kalıyordu. Fix: ref + useEffect [isLoading] ile true→false
+  // geçişinde focus restore. Mobilde atla (iOS klavye spam'i — kullanıcı
+  // bot cevabını okurken klavye sürekli açılmasın).
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const wasLoadingRef = useRef(false);
+
   useEffect(() => {
     localStorage.setItem("demo-chat-messages", JSON.stringify(messages));
     localStorage.setItem("demo-chat-language", i18n.language);
@@ -184,6 +194,26 @@ export const DemoChat = () => {
       }
     }
   }, [messages]);
+
+  // 2026-06-26: Cevap geldikten sonra focus restore (desktop only).
+  // isLoading true→false geçişini wasLoadingRef ile takip ederek SADECE
+  // gerçek bir gönderim sonrası tetikle (ilk mount'ta sayfa açılışı focus'a
+  // düşmesin — kullanıcı bot greeting'i okurken klavye açılmasın).
+  // requestAnimationFrame: disabled=false render edildikten SONRA focus ver
+  // (disabled iken focus() etkisiz — React commit sırasında DOM güncellemesi
+  // henüz tamamlanmamış olabilir).
+  useEffect(() => {
+    if (wasLoadingRef.current && !isLoading && !isMobile) {
+      const id = requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+      wasLoadingRef.current = false;
+      return () => cancelAnimationFrame(id);
+    }
+    if (isLoading) {
+      wasLoadingRef.current = true;
+    }
+  }, [isLoading, isMobile]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -509,6 +539,7 @@ export const DemoChat = () => {
             <div className="flex gap-2 items-center">
               <div className="relative flex-1">
                 <Input
+                  ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
