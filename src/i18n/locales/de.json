@@ -3813,17 +3813,36 @@
       "failed": "PIN-Verifizierung fehlgeschlagen. Bitte überprüfen Sie Ihre PIN.",
       "invalidLength": "PIN muss 6 Ziffern haben"
     },
-    "connectionInfo": {
-      "title": "Verbindungsinformationen",
-      "active": "WhatsApp-Verbindung aktiv! Nachrichten werden automatisch vom KI-Chatbot beantwortet.",
-      "importantNotes": "⚠️ Wichtige Hinweise",
-      "rule24h": "24-Stunden-Regel: Wenn seit der letzten Nachricht des Kunden mehr als 24 Stunden vergangen sind, können nur Vorlagennachrichten gesendet werden",
-      "autoManaged": "Ihre Verbindung wird automatisch über Embedded Signup verwaltet"
+    "policy24h": {
+      "title": "24-Stunden-Regel",
+      "text": "Wenn seit der letzten Nachricht des Kunden mehr als 24 Stunden vergangen sind, können nur genehmigte Vorlagennachrichten gesendet werden. Dies ist die WhatsApp Business-Richtlinie von Meta."
     },
     "guide": {
       "title": "Integrationsleitfaden",
       "subtitle": "Schritt-für-Schritt-Anleitung für die WhatsApp Business-Integration",
-      "downloadPdf": "📄 WhatsApp-Integrationsleitfaden herunterladen (PDF)"
+      "downloadPdf": "📄 WhatsApp-Integrationsleitfaden herunterladen (PDF)",
+      "steps": {
+        "step1": {
+          "title": "Verbinden",
+          "desc": "Klicken Sie auf 'WhatsApp verbinden', das Meta-Anmeldefenster wird geöffnet."
+        },
+        "step2": {
+          "title": "Anmelden",
+          "desc": "Melden Sie sich mit Ihrem Facebook/Meta-Konto an und erteilen Sie die Berechtigungen."
+        },
+        "step3": {
+          "title": "Geschäft",
+          "desc": "Wählen Sie Ihr WhatsApp Business-Konto aus oder erstellen Sie ein neues."
+        },
+        "step4": {
+          "title": "Nummer",
+          "desc": "Geben Sie die Nummer für den Chatbot ein und bestätigen Sie mit dem 6-stelligen Code."
+        },
+        "step5": {
+          "title": "Abschließen",
+          "desc": "Bestätigen Sie die Berechtigungen; Sie werden zum Panel zurückgeleitet und der Status wird 'Aktiv'."
+        }
+      }
     },
     "support": {
       "title": "Benötigen Sie Hilfe?",

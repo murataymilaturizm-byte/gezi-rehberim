@@ -3859,17 +3859,36 @@
       "failed": "PIN verification failed. Please check your PIN.",
       "invalidLength": "PIN must be 6 digits"
     },
-    "connectionInfo": {
-      "title": "Connection Information",
-      "active": "WhatsApp connection active! Messages are automatically answered by the AI chatbot.",
-      "importantNotes": "⚠️ Important Notes",
-      "rule24h": "24-hour rule: If more than 24 hours have passed since the customer's last message, only template messages can be sent",
-      "autoManaged": "Your connection is automatically managed via Embedded Signup"
+    "policy24h": {
+      "title": "24-Hour Rule",
+      "text": "If more than 24 hours have passed since the customer's last message, only approved template messages can be sent. This is Meta's WhatsApp Business policy."
     },
     "guide": {
       "title": "Integration Guide",
       "subtitle": "Step-by-step guide for WhatsApp Business integration",
-      "downloadPdf": "📄 Download WhatsApp Integration Guide (PDF)"
+      "downloadPdf": "📄 Download WhatsApp Integration Guide (PDF)",
+      "steps": {
+        "step1": {
+          "title": "Connect",
+          "desc": "Click the Connect WhatsApp button to open the Meta sign-in window."
+        },
+        "step2": {
+          "title": "Sign In",
+          "desc": "Sign in with your Facebook/Meta account and approve the permissions."
+        },
+        "step3": {
+          "title": "Business",
+          "desc": "Select your WhatsApp Business account or create a new one."
+        },
+        "step4": {
+          "title": "Number",
+          "desc": "Enter the phone number for the chatbot and verify with the 6-digit code."
+        },
+        "step5": {
+          "title": "Complete",
+          "desc": "Approve the permissions; you will be redirected to the panel and the status will turn 'Active'."
+        }
+      }
     },
     "support": {
       "title": "Need help?",

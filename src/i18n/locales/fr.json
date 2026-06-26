@@ -3813,17 +3813,36 @@
       "failed": "Échec de la vérification du PIN. Veuillez vérifier votre PIN.",
       "invalidLength": "Le PIN doit comporter 6 chiffres"
     },
-    "connectionInfo": {
-      "title": "Informations de connexion",
-      "active": "Connexion WhatsApp active ! Les messages sont automatiquement répondus par le chatbot IA.",
-      "importantNotes": "⚠️ Notes importantes",
-      "rule24h": "Règle des 24 heures : Si plus de 24 heures se sont écoulées depuis le dernier message du client, seuls les messages modèles peuvent être envoyés",
-      "autoManaged": "Votre connexion est gérée automatiquement via Embedded Signup"
+    "policy24h": {
+      "title": "Règle des 24 heures",
+      "text": "Si plus de 24 heures se sont écoulées depuis le dernier message du client, seuls les modèles de messages approuvés peuvent être envoyés. Il s'agit de la politique WhatsApp Business de Meta."
     },
     "guide": {
       "title": "Guide d'intégration",
       "subtitle": "Guide étape par étape pour l'intégration WhatsApp Business",
-      "downloadPdf": "📄 Télécharger le guide d'intégration WhatsApp (PDF)"
+      "downloadPdf": "📄 Télécharger le guide d'intégration WhatsApp (PDF)",
+      "steps": {
+        "step1": {
+          "title": "Connecter",
+          "desc": "Cliquez sur le bouton Connecter WhatsApp, la fenêtre de connexion Meta s'ouvre."
+        },
+        "step2": {
+          "title": "Connexion",
+          "desc": "Connectez-vous avec votre compte Facebook/Meta et approuvez les autorisations."
+        },
+        "step3": {
+          "title": "Entreprise",
+          "desc": "Sélectionnez votre compte WhatsApp Business ou créez-en un nouveau."
+        },
+        "step4": {
+          "title": "Numéro",
+          "desc": "Saisissez le numéro à utiliser pour le chatbot et vérifiez-le avec le code à 6 chiffres."
+        },
+        "step5": {
+          "title": "Terminer",
+          "desc": "Approuvez les autorisations ; vous serez redirigé vers le panneau et le statut deviendra 'Actif'."
+        }
+      }
     },
     "support": {
       "title": "Besoin d'aide ?",

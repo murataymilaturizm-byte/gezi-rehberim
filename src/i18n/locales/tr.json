@@ -3920,17 +3920,36 @@
       "failed": "PIN doğrulaması başarısız. Lütfen PIN'inizi kontrol edin.",
       "invalidLength": "PIN 6 haneli olmalı"
     },
-    "connectionInfo": {
-      "title": "Bağlantı Bilgileri",
-      "active": "WhatsApp bağlantısı aktif! Mesajlar otomatik olarak AI chatbot tarafından yanıtlanıyor.",
-      "importantNotes": "⚠️ Önemli Notlar",
-      "rule24h": "24 saat kuralı: Müşteriden son mesajın üzerinden 24 saat geçtiyse sadece şablon mesajı gönderilebilir",
-      "autoManaged": "Bağlantınız Embedded Signup ile otomatik yönetilmektedir"
+    "policy24h": {
+      "title": "24 Saat Kuralı",
+      "text": "Müşteriden gelen son mesajın üzerinden 24 saat geçtiyse, yalnızca onaylı şablon mesajları gönderilebilir. Bu Meta'nın WhatsApp Business politikasıdır."
     },
     "guide": {
       "title": "Entegrasyon Rehberi",
       "subtitle": "WhatsApp Business entegrasyonu için adım adım rehber",
-      "downloadPdf": "📄 WhatsApp Entegrasyon Rehberini İndir (PDF)"
+      "downloadPdf": "📄 WhatsApp Entegrasyon Rehberini İndir (PDF)",
+      "steps": {
+        "step1": {
+          "title": "Bağla",
+          "desc": "WhatsApp Bağla butonuna tıklayın, Meta giriş penceresi açılır."
+        },
+        "step2": {
+          "title": "Giriş",
+          "desc": "Facebook/Meta hesabınızla giriş yapın ve izinleri onaylayın."
+        },
+        "step3": {
+          "title": "İşletme",
+          "desc": "WhatsApp Business hesabınızı seçin veya yeni oluşturun."
+        },
+        "step4": {
+          "title": "Numara",
+          "desc": "Chatbot için kullanacağınız numarayı girin, gelen 6 haneli kodla doğrulayın."
+        },
+        "step5": {
+          "title": "Tamamla",
+          "desc": "İzinleri onaylayın; panele otomatik dönersiniz, durum 'Aktif' olur."
+        }
+      }
     },
     "support": {
       "title": "Desteğe ihtiyacınız mı var?",

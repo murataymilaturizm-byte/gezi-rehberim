@@ -3813,17 +3813,36 @@
       "failed": "Error en la verificación del PIN. Por favor revise su PIN.",
       "invalidLength": "El PIN debe tener 6 dígitos"
     },
-    "connectionInfo": {
-      "title": "Información de conexión",
-      "active": "¡Conexión de WhatsApp activa! Los mensajes son respondidos automáticamente por el chatbot de IA.",
-      "importantNotes": "⚠️ Notas importantes",
-      "rule24h": "Regla de 24 horas: Si han pasado más de 24 horas desde el último mensaje del cliente, solo se pueden enviar mensajes de plantilla",
-      "autoManaged": "Su conexión se gestiona automáticamente a través de Embedded Signup"
+    "policy24h": {
+      "title": "Regla de 24 horas",
+      "text": "Si han pasado más de 24 horas desde el último mensaje del cliente, solo se pueden enviar mensajes de plantilla aprobados. Esta es la política de WhatsApp Business de Meta."
     },
     "guide": {
       "title": "Guía de integración",
       "subtitle": "Guía paso a paso para la integración de WhatsApp Business",
-      "downloadPdf": "📄 Descargar la guía de integración de WhatsApp (PDF)"
+      "downloadPdf": "📄 Descargar la guía de integración de WhatsApp (PDF)",
+      "steps": {
+        "step1": {
+          "title": "Conectar",
+          "desc": "Haga clic en el botón Conectar WhatsApp, se abrirá la ventana de inicio de sesión de Meta."
+        },
+        "step2": {
+          "title": "Iniciar sesión",
+          "desc": "Inicie sesión con su cuenta de Facebook/Meta y apruebe los permisos."
+        },
+        "step3": {
+          "title": "Empresa",
+          "desc": "Seleccione su cuenta de WhatsApp Business o cree una nueva."
+        },
+        "step4": {
+          "title": "Número",
+          "desc": "Introduzca el número a utilizar para el chatbot y verifíquelo con el código de 6 dígitos."
+        },
+        "step5": {
+          "title": "Completar",
+          "desc": "Apruebe los permisos; será redirigido al panel y el estado pasará a 'Activo'."
+        }
+      }
     },
     "support": {
       "title": "¿Necesita ayuda?",

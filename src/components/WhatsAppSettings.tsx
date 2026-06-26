@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, CheckCircle2, Wifi, FileDown, Phone } from "lucide-react";
+import { Settings, FileDown, Phone, Info } from "lucide-react";
 import { WhatsAppEmbeddedSignup } from "./WhatsAppEmbeddedSignup";
 import { useToast } from "@/hooks/use-toast";
 
@@ -94,7 +94,17 @@ export const WhatsAppSettings = () => {
         />
       )}
 
-      {/* Dikkat çekici destek bloğu — Embedded Signup'ın hemen altında.
+      {/* 24 Saat Kuralı uyarısı — Embedded Signup'ın HEMEN ALTINDA, daima görünür.
+          Bağlanmadan önce de bilinmesi gereken ön-koşul (Meta WhatsApp Business politikası). */}
+      <Alert className="border-blue-500/30 bg-blue-500/5">
+        <Info className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-sm">
+          <span className="font-semibold">{t("whatsapp.policy24h.title")}: </span>
+          {t("whatsapp.policy24h.text")}
+        </AlertDescription>
+      </Alert>
+
+      {/* Dikkat çekici destek bloğu — 24h uyarısının hemen altında.
           Bağlantı sırasında sorun yaşayan acente direkt arayabilsin. */}
       <Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/5 via-orange-50/50 to-primary/5 dark:from-primary/10 dark:via-orange-950/20 dark:to-primary/10 shadow-md">
         <CardContent className="p-5">
@@ -124,34 +134,9 @@ export const WhatsAppSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Connection Info - when active */}
-      {isConfigured && whatsappStatus === 'active' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wifi className="h-5 w-5" />
-              {t("whatsapp.connectionInfo.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Alert className="border-primary/30 bg-primary/5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <AlertDescription>
-                ✅ {t("whatsapp.connectionInfo.active")}
-              </AlertDescription>
-            </Alert>
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold text-sm mb-2">{t("whatsapp.connectionInfo.importantNotes")}</h4>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• {t("whatsapp.connectionInfo.rule24h")}</li>
-                <li>• {t("whatsapp.connectionInfo.autoManaged")}</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* PDF Guide */}
+      {/* PDF Guide — Ekranda 5 adımlık özet (Embedded Signup akışıyla birebir) +
+          detaylı rehber için PDF indirme. Eski "Bağlantı Bilgileri" kartı kaldırıldı
+          (durum üst kartta zaten gösteriliyor, 24h notu yukarı taşındı). */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -162,7 +147,26 @@ export const WhatsAppSettings = () => {
             {t("whatsapp.guide.subtitle")}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* 5 adımlık entegrasyon özeti — PDF butonunun üstünde */}
+          <ol className="space-y-3">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <li key={n} className="flex gap-3">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/15 text-primary font-semibold text-sm shrink-0">
+                  {n}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-foreground">
+                    {t(`whatsapp.guide.steps.step${n}.title`)}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {t(`whatsapp.guide.steps.step${n}.desc`)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
           <a
             href="/docs/whatsapp_embedded_signup_rehberi.pdf"
             target="_blank"
