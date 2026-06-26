@@ -411,9 +411,22 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
           width: isMobile ? 320 : 460,
         },
         tooltip: {
+          // 2026-06-26 Dark mode portal fix v2: react-joyride 3.x'te options.backgroundColor
+          // sadece arrow/overlay için yeterli — tooltip WRAPPER'ı kendi backgroundColor
+          // override etmediği sürece light default ile çiziliyor (canlı kanıt: dark
+          // mode'da kartlar koyu --muted, ana zemin beyaz). Burada açıkça token'a
+          // bağlıyoruz. portalElement={document.documentElement} (yukarıda) ile
+          // birlikte: scope dark, value token → zemin koyu HSL çözülür.
+          backgroundColor: "hsl(var(--popover))",
           borderRadius: 14,
           padding: "20px 22px",
           boxShadow: "0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px hsl(var(--border))",
+        },
+        tooltipContainer: {
+          // Genel inner-container metin rengi fallback. tooltipTitle/tooltipContent
+          // ayrı color override ediyor ama inherit eden inline node'lar (örn. çocuk
+          // <p>/<span>) için bu güvenlik ağı.
+          color: "hsl(var(--popover-foreground))",
         },
         tooltipTitle: {
           fontSize: 17,
@@ -425,6 +438,8 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
         tooltipContent: {
           padding: "0 0 4px",
           fontSize: 14,
+          // 2026-06-26: açıklama metni token'a bağlı (önceden default koyu kalıyordu).
+          color: "hsl(var(--muted-foreground))",
         },
         tooltipFooter: {
           marginTop: 16,
