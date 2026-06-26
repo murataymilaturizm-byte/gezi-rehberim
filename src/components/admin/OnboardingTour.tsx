@@ -382,6 +382,15 @@ export function OnboardingTour({ agencyId, shouldRun, onComplete }: OnboardingTo
       scrollToFirstStep
       disableOverlayClose
       spotlightClicks
+      // 2026-06-26 Dark mode portal scope fix: react-joyride varsayılan olarak
+      // <body> altına yeni bir div yaratıp tooltip'i orada render ediyor. Theme
+      // toggle .dark class'ını <html> (documentElement) üzerine koyduğu için body
+      // üstündeki portal CSS değişkenlerini DOĞRU miras alamıyor — tooltip light
+      // mode (--popover beyaz) renkleriyle çiziliyordu, dark panel zemine
+      // uyumsuz. portalElement={document.documentElement} ile portal'ı <html>
+      // altına alıyoruz → .dark scope dahili → hsl(var(--popover)) koyu çözülür.
+      // styles prop ZATEN token'a bağlı, sorun sadece portal scope'tu.
+      portalElement={document.documentElement}
       callback={handleCallback}
       locale={{
         back: t("onboardingTour.back"),
