@@ -75,7 +75,6 @@ import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { BulkTourImport, downloadTourImportTemplate } from "@/components/admin/BulkTourImport";
 import { NotificationCenter } from "@/components/admin/NotificationCenter";
 import { CommandPalette } from "@/components/admin/CommandPalette";
-import { OnboardingTour, tourStorageKey } from "@/components/admin/OnboardingTour";
 import { FileSpreadsheet, FileText } from "lucide-react";
 import CentralNotifications from "@/components/CentralNotifications";
 import CentralSendLog from "@/components/CentralSendLog";
@@ -194,9 +193,6 @@ const Admin = () => {
 
   // Bulk import state
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
-
-  // Onboarding tour state
-  const [shouldRunTour, setShouldRunTour] = useState(false);
 
   // Complaints count (open/unresolved)
   const [openComplaintsCount, setOpenComplaintsCount] = useState(0);
@@ -420,17 +416,6 @@ const Admin = () => {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [userAgencyId, isSuperAdmin]);
-
-  // Trigger onboarding tour for first-time users
-  useEffect(() => {
-    if (!userAgencyId || isSuperAdmin) return;
-    const done = localStorage.getItem(tourStorageKey(userAgencyId));
-    if (!done) {
-      // Small delay so sidebar is rendered
-      const t = setTimeout(() => setShouldRunTour(true), 600);
-      return () => clearTimeout(t);
-    }
   }, [userAgencyId, isSuperAdmin]);
 
   // Check payment result from URL params
@@ -754,12 +739,6 @@ const Admin = () => {
                       onManualReg={() => setManualRegistrationDialogOpen(true)}
                       onLogout={handleLogout}
                       agencyId={userAgencyId ?? undefined}
-                      onRestartTour={() => {
-                        if (userAgencyId) {
-                          localStorage.removeItem(tourStorageKey(userAgencyId));
-                          setShouldRunTour(true);
-                        }
-                      }}
                     />
                   )}
                   {!isSuperAdmin && userAgencyId && (
@@ -1168,14 +1147,6 @@ const Admin = () => {
           open={bulkImportOpen}
           onClose={() => setBulkImportOpen(false)}
           onSuccess={loadData}
-        />
-      )}
-
-      {userAgencyId && (
-        <OnboardingTour
-          agencyId={userAgencyId}
-          shouldRun={shouldRunTour}
-          onComplete={() => setShouldRunTour(false)}
         />
       )}
 

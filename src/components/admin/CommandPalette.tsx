@@ -13,7 +13,7 @@ import {
 import {
   LayoutDashboard, MapPin, ClipboardList, MessageSquare, FileText,
   Building2, CreditCard, Plus, FileSpreadsheet, Sparkles,
-  Sun, Moon, Languages, HelpCircle, LogOut, Search, PlayCircle,
+  Sun, Moon, Languages, HelpCircle, LogOut, Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,7 +24,6 @@ interface CommandPaletteProps {
   onManualReg?: () => void;
   onLogout?: () => void;
   agencyId?: string;
-  onRestartTour?: () => void;
 }
 
 function getTheme() {
@@ -42,7 +41,7 @@ function toggleTheme() {
   }
 }
 
-export function CommandPalette({ onTabChange, onNewTour, onBulkImport, onManualReg, onLogout, agencyId, onRestartTour }: CommandPaletteProps) {
+export function CommandPalette({ onTabChange, onNewTour, onBulkImport, onManualReg, onLogout, agencyId }: CommandPaletteProps) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => getTheme() === "dark");
@@ -184,12 +183,6 @@ export function CommandPalette({ onTabChange, onNewTour, onBulkImport, onManualR
               <HelpCircle className="mr-2 h-4 w-4" />
               {t("commandPalette.gettingStarted")}
             </CommandItem>
-            {onRestartTour && (
-              <CommandItem onSelect={() => run(() => onRestartTour())}>
-                <PlayCircle className="mr-2 h-4 w-4" />
-                {t("commandPalette.restartTour")}
-              </CommandItem>
-            )}
             <CommandItem onSelect={() => run(() => onLogout?.())} className="text-destructive data-[selected=true]:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               {t("commandPalette.logout")}
