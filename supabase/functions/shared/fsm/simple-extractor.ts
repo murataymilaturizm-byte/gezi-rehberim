@@ -128,7 +128,7 @@ const NUMBER_WORDS: Record<string, Record<string, number>> = {
 const TR_MONTHS_GUARD =
   /\b(ocak|şubat|mart|nisan|may[ıi]s|haziran|temmuz|ağustos|eyl[üu]l|ekim|kas[ıi]m|aral[ıi]k)\b/i;
 
-function extractPaxFromWords(text: string, language: string): number | null {
+function extractPaxFromWords(text: string, language: string, collectionStep?: string): number | null {
   const lower = text.toLowerCase();
   // C3 GUARD: mesajda ay ismi varsa pax çıkarımı pas — büyük olasılıkla tarih.
   // "yirmi kişi" gibi PAX context VARSA bu guard zaten aşağıda çalışmaz (ay yok).
@@ -139,6 +139,14 @@ function extractPaxFromWords(text: string, language: string): number | null {
   const peopleContext =
     /\b(ki[şs]i|insan|person|people|kinder|kind|adult|yetişkin|kişiyiz|kişiyim|اشخاص|personas|personnes|человек|гостей)\b/i;
 
+  // 2026-06-26 BUG-X9 FIX: peopleContext ZORUNLU + waiting_for_pax istisnası.
+  // Eski "≤3/≤4 kelime fallback" peopleContext olmadan pax çıkarıyordu →
+  // "Ondördü olur" (waiting_for_date) → 14 pax SIZINTI → DB 14×900=12.600₺.
+  // Yeni: peopleContext zorunlu — AMA bot zaten "kaç kişi?" sorduysa
+  // (waiting_for_pax) kullanıcı tek-kelime "yedi"/"üç" diyebilir; o adımda
+  // fallback KORUNUR (peopleContext olmadan da yazıyla sayı pax sayılır).
+  const _allowFallback = collectionStep === "waiting_for_pax";
+
   // Çok kelimeli sayıları önce dene ("on iki")
   const multiWordEntries = Object.entries(words)
     .filter(([w]) => w.includes(" "))
@@ -146,7 +154,7 @@ function extractPaxFromWords(text: string, language: string): number | null {
 
   for (const [word, value] of multiWordEntries) {
     if (lower.includes(word)) {
-      if (peopleContext.test(lower) || lower.trim().split(/\s+/).length <= 4) {
+      if (peopleContext.test(lower) || (_allowFallback && lower.trim().split(/\s+/).length <= 4)) {
         return value;
       }
     }
@@ -155,7 +163,7 @@ function extractPaxFromWords(text: string, language: string): number | null {
   // Tek kelimeli sayılar
   for (const [word, value] of Object.entries(words).filter(([w]) => !w.includes(" "))) {
     if (new RegExp(`\\b${word}\\b`, "i").test(lower)) {
-      if (peopleContext.test(lower) || lower.trim().split(/\s+/).length <= 3) {
+      if (peopleContext.test(lower) || (_allowFallback && lower.trim().split(/\s+/).length <= 3)) {
         return value;
       }
     }
@@ -261,10 +269,12 @@ export function extractNameAndPhone(
     }
   }
   // Fallback: yazıyla yazılmış sayılar ("üç kişi", "three people")
+  // 2026-06-26 BUG-X9: collectionStep geçirildi — waiting_for_pax dışında
+  // peopleContext zorunlu (tarih sayısı "ondördü olur" pax'e sızmasın).
   if (!result.paxAdult) {
     // TR + EN + DE + RU dene — dil bilinmediğinden sırayla kontrol
     for (const lang of ["tr", "en", "de", "ru", "ar", "fr", "es"]) {
-      const wordPax = extractPaxFromWords(message, lang);
+      const wordPax = extractPaxFromWords(message, lang, collectionStep);
       if (wordPax !== null && wordPax >= 1 && wordPax <= 50) {
         result.paxAdult = wordPax;
         break;

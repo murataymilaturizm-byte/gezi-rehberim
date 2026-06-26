@@ -277,6 +277,18 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // AI bazen "<UNKNOWN>", "N/A", "bilinmiyor" gibi dummy değerler döndürür — reservationInfo'ya sızmasın
   const _isPlaceholder = (s: string): boolean =>
     /^<.*>$|^undefined$|^null$|^n\/?a$|^-+$|^\?+$|^bilinmiyor$|^belirtilmedi$|^not\s+provided$|^unknown$/i.test(s.trim());
+
+  // 2026-06-26 BUG-X9 FIX (Seçenek D): NLU paxAdult sigortası — peopleContext zorunlu.
+  // Canlı bug (exec X9): "Ondördü olur" → NLU çift kullanım (Haiku tarih sayısını
+  // hem dates hem people_count'a koydu) → paxAdult=14 SIZINTI → DB 14×900=12.600₺.
+  // Sigorta: mesajda kişi-bağlamı (kişi/insan/yetişkin/...) YOKSA NLU paxAdult
+  // reddedilir. waiting_for_pax istisna (bot zaten kişi sayısı sordu).
+  const _msgLower = (message || "").toLowerCase();
+  const _peopleContextRe = /\b(ki[şs]i|insan|person|people|kinder|kind|adult|yeti[şs]kin|[çc]ocuk|child|niño|enfant|اشخاص|طفل|personas|personnes|человек|гостей)\b/i;
+  const _hasPeopleContext = _peopleContextRe.test(_msgLower);
+  const _isWaitingForPax = context.collectionStep === "waiting_for_pax";
+  const _shouldAcceptNluPax = _hasPeopleContext || _isWaitingForPax;
+
   for (const [k, v] of Object.entries(_rawUpdates)) {
     if (k === "fullName" && typeof v === "string" && v.trim()) {
       if (_isPlaceholder(v)) continue;
@@ -288,6 +300,11 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       // KRİTİK: normalizePhone null dönerse FALLBACK YOK — placeholder DB'ye sızmasın
       const normalized = normalizePhone(v.trim());
       if (normalized) extractedInfo[k] = normalized;
+    } else if ((k === "paxAdult" || k === "paxChild") && !_shouldAcceptNluPax) {
+      // 2026-06-26 BUG-X9: peopleContext yok + waiting_for_pax değil → NLU pax REDDET
+      // (tarih sayısı sızıntısı engellenir — "ondördü olur" → 14 yutulmaz).
+      console.log(`[info-extractor] BUG-X9: NLU ${k}=${v} reddedildi (peopleContext yok + waiting_for_pax değil)`);
+      continue;
     } else {
       extractedInfo[k] = v;
     }

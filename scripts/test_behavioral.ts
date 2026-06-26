@@ -5057,6 +5057,186 @@ assert(`X8.P10 REGRESYON: "Antalya ne kadar" (tek tur fiyat) → no match`,
     r !== null && r.tourTitle === "Ege Turu" && r.direction === "desc");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 2026-06-26 BUG-X9 FIX — Tarih→pax sızıntısı (peopleContext zorunlu, 2 katman)
+// Canlı: "Ondördü olur" (tarih=14 Aralık) → "14" pax'e sızdı → "1 kişi" ezemedi
+// → özet pax=14, DB 14×900=12.600₺ (sessiz veri hatası, launch-blocker).
+//
+// Fix A: simple-extractor extractPaxFromWords peopleContext ZORUNLU
+//        (waiting_for_pax istisnası — bot zaten "kaç kişi?" sordu)
+// Fix D: info-extractor Blok 1 NLU paxAdult sigortası — peopleContext zorunlu
+//        (waiting_for_pax istisnası)
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── BUG-X9 FIX: peopleContext zorunlu (extract katmanı, 2 dosya) ──");
+
+// ── FIX A: extractNameAndPhone içinden gelen pax extraction'ı izole eden mock ──
+// (extractPaxFromWords doğrudan export edilmemiş; extractNameAndPhone ile test ediyoruz)
+import { extractNameAndPhone as _extractNameAndPhoneX9 } from "../supabase/functions/shared/fsm/simple-extractor.ts";
+
+// X9.A1 KRİTİK CANLI: "Ondördü olur" (waiting_for_date) → pax SIZMAZ
+{
+  const r = _extractNameAndPhoneX9("Ondördü olur", "waiting_for_date");
+  assert(`X9.A1 KRİTİK CANLI: "Ondördü olur" + waiting_for_date → paxAdult undefined (sızıntı yok!)`,
+    r.paxAdult === undefined);
+}
+
+// X9.A2 KRİTİK İSTİSNA: "yedi" (waiting_for_pax) → pax 7 (bot kişi sayısı sordu)
+{
+  const r = _extractNameAndPhoneX9("yedi", "waiting_for_pax");
+  assert(`X9.A2 KRİTİK İSTİSNA: "yedi" + waiting_for_pax → paxAdult=7 (fallback korundu)`,
+    r.paxAdult === 7);
+}
+
+// X9.A3 İSTİSNA: "iki" (waiting_for_pax tek kelime ASCII-safe) → pax 2
+// NOT: "üç" Türkçe karakter \b ASCII zayıflığına takılıyor (X3 ailesi, mevcut
+// kısıt — X9 scope dışı). ASCII-safe Türkçe sayılarla test yapıyoruz.
+{
+  const r = _extractNameAndPhoneX9("iki", "waiting_for_pax");
+  assert(`X9.A3 İSTİSNA: "iki" + waiting_for_pax → paxAdult=2 (fallback korundu)`,
+    r.paxAdult === 2);
+}
+
+// X9.A4: "1 kişi" (digit + peopleContext) → her zaman çalışır (Fix A fallback'i etkilemez)
+{
+  const r = _extractNameAndPhoneX9("1 kişi", "waiting_for_pax");
+  assert(`X9.A4: "1 kişi" + waiting_for_pax → paxAdult=1 (digit pattern + peopleContext)`,
+    r.paxAdult === 1);
+}
+
+// X9.A5: "1 kişi" (waiting_for_date) → peopleContext "kişi" var → pax 1 (regresyon)
+{
+  const r = _extractNameAndPhoneX9("1 kişi", "waiting_for_date");
+  assert(`X9.A5: "1 kişi" + waiting_for_date → paxAdult=1 (peopleContext "kişi" var, digit pattern)`,
+    r.paxAdult === 1);
+}
+
+// X9.A6 REGRESYON: "iki kişi" (peopleContext + waiting_for_date, ASCII-safe) → pax 2
+{
+  const r = _extractNameAndPhoneX9("iki kişi", "waiting_for_date");
+  assert(`X9.A6 REGRESYON: "iki kişi" + waiting_for_date → paxAdult=2 (peopleContext var)`,
+    r.paxAdult === 2);
+}
+
+// X9.A7 REGRESYON: "3 yetişkin 2 çocuk" (peopleContext + waiting_for_date) → 3+2
+{
+  const r = _extractNameAndPhoneX9("3 yetişkin 2 çocuk", "waiting_for_pax");
+  assert(`X9.A7 REGRESYON: "3 yetişkin 2 çocuk" → adults=3, children=2`,
+    r.paxAdult === 3 && r.paxChild === 2);
+}
+
+// X9.A8 KRİTİK: "yedi" (waiting_for_date, tek kelime, peopleContext yok) → pax SIZMAZ ★
+{
+  const r = _extractNameAndPhoneX9("yedi", "waiting_for_date");
+  assert(`X9.A8 KRİTİK: "yedi" + waiting_for_date (peopleContext yok) → paxAdult undefined (sızıntı yok)`,
+    r.paxAdult === undefined);
+}
+
+// X9.A9: "ondördü" tek kelime, waiting_for_date → pax SIZMAZ
+{
+  const r = _extractNameAndPhoneX9("ondördü", "waiting_for_date");
+  assert(`X9.A9: "ondördü" + waiting_for_date → paxAdult undefined`,
+    r.paxAdult === undefined);
+}
+
+// X9.A10 REGRESYON: "yirmi aralık" (C3 fix korundu — ay var) → pax SIZMAZ
+{
+  const r = _extractNameAndPhoneX9("yirmi aralık", "waiting_for_date");
+  assert(`X9.A10 REGRESYON C3: "yirmi aralık" → paxAdult undefined (TR_MONTHS_GUARD)`,
+    r.paxAdult === undefined);
+}
+
+// ── FIX D: NLU paxAdult sigortası (Blok 1) — info-extractor üzerinden test ──
+import { extractAllInfo as _extractAllInfoX9 } from "../supabase/functions/shared/services/info-extractor.ts";
+
+function _mkX9Context(collectionStep: string) {
+  return {
+    stage: "COLLECTING_INFO",
+    collectionStep,
+    language: "tr",
+    reservationInfo: { tourId: "T1", tourTitle: "Efes" },
+    currentTour: { id: "T1", title: "Efes", dates: [{ id: "D1", departure_date: "2026-12-14", price_adult: 900 }] },
+    collectEmail: false,
+  } as any;
+}
+
+// X9.D1 KRİTİK CANLI: NLU paxAdult=14 + mesaj "ondördü olur" + waiting_for_date → REDDEDİLİR
+{
+  const result = _extractAllInfoX9({
+    message: "ondördü olur",
+    nluResult: { intent: "provide_info", entities: { dates: ["14 Aralık"] }, updates: { paxAdult: 14, selectedDate: "2026-12-14" } } as any,
+    fsmIntent: "provide_info",
+    context: _mkX9Context("waiting_for_date"),
+    tours: [{ id: "T1", title: "Efes", dates: [{ id: "D1", departure_date: "2026-12-14", price_adult: 900 }] }],
+  });
+  assert(`X9.D1 KRİTİK CANLI: NLU paxAdult=14 + "ondördü olur" + waiting_for_date → paxAdult REDDEDİLİR`,
+    result.paxAdult === undefined);
+}
+
+// X9.D2 İSTİSNA: NLU paxAdult=5 + mesaj "beş" + waiting_for_pax → KABUL (bot sordu)
+{
+  const result = _extractAllInfoX9({
+    message: "beş",
+    nluResult: { intent: "provide_info", entities: {}, updates: { paxAdult: 5 } } as any,
+    fsmIntent: "provide_info",
+    context: _mkX9Context("waiting_for_pax"),
+    tours: [],
+  });
+  assert(`X9.D2 İSTİSNA: NLU paxAdult=5 + "beş" + waiting_for_pax → KABUL (bot kişi sordu)`,
+    result.paxAdult === 5);
+}
+
+// X9.D3 REGRESYON: NLU paxAdult=3 + "3 kişi" + waiting_for_pax → KABUL (peopleContext var)
+{
+  const result = _extractAllInfoX9({
+    message: "3 kişi",
+    nluResult: { intent: "provide_info", entities: {}, updates: { paxAdult: 3 } } as any,
+    fsmIntent: "provide_info",
+    context: _mkX9Context("waiting_for_pax"),
+    tours: [],
+  });
+  assert(`X9.D3 REGRESYON: NLU paxAdult=3 + "3 kişi" → KABUL`,
+    result.paxAdult === 3);
+}
+
+// X9.D4 REGRESYON: NLU paxAdult=2 + "2 yetişkin" + waiting_for_date → KABUL (peopleContext "yetişkin" var)
+{
+  const result = _extractAllInfoX9({
+    message: "2 yetişkin lütfen",
+    nluResult: { intent: "provide_info", entities: {}, updates: { paxAdult: 2 } } as any,
+    fsmIntent: "provide_info",
+    context: _mkX9Context("waiting_for_date"),
+    tours: [],
+  });
+  assert(`X9.D4 REGRESYON: NLU paxAdult=2 + "2 yetişkin" + waiting_for_date → KABUL (peopleContext "yetişkin")`,
+    result.paxAdult === 2);
+}
+
+// X9.D5: NLU paxAdult=14 + history sızıntısı mesajı (peopleContext yok) + waiting_for_name → REDDEDİLİR
+{
+  const result = _extractAllInfoX9({
+    message: "Mehmet Aymilatur",
+    nluResult: { intent: "provide_info", entities: {}, updates: { paxAdult: 14, fullName: "Mehmet Aymilatur" } } as any,
+    fsmIntent: "provide_info",
+    context: _mkX9Context("waiting_for_name"),
+    tours: [],
+  });
+  assert(`X9.D5: NLU paxAdult history sızıntısı + waiting_for_name → REDDEDİLİR (peopleContext yok)`,
+    result.paxAdult === undefined && result.fullName === "Mehmet Aymilatur");
+}
+
+// X9.D6 paxChild aynı sigortayla yakalanır
+{
+  const result = _extractAllInfoX9({
+    message: "ondördü olur",
+    nluResult: { intent: "provide_info", entities: {}, updates: { paxChild: 2 } } as any,
+    fsmIntent: "provide_info",
+    context: _mkX9Context("waiting_for_date"),
+    tours: [],
+  });
+  assert(`X9.D6: NLU paxChild + peopleContext yok + waiting_for_date → REDDEDİLİR`,
+    result.paxChild === undefined);
+}
+
 // ─── SONUÇ ──────────────────────────────────────────────────────────────
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
