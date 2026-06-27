@@ -435,10 +435,61 @@ export function validateFieldReask(
       }
     }
 
-    // YENİ-2 fix: preservedContent ATILDI. replacementSuffix tek başına yeterli —
-    // tam state özet+onay'ı içeriyor. LLM özet artığı eski state yansıtabilir
+    // 2026-06-28 FAQ FIX (Murat canlı kanıt): FAQ intent'inde (general_question /
+    // support_request) Haiku FAQ cevabı + yanlış dolu-alan reask üretirse, mevcut
+    // "tüm reply → özet+onay" davranışı FAQ cevabını SİLİYORDU. Bu fix:
+    // FAQ intent'inde SADECE eşleşen reask cümlesini çıkar, FAQ cevabını KORU.
+    // KÖK6 (process-message.ts L3393) doğru tek suffix'i alta ekleyecek → çift soru YOK.
+    //
+    // Soru-kalıbı guard (?, mısınız, alabilir mi, can you, may i, ...): reask pattern
+    // FAQ cevabının masum BİLGİ cümlesine takılırsa silmesin — sadece gerçek
+    // REASK sorusunu (soru-kalıbı içeren) sil. Örn:
+    //   "5 kişiden fazla katılacak gruplar dahildir."  → pax pattern eşleşir AMA
+    //     soru-kalıbı yok → KORUNUR (masum bilgi)
+    //   "Kaç kişi katılacak?"                          → pax pattern eşleşir + ? →
+    //     SİLİNİR (gerçek reask)
+    //
+    // Fallback: preserved boş kalırsa (FAQ yoktu, sadece reask vardı) eski
+    // davranışa dön → boş mesaj kullanıcıya gitmez.
+    //
+    // YENİ-2 fix (FAQ DIŞI): preservedContent ATILDI. replacementSuffix tek başına
+    // yeterli — tam state özet+onay'ı içerir. LLM özet artığı eski state yansıtabilir
     // (ÇİFT tarih sorunu kökü), atmak temiz özet sağlar.
-    const finalText = replacementSuffix;
+    let finalText: string;
+    const _isFaqIntent = intent === "general_question" || intent === "support_request";
+    if (_isFaqIntent) {
+      const _questionLikeRe = /[?？؟]|m[ıiuü]s[ıiuü]n[ıiuü]z\b|alabilir\s+mi|verir\s+mi|söyler\s+mi|paylaşır\s+m[ıi]|öğrenebilir\s+mi|söyleyebilir\s+mi|verebilir\s+mi|gönderir\s+mi|yazar\s+mı|can\s+(?:you|i)|may\s+i|could\s+(?:you|i)|would\s+you|please\s+(?:give|tell|share|provide)/iu;
+      const _sentences = text.split(/(?<=[.!?])\s+|\n+/);
+      const _preserved = _sentences
+        .filter((s) => {
+          const _trim = s.trim();
+          if (!_trim) return false;
+          // Cümleyi SİL: reask pattern + ≤120 char + soru-kalıbı (üç şart birden)
+          const _isReask = check.pattern.test(s) && s.length <= 120 && _questionLikeRe.test(s);
+          return !_isReask;
+        })
+        .join("\n")
+        .trim();
+      if (_preserved.length === 0) {
+        // FAQ cevabı yoktu, sadece reask vardı → eski davranışa dön (boş mesaj atma)
+        finalText = replacementSuffix;
+      } else if (stage === "CONFIRMING") {
+        // CONFIRMING'de onay sorusu KORUNMALI (KÖK6 burada tetiklenmez)
+        const _confirm = FIELD_REASK_CONFIRM_SUFFIX[lang] || FIELD_REASK_CONFIRM_SUFFIX.en;
+        finalText = _preserved + "\n\n" + _confirm.trim();
+      } else {
+        // COLLECTING_INFO'da KÖK6 doğru adımın suffix'ini alta ekleyecek
+        finalText = _preserved;
+      }
+      console.info("[response-validator] field-reask FAQ cümle-çıkarma", {
+        field: check.field,
+        preservedLength: _preserved.length,
+        fallback: _preserved.length === 0,
+        stage,
+      });
+    } else {
+      finalText = replacementSuffix;
+    }
 
     return {
       text: finalText,
