@@ -642,6 +642,108 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _b1Reply, newContext: context };
   }
 
+  // --- B-DUR: SÜRE FİLTRESİ (tours.type ENUM eşleştirmesi) ---
+  // 2026-06-27 köşe 6 fix: "1 günlük tur" / "2 gecelik" UNKNOWN_TOUR'a düşüyordu.
+  // tour-matching SADECE title/destination/aliases'a bakıyor; tours.type (DAYTRIP/N2/N3)
+  // ENUM eşleştirmeye girmiyordu. Süre kelimesi → type map, tours.filter, deterministik
+  // mesaj. "2/3 günlük" KASITLI olarak match edilmiyor (N1 yok, muğlak).
+  // Sıra: B-DUR önce, B-TEMA sonra. "günübirlik doğa turu" → DAYTRIP filtreli liste.
+  const _DURATION_PATTERNS: { regex: RegExp; type: "DAYTRIP" | "N2" | "N3" }[] = [
+    // DAYTRIP — TR (günübirlik, 1 günlük, günlük tur, günlük gezi) + 6 dil
+    // (?<!\d\s) "günlük tur" → "3 günlük tur" gibi sayı+boşluk öncülü match'i engeller
+    // (muğlak: N1 yok, "3 günlük" = 2 gece N2 mi 3 gece N3 mi belirsiz → tour-matching'e bırak)
+    {
+      regex: /(?<![\p{L}\p{N}])(g[üu]n[üu]birlik|1\s*g[üu]nl[üu]k|(?<!\d\s)g[üu]nl[üu]k\s+(?:bir\s+)?(?:tur|gezi?)|day\s*[-\s]?trip|one[-\s]?day(?:\s+tour)?|tages(?:tour|ausflug)|eint[äa]gig|excursion\s+(?:d['’]une\s+)?journ[ée]e|excursi[óo]n\s+de\s+un\s+d[íi]a|paseo\s+diurno|однодневн|дневной\s+тур|رحلة\s*يومية|جولة\s*يومية)/iu,
+      type: "DAYTRIP",
+    },
+    // N2 — "2 gece" / "2 gecelik" + 6 dil
+    {
+      regex: /(?<![\p{L}\p{N}])(2\s*gece(?:lik)?|2[-\s]?nights?|2\s*N[äa]chte|2\s*nuits?|2\s*noches?|2\s*ноч[иией]?|ليلتين|جولة\s*لليلتين)/iu,
+      type: "N2",
+    },
+    // N3 — "3 gece" / "3 gecelik" + 6 dil
+    {
+      regex: /(?<![\p{L}\p{N}])(3\s*gece(?:lik)?|3[-\s]?nights?|3\s*N[äa]chte|3\s*nuits?|3\s*noches?|3\s*ноч[иией]?|3\s*ليالي)/iu,
+      type: "N3",
+    },
+  ];
+
+  let _matchedType: "DAYTRIP" | "N2" | "N3" | null = null;
+  for (const dp of _DURATION_PATTERNS) {
+    if (dp.regex.test(message)) {
+      _matchedType = dp.type;
+      break;
+    }
+  }
+
+  if (
+    _isExploreStage &&
+    _matchedType &&
+    tours.length > 0
+  ) {
+    const _filtered = tours.filter((t: any) => t.type === _matchedType);
+    const _langDur = context.language || "tr";
+
+    // Süre kategorisi → 7 dil yerelleştirilmiş etiket
+    const _typeLabel: Record<string, Record<string, string>> = {
+      DAYTRIP: { tr: "günübirlik", en: "day", de: "Tages", fr: "d'une journée", es: "de un día", ru: "однодневные", ar: "اليومية" },
+      N2:      { tr: "2 gecelik",  en: "2-night", de: "2-Nächte", fr: "2 nuits", es: "2 noches", ru: "2-ночные", ar: "لليلتين" },
+      N3:      { tr: "3 gecelik",  en: "3-night", de: "3-Nächte", fr: "3 nuits", es: "3 noches", ru: "3-ночные", ar: "3 ليالي" },
+    };
+    const _label = _typeLabel[_matchedType][_langDur] || _typeLabel[_matchedType].tr;
+
+    const _exRatesDur = await getExchangeRatesOnce().catch(() => ({}));
+    const _showDualDur = agency.show_multi_currency !== false;
+
+    if (_filtered.length === 0) {
+      // O type'ta tur yok → mevcut tüm turları öner (UNKNOWN_TOUR'a düşürme)
+      const _allTours = tours.slice(0, 8).map((t: any, i: number) => {
+        const _firstDate = t.dates?.[0];
+        const _priceText = _firstDate?.price_adult
+          ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", _langDur, _exRatesDur, _showDualDur, languageCurrencies)}`
+          : "";
+        return `${i + 1}) ${getLocalizedTourTitle(t.title, _langDur)}${_priceText}`;
+      }).join("\n");
+
+      const _noneMsgs: Record<string, string> = {
+        tr: `${_label} turumuz şu anda yok. Mevcut turlarımız:\n${_allTours}\n\nHangisi ilginizi çeker? 😊`,
+        en: `We don't have ${_label} tours right now. Our available tours:\n${_allTours}\n\nWhich interests you? 😊`,
+        de: `Wir haben derzeit keine ${_label}-Touren. Verfügbare Touren:\n${_allTours}\n\nWelche interessiert Sie? 😊`,
+        fr: `Pas de circuit ${_label} pour le moment. Circuits disponibles :\n${_allTours}\n\nLequel vous intéresse ? 😊`,
+        es: `No tenemos tours ${_label} ahora. Tours disponibles:\n${_allTours}\n\n¿Cuál te interesa? 😊`,
+        ru: `Сейчас нет ${_label} туров. Доступные туры:\n${_allTours}\n\nКакой вас интересует? 😊`,
+        ar: `لا توجد جولات ${_label} حالياً. الجولات المتاحة:\n${_allTours}\n\nأيها يثير اهتمامك؟ 😊`,
+      };
+      const _reply = _noneMsgs[_langDur] || _noneMsgs.tr;
+      await _save(_reply, context);
+      await adapter.sendResponse(_reply);
+      return { success: true, response: _reply, newContext: context };
+    }
+
+    // Filtreli liste (type eşleşen turlar)
+    const _filteredList = _filtered.slice(0, 8).map((t: any, i: number) => {
+      const _firstDate = t.dates?.[0];
+      const _priceText = _firstDate?.price_adult
+        ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", _langDur, _exRatesDur, _showDualDur, languageCurrencies)}`
+        : "";
+      return `${i + 1}) ${getLocalizedTourTitle(t.title, _langDur)}${_priceText}`;
+    }).join("\n");
+
+    const _msgs: Record<string, string> = {
+      tr: `${_label} turlarımız:\n${_filteredList}\n\nHangisi ilginizi çeker? 😊`,
+      en: `Our ${_label} tours:\n${_filteredList}\n\nWhich interests you? 😊`,
+      de: `Unsere ${_label}-Touren:\n${_filteredList}\n\nWelche interessiert Sie? 😊`,
+      fr: `Nos circuits ${_label} :\n${_filteredList}\n\nLequel vous intéresse ? 😊`,
+      es: `Nuestros tours ${_label}:\n${_filteredList}\n\n¿Cuál te interesa? 😊`,
+      ru: `Наши ${_label} туры:\n${_filteredList}\n\nКакой вас интересует? 😊`,
+      ar: `جولاتنا ${_label}:\n${_filteredList}\n\nأيها يثير اهتمامك؟ 😊`,
+    };
+    const _reply = _msgs[_langDur] || _msgs.tr;
+    await _save(_reply, context);
+    await adapter.sendResponse(_reply);
+    return { success: true, response: _reply, newContext: context };
+  }
+
   // --- B-TEMA: TEMA SÖZLÜĞÜ — yumuşatılmış mesaj ---
   // R4: selectedTour/multipleTourMatches kontrolü kaldırıldı (henüz hesaplanmadı).
   // currentTour kontrolü tutuldu — rezervasyon ortasında tema sorusu LLM'e bırakılsın.
