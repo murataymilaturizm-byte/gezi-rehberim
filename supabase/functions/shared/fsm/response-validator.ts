@@ -352,9 +352,26 @@ export function validateFieldReask(
   const _isChangeInfo = intent === "change_info";
   const _msg = userMessage || "";
 
+  // 2026-06-27 changeAck guard: bot cevabı "güncelledim/değiştirdim/updated/..." gibi
+  // başarılı değişiklik bildirimi içeriyorsa (Murat canlı testleri D/B/A): pax/date
+  // değişimi sonrası "Kişi sayını güncelledim + telefon iste" gibi MEŞRU mesajlar
+  // validator tarafından SİLİNİYORDU (preservedContent at → tüm text deterministik
+  // özet'le değiştirildi → kullanıcı "güncelledim" bildirimini kaybediyordu).
+  // Çözüm: değişiklik bildirimi pattern eşleşirse 4 field check'i de skip.
+  // change_info skip ile paralel mekanizma (bu BOT cevabına bakar, change_info
+  // KULLANICI mesajına bakar). Kuru yutkunma (güncelledim YOK) için pattern
+  // FALSE → blok devam (M1 koruması korunur).
+  const _changeAckRe = /(?<![\p{L}\p{N}])(g[üu]ncel(?:ledim|liyorum|lendi|ledik|liyoruz)|de[ğg]i[şs](?:tirdim|ti|tiriyorum|tirildi|tirildim|tiriyoruz)|updated|changed|modified|aktualisiert|ge[äa]ndert|mis\s+à\s+jour|chang[ée]e?s?|modifi[ée]e?s?|actualiz(?:ado|amos|ada)|cambi(?:ado|amos|ada)|modific(?:ado|amos|ada)|обнов(?:ил|ила|или|лён|лен)|измен(?:ил|ила|или|ён)|تم\s*التحديث|تم\s*التغيير|غيّرت)(?![\p{L}\p{N}])/iu;
+  const _hasChangeAck = _changeAckRe.test(text);
+
   for (const check of checks) {
     if (!check.isFilled) continue;
     if (check.isWaitingStep) continue;  // çelişkili durum — collectionStep meşru istem diyor, saygı duy
+    // 2026-06-27 changeAck guard: bot mesajı değişiklik bildirimi içeriyorsa skip
+    if (_hasChangeAck) {
+      console.info("[validator] changeAck skip: field=" + check.field);
+      continue;
+    }
     // BULGU 2 fix: change_info + userMessage o alanı söylüyor → BLOK skip
     if (_isChangeInfo) {
       const _mention = FIELD_MENTION_PATTERNS[check.field];

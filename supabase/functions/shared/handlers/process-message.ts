@@ -1302,6 +1302,488 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _paxRejReply, newContext: context };
   }
 
+  // === A1 (LOG-ONLY) — AKIŞ-İÇİ DEĞİŞTİRME TESPİT İSKELETİ (Yaklaşım A) ===
+  // 2026-06-27: davranış değiştirmez, sadece [A-DETECT] log basar.
+  // A2'de gerçek davranış (RETURN + deterministik mesaj) eklenecek — şimdilik
+  // canlı veriden sınıflandırma doğruluğunu / yanlış-pozitif oranını gözlemle.
+  //
+  // 3 katman koşulu (spec madde 2):
+  //   K1 (dolu)   : reservationInfo[field] DOLU mu?
+  //   K2 (kelime) : mesajda net değişiklik kelimesi VAR mı? (7 dil pattern)
+  //   K3 (farklı) : extractedInfo'dan çıkan yeni değer mevcut değerden FARKLI mı?
+  //                 (tarih için dateId karşılaştırması — selectedDate STRING değil)
+  //
+  // Sınıflar:
+  //   NORMAL                 : K1 fail (alan boş, ilk giriş) — A girmez
+  //   AÇIK                   : K1+K2+K3 TRUE — değişiklik niyeti net
+  //   BELİRSİZ               : K1+K3 TRUE, K2 FALSE, stage=CONFIRMING — teyit istenecek
+  //   BELİRSİZ-AKIŞ-ORTASI   : K1+K3 TRUE, K2 FALSE, stage≠CONFIRMING — gözlem için
+  {
+    const _changeKeywordsRe = /(?<![\p{L}\p{N}])(aslında|yerine|olsun|değiştir|değiştirelim|yap|düzelt|güncelle|şöyle\s+olsun|yanlış\s+oldu|eski\s+değil|actually|instead|change(?:\s+it)?(?:\s+to)?|make\s+it|update|correct|let['’]s\s+say|eigentlich|stattdessen|änder[en]?|korrigier(?:en|e)|lass\s+es|en\s+fait|plut[ôo]t|changer|modifier|corriger|mettons|disons|en\s+realidad|mejor|cambia(?:r)?|modificar|corregir|que\s+sea|вообще-то|вместо|измен(?:ить|и)|исправ(?:ить|ь)|пусть\s+будет|في\s+الواقع|بدلاً|غيّر|عدّل|صحّح|يكون)(?![\p{L}\p{N}])/iu;
+    const _hasChangeKeyword = _changeKeywordsRe.test(message);
+    const _info = (context.reservationInfo || {}) as any;
+    const _ext = extractedInfo as any;
+
+    const _shortVal = (v: unknown): string => {
+      if (v === null || v === undefined) return "null";
+      const s = String(v);
+      // dateId UUID gibi uzun değerleri kısalt
+      return s.length > 16 ? `${s.slice(0, 8)}…${s.slice(-4)}` : s;
+    };
+
+    const _fieldsToCheck: Array<{ field: string; isFilled: boolean; extracted: unknown; current: unknown }> = [
+      { field: "pax",   isFilled: !!_info.paxAdult, extracted: _ext.paxAdult, current: _info.paxAdult },
+      // K3 tarih için dateId (spec tuzağı: selectedDate string "10 aralık 2026" vs "2026-12-10" farklı görünür)
+      { field: "date",  isFilled: !!_info.dateId,    extracted: _ext.dateId,   current: _info.dateId },
+      { field: "name",  isFilled: !!_info.fullName,  extracted: _ext.fullName, current: _info.fullName },
+      { field: "phone", isFilled: !!_info.phone,     extracted: _ext.phone,    current: _info.phone },
+    ];
+
+    for (const fc of _fieldsToCheck) {
+      // extractedInfo'da yeni değer YOKSA log gürültüsüne girme
+      if (fc.extracted === undefined || fc.extracted === null || fc.extracted === "") continue;
+
+      const _isDifferent = fc.extracted !== fc.current;
+
+      let _class: string;
+      if (!fc.isFilled) {
+        _class = "NORMAL"; // ilk giriş, A girmez
+      } else if (!_isDifferent) {
+        continue; // aynı değer, gürültüsüz
+      } else if (_hasChangeKeyword) {
+        _class = "AÇIK";
+      } else if (context.stage === "CONFIRMING") {
+        _class = "BELİRSİZ";
+      } else {
+        _class = "BELİRSİZ-AKIŞ-ORTASI";
+      }
+
+      console.log(
+        `[A-DETECT] field=${fc.field} | dolu=${fc.isFilled} | kelime=${_hasChangeKeyword} | farklı=${_isDifferent}(${_shortVal(fc.current)}→${_shortVal(fc.extracted)}) | stage=${context.stage} | step=${context.collectionStep} | sınıf=${_class}`,
+      );
+    }
+
+    // === A2 — paxAdult AÇIK DAL (yalnızca pax; date/name/phone/BELİRSİZ → A3) ===
+    // 2026-06-27: pax değişikliği için deterministik bildirim + özet/eksik-soru + RETURN.
+    // Diğer alanlar (date/name/phone) ve BELİRSİZ sınıfı A3'te ele alınacak — A2'de
+    // sadece pax + AÇIK için davranış. NORMAL/BELİRSİZ/farklı-field → A2 girmez, mevcut akış.
+    // Tip normalize: extractedInfo.paxAdult string olabilir, Number(...) ile karşılaştır.
+    const _paxFilled = !!_info.paxAdult;
+    const _paxExtRaw = _ext.paxAdult;
+    const _paxExt =
+      typeof _paxExtRaw === "number"
+        ? _paxExtRaw
+        : _paxExtRaw === undefined || _paxExtRaw === null || _paxExtRaw === ""
+          ? null
+          : Number(_paxExtRaw);
+    const _paxDifferent =
+      _paxExt !== null && Number.isFinite(_paxExt) && _paxExt !== _info.paxAdult;
+
+    if (_paxFilled && _hasChangeKeyword && _paxDifferent) {
+      // 1. Yeni reservationInfo (paxChild varsa update; yoksa mevcut KORU)
+      const _newInfo: any = { ..._info, paxAdult: _paxExt };
+      if (_ext.paxChild !== undefined && _ext.paxChild !== null) {
+        _newInfo.paxChild = _ext.paxChild;
+      }
+
+      // 2. Sonraki step (inline determineCollectionStep mantığı — pax dolu zaten)
+      const _hasDate = !!_newInfo.dateId;
+      const _hasName = !!_newInfo.fullName;
+      const _hasPhone = !!_newInfo.phone;
+      const _allFilled = _hasDate && _hasName && _hasPhone;
+
+      const _nextStage = (_allFilled ? "CONFIRMING" : "COLLECTING_INFO") as any;
+      const _nextStep = (_allFilled
+        ? "ready_for_confirmation"
+        : !_hasDate
+          ? "waiting_for_date"
+          : !_hasName
+            ? "waiting_for_name"
+            : "waiting_for_phone") as any;
+
+      const _langA2 = context.language || "tr";
+      const _oldPax = _info.paxAdult;
+
+      // 3. Bildirim prefix (7 dil)
+      const _prefixMsgs: Record<string, string> = {
+        tr: `*Kişi sayısını* ${_oldPax} → ${_paxExt} olarak güncelledim. ✨`,
+        en: `*Number of people* updated from ${_oldPax} → ${_paxExt}. ✨`,
+        de: `*Personenzahl* von ${_oldPax} → ${_paxExt} aktualisiert. ✨`,
+        fr: `*Nombre de personnes* mis à jour de ${_oldPax} → ${_paxExt}. ✨`,
+        es: `*Número de personas* actualizado de ${_oldPax} → ${_paxExt}. ✨`,
+        ru: `*Количество человек* обновлено с ${_oldPax} → ${_paxExt}. ✨`,
+        ar: `تم تحديث *عدد الأشخاص* من ${_oldPax} إلى ${_paxExt}. ✨`,
+      };
+      const _prefix = _prefixMsgs[_langA2] || _prefixMsgs.tr;
+
+      let _replyBody: string;
+      if (_allFilled) {
+        // Mevcut PHONE→CONFIRMING özet formatı kopyası (yeni template DEĞİL — tutarlılık)
+        const _labelsA2: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; confirm: string }> = {
+          tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
+          en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
+          de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",   name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
+          ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
+          ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",         child: "طفل",    name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
+          fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant", name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
+          es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",   name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
+        };
+        const L = _labelsA2[_langA2] || _labelsA2.tr;
+        const _tourTitle = context.currentTour
+          ? getLocalizedTourTitle(context.currentTour.title || "", _langA2)
+          : "";
+        const _dateText = _newInfo.selectedDate ? formatDateForLanguage(_newInfo.selectedDate, _langA2) : "";
+        const _paxText = typeof _newInfo.paxChild === "number" && _newInfo.paxChild > 0
+          ? `${_paxExt} ${L.adult}, ${_newInfo.paxChild} ${L.child}`
+          : `${_paxExt}`;
+        const _summary = [
+          _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
+          _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+          _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
+          _newInfo.fullName ? `👤 ${L.name}: ${_newInfo.fullName}` : "",
+          _newInfo.phone    ? `📱 ${L.phone}: ${_newInfo.phone}`   : "",
+        ].filter(Boolean).join("\n");
+        _replyBody = `${_summary}\n\n${L.confirm}`;
+      } else {
+        // Eksik alan sorusu (7 dil × 3 olası step)
+        const _stepQuestions: Record<string, Record<string, string>> = {
+          waiting_for_phone: {
+            tr: "Telefon numaranızı alabilir miyim? 📱",
+            en: "Could I have your phone number? 📱",
+            de: "Könnte ich Ihre Telefonnummer haben? 📱",
+            fr: "Puis-je avoir votre numéro de téléphone ? 📱",
+            es: "¿Puedo tener su número de teléfono? 📱",
+            ru: "Могу я узнать ваш номер телефона? 📱",
+            ar: "هل يمكنني الحصول على رقم هاتفك؟ 📱",
+          },
+          waiting_for_name: {
+            tr: "Ad-Soyadınızı söyler misiniz? 👤",
+            en: "Could you tell me your full name? 👤",
+            de: "Können Sie mir Ihren vollständigen Namen sagen? 👤",
+            fr: "Pouvez-vous me dire votre nom complet ? 👤",
+            es: "¿Puede decirme su nombre completo? 👤",
+            ru: "Назовите ваше полное имя? 👤",
+            ar: "هل يمكنك إخباري باسمك الكامل؟ 👤",
+          },
+          waiting_for_date: {
+            tr: "Hangi tarihi tercih edersiniz? 📅",
+            en: "Which date do you prefer? 📅",
+            de: "Welches Datum bevorzugen Sie? 📅",
+            fr: "Quelle date préférez-vous ? 📅",
+            es: "¿Qué fecha prefiere? 📅",
+            ru: "Какую дату вы предпочитаете? 📅",
+            ar: "أي تاريخ تفضل؟ 📅",
+          },
+        };
+        const _qSet = _stepQuestions[_nextStep] || _stepQuestions.waiting_for_phone;
+        _replyBody = _qSet[_langA2] || _qSet.tr;
+      }
+
+      const _replyA2 = `${_prefix}\n\n${_replyBody}`;
+      const _newCtx: any = { ...context, reservationInfo: _newInfo, stage: _nextStage, collectionStep: _nextStep };
+
+      console.log(`[A] paxAdult açık değişiklik uygulandı: ${_oldPax}→${_paxExt}, stage=${_nextStage}, step=${_nextStep}`);
+
+      await _save(_replyA2, _newCtx);
+      await adapter.sendResponse(_replyA2);
+      return { success: true, response: _replyA2, newContext: _newCtx };
+    }
+
+    // === A3 — date/name/phone AÇIK DAL + BELİRSİZ DAL (CONFIRMING, 4 alan) ===
+    // 2026-06-27: A2-pax dışında kalan 3 alan için AÇIK dal + tüm alanlar için BELİRSİZ.
+    // Sıra: date AÇIK → name AÇIK → phone AÇIK → BELİRSİZ (sadece CONFIRMING).
+    // Çoklu-alan: tek-alan öncelikli (Karar A) — ilk eşleşen alan RETURN, diğeri sonraki tur.
+    // phone AÇIK: yeni değer isValidPhone'dan GEÇMELİ (geçersizse değiştirme, soru sor).
+
+    const _langA3 = context.language || "tr";
+
+    // 7 dil özet labelleri (A2 ile aynı format, inline kopya — A4'te helper refactor)
+    const _labelsA3: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; confirm: string }> = {
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",   name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",         child: "طفل",    name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant", name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",   name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
+    };
+
+    const _stepQuestionsA3: Record<string, Record<string, string>> = {
+      waiting_for_phone: {
+        tr: "Telefon numaranızı alabilir miyim? 📱",
+        en: "Could I have your phone number? 📱",
+        de: "Könnte ich Ihre Telefonnummer haben? 📱",
+        fr: "Puis-je avoir votre numéro de téléphone ? 📱",
+        es: "¿Puedo tener su número de teléfono? 📱",
+        ru: "Могу я узнать ваш номер телефона? 📱",
+        ar: "هل يمكنني الحصول على رقم هاتفك؟ 📱",
+      },
+      waiting_for_name: {
+        tr: "Ad-Soyadınızı söyler misiniz? 👤",
+        en: "Could you tell me your full name? 👤",
+        de: "Können Sie mir Ihren vollständigen Namen sagen? 👤",
+        fr: "Pouvez-vous me dire votre nom complet ? 👤",
+        es: "¿Puede decirme su nombre completo? 👤",
+        ru: "Назовите ваше полное имя? 👤",
+        ar: "هل يمكنك إخباري باسمك الكامل؟ 👤",
+      },
+      waiting_for_date: {
+        tr: "Hangi tarihi tercih edersiniz? 📅",
+        en: "Which date do you prefer? 📅",
+        de: "Welches Datum bevorzugen Sie? 📅",
+        fr: "Quelle date préférez-vous ? 📅",
+        es: "¿Qué fecha prefiere? 📅",
+        ru: "Какую дату вы предпочитаете? 📅",
+        ar: "أي تاريخ تفضل؟ 📅",
+      },
+    };
+
+    // Helper: değişikliği uygula → step + body inşa et + reply döndür
+    const _buildA3Reply = (prefix: string, newInfo: any): { reply: string; newCtx: any; nextStage: string; nextStep: string } => {
+      const _hasDate = !!newInfo.dateId;
+      const _hasName = !!newInfo.fullName;
+      const _hasPhone = !!newInfo.phone;
+      const _hasPax = !!newInfo.paxAdult;
+      const _allFilled = _hasDate && _hasPax && _hasName && _hasPhone;
+
+      const _nextStage = _allFilled ? "CONFIRMING" : "COLLECTING_INFO";
+      const _nextStep = _allFilled
+        ? "ready_for_confirmation"
+        : !_hasDate ? "waiting_for_date"
+        : !_hasPax ? "waiting_for_pax"
+        : !_hasName ? "waiting_for_name"
+        : "waiting_for_phone";
+
+      let _body: string;
+      if (_allFilled) {
+        const L = _labelsA3[_langA3] || _labelsA3.tr;
+        const _tourTitle = context.currentTour
+          ? getLocalizedTourTitle(context.currentTour.title || "", _langA3)
+          : "";
+        const _dateText = newInfo.selectedDate ? formatDateForLanguage(newInfo.selectedDate, _langA3) : "";
+        const _paxText = typeof newInfo.paxChild === "number" && newInfo.paxChild > 0
+          ? `${newInfo.paxAdult} ${L.adult}, ${newInfo.paxChild} ${L.child}`
+          : `${newInfo.paxAdult}`;
+        const _summary = [
+          _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
+          _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+          _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
+          newInfo.fullName ? `👤 ${L.name}: ${newInfo.fullName}` : "",
+          newInfo.phone    ? `📱 ${L.phone}: ${newInfo.phone}`   : "",
+        ].filter(Boolean).join("\n");
+        _body = `${_summary}\n\n${L.confirm}`;
+      } else {
+        const _qSet = _stepQuestionsA3[_nextStep] || _stepQuestionsA3.waiting_for_phone;
+        _body = _qSet[_langA3] || _qSet.tr;
+      }
+
+      const _reply = `${prefix}\n\n${_body}`;
+      const _newCtx: any = { ...context, reservationInfo: newInfo, stage: _nextStage, collectionStep: _nextStep };
+      return { reply: _reply, newCtx: _newCtx, nextStage: _nextStage, nextStep: _nextStep };
+    };
+
+    // --- date AÇIK ---
+    const _dateFilled = !!_info.dateId;
+    const _dateExt = _ext.dateId;
+    const _dateDifferent = _dateExt !== undefined && _dateExt !== null && _dateExt !== "" && _dateExt !== _info.dateId;
+    if (_dateFilled && _hasChangeKeyword && _dateDifferent) {
+      const _newInfo: any = { ..._info, dateId: _dateExt };
+      if (_ext.selectedDate) _newInfo.selectedDate = _ext.selectedDate;
+
+      const _oldDateText = _info.selectedDate ? formatDateForLanguage(_info.selectedDate, _langA3) : String(_info.dateId);
+      const _newDateText = _ext.selectedDate ? formatDateForLanguage(_ext.selectedDate, _langA3) : String(_dateExt);
+
+      const _prefixMsgs: Record<string, string> = {
+        tr: `*Tarihi* ${_oldDateText} → ${_newDateText} olarak güncelledim. ✨`,
+        en: `*Date* updated from ${_oldDateText} → ${_newDateText}. ✨`,
+        de: `*Datum* von ${_oldDateText} → ${_newDateText} aktualisiert. ✨`,
+        fr: `*Date* mise à jour de ${_oldDateText} → ${_newDateText}. ✨`,
+        es: `*Fecha* actualizada de ${_oldDateText} → ${_newDateText}. ✨`,
+        ru: `*Дата* обновлена с ${_oldDateText} → ${_newDateText}. ✨`,
+        ar: `تم تحديث *التاريخ* من ${_oldDateText} إلى ${_newDateText}. ✨`,
+      };
+      const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
+      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      console.log(`[A] dateId açık değişiklik uygulandı: ${_info.dateId}→${_dateExt}, stage=${nextStage}, step=${nextStep}`);
+      await _save(reply, newCtx);
+      await adapter.sendResponse(reply);
+      return { success: true, response: reply, newContext: newCtx };
+    }
+
+    // --- name AÇIK ---
+    const _normalizeName = (s: unknown): string =>
+      typeof s === "string" ? s.trim().toLowerCase().replace(/\s+/g, " ") : "";
+    const _nameFilled = !!_info.fullName;
+    const _nameExt = _ext.fullName;
+    const _nameDifferent =
+      typeof _nameExt === "string" &&
+      _nameExt.trim() !== "" &&
+      _normalizeName(_nameExt) !== _normalizeName(_info.fullName);
+    if (_nameFilled && _hasChangeKeyword && _nameDifferent) {
+      const _newInfo: any = { ..._info, fullName: _nameExt };
+      const _oldName = _info.fullName || "";
+
+      const _prefixMsgs: Record<string, string> = {
+        tr: `*Ad-Soyadı* ${_oldName} → ${_nameExt} olarak güncelledim. ✨`,
+        en: `*Name* updated from ${_oldName} → ${_nameExt}. ✨`,
+        de: `*Name* von ${_oldName} → ${_nameExt} aktualisiert. ✨`,
+        fr: `*Nom* mis à jour de ${_oldName} → ${_nameExt}. ✨`,
+        es: `*Nombre* actualizado de ${_oldName} → ${_nameExt}. ✨`,
+        ru: `*Имя* обновлено с ${_oldName} → ${_nameExt}. ✨`,
+        ar: `تم تحديث *الاسم* من ${_oldName} إلى ${_nameExt}. ✨`,
+      };
+      const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
+      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      console.log(`[A] fullName açık değişiklik uygulandı: ${_oldName}→${_nameExt}, stage=${nextStage}, step=${nextStep}`);
+      await _save(reply, newCtx);
+      await adapter.sendResponse(reply);
+      return { success: true, response: reply, newContext: newCtx };
+    }
+
+    // --- phone AÇIK (yeni değer isValidPhone'dan GEÇMELİ) ---
+    const _normalizePhoneDigits = (s: unknown): string =>
+      typeof s === "string" ? s.replace(/[\s\-\(\)\.\+]/g, "") : "";
+    const _phoneFilled = !!_info.phone;
+    const _phoneExt = _ext.phone;
+    const _phoneDifferent =
+      typeof _phoneExt === "string" &&
+      _phoneExt.trim() !== "" &&
+      _normalizePhoneDigits(_phoneExt) !== _normalizePhoneDigits(_info.phone);
+
+    // --- A4-mini: phone REDDET (niyet var, geçerli değer extract edilemedi) ---
+    // 2026-06-27: kullanıcı "aslında telefonum abc def olsun" derse, info-extractor
+    // normalizePhone null döner → extractedInfo.phone undefined → A3 phone AÇIK dalı
+    // hiç girmez (LLM'e düşer, garip cevaplar). Hedef: değişiklik niyetini yakala,
+    // nazik "tam telefon" mesajı dön. State KORUNUR.
+    // Yanlış-pozitif daraltma: detectConfirmation ile "aslında telefonum doğru"
+    // gibi onay ifadelerini eler (REDDET girmez, onay akışı devam eder).
+    const _phoneMentionRe = /(?<![\p{L}\p{N}])(telefon|telefonu|telefonum|telefonumu|telefonunu|numara|numaramı|numaranız|numaranızı|cep|gsm|phone|telephone|number|mobile|téléphone|teléfono|телефон|номер|هاتف|رقم)/iu;
+    const _phoneExtMissing = _phoneExt === undefined || _phoneExt === null || (typeof _phoneExt === "string" && _phoneExt.trim() === "");
+    const _phoneMention = _phoneMentionRe.test(message);
+    const _notConfirmation = !detectConfirmation(message, _langA3);
+    if (_phoneFilled && _hasChangeKeyword && _phoneMention && _phoneExtMissing && _notConfirmation) {
+      const _missingMsgs: Record<string, string> = {
+        tr: `Telefon numaranızı tam olarak alabilir miyim? 📱\n\n(örn: 0532 123 45 67 veya +90 532 123 45 67)`,
+        en: `Could I get your full phone number? 📱\n\n(e.g. +90 532 123 45 67)`,
+        de: `Könnte ich Ihre vollständige Telefonnummer haben? 📱\n\n(z.B. +90 532 123 45 67)`,
+        fr: `Pouvez-vous me donner votre numéro de téléphone complet ? 📱\n\n(ex: +90 532 123 45 67)`,
+        es: `¿Puede darme su número de teléfono completo? 📱\n\n(ej: +90 532 123 45 67)`,
+        ru: `Могу я получить ваш полный номер телефона? 📱\n\n(напр. +90 532 123 45 67)`,
+        ar: `هل يمكنني الحصول على رقم هاتفك بالكامل؟ 📱\n\n(مثال: +90 532 123 45 67)`,
+      };
+      const _missReply = _missingMsgs[_langA3] || _missingMsgs.tr;
+      console.log(`[A] phone değişiklik REDDEDİLDİ (niyet var, geçerli değer yok): ${message.slice(0, 60)}`);
+      await _save(_missReply, context);
+      await adapter.sendResponse(_missReply);
+      return { success: true, response: _missReply, newContext: context };
+    }
+
+    if (_phoneFilled && _hasChangeKeyword && _phoneDifferent) {
+      // Dikkat #2: yeni telefon geçerli mi? Geçersizse değiştirme, soru sor.
+      if (!isValidPhone(String(_phoneExt))) {
+        const _invalidMsgs: Record<string, string> = {
+          tr: `"${_phoneExt}" geçerli bir telefon numarası değil. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,
+          en: `"${_phoneExt}" is not a valid phone number. 📱\n\nPlease enter your full number (e.g. +90 532 123 45 67)`,
+          de: `"${_phoneExt}" ist keine gültige Telefonnummer. 📱\n\nBitte vollständige Nummer eingeben (z.B. +90 532 123 45 67)`,
+          ru: `"${_phoneExt}" — неверный номер телефона. 📱\n\nВведите полный номер (напр. +90 532 123 45 67)`,
+          ar: `"${_phoneExt}" ليس رقم هاتف صحيح. 📱\n\nيرجى إدخال رقمك الكامل (مثال: +90 532 123 45 67)`,
+          fr: `"${_phoneExt}" n'est pas un numéro valide. 📱\n\nVeuillez entrer votre numéro complet (ex: +90 532 123 45 67)`,
+          es: `"${_phoneExt}" no es un número válido. 📱\n\nIngrese su número completo (ej: +90 532 123 45 67)`,
+        };
+        const _invReply = _invalidMsgs[_langA3] || _invalidMsgs.tr;
+        console.log(`[A] phone değişiklik REDDEDİLDİ (isValidPhone=false): ${_phoneExt}`);
+        await _save(_invReply, context);
+        await adapter.sendResponse(_invReply);
+        return { success: true, response: _invReply, newContext: context };
+      }
+
+      const _newInfo: any = { ..._info, phone: _phoneExt };
+      const _oldPhone = _info.phone || "";
+
+      const _prefixMsgs: Record<string, string> = {
+        tr: `*Telefonu* ${_oldPhone} → ${_phoneExt} olarak güncelledim. ✨`,
+        en: `*Phone* updated from ${_oldPhone} → ${_phoneExt}. ✨`,
+        de: `*Telefon* von ${_oldPhone} → ${_phoneExt} aktualisiert. ✨`,
+        fr: `*Téléphone* mis à jour de ${_oldPhone} → ${_phoneExt}. ✨`,
+        es: `*Teléfono* actualizado de ${_oldPhone} → ${_phoneExt}. ✨`,
+        ru: `*Телефон* обновлён с ${_oldPhone} → ${_phoneExt}. ✨`,
+        ar: `تم تحديث *الهاتف* من ${_oldPhone} إلى ${_phoneExt}. ✨`,
+      };
+      const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
+      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      console.log(`[A] phone açık değişiklik uygulandı: ${_oldPhone}→${_phoneExt}, stage=${nextStage}, step=${nextStep}`);
+      await _save(reply, newCtx);
+      await adapter.sendResponse(reply);
+      return { success: true, response: reply, newContext: newCtx };
+    }
+
+    // --- PROMOSYON: phone kuru geçerli telefon → A3 phone AÇIK davranışı (kelime ŞART DEĞİL) ---
+    // 2026-06-27: CONFIRMING'de geçerli kuru "05559876543" → BELİRSİZ'e düşmek temkinli ve UX
+    // bozuyor. Telefon kazara yazılamaz (10-15 hane digit dizisi); geçerli + farklı + onay-değil
+    // → kasıtlı değişiklik. Direkt güncelle, BELİRSİZ teyit sorma.
+    // Sıra (KRİTİK):
+    //   A3 phone AÇIK (kelime + değer) → A4-mini REDDET (kelime + değer yok) → PROMOSYON → BELİRSİZ
+    // _notConfirmation: "evet onaylıyorum" gibi net onayda PROMOSYON girmesin (onay akışı aksın).
+    if (
+      _phoneFilled &&
+      context.stage === "CONFIRMING" &&
+      _phoneDifferent &&
+      typeof _phoneExt === "string" &&
+      isValidPhone(_phoneExt) &&
+      _notConfirmation
+    ) {
+      const _newInfo: any = { ..._info, phone: _phoneExt };
+      const _oldPhone = _info.phone || "";
+
+      const _prefixMsgs: Record<string, string> = {
+        tr: `*Telefonu* ${_oldPhone} → ${_phoneExt} olarak güncelledim. ✨`,
+        en: `*Phone* updated from ${_oldPhone} → ${_phoneExt}. ✨`,
+        de: `*Telefon* von ${_oldPhone} → ${_phoneExt} aktualisiert. ✨`,
+        fr: `*Téléphone* mis à jour de ${_oldPhone} → ${_phoneExt}. ✨`,
+        es: `*Teléfono* actualizado de ${_oldPhone} → ${_phoneExt}. ✨`,
+        ru: `*Телефон* обновлён с ${_oldPhone} → ${_phoneExt}. ✨`,
+        ar: `تم تحديث *الهاتف* من ${_oldPhone} إلى ${_phoneExt}. ✨`,
+      };
+      const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
+      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      console.log(`[A] phone PROMOSYON (kuru geçerli telefon, kelime yok) uygulandı: ${_oldPhone}→${_phoneExt}, stage=${nextStage}, step=${nextStep}`);
+      await _save(reply, newCtx);
+      await adapter.sendResponse(reply);
+      return { success: true, response: reply, newContext: newCtx };
+    }
+
+    // --- BELİRSİZ DAL (sadece CONFIRMING, 4 alanın HERHANGİ biri için) ---
+    // Koşul: HERHANGİ alan dolu + farklı + kelime YOK + stage=CONFIRMING
+    // Davranış: değer UYGULAMA, değer TAHMİN ETME. Tek-net teyit sorusu.
+    if (context.stage === "CONFIRMING" && !_hasChangeKeyword) {
+      const _belirsizField =
+        (_paxFilled && _paxDifferent) ? "pax"
+        : (_dateFilled && _dateDifferent) ? "date"
+        : (_nameFilled && _nameDifferent) ? "name"
+        : (_phoneFilled && _phoneDifferent) ? "phone"
+        : null;
+
+      if (_belirsizField) {
+        const _belirsizMsgs: Record<string, string> = {
+          tr: "Tam anlayamadım — rezervasyonunuzu onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey mi var? 🤔",
+          en: "I didn't quite understand — would you like to confirm your reservation, or is there something you'd like to change? 🤔",
+          de: "Ich habe das nicht ganz verstanden — möchten Sie Ihre Reservierung bestätigen oder etwas ändern? 🤔",
+          fr: "Je n'ai pas bien compris — souhaitez-vous confirmer votre réservation ou y a-t-il quelque chose à modifier ? 🤔",
+          es: "No entendí bien — ¿desea confirmar su reserva o hay algo que quiera cambiar? 🤔",
+          ru: "Я не совсем понял — хотите подтвердить бронирование или что-то изменить? 🤔",
+          ar: "لم أفهم تماماً — هل تريد تأكيد حجزك أم هناك شيء تريد تغييره؟ 🤔",
+        };
+        const _belReply = _belirsizMsgs[_langA3] || _belirsizMsgs.tr;
+        console.log(`[A] BELİRSİZ teyit soruldu: field=${_belirsizField}, stage=CONFIRMING`);
+        await _save(_belReply, context);
+        await adapter.sendResponse(_belReply);
+        return { success: true, response: _belReply, newContext: context };
+      }
+    }
+
+    // A2/A3: hiçbir dal tetiklenmedi → RETURN yok, mevcut akışa devam.
+  }
+
   // === 9. FSM GEÇİŞİ ===
   const fsmInput: ProcessingInput = {
     userMessage: message,
