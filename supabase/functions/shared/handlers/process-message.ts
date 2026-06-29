@@ -1822,7 +1822,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     newContext.collectionStep === "waiting_for_phone" &&
     context.collectionStep === "waiting_for_phone" &&
     !extractedInfo.phone &&
-    !isValidPhone(message.trim())
+    !isValidPhone(message.trim()) &&
+    // 2026-06-29 D1 FIX: FAQ intent muafiyeti (canlı bug: waiting_for_phone'da
+    // "iptal şartları?" → telefon çıkmaz + isValidPhone FALSE → R6 tetiklenir →
+    // kullanıcı FAQ cevabı yerine "geçerli telefon değil" görüyordu. İsim/pax
+    // adımlarında böyle guard yok, sadece telefon korumalı). FAQ → R6 skip,
+    // LLM cevap üretir, KÖK 6 (L3393+) waiting_for_phone suffix'i alta ekler
+    // (FAQ commit ebf0f17 doğal tamamlayıcısı). Geçersiz telefon ("abc def" =
+    // intent general, FAQ DEĞİL) HÂLÂ guard'a takılır, asıl işi korunur.
+    //
+    // TODO (genişletme turu): bu FAQ intent listesi 3 yerde tekrar ediyor
+    //   - burada (R6)
+    //   - _isInfoQuestionFsmIntent (L1978)
+    //   - _isInfoQuestionForFlowReturn (L3393)
+    // Helper'a çıkarma ve SENKRON intent listesi tutma — post-launch refactor.
+    fsmIntent !== "general_question" &&
+    fsmIntent !== "support_request"
   ) {
     const _phInvalidMsgs: Record<string, string> = {
       tr: `"${message.trim()}" geçerli bir telefon numarası değil. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,
