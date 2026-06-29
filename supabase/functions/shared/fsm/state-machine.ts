@@ -239,14 +239,21 @@ export function detectConfirmation(message: string, language: string): boolean {
   };
 
   // Positive patterns
+  // 2026-06-28 K1 FIX (canlı bug: "kapadokya çok güzel yermiş" → "çok" içinden
+  // "ok" alt-string match → yanlış-pozitif onay → COMPLETED + create_reservation RPC).
+  // KÖK: JS \b ASCII word-char tabanlı. Türkçe "ç/ğ/ı/ş/ö/ü" non-ASCII → \b
+  // bu karakterlerden sonra "ok" başına sınır TANIR → "çok"taki "ok" match olur.
+  // Yan #8 fix (2026-06-21) negative pattern'e \p{L}\p{N} lookaround uygulamış
+  // AMA positive pattern'de UNUTULMUŞ. Bu fix tamamlama: 7 dil pattern boundary'si
+  // ASCII \b yerine Unicode-aware lookaround. /iu flag (u Unicode property için ŞART).
   const positivePatterns: Record<string, RegExp> = {
-    tr: /\b(evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla|tasdik|kesinlikle|tamamdır|onaylıorum|peki|tabii)\b/i,
-    en: /\b(yes|confirm|approve|ok|okay|sure|right|correct|definitely|agreed|deal|absolutely)\b/i,
-    de: /\b(ja|best[äa]tigen|ok|richtig|genau|stimmt|einverstanden|natürlich)\b/i,
-    fr: /\b(oui|confirme|d'accord|ok|exact|parfait|absolument)\b/i,
-    es: /\b(si|s[íi]|confirmo|vale|ok|correcto|claro|exacto)\b/i,
-    ru: /\b(да|подтверждаю|ок|верно|правильно|согласен|конечно)\b/i,
-    ar: /\b(نعم|أكد|موافق|تمام|صحيح|بالتأكيد)\b/i,
+    tr: /(?<![\p{L}\p{N}])(evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla(?:d[ıi]m|d[ıi]k)?|tasdik|kesinlikle|kesinleştir(?:d[ıi]m|d[ıi]k)?|tamamdır|onaylıorum|peki|tabii)(?![\p{L}\p{N}])/iu,
+    en: /(?<![\p{L}\p{N}])(yes|confirm|approve|ok|okay|sure|right|correct|definitely|agreed|deal|absolutely)(?![\p{L}\p{N}])/iu,
+    de: /(?<![\p{L}\p{N}])(ja|best[äa]tigen|ok|richtig|genau|stimmt|einverstanden|natürlich)(?![\p{L}\p{N}])/iu,
+    fr: /(?<![\p{L}\p{N}])(oui|confirme|d'accord|ok|exact|parfait|absolument)(?![\p{L}\p{N}])/iu,
+    es: /(?<![\p{L}\p{N}])(si|s[íi]|confirmo|vale|ok|correcto|claro|exacto)(?![\p{L}\p{N}])/iu,
+    ru: /(?<![\p{L}\p{N}])(да|подтверждаю|ок|верно|правильно|согласен|конечно)(?![\p{L}\p{N}])/iu,
+    ar: /(?<![\p{L}\p{N}])(نعم|أكد|موافق|تمام|صحيح|بالتأكيد)(?![\p{L}\p{N}])/iu,
   };
 
   const langKey = language as keyof typeof positivePatterns;
@@ -706,7 +713,17 @@ const transitions: StateTransition[] = [
     condition: (ctx, input) => {
       // 1. Deterministik onay tespiti — NLU'ya bakmadan ÖNCE kontrol et.
       //    Kullanıcı açıkça onay verdiyse NLU intent'ten bağımsız geç.
-      if (detectConfirmation(input.userMessage, ctx.language)) return true;
+      //    2026-06-28 K1 EK GUARD (belt-and-suspenders): detectConfirmation pattern
+      //    fix sonrası "ok" yanlış-pozitifi kapatıldı, AMA başka edge regex sapması
+      //    olabilir. NLU intent="general" (chitchat) iken detectConfirmation TRUE
+      //    olursa COMPLETED'a GEÇME — kullanıcı chitchat yapıyor, onaylamıyor.
+      //    NLU prompt kuralı (nlu.ts:165, L191): gerçek onaylar CONFIRMING'de
+      //    "confirm_reservation" döner. "general" sadece chitchat. Yanlış-negatif
+      //    riski yok.
+      if (detectConfirmation(input.userMessage, ctx.language)) {
+        if (input.detectedIntent === "general") return false;
+        return true;
+      }
       // 2. Bilgi sorusu gelirse kesinlikle CONFIRMING'de kal.
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
       // 3. NLU "confirm_reservation" — Tulay case bug (2026-06-19): NLU "tulay tabi"
@@ -717,10 +734,18 @@ const transitions: StateTransition[] = [
       const msg = input.userMessage.trim();
       if (msg.length > 20) return false;                // uzun mesaj → şüpheli
       if (/\d/.test(msg)) return false;                  // rakam → telefon/sayı, onay değil
-      // Net positive pattern — detectConfirmation kapsamından daha geniş ama yine sıkı.
-      // Burada "tabi" gibi 4-harfli kısaltma DAHİL EDİLMEZ (NLU yanılma kaynağıydı).
+      // 2026-06-28 K1 EKSİK YOL fix (canlı bug: "çok teşekkürler" → intent=confirm_reservation
+      // (Haiku yanlış sınıflandırma) + clearPositive "çok"→"ok" ASCII \b match → COMPLETED
+      // + RPC. Path 3 detectConfirmation'dan AYRI clearPositive pattern kullanıyordu.
+      //
+      // KATMAN B (çift-doğrulama): NLU confirm_reservation dese BİLE detectConfirmation
+      // pattern doğrulaması ŞART. Haiku sınıflandırma sapmasına karşı sigorta.
+      if (!detectConfirmation(input.userMessage, ctx.language)) return false;
+      // KATMAN A (boundary fix): Net positive pattern — \b → \p{L}\p{N} lookaround
+      // (Yan #8 fix tamamlama, detectConfirmation ile aynı kanıtlanmış desen).
+      // ASCII \b Türkçe non-ASCII öncüllü kelimelerde ("çok"→"ok") yanlış-pozitif yaratıyordu.
       const clearPositive =
-        /\b(evet|tamam|onayl[ıi]yorum|onaylıyorum|onayla|onayladım|tasdik|kabul|do[ğg]ru|olur|peki|tabii|yes|confirm|approve|okay|ok|sure|right|correct|agreed|ja|oui|si|s[íi]|да|подтверждаю|نعم|أكد|d'accord)\b/i;
+        /(?<![\p{L}\p{N}])(evet|tamam|onayl[ıi]yorum|onaylıyorum|onayla(?:d[ıi]m|d[ıi]k)?|tasdik|kabul|do[ğg]ru|olur|peki|tabii|kesinlikle|kesinleştir(?:d[ıi]m|d[ıi]k)?|yes|confirm|approve|okay|ok|sure|right|correct|agreed|ja|oui|si|s[íi]|да|подтверждаю|نعم|أكد|d'accord)(?![\p{L}\p{N}])/iu;
       return clearPositive.test(msg);
     },
     action: (ctx) => ({
