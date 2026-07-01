@@ -956,7 +956,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   // === 8. BİLGİ ÇIKARMA ===
-  const extractedInfo = extractAllInfo({ message, nluResult, fsmIntent, context, tours, tourJustChanged: _tourJustChangedThisTurn });
+  // 2026-06-29 O1 fix: selectedTour (bu turn'de tour-matching çıktısı) parametre olarak
+  // geçirilir → birleşik mesajda (tur+tarih aynı turn) Blok 9 dateId resolution
+  // context.currentTour henüz null olsa bile selectedTour'u fallback kullanır.
+  const extractedInfo = extractAllInfo({ message, nluResult, fsmIntent, context, tours, tourJustChanged: _tourJustChangedThisTurn, selectedTour });
 
   // === 8a. F4 KATMAN 2 — ÇELİŞKİ TESPİTİ + İKİ DALLI SON-ONAY ===
   // 2026-06-25 (Katman 1 = 619417f detectConfirmation negative pattern kelime listesi
@@ -2015,7 +2018,26 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       _isNewReservationIntent
     );
 
-  if (_isUserAskingDates) {
+  // 2026-07-01 PROBLEM 1 fix: (d) takılma güvenlik ağı _isUserAskingDates ÜST guard'ından
+  // ÇIKARILDI (canlı kanıt de045d24: NLU faq_general → FSM general_question →
+  // _isInfoQuestionFsmIntent TRUE → üst guard FALSE → (d) hiç ulaşılamıyordu, TAM DA
+  // en çok gereken senaryoda devre dışıydı). Ayrı koşul olarak yeniden ifade edildi:
+  // FAQ intent guard'ından BAĞIMSIZ — amacı zaten o intent'lerin takılma yarattığı
+  // durumu kapatmak.
+  // Yanlış-pozitif daraltma: mesajda sayı VAR koşulu. Gerçek FAQ ("iptal şartları?" —
+  // sayı yok) tetiklenmez → LLM FAQ cevap verir. Rezervasyon sinyali içeren mesaj
+  // ("pamukkale 3 kişi 20 aralık" — sayı var) tetiklenir → liste.
+  // NOT: PROBLEM 2 (state-machine tour_search informational bypass) çözüldükten sonra
+  // NLU doğru parse senaryosunda state COLLECTING_INFO'ya geçer, bu dal ULAŞILMAZ.
+  // Bu dal SADECE NLU'nun rezervasyon niyetini faq_general/general_question sandığı
+  // sigorta edge senaryoları için.
+  const _isStuckOnTourSelected =
+    newContext.stage === "TOUR_SELECTED" &&
+    !!newContext.currentTour &&
+    !extractedInfo.dateId &&
+    /\d/.test(message);
+
+  if (_isUserAskingDates || _isStuckOnTourSelected) {
     const tourForDates = findTourById(newContext.currentTour!.id, tours);
     const _displayTitleNoDates = getLocalizedTourTitle(
       tourForDates?.title || newContext.currentTour!.title || "",

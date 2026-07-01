@@ -262,6 +262,15 @@ export interface ExtractAllInfoParams {
    * Blok 10 yeniden atadı.
    */
   tourJustChanged?: boolean;
+  /**
+   * 2026-06-29 O1 fix: birleşik mesajda (tur+tarih aynı turn) tour-matching
+   * selectedTour'u yeni bulur AMA state-machine context.currentTour'a henüz
+   * yazmamıştır. Blok 9 (dateId resolution) context.currentTour'a bağımlıydı →
+   * dateId resolve edilmiyor → "müsait değil" yanlış mesajı.
+   * Fallback: bu turn'de matchlenen selectedTour, context.currentTour eksikse
+   * Blok 9'da aktif tur olarak kullanılır.
+   */
+  selectedTour?: any;
 }
 
 /**
@@ -430,8 +439,12 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
 
   // === Blok 9: String tarih eşleştirme (DD.MM.YYYY, YYYY-MM-DD, gün+ay) ===
   // 2026-06-22 Sorun H β fix: aynı kontenjan check.
-  if (extractedInfo.selectedDate && !extractedInfo.dateId && context.currentTour) {
-    const tour = findTourById(context.currentTour.id, tours);
+  // 2026-06-29 O1 fix: birleşik mesajda (tur+tarih aynı turn) context.currentTour
+  // henüz null olabilir; bu turn'de matchlenen selectedTour'u fallback kullan.
+  // Tek tarih senaryosunda context.currentTour zaten dolu → fallback devreye girmez.
+  const _activeTourIdForDate = context.currentTour?.id || params.selectedTour?.id;
+  if (extractedInfo.selectedDate && !extractedInfo.dateId && _activeTourIdForDate) {
+    const tour = findTourById(_activeTourIdForDate, tours);
     if (tour?.dates?.length > 0) {
       const matched = matchDateWithTourDates(extractedInfo.selectedDate, tour.dates);
       if (matched) {

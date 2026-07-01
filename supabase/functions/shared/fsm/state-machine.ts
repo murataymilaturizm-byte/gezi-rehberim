@@ -486,6 +486,45 @@ const transitions: StateTransition[] = [
   },
   // ─────────────────────────────────────────────────────────────────────────
 
+  // GREETING → COLLECTING_INFO (kök çözüm — 2026-07-01 ilk-turn takılması)
+  // Birleşik ilk mesaj ("pamukkale 3 kişi 20 aralık") tek turn'de:
+  //   selectedTour dolu + extractedInfo.dateId/pax dolu → doğrudan COLLECTING_INFO'ya geç.
+  // Aksi halde GREETING → TOUR_SELECTED tetiklenir, o action mergeReservationInfo
+  // ÇAĞIRMAZ (sadece tourId/tourTitle yazar) → dateId/pax veri kaybı + LLM
+  // TOUR_SELECTED prompt'unda "kontrol ediyorum" der → takılma.
+  // DARlık: extract yoksa VE reservation intent değilse tetiklenmez → saf "pamukkale"
+  //   mesajı hâlâ GREETING → TOUR_SELECTED yolunu izler (regresyon yok).
+  // Action: BROWSING → COLLECTING_INFO ile BİRE BİR simetrik (mergeReservationInfo +
+  //   determineCollectionStep). Kanıtlanmış deseni tekrar ediyor.
+  {
+    from: "GREETING",
+    to: "COLLECTING_INFO",
+    condition: (_ctx, input) => {
+      if (input.selectedTour === null) return false;
+      const hasExtractedDateOrPax =
+        !!(input.extractedInfo as any).dateId
+        || !!(input.extractedInfo as any).selectedDate
+        || !!(input.extractedInfo as any).paxAdult;
+      const isReservationAction =
+        input.detectedIntent === "reservation_intent" ||
+        input.detectedIntent === "tour_selected" ||
+        input.detectedIntent === "provide_info" ||
+        input.detectedIntent === "confirm";
+      return hasExtractedDateOrPax || isReservationAction;
+    },
+    action: (ctx, input) => {
+      const tour = input.selectedTour || ctx.currentTour;
+      const merged = mergeReservationInfo({ tourId: tour!.id, tourTitle: tour!.title }, input.extractedInfo, false, input.detectedIntent);
+      return {
+        ...ctx,
+        currentTour: tour,
+        viewedTours: input.selectedTour ? [...ctx.viewedTours, input.selectedTour.id] : ctx.viewedTours,
+        reservationInfo: merged,
+        collectionStep: determineCollectionStep(merged, ctx.collectEmail),
+      };
+    },
+  },
+
   // GREETING → TOUR_SELECTED
   {
     from: "GREETING",
@@ -580,7 +619,19 @@ const transitions: StateTransition[] = [
       const positivePattern = /^\s*(evet|tamam|olur|peki|tabii|yes|ok(?:ay)?|sure|ja|oui|s[íi]|да|نعم)\b/i;
       if (hasReservationSignal(input.userMessage)) return true;
       if (positivePattern.test(input.userMessage)) return true;
-      if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
+      // 2026-06-29 PROBLEM 2 fix: NLU tour_search/general'ı "informational" sayıp
+      // erken-return ile transition'ı kesiyor. AMA birleşik mesajda ("pamukkale 3 kişi
+      // 20 aralık" → NLU tour_search + dateId/pax çözüldü) gerçek rezervasyon başlatma
+      // niyeti var. Bypass: extractedInfo'da dateId/selectedDate/paxAdult VARSA
+      // informational guard'ı atla — değerlendirmeye devam et (aşağıdaki reservationIntents
+      // / hasExtractedInfo + pattern dalları transition'ı tetikleyebilir).
+      // Daraltma: SADECE extract var ise bypass. Saf bilgi sorusu ("pamukkale ne kadar?"
+      // — extract yok) HÂLÂ informational sayılır → mevcut davranış korunur.
+      const _hasExtractedDateOrPax =
+        !!(input.extractedInfo as any).dateId
+        || !!(input.extractedInfo as any).selectedDate
+        || !!(input.extractedInfo as any).paxAdult;
+      if (isInformationalMessage(input.userMessage, input.detectedIntent) && !_hasExtractedDateOrPax) return false;
       const reservationIntents = ["reservation_intent", "provide_info", "confirm", "tour_selected"];
       if (reservationIntents.includes(input.detectedIntent)) return true;
       const hasExtractedInfo = Object.keys(input.extractedInfo).length > 0;
