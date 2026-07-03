@@ -22,7 +22,8 @@ import {
 import { STEP_QUESTIONS } from "../constants/step-questions.ts";
 import { detectLanguage } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
-import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise } from "../fsm/response-validator.ts";
+import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise, detectFakeChangeAck } from "../fsm/response-validator.ts";
+import { formatReservationSummary } from "../fsm/prompts/helpers.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -3624,11 +3625,28 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // replace et: tur+tarih verisi varsa MİNİ TARİH LİSTESİ, yoksa adım sorusu,
   // o da yoksa acente yönlendirmesi. Vaat+veri birlikte → detectEmptyPromise
   // FALSE → DOKUNULMAZ (meşru cümleler kırılmaz).
-  if (!validation.wasModified && detectEmptyPromise(reply)) {
+  // 2026-07-03 V1-ack: SAHTE-DEĞİŞİKLİK-ACK da aynı geçitte (canlı Vaka 1:
+  // LLM "Tarihi 10.12 olarak güncelliyorum ✨" dedi, hiçbir şey güncellenmedi).
+  // Gerçek ack'ler deterministik dallardan RETURN'lü — LLM'e ulaşan her
+  // "güncelledim" tanım gereği sahtedir (detectFakeChangeAck gerekçesi).
+  const _fakeAckMatch = !validation.wasModified ? detectFakeChangeAck(reply) : null;
+  if (_fakeAckMatch) {
+    console.warn(`[validator] SAHTE-ACK yakalandı: '${_fakeAckMatch}' — gerçek state değişikliği yok (stage=${newContext.stage}, step=${newContext.collectionStep ?? "yok"})`);
+  }
+  if (!validation.wasModified && (detectEmptyPromise(reply) || _fakeAckMatch)) {
     const _bvLang = newContext.language || "tr";
     const _bvTour = currentTourFull || (newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null);
     let _bvReplacement = "";
-    if (_bvTour?.dates?.length) {
+    // V1-ack stage-aware öncelik: CONFIRMING'de sahte-ack → ÖZET+ONAY
+    // (tarih listesi değil — kullanıcı onay aşamasında, K1 Katman 3 tonu).
+    if (_fakeAckMatch && newContext.stage === "CONFIRMING" && _bvTour) {
+      const _sumr = formatReservationSummary(_bvTour, newContext.reservationInfo, _bvLang, newContext.tone as string);
+      const _confirmQ: Record<string, string> = {
+        tr: "\n\nBilgiler doğru mu? Onaylıyorsanız *evet* yazın ✅",
+        en: "\n\nAre these details correct? Reply *yes* to confirm ✅",
+      };
+      _bvReplacement = _sumr + (_confirmQ[_bvLang] || _confirmQ.en);
+    } else if (_bvTour?.dates?.length) {
       const _bvLines = _bvTour.dates
         .map((d: any, i: number) => {
           const _w = getWeekdayName(d.departure_date, _bvLang);

@@ -307,6 +307,40 @@ export function detectEmptyPromise(text: string): boolean {
   return EMPTY_PROMISE_RE.test(text) && !CONCRETE_DATA_RE.test(text);
 }
 
+/**
+ * 2026-07-03 V1-ack: SAHTE-DEĞİŞİKLİK-ACK tespiti (canlı Vaka 1 halka 3).
+ * CONFIRMING'de "tarihi 10 aralık olarak değiştirelim" → extract boş → T15
+ * tarihi sildi → LLM "Tamam! Tarihi 10.12 olarak GÜNCELLİYORUM ✨" dedi —
+ * GERÇEKTE HİÇBİR ŞEY GÜNCELLENMEDİ, kullanıcı yanlış tarihle onayladı.
+ *
+ * TESPİT KRİTERİNİN GEREKÇESİ (yapısal): GERÇEK değişiklik-ack'leri YALNIZ
+ * deterministik dallardan çıkar (A2/A3/:10d/PROMOSYON) ve hepsi kendi
+ * RETURN'ünü yapar — LLM'e HİÇ ulaşılmaz. Dolayısıyla LLM cevabında görülen
+ * her "güncelledim/değiştirdim" iddiası TANIM GEREĞİ SAHTEDİR — o turn'de
+ * gerçek state değişikliği olmuş olamaz. Alan/karşılaştırma kontrolüne
+ * gerek yok.
+ *
+ * İDDİA-FORMU TASARIM KARARI: DAR OLUMLU-ÇEKİM LİSTESİ (negatif-lookahead
+ * değil). Gerekçe: koşul/teklif çekimleri sonsuz çeşitli ("değiştirmek
+ * isterseniz", "güncelleyebilirim", "would you like to change") — hepsini
+ * dışlamak kırılgan; olumlu EYLEM İDDİASI çekimleri ise sayılabilir küçük
+ * küme (geçmiş + şimdiki-sürerlik + edilgen-tamamlanmış). K1 whitelist
+ * yaklaşımının aynısı. \p{L}\p{N} lookaround (K1/Yan #8 dersi).
+ *
+ * changeAck guard ÇAPRAZ NOT: validateFieldReask içindeki changeAck guard'ı
+ * (2026-06-27) "güncelledim" içeren cevapları field-reask temizliğinden muaf
+ * tutar — o guard DETERMİNİSTİK ack'ler process-message'a girmeden tasarlandı
+ * ve bu tespitle ÇELİŞMEZ: deterministik ack'ler zaten buraya ulaşmaz; buraya
+ * ulaşan "güncelledim" her zaman LLM sahtesidir ve REPLACE edilir.
+ */
+const FAKE_CHANGE_ACK_RE =
+  /(?<![\p{L}\p{N}])(güncelledim|güncelliyorum|güncellendi|güncelleniyor|değiştirdim|değiştiriyorum|değiştirildi|updated|updating|changed|changing|aktualisiert|geändert|mis\s+à\s+jour|modifié|actualizado|actualicé|cambiado|cambié|обновил(?:а|о)?|обновлен(?:а|о)?|изменил(?:а|о)?|изменен(?:а|о)?|تم\s+تحديث|تم\s+تغيير|حدّثت|غيّرت)(?![\p{L}\p{N}])/iu;
+export function detectFakeChangeAck(text: string): string | null {
+  if (!text) return null;
+  const m = text.match(FAKE_CHANGE_ACK_RE);
+  return m ? m[0] : null;
+}
+
 export function validateFieldReask(
   text: string,
   language: string,

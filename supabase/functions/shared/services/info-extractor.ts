@@ -515,7 +515,13 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
 
   // === Blok 8: Numeric tarih girişi ("1", "2", "3") ===
   // 2026-06-22 Sorun H β fix: kontenjan check, dolu ise dateRejectedFull flag set
-  if (!extractedInfo.dateId && context.currentTour && (expectedInput === "date" || expectedInput === "date_selection")) {
+  // 2026-07-03 V1-parseInt (Yan #1'in TARİH simetriği — canlı Vaka 1 halka 4):
+  // parseInt("1 kişi")=1 kuyruğu kırpıyordu → waiting_for_date'te "1 kişi"
+  // mesajı LİSTE 1. TARİHİ SEÇİMİ sanıldı → silinen tarih YANLIŞ değerle geri
+  // yazıldı → kullanıcı yanlış tarihle onayladı. Blok 6 pax'ta aynı fix
+  // 2026-06-19'da yapılmıştı; tarih tarafı atlanmıştı. Artık SADECE mesajın
+  // TAMAMI rakamsa liste seçimi sayılır ("1" ✓, "1 kişi" ✗).
+  if (!extractedInfo.dateId && context.currentTour && (expectedInput === "date" || expectedInput === "date_selection") && /^\d+$/.test(message.trim())) {
     const n = parseInt(message.trim());
     if (!isNaN(n) && n >= 1) {
       const tour = findTourById(context.currentTour.id, tours);

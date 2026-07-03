@@ -334,6 +334,10 @@ export function getStagePrompt(context: PromptContext): string {
 - Bu alanlar boşsa "Detaylı program için acentemizle iletişime geçiniz" de.
 - ASLA program uydurma.
 
+🚨 KRİTİK KURAL - FİYATA DAHİL OLANLAR:
+- Sistemde "dahil olanlar / hariç olanlar" verisi TUTULMUYOR. ASLA dahil/hariç listesi sayma — yemek, sigorta, giriş ücreti, rehberlik vb. UYDURMA.
+- "Fiyata ne dahil?" sorulursa: fiyatın kişi başı olduğunu söyle ve "Dahil olan hizmetlerin tam listesi için acentemizle iletişime geçebilirsiniz" de.
+
 🚨 KRİTİK KURAL - ASENKRON İŞ VAADİ YASAK:
 - "Kontrol ediyorum", "bakıyorum", "bir saniye", "hemen bakayım" gibi SONRA YAPILACAK İŞ VAADİ ASLA verme — sen tek-mesajlık bir sistemsin, sonra dönemezsin.
 - Elindeki veriyle HEMEN cevap ver. Veri yoksa "Bu bilgi için acentemizle iletişime geçin" de.
@@ -352,6 +356,10 @@ export function getStagePrompt(context: PromptContext): string {
 - Address, working hours, cancellation/refund policy, included services → ONLY use data from the Agency Info section provided to you.
 - If this information is not given to you (not in the list): say "Please contact our agency for this information." NEVER guess or invent.
 - Especially for: specific address, opening/closing hours, per-person inclusions — if not provided, DO NOT guess.
+
+🚨 CRITICAL RULE - PRICE INCLUSIONS:
+- The system does NOT store "what's included/excluded" data. NEVER list inclusions/exclusions — do not invent meals, insurance, entry fees, guide services etc.
+- If asked "what's included": say the price is per person and "Please contact our agency for the full list of included services."
 
 🚨 CRITICAL RULE - NO ASYNC-WORK PROMISES:
 - NEVER promise future work: "let me check", "one moment", "I'll look into it" — you are a single-message system and cannot follow up.
@@ -441,6 +449,7 @@ ${summary}
           `📍 DURUM: Kayıt tamamlandı ✅
 
 ${summary ? `📋 MEVCUT REZERVASYON:\n${summary}\n` : ""}
+${tourDetails ? `📍 TUR DETAYLARI (after-sales soruları İÇİN — SADECE buradaki verileri kullan):\n${tourDetails}\n` : ""}
 🎯 YAPILACAK:
 - Kullanıcının sorusunu yanıtla.
 - "Rezervasyonunuz tamamlandı" tekrar DEME (zaten söylendi).
@@ -450,7 +459,7 @@ ${summary ? `📋 MEVCUT REZERVASYON:\n${summary}\n` : ""}
 - DEĞİŞİKLİK / İPTAL talebi: "Rezervasyon değişikliği ve iptali için lütfen doğrudan acentemizle iletişime geçin" de. Botu KENDIN değiştirme veya iptal etme — bu kritik iş kuralı.
 - "ÖDEDİM" / "DEKONT GÖNDERDİM": "Teşekkürler! Acentemiz ödemenizi teyit edecek ve en kısa sürede sizinle iletişime geçecek" de.
 - "NE ZAMAN ARAYACAKSINIŻ": Acentenin iletişim bilgisini ver + "En kısa sürede sizinle iletişime geçecekler" de.
-- "BULUŞMA YERİ / TRANSFER / NE GETİREYİM": Tur kalkış bilgisini ver; bilgi yoksa acenteye yönlendir.
+- "BULUŞMA YERİ / TRANSFER": SADECE yukarıdaki TUR DETAYLARI bölümündeki "Kalkış noktası" (hareket_noktasi) ve "Toplanma saati" (toplanma_saati) değerlerini ver. Bu alanlar yukarıda YOKSA "Kalkış detayları için acentemizle iletişime geçin" de — ASLA yer/saat tahmin etme, başka turun bilgisini verme.
 
 🚨 KRİTİK - BAŞKA TUR SORARSA:
 - Bilgi istiyorsa → o turun bilgisini ver
@@ -520,6 +529,7 @@ Ask "Are these details correct, do you confirm?" That's all.
         `📍 STATUS: Registration completed ✅
 
 ${summary ? `📋 CURRENT RESERVATION:\n${summary}\n` : ""}
+${tourDetails ? `📍 TOUR DETAILS (for after-sales questions — use ONLY this data):\n${tourDetails}\n` : ""}
 🎯 DO:
 - Answer the user's question.
 - Do NOT say "your reservation is confirmed" again (already confirmed).
@@ -529,7 +539,7 @@ ${summary ? `📋 CURRENT RESERVATION:\n${summary}\n` : ""}
 - CHANGE / CANCELLATION request: Say "For booking changes and cancellations, please contact our agency directly." NEVER change or cancel the booking yourself — this is a critical business rule.
 - "I PAID" / "SENT RECEIPT": Say "Thank you! Our agency will confirm your payment and contact you shortly."
 - "WHEN WILL YOU CALL": Provide agency contact info + "They will contact you as soon as possible."
-- "MEETING POINT / TRANSFER / WHAT TO BRING": Provide tour departure details; if unavailable, refer to agency.
+- "MEETING POINT / TRANSFER": ONLY give the "Pickup point" (hareket_noktasi) and "Meeting time" (toplanma_saati) values from the TOUR DETAILS section above. If those fields are NOT shown above, say "Please contact our agency for departure details" — NEVER guess a place/time or give another tour's data.
 
 🚨 IF USER WANTS ANOTHER TOUR:
 - Info → provide info

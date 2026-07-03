@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (FAZ1 kapanış — ödeme-FAQ prompt bağlantısı #18, RESERVATION PROMOTE, boş-vaat guard'ı 17-BV; P4-P7, A-P1/A-P2, G14, G13, D2, X9-change ve ilk sürüm aynı gün).
+> Son güncelleme: 2026-07-03 (PAKET 1 / G15 — sahte-değişiklik-ack validator'ı + Blok8 tam-rakam + ay-adı ASCII + COMPLETED tourDetails + dahil-olanlar yasağı; FAZ1 kapanış, P4-P7 ve öncekiler aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -269,6 +269,16 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | R6 etkileşimi | visa_support → general_question → R6 muafiyetinde; :10c R6'dan SONRA — telefon adımında vize sorusu her iki katmandan doğru geçer |
 | Kaynak | 19 Haziran saat tutarsızlığı teşhisi (Bug 4'ün sınıf genellemesi): alanlar DB'de vardı (migration "for expanded chatbot functionality") ama prompt'a hiç bağlanmamıştı |
 
+### G15 — Sahte-değişiklik-ack validator'ı + Vaka-1 zinciri (PAKET 1, 2026-07-03)
+| | |
+|---|---|
+| Dosya | `response-validator.ts` detectFakeChangeAck + `process-message.ts` 17-BV genişletmesi |
+| Tespit kriteri (GEREKÇE) | **Gerçek değişiklik-ack'leri YALNIZ deterministik dallardan çıkar (A2/A3/:10d/PROMOSYON) ve hepsi RETURN'lü — LLM'e hiç ulaşılmaz. LLM cevabındaki her "güncelledim/updated" TANIM GEREĞİ SAHTEDİR** — alan/karşılaştırma kontrolü gerekmez |
+| İddia-formu | DAR OLUMLU-ÇEKİM listesi (7 dil, lookaround): güncelledim/güncelliyorum/updated/changing/aktualisiert/обновил/تم تحديث... — koşul/teklif formları ("değiştirmek isterseniz", "güncelleyebilirim", "would you like to change") LİSTEDE YOK → yakalanmaz. Negatif-lookahead yerine whitelist (K1 dersi: koşul çekimleri sonsuz, iddia çekimleri sayılabilir) |
+| Replacement | Stage-aware (17-BV geçidi): CONFIRMING→özet+onay (*evet yazın*); tur+tarih→mini liste; step→STEP_QUESTIONS; fallback yönlendirme |
+| changeAck ÇAPRAZ NOT | validateFieldReask'teki changeAck guard'ı (2026-06-27) "güncelledim"li cevapları field-reask'ten MUAF tutar — ÇELİŞMEZ: deterministik ack'ler validator'a ulaşmaz; ulaşan her "güncelledim" G15 replace eder |
+| **Vaka-1 dersi (4 halka)** | (1) "10 aralik" ASCII ay-adı parser kapsamı dışıydı → extract boş; (2) T15 pattern-fallback tarihi sildi (B-3 TASARIM — doğru); (3) LLM "güncelliyorum" sahte ack'i (bu guard'ın kökü); (4) "1 kişi" → parseInt kırpması Blok 8'de 1. tarihi seçti → silinen tarih YANLIŞ değerle geri geldi → yanlış kayıt. Fix'ler: V1-ASCII (ay regex+map süperset) + V1-ack + V1-parseInt (Blok 8 `/^\d+$/` — Yan #1'in tarih simetriği) |
+
 ### G12 — NLU katmanı (guard değil, etkileşim kaynağı)
 | Özellik | Kod gerçeği |
 |---|---|
@@ -454,3 +464,12 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     T4/T7/:11(c) intent-bazlı koşullar kaçırıyordu → LLM boş vaadi. Guard'lar:
     FAQ intent'leri + iptal/şart/iade kelimeleri + mid-flow kapsam DIŞI
     (B2/Özge korunur).
+21. **PAKET 1 ÇÖZÜLDÜ (2026-07-03)**: Vaka 1 (sahte güncelleme ack'i + yanlış
+    tarihle kayıt) → G15 4-halka zinciri; Vaka 2 (COMPLETED'da yanlış tur
+    verisi) → COMPLETED prompt'una ${tourDetails} + buluşma kuralı alan-bağımlı
+    yeniden yazıldı (G14 COMPLETED satırları ✅); Vaka 3 (dahil-olanlar
+    uydurması) → V3a hallucinationGuard yasağı (şemada alan YOK — liste sayma,
+    kişi başı fiyat + acenteye yönlendir).
+22. **V3b (panel backlog — G14 paketiyle birlikte)**: tours'a
+    included_services/excluded_services kolonları + panel formu; sonra V3a
+    yasağı veri-varsa-bas davranışına evrilir (FIX 1+2 deseni).

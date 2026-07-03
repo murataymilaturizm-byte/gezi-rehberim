@@ -315,9 +315,10 @@ export function extractNameAndPhone(
   }
 
   const monthNames: Record<string, number> = {
-    // TR
-    ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6,
-    temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12,
+    // TR (2026-07-03 V1-ASCII: ASCII varyantlar eklendi — regex yakalasa da
+    // map'te anahtar yoksa dönüşüm sessizce başarısız oluyordu)
+    ocak: 1, şubat: 2, subat: 2, mart: 3, nisan: 4, mayıs: 5, mayis: 5, haziran: 6,
+    temmuz: 7, ağustos: 8, agustos: 8, eylül: 9, eylul: 9, ekim: 10, kasım: 11, kasim: 11, aralık: 12, aralik: 12,
     // EN
     january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
     july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
@@ -394,8 +395,12 @@ export function extractNameAndPhone(
 
   // "22 aralık", "15 ocak", "15. März", "15 septembre" standart format (7 dil)
   if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
+    // 2026-07-03 V1-ASCII (canlı Vaka 1 halka 1): TR ay adlarının ASCII
+    // varyantları (aralik/subat/mayis/agustos/eylul/kasim) LİSTEDE YOKTU —
+    // mobil klavyede "10 aralik" yazan kullanıcının tarihi parse edilemiyordu
+    // → extract boş → T15 sil-ve-sor zinciri. Aksanlı+ASCII süperset yapıldı.
     const monthPatternMatch = lower.match(
-      /(\d{1,2})[\s.]+(?:de\s+|du\s+|d[e']\s+)?(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|märz|maerz|mai|juni|juli|oktober|dezember|janvier|f[ée]vrier|mars|avril|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|noviembre|diciembre|январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь|يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/i,
+      /(\d{1,2})[\s.]+(?:de\s+|du\s+|d[e']\s+)?(ocak|[şs]ubat|mart|nisan|may[ıi]s|haziran|temmuz|a[ğg]ustos|eyl[üu]l|ekim|kas[ıi]m|aral[ıi]k|january|february|march|april|may|june|july|august|september|october|november|december|januar|februar|märz|maerz|mai|juni|juli|oktober|dezember|janvier|f[ée]vrier|mars|avril|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|noviembre|diciembre|январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь|يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/i,
     );
     if (monthPatternMatch) {
       const day = parseInt(monthPatternMatch[1]);
@@ -413,7 +418,7 @@ export function extractNameAndPhone(
   // "aralık 22" ters format
   if (!result.selectedDate && !result.dateId && !result.needsMonthClarification) {
     const reverseMatch = lower.match(
-      /(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december|январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь)\s*(\d{1,2})/i,
+      /(ocak|[şs]ubat|mart|nisan|may[ıi]s|haziran|temmuz|a[ğg]ustos|eyl[üu]l|ekim|kas[ıi]m|aral[ıi]k|january|february|march|april|may|june|july|august|september|october|november|december|январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь)\s*(\d{1,2})/i,
     );
     if (reverseMatch) {
       const monthName = reverseMatch[1].toLowerCase();
