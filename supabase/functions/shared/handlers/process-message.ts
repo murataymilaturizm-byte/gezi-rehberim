@@ -22,7 +22,7 @@ import {
 import { STEP_QUESTIONS } from "../constants/step-questions.ts";
 import { detectLanguage } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
-import { validateAIResponse, validateInjectionResponse, validateFieldReask } from "../fsm/response-validator.ts";
+import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise } from "../fsm/response-validator.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -36,9 +36,9 @@ import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { QUESTION_SIGNAL_RE } from "../constants/question-detection.ts";
 import { VISA_SIGNAL_RE, VISA_QUESTION_HINT_RE } from "../constants/visa-detection.ts";
-import { produceTourChangeContext, shouldApplyEarlyTourChange, buildTourChangePrefix } from "../services/tour-change.ts";
+import { produceTourChangeContext, shouldApplyEarlyTourChange, buildTourChangePrefix, hasReservationSignal } from "../services/tour-change.ts";
 import { callAI } from "../services/ai.ts";
-import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
+import { generatePaymentMessage, safeDepositPercentage, buildPaymentPromptSummary } from "../services/payment-message.ts";
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
 import { formatPriceSync } from "../utils/currency-display.ts";
 import { isValidPax, isValidPhone, MAX_PAX_PER_RESERVATION } from "../utils/validation.ts";
@@ -938,6 +938,35 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log(`[process-message] BUG B PROMOTE: ${context.stage} + provide_info + ${_isConfirmingFullNameChange ? "fullName" : "phone"} farklı → intent → change_info`);
     nluResult.intent = "change_info";
     fsmIntent = mapNLUIntentToFSMIntent("change_info");
+  }
+
+  // === RESERVATION PROMOTE (İş 2a, 2026-07-03) — G13/X7 deseninin keşif kopyası ===
+  // Canlı vakalar: "pamukkale rezervasyon" ve "efes turu için yer ayırtabilir
+  // miyim" → NLU reservation_intent VERMEDİ (tour_search/general sapması) →
+  // T4/T7 (GREETING/BROWSING→COLLECTING_INFO) intent-bazlı isReservationAction
+  // koşulu FALSE → TOUR_SELECTED'a düşüş → :11 (c) dalı da intent'e bakıyor →
+  // LLM'e düştü → "bir saniye, müsait tarihleri kontrol ediyorum" BOŞ VAADİ.
+  // Oysa hasReservationSignal("rezervasyon"/"yer ayır") mesajı ZATEN yakalıyor.
+  // Fix: keşif stage'lerinde + TUR EŞLEŞMESİ ŞARTIYLA (Özge/KÖK5 dersi: tur adı
+  // eşleşmeden ASLA tetikleme) mesaj-sinyalini intent'e yükselt → T4/T7/:11(c)
+  // mevcut halleriyle devralır → deterministik tarih listesi.
+  // GUARD'lar: FAQ intent'leri korunur (NLU net general_question/support_request
+  // dediyse dokunma — "rezervasyon iptal şartları?" sınıfı) + iptal/şart/iade
+  // kelime guard'ı (çifte güvence). Mid-flow (COLLECTING/CONFIRMING) kapsam DIŞI
+  // — B2 stage koruması ve Özge davranışı aynen.
+  if (
+    _isExploreStage &&
+    selectedTour !== null &&
+    hasReservationSignal(message) &&
+    fsmIntent !== "reservation_intent" &&
+    fsmIntent !== "tour_selected" &&
+    fsmIntent !== "general_question" &&
+    fsmIntent !== "support_request" &&
+    !/(iptal|şart|koşul|kosul|iade|cancel|policy|refund)/i.test(message)
+  ) {
+    console.log(`[process-message] RESERVATION PROMOTE: ${context.stage} + hasReservationSignal + tur eşleşti (${selectedTour.title}) → intent → reservation_intent`);
+    nluResult.intent = "reservation_intent";
+    fsmIntent = mapNLUIntentToFSMIntent("reservation_intent");
   }
 
   // B-6 fix (2026-06-09): CONFIRMING'de "hayır" net redi → state KORUNUR, netleştirme sorusu sor.
@@ -3464,8 +3493,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     agencyWorkingHours: agency.working_hours,
     agencyMapsUrl: agency.maps_url,
     agencyCancellationPolicy: agency.cancellation_policy,
-    paymentInfo: typeof paymentInstructions === "string" ? paymentInstructions
-      : (paymentInstructions as any)?.text || undefined,
+    // 2026-07-03 İş 1 (#18): eski değer (string/text) hiçbir shared prompt
+    // bileşeni tarafından BASILMIYORDU (legacy demo-chat helper kalıntısı).
+    // Artık buildPaymentPromptSummary üretir (IBAN'sız kapora+yöntem özeti +
+    // "detaylar onay sonrası" kuralı) ve agency.ts ACENTE BİLGİSİ bloğu basar.
+    // Veri boşsa boş → satır basılmaz → agency guard'ı acenteye yönlendirir.
+    paymentInfo: buildPaymentPromptSummary(paymentInstructions, newContext.language) || undefined,
     multipleTourMatches: multipleTourMatches.length > 1 ? multipleTourMatches : undefined,
     previousContext,
   };
@@ -3580,6 +3613,49 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (validation.wasModified) {
     console.warn("[process-message] Response validator modified AI output");
     reply = validation.text;
+  }
+
+  // === 17-BV. BOŞ-VAAT GUARD'I (İş 2b, 2026-07-03) ===
+  // Canlı: "pamukkale rezervasyon" → LLM "bir saniye, müsait tarihleri kontrol
+  // ediyorum..." dedi ve HİÇBİR ŞEY gelmedi (tek-turn sistem — sonra dönemez;
+  // iki kez üst üste yaşandı). hallucinationGuard'a kural kondu ama M1
+  // kırılganlığına karşı bu deterministik ikinci geçit: cevap SALT VAATSE
+  // (yanında tarih/fiyat/liste yoksa — detectEmptyPromise) elimizdeki bağlamla
+  // replace et: tur+tarih verisi varsa MİNİ TARİH LİSTESİ, yoksa adım sorusu,
+  // o da yoksa acente yönlendirmesi. Vaat+veri birlikte → detectEmptyPromise
+  // FALSE → DOKUNULMAZ (meşru cümleler kırılmaz).
+  if (!validation.wasModified && detectEmptyPromise(reply)) {
+    const _bvLang = newContext.language || "tr";
+    const _bvTour = currentTourFull || (newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null);
+    let _bvReplacement = "";
+    if (_bvTour?.dates?.length) {
+      const _bvLines = _bvTour.dates
+        .map((d: any, i: number) => {
+          const _w = getWeekdayName(d.departure_date, _bvLang);
+          const _dt = formatDateForLanguage(d.departure_date, _bvLang) + (_w ? ` (${_w})` : "");
+          const _pr = d.price_adult ? ` - ${d.price_adult}₺` : "";
+          return `${i + 1}) ${_dt}${_pr}`;
+        })
+        .join("\n");
+      const _bvTitle = getLocalizedTourTitle(_bvTour.title || "", _bvLang);
+      const _bvMsgs: Record<string, string> = {
+        tr: `*${_bvTitle}* için müsait tarihler:\n${_bvLines}\n\nHangi tarihi tercih edersiniz?`,
+        en: `Available dates for *${_bvTitle}*:\n${_bvLines}\n\nWhich date do you prefer?`,
+      };
+      _bvReplacement = _bvMsgs[_bvLang] || _bvMsgs.en;
+    } else if (newContext.collectionStep && STEP_QUESTIONS[String(newContext.collectionStep)]) {
+      const _sq = STEP_QUESTIONS[String(newContext.collectionStep)];
+      _bvReplacement = _sq[_bvLang] || _sq.en;
+    } else {
+      const _agP = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _bvFall: Record<string, string> = {
+        tr: `Bu konuda net bilgi için acentemizle iletişime geçebilirsiniz.${_agP}`,
+        en: `Please contact our agency for details on this.${_agP}`,
+      };
+      _bvReplacement = _bvFall[_bvLang] || _bvFall.en;
+    }
+    console.warn(`[process-message] 17-BV boş-vaat yakalandı → deterministik replacement (tour=${!!_bvTour?.dates?.length}, step=${newContext.collectionStep ?? "yok"})`);
+    reply = _bvReplacement;
   }
 
   // === 17a. BUG D — Field-reask post-validation (M1 compliance ikinci geçit) ===

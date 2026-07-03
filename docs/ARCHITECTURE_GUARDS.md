@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (P4-P7 polish paketi — gün adları deterministik, :10d tarih-ack, UNKNOWN sızıntı guard'ı, stage-aware replacement; A-P1/A-P2, G14, G13, D2, X9-change ve ilk sürüm aynı gün).
+> Son güncelleme: 2026-07-03 (FAZ1 kapanış — ödeme-FAQ prompt bağlantısı #18, RESERVATION PROMOTE, boş-vaat guard'ı 17-BV; P4-P7, A-P1/A-P2, G14, G13, D2, X9-change ve ilk sürüm aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -433,7 +433,24 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (jenerik form). Kullanıcıya dönük YENİ şablona dinamik değer basarken
     placeholder kontrolü ekle (dar tutuldu; genel sanitize helper'a
     ihtiyaç doğarsa Blok 1'deki `_isPlaceholder` regex'i tek-kaynak yapılmalı).
-18. **Ödeme-FAQ verisi prompt'a bağlanacak**: P7 vakasında kullanıcının asıl
-    sorusu ("ödemeyi nasıl yapıyoruz") cevapsız kalabiliyor — agencies
-    payment_instructions/payment_methods_text COLLECTING_INFO prompt'unda
-    her zaman erişilebilir mi denetlenmeli (G14 envanter yaklaşımıyla). Ayrı iş.
+18. ~~**Ödeme-FAQ verisi prompt'a bağlanacak**~~ **ÇÖZÜLDÜ (2026-07-03, FAZ1
+    İş 1)**: `buildPaymentPromptSummary` (payment-message.ts) IBAN'SIZ özet
+    üretir (kapora oranı + yöntem ADLARI + "detaylar onay sonrası" kuralı) →
+    PromptContext.paymentInfo → agency.ts ACENTE BİLGİSİ bloğu basar. Kök:
+    paymentInfo alanı tanımlıydı ama HİÇBİR shared prompt bileşeni basmıyordu
+    (legacy demo-chat kalıntısı — G14 sınıfı). IBAN'lı TAM blok onay-sonrası
+    generatePaymentMessage'da AYNEN; veri boşsa satır basılmaz → agency
+    guard'ı yönlendirir (FIX 2 deseni).
+19. **KURAL (kalıcı, FAZ1 İş 2)**: LLM ASENKRON İŞ VAADİ VEREMEZ — tek-turn
+    sistem ("kontrol ediyorum" dedikten sonra dönemez). İki katman:
+    (i) hallucinationGuard prompt kuralı (TR+EN); (ii) 17-BV post-LLM guard'ı —
+    `detectEmptyPromise` (vaat kalıbı VAR + somut veri YOK) → deterministik
+    replacement (tur+tarih varsa mini liste / adım sorusu / yönlendirme).
+    Vaat+veri birlikte → dokunulmaz.
+20. **RESERVATION PROMOTE (FAZ1 İş 2a)**: keşif stage'lerinde (GREETING/
+    BROWSING/TOUR_SELECTED) + TUR EŞLEŞMESİ ŞARTIYLA hasReservationSignal →
+    fsmIntent=reservation_intent (G13/X7 deseni). Canlı kök: "pamukkale
+    rezervasyon" / "yer ayırtabilir miyim" → NLU reservation_intent vermiyordu →
+    T4/T7/:11(c) intent-bazlı koşullar kaçırıyordu → LLM boş vaadi. Guard'lar:
+    FAQ intent'leri + iptal/şart/iade kelimeleri + mid-flow kapsam DIŞI
+    (B2/Özge korunur).

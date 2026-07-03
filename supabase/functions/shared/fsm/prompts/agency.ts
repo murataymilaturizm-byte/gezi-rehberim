@@ -63,6 +63,8 @@ export function getAgencyInfo(context: PromptContext, language: string): string 
     if (formattedHours) lines.push(`Çalışma Saatleri:\n${formattedHours}`);
     if (agencyMapsUrl) lines.push(`Konum: ${agencyMapsUrl}`);
     if (agencyCancellationPolicy) lines.push(`İptal Koşulları: ${agencyCancellationPolicy}`);
+    // 2026-07-03 İş 1 (#18): IBAN'sız ödeme özeti — buildPaymentPromptSummary üretir.
+    if ((context as any).paymentInfo) lines.push(`Ödeme: ${(context as any).paymentInfo}`);
 
     return `\n\n🏢 ACENTE BİLGİSİ:
 ${lines.join("\n")}
@@ -90,6 +92,8 @@ KURALLAR:
   if (formattedHours) lines.push(`Working Hours:\n${formattedHours}`);
   if (agencyMapsUrl) lines.push(`Location: ${agencyMapsUrl}`);
   if (agencyCancellationPolicy) lines.push(`Cancellation Policy: ${agencyCancellationPolicy}`);
+  // 2026-07-03 İş 1 (#18): payment summary WITHOUT IBAN — from buildPaymentPromptSummary.
+  if ((context as any).paymentInfo) lines.push(`Payment: ${(context as any).paymentInfo}`);
 
   return `\n\n🏢 AGENCY INFO:
 ${lines.join("\n")}

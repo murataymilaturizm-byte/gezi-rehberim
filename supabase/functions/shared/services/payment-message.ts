@@ -16,6 +16,56 @@ export function safeDepositPercentage(input: any): number {
   return Math.round(n);
 }
 
+/**
+ * 2026-07-03 FAZ1-KAPANIŞ İş 1 (Açık Soru #18): LLM prompt'una giden KISA
+ * ödeme özeti. Canlı vaka: isim adımında "ödemeyi nasıl yapıyoruz" cevapsız
+ * kalıyordu — veri sistemde VARDI (payment_instructions) ama prompt'a hiç
+ * bağlanmamıştı (paymentInfo alanı PromptContext'te tanımlıydı, hiçbir shared
+ * prompt bileşeni basmıyordu — G14 sınıfı).
+ *
+ * GÜVENLİK: IBAN / hesap sahibi / banka adı / ofis adresi bu özete GİRMEZ —
+ * toplama sırasında IBAN vermek erken/riskli. Sadece kapora oranı + yöntem
+ * ADLARI + "detaylar onay sonrası" kuralı. Tam blok (IBAN dahil) onay-sonrası
+ * generatePaymentMessage'da AYNEN kalır.
+ * Veri boşsa boş string döner — agency.ts guard'ı "listede yoksa yönlendir"
+ * kuralıyla acenteye yönlendirir (FIX 2 deseni).
+ */
+export function buildPaymentPromptSummary(paymentInstructions: any, language: string): string {
+  if (
+    !paymentInstructions ||
+    typeof paymentInstructions !== "object" ||
+    !Array.isArray(paymentInstructions.payment_methods) ||
+    paymentInstructions.payment_methods.length === 0
+  ) {
+    return "";
+  }
+  const isTR = language === "tr";
+  const methodNames: Record<string, { tr: string; en: string }> = {
+    bank_transfer: { tr: "Havale/EFT", en: "Bank transfer" },
+    cash_office: { tr: "Ofiste nakit", en: "Cash at office" },
+    cash_on_tour: { tr: "Tur günü araçta nakit", en: "Cash on tour day" },
+    credit_card: { tr: "Kredi kartı", en: "Credit card" },
+    phone_payment: { tr: "Telefonla ödeme", en: "Payment by phone" },
+  };
+  const names = paymentInstructions.payment_methods
+    .map((m: any) => {
+      const key = typeof m === "string" ? m : m?.type;
+      const entry = methodNames[key];
+      return entry ? (isTR ? entry.tr : entry.en) : null;
+    })
+    .filter(Boolean);
+  if (names.length === 0) return "";
+  const paymentType = paymentInstructions.payment_type || "deposit";
+  const pct = safeDepositPercentage(paymentInstructions.deposit_percentage);
+  const depositLine =
+    paymentType === "deposit"
+      ? (isTR ? `Kapora: %${pct} (kalan tutar tur günü)` : `Deposit: ${pct}% (remainder on tour day)`)
+      : (isTR ? "Tam ödeme" : "Full payment");
+  return isTR
+    ? `${depositLine}. Ödeme yöntemleri: ${names.join(", ")}. IBAN/hesap gibi detaylar rezervasyon ONAYINDAN SONRA iletilir — bu aşamada IBAN/hesap numarası VERME, "detaylar onay sonrasında iletilecek" de.`
+    : `${depositLine}. Payment methods: ${names.join(", ")}. IBAN/account details are shared AFTER reservation confirmation — do NOT give IBAN/account numbers at this stage; say "details will be shared after confirmation".`;
+}
+
 // Modular currency formatting
 interface CurrencyConfig {
   code: string;

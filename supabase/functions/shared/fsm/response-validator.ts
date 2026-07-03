@@ -287,6 +287,26 @@ const FIELD_MENTION_PATTERNS: Record<string, RegExp> = {
  * @param intent           FSM intent — change_info iken niyet-aware skip (Bulgu 2 fix)
  * @param userMessage      Kullanıcının mesajı — hangi alanı değiştirmek istediğini saptamak için
  */
+/**
+ * 2026-07-03 İş 2b: BOŞ-VAAT tespiti. Canlı vaka: "pamukkale rezervasyon" →
+ * LLM "bir saniye, müsait tarihleri kontrol ediyorum..." dedi ve HİÇBİR ŞEY
+ * gelmedi (tek-turn sistem — sonra dönemez). İki katmanın ikincisi (birincisi
+ * hallucinationGuard prompt kuralı; M1 kırılganlığına karşı bu post-LLM sigorta).
+ *
+ * TRUE koşulu: vaat kalıbı VAR + cevapta SOMUT VERİ YOK (rakamlı tarih, fiyat,
+ * numaralı liste). Vaat + veri birlikteyse FALSE — meşru "şöyle görünüyor,
+ * kontrol ettim" tarzı cümleler KIRILMAZ. Replacement'ı process-message üretir
+ * (elinde tur/tarih verisi var — validator'da yok).
+ */
+const EMPTY_PROMISE_RE =
+  /(kontrol\s+ediyorum|hemen\s+bak[ıi]yorum|bak[ıi]yorum|bir\s+saniye|bir\s+dakika|hemen\s+bakay[ıi]m|kontrol\s+edeyim|let\s+me\s+check|one\s+moment|just\s+a\s+(?:second|moment)|checking\s+(?:now|for\s+you)|i['']ll\s+(?:check|look))/i;
+const CONCRETE_DATA_RE =
+  /\d{1,2}[.\/]\d{1,2}[.\/]\d{2,4}|\d+\s*(?:₺|TL|EUR|USD|\$|€)|^\s*\d+\)\s/m;
+export function detectEmptyPromise(text: string): boolean {
+  if (!text) return false;
+  return EMPTY_PROMISE_RE.test(text) && !CONCRETE_DATA_RE.test(text);
+}
+
 export function validateFieldReask(
   text: string,
   language: string,
