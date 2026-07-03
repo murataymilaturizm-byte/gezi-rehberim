@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (PAKET 2+3+4 — J-14 iptal talep-iletme, J-16 vazgeçme, I-9 rakam-tarih ayna, echo-sanitize terfisi, M-25 çift onay; PAKET 1 ve öncekiler aynı gün).
+> Son güncelleme: 2026-07-03 (FAZ2-kapanış — month-names TEK KAYNAK [ASCII Blok9 canlı vakası] + CONFIRMING/COLLECTING tourDetails + stage envanteri; PAKET'ler ve öncekiler aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -280,6 +280,17 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | Replacement | Stage-aware (17-BV geçidi): CONFIRMING→özet+onay (*evet yazın*); tur+tarih→mini liste; step→STEP_QUESTIONS; fallback yönlendirme |
 | changeAck ÇAPRAZ NOT | validateFieldReask'teki changeAck guard'ı (2026-06-27) "güncelledim"li cevapları field-reask'ten MUAF tutar — ÇELİŞMEZ: deterministik ack'ler validator'a ulaşmaz; ulaşan her "güncelledim" G15 replace eder |
 | **Vaka-1 dersi (4 halka)** | (1) "10 aralik" ASCII ay-adı parser kapsamı dışıydı → extract boş; (2) T15 pattern-fallback tarihi sildi (B-3 TASARIM — doğru); (3) LLM "güncelliyorum" sahte ack'i (bu guard'ın kökü); (4) "1 kişi" → parseInt kırpması Blok 8'de 1. tarihi seçti → silinen tarih YANLIŞ değerle geri geldi → yanlış kayıt. Fix'ler: V1-ASCII (ay regex+map süperset) + V1-ack + V1-parseInt (Blok 8 `/^\d+$/` — Yan #1'in tarih simetriği) |
+| **CANLI DERS 2 (FAZ2-kapanış)** | **Unit parse ≠ canlı zincir**: V1-ASCII simple-extractor'ı düzeltti, unit test geçti — ama canlı yol farklıydı (NLU dates=["10 aralik"] → Blok 2 normalizeDateString → info-extractor'daki ÜÇÜNCÜ kopya TEXT_MONTHS, ASCII'siz → Blok 9 eşleşemedi → "Invalid date cleaned up"). ÜÇ kopya ay-listesi (simple map + info-extractor TEXT_MONTHS + elle regex'ler) `constants/month-names.ts` TEK KAYNAĞINA indirildi (MONTH_NAME_TO_NUMBER + MONTH_ALTERNATION, uzun-önce sıralı). KURAL: ay-adı listesi/regex'i gereken her yer bu sabitten türetilir |
+
+### Stage × tourDetails ENVANTERİ (2026-07-03 FAZ2-kapanış — hücre hücre keşfetmeyelim diye)
+| Stage | tourDetails prompt'ta? | Not |
+|---|---|---|
+| GREETING | ❌ (currentTour yok — anlamsız) | default dal |
+| BROWSING | ❌ (liste formatToursList ile) | tur detayı seçim sonrası |
+| TOUR_SELECTED | ✅ (baştan beri) | TR L~403 + EN L~474 |
+| COLLECTING_INFO | ✅ **(FAZ2-kapanış eklendi)** | TR+EN — "bilgi soruları için, SADECE bu veriler" |
+| CONFIRMING | ✅ **(FAZ2-kapanış eklendi)** | TR+EN — "soru gelirse buradan cevapla, sonra onayı tekrar iste" |
+| COMPLETED | ✅ (PAKET 1 / V2) | TR+EN — after-sales + alan-bağımlı buluşma kuralı |
 
 ### G12 — NLU katmanı (guard değil, etkileşim kaynağı)
 | Özellik | Kod gerçeği |

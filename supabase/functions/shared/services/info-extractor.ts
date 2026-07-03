@@ -9,6 +9,7 @@ import { isNluFullNameNegationLeak, isNluFullNameTourLeak } from "./nlu-validati
 import { hasQuotaForPax, getQuotaRemaining } from "./quota-check.ts";
 import { isValidPax } from "../utils/validation.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
+import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-names.ts";
 
 // getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
 // normalizeDateString'den sonra yer almaktadır.
@@ -25,43 +26,13 @@ function normalizeNluField(value: any): string[] {
 }
 
 /** 7 dil ay ismi → ay numarası */
-const TEXT_MONTHS: Record<string, number> = {
-  // TR
-  ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6,
-  temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12,
-  // EN — tam form
-  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
-  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
-  // EN — kısa form ("Dec 22", "Jan 5" vb.)
-  jan: 1, feb: 2, mar: 3, apr: 4,
-  jun: 6, jul: 7, aug: 8, sep: 9, sept: 9,
-  oct: 10, nov: 11, dec: 12,
-  // DE — tam form (april/august/september/november EN ile aynı, kapsanmış)
-  januar: 1, februar: 2, märz: 3, mai: 5, juni: 6, juli: 7,
-  oktober: 10, dezember: 12,
-  // FR
-  janvier: 1, "février": 2, mars: 3, avril: 4, juin: 6, juillet: 7,
-  "août": 8, septembre: 9, octobre: 10, novembre: 11, "décembre": 12,
-  // ES
-  enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
-  julio: 7, agosto: 8, septiembre: 9, noviembre: 11, diciembre: 12,
-  // RU (nominative + genitive)
-  "январь": 1, "января": 1, "февраль": 2, "февраля": 2,
-  "март": 3, "марта": 3, "апрель": 4, "апреля": 4,
-  "май": 5, "мая": 5, "июнь": 6, "июня": 6,
-  "июль": 7, "июля": 7, "август": 8, "августа": 8,
-  "сентябрь": 9, "сентября": 9, "октябрь": 10, "октября": 10,
-  "ноябрь": 11, "ноября": 11, "декабрь": 12, "декабря": 12,
-  // AR
-  "يناير": 1, "فبراير": 2,
-  "مارس": 3, "أبريل": 4,
-  "مايو": 5, "يونيو": 6,
-  "يوليو": 7, "أغسطس": 8,
-  "سبتمبر": 9, "أكتوبر": 10,
-  "نوفمبر": 11, "ديسمبر": 12,
-};
+// 2026-07-03 FAZ2-kapanış İş 1: LOKAL KOPYA LİSTE KALDIRILDI — canlı bug
+// "10 aralik" bu listenin ASCII'sizliğinden Blok 9'da eşleşemiyordu (V1-ASCII
+// yalnız simple-extractor'ı düzeltmişti; kopya listeler senkronsuzdu).
+// TEK KAYNAK: constants/month-names.ts (TR ASCII varyantları dahil).
+const TEXT_MONTHS = MONTH_NAME_TO_NUMBER;
 
-const _monthPattern = Object.keys(TEXT_MONTHS).join("|");
+const _monthPattern = MONTH_ALTERNATION;
 // DAY MONTH [YEAR] — "20 aralık", "22. Dezember", "22.Dezember", "20 december 2026"
 // [.\s]+ → nokta, boşluk veya ikisi (boşluksuz "22.Dezember" de kabul)
 const TEXT_MONTH_REGEX = new RegExp(

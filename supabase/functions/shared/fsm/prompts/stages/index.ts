@@ -417,7 +417,7 @@ ${tourDetails}
         return (
           `📍 DURUM: Bilgi toplama
 ${stepPrompt}
-
+${tourDetails ? `\n📍 TUR DETAYLARI (bilgi soruları için — SADECE buradaki verileri kullan):\n${tourDetails}\n` : ""}
 ⚠️ Kullanıcı bilgi sorusu sorarsa ÖNCE cevapla, sonra YUKARIDA belirtilen adıma DÖN.
 ⚠️ Adımı sen seçemezsin — sistem belirledi. Sadece o adımın sorusunu sor.
 ⛔ TARİH KONUSUNA GİRME: Tarih listesi/önerisi sistem tarafından otomatik gelir. Kullanıcı tarih sorarsa "Müsait tarihleri kontrol ediyorum 📅" de ve KESİL — listeyi sistem yazar.` + filledFieldsGuard + hallucinationGuard
@@ -430,6 +430,7 @@ ${stepPrompt}
 GÖREVİN: SADECE özeti göster ve onay sor. Başka HİÇBİR şey sorma.
 
 ${summary}
+${tourDetails ? `\n📍 TUR DETAYLARI (kullanıcı tur hakkında SORU sorarsa SADECE buradaki verilerle cevapla, sonra onayı tekrar iste):\n${tourDetails}\n` : ""}
 
 "Bu bilgiler doğru mudur, onaylıyor musunuz?" diye sor. Sadece bu.
 
@@ -497,7 +498,7 @@ ${tourDetails}
       return (
         `📍 STATUS: Collecting information
 ${stepPromptEn}
-
+${tourDetails ? `\n📍 TOUR DETAILS (for info questions — use ONLY this data):\n${tourDetails}\n` : ""}
 ⚠️ If user asks a question, answer first then RETURN to the step above.
 ⚠️ You CANNOT choose the step — the system decides. Only ask the question for that step.
 ⛔ DO NOT DISCUSS DATES: Available dates are sent automatically by the system. If user asks for dates, say "Checking available dates 📅" and STOP — the system writes the list.` + filledFieldsGuard + hallucinationGuard
@@ -510,7 +511,7 @@ ${stepPromptEn}
 YOUR TASK: ONLY show the summary and ask for confirmation. Nothing else.
 
 ${summary}
-
+${tourDetails ? `\n📍 TOUR DETAILS (if the user asks a question about the tour, answer ONLY from this data, then ask for confirmation again):\n${tourDetails}\n` : ""}
 Ask "Are these details correct, do you confirm?" That's all.
 
 ❌ FORBIDDEN EXAMPLES (real bug evidence):
