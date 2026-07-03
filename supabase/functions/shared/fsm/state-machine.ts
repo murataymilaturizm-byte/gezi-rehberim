@@ -290,7 +290,9 @@ export function detectConfirmation(message: string, language: string): boolean {
 export function detectCancellation(text: string, language: string): boolean {
   const patterns: Record<string, RegExp> = {
     // TR: iptal + reset/baştan başla kalıpları
-    tr: /\b(vazge[cç]tim|vazgeçiyorum|iptal|istemiyorum|olmas[ıi]n|gerek yok|bo[sş] ver|ba[sş]ka zaman|d[uü][sş][uü]neyim|d[uü][sş][uü]neyim de|pas|paslıyorum|ba[sş]tan ba[sş]la|ba[sş]tan ba[sş]lamak|ba[sş]tan ba[sş]layal[ıi]m|yeniden ba[sş]la|yeniden ba[sş]lamak|s[ıi]f[ıi]rla|ba[sş]a dön)\b/i,
+    // 2026-07-03 J-16: bitişik "boşver" + "kalsın" + "neyse" eklendi (canlı:
+    // "boşver kalsın" ayrık "bo[sş] ver"e uymuyordu → iptal sayılmadı → isim yazıldı)
+    tr: /\b(vazge[cç]tim|vazgeçiyorum|iptal|istemiyorum|olmas[ıi]n|gerek yok|bo[sş] ?ver|kals[ıi]n|neyse|ba[sş]ka zaman|d[uü][sş][uü]neyim|d[uü][sş][uü]neyim de|pas|paslıyorum|ba[sş]tan ba[sş]la|ba[sş]tan ba[sş]lamak|ba[sş]tan ba[sş]layal[ıi]m|yeniden ba[sş]la|yeniden ba[sş]lamak|s[ıi]f[ıi]rla|ba[sş]a dön)\b/i,
     en: /\b(cancel|nevermind|never mind|forget it|don'?t want|skip it|maybe later|not now|pass|leave it|restart|reset|start over|start fresh|begin again|from scratch|new conversation)\b/i,
     de: /\b(abbrechen|stornieren|möchte nicht|will nicht|vergiss es|vergessen|später|nicht mehr|lass es sein|neu starten|von vorne|nochmal|neu anfangen)\b/i,
     ru: /\b(отмена|отменить|не хочу|неважно|забудь|забудьте|позже|потом|не надо|заново|сначала|начать заново)\b/i,
@@ -331,8 +333,15 @@ export function detectCancellation(text: string, language: string): boolean {
  * 4 transition tek-kaynak (DRY): TOUR_SELECTED/COLLECTING_INFO/CONFIRMING/COMPLETED
  * → BROWSING. Aynı kökü 4 yerde fix etmek yerine helper'a sarıldı.
  */
-function detectCancellationGuarded(input: { userMessage: string; language: string; detectedIntent: string }): boolean {
+function detectCancellationGuarded(input: { userMessage: string; language: string; detectedIntent: string; extractedInfo?: any }): boolean {
   if (input.detectedIntent === "general_question") return false;
+  // 2026-07-03 J-16 DEĞER-ÖNCELİK guard'ı: "boşver, 3 kişi olsun" / "boşver,
+  // ahmet yılmaz olsun" — vazgeçme kelimesiyle BİRLİKTE somut değer geliyorsa
+  // kullanıcı TERK etmiyor, DEĞİŞTİRİYOR. Extract'te değer varsa iptal sayma;
+  // değişiklik/toplama dalları devralır. Saf "boşver kalsın" extract üretmez
+  // (blacklist/eleme) → iptal akışı çalışır.
+  const _e = input.extractedInfo as any;
+  if (_e && (_e.fullName || _e.paxAdult || _e.dateId || _e.selectedDate || _e.phone)) return false;
   return detectCancellation(input.userMessage, input.language);
 }
 

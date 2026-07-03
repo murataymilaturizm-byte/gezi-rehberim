@@ -471,7 +471,15 @@ export function extractNameAndPhone(
 
   // === İSİM ===
   if (collectionStep === "waiting_for_name") {
-    const words = message.trim().split(/\s+/);
+    // 2026-07-03 J-16: VAZGEÇME+DOLGU token elemesi. Canlı: "boşver kalsın"
+    // 2-kelime yolundan İSİM olarak yazıldı (NLU intent'inden bağımsız).
+    // Eleme sonrası: "boşver kalsın" → 0 kelime → isim YOK (detectCancellation
+    // iptal akışını devralır); "boşver, ahmet yılmaz olsun" → ["ahmet","yılmaz"]
+    // → isim yazılır (DEĞER-ÖNCELİK — kullanıcı terk etmiyor, veriyor).
+    const _giveUpDropRe = /^(boşver|bosver|kalsın|kalsin|neyse|vazgeç|vazgec|vazgeçtim|vazgectim|olsun|lütfen|lutfen|nevermind|forget|it)$/i;
+    const words = message.trim().split(/\s+/)
+      .map((w) => w.replace(/[.,!?;:"'()]/gu, ""))
+      .filter((w) => w && !_giveUpDropRe.test(w));
     if (
       words.length >= 2 &&
       words.length <= 4 &&

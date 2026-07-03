@@ -24,6 +24,7 @@ import { detectLanguage } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
 import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise, detectFakeChangeAck } from "../fsm/response-validator.ts";
 import { formatReservationSummary } from "../fsm/prompts/helpers.ts";
+import { isEchoSafe } from "../services/echo-sanitize.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -968,6 +969,58 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log(`[process-message] RESERVATION PROMOTE: ${context.stage} + hasReservationSignal + tur eşleşti (${selectedTour.title}) → intent → reservation_intent`);
     nluResult.intent = "reservation_intent";
     fsmIntent = mapNLUIntentToFSMIntent("reservation_intent");
+  }
+
+  // === İŞ A (J-14, 2026-07-03) — COMPLETED İPTAL TALEBİ → TALEP İLETME ===
+  // Canlı: COMPLETED + "rezervasyonumu iptal etmek istiyorum" → T16
+  // (detectCancellationGuarded) KONUŞMA reset'i sanıp "Tamam sorun değil!
+  // Hangi tur ilginizi çeker?" dedi — hiçbir şey yapılmadı, yapılmış izlenimi.
+  // ÜRÜN KARARI (b): iptal İŞLENMEZ (DB'ye dokunulmaz) — TALEP acenteye
+  // İLETİLİR. Mekanizma: complaints tablosu (mevcut) — complaints_notify_trigger
+  // (migration 20260526000002) insert'i otomatik acente bildirimine bağlıyor.
+  // Deterministik sinyal esas (K1/X7/:10c deseni — NLU intent'ine güvenme).
+  // FAQ AYRIMI: soru-formu VEYA şart/koşul/policy → dala GİRME ("iptal
+  // şartları ne?" FAQ olarak akar). FSM'den ÖNCE RETURN — T16 reset'i olmaz.
+  {
+    const _cxlSignalRe = /(?<![\p{L}\p{N}])(iptal|cancel|stornier|annul|cancelar|отмен|إلغاء|ألغ)/iu;
+    const _cxlResCtxRe = /(?<![\p{L}\p{N}])(rezervasyon|kayıt|kaydı|reservation|booking|buchung|réservation|reserva|бронь|бронирование|حجز)/iu;
+    const _cxlFaqRe = /(şart|kosul|koşul|policy|iade|refund|ücret|ucret|kesinti|nasıl|nasil|ne zaman)/i;
+    if (
+      context.stage === "COMPLETED" &&
+      _cxlSignalRe.test(message) &&
+      _cxlResCtxRe.test(message) &&
+      !QUESTION_SIGNAL_RE.test(message) &&
+      !_cxlFaqRe.test(message)
+    ) {
+      const _ri = (context.reservationInfo || {}) as any;
+      const _cxlSummary =
+        `İPTAL TALEBİ — Tur: ${_ri.tourTitle || context.currentTour?.title || "?"} | ` +
+        `Tarih: ${_ri.selectedDate || "?"} | Kişi: ${_ri.paxAdult ?? "?"} | ` +
+        `İsim: ${_ri.fullName || "?"} | Tel: ${_ri.phone || "?"} | Müşteri mesajı: "${message.slice(0, 200)}"`;
+      supabase.from("complaints").insert({
+        agency_id: agency.id,
+        phone: adapter.identifier,
+        message: _cxlSummary,
+        type: "cancellation_request",
+        status: "new",
+      }).then(() => {});
+      const _agPhoneCxl = agency.phone_public ? ` Dilerseniz 📞 ${agency.phone_public} numarasından da ulaşabilirsiniz.` : "";
+      const _agPhoneCxlEn = agency.phone_public ? ` You can also reach us at 📞 ${agency.phone_public}.` : "";
+      const _cxlMsgs: Record<string, string> = {
+        tr: `İptal talebinizi acentemize ilettim. En kısa sürede sizinle iletişime geçilecek.${_agPhoneCxl}`,
+        en: `I've forwarded your cancellation request to our agency. They will contact you shortly.${_agPhoneCxlEn}`,
+        de: `Ich habe Ihre Stornierungsanfrage an unsere Agentur weitergeleitet. Sie werden in Kürze kontaktiert.${_agPhoneCxlEn}`,
+        ru: `Я передал ваш запрос на отмену в наше агентство. С вами свяжутся в ближайшее время.${_agPhoneCxlEn}`,
+        ar: `لقد أحلت طلب الإلغاء إلى وكالتنا. سيتم التواصل معك قريباً.${_agPhoneCxlEn}`,
+        fr: `J'ai transmis votre demande d'annulation à notre agence. Vous serez contacté sous peu.${_agPhoneCxlEn}`,
+        es: `He enviado su solicitud de cancelación a nuestra agencia. Se pondrán en contacto con usted en breve.${_agPhoneCxlEn}`,
+      };
+      const _cxlReply = _cxlMsgs[context.language] || _cxlMsgs.en;
+      console.log(`[process-message] J-14 COMPLETED iptal-talebi → complaints(cancellation_request) + deterministik mesaj (DB rezervasyonu DOKUNULMADI)`);
+      await _save(_cxlReply, context);
+      await adapter.sendResponse(_cxlReply);
+      return { success: true, response: _cxlReply, newContext: context };
+    }
   }
 
   // B-6 fix (2026-06-09): CONFIRMING'de "hayır" net redi → state KORUNUR, netleştirme sorusu sor.
@@ -1927,15 +1980,29 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     selectedTour === null &&
     multipleTourMatches.length === 0
   ) {
-    const _phInvalidMsgs: Record<string, string> = {
-      tr: `"${message.trim()}" geçerli bir telefon numarası değil. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,
-      en: `"${message.trim()}" is not a valid phone number. 📱\n\nPlease enter your full number (e.g. +90 532 123 45 67)`,
-      de: `"${message.trim()}" ist keine gültige Telefonnummer. 📱\n\nBitte vollständige Nummer eingeben (z.B. +90 532 123 45 67)`,
-      ru: `"${message.trim()}" — неверный номер телефона. 📱\n\nВведите полный номер (напр. +90 532 123 45 67)`,
-      ar: `"${message.trim()}" ليس رقم هاتف صحيح. 📱\n\nيرجى إدخال رقمك الكامل (مثال: +90 532 123 45 67)`,
-      fr: `"${message.trim()}" n'est pas un numéro valide. 📱\n\nVeuillez entrer votre numéro complet (ex: +90 532 123 45 67)`,
-      es: `"${message.trim()}" no es un número válido. 📱\n\nIngrese su número completo (ej: +90 532 123 45 67)`,
-    };
+    // 2026-07-03 İş D (K-19): cümle-yankı sanitize — '"numaram yok mail atsam"
+    // geçerli bir telefon değil' saçmalığı. isEchoSafe FALSE ise tırnaklı form
+    // yerine jenerik; kısa rakamsı yanlış girdiler ("0532 12") tırnaklı kalır.
+    const _phEcho = isEchoSafe(message.trim()) ? message.trim() : null;
+    const _phInvalidMsgs: Record<string, string> = _phEcho
+      ? {
+          tr: `"${_phEcho}" geçerli bir telefon numarası değil. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,
+          en: `"${_phEcho}" is not a valid phone number. 📱\n\nPlease enter your full number (e.g. +90 532 123 45 67)`,
+          de: `"${_phEcho}" ist keine gültige Telefonnummer. 📱\n\nBitte vollständige Nummer eingeben (z.B. +90 532 123 45 67)`,
+          ru: `"${_phEcho}" — неверный номер телефона. 📱\n\nВведите полный номер (напр. +90 532 123 45 67)`,
+          ar: `"${_phEcho}" ليس رقم هاتف صحيح. 📱\n\nيرجى إدخال رقمك الكامل (مثال: +90 532 123 45 67)`,
+          fr: `"${_phEcho}" n'est pas un numéro valide. 📱\n\nVeuillez entrer votre numéro complet (ex: +90 532 123 45 67)`,
+          es: `"${_phEcho}" no es un número válido. 📱\n\nIngrese su número completo (ej: +90 532 123 45 67)`,
+        }
+      : {
+          tr: `Bu geçerli bir telefon numarası görünmüyor. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,
+          en: `That doesn't look like a valid phone number. 📱\n\nPlease enter your full number (e.g. +90 532 123 45 67)`,
+          de: `Das scheint keine gültige Telefonnummer zu sein. 📱\n\nBitte vollständige Nummer eingeben (z.B. +90 532 123 45 67)`,
+          ru: `Это не похоже на действительный номер телефона. 📱\n\nВведите полный номер (напр. +90 532 123 45 67)`,
+          ar: `هذا لا يبدو رقم هاتف صحيحاً. 📱\n\nيرجى إدخال رقمك الكامل (مثال: +90 532 123 45 67)`,
+          fr: `Cela ne semble pas être un numéro valide. 📱\n\nVeuillez entrer votre numéro complet (ex: +90 532 123 45 67)`,
+          es: `Eso no parece un número válido. 📱\n\nIngrese su número completo (ej: +90 532 123 45 67)`,
+        };
     const _phReply = _phInvalidMsgs[newContext.language] || _phInvalidMsgs.tr;
     await _save(_phReply, newContext);
     await adapter.sendResponse(_phReply);
@@ -2305,10 +2372,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         // STATE'i koruyor ama değer selectedDate üzerinden BU ŞABLONA sızdı →
         // kullanıcı '"<UNKNOWN>" tarihi ... müsait değil' gördü. Placeholder/
         // boş/anlamsız değerde tırnaklı formu BASMA — jenerik form kullan.
-        const _isPlaceholderDate =
-          /^<.*>$|^undefined$|^null$|^n\/?a$|^-+$|^\?+$|^bilinmiyor$|^unknown$/i.test(
-            String(_invalidDateForPreamble).trim(),
-          ) || String(_invalidDateForPreamble).trim().length < 2;
+        // 2026-07-03 İş D: P6 lokal kontrolü isEchoSafe helper'ına terfi etti
+        // (H-3/K-22: '"günlük"/"yarın" tarihi müsait değil' cümle-yankıları da
+        // artık jenerik forma düşer — tek-kaynak echo-sanitize.ts).
+        const _isPlaceholderDate = !isEchoSafe(_invalidDateForPreamble);
         const _preambles: Record<string, string> = _isPlaceholderDate
           ? {
               tr: `Belirttiğiniz tarih için müsaitlik bulamadım. 😔\n\n`,
@@ -3185,33 +3252,19 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       }
     }
 
-    // Kanal-spesifik template eki (WhatsApp message_templates)
-    if (adapter.getCompletionTemplateAddendum) {
-      // K5: deposit_percentage 0-100 dışındaysa güvenli varsayılan
-      const _depPct2 = safeDepositPercentage(
-        typeof paymentInstructions === "object" ? paymentInstructions?.deposit_percentage : null
-      );
-      // K4: tek kaynak
-      const _tPrice = calculateTotal(
-        adultCount,
-        selectedDateFull?.price_adult,
-        childCount,
-        selectedDateFull?.price_child,
-      );
-      const tmpl = await adapter.getCompletionTemplateAddendum({
-        tourId: tourId || "",
-        tourTitle: tourTitle,
-        dateId: dateId || "",
-        formattedDate: formattedDate,
-        fullName: fullName || "",
-        pax: adultCount + childCount,
-        totalPrice: _tPrice,
-        currency: selectedTourFull?.currency || "TRY",
-        language: newContext.language,
-        agencyId: agency.id,
-      }).catch(() => null);
-      if (tmpl) completionReply += "\n\n" + tmpl;
-    }
+    // 2026-07-03 İş E (M-25) — ÇİFT ONAY SÖNÜMLEME: reservation_confirmed
+    // template addendum'u KALDIRILDI. Mimari doğrulama: template'in tek sohbet
+    // tüketicisi buydu (whatsapp adapter.getCompletionTemplateAddendum) ve
+    // completion cevabına EK olarak ikinci bir "rezervasyonunuz onaylandı...
+    // detaylar tur tarihinden önce iletilecek" onayı basıyordu — sohbet cevabı
+    // zaten TAM onay+özet+ödeme veriyor. Kanal ayrımı YAPISAL: bu kod yalnız
+    // bot-sohbet completion'ı; panel/manuel rezervasyon bildirimleri
+    // send-template-message'ı AYRI yoldan çağırır, ETKİLENMEZ. new_reservation/
+    // agency_new_reservation DB trigger'ları (Turzz ekibi + acente bildirimi)
+    // da AYNEN — onlar müşteriye gitmiyor.
+    // (Addendum çağrısı kaldırıldı — adapter.getCompletionTemplateAddendum
+    // metodu whatsapp adapter'da duruyor; panel-dışı bir ihtiyaç doğarsa
+    // yeniden bağlanabilir. Geri almak için: git log M-25.)
 
     // İletişim footer (agency.phone_public varsa)
     if (agency.phone_public) {

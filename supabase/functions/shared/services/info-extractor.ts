@@ -298,7 +298,19 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   const _peopleContextRe = /\b(ki[şs]i|insan|person|people|kinder|kind|adult|yeti[şs]kin|[çc]ocuk|child|niño|enfant|اشخاص|طفل|personas|personnes|человек|гостей)\b/i;
   const _hasPeopleContext = _peopleContextRe.test(_msgLower);
   const _isWaitingForPax = context.collectionStep === "waiting_for_pax";
-  const _shouldAcceptNluPax = _hasPeopleContext || _isWaitingForPax;
+  // 2026-07-03 I-9 (X9'un AYNA simetriği): waiting_for_pax'ta "yok yok 20'sine
+  // alalım" → NLU 20'yi people_count sandı, waiting_for_pax istisnası GEÇİRDİ →
+  // pax=20 → grup mesajı. Oysa "yirmisine" (yazı) doğru tarih değişikliği
+  // yapıyordu — tutarsızlık. Tespit: rakam + TARİH-İYELİK eki ("20'si/20sine/
+  // 20'sinde") → pax İSTİSNASINI EZ (NLU pax reddedilir); aşağıda Blok 8.5
+  // gün-eşleştirme tarih zincirine yönlendirir. Çıplak "20" ve "20 kişi"
+  // pax kalır (peopleContext/tam-rakam yolları değişmedi).
+  // Kapsam: apostroflu HER iyelik ("3'ü", "5'i", "20'sine") + apostrofsuz
+  // yalnız s'li form ("20sine") — apostrofsuz s'siz ("3u") kapsam dışı
+  // (yanlış-pozitif riski). "20 kişi" hiçbirine uymaz.
+  const _dateOrdinalRe = /(\d{1,2})['’](?:s?[ıiuü])(?:ne|nde|ni|nü|nu)?(?![\p{L}\p{N}])|(\d{1,2})s[ıi](?:ne|nde|ni)?(?![\p{L}\p{N}])/iu;
+  const _hasDateOrdinal = _dateOrdinalRe.test(message || "");
+  const _shouldAcceptNluPax = (_hasPeopleContext || _isWaitingForPax) && !_hasDateOrdinal;
 
   // 2026-07-03 X9-change fix (ÜÇÜNCÜ kabul yolu — bkz. ARCHITECTURE_GUARDS.md G8):
   // Canlı bug: waiting_for_phone'da "aslında 3 olsun" → peopleContext yok →
@@ -393,7 +405,11 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   const expectedInput = getNextExpectedInput(context);
 
   if (expectedInput === "name" && !extractedInfo.fullName) {
-    const words = message.trim().split(/\s+/);
+    // 2026-07-03 J-16: vazgeçme+dolgu token elemesi (simple-extractor ile simetrik)
+    const _giveUpDropRe5 = /^(boşver|bosver|kalsın|kalsin|neyse|vazgeç|vazgec|vazgeçtim|vazgectim|olsun|lütfen|lutfen|nevermind|forget|it)$/i;
+    const words = message.trim().split(/\s+/)
+      .map((w) => w.replace(/[.,!?;:"'()]/gu, ""))
+      .filter((w) => w && !_giveUpDropRe5.test(w));
     if (
       words.length >= 2 &&
       words.length <= 4 &&
@@ -537,6 +553,37 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
           };
         }
       }
+    }
+  }
+
+  // === Blok 8.5: Rakam+iyelik TARİH-GÜN eşleştirme (I-9, 2026-07-03) ===
+  // "20'sine alalım" → gün=20 → aktif turun tarihlerinde ayın 20'si varsa seç
+  // (quota'lı). "yirmisine" yazı-formu zaten çalışıyordu; rakam-formu pax'a
+  // sızıyordu (yukarıda istisna ezildi) — burada tarih zincirine bağlanır.
+  // Eşleşme yoksa hiçbir şey set edilmez → mevcut akış (belirsizlik/liste).
+  if (_hasDateOrdinal && !extractedInfo.dateId && !extractedInfo.selectedDate && context.currentTour) {
+    const _ordM = (message || "").match(_dateOrdinalRe);
+    const _ordDay = _ordM ? parseInt(_ordM[1] || _ordM[2]) : NaN;
+    if (_ordDay >= 1 && _ordDay <= 31) {
+      const _ordTour = findTourById(context.currentTour.id, tours);
+      const _ordMatches = (_ordTour?.dates || []).filter((d: any) => {
+        const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
+        return p && parseInt(p[1]) === _ordDay;
+      });
+      if (_ordMatches.length === 1) {
+        const cand = _ordMatches[0];
+        if (hasQuotaForPax(cand, 1)) {
+          extractedInfo.selectedDate = cand.departure_date;
+          extractedInfo.dateId = cand.id;
+          console.log(`[info-extractor] I-9 Blok 8.5: rakam-iyelik gün=${_ordDay} → dateId eşleşti`);
+        } else {
+          extractedInfo.dateRejectedFull = {
+            departureDate: cand.departure_date,
+            remaining: getQuotaRemaining(cand),
+          };
+        }
+      }
+      // >1 eşleşme → ay belirsiz, seçim yapma (ayinMatch davranışıyla tutarlı)
     }
   }
 

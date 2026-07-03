@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (PAKET 1 / G15 — sahte-değişiklik-ack validator'ı + Blok8 tam-rakam + ay-adı ASCII + COMPLETED tourDetails + dahil-olanlar yasağı; FAZ1 kapanış, P4-P7 ve öncekiler aynı gün).
+> Son güncelleme: 2026-07-03 (PAKET 2+3+4 — J-14 iptal talep-iletme, J-16 vazgeçme, I-9 rakam-tarih ayna, echo-sanitize terfisi, M-25 çift onay; PAKET 1 ve öncekiler aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -52,7 +52,8 @@ deterministik belirlenir; `isAllInfoCollected()` (~L188) ile simetriktir
 | T13 | COLLECTING_INFO → CONFIRMING | !informational + intent ∈ {provide_info, confirm, confirm_reservation} (**general YOK**) + isAllInfoCollected | **BUG 2 Hayriye** (onay adımı atlanması) |
 | T14 | CONFIRMING → COMPLETED | 3 path — aşağıda §4/G1 | **K1 ailesi** |
 | T15 | CONFIRMING → COLLECTING_INFO | change_info intent VEYA 3-katman pattern (negative guard → güçlü fiil → zayıf+hedef alan); action NLU-first override | BUG 5, BUG B, BUG-X3, B-3 |
-| T16 | COMPLETED → BROWSING | detectCancellationGuarded | — |
+| **J-14 (FSM-öncesi!)** | COMPLETED iptal-talebi dalı | Deterministik sinyal (iptal+rezervasyon bağlamı, soru/şart-FAQ hariç) → complaints(type=cancellation_request) insert (notify-trigger acenteye bildirir) + 7 dil "talebinizi ilettim" + RETURN — **DB rezervasyonuna dokunulmaz, T16 reset'i olmaz** | J-14 (2026-07-03) |
+| T16 | COMPLETED → BROWSING | detectCancellationGuarded (+J-16 DEĞER-ÖNCELİK guard'ı: extract'te fullName/pax/dateId/phone varsa iptal SAYILMAZ — "boşver, ahmet yılmaz olsun" değişikliktir) | J-16 |
 | T17 | COMPLETED → COMPLETED | isAfterSalesMessage (FSM intent: support_request/change_info/general_question + ödeme/buluşma/zamanlama pattern'leri) — no-op, context korunur | FIX 2a (dead-code intent map), Murat kararı 2026-06-24 |
 | T18/T20 | COMPLETED → BROWSING | hasNewReservationIntent (A5 exclusion dahil) | A5 |
 | T19/T21 | COMPLETED → BROWSING | browse_tours/tour_search + selectedTour yok (**general/greeting listeden ÇIKARILDI** — Bug A) | Bug A (2026-06-23) |
@@ -215,6 +216,7 @@ SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 | Pending konumu | Bilinçli: Blok 9 SONRASI + Blok 10 ÖNCESİ — Blok 10 auto-assign dateId'si kullanıcı mesajından gelmez, pending iptaline sebep olmamalı. "aslında 3'ü olsun" ayın 3'ü eşleşirse pax İPTAL, tarih akışı kazanır (tarih→pax sızıntı koruması delinmez) |
 | Pattern kaynağı | `shared/constants/change-detection.ts` CHANGE_KEYWORDS_RE — process-message A1/A2/A3 `_hasChangeKeyword` ile TEK kaynak (DRY) |
 | Kaynak | BUG-X9 ("ondördü olur" 14 pax sızıntısı) + X9-change fix (telefon adımında "aslında 3 olsun" R6'ya takılıyordu) |
+| **I-9 rakam-tarih ayna (2026-07-03)** | X9'un AYNASI: waiting_for_pax'ta "20'sine/3'ü" (rakam+tarih-iyelik, _dateOrdinalRe) → NLU-pax İSTİSNASI EZİLİR (pax=20 grup mesajı bug'ı) + Blok 8.5 gün→tourDates eşleştirme (tekil+quota'lı → dateId; çoklu → belirsiz-pas, ayinMatch tutarlı). "20 kişi"/çıplak "20" pax kalır |
 | **İSİM-pending (Blok 5b, A-P1 2026-07-03)** | X9-change'in İSİM kopyası. Koşullar: NLU/simple fullName bulamadı + CHANGE_KEYWORDS_RE + `reservationInfo.fullName` DOLU (değişiklik bağlamı) + **isim-bağlam kelimesi ŞART** (isim/ismi/ad/adım/soyad/name — bağlamsız "aslında yarın gelelim" tipi cümlelerin isim sanılmasını kapıda keser). Aday: change/bağlam/dolgu kelimeleri elendikten sonra kalan TAM 2-3 harf-ağırlıklı kelime; **Title-Case ŞARTI YOK** (canlı kanıt: kullanıcılar "leman tete" küçük yazıyor). ASIL SİGORTA: aday Sorun F gate'lerinden geçer (NegationLeak+TourLeak+onay-blacklist, tek-kaynak). Kabul → extractedInfo.fullName → A3-name/BUG B mevcut haliyle devralır. Kaynak: canlı P1 (CONFIRMING'de "ismi düzelt, Ahmet Yılmaz olacak" yutuluyordu — NLU Sorun F correction-guard'ı meşru düzeltmede de null dönüyor, simple/Blok5 step-gated) |
 
 ### G9 — O1 grubu (birleşik mesaj tarih→ID)
@@ -308,6 +310,7 @@ tur=tekil-eşleşme(G5)+RE(7c).
 | isim | — | — | ✅ normal+G13 | ✅ Blok 5b (A-P1) → A3-name | ✅ Blok 5b (A-P1) → A3-name |
 | telefon | — | — | ✅ simple koşulsuz | ✅ normal | ✅ A3-phone/PROMOSYON/BUG B |
 | tur | ✅ G5 (tekil) | ✅ G5/7c (A-P2) | ✅ G5/7c (A-P2) | ✅ G5(tekil)/7c(belirsiz) + R6 muaf (A-P2) | ✅ aynı |
+| **vazgeçme** | ✅ T1-T3 iptal | ✅ + J-16 eleme | ✅ + J-16 eleme (isim sanılmaz) | ✅ + J-16 | ✅ D-20; COMPLETED'da J-14 talep-iletme (reset değil) |
 
 Tarih hücreleri (P5, 2026-07-03): eski ⚠️ ack'siz merge kapatıldı — :10d bloğu
 FSM-SONRASI deterministik kontrol yapar: eski dateId DOLUYDU + yeni FARKLI →
@@ -437,12 +440,22 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     basan HER şablon gün adını bu helper'dan almalı; prompt'ta gün-adı-yasağı
     kuralı var (hallucinationGuard). Canlı kanıt: LLM 12.12.2026'ya "Cuma"
     dedi (gerçek: Cumartesi).
-17. **P6 sanitize notu**: NLU placeholder'ları (`<UNKNOWN>` vb.) state'e Blok 1
-    guard'ıyla girmiyor AMA `selectedDate` üzerinden kullanıcıya dönük
-    şablonlara sızabiliyordu — :11 preamble'ına placeholder kontrolü kondu
-    (jenerik form). Kullanıcıya dönük YENİ şablona dinamik değer basarken
-    placeholder kontrolü ekle (dar tutuldu; genel sanitize helper'a
-    ihtiyaç doğarsa Blok 1'deki `_isPlaceholder` regex'i tek-kaynak yapılmalı).
+17. ~~**P6 sanitize notu**~~ **TERFİ ETTİ (2026-07-03, İş D)**:
+    `shared/services/echo-sanitize.ts` → `isEchoSafe(value)` TEK KAYNAK —
+    placeholder + >25 karakter + 3+ kelime + göreli-zaman kelimeleri +
+    2-kelimelik yüklem-cümlecikleri jenerik forma düşer; kısa makul değerler
+    ("15 ocak", "0532 12") tırnaklı kalır. Bağlı şablonlar: :11 tarih-preamble,
+    R6 telefon mesajı. KURAL: kullanıcı metnini tırnak içinde geri basan YENİ
+    şablon bu helper'dan geçmeli. (:10b unknownTourQuery tour-matcher çıkarımı —
+    cümle-yankı riski düşük, kapsam dışı bırakıldı.)
+23. **PAKET 2+3+4 ÇÖZÜLDÜ (2026-07-03)**: J-14 iptal talep-iletme (FSM-öncesi
+    dal + complaints notify-trigger); J-16 vazgeçme (detectCancellation
+    boşver/kalsın/neyse + Guarded değer-öncelik guard'ı + iki isim-yolunda
+    token-eleme); I-9 rakam-tarih ayna (G8 tablosunda); İş D echo-sanitize
+    (#17 terfi); M-25 çift onay (completion addendum kaldırıldı — kanal ayrımı
+    YAPISAL: addendum yalnız bot-sohbet completion'ıydı; panel/send-template-message
+    ve new_reservation/agency_new_reservation DB trigger'ları [ekip+acente,
+    müşteriye değil] AYNEN).
 18. ~~**Ödeme-FAQ verisi prompt'a bağlanacak**~~ **ÇÖZÜLDÜ (2026-07-03, FAZ1
     İş 1)**: `buildPaymentPromptSummary` (payment-message.ts) IBAN'SIZ özet
     üretir (kapora oranı + yöntem ADLARI + "detaylar onay sonrası" kuralı) →
