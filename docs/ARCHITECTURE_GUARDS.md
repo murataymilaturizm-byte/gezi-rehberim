@@ -261,7 +261,7 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | | |
 |---|---|
 | Dosya | `process-message.ts` :10c bloğu (UNKNOWN_TOUR sonrası, :11 öncesi) + `prompts/helpers.ts` formatTourDetails |
-| :10c koşul | `nluResult.intent === "visa_support"` — **HAM NLU intent** (G12 map'i general_question'a indirger, FSM intent'inde ayrım kaybolur). 3 dal: visa_notes dolu → DB içeriği; visa_required===true + notes boş → "gerekli, acenteye danışın"; diğer her durum (false dahil — şema DEFAULT false, güvenilmez) → genel yönlendirme. Tur bağlamı yokken de deterministik (vize = en yüksek tekil hasar, LLM'e hiç düşmez). 7 dil |
+| :10c koşul | **VISA-GATE revize (2026-07-03)**: `hamIntent==="visa_support"` VEYA `VISA_SIGNAL_RE + soru-niteliği (QUESTION_SIGNAL_RE ∪ VISA_QUESTION_HINT_RE)`. Salt ham intent güvenilmezdi — canlı kanıt: Haiku "vize lazım mı"ya faq_general dedi → bypass → LLM "vize gerekmez" dedi. Soru şartı "vizem hazır" bildirimlerini dışarıda tutar. Sabitler: constants/visa-detection.ts (AR "ال" prefix'i optional). 3 cevap dalı: visa_notes dolu → DB içeriği; visa_required===true + notes boş → "gerekli, acenteye danışın"; diğer her durum (false dahil — şema DEFAULT false, güvenilmez) → genel yönlendirme. Tur bağlamı yokken de deterministik. 7 dil |
 | FIX 1 (prompt) | formatTourDetails'e eklendi: konaklama, ulasim, hotel_name(+stars), visa_notes/visa_required, price_child (**sadece >0** — 0/null "belirtilmemiş", şemada 0'ın "ücretsiz" semantiği tanımsız). return_date BİLİNÇLİ eklenmedi (Bug A3 "LLM tarih konuşmaz" + seçilmemiş tarih bağlamında yanıltıcı — doğru yer :11, ayrı iş) |
 | FIX 2 (sinyal) | Boş kritik alanlar TEK toplu iç-talimat satırında: "⚠️ SİSTEMDE KAYITLI OLMAYAN bilgiler: [liste]... acenteye yönlendir, ASLA tahmin etme, teknik ifade kullanma". Alan-başına satır değil (8 boş satır prompt şişirir) |
 | R6 etkileşimi | visa_support → general_question → R6 muafiyetinde; :10c R6'dan SONRA — telefon adımında vize sorusu her iki katmandan doğru geçer |
@@ -332,6 +332,13 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
     provide_info → change_info; G13 boş+beklenen-alan-doldu + general →
     provide_info. Sıra: BUG B extract'ten ÖNCE (nluResult.updates okur),
     G13 extract'ten SONRA (extractedInfo okur). Çakışma yok.
+12. **QUESTION_SIGNAL_RE ↔ G13 ↔ G14/:10c (ZIT YÖNLER)**: Aynı global regex
+    iki guard'da TERS amaçla kullanılır — G13'te "soru ise promote ETME"
+    (aşırı-yakalama GÜVENLİ), :10c'de "soru ise vize cevabı VER" (kaçırmak
+    LLM'e düşürür = TEHLİKELİ). Bu yüzden "lazım mı/gerekli mi/required"
+    kalıpları global regex'e EKLENMEDİ (G13'ü daraltırdı) — :10c'ye lokal
+    VISA_QUESTION_HINT_RE tamamlayıcısı kondu. QUESTION_SIGNAL_RE'yi
+    genişletirken HER İKİ tüketiciyi birden test et.
 
 ---
 
@@ -378,3 +385,5 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 11. **Panel backlog**: Yurtdışı turlarda visa/konaklama/ulaşım koşullu zorunlu
     alan + onboarding doluluk uyarısı (acente kritik alanları boş bırakırsa
     bot "acenteye yönlendir" moduna düşer — panel tarafında önlenmeli).
+12. **Kozmetik (düşük öncelik)**: validateFieldReask cümle-silme, silinen
+    cümledeki emoji artıklarını bırakabiliyor (😊 👥 sonda kalıyor).

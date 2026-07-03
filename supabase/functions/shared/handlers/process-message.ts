@@ -33,6 +33,7 @@ import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { QUESTION_SIGNAL_RE } from "../constants/question-detection.ts";
+import { VISA_SIGNAL_RE, VISA_QUESTION_HINT_RE } from "../constants/visa-detection.ts";
 import { produceTourChangeContext, shouldApplyEarlyTourChange, buildTourChangePrefix } from "../services/tour-change.ts";
 import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
@@ -2022,12 +2023,24 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // === 10c. VİZE DETERMİNİSTİK CEVAP (DATA-GAP FIX 3, 2026-07-03) ===
   // Vize = en yüksek tekil hasar alanı: yanlış "vize gerekmiyor" cevabı
   // müşterinin seyahatini iptal ettirebilir. LLM'e HİÇ düşmez.
-  // NLU HAM intent'ine bakılır (nluResult.intent === "visa_support") — G12
-  // haritasında visa_support → general_question'a maplenir, FSM intent'inde
-  // ayrım kaybolur. Ham intent'te ayrım var.
+  //
+  // 2026-07-03 VISA-GATE REVİZE (canlı kanıt): tetik SADECE ham NLU intent'i
+  // (visa_support) idi — Haiku "bu tur için vize ihtiyacı var mı" / "vize
+  // lazım mı" sorularına faq_general dedi → :10c bypass → LLM "vize gerekmez"
+  // dedi (bu bloğun yasakladığı cümle). K1/X7 deseni: NLU sınıflaması
+  // güvenilmez, deterministik sinyal otorite. Yeni tetik:
+  //   hamIntent === "visa_support"  (mevcut yol korunur)
+  //   VEYA VISA_SIGNAL_RE (vize kelimesi, 7 dil) + SORU niteliği
+  //        (QUESTION_SIGNAL_RE ∪ VISA_QUESTION_HINT_RE — "lazım mı/gerekli mi/
+  //        required" kalıpları global regex'te YOK; ORAYA eklemek PROVIDE
+  //        PROMOTE'u daraltırdı → lokal tamamlayıcı kalıp, visa-detection.ts).
+  // Soru şartının amacı: "vizem hazır, sorun yok" gibi bildirimler
+  // yönlendirmeye takılmasın, LLM doğal cevap versin.
+  //
   // R6 etkileşimi: visa_support → general_question → R6 muafiyet listesinde ✅
   //   (telefon adımında vize sorusu R6'ya takılmaz; ayrıca bu blok R6'dan
   //   SONRA olduğundan R6 muafiyeti zaten mesajı buraya ulaştırır).
+  //   NOT: NLU faq_general dediğinde de map general_question → R6 muaf ✅.
   // Tur bağlamı YOKKEN de deterministik yönlendirme (LLM'e bırakılmaz):
   //   vize turdan bağımsız da kişisel duruma bağlıdır; genel soruda LLM'in
   //   uydurma riskini açmanın gereği yok — karar: her durumda deterministik.
@@ -2035,7 +2048,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   //   false görünür): "vize gerekmez" DEMEYİZ. Sadece visa_notes doluysa
   //   içerik verilir; visa_required=true + notes boşsa "gerekli + acenteye
   //   danışın"; diğer her durumda genel yönlendirme.
-  if (nluResult.intent === "visa_support") {
+  const _visaAsksQuestion =
+    QUESTION_SIGNAL_RE.test(message) || VISA_QUESTION_HINT_RE.test(message);
+  const _visaGateFires =
+    nluResult.intent === "visa_support" ||
+    (VISA_SIGNAL_RE.test(message) && _visaAsksQuestion);
+  if (_visaGateFires) {
     const _visaTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
     const _agPhoneV = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
     let _visaReply: string;
@@ -2073,7 +2091,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       };
       _visaReply = _vg[newContext.language] || _vg.en;
     }
-    console.log(`[process-message] :10c VISA deterministik cevap (tour=${_visaTour?.id ?? "yok"}, notes=${!!_visaTour?.visa_notes}, required=${_visaTour?.visa_required === true})`);
+    console.log(`[process-message] :10c VISA deterministik cevap (tetik=${nluResult.intent === "visa_support" ? "intent" : "signal+question"}, tour=${_visaTour?.id ?? "yok"}, notes=${!!_visaTour?.visa_notes}, required=${_visaTour?.visa_required === true})`);
     await _save(_visaReply, newContext);
     await adapter.sendResponse(_visaReply);
     return { success: true, response: _visaReply, newContext };
