@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (PROVIDE PROMOTE / G13 — intent-kilitli merge veri kaybı sınıfı; D2, X9-change ve ilk sürüm aynı gün).
+> Son güncelleme: 2026-07-03 (DATA-GAP / G14 — tur alanları prompt bütünlüğü + vize deterministik; G13, D2, X9-change ve ilk sürüm aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -100,7 +100,8 @@ FSM GEÇİŞİ:
 
 FSM SONRASI DETERMİNİSTİK MESAJLAR (hepsi RETURN, LLM atlanır):
  17. O6 tur listesi boş (~L1862) │ B2 akış-ortası tur listesi (~L1883)
- 18. :10 iptal ack (~L1929) │ :10b UNKNOWN_TOUR (~L1938)
+ 18. :10 iptal ack (~L1929) │ :10b UNKNOWN_TOUR (~L1983) │ **:10c VİZE
+     deterministik (G14)** — nluResult HAM intent=visa_support → LLM'e düşmez
  19. :11 tarih listesi — 4 dal: (a) waiting_for_date, (b) tarih sorusu,
      (c) rezervasyon niyeti, (d) _isStuckOnTourSelected (~L1977-2140)
  20. :11a-AUTO-DATE-ACK (~L2142) │ :11a-MANUAL-DATE-ACK / G4 (~L2229)
@@ -256,6 +257,16 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | Kaynak | Canlı vaka 771f2a84 "Yılda Fufu" (2026-07-03): intent=general → Kural 4 erken-return → isim düştü + LLM sahte kabul mesajı |
 | **Sınıf bulgusu** | mergeReservationInfo Kural 4 (`isInformational → {...existing}`) **alandan bağımsız** — intent=general'da isim/telefon/pax/tarih İLK toplamalarının HEPSİ düşüyordu. Haiku "çıplak veri → general" sapması sistematik veri kaybı sınıfıydı; K1 ("evet"→general) ile aynı kök desen |
 
+### G14 — Vize deterministik cevap + tur-detay veri bütünlüğü (DATA-GAP paketi)
+| | |
+|---|---|
+| Dosya | `process-message.ts` :10c bloğu (UNKNOWN_TOUR sonrası, :11 öncesi) + `prompts/helpers.ts` formatTourDetails |
+| :10c koşul | `nluResult.intent === "visa_support"` — **HAM NLU intent** (G12 map'i general_question'a indirger, FSM intent'inde ayrım kaybolur). 3 dal: visa_notes dolu → DB içeriği; visa_required===true + notes boş → "gerekli, acenteye danışın"; diğer her durum (false dahil — şema DEFAULT false, güvenilmez) → genel yönlendirme. Tur bağlamı yokken de deterministik (vize = en yüksek tekil hasar, LLM'e hiç düşmez). 7 dil |
+| FIX 1 (prompt) | formatTourDetails'e eklendi: konaklama, ulasim, hotel_name(+stars), visa_notes/visa_required, price_child (**sadece >0** — 0/null "belirtilmemiş", şemada 0'ın "ücretsiz" semantiği tanımsız). return_date BİLİNÇLİ eklenmedi (Bug A3 "LLM tarih konuşmaz" + seçilmemiş tarih bağlamında yanıltıcı — doğru yer :11, ayrı iş) |
+| FIX 2 (sinyal) | Boş kritik alanlar TEK toplu iç-talimat satırında: "⚠️ SİSTEMDE KAYITLI OLMAYAN bilgiler: [liste]... acenteye yönlendir, ASLA tahmin etme, teknik ifade kullanma". Alan-başına satır değil (8 boş satır prompt şişirir) |
+| R6 etkileşimi | visa_support → general_question → R6 muafiyetinde; :10c R6'dan SONRA — telefon adımında vize sorusu her iki katmandan doğru geçer |
+| Kaynak | 19 Haziran saat tutarsızlığı teşhisi (Bug 4'ün sınıf genellemesi): alanlar DB'de vardı (migration "for expanded chatbot functionality") ama prompt'a hiç bağlanmamıştı |
+
 ### G12 — NLU katmanı (guard değil, etkileşim kaynağı)
 | Özellik | Kod gerçeği |
 |---|---|
@@ -359,3 +370,11 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
    sırada-olmayan alan sorusu yakalanmıyor. PROVIDE PROMOTE (G13) bu vakayı
    kapattı (step artık ilerliyor) ama sınıf genel olarak açık — post-launch
    değerlendirme.
+10. **DATA-GAP kalan riskler** (G14 paketi sonrası): return_date hâlâ hiçbir
+    katmanda yok ("dönüş ne zaman?" → :11 listesine dönüş tarihi eklemek ayrı
+    iş); hotel_details/transport_details deterministik DEĞİL (FIX 1+2 prompt
+    katmanı — M1'e bağlı; vize gibi :10c katmanına alınmaları post-launch
+    değerlendirme); price_single hiçbir yerde basılmıyor.
+11. **Panel backlog**: Yurtdışı turlarda visa/konaklama/ulaşım koşullu zorunlu
+    alan + onboarding doluluk uyarısı (acente kritik alanları boş bırakırsa
+    bot "acenteye yönlendir" moduna düşer — panel tarafında önlenmeli).

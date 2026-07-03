@@ -190,16 +190,67 @@ export function formatTourDetails(tour: any, language: string, _tone: string = "
   const price = firstDate?.price_adult;
   const meetTime = formatTime(tour.toplanma_saati);
 
+  // 2026-07-03 DATA-GAP FIX 1: konaklama/ulasim/hotel/visa/price_child eklendi.
+  // Bu alanlar DB'de VARDI (migration 20251112152524 + 20251125080314 — "for
+  // expanded chatbot functionality") ama prompt'a hiç bağlanmamıştı → LLM'in
+  // elinde veri yokken hotel_details/transport_details soruları uydurma
+  // riskindeydi (Bug 4 saat vakasıyla aynı sınıf).
+  // price_child: SADECE >0 ise basılır — şemada DECIMAL nullable, DEFAULT yok;
+  // 0'ın "ücretsiz" anlamı tanımsız → 0/null "belirtilmemiş" sayılır (yanlış
+  // "çocuk ücretsiz" çıkarımı engellenir).
+  // return_date BİLİNÇLİ EKLENMEDİ: Bug A3 kuralı (LLM tarih KONUŞMAZ, tarihler
+  // :11 deterministik) + tarih seçilmemişken ilk tarihin dönüşünü basmak
+  // yanıltıcı. Doğru yer :11 listesi — ayrı iş.
+  const _hotelLine = tour.hotel_name
+    ? `${tour.hotel_name}${tour.hotel_stars ? ` (${tour.hotel_stars}⭐)` : ""}`
+    : "";
+  const _visaLine = tour.visa_notes
+    ? String(tour.visa_notes)
+    : (tour.visa_required === true ? "__REQUIRED_NO_NOTES__" : "");
+  const _childPrice =
+    firstDate?.price_child && Number(firstDate.price_child) > 0
+      ? Number(firstDate.price_child)
+      : null;
+
+  // 2026-07-03 DATA-GAP FIX 2: boş kritik alanlar için AÇIK "veri yok" sinyali.
+  // Eski filter(Boolean) boş alanı sessizce atlıyordu → LLM'e "bu veri yok"
+  // sinyali örtüktü → hallucinationGuard'a rağmen (M1) uydurma kapısı açıktı.
+  // Tasarım: alan başına satır DEĞİL (8 boş satır prompt şişirir), boşları TEK
+  // toplu iç-talimat satırında listele. hallucinationGuard diliyle tutarlı.
+  const _missingTr: string[] = [];
+  const _missingEn: string[] = [];
+  const _track = (val: unknown, tr: string, en: string) => {
+    if (!val) { _missingTr.push(tr); _missingEn.push(en); }
+  };
+  _track(meetTime, "toplanma saati", "meeting time");
+  _track(tour.hareket_noktasi, "kalkış noktası", "pickup point");
+  _track(tour.tur_sure, "tur süresi", "duration");
+  _track(tour.konaklama, "konaklama detayı", "accommodation details");
+  _track(_hotelLine, "otel adı", "hotel name");
+  _track(tour.ulasim, "ulaşım detayı", "transport details");
+  _track(_visaLine, "vize bilgisi", "visa info");
+  _track(_childPrice, "çocuk fiyatı", "child price");
+
   if (language === "tr") {
     const parts = [
       `*${tour.title}*`,
       `📍 Destinasyon: ${tour.destination}`,
       price ? `💰 Fiyat: kişi başı ${price}₺` : "",
+      _childPrice ? `👶 Çocuk fiyatı: ${_childPrice}₺` : "",
       tour.tur_sure ? `⏱ Süre: ${tour.tur_sure}` : "",
       meetTime ? `🕐 Toplanma saati: ${meetTime}` : "",
       tour.hareket_noktasi ? `🚌 Kalkış noktası: ${tour.hareket_noktasi}` : "",
+      tour.konaklama ? `🏨 Konaklama: ${tour.konaklama}` : "",
+      _hotelLine ? `🏨 Otel: ${_hotelLine}` : "",
+      tour.ulasim ? `🚐 Ulaşım: ${tour.ulasim}` : "",
+      _visaLine === "__REQUIRED_NO_NOTES__"
+        ? "🛂 Vize: Bu tur için vize gereklidir (detay için acenteye danışın)"
+        : _visaLine ? `🛂 Vize: ${_visaLine}` : "",
       tour.program_kisa ? `📝 Özet: ${tour.program_kisa}` : "",
       tour.gezilecek_yerler ? `🗺️ Gezilecek Yerler: ${tour.gezilecek_yerler}` : "",
+      _missingTr.length
+        ? `⚠️ SİSTEMDE KAYITLI OLMAYAN bilgiler: ${_missingTr.join(", ")}. Kullanıcı bunlardan birini sorarsa doğal bir dille bilginin acentemizde olduğunu söyle ve acenteye yönlendir — ASLA tahmin etme, sayı/isim/detay uydurma. "Sistemde kayıtlı değil" gibi teknik ifade KULLANMA.`
+        : "",
     ];
     return parts.filter(Boolean).join("\n");
   }
@@ -208,11 +259,21 @@ export function formatTourDetails(tour: any, language: string, _tone: string = "
     `*${tour.title}*`,
     `📍 Destination: ${tour.destination}`,
     price ? `💰 Price: ${price}₺ per person` : "",
+    _childPrice ? `👶 Child price: ${_childPrice}₺` : "",
     tour.tur_sure ? `⏱ Duration: ${tour.tur_sure}` : "",
     meetTime ? `🕐 Meeting time: ${meetTime}` : "",
     tour.hareket_noktasi ? `🚌 Pickup point: ${tour.hareket_noktasi}` : "",
+    tour.konaklama ? `🏨 Accommodation: ${tour.konaklama}` : "",
+    _hotelLine ? `🏨 Hotel: ${_hotelLine}` : "",
+    tour.ulasim ? `🚐 Transport: ${tour.ulasim}` : "",
+    _visaLine === "__REQUIRED_NO_NOTES__"
+      ? "🛂 Visa: Required for this tour (contact the agency for details)"
+      : _visaLine ? `🛂 Visa: ${_visaLine}` : "",
     tour.program_kisa ? `📝 Summary: ${tour.program_kisa}` : "",
     tour.gezilecek_yerler ? `🗺️ Places to Visit: ${tour.gezilecek_yerler}` : "",
+    _missingEn.length
+      ? `⚠️ Information NOT ON RECORD: ${_missingEn.join(", ")}. If the user asks about any of these, say naturally that the agency has this information and refer them to the agency — NEVER guess or invent numbers/names/details. Do NOT use technical phrasing like "not in the system".`
+      : "",
   ];
   return parts.filter(Boolean).join("\n");
 }

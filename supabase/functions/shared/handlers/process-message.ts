@@ -2019,6 +2019,66 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _unknownReply, newContext: context };
   }
 
+  // === 10c. VİZE DETERMİNİSTİK CEVAP (DATA-GAP FIX 3, 2026-07-03) ===
+  // Vize = en yüksek tekil hasar alanı: yanlış "vize gerekmiyor" cevabı
+  // müşterinin seyahatini iptal ettirebilir. LLM'e HİÇ düşmez.
+  // NLU HAM intent'ine bakılır (nluResult.intent === "visa_support") — G12
+  // haritasında visa_support → general_question'a maplenir, FSM intent'inde
+  // ayrım kaybolur. Ham intent'te ayrım var.
+  // R6 etkileşimi: visa_support → general_question → R6 muafiyet listesinde ✅
+  //   (telefon adımında vize sorusu R6'ya takılmaz; ayrıca bu blok R6'dan
+  //   SONRA olduğundan R6 muafiyeti zaten mesajı buraya ulaştırır).
+  // Tur bağlamı YOKKEN de deterministik yönlendirme (LLM'e bırakılmaz):
+  //   vize turdan bağımsız da kişisel duruma bağlıdır; genel soruda LLM'in
+  //   uydurma riskini açmanın gereği yok — karar: her durumda deterministik.
+  // visa_required=false GÜVENİLMEZ (şema DEFAULT false — boş bırakılmış tur
+  //   false görünür): "vize gerekmez" DEMEYİZ. Sadece visa_notes doluysa
+  //   içerik verilir; visa_required=true + notes boşsa "gerekli + acenteye
+  //   danışın"; diğer her durumda genel yönlendirme.
+  if (nluResult.intent === "visa_support") {
+    const _visaTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
+    const _agPhoneV = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    let _visaReply: string;
+    if (_visaTour?.visa_notes) {
+      const _vn: Record<string, string> = {
+        tr: `🛂 *${getLocalizedTourTitle(_visaTour.title, newContext.language)}* vize bilgisi:\n${_visaTour.visa_notes}\n\nKişisel durumunuza göre gereklilikler değişebilir — kesin bilgi için acentemize danışabilirsiniz.${_agPhoneV}`,
+        en: `🛂 Visa info for *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*:\n${_visaTour.visa_notes}\n\nRequirements may vary by personal situation — please confirm with our agency.${_agPhoneV}`,
+        de: `🛂 Visa-Info für *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*:\n${_visaTour.visa_notes}\n\nAnforderungen können je nach persönlicher Situation variieren — bitte bestätigen Sie mit unserer Agentur.${_agPhoneV}`,
+        ru: `🛂 Визовая информация для *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*:\n${_visaTour.visa_notes}\n\nТребования могут зависеть от личной ситуации — уточните в нашем агентстве.${_agPhoneV}`,
+        ar: `🛂 معلومات التأشيرة لـ *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*:\n${_visaTour.visa_notes}\n\nقد تختلف المتطلبات حسب حالتك الشخصية — يرجى التأكيد مع وكالتنا.${_agPhoneV}`,
+        fr: `🛂 Infos visa pour *${getLocalizedTourTitle(_visaTour.title, newContext.language)}* :\n${_visaTour.visa_notes}\n\nLes exigences peuvent varier selon votre situation — veuillez confirmer avec notre agence.${_agPhoneV}`,
+        es: `🛂 Información de visa para *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*:\n${_visaTour.visa_notes}\n\nLos requisitos pueden variar según su situación — confirme con nuestra agencia.${_agPhoneV}`,
+      };
+      _visaReply = _vn[newContext.language] || _vn.en;
+    } else if (_visaTour?.visa_required === true) {
+      const _vr: Record<string, string> = {
+        tr: `🛂 *${getLocalizedTourTitle(_visaTour.title, newContext.language)}* için vize gereklidir. Gereklilikler kişisel duruma göre değişebildiği için detaylı bilgiyi acentemizden almanızı rica ederiz.${_agPhoneV}`,
+        en: `🛂 A visa is required for *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*. As requirements vary by personal situation, please contact our agency for details.${_agPhoneV}`,
+        de: `🛂 Für *${getLocalizedTourTitle(_visaTour.title, newContext.language)}* ist ein Visum erforderlich. Da die Anforderungen variieren, wenden Sie sich bitte an unsere Agentur.${_agPhoneV}`,
+        ru: `🛂 Для *${getLocalizedTourTitle(_visaTour.title, newContext.language)}* требуется виза. Требования зависят от личной ситуации — обратитесь в наше агентство.${_agPhoneV}`,
+        ar: `🛂 التأشيرة مطلوبة لـ *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*. تختلف المتطلبات حسب الحالة الشخصية — يرجى التواصل مع وكالتنا.${_agPhoneV}`,
+        fr: `🛂 Un visa est requis pour *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*. Les exigences variant selon la situation, veuillez contacter notre agence.${_agPhoneV}`,
+        es: `🛂 Se requiere visa para *${getLocalizedTourTitle(_visaTour.title, newContext.language)}*. Los requisitos varían según la situación — contacte con nuestra agencia.${_agPhoneV}`,
+      };
+      _visaReply = _vr[newContext.language] || _vr.en;
+    } else {
+      const _vg: Record<string, string> = {
+        tr: `🛂 Vize gereklilikleri kişisel duruma (uyruk, pasaport türü vb.) göre değişebildiği için bu konuda net bilgiyi acentemizden almanızı rica ederiz.${_agPhoneV}`,
+        en: `🛂 Visa requirements depend on your personal situation (nationality, passport type, etc.), so please contact our agency for accurate information.${_agPhoneV}`,
+        de: `🛂 Visabestimmungen hängen von Ihrer persönlichen Situation ab (Nationalität, Passtyp usw.) — bitte wenden Sie sich für genaue Informationen an unsere Agentur.${_agPhoneV}`,
+        ru: `🛂 Визовые требования зависят от вашей личной ситуации (гражданство, тип паспорта и т.д.) — за точной информацией обратитесь в наше агентство.${_agPhoneV}`,
+        ar: `🛂 تعتمد متطلبات التأشيرة على حالتك الشخصية (الجنسية، نوع جواز السفر وغيرها) — يرجى التواصل مع وكالتنا للحصول على معلومات دقيقة.${_agPhoneV}`,
+        fr: `🛂 Les exigences de visa dépendent de votre situation personnelle (nationalité, type de passeport, etc.) — veuillez contacter notre agence pour des informations précises.${_agPhoneV}`,
+        es: `🛂 Los requisitos de visa dependen de su situación personal (nacionalidad, tipo de pasaporte, etc.) — contacte con nuestra agencia para información precisa.${_agPhoneV}`,
+      };
+      _visaReply = _vg[newContext.language] || _vg.en;
+    }
+    console.log(`[process-message] :10c VISA deterministik cevap (tour=${_visaTour?.id ?? "yok"}, notes=${!!_visaTour?.visa_notes}, required=${_visaTour?.visa_required === true})`);
+    await _save(_visaReply, newContext);
+    await adapter.sendResponse(_visaReply);
+    return { success: true, response: _visaReply, newContext };
+  }
+
   // === 11. TARİH LİSTESİ (deterministik) — D5: tarih sorusu HER stage'de yakalar ===
   // 2026-06-19 (Bug A3 kök çözümü): LLM artık tarih KONUŞMUYOR. Tarih listesi
   // YALNIZ deterministik gönderilir. Tetik koşulları:
