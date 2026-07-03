@@ -32,6 +32,7 @@ import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
+import { QUESTION_SIGNAL_RE } from "../constants/question-detection.ts";
 import { produceTourChangeContext, shouldApplyEarlyTourChange, buildTourChangePrefix } from "../services/tour-change.ts";
 import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
@@ -961,6 +962,48 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // geçirilir → birleşik mesajda (tur+tarih aynı turn) Blok 9 dateId resolution
   // context.currentTour henüz null olsa bile selectedTour'u fallback kullanır.
   const extractedInfo = extractAllInfo({ message, nluResult, fsmIntent, context, tours, tourJustChanged: _tourJustChangedThisTurn, selectedTour });
+
+  // === 8-PP. PROVIDE PROMOTE — BUG B PROMOTE'un simetriği (2026-07-03) ===
+  // Canlı vaka (exec 771f2a84, "Yılda Fufu"): waiting_for_name'de kullanıcı ismi
+  // yazdı → Haiku intent=general sınıfladı → isInformationalMessage intent
+  // listesi TRUE → T12 action mergeReservationInfo(isInformational=TRUE) →
+  // Kural 4 erken-return → isim (ve o turn'deki HER extract) SESSİZCE DÜŞTÜ.
+  // LLM history'den "aldım" uydurup telefon sordu (sahte kabul). SINIF bug:
+  // intent-kilitli merge isim/telefon/pax/tarih İLK toplamalarının hepsini
+  // etkiliyor — Haiku "çıplak veri → general" sapması sistematik veri kaybı.
+  //
+  // K1 dersiyle aynı ilke: NLU intent'i tutarsız, deterministik kanıt otorite.
+  // Kanıt: BEKLENEN adımın TAM O alanı extract katmanından (K3/Sorun F
+  // gate'lerinden geçerek) çıktı → kullanıcı "somut veri sundu" = provide_info
+  // semantiğinin ta kendisi → intent'i yükselt.
+  //
+  // GÜVENLİK ŞARTLARI:
+  //   - SADECE fsmIntent==="general" (general_question/support_request/greeting
+  //     DOKUNULMAZ — FAQ akışı, R6 muafiyeti, after-sales etkilenmez)
+  //   - SADECE COLLECTING_INFO + beklenen adımın alanı (çapraz alan yükseltmez:
+  //     waiting_for_name'de telefon extract'i promote tetiklemez)
+  //   - Mesaj SORU DEĞİL (QUESTION_SIGNAL_RE, 7 dil + ?/؟) — Kural 4'ün asıl
+  //     koruduğu "3 gün mü sürüyor?" sınıfı informational kalır
+  //   - Hayriye (BUG 2) korunur: içeriksiz "tamam" (extract yok) promote edilmez
+  //     → T13 CONFIRMING'e general ile geçemez
+  //   - Sorun F/K3 korunur: "Murat değil aslında Ahmet" Blok 5 blacklist'te
+  //     düşer → extract yok → promote yok
+  //   - SADECE fsmIntent değişir; nluResult ham çıktısı, extractedInfo ve diğer
+  //     guard'lar dokunulmaz.
+  if (fsmIntent === "general" && context.stage === "COLLECTING_INFO") {
+    const _ppExpectedFieldByStep: Record<string, string[]> = {
+      waiting_for_name: ["fullName"],
+      waiting_for_phone: ["phone"],
+      waiting_for_pax: ["paxAdult"],
+      waiting_for_date: ["dateId", "selectedDate"],
+    };
+    const _ppFields = _ppExpectedFieldByStep[context.collectionStep || ""] || [];
+    const _ppFilledField = _ppFields.find((f) => !!(extractedInfo as any)[f]);
+    if (_ppFilledField && !QUESTION_SIGNAL_RE.test(message)) {
+      console.log(`[process-message] PROVIDE PROMOTE: step=${context.collectionStep} + extractedInfo.${_ppFilledField} dolu + intent=general → provide_info`);
+      fsmIntent = "provide_info";
+    }
+  }
 
   // === 8a. F4 KATMAN 2 — ÇELİŞKİ TESPİTİ + İKİ DALLI SON-ONAY ===
   // 2026-06-25 (Katman 1 = 619417f detectConfirmation negative pattern kelime listesi

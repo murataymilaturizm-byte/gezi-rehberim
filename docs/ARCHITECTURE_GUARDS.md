@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (D2 fix — T23 niyet-sinyal şartı; X9-change ve ilk sürüm aynı gün).
+> Son güncelleme: 2026-07-03 (PROVIDE PROMOTE / G13 — intent-kilitli merge veri kaybı sınıfı; D2, X9-change ve ilk sürüm aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -84,6 +84,9 @@ PROCESS-MESSAGE — LLM ÖNCESİ (erken return'lar):
   8. G5 erken tur değişimi: shouldApplyEarlyTourChange (~L814) → context mutate
   9. KÖK 5 belirsiz tur listesi (~L838) │ B2 stage koruma intent remap (~L862)
      │ BUG B PROMOTE provide_info→change_info (~L921) │ B-6 negatif cevap (~L942)
+ 9b. Bilgi çıkarma: extractAllInfo (~L963) → **8-PP PROVIDE PROMOTE** (G13):
+     COLLECTING_INFO + beklenen adımın alanı extract edildi + intent=general +
+     soru değil → fsmIntent=provide_info
  10. F4 sahte-onay + değişiklik dalları (~L995-1103) — DAL 1 açık / DAL 2 belirsiz
  11. Pax guard'ları: negatif (~L1106) │ >9 acente (~L1130) │ >50 ofis (~L1151)
  12. H-β dolu tarih reddi (~L1210) │ H-pax kontenjan (~L1255)
@@ -243,6 +246,16 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | validateAIResponse sahte onay | `response-validator.ts` ~L504 — LLM "rezervasyonunuz alındı" uydurmasını 4 stage'de yakalar (48 pattern, 7 dil) | Aktif |
 | validateFieldReask | `response-validator.ts` ~L289 — dolu alanın tekrar sorulmasını bloklar; waiting_for_X meşru adım + change_info + changeAck + FAQ istisnalı | Aktif (K4/BUG D + ebf0f17 FAQ fix) |
 
+### G13 — PROVIDE PROMOTE (BUG B PROMOTE'un simetriği)
+| | |
+|---|---|
+| Dosya | `process-message.ts` 8-PP bloğu (extractAllInfo'nun hemen ardı, F4 öncesi) |
+| State | COLLECTING_INFO + waiting_for_{name/phone/pax/date} |
+| Koşul | fsmIntent==="general" + **beklenen adımın TAM O alanı** extract edildi (name→fullName, phone→phone, pax→paxAdult, date→dateId/selectedDate — çapraz alan tetiklemez) + mesaj soru değil (`QUESTION_SIGNAL_RE`, 7 dil + ?/؟, constants/question-detection.ts) |
+| Ne yapar | fsmIntent → "provide_info" (sadece intent; NLU ham çıktısı/extract dokunulmaz) → isInformationalMessage FALSE olur → T12 merge YAZAR → step ilerler → :11b/:11c deterministik ack |
+| Kaynak | Canlı vaka 771f2a84 "Yılda Fufu" (2026-07-03): intent=general → Kural 4 erken-return → isim düştü + LLM sahte kabul mesajı |
+| **Sınıf bulgusu** | mergeReservationInfo Kural 4 (`isInformational → {...existing}`) **alandan bağımsız** — intent=general'da isim/telefon/pax/tarih İLK toplamalarının HEPSİ düşüyordu. Haiku "çıplak veri → general" sapması sistematik veri kaybı sınıfıydı; K1 ("evet"→general) ile aynı kök desen |
+
 ### G12 — NLU katmanı (guard değil, etkileşim kaynağı)
 | Özellik | Kod gerçeği |
 |---|---|
@@ -295,6 +308,19 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 9. **G10 TTL ↔ K2 mesajı**: hadReservationInProgress koşulu adapter'da
    İKİ dosyada kopyalıdır (demo-chat + whatsapp-webhook) — birinde değişiklik
    diğerine elle taşınmalı (DRY borcu).
+10. **G13 ↔ Kural 4 ↔ Hayriye (BUG 2)**: Üçgen denge. Kural 4
+    (mergeReservationInfo isInformational erken-return) bilgi sorusu sırasında
+    yanlış extract'in state bozmasını engeller — G13 bu korumayı SORU-DEĞİL +
+    beklenen-alan-dolu şartıyla deler (soru mesajları QUESTION_SIGNAL_RE ile
+    dışarıda). Hayriye guard'ı (T13 general bloku) içeriksiz mesajın CONFIRMING
+    tetiklememesini ister — G13 extract-yok durumunda promote etmediği için
+    korunur; extract VARSA provide_info semantiği zaten doğru (son alan dolunca
+    T13 → :13 özet+onay = normal akış). QUESTION_SIGNAL_RE'yi daraltmak Kural 4
+    yüzeyini açar; genişletmek G13'ü körleştirir — değiştirirken üçünü birden test et.
+11. **G13 ↔ BUG B PROMOTE**: Koşullar ayrık — BUG B dolu+farklı alan +
+    provide_info → change_info; G13 boş+beklenen-alan-doldu + general →
+    provide_info. Sıra: BUG B extract'ten ÖNCE (nluResult.updates okur),
+    G13 extract'ten SONRA (extractedInfo okur). Çakışma yok.
 
 ---
 
@@ -323,3 +349,13 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
    Path 1'den geçtiği için bu kapıya gerçek onaylar düşmüyor; kalan general'lar
    gerçek belirsiz mesajlar. Ancak NLU bir FAQ'yi yanlışlıkla general derse
    özet-tekrar mesajı FAQ cevabını yutar (yorumda bilinen sınır).
+8. **validateFieldReask replacement'ı stage-körü** (Turn 3 vakası, bc73fd09):
+   COLLECTING_INFO'da eksik bilgiyle (isim boş) özet+onay sorusu basabiliyor —
+   "onaylıyor musunuz?" yanıltıcı. Replacement formatı stage-aware olmalı
+   (COLLECTING_INFO'da eksik alanı sor, CONFIRMING'de özet+onay). Backlog.
+9. **Adım-mesaj uyumu katmanı yok**: no-op kalan + LLM'e düşen adımlarda LLM
+   bir SONRAKİ alanı sorabiliyor (771f2a84: waiting_for_name'de "telefon?").
+   validateFieldReask sadece DOLU alanın tekrar sorulmasını engeller; boş-ama-
+   sırada-olmayan alan sorusu yakalanmıyor. PROVIDE PROMOTE (G13) bu vakayı
+   kapattı (step artık ilerliyor) ama sınıf genel olarak açık — post-launch
+   değerlendirme.
