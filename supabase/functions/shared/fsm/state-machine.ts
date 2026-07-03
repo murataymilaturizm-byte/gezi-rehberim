@@ -762,19 +762,17 @@ const transitions: StateTransition[] = [
     from: "CONFIRMING",
     to: "COMPLETED",
     condition: (ctx, input) => {
-      // 1. Deterministik onay tespiti — NLU'ya bakmadan ÖNCE kontrol et.
-      //    Kullanıcı açıkça onay verdiyse NLU intent'ten bağımsız geç.
-      //    2026-06-28 K1 EK GUARD (belt-and-suspenders): detectConfirmation pattern
-      //    fix sonrası "ok" yanlış-pozitifi kapatıldı, AMA başka edge regex sapması
-      //    olabilir. NLU intent="general" (chitchat) iken detectConfirmation TRUE
-      //    olursa COMPLETED'a GEÇME — kullanıcı chitchat yapıyor, onaylamıyor.
-      //    NLU prompt kuralı (nlu.ts:165, L191): gerçek onaylar CONFIRMING'de
-      //    "confirm_reservation" döner. "general" sadece chitchat. Yanlış-negatif
-      //    riski yok.
-      if (detectConfirmation(input.userMessage, ctx.language)) {
-        if (input.detectedIntent === "general") return false;
-        return true;
-      }
+      // 1. Deterministik onay tespiti — NLU'ya bakmadan geç.
+      //    2026-07-02 K1 REVIZE (canlı yanlış-negatif kanıtı — kayıp rezervasyon):
+      //    Eski "belt-and-suspenders" intent guard (intent=general iken bloklama)
+      //    KALDIRILDI. Haiku canlıda "evet"i intent=general sınıflandırıyor →
+      //    transition FAIL → RPC yok → sessiz kayıt kaybı (yanlış-pozitiften bile
+      //    sinsi). Deterministik pattern TEK otorite. K1 yanlış-pozitif koruması
+      //    detectConfirmation'ın İÇİNDE (lookaround boundary + negative guard
+      //    "ama/değil/değiştir") — bu satırın dışına ihtiyaç yok. Test:
+      //    "çok teşekkürler"/"kapadokya güzelmiş" → detectConfirmation FALSE (K1
+      //    korunur); "evet"/"onaylıyorum"/"tamam" → TRUE (yanlış-negatif kapanır).
+      if (detectConfirmation(input.userMessage, ctx.language)) return true;
       // 2. Bilgi sorusu gelirse kesinlikle CONFIRMING'de kal.
       if (isInformationalMessage(input.userMessage, input.detectedIntent)) return false;
       // 3. NLU "confirm_reservation" — Tulay case bug (2026-06-19): NLU "tulay tabi"

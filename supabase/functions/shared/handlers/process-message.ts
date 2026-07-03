@@ -2518,14 +2518,18 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _name = info.fullName || "";
     const _phone = info.phone || "";
 
+    // 2026-07-02 K1 KATMAN 3: confirm satırına net anahtar-kelime yönlendirmesi.
+    // detectConfirmation dar bir onay-kelime whitelist'i kullanır; kullanıcıyı doğru
+    // kelimeye yönlendirmek Haiku'nun intent sınıflandırma tutarsızlığından bağımsız
+    // olarak COMPLETED'a geçişi güvenilir kılar (canlı yanlış-negatif dersini kapatır).
     const _labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; confirm: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",  child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",     child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",  name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",  child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",      child: "طفل",     name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",    child: "enfant",  name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",    child: "niño",    name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
+      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",  child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu? Onaylıyorsanız *evet* yazın ✅" },
+      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",     child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Reply *yes* to confirm ✅" },
+      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",  name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Antworten Sie *ja* zur Bestätigung ✅" },
+      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",  child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Напишите *да* для подтверждения ✅" },
+      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",      child: "طفل",     name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ اكتب *نعم* للتأكيد ✅" },
+      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",    child: "enfant",  name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Répondez *oui* pour confirmer ✅" },
+      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",    child: "niño",    name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? Responda *sí* para confirmar ✅" },
     };
     const L = _labels[_lang] || _labels.tr;
 
