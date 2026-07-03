@@ -120,7 +120,14 @@ export class WhatsAppAdapter implements ChannelAdapter {
             context: null,
             stale: {
               lastStage: _stage,
-              hadReservationInProgress: !!(parsed.reservationInfo && parsed.reservationInfo.dateId),
+              // 2026-06-29 K2 FIX: COMPLETED + reservationConfirmed istisnası. Eski
+              // koşul sadece dateId'ye bakıyordu → COMPLETED rezervasyon (dateId dolu,
+              // RPC success) 12h TTL sonrası yanıltıcı "Önceki yarım rezervasyonunuz
+              // iptal edildi" mesajı gönderiyordu. DB'de kayıt korunur (veri kaybı yok),
+              // ama mesaj yanlış. 3 katmanlı sigorta: stage + reservationConfirmed + dateId.
+              hadReservationInProgress: parsed.stage !== "COMPLETED"
+                && !parsed.reservationConfirmed
+                && !!(parsed.reservationInfo && parsed.reservationInfo.dateId),
               ageMinutes: _ageMin,
               lastLanguage: parsed.language,
             },

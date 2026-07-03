@@ -64,7 +64,16 @@ export class DemoChatAdapter implements ChannelAdapter {
           context: null,
           stale: {
             lastStage: _stage,
-            hadReservationInProgress: !!(c.reservationInfo && c.reservationInfo.dateId),
+            // 2026-06-29 K2 FIX: COMPLETED + reservationConfirmed istisnası. Eski
+            // koşul sadece dateId'ye bakıyordu → COMPLETED rezervasyon (dateId dolu,
+            // RPC success) 12h TTL sonrası yanıltıcı "Önceki yarım rezervasyonunuz
+            // iptal edildi" mesajı gönderiyordu. DB'de kayıt korunur (veri kaybı yok),
+            // ama mesaj yanlış. 3 katmanlı sigorta: stage + reservationConfirmed + dateId.
+            // COLLECTING_INFO + dateId dolu + reservationConfirmed=false (gerçek yarım
+            // rez) HÂLÂ guard=TRUE → "iptal" mesajı (DOĞRU davranış korunur).
+            hadReservationInProgress: c.stage !== "COMPLETED"
+              && !c.reservationConfirmed
+              && !!(c.reservationInfo && c.reservationInfo.dateId),
             ageMinutes: _ageMin,
             lastLanguage: c.language,
           },
