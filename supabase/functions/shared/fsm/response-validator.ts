@@ -8,6 +8,7 @@
 
 import type { ConversationStage } from "./types.ts";
 import { formatReservationSummary } from "./prompts/helpers.ts";
+import { STEP_QUESTIONS } from "../constants/step-questions.ts";
 
 // Stage'ler validator çalıştırılacak
 // TOUR_SELECTED eklendi: AI'nın "rezervasyonunuz oluşturuldu" demesini bu aşamada da engelle
@@ -418,13 +419,25 @@ export function validateFieldReask(
       textSnippet: text.slice(0, 120),
     });
 
-    // Replacement seçimi (2026-06-23 REVİZE-2):
+    // Replacement seçimi (2026-06-23 REVİZE-2 + 2026-07-03 P7 STAGE-AWARE):
     //   COMPLETED → kapanış mesajı (rezervasyon tamamlandı).
-    //   diğer (CONFIRMING + COLLECTING_INFO change_info sonrası) → TAM ÖZET + onay
-    //   currentTour yoksa REDIRECT_MESSAGES fallback (sade "kontrol edip onaylar mısınız")
+    //   CONFIRMING → TAM ÖZET + onay (mevcut davranış AYNEN korunur).
+    //   COLLECTING_INFO (ara adım) → P7 FIX: ÖZET+ONAY DİLİ YOK — canlı bug:
+    //     waiting_for_name'de FAQ sorusu → replacement "kontrol edip onaylar
+    //     mısınız? Ad-soyadınızı alabilir miyim?" basıyordu, ortada özet yokken
+    //     ONAY istendi. Artık sadece mevcut adımın sorusu (STEP_QUESTIONS,
+    //     process-message :11b/:11c ile aynı ton, tek-kaynak sabit).
+    //   currentTour yoksa REDIRECT_MESSAGES fallback.
     let replacementSuffix: string;
     if (stage === "COMPLETED") {
       replacementSuffix = REDIRECT_MESSAGES_COMPLETED[language] || REDIRECT_MESSAGES_COMPLETED.en;
+    } else if (
+      stage === "COLLECTING_INFO" &&
+      collectionStep &&
+      STEP_QUESTIONS[collectionStep]
+    ) {
+      replacementSuffix =
+        STEP_QUESTIONS[collectionStep][language] || STEP_QUESTIONS[collectionStep].en;
     } else {
       if (currentTour) {
         const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);

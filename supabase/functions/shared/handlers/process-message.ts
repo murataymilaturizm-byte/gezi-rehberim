@@ -17,7 +17,9 @@ import {
   detectLanguageChangeIntent,
   getDefaultToneForLanguage,
   formatDateForLanguage,
+  getWeekdayName,
 } from "../fsm/localization.ts";
+import { STEP_QUESTIONS } from "../constants/step-questions.ts";
 import { detectLanguage } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
 import { validateAIResponse, validateInjectionResponse, validateFieldReask } from "../fsm/response-validator.ts";
@@ -2104,6 +2106,49 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _visaReply, newContext };
   }
 
+  // === 10d. TARİH-DEĞİŞİM ACK (P5, 2026-07-03) ===
+  // Canlı vaka (WhatsApp): waiting_for_name'de "hayır şubatın yirmisi" → tarih
+  // state'te DOĞRU değişti (FSM merge + BUG-X4 override) ama "güncelledim" ack'i
+  // gitmedi — sessiz değişiklik. Matristeki tarih ⚠ hücreleri (§3b).
+  // A3-date'in _hasChangeKeyword şartını gevşetmek YERİNE FSM-SONRASI deterministik
+  // kontrol: eski dateId DOLUYDU + yeni dateId FARKLI → ack + mevcut adımın sorusu.
+  // İLK atama (null→değer) ack ÜRETMEZ (o :11a-AUTO/MANUAL-DATE-ACK'in işi).
+  // ÇİFT-ACK riski YAPISAL SIFIR: A3-date tetiklenmişse kendi RETURN'ünü yapar,
+  // FSM'e ve buraya hiç ulaşılmaz.
+  {
+    const _p5OldDateId = (context.reservationInfo as any)?.dateId;
+    const _p5NewDateId = (newContext.reservationInfo as any)?.dateId;
+    const _p5Step = String(newContext.collectionStep || "");
+    if (
+      _p5OldDateId &&
+      _p5NewDateId &&
+      _p5OldDateId !== _p5NewDateId &&
+      newContext.stage === "COLLECTING_INFO" &&
+      STEP_QUESTIONS[_p5Step]
+    ) {
+      const _lang5 = newContext.language || "tr";
+      const _oldD = formatDateForLanguage((context.reservationInfo as any)?.selectedDate || "", _lang5);
+      const _newRaw = (newContext.reservationInfo as any)?.selectedDate || "";
+      const _newWd = getWeekdayName(_newRaw, _lang5);
+      const _newD = formatDateForLanguage(_newRaw, _lang5) + (_newWd ? ` (${_newWd})` : "");
+      const _ackMsgs: Record<string, string> = {
+        tr: `*Tarihi* ${_oldD} → ${_newD} olarak güncelledim. ✨`,
+        en: `*Date* updated from ${_oldD} → ${_newD}. ✨`,
+        de: `*Datum* von ${_oldD} → ${_newD} aktualisiert. ✨`,
+        ru: `*Дата* обновлена с ${_oldD} → ${_newD}. ✨`,
+        ar: `تم تحديث *التاريخ* من ${_oldD} إلى ${_newD}. ✨`,
+        fr: `*Date* mise à jour de ${_oldD} → ${_newD}. ✨`,
+        es: `*Fecha* actualizada de ${_oldD} → ${_newD}. ✨`,
+      };
+      const _stepQ = STEP_QUESTIONS[_p5Step][_lang5] || STEP_QUESTIONS[_p5Step].en;
+      const _p5Reply = `${_ackMsgs[_lang5] || _ackMsgs.tr}\n\n${_stepQ}`;
+      console.log(`[process-message] :10d P5 tarih-değişim ack (${_p5OldDateId}→${_p5NewDateId}, step=${_p5Step})`);
+      await _save(_p5Reply, newContext);
+      await adapter.sendResponse(_p5Reply);
+      return { success: true, response: _p5Reply, newContext };
+    }
+  }
+
   // === 11. TARİH LİSTESİ (deterministik) — D5: tarih sorusu HER stage'de yakalar ===
   // 2026-06-19 (Bug A3 kök çözümü): LLM artık tarih KONUŞMUYOR. Tarih listesi
   // YALNIZ deterministik gönderilir. Tetik koşulları:
@@ -2179,7 +2224,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _showDual = agency.show_multi_currency !== false;
       const dateLines = tourForDates.dates
         .map((d: any, idx: number) => {
-          const dateText = formatDateForLanguage(d.departure_date, newContext.language);
+          // 2026-07-03 P4: gün adı KODDAN (Intl, Europe/Istanbul) — LLM
+          // 12.12.2026'ya "Cuma" diyordu (gerçek: Cumartesi). Liste history'de
+          // göründüğü için LLM sorulduğunda buradaki doğru günü kopyalar.
+          const _wd = getWeekdayName(d.departure_date, newContext.language);
+          const dateText = formatDateForLanguage(d.departure_date, newContext.language) + (_wd ? ` (${_wd})` : "");
           const priceText = d.price_adult
             ? ` - ${formatPriceSync(d.price_adult, _tourCurrency, newContext.language, _exRates, _showDual, languageCurrencies)}`
             : "";
@@ -2221,15 +2270,34 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
       let dateReply = dateSelMsgs[newContext.language] || dateSelMsgs.tr;
       if (_invalidDateForPreamble) {
-        const _preambles: Record<string, string> = {
-          tr: `"${_invalidDateForPreamble}" tarihi bu tur için müsait değil. 😔\n\n`,
-          en: `Sorry, "${_invalidDateForPreamble}" is not available for this tour. 😔\n\n`,
-          de: `Leider ist "${_invalidDateForPreamble}" für diese Tour nicht verfügbar. 😔\n\n`,
-          ru: `К сожалению, "${_invalidDateForPreamble}" недоступно для этого тура. 😔\n\n`,
-          ar: `للأسف، "${_invalidDateForPreamble}" غير متاح لهذه الجولة. 😔\n\n`,
-          fr: `Désolé, "${_invalidDateForPreamble}" n'est pas disponible pour ce circuit. 😔\n\n`,
-          es: `Lo siento, "${_invalidDateForPreamble}" no está disponible para este tour. 😔\n\n`,
-        };
+        // 2026-07-03 P6: <UNKNOWN> sızıntı guard'ı. Canlı bug: NLU dates'e
+        // "<UNKNOWN>" placeholder döndürdü → Blok 1 placeholder guard'ı
+        // STATE'i koruyor ama değer selectedDate üzerinden BU ŞABLONA sızdı →
+        // kullanıcı '"<UNKNOWN>" tarihi ... müsait değil' gördü. Placeholder/
+        // boş/anlamsız değerde tırnaklı formu BASMA — jenerik form kullan.
+        const _isPlaceholderDate =
+          /^<.*>$|^undefined$|^null$|^n\/?a$|^-+$|^\?+$|^bilinmiyor$|^unknown$/i.test(
+            String(_invalidDateForPreamble).trim(),
+          ) || String(_invalidDateForPreamble).trim().length < 2;
+        const _preambles: Record<string, string> = _isPlaceholderDate
+          ? {
+              tr: `Belirttiğiniz tarih için müsaitlik bulamadım. 😔\n\n`,
+              en: `I couldn't find availability for that date. 😔\n\n`,
+              de: `Für dieses Datum habe ich keine Verfügbarkeit gefunden. 😔\n\n`,
+              ru: `Не удалось найти доступность на эту дату. 😔\n\n`,
+              ar: `لم أجد توفراً لهذا التاريخ. 😔\n\n`,
+              fr: `Je n'ai pas trouvé de disponibilité pour cette date. 😔\n\n`,
+              es: `No encontré disponibilidad para esa fecha. 😔\n\n`,
+            }
+          : {
+              tr: `"${_invalidDateForPreamble}" tarihi bu tur için müsait değil. 😔\n\n`,
+              en: `Sorry, "${_invalidDateForPreamble}" is not available for this tour. 😔\n\n`,
+              de: `Leider ist "${_invalidDateForPreamble}" für diese Tour nicht verfügbar. 😔\n\n`,
+              ru: `К сожалению, "${_invalidDateForPreamble}" недоступно для этого тура. 😔\n\n`,
+              ar: `للأسف، "${_invalidDateForPreamble}" غير متاح لهذه الجولة. 😔\n\n`,
+              fr: `Désolé, "${_invalidDateForPreamble}" n'est pas disponible pour ce circuit. 😔\n\n`,
+              es: `Lo siento, "${_invalidDateForPreamble}" no está disponible para este tour. 😔\n\n`,
+            };
         dateReply = (_preambles[newContext.language] || _preambles.tr) + dateReply;
       }
 

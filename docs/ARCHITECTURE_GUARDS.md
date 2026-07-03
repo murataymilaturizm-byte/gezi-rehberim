@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (A-P1+A-P2 / change-family — isim-pending + tur-sinyal, §3b matrisi eklendi; G14, G13, D2, X9-change ve ilk sürüm aynı gün).
+> Son güncelleme: 2026-07-03 (P4-P7 polish paketi — gün adları deterministik, :10d tarih-ack, UNKNOWN sızıntı guard'ı, stage-aware replacement; A-P1/A-P2, G14, G13, D2, X9-change ve ilk sürüm aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -294,14 +294,16 @@ tur=tekil-eşleşme(G5)+RE(7c).
 | Alan \ Bağlam | waiting_for_date | waiting_for_pax | waiting_for_name | waiting_for_phone | CONFIRMING |
 |---|---|---|---|---|---|
 | pax | X9 red (ilk-toplama-öncesi, doğru) | ✅ normal | ✅ X9-change | ✅ X9-change | ✅ A2 |
-| tarih | ✅ normal | ⚠️ ack'siz merge | ⚠️ ack'siz merge (P5 gözlemi) | ⚠️ ack'siz merge | ✅ A3-date |
+| tarih | ✅ normal | ✅ :10d P5 ack | ✅ :10d P5 ack | ✅ :10d P5 ack | ✅ A3-date |
 | isim | — | — | ✅ normal+G13 | ✅ Blok 5b (A-P1) → A3-name | ✅ Blok 5b (A-P1) → A3-name |
 | telefon | — | — | ✅ simple koşulsuz | ✅ normal | ✅ A3-phone/PROMOSYON/BUG B |
 | tur | ✅ G5 (tekil) | ✅ G5/7c (A-P2) | ✅ G5/7c (A-P2) | ✅ G5(tekil)/7c(belirsiz) + R6 muaf (A-P2) | ✅ aynı |
 
-⚠️ hücreler (tarih ack'siz merge): state DOĞRU değişir (FSM merge + BUG-X4
-override) ama kullanıcıya deterministik değişiklik-ack gitmez — A3-date yalnız
-_hasChangeKeyword'lü mesajlarda tetikleniyor. Açık Sorular #15.
+Tarih hücreleri (P5, 2026-07-03): eski ⚠️ ack'siz merge kapatıldı — :10d bloğu
+FSM-SONRASI deterministik kontrol yapar: eski dateId DOLUYDU + yeni FARKLI →
+"Tarihi X → Y güncelledim ✨" + mevcut adımın sorusu (STEP_QUESTIONS tek-kaynak).
+İlk atama (null→değer) ack üretmez (:11a'nın işi). Çift-ack yapısal sıfır:
+A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
 
 ## 4. ETKİLEŞİM NOTLARI (birbirine dokunan guard'lar)
 
@@ -390,10 +392,10 @@ _hasChangeKeyword'lü mesajlarda tetikleniyor. Açık Sorular #15.
    Path 1'den geçtiği için bu kapıya gerçek onaylar düşmüyor; kalan general'lar
    gerçek belirsiz mesajlar. Ancak NLU bir FAQ'yi yanlışlıkla general derse
    özet-tekrar mesajı FAQ cevabını yutar (yorumda bilinen sınır).
-8. **validateFieldReask replacement'ı stage-körü** (Turn 3 vakası, bc73fd09):
-   COLLECTING_INFO'da eksik bilgiyle (isim boş) özet+onay sorusu basabiliyor —
-   "onaylıyor musunuz?" yanıltıcı. Replacement formatı stage-aware olmalı
-   (COLLECTING_INFO'da eksik alanı sor, CONFIRMING'de özet+onay). Backlog.
+8. ~~**validateFieldReask replacement'ı stage-körü**~~ **ÇÖZÜLDÜ (2026-07-03,
+   P7)**: replacement stage-aware — COMPLETED→kapanış, CONFIRMING→özet+onay
+   (aynen), COLLECTING_INFO→STEP_QUESTIONS adım sorusu (onay/özet dili YOK).
+   FAQ-koruma yolu (2026-06-28 fix) dokunulmadı.
 9. **Adım-mesaj uyumu katmanı yok**: no-op kalan + LLM'e düşen adımlarda LLM
    bir SONRAKİ alanı sorabiliyor (771f2a84: waiting_for_name'de "telefon?").
    validateFieldReask sadece DOLU alanın tekrar sorulmasını engeller; boş-ama-
@@ -417,8 +419,21 @@ _hasChangeKeyword'lü mesajlarda tetikleniyor. Açık Sorular #15.
     gerçek dispatch'e terfisi; A2/A3/X9/Blok5b/BUG B'nin tek çatıda toplanması.
     Launch öncesi büyük refactor riski nedeniyle ertelendi; alan başına dar
     fix'ler (X9-change, A-P1, A-P2) kanıtlanmış desen olarak yeterli.
-15. **Ack'siz merge sınıfı (sıradaki küçük iş)**: §3b matrisindeki tarih ⚠️
-    hücreleri — COLLECTING_INFO ara adımlarında tarih değişikliği state'e DOĞRU
-    yazılıyor (FSM merge + BUG-X4) ama deterministik değişiklik-ack üretilmiyor
-    (A3-date yalnız change-keyword'lü mesajlarda). FSM-sonrası "dateId değişti
-    ise ack" katmanı değerlendirilecek.
+15. ~~**Ack'siz merge sınıfı**~~ **ÇÖZÜLDÜ (2026-07-03, P5)**: :10d bloğu —
+    FSM-sonrası dateId dolu→farklı kontrolü + deterministik ack + adım sorusu.
+    §3b matrisi güncellendi (tarih hücreleri ✅).
+16. **P4 KURALI (kalıcı)**: Gün adları ASLA LLM'e bırakılmaz — koddan
+    hesaplanır (`getWeekdayName`, Intl + Europe/Istanbul sabit TZ). Yeni tarih
+    basan HER şablon gün adını bu helper'dan almalı; prompt'ta gün-adı-yasağı
+    kuralı var (hallucinationGuard). Canlı kanıt: LLM 12.12.2026'ya "Cuma"
+    dedi (gerçek: Cumartesi).
+17. **P6 sanitize notu**: NLU placeholder'ları (`<UNKNOWN>` vb.) state'e Blok 1
+    guard'ıyla girmiyor AMA `selectedDate` üzerinden kullanıcıya dönük
+    şablonlara sızabiliyordu — :11 preamble'ına placeholder kontrolü kondu
+    (jenerik form). Kullanıcıya dönük YENİ şablona dinamik değer basarken
+    placeholder kontrolü ekle (dar tutuldu; genel sanitize helper'a
+    ihtiyaç doğarsa Blok 1'deki `_isPlaceholder` regex'i tek-kaynak yapılmalı).
+18. **Ödeme-FAQ verisi prompt'a bağlanacak**: P7 vakasında kullanıcının asıl
+    sorusu ("ödemeyi nasıl yapıyoruz") cevapsız kalabiliyor — agencies
+    payment_instructions/payment_methods_text COLLECTING_INFO prompt'unda
+    her zaman erişilebilir mi denetlenmeli (G14 envanter yaklaşımıyla). Ayrı iş.

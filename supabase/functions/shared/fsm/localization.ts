@@ -212,3 +212,30 @@ export function formatDateForLanguage(dateString: string, language: string): str
     return dateString; // Return original if formatting fails
   }
 }
+
+/**
+ * 2026-07-03 P4: Gün adı KODDAN hesaplanır — LLM'e bırakılmaz.
+ * Canlı bug: LLM 12.12.2026'ya "Cuma" dedi (gerçek: Cumartesi).
+ * Intl.DateTimeFormat locale'leri 7 dili hazır verir (elle liste yok).
+ * timeZone Europe/Istanbul SABİT — UTC kayması günü kaydırmasın
+ * (DB DATE "2026-12-12" → new Date UTC-midnight; TZ'siz format sunucu
+ * TZ'sine göre farklı gün basabilirdi).
+ * Hata/geçersiz tarih → boş string (çağıran taraf parantezi hiç basmaz).
+ */
+const WEEKDAY_LOCALES: Record<string, string> = {
+  tr: 'tr-TR', en: 'en-US', de: 'de-DE', ru: 'ru-RU',
+  ar: 'ar-EG', fr: 'fr-FR', es: 'es-ES',
+};
+export function getWeekdayName(dateString: string, language: string): string {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat(WEEKDAY_LOCALES[language] || WEEKDAY_LOCALES.en, {
+      weekday: 'long',
+      timeZone: 'Europe/Istanbul',
+    }).format(date);
+  } catch (_e) {
+    return '';
+  }
+}

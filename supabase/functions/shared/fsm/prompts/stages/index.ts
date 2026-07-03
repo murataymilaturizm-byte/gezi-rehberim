@@ -332,7 +332,12 @@ export function getStagePrompt(context: PromptContext): string {
 🚨 KRİTİK KURAL - TUR PROGRAMI:
 - Tur programı, gezilecek yerler için SADECE gezilecek_yerler ve program_kisa alanlarını kullan.
 - Bu alanlar boşsa "Detaylı program için acentemizle iletişime geçiniz" de.
-- ASLA program uydurma.`
+- ASLA program uydurma.
+
+🚨 KRİTİK KURAL - GÜN ADLARI:
+- Bir tarihin haftanın hangi gününe denk geldiğini ASLA KENDİN HESAPLAMA.
+- Sistem tarih listelerinde gün adını parantez içinde verir: "20.12.2026 (Pazar)" — SADECE o verilen gün adını kullan.
+- Gün adı verilmemişse gün SÖYLEME; sadece tarihi söyle.`
       : `\n\n🌐 LANGUAGE REMINDER: Respond in the user's language. Always match the language of their message.\n\n🚫 CRITICAL RULE - NO HALLUCINATION:
 - NEVER invent tours, dates, prices or information not in the database.
 - Only use information from the tour list provided to you.
@@ -343,6 +348,11 @@ export function getStagePrompt(context: PromptContext): string {
 - Address, working hours, cancellation/refund policy, included services → ONLY use data from the Agency Info section provided to you.
 - If this information is not given to you (not in the list): say "Please contact our agency for this information." NEVER guess or invent.
 - Especially for: specific address, opening/closing hours, per-person inclusions — if not provided, DO NOT guess.
+
+🚨 CRITICAL RULE - WEEKDAY NAMES:
+- NEVER calculate which day of the week a date falls on yourself.
+- System-provided date lists include the weekday in parentheses: "Dec 20, 2026 (Sunday)" — ONLY use that given weekday.
+- If no weekday is provided, do NOT state one; just say the date.
 
 🚨 CRITICAL RULE - DEPARTURE / MEETING POINT:
 - For questions about "departure point", "where to meet", "pickup location":
