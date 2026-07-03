@@ -1886,7 +1886,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     //   - _isInfoQuestionForFlowReturn (L3393)
     // Helper'a çıkarma ve SENKRON intent listesi tutma — post-launch refactor.
     fsmIntent !== "general_question" &&
-    fsmIntent !== "support_request"
+    fsmIntent !== "support_request" &&
+    // 2026-07-03 A-P2 (ii): TUR-SİNYALİ muafiyeti (canlı vaka P2). Mesajda
+    // tour-matcher eşleşmesi varsa (tekil selectedTour VEYA çoklu/belirsiz
+    // multipleTourMatches) kullanıcı TELEFON değil TUR konuşuyor — "geçerli
+    // telefon değil" basma; akış tur-değişim katmanlarına (G5/7c) veya LLM'e
+    // düşsün. Saf geçersiz girdi ("abc def") tur eşleşmesi üretmez → R6 korunur.
+    selectedTour === null &&
+    multipleTourMatches.length === 0
   ) {
     const _phInvalidMsgs: Record<string, string> = {
       tr: `"${message.trim()}" geçerli bir telefon numarası değil. 📱\n\nLütfen tam numaranızı girin (örn: 0532 123 45 67 veya +90 532 123 45 67)`,

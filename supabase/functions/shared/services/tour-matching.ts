@@ -25,8 +25,17 @@ import { isMeaningfulTourKeyword } from "../constants/tour-matching.ts";
  *   - tour-matching.ts B-5 gate gevşemesi (waiting_for_name/phone'da)
  *   - process-message.ts stage koruma (B-2) istisnası
  */
+// 2026-07-03 A-P2 genişletmesi (canlı vaka P2: waiting_for_phone'da "bi dakika
+// tur yanlış, kapadokya olacaktı" → RE eşleşmedi → 7c belirsiz-liste + B2
+// istisnası kaçtı → R6 "geçersiz telefon" bastı, YANLIŞ TURLA devam edildi).
+// Eklenen sınıflar: tur+yanlış/hata, yanlış+tur, "olacaktı" (düzeltme kipi —
+// "kapadokya olacaktı"da "tur" kelimesi geçmez). Güvenlik: RE'yi tüketen yerler
+// tur eşleşmesini AYRICA şart koşar (7c: multipleTourMatches>1; B2 istisnası:
+// selectedTour!=null+farklı; B-5 gevşemesi sadece tour-matching'e İZİN verir,
+// eşleşme yoksa etkisiz) → "20 aralık olacaktı" tarih düzeltmesi yanlış
+// tetiklemez. 7 dil eşitlemesi Faz 4'te; mevcut TR kapsam korunur.
 export const TOUR_CHANGE_PHRASE_RE =
-  /(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur)/i;
+  /(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti)/i;
 
 function normalizeNluField(value: any): string[] {
   if (!value) return [];

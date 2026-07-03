@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (DATA-GAP / G14 — tur alanları prompt bütünlüğü + vize deterministik; G13, D2, X9-change ve ilk sürüm aynı gün).
+> Son güncelleme: 2026-07-03 (A-P1+A-P2 / change-family — isim-pending + tur-sinyal, §3b matrisi eklendi; G14, G13, D2, X9-change ve ilk sürüm aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -154,12 +154,12 @@ kelime-sözlüğü genişletmesi).
 **akış-içi değiştirme ailesi (adım 13) FSM'den ÖNCE, R6 (adım 16) FSM'den
 SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 
-### G3 — R6 telefon validasyonu + D1 muafiyeti
+### G3 — R6 telefon validasyonu + D1 muafiyeti + A-P2 tur-sinyal muafiyeti
 | | |
 |---|---|
-| Dosya | `process-message.ts` ~L1824-1858 |
+| Dosya | `process-message.ts` ~L1824-1900 |
 | State | COLLECTING_INFO + waiting_for_phone (önceki turn de aynı step) |
-| Koşul | `!extractedInfo.phone` + `!isValidPhone(message)` + intent ∉ {general_question, support_request} |
+| Koşul | `!extractedInfo.phone` + `!isValidPhone(message)` + intent ∉ {general_question, support_request} + **A-P2 (2026-07-03): `selectedTour===null && multipleTourMatches.length===0`** — mesajda tour-matcher eşleşmesi varsa kullanıcı TUR konuşuyor, "geçersiz telefon" basılmaz (canlı P2: "tur yanlış, kapadokya olacaktı" R6'ya takılıp YANLIŞ TURLA devam ediyordu) |
 | Sıra | FSM sonrası, deterministik mesajlardan önce |
 | Kaynak | R6 (2026-06-26) + D1 muafiyeti (36af597) |
 
@@ -188,6 +188,7 @@ SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 | Dosya | `tour-change.ts` ~L78-101; çağrı: `process-message.ts` ~L814 |
 | Koşul | selectedTour ≠ currentTour + stage ∈ {TOUR_SELECTED (intent-guard'lı: reservation_intent/tour_selected/change_info VEYA hasReservationSignal), COLLECTING_INFO, CONFIRMING (intent-bağımsız)} |
 | Ne yapar | produceTourChangeContext: pax/isim/telefon spread ile KORUNUR (Özge fix), dateId/selectedDate silinir, collectionStep=waiting_for_date |
+| TOUR_CHANGE_PHRASE_RE (A-P2, 2026-07-03) | RE genişletildi: `tur+yanlış/hata`, `yanlış+tur`, `olacaktı` (düzeltme kipi — "kapadokya olacaktı"da "tur" geçmez). Tüketiciler tur eşleşmesini AYRICA şart koştuğu için "20 aralık olacaktı" tarih düzeltmesi yanlış tetiklemez. 3 tüketici: 7c belirsiz-liste, B2 stage-koruma istisnası, B-5 gate gevşemesi |
 | **NÜANS** | T10 (TOUR_SELECTED→TOUR_SELECTED, state-machine) AYNI helper'ı kullanır ama sonrasında `collectionStep=undefined` override eder (ALT-KÖK A — TOUR_SELECTED'da tarih beklenmez) |
 | Kaynak | BUG-X6, BUG-X7, ALT-KÖK A (2026-06-25) |
 
@@ -214,6 +215,7 @@ SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 | Pending konumu | Bilinçli: Blok 9 SONRASI + Blok 10 ÖNCESİ — Blok 10 auto-assign dateId'si kullanıcı mesajından gelmez, pending iptaline sebep olmamalı. "aslında 3'ü olsun" ayın 3'ü eşleşirse pax İPTAL, tarih akışı kazanır (tarih→pax sızıntı koruması delinmez) |
 | Pattern kaynağı | `shared/constants/change-detection.ts` CHANGE_KEYWORDS_RE — process-message A1/A2/A3 `_hasChangeKeyword` ile TEK kaynak (DRY) |
 | Kaynak | BUG-X9 ("ondördü olur" 14 pax sızıntısı) + X9-change fix (telefon adımında "aslında 3 olsun" R6'ya takılıyordu) |
+| **İSİM-pending (Blok 5b, A-P1 2026-07-03)** | X9-change'in İSİM kopyası. Koşullar: NLU/simple fullName bulamadı + CHANGE_KEYWORDS_RE + `reservationInfo.fullName` DOLU (değişiklik bağlamı) + **isim-bağlam kelimesi ŞART** (isim/ismi/ad/adım/soyad/name — bağlamsız "aslında yarın gelelim" tipi cümlelerin isim sanılmasını kapıda keser). Aday: change/bağlam/dolgu kelimeleri elendikten sonra kalan TAM 2-3 harf-ağırlıklı kelime; **Title-Case ŞARTI YOK** (canlı kanıt: kullanıcılar "leman tete" küçük yazıyor). ASIL SİGORTA: aday Sorun F gate'lerinden geçer (NegationLeak+TourLeak+onay-blacklist, tek-kaynak). Kabul → extractedInfo.fullName → A3-name/BUG B mevcut haliyle devralır. Kaynak: canlı P1 (CONFIRMING'de "ismi düzelt, Ahmet Yılmaz olacak" yutuluyordu — NLU Sorun F correction-guard'ı meşru düzeltmede de null dönüyor, simple/Blok5 step-gated) |
 
 ### G9 — O1 grubu (birleşik mesaj tarih→ID)
 | Parça | Dosya | Ne yapar |
@@ -280,6 +282,26 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | **Prompt caching** | **UYGULANAMIYOR (2026-07-03 incelemesi)**: Haiku 4.5 minimum cache'lenebilir prefix eşiği **4096 token** (önceki denemedeki "2048" bilgisi YANLIŞTI); NLU sabit prefix'i (tool şeması + NLU_SYSTEM_PROMPT ≈ 3.5-4.7k token) eşiğin altında/sınırında → cache_control eklense bile Anthropic sessizce cache kurmaz (canlı kanıt: cache_creation=0). Prompt'u yapay şişirmek/availableTours'u geri koymak anti-pattern. **Yeniden değerlendirme koşulu**: NLU_SYSTEM_PROMPT ~18k karakteri aşarsa system'i array+cache_control formatına çevir (prefix=tools+system birlikte); dinamikler (mesaj/summary/state/tur) messages'ta ZATEN doğru yerde. **KURAL (gelecek NLU prompt değişiklikleri)**: NLU_SYSTEM_PROMPT ve nluTool şemasına ASLA dinamik içerik (tarih, tur listesi, session verisi) interpolasyonu yapma — caching bir gün açıldığında ilk byte farkı tüm cache'i kırar; dinamik her şey contextPrompt'a. Not: ana model (Sonnet, ai.ts) caching AKTİF ve bu kural orada bugün zorunlu |
 
 ---
+
+## 3b. AKIŞ-İÇİ DEĞİŞİKLİK AİLESİ — ALAN × BAĞLAM MATRİSİ (2026-07-03)
+
+Ailenin resmi haritası (P1+P2 ortak teşhisinden; A-P1/A-P2 fix'leri sonrası durum).
+Ortak kök: değişiklik NİYETİ tespiti ortak (CHANGE_KEYWORDS_RE) ama DEĞER
+tespiti alan başına asimetrik — telefon=koşulsuz regex, tarih=step-bağımsız
+NLU+Blok9, pax=peopleContext+X9-change, isim=Blok5b-pending (A-P1),
+tur=tekil-eşleşme(G5)+RE(7c).
+
+| Alan \ Bağlam | waiting_for_date | waiting_for_pax | waiting_for_name | waiting_for_phone | CONFIRMING |
+|---|---|---|---|---|---|
+| pax | X9 red (ilk-toplama-öncesi, doğru) | ✅ normal | ✅ X9-change | ✅ X9-change | ✅ A2 |
+| tarih | ✅ normal | ⚠️ ack'siz merge | ⚠️ ack'siz merge (P5 gözlemi) | ⚠️ ack'siz merge | ✅ A3-date |
+| isim | — | — | ✅ normal+G13 | ✅ Blok 5b (A-P1) → A3-name | ✅ Blok 5b (A-P1) → A3-name |
+| telefon | — | — | ✅ simple koşulsuz | ✅ normal | ✅ A3-phone/PROMOSYON/BUG B |
+| tur | ✅ G5 (tekil) | ✅ G5/7c (A-P2) | ✅ G5/7c (A-P2) | ✅ G5(tekil)/7c(belirsiz) + R6 muaf (A-P2) | ✅ aynı |
+
+⚠️ hücreler (tarih ack'siz merge): state DOĞRU değişir (FSM merge + BUG-X4
+override) ama kullanıcıya deterministik değişiklik-ack gitmez — A3-date yalnız
+_hasChangeKeyword'lü mesajlarda tetikleniyor. Açık Sorular #15.
 
 ## 4. ETKİLEŞİM NOTLARI (birbirine dokunan guard'lar)
 
@@ -388,3 +410,15 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
     bot "acenteye yönlendir" moduna düşer — panel tarafında önlenmeli).
 12. **Kozmetik (düşük öncelik)**: validateFieldReask cümle-silme, silinen
     cümledeki emoji artıklarını bırakabiliyor (😊 👥 sonda kalıyor).
+13. ~~**P1 CONFIRMING isim düzeltme yutulması**~~ / ~~**P2 telefon adımında tur
+    değişikliği R6'ya takılması**~~ **ÇÖZÜLDÜ (2026-07-03, A-P1+A-P2)** —
+    bkz. §3b matrisi, G8 Blok 5b, G5 RE genişletmesi, G3 tur-sinyal muafiyeti.
+14. **Seçenek B — birleşik change-dispatch (post-launch)**: A1-log iskeletinin
+    gerçek dispatch'e terfisi; A2/A3/X9/Blok5b/BUG B'nin tek çatıda toplanması.
+    Launch öncesi büyük refactor riski nedeniyle ertelendi; alan başına dar
+    fix'ler (X9-change, A-P1, A-P2) kanıtlanmış desen olarak yeterli.
+15. **Ack'siz merge sınıfı (sıradaki küçük iş)**: §3b matrisindeki tarih ⚠️
+    hücreleri — COLLECTING_INFO ara adımlarında tarih değişikliği state'e DOĞRU
+    yazılıyor (FSM merge + BUG-X4) ama deterministik değişiklik-ack üretilmiyor
+    (A3-date yalnız change-keyword'lü mesajlarda). FSM-sonrası "dateId değişti
+    ise ack" katmanı değerlendirilecek.

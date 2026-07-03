@@ -426,6 +426,68 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     }
   }
 
+  // === Blok 5b: Change-sinyalli İSİM pending (A-P1, 2026-07-03) ===
+  // Canlı vaka P1: CONFIRMING'de "ismi düzelt, Ahmet Yılmaz olacak" → NLU Sorun F
+  // correction-guard'ı yüzünden fullName null döner (meşru düzeltmeyi de yutar),
+  // simple-extractor + Blok 5 step-gated (yalnız waiting_for_name) → CONFIRMING'de
+  // fullName'in TEK kaynağı NLU'ydu → A3-name/BUG B körleşiyordu, isim sessizce
+  // yutulup ESKİ isimle özet basılıyordu. X9-change (pax) deseninin İSİM kopyası.
+  //
+  // TITLE-CASE ŞARTI YOK (kritik tasarım kararı — canlı kanıt: kullanıcılar
+  // "fulya koko", "leman tete" gibi küçük yazıyor; waiting_for_name yolu da
+  // küçük harf kabul ediyor, pending yolu aynı toleransta).
+  //
+  // KOŞULLAR (dördü birden):
+  //   1. NLU/simple fullName BULAMADI (bulduysa dokunma)
+  //   2. CHANGE_KEYWORDS_RE — değişiklik sinyali
+  //   3. context.reservationInfo.fullName DOLU — değişiklik bağlamı (ilk toplama değil)
+  //   4. İSİM-BAĞLAM kelimesi mesajda VAR (isim/ismi/ad/adım/soyad/name...) — ŞART.
+  //      Gerekçe: bağlam kelimesiz "aslında X Y" mesajlarında ("aslında yarın
+  //      gelelim", "aslında daha erken olsun") kalan 2 kelime gate'lerden geçip
+  //      İSİM SANILIRDI — gate'ler negation/tur/onay yakalar ama rastgele kelime
+  //      çiftini yakalayamaz. Bağlam-kelimesiz meşru vaka ("aslında ahmet yılmaz")
+  //      NLU'nun kolay vakası zaten (prompt "extract just X" der). Ayrıca bu şart
+  //      "tarihi değiştir, öbürü olsun" tipi mesajları KAPIDA keser.
+  //
+  // ADAY TESPİTİ (konum+eleme): kelimelerden change-keyword / isim-bağlam / dolgu
+  // elenetir; kalan tam 2-3 kelime, her biri harf-ağırlıklı + rakamsız + 2+ karakter.
+  // ASIL SİGORTA (Sorun F tek-kaynak): aday isNluFullNameNegationLeak +
+  // isNluFullNameTourLeak + onay-blacklist gate'lerinden geçmeli — "Murat değil
+  // aslında Ahmet" (negation), "Efes Turuna Geçelim" (tour-leak) burada ölür.
+  if (
+    !extractedInfo.fullName &&
+    (context.reservationInfo as any)?.fullName &&
+    CHANGE_KEYWORDS_RE.test(message) &&
+    /(?<![\p{L}\p{N}])(isim|ismi(?:m|mi)?|ad[ıi](?:m|mı|mi|n[ıi])?|ad|soyad[ıi]?|soyisim|name|namen?|имя|اسم|nom|nombre)(?![\p{L}\p{N}])/iu.test(message)
+  ) {
+    const _nameCtxRe = /^(isim|ismi|ismim|ismimi|ad|adı|adi|adım|adim|adını|adini|soyad|soyadı|soyadi|soyisim|name|namen|имя|اسم|nom|nombre)$/iu;
+    const _fillerRe = /^(olacak|olacaktı|olacakti|olsun|olarak|olmalı|olmali|lütfen|lutfen|please|bi|bir|şey|sey|yeni|ve|de|da|mi|mı|mu|mü|artık|artik)$/iu;
+    const _confirmRe = /^(evet|hayır|hayir|tamam|olur|onay\S*|iptal|cancel|yes|no|ok|okay)$/iu;
+    const _tokens = message
+      .split(/\s+/)
+      .map((w) => w.replace(/[.,!?;:"'()]/gu, "").trim())
+      .filter(Boolean);
+    const _kept = _tokens.filter(
+      (w) => !_nameCtxRe.test(w) && !_fillerRe.test(w) && !CHANGE_KEYWORDS_RE.test(w),
+    );
+    const _allWordLike = _kept.every(
+      (w) => w.length >= 2 && !/\d/.test(w) && /^[\p{L}''.-]+$/u.test(w),
+    );
+    if ((_kept.length === 2 || _kept.length === 3) && _allWordLike) {
+      const _candidate = _kept
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+      if (
+        !isNluFullNameNegationLeak(_candidate) &&
+        !isNluFullNameTourLeak(_candidate) &&
+        !_kept.some((w) => _confirmRe.test(w))
+      ) {
+        extractedInfo.fullName = formatName(_candidate);
+        console.log(`[info-extractor] A-P1 isim-pending: change-sinyalli isim kabul (step=${context.collectionStep}) — A3-name/BUG B devralacak`);
+      }
+    }
+  }
+
   // === Blok 6: Context-aware — kişi sayısı (sadece düz rakam) ===
   // 2026-06-19 (Yan #1 fix): parseInt("5 temmuz")=5 tuzağı kapatıldı. Daha önce
   // mesaj başında rakam varsa pax yazılıyordu — "5 temmuz" tarihi pax=5 oldu.
