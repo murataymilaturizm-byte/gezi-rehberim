@@ -10,6 +10,7 @@ import type {
 } from "./types.ts";
 import { produceTourChangeContext, hasReservationSignal } from "../services/tour-change.ts";
 import { isValidPax, isValidPhone } from "../utils/validation.ts";
+import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 
 export function createInitialContext(
   language: string = "tr",
@@ -1084,8 +1085,29 @@ const transitions: StateTransition[] = [
     condition: (ctx, input) => {
       const _isDifferentTour =
         input.selectedTour !== null && input.selectedTour.id !== ctx.currentTour?.id;
-      // FARKLI tur seçildiyse informational guard'ı atla (tur değişimi = informational değil)
-      if (!_isDifferentTour && isInformationalMessage(input.userMessage, input.detectedIntent)) {
+      // 2026-07-03 D2 FIX: _isDifferentTour bypass'ı NİYET SİNYALİ şartına bağlandı.
+      // Eski davranış farklı tur ADI geçmesini yeterli sayıyordu → COMPLETED'de
+      // chitchat ("kapadokya güzelmiş", aktif rezervasyon Antalya iken) yeni akış
+      // açıyordu — kullanıcı sohbet ediyordu, resetForNewReservation state'i uçurdu.
+      // Sinyal sınıfları (yeni kelime yaması değil, boşluğu sınıf olarak kapatır):
+      //   1. hasReservationSignal — rezervasyon/kayıt/booking (7 dil)
+      //   2. hasNewReservationIntent — başka/yeni tur + exclusion kalıpları
+      //   3. CHANGE_KEYWORDS_RE — ikame/düzeltme (yerine/aslında/instead/statt...)
+      //      tek-kaynak: constants/change-detection.ts (X9-change ile aynı, DRY)
+      //   4. negation — "antalya DEĞİL pamukkale" tarzı ikame; FIX A2'nin orijinal
+      //      vakası hasNewReservationIntent'e EŞLEŞMİYOR ("değil başka" ister,
+      //      "değil pamukkale" uymaz) → bu sınıf olmadan A2 vakası kırılırdı.
+      // Sinyal YOKSA bypass kapalı → informational guard normal işler → chitchat
+      // (intent tour_search/general/faq_general → informational TRUE) transition'ı
+      // tetikleyemez → COMPLETED korunur → :14a-2 / LLM after-sales cevap verir.
+      const _negationRe = /(?<![\p{L}\p{N}])(değil|deil|not|nicht|pas|не|ليس|مش)(?![\p{L}\p{N}])/iu;
+      const _hasSwitchSignal =
+        hasReservationSignal(input.userMessage) ||
+        hasNewReservationIntent(input.userMessage, input.detectedIntent) ||
+        CHANGE_KEYWORDS_RE.test(input.userMessage) ||
+        _negationRe.test(input.userMessage);
+      const _bypassInformational = _isDifferentTour && _hasSwitchSignal;
+      if (!_bypassInformational && isInformationalMessage(input.userMessage, input.detectedIntent)) {
         return false;
       }
       return (

@@ -3,7 +3,11 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (X9-change fix — G8 3. kabul yolu; ilk sürüm aynı gün).
+> Son güncelleme: 2026-07-03 (D2 fix — T23 niyet-sinyal şartı; X9-change ve ilk sürüm aynı gün).
+>
+> **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
+> DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
+> Deploy hedefleri: `demo-chat` + `whatsapp-webhook` (ikisi de shared'ı bundle'lar).
 > Satır numaraları ±10 tolerans ile verilmiştir; kod değiştikçe kayar,
 > section/fonksiyon adları referans alınmalıdır.
 
@@ -53,7 +57,7 @@ deterministik belirlenir; `isAllInfoCollected()` (~L188) ile simetriktir
 | T18/T20 | COMPLETED → BROWSING | hasNewReservationIntent (A5 exclusion dahil) | A5 |
 | T19/T21 | COMPLETED → BROWSING | browse_tours/tour_search + selectedTour yok (**general/greeting listeden ÇIKARILDI** — Bug A) | Bug A (2026-06-23) |
 | T22 | COMPLETED → TOUR_SELECTED | !informational + selectedTour + reservation intent | — |
-| T23 | COMPLETED → TOUR_SELECTED | **FARKLI selectedTour → informational guard BYPASS** + reservation intent değil | FIX A2 (2026-06-25) — ⚠ bkz. §5 D2 açık riski |
+| T23 | COMPLETED → TOUR_SELECTED | **FARKLI selectedTour + NİYET SİNYALİ → informational guard BYPASS** + reservation intent değil. Sinyal sınıfları: hasReservationSignal / hasNewReservationIntent / CHANGE_KEYWORDS_RE / negation (değil-not-nicht...) — sinyal yoksa chitchat COMPLETED'de kalır | FIX A2 (2026-06-25) + **D2 fix (2026-07-03)** |
 
 Eşleşme yoksa: COLLECTING_INFO'da extract varsa silent merge; aksi halde
 no-op (messageCount++/lastUpdated).
@@ -300,10 +304,15 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
    ("aslında 3 olsun") R6'ya takılıyor.~~ **ÇÖZÜLDÜ (2026-07-03, X9-change)**:
    G8'e 3. kabul yolu eklendi — bkz. §3/G8 ve §4 madde 2. R6 muafiyet
    listesine DOKUNULMADI (kök çözüm extract katmanında).
-2. **D2 riski (COMPLETED chitchat)**: T23'ün `_isDifferentTour` informational
-   bypass'ı niyet sinyali ARAMIYOR — "kapadokya güzelmiş" (aktif rezervasyon
-   Antalya iken) yeni akış açar. Teşhis yapıldı (2026-07-02), fix yönü:
-   bypass'a hasReservationSignal/hasNewReservationIntent şartı. Uygulanmadı.
+2. ~~**D2 riski (COMPLETED chitchat)**: T23 bypass'ı niyet sinyali aramıyor —
+   "kapadokya güzelmiş" yeni akış açar.~~ **ÇÖZÜLDÜ (2026-07-03, D2 fix)**:
+   bypass 4 sinyal sınıfına bağlandı (hasReservationSignal +
+   hasNewReservationIntent + CHANGE_KEYWORDS_RE + negation). Negation sınıfı
+   kritikti: FIX A2'nin orijinal vakası "antalya değil pamukkale"
+   hasNewReservationIntent'e eşleşmiyor ("değil başka" ister) — negation
+   olmadan A2 vakası kırılırdı. Kalıntı risk: NLU chitchat'e `browse_tours`
+   derse (informational listesinde yok) T23 hâlâ tetiklenebilir — düşük
+   olasılık, gözlem altında.
 3. **"tabi"/"tabiki" yanlış-negatifi**: detectConfirmation pattern'inde yok.
    Kelime-sözlüğü genişletme turu bekliyor (launch-blocker değil).
 4. **FAQ intent listesi 3x tekrar** (§4 madde 6) — senkron riski.
