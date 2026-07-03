@@ -31,6 +31,7 @@ import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extracto
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
+import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { produceTourChangeContext, shouldApplyEarlyTourChange, buildTourChangePrefix } from "../services/tour-change.ts";
 import { callAI } from "../services/ai.ts";
 import { generatePaymentMessage, safeDepositPercentage } from "../services/payment-message.ts";
@@ -1322,8 +1323,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   //   BELİRSİZ               : K1+K3 TRUE, K2 FALSE, stage=CONFIRMING — teyit istenecek
   //   BELİRSİZ-AKIŞ-ORTASI   : K1+K3 TRUE, K2 FALSE, stage≠CONFIRMING — gözlem için
   {
-    const _changeKeywordsRe = /(?<![\p{L}\p{N}])(aslında|yerine|olsun|değiştir|değiştirelim|yap|düzelt|güncelle|şöyle\s+olsun|yanlış\s+oldu|eski\s+değil|actually|instead|change(?:\s+it)?(?:\s+to)?|make\s+it|update|correct|let['’]s\s+say|eigentlich|stattdessen|änder[en]?|korrigier(?:en|e)|lass\s+es|en\s+fait|plut[ôo]t|changer|modifier|corriger|mettons|disons|en\s+realidad|mejor|cambia(?:r)?|modificar|corregir|que\s+sea|вообще-то|вместо|измен(?:ить|и)|исправ(?:ить|ь)|пусть\s+будет|في\s+الواقع|بدلاً|غيّر|عدّل|صحّح|يكون)(?![\p{L}\p{N}])/iu;
-    const _hasChangeKeyword = _changeKeywordsRe.test(message);
+    // 2026-07-03 X9-change fix: pattern shared/constants/change-detection.ts'e
+    // taşındı (DRY) — info-extractor Blok 1 üçüncü kabul yolu da aynı kaynağı kullanır.
+    const _hasChangeKeyword = CHANGE_KEYWORDS_RE.test(message);
     const _info = (context.reservationInfo || {}) as any;
     const _ext = extractedInfo as any;
 

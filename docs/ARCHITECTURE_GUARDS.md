@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (ilk sürüm — koddan doğrulanmış tam tarama).
+> Son güncelleme: 2026-07-03 (X9-change fix — G8 3. kabul yolu; ilk sürüm aynı gün).
 > Satır numaraları ±10 tolerans ile verilmiştir; kod değiştikçe kayar,
 > section/fonksiyon adları referans alınmalıdır.
 
@@ -198,13 +198,14 @@ SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 | Ne yapar | tours price_adult ASC/DESC sort, deterministik mesaj, LLM atlanır |
 | Kaynak | R4 mimari taşıma ile erken katmana alındı |
 
-### G8 — Pax sızıntı sigortası (BUG-X9, iki katman)
+### G8 — Pax sızıntı sigortası (BUG-X9, iki katman + X9-change 3. kabul yolu)
 | | |
 |---|---|
-| Dosya | `info-extractor.ts` Blok 1 ~L290-316 (NLU pax reddi) + Blok 6 ~L394 (context-aware rakam-sadece kuralı) |
-| Koşul | NLU paxAdult/paxChild: `waiting_for_pax` değilse VE mesajda peopleContext (kişi/person/yetişkin...) yoksa → **silent drop** |
-| Kaynak | BUG-X9 ("ondördü olur" tarih sayısının pax sanılması) |
-| ⚠ Etkileşim | Bu sigorta A2 pax-değişiklik dalını körleştirebilir → G3'teki açık bug |
+| Dosya | `info-extractor.ts` Blok 1 (NLU pax kabul/red/pending) + Blok 9b (pending karar) + Blok 6 (context-aware rakam-sadece kuralı) |
+| Koşul | NLU paxAdult/paxChild kabul yolları: (1) `waiting_for_pax`, (2) peopleContext (kişi/person/yetişkin...), (3) **X9-change (2026-07-03)**: CHANGE_KEYWORDS_RE sinyali + isValidPax(1-9) + collectionStep pax-sonrası adım (waiting_for_name/phone/email, ready_for_confirmation) → **PENDING** — Blok 9b'de aynı turn'de kullanıcı-kaynaklı tarih sinyali (dateId/selectedDate/dateRejectedFull) YOKSA kabul. Üçü de değilse silent drop |
+| Pending konumu | Bilinçli: Blok 9 SONRASI + Blok 10 ÖNCESİ — Blok 10 auto-assign dateId'si kullanıcı mesajından gelmez, pending iptaline sebep olmamalı. "aslında 3'ü olsun" ayın 3'ü eşleşirse pax İPTAL, tarih akışı kazanır (tarih→pax sızıntı koruması delinmez) |
+| Pattern kaynağı | `shared/constants/change-detection.ts` CHANGE_KEYWORDS_RE — process-message A1/A2/A3 `_hasChangeKeyword` ile TEK kaynak (DRY) |
+| Kaynak | BUG-X9 ("ondördü olur" 14 pax sızıntısı) + X9-change fix (telefon adımında "aslında 3 olsun" R6'ya takılıyordu) |
 
 ### G9 — O1 grubu (birleşik mesaj tarih→ID)
 | Parça | Dosya | Ne yapar |
@@ -257,9 +258,14 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
    detectConfirmation pattern'i genişletilirse (örn. "tabi" eklenirse) üç
    nokta birden etkilenir — pattern TEK kaynak (state-machine.ts), üçü de
    aynı fonksiyonu çağırır, senkron sorunu yok.
-2. **G3 ↔ G8 ↔ A2**: R6'nın önündeki fiili koruma A2 dalıdır; A2'nin gözü
-   ise G8/BUG-X9 sigortasının pax'ı geçirmesine bağlı. BUG-X9 daraltması
-   A2'yi körleştirir → R6 yanlış tetiklenir (bilinen açık bug, §3/G3).
+2. **G3 ↔ G8 ↔ A2 ↔ tarih zinciri (Blok 2-9)**: R6'nın önündeki fiili koruma
+   A2 dalıdır; A2'nin gözü G8'in pax'ı geçirmesine bağlı. X9-change 3. kabul
+   yolu (2026-07-03) bu zinciri kapattı: change-sinyalli pax pending'e alınır,
+   Blok 9b tarih çıkmadıysa kabul eder → A2 devralır → R6'ya ulaşılmaz.
+   DİKKAT: CHANGE_KEYWORDS_RE'ye kelime eklemek hem A2/A3 dallarını hem G8
+   3. yolunu birden etkiler (tek kaynak: constants/change-detection.ts).
+   Blok 2-9 tarih zincirine yeni tarih kaynağı eklenirse Blok 9b'nin
+   _dateSignalThisTurn kontrolü de kapsamalı.
 3. **G5 ↔ T10/T11**: Aynı `produceTourChangeContext` helper'ı; ama T10
    collectionStep'i undefined'a override eder, G5/T11 waiting_for_date
    bırakır. Tur değişiminde adım davranışı stage'e göre farklıdır —
@@ -290,9 +296,10 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 
 ## 5. AÇIK SORULAR / BİLİNEN RİSKLER
 
-1. **G3 açık bug** (§3): waiting_for_phone'da peopleContext'siz pax
-   değişikliği ("aslında 3 olsun") R6'ya takılıyor. Kök: BUG-X9 sigortası +
-   R6 muafiyet listesi kombinasyonu. Fix bekliyor.
+1. ~~**G3 açık bug**: waiting_for_phone'da peopleContext'siz pax değişikliği
+   ("aslında 3 olsun") R6'ya takılıyor.~~ **ÇÖZÜLDÜ (2026-07-03, X9-change)**:
+   G8'e 3. kabul yolu eklendi — bkz. §3/G8 ve §4 madde 2. R6 muafiyet
+   listesine DOKUNULMADI (kök çözüm extract katmanında).
 2. **D2 riski (COMPLETED chitchat)**: T23'ün `_isDifferentTour` informational
    bypass'ı niyet sinyali ARAMIYOR — "kapadokya güzelmiş" (aktif rezervasyon
    Antalya iken) yeni akış açar. Teşhis yapıldı (2026-07-02), fix yönü:

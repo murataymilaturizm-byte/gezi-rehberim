@@ -7,6 +7,8 @@ import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
 import { isNluFullNameNegationLeak, isNluFullNameTourLeak } from "./nlu-validation.ts";
 import { hasQuotaForPax, getQuotaRemaining } from "./quota-check.ts";
+import { isValidPax } from "../utils/validation.ts";
+import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 
 // getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
 // normalizeDateString'den sonra yer almaktadır.
@@ -298,6 +300,25 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   const _isWaitingForPax = context.collectionStep === "waiting_for_pax";
   const _shouldAcceptNluPax = _hasPeopleContext || _isWaitingForPax;
 
+  // 2026-07-03 X9-change fix (ÜÇÜNCÜ kabul yolu — bkz. ARCHITECTURE_GUARDS.md G8):
+  // Canlı bug: waiting_for_phone'da "aslında 3 olsun" → peopleContext yok →
+  // X9 pax'ı reddeder → A2 değişiklik dalı körleşir → R6 "geçerli telefon girin"
+  // yanlış mesajı. Ön-şartlar (Blok 1'de): change-sinyali (CHANGE_KEYWORDS_RE,
+  // process-message A2 ile TEK kaynak) + isValidPax(1-9) + collectionStep pax'ın
+  // ZATEN toplandığı bir adım (değişiklik bağlamı, ilk toplama değil).
+  // KARAR BURADA VERİLMEZ: "aslında 3'ü olsun" bir TARİH değişikliği olabilir
+  // (ayın 3'ü) ve tarih eşleşmesi Blok 2-9'da SONRA belli olur. Pending'e al,
+  // Blok 10 SONRASI tarih çıkmadıysa kabul et (X9'un tarih→pax sızıntı
+  // koruması delinmez — tarih eşleşirse pax İPTAL, tarih akışı kazanır).
+  const _paxAlreadyCollectedStep =
+    context.collectionStep === "waiting_for_name" ||
+    context.collectionStep === "waiting_for_phone" ||
+    context.collectionStep === "waiting_for_email" ||
+    context.collectionStep === "ready_for_confirmation";
+  const _hasChangeSignal = CHANGE_KEYWORDS_RE.test(message || "");
+  let _pendingChangePaxAdult: number | null = null;
+  let _pendingChangePaxChild: number | null = null;
+
   for (const [k, v] of Object.entries(_rawUpdates)) {
     if (k === "fullName" && typeof v === "string" && v.trim()) {
       if (_isPlaceholder(v)) continue;
@@ -312,6 +333,20 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     } else if ((k === "paxAdult" || k === "paxChild") && !_shouldAcceptNluPax) {
       // 2026-06-26 BUG-X9: peopleContext yok + waiting_for_pax değil → NLU pax REDDET
       // (tarih sayısı sızıntısı engellenir — "ondördü olur" → 14 yutulmaz).
+      // 2026-07-03 X9-change: change-sinyalli + pax-toplandı adımı + geçerli değer
+      // ise PENDING'e al — Blok 10 sonrası tarih eşleşmediyse kabul edilecek.
+      const _nPax = typeof v === "number" ? v : Number(v);
+      if (_hasChangeSignal && _paxAlreadyCollectedStep && Number.isFinite(_nPax)) {
+        if (k === "paxAdult" && isValidPax(_nPax)) {
+          _pendingChangePaxAdult = _nPax;
+          console.log(`[info-extractor] X9-change: NLU paxAdult=${_nPax} PENDING (change-sinyal + ${context.collectionStep}, tarih zinciri bekleniyor)`);
+          continue;
+        }
+        if (k === "paxChild" && _nPax >= 0 && _nPax <= 9) {
+          _pendingChangePaxChild = _nPax;
+          continue;
+        }
+      }
       console.log(`[info-extractor] BUG-X9: NLU ${k}=${v} reddedildi (peopleContext yok + waiting_for_pax değil)`);
       continue;
     } else {
@@ -460,6 +495,26 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
           delete extractedInfo.selectedDate;
         }
       }
+    }
+  }
+
+  // === Blok 9b: X9-change pending pax kararı (2026-07-03) ===
+  // Blok 1'de pending'e alınan change-sinyalli pax burada karara bağlanır —
+  // kullanıcı-kaynaklı tarih sinyalleri (Blok 2-9) tamamlandı, Blok 10 (otomatik
+  // atama) henüz çalışmadı. Bilinçli konum: Blok 10'un auto-assign dateId'si
+  // kullanıcının mesajından GELMEZ, pending iptaline sebep olmamalı.
+  // Tarih çıktıysa (dateId/selectedDate/dateRejectedFull) sayı TARİH'ti
+  // ("aslında 3'ü olsun" = ayın 3'ü) → pax İPTAL, tarih akışı kazanır —
+  // X9'un tarih→pax sızıntı koruması delinmez.
+  if (_pendingChangePaxAdult !== null) {
+    const _dateSignalThisTurn =
+      !!extractedInfo.dateId || !!extractedInfo.selectedDate || !!extractedInfo.dateRejectedFull;
+    if (_dateSignalThisTurn) {
+      console.log(`[info-extractor] X9-change: pending paxAdult=${_pendingChangePaxAdult} İPTAL (aynı turn'de tarih sinyali var — tarih akışı kazanır)`);
+    } else {
+      extractedInfo.paxAdult = _pendingChangePaxAdult;
+      if (_pendingChangePaxChild !== null) extractedInfo.paxChild = _pendingChangePaxChild;
+      console.log(`[info-extractor] X9-change: pending paxAdult=${_pendingChangePaxAdult} KABUL (tarih sinyali yok, A2 dalı devralacak)`);
     }
   }
 

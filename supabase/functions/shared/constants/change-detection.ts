@@ -1,0 +1,13 @@
+// Değişiklik-niyeti kelime tespiti — TEK KAYNAK (DRY).
+//
+// 2026-07-03 X9-change fix ile process-message.ts A1/A2/A3 bloğundaki
+// blok-scoped _changeKeywordsRe buraya taşındı. İki tüketici:
+//   1. process-message.ts A1-log + A2/A3 akış-içi değiştirme dalları
+//   2. info-extractor.ts Blok 1 BUG-X9 sigortasının 3. kabul yolu
+//      (change-sinyalli pax değişikliği — bkz. docs/ARCHITECTURE_GUARDS.md G8)
+//
+// Pattern disiplini (Yan #8 / K1 dersi): ASCII \b DEĞİL, \p{L}\p{N}
+// lookaround + /iu flag — Türkçe non-ASCII bitişli kelimelerde ("yanlış",
+// "aslında") \b boundary tanımaz, yanlış-pozitif/negatif üretir.
+export const CHANGE_KEYWORDS_RE =
+  /(?<![\p{L}\p{N}])(aslında|yerine|olsun|değiştir|değiştirelim|yap|düzelt|güncelle|şöyle\s+olsun|yanlış\s+oldu|eski\s+değil|actually|instead|change(?:\s+it)?(?:\s+to)?|make\s+it|update|correct|let['’]s\s+say|eigentlich|stattdessen|änder[en]?|korrigier(?:en|e)|lass\s+es|en\s+fait|plut[ôo]t|changer|modifier|corriger|mettons|disons|en\s+realidad|mejor|cambia(?:r)?|modificar|corregir|que\s+sea|вообще-то|вместо|измен(?:ить|и)|исправ(?:ить|ь)|пусть\s+будет|في\s+الواقع|بدلاً|غيّر|عدّل|صحّح|يكون)(?![\p{L}\p{N}])/iu;
