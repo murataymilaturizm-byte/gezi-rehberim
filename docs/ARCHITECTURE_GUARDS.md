@@ -277,6 +277,7 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | paxAdult step-dışı reject | **DÜZELTME**: NLU tarafında DEĞİL — `info-extractor.ts` Blok 1'de (G8/BUG-X9). NLU sadece isValidPax(1-9) doğrular |
 | CONFIRMING dikta | nlu.ts ~L162: kısa pozitifler CONFIRMING'de confirm_reservation dönmeli — ama Haiku uymayabiliyor (K1-denge'nin varlık sebebi) |
 | Intent map | mapNLUIntentToFSMIntent ~L505: 7 FAQ intent'i → general_question; after_sales/complaint/custom_package/human_handover → support_request; kalanlar birebir |
+| **Prompt caching** | **UYGULANAMIYOR (2026-07-03 incelemesi)**: Haiku 4.5 minimum cache'lenebilir prefix eşiği **4096 token** (önceki denemedeki "2048" bilgisi YANLIŞTI); NLU sabit prefix'i (tool şeması + NLU_SYSTEM_PROMPT ≈ 3.5-4.7k token) eşiğin altında/sınırında → cache_control eklense bile Anthropic sessizce cache kurmaz (canlı kanıt: cache_creation=0). Prompt'u yapay şişirmek/availableTours'u geri koymak anti-pattern. **Yeniden değerlendirme koşulu**: NLU_SYSTEM_PROMPT ~18k karakteri aşarsa system'i array+cache_control formatına çevir (prefix=tools+system birlikte); dinamikler (mesaj/summary/state/tur) messages'ta ZATEN doğru yerde. **KURAL (gelecek NLU prompt değişiklikleri)**: NLU_SYSTEM_PROMPT ve nluTool şemasına ASLA dinamik içerik (tarih, tur listesi, session verisi) interpolasyonu yapma — caching bir gün açıldığında ilk byte farkı tüm cache'i kırar; dinamik her şey contextPrompt'a. Not: ana model (Sonnet, ai.ts) caching AKTİF ve bu kural orada bugün zorunlu |
 
 ---
 

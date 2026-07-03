@@ -381,11 +381,21 @@ export async function analyzeUserMessage(
           "x-api-key": ANTHROPIC_API_KEY,
           "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
-          // NOT: NLU için prompt caching KALDIRILDI. NLU_SYSTEM_PROMPT Haiku 4.5'in 2048
-          // token minimum cache eşiğinin altında/civarında olduğu için Anthropic cache hiç
-          // kurmuyordu (cache_creation=0 raporlanıyordu). Marjinal tasarruf (~₺110/ay)
-          // karmaşıklığa değmediği için eski tek-string format'a dönüldü. ai.ts'teki Sonnet
-          // caching AYNEN aktif.
+          // NOT: NLU için prompt caching UYGULANAMIYOR — 2026-07-03 yeniden incelendi.
+          // DÜZELTME: önceki yorum eşiği 2048 sanıyordu; Haiku 4.5'in GERÇEK minimum
+          // cache'lenebilir prefix eşiği 4096 TOKEN (model bazında değişir; Sonnet 4.6
+          // 2048, Sonnet 4.5 1024 — bkz. Anthropic prompt-caching docs). Sabit prefix
+          // (tools ~1.9k char + NLU_SYSTEM_PROMPT ~12.1k char ≈ 3.5-4.7k token) eşiğin
+          // ALTINDA/sınırında → cache_control eklense bile Anthropic cache'i SESSİZCE
+          // kurmaz (canlı kanıt: önceki denemede cache_creation=0). Eşiği aşmak için
+          // prompt'u yapay şişirmek veya availableTours'u geri koymak (dinamik → cache'i
+          // kırar) anti-pattern — YAPMA.
+          // YENİDEN DEĞERLENDİRME KOŞULU: NLU_SYSTEM_PROMPT doğal büyüyüp ~18.000
+          // karakteri (≈4.5k token, güvenli marj) aşarsa caching tekrar denenebilir:
+          // system'i [{type:"text", text:..., cache_control:{type:"ephemeral"}}] array
+          // formatına çevir (prefix = tools + system birlikte cache'lenir), dinamikler
+          // (contextPrompt) messages'ta kalır — zaten doğru yerdeler.
+          // ai.ts'teki Sonnet caching AYNEN aktif (Sonnet eşiği farklı).
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
