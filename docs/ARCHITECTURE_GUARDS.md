@@ -597,6 +597,28 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
     hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
     P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
+32. **FABLE REVIEW-2 (2026-07-09, etkileşim-denetimi tamamlama)** — R6-deseni
+    (mekanizmalar tek tek doğru, SIRALAMA yanlış) avı. **Fix'lenen (S):**
+    :10g farketmez-dalında FAQ-intent guard'ı YOKTU (KÖK6 sınıfı) — "ilk önce
+    iptal şartlarını sorayım" → "ilk" sinyali tarih öneriyordu, soru yutuluyordu
+    (:10g, :11-KÖK6'dan ÖNCE) → general_question/support_request dışlandı
+    (QUESTION_SIGNAL bilinçli dışlanmadı — "en yakın tarih ne zaman?"a öneri İYİ
+    cevap, V10 zıt-yön). + çıplak "ilk" bağlam-şartlı daraltıldı ("ilk defa
+    geliyorum" FP'si; ilk→ilk(tarih/gün/uygun/müsait/olan)+ilki).
+    **TEMİZ doğrulananlar:** proposedDateId+"evet" diğer yollarla kesişmiyor
+    (pre-FSM dalları bare-evet yakalamaz; K1-Katman2 CONFIRMING-only+extract-şartlı;
+    V11-a-eskalasyon "evet"i öneriden ÖNCE alır — kabul edilebilir, eskalasyon
+    aktif soru); :10e/:10f/Blok8.5 üçgeni tek-flag/turn tutarlı; AR-rakam
+    normalize → telefon "٠٥٣٢..." artık extract olur (İYİLEŞME), X9/Blok8/parseInt
+    zinciri tutarlı; "yarın 2 kişi" aynı-turn: dates NLU-yoksay + pax NLU-kabul
+    (ayrık gate'ler, test-teyitli); confirmation tek-kaynakta K1 dengesi korunmuş
+    ("evet ama değiştir" FALSE); CHANGE-ASCII 7-tüketicide FP'siz (A2/A3 değer-şartlı).
+    **Doğrulanmış FİİLİ sıra:** normalize(L74) → stale → dil(+P3-seed-fix) → NLU
+    (+ascii-lang-switch) → A-gate → X8/B1/B-DUR/B-TEMA/KÖK5 → stage-koruma →
+    J-14 → B-6 → extract → 8-PP → K1-Katman2 → A1/A2/A3 → **V11-a(pre-FSM)** →
+    FSM → 9b-R6(post-FSM!) → O6 → :10b/:10c/:10d → **:10d-2** → :10e → :10f →
+    **:10g** → :11 ailesi → :12/:13/:14 → 17-BV. (9b numarası yanıltıcı — R6
+    newContext kullanır, FSM-SONRASI koşar; V11-a ondan önce.) Test 13/13 + 128-korpus miss=0.
 31. **FABLE TOPLU-DENETİM (2026-07-09)** — commit-review + sistematik taramalar.
     **DAVRANIŞ-RİSKİ fix'lendi (S):**
     (a) **Yan #8 TAM SÜPÜRME** — `\b` Kiril/Arapça/ö-ş-başlangıçta sınır tanımaz;

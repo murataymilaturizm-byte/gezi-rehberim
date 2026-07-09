@@ -2700,7 +2700,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _pDates = (_pTour?.dates || []) as any[];
     const _curDateId = (newContext.reservationInfo as any)?.dateId;
     // Sinyal regex'leri (post-LLM deterministik, \p{L}\p{N} lookaround — K1 dersi)
-    const _anyDateSignal = /(?<![\p{L}\p{N}])(en\s*yak[ıi]n|ilk|en\s*erken|farketmez|fark\s*etmez|siz\s*se[çc]in|sen\s*se[çc]|hangisi\s*olursa|nearest|earliest|soonest|first\s*available|any\s*(?:date|day)|whichever|you\s*(?:choose|pick|decide)|n[äa]chst\S*|fr[üu]hest\S*|egal|such\S*\s*(?:aus|sie)|ближайш\S*|[бb]лижайш\S*|л[юю]б\S*\s*дат\S*|выбер\S*\s*вы|le\s*plus\s*proche|au\s*plus\s*t[ôo]t|peu\s*importe|choisissez|m[áa]s\s*cercan\S*|lo\s*antes|cualquier\S*|elija\s*usted|أقرب|الأقرب|أي\s*تاريخ|اختر\s*أنت)(?![\p{L}\p{N}])/iu;
+    // FABLE-review2: çıplak "ilk" bağlam-şartlı daraltıldı ("ilk defa
+    // geliyorum" FP'siydi) — yalnız tarih/gün/uygun/müsait/olan öncülü + "ilki".
+    const _anyDateSignal = /(?<![\p{L}\p{N}])(en\s*yak[ıi]n|ilk(?=\s*(?:tarih|g[üu]n|uygun|müsait|musait|olan))|ilki|en\s*erken|farketmez|fark\s*etmez|siz\s*se[çc]in|sen\s*se[çc]|hangisi\s*olursa|nearest|earliest|soonest|first\s*available|any\s*(?:date|day)|whichever|you\s*(?:choose|pick|decide)|n[äa]chst\S*|fr[üu]hest\S*|egal|such\S*\s*(?:aus|sie)|ближайш\S*|[бb]лижайш\S*|л[юю]б\S*\s*дат\S*|выбер\S*\s*вы|le\s*plus\s*proche|au\s*plus\s*t[ôo]t|peu\s*importe|choisissez|m[áa]s\s*cercan\S*|lo\s*antes|cualquier\S*|elija\s*usted|أقرب|الأقرب|أي\s*تاريخ|اختر\s*أنت)(?![\p{L}\p{N}])/iu;
 
     // İş 3 anafora — dateId DOLU + tam 2 tarih + "öbür tarih" (tek-kaynak _v3AnaforaRe)
     if (
@@ -2731,9 +2733,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
 
     // İş 1 farketmez — waiting_for_date + sinyal + tarih henüz seçilmedi
+    // 2026-07-09 FABLE-review2 (KÖK6 sınıfı): FAQ-intent guard'ı EKLENDİ —
+    // "ilk önce iptal şartlarını sorayım" gibi mesajlarda "ilk" sinyali tarih
+    // öneriyordu, soru yutuluyordu (:10g, :11-KÖK6 guard'ından ÖNCE koşar).
+    // QUESTION_SIGNAL bilinçli DIŞLANMADI ("en yakın tarih ne zaman?" sorusuna
+    // öneri+onay İYİ cevaptır — V10 zıt-yön dersi); yalnız FAQ-intent'leri.
     if (
       newContext.stage === "COLLECTING_INFO" &&
       newContext.collectionStep === "waiting_for_date" &&
+      fsmIntent !== "general_question" && fsmIntent !== "support_request" &&
       !_curDateId && !newContext.proposedDateId &&
       _anyDateSignal.test(message) && _pDates.length > 0
     ) {
