@@ -164,6 +164,10 @@ NEVER assume the user wants to stay in COMPLETED forever. Trust their words.
 - Duration expressions like "3 günlük", "2 gecelik", "1 haftalık", "3-day", "2 nights" are TOUR DURATION, NOT dates. NEVER put them in the dates field.
 - "3 günlük bir tur arıyorum" → tour_search, dates EMPTY (the system filters by duration deterministically).
 
+**CRITICAL: DESTINATION NORMALIZATION (2026-07-09 A2):**
+- When the user writes a Turkish destination/tour name in another script (Arabic "باموكالي", Cyrillic "памуккале", etc.), put the LATIN/original form in destination and tour_name: "باموكالي" → "pamukkale", "каппадокия" → "kapadokya"/"cappadocia", "كابادوكيا" → "kapadokya".
+- Keep the user's message untouched; only the extracted destination/tour_name entity is normalized to Latin script. If unsure of the Latin form, return the original text as-is.
+
 **CRITICAL: RELATIVE DATES — DO NOT CONVERT (2026-07-09 FIX2):**
 - Relative date expressions ("yarın", "öbür gün", "bugün", "haftaya", "tomorrow", "next week", "morgen", "demain" etc.) must be left AS-IS. NEVER convert them to an ISO date (YYYY-MM-DD).
 - The system resolves relative dates deterministically with a today-anchor (Europe/Istanbul). If you compute an ISO date from a wrong anchor, the resolution breaks. Leave the raw wording; do not put a computed ISO value in the dates field for relative expressions.

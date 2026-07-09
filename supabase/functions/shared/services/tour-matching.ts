@@ -69,10 +69,32 @@ function normalizeTurkishChars(text: string): string {
     .replace(/Ç/g, "c").replace(/ç/g, "c");
 }
 
-/** Karşılaştırma için lowercase + Türkçe karakter normalize */
+/**
+ * 2026-07-09 Faz 5 A2: Arapça normalizasyonu — AR tur-adı eşleşmesi için.
+ * Canlı vaka: NLU dest="باموكالي" (boşluksuz) ↔ alias "بامو كالي" (boşluklu)
+ * eşleşmiyordu → tur bulunamadı → :11 deterministik dallar fire etmedi → LLM
+ * "10 Aralık yok" halüsinasyonu (DB'de VARDI). Normalizasyon:
+ *  - hareke/teşkil strip (U+064B–065F, U+0670) — yazımda opsiyonel
+ *  - tatweel (ـ U+0640) kaldır — dekoratif uzatma
+ *  - alef varyantları birleştir: أ/إ/آ → ا (hamza-üstü/altı/medde)
+ *  - alef maksura ى → ي ; ta marbuta ة → ه (yazım varyansı)
+ *  - ARAPÇA-HARF-ARASI boşlukları kaldır ("بامو كالي"→"باموكالي") — Latin
+ *    kelime aralarına DOKUNMAZ (lookbehind/ahead Arapça-blok şartlı)
+ */
+function normalizeArabicChars(text: string): string {
+  return text
+    .replace(/[ً-ٰٟ]/g, "")
+    .replace(/ـ/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/(?<=[؀-ۿ])\s+(?=[؀-ۿ])/g, "");
+}
+
+/** Karşılaştırma için lowercase + Türkçe + Arapça karakter normalize */
 function normalizeForMatch(text: string): string {
   if (!text) return "";
-  return normalizeTurkishChars(text.toLowerCase().trim());
+  return normalizeArabicChars(normalizeTurkishChars(text.toLowerCase().trim()));
 }
 
 // ─── Çeviri haritası ─────────────────────────────────────────────────────────
@@ -91,13 +113,18 @@ const TOUR_NAME_TRANSLATIONS: Record<string, string[]> = {
     "каппадокия", "كابادوكيا", "kappadokia", "kapadokia",
     "cappodocia", "cappadokia",
   ],
-  efes: ["ephesus", "ephese", "efeso", "эфес", "أفسس", "ephesos"],
+  efes: ["ephesus", "ephese", "efeso", "эфес", "эфесе", "أفسس", "ephesos"],
   troya: ["troy", "troie", "troja", "троя", "طروادة"],
-  pamukkale: ["pamukkale", "памуккале", "بامو كالي", "cotton castle"],
-  antalya: ["antalya", "антальи", "أنطاليا", "antalia"],
-  bodrum: ["bodrum", "halicarnassus", "галикарнас"],
-  fethiye: ["fethiye", "telmessos"],
-  nemrut: ["nemrut", "nemrud", "немрут"],
+  // 2026-07-09 Faz 5 A2: AR alias BOŞLUKLUYDU ("بامو كالي") — canlı "باموكالي"
+  // eşleşmiyordu. İki varyant da tutulur (normalizeArabicChars zaten birleştirir
+  // ama alias-listesi kendi-belgeleyici kalsın).
+  pamukkale: ["pamukkale", "памуккале", "باموكالي", "بامو كالي", "cotton castle"],
+  // A2 denetim: "антальи" yalnız ÇEKİM hâliydi — nominatif eklendi.
+  antalya: ["antalya", "анталья", "анталия", "антальи", "أنطاليا", "antalia"],
+  // A2 denetim: RU "бодрум" ve AR "بودروم" EKSİKTİ.
+  bodrum: ["bodrum", "бодрум", "بودروم", "halicarnassus", "галикарнас"],
+  fethiye: ["fethiye", "фетхие", "فتحية", "telmessos"],
+  nemrut: ["nemrut", "nemrud", "немрут", "نمرود"],
   istanbul: ["istanbul", "istambul", "стамбул", "إسطنبول", "konstantinopel", "estambul"],
   ankara: ["ankara", "анкара", "أنقرة"],
   izmir: ["izmir", "smyrna", "smyrne", "измир", "إزمير"],
@@ -111,11 +138,11 @@ const TOUR_NAME_TRANSLATIONS: Record<string, string[]> = {
   saklikent: ["saklikent", "saklıkent canyon", "saklikent canyon"],
   demre: ["demre", "myra", "kekova", "santa claus", "sunken city", "battık şehir"],
   konya: ["konya", "mevlana", "rumi", "whirling dervishes", "derwische", "дервиши", "konia"],
-  bursa: ["bursa", "uludag", "uludağ", "брusa", "бурса"],
+  bursa: ["bursa", "uludag", "uludağ", "бурса"], // A2: "брusa" Kiril+Latin karışımı typo kaldırıldı
   trabzon: ["trabzon", "trabzond", "трабзон"],
   uzungol: ["uzungol", "uzungöl", "long lake", "узунгёль"],
   ayder: ["ayder", "ayder plateau", "айдер"],
-  sumela: ["sumela", "sumela monastery", "sümela", "сумелa"],
+  sumela: ["sumela", "sumela monastery", "sümela", "сумела"], // A2: "сумелa" Latin-a karışımı typo düzeltildi
   mardin: ["mardin", "midyat", "мардин", "ماردين"],
   hasankeyf: ["hasankeyf", "hasankef"],
   sanliurfa: ["urfa", "sanliurfa", "şanlıurfa", "санлыурфа"],

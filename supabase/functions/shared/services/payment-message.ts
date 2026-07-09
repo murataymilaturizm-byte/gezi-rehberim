@@ -124,29 +124,20 @@ function formatPrice(amount: number, currencyCode: string = "TRY"): string {
   return `${formatted} ${currency.code}`;
 }
 
-async function convertPrice(price: number, fromCurrency: string, toCurrency: string): Promise<number> {
-  if (fromCurrency === toCurrency) return price;
+// 2026-07-09 Faz 5 A1 (KRİTİK-PARA): eski convertPrice KALDIRILDI.
+// Kök: kendi fetch'i (GET, base'siz, zayıf validasyon) sessizce başarısız
+// oluyor → `rates[x] || 1` → ÇEVRİLMEMİŞ TL-sayı + yabancı-etiket
+// ("Anzahlungsbetrag: 3.150,00 EUR"). Completion özeti (196€) ise
+// getExchangeRatesOnce+convertSync (cache'li util) kullandığı için doğruydu —
+// İKİ AYRI kur zinciri tutarsızdı. Şimdi TEK ZİNCİR: aynı util. Çevrim yine
+// mümkün değilse (rates boş/eksik) → hedef para birimi TRY'ye (tourCurrency'e)
+// DÜŞER: TL-sayı + TL-etiket. ASLA çapraz sayı/etiket basılmaz.
+import { getExchangeRatesOnce, convertSync } from "../utils/exchange-rates.ts";
 
-  try {
-    const response = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/get-exchange-rates`, {
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
-      },
-    });
-
-    if (!response.ok) return price;
-
-    const data = await response.json();
-    const rates = data.rates || {};
-
-    const fromRate = rates[fromCurrency] || 1;
-    const toRate = rates[toCurrency] || 1;
-
-    return price * (toRate / fromRate);
-  } catch (error) {
-    console.error("Error converting price:", error);
-    return price;
-  }
+/** Çevrim güvenli mi? from===to her zaman güvenli; değilse iki kur da mevcut olmalı. */
+function canConvert(from: string, to: string, rates: Record<string, number>): boolean {
+  if (from === to) return true;
+  return Number.isFinite(rates?.[from]) && Number.isFinite(rates?.[to]) && rates[from] > 0 && rates[to] > 0;
 }
 
 // Payment bilgisi YOKKEN müşteriye gösterilecek güvenli fallback (7 dil)
@@ -189,11 +180,19 @@ export async function generatePaymentMessage(
   }
 
   // Bu dili kullanan kullanıcı için hedef para birimini bul
-  const targetCurrency = getCurrencyForLanguage(language, options);
+  const desiredCurrency = getCurrencyForLanguage(language, options);
 
-  // Gerekirse çevir
-  const convertedTotal = await convertPrice(totalPrice, tourCurrency, targetCurrency);
-  const convertedDeposit = await convertPrice(depositAmount, tourCurrency, targetCurrency);
+  // 2026-07-09 Faz 5 A1: TEK KUR ZİNCİRİ (getExchangeRatesOnce+convertSync —
+  // completion özetiyle AYNI kaynak). Çevrilemiyorsa hedef TRY'ye (tourCurrency)
+  // düşer → sayı ve etiket HER ZAMAN aynı para biriminde.
+  const _rates = await getExchangeRatesOnce().catch(() => ({} as Record<string, number>));
+  const _convertible = canConvert(tourCurrency, desiredCurrency, _rates);
+  const targetCurrency = _convertible ? desiredCurrency : tourCurrency;
+  if (!_convertible && desiredCurrency !== tourCurrency) {
+    console.warn(`[payment-message] A1: kur ${tourCurrency}→${desiredCurrency} çevrilemiyor (rates eksik) — etiket ${tourCurrency}'ye düştü`);
+  }
+  const convertedTotal = convertSync(totalPrice, tourCurrency, targetCurrency, _rates);
+  const convertedDeposit = convertSync(depositAmount, tourCurrency, targetCurrency, _rates);
 
   const methods = paymentInstructions.payment_methods;
   const paymentType = paymentInstructions.payment_type || "deposit";
@@ -352,7 +351,15 @@ export async function generatePaymentMessage(
   };
 
   const lang = labels[language] || labels.tr;
-  const bankInfo = paymentInstructions[language] || paymentInstructions.tr || {};
+  // 2026-07-09 Faz 5 A1 (2. kök): bankInfo `.tr` fallback'i TR SERBEST-METNİ
+  // ("Hinweis: Lütfen açıklama kısmına...") yabancı bloğa karıştırıyordu.
+  // YAPISAL alanlar (banka adı/IBAN/hesap sahibi) dil-nötr → .tr fallback KALIR;
+  // additional_info (serbest metin) yalnız O DİLİN bloğundan basılır (tr hariç).
+  // Per-dil veri yoksa satır atlanır — acente panelde per-dil doldurmalı
+  // (panel-backlog: "payment_instructions per-dil").
+  const _bankInfoLang = paymentInstructions[language];
+  const bankInfo = _bankInfoLang || paymentInstructions.tr || {};
+  const _additionalInfo = (language === "tr" ? bankInfo.additional_info : _bankInfoLang?.additional_info) || null;
 
   // Ayraç + başlık — completion mesajından görsel ayrım
   let message = `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n${lang.title}\n\n`;
@@ -372,7 +379,7 @@ export async function generatePaymentMessage(
     if (bankInfo.bank_name) message += `${lang.bankName} ${bankInfo.bank_name}\n`;
     if (bankInfo.iban) message += `${lang.iban} ${bankInfo.iban}\n`;
     if (bankInfo.account_holder) message += `${lang.accountHolder} ${bankInfo.account_holder}\n`;
-    if (bankInfo.additional_info) message += `${lang.note} ${bankInfo.additional_info}\n`;
+    if (_additionalInfo) message += `${lang.note} ${_additionalInfo}\n`;
     message += "\n";
   }
 

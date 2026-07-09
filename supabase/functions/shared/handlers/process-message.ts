@@ -3930,10 +3930,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     newContext.reservationConfirmed === true &&
     (nluResult.intent === "general" || nluResult.intent === "greeting")
   ) {
-    // TR + EN, diğer 5 dil çok-dil eşitleme fazına bırakıldı (TR fallback).
+    // 2026-07-09 Faz 5 A4 (V4): 7-dil tamamlandı (eski TR+EN → TR fallback'i
+    // DE/FR/ES/RU/AR kullanıcıya TR kapanış basıyordu).
     const _ackBugAMsgs: Record<string, string> = {
       tr: "Rezervasyonunuz tamamlandı ✅ Başka bir konuda yardımcı olabilir miyim?",
       en: "Your reservation is complete ✅ Is there anything else I can help with?",
+      de: "Ihre Reservierung ist abgeschlossen ✅ Kann ich Ihnen noch bei etwas anderem helfen?",
+      fr: "Votre réservation est terminée ✅ Puis-je vous aider avec autre chose ?",
+      es: "Su reserva está completa ✅ ¿Puedo ayudarle con algo más?",
+      ru: "Ваше бронирование завершено ✅ Могу ли я помочь с чем-то ещё?",
+      ar: "تم إتمام حجزك ✅ هل يمكنني مساعدتك في شيء آخر؟",
     };
     const _ackBugAReply = _ackBugAMsgs[newContext.language] || _ackBugAMsgs.tr;
     console.log(`[process-message] COMPLETED after-sales ack → deterministik kapanış (intent=${nluResult.intent})`);

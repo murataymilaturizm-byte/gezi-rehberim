@@ -11,6 +11,7 @@ import type {
 import { produceTourChangeContext, hasReservationSignal } from "../services/tour-change.ts";
 import { isValidPax, isValidPhone } from "../utils/validation.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
+import { CONFIRM_POSITIVE, CONFIRM_NEGATIVE, CLEAR_POSITIVE_RE } from "../constants/confirmation-words.ts";
 
 export function createInitialContext(
   language: string = "tr",
@@ -242,15 +243,9 @@ export function detectConfirmation(message: string, language: string): boolean {
   // bozulmaz). "yap"/"olsun" için lookbehind+lookahead ile sıkı kelime sınırı —
   // "yapıyorum" çekim eki sade onay sayılır. "değiştir/düzelt/güncelle/değişiklik"
   // çekim ekleri açık (değiştirelim/değişikliği) — değişiklik niyeti her halükarda.
-  const negativePatterns: Record<string, RegExp> = {
-    tr: /(?<![\p{L}\p{N}])(ama|fakat|ancak|lakin|değil|yok|hayır|istemiyorum|vazgeçtim|olmaz|bekle|dur|aslında|sanki|acaba|mı\?|mi\?|değil mi|yanlış|hata|hatalı|yap|olsun)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])(değiştir|düzelt|güncelle|değişiklik)/iu,
-    en: /\b(but|however|except|not|no|don't|wait|hold|change|actually|wrong|mistake|rather|instead|unless|modify|edit|update|correct|fix|make\s+it)\b/i,
-    de: /\b(aber|jedoch|nicht|nein|warte|ändern|eigentlich|falsch|stattdessen|korrigieren|aktualisieren|bearbeiten|mach\s+es)\b/i,
-    fr: /\b(mais|cependant|non|pas|attends|changer|plutôt|en fait|faux|modifier|corriger|éditer|mettre\s+à\s+jour|fais\s+en|faites\s+en)\b/i,
-    es: /\b(pero|sin embargo|no|espera|cambiar|en realidad|incorrecto|equivocado|modificar|corregir|actualizar|editar|hazlo|hazla)\b/i,
-    ru: /\b(но|однако|нет|не|подожди|изменить|вообще-то|неправильно|ошибка|исправить|обновить|редактировать|сделай)\b/i,
-    ar: /\b(لكن|لا|ليس|انتظر|تغيير|في الواقع|خطأ|تعديل|تحديث|اجعل)\b/i,
-  };
+  // 2026-07-09 Faz 5 A3: TEK KAYNAK constants/confirmation-words.ts —
+  // clearPositive (T14 Path-3) ile senkron artık YAPISAL (K1 kuralı).
+  const negativePatterns = CONFIRM_NEGATIVE;
 
   // Positive patterns
   // 2026-06-28 K1 FIX (canlı bug: "kapadokya çok güzel yermiş" → "çok" içinden
@@ -260,15 +255,10 @@ export function detectConfirmation(message: string, language: string): boolean {
   // Yan #8 fix (2026-06-21) negative pattern'e \p{L}\p{N} lookaround uygulamış
   // AMA positive pattern'de UNUTULMUŞ. Bu fix tamamlama: 7 dil pattern boundary'si
   // ASCII \b yerine Unicode-aware lookaround. /iu flag (u Unicode property için ŞART).
-  const positivePatterns: Record<string, RegExp> = {
-    tr: /(?<![\p{L}\p{N}])(evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla(?:d[ıi]m|d[ıi]k)?|tasdik|kesinlikle|kesinleştir(?:d[ıi]m|d[ıi]k)?|tamamdır|onaylıorum|peki|tabii)(?![\p{L}\p{N}])/iu,
-    en: /(?<![\p{L}\p{N}])(yes|confirm|approve|ok|okay|sure|right|correct|definitely|agreed|deal|absolutely)(?![\p{L}\p{N}])/iu,
-    de: /(?<![\p{L}\p{N}])(ja|best[äa]tigen|ok|richtig|genau|stimmt|einverstanden|natürlich)(?![\p{L}\p{N}])/iu,
-    fr: /(?<![\p{L}\p{N}])(oui|confirme|d'accord|ok|exact|parfait|absolument)(?![\p{L}\p{N}])/iu,
-    es: /(?<![\p{L}\p{N}])(si|s[íi]|confirmo|vale|ok|correcto|claro|exacto)(?![\p{L}\p{N}])/iu,
-    ru: /(?<![\p{L}\p{N}])(да|подтверждаю|ок|верно|правильно|согласен|конечно)(?![\p{L}\p{N}])/iu,
-    ar: /(?<![\p{L}\p{N}])(نعم|أكد|موافق|تمام|صحيح|بالتأكيد)(?![\p{L}\p{N}])/iu,
-  };
+  // 2026-07-09 Faz 5 A3 (V3 kökü): TEK KAYNAK. EN "confirmed" (-ed lookahead'e
+  // takılıyordu — CONFIRMING'de çift özet-tekrar döngüsü) + doğal onaylar
+  // (sounds good/passt/c'est bon/perfecto/хорошо/aynen) 7 dilde eklendi.
+  const positivePatterns = CONFIRM_POSITIVE;
 
   const langKey = language as keyof typeof positivePatterns;
 
@@ -820,9 +810,9 @@ const transitions: StateTransition[] = [
       // KATMAN A (boundary fix): Net positive pattern — \b → \p{L}\p{N} lookaround
       // (Yan #8 fix tamamlama, detectConfirmation ile aynı kanıtlanmış desen).
       // ASCII \b Türkçe non-ASCII öncüllü kelimelerde ("çok"→"ok") yanlış-pozitif yaratıyordu.
-      const clearPositive =
-        /(?<![\p{L}\p{N}])(evet|tamam|onayl[ıi]yorum|onaylıyorum|onayla(?:d[ıi]m|d[ıi]k)?|tasdik|kabul|do[ğg]ru|olur|peki|tabii|kesinlikle|kesinleştir(?:d[ıi]m|d[ıi]k)?|yes|confirm|approve|okay|ok|sure|right|correct|agreed|ja|oui|si|s[íi]|да|подтверждаю|نعم|أكد|d'accord)(?![\p{L}\p{N}])/iu;
-      return clearPositive.test(msg);
+      // 2026-07-09 Faz 5 A3: TEK KAYNAK CLEAR_POSITIVE_RE (confirmation-words.ts,
+      // POS_ALT birleşimi) — detectConfirmation ile drift ARTIK YAPISAL OLARAK imkânsız.
+      return CLEAR_POSITIVE_RE.test(msg);
     },
     action: (ctx) => ({
       ...ctx,
