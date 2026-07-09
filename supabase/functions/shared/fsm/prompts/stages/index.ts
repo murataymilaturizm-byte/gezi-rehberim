@@ -1,6 +1,8 @@
-// All stage prompts - ALL IN ONE FILE (no separate files needed)
+// All stage prompts. TR+EN inline (KAYNAK-DOĞRULUK, sıfır-regresyon);
+// DE/FR/ES/RU/AR → prompts/lang/*.ts bundle'ları (2026-07-09 FAZ4-P2).
 import type { PromptContext } from "../types.ts";
 import { formatTourDetails, formatReservationSummary, formatToursList } from "../helpers.ts";
+import { LANG_PROMPTS } from "../lang/index.ts";
 
 // ============================================
 // GREETING STAGE
@@ -126,8 +128,9 @@ function buildForbiddenAskList(
     tr: { date: "tarih", pax: "kişi sayısı", name: "isim", phone: "telefon" },
     en: { date: "date", pax: "number of people", name: "name", phone: "phone" },
   };
-  const lang = labels[language] ? language : "en";
-  const L = labels[lang];
+  // 2026-07-09 FAZ4-P2: DE/FR/ES/RU/AR → bundle.forbidden (etiket + header/footer).
+  const bundle = LANG_PROMPTS[language];
+  const L = bundle ? bundle.forbidden : (labels[language] || labels.en);
 
   const info = reservationInfo || {};
   const forbidden: string[] = [];
@@ -148,7 +151,8 @@ function buildForbiddenAskList(
   if (forbidden.length === 0) return "";
 
   const list = forbidden.map((f) => `  - ${f}`).join("\n");
-  return lang === "tr"
+  if (bundle) return `\n\n${bundle.forbidden.header}\n${list}\n${bundle.forbidden.footer}`;
+  return language === "tr"
     ? `\n\n❌ TEKRAR SORMA (ZATEN ALINDI):\n${list}\nBu alanları doğrulama amaçlı bile SORMA. Sadece bu adımın sorusunu sor.`
     : `\n\n❌ DO NOT ASK AGAIN (ALREADY COLLECTED):\n${list}\nNever re-ask, not even for verification. Only ask the question for this step.`;
 }
@@ -296,6 +300,9 @@ YOUR TASK: ONLY ask for email. Nothing else.
     },
   };
 
+  // 2026-07-09 FAZ4-P2: DE/FR/ES/RU/AR → bundle.steps.
+  const bundle = LANG_PROMPTS[language];
+  if (bundle) return bundle.steps[collectionStep] || bundle.steps.default;
   const langPrompts = prompts[language] || prompts.en;
   return langPrompts[collectionStep] || langPrompts.default;
 }
@@ -307,7 +314,7 @@ export function getStagePrompt(context: PromptContext): string {
   const { stage, collectionStep, currentTour, reservationInfo, language, tone, availableTours } = context;
 
   // === UYDURMA YASAĞI + KALKI YERİ KURALI - Tüm stage'lerde geçerli ===
-  const hallucinationGuard =
+  const _defaultGuard =
     language === "tr"
       ? `\n\n🌐 DİL HATIRLATMASI: Kullanıcının yazdığı dilde yanıt ver. Hangi dilde yazıyorsa o dilde cevap ver.\n\n🚫 KRİTİK KURAL - UYDURMA YASAĞI:
 - ASLA veritabanında olmayan tur, tarih, fiyat veya bilgi UYDURMA.
@@ -386,7 +393,29 @@ export function getStagePrompt(context: PromptContext): string {
   // hallucinationGuard'dan ÖNCE eklenir — reservationInfo'da dolu olan alanlar
   // değer bazlı "TEKRAR SORMA" anchor'ı olarak LLM'e verilir. CONFIRMING /
   // COMPLETED dahil tüm stage'ler otomatik miras alır.
+  // 2026-07-09 FAZ4-P2: DE/FR/ES/RU/AR → bundle.hallucinationGuard; tr/en → _defaultGuard.
+  const hallucinationGuard = LANG_PROMPTS[language]?.hallucinationGuard ?? _defaultGuard;
   const filledFieldsGuard = buildFilledFieldsGuard(context);
+
+  // 2026-07-09 FAZ4-P2: DE/FR/ES/RU/AR bundle dispatch (roles deseni). TR/EN
+  // aşağıdaki inline yollardan gelir — BİREBİR KORUNDU (sıfır-regresyon).
+  const _bundle = LANG_PROMPTS[language];
+  if (_bundle) {
+    const _toursList = formatToursList(availableTours, language, tone);
+    const _td = currentTour ? formatTourDetails(currentTour, language, tone) : "";
+    const _sum = formatReservationSummary(currentTour, reservationInfo, language, tone);
+    let _body = "";
+    switch (stage) {
+      case "GREETING": _body = _bundle.greeting(_toursList); break;
+      case "BROWSING": _body = _bundle.browsing(_toursList); break;
+      case "TOUR_SELECTED": _body = _bundle.tourSelected(_td); break;
+      case "COLLECTING_INFO": _body = _bundle.collectingInfo(getCollectionStepPrompt(collectionStep || "default", language), _td); break;
+      case "CONFIRMING": _body = _bundle.confirming(_sum, _td); break;
+      case "COMPLETED": _body = _bundle.completed(_sum, _td); break;
+      default: _body = "";
+    }
+    return _body + filledFieldsGuard + hallucinationGuard;
+  }
 
   if (stage === "GREETING") return getGreetingPrompt(context) + filledFieldsGuard + hallucinationGuard;
   if (stage === "BROWSING") return getBrowsingPrompt(context) + filledFieldsGuard + hallucinationGuard;

@@ -1,5 +1,6 @@
 // Agency information prompts
 import type { PromptContext } from "./types.ts";
+import { LANG_PROMPTS } from "./lang/index.ts";
 
 const DAY_NAMES_TR: Record<string, string> = {
   monday: "Pazartesi", tuesday: "Salı", wednesday: "Çarşamba",
@@ -93,7 +94,11 @@ KURALLAR:
   if (agencyMapsUrl) lines.push(`Location: ${agencyMapsUrl}`);
   if (agencyCancellationPolicy) lines.push(`Cancellation Policy: ${agencyCancellationPolicy}`);
   // 2026-07-03 İş 1 (#18): payment summary WITHOUT IBAN — from buildPaymentPromptSummary.
-  if ((context as any).paymentInfo) lines.push(`Payment: ${(context as any).paymentInfo}`);
+  // 2026-07-09 FAZ4-P2: ödeme etiketi dil-başı (DE "Zahlung" vb.); değer dinamik.
+  if ((context as any).paymentInfo) {
+    const _payLbl = LANG_PROMPTS[language]?.paymentLabel ?? "Payment";
+    lines.push(`${_payLbl}: ${(context as any).paymentInfo}`);
+  }
 
   return `\n\n🏢 AGENCY INFO:
 ${lines.join("\n")}

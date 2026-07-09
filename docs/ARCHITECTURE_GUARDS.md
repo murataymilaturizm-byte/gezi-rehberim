@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (FAZ 4 P1 — kritik sinyaller 7-dil EŞİTLENDİ: müsaitlik [availability-words.ts TEK KAYNAK], TOUR_CHANGE, X8, ay-niteleyici-AR, tema-ctx-RU/AR, _cxlFaqRe, relative AR+TR-çekim. Kabul kriteri KARŞILANDI: baseline 21 gap → 7-dil fire, 0 regresyon. Davranışsal 53/53. Detay §6.).
+> Son güncelleme: 2026-07-09 (FAZ 4 P2 — LLM prompt blokları 7-dil: stage/step/hallucination-guard/no-fake-confirm/tone/ödeme → prompts/lang/{de,fr,es,ru,ar}.ts bundle (roles deseni), TR/EN inline korundu (sıfır-regresyon). Snapshot 75/75; canlı smoke 5-dil sahte-onay-yok 5/5 + dil-doğru 5/5. Detay §6c.).
+> Önceki: 2026-07-09 (FAZ 4 P1 — kritik sinyaller 7-dil: müsaitlik/TOUR_CHANGE/X8/ay-niteleyici-AR/tema-ctx/relative. Baseline 21 gap → fire, 53/53.).
 > Önceki: 2026-07-09 (FAZ 4 P0 — dil kapsama envanteri [§6] + 7-dil baseline korpusu + offline proof. Katman-1 boşlukları KANITLANDI.).
 > Önceki: 2026-07-09 (NLU-pilot FAZ B — CANLI GEÇİŞ: NLU_MODEL=claude-sonnet-4-6 [secret+redeploy]. Kanıt: A/B model=sonnet-4.6 + cache_read=4497/çağrı; smoke tüm kritik yollar ✅. Geri dönüş: secret unset + redeploy. Detay G12.).
 > Önceki: 2026-07-09 (NLU-pilot-A — İş0 göreli-kelime ASCII süperset [relative-date-words.ts TEK KAYNAK; "obür gün" o+ü karışık + bugün/bugun; echo-sanitize REL_ECHO_RE] + İş1 Sonnet-NLU pilotu FAZ A: NLU_MODEL env konfig [default Haiku, davranış değişmez] + koşullu caching [Sonnet array+cache_control] + korumalı A/B debug yolu [demo-chat X-NLU-AB] + korpus/koşum [docs/nlu-ab-corpus.json, scripts/nlu-ab-run.ps1]. FAZ3-P1/P2/P3/P4/mikro aynı gün.).
@@ -632,14 +633,35 @@ Dil-seçimi tüm şablonlarda `_msgs[context.language] || _msgs.tr` (**fallback 
 tutarlı**). Küçük: :10e `_remTxt` (kişilik-yer) TR+EN ⚠; J-14 acente-özeti TR-only
 ama iç-metin (n-a).
 
-### 6c. Sınıf C — LLM prompt blokları
+### 6c. Sınıf C — LLM prompt blokları — ✅ 7-DİL (FAZ4-P2)
 ✅ 7-dil: role, format, injection-guard, translation-directive, tarih-başlığı.
-⚠ **TR+EN + EN-fallback:** stage prompt'ları (6 aşama) + collection-step (5),
-hallucination-guard, no-fake-confirmation, tarih/dahil-olanlar yasağı (V2/V3a),
-tone (4 stil), agency/ödeme-kuralı. **Nüans:** her role dosyasında "kullanıcının
-dilinde yanıt ver" direktifi → **çıktı dili her zaman doğru**; EN-fallback yalnız
-*talimat metninde* → kural-uyum kalitesi model-yeteneğine bağlı (Sonnet-4.6 yüksek,
-garanti değil).
+✅ **FAZ4-P2 ile 7-dile yükseltildi** (EN-fallback KALKTI): stage prompt'ları (6 aşama)
++ collection-step (5) + hallucination-guard (7 alt-kural) + no-fake-confirmation +
+tarih/dahil-olanlar yasağı (V2/V3a) + tone (4 stil) + ödeme-etiketi.
+
+**PER-LANG DOSYA HARİTASI** (roles deseni): `prompts/lang/{de,fr,es,ru,ar}.ts` →
+`LANG_PROMPTS` bundle (stage fn'leri + steps + hallucinationGuard + noFakeConfirmation
++ tones + forbidden + paymentLabel). **TR/EN inline KORUNDU** (stages/index.ts +
+tones/tr.ts/en.ts + prompt-builder + agency.ts) — sıfır-regresyon (snapshot ile
+doğrulandı, gerçek render). Tüketiciler: stages/index.ts (getStagePrompt/
+getCollectionStepPrompt/buildForbiddenAskList → 5-dil bundle dalı), tones/index.ts,
+prompt-builder (no-fake), agency.ts (ödeme-etiketi).
+
+**RESIDUAL (bilinçli, P3):** agency-info DATA blok etiketleri (Address/Phone/Working
+Hours) DE/FR/ES/RU/AR'da hâlâ EN — ama "acente uydurma" kuralı hallucinationGuard'da
+7-dil kapsanıyor (semantik korunuyor). Ödeme KURALI roles/[lang].ts'de zaten 7-dil.
+
+**Fidelity:** ${...} placeholder + emoji + DB alan-adları (hareket_noktasi vb.) +
+"Tuğçe" AYNEN; yasaklar en güçlü form (NIEMALS/JAMAIS/NUNCA/НИКОГДА/أبداً); register
+(Sie/vous/usted/Вы/formal). Snapshot 75/75, canlı smoke 5-dil: **sahte-onay-yok 5/5,
+cevap-dili-doğru 5/5, uydurma-yasağı DE/FR/ES/AR redirect** (RU tur-programını veriden
+betimledi).
+
+**CACHE-ETKİ:** ana-model (Sonnet, ai.ts) prompt'unda dil-bloğu seçimi cache prefix'ini
+DİL-BAŞINA ayırır — her dil kendi prefix'ini cache'ler (normal ve kabul; sabit/dinamik
+sınır kuralı korunur — bundle metinleri STATİK, dinamikler contextPrompt'ta). Dil başına
+ilk çağrı cache_creation, sonrakiler cache_read. TR/EN prefix'i değişmedi → mevcut cache
+davranışı aynen.
 
 ### 6d. Dil-seçim mekanizması
 4 katman (öncelik): açık-niyet (`detectLanguageChangeIntent`, 7-dil) → Unicode-
