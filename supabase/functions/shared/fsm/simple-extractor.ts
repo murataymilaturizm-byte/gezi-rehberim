@@ -2,81 +2,38 @@
 import type { ReservationInfo } from "./types.ts";
 import { isValidPax } from "../utils/validation.ts";
 import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-names.ts";
+import { REL_TODAY, REL_TOMORROW, REL_DAY_AFTER, REL_NEXT_WEEK, REL_DAY_NAMES, relRegex } from "../constants/relative-date-words.ts";
 
 // ─── Göreceli tarih çıkarımı ─────────────────────────────────────────────────
 function extractRelativeDate(text: string, language: string): Date | null {
   const lower = text.toLowerCase();
 
-  // 2026-07-09 FAZ3-mikro (Yan #8 sınıfı KÖK): \b → \p{L}\p{N} lookaround.
-  // Non-ASCII ile başlayan/biten göreli kelimeler ("öbür gün", "übermorgen",
-  // "завтра", "غدا") eski ASCII-\b ile HİÇ eşleşmiyordu (gün-adları aşağıda
-  // zaten bu konvansiyona çevrilmişti — tutarlılık). hasRelativeDateWord /
-  // Blok 9d zincirinin 7-dil kapsaması bu düzeltmeye bağlı.
-  const _rw = (body: string) => new RegExp(`(?<![\\p{L}\\p{N}])(?:${body})(?![\\p{L}\\p{N}])`, "iu");
-  const tomorrowPatterns: Record<string, RegExp> = {
-    tr: _rw("yarın|yarin"),
-    en: _rw("tomorrow"),
-    de: _rw("morgen"),
-    ru: _rw("завтра"),
-    ar: _rw("غدا|غداً"),
-    fr: _rw("demain"),
-    es: _rw("mañana|manana"),
-  };
-
-  const dayAfterTomorrowPatterns: Record<string, RegExp> = {
-    tr: _rw("öbür\\s*gün|obur\\s*gun|ertesi\\s*gün"),
-    en: _rw("day\\s*after\\s*tomorrow"),
-    de: _rw("übermorgen|uebermorgen"),
-    ru: _rw("послезавтра"),
-    fr: _rw("après[\\s-]?demain|apres[\\s-]?demain"),
-    es: _rw("pasado\\s*ma[nñ]ana"),
-  };
-
-  const nextWeekPatterns: Record<string, RegExp> = {
-    tr: _rw("haftaya|gelecek\\s*hafta|önümüzdeki\\s*hafta"),
-    en: _rw("next\\s*week"),
-    de: _rw("nächste\\s*woche|naechste\\s*woche"),
-    ru: _rw("следующ\\S+\\s+недел\\S+|на\\s+следующ\\S+\\s+недел\\S+"),
-    fr: _rw("la\\s*semaine\\s*prochaine|semaine\\s*prochaine"),
-    es: _rw("la\\s*pr[oó]xima\\s*semana|pr[oó]xima\\s*semana"),
-  };
-
-  const langKey = language as keyof typeof tomorrowPatterns;
+  // 2026-07-09 NLU-pilot-A İş0: göreli-kelime setleri TEK KAYNAK'tan türetilir
+  // (constants/relative-date-words.ts). ASCII süperset (öbür/obür/öbur/obur,
+  // yarın/yarin, bugün/bugun) + Yan #8 lookaround orada baked-in. Kopya YOK —
+  // echo-sanitize aynı kaynağı tüketir (senkronsuzluk = canlı bug sınıfı).
+  const langKey = language;
   const now = new Date();
 
-  if (tomorrowPatterns[langKey]?.test(lower) || tomorrowPatterns.en.test(lower)) {
-    const d = new Date(now);
-    d.setDate(d.getDate() + 1);
-    return d;
-  }
-
-  if (dayAfterTomorrowPatterns[langKey]?.test(lower) || dayAfterTomorrowPatterns.en.test(lower)) {
-    const d = new Date(now);
-    d.setDate(d.getDate() + 2);
-    return d;
-  }
-
-  if (nextWeekPatterns[langKey]?.test(lower) || nextWeekPatterns.en.test(lower)) {
-    const d = new Date(now);
-    d.setDate(d.getDate() + 7);
-    return d;
-  }
-
-  // Gün isimleri: "pazartesi", "monday" → bir sonraki o gün
-  const dayNames: Record<string, string[]> = {
-    tr: ["pazar", "pazartesi", "salı", "çarşamba", "perşembe", "cuma", "cumartesi"],
-    en: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
-    de: ["sonntag", "montag", "dienstag", "mittwoch", "donnerstag", "freitag", "samstag"],
-    ru: ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"],
-    fr: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
-    es: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+  // Grup testi: langKey gövdesi + EN fallback. BOŞ/eksik gövdeyi ATLA — relRegex("")
+  // boşluk sınırında eşleşir (kritik: ar'da REL_DAY_AFTER yok → tüm Arapça mesaj
+  // yanlış +2 gün çözülürdü). Eski `?.test` optional-chaining güvenliğinin karşılığı.
+  const _test = (group: Record<string, string>): boolean => {
+    const b = group[langKey];
+    return (!!b && relRegex(b).test(lower)) || (!!group.en && relRegex(group.en).test(lower));
   };
-  for (const days of Object.values(dayNames)) {
-    for (let i = 0; i < days.length; i++) {
-      // 2026-06-21 Yan #8 fix: \b ASCII-only → \p{L}\p{N} lookaround.
-      // TR "salı" (ı bitişli), RU/AR gün isimleri non-ASCII karakter bitişli
-      // — eski \b match etmiyordu. Şimdi yakalanır.
-      if (new RegExp(`(?<![\\p{L}\\p{N}])${days[i]}(?![\\p{L}\\p{N}])`, "iu").test(lower)) {
+
+  // bugün/today → offset 0 (önceki setlerde YOKTU — İş0 ile eklendi).
+  if (_test(REL_TODAY)) return new Date(now);
+  if (_test(REL_TOMORROW)) { const d = new Date(now); d.setDate(d.getDate() + 1); return d; }
+  if (_test(REL_DAY_AFTER)) { const d = new Date(now); d.setDate(d.getDate() + 2); return d; }
+  if (_test(REL_NEXT_WEEK)) { const d = new Date(now); d.setDate(d.getDate() + 7); return d; }
+
+  // Gün isimleri: DIŞ indeks = hafta günü (getDay ile hizalı) → "bir sonraki o gün".
+  for (const weekdays of Object.values(REL_DAY_NAMES)) {
+    for (let i = 0; i < weekdays.length; i++) {
+      // i = hafta günü indeksi; iç dizi = varyantlar (salı/sali) — hepsi aynı gün.
+      if (relRegex(weekdays[i].join("|")).test(lower)) {
         const currentDay = now.getDay();
         let daysUntil = i - currentDay;
         if (daysUntil <= 0) daysUntil += 7;

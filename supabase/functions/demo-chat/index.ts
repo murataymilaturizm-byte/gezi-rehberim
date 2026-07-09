@@ -10,6 +10,7 @@ import { detectLanguageChangeIntent, pickLocalized } from "../shared/fsm/localiz
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
+import { analyzeUserMessage } from "../shared/fsm/nlu.ts";
 import { DemoChatAdapter } from "./adapter.ts";
 import { CONFIG, corsHeaders } from "./config/constants.ts";
 
@@ -37,6 +38,40 @@ serve(async (req) => {
     const seedLanguage = (typeof bodyLanguage === "string" && SUPPORTED_LANGS.includes(bodyLanguage))
       ? bodyLanguage
       : undefined;
+
+    // === NLU A/B DEBUG YOLU (KORUMALI — FAZ NLU-pilot-A ölçüm, 2026-07-09) ===
+    // GÜVENLİK: X-NLU-AB header'ı NLU_AB_TOKEN secret'ıyla TAM eşleşmezse yol
+    // TAMAMEN kapalı — hiçbir sinyal sızmaz, normal akışa dokunulmaz. Eşleşirse:
+    // mesajı SADECE NLU'dan iki modelde (Haiku + Sonnet) geçir, ham çıktıları
+    // yan yana döndür. STATE'e YAZMAZ, rezervasyon akışına GİRMEZ, DB'ye dokunmaz.
+    // Rate-limit/sessionId ZORUNLULUKLARINDAN ÖNCE (ölçüm izole). Secret rotate
+    // edilebilir; token yoksa endpoint normal davranır (debug varlığı gizli).
+    {
+      const _abToken = req.headers.get("X-NLU-AB");
+      const _abSecret = Deno.env.get("NLU_AB_TOKEN");
+      if (_abToken && _abSecret && _abToken === _abSecret) {
+        const _abMsg = sanitizeInput(rawMessage || "");
+        const _abSummary = typeof body.summary === "string" ? body.summary : undefined;
+        const _abState = typeof body.state === "string" ? body.state : undefined;
+        const _abTour = body.selectedTour || undefined;
+        const _HAIKU = "claude-haiku-4-5-20251001";
+        const _SONNET = "claude-sonnet-4-6";
+        const _slim = (r: any) => ({
+          model: r?._model, intent: r?.intent, language: r?.language,
+          entities: r?.entities, updates: r?.updates,
+          clarification_needed: r?.clarification_needed, usage: r?._usage,
+        });
+        const [_h, _s] = await Promise.all([
+          analyzeUserMessage(_abMsg, _abSummary, _abState, _abTour, undefined, _HAIKU).catch((e) => ({ error: String(e), _model: _HAIKU })),
+          analyzeUserMessage(_abMsg, _abSummary, _abState, _abTour, undefined, _SONNET).catch((e) => ({ error: String(e), _model: _SONNET })),
+        ]);
+        return new Response(JSON.stringify({
+          ab: true, message: _abMsg,
+          context: { summary: _abSummary, state: _abState, tour: _abTour?.title },
+          haiku: _slim(_h), sonnet: _slim(_s),
+        }, null, 2), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
 
     if (!sessionId) {
       return new Response(JSON.stringify({ error: "sessionId required" }), {

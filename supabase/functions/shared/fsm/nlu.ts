@@ -14,6 +14,24 @@ export interface NLUResult {
   };
   updates: Partial<ReservationInfo>;
   clarification_needed?: string;
+  // 2026-07-09 NLU-pilot-A: A/B debug yolu için ham usage + model (opsiyonel,
+  // yalnız ölçüm). Normal akış bu alanları OKUMAZ — davranış değişmez.
+  _usage?: any;
+  _model?: string;
+}
+
+// 2026-07-09 NLU-pilot-A: NLU model string'i env'den. Default = MEVCUT Haiku →
+// NLU_MODEL secret set edilmedikçe davranış BİREBİR AYNI. Geçiş = secret set +
+// redeploy (env değişimi worker restart ister — bkz. ARCHITECTURE_GUARDS G12).
+const NLU_MODEL_DEFAULT = "claude-haiku-4-5-20251001";
+export function resolveNluModel(override?: string): string {
+  return override || Deno.env.get("NLU_MODEL") || NLU_MODEL_DEFAULT;
+}
+// Sonnet ailesi min cache-prefix eşiği 2048 token → NLU sabit prefix (~3.5-4.7k
+// token) EŞİĞİ AŞAR → caching anlamlı. Haiku 4.5 eşiği 4096 → prefix sınırda,
+// cache_control eklense bile Anthropic sessizce kurmaz (kanıtlı) → düz format.
+export function nluModelUsesCache(model: string): boolean {
+  return /sonnet/i.test(model);
 }
 
 const NLU_TIMEOUT_MS = 15000;
@@ -289,12 +307,16 @@ export async function analyzeUserMessage(
   currentState?: string,
   selectedTour?: any,
   availableTours?: any[],
+  modelOverride?: string,
 ): Promise<NLUResult> {
+  const NLU_MODEL = resolveNluModel(modelOverride);
+  const _useCache = nluModelUsesCache(NLU_MODEL);
   try {
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) {
       throw new Error("ANTHROPIC_API_KEY not configured");
     }
+    console.log(`[nlu] MODEL=${NLU_MODEL} cache=${_useCache}`);
 
     let contextPrompt = `User message: "${userMessage}"\n\n`;
 
@@ -381,6 +403,7 @@ export async function analyzeUserMessage(
 
     let lastError: Error | null = null;
     let toolUseBlock: any = null;
+    let _lastUsage: any = null;
 
     for (let attempt = 1; attempt <= NLU_MAX_RETRIES; attempt++) {
       const response = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
@@ -406,9 +429,14 @@ export async function analyzeUserMessage(
           // ai.ts'teki Sonnet caching AYNEN aktif (Sonnet eşiği farklı).
         },
         body: JSON.stringify({
-          model: "claude-haiku-4-5-20251001",
+          model: NLU_MODEL,
           max_tokens: 500,
-          system: NLU_SYSTEM_PROMPT,
+          // KOŞULLU CACHING: Sonnet ailesinde system'i array + cache_control'e
+          // çevir (sabit prefix = tools+system cache'lenir; contextPrompt dinamik,
+          // messages'ta kalır → cache'i kırmaz). Haiku'da düz string (eşik altı).
+          system: _useCache
+            ? [{ type: "text", text: NLU_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }]
+            : NLU_SYSTEM_PROMPT,
           messages: [
             { role: "user", content: contextPrompt },
           ],
@@ -435,7 +463,10 @@ export async function analyzeUserMessage(
       // DEBUG: prompt caching doğrulaması — NLU_SYSTEM_PROMPT'un cache'lenip lendiğini gösterir.
       // İlk çağrı: cache_creation_input_tokens > 0. Sonraki 5 dk içinde aynı prefix: cache_read > 0.
       if (data.usage) {
+        _lastUsage = data.usage;
         console.log("[nlu] CACHE_USAGE", {
+          model: NLU_MODEL,
+          cache: _useCache,
           input: data.usage.input_tokens,
           output: data.usage.output_tokens,
           cache_creation_input_tokens: data.usage.cache_creation_input_tokens ?? 0,
@@ -513,6 +544,8 @@ export async function analyzeUserMessage(
       entities,
       updates,
       clarification_needed: analysis.clarification_needed,
+      _usage: _lastUsage,
+      _model: NLU_MODEL,
     };
   } catch (error) {
     console.error("NLU error:", error);
