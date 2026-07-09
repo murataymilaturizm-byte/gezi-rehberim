@@ -96,6 +96,13 @@ export interface ConversationContext {
   // Yeni pending-STATE değil — tek alanlık öneri hafızası.
   proposedDateId?: string;
   proposedDate?: string; // görsel/ack için ISO
+
+  // 2026-07-09 FAZ3-P4 (V11-a): telefon-yok politika dalı state'i. waiting_for_phone'da
+  // "numaram yok/mail atsam" → nazik politika mesajı (telefon ŞART). Kaç kez ret
+  // edildiği sayılır: 1. ret → politika, 2.+ ret → J-14 eskalasyon önerisi
+  // (contact_request). phoneEscalationPending: eskalasyon önerildi, "evet" beklenir.
+  phoneRefusalCount?: number;
+  phoneEscalationPending?: boolean;
 }
 
 export interface StateTransition {

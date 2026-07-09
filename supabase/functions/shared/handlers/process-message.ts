@@ -2008,6 +2008,127 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // A2/A3: hiçbir dal tetiklenmedi → RETURN yok, mevcut akışa devam.
   }
 
+  // === 9-PHONE-YOK: telefon-yok politika dalı (V11-a, ürün kararı a, 2026-07-09) ===
+  // waiting_for_phone'da "numaram yok / mail atsam" gibi telefon-YOK sinyali →
+  // R6 "geçersiz telefon" YERİNE nazik POLİTİKA mesajı: telefon ŞART kalır (acente
+  // telefonla teyit ediyor), gerekçe nazikçe açıklanır, e-posta EK bilgi olarak
+  // alınabilir. Deterministik sinyal (NLU'ya güvenme — J-14/K1 deseni). AYRIM:
+  //  - telefon-extract ÖNCE çalıştı → numara İÇEREN mesaj (!extractedInfo.phone
+  //    false) bu dala GİRMEZ;
+  //  - "yok" tek başına sinyal DEĞİL — numara/telefon/mail bağlam-kelimesi şart.
+  // Gönüllü e-posta EK alan (şart DEĞİL, collectEmail mekanizması dokunulmaz):
+  //  reservationInfo.email'e yazılır → :14 RPC p_email → registrations.email.
+  // ISRAR (2.+ ret): aynı mesajı tekrarlama — J-14 deseni (contact_request +
+  // acente bildirimi). FSM-ÖNCESI (J-14 gibi): "istemiyorum"u cancellation
+  // transition'ı iptal sanıp dalı atlamasın diye processTransition'dan ÖNCE.
+  if (
+    context.stage === "COLLECTING_INFO" &&
+    context.collectionStep === "waiting_for_phone" &&
+    !extractedInfo.phone
+  ) {
+    const _pyLang = context.language || "tr";
+    const _volEmail = extractEmail(message);
+    const _agPhonePY = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+
+    // (0) ESKALASYON ONAYI: 2. ret sonrası "iletelim mi?" soruldu → "evet" →
+    // contact_request kaydı (J-14 deseni) + bilgi mesajı. Müşteri çıkmazda kalmaz.
+    if (context.phoneEscalationPending && !_volEmail && detectConfirmation(message, _pyLang)) {
+      const _ri = (context.reservationInfo || {}) as any;
+      const _crSummary =
+        `İLETİŞİM TALEBİ (müşteri telefon paylaşmak istemiyor) — Tur: ${_ri.tourTitle || context.currentTour?.title || "?"} | ` +
+        `Tarih: ${_ri.selectedDate || "?"} | Kişi: ${_ri.paxAdult ?? "?"} | ` +
+        `İsim: ${_ri.fullName || "?"} | E-posta: ${_ri.email || "?"} | Müşteri mesajı: "${message.slice(0, 200)}"`;
+      supabase.from("complaints").insert({
+        agency_id: agency.id,
+        phone: adapter.identifier,
+        message: _crSummary,
+        type: "contact_request",
+        status: "new",
+      }).then(() => {});
+      const _crMsgs: Record<string, string> = {
+        tr: `Talebinizi acentemize ilettim — en kısa sürede sizinle iletişime geçecekler.${_agPhonePY}`,
+        en: `I've forwarded your request to our agency — they'll get in touch with you shortly.${_agPhonePY}`,
+        de: `Ich habe Ihre Anfrage an unsere Agentur weitergeleitet — sie wird sich in Kürze bei Ihnen melden.${_agPhonePY}`,
+        ru: `Я передал вашу заявку в наше агентство — с вами свяжутся в ближайшее время.${_agPhonePY}`,
+        ar: `لقد أحلت طلبك إلى وكالتنا — سيتواصلون معك قريباً.${_agPhonePY}`,
+        fr: `J'ai transmis votre demande à notre agence — elle vous contactera sous peu.${_agPhonePY}`,
+        es: `He enviado su solicitud a nuestra agencia — se pondrán en contacto con usted en breve.${_agPhonePY}`,
+      };
+      const _crReply = _crMsgs[_pyLang] || _crMsgs.tr;
+      const _crCtx = { ...context, phoneEscalationPending: false };
+      console.log(`[process-message] V11-a contact_request kaydı (telefon-yok ısrar → J-14 deseni, DB rezervasyonu DOKUNULMADI)`);
+      await _save(_crReply, _crCtx);
+      await adapter.sendResponse(_crReply);
+      return { success: true, response: _crReply, newContext: _crCtx };
+    }
+
+    // (1) GÖNÜLLÜ E-POSTA: kullanıcı geçerli e-posta yazdı → EK alan kaydet +
+    // ack + telefonu TEKRAR iste. Rezervasyon ŞARTI DEĞİŞMEZ (telefon zorunlu).
+    if (_volEmail) {
+      const _emCtx = { ...context, reservationInfo: { ...context.reservationInfo, email: _volEmail } };
+      const _emMsgs: Record<string, string> = {
+        tr: `E-postanızı not ettim ✉️ Ancak rezervasyon onayı için telefon numarası hâlâ gerekli — numaranızı paylaşabilir misiniz? 📱`,
+        en: `I've noted your email ✉️ But a phone number is still required to confirm the reservation — could you share your number? 📱`,
+        de: `Ich habe Ihre E-Mail notiert ✉️ Für die Bestätigung wird jedoch weiterhin eine Telefonnummer benötigt — können Sie sie mitteilen? 📱`,
+        ru: `Я записал ваш email ✉️ Но для подтверждения брони всё ещё нужен номер телефона — можете его указать? 📱`,
+        ar: `لقد سجّلت بريدك الإلكتروني ✉️ لكن لا يزال رقم الهاتف مطلوباً لتأكيد الحجز — هل يمكنك مشاركته؟ 📱`,
+        fr: `J'ai noté votre e-mail ✉️ Mais un numéro de téléphone reste nécessaire pour confirmer la réservation — pouvez-vous le partager ? 📱`,
+        es: `He anotado su correo ✉️ Pero aún se necesita un número de teléfono para confirmar la reserva — ¿puede compartirlo? 📱`,
+      };
+      const _emReply = _emMsgs[_pyLang] || _emMsgs.tr;
+      console.log(`[process-message] V11-a gönüllü e-posta kaydedildi → telefon tekrar isteniyor`);
+      await _save(_emReply, _emCtx);
+      await adapter.sendResponse(_emReply);
+      return { success: true, response: _emReply, newContext: _emCtx };
+    }
+
+    // (2) TELEFON-YOK SİNYALİ: bağlam-kelime (telefon/mail) ŞART. \p{L}\p{N}
+    // lookaround (K1). mail-kelime tek başına sinyal (telefon adımında "mail"
+    // demek = telefonla ver yerine mail niyeti); telefon-kelime + ret ise sinyal.
+    const _phoneCtxRe = /(?<![\p{L}\p{N}])(numara[\p{L}]*|telefon[\p{L}]*|phone|telefonnummer|t[ée]l[ée]phone|tel[ée]fono|телефон[\p{L}]*|رقم|هاتف)(?![\p{L}\p{N}])/iu;
+    const _mailAltRe = /(?<![\p{L}\p{N}])(mail[\p{L}]*|e-?mail|e-?posta|posta|courriel|correo|почт[\p{L}]*|بريد)(?![\p{L}\p{N}])/iu;
+    const _refusalRe = /(?<![\p{L}\p{N}])(yok|istemiyorum|vermeyece[\p{L}]*|veremem|olmaz|kein[\p{L}]*|nicht|ohne|pas\s+de|sans|no\s+tengo|no\s+quiero|нет|без|не\s+хочу|don'?t\s+have|do\s+not\s+have|won'?t|ليس\s+لدي|لا\s+أريد)(?![\p{L}\p{N}])/iu;
+    const _isPhoneYok = _mailAltRe.test(message) || (_phoneCtxRe.test(message) && _refusalRe.test(message));
+
+    if (_isPhoneYok) {
+      const _count = (context.phoneRefusalCount || 0) + 1;
+      if (_count >= 2) {
+        // (2b) ISRAR → J-14 tarzı eskalasyon ÖNERİSİ (kayıt henüz yok, onay bekler).
+        const _escMsgs: Record<string, string> = {
+          tr: `Anlıyorum. İsterseniz talebinizi acentemize ileteyim, sizinle e-posta üzerinden iletişime geçsinler — iletmemi ister misiniz? ✅`,
+          en: `I understand. If you'd like, I can forward your request to our agency so they reach out to you by email — shall I? ✅`,
+          de: `Ich verstehe. Wenn Sie möchten, leite ich Ihre Anfrage an unsere Agentur weiter, damit sie Sie per E-Mail kontaktiert — soll ich? ✅`,
+          ru: `Понимаю. Если хотите, я передам вашу заявку в агентство, чтобы с вами связались по email — передать? ✅`,
+          ar: `أتفهّم ذلك. إن أردت، يمكنني إحالة طلبك إلى وكالتنا ليتواصلوا معك عبر البريد الإلكتروني — هل أفعل؟ ✅`,
+          fr: `Je comprends. Si vous le souhaitez, je peux transmettre votre demande à notre agence pour qu'elle vous contacte par e-mail — dois-je le faire ? ✅`,
+          es: `Lo entiendo. Si lo desea, puedo enviar su solicitud a nuestra agencia para que le contacten por correo — ¿lo hago? ✅`,
+        };
+        const _escReply = _escMsgs[_pyLang] || _escMsgs.tr;
+        const _escCtx = { ...context, phoneRefusalCount: _count, phoneEscalationPending: true };
+        console.log(`[process-message] V11-a telefon-yok ISRAR (${_count}. kez) → J-14 eskalasyon önerisi`);
+        await _save(_escReply, _escCtx);
+        await adapter.sendResponse(_escReply);
+        return { success: true, response: _escReply, newContext: _escCtx };
+      }
+      // (2a) İLK RET → politika mesajı (telefon ŞART + nazik gerekçe + esneklik).
+      const _polMsgs: Record<string, string> = {
+        tr: `Rezervasyon onayı için telefon numarası gerekiyor — acentemiz rezervasyonunuzu telefonla teyit ediyor. 📱 Dilerseniz e-posta adresinizi de ekleyebilirim, ancak telefon olmadan rezervasyonu tamamlayamıyorum. Numaranızı paylaşabilir misiniz?`,
+        en: `A phone number is required to confirm the reservation — our agency verifies bookings by phone. 📱 I can also add your email if you like, but I can't complete the reservation without a phone. Could you share your number?`,
+        de: `Für die Bestätigung wird eine Telefonnummer benötigt — unsere Agentur bestätigt Buchungen telefonisch. 📱 Ich kann gerne auch Ihre E-Mail hinzufügen, aber ohne Telefon kann ich die Reservierung nicht abschließen. Können Sie Ihre Nummer mitteilen?`,
+        ru: `Для подтверждения брони нужен номер телефона — наше агентство подтверждает бронирования по телефону. 📱 При желании могу добавить и ваш email, но без телефона завершить бронирование не могу. Можете указать номер?`,
+        ar: `رقم الهاتف مطلوب لتأكيد الحجز — وكالتنا تؤكد الحجوزات هاتفياً. 📱 يمكنني أيضاً إضافة بريدك الإلكتروني إن رغبت، لكن لا يمكنني إتمام الحجز دون هاتف. هل يمكنك مشاركة رقمك؟`,
+        fr: `Un numéro de téléphone est requis pour confirmer la réservation — notre agence vérifie les réservations par téléphone. 📱 Je peux aussi ajouter votre e-mail si vous le souhaitez, mais je ne peux pas finaliser la réservation sans téléphone. Pouvez-vous partager votre numéro ?`,
+        es: `Se necesita un número de teléfono para confirmar la reserva — nuestra agencia verifica las reservas por teléfono. 📱 También puedo añadir su correo si lo desea, pero no puedo completar la reserva sin teléfono. ¿Puede compartir su número?`,
+      };
+      const _polReply = _polMsgs[_pyLang] || _polMsgs.tr;
+      const _polCtx = { ...context, phoneRefusalCount: _count };
+      console.log(`[process-message] V11-a telefon-yok politika mesajı (${_count}. kez)`);
+      await _save(_polReply, _polCtx);
+      await adapter.sendResponse(_polReply);
+      return { success: true, response: _polReply, newContext: _polCtx };
+    }
+  }
+
   // === 9. FSM GEÇİŞİ ===
   const fsmInput: ProcessingInput = {
     userMessage: message,
@@ -3397,6 +3518,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         p_agency_id: agency.id,
         p_source_channel: "WHATSAPP",
         p_total_amount: _totalAmountForRpc > 0 ? _totalAmountForRpc : null,
+        // 2026-07-09 V11-a: gönüllü e-posta (waiting_for_phone telefon-yok dalında
+        // veya :12 email adımında alınmış olabilir) → registrations.email'e persist.
+        // RPC p_email DEFAULT NULL (migration 20260518000002) — geriye uyumlu.
+        p_email: (newContext.reservationInfo as any)?.email || null,
       }
     );
 

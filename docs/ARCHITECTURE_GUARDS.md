@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (FAZ3-P3 — İş0 gün-ordinal tekil-seçim [çıplak-NLU KÖK sızıntısı] + Blok 8.5 yeniden yazım + ay-niteleyici; İş1 V2-b "farketmez"→en-yakın öneri-onay [:10g/:10d-2, proposedDateId]; İş2 V8-ucuz relative_ tüketici [Blok 9d]; İş3 V3-anafora "öbür tarih"→diğer-tarih öneri. FAZ3-P1/P2 aynı gün.).
+> Son güncelleme: 2026-07-09 (FAZ3-P4 — V11-a telefon-yok politika dalı [ürün kararı a: telefon ŞART + nazik gerekçe] + gönüllü e-posta [reservationInfo.email → RPC p_email → registrations.email] + ısrar eskalasyonu [J-14 contact_request]. FAZ3-P1/P2/P3 aynı gün.).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -97,6 +97,9 @@ PROCESS-MESSAGE — LLM ÖNCESİ (erken return'lar):
 FSM GEÇİŞİ:
  14. processTransition (~L1798) — §1'deki transitions dizisi
  15. Geçersiz tarih cleanup (~L1801) → waiting_for_date'e çek
+ 15b. **V11-a telefon-yok politika dalı (FAZ3-P4)** — R6'dan ÖNCE, FSM-öncesi:
+     waiting_for_phone + telefon-yok sinyali → politika mesajı / gönüllü e-posta
+     ack / ısrar → contact_request (bkz. G3 altı)
  16. G3/R6 telefon validasyonu (~L1824) — FAQ intent muafiyeti (D1)
 
 FSM SONRASI DETERMİNİSTİK MESAJLAR (hepsi RETURN, LLM atlanır):
@@ -179,6 +182,14 @@ SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 | Koşul | `!extractedInfo.phone` + `!isValidPhone(message)` + intent ∉ {general_question, support_request} + **A-P2 (2026-07-03): `selectedTour===null && multipleTourMatches.length===0`** — mesajda tour-matcher eşleşmesi varsa kullanıcı TUR konuşuyor, "geçersiz telefon" basılmaz (canlı P2: "tur yanlış, kapadokya olacaktı" R6'ya takılıp YANLIŞ TURLA devam ediyordu) |
 | Sıra | FSM sonrası, deterministik mesajlardan önce |
 | Kaynak | R6 (2026-06-26) + D1 muafiyeti (36af597) |
+
+**V11-a telefon-yok politika dalı (FAZ3-P4, 2026-07-09)** — R6'nın ÖNÜNDE,
+FSM-ÖNCESİ (J-14 gibi, "istemiyorum"u cancellation reset'i yutmasın):
+- Koşul: `context.stage===COLLECTING_INFO && context.collectionStep===waiting_for_phone && !extractedInfo.phone`. Telefon-extract ÖNCE → numara İÇEREN mesaj dala girmez.
+- **Sinyal (deterministik, 7 dil, \p{L}\p{N})**: `_mailAltRe` (mail/e-posta tek başına — telefon adımında mail = telefonla-ver yerine mail niyeti) VEYA `_phoneCtxRe`(telefon/numara) + `_refusalRe`(yok/istemiyorum/kein/pas de...). **"yok" tek başına sinyal DEĞİL** — bağlam-kelime şart.
+- **Ürün kararı (a)**: telefon ŞART kalır; nazik gerekçeli politika mesajı ("acente telefonla teyit ediyor"). collectEmail mekanizması DOKUNULMAZ.
+- **Gönüllü e-posta (EK alan)**: geçerli e-posta (@) → `reservationInfo.email`'e yazılır + "not ettim ✉️" ack + telefon TEKRAR istenir. :14 RPC `p_email` → `registrations.email` (migration 20260518000002, DEFAULT NULL geriye-uyumlu). E-posta REZERVASYON ŞARTI DEĞİL.
+- **Israr eskalasyonu**: `phoneRefusalCount` — 1. ret → politika; 2.+ ret → J-14 deseni: eskalasyon önerisi (`phoneEscalationPending=true`) → "evet" → `complaints(type: contact_request)` insert (trg_notify_agency_support tip-filtresiz → acente bildirimi) + "ilettim" mesajı. Müşteri çıkmazda kalmaz. DB rezervasyonuna dokunulmaz.
 
 **AÇIK BUG (koddan teyitli)**: muafiyet listesinde `change_info` YOK.
 - "aslında 3 **kişi** olsun" → peopleContext var → pax extract edilir →
@@ -540,6 +551,16 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     NOT: eski `needsMonthClarification` (ayinMatch tourDates yolu) hâlâ
     tüketicisiz — düşük öncelik, o yol Blok 3'te tourDates'siz çağrıldığı için
     fiilen ölü; V9 dateAmbiguousDay onu işlevsel olarak ikame ediyor.
+27. **FAZ3-P4 ÇÖZÜLDÜ (2026-07-09, V11-a)**: telefon-yok politika dalı — ürün
+    kararı (a) telefon ŞART kalır, bot nazikçe gerekçe açıklar (acente telefonla
+    teyit). Gönüllü e-posta EK alan (reservationInfo.email → RPC p_email →
+    registrations.email; collectEmail zorunlu-adım mekanizması DEĞİŞMEDİ). Israr
+    (2.+ ret) → J-14 contact_request eskalasyonu. **complaints.type CHECK yok +
+    trg_notify_agency_support tip-filtresiz → yeni "contact_request" tipi şema
+    değişikliği GEREKTİRMEDİ.** **Açık kalan**: telefon-yok kullanıcı için
+    e-postayı gönüllü almak dışında, e-posta-only rezervasyon akışı YOK (ürün
+    kararı gereği — telefon zorunlu). WhatsApp'ta contact_request bildirimi
+    müşterinin WhatsApp numarasını (adapter.identifier) taşır — acente oradan döner.
 26. **FAZ3-P3 ÇÖZÜLDÜ (2026-07-09)**: İş0 (V9 kalıntısı — çıplak-NLU "20" RAW
     sızıntısı → Blok 8.5 yeniden yazım + ay-niteleyici) + İş1 (V2-b "farketmez"
     → :10g en-yakın öneri + :10d-2 onay-tamamlama, proposedDateId) + İş2 (V8-ucuz
