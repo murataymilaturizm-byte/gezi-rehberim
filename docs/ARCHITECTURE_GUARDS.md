@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (FAZ 4 P2 — LLM prompt blokları 7-dil: stage/step/hallucination-guard/no-fake-confirm/tone/ödeme → prompts/lang/{de,fr,es,ru,ar}.ts bundle (roles deseni), TR/EN inline korundu (sıfır-regresyon). Snapshot 75/75; canlı smoke 5-dil sahte-onay-yok 5/5 + dil-doğru 5/5. Detay §6c.).
+> Son güncelleme: 2026-07-09 (FAZ 4 P3 KAPANIŞ — quota-labels 7-dil DRY, detectCancellation lookaround [Yan #8 son üye], agency-etiket 7-dil, detectLanguage ü-belirsizlik seed-fix, akış-ortası ASCII dil-geçiş [muhafazakâr, 2-ardışık]. Davranışsal 29/29 + 121-korpus miss=0 + snapshot 75/75. FAZ 4 (P0-P3) 7-dil kapsama TAMAM — kalan bilinçli istisnalar §Açık-Sorular-30.).
 > Önceki: 2026-07-09 (FAZ 4 P1 — kritik sinyaller 7-dil: müsaitlik/TOUR_CHANGE/X8/ay-niteleyici-AR/tema-ctx/relative. Baseline 21 gap → fire, 53/53.).
 > Önceki: 2026-07-09 (FAZ 4 P0 — dil kapsama envanteri [§6] + 7-dil baseline korpusu + offline proof. Katman-1 boşlukları KANITLANDI.).
 > Önceki: 2026-07-09 (NLU-pilot FAZ B — CANLI GEÇİŞ: NLU_MODEL=claude-sonnet-4-6 [secret+redeploy]. Kanıt: A/B model=sonnet-4.6 + cache_read=4497/çağrı; smoke tüm kritik yollar ✅. Geri dönüş: secret unset + redeploy. Detay G12.).
@@ -580,6 +580,19 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     canlı kanıt. Kalan denetim: deterministik guard'lar Sonnet'le hâlâ gerekli mi
     (guard-azaltma fırsatı) + gerçek trafik cache-hit/maliyet ölçümü (sıcak-cache smoke'u
     prodüksiyonu abartır). Birleşik tur+pax merge nüansı (model-bağımsız) ayrı izlenir.
+30. **FAZ 4 KAPANIŞ (2026-07-09) — 7-DİL KAPSAMA TAMAM (P0-P3)**: P0 teşhis+baseline
+    korpusu (§6, 121 vaka); P1 kritik sinyaller 7-dil (müsaitlik/TOUR_CHANGE/X8/
+    ay-niteleyici/tema-ctx/relative-AR+TR-çekim); P2 LLM prompt blokları 7-dil
+    (stage/step/guard/no-fake-confirm/tone → prompts/lang/*.ts bundle, TR/EN inline
+    korundu); P3 kapanış (quota-labels 7-dil DRY, detectCancellation lookaround,
+    agency-etiket 7-dil, detectLanguage ü-belirsizlik seed-fix, akış-ortası ASCII
+    dil-geçiş muhafazakâr). **KALAN BİLİNÇLİ İSTİSNALAR:** (a) NLU_SYSTEM_PROMPT
+    İngilizce kalır — yapısal, çıktı yapısal-JSON, kullanıcıya görünmez (G12);
+    (b) J-14 acente-özeti iç-metin TR-only — acenteye gider, müşteriye değil;
+    (c) enabled_languages panel yönetimi (acente hangi dilleri açar) — panel-backlog;
+    (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
+    hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
+    P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
 28. **FAZ3-mikro ÇÖZÜLDÜ (2026-07-09, İş2 kalıntısı)**: pax adımında "yarın" →
     '"2026-12-21" müsait değil' (ham ISO + yanlış çapa). FIX1 (görüntü formatı):
     :11 preamble ISO değeri DD.MM.YYYY+gün'e çevrilir (format katmanı, sanitize'dan
@@ -616,7 +629,7 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
 ### 6a. Sınıf A — Regex/Sinyal setleri
 | Mekanizma (kaynak) | Kapsam | Eksik |
 |---|---|---|
-| CHANGE_KEYWORDS_RE, QUESTION_SIGNAL_RE, VISA_SIGNAL+HINT, iptal-sinyali/res-ctx (J-14), telefon-yok (P4), farketmez (_anyDateSignal), anafora (_v3AnaforaRe), tema-keywords, B1 fiyat-bağlamı, B-DUR süre, detectCancellation+continuationGuard (J-16) | ✅ 7-dil | — (detectCancellation `\b` ASCII → AR/RU sınır kırılgan) |
+| CHANGE_KEYWORDS_RE, QUESTION_SIGNAL_RE, VISA_SIGNAL+HINT, iptal-sinyali/res-ctx (J-14), telefon-yok (P4), farketmez (_anyDateSignal), anafora (_v3AnaforaRe), tema-keywords, B1 fiyat-bağlamı, B-DUR süre, detectCancellation+continuationGuard (J-16) | ✅ 7-dil | — (**FAZ4-P3: detectCancellation `\b`→`\p{L}\p{N}` lookaround — AR/RU sınır kırılganlığı KAPANDI, Yan #8 son üye**) |
 | **müsaitlik _availQ (V10/P2)** | ✅ **7-dil (FAZ4-P1)** — `constants/availability-words.ts` TEK KAYNAK | — |
 | **X8 superlatif (en ucuz/pahalı)** | ✅ **7-dil (FAZ4-P1)** — ASC/DESC yön eşlemeli | — |
 | **TOUR_CHANGE_PHRASE_RE (V12)** | ✅ **7-dil (FAZ4-P1)** — kip-ailesi + wrong-tour, tur-eşleşme guard'lı (A-P2) | — |
@@ -630,8 +643,9 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
 STEP_QUESTIONS, :10c/:10d/:10d-2/:10f/:10g, :11 ailesi, B1, telefon-yok/P4,
 J-14, echo-sanitize preambles, netleştirme/onay-yönlendirme → **✅ 7-dil tam**.
 Dil-seçimi tüm şablonlarda `_msgs[context.language] || _msgs.tr` (**fallback TR
-tutarlı**). Küçük: :10e `_remTxt` (kişilik-yer) TR+EN ⚠; J-14 acente-özeti TR-only
-ama iç-metin (n-a).
+tutarlı**). **FAZ4-P3: :10e `_remTxt` (kişilik-yer) → 7-dil `constants/quota-labels.ts`
+TEK KAYNAK** (3 kopya-site — :11 liste, :10e, quota-full — DRY birleştirildi).
+J-14 acente-özeti TR-only ama iç-metin, kullanıcıya görünmez (n-a, bilinçli).
 
 ### 6c. Sınıf C — LLM prompt blokları — ✅ 7-DİL (FAZ4-P2)
 ✅ 7-dil: role, format, injection-guard, translation-directive, tarih-başlığı.
@@ -647,9 +661,12 @@ doğrulandı, gerçek render). Tüketiciler: stages/index.ts (getStagePrompt/
 getCollectionStepPrompt/buildForbiddenAskList → 5-dil bundle dalı), tones/index.ts,
 prompt-builder (no-fake), agency.ts (ödeme-etiketi).
 
-**RESIDUAL (bilinçli, P3):** agency-info DATA blok etiketleri (Address/Phone/Working
-Hours) DE/FR/ES/RU/AR'da hâlâ EN — ama "acente uydurma" kuralı hallucinationGuard'da
-7-dil kapsanıyor (semantik korunuyor). Ödeme KURALI roles/[lang].ts'de zaten 7-dil.
+**FAZ4-P3: agency-info DATA etiketleri (Agency name/Address/Phone/Website/Working
+Hours/Location/Cancellation Policy) → 7-dil** (agency.ts `AGENCY_LABELS`, paymentLabel
+deseniyle; EN varsayılan + 5-dil override). **Kalan bilinçli residual:** agency-blok
+KURAL metinleri (NO-HALLUCINATION/RULES) DE/FR/ES/RU/AR'da EN — ama semantik olarak
+hallucinationGuard'da 7-dil; working-hours GÜN-ADLARI (Monday..) non-TR'de EN (derin,
+düşük değer). Ödeme KURALI roles/[lang].ts'de zaten 7-dil.
 
 **Fidelity:** ${...} placeholder + emoji + DB alan-adları (hareket_noktasi vb.) +
 "Tuğçe" AYNEN; yasaklar en güçlü form (NIEMALS/JAMAIS/NUNCA/НИКОГДА/أبداً); register
@@ -671,6 +688,25 @@ whitelist final-gate → desteklenmeyen dil `enabledLangs[0]`, o da yoksa `tr`.
 context.language DB'ye (WhatsApp) taşınır, bir kez set→sabit. **Asıl dil-riski
 TESPİT değil KAPSAMA:** tespit doğru dili bulsa bile Sınıf A sinyali / Sınıf C
 promptu o dili kapsamıyorsa deterministik yol kaçar / prompt EN-fallback'e düşer.
+
+### 6e. Dil-geçiş & belirsizlik kuralları (FAZ4-P3)
+**detectLanguage ü/ö/ç BELİRSİZLİĞİ (kalem 4)** — `detectLanguage` TR'yi İLK kontrol
+eder; **ü/ö TR+DE, ç TR+FR PAYLAŞILIR** → "günstigste" (ü) TR sanılır, explicit seed'i
+(DE dropdown) ezerdi → erken katman (X8) TR şablon basardı. Bu **propagasyon-sırası
+DEĞİL** (dil, erken katmandan önce çözülüyor); kök detectLanguage TR-first + paylaşılan
+harf. **FIX (fresh-context):** `runtimeDetectedLang==="tr"` AMA mesajda **TR-UNIQUE
+harf (ı/ş/ğ/İ/Ş/Ğ) YOKKEN** (yani "tr" yalnız paylaşılan ü/ö/ç'den) + explicit+enabled
+seed farklı → **seed otorite**. Clear-TR (ışğ var) ve clear-other bozulmaz; seed yok
+(WhatsApp, NLU-dil kullanır) etkilenmez; `enabled_languages` gate `_bestLang`'de korunur.
+
+**AKIŞ-ORTASI ASCII DİL GEÇİŞİ (kalem 5) — MUHAFAZAKÂR TASARIM:** salt/uzun-ASCII
+mesajda char-tespiti null → char-switch (L172-178) çalışmaz. NLU `language` alanı
+otorite AMA **tek-mesajla geçiş YOK** (yanlış-tetik: TR kullanıcının İngilizce tur adı).
+**Şart:** NLU-lang farklı + `enabled` + salt-ASCII → 1. turn `context.pendingLangSwitch`'e
+yaz; **2. ARDIŞIK aynı** → **sessiz geç** (görünür onay cümlesi YOK). Araya farklı
+sinyal → pending temizlenir (ardışıklık bozulur). **Yalnız context.language/tone;
+rezervasyon state'ine DOKUNULMAZ.** "Antalya Rafting olsun" (cümle TR → NLU=tr) geçiş
+tetiklemez. NLU'dan SONRA çalışır (nluResult.language gerekli).
 
 ### 6e. P0 baseline korpusu + KANIT (docs/nlu-ab-corpus.json)
 **121 vaka** (15 çekirdek×7-dil = 105 + 16 dil-özgü tuzak: AR ال-takısı/RTL/فصحى,

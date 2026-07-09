@@ -305,13 +305,17 @@ export function detectCancellation(text: string, language: string): boolean {
     // TR: iptal + reset/baştan başla kalıpları
     // 2026-07-03 J-16: bitişik "boşver" + "kalsın" + "neyse" eklendi (canlı:
     // "boşver kalsın" ayrık "bo[sş] ver"e uymuyordu → iptal sayılmadı → isim yazıldı)
-    tr: /\b(vazge[cç]tim|vazgeçiyorum|iptal|istemiyorum|olmas[ıi]n|gerek yok|bo[sş] ?ver|kals[ıi]n|neyse|ba[sş]ka zaman|d[uü][sş][uü]neyim|d[uü][sş][uü]neyim de|pas|paslıyorum|ba[sş]tan ba[sş]la|ba[sş]tan ba[sş]lamak|ba[sş]tan ba[sş]layal[ıi]m|yeniden ba[sş]la|yeniden ba[sş]lamak|s[ıi]f[ıi]rla|ba[sş]a dön)\b/i,
-    en: /\b(cancel|nevermind|never mind|forget it|don'?t want|skip it|maybe later|not now|pass|leave it|restart|reset|start over|start fresh|begin again|from scratch|new conversation)\b/i,
-    de: /\b(abbrechen|stornieren|möchte nicht|will nicht|vergiss es|vergessen|später|nicht mehr|lass es sein|neu starten|von vorne|nochmal|neu anfangen)\b/i,
-    ru: /\b(отмена|отменить|не хочу|неважно|забудь|забудьте|позже|потом|не надо|заново|сначала|начать заново)\b/i,
-    ar: /\b(إلغاء|لا أريد|انس الأمر|لاحقا|ليس الآن|اتركها|البدء من جديد|إعادة|ابدأ من جديد)\b/i,
-    fr: /\b(annuler|j'abandonne|peu importe|laisse tomber|laissez tomber|plus tard|pas maintenant|oublie|recommencer|depuis le début|repartir)\b/i,
-    es: /\b(cancelar|olvídalo|olvidalo|no quiero|déjalo|dejalo|más tarde|otro día|olvida|reiniciar|empezar de nuevo|desde el principio)\b/i,
+    // 2026-07-09 FAZ4-P3 (Yan #8 son üye): \b → \p{L}\p{N} lookaround /iu.
+    // AR/RU non-ASCII sınır \b'de tanınmıyordu ("إلغاء"/"отмена" kelime-sınırı
+    // hatalı) → lookaround ile 7-dil sınırı doğru. TR/EN regresyon: ASCII sınırı
+    // lookaround ile aynı sonucu verir (davranış değişmez).
+    tr: /(?<![\p{L}\p{N}])(vazge[cç]tim|vazgeçiyorum|iptal|istemiyorum|olmas[ıi]n|gerek yok|bo[sş] ?ver|kals[ıi]n|neyse|ba[sş]ka zaman|d[uü][sş][uü]neyim|d[uü][sş][uü]neyim de|pas|paslıyorum|ba[sş]tan ba[sş]la|ba[sş]tan ba[sş]lamak|ba[sş]tan ba[sş]layal[ıi]m|yeniden ba[sş]la|yeniden ba[sş]lamak|s[ıi]f[ıi]rla|ba[sş]a dön)(?![\p{L}\p{N}])/iu,
+    en: /(?<![\p{L}\p{N}])(cancel|nevermind|never mind|forget it|don'?t want|skip it|maybe later|not now|pass|leave it|restart|reset|start over|start fresh|begin again|from scratch|new conversation)(?![\p{L}\p{N}])/iu,
+    de: /(?<![\p{L}\p{N}])(abbrechen|stornieren|möchte nicht|will nicht|vergiss es|vergessen|später|nicht mehr|lass es sein|neu starten|von vorne|nochmal|neu anfangen)(?![\p{L}\p{N}])/iu,
+    ru: /(?<![\p{L}\p{N}])(отмена|отменить|не хочу|неважно|забудь|забудьте|позже|потом|не надо|заново|сначала|начать заново)(?![\p{L}\p{N}])/iu,
+    ar: /(?<![\p{L}\p{N}])(إلغاء|لا أريد|انس الأمر|لاحقا|ليس الآن|اتركها|البدء من جديد|إعادة|ابدأ من جديد)(?![\p{L}\p{N}])/iu,
+    fr: /(?<![\p{L}\p{N}])(annuler|j'abandonne|peu importe|laisse tomber|laissez tomber|plus tard|pas maintenant|oublie|recommencer|depuis le début|repartir)(?![\p{L}\p{N}])/iu,
+    es: /(?<![\p{L}\p{N}])(cancelar|olvídalo|olvidalo|no quiero|déjalo|dejalo|más tarde|otro día|olvida|reiniciar|empezar de nuevo|desde el principio)(?![\p{L}\p{N}])/iu,
   };
   const langKey = language as keyof typeof patterns;
   const hasCancel = (patterns[langKey]?.test(text) ?? false) || patterns.en.test(text);
@@ -319,7 +323,7 @@ export function detectCancellation(text: string, language: string): boolean {
 
   // GUARD: devam bağlacı (ama/fakat/yine de) varsa tereddüt → iptal değil
   const continuationGuard =
-    /\b(ama|fakat|ancak|yine de|gene de|but|however|though|although|aber|jedoch|trotzdem|cependant|néanmoins|toutefois|pero|sin embargo|no obstante|однако|но|тем не менее|لكن|مع ذلك|ولكن)\b/i;
+    /(?<![\p{L}\p{N}])(ama|fakat|ancak|yine de|gene de|but|however|though|although|aber|jedoch|trotzdem|cependant|néanmoins|toutefois|pero|sin embargo|no obstante|однако|но|тем не менее|لكن|مع ذلك|ولكن)(?![\p{L}\p{N}])/iu;
   if (continuationGuard.test(text)) return false;
 
   return true;

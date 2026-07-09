@@ -103,6 +103,15 @@ export interface ConversationContext {
   // (contact_request). phoneEscalationPending: eskalasyon önerildi, "evet" beklenir.
   phoneRefusalCount?: number;
   phoneEscalationPending?: boolean;
+
+  // 2026-07-09 FAZ4-P3 (kalem 5): akış-ortası ASCII dil geçişi — MUHAFAZAKÂR.
+  // Uzun/salt-ASCII mesajda char-tespiti çalışmaz (detectLanguage null). NLU
+  // language alanı farklı-dil verirse HEMEN geçme (yanlış-tetik: TR kullanıcının
+  // İngilizce tur adı yazması). ARDIŞIK 2 turn aynı-farklı-dil + salt-ASCII +
+  // enabled şartı: 1. turn bu alana yaz, 2. ardışık turn aynı → sessiz geç.
+  // Araya farklı sinyal girerse temizlenir (ardışıklık bozulur). Yalnız
+  // context.language değişir — rezervasyon state'ine DOKUNULMAZ.
+  pendingLangSwitch?: string;
 }
 
 export interface StateTransition {

@@ -46,6 +46,7 @@ import { generatePaymentMessage, safeDepositPercentage, buildPaymentPromptSummar
 import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
 import { formatPriceSync } from "../utils/currency-display.ts";
 import { isValidPax, isValidPhone, MAX_PAX_PER_RESERVATION } from "../utils/validation.ts";
+import { quotaLabel } from "../constants/quota-labels.ts";
 import { maskPhone } from "../utils/log-mask.ts";
 // K4: TEK yuvarlama kuralı — tüm kapora/toplam hesapları buradan.
 import { calculateTotal, calculateDeposit } from "../utils/finance.ts";
@@ -183,7 +184,18 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   } else {
     // Yeni context: explicit change > script-based > frontend seed > tr.
-    const _detectedLang = languageChangeIntent || runtimeDetectedLang || _effectiveSeed || "tr";
+    let _detectedLang = languageChangeIntent || runtimeDetectedLang || _effectiveSeed || "tr";
+    // 2026-07-09 FAZ4-P3 (kalem 4): detectLanguage TR'yi İLK kontrol eder ve ü/ö/ç
+    // TR ile DE(ü/ö)/FR(ç) PAYLAŞILIR → "günstigste" (ü) TR sanılıp explicit seed'i
+    // (DE dropdown) eziyor → erken katman (X8) TR şablon basıyordu. FIX: "tr" tespiti
+    // mesajda TR-UNIQUE harf (ı/ş/ğ/İ/Ş/Ğ) YOKKEN geldiyse (yani yalnız paylaşılan
+    // ü/ö/ç'den) ve explicit+enabled seed farklıysa → seed otorite. Clear-TR (ışğ var)
+    // ve clear-other tespiti bozulmaz; seed yoksa (WhatsApp) etkilenmez; enabled gate
+    // _bestLang'de korunur.
+    if (runtimeDetectedLang === "tr" && _effectiveSeed && _effectiveSeed !== "tr" && !/[ışğİŞĞ]/.test(message)) {
+      _detectedLang = _effectiveSeed;
+      console.log(`[process-message] P3-dil: belirsiz "tr" tespiti (TR-unique harf yok) → explicit seed=${_effectiveSeed} otorite`);
+    }
     const lang = _bestLang(_detectedLang);
     context = createInitialContext(lang, getDefaultToneForLanguage(lang) as any);
   }
@@ -280,6 +292,30 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   const nluResult = await analyzeUserMessage(message, nluContextStr, context.stage, context.currentTour, tours);
   console.log("[process-message] Intent:", nluResult.intent, "| Stage:", context.stage, "| Lang:", context.language);
+
+  // === P3 (kalem 5): AKIŞ-ORTASI ASCII DİL GEÇİŞİ (MUHAFAZAKÂR) ===
+  // Salt-ASCII uzun mesajda char-tespiti (detectLanguage) null döner → char-switch
+  // (L172-178) çalışmaz. NLU language alanı otorite ama TEK mesajla geçme YOK
+  // (yanlış-tetik: "Antalya Rafting olsun" gibi İngilizce tur adı). Şart: NLU-lang
+  // farklı + enabled + salt-ASCII → 1. turn pending'e yaz, 2. ARDIŞIK aynı → sessiz
+  // geç. Ara sinyal → pending temizlenir. Yalnız context.language/tone; state'e dokunmaz.
+  {
+    const _nluLang = (nluResult as any).language;
+    const _msgAscii = !/[^\x00-\x7F]/.test(message);
+    if (_nluLang && _nluLang !== context.language && _isLangEnabled(_nluLang) && _msgAscii) {
+      if (context.pendingLangSwitch === _nluLang) {
+        // 2. ardışık aynı-farklı-dil → SESSİZ GEÇİŞ (görünür onay cümlesi YOK).
+        context.language = _nluLang;
+        context.tone = getDefaultToneForLanguage(_nluLang) as any;
+        context.pendingLangSwitch = undefined;
+        console.log(`[process-message] P3 akış-ortası dil geçişi (2 ardışık ASCII ${_nluLang}) — sessiz`);
+      } else {
+        context.pendingLangSwitch = _nluLang; // 1. turn — ardışıklık bekleniyor
+      }
+    } else if (context.pendingLangSwitch) {
+      context.pendingLangSwitch = undefined; // ardışıklık bozuldu
+    }
+  }
 
   // === 6b. A GATE — NLU fullName tour-leak savunma (2026-06-20 Sorun 2) ====
   // Canlı bug (execution e9fc320d): kullanıcı waiting_for_name adımında
@@ -1422,13 +1458,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           ? ` - ${formatPriceSync(d.price_adult, tour.currency || "TRY", lang, _eR, _sD, languageCurrencies)}`
           : "";
         const remaining = getQuotaRemaining(d);
-        const qLabels: Record<string, string> = {
-          tr: ` (${remaining} kişilik yer)`, en: ` (${remaining} spots)`,
-          de: ` (${remaining} Plätze)`,      ru: ` (${remaining} мест)`,
-          ar: ` (${remaining} مقاعد)`,        fr: ` (${remaining} places)`,
-          es: ` (${remaining} plazas)`,
-        };
-        return `${i + 1}) ${dt}${pr}${qLabels[lang] || qLabels.en}`;
+        return `${i + 1}) ${dt}${pr}${quotaLabel(remaining, false, lang)}`;
       })
       .join("\n");
     return lines;
@@ -2561,10 +2591,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           const _w = getWeekdayName(d.departure_date, _avLang);
           const _rem = getQuotaRemaining(d);
           const _dt = formatDateForLanguage(d.departure_date, _avLang) + (_w ? ` (${_w})` : "");
-          const _remTxt: Record<string, string> = {
-            tr: ` (${_rem} kişilik yer)`, en: ` (${_rem} spots)`,
-          };
-          return `${_dt}${_remTxt[_avLang] || _remTxt.en}`;
+          // 2026-07-09 FAZ4-P3: TR+EN → 7-dil tek-kaynak (quota-labels.ts).
+          return `${_dt}${quotaLabel(_rem, false, _avLang)}`;
         }).join(", ");
         const _avYes: Record<string, string> = {
           tr: `Evet, ${_avList} müsait ✅`,
@@ -2805,22 +2833,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           // getQuotaRemaining tek-kaynak (quota-check.ts).
           const remaining = getQuotaRemaining(d);
           const isFull = remaining <= 0;
-          const fullLabels: Record<string, string> = {
-            tr: " (DOLU)",   en: " (FULL)",   de: " (VOLL)",
-            ru: " (ПОЛНО)",  ar: " (ممتلئ)",  fr: " (COMPLET)",
-            es: " (COMPLETO)",
-          };
-          const quotaText = isFull
-            ? (fullLabels[newContext.language] || fullLabels.en)
-            : ({
-                tr: ` (${remaining} kişilik yer)`,
-                en: ` (${remaining} spots)`,
-                de: ` (${remaining} Plätze)`,
-                ru: ` (${remaining} мест)`,
-                ar: ` (${remaining} مقاعد)`,
-                fr: ` (${remaining} places)`,
-                es: ` (${remaining} plazas)`,
-              }[newContext.language] ?? ` (${remaining} spots)`);
+          // 2026-07-09 FAZ4-P3: tek-kaynak quota-labels.ts (kopya-liste DRY).
+          const quotaText = quotaLabel(remaining, isFull, newContext.language);
           return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
         })
         .join("\n");

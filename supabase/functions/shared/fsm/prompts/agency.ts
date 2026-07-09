@@ -12,6 +12,18 @@ const DAY_NAMES_EN: Record<string, string> = {
   thursday: "Thursday", friday: "Friday", saturday: "Saturday", sunday: "Sunday",
 };
 
+// 2026-07-09 FAZ4-P3 (kalem 3, P2 residual kapanışı): acente DATA etiketleri 7-dil.
+// EN varsayılan + 5 dil override (paymentLabel deseniyle). Etiketlerin altındaki
+// "NO-HALLUCINATION" kuralları hallucinationGuard'da zaten 7-dil (semantik kapsam).
+const _AGENCY_LABELS_EN = { name: "Agency display name", address: "Address", phone: "Phone", website: "Website", hours: "Working Hours", location: "Location", cancel: "Cancellation Policy" };
+const AGENCY_LABELS: Record<string, Partial<typeof _AGENCY_LABELS_EN>> = {
+  de: { name: "Anzeigename der Agentur", address: "Adresse", phone: "Telefon", website: "Webseite", hours: "Öffnungszeiten", location: "Standort", cancel: "Stornierungsbedingungen" },
+  fr: { name: "Nom de l'agence", address: "Adresse", phone: "Téléphone", website: "Site web", hours: "Horaires d'ouverture", location: "Emplacement", cancel: "Conditions d'annulation" },
+  es: { name: "Nombre de la agencia", address: "Dirección", phone: "Teléfono", website: "Sitio web", hours: "Horario", location: "Ubicación", cancel: "Política de cancelación" },
+  ru: { name: "Название агентства", address: "Адрес", phone: "Телефон", website: "Веб-сайт", hours: "Часы работы", location: "Местоположение", cancel: "Условия отмены" },
+  ar: { name: "اسم الوكالة", address: "العنوان", phone: "الهاتف", website: "الموقع الإلكتروني", hours: "ساعات العمل", location: "الموقع", cancel: "سياسة الإلغاء" },
+};
+
 function formatWorkingHours(raw: string | undefined, language: string): string {
   if (!raw) return "";
   try {
@@ -85,14 +97,15 @@ KURALLAR:
 💰 PARA BİRİMİ: Yabancı para birimleri için: "${contactRef} numarasından öğrenebilirsiniz" de.`;
   }
 
-  // English / other languages
-  const lines: string[] = [`Agency display name: ${agencyName}${cityText}`];
-  if (agencyAddress) lines.push(`Address: ${agencyAddress}`);
-  if (agencyPhone) lines.push(`Phone: ${agencyPhone}`);
-  if (agencyWebsite) lines.push(`Website: ${agencyWebsite}`);
-  if (formattedHours) lines.push(`Working Hours:\n${formattedHours}`);
-  if (agencyMapsUrl) lines.push(`Location: ${agencyMapsUrl}`);
-  if (agencyCancellationPolicy) lines.push(`Cancellation Policy: ${agencyCancellationPolicy}`);
+  // English / other languages — 2026-07-09 FAZ4-P3: DATA etiketleri dil-başı.
+  const LB = { ..._AGENCY_LABELS_EN, ...(AGENCY_LABELS[language] || {}) };
+  const lines: string[] = [`${LB.name}: ${agencyName}${cityText}`];
+  if (agencyAddress) lines.push(`${LB.address}: ${agencyAddress}`);
+  if (agencyPhone) lines.push(`${LB.phone}: ${agencyPhone}`);
+  if (agencyWebsite) lines.push(`${LB.website}: ${agencyWebsite}`);
+  if (formattedHours) lines.push(`${LB.hours}:\n${formattedHours}`);
+  if (agencyMapsUrl) lines.push(`${LB.location}: ${agencyMapsUrl}`);
+  if (agencyCancellationPolicy) lines.push(`${LB.cancel}: ${agencyCancellationPolicy}`);
   // 2026-07-03 İş 1 (#18): payment summary WITHOUT IBAN — from buildPaymentPromptSummary.
   // 2026-07-09 FAZ4-P2: ödeme etiketi dil-başı (DE "Zahlung" vb.); değer dinamik.
   if ((context as any).paymentInfo) {
