@@ -10,6 +10,7 @@ import {
   getCancellationMessage,
   detectConfirmation,
   detectNegativeResponse,
+  determineCollectionStep,
 } from "../fsm/state-machine.ts";
 import { sanitizeInput, isInputTooLong, detectInjection } from "../fsm/validator.ts";
 import { analyzeUserMessage, mapNLUIntentToFSMIntent } from "../fsm/nlu.ts";
@@ -2036,6 +2037,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log("[process-message] Invalid date cleaned up:", _invalidDateForPreamble);
   }
 
+  // 2026-07-09 V3-anafora TEK-KAYNAK regex ("öbür/diğer/öteki tarih", 7 dil).
+  // Hem telefon-guard muafiyetinde (bare anafora "geçersiz telefon" basmasın)
+  // hem :10g öneri-sunumunda kullanılır — kopya-regex senkronsuzluğu (canlı bug
+  // sınıfı) YOK. \p{L}\p{N} lookaround (K1 dersi).
+  const _v3AnaforaRe = /(?<![\p{L}\p{N}])((?:[öo]b[üu]r|di[ğg]er|[öo]teki|[öo]b[üu]rk[üu])\s*(?:tarih|g[üu]n)|other\s*date|the\s*other\s*(?:one|date)|andere[sn]?\s*datum|autre\s*date|l['’]autre|otra\s*fecha|друг\S*\s*дат\S*|التاريخ\s*الآخر|اليوم\s*الآخر)(?![\p{L}\p{N}])/iu;
+
   // === 9b. GEÇERSİZ TELEFON KONTROLÜ (BUG 4 + 2026-06-26 R6) ===
   // waiting_for_phone'dayken kullanıcı geçersiz girdi yazdıysa erken dön.
   // R6: eski "sadece rakam + <10 hane" koşulu "abc def" / "telefonum yok" / boş
@@ -2074,7 +2081,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // ack / :10e-f, çözülmezse :11 liste). CHANGE_KEYWORDS + tarih-bağlam şart —
     // saf "abc def" tetiklemez (R6 korunur).
     !(CHANGE_KEYWORDS_RE.test(message) &&
-      new RegExp(`(?<![\\p{L}\\p{N}])(tarih|tarihi|date|g[üu]n|datum|дата|تاريخ|jour|fecha)(?![\\p{L}\\p{N}])|(?<![\\p{L}\\p{N}])(${MONTH_ALTERNATION})`, "iu").test(message))
+      new RegExp(`(?<![\\p{L}\\p{N}])(tarih|tarihi|date|g[üu]n|datum|дата|تاريخ|jour|fecha)(?![\\p{L}\\p{N}])|(?<![\\p{L}\\p{N}])(${MONTH_ALTERNATION})`, "iu").test(message)) &&
+    // 2026-07-09 V3-anafora muafiyeti: telefon adımında bare "öbür tarih" →
+    // kullanıcı TELEFON değil TARİH konuşuyor → :10g anafora önerisine bırak.
+    // (change-keyword'lu "aslında öbür tarih olsun" zaten R6-date muafiyetiyle geçer.)
+    !_v3AnaforaRe.test(message)
   ) {
     // 2026-07-03 İş D (K-19): cümle-yankı sanitize — '"numaram yok mail atsam"
     // geçerli bir telefon değil' saçmalığı. isEchoSafe FALSE ise tırnaklı form
@@ -2342,6 +2353,62 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
+  // === 10d-2. TARİH ÖNERİSİ ONAY TAMAMLAMA (V2-b + V3-anafora, 2026-07-09) ===
+  // İş 1 ("farketmez"→en yakın öneri) ve İş 3 ("öbür tarih"→diğer tarih önerisi)
+  // context.proposedDateId'yi doldurur + onay ister. Bir sonraki turn burada
+  // kapanır: kullanıcı ONAYLARSA önerilen tarih SEÇİLİR (detectConfirmation —
+  // DRY, yeni pending-state YOK). FARKLI tarih yazdıysa (Blok 8/9 çözdü) öneri
+  // geçersiz → sadece temizle, P5/:11a normal devralır. Ne onay ne tarih →
+  // öneriyi temizle (bayat "evet" ileride yanlış tarih seçmesin), normal akış.
+  {
+    const _propId = (context as any).proposedDateId as string | undefined;
+    if (_propId && newContext.stage === "COLLECTING_INFO") {
+      const _propNewDateId = (newContext.reservationInfo as any)?.dateId;
+      if (_propNewDateId && _propNewDateId !== _propId) {
+        // Kullanıcı bu turn'de FARKLI tarih verdi → öneri düşer, normal akış.
+        newContext.proposedDateId = undefined;
+        newContext.proposedDate = undefined;
+      } else if (detectConfirmation(message, newContext.language)) {
+        const _propTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
+        const _propDate = (_propTour?.dates || []).find((d: any) => d.id === _propId);
+        if (_propDate) {
+          newContext.reservationInfo.dateId = _propDate.id;
+          newContext.reservationInfo.selectedDate = _propDate.departure_date;
+          newContext.proposedDateId = undefined;
+          newContext.proposedDate = undefined;
+          newContext.collectionStep = determineCollectionStep(newContext.reservationInfo, newContext.collectEmail);
+          const _lang = newContext.language || "tr";
+          const _wd = getWeekdayName(_propDate.departure_date, _lang);
+          const _dt = formatDateForLanguage(_propDate.departure_date, _lang) + (_wd ? ` (${_wd})` : "");
+          const _stepKey = String(newContext.collectionStep || "");
+          const _stepQ = STEP_QUESTIONS[_stepKey]?.[_lang] || STEP_QUESTIONS[_stepKey]?.en || "";
+          const _okMsgs: Record<string, string> = {
+            tr: `Harika, ${_dt} olarak aldım. ✅`,
+            en: `Great, I've set it to ${_dt}. ✅`,
+            de: `Super, ich habe ${_dt} eingetragen. ✅`,
+            ru: `Отлично, записал на ${_dt}. ✅`,
+            ar: `رائع، تم الحجز ليوم ${_dt}. ✅`,
+            fr: `Parfait, j'ai noté le ${_dt}. ✅`,
+            es: `Perfecto, lo he fijado para ${_dt}. ✅`,
+          };
+          const _core = _okMsgs[_lang] || _okMsgs.tr;
+          const _propReply = _stepQ ? `${_core}\n\n${_stepQ}` : _core;
+          console.log(`[process-message] :10d-2 tarih-öneri ONAYLANDI (${_propId}) → seçildi, step=${_stepKey}`);
+          await _save(_propReply, newContext);
+          await adapter.sendResponse(_propReply);
+          return { success: true, response: _propReply, newContext };
+        }
+        // Önerilen tarih artık bulunamadı (edge) → temizle, normal akış.
+        newContext.proposedDateId = undefined;
+        newContext.proposedDate = undefined;
+      } else {
+        // Ne onay ne farklı tarih → öneriyi temizle, normal akışa bırak.
+        newContext.proposedDateId = undefined;
+        newContext.proposedDate = undefined;
+      }
+    }
+  }
+
   // === 10e. V10 MÜSAİTLİK-SORUSU CEVABI (2026-07-09) ===
   // Canlı: pax adımında "20'si de müsait mi hala" → I-9 ordinal'ı tarih İŞLEMİ
   // yapıyordu + kullanıcıyı tarih listesine geri çekiyordu. Soru ≠ seçim.
@@ -2440,6 +2507,85 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       await _save(_ambReply, newContext);
       await adapter.sendResponse(_ambReply);
       return { success: true, response: _ambReply, newContext };
+    }
+  }
+
+  // === 10g. TARİH ÖNERİSİ SUNUMU (V2-b "farketmez" + V3-anafora, 2026-07-09) ===
+  // İki ÜRÜN-KARARI-b senaryosu bot'un TEK tarih ÖNERİP onay istemesini gerektirir
+  // (otomatik-seç DEĞİL — kullanıcı hangisi olduğunu görsün):
+  //  İş 1: waiting_for_date + "farketmez/en yakın/ilk/en erken/siz seçin" (7 dil)
+  //        → EN YAKIN müsait tarihi öner. "farketmez" YALNIZ bu adımda sinyaldir.
+  //  İş 3: dateId DOLU + tam 2 tarihli tur + "öbür/diğer/öteki tarih" (7 dil)
+  //        → seçili OLMAYAN diğer tarihi öner (telefon adımında da çalışır —
+  //        V3-R6 tarih-change muafiyeti zaten var). 3+ tarih/boş dateId → :11 liste.
+  // Öneri context.proposedDateId'ye yazılır → sonraki turn :10d-2 onayı kapatır.
+  {
+    const _pLang = newContext.language || "tr";
+    const _pTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
+    const _pDates = (_pTour?.dates || []) as any[];
+    const _curDateId = (newContext.reservationInfo as any)?.dateId;
+    // Sinyal regex'leri (post-LLM deterministik, \p{L}\p{N} lookaround — K1 dersi)
+    const _anyDateSignal = /(?<![\p{L}\p{N}])(en\s*yak[ıi]n|ilk|en\s*erken|farketmez|fark\s*etmez|siz\s*se[çc]in|sen\s*se[çc]|hangisi\s*olursa|nearest|earliest|soonest|first\s*available|any\s*(?:date|day)|whichever|you\s*(?:choose|pick|decide)|n[äa]chst\S*|fr[üu]hest\S*|egal|such\S*\s*(?:aus|sie)|ближайш\S*|[бb]лижайш\S*|л[юю]б\S*\s*дат\S*|выбер\S*\s*вы|le\s*plus\s*proche|au\s*plus\s*t[ôo]t|peu\s*importe|choisissez|m[áa]s\s*cercan\S*|lo\s*antes|cualquier\S*|elija\s*usted|أقرب|الأقرب|أي\s*تاريخ|اختر\s*أنت)(?![\p{L}\p{N}])/iu;
+
+    // İş 3 anafora — dateId DOLU + tam 2 tarih + "öbür tarih" (tek-kaynak _v3AnaforaRe)
+    if (
+      _curDateId && _pDates.length === 2 && _v3AnaforaRe.test(message) &&
+      !newContext.proposedDateId
+    ) {
+      const _other = _pDates.find((d: any) => d.id !== _curDateId && getQuotaRemaining(d) > 0);
+      if (_other) {
+        const _wd = getWeekdayName(_other.departure_date, _pLang);
+        const _dt = formatDateForLanguage(_other.departure_date, _pLang) + (_wd ? ` (${_wd})` : "");
+        const _msgs: Record<string, string> = {
+          tr: `Diğer tarihimiz ${_dt} — bununla devam edelim mi? ✅`,
+          en: `Our other date is ${_dt} — shall we go with this one? ✅`,
+          de: `Unser anderes Datum ist ${_dt} — sollen wir damit fortfahren? ✅`,
+          ru: `Другая наша дата — ${_dt} — продолжим с ней? ✅`,
+          ar: `تاريخنا الآخر هو ${_dt} — هل نتابع به؟ ✅`,
+          fr: `Notre autre date est ${_dt} — on continue avec celle-ci ? ✅`,
+          es: `Nuestra otra fecha es ${_dt} — ¿continuamos con esta? ✅`,
+        };
+        const _reply = _msgs[_pLang] || _msgs.tr;
+        newContext.proposedDateId = _other.id;
+        newContext.proposedDate = _other.departure_date;
+        console.log(`[process-message] :10g V3-anafora öneri (diğer tarih=${_other.id}) — onay bekleniyor`);
+        await _save(_reply, newContext);
+        await adapter.sendResponse(_reply);
+        return { success: true, response: _reply, newContext };
+      }
+    }
+
+    // İş 1 farketmez — waiting_for_date + sinyal + tarih henüz seçilmedi
+    if (
+      newContext.stage === "COLLECTING_INFO" &&
+      newContext.collectionStep === "waiting_for_date" &&
+      !_curDateId && !newContext.proposedDateId &&
+      _anyDateSignal.test(message) && _pDates.length > 0
+    ) {
+      const _istToday = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
+      const _nearest = _pDates
+        .filter((d: any) => getQuotaRemaining(d) > 0 && String(d.departure_date) >= _istToday)
+        .sort((a: any, b: any) => String(a.departure_date).localeCompare(String(b.departure_date)))[0];
+      if (_nearest) {
+        const _wd = getWeekdayName(_nearest.departure_date, _pLang);
+        const _dt = formatDateForLanguage(_nearest.departure_date, _pLang) + (_wd ? ` (${_wd})` : "");
+        const _msgs: Record<string, string> = {
+          tr: `En yakın tarihimiz ${_dt} — bununla devam edelim mi? ✅`,
+          en: `Our nearest date is ${_dt} — shall we go with this one? ✅`,
+          de: `Unser nächstes Datum ist ${_dt} — sollen wir damit fortfahren? ✅`,
+          ru: `Наша ближайшая дата — ${_dt} — продолжим с ней? ✅`,
+          ar: `أقرب تاريخ لدينا هو ${_dt} — هل نتابع به؟ ✅`,
+          fr: `Notre date la plus proche est ${_dt} — on continue avec celle-ci ? ✅`,
+          es: `Nuestra fecha más cercana es ${_dt} — ¿continuamos con esta? ✅`,
+        };
+        const _reply = _msgs[_pLang] || _msgs.tr;
+        newContext.proposedDateId = _nearest.id;
+        newContext.proposedDate = _nearest.departure_date;
+        console.log(`[process-message] :10g V2-b farketmez öneri (en yakın=${_nearest.id}) — onay bekleniyor`);
+        await _save(_reply, newContext);
+        await adapter.sendResponse(_reply);
+        return { success: true, response: _reply, newContext };
+      }
     }
   }
 

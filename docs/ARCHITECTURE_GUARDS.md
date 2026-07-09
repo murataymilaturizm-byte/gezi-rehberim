@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (FAZ3-P1 — zengin-mesaj filter-guard G16 [V5] + kalıp paketi V1/V6/V7/V12/V3-R6; FAZ3-P2 aynı gün).
+> Son güncelleme: 2026-07-09 (FAZ3-P3 — İş0 gün-ordinal tekil-seçim [çıplak-NLU KÖK sızıntısı] + Blok 8.5 yeniden yazım + ay-niteleyici; İş1 V2-b "farketmez"→en-yakın öneri-onay [:10g/:10d-2, proposedDateId]; İş2 V8-ucuz relative_ tüketici [Blok 9d]; İş3 V3-anafora "öbür tarih"→diğer-tarih öneri. FAZ3-P1/P2 aynı gün.).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -106,6 +106,14 @@ FSM SONRASI DETERMİNİSTİK MESAJLAR (hepsi RETURN, LLM atlanır):
  18b. :10e V10 müsaitlik-cevabı (availabilityQueryDay → "müsait ✅"+adım sorusu) │
      :10f V9 çift-eşleşme netleştirme (dateAmbiguousDay → global-indeksli liste +
      waiting_for_date) — ikisi de :11'den ÖNCE (liste tekrarını/sessiz seçimi keser)
+ 18c. **:10d-2 tarih-öneri ONAY tamamlama (FAZ3-P3)** — context.proposedDateId +
+     detectConfirmation("evet") → önerilen tarih SEÇİLİR (DRY, yeni pending-state
+     YOK). Farklı tarih yazıldıysa/onay değilse → öneri temizlenir, normal akış.
+ 18d. **:10g tarih-öneri SUNUMU (FAZ3-P3)** — İş1 V2-b "farketmez/en yakın"
+     (waiting_for_date + _anyDateSignal, 7 dil) → EN YAKIN müsait tarihi ÖNER+onay.
+     İş3 V3-anafora (dateId DOLU + tam 2 tarih + _v3AnaforaRe "öbür/diğer tarih")
+     → seçili OLMAYAN tarihi ÖNER+onay. İkisi de proposedDateId'ye yazar → :10d-2
+     kapatır. 3+ tarih/boş dateId → :11 liste. :11'den ÖNCE.
  19. :11 tarih listesi — 4 dal: (a) waiting_for_date, (b) tarih sorusu,
      (c) rezervasyon niyeti, (d) _isStuckOnTourSelected (~L1977-2140)
  20. :11a-AUTO-DATE-ACK (~L2142) │ :11a-MANUAL-DATE-ACK / G4 (~L2229)
@@ -224,7 +232,7 @@ SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 | Pending konumu | Bilinçli: Blok 9 SONRASI + Blok 10 ÖNCESİ — Blok 10 auto-assign dateId'si kullanıcı mesajından gelmez, pending iptaline sebep olmamalı. "aslında 3'ü olsun" ayın 3'ü eşleşirse pax İPTAL, tarih akışı kazanır (tarih→pax sızıntı koruması delinmez) |
 | Pattern kaynağı | `shared/constants/change-detection.ts` CHANGE_KEYWORDS_RE — process-message A1/A2/A3 `_hasChangeKeyword` ile TEK kaynak (DRY) |
 | Kaynak | BUG-X9 ("ondördü olur" 14 pax sızıntısı) + X9-change fix (telefon adımında "aslında 3 olsun" R6'ya takılıyordu) |
-| **I-9 rakam-tarih ayna (2026-07-03) + V10/V9 (2026-07-09)** | X9'un AYNASI: waiting_for_pax'ta "20'sine/3'ü" (rakam+tarih-iyelik, _dateOrdinalRe) → NLU-pax İSTİSNASI EZİLİR + Blok 8.5. **V10 soru-guard'ı**: müsaitlik-kelime (müsait/uygun/boş/yer var/available) → `availabilityQueryDay` flag → :10e cevaplar (seçim YOK). AYIRICI müsaitlik-kelimesidir, QUESTION_SIGNAL_RE DEĞİL (zıt-yön: soruyu aşırı-yakalamak seçimi kaçırır > tekrar seçtirmek; "20'si olur mu?" soru-formu SEÇİM kalır). **V9 çift-eşleşme**: gün 2+ tarihte varsa `dateAmbiguousDay` flag → :10f netleştirme (SESSİZ İLK-SEÇİM KALKTI). Blok 9c: apostrofsuz "ayın 20" day_ prefix çözümü + raw-day_ sızıntı temizliği. Tek eşleşme/çıplak "20 kişi" davranışı aynen |
+| **I-9 rakam-tarih ayna (2026-07-03) + V10/V9 (2026-07-09) + İş0 (FAZ3-P3)** | X9'un AYNASI: waiting_for_pax'ta "20'sine/3'ü" (rakam+tarih-iyelik, _dateOrdinalRe) → NLU-pax İSTİSNASI EZİLİR + Blok 8.5. **V10 soru-guard'ı**: müsaitlik-kelime (müsait/uygun/boş/yer var/available) → `availabilityQueryDay` flag → :10e cevaplar (seçim YOK). AYIRICI müsaitlik-kelimesidir, QUESTION_SIGNAL_RE DEĞİL (zıt-yön: soruyu aşırı-yakalamak seçimi kaçırır > tekrar seçtirmek; "20'si olur mu?" soru-formu SEÇİM kalır). **V9 çift-eşleşme**: gün 2+ tarihte varsa `dateAmbiguousDay` flag → :10f netleştirme (SESSİZ İLK-SEÇİM KALKTI). **İş0 Blok 8.5 yeniden yazımı (KÖK)**: gün-sayısı 3 KAYNAKTAN toplanır — (a) apostroflu _dateOrdinalRe, (b) düz "ayın N", (c) **NLU ÇIPLAK-SAYI** (ay-adsız ordinal'de NLU dates=["20"] → Blok2 selectedDate="20" → eski `!selectedDate` guard'ı bloke ediyor → RAW "20" şablona sızıyordu: `"20" müsait değil`). Çıplak-sayı tarih-adımında yakalanır + `delete selectedDate` (RAW asla state'e/şablona sızmaz). **Ay-niteleyici** ("bu ayın/gelecek ayın", 7 dil, Europe/Istanbul ayı) → o aya SINIRLI eşleşme; o ayda yoksa availabilityQueryDay→:10e "görünmüyor". Routing: tek→SEÇ, çoklu→dateAmbiguousDay, sıfır→:11 liste. Blok 9c: apostrofsuz "ayın 20" day_ prefix çözümü + raw-day_ temizliği. Blok 9d: **relative_ prefix TÜKETİCİSİ** (V8-ucuz) — simple-extractor tourDates ile çağrılıyor (Blok 3), "yarın/öbür gün" tur tarihiyle kesişmezse relative_ISO temizlenir→:11 liste (eski ölü-flag: consumer yoktu, RAW sızardı). Tek eşleşme/çıplak "20 kişi" davranışı aynen |
 | **İSİM-pending (Blok 5b, A-P1 2026-07-03)** | X9-change'in İSİM kopyası. Koşullar: NLU/simple fullName bulamadı + CHANGE_KEYWORDS_RE + `reservationInfo.fullName` DOLU (değişiklik bağlamı) + **isim-bağlam kelimesi ŞART** (isim/ismi/ad/adım/soyad/name — bağlamsız "aslında yarın gelelim" tipi cümlelerin isim sanılmasını kapıda keser). Aday: change/bağlam/dolgu kelimeleri elendikten sonra kalan TAM 2-3 harf-ağırlıklı kelime; **Title-Case ŞARTI YOK** (canlı kanıt: kullanıcılar "leman tete" küçük yazıyor). ASIL SİGORTA: aday Sorun F gate'lerinden geçer (NegationLeak+TourLeak+onay-blacklist, tek-kaynak). Kabul → extractedInfo.fullName → A3-name/BUG B mevcut haliyle devralır. Kaynak: canlı P1 (CONFIRMING'de "ismi düzelt, Ahmet Yılmaz olacak" yutuluyordu — NLU Sorun F correction-guard'ı meşru düzeltmede de null dönüyor, simple/Blok5 step-gated) |
 
 ### G9 — O1 grubu (birleşik mesaj tarih→ID)
@@ -532,3 +540,10 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     NOT: eski `needsMonthClarification` (ayinMatch tourDates yolu) hâlâ
     tüketicisiz — düşük öncelik, o yol Blok 3'te tourDates'siz çağrıldığı için
     fiilen ölü; V9 dateAmbiguousDay onu işlevsel olarak ikame ediyor.
+26. **FAZ3-P3 ÇÖZÜLDÜ (2026-07-09)**: İş0 (V9 kalıntısı — çıplak-NLU "20" RAW
+    sızıntısı → Blok 8.5 yeniden yazım + ay-niteleyici) + İş1 (V2-b "farketmez"
+    → :10g en-yakın öneri + :10d-2 onay-tamamlama, proposedDateId) + İş2 (V8-ucuz
+    relative_ tüketici, Blok 9d + simple'a tourDates) + İş3 (V3-anafora "öbür
+    tarih" → :10g diğer-tarih öneri, telefon-adımı muafiyeti). **Açık kalanlar
+    (M-L, Sonnet-pilotu sonrası)**: "hafta sonu/ay ortası" göreli tarihler (bu
+    pakette DEĞİL); paxChild yaş-türetimi ("çocuklar 8 ve 12 yaşında"→2).

@@ -344,7 +344,12 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   }
 
   // === Blok 3: simple-extractor (isim, telefon, paxAdult, tarih) ===
-  const simple = extractNameAndPhone(message, context.collectionStep);
+  // 2026-07-09 V8-ucuz: tourDates GEÇİRİLİYOR — extractRelativeDate (yarın/öbür
+  // gün, 7 dil) artık tur tarihleriyle kesişebilir (eşleşme→dateId; yoksa
+  // relative_ISO → Blok 9c temizler → :11 liste). Önceden tourDates'siz
+  // çağrılıyordu → relative_ prefix üretiliyor ama tüketicisi yoktu (yarım-bağlı).
+  const _b3Tour = context.currentTour ? findTourById(context.currentTour.id, tours) : null;
+  const simple = extractNameAndPhone(message, context.collectionStep, _b3Tour?.dates);
   // 2026-06-21 SORUN F GERÇEK KÖK: simple-extractor.ts:450 mesajdan Title-Case
   // fullName extract ediyor (Blok 5 mantığının kopyası). simple.fullName ile
   // gelen değeri AYNI gate sigortasından geçir (K3 tek-kaynak). Canlı exec
@@ -527,46 +532,76 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     }
   }
 
-  // === Blok 8.5: Rakam+iyelik TARİH-GÜN eşleştirme (I-9, 2026-07-03) ===
-  // "20'sine alalım" → gün=20 → aktif turun tarihlerinde ayın 20'si varsa seç
-  // (quota'lı). "yirmisine" yazı-formu zaten çalışıyordu; rakam-formu pax'a
-  // sızıyordu (yukarıda istisna ezildi) — burada tarih zincirine bağlanır.
-  // Eşleşme yoksa hiçbir şey set edilmez → mevcut akış (belirsizlik/liste).
-  if (_hasDateOrdinal && !extractedInfo.dateId && !extractedInfo.selectedDate && context.currentTour) {
-    const _ordM = (message || "").match(_dateOrdinalRe);
-    const _ordDay = _ordM ? parseInt(_ordM[1] || _ordM[2]) : NaN;
-    if (_ordDay >= 1 && _ordDay <= 31) {
+  // === Blok 8.5: GÜN-ORDİNAL tarih eşleştirme (I-9 + V9 + İş 0, 2026-07-09) ===
+  // Gün-sayısı KAYNAKLARI (3): apostroflu iyelik ("20'si/20'sine"), "ayın N",
+  // ve NLU çıplak-sayı (dates=["20"] → Blok 2 selectedDate="20"). İş 0 kökü:
+  // NLU ay-adsız ordinal'de çıplak "20" döndürüyordu → Blok 2 selectedDate="20"
+  // → eski `!selectedDate` guard'ı Blok 8.5'i bloke ediyor → Blok 9 "20"yi
+  // çözemiyor → RAW "20" şablona sızıyor ('"20" müsait değil'). "araığın 20'si"
+  // çalışıyordu çünkü NLU orada Aralık'ı çıkarıp "20 aralık"/ISO dönüyor.
+  {
+    const _bareDate = typeof extractedInfo.selectedDate === "string" && /^\d{1,2}$/.test(extractedInfo.selectedDate);
+    const _atDateStep = getNextExpectedInput(context) === "date" ||
+      context.collectionStep === "waiting_for_date" || context.collectionStep === undefined;
+    let _ordDay: number = NaN;
+    const _apos = (message || "").match(_dateOrdinalRe);
+    if (_apos) _ordDay = parseInt(_apos[1] || _apos[2]);
+    if (isNaN(_ordDay)) {
+      const _ayin = (message || "").match(/ay[ıi]n?\s*(\d{1,2})/i);
+      if (_ayin) _ordDay = parseInt(_ayin[1]);
+    }
+    if (isNaN(_ordDay) && _bareDate && _atDateStep) _ordDay = parseInt(extractedInfo.selectedDate as string);
+
+    if (_ordDay >= 1 && _ordDay <= 31 && !extractedInfo.dateId && context.currentTour) {
+      // RAW çıplak-sayı ASLA state'e/şablona sızmasın.
+      if (_bareDate) delete extractedInfo.selectedDate;
+
+      // AY-NİTELEYİCİ: "bu ay(ın)" / "gelecek/önümüzdeki ay(ın)" / next month...
+      // → o aya SINIRLI eşleşme (kullanıcı belirli ayı kastediyor).
+      let _targetMonth: number | null = null;
+      // Europe/Istanbul ayı (P4 dersi — UTC sunucusunda ay-sınırında kaymasın).
+      const _istMonth = parseInt(new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul", month: "numeric" }));
+      if (/(?<![\p{L}\p{N}])(bu\s+ay|this\s+month|dieser\s+monat|ce\s+mois|este\s+mes|этот\s+месяц)/iu.test(message || "")) {
+        _targetMonth = _istMonth;
+      } else if (/(?<![\p{L}\p{N}])(gelecek\s+ay|[öo]n[üu]m[üu]zdeki\s+ay|next\s+month|n[äa]chsten?\s+monat|mois\s+prochain|pr[óo]ximo\s+mes|следующ\S*\s+месяц)/iu.test(message || "")) {
+        _targetMonth = _istMonth + 1 > 12 ? 1 : _istMonth + 1;
+      }
+
       const _ordTour = findTourById(context.currentTour.id, tours);
-      const _ordMatches = (_ordTour?.dates || []).filter((d: any) => {
-        const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
-        return p && parseInt(p[1]) === _ordDay;
+      let _ordMatches = (_ordTour?.dates || []).filter((d: any) => {
+        const p = d.departure_date?.match(/\d{4}-(\d{2})-(\d{2})/);
+        return p && parseInt(p[2]) === _ordDay;
       });
-      // 2026-07-09 V10 SORU-GUARD'I: müsaitlik SORUSU ise tarih SEÇME/DEĞİŞTİRME
-      // — cevap dalına (:10e) bırak. AYIRICI = müsaitlik-kelimesi (dar, kesin
-      // bilgi-sorusu), QUESTION_SIGNAL_RE değil. Gerekçe (zıt-yön dersi): salt
-      // soru-form ("20'si olur mu?") SEÇİM niyeti taşıyabilir; soruyu aşırı
-      // yakalamak seçimi kaçırır (kötü) — tekrar seçtirmek (iyi) değil.
+      if (_targetMonth !== null) {
+        _ordMatches = _ordMatches.filter((d: any) => {
+          const p = d.departure_date?.match(/\d{4}-(\d{2})-\d{2}/);
+          return p && parseInt(p[1]) === _targetMonth;
+        });
+      }
+      // V10 soru-guard'ı: müsaitlik-kelimesi → :10e (seçim değil). Ayırıcı
+      // müsaitlik-kelime, QUESTION_SIGNAL değil (zıt-yön dersi).
       const _availQ = /(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|available|availability|müsaitlik|musaitlik)/iu.test(message || "");
       if (_availQ) {
-        // Müsaitlik sorusu → :10e cevaplar (0 eşleşme dahil → "görünmüyor").
         (extractedInfo as any).availabilityQueryDay = _ordDay;
       } else if (_ordMatches.length === 1) {
         const cand = _ordMatches[0];
         if (hasQuotaForPax(cand, 1)) {
           extractedInfo.selectedDate = cand.departure_date;
           extractedInfo.dateId = cand.id;
-          console.log(`[info-extractor] I-9 Blok 8.5: rakam-iyelik gün=${_ordDay} → dateId eşleşti`);
+          console.log(`[info-extractor] Blok 8.5 gün-ordinal=${_ordDay}${_targetMonth ? ` ay=${_targetMonth}` : ""} → dateId eşleşti`);
         } else {
-          extractedInfo.dateRejectedFull = {
-            departureDate: cand.departure_date,
-            remaining: getQuotaRemaining(cand),
-          };
+          extractedInfo.dateRejectedFull = { departureDate: cand.departure_date, remaining: getQuotaRemaining(cand) };
         }
       } else if (_ordMatches.length > 1) {
-        // 2026-07-09 V9: çift-eşleşme → SESSİZ İLK-SEÇİM YOK. Flag'i :10f
-        // netleştirme dalı tüketir (7c'nin tarih muadili).
+        // V9 çift-eşleşme → :10f netleştirme (SESSİZ İLK-SEÇİM YOK).
         (extractedInfo as any).dateAmbiguousDay = _ordDay;
-        console.log(`[info-extractor] V9 Blok 8.5: ordinal gün=${_ordDay} çok eşleşme (${_ordMatches.length}) → netleştirme`);
+        console.log(`[info-extractor] V9 Blok 8.5: gün=${_ordDay} çok eşleşme (${_ordMatches.length}) → netleştirme`);
+      } else {
+        // Sıfır eşleşme: RAW temizlendi (yukarıda) → :11 liste devralır (yanıltıcı
+        // tırnaklı "20 müsait değil" YOK). Ay-niteleyicili sıfırda availabilityQueryDay
+        // ile ":10e görünmüyor" tercih edilir (kullanıcı belirli ay istedi).
+        if (_targetMonth !== null) (extractedInfo as any).availabilityQueryDay = _ordDay;
+        console.log(`[info-extractor] Blok 8.5: gün=${_ordDay} eşleşme YOK → ${_targetMonth ? ":10e görünmüyor" : ":11 liste"}`);
       }
     }
   }
@@ -618,6 +653,30 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       } else if (_pMatches.length > 1) {
         (extractedInfo as any).dateAmbiguousDay = _pd;
         console.log(`[info-extractor] V9 Blok 9c: 'ayın ${_pd}' çok eşleşme → netleştirme`);
+      }
+    }
+  }
+
+  // === Blok 9d: relative_ prefix TÜKETİCİSİ (V8-ucuz, 2026-07-09) ===
+  // simple-extractor artık tourDates ile çağrılıyor (Blok 3) → "yarın/öbür gün"
+  // (extractRelativeDate, 7 dil) tur tarihiyle KESİŞİRSE dateId dolar (done).
+  // Kesişmezse selectedDate="relative_YYYY-MM-DD" kalır — ESKİDEN tüketicisi
+  // yoktu (ölü-flag dersi), RAW "relative_..." şablona sızardı. Burada:
+  // eşleşme YOK demek → o tarihte tur yok → RAW temizle → :11 liste devralır
+  // (yanıltıcı 'relative_2026-07-10 müsait değil' ASLA). NOT: "hafta sonu/ay
+  // ortası" bu pakette DEĞİL (M-L, Sonnet-pilotu sonrası → Açık Sorular).
+  if (typeof extractedInfo.selectedDate === "string" && extractedInfo.selectedDate.startsWith("relative_")) {
+    const _relIso = extractedInfo.selectedDate.slice("relative_".length);
+    delete extractedInfo.selectedDate;
+    if (!extractedInfo.dateId && _activeTourIdForDate) {
+      const _rt = findTourById(_activeTourIdForDate, tours);
+      const _rm = (_rt?.dates || []).find((d: any) => d.departure_date === _relIso);
+      if (_rm && hasQuotaForPax(_rm, 1)) {
+        extractedInfo.selectedDate = _rm.departure_date;
+        extractedInfo.dateId = _rm.id;
+        console.log(`[info-extractor] Blok 9d: göreli tarih ${_relIso} → dateId eşleşti`);
+      } else {
+        console.log(`[info-extractor] Blok 9d: göreli tarih ${_relIso} tur tarihlerinde yok → :11 liste`);
       }
     }
   }

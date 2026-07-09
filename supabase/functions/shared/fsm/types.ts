@@ -88,6 +88,14 @@ export interface ConversationContext {
   // resetForNewReservation bu alanı DÖNDÜRMEZ → spread sırasında korunur.
   // Yeni rezervasyon onaylanırsa yeni cutoff timestamp'iyle güncellenir.
   historyCutoffAt?: string;
+
+  // 2026-07-09 FAZ3-P3 (V2-b + V3-anafora): tarih ÖNERİ-context'i. "farketmez"
+  // / "öbür tarih" gibi mesajlarda bot tekil tarih ÖNERİR + onay ister; önerilen
+  // dateId burada tutulur ki sonraki turn'de "evet" gelince hangi tarihin
+  // önerildiği bilinsin. Onay işlenince veya başka değer gelince temizlenir.
+  // Yeni pending-STATE değil — tek alanlık öneri hafızası.
+  proposedDateId?: string;
+  proposedDate?: string; // görsel/ack için ISO
 }
 
 export interface StateTransition {

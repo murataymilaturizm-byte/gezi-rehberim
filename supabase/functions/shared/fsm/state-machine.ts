@@ -174,7 +174,7 @@ function mergeReservationInfo(
   return merged;
 }
 
-function determineCollectionStep(info: ReservationInfo, collectEmail?: boolean): InfoCollectionStep {
+export function determineCollectionStep(info: ReservationInfo, collectEmail?: boolean): InfoCollectionStep {
   // dateId ZORUNLU: selectedDate parse edilmiş olabilir ama DB'de eşleşen tur tarihi yoksa
   // dateId null kalır ve bu "tarih hâlâ eksik" anlamına gelir.
   if (!info.dateId) return "waiting_for_date";
