@@ -28,3 +28,4 @@ scripts/diag_*.ts
 
 # Supabase CLI iç dosyaları (sürüm damgası — her deploy'da değişir, gürültü)
 supabase/.temp/
+docs/nlu-ab-results.json
