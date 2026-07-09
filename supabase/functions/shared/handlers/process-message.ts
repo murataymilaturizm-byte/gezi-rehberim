@@ -25,6 +25,7 @@ import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getSt
 import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise, detectFakeChangeAck } from "../fsm/response-validator.ts";
 import { formatReservationSummary } from "../fsm/prompts/helpers.ts";
 import { isEchoSafe } from "../services/echo-sanitize.ts";
+import { MONTH_ALTERNATION } from "../constants/month-names.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -394,6 +395,28 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       || context.stage === "BROWSING"
       || context.stage === "TOUR_SELECTED";
 
+  // === V5 ZENGİN-MESAJ GUARD'I (2026-07-09) — filtre dalları öncesi ortak ===
+  // Canlı (N-31): "biz 4 kişilik bir aileyiz 10 aralıkta pamukkaleye gelmek
+  // istiyoruz..." → "aile" B-TEMA'yı tetikledi, TÜM mesaj (tur+tarih+pax) yutuldu.
+  // Filtre dalları (X8/B1/B-DUR/B-TEMA) LİSTE üretir; kullanıcı SPESİFİK tur/
+  // rezervasyon istiyorsa liste YANLIŞ. Ucuz ön-kontrol:
+  //   _richTourName (spesifik tur adı) → 4 dalı da atlat (en güçlü sinyal)
+  //   _richDate → B-TEMA'yı ek atlat (tema en gevşek; tema+tarih ≈ rezervasyon)
+  // Pax TEK BAŞINA gate DEĞİL — B1 "3000 bütçe 2 kişi" vakası korunur.
+  const _msgLowerRich = (message || "").toLocaleLowerCase("tr-TR");
+  const _richTourName = tours.some((t: any) => {
+    const _dest = String(t.destination || "").toLocaleLowerCase("tr-TR").trim();
+    if (_dest.length >= 4 && _msgLowerRich.includes(_dest)) return true;
+    const _tw = String(t.title || "").toLocaleLowerCase("tr-TR").split(/\s+/).filter((w: string) => w.length >= 5);
+    return _tw.some((w: string) => _msgLowerRich.includes(w));
+  });
+  const _richDate = new RegExp(`\\d{1,2}[.\\/-]\\d{1,2}|(?<![\\p{L}\\p{N}])(${MONTH_ALTERNATION})`, "iu").test(message || "");
+  if (_richTourName) {
+    console.log(`[filter-guard] Zengin mesaj — filtre dalı atlandı (sinyal: tur-adı)`);
+  } else if (_richDate) {
+    console.log(`[filter-guard] Zengin mesaj — B-TEMA atlandı (sinyal: tarih)`);
+  }
+
   // --- X8: SUPERLATİF FİYAT (en ucuz / en pahalı) ---
   // LLM (Haiku) sayı karşılaştırmada güvenilmez. Pattern eşleşince tours array
   // price_adult'a göre sıralanır, deterministik mesaj döner.
@@ -401,7 +424,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)/iu;
   const _matchesAsc = _superlativeAsc.test(message);
   const _matchesDesc = _superlativeDesc.test(message);
-  if (_isExploreStage && (_matchesAsc || _matchesDesc) && tours.length > 0) {
+  if (_isExploreStage && !_richTourName && (_matchesAsc || _matchesDesc) && tours.length > 0) {
     const _toursPriced = tours
       .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
       .filter((x: any) => typeof x.price === "number" && x.price > 0);
@@ -516,7 +539,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   // R5: stage guard GERİ EKLENDİ (telefon bug fix). Pattern + fallback rezervasyon
   // adımında ÇALIŞMAMALI — keşif aşamasında (GREETING/BROWSING/TOUR_SELECTED) çalışır.
-  if (_isExploreStage && tours.length > 0) {
+  // 2026-07-09 V5: spesifik tur adı varsa B1 liste değil rezervasyon → atla.
+  if (_isExploreStage && !_richTourName && tours.length > 0) {
     for (const p of _priceRangePats) {
       const m = message.match(p);
       if (m && m[1] && m[2]) {
@@ -685,6 +709,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   if (
     _isExploreStage &&
+    !_richTourName &&
     _matchedType &&
     tours.length > 0
   ) {
@@ -751,16 +776,80 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: true, response: _reply, newContext: context };
   }
 
+  // --- B-DUR2: GÜN-SAYISI SÜRE ARAMASI (V6, 2026-07-09) ---
+  // Canlı: "3 günlük bir tur arıyorum" → NLU "günlük"ü tarih sandı → '"günlük"
+  // müsait değil' saçmalığı. B-DUR type-enum (DAYTRIP/N2/N3) "3 günlük"ü KASITLI
+  // atlıyordu (muğlak). Burada: mesajdan gün-sayısı çıkar, tur_sure serbest-
+  // metninden gün çıkar, TAM eşleşme; eşleşen yoksa "X günlük yok + sürelerimiz".
+  {
+    const _dayMatch = _isExploreStage && !_richTourName
+      ? (message || "").match(/(?<![\p{L}\p{N}])(\d{1,2})\s*g[üu]nl[üu]k\b/iu)
+      : null;
+    if (_dayMatch && tours.length > 0) {
+      const _wantDays = parseInt(_dayMatch[1]);
+      const _langD2 = context.language || "tr";
+      // tur_sure'dan gün sayısı çıkar ("2 gün 1 gece" → 2; "günübirlik/1 gün" → 1)
+      const _tourDays = (t: any): number | null => {
+        const s = String(t.tur_sure || "").toLocaleLowerCase("tr-TR");
+        if (/g[üu]n[üu]birlik/.test(s)) return 1;
+        const m = s.match(/(\d{1,2})\s*g[üu]n/);
+        return m ? parseInt(m[1]) : null;
+      };
+      const _durMatches = tours.filter((t: any) => _tourDays(t) === _wantDays);
+      const _exR2 = await getExchangeRatesOnce().catch(() => ({}));
+      const _showD2 = agency.show_multi_currency !== false;
+      const _fmtLine = (t: any, i: number) => {
+        const _fd = t.dates?.[0];
+        const _pt = _fd?.price_adult ? ` — ${formatPriceSync(_fd.price_adult, t.currency || "TRY", _langD2, _exR2, _showD2, languageCurrencies)}` : "";
+        return `${i + 1}) ${getLocalizedTourTitle(t.title, _langD2)}${_pt}`;
+      };
+      if (_durMatches.length > 0) {
+        const _list = _durMatches.slice(0, 8).map(_fmtLine).join("\n");
+        const _m: Record<string, string> = {
+          tr: `${_wantDays} günlük turlarımız:\n${_list}\n\nHangisi ilginizi çeker? 😊`,
+          en: `Our ${_wantDays}-day tours:\n${_list}\n\nWhich interests you? 😊`,
+        };
+        const _r = _m[_langD2] || _m.en;
+        await _save(_r, context);
+        await adapter.sendResponse(_r);
+        return { success: true, response: _r, newContext: context };
+      } else {
+        // Eşleşme yok → mevcut süreleri göster (uydurma/şablon-yankı YOK)
+        const _all = tours.slice(0, 8).map(_fmtLine).join("\n");
+        const _m: Record<string, string> = {
+          tr: `${_wantDays} günlük turumuz şu anda yok. Mevcut turlarımız:\n${_all}\n\nHangisi ilginizi çeker? 😊`,
+          en: `We don't have ${_wantDays}-day tours right now. Our tours:\n${_all}\n\nWhich interests you? 😊`,
+        };
+        const _r = _m[_langD2] || _m.en;
+        console.log(`[process-message] B-DUR2 V6: ${_wantDays} günlük eşleşme yok → mevcut liste`);
+        await _save(_r, context);
+        await adapter.sendResponse(_r);
+        return { success: true, response: _r, newContext: context };
+      }
+    }
+  }
+
   // --- B-TEMA: TEMA SÖZLÜĞÜ — yumuşatılmış mesaj ---
   // R4: selectedTour/multipleTourMatches kontrolü kaldırıldı (henüz hesaplanmadı).
   // currentTour kontrolü tutuldu — rezervasyon ortasında tema sorusu LLM'e bırakılsın.
   const _themeKeywordsRe = /(?<![\p{L}\p{N}])(do[ğg]a|macera|k[üu]lt[üu]r|tarihi|tarihsel|romantik|deniz|aile|nature|adventure|cultural|historical|historic|romantic|family|natur(?!al)|abenteuer|kultur|historisch|romantisch|familie|aventure|culturel|historique|romantique|famille|naturaleza|aventura|histórico|romántico|familia|природа|приключени|культурн|историческ|романтическ|семейн|طبيعة|مغامرة|ثقافة|تاريخي|رومانسي|عائلي)/iu;
+  // 2026-07-09 V5 tema-daraltma: çift-anlamlı kelimeler (aile/tarihi/family/
+  // historical) TEK BAŞINA tema SAYILMAZ — bağlam-kelimesi ister ("aile turu",
+  // "tarihi yerler"). Canlı: "biz bir aileyiz pamukkale istiyoruz" → "aile"
+  // tetikliyordu. Tek-anlamlı kelimeler (romantik/macera/doğa...) aynen kalır.
+  const _unambiguousThemeRe = /(?<![\p{L}\p{N}])(do[ğg]a|macera|k[üu]lt[üu]r|romantik|deniz|nature|adventure|cultural|romantic|natur(?!al)|abenteuer|kultur|romantisch|aventure|culturel|romantique|naturaleza|aventura|romántico|природа|приключени|романтическ|طبيعة|مغامرة|رومانسي)/iu;
+  const _themeContextRe = /(?<![\p{L}\p{N}])(tur|turu|tatil|gezi|holiday|vacation|trip|reise|voyage|viaje|yerler?|için\s+uygun)/iu;
+  const _themeMatched = _themeKeywordsRe.test(message);
+  const _themeOnlyAmbiguous = _themeMatched && !_unambiguousThemeRe.test(message);
+  const _themeFires = _themeMatched && (!_themeOnlyAmbiguous || _themeContextRe.test(message));
 
   if (
     _isExploreStage &&
+    !_richTourName &&
+    !_richDate &&
     tours.length > 0 &&
     !context.currentTour &&
-    _themeKeywordsRe.test(message)
+    _themeFires
   ) {
     const _exRatesBT = await getExchangeRatesOnce().catch(() => ({}));
     const _showDualBT = agency.show_multi_currency !== false;
@@ -1978,7 +2067,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // telefon değil" basma; akış tur-değişim katmanlarına (G5/7c) veya LLM'e
     // düşsün. Saf geçersiz girdi ("abc def") tur eşleşmesi üretmez → R6 korunur.
     selectedTour === null &&
-    multipleTourMatches.length === 0
+    multipleTourMatches.length === 0 &&
+    // 2026-07-09 V3-R6: TARİH-CHANGE muafiyeti (A-P2 tur-muafiyetiyle simetrik).
+    // Telefon adımında "tarihi 20 aralık yapalım" → kullanıcı TELEFON değil TARİH
+    // konuşuyor → "geçersiz telefon" basma; normal zincire (tarih çözülürse :10d
+    // ack / :10e-f, çözülmezse :11 liste). CHANGE_KEYWORDS + tarih-bağlam şart —
+    // saf "abc def" tetiklemez (R6 korunur).
+    !(CHANGE_KEYWORDS_RE.test(message) &&
+      new RegExp(`(?<![\\p{L}\\p{N}])(tarih|tarihi|date|g[üu]n|datum|дата|تاريخ|jour|fecha)(?![\\p{L}\\p{N}])|(?<![\\p{L}\\p{N}])(${MONTH_ALTERNATION})`, "iu").test(message))
   ) {
     // 2026-07-03 İş D (K-19): cümle-yankı sanitize — '"numaram yok mail atsam"
     // geçerli bir telefon değil' saçmalığı. isEchoSafe FALSE ise tırnaklı form

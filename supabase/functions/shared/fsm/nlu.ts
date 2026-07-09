@@ -142,6 +142,10 @@ CASE 3 — User wants a DIFFERENT tour:
 
 NEVER assume the user wants to stay in COMPLETED forever. Trust their words.
 
+**CRITICAL: DURATION ≠ DATE (2026-07-09 V6):**
+- Duration expressions like "3 günlük", "2 gecelik", "1 haftalık", "3-day", "2 nights" are TOUR DURATION, NOT dates. NEVER put them in the dates field.
+- "3 günlük bir tur arıyorum" → tour_search, dates EMPTY (the system filters by duration deterministically).
+
 **CRITICAL: INFORMATIONAL QUESTIONS vs PROVIDING INFO:**
 - Questions like "tarih ne zaman", "ne zaman", "tarihleri nedir", "fiyat ne kadar", "kaç lira", 
   "nereden kalkıyor", "saat kaçta", "kaç gün sürer", "program nedir" are INFORMATIONAL → use "general" or "faq_general"

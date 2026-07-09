@@ -34,8 +34,12 @@ import { isMeaningfulTourKeyword } from "../constants/tour-matching.ts";
 // selectedTour!=null+farklı; B-5 gevşemesi sadece tour-matching'e İZİN verir,
 // eşleşme yoksa etkisiz) → "20 aralık olacaktı" tarih düzeltmesi yanlış
 // tetiklemez. 7 dil eşitlemesi Faz 4'te; mevcut TR kapsam korunur.
+// 2026-07-09 V12: "değildi|olmamıştı" eklendi (olacaktı'nın kip kardeşleri —
+// "pamukkale değildi sanki"). Tüketiciler tur-eşleşmesini AYRICA şart koşar
+// (7c multi>1, B2 selected!=null, B-5 sadece izin) → "20 aralık değildi" tarih
+// düzeltmesi yanlış tetiklemez (A-P2 analizi geçerli).
 export const TOUR_CHANGE_PHRASE_RE =
-  /(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti)/i;
+  /(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti|değildi|degildi|olmamıştı|olmamisti)/i;
 
 function normalizeNluField(value: any): string[] {
   if (!value) return [];

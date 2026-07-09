@@ -213,6 +213,19 @@ function isAllInfoCollected(info: ReservationInfo, collectEmail?: boolean): bool
 export function detectConfirmation(message: string, language: string): boolean {
   const msg = message.toLowerCase().trim();
 
+  // 2026-07-09 V7: YALNIZ-EMOJİ onay (WhatsApp gerçeği). Mesaj trim sonrası
+  // SADECE onay-emojilerinden oluşuyorsa (👍✅👌🙏💯 + varyant selektörler,
+  // 1-3 tekrar) onay say. Metin+emoji karışımı ("👍 ama tarih yanlış") bu
+  // yoldan SAYILMAZ → aşağıdaki metin path'leri (negative guard) devreye girer.
+  // Red-emoji (👎❌🚫) onay DEĞİL (whitelist'te yok). Path 1 zaten CONFIRMING→
+  // COMPLETED transition sınırında → yanlış-pozitif riski çok düşük.
+  // Varyasyon selektörü (FE0F), ZWJ (200D), ten tonları (1F3FB-1F3FF), boşluk
+  // temizlenir → baz emoji setiyle karşılaştır.
+  const _emojiStripped = message.trim().replace(/[️‍\u{1F3FB}-\u{1F3FF}\s]/gu, "");
+  if (_emojiStripped.length > 0 && _emojiStripped.length <= 6 && /^(?:👍|✅|👌|🙏|💯|☑|✔)+$/u.test(_emojiStripped)) {
+    return true;
+  }
+
   // Negative patterns — bunlar varsa onay değil
   // 2026-06-21 Yan #8 fix: \b ASCII-only → \p{L}\p{N} lookaround.
   // JS \b non-ASCII bitişli kelimelerde (ş/ı) boundary tanımıyor →

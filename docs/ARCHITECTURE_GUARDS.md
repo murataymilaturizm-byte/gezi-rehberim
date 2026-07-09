@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (FAZ3-P2 — V10 müsaitlik-sorusu dalı :10e + V9 çift-eşleşme tarih netleştirme :10f; FAZ2-kapanış ve öncekiler 2026-07-03).
+> Son güncelleme: 2026-07-09 (FAZ3-P1 — zengin-mesaj filter-guard G16 [V5] + kalıp paketi V1/V6/V7/V12/V3-R6; FAZ3-P2 aynı gün).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -153,6 +153,11 @@ T14'ün 3 path'i:
 Bilinen açık: "tabi"/"tabiki" pattern'de yok → yanlış-negatif (post-launch
 kelime-sözlüğü genişletmesi).
 
+**V7 emoji onay (2026-07-09)**: detectConfirmation başında YALNIZ-EMOJİ yolu —
+mesaj (varyasyon-selektörü/ZWJ/ten-tonu/boşluk strip sonrası) SADECE 👍✅👌🙏💯☑✔
+ise onay. Metin+emoji ("👍 ama tarih yanlış") bu yoldan SAYILMAZ → metin
+path'leri (negative guard) devralır. Red-emoji (👎❌) whitelist'te yok.
+
 ### G2 — Path/section sıralaması (process-message)
 §2'deki uçtan uca liste bu haritanın kendisidir. Kritik kural:
 **akış-içi değiştirme ailesi (adım 13) FSM'den ÖNCE, R6 (adım 16) FSM'den
@@ -294,6 +299,21 @@ Kaynak: commit 9a9f687 (2026-07-01/02, 4 katman).
 | COLLECTING_INFO | ✅ **(FAZ2-kapanış eklendi)** | TR+EN — "bilgi soruları için, SADECE bu veriler" |
 | CONFIRMING | ✅ **(FAZ2-kapanış eklendi)** | TR+EN — "soru gelirse buradan cevapla, sonra onayı tekrar iste" |
 | COMPLETED | ✅ (PAKET 1 / V2) | TR+EN — after-sales + alan-bağımlı buluşma kuralı |
+
+### G16 — Zengin-mesaj filter-guard'ı (V5, 2026-07-09)
+| | |
+|---|---|
+| Dosya | `process-message.ts` — `_isExploreStage` sonrası `_richTourName`/`_richDate` + 4 filtre dalı koşuluna guard |
+| Kök | Canlı N-31: "biz 4 kişilik aileyiz 10 aralıkta pamukkaleye..." → "aile" B-TEMA'yı tetikledi, TÜM mesaj (tur+tarih+pax) yutuldu. Filtre dalları (X8/B1/B-DUR/B-TEMA) LİSTE üretir; spesifik tur/rezervasyon istendiğinde yanlış |
+| Tasarım | **Primary sinyal = tur-adı adayı** (destination/title anlamlı-kelime, normalize includes) → X8/B1/B-DUR/B-TEMA'yı atlar. **_richDate** → B-TEMA'yı EK atlar (tema en gevşek). **Pax TEK BAŞINA gate DEĞİL** — B1 "3000 bütçe 2 kişi" korunur |
+| Tema-daraltma | Çift-anlamlı kelimeler (aile/tarihi/family/historical) bağlam-kelimesi ister ("aile turu", "tarihi yerler"); tek-anlamlı (romantik/macera/doğa...) aynen. `_themeOnlyAmbiguous && !_themeContextRe` → B-TEMA yanmaz |
+| V6 B-DUR2 | Aynı guard'lı yeni gün-arama dalı: "N günlük" → tur_sure gün-sayısı eşleştirme (type-enum B-DUR'dan ayrı); eşleşme yoksa "N günlük yok + mevcut liste" (şablon-yankı YOK) |
+
+### CHANGE_KEYWORDS_RE tüketici listesi (7 — genişletirken HEPSİNİ test et)
+A1-log, A2 (pax), A3 (date/name/phone), X9-change (Blok 1 pending), Blok 5b
+(isim-pending), T23 (COMPLETED chitchat), G8. + 2026-07-09 V3-R6 tarih muafiyeti.
+V1 (2026-07-09): yapalım/yapsak/alalım/alsak/yapar mısın eklendi — "yap" tek
+başına lookaround'lu (yapıyorum eşleşmez).
 
 ### G12 — NLU katmanı (guard değil, etkileşim kaynağı)
 | Özellik | Kod gerçeği |
@@ -500,6 +520,11 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
 22. **V3b (panel backlog — G14 paketiyle birlikte)**: tours'a
     included_services/excluded_services kolonları + panel formu; sonra V3a
     yasağı veri-varsa-bas davranışına evrilir (FIX 1+2 deseni).
+25. **FAZ3-P1 ÇÖZÜLDÜ (2026-07-09)**: V5 (zengin-mesaj filter-guard, G16) +
+    V1 (CHANGE_KEYWORDS çekim) + V6 (B-DUR2 gün-arama) + V7 (emoji onay) +
+    V12 (tur-change kip kardeşleri) + V3-R6 (tarih muafiyeti). **V5 kalıntı:
+    "çocuklar 8 ve 12 yaşında" → paxChild=2 türetimi bu paket DIŞI** (çocuk-yaş
+    → child sayısı; price_child etkisi) — ayrı küçük iş.
 24. **Ölü-flag dersi kapandı (2026-07-09, V9)**: `needsMonthClarification`
     simple-extractor'da üretiliyordu ama TÜKETİCİSİ YOKTU → sessiz ilk-seçim.
     Ders: flag üretmek ≠ davranış; her flag'in tüketici dalı olmalı. V9 ile

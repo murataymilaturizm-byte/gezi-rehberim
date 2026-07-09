@@ -9,5 +9,9 @@
 // Pattern disiplini (Yan #8 / K1 dersi): ASCII \b DEĞİL, \p{L}\p{N}
 // lookaround + /iu flag — Türkçe non-ASCII bitişli kelimelerde ("yanlış",
 // "aslında") \b boundary tanımaz, yanlış-pozitif/negatif üretir.
+// 2026-07-09 V1: "yapalım/yapsak/alalım/alsak/yapar mısın" çekimleri eklendi
+// (canlı: CONFIRMING "tarihi 20 aralık yapalım" → "yap" lookahead'e takılıp
+// change sayılmıyordu → A3-date girmiyordu → "Tam anlayamadım"). "yap" tek
+// başına lookaround'lu kaldı; çekimler açık alternation.
 export const CHANGE_KEYWORDS_RE =
-  /(?<![\p{L}\p{N}])(aslında|yerine|olsun|değiştir|değiştirelim|yap|düzelt|güncelle|şöyle\s+olsun|yanlış\s+oldu|eski\s+değil|actually|instead|change(?:\s+it)?(?:\s+to)?|make\s+it|update|correct|let['’]s\s+say|eigentlich|stattdessen|änder[en]?|korrigier(?:en|e)|lass\s+es|en\s+fait|plut[ôo]t|changer|modifier|corriger|mettons|disons|en\s+realidad|mejor|cambia(?:r)?|modificar|corregir|que\s+sea|вообще-то|вместо|измен(?:ить|и)|исправ(?:ить|ь)|пусть\s+будет|في\s+الواقع|بدلاً|غيّر|عدّل|صحّح|يكون)(?![\p{L}\p{N}])/iu;
+  /(?<![\p{L}\p{N}])(aslında|yerine|olsun|değiştir|değiştirelim|yap|yapal[ıi]m|yapsak|yapar\s+m[ıi]s[ıi]n|alal[ıi]m|alsak|düzelt|güncelle|şöyle\s+olsun|yanlış\s+oldu|eski\s+değil|actually|instead|change(?:\s+it)?(?:\s+to)?|make\s+it|update|correct|let['’]s\s+say|eigentlich|stattdessen|änder[en]?|korrigier(?:en|e)|lass\s+es|en\s+fait|plut[ôo]t|changer|modifier|corriger|mettons|disons|en\s+realidad|mejor|cambia(?:r)?|modificar|corregir|que\s+sea|вообще-то|вместо|измен(?:ить|и)|исправ(?:ить|ь)|пусть\s+будет|في\s+الواقع|بدلاً|غيّر|عدّل|صحّح|يكون)(?![\p{L}\p{N}])/iu;
