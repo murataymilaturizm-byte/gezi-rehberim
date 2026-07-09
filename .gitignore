@@ -29,3 +29,6 @@ scripts/diag_*.ts
 # Supabase CLI iç dosyaları (sürüm damgası — her deploy'da değişir, gürültü)
 supabase/.temp/
 docs/nlu-ab-results.json
+
+# Env (publishable degerler olsa da prensip: env dosyalari commit edilmez)
+.env

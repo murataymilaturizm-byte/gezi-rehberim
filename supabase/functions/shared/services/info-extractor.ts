@@ -68,7 +68,9 @@ const TEXT_MONTH_DAY_REGEX = new RegExp(
 // 2026-07-09 Faz 5 B: ES bağlaç "de/del" eklendi — "10 de diciembre" day-month
 // arasındaki "de" yüzünden TEXT_MONTH_REGEX'e uymuyordu (denetim kanıtı).
 // \b(de)\b yalnız AYRIK "de"yi siler — "dezember/december" İÇİNDEKİ de'ye dokunmaz.
-const _DATE_FILLER_REGEX = /\b(olur|olsun|tamam|uygun|işte|şu|bu|tarih|gün|lütfen|please|fine|good|ok|okay|de|del)\b/gi;
+// 2026-07-09 FABLE-denetim: \b → lookaround ("şu" ş-başlangıç \b'de hiç
+// eşleşmiyordu — Yan #8 süpürmesi). /giu.
+const _DATE_FILLER_REGEX = /(?<![\p{L}\p{N}])(olur|olsun|tamam|uygun|işte|şu|bu|tarih|gün|lütfen|please|fine|good|ok|okay|de|del)(?![\p{L}\p{N}])/giu;
 export function normalizeDateString(dateStr: string): string {
   if (!dateStr) return dateStr;
   // Önişlemci: dolgu sözcüklerini temizle, çoklu boşluğu tek boşluğa indir
@@ -510,17 +512,10 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     }
   }
 
-  // === Blok 7: Tarih "date_N" prefix → indekse çevir ===
-  if (extractedInfo.selectedDate?.startsWith("date_") && context.currentTour) {
-    const tour = findTourById(context.currentTour.id, tours);
-    if (tour?.dates) {
-      const idx = parseInt(extractedInfo.selectedDate.split("_")[1]);
-      if (idx >= 0 && idx < tour.dates.length) {
-        extractedInfo.selectedDate = tour.dates[idx].departure_date;
-        extractedInfo.dateId = tour.dates[idx].id;
-      }
-    }
-  }
+  // 2026-07-09 FABLE-denetim: eski "Blok 7: date_N prefix çözümü" KALDIRILDI —
+  // repo genelinde "date_N" ÜRETEN tek satır yok (üreticisiz tüketici; eski NLU
+  // format kalıntısı). index_/day_ prefix'leri ayrı ve canlı (Blok 9/9c + aşağıda
+  // kalıntı-temizlik).
 
   // === Blok 8: Numeric tarih girişi ("1", "2", "3") ===
   // 2026-06-22 Sorun H β fix: kontenjan check, dolu ise dateRejectedFull flag set
@@ -698,6 +693,18 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
         console.log(`[info-extractor] Blok 9d: göreli tarih ${_relIso} tur tarihlerinde yok → :11 liste`);
       }
     }
+  }
+
+  // === Blok 9e: day_/index_ KALINTI-TEMİZLİK (FABLE-denetim, 2026-07-09) ===
+  // day_ (simple, tourDates yokken) ve index_ (simple "ikinci tarih", şartsız)
+  // prefix'lerinin tüketicileri (Blok 9/9c) AKTİF TURA kapılı — tur yokken
+  // (BROWSING, tursuz "ikinci tarih") ham "index_1"/"day_20" selectedDate'te
+  // KALIYORDU → state-machine selectedDate'i transition-sinyali sayar + şablon
+  // sızıntı riski (relative_ vakasının sınıf-kardeşi). Çözülemeyen prefix ASLA
+  // state'e sızmaz — sil, akış normal yoluna (liste/LLM) düşer.
+  if (typeof extractedInfo.selectedDate === "string" && /^(?:day|index)_/.test(extractedInfo.selectedDate)) {
+    console.log(`[info-extractor] Blok 9e: çözülemeyen prefix "${extractedInfo.selectedDate}" temizlendi (tur bağlamı yok)`);
+    delete extractedInfo.selectedDate;
   }
 
   // === Blok 9b: X9-change pending pax kararı (2026-07-03) ===

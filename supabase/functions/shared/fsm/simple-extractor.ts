@@ -104,8 +104,12 @@ const NUMBER_WORDS: Record<string, Record<string, number>> = {
 // mesajı pax adımına yutulmuş gibi state'e yazılıyordu (totalPax: 20 canlı bug).
 // Hedefli fix: ay ismi içeren mesajlarda sözcükle yazılan pax ÇIKARMA.
 // Tarih çıkarımı etkilenmez (TARİH için ayrı pattern'ler kullanılır).
-const TR_MONTHS_GUARD =
-  /\b(ocak|şubat|mart|nisan|may[ıi]s|haziran|temmuz|ağustos|eyl[üu]l|ekim|kas[ıi]m|aral[ıi]k)\b/i;
+// 2026-07-09 FABLE-denetim: (1) KOPYA-LİSTE → MONTH_ALTERNATION tek-kaynak
+// (C3 guard'ı artık 7-dil: "twenty december"/"zwanzig dezember" de pax sızdırmaz);
+// (2) \b + "şubat" (ş-başlangıç) HİÇ eşleşmiyordu → "yirmi şubat" pax=20 sızıntısı
+// AÇIKTI (Yan #8) → lookaround.
+const TR_MONTHS_GUARD = new RegExp(
+  `(?<![\\p{L}\\p{N}])(?:${MONTH_ALTERNATION})(?![\\p{L}\\p{N}])`, "iu");
 
 function extractPaxFromWords(text: string, language: string, collectionStep?: string): number | null {
   const lower = text.toLowerCase();
@@ -311,10 +315,11 @@ export function extractNameAndPhone(
           // Tek eşleşme → direkt seç
           result.dateId = matchedDates[0].id;
           result.selectedDate = matchedDates[0].departure_date;
-        } else if (matchedDates.length > 1) {
-          // Birden fazla eşleşme → netleştirme gerekli, hiçbir şey seçme
-          result.needsMonthClarification = true;
         }
+        // 2026-07-09 FABLE-denetim: needsMonthClarification KALDIRILDI —
+        // üretiliyordu ama repo genelinde TÜKETİCİSİ YOKTU (ölü API; işlevi
+        // Blok 8.5 + dateAmbiguousDay/:10f devralmıştı). Çoklu-eşleşmede
+        // hiçbir şey seçmeme davranışı AYNEN (V9 sessiz-ilk-seçim-yok).
         // matchedDates.length === 0 → tarih bulunamadı, result boş kalır
       } else {
         // tourDates yoksa: özel format döndür, webhook'ta eşleştirilecek

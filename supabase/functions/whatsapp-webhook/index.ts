@@ -511,7 +511,7 @@ serve(async (req) => {
       if (profile?.bot_paused) {
         const pausedUntil = profile.bot_paused_until ? new Date(profile.bot_paused_until) : null;
         if (!pausedUntil || pausedUntil > new Date()) {
-          console.log(`[whatsapp-webhook] Bot paused for ${userPhone} — saving message, skipping AI`);
+          console.log(`[whatsapp-webhook] Bot paused for ${maskPhone(userPhone)} — saving message, skipping AI`);
           await supabase.from("whatsapp_conversations").insert({
             phone: userPhone, role: "user", content: rawMessage, agency_id: agency.id,
           });

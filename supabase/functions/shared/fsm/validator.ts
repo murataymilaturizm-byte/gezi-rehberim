@@ -43,7 +43,9 @@ export function detectInjection(input: string): boolean {
 
   // TR — talimat değiştirme + indirim zorlaması
   const trPatterns = [
-    /\b(önceki|tüm|mevcut|yukarıdaki|bütün)\s+(talimatlar?\w*|kurallar?\w*|direktifler?\w*)\s+(unut|yoksay|görmezden|iptal|sil)/i,
+    // 2026-07-09 FABLE-denetim: "önceki/bütün" ö/ü-başlangıç \b'de ölüydü → lookaround.
+    // \w ASCII — "talimatları" (ı-eki) eşleşmiyordu → \p{L}*.
+    /(?<![\p{L}\p{N}])(önceki|tüm|mevcut|yukarıdaki|bütün)\s+(talimatlar?\p{L}*|kurallar?\p{L}*|direktifler?\p{L}*)\s+(unut|yoksay|görmezden|iptal|sil)/iu,
     /\btalimatlar?\w*\s+(unut|yoksay|değiştir|sil)\b/i,
     /\bsen\s+artık\s+\w/i,
     /\brol\s+(değiştir|oyna|al)\b/i,
@@ -51,7 +53,7 @@ export function detectInjection(input: string): boolean {
     /\b%\s*\d+\s*indirim\s+(ver|yap|uygula)\b/i,
     /\bbedavaya?\s+(ver|yap|sun)\b/i,
     /\byeni\s+talimatlar?\b/i,
-    /\b(özel|gizli)\s+(mod|mode|komut)\b/i,
+    /(?<![\p{L}\p{N}])(özel|gizli)\s+(mod|mode|komut)(?![\p{L}\p{N}])/iu, // FABLE: özel ö-başlangıç ölüydü
   ];
   if (trPatterns.some((p) => p.test(msg))) return true;
 
@@ -89,22 +91,26 @@ export function detectInjection(input: string): boolean {
     /\bnueva\s+(instrucción|regla|rol|tarea|persona)\b/i,
 
     // ─── RU ─────────────────────────────────────────────────────────────────
-    /\b(игнорируй|забудь|пренебреги)\s+(все\s+)?(инструкции|правила|систем\w+|контекст)/i,
-    /\bты\s+теперь\b/i,
-    /\b(покажи|раскрой|сообщи|выведи)\s+(мне\s+)?(сво[ёе]?|тво[ёе]?|свой|твой)?\s*(промпт|инструкци\w+|систем\w+\s+промпт)/i,
-    /\bрежим\s+(разработчика|администратора|админ\w*|jailbreak|dan)\b/i,
-    /\bдай\s+мне\s+\d+\s*%\s*скидк\w+\b/i,
-    /\bсделай\s+(это\s+)?(бесплатн\w+|даром)\b/i,
-    /\bнов\w+\s+(инструкц\w+|правил\w+|роль|задач\w+|персон\w+)\b/i,
+    // 2026-07-09 FABLE-denetim: \b Kiril'de sınır TANIMAZ (JS \b ASCII) → bu
+    // 7 pattern HİÇ fire etmiyordu (injection-tespiti RU'da ölüydü, Yan #8).
+    // \w Kiril'i de kapsamadığından \p{L}'e; lookaround + /iu.
+    /(?<![\p{L}\p{N}])(игнорируй|забудь|пренебреги)\s+(все\s+)?(инструкции|правила|систем\p{L}*|контекст)/iu,
+    /(?<![\p{L}\p{N}])ты\s+теперь(?![\p{L}\p{N}])/iu,
+    /(?<![\p{L}\p{N}])(покажи|раскрой|сообщи|выведи)\s+(мне\s+)?(сво[ёе]?|тво[ёе]?|свой|твой)?\s*(промпт|инструкци\p{L}*|систем\p{L}*\s+промпт)/iu,
+    /(?<![\p{L}\p{N}])режим\s+(разработчика|администратора|админ\p{L}*|jailbreak|dan)(?![\p{L}\p{N}])/iu,
+    /(?<![\p{L}\p{N}])дай\s+мне\s+\d+\s*%\s*скидк\p{L}*(?![\p{L}\p{N}])/iu,
+    /(?<![\p{L}\p{N}])сделай\s+(это\s+)?(бесплатн\p{L}*|даром)(?![\p{L}\p{N}])/iu,
+    /(?<![\p{L}\p{N}])нов\p{L}*\s+(инструкц\p{L}*|правил\p{L}*|роль|задач\p{L}*|персон\p{L}*)(?![\p{L}\p{N}])/iu,
 
     // ─── AR ─────────────────────────────────────────────────────────────────
-    /\b(تجاهل|انسَ|انسى|اهمل)\s+(جميع\s+|كل\s+)?(التعليمات|القواعد|النظام|السياق)/i,
-    /\bأنت\s+الآن\b/i,
-    /\b(أرني|أظهر|اكشف|قل\s+لي)\s+(لي\s+)?(تعليماتك|البرومبت|النظام\s+الخاص|توجيهاتك)/i,
-    /\bوضع\s+(المطور|المسؤول|المدير|jailbreak|dan)\b/i,
-    /\bأعطني\s+خصم\s+\d+\s*%/i,
-    /\b(اجعله|اجعلها|قدمه)\s+مجاناً?\b/i,
-    /\bتعليمات\s+(جديدة|أخرى)\b/i,
+    // 2026-07-09 FABLE-denetim: aynı Yan #8 — Arapça'da \b/\w çalışmaz, 7 pattern ölüydü.
+    /(?<![\p{L}\p{N}])(تجاهل|انسَ|انسى|اهمل)\s+(جميع\s+|كل\s+)?(التعليمات|القواعد|النظام|السياق)/iu,
+    /(?<![\p{L}\p{N}])أنت\s+الآن(?![\p{L}\p{N}])/iu,
+    /(?<![\p{L}\p{N}])(أرني|أظهر|اكشف|قل\s+لي)\s+(لي\s+)?(تعليماتك|البرومبت|النظام\s+الخاص|توجيهاتك)/iu,
+    /(?<![\p{L}\p{N}])وضع\s+(المطور|المسؤول|المدير|jailbreak|dan)(?![\p{L}\p{N}])/iu,
+    /(?<![\p{L}\p{N}])أعطني\s+خصم\s+\d+\s*%/iu,
+    /(?<![\p{L}\p{N}])(اجعله|اجعلها|قدمه)\s+مجاناً?(?![\p{L}\p{N}])/iu,
+    /(?<![\p{L}\p{N}])تعليمات\s+(جديدة|أخرى)(?![\p{L}\p{N}])/iu,
   ];
   if (multilangPatterns.some((p) => p.test(msg))) return true;
 

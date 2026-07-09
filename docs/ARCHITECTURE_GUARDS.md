@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (Faz 5 DİL-PARİTE BÜTÜNCÜL — A: kur tek-zincir [convertPrice kaldırıldı, TL/etiket asla çapraz] + AR translit normalize+alias + confirmation-words.ts TEK KAYNAK [EN confirmed + 7-dil doğal onaylar] + BugA-ack 7-dil. B: AR-rakam ٠-٩ giriş-normalizasyonu + ES "de" tarih-filler + 4 kalan tr+en dict → 7-dil + alias typo'ları. Envanter §6f; korpus 128 vaka + confirmation sınıfı; miss=0.).
+> Son güncelleme: 2026-07-09 (FABLE TOPLU-DENETİM — Yan #8 TAM süpürme [injection/sahte-ack RU+AR 26 ölü pattern canlandı, "yirmi şubat" pax-sızıntısı kapandı, TR_MONTHS_GUARD→7-dil tek-kaynak], R6 öneri-onayı muafiyeti, _bookingActionRe malformed-fix, day_/index_ süpürücü [Blok 9e], CHANGE TR-ASCII, ölü-uç temizliği [needsMonthClarification/date_N], 9 PII-log maskelendi, .env untracked. 33/33 + 128-korpus miss=0. Detay §Açık-Sorular-31.).
+> Önceki: 2026-07-09 (Faz 5 DİL-PARİTE BÜTÜNCÜL — A: kur tek-zincir [convertPrice kaldırıldı, TL/etiket asla çapraz] + AR translit normalize+alias + confirmation-words.ts TEK KAYNAK [EN confirmed + 7-dil doğal onaylar] + BugA-ack 7-dil. B: AR-rakam ٠-٩ giriş-normalizasyonu + ES "de" tarih-filler + 4 kalan tr+en dict → 7-dil + alias typo'ları. Envanter §6f; korpus 128 vaka + confirmation sınıfı; miss=0.).
 > Önceki: 2026-07-09 (Faz 5 Vaka 2 — people-words.ts tek-kaynak; ppl/человек/أشخاص/çocuk X9-kaybı kapandı. 21/21.).
 > Önceki: 2026-07-09 (FAZ 4 P3 KAPANIŞ — quota-labels/cancellation-lookaround/agency-etiket/detectLanguage-ü-seed/ascii-dil-geçiş. 29/29 + snapshot 75/75. FAZ 4 P0-P3 7-dil TAMAM.).
 > Önceki: 2026-07-09 (FAZ 4 P1 — kritik sinyaller 7-dil: müsaitlik/TOUR_CHANGE/X8/ay-niteleyici-AR/tema-ctx/relative. Baseline 21 gap → fire, 53/53.).
@@ -596,6 +597,37 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
     hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
     P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
+31. **FABLE TOPLU-DENETİM (2026-07-09)** — commit-review + sistematik taramalar.
+    **DAVRANIŞ-RİSKİ fix'lendi (S):**
+    (a) **Yan #8 TAM SÜPÜRME** — `\b` Kiril/Arapça/ö-ş-başlangıçta sınır tanımaz;
+    ÖLÜ bulunan ve lookaround'a çevrilenler: validator injection RU(7)+AR(7)+TR
+    önceki/özel; response-validator sahte-ack RU(6)+AR(6); state-machine T17
+    ödeme-bildirimi (ödedim/оплатил/دفعت) + CONFIRMING negativeGuard; info-extractor
+    _DATE_FILLER (şu); TR_MONTHS_GUARD (**"yirmi şubat" pax=20 sızıntısı AÇIKTI**
+    → ayrıca MONTH_ALTERNATION tek-kaynağa: guard artık 7-dil, "twenty december"
+    de korunur); TR injection `\w`→`\p{L}` ("talimatları" ı-eki).
+    Çalışan EN/DE/FR/ES `\b`'leri BİLİNÇLİ dokunulmadı (kazanımsız risk).
+    (b) **R6 tarih-öneri-onayı muafiyeti** — :10g telefon-adımında öneri +
+    kullanıcı "evet" → R6 (@~2218) :10d-2'den (@~2528) ÖNCE yutuyordu →
+    `proposedDateId && detectConfirmation` muafiyeti.
+    (c) **_bookingActionRe MALFORMED** — `)|değiştir|change|...` sınırsız
+    alternatifler ("exchange" FP!) + отмен/إلغاء ölü → tek grup + lookbehind.
+    (d) **day_/index_ kalıntı-sızıntı (Blok 9e)** — tüketiciler tura kapılıyken
+    tursuz üretim ham prefix'i state'e bırakıyordu (relative_ sınıf-kardeşi) → süpürücü.
+    (e) **CHANGE_KEYWORDS TR ASCII-süperset** (aslinda/degistir/duzelt/guncelle...).
+    **ÖLÜ-UÇ temizliği:** needsMonthClarification üretimi kaldırıldı (tüketicisiz
+    API); eski Blok 7 date_N çözücüsü kaldırıldı (üreticisiz tüketici).
+    **HİJYEN:** 9 maskesiz PII-log noktası maskelendi (isim→ilkharf***, telefon→
+    maskPhone, mesaj-slice→len); `.env` untrack+gitignore (içerik publishable-sınıf,
+    rotasyon gerekmez). **NLU_AB_TOKEN debug yolu (Murat kararı bekliyor):**
+    duruş iyi (token-eşleşmezse sessiz-kapalı, log yok, cross-user veri dönmez)
+    AMA rate-limit'ten ÖNCE çalışır (token sızarsa maliyet-amplifikasyonu) +
+    `===` timing-teorik. Launch önerisi: (1) `secrets unset NLU_AB_TOKEN`+redeploy
+    (hızlı, geri-açılabilir) veya (2) kod-kaldırma (en güçlü; altyapı 1354a03'te,
+    revert edilebilir). **KOZMETİK (rapor, kaldırılmadı):** salt-yazım context
+    alanları proposedDate/sessionStarted/detectedLanguage/viewedTours; simple.dateId
+    Blok 3'te düşüyor (Blok 9 yeniden türetiyor — gereksiz hesap, M-küçük).
+    Test: 33/33 davranışsal + 128-korpus miss=0.
 28. **FAZ3-mikro ÇÖZÜLDÜ (2026-07-09, İş2 kalıntısı)**: pax adımında "yarın" →
     '"2026-12-21" müsait değil' (ham ISO + yanlış çapa). FIX1 (görüntü formatı):
     :11 preamble ISO değeri DD.MM.YYYY+gün'e çevrilir (format katmanı, sanitize'dan

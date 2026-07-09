@@ -421,7 +421,10 @@ function isAfterSalesMessage(userMessage: string, detectedIntent: string): boole
 
   // ÖDEME BİLDİRİMİ — 7 dil
   const paymentPatterns =
-    /\b(ödedim|ödeme\s+yaptım|havale\s+yaptım|para\s+gönderdim|eft\s+yaptım|banka\s+transfer|dekont|makbuz|paid\b|i\s+paid|payment\s+sent|transferred|receipt|bank\s+transfer|bezahlt|habe\s+bezahlt|überwiesen|beleg|оплатил|оплатила|перевёл|перевела|чек|квитанцию|دفعت|أرسلت\s+الدفع|payé|j['']ai\s+payé|reçu|pagué|hice\s+el\s+pago|recibo)\b/i;
+    // 2026-07-09 FABLE-denetim: \b → lookaround. "ödedim" (ö-başlangıç),
+    // "оплатил" (Kiril), "دفعت" (Arapça) \b'de HİÇ eşleşmiyordu → T17 ödeme-
+    // bildirimi bu formlarda ölüydü (Yan #8).
+    /(?<![\p{L}\p{N}])(ödedim|ödeme\s+yaptım|havale\s+yaptım|para\s+gönderdim|eft\s+yaptım|banka\s+transfer|dekont|makbuz|paid|i\s+paid|payment\s+sent|transferred|receipt|bank\s+transfer|bezahlt|habe\s+bezahlt|überwiesen|beleg|оплатил|оплатила|перевёл|перевела|чек|квитанцию|دفعت|أرسلت\s+الدفع|payé|j['']ai\s+payé|reçu|pagué|hice\s+el\s+pago|recibo)(?![\p{L}\p{N}])/iu;
   if (paymentPatterns.test(msg)) return true;
 
   // REZERVASYON SORGU / DEĞİŞİKLİK / İPTAL — Türkçe çekim ekleri dahil
@@ -845,7 +848,8 @@ const transitions: StateTransition[] = [
 
       // 1. NEGATIVE GUARD: soru/teyit kalıpları değişiklik talebi DEĞİL
       // Türkçe "değil mi?" / "öyle değil mi" / "doğru değil mi" + diğer dillerde eşdeğerleri
-      const negativeGuard = /\b(değil\s+mi|öyle\s+değil|doğru\s+değil|n['']?est[\s-]?ce\s+pas|isn['']?t\s+(it|that)|right\?|правильно\?|صحيح\?)/i;
+      // 2026-07-09 FABLE-denetim: \b→lookaround ("öyle" ö-başlangıç + RU/AR ölüydü).
+      const negativeGuard = /(?<![\p{L}\p{N}])(değil\s+mi|öyle\s+değil|doğru\s+değil|n['']?est[\s-]?ce\s+pas|isn['']?t\s+(it|that)|right\?|правильно\?|صحيح\?)/iu;
       if (negativeGuard.test(msg)) return false;
 
       // 2. GÜÇLÜ DEĞİŞİKLİK FİİLLERİ — tek başına yeterli (açık niyet)

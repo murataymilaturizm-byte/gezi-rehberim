@@ -84,7 +84,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // K4: Prompt injection şüphesi tespiti — mesaj engellenmez, sadece flag set edilir
   const _isSuspectedInjection = detectInjection(rawMessage);
   if (_isSuspectedInjection) {
-    console.warn("[process-message] K4: Suspected prompt injection detected:", rawMessage.slice(0, 100));
+    console.warn("[process-message] K4: Suspected prompt injection detected:", rawMessage.slice(0, 30) + "… (len=" + rawMessage.length + ")");
   }
 
   // _save: saveTransaction varsa atomik (user+assistant+ctx), yoksa sadece assistant+ctx
@@ -341,7 +341,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _leak = nluResult.updates.fullName;
     if (isNluFullNameTourLeak(_leak)) {
       console.log(
-        `[process-message] BLOCKED NLU fullName tour-leak: "${_leak}"`,
+        `[process-message] BLOCKED NLU fullName tour-leak: "${String(_leak).charAt(0)}***" (len=${String(_leak).length})`,
       );
       delete nluResult.updates.fullName;
       if (nluResult.entities) {
@@ -353,7 +353,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       // edge'leri ("Ahmet Değil") + sanity. Murat onayı (2026-06-21):
       // "Değil" diye soyad yok → 2-word edge kasıtlı reddedilir.
       console.log(
-        `[process-message] BLOCKED NLU fullName negation-leak: "${_leak}"`,
+        `[process-message] BLOCKED NLU fullName negation-leak: "${String(_leak).charAt(0)}***" (len=${String(_leak).length})`,
       );
       delete nluResult.updates.fullName;
       if (nluResult.entities) {
@@ -1909,7 +1909,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       };
       const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
       const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
-      console.log(`[A] fullName açık değişiklik uygulandı: ${_oldName}→${_nameExt}, stage=${nextStage}, step=${nextStep}`);
+      console.log(`[A] fullName açık değişiklik uygulandı: ${String(_oldName || "").charAt(0)}***→${String(_nameExt || "").charAt(0)}***, stage=${nextStage}, step=${nextStep}`);
       await _save(reply, newCtx);
       await adapter.sendResponse(reply);
       return { success: true, response: reply, newContext: newCtx };
@@ -1947,7 +1947,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         ar: `هل يمكنني الحصول على رقم هاتفك بالكامل؟ 📱\n\n(مثال: +90 532 123 45 67)`,
       };
       const _missReply = _missingMsgs[_langA3] || _missingMsgs.tr;
-      console.log(`[A] phone değişiklik REDDEDİLDİ (niyet var, geçerli değer yok): ${message.slice(0, 60)}`);
+      console.log(`[A] phone değişiklik REDDEDİLDİ (niyet var, geçerli değer yok): len=${message.length}`);
       await _save(_missReply, context);
       await adapter.sendResponse(_missReply);
       return { success: true, response: _missReply, newContext: context };
@@ -1966,7 +1966,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           es: `"${_phoneExt}" no es un número válido. 📱\n\nIngrese su número completo (ej: +90 532 123 45 67)`,
         };
         const _invReply = _invalidMsgs[_langA3] || _invalidMsgs.tr;
-        console.log(`[A] phone değişiklik REDDEDİLDİ (isValidPhone=false): ${_phoneExt}`);
+        console.log(`[A] phone değişiklik REDDEDİLDİ (isValidPhone=false): ${maskPhone(String(_phoneExt))}`);
         await _save(_invReply, context);
         await adapter.sendResponse(_invReply);
         return { success: true, response: _invReply, newContext: context };
@@ -1986,7 +1986,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       };
       const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
       const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
-      console.log(`[A] phone açık değişiklik uygulandı: ${_oldPhone}→${_phoneExt}, stage=${nextStage}, step=${nextStep}`);
+      console.log(`[A] phone açık değişiklik uygulandı: ${maskPhone(String(_oldPhone))}→${maskPhone(String(_phoneExt))}, stage=${nextStage}, step=${nextStep}`);
       await _save(reply, newCtx);
       await adapter.sendResponse(reply);
       return { success: true, response: reply, newContext: newCtx };
@@ -2021,7 +2021,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       };
       const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
       const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
-      console.log(`[A] phone PROMOSYON (kuru geçerli telefon, kelime yok) uygulandı: ${_oldPhone}→${_phoneExt}, stage=${nextStage}, step=${nextStep}`);
+      console.log(`[A] phone PROMOSYON (kuru geçerli telefon, kelime yok) uygulandı: ${maskPhone(String(_oldPhone))}→${maskPhone(String(_phoneExt))}, stage=${nextStage}, step=${nextStep}`);
       await _save(reply, newCtx);
       await adapter.sendResponse(reply);
       return { success: true, response: reply, newContext: newCtx };
@@ -2257,7 +2257,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // 2026-07-09 V3-anafora muafiyeti: telefon adımında bare "öbür tarih" →
     // kullanıcı TELEFON değil TARİH konuşuyor → :10g anafora önerisine bırak.
     // (change-keyword'lu "aslında öbür tarih olsun" zaten R6-date muafiyetiyle geçer.)
-    !_v3AnaforaRe.test(message)
+    !_v3AnaforaRe.test(message) &&
+    // 2026-07-09 FABLE-denetim: TARİH-ÖNERİ-ONAYI muafiyeti. :10g telefon
+    // adımında öneri yapmışsa (proposedDateId dolu) kullanıcının "evet"i
+    // telefon DEĞİL öneri-cevabıdır → :10d-2 kapatsın; R6 yutmasın.
+    // (R6 @2218, :10d-2 @~2528 — sıra nedeniyle muafiyet ŞART.)
+    !((context as any).proposedDateId && detectConfirmation(message, newContext.language))
   ) {
     // 2026-07-03 İş D (K-19): cümle-yankı sanitize — '"numaram yok mail atsam"
     // geçerli bir telefon değil' saçmalığı. isEchoSafe FALSE ise tırnaklı form
@@ -3816,7 +3821,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     fsmIntent !== "general_question"   // bilgi sorgulama (cancellation_policy/faq/...) — LLM cevaplasın
   ) {
     const _msgLower = message.toLowerCase();
-    const _bookingActionRe = /\b(iptal|cancel|annul|annuler|cancelar|stornier|отмен|إلغاء|إلغ)|değiştir|change|modif|cambiar|ändern|изменить|تعديل|تغيير\b/i;
+    // 2026-07-09 FABLE-denetim: eski regex MALFORMED'dı — ")|değiştir|change|..."
+    // alternatifleri SINIRSIZDI ("exchange" içindeki "change" FP!) + \b Kiril/
+    // Arapça'da отмен/إلغاء ölüydü. Tek grup + lookbehind (gövde-stem'ler açık:
+    // değiştir*/change*/отмен* çekimleri bilinçli serbest — lookahead YOK).
+    const _bookingActionRe = /(?<![\p{L}\p{N}])(iptal|cancel|annul|annuler|cancelar|stornier|отмен|إلغاء|إلغ|değiştir|change|modif|cambiar|ändern|изменить|تعديل|تغيير)/iu;
     const _isCancelOrChange = _bookingActionRe.test(_msgLower);
     if (_isCancelOrChange) {
       const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
