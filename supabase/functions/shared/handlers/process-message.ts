@@ -2840,6 +2840,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         // (H-3/K-22: '"günlük"/"yarın" tarihi müsait değil' cümle-yankıları da
         // artık jenerik forma düşer — tek-kaynak echo-sanitize.ts).
         const _isPlaceholderDate = !isEchoSafe(_invalidDateForPreamble);
+        // 2026-07-09 FAZ3-mikro FIX 1: değer ISO (YYYY-MM-DD) ise GÖRÜNTÜ formatına
+        // çevir (DD.MM.YYYY + gün adı — getWeekdayName TEK KAYNAK). Ham ISO tırnaklı
+        // sızıntısını (canlı: '"2026-12-21" tarihi ... müsait değil') engeller.
+        // Sorumluluk ayrımı: sanitize KARAR verir (isEchoSafe), format GÖRÜNTÜLER.
+        let _dispInvalid = _invalidDateForPreamble;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(_invalidDateForPreamble)) {
+          const _wd = getWeekdayName(_invalidDateForPreamble, newContext.language);
+          _dispInvalid = formatDateForLanguage(_invalidDateForPreamble, newContext.language) + (_wd ? ` (${_wd})` : "");
+        }
         const _preambles: Record<string, string> = _isPlaceholderDate
           ? {
               tr: `Belirttiğiniz tarih için müsaitlik bulamadım. 😔\n\n`,
@@ -2851,13 +2860,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
               es: `No encontré disponibilidad para esa fecha. 😔\n\n`,
             }
           : {
-              tr: `"${_invalidDateForPreamble}" tarihi bu tur için müsait değil. 😔\n\n`,
-              en: `Sorry, "${_invalidDateForPreamble}" is not available for this tour. 😔\n\n`,
-              de: `Leider ist "${_invalidDateForPreamble}" für diese Tour nicht verfügbar. 😔\n\n`,
-              ru: `К сожалению, "${_invalidDateForPreamble}" недоступно для этого тура. 😔\n\n`,
-              ar: `للأسف، "${_invalidDateForPreamble}" غير متاح لهذه الجولة. 😔\n\n`,
-              fr: `Désolé, "${_invalidDateForPreamble}" n'est pas disponible pour ce circuit. 😔\n\n`,
-              es: `Lo siento, "${_invalidDateForPreamble}" no está disponible para este tour. 😔\n\n`,
+              tr: `"${_dispInvalid}" tarihi bu tur için müsait değil. 😔\n\n`,
+              en: `Sorry, "${_dispInvalid}" is not available for this tour. 😔\n\n`,
+              de: `Leider ist "${_dispInvalid}" für diese Tour nicht verfügbar. 😔\n\n`,
+              ru: `К сожалению, "${_dispInvalid}" недоступно для этого тура. 😔\n\n`,
+              ar: `للأسف، "${_dispInvalid}" غير متاح لهذه الجولة. 😔\n\n`,
+              fr: `Désolé, "${_dispInvalid}" n'est pas disponible pour ce circuit. 😔\n\n`,
+              es: `Lo siento, "${_dispInvalid}" no está disponible para este tour. 😔\n\n`,
             };
         dateReply = (_preambles[newContext.language] || _preambles.tr) + dateReply;
       }

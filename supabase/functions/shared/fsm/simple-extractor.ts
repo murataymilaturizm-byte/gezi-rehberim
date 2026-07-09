@@ -7,32 +7,38 @@ import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-name
 function extractRelativeDate(text: string, language: string): Date | null {
   const lower = text.toLowerCase();
 
+  // 2026-07-09 FAZ3-mikro (Yan #8 sınıfı KÖK): \b → \p{L}\p{N} lookaround.
+  // Non-ASCII ile başlayan/biten göreli kelimeler ("öbür gün", "übermorgen",
+  // "завтра", "غدا") eski ASCII-\b ile HİÇ eşleşmiyordu (gün-adları aşağıda
+  // zaten bu konvansiyona çevrilmişti — tutarlılık). hasRelativeDateWord /
+  // Blok 9d zincirinin 7-dil kapsaması bu düzeltmeye bağlı.
+  const _rw = (body: string) => new RegExp(`(?<![\\p{L}\\p{N}])(?:${body})(?![\\p{L}\\p{N}])`, "iu");
   const tomorrowPatterns: Record<string, RegExp> = {
-    tr: /\b(yarın|yarin)\b/,
-    en: /\b(tomorrow)\b/,
-    de: /\b(morgen)\b/,
-    ru: /\b(завтра)\b/,
-    ar: /\b(غدا|غداً)\b/,
-    fr: /\b(demain)\b/,
-    es: /\b(mañana|manana)\b/,
+    tr: _rw("yarın|yarin"),
+    en: _rw("tomorrow"),
+    de: _rw("morgen"),
+    ru: _rw("завтра"),
+    ar: _rw("غدا|غداً"),
+    fr: _rw("demain"),
+    es: _rw("mañana|manana"),
   };
 
   const dayAfterTomorrowPatterns: Record<string, RegExp> = {
-    tr: /\b(öbür\s*gün|obur\s*gun|ertesi\s*gün)\b/,
-    en: /\b(day\s*after\s*tomorrow)\b/,
-    de: /\b(übermorgen|uebermorgen)\b/,
-    ru: /\b(послезавтра)\b/,
-    fr: /\b(après[\s-]?demain|apres[\s-]?demain)\b/,
-    es: /\b(pasado\s*ma[nñ]ana)\b/,
+    tr: _rw("öbür\\s*gün|obur\\s*gun|ertesi\\s*gün"),
+    en: _rw("day\\s*after\\s*tomorrow"),
+    de: _rw("übermorgen|uebermorgen"),
+    ru: _rw("послезавтра"),
+    fr: _rw("après[\\s-]?demain|apres[\\s-]?demain"),
+    es: _rw("pasado\\s*ma[nñ]ana"),
   };
 
   const nextWeekPatterns: Record<string, RegExp> = {
-    tr: /\b(haftaya|gelecek\s*hafta|önümüzdeki\s*hafta)\b/,
-    en: /\b(next\s*week)\b/,
-    de: /\b(nächste\s*woche|naechste\s*woche)\b/,
-    ru: /\b(следующ\S+\s+недел\S+|на\s+следующ\S+\s+недел\S+)\b/,
-    fr: /\b(la\s*semaine\s*prochaine|semaine\s*prochaine)\b/,
-    es: /\b(la\s*pr[oó]xima\s*semana|pr[oó]xima\s*semana)\b/,
+    tr: _rw("haftaya|gelecek\\s*hafta|önümüzdeki\\s*hafta"),
+    en: _rw("next\\s*week"),
+    de: _rw("nächste\\s*woche|naechste\\s*woche"),
+    ru: _rw("следующ\\S+\\s+недел\\S+|на\\s+следующ\\S+\\s+недел\\S+"),
+    fr: _rw("la\\s*semaine\\s*prochaine|semaine\\s*prochaine"),
+    es: _rw("la\\s*pr[oó]xima\\s*semana|pr[oó]xima\\s*semana"),
   };
 
   const langKey = language as keyof typeof tomorrowPatterns;
@@ -82,6 +88,19 @@ function extractRelativeDate(text: string, language: string): Date | null {
   }
 
   return null;
+}
+
+// 2026-07-09 FAZ3-mikro (İş2 kalıntısı): mesajda göreli-tarih kelimesi VAR MI?
+// extractRelativeDate'in 7-dil setini YENİDEN KULLANIR (kopya YOK — tek kaynak).
+// Kullanım: info-extractor Blok 2 — göreli-kelime varken NLU dates[] güvenilmez
+// (NLU yanlış çapadan ISO hesaplıyor: canlı vaka "yarın"→"2026-12-21" konuşma
+// özetindeki seçili 20.12'yi çapa aldı) → NLU dates YOKSAY, extractRelativeDate/
+// Blok 9d zinciri (bugün-çapa, Europe/Istanbul) otorite olsun.
+export function hasRelativeDateWord(text: string): boolean {
+  for (const lang of ["tr", "en", "de", "ru", "ar", "fr", "es"]) {
+    if (extractRelativeDate(text, lang)) return true;
+  }
+  return false;
 }
 
 // ─── Yazıyla sayı çıkarımı (fallback) ────────────────────────────────────────

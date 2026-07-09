@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (FAZ3-P4 — V11-a telefon-yok politika dalı [ürün kararı a: telefon ŞART + nazik gerekçe] + gönüllü e-posta [reservationInfo.email → RPC p_email → registrations.email] + ısrar eskalasyonu [J-14 contact_request]. FAZ3-P1/P2/P3 aynı gün.).
+> Son güncelleme: 2026-07-09 (FAZ3-mikro — İş2 kalıntısı: göreli-kelime NLU guard [hasRelativeDateWord → NLU dates YOKSAY, Blok 9d otorite] + ISO görüntü formatı [FIX1, ham-ISO tırnak sızıntısı] + Yan #8 kök [extractRelativeDate relative-word lookaround]. FAZ3-P1/P2/P3/P4 aynı gün.).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -117,6 +117,10 @@ FSM SONRASI DETERMİNİSTİK MESAJLAR (hepsi RETURN, LLM atlanır):
      İş3 V3-anafora (dateId DOLU + tam 2 tarih + _v3AnaforaRe "öbür/diğer tarih")
      → seçili OLMAYAN tarihi ÖNER+onay. İkisi de proposedDateId'ye yazar → :10d-2
      kapatır. 3+ tarih/boş dateId → :11 liste. :11'den ÖNCE.
+     **İş3 İKİ-KATMAN (bilinçli tasarım)**: (a) CHANGE-KEYWORD'lü form ("aslında
+     öbür tarihe alalım") → değişiklik-ailesi (A3-date/:10d P5) DİREKT değiştirir/
+     ack'ler (niyet kesin); (b) BARE form ("öbür tarih") → :10g ÖNERİ+onay (niyet
+     zayıf, teyit iste). İkisi de doğru — sinyal gücüne göre ayrışır.
  19. :11 tarih listesi — 4 dal: (a) waiting_for_date, (b) tarih sorusu,
      (c) rezervasyon niyeti, (d) _isStuckOnTourSelected (~L1977-2140)
  20. :11a-AUTO-DATE-ACK (~L2142) │ :11a-MANUAL-DATE-ACK / G4 (~L2229)
@@ -243,7 +247,7 @@ FSM-ÖNCESİ (J-14 gibi, "istemiyorum"u cancellation reset'i yutmasın):
 | Pending konumu | Bilinçli: Blok 9 SONRASI + Blok 10 ÖNCESİ — Blok 10 auto-assign dateId'si kullanıcı mesajından gelmez, pending iptaline sebep olmamalı. "aslında 3'ü olsun" ayın 3'ü eşleşirse pax İPTAL, tarih akışı kazanır (tarih→pax sızıntı koruması delinmez) |
 | Pattern kaynağı | `shared/constants/change-detection.ts` CHANGE_KEYWORDS_RE — process-message A1/A2/A3 `_hasChangeKeyword` ile TEK kaynak (DRY) |
 | Kaynak | BUG-X9 ("ondördü olur" 14 pax sızıntısı) + X9-change fix (telefon adımında "aslında 3 olsun" R6'ya takılıyordu) |
-| **I-9 rakam-tarih ayna (2026-07-03) + V10/V9 (2026-07-09) + İş0 (FAZ3-P3)** | X9'un AYNASI: waiting_for_pax'ta "20'sine/3'ü" (rakam+tarih-iyelik, _dateOrdinalRe) → NLU-pax İSTİSNASI EZİLİR + Blok 8.5. **V10 soru-guard'ı**: müsaitlik-kelime (müsait/uygun/boş/yer var/available) → `availabilityQueryDay` flag → :10e cevaplar (seçim YOK). AYIRICI müsaitlik-kelimesidir, QUESTION_SIGNAL_RE DEĞİL (zıt-yön: soruyu aşırı-yakalamak seçimi kaçırır > tekrar seçtirmek; "20'si olur mu?" soru-formu SEÇİM kalır). **V9 çift-eşleşme**: gün 2+ tarihte varsa `dateAmbiguousDay` flag → :10f netleştirme (SESSİZ İLK-SEÇİM KALKTI). **İş0 Blok 8.5 yeniden yazımı (KÖK)**: gün-sayısı 3 KAYNAKTAN toplanır — (a) apostroflu _dateOrdinalRe, (b) düz "ayın N", (c) **NLU ÇIPLAK-SAYI** (ay-adsız ordinal'de NLU dates=["20"] → Blok2 selectedDate="20" → eski `!selectedDate` guard'ı bloke ediyor → RAW "20" şablona sızıyordu: `"20" müsait değil`). Çıplak-sayı tarih-adımında yakalanır + `delete selectedDate` (RAW asla state'e/şablona sızmaz). **Ay-niteleyici** ("bu ayın/gelecek ayın", 7 dil, Europe/Istanbul ayı) → o aya SINIRLI eşleşme; o ayda yoksa availabilityQueryDay→:10e "görünmüyor". Routing: tek→SEÇ, çoklu→dateAmbiguousDay, sıfır→:11 liste. Blok 9c: apostrofsuz "ayın 20" day_ prefix çözümü + raw-day_ temizliği. Blok 9d: **relative_ prefix TÜKETİCİSİ** (V8-ucuz) — simple-extractor tourDates ile çağrılıyor (Blok 3), "yarın/öbür gün" tur tarihiyle kesişmezse relative_ISO temizlenir→:11 liste (eski ölü-flag: consumer yoktu, RAW sızardı). Tek eşleşme/çıplak "20 kişi" davranışı aynen |
+| **I-9 rakam-tarih ayna (2026-07-03) + V10/V9 (2026-07-09) + İş0 (FAZ3-P3)** | X9'un AYNASI: waiting_for_pax'ta "20'sine/3'ü" (rakam+tarih-iyelik, _dateOrdinalRe) → NLU-pax İSTİSNASI EZİLİR + Blok 8.5. **V10 soru-guard'ı**: müsaitlik-kelime (müsait/uygun/boş/yer var/available) → `availabilityQueryDay` flag → :10e cevaplar (seçim YOK). AYIRICI müsaitlik-kelimesidir, QUESTION_SIGNAL_RE DEĞİL (zıt-yön: soruyu aşırı-yakalamak seçimi kaçırır > tekrar seçtirmek; "20'si olur mu?" soru-formu SEÇİM kalır). **V9 çift-eşleşme**: gün 2+ tarihte varsa `dateAmbiguousDay` flag → :10f netleştirme (SESSİZ İLK-SEÇİM KALKTI). **İş0 Blok 8.5 yeniden yazımı (KÖK)**: gün-sayısı 3 KAYNAKTAN toplanır — (a) apostroflu _dateOrdinalRe, (b) düz "ayın N", (c) **NLU ÇIPLAK-SAYI** (ay-adsız ordinal'de NLU dates=["20"] → Blok2 selectedDate="20" → eski `!selectedDate` guard'ı bloke ediyor → RAW "20" şablona sızıyordu: `"20" müsait değil`). Çıplak-sayı tarih-adımında yakalanır + `delete selectedDate` (RAW asla state'e/şablona sızmaz). **Ay-niteleyici** ("bu ayın/gelecek ayın", 7 dil, Europe/Istanbul ayı) → o aya SINIRLI eşleşme; o ayda yoksa availabilityQueryDay→:10e "görünmüyor". Routing: tek→SEÇ, çoklu→dateAmbiguousDay, sıfır→:11 liste. Blok 9c: apostrofsuz "ayın 20" day_ prefix çözümü + raw-day_ temizliği. Blok 9d: **relative_ prefix TÜKETİCİSİ** (V8-ucuz) — simple-extractor tourDates ile çağrılıyor (Blok 3), "yarın/öbür gün" tur tarihiyle kesişmezse relative_ISO temizlenir→:11 liste (eski ölü-flag: consumer yoktu, RAW sızardı). **Blok 2 GÖRELİ-KELİME NLU GUARD'ı (FAZ3-mikro FIX2, İş2 kalıntısı)**: canlı vaka — pax adımında "yarın" → NLU konuşma-özetindeki seçili tarihi (20.12) ÇAPA alıp "2026-12-21" ISO üretti → relative_ zinciri HİÇ devreye girmedi → ham ISO şablona sızdı. Kök: göreli ifadelerde NLU dates[] GÜVENİLMEZ (yanlış çapa). Fix: `hasRelativeDateWord(message)` (extractRelativeDate 7-dil setini YENİDEN kullanır, kopya yok) TRUE ise NLU dates YOKSAYILIR → extractRelativeDate/Blok 9d (bugün-çapa, Europe/Istanbul) otorite. Net tarih ("10 aralık") göreli-kelime içermez → guard tetiklenmez. **Yan #8 KÖK**: extractRelativeDate tomorrow/dayAfter/nextWeek grupları `\b` kullanıyordu → non-ASCII ile başlayan göreli kelimeler ("öbür gün"/"übermorgen"/"завтра"/"غدا") HİÇ eşleşmiyordu (gün-adları zaten lookaround'a çevrilmişti) → üçü de `\p{L}\p{N}` lookaround'a çevrildi (7-dil kapsaması gerçekleşti). NLU_SYSTEM_PROMPT'a sabit kural: göreli ifadeleri ISO'ya ÇEVİRME. Tek eşleşme/çıplak "20 kişi" davranışı aynen |
 | **İSİM-pending (Blok 5b, A-P1 2026-07-03)** | X9-change'in İSİM kopyası. Koşullar: NLU/simple fullName bulamadı + CHANGE_KEYWORDS_RE + `reservationInfo.fullName` DOLU (değişiklik bağlamı) + **isim-bağlam kelimesi ŞART** (isim/ismi/ad/adım/soyad/name — bağlamsız "aslında yarın gelelim" tipi cümlelerin isim sanılmasını kapıda keser). Aday: change/bağlam/dolgu kelimeleri elendikten sonra kalan TAM 2-3 harf-ağırlıklı kelime; **Title-Case ŞARTI YOK** (canlı kanıt: kullanıcılar "leman tete" küçük yazıyor). ASIL SİGORTA: aday Sorun F gate'lerinden geçer (NegationLeak+TourLeak+onay-blacklist, tek-kaynak). Kabul → extractedInfo.fullName → A3-name/BUG B mevcut haliyle devralır. Kaynak: canlı P1 (CONFIRMING'de "ismi düzelt, Ahmet Yılmaz olacak" yutuluyordu — NLU Sorun F correction-guard'ı meşru düzeltmede de null dönüyor, simple/Blok5 step-gated) |
 
 ### G9 — O1 grubu (birleşik mesaj tarih→ID)
@@ -501,6 +505,12 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     R6 telefon mesajı. KURAL: kullanıcı metnini tırnak içinde geri basan YENİ
     şablon bu helper'dan geçmeli. (:10b unknownTourQuery tour-matcher çıkarımı —
     cümle-yankı riski düşük, kapsam dışı bırakıldı.)
+    **FAZ3-mikro FIX1 (2026-07-09) — SORUMLULUK AYRIMI**: isEchoSafe KARAR verir
+    (tırnaklı mı jenerik mi), FORMAT ayrı katman GÖRÜNTÜLER. :11 tarih-preamble'da
+    değer ISO (YYYY-MM-DD) ise DD.MM.YYYY + gün adı'na çevrilir (getWeekdayName
+    TEK KAYNAK) — canlı `'"2026-12-21" tarihi ... müsait değil'` ham-ISO sızıntısı
+    kapandı. Çeviri echo-sanitize'a DEĞİL format katmanına konur (sanitize karar,
+    format görüntü — sorumluluk ayrımı).
 23. **PAKET 2+3+4 ÇÖZÜLDÜ (2026-07-03)**: J-14 iptal talep-iletme (FSM-öncesi
     dal + complaints notify-trigger); J-16 vazgeçme (detectCancellation
     boşver/kalsın/neyse + Guarded değer-öncelik guard'ı + iki isim-yolunda
@@ -551,6 +561,15 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     NOT: eski `needsMonthClarification` (ayinMatch tourDates yolu) hâlâ
     tüketicisiz — düşük öncelik, o yol Blok 3'te tourDates'siz çağrıldığı için
     fiilen ölü; V9 dateAmbiguousDay onu işlevsel olarak ikame ediyor.
+28. **FAZ3-mikro ÇÖZÜLDÜ (2026-07-09, İş2 kalıntısı)**: pax adımında "yarın" →
+    '"2026-12-21" müsait değil' (ham ISO + yanlış çapa). FIX1 (görüntü formatı):
+    :11 preamble ISO değeri DD.MM.YYYY+gün'e çevrilir (format katmanı, sanitize'dan
+    ayrı). FIX2 (göreli-kelime NLU guard): hasRelativeDateWord TRUE → NLU dates
+    YOKSAY → extractRelativeDate/Blok 9d bugün-çapa otorite. **Bonus kök (Yan #8)**:
+    extractRelativeDate tomorrow/dayAfter/nextWeek `\b`→lookaround (öbür gün/
+    übermorgen/завтра/غدا artık eşleşir). NLU_SYSTEM_PROMPT sabit kural: göreli→ISO
+    çevirme. **Açık kalan**: "bugün" (today) extractRelativeDate setinde YOK — göreli
+    kelime sayılmıyor (düşük öncelik; genelde tur bugüne denk gelmez).
 27. **FAZ3-P4 ÇÖZÜLDÜ (2026-07-09, V11-a)**: telefon-yok politika dalı — ürün
     kararı (a) telefon ŞART kalır, bot nazikçe gerekçe açıklar (acente telefonla
     teyit). Gönüllü e-posta EK alan (reservationInfo.email → RPC p_email →

@@ -2,7 +2,7 @@
 // Davranış whatsapp-webhook/index.ts'deki inline bloklar ile EŞDEĞERDİR (Faz 1).
 
 import type { ConversationContext } from "../fsm/types.ts";
-import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone } from "../fsm/simple-extractor.ts";
+import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone, hasRelativeDateWord } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
 import { isNluFullNameNegationLeak, isNluFullNameTourLeak } from "./nlu-validation.ts";
@@ -338,9 +338,19 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   }
 
   // === Blok 2: NLU entities.dates → normalize (string veya string[] olabilir) ===
+  // 2026-07-09 FAZ3-mikro FIX 2 (İş2 kalıntısı): GÖRELİ-KELİME NLU GUARD'I.
+  // Canlı vaka: pax adımında "yarın" → NLU konuşma özetindeki seçili tarihi
+  // (20.12) ÇAPA alıp "2026-12-21" üretti → relative_ zinciri (Blok 9d) hiç
+  // devreye girmedi → ham ISO şablona sızdı. Kök: göreli ifadelerde NLU dates[]
+  // GÜVENİLMEZ (yanlış çapadan hesaplıyor). Mesajda göreli-tarih kelimesi varsa
+  // (hasRelativeDateWord — extractRelativeDate 7-dil seti) NLU dates'i BU TURN
+  // YOKSAY → extractRelativeDate/Blok 9d (bugün-çapa, Europe/Istanbul) otorite.
+  // Net tarih ("10 aralık") göreli-kelime içermez → guard TETİKLENMEZ, NLU geçer.
   const nluDates = normalizeNluField(nluResult.entities?.dates);
-  if (nluDates.length > 0) {
+  if (nluDates.length > 0 && !hasRelativeDateWord(message)) {
     extractedInfo.selectedDate = normalizeDateString(nluDates[0]);
+  } else if (nluDates.length > 0) {
+    console.log(`[info-extractor] FIX2 göreli-kelime NLU guard: NLU dates=${JSON.stringify(nluDates)} YOKSAYILDI (extractRelativeDate/Blok 9d otorite)`);
   }
 
   // === Blok 3: simple-extractor (isim, telefon, paxAdult, tarih) ===

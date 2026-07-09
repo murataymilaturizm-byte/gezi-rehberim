@@ -146,6 +146,10 @@ NEVER assume the user wants to stay in COMPLETED forever. Trust their words.
 - Duration expressions like "3 günlük", "2 gecelik", "1 haftalık", "3-day", "2 nights" are TOUR DURATION, NOT dates. NEVER put them in the dates field.
 - "3 günlük bir tur arıyorum" → tour_search, dates EMPTY (the system filters by duration deterministically).
 
+**CRITICAL: RELATIVE DATES — DO NOT CONVERT (2026-07-09 FIX2):**
+- Relative date expressions ("yarın", "öbür gün", "bugün", "haftaya", "tomorrow", "next week", "morgen", "demain" etc.) must be left AS-IS. NEVER convert them to an ISO date (YYYY-MM-DD).
+- The system resolves relative dates deterministically with a today-anchor (Europe/Istanbul). If you compute an ISO date from a wrong anchor, the resolution breaks. Leave the raw wording; do not put a computed ISO value in the dates field for relative expressions.
+
 **CRITICAL: INFORMATIONAL QUESTIONS vs PROVIDING INFO:**
 - Questions like "tarih ne zaman", "ne zaman", "tarihleri nedir", "fiyat ne kadar", "kaç lira", 
   "nereden kalkıyor", "saat kaçta", "kaç gün sürer", "program nedir" are INFORMATIONAL → use "general" or "faq_general"
