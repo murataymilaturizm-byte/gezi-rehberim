@@ -541,7 +541,16 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
         const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
         return p && parseInt(p[1]) === _ordDay;
       });
-      if (_ordMatches.length === 1) {
+      // 2026-07-09 V10 SORU-GUARD'I: müsaitlik SORUSU ise tarih SEÇME/DEĞİŞTİRME
+      // — cevap dalına (:10e) bırak. AYIRICI = müsaitlik-kelimesi (dar, kesin
+      // bilgi-sorusu), QUESTION_SIGNAL_RE değil. Gerekçe (zıt-yön dersi): salt
+      // soru-form ("20'si olur mu?") SEÇİM niyeti taşıyabilir; soruyu aşırı
+      // yakalamak seçimi kaçırır (kötü) — tekrar seçtirmek (iyi) değil.
+      const _availQ = /(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|available|availability|müsaitlik|musaitlik)/iu.test(message || "");
+      if (_availQ) {
+        // Müsaitlik sorusu → :10e cevaplar (0 eşleşme dahil → "görünmüyor").
+        (extractedInfo as any).availabilityQueryDay = _ordDay;
+      } else if (_ordMatches.length === 1) {
         const cand = _ordMatches[0];
         if (hasQuotaForPax(cand, 1)) {
           extractedInfo.selectedDate = cand.departure_date;
@@ -553,8 +562,12 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
             remaining: getQuotaRemaining(cand),
           };
         }
+      } else if (_ordMatches.length > 1) {
+        // 2026-07-09 V9: çift-eşleşme → SESSİZ İLK-SEÇİM YOK. Flag'i :10f
+        // netleştirme dalı tüketir (7c'nin tarih muadili).
+        (extractedInfo as any).dateAmbiguousDay = _ordDay;
+        console.log(`[info-extractor] V9 Blok 8.5: ordinal gün=${_ordDay} çok eşleşme (${_ordMatches.length}) → netleştirme`);
       }
-      // >1 eşleşme → ay belirsiz, seçim yapma (ayinMatch davranışıyla tutarlı)
     }
   }
 
@@ -580,6 +593,31 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
           // selectedDate'i de SIL — kullanıcının yazımı state'e işlenmesin
           delete extractedInfo.selectedDate;
         }
+      }
+    }
+  }
+
+  // === Blok 9c: "ayın 20" (apostrofsuz) day_ prefix çözümü + V9 (2026-07-09) ===
+  // simple-extractor "ayın 20"yi day_20 üretir (tourDates'siz çağrıldığı için).
+  // Blok 9 matchDateWithTourDates day_ prefix'i tek-eşleşmede çözer, çoklu-
+  // eşleşmede null döner → RAW "day_20" selectedDate'te KALIR (state sızıntısı).
+  // Burada: tek→seç, çoklu→V9 netleştirme flag + raw temizle, sıfır→raw temizle.
+  {
+    const _dayPfx = (extractedInfo.selectedDate as any)?.match?.(/^day_(\d+)$/);
+    if (_dayPfx && !extractedInfo.dateId && context.currentTour) {
+      const _pd = parseInt(_dayPfx[1]);
+      const _pTour = findTourById(context.currentTour.id, tours);
+      const _pMatches = (_pTour?.dates || []).filter((d: any) => {
+        const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
+        return p && parseInt(p[1]) === _pd;
+      });
+      delete extractedInfo.selectedDate; // raw day_ ASLA state'e sızmasın
+      if (_pMatches.length === 1 && hasQuotaForPax(_pMatches[0], 1)) {
+        extractedInfo.selectedDate = _pMatches[0].departure_date;
+        extractedInfo.dateId = _pMatches[0].id;
+      } else if (_pMatches.length > 1) {
+        (extractedInfo as any).dateAmbiguousDay = _pd;
+        console.log(`[info-extractor] V9 Blok 9c: 'ayın ${_pd}' çok eşleşme → netleştirme`);
       }
     }
   }

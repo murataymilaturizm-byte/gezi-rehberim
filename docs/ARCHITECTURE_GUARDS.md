@@ -3,7 +3,7 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-03 (FAZ2-kapanış — month-names TEK KAYNAK [ASCII Blok9 canlı vakası] + CONFIRMING/COLLECTING tourDetails + stage envanteri; PAKET'ler ve öncekiler aynı gün).
+> Son güncelleme: 2026-07-09 (FAZ3-P2 — V10 müsaitlik-sorusu dalı :10e + V9 çift-eşleşme tarih netleştirme :10f; FAZ2-kapanış ve öncekiler 2026-07-03).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
 > DEĞİLDİR — `supabase functions deploy process-message` çalışmaz.
@@ -103,6 +103,9 @@ FSM SONRASI DETERMİNİSTİK MESAJLAR (hepsi RETURN, LLM atlanır):
  17. O6 tur listesi boş (~L1862) │ B2 akış-ortası tur listesi (~L1883)
  18. :10 iptal ack (~L1929) │ :10b UNKNOWN_TOUR (~L1983) │ **:10c VİZE
      deterministik (G14)** — nluResult HAM intent=visa_support → LLM'e düşmez
+ 18b. :10e V10 müsaitlik-cevabı (availabilityQueryDay → "müsait ✅"+adım sorusu) │
+     :10f V9 çift-eşleşme netleştirme (dateAmbiguousDay → global-indeksli liste +
+     waiting_for_date) — ikisi de :11'den ÖNCE (liste tekrarını/sessiz seçimi keser)
  19. :11 tarih listesi — 4 dal: (a) waiting_for_date, (b) tarih sorusu,
      (c) rezervasyon niyeti, (d) _isStuckOnTourSelected (~L1977-2140)
  20. :11a-AUTO-DATE-ACK (~L2142) │ :11a-MANUAL-DATE-ACK / G4 (~L2229)
@@ -216,7 +219,7 @@ SONRA çalışır** — A2/A3 yakalarsa RETURN ile R6'ya hiç ulaşılmaz.
 | Pending konumu | Bilinçli: Blok 9 SONRASI + Blok 10 ÖNCESİ — Blok 10 auto-assign dateId'si kullanıcı mesajından gelmez, pending iptaline sebep olmamalı. "aslında 3'ü olsun" ayın 3'ü eşleşirse pax İPTAL, tarih akışı kazanır (tarih→pax sızıntı koruması delinmez) |
 | Pattern kaynağı | `shared/constants/change-detection.ts` CHANGE_KEYWORDS_RE — process-message A1/A2/A3 `_hasChangeKeyword` ile TEK kaynak (DRY) |
 | Kaynak | BUG-X9 ("ondördü olur" 14 pax sızıntısı) + X9-change fix (telefon adımında "aslında 3 olsun" R6'ya takılıyordu) |
-| **I-9 rakam-tarih ayna (2026-07-03)** | X9'un AYNASI: waiting_for_pax'ta "20'sine/3'ü" (rakam+tarih-iyelik, _dateOrdinalRe) → NLU-pax İSTİSNASI EZİLİR (pax=20 grup mesajı bug'ı) + Blok 8.5 gün→tourDates eşleştirme (tekil+quota'lı → dateId; çoklu → belirsiz-pas, ayinMatch tutarlı). "20 kişi"/çıplak "20" pax kalır |
+| **I-9 rakam-tarih ayna (2026-07-03) + V10/V9 (2026-07-09)** | X9'un AYNASI: waiting_for_pax'ta "20'sine/3'ü" (rakam+tarih-iyelik, _dateOrdinalRe) → NLU-pax İSTİSNASI EZİLİR + Blok 8.5. **V10 soru-guard'ı**: müsaitlik-kelime (müsait/uygun/boş/yer var/available) → `availabilityQueryDay` flag → :10e cevaplar (seçim YOK). AYIRICI müsaitlik-kelimesidir, QUESTION_SIGNAL_RE DEĞİL (zıt-yön: soruyu aşırı-yakalamak seçimi kaçırır > tekrar seçtirmek; "20'si olur mu?" soru-formu SEÇİM kalır). **V9 çift-eşleşme**: gün 2+ tarihte varsa `dateAmbiguousDay` flag → :10f netleştirme (SESSİZ İLK-SEÇİM KALKTI). Blok 9c: apostrofsuz "ayın 20" day_ prefix çözümü + raw-day_ sızıntı temizliği. Tek eşleşme/çıplak "20 kişi" davranışı aynen |
 | **İSİM-pending (Blok 5b, A-P1 2026-07-03)** | X9-change'in İSİM kopyası. Koşullar: NLU/simple fullName bulamadı + CHANGE_KEYWORDS_RE + `reservationInfo.fullName` DOLU (değişiklik bağlamı) + **isim-bağlam kelimesi ŞART** (isim/ismi/ad/adım/soyad/name — bağlamsız "aslında yarın gelelim" tipi cümlelerin isim sanılmasını kapıda keser). Aday: change/bağlam/dolgu kelimeleri elendikten sonra kalan TAM 2-3 harf-ağırlıklı kelime; **Title-Case ŞARTI YOK** (canlı kanıt: kullanıcılar "leman tete" küçük yazıyor). ASIL SİGORTA: aday Sorun F gate'lerinden geçer (NegationLeak+TourLeak+onay-blacklist, tek-kaynak). Kabul → extractedInfo.fullName → A3-name/BUG B mevcut haliyle devralır. Kaynak: canlı P1 (CONFIRMING'de "ismi düzelt, Ahmet Yılmaz olacak" yutuluyordu — NLU Sorun F correction-guard'ı meşru düzeltmede de null dönüyor, simple/Blok5 step-gated) |
 
 ### G9 — O1 grubu (birleşik mesaj tarih→ID)
@@ -497,3 +500,10 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
 22. **V3b (panel backlog — G14 paketiyle birlikte)**: tours'a
     included_services/excluded_services kolonları + panel formu; sonra V3a
     yasağı veri-varsa-bas davranışına evrilir (FIX 1+2 deseni).
+24. **Ölü-flag dersi kapandı (2026-07-09, V9)**: `needsMonthClarification`
+    simple-extractor'da üretiliyordu ama TÜKETİCİSİ YOKTU → sessiz ilk-seçim.
+    Ders: flag üretmek ≠ davranış; her flag'in tüketici dalı olmalı. V9 ile
+    ordinal çift-eşleşme (`dateAmbiguousDay`) :10f netleştirme dalına bağlandı.
+    NOT: eski `needsMonthClarification` (ayinMatch tourDates yolu) hâlâ
+    tüketicisiz — düşük öncelik, o yol Blok 3'te tourDates'siz çağrıldığı için
+    fiilen ölü; V9 dateAmbiguousDay onu işlevsel olarak ikame ediyor.

@@ -2246,6 +2246,107 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
+  // === 10e. V10 MÜSAİTLİK-SORUSU CEVABI (2026-07-09) ===
+  // Canlı: pax adımında "20'si de müsait mi hala" → I-9 ordinal'ı tarih İŞLEMİ
+  // yapıyordu + kullanıcıyı tarih listesine geri çekiyordu. Soru ≠ seçim.
+  // info-extractor availabilityQueryDay flag'ini set etti (müsaitlik-kelime
+  // + ordinal, tarih SEÇMEDİ). Burada: sorulan gün müsait mi cevapla +
+  // MEVCUT ADIMIN sorusu (liste DEĞİL — geri çekme yok). :10d deseni.
+  {
+    const _avDay = (extractedInfo as any).availabilityQueryDay;
+    if (_avDay && newContext.currentTour) {
+      const _avTour = findTourById(newContext.currentTour.id, tours);
+      const _avMatches = (_avTour?.dates || []).filter((d: any) => {
+        const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
+        return p && parseInt(p[1]) === _avDay;
+      });
+      const _avLang = newContext.language || "tr";
+      const _avStepKey = String(newContext.collectionStep || "");
+      const _avStepQ = STEP_QUESTIONS[_avStepKey]?.[_avLang] || STEP_QUESTIONS[_avStepKey]?.en || "";
+      let _avCore: string;
+      const _avAvail = _avMatches.filter((d: any) => getQuotaRemaining(d) > 0);
+      if (_avAvail.length >= 1) {
+        const _avList = _avAvail.map((d: any) => {
+          const _w = getWeekdayName(d.departure_date, _avLang);
+          const _rem = getQuotaRemaining(d);
+          const _dt = formatDateForLanguage(d.departure_date, _avLang) + (_w ? ` (${_w})` : "");
+          const _remTxt: Record<string, string> = {
+            tr: ` (${_rem} kişilik yer)`, en: ` (${_rem} spots)`,
+          };
+          return `${_dt}${_remTxt[_avLang] || _remTxt.en}`;
+        }).join(", ");
+        const _avYes: Record<string, string> = {
+          tr: `Evet, ${_avList} müsait ✅`,
+          en: `Yes, ${_avList} available ✅`,
+          de: `Ja, ${_avList} verfügbar ✅`,
+          ru: `Да, ${_avList} доступно ✅`,
+          ar: `نعم، ${_avList} متاح ✅`,
+          fr: `Oui, ${_avList} disponible ✅`,
+          es: `Sí, ${_avList} disponible ✅`,
+        };
+        _avCore = _avYes[_avLang] || _avYes.en;
+      } else {
+        const _avNo: Record<string, string> = {
+          tr: `Ayın ${_avDay}'i için şu an müsaitlik görünmüyor. 😔`,
+          en: `No availability for the ${_avDay}th at the moment. 😔`,
+          de: `Für den ${_avDay}. ist derzeit keine Verfügbarkeit. 😔`,
+          ru: `На ${_avDay}-е сейчас нет мест. 😔`,
+          ar: `لا يوجد توفر لليوم ${_avDay} حالياً. 😔`,
+          fr: `Pas de disponibilité pour le ${_avDay} pour le moment. 😔`,
+          es: `No hay disponibilidad para el ${_avDay} por ahora. 😔`,
+        };
+        _avCore = _avNo[_avLang] || _avNo.en;
+      }
+      const _avReply = _avStepQ ? `${_avCore}\n\n${_avStepQ}` : _avCore;
+      console.log(`[process-message] :10e V10 müsaitlik-cevabı (gün=${_avDay}, müsait=${_avAvail.length}, step=${_avStepKey}) — tarih DEĞİŞMEDİ`);
+      await _save(_avReply, newContext);
+      await adapter.sendResponse(_avReply);
+      return { success: true, response: _avReply, newContext };
+    }
+  }
+
+  // === 10f. V9 ÇİFT-EŞLEŞME TARİH NETLEŞTİRME (2026-07-09) ===
+  // Canlı: "ayın 20'si" (20 Aralık VE 20 Şubat varken) → sessizce ilki seçiliyordu.
+  // info-extractor dateAmbiguousDay flag'ini set etti (seçim YAPMADI). Burada
+  // deterministik netleştirme: eşleşen tarihleri GLOBAL indeksleriyle (:11
+  // mekanizmasıyla aynı — Blok 8 rakam-seçimi doğal çalışsın, ek state YOK) bas +
+  // collectionStep=waiting_for_date (sonraki "1"/"4" veya "20 aralık" çözülür).
+  {
+    const _ambDay = (extractedInfo as any).dateAmbiguousDay;
+    if (_ambDay && newContext.currentTour) {
+      const _ambTour = findTourById(newContext.currentTour.id, tours);
+      const _ambLang = newContext.language || "tr";
+      const _ambLines = (_ambTour?.dates || [])
+        .map((d: any, i: number) => ({ d, i }))
+        .filter(({ d }: any) => {
+          const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
+          return p && parseInt(p[1]) === _ambDay;
+        })
+        .map(({ d, i }: any) => {
+          const _w = getWeekdayName(d.departure_date, _ambLang);
+          // GLOBAL indeks (i+1) — Blok 8 tour.dates[n-1] ile birebir
+          return `${i + 1}) ${formatDateForLanguage(d.departure_date, _ambLang)}${_w ? ` (${_w})` : ""}`;
+        })
+        .join("\n");
+      const _ambMsgs: Record<string, string> = {
+        tr: `Ayın ${_ambDay}'i birden fazla turumuzda var:\n${_ambLines}\n\nHangisini tercih edersiniz? (numara veya tarih yazın)`,
+        en: `The ${_ambDay}th appears in more than one tour:\n${_ambLines}\n\nWhich one do you prefer? (type the number or date)`,
+        de: `Der ${_ambDay}. kommt in mehreren Touren vor:\n${_ambLines}\n\nWelche bevorzugen Sie? (Nummer oder Datum)`,
+        ru: `${_ambDay}-е есть в нескольких турах:\n${_ambLines}\n\nКакой предпочитаете? (номер или дата)`,
+        ar: `اليوم ${_ambDay} موجود في أكثر من جولة:\n${_ambLines}\n\nأيهما تفضل؟ (الرقم أو التاريخ)`,
+        fr: `Le ${_ambDay} figure dans plusieurs circuits :\n${_ambLines}\n\nLequel préférez-vous ? (numéro ou date)`,
+        es: `El ${_ambDay} aparece en más de un tour:\n${_ambLines}\n\n¿Cuál prefiere? (número o fecha)`,
+      };
+      const _ambReply = _ambMsgs[_ambLang] || _ambMsgs.en;
+      // Tarih seçimini bir sonraki turn'e taşı: waiting_for_date (Blok 8/9 devralır).
+      newContext.collectionStep = "waiting_for_date" as any;
+      console.log(`[process-message] :10f V9 çift-eşleşme netleştirme (gün=${_ambDay}) — sessiz ilk-seçim YOK`);
+      await _save(_ambReply, newContext);
+      await adapter.sendResponse(_ambReply);
+      return { success: true, response: _ambReply, newContext };
+    }
+  }
+
   // === 11. TARİH LİSTESİ (deterministik) — D5: tarih sorusu HER stage'de yakalar ===
   // 2026-06-19 (Bug A3 kök çözümü): LLM artık tarih KONUŞMUYOR. Tarih listesi
   // YALNIZ deterministik gönderilir. Tetik koşulları:
