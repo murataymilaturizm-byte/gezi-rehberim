@@ -1,111 +1,135 @@
-# NLU A/B kosum scripti - FAZ NLU-pilot-A olcum.
-# demo-chat X-NLU-AB debug yolundan korpusu iki modelde (Haiku + Sonnet-4.6) kosar,
-# fark tablosu + ham JSON uretir. CANLI DAVRANIS DEGISMEZ (debug yolu state'e yazmaz).
+﻿# NLU 7-dil baseline kosum scripti - FAZ 4 P0.
+# IKI BOLUM:
+#  (1) OFFLINE DETERMINISTIK-SINYAL PROOF (endpoint GEREKTIRMEZ): Katman-1
+#      sinyallerini (availability/tour_change/superlative/relative) korpus
+#      mesajlarina uygular (kaynaktan BIREBIR .NET regex) -> dil x sinyal fire/miss
+#      matrisi. Bu, P1-oncesi baseline'dir: bosluklarin 5 dilde KACTIGINI kanitlar.
+#  (2) CANLI NLU (opsiyonel, -Token/NLU_AB_TOKEN verilirse): demo-chat X-NLU-AB
+#      debug yolundan Sonnet-4.6 intent'i -> dil x intent. State'e yazmaz.
 #
 # Kullanim:
-#   $env:NLU_AB_TOKEN = "<secret>"   # demo-chat NLU_AB_TOKEN ile AYNI
-#   ./scripts/nlu-ab-run.ps1
-# Opsiyonel: -Url <fn-url> -Corpus <path> -Out <path> -Token <secret>
-#
-# GUVENLIK: token yoksa/yanlissa debug yolu kapali -> script anlamli cikti alamaz.
+#   ./scripts/nlu-ab-run.ps1                      # yalniz offline proof
+#   $env:NLU_AB_TOKEN="<secret>"; ./scripts/nlu-ab-run.ps1   # + canli NLU
+#   ./scripts/nlu-ab-run.ps1 -Lang de             # tek-dil filtre
+# Parametreler: -Url -Corpus -Out -Token -Lang
 
 param(
   [string]$Url = "https://yaxjygtjtjmzslajuctk.supabase.co/functions/v1/demo-chat",
   [string]$Corpus = "$PSScriptRoot/../docs/nlu-ab-corpus.json",
   [string]$Out = "$PSScriptRoot/../docs/nlu-ab-results.json",
-  [string]$Token = $env:NLU_AB_TOKEN
+  [string]$Token = $env:NLU_AB_TOKEN,
+  [string]$Lang = ""
 )
 
-if (-not $Token) { Write-Error "NLU_AB_TOKEN gerekli (env veya -Token)."; exit 1 }
-
-$corpusData = Get-Content $Corpus -Raw -Encoding utf8 | ConvertFrom-Json
+$raw = Get-Content $Corpus -Raw -Encoding utf8
+$raw = $raw -replace "^\xEF\xBB\xBF", ""
+$corpusData = $raw | ConvertFrom-Json
 $cases = $corpusData.cases
-Write-Host ("Korpus: " + $cases.Count + " vaka | Model: Haiku vs Sonnet-4.6") -ForegroundColor Cyan
+if ($Lang) { $cases = $cases | Where-Object { $_.lang -eq $Lang } }
+$LANGS = @("tr", "en", "de", "fr", "es", "ru", "ar")
+
+# ── Deterministik sinyal regexleri (KAYNAKTAN BIREBIR) ──
+$reAvail = [regex]::new('(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|available|availability|müsaitlik|musaitlik)', 'IgnoreCase')
+$reTourChange = [regex]::new('(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti|değildi|degildi|olmamıştı|olmamisti)', 'IgnoreCase')
+$reSupAsc = [regex]::new('(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|cheapest\s+tour)', 'IgnoreCase')
+$reSupDesc = [regex]::new('(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)', 'IgnoreCase')
+# relative: kaynak REL_* birlesimi (AR day-after/next-week/gun-adi KAYNAKTA YOK -> miss)
+$relBody = 'bugün|bugun|today|heute|сегодня|اليوم|aujourdhui|hoy|' +
+  'yarın|yarin|tomorrow|morgen|завтра|غدا|غداً|demain|mañana|manana|' +
+  'öbür\s*gün|obür\s*gün|öbur\s*gün|obur\s*gün|öbür\s*gun|obür\s*gun|obur\s*gun|ertesi\s*gün|ertesi\s*gun|day\s*after\s*tomorrow|übermorgen|uebermorgen|послезавтра|après[\s-]?demain|apres[\s-]?demain|pasado\s*ma[nñ]ana|' +
+  'haftaya|gelecek\s*hafta|önümüzdeki\s*hafta|onumuzdeki\s*hafta|next\s*week|nächste\s*woche|naechste\s*woche|следующ\S+\s+недел\S+|la\s*semaine\s*prochaine|semaine\s*prochaine|la\s*próxima\s*semana|próxima\s*semana'
+$reRelative = [regex]::new("(?<![\p{L}\p{N}])(?:$relBody)(?![\p{L}\p{N}])", 'IgnoreCase')
+
+function Test-DetSignal($sig, $msg) {
+  switch ($sig) {
+    "availability" { return $reAvail.IsMatch($msg) }
+    "tour_change"  { return $reTourChange.IsMatch($msg) }
+    "superlative"  { return $reSupAsc.IsMatch($msg) -or $reSupDesc.IsMatch($msg) }
+    "relative"     { return $reRelative.IsMatch($msg) }
+    default        { return $null }
+  }
+}
+
+$doLive = [bool]$Token
+Write-Host ("Korpus: " + $cases.Count + " vaka | Offline-proof: EVET | Canli-NLU: " + $(if ($doLive) { "EVET" } else { "HAYIR (token yok)" })) -ForegroundColor Cyan
 
 $results = @()
-$diffCount = 0
-
 foreach ($c in $cases) {
-  $payload = @{
-    message      = $c.message
-    sessionId    = "nlu-ab-" + $c.id
-    summary      = $c.summary
-    state        = $c.state
-    selectedTour = $null
-  } | ConvertTo-Json -Depth 6
+  $detFires = $null
+  if ($c.det_signal) { $detFires = Test-DetSignal $c.det_signal $c.message }
 
-  try {
-    $resp = Invoke-WebRequest -Uri $Url -Method POST -ContentType "application/json; charset=utf-8" -Headers @{ "X-NLU-AB" = $Token } -Body ([System.Text.Encoding]::UTF8.GetBytes($payload)) -TimeoutSec 60
-    $j = $resp.Content | ConvertFrom-Json
-  } catch {
-    Write-Host ("[" + $c.id + "] HATA: " + $_.Exception.Message) -ForegroundColor Red
-    continue
+  # gap-durumu: gap!=null ise sinyal MISS beklenir (baseline proof); fire ederse beklenmedik
+  $gapStatus = ""
+  if ($c.gap) {
+    if ($detFires -eq $false) { $gapStatus = "GAP-DOGRULANDI(miss)" }
+    elseif ($detFires -eq $true) { $gapStatus = "BEKLENMEDIK-FIRE" }
+  } elseif ($null -ne $detFires) {
+    if ($detFires) { $gapStatus = "OK(fire)" } else { $gapStatus = "REGRESYON?(miss)" }
   }
 
-  if (-not $j.ab) { Write-Host ("[" + $c.id + "] debug yolu KAPALI (token yanlis?)") -ForegroundColor Red; break }
-
-  $hInt = [string]$j.haiku.intent
-  $sInt = [string]$j.sonnet.intent
-  $hDates = ($j.haiku.entities.dates -join ",")
-  $sDates = ($j.sonnet.entities.dates -join ",")
-  $anyDiff = ($hInt -ne $sInt) -or ($hDates -ne $sDates)
-  if ($anyDiff) { $diffCount++ }
+  $intent = ""
+  if ($doLive) {
+    $body = @{ message = $c.message; sessionId = "nlu7-" + $c.id; summary = $c.summary; state = $c.state } | ConvertTo-Json -Depth 6
+    try {
+      $resp = Invoke-WebRequest -Uri $Url -Method POST -ContentType "application/json; charset=utf-8" -Headers @{ "X-NLU-AB" = $Token } -Body ([System.Text.Encoding]::UTF8.GetBytes($body)) -TimeoutSec 60
+      $j = $resp.Content | ConvertFrom-Json
+      if ($j.ab) { $intent = [string]$j.sonnet.intent } else { $intent = "DEBUG-KAPALI"; $doLive = $false }
+    } catch { $intent = "ERR" }
+  }
 
   $results += [pscustomobject]@{
-    id            = $c.id
-    message       = $c.message
-    expected      = $c.expected
-    critical_path = $c.critical_path
-    haiku_intent  = $hInt
-    sonnet_intent = $sInt
-    haiku_dates   = $hDates
-    sonnet_dates  = $sDates
-    diff          = $anyDiff
-    haiku_usage   = $j.haiku.usage
-    sonnet_usage  = $j.sonnet.usage
+    id = $c.id; lang = $c.lang; scenario = $c.scenario; message = $c.message
+    det_signal = $c.det_signal; det_fires = $detFires; gap = $c.gap; gap_status = $gapStatus
+    expected_intent = $c.expected_intent; sonnet_intent = $intent
   }
-
-  $flag = "same"; $col = "Gray"
-  if ($anyDiff) { $flag = "DIFF"; $col = "Yellow" }
-  $line = "[" + $c.id + "] " + $flag + "  H:" + $hInt.PadRight(20) + " S:" + $sInt.PadRight(20) + " msg:" + $c.message
-  Write-Host $line -ForegroundColor $col
 }
 
-function Get-UsageSum($rows, $key) {
-  $inp = 0; $out = 0; $cc = 0; $cr = 0
-  foreach ($r in $rows) {
-    $u = $r.$key
-    if ($u) {
-      if ($u.input_tokens) { $inp += [int]$u.input_tokens }
-      if ($u.output_tokens) { $out += [int]$u.output_tokens }
-      if ($u.cache_creation_input_tokens) { $cc += [int]$u.cache_creation_input_tokens }
-      if ($u.cache_read_input_tokens) { $cr += [int]$u.cache_read_input_tokens }
+# ── DIL x SINYAL BASELINE MATRISI ──
+Write-Host ""
+Write-Host "=== KATMAN-1 DETERMINISTIK SINYAL BASELINE (dil x sinyal: fire/miss) ===" -ForegroundColor Cyan
+$sigTypes = @("availability", "tour_change", "superlative", "relative")
+$hdr = "sinyal".PadRight(14); foreach ($l in $LANGS) { $hdr += $l.ToUpper().PadRight(6) }
+Write-Host $hdr
+foreach ($sig in $sigTypes) {
+  $row = $sig.PadRight(14)
+  foreach ($l in $LANGS) {
+    $rr = @($results | Where-Object { $_.det_signal -eq $sig -and $_.lang -eq $l })
+    if ($rr.Count -eq 0) { $row += "-".PadRight(6) }
+    else {
+      $anyFire = @($rr | Where-Object { $_.det_fires -eq $true }).Count -gt 0
+      $row += $(if ($anyFire) { "fire" } else { "MISS" }).PadRight(6)
     }
   }
-  return [pscustomobject]@{ input = $inp; output = $out; cache_creation = $cc; cache_read = $cr }
+  Write-Host $row
 }
 
-$hSum = Get-UsageSum $results "haiku_usage"
-$sSum = Get-UsageSum $results "sonnet_usage"
-
-# Fiyat USD/1M: Haiku 4.5 in=1.00 out=5.00 ; Sonnet 4.6 in=3.00 out=15.00 ; cache_read ~ in*0.1
-$hCost = ($hSum.input / 1e6 * 1.00) + ($hSum.output / 1e6 * 5.00)
-$sCostNoCache = (($sSum.input + $sSum.cache_creation + $sSum.cache_read) / 1e6 * 3.00) + ($sSum.output / 1e6 * 15.00)
-$sCostCache = (($sSum.input + $sSum.cache_creation) / 1e6 * 3.00) + ($sSum.cache_read / 1e6 * 0.30) + ($sSum.output / 1e6 * 15.00)
-
+# ── DIL x GECTI/KACTI OZET (deterministik sinyalli satirlar) ──
 Write-Host ""
-Write-Host "=== OZET ===" -ForegroundColor Cyan
-Write-Host ("Toplam vaka: " + $results.Count + " | Farkli: " + $diffCount + " | Ayni: " + ($results.Count - $diffCount))
-Write-Host ("Haiku  tokens: in=" + $hSum.input + " out=" + $hSum.output + " cache_read=" + $hSum.cache_read + " | ~maliyet USD=" + [math]::Round($hCost, 5))
-Write-Host ("Sonnet tokens: in=" + $sSum.input + " out=" + $sSum.output + " cache_create=" + $sSum.cache_creation + " cache_read=" + $sSum.cache_read)
-Write-Host ("Sonnet ~maliyet USD: cachesiz=" + [math]::Round($sCostNoCache, 5) + " | cache_read indirimli=" + [math]::Round($sCostCache, 5))
-$cacheProof = "YOK (ilk kosumda beklenir; 5dk icinde tekrar kos)"
-if ($sSum.cache_read -gt 0) { $cacheProof = "VAR (cache_read=" + $sSum.cache_read + ")" }
-Write-Host ("Sonnet cache hit kaniti: " + $cacheProof)
+Write-Host "=== DIL OZETI (deterministik-sinyal satirlari) ===" -ForegroundColor Cyan
+Write-Host ("dil".PadRight(6) + "det-satir".PadRight(11) + "fire".PadRight(7) + "miss".PadRight(7) + "gap-dogrulandi")
+foreach ($l in $LANGS) {
+  $lr = @($results | Where-Object { $_.lang -eq $l -and $null -ne $_.det_fires })
+  if ($lr.Count -eq 0) { continue }
+  $fire = @($lr | Where-Object { $_.det_fires -eq $true }).Count
+  $miss = @($lr | Where-Object { $_.det_fires -eq $false }).Count
+  $gapOk = @($lr | Where-Object { $_.gap_status -eq "GAP-DOGRULANDI(miss)" }).Count
+  Write-Host ($l.PadRight(6) + ([string]$lr.Count).PadRight(11) + ([string]$fire).PadRight(7) + ([string]$miss).PadRight(7) + [string]$gapOk)
+}
 
-@{
-  meta    = @{ url = $Url; cases = $results.Count; diffs = $diffCount; haiku_usage = $hSum; sonnet_usage = $sSum; haiku_cost = $hCost; sonnet_cost_nocache = $sCostNoCache; sonnet_cost_cached = $sCostCache }
-  results = $results
-} | ConvertTo-Json -Depth 8 | Out-File $Out -Encoding utf8
+# ── CANLI NLU: DIL x INTENT (opsiyonel) ──
+if ($doLive) {
+  Write-Host ""
+  Write-Host "=== CANLI NLU (Sonnet-4.6) INTENT ORNEKLERI ===" -ForegroundColor Cyan
+  foreach ($r in $results) {
+    Write-Host ("[" + $r.id.PadRight(9) + "] " + $r.lang + " intent=" + $r.sonnet_intent.PadRight(20) + " msg:" + $r.message)
+  }
+}
+
+$gapConfirmed = ($results | Where-Object { $_.gap_status -eq "GAP-DOGRULANDI(miss)" }).Count
+$gapUnexpected = ($results | Where-Object { $_.gap_status -eq "BEKLENMEDIK-FIRE" }).Count
 Write-Host ""
-Write-Host ("Sonuclar kaydedildi: " + $Out) -ForegroundColor Green
+Write-Host ("Toplam gap-isaretli DOGRULANDI (miss): " + $gapConfirmed + " | beklenmedik-fire: " + $gapUnexpected) -ForegroundColor Yellow
+
+@{ meta = @{ total = $results.Count; live = $doLive; gap_confirmed = $gapConfirmed; gap_unexpected = $gapUnexpected }; results = $results } |
+  ConvertTo-Json -Depth 8 | Out-File $Out -Encoding utf8
+Write-Host ("Sonuclar: " + $Out) -ForegroundColor Green

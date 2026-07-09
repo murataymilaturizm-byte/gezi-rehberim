@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (NLU-pilot FAZ B — CANLI GEÇİŞ: NLU_MODEL=claude-sonnet-4-6 [secret+redeploy]. Kanıt: A/B model=sonnet-4.6 + cache_read=4497/çağrı; smoke tüm kritik yollar ✅ [RPC success, :10c, X8, chitchat]. Geri dönüş: secret unset + redeploy. Detay G12.).
+> Son güncelleme: 2026-07-09 (FAZ 4 P0 — dil kapsama envanteri [§6] + 7-dil baseline korpusu [121 vaka, docs/nlu-ab-corpus.json] + offline deterministik proof [scripts/nlu-ab-run.ps1]. Katman-1 boşlukları KANITLANDI: müsaitlik/X8=TR+EN, tour-change=TR-only → 5-6 dilde MISS. P1 kabul kriteri hazır.).
+> Önceki: 2026-07-09 (NLU-pilot FAZ B — CANLI GEÇİŞ: NLU_MODEL=claude-sonnet-4-6 [secret+redeploy]. Kanıt: A/B model=sonnet-4.6 + cache_read=4497/çağrı; smoke tüm kritik yollar ✅. Geri dönüş: secret unset + redeploy. Detay G12.).
 > Önceki: 2026-07-09 (NLU-pilot-A — İş0 göreli-kelime ASCII süperset [relative-date-words.ts TEK KAYNAK; "obür gün" o+ü karışık + bugün/bugun; echo-sanitize REL_ECHO_RE] + İş1 Sonnet-NLU pilotu FAZ A: NLU_MODEL env konfig [default Haiku, davranış değişmez] + koşullu caching [Sonnet array+cache_control] + korumalı A/B debug yolu [demo-chat X-NLU-AB] + korpus/koşum [docs/nlu-ab-corpus.json, scripts/nlu-ab-run.ps1]. FAZ3-P1/P2/P3/P4/mikro aynı gün.).
 >
 > **DEPLOY NOTU**: `process-message` shared handler'dır, edge function
@@ -603,3 +604,70 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     tarih" → :10g diğer-tarih öneri, telefon-adımı muafiyeti). **Açık kalanlar
     (M-L, Sonnet-pilotu sonrası)**: "hafta sonu/ay ortası" göreli tarihler (bu
     pakette DEĞİL); paxChild yaş-türetimi ("çocuklar 8 ve 12 yaşında"→2).
+
+## 6. FAZ 4 — DİL KAPSAMA ENVANTERİ (teşhis + P0 baseline, 2026-07-09)
+
+7 hedef dil: TR/EN/DE/FR/ES/RU/AR. Faz 1-3'te eklenen mekanizmaların çoğu
+7-dil yazıldı; bazıları bilinçli TR/TR+EN kaldı. Aşağıdaki matris teşhisin
+(P0) sonucudur; **✅ tam / ⚠ kısmi / ❌ yok / n-a dil-bağımsız**.
+
+### 6a. Sınıf A — Regex/Sinyal setleri
+| Mekanizma (kaynak) | Kapsam | Eksik |
+|---|---|---|
+| CHANGE_KEYWORDS_RE, QUESTION_SIGNAL_RE, VISA_SIGNAL+HINT, iptal-sinyali/res-ctx (J-14), telefon-yok (P4), farketmez (_anyDateSignal), anafora (_v3AnaforaRe), tema-keywords, B1 fiyat-bağlamı, B-DUR süre, detectCancellation+continuationGuard (J-16) | ✅ 7-dil | — (detectCancellation `\b` ASCII → AR/RU sınır kırılgan) |
+| **müsaitlik _availQ (V10/P2)** | ⚠ **TR+EN** | DE/FR/ES/RU/AR |
+| **X8 superlatif (en ucuz/pahalı)** | ⚠ **TR+EN** | DE/FR/ES/RU/AR |
+| **TOUR_CHANGE_PHRASE_RE (V12)** | ❌ **TR-only** | EN/DE/FR/ES/RU/AR |
+| ay-niteleyici (bu ay/gelecek ay, İş0) | ⚠ 6-dil | AR |
+| tema-bağlam _themeContextRe (P1) | ⚠ 5-dil | RU/AR |
+| relative-date öbür-gün/gelecek-hafta/gün-adı (İş0) | ⚠ 7-kısmi | AR (bugün/yarın var) |
+| iptal-FAQ-istisnası _cxlFaqRe | ⚠ TR+kısmi EN | DE/FR/ES/RU/AR |
+| emoji-onay (V7) | n-a | — |
+
+### 6b. Sınıf B — Kullanıcıya-dönük şablonlar
+STEP_QUESTIONS, :10c/:10d/:10d-2/:10f/:10g, :11 ailesi, B1, telefon-yok/P4,
+J-14, echo-sanitize preambles, netleştirme/onay-yönlendirme → **✅ 7-dil tam**.
+Dil-seçimi tüm şablonlarda `_msgs[context.language] || _msgs.tr` (**fallback TR
+tutarlı**). Küçük: :10e `_remTxt` (kişilik-yer) TR+EN ⚠; J-14 acente-özeti TR-only
+ama iç-metin (n-a).
+
+### 6c. Sınıf C — LLM prompt blokları
+✅ 7-dil: role, format, injection-guard, translation-directive, tarih-başlığı.
+⚠ **TR+EN + EN-fallback:** stage prompt'ları (6 aşama) + collection-step (5),
+hallucination-guard, no-fake-confirmation, tarih/dahil-olanlar yasağı (V2/V3a),
+tone (4 stil), agency/ödeme-kuralı. **Nüans:** her role dosyasında "kullanıcının
+dilinde yanıt ver" direktifi → **çıktı dili her zaman doğru**; EN-fallback yalnız
+*talimat metninde* → kural-uyum kalitesi model-yeteneğine bağlı (Sonnet-4.6 yüksek,
+garanti değil).
+
+### 6d. Dil-seçim mekanizması
+4 katman (öncelik): açık-niyet (`detectLanguageChangeIntent`, 7-dil) → Unicode-
+karakter (`detectLanguage`; saf-ASCII→null) → NLU (yalnız ilk-mesaj/kısa/non-ASCII
+kabul; uzun-ASCII'de mevcut korunur) → seed (yalnız demo-chat). `enabled_languages`
+whitelist final-gate → desteklenmeyen dil `enabledLangs[0]`, o da yoksa `tr`.
+context.language DB'ye (WhatsApp) taşınır, bir kez set→sabit. **Asıl dil-riski
+TESPİT değil KAPSAMA:** tespit doğru dili bulsa bile Sınıf A sinyali / Sınıf C
+promptu o dili kapsamıyorsa deterministik yol kaçar / prompt EN-fallback'e düşer.
+
+### 6e. P0 baseline korpusu + KANIT (docs/nlu-ab-corpus.json)
+**121 vaka** (15 çekirdek×7-dil = 105 + 16 dil-özgü tuzak: AR ال-takısı/RTL/فصحى,
+RU kiril çekim, DE bileşik/Sie, ES aksansız, EN kısaltma). Her satır: intent +
+`det_signal` (availability/tour_change/superlative/relative) + `gap` işareti
+(P1 kabul kriteri). Koşum: `scripts/nlu-ab-run.ps1` — **offline deterministik
+proof** (kaynaktan .NET regex; endpoint gerektirmez — Katman-1 sinyalleri
+POST-NLU olduğundan canlı NLU onları KANITLAYAMAZ) + opsiyonel canlı-NLU
+(`-Token`, Sonnet intent). `-Lang` tek-dil filtre.
+
+**Katman-1 baseline matrisi (dil × sinyal, fire/miss) — P1-öncesi KANIT:**
+```
+sinyal        TR    EN    DE    FR    ES    RU    AR
+availability  fire  fire  MISS  MISS  MISS  MISS  MISS   ← 5-dil boşluk KANITLANDI
+tour_change   fire  MISS  MISS  MISS  MISS  MISS  MISS   ← 6-dil boşluk KANITLANDI
+superlative   fire  fire  MISS  MISS  MISS  MISS  MISS   ← 5-dil boşluk KANITLANDI
+relative      MISS  fire  fire  fire  fire  fire  fire   (TR: "yarına" çekim-eki
+                                                          lookahead'e takıldı — incidental
+                                                          bulgu; AR "بعد غد"/day-after MISS)
+```
+20/21 gap-işaretli satır DOĞRULANDI (miss), 0 beklenmedik-fire. (21.: L-ar2
+ay-niteleyici — det_signal olarak taranmadı, ayrı.) **Bu matris P1'in kabul
+kriteridir:** P1 sonrası MISS'ler fire olmalı. Faz 5 = korpusun A/B regresyon-ağı.
