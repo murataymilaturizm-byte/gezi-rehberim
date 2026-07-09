@@ -9,6 +9,7 @@ import { isNluFullNameNegationLeak, isNluFullNameTourLeak } from "./nlu-validati
 import { hasQuotaForPax, getQuotaRemaining } from "./quota-check.ts";
 import { isValidPax } from "../utils/validation.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
+import { AVAILABILITY_RE } from "../constants/availability-words.ts";
 import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-names.ts";
 
 // getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
@@ -571,9 +572,10 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       let _targetMonth: number | null = null;
       // Europe/Istanbul ayı (P4 dersi — UTC sunucusunda ay-sınırında kaymasın).
       const _istMonth = parseInt(new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul", month: "numeric" }));
-      if (/(?<![\p{L}\p{N}])(bu\s+ay|this\s+month|dieser\s+monat|ce\s+mois|este\s+mes|этот\s+месяц)/iu.test(message || "")) {
+      // 2026-07-09 FAZ4-P1: AR ay-niteleyici eklendi (هذا الشهر / الشهر القادم).
+      if (/(?<![\p{L}\p{N}])(bu\s+ay|this\s+month|dieser\s+monat|ce\s+mois|este\s+mes|этот\s+месяц|هذا\s+الشهر)/iu.test(message || "")) {
         _targetMonth = _istMonth;
-      } else if (/(?<![\p{L}\p{N}])(gelecek\s+ay|[öo]n[üu]m[üu]zdeki\s+ay|next\s+month|n[äa]chsten?\s+monat|mois\s+prochain|pr[óo]ximo\s+mes|следующ\S*\s+месяц)/iu.test(message || "")) {
+      } else if (/(?<![\p{L}\p{N}])(gelecek\s+ay|[öo]n[üu]m[üu]zdeki\s+ay|next\s+month|n[äa]chsten?\s+monat|mois\s+prochain|pr[óo]ximo\s+mes|следующ\S*\s+месяц|الشهر\s+القادم|الشهر\s+المقبل)/iu.test(message || "")) {
         _targetMonth = _istMonth + 1 > 12 ? 1 : _istMonth + 1;
       }
 
@@ -590,7 +592,8 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       }
       // V10 soru-guard'ı: müsaitlik-kelimesi → :10e (seçim değil). Ayırıcı
       // müsaitlik-kelime, QUESTION_SIGNAL değil (zıt-yön dersi).
-      const _availQ = /(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|available|availability|müsaitlik|musaitlik)/iu.test(message || "");
+      // 2026-07-09 FAZ4-P1: TR+EN → 7-dil TEK KAYNAK (availability-words.ts).
+      const _availQ = AVAILABILITY_RE.test(message || "");
       if (_availQ) {
         (extractedInfo as any).availabilityQueryDay = _ordDay;
       } else if (_ordMatches.length === 1) {

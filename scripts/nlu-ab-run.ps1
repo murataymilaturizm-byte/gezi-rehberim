@@ -29,15 +29,18 @@ if ($Lang) { $cases = $cases | Where-Object { $_.lang -eq $Lang } }
 $LANGS = @("tr", "en", "de", "fr", "es", "ru", "ar")
 
 # ── Deterministik sinyal regexleri (KAYNAKTAN BIREBIR) ──
-$reAvail = [regex]::new('(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|available|availability|müsaitlik|musaitlik)', 'IgnoreCase')
-$reTourChange = [regex]::new('(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti|değildi|degildi|olmamıştı|olmamisti)', 'IgnoreCase')
-$reSupAsc = [regex]::new('(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|cheapest\s+tour)', 'IgnoreCase')
-$reSupDesc = [regex]::new('(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)', 'IgnoreCase')
-# relative: kaynak REL_* birlesimi (AR day-after/next-week/gun-adi KAYNAKTA YOK -> miss)
-$relBody = 'bugün|bugun|today|heute|сегодня|اليوم|aujourdhui|hoy|' +
-  'yarın|yarin|tomorrow|morgen|завтра|غدا|غداً|demain|mañana|manana|' +
-  'öbür\s*gün|obür\s*gün|öbur\s*gün|obur\s*gün|öbür\s*gun|obür\s*gun|obur\s*gun|ertesi\s*gün|ertesi\s*gun|day\s*after\s*tomorrow|übermorgen|uebermorgen|послезавтра|après[\s-]?demain|apres[\s-]?demain|pasado\s*ma[nñ]ana|' +
-  'haftaya|gelecek\s*hafta|önümüzdeki\s*hafta|onumuzdeki\s*hafta|next\s*week|nächste\s*woche|naechste\s*woche|следующ\S+\s+недел\S+|la\s*semaine\s*prochaine|semaine\s*prochaine|la\s*próxima\s*semana|próxima\s*semana'
+# 2026-07-09 FAZ4-P1: kaynaktan GUNCEL (7-dil) — availability-words.ts,
+# tour-matching.ts, process-message X8, relative-date-words.ts.
+$reAvail = [regex]::new('(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|yer\s*kaldı|yer\s*kaldi|müsaitlik|musaitlik|available|availability|free|open|vacant|verfügbar|verfugbar|verfügbarkeit|verfugbarkeit|frei|disponible|disponibilité|disponibilite|disponibilidad|libre|доступн[\p{L}]*|свободн[\p{L}]*|есть\s*мест[\p{L}]*|متاح|متوفر|فاضي)(?![\p{L}\p{N}])', 'IgnoreCase')
+$reTourChange = [regex]::new("(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti|değildi|degildi|olmamıştı|olmamisti|wrong\s+(?:tour|trip|excursion)|(?:tour|trip)\s+(?:is\s+)?wrong|(?:change|switch|changed|switching).{0,20}(?:tour|trip)|(?:tour|trip).{0,20}(?:instead|mistake|wrong)|should\s+(?:have\s+)?be(?:en)?|supposed\s+to\s+be|meant\s+to\s+be|falsche[nrs]?\s+(?:tour|reise|ausflug)|(?:tour|reise)\s+(?:ändern|wechseln)|(?:ändern|wechseln).{0,12}(?:tour|reise)|sollte.{0,15}sein|mauvais(?:e)?\s+(?:circuit|excursion|tour|voyage)|(?:changer|modifier).{0,15}(?:circuit|tour)|c['’]était.{0,20}(?:circuit|tour)|[çc]a\s+devait\s+être|tour\s+(?:equivocado|incorrecto)|(?:cambiar|cambio).{0,15}tour|deb[íi]a\s+ser|era\s+.{0,15}tour|не\s+тот\s+тур\S*|(?:сменить|поменять|изменить).{0,12}тур|должн\S{0,3}\s+быть|тур.{0,12}не\s+тот|جولة\s+خاطئة|(?:تغيير|غيّر|بدّل).{0,12}(?:الجولة|جولة)|كان\s+يجب|المفروض)", 'IgnoreCase')
+$reSupAsc = [regex]::new('(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|least\s+expensive|günstigste|guenstigste|billigste|preiswerteste|(?:le\s+)?moins\s+cher|m[áa]s\s+barat[oa]|m[áa]s\s+econ[óo]mic[oa]|самый\s+деш[её]в[\p{L}]*|дешевле\s+всего|(?:ال)?أرخص|أرخص)(?![\p{L}\p{N}])', 'IgnoreCase')
+$reSupDesc = [regex]::new('(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price|priciest|teuerste|(?:le\s+)?plus\s+cher|m[áa]s\s+car[oa]|самый\s+дорог[\p{L}]*|дороже\s+всего|(?:ال)?أغلى|أغلى)(?![\p{L}\p{N}])', 'IgnoreCase')
+# relative: 7-dil GUNCEL (AR day-after/next-week/gun-adi EKLENDI; TR cekim yarına/bugüne/öbür güne)
+$relBody = 'bugün[eü]?|bugun[eu]?|today|heute|сегодня|اليوم|aujourdhui|hoy|' +
+  'yarın[aı]?|yarin[ai]?|tomorrow|morgen|завтра|غدا|غداً|demain|mañana|manana|' +
+  '(?:[öo]b[üu]r|ertesi)\s*g[üu]n[eüu]?|day\s*after\s*tomorrow|übermorgen|uebermorgen|послезавтра|après[\s-]?demain|apres[\s-]?demain|pasado\s*ma[nñ]ana|بعد\s*غد|بعد\s*بكرة|' +
+  'haftaya|gelecek\s*hafta|önümüzdeki\s*hafta|onumuzdeki\s*hafta|next\s*week|nächste\s*woche|naechste\s*woche|следующ\S+\s+недел\S+|la\s*semaine\s*prochaine|semaine\s*prochaine|la\s*próxima\s*semana|próxima\s*semana|الأسبوع\s*القادم|الأسبوع\s*المقبل|الأسبوع\s*الجاي|' +
+  'الأحد|الإثنين|الاثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت'
 $reRelative = [regex]::new("(?<![\p{L}\p{N}])(?:$relBody)(?![\p{L}\p{N}])", 'IgnoreCase')
 
 function Test-DetSignal($sig, $msg) {

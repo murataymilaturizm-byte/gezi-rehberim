@@ -38,8 +38,13 @@ import { isMeaningfulTourKeyword } from "../constants/tour-matching.ts";
 // "pamukkale değildi sanki"). Tüketiciler tur-eşleşmesini AYRICA şart koşar
 // (7c multi>1, B2 selected!=null, B-5 sadece izin) → "20 aralık değildi" tarih
 // düzeltmesi yanlış tetiklemez (A-P2 analizi geçerli).
+// 2026-07-09 FAZ4-P1: TR-only → 7-dil. Kip-ailesi (olacaktı/değildi →
+// should be / c'était / era / должна быть / كان يجب) + "yanlış tur" dil
+// karşılıkları + change-fiil+tur. /i → /iu (AR/RU unicode). Tüketiciler
+// (7c multi>1, B2 selected!=null, B-5 sadece izin) tur-EŞLEŞME şart koşar →
+// modal/gevşek alternatifler yalnız tur-adı geçen mesajda etkili (A-P2).
 export const TOUR_CHANGE_PHRASE_RE =
-  /(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti|değildi|degildi|olmamıştı|olmamisti)/i;
+  /(?:turuna\s+geç|tura\s+geç|turunu\s+değiş|turunu\s+al|turuna\s+geçelim|turuna\s+geçeyim|tur\s+değiş|değiştir.{0,10}tur|tur.{0,20}değiş|aslında.{0,30}tur|tur.{0,20}(?:yanlış|yanlis|hata)|(?:yanlış|yanlis).{0,15}tur|olacaktı|olacakti|değildi|degildi|olmamıştı|olmamisti|wrong\s+(?:tour|trip|excursion)|(?:tour|trip)\s+(?:is\s+)?wrong|(?:change|switch|changed|switching).{0,20}(?:tour|trip)|(?:tour|trip).{0,20}(?:instead|mistake|wrong)|should\s+(?:have\s+)?be(?:en)?|supposed\s+to\s+be|meant\s+to\s+be|falsche[nrs]?\s+(?:tour|reise|ausflug)|(?:tour|reise)\s+(?:ändern|wechseln)|(?:ändern|wechseln).{0,12}(?:tour|reise)|sollte.{0,15}sein|mauvais(?:e)?\s+(?:circuit|excursion|tour|voyage)|(?:changer|modifier).{0,15}(?:circuit|tour)|c['’]était.{0,20}(?:circuit|tour)|[çc]a\s+devait\s+être|tour\s+(?:equivocado|incorrecto)|(?:cambiar|cambio).{0,15}tour|deb[íi]a\s+ser|era\s+.{0,15}tour|не\s+тот\s+тур\S*|(?:сменить|поменять|изменить).{0,12}тур|должн\S{0,3}\s+быть|тур.{0,12}не\s+тот|جولة\s+خاطئة|(?:تغيير|غيّر|بدّل).{0,12}(?:الجولة|جولة)|كان\s+يجب|المفروض)/iu;
 
 function normalizeNluField(value: any): string[] {
   if (!value) return [];

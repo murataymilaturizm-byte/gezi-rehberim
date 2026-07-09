@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (FAZ 4 P0 — dil kapsama envanteri [§6] + 7-dil baseline korpusu [121 vaka, docs/nlu-ab-corpus.json] + offline deterministik proof [scripts/nlu-ab-run.ps1]. Katman-1 boşlukları KANITLANDI: müsaitlik/X8=TR+EN, tour-change=TR-only → 5-6 dilde MISS. P1 kabul kriteri hazır.).
+> Son güncelleme: 2026-07-09 (FAZ 4 P1 — kritik sinyaller 7-dil EŞİTLENDİ: müsaitlik [availability-words.ts TEK KAYNAK], TOUR_CHANGE, X8, ay-niteleyici-AR, tema-ctx-RU/AR, _cxlFaqRe, relative AR+TR-çekim. Kabul kriteri KARŞILANDI: baseline 21 gap → 7-dil fire, 0 regresyon. Davranışsal 53/53. Detay §6.).
+> Önceki: 2026-07-09 (FAZ 4 P0 — dil kapsama envanteri [§6] + 7-dil baseline korpusu + offline proof. Katman-1 boşlukları KANITLANDI.).
 > Önceki: 2026-07-09 (NLU-pilot FAZ B — CANLI GEÇİŞ: NLU_MODEL=claude-sonnet-4-6 [secret+redeploy]. Kanıt: A/B model=sonnet-4.6 + cache_read=4497/çağrı; smoke tüm kritik yollar ✅. Geri dönüş: secret unset + redeploy. Detay G12.).
 > Önceki: 2026-07-09 (NLU-pilot-A — İş0 göreli-kelime ASCII süperset [relative-date-words.ts TEK KAYNAK; "obür gün" o+ü karışık + bugün/bugun; echo-sanitize REL_ECHO_RE] + İş1 Sonnet-NLU pilotu FAZ A: NLU_MODEL env konfig [default Haiku, davranış değişmez] + koşullu caching [Sonnet array+cache_control] + korumalı A/B debug yolu [demo-chat X-NLU-AB] + korpus/koşum [docs/nlu-ab-corpus.json, scripts/nlu-ab-run.ps1]. FAZ3-P1/P2/P3/P4/mikro aynı gün.).
 >
@@ -615,13 +616,13 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
 | Mekanizma (kaynak) | Kapsam | Eksik |
 |---|---|---|
 | CHANGE_KEYWORDS_RE, QUESTION_SIGNAL_RE, VISA_SIGNAL+HINT, iptal-sinyali/res-ctx (J-14), telefon-yok (P4), farketmez (_anyDateSignal), anafora (_v3AnaforaRe), tema-keywords, B1 fiyat-bağlamı, B-DUR süre, detectCancellation+continuationGuard (J-16) | ✅ 7-dil | — (detectCancellation `\b` ASCII → AR/RU sınır kırılgan) |
-| **müsaitlik _availQ (V10/P2)** | ⚠ **TR+EN** | DE/FR/ES/RU/AR |
-| **X8 superlatif (en ucuz/pahalı)** | ⚠ **TR+EN** | DE/FR/ES/RU/AR |
-| **TOUR_CHANGE_PHRASE_RE (V12)** | ❌ **TR-only** | EN/DE/FR/ES/RU/AR |
-| ay-niteleyici (bu ay/gelecek ay, İş0) | ⚠ 6-dil | AR |
-| tema-bağlam _themeContextRe (P1) | ⚠ 5-dil | RU/AR |
-| relative-date öbür-gün/gelecek-hafta/gün-adı (İş0) | ⚠ 7-kısmi | AR (bugün/yarın var) |
-| iptal-FAQ-istisnası _cxlFaqRe | ⚠ TR+kısmi EN | DE/FR/ES/RU/AR |
+| **müsaitlik _availQ (V10/P2)** | ✅ **7-dil (FAZ4-P1)** — `constants/availability-words.ts` TEK KAYNAK | — |
+| **X8 superlatif (en ucuz/pahalı)** | ✅ **7-dil (FAZ4-P1)** — ASC/DESC yön eşlemeli | — |
+| **TOUR_CHANGE_PHRASE_RE (V12)** | ✅ **7-dil (FAZ4-P1)** — kip-ailesi + wrong-tour, tur-eşleşme guard'lı (A-P2) | — |
+| ay-niteleyici (bu ay/gelecek ay, İş0) | ✅ **7-dil (FAZ4-P1)** — AR هذا الشهر/الشهر القادم | — |
+| tema-bağlam _themeContextRe (P1) | ✅ **7-dil (FAZ4-P1)** — RU/AR eklendi | — |
+| relative-date öbür-gün/gelecek-hafta/gün-adı (İş0) | ✅ **7-dil (FAZ4-P1)** — AR بعد غد/الأسبوع القادم/gün-adları + **TR çekim** (yarına/bugüne/öbür güne; "ki" eki hariç) | — |
+| iptal-FAQ-istisnası _cxlFaqRe | ✅ **7-dil (FAZ4-P1)** | — |
 | emoji-onay (V7) | n-a | — |
 
 ### 6b. Sınıf B — Kullanıcıya-dönük şablonlar
@@ -652,22 +653,30 @@ promptu o dili kapsamıyorsa deterministik yol kaçar / prompt EN-fallback'e dü
 ### 6e. P0 baseline korpusu + KANIT (docs/nlu-ab-corpus.json)
 **121 vaka** (15 çekirdek×7-dil = 105 + 16 dil-özgü tuzak: AR ال-takısı/RTL/فصحى,
 RU kiril çekim, DE bileşik/Sie, ES aksansız, EN kısaltma). Her satır: intent +
-`det_signal` (availability/tour_change/superlative/relative) + `gap` işareti
-(P1 kabul kriteri). Koşum: `scripts/nlu-ab-run.ps1` — **offline deterministik
+`det_signal` (availability/tour_change/superlative/relative). (P0'da `gap` işaretleri
+Katman-1 boşluklarını kanıtladı; **P1'de tümü kapandı → gap-işaretsiz regresyon-ağı**.) Koşum: `scripts/nlu-ab-run.ps1` — **offline deterministik
 proof** (kaynaktan .NET regex; endpoint gerektirmez — Katman-1 sinyalleri
 POST-NLU olduğundan canlı NLU onları KANITLAYAMAZ) + opsiyonel canlı-NLU
 (`-Token`, Sonnet intent). `-Lang` tek-dil filtre.
 
-**Katman-1 baseline matrisi (dil × sinyal, fire/miss) — P1-öncesi KANIT:**
+**Katman-1 baseline matrisi (dil × sinyal, fire/miss):**
 ```
-sinyal        TR    EN    DE    FR    ES    RU    AR
-availability  fire  fire  MISS  MISS  MISS  MISS  MISS   ← 5-dil boşluk KANITLANDI
-tour_change   fire  MISS  MISS  MISS  MISS  MISS  MISS   ← 6-dil boşluk KANITLANDI
-superlative   fire  fire  MISS  MISS  MISS  MISS  MISS   ← 5-dil boşluk KANITLANDI
-relative      MISS  fire  fire  fire  fire  fire  fire   (TR: "yarına" çekim-eki
-                                                          lookahead'e takıldı — incidental
-                                                          bulgu; AR "بعد غد"/day-after MISS)
+                P1-ÖNCESİ (baseline)              →  P1-SONRASI (2026-07-09)
+sinyal        TR EN DE FR ES RU AR                   TR EN DE FR ES RU AR
+availability  ✓  ✓  ✗  ✗  ✗  ✗  ✗  (5-dil boşluk)   ✓  ✓  ✓  ✓  ✓  ✓  ✓
+tour_change   ✓  ✗  ✗  ✗  ✗  ✗  ✗  (6-dil boşluk)   ✓  ✓  ✓  ✓  ✓  ✓  ✓
+superlative   ✓  ✓  ✗  ✗  ✗  ✗  ✗  (5-dil boşluk)   ✓  ✓  ✓  ✓  ✓  ✓  ✓
+relative      ✗* ✓  ✓  ✓  ✓  ✓  ✓  (*TR çekim,AR    ✓  ✓  ✓  ✓  ✓  ✓  ✓
+                                     day-after MISS)
 ```
-20/21 gap-işaretli satır DOĞRULANDI (miss), 0 beklenmedik-fire. (21.: L-ar2
-ay-niteleyici — det_signal olarak taranmadı, ayrı.) **Bu matris P1'in kabul
-kriteridir:** P1 sonrası MISS'ler fire olmalı. Faz 5 = korpusun A/B regresyon-ağı.
+**P1 KABUL KRİTERİ KARŞILANDI:** 21/21 gap satırı fire'a döndü; her dil miss=0,
+0 regresyon (mevcut fire'lar korundu). Korpus artık gap-işaretsiz **regresyon-ağı**
+(det_signal satırları 7-dil fire etmeli; MISS'e dönerse regresyon). Faz 5 temeli.
+
+**TR ÇEKİM KARARI (relative, gerekçe):** REL_TODAY/TOMORROW/DAY_AFTER TR köklerine
+KONTROLLÜ yönelme/belirtme eki eklendi (yarın→yarın[aı]?, bugün→bugün[eü]?, öbür
+gün→…gün[eüu]?). **"ki" eki KASITLI HARİÇ:** "yarınki program" = o günün programı
+(sıfat), tarih SEÇİMİ değil → gün seçtirmemeli (lookahead 'k'yi bloklar). Dar-ek
+tercihi: yanlış-seçimi (yarınki→yarın) önler, recall-kaybı minimal (yönelme eki en
+yaygın tarih-verme formu). Diğer diller: RU çekimleri REL'de zaten `\S+` ile mevcut;
+DE/FR/ES göreli kelimeler zarf (çekimsiz) → ek sorunu yok.

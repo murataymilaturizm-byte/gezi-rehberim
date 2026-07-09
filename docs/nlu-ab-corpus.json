@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "purpose": "NLU 7-dil kapsama baseline korpusu (FAZ 4 P0). CANLI Sonnet-4.6 tek model.",
-    "usage": "scripts/nlu-ab-run.ps1 — demo-chat X-NLU-AB debug yolu (Sonnet çıktısı) + OFFLINE deterministik-sinyal regex denetimi.",
+    "purpose": "NLU 7-dil kapsama regresyon korpusu (FAZ 4 P0 baseline → P1 sonrası). CANLI Sonnet-4.6 tek model.",
+    "usage": "scripts/nlu-ab-run.ps1 — OFFLINE deterministik-sinyal regex denetimi (birincil) + opsiyonel canlı-NLU (X-NLU-AB, -Token).",
     "langs": [
       "tr",
       "en",
@@ -17,8 +17,8 @@
       "lang_specific": 16,
       "total": 121
     },
-    "fields": "id, scenario, lang, message, state/step/summary(bağlam), expected_intent, det_signal(availability|tour_change|superlative|relative), gap(KATMAN-1/2 boşluk işareti — P1 sonrası geçmeli), note",
-    "gap_legend": "gap!=null → o dilde deterministik sinyal ŞU AN KAÇIYOR; P1 (7-dil eşitleme) sonrası geçmeli. P1 kabul kriteri."
+    "fields": "id, scenario, lang, message, state/step/summary(bağlam), expected_intent, det_signal(availability|tour_change|superlative|relative), gap, note",
+    "status": "FAZ4-P1 SONRASI: tüm Katman-1 boşlukları KAPANDI (müsaitlik/tour-change/X8 7-dil + relative AR/TR-çekim). det_signal satırları artık 7 dilde FIRE etmeli — korpus regresyon-ağı: gelecekte bir sinyal MISS'e dönerse regresyon."
   },
   "cases": [
     {
@@ -876,7 +876,7 @@
       "summary": "Pamukkale, 20.12 VE 20.02 tarihleri var",
       "expected_intent": "provide_info/general",
       "det_signal": "availability",
-      "gap": "layer1-availability",
+      "gap": null,
       "note": "V10 müsaitlik-sorusu → :10e (seçim değil). _availQ TR+EN → non-TR/EN KAÇIYOR"
     },
     {
@@ -889,7 +889,7 @@
       "summary": "Pamukkale, 20.12 VE 20.02 tarihleri var",
       "expected_intent": "provide_info/general",
       "det_signal": "availability",
-      "gap": "layer1-availability",
+      "gap": null,
       "note": "V10 müsaitlik-sorusu → :10e (seçim değil). _availQ TR+EN → non-TR/EN KAÇIYOR"
     },
     {
@@ -902,7 +902,7 @@
       "summary": "Pamukkale, 20.12 VE 20.02 tarihleri var",
       "expected_intent": "provide_info/general",
       "det_signal": "availability",
-      "gap": "layer1-availability",
+      "gap": null,
       "note": "V10 müsaitlik-sorusu → :10e (seçim değil). _availQ TR+EN → non-TR/EN KAÇIYOR"
     },
     {
@@ -915,7 +915,7 @@
       "summary": "Pamukkale, 20.12 VE 20.02 tarihleri var",
       "expected_intent": "provide_info/general",
       "det_signal": "availability",
-      "gap": "layer1-availability",
+      "gap": null,
       "note": "V10 müsaitlik-sorusu → :10e (seçim değil). _availQ TR+EN → non-TR/EN KAÇIYOR"
     },
     {
@@ -928,7 +928,7 @@
       "summary": "Pamukkale, 20.12 VE 20.02 tarihleri var",
       "expected_intent": "provide_info/general",
       "det_signal": "availability",
-      "gap": "layer1-availability",
+      "gap": null,
       "note": "V10 müsaitlik-sorusu → :10e (seçim değil). _availQ TR+EN → non-TR/EN KAÇIYOR"
     },
     {
@@ -954,7 +954,7 @@
       "summary": "Pamukkale seçili, isim alındı",
       "expected_intent": "change_info/tour_search",
       "det_signal": "tour_change",
-      "gap": "layer1-tour_change",
+      "gap": null,
       "note": "TOUR_CHANGE_PHRASE_RE TR-only → non-TR KAÇIYOR (yanlış turla devam riski, A-P2)"
     },
     {
@@ -967,7 +967,7 @@
       "summary": "Pamukkale seçili, isim alındı",
       "expected_intent": "change_info/tour_search",
       "det_signal": "tour_change",
-      "gap": "layer1-tour_change",
+      "gap": null,
       "note": "TOUR_CHANGE_PHRASE_RE TR-only → non-TR KAÇIYOR (yanlış turla devam riski, A-P2)"
     },
     {
@@ -980,7 +980,7 @@
       "summary": "Pamukkale seçili, isim alındı",
       "expected_intent": "change_info/tour_search",
       "det_signal": "tour_change",
-      "gap": "layer1-tour_change",
+      "gap": null,
       "note": "TOUR_CHANGE_PHRASE_RE TR-only → non-TR KAÇIYOR (yanlış turla devam riski, A-P2)"
     },
     {
@@ -993,7 +993,7 @@
       "summary": "Pamukkale seçili, isim alındı",
       "expected_intent": "change_info/tour_search",
       "det_signal": "tour_change",
-      "gap": "layer1-tour_change",
+      "gap": null,
       "note": "TOUR_CHANGE_PHRASE_RE TR-only → non-TR KAÇIYOR (yanlış turla devam riski, A-P2)"
     },
     {
@@ -1006,7 +1006,7 @@
       "summary": "Pamukkale seçili, isim alındı",
       "expected_intent": "change_info/tour_search",
       "det_signal": "tour_change",
-      "gap": "layer1-tour_change",
+      "gap": null,
       "note": "TOUR_CHANGE_PHRASE_RE TR-only → non-TR KAÇIYOR (yanlış turla devam riski, A-P2)"
     },
     {
@@ -1019,7 +1019,7 @@
       "summary": "Pamukkale seçili, isim alındı",
       "expected_intent": "change_info/tour_search",
       "det_signal": "tour_change",
-      "gap": "layer1-tour_change",
+      "gap": null,
       "note": "TOUR_CHANGE_PHRASE_RE TR-only → non-TR KAÇIYOR (yanlış turla devam riski, A-P2)"
     },
     {
@@ -1058,7 +1058,7 @@
       "summary": null,
       "expected_intent": "tour_search/faq_general",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "X8 superlatif TR+EN → non-TR/EN KAÇIYOR (deterministik fiyat-sıralama yok, LLM tutarsız)"
     },
     {
@@ -1071,7 +1071,7 @@
       "summary": null,
       "expected_intent": "tour_search/faq_general",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "X8 superlatif TR+EN → non-TR/EN KAÇIYOR (deterministik fiyat-sıralama yok, LLM tutarsız)"
     },
     {
@@ -1084,7 +1084,7 @@
       "summary": null,
       "expected_intent": "tour_search/faq_general",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "X8 superlatif TR+EN → non-TR/EN KAÇIYOR (deterministik fiyat-sıralama yok, LLM tutarsız)"
     },
     {
@@ -1097,7 +1097,7 @@
       "summary": null,
       "expected_intent": "tour_search/faq_general",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "X8 superlatif TR+EN → non-TR/EN KAÇIYOR (deterministik fiyat-sıralama yok, LLM tutarsız)"
     },
     {
@@ -1110,7 +1110,7 @@
       "summary": null,
       "expected_intent": "tour_search/faq_general",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "X8 superlatif TR+EN → non-TR/EN KAÇIYOR (deterministik fiyat-sıralama yok, LLM tutarsız)"
     },
     {
@@ -1409,7 +1409,7 @@
       "summary": "Pamukkale",
       "expected_intent": "provide_info",
       "det_signal": null,
-      "gap": "layer2-ay-niteleyici-AR",
+      "gap": null,
       "note": "AR ay-niteleyici 'الشهر القادم' (gelecek ay) — ay-niteleyici regex AR YOK → KAÇIYOR"
     },
     {
@@ -1422,7 +1422,7 @@
       "summary": "Pamukkale",
       "expected_intent": "provide_info",
       "det_signal": "relative",
-      "gap": "layer2-relative-AR",
+      "gap": null,
       "note": "AR 'بعد غد' (öbür gün) — REL_DAY_AFTER AR YOK → çözülemez KAÇIYOR"
     },
     {
@@ -1474,7 +1474,7 @@
       "summary": null,
       "expected_intent": "tour_search",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "RU superlatif 'самый дешёвый' — X8 RU YOK → KAÇIYOR"
     },
     {
@@ -1500,7 +1500,7 @@
       "summary": null,
       "expected_intent": "tour_search",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "DE resmi Sie + superlatif 'günstigste' — X8 DE YOK → KAÇIYOR"
     },
     {
@@ -1526,7 +1526,7 @@
       "summary": null,
       "expected_intent": "tour_search",
       "det_signal": "superlative",
-      "gap": "layer1-superlative",
+      "gap": null,
       "note": "ES AKSANSIZ (cual/mas) + superlatif 'mas barato' — X8 ES YOK → KAÇIYOR"
     },
     {

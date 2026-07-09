@@ -421,8 +421,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // --- X8: SUPERLATİF FİYAT (en ucuz / en pahalı) ---
   // LLM (Haiku) sayı karşılaştırmada güvenilmez. Pattern eşleşince tours array
   // price_adult'a göre sıralanır, deterministik mesaj döner.
-  const _superlativeAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|cheapest\s+tour)/iu;
-  const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price)/iu;
+  // 2026-07-09 FAZ4-P1: TR+EN → 7-dil. ASC (ucuz) / DESC (pahalı) yön eşlemesi
+  // dil-başı doğru. RU superlatif "самый деш/дорог" + "дешевле/дороже всего";
+  // "дорог" tek başına 'yol' ile karışır → "самый\s+дорог" ile anchor'lı.
+  const _superlativeAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|least\s+expensive|günstigste|guenstigste|billigste|preiswerteste|(?:le\s+)?moins\s+cher|m[áa]s\s+barat[oa]|m[áa]s\s+econ[óo]mic[oa]|самый\s+деш[её]в[\p{L}]*|дешевле\s+всего|(?:ال)?أرخص|أرخص)(?![\p{L}\p{N}])/iu;
+  const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price|priciest|teuerste|(?:le\s+)?plus\s+cher|m[áa]s\s+car[oa]|самый\s+дорог[\p{L}]*|дороже\s+всего|(?:ال)?أغلى|أغلى)(?![\p{L}\p{N}])/iu;
   const _matchesAsc = _superlativeAsc.test(message);
   const _matchesDesc = _superlativeDesc.test(message);
   if (_isExploreStage && !_richTourName && (_matchesAsc || _matchesDesc) && tours.length > 0) {
@@ -839,7 +842,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // "tarihi yerler"). Canlı: "biz bir aileyiz pamukkale istiyoruz" → "aile"
   // tetikliyordu. Tek-anlamlı kelimeler (romantik/macera/doğa...) aynen kalır.
   const _unambiguousThemeRe = /(?<![\p{L}\p{N}])(do[ğg]a|macera|k[üu]lt[üu]r|romantik|deniz|nature|adventure|cultural|romantic|natur(?!al)|abenteuer|kultur|romantisch|aventure|culturel|romantique|naturaleza|aventura|romántico|природа|приключени|романтическ|طبيعة|مغامرة|رومانسي)/iu;
-  const _themeContextRe = /(?<![\p{L}\p{N}])(tur|turu|tatil|gezi|holiday|vacation|trip|reise|voyage|viaje|yerler?|için\s+uygun)/iu;
+  // 2026-07-09 FAZ4-P1: RU/AR bağlam-kelimeleri eklendi (çift-anlamlı tema
+  // kelimesi "aile/семейн/عائلي" bu bağlamla teyit gerektirir).
+  const _themeContextRe = /(?<![\p{L}\p{N}])(tur|turu|tatil|gezi|holiday|vacation|trip|reise|voyage|viaje|yerler?|için\s+uygun|тур|поездк[\p{L}]*|отпуск|путешеств[\p{L}]*|отдых|جولة|رحلة|عطلة|سفر)/iu;
   const _themeMatched = _themeKeywordsRe.test(message);
   const _themeOnlyAmbiguous = _themeMatched && !_unambiguousThemeRe.test(message);
   const _themeFires = _themeMatched && (!_themeOnlyAmbiguous || _themeContextRe.test(message));
@@ -1074,7 +1079,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   {
     const _cxlSignalRe = /(?<![\p{L}\p{N}])(iptal|cancel|stornier|annul|cancelar|отмен|إلغاء|ألغ)/iu;
     const _cxlResCtxRe = /(?<![\p{L}\p{N}])(rezervasyon|kayıt|kaydı|reservation|booking|buchung|réservation|reserva|бронь|бронирование|حجز)/iu;
-    const _cxlFaqRe = /(şart|kosul|koşul|policy|iade|refund|ücret|ucret|kesinti|nasıl|nasil|ne zaman)/i;
+    // 2026-07-09 FAZ4-P1: TR+kısmi-EN → 7-dil (iptal-FAQ istisnası, J-14 yanlış-
+    // tetiğini 7 dilde önler: "iptal şartları/koşulları/politikası ne?" FAQ akar).
+    const _cxlFaqRe = /(şart|kosul|koşul|policy|politika|iade|refund|ücret|ucret|kesinti|nasıl|nasil|ne zaman|condition|terms|fee|how|when|bedingung|storno(?:gebühr)?|rückerstattung|ruckerstattung|geb[üu]hr|wie|wann|politique|remboursement|frais|comment|quand|condici[óo]n|pol[íi]tica|reembolso|tarifa|c[óo]mo|cu[áa]ndo|услови|возврат|плат[аеу]|штраф|как|когда|شرو?ط|سياسة|استرداد|رسوم|كيف|متى)/i;
     if (
       context.stage === "COMPLETED" &&
       _cxlSignalRe.test(message) &&
