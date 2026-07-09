@@ -10,6 +10,7 @@ import { hasQuotaForPax, getQuotaRemaining } from "./quota-check.ts";
 import { isValidPax } from "../utils/validation.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { AVAILABILITY_RE } from "../constants/availability-words.ts";
+import { PEOPLE_CONTEXT_RE } from "../constants/people-words.ts";
 import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-names.ts";
 
 // getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
@@ -267,8 +268,10 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // Sigorta: mesajda kişi-bağlamı (kişi/insan/yetişkin/...) YOKSA NLU paxAdult
   // reddedilir. waiting_for_pax istisna (bot zaten kişi sayısı sordu).
   const _msgLower = (message || "").toLowerCase();
-  const _peopleContextRe = /\b(ki[şs]i|insan|person|people|kinder|kind|adult|yeti[şs]kin|[çc]ocuk|child|niño|enfant|اشخاص|طفل|personas|personnes|человек|гостей)\b/i;
-  const _hasPeopleContext = _peopleContextRe.test(_msgLower);
+  // 2026-07-09 Faz 5 (Vaka 2): TEK KAYNAK PEOPLE_CONTEXT_RE (people-words.ts).
+  // Eski elle-liste EN "ppl"/DE "Personen"/RU "человек"(\b)/AR "أشخاص"(\b) kaçırıyordu
+  // → birleşik ilk-mesajda NLU pax reddediliyordu. Lookaround + 7-dil ile kapandı.
+  const _hasPeopleContext = PEOPLE_CONTEXT_RE.test(_msgLower);
   const _isWaitingForPax = context.collectionStep === "waiting_for_pax";
   // 2026-07-03 I-9 (X9'un AYNA simetriği): waiting_for_pax'ta "yok yok 20'sine
   // alalım" → NLU 20'yi people_count sandı, waiting_for_pax istisnası GEÇİRDİ →

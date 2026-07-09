@@ -3,6 +3,7 @@ import type { ReservationInfo } from "./types.ts";
 import { isValidPax } from "../utils/validation.ts";
 import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-names.ts";
 import { REL_TODAY, REL_TOMORROW, REL_DAY_AFTER, REL_NEXT_WEEK, REL_DAY_NAMES, relRegex } from "../constants/relative-date-words.ts";
+import { PEOPLE_CONTEXT_RE, PAX_ADULT_RE, PAX_CHILD_RE } from "../constants/people-words.ts";
 
 // ─── Göreceli tarih çıkarımı ─────────────────────────────────────────────────
 function extractRelativeDate(text: string, language: string): Date | null {
@@ -114,8 +115,8 @@ function extractPaxFromWords(text: string, language: string, collectionStep?: st
   if (TR_MONTHS_GUARD.test(lower)) return null;
 
   const words = NUMBER_WORDS[language] || NUMBER_WORDS.en;
-  const peopleContext =
-    /\b(ki[şs]i|insan|person|people|kinder|kind|adult|yetişkin|kişiyiz|kişiyim|اشخاص|personas|personnes|человек|гостей)\b/i;
+  // 2026-07-09 Faz 5 (Vaka 2): TEK KAYNAK (people-words.ts) — 7-dil + lookaround.
+  const peopleContext = PEOPLE_CONTEXT_RE;
 
   // 2026-06-26 BUG-X9 FIX: peopleContext ZORUNLU + waiting_for_pax istisnası.
   // Eski "≤3/≤4 kelime fallback" peopleContext olmadan pax çıkarıyordu →
@@ -216,9 +217,8 @@ export function extractNameAndPhone(
   // 2026-06-25 FIX KÖK 2: paxChild pattern eklendi (canlı bug "3 yetişkin 2 çocuk" → state'e
   // SADECE adults=3 yazılıyordu, paxChild yutuluyordu → fiyat eksik). Önce çocuk pattern,
   // SONRA yetişkin pattern (mesajda her ikisi de varsa ikisi de çıkar).
-  const paxChildPatterns = [
-    /(?<![-\d])(\d+)\s*(?:çocuk|cocuk|child|children|kinder|kind|niño|niños|enfant|enfants|ребен|دфال|طفل)/i,
-  ];
+  // 2026-07-09 Faz 5 (Vaka 2): TEK KAYNAK PAX_CHILD_RE (7-dil, "دفال" typo duzeltildi).
+  const paxChildPatterns = [PAX_CHILD_RE];
   for (const pattern of paxChildPatterns) {
     const match = message.match(pattern);
     if (match) {
@@ -231,7 +231,7 @@ export function extractNameAndPhone(
   }
 
   const paxPatterns = [
-    /(?<![-\d])(\d+)\s*(?:kişi|kisi|person|people|yetişkin|adult)/i,
+    PAX_ADULT_RE, // 2026-07-09 Faz 5 (Vaka 2): 7-dil tek-kaynak (ppl/personen/человек/أشخاص)
     /(?<![-\d])(\d+)\s*kişilik/i,
     /(?<![^\s])\b(\d+)\s*(?:yetişkin|adult)/i,
     /(?:evet|yes|ok|tamam)?\s*(?<![-])(\d+)\s*kişi/i,
