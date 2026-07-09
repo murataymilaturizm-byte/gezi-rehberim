@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-07-09 (Faz 5 Vaka 2 — people-context 7-dil TEK KAYNAK [constants/people-words.ts]: EN "ppl"/RU "человек"/AR "أشخاص"/DE "Personen"/TR "çocuk" X9-pax kaybı kapandı [4 kopya birleşti, \b→lookaround Yan #8, ADULT/CHILD ayrımı]. Davranışsal 21/21 + 121-korpus miss=0. G8/X9 dengesi korundu.).
+> Son güncelleme: 2026-07-09 (Faz 5 DİL-PARİTE BÜTÜNCÜL — A: kur tek-zincir [convertPrice kaldırıldı, TL/etiket asla çapraz] + AR translit normalize+alias + confirmation-words.ts TEK KAYNAK [EN confirmed + 7-dil doğal onaylar] + BugA-ack 7-dil. B: AR-rakam ٠-٩ giriş-normalizasyonu + ES "de" tarih-filler + 4 kalan tr+en dict → 7-dil + alias typo'ları. Envanter §6f; korpus 128 vaka + confirmation sınıfı; miss=0.).
+> Önceki: 2026-07-09 (Faz 5 Vaka 2 — people-words.ts tek-kaynak; ppl/человек/أشخاص/çocuk X9-kaybı kapandı. 21/21.).
 > Önceki: 2026-07-09 (FAZ 4 P3 KAPANIŞ — quota-labels/cancellation-lookaround/agency-etiket/detectLanguage-ü-seed/ascii-dil-geçiş. 29/29 + snapshot 75/75. FAZ 4 P0-P3 7-dil TAMAM.).
 > Önceki: 2026-07-09 (FAZ 4 P1 — kritik sinyaller 7-dil: müsaitlik/TOUR_CHANGE/X8/ay-niteleyici-AR/tema-ctx/relative. Baseline 21 gap → fire, 53/53.).
 > Önceki: 2026-07-09 (FAZ 4 P0 — dil kapsama envanteri [§6] + 7-dil baseline korpusu + offline proof. Katman-1 boşlukları KANITLANDI.).
@@ -690,6 +691,35 @@ whitelist final-gate → desteklenmeyen dil `enabledLangs[0]`, o da yoksa `tr`.
 context.language DB'ye (WhatsApp) taşınır, bir kez set→sabit. **Asıl dil-riski
 TESPİT değil KAPSAMA:** tespit doğru dili bulsa bile Sınıf A sinyali / Sınıf C
 promptu o dili kapsamıyorsa deterministik yol kaçar / prompt EN-fallback'e düşer.
+
+### 6f. DİL-PARİTE ENVANTERİ (Faz 5 bütüncül oturum, 2026-07-09)
+TR-referanslı tam boru-hattı denetimi. S-boyut boşluklar AYNI oturumda fix'lendi;
+M/L paket önerisi olarak listelendi.
+
+**Dil × boru-hattı-katmanı matrisi (denetim sonucu):**
+| Katman | TR | EN | DE | FR | ES | RU | AR |
+|---|---|---|---|---|---|---|---|
+| Tur-alias/translit | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ S-fix (бодрум/анталья/фетхие + сумела/бурса typo) | ✅ S-fix (باموكالي + normalizeArabicChars + بودروم/فتحية/نمرود) |
+| Tarih yazım-biçimi | ✅ | ✅ | ✅ (10. Dez nokta OK) | ✅ ("le" OK; "1er" ordinal → M-küçük) | ✅ S-fix ("10 de diciembre" filler) | ✅ (çekimler month-names'te) | ✅ S-fix (**Arapça-Hint rakam ٠-٩/۰-۹ GİRİŞ-NOKTASI normalizasyonu** — tüm \d zinciri tek noktadan) |
+| Sayı/pax (yazıyla) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (NUMBER_WORDS 7-dil; digit-pax people-words 7-dil) |
+| Onay (confirmation) | ✅ +aynen | ✅ S-fix (confirmed/sounds good/perfect/yep) | ✅ S-fix (passt/perfekt/in ordnung) | ✅ S-fix (c'est bon/ça marche/entendu) | ✅ S-fix (perfecto/de acuerdo/dale) | ✅ S-fix (хорошо/отлично/договорились) | ✅ S-fix (أؤكد/حسنا/ماشي) |
+| Change/cancel/refusal derinliği | ✅ ~15-20 kök (referans) | ~7-17 | ~5-13 | ~7-11 | ~7-12 | ~5-12 | ~6-9 (en sığ) — **M-paket: çekim-derinlik eşitleme** |
+| Deterministik dallar | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ A2-sonrası (:11 zincirine girer — canlı smoke) |
+| Çıktı şablonları | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ S-fix (4 kalan tr+en dict: _ambiguousMsgs/_confirmQ/_bvMsgs/_bvFall → 7-dil; tarama-aracı satır-temelli düzeltildi — brace-sayaç `${}`'de şaşıyordu) |
+| Para/tarih/gün formatı | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (Intl per-currency/lang; **A1 kur tek-zincir**) |
+
+**Faz 5 tek-kaynak eklemeleri:** `confirmation-words.ts` (POS_ALT → detectConfirmation
++ clearPositive, K1-senkron yapısal), `normalizeArabicChars` (tour-matching),
+giriş-noktası AR-rakam normalizasyonu (process-message L74).
+
+**KALAN M/L PAKETLERİ (uygulanmadı — öneri):**
+1. **M — change/cancel çekim-derinliği**: TR organik zenginliğine karşı AR (~9 kök)
+   ve DE/RU sığ; çekim-aileleri + konuşma-dili varyantları (AR lehçe: بدي/عايز).
+2. **S-küçük — FR "1er décembre"** ordinal gün formu TEXT_MONTH'a eklenebilir.
+3. **M — AR RTL görsel denetim**: emoji/sayı konumları şablonlarda manuel QA
+   (kod-analizi yeterli değil, gerçek WhatsApp render'ı gerekir).
+4. **L — enabled_languages panel UI** (backlog, #30c).
+5. **İzleme — NLU translit-normalize kuralı** (A2 prompt eki) canlı etki ölçümü.
 
 ### 6e. Dil-geçiş & belirsizlik kuralları (FAZ4-P3)
 **detectLanguage ü/ö/ç BELİRSİZLİĞİ (kalem 4)** — `detectLanguage` TR'yi İLK kontrol

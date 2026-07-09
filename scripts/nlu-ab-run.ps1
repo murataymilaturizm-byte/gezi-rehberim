@@ -42,6 +42,15 @@ $relBody = 'bugün[eü]?|bugun[eu]?|today|heute|сегодня|اليوم|aujour
   'haftaya|gelecek\s*hafta|önümüzdeki\s*hafta|onumuzdeki\s*hafta|next\s*week|nächste\s*woche|naechste\s*woche|следующ\S+\s+недел\S+|la\s*semaine\s*prochaine|semaine\s*prochaine|la\s*próxima\s*semana|próxima\s*semana|الأسبوع\s*القادم|الأسبوع\s*المقبل|الأسبوع\s*الجاي|' +
   'الأحد|الإثنين|الاثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت'
 $reRelative = [regex]::new("(?<![\p{L}\p{N}])(?:$relBody)(?![\p{L}\p{N}])", 'IgnoreCase')
+# 2026-07-09 Faz5-A3: confirmation sinyali (constants/confirmation-words.ts POS_ALT birlesimi)
+$confBody = "evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|tasdik|kesinlikle|peki|tabii|aynen|" +
+  "yes|confirm(?:ed)?|approve[d]?|okay|sure|right|definitely|agreed|deal|absolutely|yep|yeah|yup|sounds\s+good|perfect|go\s+ahead|" +
+  "ja|best[äa]tig(?:en|t)?|richtig|genau|stimmt|einverstanden|passt|perfekt|in\s+ordnung|jawohl|" +
+  "oui|d'accord|exact|parfait|absolument|c'est\s+bon|[çc]a\s+marche|entendu|" +
+  "si|s[íi]|confirmo|vale|correcto|claro|exacto|perfecto|de\s+acuerdo|dale|" +
+  "да|подтверждаю|ок|верно|правильно|согласен|хорошо|отлично|договорились|" +
+  "نعم|أكد|أؤكد|موافق|تمام|صحيح|بالتأكيد|حسنا|ماشي"
+$reConfirm = [regex]::new("(?<![\p{L}\p{N}])(?:$confBody)(?![\p{L}\p{N}])", 'IgnoreCase')
 
 function Test-DetSignal($sig, $msg) {
   switch ($sig) {
@@ -49,6 +58,7 @@ function Test-DetSignal($sig, $msg) {
     "tour_change"  { return $reTourChange.IsMatch($msg) }
     "superlative"  { return $reSupAsc.IsMatch($msg) -or $reSupDesc.IsMatch($msg) }
     "relative"     { return $reRelative.IsMatch($msg) }
+    "confirmation" { return $reConfirm.IsMatch($msg) }
     default        { return $null }
   }
 }
@@ -90,7 +100,7 @@ foreach ($c in $cases) {
 # ── DIL x SINYAL BASELINE MATRISI ──
 Write-Host ""
 Write-Host "=== KATMAN-1 DETERMINISTIK SINYAL BASELINE (dil x sinyal: fire/miss) ===" -ForegroundColor Cyan
-$sigTypes = @("availability", "tour_change", "superlative", "relative")
+$sigTypes = @("availability", "tour_change", "superlative", "relative", "confirmation")
 $hdr = "sinyal".PadRight(14); foreach ($l in $LANGS) { $hdr += $l.ToUpper().PadRight(6) }
 Write-Host $hdr
 foreach ($sig in $sigTypes) {

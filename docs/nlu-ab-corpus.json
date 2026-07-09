@@ -14,11 +14,11 @@
     "counts": {
       "core_scenarios": 15,
       "core_rows": 105,
-      "lang_specific": 16,
-      "total": 121
+      "lang_specific": 23,
+      "total": 128
     },
     "fields": "id, scenario, lang, message, state/step/summary(bağlam), expected_intent, det_signal(availability|tour_change|superlative|relative), gap, note",
-    "status": "FAZ4-P1 SONRASI: tüm Katman-1 boşlukları KAPANDI (müsaitlik/tour-change/X8 7-dil + relative AR/TR-çekim). det_signal satırları artık 7 dilde FIRE etmeli — korpus regresyon-ağı: gelecekte bir sinyal MISS'e dönerse regresyon."
+    "status": "FAZ4-P1 SONRASI: tüm Katman-1 boşlukları KAPANDI (müsaitlik/tour-change/X8 7-dil + relative AR/TR-çekim). det_signal satırları artık 7 dilde FIRE etmeli — korpus regresyon-ağı: gelecekte bir sinyal MISS'e dönerse regresyon. | Faz5: A3 confirmation sinyal-sınıfı + AR-rakam/ES-de/translit temsilcileri eklendi."
   },
   "cases": [
     {
@@ -1593,6 +1593,97 @@
       "det_signal": "superlative",
       "gap": null,
       "note": "EN informal (whats/ur) + superlatif 'cheapest' — X8 EN var"
+    },
+    {
+      "id": "L-ar5",
+      "scenario": "lang_specific",
+      "lang": "ar",
+      "message": "جولة باموكالي ١٠ ديسمبر لشخصين",
+      "state": "GREETING",
+      "step": null,
+      "summary": null,
+      "expected_intent": "tour_search/reservation_intent",
+      "det_signal": null,
+      "gap": null,
+      "note": "Faz5-B: Arapça-Hint rakam (١٠) giriş-normalizasyonu + A2 translit alias — tek turn tur+tarih+pax"
+    },
+    {
+      "id": "L-es3",
+      "scenario": "lang_specific",
+      "lang": "es",
+      "message": "quiero reservar el 10 de diciembre",
+      "state": "COLLECTING_INFO",
+      "step": "waiting_for_date",
+      "summary": "Pamukkale",
+      "expected_intent": "provide_info",
+      "det_signal": null,
+      "gap": null,
+      "note": "Faz5-B: ES bağlaç \"de\" tarih-filler — \"10 de diciembre\" artık çözülür"
+    },
+    {
+      "id": "L-en3",
+      "scenario": "lang_specific",
+      "lang": "en",
+      "message": "confirmed",
+      "state": "CONFIRMING",
+      "step": "ready_for_confirmation",
+      "summary": "Tüm bilgiler alındı, onay bekleniyor",
+      "expected_intent": "confirm_reservation",
+      "det_signal": "confirmation",
+      "gap": null,
+      "note": "Faz5-A3 (V3 kökü): EN confirmed — eski sette -ed lookahead bloğu"
+    },
+    {
+      "id": "L-de4",
+      "scenario": "lang_specific",
+      "lang": "de",
+      "message": "passt",
+      "state": "CONFIRMING",
+      "step": "ready_for_confirmation",
+      "summary": "Tüm bilgiler alındı, onay bekleniyor",
+      "expected_intent": "confirm_reservation",
+      "det_signal": "confirmation",
+      "gap": null,
+      "note": "Faz5-A3: DE doğal onay passt"
+    },
+    {
+      "id": "L-ru4",
+      "scenario": "lang_specific",
+      "lang": "ru",
+      "message": "хорошо, договорились",
+      "state": "CONFIRMING",
+      "step": "ready_for_confirmation",
+      "summary": "Tüm bilgiler alındı, onay bekleniyor",
+      "expected_intent": "confirm_reservation",
+      "det_signal": "confirmation",
+      "gap": null,
+      "note": "Faz5-A3: RU doğal onay"
+    },
+    {
+      "id": "L-fr3",
+      "scenario": "lang_specific",
+      "lang": "fr",
+      "message": "c'est bon pour moi",
+      "state": "CONFIRMING",
+      "step": "ready_for_confirmation",
+      "summary": "Tüm bilgiler alındı, onay bekleniyor",
+      "expected_intent": "confirm_reservation",
+      "det_signal": "confirmation",
+      "gap": null,
+      "note": "Faz5-A3: FR doğal onay"
+    },
+    {
+      "id": "L-ar7",
+      "scenario": "lang_specific",
+      "lang": "ar",
+      "message": "نعم أؤكد",
+      "state": "CONFIRMING",
+      "step": "ready_for_confirmation",
+      "summary": "Tüm bilgiler alındı, onay bekleniyor",
+      "expected_intent": "confirm_reservation",
+      "det_signal": "confirmation",
+      "gap": null,
+      "note": "Faz5-A3: AR أؤكد pozitif sette"
     }
   ]
 }
