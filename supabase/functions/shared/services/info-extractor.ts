@@ -65,7 +65,10 @@ const TEXT_MONTH_DAY_REGEX = new RegExp(
  *       Türkçe ı/İ/I/i case-folding'i doğru handle edilir ("14 ARALIK" →
  *       "14 aralık", dotless ı korunur).
  */
-const _DATE_FILLER_REGEX = /\b(olur|olsun|tamam|uygun|işte|şu|bu|tarih|gün|lütfen|please|fine|good|ok|okay)\b/gi;
+// 2026-07-09 Faz 5 B: ES bağlaç "de/del" eklendi — "10 de diciembre" day-month
+// arasındaki "de" yüzünden TEXT_MONTH_REGEX'e uymuyordu (denetim kanıtı).
+// \b(de)\b yalnız AYRIK "de"yi siler — "dezember/december" İÇİNDEKİ de'ye dokunmaz.
+const _DATE_FILLER_REGEX = /\b(olur|olsun|tamam|uygun|işte|şu|bu|tarih|gün|lütfen|please|fine|good|ok|okay|de|del)\b/gi;
 export function normalizeDateString(dateStr: string): string {
   if (!dateStr) return dateStr;
   // Önişlemci: dolgu sözcüklerini temizle, çoklu boşluğu tek boşluğa indir

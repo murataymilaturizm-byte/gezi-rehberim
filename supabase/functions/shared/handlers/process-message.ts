@@ -71,7 +71,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     return { success: false, error: "input_too_long" };
   }
 
-  const message = sanitizeInput(rawMessage);
+  // 2026-07-09 Faz 5 B (AR rakam sınıfı): Arapça-Hint (٠-٩ U+0660-0669) ve
+  // Doğu-Arapça/Farsça (۰-۹ U+06F0-06F9) rakamlar GİRİŞ NOKTASINDA ASCII'ye
+  // normalize edilir — TÜM downstream zincir (\d regex'leri: pax, tarih,
+  // ordinal, telefon, NLU girdisi) tek noktadan kapsanır. Denetim kanıtı:
+  // "١٠ ديسمبر" hiçbir tarih/pax zincirinde çözülmüyordu (tüm \d ASCII-only).
+  const message = sanitizeInput(rawMessage).replace(/[٠-٩۰-۹]/g, (d) => {
+    const c = d.charCodeAt(0);
+    return String(c >= 0x06f0 ? c - 0x06f0 : c - 0x0660);
+  });
 
   // K4: Prompt injection şüphesi tespiti — mesaj engellenmez, sadece flag set edilir
   const _isSuspectedInjection = detectInjection(rawMessage);
@@ -983,9 +991,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _tourListLines = multipleTourMatches.slice(0, 8).map((t: any, i: number) => {
       return `${i + 1}) ${getLocalizedTourTitle(t.title, _lang)}`;
     }).join("\n");
+    // 2026-07-09 Faz 5 B: tr+en → 7-dil (KÖK5-FIX2 belirsiz tur-değişim listesi).
     const _ambiguousMsgs: Record<string, string> = {
       tr: `Birden fazla tur seçeneğimiz var:\n${_tourListLines}\n\nHangisini tercih edersiniz?`,
       en: `We have multiple tour options:\n${_tourListLines}\n\nWhich one would you prefer?`,
+      de: `Wir haben mehrere Tour-Optionen:\n${_tourListLines}\n\nWelche bevorzugen Sie?`,
+      fr: `Nous avons plusieurs options de circuits :\n${_tourListLines}\n\nLaquelle préférez-vous ?`,
+      es: `Tenemos varias opciones de tours:\n${_tourListLines}\n\n¿Cuál prefiere?`,
+      ru: `У нас несколько вариантов туров:\n${_tourListLines}\n\nКакой предпочитаете?`,
+      ar: `لدينا عدة خيارات للجولات:\n${_tourListLines}\n\nأيها تفضل؟`,
     };
     const _ambReply = _ambiguousMsgs[_lang] || _ambiguousMsgs.tr;
     console.log(`[process-message] KÖK 5 FIX2: belirsiz tur değişim (${multipleTourMatches.length} match) → destinasyon-specific liste`);
@@ -4198,9 +4212,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // (tarih listesi değil — kullanıcı onay aşamasında, K1 Katman 3 tonu).
     if (_fakeAckMatch && newContext.stage === "CONFIRMING" && _bvTour) {
       const _sumr = formatReservationSummary(_bvTour, newContext.reservationInfo, _bvLang, newContext.tone as string);
+      // 2026-07-09 Faz 5 B: tr+en → 7-dil.
       const _confirmQ: Record<string, string> = {
         tr: "\n\nBilgiler doğru mu? Onaylıyorsanız *evet* yazın ✅",
         en: "\n\nAre these details correct? Reply *yes* to confirm ✅",
+        de: "\n\nSind diese Angaben korrekt? Antworten Sie mit *ja* zur Bestätigung ✅",
+        fr: "\n\nCes informations sont-elles correctes ? Répondez *oui* pour confirmer ✅",
+        es: "\n\n¿Son correctos estos datos? Responda *sí* para confirmar ✅",
+        ru: "\n\nВсё верно? Напишите *да* для подтверждения ✅",
+        ar: "\n\nهل هذه المعلومات صحيحة؟ اكتب *نعم* للتأكيد ✅",
       };
       _bvReplacement = _sumr + (_confirmQ[_bvLang] || _confirmQ.en);
     } else if (_bvTour?.dates?.length) {
@@ -4213,9 +4233,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         })
         .join("\n");
       const _bvTitle = getLocalizedTourTitle(_bvTour.title || "", _bvLang);
+      // 2026-07-09 Faz 5 B: tr+en → 7-dil.
       const _bvMsgs: Record<string, string> = {
         tr: `*${_bvTitle}* için müsait tarihler:\n${_bvLines}\n\nHangi tarihi tercih edersiniz?`,
         en: `Available dates for *${_bvTitle}*:\n${_bvLines}\n\nWhich date do you prefer?`,
+        de: `Verfügbare Termine für *${_bvTitle}*:\n${_bvLines}\n\nWelches Datum bevorzugen Sie?`,
+        fr: `Dates disponibles pour *${_bvTitle}* :\n${_bvLines}\n\nQuelle date préférez-vous ?`,
+        es: `Fechas disponibles para *${_bvTitle}*:\n${_bvLines}\n\n¿Qué fecha prefiere?`,
+        ru: `Доступные даты для *${_bvTitle}*:\n${_bvLines}\n\nКакую дату предпочитаете?`,
+        ar: `التواريخ المتاحة لـ *${_bvTitle}*:\n${_bvLines}\n\nما التاريخ الذي تفضله؟`,
       };
       _bvReplacement = _bvMsgs[_bvLang] || _bvMsgs.en;
     } else if (newContext.collectionStep && STEP_QUESTIONS[String(newContext.collectionStep)]) {
@@ -4223,9 +4249,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       _bvReplacement = _sq[_bvLang] || _sq.en;
     } else {
       const _agP = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      // 2026-07-09 Faz 5 B: tr+en → 7-dil.
       const _bvFall: Record<string, string> = {
         tr: `Bu konuda net bilgi için acentemizle iletişime geçebilirsiniz.${_agP}`,
         en: `Please contact our agency for details on this.${_agP}`,
+        de: `Für genaue Informationen hierzu wenden Sie sich bitte an unsere Agentur.${_agP}`,
+        fr: `Pour des informations précises à ce sujet, veuillez contacter notre agence.${_agP}`,
+        es: `Para información precisa sobre esto, contacte con nuestra agencia.${_agP}`,
+        ru: `За точной информацией по этому вопросу обратитесь в наше агентство.${_agP}`,
+        ar: `لمعلومات دقيقة حول هذا الموضوع، يرجى التواصل مع وكالتنا.${_agP}`,
       };
       _bvReplacement = _bvFall[_bvLang] || _bvFall.en;
     }
