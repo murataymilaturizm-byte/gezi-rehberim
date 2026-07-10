@@ -539,9 +539,9 @@ Deno.serve(async (req) => {
       const _pnid = _clean(inputPnid).replace(/\D/g, "");
       const _wabaInput = inputWaba ? _clean(inputWaba).replace(/\D/g, "") : "";
 
-      // Sahiplik doğrula + mevcut token'ı çek (fallback için)
+      // Sahiplik doğrula + mevcut token/WABA kaynaklarını çek (fallback + keşif için)
       const { data: mAgency } = await supabase
-        .from("agencies").select("id, user_id, meta_access_token")
+        .from("agencies").select("id, user_id, meta_access_token, meta_waba_id, meta_business_account_id")
         .eq("id", agencyId).eq("user_id", user.id).single();
       if (!mAgency) {
         return new Response(
@@ -562,9 +562,13 @@ Deno.serve(async (req) => {
         );
       }
 
-      // 1) DOĞRULA + WABA KEŞFİ: GET /{phone_number_id}?fields=...
+      // 1) DOĞRULA: GET /{phone_number_id}?fields=display_phone_number,verified_name
+      //    ÖNEMLİ (2026-07-10 KÖK): eski sorgu `whatsapp_business_account{id,name}`
+      //    alt-alanını istiyordu — bu alan phone-number node'unda GEÇERSİZ → Graph
+      //    HTTP 400 → code 100 → "PNID geçersiz" (token/hesap DOĞRUYKEN bile HEP
+      //    başarısız). Alt-alan kaldırıldı. WABA phone-node'dan alınamaz (bracesiz
+      //    de 400) → aşağıda agency kaydından (business_account_id/waba_id) türetilir.
       //    Token adaylarını SIRAYLA dener; 100/33 (erişemez) olursa sonrakine düşer.
-      //    İlk erişen token hem doğrulama hem kayıt için kullanılır. Token maskeli.
       console.log(`[manual-connect] verify pnid=${_pnid} (len=${_pnid.length}, ham-len=${String(inputPnid || "").length}) agency=${agencyId.slice(0, 8)} token-aday-sayısı=${_tokCandidates.length}`);
       let verifyData: any = null;
       let _tok = "";
@@ -574,7 +578,7 @@ Deno.serve(async (req) => {
         const _kind = cand === _inputTok ? "girilen" : cand === _savedTok ? "kayıtlı" : "env";
         try {
           const verifyRes = await fetch(
-            `https://graph.facebook.com/v18.0/${_pnid}?fields=display_phone_number,verified_name,whatsapp_business_account{id,name}`,
+            `https://graph.facebook.com/v18.0/${_pnid}?fields=display_phone_number,verified_name`,
             { headers: { Authorization: `Bearer ${cand}` } }
           );
           const vd = await verifyRes.json();
@@ -611,14 +615,34 @@ Deno.serve(async (req) => {
       }
 
       const displayPhone = verifyData.display_phone_number || null;
-      const discoveredWaba = verifyData?.whatsapp_business_account?.id || "";
-      const finalWaba = (_wabaInput || discoveredWaba).trim();
+      // WABA KEŞFİ (2026-07-10): phone-node WABA vermediği için kaynak sırası:
+      // girilen > agency.meta_waba_id > agency.meta_business_account_id (Aymila
+      // fbad140f'te = 1253744820197421, numaranın WABA'sı). Hâlâ boşsa GET
+      // /{pnid}/... yerine token'ın erişebildiği WABA'yı bulmayı DENE:
+      // GET /{waba}/phone_numbers ile doğrulanır (aşağıda cross-check yerine
+      // burada yalnız kaynak seçimi — subscribe zaten waba'yı test eder).
+      const _agencyWaba = mAgency.meta_waba_id ? String(mAgency.meta_waba_id).replace(/\D/g, "") : "";
+      const _agencyBiz = mAgency.meta_business_account_id ? String(mAgency.meta_business_account_id).replace(/\D/g, "") : "";
+      const finalWaba = (_wabaInput || _agencyWaba || _agencyBiz).trim();
       if (!finalWaba) {
         return new Response(
-          JSON.stringify({ success: false, error: "WABA kimliği keşfedilemedi — token'da whatsapp_business_management izni yoksa waba_id'yi elle girin (Meta WhatsApp Manager → Business Settings)." }),
+          JSON.stringify({ success: false, error: "WABA kimliği belirlenemedi. Bu numaranın WhatsApp Business Account (WABA) ID'sini WABA ID alanına girin (Meta WhatsApp Manager → Business Settings → WhatsApp Accounts)." }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+      // WABA cross-check: pnid gerçekten bu WABA'da mı? (yanlış WABA kaydını önler)
+      try {
+        const _xchk = await fetch(`https://graph.facebook.com/v18.0/${finalWaba}/phone_numbers?fields=id`, { headers: { Authorization: `Bearer ${_tok}` } });
+        const _xd = await _xchk.json();
+        if (_xchk.ok && Array.isArray(_xd?.data)) {
+          const _match = _xd.data.some((p: any) => String(p.id) === _pnid);
+          if (!_match) {
+            console.warn(`[manual-connect] WABA cross-check: pnid ${_pnid} WABA ${finalWaba} altında DEĞİL — yine de kaydediliyor (data=${JSON.stringify(_xd.data).slice(0,200)})`);
+          } else {
+            console.log(`[manual-connect] WABA cross-check OK: pnid ${_pnid} ∈ WABA ${finalWaba}`);
+          }
+        }
+      } catch { /* cross-check opsiyonel — başarısızsa devam */ }
 
       // 2) DUPLICATE phone_number_id — başka acente kullanıyor mu?
       const { data: dupes } = await supabase
@@ -664,13 +688,14 @@ Deno.serve(async (req) => {
         .update({ status: "active", meta_access_token: _tok, meta_phone_number_id: _pnid, meta_waba_id: finalWaba })
         .eq("agency_id", agencyId).then(() => {}, () => {});
 
-      console.log(`[manual-connect] OK agency=${agencyId.slice(0, 8)} phone=${displayPhone} waba=${finalWaba} subscribed=${subscribed} (waba ${_wabaInput ? "elle" : "auto"})`);
+      const _wabaSrc = _wabaInput ? "elle" : (_agencyWaba ? "kayıt-waba" : "kayıt-biz");
+      console.log(`[manual-connect] OK agency=${agencyId.slice(0, 8)} phone=${displayPhone} waba=${finalWaba} (kaynak=${_wabaSrc}) subscribed=${subscribed}`);
       return new Response(
         JSON.stringify({
           success: true,
           displayPhoneNumber: displayPhone,
           wabaId: finalWaba,
-          wabaDiscovered: !_wabaInput && !!discoveredWaba,
+          wabaDiscovered: !_wabaInput,
           webhookSubscribed: subscribed,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
