@@ -644,15 +644,20 @@ Deno.serve(async (req) => {
         }
       } catch { /* cross-check opsiyonel — başarısızsa devam */ }
 
-      // 2) DUPLICATE phone_number_id — başka acente kullanıyor mu?
+      // 2) DUPLICATE — pnid VEYA whatsapp_phone_number başka acentede mi?
+      //    (whatsapp_phone_number UNIQUE index'i var → çakışma save'de 23505
+      //    verip "kaydedilemedi" jenerik hatasına dönüşüyordu; ÖNCEDEN net yakala.)
+      const _cleanPhone = displayPhone ? displayPhone.replace(/[^\d]/g, "") : "";
       const { data: dupes } = await supabase
-        .from("agencies").select("id, name")
-        .eq("meta_phone_number_id", _pnid).neq("id", agencyId);
+        .from("agencies").select("id, name, meta_phone_number_id, whatsapp_phone_number")
+        .or(`meta_phone_number_id.eq.${_pnid}${_cleanPhone ? `,whatsapp_phone_number.eq.${_cleanPhone}` : ""}`)
+        .neq("id", agencyId);
       if (dupes && dupes.length > 0) {
+        const _names = dupes.map((a: any) => a.name).join(", ");
         return new Response(
           JSON.stringify({
             success: false,
-            error: "Bu WhatsApp numarası başka bir acenteye bağlı. Önce oradan bağlantıyı kesin.",
+            error: `Bu WhatsApp numarası başka bir kayda bağlı (${_names}). Önce oradan bağlantıyı kesin (WhatsApp Bağlantı → Bağlantıyı Kes) ya da destek ile birleştirin: 0850 242 77 50.`,
             errorCode: "DUPLICATE_PHONE_NUMBER",
             conflictAgencies: dupes.map((a: any) => ({ id: a.id, name: a.name })),
           }),
@@ -677,10 +682,15 @@ Deno.serve(async (req) => {
         webhook_subscribed: subscribed,
       }).eq("id", agencyId);
       if (saveErr) {
-        console.error("[manual-connect] save failed:", saveErr.message);
+        console.error("[manual-connect] save failed:", saveErr.message, saveErr.code ?? "");
+        // 23505 = unique violation → net mesaj (jenerik "tekrar deneyin" YASAK).
+        let _saveMsg = "Bağlantı doğrulandı ama kaydedilemedi.";
+        if (saveErr.code === "23505" || /duplicate|unique/i.test(saveErr.message)) {
+          _saveMsg = "Bu WhatsApp numarası/kimliği zaten başka bir kayda bağlı — önce oradan bağlantıyı kesin ya da destek: 0850 242 77 50.";
+        }
         return new Response(
-          JSON.stringify({ success: false, error: "Bağlantı doğrulandı ama kaydedilemedi, tekrar deneyin." }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ success: false, error: _saveMsg, dbCode: saveErr.code ?? null }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       // whatsapp_integrations tablosu varsa senkron
