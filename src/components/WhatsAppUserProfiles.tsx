@@ -76,6 +76,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
+  const [openComplaints, setOpenComplaints] = useState<Record<string, { count: number; label: string }>>({});
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
   const [agencies, setAgencies] = useState<Agency[]>([]);
@@ -180,6 +181,26 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       // gerçek alanlar SELECT'ten gelir.
       const rows = (data || []) as unknown as UserProfile[];
       setProfiles(rows);
+
+      // İş2-S: açık talepler (complaints status='new') → telefona göre harita.
+      // İptal-talebi/şikâyet/düşük-puan liste + detayda kırmızı rozetle görünür.
+      if (effectiveAgencyId) {
+        const { data: _openC } = await supabase
+          .from("complaints")
+          .select("phone, type")
+          .eq("agency_id", effectiveAgencyId)
+          .eq("status", "new");
+        const _map: Record<string, { count: number; label: string }> = {};
+        const _lbl: Record<string, string> = {
+          cancellation_request: "İptal", low_rating: "Düşük Puan", complaint: "Şikâyet", contact_request: "İletişim",
+        };
+        for (const c of (_openC || []) as { phone: string; type: string }[]) {
+          const norm = (c.phone || "").replace(/^\+/, "").replace(/\s/g, "");
+          if (!_map[norm]) _map[norm] = { count: 0, label: _lbl[c.type] || "Talep" };
+          _map[norm].count += 1;
+        }
+        setOpenComplaints(_map);
+      }
 
       if (rows.length > 0) {
         setSelectedProfile(rows[0]);
@@ -534,6 +555,8 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                         isSelected={selectedProfile?.id === profile.id}
                         currencySym={currencySym}
                         onClick={() => setSelectedProfile(profile)}
+                        feedbackScore={profile.feedback_score}
+                        openComplaint={openComplaints[(profile.phone || "").replace(/^\+/, "").replace(/\s/g, "")] || null}
                       />
                     ))}
                   </div>
@@ -644,13 +667,46 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                   </div>
                 </div>
 
-                <Tabs defaultValue="profile" className="w-full">
+                {/* İş2-S: "Bir bakışta" şeridi — kritik bilgi ilk bakışta. */}
+                {(() => {
+                  const _lastReg = registrationsForUser[0];
+                  const _oc = openComplaints[(selectedProfile.phone || "").replace(/^\+/, "").replace(/\s/g, "")];
+                  const _spent = Number(selectedProfile.total_spent || 0);
+                  const _score = selectedProfile.feedback_score;
+                  return (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                      <div className="rounded-lg border bg-card px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Son rezervasyon</p>
+                        <p className="text-sm font-semibold truncate">{_lastReg ? (_lastReg.tour_name || "—") : "Yok"}</p>
+                      </div>
+                      <div className="rounded-lg border bg-card px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Toplam harcama</p>
+                        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{_spent > 0 ? `${_spent.toLocaleString()}${currencySym}` : "—"}</p>
+                      </div>
+                      <div className="rounded-lg border bg-card px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Son puan</p>
+                        <p className={`text-sm font-semibold ${typeof _score === "number" && _score <= 2 ? "text-red-600 dark:text-red-400" : "text-yellow-600 dark:text-yellow-400"}`}>
+                          {typeof _score === "number" && _score > 0 ? `⭐ ${_score}/5` : "—"}
+                        </p>
+                      </div>
+                      <div className={`rounded-lg border px-3 py-2 ${_oc ? "border-red-500/40 bg-red-500/5" : "bg-card"}`}>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Açık talep</p>
+                        <p className={`text-sm font-semibold ${_oc ? "text-red-700 dark:text-red-300" : ""}`}>
+                          {_oc ? `⚠️ ${_oc.label}${_oc.count > 1 ? ` (${_oc.count})` : ""}` : "Yok"}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* İş2-M: Aktivite (timeline — ⭐puan/iptal event'leri) DEFAULT ve İLK sekme. */}
+                <Tabs defaultValue="activity" className="w-full">
                   <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="activity">{t("admin.whatsapp.userProfiles.tabs.activity", { defaultValue: "Aktivite" })}</TabsTrigger>
+                    <TabsTrigger value="conversations">{t("admin.whatsapp.userProfiles.tabs.conversations")}</TabsTrigger>
                     <TabsTrigger value="profile">{t("admin.whatsapp.userProfiles.tabs.profile")}</TabsTrigger>
                     <TabsTrigger value="preferences">{t("admin.whatsapp.userProfiles.tabs.preferences")}</TabsTrigger>
-                    <TabsTrigger value="activity">{t("admin.whatsapp.userProfiles.tabs.activity", { defaultValue: "Aktivite" })}</TabsTrigger>
                     <TabsTrigger value="tags">{t("admin.whatsapp.userProfiles.tabs.tags")}</TabsTrigger>
-                    <TabsTrigger value="conversations">{t("admin.whatsapp.userProfiles.tabs.conversations")}</TabsTrigger>
                   </TabsList>
 
                   <ScrollArea className="h-[640px] mt-4">

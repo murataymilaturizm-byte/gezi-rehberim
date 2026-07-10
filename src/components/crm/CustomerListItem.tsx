@@ -5,7 +5,7 @@
 // her birine tıklamak zorunda kalmasın.
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ShoppingBag, MessageSquare, UserPlus } from "lucide-react";
+import { ShoppingBag, MessageSquare, UserPlus, Star, AlertTriangle } from "lucide-react";
 import { computeAutoTags } from "./customerTags";
 import { AutoTagBadge } from "./TagBadge";
 
@@ -23,6 +23,9 @@ interface CustomerListItemProps {
   isSelected: boolean;
   currencySym: string;
   onClick: () => void;
+  // 2026-07-10 İş2-S: liste-satırında ilk-bakış sinyalleri.
+  feedbackScore?: number | null;
+  openComplaint?: { count: number; label: string } | null;
 }
 
 // Initial harf çıkar — Türkçe karakterler için
@@ -56,6 +59,8 @@ export const CustomerListItem = ({
   isSelected,
   currencySym,
   onClick,
+  feedbackScore,
+  openComplaint,
 }: CustomerListItemProps) => {
   const { t } = useTranslation();
 
@@ -132,6 +137,16 @@ export const CustomerListItem = ({
                   {t("admin.whatsapp.userProfiles.manualBadge", { defaultValue: "Manuel" })}
                 </span>
               )}
+              {/* İş2-S: açık talep (iptal/şikâyet/düşük-puan) — dikkat çekici kırmızı */}
+              {openComplaint && openComplaint.count > 0 && (
+                <span
+                  className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-semibold bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/40"
+                  title={`Açık talep: ${openComplaint.label}`}
+                >
+                  <AlertTriangle className="w-2.5 h-2.5" />
+                  {openComplaint.label}
+                </span>
+              )}
             </p>
           </div>
           <p className="text-[11px] text-muted-foreground font-mono mb-2 truncate">
@@ -170,6 +185,16 @@ export const CustomerListItem = ({
               >
                 <ShoppingBag className="w-3 h-3" />
                 {totalBookings}
+              </span>
+            )}
+            {/* İş2-S: son puan ⭐ */}
+            {typeof feedbackScore === "number" && feedbackScore > 0 && (
+              <span
+                className={`inline-flex items-center gap-0.5 font-semibold ${feedbackScore <= 2 ? "text-red-600 dark:text-red-400" : "text-yellow-600 dark:text-yellow-400"}`}
+                title={`Son puan: ${feedbackScore}/5`}
+              >
+                <Star className="w-3 h-3 fill-current" />
+                {feedbackScore}
               </span>
             )}
             <span
