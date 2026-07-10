@@ -589,8 +589,8 @@ Deno.serve(async (req) => {
           }
           const gErr = vd?.error || {};
           _lastErr = { code: gErr.code, subcode: gErr.error_subcode, message: gErr.message || "", http: verifyRes.status };
-          // GEÇİCİ TEŞHİS: Meta'nın HAM hata gövdesini logla (token gövdede yok).
-          console.warn(`[manual-connect] verify FAILED (token=${_kind} ***${cand.slice(-4)}) — RAW: ${JSON.stringify(gErr)} | HTTP ${verifyRes.status}`);
+          // Teşhis: kod/subcode logla (kök çözüldü; ham-gövde dump kaldırıldı).
+          console.warn(`[manual-connect] verify FAILED (token=${_kind} ***${cand.slice(-4)}) code=${gErr.code ?? "-"} subcode=${gErr.error_subcode ?? "-"} HTTP ${verifyRes.status}`);
           // 100/33 (erişemez) VE hâlâ aday varsa → sonraki token'ı dene; değilse dur.
           if (!(gErr.code === 100 && gErr.error_subcode === 33) && gErr.code !== 100) break;
         } catch (vErr) {
