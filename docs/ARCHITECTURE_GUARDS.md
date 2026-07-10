@@ -488,9 +488,31 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     iş); hotel_details/transport_details deterministik DEĞİL (FIX 1+2 prompt
     katmanı — M1'e bağlı; vize gibi :10c katmanına alınmaları post-launch
     değerlendirme); price_single hiçbir yerde basılmıyor.
-11. **Panel backlog**: Yurtdışı turlarda visa/konaklama/ulaşım koşullu zorunlu
-    alan + onboarding doluluk uyarısı (acente kritik alanları boş bırakırsa
-    bot "acenteye yönlendir" moduna düşer — panel tarafında önlenmeli).
+11. **Panel backlog** → **KISMEN ÇÖZÜLDÜ (2026-07-10 Panel-1/2/3)**:
+    - **Panel-1 (ÇÖZÜLDÜ)**: tur-alan doluluk göstergesi — tek-kaynak
+      `src/utils/tourCompleteness.ts` (kritik-alan seti + koşullu konaklama[gecelemeli]/
+      vize[yurtdışı] + exampleQuestion→öneri-8 helper kaynağı). ToursList satır-rozeti
+      (%+eksik, yeşil/sarı/kırmızı, tooltip'te örnek müşteri sorusu) + TourFormDialog
+      kaydet-adımı engellemeyen uyarı + OnboardingChecklist 8. madde "Tur bilgileri
+      eksiksiz (X/Y)". 9/9 test.
+    - **Panel-2 (ÇÖZÜLDÜ)**: visa_required DEFAULT-false tuzağı — migration
+      `20260710000001` DROP DEFAULT (kolon zaten nullable; yeni tur NULL=belirtilmedi;
+      mevcut 20 false satır DOKUNULMADI). Form 3-durumlu Select. **BOT DEĞİŞMEDİ**:
+      `:10c`/helpers.ts `visa_required === true` kesin kontrolü → NULL, false ile aynı
+      else/veri-yok dalı (canlı smoke: "vize gerekli mi" → genel-yönlendirme). **VİZE
+      false→GERÇEK-CEVAP GEÇİŞİ NOTU**: eski false'lar hâlâ default-artığı olabilir;
+      "visa_required=false → güvenilir 'vize gerekmiyor' cevabı" GEÇİŞİ, eski false'ların
+      NULL'a temizlenmesi (veri-temizliği) SONRASI AYRI KARAR — şimdi muhafazakâr korunuyor.
+    - **Panel-3 (ÇÖZÜLDÜ)**: ödeme-kaydı silme onayı (RegistrationDetailDialog —
+      onaysız→AlertDialog, tutar+tarih+geri-alınamaz).
+    - **KALAN panel backlog (öneri 5-9 + nice-to-have, Fable panel-denetimi):**
+      (5,M) payment_instructions 7-dil sekmeli giriş (şu an TR+EN; A1 sızıntısı
+      kapandı ama non-TR bank-notu GİRİLEMİYOR); (6,L) mobil responsive (Admin
+      sidebar drawer + liste→kart); (7,S) enabled_languages onboarding'e belirgin
+      bağlama; (8,M) alan-başı bot-bağlantısı helper metinleri (tourCompleteness
+      exampleQuestion'dan); (9,S) tours/tour_dates RLS `TO authenticated` daraltma;
+      (nice) terminoloji birleştirme, Excel-import↔form parite denetimi, ödeme-silme
+      audit-izi (kim sildi). NLU_AB_TOKEN kapatma → Murat kararı (§31).
 12. **Kozmetik (düşük öncelik)**: validateFieldReask cümle-silme, silinen
     cümledeki emoji artıklarını bırakabiliyor (😊 👥 sonda kalıyor).
 13. ~~**P1 CONFIRMING isim düzeltme yutulması**~~ / ~~**P2 telefon adımında tur
