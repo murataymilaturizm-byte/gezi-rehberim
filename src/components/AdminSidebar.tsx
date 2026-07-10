@@ -129,6 +129,11 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   ];
 
   const communicationItems = [
+    // 2026-07-10 FIX: "settings" tab'ı (WhatsApp bağlantı + Manuel Bağlantı ekranı)
+    // VALID_TABS'ta ve Admin'de render ediliyordu AMA sidebar'da menü öğesi YOKTU —
+    // yalnız onboarding "WhatsApp'ı bağla" butonundan ulaşılıyordu (onboarding
+    // kapanınca erişilemez → "göremiyorum"). Menü öğesi geri eklendi.
+    { id: "settings", icon: Settings, label: t("admin.tabs.whatsappConnection", { defaultValue: "WhatsApp Bağlantı" }), dataTour: "sidebar-whatsapp-connection" },
     { id: "whatsapp", icon: MessageSquare, label: "WhatsApp", dataTour: "sidebar-whatsapp" },
     { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo"), dataTour: "sidebar-agency-info" },
     { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings"), dataTour: "sidebar-payment" },
