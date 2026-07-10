@@ -16,6 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,6 +98,8 @@ export const RegistrationDetailDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  // Panel-3: ödeme silme onay-dialogu (geri alınamaz para-izi → onaysız silme kaldırıldı)
+  const [pendingDeletePayment, setPendingDeletePayment] = useState<PaymentHistory | null>(null);
   
   const [editablePhone, setEditablePhone] = useState("");
   const [editableStatus, setEditableStatus] = useState("");
@@ -653,7 +665,7 @@ export const RegistrationDetailDialog = ({
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
-                          onClick={() => handleDeletePayment(payment.id, payment.amount)}
+                          onClick={() => setPendingDeletePayment(payment)}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -666,6 +678,40 @@ export const RegistrationDetailDialog = ({
           </Card>
         </div>
       </DialogContent>
+
+      {/* Panel-3: ödeme silme onayı — tutar + tarih görünür, geri alınamaz uyarısı */}
+      <AlertDialog open={!!pendingDeletePayment} onOpenChange={(o) => !o && setPendingDeletePayment(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ödeme kaydını sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeletePayment && (
+                <>
+                  <span className="font-medium text-foreground">{fmt(pendingDeletePayment.amount)}</span>
+                  {" — "}
+                  {format(new Date(pendingDeletePayment.payment_date), "d MMMM yyyy, HH:mm", { locale: dateLocale })}
+                  <br />
+                  Bu ödeme kaydı silinecek ve geri alınamaz. Kalan tutar buna göre güncellenecek. Emin misiniz?
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (pendingDeletePayment) {
+                  handleDeletePayment(pendingDeletePayment.id, pendingDeletePayment.amount);
+                  setPendingDeletePayment(null);
+                }
+              }}
+            >
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
