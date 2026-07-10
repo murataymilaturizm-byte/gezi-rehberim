@@ -119,17 +119,23 @@ export default function MessageTemplates() {
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  // Üst-seviye tab: "templates" (mevcut şablon yönetimi) | "automated" (otomatik bildirim eşleştirme)
-  const [outerTab, setOuterTab] = useState<"templates" | "automated">("templates");
   // İş1 (2026-07-10): "Şablonlar" içinde İKİ DÜNYA ayrımı — bot şablonları vs
   // Meta-onaylı (sync'le inen) template'ler karışmasın.
   const [tplScope, setTplScope] = useState<"bot" | "meta">("bot");
+  // Meta sync sonrası embed'li otomatik-bildirim kartlarını tazelemek için sinyal.
+  const [syncNonce, setSyncNonce] = useState(0);
   const { toast } = useToast();
 
   const templateKeys = getAllTemplateKeys(templates);
-  // İş1: aktif alt-sekmeye göre görünen key'ler (bot = KNOWN_TEMPLATE_TYPES, meta = geri kalan).
+  // Otomatik-bildirim standart adları (sabit iki satırda gösterilir → "Diğer
+  // Meta Şablonları" listesinden DIŞLANIR, çift görünmesin).
+  const AUTOMATION_TEMPLATE_RE = /^tour_(reminder|feedback)_(tr|en|de|fr|es|ru|ar)$/;
+  // İş1: aktif alt-sekmeye göre görünen key'ler (bot = KNOWN_TEMPLATE_TYPES,
+  // meta = geri kalan MA otomatik-bildirim template'leri hariç).
   const visibleTemplateKeys = templateKeys.filter((k) =>
-    tplScope === "bot" ? k in KNOWN_TEMPLATE_TYPES : !(k in KNOWN_TEMPLATE_TYPES),
+    tplScope === "bot"
+      ? k in KNOWN_TEMPLATE_TYPES
+      : !(k in KNOWN_TEMPLATE_TYPES) && !AUTOMATION_TEMPLATE_RE.test(k),
   );
 
   useEffect(() => {
@@ -392,6 +398,7 @@ export default function MessageTemplates() {
         : t("admin.templates.sync.success", { count: data?.updated ?? 0 });
       toast({ title: t("common.success"), description });
       await fetchTemplates();
+      setSyncNonce((n) => n + 1); // embed'li otomatik-bildirim kartlarını tazele
     } catch (err: any) {
       toast({ title: t("common.error"), description: err.message || t("admin.templates.sync.error"), variant: "destructive" });
     } finally {
@@ -419,20 +426,10 @@ export default function MessageTemplates() {
 
   return (
     <div className="space-y-6">
-      {/* Üst-seviye Tabs: Şablonlar (mevcut) | Otomatik Bildirimler (yeni).
-          İki tab dışındaki Dialog/SendTemplateDialog/AlertDialog'ler aşağıda, her iki
-          tab'da paylaşılan portal'lar. */}
-      <Tabs value={outerTab} onValueChange={(v) => setOuterTab(v as "templates" | "automated")}>
-        <TabsList className="grid grid-cols-2 w-full max-w-md">
-          <TabsTrigger value="templates">
-            {t("admin.whatsapp.templates.tabs.templates", { defaultValue: "Şablonlar" })}
-          </TabsTrigger>
-          <TabsTrigger value="automated">
-            {t("admin.whatsapp.templates.tabs.automated", { defaultValue: "Otomatik Bildirimler" })}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="templates" className="space-y-6 mt-6">
+      {/* 2026-07-10 NİHAİ MODEL: "Otomatik Bildirimler" AYRI SEKMESİ KALDIRILDI.
+          Tek ayrım: Bot Mesaj Şablonları | WhatsApp Onaylı Şablonlar (Meta).
+          Meta sekmesinin ilk iki SABİT satırı = Tur Hatırlatma + Memnuniyet Anketi
+          (Otomatik Bildirim kartları, aşağıda embed). */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold">{t("admin.whatsapp.templates.title")}</h2>
@@ -468,6 +465,21 @@ export default function MessageTemplates() {
           ? "Botun sohbet içinde kullandığı yerel şablonlar. WhatsApp otomatik bildirimleri için Meta-onaylı şablon gerekir (yan sekme)."
           : "Meta'dan senkronize edilen resmi şablonlar. Otomatik bildirim (hatırlatma/anket) yalnız APPROVED şablonlarla çalışır. Yeni çekmek için 'Şablonları Eşleştir'."}
       </p>
+
+      {/* NİHAİ MODEL: Meta sekmesinin İLK İKİ SABİT SATIRI = otomatik-bildirim
+          kartları (Tur Hatırlatma + Memnuniyet Anketi). Backend sözleşmesi
+          (event_type tour_reminder/feedback_survey + kayıt mantığı) AYNEN. */}
+      {tplScope === "meta" && (
+        <>
+          <AutomatedNotificationsTab reloadSignal={syncNonce} />
+          <div className="pt-4 mt-2 border-t border-border">
+            <h3 className="text-lg font-semibold">Diğer Meta Şablonları</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Otomatik bildirim dışındaki Meta şablonları (onay durumu rozetli).
+            </p>
+          </div>
+        </>
+      )}
 
       <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <TabsList className="grid grid-cols-7 w-full">
@@ -615,12 +627,6 @@ export default function MessageTemplates() {
           </TabsContent>
           );
         })}
-      </Tabs>
-        </TabsContent>
-
-        <TabsContent value="automated" className="mt-6">
-          <AutomatedNotificationsTab onGoToTemplates={() => setOuterTab("templates")} />
-        </TabsContent>
       </Tabs>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

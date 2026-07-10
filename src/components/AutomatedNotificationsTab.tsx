@@ -88,10 +88,13 @@ const db = supabase as any;
 interface AutomatedNotificationsTabProps {
   /** Üst-seviye Şablonlar sekmesine geçiş için (acentenin templates'i yoksa yönlendirme) */
   onGoToTemplates?: () => void;
+  /** Meta sync sonrası artan sinyal — onaylı-şablon listesini tazeler. */
+  reloadSignal?: number;
 }
 
 export default function AutomatedNotificationsTab({
   onGoToTemplates,
+  reloadSignal = 0,
 }: AutomatedNotificationsTabProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -116,8 +119,9 @@ export default function AutomatedNotificationsTab({
 
   useEffect(() => {
     loadAll();
+    // reloadSignal artınca (Meta sync sonrası) onaylı-şablon listesi tazelenir.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reloadSignal]);
 
   async function loadAll() {
     setLoading(true);
@@ -341,7 +345,7 @@ export default function AutomatedNotificationsTab({
             <p className="text-sm text-amber-900 dark:text-amber-200">
               {t("admin.automatedNotifications.noApprovedTemplates", {
                 defaultValue:
-                  "Otomatik bildirim göndermek için önce Meta Business hesabınızda bir şablon oluşturup onaylatın, sonra Şablonlar sekmesinden senkronize edin.",
+                  "Henüz Meta-onaylı şablon senkronize edilmemiş. Yukarıdaki 'Şablonları Eşleştir' ile çekin — sonra dil başına şablon seçebilirsiniz. (Zamanlama ve açık/kapalı ayarını şimdiden yapabilirsiniz.)",
               })}
             </p>
             {onGoToTemplates && (
@@ -371,6 +375,7 @@ export default function AutomatedNotificationsTab({
                 {t("admin.automatedNotifications.tourReminder.title", {
                   defaultValue: "Tur Hatırlatma",
                 })}
+                <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20" variant="outline">Otomatik Bildirim</Badge>
                 {!hasReminders && (
                   <Badge variant="outline" className="text-xs gap-1">
                     <Lock className="h-3 w-3" />
@@ -390,7 +395,7 @@ export default function AutomatedNotificationsTab({
             <Switch
               checked={reminderEnabled}
               onCheckedChange={setReminderEnabled}
-              disabled={!hasReminders || noApprovedTemplates}
+              disabled={!hasReminders}
               aria-label={t("admin.automatedNotifications.enable", { defaultValue: "Aktif" })}
             />
           </div>
@@ -482,7 +487,7 @@ export default function AutomatedNotificationsTab({
           <div className="flex justify-end pt-2">
             <Button
               onClick={() => handleSave("tour_reminder")}
-              disabled={!hasReminders || savingReminder || noApprovedTemplates}
+              disabled={!hasReminders || savingReminder}
             >
               {savingReminder ? (
                 <Loader2 className="h-4 w-4 me-2 animate-spin" />
@@ -505,6 +510,7 @@ export default function AutomatedNotificationsTab({
                 {t("admin.automatedNotifications.feedbackSurvey.title", {
                   defaultValue: "Memnuniyet Anketi",
                 })}
+                <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20" variant="outline">Otomatik Bildirim</Badge>
                 {!hasFeedback && (
                   <Badge variant="outline" className="text-xs gap-1">
                     <Lock className="h-3 w-3" />
@@ -524,7 +530,7 @@ export default function AutomatedNotificationsTab({
             <Switch
               checked={surveyEnabled}
               onCheckedChange={setSurveyEnabled}
-              disabled={!hasFeedback || noApprovedTemplates}
+              disabled={!hasFeedback}
               aria-label={t("admin.automatedNotifications.enable", { defaultValue: "Aktif" })}
             />
           </div>
@@ -612,7 +618,7 @@ export default function AutomatedNotificationsTab({
           <div className="flex justify-end pt-2">
             <Button
               onClick={() => handleSave("feedback_survey")}
-              disabled={!hasFeedback || savingSurvey || noApprovedTemplates}
+              disabled={!hasFeedback || savingSurvey}
             >
               {savingSurvey ? (
                 <Loader2 className="h-4 w-4 me-2 animate-spin" />
