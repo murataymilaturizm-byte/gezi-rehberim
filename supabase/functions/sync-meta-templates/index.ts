@@ -190,6 +190,9 @@ serve(async (req) => {
     }
 
     console.log(`[sync-meta-templates] Done: inserted=${inserted} updated=${updated} failed=${failed}`);
+    // NOT (2026-07-10 ürün kararı): OTOMATİK olay-eşleştirme KALDIRILDI — acente
+    // hatırlatma/anket eşleştirmesini panelden BİLİNÇLİ/ELLE kurar (Otomatik
+    // Bildirimler ekranı). Sync yalnız message_templates'i günceller.
 
     return new Response(
       JSON.stringify({ success: true, total: metaTemplates.length, inserted, updated, failed }),

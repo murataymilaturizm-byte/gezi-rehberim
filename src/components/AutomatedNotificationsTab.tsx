@@ -265,6 +265,49 @@ export default function AutomatedNotificationsTab({
   const hasReminders = planFeatures?.has_reminders === true;
   const hasFeedback = planFeatures?.has_feedback === true;
 
+  // İş3 (2026-07-10): eşleştirme netliği — her olay kartında özet/uyarı rozeti.
+  // "sessiz-kapalı" tuzağının PANELDE görünür hali.
+  const offsetLabel = (off: number) =>
+    off < 0 ? `${Math.abs(off) / 24} gün önce` : `${off / 24} gün sonra`;
+  const renderMatchSummary = (isReminder: boolean) => {
+    const enabled = isReminder ? reminderEnabled : surveyEnabled;
+    const offset = isReminder ? reminderOffset : surveyOffset;
+    const tmap = isReminder ? reminderTemplates : surveyTemplates;
+    const label = isReminder ? "Tur Hatırlatma" : "Tur Değerlendirme (Anket)";
+    const selected = Object.entries(tmap).filter(([, tk]) => !!tk);
+    if (!enabled) {
+      return (
+        <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          Bu bildirim <span className="font-medium">kapalı</span> — müşterilere gönderilmez.
+        </div>
+      );
+    }
+    if (selected.length === 0) {
+      return (
+        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-start gap-2">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+          <span><span className="font-semibold">Şablon seçilmedi — bu bildirim GÖNDERİLMEZ.</span> En az bir dil için şablon seçip kaydedin.</span>
+        </div>
+      );
+    }
+    const whenWho = isReminder
+      ? `Tur gününden ${offsetLabel(offset)}, o tarihte turu olan müşterilere otomatik gönderilir.`
+      : `Tur bitiminden ${offsetLabel(offset)}, tura katılan müşterilere otomatik gönderilir.`;
+    return (
+      <div className="rounded-md border border-green-500/30 bg-green-500/5 px-3 py-2 text-xs space-y-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="font-semibold text-green-700 dark:text-green-400">{label} eşleşti:</span>
+          {selected.map(([lang, tk]) => (
+            <Badge key={lang} variant="outline" className="text-[10px] border-green-500/40 font-mono">
+              {tk} ({lang}, {offset}s, etkin)
+            </Badge>
+          ))}
+        </div>
+        <p className="text-muted-foreground">{whenWho}</p>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -433,21 +476,8 @@ export default function AutomatedNotificationsTab({
             </div>
           )}
 
-          {/* Toggle açık ama hiçbir eşleştirme yok uyarısı */}
-          {reminderEnabled &&
-            hasReminders &&
-            Object.values(reminderTemplates).filter(Boolean).length === 0 &&
-            languagesWithTemplates.length > 0 && (
-              <Alert variant="destructive" className="text-xs">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                <AlertDescription>
-                  {t("admin.automatedNotifications.enabledButNoMatch", {
-                    defaultValue:
-                      "Bildirim açık ancak hiçbir dile şablon eşleştirilmemiş — kaydetmeden önce en az bir dil için şablon seçin.",
-                  })}
-                </AlertDescription>
-              </Alert>
-            )}
+          {/* İş3: eşleştirme özet/uyarı rozeti (kapalı / eşleşti / şablon-yok) */}
+          {hasReminders && renderMatchSummary(true)}
 
           <div className="flex justify-end pt-2">
             <Button
@@ -576,20 +606,8 @@ export default function AutomatedNotificationsTab({
             </div>
           )}
 
-          {surveyEnabled &&
-            hasFeedback &&
-            Object.values(surveyTemplates).filter(Boolean).length === 0 &&
-            languagesWithTemplates.length > 0 && (
-              <Alert variant="destructive" className="text-xs">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                <AlertDescription>
-                  {t("admin.automatedNotifications.enabledButNoMatch", {
-                    defaultValue:
-                      "Bildirim açık ancak hiçbir dile şablon eşleştirilmemiş — kaydetmeden önce en az bir dil için şablon seçin.",
-                  })}
-                </AlertDescription>
-              </Alert>
-            )}
+          {/* İş3: eşleştirme özet/uyarı rozeti */}
+          {hasFeedback && renderMatchSummary(false)}
 
           <div className="flex justify-end pt-2">
             <Button

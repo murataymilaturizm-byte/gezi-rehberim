@@ -62,10 +62,12 @@ const LANGUAGES = [
 ];
 
 // Bilinen sistem tipleri — i18n label'ı var
+// İş1 (2026-07-10): 'tour_reminder' KNOWN'dan ÇIKARILDI — yerel taslak değil,
+// Meta-onaylı tour_reminder_{lang} tarafından karşılanan bir olay. Eski yerel
+// kayıtlar arşivlendi (is_active=false); artık zorla bot-kartı render edilmez.
 const KNOWN_TEMPLATE_TYPES: Record<string, string> = {
   reservation_confirmed: 'admin.templates.types.reservation_confirmed',
   reservation_cancelled: 'admin.templates.types.reservation_cancelled',
-  tour_reminder: 'admin.templates.types.tour_reminder',
 };
 
 // DB'deki tüm unique template_key'leri döndür (bilinen + Meta'dan gelenler)
@@ -119,9 +121,16 @@ export default function MessageTemplates() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   // Üst-seviye tab: "templates" (mevcut şablon yönetimi) | "automated" (otomatik bildirim eşleştirme)
   const [outerTab, setOuterTab] = useState<"templates" | "automated">("templates");
+  // İş1 (2026-07-10): "Şablonlar" içinde İKİ DÜNYA ayrımı — bot şablonları vs
+  // Meta-onaylı (sync'le inen) template'ler karışmasın.
+  const [tplScope, setTplScope] = useState<"bot" | "meta">("bot");
   const { toast } = useToast();
 
   const templateKeys = getAllTemplateKeys(templates);
+  // İş1: aktif alt-sekmeye göre görünen key'ler (bot = KNOWN_TEMPLATE_TYPES, meta = geri kalan).
+  const visibleTemplateKeys = templateKeys.filter((k) =>
+    tplScope === "bot" ? k in KNOWN_TEMPLATE_TYPES : !(k in KNOWN_TEMPLATE_TYPES),
+  );
 
   useEffect(() => {
     fetchTemplates();
@@ -431,17 +440,34 @@ export default function MessageTemplates() {
             {t("admin.whatsapp.templates.description")}
           </p>
         </div>
+        {/* İş1: sync + hazır-şablon aksiyonları alt-sekmeye göre. */}
         <div className="flex gap-2 flex-wrap">
-          <Button onClick={handleSyncWithMeta} variant="outline" disabled={syncing || !agencyId}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-            {t("admin.templates.sync.button")}
-          </Button>
-          <Button onClick={copyDefaultTemplates} variant={templates.length === 0 ? "default" : "outline"}>
-            <Copy className="mr-2 h-4 w-4" />
-            {t("admin.whatsapp.templates.loadDefaults")}
-          </Button>
+          {tplScope === "meta" ? (
+            <Button onClick={handleSyncWithMeta} variant="outline" disabled={syncing || !agencyId}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              {t("admin.templates.sync.button")}
+            </Button>
+          ) : (
+            <Button onClick={copyDefaultTemplates} variant={templates.length === 0 ? "default" : "outline"}>
+              <Copy className="mr-2 h-4 w-4" />
+              {t("admin.whatsapp.templates.loadDefaults")}
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* İş1: Bot Mesaj Şablonları | WhatsApp Onaylı Şablonlar (Meta) alt-sekmeleri */}
+      <Tabs value={tplScope} onValueChange={(v) => setTplScope(v as "bot" | "meta")}>
+        <TabsList className="grid grid-cols-2 w-full max-w-lg">
+          <TabsTrigger value="bot">Bot Mesaj Şablonları</TabsTrigger>
+          <TabsTrigger value="meta">WhatsApp Onaylı Şablonlar (Meta)</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <p className="text-xs text-muted-foreground -mt-3">
+        {tplScope === "bot"
+          ? "Botun sohbet içinde kullandığı yerel şablonlar. WhatsApp otomatik bildirimleri için Meta-onaylı şablon gerekir (yan sekme)."
+          : "Meta'dan senkronize edilen resmi şablonlar. Otomatik bildirim (hatırlatma/anket) yalnız APPROVED şablonlarla çalışır. Yeni çekmek için 'Şablonları Eşleştir'."}
+      </p>
 
       <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <TabsList className="grid grid-cols-7 w-full">
@@ -462,10 +488,22 @@ export default function MessageTemplates() {
           })}
         </TabsList>
 
-        {LANGUAGES.map((lang) => (
+        {LANGUAGES.map((lang) => {
+          const _langVisibleCount = visibleTemplateKeys.filter((key) => {
+            const template = getTemplatesByLanguage(lang.code).find((tmpl) => tmpl.template_key === key);
+            return (key in KNOWN_TEMPLATE_TYPES) || !!template;
+          }).length;
+          return (
           <TabsContent key={lang.code} value={lang.code} className="space-y-4">
+            {_langVisibleCount === 0 && (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                {tplScope === "meta"
+                  ? "Bu dilde Meta'dan senkronize şablon yok. 'Şablonları Eşleştir' ile çekin."
+                  : "Bu dilde bot şablonu yok."}
+              </div>
+            )}
             <div className="grid gap-4">
-              {templateKeys.map((key) => {
+              {visibleTemplateKeys.map((key) => {
                 const template = getTemplatesByLanguage(lang.code).find(
                   tmpl => tmpl.template_key === key
                 );
@@ -473,6 +511,9 @@ export default function MessageTemplates() {
 
                 // Custom/Meta template: sadece kendi dilinin tab'ında göster
                 if (!isKnownType && !template) return null;
+                // İş1: arşivlenen yerel orphan'ı gizle (meta_status yok + pasif);
+                // Meta PENDING/REJECTED (meta_status var, is_active=false) GÖRÜNÜR kalır.
+                if (template && !template.meta_status && template.is_active === false) return null;
 
                 const label = getTemplateLabel(key, t);
 
@@ -572,7 +613,8 @@ export default function MessageTemplates() {
               })}
             </div>
           </TabsContent>
-        ))}
+          );
+        })}
       </Tabs>
         </TabsContent>
 
