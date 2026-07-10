@@ -975,7 +975,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _msgWords = _clarNorm(message).split(/\s+/).filter((w) => w.length >= 2);
       if (_msgWords.length > 0 && _msgWords.length <= 6) {
         const _matches = _clarCands.filter((c) => {
-          const _t = _clarNorm(c.title);
+          // Title'ı SUNUCUDAKİ tours listesinden id ile TAZELE — client round-trip'i
+          // title'ı bozabilir (ör. yanlış-charset'li istemci); id her zaman güvenli.
+          const _freshTitle = findTourById(c.id, tours)?.title || c.title;
+          const _t = _clarNorm(_freshTitle);
           return _msgWords.every((w) => _t.includes(w));
         });
         if (_matches.length === 1) _clarChosen = _matches[0];
