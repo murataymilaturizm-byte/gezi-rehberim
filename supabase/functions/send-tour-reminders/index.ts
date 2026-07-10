@@ -172,13 +172,17 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Pencere rezervasyonları (henüz gönderilmemiş, iptal değil)
+      // Pencere rezervasyonları — 2026-07-10 (karar 2): yalnız CONFIRMED.
+      // NEW (henüz kesinleşmemiş) müşteriye "yarın görüşürüz" gitmesin; CANCELLED
+      // zaten dışarıda. ÖDEME FİLTRESİ YOK (araçta-nakit meşru senaryo — karar 2a).
+      // Anket (send-feedback-survey) zaten CONFIRMED-only. Ödeme-bazlı gönderim
+      // seçimi (panel: tümü/kaporalı/tam) → launch-sonrası backlog (M).
       const { data: regs, error: regErr } = await supabase
         .from("registrations")
         .select(`id, full_name, phone, status, tour_dates!inner(departure_date)`)
         .eq("agency_id", m.agency_id)
         .eq("reminder_sent", false)
-        .neq("status", "CANCELLED")
+        .eq("status", "CONFIRMED")
         .gte("tour_dates.departure_date", startDate)
         .lt("tour_dates.departure_date", endDate);
 
