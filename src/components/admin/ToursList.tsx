@@ -36,6 +36,8 @@ import { MapPin } from "lucide-react";
 import { ToursEmptyIllustration } from "@/components/illustrations/ToursEmptyIllustration";
 import { TourFilters, EMPTY_TOUR_FILTERS } from "./TourFilters";
 import type { TourFilterState } from "./TourFilters";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { computeTourCompleteness } from "@/utils/tourCompleteness";
 
 interface Tour {
   id: string;
@@ -278,6 +280,37 @@ export const ToursList = ({
                       🏨 {tour.hotel_name} {tour.hotel_stars ? `${"⭐".repeat(tour.hotel_stars)}` : ""}
                     </Badge>
                   )}
+                  {/* Panel-1: bot-kalitesi doluluk rozeti — eksik alanlar tooltip'te */}
+                  {(() => {
+                    const c = computeTourCompleteness(tour);
+                    const cls =
+                      c.level === "complete"
+                        ? "border-green-500/40 text-green-700 dark:text-green-400 bg-green-500/5"
+                        : c.level === "partial"
+                          ? "border-amber-500/40 text-amber-700 dark:text-amber-400 bg-amber-500/5"
+                          : "border-red-500/40 text-red-700 dark:text-red-400 bg-red-500/5";
+                    const badge = (
+                      <Badge variant="outline" className={`text-xs cursor-help ${cls}`}>
+                        {c.level === "complete"
+                          ? `✓ Bilgiler tam`
+                          : `%${c.percent} — ${c.missing.length} alan eksik`}
+                      </Badge>
+                    );
+                    if (c.level === "complete") return badge;
+                    return (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{badge}</TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p className="font-medium mb-1">Bot bu soruları yanıtlayamayacak:</p>
+                          <ul className="text-xs space-y-0.5">
+                            {c.missing.map((m) => (
+                              <li key={m.key}>• {m.label} <span className="text-muted-foreground">("{m.exampleQuestion}")</span></li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })()}
                 </div>
               </div>
               <div className="flex gap-2 flex-wrap">

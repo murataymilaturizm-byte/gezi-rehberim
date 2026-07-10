@@ -8,6 +8,7 @@ import { CheckCircle2, Check, X, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { computeTourCompleteness } from "@/utils/tourCompleteness";
 
 const STORAGE_KEY = "turzz_onboarding_dismissed";
 
@@ -21,6 +22,7 @@ interface StepStatus {
   payment: boolean;
   addTour: boolean;
   addDates: boolean;
+  toursComplete: boolean;   // Panel-1: tüm turların kritik-alanları dolu mu
   selectLanguage: boolean;
   currencyLanguage: boolean;
   whatsapp: boolean;
@@ -31,6 +33,7 @@ interface StepStatus {
 export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklistProps) {
   const { t } = useTranslation();
   const [steps, setSteps] = useState<StepStatus | null>(null);
+  const [tourStats, setTourStats] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
   const [dismissed, setDismissed] = useState(() => {
     return localStorage.getItem(STORAGE_KEY + "_" + agencyId) === "1";
   });
@@ -41,12 +44,18 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
   }, [agencyId, dismissed]);
 
   const loadSteps = async () => {
+    // Panel-1: tur alanlarını da çek (doluluk hesabı için) — id-only yerine.
     const tourIdsRes = await supabase
       .from("tours")
-      .select("id")
+      .select("id, type, tur_kategorisi, hareket_noktasi, toplanma_saati, tur_sure, ulasim, gezilecek_yerler, konaklama, visa_required")
       .eq("agency_id", agencyId);
 
-    const tourIds = tourIdsRes.data?.map((t) => t.id) ?? [];
+    const tourRows = tourIdsRes.data ?? [];
+    const tourIds = tourRows.map((t) => t.id);
+
+    // Panel-1: kaç tur kritik-alan bakımından TAM (koşullu set: konaklama/vize).
+    const completeCount = tourRows.filter((tr) => computeTourCompleteness(tr).missing.length === 0).length;
+    setTourStats({ done: completeCount, total: tourRows.length });
 
     // Madde 3: message_templates ve faq_templates sorguları KALDIRILDI — bu iki adım
     // onboarding checklist'inden çıkarıldı.
@@ -82,6 +91,8 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
       payment: !!(agency?.payment_instructions),
       addTour: tourCount > 0,
       addDates: dateCount > 0,
+      // Panel-1: en az 1 tur VAR ve HEPSİ kritik-alan bakımından tam.
+      toursComplete: tourCount > 0 && completeCount === tourRows.length,
       selectLanguage: Array.isArray(agency?.enabled_languages) && agency.enabled_languages.length > 0,
       currencyLanguage: hasCurrencyLang,
       whatsapp: agency?.whatsapp_status === "active" && !!(agency?.meta_phone_number_id || agency?.whatsapp_api_key),
@@ -102,6 +113,7 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
     { key: "payment", tab: "payment_settings" },
     { key: "addTour", tab: "tours" },
     { key: "addDates", tab: "tours" },
+    { key: "toursComplete", tab: "tours" },
     { key: "selectLanguage", tab: "languages" },
     { key: "currencyLanguage", tab: "languages" },
     { key: "whatsapp", tab: "settings" },
@@ -207,7 +219,13 @@ export function OnboardingChecklist({ agencyId, onNavigate }: OnboardingChecklis
                       : "text-foreground"
                   )}
                 >
-                  {t(`admin.onboarding.steps.${key}`)}
+                  {key === "toursComplete"
+                    ? t("admin.onboarding.steps.toursComplete", {
+                        done: tourStats.done,
+                        total: tourStats.total,
+                        defaultValue: `Tur bilgileri eksiksiz (${tourStats.done}/${tourStats.total} tur tam)`,
+                      })
+                    : t(`admin.onboarding.steps.${key}`)}
                 </span>
 
                 {/* Right: action button or done checkmark */}
