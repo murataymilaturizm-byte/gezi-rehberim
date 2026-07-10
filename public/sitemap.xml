@@ -10,12 +10,6 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://turzzai.com/auth</loc>
-    <lastmod>2026-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://turzzai.com/whatsapp-chatbot-seyahat-acentesi</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>monthly</changefreq>
@@ -83,6 +77,18 @@
   </url>
   <url>
     <loc>https://turzzai.com/terms-of-service</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://turzzai.com/data-deletion</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://turzzai.com/data-export</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

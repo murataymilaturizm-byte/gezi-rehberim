@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { CookieConsent } from "@/components/CookieConsent";
+import { SEOHead } from "@/components/SEOHead";
 import { MetaPixel } from "@/components/MetaPixel";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -61,17 +62,21 @@ const App = () => (
         <RtlEffect />
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>}>
           <Routes>
-            {/* Core */}
+            {/* Core.
+                SEO-FIX (2026-07-10): SEOHead kullanmayan sayfalar ROUTE-
+                seviyesinde sarmalandı — canonical artık HER sayfada kendi
+                pathname'i (SEOHead default). Uygulama-içi sayfalar (auth/
+                admin/reset) noindex; içerik sayfaları title+desc alır. */}
             <Route path="/"            element={<Index />} />
-            <Route path="/auth"        element={<Auth />} />
-            <Route path="/admin"       element={<Admin />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/nasil-baslarim" element={<GettingStarted />} />
-            <Route path="/yardim"      element={<Help />} />
-            <Route path="/privacy-policy"   element={<PrivacyPolicy />} />
-            <Route path="/data-deletion"    element={<DataDeletion />} />
-            <Route path="/data-export"      element={<DataExport />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/auth"        element={<><SEOHead title="Giriş" noindex /><Auth /></>} />
+            <Route path="/admin"       element={<><SEOHead title="Panel" noindex /><Admin /></>} />
+            <Route path="/reset-password" element={<><SEOHead title="Şifre Sıfırlama" noindex /><ResetPassword /></>} />
+            <Route path="/nasil-baslarim" element={<><SEOHead title="Nasıl Başlarım? Kurulum Rehberi" description="Turzz AI'ı acenteniz için dakikalar içinde kurun: hesap, tur ekleme, WhatsApp bağlantısı — adım adım başlangıç rehberi." /><GettingStarted /></>} />
+            <Route path="/yardim"      element={<><SEOHead title="Yardım Merkezi ve SSS" description="Turzz AI yardım merkezi: sık sorulan sorular, kurulum, WhatsApp entegrasyonu ve rezervasyon yönetimi hakkında cevaplar." /><Help /></>} />
+            <Route path="/privacy-policy"   element={<><SEOHead title="Gizlilik Politikası" description="Turzz AI gizlilik politikası: kişisel verilerin işlenmesi, saklanması ve korunması hakkında bilgilendirme." /><PrivacyPolicy /></>} />
+            <Route path="/data-deletion"    element={<><SEOHead title="Veri Silme Talebi" description="Turzz AI veri silme talebi: hesap ve kişisel verilerinizin silinmesini bu sayfadan talep edebilirsiniz." /><DataDeletion /></>} />
+            <Route path="/data-export"      element={<><SEOHead title="Veri Dışa Aktarma" description="Turzz AI veri taşınabilirliği: hesabınıza ait verilerin kopyasını bu sayfadan talep edebilirsiniz." /><DataExport /></>} />
+            <Route path="/terms-of-service" element={<><SEOHead title="Kullanım Koşulları" description="Turzz AI hizmet kullanım koşulları ve abonelik şartları." /><TermsOfService /></>} />
 
             {/* SEO — Özellikler */}
             <Route path="/whatsapp-chatbot-seyahat-acentesi" element={<WhatsAppChatbot />} />
@@ -105,8 +110,8 @@ const App = () => (
             <Route path="/es/blog"       element={<Blog />} />
             <Route path="/es/blog/:slug" element={<BlogPost />} />
 
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
+            {/* 404 — noindex (soft-404 index kirliliğini önler) */}
+            <Route path="*" element={<><SEOHead title="Sayfa Bulunamadı" noindex /><NotFound /></>} />
           </Routes>
         </Suspense>
       </BrowserRouter>

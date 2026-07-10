@@ -19,9 +19,11 @@ const TODAY = new Date().toISOString().split('T')[0];
 const ALL_LANGS = ['tr', 'en', 'de', 'ru', 'ar', 'fr', 'es'];
 
 // ─── Statik sayfa listesi ──────────────────────────────────────────────────
+// SEO-FIX (2026-07-10): /auth ÇIKARILDI (artık noindex — sitemap'te noindex-URL
+// Search Console "gönderilen URL'de noindex" hatası üretir); /data-deletion +
+// /data-export EKLENDİ (SEOHead'li indexlenebilir yasal sayfalar).
 const STATIC_PAGES = [
   { path: '/',                                        priority: '1.0', changefreq: 'weekly'  },
-  { path: '/auth',                                    priority: '0.5', changefreq: 'monthly' },
   { path: '/whatsapp-chatbot-seyahat-acentesi',       priority: '0.9', changefreq: 'monthly' },
   { path: '/ai-tur-rezervasyonu',                     priority: '0.9', changefreq: 'monthly' },
   { path: '/cok-dilli-musteri-hizmetleri',            priority: '0.8', changefreq: 'monthly' },
@@ -34,6 +36,8 @@ const STATIC_PAGES = [
   { path: '/yardim',                                  priority: '0.7', changefreq: 'monthly' },
   { path: '/privacy-policy',                          priority: '0.3', changefreq: 'yearly'  },
   { path: '/terms-of-service',                        priority: '0.3', changefreq: 'yearly'  },
+  { path: '/data-deletion',                           priority: '0.3', changefreq: 'yearly'  },
+  { path: '/data-export',                             priority: '0.3', changefreq: 'yearly'  },
 ];
 
 // ─── URL yardımcısı ────────────────────────────────────────────────────────

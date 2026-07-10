@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 
 // i18n.language (tr/en/de/ru/ar/fr/es) → OG locale (IETF BCP 47)
 const OG_LOCALE_MAP: Record<string, string> = {
@@ -27,6 +28,8 @@ interface SEOHeadProps {
   schema?: object;
   type?: "website" | "article";
   extraLinks?: HreflangLink[];
+  /** SEO-FIX (2026-07-10): admin/auth gibi sayfalar için noindex,nofollow. */
+  noindex?: boolean;
 }
 
 const SITE_NAME = "Turzz AI";
@@ -47,10 +50,16 @@ export const SEOHead = ({
   schema,
   type = "website",
   extraLinks,
+  noindex = false,
 }: SEOHeadProps) => {
   const { i18n } = useTranslation();
+  const { pathname } = useLocation();
   const fullTitle = title === DEFAULT_TITLE ? title : `${title} | ${SITE_NAME}`;
-  const canonicalUrl = canonical ? `${SITE_URL}${canonical}` : undefined;
+  // SEO-FIX (2026-07-10): canonical prop verilmezse SAYFANIN KENDİ pathname'i
+  // kullanılır — canonical artık HER sayfada basılır (eski: prop'suz sayfada
+  // hiç basılmıyor, index.html'deki hardcode ana-URL geçerli kalıyordu →
+  // "her sayfa kendini ana sayfa sanıyor" kökünün ikinci yarısı).
+  const canonicalUrl = `${SITE_URL}${canonical ?? pathname}`;
   const ogLocale = OG_LOCALE_MAP[i18n.language] || "tr_TR";
 
   return (
@@ -59,6 +68,7 @@ export const SEOHead = ({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* Open Graph */}
       <meta property="og:title" content={fullTitle} />
