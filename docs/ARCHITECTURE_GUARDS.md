@@ -619,6 +619,50 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
     hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
     P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
+33. **FAZ6 — KABUL-FIX'LERİ + VAAD DENETİMİ (2026-07-10)**.
+    **A-fix'ler (canlı-kanıtlı):** A1 pendingTourClarification (types.ts alanı;
+    7c adayları yazar → 7b-0 SONRAKİ mesajı numara/kısmi-ad seçimi olarak dener,
+    lokalize-title dahil; eşleşmezse normal-akış/R6; TEK-ATIŞ) — canlı: TR "kültür
+    turu" + EN "balloon tour" + numara + alakasız-R6 ✓. A2 fiyat-prefix (:11b,
+    TEK-KAYNAK constants/price-question.ts) — canlı "2 kişi için toplam 7.000₺" ✓.
+    A3 ack teşekkür-daraltma (TEK-KAYNAK constants/thanks-words.ts) — canlı
+    chitchat→LLM, teşekkür→ack ✓. 7-dil şartı: buildTourChangePrefix TR+EN→7-dil.
+    **VERİ-BULGUSU:** demo title_en/ru YARIM-ÇEVİRİYDİ ("Cappadocia Balon Turu"
+    — keyword-replace çıktısı DB'ye yazılmış) → düzeltildi; translate-tour/import
+    çıktıları için denetim-notu.
+    **VAAD DENETİMİ (B) ÖZETİ:**
+    - **B2/B3 HATIRLATMA+ANKET: HİÇ CANLI TETİKLENMEDİ** — cron'lar aktif
+      (09:00/12:00 UTC, her gün "succeeded") AMA `agency_event_templates` **0
+      satır** → iki function da her gün "No matchings" ile boş döner
+      (reminder_sent=0, last_feedback_sent_at=0 doğruladı). Kök: hiçbir acente
+      (demo dahil) panelde eşleştirme kurmamış. Function-kalitesi iyi (plan-gate,
+      idempotent flag, 24h-pencere, 500ms rate-limit, template-based=24h-muaf).
+      **Boşluklar:** (M) dil-eşleşme fallback'siz — profil-dili≠satır-dili →
+      SESSİZ atlama (acente tek-dil kurarsa yabancı müşteri hiç almaz); (S)
+      feedback-cron'un gömülü JWT'si 1-karakter kısa (verify_jwt=false olduğundan
+      bugün etkisiz — yine de düzeltilmeli, verify açılırsa sessiz ölür); (S)
+      cron tanımları migration-dışı (drift); (kozmetik) UTC gün-granül pencere.
+    - **B3 EK: ANKET-CEVABI YAKALANMIYOR** — webhook'ta survey/rating ayrımı YOK;
+      müşteri "5" yazarsa normal akışa girer, sonuç HİÇBİR YERE yazılmaz, acente
+      GÖREMEZ. Vaadın "değerlendirme" yarısı eksik (M/L paket: quick-reply
+      butonlu template + button-payload yakalama + feedback tablosu + panel).
+    - **B1 CRM/TANIMA:** profil toplama ÇALIŞIYOR (64 profil; dil-tercihi,
+      last_interaction, insights[TR-hardcoded 6 keyword — sığ], auto-tag trigger).
+      Bot KONUŞMADA kullanım: returningUserName→prompt "adıyla selamla"
+      (total_bookings>0 şartı; registrations-trigger +1 canlıda 1 örnek —
+      phone-normalize eşleşmesi izlenmeli). TTL-sonrası dil-tercihi/isim profilde
+      korunur ✓. Boşluklar: (M) geçmiş-rezervasyon bilgisi konuşmaya taşınmıyor;
+      (S) insights keyword'leri 7-dil tek-kaynağa; (M) `send-follow-up-messages`
+      CRON'SUZ (tetikleyicisiz ölü function — karar: cron ekle ya da kaldır);
+      (M) conversation-state.ts/tour-switch-detector/intelligent-handler eski-
+      mimari kalıntıları (index bağlamıyor) — ölü-ağırlık temizliği.
+    - **B4 WEBHOOK:** SAĞLAM: HMAC(+eksik-imza reddi), atomik dedup+preload,
+      uzun-mesaj 7-dil, Meta 429/5xx tek-retry+Retry-After, PII-mask, bot-pause,
+      self-heal subscribe, send-manual-message 24h-pencere kontrolü. **S-FIX'LENDİ:**
+      desteklenmeyen-tip nazik yanıt 7-dil (eski: sesli/konum/sticker→TAM SESSİZ;
+      caption'sız medya→`[audio]` literal'i NLU'ya) — reaction/edited SESSİZ kalır
+      (doğru). M-bulgu: aynı-kullanıcı eşzamanlı FARKLI-id çift mesaj yarışı
+      (dedup id-bazlı; context last-write-wins — kuyruk/lock paketi).
 32. **FABLE REVIEW-2 (2026-07-09, etkileşim-denetimi tamamlama)** — R6-deseni
     (mekanizmalar tek tek doğru, SIRALAMA yanlış) avı. **Fix'lenen (S):**
     :10g farketmez-dalında FAQ-intent guard'ı YOKTU (KÖK6 sınıfı) — "ilk önce

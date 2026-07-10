@@ -298,6 +298,7 @@ export function extractMetaWebhookData(body: any): {
   messageId: string;
   isStatus: boolean;
   phoneNumberId: string;
+  msgType?: string; // 2026-07-10 B4: desteklenmeyen-tip nazik-yanıtı için ham tip
 } | null {
   try {
     if (body?.object !== 'whatsapp_business_account') {
@@ -334,10 +335,15 @@ export function extractMetaWebhookData(body: any): {
         message = msg.interactive.list_reply?.title || '';
       }
     } else if (msg.type === 'image' || msg.type === 'document' || msg.type === 'audio' || msg.type === 'video') {
-      message = msg[msg.type]?.caption || `[${msg.type}]`;
+      // 2026-07-10 B4: caption VARSA metin olarak işlenir (mevcut davranış korunur);
+      // caption YOKSA eski `[audio]` literal'i NLU'ya gidiyordu (bot saçma cevap) →
+      // artık boş bırakılır, index.ts msgType'a bakıp NAZİK 7-dil yanıt verir.
+      message = msg[msg.type]?.caption || '';
     }
+    // location/sticker/contacts/reaction vb. → message='' kalır; index.ts msgType'a
+    // göre karar verir (medya/konum → nazik yanıt; reaction/edited → sessiz).
 
-    return { from, message, messageId, isStatus: false, phoneNumberId };
+    return { from, message, messageId, isStatus: false, phoneNumberId, msgType: msg.type || '' };
   } catch (error) {
     console.error('❌ Error extracting Meta webhook data:', error);
     return null;

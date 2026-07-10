@@ -177,6 +177,37 @@ serve(async (req) => {
     const rawMessage = webhookData.message;
 
     if (!userPhone || !rawMessage) {
+      // 2026-07-10 B4: desteklenmeyen-tip NAZİK YANIT (7-dil). Eskiden müşteri
+      // sesli/konum/sticker atınca bot TAMAMEN SESSİZ kalıyordu (caption'sız
+      // medyada ise `[audio]` literal'i NLU'ya gidip saçma cevap üretiyordu).
+      // Medya/konum/sticker/kişi-kartı → "yazılı mesaj" ricası; reaction/
+      // edited/deleted/unknown → SESSİZ (doğru davranış — tepkiye cevap verilmez).
+      const _politeTypes = new Set(["image", "audio", "video", "document", "location", "sticker", "contacts", "voice"]);
+      if (userPhone && webhookData.msgType && _politeTypes.has(webhookData.msgType)) {
+        const _agUn = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
+        const _mcUn = _agUn?.agency ? getMetaCredentials(_agUn.agency) : null;
+        if (_mcUn?.accessToken && _mcUn?.phoneNumberId) {
+          // Dil: profil tercihi varsa o, yoksa acente ilk-dili, yoksa tr
+          let _unLang = "tr";
+          try {
+            const { data: _pUn } = await supabase
+              .from("whatsapp_user_profiles").select("language_preference")
+              .eq("phone", userPhone).eq("agency_id", _agUn.agency.id).maybeSingle();
+            _unLang = _pUn?.language_preference || (_agUn.agency.enabled_languages?.[0]) || "tr";
+          } catch { /* dil çözülemezse tr */ }
+          const _unMsgs: Record<string, string> = {
+            tr: "Şu an yalnızca yazılı mesajları işleyebiliyorum 🙏 Lütfen isteğinizi kısaca yazar mısınız?",
+            en: "I can only process written messages right now 🙏 Could you please type your request?",
+            de: "Ich kann derzeit nur Textnachrichten verarbeiten 🙏 Könnten Sie Ihre Anfrage bitte kurz schreiben?",
+            fr: "Je ne peux traiter que les messages écrits pour le moment 🙏 Pourriez-vous écrire votre demande ?",
+            es: "Por ahora solo puedo procesar mensajes escritos 🙏 ¿Podría escribir su solicitud?",
+            ru: "Сейчас я могу обрабатывать только текстовые сообщения 🙏 Напишите, пожалуйста, ваш запрос.",
+            ar: "يمكنني حالياً معالجة الرسائل النصية فقط 🙏 هل يمكنك كتابة طلبك؟",
+          };
+          await sendWhatsAppMessage(_mcUn.phoneNumberId, _mcUn.accessToken, userPhone, _unMsgs[_unLang] || _unMsgs.tr);
+          console.log(`[webhook] B4 desteklenmeyen-tip nazik-yanıt: type=${webhookData.msgType}, lang=${_unLang}`);
+        }
+      }
       return new Response(JSON.stringify({ success: true }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
