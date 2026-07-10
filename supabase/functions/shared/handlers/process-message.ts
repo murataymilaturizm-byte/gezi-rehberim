@@ -946,6 +946,61 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // kullanıcıya sorulur, sessiz atama olmaz).
   let _tourJustChangedThisTurn = false;
 
+  // === 7b-0. NETLEŞTİRME-SEÇİMİ (2026-07-10 A1) ============================
+  // Önceki turn 7c belirsiz-tur listesi bastıysa (pendingTourClarification dolu)
+  // bu mesaj ÖNCE liste-seçimi olarak denenir: numara ("1", "2)") VEYA kısmi ad
+  // ("kültür turu" → adaylar içinde anlamlı-kelimeleri kapsayan TEK aday).
+  // Eşleşirse → deterministik tur değişimi (7b deseni: produceTourChangeContext,
+  // tarih yeni tura göre yeniden sorulur) + akış DEVAM (return yok — state-machine
+  // kaldığı adımın sorusunu üretir). Eşleşmezse ("yarın ararım") → normal akış
+  // (R6 dahil). HER DURUMDA tek-atış: bayrak temizlenir.
+  if (context.pendingTourClarification?.length) {
+    const _clarCands = context.pendingTourClarification;
+    // TR-aware normalize (tour-matching normalizeForMatch private — yerel eşdeğer)
+    const _clarNorm = (s: string) =>
+      s.toLocaleLowerCase("tr-TR")
+        .replace(/[ıİ]/g, "i").replace(/[şŞ]/g, "s").replace(/[ğĞ]/g, "g")
+        .replace(/[üÜ]/g, "u").replace(/[öÖ]/g, "o").replace(/[çÇ]/g, "c").trim();
+    let _clarChosen: { id: string; title: string } | null = null;
+    // 1) Numara seçimi: "1", "2.", "3)" (tek başına)
+    const _numSel = message.trim().match(/^(\d{1,2})\s*[).]?\s*$/);
+    if (_numSel) {
+      const _idx = parseInt(_numSel[1]) - 1;
+      if (_idx >= 0 && _idx < _clarCands.length) _clarChosen = _clarCands[_idx];
+    }
+    // 2) Kısmi-ad seçimi: mesajın anlamlı kelimelerinin HEPSİNİ içeren TEK aday
+    //    ("kültür turu" → "Kapadokya Kültür Turu" ✓, "Kapadokya Balon Turu" ✗).
+    //    Stopword'ler ("turu/tur/tour") ayırt edici sayılmaz ama kapsama katılır.
+    if (!_clarChosen) {
+      const _msgWords = _clarNorm(message).split(/\s+/).filter((w) => w.length >= 2);
+      if (_msgWords.length > 0 && _msgWords.length <= 6) {
+        const _matches = _clarCands.filter((c) => {
+          const _t = _clarNorm(c.title);
+          return _msgWords.every((w) => _t.includes(w));
+        });
+        if (_matches.length === 1) _clarChosen = _matches[0];
+      }
+    }
+    // Tek-atış temizlik (seçilse de seçilmese de)
+    context = { ...context, pendingTourClarification: undefined };
+    if (_clarChosen) {
+      const _clarFull = findTourById(_clarChosen.id, tours);
+      if (_clarFull) {
+        const _prevT = context.currentTour?.title;
+        context = {
+          ...produceTourChangeContext(context, _clarFull),
+          stage: "COLLECTING_INFO" as any,
+          reservationConfirmed: false,
+          pendingTourClarification: undefined,
+        };
+        _tourJustChangedThisTurn = true;
+        console.log(`[process-message] A1 NETLEŞTİRME-SEÇİMİ: "${_prevT}" → "${_clarFull.title}" (${_numSel ? "numara" : "kısmi-ad"})`);
+      }
+    } else {
+      console.log(`[process-message] A1 netleştirme-cevabı eşleşmedi → normal akış (tek-atış temizlendi)`);
+    }
+  }
+
   // === 7b. ERKEN TUR DEĞİŞİMİ (2026-06-20 Bug 1 v2) ========================
   // Tour-matching kanıtsal selectedTour mevcut currentTour'dan farklıysa VE stage
   // COLLECTING_INFO/CONFIRMING ise: stage koruma intent'i ezmeden (line ~326)
@@ -1002,7 +1057,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       ar: `لدينا عدة خيارات للجولات:\n${_tourListLines}\n\nأيها تفضل؟`,
     };
     const _ambReply = _ambiguousMsgs[_lang] || _ambiguousMsgs.tr;
-    console.log(`[process-message] KÖK 5 FIX2: belirsiz tur değişim (${multipleTourMatches.length} match) → destinasyon-specific liste`);
+    // 2026-07-10 A1: adayları state'e yaz — SONRAKİ mesaj önce liste-seçimi
+    // olarak değerlendirilecek (7b-0). Canlı vaka: telefon adımında "kültür turu"
+    // cevabı R6 "geçersiz telefon"a yutulup akış YANLIŞ turla özete gidiyordu.
+    context = {
+      ...context,
+      pendingTourClarification: multipleTourMatches.slice(0, 8).map((t: any) => ({ id: t.id, title: t.title })),
+    };
+    console.log(`[process-message] KÖK 5 FIX2: belirsiz tur değişim (${multipleTourMatches.length} match) → destinasyon-specific liste (A1: adaylar state'e yazıldı)`);
     await _save(_ambReply, context);
     await adapter.sendResponse(_ambReply);
     return { success: true, response: _ambReply, newContext: context };
@@ -3148,6 +3210,56 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     context.collectionStep !== "waiting_for_name"
   ) {
     const _lang = newContext.language || "tr";
+    // 2026-07-10 A2: zengin ilk-mesajda kuyruk FİYAT sorusu ("...fiyat ne olur")
+    // yanıtsız kalıyordu (veri işlendi, soru yutuldu). DAR FİX: bu geçiş turn'ünde
+    // mesajda fiyat-soru sinyali varsa toplam fiyatı (pax × price_adult, seçili
+    // tarihten) adım-sorusunun ÖNÜNE prefix'le. Genel soru-sınıfı Approach-B'ye.
+    // paxChild'lı vakalarda toplam yerine KİŞİ-BAŞI basılır (child-fiyat kuralı
+    // acente-değişken — yanlış toplam basmaktan kaçın).
+    const _priceQRe = /(?<![\p{L}\p{N}])(fiyat[ıi]?|ne\s+kadar|kaç\s+para|kaça|ücret[i]?|how\s+much|price|cost|combien|[çc]a\s+co[ûu]te|cu[áa]nto\s+(?:cuesta|vale|es)|precio|сколько\s+(?:стоит|будет)?|цена|كم\s+(?:السعر|التكلفة|سيكلف)|السعر|بكم|preis|was\s+kostet|wie\s+viel)(?![\p{L}\p{N}])/iu;
+    let _pricePrefix = "";
+    if (_priceQRe.test(message)) {
+      try {
+        const _a2Tour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
+        const _a2Date = _a2Tour?.dates?.find((d: any) => d.id === (newContext.reservationInfo as any)?.dateId)
+          || _a2Tour?.dates?.[0];
+        const _a2Pax = (newContext.reservationInfo as any)?.paxAdult;
+        const _a2Child = (newContext.reservationInfo as any)?.paxChild;
+        if (_a2Date?.price_adult && _a2Pax && _a2Pax >= 1) {
+          const _a2Rates = await getExchangeRatesOnce().catch(() => ({}));
+          const _a2Dual = agency.show_multi_currency !== false;
+          if (!_a2Child) {
+            const _a2Total = formatPriceSync(_a2Date.price_adult * _a2Pax, _a2Tour?.currency || "TRY", _lang, _a2Rates, _a2Dual, languageCurrencies);
+            const _a2P: Record<string, string> = {
+              tr: `*${_a2Pax} kişi* için toplam *${_a2Total}* ✨\n\n`,
+              en: `Total for *${_a2Pax} ${_a2Pax === 1 ? "person" : "people"}*: *${_a2Total}* ✨\n\n`,
+              de: `Gesamt für *${_a2Pax} ${_a2Pax === 1 ? "Person" : "Personen"}*: *${_a2Total}* ✨\n\n`,
+              ru: `Итого за *${_a2Pax} чел.*: *${_a2Total}* ✨\n\n`,
+              ar: `الإجمالي لـ *${_a2Pax}* أشخاص: *${_a2Total}* ✨\n\n`,
+              fr: `Total pour *${_a2Pax} ${_a2Pax === 1 ? "personne" : "personnes"}* : *${_a2Total}* ✨\n\n`,
+              es: `Total para *${_a2Pax} ${_a2Pax === 1 ? "persona" : "personas"}*: *${_a2Total}* ✨\n\n`,
+            };
+            _pricePrefix = _a2P[_lang] || _a2P.tr;
+          } else {
+            const _a2Per = formatPriceSync(_a2Date.price_adult, _a2Tour?.currency || "TRY", _lang, _a2Rates, _a2Dual, languageCurrencies);
+            const _a2P2: Record<string, string> = {
+              tr: `Yetişkin kişi başı *${_a2Per}* — çocuk fiyatı için acentemiz bilgi verecek ✨\n\n`,
+              en: `Per adult: *${_a2Per}* — our agency will confirm child pricing ✨\n\n`,
+              de: `Pro Erwachsener: *${_a2Per}* — Kinderpreise bestätigt unsere Agentur ✨\n\n`,
+              ru: `За взрослого: *${_a2Per}* — детскую цену уточнит агентство ✨\n\n`,
+              ar: `للبالغ: *${_a2Per}* — ستؤكد وكالتنا سعر الأطفال ✨\n\n`,
+              fr: `Par adulte : *${_a2Per}* — notre agence confirmera le tarif enfant ✨\n\n`,
+              es: `Por adulto: *${_a2Per}* — nuestra agencia confirmará el precio infantil ✨\n\n`,
+            };
+            _pricePrefix = _a2P2[_lang] || _a2P2.tr;
+          }
+          console.log(`[process-message] A2 fiyat-prefix: pax=${_a2Pax}, child=${_a2Child ?? 0}`);
+        }
+      } catch (_a2Err) {
+        console.warn("[process-message] A2 fiyat-prefix hesaplanamadı, prefix'siz devam:", _a2Err);
+        _pricePrefix = "";
+      }
+    }
     const _msgs: Record<string, string> = {
       tr: "Teşekkürler! 😊 Ad ve soyadınızı alabilir miyim?",
       en: "Thank you! 😊 May I have your full name?",
@@ -3157,7 +3269,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       fr: "Merci ! 😊 Puis-je avoir votre nom complet ?",
       es: "¡Gracias! 😊 ¿Puede darme su nombre completo?",
     };
-    const askReply = _msgs[_lang] || _msgs.tr;
+    const askReply = _pricePrefix + (_msgs[_lang] || _msgs.tr);
     await _save(askReply, newContext);
     await adapter.sendResponse(askReply);
     return { success: true, response: askReply, newContext };
@@ -3955,11 +4067,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // STATE: SİLİNMEZ. reservationConfirmed=true + reservationInfo dolu kalır → kullanıcı
   // sonraki turn "iptal" derse 14a bypass çalışır, "başka tur" derse state-machine
   // yeni rezervasyon yoluna geçirir.
+  // 2026-07-10 A3 (kozmetik): ack yalnız TEŞEKKÜR/VEDA sinyalinde. Sinyalsiz
+  // chitchat ("kapadokya güzelmiş") "Rezervasyonunuz tamamlandı ✅" basıyordu —
+  // alakasız/robotik. Sinyalsiz general/greeting artık :14a-sonrası LLM
+  // after-sales yoluna düşer (doğal sohbet cevabı).
+  const _ackThanksRe = /(?<![\p{L}\p{N}])(te[şs]ekkür\p{L}*|sa[ğg]\s?ol\p{L}*|eyvallah|görü[şs]ürüz|iyi\s+günler|ho[şs][çc]a\s?kal\p{L}*|thanks|thank\s+you|thx|bye|goodbye|see\s+you|danke|tsch[üu]ss|merci|au\s+revoir|gracias|adi[óo]s|hasta\s+luego|спасибо|благодарю|до\s+свидания|пока|شكرا\p{L}*|مع\s+السلامة|وداعا)(?![\p{L}\p{N}])/iu;
   if (
     context.stage === "COMPLETED" &&
     newContext.stage === "COMPLETED" &&
     newContext.reservationConfirmed === true &&
-    (nluResult.intent === "general" || nluResult.intent === "greeting")
+    (nluResult.intent === "general" || nluResult.intent === "greeting") &&
+    _ackThanksRe.test(message)
   ) {
     // 2026-07-09 Faz 5 A4 (V4): 7-dil tamamlandı (eski TR+EN → TR fallback'i
     // DE/FR/ES/RU/AR kullanıcıya TR kapanış basıyordu).

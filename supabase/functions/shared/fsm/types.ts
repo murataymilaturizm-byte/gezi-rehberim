@@ -112,6 +112,12 @@ export interface ConversationContext {
   // Araya farklı sinyal girerse temizlenir (ardışıklık bozulur). Yalnız
   // context.language değişir — rezervasyon state'ine DOKUNULMAZ.
   pendingLangSwitch?: string;
+
+  // 2026-07-10 A1: 7c belirsiz-tur-değişim listesi basıldığında adaylar buraya
+  // yazılır → SONRAKİ mesaj önce liste-seçimi (numara / kısmi ad) olarak denenir
+  // (R6 "geçersiz telefon"a yutulmadan — canlı vaka: waiting_for_phone'da
+  // "kültür turu" cevabı). Tek-atış: sonraki turn başında değerlendirilip temizlenir.
+  pendingTourClarification?: Array<{ id: string; title: string }>;
 }
 
 export interface StateTransition {
