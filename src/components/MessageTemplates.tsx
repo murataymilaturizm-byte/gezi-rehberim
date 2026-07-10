@@ -362,7 +362,22 @@ export default function MessageTemplates() {
       const { data, error } = await supabase.functions.invoke('sync-meta-templates', {
         body: { agencyId },
       });
-      if (error) throw error;
+      // 2026-07-10: supabase.functions.invoke non-2xx'te error.message GENERIC
+      // ("non-2xx status code") döner — gerçek sebep response BODY'sinde. Gerçek
+      // mesajı context'ten oku (token-scope / waba-eksik net görünsün).
+      if (error) {
+        let realMsg = error.message;
+        try {
+          const body = await (error as any)?.context?.json?.();
+          if (body?.error) realMsg = body.error;
+        } catch { /* body okunamazsa generic kalır */ }
+        toast({ title: t("common.error"), description: realMsg || t("admin.templates.sync.error"), variant: "destructive" });
+        return;
+      }
+      if (data?.error) {
+        toast({ title: t("common.error"), description: data.error, variant: "destructive" });
+        return;
+      }
       const description = (data?.inserted ?? 0) > 0
         ? t("admin.templates.sync.successWithNew", { inserted: data.inserted, updated: data.updated ?? 0 })
         : t("admin.templates.sync.success", { count: data?.updated ?? 0 });

@@ -61,8 +61,13 @@ serve(async (req) => {
       .eq("id", agencyId)
       .single();
 
+    // 2026-07-10: net eksik-alan mesajı (özellikle manuel kurulumda waba_id boş
+    // kalıyordu → "şablonları eşleştir" sessizce patlıyordu).
     if (!agency?.meta_access_token || !agency?.meta_waba_id) {
-      return new Response(JSON.stringify({ error: "Meta credentials missing (meta_access_token / meta_waba_id)" }), {
+      const _eksik = !agency?.meta_waba_id
+        ? "WABA kimliği (meta_waba_id) eksik — WhatsApp ayarlarından 'Manuel Bağlantı' ile numaranızı doğrulayın (WABA otomatik keşfedilir)."
+        : "Meta erişim token'ı eksik — WhatsApp bağlantısını yeniden kurun.";
+      return new Response(JSON.stringify({ error: _eksik, code: "CREDENTIALS_MISSING" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -76,7 +81,15 @@ serve(async (req) => {
     if (!metaRes.ok) {
       const errText = await metaRes.text();
       console.error("[sync-meta-templates] Meta API error:", errText);
-      return new Response(JSON.stringify({ error: `Meta API error: ${metaRes.status}`, detail: errText }), {
+      // 2026-07-10: token-scope hatasını NET mesaja çevir (sessiz-boş liste YASAK).
+      let _parsed: any = {};
+      try { _parsed = JSON.parse(errText); } catch { /* düz metin */ }
+      const _code = _parsed?.error?.code;
+      let _msg = `Meta API hatası (HTTP ${metaRes.status}).`;
+      if (_code === 190) _msg = "Token geçersiz veya süresi dolmuş — Meta System User token'ınızı yenileyin.";
+      else if (_code === 200 || _code === 10 || _code === 803) _msg = "Token yetkisi eksik (whatsapp_business_management izni gerekli) — System User token'ını doğru izinlerle yeniden oluşturun.";
+      else if (_code === 100) _msg = "WABA kimliği geçersiz görünüyor — WhatsApp bağlantısını yeniden doğrulayın.";
+      return new Response(JSON.stringify({ error: _msg, code: _code ?? null, detail: errText.slice(0, 300) }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

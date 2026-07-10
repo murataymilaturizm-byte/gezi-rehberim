@@ -514,6 +514,133 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ── MANUEL BAĞLANTI (2026-07-10) ─────────────────────────────────────────
+    // Embedded-signup KULLANILAMAYAN numaralar için (numara Turzz tech-provider
+    // portföyünde → Meta seçtirmiyor). Acente token + phone_number_id girer;
+    // waba_id Graph'tan OTOMATİK keşfedilir (elle girmek opsiyonel).
+    if (action === "manual-connect") {
+      const { agencyId, accessToken: inputToken, phoneNumberId: inputPnid, wabaId: inputWaba } = body;
+
+      if (!agencyId || !inputToken || !inputPnid) {
+        return new Response(
+          JSON.stringify({ error: "agencyId, accessToken ve phoneNumberId zorunludur." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const _tok = String(inputToken).trim();
+      const _pnid = String(inputPnid).trim();
+      const _wabaInput = inputWaba ? String(inputWaba).trim() : "";
+
+      // Sahiplik doğrula
+      const { data: mAgency } = await supabase
+        .from("agencies").select("id, user_id")
+        .eq("id", agencyId).eq("user_id", user.id).single();
+      if (!mAgency) {
+        return new Response(
+          JSON.stringify({ error: "Agency not found or unauthorized" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // 1) DOĞRULA + WABA KEŞFİ: GET /{phone_number_id}?fields=...
+      //    Başarılıysa numara + bağlı WABA döner. Token maskeli loglanır (PII).
+      console.log(`[manual-connect] verify pnid=${_pnid} agency=${agencyId.slice(0, 8)} token=***${_tok.slice(-4)}`);
+      let verifyData: any;
+      try {
+        const verifyRes = await fetch(
+          `https://graph.facebook.com/v18.0/${_pnid}?fields=display_phone_number,verified_name,whatsapp_business_account{id,name}`,
+          { headers: { Authorization: `Bearer ${_tok}` } }
+        );
+        verifyData = await verifyRes.json();
+        if (!verifyRes.ok || verifyData?.error) {
+          const gErr = verifyData?.error || {};
+          const code = gErr.code;
+          // Net hata sınıflandırma — sessiz-boş YASAK.
+          let msg = gErr.message || `Meta doğrulama başarısız (HTTP ${verifyRes.status}).`;
+          if (code === 190) msg = "Token geçersiz veya süresi dolmuş — Meta System User token'ınızı yenileyin.";
+          else if (code === 200 || code === 10 || code === 803) msg = "Token yetkisi eksik (whatsapp_business_management / whatsapp_business_messaging izinleri gerekli) — System User token'ını doğru izinlerle yeniden oluşturun.";
+          else if (code === 100) msg = "phone_number_id geçersiz görünüyor — Meta WhatsApp Manager'dan doğru numara kimliğini kopyalayın.";
+          console.warn(`[manual-connect] verify FAILED code=${code}: ${msg}`);
+          return new Response(
+            JSON.stringify({ success: false, error: msg, metaCode: code ?? null }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      } catch (vErr) {
+        console.error("[manual-connect] verify exception:", vErr instanceof Error ? vErr.message : vErr);
+        return new Response(
+          JSON.stringify({ success: false, error: "Meta'ya ulaşılamadı, birkaç dakika sonra tekrar deneyin." }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const displayPhone = verifyData.display_phone_number || null;
+      const discoveredWaba = verifyData?.whatsapp_business_account?.id || "";
+      const finalWaba = (_wabaInput || discoveredWaba).trim();
+      if (!finalWaba) {
+        return new Response(
+          JSON.stringify({ success: false, error: "WABA kimliği keşfedilemedi — token'da whatsapp_business_management izni yoksa waba_id'yi elle girin (Meta WhatsApp Manager → Business Settings)." }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // 2) DUPLICATE phone_number_id — başka acente kullanıyor mu?
+      const { data: dupes } = await supabase
+        .from("agencies").select("id, name")
+        .eq("meta_phone_number_id", _pnid).neq("id", agencyId);
+      if (dupes && dupes.length > 0) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Bu WhatsApp numarası başka bir acenteye bağlı. Önce oradan bağlantıyı kesin.",
+            errorCode: "DUPLICATE_PHONE_NUMBER",
+            conflictAgencies: dupes.map((a: any) => ({ id: a.id, name: a.name })),
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // 3) Webhook subscribe (retry'lı) — waba'ya app'i bağla
+      const subscribed = await subscribeAppToWabaWithRetry(finalWaba, _tok);
+      if (!subscribed) {
+        console.warn(`[manual-connect] subscribe FAILED waba=${finalWaba} — kayıt yine de yapılır, repair ile tekrar denenebilir`);
+      }
+
+      // 4) KAYDET — embedded-signup ile AYNI alan seti (routing için pnid+waba şart)
+      const { error: saveErr } = await supabase.from("agencies").update({
+        meta_access_token: _tok,
+        meta_phone_number_id: _pnid,
+        meta_waba_id: finalWaba,
+        whatsapp_phone_number: displayPhone ? displayPhone.replace(/[^\d]/g, "") : null,
+        whatsapp_status: "active",
+        whatsapp_connected_at: new Date().toISOString(),
+        webhook_subscribed: subscribed,
+      }).eq("id", agencyId);
+      if (saveErr) {
+        console.error("[manual-connect] save failed:", saveErr.message);
+        return new Response(
+          JSON.stringify({ success: false, error: "Bağlantı doğrulandı ama kaydedilemedi, tekrar deneyin." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      // whatsapp_integrations tablosu varsa senkron
+      await supabase.from("whatsapp_integrations")
+        .update({ status: "active", meta_access_token: _tok, meta_phone_number_id: _pnid, meta_waba_id: finalWaba })
+        .eq("agency_id", agencyId).then(() => {}, () => {});
+
+      console.log(`[manual-connect] OK agency=${agencyId.slice(0, 8)} phone=${displayPhone} waba=${finalWaba} subscribed=${subscribed} (waba ${_wabaInput ? "elle" : "auto"})`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          displayPhoneNumber: displayPhone,
+          wabaId: finalWaba,
+          wabaDiscovered: !_wabaInput && !!discoveredWaba,
+          webhookSubscribed: subscribed,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: "Unknown action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

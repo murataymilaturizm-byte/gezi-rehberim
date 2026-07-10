@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings, FileDown, Phone, Info } from "lucide-react";
 import { WhatsAppEmbeddedSignup } from "./WhatsAppEmbeddedSignup";
+import { WhatsAppManualConnect } from "./WhatsAppManualConnect";
 import { useToast } from "@/hooks/use-toast";
 
 // NOT: Konuşma Üslubu ve E-mail Toplama buradan KALDIRILDI; AgencySettings.tsx
@@ -92,6 +93,11 @@ export const WhatsAppSettings = () => {
           webhookSubscribed={webhookSubscribed}
           onConnected={loadWhatsAppSettings}
         />
+      )}
+
+      {/* Manuel Bağlantı — embedded-signup kullanılamayan numaralar için (2026-07-10) */}
+      {agencyId && (
+        <WhatsAppManualConnect agencyId={agencyId} onConnected={loadWhatsAppSettings} />
       )}
 
       {/* 24 Saat Kuralı uyarısı — Embedded Signup'ın HEMEN ALTINDA, daima görünür.
