@@ -24,6 +24,9 @@ import { TOUR_CATEGORIES, isInternationalCategory } from "./tour-form/TourCatego
 import { TagInput } from "./tour-form/TagInput";
 import { PdfUploader } from "./tour-form/PdfUploader";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+import { computeTourCompleteness } from "@/utils/tourCompleteness";
 
 interface TourFormDialogProps {
   isOpen: boolean;
@@ -36,7 +39,7 @@ interface TourFormDialogProps {
     type: string;
     currency: string;
     min_pax: number;
-    visa_required: boolean;
+    visa_required: boolean | null;   // Panel-2: 3-durumlu (null=belirtilmedi)
     program_url?: string;
     program_kisa?: string;
     hareket_noktasi?: string;
@@ -67,7 +70,10 @@ const INITIAL_FORM = {
   type: "DAYTRIP" as "DAYTRIP" | "N2" | "N3",
   currency: "TRY",
   min_pax: 1,
-  visa_required: false,
+  // Panel-2: 3-durumlu — yeni turlarda "belirtilmedi" (NULL). Eski "false"
+  // varsayılan tuzağı kaldırıldı (dokunulmamış tur artık "vize gerekmez"
+  // sinyali TAŞIMAZ; bot NULL'u "veri yok" olarak güvenli işler).
+  visa_required: null as boolean | null,
   program_url: "",
   program_kisa: "",
   hareket_noktasi: "",
@@ -176,9 +182,10 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
   }, [formData.type]);
 
   // Reset visa when category changes to non-international
+  // Panel-2: yurtiçi turda vize alakasız → "belirtilmedi" (NULL), "gerekmez"(false) DEĞİL.
   useEffect(() => {
     if (!isInternational) {
-      setFormData((prev) => ({ ...prev, visa_required: false, visa_notes: "" }));
+      setFormData((prev) => ({ ...prev, visa_required: null, visa_notes: "" }));
     }
   }, [formData.tur_kategorisi]);
 
@@ -629,27 +636,34 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
                 <PdfUploader value={formData.program_url} onChange={(v) => set("program_url", v)} />
               </div>
 
-              {/* Visa - only for international categories */}
+              {/* Visa - only for international categories.
+                  Panel-2: 3-durumlu (Belirtilmedi / Gerekli / Gerekmiyor).
+                  "Belirtilmedi"=NULL → bot "veri yok" işler (acenteye yönlendirir). */}
               {isInternational && (
                 <div className="space-y-3 p-3 rounded-lg border border-border bg-accent/30">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="visa_required"
-                      checked={formData.visa_required}
-                      onChange={(e) => set("visa_required", e.target.checked)}
-                      className="rounded border-border"
-                    />
-                    <Label htmlFor="visa_required" className="cursor-pointer">
-                      {t("admin.tourForm.visaRequired")}
-                    </Label>
-                  </div>
-                  {formData.visa_required && (
+                  <Label>{t("admin.tourForm.visaRequired")}</Label>
+                  <Select
+                    value={formData.visa_required === true ? "yes" : formData.visa_required === false ? "no" : "unknown"}
+                    onValueChange={(v) => set("visa_required", v === "yes" ? true : v === "no" ? false : null)}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unknown">Belirtilmedi</SelectItem>
+                      <SelectItem value="yes">Vize gerekli</SelectItem>
+                      <SelectItem value="no">Vize gerekmiyor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formData.visa_required === true && (
                     <Input
                       value={formData.visa_notes}
                       onChange={(e) => set("visa_notes", e.target.value)}
                       placeholder="Vize desteği, gerekli belgeler vb."
                     />
+                  )}
+                  {formData.visa_required === null && (
+                    <p className="text-xs text-muted-foreground">
+                      Belirtilmezse bot vize sorusunda müşteriyi acenteye yönlendirir.
+                    </p>
                   )}
                 </div>
               )}
@@ -695,6 +709,27 @@ export const TourFormDialog = ({ isOpen, onClose, onSuccess, tour }: TourFormDia
             </>
           )}
         </div>
+
+        {/* Panel-1: kaydet-adımında bot-kalitesi doluluk uyarısı (ENGELLEMEZ).
+            Son adımda gösterilir; eksik alanları + örnek müşteri sorusunu listeler. */}
+        {step === activeSteps.length - 1 && (() => {
+          const c = computeTourCompleteness(formData as any);
+          if (c.missing.length === 0) return null;
+          return (
+            <Alert className="border-amber-500/40 bg-amber-500/5">
+              <Info className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-sm">
+                <span className="font-medium">Şu alanlar boş — müşteri sorarsa bot acenteye yönlendirecek:</span>
+                <ul className="mt-1.5 space-y-0.5 text-xs">
+                  {c.missing.map((m) => (
+                    <li key={m.key}>• <span className="font-medium">{m.label}</span> <span className="text-muted-foreground">("{m.exampleQuestion}")</span></li>
+                  ))}
+                </ul>
+                <span className="mt-1.5 block text-xs text-muted-foreground">Yine de kaydedebilirsiniz — bilgi sonradan eklenebilir.</span>
+              </AlertDescription>
+            </Alert>
+          );
+        })()}
 
         {/* Navigation */}
         <div className="flex justify-between pt-4 border-t border-border">
