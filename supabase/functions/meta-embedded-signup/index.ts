@@ -521,19 +521,27 @@ Deno.serve(async (req) => {
     if (action === "manual-connect") {
       const { agencyId, accessToken: inputToken, phoneNumberId: inputPnid, wabaId: inputWaba } = body;
 
-      if (!agencyId || !inputToken || !inputPnid) {
+      // 2026-07-10: token ARTIK OPSİYONEL — numara Turzz portföyündeyse acentenin
+      // KENDİ System User token'ı numaraya erişemez (code 100/33). O durumda
+      // kayıttaki mevcut (merkezi) token veya env-token kullanılır.
+      if (!agencyId || !inputPnid) {
         return new Response(
-          JSON.stringify({ error: "agencyId, accessToken ve phoneNumberId zorunludur." }),
+          JSON.stringify({ error: "agencyId ve phoneNumberId zorunludur." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const _tok = String(inputToken).trim();
-      const _pnid = String(inputPnid).trim();
-      const _wabaInput = inputWaba ? String(inputWaba).trim() : "";
+      // 2026-07-10: görünmez-karakter sağlamlaştırma. .trim() yalnız standart
+      // boşluk siler; kopyala-yapıştır zero-width (U+200B-200D), BOM (U+FEFF),
+      // RTL/LTR işaretleri (U+200E/200F), NBSP (U+00A0) bırakır → Graph code 100.
+      const _clean = (s: string) => String(s || "").replace(/[​-\u200F\u202A-\u202E﻿ ]/g, "").trim();
+      const _inputTok = _clean(inputToken);
+      // PNID ve WABA sayısal → yalnız rakam bırak (araya sızan görünmez/harf temizlenir)
+      const _pnid = _clean(inputPnid).replace(/\D/g, "");
+      const _wabaInput = inputWaba ? _clean(inputWaba).replace(/\D/g, "") : "";
 
-      // Sahiplik doğrula
+      // Sahiplik doğrula + mevcut token'ı çek (fallback için)
       const { data: mAgency } = await supabase
-        .from("agencies").select("id, user_id")
+        .from("agencies").select("id, user_id, meta_access_token")
         .eq("id", agencyId).eq("user_id", user.id).single();
       if (!mAgency) {
         return new Response(
@@ -541,35 +549,63 @@ Deno.serve(async (req) => {
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+      // Token önceliği: kullanıcının girdiği > kayıttaki mevcut (merkezi) > env.
+      // 100/33'te (erişemez) sonraki adaya düşülür — Aymila'da kayıttaki TourBot
+      // token'ı numaraya erişebiliyor, kullanıcının kendi token'ı erişemiyor.
+      const _savedTok = mAgency.meta_access_token ? String(mAgency.meta_access_token).trim() : "";
+      const _envTok = (Deno.env.get("WHATSAPP_ACCESS_TOKEN") || "").trim();
+      const _tokCandidates = [...new Set([_inputTok, _savedTok, _envTok].filter((x) => x && x.length > 10))];
+      if (_tokCandidates.length === 0) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Kullanılabilir token yok — Meta System User token'ınızı girin." }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       // 1) DOĞRULA + WABA KEŞFİ: GET /{phone_number_id}?fields=...
-      //    Başarılıysa numara + bağlı WABA döner. Token maskeli loglanır (PII).
-      console.log(`[manual-connect] verify pnid=${_pnid} agency=${agencyId.slice(0, 8)} token=***${_tok.slice(-4)}`);
-      let verifyData: any;
-      try {
-        const verifyRes = await fetch(
-          `https://graph.facebook.com/v18.0/${_pnid}?fields=display_phone_number,verified_name,whatsapp_business_account{id,name}`,
-          { headers: { Authorization: `Bearer ${_tok}` } }
-        );
-        verifyData = await verifyRes.json();
-        if (!verifyRes.ok || verifyData?.error) {
-          const gErr = verifyData?.error || {};
-          const code = gErr.code;
-          // Net hata sınıflandırma — sessiz-boş YASAK.
-          let msg = gErr.message || `Meta doğrulama başarısız (HTTP ${verifyRes.status}).`;
-          if (code === 190) msg = "Token geçersiz veya süresi dolmuş — Meta System User token'ınızı yenileyin.";
-          else if (code === 200 || code === 10 || code === 803) msg = "Token yetkisi eksik (whatsapp_business_management / whatsapp_business_messaging izinleri gerekli) — System User token'ını doğru izinlerle yeniden oluşturun.";
-          else if (code === 100) msg = "phone_number_id geçersiz görünüyor — Meta WhatsApp Manager'dan doğru numara kimliğini kopyalayın.";
-          console.warn(`[manual-connect] verify FAILED code=${code}: ${msg}`);
-          return new Response(
-            JSON.stringify({ success: false, error: msg, metaCode: code ?? null }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      //    Token adaylarını SIRAYLA dener; 100/33 (erişemez) olursa sonrakine düşer.
+      //    İlk erişen token hem doğrulama hem kayıt için kullanılır. Token maskeli.
+      console.log(`[manual-connect] verify pnid=${_pnid} (len=${_pnid.length}, ham-len=${String(inputPnid || "").length}) agency=${agencyId.slice(0, 8)} token-aday-sayısı=${_tokCandidates.length}`);
+      let verifyData: any = null;
+      let _tok = "";
+      let _lastErr: { code: any; subcode: any; message: string; http: number } | null = null;
+      for (let i = 0; i < _tokCandidates.length; i++) {
+        const cand = _tokCandidates[i];
+        const _kind = cand === _inputTok ? "girilen" : cand === _savedTok ? "kayıtlı" : "env";
+        try {
+          const verifyRes = await fetch(
+            `https://graph.facebook.com/v18.0/${_pnid}?fields=display_phone_number,verified_name,whatsapp_business_account{id,name}`,
+            { headers: { Authorization: `Bearer ${cand}` } }
           );
+          const vd = await verifyRes.json();
+          if (verifyRes.ok && !vd?.error) {
+            verifyData = vd; _tok = cand;
+            console.log(`[manual-connect] verify OK — token=${_kind} ***${cand.slice(-4)}`);
+            break;
+          }
+          const gErr = vd?.error || {};
+          _lastErr = { code: gErr.code, subcode: gErr.error_subcode, message: gErr.message || "", http: verifyRes.status };
+          // GEÇİCİ TEŞHİS: Meta'nın HAM hata gövdesini logla (token gövdede yok).
+          console.warn(`[manual-connect] verify FAILED (token=${_kind} ***${cand.slice(-4)}) — RAW: ${JSON.stringify(gErr)} | HTTP ${verifyRes.status}`);
+          // 100/33 (erişemez) VE hâlâ aday varsa → sonraki token'ı dene; değilse dur.
+          if (!(gErr.code === 100 && gErr.error_subcode === 33) && gErr.code !== 100) break;
+        } catch (vErr) {
+          _lastErr = { code: null, subcode: null, message: vErr instanceof Error ? vErr.message : String(vErr), http: 0 };
+          console.error(`[manual-connect] verify exception (token=${_kind}):`, _lastErr.message);
         }
-      } catch (vErr) {
-        console.error("[manual-connect] verify exception:", vErr instanceof Error ? vErr.message : vErr);
+      }
+
+      if (!verifyData) {
+        const code = _lastErr?.code, subcode = _lastErr?.subcode;
+        let msg = _lastErr?.message || "Meta doğrulama başarısız.";
+        if (_lastErr?.http === 0) msg = "Meta'ya ulaşılamadı, birkaç dakika sonra tekrar deneyin.";
+        else if (code === 190) msg = "Token geçersiz veya süresi dolmuş — Meta System User token'ınızı yenileyin.";
+        else if (code === 200 || code === 10 || code === 803) msg = "Token yetkisi eksik (whatsapp_business_management / whatsapp_business_messaging izinleri gerekli) — System User token'ını doğru izinlerle yeniden oluşturun.";
+        else if (code === 100 && subcode === 33) msg = "Girdiğiniz token bu WhatsApp numarasına erişemiyor ve kayıtlı/merkezi token da erişemedi. Numara başka bir Meta Business portföyünde — kendi System User'ınıza bu WABA'yı atayın VEYA Turzz destek ile bağlanın (0850 242 77 50).";
+        else if (code === 100) msg = "phone_number_id geçersiz görünüyor — WhatsApp Manager → API Setup → 'Phone number ID' değerini (telefon numarası DEĞİL) kopyalayın.";
+        console.warn(`[manual-connect] TÜM tokenlar başarısız code=${code} subcode=${subcode ?? "-"}: ${msg}`);
         return new Response(
-          JSON.stringify({ success: false, error: "Meta'ya ulaşılamadı, birkaç dakika sonra tekrar deneyin." }),
+          JSON.stringify({ success: false, error: msg, metaCode: code ?? null, metaSubcode: subcode ?? null }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

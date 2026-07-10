@@ -33,8 +33,10 @@ export const WhatsAppManualConnect = ({ agencyId, onConnected }: Props) => {
   const [result, setResult] = useState<{ phone: string; waba: string; discovered: boolean; subscribed: boolean } | null>(null);
 
   const handleVerify = async () => {
-    if (!token.trim() || !phoneNumberId.trim()) {
-      toast({ title: t("common.error"), description: "Token ve Phone Number ID zorunludur.", variant: "destructive" });
+    // 2026-07-10: token OPSİYONEL — boşsa backend kayıtlı/merkezi token'a düşer
+    // (numara Turzz portföyündeyse acentenin kendi token'ı zaten erişemez).
+    if (!phoneNumberId.trim()) {
+      toast({ title: t("common.error"), description: "Phone Number ID zorunludur.", variant: "destructive" });
       return;
     }
     setVerifying(true);
@@ -113,10 +115,10 @@ export const WhatsAppManualConnect = ({ agencyId, onConnected }: Props) => {
             ) : (
               <>
                 <div className="space-y-1.5">
-                  <Label className="flex items-center gap-1.5"><KeyRound className="h-3.5 w-3.5" /> Meta Erişim Token'ı (System User) *</Label>
+                  <Label className="flex items-center gap-1.5"><KeyRound className="h-3.5 w-3.5" /> Meta Erişim Token'ı (System User) — opsiyonel</Label>
                   <Input type="password" value={token} onChange={(e) => setToken(e.target.value)}
-                    placeholder="EAAG..." autoComplete="off" />
-                  <p className="text-xs text-muted-foreground">Meta Business Settings → System Users → token oluştur (whatsapp_business_management + whatsapp_business_messaging izinleriyle).</p>
+                    placeholder="Boş bırakın — mevcut/merkezi bağlantı kullanılır" autoComplete="off" />
+                  <p className="text-xs text-muted-foreground">Numaranız Turzz üzerinden bağlıysa boş bırakın. Kendi Meta hesabınızdaki numara için: Business Settings → System Users → token (whatsapp_business_management + whatsapp_business_messaging izinleriyle).</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Phone Number ID *</Label>
