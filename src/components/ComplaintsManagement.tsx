@@ -18,6 +18,14 @@ interface Complaint {
   created_at: string;
 }
 
+// 2026-07-10 İş3: tip-rozeti TR etiket haritası (eski: ham EN i18n key basıyordu).
+const COMPLAINT_TYPE_LABELS: Record<string, string> = {
+  complaint: "Şikâyet",
+  cancellation_request: "İptal Talebi",
+  low_rating: "Düşük Puan ⭐",
+  contact_request: "İletişim Talebi",
+};
+
 export function ComplaintsManagement() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -121,8 +129,8 @@ export function ComplaintsManagement() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Badge variant={complaint.type === 'complaint' ? 'destructive' : 'default'}>
-                            {t(`complaints.types.${complaint.type}`)}
+                          <Badge variant={complaint.type === 'complaint' || complaint.type === 'low_rating' ? 'destructive' : 'default'}>
+                            {COMPLAINT_TYPE_LABELS[complaint.type] || t(`complaints.types.${complaint.type}`, { defaultValue: "Talep" })}
                           </Badge>
                           <Badge variant={
                             complaint.status === 'new' ? 'secondary' :
