@@ -27,6 +27,7 @@ import { logCritical } from "../_shared/error-sink.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
 import { WhatsAppAdapter } from "./adapter.ts";
+import { tryCaptureFeedback } from "./services/feedback-capture.ts";
 import type { ConversationTone } from "../shared/fsm/types.ts";
 
 const corsHeaders = {
@@ -551,6 +552,25 @@ serve(async (req) => {
           });
         }
       }
+    }
+
+    // === B3 ANKET CEVAP-YAKALAMA (FSM-ÖNCESİ, çakışma-guard'lı) ===
+    // Pending-feedback penceresi açık + aktif toplama akışı yok + puan-deseni →
+    // tour_feedback kaydı + teşekkür, process-message ATLANIR. Aksi halde pas.
+    try {
+      const _captured = await tryCaptureFeedback({
+        supabase, agency, userPhone, rawMessage,
+        preloadedContext: _preloadedContext,
+        meta: { phoneNumberId: metaCredentials.phoneNumberId, accessToken: metaCredentials.accessToken },
+        lang: _prelimLang,
+      });
+      if (_captured) {
+        return new Response(JSON.stringify({ success: true, captured: "feedback" }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch (_fbErr) {
+      console.error("[feedback-capture] hata (akış bozulmaz):", _fbErr instanceof Error ? _fbErr.message : _fbErr);
     }
 
     // === CORE MESSAGE PROCESSING ===

@@ -619,6 +619,26 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
     hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
     P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
+34. **B3 ANKET CEVAP-YAKALAMA — VAAD KAPANDI (2026-07-10)**. Müşteri anket puanı
+    artık kaydediliyor (eskiden kayboluyordu). **Şema:** `registrations.feedback_sent_at`
+    (timestamptz) + yeni `tour_feedback` tablosu (id, agency_id, registration_id UNIQUE,
+    customer_phone, rating int CHECK 1-5, comment, created/updated_at; RLS acente-izole).
+    **Gönderim işareti:** send-feedback-survey başarıda `whatsapp_user_profiles.
+    last_feedback_sent_at` + `registrations.feedback_sent_at = now()`.
+    **Yakalama (whatsapp-webhook, FSM-ÖNCESİ, services/feedback-capture.ts):** yeni dal
+    **process-message'dan ÖNCE** çalışır; sıra: dedup/preload → rate-limit → abonelik →
+    bot-pause → **B3-CAPTURE** → process-message. Guard'lar (hepsi birden): (a) aktif
+    toplama akışı YOK (preloadedContext stage COLLECTING_INFO/CONFIRMING/TOUR_SELECTED/
+    BROWSING veya collectionStep varsa **tamamen pas** — pax "3" puan sanılmaz), (b)
+    pending pencere (feedback_sent_at + 72h, henüz tour_feedback yok), (c) puan-deseni
+    (tek rakam 1-5 / 1-5 ⭐ / yazıyla 1-5 7-dil — TEK KAYNAK constants/rating-words.ts,
+    \p{L}\p{N} lookaround; AR-rakam giriş-noktasında ٥→5 normalize; 6+/tarih/tur/kişi
+    sinyali → RED). Yakalarsa: tour_feedback UPSERT (reg-başı tek; 2. puan → UPDATE +
+    yorum append) + 7-dil teşekkür + (rating≤2) complaints(low_rating) J-14 bildirimi +
+    profile.feedback_score/comment (CRM ActivityTimeline 'feedback_received' event'i
+    otomatik gösterir). Desen değilse → normal akış (pencere içinde tekrar denenebilir).
+    Test: parseRating 29/29 (7-dil + AR-rakam + çakışma-negatifleri) + 128-korpus miss=0
+    + canlı: tour_feedback insert/CHECK(1-5)/UNIQUE doğrulandı, throwaway temizlendi.
 33. **FAZ6 — KABUL-FIX'LERİ + VAAD DENETİMİ (2026-07-10)**.
     **A-fix'ler (canlı-kanıtlı):** A1 pendingTourClarification (types.ts alanı;
     7c adayları yazar → 7b-0 SONRAKİ mesajı numara/kısmi-ad seçimi olarak dener,

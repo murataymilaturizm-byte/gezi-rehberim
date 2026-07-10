@@ -250,10 +250,16 @@ serve(async (req) => {
             });
 
             if (result.success) {
+              const _nowIso = new Date().toISOString();
               await supabase
                 .from("whatsapp_user_profiles")
-                .update({ last_feedback_sent_at: new Date().toISOString() })
+                .update({ last_feedback_sent_at: _nowIso })
                 .eq("id", p.id);
+              // B3: rezervasyona da yaz → cevap-yakalama penceresi (feedback_sent_at + 72h).
+              await supabase
+                .from("registrations")
+                .update({ feedback_sent_at: _nowIso })
+                .eq("id", reg.id);
               totalSent++;
               console.log(`✅ survey sent reg=${reg.id.slice(0, 8)} lang=${customerLang}`);
             } else {
