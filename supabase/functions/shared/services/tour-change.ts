@@ -164,9 +164,16 @@ export function buildTourChangePrefix(
 ): string {
   if (!oldTourId || !newTourId || oldTourId === newTourId) return "";
   if (!newTourTitle || !newTourTitle.trim()) return "";
+  // 2026-07-10 7-dil paralellik şartı: TR+EN → 7-dil (A1 netleştirme-seçimi
+  // dönüş mesajı bu prefix'i kullanıyor — DE/FR/ES/RU/AR kullanıcı EN alıyordu).
   const prefixes: Record<string, string> = {
     tr: `Şimdi *${newTourTitle}* için devam ediyoruz. `,
     en: `Now continuing with *${newTourTitle}*. `,
+    de: `Wir machen jetzt mit *${newTourTitle}* weiter. `,
+    fr: `Nous continuons maintenant avec *${newTourTitle}*. `,
+    es: `Ahora continuamos con *${newTourTitle}*. `,
+    ru: `Теперь продолжаем с *${newTourTitle}*. `,
+    ar: `نتابع الآن مع *${newTourTitle}*. `,
   };
   return prefixes[lang] || prefixes.en;
 }

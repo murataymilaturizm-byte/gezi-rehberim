@@ -38,6 +38,8 @@ import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
+import { PRICE_QUESTION_RE } from "../constants/price-question.ts";
+import { THANKS_FAREWELL_RE } from "../constants/thanks-words.ts";
 import { QUESTION_SIGNAL_RE } from "../constants/question-detection.ts";
 import { VISA_SIGNAL_RE, VISA_QUESTION_HINT_RE } from "../constants/visa-detection.ts";
 import { produceTourChangeContext, shouldApplyEarlyTourChange, buildTourChangePrefix, hasReservationSignal } from "../services/tour-change.ts";
@@ -974,12 +976,20 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (!_clarChosen) {
       const _msgWords = _clarNorm(message).split(/\s+/).filter((w) => w.length >= 2);
       if (_msgWords.length > 0 && _msgWords.length <= 6) {
+        // 2026-07-10 7-dil paralellik şartı: 7c listesi müşteri diline LOKALİZE
+        // basılıyor (getLocalizedTourTitle) → kullanıcı lokalize adı yazar
+        // (AR "جولة الثقافة", RU "Культурный тур"). Eşleşme HEM TR-title HEM
+        // lokalize-title'a karşı denenir.
+        const _clarLang = context.language || "tr";
         const _matches = _clarCands.filter((c) => {
           // Title'ı SUNUCUDAKİ tours listesinden id ile TAZELE — client round-trip'i
           // title'ı bozabilir (ör. yanlış-charset'li istemci); id her zaman güvenli.
-          const _freshTitle = findTourById(c.id, tours)?.title || c.title;
-          const _t = _clarNorm(_freshTitle);
-          return _msgWords.every((w) => _t.includes(w));
+          const _freshTour = findTourById(c.id, tours);
+          const _freshTitle = _freshTour?.title || c.title;
+          const _locTitle = _freshTour ? getLocalizedTourTitle(_freshTour.title || "", _clarLang) : _freshTitle;
+          const _t1 = _clarNorm(_freshTitle);
+          const _t2 = _clarNorm(_locTitle);
+          return _msgWords.every((w) => _t1.includes(w)) || _msgWords.every((w) => _t2.includes(w));
         });
         if (_matches.length === 1) _clarChosen = _matches[0];
       }
@@ -3215,13 +3225,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _lang = newContext.language || "tr";
     // 2026-07-10 A2: zengin ilk-mesajda kuyruk FİYAT sorusu ("...fiyat ne olur")
     // yanıtsız kalıyordu (veri işlendi, soru yutuldu). DAR FİX: bu geçiş turn'ünde
-    // mesajda fiyat-soru sinyali varsa toplam fiyatı (pax × price_adult, seçili
-    // tarihten) adım-sorusunun ÖNÜNE prefix'le. Genel soru-sınıfı Approach-B'ye.
-    // paxChild'lı vakalarda toplam yerine KİŞİ-BAŞI basılır (child-fiyat kuralı
-    // acente-değişken — yanlış toplam basmaktan kaçın).
-    const _priceQRe = /(?<![\p{L}\p{N}])(fiyat[ıi]?|ne\s+kadar|kaç\s+para|kaça|ücret[i]?|how\s+much|price|cost|combien|[çc]a\s+co[ûu]te|cu[áa]nto\s+(?:cuesta|vale|es)|precio|сколько\s+(?:стоит|будет)?|цена|كم\s+(?:السعر|التكلفة|سيكلف)|السعر|بكم|preis|was\s+kostet|wie\s+viel)(?![\p{L}\p{N}])/iu;
+    // mesajda fiyat-soru sinyali (TEK KAYNAK constants/price-question.ts, 7-dil)
+    // varsa toplam fiyatı (pax × price_adult, seçili tarihten) adım-sorusunun
+    // ÖNÜNE prefix'le. Genel soru-sınıfı Approach-B'ye. paxChild'lı vakalarda
+    // toplam yerine KİŞİ-BAŞI basılır (child-fiyat kuralı acente-değişken).
     let _pricePrefix = "";
-    if (_priceQRe.test(message)) {
+    if (PRICE_QUESTION_RE.test(message)) {
       try {
         const _a2Tour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
         const _a2Date = _a2Tour?.dates?.find((d: any) => d.id === (newContext.reservationInfo as any)?.dateId)
@@ -4070,17 +4079,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // STATE: SİLİNMEZ. reservationConfirmed=true + reservationInfo dolu kalır → kullanıcı
   // sonraki turn "iptal" derse 14a bypass çalışır, "başka tur" derse state-machine
   // yeni rezervasyon yoluna geçirir.
-  // 2026-07-10 A3 (kozmetik): ack yalnız TEŞEKKÜR/VEDA sinyalinde. Sinyalsiz
-  // chitchat ("kapadokya güzelmiş") "Rezervasyonunuz tamamlandı ✅" basıyordu —
-  // alakasız/robotik. Sinyalsiz general/greeting artık :14a-sonrası LLM
-  // after-sales yoluna düşer (doğal sohbet cevabı).
-  const _ackThanksRe = /(?<![\p{L}\p{N}])(te[şs]ekkür\p{L}*|sa[ğg]\s?ol\p{L}*|eyvallah|görü[şs]ürüz|iyi\s+günler|ho[şs][çc]a\s?kal\p{L}*|thanks|thank\s+you|thx|bye|goodbye|see\s+you|danke|tsch[üu]ss|merci|au\s+revoir|gracias|adi[óo]s|hasta\s+luego|спасибо|благодарю|до\s+свидания|пока|شكرا\p{L}*|مع\s+السلامة|وداعا)(?![\p{L}\p{N}])/iu;
+  // 2026-07-10 A3 (kozmetik): ack yalnız TEŞEKKÜR/VEDA sinyalinde (TEK KAYNAK
+  // constants/thanks-words.ts, 7-dil). Sinyalsiz chitchat ("kapadokya güzelmiş")
+  // "Rezervasyonunuz tamamlandı ✅" basıyordu — alakasız/robotik. Sinyalsiz
+  // general/greeting artık :14a-sonrası LLM after-sales yoluna düşer.
   if (
     context.stage === "COMPLETED" &&
     newContext.stage === "COMPLETED" &&
     newContext.reservationConfirmed === true &&
     (nluResult.intent === "general" || nluResult.intent === "greeting") &&
-    _ackThanksRe.test(message)
+    THANKS_FAREWELL_RE.test(message)
   ) {
     // 2026-07-09 Faz 5 A4 (V4): 7-dil tamamlandı (eski TR+EN → TR fallback'i
     // DE/FR/ES/RU/AR kullanıcıya TR kapanış basıyordu).
