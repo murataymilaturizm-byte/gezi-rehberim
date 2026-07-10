@@ -857,8 +857,12 @@ const Admin = () => {
               <LanguageStats isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp-logs" ? (
               <WhatsAppLogs />
-            ) : activeTab === "tickets" && !isSuperAdmin ? (
-              <TicketManagement />
+            ) : activeTab === "tickets" ? (
+              /* 2026-07-10 BUG-FIX (superadmin destek açılmıyor): "Destek" menü
+                 öğesi HER rolde görünür ama eski koşul `&& !isSuperAdmin` superadmin
+                 tıklamasını HİÇBİR dala sokmuyordu → boş ekran. Superadmin'de
+                 tüm-acenteler görünümü (SuperAdminTickets) render edilir. */
+              isSuperAdmin ? <SuperAdminTickets isSuperAdmin={isSuperAdmin} /> : <TicketManagement />
             ) : activeTab === "super_tickets" && isSuperAdmin ? (
               <SuperAdminTickets isSuperAdmin={isSuperAdmin} />
             ) : activeTab === "whatsapp_management" && isSuperAdmin ? (

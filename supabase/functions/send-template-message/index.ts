@@ -24,17 +24,38 @@ function extractOrderedVariables(content: string): string[] {
   return ordered;
 }
 
-// Named variable değerlerini → Meta body.parameters formatına çevir
-// Pozisyonel değişken ("1","2") varsa → önceden tanımlı isimli alanlara sırayla map et
+// Named variable değerlerini → Meta body.parameters formatına çevir.
+// Pozisyonel değişken ("1","2") varsa → şablon-AİLESİNE göre isimli alanlara map et.
+//
+// 2026-07-10 VAR-SIRA FIX (A-b): eski TEK genel sıra (POSITIONAL_VAR_ORDER)
+// standart şablonların GERÇEK {{N}} anlamlarıyla uyuşmuyordu — tour_reminder_tr'de
+// {{4}}=Toplanma Saati iken ORDER[3]=pax basılıyordu (saat yerine kişi sayısı!),
+// {{5}} kalkış-yerine tutar, {{7}} acente-adı hiç doldurulamıyordu. Artık:
+// TEMPLATE_VAR_ORDERS[aile] (templateKey'den dil-eki atılarak) → doğru sıra;
+// bilinmeyen şablonlar eski genel sıraya düşer (geriye-uyum).
 const POSITIONAL_VAR_ORDER = ["full_name", "tour_name", "date", "pax", "total_amount", "currency", "meeting_time", "meeting_point"];
+// Standart şablon-ailelerinin Meta gövdesindeki {{1}}..{{N}} GERÇEK anlam-sırası
+// (Meta'daki onaylı gövdelerden birebir — tour_reminder_tr / tour_feedback_tr):
+const TEMPLATE_VAR_ORDERS: Record<string, string[]> = {
+  // {{1}} isim, {{2}} tur, {{3}} tarih, {{4}} toplanma saati, {{5}} kalkış noktası,
+  // {{6}} kişi sayısı, {{7}} acente adı (kapanış imzası)
+  tour_reminder: ["full_name", "tour_name", "date", "meeting_time", "meeting_point", "pax", "agency_name"],
+  // {{1}} isim, {{2}} tur, {{3}} acente adı (kapanış imzası)
+  tour_feedback: ["full_name", "tour_name", "agency_name"],
+};
+// templateKey → aile ("tour_reminder_tr" → "tour_reminder"; dil-eki yoksa aynen)
+function templateFamily(templateKey: string): string {
+  return String(templateKey || "").replace(/_(tr|en|de|fr|es|ru|ar)$/i, "");
+}
 
-function buildTemplateComponents(content: string, values: Record<string, string>): any[] {
+function buildTemplateComponents(content: string, values: Record<string, string>, templateKey?: string): any[] {
   const vars = extractOrderedVariables(content);
   if (vars.length === 0) return [];
 
   const isPositional = vars.every(v => /^\d+$/.test(v));
+  const order = (templateKey && TEMPLATE_VAR_ORDERS[templateFamily(templateKey)]) || POSITIONAL_VAR_ORDER;
   const parameters = isPositional
-    ? vars.map((_, i) => ({ type: 'text', text: (POSITIONAL_VAR_ORDER[i] ? values[POSITIONAL_VAR_ORDER[i]] : undefined) ?? '' }))
+    ? vars.map((_, i) => ({ type: 'text', text: (order[i] ? values[order[i]] : undefined) ?? '' }))
     : vars.map(v => ({ type: 'text', text: values[v] || '' }));
 
   return [{ type: 'body', parameters }];
@@ -166,7 +187,7 @@ serve(async (req) => {
       // FIX: DB'deki language değeri Meta'da template'in kayıtlı olduğu dil ile aynı
       // (sync-meta-templates'in normalize ettiği basit kod). Dönüşüm YOK.
       const langCode        = tmpl.language;
-      const comps           = buildTemplateComponents(tmpl.content, variableValues || {});
+      const comps           = buildTemplateComponents(tmpl.content, variableValues || {}, tmpl.template_key);
       const _varCount       = comps[0]?.parameters?.length ?? 0;
       const _emptyParams    = comps[0]?.parameters?.filter((p: any) => !p.text || p.text === '').length ?? 0;
 
@@ -316,12 +337,14 @@ serve(async (req) => {
       currency:      'TRY',
       meeting_time:  registration.tours?.toplanma_saati || '09:00',
       meeting_point: registration.tours?.hareket_noktasi || 'Belirlenen toplanma noktası',
+      // A-b: standart şablonların kapanış imzası ({{7}} reminder / {{3}} feedback)
+      agency_name:   (registration.agencies as any)?.name || '',
     };
 
     const normalizedPhone = registration.phone.replace('whatsapp:', '').replace('+', '').trim();
     // FIX: DB language değeri Meta'da kayıtlı dil ile aynı — dönüşüm YOK.
     const langCode        = tmpl.language;
-    const comps           = buildTemplateComponents(tmpl.content, varValues);
+    const comps           = buildTemplateComponents(tmpl.content, varValues, tmpl.template_key);
     const _varCount       = comps[0]?.parameters?.length ?? 0;
     const _emptyParams    = comps[0]?.parameters?.filter((p: any) => !p.text || p.text === '').length ?? 0;
 
