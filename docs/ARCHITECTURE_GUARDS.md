@@ -619,6 +619,32 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
     hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
     P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
+35. **5-BEKLEME-DURUMU KESİŞİM DENETİMİ (2026-07-22, FABLE) — TEMİZ**.
+    Slim-review sonrası 5 eşzamanlı-olabilir bekleme bağlamı: proposedDateId,
+    pendingTourClarification (A1), phoneEscalationPending (V11-a), pendingLangSwitch
+    (P3), B3 feedback-penceresi. **Kesişim-matrisi (bekleme × gereken stage/step):**
+    | Durum | Gerekli bağlam | B3 ile çakışır? |
+    |---|---|---|
+    | proposedDateId | COLLECTING_INFO/waiting_for_date | HAYIR |
+    | pendingTourClarification | COLLECTING_INFO/CONFIRMING | HAYIR |
+    | phoneEscalationPending | COLLECTING_INFO/waiting_for_phone | HAYIR |
+    | pendingLangSwitch | herhangi stage (dile ortogonal) | var ama zararsız |
+    | B3 feedback | YALNIZ GREETING/COMPLETED/akış-yok | (kendisi) |
+    **Bulgular (kod-kanıtlı, LEAK YOK):** (1) **B3-CAPTURE guard'ı** (feedback-capture.ts:
+    `step || stage∈{COLLECTING_INFO,CONFIRMING,TOUR_SELECTED,BROWSING} → return false`)
+    aktif-akışlı 3 durumu TAM kapsar → feedback-penceresi açık müşteri yeni akışta
+    CONFIRMING'de "5" / pax-adımında "3" derse **feedback'e KAÇMAZ** (preloadedContext
+    her turn saved-state; pax/date normal akışa gider). B3 ile diğer 3 durum
+    **mutually-exclusive**. (2) **proposedDateId TEK-TURN ömürlü** — :10d-2 else-dalı
+    (process-message ~L2656-2659) her turn temizler → waiting_for_phone'a stale
+    ulaşamaz → "evet" phone-adımında yanlışlıkla tarih-onayına gitmez (phoneEscalation
+    @L2161 zaten :10d-2 @L2616'dan önce). (3) pendingLangSwitch dile ortogonal (rakam/
+    "evet" lang-taşımaz → çakışmaz). (4) 7b-0 (clarification) tur-eşleşmeden ÖNCE →
+    "1" clarification-seçimi olarak tüketilir, tek-atış temizlenir. (5) A2 fiyat-prefix
+    tek-site (:11b) → çift-basma yok. **S-fix gerekmedi — tasarım sağlam.** Ayrıca
+    doğal-cron kanıtı: 07-11 09:00 UTC tour-reminder-daily → gerçek gönderim (success);
+    var-sıra fix TEMPLATE_VAR_ORDERS ↔ Meta gövdeleri tutarlı; reminder CONFIRMED-only
+    ↔ feedback CONFIRMED-only tutarlı.
 34. **B3 ANKET CEVAP-YAKALAMA — VAAD KAPANDI (2026-07-10)**. Müşteri anket puanı
     artık kaydediliyor (eskiden kayboluyordu). **Şema:** `registrations.feedback_sent_at`
     (timestamptz) + yeni `tour_feedback` tablosu (id, agency_id, registration_id UNIQUE,
