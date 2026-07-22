@@ -69,12 +69,15 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
   const shouldShowFeedback = isSuperAdmin || planFeatures?.has_feedback;
   
   // Determine which group should be open based on active tab
+  // 2026-07-22 MENÜ-SIRALAMA (Murat onaylı): günlük-akış üstte, ayar-sınıfı tek
+  // "Ayarlar" grubunda. id/route DEĞİŞMEDİ — yalnız gruplama/sıralama.
   const getDefaultOpenGroup = () => {
-    const generalIds = ["dashboard", "languages", "history"];
+    const generalIds = ["dashboard"];
     const tourIds = ["tours", "registrations"];
     // CRM: whatsapp_profiles "Müşteri Yönetimi" grubuna taşındı (eski activeTab key korunur).
     const customerIds = ["whatsapp_profiles"];
-    const communicationIds = ["settings", "whatsapp", "templates", "faq", "agency_info", "complaints", "payment_settings", "language_currencies"];
+    const communicationIds = ["whatsapp", "complaints", "templates", "faq"];
+    const settingsIds = ["settings", "agency_info", "payment_settings", "languages", "language_currencies", "history"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback", "language-stats", "whatsapp-logs"];
     const supportIds = ["tickets"];
     const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets", "central_notifications", "central_send_log"];
@@ -84,6 +87,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     if (tourIds.includes(activeTab)) return "tours";
     if (customerIds.includes(activeTab)) return "customers";
     if (communicationIds.includes(activeTab)) return "communication";
+    if (settingsIds.includes(activeTab)) return "settingsGroup";
     if (reportingIds.includes(activeTab)) return "reporting";
     if (supportIds.includes(activeTab)) return "support";
     if (superAdminIds.includes(activeTab)) return "superAdmin";
@@ -97,6 +101,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     tours: defaultOpen === "tours",
     customers: defaultOpen === "customers",
     communication: defaultOpen === "communication",
+    settingsGroup: defaultOpen === "settingsGroup",
     reporting: defaultOpen === "reporting",
     support: defaultOpen === "support",
     superAdmin: defaultOpen === "superAdmin",
@@ -112,9 +117,6 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
 
   const generalItems = [
     { id: "dashboard", icon: LayoutDashboard, label: t("admin.tabs.dashboard"), dataTour: "sidebar-dashboard" },
-    { id: "languages", icon: Languages, label: t("admin.tabs.languages"), dataTour: "sidebar-languages" },
-    { id: "language_currencies", icon: CreditCard, label: t("admin.tabs.languageCurrencies") },
-    { id: "history", icon: History, label: t("admin.tabs.history"), dataTour: "sidebar-history" },
   ];
 
   const tourItems = [
@@ -128,18 +130,23 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: Users, label: t("admin.tabs.customers"), dataTour: "sidebar-customers" }] : []),
   ];
 
+  // İLETİŞİM: günlük operasyon (konuşmalar/talepler/şablonlar/SSS).
   const communicationItems = [
-    // 2026-07-10 FIX: "settings" tab'ı (WhatsApp bağlantı + Manuel Bağlantı ekranı)
-    // VALID_TABS'ta ve Admin'de render ediliyordu AMA sidebar'da menü öğesi YOKTU —
-    // yalnız onboarding "WhatsApp'ı bağla" butonundan ulaşılıyordu (onboarding
-    // kapanınca erişilemez → "göremiyorum"). Menü öğesi geri eklendi.
-    { id: "settings", icon: Settings, label: t("admin.tabs.whatsappConnection", { defaultValue: "WhatsApp Bağlantı" }), dataTour: "sidebar-whatsapp-connection" },
     { id: "whatsapp", icon: MessageSquare, label: "WhatsApp", dataTour: "sidebar-whatsapp" },
-    { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo"), dataTour: "sidebar-agency-info" },
-    { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings"), dataTour: "sidebar-payment" },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
     ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates"), dataTour: "sidebar-templates" }] : []),
     { id: "faq", icon: HelpCircle, label: t("admin.tabs.faq"), dataTour: "sidebar-faq" },
+  ];
+
+  // AYARLAR (2026-07-22 yeni grup): kurulum/nadir-kullanım öğeleri tek yerde.
+  // (WhatsApp Bağlantı 2026-07-10 erişilemeyen-ekran fix'iyle menüye girmişti.)
+  const settingsItems = [
+    { id: "settings", icon: Settings, label: t("admin.tabs.whatsappConnection", { defaultValue: "WhatsApp Bağlantı" }), dataTour: "sidebar-whatsapp-connection" },
+    { id: "agency_info", icon: Building2, label: t("admin.tabs.agencyInfo"), dataTour: "sidebar-agency-info" },
+    { id: "payment_settings", icon: CreditCard, label: t("admin.tabs.paymentSettings"), dataTour: "sidebar-payment" },
+    { id: "languages", icon: Languages, label: t("admin.tabs.languages"), dataTour: "sidebar-languages" },
+    { id: "language_currencies", icon: CreditCard, label: t("admin.tabs.languageCurrencies") },
+    { id: "history", icon: History, label: t("admin.tabs.history"), dataTour: "sidebar-history" },
   ];
 
   const reportingItems = [
@@ -309,6 +316,23 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
             </SidebarGroup>
           </Collapsible>
         )}
+
+        {/* Ayarlar (2026-07-22 yeni grup) — kurulum/nadir öğeler */}
+        <Collapsible open={openGroups.settingsGroup} onOpenChange={() => toggleGroup("settingsGroup")}>
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-accent/50 rounded-md cursor-pointer">
+                {!isCollapsed && t("admin.groups.settings", { defaultValue: "Ayarlar" })}
+                {!isCollapsed && <ChevronDown className={`h-4 w-4 transition-transform ${openGroups.settingsGroup ? "rotate-180" : ""}`} />}
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                {renderMenuItems(settingsItems)}
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
         {/* Destek */}
         <Collapsible open={openGroups.support} onOpenChange={() => toggleGroup("support")}>
