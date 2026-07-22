@@ -61,7 +61,7 @@ serve(async (req) => {
     // Agency Meta credentials (DB önce, global env fallback — Aymila gibi)
     const { data: agency, error: agErr } = await supabase
       .from("agencies")
-      .select("id, name, meta_phone_number_id, meta_access_token")
+      .select("id, name, meta_phone_number_id")
       .eq("id", agencyId)
       .single();
 
@@ -70,6 +70,9 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // 2026-07-22: token agency_secrets'tan (service-role).
+    const { hydrateAgencySecrets } = await import("../_shared/agency-secrets.ts");
+    await hydrateAgencySecrets(supabase, agency);
 
     const creds = getMetaCredentials(agency);
     if (!creds.accessToken || !creds.phoneNumberId) {

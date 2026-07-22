@@ -56,11 +56,14 @@ serve(async (req) => {
 
       const { data: agency } = await supabase
         .from('agencies')
-        .select('id, name, plan_type, meta_phone_number_id, meta_access_token')
+        .select('id, name, plan_type, meta_phone_number_id')
         .eq('id', customer.agency_id)
         .single();
 
       if (!agency) continue;
+      // 2026-07-22: token agency_secrets'tan (service-role).
+      const { hydrateAgencySecrets } = await import("../_shared/agency-secrets.ts");
+      await hydrateAgencySecrets(supabase, agency);
 
       const { data: planFeatures } = await supabase
         .from('plan_features')

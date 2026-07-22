@@ -69,7 +69,7 @@ serve(async (req) => {
     // Agency doğrula
     const { data: agency } = await supabase
       .from("agencies")
-      .select("id, meta_waba_id, meta_access_token, user_id")
+      .select("id, meta_waba_id, user_id")
       .eq("id", agencyId)
       .single();
 
@@ -80,7 +80,9 @@ serve(async (req) => {
     }
 
     const wabaId      = agency.meta_waba_id;
-    const accessToken = agency.meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+    // 2026-07-22: token agency_secrets'tan (service-role).
+    const { getAgencySecrets } = await import("../_shared/agency-secrets.ts");
+    const accessToken = (await getAgencySecrets(supabase, agency.id)).meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
 
     if (!wabaId || !accessToken) {
       return new Response(JSON.stringify({ error: "WABA ID or access token not configured" }), {

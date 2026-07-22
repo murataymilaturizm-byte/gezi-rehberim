@@ -5,6 +5,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendWhatsAppTemplate, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
+import { hydrateAgencySecrets } from "../_shared/agency-secrets.ts";
 // K4: tek finansal kaynak
 import { calculateTotal } from "../shared/utils/finance.ts";
 
@@ -137,9 +138,11 @@ serve(async (req) => {
 
       const { data: agency } = await supabase
         .from('agencies')
-        .select('id, name, meta_phone_number_id, meta_access_token')
+        .select('id, name, meta_phone_number_id')
         .eq('id', agencyId)
         .single();
+      // 2026-07-22: token agency_secrets'tan (service-role).
+      await hydrateAgencySecrets(supabase, agency);
 
       const creds = getMetaCredentials(agency);
       if (!creds.accessToken || !creds.phoneNumberId) {
@@ -253,7 +256,7 @@ serve(async (req) => {
         *,
         tours:tour_id (title, destination, hareket_noktasi, toplanma_saati),
         tour_dates:tour_date_id (departure_date, price_adult),
-        agencies:agency_id (id, name, whatsapp_phone_number, meta_phone_number_id, meta_access_token)
+        agencies:agency_id (id, name, whatsapp_phone_number, meta_phone_number_id)
       `)
       .eq('id', registrationId)
       .single();
@@ -307,8 +310,9 @@ serve(async (req) => {
       );
     }
 
-    // Credential (DB önce, env fallback)
+    // Credential — 2026-07-22: token agency_secrets'tan (embedded join'de yok).
     const agency = registration.agencies as any;
+    await hydrateAgencySecrets(supabase, agency);
     const credentials = getMetaCredentials(agency);
 
     if (!credentials.accessToken || !credentials.phoneNumberId) {

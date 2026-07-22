@@ -57,9 +57,12 @@ serve(async (req) => {
 
     const { data: agency } = await supabase
       .from("agencies")
-      .select("meta_access_token, meta_waba_id")
+      .select("meta_waba_id")
       .eq("id", agencyId)
       .single();
+    // 2026-07-22: token agency_secrets'tan (service-role).
+    const { getAgencySecrets } = await import("../_shared/agency-secrets.ts");
+    (agency as any).meta_access_token = (await getAgencySecrets(supabase, agencyId)).meta_access_token;
 
     // 2026-07-10: net eksik-alan mesajı (özellikle manuel kurulumda waba_id boş
     // kalıyordu → "şablonları eşleştir" sessizce patlıyordu).

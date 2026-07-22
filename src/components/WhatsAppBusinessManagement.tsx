@@ -207,15 +207,20 @@ function ManageAccountDialog({ account, open, onOpenChange, onSaved }: ManageAcc
       meta_waba_id: form.meta_waba_id || null,
       whatsapp_status: form.whatsapp_status,
     };
-    if (form.new_meta_access_token.trim()) {
-      updateData.meta_access_token = form.new_meta_access_token.trim();
-    }
     const { error } = await supabase
       .from("agencies")
       .update(updateData)
       .eq("id", account.id);
+    // 2026-07-22: token agencies'te DEĞİL → agency_secrets'a superadmin edge-action.
+    let _tokErr: any = null;
+    if (!error && form.new_meta_access_token.trim()) {
+      const r = await supabase.functions.invoke("meta-embedded-signup", {
+        body: { action: "admin-set-token", agencyId: account.id, accessToken: form.new_meta_access_token.trim() },
+      });
+      _tokErr = r.error;
+    }
 
-    if (error) {
+    if (error || _tokErr) {
       toast({ title: t("common.error"), description: t("superAdmin.business.updateError"), variant: "destructive" });
     } else {
       toast({ title: t("common.success"), description: t("superAdmin.business.updateSuccess") });

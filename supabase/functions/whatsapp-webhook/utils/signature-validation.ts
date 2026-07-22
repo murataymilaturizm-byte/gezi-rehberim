@@ -69,6 +69,9 @@ export async function resolveAgencyByAccountSid(
     return { agency: null, error: 'Agency not found' };
   }
 
+  // 2026-07-22: twilio_auth_token agency_secrets'ta → hydrate et.
+  const { hydrateAgencySecrets } = await import("../../_shared/agency-secrets.ts");
+  await hydrateAgencySecrets(supabase, agency);
   return { agency, error: null };
 }
 

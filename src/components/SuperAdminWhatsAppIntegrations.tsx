@@ -143,15 +143,14 @@ export const SuperAdminWhatsAppIntegrations = ({ isSuperAdmin = false }: SuperAd
       const _trimmedWabaId = editForm.meta_waba_id?.trim() || null;
       const _trimmedAccessToken = editForm.new_meta_access_token.trim();
 
+      // 2026-07-22: token whatsapp_integrations'ta TUTULMAZ (acente-okunabilir) →
+      // agency_secrets'a admin-set-token edge-action ile (aşağıda).
       const updateData: any = {
         status: editForm.status,
         meta_phone_number_id: _trimmedPhoneId,
         meta_waba_id: _trimmedWabaId,
         admin_notes: editForm.admin_notes || null,
       };
-      if (_trimmedAccessToken) {
-        updateData.meta_access_token = _trimmedAccessToken;
-      }
 
       if (editForm.status === "active" && editModal.status !== "active") {
         updateData.activated_at = new Date().toISOString();
@@ -176,9 +175,6 @@ export const SuperAdminWhatsAppIntegrations = ({ isSuperAdmin = false }: SuperAd
         if (_trimmedWabaId) {
           agencyUpdate.meta_waba_id = _trimmedWabaId;
         }
-        if (_trimmedAccessToken) {
-          agencyUpdate.meta_access_token = _trimmedAccessToken;
-        }
         if (editModal.whatsapp_phone) {
           agencyUpdate.whatsapp_phone_number = editModal.whatsapp_phone.trim();
         }
@@ -187,6 +183,15 @@ export const SuperAdminWhatsAppIntegrations = ({ isSuperAdmin = false }: SuperAd
           .from("agencies")
           .update(agencyUpdate)
           .eq("id", editModal.agency_id);
+      }
+
+      // 2026-07-22: token agencies/whatsapp_integrations'ta DEĞİL → agency_secrets'a
+      // superadmin edge-action ile (aktivasyondan bağımsız — token girildiyse her zaman).
+      if (_trimmedAccessToken) {
+        const { error: _tokErr } = await supabase.functions.invoke("meta-embedded-signup", {
+          body: { action: "admin-set-token", agencyId: editModal.agency_id, accessToken: _trimmedAccessToken },
+        });
+        if (_tokErr) throw _tokErr;
       }
 
       toast({ title: t("common.success"), description: t("superAdmin.integrations.saveSuccess") });

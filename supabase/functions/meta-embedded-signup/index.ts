@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { subscribeAppToWabaWithRetry, verifyWabaSubscription } from "../_shared/metaWhatsapp.ts";
+import { getAgencySecrets, upsertAgencySecret } from "../_shared/agency-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -197,9 +198,9 @@ Deno.serve(async (req) => {
         console.error(`[exchange-token] Webhook subscription FAILED for agency ${agencyId}, WABA ${cleanWabaId}`);
       }
 
-      // Step 5: Save to agency — her iki ID garanti dolu, TRIM edilmiş, duplicate yok.
+      // Step 5: Save — token agency_secrets'a (2026-07-22), non-secret agencies'e.
+      await upsertAgencySecret(supabase, agencyId, { meta_access_token: accessToken, uses_central_token: false });
       const updateData: Record<string, any> = {
-        meta_access_token: accessToken,
         meta_waba_id: cleanWabaId,
         meta_phone_number_id: cleanPhoneNumberId,
         whatsapp_phone_number: cleanPhoneNumber || null,
@@ -226,7 +227,7 @@ Deno.serve(async (req) => {
         .from("whatsapp_integrations")
         .update({
           status: "active",
-          meta_access_token: accessToken,
+          // 2026-07-22: token whatsapp_integrations'ta TUTULMAZ (acente-okunabilir) → agency_secrets.
           meta_waba_id: cleanWabaId || null,
           meta_phone_number_id: cleanPhoneNumberId || null,
           whatsapp_phone: cleanPhoneNumber || null,
@@ -323,10 +324,11 @@ Deno.serve(async (req) => {
         );
       }
 
+      // 2026-07-22: token agency_secrets'ta → orayı da temizle.
+      await upsertAgencySecret(supabase, agencyId, { meta_access_token: null, uses_central_token: false });
       const { error: agencyError } = await supabase
         .from("agencies")
         .update({
-          meta_access_token: null,
           meta_phone_number_id: null,
           meta_waba_id: null,
           whatsapp_phone_number: null,
@@ -346,7 +348,7 @@ Deno.serve(async (req) => {
       // whatsapp_integrations tablosunu da temizle
       await supabase
         .from("whatsapp_integrations")
-        .update({ status: "pending", meta_access_token: null, meta_phone_number_id: null, meta_waba_id: null, whatsapp_phone: null })
+        .update({ status: "pending", meta_phone_number_id: null, meta_waba_id: null, whatsapp_phone: null })
         .eq("agency_id", agencyId);
 
       console.info("[disconnect] WhatsApp disconnected for agency:", agencyId);
@@ -377,7 +379,7 @@ Deno.serve(async (req) => {
 
       const { data: agency, error: agencyErr } = await supabase
         .from("agencies")
-        .select("id, user_id, meta_phone_number_id, meta_access_token")
+        .select("id, user_id, meta_phone_number_id")
         .eq("id", agencyId)
         .eq("user_id", user.id)
         .single();
@@ -396,7 +398,8 @@ Deno.serve(async (req) => {
         );
       }
 
-      const token = agency.meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+      // 2026-07-22: token agency_secrets'tan.
+      const token = (await getAgencySecrets(supabase, agencyId)).meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
       if (!token) {
         return new Response(
           JSON.stringify({ error: "No access token available" }),
@@ -446,7 +449,7 @@ Deno.serve(async (req) => {
 
       const { data: repairAgency } = await supabase
         .from("agencies")
-        .select("id, user_id, meta_waba_id, meta_phone_number_id, meta_access_token")
+        .select("id, user_id, meta_waba_id, meta_phone_number_id")
         .eq("id", agencyId)
         .eq("user_id", user.id)
         .single();
@@ -465,7 +468,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const repairToken = repairAgency.meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+      const repairToken = (await getAgencySecrets(supabase, agencyId)).meta_access_token || Deno.env.get("WHATSAPP_ACCESS_TOKEN");
       if (!repairToken) {
         return new Response(
           JSON.stringify({ error: "No access token available" }),
@@ -541,7 +544,7 @@ Deno.serve(async (req) => {
 
       // Sahiplik doğrula + mevcut token/WABA kaynaklarını çek (fallback + keşif için)
       const { data: mAgency } = await supabase
-        .from("agencies").select("id, user_id, meta_access_token, meta_waba_id, meta_business_account_id")
+        .from("agencies").select("id, user_id, meta_waba_id, meta_business_account_id")
         .eq("id", agencyId).eq("user_id", user.id).single();
       if (!mAgency) {
         return new Response(
@@ -550,9 +553,8 @@ Deno.serve(async (req) => {
         );
       }
       // Token önceliği: kullanıcının girdiği > kayıttaki mevcut (merkezi) > env.
-      // 100/33'te (erişemez) sonraki adaya düşülür — Aymila'da kayıttaki TourBot
-      // token'ı numaraya erişebiliyor, kullanıcının kendi token'ı erişemiyor.
-      const _savedTok = mAgency.meta_access_token ? String(mAgency.meta_access_token).trim() : "";
+      // 2026-07-22: kayıtlı token agency_secrets'tan (resolved — central ise env).
+      const _savedTok = ((await getAgencySecrets(supabase, agencyId)).meta_access_token || "").trim();
       const _envTok = (Deno.env.get("WHATSAPP_ACCESS_TOKEN") || "").trim();
       const _tokCandidates = [...new Set([_inputTok, _savedTok, _envTok].filter((x) => x && x.length > 10))];
       if (_tokCandidates.length === 0) {
@@ -671,9 +673,16 @@ Deno.serve(async (req) => {
         console.warn(`[manual-connect] subscribe FAILED waba=${finalWaba} — kayıt yine de yapılır, repair ile tekrar denenebilir`);
       }
 
-      // 4) KAYDET — embedded-signup ile AYNI alan seti (routing için pnid+waba şart)
+      // 4a) TOKEN → agency_secrets (2026-07-22). İş1c: kazanan token ENV(merkezi)
+      //     ise token'ın KENDİSİ yazılmaz → uses_central_token=true (gönderimde env).
+      if (_tok === _envTok) {
+        await upsertAgencySecret(supabase, agencyId, { uses_central_token: true });
+        console.log(`[manual-connect] merkezi(env) token kazandı → uses_central_token=true (token DB'ye yazılmadı)`);
+      } else {
+        await upsertAgencySecret(supabase, agencyId, { meta_access_token: _tok, uses_central_token: false });
+      }
+      // 4b) KAYDET — non-secret alanlar agencies'e (routing için pnid+waba şart)
       const { error: saveErr } = await supabase.from("agencies").update({
-        meta_access_token: _tok,
         meta_phone_number_id: _pnid,
         meta_waba_id: finalWaba,
         whatsapp_phone_number: displayPhone ? displayPhone.replace(/[^\d]/g, "") : null,
@@ -695,7 +704,7 @@ Deno.serve(async (req) => {
       }
       // whatsapp_integrations tablosu varsa senkron
       await supabase.from("whatsapp_integrations")
-        .update({ status: "active", meta_access_token: _tok, meta_phone_number_id: _pnid, meta_waba_id: finalWaba })
+        .update({ status: "active", meta_phone_number_id: _pnid, meta_waba_id: finalWaba })
         .eq("agency_id", agencyId).then(() => {}, () => {});
 
       const _wabaSrc = _wabaInput ? "elle" : (_agencyWaba ? "kayıt-waba" : "kayıt-biz");
@@ -710,6 +719,23 @@ Deno.serve(async (req) => {
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // ── SUPERADMIN: token'ı agency_secrets'a yaz (2026-07-22) ────────────────
+    // Panel-client agency_secrets'a yazamaz (service-role-only). Superadmin
+    // token girişleri bu action'dan geçer.
+    if (action === "admin-set-token") {
+      const { agencyId, accessToken } = body;
+      const { data: _role } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "super_admin").maybeSingle();
+      if (!_role) {
+        return new Response(JSON.stringify({ error: "Super admin only" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      if (!agencyId || !accessToken) {
+        return new Response(JSON.stringify({ error: "agencyId ve accessToken zorunlu" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      await upsertAgencySecret(supabase, agencyId, { meta_access_token: String(accessToken).trim(), uses_central_token: false });
+      console.log(`[admin-set-token] agency=${String(agencyId).slice(0, 8)} token=***${String(accessToken).slice(-4)}`);
+      return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(

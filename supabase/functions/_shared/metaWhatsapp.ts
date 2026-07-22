@@ -1,5 +1,7 @@
 // Meta Cloud API WhatsApp utilities
 
+import { hydrateAgencySecrets } from "./agency-secrets.ts";
+
 const GRAPH_API_VERSION = 'v18.0';
 const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 
@@ -385,6 +387,8 @@ export async function resolveAgencyByPhoneNumberId(
       console.error('[resolveAgency] query error:', error.message);
       // Hata DB query'de — fallback'e düş
     } else if (data && data.length === 1) {
+      // 2026-07-22: secret'lar agency_secrets'ta → agency nesnesine hydrate et.
+      await hydrateAgencySecrets(supabase, data[0]);
       return { agency: data[0], error: null };
     } else if (data && data.length > 1) {
       // L4: AMBIGUOUS — iki+ acente aynı phone_number_id'de.
@@ -415,14 +419,19 @@ export async function resolveAgencyByPhoneNumberId(
     // length === 0 → fallback'e düş
   }
 
-  // Fallback: find agency that has meta_access_token or whatsapp_api_key set (single-agency setups)
-  const { data: agencies } = await supabase
-    .from('agencies')
-    .select('*')
-    .eq('active', true)
-    .or('meta_access_token.not.is.null,whatsapp_api_key.not.is.null');
+  // Fallback: secret'ı olan tek aktif acente. 2026-07-22: secret'lar
+  // agency_secrets'ta → önce oradan id topla, sonra agencies'ten çek.
+  const { data: _secretIds } = await supabase
+    .from('agency_secrets')
+    .select('agency_id')
+    .or('meta_access_token.not.is.null,whatsapp_api_key.not.is.null,uses_central_token.eq.true');
+  const _ids = (_secretIds || []).map((r: any) => r.agency_id);
+  const { data: agencies } = _ids.length
+    ? await supabase.from('agencies').select('*').eq('active', true).in('id', _ids)
+    : { data: [] };
 
   if (agencies && agencies.length === 1) {
+    await hydrateAgencySecrets(supabase, agencies[0]);
     return { agency: agencies[0], error: null };
   }
 
