@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -105,6 +106,10 @@ export default function AutomatedNotificationsTab({
   const [loading, setLoading] = useState(true);
   const [savingReminder, setSavingReminder] = useState(false);
   const [savingSurvey, setSavingSurvey] = useState(false);
+  // İş3: "Kendine test gönder" — numara + rate-limit (dakikada 1) + gönderiliyor.
+  const [testPhone, setTestPhone] = useState<Record<EventType, string>>({ tour_reminder: "", feedback_survey: "" });
+  const [testingSend, setTestingSend] = useState<EventType | null>(null);
+  const [testCooldownUntil, setTestCooldownUntil] = useState(0);
 
   // Reminder (tour_reminder) — tek state olarak grupla (en az 1 dil eşleştirme bekleniyor)
   const [reminderEnabled, setReminderEnabled] = useState(false);
@@ -269,10 +274,72 @@ export default function AutomatedNotificationsTab({
   const hasReminders = planFeatures?.has_reminders === true;
   const hasFeedback = planFeatures?.has_feedback === true;
 
+  // İş3 (2026-07-22): kendine test gönder — seçili şablonu örnek-veriyle o numaraya.
+  const handleTestSend = async (isReminder: boolean) => {
+    const evt: EventType = isReminder ? "tour_reminder" : "feedback_survey";
+    const tmap = isReminder ? reminderTemplates : surveyTemplates;
+    const phoneRaw = (testPhone[evt] || "").replace(/\D/g, "");
+    const selected = Object.entries(tmap).filter(([, tk]) => !!tk);
+    if (phoneRaw.length < 10) { toast({ title: t("common.error"), description: "Geçerli bir telefon numarası girin.", variant: "destructive" }); return; }
+    if (selected.length === 0) { toast({ title: t("common.error"), description: "Önce en az bir dil için şablon seçin.", variant: "destructive" }); return; }
+    if (Date.now() < testCooldownUntil) { toast({ title: t("common.error"), description: "Test gönderimi dakikada 1 kez — lütfen bekleyin.", variant: "destructive" }); return; }
+    const [lang, templateKey] = selected[0]; // ilk seçili dil/şablon
+    setTestingSend(evt);
+    try {
+      const _sampleVars = {
+        full_name: "Örnek Müşteri", tour_name: "Örnek Tur",
+        date: new Date(Date.now() + 86400000).toLocaleDateString("tr-TR", { year: "numeric", month: "long", day: "numeric" }),
+        pax: "2", total_amount: "1500", currency: "TRY",
+        meeting_time: "09:00", meeting_point: "Örnek Kalkış Noktası", agency_name: "Acenteniz",
+      };
+      const { data, error } = await supabase.functions.invoke("send-template-message", {
+        body: { agencyId, phone: phoneRaw, templateKey, language: lang, variableValues: _sampleVars, recipientName: "Test", test: true },
+      });
+      if (error) {
+        let msg = error.message;
+        try { const b = await (error as any)?.context?.json?.(); if (b?.error) msg = b.error; } catch { /* */ }
+        toast({ title: t("common.error"), description: msg || "Test gönderilemedi.", variant: "destructive" });
+        return;
+      }
+      if (data?.error) { toast({ title: t("common.error"), description: data.error, variant: "destructive" }); return; }
+      setTestCooldownUntil(Date.now() + 60000);
+      toast({ title: t("common.success"), description: `Test mesajı gönderildi: ${templateKey} (${lang}). Telefonunuzu kontrol edin.` });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e?.message || "Beklenmeyen hata.", variant: "destructive" });
+    } finally {
+      setTestingSend(null);
+    }
+  };
+
   // İş3 (2026-07-10): eşleştirme netliği — her olay kartında özet/uyarı rozeti.
   // "sessiz-kapalı" tuzağının PANELDE görünür hali.
   const offsetLabel = (off: number) =>
     off < 0 ? `${Math.abs(off) / 24} gün önce` : `${off / 24} gün sonra`;
+  // İş3: "Kendine test gönder" bloğu — numara + buton (dakikada 1).
+  const renderTestSend = (isReminder: boolean) => {
+    const evt: EventType = isReminder ? "tour_reminder" : "feedback_survey";
+    const tmap = isReminder ? reminderTemplates : surveyTemplates;
+    const hasTemplate = Object.values(tmap).some(Boolean);
+    if (!hasTemplate) return null;
+    return (
+      <div className="rounded-md border border-border bg-muted/20 px-3 py-2.5 space-y-1.5">
+        <p className="text-xs font-medium">🧪 Kendine test gönder</p>
+        <div className="flex gap-2">
+          <Input
+            value={testPhone[evt]}
+            onChange={(e) => setTestPhone({ ...testPhone, [evt]: e.target.value })}
+            placeholder="Test için telefon (05xx…)"
+            inputMode="tel"
+            className="h-8 text-sm"
+          />
+          <Button size="sm" variant="outline" onClick={() => handleTestSend(isReminder)} disabled={testingSend !== null}>
+            {testingSend === evt ? "Gönderiliyor…" : "Test Gönder"}
+          </Button>
+        </div>
+        <p className="text-[10px] text-muted-foreground">Seçili şablon örnek verilerle gönderilir (dakikada 1). Kendi WhatsApp numaranızı girin.</p>
+      </div>
+    );
+  };
   const renderMatchSummary = (isReminder: boolean) => {
     const enabled = isReminder ? reminderEnabled : surveyEnabled;
     const offset = isReminder ? reminderOffset : surveyOffset;
@@ -483,6 +550,7 @@ export default function AutomatedNotificationsTab({
 
           {/* İş3: eşleştirme özet/uyarı rozeti (kapalı / eşleşti / şablon-yok) */}
           {hasReminders && renderMatchSummary(true)}
+          {hasReminders && renderTestSend(true)}
 
           <div className="flex justify-end pt-2">
             <Button
@@ -614,6 +682,7 @@ export default function AutomatedNotificationsTab({
 
           {/* İş3: eşleştirme özet/uyarı rozeti */}
           {hasFeedback && renderMatchSummary(false)}
+          {hasFeedback && renderTestSend(false)}
 
           <div className="flex justify-end pt-2">
             <Button

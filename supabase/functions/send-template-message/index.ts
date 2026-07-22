@@ -80,10 +80,12 @@ async function logSend(supabase: any, payload: {
   agency_id: string; template_type: string; language: string;
   recipient_phone: string; recipient_name?: string | null;
   registration_id?: string | null; success: boolean; error_message?: string | null;
+  test?: boolean;
 }) {
   try {
     await supabase.from('template_send_log').insert({
       ...payload,
+      test: payload.test === true,
       sent_at: new Date().toISOString(),
     });
   } catch (e: any) {
@@ -234,7 +236,7 @@ serve(async (req) => {
       await logSend(supabase, {
         agency_id: agencyId, template_type: tmpl.template_key, language: tmpl.language,
         recipient_phone: normalizedPhone, recipient_name: recipientName || null,
-        registration_id: null, success: true,
+        registration_id: null, success: true, test: body.test === true,
       });
 
       return new Response(
