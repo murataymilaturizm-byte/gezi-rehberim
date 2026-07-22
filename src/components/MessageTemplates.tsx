@@ -471,6 +471,19 @@ export default function MessageTemplates() {
           (event_type tour_reminder/feedback_survey + kayıt mantığı) AYNEN. */}
       {tplScope === "meta" && (
         <>
+          {/* PANEL-DENETİM-2 S-fix: şablon-oluşturma yönergesi — yeni acente
+              tour_reminder_tr'yi Meta'da NASIL oluşturacağını panelden öğrenir
+              (Murat'ın yaşadığı kafa karışıklığı sınıfı). */}
+          <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm space-y-1.5">
+            <p className="font-semibold">📋 Yeni WhatsApp şablonu nasıl eklenir?</p>
+            <ol className="list-decimal ms-5 space-y-0.5 text-muted-foreground">
+              <li><a href="https://business.facebook.com/wa/manage/message-templates/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Meta WhatsApp Manager → Mesaj Şablonları</a>'nda şablon oluşturun (kategori: <span className="font-mono">Utility</span>).</li>
+              <li>Önerilen adlar: <span className="font-mono">tour_reminder_tr</span> (hatırlatma), <span className="font-mono">tour_feedback_tr</span> (anket) — diğer diller için <span className="font-mono">_en, _de…</span> eki.</li>
+              <li>Meta onayı (genelde dakikalar–saatler) sonrası aşağıdaki <span className="font-semibold">"Meta'dan Şablonları Çek"</span> ile içeri alın.</li>
+              <li>Üstteki <span className="font-semibold">Tur Hatırlatma / Memnuniyet Anketi</span> kartlarında dile göre seçip kaydedin.</li>
+            </ol>
+          </div>
+
           <AutomatedNotificationsTab reloadSignal={syncNonce} />
           <div className="pt-4 mt-2 border-t border-border">
             <h3 className="text-lg font-semibold">Diğer Meta Şablonları</h3>

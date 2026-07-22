@@ -691,7 +691,7 @@
         }
       },
       "sync": {
-        "button": "Meta ile Senkronize Et",
+        "button": "Meta'dan Şablonları Çek",
         "success": "{{count}} şablon güncellendi",
         "successWithNew": "{{inserted}} yeni eklendi, {{updated}} güncellendi",
         "error": "Senkronizasyon başarısız"
