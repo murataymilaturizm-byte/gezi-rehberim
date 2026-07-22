@@ -159,6 +159,9 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     { id: "agencies", icon: Building2, label: t("admin.tabs.agencies") },
     { id: "contact_forms", icon: Mail, label: t("admin.tabs.contactForms") },
     { id: "whatsapp_management", icon: Phone, label: t("admin.tabs.whatsappManagement") },
+    // 2026-07-22 UX-denetim: whatsapp_integrations render'da vardı ama menüde YOKTU
+    // (WhatsApp-Bağlantı vakası sınıfı — erişilemeyen ekran). Menü öğesi eklendi.
+    { id: "whatsapp_integrations", icon: MessageSquare, label: t("admin.tabs.whatsappIntegrations", { defaultValue: "WhatsApp Entegrasyonları" }) },
     { id: "whatsapp_settings", icon: Phone, label: t("admin.tabs.whatsappSettings") },
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
     { id: "central_notifications", icon: Bell, label: t("admin.tabs.centralNotifications") },
