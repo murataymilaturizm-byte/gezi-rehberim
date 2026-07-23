@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Calendar, Pencil, Trash2, Copy, Sparkles, MoreVertical } from "lucide-react";
+import { Calendar, Pencil, Trash2, Copy, Sparkles, MoreVertical, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 
@@ -47,6 +47,7 @@ interface Tour {
   currency: string;
   min_pax: number;
   visa_required: boolean;
+  is_active?: boolean;
   program_url?: string;
   program_kisa?: string;
   hareket_noktasi?: string;
@@ -79,6 +80,7 @@ interface ToursListProps {
   onAddDate: (tourId: string) => void;
   onEditTour: (tour: Tour) => void;
   onDeleteTour: (tourId: string) => void;
+  onReactivateTour?: (tourId: string, agencyId?: string) => void;
   onEditDate: (tourId: string, date: any) => void;
   onDeleteDate: (dateId: string) => void;
   onRefresh?: () => void;
@@ -93,6 +95,7 @@ export const ToursList = ({
   onAddDate,
   onEditTour,
   onDeleteTour,
+  onReactivateTour,
   onEditDate,
   onDeleteDate,
   onRefresh,
@@ -262,11 +265,18 @@ export const ToursList = ({
       )}
 
       {filteredTours.map((tour) => (
-        <Card key={tour.id} className="border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20">
+        <Card key={tour.id} className={`border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20 ${tour.is_active === false ? "opacity-60" : ""}`}>
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold text-lg">{tour.title}</h3>
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  {tour.title}
+                  {tour.is_active === false && (
+                    <Badge variant="outline" className="text-xs border-amber-500/50 text-amber-600 dark:text-amber-400">
+                      {t("admin.tours.passive", { defaultValue: "Pasif" })}
+                    </Badge>
+                  )}
+                </h3>
                 <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                   <span>{tour.destination}</span>
                   <span>•</span>
@@ -346,6 +356,12 @@ export const ToursList = ({
                       {t("tours.duplicate")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    {tour.is_active === false && onReactivateTour && (
+                      <DropdownMenuItem onClick={() => onReactivateTour(tour.id, (tour as any).agency_id)}>
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        {t("admin.tours.reactivate", { defaultValue: "Yeniden Aktifleştir" })}
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() => onDeleteTour(tour.id)}
                       className="text-destructive focus:text-destructive"

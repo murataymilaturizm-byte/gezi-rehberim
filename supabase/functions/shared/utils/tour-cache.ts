@@ -77,10 +77,13 @@ export async function getCachedTours(
     rawTours = entry!.tours;
   } else {
     console.log(`[tour-cache] MISS agency=${agencyId.slice(0, 8)}`);
+    // İş2: pasif turlar (is_active=false) bot listesinden gizli. default true →
+    // mevcut turlar etkilenmez. Mevcut kayıtlar/cron ayrı yollardan çalışmaya devam eder.
     const { data, error } = await supabase
       .from("tours")
       .select(`*, dates:tour_dates(*)`)
-      .eq("agency_id", agencyId);
+      .eq("agency_id", agencyId)
+      .neq("is_active", false);
 
     if (error) {
       console.error("[tour-cache] DB fetch error:", error.message);

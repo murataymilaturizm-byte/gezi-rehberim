@@ -170,7 +170,62 @@ const Admin = () => {
     open: boolean;
     type: "tour" | "date" | null;
     id: string | null;
-  }>({ open: false, type: null, id: null });
+    activeRegs: number | null; // null = sayılıyor; İş2 CASCADE koruması
+    busy: boolean;
+  }>({ open: false, type: null, id: null, activeRegs: null, busy: false });
+
+  // İş2: silme dialogunu açmadan ÖNCE bağlı aktif kayıt (CANCELLED dışı) sayısını
+  // server-side çek — kayıt varsa silme engellenir, "pasifleştir" sunulur.
+  const openDeleteDialog = async (type: "tour" | "date", id: string) => {
+    setDeleteDialog({ open: true, type, id, activeRegs: null, busy: false });
+    try {
+      const col = type === "tour" ? "tour_id" : "tour_date_id";
+      const { count } = await supabase
+        .from("registrations")
+        .select("id", { count: "exact", head: true })
+        .eq(col, id)
+        .neq("status", "CANCELLED");
+      setDeleteDialog((d) => (d.id === id ? { ...d, activeRegs: count ?? 0 } : d));
+    } catch {
+      setDeleteDialog((d) => (d.id === id ? { ...d, activeRegs: 0 } : d));
+    }
+  };
+
+  const handleDeactivateTour = async () => {
+    if (!deleteDialog.id) return;
+    setDeleteDialog((d) => ({ ...d, busy: true }));
+    try {
+      const tourToDeactivate = tours.find((t) => t.id === deleteDialog.id);
+      const { error } = await supabase
+        .from("tours")
+        .update({ is_active: false } as any)
+        .eq("id", deleteDialog.id);
+      if (error) throw error;
+      if (tourToDeactivate?.agency_id) {
+        supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId: tourToDeactivate.agency_id } }).catch(() => {});
+      }
+      toast({ title: t("admin.toast.success"), description: t("admin.tours.deactivateSuccess", { defaultValue: "Tur pasifleştirildi — bot listesinde görünmez, mevcut kayıtlar korunur." }) });
+      loadData();
+      setDeleteDialog({ open: false, id: null, type: null, activeRegs: null, busy: false });
+    } catch (error) {
+      console.error("Deactivate tour error:", error);
+      toast({ title: t("admin.toast.error"), description: t("admin.tours.deleteError"), variant: "destructive" });
+      setDeleteDialog((d) => ({ ...d, busy: false }));
+    }
+  };
+
+  const handleReactivateTour = async (tourId: string, agencyId?: string) => {
+    try {
+      const { error } = await supabase.from("tours").update({ is_active: true } as any).eq("id", tourId);
+      if (error) throw error;
+      if (agencyId) supabase.functions.invoke("invalidate-tour-cache", { body: { agencyId } }).catch(() => {});
+      toast({ title: t("admin.toast.success"), description: t("admin.tours.reactivateSuccess", { defaultValue: "Tur yeniden aktif." }) });
+      loadData();
+    } catch (error) {
+      console.error("Reactivate tour error:", error);
+      toast({ title: t("admin.toast.error"), description: t("admin.tours.deleteError"), variant: "destructive" });
+    }
+  };
 
   // Registrations state
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -545,6 +600,15 @@ const Admin = () => {
 
   const handleDeleteTour = async () => {
     try {
+      // İş2 guard: aktif kayıt varsa SİLME (CASCADE veri imhası) — server-side teyit.
+      const { count } = await supabase
+        .from("registrations").select("id", { count: "exact", head: true })
+        .eq("tour_id", deleteDialog.id).neq("status", "CANCELLED");
+      if ((count ?? 0) > 0) {
+        toast({ title: t("admin.toast.error"), description: t("admin.tours.deleteBlockedActive", { count, defaultValue: `Bu turda ${count} aktif kayıt var — silinemez. Pasifleştirin.` }), variant: "destructive" });
+        setDeleteDialog((d) => ({ ...d, activeRegs: count ?? 0 }));
+        return;
+      }
       const tourToDelete = tours.find(t => t.id === deleteDialog.id);
       const { error } = await supabase
         .from("tours")
@@ -577,6 +641,15 @@ const Admin = () => {
 
   const handleDeleteDate = async () => {
     try {
+      // İş2 guard: bu tarihte aktif kayıt varsa SİLME (CASCADE veri imhası).
+      const { count } = await supabase
+        .from("registrations").select("id", { count: "exact", head: true })
+        .eq("tour_date_id", deleteDialog.id).neq("status", "CANCELLED");
+      if ((count ?? 0) > 0) {
+        toast({ title: t("admin.toast.error"), description: t("admin.date.deleteBlockedActive", { count, defaultValue: `Bu tarihte ${count} aktif kayıt var — silinemez. Kayıtları iptal edin ya da turu pasifleştirin.` }), variant: "destructive" });
+        setDeleteDialog((d) => ({ ...d, activeRegs: count ?? 0 }));
+        return;
+      }
       const tourOfDate = tours.find(t => t.tour_dates?.some((d: any) => d.id === deleteDialog.id));
       const { error } = await supabase
         .from("tour_dates")
@@ -1031,13 +1104,14 @@ const Admin = () => {
                         setSelectedTour(tour);
                         setTourFormOpen(true);
                       }}
-                      onDeleteTour={(tourId) => setDeleteDialog({ open: true, id: tourId, type: "tour" })}
+                      onDeleteTour={(tourId) => openDeleteDialog("tour", tourId)}
+                      onReactivateTour={handleReactivateTour}
                       onEditDate={(tourId, date) => {
                         setSelectedTourForDate(tourId);
                         setSelectedDate(date);
                         setDateFormOpen(true);
                       }}
-                      onDeleteDate={(dateId) => setDeleteDialog({ open: true, id: dateId, type: "date" })}
+                      onDeleteDate={(dateId) => openDeleteDialog("date", dateId)}
                       onRefresh={loadData}
                     />
                   ) : (
@@ -1157,22 +1231,44 @@ const Admin = () => {
         />
       )}
 
-      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, id: null, type: null })}>
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, id: null, type: null, activeRegs: null, busy: false })}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("admin.tours.deleteConfirm")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("admin.tours.deleteWarning")}
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                {deleteDialog.activeRegs === null ? (
+                  <span>{t("common.loading", { defaultValue: "Kontrol ediliyor…" })}</span>
+                ) : deleteDialog.activeRegs > 0 ? (
+                  <span className="text-destructive font-medium">
+                    {t("admin.tours.deleteBlockedActive", { count: deleteDialog.activeRegs, defaultValue: `⚠️ Bu ${deleteDialog.type === "tour" ? "turda" : "tarihte"} ${deleteDialog.activeRegs} aktif kayıt var — silmek kayıtları ve ödeme geçmişini kalıcı SİLER.` })}
+                    {deleteDialog.type === "tour"
+                      ? " " + t("admin.tours.deactivateHint", { defaultValue: "Bunun yerine turu pasifleştirin: bot listesinde görünmez, mevcut kayıtlar ve hatırlatmalar korunur." })
+                      : " " + t("admin.date.deleteBlockedHint", { defaultValue: "Önce kayıtları iptal edin ya da turu pasifleştirin." })}
+                  </span>
+                ) : (
+                  <span>{t("admin.tours.deleteWarning")}</span>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={deleteDialog.type === "tour" ? handleDeleteTour : handleDeleteDate}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("common.delete")}
-            </AlertDialogAction>
+            <AlertDialogCancel disabled={deleteDialog.busy}>{t("common.cancel")}</AlertDialogCancel>
+            {deleteDialog.activeRegs !== null && deleteDialog.activeRegs > 0 ? (
+              deleteDialog.type === "tour" ? (
+                <AlertDialogAction onClick={(e) => { e.preventDefault(); handleDeactivateTour(); }} disabled={deleteDialog.busy}>
+                  {t("admin.tours.deactivate", { defaultValue: "Pasifleştir" })}
+                </AlertDialogAction>
+              ) : null
+            ) : (
+              <AlertDialogAction
+                onClick={deleteDialog.type === "tour" ? handleDeleteTour : handleDeleteDate}
+                disabled={deleteDialog.activeRegs === null || deleteDialog.busy}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {t("common.delete")}
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
