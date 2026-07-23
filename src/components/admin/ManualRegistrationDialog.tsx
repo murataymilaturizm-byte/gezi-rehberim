@@ -131,23 +131,44 @@ export const ManualRegistrationDialog = ({
       const paidAmount = formData.paymentStatus === "DEPOSIT" ? parseFloat(formData.depositAmount) :
                         formData.paymentStatus === "PAID" ? totalAmount : 0;
 
-      const { error } = await supabase.from("registrations").insert({
-        agency_id: agencyId,
-        tour_id: formData.tourId,
-        tour_date_id: formData.tourDateId,
-        full_name: formData.fullName,
-        phone: formData.phone,
-        pax,
-        source_channel: formData.sourceChannel,
-        payment_status: formData.paymentStatus,
-        deposit_amount: depositAmount,
-        paid_amount: paidAmount,
-        total_amount: totalAmount,
-        note: formData.notes || null,
-        status: "NEW"
+      // İş3: TEK KAPI — create_reservation_with_quota_check RPC (kota kilidi +
+      // format-toleranslı duplicate guard + pax sınırı + ownership). Düz insert
+      // kota/duplicate güvenliğini atlıyordu (oversell + 90541/0541 sınıfı çift).
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc("create_reservation_with_quota_check", {
+        p_tour_id: formData.tourId,
+        p_tour_date_id: formData.tourDateId,
+        p_full_name: formData.fullName,
+        p_phone: formData.phone,
+        p_pax: pax,
+        p_agency_id: agencyId,
+        p_source_channel: formData.sourceChannel,
+        p_note: formData.notes || null,
+        p_total_amount: totalAmount,
       });
+      if (rpcErr) throw rpcErr;
 
-      if (error) throw error;
+      const res = rpcRes as { success: boolean; error?: string; remaining?: number; registration_id?: string };
+      if (!res?.success) {
+        const map: Record<string, string> = {
+          DUPLICATE: t("admin.manualReg.errDuplicate", { defaultValue: "Bu müşteri (telefon) bu tarih için zaten kayıtlı." }),
+          QUOTA_EXCEEDED: t("admin.manualReg.errQuota", { count: res?.remaining ?? 0, defaultValue: `Kontenjan yetersiz — kalan ${res?.remaining ?? 0} kişilik yer.` }),
+          INVALID_PAX: t("admin.manualReg.errPax", { defaultValue: "Geçersiz kişi sayısı (1-50)." }),
+          TOUR_DATE_NOT_FOUND: t("admin.manualReg.errDate", { defaultValue: "Seçilen tarih bulunamadı." }),
+          NOT_AUTHORIZED: t("admin.manualReg.errAuth", { defaultValue: "Bu acente için yetkiniz yok." }),
+        };
+        toast({ title: t("common.error"), description: map[res?.error || ""] || t("admin.manualReg.error"), variant: "destructive" });
+        return;
+      }
+
+      // Ödeme alanları RPC varsayılanı (UNPAID/0) dışındaysa oluşturulan kaydı güncelle.
+      if (res.registration_id && (formData.paymentStatus !== "NEW" || paidAmount > 0)) {
+        const { error: payErr } = await supabase.from("registrations").update({
+          payment_status: formData.paymentStatus,
+          deposit_amount: depositAmount,
+          paid_amount: paidAmount,
+        }).eq("id", res.registration_id);
+        if (payErr) console.error("Manual reg payment update failed:", payErr.message);
+      }
 
       toast({ title: t("common.successTitle"), description: t("admin.manualReg.success") });
       onSuccess();

@@ -139,13 +139,25 @@ export const PassengerEditorDialog = ({
     if (!registrationId) return;
     setMutating(true);
     try {
-      // 1) Parent registration'dan agency_id al — RLS bypass değil, sadece doğru değeri yaz
+      // 1) Parent registration'dan agency_id + tour_date_id al
       const { data: regRow, error: regErr } = await db
         .from("registrations")
-        .select("agency_id, pax")
+        .select("agency_id, pax, tour_date_id")
         .eq("id", registrationId)
         .single();
       if (regErr || !regRow) throw regErr || new Error("Registration not found");
+
+      // İş3: yolcu ekleme de kota güvenliği içinde — tarihte yer yoksa engelle
+      // (panel eskiden kontrolsüz pax+1 ile oversell yapabiliyordu).
+      const { data: td } = await db.from("tour_dates").select("quota").eq("id", regRow.tour_date_id).single();
+      const { data: sameDate } = await db
+        .from("registrations").select("pax, status").eq("tour_date_id", regRow.tour_date_id);
+      const soldPax = (sameDate || []).filter((r: any) => r.status !== "CANCELLED").reduce((s: number, r: any) => s + (r.pax || 0), 0);
+      if (td && td.quota - soldPax < 1) {
+        toast({ title: t("common.error"), description: t("passengers.quotaFull", { defaultValue: "Bu tarihte boş yer yok — yolcu eklenemez." }), variant: "destructive" });
+        setMutating(false);
+        return;
+      }
 
       const nextOrder = (passengers.reduce((m, p) => Math.max(m, p.passenger_order), 0) || 0) + 1;
       const newPax = (regRow.pax || passengers.length) + 1;
