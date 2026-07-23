@@ -5,6 +5,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import { normalizePhone } from "../_shared/phone.ts";
 import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent } from "../shared/fsm/localization.ts";
 import { pickLocalized } from "../shared/fsm/localization.ts";
@@ -173,7 +174,10 @@ serve(async (req) => {
       });
     }
 
-    const userPhone = webhookData.from;
+    // 2026-07-23: TEK KANONİK FORMAT (E.164 rakam). Meta wa_id zaten ülke-kodlu
+    // ("905419..") ama normalize idempotent + tüm yazma/eşleşme tek forma iner
+    // → manuel-reg "0541.." ile profil/konuşma ÇİFTLENMESİ biter.
+    const userPhone = normalizePhone(webhookData.from);
     _catchPhone = userPhone;
     const rawMessage = webhookData.message;
 

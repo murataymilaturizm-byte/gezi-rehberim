@@ -6,6 +6,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendWhatsAppTemplate, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 import { hydrateAgencySecrets } from "../_shared/agency-secrets.ts";
+import { normalizePhone } from "../_shared/phone.ts";
 // K4: tek finansal kaynak
 import { calculateTotal } from "../shared/utils/finance.ts";
 
@@ -118,7 +119,7 @@ serve(async (req) => {
         );
       }
 
-      const phone    = body.phone.replace('+', '').trim();
+      const phone    = normalizePhone(body.phone);
       // FIX: default basit kod 'en' (DB normalize edilmiş formatla tutarlı).
       // Arayan farklı bir kod gönderirse (body.languageCode) onu kullanır — flex.
       const langCode = body.languageCode || 'en';
@@ -188,7 +189,7 @@ serve(async (req) => {
         );
       }
 
-      const normalizedPhone = rawPhone.replace('whatsapp:', '').replace('+', '').trim();
+      const normalizedPhone = normalizePhone(rawPhone.replace('whatsapp:', ''));
       // FIX: DB'deki language değeri Meta'da template'in kayıtlı olduğu dil ile aynı
       // (sync-meta-templates'in normalize ettiği basit kod). Dönüşüm YOK.
       const langCode        = tmpl.language;
@@ -275,7 +276,7 @@ serve(async (req) => {
     const { data: userProfile } = await supabase
       .from('whatsapp_user_profiles')
       .select('language_preference')
-      .eq('phone', registration.phone.replace('+', ''))
+      .eq('phone', normalizePhone(registration.phone))
       .eq('agency_id', registration.agency_id)
       .maybeSingle();
     if (userProfile?.language_preference) language = userProfile.language_preference;
@@ -347,7 +348,7 @@ serve(async (req) => {
       agency_name:   (registration.agencies as any)?.name || '',
     };
 
-    const normalizedPhone = registration.phone.replace('whatsapp:', '').replace('+', '').trim();
+    const normalizedPhone = normalizePhone(registration.phone.replace('whatsapp:', ''));
     // FIX: DB language değeri Meta'da kayıtlı dil ile aynı — dönüşüm YOK.
     const langCode        = tmpl.language;
     const comps           = buildTemplateComponents(tmpl.content, varValues, tmpl.template_key);

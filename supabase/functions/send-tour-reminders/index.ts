@@ -23,6 +23,7 @@
 //
 // Acente eşleştirme yapmadıysa veya enabled=false → graceful skip (hata değil).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { normalizePhone } from "../_shared/phone.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,7 +204,7 @@ Deno.serve(async (req) => {
       for (const reg of regsList) {
         try {
           // Müşteri dil tercihi
-          const normalizedPhone = reg.phone.replace(/^\+/, "").replace(/\s/g, "");
+          const normalizedPhone = normalizePhone(reg.phone);
           const { data: profile } = await supabase
             .from("whatsapp_user_profiles")
             .select("language_preference")

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { normalizePhone } from "@/utils/phone";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -115,7 +116,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
     (supabase as any)
       .from("whatsapp_user_profiles")
       .select("bot_paused, bot_paused_until")
-      .eq("phone", selectedPhone.replace("whatsapp:", "").replace("+", "").trim())
+      .eq("phone", normalizePhone(selectedPhone.replace("whatsapp:", "")))
       .eq("agency_id", aid)
       .maybeSingle()
       .then(({ data }: any) => {
@@ -225,7 +226,7 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
     // Önceden sadece `await loadConversations()` ile DB'den re-fetch ediyorduk;
     // DB insert SILENT FAIL ettiğinde (metadata kolonu yoktu) mesaj hiç görünmüyordu.
     // Şimdi: hemen ekle → fail olursa rollback. Migration ile DB insert de düzeldi.
-    const _normalizedPhone = selectedPhone.replace("whatsapp:", "").replace("+", "").trim();
+    const _normalizedPhone = normalizePhone(selectedPhone.replace("whatsapp:", ""));
     const _trimmedMsg = replyMessage.trim();
     const _tempId = `optimistic-${Date.now()}`;
     const _tempMsg: Message = {

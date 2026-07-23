@@ -10,6 +10,7 @@
 // AR/Farsça rakamlar burada ASCII'ye normalize edilir (٥→5) — parseRating ASCII bekler.
 import { parseRating } from "../../shared/constants/rating-words.ts";
 import { sendWhatsAppMessage } from "../../_shared/metaWhatsapp.ts";
+import { phoneMatchVariants } from "../../_shared/phone.ts";
 
 // GİRİŞ-NOKTASI AR-rakam normalizasyonu (process-message.ts ile aynı kural).
 function normalizeDigits(s: string): string {
@@ -78,7 +79,9 @@ export async function tryCaptureFeedback(deps: CaptureDeps): Promise<boolean> {
   }
 
   // 2) PENDING-FEEDBACK PENCERESİ: feedback_sent_at son 72h + henüz feedback yok.
-  const phoneVariants = [userPhone, userPhone.replace(/^\+/, ""), "+" + userPhone.replace(/^\+/, "")];
+  // registrations.phone HAM saklanır (0541.. / +90.. karışık) — kanonik userPhone'un
+  // tüm eşdeğer biçimleriyle eşleştir (İş1: registrations.phone'a DOKUNMA).
+  const phoneVariants = phoneMatchVariants(userPhone);
   const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
   const { data: pendingRegs } = await supabase
     .from("registrations")

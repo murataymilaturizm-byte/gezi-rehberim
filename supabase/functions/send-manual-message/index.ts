@@ -5,6 +5,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getMetaCredentials } from "../_shared/metaWhatsapp.ts";
+import { normalizePhone } from "../_shared/phone.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,7 +84,7 @@ serve(async (req) => {
 
     // WhatsApp 24-hour session check
     const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const normalizedPhone = phone.replace("whatsapp:", "").replace("+", "").trim();
+    const normalizedPhone = normalizePhone(phone.replace("whatsapp:", ""));
 
     const { data: recentMsgs } = await supabase
       .from("whatsapp_conversations")
