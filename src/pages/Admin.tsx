@@ -257,9 +257,12 @@ const Admin = () => {
         .from("agencies")
         // BUG FIX (Madde 1): Bağlantı durumu için sadece whatsapp_status alanı yetmiyor.
         // Acente disconnect-reconnect yaptığında bu alan bazen "pending" kalıyor ama
-        // gerçek bağlantı göstergeleri (meta_access_token + meta_phone_number_id) dolu.
-        // Meta credentials varsa gerçekten bağlı → "active" göster.
-        .select("plan_type, enabled_languages, whatsapp_status, meta_access_token, meta_phone_number_id, webhook_subscribed")
+        // gerçek bağlantı göstergesi (meta_phone_number_id) dolu → "active" göster.
+        // KRİTİK FIX (panel-denetim 6.1): meta_access_token kolonu 20260722110000
+        // migration'ı ile agency_secrets'a taşınıp DÜŞÜRÜLDÜ — select'te kalınca
+        // 42703 hatası loadAgencyPlan'ı patlatıyor, planFeatures null kalıyor ve
+        // TÜM plan-gate'li menüler (Şablonlar/Raporlar/CRM) her acentede gizleniyordu.
+        .select("plan_type, enabled_languages, whatsapp_status, meta_phone_number_id, webhook_subscribed")
         .eq("id", userAgencyId)
         .single();
 
@@ -274,9 +277,9 @@ const Admin = () => {
         setPlanFeatures(features);
         setEnabledLanguages(agencyData.enabled_languages || []);
         // BUG FIX (Madde 1): Tek kaynaklı bağlantı durumu hesabı.
-        // Meta'da hem token hem phone_number_id varsa = gerçekten bağlı, "active" göster
-        // (whatsapp_status alanı "pending" kalmış olsa bile — disconnect-reconnect race condition).
-        const _hasMetaCreds = !!(agencyData as any).meta_access_token && !!(agencyData as any).meta_phone_number_id;
+        // Token artık agency_secrets'ta (client okuyamaz) — bağlantı göstergesi
+        // meta_phone_number_id (yalnız bağlıyken dolu; disconnect null'lar).
+        const _hasMetaCreds = !!(agencyData as any).meta_phone_number_id;
         const _effectiveStatus = _hasMetaCreds ? "active" : (agencyData.whatsapp_status || "");
         setWhatsappStatus(_effectiveStatus);
       }
@@ -969,7 +972,7 @@ const Admin = () => {
                             <span className="sm:hidden">Ekle</span>
                           </Button>
                           <Button
-                            onClick={() => exportRegistrationsToExcel(registrations)}
+                            onClick={() => exportRegistrationsToExcel(getFilteredRegistrations())}
                             variant="outline"
                             size="sm"
                             disabled={registrations.length === 0}

@@ -357,7 +357,14 @@ export async function generatePaymentMessage(
   // additional_info (serbest metin) yalnız O DİLİN bloğundan basılır (tr hariç).
   // Per-dil veri yoksa satır atlanır — acente panelde per-dil doldurmalı
   // (panel-backlog: "payment_instructions per-dil").
-  const _bankInfoLang = paymentInstructions[language];
+  // FIX (panel-denetim 4.2): PaymentSettings varsayılan olarak BOŞ bir `en` bloğu
+  // kaydediyor ({bank_name:"",iban:"",...}) — boş obje truthy olduğu için tr
+  // fallback'ini eziyor ve yabancı müşteri IBAN'sız blok alıyordu. Yapısal alanı
+  // (banka/IBAN/hesap sahibi) olmayan dil bloğu YOK sayılır → tr fallback çalışır.
+  const _langBlockRaw = paymentInstructions[language];
+  const _hasStruct = (b: { bank_name?: string; iban?: string; account_holder?: string } | undefined | null) =>
+    !!(b && (b.bank_name || b.iban || b.account_holder));
+  const _bankInfoLang = _hasStruct(_langBlockRaw) ? _langBlockRaw : null;
   const bankInfo = _bankInfoLang || paymentInstructions.tr || {};
   const _additionalInfo = (language === "tr" ? bankInfo.additional_info : _bankInfoLang?.additional_info) || null;
 

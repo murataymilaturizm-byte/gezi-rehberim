@@ -138,7 +138,7 @@ export const ToursList = ({
   };
 
   const handleConfirmDuplicate = async () => {
-    if (!duplicateTour || !duplicateTitle.trim()) return;
+    if (!duplicateTour || !duplicateTitle.trim() || duplicating) return;
     setDuplicating(true);
     try {
       const { id: _id, created_at: _ca, tour_dates: _td, ...rest } = duplicateTour as any;
@@ -151,11 +151,17 @@ export const ToursList = ({
 
       // Copy dates if tour has any
       if (duplicateTour.tour_dates && duplicateTour.tour_dates.length > 0 && newTour) {
-        const dateCopies = duplicateTour.tour_dates.map(({ id: _did, ...d }: any) => ({
-          ...d,
-          tour_id: newTour.id,
-        }));
-        await supabase.from("tour_dates").insert(dateCopies);
+        // FIX (panel-denetim): loadData'nın enjekte ettiği türetilmiş alanlar
+        // (sold_pax/remaining_quota) tour_dates'te kolon değil — insert'i sessizce
+        // patlatıyordu ("kopyalandı" toast'ı ama tarihsiz tur). Ayıkla + hata kontrol et.
+        const dateCopies = duplicateTour.tour_dates.map(
+          ({ id: _did, created_at: _dca, sold_pax: _sp, remaining_quota: _rq, ...d }: any) => ({
+            ...d,
+            tour_id: newTour.id,
+          })
+        );
+        const { error: dateErr } = await supabase.from("tour_dates").insert(dateCopies);
+        if (dateErr) throw dateErr;
       }
 
       if (agencyId) {
@@ -446,7 +452,7 @@ export const ToursList = ({
             <Input
               value={duplicateTitle}
               onChange={(e) => setDuplicateTitle(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleConfirmDuplicate()}
+              onKeyDown={(e) => e.key === "Enter" && !duplicating && handleConfirmDuplicate()}
               autoFocus
             />
             {duplicateTour?.tour_dates && duplicateTour.tour_dates.length > 0 && (

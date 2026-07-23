@@ -215,7 +215,7 @@ export const ActivityTimeline = ({
                         <div>
                           {fb.score !== null && (
                             <span className="font-semibold text-yellow-700 dark:text-yellow-300">
-                              {fb.score}/10
+                              {fb.score}/5
                             </span>
                           )}
                           {fb.comment && <p className="mt-0.5 italic">"{fb.comment}"</p>}

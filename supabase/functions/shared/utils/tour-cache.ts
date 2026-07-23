@@ -131,7 +131,10 @@ async function _refreshQuota(supabase: any, tours: any[]): Promise<any[]> {
     dates: (tour.dates || []).map((d: any) => ({
       ...d,
       sold_pax: soldMap[d.id] || 0,
-      remaining_quota: d.quota - (soldMap[d.id] || 0),
+      // FIX (panel-denetim): panel kotayı satılmışın ALTINA düşürebiliyor
+      // (TourDateFormDialog'da sold kontrolü yok) → negatif kalan "sadece -5 yer"
+      // olarak müşteriye sızıyordu. 0'a clamp = DOLU semantiği (H-β/H-α doğru işler).
+      remaining_quota: Math.max(0, d.quota - (soldMap[d.id] || 0)),
     })),
   }));
 }

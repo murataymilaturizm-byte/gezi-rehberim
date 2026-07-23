@@ -56,11 +56,33 @@ function buildTemplateComponents(content: string, values: Record<string, string>
 
   const isPositional = vars.every(v => /^\d+$/.test(v));
   const order = (templateKey && TEMPLATE_VAR_ORDERS[templateFamily(templateKey)]) || POSITIONAL_VAR_ORDER;
+  // Panel-denetim 1.11 FIX: SendTemplateDialog pozisyonel şablonda values'u "1","2"...
+  // anahtarlarıyla gönderir — aile-sıra adı bulunamazsa NUMERİK anahtara düş
+  // (yoksa manuel pozisyonel gönderim hep boş parametre basıyordu).
   const parameters = isPositional
-    ? vars.map((_, i) => ({ type: 'text', text: (order[i] ? values[order[i]] : undefined) ?? '' }))
+    ? vars.map((v, i) => ({ type: 'text', text: (order[i] ? values[order[i]] : undefined) ?? values[v] ?? '' }))
     : vars.map(v => ({ type: 'text', text: values[v] || '' }));
 
   return [{ type: 'body', parameters }];
+}
+
+// Y1-A FIX (yolculuk-denetimi): DB'ye yazılan konuşma-önizlemesi. Meta gönderimi
+// comps ile doğruydu ama kayıt, ham {{N}} placeholder'larıyla kalıyordu → panel
+// thread'inde ve botun LLM geçmişinde çöp satır. Önce pozisyonel {{N}} (aile-sıra
+// + numerik-anahtar fallback), sonra isimli {var} doldurulur; değeri olmayan
+// placeholder görünür bırakılır (sessiz boşluktan iyidir).
+function renderTemplatePreview(content: string, values: Record<string, string>, templateKey?: string): string {
+  let preview = content || '';
+  const order = (templateKey && TEMPLATE_VAR_ORDERS[templateFamily(templateKey)]) || POSITIONAL_VAR_ORDER;
+  preview = preview.replace(/\{\{(\d+)\}\}/g, (m, n) => {
+    const key = order[Number(n) - 1];
+    return (key && values?.[key]) ?? values?.[n] ?? m;
+  });
+  Object.entries(values || {}).forEach(([k, v]) => {
+    if (/^\d+$/.test(k)) return; // numerik anahtarlar yukarıda işlendi
+    preview = preview.replace(new RegExp(`\\{${k}\\}`, 'g'), v ?? '');
+  });
+  return preview;
 }
 
 // KÖKEN SEBEP FIX (Meta log kanıtladı: "(#132001) template name (X) does not exist in en_US"):
@@ -227,10 +249,11 @@ serve(async (req) => {
         );
       }
 
-      // Konuşma geçmişi
+      // Konuşma geçmişi — Y1-A FIX: ham tmpl.content yerine doldurulmuş önizleme
       await supabase.from('whatsapp_conversations').insert({
         phone: normalizedPhone, role: 'assistant',
-        content: tmpl.content, agency_id: agencyId,
+        content: renderTemplatePreview(tmpl.content, variableValues || {}, tmpl.template_key),
+        agency_id: agencyId,
         metadata: { template_key: tmpl.template_key, sent_via: 'template', message_id: result.messageId },
       });
 
@@ -387,11 +410,9 @@ serve(async (req) => {
       );
     }
 
-    // Preview (variables doldurulmuş)
-    let preview = tmpl.content;
-    Object.entries(varValues).forEach(([k, v]) => {
-      preview = preview.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
-    });
+    // Preview (variables doldurulmuş) — Y1-A FIX: pozisyonel {{N}} de doldurulur
+    // (eski named-only döngü tour_reminder ailesinde ham {{1}}..{{7}} bırakıyordu).
+    const preview = renderTemplatePreview(tmpl.content, varValues, tmpl.template_key);
 
     await supabase.from('whatsapp_conversations').insert({
       phone: normalizedPhone, role: 'assistant',

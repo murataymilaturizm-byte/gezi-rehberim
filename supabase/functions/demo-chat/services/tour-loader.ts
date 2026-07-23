@@ -45,7 +45,8 @@ export async function enrichToursWithSoldPax(supabase: any, tours: any[]): Promi
     dates: (tour.dates || []).map((d: any) => ({
       ...d,
       sold_pax: soldMap[d.id] || 0,
-      remaining_quota: d.quota - (soldMap[d.id] || 0)
+      // FIX (panel-denetim): negatif kalan sızmasın — 0'a clamp (DOLU semantiği)
+      remaining_quota: Math.max(0, d.quota - (soldMap[d.id] || 0))
     }))
   }));
 }

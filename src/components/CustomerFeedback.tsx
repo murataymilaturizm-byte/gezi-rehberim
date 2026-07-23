@@ -241,9 +241,12 @@ export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps
 
     const scores = data.map(f => f.feedback_score || 0);
     const averageScore = scores.reduce((a, b) => a + b, 0) / totalResponses;
-    
-    const promoters = scores.filter(s => s >= 9).length;
-    const detractors = scores.filter(s => s <= 6).length;
+
+    // FIX (Y6-1): bot puanı 1-5 ölçekli (parseRating) — eski 0-10 NPS eşikleri
+    // (>=9 / <=6) her 5/5'i detractor sayıyordu. 5'li ölçek eşleme: 5=promoter,
+    // 4=passive, <=3=detractor.
+    const promoters = scores.filter(s => s >= 5).length;
+    const detractors = scores.filter(s => s <= 3).length;
     const nps = ((promoters - detractors) / totalResponses) * 100;
 
     setStats({
@@ -281,8 +284,9 @@ export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps
       }
 
       const scores = monthFeedbacks.map(f => f.feedback_score || 0);
-      const promoters = scores.filter(s => s >= 9).length;
-      const detractors = scores.filter(s => s <= 6).length;
+      // FIX (Y6-1): 1-5 ölçek eşikleri (yukarıdaki calculateStats ile aynı)
+      const promoters = scores.filter(s => s >= 5).length;
+      const detractors = scores.filter(s => s <= 3).length;
       const nps = ((promoters - detractors) / totalResponses) * 100;
 
       return {
@@ -296,15 +300,17 @@ export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps
   };
 
   const calculateScoreDistribution = (data: FeedbackData[]) => {
-    const distribution = Array.from({ length: 11 }, (_, i) => ({
-      score: i.toString(),
+    // FIX (Y6-1): 1-5 ölçekli dağılım (eski 0-10, 11 bucket yanlıştı)
+    const distribution = Array.from({ length: 5 }, (_, i) => ({
+      score: (i + 1).toString(),
       count: 0,
       percentage: 0,
     }));
 
     data.forEach(feedback => {
-      if (feedback.feedback_score !== null) {
-        distribution[feedback.feedback_score].count++;
+      const s = feedback.feedback_score;
+      if (s !== null && s >= 1 && s <= 5) {
+        distribution[s - 1].count++;
       }
     });
 
@@ -316,16 +322,17 @@ export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps
     setScoreDistribution(distribution.filter(item => item.count > 0));
   };
 
+  // FIX (Y6-1): 1-5 ölçek — 5=promoter, 4=passive, <=3=detractor
   const getScoreBadge = (score: number) => {
-    if (score >= 9) return <Badge className="bg-green-500">{t("feedback.promoter")}</Badge>;
-    if (score >= 7) return <Badge className="bg-yellow-500">{t("feedback.passive")}</Badge>;
+    if (score >= 5) return <Badge className="bg-green-500">{t("feedback.promoter")}</Badge>;
+    if (score >= 4) return <Badge className="bg-yellow-500">{t("feedback.passive")}</Badge>;
     return <Badge className="bg-red-500">{t("feedback.detractor")}</Badge>;
   };
 
   const renderStars = (score: number) => {
     return (
       <div className="flex gap-1">
-        {[...Array(10)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
           <Star
             key={i}
             size={16}
@@ -503,7 +510,7 @@ export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageScore}/10</div>
+            <div className="text-2xl font-bold">{stats.averageScore}/5</div>
           </CardContent>
         </Card>
 
@@ -650,7 +657,7 @@ export const CustomerFeedback = ({ isSuperAdmin = false }: CustomerFeedbackProps
                     </TableCell>
                     <TableCell>
                       {feedback.feedback_score && renderStars(feedback.feedback_score)}
-                      <div className="text-sm mt-1">{feedback.feedback_score}/10</div>
+                      <div className="text-sm mt-1">{feedback.feedback_score}/5</div>
                     </TableCell>
                     <TableCell>
                       {feedback.feedback_score && getScoreBadge(feedback.feedback_score)}

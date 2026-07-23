@@ -247,7 +247,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       // tours join — tur adı için
       let q = supabase
         .from("registrations")
-        .select("id, full_name, pax, status, created_at, tour_id, tours(name)")
+        .select("id, full_name, pax, status, created_at, tour_id, tours(title)")
         .ilike("phone", `%${tail}%`)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -255,11 +255,13 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
       const { data, error } = await q;
       if (error) throw error;
       const mapped: TimelineRegistration[] = (data || []).map((r) => {
-        const row = r as { id: string; full_name: string; pax: number; status: string; created_at: string; tours?: { name?: string } | { name?: string }[] | null };
+        // FIX (panel-denetim): tours tablosunda kolon adı "title" — "name" join'i
+        // PostgREST hatası verip rezervasyon-timeline'ını komple boş bırakıyordu.
+        const row = r as { id: string; full_name: string; pax: number; status: string; created_at: string; tours?: { title?: string } | { title?: string }[] | null };
         const toursField = row.tours;
         let tourName: string | null = null;
-        if (Array.isArray(toursField)) tourName = toursField[0]?.name ?? null;
-        else if (toursField && typeof toursField === "object") tourName = toursField.name ?? null;
+        if (Array.isArray(toursField)) tourName = toursField[0]?.title ?? null;
+        else if (toursField && typeof toursField === "object") tourName = toursField.title ?? null;
         return {
           id: row.id,
           full_name: row.full_name,
@@ -806,7 +808,8 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                               <div>
                                 <p className="text-sm text-muted-foreground mb-2">{t("userProfiles.feedbackScore")}</p>
                                 <div className="flex items-center gap-1">
-                                  {[...Array(10)].map((_, i) => (
+                                  {/* FIX (Y6-1): bot puanı 1-5 ölçekli (parseRating) — 10 yıldız /10 yanlıştı */}
+                                  {[...Array(5)].map((_, i) => (
                                     <Star
                                       key={i}
                                       className={`w-5 h-5 ${
@@ -816,7 +819,7 @@ export const WhatsAppUserProfiles = ({ isSuperAdmin = false }: WhatsAppUserProfi
                                       }`}
                                     />
                                   ))}
-                                  <span className="ml-2 text-lg font-bold">{selectedProfile.feedback_score}/10</span>
+                                  <span className="ml-2 text-lg font-bold">{selectedProfile.feedback_score}/5</span>
                                 </div>
                               </div>
                             )}

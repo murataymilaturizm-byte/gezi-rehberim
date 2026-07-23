@@ -483,8 +483,13 @@ serve(async (req) => {
       if (cannedTrigger) {
         const canned = getCannedResponse(cannedTrigger, _prelimLang);
         if (canned) {
-          await supabase.from("whatsapp_conversations")
-            .insert({ phone: userPhone, role: "assistant", content: canned, agency_id: agency.id });
+          // Y1-D FIX: müşteri mesajı da (role=user) kaydedilir — yoksa panelin
+          // 24h-pencere kontrolü (send-manual-message) son mesaj canned'a düşen
+          // müşteride yanlış negatif verip acenteyi şablona zorluyordu.
+          await supabase.from("whatsapp_conversations").insert([
+            { phone: userPhone, role: "user", content: message, agency_id: agency.id },
+            { phone: userPhone, role: "assistant", content: canned, agency_id: agency.id },
+          ]);
           await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
             userPhone, truncateForWhatsApp(canned));
           // R2: await + try/catch — RPC fail olursa sessiz kayıp yerine error-sink'e gider.
@@ -509,8 +514,11 @@ serve(async (req) => {
 
       const faqResponse = await checkFAQ(supabase, message, agency.id, _prelimLang);
       if (faqResponse) {
-        await supabase.from("whatsapp_conversations")
-          .insert({ phone: userPhone, role: "assistant", content: faqResponse, agency_id: agency.id });
+        // Y1-D FIX: role=user satırı da yazılır (canned ile aynı gerekçe)
+        await supabase.from("whatsapp_conversations").insert([
+          { phone: userPhone, role: "user", content: message, agency_id: agency.id },
+          { phone: userPhone, role: "assistant", content: faqResponse, agency_id: agency.id },
+        ]);
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
           userPhone, truncateForWhatsApp(faqResponse));
         // R2: aynı pattern — billing drift önle

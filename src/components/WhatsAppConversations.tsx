@@ -297,7 +297,9 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
 
     setBotPauseLoading(true);
     try {
-      const normalizedPhone = selectedPhone.replace("whatsapp:", "").replace("+", "").trim();
+      // FIX (Y2-B): okuma tarafı normalizePhone kullanıyor — yazma da aynı kanonik
+      // anahtarı kullanmalı; yoksa pause hayalet profile yazılıp hiç etki etmiyordu.
+      const normalizedPhone = normalizePhone(selectedPhone.replace("whatsapp:", ""));
       const newPaused = !botPaused;
       await (supabase as any)
         .from("whatsapp_user_profiles")
