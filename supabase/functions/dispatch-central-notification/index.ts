@@ -31,6 +31,7 @@ import {
 } from "../_shared/centralWhatsApp.ts";
 import { sendWhatsAppTemplate } from "../_shared/metaWhatsapp.ts";
 import { logCritical } from "../_shared/error-sink.ts";
+import { isServiceRoleCall, unauthorized } from "../_shared/edge-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -178,6 +179,10 @@ function normalizePhone(raw: string): string {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // GÜVENLİK (launch-öncesi): yalnız iç çağrı (_dispatch_central_notification
+  // DB trigger'ı → service-role, migration 20260723120000). Anon → 401.
+  if (!isServiceRoleCall(req)) return unauthorized(corsHeaders);
 
   try {
     const body = await req.json().catch(() => ({}));

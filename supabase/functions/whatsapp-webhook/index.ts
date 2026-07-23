@@ -6,6 +6,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import { normalizePhone } from "../_shared/phone.ts";
+import { getRequestUser, isSuperAdmin } from "../_shared/edge-auth.ts";
 import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent } from "../shared/fsm/localization.ts";
 import { pickLocalized } from "../shared/fsm/localization.ts";
@@ -147,6 +148,14 @@ serve(async (req) => {
 
     // === Test mode ===
     if (body?.testMode === true) {
+      // GÜVENLİK (launch-öncesi): testMode merkez env-credential'la serbest gönderim
+      // yapıyordu (imza muaf) → anonim spam. Artık yalnız super_admin JWT.
+      const _tmUser = await getRequestUser(req);
+      if (!_tmUser || !(await isSuperAdmin(supabase, _tmUser.id))) {
+        return new Response(JSON.stringify({ error: "testMode requires super_admin" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const phoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") || "";
       const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN") || "";
       if (!phoneNumberId || !accessToken) {

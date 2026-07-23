@@ -7,6 +7,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendWhatsAppTemplate, getMetaCredentials } from "../_shared/metaWhatsapp.ts";
 import { hydrateAgencySecrets } from "../_shared/agency-secrets.ts";
 import { normalizePhone } from "../_shared/phone.ts";
+import { isServiceRoleCall, getRequestUser, userOwnsAgency, unauthorized } from "../_shared/edge-auth.ts";
 // K4: tek finansal kaynak
 import { calculateTotal } from "../shared/utils/finance.ts";
 
@@ -127,10 +128,19 @@ serve(async (req) => {
 
     const body = await req.json();
 
+    // ─── GÜVENLİK (launch-öncesi) ────────────────────────────────
+    // İç çağrı (cron → service-role) tüm modlara yetkili. Panel çağrısı
+    // (user-JWT) yalnız SAHİBİ olduğu acente/kaydına. Anon → 401.
+    const _internal = isServiceRoleCall(req);
+    const _user = _internal ? null : await getRequestUser(req);
+    if (!_internal && !_user) return unauthorized(corsHeaders);
+
     // ═══════════════════════════════════════════════════════════
     // MODE 1: Direct (test / bypass) — body.templateName direkt
     // ═══════════════════════════════════════════════════════════
     if (body.phone && body.templateName) {
+      // MODE1 env-credential ile ham gönderim → yalnız iç çağrı.
+      if (!_internal) return unauthorized(corsHeaders, 'MODE1 requires internal (service-role) call');
       const phoneNumberId = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID') || '';
       const accessToken   = Deno.env.get('WHATSAPP_ACCESS_TOKEN') || '';
 
@@ -160,6 +170,11 @@ serve(async (req) => {
     // ═══════════════════════════════════════════════════════════
     if (body.agencyId && body.phone && body.templateKey && !body.registrationId) {
       const { agencyId, phone: rawPhone, templateKey, language: lang, variableValues, recipientName } = body;
+
+      // Panel çağrısı: kullanıcı bu acentenin sahibi olmalı.
+      if (!_internal && !(await userOwnsAgency(supabase, _user!.id, agencyId))) {
+        return unauthorized(corsHeaders, 'Not authorized for this agency');
+      }
 
       const { data: agency } = await supabase
         .from('agencies')
@@ -292,6 +307,11 @@ serve(async (req) => {
         JSON.stringify({ error: 'Registration not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Panel çağrısı: kullanıcı kaydın acentesinin sahibi olmalı.
+    if (!_internal && !(await userOwnsAgency(supabase, _user!.id, registration.agency_id))) {
+      return unauthorized(corsHeaders, 'Not authorized for this registration');
     }
 
     // Dil: userProfile öncelikli

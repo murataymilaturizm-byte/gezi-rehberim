@@ -21,6 +21,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { normalizePhone } from "../_shared/phone.ts";
+import { isServiceRoleCall, unauthorized } from "../_shared/edge-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,6 +69,7 @@ async function invokeSendTemplate(opts: {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${serviceKey}`,
+        "X-Internal-Secret": Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "",
       },
       body: JSON.stringify(opts),
     });
@@ -89,6 +91,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // GÜVENLİK (launch-öncesi): yalnız iç çağrı (pg_cron → service-role). Anon → 401.
+  if (!isServiceRoleCall(req)) return unauthorized(corsHeaders);
 
   try {
     console.log("🕐 feedback_survey job started at:", new Date().toISOString());

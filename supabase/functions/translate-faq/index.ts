@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.81.1";
+import { getRequestUser, userOwnsAgency, unauthorized } from "../_shared/edge-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +34,13 @@ serve(async (req) => {
 
     if (fetchError || !sourceFaq) {
       throw new Error("FAQ not found");
+    }
+
+    // GÜVENLİK (launch-öncesi): panel çağrısı — kullanıcı bu FAQ'ın acentesinin
+    // sahibi olmalı (çapraz-acente çeviri + LLM maliyet suistimali kapatıldı).
+    const _user = await getRequestUser(req);
+    if (!_user || !(await userOwnsAgency(supabase, _user.id, sourceFaq.agency_id))) {
+      return unauthorized(corsHeaders, "Not authorized for this FAQ");
     }
 
     const translations = [];
