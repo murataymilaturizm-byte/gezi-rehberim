@@ -619,10 +619,11 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
     hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
     P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
-35. **5-BEKLEME-DURUMU KESİŞİM DENETİMİ (2026-07-22, FABLE) — TEMİZ**.
-    Slim-review sonrası 5 eşzamanlı-olabilir bekleme bağlamı: proposedDateId,
-    pendingTourClarification (A1), phoneEscalationPending (V11-a), pendingLangSwitch
-    (P3), B3 feedback-penceresi. **Kesişim-matrisi (bekleme × gereken stage/step):**
+35. **6-BEKLEME-DURUMU KESİŞİM DENETİMİ (2026-07-22, FABLE; +6. durum 2026-07-24) — TEMİZ**.
+    6 eşzamanlı-olabilir bekleme bağlamı: proposedDateId, pendingTourClarification (A1),
+    phoneEscalationPending (V11-a), pendingLangSwitch (P3), B3 feedback-penceresi,
+    **pendingCancelConfirm (§35-6, COMPLETED çıplak-iptal teyidi)**.
+    **Kesişim-matrisi (bekleme × gereken stage/step):**
     | Durum | Gerekli bağlam | B3 ile çakışır? |
     |---|---|---|
     | proposedDateId | COLLECTING_INFO/waiting_for_date | HAYIR |
@@ -630,6 +631,18 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     | phoneEscalationPending | COLLECTING_INFO/waiting_for_phone | HAYIR |
     | pendingLangSwitch | herhangi stage (dile ortogonal) | var ama zararsız |
     | B3 feedback | YALNIZ GREETING/COMPLETED/akış-yok | (kendisi) |
+    | **pendingCancelConfirm** | **YALNIZ COMPLETED** | **HAYIR (evet/hayır ≠ rakam/⭐)** |
+    **§35-6 pendingCancelConfirm (2026-07-24):** COMPLETED + iptal-sinyali AMA
+    rezervasyon-kelimesi YOK → "Rezervasyonunuzu iptal etmek mi istiyorsunuz?" 7-dil
+    teyit; TEK-TURN-ömür (proposedDateId deseni). Sonraki turn: onay (detectConfirmation
+    tek-kaynak) → `_fileCancellationRequest` (J-14 ile AYNI complaints yolu) / ret
+    (detectNegativeResponse) → "rezervasyon geçerli" ack / alakasız → flag temizle +
+    normal akış. **YALNIZ COMPLETED'da set edilebilir → COLLECTING-durumlarıyla (proposedDateId/
+    pendingTourClarification/phoneEscalation) mutually-exclusive.** B3 ile çakışmaz:
+    confirmation-words rakam/⭐ İÇERMEZ ("evet/ja/да" ≠ B3 puan-deseni); B3 webhook'ta
+    process-message'dan ÖNCE koşar ama "evet" parseRating=null → B3 atlar → CHECK yakalar.
+    Rezervasyon-KELİMELİ iptal (J-14) TEYİTSİZ direkt kalır (dokunulmadı). Olumsuzlama
+    ("iptal etmeyeceğim") yanlış-pozitifi = fazladan 1 teyit sorusu (tasarım-kabul).
     **Bulgular (kod-kanıtlı, LEAK YOK):** (1) **B3-CAPTURE guard'ı** (feedback-capture.ts:
     `step || stage∈{COLLECTING_INFO,CONFIRMING,TOUR_SELECTED,BROWSING} → return false`)
     aktif-akışlı 3 durumu TAM kapsar → feedback-penceresi açık müşteri yeni akışta

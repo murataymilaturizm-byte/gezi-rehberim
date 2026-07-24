@@ -118,6 +118,13 @@ export interface ConversationContext {
   // (R6 "geçersiz telefon"a yutulmadan — canlı vaka: waiting_for_phone'da
   // "kültür turu" cevabı). Tek-atış: sonraki turn başında değerlendirilip temizlenir.
   pendingTourClarification?: Array<{ id: string; title: string }>;
+
+  // 2026-07-24 §35-6: COMPLETED çıplak-iptal (rezervasyon-kelimesiz) teyit bekleme-
+  // durumu. "Rezervasyonunuzu iptal etmek mi istiyorsunuz?" sorulunca set edilir;
+  // sonraki turn onay→complaints / ret→geçerli-ack / alakasız→temizle+normal-akış.
+  // TEK-TURN-ÖMÜR (proposedDateId deseni). YALNIZ COMPLETED'da set edilebilir →
+  // diğer 5 §35 durumuyla mutually-exclusive (onlar COLLECTING'de).
+  pendingCancelConfirm?: boolean;
 }
 
 export interface StateTransition {

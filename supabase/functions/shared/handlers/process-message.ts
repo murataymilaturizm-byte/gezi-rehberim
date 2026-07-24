@@ -81,6 +81,66 @@ const _TOTAL_LABELS: Record<string, string> = {
   tr: "Toplam", en: "Total", de: "Gesamt", ru: "Итого", ar: "الإجمالي", fr: "Total", es: "Total",
 };
 
+// === İPTAL-NİYETİ TEK-KAYNAK (2026-07-24) — J-14 + pendingCancelConfirm ortak ===
+// Sinyal: iptal fiil-çekimleri (stem'ler substring ile çekimleri yakalar:
+// stornier→stornieren, annul→annuler, отмен→отменить, إلغاء/ألغ). ASCII \b YOK,
+// \p{L}\p{N} lookbehind. RESCTX: rezervasyon-kelimesi (varsa J-14 teyitsiz direkt).
+const _CXL_SIGNAL_RE = /(?<![\p{L}\p{N}])(iptal|cancel|stornier|annul|cancelar|отмен|إلغاء|ألغ)/iu;
+const _CXL_RESCTX_RE = /(?<![\p{L}\p{N}])(rezervasyon|kayıt|kaydı|reservation|booking|buchung|réservation|reserva|бронь|бронирование|حجز)/iu;
+const _CXL_FAQ_RE = /(şart|kosul|koşul|policy|politika|iade|refund|ücret|ucret|kesinti|nasıl|nasil|ne zaman|condition|terms|fee|how|when|bedingung|storno(?:gebühr)?|rückerstattung|ruckerstattung|geb[üu]hr|wie|wann|politique|remboursement|frais|comment|quand|condici[óo]n|pol[íi]tica|reembolso|tarifa|c[óo]mo|cu[áa]ndo|услови|возврат|плат[аеу]|штраф|как|когда|شرو?ط|سياسة|استرداد|رسوم|كيف|متى)/i;
+
+// COMPLETED çıplak-iptal teyit sorusu (§35-6 pendingCancelConfirm SET)
+const _CANCEL_CONFIRM_Q: Record<string, string> = {
+  tr: "Rezervasyonunuzu iptal etmek mi istiyorsunuz?",
+  en: "Would you like to cancel your reservation?",
+  de: "Möchten Sie Ihre Reservierung stornieren?",
+  fr: "Souhaitez-vous annuler votre réservation ?",
+  es: "¿Desea cancelar su reserva?",
+  ru: "Вы хотите отменить ваше бронирование?",
+  ar: "هل ترغب في إلغاء حجزك؟",
+};
+// RET ack'i (rezervasyon geçerli)
+const _CANCEL_REJECT_ACK: Record<string, string> = {
+  tr: "Anladım, rezervasyonunuz geçerli 👍 Başka bir konuda yardımcı olabilir miyim?",
+  en: "Understood, your reservation is still valid 👍 Is there anything else I can help with?",
+  de: "Verstanden, Ihre Reservierung bleibt gültig 👍 Kann ich Ihnen sonst noch helfen?",
+  fr: "Compris, votre réservation reste valable 👍 Puis-je vous aider pour autre chose ?",
+  es: "Entendido, su reserva sigue vigente 👍 ¿Puedo ayudarle en algo más?",
+  ru: "Понял, ваше бронирование остаётся в силе 👍 Могу ли я помочь чем-то ещё?",
+  ar: "فهمت، حجزك ما زال ساري المفعول 👍 هل يمكنني مساعدتك في شيء آخر؟",
+};
+
+// İptal-talebini AÇ (complaints) + ack döndür — J-14 gövdesi buraya çıkarıldı,
+// hem J-14 (rezervasyon-kelimeli) hem pendingCancelConfirm-onayı çağırır (TEK yol).
+async function _fileCancellationRequest(
+  context: any, agency: any, supabase: any, adapter: any, message: string,
+): Promise<string> {
+  const _ri = (context.reservationInfo || {}) as any;
+  const _summary =
+    `İPTAL TALEBİ — Tur: ${_ri.tourTitle || context.currentTour?.title || "?"} | ` +
+    `Tarih: ${_ri.selectedDate || "?"} | Kişi: ${_ri.paxAdult ?? "?"} | ` +
+    `İsim: ${_ri.fullName || "?"} | Tel: ${_ri.phone || "?"} | Müşteri mesajı: "${message.slice(0, 200)}"`;
+  supabase.from("complaints").insert({
+    agency_id: agency.id,
+    phone: adapter.identifier,
+    message: _summary,
+    type: "cancellation_request",
+    status: "new",
+  }).then(() => {});
+  const _agPhoneCxl = agency.phone_public ? ` Dilerseniz${_agencyPhoneSuffix(agency.phone_public)} numarasından da ulaşabilirsiniz.` : "";
+  const _agPhoneCxlEn = agency.phone_public ? ` You can also reach us at${_agencyPhoneSuffix(agency.phone_public)}.` : "";
+  const _cxlMsgs: Record<string, string> = {
+    tr: `İptal talebinizi acentemize ilettim. En kısa sürede sizinle iletişime geçilecek.${_agPhoneCxl}`,
+    en: `I've forwarded your cancellation request to our agency. They will contact you shortly.${_agPhoneCxlEn}`,
+    de: `Ich habe Ihre Stornierungsanfrage an unsere Agentur weitergeleitet. Sie werden in Kürze kontaktiert.${_agPhoneCxlEn}`,
+    ru: `Я передал ваш запрос на отмену в наше агентство. С вами свяжутся в ближайшее время.${_agPhoneCxlEn}`,
+    ar: `لقد أحلت طلب الإلغاء إلى وكالتنا. سيتم التواصل معك قريباً.${_agPhoneCxlEn}`,
+    fr: `J'ai transmis votre demande d'annulation à notre agence. Vous serez contacté sous peu.${_agPhoneCxlEn}`,
+    es: `He enviado su solicitud de cancelación a nuestra agencia. Se pondrán en contacto con usted en breve.${_agPhoneCxlEn}`,
+  };
+  return _cxlMsgs[context.language] || _cxlMsgs.en;
+}
+
 export async function processChatMessage(input: ProcessMessageInput): Promise<ProcessMessageResult> {
   const { message: rawMessage, adapter, agency, supabase, tours, paymentInstructions, languageCurrencies, primaryCurrency, returningUserName, seedLanguage } = input;
 
@@ -986,6 +1046,35 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // kullanıcıya sorulur, sessiz atama olmaz).
   let _tourJustChangedThisTurn = false;
 
+  // === §35-6. pendingCancelConfirm — COMPLETED çıplak-iptal TEYİT cevabı =====
+  // Önceki turn "Rezervasyonunuzu iptal etmek mi istiyorsunuz?" soruldu (tek-turn-ömür,
+  // proposedDateId deseni). Bu turn cevabı değerlendir. YALNIZ COMPLETED'da set edilebilir
+  // → COLLECTING-durumlarıyla çakışamaz. Öncelik: iptal-teyidi > B3 (B3 puan-deseni
+  // rakam/⭐; confirmation-words rakam İÇERMEZ → "evet/hayır" B3'e karışmaz).
+  if (context.stage === "COMPLETED" && (context as any).pendingCancelConfirm) {
+    const _pccLang = context.language || "tr";
+    const _pccCtx = { ...context, pendingCancelConfirm: undefined } as any;
+    if (detectConfirmation(message, _pccLang)) {
+      // ONAY → mevcut iptal-talebi yolu (complaints + ack) — TEK yol (helper).
+      const _r = await _fileCancellationRequest(_pccCtx, agency, supabase, adapter, message);
+      console.log(`[process-message] §35-6 pendingCancelConfirm ONAY → complaints(cancellation_request)`);
+      await _save(_r, _pccCtx);
+      await adapter.sendResponse(_r);
+      return { success: true, response: _r, newContext: _pccCtx };
+    }
+    if (detectNegativeResponse(message, _pccLang)) {
+      // RET → rezervasyon geçerli ack, flag temiz.
+      const _r = _CANCEL_REJECT_ACK[_pccLang] || _CANCEL_REJECT_ACK.tr;
+      console.log(`[process-message] §35-6 pendingCancelConfirm RET → rezervasyon geçerli`);
+      await _save(_r, _pccCtx);
+      await adapter.sendResponse(_r);
+      return { success: true, response: _r, newContext: _pccCtx };
+    }
+    // ALAKASIZ → flag temizle, mesaj normal akışa DEVAM (return YOK).
+    context = _pccCtx;
+    console.log(`[process-message] §35-6 pendingCancelConfirm alakasız cevap → flag temizlendi, normal akış`);
+  }
+
   // === 7b-0. NETLEŞTİRME-SEÇİMİ (2026-07-10 A1) ============================
   // Önceki turn 7c belirsiz-tur listesi bastıysa (pendingTourClarification dolu)
   // bu mesaj ÖNCE liste-seçimi olarak denenir: numara ("1", "2)") VEYA kısmi ad
@@ -1240,46 +1329,36 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // FAQ AYRIMI: soru-formu VEYA şart/koşul/policy → dala GİRME ("iptal
   // şartları ne?" FAQ olarak akar). FSM'den ÖNCE RETURN — T16 reset'i olmaz.
   {
-    const _cxlSignalRe = /(?<![\p{L}\p{N}])(iptal|cancel|stornier|annul|cancelar|отмен|إلغاء|ألغ)/iu;
-    const _cxlResCtxRe = /(?<![\p{L}\p{N}])(rezervasyon|kayıt|kaydı|reservation|booking|buchung|réservation|reserva|бронь|бронирование|حجز)/iu;
-    // 2026-07-09 FAZ4-P1: TR+kısmi-EN → 7-dil (iptal-FAQ istisnası, J-14 yanlış-
-    // tetiğini 7 dilde önler: "iptal şartları/koşulları/politikası ne?" FAQ akar).
-    const _cxlFaqRe = /(şart|kosul|koşul|policy|politika|iade|refund|ücret|ucret|kesinti|nasıl|nasil|ne zaman|condition|terms|fee|how|when|bedingung|storno(?:gebühr)?|rückerstattung|ruckerstattung|geb[üu]hr|wie|wann|politique|remboursement|frais|comment|quand|condici[óo]n|pol[íi]tica|reembolso|tarifa|c[óo]mo|cu[áa]ndo|услови|возврат|плат[аеу]|штраф|как|когда|شرو?ط|سياسة|استرداد|رسوم|كيف|متى)/i;
+    const _cxlSignal = _CXL_SIGNAL_RE.test(message);
+    const _cxlNotFaqQ = !QUESTION_SIGNAL_RE.test(message) && !_CXL_FAQ_RE.test(message);
+    // J-14: COMPLETED + iptal + REZERVASYON-KELİMESİ → TEYİTSİZ direkt talep (mevcut yol).
     if (
       context.stage === "COMPLETED" &&
-      _cxlSignalRe.test(message) &&
-      _cxlResCtxRe.test(message) &&
-      !QUESTION_SIGNAL_RE.test(message) &&
-      !_cxlFaqRe.test(message)
+      _cxlSignal &&
+      _CXL_RESCTX_RE.test(message) &&
+      _cxlNotFaqQ
     ) {
-      const _ri = (context.reservationInfo || {}) as any;
-      const _cxlSummary =
-        `İPTAL TALEBİ — Tur: ${_ri.tourTitle || context.currentTour?.title || "?"} | ` +
-        `Tarih: ${_ri.selectedDate || "?"} | Kişi: ${_ri.paxAdult ?? "?"} | ` +
-        `İsim: ${_ri.fullName || "?"} | Tel: ${_ri.phone || "?"} | Müşteri mesajı: "${message.slice(0, 200)}"`;
-      supabase.from("complaints").insert({
-        agency_id: agency.id,
-        phone: adapter.identifier,
-        message: _cxlSummary,
-        type: "cancellation_request",
-        status: "new",
-      }).then(() => {});
-      const _agPhoneCxl = agency.phone_public ? ` Dilerseniz 📞 ${agency.phone_public} numarasından da ulaşabilirsiniz.` : "";
-      const _agPhoneCxlEn = agency.phone_public ? ` You can also reach us at 📞 ${agency.phone_public}.` : "";
-      const _cxlMsgs: Record<string, string> = {
-        tr: `İptal talebinizi acentemize ilettim. En kısa sürede sizinle iletişime geçilecek.${_agPhoneCxl}`,
-        en: `I've forwarded your cancellation request to our agency. They will contact you shortly.${_agPhoneCxlEn}`,
-        de: `Ich habe Ihre Stornierungsanfrage an unsere Agentur weitergeleitet. Sie werden in Kürze kontaktiert.${_agPhoneCxlEn}`,
-        ru: `Я передал ваш запрос на отмену в наше агентство. С вами свяжутся в ближайшее время.${_agPhoneCxlEn}`,
-        ar: `لقد أحلت طلب الإلغاء إلى وكالتنا. سيتم التواصل معك قريباً.${_agPhoneCxlEn}`,
-        fr: `J'ai transmis votre demande d'annulation à notre agence. Vous serez contacté sous peu.${_agPhoneCxlEn}`,
-        es: `He enviado su solicitud de cancelación a nuestra agencia. Se pondrán en contacto con usted en breve.${_agPhoneCxlEn}`,
-      };
-      const _cxlReply = _cxlMsgs[context.language] || _cxlMsgs.en;
-      console.log(`[process-message] J-14 COMPLETED iptal-talebi → complaints(cancellation_request) + deterministik mesaj (DB rezervasyonu DOKUNULMADI)`);
+      const _cxlReply = await _fileCancellationRequest(context, agency, supabase, adapter, message);
+      console.log(`[process-message] J-14 COMPLETED iptal-talebi (rezervasyon-kelimeli) → complaints + deterministik mesaj`);
       await _save(_cxlReply, context);
       await adapter.sendResponse(_cxlReply);
       return { success: true, response: _cxlReply, newContext: context };
+    }
+    // §35-6 SET: COMPLETED + iptal AMA rezervasyon-kelimesi YOK → önce TEYİT sor.
+    // (Olumsuzlama "iptal etmeyeceğim" yanlış-pozitifi = fazladan 1 teyit sorusu, kabul.)
+    if (
+      context.stage === "COMPLETED" &&
+      _cxlSignal &&
+      !_CXL_RESCTX_RE.test(message) &&
+      _cxlNotFaqQ &&
+      !(context as any).pendingCancelConfirm
+    ) {
+      const _confirmCtx = { ...context, pendingCancelConfirm: true } as any;
+      const _q = _CANCEL_CONFIRM_Q[context.language] || _CANCEL_CONFIRM_Q.tr;
+      console.log(`[process-message] §35-6 pendingCancelConfirm SET (COMPLETED çıplak-iptal) → teyit soruldu`);
+      await _save(_q, _confirmCtx);
+      await adapter.sendResponse(_q);
+      return { success: true, response: _q, newContext: _confirmCtx };
     }
   }
 
