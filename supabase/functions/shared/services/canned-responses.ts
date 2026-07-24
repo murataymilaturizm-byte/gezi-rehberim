@@ -19,6 +19,36 @@ export interface CannedAgency {
 type L7 = Record<string, string>;
 const pick = (m: L7, lang: string): string => m[lang] || m.tr;
 
+/**
+ * Canned kısa-devresi YALNIZ boşta/gözden-geçirme bağlamında çalışmalı — aktif
+ * toplama-akışı, CONFIRMING, COMPLETED veya §35 bekleme-durumlarında FSM/NLU'yu
+ * GÖLGELEMEMELİ (ör. COMPLETED "iptal" → canned yerine 14a talep-akışı çalışsın).
+ * true = boşta (canned OK) · false = aktif/bekleme (canned ATLA, FSM'e bırak).
+ */
+export function isIdleContext(ctx: any): boolean {
+  if (!ctx || typeof ctx !== "object") return true; // yeni/boş bağlam = boşta
+  const ACTIVE_STAGES = ["COMPLETED", "COLLECTING_INFO", "CONFIRMING", "TOUR_SELECTED"];
+  if (ACTIVE_STAGES.includes(ctx.stage)) return false;
+  if (ctx.collectionStep) return false;                 // waiting_for_*
+  if (ctx.proposedDateId) return false;                 // §35 tarih-önerisi
+  if (ctx.phoneEscalationPending) return false;         // §35 telefon-eskalasyon
+  if (ctx.pendingLangSwitch) return false;              // §35 dil-geçiş
+  if (Array.isArray(ctx.pendingTourClarification) && ctx.pendingTourClarification.length > 0) return false; // §35 tur-netleştirme
+  return true; // GREETING / BROWSING / boşta → canned çalışır
+}
+
+// Köprü-cümle (güvenlik ağı): boşta-bağlamda iptal-POLİTİKASI cevabına eklenir —
+// müşteri mevcut rezervasyonunu iptal/değiştirmek isterse akışa (14a talep) yönlendirir.
+const BRIDGE_CANCEL: L7 = {
+  tr: "Mevcut bir rezervasyonunuzu iptal etmek veya değiştirmek isterseniz yazmanız yeterli — talebinizi acentemize iletelim.",
+  en: "If you'd like to cancel or change an existing reservation, just write to us — we'll forward your request to our agency.",
+  de: "Wenn Sie eine bestehende Reservierung stornieren oder ändern möchten, schreiben Sie uns einfach — wir leiten Ihre Anfrage an unsere Agentur weiter.",
+  fr: "Si vous souhaitez annuler ou modifier une réservation existante, écrivez-nous simplement — nous transmettrons votre demande à notre agence.",
+  es: "Si desea cancelar o cambiar una reserva existente, solo escríbanos — trasladaremos su solicitud a nuestra agencia.",
+  ru: "Если вы хотите отменить или изменить существующее бронирование, просто напишите нам — мы передадим ваш запрос в агентство.",
+  ar: "إذا كنت ترغب في إلغاء أو تعديل حجز قائم، فقط اكتب لنا — وسنحيل طلبك إلى وكالتنا.",
+};
+
 // ── 7-DİL ÇERÇEVE ETİKETLERİ (tek-kaynak) ───────────────────────────────────
 const F = {
   contactTitle: { tr: "📞 İletişim Bilgileri", en: "📞 Contact Information", de: "📞 Kontaktinformationen", fr: "📞 Coordonnées", es: "📞 Información de contacto", ru: "📞 Контактная информация", ar: "📞 معلومات الاتصال" } as L7,
@@ -134,10 +164,12 @@ export function buildCannedResponse(key: string, language: string, agency: Canne
       return redirect(a, lang);
     }
     case "cancellation_policy": {
+      // Köprü-cümle daima eklenir (yalnız boşta-bağlamda çağrılır) → mevcut
+      // rezervasyon iptal/değişikliğini 14a talep-akışına yönlendirir.
       if (a.cancellation_policy && a.cancellation_policy.trim()) {
-        return `${pick(F.cancelTitle, lang)}\n${a.cancellation_policy.trim()}`;
+        return `${pick(F.cancelTitle, lang)}\n${a.cancellation_policy.trim()}\n\n${pick(BRIDGE_CANCEL, lang)}`;
       }
-      return redirect(a, lang);
+      return `${redirect(a, lang)}\n\n${pick(BRIDGE_CANCEL, lang)}`;
     }
     case "hours": {
       const h = formatHours(a.working_hours, lang);

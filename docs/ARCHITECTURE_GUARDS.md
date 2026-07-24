@@ -1008,3 +1008,18 @@ process-message.ts B-DUR2 liste (PM:~858), B-DUR2 yok (PM:~869), 14a-3 COMPLETED
   detection değil; pendingLangSwitch (§35) + state-machine DOKUNULMADI.
 - **FIX5 — iptal-talebi ack:** 14a "Talebinizi aldık ✅" → 📩 (✅ "iptal tamamlandı" izlenimi
   veriyordu; DB'ye dokunulmuyor, bu talep-alındı mesajı).
+
+### 8b. Canned YALNIZ-BOŞTA (bağlam-duyarlı öncelik, 2026-07-24)
+- `isIdleContext(ctx)` (canned-responses.ts): canned kısa-devresi YALNIZ boşta bağlamda
+  çalışır. ATLAR (→ FSM/NLU'ya bırakır) eğer: stage ∈ {COMPLETED, COLLECTING_INFO,
+  CONFIRMING, TOUR_SELECTED} VEYA collectionStep set VEYA §35 flag'i aktif (proposedDateId /
+  phoneEscalationPending / pendingLangSwitch / pendingTourClarification). Böylece canned
+  FSM-niyetini GÖLGELEMEZ (COMPLETED "iptal" → J-14/14a talep-akışı çalışır; aktif-akışta
+  D1 FAQ-bypass çalışır). Webhook (_preloadedContext parse) + demo-chat (incomingContext)
+  AYNI kural (kanal-paritesi).
+- Köprü-cümle: boşta-bağlamda canned cancellation_policy cevabının sonuna 7-dil
+  "mevcut rezervasyonu iptal/değiştir → yaz, acenteye iletelim" eklenir (güvenlik ağı).
+- SINIR (rapor edildi): çıplak "iptal etmek istiyorum" (rezervasyon-kelimesiz) J-14'ün
+  `_cxlResCtxRe` guard'ına takılıyor → LLM'e düşer. Guard'ı gevşetmek "iptal etmeyeceğim"
+  (olumsuzlama) yanlış-pozitifi riski → AYRI karar (Murat). Gerçekçi ifade
+  ("rezervasyonumu iptal...") J-14 → complaints kaydı ile ÇALIŞIR.

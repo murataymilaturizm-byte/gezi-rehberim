@@ -13,7 +13,7 @@ import { pickLocalized } from "../shared/fsm/localization.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { markAsRead, showTypingIndicator } from "../shared/utils/whatsapp-status.ts";
 import { checkFAQ } from "./services/faq.ts";
-import { detectCannedResponseTrigger, buildCannedResponse } from "../shared/services/canned-responses.ts";
+import { detectCannedResponseTrigger, buildCannedResponse, isIdleContext } from "../shared/services/canned-responses.ts";
 import { upsertUserProfile, enrichConversationInsights } from "./services/profile.ts";
 import {
   extractMetaWebhookData,
@@ -495,7 +495,12 @@ serve(async (req) => {
       .filter((tour: any) => tour.dates.length > 0);
 
     // === Canned responses + FAQ (plan özelliği, hızlı çıkış) ===
-    if (planFeatures?.has_templates) {
+    // BAĞLAM-DUYARLI: canned yalnız BOŞTA bağlamda (aktif akış/COMPLETED/§35 bekleme
+    // DEĞİLSE). Aksi hâlde FSM/NLU gölgelenmez (COMPLETED "iptal" → 14a talep-akışı).
+    let _cannedCtx: any = null;
+    if (_preloadedContext) { try { _cannedCtx = JSON.parse(_preloadedContext); } catch { _cannedCtx = null; } }
+    const _cannedAllowed = isIdleContext(_cannedCtx);
+    if (planFeatures?.has_templates && _cannedAllowed) {
       const cannedTrigger = detectCannedResponseTrigger(message, _prelimLang);
       if (cannedTrigger) {
         // 2026-07-24: acente-verisinden kurulur (sahte placeholder yerine). Alan
