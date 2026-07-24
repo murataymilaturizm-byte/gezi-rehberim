@@ -13,7 +13,7 @@ import { pickLocalized } from "../shared/fsm/localization.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { markAsRead, showTypingIndicator } from "../shared/utils/whatsapp-status.ts";
 import { checkFAQ } from "./services/faq.ts";
-import { detectCannedResponseTrigger, getCannedResponse } from "./services/canned-responses.ts";
+import { detectCannedResponseTrigger, buildCannedResponse } from "../shared/services/canned-responses.ts";
 import { upsertUserProfile, enrichConversationInsights } from "./services/profile.ts";
 import {
   extractMetaWebhookData,
@@ -496,7 +496,9 @@ serve(async (req) => {
     if (planFeatures?.has_templates) {
       const cannedTrigger = detectCannedResponseTrigger(message, _prelimLang);
       if (cannedTrigger) {
-        const canned = getCannedResponse(cannedTrigger, _prelimLang);
+        // 2026-07-24: acente-verisinden kurulur (sahte placeholder yerine). Alan
+        // boşsa yönlendirme döner — yine kısa-devre (uydurma canned yok).
+        const canned = buildCannedResponse(cannedTrigger, _prelimLang, agency as any);
         if (canned) {
           // Y1-D FIX: müşteri mesajı da (role=user) kaydedilir — yoksa panelin
           // 24h-pencere kontrolü (send-manual-message) son mesaj canned'a düşen

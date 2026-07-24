@@ -858,6 +858,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _m: Record<string, string> = {
           tr: `${_wantDays} günlük turlarımız:\n${_list}\n\nHangisi ilginizi çeker? 😊`,
           en: `Our ${_wantDays}-day tours:\n${_list}\n\nWhich interests you? 😊`,
+          de: `Unsere ${_wantDays}-Tage-Touren:\n${_list}\n\nWelche interessiert Sie? 😊`,
+          fr: `Nos circuits de ${_wantDays} jours :\n${_list}\n\nLequel vous intéresse ? 😊`,
+          es: `Nuestros tours de ${_wantDays} días:\n${_list}\n\n¿Cuál le interesa? 😊`,
+          ru: `Наши туры на ${_wantDays} дн.:\n${_list}\n\nКакой вас интересует? 😊`,
+          ar: `جولاتنا لمدة ${_wantDays} أيام:\n${_list}\n\nأيها يثير اهتمامك؟ 😊`,
         };
         const _r = _m[_langD2] || _m.en;
         await _save(_r, context);
@@ -869,6 +874,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _m: Record<string, string> = {
           tr: `${_wantDays} günlük turumuz şu anda yok. Mevcut turlarımız:\n${_all}\n\nHangisi ilginizi çeker? 😊`,
           en: `We don't have ${_wantDays}-day tours right now. Our tours:\n${_all}\n\nWhich interests you? 😊`,
+          de: `Wir haben derzeit keine ${_wantDays}-Tage-Touren. Unsere Touren:\n${_all}\n\nWelche interessiert Sie? 😊`,
+          fr: `Nous n'avons pas de circuits de ${_wantDays} jours pour le moment. Nos circuits :\n${_all}\n\nLequel vous intéresse ? 😊`,
+          es: `Ahora mismo no tenemos tours de ${_wantDays} días. Nuestros tours:\n${_all}\n\n¿Cuál le interesa? 😊`,
+          ru: `Сейчас у нас нет туров на ${_wantDays} дн. Наши туры:\n${_all}\n\nКакой вас интересует? 😊`,
+          ar: `لا تتوفر لدينا جولات لمدة ${_wantDays} أيام حالياً. جولاتنا المتاحة:\n${_all}\n\nأيها يثير اهتمامك؟ 😊`,
         };
         const _r = _m[_langD2] || _m.en;
         console.log(`[process-message] B-DUR2 V6: ${_wantDays} günlük eşleşme yok → mevcut liste`);
@@ -4032,6 +4042,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _redirectMsgs: Record<string, string> = {
         tr: `Rezervasyonunuz onaylandı ✅ İsim, telefon veya diğer bilgilerde değişiklik için lütfen acentemizle iletişime geçin.${_agPhone}`,
         en: `Your reservation is confirmed ✅ For changes to name, phone or other details, please contact our agency directly.${_agPhone}`,
+        de: `Ihre Reservierung ist bestätigt ✅ Für Änderungen an Name, Telefon oder anderen Angaben wenden Sie sich bitte direkt an unsere Agentur.${_agPhone}`,
+        fr: `Votre réservation est confirmée ✅ Pour modifier le nom, le téléphone ou d'autres informations, veuillez contacter directement notre agence.${_agPhone}`,
+        es: `Su reserva está confirmada ✅ Para cambios de nombre, teléfono u otros datos, contacte directamente con nuestra agencia.${_agPhone}`,
+        ru: `Ваше бронирование подтверждено ✅ Для изменения имени, телефона или других данных, пожалуйста, свяжитесь с нашим агентством напрямую.${_agPhone}`,
+        ar: `تم تأكيد حجزك ✅ لتغيير الاسم أو الهاتف أو التفاصيل الأخرى، يرجى التواصل مع وكالتنا مباشرة.${_agPhone}`,
       };
       const _redirectReply = _redirectMsgs[newContext.language] || _redirectMsgs.tr;
       const _changedFields = [

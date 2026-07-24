@@ -10,6 +10,7 @@ import { detectLanguageChangeIntent, pickLocalized } from "../shared/fsm/localiz
 import { detectLanguage } from "../shared/fsm/language.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
+import { detectCannedResponseTrigger, buildCannedResponse } from "../shared/services/canned-responses.ts";
 import { analyzeUserMessage } from "../shared/fsm/nlu.ts";
 import { DemoChatAdapter } from "./adapter.ts";
 import { CONFIG, corsHeaders } from "./config/constants.ts";
@@ -216,6 +217,19 @@ serve(async (req) => {
       const _charLang = detectLanguage(rawMessage || "");
       if (_charLang) _prelimLang = _charLang;
       else if (seedLanguage) _prelimLang = seedLanguage;
+    }
+
+    // === CANNED (acente-veri hızlı cevabı) — LLM'den önce kısa-devre ===
+    // 2026-07-24: webhook ile kanal-paritesi. Alan boşsa yönlendirme döner.
+    const _cannedKey = detectCannedResponseTrigger(message, _prelimLang);
+    if (_cannedKey) {
+      const _canned = buildCannedResponse(_cannedKey, _prelimLang, agency as any);
+      if (_canned) {
+        return new Response(JSON.stringify({
+          response: _canned,
+          conversationState: incomingContext,
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
     }
 
     // === TURLARI YÜKLE + LOCALİZE ===

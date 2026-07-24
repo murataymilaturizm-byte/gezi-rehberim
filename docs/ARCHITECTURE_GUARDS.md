@@ -972,3 +972,18 @@ DE/FR/ES göreli kelimeler zarf (çekimsiz) → ek sorunu yok.
 - Named `tour_reminder` (7-dil {full_name}) KNOWN_TEMPLATE_TYPES'ta zaten yok (İş1/07-10);
   hiçbir gönderim kullanmıyor (cron `tour_reminder_tr` gönderir). Kod-literali üretmiyor
   (copyDefaultTemplates DB-default'tan kopyalar). DB satırları SİLİNMEDİ (zararsız).
+
+### 7d. Canned cevaplar ACENTE-VERİSİNDEN (2026-07-24)
+
+- `shared/services/canned-responses.ts` (webhook/services'ten SHARED'a taşındı — webhook + demo-chat ortak kullanır). Hardcoded genel metin KALDIRILDI.
+- `buildCannedResponse(key, lang, agency)` her anahtarı bir `agencies` alanıyla eşler; 7-dil çerçeve-etiket lokalize, acente-verisi gömülür:
+  - contact_info → phone_public (normalize+display) + address; ikisi de boşsa yönlendirme.
+  - payment_methods → payment_instructions'tan MÜŞTERİ-DOSTU render (`formatPaymentMethods` — deposit + yöntem-adları 7-dil; **IBAN + LLM-direktifi YOK**; `buildPaymentPromptSummary` prompt-içi talimattır, doğrudan-send için KULLANILMAZ).
+  - cancellation_policy → agencies.cancellation_policy; hours → working_hours JSON (7-dil gün-adı); welcome → agency.name (hardcoded "Turzz" değil).
+- Alan BOŞ → generic uydurma YASAK → 7-dil yönlendirme ("acentemiz yardımcı olacaktır" + varsa phone_public).
+- what_to_bring / group_discount trigger'dan ÇIKARILDI (acente-alanı yok) → normal NLU/LLM cevaplar.
+- demo-chat: LLM'den ÖNCE canned kısa-devresi eklendi (DEMO_AGENCY_ID verisiyle; kanal-paritesi).
+- Statü-onay/cron gönderim zincirleri etkilenmez (bu yalnız sohbet-içi hızlı-cevap).
+
+### 7e. B-DUR2 + 14a-3 → 7-dil (2026-07-24)
+process-message.ts B-DUR2 liste (PM:~858), B-DUR2 yok (PM:~869), 14a-3 COMPLETED değişiklik-yönlendirme (PM:~4042) blokları tr/en'den 7-dile tamamlandı (de/fr/es/ru/ar). NOT: B-DUR2 TETİĞİ `\d günlük` (TR-word regex) — non-TR context.language ile ender kesişir; kod artık 7-dil uyumlu ama pratikte non-TR erişim, müşterinin TR "günlük" kelimesi + non-TR context kombinasyonuna bağlı. HLP prompt-helper'ları (formatReservationSummary vb.) BU KAPSAM DIŞI — ayrı karar.
