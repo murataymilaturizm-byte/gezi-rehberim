@@ -121,7 +121,11 @@ export default function MessageTemplates() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   // İş1 (2026-07-10): "Şablonlar" içinde İKİ DÜNYA ayrımı — bot şablonları vs
   // Meta-onaylı (sync'le inen) template'ler karışmasın.
-  const [tplScope, setTplScope] = useState<"bot" | "meta">("bot");
+  // 2026-07-24 panel sadeleştirme: yalnız Meta görünümü. Bot alt-sekmesi kaldırıldı
+  // (yerel/bot şablonları düzenleme UI'ı gizli). Statü-değişim gönderimleri
+  // (Admin.tsx → reservation_confirmed/cancelled → send-template-message MODE3 →
+  // message_templates) bu UI'dan BAĞIMSIZ, aynen çalışmaya devam eder.
+  const [tplScope] = useState<"bot" | "meta">("meta");
   // Meta sync sonrası embed'li otomatik-bildirim kartlarını tazelemek için sinyal.
   const [syncNonce, setSyncNonce] = useState(0);
   const { toast } = useToast();
@@ -453,17 +457,9 @@ export default function MessageTemplates() {
         </div>
       </div>
 
-      {/* İş1: Bot Mesaj Şablonları | WhatsApp Onaylı Şablonlar (Meta) alt-sekmeleri */}
-      <Tabs value={tplScope} onValueChange={(v) => setTplScope(v as "bot" | "meta")}>
-        <TabsList className="grid grid-cols-2 w-full max-w-lg">
-          <TabsTrigger value="bot">Bot Mesaj Şablonları</TabsTrigger>
-          <TabsTrigger value="meta">WhatsApp Onaylı Şablonlar (Meta)</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      <p className="text-xs text-muted-foreground -mt-3">
-        {tplScope === "bot"
-          ? "Botun sohbet içinde kullandığı yerel şablonlar. WhatsApp otomatik bildirimleri için Meta-onaylı şablon gerekir (yan sekme)."
-          : "Meta'dan senkronize edilen resmi şablonlar. Otomatik bildirim (hatırlatma/anket) yalnız APPROVED şablonlarla çalışır. Yeni çekmek için 'Şablonları Eşleştir'."}
+      {/* 2026-07-24: Bot alt-sekmesi kaldırıldı — yalnız Meta-onaylı şablonlar. */}
+      <p className="text-xs text-muted-foreground">
+        Meta'dan senkronize edilen resmi şablonlar. Otomatik bildirim (hatırlatma/anket) yalnız APPROVED şablonlarla çalışır. Yeni çekmek için 'Şablonları Eşleştir'.
       </p>
 
       {/* NİHAİ MODEL: Meta sekmesinin İLK İKİ SABİT SATIRI = otomatik-bildirim

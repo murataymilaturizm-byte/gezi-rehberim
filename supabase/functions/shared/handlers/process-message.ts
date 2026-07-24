@@ -3911,9 +3911,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // send-template-message'ı AYRI yoldan çağırır, ETKİLENMEZ. new_reservation/
     // agency_new_reservation DB trigger'ları (Turzz ekibi + acente bildirimi)
     // da AYNEN — onlar müşteriye gitmiyor.
-    // (Addendum çağrısı kaldırıldı — adapter.getCompletionTemplateAddendum
-    // metodu whatsapp adapter'da duruyor; panel-dışı bir ihtiyaç doğarsa
-    // yeniden bağlanabilir. Geri almak için: git log M-25.)
+    // (Addendum çağrısı kaldırıldı — 2026-07-24 ölü-kod temizliğinde
+    // adapter.getCompletionTemplateAddendum metodu da SİLİNDİ. Geri almak
+    // için: git log M-25 + bu commit.)
 
     // İletişim footer (agency.phone_public varsa)
     if (agency.phone_public) {

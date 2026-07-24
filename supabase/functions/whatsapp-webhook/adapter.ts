@@ -207,41 +207,4 @@ export class WhatsAppAdapter implements ChannelAdapter {
       });
     }
   }
-
-  async getCompletionTemplateAddendum(params: {
-    tourId: string; tourTitle: string; dateId: string; formattedDate: string;
-    fullName: string; pax: number; totalPrice: number; currency: string;
-    language: string; agencyId: string;
-  }): Promise<string | null> {
-    try {
-      const { data: template } = await this.supabase
-        .from("message_templates")
-        .select("content")
-        .eq("agency_id", params.agencyId)
-        .eq("template_key", "reservation_confirmed")
-        .eq("language", params.language)
-        .eq("is_active", true)
-        .maybeSingle();
-
-      if (!template?.content) return null;
-
-      // Tüm yaygın placeholder varyantlarını replace et
-      return template.content
-        .replace(/\{full_name\}/g, params.fullName)
-        .replace(/\{customer_name\}/g, params.fullName)
-        .replace(/\{ad_soyad\}/g, params.fullName)
-        .replace(/\{tour_name\}/g, params.tourTitle)
-        .replace(/\{tur_adi\}/g, params.tourTitle)
-        .replace(/\{date\}/g, params.formattedDate)
-        .replace(/\{tarih\}/g, params.formattedDate)
-        .replace(/\{pax\}/g, String(params.pax))
-        .replace(/\{kisi_sayisi\}/g, String(params.pax))
-        .replace(/\{total_amount\}/g, String(params.totalPrice))
-        .replace(/\{toplam_tutar\}/g, String(params.totalPrice))
-        .replace(/\{currency\}/g, params.currency)
-        .replace(/\{para_birimi\}/g, params.currency);
-    } catch (_e) {
-      return null;
-    }
-  }
 }

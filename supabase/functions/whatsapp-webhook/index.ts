@@ -32,6 +32,12 @@ import { WhatsAppAdapter } from "./adapter.ts";
 import { tryCaptureFeedback } from "./services/feedback-capture.ts";
 import type { ConversationTone } from "../shared/fsm/types.ts";
 
+// FAQ (SSS) özelliği kullanım-dışı (2026-07-24 panel sadeleştirme kararı).
+// checkFAQ çağrısı bu bayrakla atlanır; faq.ts + faq_templates + translate-faq
+// OLDUĞU GİBİ durur — tek satır (true) ile geri açılır. Müşteri soruları
+// canned-responses (statik) + NLU akışıyla cevaplanmaya devam eder.
+const FAQ_ENABLED = false;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -521,7 +527,7 @@ serve(async (req) => {
         }
       }
 
-      const faqResponse = await checkFAQ(supabase, message, agency.id, _prelimLang);
+      const faqResponse = FAQ_ENABLED ? await checkFAQ(supabase, message, agency.id, _prelimLang) : null;
       if (faqResponse) {
         // Y1-D FIX: role=user satırı da yazılır (canned ile aynı gerekçe)
         await supabase.from("whatsapp_conversations").insert([

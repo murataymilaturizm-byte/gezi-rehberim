@@ -76,7 +76,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     const tourIds = ["tours", "registrations"];
     // CRM: whatsapp_profiles "Müşteri Yönetimi" grubuna taşındı (eski activeTab key korunur).
     const customerIds = ["whatsapp_profiles"];
-    const communicationIds = ["whatsapp", "complaints", "templates", "faq"];
+    const communicationIds = ["whatsapp", "complaints", "templates"];
     const settingsIds = ["settings", "agency_info", "payment_settings", "languages", "language_currencies", "history"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback", "language-stats", "whatsapp-logs"];
     const supportIds = ["tickets"];
@@ -130,12 +130,12 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     ...(shouldShowUserProfiles ? [{ id: "whatsapp_profiles", icon: Users, label: t("admin.tabs.customers"), dataTour: "sidebar-customers" }] : []),
   ];
 
-  // İLETİŞİM: günlük operasyon (konuşmalar/talepler/şablonlar/SSS).
+  // İLETİŞİM: günlük operasyon (konuşmalar/talepler/şablonlar).
+  // SSS (faq) 2026-07-24 panel sadeleştirmesiyle kaldırıldı (bot tarafı FAQ_ENABLED=false).
   const communicationItems = [
     { id: "whatsapp", icon: MessageSquare, label: "WhatsApp", dataTour: "sidebar-whatsapp" },
     { id: "complaints", icon: MessageCircle, label: t("admin.tabs.complaints") },
     ...(shouldShowTemplates ? [{ id: "templates", icon: FileText, label: t("admin.tabs.templates"), dataTour: "sidebar-templates" }] : []),
-    { id: "faq", icon: HelpCircle, label: t("admin.tabs.faq"), dataTour: "sidebar-faq" },
   ];
 
   // AYARLAR (2026-07-22 yeni grup): kurulum/nadir-kullanım öğeleri tek yerde.

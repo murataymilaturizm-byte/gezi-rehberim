@@ -936,3 +936,39 @@ gün→…gün[eüu]?). **"ki" eki KASITLI HARİÇ:** "yarınki program" = o gü
 tercihi: yanlış-seçimi (yarınki→yarın) önler, recall-kaybı minimal (yönelme eki en
 yaygın tarih-verme formu). Diğer diller: RU çekimleri REL'de zaten `\S+` ile mevcut;
 DE/FR/ES göreli kelimeler zarf (çekimsiz) → ek sorunu yok.
+
+## 7. PANEL SADELEŞTİRME + ÖLÜ KOD (2026-07-24)
+
+### 7a. SSS (FAQ) kullanım-dışı — FAQ_ENABLED bayrağı
+- **Bot:** `whatsapp-webhook/index.ts` üstünde tek-kaynak sabit `FAQ_ENABLED = false`.
+  `checkFAQ` çağrısı (~L530) `FAQ_ENABLED ? await checkFAQ(...) : null` ile atlanır.
+  `services/faq.ts`, `faq_templates` tablosu, `translate-faq` edge fn OLDUĞU GİBİ durur
+  — tek satır (`true`) ile geri açılır.
+- **Panel:** SSS menü öğesi (AdminSidebar communicationItems) + route (Admin.tsx
+  `activeTab==="faq"` render + import + VALID_TABS) KALDIRILDI. `FAQManagement.tsx`
+  dosyası durur (erişim yok).
+- **Müşteri soruları:** canned-responses (statik, index.ts:491) + normal NLU akışıyla
+  cevaplanmaya devam eder — bu akışa DOKUNULMADI.
+- **Not (kesişim):** canned statik anahtarları (ödeme/iptal/iletişim/saatler/grup/
+  ne-götürmeli) zaten FAQ'tan ÖNCE kontrol ediliyordu → FAQ'ı gölgeliyordu; kapatma
+  müşteri-deneyimini bozmaz.
+
+### 7b. Şablonlar ekranı — yalnız Meta görünümü
+- `MessageTemplates.tsx`: `tplScope` "meta"ya kilitlendi; Bot|Meta alt-sekme switcher'ı
+  kaldırıldı. Ekran = Meta-onaylı şablonlar + 2 sabit otomatik-bildirim kartı
+  (AutomatedNotificationsTab) + yönerge kutusu + "Meta'dan Şablonları Çek" + 🧪 test.
+- **BOZULMADI (kritik):** Panel statü değişimi gönderimleri — Admin.tsx `handleStatusChange`
+  → `send-template-message` MODE3 → `message_templates` (reservation_confirmed/
+  reservation_cancelled) okuması — bu UI'dan BAĞIMSIZ, AYNEN çalışır. Yalnız düzenleme
+  UI'ı gizlendi; veri + gönderim yolu korundu.
+- **Cron etkilenmez:** tour_reminder_tr/tour_feedback_tr `agency_event_templates` +
+  `message_templates` üzerinden gider — panel görünümünden bağımsız.
+
+### 7c. Ölü kod
+- `adapter.getCompletionTemplateAddendum` (whatsapp adapter) + interface metodu
+  (`handlers/types.ts`) SİLİNDİ — çağrısı M-25'te kaldırılmıştı (process-message.ts),
+  message_templates'in tek bot-SOHBET okuyucusuydu. Artık message_templates yalnız
+  dışa-gönderim (send-template-message) + panel için okunuyor.
+- Named `tour_reminder` (7-dil {full_name}) KNOWN_TEMPLATE_TYPES'ta zaten yok (İş1/07-10);
+  hiçbir gönderim kullanmıyor (cron `tour_reminder_tr` gönderir). Kod-literali üretmiyor
+  (copyDefaultTemplates DB-default'tan kopyalar). DB satırları SİLİNMEDİ (zararsız).

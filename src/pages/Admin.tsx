@@ -48,7 +48,6 @@ import { SuperAdminWhatsAppIntegrations } from "@/components/SuperAdminWhatsAppI
 import { WhatsAppTestPanel } from "@/components/WhatsAppTestPanel";
 import { SubscriptionHistory } from "@/components/SubscriptionHistory";
 import MessageTemplates from "@/components/MessageTemplates";
-import FAQManagement from "@/components/FAQManagement";
 import { CustomerFeedback } from "@/components/CustomerFeedback";
 import { LanguageStats } from "@/components/LanguageStats";
 import { WhatsAppLogs } from "@/components/WhatsAppLogs";
@@ -79,7 +78,7 @@ import { FileSpreadsheet, FileText } from "lucide-react";
 import CentralNotifications from "@/components/CentralNotifications";
 import CentralSendLog from "@/components/CentralSendLog";
 
-const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "faq", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test", "language-stats", "whatsapp-logs", "central_notifications", "central_send_log"] as const;
+const VALID_TABS = ["dashboard", "tours", "registrations", "whatsapp", "whatsapp_profiles", "agency_info", "complaints", "settings", "payment_settings", "history", "agencies", "contact_forms", "whatsapp_settings", "whatsapp_integrations", "whatsapp_management", "templates", "customer-feedback", "languages", "language_currencies", "tickets", "super_tickets", "analytics", "customer-analytics", "destination-analytics", "whatsapp_test", "language-stats", "whatsapp-logs", "central_notifications", "central_send_log"] as const;
 
 interface Tour {
   id: string;
@@ -923,8 +922,6 @@ const Admin = () => {
               <LanguageCurrencySettings />
             ) : activeTab === "templates" && (planFeatures?.has_templates || isSuperAdmin) ? (
               <MessageTemplates />
-            ) : activeTab === "faq" ? (
-              <FAQManagement />
             ) : activeTab === "history" ? (
               <SubscriptionHistory />
             ) : activeTab === "customer-feedback" && (planFeatures?.has_feedback || isSuperAdmin) ? (

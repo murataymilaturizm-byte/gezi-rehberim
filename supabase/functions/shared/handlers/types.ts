@@ -72,24 +72,6 @@ export interface ChannelAdapter {
    * Demo: implement etmez → saveResponse fallback kullanılır
    */
   saveTransaction?(userMessage: string, reply: string, newContext: ConversationContext): Promise<void>;
-
-  /**
-   * Rezervasyon tamamlandığında kanal-spesifik ek içerik (opsiyonel).
-   * WhatsApp: DB'den message_templates tablosunu sorgular.
-   * Demo: null döner.
-   */
-  getCompletionTemplateAddendum?(params: {
-    tourId: string;
-    tourTitle: string;
-    dateId: string;
-    formattedDate: string;
-    fullName: string;
-    pax: number;
-    totalPrice: number;
-    currency: string;
-    language: string;
-    agencyId: string;
-  }): Promise<string | null>;
 }
 
 export interface ProcessMessageInput {
