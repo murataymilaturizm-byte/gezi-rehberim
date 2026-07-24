@@ -52,7 +52,34 @@ import { quotaLabel } from "../constants/quota-labels.ts";
 import { maskPhone } from "../utils/log-mask.ts";
 // K4: TEK yuvarlama kuralı — tüm kapora/toplam hesapları buradan.
 import { calculateTotal, calculateDeposit } from "../utils/finance.ts";
+import { normalizePhone, formatPhoneDisplay } from "../../_shared/phone.ts";
 import type { ChannelAdapter, ProcessMessageInput, ProcessMessageResult } from "./types.ts";
+
+// FIX2 (2026-07-24): acente-telefon eki — İş1 (canned) normalize deseniyle AYNI.
+// phone_public boşsa "" (kırılma yok). Tek-kaynak: hem çıkmaz-mesajları hem stale.
+function _agencyPhoneSuffix(phonePublic: string | null | undefined): string {
+  if (!phonePublic || !phonePublic.trim()) return "";
+  return ` 📞 ${formatPhoneDisplay(normalizePhone(phonePublic))}`;
+}
+
+// FIX1 (2026-07-24): rezervasyon TOPLAM tutarı — TEK-KAYNAK. CONFIRMING özeti +
+// completion AYNI fonksiyondan geçer → tutar hiçbir senaryoda farklı olamaz.
+// (Para birimi + Arapça-Hint rakam mevcut formatPriceSync zincirinden.)
+async function _reservationTotalText(
+  paxAdult: number, paxChild: number,
+  priceAdult: number, priceChild: number | null | undefined,
+  currencyCode: string, language: string,
+  showDual: boolean, languageCurrencies: any,
+): Promise<string> {
+  const total = (paxAdult || 0) * (priceAdult || 0) +
+    (paxChild || 0) * (priceChild || priceAdult || 0);
+  if (total <= 0) return "";
+  const ex = await getExchangeRatesOnce().catch(() => ({}));
+  return formatPriceSync(total, currencyCode || "TRY", language, ex, showDual, languageCurrencies);
+}
+const _TOTAL_LABELS: Record<string, string> = {
+  tr: "Toplam", en: "Total", de: "Gesamt", ru: "Итого", ar: "الإجمالي", fr: "Total", es: "Total",
+};
 
 export async function processChatMessage(input: ProcessMessageInput): Promise<ProcessMessageResult> {
   const { message: rawMessage, adapter, agency, supabase, tours, paymentInstructions, languageCurrencies, primaryCurrency, returningUserName, seedLanguage } = input;
@@ -131,20 +158,21 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       ? agency.enabled_languages.includes(seedLanguage)
       : true) ? seedLanguage : undefined;
     const _lang = _bestLang(languageChangeIntent || runtimeDetectedLang || _seedHere || _stale.lastLanguage || "tr");
-    const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    const _agPhone = _agencyPhoneSuffix(agency.phone_public);
 
     // Yarım rezervasyon vardıysa: "iptal edildi, baştan başlayalım" — kullanıcı tarihi/pax'ı yeniden seçmeli
     // Yarım rezervasyon yoksa: yumuşak "tekrar hoş geldiniz" — kullanıcı muhtemelen yeni iş için yazıyor
     const _hadReservation = _stale.hadReservationInProgress;
     const _resetMsgs: Record<string, string> = _hadReservation
       ? {
-          tr: `Önceki yarım rezervasyonunuz iptal edildi (${_stale.ageMinutes} dakikadır yanıt alınmadı). Yeniden başlayalım — hangi tur ilginizi çeker?${_agPhone}`,
-          en: `Your previous incomplete reservation has been cancelled (no response for ${_stale.ageMinutes} minutes). Let's start over — which tour interests you?${_agPhone}`,
-          de: `Ihre vorherige unvollständige Reservierung wurde storniert (keine Antwort seit ${_stale.ageMinutes} Minuten). Beginnen wir neu — welche Tour interessiert Sie?${_agPhone}`,
-          ru: `Ваше предыдущее незавершённое бронирование отменено (нет ответа ${_stale.ageMinutes} мин.). Начнём заново — какой тур вас интересует?${_agPhone}`,
-          ar: `تم إلغاء حجزك السابق غير المكتمل (لا استجابة منذ ${_stale.ageMinutes} دقيقة). لنبدأ من جديد — ما الجولة التي تهمك؟${_agPhone}`,
-          fr: `Votre réservation précédente incomplète a été annulée (pas de réponse depuis ${_stale.ageMinutes} minutes). Recommençons — quel circuit vous intéresse ?${_agPhone}`,
-          es: `Su reserva incompleta anterior ha sido cancelada (sin respuesta durante ${_stale.ageMinutes} minutos). Empecemos de nuevo — ¿qué tour le interesa?${_agPhone}`,
+          // FIX3: "iptal edildi" YOK (DB'de kayıt hiç oluşmadı) → oturum-zaman-aşımı çerçevesi.
+          tr: `Oturumunuz zaman aşımına uğradı (${_stale.ageMinutes} dakikadır yanıt alınmadı). Kaldığınız yerden yeniden başlayalım — hangi tur ilginizi çeker?${_agPhone}`,
+          en: `Your session has timed out (no response for ${_stale.ageMinutes} minutes). Let's pick up again — which tour interests you?${_agPhone}`,
+          de: `Ihre Sitzung ist abgelaufen (keine Antwort seit ${_stale.ageMinutes} Minuten). Machen wir weiter — welche Tour interessiert Sie?${_agPhone}`,
+          ru: `Время сессии истекло (нет ответа ${_stale.ageMinutes} мин.). Продолжим — какой тур вас интересует?${_agPhone}`,
+          ar: `انتهت مهلة جلستك (لا استجابة منذ ${_stale.ageMinutes} دقيقة). لنكمل من جديد — ما الجولة التي تهمك؟${_agPhone}`,
+          fr: `Votre session a expiré (pas de réponse depuis ${_stale.ageMinutes} minutes). Reprenons — quel circuit vous intéresse ?${_agPhone}`,
+          es: `Su sesión ha expirado (sin respuesta durante ${_stale.ageMinutes} minutos). Continuemos — ¿qué tour le interesa?${_agPhone}`,
         }
       : {
           tr: `Tekrar hoş geldiniz! 👋 Size nasıl yardımcı olabilirim?${_agPhone}`,
@@ -376,13 +404,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (nluResult.language) {
     const SUPPORTED = ["tr", "en", "de", "ru", "ar", "fr", "es"];
     if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language) {
-      const _hasNonAscii = /[^\x00-\x7F]/.test(message);
-      const _isShortMsg = message.length < 200;
-      // YENİ context = messageCount henüz processTransition'a girmedi = 0.
-      // Loaded context'te en az 1 mesaj olur → guard eski davranışını korur (uzun
-      // ASCII Türkçe metinde araya bir EN kelime gelirse dil değişmesin).
+      // FIX4 (C1): uzunluk-kapısı KALDIRILDI. Eski gate (_hasNonAscii||_isShortMsg||
+      // _isFirstMessage) uzun (≥200) ASCII yabancı mesajın İLK turunu TR'de bırakıyordu
+      // ("bot beni anlamadı"). NLU dili otorite — uzun mesajda NLU DAHA güvenilir.
+      // Koruma: SUPPORTED + !==context.language + _isLangEnabled guard'ları AYNEN.
+      // pendingLangSwitch (§35) ve state-machine DOKUNULMADI — yalnız tespit-kapısı.
       const _isFirstMessage = context.messageCount === 0;
-      if (_hasNonAscii || _isShortMsg || _isFirstMessage) {
+      {
         if (_isLangEnabled(nluResult.language)) {
           context.language = nluResult.language;
           // İlk mesajda tone'u da NLU diline göre re-set et — başka dilden geliyorsa
@@ -1492,7 +1520,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (context.collectionStep === "waiting_for_pax") {
     const _rawPax = (nluResult.entities as { people_count?: { adults?: number } })?.people_count?.adults;
     if (typeof _rawPax === "number" && _rawPax > MAX_PAX_PER_RESERVATION) {
-      const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _agPhone = _agencyPhoneSuffix(agency.phone_public);
       const _excessMsgs: Record<string, string> = {
         tr: `${MAX_PAX_PER_RESERVATION} kişiden fazla grup rezervasyonu için lütfen acentemizle iletişime geçin.${_agPhone}`,
         en: `For group reservations of more than ${MAX_PAX_PER_RESERVATION} people, please contact our agency.${_agPhone}`,
@@ -1513,7 +1541,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // === MAX PAX KONTROLÜ (BUG 2) — 50+ kişi grubu için ofisle iletişim ===
   const _extractedPax = extractedInfo.paxAdult ?? extractedInfo.pax;
   if (_extractedPax && _extractedPax > 50) {
-    const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    const _agPhone = _agencyPhoneSuffix(agency.phone_public);
     const _maxPaxMsgs: Record<string, string> = {
       tr: `${_extractedPax} kişilik grup için lütfen ofisimizle iletişime geçin.${_agPhone}\n\nBireysel online rezervasyonlar için kaç kişi istiyorsunuz? (maksimum 50)`,
       en: `For a group of ${_extractedPax}, please contact our office for a special offer.${_agPhone}\n\nFor online booking, how many people? (max 50)`,
@@ -1601,7 +1629,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       context.currentTour ? getLocalizedTourTitle(context.currentTour.title || "", _lang) : "",
       _lang,
     );
-    const _betaReply = _tcPrefixBeta + (_msgs[_lang] || _msgs.tr);
+    // FIX2: alternatif yoksa (çıkmaz) acente telefonu ekle — İş1 deseniyle.
+    const _betaReply = _tcPrefixBeta + (_msgs[_lang] || _msgs.tr) + (!_hasAlt ? _agencyPhoneSuffix(agency.phone_public) : "");
     console.log(`[process-message] H-β tetiklendi (tarih dolu: ${_rej.departureDate}, remaining=${_rej.remaining}, altDates=${_hasAlt}, tourChanged=${!!_tcPrefixBeta})`);
     await _save(_betaReply, context);
     await adapter.sendResponse(_betaReply);
@@ -1654,7 +1683,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       context.currentTour ? getLocalizedTourTitle(context.currentTour.title || "", _lang) : "",
       _lang,
     );
-    const _paxRejReply = _tcPrefixPax + (_msgs[_lang] || _msgs.tr);
+    // FIX2: alternatif yoksa (çıkmaz) acente telefonu ekle.
+    const _paxRejReply = _tcPrefixPax + (_msgs[_lang] || _msgs.tr) + (!_hasAlt ? _agencyPhoneSuffix(agency.phone_public) : "");
     console.log(`[process-message] H-pax tetiklendi (date=${_activeDate.departure_date}, remaining=${_remaining}, neededPax=${_paxPending}, tourChanged=${!!_tcPrefixPax})`);
     await _save(_paxRejReply, context);
     await adapter.sendResponse(_paxRejReply);
@@ -2164,7 +2194,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   ) {
     const _pyLang = context.language || "tr";
     const _volEmail = extractEmail(message);
-    const _agPhonePY = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    const _agPhonePY = _agencyPhoneSuffix(agency.phone_public);
 
     // (0) ESKALASYON ONAYI: 2. ret sonrası "iletelim mi?" soruldu → "evet" →
     // contact_request kaydı (J-14 deseni) + bilgi mesajı. Müşteri çıkmazda kalmaz.
@@ -2381,7 +2411,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // === FIX O6: Aktif tur yoksa deterministik mesaj — AI uydurmasın ===
   // COMPLETED stage hariç: after-sales mesajları tur listesine ihtiyaç duymaz.
   if (tours.length === 0 && newContext.stage !== "COMPLETED") {
-    const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    const _agPhone = _agencyPhoneSuffix(agency.phone_public);
     const _noTourMsgs: Record<string, string> = {
       tr: `Şu anda aktif turumuzu bulamıyoruz. Yeni tarihler ve bilgi için lütfen acentemizle iletişime geçin.${_agPhone}`,
       en: `We currently don't have any available tours. Please contact our agency for new dates and information.${_agPhone}`,
@@ -2530,7 +2560,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     (VISA_SIGNAL_RE.test(message) && _visaAsksQuestion);
   if (_visaGateFires) {
     const _visaTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
-    const _agPhoneV = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+    const _agPhoneV = _agencyPhoneSuffix(agency.phone_public);
     let _visaReply: string;
     if (_visaTour?.visa_notes) {
       const _vn: Record<string, string> = {
@@ -3490,12 +3520,24 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           : `${_paxAdult}`)
       : "";
 
+    // FIX1: 💰 Toplam — completion ile AYNI kaynak (live tours) ve AYNI helper →
+    // özet-ile-completion tutarı hiçbir senaryoda farklı olamaz.
+    const _confTour = tours.find((t: any) => t.id === (newContext.currentTour?.id || (info as any).tourId));
+    const _confDate = _confTour?.dates?.find((d: any) => d.id === (info as any).dateId);
+    const _confTotalText = await _reservationTotalText(
+      Number(_paxAdult) || 0, typeof _paxChild === "number" ? _paxChild : 0,
+      _confDate?.price_adult || 0, _confDate?.price_child,
+      _confTour?.currency || "TRY", _lang,
+      agency.show_multi_currency !== false, languageCurrencies,
+    );
+
     const _summaryLines = [
       _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
       _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
       _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
       _name      ? `👤 ${L.name}: ${_name}`        : "",
       _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
+      _confTotalText ? `💰 ${_TOTAL_LABELS[_lang] || _TOTAL_LABELS.en}: *${_confTotalText}*` : "",
     ].filter(Boolean).join("\n");
 
     const summaryReply = `${_summaryLines}\n\n${L.confirm}`;
@@ -3720,7 +3762,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (rpcError || !rpcResult?.success) {
       const errCode = rpcResult?.error || "UNKNOWN";
       const lang = newContext.language || "tr";
-      const agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const agPhone = _agencyPhoneSuffix(agency.phone_public);
       let errorReply = "";
 
       if (errCode === "QUOTA_EXCEEDED") {
@@ -3845,21 +3887,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     );
     const emailLine = newContext.reservationInfo.email ? `\n• *Email:* ${newContext.reservationInfo.email}` : "";
 
-    // Toplam tutar hesabı (completion mesajı için — payment block ile aynı formül)
-    const _totalPrice = adultCount * (selectedDateFull?.price_adult || 0) +
-      childCount * (selectedDateFull?.price_child || selectedDateFull?.price_adult || 0);
-    const _tourCurrencyCode = selectedTourFull?.currency || "TRY";
-    const _exRatesTotal = await getExchangeRatesOnce().catch(() => ({}));
-    const _showDualTotal = agency.show_multi_currency !== false;
-    const _totalText = _totalPrice > 0
-      ? formatPriceSync(_totalPrice, _tourCurrencyCode, newContext.language, _exRatesTotal, _showDualTotal, languageCurrencies)
-      : "";
-    const _totalLabels: Record<string, string> = {
-      tr: "Toplam", en: "Total", de: "Gesamt", ru: "Итого",
-      ar: "الإجمالي", fr: "Total", es: "Total",
-    };
+    // Toplam tutar — TEK-KAYNAK _reservationTotalText (CONFIRMING özeti ile AYNI).
+    const _totalText = await _reservationTotalText(
+      adultCount, childCount,
+      selectedDateFull?.price_adult || 0, selectedDateFull?.price_child,
+      selectedTourFull?.currency || "TRY", newContext.language,
+      agency.show_multi_currency !== false, languageCurrencies,
+    );
     const _totalLine = _totalText
-      ? `\n• *${_totalLabels[newContext.language] || _totalLabels.en}:* ${_totalText}`
+      ? `\n• *${_TOTAL_LABELS[newContext.language] || _TOTAL_LABELS.en}:* ${_totalText}`
       : "";
 
     // Yeni kompakt format: tek başlık + özet + toplam (tekrar YOK)
@@ -3970,15 +4006,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _bookingActionRe = /(?<![\p{L}\p{N}])(iptal|cancel|annul|annuler|cancelar|stornier|отмен|إلغاء|إلغ|değiştir|change|modif|cambiar|ändern|изменить|تعديل|تغيير)/iu;
     const _isCancelOrChange = _bookingActionRe.test(_msgLower);
     if (_isCancelOrChange) {
-      const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _agPhone = _agencyPhoneSuffix(agency.phone_public);
+      // FIX5 (A3-b): ✅ → 📩 — bu bir TALEP-ALINDI mesajı; ✅ "iptal tamamlandı"
+      // izlenimi veriyordu (DB'ye dokunulmuyor, yalnız complaints kaydı).
       const _ackMsgs: Record<string, string> = {
-        tr: `Talebinizi aldık ✅ Acentemiz en kısa sürede sizinle iletişime geçecek. Acil durumlar için doğrudan arayabilirsiniz.${_agPhone}`,
-        en: `We've received your request ✅ Our agency will contact you shortly. For urgent matters, please call us directly.${_agPhone}`,
-        de: `Wir haben Ihre Anfrage erhalten ✅ Unsere Agentur wird sich in Kürze mit Ihnen in Verbindung setzen. Bei dringenden Anliegen rufen Sie uns bitte direkt an.${_agPhone}`,
-        ru: `Мы получили ваш запрос ✅ Наше агентство свяжется с вами в ближайшее время. По срочным вопросам звоните напрямую.${_agPhone}`,
-        ar: `لقد استلمنا طلبك ✅ ستتواصل وكالتنا معك في أقرب وقت. للأمور العاجلة يرجى الاتصال مباشرة.${_agPhone}`,
-        fr: `Nous avons bien reçu votre demande ✅ Notre agence vous contactera prochainement. Pour les urgences, appelez-nous directement.${_agPhone}`,
-        es: `Hemos recibido su solicitud ✅ Nuestra agencia se pondrá en contacto con usted en breve. Para asuntos urgentes, llámenos directamente.${_agPhone}`,
+        tr: `Talebinizi aldık 📩 Acentemiz en kısa sürede sizinle iletişime geçecek. Acil durumlar için doğrudan arayabilirsiniz.${_agPhone}`,
+        en: `We've received your request 📩 Our agency will contact you shortly. For urgent matters, please call us directly.${_agPhone}`,
+        de: `Wir haben Ihre Anfrage erhalten 📩 Unsere Agentur wird sich in Kürze mit Ihnen in Verbindung setzen. Bei dringenden Anliegen rufen Sie uns bitte direkt an.${_agPhone}`,
+        ru: `Мы получили ваш запрос 📩 Наше агентство свяжется с вами в ближайшее время. По срочным вопросам звоните напрямую.${_agPhone}`,
+        ar: `لقد استلمنا طلبك 📩 ستتواصل وكالتنا معك في أقرب وقت. للأمور العاجلة يرجى الاتصال مباشرة.${_agPhone}`,
+        fr: `Nous avons bien reçu votre demande 📩 Notre agence vous contactera prochainement. Pour les urgences, appelez-nous directement.${_agPhone}`,
+        es: `Hemos recibido su solicitud 📩 Nuestra agencia se pondrá en contacto con usted en breve. Para asuntos urgentes, llámenos directamente.${_agPhone}`,
       };
       const _ackReply = _ackMsgs[newContext.language] || _ackMsgs.tr;
 
@@ -4038,7 +4076,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       (nluResult.intent === "provide_info" && _anyFieldChange);
 
     if (_isChangeRequest) {
-      const _agPhone = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _agPhone = _agencyPhoneSuffix(agency.phone_public);
       const _redirectMsgs: Record<string, string> = {
         tr: `Rezervasyonunuz onaylandı ✅ İsim, telefon veya diğer bilgilerde değişiklik için lütfen acentemizle iletişime geçin.${_agPhone}`,
         en: `Your reservation is confirmed ✅ For changes to name, phone or other details, please contact our agency directly.${_agPhone}`,
@@ -4409,7 +4447,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _sq = STEP_QUESTIONS[String(newContext.collectionStep)];
       _bvReplacement = _sq[_bvLang] || _sq.en;
     } else {
-      const _agP = agency.phone_public ? ` 📞 ${agency.phone_public}` : "";
+      const _agP = _agencyPhoneSuffix(agency.phone_public);
       // 2026-07-09 Faz 5 B: tr+en → 7-dil.
       const _bvFall: Record<string, string> = {
         tr: `Bu konuda net bilgi için acentemizle iletişime geçebilirsiniz.${_agP}`,

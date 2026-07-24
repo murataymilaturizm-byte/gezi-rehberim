@@ -5,7 +5,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-import { normalizePhone } from "../_shared/phone.ts";
+import { normalizePhone, formatPhoneDisplay } from "../_shared/phone.ts";
 import { getRequestUser, isSuperAdmin } from "../_shared/edge-auth.ts";
 import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent } from "../shared/fsm/localization.ts";
@@ -411,7 +411,9 @@ serve(async (req) => {
           fr: "Désolé, notre service est temporairement indisponible. 🙏 Veuillez réessayer plus tard ou contacter directement notre agence.",
           es: "Lo sentimos, nuestro servicio está temporalmente no disponible. 🙏 Por favor intente más tarde o contacte directamente con nuestra agencia.",
         };
-        const _unavMsg = _unavMsgs[_prelimLang] || _unavMsgs.tr;
+        // FIX2: 24h-cooldown çıkmazı — acente telefonu ekle (İş1 normalize deseni).
+        const _k2Phone = agency.phone_public ? ` 📞 ${formatPhoneDisplay(normalizePhone(agency.phone_public))}` : "";
+        const _unavMsg = (_unavMsgs[_prelimLang] || _unavMsgs.tr) + _k2Phone;
         // Meta 24h penceresi: müşteri az önce bize yazdığı için pencere AÇIK — free text gönderilebilir
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
           userPhone, _unavMsg).catch((e) => console.error("[K2 unav send fail]", e));

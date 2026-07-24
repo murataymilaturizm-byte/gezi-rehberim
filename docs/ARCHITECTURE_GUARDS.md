@@ -987,3 +987,24 @@ DE/FR/ES göreli kelimeler zarf (çekimsiz) → ek sorunu yok.
 
 ### 7e. B-DUR2 + 14a-3 → 7-dil (2026-07-24)
 process-message.ts B-DUR2 liste (PM:~858), B-DUR2 yok (PM:~869), 14a-3 COMPLETED değişiklik-yönlendirme (PM:~4042) blokları tr/en'den 7-dile tamamlandı (de/fr/es/ru/ar). NOT: B-DUR2 TETİĞİ `\d günlük` (TR-word regex) — non-TR context.language ile ender kesişir; kod artık 7-dil uyumlu ama pratikte non-TR erişim, müşterinin TR "günlük" kelimesi + non-TR context kombinasyonuna bağlı. HLP prompt-helper'ları (formatReservationSummary vb.) BU KAPSAM DIŞI — ayrı karar.
+
+## 8. UX LAUNCH-PAKETİ (2026-07-24)
+
+- **FIX1 — CONFIRMING özeti + completion TOPLAM tek-kaynak:** `_reservationTotalText()`
+  (process-message.ts modül-seviye) HEM özet HEM completion tarafından çağrılır; ikisi de
+  live `tours`'tan aynı fiyat/pax okur → tutar HİÇBİR senaryoda farklı olamaz. Para birimi +
+  AR-Hint rakam mevcut `formatPriceSync` zincirinden. Özete `💰 Toplam` satırı eklendi.
+  KURAL: özet-tutarı ile completion-tutarını AYRI hesaplama — daima bu helper'dan geç.
+- **FIX2 — çıkmaz-mesajlarına acente telefonu:** `_agencyPhoneSuffix(phone_public)` (İş1
+  normalize deseni: formatPhoneDisplay∘normalizePhone). Eklendi: H-β no-alt, H-pax no-alt
+  (yalnız `!_hasAlt`), K2 service_unavailable (webhook). phone_public boşsa "" (kırılma yok).
+- **FIX3 — stale-COLLECTING metni:** "rezervasyonunuz iptal edildi" → "oturumunuz zaman
+  aşımına uğradı" (DB'de kayıt hiç oluşmadı; "iptal/cancel" kelimesi kaldırıldı). TTL/reset
+  davranışı DEĞİŞMEDİ, yalnız metin (7-dil).
+- **FIX4 — C1 dil-tespit kapısı:** NLU-dil geçişinden uzunluk-kapısı (`_hasNonAscii||
+  _isShortMsg||_isFirstMessage`) KALDIRILDI → uzun (≥200) ASCII yabancı mesaj İLK turda doğru
+  dile geçer (eskiden 1-tur TR gecikmesi). Korunan guard'lar: SUPPORTED + `!==context.language`
+  + `_isLangEnabled`. Bu blok `nluResult.language` (LLM tespiti, güvenilir) kullanır — char-
+  detection değil; pendingLangSwitch (§35) + state-machine DOKUNULMADI.
+- **FIX5 — iptal-talebi ack:** 14a "Talebinizi aldık ✅" → 📩 (✅ "iptal tamamlandı" izlenimi
+  veriyordu; DB'ye dokunulmuyor, bu talep-alındı mesajı).
