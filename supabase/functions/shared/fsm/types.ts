@@ -125,6 +125,11 @@ export interface ConversationContext {
   // TEK-TURN-ÖMÜR (proposedDateId deseni). YALNIZ COMPLETED'da set edilebilir →
   // diğer 5 §35 durumuyla mutually-exclusive (onlar COLLECTING'de).
   pendingCancelConfirm?: boolean;
+
+  // 2026-07-25 §35-7 (PAKET-B): CONFIRMING'de düşük-güven alan-değeri için değer-echo
+  // teyit bekleme-durumu ("Kişi sayısını 3 yapayım mı?"). TEK-TURN-ömür. YALNIZ CONFIRMING'de
+  // set edilebilir → pendingCancelConfirm (COMPLETED) ile stage-ayrımıyla mutually-exclusive.
+  pendingFieldUpdateConfirm?: { field: string; value: any; selectedDate?: string };
 }
 
 export interface StateTransition {

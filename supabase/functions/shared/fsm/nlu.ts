@@ -286,6 +286,12 @@ Examples (affirmative → DO extract):
   * "not Murat but Ahmet Yılmaz" — extract null or just "Ahmet Yılmaz"
   * "actually my name is Ahmet" — extract just "Ahmet" or null
 - Rule: if unsure, RETURN NULL. Better to ask again than capture noise.
+- "X, NOT Y" ORDER (correct name FIRST, rejected name after negation) — extract X, the name BEFORE the negation:
+  * EN "my name is John Smithson, not Smith" → "John Smithson" (NOT "Smith")
+  * TR "adım Ahmet Yılmaz, Ahmet değil" → "Ahmet Yılmaz"  · DE "mein Name ist X, nicht Y" → X
+  * FR "mon nom est X, pas Y" → X · ES "mi nombre es X, no Y" → X
+  * RU "меня зовут X, а не Y" → X · AR "اسمي أحمد الخالدي وليس الخالد" → "أحمد الخالدي"
+  Negation tokens across languages: not|değil|nicht|pas|no|не|وليس/ليس. The name AFTER the negation is REJECTED; take the one BEFORE.
 
 **NEVER extract full_name from tour-change phrases (CRITICAL — 2026-06-20):**
 - ANY message that names a TOUR or DESTINATION combined with a CHANGE/SWITCH/DO verb

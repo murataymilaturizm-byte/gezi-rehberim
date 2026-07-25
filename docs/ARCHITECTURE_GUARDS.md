@@ -619,7 +619,7 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     (d) agency-blok KURAL metinleri + working-hours gün-adları 5-dilde EN (semantik
     hallucinationGuard'da 7-dil, düşük değer). **Kabul:** davranışsal P1 53/53 +
     P2 snapshot 75/75 + P3 29/29 + 121-korpus miss=0 + 5-dil canlı smoke sahte-onay-yok 5/5.
-35. **6-BEKLEME-DURUMU KESİŞİM DENETİMİ (2026-07-22, FABLE; +6. durum 2026-07-24) — TEMİZ**.
+35. **7-BEKLEME-DURUMU KESİŞİM DENETİMİ (2026-07-22, FABLE; +6.durum 07-24; +7.durum 07-25) — TEMİZ**.
     6 eşzamanlı-olabilir bekleme bağlamı: proposedDateId, pendingTourClarification (A1),
     phoneEscalationPending (V11-a), pendingLangSwitch (P3), B3 feedback-penceresi,
     **pendingCancelConfirm (§35-6, COMPLETED çıplak-iptal teyidi)**.
@@ -632,6 +632,18 @@ A3-date tetiklenirse kendi RETURN'üyle FSM'e hiç ulaşılmaz.
     | pendingLangSwitch | herhangi stage (dile ortogonal) | var ama zararsız |
     | B3 feedback | YALNIZ GREETING/COMPLETED/akış-yok | (kendisi) |
     | **pendingCancelConfirm** | **YALNIZ COMPLETED** | **HAYIR (evet/hayır ≠ rakam/⭐)** |
+    | **pendingFieldUpdateConfirm** | **YALNIZ CONFIRMING** | **HAYIR (B3 COMPLETED'da)** |
+    **§35-7 pendingFieldUpdateConfirm (PAKET-B, 2026-07-25):** CONFIRMING'de düşük-güven
+    alan-değeri (DAL1'e girmedi, change-keyword yok) → değer-echo teyit ("Kişi sayısını 3
+    yapayım mı?"); TEK-TURN-ömür. onay→uygula+özet+💰 / ret→değer-AT+onay-sorusu / alakasız→
+    temizle. **YALNIZ CONFIRMING'de set** → pendingCancelConfirm (COMPLETED) ile stage-ayrımıyla
+    MUTUALLY-EXCLUSIVE (aynı turda ikisi set edilemez). B3 (COMPLETED-penceresi) ile çakışmaz.
+    **KÖK-1 DAVRANIŞ-MATRİSİ (CONFIRMING mesajı):** (1) saf-onay(değersiz)→commit; (2) değer +
+    düzeltme-sinyali(positive-only ∥ negasyon ∥ change-kw)→DAL1 UYGULA+özet+💰+re-ask (commit
+    YOK, sarmalayıcı evet/hayır'dan bağımsız); (3) değer + sinyalsiz→§35-7 değer-echo; (4) değersiz
+    belirsiz→_belirsizMsgs; (5) saf-ret→ne-değişecek. F4-L2 DAL1 tespiti **positive-ONLY**
+    (negatif-guard DAL1-kapısından çıktı; SAF-ONAY yolunda negatif-guard KALIR → "onaylamıyorum"
+    commit ETMEZ). Değer ASLA atılmaz (S2/S3 yanlış-veri kökü kapandı).
     **§35-6 pendingCancelConfirm (2026-07-24):** COMPLETED + iptal-sinyali AMA
     rezervasyon-kelimesi YOK → "Rezervasyonunuzu iptal etmek mi istiyorsunuz?" 7-dil
     teyit; TEK-TURN-ömür (proposedDateId deseni). Sonraki turn: onay (detectConfirmation

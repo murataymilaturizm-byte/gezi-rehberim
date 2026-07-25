@@ -53,6 +53,7 @@ import { maskPhone } from "../utils/log-mask.ts";
 // K4: TEK yuvarlama kuralı — tüm kapora/toplam hesapları buradan.
 import { calculateTotal, calculateDeposit } from "../utils/finance.ts";
 import { normalizePhone, formatPhoneDisplay } from "../../_shared/phone.ts";
+import { CONFIRM_POSITIVE } from "../constants/confirmation-words.ts";
 import type { ChannelAdapter, ProcessMessageInput, ProcessMessageResult } from "./types.ts";
 
 // FIX2 (2026-07-24): acente-telefon eki — İş1 (canned) normalize deseniyle AYNI.
@@ -140,6 +141,76 @@ async function _fileCancellationRequest(
   };
   return _cxlMsgs[context.language] || _cxlMsgs.en;
 }
+
+// === PAKET-B (2026-07-25): CONFIRMING hibrit-düzeltme TEK-KAYNAK ===
+// Özet etiketleri (DAL1 + pendingFieldUpdateConfirm-apply ortak).
+const _CONFIRM_LABELS: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
+  tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Bilgileri güncelledim. Onaylıyor musunuz? ✅" },
+  en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "I've updated the details. Do you confirm? ✅" },
+  de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Ich habe die Angaben aktualisiert. Bestätigen Sie? ✅" },
+  ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Я обновил данные. Подтверждаете? ✅" },
+  ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "تم تحديث البيانات. هل تؤكد؟ ✅" },
+  fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "J'ai mis à jour les informations. Confirmez-vous ? ✅" },
+  es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "He actualizado los datos. ¿Confirma? ✅" },
+};
+
+// Güncellenmiş reservationInfo → özet+💰 (reask hariç; çağıran ekler). Fiyat live tours'tan
+// (completion/CONFIRMING ile AYNI _reservationTotalText → tutar tutarlı).
+async function _buildUpdatedSummary(
+  updated: any, currentTour: any, lang: string, tours: any[], agency: any, languageCurrencies: any,
+): Promise<string> {
+  const L = _CONFIRM_LABELS[lang] || _CONFIRM_LABELS.tr;
+  const _tourTitle = currentTour ? getLocalizedTourTitle(currentTour.title || "", lang) : "";
+  const _dateText = updated.selectedDate ? formatDateForLanguage(updated.selectedDate, lang) : "";
+  const _paxAdult = updated.paxAdult ?? "";
+  const _paxChild = updated.paxChild;
+  const _paxText = _paxAdult !== ""
+    ? (typeof _paxChild === "number" && _paxChild > 0 ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}` : `${_paxAdult}`)
+    : "";
+  const _confTour = tours.find((t: any) => t.id === (currentTour?.id || updated.tourId));
+  const _confDate = _confTour?.dates?.find((d: any) => d.id === updated.dateId);
+  const _total = await _reservationTotalText(
+    Number(_paxAdult) || 0, typeof _paxChild === "number" ? _paxChild : 0,
+    _confDate?.price_adult || 0, _confDate?.price_child,
+    _confTour?.currency || "TRY", lang, agency.show_multi_currency !== false, languageCurrencies,
+  );
+  return [
+    _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
+    _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+    _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
+    updated.fullName ? `👤 ${L.name}: ${updated.fullName}` : "",
+    updated.phone    ? `📱 ${L.phone}: ${updated.phone}`   : "",
+    _total ? `💰 ${_TOTAL_LABELS[lang] || _TOTAL_LABELS.en}: *${_total}*` : "",
+  ].filter(Boolean).join("\n");
+}
+
+// §35-7 değer-echo teyit soruları (BELİRSİZ düşük-güven değeri için).
+const _FIELD_UPDATE_Q: Record<string, Record<string, (v: string) => string>> = {
+  pax: {
+    tr: (v) => `Kişi sayısını *${v}* yapayım mı? (evet/hayır)`, en: (v) => `Set the number of people to *${v}*? (yes/no)`,
+    de: (v) => `Personenzahl auf *${v}* setzen? (ja/nein)`, fr: (v) => `Mettre le nombre de personnes à *${v}* ? (oui/non)`,
+    es: (v) => `¿Cambiar el número de personas a *${v}*? (sí/no)`, ru: (v) => `Изменить количество человек на *${v}*? (да/нет)`,
+    ar: (v) => `هل أجعل عدد الأشخاص *${v}*؟ (نعم/لا)`,
+  },
+  name: {
+    tr: (v) => `Adı *${v}* olarak mı güncelleyeyim? (evet/hayır)`, en: (v) => `Update the name to *${v}*? (yes/no)`,
+    de: (v) => `Name auf *${v}* aktualisieren? (ja/nein)`, fr: (v) => `Mettre le nom à *${v}* ? (oui/non)`,
+    es: (v) => `¿Actualizar el nombre a *${v}*? (sí/no)`, ru: (v) => `Изменить имя на *${v}*? (да/нет)`,
+    ar: (v) => `هل أحدّث الاسم إلى *${v}*؟ (نعم/لا)`,
+  },
+  date: {
+    tr: (v) => `Tarihi *${v}* yapayım mı? (evet/hayır)`, en: (v) => `Change the date to *${v}*? (yes/no)`,
+    de: (v) => `Datum auf *${v}* ändern? (ja/nein)`, fr: (v) => `Changer la date pour *${v}* ? (oui/non)`,
+    es: (v) => `¿Cambiar la fecha a *${v}*? (sí/no)`, ru: (v) => `Изменить дату на *${v}*? (да/нет)`,
+    ar: (v) => `هل أغيّر التاريخ إلى *${v}*؟ (نعم/لا)`,
+  },
+  phone: {
+    tr: (v) => `Telefonu *${v}* olarak mı güncelleyeyim? (evet/hayır)`, en: (v) => `Update the phone to *${v}*? (yes/no)`,
+    de: (v) => `Telefon auf *${v}* aktualisieren? (ja/nein)`, fr: (v) => `Mettre le téléphone à *${v}* ? (oui/non)`,
+    es: (v) => `¿Actualizar el teléfono a *${v}*? (sí/no)`, ru: (v) => `Изменить телефон на *${v}*? (да/нет)`,
+    ar: (v) => `هل أحدّث الهاتف إلى *${v}*؟ (نعم/لا)`,
+  },
+};
 
 export async function processChatMessage(input: ProcessMessageInput): Promise<ProcessMessageResult> {
   const { message: rawMessage, adapter, agency, supabase, tours, paymentInstructions, languageCurrencies, primaryCurrency, returningUserName, seedLanguage } = input;
@@ -1081,6 +1152,50 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log(`[process-message] §35-6 pendingCancelConfirm alakasız cevap → flag temizlendi, normal akış`);
   }
 
+  // === §35-7. pendingFieldUpdateConfirm — CONFIRMING değer-echo TEYİT cevabı =====
+  // Önceki turn "Kişi sayısını 3 yapayım mı?" soruldu (tek-turn-ömür). YALNIZ CONFIRMING'de
+  // set edilebilir → pendingCancelConfirm (COMPLETED) ile stage-ayrımıyla MUTUALLY-EXCLUSIVE.
+  if (context.stage === "CONFIRMING" && (context as any).pendingFieldUpdateConfirm) {
+    const _pf = (context as any).pendingFieldUpdateConfirm as { field: string; value: any; selectedDate?: string };
+    const _pfLang = context.language || "tr";
+    if (detectConfirmation(message, _pfLang)) {
+      // ONAY → değeri uygula + taze özet+💰 + yeniden onay sorusu (commit YOK).
+      const _u = { ...(context.reservationInfo || {}) } as any;
+      if (_pf.field === "pax") _u.paxAdult = _pf.value;
+      else if (_pf.field === "name") _u.fullName = _pf.value;
+      else if (_pf.field === "phone") _u.phone = _pf.value;
+      else if (_pf.field === "date") { _u.dateId = _pf.value; if (_pf.selectedDate) _u.selectedDate = _pf.selectedDate; }
+      const _uCtx = { ...context, reservationInfo: _u, collectionStep: "ready_for_confirmation", pendingFieldUpdateConfirm: undefined } as any;
+      const _sum = await _buildUpdatedSummary(_u, context.currentTour, _pfLang, tours, agency, languageCurrencies);
+      const _reply = `${_sum}\n\n${(_CONFIRM_LABELS[_pfLang] || _CONFIRM_LABELS.tr).reask}`;
+      console.log(`[process-message] §35-7 pendingFieldUpdateConfirm ONAY → ${_pf.field} uygulandı`);
+      await _save(_reply, _uCtx);
+      await adapter.sendResponse(_reply);
+      return { success: true, response: _reply, newContext: _uCtx };
+    }
+    if (detectNegativeResponse(message, _pfLang)) {
+      // RET → değeri AT, onay-sorusuna dön (ne değişecek?).
+      const _rejCtx = { ...context, pendingFieldUpdateConfirm: undefined } as any;
+      const _rejMsgs: Record<string, string> = {
+        tr: "Tamam, değişmedi. Rezervasyonu onaylıyor musunuz, yoksa neyi değiştirmek istersiniz? ✅",
+        en: "Okay, unchanged. Do you confirm the reservation, or what would you like to change? ✅",
+        de: "Okay, unverändert. Bestätigen Sie die Reservierung oder was möchten Sie ändern? ✅",
+        fr: "D'accord, inchangé. Confirmez-vous la réservation ou que souhaitez-vous modifier ? ✅",
+        es: "De acuerdo, sin cambios. ¿Confirma la reserva o qué desea cambiar? ✅",
+        ru: "Хорошо, без изменений. Подтверждаете бронирование или что хотите изменить? ✅",
+        ar: "حسناً، دون تغيير. هل تؤكد الحجز أم ماذا تريد أن تغيّر؟ ✅",
+      };
+      const _r = _rejMsgs[_pfLang] || _rejMsgs.tr;
+      console.log(`[process-message] §35-7 pendingFieldUpdateConfirm RET → değer atıldı`);
+      await _save(_r, _rejCtx);
+      await adapter.sendResponse(_r);
+      return { success: true, response: _r, newContext: _rejCtx };
+    }
+    // ALAKASIZ → flag temizle, normal akışa devam.
+    context = { ...context, pendingFieldUpdateConfirm: undefined } as any;
+    console.log(`[process-message] §35-7 pendingFieldUpdateConfirm alakasız → flag temizlendi`);
+  }
+
   // === 7b-0. NETLEŞTİRME-SEÇİMİ (2026-07-10 A1) ============================
   // Önceki turn 7c belirsiz-tur listesi bastıysa (pendingTourClarification dolu)
   // bu mesaj ÖNCE liste-seçimi olarak denenir: numara ("1", "2)") VEYA kısmi ad
@@ -1470,6 +1585,20 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _l2HasConfirmSignal =
     _l2ConfirmIntents.has(nluResult.intent as string) ||
     detectConfirmation(message, context.language);
+  // PAKET-B (KÖK-1): DAL1 "hibrit-düzeltme" tespiti. positive-ONLY (negatif-guard'sız)
+  // — "evet ama 3" / "Да, но…" pozitifi negatif-guard yüzünden kaçmasın. Ek: negatif
+  // ("hayır 3 kişiyiz"/"X not Y") + change-kw ("aslında 20'si") de düzeltme-sinyali.
+  // FIELD-pattern (isim/kişi) tek başına YETMEZ (hipotetik "3 kişi olursa fiyat?" DAL1'i
+  // tetiklememeli — o BELİRSİZ değer-echo yoluna gider).
+  const _l2PositiveOnly =
+    _l2ConfirmIntents.has(nluResult.intent as string) ||
+    (CONFIRM_POSITIVE[context.language] || CONFIRM_POSITIVE.tr).test(message);
+  // Düzeltme-negasyonu (UNANCHORED — detectNegativeResponse "^no$" anchored'dır,
+  // "X not Y"/"hayır 3" yakalamaz). Yalnız NEGASYON token'ları (soru-işareti/change-verb
+  // DEĞİL) — _l2HasNewValue gate'i FP'yi sınırlar ("no, 3 people" = düzeltme, doğru).
+  const _l2NegCorrection = /(?<![\p{L}\p{N}])(not|de[ğg]il|nicht|pas|no|нет|не|وليس|ليس|hay[ıi]r)(?![\p{L}\p{N}])/iu.test(message);
+  const _l2CorrectionSignal =
+    _l2PositiveOnly || _l2NegCorrection || detectNegativeResponse(message, context.language) || CHANGE_KEYWORDS_RE.test(message);
   const _l2Ext = extractedInfo as any;
   const _l2Cur = (context.reservationInfo || {}) as any;
   const _l2DiffFN = !!_l2Ext.fullName && !!_l2Cur.fullName && _l2Cur.fullName !== _l2Ext.fullName;
@@ -1487,11 +1616,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _l2VerbPattern = /(?<![\p{L}\p{N}])(yap|olsun|ayarla|kur|set|make|adjust|aceptar)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])(değiştir|düzelt|güncelle|değişiklik|change|modify|edit|update|correct|fix|ändern|korrigieren|modifier|corriger|cambiar|modificar|изменить|исправить|تعديل|تغيير|اجعل)/iu;
   const _l2HasChangeSignal = _l2FieldPattern.test(message) || _l2VerbPattern.test(message);
 
-  // ── DAL 1 — somut yeni değer var → değişiklik UYGULA + özet+onay ──
+  // ── DAL 1 — somut yeni değer var + düzeltme-sinyali → UYGULA + özet+onay ──
+  // PAKET-B: sarmalayıcı evet/hayır'dan BAĞIMSIZ değer uygulanır (matris-2); bu turda
+  // ASLA commit yok, değer ASLA atılmaz.
   if (
     context.stage === "CONFIRMING" &&
-    _l2HasConfirmSignal &&
-    _l2HasNewValue
+    _l2HasNewValue &&
+    _l2CorrectionSignal
   ) {
     const _l2Updated = { ..._l2Cur };
     if (_l2DiffFN) _l2Updated.fullName = _l2Ext.fullName;
@@ -1512,40 +1643,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       lastUpdated: new Date().toISOString(),
     };
 
-    // Özet+onay (FIX 3 / :13-PERSIST ile aynı format — DRY ileride helper'a)
+    // PAKET-B: özet+💰 TEK-KAYNAK helper (completion/CONFIRMING ile aynı tutar).
     const _lang = _l2Context.language || "tr";
-    const _tourTitle = _l2Context.currentTour
-      ? getLocalizedTourTitle(_l2Context.currentTour.title || "", _lang)
-      : "";
-    const _dateText = _l2Updated.selectedDate ? formatDateForLanguage(_l2Updated.selectedDate, _lang) : "";
-    const _paxAdult = _l2Updated.paxAdult ?? "";
-    const _paxChild = _l2Updated.paxChild;
-    const _name = _l2Updated.fullName || "";
-    const _phone = _l2Updated.phone || "";
-
-    const _l2Labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Bilgileri güncelledim. Onaylıyor musunuz? ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "I've updated the details. Do you confirm? ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Ich habe die Angaben aktualisiert. Bestätigen Sie? ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Я обновил данные. Подтверждаете? ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "تم تحديث البيانات. هل تؤكد؟ ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "J'ai mis à jour les informations. Confirmez-vous ? ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "He actualizado los datos. ¿Confirma? ✅" },
-    };
-    const L = _l2Labels[_lang] || _l2Labels.tr;
-    const _paxText = _paxAdult !== ""
-      ? (typeof _paxChild === "number" && _paxChild > 0
-          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
-          : `${_paxAdult}`)
-      : "";
-    const _summaryLines = [
-      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
-      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
-      _name      ? `👤 ${L.name}: ${_name}`        : "",
-      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
-    ].filter(Boolean).join("\n");
-    const _l2Reply = `${_summaryLines}\n\n${L.reask}`;
+    const _l2Sum = await _buildUpdatedSummary(_l2Updated, _l2Context.currentTour, _lang, tours, agency, languageCurrencies);
+    const _l2Reply = `${_l2Sum}\n\n${(_CONFIRM_LABELS[_lang] || _CONFIRM_LABELS.tr).reask}`;
 
     const _diffs = [_l2DiffFN && "name", _l2DiffPh && "phone", _l2DiffPx && "pax", _l2DiffDid && "date", _l2DiffSd && "selectedDate"].filter(Boolean).join(",");
     console.log(`[process-message] F4 Katman 2 DAL 1: çelişki yakalandı (diffs=${_diffs}) — değişiklik uygula + özet+onay`);
@@ -2227,32 +2328,25 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       return { success: true, response: reply, newContext: newCtx };
     }
 
-    // --- BELİRSİZ DAL (sadece CONFIRMING, 4 alanın HERHANGİ biri için) ---
-    // Koşul: HERHANGİ alan dolu + farklı + kelime YOK + stage=CONFIRMING
-    // Davranış: değer UYGULAMA, değer TAHMİN ETME. Tek-net teyit sorusu.
+    // --- BELİRSİZ DAL → §35-7 DEĞER-ECHO TEYİT (sadece CONFIRMING) ---
+    // PAKET-B (matris-3): değer çıkarıldı ama net düzeltme-sinyali yok (DAL1'e girmedi,
+    // change-keyword yok). ARTIK değer ATILMAZ — echo'lu teyit: "Kişi sayısını 3 yapayım mı?"
+    // pendingFieldUpdateConfirm (§35-7) set edilir; sonraki turn onay→uygula / ret→at.
     if (context.stage === "CONFIRMING" && !_hasChangeKeyword) {
-      const _belirsizField =
-        (_paxFilled && _paxDifferent) ? "pax"
-        : (_dateFilled && _dateDifferent) ? "date"
-        : (_nameFilled && _nameDifferent) ? "name"
-        : (_phoneFilled && _phoneDifferent) ? "phone"
+      const _pfuc: { field: string; value: any; selectedDate?: string; display: string } | null =
+        (_paxFilled && _paxDifferent) ? { field: "pax", value: _paxExt, display: String(_paxExt) }
+        : (_dateFilled && _dateDifferent) ? { field: "date", value: _dateExt, selectedDate: _l2Ext.selectedDate, display: _l2Ext.selectedDate ? formatDateForLanguage(_l2Ext.selectedDate, _langA3) : String(_dateExt) }
+        : (_nameFilled && _nameDifferent) ? { field: "name", value: _nameExt, display: String(_nameExt) }
+        : (_phoneFilled && _phoneDifferent) ? { field: "phone", value: _phoneExt, display: String(_phoneExt) }
         : null;
 
-      if (_belirsizField) {
-        const _belirsizMsgs: Record<string, string> = {
-          tr: "Tam anlayamadım — rezervasyonunuzu onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey mi var? 🤔",
-          en: "I didn't quite understand — would you like to confirm your reservation, or is there something you'd like to change? 🤔",
-          de: "Ich habe das nicht ganz verstanden — möchten Sie Ihre Reservierung bestätigen oder etwas ändern? 🤔",
-          fr: "Je n'ai pas bien compris — souhaitez-vous confirmer votre réservation ou y a-t-il quelque chose à modifier ? 🤔",
-          es: "No entendí bien — ¿desea confirmar su reserva o hay algo que quiera cambiar? 🤔",
-          ru: "Я не совсем понял — хотите подтвердить бронирование или что-то изменить? 🤔",
-          ar: "لم أفهم تماماً — هل تريد تأكيد حجزك أم هناك شيء تريد تغييره؟ 🤔",
-        };
-        const _belReply = _belirsizMsgs[_langA3] || _belirsizMsgs.tr;
-        console.log(`[A] BELİRSİZ teyit soruldu: field=${_belirsizField}, stage=CONFIRMING`);
-        await _save(_belReply, context);
-        await adapter.sendResponse(_belReply);
-        return { success: true, response: _belReply, newContext: context };
+      if (_pfuc) {
+        const _echoCtx = { ...context, pendingFieldUpdateConfirm: { field: _pfuc.field, value: _pfuc.value, selectedDate: _pfuc.selectedDate } } as any;
+        const _q = (_FIELD_UPDATE_Q[_pfuc.field]?.[_langA3] || _FIELD_UPDATE_Q[_pfuc.field]?.tr)(_pfuc.display);
+        console.log(`[A] §35-7 pendingFieldUpdateConfirm SET: field=${_pfuc.field} → değer-echo teyit`);
+        await _save(_q, _echoCtx);
+        await adapter.sendResponse(_q);
+        return { success: true, response: _q, newContext: _echoCtx };
       }
     }
 
