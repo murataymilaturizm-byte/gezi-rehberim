@@ -90,6 +90,16 @@ const _CXL_SIGNAL_RE = /(?<![\p{L}\p{N}])(iptal|cancel|stornier|annul|cancelar|�
 const _CXL_RESCTX_RE = /(?<![\p{L}\p{N}])(rezervasyon|kayıt|kaydı|reservation|booking|buchung|réservation|reserva|бронь|бронирование|حجز)/iu;
 const _CXL_FAQ_RE = /(şart|kosul|koşul|policy|politika|iade|refund|ücret|ucret|kesinti|nasıl|nasil|ne zaman|condition|terms|fee|how|when|bedingung|storno(?:gebühr)?|rückerstattung|ruckerstattung|geb[üu]hr|wie|wann|politique|remboursement|frais|comment|quand|condici[óo]n|pol[íi]tica|reembolso|tarifa|c[óo]mo|cu[áa]ndo|услови|возврат|плат[аеу]|штраф|как|когда|شرو?ط|سياسة|استرداد|رسوم|كيف|متى)/i;
 
+// === RET-SİNYALİ TEK-KAYNAK (FIX4 / CİLA 2026-07-25) — B-6 CONFIRMING ret ===
+// detectNegativeResponse ANCHORED (^hayır$) → "onaylamıyorum"/"reddediyorum" gibi
+// ret-FİİLLERİNİ kaçırıyordu → ret yutulup tarih-listesi (yanlış bağlam) basılıyordu.
+// Unanchored, 7-dil bare-negatif + ret-fiil aileleri (çekim-toleranslı \p{L}* stem).
+// ASCII \b YOK — \p{L}\p{N} lookbehind. Fiil stem'leri (onaylam[ıi]yorum) POZİTİFİ
+// ("onaylıyorum") ASLA yakalamaz — "onaylam" pozitifte yok. FP-DİSİPLİNİ: bu RE B-6'da
+// DAL1'DEN SONRA çalışır → "hayır 3 kişiyiz" (ret+değer) önce DAL1'e (değer-uygula)
+// düşer; B-6 yalnız SAF reddi (değersiz) yakalar → _l2HasNewValue önceliği korunur.
+const _REJECT_SIGNAL_RE = /(?<![\p{L}\p{N}])(?:hay[ıi]r|yok|olmaz|istemiyorum|onaylam[ıi]yorum|redded\p{L}*|kabul\s*etmiyorum|vazge[çc]\p{L}*|no|nope|nah|reject\p{L}*|refus\p{L}*|disagree|don['’]?t\s*(?:confirm|approve|accept|agree)|nein|nö|ablehn\p{L}*|lehne|nicht\s*best[äa]tig\p{L}*|stimme\s*nicht|non|n['’e]\s*(?:confirme|accepte)|pas\s*d['’e]?\s*accord|rechaz\p{L}*|no\s*(?:acepto|confirmo)|нет|отказ\p{L}*|не\s*подтвержда\p{L}*|не\s*соглас\p{L}*|не\s*принима\p{L}*|أرفض|رفض|لا\s*أوافق|لا\s*أؤكد|لا)(?![\p{L}\p{N}])/iu;
+
 // COMPLETED çıplak-iptal teyit sorusu (§35-6 pendingCancelConfirm SET)
 const _CANCEL_CONFIRM_Q: Record<string, string> = {
   tr: "Rezervasyonunuzu iptal etmek mi istiyorsunuz?",
@@ -1483,25 +1493,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
   }
 
-  // B-6 fix (2026-06-09): CONFIRMING'de "hayır" net redi → state KORUNUR, netleştirme sorusu sor.
-  // Eski davranış: detectConfirmation false, detectCancellation false ("hayır" pattern'de yok),
-  // değişiklik transition'ı da tetiklenmez → state takılı, LLM serbest cevap üretir (belirsiz).
-  // Yeni: deterministik netleştirme mesajı ile bot kullanıcıya neyi değiştirmek istediğini sorar.
-  if (context.stage === "CONFIRMING" && detectNegativeResponse(message, context.language)) {
-    const _negMsgs: Record<string, string> = {
-      tr: "Anladım. Hangi bilgiyi değiştirmek istersiniz — tarih, kişi sayısı, isim veya telefon? Yoksa rezervasyonu tamamen iptal mi etmek istiyorsunuz?",
-      en: "I understand. Which detail would you like to change — date, number of people, name, or phone? Or would you like to cancel the reservation entirely?",
-      de: "Verstanden. Welche Angabe möchten Sie ändern — Datum, Personenzahl, Name oder Telefon? Oder möchten Sie die Reservierung ganz stornieren?",
-      ru: "Понял. Какие данные вы хотите изменить — дату, количество человек, имя или телефон? Или вы хотите полностью отменить бронирование?",
-      ar: "فهمت. ما المعلومة التي تريد تغييرها — التاريخ، عدد الأشخاص، الاسم أو الهاتف؟ أم تريد إلغاء الحجز بالكامل؟",
-      fr: "Compris. Quelle information souhaitez-vous modifier — date, nombre de personnes, nom ou téléphone ? Ou souhaitez-vous annuler complètement la réservation ?",
-      es: "Entendido. ¿Qué información desea cambiar — fecha, número de personas, nombre o teléfono? ¿O prefiere cancelar la reserva por completo?",
-    };
-    const _negReply = _negMsgs[context.language] || _negMsgs.tr;
-    await _save(_negReply, context);  // state KORUNUR (newContext yerine context)
-    await adapter.sendResponse(_negReply);
-    return { success: true, response: _negReply, newContext: context };
-  }
+  // B-6 (2026-06-09) — CONFIRMING net-ret → netleştirme. FIX4 (CİLA 2026-07-25):
+  // blok F4-Katman-2 DAL1/DAL2 SONRASINA taşındı (aşağıda) + ret-tespiti unanchored
+  // (_REJECT_SIGNAL_RE). Sebep: "hayır 3 kişiyiz" (ret+değer) ÖNCE DAL1'e (değer-uygula)
+  // düşmeli — B-6 yalnız SAF reddi yakalamalı. Sıralama = _l2HasNewValue önceliği.
 
   // === 8. BİLGİ ÇIKARMA ===
   // 2026-06-29 O1 fix: selectedTour (bu turn'de tour-matching çıktısı) parametre olarak
@@ -1676,6 +1671,36 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(_l2DisambigReply, context);
     await adapter.sendResponse(_l2DisambigReply);
     return { success: true, response: _l2DisambigReply, newContext: context };
+  }
+
+  // ── B-6 (TAŞINDI, FIX4) — CONFIRMING SAF-RET → netleştirme (state KORUNUR) ──
+  // DAL1 (ret+değer→uygula) ve DAL2 (onay+sinyal→belirsiz) SONRASINDA: buraya yalnız
+  // SAF ret düşer (yeni-değer YOK, onay-sinyali YOK). _REJECT_SIGNAL_RE unanchored →
+  // "onaylamıyorum"/"reddediyorum"/"je refuse"/"отказываюсь" gibi ret-fiilleri de yakalar
+  // (eski anchored detectNegativeResponse yalnız bare "hayır"ı görüyordu → tarih-listesi kaçağı).
+  // "hayır 3 kişiyiz" buraya GELMEZ — DAL1 zaten değeri uygulayıp return etti (FP-disiplini).
+  // !detectConfirmation guard: "no problem, confirm it" gibi NET-ONAY içeren mesaj (unanchored
+  // "no" yakalasa da) B-6'ya düşmesin → onay yoluna gitsin. "onaylamıyorum" POZİTİF değil
+  // (POS_ALT lookaround'u "onaylam..."ı reddeder) → guard geçer, B-6 tetiklenir.
+  if (
+    context.stage === "CONFIRMING" &&
+    _REJECT_SIGNAL_RE.test(message) &&
+    !detectConfirmation(message, context.language)
+  ) {
+    const _negMsgs: Record<string, string> = {
+      tr: "Anladım. Hangi bilgiyi değiştirmek istersiniz — tarih, kişi sayısı, isim veya telefon? Yoksa rezervasyonu tamamen iptal mi etmek istiyorsunuz?",
+      en: "I understand. Which detail would you like to change — date, number of people, name, or phone? Or would you like to cancel the reservation entirely?",
+      de: "Verstanden. Welche Angabe möchten Sie ändern — Datum, Personenzahl, Name oder Telefon? Oder möchten Sie die Reservierung ganz stornieren?",
+      ru: "Понял. Какие данные вы хотите изменить — дату, количество человек, имя или телефон? Или вы хотите полностью отменить бронирование?",
+      ar: "فهمت. ما المعلومة التي تريد تغييرها — التاريخ، عدد الأشخاص، الاسم أو الهاتف؟ أم تريد إلغاء الحجز بالكامل؟",
+      fr: "Compris. Quelle information souhaitez-vous modifier — date, nombre de personnes, nom ou téléphone ? Ou souhaitez-vous annuler complètement la réservation ?",
+      es: "Entendido. ¿Qué información desea cambiar — fecha, número de personas, nombre o teléfono? ¿O prefiere cancelar la reserva por completo?",
+    };
+    const _negReply = _negMsgs[context.language] || _negMsgs.tr;
+    console.log(`[process-message] B-6 (taşındı): CONFIRMING saf-ret → netleştirme (lang=${context.language})`);
+    await _save(_negReply, context);  // state KORUNUR (newContext yerine context)
+    await adapter.sendResponse(_negReply);
+    return { success: true, response: _negReply, newContext: context };
   }
 
   // Negatif pax kontrolü
@@ -4117,7 +4142,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const payMsg = await generatePaymentMessage(
           paymentInstructions, newContext.language, totalPrice, depositAmt,
           selectedTourFull?.currency || "TRY",
-          { languageCurrencies, primaryCurrency, agencyPhone: agency.phone_public }
+          { languageCurrencies, primaryCurrency, agencyPhone: agency.phone_public,
+            showMultiCurrency: agency.show_multi_currency !== false }
         );
         if (payMsg) {
           completionReply += payMsg;
@@ -4414,6 +4440,37 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(fix3Reply, _preservedContext);
     await adapter.sendResponse(fix3Reply);
     return { success: true, response: fix3Reply, newContext: _preservedContext };
+  }
+
+  // === FIX1 (2026-07-25): COMPLETED'da TEKRAR-ONAY → completion bloğunu TEKRAR BASMA ===
+  // Rezervasyon tamam sonrası müşteri 2. kez "onaylıyorum/onaylyrm" derse LLM tam
+  // completion (🎉+ödeme) uydurup validator kaçırabiliyordu → deterministik kısa ack.
+  // GATE: COMPLETED + saf-onay (soru/iptal/değişiklik DEĞİL). Teşekkür-reset (Bug-A)
+  // detectConfirmation'la çakışmaz (teşekkür ≠ onay-token). justCompleted BU turda false
+  // (context zaten COMPLETED) → gerçek tamamlama etkilenmez.
+  if (
+    context.stage === "COMPLETED" &&
+    newContext.stage === "COMPLETED" &&
+    !justCompleted &&
+    detectConfirmation(message, context.language) &&
+    !QUESTION_SIGNAL_RE.test(message) &&
+    !_CXL_SIGNAL_RE.test(message) &&
+    !CHANGE_KEYWORDS_RE.test(message)
+  ) {
+    const _reAckMsgs: Record<string, string> = {
+      tr: "Rezervasyonunuz zaten onaylı ✅ Başka bir konuda yardımcı olabilir miyim?",
+      en: "Your reservation is already confirmed ✅ Is there anything else I can help with?",
+      de: "Ihre Reservierung ist bereits bestätigt ✅ Kann ich Ihnen mit etwas anderem helfen?",
+      fr: "Votre réservation est déjà confirmée ✅ Puis-je vous aider avec autre chose ?",
+      es: "Su reserva ya está confirmada ✅ ¿Puedo ayudarle con algo más?",
+      ru: "Ваше бронирование уже подтверждено ✅ Могу ли я помочь с чем-то ещё?",
+      ar: "حجزك مؤكد بالفعل ✅ هل يمكنني مساعدتك في شيء آخر؟",
+    };
+    const _r = _reAckMsgs[newContext.language] || _reAckMsgs.tr;
+    console.log(`[process-message] FIX1 COMPLETED tekrar-onay → kısa ack (completion tekrar-basma engellendi)`);
+    await _save(_r, newContext);
+    await adapter.sendResponse(_r);
+    return { success: true, response: _r, newContext };
   }
 
   // === 15. SYSTEM PROMPT ===
@@ -4742,7 +4799,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       waiting_for_pax: /(kaç\s*kişi|kac\s*kisi|kişi\s*say|kisi\s*say|how\s*many|wie\s*viele|combien|cuántas|cuantas|сколько|كم)/i,
       // FIX6 (KÖK-7): çekim-toleranslı — DE "Ihren Namen"/RU "ваше полное имя"/"как вас
       // zovут" bitişiklik-bağımlı desende kaçıyordu → çift isim-sorusu. name[ns]?/имя/фамили/зовут.
-      waiting_for_name: /(ad[\s-]?soyad|isminiz|ad[ıi]n[ıi]z|full\s*name|your\s*name|name[ns]?|nom|nombre|ваше\s*имя|имя|фамили|зовут|اسم)/i,
+      // FIX3 (CİLA 2026-07-25): FAQ-DÖNÜŞ kaçağı — LLM isim-adımında hint'i ("Namen")
+      // yok sayıp FİİL-tabanlı sorunca ("Wie heißen Sie?" — "name" kelimesi YOK) regex
+      // kaçırıyordu → guard ikinci soruyu ekliyor → çift. RU zaten "зовут" (fiil) kapalıydı;
+      // DE hei[sß](en/t/e), FR appel(le/ez/er), ES llama(rse)/cómo se llama, EN "call you" eklendi.
+      waiting_for_name: /(ad[\s-]?soyad|isminiz|ad[ıi]n[ıi]z|full\s*name|your\s*name|call\s*you|name[ns]?|nom|nombre|wie\s*hei[sß]|hei[sß]en|appel(le|ez|er)|c[oó]mo\s*se\s*llama|llama(rse|s)?|ваше\s*имя|имя|фамили|зовут|اسم)/iu,
       waiting_for_phone: /(telefon|phone|numaranız|numaraniz|téléphone|teléfono|телефон|هاتف)/i,
       waiting_for_email: /(\bemail\b|e-?mail|e-?posta|почт|بريد)/i,
     };
@@ -4789,7 +4850,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (totalPrice > 0) {
       const payMsg = await generatePaymentMessage(
         paymentInstructions, newContext.language, totalPrice, depositAmt,
-        tourCurr, { languageCurrencies, primaryCurrency, agencyPhone: agency.phone_public }
+        tourCurr, { languageCurrencies, primaryCurrency, agencyPhone: agency.phone_public,
+          showMultiCurrency: agency.show_multi_currency !== false }
       );
       if (payMsg) {
         reply = reply + payMsg;

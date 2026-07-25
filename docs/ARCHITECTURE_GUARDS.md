@@ -1062,3 +1062,48 @@ Fable 7-kök teşhisinin S-boyutlu kökleri (KÖK-1 yapısal DIŞARIDA — PAKET
 - **S9 mikro (FIX8):** paxTextMap.en çoğul (adults/children); NUMBER_WORDS FR/ES/RU/AR 20'ye (C3 ay-guard 7-dil tek-kaynak MONTH_ALTERNATION yeni sayıları tarih-bağlamında engeller — kanıtlı; AR çok-kelime key'ler tırnaklı).
 
 Kanıt: ampirik regex 14/14 + ay-guard 5/5 + confirm/FP 13/13; canlı 9/9 (AR لنحجز→COMPLETED+﷼; RU/FR fiyat ilk-turda; AR شخصان→pax=2; EN COMPLETED saat-cevabı ✅-duvarı yok; X8 Antalya Rafting 18$/850₺; DE tek isim-sorusu; onaylyrm→onay; onaylamıyorum→onay-değil). state-machine + field-sync 7/7 + phone 19/19.
+
+## 10. CİLA PAKETİ — GO/NO-GO öncesi son dokunuş (2026-07-25)
+
+Mini-tur kalıntıları (4 fix + 1 teşhis). PAKET-A/B mantığı DOKUNULMADI.
+- **FIX1 (COMPLETED tekrar-onay):** COMPLETED'da 2. kez saf-onay ("onaylıyorum/onaylyrm")
+  → LLM completion bloğunu (🎉+ödeme) yeniden uydurup validator kaçırabiliyordu. Deterministik
+  kısa 7-dil ack ("Rezervasyonunuz zaten onaylı ✅"). **GATE:** `context.stage==="COMPLETED" &&
+  newContext.stage==="COMPLETED" && !justCompleted && detectConfirmation && !QUESTION_SIGNAL_RE
+  && !_CXL_SIGNAL_RE && !CHANGE_KEYWORDS_RE`. justCompleted BU turda false (context zaten COMPLETED)
+  → gerçek tamamlama etkilenmez. Teşekkür-reset (Bug-A) çakışmaz (teşekkür ≠ onay-token).
+  Haki Lili/05477896545 = TEK kayıt (duplicate DEĞİL) — S-fix. Guard `=== 15. SYSTEM PROMPT ===`
+  öncesine yerleşti (FIX3-insurance ile aynı bölge, ondan sonra).
+- **FIX2 (para birimi tek-zincir):** `payment-message.ts` kapora/kalan/tam-tutar KENDİ yerel
+  `formatPrice`'ını (Intl.NumberFormat(ar-SA)) kullanıyordu → AR'da "٢٤٩٫٥٨ SAR" (Arapça-Hint
+  rakam + SAR kodu), completion-toplamı ise `formatPriceSync` ("832﷼", ﷼ + Batı-rakam) →
+  AYNI mesajda çapraz etiket/rakam-sistemi. FIX: üç tutar da ORİJİNAL (tourCurrency) +
+  `formatPriceSync` completion zincirinden geçer (`showMultiCurrency = agency.show_multi_currency
+  !== false` completion ile aynı dual-display kararı). Ölü kod silindi: yerel `formatPrice`,
+  `CurrencyConfig`/`CURRENCIES`/`getCurrency`, `convertSync` importu. **Para/tarih tek-zincir
+  kuralı (§8 A1) artık kapora bloğunu da kapsıyor.** DE/FR/ES/RU zaten EUR/USD zincir-uyumlu.
+- **FIX3 (DE FAQ-dönüş çift isim-sorusu):** KÖK-7 (f4bb147) ana-akışı düzeltti ama FAQ-dönüş
+  kaçağı vardı: LLM isim-adımında hint'i ("Namen") yok sayıp FİİL-tabanlı sorunca ("Wie heißen
+  Sie?" — "name" kelimesi YOK) `_flowKws.waiting_for_name` regex kaçırıyor → 17a-2 guard kendi
+  suffix'ini de ekliyor → çift. RU zaten "зовут" (fiil) kapalıydı; **DE `hei[sß](en/t/e)` · FR
+  `appel(le/ez/er)` · ES `cómo se llama`/`llama(rse/s)` · EN `call you`** eklendi (`/iu`,
+  \p{L}\p{N} tutarlı). FP: "Es ist heiß draußen"→false (`wie hei[sß]`/`hei[sß]en` gerekiyor).
+- **FIX4 (B-6 ret unanchored + FP-disiplini):** `detectNegativeResponse` ANCHORED (`^hayır$`)
+  → "onaylamıyorum"/"reddediyorum" ret-FİİLLERİNİ kaçırıyor → CONFIRMING'de ret yutulup
+  tarih-listesi (yanlış bağlam) basılıyordu. **Yeni `_REJECT_SIGNAL_RE`** (unanchored, 7-dil
+  bare-negatif + ret-fiil aileleri, \p{L}\p{N} lookaround, POZİTİFİ "onaylıyorum" ASLA yakalamaz).
+  `detectNegativeResponse` anchored KONTRATI KORUNDU (1152/1186/1596 yes/no-gate'leri bozulmadı).
+  **B-6 bloğu F4-Katman-2 DAL1/DAL2 SONRASINA taşındı** → "hayır 3 kişiyiz" (ret+değer) ÖNCE
+  DAL1'e (değer-uygula) düşer, B-6 yalnız SAF reddi yakalar = **_l2HasNewValue önceliği yapısal
+  garanti**. Ek `!detectConfirmation` guard: "no problem, confirm it" (unanchored "no") onay
+  yoluna gider. Kanıt: regex 34/34 (ret 16 + FP 8 + isim-kw 10).
+- **DIAG5 (AR after-sales tur-detay kaynağı — YALNIZ RAPOR):** "2 gün 1 gece + 4-yıldızlı termal
+  otel" kaynak-zinciri: COMPLETED prompt'u (ar.ts:76-79 "ما بعد البيع — SADECE bu veri") `tourDetails`
+  = `formatTourDetails(currentTour,...)` içerir; `currentTour` = `currentTourFull` =
+  `findTourById(id, tours)` = **TAM DB satırı** (findTourById null dönerse trimmed TourReference'a
+  düşer). Süre/otel prompt'a **4 DB alanından** girer: `tur_sure`(⏱), `hotel_name`+`hotel_stars`
+  (🏨 N⭐), `konaklama`(🏨), veya `program_kisa`/`gezilecek_yerler` serbest-metni. Bu alanlar
+  DOLUYSA → DB-temelli (grounded); BOŞSA → "⚠️ NOT ON RECORD" listesine girer + LLM'e "uydurma"
+  direktifi → yine de basarsa HALÜSİNASYON (M1 ihlali). NOT: `formatTourDetails` AR dalı YOK →
+  AR EN-etiketli bloğa düşer (veri akar, etiket İngilizce). Kesin sınıflama: ilgili tur satırında
+  `SELECT tur_sure, hotel_name, hotel_stars, konaklama, program_kisa, gezilecek_yerler`.

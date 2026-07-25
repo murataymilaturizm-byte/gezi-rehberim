@@ -66,22 +66,10 @@ export function buildPaymentPromptSummary(paymentInstructions: any, language: st
     : `${depositLine}. Payment methods: ${names.join(", ")}. IBAN/account details are shared AFTER reservation confirmation — do NOT give IBAN/account numbers at this stage; say "details will be shared after confirmation".`;
 }
 
-// Modular currency formatting
-interface CurrencyConfig {
-  code: string;
-  symbol: string;
-  locale: string;
-  decimals: number;
-}
-
-const CURRENCIES: Record<string, CurrencyConfig> = {
-  TRY: { code: "TRY", symbol: "₺", locale: "tr-TR", decimals: 0 },
-  USD: { code: "USD", symbol: "$", locale: "en-US", decimals: 2 },
-  EUR: { code: "EUR", symbol: "€", locale: "de-DE", decimals: 2 },
-  SAR: { code: "SAR", symbol: "ر.س", locale: "ar-SA", decimals: 2 },
-  RUB: { code: "RUB", symbol: "₽", locale: "ru-RU", decimals: 0 },
-};
-
+// FIX2 (2026-07-25): CurrencyConfig/CURRENCIES/getCurrency KALDIRILDI — yalnız
+// eski local formatPrice (Intl) için vardı. Para birimi sembolleri+formatı artık
+// tek-kaynak formatPriceSync (currency-display.ts) üzerinden. Dil→para eşlemesi
+// (aşağıda) getCurrencyForLanguage için korunur.
 const DEFAULT_LANGUAGE_CURRENCIES: Record<string, string> = {
   tr: "TRY",
   en: "USD",
@@ -92,9 +80,6 @@ const DEFAULT_LANGUAGE_CURRENCIES: Record<string, string> = {
   es: "EUR",
 };
 
-const getCurrency = (code: string): CurrencyConfig => {
-  return CURRENCIES[code] || CURRENCIES.TRY;
-};
 
 function getCurrencyForLanguage(
   language: string,
@@ -115,14 +100,10 @@ function getCurrencyForLanguage(
   return DEFAULT_LANGUAGE_CURRENCIES[language] || "TRY";
 }
 
-function formatPrice(amount: number, currencyCode: string = "TRY"): string {
-  const currency = getCurrency(currencyCode);
-  const formatted = new Intl.NumberFormat(currency.locale, {
-    minimumFractionDigits: currency.decimals,
-    maximumFractionDigits: currency.decimals,
-  }).format(amount);
-  return `${formatted} ${currency.code}`;
-}
+// FIX2 (2026-07-25 CİLA): yerel formatPrice (Intl.NumberFormat) KALDIRILDI —
+// AR'da "٢٤٩٫٥٨ SAR" (Arapça-Hint rakam + SAR kodu) basıyordu, completion ise
+// "832﷼" (formatPriceSync). Artık kapora/kalan/tam-tutar da formatPriceSync
+// tek-zincirinden geçer → tüm dillerde completion ile aynı etiket/rakam-sistemi.
 
 // 2026-07-09 Faz 5 A1 (KRİTİK-PARA): eski convertPrice KALDIRILDI.
 // Kök: kendi fetch'i (GET, base'siz, zayıf validasyon) sessizce başarısız
@@ -132,7 +113,12 @@ function formatPrice(amount: number, currencyCode: string = "TRY"): string {
 // İKİ AYRI kur zinciri tutarsızdı. Şimdi TEK ZİNCİR: aynı util. Çevrim yine
 // mümkün değilse (rates boş/eksik) → hedef para birimi TRY'ye (tourCurrency'e)
 // DÜŞER: TL-sayı + TL-etiket. ASLA çapraz sayı/etiket basılmaz.
-import { getExchangeRatesOnce, convertSync } from "../utils/exchange-rates.ts";
+import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
+// FIX2 (2026-07-25 CİLA): kapora/kalan/tam-tutar completion-TOPLAMIYLA aynı tek-
+// zincirden (formatPriceSync) geçsin. Eski local formatPrice (Intl.NumberFormat)
+// AR'da "٢٤٩٫٥٨ SAR" (Arapça-Hint rakam + SAR kodu) basıyordu; completion ise
+// "832﷼" (﷼ + Batı-rakam). formatPriceSync tek-kaynak → aynı etiket/rakam-sistemi.
+import { formatPriceSync } from "../utils/currency-display.ts";
 
 /** Çevrim güvenli mi? from===to her zaman güvenli; değilse iki kur da mevcut olmalı. */
 function canConvert(from: string, to: string, rates: Record<string, number>): boolean {
@@ -167,6 +153,7 @@ export async function generatePaymentMessage(
     languageCurrencies?: any;
     primaryCurrency?: string;
     agencyPhone?: string | null;   // YENİ: fallback mesajında göstermek için
+    showMultiCurrency?: boolean;   // FIX2: completion ile aynı dual-display kararı
   },
 ): Promise<string> {
   // payment_instructions boşsa: sessiz boş yerine güvenli fallback mesaj döner.
@@ -182,17 +169,22 @@ export async function generatePaymentMessage(
   // Bu dili kullanan kullanıcı için hedef para birimini bul
   const desiredCurrency = getCurrencyForLanguage(language, options);
 
-  // 2026-07-09 Faz 5 A1: TEK KUR ZİNCİRİ (getExchangeRatesOnce+convertSync —
+  // 2026-07-09 Faz 5 A1 + FIX2: TEK KUR ZİNCİRİ (getExchangeRatesOnce+formatPriceSync —
   // completion özetiyle AYNI kaynak). Çevrilemiyorsa hedef TRY'ye (tourCurrency)
   // düşer → sayı ve etiket HER ZAMAN aynı para biriminde.
   const _rates = await getExchangeRatesOnce().catch(() => ({} as Record<string, number>));
   const _convertible = canConvert(tourCurrency, desiredCurrency, _rates);
-  const targetCurrency = _convertible ? desiredCurrency : tourCurrency;
   if (!_convertible && desiredCurrency !== tourCurrency) {
     console.warn(`[payment-message] A1: kur ${tourCurrency}→${desiredCurrency} çevrilemiyor (rates eksik) — etiket ${tourCurrency}'ye düştü`);
   }
-  const convertedTotal = convertSync(totalPrice, tourCurrency, targetCurrency, _rates);
-  const convertedDeposit = convertSync(depositAmount, tourCurrency, targetCurrency, _rates);
+  // FIX2: kapora/kalan/tam-tutar ÜÇÜ de ORİJİNAL tutar (tourCurrency) + formatPriceSync
+  // ile completion-toplamının BİREBİR aynı zincirinden geçer. formatPriceSync kendi
+  // içinde çevrilemezse tourCurrency'ye düşer → çapraz sayı/etiket ASLA basılmaz.
+  // AR: ﷼ + Arapça-Hint rakam; DE/FR/ES/RU: EUR/USD zinciri (completion ile aynı).
+  const _showDual = options?.showMultiCurrency !== false;
+  const _fmtDeposit = formatPriceSync(depositAmount, tourCurrency, language, _rates, _showDual, options?.languageCurrencies);
+  const _fmtRemaining = formatPriceSync(totalPrice - depositAmount, tourCurrency, language, _rates, _showDual, options?.languageCurrencies);
+  const _fmtFull = formatPriceSync(totalPrice, tourCurrency, language, _rates, _showDual, options?.languageCurrencies);
 
   const methods = paymentInstructions.payment_methods;
   const paymentType = paymentInstructions.payment_type || "deposit";
@@ -204,9 +196,9 @@ export async function generatePaymentMessage(
     tr: {
       title: "💳 ÖDEME BİLGİLERİ",
       paymentType: paymentType === "deposit" ? `Kapora (%${depositPercentage})` : "Tam Ödeme",
-      depositAmount: `Kapora Tutarı: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Kalan Tutar: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Tur gününde)`,
-      fullAmount: `Ödeme Tutarı: ${formatPrice(convertedTotal, targetCurrency)}`,
+      depositAmount: `Kapora Tutarı: ${_fmtDeposit}`,
+      remaining: `Kalan Tutar: ${_fmtRemaining} (Tur gününde)`,
+      fullAmount: `Ödeme Tutarı: ${_fmtFull}`,
       methods: "Ödeme Yöntemleriniz:",
       bankTransfer: "🏦 Havale/EFT:",
       bankName: "Banka:",
@@ -225,9 +217,9 @@ export async function generatePaymentMessage(
     en: {
       title: "💳 PAYMENT INFORMATION",
       paymentType: paymentType === "deposit" ? `Deposit (${depositPercentage}%)` : "Full Payment",
-      depositAmount: `Deposit Amount: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Remaining: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (On tour day)`,
-      fullAmount: `Payment Amount: ${formatPrice(convertedTotal, targetCurrency)}`,
+      depositAmount: `Deposit Amount: ${_fmtDeposit}`,
+      remaining: `Remaining: ${_fmtRemaining} (On tour day)`,
+      fullAmount: `Payment Amount: ${_fmtFull}`,
       methods: "Payment Methods:",
       bankTransfer: "🏦 Bank Transfer:",
       bankName: "Bank:",
@@ -246,9 +238,9 @@ export async function generatePaymentMessage(
     de: {
       title: "💳 ZAHLUNGSINFORMATIONEN",
       paymentType: paymentType === "deposit" ? `Anzahlung (${depositPercentage}%)` : "Vollzahlung",
-      depositAmount: `Anzahlungsbetrag: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Restbetrag: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Am Tourtag)`,
-      fullAmount: `Zahlungsbetrag: ${formatPrice(convertedTotal, targetCurrency)}`,
+      depositAmount: `Anzahlungsbetrag: ${_fmtDeposit}`,
+      remaining: `Restbetrag: ${_fmtRemaining} (Am Tourtag)`,
+      fullAmount: `Zahlungsbetrag: ${_fmtFull}`,
       methods: "Zahlungsmethoden:",
       bankTransfer: "🏦 Banküberweisung:",
       bankName: "Bank:",
@@ -267,9 +259,9 @@ export async function generatePaymentMessage(
     ru: {
       title: "💳 ПЛАТЕЖНАЯ ИНФОРМАЦИЯ",
       paymentType: paymentType === "deposit" ? `Депозит (${depositPercentage}%)` : "Полная оплата",
-      depositAmount: `Сумма депозита: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Остаток: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (В день тура)`,
-      fullAmount: `Сумма оплаты: ${formatPrice(convertedTotal, targetCurrency)}`,
+      depositAmount: `Сумма депозита: ${_fmtDeposit}`,
+      remaining: `Остаток: ${_fmtRemaining} (В день тура)`,
+      fullAmount: `Сумма оплаты: ${_fmtFull}`,
       methods: "Способы оплаты:",
       bankTransfer: "🏦 Банковский перевод:",
       bankName: "Банк:",
@@ -288,9 +280,9 @@ export async function generatePaymentMessage(
     ar: {
       title: "💳 معلومات الدفع",
       paymentType: paymentType === "deposit" ? `وديعة (${depositPercentage}٪)` : "الدفع الكامل",
-      depositAmount: `مبلغ الوديعة: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `المتبقي: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (في يوم الجولة)`,
-      fullAmount: `مبلغ الدفع: ${formatPrice(convertedTotal, targetCurrency)}`,
+      depositAmount: `مبلغ الوديعة: ${_fmtDeposit}`,
+      remaining: `المتبقي: ${_fmtRemaining} (في يوم الجولة)`,
+      fullAmount: `مبلغ الدفع: ${_fmtFull}`,
       methods: "طرق الدفع:",
       bankTransfer: "🏦 تحويل بنكي:",
       bankName: "البنك:",
@@ -309,9 +301,9 @@ export async function generatePaymentMessage(
     fr: {
       title: "💳 INFORMATIONS DE PAIEMENT",
       paymentType: paymentType === "deposit" ? `Acompte (${depositPercentage}%)` : "Paiement complet",
-      depositAmount: `Montant de l'acompte: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Reste: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (Le jour du circuit)`,
-      fullAmount: `Montant du paiement: ${formatPrice(convertedTotal, targetCurrency)}`,
+      depositAmount: `Montant de l'acompte: ${_fmtDeposit}`,
+      remaining: `Reste: ${_fmtRemaining} (Le jour du circuit)`,
+      fullAmount: `Montant du paiement: ${_fmtFull}`,
       methods: "Méthodes de paiement:",
       bankTransfer: "🏦 Virement bancaire:",
       bankName: "Banque:",
@@ -330,9 +322,9 @@ export async function generatePaymentMessage(
     es: {
       title: "💳 INFORMACIÓN DE PAGO",
       paymentType: paymentType === "deposit" ? `Depósito (${depositPercentage}%)` : "Pago completo",
-      depositAmount: `Monto del depósito: ${formatPrice(convertedDeposit, targetCurrency)}`,
-      remaining: `Restante: ${formatPrice(convertedTotal - convertedDeposit, targetCurrency)} (El día del tour)`,
-      fullAmount: `Monto del pago: ${formatPrice(convertedTotal, targetCurrency)}`,
+      depositAmount: `Monto del depósito: ${_fmtDeposit}`,
+      remaining: `Restante: ${_fmtRemaining} (El día del tour)`,
+      fullAmount: `Monto del pago: ${_fmtFull}`,
       methods: "Métodos de pago:",
       bankTransfer: "🏦 Transferencia bancaria:",
       bankName: "Banco:",
