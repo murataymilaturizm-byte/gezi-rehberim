@@ -128,8 +128,9 @@ async function fetchWithTimeout(
   }
 }
 
-const NLU_SYSTEM_PROMPT = `You are an NLU (Natural Language Understanding) system for a travel agency chatbot. 
+const NLU_SYSTEM_PROMPT = `You are an NLU (Natural Language Understanding) system for a travel agency chatbot.
 Your job is to analyze user messages and extract intents and entities.
+Normalize common typos/misspellings when interpreting (e.g. "rezervasyn"→reservation, "onaylyrm"→confirm, "teleon"→phone) — evaluate the INTENDED meaning across all supported languages (tr,en,de,fr,es,ru,ar).
 
 **CRITICAL RULES FOR TOUR MATCHING:**
 - Only extract destination/tour_name when user is EXPLICITLY asking about tours or destinations
@@ -234,6 +235,8 @@ NEVER assume the user wants to stay in COMPLETED forever. Trust their words.
     "2 kişi" / "2 people" → people_count: { adults: 2 }
     "2 yetişkin" → people_count: { adults: 2 }
     "1 çocuk" / "1 child" → people_count: { children: 1 }
+    "نحن شخصان" / "شخصين" (Arabic dual = 2) → people_count: { adults: 2 }
+    "двое" / "трое" (Russian collective) → people_count: { adults: 2 } / { adults: 3 }
   CRITICAL: when message mentions BOTH adults and children, return BOTH fields.
   Never drop children when adults is present.
 - full_name: Customer's full name (ONLY 2-3 word combinations that are clearly proper names, NOT common words or phrases)

@@ -15,7 +15,10 @@
 
 // Yetişkin / genel "insan" (sayıya çevrilince paxAdult).
 const ADULT_ALT =
-  "ki[şs]i(?:yiz|yim)?|insan|yeti[şs]kin|person|persons|people|ppl|adult|adults|pax|guest|guests|personen|erwachsene[rn]?|personne|personnes|adulte|adultes|persona|personas|adulto|adultos|человек|человека|люди|взросл[\\p{L}]*|гост[\\p{L}]*|(?:[لب])?شخص|(?:[لب])?شخصين|(?:[لب])?أشخاص|بالغ|بالغين";
+  // 2026-07-25 PAKET-A FIX5c (KÖK-6): AR ikil-NOMİNATİF شخصان eklendi ("نحن شخصان" =
+  // "biz iki kişiyiz" pax çıkarılamıyordu — yalnız akuzatif شخصين vardı). شخصان'ı شخص'ten
+  // ÖNCE koy (alternation ilk-eşleşme; şخص lookahead'e takılırdı zaten ama açık olsun).
+  "ki[şs]i(?:yiz|yim)?|insan|yeti[şs]kin|person|persons|people|ppl|adult|adults|pax|guest|guests|personen|erwachsene[rn]?|personne|personnes|adulte|adultes|persona|personas|adulto|adultos|человек|человека|люди|взросл[\\p{L}]*|гост[\\p{L}]*|(?:[لب])?شخصان|(?:[لب])?شخصين|(?:[لب])?أشخاص|(?:[لب])?شخص|بالغ|بالغين";
 
 // Çocuk (yalnız CONTEXT + digit→paxChild; paxAdult'a çevrilmez).
 const CHILD_ALT =

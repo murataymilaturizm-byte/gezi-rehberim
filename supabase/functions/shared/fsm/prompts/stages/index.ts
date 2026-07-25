@@ -483,7 +483,6 @@ ${tourDetails ? `📍 TUR DETAYLARI (after-sales soruları İÇİN — SADECE bu
 🎯 YAPILACAK:
 - Kullanıcının sorusunu yanıtla.
 - "Rezervasyonunuz tamamlandı" tekrar DEME (zaten söylendi).
-- Gerekirse "Acentemiz en kısa sürede sizinle iletişime geçecek" ekle.
 
 🚨 AFTER-SALES — ACENTE YÖNLENDİRME KURALLARI:
 - DEĞİŞİKLİK / İPTAL talebi: "Rezervasyon değişikliği ve iptali için lütfen doğrudan acentemizle iletişime geçin" de. Botu KENDIN değiştirme veya iptal etme — bu kritik iş kuralı.
@@ -563,7 +562,6 @@ ${tourDetails ? `📍 TOUR DETAILS (for after-sales questions — use ONLY this 
 🎯 DO:
 - Answer the user's question.
 - Do NOT say "your reservation is confirmed" again (already confirmed).
-- If relevant, add "Our team will contact you shortly."
 
 🚨 AFTER-SALES — AGENCY REFERRAL RULES:
 - CHANGE / CANCELLATION request: Say "For booking changes and cancellations, please contact our agency directly." NEVER change or cancel the booking yourself — this is a critical business rule.

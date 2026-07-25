@@ -82,19 +82,24 @@ const NUMBER_WORDS: Record<string, Record<string, number>> = {
   ru: {
     один: 1, одна: 1, два: 2, двое: 2, три: 3, трое: 3,
     четыре: 4, пять: 5, шесть: 6, семь: 7, восемь: 8,
-    девять: 9, десять: 10,
+    девять: 9, десять: 10, одиннадцать: 11, двенадцать: 12,
+    тринадцать: 13, четырнадцать: 14, пятнадцать: 15, двадцать: 20,
   },
   ar: {
     واحد: 1, اثنان: 2, اثنين: 2, ثلاثة: 3, أربعة: 4,
     خمسة: 5, ستة: 6, سبعة: 7, ثمانية: 8, تسعة: 9, عشرة: 10,
+    "أحد عشر": 11, "اثنا عشر": 12, "ثلاثة عشر": 13, "أربعة عشر": 14,
+    "خمسة عشر": 15, عشرون: 20,
   },
   fr: {
     un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5,
-    six: 6, sept: 7, huit: 8, neuf: 9, dix: 10,
+    six: 6, sept: 7, huit: 8, neuf: 9, dix: 10, onze: 11,
+    douze: 12, treize: 13, quatorze: 14, quinze: 15, vingt: 20,
   },
   es: {
     uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5,
-    seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10,
+    seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11,
+    doce: 12, trece: 13, catorce: 14, quince: 15, veinte: 20,
   },
 };
 

@@ -1036,3 +1036,17 @@ process-message.ts B-DUR2 liste (PM:~858), B-DUR2 yok (PM:~869), 14a-3 COMPLETED
   `_cxlResCtxRe` guard'ına takılıyor → LLM'e düşer. Guard'ı gevşetmek "iptal etmeyeceğim"
   (olumsuzlama) yanlış-pozitifi riski → AYRI karar (Murat). Gerçekçi ifade
   ("rezervasyonumu iptal...") J-14 → complaints kaydı ile ÇALIŞIR.
+
+## 9. PAKET-A — 6-dil test token/kapı fix'leri (2026-07-25)
+
+Fable 7-kök teşhisinin S-boyutlu kökleri (KÖK-1 yapısal DIŞARIDA — PAKET-B):
+- **KÖK-2 (FIX1/2a):** confirmation-words POS_ALT'a rezervasyon-fiili onayları (ar لنحجز/احجز/نحجز/ممتاز · en let's book/book it · tr rezerve ed(elim)? · de buchen wir · fr réservons · es reservemos · ru бронируем/давай забронируем) + kürasyonlu TR typo'ları (onaylyrm/tamm/evt — exact-token, fuzzy YASAK). **FP-disiplini:** tüm tüketiciler onay-bağlamlı (T14/pendingCancelConfirm/F4-L2/phoneEscalation/proposedDateId — onay-dışı tüketici YOK). "onaylamıyorum"→onay-değil korundu (negative-guard).
+- **KÖK-2 typo (FIX2b):** NLU sistem-prompt'una tolerans direktifi (yazım-hatası normalize). Levenshtein/fuzzy YASAK (karar).
+- **KÖK-4 (FIX3):** COMPLETED prompt'undan "'team will contact' ekle" direktifi 7 dilde KALDIRILDI (validator sahte-onay deseni sayıp tüm cevabı REDIRECT_COMPLETED ile eziyordu — prompt validator'ın kendi tuzağıydı; EN/FR/ES/RU çarpışıyordu, DE/AR gramer-tesadüfüyle kurtuluyordu). roles/*.ts yasak-listesi DOKUNULMADI. Validator DOKUNULMADI.
+- **KÖK-5 (FIX4):** X8 (en ucuz/pahalı) guard'ı `_isExploreStage || COMPLETED`. `_isExploreStage`'in KENDİSİ genişletilMEZ (B1 bütçe-parseri COMPLETED'a girip telefon/dekont no'yu fiyat-aralığı sanar — R5 bug). X8 return context'i MUTATE ETMEZ (`newContext: context`) → after-sales state korunur.
+- **KÖK-6 (FIX5):** PRICE_QUESTION_RE FR `prix|tarif|coûte*` + RU yapısal fix (`сколько` tek-token da geçer, стоимость/почём); people-words AR ikil-nominatif `شخصان` (X9-kapısı NLU-pax'ı artık atmaz); NLU-prompt AR-ikil örneği.
+- **KÖK-7 (FIX6):** _flowKws waiting_for_name çekim-toleranslı (de name[ns]?/ru имя|фамили|зовут — DE "Ihren Namen"/RU "ваше полное имя" bitişiklik-deseninde kaçıp çift isim-sorusu üretiyordu).
+- **KÖK-1a token-parçası (FIX7):** change-detection RU `на самом деле|а не|вернее|точнее` (F4-L2/BELİRSİZ MANTIĞI DOKUNULMADI — PAKET-B). tr typo "aslnda" (ı-opsiyonel).
+- **S9 mikro (FIX8):** paxTextMap.en çoğul (adults/children); NUMBER_WORDS FR/ES/RU/AR 20'ye (C3 ay-guard 7-dil tek-kaynak MONTH_ALTERNATION yeni sayıları tarih-bağlamında engeller — kanıtlı; AR çok-kelime key'ler tırnaklı).
+
+Kanıt: ampirik regex 14/14 + ay-guard 5/5 + confirm/FP 13/13; canlı 9/9 (AR لنحجز→COMPLETED+﷼; RU/FR fiyat ilk-turda; AR شخصان→pax=2; EN COMPLETED saat-cevabı ✅-duvarı yok; X8 Antalya Rafting 18$/850₺; DE tek isim-sorusu; onaylyrm→onay; onaylamıyorum→onay-değil). state-machine + field-sync 7/7 + phone 19/19.

@@ -562,7 +562,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price|priciest|teuerste|(?:le\s+)?plus\s+cher|m[áa]s\s+car[oa]|самый\s+дорог[\p{L}]*|дороже\s+всего|(?:ال)?أغلى|أغلى)(?![\p{L}\p{N}])/iu;
   const _matchesAsc = _superlativeAsc.test(message);
   const _matchesDesc = _superlativeDesc.test(message);
-  if (_isExploreStage && !_richTourName && (_matchesAsc || _matchesDesc) && tours.length > 0) {
+  // KÖK-5 (2026-07-25): COMPLETED'da da X8 (en ucuz/pahalı) deterministik cevaplasın —
+  // eskiden yalnız explore-stage'di, COMPLETED dışlaması R5-fix'inin kaza-eseri kalıntısıydı.
+  // _isExploreStage'in KENDİSİ genişletilmez (B1 bütçe-parseri COMPLETED'a girip telefon/
+  // dekont numaralarını fiyat-aralığı sanabilir — R5 bug). X8 return context'i MUTATE ETMEZ
+  // (aşağıda newContext: context) → after-sales state (reservationConfirmed/reservationInfo) korunur.
+  const _x8StageOk = _isExploreStage || context.stage === "COMPLETED";
+  if (_x8StageOk && !_richTourName && (_matchesAsc || _matchesDesc) && tours.length > 0) {
     const _toursPriced = tours
       .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
       .filter((x: any) => typeof x.price === "number" && x.price > 0);
@@ -3952,7 +3958,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const childCount = newContext.reservationInfo.paxChild || 0;
     const paxTextMap: Record<string, string> = {
       tr: `${adultCount} yetişkin${childCount ? `, ${childCount} çocuk` : ""}`,
-      en: `${adultCount} adult${childCount ? `, ${childCount} child` : ""}`,
+      en: `${adultCount} adult${adultCount > 1 ? "s" : ""}${childCount ? `, ${childCount} child${childCount > 1 ? "ren" : ""}` : ""}`,
       de: `${adultCount} Erwachsene${childCount ? `, ${childCount} Kind${childCount > 1 ? "er" : ""}` : ""}`,
       ru: `${adultCount} взросл${adultCount === 1 ? "ый" : "ых"}${childCount ? `, ${childCount} ребёнок` : ""}`,
       ar: `${adultCount} بالغ${childCount ? `، ${childCount} طفل` : ""}`,
@@ -4640,7 +4646,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // LLM cevabında bu adımın anahtar kelimesi var mı? Varsa zaten doğru sordu.
     const _flowKws: Record<string, RegExp> = {
       waiting_for_pax: /(kaç\s*kişi|kac\s*kisi|kişi\s*say|kisi\s*say|how\s*many|wie\s*viele|combien|cuántas|cuantas|сколько|كم)/i,
-      waiting_for_name: /(ad[\s-]?soyad|isminiz|adınız|adiniz|full\s*name|your\s*name|ihr\s*name|nom\s*complet|nombre\s*completo|ваше\s*имя|اسم)/i,
+      // FIX6 (KÖK-7): çekim-toleranslı — DE "Ihren Namen"/RU "ваше полное имя"/"как вас
+      // zovут" bitişiklik-bağımlı desende kaçıyordu → çift isim-sorusu. name[ns]?/имя/фамили/зовут.
+      waiting_for_name: /(ad[\s-]?soyad|isminiz|ad[ıi]n[ıi]z|full\s*name|your\s*name|name[ns]?|nom|nombre|ваше\s*имя|имя|фамили|зовут|اسم)/i,
       waiting_for_phone: /(telefon|phone|numaranız|numaraniz|téléphone|teléfono|телефон|هاتف)/i,
       waiting_for_email: /(\bemail\b|e-?mail|e-?posta|почт|بريد)/i,
     };

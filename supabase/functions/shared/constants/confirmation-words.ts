@@ -20,14 +20,18 @@
 // Pattern disiplini: \p{L}\p{N} lookaround + /iu (Yan #8 — \b YASAK).
 
 // Per-dil POZİTİF alternation gövdeleri (RegExp'e gömülür).
+// 2026-07-25 PAKET-A FIX1/FIX2a: rezervasyon-fiili onayları (KÖK-2: "لنحجز/let's book"
+// gibi doğal "hadi rezerve edelim" ifadeleri hiçbir dilde onay sayılmıyordu → CONFIRMING
+// deadlock) + kürasyonlu sık typo'lar (exact-token, fuzzy YOK). FP-disiplini: tüm
+// tüketiciler onay-bağlamlı (T14/pendingCancelConfirm/F4-L2/phoneEscalation/proposedDateId).
 const POS_ALT: Record<string, string> = {
-  tr: "evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla(?:d[ıi]m|d[ıi]k)?|tasdik|kesinlikle|kesinleştir(?:d[ıi]m|d[ıi]k)?|tamamdır|onaylıorum|peki|tabii|aynen",
-  en: "yes|confirm(?:ed)?|approve[d]?|ok|okay|sure|right|correct|definitely|agreed|deal|absolutely|yep|yeah|yup|sounds\\s+good|perfect|go\\s+ahead",
-  de: "ja|best[äa]tig(?:en|t)?|ok|richtig|genau|stimmt|einverstanden|natürlich|passt|perfekt|in\\s+ordnung|jawohl",
-  fr: "oui|confirm[ée]?|d'accord|ok|exact|parfait|absolument|c'est\\s+bon|[çc]a\\s+marche|entendu|tr[èe]s\\s+bien",
-  es: "si|s[íi]|confirm(?:o|ado)|vale|ok|correcto|claro|exacto|perfecto|de\\s+acuerdo|est[áa]\\s+bien|dale",
-  ru: "да|подтверждаю|ок|верно|правильно|согласен|согласна|конечно|хорошо|отлично|договорились|именно",
-  ar: "نعم|أكد|أؤكد|موافق|موافقه|تمام|صحيح|بالتأكيد|حسنا|ماشي|اوكي|أوكي|ايوه|أجل",
+  tr: "evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla(?:d[ıi]m|d[ıi]k)?|tasdik|kesinlikle|kesinleştir(?:d[ıi]m|d[ıi]k)?|tamamdır|onaylıorum|peki|tabii|aynen|rezerve\\s+ed(?:elim|iyorum)?|onaylyrm|onaylıyrm|onylıyorum|tamm|evt",
+  en: "yes|confirm(?:ed)?|approve[d]?|ok|okay|sure|right|correct|definitely|agreed|deal|absolutely|yep|yeah|yup|sounds\\s+good|perfect|go\\s+ahead|let'?s\\s+book|book\\s+it",
+  de: "ja|best[äa]tig(?:en|t)?|ok|richtig|genau|stimmt|einverstanden|natürlich|passt|perfekt|in\\s+ordnung|jawohl|buchen\\s+wir|lass\\s+uns\\s+buchen",
+  fr: "oui|confirm[ée]?|d'accord|ok|exact|parfait|absolument|c'est\\s+bon|[çc]a\\s+marche|entendu|tr[èe]s\\s+bien|r[ée]servons",
+  es: "si|s[íi]|confirm(?:o|ado)|vale|ok|correcto|claro|exacto|perfecto|de\\s+acuerdo|est[áa]\\s+bien|dale|reservemos",
+  ru: "да|подтверждаю|ок|верно|правильно|согласен|согласна|конечно|хорошо|отлично|договорились|именно|бронируем|давай\\s+забронируем",
+  ar: "نعم|أكد|أؤكد|موافق|موافقه|تمام|صحيح|بالتأكيد|حسنا|ماشي|اوكي|أوكي|ايوه|أجل|لنحجز|احجز|نحجز|ممتاز",
 };
 
 const _wrap = (body: string) => new RegExp(`(?<![\\p{L}\\p{N}])(?:${body})(?![\\p{L}\\p{N}])`, "iu");

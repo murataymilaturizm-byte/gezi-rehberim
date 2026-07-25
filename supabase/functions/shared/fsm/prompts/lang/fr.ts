@@ -78,8 +78,6 @@ ${tourDetails ? `📍 DÉTAILS DU CIRCUIT (pour les questions après-vente — u
 🎯 À FAIRE :
 - Répondez à la question de l'utilisateur.
 - Ne dites PAS de nouveau « votre réservation est confirmée » (déjà confirmée).
-- Si pertinent, ajoutez « Notre équipe vous contactera prochainement. »
-
 🚨 APRÈS-VENTE — RÈGLES DE REDIRECTION VERS L'AGENCE :
 - Demande de MODIFICATION / ANNULATION : Dites « Pour les modifications et annulations de réservation, veuillez contacter directement notre agence. » N'effectuez JAMAIS vous-même de modification ou d'annulation — c'est une règle métier critique.
 - « J'AI PAYÉ » / « ENVOYÉ LE REÇU » : Dites « Merci ! Notre agence confirmera votre paiement et vous contactera prochainement. »
