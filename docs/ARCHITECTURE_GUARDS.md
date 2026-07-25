@@ -1107,3 +1107,49 @@ Mini-tur kalıntıları (4 fix + 1 teşhis). PAKET-A/B mantığı DOKUNULMADI.
   direktifi → yine de basarsa HALÜSİNASYON (M1 ihlali). NOT: `formatTourDetails` AR dalı YOK →
   AR EN-etiketli bloğa düşer (veri akar, etiket İngilizce). Kesin sınıflama: ilgili tur satırında
   `SELECT tur_sure, hotel_name, hotel_stars, konaklama, program_kisa, gezilecek_yerler`.
+
+## 11. SEO/GEO — TEK-HOST + SSG PRERENDER (turzzai.com, 2026-07-25)
+
+**§11.1 TEK-KANONİK-HOST İLKESİ (apex = `turzzai.com`).** Kanonik host **apex**; `www`
+apex'e **kalıcı (301/308)** redirect eder. ALTI sinyal AYNI host'ta olmak ZORUNDA, aksi
+halde Google "sayfa yönlendirmeli" sınıfına sokar, dizinlenme durur:
+1. Sunucu redirect yönü (www→apex, kalıcı) — **Vercel Dashboard** (kod değil).
+2. `<link rel="canonical">` — SEOHead `SITE_URL="https://turzzai.com"` (apex).
+3. `sitemap.xml` 112 URL — `scripts/generate-sitemap.mjs` `SITE_URL` (apex).
+4. `robots.txt` `Sitemap:` satırı (apex).
+5. Site-içi linkler — React Router relative (host-agnostik).
+6. `og:url` + JSON-LD `url`/`logo` — SEOHead + index.html (apex).
+Yeni bir mutlak-URL sinyali eklenirken apex kullan; host karıştırma YASAK.
+
+**§11.2 SSG PRERENDER (pazarlama ham HTML, panel SPA).** Pazarlama + blog rotaları
+**build-time prerender** edilir (`vite-react-ssg`, saf Node SSR — Vercel-deterministik,
+Chromium YOK). AI crawler'lar (GPTBot/ClaudeBot/PerplexityBot — JS çalıştırmaz) + Google
+ham HTML'de başlık/metin/fiyat/meta/schema görür.
+- **Entry:** `src/main.tsx` → `ViteReactSSG({ routes })`; rotalar `src/routes.tsx`
+  (declarative `<Routes>` yerine `RouteRecord[]` + kök `Layout` provider ağacı + `<Outlet/>`).
+- **Head TEK-KAYNAK:** `SEOHead` artık `react-helmet-async` DEĞİL `vite-react-ssg <Head>`
+  kullanır (kendi bundled helmet instance'ı → SSG toplar). index.html'den STATİK
+  title/description/og KALDIRILDI (Head-inject ile çiftleniyordu → statik-default tüm
+  sayfalarda kazanıyordu). Her sayfada TEKİL, sayfa-özel `<title>`/canonical/og/schema.
+- **Prerender seti = sitemap.xml:** `vite.config.ts` `ssgOptions.includedRoutes` sitemap'i
+  okur → prerender-seti ≡ sitemap-seti (tek-kaynak). Panel (`/admin`,`/auth`,`/reset-password`)
+  sitemap'te YOK → prerender-DIŞI (SPA kalır).
+- **Panel flash YOK:** `scripts/spa-fallback.mjs` (postbuild) `dist/index.html`'den boş-#root
+  `spa-fallback.html` üretir; `vercel.json` panel rotalarını buraya rewrite eder →
+  prerender'lı ana sayfa içeriği panelde görünmez. Panel davranışı SPA olarak AYNEN korunur.
+- **Vercel:** `cleanUrls: true` (`/foo`→`foo.html`) + catch-all rewrite `/index.html`
+  (filesystem'den sonra çalışır → prerender dosyaları kazanır, bilinmeyen→SPA).
+- **SSR-safety guard'ları (module-load/render'da browser-API):** `src/ssr-polyfill.ts`
+  (main.tsx İLK import — in-memory `localStorage` shim, YALNIZ Node'da; `window` polyfill YOK
+  → izomorfik guard'lar bozulmaz), i18n + Supabase client `typeof localStorage` guard,
+  ThemeToggle `typeof window` guard. Blog `import.meta.glob(eager)` → build-time bundle'da.
+- **KURAL:** yeni bir bileşen render-anında `localStorage`/`window`/`document` OKURSA
+  (useState initializer / render gövdesi — effect/handler DEĞİL) prerender çöker →
+  `typeof` guard'la veya `<ClientOnly>` (vite-react-ssg) ile sar. Pazarlama sayfası
+  render-anında Supabase/react-query fetch YAPMAZ (prerender boş içerik basar).
+- **Structured data:** index.html sitewide Organization + SoftwareApplication (apex);
+  ana sayfa FAQPage (Index SEOHead `schema`, i18n `faq.items` tek-kaynak, homepage-only);
+  blog post sayfaları Article schema (BlogPost). Hepsi prerender çıktısında GÖMÜLÜ (JS-inject değil).
+- **robots.txt:** AI/GEO crawler'ları (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot,
+  Claude-SearchBot, PerplexityBot, Google-Extended, Meta-ExternalAgent…) AÇIKÇA izinli;
+  panel/api Disallow. `public/llms.txt` GEO sinyali (ürün tanımı + önemli sayfa linkleri).

@@ -9,45 +9,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Primary Meta ————————————————————————————————————————————————
-         SEO-FIX (2026-07-10): STATİK canonical + og:url KALDIRILDI.
-         KÖK: SPA'da her route aynı index.html'i servis eder — hardcode
-         canonical="https://turzzai.com/" yüzünden Google HER SAYFAYI
-         "ana sayfanın kopyası" sayıyordu (indexleme şikâyetinin kökü).
-         Canonical artık SADECE React-Helmet'ten, sayfa-bazlı üretilir
-         (SEOHead default=pathname). Aşağıdaki title/description/og
-         etiketleri data-rh="true" taşır: react-helmet-async bunları
-         KENDİ yönetimine alıp sayfa değerleriyle DEĞİŞTİRİR (çiftlenme
-         yok); JS-öncesi ilk-HTML'de ana-sayfa değerleri görünür kalır. -->
-    <title>Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot</title>
-    <meta data-rh="true" name="description" content="Turzz AI ile WhatsApp üzerinden 7/24 otomatik tur satışı yapın. 7 dil desteği, AI destekli rezervasyon asistanı, tur operatörleri için akıllı chatbot. 14 gün ücretsiz dene." />
-    <meta data-rh="true" name="keywords" content="whatsapp chatbot seyahat acentesi, ai tur rezervasyonu, tur operatörü yazılımı, otomatik tur satışı, whatsapp bot turizm, seyahat acentesi yazılımı" />
+    <!-- Meta/OG/Twitter/canonical: SEOHead (vite-react-ssg Head) sayfa-bazlı üretir.
+         Statik meta'lar 2026-07-25 SSG'de kaldırıldı (Head-inject ile çiftleniyordu). -->
     <meta name="author" content="Turzz AI" />
-    <meta name="robots" content="index, follow" />
-
-    <!-- Open Graph (data-rh: Helmet sayfa-bazlı değiştirir) -->
-    <meta data-rh="true" property="og:title" content="Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot" />
-    <meta data-rh="true" property="og:description" content="WhatsApp üzerinden 7/24 otomatik tur satışı. 7 dil desteği, AI rezervasyon asistanı. 14 gün ücretsiz dene." />
-    <meta data-rh="true" property="og:type" content="website" />
-    <meta data-rh="true" property="og:image" content="https://turzzai.com/og-default.jpg" />
-    <meta data-rh="true" property="og:image:type" content="image/jpeg" />
-    <meta data-rh="true" property="og:image:width" content="1200" />
-    <meta data-rh="true" property="og:image:height" content="630" />
-    <meta data-rh="true" property="og:site_name" content="Turzz AI" />
-    <meta data-rh="true" property="og:locale" content="tr_TR" />
-
-    <!-- Twitter Card (data-rh: Helmet sayfa-bazlı değiştirir) -->
-    <meta data-rh="true" name="twitter:card" content="summary_large_image" />
-    <meta data-rh="true" name="twitter:title" content="Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot" />
-    <meta data-rh="true" name="twitter:description" content="WhatsApp üzerinden 7/24 otomatik tur satışı. 7 dil desteği, AI rezervasyon asistanı." />
-    <meta data-rh="true" name="twitter:image" content="https://turzzai.com/og-default.jpg" />
 
     <!-- Favicon -->
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
     <link rel="icon" href="/favicon.png" type="image/png" sizes="16x16" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
-    <!-- JSON-LD Organization Schema -->
+    <!-- JSON-LD Organization Schema (sitewide, ham HTML — kanonik host: apex) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -63,6 +34,36 @@
         "availableLanguage": ["Turkish", "English"]
       },
       "sameAs": []
+    }
+    </script>
+
+    <!-- JSON-LD SoftwareApplication Schema (sitewide, ham HTML — SEO/GEO ürün sinyali) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Turzz AI",
+      "url": "https://turzzai.com",
+      "description": "Seyahat acenteleri ve tur operatörleri için WhatsApp tabanlı, yapay zeka destekli rezervasyon chatbot'u. 7 dilde 7/24 otomatik tur satışı, rezervasyon yönetimi ve çok dilli müşteri hizmetleri.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "inLanguage": "tr",
+      "offers": {
+        "@type": "Offer",
+        "price": "3999",
+        "priceCurrency": "TRY",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "3999",
+          "priceCurrency": "TRY",
+          "unitText": "MONTH"
+        }
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Turzz AI",
+        "url": "https://turzzai.com"
+      }
     }
     </script>
 

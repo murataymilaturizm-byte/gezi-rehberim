@@ -1,0 +1,16 @@
+# Turzz AI
+
+> Seyahat acenteleri ve tur operatörleri için WhatsApp tabanlı, yapay zeka destekli rezervasyon chatbot'u. 7 dilde (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Rusça, Arapça) 7/24 otomatik tur satışı, rezervasyon yönetimi ve çok dilli müşteri hizmetleri. Başlangıç planı 3.999₺/ay'dan başlar; kredi kartı gerektirmeyen ücretsiz demo mevcut.
+
+## Önemli Sayfalar
+- [Ana sayfa](https://turzzai.com/): Ürün genel bakışı, özellikler ve fiyatlandırma
+- [WhatsApp Chatbot (Seyahat Acentesi)](https://turzzai.com/whatsapp-chatbot-seyahat-acentesi): Acenteler için WhatsApp chatbot çözümü
+- [AI Tur Rezervasyonu](https://turzzai.com/ai-tur-rezervasyonu): Yapay zeka ile otomatik tur rezervasyonu
+- [Çok Dilli Müşteri Hizmetleri](https://turzzai.com/cok-dilli-musteri-hizmetleri): 7 dilde otomatik yanıt
+- [Tur Otomasyonu](https://turzzai.com/tur-otomasyonu): Uçtan uca tur satış otomasyonu
+- [Nasıl Başlarım](https://turzzai.com/nasil-baslarim): Kurulum rehberi ve planlar
+- [Blog](https://turzzai.com/blog): Sektör rehberleri ve içerikler
+- [Yardım / SSS](https://turzzai.com/yardim): Sık sorulan sorular
+
+## İletişim
+- E-posta: info@turzzai.com

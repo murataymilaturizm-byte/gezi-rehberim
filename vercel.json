@@ -1,5 +1,10 @@
 {
+  "cleanUrls": true,
   "rewrites": [
+    { "source": "/admin/:path*", "destination": "/spa-fallback.html" },
+    { "source": "/admin", "destination": "/spa-fallback.html" },
+    { "source": "/auth", "destination": "/spa-fallback.html" },
+    { "source": "/reset-password", "destination": "/spa-fallback.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

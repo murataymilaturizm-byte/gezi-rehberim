@@ -1,4 +1,8 @@
-import { Helmet } from "react-helmet-async";
+// SEO-FIX (2026-07-25 SSG): react-helmet-async yerine vite-react-ssg <Head>.
+// Sebep: prerender'da head'i vite-react-ssg TOPLAR (kendi bundled react-helmet-
+// async instance'ı) → canonical/og/title/schema statik HTML'e gömülür. Projenin
+// ayrı react-helmet-async instance'ı SSG'de toplanmazdı. JSX API aynı.
+import { Head } from "vite-react-ssg";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
@@ -63,7 +67,7 @@ export const SEOHead = ({
   const ogLocale = OG_LOCALE_MAP[i18n.language] || "tr_TR";
 
   return (
-    <Helmet>
+    <Head>
       <html lang={i18n.language} dir={i18n.language === "ar" ? "rtl" : "ltr"} />
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
@@ -100,6 +104,6 @@ export const SEOHead = ({
       {schema && (
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       )}
-    </Helmet>
+    </Head>
   );
 };

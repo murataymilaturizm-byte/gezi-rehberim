@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 
 export const ThemeToggle = () => {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
+    // SSR/SSG-safe: prerender'da window/localStorage YOK → varsayılan "light"
+    // (index.html inline script gerçek temayı zaten <html>'e uygular; istemcide
+    // initializer tekrar koşup doğru değeri alır).
+    if (typeof window === "undefined") return "light";
     const stored = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     return (stored as "light" | "dark") || (prefersDark ? "dark" : "light");

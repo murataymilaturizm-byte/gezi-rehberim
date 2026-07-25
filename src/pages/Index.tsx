@@ -83,12 +83,27 @@ const Index = () => {
     });
   };
 
+  // İŞ 4b (2026-07-25): Homepage FAQPage JSON-LD — SSS bölümüyle AYNI i18n kaynağı
+  // (faq.items). SEOHead.schema → vite-react-ssg <Head> ile prerender çıktısına
+  // (yalnız ana sayfa) gömülür. Prerender'da TR; istemcide dil değişince güncellenir.
+  const _faqKeys = ["salesIncrease", "setup", "whatsappCost", "payment", "tourLimit", "cancellation", "addingTours"];
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: _faqKeys.map((k) => ({
+      "@type": "Question",
+      name: t(`faq.items.${k}.question`),
+      acceptedAnswer: { "@type": "Answer", text: t(`faq.items.${k}.answer`) },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <SEOHead
         title="Turzz AI - Seyahat Acenteleri için WhatsApp Chatbot"
         description="WhatsApp üzerinden 7/24 otomatik tur satışı. 7 dil desteği, AI destekli rezervasyon asistanı. 14 gün ücretsiz deneyin."
         canonical="/"
+        schema={faqSchema}
       />
       {/* Header */}
       <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">

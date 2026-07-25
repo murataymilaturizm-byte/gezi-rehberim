@@ -19,11 +19,17 @@ const resources = {
   es: { translation: es },
 };
 
+// SSR/SSG-safe: prerender (Node) ortamında localStorage YOK. typeof guard'ı
+// olmadan module-load anında ReferenceError → build çöker. Prerender'da varsayılan
+// 'tr' render edilir; istemcide RtlEffect + i18n gerçek dile geçer.
+const _initialLng =
+  (typeof localStorage !== 'undefined' && localStorage.getItem('preferred-language')) || 'tr';
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: localStorage.getItem('preferred-language') || 'tr',
+    lng: _initialLng,
     fallbackLng: 'tr',
     interpolation: {
       escapeValue: false,

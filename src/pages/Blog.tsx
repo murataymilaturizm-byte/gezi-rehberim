@@ -53,7 +53,10 @@ function getLangDisplayName(uiLang: string, targetLang: string): string {
 }
 
 function BlogCard({ post, lang }: { post: BlogPost; lang: string }) {
-  const { t } = useTranslation();
+  // FIX (2026-07-25): i18n destructure'a eklendi — isFallback bloğu (satır ~65)
+  // i18n.language kullanıyordu ama scope'da yoktu → RU/AR fallback'te ReferenceError
+  // (prerender + istemci). Latent bug, prerender ortaya çıkardı.
+  const { t, i18n } = useTranslation();
   const dateLocale = DATE_LOCALES[lang] || "en-GB";
 
   return (

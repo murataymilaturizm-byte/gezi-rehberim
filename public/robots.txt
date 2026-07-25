@@ -1,5 +1,33 @@
+# robots.txt — turzzai.com
+# Kanonik host: turzzai.com (apex). Tek-host ilkesi (ARCHITECTURE_GUARDS §SEO).
+
+# Tüm crawler'lar: pazarlama/içerik sayfaları serbest, panel/api kapalı.
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /auth
+Disallow: /reset-password
 Disallow: /api
+
+# AI / GEO crawler'ları — AÇIKÇA izinli (pazarlama içeriği + ürün tanıma).
+# Not: bu UA'lar burada listelendiği için '*' grubunu görmezler; panel Disallow
+# kuralları TEKRAR edilir ki /admin, /auth, /reset-password yine korunsun.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Meta-ExternalAgent
+User-agent: Meta-ExternalFetcher
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /api
+
 Sitemap: https://turzzai.com/sitemap.xml
