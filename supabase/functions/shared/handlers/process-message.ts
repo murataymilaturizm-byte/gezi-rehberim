@@ -138,16 +138,28 @@ async function _fileCancellationRequest(
     type: "cancellation_request",
     status: "new",
   }).then(() => {});
-  const _agPhoneCxl = agency.phone_public ? ` Dilerseniz${_agencyPhoneSuffix(agency.phone_public)} numarasından da ulaşabilirsiniz.` : "";
-  const _agPhoneCxlEn = agency.phone_public ? ` You can also reach us at${_agencyPhoneSuffix(agency.phone_public)}.` : "";
+  // CİLA-2 İŞ4 (2026-07-26): telefon-eki 7-dil TEK-KAYNAK. Eski hâlde de/fr/es/ru/ar
+  // hepsi İngilizce _agPhoneCxlEn kullanıyordu → RU/AR müşteri İngilizce "You can also
+  // reach us at…" görüyordu (canlıda 2 kez). _agencyPhoneSuffix (tek-kaynak 📞 no) korunur.
+  const _pn = agency.phone_public ? _agencyPhoneSuffix(agency.phone_public) : "";
+  const _psByLang: Record<string, string> = agency.phone_public ? {
+    tr: ` Dilerseniz${_pn} numarasından da ulaşabilirsiniz.`,
+    en: ` You can also reach us at${_pn}.`,
+    de: ` Sie können uns auch unter${_pn} erreichen.`,
+    ru: ` Вы также можете связаться с нами по${_pn}.`,
+    ar: ` يمكنك أيضاً التواصل معنا على${_pn}.`,
+    fr: ` Vous pouvez aussi nous joindre au${_pn}.`,
+    es: ` También puede contactarnos en${_pn}.`,
+  } : { tr: "", en: "", de: "", ru: "", ar: "", fr: "", es: "" };
+  const _ps = (l: string) => _psByLang[l] ?? _psByLang.en;
   const _cxlMsgs: Record<string, string> = {
-    tr: `İptal talebinizi acentemize ilettim. En kısa sürede sizinle iletişime geçilecek.${_agPhoneCxl}`,
-    en: `I've forwarded your cancellation request to our agency. They will contact you shortly.${_agPhoneCxlEn}`,
-    de: `Ich habe Ihre Stornierungsanfrage an unsere Agentur weitergeleitet. Sie werden in Kürze kontaktiert.${_agPhoneCxlEn}`,
-    ru: `Я передал ваш запрос на отмену в наше агентство. С вами свяжутся в ближайшее время.${_agPhoneCxlEn}`,
-    ar: `لقد أحلت طلب الإلغاء إلى وكالتنا. سيتم التواصل معك قريباً.${_agPhoneCxlEn}`,
-    fr: `J'ai transmis votre demande d'annulation à notre agence. Vous serez contacté sous peu.${_agPhoneCxlEn}`,
-    es: `He enviado su solicitud de cancelación a nuestra agencia. Se pondrán en contacto con usted en breve.${_agPhoneCxlEn}`,
+    tr: `İptal talebinizi acentemize ilettim. En kısa sürede sizinle iletişime geçilecek.${_ps("tr")}`,
+    en: `I've forwarded your cancellation request to our agency. They will contact you shortly.${_ps("en")}`,
+    de: `Ich habe Ihre Stornierungsanfrage an unsere Agentur weitergeleitet. Sie werden in Kürze kontaktiert.${_ps("de")}`,
+    ru: `Я передал ваш запрос на отмену в наше агентство. С вами свяжутся в ближайшее время.${_ps("ru")}`,
+    ar: `لقد أحلت طلب الإلغاء إلى وكالتنا. سيتم التواصل معك قريباً.${_ps("ar")}`,
+    fr: `J'ai transmis votre demande d'annulation à notre agence. Vous serez contacté sous peu.${_ps("fr")}`,
+    es: `He enviado su solicitud de cancelación a nuestra agencia. Se pondrán en contacto con usted en breve.${_ps("es")}`,
   };
   return _cxlMsgs[context.language] || _cxlMsgs.en;
 }
@@ -544,7 +556,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // — bu noktada başka dil sinyali zaten yok, NLU dili otorite. Whitelist korunur.
   if (nluResult.language) {
     const SUPPORTED = ["tr", "en", "de", "ru", "ar", "fr", "es"];
-    if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language) {
+    // CİLA-2 İŞ1 (2026-07-26): DİL-LESS mesaj (telefon no / saf rakam / emoji — HARF YOK)
+    // yerleşik context.language'ı EZEMEZ. KÖK: WhatsApp'ta EN akışın telefon-turn'ünde
+    // (CONFIRMING'e geçiş) NLU dilsiz "05329991307" için "tr" döndürüyor → context.language
+    // EN→TR flip → CONFIRMING özeti TR + ₺-only (TR para=TRY, dual çöker); sonraki "yes"
+    // turn'ünde NLU "en" → completion EN+$. İki kanal-tutarsızlığı (demo NLU bağlam-duyarlı
+    // "en" döndüğünden flip etmiyordu). Guard: harfsiz mesaj dil-otoritesi taşımaz →
+    // özet/kur akışın geri kalanıyla AYNI stabil context.language'dan gelir. FIX4 C1 korunur
+    // (harfli yabancı mesaj — "I want to book" — flip eder). ASCII \b YOK, \p{L} lookaround-suz.
+    const _msgHasLetter = /\p{L}/u.test(message);
+    if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language && _msgHasLetter) {
       // FIX4 (C1): uzunluk-kapısı KALDIRILDI. Eski gate (_hasNonAscii||_isShortMsg||
       // _isFirstMessage) uzun (≥200) ASCII yabancı mesajın İLK turunu TR'de bırakıyordu
       // ("bot beni anlamadı"). NLU dili otorite — uzun mesajda NLU DAHA güvenilir.
@@ -3794,12 +3815,25 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           : `${_paxAdult}`)
       : "";
 
+    // CİLA-2 İŞ3 (2026-07-26): 💰 Toplam — re-ask özeti PHONE→CONFIRMING/completion ile
+    // AYNI _reservationTotalText tek-kaynağından. Canlı bug: bu re-ask özeti 💰'siz basılıyordu
+    // (ilk özet 💰'lu). Özet nereden basılırsa basılsın toplam dahil.
+    const _p13Tour = tours.find((t: any) => t.id === (newContext.currentTour?.id || (info as any).tourId));
+    const _p13Date = _p13Tour?.dates?.find((d: any) => d.id === (info as any).dateId);
+    const _p13TotalText = await _reservationTotalText(
+      Number(_paxAdult) || 0, typeof _paxChild === "number" ? _paxChild : 0,
+      _p13Date?.price_adult || 0, _p13Date?.price_child,
+      _p13Tour?.currency || "TRY", _lang,
+      agency.show_multi_currency !== false, languageCurrencies,
+    );
+
     const _summaryLines = [
       _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
       _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
       _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
       _name      ? `👤 ${L.name}: ${_name}`        : "",
       _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
+      _p13TotalText ? `💰 ${_TOTAL_LABELS[_lang] || _TOTAL_LABELS.en}: *${_p13TotalText}*` : "",
     ].filter(Boolean).join("\n");
 
     const reaskReply = `${_summaryLines}\n\n${L.reask}`;
@@ -4429,12 +4463,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
           : `${_paxAdult}`)
       : "";
+    // CİLA-2 İŞ3 (2026-07-26): 💰 Toplam — bu re-ask özeti de tek-kaynak _reservationTotalText.
+    const _f3Tour = tours.find((t: any) => t.id === (_preservedContext.currentTour?.id || (info as any).tourId));
+    const _f3Date = _f3Tour?.dates?.find((d: any) => d.id === (info as any).dateId);
+    const _f3TotalText = await _reservationTotalText(
+      Number(_paxAdult) || 0, typeof _paxChild === "number" ? _paxChild : 0,
+      _f3Date?.price_adult || 0, _f3Date?.price_child,
+      _f3Tour?.currency || "TRY", _lang,
+      agency.show_multi_currency !== false, languageCurrencies,
+    );
     const _summaryLines = [
       _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
       _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
       _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
       _name      ? `👤 ${L.name}: ${_name}`        : "",
       _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
+      _f3TotalText ? `💰 ${_TOTAL_LABELS[_lang] || _TOTAL_LABELS.en}: *${_f3TotalText}*` : "",
     ].filter(Boolean).join("\n");
     const fix3Reply = `${_summaryLines}\n\n${L.reask}`;
     await _save(fix3Reply, _preservedContext);

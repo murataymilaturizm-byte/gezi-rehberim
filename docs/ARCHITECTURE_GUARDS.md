@@ -1153,3 +1153,29 @@ ham HTML'de başlık/metin/fiyat/meta/schema görür.
 - **robots.txt:** AI/GEO crawler'ları (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot,
   Claude-SearchBot, PerplexityBot, Google-Extended, Meta-ExternalAgent…) AÇIKÇA izinli;
   panel/api Disallow. `public/llms.txt` GEO sinyali (ürün tanımı + önemli sayfa linkleri).
+
+## 12. CİLA-2 — dil-kaynağı + tek-kaynak özet (2026-07-26)
+
+**§12.1 DİL-KAYNAĞI KURALI (context.language stabilitesi).** Deterministik şablonların
+(CONFIRMING özeti, completion, re-ask, iptal-ack) dili + kuru TEK stabil kaynaktan gelir:
+`newContext.language`. Bu değer **harfsiz mesajla EZİLEMEZ**. KÖK (WhatsApp canlı): NLU dil-
+uygulama kapısı (process-message ~L547, FIX4 C1 uzunluk-kapısını kaldırmıştı) `context.language
+= nluResult.language`'ı KOŞULSUZ yapıyordu → EN akışın telefon-turn'ünde (CONFIRMING'e geçiş)
+NLU dilsiz "05329991307" için "tr" döndürünce EN→TR flip → CONFIRMING özeti TR + ₺-only
+(TR para=TRY → dual çöker); sonraki "yes" turn'ünde NLU "en" → completion EN+$. Kanal-tutarsızlık
+(demo NLU bağlam-duyarlı "en" döndüğünden flip etmiyordu). **GUARD:** `/\p{L}/u` — mesajda HARF
+yoksa (telefon/rakam/emoji) NLU dil-otoritesi taşımaz, yerleşik context.language korunur.
+FIX4 C1 korunur (harfli yabancı mesaj hâlâ flip eder). Özet dili+kur bu sayede akışın geri
+kalanıyla aynı kaynaktan. ASCII \b YASAK.
+
+**§12.2 ÖZET TEK-KAYNAK (💰 dahil).** CONFIRMING özeti NEREDEN basılırsa basılsın (PHONE→
+CONFIRMING geçişi, :13-PERSIST re-ask, FIX3-insurance re-ask, F4-L2 DAL1) toplam satırı AYNI
+`_reservationTotalText` (+ `_TOTAL_LABELS`) tek-kaynağından gelir → hiçbir özet 💰'siz kalamaz,
+tutar/kur hiçbir yolda farklı olamaz. Yeni bir özet-yolu eklenirse 💰 satırı ZORUNLU.
+
+**§12.3 J-14 iptal-ack + telefon eki 7-dil.** İptal-talebi ack'i ve telefon-eki cümlesi
+(`_agencyPhoneSuffix` tek-kaynak 📞) 7-dil tam; hiçbir dil İngilizce'ye düşmez (RU/AR dahil).
+
+**§12.4 Onay typo-toleransı (POS_ALT).** Dil-başı BARIZ typo/yakın-tuş varyantları eklenir
+(ru подтверждю/падтверждаю; ar hamza-düşmesi اؤكد/اكد; de umlaut-suz bestatige). Fuzzy/Levenshtein
+YASAK, uydurma-kürasyon YASAK. Her yeni token için FP-testi (CONFIRM_NEGATIVE ile ret-vakası false).

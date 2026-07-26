@@ -27,11 +27,15 @@
 const POS_ALT: Record<string, string> = {
   tr: "evet|onayl[ıi]yorum|tamam|ok|olur|kabul|do[ğg]ru|onayla(?:d[ıi]m|d[ıi]k)?|tasdik|kesinlikle|kesinleştir(?:d[ıi]m|d[ıi]k)?|tamamdır|onaylıorum|peki|tabii|aynen|rezerve\\s+ed(?:elim|iyorum)?|onaylyrm|onaylıyrm|onylıyorum|tamm|evt",
   en: "yes|confirm(?:ed)?|approve[d]?|ok|okay|sure|right|correct|definitely|agreed|deal|absolutely|yep|yeah|yup|sounds\\s+good|perfect|go\\s+ahead|let'?s\\s+book|book\\s+it",
-  de: "ja|best[äa]tig(?:en|t)?|ok|richtig|genau|stimmt|einverstanden|natürlich|passt|perfekt|in\\s+ordnung|jawohl|buchen\\s+wir|lass\\s+uns\\s+buchen",
+  // CİLA-2 İŞ2 (2026-07-26): dil-başı BARIZ typo/yakın-tuş varyantları (uydurma/fuzzy YOK).
+  // de: umlaut-suz "bestatige/bestatigen" (bestatig).
+  de: "ja|best[äa]tig(?:en|t)?|bestatig(?:en|t)?|ok|richtig|genau|stimmt|einverstanden|natürlich|passt|perfekt|in\\s+ordnung|jawohl|buchen\\s+wir|lass\\s+uns\\s+buchen",
   fr: "oui|confirm[ée]?|d'accord|ok|exact|parfait|absolument|c'est\\s+bon|[çc]a\\s+marche|entendu|tr[èe]s\\s+bien|r[ée]servons",
   es: "si|s[íi]|confirm(?:o|ado)|vale|ok|correcto|claro|exacto|perfecto|de\\s+acuerdo|est[áa]\\s+bien|dale|reservemos",
-  ru: "да|подтверждаю|ок|верно|правильно|согласен|согласна|конечно|хорошо|отлично|договорились|именно|бронируем|давай\\s+забронируем",
-  ar: "نعم|أكد|أؤكد|موافق|موافقه|تمام|صحيح|بالتأكيد|حسنا|ماشي|اوكي|أوكي|ايوه|أجل|لنحجز|احجز|نحجز|ممتاز",
+  // ru: подтверждаю typo'ları (е-düşmesi подтверждю, о→а падтверждаю, son-harf подтверждау) + да да.
+  ru: "да|подтверждаю|подтверждю|падтверждаю|подтверждау|да\\s+да|ок|верно|правильно|согласен|согласна|конечно|хорошо|отлично|договорились|именно|бронируем|давай\\s+забронируем",
+  // ar: أؤكد hamza-düşmesi varyantları (اؤكد/أوكد/اوكد/اكد).
+  ar: "نعم|أكد|أؤكد|اؤكد|أوكد|اوكد|اكد|موافق|موافقه|تمام|صحيح|بالتأكيد|حسنا|ماشي|اوكي|أوكي|ايوه|أجل|لنحجز|احجز|نحجز|ممتاز",
 };
 
 const _wrap = (body: string) => new RegExp(`(?<![\\p{L}\\p{N}])(?:${body})(?![\\p{L}\\p{N}])`, "iu");
