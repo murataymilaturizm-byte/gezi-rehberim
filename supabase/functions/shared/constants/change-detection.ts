@@ -17,5 +17,12 @@
 // eklendi — asl[ıi]nda, de[ğg]i[şs]tir(elim), d[üu]zelt, g[üu]ncelle,
 // [şs][öo]yle olsun, yanl[ıi][şs] oldu, eski de[ğg]il. Recall-only genişleme
 // (7 tüketici: A1/A2/A3/X9/Blok5b/T23/G8 — davranış sınıfı aynı).
+// 2026-07-26 CİLA-4-A: ERTELEME/TAŞIMA ailesi + AR isim-hâli. Canlı iki vaka:
+// RU "Можно перенести на 20 декабря?" (перенести listede YOKTU) ve AR
+// "هل يمكن التغيير إلى ٢٠ ديسمبر؟" (تغيير isim-hâli yoktu; التغيير harf-i tarifli
+// lookbehind'ı geçemiyordu) → telefon-adımı R6 tarih-muafiyeti düşüp invalid_phone
+// basılıyordu. Eklenen: tr ertele*/kaydır*, en reschedule|postpone|move it/the date,
+// de verschieb*, fr reporter|décal*, es aplaz*/pospon*, ru перенес*/перенос*,
+// ar (?:ال)?تغيير|تأجيل. Stem+\p{L}* çekim-toleransı (sondaki lookahead'i tüketir).
 export const CHANGE_KEYWORDS_RE =
-  /(?<![\p{L}\p{N}])(asl[ıi]?nda|yerine|olsun|de[ğg]i[şs]tir|de[ğg]i[şs]tirelim|yap|yapal[ıi]m|yapsak|yapar\s+m[ıi]s[ıi]n|alal[ıi]m|alsak|d[üu]zelt|g[üu]ncelle|[şs][öo]yle\s+olsun|yanl[ıi][şs]\s+oldu|eski\s+de[ğg]il|actually|instead|change(?:\s+it)?(?:\s+to)?|make\s+it|update|correct|let['’]s\s+say|eigentlich|stattdessen|änder[en]?|korrigier(?:en|e)|lass\s+es|en\s+fait|plut[ôo]t|changer|modifier|corriger|mettons|disons|en\s+realidad|mejor|cambia(?:r)?|modificar|corregir|que\s+sea|вообще-то|на\s+самом\s+деле|а\s+не|вернее|точнее|вместо|измен(?:ить|и)|исправ(?:ить|ь)|пусть\s+будет|في\s+الواقع|بدلاً|غيّر|عدّل|صحّح|يكون)(?![\p{L}\p{N}])/iu;
+  /(?<![\p{L}\p{N}])(asl[ıi]?nda|yerine|olsun|de[ğg]i[şs]tir|de[ğg]i[şs]tirelim|yap|yapal[ıi]m|yapsak|yapar\s+m[ıi]s[ıi]n|alal[ıi]m|alsak|d[üu]zelt|g[üu]ncelle|[şs][öo]yle\s+olsun|yanl[ıi][şs]\s+oldu|eski\s+de[ğg]il|ertele\p{L}*|kayd[ıi]r\p{L}*|actually|instead|change(?:\s+it)?(?:\s+to)?|make\s+it|update|correct|let['’]s\s+say|reschedule|postpone|move\s+(?:it|the\s+date)|eigentlich|stattdessen|änder[en]?|korrigier(?:en|e)|lass\s+es|verschieb\p{L}*|en\s+fait|plut[ôo]t|changer|modifier|corriger|mettons|disons|reporter|d[ée]cal\p{L}*|en\s+realidad|mejor|cambia(?:r)?|modificar|corregir|que\s+sea|aplaz\p{L}*|pospon\p{L}*|вообще-то|на\s+самом\s+деле|а\s+не|вернее|точнее|вместо|измен(?:ить|и)|исправ(?:ить|ь)|пусть\s+будет|перенес\p{L}*|перенос\p{L}*|في\s+الواقع|بدلاً|غيّر|عدّل|صحّح|يكون|(?:ال)?تغيير|تأجيل)(?![\p{L}\p{N}])/iu;

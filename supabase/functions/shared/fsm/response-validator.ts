@@ -596,6 +596,27 @@ export function validateAIResponse(
     originalLength: text.length,
   });
 
+  // CİLA-4-E (2026-07-26, KÖK-4'ün ertelenen opsiyonu — YALNIZ FR, dar kapsam):
+  // FR after-sales'te LLM'in doğal cümlesi ("votre réservation est confirmée pour
+  // le 20...") completion-claim desenine çarpıp TÜM cevap ✅-duvarıyla eziliyordu
+  // (kullanıcı sorusunun cevabı kayboluyordu). FR + COMPLETED'de tam-değiştirme
+  // yerine YALNIZ çarpan cümleyi ayıkla; kalan içerik boşsa redirect'e düş.
+  // Diğer diller/stage'ler DOKUNULMADI (tam-değiştirme, kanıtlı-güvenli davranış).
+  if (stage === "COMPLETED" && language === "fr") {
+    const _sentences = text.split(/(?<=[.!?؟…])\s+|\n+/);
+    const _kept = _sentences.filter((s) => !matchesAnyPattern(s, patterns));
+    const _cleaned = _kept.join(" ").replace(/\s{2,}/g, " ").trim();
+    console.log("[response-validator] CİLA-4-E FR cümle-ayıklama:", {
+      matchedPattern: matched,
+      excised: _sentences.length - _kept.length,
+      keptLength: _cleaned.length,
+    });
+    if (_cleaned.length >= 20) {
+      return { text: _cleaned, wasModified: true, matchedPattern: matched };
+    }
+    // ayıklama sonrası anlamlı içerik kalmadı → mevcut redirect davranışı
+  }
+
   // FIX: stage'e göre redirect mesajı. Aktif aşamalarda "onayla" yönlendirmesi,
   // COMPLETED'de "zaten tamamlandı, başka bir şey?" — meşru atıf gibi görünen
   // ama AI tarafından üretilmesi riskli olan yeni-onay sızıntısını yumuşatır.

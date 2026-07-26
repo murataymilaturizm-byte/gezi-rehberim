@@ -26,7 +26,8 @@ import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getSt
 import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise, detectFakeChangeAck } from "../fsm/response-validator.ts";
 import { formatReservationSummary } from "../fsm/prompts/helpers.ts";
 import { isEchoSafe } from "../services/echo-sanitize.ts";
-import { MONTH_ALTERNATION } from "../constants/month-names.ts";
+import { MONTH_ALTERNATION, MONTH_NAME_TO_NUMBER } from "../constants/month-names.ts";
+import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -99,7 +100,11 @@ const _TOTAL_LABELS: Record<string, string> = {
 // Sinyal: iptal fiil-çekimleri (stem'ler substring ile çekimleri yakalar:
 // stornier→stornieren, annul→annuler, отмен→отменить, إلغاء/ألغ). ASCII \b YOK,
 // \p{L}\p{N} lookbehind. RESCTX: rezervasyon-kelimesi (varsa J-14 teyitsiz direkt).
-const _CXL_SIGNAL_RE = /(?<![\p{L}\p{N}])(iptal|cancel|stornier|annul|cancelar|отмен|إلغاء|ألغ)/iu;
+// CİLA-4-B (2026-07-26): AR harf-i tarifli isim-hâli — "أريد الإلغاء"da الإلغاء'nın
+// إ'si ل'den sonra geldiği için lookbehind eşleşmeyi engelliyordu → (?:ال)? toleransı.
+// (FR annulation→annul, ES cancelación→cancel zaten prefix'le eşleşiyor — trailing
+// lookahead YOK bu regex'te, kasıtlı: çekimler serbest.)
+const _CXL_SIGNAL_RE = /(?<![\p{L}\p{N}])(iptal|cancel|stornier|annul|cancelar|отмен|(?:ال)?إلغاء|ألغ)/iu;
 const _CXL_RESCTX_RE = /(?<![\p{L}\p{N}])(rezervasyon|kayıt|kaydı|reservation|booking|buchung|réservation|reserva|бронь|бронирование|حجز)/iu;
 const _CXL_FAQ_RE = /(şart|kosul|koşul|policy|politika|iade|refund|ücret|ucret|kesinti|nasıl|nasil|ne zaman|condition|terms|fee|how|when|bedingung|storno(?:gebühr)?|rückerstattung|ruckerstattung|geb[üu]hr|wie|wann|politique|remboursement|frais|comment|quand|condici[óo]n|pol[íi]tica|reembolso|tarifa|c[óo]mo|cu[áa]ndo|услови|возврат|плат[аеу]|штраф|как|когда|شرو?ط|سياسة|استرداد|رسوم|كيف|متى)/i;
 
@@ -696,7 +701,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // 2026-07-09 FAZ4-P1: TR+EN → 7-dil. ASC (ucuz) / DESC (pahalı) yön eşlemesi
   // dil-başı doğru. RU superlatif "самый деш/дорог" + "дешевле/дороже всего";
   // "дорог" tek başına 'yol' ile karışır → "самый\s+дорог" ile anchor'lı.
-  const _superlativeAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|least\s+expensive|günstigste|guenstigste|billigste|preiswerteste|(?:le\s+)?moins\s+cher|m[áa]s\s+barat[oa]|m[áa]s\s+econ[óo]mic[oa]|самый\s+деш[её]в[\p{L}]*|дешевле\s+всего|(?:ال)?أرخص|أرخص)(?![\p{L}\p{N}])/iu;
+  // CİLA-4-C (2026-07-26): FR kapsam genişletme — canlıda FR sorgusu X8'i ıskalayıp
+  // LLM'e düşünce kur uyduruluyordu (25€). abordable/bon marché/meilleur marché eklendi.
+  const _superlativeAsc = /(?<![\p{L}\p{N}])(en\s+(ucuz|uygun|hesaplı|hesapli|düşük|dusuk)|cheapest|lowest\s+price|least\s+expensive|günstigste|guenstigste|billigste|preiswerteste|(?:le\s+)?moins\s+cher|(?:le\s+)?plus\s+abordable|bon\s+march[ée]|meilleur\s+march[ée]|m[áa]s\s+barat[oa]|m[áa]s\s+econ[óo]mic[oa]|самый\s+деш[её]в[\p{L}]*|дешевле\s+всего|(?:ال)?أرخص|أرخص)(?![\p{L}\p{N}])/iu;
   const _superlativeDesc = /(?<![\p{L}\p{N}])(en\s+(pahalı|pahali|yüksek|yuksek)|most\s+expensive|highest\s+price|priciest|teuerste|(?:le\s+)?plus\s+cher|m[áa]s\s+car[oa]|самый\s+дорог[\p{L}]*|дороже\s+всего|(?:ال)?أغلى|أغلى)(?![\p{L}\p{N}])/iu;
   const _matchesAsc = _superlativeAsc.test(message);
   const _matchesDesc = _superlativeDesc.test(message);
@@ -707,8 +714,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // (aşağıda newContext: context) → after-sales state (reservationConfirmed/reservationInfo) korunur.
   const _x8StageOk = _isExploreStage || context.stage === "COMPLETED";
   if (_x8StageOk && !_richTourName && (_matchesAsc || _matchesDesc) && tours.length > 0) {
+    // CİLA-4-C: turun fiyatı dates[0] DEĞİL — yöne göre tarihler-arası MIN (en ucuz)
+    // / MAX (en pahalı). dates[0] sıra-drift'inde (geçmiş tarih düşünce) yanlış fiyat
+    // basıyordu (kur tutarsızlığı GÖRÜNÜMÜ: aynı tur farklı koşumda farklı ₺-taban).
     const _toursPriced = tours
-      .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
+      .map((t: any) => {
+        const _ps = (t.dates || []).map((d: any) => d?.price_adult).filter((p: any) => typeof p === "number" && p > 0);
+        return { tour: t, price: _ps.length ? (_matchesDesc ? Math.max(..._ps) : Math.min(..._ps)) : undefined };
+      })
       .filter((x: any) => typeof x.price === "number" && x.price > 0);
     if (_toursPriced.length > 0) {
       _toursPriced.sort((a: any, b: any) =>
@@ -1210,6 +1223,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       // RET → rezervasyon geçerli ack, flag temiz.
       const _r = _CANCEL_REJECT_ACK[_pccLang] || _CANCEL_REJECT_ACK.tr;
       console.log(`[process-message] §35-6 pendingCancelConfirm RET → rezervasyon geçerli`);
+      await _save(_r, _pccCtx);
+      await adapter.sendResponse(_r);
+      return { success: true, response: _r, newContext: _pccCtx };
+    }
+    // CİLA-4-F(ii) (2026-07-26): İPTAL-ISRARI = ONAY. Teyit beklerken kullanıcı AYNI
+    // iptal-niyetini tekrar yazarsa ("ich möchte stornieren" × 2) soruyu TEKRARLAMAK
+    // döngü yaratır; ısrar = iptal isteği net → onay yolu (complaints). Ret-sinyali
+    // yukarıda zaten elendi ("iptal etmek istemiyorum" negatif-yola düşer).
+    if (_CXL_SIGNAL_RE.test(message)) {
+      const _r = await _fileCancellationRequest(_pccCtx, agency, supabase, adapter, message);
+      console.log(`[process-message] §35-6 pendingCancelConfirm İPTAL-ISRARI → onay say → complaints`);
       await _save(_r, _pccCtx);
       await adapter.sendResponse(_r);
       return { success: true, response: _r, newContext: _pccCtx };
@@ -2591,6 +2615,89 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // sınıfı) YOK. \p{L}\p{N} lookaround (K1 dersi).
   const _v3AnaforaRe = /(?<![\p{L}\p{N}])((?:[öo]b[üu]r|di[ğg]er|[öo]teki|[öo]b[üu]rk[üu])\s*(?:tarih|g[üu]n)|other\s*date|the\s*other\s*(?:one|date)|andere[sn]?\s*datum|autre\s*date|l['’]autre|otra\s*fecha|друг\S*\s*дат\S*|التاريخ\s*الآخر|اليوم\s*الآخر)(?![\p{L}\p{N}])/iu;
 
+  // === 9b-A (CİLA-4, 2026-07-26): TELEFON-ADIMINDA TARİH-YAN-NİYETİ — D1 deseni ===
+  // Canlı iki vaka: RU "перенести на двадцатое декабря" → invalid_phone + değişiklik
+  // KAYIP (yazı-sayı tarih deterministik katmanda yoktu); AR "التغيير إلى ٢٠ ديسمبر" →
+  // merge tarih uygulamış AMA R6 invalid_phone DA basmıştı. KURAL: yan-niyet (change-kw
+  // + ay-adı) yakalanırsa invalid_phone ASLA basılmaz — tarih çözülürse UYGULA+ack,
+  // çözülemezse anlaşıldı-ack + kısa liste; iki durumda da telefona dönüş. Yazı-sayı
+  // köprüsü: NUMBER_WORDS stem-eşleştirme (двадцатое↔двадцать) — YALNIZ bu blokta (dar).
+  if (
+    newContext.collectionStep === "waiting_for_phone" &&
+    context.collectionStep === "waiting_for_phone" &&
+    !extractedInfo.phone &&
+    !isValidPhone(message.trim())
+  ) {
+    const _pdMonthM = new RegExp(`(?<![\\p{L}\\p{N}])(${MONTH_ALTERNATION})`, "iu").exec(message);
+    if (_pdMonthM && CHANGE_KEYWORDS_RE.test(message)) {
+      const _pdLang = newContext.language || "tr";
+      const _pdMonthNum = MONTH_NAME_TO_NUMBER[_pdMonthM[1].toLowerCase()] ?? MONTH_NAME_TO_NUMBER[_pdMonthM[1]];
+      // Gün: Batı + Arapça-Hint rakam normalize → 1-2 haneli; yoksa yazı-sayı stemi.
+      const _pdNorm = message.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+      let _pdDay: number | null = null;
+      const _pdDayM = _pdNorm.replace(/\d{4}/g, "").match(/(?<!\d)(\d{1,2})(?!\d)/);
+      if (_pdDayM) _pdDay = parseInt(_pdDayM[1], 10);
+      if (_pdDay === null) {
+        const _nw = NUMBER_WORDS[_pdLang] || NUMBER_WORDS.en || {};
+        const _low = _pdNorm.toLocaleLowerCase();
+        const _toks = _low.split(/[^\p{L}]+/u).filter(Boolean);
+        for (const [k, v] of Object.entries(_nw)) {
+          if (typeof v !== "number" || v < 1 || v > 31) continue;
+          const _hit = k.includes(" ")
+            ? _low.includes(k)
+            : k.length >= 4
+              ? _toks.some((t) => t.startsWith(k.slice(0, k.length - 1)))
+              : _toks.includes(k);
+          if (_hit) { _pdDay = v; break; }
+        }
+      }
+      const _pdTour = tours.find((t: any) => t.id === (newContext.currentTour?.id || (newContext.reservationInfo as any).tourId));
+      const _pdDates: any[] = _pdTour?.dates || newContext.currentTour?.dates || [];
+      const _pdHit = _pdDay !== null && _pdMonthNum
+        ? _pdDates.find((d: any) => {
+            const _p = String(d?.departure_date || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+            return _p && parseInt(_p[2], 10) === _pdMonthNum && parseInt(_p[3], 10) === _pdDay;
+          })
+        : null;
+      if (_pdHit) {
+        newContext.reservationInfo = { ...newContext.reservationInfo, dateId: _pdHit.id, selectedDate: _pdHit.departure_date };
+        const _pdText = formatDateForLanguage(_pdHit.departure_date, _pdLang);
+        const _pdAckMsgs: Record<string, string> = {
+          tr: `*Tarihi* ${_pdText} olarak güncelledim ✨\n\n📱 Telefon numaranızı alabilir miyim?`,
+          en: `*Date* updated to ${_pdText} ✨\n\n📱 May I have your phone number?`,
+          de: `*Datum* auf ${_pdText} aktualisiert ✨\n\n📱 Könnten Sie mir Ihre Telefonnummer geben?`,
+          ru: `*Дата* обновлена на ${_pdText} ✨\n\n📱 Назовите, пожалуйста, ваш номер телефона.`,
+          ar: `تم تحديث *التاريخ* إلى ${_pdText} ✨\n\n📱 هل يمكنني الحصول على رقم هاتفك؟`,
+          fr: `*Date* mise à jour au ${_pdText} ✨\n\n📱 Puis-je avoir votre numéro de téléphone ?`,
+          es: `*Fecha* actualizada al ${_pdText} ✨\n\n📱 ¿Me podría dar su número de teléfono?`,
+        };
+        const _r = _pdAckMsgs[_pdLang] || _pdAckMsgs.tr;
+        console.log(`[process-message] 9b-A tarih-yan-niyet ÇÖZÜLDÜ (${_pdHit.departure_date}) → ack + telefona dönüş (invalid_phone YOK)`);
+        await _save(_r, newContext);
+        await adapter.sendResponse(_r);
+        return { success: true, response: _r, newContext };
+      }
+      // Çözülemedi → anlaşıldı-ack + kısa liste + telefona dönüş (invalid_phone YOK).
+      const _pdList = _pdDates.slice(0, 4)
+        .map((d: any, i: number) => `${i + 1}) ${formatDateForLanguage(d.departure_date, _pdLang)}`)
+        .join("\n");
+      const _pdSoftMsgs: Record<string, string> = {
+        tr: `Tarih değişikliği talebinizi anladım 👍 Bu tarihle birebir eşleşme bulamadım. Müsait tarihler:\n${_pdList}\n\nHangi tarihi istersiniz? (Sonrasında telefon numaranızla devam edelim 📱)`,
+        en: `I understood your date-change request 👍 I couldn't find an exact match. Available dates:\n${_pdList}\n\nWhich date would you like? (Then we'll continue with your phone number 📱)`,
+        de: `Ich habe Ihren Terminänderungswunsch verstanden 👍 Keine genaue Übereinstimmung gefunden. Verfügbare Termine:\n${_pdList}\n\nWelches Datum möchten Sie? (Danach fahren wir mit Ihrer Telefonnummer fort 📱)`,
+        ru: `Я понял вашу просьбу о переносе даты 👍 Точного совпадения не нашёл. Доступные даты:\n${_pdList}\n\nКакую дату вы хотите? (Затем продолжим с вашим номером телефона 📱)`,
+        ar: `فهمت طلبك لتغيير التاريخ 👍 لم أجد تطابقاً دقيقاً. التواريخ المتاحة:\n${_pdList}\n\nما التاريخ الذي تريده؟ (ثم نكمل برقم هاتفك 📱)`,
+        fr: `J'ai compris votre demande de changement de date 👍 Aucune correspondance exacte. Dates disponibles :\n${_pdList}\n\nQuelle date souhaitez-vous ? (Ensuite nous continuerons avec votre numéro 📱)`,
+        es: `Entendí su solicitud de cambio de fecha 👍 No encontré coincidencia exacta. Fechas disponibles:\n${_pdList}\n\n¿Qué fecha desea? (Luego continuamos con su número de teléfono 📱)`,
+      };
+      const _r = _pdSoftMsgs[_pdLang] || _pdSoftMsgs.tr;
+      console.log(`[process-message] 9b-A tarih-yan-niyet ANLAŞILDI (çözülemedi: ay=${_pdMonthNum}, gün=${_pdDay}) → soft-ack (invalid_phone YOK)`);
+      await _save(_r, newContext);
+      await adapter.sendResponse(_r);
+      return { success: true, response: _r, newContext };
+    }
+  }
+
   // === 9b. GEÇERSİZ TELEFON KONTROLÜ (BUG 4 + 2026-06-26 R6) ===
   // waiting_for_phone'dayken kullanıcı geçersiz girdi yazdıysa erken dön.
   // R6: eski "sadece rakam + <10 hane" koşulu "abc def" / "telefonum yok" / boş
@@ -3273,6 +3380,24 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           const _wd = getWeekdayName(_invalidDateForPreamble, newContext.language);
           _dispInvalid = formatDateForLanguage(_invalidDateForPreamble, newContext.language) + (_wd ? ` (${_wd})` : "");
         }
+        // CİLA-4-F(i) (2026-07-26): AY-ONLY sorgu ("December" — gün YOK) negatif
+        // "müsait değil 😔" yerine POZİTİF çerçeve: "Aralık tarihlerimiz: 👇".
+        // Tespit: kullanıcı mesajında ay-adı VAR + (yıl hariç) 1-2 haneli gün YOK.
+        const _moMonthM = new RegExp(`(?<![\\p{L}\\p{N}])(${MONTH_ALTERNATION})`, "iu").exec(message);
+        const _moHasDay = /(?<!\d)\d{1,2}(?!\d)/.test(message.replace(/\d{4}/g, ""));
+        if (_moMonthM && !_moHasDay) {
+          const _moName = _moMonthM[1];
+          const _moFrames: Record<string, string> = {
+            tr: `İşte *${_moName}* tarihlerimiz: 👇\n\n`,
+            en: `Here are our *${_moName}* dates: 👇\n\n`,
+            de: `Hier sind unsere Termine im *${_moName}*: 👇\n\n`,
+            ru: `Вот наши даты на *${_moName}*: 👇\n\n`,
+            ar: `إليك تواريخنا في *${_moName}*: 👇\n\n`,
+            fr: `Voici nos dates en *${_moName}* : 👇\n\n`,
+            es: `Aquí están nuestras fechas de *${_moName}*: 👇\n\n`,
+          };
+          dateReply = (_moFrames[newContext.language] || _moFrames.tr) + dateReply;
+        } else {
         const _preambles: Record<string, string> = _isPlaceholderDate
           ? {
               tr: `Belirttiğiniz tarih için müsaitlik bulamadım. 😔\n\n`,
@@ -3293,6 +3418,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
               es: `Lo siento, "${_dispInvalid}" no está disponible para este tour. 😔\n\n`,
             };
         dateReply = (_preambles[newContext.language] || _preambles.tr) + dateReply;
+        }
       }
 
       // 2026-06-23 Sorun D: tur değişim prefix (FSM transition sonrası

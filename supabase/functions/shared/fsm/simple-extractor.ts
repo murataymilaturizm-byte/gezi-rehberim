@@ -62,7 +62,9 @@ export function hasRelativeDateWord(text: string): boolean {
 }
 
 // ─── Yazıyla sayı çıkarımı (fallback) ────────────────────────────────────────
-const NUMBER_WORDS: Record<string, Record<string, number>> = {
+// CİLA-4-A (2026-07-26): export — process-message telefon-adımı yazı-sayı tarih
+// köprüsü (stem-eşleştirme, dar kapsam) bu tek-kaynağı kullanır.
+export const NUMBER_WORDS: Record<string, Record<string, number>> = {
   tr: {
     bir: 1, iki: 2, üç: 3, uc: 3, dört: 4, dort: 4,
     beş: 5, bes: 5, altı: 6, alti: 6, yedi: 7, sekiz: 8,

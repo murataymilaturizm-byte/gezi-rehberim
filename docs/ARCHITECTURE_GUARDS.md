@@ -1206,3 +1206,38 @@ farklı (veya hiç) guard'lı; tek turn'de 2-3 yazma (ping-pong). Kanıt (`_lang
 4. Her yazma `_traceLang` ring'inden geçer (`context._langTrace`, son 12) — yeni yazma-noktası
    eklenecekse trace ZORUNLU. Deterministik şablonların dili DAİMA `newContext.language`.
 Doğrulama standardı: dil-flip sınıfı değişikliklerde tekrar-testi N≥5 (tek yeşil koşum kanıt değil).
+
+## 13. CİLA-4 — tam-tur bulguları (2026-07-26)
+
+- **A (telefon-adımı tarih-yan-niyeti, 9b-A):** KÖK: CHANGE_KEYWORDS'te erteleme-ailesi
+  (ru перенес*/ar التغيير-isim-hâli) yoktu → R6 tarih-muafiyeti düşüp invalid_phone
+  basılıyordu; RU yazı-sayı gün ("двадцатое") hiçbir deterministik katmanda yoktu.
+  FIX: (1) CHANGE_KEYWORDS 7-dil erteleme-fiilleri + AR (?:ال)?تغيير; (2) YENİ 9b-A bloğu
+  (R6'dan önce): change-kw+ay-adı → invalid_phone ASLA basılmaz; gün çözümü rakam
+  (Batı+Arapça-Hint) → yoksa NUMBER_WORDS stem-köprüsü (двадцатое↔двадцать, YALNIZ bu
+  blokta — dar kapsam) → çözüldüyse uygula+ack+telefona-dönüş, çözülemediyse anlaşıldı-ack
+  + kısa liste. KURAL: telefon-adımı yan-niyet blokları R6'dan ÖNCE gelir ve R6'yı bypass eder.
+- **B (_CXL harf-i tarif):** (?:ال)?إلغاء — "أريد الإلغاء" lookbehind'a takılıyordu.
+  FR annulation/ES cancelación zaten prefix'le eşleşir (trailing lookahead YOK — kasıtlı).
+- **C (X8):** tur fiyatı dates[0] DEĞİL yöne-göre MIN/MAX (sıra-drift yanlış ₺-taban
+  basıyordu → "kur tutarsızlığı" görünümü); FR asc-kalıpları genişletildi (abordable/
+  bon-meilleur marché) — ıskalayan sorgu LLM'e düşüp kur uyduruyordu. Kur zinciri
+  formatPriceSync (zaten tek-zincir) DOKUNULMADI.
+- **D (onay-çekimleri):** derlenmiş-modül kanıtı — "bestätige/bestatige" (1. tekil -e)
+  (?:en|t)? setinde yoktu, lookahead'e takılıp kaçıyordu ("ja bestätige" yalnız "ja" ile
+  geçiyordu; CİLA-2 FP-testi harness çift-escape hatası yüzünden yanlış-yeşildi).
+  Set: (?:e|en|t|st). fr confirm[ée]{0,2}, es confirm(?:o|oo|ado).
+  **KURAL: regex davranış-testleri DERLENMİŞ modülle koşulur (esbuild→import), elle
+  kopyalanmış desenle DEĞİL.**
+- **E (FR ✅-duvarı):** COMPLETED+fr'de validator tam-değiştirme yerine YALNIZ çarpan
+  cümleyi ayıklar (kalan <20 karakter ise redirect'e düşer; log'lu). Diğer diller/
+  stage'ler tam-değiştirme (kanıtlı-güvenli) kalır — KÖK-4'ün ertelenen dar opsiyonu.
+- **F:** (i) ay-only sorgu ("December") pozitif çerçeve "İşte X tarihlerimiz 👇" (negatif
+  "müsait değil 😔" yerine, 7-dil); (ii) pendingCancelConfirm beklerken İPTAL-ISRARI =
+  ONAY (soru-tekrarı döngüsü yok; ret-sinyali önce elenir); (iii) working_hours TEK-KAYNAK
+  shared/utils/working-hours.ts (JSON gün-yapısı + kürasyonlu TR-kalıp sözlüğü
+  "Hafta içi"→"Wochentags"); tüketiciler: canned hours + payment bloğu. C4 TR-sızıntı kapandı.
+- **Vercel hotfix (9601a78, ayrı commit):** beasties@0.4 devDep'i vite-react-ssg
+  peerOptional ^0.1 ile çakışıp Vercel düz-npm-install'ını 3-4s'de öldürüyordu (3 deploy
+  Error). beasties KALDIRILDI (crittersOptions:false → kullanılmıyordu). KURAL: yerel
+  kurulumda --legacy-peer-deps GEREKTİYSE bu Vercel'de de patlar — ya kökü çöz ya .npmrc.

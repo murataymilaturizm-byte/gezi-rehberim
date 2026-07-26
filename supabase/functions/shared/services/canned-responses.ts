@@ -5,6 +5,7 @@
 // Verisi olmayan anahtarlar (what_to_bring/group_discount) trigger'dan çıkarıldı →
 // normal NLU/LLM akışı cevaplar (bağlamsal, uydurma değil).
 import { normalizePhone, formatPhoneDisplay } from "../../_shared/phone.ts";
+import { localizeWorkingHours } from "../utils/working-hours.ts";
 
 export interface CannedAgency {
   name?: string | null;
@@ -71,34 +72,11 @@ const WELCOME: Record<string, (name: string) => string> = {
   ar: (n) => `مرحباً! 👋 كيف يمكن لـ ${n} مساعدتك؟`,
 };
 
-// TR/EN gün-adlı working_hours formatlayıcı (mevcut prompt davranışıyla tutarlı).
-const DAY_NAMES: Record<string, L7> = {
-  monday:    { tr: "Pazartesi", en: "Monday", de: "Montag", fr: "Lundi", es: "Lunes", ru: "Понедельник", ar: "الاثنين" },
-  tuesday:   { tr: "Salı", en: "Tuesday", de: "Dienstag", fr: "Mardi", es: "Martes", ru: "Вторник", ar: "الثلاثاء" },
-  wednesday: { tr: "Çarşamba", en: "Wednesday", de: "Mittwoch", fr: "Mercredi", es: "Miércoles", ru: "Среда", ar: "الأربعاء" },
-  thursday:  { tr: "Perşembe", en: "Thursday", de: "Donnerstag", fr: "Jeudi", es: "Jueves", ru: "Четверг", ar: "الخميس" },
-  friday:    { tr: "Cuma", en: "Friday", de: "Freitag", fr: "Vendredi", es: "Viernes", ru: "Пятница", ar: "الجمعة" },
-  saturday:  { tr: "Cumartesi", en: "Saturday", de: "Samstag", fr: "Samedi", es: "Sábado", ru: "Суббота", ar: "السبت" },
-  sunday:    { tr: "Pazar", en: "Sunday", de: "Sonntag", fr: "Dimanche", es: "Domingo", ru: "Воскресенье", ar: "الأحد" },
-};
-const CLOSED: L7 = { tr: "Kapalı", en: "Closed", de: "Geschlossen", fr: "Fermé", es: "Cerrado", ru: "Закрыто", ar: "مغلق" };
-
-function formatHours(raw: string | null | undefined, lang: string): string {
-  if (!raw) return "";
-  try {
-    const data = JSON.parse(raw);
-    if (data && typeof data === "object" && data.monday !== undefined) {
-      const lines: string[] = [];
-      for (const key of Object.keys(DAY_NAMES)) {
-        const name = pick(DAY_NAMES[key], lang);
-        const day = data[key];
-        lines.push(day && day.enabled ? `${name}: ${day.open} - ${day.close}` : `${name}: ${pick(CLOSED, lang)}`);
-      }
-      return lines.join("\n");
-    }
-  } catch { /* ham metin */ }
-  return String(raw);
-}
+// CİLA-4-F(iii) (2026-07-26): working_hours formatlayıcı TEK-KAYNAĞA taşındı —
+// shared/utils/working-hours.ts (JSON gün-yapısı + serbest-TR-metin sözlüğü,
+// "Hafta içi"→"Wochentags" C4 TR-sızıntı fix'i). payment-message ile AYNI kaynak.
+// Yerel DAY_NAMES/CLOSED/formatHours gövdesi SİLİNDİ (net-negatif kod kuralı).
+const formatHours = localizeWorkingHours;
 
 // Müşteri-dostu ödeme-yöntemi render'ı (IBAN + LLM-direktifi YOK — buildPaymentPromptSummary
 // prompt-içi talimat içeriyor, doğrudan-send için UYGUN DEĞİL).

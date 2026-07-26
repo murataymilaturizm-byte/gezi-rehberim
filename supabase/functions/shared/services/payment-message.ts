@@ -119,6 +119,7 @@ import { getExchangeRatesOnce } from "../utils/exchange-rates.ts";
 // AR'da "٢٤٩٫٥٨ SAR" (Arapça-Hint rakam + SAR kodu) basıyordu; completion ise
 // "832﷼" (﷼ + Batı-rakam). formatPriceSync tek-kaynak → aynı etiket/rakam-sistemi.
 import { formatPriceSync } from "../utils/currency-display.ts";
+import { localizeWorkingHours } from "../utils/working-hours.ts";
 
 /** Çevrim güvenli mi? from===to her zaman güvenli; değilse iki kur da mevcut olmalı. */
 function canConvert(from: string, to: string, rates: Record<string, number>): boolean {
@@ -386,7 +387,9 @@ export async function generatePaymentMessage(
   if (methods.includes("cash_office")) {
     message += `${lang.cashOffice}\n`;
     if (paymentInstructions.office_address) message += `${lang.address} ${paymentInstructions.office_address}\n`;
-    if (paymentInstructions.working_hours) message += `${lang.hours} ${paymentInstructions.working_hours}\n`;
+    // CİLA-4-F(iii): C4 TR-sızıntı — çalışma saatleri tek-kaynak yerelleştirici
+    // ("Hafta içi 09:00-18:00" → "Wochentags 09:00-18:00"; canned hours ile AYNI util).
+    if (paymentInstructions.working_hours) message += `${lang.hours} ${localizeWorkingHours(paymentInstructions.working_hours, language)}\n`;
     message += "\n";
   }
 
