@@ -63,6 +63,19 @@ function _agencyPhoneSuffix(phonePublic: string | null | undefined): string {
   return ` 📞 ${formatPhoneDisplay(normalizePhone(phonePublic))}`;
 }
 
+// === DİL-YAZMA AUDIT RING (CİLA-3, 2026-07-26) ===
+// context.language'a yazan HER nokta buradan geçer → context._langTrace ring'ine
+// (son 12) kayıt düşer. Amaç: non-deterministik dil-flip'lerin turn+kaynak+harf-durumu
+// kanıtı (demo conversationState'te dışarı sızar, WhatsApp'ta context ile persist).
+// Format: "<messageCount>:<kaynak>:<eski>><yeni>:<L|0>" (L=mesajda harf var).
+function _traceLang(ctx: any, src: string, to: string, msg: string): void {
+  const from = ctx?.language ?? "?";
+  const t: string[] = Array.isArray(ctx?._langTrace) ? ctx._langTrace : [];
+  t.push(`${ctx?.messageCount ?? 0}:${src}:${from}>${to}:${/\p{L}/u.test(msg) ? "L" : "0"}`);
+  ctx._langTrace = t.slice(-12);
+  console.log(`[lang-write] src=${src} ${from}>${to} letters=${/\p{L}/u.test(msg)} mc=${ctx?.messageCount ?? 0}`);
+}
+
 // FIX1 (2026-07-24): rezervasyon TOPLAM tutarı — TEK-KAYNAK. CONFIRMING özeti +
 // completion AYNI fonksiyondan geçer → tutar hiçbir senaryoda farklı olamaz.
 // (Para birimi + Arapça-Hint rakam mevcut formatPriceSync zincirinden.)
@@ -358,21 +371,34 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (languageChangeIntent && languageChangeIntent !== context.language) {
       // Müşteri açıkça dil değiştirdi — sadece acentenin açtığı dillere izin ver
       if (_isLangEnabled(languageChangeIntent)) {
+        _traceLang(context, "explicit", languageChangeIntent, message);
         context.language = languageChangeIntent;
         context.tone = getDefaultToneForLanguage(languageChangeIntent) as any;
       }
     } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
       const _hasNonAscii = /[^\x00-\x7F]/.test(message);
       const _isShortMsg = message.length < 200;
-      if (_hasNonAscii || _isShortMsg) {
-        if (_isLangEnabled(runtimeDetectedLang)) context.language = runtimeDetectedLang;
+      // CİLA-3 A-guard (2026-07-26, trace-kanıtlı `1:char:de>tr`): TR-PAYLAŞILAN-AKSAN.
+      // detectLanguage TR'yi İLK kontrol eder; ü/ö/ç DE(ü/ö)/FR(ç) ile paylaşılır →
+      // DE akışında "Ich möchte" (ö) TR sanılıp yerleşik dili eziyordu. Mid-flow'da
+      // yerleşik dil tr-DEĞİLKEN "tr" tespiti yalnız TR-UNIQUE harfle (ı/ş/ğ/İ/Ş/Ğ)
+      // yazabilir. (P3 kalem-4'ün new-context kuralının loadedContext simetriği.)
+      const _trSharedOnly = runtimeDetectedLang === "tr" && context.language !== "tr" && !/[ışğİŞĞ]/.test(message);
+      if ((_hasNonAscii || _isShortMsg) && !_trSharedOnly) {
+        if (_isLangEnabled(runtimeDetectedLang)) {
+          _traceLang(context, "char", runtimeDetectedLang, message);
+          context.language = runtimeDetectedLang;
+        }
         // Aksi hâlde mevcut context.language'ı koru (acente bu dili açmamış)
       }
-    } else if (_effectiveSeed && _effectiveSeed !== context.language && !runtimeDetectedLang) {
-      // Detection sinyali yok ama frontend explicit dil göndermiş — kullanıcının seçimi otorite.
-      context.language = _effectiveSeed;
-      context.tone = getDefaultToneForLanguage(_effectiveSeed) as any;
     }
+    // CİLA-3 D-SİL (2026-07-26, trace-kanıtlı `5:seed-mid:ar>tr:0` — Murat demo AR/DE
+    // vakalarının KÖKÜ): mid-flow seed-override dalı KALDIRILDI. Site UI'ı TR olan
+    // kullanıcı (body.language="tr" her turn) AR/DE akışı koşarken tek harfsiz turn'de
+    // (telefon no) yerleşik dil koşulsuz TR'ye eziliyordu → CONFIRMING özeti TR+₺-only.
+    // İNVARYANT: seed YALNIZ context doğumunda kullanılır (aşağıdaki else dalı);
+    // yerleşik konuşma dili UI-diliyle ASLA ezilmez. Dropdown'ı mid-flow değiştiren
+    // kullanıcı yeni dilde yazınca char/NLU-pending mekanizması geçişi yapar.
   } else {
     // Yeni context: explicit change > script-based > frontend seed > tr.
     let _detectedLang = languageChangeIntent || runtimeDetectedLang || _effectiveSeed || "tr";
@@ -389,6 +415,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
     const lang = _bestLang(_detectedLang);
     context = createInitialContext(lang, getDefaultToneForLanguage(lang) as any);
+    (context as any)._langTrace = [`0:init:>${lang}:${/\p{L}/u.test(message) ? "L" : "0"}`];
   }
 
   // Agency email toplama ayarını her mesajda sync et (admin toggle anlık etki etsin)
@@ -493,9 +520,18 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   {
     const _nluLang = (nluResult as any).language;
     const _msgAscii = !/[^\x00-\x7F]/.test(message);
-    if (_nluLang && _nluLang !== context.language && _isLangEnabled(_nluLang) && _msgAscii) {
+    // CİLA-3 B-guard (2026-07-26, trace-kanıtlı `5:pending:tr>de:0`): HARFSİZ turn
+    // (telefon no / rakam-pax) pending'i NE SET NE COMPLETE NE CLEAR eder — FREEZE.
+    // Eski hâlde 2 ardışık harfsiz-ASCII turn (pax "2" + telefon) NLU'nun harfsiz
+    // mesaja döndürdüğü rasgele dille sessiz-flip yapabiliyordu (WhatsApp EN vakası
+    // sınıfı). Dil-sinyali yalnız HARFLİ mesajdan gelir (invariant).
+    const _plsLetters = /\p{L}/u.test(message);
+    if (!_plsLetters) {
+      // harfsiz turn: pending dondurulur (dokunma)
+    } else if (_nluLang && _nluLang !== context.language && _isLangEnabled(_nluLang) && _msgAscii) {
       if (context.pendingLangSwitch === _nluLang) {
         // 2. ardışık aynı-farklı-dil → SESSİZ GEÇİŞ (görünür onay cümlesi YOK).
+        _traceLang(context, "pending", _nluLang, message);
         context.language = _nluLang;
         context.tone = getDefaultToneForLanguage(_nluLang) as any;
         context.pendingLangSwitch = undefined;
@@ -504,7 +540,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         context.pendingLangSwitch = _nluLang; // 1. turn — ardışıklık bekleniyor
       }
     } else if (context.pendingLangSwitch) {
-      context.pendingLangSwitch = undefined; // ardışıklık bozuldu
+      context.pendingLangSwitch = undefined; // ardışıklık bozuldu (harfli farklı-sinyal)
     }
   }
 
@@ -565,25 +601,25 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // özet/kur akışın geri kalanıyla AYNI stabil context.language'dan gelir. FIX4 C1 korunur
     // (harfli yabancı mesaj — "I want to book" — flip eder). ASCII \b YOK, \p{L} lookaround-suz.
     const _msgHasLetter = /\p{L}/u.test(message);
-    if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language && _msgHasLetter) {
-      // FIX4 (C1): uzunluk-kapısı KALDIRILDI. Eski gate (_hasNonAscii||_isShortMsg||
-      // _isFirstMessage) uzun (≥200) ASCII yabancı mesajın İLK turunu TR'de bırakıyordu
-      // ("bot beni anlamadı"). NLU dili otorite — uzun mesajda NLU DAHA güvenilir.
-      // Koruma: SUPPORTED + !==context.language + _isLangEnabled guard'ları AYNEN.
-      // pendingLangSwitch (§35) ve state-machine DOKUNULMADI — yalnız tespit-kapısı.
-      const _isFirstMessage = context.messageCount === 0;
-      {
-        if (_isLangEnabled(nluResult.language)) {
-          context.language = nluResult.language;
-          // İlk mesajda tone'u da NLU diline göre re-set et — başka dilden geliyorsa
-          // varsayılan tone uyumlu olsun (örn. EN için kurumsal tone TR'den farklı olabilir).
-          if (_isFirstMessage) {
-            context.tone = getDefaultToneForLanguage(nluResult.language) as any;
-          }
-        } else {
-          // Acente bu dili açmamış — mevcut dili koru
-          console.log(`[process-message] S4: Detected lang ${nluResult.language} not in enabled_languages (${_enabledLangs}), keeping ${context.language}`);
-        }
+    // CİLA-3 C-daralt (2026-07-26, trace-kanıtlı ping-pong `nlu:tr>de` her turn):
+    // NLU tek-turn dil-yazması YALNIZ İLK MESAJDA (messageCount===0 — C1 davranışı:
+    // ASCII yabancı ilk mesaj gecikmesiz doğru dile oturur; uzunluk-kapısız).
+    // MID-FLOW NLU dil-farkı ARTIK BURADAN YAZILMAZ — o iş §35 pendingLangSwitch'in
+    // (2 ardışık harfli-ASCII turn, yukarıda) + char-detect'in (unique-script) +
+    // explicit-intent'in. Tek-turn NLU yanlış-tespiti ("John Smith"→"tr" sınıfı)
+    // yerleşik dili artık süremez → CONFIRMING özeti stabil dil/kur kaynağından.
+    const _isFirstMessage = context.messageCount === 0;
+    if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language && _msgHasLetter && _isFirstMessage) {
+      if (_isLangEnabled(nluResult.language)) {
+        _traceLang(context, "nlu-first", nluResult.language, message);
+        context.language = nluResult.language;
+        // İlk mesajda tone'u da NLU diline göre re-set et.
+        context.tone = getDefaultToneForLanguage(nluResult.language) as any;
+        // İlk-mesaj yazımı pending'i geçersiz kılar (aynı-turn çifte-işlem önlemi).
+        context.pendingLangSwitch = undefined;
+      } else {
+        // Acente bu dili açmamış — mevcut dili koru
+        console.log(`[process-message] S4: Detected lang ${nluResult.language} not in enabled_languages (${_enabledLangs}), keeping ${context.language}`);
       }
     }
   }

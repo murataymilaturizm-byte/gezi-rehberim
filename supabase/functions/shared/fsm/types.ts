@@ -130,6 +130,11 @@ export interface ConversationContext {
   // teyit bekleme-durumu ("Kişi sayısını 3 yapayım mı?"). TEK-TURN-ömür. YALNIZ CONFIRMING'de
   // set edilebilir → pendingCancelConfirm (COMPLETED) ile stage-ayrımıyla mutually-exclusive.
   pendingFieldUpdateConfirm?: { field: string; value: any; selectedDate?: string };
+
+  // 2026-07-26 CİLA-3: dil-yazma audit ring'i (son 12). context.language'a yazan HER
+  // nokta "<mc>:<kaynak>:<eski>><yeni>:<L|0>" kaydı düşer (_traceLang). Non-deterministik
+  // dil-flip teşhisi + kalıcı gözlemlenebilirlik. Davranışa etkisi YOK.
+  _langTrace?: string[];
 }
 
 export interface StateTransition {

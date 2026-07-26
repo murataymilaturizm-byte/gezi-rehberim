@@ -1179,3 +1179,30 @@ tutar/kur hiçbir yolda farklı olamaz. Yeni bir özet-yolu eklenirse 💰 satı
 **§12.4 Onay typo-toleransı (POS_ALT).** Dil-başı BARIZ typo/yakın-tuş varyantları eklenir
 (ru подтверждю/падтверждаю; ar hamza-düşmesi اؤكد/اكد; de umlaut-suz bestatige). Fuzzy/Levenshtein
 YASAK, uydurma-kürasyon YASAK. Her yeni token için FP-testi (CONFIRM_NEGATIVE ile ret-vakası false).
+
+## 12.1-REV — DİL-YAZMA İNVARYANTI (CİLA-3, 2026-07-26) — §12.1'İ GEÇERSİZ KILAR
+
+§12.1'in "kök = NLU kapısı" teşhisi EKSİKTİ (tek yazma-noktası varsayımı). Fable trace-kanıtlı
+yeniden-teşhis: flip bir SINIF bug'ıydı — `context.language`'a yazan 5 bağımsız nokta, her biri
+farklı (veya hiç) guard'lı; tek turn'de 2-3 yazma (ping-pong). Kanıt (`_langTrace` ring, 6 oturum):
+- **D (seed-midflow, ANA KÖK — demo AR/DE vakaları):** `5:seed-mid:ar>tr:0` — site UI'ı TR olan
+  kullanıcının her turn gönderdiği body.language="tr", tek harfsiz turn'de (telefon) yerleşik dili
+  KOŞULSUZ eziyordu. AR×3/3 deterministik flip. → **DAL SİLİNDİ: seed YALNIZ context doğumunda.**
+- **A (char TR-paylaşılan-aksan):** `1:char:de>tr:L` — "Ich möchte" (ö) TR sanılıyor. → Mid-flow'da
+  yerleşik dil tr-değilken "tr" char-tespiti yalnız TR-UNIQUE harfle (ı/ş/ğ/İ/Ş/Ğ) yazabilir.
+- **B (pendingLangSwitch harfsiz-çift — WhatsApp EN vakası sınıfı):** `5:pending:tr>de:0` —
+  harfsiz turn'ler pending'i set/complete edebiliyordu (NLU'nun rakam-mesaja döndürdüğü rasgele
+  dille). → Harfsiz turn pending'i FREEZE eder (ne set ne complete ne clear).
+- **C (NLU tek-turn):** her turn `nlu:tr>de` düzeltme ping-pong'u. → NLU dil-yazması YALNIZ İLK
+  MESAJDA (C1 davranışı). Mid-flow NLU farkı pendingLangSwitch'in işi (2 ardışık harfli-ASCII).
+
+**İNVARYANT (yeni kod bu kurallara uyar):**
+1. `context.language` YALNIZ şu 4 mekanizmadan yazılır: (i) doğum (createInitialContext—seed
+   burada), (ii) explicit intent ("english please" — anında), (iii) char-detect unique-script
+   (Kiril/Arap anında; TR yalnız TR-unique harfle), (iv) NLU: ilk-mesaj anında, mid-flow yalnız
+   §35 pendingLangSwitch (2 ardışık harfli-ASCII turn).
+2. **HARFSİZ mesaj (\p{L} yok: telefon/rakam/emoji) HİÇBİR mekanizmada dil-sinyali DEĞİLDİR.**
+3. UI/seed dili yerleşik konuşma dilini ASLA ezmez (mid-flow seed-override YASAK).
+4. Her yazma `_traceLang` ring'inden geçer (`context._langTrace`, son 12) — yeni yazma-noktası
+   eklenecekse trace ZORUNLU. Deterministik şablonların dili DAİMA `newContext.language`.
+Doğrulama standardı: dil-flip sınıfı değişikliklerde tekrar-testi N≥5 (tek yeşil koşum kanıt değil).
