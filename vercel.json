@@ -1,5 +1,8 @@
 {
   "cleanUrls": true,
+  "redirects": [
+    { "source": "/gizlilik-politikasi", "destination": "/privacy-policy", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/admin/:path*", "destination": "/spa-fallback.html" },
     { "source": "/admin", "destination": "/spa-fallback.html" },

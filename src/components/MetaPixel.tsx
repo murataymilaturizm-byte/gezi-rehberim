@@ -6,7 +6,9 @@
 import { useEffect } from "react";
 import { getConsent } from "./CookieConsent";
 
-const PIXEL_ID = "1240169247981795";
+// Pixel ID env'den (Vercel → VITE_META_PIXEL_ID). Koda GÖMÜLMEZ. Tanımsızsa Pixel
+// yüklenmez (güvenli no-op) → Murat Meta Events Manager'dan alıp Vercel env'e girecek.
+const PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID as string | undefined;
 
 declare global {
   interface Window {
@@ -16,6 +18,10 @@ declare global {
 }
 
 function loadPixel() {
+  if (!PIXEL_ID) {
+    if (import.meta.env.DEV) console.warn("[MetaPixel] VITE_META_PIXEL_ID tanımsız — Pixel yüklenmedi.");
+    return;
+  }
   if (window.fbq) return; // zaten yüklü
 
   const n: any = function (...args: any[]) {
@@ -35,6 +41,20 @@ function loadPixel() {
 
   window.fbq("init", PIXEL_ID);
   window.fbq("track", "PageView");
+}
+
+/**
+ * Lead event — demo-talep / iletişim formu BAŞARILI submit'inde çağrılır.
+ * fbq yalnız marketing-onayı + geçerli Pixel ID varsa yüklüdür → trackLead
+ * otomatik olarak consent-gated'dır (onay yoksa window.fbq yok → sessiz no-op).
+ * Kullanım: import { trackLead } from "@/components/MetaPixel"; trackLead();
+ * Yeni bir dönüşüm noktası eklenirse (ör. "Ücretsiz Dene" tıklaması) buraya
+ * benzer bir helper (trackCompleteRegistration vb.) eklenip oraya bağlanabilir.
+ */
+export function trackLead(params?: Record<string, unknown>) {
+  if (typeof window !== "undefined" && typeof window.fbq === "function") {
+    window.fbq("track", "Lead", params);
+  }
 }
 
 export function MetaPixel() {

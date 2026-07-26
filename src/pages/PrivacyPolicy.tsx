@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,12 +5,15 @@ import { ArrowLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-// src/legal/privacy/*.md dosyaları — ?raw ile ham metin olarak import
+// src/legal/privacy/*.md — ?raw + EAGER: prerender-fix (2026-07-26). Eskiden eager:false
+// + useEffect async yükleniyordu → prerender'da içerik BOŞTU (loading state), ham HTML'de
+// gizlilik metni GÖRÜNMÜYORDU (SEO/GEO eksik). Şimdi eager → bundle'da senkron, prerender'a
+// TR metni gömülür; istemcide i18n dili değişince re-render ile ilgili dil basılır. (blog.ts deseni.)
 const policyFiles = import.meta.glob("../legal/privacy/*.md", {
   query: "?raw",
   import: "default",
-  eager: false,
-}) as Record<string, () => Promise<string>>;
+  eager: true,
+}) as Record<string, string>;
 
 const BACK_LABELS: Record<string, string> = {
   tr: "Geri", en: "Back", de: "Zurück",
@@ -21,27 +23,15 @@ const BACK_LABELS: Record<string, string> = {
 const PrivacyPolicy = () => {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
-  const [content, setContent] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const lang = i18n.language?.slice(0, 2) || "tr";
 
-  useEffect(() => {
-    setLoading(true);
-    const lang = i18n.language?.slice(0, 2) || "tr";
-    const key = Object.keys(policyFiles).find((k) => k.endsWith(`/${lang}.md`));
-    const fallback = Object.keys(policyFiles).find((k) => k.endsWith("/tr.md"));
-    const loader = policyFiles[key ?? fallback ?? ""];
+  // Senkron seçim (eager glob) → prerender'da içerik hazır. Dil yoksa TR fallback.
+  const key =
+    Object.keys(policyFiles).find((k) => k.endsWith(`/${lang}.md`)) ??
+    Object.keys(policyFiles).find((k) => k.endsWith("/tr.md"));
+  const content = key ? policyFiles[key] : "";
 
-    if (loader) {
-      loader().then((text) => {
-        setContent(text);
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
-    }
-  }, [i18n.language]);
-
-  const backLabel = BACK_LABELS[i18n.language?.slice(0, 2)] ?? "Back";
+  const backLabel = BACK_LABELS[lang] ?? "Back";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -51,17 +41,9 @@ const PrivacyPolicy = () => {
           {backLabel}
         </Button>
 
-        {loading ? (
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/2" />
-            <div className="h-4 bg-muted rounded w-full" />
-            <div className="h-4 bg-muted rounded w-3/4" />
-          </div>
-        ) : (
-          <article className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-a:text-primary">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-          </article>
-        )}
+        <article className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-a:text-primary">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+        </article>
       </div>
     </div>
   );

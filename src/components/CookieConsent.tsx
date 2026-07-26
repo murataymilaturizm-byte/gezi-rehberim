@@ -6,6 +6,7 @@ import { Cookie, X, ChevronDown } from "lucide-react";
 
 const CONSENT_KEY = "turzz_cookie_consent";
 const CONSENT_VERSION = "1.0";
+const CONSENT_MAX_AGE = 365 * 24 * 60 * 60; // 1 yıl (saniye)
 
 export interface ConsentSettings {
   necessary: true;
@@ -15,9 +16,23 @@ export interface ConsentSettings {
   timestamp: string;
 }
 
+// Çerez-onayı tercihi COOKIE'de tutulur (localStorage değil) — gerçek site, ePrivacy
+// uyumu. SSR/SSG-safe: prerender'da document YOK (typeof guard). JSON değeri
+// encode/decode edilir (cookie'de ; , " güvenli olmaz).
+function _readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+function _writeCookie(name: string, value: string, maxAgeSec: number): void {
+  if (typeof document === "undefined") return;
+  const secure = typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSec}; SameSite=Lax${secure}`;
+}
+
 export function getConsent(): ConsentSettings | null {
   try {
-    const raw = localStorage.getItem(CONSENT_KEY);
+    const raw = _readCookie(CONSENT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as ConsentSettings;
     if (parsed.version !== CONSENT_VERSION) return null;
@@ -35,8 +50,8 @@ export function saveConsent(settings: { analytics: boolean; marketing: boolean }
     version: CONSENT_VERSION,
     timestamp: new Date().toISOString(),
   };
-  localStorage.setItem(CONSENT_KEY, JSON.stringify(full));
-  window.dispatchEvent(new Event("consent-updated"));
+  _writeCookie(CONSENT_KEY, JSON.stringify(full), CONSENT_MAX_AGE);
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("consent-updated"));
   return full;
 }
 

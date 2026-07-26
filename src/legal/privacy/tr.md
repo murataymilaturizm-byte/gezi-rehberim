@@ -1,8 +1,8 @@
 # Gizlilik Politikası
 
-**Son güncelleme:** Mayıs 2026  
+**Son güncelleme:** Temmuz 2026  
 **Veri Sorumlusu:** Aymila Bilgisayar İtriyat Turizm İthalat İhracat Ticaret ve Sanayi Limited Şirketi  
-**İletişim:** info@turzzai.com
+**İletişim:** info@turzzai.com — Destek: 0850 242 77 50
 
 ---
 
@@ -59,7 +59,7 @@ Verileriniz, hizmet ilişkimizin devam ettiği süre boyunca ve sonrasında yasa
 
 ## 7. Haklarınız
 
-KVKK ve GDPR kapsamında aşağıdaki haklara sahipsiniz:
+KVKK **madde 11** ve GDPR kapsamında aşağıdaki haklara sahipsiniz:
 
 - **Erişim hakkı:** Verilerinize erişim talep edebilirsiniz
 - **Düzeltme hakkı:** Hatalı verilerin düzeltilmesini isteyebilirsiniz
@@ -68,9 +68,13 @@ KVKK ve GDPR kapsamında aşağıdaki haklara sahipsiniz:
 - **İtiraz hakkı:** Veri işlemeye itiraz edebilirsiniz
 - **Kısıtlama hakkı:** İşlemenin kısıtlanmasını talep edebilirsiniz
 
-## 8. Çerezler
+## 8. Çerezler ve İzleme Teknolojileri
 
-Web sitemiz, temel işlevler için zorunlu çerezler ve onayınıza bağlı olarak analitik ve pazarlama çerezleri kullanmaktadır. Tercihlerinizi çerez banner'ından yönetebilirsiniz.
+Web sitemiz, temel işlevler için **zorunlu çerezler** ve onayınıza bağlı olarak **analitik** ve **pazarlama** çerezleri kullanmaktadır. Tercihlerinizi sayfanın altındaki çerez banner'ından her zaman yönetebilirsiniz.
+
+- **Zorunlu:** Sitenin çalışması ve tercihlerinizin (dil, çerez onayı) hatırlanması için gereklidir; onay gerektirmez.
+- **Pazarlama — Meta (Facebook) Pixel:** Yalnızca pazarlama çerezlerine **açık onay verdiğinizde** yüklenir. Meta Pixel, reklam performansını ölçmek ve ilgili kitlelere ulaşmak amacıyla anonimleştirilmiş etkileşim verilerini Meta Platforms Ireland Ltd. ile paylaşır. Onay vermezseniz Pixel **hiç yüklenmez**. Onayınızı çerez banner'ından dilediğiniz zaman geri alabilirsiniz.
+- **Analitik:** (Etkinse) site kullanımını ölçmek için onaya bağlı olarak kullanılır.
 
 ## 9. Güvenlik
 
@@ -78,9 +82,10 @@ Verileriniz şifreleme, erişim kontrolü ve düzenli güvenlik denetimleri ile 
 
 ## 10. İletişim ve Şikâyet
 
-Gizlilik politikamız hakkında sorularınız için:
+Gizlilik politikamız veya KVKK md.11 haklarınız hakkında sorularınız için:
 
-**E-posta:** info@turzzai.com
+**E-posta:** info@turzzai.com  
+**Destek Hattı:** 0850 242 77 50
 
 Türkiye'de Kişisel Verileri Koruma Kurumu'na (kvkk.gov.tr), AB'de ilgili Veri Koruma Otoritesi'ne şikâyette bulunabilirsiniz.
 

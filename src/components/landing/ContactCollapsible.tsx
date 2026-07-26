@@ -11,6 +11,7 @@ import { ChevronDown, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { trackLead } from "@/components/MetaPixel";
 import { contactFormSchema, checkRateLimit, sanitizeHtml } from "@/utils/validation";
 
 export const ContactCollapsible = () => {
@@ -49,6 +50,9 @@ export const ContactCollapsible = () => {
         status: "new",
       });
       if (error) throw error;
+
+      // Meta Pixel Lead — yalnız marketing-onayı + Pixel yüklüyse gönderilir (consent-gated).
+      trackLead({ content_name: "contact_form" });
 
       toast({
         title: t("contact.successTitle"),
