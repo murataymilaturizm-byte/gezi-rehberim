@@ -39,6 +39,7 @@ import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
 import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
+import { isSummaryRequest } from "../constants/summary-request.ts";
 import { PRICE_QUESTION_RE } from "../constants/price-question.ts";
 import { THANKS_FAREWELL_RE } from "../constants/thanks-words.ts";
 import { QUESTION_SIGNAL_RE } from "../constants/question-detection.ts";
@@ -214,9 +215,17 @@ async function _buildUpdatedSummary(
     _confDate?.price_adult || 0, _confDate?.price_child,
     _confTour?.currency || "TRY", lang, agency.show_multi_currency !== false, languageCurrencies,
   );
+  // B-C1 (2026-07-27): tarih YOKSA satır atlanmaz — "henüz seçilmedi" basılır.
+  // KÖK: red-sonrası "özet"te tarih-satırı sessizce kaybolunca LLM history'den
+  // silinmiş tarihi dolduruyordu; deterministik "seçilmedi" hem doğru bilgi verir
+  // hem bayat-tarih görünümünü keser. Dolu-tarih davranışı BİREBİR aynı.
+  const _dateNotSel: Record<string, string> = {
+    tr: "henüz seçilmedi", en: "not selected yet", de: "noch nicht ausgewählt",
+    fr: "pas encore choisie", es: "aún no seleccionada", ru: "ещё не выбрана", ar: "لم يُحدَّد بعد",
+  };
   return [
     _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
-    _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
+    _dateText  ? `📅 ${L.date}: ${_dateText}`    : `📅 ${L.date}: ${_dateNotSel[lang] || _dateNotSel.tr}`,
     _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
     updated.fullName ? `👤 ${L.name}: ${updated.fullName}` : "",
     updated.phone    ? `📱 ${L.phone}: ${updated.phone}`   : "",
@@ -3970,6 +3979,28 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     await _save(summaryReply, newContext);
     await adapter.sendResponse(summaryReply);
     return { success: true, response: summaryReply, newContext };
+  }
+
+  // === 13-SUM (B-C1, 2026-07-27): AÇIK "özet" isteği — STATE-FIRST deterministik ===
+  // KÖK (denetim B-1): red-sonrası waiting_for_date'te "özet" LLM'e düşüyordu →
+  // LLM history'deki ESKİ özetten silinmiş tarihi söylüyordu (state'te tarih YOK).
+  // FIX: salt özet-isteği (isSummaryRequest: ≤4 kelime + 7-dil özet-kelimesi +
+  // tur-içerik-dışlama) + rezervasyon bağlamı (tourId) → _buildUpdatedSummary
+  // (tek-kaynak: :13/l2 ile aynı, 💰 dahil; tarih yoksa "henüz seçilmedi" satırı).
+  // LLM'e HİÇ gitmez → history-kopyası imkânsız. STATE DEĞİŞMEZ (sadece cevap).
+  if (
+    isSummaryRequest(message) &&
+    (newContext.reservationInfo as any)?.tourId &&
+    ["TOUR_SELECTED", "COLLECTING_INFO", "CONFIRMING"].includes(newContext.stage)
+  ) {
+    const _sumLang = newContext.language || "tr";
+    const _sumText = await _buildUpdatedSummary(
+      newContext.reservationInfo, newContext.currentTour, _sumLang, tours, agency, languageCurrencies,
+    );
+    console.log(`[process-message] 13-SUM state-first özet bypass (stage=${newContext.stage}, step=${newContext.collectionStep ?? "-"}, hasDate=${!!(newContext.reservationInfo as any)?.dateId})`);
+    await _save(_sumText, newContext);
+    await adapter.sendResponse(_sumText);
+    return { success: true, response: _sumText, newContext };
   }
 
   // === 13-PERSIST. CONFIRMING NO-OP — belirsiz cevap özet+onay tekrar ===
