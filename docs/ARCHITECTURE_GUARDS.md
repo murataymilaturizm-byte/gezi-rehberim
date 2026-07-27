@@ -1355,3 +1355,18 @@ claim-desenleri "\b[öo]deme" — ö-önü \b non-ASCII'de ölü-desen riski, M1
 fsm/validator.ts ×38, simple-extractor ×8 (çoğu rakam-deseni, güvenli), state-machine ×3
 (hasPax bilinen), nlu/question-detection/sales/support ×1-2 (rakam/HTML-sanitize, güvenli).
 Öncelik: response-validator → fsm/validator → kalanlar.
+
+### §15.1 M1-TAMAMLAMA — kopya-liste canlı-FAIL dersi (2026-07-27)
+
+M1 A-GATE fix'i derlenmiş-testte yeşildi ama CANLIDA sızıntı sürdü ("Vergiss Es" tekrar).
+KÖK: sızıntı NLU-yolundan değil — info-extractor'da İKİ ayrı deterministik isim-kabul
+noktası vardı: (1) Blok-5 fallback'i İÇİNDE `_giveUpDropRe5` adlı ESKİ KOPYA-LİSTE
+(yalnız tr+en; "simetrik" yorumuyla yaşayan tek-kaynak ihlali — Dalga-2 genişletmesi
+buraya hiç yansımamıştı), (2) simple-kısa-yol merge'ünün (L379) sigortası yalnız
+Negation+Tour idi. FIX: kopya SİLİNDİ → GIVE_UP_DROP_RE; iki noktaya da BEŞLİ tek-kaynak
+sigorta (Negation+Tour+GiveUp+THANKS+CLEAR). Canlı: DE/FR give-up artık cancel-yolu
+("Kein Problem!/Pas de problème!"), RU "Спасибо большое" isim değil.
+KURAL: aynı sinyalin İKİNCİ tüketicisi yazılacaksa kopya değil İMPORT; "X ile simetrik"
+yorumu görülen her yerde senkron-riski var — parite-testi kapsamına alınır.
+DOĞRULAMA-KURALI: guard-fix'i "hangi katman yazıyor" kanıtı olmadan kapatılmaz —
+derlenmiş-test yeşili, YANLIŞ katmandaki guard için de yeşildir (bu vaka).

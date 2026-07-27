@@ -2,15 +2,17 @@
 // Davranış whatsapp-webhook/index.ts'deki inline bloklar ile EŞDEĞERDİR (Faz 1).
 
 import type { ConversationContext } from "../fsm/types.ts";
-import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone, hasRelativeDateWord } from "../fsm/simple-extractor.ts";
+import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone, hasRelativeDateWord, GIVE_UP_DROP_RE } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
-import { isNluFullNameNegationLeak, isNluFullNameTourLeak } from "./nlu-validation.ts";
+import { isNluFullNameNegationLeak, isNluFullNameTourLeak, isNluFullNameGiveUpLeak } from "./nlu-validation.ts";
 import { hasQuotaForPax, getQuotaRemaining } from "./quota-check.ts";
 import { isValidPax } from "../utils/validation.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { AVAILABILITY_RE } from "../constants/availability-words.ts";
 import { PEOPLE_CONTEXT_RE } from "../constants/people-words.ts";
+import { THANKS_FAREWELL_RE } from "../constants/thanks-words.ts";
+import { CLEAR_POSITIVE_RE } from "../constants/confirmation-words.ts";
 import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-names.ts";
 
 // getLocalizedTourTitle ve _TOUR_TITLE_TRANSLATIONS tanımları aşağıda,
@@ -375,7 +377,16 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // 9f040077 kanıtı: simple-extractor "Murat Değil Aslında Ahmet" Title-Case
   // dönüyordu → state'e ham yazılıyordu.
   if (simple.fullName && !extractedInfo.fullName) {
-    if (!isNluFullNameNegationLeak(simple.fullName) && !isNluFullNameTourLeak(simple.fullName)) {
+    // M1-tamamlama (2026-07-27): +GiveUpLeak +THANKS/CLEAR — simple kısa-yolu
+    // (waiting_for_name 2-4-kelime, karakter-sınıfsız) "Спасибо Большое"/"Vielen
+    // Dank"ı isim yazıyordu; Blok-5 sigortasıyla AYNI beşli tek-kaynak set.
+    if (
+      !isNluFullNameNegationLeak(simple.fullName) &&
+      !isNluFullNameTourLeak(simple.fullName) &&
+      !isNluFullNameGiveUpLeak(simple.fullName) &&
+      !THANKS_FAREWELL_RE.test(simple.fullName) &&
+      !CLEAR_POSITIVE_RE.test(simple.fullName)
+    ) {
       extractedInfo.fullName = simple.fullName;
     }
     // else: silent drop, sonraki turn'de bot yeniden sorar
@@ -400,11 +411,14 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   const expectedInput = getNextExpectedInput(context);
 
   if (expectedInput === "name" && !extractedInfo.fullName) {
-    // 2026-07-03 J-16: vazgeçme+dolgu token elemesi (simple-extractor ile simetrik)
-    const _giveUpDropRe5 = /^(boşver|bosver|kalsın|kalsin|neyse|vazgeç|vazgec|vazgeçtim|vazgectim|olsun|lütfen|lutfen|nevermind|forget|it)$/i;
+    // 2026-07-03 J-16 → M1-tamamlama (2026-07-27): eski KOPYA _giveUpDropRe5 (yalnız
+    // tr+en) SİLİNDİ → tek-kaynak GIVE_UP_DROP_RE. CANLI KÖK-KANIT: "vergiss es"/
+    // "laisse tomber"/"Спасибо большое" A-GATE'i değil BU deterministik fallback'i
+    // kullanıyordu; kopya-liste DE/FR/RU token'larını bilmediğinden aday "Vergiss Es"
+    // yazılıyordu (M1 A-GATE fix'i yanlış katmandı — sızıntı NLU'dan gelmiyordu).
     const words = message.trim().split(/\s+/)
       .map((w) => w.replace(/[.,!?;:"'()]/gu, ""))
-      .filter((w) => w && !_giveUpDropRe5.test(w));
+      .filter((w) => w && !GIVE_UP_DROP_RE.test(w));
     if (
       words.length >= 2 &&
       words.length <= 4 &&
@@ -430,7 +444,15 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       if (!blacklist.some((w) => message.toLowerCase().includes(w))) {
         const _candidate = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
         // ASIL SİGORTA: candidate gate kontrolü (K3 ile aynı helper'lar, tek-kaynak)
-        if (!isNluFullNameNegationLeak(_candidate) && !isNluFullNameTourLeak(_candidate)) {
+        // M1-tamamlama (2026-07-27): +GiveUpLeak (ifade+kompozisyon) ve +THANKS/CLEAR
+        // ön-eleme ("Спасибо Большое"/"Vielen Dank" isim değildir — M2-simetriği).
+        if (
+          !isNluFullNameNegationLeak(_candidate) &&
+          !isNluFullNameTourLeak(_candidate) &&
+          !isNluFullNameGiveUpLeak(_candidate) &&
+          !THANKS_FAREWELL_RE.test(_candidate) &&
+          !CLEAR_POSITIVE_RE.test(_candidate)
+        ) {
           extractedInfo.fullName = _candidate;
         }
       }
