@@ -1708,7 +1708,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _l2DiffPh = !!_l2Ext.phone && !!_l2Cur.phone && _l2Cur.phone !== _l2Ext.phone;
   const _l2DiffPx = typeof _l2Ext.paxAdult === "number" && typeof _l2Cur.paxAdult === "number" && _l2Cur.paxAdult !== _l2Ext.paxAdult;
   const _l2DiffDid = !!_l2Ext.dateId && !!_l2Cur.dateId && _l2Cur.dateId !== _l2Ext.dateId;
-  const _l2DiffSd = !!_l2Ext.selectedDate && !!_l2Cur.selectedDate && _l2Cur.selectedDate !== _l2Ext.selectedDate;
+  // 2026-07-27 OLGU-A (layer-2 tamamlama — canlı a/b kanıtı): selectedDate farkı
+  // YALNIZ çözülmüş dateId ile geçerli değişim sayılır. Geçersiz tarihte (_l2Ext.dateId
+  // yok, turda OLMAYAN tarih) selectedDate-only farkı DAL1'e GİRMEMELİ — girerse
+  // _l2Updated.selectedDate=15 yazılıp _l2DiffDid=false olduğundan stale dateId=10
+  // kalıyor (görünen≠kayıtlı; özet "15.12" gösterip rezervasyon 10.12'ye yazılıyor).
+  // Fix: dateId şartı → dateId'siz fark DAL1'i tetiklemez → fall-through: state-machine
+  // change-action (stale dateId siler) + pm _invalidDateForPreamble ("müsait değil"+
+  // müsait liste + waiting_for_date). Geçerli değişimde (_l2Ext.dateId dolu) davranış
+  // AYNEN korunur (_l2DiffDid zaten true, ikisi birlikte yazılır). state-machine ~899
+  // OLGU-A fix'inin layer-2 simetriği (asıl canlı-yol burasıydı).
+  const _l2DiffSd = !!_l2Ext.selectedDate && !!_l2Ext.dateId && !!_l2Cur.selectedDate && _l2Cur.selectedDate !== _l2Ext.selectedDate;
   const _l2HasNewValue = _l2DiffFN || _l2DiffPh || _l2DiffPx || _l2DiffDid || _l2DiffSd;
 
   // DAL 2 için "değişiklik sinyali": mesajda alan adı (sıkı kelime sınırı) veya

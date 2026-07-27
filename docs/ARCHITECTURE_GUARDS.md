@@ -1436,3 +1436,22 @@ yola birleşir). Pax kota-guard'ının ([4b]) tarih simetriği.
 **KURAL:** id-eşlemeli alan çiftlerinde (selectedDate↔dateId gibi) GÖRÜNEN değeri kayıt-id'si
 çözülmeden YAZMA; id çözülemezse eski id'yi de temizle (stale bırakma) — "değişim" yolu
 "init" yolunun availability-guard'ını AYNEN uygulamalı. Kalıcı: test_behavioral OLGU-A bloğu.
+
+### §16.1 OLGU-A LAYER-2 TAMAMLAMA — "yanlış katman" tekrarı (2026-07-27)
+
+COMMIT-1 (cf4a8ba) OLGU-A'yı **state-machine change-action (~899)**'da düzeltti; birim-test
+(processTransition) yeşildi. AMA CANLI ADIM-4: "15 Aralık yap" hâlâ 15'i kabul etti
+(selDate=15, dateId=…004 stale, bot "15.12" gösterdi). KÖK: canlı "15 Aralık yap" 901'den
+DEĞİL **process-message layer-2 DAL1 (~1738)**'den geçip erken-return ediyor — 901 hiç
+çalışmıyor. Envanterde (§16) "~1738 follow-up, repro yok" demiştim; ASIL canlı-yol buradaydı.
+Bu, §15.1'in TEKRARI: **derlenmiş/birim test yeşili YANLIŞ katman için de yeşildir; guard-fix
+'hangi katman canlıda çalışıyor' kanıtı olmadan kapatılamaz.** Birim-test entry-point'i
+(processTransition) canlı entry-point (process-message handler) DEĞİLDİ.
+
+**Fix (layer-2):** `_l2DiffSd`'ye `_l2Ext.dateId` şartı → geçersiz tarih (dateId'siz) DAL1'e
+girmez → fall-through: pm `_invalidDateForPreamble` ("müsait değil"+liste) + (901 fix'i de
+devrede). Geçerli değişimde davranış aynen korunur (_l2DiffDid zaten kapsıyor).
+
+**KURAL (güçlendirilmiş):** id-eşlemeli alan fix'i, kullanıcı mesajının GİRDİĞİ GERÇEK
+canlı-yolda doğrulanmadan kapatılmaz. Aynı bug için BİRDEN FAZLA giriş-yolu (layer-2 DAL1,
+state-machine change-action, A3, merge) olabilir — hepsi taranmalı; "birim yeşil" ≠ "canlı yeşil".
