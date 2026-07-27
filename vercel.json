@@ -4,10 +4,10 @@
     { "source": "/gizlilik-politikasi", "destination": "/privacy-policy", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/admin/:path*", "destination": "/spa-fallback.html" },
-    { "source": "/admin", "destination": "/spa-fallback.html" },
-    { "source": "/auth", "destination": "/spa-fallback.html" },
-    { "source": "/reset-password", "destination": "/spa-fallback.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/admin/:path*", "destination": "/spa-fallback" },
+    { "source": "/admin", "destination": "/spa-fallback" },
+    { "source": "/auth", "destination": "/spa-fallback" },
+    { "source": "/reset-password", "destination": "/spa-fallback" },
+    { "source": "/(.*)", "destination": "/spa-fallback" }
   ]
 }
