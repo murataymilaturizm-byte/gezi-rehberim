@@ -1370,3 +1370,41 @@ KURAL: aynı sinyalin İKİNCİ tüketicisi yazılacaksa kopya değil İMPORT; "
 yorumu görülen her yerde senkron-riski var — parite-testi kapsamına alınır.
 DOĞRULAMA-KURALI: guard-fix'i "hangi katman yazıyor" kanıtı olmadan kapatılmaz —
 derlenmiş-test yeşili, YANLIŞ katmandaki guard için de yeşildir (bu vaka).
+
+### §15.2 VALIDATOR ÖLÜ-DESEN FIX (2026-07-27) — güvenlik-ağı katmanı
+
+response-validator/validator "botun kendi cevabını denetleyip şüpheliyi SİLEN" katman.
+Ölçüm (gerçek-fonksiyon, literal-çıkarma değil): 80 desenden **8 ölü + 4 kısmi**. Kök 4 sınıf:
+1. **Kiril/Arap + \b (EN KRİTİK):** JS \b ASCII → PRICE_MANIP RU/AR (L133/134/136) HİÇ
+   fire etmiyordu; injection-şüpheli konuşmada RU/AR fiyat-manip guard'ı TAMAMEN kördü.
+   → \p{L}\p{N} lookaround (fsm/validator RU/AR injection'da aynı Yan #8, 2026-07-09).
+2. **%-kenarı (yeni alt-sınıf):** "%20 indirim" başındaki % non-word → \b sınır ÜRETMEZ.
+   L110/L121/fsm-L53. → öndeki \b yerine `(?<![\p{L}\p{N}])`; sondaki `%\b` kaldırıldı.
+3. **büyük-İ (yeni alt-sınıf):** cümle-başı "İşleminiz"/"İsminizi" → İ (U+0130) JS /i-fold'da
+   ASCII i'ye İNMEZ → `i…` dalı kaçırır. L38 + FIELD_REASK name.tr. → `[iİ]` + lookaround.
+4. **ASCII \w + TR-eki:** `talimatlar?\w*` → \w ı'yı almaz, \w* sıfır eşleşip \s+ kopar.
+   fsm L49/L52. → `\w*`→`\p{L}*` + /u.
+NO-OP raporu: L28 (rezervasyon+adverb+oluşturuldu) zaten L32 "başarıyla" deseniyle
+yakalanıyordu → genişletilmedi (redundant + FP-yüzeyi). KALAN kısmi (FIX EDİLMEDİ,
+ayrı-iş): FIELD_REASK **EN kelime-sırası** (L242.en/L246.en) — "may I know your name"
+gibi request-önce-alan dizilişi; yeniden-sıralama FP-riskli, Dalga-sonrası.
+
+**ZORUNLU DİSİPLİN (emsal 7671d68 — validator meşru "güncelledim+telefon iste"yi siliyordu):**
+Bu katmanda desen GENİŞLETMEK = MEŞRU cevabı silme riski. Her fix ÖNCESİ **FP-korpusu
+baseline** (40+ cümle, 7 dil, meşru bot-çıktısı/kullanıcı-mesajı) koşulur; fix SONRASI
+baseline-farkı SIFIR olmalı (yeni-yakalanan meşru cümle = REGRESYON → deseni GERİ AL,
+kısmi bırak). "Kör guard, meşru cevabı silen guard'dan İYİDİR." Kalıcı koruma:
+scripts/test_behavioral.ts **V-FIX bloğu** (12 pozitif YAKALANMALI + FP-alt-küme
+YAKALANMAMALI, gerçek-fonksiyon). Yeni PRICE_MANIP/completion/injection deseni eklerken
+buraya hem pozitif hem FP cümle EKLENİR.
+
+### §15.3 KOPYA-TESPİTİ AÇIĞI (mekanizma eksikliği — Dalga-3 registry tasarım notu)
+
+M1'de `_giveUpDropRe`'nin tr+en KOPYASI (info-extractor Blok-5) AYLARCA yaşadı ve
+field-sync-test o sırada YEŞİLDİ → "tek-kaynak kopya YASAK" kuralının UYGULAYICI
+MEKANİZMASI YOK; kural yalnız insan-disiplinine bağlı, kopyalar sessizce sürüklenir.
+**Planlanan parite-registry'ye NOT:** kopya-yakalayıcı YALNIZCA Kiril/Arap literal
+ararsa (Yan #8 sezgisi) **tr+en kopyasını ATLAR** — tr+en tamamen ASCII'dir. Yakalayıcı
+seviyesi "tek-kaynak sabitin ADINI taşımayan, aynı SEMANTİĞİ tekrarlayan liste/regex"
+olmalı (ör. iki farklı yerde vazgeçme-token listesi = ihlal, dilden bağımsız). Bu tur
+FIX yok — yalnız tasarım notu.

@@ -35,9 +35,14 @@ const TR_PATTERNS: RegExp[] = [
   // "en kısa sürede/yakında sizi arayacak/ulaşacak" (zaman + eylem kombinasyonu)
   /\b(en\s+k[ıi]sa\s+s[üu]rede|yak[ıi]nda|k[ıi]sa\s+s[üu]re\s+i[çc]inde)\s+(sizi|size)\s+(aray\S*|ula[şs]\S*|d[öo]n\S*)/i,
   // "işleminiz tamamlandı/gerçekleşti"
-  /\bi[şs]lem(iniz)?\s+(tamamland[ıi]|ger[çc]ekle[şs]ti|ba[şs]ar[ıi]l[ıi])/i,
-  // "ödeme bilgileri/detayları gönderilecek"
-  /\b[öo]deme\s+(bilgileri|detaylar[ıi])\s+(g[öo]nderilecek|payla[şs][ıi]lacak|iletilecek)/i,
+  // 2026-07-27 validator-fix (büyük-İ sınıfı): cümle-başı "İşleminiz" → İ (U+0130)
+  // /i-fold'da ASCII i'ye inmez (JS default), \b de non-ASCII'de sınır üretmez →
+  // desen ölüydü (kanıt: "İşleminiz tamamlandı" ✗). [iİ] + lookaround /u.
+  /(?<![\p{L}\p{N}])[iİ][şs]lem(iniz)?\s+(tamamland[ıi]|ger[çc]ekle[şs]ti|ba[şs]ar[ıi]l[ıi])/iu,
+  // "ödeme bilgileri/detayları (size) gönderilecek"
+  // 2026-07-27 validator-fix: leading \b[öo] cümle-başı Ö'de sınır üretmiyordu +
+  // araya "size" girince \s+ kopuyordu → lookaround + opsiyonel zamir.
+  /(?<![\p{L}\p{N}])[öo]deme\s+(bilgileri(?:niz)?|detaylar[ıi])\s+(?:size\s+)?(g[öo]nderilecek|payla[şs][ıi]lacak|iletilecek)/iu,
   // "kaydınız sistemimize işlendi"
   /\bkayd[ıi]n[ıi]z\s+sistem\S*\s+(i[şs]lendi|al[ıi]nd[ıi])/i,
 ];
@@ -107,18 +112,25 @@ const EXTRA_PATTERNS: RegExp[] = [
 // ─── K4 Post-validation: injection şüphesi sonrası fiyat manipülasyon tespiti ──
 const PRICE_MANIP_PATTERNS: RegExp[] = [
   // TR — indirim/bedava/ücretsiz
-  /\b%\s*\d+\s*indirim\b/i,
+  // 2026-07-27 validator-fix (%-kenarı sınıfı): "%20 indirim" başındaki % non-word
+  // olduğundan \b sınır ÜRETMEZ (cümle-başı) → desen ölüydü. Öndeki \b yerine
+  // "harf/rakam-değil" lookbehind (boşluk veya string-başı kabul).
+  /(?<![\p{L}\p{N}])%\s*\d+\s*indirim(?![\p{L}\p{N}])/iu,
   /\bindirimli\s+(fiyat|ücret)\b/i,
   /\b(size\s+özel|sadece\s+siz|özel\s+teklif)\s+.{0,20}%(indirim|daha\s+ucuz)/i,
   // 2026-06-21 Yan #8 GÜVENLİK fix: "ücretsiz" başlangıçtaki ü non-ASCII, eski
   // \b boundary çalışmıyordu → LLM "ücretsiz yapabilirim" çıktısı K4 guard'a
   // takılmıyordu. \p{L}\p{N} lookaround ile yakalanır.
   /(?<![\p{L}\p{N}])ücretsiz\s+(yapabilirim|sunabilirim|yapıyorum|veriyorum|yaptım)(?![\p{L}\p{N}])/iu,
-  /\bbedavaya?\s+(alabilirim|sunabilirim|yapabilirim|veriyorum)\b/i,
+  // 2026-07-27 validator-fix (kapsam): "bedavaya?" = "bedavay"+opsiyonel-a → bare
+  // "bedava" (y yok) kaçıyordu; "bedava(?:ya)?" hem "bedava" hem "bedavaya" tutar.
+  /\bbedava(?:ya)?\s+(alabilirim|sunabilirim|yapabilirim|veriyorum)\b/i,
   // EN — discount/free
   /\bgive\s+(you\s+)?(a\s+)?\d+\s*%\s*(off|discount)\b/i,
   /\b(i\s+can|i'll)\s+(make|give|offer)\s+(it|you)\s+(free|at\s+no\s+cost)\b/i,
-  /\bspecial\s+(price|discount|offer)\s+of\s+\d+\s*%\b/i,
+  // 2026-07-27 validator-fix (%-kenarı): sondaki %\b → % non-word, string/boşluk
+  // sonunda sınır oluşmaz → trailing \b kaldırıldı ("20%" sonu artık tutar).
+  /\bspecial\s+(price|discount|offer)\s+of\s+\d+\s*%/i,
   /\b\d+\s*%\s*off\s+(for\s+you|today)\b/i,
   // DE
   /\b(gebe\s+ihnen|biete\s+ihnen)\s+\d+\s*%\s*(rabatt|vergünstigung)\b/i,
@@ -129,11 +141,15 @@ const PRICE_MANIP_PATTERNS: RegExp[] = [
   // ES
   /\ble\s+doy\s+\d+\s*%\s*de\s+descuento\b/i,
   /\bgratis\s+para\s+(usted|ti)\b/i,
-  // RU
-  /\bдам\s+вам\s+скидку\s+\d+\s*%\b/i,
-  /\bбесплатно\s+для\s+вас\b/i,
-  // AR
-  /\bأعطيك\s+خصم\s+\d+\s*%\b/i,
+  // RU / AR
+  // 2026-07-27 validator-fix (Kiril/Arap+\b sınıfı — EN KRİTİK): JS \b ASCII'dir,
+  // Kiril/Arap harflerde sınır TANIMAZ → bu 3 desen HİÇ fire etmiyordu, yani
+  // injection-şüpheli konuşmada RU/AR fiyat-manipülasyon guard'ı TAMAMEN kördü
+  // (fsm/validator RU/AR injection'da 2026-07-09'da düzeltilen aynı Yan #8 sınıfı).
+  // \b → \p{L}\p{N} lookaround + /u.
+  /(?<![\p{L}\p{N}])дам\s+вам\s+скидку\s+\d+\s*%/iu,
+  /(?<![\p{L}\p{N}])бесплатно\s+для\s+вас(?![\p{L}\p{N}])/iu,
+  /(?<![\p{L}\p{N}])أعطيك\s+خصم\s+\d+\s*%/iu,
 ];
 
 const PRICE_MANIP_SAFE: Record<string, string> = {
@@ -242,7 +258,11 @@ const FIELD_REASK_PATTERNS: Record<string, { tr: RegExp; en: RegExp }> = {
     en: /\b(phone|telephone|mobile|number)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|send)/i,
   },
   name: {
-    tr: /(?<![\p{L}\p{N}])(isim|isminizi|isminiz|ad|adınızı|adınız|soyad|soyadınızı|soyadınız|adsoyad|ad\s*soyad)\s+\S{0,40}?(alabilir miyim|verir misiniz|söyler misiniz|paylaşır mısınız|öğrenebilir miyim|yazar mısınız|alayım)(?![\p{L}\p{N}])/iu,
+    // 2026-07-27 validator-fix (büyük-İ sınıfı, L38 ile aynı kök): cümle-başı
+    // "İsminizi" → İ /i-fold'da ASCII i'ye inmez → "isim" dalları kaçırıyordu
+    // (bot dolu-alanı "İsminizi alabilir miyim?" ile tekrar sorunca guard sessiz).
+    // isim-öbeği baş harfi [iİ]; ad/soyad zaten ASCII-a başlıyor, dokunulmadı.
+    tr: /(?<![\p{L}\p{N}])([iİ]sim|[iİ]sminizi|[iİ]sminiz|ad|adınızı|adınız|soyad|soyadınızı|soyadınız|adsoyad|ad\s*soyad)\s+\S{0,40}?(alabilir miyim|verir misiniz|söyler misiniz|paylaşır mısınız|öğrenebilir miyim|yazar mısınız|alayım)(?![\p{L}\p{N}])/iu,
     en: /\b(name|full\s+name|surname|first\s+name|last\s+name)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|know)/i,
   },
   date: {

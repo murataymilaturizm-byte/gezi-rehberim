@@ -46,11 +46,16 @@ export function detectInjection(input: string): boolean {
     // 2026-07-09 FABLE-denetim: "önceki/bütün" ö/ü-başlangıç \b'de ölüydü → lookaround.
     // \w ASCII — "talimatları" (ı-eki) eşleşmiyordu → \p{L}*.
     /(?<![\p{L}\p{N}])(önceki|tüm|mevcut|yukarıdaki|bütün)\s+(talimatlar?\p{L}*|kurallar?\p{L}*|direktifler?\p{L}*)\s+(unut|yoksay|görmezden|iptal|sil)/iu,
-    /\btalimatlar?\w*\s+(unut|yoksay|değiştir|sil)\b/i,
+    // 2026-07-27 validator-fix (ASCII \w + TR-eki sınıfı): \w ASCII olduğundan
+    // "talimatları"nın ı-ekini almıyor → \w* sıfır eşleşip \s+ kopuyordu ("önceki"
+    // öneki olmayan bare "talimatları unut" kaçıyordu). \w* → \p{L}* + /u.
+    /\btalimatlar?\p{L}*\s+(unut|yoksay|değiştir|sil)\b/iu,
     /\bsen\s+artık\s+\w/i,
     /\brol\s+(değiştir|oyna|al)\b/i,
-    /\b(sistem\s+prompt\w*|talimatlar?\w*)\s+(göster|yaz|söyle|aç|oku)\b/i,
-    /\b%\s*\d+\s*indirim\s+(ver|yap|uygula)\b/i,
+    /\b(sistem\s+prompt\p{L}*|talimatlar?\p{L}*)\s+(göster|yaz|söyle|aç|oku)\b/iu,
+    // 2026-07-27 validator-fix (%-kenarı): baştaki \b% → % non-word, sınır yok →
+    // "%50 indirim ver" kaçıyordu. Öndeki \b yerine harf/rakam-değil lookbehind.
+    /(?<![\p{L}\p{N}])%\s*\d+\s*indirim\s+(ver|yap|uygula)\b/iu,
     /\bbedavaya?\s+(ver|yap|sun)\b/i,
     /\byeni\s+talimatlar?\b/i,
     /(?<![\p{L}\p{N}])(özel|gizli)\s+(mod|mode|komut)(?![\p{L}\p{N}])/iu, // FABLE: özel ö-başlangıç ölüydü
