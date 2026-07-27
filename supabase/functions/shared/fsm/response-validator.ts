@@ -255,7 +255,12 @@ const FIELD_REASK_PATTERNS: Record<string, { tr: RegExp; en: RegExp }> = {
     // TR: "telefon/numara/cep" + (kısa boşluk) + (alabilir miyim/verir misiniz/...)
     // \p{L}\p{N} lookaround Yan #8 pattern'i (ı/ş bitişli kelimeler için ASCII \b yetersiz)
     tr: /(?<![\p{L}\p{N}])(telefon|telefonunuz|telefonunuzu|telefonu|numara|numaranızı|numaranız|cep|gsm)\s+\S{0,40}?(alabilir miyim|verir misiniz|paylaşır mısınız|söyler misiniz|alayım|öğrenebilir miyim|gönderir misiniz|yazar mısınız|verin|verebilir misiniz)/iu,
-    en: /\b(phone|telephone|mobile|number)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|send)/i,
+    // B-C4 (2026-07-27): İKİ KELİME-SIRASI — alan-önce ("your phone number please")
+    // VE istek-önce ("can you share your phone" / "may I have your number"). Eski desen
+    // yalnız alan-önce idi → istek-önce EN varyantları dolu-alan-yutkunma tespitinden
+    // kaçıyordu (ADIM-1 ölçüm kanıtı: "can you share your phone" ✗). FP-emniyeti:
+    // validateFieldReask zaten alan-DOLU + meşru-bekleme-adımı-DEĞİL kapılarının ardında.
+    en: /\b(phone|telephone|mobile|number)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|send)|\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|send|have)\b.{0,40}?\b(phone|telephone|mobile)\b/i,
   },
   name: {
     // 2026-07-27 validator-fix (büyük-İ sınıfı, L38 ile aynı kök): cümle-başı
@@ -263,7 +268,9 @@ const FIELD_REASK_PATTERNS: Record<string, { tr: RegExp; en: RegExp }> = {
     // (bot dolu-alanı "İsminizi alabilir miyim?" ile tekrar sorunca guard sessiz).
     // isim-öbeği baş harfi [iİ]; ad/soyad zaten ASCII-a başlıyor, dokunulmadı.
     tr: /(?<![\p{L}\p{N}])([iİ]sim|[iİ]sminizi|[iİ]sminiz|ad|adınızı|adınız|soyad|soyadınızı|soyadınız|adsoyad|ad\s*soyad)\s+\S{0,40}?(alabilir miyim|verir misiniz|söyler misiniz|paylaşır mısınız|öğrenebilir miyim|yazar mısınız|alayım)(?![\p{L}\p{N}])/iu,
-    en: /\b(name|full\s+name|surname|first\s+name|last\s+name)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|know)/i,
+    // B-C4 (2026-07-27): iki kelime-sırası (bkz. phone.en). "may I know your full name" /
+    // "could you tell me your name" istek-önce dizilişi artık kapsanır.
+    en: /\b(name|full\s+name|surname|first\s+name|last\s+name)\b\s+\S{0,40}?\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|know)|\b(please|can\s+(?:you|i)|may\s+i|could\s+you|share|provide|give|tell|know|have)\b.{0,40}?\b(name|surname)\b/i,
   },
   date: {
     tr: /(?<![\p{L}\p{N}])(hangi\s+tarih|hangi\s+güne?|tarihte|tarihinizi|tarih.{0,20}?(?:tercih|seçer|uygun|belirleyin|belirtir))(?![\p{L}\p{N}])/iu,
