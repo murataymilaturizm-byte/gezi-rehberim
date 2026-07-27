@@ -472,8 +472,14 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
     /(?<![\p{L}\p{N}])(isim|ismi(?:m|mi)?|ad[ıi](?:m|mı|mi|n[ıi])?|ad|soyad[ıi]?|soyisim|name|namen?|имя|اسم|nom|nombre)(?![\p{L}\p{N}])/iu.test(message)
   ) {
     const _nameCtxRe = /^(isim|ismi|ismim|ismimi|ad|adı|adi|adım|adim|adını|adini|soyad|soyadı|soyadi|soyisim|name|namen|имя|اسم|nom|nombre)$/iu;
-    const _fillerRe = /^(olacak|olacaktı|olacakti|olsun|olarak|olmalı|olmali|lütfen|lutfen|please|bi|bir|şey|sey|yeni|ve|de|da|mi|mı|mu|mü|artık|artik)$/iu;
-    const _confirmRe = /^(evet|hayır|hayir|tamam|olur|onay\S*|iptal|cancel|yes|no|ok|okay)$/iu;
+    // D1-7 (CİLA-PARİTE-1): kibar-kalıplar 7-dil ("Hans bitte" → isim "Hans bitte"
+    // olmasın; token filtrelenip "Hans" tek kalır → 2-3 kelime şartına düşmez, kabul edilmez).
+    const _fillerRe = /^(olacak|olacaktı|olacakti|olsun|olarak|olmalı|olmali|lütfen|lutfen|please|bitte|svp|pf|por|favor|пожалуйста|من|فضلك|bi|bir|şey|sey|yeni|ve|de|da|mi|mı|mu|mü|artık|artik)$/iu;
+    // D1-9 (CİLA-PARİTE-1): _confirmRe bir isim-token BLACKLIST'i (polarite kararı VERMEZ;
+    // "_kept.some(w=>_confirmRe.test(w))" → isim-adayında onay/red/iptal token'ı varsa ismi
+    // REDDET). Nötr filtre olduğu için olumlu+olumsuz 7-dil TAMAMI güvenle eklenir
+    // (hayır'ı onay sayma riski YOK — burada onay kararı verilmiyor).
+    const _confirmRe = /^(evet|hayır|hayir|tamam|olur|onay\S*|iptal|cancel|yes|no|ok|okay|ja|nein|oui|non|s[íi]|да|нет|نعم|لا)$/iu;
     const _tokens = message
       .split(/\s+/)
       .map((w) => w.replace(/[.,!?;:"'()]/gu, "").trim())

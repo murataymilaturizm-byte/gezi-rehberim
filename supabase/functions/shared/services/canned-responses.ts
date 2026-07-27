@@ -165,14 +165,19 @@ export function buildCannedResponse(key: string, language: string, agency: Canne
  */
 export function detectCannedResponseTrigger(message: string, _language: string = "tr"): string | null {
   const lowerMessage = message.toLowerCase().trim();
-  const triggers: Record<string, string[]> = {
-    hours: ["çalışma saatleri", "açık mısınız", "ne zaman açık", "working hours", "opening hours", "öffnungszeiten"],
-    payment_methods: ["ödeme", "nasıl öderim", "kredi kartı", "payment", "zahlung", "оплата"],
-    cancellation_policy: ["iptal", "iade", "cancellation", "refund", "stornierung", "отмена"],
-    contact_info: ["iletişim", "telefon", "adres", "contact", "kontakt", "контакт"],
+  // D1-5 (CİLA-PARİTE-1): substring dizi → 7-dil \p{L}\p{N} lookaround-regex (tek-kaynak).
+  // fr/es/ar bacakları eklendi (eskiden yalnız tr/en/de+kısmi-ru → o diller hız-yolunu
+  // hiç alamıyordu). İDLE-GATE korunur: bu fonksiyon yalnız isIdleContext()=true iken
+  // (GREETING/BROWSING/boşta) çağrılır → COMPLETED "annulation/إلغاء" pendingCancelConfirm'e
+  // gider, canned'a DEĞİL (R-2 yapısal garanti — çağrı-yeri gate'li).
+  const triggers: Record<string, RegExp> = {
+    hours: /(?<![\p{L}\p{N}])(çalışma\s*saatleri|açık\s*mısınız|ne\s*zaman\s*açık|working\s*hours|opening\s*hours|öffnungszeiten|horaires|heures\s*d['’]ouverture|horario|часы\s*работы|ساعات\s*العمل)(?![\p{L}\p{N}])/iu,
+    payment_methods: /(?<![\p{L}\p{N}])(ödeme|nasıl\s*öderim|kredi\s*kartı|payment|zahlung|оплата|paiement|pago|الدفع|طرق\s*الدفع)(?![\p{L}\p{N}])/iu,
+    cancellation_policy: /(?<![\p{L}\p{N}])(iptal|iade|cancellation|refund|stornierung|отмена|annulation|cancelaci[óo]n|شروط\s*الإلغاء)(?![\p{L}\p{N}])/iu,
+    contact_info: /(?<![\p{L}\p{N}])(iletişim|telefon|adres|contact|kontakt|контакт|coordonn[ée]es|contacto|اتصال|تواصل)(?![\p{L}\p{N}])/iu,
   };
-  for (const [key, keywords] of Object.entries(triggers)) {
-    if (keywords.some((k) => lowerMessage.includes(k))) return key;
+  for (const [key, re] of Object.entries(triggers)) {
+    if (re.test(lowerMessage)) return key;
   }
   return null;
 }

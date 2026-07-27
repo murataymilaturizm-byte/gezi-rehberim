@@ -12,4 +12,7 @@
 // Pattern disiplini: \p{L}\p{N} lookaround + /iu (Yan #8). RU çekim için
 // [\p{L}]* eki (доступн/свободн kökleri). AR konuşma "فاضي" dahil.
 export const AVAILABILITY_RE =
-  /(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|yer\s*kaldı|yer\s*kaldi|müsaitlik|musaitlik|available|availability|free|open|vacant|verfügbar|verfugbar|verfügbarkeit|verfugbarkeit|frei|disponible|disponibilité|disponibilite|disponibilidad|libre|доступн[\p{L}]*|свободн[\p{L}]*|есть\s*мест[\p{L}]*|متاح|متوفر|فاضي)(?![\p{L}\p{N}])/iu;
+  // D1-6 (CİLA-PARİTE-1): ru ters-sıra (мест… есть — "места есть?" kaçıyordu);
+  // es genişletme (hay lugar/quedan plazas/cupo/disponibilidad); ar genişletme
+  // (في أماكن/يوجد مكان + mevcut). TR-eş kapsam hedefi.
+  /(?<![\p{L}\p{N}])(müsait|musait|uygun|boş|bos|dolu|yer\s*var|yer\s*kaldı|yer\s*kaldi|müsaitlik|musaitlik|available|availability|free|open|vacant|verfügbar|verfugbar|verfügbarkeit|verfugbarkeit|frei|disponible|disponibilité|disponibilite|disponibilidad|libre|hay\s*(?:lugar|plazas?|cupo)|quedan\s*(?:plazas?|lugares?)|cupo|доступн[\p{L}]*|свободн[\p{L}]*|есть\s*мест[\p{L}]*|мест[\p{L}]*\s*есть|متاح|متوفر|فاضي|يوجد\s*(?:مكان|أماكن)|في\s*(?:مكان|أماكن))(?![\p{L}\p{N}])/iu;

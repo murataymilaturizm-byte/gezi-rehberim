@@ -65,43 +65,62 @@ export function hasRelativeDateWord(text: string): boolean {
 // CİLA-4-A (2026-07-26): export — process-message telefon-adımı yazı-sayı tarih
 // köprüsü (stem-eşleştirme, dar kapsam) bu tek-kaynağı kullanır.
 export const NUMBER_WORDS: Record<string, Record<string, number>> = {
+  // D1-1 (CİLA-PARİTE-1, 2026-07-27): 16-19 TÜM dillerde eksikti (parite değil düz
+  // eksik). tr bitişik varyantlar (onaltı…) yaygın yazım; ru "-надцать" stem-köprüsü
+  // 9b-A'da sıra-hâlini (девятнадцатое→19) otomatik çözer; ar çok-kelime tırnaklı.
   tr: {
     bir: 1, iki: 2, üç: 3, uc: 3, dört: 4, dort: 4,
     beş: 5, bes: 5, altı: 6, alti: 6, yedi: 7, sekiz: 8,
     dokuz: 9, on: 10, "on bir": 11, "on iki": 12, "on üç": 13,
-    "on dört": 14, "on beş": 15, yirmi: 20, otuz: 30,
+    "on dört": 14, "on beş": 15,
+    "on altı": 16, "on alti": 16, onaltı: 16, onalti: 16,
+    "on yedi": 17, onyedi: 17,
+    "on sekiz": 18, onsekiz: 18,
+    "on dokuz": 19, ondokuz: 19,
+    yirmi: 20, otuz: 30,
   },
   en: {
     one: 1, two: 2, three: 3, four: 4, five: 5, six: 6,
     seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
-    thirteen: 13, fourteen: 14, fifteen: 15, twenty: 20, thirty: 30,
+    thirteen: 13, fourteen: 14, fifteen: 15,
+    sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+    twenty: 20, thirty: 30,
   },
   de: {
     eins: 1, ein: 1, eine: 1, zwei: 2, drei: 3, vier: 4,
     fünf: 5, funf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9,
-    zehn: 10, elf: 11, zwölf: 12, zwanzig: 20,
+    zehn: 10, elf: 11, zwölf: 12,
+    sechzehn: 16, siebzehn: 17, achtzehn: 18, neunzehn: 19,
+    zwanzig: 20,
   },
   ru: {
     один: 1, одна: 1, два: 2, двое: 2, три: 3, трое: 3,
     четыре: 4, пять: 5, шесть: 6, семь: 7, восемь: 8,
     девять: 9, десять: 10, одиннадцать: 11, двенадцать: 12,
-    тринадцать: 13, четырнадцать: 14, пятнадцать: 15, двадцать: 20,
+    тринадцать: 13, четырнадцать: 14, пятнадцать: 15,
+    шестнадцать: 16, семнадцать: 17, восемнадцать: 18, девятнадцать: 19,
+    двадцать: 20,
   },
   ar: {
     واحد: 1, اثنان: 2, اثنين: 2, ثلاثة: 3, أربعة: 4,
     خمسة: 5, ستة: 6, سبعة: 7, ثمانية: 8, تسعة: 9, عشرة: 10,
     "أحد عشر": 11, "اثنا عشر": 12, "ثلاثة عشر": 13, "أربعة عشر": 14,
-    "خمسة عشر": 15, عشرون: 20,
+    "خمسة عشر": 15, "ستة عشر": 16, "سبعة عشر": 17, "ثمانية عشر": 18,
+    "تسعة عشر": 19, عشرون: 20,
   },
   fr: {
     un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5,
     six: 6, sept: 7, huit: 8, neuf: 9, dix: 10, onze: 11,
-    douze: 12, treize: 13, quatorze: 14, quinze: 15, vingt: 20,
+    douze: 12, treize: 13, quatorze: 14, quinze: 15, seize: 16,
+    "dix-sept": 17, "dix sept": 17, "dix-huit": 18, "dix huit": 18,
+    "dix-neuf": 19, "dix neuf": 19, vingt: 20,
   },
   es: {
     uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5,
     seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11,
-    doce: 12, trece: 13, catorce: 14, quince: 15, veinte: 20,
+    doce: 12, trece: 13, catorce: 14, quince: 15,
+    dieciséis: 16, dieciseis: 16, diecisiete: 17, dieciocho: 18, diecinueve: 19,
+    veinte: 20,
   },
 };
 
@@ -118,7 +137,7 @@ export const NUMBER_WORDS: Record<string, Record<string, number>> = {
 const TR_MONTHS_GUARD = new RegExp(
   `(?<![\\p{L}\\p{N}])(?:${MONTH_ALTERNATION})(?![\\p{L}\\p{N}])`, "iu");
 
-function extractPaxFromWords(text: string, language: string, collectionStep?: string): number | null {
+export function extractPaxFromWords(text: string, language: string, collectionStep?: string): number | null {
   const lower = text.toLowerCase();
   // C3 GUARD: mesajda ay ismi varsa pax çıkarımı pas — büyük olasılıkla tarih.
   // "yirmi kişi" gibi PAX context VARSA bu guard zaten aşağıda çalışmaz (ay yok).
@@ -150,9 +169,14 @@ function extractPaxFromWords(text: string, language: string, collectionStep?: st
     }
   }
 
-  // Tek kelimeli sayılar
-  for (const [word, value] of Object.entries(words).filter(([w]) => !w.includes(" "))) {
-    if (new RegExp(`\\b${word}\\b`, "i").test(lower)) {
+  // Tek kelimeli sayılar. D1-1 (CİLA-PARİTE-1): (1) \b → \p{L}\p{N} lookaround —
+  // ASCII \b Kiril/Arap kelime-sınırı tanımıyordu → ru/ar yazı-sayı pax HİÇ çalışmıyordu
+  // (Yan #8 sınıfı). (2) EN-UZUN-ÖNCE sıralama — 16-19 eklenince "девять"(9) stem'i
+  // "девятнадцать"(19) ile çakışabilirdi; uzun-key önce denenir.
+  for (const [word, value] of Object.entries(words)
+    .filter(([w]) => !w.includes(" "))
+    .sort((a, b) => b[0].length - a[0].length)) {
+    if (new RegExp(`(?<![\\p{L}\\p{N}])${word}(?![\\p{L}\\p{N}])`, "iu").test(lower)) {
       if (peopleContext.test(lower) || (_allowFallback && lower.trim().split(/\s+/).length <= 3)) {
         return value;
       }

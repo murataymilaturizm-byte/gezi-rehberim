@@ -882,8 +882,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         _priceMatched = true;
         console.log(`[process-message] B1 KÖK FALLBACK (range, contextless): nums=${_nums.slice(0, 2)}`);
       } else if (_nums.length === 1) {
-        const _priceCtxRe = /b[üu]t[çc]e|alt[ıi]|aşağ[ıi]|[üu]st[üu]|[üu]zeri|fazla|kadar|aras[ıi]|ila|ile\s+\d|ve\s+\d|tl|₺|lira|budget|under|over|less\s+than|more\s+than|cheaper|expensive|between|up\s+to|hasta|menos|m[áa]s|entre|jusqu|moins|plus\s+de|bis|unter|über|до|более|менее|между|أقل|أكثر|حتى|بين/iu;
-        if (_priceCtxRe.test(message)) {
+        // D1-4 (CİLA-PARİTE-1): NET-fiyat edatları (tarih cümlesinde geçmez) — her zaman.
+        // Yeni: de günstiger, ru дешевле|бюджет, ar ميزانية (mevcut de/ru/ar edatları zaten vardı).
+        const _priceCtxRe = /b[üu]t[çc]e|tl|₺|lira|budget|under|over|less\s+than|more\s+than|cheaper|expensive|up\s+to|hasta|menos|m[áa]s|moins|plus\s+de|unter|über|günstiger|более|менее|дешевле|бюджет|أقل|أكثر|ميزانية/iu;
+        // BELİRSİZ edatlar (hem fiyat hem TARİH/süre: до 5000=bütçe, до 15 aralık=tarih).
+        // YALNIZ ay-adı YOKKEN fiyat-sinyali. (Eskiden bunlar guard'sızdı → "до 15 декабря
+        // 2026"da yıl→sayı çakışması riski; ay-guard bunu kapatır.) B1 zaten \d{3,6} şartlı.
+        const _priceCtxAmbig = /(?<![\p{L}\p{N}])(alt[ıi]|aşağ[ıi]|[üu]st[üu]|[üu]zeri|fazla|kadar|aras[ıi]|ila|between|entre|jusqu|bis|zwischen|до|от|между|حتى|بين)(?![\p{L}\p{N}])|ile\s+\d|ve\s+\d/iu;
+        const _priceHasMonth = new RegExp(`(?<![\\p{L}\\p{N}])(?:${MONTH_ALTERNATION})(?![\\p{L}\\p{N}])`, "iu").test(message);
+        if (_priceCtxRe.test(message) || (!_priceHasMonth && _priceCtxAmbig.test(message))) {
           _priceUpper = _nums[0];
           _priceMatched = true;
           console.log(`[process-message] B1 KÖK FALLBACK (upper, with ctx): num=${_nums[0]}`);
@@ -2641,7 +2648,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _nw = NUMBER_WORDS[_pdLang] || NUMBER_WORDS.en || {};
         const _low = _pdNorm.toLocaleLowerCase();
         const _toks = _low.split(/[^\p{L}]+/u).filter(Boolean);
-        for (const [k, v] of Object.entries(_nw)) {
+        // D1-1: EN-UZUN-ÖNCE — "девять"(9) stem'i "девятнадцатое"(19) prefix'i olduğundan
+        // kısa-key önce eşleşip 19'u 9 yapıyordu. Uzun-key önce denenir.
+        for (const [k, v] of Object.entries(_nw).sort((a, b) => b[0].length - a[0].length)) {
           if (typeof v !== "number" || v < 1 || v > 31) continue;
           const _hit = k.includes(" ")
             ? _low.includes(k)
@@ -5011,7 +5020,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       // DE hei[sß](en/t/e), FR appel(le/ez/er), ES llama(rse)/cómo se llama, EN "call you" eklendi.
       waiting_for_name: /(ad[\s-]?soyad|isminiz|ad[ıi]n[ıi]z|full\s*name|your\s*name|call\s*you|name[ns]?|nom|nombre|wie\s*hei[sß]|hei[sß]en|appel(le|ez|er)|c[oó]mo\s*se\s*llama|llama(rse|s)?|ваше\s*имя|имя|фамили|зовут|اسم)/iu,
       waiting_for_phone: /(telefon|phone|numaranız|numaraniz|téléphone|teléfono|телефон|هاتف)/i,
-      waiting_for_email: /(\bemail\b|e-?mail|e-?posta|почт|بريد)/i,
+      // D1-2 (CİLA-PARİTE-1): fr courriel, es correo eklendi (KÖK-7 simetriği — eksikse
+      // FR/ES çift e-posta sorusu). ASCII \b → \p{L}\p{N} lookaround (kural).
+      waiting_for_email: /(?<![\p{L}\p{N}])(email|e-?mail|e-?posta|courriel|correo|почт\p{L}*|بريد)(?![\p{L}\p{N}])/iu,
     };
     const _step = newContext.collectionStep;
     const _qsTable = _flowQs[_step];

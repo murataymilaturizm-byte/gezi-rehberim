@@ -1241,3 +1241,35 @@ Doğrulama standardı: dil-flip sınıfı değişikliklerde tekrar-testi N≥5 (
   peerOptional ^0.1 ile çakışıp Vercel düz-npm-install'ını 3-4s'de öldürüyordu (3 deploy
   Error). beasties KALDIRILDI (crittersOptions:false → kullanılmıyordu). KURAL: yerel
   kurulumda --legacy-peer-deps GEREKTİYSE bu Vercel'de de patlar — ya kökü çöz ya .npmrc.
+
+## 14. PARİTE DALGA-1 — TR↔yabancı sinyal-seti kapsamı (2026-07-27)
+
+Fable parite-denetiminin Dalga-1 boşlukları (davranış-mimarisi değişmedi; yalnız token/kapsam):
+- **D1-1 NUMBER_WORDS 16-19 (7 dil):** düz eksik (TR dahil). tr bitişik (onaltı…), ru "-надцать",
+  ar çok-kelime. **İki latent bug D1-1 ile açığa çıktı, birlikte kapandı:** (a) extractPaxFromWords
+  tek-kelime döngüsü ASCII `\b` → Kiril/Arap sınır tanımıyordu (ru/ar yazı-sayı pax HİÇ çalışmıyordu)
+  → `\p{L}\p{N}` lookaround; (b) stem-köprü (9b-A + pax) kısa-sayı stem'i uzun-sayı prefix'i
+  (девять→девятнадцатое) → **EN-UZUN-ÖNCE sıralama** (`.sort((a,b)=>b[0].length-a[0].length)`).
+- **D1-2 _flowKws.email:** fr courriel, es correo (+ ASCII `\b`→lookaround). KÖK-7 simetriği.
+- **D1-3 CHANGE_KEYWORDS:** ru помен\p{L}*, de umbuchen, fr repousser, en switch it/to.
+  (AR بدل/غير bilinçli DIŞARIDA — çok-anlamlı FP riski, Fable'a bırakıldı.)
+- **D1-4 _priceCtxRe:** de/ru/ar edatları ZATEN vardı (rapor regex-kesikliğinden "yok" sanmış).
+  Eklenen NET: de günstiger, ru дешевле|бюджет, ar ميزانية. **Asıl fix:** belirsiz edatlar
+  (kadar|arası|between|bis|zwischen|до|от|между|حتى|بين) `_priceCtxAmbig`'e alınıp **AY-ADI-YOK
+  guard'ı**yla korundu — "до 5000"=bütçe tetikler, "до 15 декабря 2026"=tarih tetiklemez
+  (eskiden guard'sızdı, yıl→sayı çakışma riski vardı). B1 zaten \b\d{3,6}\b + explore-stage guard'lı.
+- **D1-5 canned TRIGGERS:** substring dizi → 7-dil `\p{L}\p{N}` lookaround-regex; fr/es/ar
+  bacakları eklendi. **R-2 yapısal:** canned yalnız `isIdleContext()=true` iken çağrılır →
+  COMPLETED "annulation/إلغاء" pendingCancelConfirm'e gider, canned'a değil (çağrı-yeri gate'li).
+- **D1-6 AVAILABILITY_RE:** ru ters-sıra (мест…есть), es (hay lugar/quedan plazas/cupo),
+  ar (يوجد مكان/في أماكن).
+- **D1-7 _fillerRe:** kibar-kalıp 7-dil (bitte/svp/por favor/пожалуйста/من فضلك) — isim-kirliliği.
+- **D1-9 _confirmRe:** KANIT — nötr isim-token BLACKLIST'i (polarite kararı vermez) → olumlu+
+  olumsuz 7-dil tam liste güvenle eklendi.
+- **D1-8 _themeContextRe:** ru тур|поездк, ar جولة|رحلة ZATEN mevcuttu → NO-OP.
+
+**Kural (CİLA-4 dersi mühürlendi):** regex/sinyal-seti testleri **DERLENMİŞ modülle** koşulur
+(esbuild `--bundle --platform=node` → `import`); elle-kopya harness YASAK (harness çift-escape
+DE typo-setini yanlış-yeşile boyamıştı). İnline regex (export edilemeyen) testinde literal
+birebir-kopya + izole davranış-testi + canlı-teyit üçlemesi. Dil-flip sınıfında N≥5 (§12.1-REV).
+Regresyon standardı: R-1 X9-nöbeti (tarih↔pax ayrımı) her sayı-kelime değişikliğinde zorunlu.
