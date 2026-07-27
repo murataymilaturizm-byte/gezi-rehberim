@@ -1273,3 +1273,20 @@ Fable parite-denetiminin Dalga-1 boşlukları (davranış-mimarisi değişmedi; 
 DE typo-setini yanlış-yeşile boyamıştı). İnline regex (export edilemeyen) testinde literal
 birebir-kopya + izole davranış-testi + canlı-teyit üçlemesi. Dil-flip sınıfında N≥5 (§12.1-REV).
 Regresyon standardı: R-1 X9-nöbeti (tarih↔pax ayrımı) her sayı-kelime değişikliğinde zorunlu.
+
+### §14.1 BİLİNEN TUZAKLAR (D1-1'in açığa çıkardığı iki SINIF — tekrar edebilir)
+
+1. **ASCII `\b` Kiril/Arap'ta kelime-sınırı DEĞİL.** `new RegExp("\b"+word+"\b")` deseni
+   Latin-dışı alfabelerde hiç eşleşmez (extractPaxFromWords tek-kelime döngüsü bu yüzden
+   ru/ar'da SESSİZCE ölüydü — test de aynı ASCII varsayımıyla yazılırsa yeşil görünür).
+   KURAL: dinamik kelime-regex kurarken DAİMA `(?<![\p{L}\p{N}])…(?![\p{L}\p{N}])` + `u` flag.
+   Denetim grep'i: `new RegExp(.*\\b` → şüpheli.
+2. **Sayı/anahtar sözlüklerinde KISA-KEY UZUN-KEYİN PREFIX'İ olabilir** (девять→девятнадцать,
+   تسعة→تسعة عشر, on→onaltı). Object.entries sırasına güvenen her eşleştirici kısa-key'i önce
+   bulup YANLIŞ değer döndürür; stem-eşleştirme (slice(0,-1)) riski büyütür. KURAL: sözlük
+   taramasında DAİMA en-uzun-önce sıralama (`.sort((a,b)=>b[0].length-a[0].length)`); yeni
+   girdi eklerken prefix-çakışması kontrolü. (İkisi de derlenmiş-modül testi + canlı ile kanıtlandı.)
+3. **MAX_PAX(9) gölgesi:** 10-19 arası pax-parse'ının state-yazımı canlıda GÖZLEMLENEMEZ
+   (aşım-yolu acenteye yönlendirir, state'e yazmaz — kasıtlı). Bu aralığın parse-kanıtı
+   dil-doğru aşım-mesajının kendisidir + derlenmiş-modül testi; "state'te 16 görünmüyor"
+   regresyon sanılmasın.
