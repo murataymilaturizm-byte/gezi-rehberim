@@ -10,6 +10,7 @@ import { normalizePhone } from "../_shared/phone.ts";
 import { isServiceRoleCall, getRequestUser, userOwnsAgency, unauthorized } from "../_shared/edge-auth.ts";
 // K4: tek finansal kaynak
 import { calculateTotal } from "../shared/utils/finance.ts";
+import { neutralMeetingTime } from "../shared/constants/template-fallbacks.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -385,7 +386,10 @@ serve(async (req) => {
           : calculateTotal(registration.pax, registration.tour_dates?.price_adult)
       ),
       currency:      'TRY',
-      meeting_time:  registration.tours?.toplanma_saati || '09:00',
+      // 2026-07-27 S1: toplanma_saati boşsa UYDURMA 09:00 yerine şablonun dilinde
+      // nötr metin (tek-kaynak neutralMeetingTime). Meta boş-param reddini önler
+      // (param dolu kalır) ama saat uydurmaz. DOLU turlarda çıktı BİREBİR AYNI (|| kısa-devre).
+      meeting_time:  registration.tours?.toplanma_saati || neutralMeetingTime(tmpl.language),
       meeting_point: registration.tours?.hareket_noktasi || 'Belirlenen toplanma noktası',
       // A-b: standart şablonların kapanış imzası ({{7}} reminder / {{3}} feedback)
       agency_name:   (registration.agencies as any)?.name || '',

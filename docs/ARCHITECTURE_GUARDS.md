@@ -1484,3 +1484,28 @@ yolunu kapsar (etiketlendi) — layer-2 kanıtı live-smoke'tadır.
 - state-machine change-action (~899): bare-date (change-keyword'süz) ile erişilebilir (E3a). FIX'LENDİ (stale dateId sil). cf4a8ba KALIR (ölü kod değil).
 - merge (~135) COLLECTING: erken-return YOK → pm:2622 (`extractedInfo.selectedDate && !dateId`) devralır → desync ÜRETMEZ (M1/M2 canlı-kanıt). Fix GEREKMEZ.
 - A3 (~2300): dateId-kapılı → güvenli. tourId: hep resolved tur → desync-sınıfı yok.
+
+## 17. SAAT — veri-bağımsız mayın temizliği (2026-07-27, COMMIT-2; S3 İPTAL)
+
+Bugün boş toplanma_saati'li tur YOK (fbad140f 3/3, demo 5/5 dolu) → bu maddeler bugün
+tetiklenmez; gelecekteki acenteler için. ÖNCELİK: çalışan davranışı bozmamak (diff-zero).
+
+**S1 (WhatsApp şablonu):** send-template-message ~388 `meeting_time: toplanma_saati || '09:00'`
+saat boşsa müşterinin sakladığı onay/hatırlatma mesajına UYDURMA 09:00 yazıyordu. Fallback
+KALDIRILAMAZ: meeting_time = tour_reminder {{4}} POZİSYONEL; Meta boş-param'ı reddeder →
+gönderim başarısız → mesaj HİÇ GİTMEZ (fallback bunu önlüyordu). FIX: `|| neutralMeetingTime
+(tmpl.language)` — tek-kaynak constants/template-fallbacks.ts, 7 dil, ŞABLONUN dilinde,
+TEK SATIR (Meta newline/tab/4+boşluk reddi). DOLU turlarda `||` kısa-devre → param BİREBİR
+AYNI (diff-zero, bugünkü gerçek yol). S3 (prompt'a "çalışma saati ≠ tur saati" talimatı)
+İPTAL: çift-saat belirtisi demo'da repro edilemedi; üretilemeyen hata için her konuşmaya
+giren prompt'u değiştirmek çalışan davranışı riske atar (WhatsApp'ta zaten "uydurma yasağı" var).
+
+**S2 (demo prompt missing-guard):** demo prompt-builder-helper ~167 ham `${toplanma_saati}`
+basıyor, boş alan için "uydurma yasağı" iç-talimatı YOKTU (prod helpers.ts'te VAR). FIX:
+prod'un metni KOPYALANMADI → ortak `buildMissingInfoGuard(missing, lang)` (helpers.ts) çıkarıldı,
+prod + demo İKİSİ oradan kullanıyor. Prod inline metin bu fonksiyonun BİREBİR aynısı →
+formatTourDetails çıktısı diff-zero (kanıt: guard string char-for-char eşit + tam-dolu tur
+guard'sız). DOLU turlarda demo çıktısı DEĞİŞMEZ (missing listesi boş).
+
+**KURAL:** WhatsApp şablon fallback'i "kaldırma" değil "nötr metinle doldurma" (pozisyonel
+param boş bırakılamaz). Şablon-değişkeni metinleri şablonun dilinde, tek-kaynak sabitten.

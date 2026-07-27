@@ -1,6 +1,7 @@
 // Prompt Builder Helper Service
 
 import { buildSystemPrompt } from "../../shared/fsm/prompt-builder.ts";
+import { buildMissingInfoGuard } from "../../shared/fsm/prompts/helpers.ts";
 import { findTourById } from "./tour-matching.ts";
 import type { Tour, AgencyData } from "../types/index.ts";
 import type { ConversationContext } from "../../shared/fsm/types.ts";
@@ -165,6 +166,22 @@ export function buildCompleteSystemPrompt(options: PromptBuilderOptions): string
       if (matchedTourData.ulasim) tourDetail += `Ulaşım: ${matchedTourData.ulasim}\n`;
       if (matchedTourData.hareket_noktasi) tourDetail += `Hareket: ${matchedTourData.hareket_noktasi}\n`;
       if (matchedTourData.toplanma_saati) tourDetail += `Toplanma: ${matchedTourData.toplanma_saati}\n`;
+
+      // 2026-07-27 S2: boş kritik alanlar için "uydurma" iç-talimatı — prod
+      // formatTourDetails ile AYNI koruma, TEK-KAYNAK buildMissingInfoGuard (metin
+      // kopyalanmaz). Eskiden demo-builder boş alanı sessizce atlıyordu → LLM'e "veri
+      // yok" sinyali örtüktü (saat vb. uydurma riski). DOLU turlarda liste boş → çıktı DEĞİŞMEZ.
+      {
+        const _demoMissing: string[] = [];
+        const _mt = (val: unknown, tr: string, en: string) => { if (!val) _demoMissing.push(lang === "tr" ? tr : en); };
+        _mt(matchedTourData.toplanma_saati, "toplanma saati", "meeting time");
+        _mt(matchedTourData.hareket_noktasi, "kalkış noktası", "pickup point");
+        _mt(matchedTourData.tur_sure, "tur süresi", "duration");
+        _mt(matchedTourData.konaklama, "konaklama detayı", "accommodation details");
+        _mt(matchedTourData.ulasim, "ulaşım detayı", "transport details");
+        const _guard = buildMissingInfoGuard(_demoMissing, lang === "tr" ? "tr" : "en");
+        if (_guard) tourDetail += `${_guard}\n`;
+      }
 
       if (futureDates.length > 0) {
         tourDetail += `\n${dateLabel}:\n`;

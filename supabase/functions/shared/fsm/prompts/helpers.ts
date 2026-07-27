@@ -173,6 +173,20 @@ function formatTime(t: any): string {
 }
 
 /**
+ * "SİSTEMDE KAYITLI OLMAYAN bilgiler" iç-talimatı (TEK-KAYNAK — 2026-07-27 S2).
+ * Prod (formatTourDetails) + demo (prompt-builder-helper) BURADAN kullanır; metin
+ * KOPYALANMAZ (kopya-liste dersi). Boş liste → "" (satır basılmaz). Prod davranışı
+ * DEĞİŞMEZ: bu fonksiyon prod'daki inline metnin BİREBİR aynısını üretir (diff-zero).
+ * Dil: "tr" → Türkçe; diğerleri → İngilizce (prod ile aynı ikili ayrım).
+ */
+export function buildMissingInfoGuard(missing: string[], language: string): string {
+  if (!missing.length) return "";
+  if (language === "tr")
+    return `⚠️ SİSTEMDE KAYITLI OLMAYAN bilgiler: ${missing.join(", ")}. Kullanıcı bunlardan birini sorarsa doğal bir dille bilginin acentemizde olduğunu söyle ve acenteye yönlendir — ASLA tahmin etme, sayı/isim/detay uydurma. "Sistemde kayıtlı değil" gibi teknik ifade KULLANMA.`;
+  return `⚠️ Information NOT ON RECORD: ${missing.join(", ")}. If the user asks about any of these, say naturally that the agency has this information and refer them to the agency — NEVER guess or invent numbers/names/details. Do NOT use technical phrasing like "not in the system".`;
+}
+
+/**
  * Format tour details with tone-aware styling
  * *tek yıldız* kullanır (WhatsApp uyumlu)
  */
@@ -248,9 +262,7 @@ export function formatTourDetails(tour: any, language: string, _tone: string = "
         : _visaLine ? `🛂 Vize: ${_visaLine}` : "",
       tour.program_kisa ? `📝 Özet: ${tour.program_kisa}` : "",
       tour.gezilecek_yerler ? `🗺️ Gezilecek Yerler: ${tour.gezilecek_yerler}` : "",
-      _missingTr.length
-        ? `⚠️ SİSTEMDE KAYITLI OLMAYAN bilgiler: ${_missingTr.join(", ")}. Kullanıcı bunlardan birini sorarsa doğal bir dille bilginin acentemizde olduğunu söyle ve acenteye yönlendir — ASLA tahmin etme, sayı/isim/detay uydurma. "Sistemde kayıtlı değil" gibi teknik ifade KULLANMA.`
-        : "",
+      buildMissingInfoGuard(_missingTr, "tr"),
     ];
     return parts.filter(Boolean).join("\n");
   }
@@ -271,9 +283,7 @@ export function formatTourDetails(tour: any, language: string, _tone: string = "
       : _visaLine ? `🛂 Visa: ${_visaLine}` : "",
     tour.program_kisa ? `📝 Summary: ${tour.program_kisa}` : "",
     tour.gezilecek_yerler ? `🗺️ Places to Visit: ${tour.gezilecek_yerler}` : "",
-    _missingEn.length
-      ? `⚠️ Information NOT ON RECORD: ${_missingEn.join(", ")}. If the user asks about any of these, say naturally that the agency has this information and refer them to the agency — NEVER guess or invent numbers/names/details. Do NOT use technical phrasing like "not in the system".`
-      : "",
+    buildMissingInfoGuard(_missingEn, "en"),
   ];
   return parts.filter(Boolean).join("\n");
 }
