@@ -134,7 +134,10 @@ export const NUMBER_WORDS: Record<string, Record<string, number>> = {
 // (C3 guard'ı artık 7-dil: "twenty december"/"zwanzig dezember" de pax sızdırmaz);
 // (2) \b + "şubat" (ş-başlangıç) HİÇ eşleşmiyordu → "yirmi şubat" pax=20 sızıntısı
 // AÇIKTI (Yan #8) → lookaround.
-const TR_MONTHS_GUARD = new RegExp(
+// B-1 (Dalga-2, 2026-07-27): TR_MONTHS_GUARD → MONTHS_GUARD yeniden-adlandırıldı.
+// Ad "TR" diyordu ama içerik 45a3057'den beri 7-dil MONTH_ALTERNATION — yanıltıcı
+// ad bu pencerede sahte denetim-bulgusu üretti ("X9 TR-only mu?"). Davranış birebir aynı.
+const MONTHS_GUARD = new RegExp(
   `(?<![\\p{L}\\p{N}])(?:${MONTH_ALTERNATION})(?![\\p{L}\\p{N}])`, "iu");
 
 export function extractPaxFromWords(text: string, language: string, collectionStep?: string): number | null {
@@ -142,7 +145,7 @@ export function extractPaxFromWords(text: string, language: string, collectionSt
   // C3 GUARD: mesajda ay ismi varsa pax çıkarımı pas — büyük olasılıkla tarih.
   // "yirmi kişi" gibi PAX context VARSA bu guard zaten aşağıda çalışmaz (ay yok).
   // "yirmi aralık" → ay var → null dön.
-  if (TR_MONTHS_GUARD.test(lower)) return null;
+  if (MONTHS_GUARD.test(lower)) return null;
 
   const words = NUMBER_WORDS[language] || NUMBER_WORDS.en;
   // 2026-07-09 Faz 5 (Vaka 2): TEK KAYNAK (people-words.ts) — 7-dil + lookaround.
@@ -466,7 +469,13 @@ export function extractNameAndPhone(
     // Eleme sonrası: "boşver kalsın" → 0 kelime → isim YOK (detectCancellation
     // iptal akışını devralır); "boşver, ahmet yılmaz olsun" → ["ahmet","yılmaz"]
     // → isim yazılır (DEĞER-ÖNCELİK — kullanıcı terk etmiyor, veriyor).
-    const _giveUpDropRe = /^(boşver|bosver|kalsın|kalsin|neyse|vazgeç|vazgec|vazgeçtim|vazgectim|olsun|lütfen|lutfen|nevermind|forget|it)$/i;
+    // C-2 (Dalga-2, 2026-07-27): 7-dil vazgeçme/dolgu token'ları. BİLİNÇLİ DIŞARIDA:
+    // "es"/"da"/"لا" — soyad-parçası/aşırı-genel FP ("Juan DA Silva"→"Juan Silva",
+    // "mi nombre ES Juan García" 5→4 token'a inip yanlış-isim üretirdi). Çok-kelimeli
+    // kalıpların ("vergiss es") kalan tek-token'ı zaten <2-kelime şartına takılır.
+    // + kibar-dolgu 7-dil (Jörg-vakası: "Jörg Müller bitte" → "Bitte" isim-parçası olmasın).
+    // "por"/"من"/"s'il/vous/plaît" parça-token'ları BİLİNÇLİ DIŞARIDA (genel-kelime FP).
+    const _giveUpDropRe = /^(boşver|bosver|kalsın|kalsin|neyse|vazgeç|vazgec|vazgeçtim|vazgectim|olsun|lütfen|lutfen|nevermind|forget|it|egal|vergiss|laisse|tomber|peu|importe|olv[íi]dalo|igual|неважно|проехали|خلاص|يهم|bitte|svp|favor|пожалуйста|فضلك)$/iu;
     const words = message.trim().split(/\s+/)
       .map((w) => w.replace(/[.,!?;:"'()]/gu, ""))
       .filter((w) => w && !_giveUpDropRe.test(w));
@@ -602,6 +611,11 @@ function isValidName(name: string, fullMessage: string): boolean {
   if (blacklist.some((word) => lowerName.includes(word))) return false;
   if (fullMessage.includes("?")) return false;
 
+  // C-5 (Dalga-2, 2026-07-27) DENENDİ ve GERİ ALINDI: 7-dil kalıp eklemek gate'i
+  // geçirtiyor AMA downstream isim-parser'ı TR/EN-tasarımlı — FP-kanıt (derlenmiş-modül):
+  // "mi nombre es Juan García" → fullName "Juan Garc" (bozuk kesim). Kalıp-ekleme tek
+  // başına yetmez; parser-uyumu ayrı iş (Dalga-3 adayı). Yabancı isimler NLU-yolundan
+  // çalışmaya devam ediyor (mevcut canlı davranış).
   const nameContextPatterns = /adım|ismim|benim adım|my name is|isim:/i;
   const messageIsShort = fullMessage.trim().split(/\s+/).length <= 4;
   if (!nameContextPatterns.test(fullMessage) && !messageIsShort) return false;

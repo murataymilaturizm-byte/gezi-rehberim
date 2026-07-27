@@ -1290,3 +1290,37 @@ Regresyon standardı: R-1 X9-nöbeti (tarih↔pax ayrımı) her sayı-kelime de�
    (aşım-yolu acenteye yönlendirir, state'e yazmaz — kasıtlı). Bu aralığın parse-kanıtı
    dil-doğru aşım-mesajının kendisidir + derlenmiş-modül testi; "state'te 16 görünmüyor"
    regresyon sanılmasın.
+
+## 14.2 PARİTE DALGA-2 + TEST BAKIMI (2026-07-27)
+
+**Test bakımı (davranış değişmedi):** D.4→7-dil şablon beklentisi (57b2098); C3.8→ay-guard-7-dil
+beklentisi (45a3057); D.B.17/18→changeAck-skip trade-off'una (7671d68, Murat kararı) göre revize
++ changeAck'SİZ yakalama kontrast-testi eklendi. Suite 592/596 → **596/596 TAM YEŞİL**.
+
+**B-1/B-2 — YANILTICI TANIMLAYICI ADI = SAHTE DENETİM BULGUSU (bilinen tuzak #4):**
+`TR_MONTHS_GUARD` → `MONTHS_GUARD` (içerik 45a3057'den beri 7-dil MONTH_ALTERNATION'dı; "TR"
+adı bu pencerede "X9 TR-only mu?" sahte-şüphesi üretti). KURAL: bir sabitin kapsamı adından
+değil içeriğinden okunur; ad kapsamı yanlış ima ediyorsa DÜZELTİLİR (salt-rename, davranış aynı).
+
+**Dil boşlukları:**
+- C-1 B-DUR2 süre-sorgusu 7-dil (`3 Tage Tour`/`туры на 2 дня`…) + **SÜRE-vs-GÖRELİ guard'ı**
+  (`через/in/dans/بعد + N + gün-kelimesi` → süre-filtresi PAS; "3 gün sonra/içinde" dahil).
+  Sınır (bilinçli): AR tarafı Batı-rakam ("3 أيام"); Arapça-Hint rakam bu blokta normalize
+  edilmiyor — Dalga-3. tur_sure eşleştirme tarafı (TR-acente-verisi) DOKUNULMADI.
+- C-2 _giveUpDropRe 7-dil + kibar-dolgu (bitte/svp/favor/пожалуйста/فضلك). **BİLİNÇLİ DIŞARIDA:**
+  "es"/"da"/"لا"/"por"/"من" — soyad-parçası/aşırı-genel FP ("Juan DA Silva", "mi nombre ES …").
+- C-3 ay-kısaltmaları: ru янв..дек (11) + de mär/okt/dez (diğer DE kısaltmaları EN-blokta zaten
+  vardı — çakışma-analizi yapıldı, kopya eklenmedi). Çift-yönlü test: "15 дек" guard'lı, "декор/
+  märchen" FP'siz (ÜRETİM-yolu derlenmiş-modülle kanıtlı), ay-sız pax okunuyor; X9 16/16.
+- C-4 _questionLikeRe kibar-kalıplar 5-dil.
+- **C-5 DENENDİ→GERİ ALINDI:** kalıp-ekleme gate'i geçirtiyor ama downstream isim-parser TR/EN-
+  tasarımlı → FP-kanıt "mi nombre es Juan García"→"Juan Garc". Parser-uyumu ayrı iş (Dalga-3).
+- **C-6 DURDURULDU:** DATE_QUERY_RE lookaround-geçişi diff-testi FARK verdi — kayıp: "tarihler/
+  tarihleri" (TR çekim substring'le yaşıyordu); kazanç: "unavailable/whenever" FP'leri düşerdi.
+  Substring→lookaround geçişi stem+\p{L}* yeniden-kürasyonu gerektirir (ayrı, dikkatli iş).
+
+**Bilinen tuzak #5 — TEMPLATE-HARNESS BACKSLASH ZAYİİ:** heredoc/`node -e` içinde elle kurulan
+`new RegExp("\p{L}…")` şablonlarında backslash katman-katman eriyip lookaround'lar `p{L}`
+karakter-sınıfına dönüşebilir → sahte-FP/sahte-yeşil (bu turda c3dbg "декор" sahte-FP'si; CİLA-4
+DE-typo sahte-yeşili aynı sınıftı). KURAL: regex doğrulaması YALNIZ derlenmiş-modül import'uyla;
+elle şablon-kurulum debug'da bile şüpheli — kaynak-string'i `re.source` ile teyit et.

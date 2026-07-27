@@ -26,6 +26,10 @@ export const MONTH_NAME_TO_NUMBER: Record<string, number> = {
   // DE (aksanlı + ASCII)
   januar: 1, februar: 2, märz: 3, maerz: 3, mai: 5, juni: 6, juli: 7,
   oktober: 10, dezember: 12,
+  // DE kısaltmalar (C-3 Dalga-2, 2026-07-27): yalnız EN-kısaltmalarla ÇAKIŞMAYANLAR
+  // (jan/feb/apr/jun/jul/aug/sep/nov zaten EN blokta). Tüketiciler lookaround'lı
+  // (MONTHS_GUARD/_richDate/9b-A) → "märchen" gibi bileşiklerde eşleşmez.
+  mär: 3, okt: 10, dez: 12,
   // FR (aksanlı + ASCII)
   janvier: 1, "février": 2, fevrier: 2, mars: 3, avril: 4, juin: 6, juillet: 7,
   "août": 8, aout: 8, septembre: 9, octobre: 10, novembre: 11, "décembre": 12, decembre: 12,
@@ -39,6 +43,11 @@ export const MONTH_NAME_TO_NUMBER: Record<string, number> = {
   "июль": 7, "июля": 7, "август": 8, "августа": 8,
   "сентябрь": 9, "сентября": 9, "октябрь": 10, "октября": 10,
   "ноябрь": 11, "ноября": 11, "декабрь": 12, "декабря": 12,
+  // RU kısaltmalar (C-3 Dalga-2, 2026-07-27): "15 дек" sınıfı. "май" tam-ad zaten
+  // yukarıda. X9-etkisi bilinçli: bu token'lar ay-guard'ı da besler (kısaltma
+  // içeren mesajda yazı-sayı pax pas geçilir — tarih-mesajı olasılığı baskın).
+  "янв": 1, "фев": 2, "мар": 3, "апр": 4, "июн": 6, "июл": 7,
+  "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12,
   // AR
   "يناير": 1, "فبراير": 2,
   "مارس": 3, "أبريل": 4,

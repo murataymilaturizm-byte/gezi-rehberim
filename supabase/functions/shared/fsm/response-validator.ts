@@ -528,7 +528,9 @@ export function validateFieldReask(
     let finalText: string;
     const _isFaqIntent = intent === "general_question" || intent === "support_request";
     if (_isFaqIntent) {
-      const _questionLikeRe = /[?？؟]|m[ıiuü]s[ıiuü]n[ıiuü]z\b|alabilir\s+mi|verir\s+mi|söyler\s+mi|paylaşır\s+m[ıi]|öğrenebilir\s+mi|söyleyebilir\s+mi|verebilir\s+mi|gönderir\s+mi|yazar\s+mı|can\s+(?:you|i)|may\s+i|could\s+(?:you|i)|would\s+you|please\s+(?:give|tell|share|provide)/iu;
+      // C-4 (Dalga-2, 2026-07-27): de/fr/es/ru/ar kibar-soru kalıpları eklendi
+      // ([?] dalı zaten evrensel-kompanse — düşük risk, recall-genişletme).
+      const _questionLikeRe = /[?？؟]|m[ıiuü]s[ıiuü]n[ıiuü]z\b|alabilir\s+mi|verir\s+mi|söyler\s+mi|paylaşır\s+m[ıi]|öğrenebilir\s+mi|söyleyebilir\s+mi|verebilir\s+mi|gönderir\s+mi|yazar\s+mı|can\s+(?:you|i)|may\s+i|could\s+(?:you|i)|would\s+you|please\s+(?:give|tell|share|provide)|k[öo]nnten\s+sie|d[üu]rfte\s+ich|pourriez[\s-]?vous|puis[\s-]?je|podr[íi]a[sn]?|не\s+могли\s+бы|можете\s+ли|هل\s+يمكن/iu;
       const _sentences = text.split(/(?<=[.!?])\s+|\n+/);
       const _preserved = _sentences
         .filter((s) => {

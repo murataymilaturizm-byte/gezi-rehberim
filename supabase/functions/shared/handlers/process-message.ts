@@ -1084,8 +1084,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // atlıyordu (muğlak). Burada: mesajdan gün-sayısı çıkar, tur_sure serbest-
   // metninden gün çıkar, TAM eşleşme; eşleşen yoksa "X günlük yok + sürelerimiz".
   {
-    const _dayMatch = _isExploreStage && !_richTourName
-      ? (message || "").match(/(?<![\p{L}\p{N}])(\d{1,2})\s*g[üu]nl[üu]k\b/iu)
+    // C-1 (Dalga-2, 2026-07-27): sorgu-regex'i 7-dil ("3 Tage Tour"/"туры на 2 дня"/
+    // "tours de 3 días"…) + ASCII \b→lookaround. ⚠️ SÜRE-vs-GÖRELİ-TARİH AYRIMI:
+    // "через 3 дня / in 3 Tagen / dans 3 jours / 3 gün sonra-içinde / بعد ٣ أيام"
+    // SÜRE-sorgusu DEĞİL → _durRelGuard tetiklerse blok komple pas (yanlış
+    // tetiklemektense eksik bırak). tur_sure eşleştirmesi (TR-acente-verisi) DOKUNULMADI.
+    // Sınır (bilinçli-dar): AR tarafında Batı-rakam ("3 أيام"); Arapça-Hint rakam
+    // normalize bu blokta yok (9b-A'daki gibi) — Dalga-3 adayı.
+    const _durDayRe = /(?<![\p{L}\p{N}])(\d{1,2})\s*(?:g[üu]nl[üu]k|[-\s]?days?|tage|jours?|d[íi]as?|дн(?:я|ей|и)|أيام)(?![\p{L}\p{N}])/iu;
+    const _durRelGuard = /(?:через|nach|in|dans|dentro\s+de|en|after|within|بعد|خلال)\s*\d{1,2}\s*(?:g[üu]n|day|tag|jour|d[íi]a|дн|يوم|أيام)|\d{1,2}\s*g[üu]n\s+(?:sonra|i[çc]inde)/iu;
+    const _dayMatch = _isExploreStage && !_richTourName && !_durRelGuard.test(message || "")
+      ? (message || "").match(_durDayRe)
       : null;
     if (_dayMatch && tours.length > 0) {
       const _wantDays = parseInt(_dayMatch[1]);

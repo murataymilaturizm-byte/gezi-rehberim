@@ -1768,13 +1768,21 @@ assert(`D.1: aynı tur ID → boş string`,
     p === "Now continuing with *Pamukkale Tour*. ");
 }
 
-// ─── D.4: 5 fallback dilleri → EN şablonu ────────────────────────────────
+// ─── D.4 (REVİZE 2026-07-27 Dalga-2): 7-dil şablonlar ────────────────────
+// ESKİ beklenti: 5 dil EN-fallback. 57b2098 (2026-07-10, "7-dil paralellik
+// şartı") ile her dil KENDİ şablonunu aldı — kod DOĞRU, test günceldi-dışıydı.
 {
-  const expected = "Now continuing with *X*. ";
-  const allFallback = ["de", "ru", "ar", "fr", "es"].every((lang) =>
-    buildTourChangePrefix("T1", "T2", "X", lang) === expected
+  const expectedByLang: Record<string, string> = {
+    de: "Wir machen jetzt mit *X* weiter. ",
+    ru: "Теперь продолжаем с *X*. ",
+    ar: "نتابع الآن مع *X*. ",
+    fr: "Nous continuons maintenant avec *X*. ",
+    es: "Ahora continuamos con *X*. ",
+  };
+  const allNative = Object.entries(expectedByLang).every(([lang, exp]) =>
+    buildTourChangePrefix("T1", "T2", "X", lang) === exp
   );
-  assert(`D.4: DE/RU/AR/FR/ES tümü EN fallback`, allFallback);
+  assert(`D.4 (REVİZE): DE/RU/AR/FR/ES her biri KENDİ şablonu (7-dil, 57b2098)`, allNative);
 }
 
 // ─── D.5: oldTourId undefined → BOŞ (ilk tur seçimi senaryosu) ───────────
@@ -2225,12 +2233,22 @@ console.log("\n── BUG D REVİZE: surgical validator (bilgi cevabı korunur) 
   // Bug B promote sonrası state: COLLECTING_INFO/ready_for_confirmation
   // (kullanıcı CONFIRMING'de "aslında adım Osman" dedi, change_info transition
   // stage'i COLLECTING_INFO'ya düşürdü, ama Bug B fix override fullName'i güncelledi)
+  // REVİZE 2026-07-27 Dalga-2 — changeAck-skip TRADE-OFF'u (7671d68, 2026-06-27,
+  // Murat canlı-test kararı): bot cevabı "güncelledim/güncellendi/updated…" içeriyorsa
+  // validator 4 field-check'i de ATLAR — çünkü "Kişi sayını güncelledim + telefon iste"
+  // gibi MEŞRU akış-ilerletme mesajları eskiden komple siliniyordu (kullanıcı değişiklik
+  // onayını göremiyordu). Bedeli: change-ack'li cümlede dolu-alan-tekrar-sorma yakalanmaz
+  // (nadir; sonraki turn FSM kompanse eder — triyaj 2026-07-27, kategori (iii)).
+  // Bu iki test artık trade-off-SONRASI davranışı sabitler.
   const llmReply = "İsim güncellendi. Telefon numaranızı alabilir miyim?";
   const result = validateFieldReask(llmReply, "tr", "COLLECTING_INFO", "ready_for_confirmation", reservationInfo, currentTour, "standart");
-  assert(`D.B.17 KRİTİK: COLLECTING_INFO/ready_for_confirmation + phone DOLU + LLM telefon iste → yakalandı (stage filtresi kaldırıldı)`,
-    result.wasModified === true && result.matchedPattern === "field-reask:phone");
-  assert(`D.B.18: replacement TAM ÖZET içeriyor (Osman + 05551234567)`,
-    result.text.includes("Osman Müftü") && result.text.includes("05551234567") && result.text.includes("onaylıyor musunuz"));
+  assert(`D.B.17 (REVİZE): changeAck'li cevap ("güncellendi"+telefon-iste) → SKIP, dokunulmaz (7671d68 trade-off)`,
+    result.wasModified === false && result.matchedPattern === null);
+  // Kontrast: AYNI istek changeAck OLMADAN → yakalanır (M1 koruması yaşıyor).
+  const resultNoAck = validateFieldReask("Telefon numaranızı alabilir miyim?", "tr", "COLLECTING_INFO", "ready_for_confirmation", reservationInfo, currentTour, "standart");
+  assert(`D.B.18 (REVİZE): changeAck'SİZ dolu-telefon-iste → hâlâ yakalanır + TAM ÖZET (Osman + 05551234567)`,
+    resultNoAck.wasModified === true &&
+    resultNoAck.text.includes("Osman Müftü") && resultNoAck.text.includes("05551234567"));
 }
 
 // ─── D.B.19 KRİTİK REGRESYON (exec bade7c70 öncesi davranış DA KORUNUR):
@@ -2766,9 +2784,11 @@ const _allMonthsPass = _months.every((m) => {
 assert(`C3.7 KRİTİK: 12 ay tümünde sözcükle yazılan sayı → paxAdult sızmaz`,
   _allMonthsPass);
 
-// EN/diğer dillerde ay-guard YOK (TR-specific) — regresyon yok
-assert(`C3.8 REGRESYON: "twenty december" (EN) → paxAdult=20 (TR ay-guard etkisiz)`,
-  _enpC3("twenty december", "waiting_for_pax").paxAdult === 20);
+// C3.8 (REVİZE 2026-07-27 Dalga-2): ay-guard 45a3057 (2026-07-09) ile
+// MONTH_ALTERNATION tek-kaynağına bağlanıp 7-DİLE çıktı — "twenty december"
+// artık pax SIZDIRMAZ (eski test EN'de guard-yokluğunu sabitliyordu; kod İYİLEŞTİ).
+assert(`C3.8 (REVİZE): "twenty december" (EN) → paxAdult SIZMAZ (ay-guard 7-dil)`,
+  _enpC3("twenty december", "waiting_for_pax").paxAdult === undefined);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 2026-06-24 F4 ÖLÇÜM (KOD DEĞİŞİKLİĞİ YOK — DAVRANIŞ KAYDI)
@@ -5141,7 +5161,7 @@ import { extractNameAndPhone as _extractNameAndPhoneX9 } from "../supabase/funct
 // X9.A10 REGRESYON: "yirmi aralık" (C3 fix korundu — ay var) → pax SIZMAZ
 {
   const r = _extractNameAndPhoneX9("yirmi aralık", "waiting_for_date");
-  assert(`X9.A10 REGRESYON C3: "yirmi aralık" → paxAdult undefined (TR_MONTHS_GUARD)`,
+  assert(`X9.A10 REGRESYON C3: "yirmi aralık" → paxAdult undefined (MONTHS_GUARD)`,
     r.paxAdult === undefined);
 }
 
