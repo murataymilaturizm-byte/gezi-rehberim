@@ -5299,6 +5299,29 @@ for (const [n, e] of [["Vergiss Es", true], ["Laisse Tomber", true], ["Da Igual"
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// B-C2 (2026-07-27): YAZI-GÜN→TARİH 7 dil (NUMBER_WORDS tek-kaynak) + X9 koruması.
+// Kural: yazı-gün çıktısı rakam-yol ile EŞDEĞER olmalı; ay-bitişik-şart pax'a sızdırmaz.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── B-C2: yazı-gün→tarih 7-dil + X9 ──");
+import { convertWordDayNearMonth as _cwdBC2, extractNameAndPhone as _enBC2, extractPaxFromWords as _epwBC2 } from "../supabase/functions/shared/fsm/simple-extractor.ts";
+import { normalizeDateString as _ndsBC2 } from "../supabase/functions/shared/services/info-extractor.ts";
+{
+  const _td = [{ id: "D10", departure_date: "2026-12-10" }, { id: "D20", departure_date: "2026-12-20" }];
+  const _eq = (a: string, b: string) => JSON.stringify(_enBC2(a, "waiting_for_date", _td)) === JSON.stringify(_enBC2(b, "waiting_for_date", _td));
+  for (const [w, d] of [["yirmi aralık", "20 aralık"], ["twenty december", "20 december"], ["december twentieth", "december 20"], ["zwanzigsten dezember", "20 dezember"], ["vingt décembre", "20 décembre"], ["veinte de diciembre", "20 de diciembre"], ["двадцатое декабря", "20 декабря"], ["عشرين ديسمبر", "20 ديسمبر"]] as Array<[string, string]>)
+    assert(`B-C2 eşdeğerlik "${w}" ≡ "${d}"`, _eq(w, d));
+  assert(`B-C2 nds "yirmi aralık" → 2026-12-20`, _ndsBC2("yirmi aralık") === "2026-12-20");
+  // FP-dışlamalar
+  assert(`B-C2 FP: "book on december 20" DEĞİŞMEZ`, _cwdBC2("book on december 20") === "book on december 20");
+  assert(`B-C2 FP: "пятница 5 декабря" DEĞİŞMEZ (kısa-stem)`, _cwdBC2("пятница 5 декабря") === "пятница 5 декабря");
+  assert(`B-C2 FP: "one december" DEĞİŞMEZ (1-dışlama)`, _cwdBC2("one december") === "one december");
+  // X9 çift-yön
+  assert(`B-C2 X9: "yirmi aralık" → pax NULL`, _epwBC2("yirmi aralık", "tr", "waiting_for_pax") === null);
+  assert(`B-C2 X9: "twenty december" → pax NULL`, _epwBC2("twenty december", "en", "waiting_for_pax") === null);
+  assert(`B-C2 X9-ters: "üç kişi" → pax=3 + tarih-üretmez`, _epwBC2("üç kişi", "tr", "waiting_for_pax") === 3 && _enBC2("üç kişi", "waiting_for_pax", _td).selectedDate === undefined);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // OLGU-A KORUMASI (2026-07-27): CONFIRMING tarih-değişiminde availability guard.
 // ⚠️ KAPSAM UYARISI (EK-2, §16.2): Bu blok YALNIZ state-machine change-action (~899)
 // yolunu test eder (processTransition entry-point). Canlı "15 Aralık yap" ÇOĞUNLUKLA

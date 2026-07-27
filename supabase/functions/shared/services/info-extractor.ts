@@ -2,7 +2,7 @@
 // Davranış whatsapp-webhook/index.ts'deki inline bloklar ile EŞDEĞERDİR (Faz 1).
 
 import type { ConversationContext } from "../fsm/types.ts";
-import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone, hasRelativeDateWord, GIVE_UP_DROP_RE } from "../fsm/simple-extractor.ts";
+import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone, hasRelativeDateWord, GIVE_UP_DROP_RE, convertWordDayNearMonth } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
 import { isNluFullNameNegationLeak, isNluFullNameTourLeak, isNluFullNameGiveUpLeak } from "./nlu-validation.ts";
@@ -78,7 +78,9 @@ export function normalizeDateString(dateStr: string): string {
   // Önişlemci: dolgu sözcüklerini temizle, çoklu boşluğu tek boşluğa indir
   const stripped = dateStr.replace(_DATE_FILLER_REGEX, "").replace(/\s+/g, " ").trim();
   // Türkçe-aware lowercase (ı/İ/I/i için)
-  const cleaned = stripped.toLocaleLowerCase("tr-TR").trim();
+  // B-C2 (2026-07-27): yazı-gün→rakam (NLU "yirmi aralık" döndürürse bu yol da çözer;
+  // tek-kaynak convertWordDayNearMonth — simple-extractor ile aynı fonksiyon).
+  const cleaned = convertWordDayNearMonth(stripped.toLocaleLowerCase("tr-TR").trim());
 
   // 1. Zaten ISO formatı
   if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) return cleaned;

@@ -126,6 +126,64 @@ export const NUMBER_WORDS: Record<string, Record<string, number>> = {
   },
 };
 
+// ─── B-C2 (2026-07-27): YAZI-GÜN → RAKAM ön-çevirici ─────────────────────────
+// "yirmi aralık" / "twenty december" / "двадцатое декабря" → "20 aralık" vb.
+// TEK-KAYNAK: NUMBER_WORDS (pax ile aynı sözlük — kopya YASAK) + MONTH_ALTERNATION.
+// X9-YAPISAL GÜVENCE: çeviri yalnız AY-ADI-BİTİŞİĞİNDE tetiklenir → "üç kişi"
+// dokunulmaz; pax-yolu zaten ORİJİNAL message üzerinde çalışır (lower değil) ve
+// MONTHS_GUARD ay-varken pax'i bloke eder (çift emniyet, iki yönde de).
+// Türetimli varyantlar (sözlüğe elle satır eklemeden):
+//   • genel ek-toleransı \p{L}{0,5} (yirmisi/zwanzigsten/vingtième/onbeşinde)
+//   • EN -y→-ie kökü (twenty→twentie +th → twentieth)
+//   • RU ь-düşmüş stem, yalnız ≥6 harf (двадцать→двадцат+ое; "пять"→"пят" YAPILMAZ —
+//     "пятница" FP'si) → RU 10-20 ordinalleri kapsanır, 1-9 RU ordinal kök-farklı (sınır)
+//   • AR oblik عشرون→عشرين
+// BİLİNÇLİ DIŞLAMA (FP): değeri 1 olan anahtarlar (EN/DE/FR/ES "un/ein/one" edat-artikel
+// çakışması; "1 Aralık" rakamla zaten çalışır) + tr "on" (EN "on december 20" edatı) —
+// bilinen-sınır olarak raporlandı. Bileşik 21-29 ("yirmi bir") kapsam-dışı (sınır).
+let _wdCache: { re1: RegExp; re2: RegExp; map: Record<string, number> } | null = null;
+function _wdBuild() {
+  if (_wdCache) return _wdCache;
+  const map: Record<string, number> = {};
+  for (const lang of Object.keys(NUMBER_WORDS)) {
+    for (const [k, v] of Object.entries(NUMBER_WORDS[lang])) {
+      if (v === 1) continue;                    // 1-değerleri dışla (edat/artikel FP)
+      const key = k.toLowerCase();
+      if (key === "on") continue;               // tr-10 ↔ EN "on december" edatı
+      map[key] = v;
+      if (/y$/.test(key)) map[key.slice(0, -1) + "ie"] = v;      // twenty→twentie(th)
+      if (/ь$/u.test(key) && key.length >= 6) map[key.slice(0, -1)] = v; // двадцать→двадцат(ое)
+      if (/ون$/u.test(key)) map[key.slice(0, -2) + "ين"] = v;    // عشرون→عشرين
+    }
+  }
+  const alt = Object.keys(map).sort((a, b) => b.length - a.length)
+    .map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  // DAY MONTH: yazı-sayı(+ek) + boşluk(+bağlaç) + AY — AY'dan hemen sonra RAKAM
+  // geliyorsa çevirme ("on december 20" sınıfı: rakam-yol otorite).
+  const re1 = new RegExp(
+    `(?<![\\p{L}\\p{N}])(${alt})(\\p{L}{0,5})?([\\s.]+(?:de\\s+|du\\s+|d['e]\\s+)?(?:${MONTH_ALTERNATION}))(?![\\s.]*\\d)`,
+    "giu");
+  // MONTH DAY: AY + boşluk + yazı-sayı(+ek) — "december twentieth"
+  const re2 = new RegExp(
+    `((?:${MONTH_ALTERNATION})[\\s.,]{1,3})(${alt})(\\p{L}{0,5})?(?![\\p{L}\\p{N}])`,
+    "giu");
+  _wdCache = { re1, re2, map };
+  return _wdCache;
+}
+export function convertWordDayNearMonth(text: string): string {
+  if (!text) return text;
+  const { re1, re2, map } = _wdBuild();
+  let out = text.replace(re1, (_m, w, _suf, rest) => {
+    const n = map[String(w).toLowerCase()];
+    return n ? `${n}${rest}` : _m;
+  });
+  out = out.replace(re2, (_m, pre, w) => {
+    const n = map[String(w).toLowerCase()];
+    return n ? `${pre}${n}` : _m;
+  });
+  return out;
+}
+
 // 2026-06-24 C3 fix (Opsiyon 2 — exec d9210ba4): "yirmi aralık" mesajında
 // "yirmi" tek-kelime sayı pax-context (kişi/insan/...) olmadan kabul ediliyordu
 // (≤3 kelime fallback). "yirmi aralık" 2 kelime → pax=20 sızıyordu — tarih
@@ -240,7 +298,10 @@ export function extractNameAndPhone(
   } = {};
 
   // Fonksiyon boyunca kullanılır — TDZ hatasını önlemek için en başta tanımla
-  const lower = message.toLowerCase().trim();
+  // B-C2 (2026-07-27): yazı-gün→rakam ön-çevirisi ("yirmi aralık"→"20 aralık").
+  // lower YALNIZ tarih-bloklarında kullanılır (kanıt: isim-yolu ayrı lowerMsg,
+  // pax-yolu orijinal message) → tek-nokta güvenli; ay-bitişik-şart X9-korumalı.
+  const lower = convertWordDayNearMonth(message.toLowerCase().trim());
 
   // === TELEFON ===
   const intlMatch = message.match(/\+\d[\d\s\-\.]{6,17}/);
