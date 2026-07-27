@@ -1408,3 +1408,31 @@ ararsa (Yan #8 sezgisi) **tr+en kopyasını ATLAR** — tr+en tamamen ASCII'dir.
 seviyesi "tek-kaynak sabitin ADINI taşımayan, aynı SEMANTİĞİ tekrarlayan liste/regex"
 olmalı (ör. iki farklı yerde vazgeçme-token listesi = ihlal, dilden bağımsız). Bu tur
 FIX yok — yalnız tasarım notu.
+
+## 16. TARİH DESENKRON SINIFI — "init'te guard var, değişimde yok" (2026-07-27, OLGU-A)
+
+**Bug (sessiz veri bozulması, canlı-kanıtlı):** CONFIRMING'de "15 Aralık yap" (turda
+OLMAYAN tarih) → değişim-action (state-machine.ts ~899) yeni `selectedDate=2026-12-15`
+yazıp ESKİ `dateId=…004 (10 Aralık)` **stale bıraktı** → özet 15.12 gösterip rezervasyon
+10.12'ye yazıldı (**görünen ≠ kayıtlı**; müşteri yanlış tarih onaylar). Mevcut invalid-date
+guard'ı (process-message `_invalidDateForPreamble`) `selectedDate && !dateId` kontrol
+ettiğinden **stale-dateId'yi kaçırıyordu** (dateId dolu görünüyor).
+
+**Sınıf:** id-eşlemeli iki alan (görünen `selectedDate` + kayıt `dateId`) BAĞIMSIZ
+yazıldığında desenkron. Envanter (selectedDate persisted-write):
+- DESYNC-ADAYI (bağımsız yaz): state-machine.ts merge (~135), **değişim-action (~899, BUG)**,
+  process-message layer-2 (~1738). 135/1738 aynı-desen ama repro YOK → follow-up.
+- GÜVENLİ (dateId-kapılı/birlikte): process-message A3-değişim (~2300, `_dateDifferent`
+  = `_ext.dateId` şart), ~2692, ~3065.
+- tourId/currentTour: TÜM yazımlar resolved tur'dan (`tour!.id`/`selectedTour!.id`) +
+  tourTitle birlikte → desync-sınıfı YOK.
+
+**Fix (yalnız kanıtlı değişim-action):** dateId çözülemezse (geçersiz tarih) yeni
+selectedDate yazılırken **stale dateId SİLİNİR** → `selectedDate present + dateId absent`
+kalır → mevcut aşağı-akış guard'ı devralır ("X müsait değil" + müsait liste +
+waiting_for_date). Böylece "15 Aralık yap" ≡ "tarihi 15 Aralık yap" (iki ifade-yolu TEK
+yola birleşir). Pax kota-guard'ının ([4b]) tarih simetriği.
+
+**KURAL:** id-eşlemeli alan çiftlerinde (selectedDate↔dateId gibi) GÖRÜNEN değeri kayıt-id'si
+çözülmeden YAZMA; id çözülemezse eski id'yi de temizle (stale bırakma) — "değişim" yolu
+"init" yolunun availability-guard'ını AYNEN uygulamalı. Kalıcı: test_behavioral OLGU-A bloğu.

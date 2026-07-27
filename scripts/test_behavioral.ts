@@ -5299,6 +5299,27 @@ for (const [n, e] of [["Vergiss Es", true], ["Laisse Tomber", true], ["Da Igual"
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// OLGU-A KORUMASI (2026-07-27): CONFIRMING tarih-değişiminde availability guard.
+// Geçersiz tarih (dateId çözülemedi) → stale dateId SİLİNİR (selectedDate present +
+// dateId absent → aşağı-akış invalid-date guard'ı devralır). Geçerli → ikisi birlikte.
+// KANIT: "15 Aralık yap" selectedDate=15 yazıp dateId=…004(10Ara) bırakıyordu → görünen≠kayıtlı.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── OLGU-A: CONFIRMING tarih-değişimi availability guard ──");
+{
+  const _base = () => ({ stage: "CONFIRMING", collectionStep: "ready_for_confirmation", language: "tr", currentTour: { id: "T1" }, messageCount: 3, collectEmail: false, reservationInfo: { tourId: "T1", tourTitle: "Pamukkale", dateId: "D1_10", selectedDate: "2026-12-10", paxAdult: 2, fullName: "Ali Veli", phone: "05551112233" } } as any);
+  const _inv: any = _ptB(_base(), { userMessage: "15 Aralık yap", detectedIntent: "change_info", extractedInfo: { selectedDate: "2026-12-15" }, selectedTour: null, language: "tr" } as any);
+  assert("OLGU-A geçersiz: stale dateId SİLİNDİ", _inv.reservationInfo?.dateId === undefined);
+  assert("OLGU-A geçersiz: waiting_for_date (guard devralır)", _inv.collectionStep === "waiting_for_date");
+  assert("OLGU-A geçersiz: tur korunur", _inv.reservationInfo?.tourId === "T1");
+  const _val: any = _ptB(_base(), { userMessage: "20 Aralık yap", detectedIntent: "change_info", extractedInfo: { dateId: "D2_20", selectedDate: "2026-12-20" }, selectedTour: null, language: "tr" } as any);
+  assert("OLGU-A geçerli: dateId+selectedDate BİRLİKTE (20)", _val.reservationInfo?.dateId === "D2_20" && _val.reservationInfo?.selectedDate === "2026-12-20");
+  const _px: any = _ptB(_base(), { userMessage: "3 kişi olsun", detectedIntent: "change_info", extractedInfo: { paxAdult: 3 }, selectedTour: null, language: "tr" } as any);
+  assert("OLGU-A regresyon: pax değişimi tarihi bozmaz", _px.reservationInfo?.paxAdult === 3 && _px.reservationInfo?.dateId === "D1_10");
+  const _nm: any = _ptB(_base(), { userMessage: "ismi Haki Oğrak yap", detectedIntent: "change_info", extractedInfo: { fullName: "Haki Oğrak" }, selectedTour: null, language: "tr" } as any);
+  assert("OLGU-A regresyon: isim değişimi tarihi bozmaz", _nm.reservationInfo?.dateId === "D1_10" && _nm.reservationInfo?.selectedDate === "2026-12-10");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // VALIDATOR ÖLÜ-DESEN KORUMASI (2026-07-27 validator-fix — kalıcı çift-yönlü)
 // Kaynak: response-validator ölü-desen teşhisi (8 ölü + 4 kısmi). Bu blok
 // gerçek fonksiyonları koşar (literal-çıkarma YOK → tuzak-#5 bağışık).

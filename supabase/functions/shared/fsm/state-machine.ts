@@ -897,8 +897,24 @@ const transitions: StateTransition[] = [
         _appliedAny = true;
       }
       if (_ext.dateId || _ext.selectedDate) {
-        if (_ext.dateId) info.dateId = _ext.dateId;
-        if (_ext.selectedDate) info.selectedDate = _ext.selectedDate;
+        if (_ext.dateId) {
+          // Geçerli tarih: dateId çözüldü → dateId + görünen tarih BİRLİKTE yaz.
+          info.dateId = _ext.dateId;
+          if (_ext.selectedDate) info.selectedDate = _ext.selectedDate;
+        } else if (_ext.selectedDate) {
+          // 2026-07-27 OLGU-A fix: dateId ÇÖZÜLEMEDİ ama tarih metni parse edildi
+          // (turda OLMAYAN tarih, örn "15 Aralık yap"). ESKİ davranış: yeni
+          // selectedDate yazılıp ESKİ dateId stale kalıyordu → özet 15.12 gösterip
+          // rezervasyon 10.12'ye (eski dateId) yazılıyordu (SESSİZ desenkron;
+          // görünen≠kayıtlı, canlı kanıt selectedDate=2026-12-15 & dateId=…004).
+          // FIX: stale dateId'yi SİL → selectedDate present + dateId absent kalır →
+          // aşağı akıştaki mevcut invalid-date guard'ı (process-message _invalidDate
+          // ForPreamble) devralır: "X müsait değil" + müsait tarih listesi +
+          // waiting_for_date. Böylece "15 Aralık yap" ≡ "tarihi 15 Aralık yap"
+          // (iki ifade-yolu TEK yola birleşir). Pax kota-guard'ının tarih simetriği.
+          info.selectedDate = _ext.selectedDate;
+          delete info.dateId;
+        }
         _appliedAny = true;
       }
 
