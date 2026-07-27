@@ -4,6 +4,8 @@ import { isValidPax } from "../utils/validation.ts";
 import { MONTH_NAME_TO_NUMBER, MONTH_ALTERNATION } from "../constants/month-names.ts";
 import { REL_TODAY, REL_TOMORROW, REL_DAY_AFTER, REL_NEXT_WEEK, REL_DAY_NAMES, relRegex } from "../constants/relative-date-words.ts";
 import { PEOPLE_CONTEXT_RE, PAX_ADULT_RE, PAX_CHILD_RE } from "../constants/people-words.ts";
+import { THANKS_FAREWELL_RE } from "../constants/thanks-words.ts";
+import { CLEAR_POSITIVE_RE } from "../constants/confirmation-words.ts";
 
 // ─── Göreceli tarih çıkarımı ─────────────────────────────────────────────────
 function extractRelativeDate(text: string, language: string): Date | null {
@@ -134,6 +136,17 @@ export const NUMBER_WORDS: Record<string, Record<string, number>> = {
 // (C3 guard'ı artık 7-dil: "twenty december"/"zwanzig dezember" de pax sızdırmaz);
 // (2) \b + "şubat" (ş-başlangıç) HİÇ eşleşmiyordu → "yirmi şubat" pax=20 sızıntısı
 // AÇIKTI (Yan #8) → lookaround.
+// M1 (isim-katmanı sınıf-fix, 2026-07-27): J-16 vazgeçme/dolgu token seti — TEK KAYNAK.
+// Tüketiciler: (1) waiting_for_name deterministik yolu, (2) nlu-validation
+// isNluFullNameGiveUpLeak (NLU-yolu simetriği — canlı DE "Vergiss Es"/FR "Laisse Tomber"
+// sızıntısının guard'ı). "es"/"da"/"لا"/"por"/"من" BİLİNÇLİ DIŞARIDA (soyad-parçası FP).
+export const GIVE_UP_DROP_RE = /^(boşver|bosver|kalsın|kalsin|neyse|vazgeç|vazgec|vazgeçtim|vazgectim|olsun|lütfen|lutfen|nevermind|forget|it|egal|vergiss|laisse|tomber|peu|importe|olv[íi]dalo|igual|неважно|проехали|خلاص|يهم|bitte|svp|favor|пожалуйста|فضلك)$/iu;
+
+// M1: ÇOK-KELİMELİ give-up İFADELERİ (tam-eşleşme). "es"/"da" gibi parça-token'lar
+// drop-setine giremez (soyad-FP: "Juan DA Silva") ama TAM-İFADE "vergiss es" bir isim
+// olamaz → ifade-düzeyi ikinci kural. Tüketiciler: isNluFullNameGiveUpLeak + isValidName.
+export const GIVE_UP_PHRASE_RE = /^(vergiss\s+es|laisse\s+tomber|peu\s+importe|da\s+igual|no\s+importa|forget\s+it|bo[şs]\s*ver|لا\s+يهم|не\s+важно)$/iu;
+
 // B-1 (Dalga-2, 2026-07-27): TR_MONTHS_GUARD → MONTHS_GUARD yeniden-adlandırıldı.
 // Ad "TR" diyordu ama içerik 45a3057'den beri 7-dil MONTH_ALTERNATION — yanıltıcı
 // ad bu pencerede sahte denetim-bulgusu üretti ("X9 TR-only mu?"). Davranış birebir aynı.
@@ -473,12 +486,9 @@ export function extractNameAndPhone(
     // "es"/"da"/"لا" — soyad-parçası/aşırı-genel FP ("Juan DA Silva"→"Juan Silva",
     // "mi nombre ES Juan García" 5→4 token'a inip yanlış-isim üretirdi). Çok-kelimeli
     // kalıpların ("vergiss es") kalan tek-token'ı zaten <2-kelime şartına takılır.
-    // + kibar-dolgu 7-dil (Jörg-vakası: "Jörg Müller bitte" → "Bitte" isim-parçası olmasın).
-    // "por"/"من"/"s'il/vous/plaît" parça-token'ları BİLİNÇLİ DIŞARIDA (genel-kelime FP).
-    const _giveUpDropRe = /^(boşver|bosver|kalsın|kalsin|neyse|vazgeç|vazgec|vazgeçtim|vazgectim|olsun|lütfen|lutfen|nevermind|forget|it|egal|vergiss|laisse|tomber|peu|importe|olv[íi]dalo|igual|неважно|проехали|خلاص|يهم|bitte|svp|favor|пожалуйста|فضلك)$/iu;
     const words = message.trim().split(/\s+/)
       .map((w) => w.replace(/[.,!?;:"'()]/gu, ""))
-      .filter((w) => w && !_giveUpDropRe.test(w));
+      .filter((w) => w && !GIVE_UP_DROP_RE.test(w));
     if (
       words.length >= 2 &&
       words.length <= 4 &&
@@ -510,9 +520,15 @@ export function extractNameAndPhone(
     }
   }
 
-  // Diğer aşamalarda sıkı isim doğrulama
+  // Diğer aşamalarda sıkı isim doğrulama.
+  // M2 (isim-katmanı sınıf-fix, 2026-07-27): [A-ZÇĞİÖŞÜ]-elle-sayım → Unicode
+  // \p{Lu}\p{Ll} + ASCII \b → \p{L}\p{N} lookaround (tuzak #1+#4 sınıfı; teşhis-kanıt:
+  // "Juan García"→"Juan Garc" kesiği, "Çağrı Şahin" \b yüzünden hiç eşleşmiyordu).
+  // Kapsam-genişleme FP'leri isValidName'de kontrol edilir (Latin-script şartı +
+  // THANKS/CLEAR tek-kaynak ön-eleme). ’/-/' isim-içi karakterleri bilinçli-dışarıda
+  // (mevcut davranış korunur; O'Brien sınıfı Dalga-3).
   const nameMatch = message.match(
-    /\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]{1,}\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]{1,}(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]{1,})?)\b/,
+    /(?<![\p{L}\p{N}])([\p{Lu}][\p{Ll}]{1,}\s+[\p{Lu}][\p{Ll}]{1,}(?:\s+[\p{Lu}][\p{Ll}]{1,})?)(?![\p{L}\p{N}])/u,
   );
   if (nameMatch) {
     const name = nameMatch[1].trim();
@@ -528,6 +544,19 @@ function isValidName(name: string, fullMessage: string): boolean {
   if (words.some((w) => w.length < 2)) return false;
   if (name.length < 5 || name.length > 50) return false;
   if (/\d/.test(name)) return false;
+
+  // M2 (2026-07-27) — Unicode-geçişin FP-frenleri:
+  // (1) LATİN-SCRIPT ŞARTI: sıkı-yol yalnız Latin isimler için (Kiril/Arap →
+  //     false = teşhisteki güvenli-undefined davranışı; o alfabelerde büyük-harfli
+  //     öbekler ("Спасибо Большое") isim sanılMAZ; RU/AR isimleri NLU-yolundan
+  //     çalışmaya devam eder — canlı-kanıtlı mevcut davranış).
+  if (!/^[\p{Script=Latin}\s]+$/u.test(name)) return false;
+  // (2) TEK-KAYNAK ön-eleme: teşekkür/veda + net-onay öbekleri isim değildir
+  //     ("Merci Beaucoup"/"Muchas Gracias"/"Vielen Dank"/"Tamam Olur").
+  if (THANKS_FAREWELL_RE.test(name) || CLEAR_POSITIVE_RE.test(name)) return false;
+  // (3) Give-up kompozisyonu ("Vergiss Es" sınıfı) — GIVE_UP_DROP_RE + PHRASE tek-kaynak.
+  if (GIVE_UP_PHRASE_RE.test(name.trim())) return false;
+  if (words.every((w) => GIVE_UP_DROP_RE.test(w.replace(/[.,!?;:"'()]/gu, "")))) return false;
 
   const blacklist = [
     "evet",
@@ -608,7 +637,11 @@ function isValidName(name: string, fullMessage: string): boolean {
   ];
 
   const lowerName = name.toLowerCase();
-  if (blacklist.some((word) => lowerName.includes(word))) return false;
+  // M2 (2026-07-27): substring→TAM-TOKEN karşılaştırma. "mart"⊂"martínez" substring'i
+  // "José Martínez"i reddediyordu (aylar/anahtar kelimeler isim-İÇİ hece olarak masum).
+  // Token-tam eşleşme korunur: "Nisan Yıldız"→"nisan" yine reddedilir (ay-token).
+  const _nameTokens = lowerName.split(/\s+/);
+  if (_nameTokens.some((t) => blacklist.includes(t))) return false;
   if (fullMessage.includes("?")) return false;
 
   // C-5 (Dalga-2, 2026-07-27) DENENDİ ve GERİ ALINDI: 7-dil kalıp eklemek gate'i

@@ -1324,3 +1324,34 @@ değil içeriğinden okunur; ad kapsamı yanlış ima ediyorsa DÜZELTİLİR (sa
 karakter-sınıfına dönüşebilir → sahte-FP/sahte-yeşil (bu turda c3dbg "декор" sahte-FP'si; CİLA-4
 DE-typo sahte-yeşili aynı sınıftı). KURAL: regex doğrulaması YALNIZ derlenmiş-modül import'uyla;
 elle şablon-kurulum debug'da bile şüpheli — kaynak-string'i `re.source` ile teyit et.
+
+## 15. İSİM-KATMANI SINIF-FİX (2026-07-27)
+
+**M1 — NLU give-up sızıntısı (canlı-matris kanıtlı):** 7-dil pre-fix matrisi: de "Vergiss Es"
++ fr "Laisse Tomber" NLU'dan fullName olarak SIZDI (tr/en/es/ru cancel-yolu, ar anlaşılamadı-yolu
+kompanse ediyordu) → açık "2-kelimeli give-up ifadeleri" sınıfında. FIX: A-GATE 3. dal
+`isNluFullNameGiveUpLeak` — TEK-KAYNAK `GIVE_UP_DROP_RE` (tam-kompozisyon; kısmi eşleşme
+reddetmez: "Egal Schmidt" temiz) + `GIVE_UP_PHRASE_RE` (çok-kelimeli ifadeler: "vergiss es" —
+"es"/"da" parça-token'ları drop-setine giremez [soyad-FP] ama TAM-İFADE isim olamaz).
+
+**M2 — Sıkı isim-regex Unicode:** `[A-ZÇĞİÖŞÜ]`-elle-sayım → `\p{Lu}\p{Ll}` + ASCII-\b →
+lookaround. FP-frenleri (kapsam-genişleme dengeleyicileri): (1) **Latin-script şartı** —
+Kiril/Arap sıkı-yoldan bilinçli-dışarıda (büyük-harfli öbekler "Спасибо Большое" isim
+sanılMAZ; RU/AR isimleri NLU-yolundan, canlı-kanıtlı); (2) THANKS_FAREWELL_RE +
+CLEAR_POSITIVE_RE tek-kaynak ön-eleme ("Merci Beaucoup"/"Vielen Dank"/"Tamam Olur");
+(3) give-up kompozisyonu. YAN-BULGU+FIX: isValidName blacklist'i substring→TAM-TOKEN
+("mart"⊂"martínez" "José Martínez"i reddediyordu — bilinen-tuzak #6: **SUBSTRING-BLACKLIST
+isim-içi heceleri yer**; token-tam karşılaştır). thanks-words "danke"→"dank\p{L}*".
+
+**M3 — İsim-korpusu kuralı:** Suite'teki 60+ isim-kullanımının TAMAMI TR-alfabe-uyumluydu
+(körlük: kesik-sınıfı hiç görülmedi). M3 bölümü 30 kalıcı test ekledi (11 Latin-Unicode
+pozitif + 4 Kiril/Arap-güvenli + 8 FP + blacklist + give-up). **KURAL: yeni isim-testi
+eklerken en az bir TR-DIŞI-aksanlı/alfabe vakası ZORUNLU.**
+
+**M4 — Envanter (Dalga-3 kapsamı, teşhis-only):** (1) A-Z+TR karışık elle-sayım sınıfı:
+M2 sonrası **0 kaldı** (sınıf kapandı; `[ıi]`-tipi aksan-toleransları meşru). (2) ASCII-\b
+kalanları (kullanıcı-metnine değil çoğu BOT-metnine/rakama): response-validator ×53 (TR
+claim-desenleri "\b[öo]deme" — ö-önü \b non-ASCII'de ölü-desen riski, M1-koruma zayıflatır),
+fsm/validator.ts ×38, simple-extractor ×8 (çoğu rakam-deseni, güvenli), state-machine ×3
+(hasPax bilinen), nlu/question-detection/sales/support ×1-2 (rakam/HTML-sanitize, güvenli).
+Öncelik: response-validator → fsm/validator → kalanlar.

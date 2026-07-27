@@ -5261,4 +5261,41 @@ function _mkX9Context(collectionStep: string) {
 console.log(`\n═══════════════════════════════════════════════════════════════════════`);
 console.log(`DAVRANIŞSAL TESTLER: ${pass}/${pass + fail} geçti`);
 console.log(`═══════════════════════════════════════════════════════════════════════`);
+// ═══════════════════════════════════════════════════════════════════════
+// M3 (2026-07-27) — İSİM-KORPUSU: TR-DIŞI ALFABE ZORUNLU TESTLERİ
+// Körlük-kanıtı: bu bölümden önce suite'teki 60+ isim-kullanımının TAMAMI
+// TR-alfabe-uyumluydu → sıkı-regex'in "Juan García"→"Juan Garc" kesiği ve
+// Kiril/Arap kör-noktası HİÇ görülmedi. KURAL (Guards §15): yeni isim-testi
+// eklerken en az bir TR-DIŞI-aksanlı/alfabe vakası ZORUNLU.
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── M3 İSİM-KORPUSU: Unicode pozitif + FP + give-up ──");
+import { extractNameAndPhone as _enM3 } from "../supabase/functions/shared/fsm/simple-extractor.ts";
+import { isNluFullNameGiveUpLeak as _gulM3 } from "../supabase/functions/shared/services/nlu-validation.ts";
+
+// Pozitif — Latin-Unicode isimler sıkı-yoldan TAM geçer (kesik=0)
+const _m3Pos: Array<[string, string]> = [
+  ["Çağrı Şahin", "Çağrı Şahin"], ["Gülşah Öztürk", "Gülşah Öztürk"], ["İlknur Yıldız", "İlknur Yıldız"],
+  ["Jörg Müller", "Jörg Müller"], ["Björn Weiß", "Björn Weiß"],
+  ["André Dupont", "André Dupont"], ["François Lefèvre", "François Lefèvre"], ["Chloé Girard", "Chloé Girard"],
+  ["Juan García", "Juan García"], ["José Martínez", "José Martínez"], ["Begoña Ruiz", "Begoña Ruiz"],
+];
+for (const [inp, exp] of _m3Pos) {
+  assert(`M3.POS "${inp}" → TAM (kesik yok)`, _enM3("my name is " + inp, undefined).fullName === exp);
+}
+// Kiril/Arap sıkı-yolda BİLİNÇLİ undefined (NLU-yolu ana; güvenli davranış)
+for (const n of ["Иван Петров", "Наталья Соколова", "محمد العلي", "فاطمة الزهراء"]) {
+  assert(`M3.SAFE "${n}" → undefined (sıkı-yol Latin-sınırlı, NLU devralır)`, _enM3("my name is " + n, undefined).fullName === undefined);
+}
+// FP — büyük-harfli öbekler İSİM DEĞİL
+for (const f of ["Спасибо Большое", "Доброе Утро", "Всё Хорошо", "Vielen Dank", "Merci Beaucoup", "Muchas Gracias", "Tamam Olur", "Thank You"]) {
+  assert(`M3.FP "${f}" → isim sanılmaz`, _enM3(f, undefined).fullName === undefined);
+}
+// Token-blacklist tam-token'a geçti; ay-token isimleri hâlâ reddedilir, isim-İÇİ hece serbest
+assert(`M3.BL "Nisan Yıldız" → reddedilir (ay-token)`, _enM3("Nisan Yıldız", undefined).fullName === undefined);
+assert(`M3.BL "José Martínez" mart-hecesine takılmaz`, _enM3("José Martínez", undefined).fullName === "José Martínez");
+// M1 give-up leak (NLU-yolu guard'ı)
+for (const [n, e] of [["Vergiss Es", true], ["Laisse Tomber", true], ["Da Igual", true], ["Egal Schmidt", false], ["Juan García", false]] as Array<[string, boolean]>) {
+  assert(`M3.GUL "${n}" → ${e}`, _gulM3(n) === e);
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

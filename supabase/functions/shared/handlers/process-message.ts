@@ -31,7 +31,7 @@ import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
-import { isNluFullNameTourLeak, isNluFullNameNegationLeak } from "../services/nlu-validation.ts";
+import { isNluFullNameTourLeak, isNluFullNameNegationLeak, isNluFullNameGiveUpLeak } from "../services/nlu-validation.ts";
 import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerManualDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
 import { hasQuotaForPax, getQuotaRemaining, hasAnyAvailableDate } from "../services/quota-check.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
@@ -566,6 +566,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (isNluFullNameTourLeak(_leak)) {
       console.log(
         `[process-message] BLOCKED NLU fullName tour-leak: "${String(_leak).charAt(0)}***" (len=${String(_leak).length})`,
+      );
+      delete nluResult.updates.fullName;
+      if (nluResult.entities) {
+        (nluResult.entities as any).full_name = "";
+      }
+    } else if (isNluFullNameGiveUpLeak(_leak)) {
+      // M1 (2026-07-27): NLU give-up sızıntısı — canlı DE "Vergiss Es"/FR "Laisse
+      // Tomber" (J-16'nın NLU-simetriği). Tam-kompozisyon vazgeçme-token'ı → REDDET;
+      // isim yazılmaz, akış (detectCancellation/LLM) normal yoluna devam eder.
+      console.log(
+        `[process-message] BLOCKED NLU fullName giveup-leak: "${String(_leak).charAt(0)}***" (len=${String(_leak).length})`,
       );
       delete nluResult.updates.fullName;
       if (nluResult.entities) {

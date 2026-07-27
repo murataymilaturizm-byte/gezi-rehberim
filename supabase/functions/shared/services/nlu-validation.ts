@@ -44,6 +44,7 @@
 // DB-bağımlı katman bilinçli EKLENMEDİ: pure function kalsın, gri zon kabul.
 
 import { TOUR_KEYWORD_STOPWORDS } from "../constants/tour-matching.ts";
+import { GIVE_UP_DROP_RE, GIVE_UP_PHRASE_RE } from "../fsm/simple-extractor.ts";
 
 function normalizeForGate(s: string): string {
   return s
@@ -115,4 +116,21 @@ export function isNluFullNameNegationLeak(fullName: string): boolean {
   if (!fullName || typeof fullName !== "string") return false;
   const words = normalizeForGate(fullName).split(/\s+/).filter(Boolean);
   return words.some((w) => NEGATION_TOKENS.has(w));
+}
+
+/**
+ * M1 (isim-katmanı sınıf-fix, 2026-07-27) — NLU give-up sızıntı guard'ı.
+ * Canlı FAIL: DE "vergiss es" / FR "laisse tomber" isim adımında NLU'dan
+ * fullName olarak döndü → "Vielen Dank, Vergiss!" (J-16 yalnız deterministik
+ * yolu koruyordu). Kural: fullName'in TÜM token'ları GIVE_UP_DROP_RE
+ * (tek-kaynak, simple-extractor) vazgeçme/dolgu setindense → sızıntı, REDDET.
+ * KISMİ eşleşme REDDETMEZ: "Egal Schmidt" → "schmidt" sette değil → temiz isim
+ * (FP-disiplini: yalnız TAM-kompozisyon reddedilir).
+ */
+export function isNluFullNameGiveUpLeak(fullName: string): boolean {
+  if (!fullName || typeof fullName !== "string") return false;
+  if (GIVE_UP_PHRASE_RE.test(fullName.trim())) return true;
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return false;
+  return words.every((w) => GIVE_UP_DROP_RE.test(w));
 }
