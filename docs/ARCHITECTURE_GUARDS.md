@@ -1455,3 +1455,32 @@ devrede). Geçerli değişimde davranış aynen korunur (_l2DiffDid zaten kapsı
 **KURAL (güçlendirilmiş):** id-eşlemeli alan fix'i, kullanıcı mesajının GİRDİĞİ GERÇEK
 canlı-yolda doğrulanmadan kapatılmaz. Aynı bug için BİRDEN FAZLA giriş-yolu (layer-2 DAL1,
 state-machine change-action, A3, merge) olabilir — hepsi taranmalı; "birim yeşil" ≠ "canlı yeşil".
+
+### §16.2 ZORUNLU PROSEDÜR — "iz-kaydı olmadan guard-fix kapatılmaz" (2026-07-27)
+
+Bu pencerede "birim/derleme yeşil ama canlı kırık" İKİ KEZ oldu (M1 §15.1, OLGU-A §16.1).
+Not düşmek engellemedi → ZORUNLU ADIM:
+
+**Guard/eleme fix'i yazmadan ÖNCE:** hedef kullanıcı-mesajı CANLIDA koşulur ve HANGİ
+BLOKLARIN çalıştığı iz olarak kaydedilir (STATE_IN/OUT + tetiklenen dal). Fix, iz-kaydında
+GÖRÜLEN bloğa yazılır. İz-kaydı olmadan yazılan fix — birim testi yeşil olsa da —
+"DOĞRULANMAMIŞ" sayılır ve kapatılmaz. Fix SONRASI iz-kaydı, hedeflenen guard'ın (ör.
+`_invalidDateForPreamble`) gerçekten devraldığını göstermeli.
+
+**Aynı bug'ın BİRDEN FAZLA giriş-yolu olabilir** (process-message layer-2 DAL1, state-machine
+change-action, A3 change, merge). "Birim yeşil" yalnız test edilen entry-point'i kanıtlar.
+OLGU-A'da: canlı "15 Aralık yap" layer-2 DAL1(~1738)'den; birim-test processTransition(~899)'u
+koşuyordu → farklı entry-point → sahte-güven. Fix yazmadan ÖNCE tüm giriş-yolları taranır.
+
+**"Kalıcı test" tanımı (güncellendi):** bir koruma ancak CANLI entry-point'ten geçen bir test
+ile kalıcı sayılır. Handler unit-test edilemiyorsa (process-message: 76 erken-return +
+adapter/DB/LLM bağımlılığı) → committed **live-smoke script** (deploy sonrası koşulan,
+assert'li, exit-kodlu) kalıcı-test yerine geçer. Bkz. scripts/live-date-change-smoke.mjs
+(OLGU-A CORE + O1-FP gate). test_behavioral'daki processTransition testleri YALNIZ ~899
+yolunu kapsar (etiketlendi) — layer-2 kanıtı live-smoke'tadır.
+
+**OLGU-A kapanış envanteri (canlı-kanıtlı):**
+- layer-2 DAL1 (~1738): erken-return → pm:2622 çalışamaz → ASIL desync-kökü. FIX'LENDİ (dateId şartı).
+- state-machine change-action (~899): bare-date (change-keyword'süz) ile erişilebilir (E3a). FIX'LENDİ (stale dateId sil). cf4a8ba KALIR (ölü kod değil).
+- merge (~135) COLLECTING: erken-return YOK → pm:2622 (`extractedInfo.selectedDate && !dateId`) devralır → desync ÜRETMEZ (M1/M2 canlı-kanıt). Fix GEREKMEZ.
+- A3 (~2300): dateId-kapılı → güvenli. tourId: hep resolved tur → desync-sınıfı yok.

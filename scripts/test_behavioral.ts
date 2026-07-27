@@ -5300,9 +5300,12 @@ for (const [n, e] of [["Vergiss Es", true], ["Laisse Tomber", true], ["Da Igual"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // OLGU-A KORUMASI (2026-07-27): CONFIRMING tarih-değişiminde availability guard.
-// Geçersiz tarih (dateId çözülemedi) → stale dateId SİLİNİR (selectedDate present +
-// dateId absent → aşağı-akış invalid-date guard'ı devralır). Geçerli → ikisi birlikte.
-// KANIT: "15 Aralık yap" selectedDate=15 yazıp dateId=…004(10Ara) bırakıyordu → görünen≠kayıtlı.
+// ⚠️ KAPSAM UYARISI (EK-2, §16.2): Bu blok YALNIZ state-machine change-action (~899)
+// yolunu test eder (processTransition entry-point). Canlı "15 Aralık yap" ÇOĞUNLUKLA
+// process-message layer-2 DAL1 (~1738)'den geçer — o yol BURADA test EDİLMEZ; kanıtı
+// scripts/live-date-change-smoke.mjs (gerçek entry-point, deploy sonrası koşulur).
+// 899 yolu bare-date (change-keyword'süz "15 Aralık") ile canlıda erişilebilir (kanıt E3a).
+// Geçersiz tarih → stale dateId SİLİNİR; geçerli → ikisi birlikte.
 // ═══════════════════════════════════════════════════════════════════════════
 console.log("\n── OLGU-A: CONFIRMING tarih-değişimi availability guard ──");
 {
