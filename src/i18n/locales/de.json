@@ -1739,7 +1739,8 @@
       "updateSuccess": "Datum aktualisiert",
       "errorOccurred": "Bei der Operation ist ein Fehler aufgetreten",
       "userNotFound": "Benutzer nicht gefunden",
-      "agencyNotFound": "Agentur nicht gefunden"
+      "agencyNotFound": "Agentur nicht gefunden",
+      "returnBeforeDeparture": "Das Rückreisedatum darf nicht vor dem Abreisedatum liegen"
     },
     "registrationForm": {
       "title": "Voranmeldungsformular",

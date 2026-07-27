@@ -1707,7 +1707,8 @@
       "updateSuccess": "Date mise à jour",
       "errorOccurred": "Une erreur s'est produite pendant l'opération",
       "userNotFound": "Utilisateur non trouvé",
-      "agencyNotFound": "Agence non trouvée"
+      "agencyNotFound": "Agence non trouvée",
+      "returnBeforeDeparture": "La date de retour ne peut pas être antérieure à la date de départ"
     },
     "registrationForm": {
       "title": "Formulaire de Pré-inscription",

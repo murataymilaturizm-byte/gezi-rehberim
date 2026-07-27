@@ -1707,7 +1707,8 @@
       "updateSuccess": "تم تحديث التاريخ",
       "errorOccurred": "حدث خطأ أثناء العملية",
       "userNotFound": "المستخدم غير موجود",
-      "agencyNotFound": "الوكالة غير موجودة"
+      "agencyNotFound": "الوكالة غير موجودة",
+      "returnBeforeDeparture": "لا يمكن أن يكون تاريخ العودة قبل تاريخ المغادرة"
     },
     "registrationForm": {
       "title": "استمارة التسجيل المسبق",

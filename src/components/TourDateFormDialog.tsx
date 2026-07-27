@@ -102,6 +102,18 @@ export const TourDateFormDialog = ({
       return;
     }
 
+    // F-4 (2026-07-27): return_date < departure_date girilemez — bozuk-veri sınıfı
+    // (canlı örnek: dönüşü kalkıştan ÖNCE kayıt, anket-penceresi hesabını bozuyordu).
+    // ISO "YYYY-MM-DD" string karşılaştırması tarih-sırasıyla birebir.
+    if (formData.return_date && formData.return_date < formData.departure_date) {
+      toast({
+        title: t("admin.dateForm.error"),
+        description: t("admin.dateForm.returnBeforeDeparture"),
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {

@@ -1736,7 +1736,8 @@
       "updateSuccess": "Date updated",
       "errorOccurred": "An error occurred during the operation",
       "userNotFound": "User not found",
-      "agencyNotFound": "Agency not found"
+      "agencyNotFound": "Agency not found",
+      "returnBeforeDeparture": "Return date cannot be earlier than the departure date"
     },
     "registrationForm": {
       "title": "Pre-Registration Form",

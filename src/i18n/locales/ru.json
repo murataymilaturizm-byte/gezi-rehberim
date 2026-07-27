@@ -1773,7 +1773,8 @@
       "updateSuccess": "Дата обновлена",
       "errorOccurred": "Произошла ошибка во время операции",
       "userNotFound": "Пользователь не найден",
-      "agencyNotFound": "Агентство не найдено"
+      "agencyNotFound": "Агентство не найдено",
+      "returnBeforeDeparture": "Дата возвращения не может быть раньше даты отправления"
     },
     "registrationForm": {
       "title": "Форма Предварительной Регистрации",

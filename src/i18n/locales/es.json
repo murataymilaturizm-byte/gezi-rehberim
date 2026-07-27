@@ -1773,7 +1773,8 @@
       "updateSuccess": "Fecha actualizada",
       "errorOccurred": "Ocurrió un error durante la operación",
       "userNotFound": "Usuario no encontrado",
-      "agencyNotFound": "Agencia no encontrada"
+      "agencyNotFound": "Agencia no encontrada",
+      "returnBeforeDeparture": "La fecha de regreso no puede ser anterior a la fecha de salida"
     },
     "registrationForm": {
       "title": "Formulario de Pre-registro",
