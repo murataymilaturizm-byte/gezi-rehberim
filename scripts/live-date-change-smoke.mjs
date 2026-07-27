@@ -58,6 +58,14 @@ console.log("=== LIVE SMOKE: OLGU-A tarih-değişimi (canlı process-message) ==
   check("FP-E ayrı-mesaj geçerli tarih → İKİSİ", both(s)); }
 { const s = S("tr"); await s.say("Pamukkale turu"); await s.say("rezervasyon"); await s.say("10 Aralık 2026"); await s.say("2 kişi"); await s.say("Ali Veli"); await s.say("20 Aralık yap");
   check("FP-F waiting_for_phone geçerli değişim → İKİSİ+20", both(s) && ri(s).selectedDate === "2026-12-20"); }
+// KUYRUK (tail): geçersiz-tarih reddi SONRASI tarih VERMEDEN ilerleme → stale dateId
+// ile COMPLETED/CONFIRMING'e GEÇMEMELİ (sessiz yanlış-tarih sınıfının ters-yönü).
+for (const proceed of ["tamam onaylıyorum", "evet", "rezervasyonu tamamla"]) {
+  const s = await conf(S("tr")); await s.say("15 Aralık yap"); // reddettir
+  const r = await s.say(proceed);
+  const advanced = s.st?.stage === "COMPLETED" || (s.st?.stage === "CONFIRMING" && !!ri(s).dateId && !ri(s).selectedDate);
+  check(`TAIL red-sonrası "${proceed}" → tarihsiz İLERLEMEZ`, !advanced);
+}
 
 console.log(`\n=== SONUÇ: ${fail === 0 ? "TÜM SMOKE GEÇTİ ✓" : fail + " FAIL ✗"} ===`);
 process.exit(fail === 0 ? 0 : 1);
