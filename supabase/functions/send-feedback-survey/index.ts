@@ -21,6 +21,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { normalizePhone } from "../_shared/phone.ts";
+import { feedbackWindowBounds, buildFeedbackWindowOrFilter } from "../_shared/feedback-window.ts";
 import { isServiceRoleCall, unauthorized } from "../_shared/edge-auth.ts";
 
 const corsHeaders = {
@@ -154,19 +155,16 @@ serve(async (req) => {
 
     // ── 2) Her eşleştirme için pencere ───────────────────────────────────────
     for (const m of rows) {
-      // POZİTİF offset: tur bitiminden N saat sonra anket
-      // Pencere: tur bitti = today - N saat (gün granül, 24-saat window)
-      const hoursAfter = Math.max(0, m.offset_hours);
-      const nowMs = Date.now();
-      const startMs = nowMs - hoursAfter * 3600 * 1000;
-      const endMs = startMs + 24 * 3600 * 1000;
-
-      const startDate = new Date(startMs).toISOString().split("T")[0];
-      const endDate = new Date(endMs).toISOString().split("T")[0];
+      // F-2+F-3 (2026-07-27): pencere TEK-KAYNAK _shared/feedback-window.ts.
+      // Bitiş = coalesce(return_date, departure_date); aralık [now−14g, now−offset]
+      // gün-granül + feedback_sent_at IS NULL (aşağıda) → kaçan gün telafi edilir,
+      // çift-gönderim kayıt-kilidiyle engellenir. Eski tek-günlük pencere kaçırma
+      // sonrası kalıcı kayıp üretiyordu (A2-EK kök raporu).
+      const { floor: startDate, ceil: endDate } = feedbackWindowBounds(Date.now(), m.offset_hours);
 
       console.log(
         `🎯 matching agency=${m.agency_id.slice(0, 8)} lang=${m.language} ` +
-          `offset=+${m.offset_hours}h window=${startDate}→${endDate}`,
+          `offset=+${m.offset_hours}h window=${startDate}→${endDate} (coalesce-bitiş)`,
       );
 
       const planOk = await hasFeedbackEnabled(m.agency_id);
@@ -175,12 +173,12 @@ serve(async (req) => {
         continue;
       }
 
-      // Pencerede biten tour_dates (tours.agency_id filter ile bu acenteye ait)
+      // Pencerede BİTEN tour_dates — coalesce(return_date, departure_date) bazlı
+      // (or-filtre; tours!inner.agency_id bu acenteye sabitler, seed/null-agency elenir).
       const { data: tds, error: tdErr } = await supabase
         .from("tour_dates")
-        .select(`id, departure_date, tours!inner(title, agency_id)`)
-        .gte("departure_date", startDate)
-        .lt("departure_date", endDate)
+        .select(`id, departure_date, return_date, tours!inner(title, agency_id)`)
+        .or(buildFeedbackWindowOrFilter(startDate, endDate))
         .eq("tours.agency_id", m.agency_id);
 
       if (tdErr) {
@@ -197,12 +195,15 @@ serve(async (req) => {
       console.log(`📅 ${tdList.length} tour dates in window`);
 
       for (const td of tdList) {
-        // CONFIRMED rezervasyonlar
+        // CONFIRMED + HENÜZ ANKET GİTMEMİŞ rezervasyonlar (F-3: kayıt-bazlı
+        // çift-gönderim kilidi — pencere genişlediği için şart; 10-Tem test-damgalı
+        // eski kayıtlar da bu filtreyle güvenle dışarıda kalır).
         const { data: regs, error: regErr } = await supabase
           .from("registrations")
           .select("id, full_name, phone")
           .eq("tour_date_id", td.id)
-          .eq("status", "CONFIRMED");
+          .eq("status", "CONFIRMED")
+          .is("feedback_sent_at", null);
 
         if (regErr) {
           console.error(`❌ regs fetch error td=${td.id}:`, regErr);
