@@ -195,14 +195,16 @@ export const AdvancedAnalytics = () => {
         .sort((a, b) => b.reservedVolume - a.reservedVolume)
         .slice(0, 5);
 
-      // Dönüşüm oranı — aynı status filter
-      let conversationQuery = supabase
-        .from("whatsapp_conversations")
-        .select("*", { count: 'exact', head: true })
-        .gte("created_at", startDate.toISOString())
-        .lte("created_at", endDate.toISOString());
-      if (agencyId) conversationQuery = conversationQuery.eq("agency_id", agencyId);
-      const { count: conversationCount } = await conversationQuery;
+      // Dönüşüm oranı — F-R1 (2026-07-28): payda artık GERÇEK konuşma sayısı
+      // (distinct phone, RPC — SECURITY INVOKER/RLS'li). Eski satır-sayımı
+      // user+assistant+system-state satırlarını "konuşma" sayıyordu (fbad140f
+      // 6-ay kanıtı: 1312 satır vs 4 konuşma → yapısal-yanıltıcı oran).
+      const { data: _distinctPhones } = await supabase.rpc("count_distinct_conversation_phones", {
+        p_agency_id: agencyId || null,
+        p_start: startDate.toISOString(),
+        p_end: endDate.toISOString(),
+      });
+      const conversationCount = (_distinctPhones as number | null) ?? 0;
 
       let registrationCountQuery = supabase
         .from("registrations")
