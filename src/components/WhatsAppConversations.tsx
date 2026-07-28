@@ -331,10 +331,12 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
       }
 
       setReplyMessage("");
-      // Re-fetch — gerçek DB id ile değiştirsin (optimistic temp id yerine).
-      // Eğer DB insert başarılıysa loadConversations gerçek mesajı getirir.
-      // Argument olarak aid geç — state race condition önle.
-      await loadConversations(aid);
+      // P2-A BULGU-2 (2026-07-28): tam re-fetch KALDIRILDI — ekran-zıplamasının
+      // kökü buydu (loadConversations tüm listeyi yeniden kurup state'i komple
+      // değiştiriyordu). Artık: optimistic satır zaten ekranda; gerçek DB-satırı
+      // realtime INSERT'iyle gelir ve dedupe-(2) optimistic'i sessizce gerçek
+      // id'yle değiştirir. Realtime kaçarsa optimistic satır aynı içerikle kalır
+      // (görsel fark yok). Hata-yolu (rollback+toast) aynen aşağıda.
     } catch (err: any) {
       // Rollback: optimistic eklenen mesajı kaldır
       setConversations((prev) => prev.map((conv) =>

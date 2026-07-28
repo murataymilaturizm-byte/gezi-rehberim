@@ -165,8 +165,17 @@ export class WhatsAppAdapter implements ChannelAdapter {
     await saveConversationAtomic(this.supabase, this.phone, this.agency.id, "", reply, newContext);
   }
 
+  // P2-A BULGU-1 (2026-07-28): webhook user-mesajını AI'dan ÖNCE ayrı-insert etti mi?
+  // Ettiyse saveTransaction user'ı TEKRAR yazmaz ("" → RPC ve fallback atlar; saveResponse
+  // ile aynı kanıtlı yol). Realtime paneli mesajı atıldığı saniye gösterir.
+  private userAlreadySaved = false;
+  markUserSaved(): void { this.userAlreadySaved = true; }
+
   async saveTransaction(userMessage: string, reply: string, newContext: ConversationContext): Promise<void> {
-    await saveConversationAtomic(this.supabase, this.phone, this.agency.id, userMessage, reply, newContext);
+    await saveConversationAtomic(
+      this.supabase, this.phone, this.agency.id,
+      this.userAlreadySaved ? "" : userMessage, reply, newContext,
+    );
   }
 
   async sendResponse(reply: string): Promise<void> {

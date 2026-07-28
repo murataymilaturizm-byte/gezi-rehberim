@@ -616,6 +616,25 @@ serve(async (req) => {
       _preloadedContext, _preloadedHistory,
     );
 
+    // P2-A BULGU-1 (2026-07-28): müşteri mesajı AI-işlemden ÖNCE yazılır → panel
+    // realtime'ında ATILDIĞI SANİYE düşer (eski: save_conversation_atomic user+bot'u
+    // işlem-SONUNDA birlikte yazıyordu → mesaj ancak bot-cevabıyla beliriyordu;
+    // pause-yolu zaten erken yazdığı için oradaki anlık-düşme gözlemiyle tutarlıydı).
+    // adapter.markUserSaved() → saveTransaction user'ı TEKRAR yazmaz (çift-kayıt yok).
+    // History çift-mesaj riski: _preloadedHistory bu insert'ten ÖNCE yüklendi →
+    // loadHistory yeni satırı görmez (nadir preload-null fallback'inde LLM history'de
+    // kopya görebilir — state-etkisi yok, kabul edilen marjinal durum).
+    // Best-effort: insert hatası akışı BOZMAZ (eski davranışa geri düşer).
+    try {
+      const { error: _earlyErr } = await supabase.from("whatsapp_conversations").insert({
+        phone: userPhone, role: "user", content: rawMessage, agency_id: agency.id,
+      });
+      if (!_earlyErr) adapter.markUserSaved();
+      else console.error("[whatsapp-webhook] early user-insert failed (fallback to atomic):", _earlyErr.message);
+    } catch (_e) {
+      console.error("[whatsapp-webhook] early user-insert threw (fallback to atomic):", _e instanceof Error ? _e.message : _e);
+    }
+
     const result = await processChatMessage({
       message: rawMessage,  // process-message.ts sanitize eder + isInputTooLong tekrar kontrol eder
       adapter,
