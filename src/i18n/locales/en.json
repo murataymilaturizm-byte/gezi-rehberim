@@ -2133,7 +2133,7 @@
     "botPaused": "Bot paused for 24 hours",
     "botResumed": "Bot resumed",
     "replyPlaceholder": "Type your message...",
-    "replyHint": "Ctrl+Enter to send",
+    "replyHint": "Enter sends · Shift+Enter for a new line",
     "sendReply": "Send",
     "sending": "Sending...",
     "sendSuccess": "Message sent!",

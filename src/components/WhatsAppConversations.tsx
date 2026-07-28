@@ -718,7 +718,16 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                                 disabled={sending}
                                 className="w-full resize-none text-sm"
                                 onKeyDown={(e) => {
-                                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                                  // P3-0 (2026-07-28): Enter → gönder; Shift+Enter → satır-başı.
+                                  // IME-koruması: kompozisyon sürerken (AR/RU vb. IME'lerde
+                                  // isComposing / eski-tarayıcı keyCode 229) Enter gönderMEZ.
+                                  // Çift-gönderim: `sending` true iken tetiklenmez (buton-disable
+                                  // ile aynı state); boş/whitespace'i handleSendReply zaten eler.
+                                  if (
+                                    e.key === "Enter" && !e.shiftKey &&
+                                    !e.nativeEvent.isComposing && e.keyCode !== 229 &&
+                                    !sending
+                                  ) {
                                     e.preventDefault();
                                     handleSendReply();
                                   }

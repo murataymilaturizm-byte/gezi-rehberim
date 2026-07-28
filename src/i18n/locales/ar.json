@@ -2133,7 +2133,7 @@
     "botPaused": "تم إيقاف البوت مؤقتًا لمدة 24 ساعة",
     "botResumed": "تم استئناف البوت",
     "replyPlaceholder": "اكتب رسالتك...",
-    "replyHint": "Ctrl+Enter للإرسال",
+    "replyHint": "Enter للإرسال · Shift+Enter لسطر جديد",
     "sendReply": "إرسال",
     "sending": "جارٍ الإرسال...",
     "sendSuccess": "تم إرسال الرسالة!",
