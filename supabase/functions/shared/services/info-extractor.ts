@@ -401,12 +401,22 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   }
   if (simple.selectedDate && !extractedInfo.selectedDate) extractedInfo.selectedDate = simple.selectedDate;
 
-  // === Blok 4: Email adımı (waiting_for_email) ===
-  if (context.collectionStep === "waiting_for_email") {
+  // === Blok 4: Email — GENEL yakalayıcı (F-E1, 2026-07-28) ===
+  // ESKİ: yalnız waiting_for_email adımında yakalanıyordu → akış-ortasında
+  // "mail adresim x@y.com" yazan müşterinin maili KAYBOLUYOR, bot ise "aldım"
+  // diyordu (canlı kanıt: state.email=undefined + registrations.email=null).
+  // YENİ: extractEmail HER adımda çalışır → reservationInfo.email → :14 RPC
+  // p_email → registrations.email. NOT: collect_email toggle'ı yalnız botun
+  // SORMASINI kontrol eder — gönüllü-verilen email toggle kapalıyken de
+  // KAYDEDİLİR (Murat kararı). Geçersiz format _EMAIL_RE'ye takılmaz → yazılmaz.
+  // skip-sinyali eskisi gibi yalnız waiting_for_email'de anlamlı.
+  {
     const emailFound = extractEmail(message);
-    const skipFound = isEmailSkipRequest(message, context.language);
-    if (emailFound) extractedInfo.email = emailFound;
-    else if (skipFound) extractedInfo.emailSkipped = true;
+    if (emailFound && !extractedInfo.email) extractedInfo.email = emailFound;
+    if (context.collectionStep === "waiting_for_email" && !emailFound &&
+        isEmailSkipRequest(message, context.language)) {
+      extractedInfo.emailSkipped = true;
+    }
   }
 
   // === Blok 5: Context-aware — isim (esnek mod) ===
@@ -426,6 +436,9 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       words.length <= 4 &&
       !message.includes("?") &&
       !/\d/.test(message) &&
+      // F-E1 X9-sınıfı koruma (2026-07-28): email-içeren mesajdan isim-adayı ÜRETME —
+      // "mail adresim test@ornek.com" → "Mail Adresim Test@…" isim sanılıyordu.
+      !words.some((w) => w.includes("@")) &&
       words.every((w) => w.length >= 2)
     ) {
       // 2026-06-21 SORUN F GERÇEK KÖK: Blok 5 fallback path NLU K2+K3 gate'lerini

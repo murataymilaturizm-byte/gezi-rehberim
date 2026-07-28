@@ -145,6 +145,15 @@ function mergeReservationInfo(
     merged.paxChild = extracted.paxChild;
   }
 
+  // F-E1 (2026-07-28) İKİNCİ KÖK: email/emailSkipped HİÇ merge edilmiyordu —
+  // Blok-4 çıkarsa bile state'e geçmiyordu (zorunlu collect_email akışı da dahil;
+  // hiçbir acentede toggle açık olmadığından bugüne dek görünmemişti). Gönüllü
+  // email her adımda kabul (extractEmail geçerli-format garantisi).
+  if ((extracted as any).email && !(merged as any).email) {
+    (merged as any).email = (extracted as any).email;
+  }
+  if ((extracted as any).emailSkipped) (merged as any).emailSkipped = true;
+
   // 3. İsim: henüz yoksa ekle VEYA change_info düzeltme ise override.
   //    KRİTİK BUG FIX (2026-06-08): Eskiden "hasPax && !merged.fullName" koşulu vardı —
   //    state'e paxAdult henüz merge edilmemişse (kullanıcı pax sormadan isim verdi veya

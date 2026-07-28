@@ -551,6 +551,9 @@ export function extractNameAndPhone(
       .map((w) => w.replace(/[.,!?;:"'()]/gu, ""))
       .filter((w) => w && !GIVE_UP_DROP_RE.test(w));
     if (
+      // F-E1 X9-sınıfı koruma (2026-07-28): email-token'lı mesajdan isim ÜRETME —
+      // "mail adresim test@ornek.com" kısa-yoldan "Mail Adresim Test@…" oluyordu.
+      !words.some((w) => w.includes("@")) &&
       words.length >= 2 &&
       words.length <= 4 &&
       !message.includes("?") &&

@@ -5346,6 +5346,19 @@ console.log("\n── OLGU-A: CONFIRMING tarih-değişimi availability guard ─
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// F-E1 (2026-07-28): gönüllü-email genel yakalayıcı + X9-sınıfı sızıntı koruması.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── F-E1: gönüllü-email + X9-email sızıntı ──");
+{
+  const _mkE = (msg: string, step: string) => extractAllInfo2({ message: msg, nluResult: { intent: "general", updates: {}, entities: {} }, fsmIntent: "general", context: { stage: "COLLECTING_INFO", collectionStep: step, language: "tr", reservationInfo: { tourId: "T1", dateId: "D1", paxAdult: 2 }, currentTour: { id: "T1", title: "X", dates: [] } } as any, tours: [], tourJustChanged: false, selectedTour: null } as any);
+  assert("F-E1 email her-adımda yakalanır", _mkE("mail adresim test@ornek.com", "waiting_for_name").email === "test@ornek.com");
+  assert("F-E1 geçersiz @@ yazılmaz", _mkE("mailim asdf@@nope", "waiting_for_phone").email === undefined);
+  const _rE: any = _mkE("mail adresim test@ornek.com", "waiting_for_name");
+  assert("F-E1 X9: email-mesajı isim/telefon/pax ÜRETMEZ", _rE.fullName === undefined && _rE.phone === undefined && _rE.paxAdult === undefined);
+  assert("F-E1 normal isim regresyonsuz", _mkE("Ali Veli", "waiting_for_name").fullName === "Ali Veli");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // VALIDATOR ÖLÜ-DESEN KORUMASI (2026-07-27 validator-fix — kalıcı çift-yönlü)
 // Kaynak: response-validator ölü-desen teşhisi (8 ölü + 4 kısmi). Bu blok
 // gerçek fonksiyonları koşar (literal-çıkarma YOK → tuzak-#5 bağışık).
