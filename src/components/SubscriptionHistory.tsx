@@ -264,40 +264,45 @@ function PlanCard({
         {/* CTA — mt-auto: kart yüksekliği farklı olsa bile buton ALTTA hizalı.
             popüler için gradient ocean (landing CTA stiliyle aynı).
             Madde 2: Enterprise için LemonSqueezy yerine iletişim CTA (mailto). */}
-        {plan.id === "enterprise" && !onSwitch && (
-          <div className="mt-auto pt-2">
-            <Button asChild className="w-full bg-gradient-ocean hover:opacity-90">
-              {/* POS-yok dönemi: mailto yerine landing iletişim formuna scroll (FaqSection #contact). */}
-              <a href="/#contact">
-                {t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </a>
-            </Button>
-          </div>
-        )}
-        {plan.id !== "enterprise" && agencyId && !onSwitch && (
-          <div className="mt-auto pt-2">
-            <LemonSqueezyButton
-              planId={plan.id}
-              isYearly={isYearly}
-              agencyId={agencyId}
-              userEmail={userEmail ?? ""}
-              label={t("admin.subscription.subscribe")}
-              className={[
-                "w-full motion-safe:transition-all motion-safe:duration-200",
-                plan.popular ? "bg-gradient-ocean hover:opacity-90 text-primary-foreground shadow-md" : "",
-              ].join(" ")}
-            />
-            {/* P5-2a (2026-07-28): Havale/EFT manuel-ödeme — BankTransferDialog açar.
-                PayTR-hazırlık: kart-butonu bilinçli YOK (çalışmayan buton koyma). */}
-            {onBankTransfer && (
+        {/* P5-EK E-1b (2026-07-28): CTA bloğu TEK yerde toplandı. KÖK (kod-kanıtı):
+            havale butonu eskiden `plan.id !== "enterprise" && agencyId` bloğunun İÇİNDEYDİ
+            → enterprise acente (Aymila) havale butonunu HİÇ görmüyordu; sebep kart-kapsamı,
+            önbellek/deploy DEĞİL. Yeni kural: agencyId varsa ÜÇ planda da havale görünür.
+            Enterprise'da havale BİRİNCİL (gradient), "İletişime Geç" İKİNCİL (özel fiyat
+            görüşmesi için meşru). starter/professional'da LemonSqueezy birincil kalır. */}
+        {!onSwitch && (agencyId || plan.id === "enterprise") && (
+          <div className="mt-auto pt-2 space-y-2">
+            {plan.id !== "enterprise" && agencyId && (
+              <LemonSqueezyButton
+                planId={plan.id}
+                isYearly={isYearly}
+                agencyId={agencyId}
+                userEmail={userEmail ?? ""}
+                label={t("admin.subscription.subscribe")}
+                className={[
+                  "w-full motion-safe:transition-all motion-safe:duration-200",
+                  plan.popular ? "bg-gradient-ocean hover:opacity-90 text-primary-foreground shadow-md" : "",
+                ].join(" ")}
+              />
+            )}
+            {/* Havale/EFT — PayTR-hazırlık: kart-butonu bilinçli YOK (çalışmayan buton koyma). */}
+            {onBankTransfer && agencyId && (
               <Button
-                variant="outline"
-                className="w-full mt-2"
+                variant={plan.id === "enterprise" ? "default" : "outline"}
+                className={["w-full", plan.id === "enterprise" ? "bg-gradient-ocean hover:opacity-90" : ""].join(" ")}
                 onClick={(e) => { e.stopPropagation(); onBankTransfer(plan); }}
               >
                 <Landmark className="h-4 w-4 mr-2" />
                 {t("bankTransfer.payByTransfer")}
+              </Button>
+            )}
+            {plan.id === "enterprise" && (
+              <Button asChild variant="outline" className="w-full">
+                {/* POS-yok dönemi: mailto yerine landing iletişim formuna scroll (#contact). */}
+                <a href="/#contact">
+                  {t("pricing.cta.contact", { defaultValue: "İletişime Geç" })}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </a>
               </Button>
             )}
           </div>

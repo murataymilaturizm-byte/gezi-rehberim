@@ -3,7 +3,7 @@
 // Kapalıyken tek satır (ok+başlık), tıklayınca form açılır. Form işlevi tamamen
 // FaqSection'daki orijinaliyle aynı: zod validation + sanitizeHtml + contact_forms
 // insert + toast (success/error/rate-limit).
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,8 +17,28 @@ import { contactFormSchema, checkRateLimit, sanitizeHtml } from "@/utils/validat
 export const ContactCollapsible = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [isOpen, setIsOpen] = useState(false);
+  // P5-EK E-2 (2026-07-28): #contact ile gelindiğinde form OTOMATİK AÇIK + yumuşak scroll.
+  // KÖK: default kapalıydı → panel/plan sayfasından "İletişime Geç" ile gelen kullanıcı
+  // boş bir başlık satırı görüyordu ("rastgele kapalı" algısı). SSG-güvenli: window guard.
+  const _hashIsContact = () => typeof window !== "undefined" && window.location.hash === "#contact";
+  const [isOpen, setIsOpen] = useState(_hashIsContact);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // İlk yüklemede (hash ile gelinmişse) ve sayfa içi hash değişiminde aç + kaydır.
+    const openIfHash = () => {
+      if (!_hashIsContact()) return;
+      setIsOpen(true);
+      // Layout otursun diye bir frame bekle (SSG hydration + animasyon).
+      requestAnimationFrame(() => {
+        rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    };
+    openIfHash();
+    window.addEventListener("hashchange", openIfHash);
+    return () => window.removeEventListener("hashchange", openIfHash);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,7 +103,7 @@ export const ContactCollapsible = () => {
   return (
     <section className="py-10 sm:py-12">
       <div className="container mx-auto px-4 max-w-3xl">
-        <div className="border border-border/60 rounded-xl bg-card overflow-hidden">
+        <div ref={rootRef} className="border border-border/60 rounded-xl bg-card overflow-hidden">
           <button
             type="button"
             onClick={() => setIsOpen((v) => !v)}
