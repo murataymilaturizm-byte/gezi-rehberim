@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import {
   MessageCircle, User, Bot, Building2,
   Search, Settings, ChevronLeft, ChevronRight, Send, PauseCircle,
-  PlayCircle, Loader2, Bell,
+  PlayCircle, Loader2, Bell, Info, Maximize2, Minimize2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -31,7 +31,6 @@ import { WhatsAppSettings } from "./WhatsAppSettings";
 import AgencySettings from "./AgencySettings";
 import { EmptyState } from "./EmptyState";
 import { ConversationsEmptyIllustration } from "./illustrations/ConversationsEmptyIllustration";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const PAGE_SIZE = 25;
 
@@ -83,6 +82,8 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
   const [sending, setSending] = useState(false);
   const [botPaused, setBotPaused] = useState(false);
   const [botPauseLoading, setBotPauseLoading] = useState(false);
+  // P2-C (2026-07-28): tam-sayfa modu — aynı sayfada expand (route/pencere DEĞİL).
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -360,7 +361,14 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
   }
 
   return (
-    <div className="space-y-6 overflow-x-hidden">
+    <div
+      className={cn(
+        "space-y-6 overflow-x-hidden",
+        // P2-C: expand'de modül panelin tüm alanını kaplar (overlay; layout'a dokunmaz,
+        // diğer bölümler DOM'da yerinde kalır — kapatınca birebir eski görünüm).
+        isExpanded && "fixed inset-0 z-50 bg-background p-4 overflow-y-auto"
+      )}
+    >
       <Tabs defaultValue="conversations" className="w-full">
         <Card className="shadow-card">
           <CardHeader>
@@ -369,6 +377,16 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                 <CardTitle className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
                   {t("whatsapp.management.title")}
+                  {/* P2-C: genişlet/daralt */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 ml-1"
+                    onClick={() => setIsExpanded((v) => !v)}
+                    title={isExpanded ? t("conversations.collapse") : t("conversations.expand")}
+                  >
+                    {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  </Button>
                 </CardTitle>
 
                 {isSuperAdmin && agencies.length > 0 && (
@@ -420,8 +438,12 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                   description={t("conversations.emptyDescription")}
                 />
               ) : (
-                /* Two-panel: outer h-[600px] gives flex-1 children a concrete height to fill */
-                <div className="flex h-[600px] rounded-lg border overflow-hidden divide-x divide-border">
+                /* Two-panel: outer fixed-height gives flex-1 children a concrete height to fill.
+                   P2-C: expand'de yükseklik viewport'a oturur (başlık+padding payı düşülür). */
+                <div className={cn(
+                  "flex rounded-lg border overflow-hidden divide-x divide-border",
+                  isExpanded ? "h-[calc(100vh-230px)]" : "h-[600px]"
+                )}>
 
                   {/* LEFT — conversation list */}
                   <div className={cn(
@@ -555,29 +577,13 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                         {/* Takeover panel — flex-shrink-0 so it never steals space from messages */}
                         {!isSuperAdmin && (
                           <div className="flex-shrink-0 border-t p-3 space-y-2">
-                            {/* Müşteri + WhatsApp quick link (hızlı manuel cevap için) */}
-                            {(() => {
-                              const _waUrl = selectedPhone ? buildWhatsAppUrl(selectedPhone) : null;
-                              return _waUrl ? (
-                                <div className="flex items-center justify-between gap-2 px-1">
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    <User className="h-3 w-3 inline mr-1" />
-                                    {selectedPhone}
-                                  </p>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2.5 text-[11px] border-green-500/40 text-green-700 dark:text-green-400 hover:bg-green-500/5 shrink-0"
-                                    asChild
-                                  >
-                                    <a href={_waUrl} target="_blank" rel="noopener noreferrer">
-                                      <MessageCircle className="w-3 h-3 mr-1" />
-                                      {t("common.openWhatsApp")}
-                                    </a>
-                                  </Button>
-                                </div>
-                              ) : null;
-                            })()}
+                            {/* P1-4 (2026-07-28): "WhatsApp'tan yaz" quick-link KALDIRILDI —
+                                numara Cloud API'ye bağlı; wa.me/WhatsApp Web'den yazmak imkânsız,
+                                buton yanıltıcıydı. Panel-içi gönderim (send-manual-message) tek yol. */}
+                            <p className="text-xs text-muted-foreground truncate px-1">
+                              <User className="h-3 w-3 inline mr-1" />
+                              {selectedPhone}
+                            </p>
                             {/* Bot status */}
                             <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                               <div className="flex items-center gap-2">
@@ -605,6 +611,31 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                                 {botPauseLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : botPaused ? t("conversations.resumeBot") : t("conversations.pauseBot")}
                               </Button>
                             </div>
+
+                            {/* P1-5 (2026-07-28): Meta 24h-kuralı bilgi bandı — DİNAMİK.
+                                Son müşteri(user)-mesajı zamanı state'te hazır (selectedConversation
+                                .messages) → 24h penceresi hesaplanır: açıksa nötr bilgi-tonu,
+                                kapalıysa (veya hiç user-mesajı yoksa) uyarı-tonu. */}
+                            {(() => {
+                              const _lastUser = [...selectedConversation.messages]
+                                .reverse()
+                                .find((m) => m.role === "user");
+                              const _winOpen = !!_lastUser &&
+                                Date.now() - new Date(_lastUser.created_at).getTime() < 24 * 60 * 60 * 1000;
+                              return (
+                                <div
+                                  className={cn(
+                                    "flex items-start gap-2 rounded-md px-3 py-2 text-xs",
+                                    _winOpen
+                                      ? "bg-muted/40 text-muted-foreground"
+                                      : "bg-orange-500/10 text-orange-700 dark:text-orange-400 border border-orange-500/30"
+                                  )}
+                                >
+                                  <Info className="h-3.5 w-3.5 shrink-0 mt-[1px]" />
+                                  <span>{_winOpen ? t("conversations.win24Info") : t("conversations.win24Warn")}</span>
+                                </div>
+                              );
+                            })()}
 
                             {/* Reply textarea */}
                             <div className="space-y-2">

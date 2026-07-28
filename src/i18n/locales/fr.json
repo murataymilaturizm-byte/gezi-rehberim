@@ -2135,7 +2135,11 @@
     "sendSuccess": "Message envoyé!",
     "dbWarning": "Message envoyé via WhatsApp mais l'enregistrement dans le panneau a échoué.",
     "sendError": "Échec de l'envoi du message",
-    "outside24h": "Le client n'a pas écrit depuis 24h. Utilisez un message modèle."
+    "outside24h": "Le client n'a pas écrit depuis 24h. Utilisez un message modèle.",
+    "win24Info": "Règle Meta des 24 heures : vous pouvez envoyer des messages libres dans les 24 heures suivant le dernier message du client. La fenêtre est actuellement ouverte.",
+    "win24Warn": "Règle Meta des 24 heures : le client n'a pas écrit depuis 24 heures ; les messages libres sont impossibles, seuls les modèles approuvés peuvent être envoyés.",
+    "expand": "Plein écran",
+    "collapse": "Réduire"
   },
   "notifications": {
     "title": "Notifications",

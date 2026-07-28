@@ -44,7 +44,7 @@ export function TourPerformance({ tours, rawData, currency = "₺", onNavigateAn
         else counts.set(r.tourId, { id: r.tourId, title: r.title, destination: r.destination, registrationCount: 1 });
       }
     }
-    return Array.from(counts.values()).sort((a, b) => b.registrationCount - a.registrationCount).slice(0, 5);
+    return Array.from(counts.values()).sort((a, b) => b.registrationCount - a.registrationCount).slice(0, 4); // P1-2: ilk 4 (sıralama korunur)
   }, [rawData, range, tours]);
 
   const maxCount = Math.max(...displayed.map((t) => t.registrationCount), 1);
@@ -98,7 +98,7 @@ export function TourPerformance({ tours, rawData, currency = "₺", onNavigateAn
           </p>
         ) : (
           <div className="space-y-3">
-            {displayed.slice(0, 5).map((tour, idx) => {
+            {displayed.slice(0, 4).map((tour, idx) => {
               const fillPct = Math.round((tour.registrationCount / maxCount) * 100);
               const isHot = fillPct >= 80;
               return (

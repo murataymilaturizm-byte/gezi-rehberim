@@ -2135,7 +2135,11 @@
     "sendSuccess": "Nachricht gesendet!",
     "dbWarning": "Nachricht über WhatsApp gesendet, aber Panel-Eintrag fehlgeschlagen.",
     "sendError": "Nachricht konnte nicht gesendet werden",
-    "outside24h": "Kunde hat in 24 Std. keine Nachricht geschickt. Vorlage verwenden."
+    "outside24h": "Kunde hat in 24 Std. keine Nachricht geschickt. Vorlage verwenden.",
+    "win24Info": "Meta-24-Stunden-Regel: Innerhalb von 24 Stunden nach der letzten Kundennachricht können Sie frei antworten. Das Fenster ist derzeit offen.",
+    "win24Warn": "Meta-24-Stunden-Regel: Der Kunde hat in den letzten 24 Stunden nicht geschrieben; freie Nachrichten sind nicht möglich, nur genehmigte Vorlagen können gesendet werden.",
+    "expand": "Vollbild",
+    "collapse": "Verkleinern"
   },
   "notifications": {
     "title": "Benachrichtigungen",

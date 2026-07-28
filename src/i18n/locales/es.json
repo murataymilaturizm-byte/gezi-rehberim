@@ -2169,7 +2169,11 @@
     "sendSuccess": "¡Mensaje enviado!",
     "dbWarning": "Mensaje enviado por WhatsApp pero falló el registro en el panel.",
     "sendError": "Error al enviar el mensaje",
-    "outside24h": "El cliente no ha escrito en 24h. Use un mensaje de plantilla."
+    "outside24h": "El cliente no ha escrito en 24h. Use un mensaje de plantilla.",
+    "win24Info": "Regla de 24 horas de Meta: puede enviar mensajes libres dentro de las 24 horas posteriores al último mensaje del cliente. La ventana está abierta.",
+    "win24Warn": "Regla de 24 horas de Meta: el cliente no ha escrito en las últimas 24 horas; no se pueden enviar mensajes libres, solo plantillas aprobadas.",
+    "expand": "Pantalla completa",
+    "collapse": "Reducir"
   },
   "notifications": {
     "title": "Notificaciones",

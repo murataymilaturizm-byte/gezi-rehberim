@@ -2135,7 +2135,11 @@
     "sendSuccess": "Message sent!",
     "dbWarning": "Message sent via WhatsApp but panel record failed.",
     "sendError": "Failed to send message",
-    "outside24h": "Customer hasn't messaged in 24 hours. Use a template message."
+    "outside24h": "Customer hasn't messaged in 24 hours. Use a template message.",
+    "win24Info": "Meta 24-hour rule: you can send free-form messages within 24 hours of the customer's last message. The window is currently open.",
+    "win24Warn": "Meta 24-hour rule: the customer has not messaged in the last 24 hours, so free-form messages cannot be sent; only approved template messages can be delivered.",
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "notifications": {
     "title": "Notifications",

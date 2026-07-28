@@ -231,8 +231,10 @@ const Admin = () => {
   const [manualRegistrationDialogOpen, setManualRegistrationDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
-  // Faz 2-C: Kayıtlar 3 görünüm — varsayılan "by-departure" (operasyonel en sık kullanım)
-  const [registrationsView, setRegistrationsView] = useState<RegistrationsView>("by-departure");
+  // Faz 2-C: Kayıtlar 3 görünüm. P1-3 (2026-07-28): varsayılan LİSTE (Murat kararı).
+  // Görünüm-tercihi persist EDİLMİYOR (localStorage/DB yok — tarandı) → yalnız
+  // ilk-açılış default'u değişir, kullanıcı seçici mekanizması aynen korunur.
+  const [registrationsView, setRegistrationsView] = useState<RegistrationsView>("list");
   const [departureDetailOpen, setDepartureDetailOpen] = useState(false);
   const [selectedDepartureGroup, setSelectedDepartureGroup] = useState<DepartureGroup | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");

@@ -55,7 +55,8 @@ export function RecentRegistrations({ registrations, onViewAll, onRowClick }: Re
           />
         ) : (
           <div className="space-y-1.5">
-            {registrations.slice(0, 8).map((reg) => {
+            {/* P1-1 (2026-07-28): 8→4 — dashboard yoğunluğu; "Tümünü gör" korunur */}
+            {registrations.slice(0, 4).map((reg) => {
               const initials = reg.full_name?.charAt(0).toUpperCase() || "?";
               const statusStyle = STATUS_STYLE[reg.status] || STATUS_STYLE.NEW;
               return (

@@ -2203,7 +2203,11 @@
     "sendSuccess": "Mesaj gönderildi!",
     "dbWarning": "Mesaj WhatsApp'tan gönderildi ama panel kaydı yapılamadı.",
     "sendError": "Mesaj gönderilemedi",
-    "outside24h": "Müşteri son 24 saat içinde mesaj atmadı. Şablon mesaj kullanın."
+    "outside24h": "Müşteri son 24 saat içinde mesaj atmadı. Şablon mesaj kullanın.",
+    "win24Info": "Meta 24 saat kuralı: müşterinin son mesajından sonraki 24 saat içinde serbest mesaj gönderebilirsiniz. Pencere şu an açık.",
+    "win24Warn": "Meta 24 saat kuralı: müşteri son 24 saat içinde mesaj göndermediği için serbest mesaj gönderilemez; yalnızca onaylı şablon mesajları iletilebilir.",
+    "expand": "Tam ekran",
+    "collapse": "Küçült"
   },
   "notifications": {
     "title": "Bildirimler",
