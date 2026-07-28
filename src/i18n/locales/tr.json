@@ -1445,7 +1445,12 @@
       "daysLeftBadge": "Paketinizin bitmesine {{count}} gün kaldı",
       "lastDay": "Bugün paketinizin son günü",
       "expiryBandTitle": "Paket süresi doluyor",
-      "expiryBandMsg": "Kesintisiz hizmet için lütfen yenileyin."
+      "expiryBandMsg": "Kesintisiz hizmet için lütfen yenileyin.",
+      "expiredBandTitle": "Paketinizin süresi doldu",
+      "expiredBandMsg": "Hizmetin kesintiye uğramaması için ödemenizi yapın.",
+      "expiredBadge": "Süre doldu",
+      "paymentPendingTitle": "Ödeme bildiriminiz alındı",
+      "paymentPendingMsg": "Onay bekleniyor — onaylandığında paketiniz otomatik uzatılacak."
     },
     "welcome": "Hoşgeldiniz",
     "back": "Geri",
@@ -4253,5 +4258,33 @@
   },
   "stickyMobileCTA": {
     "label": "14 Gün Ücretsiz Başla"
+  },
+  "bankTransfer": {
+    "title": "Havale/EFT ile Ödeme",
+    "desc": "Aşağıdaki hesaba ödeme yapıp “Ödemeyi yaptım”a basın.",
+    "payByTransfer": "Havale/EFT ile öde",
+    "accountHolder": "Hesap adı",
+    "bankName": "Banka",
+    "amount": "Tutar",
+    "reference": "Açıklama kodu",
+    "referenceHint": "Açıklama kısmına bu kodu yazın — ödemenizi bu kodla eşleştiriyoruz.",
+    "iPaid": "Ödemeyi yaptım",
+    "copied": "Kopyalandı",
+    "noIban": "Banka bilgisi henüz tanımlanmadı, lütfen bizimle iletişime geçin.",
+    "submittedTitle": "Bildiriminiz alındı",
+    "submittedDesc": "Ödemeniz onaylandığında paketiniz uzatılacak."
+  },
+  "superPayments": {
+    "pendingTitle": "Bekleyen ödeme talepleri",
+    "noPending": "Bekleyen talep yok.",
+    "approve": "Onayla",
+    "reject": "Reddet",
+    "approved": "Onaylandı — paket uzatıldı",
+    "expiringTitle": "Süresi kritik acenteler (≤7 gün / geçmiş)",
+    "noExpiring": "Kritik acente yok.",
+    "period": {
+      "monthly": "Aylık",
+      "yearly": "Yıllık"
+    }
   }
 }

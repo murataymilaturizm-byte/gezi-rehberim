@@ -28,6 +28,8 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
   const [loading, setLoading] = useState(true);
   // P4-1a: kritik-bant oturum-bazlı kapatma (her yeni girişte yeniden görünür)
   const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("pkgExpiryDismissed") === "1");
+  // P5-2e: bekleyen havale-bildirimi (varsa bant nötr moda geçer)
+  const [hasPendingPayment, setHasPendingPayment] = useState(false);
 
   useEffect(() => {
     loadSubscriptionInfo();
@@ -47,6 +49,12 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
       if (error) throw error;
       
       if (agencyData) {
+        const { count: _pendingCount } = await (supabase as any)
+          .from("payment_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("agency_id", agencyData.id)
+          .eq("status", "pending");
+        setHasPendingPayment((_pendingCount ?? 0) > 0);
         setSubscriptionInfo({
           plan_type: agencyData.plan_type,
           trial_ends_at: agencyData.trial_ends_at,
@@ -88,6 +96,36 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
             {t("admin.subscription.expiredMessage")}
           </span>
           <Button size="sm" className="ml-4" onClick={handleNavigateToPlan}>
+            <CreditCard className="w-4 h-4 mr-2" />
+            {t("admin.subscription.makePayment")}
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // P5-2e (2026-07-28): bekleyen ödeme-bildirimi varsa NÖTR mod — müşteri "ödedim"
+  // dedikten sonra kırmızı bağırma devam etmesin (kritik/expired dallarından ÖNCE).
+  if (hasPendingPayment) {
+    return (
+      <Alert className="mb-6 border-primary/40 bg-primary/5">
+        <Clock className="h-4 w-4 text-primary" />
+        <AlertTitle>{t("admin.subscription.paymentPendingTitle")}</AlertTitle>
+        <AlertDescription>{t("admin.subscription.paymentPendingMsg")}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  // P5-1a (2026-07-28): SÜRE DOLDU (tarih geçmiş, status hâlâ active olabilir) —
+  // KESME YOK (ürün-kararı: yalnız-uyarı), bant KAPATILAMAZ bu modda.
+  if (remainingDays !== null && remainingDays < 0) {
+    return (
+      <Alert variant="destructive" className="mb-6 border-2">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>{t("admin.subscription.expiredBandTitle")}</AlertTitle>
+        <AlertDescription className="flex items-center justify-between gap-2 flex-wrap">
+          <span>{t("admin.subscription.expiredBandMsg")}</span>
+          <Button size="sm" className="shrink-0" onClick={handleNavigateToPlan}>
             <CreditCard className="w-4 h-4 mr-2" />
             {t("admin.subscription.makePayment")}
           </Button>

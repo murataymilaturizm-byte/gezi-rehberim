@@ -1542,7 +1542,12 @@
       "daysLeftBadge": "{{count}} jours restants sur votre forfait",
       "lastDay": "Aujourd'hui est le dernier jour de votre forfait",
       "expiryBandTitle": "Votre forfait expire bientôt",
-      "expiryBandMsg": "Veuillez renouveler pour éviter toute interruption."
+      "expiryBandMsg": "Veuillez renouveler pour éviter toute interruption.",
+      "expiredBandTitle": "Votre forfait a expiré",
+      "expiredBandMsg": "Veuillez effectuer votre paiement pour éviter toute interruption.",
+      "expiredBadge": "Expiré",
+      "paymentPendingTitle": "Avis de paiement reçu",
+      "paymentPendingMsg": "En attente de validation — votre forfait sera prolongé automatiquement."
     },
     "agency": {
       "title": "Gestion des Agences",
@@ -4154,5 +4159,33 @@
   },
   "stickyMobileCTA": {
     "label": "Démarrer l'essai gratuit de 14 jours"
+  },
+  "bankTransfer": {
+    "title": "Paiement par virement",
+    "desc": "Virez sur le compte ci-dessous puis cliquez sur « J’ai payé ».",
+    "payByTransfer": "Payer par virement",
+    "accountHolder": "Titulaire du compte",
+    "bankName": "Banque",
+    "amount": "Montant",
+    "reference": "Code de référence",
+    "referenceHint": "Indiquez ce code dans le libellé du virement — il nous sert à identifier votre paiement.",
+    "iPaid": "J’ai payé",
+    "copied": "Copié",
+    "noIban": "Les coordonnées bancaires ne sont pas encore définies, contactez-nous.",
+    "submittedTitle": "Avis reçu",
+    "submittedDesc": "Votre forfait sera prolongé après validation du paiement."
+  },
+  "superPayments": {
+    "pendingTitle": "Demandes de paiement en attente",
+    "noPending": "Aucune demande en attente.",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "approved": "Approuvé — forfait prolongé",
+    "expiringTitle": "Agences critiques (≤7 jours / expirées)",
+    "noExpiring": "Aucune agence critique.",
+    "period": {
+      "monthly": "Mensuel",
+      "yearly": "Annuel"
+    }
   }
 }

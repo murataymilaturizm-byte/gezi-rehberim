@@ -38,6 +38,7 @@ import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
 import { clearPlanFeaturesCache } from "@/utils/planFeatures";
+import { BankTransferDialog } from "./BankTransferDialog";
 import {
   History,
   CheckCircle2,
@@ -53,6 +54,7 @@ import {
   ArrowRight,
   Download,
   Building2,
+  Landmark,
 } from "lucide-react";
 
 interface SubscriptionHistoryItem {
@@ -107,6 +109,7 @@ interface PlanCardProps {
   userEmail?: string;
   /** If provided, show "switch" button (active-sub flow) */
   onSwitch?: (plan: PlanOption) => void;
+  onBankTransfer?: (plan: PlanOption) => void;
   formatPrice: (price: number | null | undefined, yearly: boolean) => string;
   calculatePrice: (base: number | null | undefined, yearly: boolean) => number;
   // i18next t() signature — defaultValue + interpolation options destekler
@@ -121,6 +124,7 @@ function PlanCard({
   agencyId,
   userEmail,
   onSwitch,
+  onBankTransfer,
   formatPrice,
   calculatePrice,
   t,
@@ -284,6 +288,18 @@ function PlanCard({
                 plan.popular ? "bg-gradient-ocean hover:opacity-90 text-primary-foreground shadow-md" : "",
               ].join(" ")}
             />
+            {/* P5-2a (2026-07-28): Havale/EFT manuel-ödeme — BankTransferDialog açar.
+                PayTR-hazırlık: kart-butonu bilinçli YOK (çalışmayan buton koyma). */}
+            {onBankTransfer && (
+              <Button
+                variant="outline"
+                className="w-full mt-2"
+                onClick={(e) => { e.stopPropagation(); onBankTransfer(plan); }}
+              >
+                <Landmark className="h-4 w-4 mr-2" />
+                {t("bankTransfer.payByTransfer")}
+              </Button>
+            )}
           </div>
         )}
         {!agencyId && !onSwitch && (
@@ -429,6 +445,8 @@ export const SubscriptionHistory = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  // P5-2a: havale-dialog hedef planı
+  const [bankPlan, setBankPlan] = useState<PlanOption | null>(null);
 
   const planOptions: PlanOption[] = [
     {
@@ -796,6 +814,7 @@ export const SubscriptionHistory = () => {
                   isYearly={isYearly}
                   agencyId={agencyId}
                   userEmail={userEmail}
+                  onBankTransfer={(p) => setBankPlan(p)}
                   formatPrice={formatPrice}
                   calculatePrice={calculatePrice}
                   t={t}
@@ -995,6 +1014,7 @@ export const SubscriptionHistory = () => {
                       isYearly={isYearly}
                       agencyId={agencyId}
                       userEmail={userEmail}
+                      onBankTransfer={(p) => setBankPlan(p)}
                       formatPrice={formatPrice}
                       calculatePrice={calculatePrice}
                       t={t}
@@ -1237,6 +1257,16 @@ export const SubscriptionHistory = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* P5-2a: Havale/EFT ödeme dialogu */}
+      <BankTransferDialog
+        open={!!bankPlan}
+        onOpenChange={(v) => { if (!v) setBankPlan(null); }}
+        agencyId={agencyId}
+        plan={bankPlan?.id || "starter"}
+        period={isYearly ? "yearly" : "monthly"}
+        amount={bankPlan ? calculatePrice(bankPlan.price, isYearly) : null}
+      />
     </>
   );
 };

@@ -1542,7 +1542,12 @@
       "daysLeftBadge": "Noch {{count}} Tage bis zum Paketende",
       "lastDay": "Heute ist der letzte Tag Ihres Pakets",
       "expiryBandTitle": "Ihr Paket läuft ab",
-      "expiryBandMsg": "Bitte verlängern Sie, um Unterbrechungen zu vermeiden."
+      "expiryBandMsg": "Bitte verlängern Sie, um Unterbrechungen zu vermeiden.",
+      "expiredBandTitle": "Ihr Paket ist abgelaufen",
+      "expiredBandMsg": "Bitte zahlen Sie, um Unterbrechungen zu vermeiden.",
+      "expiredBadge": "Abgelaufen",
+      "paymentPendingTitle": "Zahlungsmeldung erhalten",
+      "paymentPendingMsg": "Warten auf Bestätigung — nach Freigabe wird Ihr Paket automatisch verlängert."
     },
     "agency": {
       "title": "Agentenverwaltung",
@@ -4154,5 +4159,33 @@
   },
   "stickyMobileCTA": {
     "label": "14 Tage kostenlos starten"
+  },
+  "bankTransfer": {
+    "title": "Zahlung per Überweisung",
+    "desc": "Überweisen Sie auf das folgende Konto und klicken Sie auf „Ich habe bezahlt“.",
+    "payByTransfer": "Per Überweisung zahlen",
+    "accountHolder": "Kontoinhaber",
+    "bankName": "Bank",
+    "amount": "Betrag",
+    "reference": "Verwendungszweck-Code",
+    "referenceHint": "Geben Sie diesen Code im Verwendungszweck an — damit ordnen wir Ihre Zahlung zu.",
+    "iPaid": "Ich habe bezahlt",
+    "copied": "Kopiert",
+    "noIban": "Bankdaten sind noch nicht hinterlegt, bitte kontaktieren Sie uns.",
+    "submittedTitle": "Meldung erhalten",
+    "submittedDesc": "Nach Freigabe der Zahlung wird Ihr Paket verlängert."
+  },
+  "superPayments": {
+    "pendingTitle": "Offene Zahlungsanfragen",
+    "noPending": "Keine offenen Anfragen.",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "approved": "Genehmigt — Paket verlängert",
+    "expiringTitle": "Kritische Agenturen (≤7 Tage / abgelaufen)",
+    "noExpiring": "Keine kritischen Agenturen.",
+    "period": {
+      "monthly": "Monatlich",
+      "yearly": "Jährlich"
+    }
   }
 }

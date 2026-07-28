@@ -80,7 +80,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     const settingsIds = ["settings", "agency_info", "payment_settings", "languages", "language_currencies", "history"];
     const reportingIds = ["analytics", "customer-analytics", "destination-analytics", "customer-feedback", "language-stats", "whatsapp-logs"];
     const supportIds = ["tickets"];
-    const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets", "central_notifications", "central_send_log"];
+    const superAdminIds = ["agencies", "contact_forms", "whatsapp_management", "whatsapp_integrations", "whatsapp_settings", "super_tickets", "central_notifications", "central_send_log", "super_payments"];
     const testIds = ["whatsapp_test"];
 
     if (generalIds.includes(activeTab)) return "general";
@@ -173,6 +173,7 @@ export function AdminSidebar({ isSuperAdmin, activeTab, onTabChange, agencyName,
     { id: "super_tickets", icon: HelpCircle, label: t("admin.tabs.allTickets") },
     { id: "central_notifications", icon: Bell, label: t("admin.tabs.centralNotifications") },
     { id: "central_send_log", icon: ScrollText, label: t("admin.tabs.centralSendLog") },
+    { id: "super_payments", icon: CreditCard, label: t("admin.tabs.superPayments", { defaultValue: "Ödeme Onayları" }) },
   ];
 
   const testItems = [

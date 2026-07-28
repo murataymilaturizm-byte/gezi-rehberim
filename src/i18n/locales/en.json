@@ -1539,7 +1539,12 @@
       "daysLeftBadge": "{{count}} days left on your package",
       "lastDay": "Today is the last day of your package",
       "expiryBandTitle": "Your package is expiring",
-      "expiryBandMsg": "Please renew to avoid service interruption."
+      "expiryBandMsg": "Please renew to avoid service interruption.",
+      "expiredBandTitle": "Your package has expired",
+      "expiredBandMsg": "Please complete your payment to avoid service interruption.",
+      "expiredBadge": "Expired",
+      "paymentPendingTitle": "Payment notice received",
+      "paymentPendingMsg": "Awaiting approval — your package will be extended automatically once approved."
     },
     "agency": {
       "title": "Agency Management",
@@ -4154,5 +4159,33 @@
   },
   "stickyMobileCTA": {
     "label": "Start 14-Day Free Trial"
+  },
+  "bankTransfer": {
+    "title": "Pay by Bank Transfer",
+    "desc": "Transfer to the account below, then click “I have paid”.",
+    "payByTransfer": "Pay by bank transfer",
+    "accountHolder": "Account holder",
+    "bankName": "Bank",
+    "amount": "Amount",
+    "reference": "Reference code",
+    "referenceHint": "Add this code to the transfer description — we match your payment by it.",
+    "iPaid": "I have paid",
+    "copied": "Copied",
+    "noIban": "Bank details are not set yet, please contact us.",
+    "submittedTitle": "Notice received",
+    "submittedDesc": "Your package will be extended once the payment is approved."
+  },
+  "superPayments": {
+    "pendingTitle": "Pending payment requests",
+    "noPending": "No pending requests.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Approved — package extended",
+    "expiringTitle": "Critical agencies (≤7 days / expired)",
+    "noExpiring": "No critical agencies.",
+    "period": {
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    }
   }
 }

@@ -1576,7 +1576,12 @@
       "daysLeftBadge": "Quedan {{count}} días de su paquete",
       "lastDay": "Hoy es el último día de su paquete",
       "expiryBandTitle": "Su paquete está por vencer",
-      "expiryBandMsg": "Renueve para evitar interrupciones del servicio."
+      "expiryBandMsg": "Renueve para evitar interrupciones del servicio.",
+      "expiredBandTitle": "Su paquete ha vencido",
+      "expiredBandMsg": "Realice su pago para evitar la interrupción del servicio.",
+      "expiredBadge": "Vencido",
+      "paymentPendingTitle": "Aviso de pago recibido",
+      "paymentPendingMsg": "Pendiente de aprobación — su paquete se extenderá automáticamente."
     },
     "agency": {
       "title": "Gestión de Agencias",
@@ -4154,5 +4159,33 @@
   },
   "stickyMobileCTA": {
     "label": "Comenzar prueba gratuita de 14 días"
+  },
+  "bankTransfer": {
+    "title": "Pago por transferencia",
+    "desc": "Transfiera a la cuenta indicada y pulse “He pagado”.",
+    "payByTransfer": "Pagar por transferencia",
+    "accountHolder": "Titular",
+    "bankName": "Banco",
+    "amount": "Importe",
+    "reference": "Código de referencia",
+    "referenceHint": "Escriba este código en el concepto — así identificamos su pago.",
+    "iPaid": "He pagado",
+    "copied": "Copiado",
+    "noIban": "Los datos bancarios aún no están definidos, contáctenos.",
+    "submittedTitle": "Aviso recibido",
+    "submittedDesc": "Su paquete se extenderá cuando se apruebe el pago."
+  },
+  "superPayments": {
+    "pendingTitle": "Solicitudes de pago pendientes",
+    "noPending": "No hay solicitudes pendientes.",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "approved": "Aprobado — paquete extendido",
+    "expiringTitle": "Agencias críticas (≤7 días / vencidas)",
+    "noExpiring": "No hay agencias críticas.",
+    "period": {
+      "monthly": "Mensual",
+      "yearly": "Anual"
+    }
   }
 }
