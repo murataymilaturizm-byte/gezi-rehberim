@@ -5346,6 +5346,19 @@ console.log("\n── OLGU-A: CONFIRMING tarih-değişimi availability guard ─
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// P4-3 (2026-07-28): TUR-DIŞI TALEP tespiti — çift-şart + ZORUNLU FP-korpusu.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── P4-3: lead-detection + FP-korpus ──");
+import { detectOutOfScopeLead as _dolP43 } from "../supabase/functions/shared/constants/lead-detection.ts";
+{
+  for (const m of ["İstanbul'a uçak bileti almak istiyorum", "bana otel de ayarlar mısınız", "havalimanından transfer lazım", "I want to book a flight to Istanbul", "Хочу купить авиабилет, можете помочь?", "أريد حجز فندق، هل يمكنكم ترتيب ذلك؟"])
+    assert(`P4-3 LEAD: "${m.slice(0, 34)}"`, _dolP43(m));
+  for (const m of ["Kapadokya turu uçak dahil mi", "otelden alıyor musunuz", "transfer dahil mi", "vize gerekiyor mu", "is a flight included in the tour", "do I need a visa", "oradaki oteller güzel mi", "rezervasyon yapmak istiyorum"])
+    assert(`P4-3 FP-DEĞİL: "${m.slice(0, 34)}"`, !_dolP43(m));
+  assert(`P4-3 currentTour-bağlam: DEĞİL`, !_dolP43("Pamukkale için otel var mı", "Pamukkale Turu"));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // F-E1 (2026-07-28): gönüllü-email genel yakalayıcı + X9-sınıfı sızıntı koruması.
 // ═══════════════════════════════════════════════════════════════════════════
 console.log("\n── F-E1: gönüllü-email + X9-email sızıntı ──");

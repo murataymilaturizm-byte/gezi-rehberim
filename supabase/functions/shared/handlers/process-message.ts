@@ -29,6 +29,7 @@ import { isEchoSafe } from "../services/echo-sanitize.ts";
 import { MONTH_ALTERNATION, MONTH_NAME_TO_NUMBER } from "../constants/month-names.ts";
 import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
+import { detectOutOfScopeLead, LEAD_ACK, LEAD_RESUME, LEAD_ASK_PHONE, LEAD_SAVED } from "../constants/lead-detection.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak, isNluFullNameNegationLeak, isNluFullNameGiveUpLeak } from "../services/nlu-validation.ts";
@@ -501,6 +502,64 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       await _save(_revalReply, context);
       await adapter.sendResponse(_revalReply);
       return { success: true, response: _revalReply, newContext: context };
+    }
+  }
+
+  // === P4-3 (2026-07-28): TUR-DIŞI TALEP-YAKALAMA — FSM-ÖNCESİ, DETERMİNİSTİK ===
+  // Çift-şart tespit (lead-detection tek-kaynak); NLU'ya güvenilmez. 3 giriş-noktası:
+  // (A) pendingLeadCapture 2. adım (akış-dışı telefon-toplama devamı),
+  // (B) akış-İÇİ/COMPLETED: 9b-A deseni — kısa-ack + lead-kaydı (isim/tel STATE'ten,
+  //     yeniden sorulmaz), STATE'E DOKUNULMAZ (akış kaldığı adımdan sürer),
+  // (C) akış-DIŞI: identifier gerçek-telefonsa (WhatsApp) direkt kaydet; değilse
+  //     (demo session-id) pendingLeadCapture ile TEK-tekrar telefon iste.
+  {
+    const _leadLang = context.language || "tr";
+    const _idIsPhone = /^\+?\d{8,15}$/.test(String(adapter.identifier || "").replace(/[\s.-]/g, ""));
+    const _insertLead = async (req: string, phone: string | null, name: string | null) => {
+      const { error: _le } = await supabase.from("agency_leads").insert({
+        agency_id: agency.id, phone, full_name: name,
+        request_text: req.slice(0, 1000), source_stage: context.stage, status: "new",
+      });
+      if (_le) console.error("[P4-3 lead] insert failed:", _le.message);
+      else console.log(`[P4-3 lead] kaydedildi (stage=${context.stage}, phone=${phone ? "var" : "yok"})`);
+      return !_le;
+    };
+
+    // (A) 2. adım: telefon bekleniyordu
+    if (context.pendingLeadCapture) {
+      const _pm = message.match(/\+?\d[\d\s.\-()]{7,17}\d/);
+      const _phone = _pm ? _pm[0].replace(/[^\d+]/g, "") : null;
+      await _insertLead(context.pendingLeadCapture.request, _phone, context.reservationInfo?.fullName || null);
+      const _ctxA = { ...context, pendingLeadCapture: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
+      const _replyA = LEAD_SAVED[_leadLang] || LEAD_SAVED.tr;
+      await _save(_replyA, _ctxA);
+      await adapter.sendResponse(_replyA);
+      return { success: true, response: _replyA, newContext: _ctxA };
+    }
+
+    // (B)+(C) yeni tespit
+    if (detectOutOfScopeLead(message, context.currentTour?.title)) {
+      const _info: any = context.reservationInfo || {};
+      const _inFlow = !!_info.tourId && ["COLLECTING_INFO", "CONFIRMING"].includes(context.stage);
+      const _phoneFromState = _info.phone || (_idIsPhone ? String(adapter.identifier) : null);
+
+      if (_inFlow || context.stage === "COMPLETED" || _phoneFromState) {
+        await _insertLead(message, _phoneFromState, _info.fullName || null);
+        const _replyB = _inFlow
+          ? `${LEAD_ACK[_leadLang] || LEAD_ACK.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
+          : (LEAD_ACK[_leadLang] || LEAD_ACK.tr);
+        const _ctxB = { ...context, lastUserMessage: message, messageCount: context.messageCount + 1 };
+        await _save(_replyB, _ctxB);
+        await adapter.sendResponse(_replyB);
+        return { success: true, response: _replyB, newContext: _ctxB };
+      }
+
+      // (C) akış-dışı + telefon bilinmiyor → 2-adım toplama
+      const _ctxC = { ...context, pendingLeadCapture: { request: message }, lastUserMessage: message, messageCount: context.messageCount + 1 };
+      const _replyC = LEAD_ASK_PHONE[_leadLang] || LEAD_ASK_PHONE.tr;
+      await _save(_replyC, _ctxC);
+      await adapter.sendResponse(_replyC);
+      return { success: true, response: _replyC, newContext: _ctxC };
     }
   }
 

@@ -2049,6 +2049,17 @@
     "waMoved": {
       "notice": "Die WhatsApp-Verbindungseinstellungen wurden nach Chatbot > WhatsApp verschoben.",
       "cta": "Zum WhatsApp-Bereich"
+    },
+    "leads": {
+      "viewTitle": "Anfragen",
+      "empty": "Noch keine externen Anfragen. Der Bot erfasst Flug/Hotel/Transfer-Anfragen hier.",
+      "markContacted": "Kontaktiert",
+      "markClosed": "Schließen",
+      "status": {
+        "new": "Neu",
+        "contacted": "Kontaktiert",
+        "closed": "Geschlossen"
+      }
     }
   },
   "auth": {

@@ -2117,6 +2117,17 @@
     "waMoved": {
       "notice": "WhatsApp bağlantı ayarları Chatbot > WhatsApp bölümüne taşındı.",
       "cta": "WhatsApp bölümüne git"
+    },
+    "leads": {
+      "viewTitle": "Talepler",
+      "empty": "Henüz tur-dışı talep yok. Bot, uçak/otel/transfer gibi talepleri buraya düşürür.",
+      "markContacted": "İletişime geçildi",
+      "markClosed": "Kapat",
+      "status": {
+        "new": "Yeni",
+        "contacted": "Arandı",
+        "closed": "Kapalı"
+      }
     }
   },
   "auth": {

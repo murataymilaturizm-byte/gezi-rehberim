@@ -32,6 +32,6 @@ export interface RegistrationRow {
   };
 }
 
-export type RegistrationsView = "list" | "by-tour" | "by-departure";
+export type RegistrationsView = "list" | "by-tour" | "by-departure" | "leads";
 
 export type StatusValue = "NEW" | "PENDING" | "CONFIRMED" | "CANCELLED";

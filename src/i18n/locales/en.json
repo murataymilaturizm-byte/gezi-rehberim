@@ -2049,6 +2049,17 @@
     "waMoved": {
       "notice": "WhatsApp connection settings have moved to Chatbot > WhatsApp.",
       "cta": "Go to WhatsApp section"
+    },
+    "leads": {
+      "viewTitle": "Requests",
+      "empty": "No out-of-scope requests yet. The bot captures flight/hotel/transfer requests here.",
+      "markContacted": "Mark contacted",
+      "markClosed": "Close",
+      "status": {
+        "new": "New",
+        "contacted": "Contacted",
+        "closed": "Closed"
+      }
     }
   },
   "auth": {

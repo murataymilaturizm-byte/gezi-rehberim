@@ -2049,6 +2049,17 @@
     "waMoved": {
       "notice": "Les paramètres de connexion WhatsApp ont été déplacés vers Chatbot > WhatsApp.",
       "cta": "Aller à la section WhatsApp"
+    },
+    "leads": {
+      "viewTitle": "Demandes",
+      "empty": "Aucune demande hors-tour pour l'instant. Le bot capture ici les demandes vol/hôtel/transfert.",
+      "markContacted": "Contacté",
+      "markClosed": "Fermer",
+      "status": {
+        "new": "Nouveau",
+        "contacted": "Contacté",
+        "closed": "Fermé"
+      }
     }
   },
   "auth": {

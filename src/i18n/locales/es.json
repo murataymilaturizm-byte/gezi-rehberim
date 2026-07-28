@@ -2083,6 +2083,17 @@
     "waMoved": {
       "notice": "La configuración de conexión de WhatsApp se movió a Chatbot > WhatsApp.",
       "cta": "Ir a la sección de WhatsApp"
+    },
+    "leads": {
+      "viewTitle": "Solicitudes",
+      "empty": "Aún no hay solicitudes externas. El bot captura aquí vuelos/hoteles/traslados.",
+      "markContacted": "Contactado",
+      "markClosed": "Cerrar",
+      "status": {
+        "new": "Nueva",
+        "contacted": "Contactado",
+        "closed": "Cerrada"
+      }
     }
   },
   "auth": {
