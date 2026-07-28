@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { daysLeftUtc, packageEndDate, expiryTier } from "@/lib/subscription-days";
 import {
   Collapsible,
   CollapsibleContent,
@@ -162,6 +163,26 @@ export const UsageStats = () => {
               </p>
             </div>
           </div>
+          {/* P4-1a (2026-07-28): SAĞ-ÜST kalan-gün rozeti — eşikli (>14 nötr ·
+              8-14 amber · ≤7 kırmızı+pulse). Tek-kaynak UTC-gün (subscription-days). */}
+          {(() => {
+            const _days = daysLeftUtc(packageEndDate(usage));
+            const _tier = expiryTier(_days);
+            if (_days === null || _tier === null || _tier === "past") return null;
+            const _cls =
+              _tier === "critical"
+                ? "bg-red-600 text-white [animation:pulse_2.5s_ease-in-out_infinite]"
+                : _tier === "warn"
+                  ? "bg-amber-500 text-white"
+                  : "bg-muted text-muted-foreground";
+            return (
+              <Badge className={cn("text-[10px] px-2 py-0.5 shrink-0", _cls)}>
+                {_days === 0
+                  ? t("admin.subscription.lastDay")
+                  : t("admin.subscription.daysLeftBadge", { count: _days })}
+              </Badge>
+            );
+          })()}
         </div>
       </div>
 

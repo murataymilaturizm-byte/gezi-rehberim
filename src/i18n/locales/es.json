@@ -1572,7 +1572,11 @@
         "failed": "Fallido",
         "pending": "Pendiente",
         "cancelled": "Cancelado"
-      }
+      },
+      "daysLeftBadge": "Quedan {{count}} días de su paquete",
+      "lastDay": "Hoy es el último día de su paquete",
+      "expiryBandTitle": "Su paquete está por vencer",
+      "expiryBandMsg": "Renueve para evitar interrupciones del servicio."
     },
     "agency": {
       "title": "Gestión de Agencias",

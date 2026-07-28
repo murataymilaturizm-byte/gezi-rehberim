@@ -1538,7 +1538,11 @@
         "failed": "Échoué",
         "pending": "En attente",
         "cancelled": "Annulé"
-      }
+      },
+      "daysLeftBadge": "{{count}} jours restants sur votre forfait",
+      "lastDay": "Aujourd'hui est le dernier jour de votre forfait",
+      "expiryBandTitle": "Votre forfait expire bientôt",
+      "expiryBandMsg": "Veuillez renouveler pour éviter toute interruption."
     },
     "agency": {
       "title": "Gestion des Agences",

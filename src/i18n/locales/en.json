@@ -1535,7 +1535,11 @@
         "failed": "Failed",
         "pending": "Pending",
         "cancelled": "Cancelled"
-      }
+      },
+      "daysLeftBadge": "{{count}} days left on your package",
+      "lastDay": "Today is the last day of your package",
+      "expiryBandTitle": "Your package is expiring",
+      "expiryBandMsg": "Please renew to avoid service interruption."
     },
     "agency": {
       "title": "Agency Management",

@@ -1441,7 +1441,11 @@
         "failed": "Başarısız",
         "pending": "Beklemede",
         "cancelled": "İptal"
-      }
+      },
+      "daysLeftBadge": "Paketinizin bitmesine {{count}} gün kaldı",
+      "lastDay": "Bugün paketinizin son günü",
+      "expiryBandTitle": "Paket süresi doluyor",
+      "expiryBandMsg": "Kesintisiz hizmet için lütfen yenileyin."
     },
     "welcome": "Hoşgeldiniz",
     "back": "Geri",

@@ -4,7 +4,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, Clock, CreditCard } from "lucide-react";
-import { differenceInDays, format } from "date-fns";
+import { format } from "date-fns";
+import { daysLeftUtc, packageEndDate } from "@/lib/subscription-days";
 import { tr, enUS, de, ru, ar, fr, es } from "date-fns/locale";
 
 const DATE_LOCALE_MAP = { tr, en: enUS, de, ru, ar, fr, es };
@@ -25,6 +26,8 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
   const dateLocale = DATE_LOCALE_MAP[i18n.language as keyof typeof DATE_LOCALE_MAP] || tr;
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  // P4-1a: kritik-bant oturum-bazlı kapatma (her yeni girişte yeniden görünür)
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("pkgExpiryDismissed") === "1");
 
   useEffect(() => {
     loadSubscriptionInfo();
@@ -60,16 +63,9 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
 
   if (loading || !subscriptionInfo) return null;
 
-  const getRemainingDays = () => {
-    const targetDate = subscriptionInfo.subscription_status === 'trial' 
-      ? subscriptionInfo.trial_ends_at 
-      : subscriptionInfo.subscription_ends_at;
-    
-    if (!targetDate) return null;
-    return differenceInDays(new Date(targetDate), new Date());
-  };
-
-  const remainingDays = getRemainingDays();
+  // P4-1 (2026-07-28): tek-kaynak UTC-gün-granül hesap (subscription-days.ts).
+  // Eski differenceInDays saat/timezone-hassastı; "bugün son gün" artık 0.
+  const remainingDays = daysLeftUtc(packageEndDate(subscriptionInfo));
 
   const handleNavigateToPlan = () => {
     if (onNavigateToPlan) {
@@ -95,6 +91,36 @@ export const SubscriptionBanner = ({ onNavigateToPlan }: SubscriptionBannerProps
             <CreditCard className="w-4 h-4 mr-2" />
             {t("admin.subscription.makePayment")}
           </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // P4-1a (2026-07-28): ≤7 gün KRİTİK üst-bant — HER status'ta (eski hâl yalnız
+  // trial'dı → active+6g acente hiç uyarı görmüyordu, kök-kanıt). Kapatılabilir
+  // (sessionStorage — oturum-bazlı; her yeni girişte yeniden görünür). Yumuşak
+  // pulse (sert blink yerine — görsel karar Murat'ta).
+  if (remainingDays !== null && remainingDays >= 0 && remainingDays <= 7 && !dismissed) {
+    return (
+      <Alert variant="destructive" className="mb-6 border-2 [animation:pulse_2.5s_ease-in-out_infinite]">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>{t("admin.subscription.expiryBandTitle")}</AlertTitle>
+        <AlertDescription className="flex items-center justify-between gap-2 flex-wrap">
+          <span>
+            {remainingDays === 0
+              ? t("admin.subscription.lastDay")
+              : t("admin.subscription.daysLeftBadge", { count: remainingDays })}
+            {" — "}{t("admin.subscription.expiryBandMsg")}
+          </span>
+          <span className="flex items-center gap-2 shrink-0">
+            <Button size="sm" onClick={handleNavigateToPlan}>
+              <CreditCard className="w-4 h-4 mr-2" />
+              {t("admin.subscription.makePayment")}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => { sessionStorage.setItem("pkgExpiryDismissed", "1"); setDismissed(true); }}>
+              ✕
+            </Button>
+          </span>
         </AlertDescription>
       </Alert>
     );

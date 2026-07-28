@@ -1538,7 +1538,11 @@
         "failed": "Fehlgeschlagen",
         "pending": "Ausstehend",
         "cancelled": "Storniert"
-      }
+      },
+      "daysLeftBadge": "Noch {{count}} Tage bis zum Paketende",
+      "lastDay": "Heute ist der letzte Tag Ihres Pakets",
+      "expiryBandTitle": "Ihr Paket läuft ab",
+      "expiryBandMsg": "Bitte verlängern Sie, um Unterbrechungen zu vermeiden."
     },
     "agency": {
       "title": "Agentenverwaltung",
