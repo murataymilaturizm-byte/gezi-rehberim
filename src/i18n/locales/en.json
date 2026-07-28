@@ -2039,6 +2039,10 @@
       "upgradeRequired": "Professional plan required",
       "enable": "Enable",
       "saved": "Settings saved"
+    },
+    "waMoved": {
+      "notice": "WhatsApp connection settings have moved to Chatbot > WhatsApp.",
+      "cta": "Go to WhatsApp section"
     }
   },
   "auth": {

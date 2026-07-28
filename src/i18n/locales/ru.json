@@ -2073,6 +2073,10 @@
       "upgradeRequired": "Требуется план Professional",
       "enable": "Включить",
       "saved": "Настройки сохранены"
+    },
+    "waMoved": {
+      "notice": "Настройки подключения WhatsApp перенесены в раздел Чат-бот > WhatsApp.",
+      "cta": "Перейти в раздел WhatsApp"
     }
   },
   "auth": {

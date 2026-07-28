@@ -2039,6 +2039,10 @@
       "upgradeRequired": "Plan Professionnel requis",
       "enable": "Activer",
       "saved": "Paramètres enregistrés"
+    },
+    "waMoved": {
+      "notice": "Les paramètres de connexion WhatsApp ont été déplacés vers Chatbot > WhatsApp.",
+      "cta": "Aller à la section WhatsApp"
     }
   },
   "auth": {

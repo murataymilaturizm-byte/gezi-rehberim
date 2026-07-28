@@ -41,7 +41,6 @@ import { WhatsAppUserProfiles } from "@/components/WhatsAppUserProfiles";
 import { AgencyManagement } from "@/components/AgencyManagement";
 import { ContactFormsManagement } from "@/components/ContactFormsManagement";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
-import { WhatsAppSettings } from "@/components/WhatsAppSettings";
 import { WhatsAppIntegrationPanel } from "@/components/WhatsAppIntegrationPanel";
 import { SuperAdminWhatsAppSettings } from "@/components/SuperAdminWhatsAppSettings";
 import { SuperAdminWhatsAppIntegrations } from "@/components/SuperAdminWhatsAppIntegrations";
@@ -915,7 +914,16 @@ const Admin = () => {
             ) : activeTab === "complaints" ? (
               <ComplaintsManagement />
             ) : activeTab === "settings" ? (
-              <WhatsAppSettings />
+              /* P1-6 kararı (2026-07-28): WhatsAppSettings çift-girişi kaldırıldı —
+                 tek giriş Chatbot > WhatsApp (integration). Burada yalnız yönlendirme. */
+              <Card className="shadow-card">
+                <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-6">
+                  <p className="text-sm text-muted-foreground">{t("admin.waMoved.notice")}</p>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab("whatsapp")}>
+                    {t("admin.waMoved.cta")}
+                  </Button>
+                </CardContent>
+              </Card>
             ) : activeTab === "payment_settings" ? (
               <PaymentSettings />
             ) : activeTab === "languages" ? (
