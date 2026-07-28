@@ -4406,6 +4406,35 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       return { success: false, error: errCode, response: errorReply, newContext };
     }
 
+    // === P6-FIX ① (2026-07-28): CRM profiline İSİM yazımı (rezervasyon başarılı) ===
+    // total_bookings/total_spent DB-trigger'ının (sync_user_booking_stats) işi — burada
+    // DOKUNULMAZ. Eksik olan tek şey profildeki İSİMDİ: bot akışındaki isim profile hiç
+    // taşınmıyordu → returningUserName (full_name && total_bookings>0) fiilen hiç
+    // tetiklenmiyordu; profildeki isimler yalnız CRM panelinden elle giriliyordu.
+    // KURALLAR: (a) YÜZEY-AYRIMI — yalnız whatsapp (upsertUserProfile'ın yüzey-ayrımı
+    // ile aynı); demo/website akışı gerçek profilleri kirletmez. (b) UPDATE-only —
+    // profil satırı YOKSA no-op: starter planında (has_user_profiles=false) profil hiç
+    // oluşmadığından ücretli CRM özelliği sızmaz, plan-lookup coupling'i gerekmez.
+    // (c) elle-girilmiş isim EZİLMEZ (yalnız NULL/boş doldurulur). (d) normalize_phone
+    // eşleşmesi — kanonik profil ↔ ham kayıt (İş1 sonrası tam-string eşleşmiyor).
+    // Best-effort: hata akışı BOZMAZ (rezervasyon zaten kayıtlı).
+    // (e) EŞLEŞME DB'DE: TS normalizePhone ("05416500303") ile DB normalize_phone
+    // ("905416500303") FARKLI kanonik üretir — edge'de eşleştirmek bu paketle
+    // düzeltilen drift'i yeniden üretirdi. RPC fill_profile_name_if_empty tek-kaynak.
+    if (adapter.channel === "whatsapp" && fullName && reservationPhone) {
+      try {
+        const { data: _filled, error: _profErr } = await supabase.rpc("fill_profile_name_if_empty", {
+          p_agency_id: agency.id,
+          p_phone: reservationPhone,
+          p_full_name: fullName,
+        });
+        if (_profErr) console.error("[P6-FIX] profil isim yazımı başarısız:", _profErr.message);
+        else console.log(`[P6-FIX] profil ismi dolduruldu (boşsa) — kanal=whatsapp, satır=${_filled ?? 0}`);
+      } catch (_pe) {
+        console.error("[P6-FIX] profil isim yazımı hata:", _pe instanceof Error ? _pe.message : _pe);
+      }
+    }
+
     // Rezervasyon başarılı → deterministik tamamlama mesajı
     const selectedTourFull = tours.find((t: any) => t.id === tourId);
     const selectedDateFull = selectedTourFull?.dates?.find((d: any) => d.id === dateId);
