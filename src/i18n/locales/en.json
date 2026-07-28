@@ -2690,7 +2690,10 @@
       "friday": "Friday",
       "saturday": "Saturday",
       "sunday": "Sunday"
-    }
+    },
+    "aboutTitle": "About the Agency",
+    "aboutHint": "Short intro the bot uses for \"about your company\" questions (max 300 characters).",
+    "aboutPlaceholder": "E.g.: Boutique family-friendly agency, Aegean tours expert since 2005."
   },
   "complaints": {
     "title": "Complaints and Feedback",

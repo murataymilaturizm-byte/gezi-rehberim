@@ -2610,7 +2610,10 @@
       "friday": "Vendredi",
       "saturday": "Samedi",
       "sunday": "Dimanche"
-    }
+    },
+    "aboutTitle": "À propos de l'agence",
+    "aboutHint": "Brève présentation utilisée par le bot pour les questions sur votre société (300 caractères max).",
+    "aboutPlaceholder": "Ex. : Agence boutique familiale, experte des circuits égéens depuis 2005."
   },
   "complaints": {
     "title": "Réclamations et commentaires",

@@ -2644,7 +2644,10 @@
       "friday": "Freitag",
       "saturday": "Samstag",
       "sunday": "Sonntag"
-    }
+    },
+    "aboutTitle": "Über die Agentur",
+    "aboutHint": "Kurzbeschreibung, die der Bot bei Fragen zu Ihrer Firma nutzt (max. 300 Zeichen).",
+    "aboutPlaceholder": "z. B.: Familienfreundliche Boutique-Agentur, Ägäis-Experte seit 2005."
   },
   "complaints": {
     "title": "Beschwerden und Feedback",

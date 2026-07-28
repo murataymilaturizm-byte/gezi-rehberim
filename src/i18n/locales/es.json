@@ -2644,7 +2644,10 @@
       "friday": "Viernes",
       "saturday": "Sábado",
       "sunday": "Domingo"
-    }
+    },
+    "aboutTitle": "Sobre la agencia",
+    "aboutHint": "Breve presentación que el bot usa para preguntas sobre su empresa (máx. 300 caracteres).",
+    "aboutPlaceholder": "Ej.: Agencia boutique familiar, experta en tours del Egeo desde 2005."
   },
   "complaints": {
     "title": "Quejas y comentarios",

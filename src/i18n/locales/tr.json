@@ -2710,7 +2710,10 @@
       "friday": "Cuma",
       "saturday": "Cumartesi",
       "sunday": "Pazar"
-    }
+    },
+    "aboutTitle": "Acente Hakkında",
+    "aboutHint": "Botun \"firmanız hakkında\" sorularında kullanacağı kısa tanıtım (en fazla 300 karakter).",
+    "aboutPlaceholder": "Örn: 2005'ten beri Ege turlarında uzman, aile-dostu butik acente."
   },
   "complaints": {
     "title": "Şikayetler ve Geri Bildirimler",

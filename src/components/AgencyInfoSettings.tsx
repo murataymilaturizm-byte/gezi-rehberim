@@ -63,6 +63,7 @@ interface AgencyInfo {
   working_hours?: string;
   maps_url?: string;
   cancellation_policy?: string;
+  description?: string;
 }
 
 export function AgencyInfoSettings() {
@@ -87,7 +88,8 @@ export function AgencyInfoSettings() {
     website_url: "",
     working_hours: "",
     maps_url: "",
-    cancellation_policy: ""
+    cancellation_policy: "",
+    description: ""
   });
   const [workingHours, setWorkingHours] = useState<WorkingHoursData>(DEFAULT_HOURS);
 
@@ -103,7 +105,7 @@ export function AgencyInfoSettings() {
 
       const { data: agency, error } = await supabase
         .from('agencies')
-        .select('id, address, phone_public, website_url, working_hours, maps_url, cancellation_policy')
+        .select('id, address, phone_public, website_url, working_hours, maps_url, cancellation_policy, description')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
@@ -119,7 +121,8 @@ export function AgencyInfoSettings() {
           website_url: agency.website_url || "",
           working_hours: agency.working_hours || "",
           maps_url: agency.maps_url || "",
-          cancellation_policy: agency.cancellation_policy || ""
+          cancellation_policy: agency.cancellation_policy || "",
+          description: (agency as any).description || ""
         });
       }
     } catch (error) {
@@ -372,6 +375,24 @@ export function AgencyInfoSettings() {
             value={agencyInfo.cancellation_policy}
             onChange={(e) => setAgencyInfo({ ...agencyInfo, cancellation_policy: e.target.value })}
             rows={4}
+          />
+        </CardContent>
+      </Card>
+
+      {/* F-D1 (2026-07-28): "Acente hakkında" — bot promptuna ~300 karakterle girer */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("agencyInfo.aboutTitle")}</CardTitle>
+          <CardDescription>{t("agencyInfo.aboutHint")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            id="agency_description"
+            placeholder={t("agencyInfo.aboutPlaceholder")}
+            value={agencyInfo.description || ""}
+            onChange={(e) => setAgencyInfo({ ...agencyInfo, description: e.target.value })}
+            maxLength={300}
+            rows={3}
           />
         </CardContent>
       </Card>
