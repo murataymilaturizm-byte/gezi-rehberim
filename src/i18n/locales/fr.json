@@ -451,7 +451,9 @@
       "noData": "Aucune donnée d'analyse pour le moment",
       "noDataDescription": "Les analyses apparaîtront ici dès votre première inscription",
       "export": "Télécharger CSV",
-      "exportFilename": "rapports"
+      "exportFilename": "rapports",
+      "collectedRevenue": "Revenus encaissés",
+      "reservedVolumeShort": "Volume réservé"
     },
     "tags": {
       "vip": "VIP",

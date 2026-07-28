@@ -451,7 +451,9 @@
       "noData": "لا توجد بيانات تحليلية بعد",
       "noDataDescription": "ستظهر التحليلات هنا بمجرد إجراء أول تسجيل لك",
       "export": "تنزيل CSV",
-      "exportFilename": "التقارير"
+      "exportFilename": "التقارير",
+      "collectedRevenue": "الإيرادات المحصلة",
+      "reservedVolumeShort": "الحجم المحجوز"
     },
     "tags": {
       "vip": "VIP",

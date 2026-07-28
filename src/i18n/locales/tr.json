@@ -512,7 +512,9 @@
       "noData": "Henüz analiz verisi yok",
       "noDataDescription": "İlk rezervasyonunuz oluştuğunda analitikler burada görünecek",
       "export": "CSV İndir",
-      "exportFilename": "raporlar"
+      "exportFilename": "raporlar",
+      "collectedRevenue": "Tahsilat",
+      "reservedVolumeShort": "Rezerve hacim"
     },
     "tags": {
       "vip": "VIP",

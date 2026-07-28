@@ -485,7 +485,9 @@
       "noData": "Пока нет данных аналитики",
       "noDataDescription": "Аналитика появится здесь после первой регистрации",
       "export": "Скачать CSV",
-      "exportFilename": "отчеты"
+      "exportFilename": "отчеты",
+      "collectedRevenue": "Собранная выручка",
+      "reservedVolumeShort": "Зарезервированный объём"
     },
     "tags": {
       "vip": "VIP",

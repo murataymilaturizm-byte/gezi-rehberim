@@ -478,7 +478,9 @@
       "noData": "No analytics data yet",
       "noDataDescription": "Analytics will appear here once you have your first registration",
       "export": "Download CSV",
-      "exportFilename": "reports"
+      "exportFilename": "reports",
+      "collectedRevenue": "Collected revenue",
+      "reservedVolumeShort": "Reserved volume"
     },
     "tags": {
       "vip": "VIP",

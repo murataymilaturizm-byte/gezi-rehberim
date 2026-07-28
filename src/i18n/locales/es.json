@@ -485,7 +485,9 @@
       "noData": "Aún no hay datos de análisis",
       "noDataDescription": "Las analíticas aparecerán aquí cuando tenga su primer registro",
       "export": "Descargar CSV",
-      "exportFilename": "informes"
+      "exportFilename": "informes",
+      "collectedRevenue": "Ingresos cobrados",
+      "reservedVolumeShort": "Volumen reservado"
     },
     "tags": {
       "vip": "VIP",
