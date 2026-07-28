@@ -2637,6 +2637,21 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const newContext = processTransition(context, fsmInput);
   console.log(`[process-message] ${context.stage} → ${newContext.stage}`);
 
+  // F-E1 canlı-tamamlama (2026-07-28): gönüllü-email HER AŞAMADA state'e uygulanır —
+  // transition/bypass'lardan bağımsız TEK-NOKTA. KÖK (canlı kanıt): CONFIRMING'de
+  // "mail adresim x@y.com" → hiçbir CONFIRMING-transition'ı tutmadı → genel-merge
+  // (aşağıda, YALNIZ COLLECTING_INFO-şartlı) çalışmadı → 13-PERSIST özet-reask'i
+  // email'i YAZMADAN return etti (state.email=undefined; birim-testler
+  // COLLECTING-adımlarını ölçtüğü için yeşildi — §16.2 sınıfı). :14 RPC p_email
+  // newContext'ten okur → buradaki yazım kayda kadar taşınır.
+  if ((extractedInfo as any).email && !(newContext.reservationInfo as any)?.email) {
+    newContext.reservationInfo = {
+      ...newContext.reservationInfo,
+      email: (extractedInfo as any).email,
+    } as any;
+    console.log(`[process-message] F-E1 gönüllü-email uygulandı (stage=${newContext.stage})`);
+  }
+
   // FIX: Geçersiz tarih cleanup — dateId yoksa selectedDate her zaman invalid (BUG 1)
   // extractedInfo da kontrol edilir: TOUR_SELECTED'da FSM geçmeden gelen tarih de yakalanır
   const _invalidDateForPreamble =
