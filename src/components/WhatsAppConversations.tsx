@@ -42,6 +42,17 @@ interface Message {
   created_at: string;
 }
 
+// BUG 8b (P2-A'da modül-seviyesine çıkarıldı — TEK KAYNAK): system/state-JSON
+// mesajlarını filtrele. Tüketiciler: loadConversations + realtime INSERT handler.
+const isSystemOrStateMsg = (msg: Message) => {
+  if (msg.role === "system") return true;
+  if (typeof msg.content === "string" && msg.content.trimStart().startsWith("{")) {
+    try { const p = JSON.parse(msg.content); return typeof p === "object" && p !== null && "stage" in p; }
+    catch { return false; }
+  }
+  return false;
+};
+
 interface ConversationGroup {
   phone: string;
   messages: Message[];
@@ -84,6 +95,13 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
   const [botPauseLoading, setBotPauseLoading] = useState(false);
   // P2-C (2026-07-28): tam-sayfa modu — aynı sayfada expand (route/pencere DEĞİL).
   const [isExpanded, setIsExpanded] = useState(false);
+  // P2-A (2026-07-28): realtime okunmamış-vurgusu — seçili-olmayan konuşmaya yeni
+  // user-mesajı düşünce telefonu bu set'e ekle; konuşma seçilince temizle.
+  const [unseenPhones, setUnseenPhones] = useState<Set<string>>(new Set());
+  // subscription-callback'te güncel seçimi okumak için ref (kanalı selectedPhone'a
+  // bağlamamak için — yoksa her seçim kanal yeniden-kurardı).
+  const selectedPhoneRef = useRef<string | null>(null);
+  useEffect(() => { selectedPhoneRef.current = selectedPhone; }, [selectedPhone]);
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -135,6 +153,57 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedPhone, conversations]);
 
+  // ── P2-A (2026-07-28): REALTIME — yeni mesajlar F5'siz düşer ────────────────
+  // postgres_changes INSERT, agency-filtreli (RLS de agency-scoped: çifte emniyet).
+  // DEDUPE: (1) aynı id zaten listedeyse SKIP (loadConversations re-fetch yarışı);
+  // (2) kendi optimistic-insert'imizle (id "optimistic-*") content+role eşleşiyorsa
+  // optimistic satır GERÇEK satırla DEĞİŞTİRİLİR (çift-görünüm imkânsız).
+  // CLEANUP: effect-return removeChannel — unmount + aid-değişiminde (superadmin
+  // acente değiştirince eski kanal kapanır, yenisi kurulur; memory-leak yok).
+  // 24h-BANDI: bant render'da selectedConversation.messages'tan hesaplanıyor →
+  // realtime-merge state'i güncelleyince pencere-durumu otomatik yeniden hesaplanır.
+  useEffect(() => {
+    const aid = isSuperAdmin ? selectedAgencyId : agencyId;
+    if (!aid) return;
+    const channel = supabase
+      .channel(`wa-conv-${aid}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "whatsapp_conversations", filter: `agency_id=eq.${aid}` },
+        (payload) => {
+          const msg = payload.new as Message;
+          if (!msg?.id || isSystemOrStateMsg(msg)) return;
+          setConversations((prev) => {
+            const idx = prev.findIndex((c) => c.phone === msg.phone);
+            if (idx === -1) {
+              // Yeni konuşma — grup oluştur, en üste
+              return [{ phone: msg.phone, messages: [msg], lastMessageTime: msg.created_at }, ...prev];
+            }
+            const conv = prev[idx];
+            if (conv.messages.some((m) => m.id === msg.id)) return prev; // dedupe (1)
+            const optIdx = conv.messages.findIndex(
+              (m) => m.id.startsWith("optimistic-") && m.role === msg.role && m.content === msg.content,
+            );
+            const newMessages = optIdx !== -1
+              ? conv.messages.map((m, i) => (i === optIdx ? msg : m)) // dedupe (2): replace
+              : [...conv.messages, msg];
+            const updated = { ...conv, messages: newMessages, lastMessageTime: msg.created_at };
+            // Sol-liste yeniden-sıralama: son-mesajı olan en üste
+            const rest = prev.filter((_, i) => i !== idx);
+            return [updated, ...rest].sort(
+              (a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime(),
+            );
+          });
+          // Okunmamış-vurgu: seçili-olmayan konuşmaya USER-mesajı
+          if (msg.role === "user" && selectedPhoneRef.current !== msg.phone) {
+            setUnseenPhones((prev) => new Set(prev).add(msg.phone));
+          }
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [agencyId, selectedAgencyId, isSuperAdmin]);
+
   const loadAgencies = async () => {
     try {
       const { data, error } = await supabase
@@ -172,15 +241,6 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
 
       if (error) throw error;
 
-      // BUG 8b: system mesajlarını (bot internal state JSON) filtrele
-      const isSystemOrStateMsg = (msg: Message) => {
-        if (msg.role === "system") return true;
-        if (typeof msg.content === "string" && msg.content.trimStart().startsWith("{")) {
-          try { const p = JSON.parse(msg.content); return typeof p === "object" && p !== null && "stage" in p; }
-          catch { return false; }
-        }
-        return false;
-      };
       const visibleData = (data || []).filter((msg) => !isSystemOrStateMsg(msg));
 
       // Konuşmaları telefon numarasına göre grupla
@@ -333,6 +393,11 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
 
   const handleSelectConversation = (phone: string) => {
     setSelectedPhone(phone);
+    // P2-A: seçilince okunmamış-vurgusu temizlenir
+    setUnseenPhones((prev) => {
+      if (!prev.has(phone)) return prev;
+      const next = new Set(prev); next.delete(phone); return next;
+    });
     if (isMobile) setMobileView("detail");
   };
 
@@ -483,7 +548,11 @@ export const WhatsAppConversations = ({ isSuperAdmin = false }: WhatsAppConversa
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <User className="h-4 w-4 shrink-0" />
-                              <p className="font-medium text-sm truncate">{conv.phone}</p>
+                              <p className={cn("text-sm truncate", unseenPhones.has(conv.phone) ? "font-bold" : "font-medium")}>{conv.phone}</p>
+                              {/* P2-A: okunmamış-vurgusu — seçili-olmayan konuşmaya yeni user-mesajı */}
+                              {unseenPhones.has(conv.phone) && (
+                                <span className="h-2 w-2 rounded-full bg-primary shrink-0 animate-pulse" aria-hidden />
+                              )}
                             </div>
                             <p className="text-xs text-muted-foreground">
                               {conv.messages.length} {t("admin.whatsapp.conversations.messages")}
