@@ -193,7 +193,7 @@ serve(async (req) => {
     const { data: agencyRaw } = await supabase
       .from("agencies")
       .select(
-        "id, name, city, address, phone_public, website_url, working_hours, maps_url, cancellation_policy, payment_instructions, primary_currency, language_currencies, collect_email, show_multi_currency, conversation_style, enabled_languages",
+        "id, name, city, address, phone_public, website_url, working_hours, maps_url, cancellation_policy, description, payment_instructions, primary_currency, language_currencies, collect_email, show_multi_currency, conversation_style, enabled_languages",
       )
       .eq("id", agencyId)
       .single();

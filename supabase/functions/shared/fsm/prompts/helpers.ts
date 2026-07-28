@@ -1,5 +1,6 @@
 // Helper functions for formatting prompts - TONE-AWARE VERSION
 import { formatDateForLanguage } from "../localization.ts";
+import { formatPriceSync } from "../../utils/currency-display.ts";
 
 export function formatDateHeader(language: string): string {
   const now = new Date();
@@ -190,7 +191,16 @@ export function buildMissingInfoGuard(missing: string[], language: string): stri
  * Format tour details with tone-aware styling
  * *tek yıldız* kullanır (WhatsApp uyumlu)
  */
-export function formatTourDetails(tour: any, language: string, _tone: string = "standart"): string {
+export function formatTourDetails(
+  tour: any, language: string, _tone: string = "standart",
+  // F-C1 (2026-07-28): dual-currency bağlamı (AIPromptContext.fx). Verilmezse/
+  // rates boşsa formatPriceSync tek-para ₺-fallback'ine düşer (O2, NaN-korumalı).
+  fx?: { ex: Record<string, number>; showDual: boolean; languageCurrencies?: Record<string, string> | null },
+): string {
+  const _fmtPrice = (amount: number): string =>
+    fx
+      ? formatPriceSync(amount, tour.currency || "TRY", language, fx.ex, fx.showDual, fx.languageCurrencies)
+      : `${amount}₺`;
   // 2026-06-19 (Bug A3 kök çözümü): datesSection bloğu KALDIRILDI. LLM artık tarih
   // konuşmuyor; tarih listesi process-message.ts :11 (TARİH LİSTESİ deterministik)
   // tarafından üretiliyor (D5 — collectionStep'ten bağımsız).
@@ -249,8 +259,8 @@ export function formatTourDetails(tour: any, language: string, _tone: string = "
     const parts = [
       `*${tour.title}*`,
       `📍 Destinasyon: ${tour.destination}`,
-      price ? `💰 Fiyat: kişi başı ${price}₺` : "",
-      _childPrice ? `👶 Çocuk fiyatı: ${_childPrice}₺` : "",
+      price ? `💰 Fiyat: kişi başı ${_fmtPrice(price)}` : "",
+      _childPrice ? `👶 Çocuk fiyatı: ${_fmtPrice(_childPrice)}` : "",
       tour.tur_sure ? `⏱ Süre: ${tour.tur_sure}` : "",
       meetTime ? `🕐 Toplanma saati: ${meetTime}` : "",
       tour.hareket_noktasi ? `🚌 Kalkış noktası: ${tour.hareket_noktasi}` : "",
@@ -270,8 +280,8 @@ export function formatTourDetails(tour: any, language: string, _tone: string = "
   const parts = [
     `*${tour.title}*`,
     `📍 Destination: ${tour.destination}`,
-    price ? `💰 Price: ${price}₺ per person` : "",
-    _childPrice ? `👶 Child price: ${_childPrice}₺` : "",
+    price ? `💰 Price: ${_fmtPrice(price)} per person` : "",
+    _childPrice ? `👶 Child price: ${_fmtPrice(_childPrice)}` : "",
     tour.tur_sure ? `⏱ Duration: ${tour.tur_sure}` : "",
     meetTime ? `🕐 Meeting time: ${meetTime}` : "",
     tour.hareket_noktasi ? `🚌 Pickup point: ${tour.hareket_noktasi}` : "",

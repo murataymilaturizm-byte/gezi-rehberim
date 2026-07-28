@@ -402,7 +402,7 @@ export function getStagePrompt(context: PromptContext): string {
   const _bundle = LANG_PROMPTS[language];
   if (_bundle) {
     const _toursList = formatToursList(availableTours, language, tone);
-    const _td = currentTour ? formatTourDetails(currentTour, language, tone) : "";
+    const _td = currentTour ? formatTourDetails(currentTour, language, tone, context.fx) : "";
     const _sum = formatReservationSummary(currentTour, reservationInfo, language, tone);
     let _body = "";
     switch (stage) {
@@ -420,7 +420,7 @@ export function getStagePrompt(context: PromptContext): string {
   if (stage === "GREETING") return getGreetingPrompt(context) + filledFieldsGuard + hallucinationGuard;
   if (stage === "BROWSING") return getBrowsingPrompt(context) + filledFieldsGuard + hallucinationGuard;
 
-  const tourDetails = currentTour ? formatTourDetails(currentTour, language, tone) : "";
+  const tourDetails = currentTour ? formatTourDetails(currentTour, language, tone, context.fx) : "";
   const summary = formatReservationSummary(currentTour, reservationInfo, language, tone);
 
   if (language === "tr") {

@@ -56,6 +56,7 @@ export function getAgencyInfo(context: PromptContext, language: string): string 
     agencyWorkingHours,
     agencyMapsUrl,
     agencyCancellationPolicy,
+    agencyDescription,
   } = context;
 
   if (!agencyName) return "";
@@ -76,6 +77,8 @@ export function getAgencyInfo(context: PromptContext, language: string): string 
     if (formattedHours) lines.push(`Çalışma Saatleri:\n${formattedHours}`);
     if (agencyMapsUrl) lines.push(`Konum: ${agencyMapsUrl}`);
     if (agencyCancellationPolicy) lines.push(`İptal Koşulları: ${agencyCancellationPolicy}`);
+    // F-D1 (2026-07-28): "Acente hakkında" — ~300 karakter kırpılır (prompt şişmesin), boşsa satır yok.
+    if (agencyDescription) lines.push(`Hakkında: ${String(agencyDescription).slice(0, 300)}`);
     // 2026-07-03 İş 1 (#18): IBAN'sız ödeme özeti — buildPaymentPromptSummary üretir.
     if ((context as any).paymentInfo) lines.push(`Ödeme: ${(context as any).paymentInfo}`);
 
@@ -106,6 +109,7 @@ KURALLAR:
   if (formattedHours) lines.push(`${LB.hours}:\n${formattedHours}`);
   if (agencyMapsUrl) lines.push(`${LB.location}: ${agencyMapsUrl}`);
   if (agencyCancellationPolicy) lines.push(`${LB.cancel}: ${agencyCancellationPolicy}`);
+  if (agencyDescription) lines.push(`About: ${String(agencyDescription).slice(0, 300)}`);
   // 2026-07-03 İş 1 (#18): payment summary WITHOUT IBAN — from buildPaymentPromptSummary.
   // 2026-07-09 FAZ4-P2: ödeme etiketi dil-başı (DE "Zahlung" vb.); değer dinamik.
   if ((context as any).paymentInfo) {

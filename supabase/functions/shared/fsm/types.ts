@@ -175,6 +175,13 @@ export interface AIPromptContext {
   agencyWorkingHours?: string;
   agencyMapsUrl?: string;
   agencyCancellationPolicy?: string;
+  // F-D1 (2026-07-28): panel "Acente hakkında" (agencies.description) — prompt'ta
+  // ~300 karakterle kırpılır; boşsa satır basılmaz.
+  agencyDescription?: string;
+  // F-C1 (2026-07-28): tur-detay fiyat-satırı dual-currency için kur-bağlamı.
+  // ex = getExchangeRatesOnce (process-içi cache); yoksa/boşsa formatPriceSync
+  // ₺-fallback (O2 davranışı). tourDetails DYNAMIC-suffix'te → prompt-cache bozulmaz.
+  fx?: { ex: Record<string, number>; showDual: boolean; languageCurrencies?: Record<string, string> | null };
   multipleTourMatches?: any[]; // When multiple tours match user's query
   previousContext?: ConversationContext;
 }

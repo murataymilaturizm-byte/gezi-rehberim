@@ -4782,6 +4782,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // "detaylar onay sonrası" kuralı) ve agency.ts ACENTE BİLGİSİ bloğu basar.
     // Veri boşsa boş → satır basılmaz → agency guard'ı acenteye yönlendirir.
     paymentInfo: buildPaymentPromptSummary(paymentInstructions, newContext.language) || undefined,
+    // F-D1 (2026-07-28): panel "Acente hakkında" → prompt (agency.ts ~300-kırp; boşsa satır yok).
+    agencyDescription: (agency as any).description || undefined,
+    // F-C1 (2026-07-28): tur-detay fiyat-satırı dual-currency (liste/özet-yollarıyla
+    // aynı formatPriceSync zinciri; kur process-içi once-cache, hata → ₺-fallback O2).
+    fx: {
+      ex: await getExchangeRatesOnce().catch(() => ({})),
+      showDual: (agency as any).show_multi_currency !== false,
+      languageCurrencies,
+    },
     multipleTourMatches: multipleTourMatches.length > 1 ? multipleTourMatches : undefined,
     previousContext,
   };
