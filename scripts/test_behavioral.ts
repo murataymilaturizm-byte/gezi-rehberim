@@ -5371,6 +5371,13 @@ import { detectOutOfScopeLead as _dolP43 } from "../supabase/functions/shared/co
   for (const m of ["Kapadokya turu uçak dahil mi", "otelden alıyor musunuz", "transfer dahil mi", "vize gerekiyor mu", "is a flight included in the tour", "do I need a visa", "oradaki oteller güzel mi", "rezervasyon yapmak istiyorum"])
     assert(`P4-3 FP-DEĞİL: "${m.slice(0, 34)}"`, !_dolP43(m));
   assert(`P4-3 currentTour-bağlam: DEĞİL`, !_dolP43("Pamukkale için otel var mı", "Pamukkale Turu"));
+
+  // W2-a (2026-07-29): hizmet-yönelik SORU kalıpları da lead sinyali; tur-kataloğu vetosu.
+  const _CATW2 = { tourTitles: ["Pamukkale Turu", "Kapadokya Balon Turu", "Antalya Rafting"], destinations: ["Pamukkale", "Kapadokya", "Antalya"] };
+  for (const m of ["Uçak bileti var mı", "uçak bileti satıyor musunuz", "otel ayarlıyor musunuz", "transfer yapıyor musunuz", "do you sell flight tickets", "есть ли авиабилеты", "gibt es Flugtickets"])
+    assert(`W2-a LEAD "${m.slice(0, 30)}"`, _dolP43(m, _CATW2));
+  for (const m of ["Pamukkale için otel var mı", "turda yemek var mı", "boş yer var mı", "müsait yer var mı", "Kapadokya turu uçak dahil mi", "otelden alıyor musunuz", "Antalya için transfer var mı"])
+    assert(`W2-a FP-DEĞİL "${m.slice(0, 30)}"`, !_dolP43(m, _CATW2));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

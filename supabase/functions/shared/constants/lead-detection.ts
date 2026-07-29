@@ -18,24 +18,56 @@ export const LEAD_SERVICE_RE =
 export const LEAD_INTENT_RE =
   /(?<![\p{L}\p{N}])(istiyor[uü]m|almak\s+istiyorum|ar[ıi]yorum|laz[ıi]m|ayarla(?:r\s*m[ıi]s[ıi]n[ıi]z|yabilir\s*misiniz)\p{L}*|bakar\s*m[ıi]s[ıi]n[ıi]z|yard[ıi]mc[ıi]\s+olur\s*musunuz|i\s+(?:want|need)(?:\s+to\s+(?:book|buy|get|rent))?|looking\s+for|can\s+you\s+(?:book|arrange|get|find)|could\s+you\s+(?:book|arrange)|help\s+me\s+(?:book|find|get)|ich\s+(?:m[öo]chte|brauche|suche)|k[öo]nnen\s+sie\s+(?:buchen|organisieren|arrangieren)|je\s+(?:veux|voudrais|cherche)|j['e]ai\s+besoin|pouvez[-\s]vous\s+(?:r[ée]server|organiser|arranger)|quiero|necesito|busco|puede\s+(?:reservar|conseguir|organizar)|me\s+(?:puede|pueden)\s+(?:ayudar|conseguir)|хочу|нужн[оаы]|ищу|можете\s+(?:ли\s+)?(?:забронировать|организовать|устроить|помочь)|забронир\p{L}*\s+(?:мне|нам)|أريد|أحتاج|أبحث\s+عن|هل\s+يمكنك(?:م)?\s+(?:حجز|ترتيب|تأمين)|ممكن\s+(?:تحجز|ترتب))(?![\p{L}\p{N}])/iu;
 
+// (2b) W2-a (2026-07-29): HİZMET-YÖNELİK SORU kalıpları — talep-fiili kadar geçerli
+// ikinci sinyal. CANLI BUG: "Uçak bileti var mı" lead ÜRETMEDİ (talep-fiili yok +
+// "var mı" VETO listesindeydi → çift-katmanlı kapalıydı).
+// BİLİNÇLİ DIŞARIDA: "alıyor musunuz" (otelDEN alıyor musunuz = tur lojistiği,
+// zorunlu FP-korpusunda) ve "gerekiyor mu / do I need" (bilgi-sorusu) → veto'da kalır.
+export const LEAD_QUESTION_RE =
+  /(?<![\p{L}\p{N}])(var\s*m[ıi]|sat[ıi]yor\s*musunuz|yap[ıi]yor\s*musunuz|ayarl[ıi]yor\s*musunuz|bak[ıi]yor\s*musunuz|bulu?yor\s*musunuz|temin\s+ediyor\s*musunuz|do\s+you\s+(?:have|sell|offer|arrange|provide|book)|can\s+you\s+(?:provide|arrange|sell)|gibt\s+es|bieten\s+sie|verkaufen\s+sie|organisieren\s+sie|avez[-\s]vous|proposez[-\s]vous|vendez[-\s]vous|tienen|venden|ofrecen|есть\s+ли|продаёте\s+ли|продаете\s+ли|предлагаете\s+ли|занимаетесь\s+ли|هل\s+لديكم|هل\s+توفرون|هل\s+تبيعون)(?![\p{L}\p{N}])/iu;
+
 // (3) Tur-bağlam-sinyali — bunlardan biri varsa LEAD-DEĞİL (tur-sorusudur)
+// W2-a: GENEL soru kalıpları ("var mı", "is there", "gibt es", "есть ли") buradan
+// ÇIKARILDI — artık (2b)'de SİNYAL. Tur-özgü vetolar KALDI: dahil/included,
+// tur/tour kelimeleri, "gerekiyor mu", "alıyor musunuz", "karşılıyor musunuz".
 export const LEAD_TOUR_CONTEXT_RE =
-  /(?<![\p{L}\p{N}])(dahil\p{L}*|included?|inklusive|enthalten|inclus\p{L}*|incluid\p{L}*|включ\p{L}*|يشمل|تشمل|مشمول|tur[au]?\p{L}*|tour\p{L}*|circuit\p{L}*|excursi[óo]n\p{L}*|ausflug\p{L}*|тур\p{L}*|экскурси\p{L}*|جولة|رحلة|gerek(?:iyor|li)\s*mi|var\s*m[ıi]|al[ıi]yor\s*musunuz|kar[şs][ıi]l[ıi]yor\s*musunuz|do\s+i\s+need|is\s+there|brauche\s+ich|faut[-\s]il|se\s+necesita|нужна\s+ли|هل\s+أحتاج)(?![\p{L}\p{N}])/iu;
+  /(?<![\p{L}\p{N}])(dahil\p{L}*|included?|inklusive|enthalten|inclus\p{L}*|incluid\p{L}*|включ\p{L}*|يشمل|تشمل|مشمول|tur[au]?\p{L}*|tour\p{L}*|circuit\p{L}*|excursi[óo]n\p{L}*|ausflug\p{L}*|тур\p{L}*|экскурси\p{L}*|جولة|رحلة|gerek(?:iyor|li)\s*mi|al[ıi]yor\s*musunuz|kar[şs][ıi]l[ıi]yor\s*musunuz|do\s+i\s+need|brauche\s+ich|faut[-\s]il|se\s+necesita|нужна\s+ли|هل\s+أحتاج)(?![\p{L}\p{N}])/iu;
+
+/** Tur-kataloğu bağlam kontrolü: mesajda acentenin tur adı/destinasyonu geçiyorsa
+ *  bu bir TUR sorusudur (W2-a kritik FP-koruması: "Pamukkale için otel var mı"). */
+function mentionsCatalog(lowerMsg: string, catalog?: LeadCatalog | null): boolean {
+  if (!catalog) return false;
+  const _tokens: string[] = [];
+  for (const s of [...(catalog.tourTitles || []), ...(catalog.destinations || []), catalog.currentTourTitle || ""]) {
+    for (const w of String(s || "").toLowerCase().split(/\s+/)) {
+      // "turu/tour/gezi" gibi jenerik kelimeler zaten LEAD_TOUR_CONTEXT_RE'de;
+      // burada yalnız ÖZEL adlar (≥4 harf) aranır.
+      if (w.length >= 4 && !/^(tur\p{L}*|tour\p{L}*|gezi\p{L}*)$/iu.test(w)) _tokens.push(w);
+    }
+  }
+  return _tokens.some((t) => lowerMsg.includes(t));
+}
+
+export interface LeadCatalog {
+  currentTourTitle?: string | null;
+  tourTitles?: string[];
+  destinations?: string[];
+}
 
 /**
- * ÇİFT-ŞART tespit: hizmet-kelimesi VAR + talep-fiili VAR + tur-bağlam-sinyali YOK.
- * currentTourTitle verilirse mesajda tur-adı-parçası geçmesi de bağlam sayılır.
+ * ÇİFT-ŞART tespit: hizmet-kelimesi VAR + (talep-fiili VEYA hizmet-sorusu) VAR
+ * + tur-bağlamı YOK (regex vetosu VE tur-kataloğu adları).
+ * catalog: string verilirse geriye-uyumlu currentTourTitle olarak yorumlanır.
  */
-export function detectOutOfScopeLead(message: string, currentTourTitle?: string | null): boolean {
+export function detectOutOfScopeLead(message: string, catalog?: LeadCatalog | string | null): boolean {
   if (!message || typeof message !== "string") return false;
   const m = message.trim();
   if (!LEAD_SERVICE_RE.test(m)) return false;
-  if (!LEAD_INTENT_RE.test(m)) return false;
+  if (!LEAD_INTENT_RE.test(m) && !LEAD_QUESTION_RE.test(m)) return false;
   if (LEAD_TOUR_CONTEXT_RE.test(m)) return false;
-  if (currentTourTitle) {
-    const firstWord = currentTourTitle.toLowerCase().split(/\s+/)[0];
-    if (firstWord && firstWord.length >= 4 && m.toLowerCase().includes(firstWord)) return false;
-  }
+  const _cat: LeadCatalog | null =
+    typeof catalog === "string" ? { currentTourTitle: catalog } : (catalog || null);
+  if (mentionsCatalog(m.toLowerCase(), _cat)) return false;
   return true;
 }
 

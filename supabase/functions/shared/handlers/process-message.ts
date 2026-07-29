@@ -553,7 +553,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
 
     // (B)+(C) yeni tespit
-    if (detectOutOfScopeLead(message, context.currentTour?.title)) {
+    if (detectOutOfScopeLead(message, {
+      currentTourTitle: context.currentTour?.title,
+      tourTitles: (tours || []).map((t: any) => t?.title).filter(Boolean),
+      destinations: (tours || []).map((t: any) => t?.destination).filter(Boolean),
+    })) {
       const _info: any = context.reservationInfo || {};
       const _inFlow = !!_info.tourId && ["COLLECTING_INFO", "CONFIRMING"].includes(context.stage);
       const _phoneFromState = _info.phone || (_idIsPhone ? String(adapter.identifier) : null);
