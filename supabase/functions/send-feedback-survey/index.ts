@@ -153,6 +153,18 @@ serve(async (req) => {
     let totalSkipped = 0;
     let totalErrors = 0;
 
+    // F-0-EK / P8-3 deseni (2026-07-29): "skipped: N" tek başına sessizdi —
+    // 0 mı yoksa sebebi ne, gövdeden okunamıyordu. Artık sebep kırılımı dönüyor.
+    // Kırılım kodları: NO_PLAN · NO_TOUR_DATES · LANG_MISMATCH · COOLDOWN.
+    // (NO_PROFILE artık bir atlama sebebi DEĞİL — F-0-FIX ile gönderime dönüştü;
+    //  yine de kaç gönderimin profilsiz yapıldığı `noProfileSent` ile ölçülüyor.)
+    const skipReasons: Record<string, number> = {};
+    let noProfileSent = 0;
+    const bump = (reason: string) => {
+      totalSkipped++;
+      skipReasons[reason] = (skipReasons[reason] ?? 0) + 1;
+    };
+
     // ── 2) Her eşleştirme için pencere ───────────────────────────────────────
     for (const m of rows) {
       // F-2+F-3 (2026-07-27): pencere TEK-KAYNAK _shared/feedback-window.ts.
@@ -170,6 +182,7 @@ serve(async (req) => {
       const planOk = await hasFeedbackEnabled(m.agency_id);
       if (!planOk) {
         console.log(`⏭️ plan skip: ${m.agency_id.slice(0, 8)} — has_feedback=false`);
+        bump("NO_PLAN");
         continue;
       }
 
@@ -190,6 +203,7 @@ serve(async (req) => {
       const tdList = (tds ?? []) as unknown as TourDateRow[];
       if (tdList.length === 0) {
         console.log(`📭 no completed tours in window for ${m.agency_id.slice(0, 8)}/${m.language}`);
+        bump("NO_TOUR_DATES");
         continue;
       }
       console.log(`📅 ${tdList.length} tour dates in window`);
@@ -221,22 +235,37 @@ serve(async (req) => {
               .eq("agency_id", m.agency_id)
               .maybeSingle();
 
-            if (!profile) {
-              // Müşterinin profile'ı yok → dil bilinmediği için graceful skip
-              totalSkipped++;
-              continue;
-            }
-            const p = profile as unknown as UserProfileRow;
-            const customerLang = p.language_preference || "tr";
+            // F-0-FIX (2026-07-29): profil YOKSA artık ATLAMIYORUZ.
+            //
+            // Kök vaka: müşteri WhatsApp'tan bot akışıyla rezervasyon yaptı ama
+            // İLETİŞİM numarası olarak BAŞKA bir numara verdi (yazan …0303,
+            // rezervasyona yazılan …8989). Profil yalnız YAZAN numara için açılır
+            // (upsertUserProfile inbound mesajda çalışır) → rezervasyon telefonunun
+            // profili hiç olmaz. Eski kod bu müşteriyi sessizce eliyordu; oysa
+            // AYNI müşteriye tur-hatırlatması GİTMİŞTİ (send-tour-reminders profil
+            // yokluğunda dil-varsayılanına düşüyor). İki cron tutarsızdı.
+            //
+            // Profil yoksa: acentenin bu eşleşme için seçtiği dil (m.language) —
+            // "tr" sabitinden isabetli, çünkü acente şablonu zaten o dilde.
+            //
+            // COOLDOWN: profil yoksa last_feedback_sent_at damgası da yoktur,
+            // dolayısıyla 7-gün kontrolü uygulanamaz. Çift-gönderim riski YOK:
+            // kayıt-bazlı `feedback_sent_at IS NULL` kilidi (yukarıdaki sorgu +
+            // gönderim sonrası damga) her rezervasyon için tek gönderim garantiler.
+            // Profil-cooldown'u yalnız "aynı kişinin FARKLI rezervasyonları" içindir;
+            // profilsiz müşteride o senaryo zaten izlenemez.
+            const p = (profile ?? null) as UserProfileRow | null;
+            const customerLang = p?.language_preference || m.language;
 
-            // Dil eşleşmesi
+            // Dil eşleşmesi (profilsizde customerLang === m.language olduğu için
+            // bu dal profilsiz müşteriyi ASLA elemez — fix'in can damarı).
             if (customerLang !== m.language) {
-              totalSkipped++;
+              bump("LANG_MISMATCH");
               continue;
             }
 
-            // Cooldown — son 7 günde anket gönderildiyse atla
-            if (p.last_feedback_sent_at) {
+            // Cooldown — son 7 günde anket gönderildiyse atla (yalnız profilliyken)
+            if (p?.last_feedback_sent_at) {
               const diffDays =
                 (Date.now() - new Date(p.last_feedback_sent_at).getTime()) /
                 (1000 * 60 * 60 * 24);
@@ -244,7 +273,7 @@ serve(async (req) => {
                 console.log(
                   `⏭️ cooldown: ${reg.phone} ${diffDays.toFixed(1)}d since last survey`,
                 );
-                totalSkipped++;
+                bump("COOLDOWN");
                 continue;
               }
             }
@@ -258,17 +287,24 @@ serve(async (req) => {
 
             if (result.success) {
               const _nowIso = new Date().toISOString();
-              await supabase
-                .from("whatsapp_user_profiles")
-                .update({ last_feedback_sent_at: _nowIso })
-                .eq("id", p.id);
+              // Profil varsa cooldown damgası; yoksa atlanır (damgalanacak satır yok).
+              if (p?.id) {
+                await supabase
+                  .from("whatsapp_user_profiles")
+                  .update({ last_feedback_sent_at: _nowIso })
+                  .eq("id", p.id);
+              }
               // B3: rezervasyona da yaz → cevap-yakalama penceresi (feedback_sent_at + 72h).
               await supabase
                 .from("registrations")
                 .update({ feedback_sent_at: _nowIso })
                 .eq("id", reg.id);
               totalSent++;
-              console.log(`✅ survey sent reg=${reg.id.slice(0, 8)} lang=${customerLang}`);
+              if (!p) noProfileSent++;
+              console.log(
+                `✅ survey sent reg=${reg.id.slice(0, 8)} lang=${customerLang}` +
+                  (p ? "" : " (profilsiz — acente dili)"),
+              );
             } else {
               totalErrors++;
               console.error(`❌ send failed reg=${reg.id.slice(0, 8)}: ${result.error}`);
@@ -284,13 +320,16 @@ serve(async (req) => {
     }
 
     console.log(
-      `✅ Done. sent=${totalSent} skipped=${totalSkipped} errors=${totalErrors}`,
+      `✅ Done. sent=${totalSent} (profilsiz=${noProfileSent}) skipped=${totalSkipped} ` +
+        `${JSON.stringify(skipReasons)} errors=${totalErrors}`,
     );
     return new Response(
       JSON.stringify({
         success: true,
         sent: totalSent,
+        sent_without_profile: noProfileSent,
         skipped: totalSkipped,
+        skip_reasons: skipReasons,
         errors: totalErrors,
         matchings: rows.length,
       }),

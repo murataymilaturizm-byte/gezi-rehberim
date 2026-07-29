@@ -156,6 +156,15 @@ Deno.serve(async (req) => {
     let totalSkipped = 0;
     let totalErrors = 0;
 
+    // F-0-EK / P8-3 deseni (2026-07-29): sebep-kırılımlı atlama sayacı.
+    // Kırılım: NO_PLAN · NO_REGS · LANG_MISMATCH.
+    const skipReasons: Record<string, number> = {};
+    let noProfileSent = 0;
+    const bump = (reason: string) => {
+      totalSkipped++;
+      skipReasons[reason] = (skipReasons[reason] ?? 0) + 1;
+    };
+
     // ── 2) Her eşleştirme için pencere taraması ──────────────────────────────
     for (const m of rows) {
       const hoursOffset = Math.abs(m.offset_hours); // -72 → 72 (önce N saat)
@@ -175,6 +184,7 @@ Deno.serve(async (req) => {
       const planOk = await hasRemindersEnabled(m.agency_id);
       if (!planOk) {
         console.log(`⏭️ plan skip: ${m.agency_id.slice(0, 8)} — has_reminders=false`);
+        bump("NO_PLAN");
         continue;
       }
 
@@ -201,6 +211,7 @@ Deno.serve(async (req) => {
       const regsList = (regs ?? []) as unknown as RegistrationRow[];
       if (regsList.length === 0) {
         console.log(`📭 no regs in window for ${m.agency_id.slice(0, 8)}/${m.language}`);
+        bump("NO_REGS");
         continue;
       }
       console.log(`👥 ${regsList.length} regs in window`);
@@ -216,12 +227,19 @@ Deno.serve(async (req) => {
             .eq("phone", normalizedPhone)
             .eq("agency_id", m.agency_id)
             .maybeSingle();
-          const customerLang = (profile?.language_preference as string | undefined) || "tr";
+          // F-0-FIX (2026-07-29): profil yoksa varsayılan artık sabit "tr" DEĞİL,
+          // acentenin bu eşleşme için seçtiği dil (m.language).
+          // Eski sabit gizli bir hata taşıyordu: TR-dışı bir acente eşleşmesinde
+          // (ör. lang=de) profilsiz müşteri "tr" sayılıp hemen altındaki dil
+          // kontrolünde ELENİYORDU — yani hatırlatma hiç gitmiyordu. TR acentelerde
+          // tesadüfen doğru çalıştığı için bugüne dek görünmedi.
+          // Anket tarafıyla (send-feedback-survey) davranış artık AYNI.
+          const customerLang = (profile?.language_preference as string | undefined) || m.language;
 
           // Bu satırın dili müşteri diliyle eşleşmiyorsa — başka bir m içinde işlenir
           // (acente o dil için başka eşleştirme yaptıysa). Burada bu rezervasyon atlanır.
           if (customerLang !== m.language) {
-            totalSkipped++;
+            bump("LANG_MISMATCH");
             continue;
           }
 
@@ -241,7 +259,11 @@ Deno.serve(async (req) => {
               })
               .eq("id", reg.id);
             totalSent++;
-            console.log(`✅ sent reg=${reg.id.slice(0, 8)} lang=${customerLang}`);
+            if (!profile) noProfileSent++;
+            console.log(
+              `✅ sent reg=${reg.id.slice(0, 8)} lang=${customerLang}` +
+                (profile ? "" : " (profilsiz — acente dili)"),
+            );
           } else {
             totalErrors++;
             console.error(`❌ send failed reg=${reg.id.slice(0, 8)}: ${result.error}`);
@@ -257,13 +279,16 @@ Deno.serve(async (req) => {
     }
 
     console.log(
-      `✅ Done. sent=${totalSent} skipped=${totalSkipped} errors=${totalErrors}`,
+      `✅ Done. sent=${totalSent} (profilsiz=${noProfileSent}) skipped=${totalSkipped} ` +
+        `${JSON.stringify(skipReasons)} errors=${totalErrors}`,
     );
     return new Response(
       JSON.stringify({
         success: true,
         sent: totalSent,
+        sent_without_profile: noProfileSent,
         skipped: totalSkipped,
+        skip_reasons: skipReasons,
         errors: totalErrors,
         matchings: rows.length,
       }),
