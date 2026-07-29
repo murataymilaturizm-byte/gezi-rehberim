@@ -29,7 +29,8 @@ import { isEchoSafe } from "../services/echo-sanitize.ts";
 import { MONTH_ALTERNATION, MONTH_NAME_TO_NUMBER } from "../constants/month-names.ts";
 import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
-import { detectOutOfScopeLead, LEAD_ACK, LEAD_RESUME, LEAD_ASK_PHONE, LEAD_SAVED } from "../constants/lead-detection.ts";
+import { detectOutOfScopeLead, LEAD_ACK, LEAD_RESUME, LEAD_ASK_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
+import { logCritical } from "../../_shared/error-sink.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
 import { isNluFullNameTourLeak, isNluFullNameNegationLeak, isNluFullNameGiveUpLeak } from "../services/nlu-validation.ts";
@@ -520,8 +521,19 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         agency_id: agency.id, phone, full_name: name,
         request_text: req.slice(0, 1000), source_stage: context.stage, status: "new",
       });
-      if (_le) console.error("[P4-3 lead] insert failed:", _le.message);
-      else console.log(`[P4-3 lead] kaydedildi (stage=${context.stage}, phone=${phone ? "var" : "yok"})`);
+      if (_le) {
+        console.error("[P4-3 lead] insert failed:", _le.message);
+        // W3-b: sessiz yutma YOK — panel "Sistem Hataları"na düşsün.
+        await logCritical({
+          event: "LEAD_INSERT_FAIL",
+          error: _le.message,
+          context: { stage: context.stage, channel: adapter.channel, hasPhone: !!phone },
+          agencyId: agency.id,
+          severity: "error",
+        }).catch(() => {});
+      } else {
+        console.log(`[P4-3 lead] kaydedildi (stage=${context.stage}, phone=${phone ? "var" : "yok"})`);
+      }
       return !_le;
     };
 
@@ -529,9 +541,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (context.pendingLeadCapture) {
       const _pm = message.match(/\+?\d[\d\s.\-()]{7,17}\d/);
       const _phone = _pm ? _pm[0].replace(/[^\d+]/g, "") : null;
-      await _insertLead(context.pendingLeadCapture.request, _phone, context.reservationInfo?.fullName || null);
+      // W3-b (2026-07-29): PROMISE-AFTER-WRITE — yazım başarısızsa "ilettim" DEME.
+      const _okA = await _insertLead(context.pendingLeadCapture.request, _phone, context.reservationInfo?.fullName || null);
       const _ctxA = { ...context, pendingLeadCapture: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
-      const _replyA = LEAD_SAVED[_leadLang] || LEAD_SAVED.tr;
+      const _replyA = _okA
+        ? (LEAD_SAVED[_leadLang] || LEAD_SAVED.tr)
+        : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
       await _save(_replyA, _ctxA);
       await adapter.sendResponse(_replyA);
       return { success: true, response: _replyA, newContext: _ctxA };
@@ -544,8 +559,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _phoneFromState = _info.phone || (_idIsPhone ? String(adapter.identifier) : null);
 
       if (_inFlow || context.stage === "COMPLETED" || _phoneFromState) {
-        await _insertLead(message, _phoneFromState, _info.fullName || null);
-        const _replyB = _inFlow
+        // W3-b: önce YAZ, sonra vaat et. Başarısızsa "ilettim" yerine dürüst mesaj
+        // (akış-içinde de resume satırı eklenir — akış bölünmesin).
+        const _okB = await _insertLead(message, _phoneFromState, _info.fullName || null);
+        const _replyB = !_okB
+          ? (_inFlow
+              ? `${LEAD_FAILED[_leadLang] || LEAD_FAILED.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
+              : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr))
+          : _inFlow
           ? `${LEAD_ACK[_leadLang] || LEAD_ACK.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
           : (LEAD_ACK[_leadLang] || LEAD_ACK.tr);
         const _ctxB = { ...context, lastUserMessage: message, messageCount: context.messageCount + 1 };

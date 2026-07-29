@@ -70,6 +70,19 @@ export const LEAD_ASK_PHONE: Record<string, string> = {
   ar: "استلمت طلبك! هل يمكنك كتابة رقم هاتفك لنتواصل معك؟ 📱",
 };
 
+// W3-b (2026-07-29): YAZIM BAŞARISIZSA vaat EDİLMEZ — "ilettim" yerine dürüst mesaj.
+// E1-dersi (bot "aldım" deyip kaydetmemişti) bu sınıfın ikinci örneğiydi; desen artık
+// "önce yaz, sonra vaat et" (promise-after-write).
+export const LEAD_FAILED: Record<string, string> = {
+  tr: "Talebinizi şu an kaydedemedim 😔 Telefon numaranızla birlikte tekrar yazar mısınız?",
+  en: "I couldn't record your request right now 😔 Could you write again with your phone number?",
+  de: "Ihre Anfrage konnte gerade nicht gespeichert werden 😔 Bitte schreiben Sie erneut mit Ihrer Telefonnummer.",
+  fr: "Je n'ai pas pu enregistrer votre demande 😔 Pouvez-vous réécrire avec votre numéro de téléphone ?",
+  es: "No pude registrar su solicitud ahora 😔 ¿Puede escribir de nuevo con su número de teléfono?",
+  ru: "Не удалось сохранить вашу заявку 😔 Напишите, пожалуйста, ещё раз с номером телефона.",
+  ar: "لم أتمكن من تسجيل طلبك الآن 😔 هل يمكنك إعادة الكتابة مع رقم هاتفك؟",
+};
+
 export const LEAD_SAVED: Record<string, string> = {
   tr: "Teşekkürler! Acentemiz en kısa sürede sizinle iletişime geçecek 🤝",
   en: "Thank you! Our agency will contact you shortly 🤝",
