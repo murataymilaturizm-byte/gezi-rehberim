@@ -5346,6 +5346,21 @@ console.log("\n── OLGU-A: CONFIRMING tarih-değişimi availability guard ─
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// W1 (2026-07-29): FİİL/MASTAR tur-adı-adayı olamaz — canlı bug '"almak" sistemimizde
+// bulunmuyor'. NEGATİF: aday kalmamalı (→ UNKNOWN_TOUR atılmaz). POZİTİF: gerçek
+// tur adları korunur.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── W1: fiil/mastar filtresi (tur-adı adayı) ──");
+import { isMeaningfulTourKeyword as _mtkW1 } from "../supabase/functions/shared/constants/tour-matching.ts";
+{
+  const _wordsW1 = (m: string) => m.toLowerCase().split(/\s+/).map((x) => x.replace(/[.,!?;:]/g, "")).filter(_mtkW1);
+  for (const m of ["Tur almak istiyorum", "tur satın almak istiyorum", "tur ayırtmak istiyorum", "tur yaptırmak istiyorum", "rezervasyon yapmak istiyorum", "tur bakmak istiyorum", "I want to buy a tour"])
+    assert(`W1 NEG "${m.slice(0, 30)}" → aday YOK`, _wordsW1(m).length === 0);
+  for (const [m, exp] of [["Balon turu almak istiyorum", "balon"], ["Ege turu yapmak istiyorum", "ege"], ["Kapadokya turu istiyorum", "kapadokya"], ["Pamukkale rezervasyonu", "pamukkale"], ["Antalya Rafting turu", "antalya"]] as Array<[string, string]>)
+    assert(`W1 POZ "${m.slice(0, 28)}" → ${exp}`, _wordsW1(m)[0] === exp);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // P4-3 (2026-07-28): TUR-DIŞI TALEP tespiti — çift-şart + ZORUNLU FP-korpusu.
 // ═══════════════════════════════════════════════════════════════════════════
 console.log("\n── P4-3: lead-detection + FP-korpus ──");

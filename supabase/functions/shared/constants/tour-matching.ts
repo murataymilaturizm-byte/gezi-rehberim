@@ -63,7 +63,52 @@ export const TOUR_KEYWORD_STOPWORDS = new Set<string>([
  * Kelimenin anlamlı match adayı olup olmadığını kontrol et.
  * Stopword + minimum uzunluk (3 harf, "ege" gibi kısa tur adlarını kabul et).
  */
+// ─── W1 (2026-07-29): FİİL/MASTAR tur-adı-adayı OLAMAZ — YAPISAL kural ────────
+// CANLI BUG: "Tur almak istiyorum" → tour-matching Öncelik-3 fallback msgWords[0]
+// = "almak" seçti → bot '"almak" sistemimizde bulunmuyor 😔'. 2026-06-20'de aynı
+// sınıf ("en uzun kelime" → "istiyorum") tek-nokta yamalanmıştı ("ilk kelime"),
+// sınıf kapanmadı: mesajda gerçek tur adı YOKSA ilk kelime de fiildir.
+// Ölçüm (9-satır korpus): almak/satın/ayırtmak/yaptırmak/yapmak/bakmak/want → 7 vaka.
+// ÇÖZÜM: stopword listesine tek tek fiil eklemek YERİNE morfolojik/kök kuralı:
+//   • TR mastar: -mak/-mek  •  TR çekim: -iyorum/-ıyorum/-uyorum/-üyorum, -acağım/
+//     -eceğim, -alım/-elim, -ayım/-eyim, -arım/-erim, -dım/-dim/-dum/-düm, -mış/-miş
+//   • TR parçacık: "satın" (tek başına anlam taşımaz, hep fiille gelir)
+//   • 6 dil niyet-fiili kökleri (want/buy/book/look…, möchte/kaufen…, veux/acheter…,
+//     quiero/comprar…, хочу/купить…, أريد/شراء…)
+// POZİTİF-KORUMA: gerçek tur adları etkilenmez — "Balon turu almak istiyorum" → "balon"
+// (fiil değil) hayatta kalır; "Ege turu yapmak istiyorum" → "ege". Fiil elenince aday
+// KALMAZSA unknownTourQuery=null → UNKNOWN_TOUR atılmaz → normal tur-listesi dalı.
+const _TR_VERB_SUFFIX_RE =
+  /(mak|mek|[iıuü]yorum|[iıuü]yoruz|[iıuü]yor|acağım|eceğim|acağız|eceğiz|al[ıi]m|elim|ay[ıi]m|eyim|ar[ıi]m|erim|d[iıuü]m|m[iı][şs]|sin|siniz)$/iu;
+const _INTENT_VERB_ROOTS = new Set<string>([
+  // TR parçacık/kök
+  "satın", "satin",
+  // EN
+  "want", "buy", "book", "booking", "purchase", "look", "looking", "need", "get", "make", "take", "have",
+  // DE
+  "möchte", "mochte", "möchten", "kaufen", "buchen", "brauche", "suche", "machen", "nehmen",
+  // FR
+  "veux", "voudrais", "acheter", "réserver", "reserver", "cherche", "besoin", "faire", "prendre",
+  // ES
+  "quiero", "comprar", "reservar", "busco", "necesito", "hacer", "tomar",
+  // RU
+  "хочу", "купить", "забронировать", "ищу", "нужно", "нужен", "сделать", "взять",
+  // AR
+  "أريد", "شراء", "حجز", "أبحث", "أحتاج",
+]);
+
+/** Kelime niyet-fiili / mastar mı? (tur adı adayı olamaz) */
+export function isVerbLikeWord(word: string): boolean {
+  const w = (word || "").toLowerCase();
+  if (!w) return false;
+  if (_INTENT_VERB_ROOTS.has(w)) return true;
+  // TR morfolojisi: en az 5 harf + fiil-eki (kısa tur adları yanlışlıkla elenmesin,
+  // örn. "demek" gibi 5-harf istisnalar zaten tur adı değil).
+  return w.length >= 5 && _TR_VERB_SUFFIX_RE.test(w);
+}
+
 export function isMeaningfulTourKeyword(word: string): boolean {
   if (!word || word.length < 3) return false;
+  if (isVerbLikeWord(word)) return false; // W1
   return !TOUR_KEYWORD_STOPWORDS.has(word.toLowerCase());
 }
