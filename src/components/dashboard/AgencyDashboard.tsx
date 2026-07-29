@@ -46,6 +46,12 @@ export const AgencyDashboard = ({
   // Ödeme ekleme + WhatsApp butonu + durum güncelleme buradan da çalışır.
   // P7-C (2026-07-29): bekleyen hizmet talebi sayacı (status=new)
   const [pendingLeads, setPendingLeads] = useState(0);
+  // P8-2 (2026-07-29): WhatsApp bildirim-numarası tanımsızsa uyarı kartı.
+  // Teşhis: 6 aktif acenteden 5'inde agency_notification_settings satırı YOKTU →
+  // dispatch NO_AGENCY_SETTINGS ile sessizce çıkıyordu. P8-1 satırı açıyor ama
+  // KAPALI (enabled=false, phone=NULL) — deliği asıl kapatan bu karttır.
+  // null = henüz bilinmiyor (sorgu dönmedi) → kart çizilmez, yanlış alarm olmasın.
+  const [notifGap, setNotifGap] = useState<boolean | null>(null);
   const [detailReg, setDetailReg] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -57,6 +63,20 @@ export const AgencyDashboard = ({
       .eq("agency_id", agencyId)
       .eq("status", "new")
       .then(({ count }: any) => setPendingLeads(count ?? 0));
+  }, [agencyId]);
+
+  useEffect(() => {
+    if (!agencyId) return;
+    (supabase as any)
+      .from("agency_notification_settings")
+      .select("enabled, phone")
+      .eq("agency_id", agencyId)
+      .maybeSingle()
+      .then(({ data, error }: any) => {
+        if (error) { setNotifGap(null); return; }   // sorgu patlarsa sessiz kal
+        // Delik üç halden biri: satır yok · kapalı · numara boş.
+        setNotifGap(!data || data.enabled !== true || !String(data.phone || "").trim());
+      });
   }, [agencyId]);
 
   if (loading) return <DashboardSkeleton />;
@@ -179,6 +199,23 @@ export const AgencyDashboard = ({
           icon={<Target className="h-4 w-4 text-primary" />}
         />
       </div>
+
+      {/* P8-2: WhatsApp bildirim numarası tanımsız → uyarı. Tıkla → Ayarlar */}
+      {notifGap === true && (
+        <button
+          type="button"
+          onClick={() => onTabChange?.("settings")}
+          className="w-full flex items-center justify-between gap-3 rounded-lg border-2 border-amber-500/40 bg-amber-500/5 px-4 py-3 text-left hover:bg-amber-500/10 transition-colors"
+        >
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+            {t("admin.dashboard.notifGapTitle", { defaultValue: "WhatsApp bildirimleriniz kapalı — numara tanımlayın" })}
+          </span>
+          <span className="text-xs text-amber-700 underline shrink-0">
+            {t("admin.dashboard.notifGapAction", { defaultValue: "Ayarlar" })}
+          </span>
+        </button>
+      )}
 
       {/* P7-C: Bekleyen Talepler — tıkla → Talepler-Şikayetler > Hizmet Talepleri */}
       {pendingLeads > 0 && (

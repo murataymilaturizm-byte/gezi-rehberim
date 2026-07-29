@@ -1228,7 +1228,9 @@
       "agencies": "agencias",
       "noLocationInfo": "No se encontraron datos de ubicación",
       "noLocationInfoDesc": "Ninguna agencia ha ingresado datos de ubicación aún.",
-      "pendingLeads": "Solicitudes pendientes"
+      "pendingLeads": "Solicitudes pendientes",
+      "notifGapTitle": "Tus notificaciones de WhatsApp están desactivadas — añade un número",
+      "notifGapAction": "Ajustes"
     },
     "toast": {
       "success": "¡Éxito! ✅",

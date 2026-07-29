@@ -1191,7 +1191,9 @@
       "noLocationInfo": "No Location Data Found",
       "noLocationInfoDesc": "No agency has entered location information yet. Geographic distribution will be shown here once agencies add city and region data.",
       "superAdminDescription": "Monitor the overall status and usage statistics of all agencies here. Use the \"Agencies\" tab for detailed management.",
-      "pendingLeads": "Pending Requests"
+      "pendingLeads": "Pending Requests",
+      "notifGapTitle": "Your WhatsApp notifications are off — add a number",
+      "notifGapAction": "Settings"
     },
     "toast": {
       "success": "Success! ✅",

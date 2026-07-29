@@ -143,6 +143,9 @@ export function NotificationCenter({ agencyId, onTabChange }: NotificationCenter
     if (!n.is_read) markAsRead(n.id);
     if (n.type === "new_reservation" || n.type === "cancellation") onTabChange("registrations");
     else if (n.type === "message") onTabChange("whatsapp");
+    // P8-0 (2026-07-29): new_lead dalı yoktu — bildirime tıklayınca hiçbir yere
+    // gitmiyordu. Hedef: Talepler-Şikayetler > Hizmet Talepleri sekmesi.
+    else if (n.type === "new_lead") onTabChange("complaints");
     setOpen(false);
   };
 

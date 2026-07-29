@@ -1,6 +1,8 @@
 // Shared AI service — demo-chat/services/ai.ts'den taşındı, logger/CONFIG bağımlılıkları kaldırıldı.
 // Retry + exponential backoff + timeout ile Anthropic API çağrısı yapar.
 
+import { logCritical } from "../../_shared/error-sink.ts";
+
 const AI_TIMEOUT_MS = 25000;
 const AI_MAX_RETRIES = 2;
 const AI_MODEL = "claude-sonnet-4-5";
@@ -103,6 +105,22 @@ export async function callAI(params: {
       if (!response.ok) {
         const errText = await response.text().catch(() => "");
         console.error(`[ai] HTTP ${response.status} attempt ${attempt}/${AI_MAX_RETRIES}: ${errText.slice(0, 200)}`);
+
+        // P8-EK (2026-07-29): AI hataları BUGÜNE KADAR yalnız console.error'daydı —
+        // yani DB'den görünmezdi. Canlı bot cevap üretemez hale geldiğinde
+        // (bugün 6/6 fallback) kök sebebi okuyacak HİÇBİR kalıcı iz yoktu.
+        // Artık system_errors'a düşüyor: status + Anthropic'in kendi hata metni.
+        await logCritical({
+          event: "AI_HTTP_ERROR",
+          error: new Error(`Anthropic HTTP ${response.status}`),
+          context: {
+            status: response.status,
+            attempt,
+            model: AI_MODEL,
+            body: errText.slice(0, 300),
+          },
+          severity: response.status === 429 || response.status === 529 ? "warning" : "error",
+        }).catch(() => {});
 
         // O1: 429 (rate limit) artık retry edilebilir. Retry-After header respekt edilir.
         const isRateLimit = response.status === 429;

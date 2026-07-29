@@ -1228,7 +1228,9 @@
       "agencies": "агентств",
       "noLocationInfo": "Данные о местоположении не найдены",
       "noLocationInfoDesc": "Ещё ни одно агентство не ввело данные о местоположении.",
-      "pendingLeads": "Ожидающие заявки"
+      "pendingLeads": "Ожидающие заявки",
+      "notifGapTitle": "Уведомления WhatsApp отключены — укажите номер",
+      "notifGapAction": "Настройки"
     },
     "toast": {
       "success": "Успешно! ✅",

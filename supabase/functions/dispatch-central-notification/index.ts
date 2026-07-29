@@ -178,6 +178,36 @@ async function logSend(
   }
 }
 
+// ─── P8-3 (2026-07-29): SESSİZ ATLAMA SAYACI ────────────────────────────────
+// Teşhis: 6 aktif acenteden 5'inde ayar satırı yoktu → dispatch NO_AGENCY_SETTINGS
+// ile çıkıyor, geriye yalnız bir console.info kalıyordu. Yani "hiç bildirim
+// gitmiyor" durumu HİÇBİR YERDE ölçülemiyordu.
+//
+// Neden ayrı sayaç tablosu değil de template_send_log: mevcut log-deseni bu ve
+// acente kendi bildirim geçmişini zaten buradan okuyor (AgencyNotificationSettings
+// → template_type LIKE 'agency_%'). Böylece acente "denendi ama numaran yok"
+// satırını KENDİ ekranında görür — P8-2 uyarı kartıyla aynı mesajı pekiştirir.
+//
+// EVENT_TOGGLE_OFF bilinçli tercih olduğu için loglanmaz — o sessizlik istenen
+// sessizlik. Buradaki üç sebep ise "acente farkında değil" halleri.
+async function logSkip(
+  sb: any,
+  agencyId: string,
+  eventType: string,
+  language: string,
+  reason: string,
+): Promise<void> {
+  await logSend(sb, {
+    agency_id:       agencyId,
+    template_type:   eventType,
+    language,
+    recipient_phone: "",            // NOT NULL → boş string; "numara yok"un kendisi
+    recipient_name:  null,
+    success:         false,
+    error_message:   `SKIPPED: ${reason}`,
+  });
+}
+
 // ─── Telefon normalize: Meta '+' istemiyor, sadece rakam ─────────────────────
 function normalizePhone(raw: string): string {
   return (raw || "").replace("whatsapp:", "").replace("+", "").trim();
@@ -329,7 +359,10 @@ serve(async (req) => {
       // 4a) Acente ayarları
       const { data: settings, error: settingsErr } = await sb
         .from("agency_notification_settings")
-        .select("phone, enabled, notify_new_reservation, notify_support")
+        // P8-3 DÜZELTME: notify_new_lead kolonu SELECT'te YOKTU → settings[toggleCol]
+        // undefined dönüyordu, `=== false` kontrolü geçiyordu. Sonuç: acente
+        // "Hizmet Talebi" bildirimini kapatsa bile gönderim devam ederdi.
+        .select("phone, enabled, notify_new_reservation, notify_support, notify_new_lead")
         .eq("agency_id", targetAgencyId)
         .maybeSingle();
 
@@ -348,6 +381,7 @@ serve(async (req) => {
 
       if (!settings) {
         console.info(`[dispatch-central/agency] no settings row for agency=${targetAgencyId.slice(0, 8)} — skipping`);
+        await logSkip(sb, targetAgencyId, event_type, language, "NO_AGENCY_SETTINGS");
         return new Response(
           JSON.stringify({ ok: true, skipped: true, reason: "NO_AGENCY_SETTINGS" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -356,6 +390,7 @@ serve(async (req) => {
 
       if (!settings.enabled) {
         console.info(`[dispatch-central/agency] disabled for agency=${targetAgencyId.slice(0, 8)} — skipping`);
+        await logSkip(sb, targetAgencyId, event_type, language, "AGENCY_NOTIFICATIONS_DISABLED");
         return new Response(
           JSON.stringify({ ok: true, skipped: true, reason: "AGENCY_NOTIFICATIONS_DISABLED" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -364,7 +399,7 @@ serve(async (req) => {
 
       // Event-specific toggle
       const toggleCol = AGENCY_EVENT_TOGGLE[event_type];
-      if (toggleCol && settings[toggleCol] === false) {
+      if (toggleCol && (settings as Record<string, unknown>)[toggleCol] === false) {
         console.info(`[dispatch-central/agency] ${toggleCol}=false for agency=${targetAgencyId.slice(0, 8)} — skipping`);
         return new Response(
           JSON.stringify({ ok: true, skipped: true, reason: "EVENT_TOGGLE_OFF", toggle: toggleCol }),
@@ -375,6 +410,7 @@ serve(async (req) => {
       const agencyPhoneRaw = (settings.phone || "").trim();
       if (!agencyPhoneRaw) {
         console.info(`[dispatch-central/agency] no phone for agency=${targetAgencyId.slice(0, 8)} — skipping`);
+        await logSkip(sb, targetAgencyId, event_type, language, "NO_AGENCY_PHONE");
         return new Response(
           JSON.stringify({ ok: true, skipped: true, reason: "NO_AGENCY_PHONE" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

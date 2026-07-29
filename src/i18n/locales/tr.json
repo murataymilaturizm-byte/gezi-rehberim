@@ -1149,7 +1149,9 @@
       "conversationHistory": "30 gün konuşma geçmişi",
       "emailSupport": "Email destek",
       "whatsappSettings": "WhatsApp Ayarları",
-      "pendingLeads": "Bekleyen Talepler"
+      "pendingLeads": "Bekleyen Talepler",
+      "notifGapTitle": "WhatsApp bildirimleriniz kapalı — numara tanımlayın",
+      "notifGapAction": "Ayarlar"
     },
     "toast": {
       "success": "Başarılı! ✅",

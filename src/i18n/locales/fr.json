@@ -1194,7 +1194,9 @@
       "topCitiesByAgencies": "Villes avec le plus d'agences",
       "location": "Emplacement",
       "agencyCount": "Nombre d'agences",
-      "pendingLeads": "Demandes en attente"
+      "pendingLeads": "Demandes en attente",
+      "notifGapTitle": "Vos notifications WhatsApp sont désactivées — ajoutez un numéro",
+      "notifGapAction": "Paramètres"
     },
     "toast": {
       "success": "Succès! ✅",

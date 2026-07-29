@@ -1194,7 +1194,9 @@
       "agencies": "Agenturen",
       "noLocationInfo": "Keine Standortdaten gefunden",
       "noLocationInfoDesc": "Noch keine Agentur hat Standortdaten eingegeben.",
-      "pendingLeads": "Offene Anfragen"
+      "pendingLeads": "Offene Anfragen",
+      "notifGapTitle": "Ihre WhatsApp-Benachrichtigungen sind aus — Nummer hinterlegen",
+      "notifGapAction": "Einstellungen"
     },
     "toast": {
       "success": "Erfolgreich! ✅",

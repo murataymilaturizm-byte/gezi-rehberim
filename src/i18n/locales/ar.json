@@ -1194,7 +1194,9 @@
       "topCitiesByAgencies": "أكثر المدن التي تضم وكالات",
       "location": "الموقع",
       "agencyCount": "عدد الوكالات",
-      "pendingLeads": "طلبات معلقة"
+      "pendingLeads": "طلبات معلقة",
+      "notifGapTitle": "إشعارات واتساب معطلة — أضف رقمًا",
+      "notifGapAction": "الإعدادات"
     },
     "toast": {
       "success": "نجح! ✅",
