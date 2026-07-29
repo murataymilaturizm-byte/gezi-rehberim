@@ -92,6 +92,38 @@ export const LEAD_RESUME: Record<string, string> = {
   ar: "لنكمل من حيث توقفنا ✨",
 };
 
+/** Mesaj TUR bağlamında mı? (W3-EK: detay-beklerken gelen alakasız/tur mesajını ayırt eder) */
+export function isTourContextMessage(message: string, catalog?: LeadCatalog | string | null): boolean {
+  if (!message) return false;
+  if (LEAD_TOUR_CONTEXT_RE.test(message)) return true;
+  const _cat: LeadCatalog | null =
+    typeof catalog === "string" ? { currentTourTitle: catalog } : (catalog || null);
+  return mentionsCatalog(message.toLowerCase(), _cat);
+}
+
+// W3-EK (2026-07-29): akış-DIŞI lead'de DETAY toplama. Taslak kayıt İLK mesajda
+// açılır (kayıp yok), detay gelirse request_text güncellenir.
+export const LEAD_ASK_DETAIL: Record<string, string> = {
+  tr: "Talebinizi acentemize iletmek isterim! ✍️ Kısaca detay verir misiniz? (örn. nereden nereye, hangi tarih, kaç kişi)",
+  en: "I'd like to forward your request to our agency! ✍️ Could you give a few details? (e.g. from/to, which date, how many people)",
+  de: "Ich leite Ihre Anfrage gerne an unsere Agentur weiter! ✍️ Können Sie kurz Details nennen? (z. B. von/nach, Datum, Personenzahl)",
+  fr: "Je transmets volontiers votre demande à notre agence ! ✍️ Pouvez-vous donner quelques détails ? (ex. de/à, quelle date, combien de personnes)",
+  es: "¡Con gusto transmito su solicitud a nuestra agencia! ✍️ ¿Puede darme algunos detalles? (p. ej. desde/hasta, qué fecha, cuántas personas)",
+  ru: "С радостью передам вашу заявку агентству! ✍️ Уточните, пожалуйста, детали (откуда/куда, какая дата, сколько человек).",
+  ar: "يسعدني إرسال طلبك إلى وكالتنا! ✍️ هل يمكنك ذكر بعض التفاصيل؟ (مثلاً من/إلى، التاريخ، عدد الأشخاص)",
+};
+
+/** Telefon bilinmiyorsa (demo/web yüzeyi) detay + telefon birlikte istenir. */
+export const LEAD_ASK_DETAIL_PHONE: Record<string, string> = {
+  tr: "Talebinizi acentemize iletmek isterim! ✍️ Kısaca detay (nereden nereye, tarih, kişi sayısı) ve size dönebilmemiz için telefon numaranızı yazar mısınız?",
+  en: "I'd like to forward your request! ✍️ Could you share a few details (from/to, date, people) and your phone number so we can reach you?",
+  de: "Ich leite Ihre Anfrage gerne weiter! ✍️ Bitte nennen Sie kurz Details (von/nach, Datum, Personen) und Ihre Telefonnummer für den Rückruf.",
+  fr: "Je transmets volontiers votre demande ! ✍️ Pouvez-vous préciser quelques détails (de/à, date, personnes) et votre numéro de téléphone ?",
+  es: "¡Con gusto transmito su solicitud! ✍️ ¿Puede indicar algunos detalles (desde/hasta, fecha, personas) y su número de teléfono?",
+  ru: "С радостью передам вашу заявку! ✍️ Укажите, пожалуйста, детали (откуда/куда, дата, человек) и номер телефона для связи.",
+  ar: "يسعدني إرسال طلبك! ✍️ يرجى ذكر بعض التفاصيل (من/إلى، التاريخ، عدد الأشخاص) ورقم هاتفك للتواصل.",
+};
+
 export const LEAD_ASK_PHONE: Record<string, string> = {
   tr: "Talebinizi aldım! Size dönüş yapabilmemiz için telefon numaranızı yazar mısınız? 📱",
   en: "Got your request! Could you share your phone number so we can get back to you? 📱",

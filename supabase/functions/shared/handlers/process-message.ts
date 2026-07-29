@@ -29,7 +29,7 @@ import { isEchoSafe } from "../services/echo-sanitize.ts";
 import { MONTH_ALTERNATION, MONTH_NAME_TO_NUMBER } from "../constants/month-names.ts";
 import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
-import { detectOutOfScopeLead, LEAD_ACK, LEAD_RESUME, LEAD_ASK_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
+import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 import { logCritical } from "../../_shared/error-sink.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -537,51 +537,102 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       return !_le;
     };
 
-    // (A) 2. adım: telefon bekleniyordu
-    if (context.pendingLeadCapture) {
-      const _pm = message.match(/\+?\d[\d\s.\-()]{7,17}\d/);
-      const _phone = _pm ? _pm[0].replace(/[^\d+]/g, "") : null;
-      // W3-b (2026-07-29): PROMISE-AFTER-WRITE — yazım başarısızsa "ilettim" DEME.
-      const _okA = await _insertLead(context.pendingLeadCapture.request, _phone, context.reservationInfo?.fullName || null);
-      const _ctxA = { ...context, pendingLeadCapture: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
-      const _replyA = _okA
-        ? (LEAD_SAVED[_leadLang] || LEAD_SAVED.tr)
-        : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
-      await _save(_replyA, _ctxA);
-      await adapter.sendResponse(_replyA);
-      return { success: true, response: _replyA, newContext: _ctxA };
-    }
-
-    // (B)+(C) yeni tespit
-    if (detectOutOfScopeLead(message, {
+    const _leadCatalog = {
       currentTourTitle: context.currentTour?.title,
       tourTitles: (tours || []).map((t: any) => t?.title).filter(Boolean),
       destinations: (tours || []).map((t: any) => t?.destination).filter(Boolean),
-    })) {
+    };
+
+    // (A) W3-EK (2026-07-29): DETAY adımı — taslak kayıt ZATEN açık (kayıp yok).
+    // Gelen mesaj: (a) TUR bağlamı/alakasız → taslak MEVCUT metinle kesinleşir,
+    // pending temizlenir ve NORMAL AKIŞ SÜRER (return YOK); (b) aksi halde DETAY
+    // sayılır → request_text güncellenir (+ telefon varsa doldurulur) → "ilettim".
+    // ÇİFT-TASLAK KURALI: detay-penceresinde gelen İKİNCİ tur-dışı istek de DETAY
+    // sayılır (TEK lead'e birleşir) — acenteye tek iş düşer; pencere kapandıktan
+    // sonraki yeni istek AYRI lead açar.
+    if (context.pendingLeadCapture) {
+      const _pend = context.pendingLeadCapture;
+      const _unrelated = isTourContextMessage(message, _leadCatalog);
+      if (!_unrelated) {
+        const _pm = message.match(/\+?\d[\d\s.\-()]{7,17}\d/);
+        const _phone = _pm ? _pm[0].replace(/[^\d+]/g, "") : null;
+        const _merged = `${_pend.request} — Detay: ${message}`.slice(0, 1000);
+        let _okA = true;
+        if (_pend.leadId) {
+          const _upd: any = { request_text: _merged };
+          if (_phone) _upd.phone = _phone;
+          const { error: _ue } = await supabase.from("agency_leads").update(_upd).eq("id", _pend.leadId);
+          if (_ue) {
+            console.error("[W3-EK lead] detay güncelleme başarısız:", _ue.message);
+            await logCritical({ event: "LEAD_DETAIL_UPDATE_FAIL", error: _ue.message, context: { leadId: _pend.leadId }, agencyId: agency.id, severity: "warning" }).catch(() => {});
+            // Taslak kayıt DURUYOR → müşteriye yine "ilettim" demek DOĞRU (yalan değil).
+          }
+        } else {
+          // Taslak açılamamıştı (eski akış/insert hatası) → şimdi yazmayı dene.
+          _okA = await _insertLead(_merged, _phone, context.reservationInfo?.fullName || null);
+        }
+        const _ctxA = { ...context, pendingLeadCapture: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
+        const _replyA = _okA ? (LEAD_SAVED[_leadLang] || LEAD_SAVED.tr) : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
+        await _save(_replyA, _ctxA);
+        await adapter.sendResponse(_replyA);
+        return { success: true, response: _replyA, newContext: _ctxA };
+      }
+      // (a) alakasız/tur-sorusu → taslak mevcut metinle kesinleşti; akış devam etsin.
+      console.log("[W3-EK lead] detay yerine tur-bağlamı geldi → taslak kesinleşti, akış sürüyor");
+      (context as any).pendingLeadCapture = undefined;
+    }
+
+    // (B)+(C) yeni tespit
+    if (detectOutOfScopeLead(message, _leadCatalog)) {
       const _info: any = context.reservationInfo || {};
       const _inFlow = !!_info.tourId && ["COLLECTING_INFO", "CONFIRMING"].includes(context.stage);
       const _phoneFromState = _info.phone || (_idIsPhone ? String(adapter.identifier) : null);
 
-      if (_inFlow || context.stage === "COMPLETED" || _phoneFromState) {
-        // W3-b: önce YAZ, sonra vaat et. Başarısızsa "ilettim" yerine dürüst mesaj
-        // (akış-içinde de resume satırı eklenir — akış bölünmesin).
+      // (B) YALNIZ REZERVASYON-İÇİ: kısa ack + akışa dön, DETAY SORULMAZ (akış bölünmez).
+      // W3-EK NOT: ayrım "telefon biliniyor mu" DEĞİL "akış içinde mi" — WhatsApp'ta
+      // telefon her zaman bilinir; eski koşul yüzünden akış-dışı WhatsApp kullanıcısına
+      // detay hiç sorulamazdı (canlı W3 vakası tam buydu: BROWSING + telefon var).
+      if (_inFlow) {
+        // W3-b: önce YAZ, sonra vaat et.
         const _okB = await _insertLead(message, _phoneFromState, _info.fullName || null);
         const _replyB = !_okB
-          ? (_inFlow
-              ? `${LEAD_FAILED[_leadLang] || LEAD_FAILED.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
-              : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr))
-          : _inFlow
-          ? `${LEAD_ACK[_leadLang] || LEAD_ACK.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
-          : (LEAD_ACK[_leadLang] || LEAD_ACK.tr);
+          ? `${LEAD_FAILED[_leadLang] || LEAD_FAILED.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
+          : `${LEAD_ACK[_leadLang] || LEAD_ACK.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`;
         const _ctxB = { ...context, lastUserMessage: message, messageCount: context.messageCount + 1 };
         await _save(_replyB, _ctxB);
         await adapter.sendResponse(_replyB);
         return { success: true, response: _replyB, newContext: _ctxB };
       }
 
-      // (C) akış-dışı + telefon bilinmiyor → 2-adım toplama
-      const _ctxC = { ...context, pendingLeadCapture: { request: message }, lastUserMessage: message, messageCount: context.messageCount + 1 };
-      const _replyC = LEAD_ASK_PHONE[_leadLang] || LEAD_ASK_PHONE.tr;
+      // (C) W3-EK: akış-DIŞI → TASLAK kaydı HEMEN aç (müşteri hiç cevap vermese bile
+      // talep kaybolmaz), sonra DETAY iste. Telefon bilinmiyorsa detay+telefon birlikte.
+      const { data: _draft, error: _de } = await supabase
+        .from("agency_leads")
+        .insert({
+          agency_id: agency.id, phone: _phoneFromState, full_name: _info.fullName || null,
+          request_text: message.slice(0, 1000), source_stage: context.stage, status: "new",
+        })
+        .select("id")
+        .single();
+      if (_de) {
+        console.error("[W3-EK lead] taslak açılamadı:", _de.message);
+        await logCritical({ event: "LEAD_INSERT_FAIL", error: _de.message, context: { stage: context.stage, channel: adapter.channel, draft: true }, agencyId: agency.id, severity: "error" }).catch(() => {});
+        const _replyF = LEAD_FAILED[_leadLang] || LEAD_FAILED.tr;
+        const _ctxF = { ...context, lastUserMessage: message, messageCount: context.messageCount + 1 };
+        await _save(_replyF, _ctxF);
+        await adapter.sendResponse(_replyF);
+        return { success: true, response: _replyF, newContext: _ctxF };
+      }
+      console.log(`[W3-EK lead] taslak açıldı id=${_draft?.id?.slice(0, 8)} → detay isteniyor`);
+      const _ctxC = {
+        ...context,
+        pendingLeadCapture: { request: message, leadId: _draft?.id },
+        lastUserMessage: message,
+        messageCount: context.messageCount + 1,
+      };
+      const _replyC = _phoneFromState
+        ? (LEAD_ASK_DETAIL[_leadLang] || LEAD_ASK_DETAIL.tr)
+        : (LEAD_ASK_DETAIL_PHONE[_leadLang] || LEAD_ASK_DETAIL_PHONE.tr);
       await _save(_replyC, _ctxC);
       await adapter.sendResponse(_replyC);
       return { success: true, response: _replyC, newContext: _ctxC };

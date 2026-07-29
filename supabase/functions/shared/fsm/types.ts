@@ -127,7 +127,8 @@ export interface ConversationContext {
   pendingCancelConfirm?: boolean;
   // P4-3 (2026-07-28): akış-DIŞI tur-dışı-talep 2-adım toplama — ilk mesaj request'i
   // taşır, sonraki mesajdan telefon beklenir (gelmese de kayıt atılır, tek-tekrar).
-  pendingLeadCapture?: { request: string };
+  // W3-EK (2026-07-29): leadId = İLK mesajda açılan TASLAK kaydın id'si (kayıp-koruma).
+  pendingLeadCapture?: { request: string; leadId?: string };
 
   // 2026-07-25 §35-7 (PAKET-B): CONFIRMING'de düşük-güven alan-değeri için değer-echo
   // teyit bekleme-durumu ("Kişi sayısını 3 yapayım mı?"). TEK-TURN-ömür. YALNIZ CONFIRMING'de
