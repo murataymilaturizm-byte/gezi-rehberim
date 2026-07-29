@@ -1190,7 +1190,8 @@
       "agencies": "agencies",
       "noLocationInfo": "No Location Data Found",
       "noLocationInfoDesc": "No agency has entered location information yet. Geographic distribution will be shown here once agencies add city and region data.",
-      "superAdminDescription": "Monitor the overall status and usage statistics of all agencies here. Use the \"Agencies\" tab for detailed management."
+      "superAdminDescription": "Monitor the overall status and usage statistics of all agencies here. Use the \"Agencies\" tab for detailed management.",
+      "pendingLeads": "Pending Requests"
     },
     "toast": {
       "success": "Success! ✅",
@@ -2064,7 +2065,8 @@
         "new": "New",
         "contacted": "Contacted",
         "closed": "Closed"
-      }
+      },
+      "description": "Out-of-scope service requests captured by the bot (flight, hotel, transfer, visa)."
     }
   },
   "auth": {
@@ -2738,7 +2740,9 @@
       "new": "New",
       "reviewed": "Reviewed",
       "resolved": "Resolved"
-    }
+    },
+    "tabComplaints": "Complaints",
+    "tabLeads": "Service Requests"
   },
   "blog": {
     "minutesRead": "{{count}} min read",
@@ -4097,7 +4101,8 @@
       "eventsLabel": "Notification Types",
       "events": {
         "new_reservation": "New Reservation",
-        "new_support": "Support & Complaint"
+        "new_support": "Support & Complaint",
+        "new_lead": "Service Request"
       },
       "eventReservationHint": "Get notified when a new reservation is created in your system.",
       "eventSupportHint": "Get notified when a customer sends a support/complaint via WhatsApp.",
@@ -4114,7 +4119,8 @@
         "phone": "Phone",
         "status": "Status",
         "error": "Error"
-      }
+      },
+      "eventLeadHint": "Get notified when a customer asks about a non-tour service (flight, hotel, transfer, visa)."
     }
   },
   "operations": {

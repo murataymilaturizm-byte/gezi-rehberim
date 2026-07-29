@@ -1193,7 +1193,8 @@
       "geographicDistribution": "Distribution géographique",
       "topCitiesByAgencies": "Villes avec le plus d'agences",
       "location": "Emplacement",
-      "agencyCount": "Nombre d'agences"
+      "agencyCount": "Nombre d'agences",
+      "pendingLeads": "Demandes en attente"
     },
     "toast": {
       "success": "Succès! ✅",
@@ -2064,7 +2065,8 @@
         "new": "Nouveau",
         "contacted": "Contacté",
         "closed": "Fermé"
-      }
+      },
+      "description": "Demandes hors circuit captées par le bot (vol, hôtel, transfert, visa)."
     }
   },
   "auth": {
@@ -2658,7 +2660,9 @@
       "new": "Nouveau",
       "reviewed": "Examiné",
       "resolved": "Résolu"
-    }
+    },
+    "tabComplaints": "Réclamations",
+    "tabLeads": "Demandes de service"
   },
   "cta": {
     "title": "Prêt à commencer ?",
@@ -4097,7 +4101,8 @@
       "eventsLabel": "Types de notification",
       "events": {
         "new_reservation": "Nouvelle Réservation",
-        "new_support": "Demande & Plainte"
+        "new_support": "Demande & Plainte",
+        "new_lead": "Demande de service"
       },
       "eventReservationHint": "Soyez averti lorsqu'une nouvelle réservation est créée dans votre système.",
       "eventSupportHint": "Soyez averti lorsqu'un client envoie une demande/plainte via WhatsApp.",
@@ -4114,7 +4119,8 @@
         "phone": "Numéro",
         "status": "État",
         "error": "Erreur"
-      }
+      },
+      "eventLeadHint": "Soyez notifié quand un client demande un service hors circuit (vol, hôtel, transfert, visa)."
     }
   },
   "operations": {

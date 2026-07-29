@@ -1148,7 +1148,8 @@
       "messagesPerMonth": "500 mesaj/ay",
       "conversationHistory": "30 gün konuşma geçmişi",
       "emailSupport": "Email destek",
-      "whatsappSettings": "WhatsApp Ayarları"
+      "whatsappSettings": "WhatsApp Ayarları",
+      "pendingLeads": "Bekleyen Talepler"
     },
     "toast": {
       "success": "Başarılı! ✅",
@@ -2132,7 +2133,8 @@
         "new": "Yeni",
         "contacted": "Arandı",
         "closed": "Kapalı"
-      }
+      },
+      "description": "Bot'un yakaladığı tur dışı hizmet talepleri (uçak, otel, transfer, vize)."
     }
   },
   "auth": {
@@ -2758,7 +2760,9 @@
       "new": "Yeni",
       "reviewed": "İncelendi",
       "resolved": "Çözüldü"
-    }
+    },
+    "tabComplaints": "Şikayetler",
+    "tabLeads": "Hizmet Talepleri"
   },
   "common": {
     "unknown": "Bilinmiyor",
@@ -4196,7 +4200,8 @@
       "eventsLabel": "Bildirim Türleri",
       "events": {
         "new_reservation": "Yeni Rezervasyon",
-        "new_support": "Talep & Şikayet"
+        "new_support": "Talep & Şikayet",
+        "new_lead": "Hizmet Talebi"
       },
       "eventReservationHint": "Sisteme yeni bir rezervasyon düştüğünde bildirim alın.",
       "eventSupportHint": "Müşteri WhatsApp üzerinden talep/şikayet ilettiğinde bildirim alın.",
@@ -4213,7 +4218,8 @@
         "phone": "Numara",
         "status": "Durum",
         "error": "Hata"
-      }
+      },
+      "eventLeadHint": "Müşteri tur dışı bir hizmet (uçak, otel, transfer, vize) sorduğunda bildirim alın."
     }
   },
   "operations": {

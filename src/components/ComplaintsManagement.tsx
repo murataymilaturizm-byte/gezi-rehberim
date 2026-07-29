@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LeadsList } from "@/components/admin/registrations/LeadsList";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +33,8 @@ export function ComplaintsManagement() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  // P7-A: Hizmet Talepleri sekmesi (agency_leads) aynı ekranda
+  const [agencyIdP7, setAgencyIdP7] = useState<string | null>(null);
 
   useEffect(() => {
     fetchComplaints();
@@ -49,6 +53,7 @@ export function ComplaintsManagement() {
         .single();
 
       if (!agency) return;
+      setAgencyIdP7(agency.id);
 
       const { data, error } = await supabase
         .from('complaints')
@@ -106,6 +111,33 @@ export function ComplaintsManagement() {
 
   return (
     <div className="space-y-6">
+      {/* P7-A (2026-07-29): TEK ADRES — iki "talep" kavramı aynı ekranda iki sekmede.
+          Şikayetler = J-14/complaints (mevcut) · Hizmet Talepleri = agency_leads
+          (tur-dışı uçak/otel/transfer/vize). Kayıtlar'daki 4. görünüm KALDIRILDI:
+          canlı kanıt — acente lead'i "Talepler-Şikayetler"de aradı, Kayıtlar'da
+          olduğu için bulamadı. */}
+      <Tabs defaultValue="complaints" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsTrigger value="complaints">{t("complaints.tabComplaints", { defaultValue: "Şikayetler" })}</TabsTrigger>
+          <TabsTrigger value="leads">{t("complaints.tabLeads", { defaultValue: "Hizmet Talepleri" })}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="leads" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                {t("admin.leads.viewTitle", { defaultValue: "Talepler" })}
+              </CardTitle>
+              <CardDescription>{t("admin.leads.description", { defaultValue: "Bot'un yakaladığı tur dışı hizmet talepleri (uçak, otel, transfer, vize)." })}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LeadsList agencyId={agencyIdP7} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="complaints" className="mt-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -165,6 +197,8 @@ export function ComplaintsManagement() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

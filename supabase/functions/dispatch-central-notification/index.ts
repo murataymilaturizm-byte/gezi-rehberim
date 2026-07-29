@@ -45,7 +45,9 @@ type EventType =
   | "new_reservation"
   // Acente (Faz 2) — 'agency_' prefix'i akış ayrımının taşıyıcısı, isimlerle oynama
   | "agency_new_reservation"
-  | "agency_new_support";
+  | "agency_new_support"
+  // P7-C (2026-07-29): tur-dışı hizmet talebi (agency_leads)
+  | "agency_new_lead";
 
 const VALID_EVENT_TYPES: ReadonlySet<string> = new Set<EventType>([
   "new_agency_signup",
@@ -53,12 +55,14 @@ const VALID_EVENT_TYPES: ReadonlySet<string> = new Set<EventType>([
   "new_reservation",
   "agency_new_reservation",
   "agency_new_support",
+  "agency_new_lead",
 ]);
 
 // Acente akışı için event → toggle kolonu eşlemesi (agency_notification_settings).
 const AGENCY_EVENT_TOGGLE: Record<string, string> = {
   agency_new_reservation: "notify_new_reservation",
   agency_new_support:     "notify_support",
+  agency_new_lead:        "notify_new_lead",
 };
 
 function isAgencyEvent(et: string): boolean {
@@ -87,6 +91,8 @@ const EVENT_VARIABLE_ORDER: Record<string, readonly string[]> = {
   // Acente (Faz 2)
   agency_new_reservation: ["full_name", "tour_name", "date", "pax", "total_amount", "currency"],
   agency_new_support:     ["phone", "type", "message"],
+  // P7-C: {{1}}=talep özeti (ilk ~80 karakter), {{2}}=müşteri telefonu
+  agency_new_lead:        ["request_text", "phone"],
 };
 
 // ─── Variable helper'ları (mirror of send-template-message/index.ts:17-41) ─────

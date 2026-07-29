@@ -1227,7 +1227,8 @@
       "geographicDistributionDesc": "Distribución de agencias por ciudad y región (Top 10 ubicaciones)",
       "agencies": "agencias",
       "noLocationInfo": "No se encontraron datos de ubicación",
-      "noLocationInfoDesc": "Ninguna agencia ha ingresado datos de ubicación aún."
+      "noLocationInfoDesc": "Ninguna agencia ha ingresado datos de ubicación aún.",
+      "pendingLeads": "Solicitudes pendientes"
     },
     "toast": {
       "success": "¡Éxito! ✅",
@@ -2098,7 +2099,8 @@
         "new": "Nueva",
         "contacted": "Contactado",
         "closed": "Cerrada"
-      }
+      },
+      "description": "Solicitudes fuera de tour captadas por el bot (vuelo, hotel, traslado, visado)."
     }
   },
   "auth": {
@@ -2692,7 +2694,9 @@
       "new": "Nuevo",
       "reviewed": "Revisado",
       "resolved": "Resuelto"
-    }
+    },
+    "tabComplaints": "Quejas",
+    "tabLeads": "Solicitudes de servicio"
   },
   "blog": {
     "minutesRead": "{{count}} min de lectura",
@@ -4097,7 +4101,8 @@
       "eventsLabel": "Tipos de notificación",
       "events": {
         "new_reservation": "Nueva Reserva",
-        "new_support": "Solicitud y Queja"
+        "new_support": "Solicitud y Queja",
+        "new_lead": "Solicitud de servicio"
       },
       "eventReservationHint": "Reciba una notificación cuando se cree una nueva reserva en su sistema.",
       "eventSupportHint": "Reciba una notificación cuando un cliente envíe una solicitud/queja por WhatsApp.",
@@ -4114,7 +4119,8 @@
         "phone": "Número",
         "status": "Estado",
         "error": "Error"
-      }
+      },
+      "eventLeadHint": "Reciba aviso cuando un cliente pregunte por un servicio fuera de tour (vuelo, hotel, traslado, visado)."
     }
   },
   "operations": {

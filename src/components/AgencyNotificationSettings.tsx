@@ -31,6 +31,7 @@ interface NotificationSettings {
   enabled: boolean;
   notify_new_reservation: boolean;
   notify_support: boolean;
+  notify_new_lead?: boolean;
 }
 
 interface SendLogRow {
@@ -69,6 +70,7 @@ export default function AgencyNotificationSettings() {
   const [enabled, setEnabled] = useState(false);
   const [notifyNewReservation, setNotifyNewReservation] = useState(true);
   const [notifySupport, setNotifySupport] = useState(true);
+  const [notifyNewLead, setNotifyNewLead] = useState(true); // P7-C: varsayılan AÇIK
 
   // History
   const [history, setHistory] = useState<SendLogRow[]>([]);
@@ -106,7 +108,7 @@ export default function AgencyNotificationSettings() {
       // Ayarları çek — yoksa default form değerleri kalır
       const { data: settings, error: settingsErr } = await (supabase as any)
         .from("agency_notification_settings")
-        .select("agency_id, phone, enabled, notify_new_reservation, notify_support")
+        .select("agency_id, phone, enabled, notify_new_reservation, notify_support, notify_new_lead")
         .eq("agency_id", agencyData.id)
         .maybeSingle();
 
@@ -118,6 +120,7 @@ export default function AgencyNotificationSettings() {
         setEnabled(!!s.enabled);
         setNotifyNewReservation(s.notify_new_reservation !== false);
         setNotifySupport(s.notify_support !== false);
+        setNotifyNewLead((s as any).notify_new_lead !== false);
       }
       setLoading(false);
 
@@ -165,6 +168,7 @@ export default function AgencyNotificationSettings() {
         enabled,
         notify_new_reservation: notifyNewReservation,
         notify_support: notifySupport,
+        notify_new_lead: notifyNewLead,
       };
 
       const { error } = await (supabase as any)
@@ -298,6 +302,25 @@ export default function AgencyNotificationSettings() {
                   id="notif-support"
                   checked={notifySupport}
                   onCheckedChange={setNotifySupport}
+                  disabled={togglesDisabled}
+                />
+              </div>
+              {/* P7-C (2026-07-29): tur-dışı hizmet talebi bildirimi (varsayılan AÇIK) */}
+              <div className="flex items-center justify-between gap-3 rounded-md border p-3 mt-2">
+                <div className="space-y-0.5">
+                  <Label htmlFor="notif-lead" className="text-sm font-medium cursor-pointer">
+                    {t("agency.notifications.events.new_lead", { defaultValue: "Hizmet Talebi" })}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t("agency.notifications.eventLeadHint", {
+                      defaultValue: "Müşteri tur dışı bir hizmet (uçak, otel, transfer, vize) sorduğunda bildirim alın.",
+                    })}
+                  </p>
+                </div>
+                <Switch
+                  id="notif-lead"
+                  checked={notifyNewLead}
+                  onCheckedChange={setNotifyNewLead}
                   disabled={togglesDisabled}
                 />
               </div>

@@ -31,8 +31,7 @@ import { DepartureDetailDialog } from "@/components/admin/registrations/Departur
 import type { DepartureGroup } from "@/components/admin/registrations/RegistrationsByDeparture";
 import type { RegistrationsView } from "@/components/admin/registrations/types";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { List, Layers, CalendarDays, Inbox } from "lucide-react";
-import { LeadsList } from "@/components/admin/registrations/LeadsList";
+import { List, Layers, CalendarDays } from "lucide-react";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { CustomerAnalytics } from "@/components/CustomerAnalytics";
@@ -1165,22 +1164,11 @@ const Admin = () => {
                               {t("admin.registrations.viewList", { defaultValue: "Liste" })}
                             </span>
                           </TabsTrigger>
-                          {/* P4-3 (2026-07-28): TUR-DIŞI TALEPLER — 4. görünüm */}
-                          <TabsTrigger
-                            value="leads"
-                            className="relative gap-2 px-4 py-2.5 h-auto rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground hover:text-foreground transition-colors after:absolute after:left-0 after:right-0 after:bottom-[-1px] after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:origin-center after:transition-transform after:duration-200"
-                          >
-                            <Inbox className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                              {t("admin.leads.viewTitle", { defaultValue: "Talepler" })}
-                            </span>
-                          </TabsTrigger>
+                          {/* P7-A (2026-07-29): "Talepler" 4. görünümü KALDIRILDI —
+                              hizmet talepleri artık Talepler-Şikayetler ekranında
+                              "Hizmet Talepleri" sekmesinde (tek adres, kısayolsuz). */}
                         </TabsList>
                       </Tabs>
-
-                      {registrationsView === "leads" && (
-                        <LeadsList agencyId={userAgencyId} />
-                      )}
 
                       {registrationsView === "list" && (
                         <RegistrationsList

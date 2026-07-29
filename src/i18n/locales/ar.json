@@ -1193,7 +1193,8 @@
       "geographicDistribution": "التوزيع الجغرافي",
       "topCitiesByAgencies": "أكثر المدن التي تضم وكالات",
       "location": "الموقع",
-      "agencyCount": "عدد الوكالات"
+      "agencyCount": "عدد الوكالات",
+      "pendingLeads": "طلبات معلقة"
     },
     "toast": {
       "success": "نجح! ✅",
@@ -2064,7 +2065,8 @@
         "new": "جديد",
         "contacted": "تم التواصل",
         "closed": "مغلق"
-      }
+      },
+      "description": "طلبات خارج الجولات التي التقطها الروبوت (طيران، فندق، نقل، تأشيرة)."
     }
   },
   "auth": {
@@ -2658,7 +2660,9 @@
       "new": "جديد",
       "reviewed": "تمت المراجعة",
       "resolved": "تم الحل"
-    }
+    },
+    "tabComplaints": "الشكاوى",
+    "tabLeads": "طلبات الخدمة"
   },
   "cta": {
     "title": "هل أنت مستعد للبدء؟",
@@ -4097,7 +4101,8 @@
       "eventsLabel": "أنواع الإشعارات",
       "events": {
         "new_reservation": "حجز جديد",
-        "new_support": "طلب وشكوى"
+        "new_support": "طلب وشكوى",
+        "new_lead": "طلب خدمة"
       },
       "eventReservationHint": "احصل على إشعار عند إنشاء حجز جديد في نظامك.",
       "eventSupportHint": "احصل على إشعار عندما يرسل العميل طلبًا/شكوى عبر WhatsApp.",
@@ -4114,7 +4119,8 @@
         "phone": "الرقم",
         "status": "الحالة",
         "error": "الخطأ"
-      }
+      },
+      "eventLeadHint": "احصل على إشعار عندما يسأل العميل عن خدمة خارج الجولات (طيران، فندق، نقل، تأشيرة)."
     }
   },
   "operations": {

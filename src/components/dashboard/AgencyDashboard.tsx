@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { DollarSign, Users, TrendingUp, Target, Sun, AlertCircle, RefreshCw } from "lucide-react";
+import { DollarSign, Users, TrendingUp, Target, Sun, AlertCircle, RefreshCw, Inbox } from "lucide-react";
 import { useAgencyDashboardData } from "@/hooks/useAgencyDashboardData";
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardSkeleton } from "@/components/admin/skeletons/DashboardSkeleton";
 import { WelcomeHeader } from "@/components/admin/dashboard/WelcomeHeader";
 import { HeroKPICard } from "@/components/admin/dashboard/HeroKPICard";
@@ -43,8 +44,20 @@ export const AgencyDashboard = ({
 
   // Madde 5: Rezervasyon detay dialog'u — Rezervasyonlar sayfasıyla AYNI bileşen.
   // Ödeme ekleme + WhatsApp butonu + durum güncelleme buradan da çalışır.
+  // P7-C (2026-07-29): bekleyen hizmet talebi sayacı (status=new)
+  const [pendingLeads, setPendingLeads] = useState(0);
   const [detailReg, setDetailReg] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  useEffect(() => {
+    if (!agencyId) return;
+    (supabase as any)
+      .from("agency_leads")
+      .select("id", { count: "exact", head: true })
+      .eq("agency_id", agencyId)
+      .eq("status", "new")
+      .then(({ count }: any) => setPendingLeads(count ?? 0));
+  }, [agencyId]);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -166,6 +179,21 @@ export const AgencyDashboard = ({
           icon={<Target className="h-4 w-4 text-primary" />}
         />
       </div>
+
+      {/* P7-C: Bekleyen Talepler — tıkla → Talepler-Şikayetler > Hizmet Talepleri */}
+      {pendingLeads > 0 && (
+        <button
+          type="button"
+          onClick={() => onTabChange?.("complaints")}
+          className="w-full flex items-center justify-between gap-3 rounded-lg border-2 border-red-500/40 bg-red-500/5 px-4 py-3 text-left hover:bg-red-500/10 transition-colors"
+        >
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Inbox className="h-4 w-4 text-red-600" />
+            {t("admin.dashboard.pendingLeads", { defaultValue: "Bekleyen Talepler" })}
+          </span>
+          <span className="text-lg font-bold text-red-600 tabular-nums">{pendingLeads}</span>
+        </button>
+      )}
 
       {/* 3. Main grid: Trend Chart + Quick Actions */}
       <div className="grid gap-4 lg:grid-cols-3">

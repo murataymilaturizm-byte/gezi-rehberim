@@ -516,11 +516,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   {
     const _leadLang = context.language || "tr";
     const _idIsPhone = /^\+?\d{8,15}$/.test(String(adapter.identifier || "").replace(/[\s.-]/g, ""));
+    // P7-C: eklenen kaydın id'si DÖNER — kesinleşme bildiriminde notified_at damgası
+    // vurulabilsin (yoksa 15-dk süpürücü aynı lead'i İKİNCİ kez bildirirdi).
+    let _lastLeadId: string | null = null;
     const _insertLead = async (req: string, phone: string | null, name: string | null) => {
-      const { error: _le } = await supabase.from("agency_leads").insert({
+      const { data: _row, error: _le } = await supabase.from("agency_leads").insert({
         agency_id: agency.id, phone, full_name: name,
         request_text: req.slice(0, 1000), source_stage: context.stage, status: "new",
-      });
+      }).select("id").single();
+      _lastLeadId = _row?.id ?? null;
       if (_le) {
         console.error("[P4-3 lead] insert failed:", _le.message);
         // W3-b: sessiz yutma YOK — panel "Sistem Hataları"na düşsün.
@@ -541,6 +545,32 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       currentTourTitle: context.currentTour?.title,
       tourTitles: (tours || []).map((t: any) => t?.title).filter(Boolean),
       destinations: (tours || []).map((t: any) => t?.destination).filter(Boolean),
+    };
+
+    // P7-C (2026-07-29): KESİNLEŞME bildirimi — TASLAKTA DEĞİL (spam-kuralı).
+    // ① admin_notifications (NotificationCenter + dashboard "Bekleyen Talepler" kartı)
+    // ② merkezi WhatsApp dispatch (agency_new_lead → turzz_acente_hizmet_talebi;
+    //    şablon Meta'da APPROVED olana kadar dispatch tarafında DOĞAL-KAPALI)
+    // ③ notified_at damgası → 15-dk süpürücü aynı lead'i TEKRAR bildirmez.
+    const _notifyLeadFinal = async (leadId: string | null | undefined, reqText: string, phone: string | null) => {
+      try {
+        await supabase.from("admin_notifications").insert({
+          agency_id: agency.id,
+          type: "new_lead",
+          title: "🔔 " + reqText.slice(0, 60),
+          description: phone || "",
+          metadata: { lead_id: leadId || null, phone },
+        });
+        await supabase.rpc("_dispatch_central_notification", {
+          p_event_type: "agency_new_lead",
+          p_payload: { agency_id: agency.id, lead_id: leadId || null, request_text: reqText.slice(0, 80), phone: phone || "-" },
+        });
+        if (leadId) {
+          await supabase.from("agency_leads").update({ notified_at: new Date().toISOString() }).eq("id", leadId);
+        }
+      } catch (_ne) {
+        console.error("[P7-C] lead bildirimi başarısız (akış bozulmaz):", _ne instanceof Error ? _ne.message : _ne);
+      }
     };
 
     // (A) W3-EK (2026-07-29): DETAY adımı — taslak kayıt ZATEN açık (kayıp yok).
@@ -576,6 +606,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           // Taslak açılamamıştı (eski akış/insert hatası) → şimdi yazmayı dene.
           _okA = await _insertLead(_merged, _phone, context.reservationInfo?.fullName || null);
         }
+        if (_okA) await _notifyLeadFinal(_pend.leadId ?? _lastLeadId, _merged, _phone); // P7-C: TEK kesinleşme bildirimi
         const _ctxA = { ...context, pendingLeadCapture: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
         const _replyA = _okA ? (LEAD_SAVED[_leadLang] || LEAD_SAVED.tr) : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
         await _save(_replyA, _ctxA);
@@ -600,6 +631,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       if (_inFlow) {
         // W3-b: önce YAZ, sonra vaat et.
         const _okB = await _insertLead(message, _phoneFromState, _info.fullName || null);
+        if (_okB) await _notifyLeadFinal(_lastLeadId, message, _phoneFromState); // P7-C: akış-içi lead ANINDA kesindir
         const _replyB = !_okB
           ? `${LEAD_FAILED[_leadLang] || LEAD_FAILED.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
           : `${LEAD_ACK[_leadLang] || LEAD_ACK.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`;
