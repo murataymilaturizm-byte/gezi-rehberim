@@ -552,7 +552,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // sonraki yeni istek AYRI lead açar.
     if (context.pendingLeadCapture) {
       const _pend = context.pendingLeadCapture;
-      const _unrelated = isTourContextMessage(message, _leadCatalog);
+      // W3-EK canlı-düzeltme (2026-07-29): detay-penceresinde KATALOG-adı vetosu
+      // UYGULANMAZ — yalnız açık tur-bağlamı (tur/tour/dahil/circuit…) alakasız sayılır.
+      // KANIT: "İstanbul'dan Antalya'ya, 5 Ağustos, 2 kişi" detayı, "Antalya" katalog
+      // destinasyonu olduğu için alakasız sanılıp DETAY KAYBOLUYORDU. Müşteriden
+      // "nereden nereye" istendiğinde şehir adı BEKLENEN cevaptır.
+      const _unrelated = isTourContextMessage(message);
       if (!_unrelated) {
         const _pm = message.match(/\+?\d[\d\s.\-()]{7,17}\d/);
         const _phone = _pm ? _pm[0].replace(/[^\d+]/g, "") : null;
