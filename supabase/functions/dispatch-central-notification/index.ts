@@ -208,10 +208,16 @@ async function logSkip(
   });
 }
 
-// ─── Telefon normalize: Meta '+' istemiyor, sadece rakam ─────────────────────
-function normalizePhone(raw: string): string {
-  return (raw || "").replace("whatsapp:", "").replace("+", "").trim();
-}
+// ─── Telefon normalize ───────────────────────────────────────────────────────
+// F-D2-1 (2026-07-31): buradaki YEREL kopya kaldırıldı, tek-kaynak import edildi.
+// Denetimde (D2) üç ayrı normalizePhone uygulaması bulundu; bu kopya yalnız
+// "whatsapp:" ve TEK "+" siliyordu:
+//     "05416500303"        → "05416500303"        (90 önekine çevirmiyordu)
+//     "+90 541 650 03 03"  → "90 541 650 03 03"   (boşluklar kalıyordu)
+// _shared/phone.ts ve DB normalize_phone() ikisi de "905416500303" üretiyor.
+// Panel girişi bugün E.164 doğrulaması yaptığı için (AgencyNotificationSettings
+// E164_REGEX) aktif bir delik DEĞİLDİ — ama tek-kaynak + savunma derinliği.
+import { normalizePhone } from "../_shared/phone.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

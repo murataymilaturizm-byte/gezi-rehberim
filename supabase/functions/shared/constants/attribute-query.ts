@@ -26,7 +26,9 @@
 //    KAÇIYORDU (ilk korpus koşumunda 6 pozitif kırmızı verdi). Sap + serbest ek.
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type AttrKey = "child_price" | "accommodation" | "transport" | "time" | "departure";
+export type AttrKey =
+  | "child_price" | "single_price" | "min_pax"
+  | "accommodation" | "transport" | "time" | "departure";
 
 /**
  * SIRA ÖNEMLİ — en dar desen önce.
@@ -39,6 +41,18 @@ export const ATTR_PATTERNS: ReadonlyArray<{ key: AttrKey; re: RegExp }> = [
   {
     key: "child_price",
     re: /(?<![\p{L}\p{N}])(?:[çc]ocuk\s*(?:[üu]cret|fiyat|indirim|tarife|ka[çc]\s*para)|[çc]ocuklar\s*i[çc]in\s*(?:[üu]cret|fiyat)|child(?:ren)?\s*(?:price|fee|rate|cost)|kids?\s*price|kinder(?:preis|tarif)|preis\s*f[üu]r\s*kinder|(?:tarif|prix)\s*enfant|precio\s*(?:ni[ñn]o|infantil)|tarifa\s*infantil|(?:цена|стоимость|тариф)\s*(?:для\s*)?(?:дет|ребен)|детск\p{L}*\s*(?:цена|тариф|билет)|سعر\s*(?:ال)?[أا]طفال)/iu,
+  },
+  {
+    // F-D1-1: "tek kişilik oda farkı" — price_single 8 tarihte dolu, hiçbir
+    // yüzeye girmiyordu (D1 denetimi). child_price'tan SONRA gelmeli değil,
+    // ÖNCE de olmamalı: desenler kesişmiyor (çocuk ≠ tek kişi).
+    key: "single_price",
+    re: /(?<![\p{L}\p{N}])(?:tek\s*ki[şs]i(?:lik)?\s*(?:oda\s*)?(?:fark|[üu]cret|fiyat)|tek\s*ki[şs]i\s*fark[ıi]|single\s*(?:room\s*)?supplement|single\s*room\s*(?:price|rate)|einzelzimmer(?:zuschlag)?|suppl[ée]ment\s*(?:single|individuel)|chambre\s*individuelle|suplemento\s*individual|habitaci[óo]n\s*individual|доплата\s*за\s*одноместн|одноместн[\p{L}]*\s*размещени|فرق\s*(?:الغرفة\s*)?المفردة)/iu,
+  },
+  {
+    // F-D1-1: "kaç kişiden itibaren kalkıyor" — min_pax 10 aktif turda >1.
+    key: "min_pax",
+    re: /(?<![\p{L}\p{N}])(?:ka[çc]\s*ki[şs]iden\s*(?:itibaren|sonra)?|minimum\s*ki[şs]i|en\s*az\s*ka[çc]\s*ki[şs]i|ka[çc]\s*ki[şs]ilik\s*grup|minimum\s*(?:number\s*of\s*)?(?:people|participants|pax)|how\s*many\s*people\s*(?:do\s*you\s*need|minimum)|mindest(?:teilnehmer|personenzahl)|minimum\s*de\s*participants|m[íi]nimo\s*de\s*personas|минимальн[\p{L}]*\s*(?:количество|число)\s*(?:человек|участник)|الحد\s*الأدنى\s*(?:من\s*)?(?:الأشخاص|المشاركين))/iu,
   },
   {
     key: "accommodation",
@@ -91,6 +105,16 @@ export const ATTR_HEADERS: Record<AttrKey, Record<string, string>> = {
     de: "Transport in unseren Touren:", fr: "Transport dans nos circuits :",
     es: "Transporte en nuestros tours:", ru: "Транспорт в наших турах:",
     ar: "النقل في جولاتنا:",
+  },
+  single_price: {
+    tr: "Tek kişilik oda farkı:", en: "Single room supplement:", de: "Einzelzimmerzuschlag:",
+    fr: "Supplément chambre individuelle :", es: "Suplemento individual:",
+    ru: "Доплата за одноместное размещение:", ar: "فرق الغرفة المفردة:",
+  },
+  min_pax: {
+    tr: "Minimum katılımcı sayımız:", en: "Our minimum group size:", de: "Unsere Mindestteilnehmerzahl:",
+    fr: "Nombre minimum de participants :", es: "Número mínimo de participantes:",
+    ru: "Минимальное число участников:", ar: "الحد الأدنى للمشاركين:",
   },
   child_price: {
     tr: "Çocuk fiyatlarımız:", en: "Our child prices:", de: "Unsere Kinderpreise:",

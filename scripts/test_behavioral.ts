@@ -5466,6 +5466,16 @@ for (const [s, k] of [
   ["Gibt es einen Kinderpreis?", "child_price"],
   ["Какая цена для детей?", "child_price"],
   ["ما سعر الأطفال؟", "child_price"],
+  // F-D1-1 (2026-07-31): D1 denetiminde bulunan iki kolon
+  ["tek kişilik oda farkı ne kadar", "single_price"],
+  ["tek kişi ücreti", "single_price"],
+  ["What is the single room supplement?", "single_price"],
+  ["Einzelzimmerzuschlag?", "single_price"],
+  ["Доплата за одноместное размещение?", "single_price"],
+  ["kaç kişiden itibaren kalkıyor", "min_pax"],
+  ["minimum kişi sayısı nedir", "min_pax"],
+  ["What is the minimum number of participants?", "min_pax"],
+  ["Mindestteilnehmerzahl?", "min_pax"],
 ] as Array<[string, string]>)
   assert(`B-ATTR.POS "${s.slice(0, 32)}" → ${k}`, _daq(s) === k, `beklenen=${k} gelen=${_daq(s)}`);
 

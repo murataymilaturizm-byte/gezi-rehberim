@@ -32,6 +32,8 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 // B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
+// F-D4-1 (2026-07-31) — "ilettim" vaadi öncesi yazım doğrulaması başarısızsa
+import { buildEscalationFailed } from "../constants/escalation.ts";
 // X9 (2026-07-31) — "en çok satan tur": sıralama evet, ham satış sayısı ASLA
 import { POPULAR_QUERY_RE, POPULAR_REPLY, POPULAR_MIN_TOTAL, POPULAR_STATUSES, POPULAR_LOOKBACK_DAYS } from "../constants/popular-tour.ts";
 // KÖK-B (2026-07-31) — ilk-mesaj dil-yazması asgari-sinyal kapısı
@@ -148,6 +150,40 @@ const _CANCEL_REJECT_ACK: Record<string, string> = {
   ar: "فهمت، حجزك ما زال ساري المفعول 👍 هل يمكنني مساعدتك في شيء آخر؟",
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// F-D4-1 (2026-07-31): VAAT-SONRASI-YAZIM koruması (W3-b kalıbının complaints hâli)
+// Denetim (D4) bulgusu: üç yerde complaints.insert(...).then(()=>{}) fire-and-forget
+// idi ve hemen ardından müşteriye "ilettim / talebinizi aldık" deniyordu.
+// Bu yardımcı dönüşü KONTROL eder; false ise çağıran taraf vaat cümlesini KURMAZ.
+// ⚠️ Yeni bir "ilettim" vaadi eklerken yazımı buradan geçir.
+// ═══════════════════════════════════════════════════════════════════════════
+async function _insertComplaintChecked(
+  supabase: any,
+  payload: { agency_id: string; phone: string; message: string; type: string },
+): Promise<boolean> {
+  try {
+    const { error } = await supabase.from("complaints").insert({ ...payload, status: "new" });
+    if (error) {
+      await logCritical({
+        event: "COMPLAINT_INSERT_FAIL",
+        error: new Error(error.message),
+        context: { type: payload.type, agency_id: payload.agency_id },
+        severity: "error",
+      }).catch(() => {});
+      return false;
+    }
+    return true;
+  } catch (e: any) {
+    await logCritical({
+      event: "COMPLAINT_INSERT_THROW",
+      error: e instanceof Error ? e : new Error(String(e)),
+      context: { type: payload.type, agency_id: payload.agency_id },
+      severity: "error",
+    }).catch(() => {});
+    return false;
+  }
+}
+
 // İptal-talebini AÇ (complaints) + ack döndür — J-14 gövdesi buraya çıkarıldı,
 // hem J-14 (rezervasyon-kelimeli) hem pendingCancelConfirm-onayı çağırır (TEK yol).
 async function _fileCancellationRequest(
@@ -158,13 +194,17 @@ async function _fileCancellationRequest(
     `İPTAL TALEBİ — Tur: ${_ri.tourTitle || context.currentTour?.title || "?"} | ` +
     `Tarih: ${_ri.selectedDate || "?"} | Kişi: ${_ri.paxAdult ?? "?"} | ` +
     `İsim: ${_ri.fullName || "?"} | Tel: ${_ri.phone || "?"} | Müşteri mesajı: "${message.slice(0, 200)}"`;
-  supabase.from("complaints").insert({
+  // F-D4-1 (2026-07-31): eskiden .then(()=>{}) fire-and-forget'ti; hemen altında
+  // "İptal talebinizi acentemize ilettim" deniyor. Insert düşerse müşteri
+  // iletildiğini sanır, acentede iz kalmaz → W3-b kalıbı uygulandı.
+  if (!(await _insertComplaintChecked(supabase, {
     agency_id: agency.id,
     phone: adapter.identifier,
     message: _summary,
     type: "cancellation_request",
-    status: "new",
-  }).then(() => {});
+  }))) {
+    return buildEscalationFailed(context.language || "tr", agency.phone_public);
+  }
   // CİLA-2 İŞ4 (2026-07-26): telefon-eki 7-dil TEK-KAYNAK. Eski hâlde de/fr/es/ru/ar
   // hepsi İngilizce _agPhoneCxlEn kullanıyordu → RU/AR müşteri İngilizce "You can also
   // reach us at…" görüyordu (canlıda 2 kez). _agencyPhoneSuffix (tek-kaynak 📞 no) korunur.
@@ -1456,6 +1496,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
             return t.konaklama?.trim() || null;
           case "transport":
             return t.ulasim?.trim() || null;
+          case "min_pax": {
+            // F-D1-1: min_pax hiçbir yüzeye girmiyordu (D1). 1 ise bilgi değeri
+            // yok ("1 kişiden itibaren" demek gereksiz) → satır atlanır.
+            const n = Number(t.min_pax);
+            if (!Number.isFinite(n) || n <= 1) return null;
+            const _lblP: Record<string, string> = {
+              tr: `${n} kişi`, en: `${n} people`, de: `${n} Personen`, fr: `${n} personnes`,
+              es: `${n} personas`, ru: `${n} чел.`, ar: `${n} أشخاص`,
+            };
+            return _lblP[_langA] ?? _lblP.en;
+          }
+          case "single_price": {
+            const d = t.dates?.[0];
+            if (!d?.price_single) return null;
+            return formatPriceSync(d.price_single, t.currency || "TRY", _langA, _exRatesA, _showDualA, languageCurrencies);
+          }
           case "child_price": {
             const d = t.dates?.[0];
             if (!d?.price_child) return null;
@@ -2865,13 +2921,20 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         `İLETİŞİM TALEBİ (müşteri telefon paylaşmak istemiyor) — Tur: ${_ri.tourTitle || context.currentTour?.title || "?"} | ` +
         `Tarih: ${_ri.selectedDate || "?"} | Kişi: ${_ri.paxAdult ?? "?"} | ` +
         `İsim: ${_ri.fullName || "?"} | E-posta: ${_ri.email || "?"} | Müşteri mesajı: "${message.slice(0, 200)}"`;
-      supabase.from("complaints").insert({
+      // F-D4-1: EN PAHALI YOL — müşteri telefon vermek İSTEMİYOR. Kayıt düşerse
+      // ona ulaşmanın başka yolu yok; "ilettim" demeden önce yazımı doğrula.
+      if (!(await _insertComplaintChecked(supabase, {
         agency_id: agency.id,
         phone: adapter.identifier,
         message: _crSummary,
         type: "contact_request",
-        status: "new",
-      }).then(() => {});
+      }))) {
+        const _crFail = buildEscalationFailed(_pyLang, agency.phone_public);
+        const _crFailCtx = { ...context, phoneEscalationPending: false };
+        await _save(_crFail, _crFailCtx);
+        await adapter.sendResponse(_crFail);
+        return { success: true, response: _crFail, newContext: _crFailCtx };
+      }
       const _crMsgs: Record<string, string> = {
         tr: `Talebinizi acentemize ilettim — en kısa sürede sizinle iletişime geçecekler.${_agPhonePY}`,
         en: `I've forwarded your request to our agency — they'll get in touch with you shortly.${_agPhonePY}`,
@@ -4865,18 +4928,21 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       };
       const _ackReply = _ackMsgs[newContext.language] || _ackMsgs.tr;
 
-      // Complaint kaydı (panel'de "açık talep" olarak görünür)
-      supabase.from("complaints").insert({
+      // F-D4-1: "Talebinizi aldık 📩 Acentemiz ... iletişime geçecek" vaadi var →
+      // kayıt düşerse bu cümle kurulmaz (eski hâl: .then(()=>{},()=>{}) tam sessiz).
+      const _asOk = await _insertComplaintChecked(supabase, {
         agency_id: agency.id,
         phone: adapter.identifier,
         message,
         type: "after_sales_action",
-        status: "new",
-      }).then(() => {}, () => {});
+      });
+      const _asReply = _asOk
+        ? _ackReply
+        : buildEscalationFailed(newContext.language || "tr", agency.phone_public);
 
-      await _save(_ackReply, newContext);
-      await adapter.sendResponse(_ackReply);
-      return { success: true, response: _ackReply, newContext };
+      await _save(_asReply, newContext);
+      await adapter.sendResponse(_asReply);
+      return { success: true, response: _asReply, newContext };
     }
   }
 
