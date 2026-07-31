@@ -5490,4 +5490,25 @@ for (const s of [
 ])
   assert(`B-ATTR.NEG "${s.slice(0, 32)}" → tetiklenMEZ`, _daq(s) === null, `gelen=${_daq(s)}`);
 
+// ── X9 popüler-tur sorgusu (2026-07-31) — KALICI ──
+// Gizlilik kuralı testle kilitlenir: şablonlarda SAYI YER TUTUCUSU olmamalı.
+console.log("\n── X9 popüler-tur sorgusu ──");
+import { POPULAR_QUERY_RE as _pqre, POPULAR_REPLY as _prep } from "../supabase/functions/shared/constants/popular-tour.ts";
+for (const s of [
+  "en çok satan turunuz hangisi", "en popüler turunuz", "en çok tercih edilen tur hangisi",
+  "Which is your best seller?", "What is your most popular tour?",
+  "Was ist Ihre beliebteste Tour?", "Quel est votre circuit le plus populaire ?",
+  "¿Cuál es su tour más popular?", "Какой самый популярный тур?", "ما هي الجولة الأكثر شعبية؟",
+])
+  assert(`X9.POS "${s.slice(0, 32)}" → yakalandı`, _pqre.test(s));
+for (const s of [
+  "en ucuz turunuz hangisi", "en pahalı turunuz",   // X8 alanı — çalınmamalı
+  "hangisi daha güzel", "3 günlük turlarınız var mı", "fiyatlar ne kadar",
+  "çocuk ücreti var mı", "nereden kalkıyor", "rezervasyon yapmak istiyorum",
+])
+  assert(`X9.NEG "${s.slice(0, 32)}" → tetiklenMEZ`, !_pqre.test(s));
+// GİZLİLİK: hiçbir dilde ham sayı yer tutucusu bulunmamalı.
+for (const [l, t] of Object.entries(_prep))
+  assert(`X9.GİZLİLİK ${l} → sayı yer tutucusu yok`, !/\{(count|n|total|adet|sayi|sayı)\}|\d+\s*(kez|kere|times|adet)/i.test(t));
+
 Deno.exit(fail === 0 ? 0 : 1);

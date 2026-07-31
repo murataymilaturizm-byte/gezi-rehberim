@@ -32,6 +32,8 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 // B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
+// X9 (2026-07-31) — "en çok satan tur": sıralama evet, ham satış sayısı ASLA
+import { POPULAR_QUERY_RE, POPULAR_REPLY, POPULAR_MIN_TOTAL, POPULAR_STATUSES, POPULAR_LOOKBACK_DAYS } from "../constants/popular-tour.ts";
 import { logCritical } from "../../_shared/error-sink.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -970,6 +972,58 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       await _save(_x8Reply, context);
       await adapter.sendResponse(_x8Reply);
       return { success: true, response: _x8Reply, newContext: context };
+    }
+  }
+
+  // --- X9 / B-POPULAR: "En çok satan turunuz hangisi?" (2026-07-31) ---
+  // Tarama bulgusu (K5): bot "satış istatistiği bilgisi bulunmuyor" diyordu.
+  // registrations bu sıralamayı zaten verebiliyor. Kurallar constants/popular-tour.ts:
+  //   • HAM SAYI TELAFFUZ EDİLMEZ — yalnız sıralama (şablonda sayı yer tutucusu yok).
+  //   • Toplam sayım POPULAR_MIN_TOTAL altındaysa blok SUSAR → mevcut LLM davranışı.
+  // X8 ile çakışmaz: superlatif regexleri fiyat sözcükleri arar ("en ucuz/pahalı").
+  if (_x8StageOk && !_richTourName && tours.length > 0 && POPULAR_QUERY_RE.test(message || "")) {
+    try {
+      const _sinceX9 = new Date(Date.now() - POPULAR_LOOKBACK_DAYS * 86400000).toISOString();
+      const { data: _regsX9 } = await supabase
+        .from("registrations")
+        .select("tour_id")
+        .eq("agency_id", agency.id)
+        .in("status", POPULAR_STATUSES as unknown as string[])
+        .gte("created_at", _sinceX9)
+        .limit(5000);
+
+      const _rows = (_regsX9 ?? []) as Array<{ tour_id: string | null }>;
+      // Sıralama YALNIZ hâlâ aktif turlar üzerinden — kapalı tur önerilmez.
+      const _activeIds = new Set(tours.map((t: any) => t.id));
+      const _counts = new Map<string, number>();
+      let _total = 0;
+      for (const r of _rows) {
+        if (!r.tour_id || !_activeIds.has(r.tour_id)) continue;
+        _counts.set(r.tour_id, (_counts.get(r.tour_id) ?? 0) + 1);
+        _total++;
+      }
+
+      if (_total >= POPULAR_MIN_TOTAL && _counts.size > 0) {
+        const _topId = [..._counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+        const _topTour = tours.find((t: any) => t.id === _topId);
+        if (_topTour) {
+          const _langX9 = context.language || "tr";
+          const _tpl = POPULAR_REPLY[_langX9] || POPULAR_REPLY.en;
+          const _replyX9 = _tpl
+            .replace("{tour}", getLocalizedTourTitle(_topTour.title || "", _langX9))
+            .trim();
+          // Log'da sayı VAR (operasyon için), MÜŞTERİ mesajında YOK.
+          console.log(`[process-message] X9 popüler tur: ${_topTour.title} (${_counts.get(_topId)}/${_total} kayıt)`);
+          await _save(_replyX9, context);
+          await adapter.sendResponse(_replyX9);
+          return { success: true, response: _replyX9, newContext: context };
+        }
+      } else {
+        console.log(`[process-message] X9: yetersiz veri (${_total} < ${POPULAR_MIN_TOTAL}) → LLM'e bırakıldı`);
+      }
+    } catch (_x9err) {
+      // Sayım başarısızsa SUS — mevcut davranış korunur, müşteriye hata sızmaz.
+      console.error("[process-message] X9 sayım hatası (yok sayıldı):", _x9err);
     }
   }
 
