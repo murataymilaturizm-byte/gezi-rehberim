@@ -34,6 +34,8 @@ import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
 // X9 (2026-07-31) — "en çok satan tur": sıralama evet, ham satış sayısı ASLA
 import { POPULAR_QUERY_RE, POPULAR_REPLY, POPULAR_MIN_TOTAL, POPULAR_STATUSES, POPULAR_LOOKBACK_DAYS } from "../constants/popular-tour.ts";
+// KÖK-B (2026-07-31) — ilk-mesaj dil-yazması asgari-sinyal kapısı
+import { hasReliableLanguageSignal } from "../constants/language-gate.ts";
 import { logCritical } from "../../_shared/error-sink.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -810,7 +812,27 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // explicit-intent'in. Tek-turn NLU yanlış-tespiti ("John Smith"→"tr" sınıfı)
     // yerleşik dili artık süremez → CONFIRMING özeti stabil dil/kur kaynağından.
     const _isFirstMessage = context.messageCount === 0;
-    if (SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language && _msgHasLetter && _isFirstMessage) {
+    // KÖK-B kapısı (2026-07-31): ilk mesaj GÜVENİLİR dil-sinyali taşımıyorsa
+    // (tek kısa kelime + tek-anlamlı açılış sözcüğü değil) NLU dili YAZAMAZ.
+    // Canlı ölçüm: "ok"→en, "pardon"→fr, "si"→es — istekte language:"tr" açıkça
+    // gönderilirken bile. Gerekçe/eşikler: constants/language-gate.ts.
+    //
+    // KAPI KAPANDIĞINDA HANGİ DİL KALIR (kenar tanımı):
+    //   1) context.language — demo'da açık `language` parametresi, WhatsApp'ta
+    //      saklı konuşma bağlamı buraya oturur → AÇIK PARAMETRE KAZANIR.
+    //   2) o da yoksa agency.language_preference (acente varsayılanı).
+    //   3) o da BOŞ/NULL ise "tr" — mevcut davranış aynen korunur, yeni bir
+    //      varsayılan icat edilmez.
+    const _langSignalOk = !_isFirstMessage || hasReliableLanguageSignal(message);
+    if (!_langSignalOk) {
+      const _agencyDefLang = (agency.language_preference || "").trim();
+      if (!context.language) context.language = _agencyDefLang || "tr";
+      console.log(
+        `[process-message] KÖK-B: ilk mesaj zayıf dil-sinyali ("${(message || "").slice(0, 20)}") ` +
+        `— NLU '${nluResult.language}' YAZILMADI, dil '${context.language}' kaldı`,
+      );
+    }
+    if (_langSignalOk && SUPPORTED.includes(nluResult.language) && nluResult.language !== context.language && _msgHasLetter && _isFirstMessage) {
       if (_isLangEnabled(nluResult.language)) {
         _traceLang(context, "nlu-first", nluResult.language, message);
         context.language = nluResult.language;

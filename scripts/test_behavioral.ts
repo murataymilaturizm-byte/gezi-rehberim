@@ -5511,4 +5511,24 @@ for (const s of [
 for (const [l, t] of Object.entries(_prep))
   assert(`X9.GİZLİLİK ${l} → sayı yer tutucusu yok`, !/\{(count|n|total|adet|sayi|sayı)\}|\d+\s*(kez|kere|times|adet)/i.test(t));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// KÖK-B — İLK-MESAJ DİL-SİNYALİ KAPISI (2026-07-31) — KALICI
+// Canlı ölçüm: language:"tr" gönderilirken "ok"→en, "pardon"→fr, "si"→es.
+// KURAL: kısa/çok-anlamlı tek token dili ÇEVİRMEZ; C1 (yabancı ilk mesaj
+// gecikmesiz doğru dile otursun) korunur. Yeni token eklerken İKİ yöne de yaz.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── KÖK-B ilk-mesaj dil-sinyali kapısı ──");
+import { hasReliableLanguageSignal as _hrls } from "../supabase/functions/shared/constants/language-gate.ts";
+// KAPALI — acente dili korunur (NLU yazamaz)
+for (const s of ["pardon", "ok", "no", "si", "merci", "??", "  ", "hmm", "tamam"])
+  assert(`KÖK-B.KAPALI "${s.trim() || "(boş)"}" → NLU dili YAZAMAZ`, !_hrls(s));
+// AÇIK — C1 korunur (NLU dili yazar)
+for (const s of [
+  "hello", "Hello!", "Bonjour", "hola",
+  "I want to book a tour", "Ich möchte eine Tour buchen", "Я хочу забронировать",
+  "أريد حجز جولة", "Quiero reservar", "merhaba",
+  "reservation",              // tek kelime ama ≥8 harf → sinyal yeterli
+])
+  assert(`KÖK-B.AÇIK "${s.slice(0, 26)}" → NLU dili yazar`, _hrls(s));
+
 Deno.exit(fail === 0 ? 0 : 1);
