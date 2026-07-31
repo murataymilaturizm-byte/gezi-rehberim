@@ -5418,4 +5418,76 @@ for (const [s, l] of [["Kapadokya turu kişi başı 2500₺, balonlu tur 4500₺
 for (const s of ["Bana turların fiyatını söyler misin?", "İndiriminiz var mı acaba?", "Покажи мне доступные даты тура.", "هل لديكم خصم للمجموعات؟"])
   assert(`V-FIX.FP.inj-in "${s.slice(0, 24)}" → injection değil`, !_detInjVF(s));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// B-ATTR — TUR-BAĞLAMSIZ ÖZNİTELİK SORUSU (W4 kökü, 2026-07-31) — KALICI
+// Kaynak: canlı WhatsApp vakası "Hangi şehirden çıkışlı, hiç bilgi yok" →
+// bot telefona yönlendirdi, oysa hareket_noktasi doluydu.
+// KURAL: yeni öznitelik/dil eklerken buraya hem POZİTİF hem NEGATİF cümle girer.
+// Negatif korpus kritik: yanlış tetikleme rezervasyon akışını çalar.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── B-ATTR öznitelik-sorusu tespiti (W4) ──");
+import { detectAttributeQuery as _daq } from "../supabase/functions/shared/constants/attribute-query.ts";
+
+// POZİTİF — doğru anahtara düşmeli (7 dil)
+for (const [s, k] of [
+  // departure (canlı vaka dahil)
+  ["Hangi şehirden çıkışlı, hiç bilgi yok", "departure"],
+  ["nereden kalkıyor", "departure"],
+  ["kalkış yeri neresi", "departure"],
+  ["toplanma noktası nerede", "departure"],
+  ["What is the departure point?", "departure"],
+  ["Wo ist der Treffpunkt?", "departure"],
+  ["Quel est le point de départ ?", "departure"],
+  ["¿Cuál es el punto de salida?", "departure"],
+  ["Откуда отправляются туры?", "departure"],
+  ["ما هي نقطة الانطلاق؟", "departure"],
+  // time
+  ["saat kaçta", "time"],
+  ["toplanma saati nedir", "time"],
+  ["What time do the tours start?", "time"],
+  ["Um wie viel Uhr?", "time"],
+  ["Во сколько отправление?", "time"],
+  // accommodation
+  ["otelde konaklama dahil mi", "accommodation"],
+  ["konaklama var mı", "accommodation"],
+  ["Is accommodation included?", "accommodation"],
+  ["Ist die Unterkunft inklusive?", "accommodation"],
+  ["Проживание включено?", "accommodation"],
+  // transport
+  ["otelden alıyor musunuz", "transport"],
+  ["kendi arabamla gelsem", "transport"],
+  ["ulaşım dahil mi", "transport"],
+  ["Do you offer hotel pick-up?", "transport"],
+  ["Ist der Transport dabei?", "transport"],
+  // child_price
+  ["çocuk ücreti var mı", "child_price"],
+  ["çocuk fiyatı ne kadar", "child_price"],
+  ["What is the child price?", "child_price"],
+  ["Gibt es einen Kinderpreis?", "child_price"],
+  ["Какая цена для детей?", "child_price"],
+  ["ما سعر الأطفال؟", "child_price"],
+] as Array<[string, string]>)
+  assert(`B-ATTR.POS "${s.slice(0, 32)}" → ${k}`, _daq(s) === k, `beklenen=${k} gelen=${_daq(s)}`);
+
+// NEGATİF — ZORUNLU: bu cümleler ASLA B-ATTR'ı tetiklememeli.
+// Tetiklerse rezervasyon/fiyat/tarih akışı çalınır (B-DUR2 ve tur-seçimi dahil).
+for (const s of [
+  "3 günlük bir tur arıyorum",          // B-DUR2 alanı
+  "kaç günlük turlarınız var",          // B-DUR2 alanı
+  "fiyatlar ne kadar",                  // genel fiyat
+  "en ucuz turunuz hangisi",
+  "bütçem 2000 lira ne önerirsin",
+  "Kapadokya turu hakkında bilgi ver",
+  "rezervasyon yapmak istiyorum",
+  "10 Aralık için 2 kişi",
+  "tatile çıkmak istiyorum",
+  "merhaba",
+  "uçak bileti var mı",                 // lead sınıfı — B-ATTR değil
+  "iptal edersem param yanar mı",       // politika sorusu
+  "hangisi daha güzel",
+  "I want to book a tour",
+  "Ich möchte eine Tour buchen",
+])
+  assert(`B-ATTR.NEG "${s.slice(0, 32)}" → tetiklenMEZ`, _daq(s) === null, `gelen=${_daq(s)}`);
+
 Deno.exit(fail === 0 ? 0 : 1);

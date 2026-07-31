@@ -30,6 +30,8 @@ import { MONTH_ALTERNATION, MONTH_NAME_TO_NUMBER } from "../constants/month-name
 import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
+// B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
+import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
 import { logCritical } from "../../_shared/error-sink.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-matching.ts";
@@ -1339,6 +1341,86 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         await adapter.sendResponse(_r);
         return { success: true, response: _r, newContext: context };
       }
+    }
+  }
+
+  // --- B-ATTR: TUR-BAĞLAMSIZ ÖZNİTELİK SORUSU (W4 kökü, 2026-07-31) ---
+  // "Hangi şehirden çıkışlı" / "saat kaçta" / "çocuk ücreti var mı" gibi sorular
+  // tur SEÇİLMEDEN gelince prompt'ta veri olmadığı için bot acenteye yönlendiriyordu
+  // (canlı vaka: 30 Tem 14:46 UTC). Veri DB'de VAR — burada LLM'e hiç bırakmadan
+  // karşılaştırmalı liste üretiyoruz. Gerekçe/kök: constants/attribute-query.ts.
+  //
+  // TETİKLEME SINIRI: yalnız keşif aşaması + tur adı geçmiyor + seçili tur yok.
+  //   → tur SEÇİLİYKEN blok çalışmaz; K1-REG referans davranışı (LLM'in tur
+  //     detaylarından cevaplaması) BİREBİR korunur.
+  //   → B-DUR2 (gün-sayısı) bu bloktan ÖNCE döndüğü için etkilenmez.
+  {
+    const _attrKey = (_isExploreStage && !_richTourName && !context.currentTour && tours.length > 0)
+      ? detectAttributeQuery(message || "")
+      : null;
+
+    if (_attrKey) {
+      const _langA = context.language || "tr";
+      const _pick = <T,>(m: Record<string, T>): T => m[_langA] ?? m.en;
+      const _MAX = 5;
+
+      const _exRatesA = await getExchangeRatesOnce().catch(() => ({}));
+      const _showDualA = agency.show_multi_currency !== false;
+
+      // Öznitelik → satır metni. Boş/anlamsız değer null döner → o tur ATLANIR.
+      const _attrValue = (t: any): string | null => {
+        switch (_attrKey) {
+          case "departure":
+            return t.hareket_noktasi?.trim() || null;
+          case "time": {
+            const s = String(t.toplanma_saati || "").trim();
+            return s ? s.slice(0, 5) : null;   // "05:00:00" → "05:00"
+          }
+          case "accommodation":
+            return t.konaklama?.trim() || null;
+          case "transport":
+            return t.ulasim?.trim() || null;
+          case "child_price": {
+            const d = t.dates?.[0];
+            if (!d?.price_child) return null;
+            const _cur = t.currency || "TRY";
+            const _lbl = _pick(ATTR_CHILD_LABELS);
+            const _child = formatPriceSync(d.price_child, _cur, _langA, _exRatesA, _showDualA, languageCurrencies);
+            // Karşılaştırma değeri yetişkin fiyatının YANINDA olmasından geliyor.
+            if (!d.price_adult) return `${_lbl.child}: ${_child}`;
+            const _adult = formatPriceSync(d.price_adult, _cur, _langA, _exRatesA, _showDualA, languageCurrencies);
+            return `${_lbl.child}: ${_child} / ${_lbl.adult}: ${_adult}`;
+          }
+          default:
+            return null;
+        }
+      };
+
+      const _rows = tours
+        .map((t: any) => ({ t, v: _attrValue(t) }))
+        .filter((x: any) => !!x.v);
+
+      let _reply: string;
+      if (_rows.length === 0) {
+        // HİÇBİR turda veri yok → eski davranış YALNIZ burada geçerli.
+        const _ph = agency.phone_public?.trim();
+        _reply = _pick(ATTR_NO_DATA).replace("{phone}", _ph ? `: 📞 ${_ph}` : "");
+        console.log(`[process-message] B-ATTR ${_attrKey}: hiçbir turda veri yok → acente yedeği`);
+      } else {
+        const _shown = _rows.slice(0, _MAX);
+        const _lines = _shown
+          .map((x: any, i: number) => `${i + 1}) ${getLocalizedTourTitle(x.t.title, _langA)} — ${x.v}`)
+          .join("\n");
+        const _more = _rows.length > _MAX
+          ? "\n" + _pick(ATTR_MORE).replace("{n}", String(_MAX))
+          : "";
+        _reply = `${_pick(ATTR_HEADERS[_attrKey])}\n${_lines}${_more}\n\n${_pick(ATTR_FOOTER)}`;
+        console.log(`[process-message] B-ATTR ${_attrKey}: ${_shown.length}/${tours.length} tur listelendi`);
+      }
+
+      await _save(_reply, context);
+      await adapter.sendResponse(_reply);
+      return { success: true, response: _reply, newContext: context };
     }
   }
 
