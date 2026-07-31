@@ -5531,4 +5531,44 @@ for (const s of [
 ])
   assert(`KÖK-B.AÇIK "${s.slice(0, 26)}" → NLU dili yazar`, _hrls(s));
 
+// ── KARNE desenleri (2026-07-31) — KALICI ──
+// Kaçış tespiti + meşru-yönlendirme beyaz listesi + tekrar-soru benzerliği.
+// Beyaz liste büyürse karne körelir → her kalıp iki yönde de test edilir.
+console.log("\n── Konuşma-karnesi desenleri ──");
+import { ESCAPE_RE as _esc, LEGIT_REDIRECTS as _legit, similarity as _sim, REPEAT_SIMILARITY as _rsim, ABANDON_STAGES as _abst } from "../supabase/functions/shared/constants/report-patterns.ts";
+const _isLegit = (s: string) => _legit.some((w) => w.re.test(s));
+// Kaçış YAKALANMALI ve meşru SAYILMAMALI (gerçek delik)
+for (const s of [
+  "Turlarımızın kalkış yeri bilgileri için lütfen acentemizle iletişime geçin: 📞 +90 541 650 03 03",
+  "Engelli erişimi konusunda bu detaylı bilgi şu anda sistemimizde bulunmuyor.",
+  "TÜRSAB gibi bilgiler sistemimde bulunmuyor",   // yakalanır ama beyaz-listede (aşağıda)
+])
+  assert(`KARNE.ESC "${s.slice(0, 34)}" → kaçış`, _esc.test(s));
+for (const s of [
+  "Turlarımızın kalkış yeri bilgileri için lütfen acentemizle iletişime geçin",
+  "Engelli erişimi konusunda bu detaylı bilgi şu anda sistemimizde bulunmuyor.",
+])
+  assert(`KARNE.ESC.gerçek "${s.slice(0, 30)}" → meşru DEĞİL`, !_isLegit(s));
+// Meşru yönlendirmeler → beyaz listeye takılmalı (karne bunları bulgu saymaz)
+for (const s of [
+  "Rezervasyon değişikliği ve iptali için lütfen doğrudan acentemizle iletişime geçin",
+  "Dahil olan hizmetlerin tam listesi için acentemizle iletişime geçebilirsiniz",
+  "Dekontunuzu acentemiz teyit edecek",
+  "TÜRSAB belgesi gibi lisans bilgileri sistemimde bulunmuyor",
+])
+  assert(`KARNE.MEŞRU "${s.slice(0, 34)}" → beyaz liste`, _isLegit(s));
+// Normal cevaplar kaçış SAYILMAZ
+for (const s of [
+  "Kalkış noktalarımız: 1) Pamukkale Turu — Denizli",
+  "Çocuk fiyatlarımız: 1) Ege Turu — Çocuk: 3.600₺ / Yetişkin: 4.500₺",
+  "Rezervasyonunuz onaylandı! 🎉",
+])
+  assert(`KARNE.ESC.FP "${s.slice(0, 34)}" → kaçış DEĞİL`, !_esc.test(s));
+// Tekrar-soru: eşik altı/üstü
+assert("KARNE.REPEAT aynı soru → yakalanır", _sim("nereden kalkıyor", "peki nereden kalkıyor") >= _rsim);
+assert("KARNE.REPEAT farklı soru → yakalanMAZ", _sim("nereden kalkıyor", "fiyatlar ne kadar") < _rsim);
+// Terk: COMPLETED asla terk sayılmaz (after-sales korunur)
+assert("KARNE.ABANDON COMPLETED → terk değil", !_abst.has("COMPLETED"));
+assert("KARNE.ABANDON CONFIRMING → terk", _abst.has("CONFIRMING"));
+
 Deno.exit(fail === 0 ? 0 : 1);

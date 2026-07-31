@@ -18,6 +18,12 @@ verify_jwt = true
 [functions.sipay-callback]
 verify_jwt = false
 
+[functions.conversation-daily-report]
+# Cron çağırır; güvenlik X-Internal-Secret ile (isInternalCall). Gateway legacy
+# anon-JWT'i verify_jwt=true iken UNAUTHORIZED_LEGACY_JWT ile reddediyor —
+# diğer tüm cron fonksiyonlarıyla aynı yapılandırma.
+verify_jwt = false
+
 [functions.send-tour-reminders]
 verify_jwt = false
 
