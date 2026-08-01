@@ -29,6 +29,8 @@ import { isEchoSafe } from "../services/echo-sanitize.ts";
 import { MONTH_ALTERNATION, MONTH_NAME_TO_NUMBER } from "../constants/month-names.ts";
 import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
+// W5 (2026-08-01) — yazılım-talebi kategorisi (acente bayrağıyla kapılı)
+import { detectSoftwareInquiry, SW_ACK, SW_ASK_DETAIL, SW_SAVED } from "../constants/lead-detection.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 // B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
@@ -565,10 +567,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // P7-C: eklenen kaydın id'si DÖNER — kesinleşme bildiriminde notified_at damgası
     // vurulabilsin (yoksa 15-dk süpürücü aynı lead'i İKİNCİ kez bildirirdi).
     let _lastLeadId: string | null = null;
-    const _insertLead = async (req: string, phone: string | null, name: string | null) => {
+    const _insertLead = async (req: string, phone: string | null, name: string | null, category = "service") => {
       const { data: _row, error: _le } = await supabase.from("agency_leads").insert({
         agency_id: agency.id, phone, full_name: name,
         request_text: req.slice(0, 1000), source_stage: context.stage, status: "new",
+        category,   // W5: 'service' | 'software_inquiry'
       }).select("id").single();
       _lastLeadId = _row?.id ?? null;
       if (_le) {
@@ -598,18 +601,28 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // ② merkezi WhatsApp dispatch (agency_new_lead → turzz_acente_hizmet_talebi;
     //    şablon Meta'da APPROVED olana kadar dispatch tarafında DOĞAL-KAPALI)
     // ③ notified_at damgası → 15-dk süpürücü aynı lead'i TEKRAR bildirmez.
-    const _notifyLeadFinal = async (leadId: string | null | undefined, reqText: string, phone: string | null) => {
+    const _notifyLeadFinal = async (
+      leadId: string | null | undefined, reqText: string, phone: string | null, category = "service",
+    ) => {
+      // W5: Murat bildirime tek bakışta "yazılım talebi mi, tur-dışı hizmet mi"
+      // diyebilsin — etiket başlığın BAŞINDA (panelde başlık kırpılıyor).
+      const _isSw = category === "software_inquiry";
+      const _tag = _isSw ? "💼 YAZILIM TALEBİ" : "🔔";
       try {
         await supabase.from("admin_notifications").insert({
           agency_id: agency.id,
           type: "new_lead",
-          title: "🔔 " + reqText.slice(0, 60),
+          title: `${_tag} ${reqText.slice(0, 60)}`,
           description: phone || "",
-          metadata: { lead_id: leadId || null, phone },
+          metadata: { lead_id: leadId || null, phone, category },
         });
         await supabase.rpc("_dispatch_central_notification", {
           p_event_type: "agency_new_lead",
-          p_payload: { agency_id: agency.id, lead_id: leadId || null, request_text: reqText.slice(0, 80), phone: phone || "-" },
+          p_payload: {
+            agency_id: agency.id, lead_id: leadId || null,
+            request_text: (_isSw ? "[YAZILIM] " : "") + reqText.slice(0, 70),
+            phone: phone || "-",
+          },
         });
         if (leadId) {
           await supabase.from("agency_leads").update({ notified_at: new Date().toISOString() }).eq("id", leadId);
@@ -628,12 +641,21 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // sonraki yeni istek AYRI lead açar.
     if (context.pendingLeadCapture) {
       const _pend = context.pendingLeadCapture;
+      // W5: taslağın kategorisi detay adımında KORUNUR (yazılım talebi tur-dışı
+      // hizmete dönüşmesin). Eski taslaklarda alan yok → 'service'.
+      const _pendCat: string = (_pend as any).category || "service";
       // W3-EK canlı-düzeltme (2026-07-29): detay-penceresinde KATALOG-adı vetosu
       // UYGULANMAZ — yalnız açık tur-bağlamı (tur/tour/dahil/circuit…) alakasız sayılır.
       // KANIT: "İstanbul'dan Antalya'ya, 5 Ağustos, 2 kişi" detayı, "Antalya" katalog
       // destinasyonu olduğu için alakasız sanılıp DETAY KAYBOLUYORDU. Müşteriden
       // "nereden nereye" istendiğinde şehir adı BEKLENEN cevaptır.
-      const _unrelated = isTourContextMessage(message);
+      // W5 canlı-düzeltme (2026-08-01): YAZILIM talebinde tur-bağlamı vetosu
+      // UYGULANMAZ. Beklenen cevap ACENTE ADI ve Türkiye'de acente adlarının
+      // büyük kısmı "Tur/Turizm/Travel" içerir — canlı zincirde "Mavi Tur
+      // Antalya, 0532 111 22 33" tur-sorusu sanılıp DETAY KAYBOLDU (taslak
+      // ilk metinle kesinleşti, telefon yazılmadı). W3-EK'te katalog-vetosu
+      // için verilen kararın aynısı, bu kez regex vetosu için.
+      const _unrelated = _pendCat === "software_inquiry" ? false : isTourContextMessage(message);
       if (!_unrelated) {
         const _pm = message.match(/\+?\d[\d\s.\-()]{7,17}\d/);
         const _phone = _pm ? _pm[0].replace(/[^\d+]/g, "") : null;
@@ -650,11 +672,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           }
         } else {
           // Taslak açılamamıştı (eski akış/insert hatası) → şimdi yazmayı dene.
-          _okA = await _insertLead(_merged, _phone, context.reservationInfo?.fullName || null);
+          _okA = await _insertLead(_merged, _phone, context.reservationInfo?.fullName || null, _pendCat);
         }
-        if (_okA) await _notifyLeadFinal(_pend.leadId ?? _lastLeadId, _merged, _phone); // P7-C: TEK kesinleşme bildirimi
+        if (_okA) await _notifyLeadFinal(_pend.leadId ?? _lastLeadId, _merged, _phone, _pendCat); // P7-C: TEK kesinleşme bildirimi
         const _ctxA = { ...context, pendingLeadCapture: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
-        const _replyA = _okA ? (LEAD_SAVED[_leadLang] || LEAD_SAVED.tr) : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
+        // W5: kapanış metni kategoriye göre — yazılım talebinde "acentemiz" değil "Turzz ekibi".
+        const _savedMap = _pendCat === "software_inquiry" ? SW_SAVED : LEAD_SAVED;
+        const _replyA = _okA ? (_savedMap[_leadLang] || _savedMap.tr) : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
         await _save(_replyA, _ctxA);
         await adapter.sendResponse(_replyA);
         return { success: true, response: _replyA, newContext: _ctxA };
@@ -665,7 +689,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }
 
     // (B)+(C) yeni tespit
-    if (detectOutOfScopeLead(message, _leadCatalog)) {
+    // W5-REV (2026-08-01): YAZILIM-TALEBİ kategorisi ACENTE-BAZLI BAYRAKLA kapılı.
+    // Bayrak kapalıysa regex'e HİÇ girilmez (erken-çıkış) — diğer P4-3
+    // kategorileri etkilenmez. Gerekçe: Aymila = Turzz'un tanıtım/demo kanalı;
+    // başka acentenin MÜŞTERİ kanalında Turzz-satışı yapılmamalı.
+    const _swOn = agency.software_inquiry_enabled === true;
+    const _isSoftware = _swOn && detectSoftwareInquiry(message, _leadCatalog);
+    if (_isSoftware || detectOutOfScopeLead(message, _leadCatalog)) {
+      const _cat = _isSoftware ? "software_inquiry" : "service";
       const _info: any = context.reservationInfo || {};
       const _inFlow = !!_info.tourId && ["COLLECTING_INFO", "CONFIRMING"].includes(context.stage);
       const _phoneFromState = _info.phone || (_idIsPhone ? String(adapter.identifier) : null);
@@ -676,11 +707,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       // detay hiç sorulamazdı (canlı W3 vakası tam buydu: BROWSING + telefon var).
       if (_inFlow) {
         // W3-b: önce YAZ, sonra vaat et.
-        const _okB = await _insertLead(message, _phoneFromState, _info.fullName || null);
-        if (_okB) await _notifyLeadFinal(_lastLeadId, message, _phoneFromState); // P7-C: akış-içi lead ANINDA kesindir
+        const _okB = await _insertLead(message, _phoneFromState, _info.fullName || null, _cat);
+        if (_okB) await _notifyLeadFinal(_lastLeadId, message, _phoneFromState, _cat); // P7-C: akış-içi lead ANINDA kesindir
+        // W5: ack kategoriye göre — rezervasyon YİNE bölünmez (P4-3 (B) kuralı aynen).
+        const _ackMap = _cat === "software_inquiry" ? SW_ACK : LEAD_ACK;
         const _replyB = !_okB
           ? `${LEAD_FAILED[_leadLang] || LEAD_FAILED.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`
-          : `${LEAD_ACK[_leadLang] || LEAD_ACK.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`;
+          : `${_ackMap[_leadLang] || _ackMap.tr}\n\n${LEAD_RESUME[_leadLang] || LEAD_RESUME.tr}`;
         const _ctxB = { ...context, lastUserMessage: message, messageCount: context.messageCount + 1 };
         await _save(_replyB, _ctxB);
         await adapter.sendResponse(_replyB);
@@ -694,6 +727,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         .insert({
           agency_id: agency.id, phone: _phoneFromState, full_name: _info.fullName || null,
           request_text: message.slice(0, 1000), source_stage: context.stage, status: "new",
+          category: _cat,   // W5
         })
         .select("id")
         .single();
@@ -709,13 +743,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       console.log(`[W3-EK lead] taslak açıldı id=${_draft?.id?.slice(0, 8)} → detay isteniyor`);
       const _ctxC = {
         ...context,
-        pendingLeadCapture: { request: message, leadId: _draft?.id },
+        pendingLeadCapture: { request: message, leadId: _draft?.id, category: _cat },
         lastUserMessage: message,
         messageCount: context.messageCount + 1,
       };
-      const _replyC = _phoneFromState
-        ? (LEAD_ASK_DETAIL[_leadLang] || LEAD_ASK_DETAIL.tr)
-        : (LEAD_ASK_DETAIL_PHONE[_leadLang] || LEAD_ASK_DETAIL_PHONE.tr);
+      // W5: yazılım talebinde TUR-SATIŞ TONUNDAN ÇIKAN metin. Telefon bilinse
+      // bile aynı metin — asıl eksik ACENTE ADI, telefon değil.
+      const _replyC = _cat === "software_inquiry"
+        ? (SW_ASK_DETAIL[_leadLang] || SW_ASK_DETAIL.tr)
+        : _phoneFromState
+          ? (LEAD_ASK_DETAIL[_leadLang] || LEAD_ASK_DETAIL.tr)
+          : (LEAD_ASK_DETAIL_PHONE[_leadLang] || LEAD_ASK_DETAIL_PHONE.tr);
       await _save(_replyC, _ctxC);
       await adapter.sendResponse(_replyC);
       return { success: true, response: _replyC, newContext: _ctxC };

@@ -156,3 +156,99 @@ export const LEAD_SAVED: Record<string, string> = {
   ru: "Спасибо! Наше агентство свяжется с вами в ближайшее время 🤝",
   ar: "شكراً! ستتواصل معك وكالتنا في أقرب وقت 🤝",
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// W5 (2026-08-01): YAZILIM-TALEBİ YAKALAMA — Click-to-WhatsApp reklam hazırlığı
+//
+// BAĞLAM: reklamla Aymila'nın GERÇEK botuna acente sahipleri gelecek ve
+// "müşteri gibi" deneyip rolden çıkarak yazılımın KENDİSİNİ soracaklar.
+// ÖLÇÜM (31 Tem, 6 prob, demo yüzeyi) — 6/6 KAYIP:
+//   "bu sistemi ben de acenteme almak istiyorum" → "sadece tur bilgisi ve
+//      rezervasyon konularında yardımcı olabilirim"
+//   "bu bot ne kadar, fiyatı nedir"              → "satışta değildir"
+//   "bu yazılımı kim yaptı"                      → "bilgi veremiyorum"
+//   "turzz nedir"                                → kendini Demo Turizm sanıp
+//                                                  tur listesine dönüyor
+// Yani en değerli ziyaretçi (potansiyel acente) hiçbir iz bırakmadan gidiyordu.
+//
+// ⚠️ KAPSAM KISITI (W5-REV): bu kategori ACENTE-BAZLI BAYRAKLA kapılıdır
+//    (agencies.software_inquiry_enabled, default FALSE; yalnız Aymila TRUE).
+//    Gerekçe: Aymila = Turzz'un tanıtım/demo kanalı. Diğer acentelerin
+//    MÜŞTERİ kanalına Turzz-satışı sızmamalı — bir müşteri "sisteminiz güzelmiş"
+//    dediğinde o acentenin botu Turzz adına satış yapmaya kalkmamalı.
+//    Bayrak kontrolü ÇAĞIRAN tarafta, regex'e girmeden (erken-çıkış).
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Yazılımın kendisini işaret eden özneler. */
+const SOFTWARE_SUBJECT_RE =
+  /(?<![\p{L}\p{N}])(?:turzz|yaz[ıi]l[ıi]m|chatbot|bot|panel|program|uygulama|sistem|software|application|app|system|programm|anwendung|logiciel|syst[èe]me|aplicaci[óo]n|programa|программ|систем|приложени|бот|(?:ال)?برنامج|(?:ال)?نظام|(?:ال)?تطبيق)/iu;
+
+/**
+ * İkinci şart — P4-3 deseniyle aynı mantık ama yazılım-alıcısının diliyle:
+ * talep-fiili (LEAD_INTENT_RE) VEYA ticari soru (LEAD_QUESTION_RE) VEYA
+ * fiyat/paket/demo/üretici sorusu.
+ */
+const SOFTWARE_QUALIFIER_RE =
+  /(?<![\p{L}\p{N}])(?:ne\s*kadar|fiyat|[üu]cret|maliyet|paket|abonelik|lisans|demo|deneme|kim\s*(?:yapt|geli[şs]tir|[üu]ret)|nedir|ne\s*i[şs]e\s*yara|sat[ıi]n\s*al|almak\s*ist|kullanmak\s*ist|kurmak\s*ist|ar[ıi]yoruz|ar[ıi]yorum|teklif|looking\s*for|interested\s*in|auf\s*der\s*suche|[àa]\s*la\s*recherche|buscando|ищем|ищу|نبحث|how\s*much|price|cost|pricing|subscription|licen[cs]e|trial|who\s*(?:made|built|develop)|what\s*is|quote|preis|kost(?:en|et)|abonnement|testversion|wer\s*hat|combien|tarif|abonnement|essai|qui\s*a\s*(?:fait|d[ée]velopp)|cu[áa]nto\s*cuesta|precio|suscripci[óo]n|prueba|qui[ée]n\s*(?:hizo|desarroll)|сколько\s*стоит|цена|подписк|демо|пробн|кто\s*(?:сделал|разработ)|كم\s*(?:سعر|تكلفة)|اشتراك|تجريب|من\s*(?:صنع|طور))/iu;
+
+/**
+ * VETO — SON TÜKETİCİ tur-bağlamı. Bunlar "sistem/bot" kelimesi geçse bile
+ * yazılım talebi DEĞİLDİR ve karşılığı canlıda pahalıdır (müşteriye Turzz
+ * satmaya kalkmak). Zorunlu negatif korpus test dosyasında kilitli:
+ *   "sistemde hangi turlar var" · "sisteminizde Kapadokya var mı"
+ *   "rezervasyon sistemi üzerinden mi ödeyeceğim"
+ * Ayrıca kimlik sorusu ("bot musun / gerçek insan mısın") de veto —
+ * bu mevcut davranışında (LLM'in doğal cevabı) bırakılır.
+ */
+const SOFTWARE_VETO_RE =
+  /(?<![\p{L}\p{N}])(?:tur(?!zz)(?:lar|unuz|umuz|a|u|da|dan)?|rezervasyon|bilet|kontenjan|[öo]de(?:me|yece|ycek)|tarih|kalk[ıi][şs]|gezi|tatil|tour|booking|reservation|payment|reise|buchung|circuit|r[ée]servation|paiement|reserva|viaje|тур|брониров|оплат|رحلة|حجز|دفع|bot\s*musun|robot\s*musun|ger[çc]ek\s*(?:insan|ki[şs]i)|insan\s*m[ıi]s[ıi]n|are\s*you\s*(?:a\s*)?(?:bot|human|real)|bist\s*du\s*ein\s*(?:bot|mensch)|es[- ]?tu\s*un\s*(?:bot|humain)|eres\s*(?:un\s*)?(?:bot|humano)|ты\s*(?:бот|человек)|هل\s*[أا]نت\s*(?:روبوت|إنسان))/iu;
+
+/**
+ * ÇİFT-ŞART + VETO: yazılım-öznesi VAR + nitelik sorusu VAR + tur-bağlamı YOK
+ * (regex vetosu VE tur-kataloğu adları — "sisteminizde Kapadokya var mı").
+ * ⚠️ Çağıran taraf agencies.software_inquiry_enabled'ı ÖNCE kontrol etmeli.
+ */
+export function detectSoftwareInquiry(message: string, catalog?: LeadCatalog | string | null): boolean {
+  const m = (message || "").trim();
+  if (!m) return false;
+  if (!SOFTWARE_SUBJECT_RE.test(m)) return false;
+  if (!SOFTWARE_QUALIFIER_RE.test(m)) return false;
+  if (SOFTWARE_VETO_RE.test(m)) return false;
+  const _cat: LeadCatalog | null =
+    typeof catalog === "string" ? { currentTourTitle: catalog } : (catalog ?? null);
+  if (mentionsCatalog(m.toLowerCase(), _cat)) return false;
+  return true;
+}
+
+/** Yakalanınca: TUR-SATIŞ TONUNDAN ÇIKAN karşılama (7-dil). */
+export const SW_ASK_DETAIL: Record<string, string> = {
+  tr: "Turzz AI'yı acenteniz için mi değerlendiriyorsunuz? Harika! 🎉 Talebinizi ekibimize iletiyorum — kısaca acente adınızı ve size nasıl ulaşalım yazar mısınız?",
+  en: "Are you considering Turzz AI for your own agency? Great! 🎉 I'm forwarding your request to our team — could you share your agency name and how we can reach you?",
+  de: "Prüfen Sie Turzz AI für Ihre eigene Agentur? Ausgezeichnet! 🎉 Ich leite Ihre Anfrage an unser Team weiter — nennen Sie uns kurz Ihren Agenturnamen und wie wir Sie erreichen können?",
+  fr: "Vous envisagez Turzz AI pour votre propre agence ? Parfait ! 🎉 Je transmets votre demande à notre équipe — pouvez-vous indiquer le nom de votre agence et comment vous joindre ?",
+  es: "¿Está evaluando Turzz AI para su propia agencia? ¡Genial! 🎉 Traslado su solicitud a nuestro equipo — ¿puede indicarnos el nombre de su agencia y cómo contactarle?",
+  ru: "Рассматриваете Turzz AI для своего агентства? Отлично! 🎉 Передаю вашу заявку нашей команде — напишите, пожалуйста, название агентства и как с вами связаться.",
+  ar: "هل تفكر في Turzz AI لوكالتك؟ رائع! 🎉 سأحيل طلبك إلى فريقنا — هل يمكنك ذكر اسم وكالتك وكيفية التواصل معك؟",
+};
+
+/** Akış-içi kısa ack (rezervasyon bölünmez — P4-3 (B) dalıyla aynı kural). */
+export const SW_ACK: Record<string, string> = {
+  tr: "Turzz AI ile ilgilendiğinizi ekibimize ilettim 🎉",
+  en: "I've let our team know you're interested in Turzz AI 🎉",
+  de: "Ich habe unser Team über Ihr Interesse an Turzz AI informiert 🎉",
+  fr: "J'ai informé notre équipe de votre intérêt pour Turzz AI 🎉",
+  es: "He informado a nuestro equipo de su interés en Turzz AI 🎉",
+  ru: "Я сообщил нашей команде о вашем интересе к Turzz AI 🎉",
+  ar: "أبلغت فريقنا باهتمامك بـ Turzz AI 🎉",
+};
+
+/** Detay geldikten sonra kapanış. */
+export const SW_SAVED: Record<string, string> = {
+  tr: "Teşekkürler! Turzz ekibi en kısa sürede sizinle iletişime geçecek 🚀",
+  en: "Thank you! The Turzz team will contact you shortly 🚀",
+  de: "Vielen Dank! Das Turzz-Team meldet sich in Kürze bei Ihnen 🚀",
+  fr: "Merci ! L'équipe Turzz vous contactera sous peu 🚀",
+  es: "¡Gracias! El equipo de Turzz se pondrá en contacto en breve 🚀",
+  ru: "Спасибо! Команда Turzz свяжется с вами в ближайшее время 🚀",
+  ar: "شكراً! سيتواصل معك فريق Turzz قريباً 🚀",
+};

@@ -193,7 +193,12 @@ serve(async (req) => {
     const { data: agencyRaw } = await supabase
       .from("agencies")
       .select(
-        "id, name, city, address, phone_public, website_url, working_hours, maps_url, cancellation_policy, description, payment_instructions, primary_currency, language_currencies, collect_email, show_multi_currency, conversation_style, enabled_languages",
+        // W5 (2026-08-01): software_inquiry_enabled EKLENDİ. Canlı doğrulamada
+        // bayrak DB'de açıkken tetiklenmedi — kolon bu açık listede olmadığı için
+        // agency.software_inquiry_enabled undefined geliyordu (P8-3'teki
+        // notify_new_lead vakasının aynısı: açık SELECT listesi + yeni kolon).
+        // whatsapp-webhook select('*') kullandığı için etkilenmemişti.
+        "id, name, city, address, phone_public, website_url, working_hours, maps_url, cancellation_policy, description, payment_instructions, primary_currency, language_currencies, collect_email, show_multi_currency, conversation_style, enabled_languages, software_inquiry_enabled",
       )
       .eq("id", agencyId)
       .single();

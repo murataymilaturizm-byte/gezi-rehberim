@@ -5581,4 +5581,47 @@ assert("KARNE.REPEAT farklı soru → yakalanMAZ", _sim("nereden kalkıyor", "fi
 assert("KARNE.ABANDON COMPLETED → terk değil", !_abst.has("COMPLETED"));
 assert("KARNE.ABANDON CONFIRMING → terk", _abst.has("CONFIRMING"));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// W5 — YAZILIM-TALEBİ (software_inquiry) — KALICI
+// Ölçüm (31 Tem, 6 prob): bu soruların 6/6'sı iz bırakmadan kayboluyordu.
+// ⚠️ NEGATİF KORPUS BURADA HAYATİ: yanlış tetikleme = acentenin MÜŞTERİSİNE
+//    Turzz satmaya kalkmak. Yeni desen eklerken iki yöne de cümle yazılır.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── W5 yazılım-talebi tespiti ──");
+import { detectSoftwareInquiry as _dsi } from "../supabase/functions/shared/constants/lead-detection.ts";
+const _CAT = { tourTitles: ["Kapadokya Balon Turu", "Pamukkale Turu"], destinations: ["Kapadokya", "Pamukkale"] };
+// POZİTİF — ölçüm probları + 7 dil
+for (const s of [
+  "bu sistemi ben de acenteme almak istiyorum",
+  "bu bot ne kadar, fiyatı nedir",
+  "bu yazılımı kim yaptı",
+  "biz de acenteyiz böyle bir sistem arıyoruz",
+  "turzz nedir",
+  "bu panel için abonelik ücreti ne kadar",
+  "How much does this chatbot cost?",
+  "We are an agency, we are looking for such a system",
+  "Was kostet dieses System?",
+  "Combien coûte ce logiciel ?",
+  "¿Cuánto cuesta este sistema?",
+  "Сколько стоит эта система?",
+  "كم سعر هذا النظام؟",
+])
+  assert(`W5.POS "${s.slice(0, 40)}" → yazılım talebi`, _dsi(s, _CAT));
+// NEGATİF — ZORUNLU: son-tüketici tur bağlamı + kimlik sorusu
+for (const s of [
+  "sistemde hangi turlar var",                    // kullanıcı şartı
+  "sisteminizde Kapadokya var mı",                // kullanıcı şartı (katalog vetosu)
+  "rezervasyon sistemi üzerinden mi ödeyeceğim",  // kullanıcı şartı
+  "bot musun",                                    // kimlik — mevcut davranış korunur
+  "gerçek insan mısın",
+  "Are you a bot?",
+  "sisteminizde yer var mı",
+  "bu turun fiyatı ne kadar",
+  "uçak bileti var mı",                           // P4-3 service sınıfı, software DEĞİL
+  "otel ayarlıyor musunuz",
+  "rezervasyon yapmak istiyorum",
+  "merhaba",
+])
+  assert(`W5.NEG "${s.slice(0, 40)}" → yazılım talebi DEĞİL`, !_dsi(s, _CAT));
+
 Deno.exit(fail === 0 ? 0 : 1);
