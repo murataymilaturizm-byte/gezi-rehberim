@@ -8,6 +8,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent, pickLocalized } from "../shared/fsm/localization.ts";
 import { detectLanguage } from "../shared/fsm/language.ts";
+// MİKRO-D2 (2026-08-01): acente davranış-kolonları TEK KAYNAK
+import { AGENCY_SELECT } from "../shared/constants/agency-columns.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
 import { detectCannedResponseTrigger, buildCannedResponse, isIdleContext } from "../shared/services/canned-responses.ts";
@@ -193,17 +195,19 @@ serve(async (req) => {
     const { data: agencyRaw } = await supabase
       .from("agencies")
       .select(
-        // W5 (2026-08-01): software_inquiry_enabled EKLENDİ. Canlı doğrulamada
-        // bayrak DB'de açıkken tetiklenmedi — kolon bu açık listede olmadığı için
-        // agency.software_inquiry_enabled undefined geliyordu (P8-3'teki
-        // notify_new_lead vakasının aynısı: açık SELECT listesi + yeni kolon).
-        // whatsapp-webhook select('*') kullandığı için etkilenmemişti.
-        "id, name, city, address, phone_public, website_url, working_hours, maps_url, cancellation_policy, description, payment_instructions, primary_currency, language_currencies, collect_email, show_multi_currency, conversation_style, enabled_languages, software_inquiry_enabled",
+        // MİKRO-D2 (2026-08-01): elle yazılan kolon listesi KALDIRILDI — üç kez
+        // "yeni kolon eklendi ama buraya yazılmadı" hatası üretti. Tek kaynak:
+        // shared/constants/agency-columns.ts (suite muhafızı listeyi zorunlu tutar).
+        AGENCY_SELECT,
       )
       .eq("id", agencyId)
       .single();
 
-    const agency = agencyRaw ?? {
+    // MİKRO-D2 NOTU: select() artık literal dizge değil sabit olduğu için
+    // supabase-js satır tipini çıkaramıyor ve yedek-nesnenin dar şekline
+    // daralıyordu (language_currencies/payment_instructions/primary_currency
+    // "yok" hatası). Çalışma zamanı davranışı aynı; tipi gevşetiyoruz.
+    const agency: any = agencyRaw ?? {
       id: agencyId,
       name: "Demo Agency",
       collect_email: false,

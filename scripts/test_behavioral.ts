@@ -5624,4 +5624,45 @@ for (const s of [
 ])
   assert(`W5.NEG "${s.slice(0, 40)}" → yazılım talebi DEĞİL`, !_dsi(s, _CAT));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// MİKRO-D2 MUHAFIZI (2026-08-01) — "yeni kolon ↔ açık SELECT-listesi" sınıfı
+//
+// Sınıf ÜÇ kez tekrarladı (notify_new_lead · software_inquiry_enabled ·
+// language_preference): kolon eklendi, kod okudu, SELECT listesine yazılmadı →
+// alan sessizce undefined, özellik hiç çalışmadı, HATA DA YOK.
+//
+// Muhafız KAYNAK KODU tarar: shared/ içinde okunan HER `agency.<kolon>` alanı
+// AGENCY_BEHAVIOR_COLUMNS'ta OLMAK ZORUNDA. Listeye eklemeyi unutan kişi
+// derleme değil TEST hatası alır → dördüncü tekrar imkânsız.
+//
+// NEDEN migration-tarayan bir assert DEĞİL: agencies tablosunda bot'un
+// GÖRMEMESİ gereken çok kolon var (meta token'ları, lemonsqueezy kimlikleri,
+// abonelik alanları). "Migration'da kolon eklendiyse SELECT'te de olmalı"
+// kuralı bunların hepsinde YANLIŞ ALARM verir → muhafız kısa sürede susturulur
+// ve ölür. Okuma-güdümlü bu kural tanım gereği yanlış-pozitif üretmez.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── MİKRO-D2: agency kolon tek-kaynak muhafızı ──");
+import { AGENCY_BEHAVIOR_COLUMNS as _agCols, AGENCY_NON_COLUMN_PROPS as _agIgnore } from "../supabase/functions/shared/constants/agency-columns.ts";
+
+const _agSources = [
+  "supabase/functions/shared/handlers/process-message.ts",
+  "supabase/functions/shared/services/canned-responses.ts",
+  "supabase/functions/shared/fsm/prompts/agency.ts",
+];
+const _agRead = new Set<string>();
+for (const f of _agSources) {
+  let src = "";
+  try { src = await Deno.readTextFile(f); } catch { continue; }
+  for (const m of src.matchAll(/\bagency\??\.([a-z_][a-z0-9_]*)/gi)) _agRead.add(m[1]);
+}
+const _agMissing = [..._agRead].filter((c) => !_agCols.includes(c) && !_agIgnore.includes(c));
+assert(
+  `MİKRO-D2: okunan tüm agency alanları tek-kaynak listede (${_agRead.size} alan tarandı)`,
+  _agMissing.length === 0,
+  _agMissing.length ? `EKSİK → agency-columns.ts'e ekle: ${_agMissing.join(", ")}` : "",
+);
+// Liste kendi içinde tutarlı olmalı (kopya yok, boş yok)
+assert("MİKRO-D2: listede kopya kolon yok", new Set(_agCols).size === _agCols.length);
+assert("MİKRO-D2: id her zaman listede (tüm çağrılar gerektiriyor)", _agCols.includes("id"));
+
 Deno.exit(fail === 0 ? 0 : 1);

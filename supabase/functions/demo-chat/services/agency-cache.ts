@@ -1,6 +1,7 @@
 // Agency Data Cache Service
 
 import { CONFIG } from "../config/constants.ts";
+import { AGENCY_SELECT } from "../../shared/constants/agency-columns.ts";
 import { logger } from "../utils/logger.ts";
 import type { AgencyData } from "../types/index.ts";
 
@@ -27,20 +28,7 @@ export async function getAgencyData(
   
   const { data, error } = await supabase
     .from("agencies")
-    .select(`
-      name,
-      city,
-      payment_instructions,
-      primary_currency,
-      language_currencies,
-      address,
-      phone_public,
-      website_url,
-      working_hours,
-      maps_url,
-      cancellation_policy,
-      collect_email
-    `)
+    .select(AGENCY_SELECT)   // MİKRO-D2: tek kaynak (elle alt-küme kaldırıldı)
     .eq("id", agencyId)
     .single();
     
