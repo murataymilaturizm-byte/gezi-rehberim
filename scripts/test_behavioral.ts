@@ -5625,6 +5625,53 @@ for (const s of [
   assert(`W5.NEG "${s.slice(0, 40)}" → yazılım talebi DEĞİL`, !_dsi(s, _CAT));
 
 // ═══════════════════════════════════════════════════════════════════════════
+// W5-FIX — CANLI DİL KORPUSU (2026-08-01) — KALICI
+// Canlı başarısızlık: "bu sistemi bende istiyorum" → YAKALANMADI. Kök: nitelik
+// bacağı "istemek"i yalnız MASTARLA tanıyordu ("almak istiyorum"). İlk korpusu
+// kitap-diliyle yazmışım; gerçek acenteci kısa yazıyor.
+// ⚠️ Yeni kalıp eklerken İKİ yöne de cümle: FP freni burada hayati.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── W5-FIX canlı dil korpusu ──");
+import { detectSoftwareInquiry as _dsi2, detectSoftwareBridge as _dsb } from "../supabase/functions/shared/constants/lead-detection.ts";
+const _CAT2 = { tourTitles: ["Kapadokya Balon Turu", "Pamukkale Turu", "Antalya Rafting"], destinations: ["Kapadokya", "Pamukkale", "Antalya"] };
+// POZİTİF — canlı vaka + komşu küme + 7-dil kısa formlar
+for (const s of [
+  "bu sistemi bende istiyorum",            // CANLI VAKA (01.08 13:08)
+  "bunu bende kullanmak istiyorum",
+  "bu sistemden bana da lazım",
+  "bunu nasıl alabilirim",
+  "kaç para bu sistem",
+  "bu sistemi ben de acenteme almak istiyorum",
+  "bu bot ne kadar, fiyatı nedir",
+  "turzz nedir",
+  "biz de acenteyiz böyle bir sistem arıyoruz",
+  "I want this system too",
+  "How much is this system?",
+  "Ich will das System auch haben",
+  "Comment puis-je obtenir ce système ?",
+  "Yo también quiero este sistema",
+  "Я тоже хочу эту систему",
+  "أريد هذا النظام أيضا",
+])
+  assert(`W5F.POS "${s.slice(0, 42)}"`, _dsi2(s, _CAT2));
+// NEGATİF — ZORUNLU FP freni (son tüketici)
+for (const s of [
+  "bende rezervasyon var mı", "bana da tur önerin", "sistemde hangi turlar var",
+  "sisteminizde Kapadokya var mı", "rezervasyon sistemi üzerinden mi ödeyeceğim",
+  "bot musun", "gerçek insan mısın", "uçak bileti var mı", "bana da fiyat verir misiniz",
+  "bu turu bende istiyorum", "rezervasyon yapmak istiyorum", "merhaba",
+  "otel ayarlıyor musunuz", "bana da yer ayırın", "bende iki kişilik yer lazım",
+  "bunu nasıl iptal ederim", "bana da indirim yapar mısınız",
+])
+  assert(`W5F.NEG "${s.slice(0, 42)}" → lead DEĞİL`, !_dsi2(s, _CAT2));
+// KÖPRÜ — özne var + nitelik yok → SORU (kayıt yok)
+for (const s of ["sisteminiz çok iyiymiş", "bu bot güzel çalışıyor", "yazılımınız hoşuma gitti"])
+  assert(`W5F.KÖPRÜ "${s.slice(0, 36)}" → köprü sorusu`, _dsb(s, _CAT2));
+// KÖPRÜ tetiklenMEMELİ: tur bağlamı · kesin-yakalama zaten var · kimlik
+for (const s of ["sistemde hangi turlar var", "sisteminizde Kapadokya var mı", "bot musun", "bu sistemi bende istiyorum"])
+  assert(`W5F.KÖPRÜ.NEG "${s.slice(0, 36)}" → köprü YOK`, !_dsb(s, _CAT2));
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MİKRO-D2 MUHAFIZI (2026-08-01) — "yeni kolon ↔ açık SELECT-listesi" sınıfı
 //
 // Sınıf ÜÇ kez tekrarladı (notify_new_lead · software_inquiry_enabled ·

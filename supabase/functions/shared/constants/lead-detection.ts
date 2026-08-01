@@ -181,7 +181,7 @@ export const LEAD_SAVED: Record<string, string> = {
 
 /** Yazılımın kendisini işaret eden özneler. */
 const SOFTWARE_SUBJECT_RE =
-  /(?<![\p{L}\p{N}])(?:turzz|yaz[ıi]l[ıi]m|chatbot|bot|panel|program|uygulama|sistem|software|application|app|system|programm|anwendung|logiciel|syst[èe]me|aplicaci[óo]n|programa|программ|систем|приложени|бот|(?:ال)?برنامج|(?:ال)?نظام|(?:ال)?تطبيق)/iu;
+  /(?<![\p{L}\p{N}])(?:turzz|yaz[ıi]l[ıi]m|chatbot|bot|panel|program|uygulama|sistem|software|application|app|system|programm|anwendung|logiciel|syst[èe]me|aplicaci[óo]n|programa|программ|систем|приложени|бот|(?:ال)?برنامج|(?:ال)?نظام|(?:ال)?تطبيق)|(?<![\p{L}\p{N}])(?:bunu|bunun|bu\s*i[şs]i|this\s*one|das\s*hier|[çc]a|esto|это|هذا)(?=[\s\S]{0,40}(?:ben(?:de|im)|bana\s*da|bize\s*de|kurar|kurabilir|alabilir|al[ıi]r|for\s*me|f[üu]r\s*mich|pour\s*moi|para\s*m[íi]|мне|لي))/iu;
 
 /**
  * İkinci şart — P4-3 deseniyle aynı mantık ama yazılım-alıcısının diliyle:
@@ -189,7 +189,7 @@ const SOFTWARE_SUBJECT_RE =
  * fiyat/paket/demo/üretici sorusu.
  */
 const SOFTWARE_QUALIFIER_RE =
-  /(?<![\p{L}\p{N}])(?:ne\s*kadar|fiyat|[üu]cret|maliyet|paket|abonelik|lisans|demo|deneme|kim\s*(?:yapt|geli[şs]tir|[üu]ret)|nedir|ne\s*i[şs]e\s*yara|sat[ıi]n\s*al|almak\s*ist|kullanmak\s*ist|kurmak\s*ist|ar[ıi]yoruz|ar[ıi]yorum|teklif|looking\s*for|interested\s*in|auf\s*der\s*suche|[àa]\s*la\s*recherche|buscando|ищем|ищу|نبحث|how\s*much|price|cost|pricing|subscription|licen[cs]e|trial|who\s*(?:made|built|develop)|what\s*is|quote|preis|kost(?:en|et)|abonnement|testversion|wer\s*hat|combien|tarif|abonnement|essai|qui\s*a\s*(?:fait|d[ée]velopp)|cu[áa]nto\s*cuesta|precio|suscripci[óo]n|prueba|qui[ée]n\s*(?:hizo|desarroll)|сколько\s*стоит|цена|подписк|демо|пробн|кто\s*(?:сделал|разработ)|كم\s*(?:سعر|تكلفة)|اشتراك|تجريب|من\s*(?:صنع|طور))/iu;
+  /(?<![\p{L}\p{N}])(?:ne\s*kadar|fiyat|[üu]cret|maliyet|paket|abonelik|lisans|demo|deneme|kim\s*(?:yapt|geli[şs]tir|[üu]ret)|nedir|ne\s*i[şs]e\s*yara|sat[ıi]n\s*al|almak\s*ist|kullanmak\s*ist|kurmak\s*ist|ar[ıi]yoruz|ar[ıi]yorum|teklif|looking\s*for|interested\s*in|auf\s*der\s*suche|[àa]\s*la\s*recherche|buscando|ищем|ищу|نبحث|how\s*much|price|cost|pricing|subscription|licen[cs]e|trial|who\s*(?:made|built|develop)|what\s*is|quote|preis|kost(?:en|et)|abonnement|testversion|wer\s*hat|combien|tarif|abonnement|essai|qui\s*a\s*(?:fait|d[ée]velopp)|cu[áa]nto\s*cuesta|precio|suscripci[óo]n|prueba|qui[ée]n\s*(?:hizo|desarroll)|сколько\s*стоит|цена|подписк|демо|пробн|кто\s*(?:сделал|разработ)|كم\s*(?:سعر|تكلفة)|اشتراك|تجريب|من\s*(?:صنع|طور))|(?<![\p{L}\p{N}])(?:ben(?:de|im\s*i[çc]in)|bana\s*da|bize\s*de)[\s\S]{0,30}(?:ist(?:iyor|erim|edik)|laz[ıi]m|kullan|kur)|(?<![\p{L}\p{N}])(?:ist(?:iyor|erim)|laz[ıi]m|kullanmak|kurmak)[\s\S]{0,25}(?:ben(?:de|im)|bize|bana)|(?<![\p{L}\p{N}])ka[çc]\s*para|(?<![\p{L}\p{N}])nas[ıi]l\s*(?:al[ıi]r|alabilir|edinebilir|kurdur)|(?<![\p{L}\p{N}])kur(?:ar|abilir)\s*m[ıi]s[ıi]n|(?<![\p{L}\p{N}])(?:i\s*want\s*(?:this|it|one)(?:\s*too)?|want\s*(?:this|it)\s*(?:too|as\s*well)|for\s*me\s*too|set\s*(?:this|it)\s*up|how\s*can\s*i\s*get)|(?<![\p{L}\p{N}])(?:auch\s*haben|f[üu]r\s*mich\s*auch|wie\s*bekomme|will\s*das\s*auch)|(?<![\p{L}\p{N}])(?:moi\s*aussi|aussi\s*avoir|comment\s*(?:puis[- ]je\s*)?(?:l['’]?)?obtenir)|(?<![\p{L}\p{N}])(?:yo\s*tambi[ée]n|tambi[ée]n\s*quiero|c[óo]mo\s*(?:puedo\s*)?(?:conseguir|obtener))|(?<![\p{L}\p{N}])(?:тоже\s*хочу|мне\s*тоже|как\s*(?:получить|приобрести))|(?:[أا]ريد[\s\S]{0,15}[أا]يض|كيف\s*[أا]حصل)/iu;
 
 /**
  * VETO — SON TÜKETİCİ tur-bağlamı. Bunlar "sistem/bot" kelimesi geçse bile
@@ -251,4 +251,54 @@ export const SW_SAVED: Record<string, string> = {
   es: "¡Gracias! El equipo de Turzz se pondrá en contacto en breve 🚀",
   ru: "Спасибо! Команда Turzz свяжется с вами в ближайшее время 🚀",
   ar: "شكراً! سيتواصل معك فريق Turzz قريباً 🚀",
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// W5-FIX (d) — SORU-KÖPRÜSÜ (2026-08-01)
+//
+// Canlı W5-FAIL komşu-kümesinde iki cümle hiçbir regexle çözülemezdi:
+//   "bende istiyorum bunu" · "bana da kurar mısınız"
+// Çünkü yazılım ÖZNESİ yok — anlam bir ÖNCEKİ mesajda. Tek mesaja bakan
+// hiçbir kalıp bunu çözemez.
+//
+// ÇÖZÜM: kesin-yakalama yerine SORU. Yazılım öznesi VAR ama nitelik bacağı
+// tutmadıysa (ve tur-vetosu temizse) bot iddia kurmaz, SORAR. Cevap "evet"
+// ise normal software_inquiry zinciri işler. FP riski ~0: yanlış tetiklense
+// bile müşteri "hayır" der, hiçbir kayıt açılmaz.
+//
+// ÖMÜR: TEK TURN. pendingSoftwareBridge bir sonraki mesajda ya onaya döner ya
+// da sessizce temizlenir — süpürücüye ihtiyaç YOK (pendingLeadCapture'ın
+// aksine burada AÇILMIŞ bir kayıt yok, dolayısıyla kaybolacak veri de yok).
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Köprü koşulu: özne VAR + nitelik YOK + veto temiz + katalog temiz. */
+export function detectSoftwareBridge(message: string, catalog?: LeadCatalog | string | null): boolean {
+  const m = (message || "").trim();
+  if (!m) return false;
+  if (!SOFTWARE_SUBJECT_RE.test(m)) return false;
+  if (SOFTWARE_QUALIFIER_RE.test(m)) return false;   // zaten kesin-yakalama yolu
+  if (SOFTWARE_VETO_RE.test(m)) return false;
+  const _cat: LeadCatalog | null =
+    typeof catalog === "string" ? { currentTourTitle: catalog } : (catalog ?? null);
+  if (mentionsCatalog(m.toLowerCase(), _cat)) return false;
+  return true;
+}
+
+/** Köprüden sonra ÇIPLAK onay/istek — "evet", "bende istiyorum", "olur" … */
+export const SW_BRIDGE_YES_RE =
+  /(?<![\p{L}\p{N}])(?:evet|tabii|tabi|olur|isterim|istiyorum|ilgileniyorum|l[üu]tfen|tamam|yes|sure|please|yeah|ja|bitte|genau|oui|volontiers|s[íi]|claro|por\s*favor|да|конечно|хочу|نعم|بالتأكيد|أريد|ben(?:de|im)\s*(?:de\s*)?(?:ist|laz)|bana\s*da)/iu;
+
+/** Köprüye AÇIK RET — "yok, tur soruyordum" sınıfı. */
+export const SW_BRIDGE_NO_RE =
+  /(?<![\p{L}\p{N}])(?:hay[ıi]r|yok|de[ğg]il|istemiyorum|bo[şs]\s*ver|no|nope|nein|non|нет|لا)/iu;
+
+/** Köprü sorusu — İDDİA DEĞİL SORU (7-dil). */
+export const SW_BRIDGE: Record<string, string> = {
+  tr: "Turzz AI sistemini mi kastediyorsunuz? Acenteniz için bilgi almak isterseniz talebinizi ekibimize iletebilirim 😊",
+  en: "Do you mean the Turzz AI system? If you'd like information for your own agency, I can forward your request to our team 😊",
+  de: "Meinen Sie das Turzz-AI-System? Wenn Sie Informationen für Ihre eigene Agentur möchten, leite ich Ihre Anfrage gerne an unser Team weiter 😊",
+  fr: "Parlez-vous du système Turzz AI ? Si vous souhaitez des informations pour votre propre agence, je peux transmettre votre demande à notre équipe 😊",
+  es: "¿Se refiere al sistema Turzz AI? Si desea información para su propia agencia, puedo trasladar su solicitud a nuestro equipo 😊",
+  ru: "Вы имеете в виду систему Turzz AI? Если хотите информацию для своего агентства, я передам вашу заявку нашей команде 😊",
+  ar: "هل تقصد نظام Turzz AI؟ إذا كنت ترغب في معلومات لوكالتك، يمكنني إحالة طلبك إلى فريقنا 😊",
 };

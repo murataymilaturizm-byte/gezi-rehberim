@@ -31,6 +31,8 @@ import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
 import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 // W5 (2026-08-01) — yazılım-talebi kategorisi (acente bayrağıyla kapılı)
 import { detectSoftwareInquiry, SW_ACK, SW_ASK_DETAIL, SW_SAVED } from "../constants/lead-detection.ts";
+// W5-FIX (d) — soru-köprüsü
+import { detectSoftwareBridge, SW_BRIDGE, SW_BRIDGE_YES_RE, SW_BRIDGE_NO_RE } from "../constants/lead-detection.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 // B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
@@ -688,6 +690,53 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       (context as any).pendingLeadCapture = undefined;
     }
 
+    // ── W5-FIX (d): SORU-KÖPRÜSÜ CEVABI ────────────────────────────────────
+    // Bir önceki turn'de köprü sorusu soruldu. Cevap:
+    //   onay/istek → software_inquiry zinciri (özne olmadan da yakalanır)
+    //   ret/alakasız → durum SESSİZCE kapanır, akış normal devam (kayıt YOK)
+    // Durum TEK TURN ömürlü: burada her hâlükârda temizlenir → süpürücü gerekmez.
+    if ((context as any).pendingSoftwareBridge) {
+      const _br = (context as any).pendingSoftwareBridge;
+      (context as any).pendingSoftwareBridge = undefined;
+      const _yes = SW_BRIDGE_YES_RE.test(message) && !SW_BRIDGE_NO_RE.test(message);
+      if (_yes) {
+        // Köprüden gelen onay: talep metni ÖNCEKİ mesaj + bu onay.
+        const _brReq = `${_br.request} — ${message}`.slice(0, 1000);
+        const _brInfo: any = context.reservationInfo || {};
+        const _brPhone = _brInfo.phone || (_idIsPhone ? String(adapter.identifier) : null);
+        const { data: _brDraft, error: _brErr } = await supabase
+          .from("agency_leads")
+          .insert({
+            agency_id: agency.id, phone: _brPhone, full_name: _brInfo.fullName || null,
+            request_text: _brReq, source_stage: context.stage, status: "new",
+            category: "software_inquiry",
+          })
+          .select("id").single();
+        if (_brErr) {
+          await logCritical({ event: "LEAD_INSERT_FAIL", error: _brErr.message, context: { bridge: true }, agencyId: agency.id, severity: "error" }).catch(() => {});
+          const _brFail = LEAD_FAILED[_leadLang] || LEAD_FAILED.tr;
+          const _brCtxF = { ...context, pendingSoftwareBridge: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
+          await _save(_brFail, _brCtxF);
+          await adapter.sendResponse(_brFail);
+          return { success: true, response: _brFail, newContext: _brCtxF };
+        }
+        console.log(`[W5 köprü] onay → taslak id=${_brDraft?.id?.slice(0, 8)}`);
+        const _brCtx = {
+          ...context,
+          pendingSoftwareBridge: undefined,
+          pendingLeadCapture: { request: _brReq, leadId: _brDraft?.id, category: "software_inquiry" },
+          lastUserMessage: message,
+          messageCount: context.messageCount + 1,
+        };
+        const _brReply = SW_ASK_DETAIL[_leadLang] || SW_ASK_DETAIL.tr;
+        await _save(_brReply, _brCtx);
+        await adapter.sendResponse(_brReply);
+        return { success: true, response: _brReply, newContext: _brCtx };
+      }
+      // Ret/alakasız → sessizce düş, AKIŞ DEVAM (return YOK, kayıt YOK).
+      console.log("[W5 köprü] onay gelmedi → durum kapatıldı, akış sürüyor");
+    }
+
     // (B)+(C) yeni tespit
     // W5-REV (2026-08-01): YAZILIM-TALEBİ kategorisi ACENTE-BAZLI BAYRAKLA kapılı.
     // Bayrak kapalıysa regex'e HİÇ girilmez (erken-çıkış) — diğer P4-3
@@ -757,6 +806,24 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       await _save(_replyC, _ctxC);
       await adapter.sendResponse(_replyC);
       return { success: true, response: _replyC, newContext: _ctxC };
+    }
+
+    // ── W5-FIX (d): KÖPRÜ SORUSU ───────────────────────────────────────────
+    // Kesin-yakalama tutmadı ama mesajda yazılım öznesi var (ve tur-vetosu
+    // temiz). İDDİA kurmadan SOR — yanlış tetiklense bile müşteri "hayır" der
+    // ve hiçbir kayıt açılmaz. Kayıt YOK, yalnız tek-turn'lük durum.
+    if (_swOn && detectSoftwareBridge(message, _leadCatalog)) {
+      const _bqCtx = {
+        ...context,
+        pendingSoftwareBridge: { request: message },
+        lastUserMessage: message,
+        messageCount: context.messageCount + 1,
+      };
+      const _bq = SW_BRIDGE[_leadLang] || SW_BRIDGE.tr;
+      console.log("[W5 köprü] özne var, nitelik yok → soru soruldu (kayıt YOK)");
+      await _save(_bq, _bqCtx);
+      await adapter.sendResponse(_bq);
+      return { success: true, response: _bq, newContext: _bqCtx };
     }
   }
 
