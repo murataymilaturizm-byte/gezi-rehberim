@@ -64,7 +64,7 @@ function getBrowsingPrompt(context: PromptContext): string {
 - "Kalkış yeri", "nereden hareket", "toplanma yeri", "nerede buluşuyoruz" sorularında:
   → SADECE turun hareket_noktasi bilgisini ver
   → Acente ofis adresini ASLA kalkış yeri olarak gösterme
-  → hareket_noktasi boşsa: "Kalkış yeri için lütfen acentemizle iletişime geçin" de
+  → hareket_noktasi boşsa: "Kalkış bilgisini acentemizden öğrenmemi isterseniz talebinizi iletebilirim ✍️" de (TELEFON YAZMA)
 
 Mevcut turlar:
 ${toursList}`;
@@ -333,8 +333,8 @@ export function getStagePrompt(context: PromptContext): string {
 - "Kalkış yeri", "nereden hareket", "toplanma yeri", "nerede buluşuyoruz" sorularında:
   → SADECE turun hareket_noktasi alanındaki bilgiyi ver
   → Acente ofis adresini ASLA kalkış/toplanma yeri olarak verme
-  → hareket_noktasi boşsa: "Kalkış yeri detayları için acentemizle iletişime geçiniz" de
-  → Kalkış saati için toplanma_saati alanını kullan, yoksa "Saati acentemizden öğrenebilirsiniz" de
+  → hareket_noktasi boşsa: "Kalkış detayını acentemizden öğrenmemi isterseniz talebinizi iletebilirim ✍️" de (TELEFON YAZMA)
+  → Kalkış saati için toplanma_saati alanını kullan, yoksa "Saati acentemizden öğrenip iletebilirim ✍️" de (TELEFON YAZMA)
 
 🚨 KRİTİK KURAL - TUR PROGRAMI:
 - Tur programı, gezilecek yerler için SADECE gezilecek_yerler ve program_kisa alanlarını kullan.
@@ -347,7 +347,7 @@ export function getStagePrompt(context: PromptContext): string {
 
 🚨 KRİTİK KURAL - ASENKRON İŞ VAADİ YASAK:
 - "Kontrol ediyorum", "bakıyorum", "bir saniye", "hemen bakayım" gibi SONRA YAPILACAK İŞ VAADİ ASLA verme — sen tek-mesajlık bir sistemsin, sonra dönemezsin.
-- Elindeki veriyle HEMEN cevap ver. Veri yoksa "Bu bilgi için acentemizle iletişime geçin" de.
+- Elindeki veriyle HEMEN cevap ver. Veri yoksa "İsterseniz bu talebi acentemize iletebilirim ✍️" de (TELEFON YAZMA).
 
 🚨 KRİTİK KURAL - GÜN ADLARI:
 - Bir tarihin haftanın hangi gününe denk geldiğini ASLA KENDİN HESAPLAMA.

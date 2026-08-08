@@ -76,8 +76,54 @@ import type { ChannelAdapter, ProcessMessageInput, ProcessMessageResult } from "
 
 // FIX2 (2026-07-24): acente-telefon eki — İş1 (canned) normalize deseniyle AYNI.
 // phone_public boşsa "" (kırılma yok). Tek-kaynak: hem çıkmaz-mesajları hem stale.
-function _agencyPhoneSuffix(phonePublic: string | null | undefined): string {
+// ═══════════════════════════════════════════════════════════════════════════
+// W8 (2026-08-02): TELEFON GÖSTERİM POLİTİKASI — SEBEP-PARAMETRELİ SUFFIX
+//
+// Canlı vaka: stale-reset selamlaması "Tekrar hoş geldiniz! 👋 … 📞 +90 541…"
+// — sebepsiz telefon, üstelik gösterilen numara MÜŞTERİNİN KENDİSİYDİ
+// (phone_public'te Murat'ın cebi vardı → kendi numarasına yönlendirme).
+// Felsefe: telefon müşteriyi KANAL-DIŞINA iter; lead/complaint zinciri varken
+// varsayılan cevap "talebinizi iletebilirim ✍️" olmalı.
+//
+// KARAR TABLOSU — telefon YALNIZ şu sebeplerle basılır:
+//   cancellation        → iptal/değişiklik talebi (bot yetkisiz — iş kuralı)
+//   after_sales_rule    → satış-sonrası bilgi değişikliği (aynı iş kuralı)
+//   big_group           → 50+ kişi grup (insan pazarlığı gerekir)
+//   quota_dead_end      → kontenjan/tarih tıkandı, alternatif YOK (bot çözemiyor)
+//   no_phone_escalation → müşteri telefon vermek istemiyor (aramayı seçebilir)
+//   visa                → vize desteği (acente işi)
+//   write_failed        → kayıt DÜŞMEDİ (son çare — escalation ailesi)
+//   ai_fallback         → bot cevap üretemiyor (son çare)
+// Sebepsiz/listede-olmayan çağrı → BOŞ döner. Suite muhafızı tek-argümanlı
+// çağrıyı kırmızıya düşürür (sebepsiz kullanım derleme değil TEST hatası).
+//
+// AYNI-NUMARA KURALI (her sebepte geçerli): gösterilecek numara, MÜŞTERİNİN
+// yazdığı numarayla VEYA acentenin WhatsApp hattıyla aynıysa BOŞ — müşteriyi
+// kendi numarasına ya da zaten konuştuğu hatta "yönlendirmek" absürttür.
+// Demo yüzeyinde identifier session-id olduğundan kural doğal tetiklenmez
+// (iki-yüzey ayrımına gerek kalmaz — tek politika).
+// ═══════════════════════════════════════════════════════════════════════════
+const _PHONE_SUFFIX_REASONS: ReadonlySet<string> = new Set([
+  "cancellation", "after_sales_rule", "big_group", "quota_dead_end",
+  "no_phone_escalation", "visa", "write_failed", "ai_fallback",
+]);
+
+function _isSelfPhone(phonePublic: string, customerId?: string, agencyLine?: string): boolean {
+  const digits = (s: string | undefined) => (s || "").replace(/\D/g, "").replace(/^0+/, "").replace(/^90/, "");
+  const p = digits(phonePublic);
+  if (!p) return false;
+  return (!!customerId && digits(customerId) === p) || (!!agencyLine && digits(agencyLine) === p);
+}
+
+function _agencyPhoneSuffix(
+  phonePublic: string | null | undefined,
+  reason?: string,
+  customerId?: string,
+  agencyLine?: string,
+): string {
   if (!phonePublic || !phonePublic.trim()) return "";
+  if (!reason || !_PHONE_SUFFIX_REASONS.has(reason)) return "";
+  if (_isSelfPhone(phonePublic, customerId, agencyLine)) return "";
   return ` 📞 ${formatPhoneDisplay(normalizePhone(phonePublic))}`;
 }
 
@@ -209,12 +255,12 @@ async function _fileCancellationRequest(
     message: _summary,
     type: "cancellation_request",
   }))) {
-    return buildEscalationFailed(context.language || "tr", agency.phone_public);
+    return buildEscalationFailed(context.language || "tr", agency.phone_public && !_isSelfPhone(agency.phone_public, String(adapter?.identifier || ""), (agency as any)?.whatsapp_phone_number) ? agency.phone_public : undefined); // W8
   }
   // CİLA-2 İŞ4 (2026-07-26): telefon-eki 7-dil TEK-KAYNAK. Eski hâlde de/fr/es/ru/ar
   // hepsi İngilizce _agPhoneCxlEn kullanıyordu → RU/AR müşteri İngilizce "You can also
   // reach us at…" görüyordu (canlıda 2 kez). _agencyPhoneSuffix (tek-kaynak 📞 no) korunur.
-  const _pn = agency.phone_public ? _agencyPhoneSuffix(agency.phone_public) : "";
+  const _pn = agency.phone_public ? _agencyPhoneSuffix(agency.phone_public, "cancellation", String(adapter?.identifier || ""), (agency as any)?.whatsapp_phone_number) : "";
   const _psByLang: Record<string, string> = agency.phone_public ? {
     tr: ` Dilerseniz${_pn} numarasından da ulaşabilirsiniz.`,
     en: ` You can also reach us at${_pn}.`,
@@ -379,6 +425,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _bestLang = (detected: string): string =>
     _isLangEnabled(detected) ? detected : (_enabledLangs?.[0] ?? "tr");
 
+  // W8: sebep-parametreli telefon-eki — müşteri kimliği + acente hattı otomatik
+  // bağlanır (aynı-numara kuralı her çağrıda işler). Sebepsiz telefon YOK.
+  const _phoneSfx = (reason: string) =>
+    _agencyPhoneSuffix(agency.phone_public, reason, String(adapter.identifier || ""), (agency as any).whatsapp_phone_number);
+  // Escalation/AI-fallback şablonları ham numara alır (suffix formatı değil) —
+  // aynı-numara kuralı onlar için bu değerle uygulanır (son-çare sebepleri meşru).
+  const _phonePublicSafe = agency.phone_public && !_isSelfPhone(agency.phone_public, String(adapter.identifier || ""), (agency as any).whatsapp_phone_number)
+    ? agency.phone_public
+    : undefined;
+
   // === KATMAN 1: STALE STATE GÖRÜNÜR RESET ===
   // Eski davranış: loadContext null dönerse sessizce fresh context + AI çalışırdı.
   // AI history'i okuyup eski yarım rezervasyon bilgilerini sızdırırdı ("müsait değil" saçmalığı).
@@ -392,7 +448,9 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       ? agency.enabled_languages.includes(seedLanguage)
       : true) ? seedLanguage : undefined;
     const _lang = _bestLang(languageChangeIntent || runtimeDetectedLang || _seedHere || _stale.lastLanguage || "tr");
-    const _agPhone = _agencyPhoneSuffix(agency.phone_public);
+    // W8 VAKA: selamlamada/timeout'ta telefonun işlevi YOK — müşteri zaten
+    // kanalda yazıyor; sebepsiz 📞 kaldırıldı (şablonlardaki ${_agPhone} boş).
+    const _agPhone = "";
 
     // Yarım rezervasyon vardıysa: "iptal edildi, baştan başlayalım" — kullanıcı tarihi/pax'ı yeniden seçmeli
     // Yarım rezervasyon yoksa: yumuşak "tekrar hoş geldiniz" — kullanıcı muhtemelen yeni iş için yazıyor
@@ -2351,7 +2409,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (context.collectionStep === "waiting_for_pax") {
     const _rawPax = (nluResult.entities as { people_count?: { adults?: number } })?.people_count?.adults;
     if (typeof _rawPax === "number" && _rawPax > MAX_PAX_PER_RESERVATION) {
-      const _agPhone = _agencyPhoneSuffix(agency.phone_public);
+      const _agPhone = _phoneSfx("quota_dead_end");
       const _excessMsgs: Record<string, string> = {
         tr: `${MAX_PAX_PER_RESERVATION} kişiden fazla grup rezervasyonu için lütfen acentemizle iletişime geçin.${_agPhone}`,
         en: `For group reservations of more than ${MAX_PAX_PER_RESERVATION} people, please contact our agency.${_agPhone}`,
@@ -2372,7 +2430,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // === MAX PAX KONTROLÜ (BUG 2) — 50+ kişi grubu için ofisle iletişim ===
   const _extractedPax = extractedInfo.paxAdult ?? extractedInfo.pax;
   if (_extractedPax && _extractedPax > 50) {
-    const _agPhone = _agencyPhoneSuffix(agency.phone_public);
+    const _agPhone = _phoneSfx("big_group");
     const _maxPaxMsgs: Record<string, string> = {
       tr: `${_extractedPax} kişilik grup için lütfen ofisimizle iletişime geçin.${_agPhone}\n\nBireysel online rezervasyonlar için kaç kişi istiyorsunuz? (maksimum 50)`,
       en: `For a group of ${_extractedPax}, please contact our office for a special offer.${_agPhone}\n\nFor online booking, how many people? (max 50)`,
@@ -2461,7 +2519,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       _lang,
     );
     // FIX2: alternatif yoksa (çıkmaz) acente telefonu ekle — İş1 deseniyle.
-    const _betaReply = _tcPrefixBeta + (_msgs[_lang] || _msgs.tr) + (!_hasAlt ? _agencyPhoneSuffix(agency.phone_public) : "");
+    const _betaReply = _tcPrefixBeta + (_msgs[_lang] || _msgs.tr) + (!_hasAlt ? _phoneSfx("quota_dead_end") : "");
     console.log(`[process-message] H-β tetiklendi (tarih dolu: ${_rej.departureDate}, remaining=${_rej.remaining}, altDates=${_hasAlt}, tourChanged=${!!_tcPrefixBeta})`);
     await _save(_betaReply, context);
     await adapter.sendResponse(_betaReply);
@@ -2515,7 +2573,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       _lang,
     );
     // FIX2: alternatif yoksa (çıkmaz) acente telefonu ekle.
-    const _paxRejReply = _tcPrefixPax + (_msgs[_lang] || _msgs.tr) + (!_hasAlt ? _agencyPhoneSuffix(agency.phone_public) : "");
+    const _paxRejReply = _tcPrefixPax + (_msgs[_lang] || _msgs.tr) + (!_hasAlt ? _phoneSfx("quota_dead_end") : "");
     console.log(`[process-message] H-pax tetiklendi (date=${_activeDate.departure_date}, remaining=${_remaining}, neededPax=${_paxPending}, tourChanged=${!!_tcPrefixPax})`);
     await _save(_paxRejReply, context);
     await adapter.sendResponse(_paxRejReply);
@@ -3018,7 +3076,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   ) {
     const _pyLang = context.language || "tr";
     const _volEmail = extractEmail(message);
-    const _agPhonePY = _agencyPhoneSuffix(agency.phone_public);
+    const _agPhonePY = _phoneSfx("no_phone_escalation");
 
     // (0) ESKALASYON ONAYI: 2. ret sonrası "iletelim mi?" soruldu → "evet" →
     // contact_request kaydı (J-14 deseni) + bilgi mesajı. Müşteri çıkmazda kalmaz.
@@ -3036,7 +3094,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         message: _crSummary,
         type: "contact_request",
       }))) {
-        const _crFail = buildEscalationFailed(_pyLang, agency.phone_public);
+        const _crFail = buildEscalationFailed(_pyLang, _phonePublicSafe); // W8
         const _crFailCtx = { ...context, phoneEscalationPending: false };
         await _save(_crFail, _crFailCtx);
         await adapter.sendResponse(_crFail);
@@ -3362,15 +3420,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // === FIX O6: Aktif tur yoksa deterministik mesaj — AI uydurmasın ===
   // COMPLETED stage hariç: after-sales mesajları tur listesine ihtiyaç duymaz.
   if (tours.length === 0 && newContext.stage !== "COMPLETED") {
-    const _agPhone = _agencyPhoneSuffix(agency.phone_public);
+    const _agPhone = ""; // W8: O6 katalog-boş → telefon yerine kanal-içi köprü (metinler güncellendi)
+    // W8: telefon yerine KANAL-İÇİ köprü — talep lead/complaint zinciriyle alınır.
     const _noTourMsgs: Record<string, string> = {
-      tr: `Şu anda aktif turumuzu bulamıyoruz. Yeni tarihler ve bilgi için lütfen acentemizle iletişime geçin.${_agPhone}`,
-      en: `We currently don't have any available tours. Please contact our agency for new dates and information.${_agPhone}`,
-      de: `Wir haben derzeit keine verfügbaren Touren. Für neue Termine und Informationen wenden Sie sich bitte an unsere Agentur.${_agPhone}`,
-      ru: `В настоящее время у нас нет доступных туров. Пожалуйста, свяжитесь с нашим агентством для получения информации.${_agPhone}`,
-      ar: `لا تتوفر لدينا جولات متاحة حالياً. يرجى التواصل مع وكالتنا للحصول على معلومات.${_agPhone}`,
-      fr: `Nous n'avons actuellement aucun circuit disponible. Contactez notre agence pour de nouvelles dates et informations.${_agPhone}`,
-      es: `Actualmente no tenemos tours disponibles. Por favor contacte nuestra agencia para fechas y más información.${_agPhone}`,
+      tr: `Şu anda aktif turumuz bulunmuyor. İsterseniz talebinizi acentemize iletebilirim — yeni tarihler açılınca sizinle iletişime geçilir ✍️${_agPhone}`,
+      en: `We currently don't have any active tours. If you like, I can forward your request to our agency — they'll contact you when new dates open ✍️${_agPhone}`,
+      de: `Derzeit haben wir keine aktiven Touren. Gerne leite ich Ihre Anfrage an unsere Agentur weiter — Sie werden kontaktiert, sobald neue Termine verfügbar sind ✍️${_agPhone}`,
+      ru: `Сейчас у нас нет активных туров. Если хотите, я передам вашу заявку агентству — с вами свяжутся, когда появятся новые даты ✍️${_agPhone}`,
+      ar: `لا تتوفر لدينا جولات نشطة حالياً. إذا رغبت، يمكنني إحالة طلبك إلى وكالتنا — سيتواصلون معك عند توفر مواعيد جديدة ✍️${_agPhone}`,
+      fr: `Nous n'avons actuellement aucun circuit actif. Si vous le souhaitez, je peux transmettre votre demande à notre agence — elle vous contactera dès l'ouverture de nouvelles dates ✍️${_agPhone}`,
+      es: `Actualmente no tenemos tours activos. Si lo desea, puedo trasladar su solicitud a nuestra agencia — le contactarán cuando se abran nuevas fechas ✍️${_agPhone}`,
     };
     const _noTourReply = _noTourMsgs[newContext.language] || _noTourMsgs.tr;
     console.warn("[process-message] O6: No available tours — returning deterministic message");
@@ -3511,7 +3570,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     (VISA_SIGNAL_RE.test(message) && _visaAsksQuestion);
   if (_visaGateFires) {
     const _visaTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
-    const _agPhoneV = _agencyPhoneSuffix(agency.phone_public);
+    const _agPhoneV = _phoneSfx("visa");
     let _visaReply: string;
     if (_visaTour?.visa_notes) {
       const _vn: Record<string, string> = {
@@ -4767,7 +4826,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (rpcError || !rpcResult?.success) {
       const errCode = rpcResult?.error || "UNKNOWN";
       const lang = newContext.language || "tr";
-      const agPhone = _agencyPhoneSuffix(agency.phone_public);
+      const agPhone = _phoneSfx("write_failed");
       let errorReply = "";
 
       if (errCode === "QUOTA_EXCEEDED") {
@@ -4997,19 +5056,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // için: git log M-25 + bu commit.)
 
     // İletişim footer (agency.phone_public varsa)
-    if (agency.phone_public) {
-      const _contactLabels: Record<string, string> = {
-        tr: "Sorularınız için",
-        en: "For questions",
-        de: "Bei Fragen",
-        ru: "По вопросам",
-        ar: "للأسئلة",
-        fr: "Pour vos questions",
-        es: "Para consultas",
-      };
-      const _contactLabel = _contactLabels[newContext.language] || _contactLabels.en;
-      completionReply += `\n\n📞 ${_contactLabel}: ${agency.phone_public}`;
-    }
+    // W8: rezervasyon-tamamlandı mesajındaki koşulsuz 📞 bloğu KALDIRILDI —
+    // en yüksek hacimli sebepsiz-telefon noktasıydı (her başarılı rezervasyonda).
+    // After-sales soruları kanal-içi zaten cevaplanıyor; iptal/değişiklik gibi
+    // meşru hallerde telefon kendi dallarında (after_sales_rule) basılmaya devam eder.
 
     await _save(completionReply, newContext);
     await adapter.sendResponse(completionReply);
@@ -5041,7 +5091,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _bookingActionRe = /(?<![\p{L}\p{N}])(iptal|cancel|annul|annuler|cancelar|stornier|отмен|إلغاء|إلغ|değiştir|change|modif|cambiar|ändern|изменить|تعديل|تغيير)/iu;
     const _isCancelOrChange = _bookingActionRe.test(_msgLower);
     if (_isCancelOrChange) {
-      const _agPhone = _agencyPhoneSuffix(agency.phone_public);
+      const _agPhone = _phoneSfx("after_sales_rule");
       // FIX5 (A3-b): ✅ → 📩 — bu bir TALEP-ALINDI mesajı; ✅ "iptal tamamlandı"
       // izlenimi veriyordu (DB'ye dokunulmuyor, yalnız complaints kaydı).
       const _ackMsgs: Record<string, string> = {
@@ -5065,7 +5115,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       });
       const _asReply = _asOk
         ? _ackReply
-        : buildEscalationFailed(newContext.language || "tr", agency.phone_public);
+        : buildEscalationFailed(newContext.language || "tr", _phonePublicSafe); // W8
 
       await _save(_asReply, newContext);
       await adapter.sendResponse(_asReply);
@@ -5114,7 +5164,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       (nluResult.intent === "provide_info" && _anyFieldChange);
 
     if (_isChangeRequest) {
-      const _agPhone = _agencyPhoneSuffix(agency.phone_public);
+      const _agPhone = _phoneSfx("after_sales_rule");
       const _redirectMsgs: Record<string, string> = {
         tr: `Rezervasyonunuz onaylandı ✅ İsim, telefon veya diğer bilgilerde değişiklik için lütfen acentemizle iletişime geçin.${_agPhone}`,
         en: `Your reservation is confirmed ✅ For changes to name, phone or other details, please contact our agency directly.${_agPhone}`,
@@ -5461,7 +5511,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log("[process-message] AI reply:", reply.substring(0, 80));
   } catch (_aiErr) {
     console.error("[process-message] AI call failed:", _aiErr);
-    reply = buildAIFallbackResponse(newContext, agency.phone_public || undefined);
+    reply = buildAIFallbackResponse(newContext, _phonePublicSafe); // W8: aynı-numara kuralı
     await _save(reply, newContext);
     await adapter.sendResponse(reply);
     return { success: true, response: reply, newContext };
@@ -5535,16 +5585,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _sq = STEP_QUESTIONS[String(newContext.collectionStep)];
       _bvReplacement = _sq[_bvLang] || _sq.en;
     } else {
-      const _agP = _agencyPhoneSuffix(agency.phone_public);
+      const _agP = ""; // W8: genel-yönlendirme SEBEPSİZ → telefon YOK (kanal-içi köprü aşağıda)
       // 2026-07-09 Faz 5 B: tr+en → 7-dil.
+      // W8: telefon yerine KANAL-İÇİ köprü ("escape" sınıfının en tipik cümlesiydi).
       const _bvFall: Record<string, string> = {
-        tr: `Bu konuda net bilgi için acentemizle iletişime geçebilirsiniz.${_agP}`,
-        en: `Please contact our agency for details on this.${_agP}`,
-        de: `Für genaue Informationen hierzu wenden Sie sich bitte an unsere Agentur.${_agP}`,
-        fr: `Pour des informations précises à ce sujet, veuillez contacter notre agence.${_agP}`,
-        es: `Para información precisa sobre esto, contacte con nuestra agencia.${_agP}`,
-        ru: `За точной информацией по этому вопросу обратитесь в наше агентство.${_agP}`,
-        ar: `لمعلومات دقيقة حول هذا الموضوع، يرجى التواصل مع وكالتنا.${_agP}`,
+        tr: `Bu konudaki net bilgiyi acentemizden öğrenmemi isterseniz talebinizi iletebilirim ✍️${_agP}`,
+        en: `If you like, I can forward your question to our agency for a precise answer ✍️${_agP}`,
+        de: `Wenn Sie möchten, leite ich Ihre Frage für eine genaue Antwort an unsere Agentur weiter ✍️${_agP}`,
+        fr: `Si vous le souhaitez, je peux transmettre votre question à notre agence pour une réponse précise ✍️${_agP}`,
+        es: `Si lo desea, puedo trasladar su pregunta a nuestra agencia para una respuesta precisa ✍️${_agP}`,
+        ru: `Если хотите, я передам ваш вопрос агентству для точного ответа ✍️${_agP}`,
+        ar: `إذا رغبت، يمكنني إحالة سؤالك إلى وكالتنا للحصول على إجابة دقيقة ✍️${_agP}`,
       };
       _bvReplacement = _bvFall[_bvLang] || _bvFall.en;
     }

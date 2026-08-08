@@ -39,6 +39,16 @@ export const LEGIT_REDIRECTS: ReadonlyArray<{ re: RegExp; why: string }> = [
     re: /(?:t[üu]rsab|lisans|sertifika|belge(?:niz|si)|licen[cs]e|certificat)/iu,
     why: "acente lisans/belge alanı şemada yok — dürüst yönlendirme (D1 adayı)",
   },
+  {
+    // W8 politikası: 50+ kişi grup — insan pazarlığı gerekir (big_group sebebi).
+    re: /(?:50\+|[5-9]\d\s*ki[şs]i|b[üu]y[üu]k\s*grup|large\s*group|ofisle\s*ileti[şs]im)/iu,
+    why: "50+ grup — fiyat/organizasyon insan pazarlığı ister (W8 big_group)",
+  },
+  {
+    // W8 politikası: vize desteği acente işi (visa sebebi).
+    re: /(?:vize|visa|visum|виз[аы]|تأشير)/iu,
+    why: "vize desteği acente işi — meşru yönlendirme (W8 visa)",
+  },
 ];
 
 /** İki metnin bigram-Dice benzerliği (0..1). Tekrar-soru tespiti için. */

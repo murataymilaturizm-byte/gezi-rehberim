@@ -5752,4 +5752,44 @@ assert("W7.90LI intl '+491701234567' → '491701234567'", _np90("+491701234567")
 for (const l of ["tr", "en", "de", "fr", "es", "ru", "ar"])
   assert(`W7.MSG ${l} mevcut`, typeof _pbm[l] === "string" && _pbm[l].length > 20);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// W8 — TELEFON GÖSTERİM POLİTİKASI MUHAFIZI (2026-08-02) — KALICI
+// Canlı vaka: stale-selamlamada sebepsiz 📞 + numara müşterinin KENDİSİYDİ.
+// İki kilit: (1) kaynak-tarama — _agencyPhoneSuffix SEBEPSİZ (tek-argümanlı)
+// çağrılamaz; (2) aynı-numara kuralı davranışsal.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── W8 telefon-politikası muhafızı ──");
+{
+  const _pmSrc = await Deno.readTextFile("supabase/functions/shared/handlers/process-message.ts");
+  // Tek-argümanlı çağrı: "..._agencyPhoneSuffix(x)" — virgülsüz kapanış.
+  const _bare = [..._pmSrc.matchAll(/_agencyPhoneSuffix\(\s*[^,()]*\)/g)]
+    .map((m) => m[0])
+    .filter((c) => !c.includes("(\n"));   // tanım satırı değil, çağrı
+  assert(
+    "W8.MUHAFIZ: sebepsiz (tek-argümanlı) _agencyPhoneSuffix çağrısı YOK",
+    _bare.length === 0,
+    _bare.length ? `sebepsiz çağrı: ${_bare[0]}` : "",
+  );
+  // Şüpheli 4 noktanın telefonsuzluğu kaynak-kanıtı:
+  assert("W8.STALE: selamlama şablonu bölgesinde sebepsiz suffix yok",
+    /_agPhone = "";[\s\S]{0,2500}Tekrar hoş geldiniz/.test(_pmSrc));
+  assert("W8.COMPLETION: 'Sorularınız için 📞' bloğu kaldırıldı",
+    !_pmSrc.includes('completionReply += `\\n\\n📞'));
+}
+// Aynı-numara kuralı — _isSelfPhone process-message'ta modül-içi (dışa açık değil;
+// modülü import etmek supabase-js zincirini çeker). Kural kaynak-taramayla kilitli
+// (yukarıda) + normalize mantığı burada senaryoyla doğrulanır:
+const _selfCheck = (pub: string, cust: string) => {
+  const d = (s: string) => s.replace(/\D/g, "").replace(/^0+/, "").replace(/^90/, "");
+  return d(pub) === d(cust);
+};
+assert("W8.SELF '+90 541 650 03 03' vs müşteri '905416500303' → GİZLE", _selfCheck("+90 541 650 03 03", "905416500303"));
+assert("W8.SELF '+90 541 650 03 03' vs müşteri '905414568989' → GÖSTER", !_selfCheck("+90 541 650 03 03", "905414568989"));
+// Karne hizası: 50+ grup ve vize yönlendirmeleri artık MEŞRU (escape sayılmaz)
+import { LEGIT_REDIRECTS as _lr8 } from "../supabase/functions/shared/constants/report-patterns.ts";
+const _isLegit8 = (s: string) => _lr8.some((w) => w.re.test(s));
+assert("W8.KARNE 50+ grup yönlendirmesi meşru", _isLegit8("50 kişilik büyük grup için lütfen ofisle iletişime geçin"));
+assert("W8.KARNE vize yönlendirmesi meşru", _isLegit8("Vize işlemleri için acentemizle iletişime geçin"));
+assert("W8.KARNE sebepsiz kaçış HÂLÂ yakalanır", !_isLegit8("Kalkış yeri bilgileri için lütfen acentemizle iletişime geçin"));
+
 Deno.exit(fail === 0 ? 0 : 1);
