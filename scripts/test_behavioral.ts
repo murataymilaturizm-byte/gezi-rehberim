@@ -5792,4 +5792,26 @@ assert("W8.KARNE 50+ grup yönlendirmesi meşru", _isLegit8("50 kişilik büyük
 assert("W8.KARNE vize yönlendirmesi meşru", _isLegit8("Vize işlemleri için acentemizle iletişime geçin"));
 assert("W8.KARNE sebepsiz kaçış HÂLÂ yakalanır", !_isLegit8("Kalkış yeri bilgileri için lütfen acentemizle iletişime geçin"));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// W6 — ZAMİR/BAĞLAM FRENİ (2026-08-02) — KALICI (isVerbLikeWord'ün zamir eşi)
+// Canlı: "bu turu bende istiyorum" → '"bende" sistemimizde bulunmuyor 😔'.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── W6 zamir-freni ──");
+import { isMeaningfulTourKeyword as _imtk } from "../supabase/functions/shared/constants/tour-matching.ts";
+// FREN — zamir/bağlam sözcükleri tur-anahtarı DEĞİL (7-dil)
+for (const w of ["bende", "bana", "bunu", "şunu", "onu", "bizde", "sizde", "bize", "sana", "this", "that", "das", "mir", "uns", "это", "мне", "нам", "esto", "cela", "هذا"])
+  assert(`W6.FREN "${w}" → tur-anahtarı değil`, !_imtk(w));
+// POZİTİF KORUMA — gerçek tur/yer adları YAKALANMAYA devam eder
+for (const w of ["kapadokya", "pamukkale", "balon", "rafting", "efes", "antalya"])
+  assert(`W6.POS "${w}" → tur-anahtarı`, _imtk(w));
+// Karışık cümle simülasyonu: kelime-bazlı süzgeçten geçen anlamlı kalıntı doğru
+{
+  const _words = (s: string) => s.toLowerCase().split(/\s+/).filter((x) => _imtk(x.replace(/[^\p{L}]/gu, "")));
+  assert("W6.MIX 'Kapadokya'yı bana anlat' → kalan anahtar kapadokya içerir",
+    _words("Kapadokyayı bana anlat").some((w) => w.includes("kapadokya")));
+  assert("W6.MIX 'Balon turunu bunu istiyorum' → balon kalır, bunu/istiyorum elenir",
+    _words("Balon turunu bunu istiyorum").includes("balon") &&
+    !_words("Balon turunu bunu istiyorum").includes("bunu"));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

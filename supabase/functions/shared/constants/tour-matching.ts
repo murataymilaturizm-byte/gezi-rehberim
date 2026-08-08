@@ -107,8 +107,37 @@ export function isVerbLikeWord(word: string): boolean {
   return w.length >= 5 && _TR_VERB_SUFFIX_RE.test(w);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// W6 (2026-08-02): ZAMİR/BAĞLAM-SÖZCÜĞÜ FRENİ — isVerbLikeWord'ün zamir eşdeğeri
+//
+// Canlı vaka (W5-FIX FP-probu): "bu turu bende istiyorum" → bot
+// '"bende" sistemimizde bulunmuyor 😔' — zamiri TUR ADI sandı. W1'de "almak"
+// fiili aynı şekilde tur adı sanılıyordu; bu, sınıfın zamir üyesi.
+//
+// Yalnız GERÇEKTEN DELİKTE olanlar listede: <3 harf zaten uzunluk şartına
+// takılıyor ("it/me/us/о..." giremez) — bu yüzden EN it/me/us, DE mir/uns,
+// RU мне/нам 3-harf sınırında olsalar da 3+ olanlar ve tümü açıkça eklendi
+// (uzunluk kuralı değişirse fren yerinde kalsın).
+// ═══════════════════════════════════════════════════════════════════════════
+const _PRONOUN_CONTEXT_WORDS = new Set<string>([
+  // TR
+  "bende", "bana", "bunu", "bunun", "şunu", "sunu", "onu", "bizde", "sizde", "bize", "sana", "bende",
+  // EN
+  "this", "that", "these", "those",
+  // DE
+  "das", "dies", "mir", "uns",
+  // FR / ES
+  "ceci", "cela", "esto", "eso",
+  // RU
+  "это", "этот", "мне", "нам",
+  // AR
+  "هذا", "هذه", "ذلك",
+]);
+
 export function isMeaningfulTourKeyword(word: string): boolean {
   if (!word || word.length < 3) return false;
   if (isVerbLikeWord(word)) return false; // W1
-  return !TOUR_KEYWORD_STOPWORDS.has(word.toLowerCase());
+  const w = word.toLowerCase();
+  if (_PRONOUN_CONTEXT_WORDS.has(w)) return false; // W6
+  return !TOUR_KEYWORD_STOPWORDS.has(w);
 }

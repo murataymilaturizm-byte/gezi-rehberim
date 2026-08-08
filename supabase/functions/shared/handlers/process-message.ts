@@ -3377,6 +3377,31 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // (R6 @2218, :10d-2 @~2528 — sıra nedeniyle muafiyet ŞART.)
     !((context as any).proposedDateId && detectConfirmation(message, newContext.language))
   ) {
+    // W6-cila (2026-08-02): guard-red basılırken pax SESSİZCE güncelleniyordu
+    // ("3 kişi" → pax 2→3 yazılıyor ama cevap yalnız "geçersiz telefon" idi —
+    // P2 "değiştirdim demiyor" ailesi). Değişiklik artık SÖYLENİYOR ve telefon
+    // sorusu tekrarlanıyor; adımda kalış aynen.
+    {
+      const _paxNewG = (newContext.reservationInfo as any)?.paxAdult;
+      const _paxOldG = (context.reservationInfo as any)?.paxAdult;
+      if (_paxNewG && _paxOldG && _paxNewG !== _paxOldG) {
+        const _ackLang = newContext.language || "tr";
+        const _paxAckMsgs: Record<string, string> = {
+          tr: `Kişi sayısını ${_paxNewG} olarak güncelledim 👍 Telefon numaranızı alabilir miyim? 📱`,
+          en: `I've updated the group size to ${_paxNewG} 👍 Could I get your phone number? 📱`,
+          de: `Ich habe die Personenzahl auf ${_paxNewG} aktualisiert 👍 Darf ich Ihre Telefonnummer haben? 📱`,
+          fr: `J'ai mis à jour le nombre de personnes à ${_paxNewG} 👍 Puis-je avoir votre numéro de téléphone ? 📱`,
+          es: `He actualizado el número de personas a ${_paxNewG} 👍 ¿Me da su número de teléfono? 📱`,
+          ru: `Я обновил количество человек: ${_paxNewG} 👍 Могу я получить ваш номер телефона? 📱`,
+          ar: `قمت بتحديث عدد الأشخاص إلى ${_paxNewG} 👍 هل يمكنني الحصول على رقم هاتفك؟ 📱`,
+        };
+        const _paxAckReply = _paxAckMsgs[_ackLang] || _paxAckMsgs.tr;
+        console.log(`[W6-cila] guard-red'de pax ${_paxOldG}→${_paxNewG} güncellendi — ack basıldı`);
+        await _save(_paxAckReply, newContext);
+        await adapter.sendResponse(_paxAckReply);
+        return { success: true, response: _paxAckReply, newContext };
+      }
+    }
     // W7-FIX: eksik/hatalı NUMARA denemesi → format-örnekli kibar-red (7-dil,
     // tek kaynak phone-rules.ts) + adımda kalış. Eski jenerik "geçerli değil"
     // mesajı format örneği vermiyordu; müşteri neyi düzelteceğini bilemiyordu.
