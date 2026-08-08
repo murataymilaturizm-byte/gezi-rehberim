@@ -6,6 +6,8 @@ import { REL_TODAY, REL_TOMORROW, REL_DAY_AFTER, REL_NEXT_WEEK, REL_DAY_NAMES, r
 import { PEOPLE_CONTEXT_RE, PAX_ADULT_RE, PAX_CHILD_RE } from "../constants/people-words.ts";
 import { THANKS_FAREWELL_RE } from "../constants/thanks-words.ts";
 import { CLEAR_POSITIVE_RE } from "../constants/confirmation-words.ts";
+// W7-FIX (2026-08-02) — telefon kabulü tek-kaynak katı doğrulayıcıdan
+import { canonicalTrPhone } from "../constants/phone-rules.ts";
 
 // ─── Göreceli tarih çıkarımı ─────────────────────────────────────────────────
 function extractRelativeDate(text: string, language: string): Date | null {
@@ -304,9 +306,15 @@ export function extractNameAndPhone(
   const lower = convertWordDayNearMonth(message.toLowerCase().trim());
 
   // === TELEFON ===
+  // W7-FIX (2026-08-02): kabul eşiği artık TEK-KAYNAK katı doğrulayıcıda
+  // (constants/phone-rules.ts). Eski hâlde normalizePhone "10-15 hane" sayıyordu
+  // ve TR-anlamı yoktu → 0'lı-10-hane (geçersiz TR numarası) kabul edilip
+  // CONFIRMING özetine sızıyordu. Katı kurallar + kanonik 05… normalizasyonu
+  // (özet ve DB tutarlı; _shared/phone.ts 90'lı çevrimi suite'te kilitli).
+  // normalizePhone fonksiyonunun KENDİSİNE dokunulmadı (başka tüketiciler aynen).
   const intlMatch = message.match(/\+\d[\d\s\-\.]{6,17}/);
   if (intlMatch) {
-    const phone = normalizePhone(intlMatch[0]);
+    const phone = canonicalTrPhone(intlMatch[0]);
     if (phone) result.phone = phone;
   }
 
@@ -315,7 +323,7 @@ export function extractNameAndPhone(
     for (const pattern of localPatterns) {
       const match = message.match(pattern);
       if (match) {
-        const phone = normalizePhone(match[1]);
+        const phone = canonicalTrPhone(match[1]);
         if (phone) {
           result.phone = phone;
           break;

@@ -33,6 +33,8 @@ import { extractEmail, isNegativePaxMessage } from "../fsm/simple-extractor.ts";
 import { detectSoftwareInquiry, SW_ACK, SW_ASK_DETAIL, SW_SAVED } from "../constants/lead-detection.ts";
 // W5-FIX (d) — soru-köprüsü
 import { detectSoftwareBridge, SW_BRIDGE, SW_BRIDGE_YES_RE, SW_BRIDGE_NO_RE } from "../constants/lead-detection.ts";
+// W7-FIX (2026-08-02) — telefon-adımı katı-doğrulama + kibar-red
+import { isBrokenPhoneAttempt, PHONE_BROKEN_MSG } from "../constants/phone-rules.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 // B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
@@ -3264,11 +3266,20 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // R6: eski "sadece rakam + <10 hane" koşulu "abc def" / "telefonum yok" / boş
   // mesajları YAKALAMAYIP CONFIRMING özetine kaçırıyordu (canlı bug). Yeni:
   // isValidPhone tek-helper → format-bağımsız tüm geçersiz girdiler yakalanır.
+  // W7-FIX (2026-08-02): guard artık İKİ durumda açılır —
+  //   (1) eski koşul: !isValidPhone (rakamsız/garip girdi)
+  //   (2) YENİ: isBrokenPhoneAttempt — rakam-ağırlıklı ama katı-doğrulamadan
+  //       geçmeyen girdi (7-9 hane, 0'lı-10-hane…). Eski hâlde isValidPhone ≥7
+  //       haneyi "telefon sayılır" deyip guard'ı SUSTURUYORDU → mesaj LLM'e
+  //       düşüyordu → canlı sunumda tarih listesi (deterministik değildi).
+  // P2 muafiyetleri (FAQ/tur/tarih-değişim/anafora/öneri-onayı) her iki durumda
+  // AYNEN geçerli — koşul zincirinin geri kalanına dokunulmadı.
+  const _w7Broken = isBrokenPhoneAttempt(message);
   if (
     newContext.collectionStep === "waiting_for_phone" &&
     context.collectionStep === "waiting_for_phone" &&
     !extractedInfo.phone &&
-    !isValidPhone(message.trim()) &&
+    (!isValidPhone(message.trim()) || _w7Broken) &&
     // 2026-06-29 D1 FIX: FAQ intent muafiyeti (canlı bug: waiting_for_phone'da
     // "iptal şartları?" → telefon çıkmaz + isValidPhone FALSE → R6 tetiklenir →
     // kullanıcı FAQ cevabı yerine "geçerli telefon değil" görüyordu. İsim/pax
@@ -3308,6 +3319,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // (R6 @2218, :10d-2 @~2528 — sıra nedeniyle muafiyet ŞART.)
     !((context as any).proposedDateId && detectConfirmation(message, newContext.language))
   ) {
+    // W7-FIX: eksik/hatalı NUMARA denemesi → format-örnekli kibar-red (7-dil,
+    // tek kaynak phone-rules.ts) + adımda kalış. Eski jenerik "geçerli değil"
+    // mesajı format örneği vermiyordu; müşteri neyi düzelteceğini bilemiyordu.
+    if (_w7Broken) {
+      const _w7Lang = newContext.language || "tr";
+      const _w7Reply = PHONE_BROKEN_MSG[_w7Lang] || PHONE_BROKEN_MSG.tr;
+      console.log(`[W7 phone-guard] eksik/hatalı numara denemesi ("${message.trim().slice(0, 20)}") → kibar-red, adımda kalındı`);
+      await _save(_w7Reply, newContext);
+      await adapter.sendResponse(_w7Reply);
+      return { success: true, response: _w7Reply, newContext };
+    }
     // 2026-07-03 İş D (K-19): cümle-yankı sanitize — '"numaram yok mail atsam"
     // geçerli bir telefon değil' saçmalığı. isEchoSafe FALSE ise tırnaklı form
     // yerine jenerik; kısa rakamsı yanlış girdiler ("0532 12") tırnaklı kalır.

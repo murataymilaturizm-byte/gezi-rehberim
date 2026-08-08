@@ -2,7 +2,9 @@
 // Davranış whatsapp-webhook/index.ts'deki inline bloklar ile EŞDEĞERDİR (Faz 1).
 
 import type { ConversationContext } from "../fsm/types.ts";
-import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, normalizePhone, hasRelativeDateWord, GIVE_UP_DROP_RE, convertWordDayNearMonth } from "../fsm/simple-extractor.ts";
+import { extractNameAndPhone, extractEmail, isEmailSkipRequest, formatName, hasRelativeDateWord, GIVE_UP_DROP_RE, convertWordDayNearMonth } from "../fsm/simple-extractor.ts";
+// W7-FIX (2026-08-02) — telefon kabulü tek-kaynak katı doğrulayıcıdan
+import { canonicalTrPhone } from "../constants/phone-rules.ts";
 import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
 import { isNluFullNameNegationLeak, isNluFullNameTourLeak, isNluFullNameGiveUpLeak } from "./nlu-validation.ts";
@@ -323,8 +325,12 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       if (_nameWords.length < 2) continue;
       extractedInfo[k] = formatName(v.trim());
     } else if (k === "phone" && typeof v === "string" && v.trim()) {
-      // KRİTİK: normalizePhone null dönerse FALLBACK YOK — placeholder DB'ye sızmasın
-      const normalized = normalizePhone(v.trim());
+      // KRİTİK: doğrulama null dönerse FALLBACK YOK — placeholder DB'ye sızmasın.
+      // W7-FIX (2026-08-02): normalizePhone (gevşek, 10-15 hane) → canonicalTrPhone
+      // (katı + kanonik 05…). Bu, NLU-yolundan gelen telefonun İKİNCİ kapısıydı:
+      // simple-extractor katılaşınca burası gevşek kalsaydı "0541650030" (geçersiz
+      // 0'lı-10-hane) NLU üzerinden yine CONFIRMING'e sızardı.
+      const normalized = canonicalTrPhone(v.trim());
       if (normalized) extractedInfo[k] = normalized;
     } else if ((k === "paxAdult" || k === "paxChild") && !_shouldAcceptNluPax) {
       // 2026-06-26 BUG-X9: peopleContext yok + waiting_for_pax değil → NLU pax REDDET

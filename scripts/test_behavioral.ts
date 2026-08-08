@@ -5712,4 +5712,44 @@ assert(
 assert("MİKRO-D2: listede kopya kolon yok", new Set(_agCols).size === _agCols.length);
 assert("MİKRO-D2: id her zaman listede (tüm çağrılar gerektiriyor)", _agCols.includes("id"));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// W7 — TELEFON KATI-DOĞRULAMA (2026-08-02) — KALICI
+// Canlı sunum vakası: eksik numara → LLM piyangosu → tarih listesi.
+// Kök: isValidPhone (≥7) ile normalizePhone (≥10) çelişkisi + 0'lı-10-hane deliği.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── W7 telefon katı-doğrulama ──");
+import { canonicalTrPhone as _ctp, isBrokenPhoneAttempt as _bpa, PHONE_BROKEN_MSG as _pbm } from "../supabase/functions/shared/constants/phone-rules.ts";
+import { extractNameAndPhone as _enp7 } from "../supabase/functions/shared/fsm/simple-extractor.ts";
+// 9-varyant karar tablosu (repro tablosuyla birebir)
+for (const [inp, want] of [
+  ["0541 650", null],          // 7 hane — eski ölü-bölge
+  ["05416500", null],          // 8 hane
+  ["541650030", null],         // 9 hane
+  ["0541650030", null],        // 10 hane 0'lı — CONFIRMING'e sızıyordu
+  ["5416500303", "05416500303"],   // 10 hane 0'sız → kanonik 0'lı
+  ["541 650 03 03", "05416500303"],
+  ["05416500303", "05416500303"],  // tam geçerli
+  ["+90 541 650 03 03", "05416500303"], // +90 → kanonik 0'lı
+  ["905416500303", "05416500303"],      // 90'lı 12 hane → kanonik
+  ["+49 170 1234567", "+491701234567"], // TR-dışı uluslararası KORUNUR
+  ["+90 541 650", null],       // eksik +90'lı da RED
+] as Array<[string, string | null]>)
+  assert(`W7.CTP "${inp}" → ${want ?? "RED"}`, _ctp(inp) === want, `gelen=${_ctp(inp)}`);
+// Guard tetikleyici: rakam-ağırlıklı-geçersiz TRUE; az-rakamlı/geçerli FALSE
+for (const s of ["0541 650", "05416500", "541650030", "0541650030"])
+  assert(`W7.BPA "${s}" → kibar-red tetikler`, _bpa(s));
+for (const s of ["10 aralık", "3 kişi", "05416500303", "541 650 03 03", "numaram yok mail atsam", "tarihi 20 aralık yapalım", "yemek dahil mi"])
+  assert(`W7.BPA "${s}" → tetiklemez (P2/geçerli korunur)`, !_bpa(s));
+// Extractor artık kanonik yazıyor; geçersizi YAZMIYOR
+assert("W7.EXT '5416500303' → kanonik 05…", _enp7("5416500303", "waiting_for_phone").phone === "05416500303");
+assert("W7.EXT '0541650030' → phone YAZILMAZ", _enp7("0541650030", "waiting_for_phone").phone === undefined);
+assert("W7.EXT '+905416500303' → kanonik 05…", _enp7("+90 541 650 03 03", "waiting_for_phone").phone === "05416500303");
+// ④ kanonik format → _shared/phone.ts 90'lı çevrimi HÂLÂ doğru (cron zinciri)
+import { normalizePhone as _np90 } from "../supabase/functions/_shared/phone.ts";
+assert("W7.90LI kanonik '05416500303' → '905416500303'", _np90("05416500303") === "905416500303");
+assert("W7.90LI intl '+491701234567' → '491701234567'", _np90("+491701234567") === "491701234567");
+// 7-dil red mesajı eksiksiz
+for (const l of ["tr", "en", "de", "fr", "es", "ru", "ar"])
+  assert(`W7.MSG ${l} mevcut`, typeof _pbm[l] === "string" && _pbm[l].length > 20);
+
 Deno.exit(fail === 0 ? 0 : 1);
