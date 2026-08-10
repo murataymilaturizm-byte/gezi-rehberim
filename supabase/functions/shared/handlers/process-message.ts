@@ -37,6 +37,8 @@ import { detectSoftwareBridge, SW_BRIDGE, SW_BRIDGE_YES_RE, SW_BRIDGE_NO_RE } fr
 import { isBrokenPhoneAttempt, PHONE_BROKEN_MSG } from "../constants/phone-rules.ts";
 // E3-1+E4-2 (2026-08-10) — kademeli-red sayacı + alternatif metinler
 import { bumpGuardStreak, PHONE_RETRY_MSG, PHONE_BRIDGE_MSG, AI_FALLBACK_REPEAT_MSG } from "../constants/graded-reject.ts";
+// E4-1 (2026-08-10) — "en kısa sürede" vaadi yerine gerçekçi kapanış
+import { buildFollowupClosing } from "../constants/followup-closing.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 // B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
@@ -274,15 +276,15 @@ async function _fileCancellationRequest(
   } : { tr: "", en: "", de: "", ru: "", ar: "", fr: "", es: "" };
   const _ps = (l: string) => _psByLang[l] ?? _psByLang.en;
   const _cxlMsgs: Record<string, string> = {
-    tr: `İptal talebinizi acentemize ilettim. En kısa sürede sizinle iletişime geçilecek.${_ps("tr")}`,
-    en: `I've forwarded your cancellation request to our agency. They will contact you shortly.${_ps("en")}`,
-    de: `Ich habe Ihre Stornierungsanfrage an unsere Agentur weitergeleitet. Sie werden in Kürze kontaktiert.${_ps("de")}`,
-    ru: `Я передал ваш запрос на отмену в наше агентство. С вами свяжутся в ближайшее время.${_ps("ru")}`,
-    ar: `لقد أحلت طلب الإلغاء إلى وكالتنا. سيتم التواصل معك قريباً.${_ps("ar")}`,
-    fr: `J'ai transmis votre demande d'annulation à notre agence. Vous serez contacté sous peu.${_ps("fr")}`,
-    es: `He enviado su solicitud de cancelación a nuestra agencia. Se pondrán en contacto con usted en breve.${_ps("es")}`,
+    tr: `İptal talebinizi acentemize ilettim.${_ps("tr")}`,
+    en: `I've forwarded your cancellation request to our agency.${_ps("en")}`,
+    de: `Ich habe Ihre Stornierungsanfrage an unsere Agentur weitergeleitet.${_ps("de")}`,
+    ru: `Я передал ваш запрос на отмену в наше агентство.${_ps("ru")}`,
+    ar: `لقد أحلت طلب الإلغاء إلى وكالتنا.${_ps("ar")}`,
+    fr: `J'ai transmis votre demande d'annulation à notre agence.${_ps("fr")}`,
+    es: `He enviado su solicitud de cancelación a nuestra agencia.${_ps("es")}`,
   };
-  return _cxlMsgs[context.language] || _cxlMsgs.en;
+  return (_cxlMsgs[context.language] || _cxlMsgs.en) + " " + buildFollowupClosing(context.language || "tr", agency.working_hours); // E4-1
 }
 
 // === PAKET-B (2026-07-25): CONFIRMING hibrit-düzeltme TEK-KAYNAK ===
@@ -742,7 +744,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _ctxA = { ...context, pendingLeadCapture: undefined, lastUserMessage: message, messageCount: context.messageCount + 1 };
         // W5: kapanış metni kategoriye göre — yazılım talebinde "acentemiz" değil "Turzz ekibi".
         const _savedMap = _pendCat === "software_inquiry" ? SW_SAVED : LEAD_SAVED;
-        const _replyA = _okA ? (_savedMap[_leadLang] || _savedMap.tr) : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
+        // E4-1: service-lead kapanışına gerçekçi dönüş-bilgisi (yazılım-talebi
+        // kendi B2B vaadini taşıyor — İş 3 ton-sınıfı).
+        const _e41Close = _pendCat === "software_inquiry" ? "" : " " + buildFollowupClosing(_leadLang, agency.working_hours);
+        const _replyA = _okA ? ((_savedMap[_leadLang] || _savedMap.tr) + _e41Close) : (LEAD_FAILED[_leadLang] || LEAD_FAILED.tr);
         await _save(_replyA, _ctxA);
         await adapter.sendResponse(_replyA);
         return { success: true, response: _replyA, newContext: _ctxA };
@@ -3103,15 +3108,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         return { success: true, response: _crFail, newContext: _crFailCtx };
       }
       const _crMsgs: Record<string, string> = {
-        tr: `Talebinizi acentemize ilettim — en kısa sürede sizinle iletişime geçecekler.${_agPhonePY}`,
-        en: `I've forwarded your request to our agency — they'll get in touch with you shortly.${_agPhonePY}`,
-        de: `Ich habe Ihre Anfrage an unsere Agentur weitergeleitet — sie wird sich in Kürze bei Ihnen melden.${_agPhonePY}`,
-        ru: `Я передал вашу заявку в наше агентство — с вами свяжутся в ближайшее время.${_agPhonePY}`,
-        ar: `لقد أحلت طلبك إلى وكالتنا — سيتواصلون معك قريباً.${_agPhonePY}`,
-        fr: `J'ai transmis votre demande à notre agence — elle vous contactera sous peu.${_agPhonePY}`,
-        es: `He enviado su solicitud a nuestra agencia — se pondrán en contacto con usted en breve.${_agPhonePY}`,
+        tr: `Talebinizi acentemize ilettim.${_agPhonePY}`,
+        en: `I've forwarded your request to our agency.${_agPhonePY}`,
+        de: `Ich habe Ihre Anfrage an unsere Agentur weitergeleitet.${_agPhonePY}`,
+        ru: `Я передал вашу заявку в наше агентство.${_agPhonePY}`,
+        ar: `لقد أحلت طلبك إلى وكالتنا.${_agPhonePY}`,
+        fr: `J'ai transmis votre demande à notre agence.${_agPhonePY}`,
+        es: `He enviado su solicitud a nuestra agencia.${_agPhonePY}`,
       };
-      const _crReply = _crMsgs[_pyLang] || _crMsgs.tr;
+      const _crReply = (_crMsgs[_pyLang] || _crMsgs.tr) + " " + buildFollowupClosing(_pyLang, agency.working_hours); // E4-1
       const _crCtx = { ...context, phoneEscalationPending: false };
       console.log(`[process-message] V11-a contact_request kaydı (telefon-yok ısrar → J-14 deseni, DB rezervasyonu DOKUNULMADI)`);
       await _save(_crReply, _crCtx);
@@ -5155,15 +5160,15 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       // FIX5 (A3-b): ✅ → 📩 — bu bir TALEP-ALINDI mesajı; ✅ "iptal tamamlandı"
       // izlenimi veriyordu (DB'ye dokunulmuyor, yalnız complaints kaydı).
       const _ackMsgs: Record<string, string> = {
-        tr: `Talebinizi aldık 📩 Acentemiz en kısa sürede sizinle iletişime geçecek. Acil durumlar için doğrudan arayabilirsiniz.${_agPhone}`,
-        en: `We've received your request 📩 Our agency will contact you shortly. For urgent matters, please call us directly.${_agPhone}`,
-        de: `Wir haben Ihre Anfrage erhalten 📩 Unsere Agentur wird sich in Kürze mit Ihnen in Verbindung setzen. Bei dringenden Anliegen rufen Sie uns bitte direkt an.${_agPhone}`,
-        ru: `Мы получили ваш запрос 📩 Наше агентство свяжется с вами в ближайшее время. По срочным вопросам звоните напрямую.${_agPhone}`,
-        ar: `لقد استلمنا طلبك 📩 ستتواصل وكالتنا معك في أقرب وقت. للأمور العاجلة يرجى الاتصال مباشرة.${_agPhone}`,
+        tr: `Talebinizi aldık 📩 Acil durumlar için doğrudan arayabilirsiniz.${_agPhone}`,
+        en: `We've received your request 📩 For urgent matters, please call us directly.${_agPhone}`,
+        de: `Wir haben Ihre Anfrage erhalten 📩 Bei dringenden Anliegen rufen Sie uns bitte direkt an.${_agPhone}`,
+        ru: `Мы получили ваш запрос 📩 По срочным вопросам звоните напрямую.${_agPhone}`,
+        ar: `لقد استلمنا طلبك 📩 للأمور العاجلة يرجى الاتصال مباشرة.${_agPhone}`,
         fr: `Nous avons bien reçu votre demande 📩 Notre agence vous contactera prochainement. Pour les urgences, appelez-nous directement.${_agPhone}`,
         es: `Hemos recibido su solicitud 📩 Nuestra agencia se pondrá en contacto con usted en breve. Para asuntos urgentes, llámenos directamente.${_agPhone}`,
       };
-      const _ackReply = _ackMsgs[newContext.language] || _ackMsgs.tr;
+      const _ackReply = (_ackMsgs[newContext.language] || _ackMsgs.tr) + " " + buildFollowupClosing(newContext.language || "tr", agency.working_hours); // E4-1
 
       // F-D4-1: "Talebinizi aldık 📩 Acentemiz ... iletişime geçecek" vaadi var →
       // kayıt düşerse bu cümle kurulmaz (eski hâl: .then(()=>{},()=>{}) tam sessiz).

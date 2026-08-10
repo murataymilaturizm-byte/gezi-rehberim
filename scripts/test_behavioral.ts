@@ -5832,4 +5832,28 @@ import { PHONE_BROKEN_MSG as _pb1 } from "../supabase/functions/shared/constants
 assert("E3.FARK 1≠2", _pb1.tr !== _prm.tr);
 assert("E3.FARK 2≠3", _prm.tr !== _pbm2.tr);
 
+// ═══ E4-1 — VAAT-YUMUŞATMA (2026-08-10) — KALICI ═══
+console.log("\n── E4-1 gerçekçi kapanış ──");
+import { buildFollowupClosing as _bfc } from "../supabase/functions/shared/constants/followup-closing.ts";
+assert("E4.SAAT kısa serbest-metin → parantezde basılır",
+  _bfc("tr", "Pzt-Cmt 09:00-18:00").includes("(Pzt-Cmt 09:00-18:00)"));
+assert("E4.JSON working_hours JSON ise SESSİZCE atlanır",
+  !_bfc("tr", '{"monday":{"enabled":true,"open":"09:00"}}').includes("{"));
+assert("E4.BOŞ hours yoksa temel metin", _bfc("tr", null).includes("çalışma saatleri içinde"));
+assert("E4.KONTROL 'buradan tekrar yazabilirsiniz' müşteride", _bfc("tr", null).includes("tekrar yazabilirsiniz"));
+for (const l of ["tr", "en", "de", "fr", "es", "ru", "ar"])
+  assert(`E4.DİL ${l}`, _bfc(l, null).length > 30);
+// "en kısa sürede" şablonlardan gerçekten çıktı mı (kaynak-kilidi)
+{
+  const _pm = await Deno.readTextFile("supabase/functions/shared/handlers/process-message.ts");
+  const _ld = await Deno.readTextFile("supabase/functions/shared/constants/lead-detection.ts");
+  // Yalnız ŞABLON-LİTERALLERİ taranır (yorum satırları değil). SW_SAVED İş 3'te
+  // B2B vaadine dönecek — o zamana dek muaf (satırında SW/Turzz geçer).
+  const _promiseLit = /(tr|en|de|fr|es|ru|ar): [`"][^`"\n]*en kısa sürede/gi;
+  const _pmHits = (_pm.match(_promiseLit) || []);
+  assert("E4.KAYNAK pm şablonlarında 'en kısa sürede' kalmadı", _pmHits.length === 0, _pmHits[0] || "");
+  const _ldHits = (_ld.match(_promiseLit) || []).filter((h) => !/Turzz/.test(h));
+  assert("E4.KAYNAK lead-detection'da (SW_SAVED hariç) vaat kalmadı", _ldHits.length === 0, _ldHits[0] || "");
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

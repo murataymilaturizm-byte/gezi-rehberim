@@ -486,8 +486,8 @@ ${tourDetails ? `📍 TUR DETAYLARI (after-sales soruları İÇİN — SADECE bu
 
 🚨 AFTER-SALES — ACENTE YÖNLENDİRME KURALLARI:
 - DEĞİŞİKLİK / İPTAL talebi: "Rezervasyon değişikliği ve iptali için lütfen doğrudan acentemizle iletişime geçin" de. Botu KENDIN değiştirme veya iptal etme — bu kritik iş kuralı.
-- "ÖDEDİM" / "DEKONT GÖNDERDİM": "Teşekkürler! Acentemiz ödemenizi teyit edecek ve en kısa sürede sizinle iletişime geçecek" de.
-- "NE ZAMAN ARAYACAKSINIŻ": Acentenin iletişim bilgisini ver + "En kısa sürede sizinle iletişime geçecekler" de.
+- "ÖDEDİM" / "DEKONT GÖNDERDİM": "Teşekkürler! Acentemiz ödemenizi teyit edecek — genellikle çalışma saatleri içinde dönüş yapılır" de.
+- "NE ZAMAN ARAYACAKSINIŻ": Acentenin iletişim bilgisini ver + "Genellikle çalışma saatleri içinde dönüş yapılır" de.
 - "BULUŞMA YERİ / TRANSFER": SADECE yukarıdaki TUR DETAYLARI bölümündeki "Kalkış noktası" (hareket_noktasi) ve "Toplanma saati" (toplanma_saati) değerlerini ver. Bu alanlar yukarıda YOKSA "Kalkış detayları için acentemizle iletişime geçin" de — ASLA yer/saat tahmin etme, başka turun bilgisini verme.
 
 🚨 KRİTİK - BAŞKA TUR SORARSA:

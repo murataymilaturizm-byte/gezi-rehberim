@@ -148,13 +148,15 @@ export const LEAD_FAILED: Record<string, string> = {
 };
 
 export const LEAD_SAVED: Record<string, string> = {
-  tr: "Teşekkürler! Acentemiz en kısa sürede sizinle iletişime geçecek 🤝",
-  en: "Thank you! Our agency will contact you shortly 🤝",
-  de: "Danke! Unsere Agentur meldet sich in Kürze bei Ihnen 🤝",
-  fr: "Merci ! Notre agence vous contactera très prochainement 🤝",
-  es: "¡Gracias! Nuestra agencia se pondrá en contacto en breve 🤝",
-  ru: "Спасибо! Наше агентство свяжется с вами в ближайшее время 🤝",
-  ar: "شكراً! ستتواصل معك وكالتنا في أقرب وقت 🤝",
+  // E4-1 (2026-08-10): "en kısa sürede" vaadi buradan ÇIKTI — basım noktası
+  // buildFollowupClosing ile gerçekçi kapanış ekliyor (working_hours dahil).
+  tr: "Teşekkürler, talebinizi acentemize ilettim 🤝",
+  en: "Thank you, I've forwarded your request to our agency 🤝",
+  de: "Danke, ich habe Ihre Anfrage an unsere Agentur weitergeleitet 🤝",
+  fr: "Merci, j'ai transmis votre demande à notre agence 🤝",
+  es: "Gracias, he trasladado su solicitud a nuestra agencia 🤝",
+  ru: "Спасибо, я передал вашу заявку в наше агентство 🤝",
+  ar: "شكراً، أحلت طلبك إلى وكالتنا 🤝",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
