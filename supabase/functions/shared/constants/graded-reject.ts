@@ -20,6 +20,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** 2. tetikleme — telefon-adımı: farklı yazım önerisi + köprü TEKLİFİ. */
+// TON: nötr-yardım (2. deneme — çözüm önerir)
 export const PHONE_RETRY_MSG: Record<string, string> = {
   tr: "Hâlâ olmadı 🙏 Numaranızı boşluksuz tek satır yazmayı deneyin (örn. 05321234567) — ya da isterseniz talebinizi bu haliyle acentemize ileteyim, sizi arasınlar.",
   en: "Still not working 🙏 Try typing your number in one line without spaces (e.g. 05321234567) — or I can forward your request to our agency as it is, and they'll call you.",
@@ -31,6 +32,7 @@ export const PHONE_RETRY_MSG: Record<string, string> = {
 };
 
 /** 3. tetikleme — otomatik köprü: kayıt AÇILDI, müşteri döngüden çıktı. */
+// TON: nötr-işlem (talep kayda geçti)
 export const PHONE_BRIDGE_MSG: Record<string, string> = {
   tr: "Talebinizi rezervasyon bilgilerinizle birlikte acentemize ilettim 📩 Sizinle iletişime geçecekler. Dilerseniz numaranızı daha sonra buradan da yazabilirsiniz.",
   en: "I've forwarded your request with your reservation details to our agency 📩 They will get in touch with you. You can also send your number here later if you like.",
@@ -43,6 +45,7 @@ export const PHONE_BRIDGE_MSG: Record<string, string> = {
 
 /** AI-fallback 2.+ ardışık basım — "birkaç dakika" vaadi yerine kayıt-gerçeği.
  *  (Mesaj GERÇEKTEN kaydediliyor: inbound whatsapp_conversations'a düşüyor.) */
+// TON: ciddi (teknik sorun itirafı — dürüst, vaatsiz)
 export const AI_FALLBACK_REPEAT_MSG: Record<string, string> = {
   tr: "Şu anda teknik bir sorun yaşıyoruz 🙏 Mesajınız bize ulaştı — sorun giderilir giderilmez buradan yanıtlayacağız.",
   en: "We're having a technical issue right now 🙏 Your message has reached us — we'll reply here as soon as it's resolved.",

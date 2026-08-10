@@ -68,9 +68,10 @@ export function isBrokenPhoneAttempt(message: string): boolean {
   return canonicalTrPhone(m) === null;
 }
 
+// TON: nötr-yardım (red ama yol gösterir)
 /** Kibar-red — 7 dil, örnekli format, adımda kalış mesajı. */
 export const PHONE_BROKEN_MSG: Record<string, string> = {
-  tr: "Numaranız eksik veya hatalı görünüyor 📱 Lütfen başında 0 ile 11 haneli yazın (örn. 05XX XXX XX XX)",
+  tr: "Numaranız eksik veya hatalı görünüyor 📱 Lütfen başında 0 ile 11 haneli (örn. 05XX XXX XX XX) ya da +90'lı yazın.",
   en: "Your number looks incomplete or invalid 📱 Please enter 11 digits starting with 0 (e.g. 05XX XXX XX XX) or with +country code",
   de: "Ihre Nummer scheint unvollständig oder fehlerhaft 📱 Bitte 11-stellig mit führender 0 eingeben (z. B. 05XX XXX XX XX) oder mit +Ländervorwahl",
   fr: "Votre numéro semble incomplet ou incorrect 📱 Veuillez saisir 11 chiffres commençant par 0 (ex. 05XX XXX XX XX) ou avec +indicatif",

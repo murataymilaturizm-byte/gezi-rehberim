@@ -14,6 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** {phone} → " 📞 +90…" (varsa) ya da boş string. */
+// TON: ciddi (son çare — sistem kaydedemedi; 🙏 ölçülü, neşe YOK)
 export const ESCALATION_FAILED: Record<string, string> = {
   tr: "Talebinizi şu an sistemimize kaydedemedim 🙏 Lütfen doğrudan acentemizle iletişime geçin{phone} — ya da birkaç dakika sonra tekrar yazın.",
   en: "I couldn't save your request just now 🙏 Please contact our agency directly{phone} — or write again in a few minutes.",

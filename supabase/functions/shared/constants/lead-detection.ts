@@ -72,6 +72,7 @@ export function detectOutOfScopeLead(message: string, catalog?: LeadCatalog | st
 }
 
 // Bot-metinleri — 7 dil ("satmıyoruz" tonu YOK; talebi iletme + akışa saygı)
+// TON: nötr-işlem (talep alındı ack)
 export const LEAD_ACK: Record<string, string> = {
   tr: "Bu konuda acentemiz size doğrudan yardımcı olabilir — talebinizi ilettim ✍️",
   en: "Our agency can help you with this directly — I've forwarded your request ✍️",
@@ -82,6 +83,7 @@ export const LEAD_ACK: Record<string, string> = {
   ar: "يمكن لوكالتنا مساعدتك في ذلك مباشرة — قمت بإرسال طلبك ✍️",
 };
 
+// TON: neşeli-hafif (akışa dönüş)
 export const LEAD_RESUME: Record<string, string> = {
   tr: "Kaldığımız yerden devam edelim ✨",
   en: "Let's continue where we left off ✨",
@@ -103,6 +105,7 @@ export function isTourContextMessage(message: string, catalog?: LeadCatalog | st
 
 // W3-EK (2026-07-29): akış-DIŞI lead'de DETAY toplama. Taslak kayıt İLK mesajda
 // açılır (kayıp yok), detay gelirse request_text güncellenir.
+// TON: neşeli (satış/keşif — detay isteme)
 export const LEAD_ASK_DETAIL: Record<string, string> = {
   tr: "Talebinizi acentemize iletmek isterim! ✍️ Kısaca detay verir misiniz? (örn. nereden nereye, hangi tarih, kaç kişi)",
   en: "I'd like to forward your request to our agency! ✍️ Could you give a few details? (e.g. from/to, which date, how many people)",
@@ -137,8 +140,9 @@ export const LEAD_ASK_PHONE: Record<string, string> = {
 // W3-b (2026-07-29): YAZIM BAŞARISIZSA vaat EDİLMEZ — "ilettim" yerine dürüst mesaj.
 // E1-dersi (bot "aldım" deyip kaydetmemişti) bu sınıfın ikinci örneğiydi; desen artık
 // "önce yaz, sonra vaat et" (promise-after-write).
+// TON: ciddi (kayıt DÜŞMEDİ — hata durumu; emoji yok)
 export const LEAD_FAILED: Record<string, string> = {
-  tr: "Talebinizi şu an kaydedemedim 😔 Telefon numaranızla birlikte tekrar yazar mısınız?",
+  tr: "Talebinizi şu an kaydedemedim. Telefon numaranızla birlikte tekrar yazar mısınız?",
   en: "I couldn't record your request right now 😔 Could you write again with your phone number?",
   de: "Ihre Anfrage konnte gerade nicht gespeichert werden 😔 Bitte schreiben Sie erneut mit Ihrer Telefonnummer.",
   fr: "Je n'ai pas pu enregistrer votre demande 😔 Pouvez-vous réécrire avec votre numéro de téléphone ?",
@@ -223,6 +227,7 @@ export function detectSoftwareInquiry(message: string, catalog?: LeadCatalog | s
 }
 
 /** Yakalanınca: TUR-SATIŞ TONUNDAN ÇIKAN karşılama (7-dil). */
+// TON: neşeli-iş (B2B karşılama)
 export const SW_ASK_DETAIL: Record<string, string> = {
   tr: "Turzz AI'yı acenteniz için mi değerlendiriyorsunuz? Harika! 🎉 Talebinizi ekibimize iletiyorum — kısaca acente adınızı ve size nasıl ulaşalım yazar mısınız?",
   en: "Are you considering Turzz AI for your own agency? Great! 🎉 I'm forwarding your request to our team — could you share your agency name and how we can reach you?",
@@ -234,6 +239,7 @@ export const SW_ASK_DETAIL: Record<string, string> = {
 };
 
 /** Akış-içi kısa ack (rezervasyon bölünmez — P4-3 (B) dalıyla aynı kural). */
+// TON: nötr-işlem
 export const SW_ACK: Record<string, string> = {
   tr: "Turzz AI ile ilgilendiğinizi ekibimize ilettim 🎉",
   en: "I've let our team know you're interested in Turzz AI 🎉",
@@ -245,14 +251,16 @@ export const SW_ACK: Record<string, string> = {
 };
 
 /** Detay geldikten sonra kapanış. */
+// TON: ciddi-iş (B2B) — hedef kitle ACENTE SAHİBİ; 🚀/startup-neşesi değil,
+// ölçülebilir vaat: "bir iş günü". (E2-1 ton-sınıfı, 2026-08-10)
 export const SW_SAVED: Record<string, string> = {
-  tr: "Teşekkürler! Turzz ekibi en kısa sürede sizinle iletişime geçecek 🚀",
-  en: "Thank you! The Turzz team will contact you shortly 🚀",
-  de: "Vielen Dank! Das Turzz-Team meldet sich in Kürze bei Ihnen 🚀",
-  fr: "Merci ! L'équipe Turzz vous contactera sous peu 🚀",
-  es: "¡Gracias! El equipo de Turzz se pondrá en contacto en breve 🚀",
-  ru: "Спасибо! Команда Turzz свяжется с вами в ближайшее время 🚀",
-  ar: "شكراً! سيتواصل معك فريق Turzz قريباً 🚀",
+  tr: "Talebiniz Turzz ekibine iletildi. En geç bir iş günü içinde dönüş yapılır.",
+  en: "Your request has been forwarded to the Turzz team. You will hear back within one business day.",
+  de: "Ihre Anfrage wurde an das Turzz-Team weitergeleitet. Sie erhalten innerhalb eines Werktags eine Rückmeldung.",
+  fr: "Votre demande a été transmise à l'équipe Turzz. Vous recevrez une réponse sous un jour ouvré.",
+  es: "Su solicitud ha sido enviada al equipo de Turzz. Recibirá respuesta en un día hábil.",
+  ru: "Ваша заявка передана команде Turzz. Ответ поступит в течение одного рабочего дня.",
+  ar: "تمت إحالة طلبك إلى فريق Turzz. سيتم الرد خلال يوم عمل واحد.",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -287,6 +295,7 @@ export function detectSoftwareBridge(message: string, catalog?: LeadCatalog | st
 }
 
 /** Köprüden sonra ÇIPLAK onay/istek — "evet", "bende istiyorum", "olur" … */
+// TON: nötr-soru (iddiasız köprü)
 export const SW_BRIDGE_YES_RE =
   /(?<![\p{L}\p{N}])(?:evet|tabii|tabi|olur|isterim|istiyorum|ilgileniyorum|l[üu]tfen|tamam|yes|sure|please|yeah|ja|bitte|genau|oui|volontiers|s[íi]|claro|por\s*favor|да|конечно|хочу|نعم|بالتأكيد|أريد|ben(?:de|im)\s*(?:de\s*)?(?:ist|laz)|bana\s*da)/iu;
 

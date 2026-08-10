@@ -157,6 +157,7 @@ export const ATTR_CHILD_LABELS: Record<string, { child: string; adult: string }>
  * HİÇBİR turda o öznitelik yoksa kullanılan tek yedek — W4'ün eski davranışı
  * ARTIK YALNIZ BURADA. {phone} varsa telefon eklenir, yoksa cümle telefonsuz biter.
  */
+// TON: nötr (veri yok — dürüst yönlendirme)
 export const ATTR_NO_DATA: Record<string, string> = {
   tr: "Bu bilgi turlarımızda henüz tanımlı değil. Acentemiz size yardımcı olabilir{phone}.",
   en: "This information is not yet defined for our tours. Our agency can help you{phone}.",

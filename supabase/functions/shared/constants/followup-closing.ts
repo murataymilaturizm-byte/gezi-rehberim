@@ -16,6 +16,7 @@
 //    süslü-parantezsiz değer basılır; aksi halde saat kısmı sessizce atlanır.
 // ═══════════════════════════════════════════════════════════════════════════
 
+// TON: nötr-güven (gerçekçi vaat + kontrol müşteride)
 const CLOSING: Record<string, { base: string; withHours: string }> = {
   tr: {
     base: "Acentemiz genellikle çalışma saatleri içinde dönüş yapar — dönüş alamazsanız buradan tekrar yazabilirsiniz 🤝",
